@@ -534,17 +534,17 @@ extern std::string active_url;
 static bool
 RendererCrashHandler(const void* crash_context, size_t crash_context_size,
              void* context) {
-  const int fd = reinterpret_cast<int>(context);
+  const int fd = reinterpret_cast<intptr_t>(context);
   int fds[2];
   socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
   char guid[kGuidSize] = {0};
   char crash_url[kMaxActiveURLSize + 1] = {0};
   char distro[kDistroSize + 1] = {0};
-  const unsigned guid_len = std::min(google_update::linux_guid.size(),
-                                     kGuidSize);
-  const unsigned crash_url_len =
+  const size_t guid_len = std::min(google_update::linux_guid.size(),
+                                   kGuidSize);
+  const size_t crash_url_len =
       std::min(child_process_logging::active_url.size(), kMaxActiveURLSize);
-  const unsigned distro_len =
+  const size_t distro_len =
       std::min(base::linux_distro.size(), kDistroSize);
   memcpy(guid, google_update::linux_guid.data(), guid_len);
   memcpy(crash_url, child_process_logging::active_url.data(), crash_url_len);

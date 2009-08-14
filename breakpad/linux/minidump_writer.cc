@@ -238,21 +238,21 @@ static void CPUFillFromThreadInfo(MDRawContextAMD64 *out,
 
   out->flt_save.control_word = info.fpregs.cwd;
   out->flt_save.status_word = info.fpregs.swd;
-  out->flt_save.tag_word = info.fpregs.twd;
+  out->flt_save.tag_word = info.fpregs.ftw;
   out->flt_save.error_opcode = info.fpregs.fop;
   out->flt_save.error_offset = info.fpregs.rip;
   out->flt_save.error_selector = 0; // We don't have this.
   out->flt_save.data_offset = info.fpregs.rdp;
   out->flt_save.data_selector = 0;  // We don't have this.
   out->flt_save.mx_csr = info.fpregs.mxcsr;
-  out->flt_save.mx_csr_mask = info.fpregs.mxcsr_mask;
+  out->flt_save.mx_csr_mask = info.fpregs.mxcr_mask;
   memcpy(&out->flt_save.float_registers, &info.fpregs.st_space, 8 * 16);
   memcpy(&out->flt_save.xmm_registers, &info.fpregs.xmm_space, 16 * 16);
 }
 
 static void CPUFillFromUContext(MDRawContextAMD64 *out, const ucontext *uc,
                                 const struct _libc_fpstate* fpregs) {
-  const greg_t* regs = uc->gregs;
+  const greg_t* regs = uc->uc_mcontext.gregs;
 
   out->context_flags = MD_CONTEXT_AMD64_FULL;
 
@@ -292,7 +292,7 @@ static void CPUFillFromUContext(MDRawContextAMD64 *out, const ucontext *uc,
   out->flt_save.error_selector = 0; // We don't have this.
   out->flt_save.data_selector = 0;  // We don't have this.
   out->flt_save.mx_csr = fpregs->mxcsr;
-  out->flt_save.mx_csr_mask = fpregs->mxcsr_mask;
+  out->flt_save.mx_csr_mask = fpregs->mxcr_mask;
   memcpy(&out->flt_save.float_registers, &fpregs->_st, 8 * 16);
   memcpy(&out->flt_save.xmm_registers, &fpregs->_xmm, 16 * 16);
 }

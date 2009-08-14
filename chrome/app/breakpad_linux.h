@@ -10,9 +10,9 @@
 extern void InitCrashReporter();
 
 #if defined(GOOGLE_CHROME_BUILD)
-static const unsigned kMaxActiveURLSize = 1024;
-static const unsigned kGuidSize = 32;  // 128 bits = 32 chars in hex.
-static const unsigned kDistroSize = 128;
+static const size_t kMaxActiveURLSize = 1024;
+static const size_t kGuidSize = 32;  // 128 bits = 32 chars in hex.
+static const size_t kDistroSize = 128;
 
 struct BreakpadInfo {
   const char* filename;

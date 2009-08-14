@@ -86,8 +86,13 @@ class PageAllocator {
 
  private:
   uint8_t *GetNPages(unsigned num_pages) {
+#ifdef __x86_64
+    void *a = sys_mmap(NULL, page_size_ * num_pages, PROT_READ | PROT_WRITE,
+                       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+#else
     void *a = sys_mmap2(NULL, page_size_ * num_pages, PROT_READ | PROT_WRITE,
                    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+#endif
     if (a == MAP_FAILED)
       return NULL;
 
