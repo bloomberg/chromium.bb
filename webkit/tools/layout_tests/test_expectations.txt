@@ -767,7 +767,6 @@ BUG8696 WIN LINUX : LayoutTests/fast/gradients/crash-on-zero-radius.html = FAIL
 // These are regressions from 1.0, but deemed DEFERable for 2.0.
 BUG8635 LINUX WIN : LayoutTests/svg/custom/pattern-y-offset.svg = FAIL
 BUG8635 LINUX WIN : LayoutTests/svg/batik/paints/patternRegions.svg = FAIL
-BUG8635 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-mask-01-b.svg = FAIL
 BUG8635 LINUX WIN : LayoutTests/svg/custom/pattern-cycle-detection.svg = FAIL
 
 // Shows garbage instead of an image
@@ -806,7 +805,6 @@ BUG10288 WIN LINUX : LayoutTests/svg/batik/text/verticalText.svg = FAIL
 
 BUG10289 WIN LINUX : LayoutTests/svg/batik/masking/maskRegions.svg = FAIL
 
-BUG10290 WIN LINUX : LayoutTests/svg/custom/image-small-width-height.svg = FAIL
 
 // Bug in Skia, see https://bugs.webkit.org/show_bug.cgi?id=24534 .
 BUG10291 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-06-b.svg = FAIL
@@ -956,11 +954,6 @@ BUG10302 LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-10-b.svg = FAIL
 
 BUG10303 MAC : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 BUG10303 LINUX : LayoutTests/svg/custom/pattern-rotate.svg = FAIL
-// The pattern we generate appears to be scaled incorrectly.
-// Expectations for this test changed upstream. We should fix this test, but
-// it doesn't need to block the current release
-BUG10303 WIN LINUX : LayoutTests/svg/custom/pointer-events-image.svg = FAIL
-
 
 // I find it hard to care too much about SVG failures.
 BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-04-t.svg = FAIL
@@ -1943,10 +1936,6 @@ BUG10461 SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-verti
 BUG10463 WIN LINUX : LayoutTests/editing/selection/hit-test-anonymous.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL CRASH
-BUG10463 WIN : LayoutTests/svg/W3C-SVG-1.1/animate-elem-36-t.svg = FAIL
-BUG10463 WIN : LayoutTests/svg/custom/image-parent-translation.xhtml = FAIL
-BUG10463 WIN LINUX : LayoutTests/svg/custom/js-update-image.svg = FAIL
-BUG10463 WIN : LayoutTests/svg/custom/text-image-opacity.svg = FAIL
 
 // Adding more failures after the last merge:
 BUG10464 WIN : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = CRASH PASS
@@ -2224,14 +2213,6 @@ BUG10861 WIN : LayoutTests/fast/dom/HTMLSelectElement/named-options.html = FAIL
 BUG10861 WIN : LayoutTests/http/tests/plugins/post-url-file.html = PASS
 BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = TIMEOUT
 BUG10861 LINUX MAC : LayoutTests/security/set-form-autocomplete-attribute.html = TIMEOUT PASS
-
-// New failures from WebKit merge 42725:42805
-// The following tests needs rebaseline on LINUX since
-// WebKit change http://trac.webkit.org/changeset/42751
-// changed the name of SVG image in the dump from "RenderImage"
-// to "RenderSVGImage".
-BUG10998 LINUX : LayoutTests/svg/custom/image-parent-translation.xhtml = FAIL
-BUG10998 LINUX : LayoutTests/svg/custom/text-image-opacity.svg = FAIL
 
 // New failures from WebKit merge 42725:42805
 // The following tests needs rebaseline on MAC because of
