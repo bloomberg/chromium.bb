@@ -134,6 +134,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
     return reply_message;
   }
 
+  // Adds the external tab passed in to the tab tracker.
+  bool AddExternalTab(ExternalTabContainer* external_tab);
+
  private:
   // IPC Message callbacks.
   void CloseBrowser(int handle, IPC::Message* reply_message);

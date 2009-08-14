@@ -993,6 +993,13 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_GetFilteredInetHitCount,
                              int /* hit_count */)
 
+  IPC_MESSAGE_ROUTED5(AutomationMsg_AttachExternalTab,
+                      int /* tab_handle */,
+                      int /* existing_tab_handle */,
+                      gfx::NativeWindow  /* Tab container window */,
+                      gfx::NativeWindow  /* Tab window */,
+                      int /* disposition */)
+
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   // See previous definition of this message for explanation of why it is
   // defined twice.

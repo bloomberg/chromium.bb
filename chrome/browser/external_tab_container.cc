@@ -35,7 +35,8 @@ ExternalTabContainer::ExternalTabContainer(
       tab_handle_(0),
       ignore_next_load_notification_(false),
       automation_resource_message_filter_(filter),
-      load_requests_via_automation_(false) {
+      load_requests_via_automation_(false),
+      handle_top_level_requests_(false) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -47,13 +48,15 @@ bool ExternalTabContainer::Init(Profile* profile,
                                 const gfx::Rect& bounds,
                                 DWORD style,
                                 bool load_requests_via_automation,
-                                bool handle_top_level_requests) {
+                                bool handle_top_level_requests,
+                                TabContents* existing_contents) {
   if (IsWindow()) {
     NOTREACHED();
     return false;
   }
 
   load_requests_via_automation_ = load_requests_via_automation;
+  handle_top_level_requests_ = handle_top_level_requests;
 
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
   views::WidgetWin::Init(NULL, bounds);
@@ -82,12 +85,19 @@ bool ExternalTabContainer::Init(Profile* profile,
     profile = automation_profile_.get();
   }
 
-  tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL);
+  if (existing_contents)
+    tab_contents_ = existing_contents;
+  else
+    tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL);
+
   tab_contents_->set_delegate(this);
   tab_contents_->GetMutableRendererPrefs()->browser_handles_top_level_requests =
       handle_top_level_requests;
-  tab_contents_->render_view_host()->AllowBindings(
-      BindingsPolicy::EXTERNAL_HOST);
+
+  if (!existing_contents) {
+    tab_contents_->render_view_host()->AllowBindings(
+        BindingsPolicy::EXTERNAL_HOST);
+  }
 
   // Create a TabContentsContainer to handle focus cycling using Tab and
   // Shift-Tab.
@@ -208,13 +218,43 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
                             WindowOpenDisposition disposition,
                             const gfx::Rect& initial_pos,
                             bool user_gesture) {
-  if (disposition == NEW_POPUP || disposition == NEW_WINDOW ||
-      disposition == NEW_FOREGROUND_TAB) {
-    Browser::BuildPopupWindowHelper(source, new_contents, initial_pos,
-                                    Browser::TYPE_POPUP,
-                                    tab_contents_->profile(), true);
-  } else {
-    NOTREACHED();
+  switch (disposition) {
+    case NEW_POPUP:
+    case NEW_WINDOW: {
+      Browser::BuildPopupWindowHelper(source, new_contents, initial_pos,
+                                      Browser::TYPE_POPUP,
+                                      tab_contents_->profile(), true);
+      break;
+    }
+
+    case NEW_FOREGROUND_TAB:
+    case NEW_BACKGROUND_TAB: {
+      DCHECK(automation_ != NULL);
+
+      ExternalTabContainer* new_container =
+          new ExternalTabContainer(automation_,
+                                   automation_resource_message_filter_);
+      bool result = new_container->Init(automation_profile_.get(),
+                                        NULL,
+                                        initial_pos,
+                                        WS_CHILD,
+                                        load_requests_via_automation_,
+                                        handle_top_level_requests_,
+                                        new_contents);
+      DCHECK(result);
+      result = automation_->AddExternalTab(new_container);
+      DCHECK(result);
+
+      automation_->Send(new AutomationMsg_AttachExternalTab(
+          0, tab_handle_, new_container->tab_handle(),
+          new_container->GetNativeView(), new_contents->GetNativeView(),
+          disposition));
+      break;
+    }
+
+    default:
+      NOTREACHED();
+      break;
   }
 }
 

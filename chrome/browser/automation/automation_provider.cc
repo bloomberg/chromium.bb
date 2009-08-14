@@ -2390,10 +2390,11 @@ void AutomationProvider::CreateExternalTab(
       profile_->GetOffTheRecordProfile() : profile_;
   external_tab_container->Init(profile, settings.parent, settings.dimensions,
       settings.style, settings.load_requests_via_automation,
-      settings.handle_top_level_requests);
-  TabContents* tab_contents = external_tab_container->tab_contents();
-  if (tab_contents) {
-    *tab_handle = tab_tracker_->Add(&tab_contents->controller());
+      settings.handle_top_level_requests, NULL);
+
+  if (AddExternalTab(external_tab_container)) {
+    TabContents* tab_contents = external_tab_container->tab_contents();
+    *tab_handle = external_tab_container->tab_handle();
     external_tab_container->set_tab_handle(*tab_handle);
     *tab_container_window = external_tab_container->GetNativeView();
     *tab_window = tab_contents->GetNativeView();
@@ -2401,6 +2402,20 @@ void AutomationProvider::CreateExternalTab(
     delete external_tab_container;
   }
 }
+
+bool AutomationProvider::AddExternalTab(ExternalTabContainer* external_tab) {
+  DCHECK(external_tab != NULL);
+
+  TabContents* tab_contents = external_tab->tab_contents();
+  if (tab_contents) {
+    int tab_handle = tab_tracker_->Add(&tab_contents->controller());
+    external_tab->set_tab_handle(tab_handle);
+    return true;
+  }
+
+  return false;
+}
+
 #endif
 
 void AutomationProvider::NavigateInExternalTab(

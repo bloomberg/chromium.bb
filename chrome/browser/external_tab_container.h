@@ -42,12 +42,17 @@ class ExternalTabContainer : public TabContentsDelegate,
       automation_profile_->set_tab_handle(handle);
   }
 
+  int tab_handle() const {
+    return tab_handle_;
+  }
+
   bool Init(Profile* profile,
             HWND parent,
             const gfx::Rect& bounds,
             DWORD style,
             bool load_requests_via_automation,
-            bool handle_top_level_requests);
+            bool handle_top_level_requests,
+            TabContents* existing_tab_contents);
 
   // This is invoked when the external host reflects back to us a keyboard
   // message it did not process
@@ -159,6 +164,9 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // If all the url requests for this tab are to be loaded via automation.
   bool load_requests_via_automation_;
+
+  // whether top level URL requests are to be handled by the automation client.
+  bool handle_top_level_requests_;
 
   // Scoped browser object for this ExternalTabContainer instance.
   scoped_ptr<Browser> browser_;
