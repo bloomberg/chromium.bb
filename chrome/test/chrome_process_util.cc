@@ -98,7 +98,19 @@ ChromeProcessList GetRunningChromeProcesses(const FilePath& data_dir) {
     while ((process_entry = it.NextProcessEntry()))
       result.push_back(process_entry->pid);
   }
-#endif
+#endif  // defined(OS_LINUX)
+
+#if defined(OS_MACOSX)
+  // On Mac OS X we run the subprocesses with a different bundle, so they end
+  // up with a different name, so we have to collect them in a second pass.
+  {
+    ChildProcessFilter filter(browser_pid);
+    base::NamedProcessIterator it(chrome::kHelperProcessExecutableName,
+                                  &filter);
+    while ((process_entry = it.NextProcessEntry()))
+      result.push_back(process_entry->pid);
+  }
+#endif  // defined(OS_MACOSX)
 
   result.push_back(browser_pid);
 

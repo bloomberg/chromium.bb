@@ -17,11 +17,12 @@ const wchar_t kBrowserProcessExecutableName[] = L"chrome.exe";
 #elif defined(OS_LINUX)
 const wchar_t kBrowserProcessExecutableName[] = L"chrome";
 #elif defined(OS_MACOSX)
-const wchar_t kBrowserProcessExecutableName[] =
 #if defined(GOOGLE_CHROME_BUILD)
-    L"Google Chrome";
+const wchar_t kBrowserProcessExecutableName[] = L"Google Chrome";
+const wchar_t kHelperProcessExecutableName[] = L"Google Chrome Helper";
 #else
-    L"Chromium";
+const wchar_t kBrowserProcessExecutableName[] = L"Chromium";
+const wchar_t kHelperProcessExecutableName[] = L"Chromium Helper";
 #endif  // GOOGLE_CHROME_BUILD
 #endif  // OS_*
 #if defined(OS_WIN)
