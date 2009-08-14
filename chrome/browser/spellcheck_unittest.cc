@@ -804,18 +804,30 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       // Portuguese (Brazil)
       "pt-BR",
       L"A miss\x00E3o do "
-      // L"Google " - to be added.
+#if !defined(OS_MACOSX)
+      L"Google "
+#endif
       L"\x00E9 organizar as informa\x00E7\x00F5"
-      L"es do mundo todo e torn\x00E1-las acess\x00EDveis e "
+      L"es do mundo todo e "
+#if !defined(OS_MACOSX)
+      L"torn\x00E1-las "
+#endif
+      L"acess\x00EDveis e "
       // L"\x00FAteis " - to be added.
       L"em car\x00E1ter universal."
     }, {
       // Portuguese (Portugal)
       "pt-PT",
       L"O "
-      // L"Google " - to be added.
+#if !defined(OS_MACOSX)
+      L"Google "
+#endif
       L"tem por miss\x00E3o organizar a informa\x00E7\x00E3o do "
-      L"mundo e torn\x00E1-la universalmente acess\x00EDvel e \x00FAtil"
+      L"mundo e "
+#if !defined(OS_MACOSX)
+      L"torn\x00E1-la "
+#endif
+      L"universalmente acess\x00EDvel e \x00FAtil"
     }, {
       // Romanian
       "ro-RO",
@@ -877,7 +889,6 @@ TEST_F(SpellCheckTest, SpellCheckText) {
   ASSERT_FALSE(hunspell_directory.empty());
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    fprintf(stderr, "%s(): %s\n", __FUNCTION__, kTestCases[i].language);
     scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
         hunspell_directory, kTestCases[i].language, NULL, FilePath()));
 
