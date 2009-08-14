@@ -118,7 +118,7 @@ class TestRunner:
     if options.lint_test_files:
       # Creating the expecations for each platform/target pair does all the
       # test list parsing and ensures it's correct syntax(e.g. no dupes).
-      for platform in TestExpectationsFile.PLATFORMS:
+      for platform in test_expectations.TestExpectationsFile.PLATFORMS:
         self._ParseExpectations(platform, is_debug_mode=True)
         self._ParseExpectations(platform, is_debug_mode=False)
     else:
