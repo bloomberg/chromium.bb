@@ -247,7 +247,7 @@ void TabContentsViewWin::OnTabCrashed() {
   // paint.
   // Note that it's possible to get this message after the window was destroyed.
   if (::IsWindow(GetNativeView()))
-    ::InvalidateRect(GetNativeView(), NULL, FALSE);
+    InvalidateRect(GetNativeView(), NULL, FALSE);
 }
 
 void TabContentsViewWin::SizeContents(const gfx::Size& size) {

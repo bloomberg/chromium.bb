@@ -18,19 +18,6 @@
 
 namespace base {
 
-// An interface implemented by classes that use message maps.
-// ProcessWindowMessage is implemented by the BEGIN_MESSAGE_MAP_EX macro.
-class MessageMapInterface {
- public:
-  // Processes one message from the window's message queue.
-  virtual BOOL ProcessWindowMessage(HWND window,
-                                    UINT message,
-                                    WPARAM w_param,
-                                    LPARAM l_param,
-                                    LRESULT& result,
-                                    DWORD msg_mad_id = 0) = 0;
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // WindowImpl
@@ -39,19 +26,23 @@ class MessageMapInterface {
 //  Windows.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class WindowImpl : public MessageMapInterface {
+class WindowImpl {
  public:
   WindowImpl();
   virtual ~WindowImpl();
 
-  // Initializes the Window with a parent and an initial desired size.
-  void Init(HWND parent, const gfx::Rect& bounds);
+  BEGIN_MSG_MAP_EX(WindowImpl)
+    // No messages to handle
+  END_MSG_MAP()
+
+  // Initialize the Window with a parent and an initial desired size.
+  virtual void Init(HWND parent, const gfx::Rect& bounds);
+
+  // Returns the gfx::NativeView associated with this Window.
+  virtual gfx::NativeView GetNativeView() const;
 
   // Retrieves the default window icon to use for windows if none is specified.
   virtual HICON GetDefaultWindowIcon() const;
-
-  // Returns the HWND associated with this Window.
-  HWND hwnd() const { return hwnd_; }
 
   // Sets the window styles. This is ONLY used when the window is created.
   // In other words, if you invoke this after invoking Init, nothing happens.
@@ -71,13 +62,16 @@ class WindowImpl : public MessageMapInterface {
   UINT initial_class_style() { return class_style_; }
 
  protected:
+  // Call close instead of this to Destroy the window.
+  BOOL DestroyWindow();
+
   // Handles the WndProc callback for this object.
   virtual LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param);
 
  private:
   friend class ClassRegistrar;
 
-  // The window procedure used by all Windows.
+  // The windows procedure used by all Windows.
   static LRESULT CALLBACK WndProc(HWND window,
                                   UINT message,
                                   WPARAM w_param,

@@ -44,10 +44,10 @@ PluginInstallerImpl::~PluginInstallerImpl() {
   installation_job_monitor_thread_->Stop();
 
   if (bold_font_)
-    DeleteObject(bold_font_);
+    ::DeleteObject(bold_font_);
 
   if (underline_font_)
-    DeleteObject(underline_font_);
+    ::DeleteObject(underline_font_);
 
   if (activex_installer_) {
     activex_installer_->Cleanup();
@@ -55,7 +55,7 @@ PluginInstallerImpl::~PluginInstallerImpl() {
   }
 
   if (tooltip_)
-    DestroyWindow(tooltip_);
+    ::DestroyWindow(tooltip_);
 }
 
 bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
@@ -118,8 +118,8 @@ void PluginInstallerImpl::Shutdown() {
   if (install_dialog_.IsWindow()) {
     install_dialog_.DestroyWindow();
   }
-  if (IsWindow(hwnd())) {
-    DestroyWindow(hwnd());
+  if (IsWindow()) {
+    DestroyWindow();
   }
 }
 
@@ -168,12 +168,12 @@ void PluginInstallerImpl::ClearDisplay() {
 }
 
 void PluginInstallerImpl::RefreshDisplay() {
-  if (!IsWindow(hwnd()))
+  if (!IsWindow())
     return;
   UpdateToolTip();
 
-  InvalidateRect(hwnd(), NULL, TRUE);
-  UpdateWindow(hwnd());
+  InvalidateRect(NULL, TRUE);
+  UpdateWindow();
 }
 
 bool PluginInstallerImpl::CreateToolTip() {
@@ -182,16 +182,16 @@ bool PluginInstallerImpl::CreateToolTip() {
                             WS_POPUP | TTS_ALWAYSTIP,
                             CW_USEDEFAULT, CW_USEDEFAULT,
                             CW_USEDEFAULT, CW_USEDEFAULT,
-                            hwnd(), NULL, NULL, NULL);
+                            m_hWnd, NULL, NULL, NULL);
  if (!tooltip_)
    return false;
 
   // Associate the ToolTip with the tool.
   TOOLINFO tool_info = {0};
   tool_info.cbSize = sizeof(tool_info);
-  tool_info.hwnd = hwnd();
+  tool_info.hwnd = m_hWnd;
   tool_info.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-  tool_info.uId = reinterpret_cast<UINT_PTR>(hwnd());
+  tool_info.uId = reinterpret_cast<UINT_PTR>(m_hWnd);
   tool_info.lpszText = NULL;
   SendMessage(tooltip_, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&tool_info));
   SendMessage(tooltip_, TTM_SETMAXTIPWIDTH, 0, TOOLTIP_MAX_WIDTH);
@@ -207,9 +207,9 @@ void PluginInstallerImpl::UpdateToolTip() {
 
   TOOLINFO tool_info = {0};
   tool_info.cbSize = sizeof(tool_info);
-  tool_info.hwnd = hwnd();
+  tool_info.hwnd = m_hWnd;
   tool_info.uFlags = TTF_IDISHWND;
-  tool_info.uId = reinterpret_cast<UINT_PTR>(hwnd());
+  tool_info.uId = reinterpret_cast<UINT_PTR>(m_hWnd);
   tool_info.lpszText = const_cast<LPWSTR>(tip.c_str());
   SendMessage(tooltip_, TTM_UPDATETIPTEXT, 0, (LPARAM)&tool_info);
 }
@@ -316,9 +316,9 @@ std::wstring PluginInstallerImpl::ReplaceStringForPossibleEmptyReplacement(
 }
 
 bool PluginInstallerImpl::SetWindow(HWND parent_window) {
-  if (!IsWindow(parent_window)) {
+  if (!::IsWindow(parent_window)) {
     // No window created yet. Ignore this call.
-    if (!IsWindow(hwnd()))
+    if (!IsWindow())
       return true;
     // Parent window has been destroyed.
     Shutdown();
@@ -327,25 +327,22 @@ bool PluginInstallerImpl::SetWindow(HWND parent_window) {
 
   RECT parent_rect = {0};
 
-  if (IsWindow(hwnd())) {
-    GetClientRect(parent_window, &parent_rect);
-    SetWindowPos(hwnd(), NULL, parent_rect.left, parent_rect.top,
-                 parent_rect.right - parent_rect.left,
-                 parent_rect.bottom - parent_rect.top, SWP_SHOWWINDOW);
+  if (IsWindow()) {
+    ::GetClientRect(parent_window, &parent_rect);
+    SetWindowPos(NULL, &parent_rect, SWP_SHOWWINDOW);
     return true;
   }
   // First time in -- no window created by plugin yet.
-  GetClientRect(parent_window, &parent_rect);
-  set_window_style(WS_CHILD | WS_BORDER);
-  Init(parent_window, gfx::Rect(parent_rect));
-  DCHECK(IsWindow(hwnd()));
-  installation_job_monitor_thread_->set_plugin_window(hwnd());
+  ::GetClientRect(parent_window, &parent_rect);
+  Create(parent_window, parent_rect, NULL, WS_CHILD | WS_BORDER);
+  DCHECK(IsWindow());
+  installation_job_monitor_thread_->set_plugin_window(m_hWnd);
 
   CreateToolTip();
   UpdateToolTip();
 
-  UpdateWindow(hwnd());
-  ShowWindow(hwnd(), SW_SHOW);
+  UpdateWindow();
+  ShowWindow(SW_SHOW);
 
   return true;
 }
@@ -363,11 +360,11 @@ void PluginInstallerImpl::DownloadPlugin() {
       CComObject<ActiveXInstaller>::CreateInstance(&activex_installer_);
       activex_installer_->AddRef();
     }
-    activex_installer_->StartDownload(activex_clsid_, activex_codebase_,
-                                      hwnd(), kActivexInstallResult);
+    activex_installer_->StartDownload(activex_clsid_, activex_codebase_, m_hWnd,
+                                      kActivexInstallResult);
   } else {
     if (!plugin_download_url_for_display_) {
-      webkit_glue::DownloadUrl(plugin_download_url_, hwnd());
+      webkit_glue::DownloadUrl(plugin_download_url_, m_hWnd);
     } else {
       default_plugin::g_browser->geturl(instance(),
                                         plugin_download_url_.c_str(),
@@ -388,11 +385,11 @@ LRESULT PluginInstallerImpl::OnEraseBackGround(UINT message, WPARAM wparam,
                                                LPARAM lparam, BOOL& handled) {
   HDC paint_device_context = reinterpret_cast<HDC>(wparam);
   RECT erase_rect = {0};
-  GetClipBox(paint_device_context, &erase_rect);
+  ::GetClipBox(paint_device_context, &erase_rect);
   HBRUSH brush = ::CreateSolidBrush(RGB(252, 235, 162));
   DCHECK(brush);
-  FillRect(paint_device_context, &erase_rect, brush);
-  DeleteObject(brush);
+  ::FillRect(paint_device_context, &erase_rect, brush);
+  ::DeleteObject(brush);
   return 1;
 }
 
@@ -417,7 +414,7 @@ bool PluginInstallerImpl::IsRTLLayout() const {
 LRESULT PluginInstallerImpl::OnPaint(UINT message, WPARAM wparam, LPARAM lparam,
                                      BOOL& handled) {
   PAINTSTRUCT paint_struct = {0};
-  BeginPaint(hwnd(), &paint_struct);
+  BeginPaint(&paint_struct);
 
   int save_dc_context = SaveDC(paint_struct.hdc);
   // The drawing order is as below:-
@@ -444,7 +441,7 @@ LRESULT PluginInstallerImpl::OnPaint(UINT message, WPARAM wparam, LPARAM lparam,
   text_rect.bottom = text_rect.top + device_point.y;
 
   RECT client_rect = {0};
-  GetClientRect(hwnd(), &client_rect);
+  GetClientRect(&client_rect);
 
   int icon_width = GetSystemMetrics(SM_CXICON);
   int icon_height = GetSystemMetrics(SM_CYICON);
@@ -494,7 +491,7 @@ LRESULT PluginInstallerImpl::OnPaint(UINT message, WPARAM wparam, LPARAM lparam,
   }
 
   RestoreDC(paint_struct.hdc, save_dc_context);
-  EndPaint(hwnd(), &paint_struct);
+  EndPaint(&paint_struct);
   return 0;
 }
 
@@ -554,7 +551,7 @@ void PluginInstallerImpl::PaintUserActionInformation(HDC paint_dc,
 void PluginInstallerImpl::ShowInstallDialog() {
   enable_click_ = false;
   install_dialog_.Initialize(this, plugin_name_);
-  install_dialog_.Create(hwnd(), NULL);
+  install_dialog_.Create(m_hWnd, NULL);
   install_dialog_.ShowWindow(SW_SHOW);
 }
 
@@ -584,7 +581,7 @@ LRESULT PluginInstallerImpl::OnLButtonDown(UINT message, WPARAM wparam,
 LRESULT PluginInstallerImpl::OnSetCursor(UINT message, WPARAM wparam,
                                          LPARAM lparam, BOOL& handled) {
   if (enable_click_) {
-    SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_HAND)));
+    ::SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_HAND)));
     return 1;
   }
   handled = FALSE;
@@ -660,7 +657,7 @@ LRESULT PluginInstallerImpl::OnActiveXInstallResult(UINT message,
   if (SUCCEEDED(wparam)) {
     set_plugin_installer_state(PluginInstallerLaunchSuccess);
     DisplayStatus(IDS_DEFAULT_PLUGIN_REFRESH_PLUGIN_MSG);
-    PostMessage(hwnd(), kRefreshPluginsMessage, 0, 0);
+    PostMessage(kRefreshPluginsMessage, 0, 0);
   } else if ((wparam == INET_E_UNKNOWN_PROTOCOL) ||
              (wparam == HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND))) {
     set_plugin_installer_state(PluginDownloadFailed);
