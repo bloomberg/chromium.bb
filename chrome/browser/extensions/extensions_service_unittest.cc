@@ -386,9 +386,49 @@ class ExtensionsServiceTest
     EXPECT_EQ(count, dict->GetSize());
   }
 
-  void ValidatePref(const std::string& extension_id,
-                    const std::wstring& pref_path,
-                    int must_equal) {
+  void ValidateBooleanPref(const std::string& extension_id,
+                           const std::wstring& pref_path,
+                           bool must_equal) {
+    std::wstring msg = L" while checking: ";
+    msg += ASCIIToWide(extension_id);
+    msg += L" ";
+    msg += pref_path;
+    msg += L" == ";
+    msg += must_equal ? L"true" : L"false";
+
+    const DictionaryValue* dict =
+        prefs_->GetDictionary(L"extensions.settings");
+    ASSERT_TRUE(dict != NULL) << msg;
+    DictionaryValue* pref = NULL;
+    ASSERT_TRUE(dict->GetDictionary(ASCIIToWide(extension_id), &pref)) << msg;
+    EXPECT_TRUE(pref != NULL) << msg;
+    bool val;
+    pref->GetBoolean(pref_path, &val);
+    EXPECT_EQ(must_equal, val) << msg;
+  }
+
+  bool IsPrefExist(const std::string& extension_id,
+                   const std::wstring& pref_path) {
+    const DictionaryValue* dict =
+      prefs_->GetDictionary(L"extensions.settings");
+    if (dict == NULL) return false;
+    DictionaryValue* pref = NULL;
+    if (!dict->GetDictionary(ASCIIToWide(extension_id), &pref)) {
+      return false;
+    }
+    if (pref == NULL) {
+      return false;
+    }
+    bool val;
+    if (!pref->GetBoolean(pref_path, &val)) {
+      return false;
+    }
+    return true;
+  }
+
+  void ValidateIntegerPref(const std::string& extension_id,
+                           const std::wstring& pref_path,
+                           int must_equal) {
     std::wstring msg = L" while checking: ";
     msg += ASCIIToWide(extension_id);
     msg += L" ";
@@ -407,9 +447,9 @@ class ExtensionsServiceTest
     EXPECT_EQ(must_equal, val) << msg;
   }
 
-  void SetPref(const std::string& extension_id,
-               const std::wstring& pref_path,
-               int value) {
+  void SetPrefInteg(const std::string& extension_id,
+                    const std::wstring& pref_path,
+                    int value) {
     std::wstring msg = L" while setting: ";
     msg += ASCIIToWide(extension_id);
     msg += L" ";
@@ -485,12 +525,12 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ(3u, service_->extensions()->size());
 
   ValidatePrefKeyCount(3);
-  ValidatePref(good0, L"state", Extension::ENABLED);
-  ValidatePref(good0, L"location", Extension::INTERNAL);
-  ValidatePref(good1, L"state", Extension::ENABLED);
-  ValidatePref(good1, L"location", Extension::INTERNAL);
-  ValidatePref(good2, L"state", Extension::ENABLED);
-  ValidatePref(good2, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(good0, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good0, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(good1, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good1, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(good2, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good2, L"location", Extension::INTERNAL);
 
   Extension* extension = loaded_[0];
   const UserScriptList& scripts = extension->content_scripts();
@@ -658,15 +698,15 @@ TEST_F(ExtensionsServiceTest, InstallExtension) {
 
   int pref_count = 0;
   ValidatePrefKeyCount(++pref_count);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::INTERNAL);
 
   // An extension with page actions.
   path = extensions_path.AppendASCII("page_action.crx");
   InstallExtension(path, true);
   ValidatePrefKeyCount(++pref_count);
-  ValidatePref(page_action, L"state", Extension::ENABLED);
-  ValidatePref(page_action, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(page_action, L"state", Extension::ENABLED);
+  ValidateIntegerPref(page_action, L"location", Extension::INTERNAL);
 
   // Bad signature.
   path = extensions_path.AppendASCII("bad_signature.crx");
@@ -764,8 +804,8 @@ TEST_F(ExtensionsServiceTest, InstallTheme) {
   InstallExtension(path, true);
   int pref_count = 0;
   ValidatePrefKeyCount(++pref_count);
-  ValidatePref(theme_crx, L"state", Extension::ENABLED);
-  ValidatePref(theme_crx, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(theme_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(theme_crx, L"location", Extension::INTERNAL);
 
   // A theme when extensions are disabled. Themes can be installed, even when
   // extensions are disabled.
@@ -773,8 +813,8 @@ TEST_F(ExtensionsServiceTest, InstallTheme) {
   path = extensions_path.AppendASCII("theme2.crx");
   InstallExtension(path, true);
   ValidatePrefKeyCount(++pref_count);
-  ValidatePref(theme2_crx, L"state", Extension::ENABLED);
-  ValidatePref(theme2_crx, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(theme2_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(theme2_crx, L"location", Extension::INTERNAL);
 
   // A theme with extension elements. Themes cannot have extension elements so
   // this test should fail.
@@ -805,8 +845,8 @@ TEST_F(ExtensionsServiceTest, Reinstall) {
   ASSERT_EQ(1u, loaded_.size());
   ASSERT_EQ(0u, GetErrors().size());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::INTERNAL);
 
   installed_ = NULL;
   loaded_.clear();
@@ -820,8 +860,8 @@ TEST_F(ExtensionsServiceTest, Reinstall) {
   ASSERT_EQ(0u, loaded_.size());
   ASSERT_EQ(0u, GetErrors().size());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::INTERNAL);
 }
 
 // Test upgrading a signed extension.
@@ -948,6 +988,130 @@ TEST_F(ExtensionsServiceTest, UpdateToSameVersionIsNoop) {
   UpdateExtension(good_crx, path, false, false);
 }
 
+// Test pref settings for blacklist and unblacklist extensions.
+TEST_F(ExtensionsServiceTest, SetUnsetBlacklistInPrefs) {
+  InitializeEmptyExtensionsService();
+  std::vector<std::string> blacklist;
+  blacklist.push_back(good0);
+  blacklist.push_back("invalid_id");  // an invalid id
+  blacklist.push_back(good1);
+  service_->UpdateExtensionBlacklist(blacklist);
+  // Make sure pref is updated
+  loop_.RunAllPending();
+
+  // blacklist is set for good0,1,2
+  ValidateBooleanPref(good0, L"blacklist", true);
+  ValidateBooleanPref(good1, L"blacklist", true);
+  // invalid_id should not be inserted to pref.
+  EXPECT_FALSE(IsPrefExist("invalid_id", L"blacklist"));
+
+  // remove good1, add good2
+  blacklist.pop_back();
+  blacklist.push_back(good2);
+
+  service_->UpdateExtensionBlacklist(blacklist);
+  // only good0 and good1 should be set
+  ValidateBooleanPref(good0, L"blacklist", true);
+  EXPECT_FALSE(IsPrefExist(good1, L"blacklist"));
+  ValidateBooleanPref(good2, L"blacklist", true);
+  EXPECT_FALSE(IsPrefExist("invalid_id", L"blacklist"));
+}
+
+// Unload installed extension from blacklist.
+TEST_F(ExtensionsServiceTest, UnloadBlacklistedExtension) {
+  InitializeEmptyExtensionsService();
+  FilePath extensions_path;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+
+  FilePath path = extensions_path.AppendASCII("good.crx");
+
+  InstallExtension(path, true);
+  Extension* good = service_->extensions()->at(0);
+  EXPECT_EQ(good_crx, good->id());
+  UpdateExtension(good_crx, path, false, false);
+
+  std::vector<std::string> blacklist;
+  blacklist.push_back(good_crx);
+  service_->UpdateExtensionBlacklist(blacklist);
+  // Make sure pref is updated
+  loop_.RunAllPending();
+
+  // Now, the good_crx is blacklisted.
+  ValidateBooleanPref(good_crx, L"blacklist", true);
+  EXPECT_EQ(0u, service_->extensions()->size());
+
+  // Remove good_crx from blacklist
+  blacklist.pop_back();
+  service_->UpdateExtensionBlacklist(blacklist);
+  // Make sure pref is updated
+  loop_.RunAllPending();
+  // blacklist value should not be set for good_crx
+  EXPECT_FALSE(IsPrefExist(good_crx, L"blacklist"));
+}
+
+// Unload installed extension from blacklist.
+TEST_F(ExtensionsServiceTest, BlacklistedExtensionWillNotInstall) {
+  InitializeEmptyExtensionsService();
+  std::vector<std::string> blacklist;
+  blacklist.push_back(good_crx);
+  service_->UpdateExtensionBlacklist(blacklist);
+  // Make sure pref is updated
+  loop_.RunAllPending();
+
+  // Now, the good_crx is blacklisted.
+  ValidateBooleanPref(good_crx, L"blacklist", true);
+
+  // We can not install good_crx.
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  service_->InstallExtension(path);
+  loop_.RunAllPending();
+  EXPECT_EQ(0u, service_->extensions()->size());
+  ValidateBooleanPref(good_crx, L"blacklist", true);
+}
+
+// Test loading extensions from the profile directory, except
+// blacklisted ones.
+TEST_F(ExtensionsServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
+  // Initialize the test dir with a good Preferences/extensions.
+  FilePath source_install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
+  source_install_dir = source_install_dir
+      .AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions");
+  FilePath pref_path = source_install_dir
+      .DirName()
+      .AppendASCII("Preferences");
+  InitializeInstalledExtensionsService(pref_path, source_install_dir);
+
+  // Blacklist good0.
+  std::vector<std::string> blacklist;
+  blacklist.push_back(good0);
+  service_->UpdateExtensionBlacklist(blacklist);
+  // Make sure pref is updated
+  loop_.RunAllPending();
+
+  ValidateBooleanPref(good0, L"blacklist", true);
+
+  // Load extensions.
+  service_->Init();
+  loop_.RunAllPending();
+
+  std::vector<std::string> errors = GetErrors();
+  for (std::vector<std::string>::iterator err = errors.begin();
+    err != errors.end(); ++err) {
+    LOG(ERROR) << *err;
+  }
+  EXPECT_EQ(2u, loaded_.size());
+
+  EXPECT_NE(std::string(good0), loaded_[0]->id());
+  EXPECT_NE(std::string(good0), loaded_[1]->id());
+}
+
 // Tests uninstalling normal extensions
 TEST_F(ExtensionsServiceTest, UninstallExtension) {
   InitializeEmptyExtensionsService();
@@ -965,8 +1129,8 @@ TEST_F(ExtensionsServiceTest, UninstallExtension) {
   EXPECT_TRUE(file_util::PathExists(extension_path));
 
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::INTERNAL);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::INTERNAL);
 
   // Uninstall it.
   service_->UninstallExtension(extension_id, false);
@@ -1113,8 +1277,8 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
   ASSERT_EQ(Extension::EXTERNAL_REGISTRY, loaded_[0]->location());
   ASSERT_EQ("1.0.0.0", loaded_[0]->version()->GetString());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
 
   // Reload extensions without changing anything. The extension should be
   // loaded again.
@@ -1124,8 +1288,8 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
   ASSERT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
 
   // Now update the extension with a new version. We should get upgraded.
   source_path = source_path.DirName().AppendASCII("good2.crx");
@@ -1138,8 +1302,8 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
   ASSERT_EQ(1u, loaded_.size());
   ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
 
   // Uninstall the extension and reload. Nothing should happen because the
   // preference should prevent us from reinstalling.
@@ -1156,12 +1320,12 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
   loop_.RunAllPending();
   ASSERT_EQ(0u, loaded_.size());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::KILLBIT);  // It is an ex-parrot.
-  ValidatePref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
+  ValidateIntegerPref(good_crx, L"state", Extension::KILLBIT);
+  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
 
   // Now clear the preference, reinstall, then remove the reg key. The extension
   // should be uninstalled.
-  SetPref(good_crx, L"state", Extension::ENABLED);
+  SetPrefInteg(good_crx, L"state", Extension::ENABLED);
   prefs_->ScheduleSavePersistentPrefs();
 
   loaded_.clear();
@@ -1169,8 +1333,8 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
   loop_.RunAllPending();
   ASSERT_EQ(1u, loaded_.size());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_REGISTRY);
 
   // Now test an externally triggered uninstall (deleting the registry key).
   reg_provider->RemoveExtension(good_crx);
@@ -1217,8 +1381,8 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   ASSERT_EQ(Extension::EXTERNAL_PREF, loaded_[0]->location());
   ASSERT_EQ("1.0.0.0", loaded_[0]->version()->GetString());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::EXTERNAL_PREF);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_PREF);
 
   // Reload extensions without changing anything. The extension should be
   // loaded again.
@@ -1228,8 +1392,8 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   ASSERT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::EXTERNAL_PREF);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_PREF);
 
   // Now update the extension with a new version. We should get upgraded.
   source_path = source_path.DirName().AppendASCII("good2.crx");
@@ -1242,8 +1406,8 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   ASSERT_EQ(1u, loaded_.size());
   ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::EXTERNAL_PREF);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_PREF);
 
   // Uninstall the extension and reload. Nothing should happen because the
   // preference should prevent us from reinstalling.
@@ -1260,11 +1424,11 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   loop_.RunAllPending();
   ASSERT_EQ(0u, loaded_.size());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::KILLBIT);
-  ValidatePref(good_crx, L"location", Extension::EXTERNAL_PREF);
+  ValidateIntegerPref(good_crx, L"state", Extension::KILLBIT);
+  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_PREF);
 
   // Now clear the preference and reinstall.
-  SetPref(good_crx, L"state", Extension::ENABLED);
+  SetPrefInteg(good_crx, L"state", Extension::ENABLED);
   prefs_->ScheduleSavePersistentPrefs();
 
   loaded_.clear();
@@ -1272,8 +1436,8 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   loop_.RunAllPending();
   ASSERT_EQ(1u, loaded_.size());
   ValidatePrefKeyCount(1);
-  ValidatePref(good_crx, L"state", Extension::ENABLED);
-  ValidatePref(good_crx, L"location", Extension::EXTERNAL_PREF);
+  ValidateIntegerPref(good_crx, L"state", Extension::ENABLED);
+  ValidateIntegerPref(good_crx, L"location", Extension::EXTERNAL_PREF);
 
   // Now test an externally triggered uninstall (deleting id from json file).
   pref_provider->RemoveExtension(good_crx);

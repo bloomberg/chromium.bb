@@ -24,6 +24,9 @@ const wchar_t kPrefState[] = L"state";
 // The path to the current version's manifest file.
 const wchar_t kPrefPath[] = L"path";
 
+// Indicates if an extension is blacklisted:
+const wchar_t kPrefBlacklist[] = L"blacklist";
+
 // A preference that tracks extension shelf configuration.  This is a list
 // object read from the Preferences file, containing a list of toolstrip URLs.
 const wchar_t kExtensionShelf[] = L"extensions.shelf";
@@ -47,6 +50,17 @@ void InstalledExtensions::VisitInstalledExtensions(
       LOG(WARNING) << "Invalid pref for extension " << *extension_id;
       NOTREACHED();
       continue;
+    }
+    if (ext->HasKey(kPrefBlacklist)) {
+      bool is_blacklisted = false;
+      if (!ext->GetBoolean(kPrefBlacklist, &is_blacklisted)) {
+        NOTREACHED() << "Invalid blacklist pref:" << *extension_id;
+        continue;
+      }
+      if (is_blacklisted) {
+        LOG(WARNING) << "Blacklisted extension: " << *extension_id;
+        continue;
+      }
     }
     FilePath::StringType path;
     if (!ext->GetString(kPrefPath, &path)) {
@@ -131,7 +145,10 @@ void ExtensionPrefs::MakePathsAbsolute(DictionaryValue* dict) {
     }
     FilePath::StringType path_string;
     if (!extension_dict->GetString(kPrefPath, &path_string)) {
-      NOTREACHED();
+      if (!IsBlacklistBitSet(extension_dict)) {
+        // We expect the kPrefPath for non-blacklisted extensions.
+        NOTREACHED();
+      }
       continue;
     }
     DCHECK(!FilePath(path_string).IsAbsolute());
@@ -149,6 +166,83 @@ DictionaryValue* ExtensionPrefs::CopyCurrentExtensions() {
     return copy;
   }
   return new DictionaryValue;
+}
+
+bool ExtensionPrefs::IsBlacklistBitSet(DictionaryValue* ext) {
+  if (!ext->HasKey(kPrefBlacklist)) return false;
+  bool is_blacklisted = false;
+  if (!ext->GetBoolean(kPrefBlacklist, &is_blacklisted)) {
+    NOTREACHED() << "Failed to fetch blacklist flag.";
+    // In case we could not fetch the flag, we consider the extension
+    // is NOT blacklisted.
+    return false;
+  }
+  return is_blacklisted;
+}
+
+bool ExtensionPrefs::IsExtensionBlacklisted(const std::string& extension_id) {
+  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  DCHECK(extensions);
+  DictionaryValue* ext = NULL;
+  if (!extensions->GetDictionary(ASCIIToWide(extension_id), &ext)) {
+    // No such extension yet.
+    return false;
+  }
+  return IsBlacklistBitSet(ext);
+}
+
+void ExtensionPrefs::UpdateBlacklist(
+  const std::set<std::string>& blacklist_set) {
+  std::vector<std::string> remove_pref_ids;
+  std::set<std::string> used_id_set;
+  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  DCHECK(extensions);
+  DictionaryValue::key_iterator extension_id = extensions->begin_keys();
+  for (; extension_id != extensions->end_keys(); ++extension_id) {
+    DictionaryValue* ext;
+    std::string id = WideToASCII(*extension_id);
+    if (!extensions->GetDictionary(*extension_id, &ext)) {
+      NOTREACHED() << "Invalid pref for extension " << *extension_id;
+      continue;
+    }
+    if (blacklist_set.find(id) == blacklist_set.end()) {
+      if (!IsBlacklistBitSet(ext)) {
+        // This extension is not in blacklist. And it was not blacklisted
+        // before.
+        continue;
+      } else {
+        if (ext->GetSize() == 1) {
+          // We should remove the entry if the only flag here is blacklist.
+          remove_pref_ids.push_back(id);
+        } else {
+          // Remove the blacklist bit.
+          ext->Remove(kPrefBlacklist, NULL);
+        }
+      }
+    } else {
+      if (!IsBlacklistBitSet(ext)) {
+        // Only set the blacklist if it was not set.
+        ext->SetBoolean(kPrefBlacklist, true);
+      }
+      // Keep the record if this extension is already processed.
+      used_id_set.insert(id);
+    }
+  }
+
+  // Iterate the leftovers to set blacklist in pref
+  std::set<std::string>::const_iterator set_itr = blacklist_set.begin();
+  for (; set_itr != blacklist_set.end(); ++set_itr) {
+    if (used_id_set.find(*set_itr) == used_id_set.end()) {
+      UpdateExtensionPref(*set_itr, kPrefBlacklist,
+        Value::CreateBooleanValue(true));
+    }
+  }
+  for (unsigned int i = 0; i < remove_pref_ids.size(); ++i) {
+    DeleteExtensionPrefs(remove_pref_ids[i]);
+  }
+  // Update persistent registry
+  prefs_->ScheduleSavePersistentPrefs();
+  return;
 }
 
 void ExtensionPrefs::GetKilledExtensionIds(std::set<std::string>* killed_ids) {
@@ -265,4 +359,3 @@ DictionaryValue* ExtensionPrefs::GetOrCreateExtensionPref(
   }
   return extension;
 }
-

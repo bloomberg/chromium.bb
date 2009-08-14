@@ -532,6 +532,9 @@ const wchar_t kLastExtensionsUpdateCheck[] =
     L"extensions.autoupdate.last_check";
 const wchar_t kNextExtensionsUpdateCheck[] =
     L"extensions.autoupdate.next_check";
+// Version number of last blacklist check
+const wchar_t kExtensionBlacklistUpdateVersion[] =
+    L"extensions.blacklistupdate.version";
 
 // New Tab Page URLs that should not be shown as most visited thumbnails.
 const wchar_t kNTPMostVisitedURLsBlacklist[] = L"ntp.most_visited_blacklist";

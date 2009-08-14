@@ -45,6 +45,8 @@ class ExtensionUpdateService {
   virtual const ExtensionList* extensions() const = 0;
   virtual void UpdateExtension(const std::string& id, const FilePath& path) = 0;
   virtual Extension* GetExtensionById(const std::string& id) = 0;
+  virtual void UpdateExtensionBlacklist(
+    const std::vector<std::string>& blacklist) = 0;
 };
 
 // Manages installed and running Chromium extensions.
@@ -174,6 +176,11 @@ class ExtensionsService
                                 const std::string& version,
                                 const FilePath& path,
                                 Extension::Location location);
+
+  // Go through each extensions in pref, unload blacklisted extensions
+  // and update the blacklist state in pref.
+  virtual void UpdateExtensionBlacklist(
+    const std::vector<std::string>& blacklist);
 
   void set_extensions_enabled(bool enabled) { extensions_enabled_ = enabled; }
   bool extensions_enabled() { return extensions_enabled_; }

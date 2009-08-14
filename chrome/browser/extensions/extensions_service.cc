@@ -63,10 +63,11 @@ ExtensionsService::ExtensionsService(Profile* profile,
       show_extensions_prompts_(true),
       ready_(false) {
   // Figure out if extension installation should be enabled.
-  if (command_line->HasSwitch(switches::kEnableExtensions))
+  if (command_line->HasSwitch(switches::kEnableExtensions)) {
     extensions_enabled_ = true;
-  else if (profile->GetPrefs()->GetBoolean(prefs::kEnableExtensions))
+  } else if (profile->GetPrefs()->GetBoolean(prefs::kEnableExtensions)) {
     extensions_enabled_ = true;
+  }
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
@@ -170,6 +171,33 @@ void ExtensionsService::LoadAllExtensions() {
       &ExtensionsServiceBackend::LoadInstalledExtensions,
       scoped_refptr<ExtensionsService>(this),
       new InstalledExtensions(extension_prefs_.get())));
+}
+
+void ExtensionsService::UpdateExtensionBlacklist(
+  const std::vector<std::string>& blacklist) {
+  // Use this set to indicate if an extension in the blacklist has been used.
+  std::set<std::string> blacklist_set;
+  for (unsigned int i = 0; i < blacklist.size(); ++i) {
+    if (Extension::IdIsValid(blacklist[i])) {
+      blacklist_set.insert(blacklist[i]);
+    }
+  }
+  extension_prefs_->UpdateBlacklist(blacklist_set);
+  std::vector<std::string> to_be_removed;
+  // Loop current extensions, unload installed extensions.
+  for (ExtensionList::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    Extension* extension = (*iter);
+    if (blacklist_set.find(extension->id()) != blacklist_set.end()) {
+      to_be_removed.push_back(extension->id());
+    }
+  }
+
+  // UnloadExtension will change the extensions_ list. So, we should
+  // call it outside the iterator loop.
+  for (unsigned int i = 0; i < to_be_removed.size(); ++i) {
+    UnloadExtension(to_be_removed[i]);
+  }
 }
 
 void ExtensionsService::CheckForExternalUpdates() {

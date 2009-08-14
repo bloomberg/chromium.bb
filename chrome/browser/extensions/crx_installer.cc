@@ -116,14 +116,10 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
         expected_id_.c_str()));
     return;
   }
+  if (client_.get())  DecodeInstallIcon();
 
-  if (client_.get()) {
-    DecodeInstallIcon();
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &CrxInstaller::ConfirmInstall));
-  } else {
-    CompleteInstall();
-  }
+  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+    &CrxInstaller::ConfirmInstall));
 }
 
 void CrxInstaller::DecodeInstallIcon() {
@@ -146,7 +142,7 @@ void CrxInstaller::DecodeInstallIcon() {
   webkit_glue::ImageDecoder decoder;
   scoped_ptr<SkBitmap> decoded(new SkBitmap());
   *decoded = decoder.Decode(data, file_contents.length());
-  if(decoded->empty()) {
+  if (decoded->empty()) {
     LOG(ERROR) << "Could not decode icon file: "
                << WideToUTF8(path.ToWStringHack());
     return;
@@ -163,9 +159,24 @@ void CrxInstaller::DecodeInstallIcon() {
 }
 
 void CrxInstaller::ConfirmInstall() {
-  AddRef();  // balanced in ContinueInstall() and AbortInstall().
+  DCHECK(MessageLoop::current() == ui_loop_);
+  if (frontend_->extension_prefs()->IsExtensionBlacklisted(extension_->id())) {
+    LOG(INFO) << "This extension: " << extension_->id()
+      << " is blacklisted. Install failed.";
+    if (client_) {
+      client_->OnInstallFailure("This extension is blacklisted.");
+    }
+    return;
+  }
 
-  client_->ConfirmInstall(this, extension_.get(), install_icon_.get());
+  if (client_) {
+    AddRef();  // balanced in ContinueInstall() and AbortInstall().
+    client_->ConfirmInstall(this, extension_.get(), install_icon_.get());
+  } else {
+    file_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &CrxInstaller::CompleteInstall));
+  }
+  return;
 }
 
 void CrxInstaller::ContinueInstall() {

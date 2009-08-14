@@ -5,6 +5,7 @@
 #include <map>
 
 #include "base/file_util.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -12,6 +13,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +25,16 @@ const char *valid_xml =
 " <app appid='12345'>"
 "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
 "               version='1.2.3.4' prodversionmin='2.0.143.0' />"
+" </app>"
+"</gupdate>";
+
+const char *valid_xml_with_hash =
+"<?xml version='1.0' encoding='UTF-8'?>"
+"<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
+" <app appid='12345'>"
+"  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
+"               version='1.2.3.4' prodversionmin='2.0.143.0' "
+"               hash='1234'/>"
 " </app>"
 "</gupdate>";
 
@@ -105,6 +118,10 @@ class MockService : public ExtensionUpdateService {
     return NULL;
   }
 
+  virtual void UpdateExtensionBlacklist(
+    const std::vector<std::string>& blacklist) {
+    EXPECT_TRUE(false);
+  }
  private:
   DISALLOW_COPY_AND_ASSIGN(MockService);
 };
@@ -114,7 +131,10 @@ class MockService : public ExtensionUpdateService {
 class ScopedTempPrefService {
  public:
   ScopedTempPrefService() {
-    FilePath pref_file = temp_dir_.path().AppendASCII("prefs");
+    // Make sure different tests won't use the same prefs file. It will cause
+    // problem when different tests are running in parallel.
+    FilePath pref_file = temp_dir_.path().AppendASCII(
+      StringPrintf("prefs_%lld", base::RandUint64()));
     prefs_.reset(new PrefService(pref_file, NULL));
   }
 
@@ -193,6 +213,27 @@ class ServiceForDownloadTests : public MockService {
   FilePath install_path_;
 };
 
+class ServiceForBlacklistTests : public MockService {
+ public:
+  ServiceForBlacklistTests()
+     : MockService(),
+       processed_blacklist_(false) {
+  }
+  virtual void UpdateExtensionBlacklist(
+    const std::vector<std::string>& blacklist) {
+    processed_blacklist_ = true;
+    return;
+  }
+  bool processed_blacklist() { return processed_blacklist_; }
+  const std::string& extension_id() { return extension_id_; }
+
+ private:
+  bool processed_blacklist_;
+  std::string extension_id_;
+  FilePath install_path_;
+};
+
+
 static const int kUpdateFrequencySecs = 15;
 
 // Takes a string with KEY=VALUE parameters separated by '&' in |params| and
@@ -260,6 +301,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater::ParseResult* firstResult = results->at(0);
     EXPECT_EQ(GURL("http://example.com/extension_1.2.3.4.crx"),
               firstResult->crx_url);
+    EXPECT_TRUE(firstResult->package_hash.empty());
     scoped_ptr<Version> version(Version::GetVersionFromString("1.2.3.4"));
     EXPECT_EQ(0, version->CompareTo(*firstResult->version.get()));
     version.reset(Version::GetVersionFromString("2.0.143.0"));
@@ -269,9 +311,16 @@ class ExtensionUpdaterTest : public testing::Test {
     results.reset();
     EXPECT_TRUE(ExtensionUpdater::Parse(uses_namespace_prefix, &results.get()));
     EXPECT_TRUE(ExtensionUpdater::Parse(similar_tagnames, &results.get()));
+
+    // Parse xml with hash value
+    results.reset();
+    EXPECT_TRUE(ExtensionUpdater::Parse(valid_xml_with_hash, &results.get()));
+    EXPECT_FALSE(results->empty());
+    firstResult = results->at(0);
+    EXPECT_EQ("1234", firstResult->package_hash);
   }
 
-  static void TestUpdateCheckRequests() {
+  static void TestExtensionUpdateCheckRequests() {
     // Create an extension with an update_url.
     ServiceForManifestTests service;
     ExtensionList tmp;
@@ -317,6 +366,48 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_EQ("", params["uc"]);
 
     STLDeleteElements(&tmp);
+  }
+
+  static void TestBlacklistUpdateCheckRequests() {
+    ServiceForManifestTests service;
+
+    // Setup and start the updater.
+    TestURLFetcherFactory factory;
+    URLFetcher::set_factory(&factory);
+    MessageLoop message_loop;
+    ScopedTempPrefService prefs;
+    scoped_refptr<ExtensionUpdater> updater =
+      new ExtensionUpdater(&service, prefs.get(), 60*60*24, &message_loop);
+    updater->Start();
+
+    // Tell the updater that it's time to do update checks.
+    SimulateTimerFired(updater.get());
+
+    // Get the url our mock fetcher was asked to fetch.
+    TestURLFetcher* fetcher =
+        factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
+    const GURL& url = fetcher->original_url();
+
+    EXPECT_FALSE(url.is_empty());
+    EXPECT_TRUE(url.is_valid());
+    EXPECT_TRUE(url.SchemeIs("https"));
+    EXPECT_EQ("clients2.google.com", url.host());
+    EXPECT_EQ("/service/update2/crx", url.path());
+
+    // Validate the extension request parameters in the query. It should
+    // look something like "?x=id%3D<id>%26v%3D<version>%26uc".
+    EXPECT_TRUE(url.has_query());
+    std::vector<std::string> parts;
+    SplitString(url.query(), '=', &parts);
+    EXPECT_EQ(2u, parts.size());
+    EXPECT_EQ("x", parts[0]);
+    std::string decoded = UnescapeURLComponent(parts[1],
+                                               UnescapeRule::URL_SPECIAL_CHARS);
+    std::map<std::string, std::string> params;
+    ExtractParameters(decoded, &params);
+    EXPECT_EQ("com.google.crx.blacklist", params["id"]);
+    EXPECT_EQ("0", params["v"]);
+    EXPECT_EQ("", params["uc"]);
   }
 
   static void TestDetermineUpdates() {
@@ -403,7 +494,11 @@ class ExtensionUpdaterTest : public testing::Test {
 
     std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
-    updater->FetchUpdatedExtension(id, test_url);
+    std::string hash = "";
+
+    std::string version = "0.0.1";
+
+    updater->FetchUpdatedExtension(id, test_url, hash, version);
 
     // Call back the ExtensionUpdater with a 200 response and some test data
     std::string extension_data("whatever");
@@ -427,6 +522,49 @@ class ExtensionUpdaterTest : public testing::Test {
     URLFetcher::set_factory(NULL);
   }
 
+  static void TestBlacklistDownloading() {
+    MessageLoop message_loop;
+    TestURLFetcherFactory factory;
+    TestURLFetcher* fetcher = NULL;
+    URLFetcher::set_factory(&factory);
+    ServiceForBlacklistTests service;
+    ScopedTempPrefService prefs;
+    scoped_refptr<ExtensionUpdater> updater =
+      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
+                           &message_loop);
+    prefs.get()->
+      RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion, L"0");
+    GURL test_url("http://localhost/extension.crx");
+
+    std::string id = "com.google.crx.blacklist";
+
+    std::string hash =
+      "2CE109E9D0FAF820B2434E166297934E6177B65AB9951DBC3E204CAD4689B39C";
+
+    std::string version = "0.0.1";
+
+    updater->FetchUpdatedExtension(id, test_url, hash, version);
+
+    // Call back the ExtensionUpdater with a 200 response and some test data
+    std::string extension_data("aaabbb");
+    fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
+    EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    fetcher->delegate()->OnURLFetchComplete(
+        fetcher, test_url, URLRequestStatus(), 200, ResponseCookies(),
+        extension_data);
+
+    message_loop.RunAllPending();
+
+    // The updater should have called extension service to process the
+    // blacklist.
+    EXPECT_TRUE(service.processed_blacklist());
+
+    EXPECT_EQ(version, WideToASCII(prefs.get()->
+      GetString(prefs::kExtensionBlacklistUpdateVersion)));
+
+    URLFetcher::set_factory(NULL);
+  }
+
   static void TestMultipleExtensionDownloading() {
     MessageLoopForUI message_loop;
     TestURLFetcherFactory factory;
@@ -444,9 +582,14 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string id1 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     std::string id2 = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
+    std::string hash1 = "";
+    std::string hash2 = "";
+
+    std::string version1 = "0.1";
+    std::string version2 = "0.1";
     // Start two fetches
-    updater->FetchUpdatedExtension(id1, url1);
-    updater->FetchUpdatedExtension(id2, url2);
+    updater->FetchUpdatedExtension(id1, url1, hash1, version1);
+    updater->FetchUpdatedExtension(id2, url2, hash2, version2);
 
     // Make the first fetch complete.
     std::string extension_data1("whatever");
@@ -491,8 +634,12 @@ TEST(ExtensionUpdaterTest, TestXmlParsing) {
   ExtensionUpdaterTest::TestXmlParsing();
 }
 
-TEST(ExtensionUpdaterTest, TestUpdateCheckRequests) {
-  ExtensionUpdaterTest::TestUpdateCheckRequests();
+TEST(ExtensionUpdaterTest, TestExtensionUpdateCheckRequests) {
+  ExtensionUpdaterTest::TestExtensionUpdateCheckRequests();
+}
+
+TEST(ExtensionUpdaterTest, TestBlacklistUpdateCheckRequests) {
+  ExtensionUpdaterTest::TestBlacklistUpdateCheckRequests();
 }
 
 TEST(ExtensionUpdaterTest, TestDetermineUpdates) {
@@ -505,6 +652,10 @@ TEST(ExtensionUpdaterTest, TestMultipleManifestDownloading) {
 
 TEST(ExtensionUpdaterTest, TestSingleExtensionDownloading) {
   ExtensionUpdaterTest::TestSingleExtensionDownloading();
+}
+
+TEST(ExtensionUpdaterTest, TestBlacklistDownloading) {
+  ExtensionUpdaterTest::TestBlacklistDownloading();
 }
 
 TEST(ExtensionUpdaterTest, TestMultipleExtensionDownloading) {

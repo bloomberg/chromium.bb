@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H_
 
 #include <set>
 #include <string>
@@ -46,6 +46,12 @@ class ExtensionPrefs {
   // Returns base extensions install directory.
   const FilePath& install_directory() const { return install_directory_; }
 
+  // Updates the prefs based on the blacklist.
+  void UpdateBlacklist(const std::set<std::string>& blacklist_set);
+
+  // Based on extension id, checks prefs to see if it is blacklisted.
+  bool IsExtensionBlacklisted(const std::string& id);
+
  private:
 
   // Converts absolute paths in the pref to paths relative to the
@@ -66,6 +72,11 @@ class ExtensionPrefs {
 
   // Ensures and returns a mutable dictionary for extension |id|'s prefs.
   DictionaryValue* GetOrCreateExtensionPref(const std::string& id);
+
+  // Checks if kPrefBlacklist is set to true in the DictionaryValue.
+  // Return false if the value is false or kPrefBlacklist does not exist.
+  // This is used to decide if an extension is blacklisted.
+  bool IsBlacklistBitSet(DictionaryValue* ext);
 
   // The pref service specific to this set of extension prefs.
   PrefService* prefs_;
@@ -91,7 +102,8 @@ class InstalledExtensions {
                     Extension::Location>::Type Callback;
 
   // Runs |callback| for each installed extension with the path to the
-  // version directory and the location.
+  // version directory and the location. Blacklisted extensions won't trigger
+  // the callback.
   void VisitInstalledExtensions(Callback *callback);
 
  private:
@@ -102,4 +114,5 @@ class InstalledExtensions {
   DISALLOW_COPY_AND_ASSIGN(InstalledExtensions);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H_
+

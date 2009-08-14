@@ -68,7 +68,8 @@ class ExtensionUpdater
   // <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
   //  <app appid='12345'>
   //   <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'
-  //                version='1.2.3.4' prodversionmin='2.0.143.0' />
+  //                version='1.2.3.4' prodversionmin='2.0.143.0'
+  //                hash="12345"/>
   //  </app>
   // </gupdate>
   //
@@ -76,22 +77,29 @@ class ExtensionUpdater
   // extension. The "codebase" attribute of the <updatecheck> tag is the url to
   // fetch the updated crx file, and the "prodversionmin" attribute refers to
   // the minimum version of the chrome browser that the update applies to.
+  // The hash is only required for blacklist. It is a sha256 hash value against
+  // the payload in hex format.
 
   // The result of parsing one <app> tag in an xml update check manifest.
   struct ParseResult {
     std::string extension_id;
     scoped_ptr<Version> version;
     scoped_ptr<Version> browser_min_version;
+    std::string package_hash;
     GURL crx_url;
   };
 
-  // We need to keep track of the extension id associated with a url when
-  // doing a fetch.
+  // We need to keep track of some information associated with a url
+  // when doing a fetch.
   struct ExtensionFetch {
     std::string id;
     GURL url;
-    ExtensionFetch() : id(""), url() {}
-    ExtensionFetch(const std::string& i, const GURL& u) : id(i), url(u) {}
+    std::string package_hash;
+    std::string version;
+    ExtensionFetch() : id(""), url(), package_hash(""), version("") {}
+    ExtensionFetch(const std::string& i, const GURL& u,
+      const std::string& h, const std::string& v)
+      : id(i), url(u), package_hash(h), version(v) {}
   };
 
   // These are needed for unit testing, to help identify the correct mock
@@ -102,6 +110,9 @@ class ExtensionUpdater
   // Constants for the update manifest.
   static const char* kExpectedGupdateProtocol;
   static const char* kExpectedGupdateXmlns;
+
+  static const char* kBlacklistUpdateUrl;
+  static const char* kBlacklistAppID;
 
   // Does common work from constructors.
   void Init();
@@ -134,6 +145,10 @@ class ExtensionUpdater
   // Callback for when ExtensionsService::Install is finished.
   void OnExtensionInstallFinished(const FilePath& path, Extension* extension);
 
+  // Verifies downloaded blacklist. Based on the blacklist, calls extension
+  // service to unload blacklisted extensions and update pref.
+  void ProcessBlacklist(const std::string& data);
+
   // Sets the timer to call TimerFired after roughly |target_delay| from now.
   // To help spread load evenly on servers, this method adds some random
   // jitter. It also saves the scheduled time so it can be reloaded on
@@ -147,7 +162,12 @@ class ExtensionUpdater
   void StartUpdateCheck(const GURL& url);
 
   // Begins (or queues up) download of an updated extension.
-  void FetchUpdatedExtension(const std::string& id, const GURL& url);
+  void FetchUpdatedExtension(const std::string& id, const GURL& url,
+    const std::string& hash, const std::string& version);
+
+  // Determines the version of an existing extension.
+  // Returns true on success and false on failures.
+  bool GetExistingVersion(const std::string& id, std::string* version);
 
   typedef std::vector<ParseResult*> ParseResultList;
 
@@ -159,6 +179,9 @@ class ExtensionUpdater
   // inserts new ParseResult items into |result| and returns true. On failure,
   // it returns false and puts nothing into |result|.
   static bool Parse(const std::string& manifest_xml, ParseResultList* result);
+
+  // Creates a blacklist update url.
+  static GURL GetBlacklistUpdateUrl(const std::wstring& version);
 
   // Outstanding url fetch requests for manifests and updates.
   scoped_ptr<URLFetcher> manifest_fetcher_;
