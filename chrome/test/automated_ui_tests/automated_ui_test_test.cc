@@ -18,8 +18,9 @@
 #else
 // http://code.google.com/p/chromium/issues/detail?id=14731
 #define MAYBE_IncognitoWindow DISABLED_IncognitoWindow
+// http://crbug.com/19394
 #define MAYBE_OpenCloseBrowserWindowWithAccelerator \
-    OpenCloseBrowserWindowWithAccelerator
+    DISABLED_OpenCloseBrowserWindowWithAccelerator
 #endif
 
 // http://code.google.com/p/chromium/issues/detail?id=14774
