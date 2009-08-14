@@ -46,4 +46,10 @@
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
 }
 
+// Mouse down events on the download shelf should not allow dragging the parent
+// window around.
+- (BOOL)mouseDownCanMoveWindow {
+  return NO;
+}
+
 @end
