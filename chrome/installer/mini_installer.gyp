@@ -76,6 +76,9 @@
                     'shlwapi.lib',
                   ],
                 },
+                'VCManifestTool': {
+                  'AdditionalManifestFiles': '$(ProjectDir)\\mini_installer\\mini_installer.exe.manifest',
+                },
               },
             },
             'Release': {
