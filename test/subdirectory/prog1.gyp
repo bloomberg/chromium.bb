@@ -1,4 +1,7 @@
 {
+  'includes': [
+    'symroot.gypi',
+  ],
   'targets': [
     {
       'target_name': 'prog1',

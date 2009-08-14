@@ -125,6 +125,19 @@ class TestGypBase(TestCommon.TestCommon):
     args = ('--depth=.', '--format='+self.format) + args
     return self.run(program=self.gyp, arguments=args, **kw)
 
+  def run(self, *args, **kw):
+    """
+    Executes a program by calling the superclass .run() method.
+
+    This exists to provide a common place to filter out keyword
+    arguments implemented in this layer, without having to update
+    the tool-specific subclasses or clutter the tests themselves
+    with platform-specific code.
+    """
+    if kw.has_key('SYMROOT'):
+      del kw['SYMROOT']
+    super(TestGypBase, self).run(*args, **kw)
+
   def set_configuration(self, configuration):
     """
     Sets the configuration, to be used for invoking the build
@@ -362,7 +375,9 @@ class TestGypXcode(TestGypBase):
     args = ('-project', gyp_file.replace('.gyp', '.xcodeproj')) + args
     if self.configuration:
       args += ('-configuration', self.configuration)
-    args += ('SYMROOT=$SRCROOT/build',) + args
+    symroot = kw.get('SYMROOT', '$SRCROOT/build')
+    if symroot:
+      args += ('SYMROOT='+symroot,) + args
     return self.run(program=self.build_tool, arguments=args, **kw)
   def run_built_executable(self, name, *args, **kw):
     """

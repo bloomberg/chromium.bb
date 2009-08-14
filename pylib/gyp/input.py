@@ -212,8 +212,11 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   # If depth is set, predefine the DEPTH variable to be a relative path from
   # this build file's directory to the directory identified by depth.
   if depth:
-    variables['DEPTH'] = \
-        gyp.common.RelativePath(depth, os.path.dirname(build_file_path))
+    d = gyp.common.RelativePath(depth, os.path.dirname(build_file_path))
+    if d == '':
+      variables['DEPTH'] = '.'
+    else:
+      variables['DEPTH'] = d
 
   # If the generator needs absolue paths, then do so.
   if absolute_build_file_paths:
