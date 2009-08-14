@@ -174,7 +174,7 @@ std::string GetUIResourceProtocol();
 bool GetExeDirectory(std::wstring* path);
 
 // Embedders implement this function to return the list of plugins to Webkit.
-void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
+bool GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
 
 // Returns true if the plugins run in the same process as the renderer, and
 // false otherwise.

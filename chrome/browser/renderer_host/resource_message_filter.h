@@ -119,6 +119,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetCookies(const GURL& url,
                     const GURL& first_party_for_cookies,
                     std::string* cookies);
+  void OnGetDataDir(std::wstring* data_dir);
   void OnPluginMessage(const FilePath& plugin_path,
                        const std::vector<uint8>& message);
   void OnPluginSyncMessage(const FilePath& plugin_path,
@@ -140,8 +141,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // Not handled in the IO thread on Mac.
   void OnGetScreenInfo(gfx::NativeViewId window, IPC::Message* reply);
 #endif
-  void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
-  void OnGetPluginsOnFileThread(bool refresh, IPC::Message* reply_msg);
+  void OnGetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
   void OnGetPluginPath(const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,

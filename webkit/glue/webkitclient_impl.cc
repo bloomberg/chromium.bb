@@ -108,7 +108,8 @@ WebURLLoader* WebKitClientImpl::createURLLoader() {
 void WebKitClientImpl::getPluginList(bool refresh,
                                      WebPluginListBuilder* builder) {
   std::vector<WebPluginInfo> plugins;
-  GetPlugins(refresh, &plugins);
+  if (!GetPlugins(refresh, &plugins))
+    return;
 
   for (size_t i = 0; i < plugins.size(); ++i) {
     const WebPluginInfo& plugin = plugins[i];

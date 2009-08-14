@@ -36,7 +36,7 @@ PluginLib* PluginLib::CreatePluginLib(const FilePath& filename) {
 
   WebPluginInfo info;
   const PluginEntryPoints* entry_points = NULL;
-  if (!PluginList::Singleton()->ReadPluginInfo(filename, &info, &entry_points))
+  if (!PluginList::ReadPluginInfo(filename, &info, &entry_points))
     return NULL;
 
   return new PluginLib(info, entry_points);

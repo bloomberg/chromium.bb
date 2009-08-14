@@ -202,10 +202,11 @@ std::string GetUIResourceProtocol() {
   return "chrome";
 }
 
-void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
+bool GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
   if (!RenderThread::current()->plugin_refresh_allowed())
     refresh = false;
-  RenderThread::current()->Send(new ViewHostMsg_GetPlugins(refresh, plugins));
+  return RenderThread::current()->Send(new ViewHostMsg_GetPlugins(
+     refresh, plugins));
 }
 
 // static factory function

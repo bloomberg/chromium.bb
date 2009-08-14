@@ -25,44 +25,49 @@ base::LazyInstance<PluginList> g_singleton(base::LINKER_INITIALIZED);
 
 // static
 PluginList* PluginList::Singleton() {
-  return g_singleton.Pointer();
+  PluginList* singleton = g_singleton.Pointer();
+  if (!singleton->plugins_loaded_) {
+    singleton->LoadPlugins(false);
+    DCHECK(singleton->plugins_loaded_);
+  }
+  return singleton;
 }
 
-bool PluginList::PluginsLoaded() {
-  AutoLock lock(lock_);
-  return plugins_loaded_;
-}
-
+// static
 void PluginList::ResetPluginsLoaded() {
-  AutoLock lock(lock_);
-  plugins_loaded_ = false;
+  // We access the singleton directly, and not through Singleton(), since
+  // we don't want LoadPlugins() to be called.
+  g_singleton.Pointer()->plugins_loaded_ = false;
 }
 
+// static
 void PluginList::AddExtraPluginPath(const FilePath& plugin_path) {
-  AutoLock lock(lock_);
-  extra_plugin_paths_.push_back(plugin_path);
+  DCHECK(!g_singleton.Pointer()->plugins_loaded_);
+  g_singleton.Pointer()->extra_plugin_paths_.push_back(plugin_path);
 }
 
+// static
 void PluginList::AddExtraPluginDir(const FilePath& plugin_dir) {
-  AutoLock lock(lock_);
-  extra_plugin_dirs_.push_back(plugin_dir);
+  DCHECK(!g_singleton.Pointer()->plugins_loaded_);
+  g_singleton.Pointer()->extra_plugin_dirs_.push_back(plugin_dir);
 }
 
 void PluginList::RegisterInternalPlugin(const PluginVersionInfo& info) {
-  AutoLock lock(lock_);
-  internal_plugins_.push_back(info);
+  DCHECK(!g_singleton.Pointer()->plugins_loaded_);
+  g_singleton.Pointer()->internal_plugins_.push_back(info);
 }
 
 bool PluginList::ReadPluginInfo(const FilePath &filename,
                                 WebPluginInfo* info,
                                 const PluginEntryPoints** entry_points) {
-  {
-    AutoLock lock(lock_);
-    for (size_t i = 0; i < internal_plugins_.size(); ++i) {
-      if (filename == internal_plugins_[i].path) {
-        *entry_points = &internal_plugins_[i].entry_points;
-        return CreateWebPluginInfo(internal_plugins_[i], info);
-      }
+  // We access the singleton directly, and not through Singleton(), since
+  // we might be in a LoadPlugins call and don't want to call it recursively!
+  const std::vector<PluginVersionInfo>& internal_plugins =
+      g_singleton.Pointer()->internal_plugins_;
+  for (size_t i = 0; i < internal_plugins.size(); ++i) {
+    if (filename == internal_plugins[i].path) {
+      *entry_points = &internal_plugins[i].entry_points;
+      return CreateWebPluginInfo(internal_plugins[i], info);
     }
   }
 
@@ -141,60 +146,46 @@ PluginList::PluginList() : plugins_loaded_(false) {
 }
 
 void PluginList::LoadPlugins(bool refresh) {
-  // Don't want to hold the lock while loading new plugins, so we don't block
-  // other methods if they're called on other threads.
-  std::vector<FilePath> extra_plugin_paths;
-  std::vector<FilePath> extra_plugin_dirs;
-  {
-    AutoLock lock(lock_);
-    if (plugins_loaded_ && !refresh)
-      return;
+  if (plugins_loaded_ && !refresh)
+    return;
 
-    extra_plugin_paths = extra_plugin_paths_;
-    extra_plugin_dirs = extra_plugin_dirs_;
-  }
+  plugins_.clear();
+  plugins_loaded_ = true;
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-
-  std::vector<WebPluginInfo> new_plugins;
 
   std::vector<FilePath> directories_to_scan;
   GetPluginDirectories(&directories_to_scan);
 
-  for (size_t i = 0; i < extra_plugin_paths.size(); ++i)
-    LoadPlugin(extra_plugin_paths[i], &new_plugins);
+  for (size_t i = 0; i < extra_plugin_paths_.size(); ++i)
+    LoadPlugin(extra_plugin_paths_[i]);
 
-  for (size_t i = 0; i < extra_plugin_dirs.size(); ++i) {
-    LoadPluginsFromDir(extra_plugin_dirs[i], &new_plugins);
+  for (size_t i = 0; i < extra_plugin_dirs_.size(); ++i) {
+    LoadPluginsFromDir(extra_plugin_dirs_[i]);
   }
 
   for (size_t i = 0; i < directories_to_scan.size(); ++i) {
-    LoadPluginsFromDir(directories_to_scan[i], &new_plugins);
+    LoadPluginsFromDir(directories_to_scan[i]);
   }
 
-  LoadInternalPlugins(&new_plugins);
+  LoadInternalPlugins();
 
   if (webkit_glue::IsDefaultPluginEnabled())
-    LoadPlugin(FilePath(kDefaultPluginLibraryName), &new_plugins);
+    LoadPlugin(FilePath(kDefaultPluginLibraryName));
 
   base::TimeTicks end_time = base::TimeTicks::Now();
   base::TimeDelta elapsed = end_time - start_time;
   DLOG(INFO) << "Loaded plugin list in " << elapsed.InMilliseconds() << " ms.";
-
-  AutoLock lock(lock_);
-  plugins_ = new_plugins;
-  plugins_loaded_ = true;
 }
 
-void PluginList::LoadPlugin(const FilePath &path,
-                            std::vector<WebPluginInfo>* plugins) {
+void PluginList::LoadPlugin(const FilePath &path) {
   WebPluginInfo plugin_info;
   const PluginEntryPoints* entry_points;
 
   if (!ReadPluginInfo(path, &plugin_info, &entry_points))
     return;
 
-  if (!ShouldLoadPlugin(plugin_info, plugins))
+  if (!ShouldLoadPlugin(plugin_info))
     return;
 
   if (path.value() != kDefaultPluginLibraryName
@@ -212,7 +203,7 @@ void PluginList::LoadPlugin(const FilePath &path,
     }
   }
 
-  plugins->push_back(plugin_info);
+  plugins_.push_back(plugin_info);
 }
 
 bool PluginList::FindPlugin(const std::string& mime_type,
@@ -221,8 +212,6 @@ bool PluginList::FindPlugin(const std::string& mime_type,
                             WebPluginInfo* info) {
   DCHECK(mime_type == StringToLowerASCII(mime_type));
 
-  LoadPlugins(false);
-  AutoLock lock(lock_);
   for (size_t i = 0; i < plugins_.size(); ++i) {
     if (SupportsType(plugins_[i], mime_type, allow_wildcard)) {
 #if defined(OS_WIN)
@@ -243,8 +232,6 @@ bool PluginList::FindPlugin(const std::string& mime_type,
 
 bool PluginList::FindPlugin(const GURL &url, std::string* actual_mime_type,
                             WebPluginInfo* info) {
-  LoadPlugins(false);
-  AutoLock lock(lock_);
   std::string path = url.path();
   std::string::size_type last_dot = path.rfind('.');
   if (last_dot == std::string::npos)
@@ -299,11 +286,13 @@ bool PluginList::SupportsExtension(const WebPluginInfo& info,
 }
 
 
-void PluginList::GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
-  LoadPlugins(refresh);
+bool PluginList::GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
+  if (refresh)
+    LoadPlugins(true);
 
-  AutoLock lock(lock_);
   *plugins = plugins_;
+
+  return true;
 }
 
 bool PluginList::GetPluginInfo(const GURL& url,
@@ -333,8 +322,6 @@ bool PluginList::GetPluginInfo(const GURL& url,
 
 bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
                                      WebPluginInfo* info) {
-  LoadPlugins(false);
-  AutoLock lock(lock_);
   for (size_t i = 0; i < plugins_.size(); ++i) {
     if (plugins_[i].path == plugin_path) {
       *info = plugins_[i];

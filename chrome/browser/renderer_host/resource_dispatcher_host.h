@@ -108,7 +108,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
           has_started_reading(false),
           paused_read_bytes(0) {
     }
-    virtual ~ExtraRequestInfo() { resource_handler->OnRequestClosed(); }
 
     // Top-level ResourceHandler servicing this request.
     scoped_refptr<ResourceHandler> resource_handler;
@@ -353,6 +352,11 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // Retrieves a URLRequest.  Must be called from the IO thread.
   URLRequest* GetURLRequest(GlobalRequestID request_id) const;
 
+  // A test to determining whether a given request should be forwarded to the
+  // download thread.
+  bool ShouldDownload(const std::string& mime_type,
+                      const std::string& content_disposition);
+
   // Notifies our observers that a request has been cancelled.
   void NotifyResponseCompleted(URLRequest* request, int process_id);
 
@@ -546,6 +550,8 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // List of objects observing resource dispatching.
   ObserverList<Observer> observer_list_;
+
+  PluginService* plugin_service_;
 
   // For running tasks.
   ScopedRunnableMethodFactory<ResourceDispatcherHost> method_runner_;

@@ -56,19 +56,17 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   GetPluginPrivateDirectory(plugin_dirs);
 }
 
-void PluginList::LoadPluginsFromDir(const FilePath &path,
-                                    std::vector<WebPluginInfo>* plugins) {
+void PluginList::LoadPluginsFromDir(const FilePath &path) {
   file_util::FileEnumerator enumerator(path,
                                        false, // not recursive
                                        file_util::FileEnumerator::DIRECTORIES);
   for (FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
-    LoadPlugin(path, plugins);
+    LoadPlugin(path);
   }
 }
 
-bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
-                                  std::vector<WebPluginInfo>* plugins) {
+bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info) {
   // The Gears plugin is Safari-specific, and causes crashes, so don't load it.
   for (std::vector<WebPluginMimeType>::const_iterator i =
            info.mime_types.begin(); i != info.mime_types.end(); ++i) {
@@ -89,8 +87,8 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   // Hierarchy check
   // (we're loading plugins hierarchically from Library folders, so plugins we
   //  encounter earlier must override plugins we encounter later)
-  for (size_t i = 0; i < plugins->size(); ++i) {
-    if ((*plugins)[i].path.BaseName() == info.path.BaseName()) {
+  for (size_t i = 0; i < plugins_.size(); ++i) {
+    if (plugins_[i].path.BaseName() == info.path.BaseName()) {
       return false;  // We already have a loaded plugin higher in the hierarchy.
     }
   }
@@ -98,7 +96,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   return true;
 }
 
-void PluginList::LoadInternalPlugins(std::vector<WebPluginInfo>* plugins) {
+void PluginList::LoadInternalPlugins() {
   // none for now
 }
 
