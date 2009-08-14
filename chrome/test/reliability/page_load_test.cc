@@ -161,8 +161,8 @@ class PageLoadTest : public UITest {
 // TODO(estade): port.
 #if defined(OS_WIN)
     // Check file version info for chrome dll.
-    FileVersionInfo* file_info;
-    file_info = FileVersionInfo::CreateFileVersionInfo(kChromeDll);
+    scoped_ptr<FileVersionInfo> file_info;
+    file_info.reset(FileVersionInfo::CreateFileVersionInfo(kChromeDll));
     std::wstring last_change = file_info->last_change();
     test_log << "Last Change: ";
     test_log << last_change << std::endl;
@@ -199,7 +199,8 @@ class PageLoadTest : public UITest {
       if (!is_timeout && result == AUTOMATION_MSG_NAVIGATION_SUCCESS) {
         if (page_down) {
           // Page down twice.
-          scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+          scoped_refptr<BrowserProxy> browser(
+              automation()->GetBrowserWindow(0));
           if (browser.get()) {
             scoped_refptr<WindowProxy> window(browser->GetWindow());
             if (window.get()) {
@@ -685,14 +686,14 @@ void SetPageRange(const CommandLine& parsed_command_line) {
     ASSERT_TRUE(
         StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kStartIndexSwitch)), &start_index));
-    ASSERT_TRUE(start_index > 0);
+    ASSERT_GT(start_index, 0);
   }
 
   if (parsed_command_line.HasSwitch(kEndIndexSwitch)) {
     ASSERT_TRUE(
         StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kEndIndexSwitch)), &end_index));
-    ASSERT_TRUE(end_index > 0);
+    ASSERT_GT(end_index, 0);
   }
 
   ASSERT_TRUE(end_index >= start_index);
@@ -706,7 +707,7 @@ void SetPageRange(const CommandLine& parsed_command_line) {
     ASSERT_TRUE(
         StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kIterationSwitch)), &iterations));
-    ASSERT_TRUE(iterations > 0);
+    ASSERT_GT(iterations, 0);
   }
 
   if (parsed_command_line.HasSwitch(kMemoryUsageSwitch))
@@ -722,14 +723,15 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kLogFileSwitch)) {
     log_file_path =
-        FilePath::FromWStringHack(parsed_command_line.GetSwitchValue(kLogFileSwitch));
+        FilePath::FromWStringHack(
+            parsed_command_line.GetSwitchValue(kLogFileSwitch));
   }
 
   if (parsed_command_line.HasSwitch(kTimeoutSwitch)) {
     ASSERT_TRUE(
         StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kTimeoutSwitch)), &timeout_ms));
-    ASSERT_TRUE(timeout_ms > 0);
+    ASSERT_GT(timeout_ms, 0);
   }
 
   if (parsed_command_line.HasSwitch(kNoPageDownSwitch))
