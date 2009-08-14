@@ -640,7 +640,6 @@ bool CaptureVisibleTabFunction::RunImpl() {
   }
 
   SkBitmap screen_capture;
-#if defined(OS_WIN)
   TabContents* tab_contents = browser->GetSelectedTabContents();
   if (!tab_contents) {
     error_ = keys::kInternalVisibleTabCaptureError;
@@ -652,6 +651,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
     error_ = keys::kInternalVisibleTabCaptureError;
     return false;
   }
+#if defined(OS_WIN)
   skia::PlatformCanvas temp_canvas;
   if (!temp_canvas.initialize(backing_store->size().width(),
                               backing_store->size().height(), true)) {
@@ -666,6 +666,9 @@ bool CaptureVisibleTabFunction::RunImpl() {
   temp_canvas.endPlatformPaint();
 
   screen_capture = temp_canvas.getTopPlatformDevice().accessBitmap(false);
+#elif defined(OS_MACOSX)
+  screen_capture = backing_store->canvas()->getTopPlatformDevice()
+      .accessBitmap(false);
 #else
   // TODO(port)
   error_ = keys::kNotImplementedError;
