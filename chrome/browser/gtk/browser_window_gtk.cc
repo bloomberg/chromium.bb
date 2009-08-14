@@ -1012,13 +1012,6 @@ void BrowserWindowGtk::Observe(NotificationType type,
       if (!window_)
         break;
 
-      // If there's an app modal dialog (e.g., JS alert), try to redirect
-      // the user's attention to the window owning the dialog.
-      if (Singleton<AppModalDialogQueue>()->HasActiveDialog()) {
-        Singleton<AppModalDialogQueue>()->ActivateModalDialog();
-        break;
-      }
-
       // If we lose focus to an info bubble, we don't want to seem inactive.
       // However we can only control this when we are painting a custom
       // frame. So if we lose focus BUT it's to one of our info bubbles AND we
@@ -1030,6 +1023,16 @@ void BrowserWindowGtk::Observe(NotificationType type,
                        (window_ == info_bubble_toplevel &&
                         use_custom_frame_.GetValue()));
       bool changed = (is_active != is_active_);
+
+      if (is_active && changed) {
+        // If there's an app modal dialog (e.g., JS alert), try to redirect
+        // the user's attention to the window owning the dialog.
+        if (Singleton<AppModalDialogQueue>()->HasActiveDialog()) {
+          Singleton<AppModalDialogQueue>()->ActivateModalDialog();
+          break;
+        }
+      }
+
       is_active_ = is_active;
       if (changed) {
         SetBackgroundColor();
