@@ -188,6 +188,7 @@ o3djs/material.js
 o3djs/math.js
 o3djs/pack.js
 o3djs/particles.js
+o3djs/performance.js
 o3djs/picking.js
 o3djs/primitives.js
 o3djs/quaternions.js
