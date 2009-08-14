@@ -54,7 +54,7 @@ namespace nacl_srpc {
 class Closure {
  public:
   Closure(Plugin* plugin, std::string url) :
-    plugin_(plugin), url_(url) {}
+    plugin_(plugin), url_(url), buffer_(NULL) {}
   virtual ~Closure() {}
   virtual void Run(NPStream *stream, const char *fname) = 0;
   virtual void Run(const char *url, const void* buffer, int32_t size) = 0;
