@@ -715,14 +715,25 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusOut() {
 void AutocompleteEditViewGtk::HandleViewMoveCursor(
     GtkMovementStep step,
     gint count,
-    gboolean extendion_selection) {
-  // Handle up/down/pgup/pgdn movement on our own.
-  int move_amount = count;
-  if (step == GTK_MOVEMENT_PAGES)
-    move_amount = model_->result().size() * ((count < 0) ? -1 : 1);
-  else if (step != GTK_MOVEMENT_DISPLAY_LINES)
+    gboolean extend_selection) {
+  // We want the GtkEntry behavior when you move the cursor while you have a
+  // selection.  GtkTextView just drops the selection and moves the cursor, but
+  // instead we want to move the cursor to the appropiate end of the selection.
+  GtkTextIter sstart, send;
+  if (step == GTK_MOVEMENT_VISUAL_POSITIONS &&
+      !extend_selection &&
+      (count == 1 || count == -1) &&
+      gtk_text_buffer_get_selection_bounds(text_buffer_, &sstart, &send)) {
+    // We have a selection and start / end are in ascending order.
+    gtk_text_buffer_place_cursor(text_buffer_, count == 1 ? &send : &sstart);
+  } else if (step == GTK_MOVEMENT_PAGES) {  // Page up and down.
+    // Multiply by count for the direction (if we move too much that's ok).
+    model_->OnUpOrDownKeyPressed(model_->result().size() * count);
+  } else if (step == GTK_MOVEMENT_DISPLAY_LINES) {  // Arrow up and down.
+    model_->OnUpOrDownKeyPressed(count);
+  } else {
     return;  // Propagate into GtkTextView
-  model_->OnUpOrDownKeyPressed(move_amount);
+  }
 
   // move-cursor doesn't use a signal accumulator on the return value (it
   // just ignores then), so we have to stop the propagation.
