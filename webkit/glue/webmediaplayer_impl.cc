@@ -334,6 +334,12 @@ bool WebMediaPlayerImpl::hasVideo() const {
   return pipeline_->IsRendered(media::mime_type::kMajorTypeVideo);
 }
 
+bool WebMediaPlayerImpl::hasAudio() const {
+  DCHECK(MessageLoop::current() == main_loop_);
+
+  return pipeline_->IsRendered(media::mime_type::kMajorTypeAudio);
+}
+
 WebKit::WebSize WebMediaPlayerImpl::naturalSize() const {
   DCHECK(MessageLoop::current() == main_loop_);
 

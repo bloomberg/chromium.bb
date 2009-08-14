@@ -183,6 +183,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   // True if a video is loaded.
   virtual bool hasVideo() const;
+  virtual bool hasAudio() const;
 
   // Dimensions of the video.
   virtual WebKit::WebSize naturalSize() const;
