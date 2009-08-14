@@ -2883,3 +2883,7 @@ BUG_LEVIN WIN LINUX : LayoutTests/fast/block/float/float-avoidance.html = FAIL
 BUG_LEVIN WIN LINUX : LayoutTests/fast/reflections/reflection-overflow-scroll.html = FAIL
 BUG_LEVIN WIN LINUX : LayoutTests/fast/text/monospace-width-cache.html = FAIL
 BUG_LEVIN WIN LINUX : LayoutTests/tables/mozilla/bugs/bug106158-1.html = FAIL
+
+// Fallout from webkit 47265:47277
+BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
+BUG_MBELSHE LINUX : LayoutTests/fast/overflow/image-selection-highlight.html = CRASH
