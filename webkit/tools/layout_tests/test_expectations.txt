@@ -669,7 +669,7 @@ BUG13907 WIN DEBUG : LayoutTests/media/video-dom-autobuffer.html = PASS FAIL
 // This test crashes in debug build.
 BUG13907 WIN DEBUG : LayoutTests/media/video-document-types.html = FAIL CRASH
 BUG13907 WIN RELEASE : LayoutTests/media/video-document-types.html = PASS FAIL
-BUG13907 WIN : LayoutTests/media/video-loop.html = FAIL CRASH
+BUG13907 WIN : LayoutTests/media/video-loop.html = FAIL CRASH TIMEOUT
 // This test is flaky too.	
 BUG13907 WIN : LayoutTests/media/video-played-collapse.html = FAIL TIMEOUT
 // This test crashes in debug build.
@@ -2870,3 +2870,16 @@ BUG_LEVIN : LayoutTests/fast/dom/Geolocation/enabled.html = FAIL
 BUG_LEVIN : LayoutTests/storage/multiple-transactions-on-different-handles.html = TIMEOUT
 BUG_LEVIN WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
 BUG_LEVIN WIN : LayoutTests/media/controls-drag-timebar.html = FAIL TIMEOUT
+
+// Fallout from webkit 47189:47265
+BUG_LEVIN : LayoutTests/fast/loader/onhashchange-attribute-listeners.html = TIMEOUT
+BUG_LEVIN : LayoutTests/fast/dom/Geolocation/argument-types.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/css1/font_properties/font_family.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/css2.1/t1503-c522-font-family-00-b.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/fast/block/float/035.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/fast/block/float/avoidance-percent-width-compat.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/fast/block/float/avoidance-percent-width-strict.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/fast/block/float/float-avoidance.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/fast/reflections/reflection-overflow-scroll.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/fast/text/monospace-width-cache.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/tables/mozilla/bugs/bug106158-1.html = FAIL
