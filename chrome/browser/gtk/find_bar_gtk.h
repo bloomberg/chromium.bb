@@ -108,11 +108,7 @@ class FindBarGtk : public FindBar,
                                   GtkAllocation* allocation,
                                   FindBarGtk* findbar);
 
-  // Called when |container_| is allocated.
-  static void OnContainerSizeAllocate(GtkWidget* container,
-                                      GtkAllocation* allocation,
-                                      FindBarGtk* findbar);
-
+  // Handles shapping and drawing the find bar background.
   static gboolean OnExpose(GtkWidget* widget, GdkEventExpose* event,
                            FindBarGtk* bar);
 
@@ -142,12 +138,17 @@ class FindBarGtk : public FindBar,
   // A GtkAlignment that is the child of |slide_widget_|.
   GtkWidget* container_;
 
-  // This will be set to true after ContourWidget() has been called so we don't
-  // call it twice.
-  bool container_shaped_;
+  // Cached allocation of |container_|. We keep this on hand so that we can
+  // reset the widget's shape when the width/height change.
+  int container_width_;
+  int container_height_;
 
   // The widget where text is entered.
   GtkWidget* text_entry_;
+
+  // The border around the text entry area.
+  GtkWidget* border_bin_;
+  GtkWidget* border_bin_aa_;
 
   // The next and previous match buttons.
   scoped_ptr<CustomDrawButton> find_previous_button_;

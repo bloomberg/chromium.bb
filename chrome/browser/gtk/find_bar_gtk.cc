@@ -53,7 +53,62 @@ const int kFindBarHeight = 32;
 // The width of the text entry field.
 const int kTextEntryWidth = 220;
 
-// Give the findbar dialog its unique shape.
+// The size of the "rounded" corners.
+const int kCornerSize = 3;
+
+enum FrameType {
+  FRAME_MASK,
+  FRAME_STROKE,
+};
+
+// Returns a list of points that either form the outline of the status bubble
+// (|type| == FRAME_MASK) or form the inner border around the inner edge
+// (|type| == FRAME_STROKE).
+std::vector<GdkPoint> MakeFramePolygonPoints(int width,
+                                             int height,
+                                             FrameType type) {
+  using gtk_util::MakeBidiGdkPoint;
+  std::vector<GdkPoint> points;
+
+  bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
+  // If we have a stroke, we have to offset some of our points by 1 pixel.
+  // We have to inset by 1 pixel when we draw horizontal lines that are on the
+  // bottom or when we draw vertical lines that are closer to the end (end is
+  // right for ltr).
+  int y_off = (type == FRAME_MASK) ? 0 : -1;
+  // We use this one for LTR.
+  int x_off_l = ltr ? y_off : 0;
+  // We use this one for RTL.
+  int x_off_r = !ltr ? -y_off : 0;
+
+  // Top left corner
+  points.push_back(MakeBidiGdkPoint(x_off_r, 0, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      kCornerSize - x_off_r, kCornerSize, width, ltr));
+
+  // Bottom left corner
+  points.push_back(MakeBidiGdkPoint(
+      kCornerSize - x_off_r, height - kCornerSize + y_off, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      (2 * kCornerSize) - x_off_r - 1, height + y_off,
+      width, ltr));
+
+  // Bottom right corner
+  points.push_back(MakeBidiGdkPoint(
+      width - (2 * kCornerSize) + x_off_l, height + y_off,
+      width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      width - kCornerSize + x_off_l, height - kCornerSize + y_off, width, ltr));
+
+  // Top right corner
+  points.push_back(MakeBidiGdkPoint(
+      width - kCornerSize + x_off_l, kCornerSize, width, ltr));
+  points.push_back(MakeBidiGdkPoint(width + x_off_l, 0, width, ltr));
+
+  return points;
+}
+
+// Give the findbar dialog its unique shape using images.
 void SetDialogShape(GtkWidget* widget) {
   static NineBox* dialog_shape = NULL;
   if (!dialog_shape) {
@@ -89,7 +144,8 @@ FindBarGtk::FindBarGtk(Browser* browser)
     : browser_(browser),
       window_(static_cast<BrowserWindowGtk*>(browser->window())),
       theme_provider_(GtkThemeProvider::GetFrom(browser->profile())),
-      container_shaped_(false),
+      container_width_(-1),
+      container_height_(-1),
       ignore_changed_signal_(false),
       current_fixed_width_(-1) {
   InitWidgets();
@@ -119,10 +175,6 @@ FindBarGtk::FindBarGtk(Browser* browser)
                    G_CALLBACK(OnButtonPress), this);
   g_signal_connect(widget(), "size-allocate",
                    G_CALLBACK(OnFixedSizeAllocate), this);
-  // We can't call ContourWidget() until after |container_| has been
-  // allocated, hence we connect to this signal.
-  g_signal_connect(container_, "size-allocate",
-                   G_CALLBACK(OnContainerSizeAllocate), this);
   g_signal_connect(container_, "expose-event",
                    G_CALLBACK(OnExpose), this);
 }
@@ -158,7 +210,7 @@ void FindBarGtk::InitWidgets() {
   gtk_fixed_put(GTK_FIXED(widget()), slide_widget(), 0, 0);
   gtk_widget_set_size_request(widget(), -1, 0);
 
-  close_button_.reset(CustomDrawButton::CloseButton(NULL));
+  close_button_.reset(CustomDrawButton::CloseButton(theme_provider_));
   gtk_util::CenterWidgetInHBox(hbox, close_button_->widget(), true,
                                kCloseButtonPaddingLeft);
   g_signal_connect(G_OBJECT(close_button_->widget()), "clicked",
@@ -166,8 +218,9 @@ void FindBarGtk::InitWidgets() {
   gtk_widget_set_tooltip_text(close_button_->widget(),
       l10n_util::GetStringUTF8(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP).c_str());
 
-  find_next_button_.reset(new CustomDrawButton(IDR_FINDINPAGE_NEXT,
-      IDR_FINDINPAGE_NEXT_H, IDR_FINDINPAGE_NEXT_H, IDR_FINDINPAGE_NEXT_P));
+  find_next_button_.reset(new CustomDrawButton(theme_provider_,
+      IDR_FINDINPAGE_NEXT, IDR_FINDINPAGE_NEXT_H, IDR_FINDINPAGE_NEXT_H,
+      IDR_FINDINPAGE_NEXT_P, GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_MENU));
   g_signal_connect(G_OBJECT(find_next_button_->widget()), "clicked",
                    G_CALLBACK(OnClicked), this);
   gtk_widget_set_tooltip_text(find_next_button_->widget(),
@@ -175,8 +228,9 @@ void FindBarGtk::InitWidgets() {
   gtk_box_pack_end(GTK_BOX(hbox), find_next_button_->widget(),
                    FALSE, FALSE, 0);
 
-  find_previous_button_.reset(new CustomDrawButton(IDR_FINDINPAGE_PREV,
-      IDR_FINDINPAGE_PREV_H, IDR_FINDINPAGE_PREV_H, IDR_FINDINPAGE_PREV_P));
+  find_previous_button_.reset(new CustomDrawButton(theme_provider_,
+      IDR_FINDINPAGE_PREV, IDR_FINDINPAGE_PREV_H, IDR_FINDINPAGE_PREV_H,
+      IDR_FINDINPAGE_PREV_P, GTK_STOCK_GO_UP, GTK_ICON_SIZE_MENU));
   g_signal_connect(G_OBJECT(find_previous_button_->widget()), "clicked",
                    G_CALLBACK(OnClicked), this);
   gtk_widget_set_tooltip_text(find_previous_button_->widget(),
@@ -229,13 +283,11 @@ void FindBarGtk::InitWidgets() {
   gtk_container_add(GTK_CONTAINER(content_event_box), content_hbox);
 
   // We fake anti-aliasing by having two borders.
-  GtkWidget* border_bin = gtk_util::CreateGtkBorderBin(content_event_box,
-                                                       &kTextBorderColor,
-                                                       1, 1, 1, 0);
-  GtkWidget* border_bin_aa = gtk_util::CreateGtkBorderBin(border_bin,
-                                                          &kTextBorderColorAA,
-                                                          1, 1, 1, 0);
-  gtk_util::CenterWidgetInHBox(hbox, border_bin_aa, true, 0);
+  border_bin_ = gtk_util::CreateGtkBorderBin(content_event_box, NULL,
+                                             1, 1, 1, 0);
+  border_bin_aa_ = gtk_util::CreateGtkBorderBin(border_bin_, NULL,
+                                                1, 1, 1, 0);
+  gtk_util::CenterWidgetInHBox(hbox, border_bin_aa_, true, 0);
 
   theme_provider_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -401,11 +453,22 @@ void FindBarGtk::Observe(NotificationType type,
                          const NotificationDetails& details) {
   DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
 
+  // Force reshapings of the find bar window.
+  container_width_ = -1;
+  container_height_ = -1;
+  current_fixed_width_ = -1;
+
   if (theme_provider_->UseGtkTheme()) {
     GdkColor color = theme_provider_->GetBorderColor();
     gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &color);
+
+    gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, NULL);
+    gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, NULL);
   } else {
     gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &kFrameBorderColor);
+
+    gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, &kTextBorderColor);
+    gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, &kTextBorderColorAA);
   }
 }
 
@@ -550,35 +613,61 @@ void FindBarGtk::OnFixedSizeAllocate(GtkWidget* fixed,
 // Used to handle custom painting of |container_|.
 gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
                               FindBarGtk* bar) {
-  // Draw the background theme image.
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  cairo_rectangle(cr, e->area.x, e->area.y, e->area.width, e->area.height);
-  cairo_clip(cr);
-  gfx::Point tabstrip_origin =
-      bar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
-  bar->dialog_background_->RenderTopCenterStrip(
-      cr, tabstrip_origin.x(), tabstrip_origin.y(),
-      e->area.x + e->area.width - tabstrip_origin.x());
-  cairo_destroy(cr);
+  if (bar->theme_provider_->UseGtkTheme()) {
+    if (bar->container_width_ != widget->allocation.width ||
+        bar->container_height_ != widget->allocation.height) {
+      std::vector<GdkPoint> mask_points = MakeFramePolygonPoints(
+          widget->allocation.width, widget->allocation.height, FRAME_MASK);
+      GdkRegion* mask_region = gdk_region_polygon(&mask_points[0],
+                                                  mask_points.size(),
+                                                  GDK_EVEN_ODD_RULE);
+      gdk_window_shape_combine_region(widget->window, mask_region, 0, 0);
+      gdk_region_destroy(mask_region);
 
-  // Draw the border.
-  GetDialogBorder()->RenderToWidget(widget);
+      bar->container_width_ = widget->allocation.width;
+      bar->container_height_ = widget->allocation.height;
+    }
+
+    GdkDrawable* drawable = GDK_DRAWABLE(e->window);
+    GdkGC* gc = gdk_gc_new(drawable);
+    GdkColor color = bar->theme_provider_->GetBorderColor();
+    gdk_gc_set_rgb_fg_color(gc, &color);
+
+    // Stroke the frame border.
+    std::vector<GdkPoint> points = MakeFramePolygonPoints(
+        widget->allocation.width, widget->allocation.height, FRAME_STROKE);
+    gdk_draw_lines(drawable, gc, &points[0], points.size());
+
+    g_object_unref(gc);
+  } else {
+    if (bar->container_width_ != widget->allocation.width ||
+        bar->container_height_ != widget->allocation.height) {
+      SetDialogShape(bar->container_);
+
+      bar->container_width_ = widget->allocation.width;
+      bar->container_height_ = widget->allocation.height;
+    }
+
+    // Draw the background theme image.
+    cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+    cairo_rectangle(cr, e->area.x, e->area.y, e->area.width, e->area.height);
+    cairo_clip(cr);
+    gfx::Point tabstrip_origin =
+        bar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
+    bar->dialog_background_->RenderTopCenterStrip(
+        cr, tabstrip_origin.x(), tabstrip_origin.y(),
+        e->area.x + e->area.width - tabstrip_origin.x());
+    cairo_destroy(cr);
+
+    // Draw the border.
+    GetDialogBorder()->RenderToWidget(widget);
+  }
 
   // Propagate to the container's child.
   GtkWidget* child = gtk_bin_get_child(GTK_BIN(widget));
   if (child)
     gtk_container_propagate_expose(GTK_CONTAINER(widget), child, e);
   return TRUE;
-}
-
-// static
-void FindBarGtk::OnContainerSizeAllocate(GtkWidget* container,
-                                         GtkAllocation* allocation,
-                                         FindBarGtk* findbar) {
-  if (!findbar->container_shaped_) {
-    SetDialogShape(container);
-    findbar->container_shaped_ = true;
-  }
 }
 
 // static
