@@ -1,8 +1,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(timsteele): Re-enable ASAP.  http://crbug.com/19002
-#if 0
 #ifdef CHROME_PERSONALIZATION
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -107,6 +105,10 @@ class TestBrowserWindowForWizardTest : public TestBrowserWindow {
       // exist in our test, so we perform cleanup manually.
       std::vector<DOMMessageHandler*> handlers;
       flow_->GetDOMMessageHandlers(&handlers);
+      // The handler contract is that they are valid for the lifetime of the
+      // HTMLDialogUIDelegate, but are cleaned up after the dialog is closed
+      // and/or deleted.
+      flow_.reset();
       STLDeleteElements(&handlers);
     }
   }
@@ -125,10 +127,25 @@ class TestBrowserWindowForWizardTest : public TestBrowserWindow {
     return ret;
   }
 
+  // Simulates the user (or browser view hierarchy) closing the html dialog.
+  // Handles cleaning up the delegate and associated handlers.
+  void CloseDialog() {
+    if (flow_.get()) {
+      std::vector<DOMMessageHandler*> handlers;
+      flow_->GetDOMMessageHandlers(&handlers);
+      // The flow deletes itself here.  Don't use reset().
+      flow_.release()->OnDialogClosed("");
+      STLDeleteElements(&handlers);
+    }
+  }
+
+  SyncSetupFlow* flow() { return flow_.get(); }
+
+ private:
   // In real life, this is owned by the view that is opened by the browser.  We
   // mock all that out, so we need to take ownership so the flow doesn't leak.
   scoped_ptr<SyncSetupFlow> flow_;
- private:
+
   bool was_show_html_dialog_called_;
 };
 
@@ -176,19 +193,19 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   credentials.Append(new StringValue(auth));
 
   EXPECT_FALSE(wizard_->IsVisible());
-  EXPECT_FALSE(test_window_->flow_.get());
+  EXPECT_FALSE(test_window_->flow());
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
 
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow_->current_state_);
-  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow_->end_state_);
-  EXPECT_EQ(json_start_args, test_window_->flow_->dialog_start_args_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->end_state_);
+  EXPECT_EQ(json_start_args, test_window_->flow()->dialog_start_args_);
 
   // Simulate the user submitting credentials.
-  test_window_->flow_->flow_handler_->HandleSubmitAuth(&credentials);
+  test_window_->flow()->flow_handler_->HandleSubmitAuth(&credentials);
   EXPECT_TRUE(wizard_->IsVisible());
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
   EXPECT_EQ(kTestUser, service_->username_);
   EXPECT_EQ(kTestPassword, service_->password_);
   EXPECT_FALSE(service_->user_accepted_merge_and_sync_);
@@ -200,7 +217,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
   dialog_args.Clear();
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
   EXPECT_EQ(2, dialog_args.GetSize());
@@ -216,31 +233,32 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, test_window_->flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS,
+            test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::DONE);  // No merge and sync.
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->current_state_);
 }
 
 TEST_F(SyncSetupWizardTest, InitialStepMergeAndSync) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow_->end_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->end_state_);
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::MERGE_AND_SYNC);
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
   EXPECT_EQ(SyncSetupWizard::MERGE_AND_SYNC,
-            test_window_->flow_->current_state_);
+            test_window_->flow()->current_state_);
 
-  test_window_->flow_->flow_handler_->HandleSubmitMergeAndSync(NULL);
+  test_window_->flow()->flow_handler_->HandleSubmitMergeAndSync(NULL);
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_EQ(SyncSetupWizard::MERGE_AND_SYNC,
-            test_window_->flow_->current_state_);
+            test_window_->flow()->current_state_);
   EXPECT_EQ(std::string(), service_->username_);
   EXPECT_EQ(std::string(), service_->password_);
   EXPECT_TRUE(service_->user_accepted_merge_and_sync_);
@@ -249,12 +267,13 @@ TEST_F(SyncSetupWizardTest, InitialStepMergeAndSync) {
   wizard_->Step(SyncSetupWizard::DONE);  // No merge and sync.
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
-  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->current_state_);
 }
 
 TEST_F(SyncSetupWizardTest, DialogCancelled) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  test_window_->flow_->OnDialogClosed("");
+  // Simulate the user closing the dialog.
+  test_window_->CloseDialog();
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_TRUE(service_->user_cancelled_dialog_);
   EXPECT_EQ(std::string(), service_->username_);
@@ -268,7 +287,7 @@ TEST_F(SyncSetupWizardTest, DialogCancelled) {
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 
   wizard_->Step(SyncSetupWizard::MERGE_AND_SYNC);
-  test_window_->flow_->OnDialogClosed("");
+  test_window_->CloseDialog();
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_TRUE(service_->user_cancelled_dialog_);
   EXPECT_EQ(std::string(), service_->username_);
@@ -287,19 +306,19 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
 
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   wizard_->Step(SyncSetupWizard::MERGE_AND_SYNC);
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::DONE);
-  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow_->current_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::MERGE_AND_SYNC);
   EXPECT_EQ(SyncSetupWizard::MERGE_AND_SYNC,
-            test_window_->flow_->current_state_);
+            test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_EQ(SyncSetupWizard::MERGE_AND_SYNC,
-            test_window_->flow_->current_state_);
+            test_window_->flow()->current_state_);
 }
 
 TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
@@ -307,7 +326,7 @@ TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::MERGE_AND_SYNC);
   wizard_->Step(SyncSetupWizard::DONE);
-  test_window_->flow_->OnDialogClosed("");
+  test_window_->CloseDialog();
   EXPECT_FALSE(wizard_->IsVisible());
   EXPECT_TRUE(service_->profile()->GetPrefs()->GetBoolean(
       prefs::kSyncHasSetupCompleted));
@@ -320,11 +339,11 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::MERGE_AND_SYNC);
   wizard_->Step(SyncSetupWizard::DONE);
-  test_window_->flow_->OnDialogClosed("");
+  test_window_->CloseDialog();
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, test_window_->flow_->end_state_);
+  EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, test_window_->flow()->end_state_);
 
   service_->set_auth_state(kTestUser, AUTH_ERROR_INVALID_GAIA_CREDENTIALS);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
@@ -344,4 +363,4 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
 }
 
 #endif  // CHROME_PERSONALIZATION
-#endif
+

@@ -19,7 +19,7 @@ class TestBrowserWindow : public BrowserWindow {
       : tab_strip_(browser->tabstrip_model()) {
     tab_strip_.InitTabStripButtons();
   }
-  ~TestBrowserWindow() {}
+  virtual ~TestBrowserWindow() {}
 
   virtual void Init() {}
   virtual void Show() {}
