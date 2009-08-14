@@ -5,4 +5,10 @@
 #include "chrome/browser/cocoa/toolbar_view.h"
 
 @implementation ToolbarView
+
+// Prevent mouse down events from moving the parent window around.
+- (BOOL)mouseDownCanMoveWindow {
+  return NO;
+}
+
 @end

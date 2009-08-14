@@ -12,8 +12,7 @@
 // this time it only draws a gradient.  Future changes (e.g. themes)
 // may require new functionality here.
 
-@interface ToolbarView : BackgroundGradientView {
-}
+@interface ToolbarView : BackgroundGradientView
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TOOLBAR_VIEW_H_
