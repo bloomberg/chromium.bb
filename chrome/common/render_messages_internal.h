@@ -896,10 +896,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               FilePath /* filename */,
                               std::string /* actual mime type for url */)
 
-  // Retrieve the data directory associated with the renderer's profile.
-  IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetDataDir,
-                              std::wstring /* data_dir_retval */)
-
   // Allows a chrome plugin loaded in a renderer process to send arbitrary
   // data to an instance of the same plugin loaded in the browser process.
   IPC_MESSAGE_CONTROL2(ViewHostMsg_PluginMessage,

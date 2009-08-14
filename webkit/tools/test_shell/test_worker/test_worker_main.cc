@@ -208,8 +208,7 @@ bool SpellCheckWord(const wchar_t* word, int word_len,
   return true;
 }
 
-bool GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
-  return false;
+void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
 }
 
 bool IsPluginRunningInRendererProcess() {

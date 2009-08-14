@@ -40,8 +40,10 @@ PluginService::PluginService()
   // Load the one specified on the command line as well.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   std::wstring path = command_line->GetSwitchValue(switches::kLoadPlugin);
-  if (!path.empty())
-    NPAPI::PluginList::AddExtraPluginPath(FilePath::FromWStringHack(path));
+  if (!path.empty()) {
+    NPAPI::PluginList::Singleton()->AddExtraPluginPath(
+        FilePath::FromWStringHack(path));
+  }
 
 #if defined(OS_WIN)
   hkcu_key_.Create(
@@ -75,12 +77,6 @@ PluginService::~PluginService() {
 #endif
 }
 
-void PluginService::GetPlugins(bool refresh,
-                               std::vector<WebPluginInfo>* plugins) {
-  AutoLock lock(lock_);
-  NPAPI::PluginList::Singleton()->GetPlugins(refresh, plugins);
-}
-
 void PluginService::LoadChromePlugins(
     ResourceDispatcherHost* resource_dispatcher_host) {
   resource_dispatcher_host_ = resource_dispatcher_host;
@@ -88,12 +84,10 @@ void PluginService::LoadChromePlugins(
 }
 
 void PluginService::SetChromePluginDataDir(const FilePath& data_dir) {
-  AutoLock lock(lock_);
   chrome_plugin_data_dir_ = data_dir;
 }
 
 const FilePath& PluginService::GetChromePluginDataDir() {
-  AutoLock lock(lock_);
   return chrome_plugin_data_dir_;
 }
 
@@ -132,7 +126,8 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
     return plugin_host;
 
   WebPluginInfo info;
-  if (!GetPluginInfoByPath(plugin_path, &info)) {
+  if (!NPAPI::PluginList::Singleton()->GetPluginInfoByPath(
+          plugin_path, &info)) {
     DCHECK(false);
     return NULL;
   }
@@ -179,7 +174,6 @@ FilePath PluginService::GetPluginPath(const GURL& url,
                                       const std::string& mime_type,
                                       const std::string& clsid,
                                       std::string* actual_mime_type) {
-  AutoLock lock(lock_);
   bool allow_wildcard = true;
   WebPluginInfo info;
   if (NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, clsid,
@@ -192,23 +186,6 @@ FilePath PluginService::GetPluginPath(const GURL& url,
   return FilePath();
 }
 
-bool PluginService::GetPluginInfoByPath(const FilePath& plugin_path,
-                                        WebPluginInfo* info) {
-  AutoLock lock(lock_);
-  return NPAPI::PluginList::Singleton()->GetPluginInfoByPath(plugin_path, info);
-}
-
-bool PluginService::HavePluginFor(const std::string& mime_type,
-                                  bool allow_wildcard) {
-  AutoLock lock(lock_);
-
-  GURL url;
-  WebPluginInfo info;
-  return NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, "",
-                                                       allow_wildcard, &info,
-                                                       NULL);
-}
-
 void PluginService::OnWaitableEventSignaled(base::WaitableEvent* waitable_event) {
 #if defined(OS_WIN)
   if (waitable_event == hkcu_event_.get()) {
@@ -217,8 +194,7 @@ void PluginService::OnWaitableEventSignaled(base::WaitableEvent* waitable_event)
     hklm_key_.StartWatching();
   }
 
-  AutoLock lock(lock_);
-  NPAPI::PluginList::ResetPluginsLoaded();
+  NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
 
   for (RenderProcessHost::iterator it = RenderProcessHost::begin();
        it != RenderProcessHost::end(); ++it) {
@@ -242,9 +218,8 @@ void PluginService::Observe(NotificationType type,
            extension != extensions->end(); ++extension) {
         for (size_t i = 0; i < (*extension)->plugins().size(); ++i ) {
           const Extension::PluginInfo& plugin = (*extension)->plugins()[i];
-          AutoLock lock(lock_);
-          NPAPI::PluginList::ResetPluginsLoaded();
-          NPAPI::PluginList::AddExtraPluginPath(plugin.path);
+          NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
+          NPAPI::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
           if (!plugin.is_public)
             private_plugins_[plugin.path] = (*extension)->url();
         }

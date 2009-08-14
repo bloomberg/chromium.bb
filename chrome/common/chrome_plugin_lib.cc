@@ -42,12 +42,6 @@ static PluginMap* g_loaded_libs;
 static PlatformThreadId g_plugin_thread_id = 0;
 static MessageLoop* g_plugin_thread_loop = NULL;
 
-#ifdef GEARS_STATIC_LIB
-// defined in gears/base/chrome/module_cr.cc
-CPError STDCALL Gears_CP_Initialize(CPID id, const CPBrowserFuncs *bfuncs,
-                                    CPPluginFuncs *pfuncs);
-#endif
-
 static bool IsSingleProcessMode() {
   // We don't support ChromePlugins in single-process mode.
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
@@ -120,9 +114,7 @@ void ChromePluginLib::RegisterPluginsWithNPAPI() {
   FilePath path;
   if (!PathService::Get(chrome::FILE_GEARS_PLUGIN, &path))
     return;
-  // Note: we can only access the NPAPI list because the PluginService has done
-  // the locking for us.  We should not touch it anywhere else.
-  NPAPI::PluginList::AddExtraPluginPath(path);
+  NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
 }
 
 static void LogPluginLoadTime(const TimeDelta &time) {
@@ -253,13 +245,6 @@ bool ChromePluginLib::Load() {
   return false;
 #else
   DCHECK(module_ == 0);
-#ifdef GEARS_STATIC_LIB
-  FilePath path;
-  if (filename_.BaseName().value().find(FILE_PATH_LITERAL("gears")) == 0) {
-    CP_Initialize_ = &Gears_CP_Initialize;
-    return true;
-  }
-#endif
 
   module_ = LoadLibrary(filename_.value().c_str());
   if (module_ == 0)
