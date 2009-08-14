@@ -900,18 +900,12 @@ BUG992321 LINUX WIN : LayoutTests/svg/custom/path-textPath-simulation.svg = FAIL
 // The crash started occuring after the WebKit merge 43242:43321
 BUG992321 : LayoutTests/svg/custom/stroke-width-click.svg = FAIL CRASH
 
-// These tests all pass simplified diff, but fail full text diffs due to
-// positions and/or widths that deviate from Apple's expectations by varying
-// degrees. These are almost certainly nonbugs, but won't be rebased until
-// we can say for sure.
 // The red marker is not drawing the same way as the mac.
 BUG992321 LINUX WIN : LayoutTests/svg/custom/marker-changes.svg = PASS FAIL
+
 // 11 numbers differ, by an absolute total of 4.69
 BUG992321 : LayoutTests/svg/custom/use-on-symbol-inside-pattern.svg = FAIL
-// There are gaps in the whiskers of the tiger
-BUG992321 LINUX WIN : LayoutTests/svg/hixie/perf/001.xml = FAIL
-BUG992321 LINUX WIN : LayoutTests/svg/hixie/perf/002.xml = FAIL
-// 1 numbers differ, by an absolute total of 1.00
+
 BUG992321 LINUX WIN : LayoutTests/svg/hixie/text/003.html = FAIL
 
 // SVG combined with font metrics.
@@ -2418,10 +2412,6 @@ BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-ch
 // New test added in WebKit 44550:
 BUG13767 : LayoutTests/fast/js/JSON-stringify.html = FAIL TIMEOUT
 
-// WebKit 44646:44668
-BUG14061 WIN LINUX : LayoutTests/svg/filters/subRegion-one-effect.svg = FAIL
-BUG14061 WIN LINUX : LayoutTests/svg/filters/subRegion-two-effects.svg = FAIL
-
 BUG14207 WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
 
 // Newly added test http://trac.webkit.org/changeset/44816
@@ -2429,8 +2419,6 @@ BUG14673 : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.h
 
 // WebKit 44837:44872
 BUG14772 WIN LINUX : LayoutTests/fast/canvas/image-object-in-canvas.html = FAIL
-BUG14771 WIN LINUX : LayoutTests/svg/batik/filters/feTile.svg = FAIL
-BUG14771 WIN LINUX : LayoutTests/svg/filters/feTile.svg = FAIL
 
 // Need investigation: test shell crashers.
 BUG14752 LINUX : LayoutTests/http/tests/cache/subresource-expiration.html = CRASH PASS
@@ -2472,10 +2460,11 @@ BUG15270 : LayoutTests/fast/js/excessive-comma-usage.html = FAIL
 BUG15403 SKIP : LayoutTests/http/tests/security/clipboard/clipboard-file-access.html = FAIL
 
 // WebKit 45203:45247
-BUG15460 : LayoutTests/media/audio-controls-rendering.html = FAIL
 BUG15460 : LayoutTests/media/video-controls-rendering.html = FAIL
-BUG15460 : LayoutTests/media/video-empty-source.html = FAIL
 BUG15460 : LayoutTests/media/video-zoom-controls.html = FAIL
+// Already rebaselined for Linux and Windows, may just need rebaseline
+BUG15460 MAC : LayoutTests/media/audio-controls-rendering.html = FAIL
+BUG15460 MAC : LayoutTests/media/video-empty-source.html = FAIL
 
 // WebKit 45247:45270
 BUG15478 SKIP : LayoutTests/fast/frames/viewsource-on-image-file.html = FAIL
