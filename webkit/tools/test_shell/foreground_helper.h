@@ -38,16 +38,16 @@ class ForegroundHelper : public base::WindowImpl {
     // be in the foreground and allowed to move the target window
     // into the foreground too.
 
-    set_window_ex_style(WS_POPUP);
+    set_window_style(WS_POPUP);
     Init(NULL, gfx::Rect());
 
     static const int hotkey_id = 0x0000baba;
 
     // Store the target window into our USERDATA for use in our
     // HotKey handler.
-    SetWindowLongPtr(GetNativeView(), GWLP_USERDATA,
+    SetWindowLongPtr(hwnd(), GWLP_USERDATA,
                      reinterpret_cast<ULONG_PTR>(window));
-    RegisterHotKey(GetNativeView(), hotkey_id, 0, VK_F22);
+    RegisterHotKey(hwnd(), hotkey_id, 0, VK_F22);
 
     // If the calling thread is not yet a UI thread, call PeekMessage
     // to ensure creation of its message queue.
@@ -72,8 +72,8 @@ class ForegroundHelper : public base::WindowImpl {
         break;
     }
 
-    UnregisterHotKey(GetNativeView(), hotkey_id);
-    DestroyWindow();
+    UnregisterHotKey(hwnd(), hotkey_id);
+    DestroyWindow(hwnd());
 
     return S_OK;
   }
@@ -83,7 +83,7 @@ class ForegroundHelper : public base::WindowImpl {
                    WPARAM wparam,
                    LPARAM lparam,
                    BOOL& handled) {
-    HWND window = reinterpret_cast<HWND>(GetWindowLongPtr(GetNativeView(),
+    HWND window = reinterpret_cast<HWND>(GetWindowLongPtr(hwnd(),
                                                           GWLP_USERDATA));
     SetForegroundWindow(window);
     return 1;

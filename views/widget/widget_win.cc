@@ -27,7 +27,7 @@ namespace views {
 static const wchar_t* const kRootViewWindowProperty = L"__ROOT_VIEW__";
 
 bool SetRootViewForHWND(HWND hwnd, RootView* root_view) {
-  return ::SetProp(hwnd, kRootViewWindowProperty, root_view) ? true : false;
+  return SetProp(hwnd, kRootViewWindowProperty, root_view) ? true : false;
 }
 
 RootView* GetRootViewForHWND(HWND hwnd) {
@@ -36,7 +36,7 @@ RootView* GetRootViewForHWND(HWND hwnd) {
 
 NativeControlWin* GetNativeControlWinForHWND(HWND hwnd) {
   return reinterpret_cast<NativeControlWin*>(
-      ::GetProp(hwnd, NativeControlWin::kNativeControlWinKey));
+      GetProp(hwnd, NativeControlWin::kNativeControlWinKey));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
   default_theme_provider_.reset(new DefaultThemeProvider());
 
-  SetWindowSupportsRerouteMouseWheel(GetNativeView());
+  SetWindowSupportsRerouteMouseWheel(hwnd());
 
   drop_target_ = new DropTargetWin(root_view_.get());
 
@@ -87,7 +87,7 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   }
 
   // Sets the RootView as a property, so the automation can introspect windows.
-  SetRootViewForHWND(GetNativeView(), root_view_.get());
+  SetRootViewForHWND(hwnd(), root_view_.get());
 
   MessageLoopForUI::current()->AddObserver(this);
 
@@ -102,14 +102,14 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
   // This message initializes the window so that focus border are shown for
   // windows.
-  ::SendMessage(GetNativeView(),
-                WM_CHANGEUISTATE,
-                MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
-                0);
+  SendMessage(hwnd(),
+              WM_CHANGEUISTATE,
+              MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
+              0);
 
   // Bug 964884: detach the IME attached to this window.
   // We should attach IMEs only when we need to input CJK strings.
-  ::ImmAssociateContextEx(GetNativeView(), NULL, 0);
+  ImmAssociateContextEx(hwnd(), NULL, 0);
 }
 
 void WidgetWin::SetContentsView(View* view) {
@@ -126,7 +126,7 @@ void WidgetWin::GetBounds(gfx::Rect* out, bool including_frame) const {
 
   GetClientRect(&crect);
   POINT p = {0, 0};
-  ::ClientToScreen(GetNativeView(), &p);
+  ClientToScreen(hwnd(), &p);
   out->SetRect(crect.left + p.x, crect.top + p.y,
                crect.Width(), crect.Height());
 }
@@ -164,7 +164,7 @@ void WidgetWin::CloseNow() {
   // we need to check to see if we're still a window before trying to destroy
   // ourself.
   if (IsWindow())
-    DestroyWindow();
+    DestroyWindow(hwnd());
 }
 
 void WidgetWin::Show() {
@@ -185,7 +185,7 @@ void WidgetWin::Hide() {
 }
 
 gfx::NativeView WidgetWin::GetNativeView() const {
-  return WindowImpl::GetNativeView();
+  return WindowImpl::hwnd();
 }
 
 static BOOL CALLBACK EnumChildProcForRedraw(HWND hwnd, LPARAM lparam) {
@@ -212,10 +212,10 @@ void WidgetWin::PaintNow(const gfx::Rect& update_rect) {
       // We're transparent. Need to force painting to occur from our parent.
       CRect parent_update_rect = update_rect.ToRECT();
       POINT location_in_parent = { 0, 0 };
-      ClientToScreen(GetNativeView(), &location_in_parent);
-      ::ScreenToClient(GetParent(), &location_in_parent);
+      ClientToScreen(hwnd(), &location_in_parent);
+      ScreenToClient(GetParent(), &location_in_parent);
       parent_update_rect.OffsetRect(location_in_parent);
-      ::RedrawWindow(GetParent(), parent_update_rect, NULL,
+      RedrawWindow(GetParent(), parent_update_rect, NULL,
                      RDW_UPDATENOW | RDW_INVALIDATE | RDW_ALLCHILDREN);
     } else {
       // Paint child windows that are in a different process asynchronously.
@@ -230,11 +230,11 @@ void WidgetWin::PaintNow(const gfx::Rect& update_rect) {
       gfx::Rect invalid_screen_rect = update_rect;
       invalid_screen_rect.Offset(screen_rect.x(), screen_rect.y());
 
-      ::RedrawWindow(GetNativeView(), &update_rect.ToRECT(), NULL,
-                     RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
+      RedrawWindow(hwnd(), &update_rect.ToRECT(), NULL,
+                   RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
 
       LPARAM lparam = reinterpret_cast<LPARAM>(&invalid_screen_rect);
-      EnumChildWindows(GetNativeView(), EnumChildProcForRedraw, lparam);
+      EnumChildWindows(hwnd(), EnumChildProcForRedraw, lparam);
     }
     // As we were created with a style of WS_CLIPCHILDREN redraw requests may
     // result in an empty paint rect in WM_PAINT (this'll happen if a
@@ -261,15 +261,15 @@ RootView* WidgetWin::GetRootView() {
 
 Widget* WidgetWin::GetRootWidget() const {
   return reinterpret_cast<WidgetWin*>(
-      win_util::GetWindowUserData(GetAncestor(GetNativeView(), GA_ROOT)));
+      win_util::GetWindowUserData(GetAncestor(hwnd(), GA_ROOT)));
 }
 
 bool WidgetWin::IsVisible() const {
-  return !!::IsWindowVisible(GetNativeView());
+  return !!::IsWindowVisible(hwnd());
 }
 
 bool WidgetWin::IsActive() const {
-  return win_util::IsWindowActive(GetNativeView());
+  return win_util::IsWindowActive(hwnd());
 }
 
 void WidgetWin::GenerateMousePressedForView(View* view,
@@ -301,11 +301,11 @@ ThemeProvider* WidgetWin::GetThemeProvider() const {
 }
 
 Window* WidgetWin::GetWindow() {
-  return GetWindowImpl(GetNativeView());
+  return GetWindowImpl(hwnd());
 }
 
 const Window* WidgetWin::GetWindow() const {
-  return GetWindowImpl(GetNativeView());
+  return GetWindowImpl(hwnd());
 }
 
 FocusManager* WidgetWin::GetFocusManager() {
@@ -332,7 +332,7 @@ void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
     return;
 
   use_layered_buffer_ = use_layered_buffer;
-  if (!GetNativeView())
+  if (!hwnd())
     return;
 
   if (use_layered_buffer_) {
@@ -440,11 +440,11 @@ void WidgetWin::OnClose() {
 
 void WidgetWin::OnDestroy() {
   if (drop_target_.get()) {
-    RevokeDragDrop(GetNativeView());
+    RevokeDragDrop(hwnd());
     drop_target_ = NULL;
   }
 
-  RemoveProp(GetNativeView(), kRootViewWindowProperty);
+  RemoveProp(hwnd(), kRootViewWindowProperty);
 }
 
 LRESULT WidgetWin::OnEraseBkgnd(HDC dc) {
@@ -548,7 +548,7 @@ LRESULT WidgetWin::OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param) {
   // Reroute the mouse-wheel to the window under the mouse pointer if
   // applicable.
   if (message == WM_MOUSEWHEEL &&
-      views::RerouteMouseWheel(GetNativeView(), w_param, l_param)) {
+      views::RerouteMouseWheel(hwnd(), w_param, l_param)) {
     return 0;
   }
 
@@ -598,7 +598,7 @@ LRESULT WidgetWin::OnNCMouseLeave(UINT uMsg, WPARAM w_param, LPARAM l_param) {
 LRESULT WidgetWin::OnNCMouseMove(UINT flags, const CPoint& point) {
   // NC points are in screen coordinates.
   CPoint temp = point;
-  MapWindowPoints(HWND_DESKTOP, GetNativeView(), &temp, 1);
+  MapWindowPoints(HWND_DESKTOP, hwnd(), &temp, 1);
   ProcessMouseMoved(temp, 0, true);
 
   // We need to process this message to stop Windows from drawing the window
@@ -634,7 +634,7 @@ LRESULT WidgetWin::OnNotify(int w_param, NMHDR* l_param) {
 }
 
 void WidgetWin::OnPaint(HDC dc) {
-  root_view_->OnPaint(GetNativeView());
+  root_view_->OnPaint(hwnd());
 }
 
 void WidgetWin::OnRButtonDown(UINT flags, const CPoint& point) {
@@ -681,7 +681,7 @@ void WidgetWin::TrackMouseEvents(DWORD mouse_tracking_flags) {
     TRACKMOUSEEVENT tme;
     tme.cbSize = sizeof(tme);
     tme.dwFlags = mouse_tracking_flags;
-    tme.hwndTrack = GetNativeView();
+    tme.hwndTrack = hwnd();
     tme.dwHoverTime = 0;
     TrackMouseEvent(&tme);
   } else if (mouse_tracking_flags != active_mouse_tracking_flags_) {
@@ -848,8 +848,8 @@ void WidgetWin::UpdateWindowFromContents(HDC dib_dc) {
     CPoint window_position = wr.TopLeft();
 
     BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
-    ::UpdateLayeredWindow(
-        GetNativeView(), NULL, &window_position, &size, dib_dc, &zero_origin,
+    UpdateLayeredWindow(
+        hwnd(), NULL, &window_position, &size, dib_dc, &zero_origin,
         RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
   }
 }
@@ -904,7 +904,7 @@ bool ProcessNativeControlMessage(UINT message,
 }
 
 LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
-  HWND window = GetNativeView();
+  HWND window = hwnd();
   LRESULT result = 0;
 
   // First allow messages sent by child controls to be processed directly by

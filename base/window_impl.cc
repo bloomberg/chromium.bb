@@ -96,7 +96,7 @@ class ClassRegistrar {
   typedef std::list<RegisteredClass> RegisteredClasses;
   RegisteredClasses registered_classes_;
 
-  // Counter of how many classes have ben registered so far.
+  // Counter of how many classes have been registered so far.
   int registered_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ClassRegistrar);
@@ -136,7 +136,7 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
     height = bounds.height();
   }
 
-  hwnd_ = CreateWindowEx(window_ex_style_, GetWindowClassName().c_str(), L"",
+  hwnd_ = CreateWindowEx(window_ex_style_, GetWindowClassName().c_str(), NULL,
                          window_style_, x, y, width, height,
                          parent, NULL, NULL, this);
   DCHECK(hwnd_);
@@ -145,27 +145,17 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
   DCHECK(win_util::GetWindowUserData(hwnd_) == this);
 }
 
-gfx::NativeView WindowImpl::GetNativeView() const {
-  return hwnd_;
-}
-
 HICON WindowImpl::GetDefaultWindowIcon() const {
   return NULL;
 }
 
-BOOL WindowImpl::DestroyWindow() {
-  DCHECK(::IsWindow(GetNativeView()));
-  return ::DestroyWindow(GetNativeView());
-}
-
 LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
-  HWND window = GetNativeView();
   LRESULT result = 0;
 
   // Handle the message if it's in our message map; otherwise, let the system
   // handle it.
-  if (!ProcessWindowMessage(window, message, w_param, l_param, result))
-    result = DefWindowProc(window, message, w_param, l_param);
+  if (!ProcessWindowMessage(hwnd_, message, w_param, l_param, result))
+    result = DefWindowProc(hwnd_, message, w_param, l_param);
 
   return result;
 }

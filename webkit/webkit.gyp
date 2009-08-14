@@ -1502,6 +1502,9 @@
           ],
         }, {  # else: OS=="win"
           'sources/': [['exclude', '_posix\\.cc$']],
+          'include_dirs': [
+            '../chrome/third_party/wtl/include',
+          ],
           'dependencies': [
             '../build/win/system.gyp:cygwin',
             'activex_shim/activex_shim.gyp:activex_shim',
