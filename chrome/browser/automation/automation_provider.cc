@@ -1652,8 +1652,9 @@ void AutomationProvider::WindowSimulateDrag(int handle,
                                             bool press_escape_en_route,
                                             IPC::Message* reply_message) {
   bool succeeded = false;
-  if (window_tracker_->ContainsHandle(handle) && (drag_path.size() > 1)) {
-    gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  if (browser_tracker_->ContainsHandle(handle) && (drag_path.size() > 1)) {
+    gfx::NativeWindow window =
+        browser_tracker_->GetResource(handle)->window()->GetNativeHandle();
     succeeded = true;
 
     UINT down_message = 0;
