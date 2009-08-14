@@ -43,6 +43,7 @@
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
                                    uint32_t             new_prog_ctr) {
   struct NaClApp  *nap;
+  struct NaClThreadContext  *context;
   /*
    * Save service runtime segment registers; fs/gs is used for TLS
    * on Windows and Linux respectively, so will change.  The others
@@ -61,26 +62,19 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
    * to %esp, then pushes the thread ID (LDT index) onto the stack as
    * argument to NaClSyscallCSegHook.  See nacl_syscall.S.
    */
-  natp->sys.stack_ptr = (NaClGetEsp() & ~0xf) + 4;
-
+#if NACL_BUILD_SUBARCH == 64
+  natp->sys.stack_ptr.ptr_64 = (NaClGetEsp() & ~0xf) + 4;
+#else
+  natp->sys.stack_ptr.ptr_32.ptr = (NaClGetEsp() & ~0xf) + 4;
+#endif
   nap = natp->nap;
+  context = &natp->user;
+  context->spring_addr = NaClSysToUser(nap,
+                                       nap->mem_start + nap->springboard_addr);
+  context->new_eip = new_prog_ctr;
+  context->sysret = 0; /* %eax not used to return */
 
-  NaClSwitch(
-      new_prog_ctr,
-      natp->user.frame_ptr,
-      natp->user.edi,
-      natp->user.esi,
-      natp->user.ebx,
-      (uint32_t) natp->user.gs,
-      (uint32_t) natp->user.fs,
-      (uint32_t) natp->user.es,
-      NaClSysToUser(nap, nap->mem_start + nap->springboard_addr),
-      (uint32_t) natp->user.cs,
-      /* rest popped by NaCl_springboard */
-      (uint32_t) natp->user.ds,
-      0,  /* %eax not used to return */
-      natp->user.stack_ptr,
-      (uint32_t) natp->user.ss);
+  NaClSwitch(context);
 }
 
 
@@ -90,22 +84,14 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
                               uint32_t             new_prog_ctr) {
   struct NaClApp  *nap;
+  struct NaClThreadContext  *context;
 
   nap = natp->nap;
-  NaClSwitch(
-      new_prog_ctr,
-      natp->user.frame_ptr,
-      natp->user.edi,
-      natp->user.esi,
-      natp->user.ebx,
-      (uint32_t) natp->user.gs,
-      (uint32_t) natp->user.fs,
-      (uint32_t) natp->user.es,
-      NaClSysToUser(nap, nap->mem_start + nap->springboard_addr),
-      (uint32_t) natp->user.cs,
-      /* rest popped by NaCl_springboard */
-      (uint32_t) natp->user.ds,
-      natp->sysret,
-      natp->user.stack_ptr,
-      (uint32_t) natp->user.ss);
+  context = &natp->user;
+  context->spring_addr = NaClSysToUser(nap,
+                                       nap->mem_start + nap->springboard_addr);
+  context->new_eip = new_prog_ctr;
+  context->sysret = natp->sysret;
+
+  NaClSwitch(context);
 }

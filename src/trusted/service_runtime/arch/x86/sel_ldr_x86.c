@@ -43,11 +43,7 @@
  * main, or something that main invokes early.
  */
 void NaClThreadStartupCheck() {
-#if NACL_BUILD_SUBARCH == 64
-  CHECK(sizeof(struct NaClThreadContext) == 48);
-#else
-  CHECK(sizeof(struct NaClThreadContext) == 36);
-#endif
+  CHECK(sizeof(struct NaClThreadContext) == 64);
 }
 
 

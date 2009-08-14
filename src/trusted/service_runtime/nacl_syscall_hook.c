@@ -96,11 +96,18 @@ NORETURN void NaClSyscallCSegHook(int32_t ldt_ix) {
   uint32_t                  tramp_ret;
   uint32_t                  aligned_tramp_ret;
   uint32_t                  sysnum;
+  uintptr_t                 stack_ptr;
+
+#if NACL_BUILD_SUBARCH == 64
+  stack_ptr = (uintptr_t) user->stack_ptr.ptr_64;
+#else
+  stack_ptr = (uintptr_t) user->stack_ptr.ptr_32.ptr;
+#endif
 
   /* esp must be okay for control to have gotten here */
 #if !BENCHMARK
   NaClLog(4, "Entered NaClSyscallCSegHook\n");
-  NaClLog(4, "user sp %"PRIxPTR"\n", user->stack_ptr);
+  NaClLog(4, "user sp %"PRIxPTR"\n", stack_ptr);
 #endif
 
   /*
@@ -110,7 +117,7 @@ NORETURN void NaClSyscallCSegHook(int32_t ldt_ix) {
    *  esp+8:  retaddr from syscall wrapper
    *  esp+c:  ...
    */
-  tramp_addr = NaClUserToSys(nap, user->stack_ptr);
+  tramp_addr = NaClUserToSys(nap, stack_ptr);
   tramp_ret = *(uint32_t *) tramp_addr;
   tramp_ret = NaClUserToSys(nap, tramp_ret);
   /*
@@ -149,7 +156,12 @@ NORETURN void NaClSyscallCSegHook(int32_t ldt_ix) {
     tramp_ret = aligned_tramp_ret;
   }
 
-  user->stack_ptr += NACL_CALL_STEP; /* call, lcall */
+#if NACL_BUILD_SUBARCH == 64
+  user->stack_ptr.ptr_64 += NACL_CALL_STEP; /* call, lcall */
+#else
+  user->stack_ptr.ptr_32.ptr += NACL_CALL_STEP; /* call, lcall */
+#endif
+
   if (sysnum >= NACL_MAX_SYSCALLS) {
     NaClLog(2, "INVALID system call %d\n", sysnum);
     natp->sysret = -NACL_ABI_EINVAL;
@@ -169,7 +181,7 @@ NORETURN void NaClSyscallCSegHook(int32_t ldt_ix) {
           sysnum, natp->sysret, natp->sysret);
 
   NaClLog(4, "return target 0x%08"PRIx32"\n", tramp_ret);
-  NaClLog(4, "user sp %"PRIxPTR"\n", user->stack_ptr);
+  NaClLog(4, "user sp %"PRIxPTR"\n", stack_ptr);
 #endif
   if (-1 == NaClArtificialDelay) {
     char *delay = getenv("NACLDELAY");

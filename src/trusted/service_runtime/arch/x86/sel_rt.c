@@ -73,8 +73,13 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->ebx = 0;
   ntcp->esi = 0;
   ntcp->edi = 0;
-  ntcp->frame_ptr = 0;
-  ntcp->stack_ptr = stack_ptr;
+#if NACL_TARGET_SUBARCH == 64
+  ntcp->frame_ptr.ptr_64 = 0;
+  ntcp->stack_ptr.ptr_64 = stack_ptr;
+#else
+  ntcp->frame_ptr.ptr_32.ptr = 0;
+  ntcp->stack_ptr.ptr_32.ptr = stack_ptr;
+#endif
   ntcp->prog_ctr = prog_ctr;
 
   ntcp->cs = nap->code_seg_sel;

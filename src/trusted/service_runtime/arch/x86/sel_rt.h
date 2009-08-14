@@ -88,23 +88,47 @@ uint32_t NaClGetEbx(void);
  *
  * We assume that the following is packed.  This is true for gcc and
  * msvc for x86, but we will include a check that sizeof(struct
- * NaClThreadContext) == 9*4 == 36 bytes. (32-bit mode)
+ * NaClThreadContext) == 64 bytes. (32-bit and 64-bit mode)
  */
+
+/* 8-bytes */
+union PtrAbstraction {
+  uint64_t ptr_64;
+  struct {
+    uint32_t ptr_padding;
+    uint32_t ptr;
+  } ptr_32;
+};
+
 struct NaClThreadContext {
-  uint32_t    ebx, esi, edi;  /* ecx, edx, eax, eflags not saved */
-  /*          0    4    8 */
-  uintptr_t   frame_ptr, stack_ptr;
-  /*          c          10 */
-  /* 64-bit   10         18 (there is a padding at 0xc - 0x10) */
-  uint32_t    prog_ctr; /* return addr */
-  /*          14 */
-  /* 64-bit   20 */
-  uint16_t    cs, ds, es, fs, gs, ss;
-  /*          18  1a  1c  1e  20  22 */
-  /* 64-bit   24  26  28  2a  2c  2e */
+  /* ecx, edx, eax, eflags not saved */
+  uint32_t    ebx, esi, edi, prog_ctr; /* return addr */
+  /*          0    4    8    c */
+  union PtrAbstraction frame_ptr;
+  /*          10 */
+  union PtrAbstraction stack_ptr;
+  /*          18 */
+  uint16_t    ss; /* stack_ptr and ss must be adjacent */
+  /*          20 */
+  char        dummy[6];
   /*
    * gs is our TLS base in the app; on the host side it's either fs or gs.
    */
+  uint16_t    ds, es, fs, gs;
+  /*          28  2a  2c  2e */
+  /*
+   * spring_addr, sys_ret and new_eip are not a part of the thread's
+   * register set, but are needed by NaClSwitch. By including them
+   * here, the two use the same interface.
+   */
+  uint32_t    new_eip;
+  /*          30 */
+  uint32_t    sysret;
+  /*          34 */
+  uint32_t    spring_addr;
+  /*          38 */
+  uint16_t    cs; /* spring_addr and cs must be adjacent */
+  /*          3c */
 };
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_SEL_RT_H__ */

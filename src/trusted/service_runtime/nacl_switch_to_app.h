@@ -42,20 +42,9 @@ EXTERN_C_BEGIN
 
 struct NaClAppThread;
 
-extern NORETURN void NaClSwitch(uint32_t prog_ctr,
-                                uint32_t ebp,
-                                uint32_t edi,
-                                uint32_t esi,
-                                uint32_t ebx,
-                                uint32_t gs,  /* high 16 bits ignored */
-                                uint32_t fs,
-                                uint32_t es,
-                                uint32_t spring_addr,
-                                uint32_t cs,
-                                uint32_t ds,
-                                uint32_t eax,
-                                uint32_t ss,
-                                uint32_t stack_ptr);
+struct NaclThreadContext;
+
+extern NORETURN void NaClSwitch(struct NaClThreadContext *context);
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
                                    uint32_t             new_prog_ctr);

@@ -35,26 +35,26 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 
-	/*
-	 * Assembly code template.  This is linked into the service runtime
-	 * but is unused as code -- it is used as data to be patched into
-	 * a NaCl app's address space as a "hidden" part of its trampoline
-	 * region.
-	 */
+        /*
+         * Assembly code template.  This is linked into the service runtime
+         * but is unused as code -- it is used as data to be patched into
+         * a NaCl app's address space as a "hidden" part of its trampoline
+         * region.
+         */
 
-	.globl	IDENTIFIER(NaCl_springboard)
-	.globl	IDENTIFIER(NaCl_springboard_end)
+        .globl  IDENTIFIER(NaCl_springboard)
+        .globl  IDENTIFIER(NaCl_springboard_end)
 
-	/*
-	 * NaCl_pringboard is used for syscall return and any time we want
-	 * to do an upcall into NaCl application.
-	 */
+        /*
+         * NaCl_pringboard is used for syscall return and any time we want
+         * to do an upcall into NaCl application.
+         */
 
 IDENTIFIER(NaCl_springboard):
-	hlt  /* one byte */
-	addl	$8, %esp  /* springboard addr, cs */
-	popl	%ds
-	popl	%eax  /* syscall return value, if any, from trusted stack */
-	lss	(%esp), %esp
-	jmp	*%edx
+        hlt  /* one byte */
+        /* syscall return value, if any, from trusted stack */
+        mov     0x34(%ecx), %eax /* sysret */
+        lss     0x1c(%ecx), %esp /* stack_ptr.ptr_32.ptr */
+        mov     0x28(%ecx), %ds /* ds */
+        jmp     *%edx
 IDENTIFIER(NaCl_springboard_end):
