@@ -303,7 +303,9 @@ namespace WebKit {
 
         virtual WebRange markedRange() const = 0;
 
-        // See EditorCommand.cpp for the list of supported commands.
+        // Supports commands like Undo, Redo, Cut, Copy, Paste, SelectAll,
+        // Unselect, etc. See EditorCommand.cpp for the full list of supported
+        // commands.
         virtual bool executeCommand(const WebString&) = 0;
         virtual bool executeCommand(const WebString&, const WebString& value) = 0;
         virtual bool isCommandEnabled(const WebString&) const = 0;
@@ -315,8 +317,6 @@ namespace WebKit {
 
         // Selection -----------------------------------------------------------
 
-        virtual void selectAll() = 0;
-        virtual void clearSelection() = 0;
         virtual bool hasSelection() const = 0;
 
         virtual WebRange selectionRange() const = 0;

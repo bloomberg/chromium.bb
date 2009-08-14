@@ -820,7 +820,7 @@ bool WebViewImpl::KeyEventDefault(const WebKeyboardEvent& event) {
       if (event.modifiers == WebInputEvent::ControlKey) {
         switch (event.windowsKeyCode) {
           case 'A':
-            GetFocusedFrame()->selectAll();
+            GetFocusedFrame()->executeCommand(WebString::fromUTF8("SelectAll"));
             return true;
           case VKEY_INSERT:
           case 'C':

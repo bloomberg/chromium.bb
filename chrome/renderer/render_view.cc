@@ -771,7 +771,7 @@ void RenderView::OnStopFinding(bool clear_selection) {
     return;
 
   if (clear_selection)
-    view->GetFocusedFrame()->clearSelection();
+    view->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
 
   WebFrame* frame = view->GetMainFrame();
   while (frame) {
@@ -867,7 +867,9 @@ void RenderView::OnSelectAll() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->selectAll();
+  webview()->GetFocusedFrame()->executeCommand(
+      WebString::fromUTF8("SelectAll"));
+  UserMetricsRecordAction(L"SelectAll");
 }
 
 void RenderView::OnSetInitialFocus(bool reverse) {
@@ -2279,7 +2281,7 @@ void RenderView::OnFind(int request_id,
 
     if (!result) {
       // don't leave text selected as you move to the next frame.
-      search_frame->clearSelection();
+      search_frame->executeCommand(WebString::fromUTF8("Unselect"));
 
       // Find the next frame, but skip the invisible ones.
       do {
@@ -2292,7 +2294,7 @@ void RenderView::OnFind(int request_id,
                search_frame != focused_frame);
 
       // Make sure selection doesn't affect the search operation in new frame.
-      search_frame->clearSelection();
+      search_frame->executeCommand(WebString::fromUTF8("Unselect"));
 
       // If we have multiple frames and we have wrapped back around to the
       // focused frame, we need to search it once more allowing wrap within

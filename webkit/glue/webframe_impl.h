@@ -139,8 +139,6 @@ class WebFrameImpl : public WebKit::WebFrame,
   virtual bool isCommandEnabled(const WebKit::WebString& command) const;
   virtual void enableContinuousSpellChecking(bool enable);
   virtual bool isContinuousSpellCheckingEnabled() const;
-  virtual void selectAll();
-  virtual void clearSelection();
   virtual bool hasSelection() const;
   virtual WebKit::WebRange selectionRange() const;
   virtual WebKit::WebString selectionAsText() const;

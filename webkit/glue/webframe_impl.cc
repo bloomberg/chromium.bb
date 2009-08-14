@@ -986,18 +986,6 @@ bool WebFrameImpl::isContinuousSpellCheckingEnabled() const {
   return frame()->editor()->isContinuousSpellCheckingEnabled();
 }
 
-void WebFrameImpl::selectAll() {
-  frame()->selection()->selectAll();
-
-  WebViewDelegate* d = GetWebViewImpl()->GetDelegate();
-  if (d)
-    d->UserMetricsRecordAction(L"SelectAll");
-}
-
-void WebFrameImpl::clearSelection() {
-  frame()->selection()->clear();
-}
-
 bool WebFrameImpl::hasSelection() const {
   // frame()->selection()->isNone() never returns true.
   return (frame()->selection()->start() != frame()->selection()->end());
@@ -1134,7 +1122,8 @@ bool WebFrameImpl::find(int request_id,
       active_match_ = new_selection.toNormalizedRange();
       curr_selection_rect = active_match_->boundingBox();
       SetMarkerActive(active_match_.get(), true);  // Active.
-      clearSelection();  // WebKit draws the highlighting for all matches.
+      // WebKit draws the highlighting for all matches.
+      executeCommand(WebString::fromUTF8("Unselect"));
     }
 
     if (!options.findNext) {

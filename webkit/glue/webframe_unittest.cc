@@ -85,9 +85,9 @@ TEST_F(WebFrameTest, GetFullHtmlOfPage) {
 
   // Test selection check
   EXPECT_FALSE(frame->hasSelection());
-  frame->selectAll();
+  frame->executeCommand(WebString::fromUTF8("SelectAll"));
   EXPECT_TRUE(frame->hasSelection());
-  frame->clearSelection();
+  frame->executeCommand(WebString::fromUTF8("Unselect"));
   EXPECT_FALSE(frame->hasSelection());
   WebString selection_html = frame->selectionAsMarkup();
   EXPECT_TRUE(selection_html.isEmpty());
