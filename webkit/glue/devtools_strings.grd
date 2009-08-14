@@ -46,11 +46,56 @@ Google Chrome Developer Tools. -->
       <message name="IDS_WINDOW_HEADER" desc="DevTools window header.">
         Developer Tools - <ph name="URL">%s<ex>http://www.example.com/</ex></ph>
       </message>
+      <message name="IDS_HEAP_TAB_TITLE" desc="Title of the heap profiler tab.">
+        Heap
+      </message>
+      <message name="IDS_TAKE_HEAP_SNAPSHOT" desc="Title of a button that takes heap snapshot.">
+        Take heap snapshot.
+      </message>
       <message name="IDS_HEAP_SNAPSHOT" desc="Heap snapshot title.">
         Snapshot <ph name="COUNT">%d<ex>1</ex></ph>
       </message>
       <message name="IDS_HEAP_USAGE" desc="Heap usage.">
-        Used <ph name="USED">%1$s<ex>100MB</ex></ph> of <ph name="CAPACITY">%2$s<ex>200MB</ex></ph>
+        Used <ph name="USED">%1$s<ex>100MB</ex></ph> of <ph name="CAPACITY">%2$s<ex>200MB</ex></ph> (<ph name="PERCENT">%3$.0f<ex>50</ex></ph>%%)
+      </message>
+      <message name="IDS_HEAP_SNAPSHOT_GRID_CONSTRUCTOR" desc="Title of a heap snapshot grid column showing object's constructor name.">
+        Constructor
+      </message>
+      <message name="IDS_HEAP_SNAPSHOT_GRID_COUNT" desc="Title of a heap snapshot grid column showing objects count.">
+        Count
+      </message>
+      <message name="IDS_HEAP_SNAPSHOT_GRID_COUNT_DELTA" desc="Title of a heap snapshot grid column showing delta of objects count.">
+        ± Count
+      </message>
+      <message name="IDS_HEAP_SNAPSHOT_GRID_SIZE_DELTA" desc="Title of a heap snapshot grid column showing delta of objects size.">
+        ± Size
+      </message>
+      <message name="IDS_HEAP_SNAPSHOT_COMPARED_TO" desc="An option to choose a snapshot to compare current snapshot with.">
+        Compared to <ph name="BASE">%s<ex>Snapshot 1</ex></ph>
+      </message>
+      <message name="IDS_ABSOLUTE_OBJ_COUNTS_AND_SIZES" desc="An option to show absolute objects counts and sizes.">
+        Show absolute counts and sizes.
+      </message>
+      <message name="IDS_PERCENTAGE_OBJ_COUNTS_AND_SIZES" desc="An option to show objects counts and sizes as percentages.">
+        Show counts and sizes as percentages.
+      </message>
+      <message name="IDS_NEW_OBJECTS_IN_DELTA" desc="Indicates that object instances are new compared to base state.">
+        new
+      </message>
+      <message name="IDS_DELETED_OBJECTS_IN_DELTA" desc="Indicates that object instances have disappeared compared to base state.">
+        deleted
+      </message>
+      <message name="IDS_VERY_LARGE_DELTA" desc="Shows very large delta in percents">
+        <ph name="SIGN">%s<ex>+</ex></ph> >1000%%
+      </message>
+      <message name="IDS_SHARE_IN_PERCENTS_SIGNED" desc="Share in percents, with sign.">
+        <ph name="SIGN">%$1s<ex>+</ex></ph><ph name="SHARE">%$2.2f<ex>5</ex></ph>%%
+      </message>
+      <message name="IDS_SIGNED_DELTA" desc="Signed delta.">
+        %$1s%$2d
+      </message>
+      <message name="IDS_SIGNED_STRING_DELTA" desc="Signed string delta.">
+        %$1s%$2s
       </message>
     </messages>
   </release>

@@ -387,7 +387,7 @@ devtools.profiler.Processor.prototype.processHeapSampleBegin_ = function(
   if (space != 'Heap') return;
   this.currentHeapSnapshot_ = {
       number: this.heapSnapshotId_++,
-      entries: [],
+      entries: {},
       ticks: ticks
   };
 };
@@ -404,9 +404,9 @@ devtools.profiler.Processor.prototype.processHeapSampleStats_ = function(
 devtools.profiler.Processor.prototype.processHeapJsConsItem_ = function(
     item, number, size) {
   if (!this.currentHeapSnapshot_) return;
-  this.currentHeapSnapshot_.entries.push({
+  this.currentHeapSnapshot_.entries[item] = {
     cons: item, count: number, size: size
-  });
+  };
 };
 
 

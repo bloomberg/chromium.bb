@@ -83,13 +83,16 @@ WebInspector.HeapProfilerPanel.prototype = {
 
     addSnapshot: function(snapshot) {
         this._snapshots.push(snapshot);
+        snapshot.list = this._snapshots;
+        snapshot.listIndex = this._snapshots.length - 1;
 
-        var sidebarParent = this.sidebarTree;
         var snapshotsTreeElement = new WebInspector.HeapSnapshotSidebarTreeElement(snapshot);
         snapshotsTreeElement.small = false;
         snapshot._snapshotsTreeElement = snapshotsTreeElement;
 
-        sidebarParent.appendChild(snapshotsTreeElement);
+        this.sidebarTree.appendChild(snapshotsTreeElement);
+
+        this.dispatchEventToListeners("snapshot added");
     },
 
     showSnapshot: function(snapshot) {
@@ -118,7 +121,7 @@ WebInspector.HeapProfilerPanel.prototype = {
         if (!snapshot)
             return null;
         if (!snapshot._snapshotView)
-            snapshot._snapshotView = new WebInspector.HeapSnapshotView(snapshot);
+            snapshot._snapshotView = new WebInspector.HeapSnapshotView(this, snapshot);
         return snapshot._snapshotView;
     },
 
@@ -177,18 +180,25 @@ WebInspector.HeapProfilerPanel.prototype = {
 
 WebInspector.HeapProfilerPanel.prototype.__proto__ = WebInspector.Panel.prototype;
 
-WebInspector.HeapSnapshotView = function(snapshot)
+WebInspector.HeapSnapshotView = function(parent, snapshot)
 {
     WebInspector.View.call(this);
 
     this.element.addStyleClass("heap-snapshot-view");
 
+    this.parent = parent;
+    this.parent.addEventListener("snapshot added", this._updateBaseOptions, this);
+
     this.showCountAsPercent = true;
     this.showSizeAsPercent = true;
+    this.showCountDeltaAsPercent = true;
+    this.showSizeDeltaAsPercent = true;
 
     var columns = { "cons": { title: WebInspector.UIString("Constructor"), disclosure: true, sortable: true },
                     "count": { title: WebInspector.UIString("Count"), width: "54px", sortable: true },
-                    "size": { title: WebInspector.UIString("Size"), width: "72px", sort: "descending", sortable: true } };
+                    "size": { title: WebInspector.UIString("Size"), width: "72px", sort: "descending", sortable: true },
+                    "countDelta": { title: WebInspector.UIString("\xb1 Count"), width: "72px", sortable: true },
+                    "sizeDelta": { title: WebInspector.UIString("\xb1 Size"), width: "72px", sortable: true } };
 
     this.dataGrid = new WebInspector.DataGrid(columns);
     this.dataGrid.addEventListener("sorting changed", this._sortData, this);
@@ -196,11 +206,18 @@ WebInspector.HeapSnapshotView = function(snapshot)
     this.element.appendChild(this.dataGrid.element);
 
     this.snapshot = snapshot;
-    this.snapshotDataGridList = this.createSnapshotDataGridList();
-    this.snapshotDataGridList.sort(WebInspector.HeapSnapshotDataGridList.propertyComparator("objectsSize", false));
 
-    this.percentButton = document.createElement("button");
-    this.percentButton.className = "percent-time-status-bar-item status-bar-item";
+    this.baseSelectElement = document.createElement("select");
+    this.baseSelectElement.className = "status-bar-item";
+    this.baseSelectElement.addEventListener("change", this._changeBase.bind(this), false);
+    this._updateBaseOptions();
+    if (this.snapshot.listIndex > 0)
+        this.baseSelectElement.selectedIndex = this.snapshot.listIndex - 1;
+    else
+        this.baseSelectElement.selectedIndex = this.snapshot.listIndex;
+    this._resetDataGridList();
+
+    this.percentButton = new WebInspector.StatusBarButton("", "percent-time-status-bar-item status-bar-item");
     this.percentButton.addEventListener("click", this._percentClicked.bind(this), false);
 
     this.refresh();
@@ -211,7 +228,7 @@ WebInspector.HeapSnapshotView = function(snapshot)
 WebInspector.HeapSnapshotView.prototype = {
     get statusBarItems()
     {
-        return [this.percentButton];
+        return [this.baseSelectElement, this.percentButton.element];
     },
 
     get snapshot()
@@ -224,11 +241,16 @@ WebInspector.HeapSnapshotView.prototype = {
         this._snapshot = snapshot;
     },
 
-    createSnapshotDataGridList: function()
+    show: function(parentElement)
     {
-        if (!this._snapshotDataGridList)
-            this._snapshotDataGridList = new WebInspector.HeapSnapshotDataGridList(this, this.snapshot.entries);
-        return this._snapshotDataGridList;
+        WebInspector.View.prototype.show.call(this, parentElement);
+        this.dataGrid.updateWidths();
+    },
+
+    resize: function()
+    {
+        if (this.dataGrid)
+            this.dataGrid.updateWidths();
     },
 
     refresh: function()
@@ -256,19 +278,40 @@ WebInspector.HeapSnapshotView.prototype = {
         }
     },
 
+    _changeBase: function() {
+        if (this.baseSnapshot === this.snapshot.list[this.baseSelectElement.selectedIndex])
+            return;
+
+      this._resetDataGridList();
+      this.refresh();
+    },
+
+    _createSnapshotDataGridList: function()
+    {
+        if (this._snapshotDataGridList)
+          delete this._snapshotDataGridList;
+
+        this._snapshotDataGridList = new WebInspector.HeapSnapshotDataGridList(this, this.baseSnapshot.entries, this.snapshot.entries);
+        return this._snapshotDataGridList;
+    },
+
     _mouseDownInDataGrid: function(event)
     {
         if (event.detail < 2)
             return;
 
         var cell = event.target.enclosingNodeOrSelfWithNodeName("td");
-        if (!cell || (!cell.hasStyleClass("count-column") && !cell.hasStyleClass("size-column")))
+        if (!cell || (!cell.hasStyleClass("count-column") && !cell.hasStyleClass("size-column") && !cell.hasStyleClass("countDelta-column") && !cell.hasStyleClass("sizeDelta-column")))
             return;
 
         if (cell.hasStyleClass("count-column"))
             this.showCountAsPercent = !this.showCountAsPercent;
         else if (cell.hasStyleClass("size-column"))
             this.showSizeAsPercent = !this.showSizeAsPercent;
+        else if (cell.hasStyleClass("countDelta-column"))
+            this.showCountDeltaAsPercent = !this.showCountDeltaAsPercent;
+        else if (cell.hasStyleClass("sizeDelta-column"))
+            this.showSizeDeltaAsPercent = !this.showSizeDeltaAsPercent;
 
         this.refreshShowAsPercents();
 
@@ -276,12 +319,30 @@ WebInspector.HeapSnapshotView.prototype = {
         event.stopPropagation();
     },
 
+    get _isShowingAsPercent()
+    {
+        return this.showCountAsPercent && this.showSizeAsPercent && this.showCountDeltaAsPercent && this.showSizeDeltaAsPercent;
+    },
+
     _percentClicked: function(event)
     {
-        var currentState = this.showCountAsPercent && this.showSizeAsPercent;
+        var currentState = this._isShowingAsPercent;
         this.showCountAsPercent = !currentState;
         this.showSizeAsPercent = !currentState;
+        this.showCountDeltaAsPercent = !currentState;
+        this.showSizeDeltaAsPercent = !currentState;
         this.refreshShowAsPercents();
+    },
+
+    _resetDataGridList: function()
+    {
+        this.baseSnapshot = this.snapshot.list[this.baseSelectElement.selectedIndex];
+        var lastComparator = WebInspector.HeapSnapshotDataGridList.propertyComparator("objectsSize", false);
+        if (this.snapshotDataGridList) {
+            lastComparator = this.snapshotDataGridList.lastComparator;
+        }
+        this.snapshotDataGridList = this._createSnapshotDataGridList();
+        this.snapshotDataGridList.sort(lastComparator, true);
     },
 
     _sortData: function()
@@ -291,7 +352,9 @@ WebInspector.HeapSnapshotView.prototype = {
         var sortProperty = {
                 "cons": "constructorName",
                 "count": "objectsCount",
-                "size": "objectsSize"
+                "size": "objectsSize",
+                "countDelta": this.showCountDeltaAsPercent ? "objectsCountDeltaPercent" : "objectsCountDelta",
+                "sizeDelta": this.showSizeDeltaAsPercent ? "objectsSizeDeltaPercent" : "objectsSizeDelta"
         }[sortColumnIdentifier];
 
         this.snapshotDataGridList.sort(WebInspector.HeapSnapshotDataGridList.propertyComparator(sortProperty, sortAscending));
@@ -299,14 +362,27 @@ WebInspector.HeapSnapshotView.prototype = {
         this.refresh();
     },
 
+    _updateBaseOptions: function()
+    {
+        // We're assuming that snapshots can only be added.
+        if (this.baseSelectElement.length == this.snapshot.list.length)
+            return;
+
+        for (var i = this.baseSelectElement.length, n = this.snapshot.list.length; i < n; ++i) {
+            var baseOption = document.createElement("option");
+            baseOption.label = WebInspector.UIString("Compared to %s", this.snapshot.list[i].title);
+            this.baseSelectElement.appendChild(baseOption);
+        }
+    },
+
     _updatePercentButton: function()
     {
-        if (this.showCountAsPercent && this.showSizeAsPercent) {
-            this.percentButton.title = WebInspector.UIString("Show absolute counts and sized.");
-            this.percentButton.addStyleClass("toggled-on");
+        if (this._isShowingAsPercent) {
+            this.percentButton.title = WebInspector.UIString("Show absolute counts and sizes.");
+            this.percentButton.toggled = true;
         } else {
             this.percentButton.title = WebInspector.UIString("Show counts and sizes as percentages.");
-            this.percentButton.removeStyleClass("toggled-on");
+            this.percentButton.toggled = false;
         }
     }
 };
@@ -316,7 +392,7 @@ WebInspector.HeapSnapshotView.prototype.__proto__ = WebInspector.View.prototype;
 WebInspector.HeapSnapshotSidebarTreeElement = function(snapshot)
 {
     this.snapshot = snapshot;
-    this._snapshotNumber = snapshot.number;
+    this.snapshot.title = WebInspector.UIString("Snapshot %d", this.snapshot.number);
 
     WebInspector.SidebarTreeElement.call(this, "heap-snapshot-sidebar-tree-item", "", "", snapshot, false);
 
@@ -333,7 +409,7 @@ WebInspector.HeapSnapshotSidebarTreeElement.prototype = {
     {
         if (this._mainTitle)
             return this._mainTitle;
-        return WebInspector.UIString("Snapshot %d", this._snapshotNumber);
+        return this.snapshot.title;
     },
 
     set mainTitle(x)
@@ -346,7 +422,7 @@ WebInspector.HeapSnapshotSidebarTreeElement.prototype = {
     {
         if (this._subTitle)
             return this._subTitle;
-        return WebInspector.UIString("Used %s of %s (%.0f%)", Number.bytesToString(this.snapshot.used, null, false), Number.bytesToString(this.snapshot.capacity, null, false), this.snapshot.used / this.snapshot.capacity * 100.0);
+        return WebInspector.UIString("Used %s of %s (%.0f%%)", Number.bytesToString(this.snapshot.used, null, false), Number.bytesToString(this.snapshot.capacity, null, false), this.snapshot.used / this.snapshot.capacity * 100.0);
     },
 
     set subtitle(x)
@@ -358,61 +434,119 @@ WebInspector.HeapSnapshotSidebarTreeElement.prototype = {
 
 WebInspector.HeapSnapshotSidebarTreeElement.prototype.__proto__ = WebInspector.SidebarTreeElement.prototype;
 
-WebInspector.HeapSnapshotDataGridNode = function(snapshotView, snapshotEntry, owningList)
+WebInspector.HeapSnapshotDataGridNode = function(snapshotView, baseEntry, snapshotEntry, owningList)
 {
-    this.snapshotView = snapshotView;
-    this.snapshotEntry = snapshotEntry;
-
     WebInspector.DataGridNode.call(this, null, false);
 
+    this.snapshotView = snapshotView;
     this.list = owningList;
-    this.lastComparator = null;
 
+    if (!snapshotEntry)
+        snapshotEntry = { cons: baseEntry.cons, count: 0, size: 0 };
     this.constructorName = snapshotEntry.cons;
     this.objectsCount = snapshotEntry.count;
     this.objectsSize = snapshotEntry.size;
+
+    if (!baseEntry)
+        baseEntry = { count: 0, size: 0 };
+    this.baseObjectsCount = baseEntry.count;
+    this.objectsCountDelta = this.objectsCount - this.baseObjectsCount;
+    this.baseObjectsSize = baseEntry.size;
+    this.objectsSizeDelta = this.objectsSize - this.baseObjectsSize;
 };
 
 WebInspector.HeapSnapshotDataGridNode.prototype = {
     get data()
     {
-        var data = {
-            cons: this.constructorName
-        };
+        var data = {};
+
+        data["cons"] = this.constructorName;
 
         if (this.snapshotView.showCountAsPercent)
-            data["count"] = WebInspector.UIString("%.2f%%", this.countPercent);
+            data["count"] = WebInspector.UIString("%.2f%%", this.objectsCountPercent);
         else
             data["count"] = this.objectsCount;
 
         if (this.snapshotView.showSizeAsPercent)
-            data["size"] = WebInspector.UIString("%.2f%%", this.sizePercent);
+            data["size"] = WebInspector.UIString("%.2f%%", this.objectsSizePercent);
         else
             data["size"] = Number.bytesToString(this.objectsSize);
+
+        function signForDelta(delta) {
+            if (delta == 0)
+                return "";
+            if (delta > 0)
+                return "+";
+            else
+                // Math minus sign, same width as plus.
+                return "\u2212";
+        }
+
+        function showDeltaAsPercent(value) {
+            if (value === Number.POSITIVE_INFINITY)
+                return WebInspector.UIString("new");
+            else if (value === Number.NEGATIVE_INFINITY)
+                return WebInspector.UIString("deleted");
+            if (value > 1000.0)
+                return WebInspector.UIString("%s >1000%%", signForDelta(value));
+            return WebInspector.UIString("%s%.2f%%", signForDelta(value), Math.abs(value));
+        }
+
+        if (this.snapshotView.showCountDeltaAsPercent)
+            data["countDelta"] = showDeltaAsPercent(this.objectsCountDeltaPercent);
+        else
+            data["countDelta"] = WebInspector.UIString("%s%d", signForDelta(this.objectsCountDelta), Math.abs(this.objectsCountDelta));
+
+        if (this.snapshotView.showSizeDeltaAsPercent)
+            data["sizeDelta"] = showDeltaAsPercent(this.objectsSizeDeltaPercent);
+        else
+            data["sizeDelta"] = WebInspector.UIString("%s%s", signForDelta(this.objectsSizeDelta), Number.bytesToString(Math.abs(this.objectsSizeDelta)));
 
         return data;
     },
 
-    get countPercent()
+    get objectsCountPercent()
     {
         return this.objectsCount / this.list.objectsCount * 100.0;
     },
 
-    get sizePercent()
+    get objectsSizePercent()
     {
         return this.objectsSize / this.list.objectsSize * 100.0;
+    },
+
+    get objectsCountDeltaPercent()
+    {
+        if (this.baseObjectsCount > 0) {
+            if (this.objectsCount > 0)
+                return this.objectsCountDelta / this.baseObjectsCount * 100.0;
+            else
+                return Number.NEGATIVE_INFINITY;
+        } else
+            return Number.POSITIVE_INFINITY;
+    },
+
+    get objectsSizeDeltaPercent()
+    {
+        if (this.baseObjectsSize > 0) {
+            if (this.objectsSize > 0)
+                return this.objectsSizeDelta / this.baseObjectsSize * 100.0;
+            else
+                return Number.NEGATIVE_INFINITY;
+        } else
+            return Number.POSITIVE_INFINITY;
     }
 };
 
 WebInspector.HeapSnapshotDataGridNode.prototype.__proto__ = WebInspector.DataGridNode.prototype;
 
-WebInspector.HeapSnapshotDataGridList = function(snapshotView, snapshotEntries)
+WebInspector.HeapSnapshotDataGridList = function(snapshotView, baseEntries, snapshotEntries)
 {
     this.list = this;
     this.snapshotView = snapshotView;
     this.children = [];
     this.lastComparator = null;
-    this.populateChildren(snapshotEntries);
+    this.populateChildren(baseEntries, snapshotEntries);
 };
 
 WebInspector.HeapSnapshotDataGridList.prototype = {
@@ -431,11 +565,15 @@ WebInspector.HeapSnapshotDataGridList.prototype = {
         this.children = [];
     },
 
-    populateChildren: function(snapshotEntries)
+    populateChildren: function(baseEntries, snapshotEntries)
     {
-        var count = snapshotEntries.length;
-        for (var index = 0; index < count; ++index)
-            this.appendChild(new WebInspector.HeapSnapshotDataGridNode(this.snapshotView, snapshotEntries[index], this));
+        for (var item in snapshotEntries)
+            this.appendChild(new WebInspector.HeapSnapshotDataGridNode(this.snapshotView, baseEntries[item], snapshotEntries[item], this));
+
+        for (item in baseEntries) {
+            if (!(item in snapshotEntries))
+                this.appendChild(new WebInspector.HeapSnapshotDataGridNode(this.snapshotView, baseEntries[item], null, this));
+        }
     },
 
     sort: function(comparator, force) {

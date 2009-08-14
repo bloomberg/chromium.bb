@@ -14,6 +14,7 @@ RemoteDebuggerAgentStub = function() {
   this.activeProfilerModules_ =
       devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_NONE;
   this.profileLogPos_ = 0;
+  this.heapProfSample_ = 0;
   this.heapProfLog_ = '';
 };
 
@@ -39,9 +40,16 @@ RemoteDebuggerAgentStub.prototype.StartProfiling = function(modules) {
       this.heapProfLog_ +=
           'heap-sample-begin,"Heap","allocated",' +
               (new Date()).getTime() + '\n' +
-          'heap-sample-stats,"Heap","allocated",10000,1000\n' +
-          'heap-js-cons-item,"foo",10,1000\n' +
-          'heap-js-cons-item,"bar",20,2000\n' +
+          'heap-sample-stats,"Heap","allocated",10000,1000\n';
+      var sample = RemoteDebuggerAgentStub.HeapSamples[this.heapProfSample_];
+      if (++this.heapProfSample_ == RemoteDebuggerAgentStub.HeapSamples.length)
+          this.heapProfSample_ = 0;
+      for (var obj in sample) {
+        this.heapProfLog_ +=
+            'heap-js-cons-item,"' + obj + '",' + sample[obj][0] +
+            ',' + sample[obj][1] + '\n';
+      }
+      this.heapProfLog_ +=
           'heap-sample-end,"Heap","allocated"\n';
     }
   } else {
@@ -184,6 +192,16 @@ RemoteDebuggerAgentStub.ProfilerLogBuffer =
   'tick,0x2020,0x0,3,0x1010\n' +
   'tick,0x1010,0x0,3\n' +
   'profiler,pause\n';
+
+
+RemoteDebuggerAgentStub.HeapSamples = [
+    {foo: [1, 100], bar: [20, 2000]},
+    {foo: [2000, 200000], bar: [10, 1000]},
+    {foo: [15, 1500], bar: [15, 1500]},
+    {bar: [20, 2000]},
+    {foo: [15, 1500], bar: [15, 1500]},
+    {bar: [20, 2000], baz: [15, 1500]}
+];
 
 
 /**
