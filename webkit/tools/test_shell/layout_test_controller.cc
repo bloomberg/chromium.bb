@@ -138,6 +138,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) {
 
   BindMethod("setXSSAuditorEnabled", &LayoutTestController::setXSSAuditorEnabled);
   BindMethod("evaluateScriptInIsolatedWorld", &LayoutTestController::evaluateScriptInIsolatedWorld);
+  BindMethod("overridePreference", &LayoutTestController::overridePreference);
 
   // The fallback method is called when an unknown method is invoked.
   BindFallbackMethod(&LayoutTestController::fallbackMethod);
@@ -804,6 +805,113 @@ void LayoutTestController::evaluateScriptInIsolatedWorld(
   if (args.size() > 0 && args[0].isString()) {
     WebScriptSource source(WebString::fromUTF8(args[0].ToString()));
     shell_->webView()->GetMainFrame()->executeScriptInNewWorld(&source, 1, 1);
+  }
+  result->SetNull();
+}
+
+// Need these conversions because the format of the value for overridePreference
+// may vary - for example, on mac "1" and "0" are used for boolean.
+bool LayoutTestController::CppVariantToBool(const CppVariant& value) {
+  if (value.isBool())
+    return value.ToBoolean();
+  else if (value.isInt32())
+    return 0 != value.ToInt32();
+  else if (value.isString()) {
+    std::string valueString = value.ToString();
+    if (valueString == "true")
+      return true;
+    if (valueString == "false")
+      return false;
+  }
+  shell_->delegate()->AddMessageToConsole(shell_->webView(),
+      L"Invalid value for preference. Expected boolean value.", 0, L"");
+  return false;
+}
+
+int32 LayoutTestController::CppVariantToInt32(const CppVariant& value) {
+    if (value.isInt32())
+    return value.ToInt32();
+  else if (value.isString()) {
+    int number;
+    if (StringToInt(value.ToString(), &number))
+      return number;
+  }
+  shell_->delegate()->AddMessageToConsole(shell_->webView(),
+      L"Invalid value for preference. Expected integer value.", 0, L"");
+  return 0;
+}
+
+std::wstring LayoutTestController::CppVariantToWstring(
+    const CppVariant& value) {
+  if (value.isString())
+    return UTF8ToWide(value.ToString());
+  shell_->delegate()->AddMessageToConsole(shell_->webView(),
+      L"Invalid value for preference. Expected string value.", 0, L"");
+  return std::wstring();
+}
+
+void LayoutTestController::overridePreference(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() == 2 && args[0].isString()) {
+    std::string key = args[0].ToString();
+    CppVariant value = args[1];
+    WebPreferences* preferences = shell_->GetWebPreferences();
+    if (key == "WebKitStandardFont")
+      preferences->standard_font_family = CppVariantToWstring(value);
+    else if (key == "WebKitFixedFont")
+      preferences->fixed_font_family = CppVariantToWstring(value);
+    else if (key == "WebKitSerifFont")
+      preferences->serif_font_family = CppVariantToWstring(value);
+    else if (key == "WebKitSansSerifFont")
+      preferences->sans_serif_font_family = CppVariantToWstring(value);
+    else if (key == "WebKitCursiveFont")
+      preferences->cursive_font_family = CppVariantToWstring(value);
+    else if (key == "WebKitFantasyFont")
+      preferences->fantasy_font_family = CppVariantToWstring(value);
+    else if (key == "WebKitDefaultFontSize")
+      preferences->default_font_size = CppVariantToInt32(value);
+    else if (key == "WebKitDefaultFixedFontSize")
+      preferences->default_fixed_font_size = CppVariantToInt32(value);
+    else if (key == "WebKitMinimumFontSize")
+      preferences->minimum_font_size = CppVariantToInt32(value);
+    else if (key == "WebKitMinimumLogicalFontSize")
+      preferences->minimum_logical_font_size = CppVariantToInt32(value);
+    else if (key == "WebKitDefaultTextEncodingName")
+      preferences->default_encoding = CppVariantToWstring(value);
+    else if (key == "WebKitJavaScriptEnabled")
+      preferences->javascript_enabled = CppVariantToBool(value);
+    else if (key == "WebKitWebSecurityEnabled")
+      preferences->web_security_enabled = CppVariantToBool(value);
+    else if (key == "WebKitJavaScriptCanOpenWindowsAutomatically")
+      preferences->javascript_can_open_windows_automatically =
+          CppVariantToBool(value);
+    else if (key == "WebKitDisplayImagesKey")
+      preferences->loads_images_automatically = CppVariantToBool(value);
+    else if (key == "WebKitPluginsEnabled")
+      preferences->plugins_enabled = CppVariantToBool(value);
+    else if (key == "WebKitDOMPasteAllowedPreferenceKey")
+      preferences->dom_paste_enabled = CppVariantToBool(value);
+    else if (key == "WebKitDeveloperExtrasEnabledPreferenceKey")
+      preferences->developer_extras_enabled = CppVariantToBool(value);
+    else if (key == "WebKitShrinksStandaloneImagesToFit")
+      preferences->shrinks_standalone_images_to_fit = CppVariantToBool(value);
+    else if (key == "WebKitTextAreasAreResizable")
+      preferences->text_areas_are_resizable = CppVariantToBool(value);
+    else if (key == "WebKitJavaEnabled")
+      preferences->java_enabled = CppVariantToBool(value);
+    else if (key == "WebKitUsesPageCachePreferenceKey")
+      preferences->uses_page_cache = CppVariantToBool(value);
+    else if (key == "WebKitXSSAuditorEnabled")
+      preferences->xss_auditor_enabled = CppVariantToBool(value);
+    else if (key == "WebKitLocalStorageEnabledPreferenceKey")
+      preferences->local_storage_enabled = CppVariantToBool(value);
+    else {
+      std::wstring message(L"Invalid name for preference: ");
+      message.append(ASCIIToWide(key));
+      shell_->delegate()->AddMessageToConsole(shell_->webView(),
+                                              message, 0, L"");
+    }
+    shell_->webView()->SetPreferences(*preferences);
   }
   result->SetNull();
 }

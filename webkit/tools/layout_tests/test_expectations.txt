@@ -2836,10 +2836,6 @@ BUG18995 LINUX WIN : LayoutTests/editing/pasteboard/select-element-1.html = FAIL
 // Fallout from webkit roll 47010:47034
 BUG19028 MAC : LayoutTests/fast/dom/Window/window-open-parent-no-parent.html = PASS CRASH
 
-// Fallout from webkit 47034:47041
-BUG19064 : LayoutTests/fast/harness/override-preferences.html = FAIL
-BUG19064 : LayoutTests/fast/harness/override-preferences-2.html = FAIL
-
 // Fallout from webkit 47041:47189
 BUG19247 : LayoutTests/fast/events/set-event-in-another-frame.html = FAIL
 BUG19248 : LayoutTests/fast/js/const.html = FAIL

@@ -182,6 +182,7 @@ class LayoutTestController : public CppBoundClass {
 
   void setXSSAuditorEnabled(const CppArgumentList& args, CppVariant* result);
   void evaluateScriptInIsolatedWorld(const CppArgumentList& args, CppVariant* result);
+  void overridePreference(const CppArgumentList& args, CppVariant* result);
 
   // The fallback method is called when a nonexistent method is called on
   // the layout test controller object.
@@ -268,6 +269,11 @@ class LayoutTestController : public CppBoundClass {
     std::queue<WorkItem*> queue_;
     bool frozen_;
   };
+
+  // Support for overridePreference.
+  bool CppVariantToBool(const CppVariant&);
+  int32 CppVariantToInt32(const CppVariant&);
+  std::wstring CppVariantToWstring(const CppVariant&);
 
   // Non-owning pointer.  The LayoutTestController is owned by the host.
   static TestShell* shell_;
