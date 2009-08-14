@@ -129,10 +129,10 @@ int TCPConnectJob::DoTCPConnectComplete(int result) {
 
 ConnectJob* TCPClientSocketPool::TCPConnectJobFactory::NewConnectJob(
     const std::string& group_name,
-    const ClientSocketPoolBase::Request& request,
+    const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
   return new TCPConnectJob(
-      group_name, request.resolve_info, request.handle,
+      group_name, request.params(), request.handle(),
       base::TimeDelta::FromSeconds(kTCPConnectJobTimeoutInSeconds),
       client_socket_factory_, host_resolver_, delegate);
 }
@@ -142,47 +142,48 @@ TCPClientSocketPool::TCPClientSocketPool(
     int max_sockets_per_group,
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory)
-    : base_(new ClientSocketPoolBase(
-        max_sockets, max_sockets_per_group,
-        new TCPConnectJobFactory(client_socket_factory, host_resolver))) {}
+    : base_(max_sockets, max_sockets_per_group,
+            new TCPConnectJobFactory(client_socket_factory, host_resolver)) {}
 
 TCPClientSocketPool::~TCPClientSocketPool() {}
 
 int TCPClientSocketPool::RequestSocket(
     const std::string& group_name,
-    const HostResolver::RequestInfo& resolve_info,
+    const void* resolve_info,
     int priority,
     ClientSocketHandle* handle,
     CompletionCallback* callback,
     LoadLog* load_log) {
-  return base_->RequestSocket(
-      group_name, resolve_info, priority, handle, callback, load_log);
+  const HostResolver::RequestInfo* casted_resolve_info =
+      static_cast<const HostResolver::RequestInfo*>(resolve_info);
+  return base_.RequestSocket(
+      group_name, *casted_resolve_info, priority, handle, callback, load_log);
 }
 
 void TCPClientSocketPool::CancelRequest(
     const std::string& group_name,
     const ClientSocketHandle* handle) {
-  base_->CancelRequest(group_name, handle);
+  base_.CancelRequest(group_name, handle);
 }
 
 void TCPClientSocketPool::ReleaseSocket(
     const std::string& group_name,
     ClientSocket* socket) {
-  base_->ReleaseSocket(group_name, socket);
+  base_.ReleaseSocket(group_name, socket);
 }
 
 void TCPClientSocketPool::CloseIdleSockets() {
-  base_->CloseIdleSockets();
+  base_.CloseIdleSockets();
 }
 
 int TCPClientSocketPool::IdleSocketCountInGroup(
     const std::string& group_name) const {
-  return base_->IdleSocketCountInGroup(group_name);
+  return base_.IdleSocketCountInGroup(group_name);
 }
 
 LoadState TCPClientSocketPool::GetLoadState(
     const std::string& group_name, const ClientSocketHandle* handle) const {
-  return base_->GetLoadState(group_name, handle);
+  return base_.GetLoadState(group_name, handle);
 }
 
 }  // namespace net

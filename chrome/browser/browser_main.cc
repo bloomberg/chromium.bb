@@ -659,7 +659,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   const int late_binding_group =
       socket_late_binding_trial->AppendGroup("_enable_late_binding", 50);
   if (socket_late_binding_trial->group() == late_binding_group)
-    net::ClientSocketPoolBase::EnableLateBindingOfSockets(true);
+    net::EnableLateBindingOfSockets(true);
 
 #if defined(OS_WIN)
   // Init common control sex.

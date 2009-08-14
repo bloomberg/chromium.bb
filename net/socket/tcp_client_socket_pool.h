@@ -81,7 +81,7 @@ class TCPClientSocketPool : public ClientSocketPool {
   // ClientSocketPool methods:
 
   virtual int RequestSocket(const std::string& group_name,
-                            const HostResolver::RequestInfo& resolve_info,
+                            const void* resolve_info,
                             int priority,
                             ClientSocketHandle* handle,
                             CompletionCallback* callback,
@@ -96,7 +96,7 @@ class TCPClientSocketPool : public ClientSocketPool {
   virtual void CloseIdleSockets();
 
   virtual int IdleSocketCount() const {
-    return base_->idle_socket_count();
+    return base_.idle_socket_count();
   }
 
   virtual int IdleSocketCountInGroup(const std::string& group_name) const;
@@ -105,10 +105,10 @@ class TCPClientSocketPool : public ClientSocketPool {
                                  const ClientSocketHandle* handle) const;
 
  private:
-  virtual ~TCPClientSocketPool();
+  typedef ClientSocketPoolBase<HostResolver::RequestInfo> PoolBase;
 
   class TCPConnectJobFactory
-      : public ClientSocketPoolBase::ConnectJobFactory {
+      : public PoolBase::ConnectJobFactory {
    public:
     TCPConnectJobFactory(ClientSocketFactory* client_socket_factory,
                          HostResolver* host_resolver)
@@ -121,7 +121,7 @@ class TCPClientSocketPool : public ClientSocketPool {
 
     virtual ConnectJob* NewConnectJob(
         const std::string& group_name,
-        const ClientSocketPoolBase::Request& request,
+        const PoolBase::Request& request,
         ConnectJob::Delegate* delegate) const;
 
    private:
@@ -131,12 +131,9 @@ class TCPClientSocketPool : public ClientSocketPool {
     DISALLOW_COPY_AND_ASSIGN(TCPConnectJobFactory);
   };
 
-  // One might ask why ClientSocketPoolBase is also refcounted if its
-  // containing ClientSocketPool is already refcounted.  The reason is because
-  // DoReleaseSocket() posts a task.  If ClientSocketPool gets deleted between
-  // the posting of the task and the execution, then we'll hit the DCHECK that
-  // |ClientSocketPoolBase::group_map_| is empty.
-  scoped_refptr<ClientSocketPoolBase> base_;
+  virtual ~TCPClientSocketPool();
+
+  PoolBase base_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocketPool);
 };
