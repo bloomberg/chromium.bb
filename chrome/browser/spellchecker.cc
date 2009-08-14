@@ -379,8 +379,8 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
       obtaining_dictionary_(false),
       auto_spell_correct_turned_on_(false),
       is_using_platform_spelling_engine_(false),
-      fetcher_(NULL),
       ui_loop_(MessageLoop::current()),
+      fetcher_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           on_dictionary_save_complete_callback_factory_(this)) {
   if (SpellCheckerPlatform::SpellCheckerAvailable()) {
