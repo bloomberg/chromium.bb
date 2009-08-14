@@ -2244,7 +2244,7 @@ BUG10999 MAC : LayoutTests/editing/selection/click-in-padding-with-multiple-line
 // DumpRenderTree now dumps additional info on the element that was
 // passed to the policy delegate. So the dump changes.
 // We need to reflect the change in test shell.
-BUG11000 LINUX MAC WIN : LayoutTests/fast/encoding/mailto-always-utf-8.html = FAIL
+BUG11000 LINUX MAC WIN : LayoutTests/fast/encoding/mailto-always-utf-8.html = FAIL CRASH
 BUG11000 LINUX MAC WIN : LayoutTests/fast/loader/policy-delegate-action-hit-test-zoomed.html = FAIL
 BUG11000 LINUX MAC WIN : LayoutTests/http/tests/misc/policy-delegate-called-twice.html = FAIL
 BUG11000 LINUX MAC WIN : LayoutTests/http/tests/misc/redirect-to-external-url.html = FAIL
