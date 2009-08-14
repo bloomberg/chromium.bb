@@ -28,6 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cassert>
+#include <cstdio>
 
 #include "google_breakpad/processor/minidump_processor.h"
 #include "google_breakpad/processor/call_stack.h"
