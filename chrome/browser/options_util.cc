@@ -25,6 +25,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kDnsPrefetchingEnabled,
     prefs::kDownloadDefaultDirectory,
     prefs::kDownloadExtensionsToOpen,
+    prefs::kEnableSpellCheck,
     prefs::kFormAutofillEnabled,
     prefs::kHomePage,
     prefs::kHomePageIsNewTabPage,
