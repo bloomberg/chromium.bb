@@ -100,22 +100,31 @@ class MessageIterator {
 //-----------------------------------------------------------------------------
 // ParamTraits specializations, etc.
 
-template <class P> struct ParamTraits {};
+template <class P> struct ParamTraits {
+};
+
+template <class P>
+struct SimilarTypeTraits {
+  typedef P Type;
+};
 
 template <class P>
 static inline void WriteParam(Message* m, const P& p) {
-  ParamTraits<P>::Write(m, p);
+  typedef typename SimilarTypeTraits<P>::Type Type;
+  ParamTraits<Type>::Write(m, static_cast<const Type& >(p));
 }
 
 template <class P>
 static inline bool WARN_UNUSED_RESULT ReadParam(const Message* m, void** iter,
                                                 P* p) {
-  return ParamTraits<P>::Read(m, iter, p);
+  typedef typename SimilarTypeTraits<P>::Type Type;
+  return ParamTraits<Type>::Read(m, iter, reinterpret_cast<Type* >(p));
 }
 
 template <class P>
 static inline void LogParam(const P& p, std::wstring* l) {
-  ParamTraits<P>::Log(p, l);
+  typedef typename SimilarTypeTraits<P>::Type Type;
+  ParamTraits<Type>::Log(static_cast<const Type& >(p), l);
 }
 
 template <>
@@ -787,7 +796,6 @@ struct ParamTraits<LogData> {
     // Doesn't make sense to implement this!
   }
 };
-
 
 template <>
 struct ParamTraits<Message> {

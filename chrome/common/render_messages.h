@@ -21,6 +21,7 @@
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/transport_dib.h"
+#include "chrome/common/view_types.h"
 #include "chrome/common/webkit_param_traits.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
@@ -1159,8 +1160,6 @@ struct ParamTraits<ViewMsg_UploadFile_Params> {
   }
 };
 
-
-
 // Traits for webkit_glue::PasswordFormDomManager::FillData.
 template <>
 struct ParamTraits<webkit_glue::PasswordFormDomManager::FillData> {
@@ -2000,6 +1999,10 @@ struct ParamTraits<ViewHostMsg_ScriptedPrint_Params> {
   }
 };
 
+template <>
+struct SimilarTypeTraits<ViewType::Type> {
+  typedef int Type;
+};
 
 }  // namespace IPC
 

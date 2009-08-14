@@ -86,6 +86,11 @@ class InterstitialPage : public NotificationObserver,
   // Called when tab traversing.
   void FocusThroughTabTraversal(bool reverse);
 
+  virtual ViewType::Type GetRenderViewType() const {
+    return ViewType::INTERSTITIAL_PAGE;
+  }
+  virtual int GetBrowserWindowID() const;
+
  protected:
   // NotificationObserver method:
   virtual void Observe(NotificationType type,

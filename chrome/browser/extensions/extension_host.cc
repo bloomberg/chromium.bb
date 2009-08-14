@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "chrome/common/view_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 
@@ -84,12 +86,13 @@ class CrashedExtensionInfobarDelegate : public ConfirmInfoBarDelegate {
 bool ExtensionHost::enable_dom_automation_ = false;
 
 ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
-                             const GURL& url)
+                             const GURL& url, ViewType::Type host_type)
     : extension_(extension),
       profile_(site_instance->browsing_instance()->profile()),
       did_stop_loading_(false),
       document_element_available_(false),
-      url_(url) {
+      url_(url),
+      extension_host_type_(host_type) {
   render_view_host_ = new RenderViewHost(
       site_instance, this, MSG_ROUTING_NONE, NULL);
   render_view_host_->AllowBindings(BindingsPolicy::EXTENSION);
@@ -385,6 +388,10 @@ Browser* ExtensionHost::GetBrowser() {
   return browser;
 }
 
+ViewType::Type ExtensionHost::GetRenderViewType() const {
+  return extension_host_type_;
+}
+
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   // TODO(mpcomplete): This is duplicated in DidNavigate, which means that
   // we'll create 2 EFDs for the first navigation. We should try to find a
@@ -392,4 +399,18 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   // See http://code.google.com/p/chromium/issues/detail?id=18240
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(render_view_host, this, url_));
+}
+
+int ExtensionHost::GetBrowserWindowID() const {
+  int window_id = -1;
+  if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP) {
+    window_id = ExtensionTabUtil::GetWindowId(
+        const_cast<ExtensionHost* >(this)->GetBrowser());
+  } else if (extension_host_type_ == ViewType::EXTENSION_BACKGROUND_PAGE) {
+    // Background page is not attached to any browser window, so pass -1.
+    window_id = -1;
+  } else {
+    NOTREACHED();
+  }
+  return window_id;
 }

@@ -56,7 +56,8 @@ ExtensionHost* ExtensionProcessManager::CreateView(Extension* extension,
   DCHECK(extension);
   DCHECK(browser);
   ExtensionHost* host =
-      new ExtensionHost(extension, GetSiteInstanceForURL(url), url);
+      new ExtensionHost(extension, GetSiteInstanceForURL(url), url,
+                        ViewType::EXTENSION_TOOLSTRIP);
   host->CreateView(browser);
   OnExtensionHostCreated(host, false);
   return host;
@@ -78,7 +79,8 @@ ExtensionHost* ExtensionProcessManager::CreateView(const GURL& url,
 ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
     Extension* extension, const GURL& url) {
   ExtensionHost* host =
-      new ExtensionHost(extension, GetSiteInstanceForURL(url), url);
+      new ExtensionHost(extension, GetSiteInstanceForURL(url), url,
+                        ViewType::EXTENSION_BACKGROUND_PAGE);
   host->CreateRenderView(NULL);  // create a RenderViewHost with no view
   OnExtensionHostCreated(host, true);
   return host;

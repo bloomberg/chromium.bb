@@ -31,6 +31,52 @@
           "$ref": "Port",
           "description": "Port through which messages can be sent and received with the extension."
         }
+      },
+      {
+        "name": "getViews",
+        "type": "function",
+        "description": "Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes toolstrips, background pages, and tabs.",
+        "parameters": [],
+        "returns": {
+          "type": "array",
+          "description": "Array of global objects",
+          "items": { "type": "object" }
+        }
+      },
+      {
+        "name": "getBackgroundPage",
+        "type": "function",
+        "description": "Returns the global JavaScript object for the background page running inside the current extension. Returns null if the extension has no backround page.",
+        "parameters": [],
+        "returns": {
+          "type": "object"
+        }
+      },
+      {
+        "name": "getToolstrips",
+        "type": "function",
+        "description": "Returns an array of the global JavaScript objects for each of the toolstrip views running inside the current extension. If windowId is specified, returns only the toolstrips attached to the specified window.",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "optional": true}
+        ],
+        "returns": {
+          "type": "array",
+          "description": "Array of global objects",
+          "items": { "type": "object" }
+        }
+      },
+      {
+        "name": "getTabContentses",
+        "type": "function",
+        "description": "Returns an array of the global JavaScript objects for each of the tab contents views running inside the current extension. If windowId is specified, returns only the tab contentses attached to the specified window.",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "optional": true}
+        ],
+        "returns": {
+          "type": "array",
+          "description": "Array of global objects",
+          "items": { "type": "object" }
+        }
       }
     ],
     "events": [
@@ -43,25 +89,6 @@
         ]
       }
     ]
-  },
-  {
-    "namespace": "self",
-    "types": [
-    ],
-    "functions": [
-      {
-        "name": "getViews",
-        "type": "function",
-        "description": "Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes toolstrips, background pages, and tabs.",
-        "parameters": [],
-        "returns": {
-          "type": "array",
-          "description": "Array of HTMLWindow objects",
-          "items": { "type": "object" }
-        }
-      }
-    ],
-    "events": []
   },
   {
     "namespace": "windows",
@@ -101,7 +128,7 @@
       {
         "name": "getCurrent",
         "type": "function",
-        "description": "Get the window that is the container for the caller. i.e. the window containing the ToolStrip that makes the call.",
+        "description": "Get the window that is the container for the caller. i.e. the window containing the toolstrip that makes the call.",
         "parameters": [
           {
             "type": "function",

@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/common/css_colors.h"
 #include "chrome/common/transport_dib.h"
+#include "chrome/common/view_types.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -645,6 +646,14 @@ IPC_BEGIN_MESSAGES(View)
   // validity.
   IPC_MESSAGE_CONTROL1(UtilityMsg_UnpackWebResource,
                        std::string /* JSON data */)
+
+  // Tell the renderer which browser window it's being attached to.
+  IPC_MESSAGE_ROUTED1(ViewMsg_UpdateBrowserWindowId,
+                      int /* id of browser window */)
+
+  // Tell the renderer which type this view is.
+  IPC_MESSAGE_ROUTED1(ViewMsg_NotifyRenderViewType,
+                      ViewType::Type /* view_type */)
 
   // Returns a file handle
   IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseOpenFileResponse,

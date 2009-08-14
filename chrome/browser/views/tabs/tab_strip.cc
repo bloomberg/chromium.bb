@@ -739,7 +739,10 @@ void TabStrip::TabInsertedAt(TabContents* contents,
                              bool foreground) {
   DCHECK(contents);
   DCHECK(index == TabStripModel::kNoTab || model_->ContainsIndex(index));
-
+  // This tab may be attached to another browser window, we should notify
+  // renderer.
+  contents->render_view_host()->UpdateBrowserWindowId(
+      contents->controller().window_id().id());
   if (active_animation_.get())
     active_animation_->Stop();
 

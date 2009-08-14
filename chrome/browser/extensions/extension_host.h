@@ -40,7 +40,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   static void EnableDOMAutomation() { enable_dom_automation_ = true; }
 
   ExtensionHost(Extension* extension, SiteInstance* site_instance,
-                const GURL& url);
+                const GURL& url, ViewType::Type host_type);
   ~ExtensionHost();
 
 #if defined(TOOLKIT_VIEWS)
@@ -84,6 +84,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual const GURL& GetURL() const { return url_; }
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
+  virtual ViewType::Type GetRenderViewType() const;
+  virtual int GetBrowserWindowID() const;
   virtual void RenderViewGone(RenderViewHost* render_view_host);
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
@@ -176,6 +178,10 @@ class ExtensionHost : public RenderViewHostDelegate,
   NotificationRegistrar registrar_;
 
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
+
+  // Only EXTENSION_TOOLSTRIP and EXTENSION_BACKGROUND_PAGE are used here,
+  // others are not hostd by ExtensionHost.
+  ViewType::Type extension_host_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };

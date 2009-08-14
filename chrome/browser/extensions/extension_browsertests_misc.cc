@@ -48,11 +48,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
       AppendASCII("1.0.0.0");
   ASSERT_TRUE(LoadExtension(extension_test_data_dir));
 
-  // At this point, there should be two ExtensionHosts loaded because this
-  // extension has two toolstrips. Find the one that is hosting toolstrip1.html.
+  // At this point, there should be three ExtensionHosts loaded because this
+  // extension has two toolstrips and one background page. Find the one that is
+  // hosting toolstrip1.html.
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip1.html", 2);
+  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip1.html", 3);
 
   // Tell it to run some JavaScript that tests that basic extension code works.
   bool result = false;
@@ -75,6 +76,45 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
       host->render_view_host(), L"", L"testTabsLanguageAPI()", &result);
   EXPECT_TRUE(result);
 #endif
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {
+  FilePath extension_test_data_dir = test_data_dir_.AppendASCII("good").
+      AppendASCII("Extensions").AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj").
+      AppendASCII("1.0.0.0");
+  ASSERT_TRUE(LoadExtension(extension_test_data_dir));
+
+  // At this point, there should be three ExtensionHosts loaded because this
+  // extension has two toolstrips and one background page. Find the one that is
+  // hosting toolstrip1.html.
+  ExtensionProcessManager* manager =
+      browser()->profile()->GetExtensionProcessManager();
+  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip1.html", 3);
+
+  FilePath gettabs_url = extension_test_data_dir.AppendASCII(
+      "test_gettabs.html");
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL(gettabs_url.ToWStringHack()));
+
+  bool result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      host->render_view_host(), L"", L"testgetToolstripsAPI()", &result);
+  EXPECT_TRUE(result);
+
+  result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      host->render_view_host(), L"", L"testgetBackgroundPageAPI()", &result);
+  EXPECT_TRUE(result);
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+           "test_gettabs.html"));
+  result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      host->render_view_host(), L"", L"testgetTabContentsesAPI()", &result);
+  EXPECT_TRUE(result);
 }
 
 // Tests that the ExtensionShelf initializes properly, notices that

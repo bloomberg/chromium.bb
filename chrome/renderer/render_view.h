@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/common/id_map.h"
 #include "chrome/common/renderer_preferences.h"
+#include "chrome/common/view_types.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/dom_ui_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
@@ -98,6 +99,9 @@ class RenderView : public RenderWidget,
                    public WebViewDelegate,
                    public webkit_glue::DomSerializerDelegate {
  public:
+  struct RenderViewSet {
+    std::set<RenderView* > render_view_set_;
+  };
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
   // parent of the WebView HWND that will be created.  The modal_dialog_event
   // is set by the RenderView whenever a modal dialog alert is shown, so that
@@ -130,6 +134,14 @@ class RenderView : public RenderWidget,
 
   base::WaitableEvent* modal_dialog_event() {
     return modal_dialog_event_.get();
+  }
+
+  int browser_window_id() {
+    return browser_window_id_;
+  }
+
+  ViewType::Type view_type() {
+    return view_type_;
   }
 
   // IPC::Channel::Listener
@@ -543,6 +555,8 @@ class RenderView : public RenderWidget,
   void OnMediaPlayerActionAt(int x,
                              int y,
                              const MediaPlayerAction& action);
+  void OnNotifyRendererViewType(ViewType::Type view_type);
+  void OnUpdateBrowserWindowId(int window_id);
   void OnUpdateBackForwardListCount(int back_list_count,
                                     int forward_list_count);
   void OnGetAccessibilityInfo(
@@ -836,6 +850,13 @@ class RenderView : public RenderWidget,
   scoped_ptr<PrintWebViewHelper> print_helper_;
 
   RendererPreferences renderer_preferences_;
+
+  // Type of view attached with RenderView, it could be INVALID, TAB_CONTENTS,
+  // EXTENSION_TOOLSTRIP, EXTENSION_BACKGROUND_PAGE, DEV_TOOLS_UI.
+  ViewType::Type view_type_;
+
+  // Id number of browser window which RenderView is attached to.
+  int browser_window_id_;
 
   // page id for the last navigation sent to the browser.
   int32 last_top_level_navigation_page_id_;

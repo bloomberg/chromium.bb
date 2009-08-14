@@ -14,6 +14,7 @@
     },
     "toolstrip2.html"
   ],
+  "background_page": "backgroundpage.html",
   "permissions": ["tabs", "http://*.google.com/*", "https://*.google.com/*"],
   "content_scripts": [
     {

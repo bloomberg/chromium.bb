@@ -1776,12 +1776,19 @@ TabContents* TabContents::GetAsTabContents() {
   return this;
 }
 
+ViewType::Type TabContents::GetRenderViewType() const {
+  return ViewType::TAB_CONTENTS;
+}
+
+int TabContents::GetBrowserWindowID() const {
+  return controller().window_id().id();
+}
+
 void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
   NotificationService::current()->Notify(
       NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<TabContents>(this),
       Details<RenderViewHost>(render_view_host));
-
   NavigationEntry* entry = controller_.GetActiveEntry();
   if (!entry)
     return;

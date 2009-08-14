@@ -92,8 +92,8 @@ class ExtensionImpl : public ExtensionBase {
       v8::Handle<v8::String> name) {
     if (name->Equals(v8::String::New("GetExtensionAPIDefinition"))) {
       return v8::FunctionTemplate::New(GetExtensionAPIDefinition);
-    } else if (name->Equals(v8::String::New("GetViews"))) {
-      return v8::FunctionTemplate::New(GetViews);
+    } else if (name->Equals(v8::String::New("GetExtensionViews"))) {
+      return v8::FunctionTemplate::New(GetExtensionViews);
     } else if (name->Equals(v8::String::New("GetNextRequestId"))) {
       return v8::FunctionTemplate::New(GetNextRequestId);
     } else if (name->Equals(v8::String::New("OpenChannelToTab"))) {
@@ -113,22 +113,66 @@ class ExtensionImpl : public ExtensionBase {
     return v8::String::New(GetStringResource<IDR_EXTENSION_API_JSON>());
   }
 
-  static v8::Handle<v8::Value> GetViews(const v8::Arguments& args) {
-    std::string extension_id = ExtensionIdForCurrentContext();
+  static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args) {
+    if (args.Length() != 2)
+      return v8::Undefined();
 
-    ContextList contexts =
-        bindings_utils::GetContextsForExtension(extension_id);
-    DCHECK(contexts.size() > 0);
+    if (!args[0]->IsInt32() || !args[1]->IsString())
+      return v8::Undefined();
 
-    v8::Local<v8::Array> views = v8::Array::New(contexts.size());
+    // |browser_window_id| == -1 means getting views attached to any browser
+    // window.
+    int browser_window_id = args[0]->Int32Value();
+
+    std::string view_type_string = *v8::String::Utf8Value(args[1]->ToString());
+    // |view_type| == ViewType::INVALID means getting any type of views.
+    ViewType::Type view_type = ViewType::INVALID;
+    if (view_type_string == "TOOLSTRIP") {
+      view_type = ViewType::EXTENSION_TOOLSTRIP;
+    } else if (view_type_string == "BACKGROUND") {
+      view_type = ViewType::EXTENSION_BACKGROUND_PAGE;
+    } else if (view_type_string == "TAB") {
+      view_type = ViewType::TAB_CONTENTS;
+    } else if (view_type_string != "ALL") {
+      return v8::Undefined();
+    }
+
+    v8::Local<v8::Array> views = v8::Array::New();
     int index = 0;
-    ContextList::const_iterator it = contexts.begin();
-    for (; it != contexts.end(); ++it) {
-      v8::Local<v8::Value> window = (*it)->context->Global()->Get(
-          v8::String::New("window"));
-      DCHECK(!window.IsEmpty());
-      views->Set(v8::Integer::New(index), window);
-      index++;
+    RenderView::RenderViewSet* render_view_set_pointer =
+        Singleton<RenderView::RenderViewSet>::get();
+    DCHECK(render_view_set_pointer->render_view_set_.size() > 0);
+
+    v8::Local<v8::Value> window;
+    std::string current_extension_id = ExtensionIdForCurrentContext();
+    std::set<RenderView* >::iterator it =
+        render_view_set_pointer->render_view_set_.begin();
+    for (; it != render_view_set_pointer->render_view_set_.end(); ++it) {
+      if (view_type != ViewType::INVALID && (*it)->view_type() != view_type)
+        continue;
+
+      GURL url = (*it)->webview()->GetMainFrame()->url();
+      if (!url.SchemeIs(chrome::kExtensionScheme))
+        continue;
+      std::string extension_id = url.host();
+      if (extension_id != current_extension_id)
+        continue;
+
+      if (browser_window_id != -1 &&
+          (*it)->browser_window_id() != browser_window_id) {
+        continue;
+      }
+
+      v8::Local<v8::Context> context =
+          (*it)->webview()->GetMainFrame()->mainWorldScriptContext();
+      if (!context.IsEmpty()) {
+        v8::Local<v8::Value> window = context->Global();
+        DCHECK(!window.IsEmpty());
+        views->Set(v8::Integer::New(index), window);
+        index++;
+        if (view_type == ViewType::EXTENSION_BACKGROUND_PAGE)
+          break;
+      }
     }
     return views;
   }

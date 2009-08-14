@@ -223,7 +223,9 @@ bool RenderViewHost::CreateRenderView() {
   // If it's enabled, tell the renderer to set up the Javascript bindings for
   // sending messages back to the browser.
   Send(new ViewMsg_AllowBindings(routing_id(), enabled_bindings_));
-
+  UpdateBrowserWindowId(delegate_->GetBrowserWindowID());
+  Send(new ViewMsg_NotifyRenderViewType(routing_id(),
+                                        delegate_->GetRenderViewType()));
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
   process()->ViewCreated();
@@ -1640,4 +1642,8 @@ void RenderViewHost::SignalModalDialogEvent() {
 void RenderViewHost::ResetModalDialogEvent() {
  if (--modal_dialog_count_ == 0)
    modal_dialog_event_->Reset();
+}
+
+void RenderViewHost::UpdateBrowserWindowId(int window_id) {
+  Send(new ViewMsg_UpdateBrowserWindowId(routing_id(), window_id));
 }

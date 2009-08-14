@@ -513,6 +513,7 @@
         'common/transport_dib_win.cc',
         'common/url_constants.cc',
         'common/url_constants.h',
+        'common/view_types.h',
         'common/visitedlink_common.cc',
         'common/visitedlink_common.h',
         'common/webkit_param_traits.h',

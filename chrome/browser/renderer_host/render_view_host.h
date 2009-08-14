@@ -426,6 +426,9 @@ class RenderViewHost : public RenderWidgetHost,
   void SignalModalDialogEvent();
   void ResetModalDialogEvent();
 
+  // Tell renderer which browser window it is being attached to.
+  void UpdateBrowserWindowId(int window_id);
+
   void set_in_inspect_element_mode(bool enabled) {
     in_inspect_element_mode_ = enabled;
   }

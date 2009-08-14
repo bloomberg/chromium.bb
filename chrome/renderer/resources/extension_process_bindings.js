@@ -15,7 +15,7 @@ var chrome = chrome || {};
   native function GetExtensionAPIDefinition();
   native function StartRequest();
   native function GetCurrentPageActions(extensionId);
-  native function GetViews();
+  native function GetExtensionViews();
   native function GetChromeHidden();
   native function GetNextRequestId();
   native function OpenChannelToTab();
@@ -122,19 +122,6 @@ var chrome = chrome || {};
     return StartRequest(functionName, sargs, requestId, hasCallback);
   }
   
-  // Read api definitions and setup api functions in the chrome namespace.
-  // TODO(rafaelw): Consider defining a json schema for an api definition
-  //   and validating either here, in a unit_test or both.
-  // TODO(rafaelw): Handle synchronous functions.
-  // TOOD(rafaelw): Consider providing some convenient override points
-  //   for api functions that wish to insert themselves into the call. 
-  var apiDefinitions = JSON.parse(GetExtensionAPIDefinition());
-  
-  // |apiFunctions| is a hash of name -> object that stores the 
-  // name & definition of the apiFunction. Custom handling of api functions
-  // is implemented by adding a "handleRequest" function to the object.
-  var apiFunctions = {};
-
   // Using forEach for convenience, and to bind |module|s & |apiDefs|s via
   // closures.
   function forEach(a, f) {
@@ -149,49 +136,6 @@ var chrome = chrome || {};
     };
   }
 
-  forEach(apiDefinitions, function(apiDef) {
-    chrome[apiDef.namespace] = chrome[apiDef.namespace] || {};
-    var module = chrome[apiDef.namespace];
-    
-    // Setup Functions.
-    if (apiDef.functions) {
-      forEach(apiDef.functions, function(functionDef) {
-        // Module functions may have been defined earlier by hand. Don't clobber
-        // them.
-        if (module[functionDef.name])
-          return;
-
-        var apiFunction = {};      
-        apiFunction.definition = functionDef;
-        apiFunction.name = apiDef.namespace + "." + functionDef.name;;
-        apiFunctions[apiFunction.name] = apiFunction;
-        
-        module[functionDef.name] = bind(apiFunction, function() {
-          validate(arguments, this.definition.parameters);
-    
-          if (this.handleRequest)
-            return this.handleRequest.apply(this, arguments);
-          else 
-            return sendRequest(this.name, arguments,
-                this.definition.parameters);        
-        });
-      });
-    }
-    
-    // Setup Events
-    if (apiDef.events) {
-      forEach(apiDef.events, function(eventDef) {
-        // Module events may have been defined earlier by hand. Don't clobber
-        // them.
-        if (module[eventDef.name])
-          return;
-
-        var eventName = apiDef.namespace + "." + eventDef.name;
-        module[eventDef.name] = new chrome.Event(eventName);
-      });
-    }
-  });
-
   // --- Setup additional api's not currently handled in common/extensions/api
 
   // Page action events send (pageActionId, {tabId, tabUrl}).
@@ -205,26 +149,97 @@ var chrome = chrome || {};
     }
   }
 
-  // Tabs connect()
-  apiFunctions["tabs.connect"].handleRequest = function(tabId, opt_name) {
-    var portId = OpenChannelToTab(tabId, chrome.extension.id_, opt_name || "");
-    return chromeHidden.Port.createPort(portId, opt_name);
-  }
-
-  // chrome.self / chrome.extension.
-  chrome.self = chrome.self || {};
-
   chromeHidden.onLoad.addListener(function (extensionId) {
     chrome.extension = new chrome.Extension(extensionId);
-    // TODO(mpcomplete): self.onConnect is deprecated.  Remove it at 1.0.
+
+    // TODO(mpcomplete): chrome.self is deprecated.  Remove it at 1.0.
     // http://code.google.com/p/chromium/issues/detail?id=16356
-    chrome.self.onConnect = chrome.extension.onConnect;
+    chrome.self = chrome.extension;
+
+    // |apiFunctions| is a hash of name -> object that stores the 
+    // name & definition of the apiFunction. Custom handling of api functions
+    // is implemented by adding a "handleRequest" function to the object.
+    var apiFunctions = {};
+
+    // Read api definitions and setup api functions in the chrome namespace.
+    // TODO(rafaelw): Consider defining a json schema for an api definition
+    //   and validating either here, in a unit_test or both.
+    // TODO(rafaelw): Handle synchronous functions.
+    // TOOD(rafaelw): Consider providing some convenient override points
+    //   for api functions that wish to insert themselves into the call. 
+    var apiDefinitions = JSON.parse(GetExtensionAPIDefinition());
+
+    forEach(apiDefinitions, function(apiDef) {
+      chrome[apiDef.namespace] = chrome[apiDef.namespace] || {};
+      var module = chrome[apiDef.namespace];
+      
+      // Setup Functions.
+      if (apiDef.functions) {
+        forEach(apiDef.functions, function(functionDef) {
+          // Module functions may have been defined earlier by hand. Don't
+          // clobber them.
+          if (module[functionDef.name])
+            return;
+
+          var apiFunction = {};      
+          apiFunction.definition = functionDef;
+          apiFunction.name = apiDef.namespace + "." + functionDef.name;;
+          apiFunctions[apiFunction.name] = apiFunction;
+          
+          module[functionDef.name] = bind(apiFunction, function() {
+            validate(arguments, this.definition.parameters);
+      
+            if (this.handleRequest)
+              return this.handleRequest.apply(this, arguments);
+            else 
+              return sendRequest(this.name, arguments,
+                  this.definition.parameters);        
+          });
+        });
+      }
+
+      // Setup Events
+      if (apiDef.events) {
+        forEach(apiDef.events, function(eventDef) {
+          // Module events may have been defined earlier by hand. Don't clobber
+          // them.
+          if (module[eventDef.name])
+            return;
+
+          var eventName = apiDef.namespace + "." + eventDef.name;
+          module[eventDef.name] = new chrome.Event(eventName);
+        });
+      }
+    });
+
+    apiFunctions["tabs.connect"].handleRequest = function(tabId, opt_name) {
+      var portId = OpenChannelToTab(
+          tabId, chrome.extension.id_, opt_name || "");
+      return chromeHidden.Port.createPort(portId, opt_name);
+    }
+
+    apiFunctions["extension.getViews"].handleRequest = function() {
+      return GetExtensionViews(-1, "ALL");
+    }
+
+    apiFunctions["extension.getBackgroundPage"].handleRequest = function() {
+      return GetExtensionViews(-1, "BACKGROUND")[0] || null;
+    }
+
+    apiFunctions["extension.getToolstrips"].handleRequest =
+        function(windowId) {
+      if (typeof(windowId) == "undefined")
+        windowId = -1;
+      return GetExtensionViews(windowId, "TOOLSTRIP");
+    }
+
+    apiFunctions["extension.getTabContentses"].handleRequest =
+        function(windowId) {
+      if (typeof(windowId) == "undefined")
+        windowId = -1;
+      return GetExtensionViews(windowId, "TAB");
+    }
 
     setupPageActionEvents(extensionId);
   });
-  
-  // Self getViews();
-  apiFunctions["self.getViews"].handleRequest = function() {
-    return GetViews();
-  }
-})();
+ })();

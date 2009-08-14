@@ -68,8 +68,8 @@ ContextList::iterator FindContext(v8::Handle<v8::Context> context) {
 
   ContextList::iterator it = all_contexts.begin();
   for (; it != all_contexts.end(); ++it) {
-     if ((*it)->context == context)
-       break;
+    if ((*it)->context == context)
+      break;
   }
 
   return it;

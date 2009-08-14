@@ -1,4 +1,5 @@
 <script>
+var isToolstrip = 1;
 // This function is called from the C++ browser test. It does a basic sanity
 // test that we can call extension APIs.
 function testTabsAPI() {
@@ -16,6 +17,34 @@ function testTabsLanguageAPI() {
   chrome.tabs.detectLanguage(null, function(language) {
     window.domAutomationController.send(language == 'fr');
   });
+}
+
+// This function is called from the C++ browser test. It tests the getToolstrips
+// function to make sure it can be used as an extension API. This will pass if
+// getToolstrips returns all toolstrip views.
+function testgetToolstripsAPI() {
+  var views = chrome.extension.getToolstrips();
+  window.domAutomationController.send(views.length == 2 &&
+                                      views[0].isToolstrip == 1 &&
+                                      views[1].isToolstrip == 1);
+}
+
+// This function is called from the C++ browser test. It tests the
+// getBackgroundPage function to make sure it can be used as an extension API.
+// This will pass if getBackgroundPage returns background page view.
+function testgetBackgroundPageAPI() {
+  var view = chrome.extension.getBackgroundPage();
+  window.domAutomationController.send(view != null &&
+                                      view.isBackgroundPage == 1);
+}
+
+// This function is called from the C++ browser test. It tests the
+// getTabContentses function to make sure it can be used as an extension API.
+// This will pass if getTabContentses returns tabcontent view.
+function testgetTabContentsesAPI() {
+  var views = chrome.extension.getTabContentses();
+  window.domAutomationController.send(views.length == 1 &&
+                                      views[0].isTabContents == 1);
 }
 
 </script>

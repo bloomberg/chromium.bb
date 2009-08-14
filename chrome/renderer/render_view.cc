@@ -19,6 +19,7 @@
 #include "base/gfx/png_encoder.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/process_util.h"
+#include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
@@ -201,10 +202,14 @@ RenderView::RenderView(RenderThreadBase* render_thread)
       preferred_width_(0),
       send_preferred_width_changes_(false),
       determine_page_text_after_loading_stops_(false),
+      view_type_(ViewType::INVALID),
+      browser_window_id_(-1),
       last_top_level_navigation_page_id_(-1) {
+  Singleton<RenderViewSet>()->render_view_set_.insert(this);
 }
 
 RenderView::~RenderView() {
+  Singleton<RenderViewSet>()->render_view_set_.erase(this);
   if (decrement_shared_popup_at_destruction_)
     shared_popup_counter_->data--;
 
@@ -427,6 +432,10 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_EnableIntrinsicWidthChangedMode,
                         OnEnableIntrinsicWidthChangedMode)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateBrowserWindowId,
+                        OnUpdateBrowserWindowId)
+    IPC_MESSAGE_HANDLER(ViewMsg_NotifyRenderViewType,
+                        OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
 
@@ -2775,6 +2784,14 @@ void RenderView::OnMediaPlayerActionAt(int x,
     return;
 
   webview()->MediaPlayerActionAt(x, y, action);
+}
+
+void RenderView::OnNotifyRendererViewType(ViewType::Type type) {
+  view_type_ = type;
+}
+
+void RenderView::OnUpdateBrowserWindowId(int window_id) {
+  browser_window_id_ = window_id;
 }
 
 void RenderView::OnUpdateBackForwardListCount(int back_list_count,

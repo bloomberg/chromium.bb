@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "chrome/common/view_types.h"
 #include "net/base/load_states.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -372,6 +373,13 @@ class RenderViewHostDelegate {
   // Return this object cast to a TabContents, if it is one. If the object is
   // not a TabContents, returns NULL.
   virtual TabContents* GetAsTabContents();
+
+  // Return id number of browser window which this object is attached to. If no
+  // browser window is attached to, just return -1.
+  virtual int GetBrowserWindowID() const = 0;
+
+  // Return type of RenderView which is attached with this object.
+  virtual ViewType::Type GetRenderViewType() const = 0;
 
   // The RenderView is being constructed (message sent to the renderer process
   // to construct a RenderView).  Now is a good time to send other setup events
