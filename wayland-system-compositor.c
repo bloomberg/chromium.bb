@@ -1193,7 +1193,7 @@ notify_key(struct wlsc_input_device *device,
 		return;
 
 	switch (key | compositor->meta_state) {
-	case KEY_EJECTCD | META_DOWN:
+	case KEY_BACKSPACE | META_DOWN:
 		on_term_signal(SIGTERM, compositor);
 		return;
 
