@@ -60,9 +60,8 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
     ProfileSyncService* service, std::wstring* status_label,
     std::wstring* link_label) {
   MessageType result_type(SYNCED);
-  bool sync_enabled = service->IsSyncEnabledByUser();
 
-  if (sync_enabled) {
+  if (service->HasSyncSetupCompleted()) {
     ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
     AuthErrorState auth_error(service->GetAuthErrorState());
 

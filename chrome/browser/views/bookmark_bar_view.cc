@@ -409,12 +409,10 @@ BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
       browser_(browser),
       throbbing_view_(NULL) {
 #ifdef CHROME_PERSONALIZATION
-  // Obtain a pointer to the profile sync service and add our instance as an
-  // observer.
-  ProfilePersonalization* profile_p13n = profile->GetProfilePersonalization();
-  if (profile_p13n) {
-    sync_service_ = profile_p13n->sync_service();
-    DCHECK(sync_service_);
+  if (profile->GetProfileSyncService()) {
+    // Obtain a pointer to the profile sync service and add our instance as an
+    // observer.
+    sync_service_ = profile->GetProfileSyncService();
     sync_service_->AddObserver(this);
   }
 #endif
@@ -1862,7 +1860,7 @@ void BookmarkBarView::UpdateButtonColors() {
 // not the re-login indicator button should be visible.
 bool BookmarkBarView::ShouldShowSyncErrorButton() {
   bool show_sync_error_button(false);
-  if (sync_service_ && sync_service_->IsSyncEnabledByUser()) {
+  if (sync_service_ && sync_service_->HasSyncSetupCompleted()) {
     std::wstring status_text;
     std::wstring link_text;
     SyncStatusUIHelper::MessageType sync_status;

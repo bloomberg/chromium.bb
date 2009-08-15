@@ -88,7 +88,8 @@ class ProfileSyncService : public BookmarkModelObserver,
   virtual void DisableForUser();
 
   // Whether sync is enabled by user or not.
-  bool IsSyncEnabledByUser() const;
+  bool HasSyncSetupCompleted() const;
+  void SetSyncSetupCompleted();
 
   // BookmarkModelObserver implementation.
   virtual void Loaded(BookmarkModel* model);
@@ -146,7 +147,7 @@ class ProfileSyncService : public BookmarkModelObserver,
   // occurred preventing the action. We make it the duty of ProfileSyncService
   // to open the dialog to easily ensure only one is ever showing.
   bool SetupInProgress() const {
-    return !IsSyncEnabledByUser() && WizardIsVisible();
+    return !HasSyncSetupCompleted() && WizardIsVisible();
   }
   bool WizardIsVisible() const { return wizard_.IsVisible(); }
   void ShowLoginDialog();
@@ -221,6 +222,10 @@ class ProfileSyncService : public BookmarkModelObserver,
   // |sync_disabled| indicates if syncing is being disabled or not.
   void Shutdown(bool sync_disabled);
 
+  // Methods to register and remove preferences.
+  void RegisterPreferences();
+  void ClearPreferences();
+
   // Tests need to override this.
   virtual void InitializeBackend();
 
@@ -252,11 +257,6 @@ class ProfileSyncService : public BookmarkModelObserver,
 
   // Initializes the various settings from the command line.
   void InitSettings();
-
-  // Methods to register, load and remove preferences.
-  void RegisterPreferences();
-  void LoadPreferences();
-  void ClearPreferences();
 
   // Treat the |index|th child of |parent| as a newly added node, and create a
   // corresponding node in the sync domain using |trans|.  All properties

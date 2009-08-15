@@ -116,16 +116,6 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
       gtk_label_new(
           l10n_util::GetStringUTF8(IDS_OPTIONS_CONTENT_TAB_LABEL).c_str()));
 
-#ifdef CHROME_PERSONALIZATION
-  if (Personalization::IsSyncEnabled(profile)) {
-    gtk_notebook_append_page(
-        GTK_NOTEBOOK(notebook_),
-        gtk_label_new("TODO personalization"),
-        gtk_label_new(
-            l10n_util::GetStringUTF8(IDS_OPTIONS_USER_DATA_TAB_LABEL).c_str()));
-  }
-#endif
-
   gtk_notebook_append_page(
       GTK_NOTEBOOK(notebook_),
       advanced_page_.get_page_widget(),

@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/personalization.h"
 #include "chrome/browser/sync/personalization_strings.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/time_format.h"
 #include "views/window/window.h"
@@ -32,8 +33,8 @@
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 
-// Default sync server URL.	
-static const char kSyncServerUrl[] = "https://clients4.google.com/chrome-sync";	
+// Default sync server URL.
+static const char kSyncServerUrl[] = "https://clients4.google.com/chrome-sync";
 
 ProfileSyncService::ProfileSyncService(Profile* profile)
     : last_auth_error_(AUTH_ERROR_NONE),
@@ -77,46 +78,18 @@ void ProfileSyncService::InitSettings() {
       }
     }
   }
-
-  if (command_line.HasSwitch(switches::kSyncServicePort)) {
-    std::string port_str = WideToUTF8(command_line.GetSwitchValue(
-        switches::kSyncServicePort));
-    if (!port_str.empty()) {
-      GURL::Replacements replacements;
-      replacements.SetPortStr(port_str);
-      sync_service_url_ = sync_service_url_.ReplaceComponents(replacements);
-    }
-  }
 }
 
 void ProfileSyncService::RegisterPreferences() {
   PrefService* pref_service = profile_->GetPrefs();
-  if (pref_service->IsPrefRegistered(prefs::kSyncUserName))
+  if (pref_service->IsPrefRegistered(prefs::kSyncLastSyncedTime))
     return;
-  pref_service->RegisterStringPref(prefs::kSyncUserName, std::wstring());
-  pref_service->RegisterStringPref(prefs::kSyncLastSyncedTime, std::wstring());
+  pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
-}
-
-void ProfileSyncService::LoadPreferences() {
-  PrefService* pref_service = profile_->GetPrefs();
-  std::wstring last_synced_time_string =
-      pref_service->GetString(prefs::kSyncLastSyncedTime);
-  if (!last_synced_time_string.empty()) {
-    int64 last_synced_time;
-    bool success = StringToInt64(WideToUTF16(last_synced_time_string),
-                                 &last_synced_time);
-    if (success) {
-      last_synced_time_ = base::Time::FromInternalValue(last_synced_time);
-    } else {
-      NOTREACHED();
-    }
-  }
 }
 
 void ProfileSyncService::ClearPreferences() {
   PrefService* pref_service = profile_->GetPrefs();
-  pref_service->ClearPref(prefs::kSyncUserName);
   pref_service->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service->ClearPref(prefs::kSyncHasSetupCompleted);
 
@@ -132,7 +105,8 @@ void ProfileSyncService::StartUp() {
   if (backend_.get())
     return;
 
-  LoadPreferences();
+  last_synced_time_ = base::Time::FromInternalValue(
+      profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
 
   backend_.reset(new SyncBackendHost(this, profile_->GetPath()));
 
@@ -291,14 +265,21 @@ bool ProfileSyncService::MergeAndSyncAcceptanceNeeded() const {
          model_associator_->SyncModelHasUserCreatedNodes();
 }
 
-bool ProfileSyncService::IsSyncEnabledByUser() const {
+bool ProfileSyncService::HasSyncSetupCompleted() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted);
+}
+
+void ProfileSyncService::SetSyncSetupCompleted() {
+  PrefService* prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kSyncHasSetupCompleted, true);
+  prefs->ScheduleSavePersistentPrefs();
 }
 
 void ProfileSyncService::UpdateLastSyncedTime() {
   last_synced_time_ = base::Time::Now();
-  profile_->GetPrefs()->SetString(prefs::kSyncLastSyncedTime,
-      Int64ToWString(last_synced_time_.ToInternalValue()));
+  profile_->GetPrefs()->SetInt64(prefs::kSyncLastSyncedTime,
+      last_synced_time_.ToInternalValue());
+  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 }
 
 void ProfileSyncService::BookmarkNodeAdded(BookmarkModel* model,
@@ -519,11 +500,6 @@ int ProfileSyncService::CalculateBookmarkModelInsertionIndex(
 
 void ProfileSyncService::OnBackendInitialized() {
   backend_initialized_ = true;
-
-  PrefService* pref_service = profile_->GetPrefs();
-  DCHECK(pref_service->IsPrefRegistered(prefs::kSyncUserName));
-  pref_service->SetString(prefs::kSyncUserName,
-                          UTF16ToWide(backend_->GetAuthenticatedUsername()));
   StartProcessingChangesIfReady();
 
   // The very first time the backend initializes is effectively the first time

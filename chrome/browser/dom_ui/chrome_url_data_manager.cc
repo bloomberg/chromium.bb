@@ -12,12 +12,6 @@
 #include "base/thread.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#ifdef CHROME_PERSONALIZATION
-// TODO(timsteele): Remove all CHROME_PERSONALIZATION code in this file.
-// It is only temporarily needed to configure some personalization data sources
-// that will go away soon.
-#include "chrome/browser/sync/personalization.h"
-#endif
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/url_constants.h"
@@ -118,11 +112,6 @@ void RegisterURLRequestChromeJob() {
                                       &ChromeURLDataManager::Factory);
   URLRequest::RegisterProtocolFactory(chrome::kPrintScheme,
                                       &ChromeURLDataManager::Factory);
-#ifdef CHROME_PERSONALIZATION
-  url_util::AddStandardScheme(kPersonalizationScheme);
-  URLRequest::RegisterProtocolFactory(kPersonalizationScheme,
-                                      &ChromeURLDataManager::Factory);
-#endif
 }
 
 void UnregisterURLRequestChromeJob() {
@@ -137,13 +126,7 @@ void UnregisterURLRequestChromeJob() {
 void ChromeURLDataManager::URLToRequest(const GURL& url,
                                         std::string* source_name,
                                         std::string* path) {
-#ifdef CHROME_PERSONALIZATION
-  DCHECK(url.SchemeIs(kChromeURLScheme) ||
-         url.SchemeIs(kPersonalizationScheme) ||
-         url.SchemeIs(chrome::kPrintScheme));
-#else
   DCHECK(url.SchemeIs(kChromeURLScheme) || url.SchemeIs(chrome::kPrintScheme));
-#endif
 
   if (!url.is_valid()) {
     NOTREACHED();

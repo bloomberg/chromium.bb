@@ -31,6 +31,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/spellchecker.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/thumbnail_store.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/browser/visitedlink_event_listener.h"
@@ -380,11 +381,9 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetBookmarkModel();
   }
 
-#ifdef CHROME_PERSONALIZATION
-  virtual ProfilePersonalization* GetProfilePersonalization() {
-    return profile_->GetProfilePersonalization();
+  virtual ProfileSyncService* GetProfileSyncService() {
+    return NULL;
   }
-#endif
 
   virtual bool IsSameProfile(Profile* profile) {
     if (profile == static_cast<Profile*>(this))
@@ -516,11 +515,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   prefs->AddPrefObserver(prefs::kEnableSpellCheck, this);
   prefs->AddPrefObserver(prefs::kEnableAutoSpellCorrect, this);
 
-#ifdef CHROME_PERSONALIZATION
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync))
-    personalization_.reset(Personalization::CreateProfilePersonalization(this));
-#endif
-
   if (CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kPrivacyBlacklist)) {
     std::wstring option = CommandLine::ForCurrentProcess()->GetSwitchValue(
@@ -541,6 +535,10 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   // Listen for theme installation.
   registrar_.Add(this, NotificationType::THEME_INSTALLED,
                  NotificationService::AllSources());
+
+  // Listen for bookmark model load, to bootstrap the sync service.
+  registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
+                 Source<Profile>(this));
 }
 
 void ProfileImpl::InitExtensions() {
@@ -633,7 +631,7 @@ ProfileImpl::~ProfileImpl() {
   prefs->RemovePrefObserver(prefs::kEnableAutoSpellCorrect, this);
 
 #ifdef CHROME_PERSONALIZATION
-  personalization_.reset();
+  sync_service_.reset();
 #endif
 
   // Both HistoryService and WebDataService maintain threads for background
@@ -1210,6 +1208,10 @@ void ProfileImpl::Observe(NotificationType type,
   } else if (NotificationType::THEME_INSTALLED == type) {
     Extension* extension = Details<Extension>(details).ptr();
     SetTheme(extension);
+  } else if (NotificationType::BOOKMARK_MODEL_LOADED == type) {
+    GetProfileSyncService();  // Causes lazy-load if sync is enabled.
+    registrar_.Remove(this, NotificationType::BOOKMARK_MODEL_LOADED,
+                      Source<Profile>(this));
   }
 }
 
@@ -1217,8 +1219,20 @@ void ProfileImpl::StopCreateSessionServiceTimer() {
   create_session_service_timer_.Stop();
 }
 
+ProfileSyncService* ProfileImpl::GetProfileSyncService() {
 #ifdef CHROME_PERSONALIZATION
-ProfilePersonalization* ProfileImpl::GetProfilePersonalization() {
-  return personalization_.get();
-}
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync)) {
+    if (!sync_service_.get())
+      InitSyncService();
+    return sync_service_.get();
+  }
 #endif
+  return NULL;
+}
+
+void ProfileImpl::InitSyncService() {
+#ifdef CHROME_PERSONALIZATION
+  sync_service_.reset(new ProfileSyncService(this));
+  sync_service_->Initialize();
+#endif
+}

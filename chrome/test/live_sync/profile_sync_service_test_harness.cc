@@ -116,8 +116,8 @@ ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(
 }
 
 bool ProfileSyncServiceTestHarness::SetupSync() {
-  service_ = profile_->GetProfilePersonalization()->sync_service();
-  profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, true);
+  service_ = profile_->GetProfileSyncService();
+  service_->SetSyncSetupCompleted();
   service_->EnableForUser();
 
   // Needed to avoid showing the login dialog. Well aware this is egregious.

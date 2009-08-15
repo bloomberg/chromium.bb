@@ -228,11 +228,9 @@ class TestingProfile : public Profile {
   // history service processes all pending requests.
   void BlockUntilHistoryProcessesPendingRequests();
 
-#ifdef CHROME_PERSONALIZATION
-  virtual ProfilePersonalization* GetProfilePersonalization() {
+  virtual ProfileSyncService* GetProfileSyncService() {
     return NULL;
   }
-#endif
 
  protected:
   // The path of the profile; the various database and other files are relative

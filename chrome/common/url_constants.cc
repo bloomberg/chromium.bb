@@ -55,4 +55,10 @@ const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIThumbnailPath[] = "thumb";
 const char kChromeUIThemePath[] = "theme";
 
+const char kSyncResourcesPath[] = "syncresources";
+const char kSyncGaiaLoginPath[] = "gaialogin";
+const char kSyncMergeAndSyncPath[] = "mergeandsync";
+const char kSyncThrobberPath[] = "throbber.png";
+const char kSyncSetupFlowPath[] = "setup";
+
 }  // namespace chrome

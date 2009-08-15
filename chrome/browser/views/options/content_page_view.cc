@@ -69,13 +69,11 @@ ContentPageView::ContentPageView(Profile* profile)
 #endif
       OptionsPageView(profile) {
 #ifdef CHROME_PERSONALIZATION
-  ProfilePersonalization* profile_p13n = profile->GetProfilePersonalization();
-  if (profile_p13n) {
-    sync_service_ = profile_p13n->sync_service();
-    DCHECK(sync_service_);
+  if (profile->GetProfileSyncService()) {
+    sync_service_ = profile->GetProfileSyncService();
     sync_service_->AddObserver(this);
-  }
 #endif
+  }
 }
 
 ContentPageView::~ContentPageView() {
@@ -135,7 +133,7 @@ void ContentPageView::ButtonPressed(views::Button* sender) {
 #ifdef CHROME_PERSONALIZATION
   } else if (sender == sync_start_stop_button_) {
     DCHECK(sync_service_);
-    if (sync_service_->IsSyncEnabledByUser()) {
+    if (sync_service_->HasSyncSetupCompleted()) {
       sync_service_->DisableForUser();
       ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
     } else {
@@ -457,10 +455,10 @@ void ContentPageView::UpdateSyncControls() {
   std::wstring status_label;
   std::wstring link_label;
   std::wstring button_label;
-  bool sync_enabled = sync_service_->IsSyncEnabledByUser();
+  bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
   bool status_has_error = SyncStatusUIHelper::GetLabels(sync_service_,
       &status_label, &link_label) == SyncStatusUIHelper::SYNC_ERROR;
-  button_label = sync_enabled ? kStopSyncButtonLabel :
+  button_label = sync_setup_completed ? kStopSyncButtonLabel :
                  sync_service_->SetupInProgress() ? UTF8ToWide(kSettingUpText)
                  : kStartSyncButtonLabel;
 

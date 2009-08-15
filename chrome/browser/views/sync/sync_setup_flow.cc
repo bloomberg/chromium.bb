@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/sync/sync_setup_flow.h"
-#include "chrome/common/pref_service.h"
 
 static const int kSyncDialogWidth = 270;
 static const int kSyncDialogHeight = 369;
@@ -139,9 +138,7 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
   DCHECK(json_retval.empty());
   container_->set_flow(NULL);  // Sever ties from the wizard.
   if (current_state_ == SyncSetupWizard::DONE) {
-    PrefService* prefs = service_->profile()->GetPrefs();
-    prefs->SetBoolean(prefs::kSyncHasSetupCompleted, true);
-    prefs->ScheduleSavePersistentPrefs();
+    service_->SetSyncSetupCompleted();
   }
 
   // Record the state at which the user cancelled the signon dialog.

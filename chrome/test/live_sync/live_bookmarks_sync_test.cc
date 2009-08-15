@@ -15,6 +15,11 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/test/ui_test_utils.h"
 
+namespace switches {
+const wchar_t kSyncUserForTest[] = L"sync-user-for-test";
+const wchar_t kSyncPasswordForTest[] = L"sync-password-for-test";
+}
+
 // BookmarkLoadObserver is used when blocking until the BookmarkModel
 // finishes loading. As soon as the BookmarkModel finishes loading the message
 // loop is quit.

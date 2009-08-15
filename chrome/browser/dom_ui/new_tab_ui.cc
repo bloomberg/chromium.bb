@@ -1551,7 +1551,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     }
 
 #ifdef CHROME_PERSONALIZATION
-    if (Personalization::IsSyncEnabled(GetProfile())) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync)) {
       AddMessageHandler(Personalization::CreateNewTabPageHandler(this));
     }
 #endif

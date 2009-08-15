@@ -566,4 +566,10 @@ const wchar_t kDevToolsOpenDocked[] = L"devtools.open_docked";
 // Integer location of the split bar in the browser view.
 const wchar_t kDevToolsSplitLocation[] = L"devtools.split_location";
 
+// 64-bit integer serialization of the base::Time when the last sync occured.
+const wchar_t kSyncLastSyncedTime[] = L"sync.last_synced_time";
+
+// Boolean specifying whether the user finished setting up sync.
+const wchar_t kSyncHasSetupCompleted[] = L"sync.has_setup_completed";
+
 }  // namespace prefs

@@ -20,6 +20,11 @@ class BookmarkModel;
 class BookmarkNode;
 class Profile;
 
+namespace switches {
+extern const wchar_t kSyncUserForTest[];
+extern const wchar_t kSyncPasswordForTest[];
+}
+
 // TODO(timsteele): This should be moved out of personalization_unit_tests into
 // its own project that doesn't get run by default on the standard buildbot
 // without a valid sync server set up.
@@ -59,7 +64,7 @@ class LiveBookmarksSyncTest : public InProcessBrowserTest {
  protected:
   std::string username_;
   std::string password_;
- 
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LiveBookmarksSyncTest);
 };

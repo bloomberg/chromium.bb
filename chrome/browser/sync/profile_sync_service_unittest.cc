@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/common/pref_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_profile.h"
 
 using std::vector;
@@ -68,12 +68,8 @@ class TestProfileSyncService : public ProfileSyncService {
  public:
   explicit TestProfileSyncService(Profile* profile)
       : ProfileSyncService(profile) {
-    PrefService* pref_service = profile->GetPrefs();
-    if (pref_service->IsPrefRegistered(prefs::kSyncUserName))
-      return;
-    pref_service->RegisterStringPref(prefs::kSyncUserName, string16());
-    pref_service->RegisterStringPref(prefs::kSyncLastSyncedTime, string16());
-    pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, true);
+    RegisterPreferences();
+    SetSyncSetupCompleted();
   }
   virtual ~TestProfileSyncService() {
   }
@@ -284,7 +280,7 @@ class ProfileSyncServiceTest : public testing::Test {
     }
     // The service may have already started sync automatically if it's already
     // enabled by user once.
-    if (!service_->IsSyncEnabledByUser())
+    if (!service_->HasSyncSetupCompleted())
       service_->EnableForUser();
   }
   void StopSyncService(SaveOption save) {

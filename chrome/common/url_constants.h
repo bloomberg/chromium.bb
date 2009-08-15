@@ -62,6 +62,13 @@ extern const char kChromeUINewTabHost[];
 extern const char kChromeUIThumbnailPath[];
 extern const char kChromeUIThemePath[];
 
+// Sync related URL components.
+extern const char kSyncResourcesPath[];
+extern const char kSyncGaiaLoginPath[];
+extern const char kSyncMergeAndSyncPath[];
+extern const char kSyncThrobberPath[];
+extern const char kSyncSetupFlowPath[];
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_URL_CONSTANTS_H_

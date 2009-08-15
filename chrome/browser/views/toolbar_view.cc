@@ -1085,9 +1085,8 @@ void ToolbarView::CreateAppMenu() {
                                           IDS_SHOW_DOWNLOADS);
   app_menu_contents_->AddSeparator();
 #ifdef CHROME_PERSONALIZATION
-  if (Personalization::IsSyncEnabled(profile_)) {
-    app_menu_contents_->AddItem(
-        IDC_P13N_INFO,
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync)) {
+    app_menu_contents_->AddItem(IDC_P13N_INFO,
         Personalization::GetMenuItemInfoText(browser()));
   }
 #endif

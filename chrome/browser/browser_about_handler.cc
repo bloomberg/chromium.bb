@@ -24,6 +24,7 @@
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/sync/personalization.h"
 #include "chrome/common/histogram_synchronizer.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
@@ -64,6 +65,7 @@ const char kVersionPath[] = "version";
 const char kCreditsPath[] = "credits";
 const char kTermsPath[] = "terms";
 const char kLinuxSplash[] = "linux-splash";
+const char kSyncPath[] = "sync";
 
 // Points to the singleton AboutSource object, if any.
 ChromeURLDataManager::DataSource* about_source = NULL;
@@ -436,6 +438,10 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
     response = AboutCredits();
   } else if (path == kTermsPath) {
     response = AboutTerms();
+  } else if (path == kSyncPath) {
+#ifdef CHROME_PERSONALIZATION
+    response = Personalization::AboutSync();
+#endif
   }
 #if defined(OS_LINUX)
   else if (path == kLinuxSplash) {

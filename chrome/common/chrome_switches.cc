@@ -572,4 +572,7 @@ const wchar_t kEnableDatabases[] = L"enable-databases";
 
 // Enable ApplicationCache. Still mostly not there.
 const wchar_t kEnableApplicationCache[] = L"enable-application-cache";
+
+// Override the default server used for profile sync.
+const wchar_t kSyncServiceURL[]  = L"sync-url";
 }  // namespace switches

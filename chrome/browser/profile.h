@@ -15,9 +15,6 @@
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
-#ifdef CHROME_PERSONALIZATION
-#include "chrome/browser/sync/personalization.h"
-#endif
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -37,6 +34,7 @@ class HistoryService;
 class NavigationController;
 class PasswordStore;
 class PrefService;
+class ProfileSyncService;
 class SessionService;
 class SpellChecker;
 class SSLHostState;
@@ -258,9 +256,8 @@ class Profile {
   // Returns the BookmarkModel, creating if not yet created.
   virtual BookmarkModel* GetBookmarkModel() = 0;
 
-#ifdef CHROME_PERSONALIZATION
-  virtual ProfilePersonalization* GetProfilePersonalization() = 0;
-#endif
+  // Returns the ProfileSyncService, creating if not yet created.
+  virtual ProfileSyncService* GetProfileSyncService() = 0;
 
   // Return whether 2 profiles are the same. 2 profiles are the same if they
   // represent the same profile. This can happen if there is pointer equality
@@ -383,9 +380,9 @@ class ProfileImpl : public Profile,
   virtual void MarkAsCleanShutdown();
   virtual void InitExtensions();
   virtual void InitWebResources();
-#ifdef CHROME_PERSONALIZATION
-  virtual ProfilePersonalization* GetProfilePersonalization();
-#endif
+  virtual ProfileSyncService* GetProfileSyncService();
+  void InitSyncService();
+
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -436,7 +433,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebResourceService> web_resource_service_;
 
 #ifdef CHROME_PERSONALIZATION
-  scoped_ptr<ProfilePersonalization> personalization_;
+  scoped_ptr<ProfileSyncService> sync_service_;
 #endif
 
   ChromeURLRequestContext* request_context_;

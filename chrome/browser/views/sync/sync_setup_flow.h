@@ -44,7 +44,7 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   // HtmlDialogUIDelegate implementation.
   // Get the HTML file path for the content to load in the dialog.
   virtual GURL GetDialogContentURL() const {
-    return GURL("cloudy://resources/setup");
+    return GURL("chrome://syncresources/setup");
   }
 
   // HtmlDialogUIDelegate implementation.

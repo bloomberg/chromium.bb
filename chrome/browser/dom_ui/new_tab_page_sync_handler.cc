@@ -76,9 +76,8 @@ NewTabPageSyncHandler::~NewTabPageSyncHandler() {
 }
 
 DOMMessageHandler* NewTabPageSyncHandler::Attach(DOMUI* dom_ui) {
-  Profile* p = dom_ui->GetProfile();
-  sync_service_ = p->GetProfilePersonalization()->sync_service();
-  DCHECK(sync_service_);
+  sync_service_ = dom_ui->GetProfile()->GetProfileSyncService();
+  DCHECK(sync_service_);  // This shouldn't get called by an incognito NTP.
   sync_service_->AddObserver(this);
   return DOMMessageHandler::Attach(dom_ui);
 }
@@ -101,7 +100,7 @@ void NewTabPageSyncHandler::HandleResizeP13N(const Value* value) {
 void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   DCHECK(!waiting_for_initial_page_load_);
 
-  if (!sync_service_->IsSyncEnabledByUser() &&
+  if (!sync_service_->HasSyncSetupCompleted() &&
       !sync_service_->SetupInProgress()) {
     // Clear the page status, without showing the promotion or sync ui.
     // TODO(timsteele): This is fine, but if the page is refreshed or another
@@ -130,7 +129,7 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
 void NewTabPageSyncHandler::HandleGetSyncMessage(const Value* value) {
     waiting_for_initial_page_load_ = false;
 
-  if (!sync_service_->IsSyncEnabledByUser() &&
+  if (!sync_service_->HasSyncSetupCompleted() &&
       !sync_service_->SetupInProgress()) {
     if (Personalization::IsGoogleGAIACookieInstalled()) {
       // Sync has not been enabled, and the user has logged in to GAIA.
@@ -145,7 +144,7 @@ void NewTabPageSyncHandler::HandleGetSyncMessage(const Value* value) {
 
 void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
   DCHECK(!waiting_for_initial_page_load_);
-  if (sync_service_->IsSyncEnabledByUser()) {
+  if (sync_service_->HasSyncSetupCompleted()) {
     // User clicked 'Login again' link to re-authenticate.
     sync_service_->ShowLoginDialog();
   } else {

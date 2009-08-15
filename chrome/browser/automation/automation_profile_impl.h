@@ -152,8 +152,8 @@ class AutomationProfileImpl : public Profile {
   }
 
 #ifdef CHROME_PERSONALIZATION
-  virtual ProfilePersonalization* GetProfilePersonalization() {
-    return original_profile_->GetProfilePersonalization();
+  virtual ProfileSyncService* GetProfileSyncService() {
+    return original_profile_->GetProfileSyncService();
   }
 #endif
 

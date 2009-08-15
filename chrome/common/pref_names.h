@@ -211,6 +211,9 @@ extern const wchar_t kNTPShownSections[];
 
 extern const wchar_t kDevToolsOpenDocked[];
 extern const wchar_t kDevToolsSplitLocation[];
+
+extern const wchar_t kSyncLastSyncedTime[];
+extern const wchar_t kSyncHasSetupCompleted[];
 }
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

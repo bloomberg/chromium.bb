@@ -14,6 +14,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/sync/sync_setup_flow.h"
 #include "chrome/browser/views/sync/sync_setup_wizard.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/test_browser_window.h"
@@ -27,6 +29,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   explicit ProfileSyncServiceForWizardTest(Profile* profile)
     : ProfileSyncService(profile), user_accepted_merge_and_sync_(false),
       user_cancelled_dialog_(false) {
+    RegisterPreferences();
   }
 
   virtual ~ProfileSyncServiceForWizardTest() { }
@@ -68,27 +71,17 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceForWizardTest);
 };
 
-class ProfilePersonalizationTestImpl : public ProfilePersonalization {
+class TestingProfileWithSyncService : public TestingProfile {
  public:
-  explicit ProfilePersonalizationTestImpl(Profile* p)
-      : sync_service_(new ProfileSyncServiceForWizardTest(p)) {
+  TestingProfileWithSyncService() {
+    sync_service_.reset(new ProfileSyncServiceForWizardTest(this));
   }
-  virtual ProfileSyncService* sync_service() { return sync_service_.get(); }
+
+  virtual ProfileSyncService* GetProfileSyncService() {
+    return sync_service_.get();
+  }
  private:
   scoped_ptr<ProfileSyncService> sync_service_;
-};
-
-class TestingProfileWithPersonalization : public TestingProfile {
- public:
-  TestingProfileWithPersonalization() {
-    personalization_.reset(new ProfilePersonalizationTestImpl(this));
-  }
-
-  virtual ProfilePersonalization* GetProfilePersonalization() {
-    return personalization_.get();
-  }
- private:
-  scoped_ptr<ProfilePersonalization> personalization_;
 };
 
 class TestBrowserWindowForWizardTest : public TestBrowserWindow {
@@ -154,19 +147,17 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
   SyncSetupWizardTest() : test_window_(NULL), wizard_(NULL) { }
   virtual ~SyncSetupWizardTest() { }
   virtual void SetUp() {
-    set_profile(new TestingProfileWithPersonalization());
+    set_profile(new TestingProfileWithSyncService());
     profile()->CreateBookmarkModel(false);
     // Wait for the bookmarks model to load.
     profile()->BlockUntilBookmarkModelLoaded();
-    profile()->GetPrefs()->RegisterBooleanPref(prefs::kSyncHasSetupCompleted,
-                                              false);
     set_browser(new Browser(Browser::TYPE_NORMAL, profile()));
     test_window_ = new TestBrowserWindowForWizardTest(browser());
     set_window(test_window_);
     browser()->set_window(window());
     BrowserList::SetLastActive(browser());
     service_ = static_cast<ProfileSyncServiceForWizardTest*>(
-        profile()->GetProfilePersonalization()->sync_service());
+        profile()->GetProfileSyncService());
     wizard_.reset(new SyncSetupWizard(service_));
   }
 
