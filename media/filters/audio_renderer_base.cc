@@ -78,25 +78,16 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
   scoped_ptr<FilterCallback> c(callback);
   decoder_ = decoder;
 
-  // Defer initialization until all scheduled reads have completed.
-  if (!OnInitialize(decoder_->media_format())) {
-    host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
-    callback->Run();
-    return;
-  }
-
   // Get the media properties to initialize our algorithms.
   int channels = 0;
   int sample_rate = 0;
   int sample_bits = 0;
-  bool ret = ParseMediaFormat(decoder_->media_format(),
-                              &channels,
-                              &sample_rate,
-                              &sample_bits);
-
-  // We should have successfully parsed the media format, or we would not have
-  // been created.
-  DCHECK(ret);
+  if (!ParseMediaFormat(decoder_->media_format(), &channels, &sample_rate,
+                        &sample_bits)) {
+    host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
+    callback->Run();
+    return;
+  }
 
   // Create a callback so our algorithm can request more reads.
   AudioRendererAlgorithmBase::RequestReadCallback* cb =
@@ -105,13 +96,20 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
   // Construct the algorithm.
   algorithm_.reset(new AudioRendererAlgorithmOLA());
 
-  // Initialize our algorithm with media properties, initial playback rate
-  // (may be 0), and a callback to request more reads from the data source.
+  // Initialize our algorithm with media properties, initial playback rate,
+  // and a callback to request more reads from the data source.
   algorithm_->Initialize(channels,
                          sample_rate,
                          sample_bits,
-                         GetPlaybackRate(),
+                         0.0f,
                          cb);
+
+  // Give the subclass an opportunity to initialize itself.
+  if (!OnInitialize(decoder_->media_format())) {
+    host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
+    callback->Run();
+    return;
+  }
 
   // Finally, execute the start callback.
   state_ = kPaused;
