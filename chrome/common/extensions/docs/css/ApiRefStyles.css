@@ -73,6 +73,10 @@ div#toc {
   padding-left: 1em;
 }
 
+#toc li {
+  margin-top: 0;
+}
+
 div#breadcrumbs {
   display: inline;
   font-size: 80%;
