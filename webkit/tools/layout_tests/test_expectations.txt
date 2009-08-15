@@ -657,8 +657,6 @@ BUG13907 SKIP : LayoutTests/media/media-load-event.html = FAIL
 BUG13907 SKIP : LayoutTests/media/audio-mpeg-supported.html = FAIL
 // This test crashes in debug build not in release build.
 BUG13907 WIN : LayoutTests/media/video-can-play-type.html = FAIL
-// This test is flaky.
-BUG13907 WIN DEBUG : LayoutTests/media/video-dom-autobuffer.html = PASS FAIL
 // This test crashes in debug build.
 BUG13907 WIN DEBUG : LayoutTests/media/video-document-types.html = FAIL CRASH
 BUG13907 WIN RELEASE : LayoutTests/media/video-document-types.html = PASS FAIL
@@ -2571,6 +2569,7 @@ BUG16779 SKIP : LayoutTests/media/video-currentTime-set.html = FAIL CRASH TIMEOU
 BUG16779 SKIP : LayoutTests/media/video-currentTime-set2.html = PASS FAIL CRASH TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-currentTime.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-display-toggle.html = FAIL TIMEOUT CRASH
+BUG16779 SKIP : LayoutTests/media/video-dom-autobuffer.html = PASS FAIL
 BUG16779 SKIP : LayoutTests/media/video-dom-autoplay.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-dom-src.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-error-abort.html = FAIL CRASH TIMEOUT
