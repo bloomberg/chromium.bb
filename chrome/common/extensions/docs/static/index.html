@@ -1,13 +1,57 @@
+<style>
+#pics {
+  margin:2em 1em 1.5em;
+}
+
+#pics td {
+  text-align:center;
+  width:33%!important;
+  border:none;
+  padding:1em;
+  font-size:90%;
+}
+
+#pics img {
+  width:180px;
+  height:85px;
+  border:1px solid black;
+}
+</style>
+
 <div id="pageData-title" class="pageData">Chrome Extensions Developer Documentation</div>
 
-<p> If you want to customize Google Chrome, you've come to the right place. An <em>extension</em> is a bundle of web code (HTML, JavaScript, perhaps some CSS) that lets you add functionality or a bit of user interface (usually both) to the browser. <a href="http://dev.chromium.org/developers/design-documents/extensions/samples">Examples of extensions</a> include a mail checker, a newsfeed subscriber, and a status monitor.<br>
-</p>
+<h3>Hello There!</h3>
 
+<p><em>Extensions</em> are small software programs that can modify and enhance the functionality of Google Chrome.
 
-<p>[Maybe add some nice enticing pictures of toolstrips and moles (when we have them)]</p>
+<p>They are written using web technologies like HTML, JavaScript, and CSS. So if you know how to write web pages, you already know most of what you need to know to write extensions.
 
+<p>Some examples of things you can build with an extension include:
 
-<p>If you just want to dive in,
-try <a href="getstarted.html">Get Started</a>.
-Otherwise, if you'd prefer to start with the high level overview,
-try <a href="overview.html">Overview</a>.
+<table width="100%" id="pics">
+  <tr>
+    <td valign="top">
+      <b>Toolstrips</b><br>
+      <img src="images/index/toolstrip.png"><br>
+      Display small toolbars in Google Chrome's chrome.
+    </td>
+    <td valign="top">
+      <b>Page actions</b><br>
+      <img src="images/index/page_action.png"><br>
+      Add buttons to the Omnibox that get displayed for specific pages.
+    </td>
+    <td valign="top">
+      <b>Content scripts</b><br>
+      <img src="images/index/content_script.png"><br>
+      Modify the look and behavior of web pages.
+    </td>
+  </tr>
+</table>
+
+<p>This website contains all the information you need to start building extensions. To begin, choose one of:
+
+<ul>
+  <li><a href="getstarted.html">Get Started</a>: Build a simple "Hello, World" extension in about 5 minutes.
+  <li><a href="overview.html">Overview</a>: Dig deeper into the fundamental design points of Google Chrome's extension system.
+  <li><a href="#">Reference</a>: The complete listing of all the features and APIs.
+</ul>
