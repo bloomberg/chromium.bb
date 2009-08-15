@@ -9,6 +9,7 @@
 
 #include "chrome/browser/renderer_host/resource_handler.h"
 
+class MessageLoop;
 class ResourceDispatcherHost;
 class URLRequest;
 
@@ -61,7 +62,12 @@ class BufferedResourceHandler : public ResourceHandler {
   bool ShouldDownload(bool* need_plugin_list);
 
   // Called on the file thread to load the list of plugins.
-  void LoadPlugins();
+  static void LoadPlugins(BufferedResourceHandler* handler,
+                          MessageLoop* main_message_loop);
+
+  // Runs on the main thread to notify the IO thread that plugins have been
+  // loaded.  This is needed since the file thread outlives the IO thread.
+  static void NotifyPluginsLoaded(BufferedResourceHandler* handler);
 
   // Called on the IO thread once the list of plugins has been loaded.
   void OnPluginsLoaded();

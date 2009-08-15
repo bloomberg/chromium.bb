@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -331,8 +332,15 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
   host_->PauseRequest(info->process_id, info->request_id, true);
 
   // Schedule plugin loading on the file thread.
+  // Note: it's possible that the only reference to this object is the task.  If
+  // If the task executes on the file thread, and before it returns, the task it
+  // posts to the IO thread runs, then this object will get destructed on the
+  // file thread.  This breaks assumptions in other message handlers (i.e. when
+  // unregistering with NotificationService in the destructor).
+  AddRef();
   ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &BufferedResourceHandler::LoadPlugins));
+      NewRunnableFunction(&BufferedResourceHandler::LoadPlugins,
+          this, host_->ui_loop()));
   return true;
 }
 
@@ -396,14 +404,28 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
       GURL(), type, "", allow_wildcard, &info, NULL);
 }
 
-void BufferedResourceHandler::LoadPlugins() {
+void BufferedResourceHandler::LoadPlugins(BufferedResourceHandler* handler,
+                                          MessageLoop* main_message_loop) {
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
-  ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &BufferedResourceHandler::OnPluginsLoaded));
+
+  // Note, we want to get to the IO thread now, but the file thread outlives it
+  // so we can't post a task to it directly as it might be in the middle of
+  // destruction.  So hop through the main thread, where the destruction of the
+  // IO thread happens and hence no race conditions exist.
+  main_message_loop->PostTask(FROM_HERE,
+      NewRunnableFunction(&BufferedResourceHandler::NotifyPluginsLoaded,
+          handler));
+}
+
+void BufferedResourceHandler::NotifyPluginsLoaded(
+    BufferedResourceHandler* handler) {
+  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(handler, &BufferedResourceHandler::OnPluginsLoaded));
 }
 
 void BufferedResourceHandler::OnPluginsLoaded() {
+  Release();
   wait_for_plugins_ = false;
   if (!request_)
     return;
