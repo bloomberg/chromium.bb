@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #ifdef CHROME_PERSONALIZATION
-#ifndef COMPILING_SYNCAPI_STUB  // This test requires the real deal syncapi.
+#ifndef COMPILING_SYNCAPI_STUB  // This test requires the real-deal syncapi.
 
 #include <stack>
 #include <vector>
