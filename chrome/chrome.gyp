@@ -5,6 +5,13 @@
 {
   'variables': {
     'chromium_code': 1,
+
+    # Whether or not browser sync code is built in.
+    'chrome_personalization': 1,
+
+    # Used to build and statically link a stub (no-op) syncapi engine.
+    'use_syncapi_stub' : 1,
+
     # Define the common dependencies that contain all the actual
     # Chromium functionality.  This list gets pulled in below by
     # the link of the actual chrome (or chromium) executable on
@@ -111,6 +118,12 @@
       ['OS=="linux" and toolkit_views==1', {'sources/': [
         ['include', '_views\\.cc$'],
       ]}],
+      ['OS=="win" and use_syncapi_stub==1', {
+        'defines': ['COMPILING_SYNCAPI_STUB'],
+      }],  # use_syncapi_stub==1
+      ['OS=="win" and chrome_personalization==1', {
+         'defines': ['CHROME_PERSONALIZATION=1'],
+      }],  # chrome_personalization==1
     ],
   },
   'targets': [
