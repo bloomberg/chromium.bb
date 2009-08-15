@@ -342,6 +342,9 @@ class UITest : public testing::Test {
   // for testing.
   static FilePath ComputeTypicalUserDataSource(int profile_type);
 
+  // Rewrite the preferences file to point to the proper image directory.
+  static void RewritePreferencesFile(const FilePath& user_data_dir);
+
   // Called by some tests that wish to have a base profile to start from. This
   // "user data directory" (containing one or more profiles) will be recursively
   // copied into the user data directory for the test and the files will be
@@ -479,6 +482,8 @@ class UITest : public testing::Test {
   bool use_existing_browser_;           // Duplicate of the static version.
                                         // Default value comes from static.
   bool enable_file_cookies_;            // Enable file cookies, default is true.
+  int profile_type_;                    // Are we using a profile with a
+                                        // complex theme?
 
  private:
   base::Time test_start_time_;          // Time the test was started

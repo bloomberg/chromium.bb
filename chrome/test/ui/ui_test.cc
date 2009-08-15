@@ -97,6 +97,7 @@ UITest::UITest()
       include_testing_id_(true),
       use_existing_browser_(default_use_existing_browser_),
       enable_file_cookies_(true),
+      profile_type_(UITest::DEFAULT_THEME),
       test_start_time_(base::Time::NowFromSystemTime()),
       command_execution_timeout_ms_(kMaxTestExecutionTime),
       action_timeout_ms_(kWaitForActionMsec),
@@ -307,7 +308,7 @@ void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
       chrome::kBrowserProcessExecutablePath));
   CommandLine command_line(command.ToWStringHack());
 
-  // Add any explict command line flags passed to the process.
+  // Add any explicit command line flags passed to the process.
   std::wstring extra_chrome_flags =
       CommandLine::ForCurrentProcess()->GetSwitchValue(kExtraChromeFlagsSwitch);
   if (!extra_chrome_flags.empty()) {
@@ -423,6 +424,11 @@ void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
     ASSERT_TRUE(file_util::CopyRecursiveDirNoCache(
         template_user_data_,
         user_data_dir_.ToWStringHack()));
+    // If we're using the complex theme data, we need to write the
+    // user_data_dir_ to our preferences file.
+    if (profile_type_ == UITest::COMPLEX_THEME) {
+      RewritePreferencesFile(user_data_dir_);
+    }
   }
 
   browser_launch_time_ = TimeTicks::Now();
@@ -962,6 +968,38 @@ bool UITest::EvictFileFromSystemCacheWrapper(const FilePath& path) {
     PlatformThread::Sleep(sleep_timeout_ms() / 10);
   }
   return false;
+}
+
+// static
+void UITest::RewritePreferencesFile(const FilePath& user_data_dir) {
+  const FilePath pref_template_path(
+      user_data_dir.AppendASCII("Default").AppendASCII("PreferencesTemplate"));
+  const FilePath pref_path(
+      user_data_dir.AppendASCII("Default").AppendASCII("Preferences"));
+
+  // Read in preferences template.
+  std::string pref_string;
+  EXPECT_TRUE(file_util::ReadFileToString(pref_template_path, &pref_string));
+  string16 format_string = ASCIIToUTF16(pref_string);
+
+  // Make sure temp directory has the proper format for writing to prefs file.
+#if defined(OS_POSIX)
+  std::wstring user_data_dir_w(ASCIIToWide(user_data_dir.value()));
+#elif defined(OS_WIN)
+  std::wstring user_data_dir_w(user_data_dir.value());
+  // In Windows, the FilePath will write '\' for the path separators; change
+  // these to a separator that won't trigger escapes.
+  std::replace(user_data_dir_w.begin(),
+               user_data_dir_w.end(), '\\', '/');
+#endif
+
+  // Rewrite prefs file.
+  std::vector<string16> subst;
+  subst.push_back(WideToUTF16(user_data_dir_w));
+  const std::string prefs_string =
+      UTF16ToASCII(ReplaceStringPlaceholders(format_string, subst, NULL));
+  EXPECT_TRUE(file_util::WriteFile(pref_path, prefs_string.c_str(),
+                                   prefs_string.size()));
 }
 
 // static
