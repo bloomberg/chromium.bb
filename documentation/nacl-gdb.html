@@ -114,7 +114,7 @@ To run <code>nacl-gdb</code>, you should have the following:
     <code>nacl-gdb</code>.
     The tools directory is here:
     <blockquote>
-<code><em>install_dir</em>/src/third_party/nacl_sdk/linux/sdk/nacl-sdk/bin</code>
+<code><em>install_dir</em>/build/native_client/src/third_party/nacl_sdk/linux/sdk/nacl-sdk/bin</code>
     </blockquote>
   </li>
   <li>
@@ -122,7 +122,7 @@ To run <code>nacl-gdb</code>, you should have the following:
     For example, here's how to compile the hello_world example
     with debugging symbols:
 <pre class="platform-linux">
-$ <kbd>cd <em>install_dir</em>/src/native_client/tests/hello_world</kbd>
+$ <kbd>cd <em>install_dir</em>/build/native_client/tests/hello_world</kbd>
 $ <kbd>nacl-gcc -g -o hello_world.nexe hello_world.c</kbd>
 </pre>
   </li>
@@ -142,7 +142,7 @@ GNU gdb 6.8-nacl-beta1
 (nc-gdb) <kbd>break hello_world</kbd>
 Breakpoint 1 at 0x202c6: file hello_world.c, line 39.
 (nc-gdb) <kbd>run</kbd>
-Starting program: /whatever/src/native_client/tests/hello_world/hello_world.nexe
+Starting program: /whatever/build/native_client/tests/hello_world/hello_world.nexe
 [Thread debugging using libthread_db enabled]
 [New Thread 0xf7fdd6c0 (LWP 17377)]
 [New Thread 0xf7ffbbb0 (LWP 17380)]
@@ -199,7 +199,7 @@ $ <kbd>nacl-gcc -g -o my_prog.nexe my_prog.c</kbd>
 (nc-gdb) <kbd>b hello_world</kbd>
 Breakpoint 1 at 0x202c0
 (nc-gdb) <kbd>r</kbd>
-Starting program: /.../src/native_client/scons-out/nacl/staging/hello_world.nexe
+Starting program: /.../build/native_client/scons-out/nacl/staging/hello_world.nexe
 [Thread debugging using libthread_db enabled]
 [New Thread 0xf7fdd6c0 (LWP 2872)]
 [New Thread 0xf7ffbbb0 (LWP 2943)]
@@ -358,7 +358,7 @@ Breakpoint 1 at 0x804a5c5: file service_runtime/sel_main.c, line 185.
 Num     Type           Disp Enb Address       What
 1       breakpoint     keep y   sr:0x0804a5c5 service_runtime/sel_main.c:185
 (nc-gdb) <kbd>run</kbd>
-Starting program: /whatever/src/native_client/tests/hello_world/hello_world.nexe
+Starting program: /whatever/build/native_client/tests/hello_world/hello_world.nexe
 [Thread debugging using libthread_db enabled]
 [New Thread 0xf7fdd6c0 (LWP 12522)]
 nacl [Switching to Thread 0xf7fdd6c0 (LWP 12522)]
