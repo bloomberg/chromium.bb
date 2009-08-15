@@ -393,7 +393,7 @@ BUG877986 WIN LINUX : LayoutTests/css2.1/t1204-reset-01-c-o.html = FAIL
 // TODO(deanm): Address all of these via lighttpd if possible, otherwise fork.
 // Maybe flaky and need to be forked?
 // Difference in caching headers
-BUG18978 MAC LINUX : LayoutTests/http/tests/xmlhttprequest/cache-override.html = FAIL
+BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/cache-override.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods
 BUG18978 SKIP : LayoutTests/http/tests/xmlhttprequest/methods-lower-case.html = TIMEOUT CRASH
 BUG18978 : LayoutTests/http/tests/xmlhttprequest/methods-async.html = FAIL TIMEOUT
@@ -2419,7 +2419,7 @@ BUG15125 MAC SKIP : chrome/fast/text/fake-italic.html = FAIL
 BUG15217 : LayoutTests/fast/events/drag-to-navigate.html = TIMEOUT FAIL
 BUG15217 : LayoutTests/fast/js/dictionary-no-cache.html = FAIL
 BUG15217 : LayoutTests/fast/events/prevent-drag-to-navigate.html = TIMEOUT
-BUG15217 MAC LINUX : LayoutTests/fast/js/switch-behaviour.html = FAIL
+BUG15217 MAC : LayoutTests/fast/js/switch-behaviour.html = FAIL
 
 // WebKit 45086:45111
 BUG15270 LINUX WIN : LayoutTests/svg/custom/js-update-image-and-display.svg = FAIL
@@ -2781,7 +2781,6 @@ BUG18802 WIN : LayoutTests/http/tests/misc/referrer.html = TIMEOUT PASS
 
 // Test failures caused by re-enabling skia asserts.
 BUG18896 WIN DEBUG : LayoutTests/fast/backgrounds/svg-as-background-5.html = FAIL
-BUG18896 WIN LINUX DEBUG : LayoutTests/fast/canvas/canvas-with-incorrect-args.html = FAIL
 BUG18896 WIN LINUX DEBUG : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
 BUG18896 WIN DEBUG : LayoutTests/svg/carto.net/window.svg = FAIL
 BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = FAIL
@@ -2812,8 +2811,7 @@ BUG19247 : LayoutTests/fast/events/set-event-in-another-frame.html = FAIL
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
 
 BUG_LEVIN : LayoutTests/fast/dom/Window/window-property-shadowing.html = FAIL
-BUG_LEVIN MAC : LayoutTests/editing/selection/caret-rtl.html = CRASH
-BUG_LEVIN : LayoutTests/fast/canvas/canvas-zoom.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/fast/canvas/canvas-zoom.html = FAIL
 BUG_LEVIN : LayoutTests/fast/dom/Geolocation/enabled.html = FAIL
 BUG_LEVIN : LayoutTests/storage/multiple-transactions-on-different-handles.html = TIMEOUT
 BUG_LEVIN WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
@@ -2833,7 +2831,6 @@ BUG_LEVIN WIN LINUX : LayoutTests/tables/mozilla/bugs/bug106158-1.html = FAIL
 
 // Fallout from webkit 47265:47277
 BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
-BUG_MBELSHE LINUX : LayoutTests/fast/overflow/image-selection-highlight.html = CRASH
 
 BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/002.xml = FAIL
