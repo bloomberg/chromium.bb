@@ -39,13 +39,6 @@ const TCHAR kRegistryBrowserJavaVersion[] = _T("BrowserJavaVersion");
 const TCHAR kRegistryCurrentJavaVersion[] = _T("CurrentVersion");
 const TCHAR kRegistryJavaHome[] = _T("JavaHome");
 
-#ifdef GEARS_STATIC_LIB
-// defined in gears/base/common/module.cc
-NPError API_CALL Gears_NP_GetEntryPoints(NPPluginFuncs* funcs);
-NPError API_CALL Gears_NP_Initialize(NPNetscapeFuncs* funcs);
-NPError API_CALL Gears_NP_Shutdown(void);
-#endif
-
 // The application path where we expect to find plugins.
 void GetAppDirectory(std::set<FilePath>* plugin_dirs) {
   std::wstring app_path;
@@ -226,22 +219,6 @@ void PluginList::PlatformInit() {
       activex_shim::ActiveX_Shim_NP_Shutdown
     }
   },
-#ifdef GEARS_STATIC_LIB
-  {
-    FilePath(kGearsPluginLibraryName),
-    L"Gears",
-    L"Statically linked Gears",
-    L"1, 0, 0, 1",
-    L"application/x-googlegears",
-    L"",
-    L"",
-    {
-      Gears_NP_GetEntryPoints,
-      Gears_NP_Initialize,
-      Gears_NP_Shutdown
-    }
-  },
-#endif
   };
 
   for (int i = 0; i < arraysize(builtin_plugins); ++i)
@@ -275,7 +252,8 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
     plugin_dirs->push_back(*i);
 }
 
-void PluginList::LoadPluginsFromDir(const FilePath &path) {
+void PluginList::LoadPluginsFromDir(const FilePath &path,
+                                    std::vector<WebPluginInfo>* plugins) {
   WIN32_FIND_DATA find_file_data;
   HANDLE find_handle;
 
@@ -290,7 +268,7 @@ void PluginList::LoadPluginsFromDir(const FilePath &path) {
   do {
     if (!(find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
       FilePath filename = path.Append(find_file_data.cFileName);
-      LoadPlugin(filename);
+      LoadPlugin(filename, plugins);
     }
   } while (FindNextFile(find_handle, &find_file_data) != 0);
 
@@ -317,13 +295,13 @@ bool IsNewerVersion(const std::wstring& a, const std::wstring& b) {
   return false;
 }
 
-bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info) {
-
+bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
+                                  std::vector<WebPluginInfo>* plugins) {
   // Version check
 
-  for (size_t i = 0; i < plugins_.size(); ++i) {
-    if (plugins_[i].path.BaseName() == info.path.BaseName() &&
-        !IsNewerVersion(plugins_[i].version, info.version)) {
+  for (size_t i = 0; i < plugins->size(); ++i) {
+    if ((*plugins)[i].path.BaseName() == info.path.BaseName() &&
+        !IsNewerVersion((*plugins)[i].version, info.version)) {
       return false;  // We already have a loaded plugin whose version is newer.
     }
   }
@@ -360,15 +338,15 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info) {
       if (dont_load_new_wmp_)
         return false;
 
-      for (size_t i = 0; i < plugins_.size(); ++i) {
-        if (plugins_[i].path.BaseName().value() == kOldWMPPlugin) {
-          plugins_.erase(plugins_.begin() + i);
+      for (size_t i = 0; i < plugins->size(); ++i) {
+        if ((*plugins)[i].path.BaseName().value() == kOldWMPPlugin) {
+          plugins->erase(plugins->begin() + i);
           break;
         }
       }
     } else if (filename == kOldWMPPlugin) {
-      for (size_t i = 0; i < plugins_.size(); ++i) {
-        if (plugins_[i].path.BaseName().value() == kNewWMPPlugin)
+      for (size_t i = 0; i < plugins->size(); ++i) {
+        if ((*plugins)[i].path.BaseName().value() == kNewWMPPlugin)
           return false;
       }
     }
@@ -377,16 +355,11 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info) {
   return true;
 }
 
-void PluginList::LoadInternalPlugins() {
-#ifdef GEARS_STATIC_LIB
-  LoadPlugin(FilePath(kGearsPluginLibraryName));
-#endif
-
+void PluginList::LoadInternalPlugins(std::vector<WebPluginInfo>* plugins) {
   if (!use_internal_activex_shim_)
-    return;
 
-  LoadPlugin(FilePath(kActiveXShimFileName));
-  LoadPlugin(FilePath(kActiveXShimFileNameForMediaPlayer));
+  LoadPlugin(FilePath(kActiveXShimFileName), plugins);
+  LoadPlugin(FilePath(kActiveXShimFileNameForMediaPlayer), plugins);
 }
 
 } // namespace NPAPI

@@ -30,6 +30,7 @@ class BufferedResourceHandler : public ResourceHandler {
   bool OnResponseCompleted(int request_id,
                            const URLRequestStatus& status,
                            const std::string& security_info);
+  void OnRequestClosed();
 
  private:
   // Returns true if we should delay OnResponseStarted forwarding.
@@ -49,6 +50,22 @@ class BufferedResourceHandler : public ResourceHandler {
   // this is invoked from |OnResponseCompleted|.
   bool CompleteResponseStarted(int request_id, bool in_complete);
 
+  // Returns true if we have to wait until the plugin list is generated.
+  bool ShouldWaitForPlugins();
+
+  // A test to determining whether the request should be forwarded to the
+  // download thread.  If need_plugin_list was passed in and was set to true,
+  // that means that the check couldn't be fully done because the plugins aren't
+  // loaded.  The function should be called again after the plugin list is
+  // loaded.
+  bool ShouldDownload(bool* need_plugin_list);
+
+  // Called on the file thread to load the list of plugins.
+  void LoadPlugins();
+
+  // Called on the IO thread once the list of plugins has been loaded.
+  void OnPluginsLoaded();
+
   scoped_refptr<ResourceHandler> real_handler_;
   scoped_refptr<ResourceResponse> response_;
   ResourceDispatcherHost* host_;
@@ -59,6 +76,7 @@ class BufferedResourceHandler : public ResourceHandler {
   int bytes_read_;
   bool sniff_content_;
   bool should_buffer_;
+  bool wait_for_plugins_;
   bool buffering_;
   bool finished_;
 

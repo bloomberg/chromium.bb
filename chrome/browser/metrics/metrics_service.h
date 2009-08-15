@@ -21,7 +21,7 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/common/notification_registrar.h"
-#include "webkit/glue/webplugin.h"
+#include "webkit/glue/webplugininfo.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BookmarkModel;
@@ -99,7 +99,7 @@ class MetricsService : public NotificationObserver,
   void RecordBreakpadHasDebugger(bool has_debugger);
 
   // Callback to let us knew that the plugin list is warmed up.
-  void OnGetPluginListTaskComplete();
+  void OnGetPluginListTaskComplete(const std::vector<WebPluginInfo>& plugins);
 
   // Save any unsent logs into a persistent store in a pref.  We always do this
   // at shutdown, but we can do it as we reduce the list as well.
@@ -401,6 +401,9 @@ class MetricsService : public NotificationObserver,
   // The progession of states made by the browser are recorded in the following
   // state.
   State state_;
+
+  // The list of plugins which was retrieved on the file thread.
+  std::vector<WebPluginInfo> plugins_;
 
   // A log that we are currently transmiting, or about to try to transmit.
   MetricsLog* pending_log_;

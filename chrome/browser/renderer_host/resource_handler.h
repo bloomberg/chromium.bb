@@ -52,7 +52,7 @@ struct ResourceResponse : public base::RefCounted<ResourceResponse> {
 // The resource dispatcher host uses this interface to push load events to the
 // renderer, allowing for differences in the types of IPC messages generated.
 // See the implementations of this interface defined below.
-class ResourceHandler : public base::RefCounted<ResourceHandler> {
+class ResourceHandler : public base::RefCountedThreadSafe<ResourceHandler> {
  public:
   virtual ~ResourceHandler() {}
 
@@ -93,6 +93,10 @@ class ResourceHandler : public base::RefCounted<ResourceHandler> {
   virtual bool OnResponseCompleted(int request_id,
                                    const URLRequestStatus& status,
                                    const std::string& security_info) = 0;
+
+  // Signals that the request is closed (i.e. finished successfully, cancelled).
+  // This is a signal that the associated URLRequest isn't valid anymore.
+  virtual void OnRequestClosed() { }
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RESOURCE_HANDLER_H_

@@ -44,6 +44,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
+#include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugin.h"
 
@@ -282,13 +283,12 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetCookies, OnGetCookies)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_GetDataDir, OnGetDataDir)
       IPC_MESSAGE_HANDLER(ViewHostMsg_PluginMessage, OnPluginMessage)
       IPC_MESSAGE_HANDLER(ViewHostMsg_PluginSyncMessage, OnPluginSyncMessage)
 #if defined(OS_WIN)  // This hack is Windows-specific.
       IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
-      IPC_MESSAGE_HANDLER(ViewHostMsg_GetPlugins, OnGetPlugins)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPath, OnGetPluginPath)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
@@ -463,10 +463,6 @@ void ResourceMessageFilter::OnGetCookies(const GURL& url,
     *cookies = context->cookie_store()->GetCookies(url);
 }
 
-void ResourceMessageFilter::OnGetDataDir(std::wstring* data_dir) {
-  *data_dir = plugin_service_->GetChromePluginDataDir().ToWStringHack();
-}
-
 void ResourceMessageFilter::OnPluginMessage(const FilePath& plugin_path,
                                             const std::vector<uint8>& data) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
@@ -545,8 +541,20 @@ void ResourceMessageFilter::OnLoadFont(LOGFONT font) {
 #endif
 
 void ResourceMessageFilter::OnGetPlugins(bool refresh,
-                                         std::vector<WebPluginInfo>* plugins) {
-  plugin_service_->GetPlugins(refresh, plugins);
+                                         IPC::Message* reply_msg) {
+  ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &ResourceMessageFilter::OnGetPluginsOnFileThread,
+          refresh, reply_msg));
+}
+
+void ResourceMessageFilter::OnGetPluginsOnFileThread(bool refresh,
+                                                     IPC::Message* reply_msg) {
+  std::vector<WebPluginInfo> plugins;
+  NPAPI::PluginList::Singleton()->GetPlugins(refresh, &plugins);
+
+  ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
+  ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
 void ResourceMessageFilter::OnGetPluginPath(const GURL& url,

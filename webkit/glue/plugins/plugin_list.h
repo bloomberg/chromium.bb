@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/lock.h"
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/plugins/nphostapi.h"
 
@@ -66,39 +67,39 @@ struct PluginVersionInfo {
 // the machine-wide and user plugin directories and loads anything that has
 // the correct types. On Linux, it walks the plugin directories as well
 // (e.g. /usr/lib/browser-plugins/).
+// This object is thread safe.
 class PluginList {
  public:
-  // Gets the one instance of the PluginList.  Accessing the singleton causes
-  // the PluginList to look on disk for existing plugins.  It does not actually
-  // load libraries, that will only happen when you initialize the plugin for
-  // the first time.
+  // Gets the one instance of the PluginList.
   static PluginList* Singleton();
+
+  // Returns true iff the plugin list has been loaded already.
+  bool PluginsLoaded();
 
   // Clear the plugins_loaded_ bit to force a refresh next time we retrieve
   // plugins.
-  static void ResetPluginsLoaded();
+  void ResetPluginsLoaded();
 
-  // Add an extra plugin to load when we actually do the loading.  This is
-  // static because we want to be able to add to it without searching the disk
-  // for plugins.  Must be called before the plugins have been loaded.
-  static void AddExtraPluginPath(const FilePath& plugin_path);
+  // Add an extra plugin to load when we actually do the loading.  Must be
+  // called before the plugins have been loaded.
+  void AddExtraPluginPath(const FilePath& plugin_path);
 
   // Same as above, but specifies a directory in which to search for plugins.
-  static void AddExtraPluginDir(const FilePath& plugin_dir);
+  void AddExtraPluginDir(const FilePath& plugin_dir);
 
   // Register an internal plugin with the specified plugin information and
   // function pointers.  An internal plugin must be registered before it can
   // be loaded using PluginList::LoadPlugin().
-  static void RegisterInternalPlugin(const PluginVersionInfo& info);
+  void RegisterInternalPlugin(const PluginVersionInfo& info);
 
   // Creates a WebPluginInfo structure given a plugin's path.  On success
   // returns true, with the information being put into "info".  If it's an
   // internal plugin, "entry_points" is filled in as well with a
   // internally-owned PluginEntryPoints pointer.
   // Returns false if the library couldn't be found, or if it's not a plugin.
-  static bool ReadPluginInfo(const FilePath& filename,
-                             WebPluginInfo* info,
-                             const PluginEntryPoints** entry_points);
+  bool ReadPluginInfo(const FilePath& filename,
+                      WebPluginInfo* info,
+                      const PluginEntryPoints** entry_points);
 
   // Populate a WebPluginInfo from a PluginVersionInfo.
   static bool CreateWebPluginInfo(const PluginVersionInfo& pvi,
@@ -108,7 +109,7 @@ class PluginList {
   void Shutdown();
 
   // Get all the plugins
-  bool GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
+  void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
 
   // Returns true if a plugin is found for the given url and mime type.
   // The mime type which corresponds to the URL is optionally returned
@@ -128,7 +129,8 @@ class PluginList {
                            WebPluginInfo* info);
 
   // Load a specific plugin with full path.
-  void LoadPlugin(const FilePath& filename);
+  void LoadPlugin(const FilePath& filename,
+                  std::vector<WebPluginInfo>* plugins);
 
  private:
   // Constructors are private for singletons
@@ -138,13 +140,17 @@ class PluginList {
   void LoadPlugins(bool refresh);
 
   // Load all plugins from a specific directory
-  void LoadPluginsFromDir(const FilePath& path);
+  void LoadPluginsFromDir(const FilePath& path,
+                          std::vector<WebPluginInfo>* plugins);
 
   // Returns true if we should load the given plugin, or false otherwise.
-  bool ShouldLoadPlugin(const WebPluginInfo& info);
+  // plugins is the list of plugins we have crawled in the current plugin
+  // loading run.
+  bool ShouldLoadPlugin(const WebPluginInfo& info,
+                        std::vector<WebPluginInfo>* plugins);
 
   // Load internal plugins.
-  void LoadInternalPlugins();
+  void LoadInternalPlugins(std::vector<WebPluginInfo>* plugins);
 
   // Find a plugin by mime type, and clsid.
   // If clsid is empty, we will just find the plugin that supports mime type.
@@ -216,9 +222,13 @@ class PluginList {
   // Holds information about internal plugins.
   std::vector<PluginVersionInfo> internal_plugins_;
 
+  // Need synchronization for the above members since this object can be
+  // accessed on multiple threads.
+  Lock lock_;
+
   friend struct base::DefaultLazyInstanceTraits<PluginList>;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PluginList);
+  DISALLOW_COPY_AND_ASSIGN(PluginList);
 };
 
 } // namespace NPAPI

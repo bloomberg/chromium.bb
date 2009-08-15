@@ -181,7 +181,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/memory_details.h"
-#include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -197,6 +196,7 @@
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 #if defined(OS_POSIX)
 // TODO(port): Move these headers above as they are ported.
@@ -288,9 +288,15 @@ class MetricsMemoryDetails : public MemoryDetails {
 };
 
 class MetricsService::GetPluginListTaskComplete : public Task {
+ public:
+  explicit GetPluginListTaskComplete(
+      const std::vector<WebPluginInfo>& plugins) : plugins_(plugins) { }
   virtual void Run() {
-    g_browser_process->metrics_service()->OnGetPluginListTaskComplete();
+    g_browser_process->metrics_service()->OnGetPluginListTaskComplete(plugins_);
   }
+
+ private:
+  std::vector<WebPluginInfo> plugins_;
 };
 
 class MetricsService::GetPluginListTask : public Task {
@@ -300,9 +306,10 @@ class MetricsService::GetPluginListTask : public Task {
 
   virtual void Run() {
     std::vector<WebPluginInfo> plugins;
-    PluginService::GetInstance()->GetPlugins(false, &plugins);
+    NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
 
-    callback_loop_->PostTask(FROM_HERE, new GetPluginListTaskComplete());
+    callback_loop_->PostTask(
+        FROM_HERE, new GetPluginListTaskComplete(plugins));
   }
 
  private:
@@ -751,8 +758,10 @@ void MetricsService::InitializeMetricsState() {
   ScheduleNextStateSave();
 }
 
-void MetricsService::OnGetPluginListTaskComplete() {
+void MetricsService::OnGetPluginListTaskComplete(
+    const std::vector<WebPluginInfo>& plugins) {
   DCHECK(state_ == PLUGIN_LIST_REQUESTED);
+  plugins_ = plugins;
   if (state_ == PLUGIN_LIST_REQUESTED)
     state_ = PLUGIN_LIST_ARRIVED;
 }
@@ -1122,11 +1131,9 @@ bool MetricsService::TransmissionPermitted() const {
 
 void MetricsService::PrepareInitialLog() {
   DCHECK(state_ == PLUGIN_LIST_ARRIVED);
-  std::vector<WebPluginInfo> plugins;
-  PluginService::GetInstance()->GetPlugins(false, &plugins);
 
   MetricsLog* log = new MetricsLog(client_id_, session_id_);
-  log->RecordEnvironment(plugins, profile_dictionary_.get());
+  log->RecordEnvironment(plugins_, profile_dictionary_.get());
 
   // Histograms only get written to current_log_, so setup for the write.
   MetricsLog* save_log = current_log_;

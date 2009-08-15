@@ -44,7 +44,8 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   plugin_dirs->push_back(FilePath("/usr/lib/mozilla/plugins"));
 }
 
-void PluginList::LoadPluginsFromDir(const FilePath& path) {
+void PluginList::LoadPluginsFromDir(const FilePath& path,
+                                    std::vector<WebPluginInfo>* plugins) {
   file_util::FileEnumerator enumerator(path,
                                        false, // not recursive
                                        file_util::FileEnumerator::FILES);
@@ -52,11 +53,12 @@ void PluginList::LoadPluginsFromDir(const FilePath& path) {
        path = enumerator.Next()) {
     // Skip over Mozilla .xpt files.
     if (!path.MatchesExtension(FILE_PATH_LITERAL(".xpt")))
-      LoadPlugin(path);
+      LoadPlugin(path, plugins);
   }
 }
 
-bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info) {
+bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
+                                  std::vector<WebPluginInfo>* plugins) {
   // The equivalent Windows code verifies we haven't loaded a newer version
   // of the same plugin, and then blacklists some known bad plugins.
   // The equivalent Mac code verifies that plugins encountered first in the
@@ -66,7 +68,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info) {
   return true;
 }
 
-void PluginList::LoadInternalPlugins() {
+void PluginList::LoadInternalPlugins(std::vector<WebPluginInfo>* plugins) {
   // none for now
 }
 
