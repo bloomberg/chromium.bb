@@ -70,7 +70,8 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
   SimulateRendererCrash(browser());
-  ASSERT_TRUE(ui_test_utils::ReloadCurrentTab(browser()));
+  browser()->Reload();
+  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_NE(title_before_crash, title_after_crash);
@@ -90,7 +91,8 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
   SimulateRendererCrash(browser());
-  ASSERT_TRUE(ui_test_utils::ReloadCurrentTab(browser()));
+  browser()->Reload();
+  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_EQ(title_before_crash, title_after_crash);

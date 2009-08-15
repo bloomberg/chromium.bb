@@ -30,7 +30,8 @@ class ErrorPageTest : public UITest {
   }
 };
 
-TEST_F(ErrorPageTest, DNSError_Basic) {
+// Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
+TEST_F(ErrorPageTest, DISABLED_DNSError_Basic) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(test_url);
@@ -38,7 +39,8 @@ TEST_F(ErrorPageTest, DNSError_Basic) {
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 }
 
-TEST_F(ErrorPageTest, DNSError_GoBack1) {
+// Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
+TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack1) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
@@ -52,7 +54,8 @@ TEST_F(ErrorPageTest, DNSError_GoBack1) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-TEST_F(ErrorPageTest, DNSError_GoBack2) {
+// Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
+TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
@@ -69,7 +72,8 @@ TEST_F(ErrorPageTest, DNSError_GoBack2) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
+// Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
+TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2AndForward) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
 
@@ -88,7 +92,8 @@ TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 }
 
-TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
+// Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
+TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2Forward2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
 

@@ -651,7 +651,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
 
   // Open the new tab, reload.
   browser()->NewTab();
-  ui_test_utils::ReloadCurrentTab(browser());
+  browser()->Reload();
+  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should stay on the location bar.
   EXPECT_EQ(browser_view->GetLocationBarView(),
             focus_manager->GetFocusedView());
@@ -661,7 +662,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   browser_view->GetLocationBarView()->FocusLocation();
   EXPECT_EQ(browser_view->GetLocationBarView(),
             focus_manager->GetFocusedView());
-  ui_test_utils::ReloadCurrentTab(browser());
+  browser()->Reload();
+  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should now be on the tab contents.
   EXPECT_EQ(browser_view->GetTabContentsContainerView(),
             focus_manager->GetFocusedView());
@@ -681,7 +683,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReloadCrashedTab) {
   // Open a regular page, crash, reload.
   ui_test_utils::NavigateToURL(browser(), server->TestServerPageW(kSimplePage));
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
-  ui_test_utils::ReloadCurrentTab(browser());
+  browser()->Reload();
+  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should now be on the tab contents.
   EXPECT_EQ(browser_view->GetTabContentsContainerView(),
             focus_manager->GetFocusedView());

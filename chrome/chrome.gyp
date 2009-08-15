@@ -36,6 +36,7 @@
       'browser/browser_init_browsertest.cc',
       'browser/crash_recovery_browsertest.cc',
       'browser/download/save_page_browsertest.cc',
+      'browser/errorpage_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
     ],
     'browser_tests_sources_win_specific': [

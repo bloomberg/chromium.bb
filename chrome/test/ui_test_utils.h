@@ -31,6 +31,15 @@ void RunMessageLoop();
 // Puts the current tab title in |title|. Returns true on success.
 bool GetCurrentTabTitle(const Browser* browser, string16* title);
 
+// Waits for the current tab to complete the navigation. Returns true on
+// success.
+bool WaitForNavigationInCurrentTab(Browser* browser);
+
+// Waits for the current tab to complete the specified number of navigations.
+// Returns true on success.
+bool WaitForNavigationsInCurrentTab(Browser* browser,
+                                    int number_of_navigations);
+
 // Waits for |controller| to complete a navigation. This blocks until
 // the navigation finishes.
 void WaitForNavigation(NavigationController* controller);
@@ -43,10 +52,6 @@ void WaitForNavigations(NavigationController* controller,
 // Navigates the selected tab of |browser| to |url|, blocking until the
 // navigation finishes.
 void NavigateToURL(Browser* browser, const GURL& url);
-
-// Reloads current tab contents and waits for navigation to finish.
-// Returns true on success.
-bool ReloadCurrentTab(Browser* browser);
 
 // Navigates the selected tab of |browser| to |url|, blocking until the
 // number of navigations specified complete.

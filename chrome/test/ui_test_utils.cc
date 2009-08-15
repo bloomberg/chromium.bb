@@ -282,6 +282,23 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   return true;
 }
 
+bool WaitForNavigationInCurrentTab(Browser* browser) {
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  if (!tab_contents)
+    return false;
+  WaitForNavigation(&tab_contents->controller());
+  return true;
+}
+
+bool WaitForNavigationsInCurrentTab(Browser* browser,
+                                    int number_of_navigations) {
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  if (!tab_contents)
+    return false;
+  WaitForNavigations(&tab_contents->controller(), number_of_navigations);
+  return true;
+}
+
 void WaitForNavigation(NavigationController* controller) {
   WaitForNavigations(controller, 1);
 }
@@ -302,15 +319,6 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
       &browser->GetSelectedTabContents()->controller();
   browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   WaitForNavigations(controller, number_of_navigations);
-}
-
-bool ReloadCurrentTab(Browser* browser) {
-  browser->Reload();
-  TabContents* tab_contents = browser->GetSelectedTabContents();
-  if (!tab_contents)
-    return false;
-  WaitForNavigation(&tab_contents->controller());
-  return true;
 }
 
 Value* ExecuteJavaScript(RenderViewHost* render_view_host,
