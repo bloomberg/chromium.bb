@@ -13,6 +13,7 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -39,17 +40,20 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
   // We effectively double-buffer by virtue of having only one image...
   gtk_widget_set_double_buffered(widget_.get(), FALSE);
 
-  g_signal_connect(G_OBJECT(widget_.get()), "expose-event",
+  g_signal_connect(widget_.get(), "expose-event",
                    G_CALLBACK(OnExpose), this);
-  g_signal_connect(G_OBJECT(widget_.get()), "enter",
+  g_signal_connect(widget_.get(), "enter",
                    G_CALLBACK(OnEnter), this);
-  g_signal_connect(G_OBJECT(widget_.get()), "leave",
+  g_signal_connect(widget_.get(), "leave",
                    G_CALLBACK(OnLeave), this);
-  g_signal_connect(G_OBJECT(widget_.get()), "clicked",
+  g_signal_connect(widget_.get(), "clicked",
                    G_CALLBACK(OnClicked), this);
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
 
-  SetTooltip();
+  gtk_widget_set_has_tooltip(widget_.get(), TRUE);
+  g_signal_connect(widget_.get(), "query-tooltip",
+                   G_CALLBACK(OnQueryTooltipThunk), this);
+
   gtk_util::SetButtonTriggersNavigation(widget());
 
   if (theme_provider_) {
@@ -73,9 +77,8 @@ void GoButtonGtk::ChangeMode(Mode mode, bool force) {
   if (force || (state() != BS_HOT) || ((mode == MODE_STOP) ?
       stop_timer_.empty() : (visible_mode_ != MODE_STOP))) {
     stop_timer_.RevokeAll();
-    gtk_widget_queue_draw(widget_.get());
-    SetTooltip();
     visible_mode_ = mode;
+    gtk_widget_queue_draw(widget_.get());
 
     UpdateThemeButtons();
   }
@@ -180,29 +183,42 @@ gboolean GoButtonGtk::OnClicked(GtkButton* widget, GoButtonGtk* button) {
   return TRUE;
 }
 
-void GoButtonGtk::SetTooltip() {
-  if (visible_mode_ == MODE_GO) {
-    // |location_bar_| can be NULL in tests.
-    std::wstring current_text(
-        location_bar_ ?  location_bar_->location_entry()->GetText() :
-        L"");
-    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
-      l10n_util::WrapStringWithLTRFormatting(&current_text);
-    }
+gboolean GoButtonGtk::OnQueryTooltip(GtkTooltip* tooltip) {
+  // |location_bar_| can be NULL in tests.
+  if (!location_bar_)
+    return FALSE;
 
-    // TODO(pkasting): http://b/868940 Use the right strings at the right
-    // times by asking the autocomplete system what to do.  Don't hardcode
-    // "Google" as the search provider name.
-    gtk_widget_set_tooltip_text(
-        widget_.get(),
-        true ? l10n_util::GetStringFUTF8(
-            IDS_TOOLTIP_GO_SITE, WideToUTF16(current_text)).c_str() :
-        l10n_util::GetStringFUTF8(IDS_TOOLTIP_GO_SEARCH, UTF8ToUTF16("Google"),
-                                  WideToUTF16(current_text)).c_str());
+  std::string text;
+  if (visible_mode_ == MODE_GO) {
+    std::wstring current_text_wstr(location_bar_->location_entry()->GetText());
+    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+      l10n_util::WrapStringWithLTRFormatting(&current_text_wstr);
+    string16 current_text = WideToUTF16Hack(current_text_wstr);
+
+    AutocompleteEditModel* edit_model =
+        location_bar_->location_entry()->model();
+    if (edit_model->CurrentTextIsURL()) {
+      text = l10n_util::GetStringFUTF8(IDS_TOOLTIP_GO_SITE, current_text);
+    } else {
+      std::wstring keyword(edit_model->keyword());
+      TemplateURLModel* template_url_model =
+          browser_->profile()->GetTemplateURLModel();
+      const TemplateURL* provider =
+          (keyword.empty() || edit_model->is_keyword_hint()) ?
+          template_url_model->GetDefaultSearchProvider() :
+          template_url_model->GetTemplateURLForKeyword(keyword);
+      if (!provider)
+        return FALSE;  // Don't show a tooltip.
+      text = l10n_util::GetStringFUTF8(IDS_TOOLTIP_GO_SEARCH,
+          WideToUTF16Hack(provider->AdjustedShortNameForLocaleDirection()),
+          current_text);
+    }
   } else {
-    gtk_widget_set_tooltip_text(
-        widget_.get(), l10n_util::GetStringUTF8(IDS_TOOLTIP_STOP).c_str());
+    text = l10n_util::GetStringUTF8(IDS_TOOLTIP_STOP);
   }
+
+  gtk_tooltip_set_text(tooltip, text.c_str());
+  return TRUE;
 }
 
 void GoButtonGtk::UpdateThemeButtons() {

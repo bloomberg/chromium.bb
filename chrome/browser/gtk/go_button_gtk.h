@@ -49,12 +49,18 @@ class GoButtonGtk : public NotificationObserver {
   static gboolean OnEnter(GtkButton* widget, GoButtonGtk* button);
   static gboolean OnLeave(GtkButton* widget, GoButtonGtk* button);
   static gboolean OnClicked(GtkButton* widget, GoButtonGtk* button);
+  static gboolean OnQueryTooltipThunk(GtkWidget* widget,
+                                      gint x, gint y, gboolean keyboard_mode,
+                                      GtkTooltip* tooltip,
+                                      GoButtonGtk* button) {
+    return button->OnQueryTooltip(tooltip);
+  }
+  gboolean OnQueryTooltip(GtkTooltip* tooltip);
 
   void SetToggled();
 
   Task* CreateButtonTimerTask();
   void OnButtonTimer();
-  void SetTooltip();
   void UpdateThemeButtons();
 
   // Used to listen for theme change notifications.
@@ -70,10 +76,10 @@ class GoButtonGtk : public NotificationObserver {
   int button_delay_;
   ScopedRunnableMethodFactory<GoButtonGtk> stop_timer_;
 
-  // The mode we should be in
+  // The mode we should be in.
   Mode intended_mode_;
 
-  // The currently-visible mode - this may different from the intended mode
+  // The currently-visible mode - this may different from the intended mode.
   Mode visible_mode_;
 
   ButtonState state_;
