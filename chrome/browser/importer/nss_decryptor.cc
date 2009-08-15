@@ -4,7 +4,9 @@
 
 #include "chrome/browser/importer/nss_decryptor.h"
 
+#include "base/scoped_ptr.h"
 #include "build/build_config.h"
+#include "chrome/common/sqlite_utils.h"
 
 #if defined(OS_LINUX)
 #include <pk11pub.h>
@@ -225,4 +227,71 @@ void NSSDecryptor::ParseSignons(const std::string& content,
       forms->push_back(form);
     }
   }
+}
+
+bool NSSDecryptor::ReadAndParseSignons(const FilePath& sqlite_file,
+    std::vector<webkit_glue::PasswordForm>* forms) {
+  sqlite3* sqlite;
+  if (OpenSqliteDb(sqlite_file, &sqlite) != SQLITE_OK)
+    return false;
+  sqlite_utils::scoped_sqlite_db_ptr db(sqlite);
+
+  SQLStatement s;
+  const char* stmt = "SELECT hostname FROM moz_disabledHosts";
+  if (s.prepare(db.get(), stmt) != SQLITE_OK)
+    return false;
+
+  GURL::Replacements rep;
+  rep.ClearQuery();
+  rep.ClearRef();
+  rep.ClearUsername();
+  rep.ClearPassword();
+  // Read domains for which passwords are never saved.
+  while (s.step() == SQLITE_ROW) {
+    PasswordForm form;
+    form.origin = GURL(s.column_string(0)).ReplaceComponents(rep);
+    form.signon_realm = form.origin.GetOrigin().spec();
+    form.blacklisted_by_user = true;
+    forms->push_back(form);
+  }
+
+  SQLStatement s2;
+  const char* stmt2 = "SELECT hostname, httpRealm, formSubmitURL, "
+                      "usernameField, passwordField, encryptedUsername, "
+                      "encryptedPassword FROM moz_logins";
+
+  if (s2.prepare(db.get(), stmt2) != SQLITE_OK)
+    return false;
+
+  while (s2.step() == SQLITE_ROW) {
+    GURL url;
+    std::string realm(s2.column_string(1));
+    if (!realm.empty()) {
+      // In this case, the scheme may not exsit. Assume HTTP.
+      std::string host(s2.column_string(0));
+      if (host.find("://") == std::string::npos)
+        host = "http://" + host;
+      url = GURL(host);
+    } else {
+      url = GURL(s2.column_string(0));
+    }
+    // Skip this row if the URL is not valid.
+    if (!url.is_valid())
+      continue;
+
+    PasswordForm form;
+    form.origin = url.ReplaceComponents(rep);
+    form.signon_realm = form.origin.GetOrigin().spec();
+    if (!realm.empty())
+      form.signon_realm += realm;
+    form.ssl_valid = form.origin.SchemeIsSecure();
+    // The user name, password and action.
+    form.username_element = UTF8ToWide(s2.column_string(3));
+    form.username_value = Decrypt(s2.column_string(5));
+    form.password_element = UTF8ToWide(s2.column_string(4));
+    form.password_value = Decrypt(s2.column_string(6));
+    form.action = GURL(s2.column_string(2)).ReplaceComponents(rep);
+    forms->push_back(form);
+  }
+  return true;
 }

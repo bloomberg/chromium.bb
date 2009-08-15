@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 
 namespace webkit_glue {
 struct PasswordForm;
@@ -35,7 +36,12 @@ class NSSDecryptor {
   void ParseSignons(const std::string& content,
                     std::vector<webkit_glue::PasswordForm>* forms);
 
- private:
+  // Reads and parses the Firefox password sqlite db, decrypts the
+  // username/password and reads other related information.
+  // The result will be stored in |forms|.
+  bool ReadAndParseSignons(const FilePath& sqlite_file,
+                           std::vector<webkit_glue::PasswordForm>* forms);
+private:
   // Does not actually free the slot, since we'll free it when NSSDecryptor is
   // destroyed.
   void FreeSlot(PK11SlotInfo* slot) const {};

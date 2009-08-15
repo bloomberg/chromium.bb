@@ -265,18 +265,22 @@ void Firefox3Importer::ImportPasswords() {
       !decryptor.Init(app_path_, source_path_))
     return;
 
-  // Firefox 3 uses signons3.txt to store the passwords.
-  std::wstring file = source_path_;
-  file_util::AppendToPath(&file, L"signons3.txt");
-  if (!file_util::PathExists(file)) {
-    file = source_path_;
-    file_util::AppendToPath(&file, L"signons2.txt");
-  }
-
-  std::string content;
-  file_util::ReadFileToString(file, &content);
   std::vector<PasswordForm> forms;
-  decryptor.ParseSignons(content, &forms);
+  FilePath source_path = FilePath::FromWStringHack(source_path_);
+  FilePath file = source_path.AppendASCII("signons.sqlite");
+  if (file_util::PathExists(file)) {
+    // Since Firefox 3.1, passwords are in signons.sqlite db.
+    decryptor.ReadAndParseSignons(file, &forms);
+  } else {
+    // Firefox 3.0 uses signons3.txt to store the passwords.
+    file = source_path.AppendASCII("signons3.txt");
+    if (!file_util::PathExists(file))
+      file = source_path.AppendASCII("signons2.txt");
+
+    std::string content;
+    file_util::ReadFileToString(file, &content);
+    decryptor.ParseSignons(content, &forms);
+  }
 
   if (!cancelled()) {
     for (size_t i = 0; i < forms.size(); ++i) {

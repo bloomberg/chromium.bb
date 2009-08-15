@@ -131,6 +131,12 @@ class NSSDecryptor {
   void ParseSignons(const std::string& content,
                     std::vector<webkit_glue::PasswordForm>* forms);
 
+  // Reads and parses the Firefox password sqlite db, decrypts the
+  // username/password and reads other related information.
+  // The result will be stored in |forms|.
+  bool ReadAndParseSignons(const FilePath& sqlite_file,
+                           std::vector<webkit_glue::PasswordForm>* forms);
+
  private:
   // Performs tasks common across all platforms to initialize NSS.
   bool InitNSS(const std::wstring& db_path,
