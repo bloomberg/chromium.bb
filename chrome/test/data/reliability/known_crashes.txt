@@ -112,3 +112,6 @@ PREFIX : npapi::pluginstreamurl::didreceivedata___webplugindelegatestub::ondidre
 # 19414
 PREFIX : downloadfilemanager::updatedownload___runnablemethod<locationbarview::pageactionimageview::imageloadingtracker,void (__thiscall locationbarview::pageactionimageview::imageloadingtracker::*)(skbitmap *,int),tuple2<skbitmap *,int> >::run___messageloop::runtask___messageloop::dowork___base::messagepumpforui::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::runhandler___messageloop::run___base::thread::threadmain___`anonymous namespace'::threadfunc
 
+# 19415
+PREFIX : messageloop::posttask___resourcemessagefilter::ongetpluginsonfilethread___runnablemethod<resourcemessagefilter,void (__thiscall resourcemessagefilter::*)(bool,ipc::message *),tuple2<bool,ipc::message *> >::run___messageloop::runtask___messageloop::dowork___base::messagepumpforui::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::runhandler___messageloop::run___base::thread::threadmain___`anonymous namespace'::threadfunc
+
