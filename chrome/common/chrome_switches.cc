@@ -529,10 +529,13 @@ const wchar_t kEnableMonitorProfile[] = L"enable-monitor-profile";
 // still experimental.
 const wchar_t kEnableXSSAuditor[] = L"enable-xss-auditor";
 
-// A flag, generated internally by Chrome for renderer command lines (Linux
-// only). It tells the renderer to enable crash dumping since it cannot access
-// the user's home directory to find out for itself.
-const wchar_t kRendererCrashDump[] = L"renderer-crash-dumping";
+#if defined(OS_POSIX)
+// A flag, generated internally by Chrome for renderer and other helper process
+// command lines on Linux and Mac.  It tells the helper process to enable crash
+// dumping and reporting, because helpers cannot access the profile or other
+// files needed to make this decision.
+const wchar_t kEnableCrashReporter[] = L"enable-crash-reporter";
+#endif
 
 // Enables the new Tabstrip on Windows.
 const wchar_t kEnableTabtastic2[] = L"enable-tabtastic2";

@@ -298,29 +298,14 @@ int ChromeMain(int argc, const char** argv) {
 #endif
 
 #if defined(OS_MACOSX)
-  // TODO(mark): Some of these things ought to be handled in chrome_exe_main.mm,
-  // such as Breakpad initialization.  Under the current architecture, nothing
-  // in chrome_exe_main can rely directly on chrome_dll code on the Mac,
-  // though, so until some of this code is refactored to avoid such a
-  // dependency, it lives here.  See also the TODO(mark) below at
-  // DestructCrashReporter().
+  // TODO(mark): Some of these things ought to be handled in chrome_exe_main.mm.
+  // Under the current architecture, nothing in chrome_exe_main can rely
+  // directly on chrome_dll code on the Mac, though, so until some of this code
+  // is refactored to avoid such a dependency, it lives here.  See also the
+  // TODO(mark) below at InitCrashReporter() and DestructCrashReporter().
   base::EnableTerminationOnHeapCorruption();
-
-  // The exit manager is in charge of calling the dtors of singletons.
-  // Win has one here, but we assert with multiples from BrowserMain() if we
-  // keep it.
-  // base::AtExitManager exit_manager;
-
-#if defined(GOOGLE_CHROME_BUILD)
-  InitCrashReporter();
-#endif
-
-  // If Breakpad is not present then turn off os crash dumps so we don't have
-  // to wait eons for Apple's Crash Reporter to generate a dump.
-  if (IsCrashReporterDisabled()) {
-    DebugUtil::DisableOSCrashDumps();
-  }
 #endif  // OS_MACOSX
+
   RegisterInvalidParamHandler();
 
   // The exit manager is in charge of calling the dtors of singleton objects.
@@ -350,9 +335,20 @@ int ChromeMain(int argc, const char** argv) {
 #endif
 
 #if defined(OS_MACOSX)
-  // Needs to be called after CommandLine::Init().
-  InitCrashProcessInfo();
-#endif
+  // TODO(mark): Right now, InitCrashReporter() needs to be called after
+  // CommandLine::Init().  Ideally, Breakpad initialization could occur
+  // sooner, preferably even before the framework dylib is even loaded, to
+  // catch potential early early crashes.
+  InitCrashReporter();
+
+  // If Breakpad is not present, turn off OS crash dumps to avoid having
+  // to wait eons for Apple's Crash Reporter to generate dumps for builds
+  // where debugging symbols are present.
+  if (IsCrashReporterDisabled())
+    DebugUtil::DisableOSCrashDumps();
+  else
+    InitCrashProcessInfo();
+#endif  // OS_MACOSX
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
 

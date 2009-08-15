@@ -401,18 +401,13 @@ bool BrowserRenderProcessHost::Init() {
   }
 #endif  // OS_POSIX
 
-#if defined(OS_LINUX)
-  if (GoogleUpdateSettings::GetCollectStatsConsent())
-    cmd_line.AppendSwitchWithValue(switches::kRendererCrashDump,
-                                   ASCIIToWide(google_update::linux_guid +
-                                               "," + base::GetLinuxDistro()));
-#endif
-
   cmd_line.AppendSwitchWithValue(switches::kProcessType,
                                  switches::kRendererProcess);
 
   cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
                                  ASCIIToWide(channel_id));
+
+  ChildProcessHost::SetCrashReporterCommandLine(&cmd_line);
 
   const std::wstring& profile_path =
       browser_command_line.GetSwitchValue(switches::kUserDataDir);

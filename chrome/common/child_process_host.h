@@ -13,6 +13,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "ipc/ipc_channel.h"
 
+class CommandLine;
 class NotificationType;
 
 // Plugins/workers and other child processes that live on the IO thread should
@@ -28,6 +29,13 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   // this will be the same as the currently-executing process.  On failure,
   // returns an empty wstring.
   static std::wstring GetChildPath();
+
+  // Prepares command_line for crash reporting as appropriate.  On Linux and
+  // Mac, a command-line flag to enable crash reporting in the child process
+  // will be appended if needed, because the child process may not have access
+  // to the data that determines the status of crash reporting in the
+  // currently-executing process.  This function is a no-op on Windows.
+  static void SetCrashReporterCommandLine(CommandLine* command_line);
 
   // ResourceDispatcherHost::Receiver implementation:
   virtual bool Send(IPC::Message* msg);

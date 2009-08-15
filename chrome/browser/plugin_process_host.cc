@@ -404,6 +404,8 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   cmd_line.AppendSwitchWithValue(switches::kPluginPath,
                                  info.path.ToWStringHack());
 
+  SetCrashReporterCommandLine(&cmd_line);
+
   base::ProcessHandle process = 0;
 #if defined(OS_WIN)
   process = sandbox::StartProcess(&cmd_line);

@@ -74,6 +74,7 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
                                  switches::kUtilityProcess);
   cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
                                  ASCIIToWide(channel_id()));
+  SetCrashReporterCommandLine(&cmd_line);
 
   base::ProcessHandle process;
 #if defined(OS_WIN)

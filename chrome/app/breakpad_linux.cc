@@ -611,11 +611,11 @@ void InitCrashReporter() {
     // We might be chrooted in a zygote or renderer process so we cannot call
     // GetCollectStatsConsent because that needs access the the user's home
     // dir. Instead, we set a command line flag for these processes.
-    if (!parsed_command_line.HasSwitch(switches::kRendererCrashDump))
+    if (!parsed_command_line.HasSwitch(switches::kEnableCrashReporter))
       return;
     // Get the guid and linux distro from the command line switch.
     std::string switch_value = WideToASCII(
-        parsed_command_line.GetSwitchValue(switches::kRendererCrashDump));
+        parsed_command_line.GetSwitchValue(switches::kEnableCrashReporter));
     size_t separator = switch_value.find(",");
     if (separator != std::string::npos) {
       google_update::linux_guid = switch_value.substr(0, separator);

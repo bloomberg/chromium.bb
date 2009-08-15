@@ -97,6 +97,7 @@ bool WorkerProcessHost::Init() {
                                  switches::kWorkerProcess);
   cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
                                  ASCIIToWide(channel_id()));
+  SetCrashReporterCommandLine(&cmd_line);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNativeWebWorkers)) {

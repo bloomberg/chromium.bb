@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/singleton.h"
+#include "base/string_util.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_switches.h"
@@ -20,10 +21,23 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "ipc/ipc_logging.h"
+
+#if defined(OS_LINUX)
+#include "base/linux_util.h"
+
+// This is defined in chrome/browser/google_update_settings_linux.cc.  It's the
+// static string containing the user's unique GUID.  We send this in the crash
+// report.
+namespace google_update {
+extern std::string linux_guid;
+}  // namespace google_update
+#endif  // OS_LINUX
 
 
 namespace {
+
 typedef std::list<ChildProcessHost*> ChildProcessList;
 
 // The NotificationTask is used to notify about plugin process connection/
@@ -47,7 +61,6 @@ class ChildNotificationTask : public Task {
 };
 
 }  // namespace
-
 
 
 ChildProcessHost::ChildProcessHost(
@@ -128,6 +141,22 @@ std::wstring ChildProcessHost::GetChildPath() {
 
   return path.ToWStringHack();
 #endif  // OS_MACOSX
+}
+
+// static
+void ChildProcessHost::SetCrashReporterCommandLine(CommandLine* command_line) {
+#if defined(OS_POSIX)
+  if (GoogleUpdateSettings::GetCollectStatsConsent()) {
+#if defined(OS_LINUX)
+    command_line->AppendSwitchWithValue(switches::kEnableCrashReporter,
+                                        ASCIIToWide(google_update::linux_guid +
+                                                    "," +
+                                                    base::GetLinuxDistro()));
+#else  // !OS_LINUX
+    command_line->AppendSwitch(switches::kEnableCrashReporter);
+#endif  // !OS_LINUX
+  }
+#endif  // OS_POSIX
 }
 
 bool ChildProcessHost::CreateChannel() {

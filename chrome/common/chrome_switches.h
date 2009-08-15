@@ -7,6 +7,7 @@
 #ifndef CHROME_COMMON_CHROME_SWITCHES_H_
 #define CHROME_COMMON_CHROME_SWITCHES_H_
 
+#include "build/build_config.h"
 #include "base/base_switches.h"
 
 namespace switches {
@@ -200,7 +201,9 @@ extern const wchar_t kEnableMonitorProfile[];
 
 extern const wchar_t kEnableXSSAuditor[];
 
-extern const wchar_t kRendererCrashDump[];
+#if defined(OS_POSIX)
+extern const wchar_t kEnableCrashReporter[];
+#endif
 
 extern const wchar_t kEnableTabtastic2[];
 
