@@ -28,7 +28,7 @@ deps = {
     "/trunk/deps/third_party/icu38@20192",
 
   "src/third_party/protobuf2/src":
-    "http://protobuf.googlecode.com/svn/trunk@154",
+    "http://protobuf.googlecode.com/svn/trunk@219",
 
   "src/tools/gyp":
     "http://gyp.googlecode.com/svn/trunk@591",
