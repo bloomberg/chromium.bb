@@ -2692,12 +2692,12 @@ void Browser::OpenURLAtIndex(TabContents* source,
     if (GetStatusBubble())
       GetStatusBubble()->Hide();
 
-    // Update the location bar. This is synchronous. We specfically don't update
-    // the load state since the load hasn't started yet and updating it will put
-    // it out of sync with the actual state like whether we're displaying a
-    // favicon, which controls the throbber. If we updated it here, the throbber
-    // will show the default favicon for a split second when navigating away
-    // from the new tab page.
+    // Update the location bar. This is synchronous. We specifically don't
+    // update the load state since the load hasn't started yet and updating it
+    // will put it out of sync with the actual state like whether we're
+    // displaying a favicon, which controls the throbber. If we updated it here,
+    // the throbber will show the default favicon for a split second when
+    // navigating away from the new tab page.
     ScheduleUIUpdate(current_tab, TabContents::INVALIDATE_URL);
   } else if (disposition == OFF_THE_RECORD) {
     OpenURLOffTheRecord(profile_, url);
@@ -2707,7 +2707,8 @@ void Browser::OpenURLAtIndex(TabContents* source,
         disposition != NEW_BACKGROUND_TAB, index, force_index, instance);
   }
 
-  if (disposition != NEW_BACKGROUND_TAB && source_tab_was_frontmost) {
+  if (disposition != NEW_BACKGROUND_TAB && source_tab_was_frontmost &&
+      new_contents) {
     // Give the focus to the newly navigated tab, if the source tab was
     // front-most.
     new_contents->Focus();
