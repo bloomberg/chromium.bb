@@ -38,6 +38,7 @@ libdrm/config.h.in
 libdrm.pc
 libdrm_intel.pc
 libdrm_nouveau.pc
+libdrm_radeon.pc
 libtool
 ltmain.sh
 mach64.kld
