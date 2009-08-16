@@ -1035,3 +1035,11 @@
    fun:_Z10ThreadFuncPv
    fun:start_thread
 }
+{
+   bug_19463
+   Memcheck:Leak
+   fun:_Znwj
+   fun:_ZN4base19MessagePumpLibevent4InitEv
+   fun:_ZN4base19MessagePumpLibeventC1Ev
+   fun:_ZN11MessageLoopC1ENS_4TypeE
+}
