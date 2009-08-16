@@ -1016,6 +1016,7 @@
    bug_19377
    Memcheck:Leak
    fun:calloc
+   ...
    fun:event_base_new
    fun:_ZN4base19MessagePumpLibeventC1Ev
    fun:_ZN11MessageLoopC1ENS_4TypeE
