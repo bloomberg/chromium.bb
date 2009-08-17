@@ -2833,3 +2833,5 @@ BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/002.xml = FAIL
 BUG19409 WIN : LayoutTests/media/video-empty-source.html = PASS TIMEOUT
 
 BUG19519 MAC DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
+
+BUG19544 : LayoutTests/http/tests/security/xssAuditor/link-opens-new-window.html = FAIL
