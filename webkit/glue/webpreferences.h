@@ -5,7 +5,7 @@
 // A struct for managing webkit's settings.
 //
 // Adding new values to this class probably involves updating
-// WebViewImpl::SetPreferences, common/render_messages.h, and
+// WebKit::WebSettings, common/render_messages.h, and
 // browser/profile.cc.
 
 #ifndef WEBKIT_GLUE_WEBPREFERENCES_H__
@@ -13,6 +13,8 @@
 
 #include <string>
 #include "googleurl/src/gurl.h"
+
+class WebView;
 
 struct WebPreferences {
   std::wstring standard_font_family;
@@ -87,6 +89,8 @@ struct WebPreferences {
         application_cache_enabled(false),
         user_style_sheet_enabled(false) {
   }
+
+  void Apply(WebView* web_view) const;
 };
 
 #endif  // WEBKIT_GLUE_WEBPREFERENCES_H__

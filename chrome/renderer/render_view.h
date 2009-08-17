@@ -33,6 +33,7 @@
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/webaccessibilitymanager.h"
+#include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview.h"
 
@@ -391,6 +392,10 @@ class RenderView : public RenderWidget,
                            const std::string& response,
                            const std::string& error);
 
+  const WebPreferences& webkit_preferences() const {
+    return webkit_preferences_;
+  }
+
  protected:
   // RenderWidget override.
   virtual void OnResize(const gfx::Size& new_size,
@@ -412,7 +417,8 @@ class RenderView : public RenderWidget,
   FRIEND_TEST(RenderViewTest, OnHandleKeyboardEvent);
   FRIEND_TEST(RenderViewTest, InsertCharacters);
 
-  explicit RenderView(RenderThreadBase* render_thread);
+  explicit RenderView(RenderThreadBase* render_thread,
+                      const WebPreferences& webkit_preferences);
 
   // Initializes this view with the given parent and ID. The |routing_id| can be
   // set to 'MSG_ROUTING_NONE' if the true ID is not yet known. In this case,
@@ -421,7 +427,6 @@ class RenderView : public RenderWidget,
             base::WaitableEvent* modal_dialog_event,  // takes ownership
             int32 opener_id,
             const RendererPreferences& renderer_prefs,
-            const WebPreferences& webkit_prefs,
             SharedRenderViewCounter* counter,
             int32 routing_id);
 
@@ -860,6 +865,9 @@ class RenderView : public RenderWidget,
 
   // page id for the last navigation sent to the browser.
   int32 last_top_level_navigation_page_id_;
+
+  // The settings this render view initialized WebKit with.
+  WebPreferences webkit_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };

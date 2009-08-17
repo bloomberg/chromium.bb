@@ -223,7 +223,7 @@ void WebInspectorClient::LoadSettings() {
 
   settings_.set(new SettingsMap);
   String data = webkit_glue::StdWStringToString(
-      inspected_web_view_->GetPreferences().inspector_settings);
+      inspected_web_view_->GetInspectorSettings());
   if (data.isEmpty())
     return;
 

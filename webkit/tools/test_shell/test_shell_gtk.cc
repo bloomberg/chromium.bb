@@ -543,7 +543,7 @@ void TestShell::ResizeSubViews() {
   // Clean up state between test runs.
   webkit_glue::ResetBeforeTestRun(shell->webView());
   ResetWebPreferences();
-  shell->webView()->SetPreferences(*web_prefs_);
+  web_prefs_->Apply(shell->webView());
 
   // TODO(agl): Maybe make the window hidden in the future. Window does this
   // by positioning it off the screen but the GTK function to do this is

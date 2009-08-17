@@ -73,6 +73,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void setTextDirection(WebKit::WebTextDirection direction);
 
   // WebView methods:
+  virtual void InitializeMainFrame(WebViewDelegate* delegate);
   virtual bool ShouldClose();
   virtual void ClosePage();
   virtual WebViewDelegate* GetDelegate();
@@ -89,9 +90,9 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void SetBackForwardListSize(int size);
   virtual void SetInitialFocus(bool reverse);
   virtual bool DownloadImage(int id, const GURL& image_url, int image_size);
-  virtual void SetPreferences(const WebPreferences& preferences);
-  virtual const WebPreferences& GetPreferences();
   virtual WebKit::WebSettings* GetSettings();
+  virtual const std::wstring& GetInspectorSettings() const;
+  virtual void SetInspectorSettings(const std::wstring& settings);
   virtual void SetPageEncoding(const std::wstring& encoding_name);
   virtual std::wstring GetMainFrameEncodingName();
   virtual void ZoomIn(bool text_only);
@@ -361,6 +362,9 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
 
   // Whether the webview is rendering transparently.
   bool is_transparent_;
+
+  // Inspector settings.
+  std::wstring inspector_settings_;
 
   // HACK: current_input_event is for ChromeClientImpl::show(), until we can fix
   // WebKit to pass enough information up into ChromeClient::show() so we can

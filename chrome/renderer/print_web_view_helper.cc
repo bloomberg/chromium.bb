@@ -89,10 +89,13 @@ bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
   // on the page).
-  WebPreferences prefs = web_frame->view()->GetPreferences();
+  WebPreferences prefs = render_view_->webkit_preferences();
   prefs.javascript_enabled = false;
   prefs.java_enabled = false;
-  print_web_view_.reset(WebView::Create(this, prefs));
+
+  print_web_view_.reset(WebView::Create());
+  prefs.Apply(print_web_view_.get());
+  print_web_view_->InitializeMainFrame(this);
 
   print_pages_params_.reset(new ViewMsg_PrintPages_Params(params));
   print_pages_params_->pages.clear();  // Print all pages of selection.

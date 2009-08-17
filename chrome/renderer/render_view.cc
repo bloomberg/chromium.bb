@@ -86,7 +86,6 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
-#include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webview.h"
 
@@ -115,6 +114,7 @@ using WebKit::WebNavigationType;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
 using WebKit::WebScriptSource;
+using WebKit::WebSettings;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebTextDirection;
@@ -178,7 +178,8 @@ static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-RenderView::RenderView(RenderThreadBase* render_thread)
+RenderView::RenderView(RenderThreadBase* render_thread,
+                       const WebPreferences& webkit_preferences)
     : RenderWidget(render_thread, true),
       enabled_bindings_(0),
       target_url_status_(TARGET_NONE),
@@ -204,7 +205,7 @@ RenderView::RenderView(RenderThreadBase* render_thread)
       determine_page_text_after_loading_stops_(false),
       view_type_(ViewType::INVALID),
       browser_window_id_(-1),
-      last_top_level_navigation_page_id_(-1) {
+      webkit_preferences_(webkit_preferences) {
   Singleton<RenderViewSet>()->render_view_set_.insert(this);
 }
 
@@ -234,12 +235,11 @@ RenderView* RenderView::Create(
     SharedRenderViewCounter* counter,
     int32 routing_id) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
-  scoped_refptr<RenderView> view = new RenderView(render_thread);
+  scoped_refptr<RenderView> view = new RenderView(render_thread, webkit_prefs);
   view->Init(parent_hwnd,
              modal_dialog_event,
              opener_id,
              renderer_prefs,
-             webkit_prefs,
              counter,
              routing_id);  // adds reference
   return view;
@@ -281,7 +281,6 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
                       base::WaitableEvent* modal_dialog_event,
                       int32 opener_id,
                       const RendererPreferences& renderer_prefs,
-                      const WebPreferences& webkit_prefs,
                       SharedRenderViewCounter* counter,
                       int32 routing_id) {
   DCHECK(!webview());
@@ -302,7 +301,9 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
-  webwidget_ = WebView::Create(this, webkit_prefs);
+  webwidget_ = WebView::Create();
+  webkit_preferences_.Apply(webview());
+  webview()->InitializeMainFrame(this);
 
 #if defined(OS_LINUX)
   // We have to enable ourselves as the editor delegate on linux so we can copy
@@ -1876,7 +1877,6 @@ WebView* RenderView::CreateWebView(WebView* webview,
   }
 
   // The WebView holds a reference to this new RenderView
-  const WebPreferences& web_prefs = webview->GetPreferences();
   base::WaitableEvent* waitable_event = new base::WaitableEvent
 #if defined(OS_WIN)
       (modal_dialog_event.event);
@@ -1885,7 +1885,8 @@ WebView* RenderView::CreateWebView(WebView* webview,
 #endif
   RenderView* view = RenderView::Create(render_thread_,
                                         NULL, waitable_event, routing_id_,
-                                        renderer_preferences_, web_prefs,
+                                        renderer_preferences_,
+                                        webkit_preferences_,
                                         shared_popup_counter_, routing_id);
   view->opened_by_user_gesture_ = user_gesture;
   view->creator_url_ = creator_url;
@@ -2735,7 +2736,8 @@ void RenderView::OnDragTargetDrop(const gfx::Point& client_point,
 }
 
 void RenderView::OnUpdateWebPreferences(const WebPreferences& prefs) {
-  webview()->SetPreferences(prefs);
+  webkit_preferences_ = prefs;
+  webkit_preferences_.Apply(webview());
 }
 
 void RenderView::OnSetAltErrorPageURL(const GURL& url) {

@@ -1436,6 +1436,7 @@
         'glue/webplugininfo.h',
         'glue/webpopupmenu_impl.cc',
         'glue/webpopupmenu_impl.h',
+        'glue/webpreferences.cc',
         'glue/webpreferences.h',
         'glue/webthemeengine_impl_win.cc',
         'glue/weburlloader_impl.cc',

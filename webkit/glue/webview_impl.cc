@@ -59,14 +59,11 @@ MSVC_POP_WARNING();
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebInputEvent.h"
-#include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
 #include "webkit/api/src/WebInputEventConversion.h"
 #include "webkit/api/src/WebSettingsImpl.h"
 #include "webkit/glue/chrome_client_impl.h"
@@ -80,10 +77,8 @@ MSVC_POP_WARNING();
 #include "webkit/glue/inspector_client_impl.h"
 #include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
-#include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpopupmenu_impl.h"
-#include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webdevtoolsagent.h"
 #include "webkit/glue/webdevtoolsclient.h"
 #include "webkit/glue/webview_delegate.h"
@@ -118,7 +113,6 @@ using WebKit::WebTextDirection;
 using WebKit::WebTextDirectionDefault;
 using WebKit::WebTextDirectionLeftToRight;
 using WebKit::WebTextDirectionRightToLeft;
-using WebKit::WebURL;
 
 using webkit_glue::ImageResourceFetcher;
 
@@ -319,33 +313,31 @@ static const WebCore::PopupContainerSettings kAutocompletePopupSettings = {
 // WebView ----------------------------------------------------------------
 
 /*static*/
-WebView* WebView::Create(WebViewDelegate* delegate,
-                         const WebPreferences& prefs) {
+WebView* WebView::Create() {
   WebViewImpl* instance = new WebViewImpl();
   instance->AddRef();
-  instance->SetPreferences(prefs);
+  return instance;
+}
 
+void WebViewImpl::InitializeMainFrame(WebViewDelegate* delegate) {
   // NOTE: The WebFrameImpl takes a reference to itself within InitMainFrame
   // and releases that reference once the corresponding Frame is destroyed.
   scoped_refptr<WebFrameImpl> main_frame = new WebFrameImpl();
 
   // Set the delegate before initializing the frame, so that notifications like
   // DidCreateDataSource make their way to the client.
-  instance->delegate_ = delegate;
-  main_frame->InitMainFrame(instance);
+  delegate_ = delegate;
+  main_frame->InitMainFrame(this);
 
   WebDevToolsAgentDelegate* tools_delegate =
       delegate->GetWebDevToolsAgentDelegate();
-  if (tools_delegate) {
-    instance->devtools_agent_.reset(
-      new WebDevToolsAgentImpl(instance, tools_delegate));
-  }
+  if (tools_delegate)
+    devtools_agent_.reset(new WebDevToolsAgentImpl(this, tools_delegate));
 
   // Restrict the access to the local file system
   // (see WebView.mm WebView::_commonInitializationWithFrameName).
   FrameLoader::setLocalLoadPolicy(
       FrameLoader::AllowLocalLoadsForLocalOnly);
-  return instance;
 }
 
 // static
@@ -1382,101 +1374,19 @@ bool WebViewImpl::DownloadImage(int id, const GURL& image_url,
   return true;
 }
 
-void WebViewImpl::SetPreferences(const WebPreferences& preferences) {
-  if (!page_.get())
-    return;
-
-  // Keep a local copy of the preferences struct for GetPreferences.
-  webprefs_ = preferences;
-
-  WebSettings* settings = GetSettings();
-
-  settings->setStandardFontFamily(WideToUTF16Hack(
-    preferences.standard_font_family));
-  settings->setFixedFontFamily(WideToUTF16Hack(
-    preferences.fixed_font_family));
-  settings->setSerifFontFamily(WideToUTF16Hack(
-    preferences.serif_font_family));
-  settings->setSansSerifFontFamily(WideToUTF16Hack(
-    preferences.sans_serif_font_family));
-  settings->setCursiveFontFamily(WideToUTF16Hack(
-    preferences.cursive_font_family));
-  settings->setFantasyFontFamily(WideToUTF16Hack(
-    preferences.fantasy_font_family));
-  settings->setDefaultFontSize(preferences.default_font_size);
-  settings->setDefaultFixedFontSize(preferences.default_fixed_font_size);
-  settings->setMinimumFontSize(preferences.minimum_font_size);
-  settings->setMinimumLogicalFontSize(preferences.minimum_logical_font_size);
-  settings->setDefaultTextEncodingName(WideToUTF16Hack(
-    preferences.default_encoding));
-  settings->setJavaScriptEnabled(preferences.javascript_enabled);
-  settings->setWebSecurityEnabled(preferences.web_security_enabled);
-  settings->setJavaScriptCanOpenWindowsAutomatically(
-    preferences.javascript_can_open_windows_automatically);
-  settings->setLoadsImagesAutomatically(
-    preferences.loads_images_automatically);
-  settings->setPluginsEnabled(preferences.plugins_enabled);
-  settings->setDOMPasteAllowed(preferences.dom_paste_enabled);
-  settings->setDeveloperExtrasEnabled(preferences.developer_extras_enabled);
-  settings->setShrinksStandaloneImagesToFit(
-    preferences.shrinks_standalone_images_to_fit);
-  settings->setUsesEncodingDetector(preferences.uses_universal_detector);
-  settings->setTextAreasAreResizable(preferences.text_areas_are_resizable);
-  settings->setAllowScriptsToCloseWindows(
-    preferences.allow_scripts_to_close_windows);
-  if (preferences.user_style_sheet_enabled)
-    settings->setUserStyleSheetLocation(preferences.user_style_sheet_location);
-  else
-    settings->setUserStyleSheetLocation(WebURL());
-  settings->setUsesPageCache(preferences.uses_page_cache);
-  settings->setDownloadableBinaryFontsEnabled(preferences.remote_fonts_enabled);
-  settings->setXSSAuditorEnabled(preferences.xss_auditor_enabled);
-  settings->setLocalStorageEnabled(preferences.local_storage_enabled);
-  settings->setSessionStorageEnabled(preferences.session_storage_enabled);
-  settings->setOfflineWebApplicationCacheEnabled(preferences.application_cache_enabled);
-
-  // This setting affects the behavior of links in an editable region:
-  // clicking the link should select it rather than navigate to it.
-  // Safari uses the same default. It is unlikley an embedder would want to
-  // change this, since it would break existing rich text editors.
-  settings->setEditableLinkBehaviorNeverLive();
-
-  settings->setFontRenderingModeNormal();
-  settings->setJavaEnabled(preferences.java_enabled);
-
-  // Turn this on to cause WebCore to paint the resize corner for us.
-  settings->setShouldPaintCustomScrollbars(true);
-
-#if ENABLE(DATABASE)
-  settings->setDatabasesEnabled(WebKit::databasesEnabled());
-#endif
-
-  // Mitigate attacks from local HTML files by not granting file:// URLs
-  // universal access.
-  settings->setAllowUniversalAccessFromFileURLs(false);
-
-  // We prevent WebKit from checking if it needs to add a "text direction"
-  // submenu to a context menu. it is not only because we don't need the result
-  // but also because it cause a possible crash in Editor::hasBidiSelection().
-  settings->setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
-
-#if defined(OS_WIN)
-  // RenderTheme is a singleton that needs to know the default font size to
-  // draw some form controls.  We let it know each time the size changes.
-  WebCore::RenderThemeChromiumWin::setDefaultFontSize(
-      preferences.default_font_size);
-#endif
-}
-
-const WebPreferences& WebViewImpl::GetPreferences() {
-  return webprefs_;
-}
-
 WebSettings* WebViewImpl::GetSettings() {
   if (!web_settings_.get())
     web_settings_.reset(new WebSettingsImpl(page_->settings()));
   DCHECK(web_settings_.get());
   return web_settings_.get();
+}
+
+const std::wstring& WebViewImpl::GetInspectorSettings() const {
+  return inspector_settings_;
+}
+
+void WebViewImpl::SetInspectorSettings(const std::wstring& settings) {
+  inspector_settings_ = settings;
 }
 
 // Set the encoding of the current main frame to the one selected by

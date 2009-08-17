@@ -254,7 +254,7 @@ bool TestShell::RunFileTest(const TestParams& params) {
   // Clean up state between test runs.
   webkit_glue::ResetBeforeTestRun(shell->webView());
   ResetWebPreferences();
-  shell->webView()->SetPreferences(*web_prefs_);
+  web_prefs_->Apply(shell->webView());
 
   SetWindowPos(shell->m_mainWnd, NULL,
                kTestWindowXLocation, kTestWindowYLocation, 0, 0,

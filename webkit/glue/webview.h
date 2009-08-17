@@ -19,7 +19,6 @@ struct WebPoint;
 }
 
 struct MediaPlayerAction;
-struct WebPreferences;
 class GURL;
 class WebDevToolsAgent;
 class WebViewDelegate;
@@ -49,9 +48,13 @@ class WebView : public WebKit::WebWidget {
   WebView() {}
   virtual ~WebView() {}
 
-  // This method creates a WebView that is initially sized to an empty rect.
-  static WebView* Create(WebViewDelegate* delegate,
-                         const WebPreferences& prefs);
+  // This method creates a WebView that is NOT yet initialized.  You will need
+  // to call InitializeMainFrame to finish the initialization.
+  static WebView* Create();
+
+  // After creating a WebView, you should immediately call this function.
+  // You can optionally modify the settings (via GetSettings()) in between.
+  virtual void InitializeMainFrame(WebViewDelegate* delegate) = 0;
 
   // Tells all Page instances of this view to update the visited link state for
   // the specified hash.
@@ -62,8 +65,8 @@ class WebView : public WebKit::WebWidget {
   static void ResetVisitedLinkState();
 
   // Returns the delegate for this WebView.  This is the pointer that was
-  // passed to WebView::Create. The caller must check this value before using
-  // it, it will be NULL during closing of the view.
+  // passed to WebView::Initialize. The caller must check this value before
+  // using it, it will be NULL during closing of the view.
   virtual WebViewDelegate* GetDelegate() = 0;
 
   // Instructs the EditorClient whether to pass editing notifications on to a
@@ -143,15 +146,14 @@ class WebView : public WebKit::WebWidget {
   // image doesn't have a frame at the specified size, the first is returned.
   virtual bool DownloadImage(int id, const GURL& image_url, int image_size) = 0;
 
-  // Replace the standard setting for the WebView with |preferences|.
-  // TODO(jorlow): Remove in favor of the GetWebSettings() interface below.
-  virtual void SetPreferences(const WebPreferences& preferences) = 0;
-  virtual const WebPreferences& GetPreferences() = 0;
-
   // Gets a WebSettings object that can be used to modify the behavior of this
   // WebView.  The object is deleted by this class on destruction, so you must
   // not use it beyond WebView's lifetime.
   virtual WebKit::WebSettings* GetSettings() = 0;
+
+  // Settings used by inspector.
+  virtual const std::wstring& GetInspectorSettings() const = 0;
+  virtual void SetInspectorSettings(const std::wstring& settings) = 0;
 
   // Set the encoding of the current main frame. The value comes from
   // the encoding menu. WebKit uses the function named

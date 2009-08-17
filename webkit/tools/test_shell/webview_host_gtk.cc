@@ -11,6 +11,7 @@
 #include "base/gfx/size.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/glue/plugins/gtk_plugin_container.h"
+#include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
 
 // static
@@ -22,7 +23,9 @@ WebViewHost* WebViewHost::Create(GtkWidget* parent_view,
   host->view_ = WebWidgetHost::CreateWidget(parent_view, host);
   host->plugin_container_manager_.set_host_widget(host->view_);
 
-  host->webwidget_ = WebView::Create(delegate, prefs);
+  host->webwidget_ = WebView::Create();
+  prefs.Apply(host->webview());
+  host->webview()->InitializeMainFrame(delegate);
   host->webwidget_->layout();
 
   return host;
