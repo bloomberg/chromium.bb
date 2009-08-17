@@ -42,7 +42,6 @@ static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
 }
 
 // Tests that toolstrips initializes properly and can run basic extension js.
-// TODO(pfeldman): Re-enable this test. http://crbug.com/19335
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
   FilePath extension_test_data_dir = test_data_dir_.AppendASCII("good").
       AppendASCII("Extensions").AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj").
