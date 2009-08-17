@@ -876,7 +876,8 @@
 								<object class="NSMenuItem" id="64100325">
 									<reference key="NSMenu" ref="436720301"/>
 									<string key="NSTitle">^IDS_SHOW_HISTORY_MAC</string>
-									<string key="NSKeyEquiv"/>
+									<string key="NSKeyEquiv">y</string>
+									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="353210768"/>
 									<reference key="NSMixedImage" ref="549394948"/>
