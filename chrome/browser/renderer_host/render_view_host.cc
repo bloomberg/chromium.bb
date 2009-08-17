@@ -148,7 +148,7 @@ void RenderViewHost::Observe(NotificationType type,
   if (rph == process()) {
     // Try to get some debugging information on the stack.
     size_t num_hosts = RenderProcessHost::size();
-    bool no_listeners = rph->listeners_begin() == rph->listeners_end();
+    bool no_listeners = rph->ListenersIterator().IsAtEnd();
     bool live_instance = site_instance() != NULL;
     CHECK(live_instance);
     bool live_process = site_instance()->GetProcess() != NULL;
@@ -164,7 +164,7 @@ void RenderViewHost::Observe(NotificationType type,
 bool RenderViewHost::CreateRenderView() {
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
   CHECK(process());
-  CHECK(process()->listeners_begin() != process()->listeners_end()) <<
+  CHECK(!process()->ListenersIterator().IsAtEnd()) <<
       "Our process should have us as a listener.";
 
   // The process may (if we're sharing a process with another host that already

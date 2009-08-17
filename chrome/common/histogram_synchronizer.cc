@@ -56,9 +56,10 @@ void HistogramSynchronizer::FetchRendererHistogramsSynchronously(
 
   int sequence_number = GetNextAvaibleSequenceNumber(
       SYNCHRONOUS_HISTOGRAMS, RenderProcessHost::size());
-  for (RenderProcessHost::iterator it = RenderProcessHost::begin();
-       it != RenderProcessHost::end(); ++it) {
-    it->second->Send(new ViewMsg_GetRendererHistograms(sequence_number));
+  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Send(
+        new ViewMsg_GetRendererHistograms(sequence_number));
   }
 
   TimeTicks start = TimeTicks::Now();
@@ -111,9 +112,10 @@ void HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
   int sequence_number =
       current_synchronizer->GetNextAvaibleSequenceNumber(
           ASYNC_HISTOGRAMS, RenderProcessHost::size());
-  for (RenderProcessHost::iterator it = RenderProcessHost::begin();
-       it != RenderProcessHost::end(); ++it) {
-    it->second->Send(new ViewMsg_GetRendererHistograms(sequence_number));
+  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Send(
+        new ViewMsg_GetRendererHistograms(sequence_number));
   }
 
   // Post a task that would be called after waiting for wait_time.

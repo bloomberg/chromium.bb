@@ -196,13 +196,13 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
     // check if it's a diagnostics-related process.  We skip all diagnostics
     // pages (e.g. "about:xxx" URLs).  Iterate the RenderProcessHosts to find
     // the tab contents.
-    RenderProcessHost::iterator renderer_iter;
-    for (renderer_iter = RenderProcessHost::begin(); renderer_iter !=
-         RenderProcessHost::end(); ++renderer_iter) {
-      DCHECK(renderer_iter->second);
+    RenderProcessHost::iterator renderer_iter(
+        RenderProcessHost::AllHostsIterator());
+    for (; !renderer_iter.IsAtEnd(); renderer_iter.Advance()) {
+      DCHECK(renderer_iter.GetCurrentValue());
       ProcessMemoryInformation& process =
           process_data_[CHROME_BROWSER].processes[index];
-      if (process.pid != renderer_iter->second->process().pid())
+      if (process.pid != renderer_iter.GetCurrentValue()->process().pid())
         continue;
       process.type = ChildProcessInfo::RENDER_PROCESS;
       // The RenderProcessHost may host multiple TabContents.  Any
@@ -212,16 +212,16 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       // NOTE: This is a bit dangerous.  We know that for now, listeners
       //       are always RenderWidgetHosts.  But in theory, they don't
       //       have to be.
-      RenderProcessHost::listeners_iterator iter;
-      for (iter = renderer_iter->second->listeners_begin();
-           iter != renderer_iter->second->listeners_end(); ++iter) {
-        RenderWidgetHost* widget =
-            static_cast<RenderWidgetHost*>(iter->second);
+      RenderProcessHost::listeners_iterator iter(
+          renderer_iter.GetCurrentValue()->ListenersIterator());
+      for (; !iter.IsAtEnd(); iter.Advance()) {
+        const RenderWidgetHost* widget =
+            static_cast<const RenderWidgetHost*>(iter.GetCurrentValue());
         DCHECK(widget);
         if (!widget || !widget->IsRenderView())
           continue;
 
-        RenderViewHost* host = static_cast<RenderViewHost*>(widget);
+        const RenderViewHost* host = static_cast<const RenderViewHost*>(widget);
         TabContents* contents = NULL;
         if (host->delegate())
           contents = host->delegate()->GetAsTabContents();

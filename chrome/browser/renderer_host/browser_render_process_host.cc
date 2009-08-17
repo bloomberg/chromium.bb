@@ -649,17 +649,20 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
 
   // Check for any external tab containers, since they may still be running even
   // though this window closed.
-  BrowserRenderProcessHost::listeners_iterator iter;
-  // NOTE: This is a bit dangerous.  We know that for now, listeners are
-  // always RenderWidgetHosts.  But in theory, they don't have to be.
-  for (iter = listeners_begin(); iter != listeners_end(); ++iter) {
-    RenderWidgetHost* widget = static_cast<RenderWidgetHost*>(iter->second);
+  BrowserRenderProcessHost::listeners_iterator iter(ListenersIterator());
+  while (!iter.IsAtEnd()) {
+    // NOTE: This is a bit dangerous.  We know that for now, listeners are
+    // always RenderWidgetHosts.  But in theory, they don't have to be.
+    const RenderWidgetHost* widget =
+        static_cast<const RenderWidgetHost*>(iter.GetCurrentValue());
     DCHECK(widget);
-    if (!widget || !widget->IsRenderView())
-      continue;
-    RenderViewHost* rvh = static_cast<RenderViewHost*>(widget);
-    if (rvh->delegate()->IsExternalTabContainer())
-      return false;
+    if (widget && widget->IsRenderView()) {
+      const RenderViewHost* rvh = static_cast<const RenderViewHost*>(widget);
+      if (rvh->delegate()->IsExternalTabContainer())
+        return false;
+    }
+
+    iter.Advance();
   }
 
   // Otherwise, we're allowed to just terminate the process. Using exit code 0
@@ -876,13 +879,11 @@ void BrowserRenderProcessHost::OnChannelError() {
 
   channel_.reset();
 
-  // This process should detach all the listeners, causing the object to be
-  // deleted. We therefore need a stack copy of the web view list to avoid
-  // crashing when checking for the termination condition the last time.
-  IDMap<IPC::Channel::Listener> local_listeners(listeners_);
-  for (listeners_iterator i = local_listeners.begin();
-       i != local_listeners.end(); ++i) {
-    i->second->OnMessageReceived(ViewHostMsg_RenderViewGone(i->first));
+  IDMap<IPC::Channel::Listener>::iterator iter(&listeners_);
+  while (!iter.IsAtEnd()) {
+    iter.GetCurrentValue()->OnMessageReceived(
+        ViewHostMsg_RenderViewGone(iter.GetCurrentKey()));
+    iter.Advance();
   }
 
   ClearTransportDIBCache();

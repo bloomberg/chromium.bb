@@ -957,9 +957,10 @@ void MetricsService::LogTransmissionTimerDone() {
   details->StartFetch();
 
   // Collect WebCore cache information to put into a histogram.
-  for (RenderProcessHost::iterator it = RenderProcessHost::begin();
-       it != RenderProcessHost::end(); ++it) {
-    it->second->Send(new ViewMsg_GetCacheResourceStats());
+  RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  while (!it.IsAtEnd()) {
+    it.GetCurrentValue()->Send(new ViewMsg_GetCacheResourceStats());
+    it.Advance();
   }
 }
 

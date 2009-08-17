@@ -171,7 +171,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   virtual void Shutdown();
 
   // Manual RTTI FTW. We are not hosting a web page.
-  virtual bool IsRenderView() { return false; }
+  virtual bool IsRenderView() const { return false; }
 
   // IPC::Channel::Listener
   virtual void OnMessageReceived(const IPC::Message& msg);

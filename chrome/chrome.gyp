@@ -3968,6 +3968,7 @@
         'common/extensions/extension_unittest.cc',
         'common/extensions/url_pattern_unittest.cc',
         'common/extensions/user_script_unittest.cc',
+        'common/id_map_unittest.cc',
         'common/important_file_writer_unittest.cc',
         'common/json_value_serializer_unittest.cc',
         'common/mru_cache_unittest.cc',

@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_ID_MAP_H_
 #define CHROME_COMMON_ID_MAP_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
@@ -21,30 +23,13 @@ template<class T>
 class IDMap {
  private:
   typedef base::hash_map<int32, T*> HashTable;
-  typedef typename HashTable::iterator iterator;
 
  public:
-  // support const iterators over the items
-  // Note, use iterator->first to get the ID, iterator->second to get the T*
-  typedef typename HashTable::const_iterator const_iterator;
-
-  IDMap() : next_id_(1), check_on_null_data_(false) {
-  }
-  IDMap(const IDMap& other)
-      : next_id_(other.next_id_),
-        data_(other.data_),
-        check_on_null_data_(other.check_on_null_data_) {
+  IDMap() : iteration_depth_(0), next_id_(1), check_on_null_data_(false) {
   }
 
   // Sets whether Add should CHECK if passed in NULL data. Default is false.
   void set_check_on_null_data(bool value) { check_on_null_data_ = value; }
-
-  const_iterator begin() const {
-    return data_.begin();
-  }
-  const_iterator end() const {
-    return data_.end();
-  }
 
   // Adds a view with an automatically generated unique ID. See AddWithID.
   int32 Add(T* data) {
@@ -67,12 +52,16 @@ class IDMap {
   }
 
   void Remove(int32 id) {
-    iterator i = data_.find(id);
+    typename HashTable::iterator i = data_.find(id);
     if (i == data_.end()) {
       NOTREACHED() << "Attempting to remove an item not in the list";
       return;
     }
-    data_.erase(i);
+
+    if (iteration_depth_ == 0)
+      data_.erase(i);
+    else
+      removed_ids_.insert(id);
   }
 
   bool IsEmpty() const {
@@ -80,7 +69,7 @@ class IDMap {
   }
 
   T* Lookup(int32 id) const {
-    const_iterator i = data_.find(id);
+    typename HashTable::const_iterator i = data_.find(id);
     if (i == data_.end())
       return NULL;
     return i->second;
@@ -90,15 +79,84 @@ class IDMap {
     return data_.size();
   }
 
- protected:
+  // It is safe to remove elements from the map during iteration. All iterators
+  // will remain valid.
+  template<class ReturnType>
+  class Iterator {
+   public:
+    Iterator(IDMap<T>* map)
+        : map_(map),
+          iter_(map_->data_.begin()) {
+      ++map_->iteration_depth_;
+      SkipRemovedEntries();
+    }
+
+    ~Iterator() {
+      if (--map_->iteration_depth_ == 0)
+        map_->Compact();
+    }
+
+    bool IsAtEnd() const {
+      return iter_ == map_->data_.end();
+    }
+
+    int32 GetCurrentKey() const {
+      return iter_->first;
+    }
+
+    ReturnType* GetCurrentValue() const {
+      return iter_->second;
+    }
+
+    void Advance() {
+      ++iter_;
+      SkipRemovedEntries();
+    }
+
+   private:
+    void SkipRemovedEntries() {
+      while (iter_ != map_->data_.end() &&
+             map_->removed_ids_.find(iter_->first) !=
+             map_->removed_ids_.end()) {
+        ++iter_;
+      }
+    }
+
+    IDMap<T>* map_;
+    typename HashTable::const_iterator iter_;
+  };
+
+  typedef Iterator<T> iterator;
+  typedef Iterator<const T> const_iterator;
+
+ private:
+  void Compact() {
+    DCHECK_EQ(0, iteration_depth_);
+    for (std::set<int32>::const_iterator i = removed_ids_.begin();
+         i != removed_ids_.end(); ++i) {
+      Remove(*i);
+    }
+    removed_ids_.clear();
+  }
+
+  // Keep track of how many iterators are currently iterating on us to safely
+  // handle removing items during iteration.
+  int iteration_depth_;
+
+  // Keep set of IDs that should be removed after the outermost iteration has
+  // finished. This way we manage to not invalidate the iterator when an element
+  // is removed.
+  std::set<int32> removed_ids_;
+
   // The next ID that we will return from Add()
   int32 next_id_;
 
   HashTable data_;
 
- private:
   // See description above setter.
   bool check_on_null_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(IDMap);
 };
 
 #endif  // CHROME_COMMON_ID_MAP_H_

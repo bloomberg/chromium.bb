@@ -125,13 +125,8 @@ void RenderProcessHost::UpdateMaxPageID(int32 page_id) {
 }
 
 // static
-RenderProcessHost::iterator RenderProcessHost::begin() {
-  return all_hosts.begin();
-}
-
-// static
-RenderProcessHost::iterator RenderProcessHost::end() {
-  return all_hosts.end();
+RenderProcessHost::iterator RenderProcessHost::AllHostsIterator() {
+  return iterator(&all_hosts);
 }
 
 // static
@@ -165,10 +160,13 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(Profile* profile,
   std::vector<RenderProcessHost*> suitable_renderers;
   suitable_renderers.reserve(size());
 
-  for (iterator iter = begin(); iter != end(); ++iter) {
+  iterator iter(AllHostsIterator());
+  while (!iter.IsAtEnd()) {
     if (run_renderer_in_process() ||
-        IsSuitableHost(iter->second, profile, type))
-      suitable_renderers.push_back(iter->second);
+        IsSuitableHost(iter.GetCurrentValue(), profile, type))
+      suitable_renderers.push_back(iter.GetCurrentValue());
+
+    iter.Advance();
   }
 
   // Now pick a random suitable renderer, if we have any.

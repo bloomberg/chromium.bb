@@ -58,16 +58,9 @@ void CPBrowsingContextManager::Observe(NotificationType type,
   URLRequestContext* context = Source<URLRequestContext>(source).ptr();
 
   // Multiple CPBrowsingContexts may refer to the same URLRequestContext.
-  // Remove after collecting all entries, since removing may invalidate
-  // iterators.
-  std::vector<int32> ids_to_remove;
-  for (Map::const_iterator it = map_.begin(); it != map_.end(); ++it) {
-    if (it->second == context)
-      ids_to_remove.push_back(it->first);
-  }
-
-  for (size_t i = 0; i < ids_to_remove.size(); ++i) {
-    map_.Remove(ids_to_remove[i]);
+  for (Map::iterator it(&map_); !it.IsAtEnd(); it.Advance()) {
+    if (it.GetCurrentValue() == context)
+      map_.Remove(it.GetCurrentKey());
   }
 
   reverse_map_.erase(context);

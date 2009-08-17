@@ -128,11 +128,12 @@ class BrowserIdleTimer : public base::IdleTimer {
     process.ReduceWorkingSet();
 
     // Handle the Renderer(s).
-    RenderProcessHost::iterator renderer_iter;
-    for (renderer_iter = RenderProcessHost::begin(); renderer_iter !=
-         RenderProcessHost::end(); renderer_iter++) {
-       base::Process process = renderer_iter->second->process();
-       process.ReduceWorkingSet();
+    RenderProcessHost::iterator renderer_iter(
+        RenderProcessHost::AllHostsIterator());
+    while (!renderer_iter.IsAtEnd()) {
+      base::Process process = renderer_iter.GetCurrentValue()->process();
+      process.ReduceWorkingSet();
+      renderer_iter.Advance();
     }
 
     // Handle the child processe.  We need to iterate through them on the IO

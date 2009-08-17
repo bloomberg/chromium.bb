@@ -403,7 +403,7 @@ class RenderViewHost : public RenderWidgetHost,
 
   // RenderWidgetHost public overrides.
   virtual void Shutdown();
-  virtual bool IsRenderView() { return true; }
+  virtual bool IsRenderView() const { return true; }
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void GotFocus();
   virtual bool CanBlur() const;

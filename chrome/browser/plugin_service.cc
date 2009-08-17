@@ -196,11 +196,11 @@ void PluginService::OnWaitableEventSignaled(base::WaitableEvent* waitable_event)
 
   NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
 
-  for (RenderProcessHost::iterator it = RenderProcessHost::begin();
-       it != RenderProcessHost::end(); ++it) {
-    it->second->Send(new ViewMsg_PurgePluginListCache());
+  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Send(new ViewMsg_PurgePluginListCache());
   }
-#endif
+#endif  // defined(OS_WIN)
 }
 
 void PluginService::Observe(NotificationType type,

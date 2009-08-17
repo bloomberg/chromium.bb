@@ -28,7 +28,7 @@ struct ViewMsg_ClosePage_Params;
 class RenderProcessHost : public IPC::Channel::Sender,
                           public IPC::Channel::Listener {
  public:
-  typedef IDMap<RenderProcessHost>::const_iterator iterator;
+  typedef IDMap<RenderProcessHost>::iterator iterator;
 
   // We classify renderers according to their highest privilege, and try
   // to group pages into renderers with similar privileges.
@@ -83,11 +83,9 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // Allows iteration over this RenderProcessHost's RenderViewHost listeners.
   // Use from UI thread only.
   typedef IDMap<IPC::Channel::Listener>::const_iterator listeners_iterator;
-  listeners_iterator listeners_begin() {
-    return listeners_.begin();
-  }
-  listeners_iterator listeners_end() {
-    return listeners_.end();
+
+  listeners_iterator ListenersIterator() {
+    return listeners_iterator(&listeners_);
   }
 
   IPC::Channel::Listener* GetListenerByID(int routing_id) {
@@ -195,10 +193,7 @@ class RenderProcessHost : public IPC::Channel::Sender,
 
   // Allows iteration over all the RenderProcessHosts in the browser. Note
   // that each host may not be active, and therefore may have NULL channels.
-  // This is just a standard STL iterator, so it is not valid if the list
-  // of RenderProcessHosts changes between iterations.
-  static iterator begin();
-  static iterator end();
+  static iterator AllHostsIterator();
   static size_t size();  // TODO(brettw) rename this, it's very unclear.
 
   // Returns the RenderProcessHost given its ID.  Returns NULL if the ID does

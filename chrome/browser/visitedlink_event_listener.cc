@@ -19,20 +19,20 @@ void VisitedLinkEventListener::NewTable(base::SharedMemory* table_memory) {
     return;
 
   // Send to all RenderProcessHosts.
-  for (RenderProcessHost::iterator i = RenderProcessHost::begin();
-       i != RenderProcessHost::end(); ++i) {
-    if (!i->second->HasConnection())
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    if (!i.GetCurrentValue()->HasConnection())
       continue;
 
     base::SharedMemoryHandle new_table;
-    base::ProcessHandle process = i->second->process().handle();
+    base::ProcessHandle process = i.GetCurrentValue()->process().handle();
     if (!process) {
       // process can be null if it's started with the --single-process flag.
       process = base::Process::Current().handle();
     }
 
     table_memory->ShareToProcess(process, &new_table);
-    i->second->Send(new ViewMsg_VisitedLink_NewTable(new_table));
+    i.GetCurrentValue()->Send(new ViewMsg_VisitedLink_NewTable(new_table));
   }
 }
 
@@ -51,17 +51,17 @@ void VisitedLinkEventListener::Reset() {
   coalesce_timer_.Stop();
 
   // Send to all RenderProcessHosts.
-  for (RenderProcessHost::iterator i = RenderProcessHost::begin();
-       i != RenderProcessHost::end(); ++i) {
-    i->second->ResetVisitedLinks();
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->ResetVisitedLinks();
   }
 }
 
 void VisitedLinkEventListener::CommitVisitedLinks() {
   // Send to all RenderProcessHosts.
-  for (RenderProcessHost::iterator i = RenderProcessHost::begin();
-       i != RenderProcessHost::end(); ++i) {
-    i->second->AddVisitedLinks(pending_visited_links_);
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    i.GetCurrentValue()->AddVisitedLinks(pending_visited_links_);
   }
 
   pending_visited_links_.clear();
