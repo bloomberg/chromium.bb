@@ -21,11 +21,8 @@ namespace {
 // we already have this many download views, one is removed.
 const size_t kMaxDownloadItemCount = 16;
 
-// Border padding of a download item.
-const int kDownloadItemBorderPadding = 3;
-
 // Horizontal padding between two download items.
-const int kDownloadItemPadding = 10;
+const int kDownloadItemPadding = 2;
 
 // Duration for the open-new-leftmost-item animation, in seconds.
 const NSTimeInterval kDownloadItemOpenDuration = 0.8;
@@ -231,7 +228,7 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 
   // Start at width 0...
   NSSize size = [controller.get() preferredSize];
-  NSRect frame = NSMakeRect(0, kDownloadItemBorderPadding, 0, size.height);
+  NSRect frame = NSMakeRect(0, 0, 0, size.height);
   [[controller.get() view] setFrame:frame];
 
   // ...then animate in

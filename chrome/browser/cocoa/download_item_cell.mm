@@ -16,19 +16,19 @@
 namespace {
 
 // Distance from top border to icon
-const CGFloat kImagePaddingTop = 1;
+const CGFloat kImagePaddingTop = 8;
 
 // Distance from left border to icon
-const CGFloat kImagePaddingLeft = 1;
+const CGFloat kImagePaddingLeft = 5;
 
 // Width of icon
-const CGFloat kImageWidth = 32;
+const CGFloat kImageWidth = 16;
 
 // Height of icon
-const CGFloat kImageHeight = 32;
+const CGFloat kImageHeight = 16;
 
 // x coordinate of download name string, in view coords
-const CGFloat kTextPosLeft = kImagePaddingLeft + kImageWidth + 1;
+const CGFloat kTextPosLeft = kImagePaddingLeft + kImageWidth + 4 + 1;
 
 // Distance from end of download name string to dropdown area
 const CGFloat kTextPaddingRight = 3;
@@ -44,8 +44,9 @@ const CGFloat kPrimaryTextOnlyPosTop = 10;
 // y coordinate of status message, in view coords
 const CGFloat kSecondaryTextPosTop = 17;
 
-// Width of dropdown area on the right
-const CGFloat kDropdownAreaWidth = 18;
+// Width of dropdown area on the right (includes 1px for the border on each
+// side).
+const CGFloat kDropdownAreaWidth = 14;
 
 // Width of dropdown arrow
 const CGFloat kDropdownArrowWidth = 5;
@@ -260,13 +261,12 @@ NSTimeInterval kHideStatusDuration = 0.3;
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-
-  // Constants from Cole.  Will kConstan them once the feedback loop
+  // Constants from Cole.  Will kConstant them once the feedback loop
   // is complete.
   NSRect drawFrame = NSInsetRect(cellFrame, 0.5, 0.5);
   NSRect innerFrame = NSInsetRect(cellFrame, 1, 1);
 
-  const float radius = 3.5;
+  const float radius = 5;
   NSWindow* window = [controlView window];
   BOOL active = [window isKeyWindow] || [window isMainWindow];
 
@@ -274,10 +274,6 @@ NSTimeInterval kHideStatusDuration = 0.3;
 
   NSRect buttonDrawRect, dropdownDrawRect;
   NSDivideRect(drawFrame, &dropdownDrawRect, &buttonDrawRect,
-      kDropdownAreaWidth, NSMaxXEdge);
-
-  NSRect buttonInnerRect, dropdownInnerRect;
-  NSDivideRect(innerFrame, &dropdownInnerRect, &buttonInnerRect,
       kDropdownAreaWidth, NSMaxXEdge);
 
   NSBezierPath* buttonInnerPath = [self
@@ -292,27 +288,24 @@ NSTimeInterval kHideStatusDuration = 0.3;
       rightRoundedPath:(radius + 1)
                 inRect:NSInsetRect(dropdownDrawRect, -1, -1)];
 
-  // Stroke the borders and appropriate fill gradient. If we're borderless,
-  // the only time we want to draw the inner gradient is if we're highlighted.
-  if ([self isHighlighted] || [self isMouseInside]) {
-    [self drawBorderAndFillForTheme:theme
-                        controlView:controlView
-                          outerPath:buttonOuterPath
-                          innerPath:buttonInnerPath
-              showHighlightGradient:[self isMouseOverButtonPart]
-                showClickedGradient:[self isButtonPartPressed]
-                             active:active
-                          cellFrame:cellFrame];
+  // Stroke the borders and appropriate fill gradient.
+  [self drawBorderAndFillForTheme:theme
+                      controlView:controlView
+                        outerPath:buttonOuterPath
+                        innerPath:buttonInnerPath
+            showHighlightGradient:[self isMouseOverButtonPart]
+              showClickedGradient:[self isButtonPartPressed]
+                           active:active
+                        cellFrame:cellFrame];
 
-    [self drawBorderAndFillForTheme: theme
-                        controlView:controlView
-                          outerPath:dropdownOuterPath
-                          innerPath:dropdownInnerPath
-              showHighlightGradient:[self isMouseOverDropdownPart]
-                showClickedGradient:[self isDropdownPartPressed]
-                             active:active
-                          cellFrame:cellFrame];
-  }
+  [self drawBorderAndFillForTheme: theme
+                      controlView:controlView
+                        outerPath:dropdownOuterPath
+                        innerPath:dropdownInnerPath
+            showHighlightGradient:[self isMouseOverDropdownPart]
+              showClickedGradient:[self isDropdownPartPressed]
+                           active:active
+                        cellFrame:cellFrame];
 
   [self drawInteriorWithFrame:innerFrame inView:controlView];
 }
@@ -364,7 +357,7 @@ NSTimeInterval kHideStatusDuration = 0.3;
 
   // Popup arrow. Put center of mass of the arrow in the center of the
   // dropdown area.
-  CGFloat cx = NSMaxX(cellFrame) - kDropdownAreaWidth/2;
+  CGFloat cx = NSMaxX(cellFrame) - kDropdownAreaWidth/2 + 0.5;
   CGFloat cy = NSMidY(cellFrame);
   NSPoint p1 = NSMakePoint(cx - kDropdownArrowWidth/2,
                            cy - kDropdownArrowHeight/3);

@@ -41,8 +41,8 @@
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<object class="NSButton" id="538957441">
 						<reference key="NSNextResponder" ref="1005"/>
-						<int key="NSvFlags">289</int>
-						<string key="NSFrame">{{456, 12}, {15, 15}}</string>
+						<int key="NSvFlags">257</int>
+						<string key="NSFrame">{{456, 14}, {15, 15}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="104399124">
@@ -73,7 +73,7 @@
 					</object>
 					<object class="NSScrollView" id="433009119">
 						<reference key="NSNextResponder" ref="1005"/>
-						<int key="NSvFlags">289</int>
+						<int key="NSvFlags">257</int>
 						<object class="NSMutableArray" key="NSSubviews">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="NSClipView" id="581923208">
@@ -280,7 +280,7 @@
 										</object>
 										<int key="NSTVFlags">6</int>
 										<string key="NSMaxSize">{463, 1e+07}</string>
-										<string key="NSMinize">{63, 3}</string>
+										<string key="NSMinize">{63, 0}</string>
 										<nil key="NSDelegate"/>
 									</object>
 								</object>
@@ -316,7 +316,7 @@
 								<double key="NSPercent">9.456522e-01</double>
 							</object>
 						</object>
-						<string key="NSFrame">{{266, 13}, {182, 14}}</string>
+						<string key="NSFrame">{{266, 15}, {182, 14}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSNextKeyView" ref="581923208"/>
 						<int key="NSsFlags">0</int>
@@ -326,14 +326,14 @@
 					</object>
 					<object class="NSCustomView" id="931787328">
 						<reference key="NSNextResponder" ref="1005"/>
-						<int key="NSvFlags">290</int>
-						<string key="NSFrame">{{3, 0}, {240, 40}}</string>
+						<int key="NSvFlags">258</int>
+						<string key="NSFrame">{{3, 5}, {240, 34}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<string key="NSClassName">NSView</string>
 					</object>
 					<object class="NSImageView" id="663605208">
 						<reference key="NSNextResponder" ref="1005"/>
-						<int key="NSvFlags">289</int>
+						<int key="NSvFlags">257</int>
 						<object class="NSMutableSet" key="NSDragTypes">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="NSMutableArray" key="set.sortedObjects">
@@ -346,7 +346,7 @@
 								<string>NeXT TIFF v4.0 pasteboard type</string>
 							</object>
 						</object>
-						<string key="NSFrame">{{245, 11}, {16, 16}}</string>
+						<string key="NSFrame">{{245, 13}, {16, 16}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSImageCell" key="NSCell" id="673439633">
@@ -364,7 +364,7 @@
 						<bool key="NSEditable">YES</bool>
 					</object>
 				</object>
-				<string key="NSFrameSize">{480, 40}</string>
+				<string key="NSFrameSize">{480, 44}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">DownloadShelfView</string>
 			</object>
@@ -549,7 +549,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{845, 30}, {480, 40}}</string>
+					<string>{{208, 193}, {480, 44}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{357, 416}, {480, 272}}</string>
@@ -612,6 +612,7 @@
 							<string>image_</string>
 							<string>itemContainerView_</string>
 							<string>linkContainer_</string>
+							<string>resizeDelegate_</string>
 							<string>showAllDownloadsLink_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -619,6 +620,7 @@
 							<string>NSImageView</string>
 							<string>NSView</string>
 							<string>NSScrollView</string>
+							<string>id</string>
 							<string>NSTextView</string>
 						</object>
 					</object>
