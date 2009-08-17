@@ -3,7 +3,6 @@
 // LICENSE file.
 
 // list.h : class for Recent Files list
-// TODO(fbarchard): Remove hungarian notations.
 
 #ifndef MEDIA_PLAYER_LIST_H_
 #define MEDIA_PLAYER_LIST_H_
@@ -12,12 +11,12 @@ class CMruList : public CWindowImpl<CMruList, CListBox> {
  public:
 
   CMruList() {
-    m_size.cx = 400;
-    m_size.cy = 150;
+    size_.cx = 400;
+    size_.cy = 150;
   }
 
-  HWND Create(HWND hWndParent) {
-    CWindowImpl<CMruList, CListBox>::Create(hWndParent, rcDefault, NULL,
+  HWND Create(HWND hwnd) {
+    CWindowImpl<CMruList, CListBox>::Create(hwnd, rcDefault, NULL,
       WS_POPUP | WS_THICKFRAME | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
       WS_VSCROLL | LBS_NOINTEGRALHEIGHT,
       WS_EX_CLIENTEDGE);
@@ -31,11 +30,11 @@ class CMruList : public CWindowImpl<CMruList, CListBox> {
 
     ResetContent();
 
-    int nSize = mru.m_arrDocs.GetSize();
-    for (int i = 0; i < nSize; i++)
+    int docs_size = mru.m_arrDocs.GetSize();
+    for (int i = 0; i < docs_size; i++)
       InsertString(0, mru.m_arrDocs[i].szDocName);  // Reverse order in array.
 
-    if (nSize > 0) {
+    if (docs_size > 0) {
       SetCurSel(0);
       SetTopIndex(0);
     }
@@ -44,24 +43,24 @@ class CMruList : public CWindowImpl<CMruList, CListBox> {
   }
 
   BOOL ShowList(int x, int y) {
-    return SetWindowPos(NULL, x, y, m_size.cx, m_size.cy,
+    return SetWindowPos(NULL, x, y, size_.cx, size_.cy,
                         SWP_NOZORDER | SWP_SHOWWINDOW);
   }
 
   void HideList() {
     RECT rect;
     GetWindowRect(&rect);
-    m_size.cx = rect.right - rect.left;
-    m_size.cy = rect.bottom - rect.top;
+    size_.cx = rect.right - rect.left;
+    size_.cy = rect.bottom - rect.top;
     ShowWindow(SW_HIDE);
   }
 
   void FireCommand() {
-    int nSel = GetCurSel();
-    if (nSel != LB_ERR) {
+    int selection = GetCurSel();
+    if (selection != LB_ERR) {
       ::SetFocus(GetParent());  // Will hide this window.
       ::SendMessage(GetParent(), WM_COMMAND,
-                    MAKEWPARAM((WORD)(ID_FILE_MRU_FIRST + nSel),
+                    MAKEWPARAM((WORD)(ID_FILE_MRU_FIRST + selection),
                                LBN_DBLCLK), (LPARAM)m_hWnd);
     }
   }
@@ -73,55 +72,55 @@ class CMruList : public CWindowImpl<CMruList, CListBox> {
     MESSAGE_HANDLER(WM_NCHITTEST, OnNcHitTest)
   END_MSG_MAP()
 
-  LRESULT OnKeyDown(UINT /*uMsg*/,
-                    WPARAM wParam,
-                    LPARAM /*lParam*/,
-                    BOOL& bHandled) {
-    if (wParam == VK_RETURN)
+  LRESULT OnKeyDown(UINT /*message*/,
+                    WPARAM wparam,
+                    LPARAM /*lparam*/,
+                    BOOL& handled) {
+    if (wparam == VK_RETURN)
       FireCommand();
     else
-      bHandled = FALSE;
+      handled = FALSE;
     return 0;
   }
 
-  LRESULT OnLButtonDblClk(UINT /*uMsg*/,
-                          WPARAM /*wParam*/,
-                          LPARAM /*lParam*/,
-                          BOOL& /*bHandled*/) {
+  LRESULT OnLButtonDblClk(UINT /*message*/,
+                          WPARAM /*wparam*/,
+                          LPARAM /*lparam*/,
+                          BOOL& /*handled*/) {
     FireCommand();
     return 0;
   }
 
-  LRESULT OnKillFocus(UINT /*uMsg*/,
-                      WPARAM /*wParam*/,
-                      LPARAM /*lParam*/,
-                      BOOL& /*bHandled*/) {
+  LRESULT OnKillFocus(UINT /*message*/,
+                      WPARAM /*wparam*/,
+                      LPARAM /*lparam*/,
+                      BOOL& /*handled*/) {
     HideList();
     return 0;
   }
 
-  LRESULT OnNcHitTest(UINT uMsg,
-                      WPARAM wParam,
-                      LPARAM lParam,
-                      BOOL& /*bHandled*/) {
-    LRESULT lRet = DefWindowProc(uMsg, wParam, lParam);
-    switch (lRet) {
+  LRESULT OnNcHitTest(UINT message,
+                      WPARAM wparam,
+                      LPARAM lparam,
+                      BOOL& /*handled*/) {
+    LRESULT result = DefWindowProc(message, wparam, lparam);
+    switch (result) {
       case HTLEFT:
       case HTTOP:
       case HTTOPLEFT:
       case HTTOPRIGHT:
       case HTBOTTOMLEFT:
-        lRet = HTCLIENT;  // Don't allow resizing here.
+        result = HTCLIENT;  // Don't allow resizing here.
         break;
       default:
         break;
     }
-    return lRet;
+    return result;
   }
 
  private:
 
-  SIZE m_size;
+  SIZE size_;
 };
 
 #endif  // MEDIA_PLAYER_LIST_H_
