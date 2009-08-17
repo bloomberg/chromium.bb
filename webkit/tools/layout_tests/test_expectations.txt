@@ -2584,7 +2584,6 @@ BUG16779 SKIP : LayoutTests/media/video-play-empty-events.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-played-collapse.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-played-ranges-1.html = FAIL CRASH TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-played-reset.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-played.html = FAIL CRASH TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-seek-past-end-paused.html = PASS FAIL CRASH TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-seek-past-end-playing.html = PASS FAIL CRASH TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-seekable.html = FAIL TIMEOUT
@@ -2836,3 +2835,5 @@ BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
 BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/002.xml = FAIL
 BUG19409 WIN : LayoutTests/media/video-empty-source.html = PASS TIMEOUT
+
+BUG19519 MAC DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
