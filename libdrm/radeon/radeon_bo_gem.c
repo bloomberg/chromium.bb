@@ -156,11 +156,7 @@ static int bo_map(struct radeon_bo *bo, int write)
         return 0;
     }
     if (bo_gem->priv_ptr) {
-	r = bo_wait(bo);
-	bo->ptr = bo_gem->priv_ptr;
-	if (r)
-		return r;
-	return 0;
+	goto wait;
     }
 
     bo->ptr = NULL;
@@ -180,8 +176,12 @@ static int bo_map(struct radeon_bo *bo, int write)
     if (ptr == MAP_FAILED)
         return -errno;
     bo_gem->priv_ptr = ptr;
+wait:
     bo->ptr = bo_gem->priv_ptr;
-    return r;
+    r = bo_wait(bo);
+    if (r)
+	return r;
+    return 0;
 }
 
 static int bo_unmap(struct radeon_bo *bo)
