@@ -811,7 +811,7 @@ bool WebViewImpl::KeyEventDefault(const WebKeyboardEvent& event) {
       if (event.windowsKeyCode == VKEY_SPACE) {
         int key_code = ((event.modifiers & WebInputEvent::ShiftKey) ?
                          VKEY_PRIOR : VKEY_NEXT);
-        return ScrollViewWithKeyboard(key_code);
+        return ScrollViewWithKeyboard(key_code, event.modifiers);
       }
       break;
     }
@@ -838,7 +838,7 @@ bool WebViewImpl::KeyEventDefault(const WebKeyboardEvent& event) {
         }
       }
       if (!event.isSystemKey) {
-        return ScrollViewWithKeyboard(event.windowsKeyCode);
+        return ScrollViewWithKeyboard(event.windowsKeyCode, event.modifiers);
       }
       break;
     }
@@ -849,7 +849,7 @@ bool WebViewImpl::KeyEventDefault(const WebKeyboardEvent& event) {
   return false;
 }
 
-bool WebViewImpl::ScrollViewWithKeyboard(int key_code) {
+bool WebViewImpl::ScrollViewWithKeyboard(int key_code, int modifiers) {
   Frame* frame = GetFocusedWebCoreFrame();
   if (!frame)
     return false;
@@ -868,11 +868,29 @@ bool WebViewImpl::ScrollViewWithKeyboard(int key_code) {
       break;
     case VKEY_UP:
       scroll_direction = ScrollUp;
+#if defined(OS_MACOSX)
+      // Many Mac applications (such as TextEdit, Safari, Firefox, etc.) scroll
+      // to the beginning of a page when typing command+up keys. It is better
+      // for Mac Chrome to emulate this behavior to improve compatibility with
+      // these applications.
+      scroll_granularity = (modifiers == WebInputEvent::MetaKey) ?
+          ScrollByDocument : ScrollByLine;
+#else
       scroll_granularity = ScrollByLine;
+#endif
       break;
     case VKEY_DOWN:
       scroll_direction = ScrollDown;
+#if defined(OS_MACOSX)
+      // Many Mac applications (such as TextEdit, Safari, Firefox, etc.) scroll
+      // to the end of a page when typing command+down keys. It is better
+      // for Mac Chrome to emulate this behavior to improve compatibility with
+      // these applications.
+      scroll_granularity = (modifiers == WebInputEvent::MetaKey) ?
+          ScrollByDocument : ScrollByLine;
+#else
       scroll_granularity = ScrollByLine;
+#endif
       break;
     case VKEY_HOME:
       scroll_direction = ScrollUp;

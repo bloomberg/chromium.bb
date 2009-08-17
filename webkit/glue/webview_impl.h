@@ -282,7 +282,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   void RefreshAutofillPopup();
 
   // Returns true if the view was scrolled.
-  bool ScrollViewWithKeyboard(int key_code);
+  bool ScrollViewWithKeyboard(int key_code, int modifiers);
 
   // Removes fetcher from the set of pending image fetchers and deletes it.
   // This is invoked after the download is completed (or fails).
