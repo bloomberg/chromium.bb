@@ -47,7 +47,7 @@ void InitCrashReporter() {
   NSBundle* main_bundle = [NSBundle mainBundle];
   NSDictionary* info_dictionary = [main_bundle infoDictionary];
   bool is_browser = [[info_dictionary objectForKey:@"LSUIElement"]
-                                   isEqualToString:@"1"] ? true : false;
+                                   isEqualToString:@"1"] ? false : true;
   bool enable_breakpad =
       is_browser ? GoogleUpdateSettings::GetCollectStatsConsent() :
                    CommandLine::ForCurrentProcess()->
