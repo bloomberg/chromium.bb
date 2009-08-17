@@ -1043,3 +1043,12 @@
    fun:_ZN4base19MessagePumpLibeventC1Ev
    fun:_ZN11MessageLoopC1ENS_4TypeE
 }
+{
+   bug_19490
+   Memcheck:Leak
+   fun:_Znwj
+   ...
+   fun:_ZN19SafeBrowsingService11GetDatabaseEv
+   fun:_ZN19SafeBrowsingService14OnDBInitializeEv
+   fun:_ZN14RunnableMethodI19SafeBrowsingServiceMS0_FvvE6Tuple0E3RunEv
+}
