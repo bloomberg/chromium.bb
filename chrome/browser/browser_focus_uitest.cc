@@ -19,6 +19,10 @@
 #include "views/view.h"
 #include "views/window/window.h"
 
+#if defined(OS_LINUX)
+#include "chrome/browser/gtk/view_id_util.h"
+#endif
+
 namespace {
 
 // The delay waited in some cases where we don't have a notifications for an
@@ -36,6 +40,46 @@ class BrowserFocusTest : public InProcessBrowserTest {
     set_show_window(true);
     EnableDOMAutomation();
   }
+
+  void CheckViewHasFocus(ViewID vid) {
+    BrowserWindow* browser_window = browser()->window();
+    ASSERT_TRUE(browser_window);
+    gfx::NativeWindow window = browser_window->GetNativeHandle();
+    ASSERT_TRUE(window);
+#if defined(OS_WIN)
+    views::FocusManager* focus_manager =
+        views::FocusManager::GetFocusManagerForNativeView(window);
+    ASSERT_TRUE(focus_manager);
+    EXPECT_EQ(reinterpret_cast<views::View*>(browser_window)->GetViewByID(vid),
+              focus_manager->GetFocusedView());
+#elif defined(OS_LINUX)
+    GtkWidget* widget = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
+    ASSERT_TRUE(widget);
+    EXPECT_TRUE(WidgetInFocusChain(GTK_WIDGET(window), widget));
+#else
+    NOTIMPLEMENTED();
+#endif
+  }
+
+ private:
+#if defined(OS_LINUX)
+  // Check if the focused widget for |root| is |target| or a child of |target|.
+  static bool WidgetInFocusChain(GtkWidget* root, GtkWidget* target) {
+    GtkWidget* iter = root;
+
+    while (iter) {
+      if (iter == target)
+        return true;
+
+      if (!GTK_IS_CONTAINER(iter))
+        return false;
+
+      iter = GTK_CONTAINER(iter)->focus_child;
+    }
+
+    return false;
+  }
+#endif
 };
 
 class TestInterstitialPage : public InterstitialPage {
@@ -94,8 +138,10 @@ class TestInterstitialPage : public InterstitialPage {
   std::string dom_response_;
 
 };
+
 }  // namespace
 
+#if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
   HTTPTestServer* server = StartHTTPServer();
 
@@ -605,39 +651,30 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   ASSERT_TRUE(focused_view != NULL);
   EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, focused_view->GetID());
 }
+#endif  // defined(OS_WIN)
 
 // Makes sure the focus is in the right location when opening the different
 // types of tabs.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  ASSERT_TRUE(browser_view);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd);
-  ASSERT_TRUE(focus_manager);
-
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER);
 
   // Open the new tab, focus should be on the location bar.
   browser()->NewTab();
-  EXPECT_EQ(browser_view->GetLocationBarView(),
-            focus_manager->GetFocusedView());
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
   // Open the download tab, focus should be on the tab contents.
   browser()->ShowDownloadsTab();
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER);
 
   // Open about:blank, focus should be on the location bar.
   browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::LINK,
                            true, -1, false, NULL);
-  EXPECT_EQ(browser_view->GetLocationBarView(),
-            focus_manager->GetFocusedView());
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 }
 
+#if defined(OS_WIN)
 // Tests that focus goes where expected when using reload.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   HTTPTestServer* server = StartHTTPServer();
@@ -689,3 +726,4 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReloadCrashedTab) {
   EXPECT_EQ(browser_view->GetTabContentsContainerView(),
             focus_manager->GetFocusedView());
 }
+#endif  // defined(OS_WIN)
