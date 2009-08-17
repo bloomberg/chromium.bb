@@ -294,7 +294,13 @@ devtools.DebuggerAgent.prototype.removeBreakpoint = function(sourceId, line) {
     delete breakpoints[line];
   } else {
     breakpointInfo = script.getBreakpointInfo(line);
-    script.removeBreakpointInfo(breakpointInfo);
+    if (breakpointInfo) {
+      script.removeBreakpointInfo(breakpointInfo);
+    }
+  }
+
+  if (!breakpointInfo) {
+    return;
   }
 
   breakpointInfo.markAsRemoved();
