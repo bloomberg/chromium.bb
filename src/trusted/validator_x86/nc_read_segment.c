@@ -34,6 +34,11 @@
  *
  * Note: To see what the segment contains, run ncdis on the corresponding
  * segment to disassemble it.
+ *
+ * Note: The purpose of this code is to make it easy to specify the contents
+ * of code segments using textual values, so that tests are easier to write.
+ * The code is NOT industrial strength and shouldn't be used except for simple
+ * test cases.
  */
 
 #include <stdio.h>
@@ -79,7 +84,7 @@ static size_t NcReadHexData(FILE* file, uint8_t* mbase, size_t mbase_size,
       /* Not a comment line, process. */
       next = &input_line[0];
       mini_buf_index = 0;
-      while ((ch = *(next++))) {
+      while (count < mbase_size && (ch = *(next++))) {
         switch (ch) {
           case '0':
           case '1':

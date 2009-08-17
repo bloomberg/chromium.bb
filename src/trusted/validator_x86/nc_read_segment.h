@@ -34,6 +34,11 @@
  *
  * Note: To see what the segment contains, run ncdis on the corresponding
  * segment to disassemble it.
+ *
+ * Note: The purpose of this code is to make it easy to specify the contents
+ * of code segments using textual values, so that tests are easier to write.
+ * The code is NOT industrial strength and shouldn't be used except for simple
+ * test cases.
  */
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_READ_SEGMENT_H_
