@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -276,7 +277,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 
 void MemoryDetails::UpdateHistograms() {
   // Reports a set of memory metrics to UMA.
-  // Memory is measured in units of 10KB.
+  // Memory is measured in KB.
 
   ProcessData browser = process_data_[CHROME_BROWSER];
   size_t aggregate_memory = 0;
@@ -302,6 +303,8 @@ void MemoryDetails::UpdateHistograms() {
        break;
     }
   }
+  UMA_HISTOGRAM_MEMORY_KB("Memory.BackingStore",
+                          BackingStoreManager::MemorySize() / 1024);
 
   UMA_HISTOGRAM_COUNTS_100("Memory.ProcessCount",
       static_cast<int>(browser.processes.size()));

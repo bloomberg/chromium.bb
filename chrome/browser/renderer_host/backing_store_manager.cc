@@ -22,31 +22,34 @@ typedef OwningMRUCache<RenderWidgetHost*, BackingStore*> BackingStoreCache;
 static BackingStoreCache* large_cache = NULL;
 static BackingStoreCache* small_cache = NULL;
 
-// Threshold is based on a large-monitor width toolstrip.
+// Threshold is based on a single large-monitor-width toolstrip.
+// (32bpp, 32 pixels high, 1920 pixels wide)
 // TODO(erikkay) 32bpp assumption isn't great.
 const size_t kSmallThreshold = 4 * 32 * 1920;
 
-// Previously, the backing store cache was based on a set number of backing
-// stores, regardless of their size.  The numbers were chosen based on a user
-// with a maximized browser on a large monitor.  Now that the cache is based on
-// total memory size of the backing stores, we'll keep an approximation of the
-// numbers from the previous algorithm by choosing a large monitor backing store
-// size as our multiplier.
+// Pick a large monitor size to use as a multiplier.  This is multiplied by the
+// max number of large backing stores (usually tabs) to pick a ceiling on the
+// max memory to use.
 // TODO(erikkay) Perhaps we should actually use monitor size?  That way we
 // could make an assertion like "worse case, there are two tabs in the cache".
 // However, the small_cache might mess up these calculations a bit.
 // TODO(erikkay) 32bpp assumption isn't great.
 const size_t kMemoryMultiplier = 4 * 1920 * 1200;  // ~9MB
 
-static size_t GetBackingStoreCacheMemorySize() {
+// The maximum number of large BackingStoreCache objects (tabs) to use.
+// Use a minimum of 2, and add one for each 256MB of physical memory you have.
+// Cap at 5, the thinking being that even if you have a gigantic amount of
+// RAM, there's a limit to how much caching helps beyond a certain number
+// of tabs.
+static size_t MaxNumberOfBackingStores() {
+  return std::min(5, 2 + (base::SysInfo::AmountOfPhysicalMemoryMB() / 256));
+}
+
+// The maximum about of memory to use for all BackingStoreCache object combined.
+// We use this 
+static size_t MaxBackingStoreMemory() {
   // Compute in terms of the number of large monitor's worth of backing-store.
-  // Use a minimum of 2, and add one for each 256MB of physical memory you have.
-  // Cap at 5, the thinking being that even if you have a gigantic amount of
-  // RAM, there's a limit to how much caching helps beyond a certain number
-  // of tabs.
-  size_t mem_tier = std::min(5,
-      2 + (base::SysInfo::AmountOfPhysicalMemoryMB() / 256));
-  return mem_tier * kMemoryMultiplier;
+  return MaxNumberOfBackingStores() * kMemoryMultiplier;
 }
 
 // Expires the given |backing_store| from |cache|.
@@ -61,6 +64,18 @@ void ExpireBackingStoreAt(BackingStoreCache* cache,
   cache->Erase(backing_store);
 }
 
+size_t ExpireLastBackingStore(BackingStoreCache* cache) {
+  if (cache->size() < 1)
+    return 0;
+
+  // Crazy C++ alert: rbegin.base() is a forward iterator pointing to end(),
+  // so we need to do -- to move one back to the actual last item.
+  BackingStoreCache::iterator entry = --cache->rbegin().base();
+  size_t entry_size = entry->second->MemorySize();
+  ExpireBackingStoreAt(cache, entry);
+  return entry_size;
+}
+
 void CreateCacheSpace(size_t size) {
   // Given a request for |size|, first free from the large cache (until there's
   // only one item left) and then do the same from the small cache if we still
@@ -69,11 +84,7 @@ void CreateCacheSpace(size_t size) {
     BackingStoreCache* cache =
         (large_cache->size() > 1) ? large_cache : small_cache;
     while (size > 0 && cache->size() > 1) {
-      // Crazy C++ alert: rbegin.base() is a forward iterator pointing to end(),
-      // so we need to do -- to move one back to the actual last item.
-      BackingStoreCache::iterator entry = --cache->rbegin().base();
-      size_t entry_size = entry->second->MemorySize();
-      ExpireBackingStoreAt(cache, entry);
+      size_t entry_size = ExpireLastBackingStore(cache);
       if (size > entry_size)
         size -= entry_size;
       else
@@ -98,23 +109,32 @@ BackingStore* CreateBackingStore(RenderWidgetHost* host,
   // TODO(erikkay) 32bpp is not always accurate
   size_t new_mem = backing_store_size.GetArea() * 4;
   size_t current_mem = BackingStoreManager::MemorySize();
-  size_t max_mem = GetBackingStoreCacheMemorySize();
+  size_t max_mem = MaxBackingStoreMemory();
   DCHECK(new_mem < max_mem);
   if (current_mem + new_mem > max_mem) {
     // Need to remove old backing stores to make room for the new one. We
     // don't want to do this when the backing store is being replace by a new
     // one for the same tab, but this case won't get called then: we'll have
-    // removed the onld one in the RemoveBackingStore above, and the cache
+    // removed the old one in the RemoveBackingStore above, and the cache
     // won't be over-sized.
     CreateCacheSpace((current_mem + new_mem) - max_mem);
   }
   DCHECK((BackingStoreManager::MemorySize() + new_mem) < max_mem);
 
+  BackingStoreCache* cache;
+  if (new_mem > kSmallThreshold) {
+    // Limit the number of large backing stores (tabs) to the memory tier number
+    // (between 2-5). While we allow a larger amount of memory for people who
+    // have large windows, this means that those who use small browser windows
+    // won't ever cache more than 5 tabs, so they pay a smaller memory cost.
+    if (large_cache->size() >= MaxNumberOfBackingStores())
+      ExpireLastBackingStore(large_cache);
+    cache = large_cache;
+  } else {
+    cache = small_cache;
+  }
   BackingStore* backing_store = host->AllocBackingStore(backing_store_size);
-  if (new_mem > kSmallThreshold)
-    large_cache->Put(host, backing_store);
-  else
-    small_cache->Put(host, backing_store);
+  cache->Put(host, backing_store);
   return backing_store;
 }
 
