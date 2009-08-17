@@ -41,6 +41,7 @@ namespace WebCore {
         virtual PassRefPtr<StorageArea> storageArea(SecurityOrigin*);
         virtual PassRefPtr<StorageNamespace> copy();
         virtual void close();
+        virtual void unlock();
 
     private:
         OwnPtr<WebKit::WebStorageNamespace> m_storageNamespace;

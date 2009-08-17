@@ -71,6 +71,11 @@ void StorageNamespaceProxy::close()
     m_storageNamespace->close();
 }
 
+void StorageNamespaceProxy::unlock()
+{
+    // FIXME: Implement.
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(DOM_STORAGE)
