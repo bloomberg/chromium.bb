@@ -1,5 +1,5 @@
 0000000000000000: 00 c0                                        add %al, %al
-  { 0x00,
+  { 1, { 0x00, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
     InstAdd,
@@ -14,7 +14,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
 };
 0000000000000000: 01 c0                                        add %eax, %eax
-  { 0x01,
+  { 1, { 0x01, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstAdd,
@@ -29,7 +29,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
 0000000000000000: 41 01 c3                                     add %r11d, %eax
-  { 0x01,
+  { 1, { 0x01, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstAdd,
@@ -44,7 +44,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
 0000000000000000: 44 01 d8                                     add %eax, %r11d
-  { 0x01,
+  { 1, { 0x01, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstAdd,
@@ -59,7 +59,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %r11d, ExprUsed | ExprSize32 },
 };
 0000000000000000: 48 01 c3                                     add %rbx, %rax
-  { 0x01,
+  { 1, { 0x01, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstAdd,
@@ -74,7 +74,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
 };
 0000000000000000: 67 03 18                                     add %ebx, [%eax]
-  { 0x03,
+  { 1, { 0x03, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstAdd,
@@ -93,7 +93,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 67 02 04 00                                  add %al, [%rax+%rax*1]
-  { 0x02,
+  { 1, { 0x02, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
     InstAdd,
@@ -112,7 +112,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 48 83 ec 08                                  sub %rsp, 0x8
-  { 0x83,
+  { 1, { 0x83, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeLockable) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstSub,
@@ -128,7 +128,7 @@ ExprNodeVector[4] = {
   { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | EpxrUnsignedHex },
 };
 00000000004003d4: e8 83 00 00 00                               call 0x40045c
-  { 0xe8,
+  { 1, { 0xe8, 0x00, 0x00 },
     NACLi_JMPZ,
     InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_v),
     InstCall,
@@ -146,7 +146,7 @@ ExprNodeVector[6] = {
   { ExprConstant[0] , 0x40045c, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
 };
 00000000004003de: e8 7d 05 00 00                               call 0x400960
-  { 0xe8,
+  { 1, { 0xe8, 0x00, 0x00 },
     NACLi_JMPZ,
     InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_v),
     InstCall,
@@ -164,7 +164,7 @@ ExprNodeVector[6] = {
   { ExprConstant[0] , 0x400960, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: c3                                           ret
-  { 0xc3,
+  { 1, { 0xc3, 0x00, 0x00 },
     NACLi_RETURN,
     0,
     InstRet,
@@ -179,7 +179,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: ff 35 ea 0d 20 00                            push [%rip+0x200dea]
-  { 0xff,
+  { 1, { 0xff, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
     InstPush,
@@ -199,7 +199,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0x200dea, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: ff 25 ec 0d 20 00                            jmp [%rip+0x200dec]
-  { 0xff,
+  { 1, { 0xff, 0x00, 0x00 },
     NACLi_INDIRECT,
     InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeForce64),
     InstJmp,
@@ -219,7 +219,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0x200dec, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 0f 1f 40 00                                  nop
-  { 0x1f,
+  { 2, { 0x0f, 0x1f, 0x00 },
     NACLi_386,
     InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstNop,
@@ -229,7 +229,7 @@ ExprNodeVector[8] = {
 ExprNodeVector[0] = {
 };
 0000000000000000: 68 00 00 00 00                               push 0x0
-  { 0x68,
+  { 1, { 0x68, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeHasImmed_v) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
     InstPush,
@@ -244,7 +244,7 @@ ExprNodeVector[4] = {
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize32 | EpxrUnsignedHex },
 };
 0000000000400403: e9 e0 ff ff ff                               jmp 0x4003e8
-  { 0xe9,
+  { 1, { 0xe9, 0x00, 0x00 },
     NACLi_JMPZ,
     InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_v),
     InstJmp,
@@ -259,7 +259,7 @@ ExprNodeVector[4] = {
   { ExprConstant[0] , 0x4003e8, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: 49 89 d1                                     mov %r9, %rdx
-  { 0x89,
+  { 1, { 0x89, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstMov,
@@ -274,7 +274,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %rdx, ExprUsed | ExprSize64 },
 };
 0000000000000000: 5e                                           pop %rsi
-  { 0x5e,
+  { 1, { 0x5e, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
     InstPop,
@@ -290,7 +290,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %rsi, ExprSet | ExprSize64 },
 };
 0000000000000000: 49 c7 c0 c0 08 40 00                         mov %r8, 0x4008c0
-  { 0xc7,
+  { 1, { 0xc7, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_v) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstMov,
@@ -306,7 +306,7 @@ ExprNodeVector[4] = {
   { ExprConstant[0] , 0x4008c0, ExprUsed | ExprSize32 | EpxrUnsignedHex },
 };
 0000000000000000: f4                                           hlt
-  { 0xf4,
+  { 1, { 0xf4, 0x00, 0x00 },
     NACLi_386,
     0,
     InstHlt,
@@ -315,7 +315,7 @@ ExprNodeVector[4] = {
 ExprNodeVector[0] = {
 };
 0000000000000000: 48 8b 05 61 0d 20 00                         mov %rax, [%rip+0x200d61]
-  { 0x8b,
+  { 1, { 0x8b, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstMov,
@@ -334,7 +334,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0x200d61, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 48 85 c0                                     test %rax, %rax
-  { 0x85,
+  { 1, { 0x85, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstTest,
@@ -349,7 +349,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
 };
 000000000040046a: 74 02                                        jz 0x40046e
-  { 0x74,
+  { 1, { 0x74, 0x00, 0x00 },
     NACLi_JMP8,
     InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_b),
     InstJz,
@@ -364,7 +364,7 @@ ExprNodeVector[4] = {
   { ExprConstant[0] , 0x40046e, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: ff d0                                        call %rax
-  { 0xff,
+  { 1, { 0xff, 0x00, 0x00 },
     NACLi_INDIRECT,
     InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeForce64),
     InstCall,
@@ -383,7 +383,7 @@ ExprNodeVector[6] = {
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 | ExprJumpTarget },
 };
 000000000040048d: eb 24                                        jmp 0x4004b3
-  { 0xeb,
+  { 1, { 0xeb, 0x00, 0x00 },
     NACLi_JMP8,
     InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_b),
     InstJmp,
@@ -398,7 +398,7 @@ ExprNodeVector[4] = {
   { ExprConstant[0] , 0x4004b3, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: c9                                           leave
-  { 0xc9,
+  { 1, { 0xc9, 0x00, 0x00 },
     NACLi_386,
     0,
     InstLeave,
@@ -413,7 +413,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
-  { 0x1f,
+  { 2, { 0x0f, 0x1f, 0x00 },
     NACLi_386,
     InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstNop,
@@ -423,7 +423,7 @@ ExprNodeVector[4] = {
 ExprNodeVector[0] = {
 };
 0000000000000000: b8 00 00 00 00                               mov %eax, 0x0
-  { 0xb8,
+  { 1, { 0xb8, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeHasImmed) | InstFlag(OpcodePlusR) | InstFlag(OperandSize_v),
     InstMov,
@@ -439,7 +439,7 @@ ExprNodeVector[4] = {
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize32 | EpxrUnsignedHex },
 };
 0000000000000000: bf 20 10 60 00                               mov %edi, 0x601020
-  { 0xbf,
+  { 1, { 0xbf, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeHasImmed) | InstFlag(OpcodePlusR) | InstFlag(OperandSize_v),
     InstMov,
@@ -455,7 +455,7 @@ ExprNodeVector[4] = {
   { ExprConstant[0] , 0x601020, ExprUsed | ExprSize32 | EpxrUnsignedHex },
 };
 0000000000000000: 48 8b 04 c5 a0 13 60 00                      mov %rax, [%rax*8+0x6013a0]
-  { 0x8b,
+  { 1, { 0x8b, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstMov,
@@ -474,7 +474,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0x6013a0, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 89 7d fc                                     mov [%rbp-0x4], %edi
-  { 0x89,
+  { 1, { 0x89, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstMov,
@@ -493,7 +493,7 @@ ExprNodeVector[8] = {
   { ExprRegister[0] , %edi, ExprUsed | ExprSize32 },
 };
 0000000000000000: 3b 45 fc                                     cmp %eax, [%rbp-0x4]
-  { 0x3b,
+  { 1, { 0x3b, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstCmp,
@@ -512,7 +512,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , -0x4, ExprSize8 | ExprSignedHex },
 };
 0000000000000000: 83 7d f8 08                                  cmp [%rbp-0x8], 0x8
-  { 0x83,
+  { 1, { 0x83, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_v),
     InstCmp,
@@ -532,7 +532,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | EpxrUnsignedHex },
 };
 0000000000000000: 8b 45 fc                                     mov %eax, [%rbp-0x4]
-  { 0x8b,
+  { 1, { 0x8b, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstMov,
@@ -551,7 +551,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , -0x4, ExprSize8 | ExprSignedHex },
 };
 0000000000000000: 41 d3 e4                                     shl %r12d, %cl
-  { 0xd3,
+  { 1, { 0xd3, 0x00, 0x00 },
     NACLi_OPINMRM,
     InstFlag(OpcodeInModRm) | InstFlag(OperandSize_v),
     InstShl,
@@ -567,7 +567,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %cl, ExprUsed | ExprSize8 },
 };
 0000000000000000: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
-  { 0x1f,
+  { 2, { 0x0f, 0x1f, 0x00 },
     NACLi_386,
     InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstNop,
@@ -577,7 +577,7 @@ ExprNodeVector[4] = {
 ExprNodeVector[0] = {
 };
 0000000000000000: 48 c1 fd 03                                  sar %rbp, 0x3
-  { 0xc1,
+  { 1, { 0xc1, 0x00, 0x00 },
     NACLi_OPINMRM,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstSar,
@@ -593,7 +593,7 @@ ExprNodeVector[4] = {
   { ExprConstant[0] , 0x3, ExprSize8 | EpxrUnsignedHex },
 };
 0000000000000000: 48 8d 2d 0f 07 20 00                         lea %rbp, [%rip+0x20070f]
-  { 0x8d,
+  { 1, { 0x8d, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstLea,
@@ -612,7 +612,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0x20070f, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: a0 88 77 66 55 44 33 22 11                   mov %al, [0x1122334455667788]
-  { 0xa0,
+  { 1, { 0xa0, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_b),
     InstMov,
@@ -633,7 +633,7 @@ ExprNodeVector[10] = {
   { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
 };
 0000000000000000: 66 a1 88 77 66 55 44 33 22 11                mov %ax, [0x1122334455667788]
-  { 0xa1,
+  { 1, { 0xa1, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstMov,
@@ -654,7 +654,7 @@ ExprNodeVector[10] = {
   { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
 };
 0000000000000000: a2 88 77 66 55 44 33 22 11                   mov [0x1122334455667788], %al
-  { 0xa2,
+  { 1, { 0xa2, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_b),
     InstMov,
@@ -675,7 +675,7 @@ ExprNodeVector[10] = {
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
 };
 0000000000000000: 66 a3 88 77 66 55 44 33 22 11                mov [0x1122334455667788], %ax
-  { 0xa3,
+  { 1, { 0xa3, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstMov,
@@ -696,7 +696,7 @@ ExprNodeVector[10] = {
   { ExprRegister[0] , %ax, ExprUsed | ExprSize16 },
 };
 0000000000000000: 48 b8 88 77 66 55 44 33 22 11                mov %rax, 0x1122334455667788
-  { 0xb8,
+  { 1, { 0xb8, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeHasImmed) | InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
     InstMov,
@@ -714,7 +714,7 @@ ExprNodeVector[6] = {
   { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
 };
 0000000000000000: 44 8a 04 00                                  mov %r8b, [%rax+%rax*1]
-  { 0x8a,
+  { 1, { 0x8a, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
     InstMov,
@@ -733,7 +733,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 8a 44 05 00                                  mov %al, [%rbp+%rax*1]
-  { 0x8a,
+  { 1, { 0x8a, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
     InstMov,
@@ -752,7 +752,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0x0, ExprSize8 | ExprSignedHex },
 };
 0000000000000000: 42 8a 04 20                                  mov %al, [%rax+%r12*1]
-  { 0x8a,
+  { 1, { 0x8a, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
     InstMov,
@@ -771,7 +771,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 41 8a 44 05 00                               mov %al, [%r13+%rax*1]
-  { 0x8a,
+  { 1, { 0x8a, 0x00, 0x00 },
     NACLi_386,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
     InstMov,

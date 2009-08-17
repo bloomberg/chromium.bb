@@ -388,7 +388,12 @@ void PrintOpcodeTableDriver(FILE* f, Bool as_array_element,
   if (!simplify && index >= 0) {
     fprintf(f, "  /* %d */\n", index);
   }
-  fprintf(f, "  { 0x%02x,\n", opcode->opcode);
+  fprintf(f, "  { %"PRIu8", {", opcode->num_opcode_bytes);
+  for (i = 0; i < MAX_OPCODE_BYTES; ++i) {
+    if (i > 0) fprintf(f, ",");
+    fprintf(f," 0x%02x", opcode->opcode[i]);
+  }
+  fprintf(f, " },\n");
   fprintf(f, "    %s,\n", kNaClInstTypeString[opcode->insttype]);
   fprintf(f, "    ");
   if (opcode->flags) {

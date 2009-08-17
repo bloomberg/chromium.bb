@@ -666,14 +666,21 @@ typedef struct Operand {
 /* Maximum number of operands in an x86 instruction (implicit and explicit). */
 #define MAX_NUM_OPERANDS 4
 
+/* Maxmimum number of opcode bytes per instruction. */
+#define MAX_OPCODE_BYTES 3
+
 /* Metadata about an instruction, defining a pattern. Note: Since the same
  * sequence of opcode bytes may define more than one pattern (depending on
  * other bytes in the parsed instruction), the patterns are
  * modeled using a singly linked list.
  */
 typedef struct Opcode {
+  /* The number of opcode bytes in the instruction. */
+  uint8_t num_opcode_bytes;
+  /* The actual opcode bytes. */
+  uint8_t opcode[MAX_OPCODE_BYTES];
   /* The (last) byte value representing the (opcode) instruction. */
-  uint8_t opcode;
+  /* uint8_t opcode; */
   /* Defines the origin of this instruction. */
   NaClInstType insttype;
   /* Flags defining additional facts about the instruction. */

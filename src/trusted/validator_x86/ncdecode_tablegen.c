@@ -493,6 +493,53 @@ static void ApplySanityChecksToOpcode() {
   }
 }
 
+static void DefineOpcodeBytes(uint8_t opcode) {
+  uint8_t index;
+  /* Start by clearing all entries. */
+  for (index = 0; index < MAX_OPCODE_BYTES; ++index) {
+    current_opcode->opcode[index] = 0x00;
+  }
+
+  /* Now fill in non-final bytes. */
+  index = 0;
+  switch (current_opcode_prefix) {
+    case NoPrefix:
+      break;
+    case Prefix0F:
+    case Prefix660F:
+    case PrefixF20F:
+    case PrefixF30F:
+      current_opcode->opcode[0] = 0x0F;
+      index = 1;
+      break;
+    case Prefix0F0F:
+      current_opcode->opcode[0] = 0x0F;
+      current_opcode->opcode[1] = 0x0F;
+      index = 2;
+      break;
+    case Prefix0F38:
+    case Prefix660F38:
+    case PrefixF20F38:
+      current_opcode->opcode[0] = 0x0F;
+      current_opcode->opcode[1] = 0x38;
+      index = 2;
+      break;
+    case Prefix0F3A:
+    case Prefix660F3A:
+      current_opcode->opcode[0] = 0x0F;
+      current_opcode->opcode[1] = 0x3A;
+      index = 2;
+      break;
+    default:
+      fatal("Unrecognized opcode prefix in DefineOpcodeBytes");
+      break;
+  }
+
+  /* Now add final byte. */
+  current_opcode->opcode[index] = opcode;
+  current_opcode->num_opcode_bytes = index + 1;
+}
+
 /* Define the next opcode (instruction), initializing with
  * no operands.
  */
@@ -513,7 +560,7 @@ static void DefineOpcode(
   if (NULL == current_opcode) {
     fatal("DefineOpcode: malloc failed");
   }
-  current_opcode->opcode = opcode;
+  DefineOpcodeBytes(opcode);
   current_opcode->insttype = insttype;
   current_opcode->flags = flags;
   current_opcode->name = name;
