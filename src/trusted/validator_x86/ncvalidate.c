@@ -437,6 +437,22 @@ void NCValidateFreeState(struct NCValidatorState **vstate) {
   *vstate = NULL;
 }
 
+/* ValidateSFenceClFlush is called for the sfence/clflush opcode 0f ae /7 */
+/* It returns 0 if the current instruction is implemented, and 1 if not.  */
+static int ValidateSFenceClFlush(const struct NCDecoderState *mstate) {
+  uint8_t mrm = (uint8_t)mstate->inst.maddr[2];
+
+  if (modrm_mod(mrm) == 3) {
+    /* this is an sfence */
+    if (mstate->vstate->cpufeatures.f_FXSR) return 0;
+    return 1;
+  } else {
+    /* this is an clflush */
+    if (mstate->vstate->cpufeatures.f_CLFLUSH) return 0;
+    return 1;
+  }
+}
+
 static void ValidateCallAlignment(const struct NCDecoderState *mstate) {
   PcAddress fallthru = mstate->inst.vaddr + mstate->inst.length;
   if (fallthru & mstate->vstate->alignmask) {
@@ -678,8 +694,8 @@ void ValidateInst(const struct NCDecoderState *mstate) {
     case NACLi_X87:
       squashme = (!cpufeatures->f_x87);
       break;
-    case NACLi_CFLUSH:
-      squashme = (!cpufeatures->f_CFLUSH);
+    case NACLi_SFENCE_CLFLUSH:
+      squashme = ValidateSFenceClFlush(mstate);
       break;
     case NACLi_CMPXCHG8B:
       squashme = (!cpufeatures->f_CX8);

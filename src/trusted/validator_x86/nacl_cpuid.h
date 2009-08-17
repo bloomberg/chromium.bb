@@ -57,7 +57,7 @@ typedef struct cpu_feature_struct {
   bool f_CMOV;
   bool f_MON;
   bool f_FXSR;
-  bool f_CFLUSH;
+  bool f_CLFLUSH;
   bool f_TSC;
   /* These instructions are illegal but included for completeness */
   bool f_MSR;

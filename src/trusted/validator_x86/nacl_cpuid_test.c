@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
   if (fv.f_CMOV)   printf("        CMOV\n");
   if (fv.f_MON)    printf("        MON\n");
   if (fv.f_FXSR)   printf("        FXSR\n");
-  if (fv.f_CFLUSH) printf("        CFLUSH\n");
+  if (fv.f_CLFLUSH) printf("       CLFLUSH\n");
   if (fv.f_TSC)    printf("        TSC\n");
   /* These instructions are illegal but included for completeness */
   if (fv.f_MSR)    printf("        MSR\n");

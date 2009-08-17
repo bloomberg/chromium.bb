@@ -1495,10 +1495,9 @@ static void BuildMetaTables() {
   EncodeModRMOp(GROUP15, 2, NACLi_ILLEGAL, "ldmxcsr");  /* SSE */
   EncodeModRMOp(GROUP15, 3, NACLi_ILLEGAL, "stmxcsr");
   EncodeModRMOp(GROUP15, 4, NACLi_ILLEGAL, "invalid");
-  TODO(brad, "ask bennet which fence instructions are okay");
-  EncodeModRMOp(GROUP15, 5, NACLi_ILLEGAL, "lfence");
+  EncodeModRMOp(GROUP15, 5, NACLi_SSE2, "lfence");
   EncodeModRMOp(GROUP15, 6, NACLi_SSE2, "mfence");
-  EncodeModRMOp(GROUP15, 7, NACLi_ILLEGAL, "sfence/clflush");
+  EncodeModRMOp(GROUP15, 7, NACLi_SFENCE_CLFLUSH, "sfence/clflush");
 
   /* group16 - SSE prefetch instructions */
   EncodeModRMOp(GROUP16, 0, NACLi_SSE, "prefetch NTA");

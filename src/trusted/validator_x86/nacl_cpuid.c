@@ -62,7 +62,7 @@ typedef enum {
   CPUFeature_CMOV,
   CPUFeature_MON,
   CPUFeature_FXSR,
-  CPUFeature_CLFSH,
+  CPUFeature_CLFLUSH,
   /* These instructions are illegal but included for completeness */
   CPUFeature_MSR,
   CPUFeature_TSC,
@@ -99,7 +99,7 @@ typedef enum {
 #define CPUID_EDX_PAT        0x00010000  /* Page Attribute Table */
 #define CPUID_EDX_PSE36      0x00020000  /* Page Size Extension bis */
 #define CPUID_EDX_PSN        0x00040000  /* Processor Serial Number */
-#define CPUID_EDX_CLFSH      0x00080000  /* CFLUSH instruction */
+#define CPUID_EDX_CLFLUSH    0x00080000  /* CLFLUSH instruction */
 /* 0x00100000 reserved */
 #define CPUID_EDX_DS         0x00200000  /* Debug Store */
 #define CPUID_EDX_ACPI       0x00400000  /* Thermal Monitor and Clock Ctrl */
@@ -193,7 +193,7 @@ static const CPUFeature CPUFeatureDescriptions[(int)CPUFeature_Last] = {
   {CFReg_EDX_I, CPUID_EDX_CMOV, "CMOV"},
   {CFReg_ECX_I, CPUID_ECX_MON, "MONITOR/MWAIT"},
   {CFReg_EDX_I, CPUID_EDX_FXSR, "FXSAVE/FXRSTOR"},
-  {CFReg_EDX_I, CPUID_EDX_CLFSH, "CLFSH"},
+  {CFReg_EDX_I, CPUID_EDX_CLFLUSH, "CLFLUSH"},
   {CFReg_EDX_I, CPUID_EDX_MSR, "RDMSR/WRMSR"},
   {CFReg_EDX_I, CPUID_EDX_TSC, "RDTSC"},
   {CFReg_EDX_I, CPUID_EDX_VME, "VME"},
@@ -397,7 +397,7 @@ void GetCPUFeatures(CPUFeatures *cpuf) {
   cpuf->f_CMOV = CheckCPUFeature(CPUFeature_CMOV);
   cpuf->f_MON = CheckCPUFeature(CPUFeature_MON);
   cpuf->f_FXSR = CheckCPUFeature(CPUFeature_FXSR);
-  cpuf->f_CFLUSH = CheckCPUFeature(CPUFeature_CLFSH);
+  cpuf->f_CLFLUSH = CheckCPUFeature(CPUFeature_CLFLUSH);
   /* These instructions are illegal but included for completeness */
   cpuf->f_MSR = CheckCPUFeature(CPUFeature_MSR);
   cpuf->f_TSC = CheckCPUFeature(CPUFeature_TSC);

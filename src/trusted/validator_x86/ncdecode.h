@@ -81,7 +81,7 @@ typedef enum {
   NACLi_INDIRECT,
   NACLi_OPINMRM,
   NACLi_RETURN,
-  NACLi_CFLUSH,
+  NACLi_SFENCE_CLFLUSH,
   NACLi_CMPXCHG8B,
   NACLi_CMPXCHG16B,   /* 64-bit mode only, illegal for NaCl */
   NACLi_CMOV,
@@ -131,7 +131,7 @@ static const char *kNaClInstTypeString[kNaClInstTypeRange] = {
   "NACLi_INDIRECT",
   "NACLi_OPINMRM",
   "NACLi_RETURN",
-  "NACLi_CFLUSH",
+  "NACLi_SFENCE_CLFLUSH",
   "NACLi_CMPXCHG8B",
   "NACLi_CMPXCHG16B",
   "NACLi_CMOV",

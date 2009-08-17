@@ -375,8 +375,8 @@ struct NCValTestCase NCValTests[] = {
   {
     "test 16",
     "test 16: lfence",
-    1, 8, 1, 11, 0x80000000,
-    (uint8_t *)"\x90\x0f\xae\x28"
+    0, 8, 0, 11, 0x80000000,
+    (uint8_t *)"\x90\x0f\xae\xef"
     "\x90\x90\x90\x90\x90\x90\xf4",
   },
   {
@@ -717,7 +717,7 @@ struct NCValTestCase NCValTests[] = {
   {
     /* I think this is currently NACLi_ILLEGAL */
     "test 65",
-    "test 65: NACLi_CFLUSH",
+    "test 65: fxsave",
     1, 2, 1, 10, 0x80000000,
     (uint8_t *)"\x0f\xae\x00\x00\x90\x90\x90\x90\x90\xf4"
   },
@@ -881,6 +881,27 @@ struct NCValTestCase NCValTests[] = {
     (uint8_t *)"\x66\x0f\x84\x00\x00"
     "\x90\x90"
     "\xf4",
+  },
+  {
+    "test 89",
+    "test 89: sfence",
+    0, 8, 0, 11, 0x80000000,
+    (uint8_t *)"\x90\x0f\xae\xff"
+    "\x90\x90\x90\x90\x90\x90\xf4",
+  },
+  {
+    "test 90",
+    "test 90: clflush",
+    0, 8, 0, 11, 0x80000000,
+    (uint8_t *)"\x90\x0f\xae\x3f"
+    "\x90\x90\x90\x90\x90\x90\xf4",
+  },
+  {
+    "test 91",
+    "test 91: mfence",
+    0, 8, 0, 11, 0x80000000,
+    (uint8_t *)"\x90\x0f\xae\xf7"
+    "\x90\x90\x90\x90\x90\x90\xf4",
   },
 
 };
