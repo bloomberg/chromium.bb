@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "net/base/net_errors.h"
+#include "net/base/load_log.h"
+#include "net/base/load_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/init_proxy_resolver.h"
 #include "net/proxy/proxy_config.h"
@@ -168,9 +170,25 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
+  scoped_refptr<LoadLog> log(new LoadLog);
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback));
+  EXPECT_EQ(OK, init.Init(config, &callback, log));
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
+
+  // Check the LoadLog was filled correctly.
+  EXPECT_EQ(6u, log->events().size());
+  ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
+      LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+      LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 2, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+      LoadLog::PHASE_END);
+  ExpectLogContains(log, 3, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+      LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+      LoadLog::PHASE_END);
+  ExpectLogContains(log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER,
+      LoadLog::PHASE_END);
 }
 
 // Fail downloading the custom PAC script.
@@ -185,9 +203,21 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
+  scoped_refptr<LoadLog> log(new LoadLog);
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(kFailedDownloading, init.Init(config, &callback));
+  EXPECT_EQ(kFailedDownloading, init.Init(config, &callback, log));
   EXPECT_EQ("", resolver.pac_bytes());
+
+  // Check the LoadLog was filled correctly.
+  EXPECT_EQ(4u, log->events().size());
+  ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
+      LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+      LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 2, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+      LoadLog::PHASE_END);
+  ExpectLogContains(log, 3, LoadLog::TYPE_INIT_PROXY_RESOLVER,
+      LoadLog::PHASE_END);
 }
 
 // Fail parsing the custom PAC script.
@@ -203,7 +233,7 @@ TEST(InitProxyResolverTest, CustomPacFails2) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(kFailedParsing, init.Init(config, &callback));
+  EXPECT_EQ(kFailedParsing, init.Init(config, &callback, NULL));
   EXPECT_EQ("", resolver.pac_bytes());
 }
 
@@ -220,7 +250,7 @@ TEST(InitProxyResolverTest, AutodetectSuccess) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback));
+  EXPECT_EQ(OK, init.Init(config, &callback, NULL));
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
 }
 
@@ -239,7 +269,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess1) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback));
+  EXPECT_EQ(OK, init.Init(config, &callback, NULL));
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
 }
 
@@ -257,9 +287,35 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
   TestCompletionCallback callback;
+  scoped_refptr<LoadLog> log(new LoadLog);
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback));
+  EXPECT_EQ(OK, init.Init(config, &callback, log));
   EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
+
+  // Check the LoadLog was filled correctly.
+  // (Note that the Fetch and Set states are repeated since both WPAD and custom
+  // PAC scripts are tried).
+  EXPECT_EQ(10u, log->events().size());
+  ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
+      LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+      LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 2, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+      LoadLog::PHASE_END);
+  ExpectLogContains(log, 3, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+      LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+      LoadLog::PHASE_END);
+  ExpectLogContains(log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+      LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 6, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
+      LoadLog::PHASE_END);
+  ExpectLogContains(log, 7, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+      LoadLog::PHASE_BEGIN);
+  ExpectLogContains(log, 8, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
+      LoadLog::PHASE_END);
+  ExpectLogContains(log, 9, LoadLog::TYPE_INIT_PROXY_RESOLVER,
+      LoadLog::PHASE_END);
 }
 
 // Fails at WPAD (downloading), and fails at custom PAC (downloading).
@@ -277,7 +333,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails1) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(kFailedDownloading, init.Init(config, &callback));
+  EXPECT_EQ(kFailedDownloading, init.Init(config, &callback, NULL));
   EXPECT_EQ("", resolver.pac_bytes());
 }
 
@@ -296,7 +352,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails2) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(kFailedParsing, init.Init(config, &callback));
+  EXPECT_EQ(kFailedParsing, init.Init(config, &callback, NULL));
   EXPECT_EQ("", resolver.pac_bytes());
 }
 
@@ -317,7 +373,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2_NoFetch) {
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher);
-  EXPECT_EQ(OK, init.Init(config, &callback));
+  EXPECT_EQ(OK, init.Init(config, &callback, NULL));
   EXPECT_EQ(rule.url, resolver.pac_url());
 }
 

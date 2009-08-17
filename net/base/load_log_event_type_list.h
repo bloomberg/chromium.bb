@@ -32,3 +32,31 @@ EVENT_TYPE(HOST_RESOLVER_IMPL_OBSERVER_ONFINISH)
 
 // The start/end of HostResolver::Observer::OnCancelResolution.
 EVENT_TYPE(HOST_RESOLVER_IMPL_OBSERVER_ONCANCEL)
+
+// ------------------------------------------------------------------------
+// InitProxyResolver
+// ------------------------------------------------------------------------
+
+// The start/end of auto-detect + custom PAC URL configuration.
+EVENT_TYPE(INIT_PROXY_RESOLVER)
+
+// The start/end of download of a PAC script. This could be the well-known
+// WPAD URL (if testing auto-detect), or a custom PAC URL.
+EVENT_TYPE(INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT)
+
+// The start/end of the testing of a PAC script (trying to parse the fetched
+// file as javascript).
+EVENT_TYPE(INIT_PROXY_RESOLVER_SET_PAC_SCRIPT)
+
+// ------------------------------------------------------------------------
+// ProxyService
+// ------------------------------------------------------------------------
+
+// The start/end of a proxy resolve request.
+EVENT_TYPE(PROXY_SERVICE)
+
+// The time while a request is waiting on InitProxyResolver to configure
+// against either WPAD or custom PAC URL. The specifics on this time
+// are found from ProxyService::init_proxy_resolver_log().
+EVENT_TYPE(PROXY_SERVICE_WAITING_FOR_INIT_PAC)
+

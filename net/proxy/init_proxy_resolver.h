@@ -13,6 +13,7 @@
 
 namespace net {
 
+class LoadLog;
 class ProxyConfig;
 class ProxyResolver;
 class ProxyScriptFetcher;
@@ -44,7 +45,9 @@ class InitProxyResolver {
   ~InitProxyResolver();
 
   // Apply the PAC settings of |config| to |resolver_|.
-  int Init(const ProxyConfig& config, CompletionCallback* callback);
+  int Init(const ProxyConfig& config,
+           CompletionCallback* callback,
+           LoadLog* load_log);
 
  private:
   enum State {
@@ -82,6 +85,9 @@ class InitProxyResolver {
   // Returns the current PAC URL we are fetching/testing.
   const GURL& current_pac_url() const;
 
+  void DidCompleteInit();
+  void Cancel();
+
   ProxyResolver* resolver_;
   ProxyScriptFetcher* proxy_script_fetcher_;
 
@@ -95,6 +101,8 @@ class InitProxyResolver {
 
   UrlList pac_urls_;
   State next_state_;
+
+  scoped_refptr<LoadLog> load_log_;
 
   DISALLOW_COPY_AND_ASSIGN(InitProxyResolver);
 };
