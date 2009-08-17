@@ -592,8 +592,6 @@ bool MessageQueue::ProcessMessageUpdateTexture2D(
 
   unsigned int mip_width =
       image::ComputeMipDimension(message.level, texture_object->width());
-  unsigned int mip_height =
-      image::ComputeMipDimension(message.level, texture_object->height());
 
   void *target_address =
       PointerFromVoidPointer<void*>(info->mapped_address, message.offset);

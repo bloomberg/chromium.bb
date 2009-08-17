@@ -372,9 +372,9 @@ TEST_F(BitmapTest, Basic) {
   EXPECT_TRUE(bitmap->IsA(ParamObject::GetApparentClass()));
   EXPECT_TRUE(bitmap->image_data() == NULL);
   EXPECT_EQ(Texture::UNKNOWN_FORMAT, bitmap->format());
-  EXPECT_EQ(0, bitmap->width());
-  EXPECT_EQ(0, bitmap->height());
-  EXPECT_EQ(0, bitmap->num_mipmaps());
+  EXPECT_EQ(0u, bitmap->width());
+  EXPECT_EQ(0u, bitmap->height());
+  EXPECT_EQ(0u, bitmap->num_mipmaps());
   EXPECT_EQ(Bitmap::IMAGE, bitmap->semantic());
 }
 
@@ -386,7 +386,7 @@ TEST_F(BitmapTest, LoadTGAFile24bit) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::TGA, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
@@ -403,7 +403,7 @@ TEST_F(BitmapTest, LoadTGAFile32bit) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::TGA, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::ARGB8, bitmap->format());
@@ -423,7 +423,7 @@ TEST_F(BitmapTest, LoadTGAFileTooLarge) {
   BitmapRefArray bitmaps;
   EXPECT_FALSE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::TGA, &bitmaps));
-  EXPECT_EQ(0, bitmaps.size());
+  EXPECT_EQ(0u, bitmaps.size());
 }
 
 // Loads a JPEG file, checks it against the known data.
@@ -433,7 +433,7 @@ TEST_F(BitmapTest, LoadJPEGFile) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::JPEG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
@@ -450,7 +450,7 @@ TEST_F(BitmapTest, LoadJPEGFileTooLarge) {
   BitmapRefArray bitmaps;
   EXPECT_FALSE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::JPEG, &bitmaps));
-  EXPECT_EQ(0, bitmaps.size());
+  EXPECT_EQ(0u, bitmaps.size());
 }
 
 // Loads a 24 bit PNG file, checks it against the known data.
@@ -460,7 +460,7 @@ TEST_F(BitmapTest, LoadPNGFile24bit) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
@@ -478,7 +478,7 @@ TEST_F(BitmapTest, LoadPNGFile24bitInterlaced) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
@@ -494,7 +494,7 @@ TEST_F(BitmapTest, LoadPNGFile32bit) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::ARGB8, bitmap->format());
@@ -512,7 +512,7 @@ TEST_F(BitmapTest, LoadPNGFile8bitPalette) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
@@ -530,7 +530,7 @@ TEST_F(BitmapTest, LoadPNGFile4bitPalette) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
@@ -548,7 +548,7 @@ TEST_F(BitmapTest, LoadPNGFileTooLarge) {
   BitmapRefArray bitmaps;
   EXPECT_FALSE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::PNG, &bitmaps));
-  EXPECT_EQ(0, bitmaps.size());
+  EXPECT_EQ(0u, bitmaps.size());
 }
 
 // NOTE: Having trouble recognising the alpha channel in a PNG
@@ -561,7 +561,7 @@ TEST_F(BitmapTest, LoadPNGFile8bitPaletteAlpha) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::ARGB8, bitmap->format());
@@ -578,7 +578,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT1) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::DDS, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::DXT1, bitmap->format());
@@ -596,7 +596,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT1Alpha) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::DDS, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::DXT1, bitmap->format());
@@ -614,7 +614,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT1Mipmap) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::DDS, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::DXT1, bitmap->format());
@@ -635,7 +635,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT3) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::DDS, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::DXT3, bitmap->format());
@@ -653,7 +653,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT3Mipmap) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::DDS, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::DXT3, bitmap->format());
@@ -674,7 +674,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT5) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::DDS, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::DXT5, bitmap->format());
@@ -692,7 +692,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT5Mipmap) {
   BitmapRefArray bitmaps;
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::DDS, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap* bitmap = bitmaps[0].Get();
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_EQ(Texture::DXT5, bitmap->format());
@@ -715,7 +715,7 @@ TEST_F(BitmapTest, LoadDDSFileTooLarge) {
   BitmapRefArray bitmaps;
   EXPECT_FALSE(Bitmap::LoadFromFile(
       g_service_locator, filepath, image::DDS, &bitmaps));
-  EXPECT_EQ(0, bitmaps.size());
+  EXPECT_EQ(0u, bitmaps.size());
 }
 
 static uint8 kpng_8x4_drawImage[128] = {
@@ -1011,7 +1011,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(filename_2x2_src),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_2x2_src(bitmaps[0]);
 
   String filename_4x4_src = *g_program_path +
@@ -1020,7 +1020,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(filename_4x4_src),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_4x4_src(bitmaps[0]);
 
   String filename_8x8_src = *g_program_path +
@@ -1029,7 +1029,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(filename_8x8_src),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_8x8_src(bitmaps[0]);
 
   // test draw image on top left boundary.
@@ -1037,7 +1037,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_top_left(bitmaps[0]);
   // test whether the raw image is loaded correctly or not.
   EXPECT_TRUE(bitmap_dest_top_left->image_data() != NULL);
@@ -1051,7 +1051,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_top(bitmaps[0]);
   bitmap_dest_top->DrawImage(*bitmap_4x4_src, 0, 0, 4, 4, 2, -2, 4, 4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_top, kpng_8x4_drawImage_top));
@@ -1061,7 +1061,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_top_right(bitmaps[0]);
   bitmap_dest_top_right->DrawImage(*bitmap_4x4_src, 0, 0, 4, 4, 5, -1, 4, 4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_top_right,
@@ -1072,7 +1072,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_right(bitmaps[0]);
   bitmap_dest_right->DrawImage(*bitmap_4x4_src, 0, 0, 4, 4, 5, 0, 4, 4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_right, kpng_8x4_drawImage_right));
@@ -1082,7 +1082,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_bottom_right(bitmaps[0]);
   bitmap_dest_bottom_right->DrawImage(*bitmap_4x4_src, 0, 0, 4, 4, 5, 1, 4, 4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_bottom_right,
@@ -1093,7 +1093,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_bottom(bitmaps[0]);
   bitmap_dest_bottom->DrawImage(*bitmap_4x4_src, 0, 0, 4, 4, 2, 1, 4, 4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_bottom, kpng_8x4_drawImage_bottom));
@@ -1103,7 +1103,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_bottom_left(bitmaps[0]);
   bitmap_dest_bottom_left->DrawImage(*bitmap_4x4_src, 0, 0, 4, 4, -1, 1, 4, 4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_bottom_left,
@@ -1114,7 +1114,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_left(bitmaps[0]);
   bitmap_dest_left->DrawImage(*bitmap_4x4_src, 0, 0, 4, 4, -1, 0, 4, 4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_left, kpng_8x4_drawImage_left));
@@ -1124,7 +1124,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_scale_up(bitmaps[0]);
   bitmap_dest_scale_up->DrawImage(*bitmap_2x2_src, 0, 0, 2, 2, 0, 0, 8, 4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_scale_up,
@@ -1135,7 +1135,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_scale_down(bitmaps[0]);
   bitmap_dest_scale_down->DrawImage(*bitmap_8x8_src, 0, 0, 8, 8, 0, 0, 4, 4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_scale_down,
@@ -1146,7 +1146,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_scale_out(bitmaps[0]);
   bitmap_dest_scale_out->DrawImage(*bitmap_8x8_src, 0, 0, 8, 8, -2, -4, 12, 12);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_scale_out,
@@ -1157,7 +1157,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_flip(bitmaps[0]);
   bitmap_dest_flip->DrawImage(*bitmap_4x4_src, 0, 0, 4, 4, 5, 3, -4, -4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_flip, kpng_8x4_drawImage_flip));
@@ -1170,7 +1170,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_dst_argb8),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_dest_argb8(bitmaps[0]);
   String fname_src_argb8 = *g_program_path +
                            "/bitmap_test/" +
@@ -1179,7 +1179,7 @@ TEST_F(BitmapTest, DrawImage) {
   EXPECT_TRUE(Bitmap::LoadFromFile(
       g_service_locator, UTF8ToFilePath(fname_src_argb8),
       image::PNG, &bitmaps));
-  ASSERT_EQ(1, bitmaps.size());
+  ASSERT_EQ(1u, bitmaps.size());
   Bitmap::Ref bitmap_src_argb8(bitmaps[0]);
   bitmap_dest_argb8->DrawImage(*bitmap_src_argb8, 0, 0, 4, 4, 0, 0, 4, 4);
   EXPECT_TRUE(TestBitmapData(*bitmap_dest_argb8, kpng_8x4_drawImage_argb8));
