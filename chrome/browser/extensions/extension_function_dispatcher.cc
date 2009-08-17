@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_toolstrip_api.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -67,9 +68,10 @@ FactoryRegistry* FactoryRegistry::instance() {
 void FactoryRegistry::ResetFunctions() {
   // Register all functions here.
 
-  namespace tabs = extension_tabs_module_constants;
-  namespace page_actions = extension_page_actions_module_constants;
   namespace bookmarks = extension_bookmarks_module_constants;
+  namespace page_actions = extension_page_actions_module_constants;
+  namespace tabs = extension_tabs_module_constants;
+  namespace test = extension_test_api_functions;
   namespace toolstrip = extension_toolstrip_api_functions;
 
   // Windows
@@ -139,6 +141,12 @@ void FactoryRegistry::ResetFunctions() {
       &NewExtensionFunction<ToolstripExpandFunction>;
   factories_[toolstrip::kCollapseFunction] =
       &NewExtensionFunction<ToolstripCollapseFunction>;
+
+  // Test.
+  factories_[test::kPassFunction] =
+      &NewExtensionFunction<ExtensionTestPassFunction>;
+  factories_[test::kFailFunction] =
+      &NewExtensionFunction<ExtensionTestFailFunction>;
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {
@@ -253,7 +261,8 @@ void ExtensionFunctionDispatcher::SendResponse(ExtensionFunction* function,
 }
 
 void ExtensionFunctionDispatcher::HandleBadMessage(ExtensionFunction* api) {
-  LOG(ERROR) << "bad extension message " <<  // TODO(erikkay) name?
+  LOG(ERROR) << "bad extension message " <<
+                api->name() << 
                 " : terminating renderer.";
   if (RenderProcessHost::run_renderer_in_process()) {
     // In single process mode it is better if we don't suicide but just crash.

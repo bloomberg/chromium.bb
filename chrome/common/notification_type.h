@@ -642,6 +642,11 @@ class NotificationType {
     // Sent when a background page is ready so other components can load.
     EXTENSION_BACKGROUND_PAGE_READY,
 
+    // Sent by an extension to notify the browser about the results of a unit
+    // test.
+    EXTENSION_TEST_PASSED,
+    EXTENSION_TEST_FAILED,
+
     // Debugging ---------------------------------------------------------------
 
     // Count (must be last) ----------------------------------------------------

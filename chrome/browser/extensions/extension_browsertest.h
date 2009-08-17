@@ -32,14 +32,16 @@ class ExtensionBrowserTest
   // Wait for the number of visible page actions to change to |count|.
   bool WaitForPageActionVisibilityChangeTo(int count);
 
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   bool loaded_;
   bool installed_;
   FilePath test_data_dir_;
 
  private:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
   bool WaitForExtensionHostsToLoad();
 };
 

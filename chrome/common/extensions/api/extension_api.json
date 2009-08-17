@@ -849,5 +849,26 @@
       }
     ],
     "events": []
+  },
+  {
+    "namespace": "test",
+    "types": [],
+    "functions": [
+      {
+        "name": "fail",
+        "type": "function",
+        "description": "Notify the browser process that test code running in the extension failed.  This is only used for internal unit testing.",
+        "parameters": [
+          {"type": "string", "name": "message"}
+        ]
+      },
+      {
+        "name": "pass",
+        "type": "function",
+        "description": "Notify the browser process that test code running in the extension passed.  This is only used for internal unit testing.",
+        "parameters": []
+      }
+    ],
+    "events": []
   }
 ]
