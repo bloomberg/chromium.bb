@@ -20,7 +20,7 @@ generator_default_variables = {
     'RULE_INPUT_ROOT': '${SOURCE.filebase}',
     'RULE_INPUT_EXT': '${SOURCE.suffix}',
     'RULE_INPUT_NAME': '${SOURCE.file}',
-    'RULE_INPUT_PATH': '${SOURCE}',
+    'RULE_INPUT_PATH': '${SOURCE.abspath}',
     'CONFIGURATION_NAME': '${CONFIG_NAME}',
 }
 
@@ -158,8 +158,9 @@ else:
   %(name)s_action = Action([%(action)s], %(message)s)
 env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action, emitter=%(name)s_emitter)
 %(name)s_files = [f for f in input_files if str(f).endswith('.%(extension)s')]
+_outputs = []
 for %(name)s_file in %(name)s_files:
-  _outputs = env.%(name)s(%(name)s_file)
+  _outputs.append(env.%(name)s(%(name)s_file))
 """
 
 _spawn_hack = """

@@ -112,11 +112,10 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
   if build_file_path in data:
     return data[build_file_path]
 
-  try:
+  if os.path.exists(build_file_path):
     build_file_contents = open(build_file_path).read()
-  except IOError, e:
-    gyp.common.ExceptionAppend(e, "Unable to read %s" % build_file_path)
-    raise
+  else:
+    raise Exception("%s not found" % build_file_path)
 
   build_file_data = None
   try:
@@ -278,8 +277,13 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
       for dependency in target_dict['dependencies']:
         other_build_file = \
             gyp.common.BuildFileAndTarget(build_file_path, dependency)[0]
-        LoadTargetBuildFile(other_build_file, data, aux_data, variables,
-                            includes, depth)
+        try:
+          LoadTargetBuildFile(other_build_file, data, aux_data, variables,
+                              includes, depth)
+        except Exception, e:
+          gyp.common.ExceptionAppend(
+            e, 'while loading dependencies of %s' % build_file_path)
+          raise
 
   return data
 
@@ -1677,7 +1681,11 @@ def Load(build_files, variables, includes, depth, generator_input_info):
     # Normalize paths everywhere.  This is important because paths will be
     # used as keys to the data dict and for references between input files.
     build_file = os.path.normpath(build_file)
-    LoadTargetBuildFile(build_file, data, aux_data, variables, includes, depth)
+    try:
+      LoadTargetBuildFile(build_file, data, aux_data, variables, includes, depth)
+    except Exception, e:
+      gyp.common.ExceptionAppend(e, 'while trying to load %s' % build_file)
+      raise
 
   # Build a dict to access each target's subdict by qualified name.
   targets = BuildTargetsDict(data)
