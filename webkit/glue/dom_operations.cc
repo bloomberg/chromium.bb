@@ -202,7 +202,8 @@ static bool FillFormToUploadFileImpl(WebCore::HTMLFormElement* fe,
         static_cast<WebCore::HTMLInputElement*>(elements->item(i));
 
     std::wstring name = StringToStdWString(ie->name());
-    std::wstring id = StringToStdWString(ie->id());
+    std::wstring id = StringToStdWString(
+        ie->getAttribute(WebCore::HTMLNames::idAttr));
 
     if (!file_found &&
         ie->inputType() == WebCore::HTMLInputElement::FILE &&
@@ -269,7 +270,8 @@ bool FillFormToUploadFile(WebView* view, const FileUploadData& data) {
         WebCore::HTMLFormElement* fe =
             static_cast<WebCore::HTMLFormElement*>(forms->item(i));
         std::wstring name = StringToStdWString(fe->name());
-        std::wstring id = StringToStdWString(fe->id());
+        std::wstring id = StringToStdWString(
+            fe->getAttribute(WebCore::HTMLNames::idAttr));
         if (data.form_name.empty() ||
             id == data.form_name || name == data.form_name) {
           if (FillFormToUploadFileImpl(fe, data))

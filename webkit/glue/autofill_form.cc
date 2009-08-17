@@ -81,7 +81,7 @@ std::wstring AutofillForm::GetNameForInputElement(WebCore::HTMLInputElement*
   if (trimmed_name.length() > 0)
     return trimmed_name;
 
-  name = StringToStdWString(element->id());
+  name = StringToStdWString(element->getAttribute(WebCore::HTMLNames::idAttr));
   TrimWhitespace(name, TRIM_LEADING, &trimmed_name);
   if (trimmed_name.length() > 0)
     return trimmed_name;

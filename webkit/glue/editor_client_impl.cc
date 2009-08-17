@@ -96,7 +96,7 @@ bool EditorClientImpl::shouldShowDeleteInterface(WebCore::HTMLElement* elem) {
   // it if in testing mode and the test specifically requests it by using this
   // magic class name.
   return WebKit::layoutTestMode() &&
-         elem->className() == "needsDeletionUI";
+      elem->getAttribute(WebCore::HTMLNames::classAttr) == "needsDeletionUI";
 }
 
 bool EditorClientImpl::smartInsertDeleteEnabled() {
