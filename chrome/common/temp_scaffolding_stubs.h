@@ -270,9 +270,11 @@ class BookmarkEditorView {
 //---------------------------------------------------------------------------
 // These stubs are for Browser
 
-#if !defined(TOOLKIT_VIEWS)
+#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
 namespace download_util {
-void DragDownload(const DownloadItem* download, SkBitmap* icon);
+void DragDownload(const DownloadItem* download,
+                  SkBitmap* icon,
+                  gfx::NativeView view);
 }  // namespace download_util
 #endif
 

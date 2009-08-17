@@ -872,7 +872,7 @@ bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
       SkBitmap* icon = im->LookupIcon(download_->full_path(),
                                       IconLoader::SMALL);
       if (icon)
-        download_util::DragDownload(download_, icon);
+        download_util::DragDownload(download_, icon, NULL);
     }
   } else if (ExceededDragThreshold(
                  event.location().x() - drag_start_point_.x(),

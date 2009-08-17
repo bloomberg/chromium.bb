@@ -16,13 +16,14 @@
 #include "chrome/browser/dom_ui/fileicon_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 // TODO(port): re-enable when download_util is ported
 #include "chrome/browser/download/download_util.h"
 #else
@@ -169,7 +170,8 @@ void DownloadsDOMHandler::HandleDrag(const Value* value) {
   if (file) {
     IconManager* im = g_browser_process->icon_manager();
     SkBitmap* icon = im->LookupIcon(file->full_path(), IconLoader::NORMAL);
-    download_util::DragDownload(file, icon);
+    gfx::NativeView view = dom_ui_->tab_contents()->GetNativeView();
+    download_util::DragDownload(file, icon, view);
   }
 }
 

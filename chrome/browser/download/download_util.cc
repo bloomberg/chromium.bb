@@ -220,8 +220,7 @@ int GetBigProgressIconSize() {
   static int big_progress_icon_size = 0;
   if (big_progress_icon_size == 0) {
     string16 locale_size_str =
-        WideToUTF16Hack(
-        l10n_util::GetString(IDS_DOWNLOAD_BIG_PROGRESS_SIZE));
+        WideToUTF16Hack(l10n_util::GetString(IDS_DOWNLOAD_BIG_PROGRESS_SIZE));
     bool rc = StringToInt(locale_size_str, &big_progress_icon_size);
     if (!rc || big_progress_icon_size < kBigProgressIconSize) {
       NOTREACHED();
@@ -238,7 +237,9 @@ int GetBigProgressIconOffset() {
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 // Download dragging
-void DragDownload(const DownloadItem* download, SkBitmap* icon) {
+void DragDownload(const DownloadItem* download,
+                  SkBitmap* icon,
+                  gfx::NativeView view) {
 #if defined(OS_WIN)
   DCHECK(download);
 
@@ -269,7 +270,7 @@ void DragDownload(const DownloadItem* download, SkBitmap* icon) {
              DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
 #else
   NOTIMPLEMENTED();
-#endif
+#endif  // OS_WIN
 }
 #endif
 
