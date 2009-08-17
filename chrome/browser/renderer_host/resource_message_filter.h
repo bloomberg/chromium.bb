@@ -141,7 +141,12 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetScreenInfo(gfx::NativeViewId window, IPC::Message* reply);
 #endif
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
-  void OnGetPluginsOnFileThread(bool refresh, IPC::Message* reply_msg);
+  static void OnGetPluginsOnFileThread(ResourceMessageFilter* filter,
+                                       bool refresh,
+                                       IPC::Message* reply_msg);
+  static void OnNotifyPluginsLoaded(ResourceMessageFilter* filter,
+                                    IPC::Message* reply_msg);
+  void OnPluginsLoaded(IPC::Message* reply_msg);
   void OnGetPluginPath(const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,

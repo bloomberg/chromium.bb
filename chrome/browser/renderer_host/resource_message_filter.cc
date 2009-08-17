@@ -387,9 +387,8 @@ void ResourceMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
 
   // Create a new ViewHostMsg_ContextMenu message.
   const ViewHostMsg_ContextMenu context_menu_message(msg.routing_id(), params);
-  render_widget_helper_->ui_loop()->PostTask(FROM_HERE,
-      new ContextMenuMessageDispatcher(render_process_id_,
-                                       context_menu_message));
+  ui_loop()->PostTask(FROM_HERE, new ContextMenuMessageDispatcher(
+      render_process_id_, context_menu_message));
 }
 
 // Called on the IPC thread:
@@ -542,19 +541,45 @@ void ResourceMessageFilter::OnLoadFont(LOGFONT font) {
 
 void ResourceMessageFilter::OnGetPlugins(bool refresh,
                                          IPC::Message* reply_msg) {
+  // Schedule plugin loading on the file thread.
+  // Note: it's possible that the only reference to this object is the task.  If
+  // If the task executes on the file thread, and before it returns, the task it
+  // posts to the IO thread runs, then this object will get destructed on the
+  // file thread.  We need this object to be destructed on the IO thread, so do
+  // the refcounting manually.
+  AddRef();
   ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &ResourceMessageFilter::OnGetPluginsOnFileThread,
-          refresh, reply_msg));
+      NewRunnableFunction(&ResourceMessageFilter::OnGetPluginsOnFileThread,
+          this, refresh, reply_msg));
 }
 
-void ResourceMessageFilter::OnGetPluginsOnFileThread(bool refresh,
-                                                     IPC::Message* reply_msg) {
+void ResourceMessageFilter::OnGetPluginsOnFileThread(
+    ResourceMessageFilter* filter,
+    bool refresh,
+    IPC::Message* reply_msg) {
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(refresh, &plugins);
 
   ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
+  // Note, we want to get to the IO thread now, but the file thread outlives it
+  // so we can't post a task to it directly as it might be in the middle of
+  // destruction.  So hop through the main thread, where the destruction of the
+  // IO thread happens and hence no race conditions exist.
+  filter->ui_loop()->PostTask(FROM_HERE,
+      NewRunnableFunction(&ResourceMessageFilter::OnNotifyPluginsLoaded,
+          filter, reply_msg));
+}
+
+void ResourceMessageFilter::OnNotifyPluginsLoaded(ResourceMessageFilter* filter,
+                                                  IPC::Message* reply_msg) {
   ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
+      NewRunnableMethod(filter, &ResourceMessageFilter::OnPluginsLoaded,
+          reply_msg));
+}
+
+void ResourceMessageFilter::OnPluginsLoaded(IPC::Message* reply_msg) {
+  Send(reply_msg);
+  Release();
 }
 
 void ResourceMessageFilter::OnGetPluginPath(const GURL& url,
@@ -621,8 +646,7 @@ void ResourceMessageFilter::OnClipboardWriteObjects(
   Clipboard::DuplicateRemoteHandles(handle(), long_living_objects);
 #endif
 
-  render_widget_helper_->ui_loop()->PostTask(FROM_HERE,
-      new WriteClipboardTask(long_living_objects));
+  ui_loop()->PostTask(FROM_HERE, new WriteClipboardTask(long_living_objects));
 }
 
 #if !defined(OS_LINUX)

@@ -425,14 +425,13 @@ void BufferedResourceHandler::NotifyPluginsLoaded(
 }
 
 void BufferedResourceHandler::OnPluginsLoaded() {
-  Release();
   wait_for_plugins_ = false;
-  if (!request_)
-    return;
-
-  ResourceDispatcherHost::ExtraRequestInfo* info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request_);
-  host_->PauseRequest(info->process_id, info->request_id, false);
-  if (!CompleteResponseStarted(info->request_id, false))
-    host_->CancelRequest(info->process_id, info->request_id, false);
+  if (request_) {
+    ResourceDispatcherHost::ExtraRequestInfo* info =
+        ResourceDispatcherHost::ExtraInfoForRequest(request_);
+    host_->PauseRequest(info->process_id, info->request_id, false);
+    if (!CompleteResponseStarted(info->request_id, false))
+      host_->CancelRequest(info->process_id, info->request_id, false);
+  }
+  Release();
 }
