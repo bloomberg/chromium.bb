@@ -36,10 +36,7 @@ def calc_output(locale):
   """Determine the file that will be generated for the given locale."""
   #e.g. '<(INTERMEDIATE_DIR)/repack/da.pak',
   if sys.platform in ('darwin',):
-    splitpos = locale.find('-')
-    if splitpos == -1:
-      splitpos = None
-    return '%s/repack/%s.lproj/locale.pak' % (INT_DIR, locale[0:splitpos])
+    return '%s/repack/%s.lproj/locale.pak' % (INT_DIR, locale)
   else:
     return '%s/repack/%s.pak' % (INT_DIR, locale)
 

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This script is intended to run from a "postbuild" action from within Xcode.
+# It will create any symlinks needed to sync up what comes from the GRIT files
+# with what Cocoa would like.
+
+set -e
+
+# Working in the resources directory
+cd "${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Contents/Resources"
+
+# Remove the stale zh.lproj
+# TODO: This can go away about 09/01/09, when they won't exist on the bots or
+# developers' local builds.
+rm -rf "zh.lproj" "en.lproj"
+
+# Provide an link for en.lproj that points to en-US.lproj.
+ln -fhs "en-US.lproj" "en.lproj"

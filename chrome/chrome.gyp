@@ -3147,7 +3147,11 @@
                          '-s1',  # Include Subversion information
                          '<(branding)'],
             },
-          ],
+            {
+              'postbuild_name': 'Tweak Mac lproj folders',
+              'action': ['app/tweak_mac_lproj_folders'],
+            },
+          ],  # postbuilds
         }, { # else: OS != "mac"
           'conditions': [
             ['branding=="Chrome"', {
@@ -3322,6 +3326,7 @@
             },
             {
               'action_name': 'repack_locales',
+              'process_outputs_as_mac_bundle_resources': 1,
               'variables': {
                 'conditions': [
                   ['branding=="Chrome"', {
@@ -3340,23 +3345,8 @@
                 # here was the only way it seemed to work.
                 '>!@(<(repack_locales_cmd) -i <(branding_flag) -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
               ],
-              'conditions': [
-                ['OS=="mac"', {
-                  'process_outputs_as_mac_bundle_resources': 1,
-                  'variables': {
-                    'locales=': [ 'da', 'en-US', 'he', 'zh-TW', ],
-                  },
-                  'outputs': [
-                    '<(INTERMEDIATE_DIR)/repack/da.lproj/locale.pak',
-                    '<(INTERMEDIATE_DIR)/repack/en.lproj/locale.pak',
-                    '<(INTERMEDIATE_DIR)/repack/he.lproj/locale.pak',
-                    '<(INTERMEDIATE_DIR)/repack/zh.lproj/locale.pak',
-                  ],
-                }, {  # else: OS!="mac"
-                  'outputs': [
-                    '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
-                  ],
-                }],
+              'outputs': [
+                '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
               ],
               'action': ['<@(repack_locales_cmd)',
                 '<@(branding_flag)',
