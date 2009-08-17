@@ -1,5 +1,5 @@
 00000000: 00 00                                        add %ds[%eax], %al
-  { 0x00,
+  { 1, { 0x00, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
     InstAdd,
@@ -20,7 +20,7 @@ ExprNodeVector[10] = {
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
 };
 00000000: 00 c0                                        add %al, %al
-  { 0x00,
+  { 1, { 0x00, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
     InstAdd,
@@ -35,7 +35,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
 };
 00000000: 01 c0                                        add %eax, %eax
-  { 0x01,
+  { 1, { 0x01, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstAdd,
@@ -50,7 +50,7 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
 00000000: 03 18                                        add %ebx, %ds[%eax]
-  { 0x03,
+  { 1, { 0x03, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstAdd,
@@ -71,7 +71,7 @@ ExprNodeVector[10] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 00000000: 03 1d 20 00 00 00                            add %ebx, 0x20
-  { 0x03,
+  { 1, { 0x03, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstAdd,
@@ -86,7 +86,7 @@ ExprNodeVector[4] = {
   { ExprConstant[0] , 0x20, ExprUsed | ExprSize32 | ExprSignedHex },
 };
 00000000: 02 04 00                                     add %al, %ds[%eax+%eax*1]
-  { 0x02,
+  { 1, { 0x02, 0x00, 0x00 },
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
     InstAdd,
