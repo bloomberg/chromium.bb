@@ -2582,6 +2582,7 @@ BUG16779 SKIP : LayoutTests/media/video-no-autoplay.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-pause-empty-events.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-play-empty-events.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-played-collapse.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-played-ranges-1.html = FAIL CRASH TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-played-reset.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-played.html = FAIL CRASH TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-seek-past-end-paused.html = PASS FAIL CRASH TIMEOUT
