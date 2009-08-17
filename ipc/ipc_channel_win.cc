@@ -170,7 +170,7 @@ bool Channel::ChannelImpl::CreatePipe(const std::string& channel_id,
 }
 
 bool Channel::ChannelImpl::Connect() {
-  DLOG(WARNING) << "Connect called twice";
+  DLOG_IF(WARNING, thread_check_.get()) << "Connect called more than once";
 
   if (!thread_check_.get())
     thread_check_.reset(new NonThreadSafe());
