@@ -25,6 +25,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/child_process_security_policy.h"
@@ -527,7 +528,12 @@ void PluginProcessHost::OnGetCookies(uint32 request_context,
 
   // Note: We don't have a first_party_for_cookies check because plugins bypass
   // third-party cookie blocking.
-  *cookies = context->cookie_store()->GetCookies(url);
+  if (context && context->cookie_store()) {
+    *cookies = context->cookie_store()->GetCookies(url);
+  } else {
+    DLOG(ERROR) << "Could not serve plugin cookies request.";
+    *cookies = EmptyString();
+  }
 }
 
 void PluginProcessHost::OnAccessFiles(int process_id,
