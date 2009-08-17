@@ -101,7 +101,8 @@ static gboolean gtk_chrome_link_button_expose(GtkWidget* widget,
     button->is_blue = FALSE;
   } else if (GTK_WIDGET_STATE(widget) != GTK_STATE_ACTIVE && !button->is_blue) {
     gtk_label_set_markup(GTK_LABEL(label),
-        button->using_native_theme ? button->native_markup : button->blue_markup);
+        button->using_native_theme ? button->native_markup :
+                                     button->blue_markup);
     button->is_blue = TRUE;
   }
 

@@ -47,7 +47,8 @@ static void gtk_chrome_button_class_init(GtkChromeButtonClass* button_class) {
       "widget \"*chrome-button\" style \"chrome-button\"");
 
   GObjectClass* gobject_class = G_OBJECT_CLASS(button_class);
-  GtkWidgetClass* widget_class = reinterpret_cast<GtkWidgetClass*>(button_class);
+  GtkWidgetClass* widget_class = reinterpret_cast<GtkWidgetClass*>(
+      button_class);
   widget_class->expose_event = gtk_chrome_button_expose;
 
   g_nine_box_prelight = new NineBox(

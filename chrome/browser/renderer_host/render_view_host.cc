@@ -454,7 +454,8 @@ void RenderViewHost::DragTargetDragEnter(
     const gfx::Point& client_pt,
     const gfx::Point& screen_pt) {
   // Grant the renderer the ability to load the drop_data.
-  ChildProcessSecurityPolicy* policy = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
   policy->GrantRequestURL(process()->pid(), drop_data.url);
   for (std::vector<string16>::const_iterator iter(drop_data.filenames.begin());
        iter != drop_data.filenames.end(); ++iter) {
@@ -927,7 +928,8 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
     return;
 
   const int renderer_id = process()->pid();
-  ChildProcessSecurityPolicy* policy = ChildProcessSecurityPolicy::GetInstance();
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
   // Without this check, an evil renderer can trick the browser into creating
   // a navigation entry for a banned URL.  If the user clicks the back button
   // followed by the forward button (or clicks reload, or round-trips through
@@ -1442,7 +1444,8 @@ void RenderViewHost::UpdateBackForwardListCount() {
   RenderViewHostDelegate::BrowserIntegration* integration_delegate =
       delegate_->GetBrowserIntegrationDelegate();
   if (integration_delegate) {
-    integration_delegate->GetHistoryListCount(&back_list_count, &forward_list_count);
+    integration_delegate->GetHistoryListCount(&back_list_count,
+                                              &forward_list_count);
     Send(new ViewMsg_UpdateBackForwardListCount(
          routing_id(), back_list_count, forward_list_count));
   }

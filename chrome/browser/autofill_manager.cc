@@ -50,7 +50,8 @@ Profile* AutofillManager::profile() {
   return tab_contents_->profile();
 }
 
-void AutofillManager::AutofillFormSubmitted(const webkit_glue::AutofillForm& form) {
+void AutofillManager::AutofillFormSubmitted(
+    const webkit_glue::AutofillForm& form) {
   StoreFormEntriesInWebDatabase(form);
 }
 

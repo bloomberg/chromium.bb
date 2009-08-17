@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__
 
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/lock.h"
@@ -464,7 +465,8 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   //
   //////////////////////////////////////////////////////////////////////////////
   void AddAutofillFormElementsImpl(
-      GenericRequest<std::vector<webkit_glue::AutofillForm::Element> >* request);
+      GenericRequest<std::vector<webkit_glue::AutofillForm::Element> >*
+          request);
   void GetFormValuesForElementNameImpl(WebDataRequest* request,
       const std::wstring& name, const std::wstring& prefix, int limit);
   void RemoveFormElementsAddedBetweenImpl(

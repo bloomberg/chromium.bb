@@ -47,8 +47,8 @@ void NativeTabContentsContainerGtk::AttachContents(TabContents* contents) {
 void NativeTabContentsContainerGtk::DetachContents(TabContents* contents) {
   // TODO(port): figure out focus interception
 #if defined(OS_WIN)
-  // TODO(brettw) should this move to NativeViewHost::Detach which is called below?
-  // It needs cleanup regardless.
+  // TODO(brettw) should this move to NativeViewHost::Detach which is called
+  // below? It needs cleanup regardless.
   HWND container_hwnd = contents->GetNativeView();
 
   // Hide the contents before adjusting its parent to avoid a full desktop

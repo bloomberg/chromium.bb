@@ -73,7 +73,8 @@ class WorkerService : public NotificationObserver {
 
   // Checks if we can create a worker process based on the process limit when
   // we're using a strategy of one process per core.
-  bool CanCreateWorkerProcess(const WorkerProcessHost::WorkerInstance& instance);
+  bool CanCreateWorkerProcess(
+      const WorkerProcessHost::WorkerInstance& instance);
 
   // NotificationObserver interface.
   void Observe(NotificationType type,

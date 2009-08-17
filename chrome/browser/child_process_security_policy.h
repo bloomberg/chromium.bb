@@ -30,9 +30,9 @@ class ChildProcessSecurityPolicy {
   // private.
   ~ChildProcessSecurityPolicy();
 
-  // There is one global ChildProcessSecurityPolicy object for the entire browser
-  // processes.  The object returned by this method may be accessed on any
-  // thread.
+  // There is one global ChildProcessSecurityPolicy object for the entire
+  // browser process.  The object returned by this method may be accessed on
+  // any thread.
   static ChildProcessSecurityPolicy* GetInstance();
 
   // Web-safe schemes can be requested by any renderer.  Once a web-safe scheme

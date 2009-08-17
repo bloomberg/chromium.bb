@@ -1412,7 +1412,8 @@ TEST_F(NavigationControllerHistoryTest, Basic) {
   TabNavigation nav1(0, url0, GURL(), string16(),
                      webkit_glue::CreateHistoryStateForURL(url0),
                      PageTransition::LINK);
-  session_helper_.AssertNavigationEquals(nav1, windows_[0]->tabs[0]->navigations[0]);
+  session_helper_.AssertNavigationEquals(nav1,
+                                         windows_[0]->tabs[0]->navigations[0]);
 }
 
 // Navigates to three urls, then goes back and make sure the history database

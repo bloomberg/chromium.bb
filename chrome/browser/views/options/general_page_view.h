@@ -68,7 +68,8 @@ class GeneralPageView : public OptionsPageView,
  private:
   // ShellIntegration::DefaultBrowserObserver implementation:
   // Updates the UI state to reflect the current default browser state.
-  virtual void SetDefaultBrowserUIState(ShellIntegration::DefaultBrowserUIState state);
+  virtual void SetDefaultBrowserUIState(
+      ShellIntegration::DefaultBrowserUIState state);
 
   // Init all the dialog controls
   void InitStartupGroup();

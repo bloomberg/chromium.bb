@@ -1109,7 +1109,8 @@ TEST_F(TabStripModelTest, AddTabContents_NewTabAtEndOfStripInheritsGroup) {
 
   // Open a New Tab at the end of the strip (simulate Ctrl+T)
   TabContents* new_tab_contents = CreateTabContents();
-  strip.AddTabContents(new_tab_contents, -1, false, PageTransition::TYPED, true);
+  strip.AddTabContents(new_tab_contents, -1, false, PageTransition::TYPED,
+                       true);
 
   EXPECT_EQ(4, strip.GetIndexOfTabContents(new_tab_contents));
   EXPECT_EQ(4, strip.selected_index());
@@ -1139,8 +1140,8 @@ TEST_F(TabStripModelTest, AddTabContents_NewTabAtEndOfStripInheritsGroup) {
   // in New Tab". No opener relationship should be preserved between this Tab
   // and the one that was active when the gesture was performed.
   TabContents* page_f_contents = CreateTabContents();
-  strip.AddTabContents(page_f_contents, -1, false, PageTransition::AUTO_BOOKMARK,
-                       true);
+  strip.AddTabContents(page_f_contents, -1, false,
+                       PageTransition::AUTO_BOOKMARK, true);
 
   EXPECT_EQ(4, strip.GetIndexOfTabContents(page_f_contents));
   EXPECT_EQ(4, strip.selected_index());
@@ -1177,7 +1178,8 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
 
   // Open page E in a different opener group from page A.
   TabContents* page_e_contents = CreateTabContents();
-  strip.AddTabContents(page_e_contents, -1, false, PageTransition::START_PAGE, false);
+  strip.AddTabContents(page_e_contents, -1, false,
+                       PageTransition::START_PAGE, false);
 
   // Tell the TabStripModel that we are navigating page D via a link click.
   strip.SelectTabContentsAt(3, true);

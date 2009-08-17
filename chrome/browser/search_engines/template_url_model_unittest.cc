@@ -298,7 +298,8 @@ TEST_F(TemplateURLModelTest, ClearBrowsingData_Keywords) {
                      now + one_day);
   // Try the other three states.
   AddKeywordWithDate(L"key5", false, L"http://foo5", L"name5", false, now);
-  AddKeywordWithDate(L"key6", false, L"http://foo6", L"name6", false, month_ago);
+  AddKeywordWithDate(L"key6", false, L"http://foo6", L"name6", false,
+                     month_ago);
 
   // We just added a few items, validate them.
   EXPECT_EQ(6U, model_->GetTemplateURLs().size());

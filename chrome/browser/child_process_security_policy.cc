@@ -133,7 +133,8 @@ void ChildProcessSecurityPolicy::Remove(int renderer_id) {
   security_state_.erase(renderer_id);
 }
 
-void ChildProcessSecurityPolicy::RegisterWebSafeScheme(const std::string& scheme) {
+void ChildProcessSecurityPolicy::RegisterWebSafeScheme(
+    const std::string& scheme) {
   AutoLock lock(lock_);
   DCHECK(web_safe_schemes_.count(scheme) == 0) << "Add schemes at most once.";
   DCHECK(pseudo_schemes_.count(scheme) == 0) << "Web-safe implies not psuedo.";
@@ -147,7 +148,8 @@ bool ChildProcessSecurityPolicy::IsWebSafeScheme(const std::string& scheme) {
   return (web_safe_schemes_.find(scheme) != web_safe_schemes_.end());
 }
 
-void ChildProcessSecurityPolicy::RegisterPseudoScheme(const std::string& scheme) {
+void ChildProcessSecurityPolicy::RegisterPseudoScheme(
+    const std::string& scheme) {
   AutoLock lock(lock_);
   DCHECK(pseudo_schemes_.count(scheme) == 0) << "Add schemes at most once.";
   DCHECK(web_safe_schemes_.count(scheme) == 0) <<
@@ -162,7 +164,8 @@ bool ChildProcessSecurityPolicy::IsPseudoScheme(const std::string& scheme) {
   return (pseudo_schemes_.find(scheme) != pseudo_schemes_.end());
 }
 
-void ChildProcessSecurityPolicy::GrantRequestURL(int renderer_id, const GURL& url) {
+void ChildProcessSecurityPolicy::GrantRequestURL(
+    int renderer_id, const GURL& url) {
 
   if (!url.is_valid())
     return;  // Can't grant the capability to request invalid URLs.
@@ -249,7 +252,8 @@ void ChildProcessSecurityPolicy::GrantExtensionBindings(int renderer_id) {
   state->second->GrantBindings(BindingsPolicy::EXTENSION);
 }
 
-bool ChildProcessSecurityPolicy::CanRequestURL(int renderer_id, const GURL& url) {
+bool ChildProcessSecurityPolicy::CanRequestURL(
+    int renderer_id, const GURL& url) {
   if (!url.is_valid())
     return false;  // Can't request invalid URLs.
 

@@ -132,7 +132,8 @@ TEST_F(BookmarkTableModelTest, AddToFolder) {
   const BookmarkNode* other = bookmark_model()->other_node();
   SetModel(BookmarkTableModel::CreateBookmarkTableModelForFolder(
       bookmark_model(), other));
-  const BookmarkNode* new_node = bookmark_model()->AddURL(other, 0, L"new", url1_);
+  const BookmarkNode* new_node = bookmark_model()->AddURL(other, 0, L"new",
+                                                          url1_);
   // Should have gotten notification of the add.
   VerifyAndClearOberserverCounts(0, 0, 1, 0);
   ASSERT_EQ(4, model_->RowCount());

@@ -75,7 +75,8 @@ class DevToolsSanityTest : public InProcessBrowserTest {
           ui_test_utils::ExecuteJavaScriptAndExtractString(
               client_contents_->render_view_host(),
               L"",
-              UTF8ToWide(StringPrintf("uiTests.runTest('%s')", test_name.c_str())),
+              UTF8ToWide(StringPrintf("uiTests.runTest('%s')",
+                                      test_name.c_str())),
               &result));
       EXPECT_EQ("[OK]", result);
     } else {

@@ -258,8 +258,8 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
   p->Remove(kRendererID);
 
   // Renderers are added and removed on the UI thread, but the policy can be
-  // queried on the IO thread.  The ChildProcessSecurityPolicy needs to be prepared
-  // to answer policy questions about renderers who no longer exist.
+  // queried on the IO thread.  The ChildProcessSecurityPolicy needs to be
+  // prepared to answer policy questions about renderers who no longer exist.
 
   // In this case, we default to secure behavior.
   EXPECT_FALSE(p->CanRequestURL(kRendererID, url));

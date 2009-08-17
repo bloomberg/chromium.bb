@@ -346,7 +346,9 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels * 2,
-                        kWindowTilePixels * 2, 30 /* not 29 */, 30 /* not 29 */),
+                        kWindowTilePixels * 2,
+                        30 /* not 29 */,
+                        30 /* not 29 */),
               window_bounds);
   }
 

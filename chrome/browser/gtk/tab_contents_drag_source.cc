@@ -143,7 +143,8 @@ void TabContentsDragSource::OnDragDataGet(
       // |html_base_url|.
       std::string utf8_text = UTF16ToUTF8(drop_data_->text_html);
       gtk_selection_data_set(selection_data,
-                             GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_HTML),
+                             GtkDndUtil::GetAtomForTarget(
+                                 GtkDndUtil::TEXT_HTML),
                              bits_per_byte,
                              reinterpret_cast<const guchar*>(utf8_text.c_str()),
                              utf8_text.length());

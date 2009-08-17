@@ -213,7 +213,8 @@ gboolean BookmarkMenuController::OnButtonPressed(
     // If the cursor is outside our bounds, pass this event up to the parent.
     if (!gtk_util::WidgetContainsCursor(sender)) {
       if (menu_shell->parent_menu_shell) {
-        return OnButtonPressed(menu_shell->parent_menu_shell, event, controller);
+        return OnButtonPressed(menu_shell->parent_menu_shell, event,
+                               controller);
       } else {
         // We are the top level menu; we can propagate no further.
         return FALSE;

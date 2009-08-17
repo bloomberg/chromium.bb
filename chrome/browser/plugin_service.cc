@@ -186,7 +186,8 @@ FilePath PluginService::GetPluginPath(const GURL& url,
   return FilePath();
 }
 
-void PluginService::OnWaitableEventSignaled(base::WaitableEvent* waitable_event) {
+void PluginService::OnWaitableEventSignaled(
+    base::WaitableEvent* waitable_event) {
 #if defined(OS_WIN)
   if (waitable_event == hkcu_event_.get()) {
     hkcu_key_.StartWatching();

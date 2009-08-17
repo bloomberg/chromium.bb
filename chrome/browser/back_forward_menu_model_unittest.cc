@@ -224,7 +224,7 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
 
   // Seed the controller with 32 URLs.
   int i = 0;
-  LoadURLAndUpdateState("http://www.a.com/1", "A1"); // 0
+  LoadURLAndUpdateState("http://www.a.com/1", "A1");
   ValidateModel(back_model.get(), i++, 0);
   LoadURLAndUpdateState("http://www.a.com/2", "A2");
   ValidateModel(back_model.get(), i++, 0);
@@ -234,7 +234,8 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   ValidateModel(back_model.get(), i++, 0);
   LoadURLAndUpdateState("http://www.b.com/2", "B2");
   ValidateModel(back_model.get(), i++, 0);
-  LoadURLAndUpdateState("http://www.b.com/3", "B3"); // 5
+  // i = 5
+  LoadURLAndUpdateState("http://www.b.com/3", "B3");
   ValidateModel(back_model.get(), i++, 0);
   LoadURLAndUpdateState("http://www.c.com/1", "C1");
   ValidateModel(back_model.get(), i++, 0);
@@ -244,7 +245,8 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   ValidateModel(back_model.get(), i++, 0);
   LoadURLAndUpdateState("http://www.d.com/1", "D1");
   ValidateModel(back_model.get(), i++, 0);
-  LoadURLAndUpdateState("http://www.d.com/2", "D2"); // 10
+  // i = 10
+  LoadURLAndUpdateState("http://www.d.com/2", "D2");
   ValidateModel(back_model.get(), i++, 0);
   LoadURLAndUpdateState("http://www.d.com/3", "D3");
   ValidateModel(back_model.get(), i++, 0);
@@ -254,7 +256,8 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   ValidateModel(back_model.get(), i++, 0);
   LoadURLAndUpdateState("http://www.e.com/3", "E3");
   ValidateModel(back_model.get(), i++, 0);
-  LoadURLAndUpdateState("http://www.f.com/1", "F1"); // 15
+  // i = 15
+  LoadURLAndUpdateState("http://www.f.com/1", "F1");
   ValidateModel(back_model.get(), i++, 1);
   LoadURLAndUpdateState("http://www.f.com/2", "F2");
   ValidateModel(back_model.get(), i++, 1);
@@ -264,7 +267,8 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   ValidateModel(back_model.get(), i++, 2);
   LoadURLAndUpdateState("http://www.g.com/2", "G2");
   ValidateModel(back_model.get(), i++, 2);
-  LoadURLAndUpdateState("http://www.g.com/3", "G3"); // 20
+  // i = 20
+  LoadURLAndUpdateState("http://www.g.com/3", "G3");
   ValidateModel(back_model.get(), i++, 2);
   LoadURLAndUpdateState("http://www.h.com/1", "H1");
   ValidateModel(back_model.get(), i++, 3);
@@ -274,7 +278,8 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   ValidateModel(back_model.get(), i++, 3);
   LoadURLAndUpdateState("http://www.i.com/1", "I1");
   ValidateModel(back_model.get(), i++, 4);
-  LoadURLAndUpdateState("http://www.i.com/2", "I2"); // 25
+  // i = 25
+  LoadURLAndUpdateState("http://www.i.com/2", "I2");
   ValidateModel(back_model.get(), i++, 4);
   LoadURLAndUpdateState("http://www.i.com/3", "I3");
   ValidateModel(back_model.get(), i++, 4);
@@ -284,22 +289,30 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   ValidateModel(back_model.get(), i++, 5);
   LoadURLAndUpdateState("http://www.j.com/3", "J3");
   ValidateModel(back_model.get(), i++, 5);
-  LoadURLAndUpdateState("http://www.k.com/1", "K1"); // 30
+  // i = 30
+  LoadURLAndUpdateState("http://www.k.com/1", "K1");
   ValidateModel(back_model.get(), i++, 6);
   LoadURLAndUpdateState("http://www.k.com/2", "K2");
   ValidateModel(back_model.get(), i++, 6);
-  LoadURLAndUpdateState("http://www.k.com/3", "K3"); // 32
+  // i = 32
+  LoadURLAndUpdateState("http://www.k.com/3", "K3");
   ValidateModel(back_model.get(), i++, 6);
+
+  // A chapter stop is defined as the last page the user
+  // browsed to within the same domain.
 
   // Check to see if the chapter stops have the right labels.
   int index = BackForwardMenuModel::kMaxHistoryItems + 1;
-  EXPECT_EQ(ASCIIToUTF16(""), back_model->GetItemLabel(index++));  // separator.
+  // Empty string indicates item is a separator.
+  EXPECT_EQ(ASCIIToUTF16(""), back_model->GetItemLabel(index++));
   EXPECT_EQ(ASCIIToUTF16("F3"), back_model->GetItemLabel(index++));
   EXPECT_EQ(ASCIIToUTF16("E3"), back_model->GetItemLabel(index++));
   EXPECT_EQ(ASCIIToUTF16("D3"), back_model->GetItemLabel(index++));
   EXPECT_EQ(ASCIIToUTF16("C3"), back_model->GetItemLabel(index++));
-  EXPECT_EQ(ASCIIToUTF16("B3"), back_model->GetItemLabel(index));  // max 5 chapter stops.
-  EXPECT_EQ(ASCIIToUTF16(""), back_model->GetItemLabel(index + 1));  // separator.
+  // The menu should only show a maximum of 5 chapter stops.
+  EXPECT_EQ(ASCIIToUTF16("B3"), back_model->GetItemLabel(index));
+  // Empty string indicates item is a separator.
+  EXPECT_EQ(ASCIIToUTF16(""), back_model->GetItemLabel(index + 1));
   EXPECT_EQ(back_model->GetShowFullHistoryLabel(),
             back_model->GetItemLabel(index + 2));
 
@@ -316,8 +329,10 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   GoBack();
   EXPECT_EQ(ASCIIToUTF16("A3"), back_model->GetItemLabel(index));
   GoBack();
-  EXPECT_EQ(ASCIIToUTF16(""), back_model->GetItemLabel(index));  // It is now a separator.
-  NavigateToOffset(6);  // Undo our position change.
+  // It is now a separator.
+  EXPECT_EQ(ASCIIToUTF16(""), back_model->GetItemLabel(index));
+  // Undo our position change.
+  NavigateToOffset(6);
 
   // Go back enough to make sure no chapter stops should appear.
   NavigateToOffset(-BackForwardMenuModel::kMaxHistoryItems);
@@ -337,14 +352,16 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
 
   // Check to see if the chapter stops have the right labels.
   index = BackForwardMenuModel::kMaxHistoryItems + 1;
-  EXPECT_EQ(ASCIIToUTF16(""), forward_model->GetItemLabel(index++));    // separator.
+  // Empty string indicates item is a separator.
+  EXPECT_EQ(ASCIIToUTF16(""), forward_model->GetItemLabel(index++));
   EXPECT_EQ(ASCIIToUTF16("E3"), forward_model->GetItemLabel(index++));
   EXPECT_EQ(ASCIIToUTF16("F3"), forward_model->GetItemLabel(index++));
   EXPECT_EQ(ASCIIToUTF16("G3"), forward_model->GetItemLabel(index++));
   EXPECT_EQ(ASCIIToUTF16("H3"), forward_model->GetItemLabel(index++));
-  // max 5 chapter stops.
+  // The menu should only show a maximum of 5 chapter stops.
   EXPECT_EQ(ASCIIToUTF16("I3"), forward_model->GetItemLabel(index));
-  EXPECT_EQ(ASCIIToUTF16(""), forward_model->GetItemLabel(index + 1));  // separator.
+  // Empty string indicates item is a separator.
+  EXPECT_EQ(ASCIIToUTF16(""), forward_model->GetItemLabel(index + 1));
   EXPECT_EQ(forward_model->GetShowFullHistoryLabel(),
       forward_model->GetItemLabel(index + 2));
 
@@ -382,14 +399,16 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
 
   // Bug found during review (two different sites, but first wasn't considered
   // a chapter-stop).
-  NavigateToIndex(0);  // Go to A1;
+  // Go to A1;
+  NavigateToIndex(0);
   LoadURLAndUpdateState("http://www.b.com/1", "B1");
   EXPECT_EQ(0, back_model->GetIndexOfNextChapterStop(1, false));
   EXPECT_EQ(1, back_model->GetIndexOfNextChapterStop(0, true));
 
   // Now see if it counts 'www.x.com' and 'mail.x.com' as same domain, which
   // it should.
-  NavigateToIndex(0);  // Go to A1.
+  // Go to A1.
+  NavigateToIndex(0);
   LoadURLAndUpdateState("http://mail.a.com/2", "A2-mai");
   LoadURLAndUpdateState("http://www.b.com/1", "B1");
   LoadURLAndUpdateState("http://mail.b.com/2", "B2-mai");

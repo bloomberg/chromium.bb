@@ -692,7 +692,8 @@ void BookmarkManagerView::ShowMenu(
     return;
 
   if (config == BookmarkContextMenuController::BOOKMARK_MANAGER_TABLE ||
-      (config == BookmarkContextMenuController::BOOKMARK_MANAGER_ORGANIZE_MENU &&
+      (config ==
+          BookmarkContextMenuController::BOOKMARK_MANAGER_ORGANIZE_MENU &&
        table_view_->HasFocus())) {
     std::vector<const BookmarkNode*> nodes = GetSelectedTableNodes();
     const BookmarkNode* parent = GetSelectedFolder();

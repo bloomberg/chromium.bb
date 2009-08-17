@@ -109,7 +109,10 @@ unpadBlock(SECItem *data, int blockSize, SECItem *result)
   result->len = 0;
 
   /* Remove the padding from the end if the input data */
-  if (data->len == 0 || data->len % blockSize  != 0) { rv = SECFailure; goto loser; }
+  if (data->len == 0 || data->len % blockSize  != 0) {
+    rv = SECFailure;
+    goto loser;
+  }
 
   padLength = data->data[data->len-1];
   if (padLength > blockSize) { rv = SECFailure; goto loser; }
@@ -138,8 +141,8 @@ loser:
 
 /* decrypt a block */
 static SECStatus
-pk11Decrypt(PK11SlotInfo *slot, PLArenaPool *arena, 
-            CK_MECHANISM_TYPE type, PK11SymKey *key, 
+pk11Decrypt(PK11SlotInfo *slot, PLArenaPool *arena,
+            CK_MECHANISM_TYPE type, PK11SymKey *key,
             SECItem *params, SECItem *in, SECItem *result)
 {
   PK11Context *ctx = 0;
@@ -156,7 +159,7 @@ pk11Decrypt(PK11SlotInfo *slot, PLArenaPool *arena,
   paddedResult.data = static_cast<unsigned char*>(
       PORT_ArenaAlloc(arena, paddedResult.len));
 
-  rv = PK11_CipherOp(ctx, paddedResult.data, 
+  rv = PK11_CipherOp(ctx, paddedResult.data,
                         (int*)&paddedResult.len, paddedResult.len,
                         in->data, in->len);
   if (rv != SECSuccess) goto loser;
@@ -197,10 +200,10 @@ SECStatus NSSDecryptor::PK11SDR_DecryptWithSlot(
   /* Use triple-DES (Should look up the algorithm) */
   type = CKM_DES3_CBC;
   key = PK11_FindFixedKey(slot, type, &sdrResult.keyid, cx);
-  if (!key) { 
-    rv = SECFailure;  
+  if (!key) {
+    rv = SECFailure;
   } else {
-    rv = pk11Decrypt(slot, arena, type, key, params, 
+    rv = pk11Decrypt(slot, arena, type, key, params,
                      &sdrResult.data, result);
   }
 

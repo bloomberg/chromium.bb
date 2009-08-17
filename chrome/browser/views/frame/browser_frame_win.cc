@@ -84,7 +84,8 @@ int BrowserFrameWin::GetMinimizeButtonOffset() const {
   return minimize_button_corner.x;
 }
 
-gfx::Rect BrowserFrameWin::GetBoundsForTabStrip(TabStripWrapper* tabstrip) const {
+gfx::Rect BrowserFrameWin::GetBoundsForTabStrip(
+    TabStripWrapper* tabstrip) const {
   return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
 }
 
@@ -143,7 +144,8 @@ void BrowserFrameWin::OnExitSizeMove() {
       detached_drag_mode_ = false;
       if (drop_tabstrip_) {
         gfx::Point screen_point = views::Screen::GetCursorScreenPoint();
-        BrowserTabStrip* tabstrip = browser_view_->tabstrip()->AsBrowserTabStrip();
+        BrowserTabStrip* tabstrip =
+            browser_view_->tabstrip()->AsBrowserTabStrip();
         gfx::Rect tsb = tabstrip->GetDraggedTabScreenBounds(screen_point);
         drop_tabstrip_->AttachTab(tabstrip->DetachTab(0), screen_point, tsb);
       } else {

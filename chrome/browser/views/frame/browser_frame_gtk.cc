@@ -51,7 +51,8 @@ int BrowserFrameGtk::GetMinimizeButtonOffset() const {
   return 0;
 }
 
-gfx::Rect BrowserFrameGtk::GetBoundsForTabStrip(TabStripWrapper* tabstrip) const {
+gfx::Rect BrowserFrameGtk::GetBoundsForTabStrip(
+    TabStripWrapper* tabstrip) const {
   return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
 }
 

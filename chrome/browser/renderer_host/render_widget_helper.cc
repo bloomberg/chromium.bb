@@ -238,7 +238,8 @@ void RenderWidgetHelper::OnCreateWindowOnUI(
     host->CreateNewWindow(route_id, modal_dialog_event);
 
   g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &RenderWidgetHelper::OnCreateWindowOnIO, route_id));
+      NewRunnableMethod(this, &RenderWidgetHelper::OnCreateWindowOnIO,
+                        route_id));
 }
 
 void RenderWidgetHelper::OnCreateWindowOnIO(int route_id) {

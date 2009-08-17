@@ -118,7 +118,8 @@ gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size) {
     // Limit to not overflow the work area right and bottom edges.
     gfx::Point limit(
         std::min(x + kWindowTilePixels, monitor_bounds.right() - size.width()),
-        std::min(y + kWindowTilePixels, monitor_bounds.bottom() - size.height()));
+        std::min(y + kWindowTilePixels,
+                 monitor_bounds.bottom() - size.height()));
     // Adjust corner to now overflow the work area left and top edges, so
     // that if a popup does not fit the title-bar is remains visible.
     corner = gfx::Point(

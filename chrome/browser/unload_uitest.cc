@@ -74,7 +74,8 @@ const std::string TWO_SECOND_BEFORE_UNLOAD_ALERT_HTML =
 
 const std::string CLOSE_TAB_WHEN_OTHER_TAB_HAS_LISTENER =
     "<html><head><title>only_one_unload</title></head>"
-    "<body onload=\"window.open('data:text/html,<html><head><title>popup</title></head></body>')\" "
+    "<body onload=\"window.open('data:text/html,"
+    "<html><head><title>popup</title></head></body>')\" "
     "onbeforeunload='return;'"
     "</body></html>";
 
