@@ -10,6 +10,8 @@
 
 #if defined(WIN32)
 #include "skia/ext/canvas_paint_win.h"
+#elif defined(__APPLE__)
+#include "skia/ext/canvas_paint_mac.h"
 #elif defined(__linux__)
 #include "skia/ext/canvas_paint_linux.h"
 #endif

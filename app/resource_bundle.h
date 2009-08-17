@@ -67,7 +67,7 @@ class ResourceBundle {
   void LoadThemeResources();
 
   // Gets the bitmap with the specified resource_id, first by looking into the
-  // theme data, than in the current module data if applicable.
+  // theme data, then in the current module data if applicable.
   // Returns a pointer to a shared instance of the SkBitmap. This shared bitmap
   // is owned by the resource bundle and should not be freed.
   //

@@ -13,9 +13,7 @@
 
 namespace gfx {
 
-#if defined(OS_WIN) || defined(OS_LINUX)
 typedef skia::CanvasPaintT<Canvas> CanvasPaint;
-#endif
 
 }  // namespace gfx
 
