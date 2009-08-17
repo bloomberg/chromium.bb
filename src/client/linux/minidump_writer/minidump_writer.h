@@ -1,4 +1,4 @@
-// Copyright (c) 2006, Google Inc.
+// Copyright (c) 2009, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,45 +26,28 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// file_id.h: Return a unique identifier for a file
-//
 
-#ifndef COMMON_LINUX_FILE_ID_H__
-#define COMMON_LINUX_FILE_ID_H__
+#ifndef CLIENT_LINUX_MINIDUMP_WRITER_MINIDUMP_WRITER_H_
+#define CLIENT_LINUX_MINIDUMP_WRITER_MINIDUMP_WRITER_H_
 
-#include <limits.h>
-
-#include "common/linux/guid_creator.h"
+#include <stdint.h>
+#include <unistd.h>
 
 namespace google_breakpad {
 
-static const size_t kMDGUIDSize = sizeof(MDGUID);
-
-class FileID {
- public:
-  explicit FileID(const char* path);
-  ~FileID() {}
-
-  // Load the identifier for the elf file path specified in the constructor into
-  // |identifier|.  Return false if the identifier could not be created for the
-  // file.
-  // The current implementation will XOR the first page of data to generate an
-  // identifier.
-  bool ElfFileIdentifier(uint8_t identifier[kMDGUIDSize]);
-
-  // Convert the |identifier| data to a NULL terminated string.  The string will
-  // be formatted as a UUID (e.g., 22F065BB-FC9C-49F7-80FE-26A7CEBD7BCE).
-  // The |buffer| should be at least 37 bytes long to receive all of the data
-  // and termination.  Shorter buffers will contain truncated data.
-  static void ConvertIdentifierToString(const uint8_t identifier[kMDGUIDSize],
-                                        char* buffer, int buffer_length);
-
- private:
-  // Storage for the path specified
-  char path_[PATH_MAX];
-};
+// Write a minidump to the filesystem. This function does not malloc nor use
+// libc functions which may. Thus, it can be used in contexts where the state
+// of the heap may be corrupt.
+//   filename: the filename to write to. This is opened O_EXCL and fails if
+//     open fails.
+//   crashing_process: the pid of the crashing process. This must be trusted.
+//   blob: a blob of data from the crashing process. See exception_handler.h
+//   blob_size: the length of |blob|, in bytes
+//
+// Returns true iff successful.
+bool WriteMinidump(const char* filename, pid_t crashing_process,
+                   const void* blob, size_t blob_size);
 
 }  // namespace google_breakpad
 
-#endif  // COMMON_LINUX_FILE_ID_H__
+#endif  // CLIENT_LINUX_MINIDUMP_WRITER_MINIDUMP_WRITER_H_

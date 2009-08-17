@@ -1,4 +1,4 @@
-// Copyright (c) 2006, Google Inc.
+// Copyright (c) 2009, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,45 +26,54 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// file_id.h: Return a unique identifier for a file
-//
 
-#ifndef COMMON_LINUX_FILE_ID_H__
-#define COMMON_LINUX_FILE_ID_H__
+#include <unistd.h>
+#include <sys/syscall.h>
 
-#include <limits.h>
+#include "client/linux/handler/exception_handler.h"
+#include "client/linux/minidump_writer/minidump_writer.h"
+#include "breakpad_googletest_includes.h"
 
-#include "common/linux/guid_creator.h"
+using namespace google_breakpad;
 
-namespace google_breakpad {
+// This provides a wrapper around system calls which may be
+// interrupted by a signal and return EINTR. See man 7 signal.
+#define HANDLE_EINTR(x) ({ \
+  typeof(x) __eintr_result__; \
+  do { \
+    __eintr_result__ = x; \
+  } while (__eintr_result__ == -1 && errno == EINTR); \
+  __eintr_result__;\
+})
 
-static const size_t kMDGUIDSize = sizeof(MDGUID);
+namespace {
+typedef testing::Test MinidumpWriterTest;
+}
 
-class FileID {
- public:
-  explicit FileID(const char* path);
-  ~FileID() {}
+TEST(MinidumpWriterTest, Setup) {
+  int fds[2];
+  ASSERT_NE(-1, pipe(fds));
 
-  // Load the identifier for the elf file path specified in the constructor into
-  // |identifier|.  Return false if the identifier could not be created for the
-  // file.
-  // The current implementation will XOR the first page of data to generate an
-  // identifier.
-  bool ElfFileIdentifier(uint8_t identifier[kMDGUIDSize]);
+  const pid_t child = fork();
+  if (child == 0) {
+    close(fds[1]);
+    char b;
+    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    close(fds[0]);
+    syscall(__NR_exit);
+  }
+  close(fds[0]);
 
-  // Convert the |identifier| data to a NULL terminated string.  The string will
-  // be formatted as a UUID (e.g., 22F065BB-FC9C-49F7-80FE-26A7CEBD7BCE).
-  // The |buffer| should be at least 37 bytes long to receive all of the data
-  // and termination.  Shorter buffers will contain truncated data.
-  static void ConvertIdentifierToString(const uint8_t identifier[kMDGUIDSize],
-                                        char* buffer, int buffer_length);
+  ExceptionHandler::CrashContext context;
+  memset(&context, 0, sizeof(context));
 
- private:
-  // Storage for the path specified
-  char path_[PATH_MAX];
-};
+  char templ[] = "/tmp/minidump-writer-unittest-XXXXXX";
+  mktemp(templ);
+  ASSERT_TRUE(WriteMinidump(templ, child, &context, sizeof(context)));
+  struct stat st;
+  ASSERT_EQ(stat(templ, &st), 0);
+  ASSERT_GT(st.st_size, 0u);
+  unlink(templ);
 
-}  // namespace google_breakpad
-
-#endif  // COMMON_LINUX_FILE_ID_H__
+  close(fds[1]);
+}

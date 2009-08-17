@@ -1,7 +1,5 @@
-// Copyright (c) 2006, Google Inc.
+// Copyright (c) 2009, Google Inc.
 // All rights reserved.
-//
-// Author: Li Liu
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -29,45 +27,58 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef CLIENT_LINUX_HANDLER_MINIDUMP_GENERATOR_H__
-#define CLIENT_LINUX_HANDLER_MINIDUMP_GENERATOR_H__
+#include "breakpad/linux/memory.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
-#include <stdint.h>
+using namespace google_breakpad;
 
-#include "google_breakpad/common/breakpad_types.h"
-#include "processor/scoped_ptr.h"
+namespace {
+typedef testing::Test PageAllocatorTest;
+}
 
-struct sigcontext;
+TEST(PageAllocatorTest, Setup) {
+  PageAllocator allocator;
+}
 
-namespace google_breakpad {
+TEST(PageAllocatorTest, SmallObjects) {
+  PageAllocator allocator;
 
-//
-// MinidumpGenerator
-//
-// Write a minidump to file based on the signo and sig_ctx.
-// A minidump generator should be created before any exception happen.
-//
-class MinidumpGenerator {
-  public:
-   MinidumpGenerator();
+  for (unsigned i = 1; i < 1024; ++i) {
+    uint8_t *p = reinterpret_cast<uint8_t*>(allocator.Alloc(i));
+    ASSERT_FALSE(p == NULL);
+    memset(p, 0, i);
+  }
+}
 
-   ~MinidumpGenerator();
+TEST(PageAllocatorTest, LargeObject) {
+  PageAllocator allocator;
 
-   // Write minidump.
-   bool WriteMinidumpToFile(const char *file_pathname,
-                            int signo,
-                            uintptr_t sighandler_ebp,
-                            struct sigcontext **sig_ctx) const;
-  private:
-   // Allocate memory for stack.
-   void AllocateStack();
+  uint8_t *p = reinterpret_cast<uint8_t*>(allocator.Alloc(10000));
+  ASSERT_FALSE(p == NULL);
+  for (unsigned i = 1; i < 10; ++i) {
+    uint8_t *p = reinterpret_cast<uint8_t*>(allocator.Alloc(i));
+    ASSERT_FALSE(p == NULL);
+    memset(p, 0, i);
+  }
+}
 
-  private:
-   // Stack size of the writer thread.
-   static const int kStackSize = 1024 * 1024;
-   scoped_array<char> stack_;
-};
+namespace {
+typedef testing::Test WastefulVectorTest;
+}
 
-}  // namespace google_breakpad
+TEST(WastefulVectorTest, Setup) {
+  PageAllocator allocator_;
+  wasteful_vector<int> v(&allocator_);
+  ASSERT_EQ(v.size(), 0u);
+}
 
-#endif   // CLIENT_LINUX_HANDLER_MINIDUMP_GENERATOR_H__
+TEST(WastefulVectorTest, Simple) {
+  PageAllocator allocator_;
+  wasteful_vector<int> v(&allocator_);
+
+  for (unsigned i = 0; i < 256; ++i)
+    v.push_back(i);
+  ASSERT_EQ(v.size(), 256u);
+  for (unsigned i = 0; i < 256; ++i)
+    ASSERT_EQ(v[i], i);
+}

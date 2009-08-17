@@ -27,20 +27,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <cstdarg>
-#include <cstdlib>
-#include <cstdio>
+#include <assert.h>
 #include <cxxabi.h>
 #include <elf.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <link.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <algorithm>
 
+#include <algorithm>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <list>
@@ -121,7 +123,7 @@ static const ElfW(Shdr) *FindSectionByName(const char *name,
 
   for (int i = 0; i < nsection; ++i) {
     const char *section_name =
-      (char*)(strtab->sh_offset + sections[i].sh_name);
+      reinterpret_cast<char*>(strtab->sh_offset + sections[i].sh_name);
     if (!strncmp(name, section_name, name_len))
       return sections + i;
   }
