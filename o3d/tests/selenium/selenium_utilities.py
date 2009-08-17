@@ -214,14 +214,15 @@ def TakeScreenShotAtPath(session,
 class SeleniumTestCase(unittest.TestCase):
   """Wrapper for TestCase for selenium."""
 
-  def __init__(self, name, session, browser, test_type=None, sample_path=None,
-               options=None):
+  def __init__(self, name, session, browser, path_to_html, test_type=None,
+              sample_path=None, options=None):
     """Constructor for SampleTests.
 
     Args:
       name: Name of unit test.
       session: Selenium session.
       browser: Name of browser.
+      path_to_html: path to html from server root
       test_type: Type of test ("small", "medium", "large")
       sample_path: Path to test.
       options: list of option strings.
@@ -233,6 +234,11 @@ class SeleniumTestCase(unittest.TestCase):
     self.test_type = test_type
     self.sample_path = sample_path
     self.options = options
+    self.path_to_html = path_to_html
+
+  def GetURL(self, url):
+    """Gets a URL for the test."""
+    return self.session.browserURL + self.path_to_html + url
 
   def shortDescription(self):
     """override unittest.TestCase shortDescription for our own descriptions."""
@@ -281,7 +287,7 @@ class SeleniumTestCase(unittest.TestCase):
         client = GetArgument(option)
         self.assertTrue(not client is None)
 
-    url = base_path + self.sample_path + ".html"
+    url = self.GetURL(base_path + self.sample_path + ".html")
 
     # load the sample.
     self.session.open(url)

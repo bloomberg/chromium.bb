@@ -49,10 +49,11 @@ import selenium_utilities
 class JavaScriptUnitTests(selenium_utilities.SeleniumTestCase):
   """Runs the JavaScript unit tests for the sample utilities."""
 
-  def __init__(self, name, session, browser, test_type=None, sample_path=None,
-               options=None):
+  def __init__(self, name, session, browser, path_to_html, test_type=None,
+               sample_path=None,  options=None):
     selenium_utilities.SeleniumTestCase.__init__(
-        self, name, session, browser, test_type, sample_path, options)
+        self, name, session, browser, path_to_html, test_type, sample_path,
+        options)
 
   def GenericTest(self):
     """Generically test a sample.
@@ -61,8 +62,7 @@ class JavaScriptUnitTests(selenium_utilities.SeleniumTestCase):
     That starts undefined and is set to true or false when the test is finished.
     """
     self.RunGenericTest(
-        self.session.browserURL +
-            "/tests/selenium/tests/",
+        "/tests/selenium/tests/",
         "typeof(window.g_testResult) != 'undefined'",
         "window.g_testResult")
 
@@ -71,8 +71,7 @@ class JavaScriptUnitTests(selenium_utilities.SeleniumTestCase):
 
     # Alias for the selenium session
     s = self.session
-    s.open(s.browserURL +
-        "/tests/selenium/tests/drawshapes.html")
+    s.open(self.GetURL("/tests/selenium/tests/drawshapes.html"))
 
     # Allow a limited time for the plugin to initialize.
     s.wait_for_condition("typeof(window.g_client) != 'undefined';", 20000)
@@ -216,8 +215,8 @@ class JavaScriptUnitTests(selenium_utilities.SeleniumTestCase):
     old = s.get_all_window_titles()
 
     for i in range(1, 5):
-      s.open_window(s.browserURL +
-          "/samples/simpletexture.html",
+      s.open_window(
+          self.GetURL("/samples/simpletexture.html"),
           "o3dstress_window%d" % i)
 
     for i in range(1, 5):
@@ -241,8 +240,7 @@ class JavaScriptUnitTests(selenium_utilities.SeleniumTestCase):
 
     # Alias for the selenium session
     s = self.session
-    s.open(s.browserURL +
-        "/tests/selenium/tests/culling-zsort-test.html")
+    s.open(self.GetURL("/tests/selenium/tests/culling-zsort-test.html"))
 
     # Allow a limited time for the plugin to initialize.
     s.wait_for_condition("typeof(window.g_client) != 'undefined';", 20000)

@@ -535,11 +535,14 @@ run_env.Replace(
     SELENIUM_CAPTURE_SCREENSHOTS = ARGUMENTS.get(
         'SELENIUM_CAPTURE_SCREENSHOTS',
         ''),
+    SELENIUM_SAMPLES_DIR = run_env.subst('$ARTIFACTS_DIR')[
+        len(run_env.subst('$SCONSTRUCT_DIR')):],
     SELENIUM_FLAGS = ('--verbose=$SELENIUM_VERBOSE '
                       '--selenium_server="$SELENIUM_SERVER_JAR" '
                       '--testprefix=$SELENIUM_TEST_PREFIX '
                       '--testsuffixes=$SELENIUM_TEST_SUFFIXES '
                       '--screencompare=$PDIFF_PATH '
+                      '--samplespath=$SELENIUM_SAMPLES_DIR '
                       '$SELENIUM_CAPTURE_SCREENSHOTS '
                       '$SELENIUM_EXTRA_FLAGS'),
 )

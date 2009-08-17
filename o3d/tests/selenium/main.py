@@ -115,6 +115,11 @@ gflags.DEFINE_string(
     "",
     "specifies the path to the browser executable "
     "(for platforms that don't support MOZ_PLUGIN_PATH)")
+gflags.DEFINE_string(
+    "samplespath",
+    "/",
+    "specifies the path from the web root to the samples."
+    "eg. 'scons-out/test-dbg-d3d/artifacts'")
 
 TESTING_ROOT = os.path.abspath(os.path.dirname(__file__) + "/..")
 
@@ -486,7 +491,7 @@ def MatchesSuffix(name, suffixes):
 
 
 def AddTests(test_suite, session, browser, module, filename, prefix,
-             test_prefix_filter, test_suffixes):
+             test_prefix_filter, test_suffixes, path_to_html):
   """Add tests defined in filename.
 
   Assumes module has a method "GenericTest" that uses self.args to run.
@@ -500,6 +505,7 @@ def AddTests(test_suite, session, browser, module, filename, prefix,
     prefix: prefix to add to the beginning of each test.
     test_prefix_filter: Only adds a test if it starts with this.
     test_suffixes: list of suffixes to filter by. An empty list = pass all.
+    path_to_html: Path from server root to html
   """
   # See comments in that file for the expected format.
   # skip lines that are blank or have "#" or ";" as their first non whitespace
@@ -539,12 +545,12 @@ def AddTests(test_suite, session, browser, module, filename, prefix,
       if (test_path.startswith(test_prefix_filter) and
           hasattr(module, test_path) and callable(getattr(module, test_path))):
         test_suite.addTest(test_path, module(test_path, session, browser,
-                                             options=options))
+                                             path_to_html, options=options))
       elif (name.startswith(test_prefix_filter) and
             MatchesSuffix(name, test_suffixes)):
         # no, so add a method that will run a test generically.
         setattr(module, name, module.GenericTest)
-        test_suite.addTest(name, module(name, session, browser,
+        test_suite.addTest(name, module(name, session, browser, path_to_html,
                                         test_type, test_path, options))
 
 
@@ -574,7 +580,8 @@ def SeleniumSuite(session, browser, test_list, test_prefix, test_suffixes):
            filename,
            "Sample",
            test_prefix,
-           suffixes)
+           suffixes,
+           FLAGS.samplespath.replace("\\", "/"))
 
   # add javascript tests.
   filename = os.path.join(os.getcwd(), "tests", "selenium",
@@ -586,7 +593,8 @@ def SeleniumSuite(session, browser, test_list, test_prefix, test_suffixes):
            filename,
            "UnitTest",
            test_prefix,
-           suffixes)
+           suffixes,
+           '')
 
   test_list += test_suite.test_list
 
