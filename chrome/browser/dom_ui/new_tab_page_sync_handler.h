@@ -31,21 +31,22 @@ class NewTabPageSyncHandler : public DOMMessageHandler,
   void HandleGetSyncMessage(const Value* value);
   // Callback for "SyncLinkClicked".
   void HandleSyncLinkClicked(const Value* value);
-  // Callback for "ResizeP13N"
-  void HandleResizeP13N(const Value* value);
 
   // ProfileSyncServiceObserver
   virtual void OnStateChanged();
 
  private:
-  // Helper to invoke |renderSyncMessage| JS function on the new tab page.
+  // Helper to invoke the |syncMessageChanged| JS function on the new tab page.
   void SendSyncMessageToPage(SyncStatusUIHelper::MessageType type,
-                             std::string msg, const std::string& linktext);
+                             std::string msg, std::string linktext);
 
   // Helper to query the sync service and figure out what to send to
   // the page, and send it via SendSyncMessageToPage.
   // NOTE: precondition: sync must be enabled.
   void BuildAndSendSyncStatus();
+
+  // Helper to send a message to the NNTP which hides the sync section.
+  void HideSyncStatusSection();
 
   // Cached pointer to ProfileSyncService.
   ProfileSyncService* sync_service_;

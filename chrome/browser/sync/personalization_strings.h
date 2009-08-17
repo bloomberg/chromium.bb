@@ -47,8 +47,16 @@ static const char kSyncPromotionMsg[] =
 static const wchar_t kSyncServerUnavailableMsg[] =
     L"Google Chrome could not sync your bookmarks because it could not connect "
     L"to the sync server. Retrying...";
-static const char kStartNowLinkText[] = "Start now.";
+static const char kStartNowLinkText[] = "Start now";
 static const char kSettingUpText[] = "Setup in progress...";
+
+// TODO(idana): when we get rid of this file and move all the strings into
+// generated_resources.grd, we should probably move these into a pref of some
+// sort to allow third party sync providers to control which URL to use for the
+// sync web UI. We should also make it possible for the sync provider to hide
+// the link altogether if they don't provide web UI for their users.
+static const char kSyncViewOnlineLinkUrl[] = "http://docs.google.com";
+static const char kSyncViewOnlineLinkLabel[] = "View in Google Docs";
 
 // Sync menu item strings.
 static const wchar_t kMenuLabelStartSync[] = L"Sync my bookmarks...";

@@ -102,7 +102,6 @@ function recentlyClosedTabs(data) {
 }
 
 var recentItems = [];
-var recentItemKeys = {};
 
 function renderRecentlyClosed() {
   // We remove all items but the header and the nav
@@ -646,8 +645,6 @@ var mostVisited = {
 
 function layoutRecentlyClosed() {
   var recentElement = $('recently-closed');
-
-  var rtl = document.documentElement.dir == 'rtl';
   var recentShown = shownSections & Section.RECENT;
   var style = recentElement.style;
 
@@ -682,6 +679,90 @@ function layoutRecentlyClosed() {
       el.style.display = 'none';
     });
   }
+}
+
+/**
+ * This function is called by the backend whenever the sync status section
+ * needs to be updated to reflect recent sync state changes. The backend passes
+ * the new status information in the newMessage parameter. The state includes
+ * the following:
+ *
+ * syncsectionisvisible: true if the sync section needs to show up on the new
+ *                       tab page and false otherwise.
+ * msgtype: represents the states - "error", "presynced" or "synced".
+ * title: the header for the sync status section.
+ * msg: the actual message (e.g. "Synced to foo@gmail.com").
+ * linkisvisible: true if the link element should be visible within the sync
+ *                section and false otherwise.
+ * linktext: the text to display as the link in the sync status (only used if
+ *           linkisvisible is true).
+ * linkurlisset: true if an URL should be set as the href for the link and false
+ *               otherwise. If this field is false, then clicking on the link
+ *               will result in sending a message to the backend (see
+ *               'SyncLinkClicked').
+ * linkurl: the URL to use as the element's href (only used if linkurlisset is
+ *          true).
+ */
+function syncMessageChanged(newMessage) {
+  var syncStatusElement = $('sync-status');
+  var style = syncStatusElement.style;
+
+  // Hide the section if the message is emtpy.
+  if (!newMessage.syncsectionisvisible) {
+    style.opacity = style.height = 0;
+    return;
+  }
+  style.height = '';
+  style.opacity = 1;
+
+  // Set the sync section background color based on the state.
+  if (newMessage.msgtype == "error") {
+    style.backgroundColor = "tomato";
+  } else if (newMessage.msgtype == "presynced") {
+    style.backgroundColor = "greenyellow";
+  } else {
+    style.backgroundColor = "#CAFF70";
+  }
+
+  // Set the text for the header and sync message.
+  var titleElement = syncStatusElement.firstElementChild;
+  titleElement.textContent = newMessage.title;
+  var messageElement = titleElement.nextElementSibling;
+  messageElement.textContent = newMessage.msg;
+
+  // Set up the link if we should show one or hide it otherwise.
+  var linkContainer = messageElement.nextElementSibling;
+  var containerStyle = linkContainer.style;
+  var linkElement = linkContainer.firstElementChild;
+  linkElement.removeEventListener('click', syncSectionLinkClicked);
+
+  // TODO(idana): when we don't have an URL to set, using an href is not a good
+  // idea because the user will still be able to right click on the link and
+  // open the empty href in a new tab/window.
+  //
+  // See http://code.google.com/p/chromium/issues/detail?id=19538 for more info
+  // about how to fix this.
+  linkElement.href = '';
+  containerStyle.display = 'none';
+  if (newMessage.linkisvisible) {
+    containerStyle.display = '';
+    linkElement.textContent = newMessage.linktext;
+    // We don't listen to click events if the backend specified a target URL
+    // for the link.
+    if (newMessage.linkurlisset) {
+      linkElement.href = newMessage.linkurl;
+    } else {
+      linkElement.addEventListener('click', syncSectionLinkClicked);
+    }
+  }
+}
+
+/**
+ * Invoked when the link in the sync status section is clicked.
+ */
+function syncSectionLinkClicked(e) {
+  chrome.send('SyncLinkClicked');
+  e.preventDefault();
 }
 
 /**
@@ -1205,6 +1286,25 @@ window.addEventListener('load', onDataLoaded);
 window.addEventListener('resize', handleWindowResize);
 document.addEventListener('DOMContentLoaded', bind(logEvent, global,
                                                    'domcontentloaded fired'));
+
+// Whether or not we should send the initial 'GetSyncMessage' to the backend
+// depends on the value of the attribue 'syncispresent' which the backend sets
+// to indicate if there is code in the backend which is capable of processing
+// this message. This attribute is loaded by the JSTemplate and therefore we
+// must make sure we check the attribute after the DOM is loaded.
+document.addEventListener('DOMContentLoaded',
+                          callGetSyncMessageIfSyncIsPresent);
+
+/**
+ * The sync code is not yet built by default on all platforms so we have to
+ * make sure we don't send the initial sync message to the backend unless the
+ * backend told us that the sync code is present.
+ */
+function callGetSyncMessageIfSyncIsPresent() {
+  if (document.documentElement.getAttribute("syncispresent") == "true") {
+    chrome.send('GetSyncMessage');
+  }
+}
 
 function hideAllMenus() {
   optionMenu.hide();

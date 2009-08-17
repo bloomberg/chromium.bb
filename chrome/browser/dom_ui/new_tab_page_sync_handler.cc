@@ -20,10 +20,9 @@
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 
-// XPath expression for finding our p13n iframe.
-static const wchar_t* kP13nIframeXpath = L"//iframe[@id='p13n']";
-
-namespace Personalization {
+// TODO(idana): the following code was originally copied from
+// toolbar_importer.h/cc and it needs to be moved to a common Google Accounts
+// utility.
 
 // A simple pair of fields that identify a set of Google cookies, used to
 // filter from a larger set.
@@ -65,14 +64,13 @@ bool IsGoogleGAIACookieInstalled() {
   return false;
 }
 
-}  // namespace Personalization
-
 NewTabPageSyncHandler::NewTabPageSyncHandler() : sync_service_(NULL),
-    waiting_for_initial_page_load_(true) {
+  waiting_for_initial_page_load_(true) {
 }
 
 NewTabPageSyncHandler::~NewTabPageSyncHandler() {
-  sync_service_->RemoveObserver(this);
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
 }
 
 DOMMessageHandler* NewTabPageSyncHandler::Attach(DOMUI* dom_ui) {
@@ -87,32 +85,44 @@ void NewTabPageSyncHandler::RegisterMessages() {
       NewCallback(this, &NewTabPageSyncHandler::HandleGetSyncMessage));
   dom_ui_->RegisterMessageCallback("SyncLinkClicked",
       NewCallback(this, &NewTabPageSyncHandler::HandleSyncLinkClicked));
-  dom_ui_->RegisterMessageCallback("ResizeP13N",
-      NewCallback(this, &NewTabPageSyncHandler::HandleResizeP13N));
 }
 
-void NewTabPageSyncHandler::HandleResizeP13N(const Value* value) {
-  // We just want to call back in to the new tab page on behalf of our
-  // same-origin-policy crippled iframe, to tell it to resize the container.
-  dom_ui_->CallJavascriptFunction(L"resizeP13N", *value);
+void NewTabPageSyncHandler::HandleGetSyncMessage(const Value* value) {
+  waiting_for_initial_page_load_ = false;
+  BuildAndSendSyncStatus();
+}
+
+void NewTabPageSyncHandler::HideSyncStatusSection() {
+  SendSyncMessageToPage(SyncStatusUIHelper::PRE_SYNCED, std::string(),
+                        std::string());
 }
 
 void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   DCHECK(!waiting_for_initial_page_load_);
 
-  if (!sync_service_->HasSyncSetupCompleted() &&
-      !sync_service_->SetupInProgress()) {
-    // Clear the page status, without showing the promotion or sync ui.
-    // TODO(timsteele): This is fine, but if the page is refreshed or another
-    // NTP is opened, we could end up showing the promo again. Not sure this is
-    // desired if the user already signed up once and disabled.
-    FundamentalValue value(0);
-    dom_ui_->CallJavascriptFunction(L"resizeP13N", value);
+  // Hide the sync status section if sync is disabled entirely.
+  if (!sync_service_) {
+    HideSyncStatusSection();
     return;
   }
 
-  // There are currently three supported "sync statuses" for the NTP, from
-  // the users perspective:
+  // We show the sync promotion if sync has not been enabled and the user is
+  // logged in to Google Accounts. If the user is not signed in to GA, we
+  // should hide the sync status section entirely.
+  if (!sync_service_->HasSyncSetupCompleted() &&
+      !sync_service_->SetupInProgress()) {
+    if (IsGoogleGAIACookieInstalled()) {
+      SendSyncMessageToPage(SyncStatusUIHelper::PRE_SYNCED, kSyncPromotionMsg,
+                            kStartNowLinkText);
+    } else {
+      HideSyncStatusSection();
+    }
+    return;
+  }
+
+  // Once sync has been enabled, the supported "sync statuses" for the NNTP
+  // from the user's perspective are:
+  //
   // "Synced to foo@gmail.com", when we are successfully authenticated and
   //                            connected to a sync server.
   // "Sync error", when we can't authenticate or establish a connection with
@@ -126,29 +136,14 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   SendSyncMessageToPage(type, WideToUTF8(status_msg), WideToUTF8(link_text));
 }
 
-void NewTabPageSyncHandler::HandleGetSyncMessage(const Value* value) {
-    waiting_for_initial_page_load_ = false;
-
-  if (!sync_service_->HasSyncSetupCompleted() &&
-      !sync_service_->SetupInProgress()) {
-    if (Personalization::IsGoogleGAIACookieInstalled()) {
-      // Sync has not been enabled, and the user has logged in to GAIA.
-      SendSyncMessageToPage(SyncStatusUIHelper::PRE_SYNCED, kSyncPromotionMsg,
-                            kStartNowLinkText);
-    }
-    return;
-  }
-
-  BuildAndSendSyncStatus();
-}
-
 void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
   DCHECK(!waiting_for_initial_page_load_);
+  DCHECK(sync_service_);
   if (sync_service_->HasSyncSetupCompleted()) {
-    // User clicked 'Login again' link to re-authenticate.
+    // User clicked the 'Login again' link to re-authenticate.
     sync_service_->ShowLoginDialog();
   } else {
-    // User clicked "Start now" link to begin syncing.
+    // User clicked the 'Start now' link to begin syncing.
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_NTP);
     sync_service_->EnableForUser();
   }
@@ -163,16 +158,19 @@ void NewTabPageSyncHandler::OnStateChanged() {
 
 void NewTabPageSyncHandler::SendSyncMessageToPage(
     SyncStatusUIHelper::MessageType type, std::string msg,
-    const std::string& linktext) {
+    std::string linktext) {
   DictionaryValue value;
-  std::string title, msgtype;
+  std::string msgtype;
+  std::string title = kSyncSectionTitle;
+  std::string linkurl;
   switch (type) {
     case SyncStatusUIHelper::PRE_SYNCED:
-      title = kSyncSectionTitle;
       msgtype = "presynced";
       break;
     case SyncStatusUIHelper::SYNCED:
       msgtype = "synced";
+      linktext = kSyncViewOnlineLinkLabel;
+      linkurl = kSyncViewOnlineLinkUrl;
       msg = msg.substr(0, msg.find(WideToUTF8(kLastSyncedLabel)));
       break;
     case SyncStatusUIHelper::SYNC_ERROR:
@@ -181,20 +179,34 @@ void NewTabPageSyncHandler::SendSyncMessageToPage(
       break;
   }
 
-  value.SetString(L"title", title);
-  value.SetString(L"msg", msg);
-  value.SetString(L"msgtype", msgtype);
-  if (!linktext.empty())
-    value.SetString(L"linktext", linktext);
-  else
-    value.SetBoolean(L"linktext", false);
+  // If there is no message to show, we should hide the sync section
+  // altogether.
+  if (msg.empty()) {
+    value.SetBoolean(L"syncsectionisvisible", false);
+  } else {
+    value.SetBoolean(L"syncsectionisvisible", true);
+    value.SetString(L"msg", msg);
+    value.SetString(L"title", title);
+    value.SetString(L"msgtype", msgtype);
+    if (linktext.empty()) {
+      value.SetBoolean(L"linkisvisible", false);
+    } else {
+      value.SetBoolean(L"linkisvisible", true);
+      value.SetString(L"linktext", linktext);
 
-  std::string json;
-  JSONWriter::Write(&value, false, &json);
-  std::wstring javascript = std::wstring(L"renderSyncMessage") +
-      L"(" + UTF8ToWide(json) + L");";
-  RenderViewHost* rvh = dom_ui_->tab_contents()->render_view_host();
-  rvh->ExecuteJavascriptInWebFrame(kP13nIframeXpath, javascript);
+      // The only time we set the URL is when the user is synced and we need to
+      // show a link to a web interface (e.g. http://docs.google.com). When we
+      // set that URL, HandleSyncLinkClicked won't be called when the user
+      // clicks on the link.
+      if (linkurl.empty()) {
+        value.SetBoolean(L"linkurlisset", false);
+      } else {
+        value.SetBoolean(L"linkurlisset", true);
+        value.SetString(L"linkurl", linkurl);
+      }
+    }
+  }
+  dom_ui_->CallJavascriptFunction(L"syncMessageChanged", value);
 }
 
 #endif  // CHROME_PERSONALIZATION

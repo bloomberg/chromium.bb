@@ -24,6 +24,7 @@
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/dom_ui/downloads_dom_handler.h"
 #include "chrome/browser/dom_ui/history_ui.h"
+#include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/dom_ui/tips_handler.h"
 #include "chrome/browser/history/page_usage_data.h"
@@ -36,9 +37,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#ifdef CHROME_PERSONALIZATION
-#include "chrome/browser/sync/personalization.h"
-#endif
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -344,6 +342,13 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString(L"closefirstrunnotification",
       l10n_util::GetString(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
 
+  // Don't initiate the sync related message passing with the page if the sync
+  // code is not present.
+  if (profile_->GetProfileSyncService())
+    localized_strings.SetString(L"syncispresent", "true");
+  else
+    localized_strings.SetString(L"syncispresent", "false");
+
   SetFontAndTextDirection(&localized_strings);
 
   // Let the tab know whether it's the first tab being viewed.
@@ -355,10 +360,6 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
   std::wstring anim =
       Animation::ShouldRenderRichAnimation() ? L"true" : L"false";
   localized_strings.SetString(L"anim", anim);
-
-#ifdef CHROME_PERSONALIZATION
-  localized_strings.SetString(L"p13nsrc", Personalization::GetNewTabSource());
-#endif
 
   // In case we have the new new tab page enabled we first try to read the file
   // provided on the command line. If that fails we just get the resource from
@@ -1552,7 +1553,7 @@ NewTabUI::NewTabUI(TabContents* contents)
 
 #ifdef CHROME_PERSONALIZATION
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync)) {
-      AddMessageHandler(Personalization::CreateNewTabPageHandler(this));
+      AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
     }
 #endif
 

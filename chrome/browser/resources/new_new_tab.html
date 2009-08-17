@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html i18n-values="dir:textdirection;firstview:firstview;bookmarkbarattached:bookmarkbarattached;hasattribution:hasattribution;anim:anim">
+<html i18n-values="dir:textdirection;firstview:firstview;bookmarkbarattached:bookmarkbarattached;hasattribution:hasattribution;anim:anim;syncispresent:syncispresent">
 
 <meta charset="utf-8">
 <title i18n-content="title"></title>
@@ -39,6 +39,8 @@ chrome.send('getRecentlyClosedTabs');
 registerCallback('onShownSections');
 registerCallback('mostVisitedPages');
 registerCallback('recentlyClosedTabs');
+registerCallback('syncMessageChanged');
+
 // TODO(arv): The backend calls this function. Remove the call on the backend.
 function downloadsList() {}
 
@@ -224,6 +226,12 @@ document.write('<link id="themecss" rel="stylesheet" ' +
       <a href="chrome://history/" class="item"
           i18n-content="viewfullhistory"></a>
     </span>
+  </div>
+
+  <div id="sync-status">
+    <h2>&nbsp;</h2>
+    <span>&nbsp;</span>
+    <span><a href="">&nbsp;</a></span>
   </div>
 
 </div> <!-- main -->
