@@ -39,14 +39,13 @@
 #include <map>
 #include "core/cross/element.h"
 #include "core/cross/stream.h"
+#include "core/cross/vertex_source.h"
 
 namespace o3d {
 
-class VertexSource;
-
 // A StreamBank collects streams so they can be shared amoung StreamBanks. It
 // also handles platform specific things like vertex declarations..
-class StreamBank : public NamedObject {
+class StreamBank : public VertexSource {
  public:
   typedef SmartPointer<StreamBank> Ref;
   typedef WeakPointer<StreamBank> WeakPointerType;
@@ -55,8 +54,13 @@ class StreamBank : public NamedObject {
 
   // The number of times streams have been added or removed from this stream
   // bank. Can be used for caching.
-  int change_count() {
+  int change_count() const {
     return change_count_;
+  }
+
+  // True if all the streams on this streambank are renderable. 
+  bool renderable() const {
+    return renderable_;
   }
 
   // Binds a field of a vertex buffer to the streambank and defines how the data
@@ -82,36 +86,14 @@ class StreamBank : public NamedObject {
   // set on this StreamBank.
   unsigned GetMaxVertices() const;
 
-  // Used by BindStream.
-  // Returns the ParamVertexBufferStream that manages the given stream.
-  // as an output param for this VertexSource.
-  ParamVertexBufferStream* GetVertexStreamParam(Stream::Semantic semantic,
-                                                int semantic_index) const;
+  // Overriden from VertexSource.
+  virtual ParamVertexBufferStream* GetVertexStreamParam(
+      Stream::Semantic semantic,
+      int semantic_index) const;
 
   const StreamParamVector& vertex_stream_params() const {
     return vertex_stream_params_;
   }
-
-  // Bind the source stream to the corresponding stream in this VertexSource.
-  // Parameters:
-  //   source: Source to get vertices from.
-  //   semantic: The semantic of the vertices to get
-  //   semantic_index: The semantic index of the vertices to get.
-  // Returns:
-  //   True if success. False if failure. If the requested semantic or semantic
-  //   index do not exist on the source or this source the bind will fail. If
-  //   they do exist but are not the same length the bind will fail.
-  bool BindStream(VertexSource* source,
-                  Stream::Semantic semantic,
-                  int semantic_index);
-
-  // Unbinds the requested stream.
-  // Parameters:
-  //   semantic: The semantic of the vertices to unbind
-  //   semantic_index: The semantic index of the vertices to unbind.
-  // Returns:
-  //   True if unbound. False those vertices do not exist or were not bound.
-  bool UnbindStream(Stream::Semantic semantic, int semantic_index);
 
   // If the streams are bound to other streams, update them.
   void UpdateStreams();
@@ -162,12 +144,18 @@ class StreamBank : public NamedObject {
   friend class IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
+  // Updates the renderable flag.
+  void UpdateRenderable();
+
   // the number of streams that are bound to a VertexSource.
   // Used as a shortcut. If zero no need to do expensive checking.
   unsigned int number_binds_;
 
   // The number of times a stream has been added or removed.
   int change_count_;
+
+  // True if all the streams on this streambank are renderable.
+  bool renderable_;
 
   // Manager for weak pointers to us.
   WeakPointerType::WeakPointerManager weak_pointer_manager_;

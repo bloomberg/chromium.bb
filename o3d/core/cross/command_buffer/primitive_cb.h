@@ -51,14 +51,13 @@ class PrimitiveCB : public Primitive {
   PrimitiveCB(ServiceLocator* service_locator, RendererCB *renderer);
   virtual ~PrimitiveCB();
 
-  // Overridden from Element
-  // Renders this Element using the parameters from override first, followed by
-  // the draw_element, followed by params on this Primitive and material.
-  virtual void Render(Renderer* renderer,
-                      DrawElement* draw_element,
-                      Material* material,
-                      ParamObject* override,
-                      ParamCache* param_cache);
+ protected:
+  // Overridden from Primitve.
+  virtual void PlatformSpecificRender(Renderer* renderer,
+                                      DrawElement* draw_element,
+                                      Material* material,
+                                      ParamObject* override,
+                                      ParamCache* param_cache);
  private:
   // The renderer that created this shape data.
   RendererCB *renderer_;

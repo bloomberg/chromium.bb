@@ -50,14 +50,13 @@ class PrimitiveD3D9 : public Primitive {
                          IDirect3DDevice9* d3d_device);
   ~PrimitiveD3D9();
 
-  // Overridden from Primitive Render this Primitive using the parameters from
-  // override first, followed by the draw_element, followed by params on this
-  // Primitive and material.
-  virtual void Render(Renderer* renderer,
-                      DrawElement* draw_element,
-                      Material* material,
-                      ParamObject* override,
-                      ParamCache* param_cache);
+ protected:
+  // Overridden from Primitive.
+  virtual void PlatformSpecificRender(Renderer* renderer,
+                                      DrawElement* draw_element,
+                                      Material* material,
+                                      ParamObject* override,
+                                      ParamCache* param_cache);
 
  private:
   CComPtr<IDirect3DDevice9> d3d_device_;

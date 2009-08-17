@@ -83,35 +83,19 @@ static GAPIInterface::PrimitiveType GetCBPrimitiveType(
 }
 
 // Sends the draw commands to the command buffers.
-void PrimitiveCB::Render(Renderer* renderer,
-                         DrawElement* draw_element,
-                         Material* material,
-                         ParamObject* override,
-                         ParamCache* param_cache) {
+void PrimitiveCB::PlatformSpecificRender(Renderer* renderer,
+                                         DrawElement* draw_element,
+                                         Material* material,
+                                         ParamObject* override,
+                                         ParamCache* param_cache) {
   DLOG_ASSERT(draw_element);
   DLOG_ASSERT(param_cache);
-  if (!material) {
-    O3D_ERROR(service_locator())
-        << "No Material attached to Shape '"
-        << draw_element->name() << "'";
-    return;
-  }
+  DLOG_ASSERT(material);
+
   EffectCB *effect_cb = down_cast<EffectCB*>(material->effect());
-  // If there's no effect attached to this Material, draw nothing.
-  if (!effect_cb ||
-      effect_cb->resource_id() == command_buffer::kInvalidResource) {
-    O3D_ERROR(service_locator())
-        << "No Effect attached to Material '"
-        << material->name() << "' in Shape '"
-        << draw_element->name() << "'";
-    return;
-  }
+  DLOG_ASSERT(effect_cb);
   StreamBankCB* stream_bank_cb = down_cast<StreamBankCB*>(stream_bank());
-  if (!stream_bank_cb) {
-    O3D_ERROR(service_locator())
-        << "No StreamBank attached to Shape '"
-        << draw_element->name() << "'";
-  }
+  DLOG_ASSERT(stream_bank_cb);
 
   ParamCacheCB *param_cache_cb = down_cast<ParamCacheCB *>(param_cache);
 

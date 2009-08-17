@@ -36,7 +36,7 @@
 #include "core/cross/primitive.h"
 #include "core/cross/renderer.h"
 #include "core/cross/error.h"
-#include "core/cross/vertex_source.h"
+#include "core/cross/stream_bank.h"
 
 namespace o3d {
 
@@ -92,6 +92,48 @@ Primitive::Primitive(ServiceLocator* service_locator)
 }
 
 Primitive::~Primitive() {
+}
+
+void Primitive::Render(Renderer* renderer,
+                       DrawElement* draw_element,
+                       Material* material,
+                       ParamObject* override,
+                       ParamCache* param_cache) {
+  DLOG_ASSERT(draw_element);
+  DLOG_ASSERT(param_cache);
+  // If there's no material attached to this Shape.
+  if (!material) {
+    O3D_ERROR(service_locator()) << "No Material attached to Shape \""
+                                 << draw_element->name() << "\"";
+    return;
+  }
+
+  Effect* effect = material->effect();
+  if (!effect) {
+    O3D_ERROR(service_locator()) << "No Effect attached to Material '"
+                                 << material->name() << "' in Shape '"
+                                 << draw_element->name() << "'";
+    return;
+  }
+
+  StreamBank* bank = stream_bank();
+  if (!bank) {
+    O3D_ERROR(service_locator())
+        << "No StreambBank attached to Primitive '"
+        << material->name() << "' in Shape '"
+        << draw_element->name() << "'";
+    return;
+  }
+
+  if (!bank->renderable()) {
+    O3D_ERROR(service_locator())
+        << "StreamBank has non-renderable buffers '"
+        << bank->name() << "'";
+    return;
+  }
+
+  PlatformSpecificRender(renderer, draw_element, material, override, 
+                         param_cache);
 }
 
 namespace {

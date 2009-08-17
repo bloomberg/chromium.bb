@@ -145,11 +145,11 @@ class Primitive : public Element {
   }
 
   // Render this Primitive.
-  virtual void Render(Renderer* renderer,
-                      DrawElement* draw_element,
-                      Material* material,
-                      ParamObject* param_object,
-                      ParamCache* param_cache) = 0;
+  void Render(Renderer* renderer,
+              DrawElement* draw_element,
+              Material* material,
+              ParamObject* param_object,
+              ParamCache* param_cache);
 
   // Overridden from Element (see element.h)
   // Computes the intersection of a ray in the same coordinate system as
@@ -189,6 +189,12 @@ class Primitive : public Element {
 
  protected:
   explicit Primitive(ServiceLocator* service_locator);
+
+  virtual void PlatformSpecificRender(Renderer* renderer,
+                                      DrawElement* draw_element,
+                                      Material* material,
+                                      ParamObject* param_object,
+                                      ParamCache* param_cache) = 0;
 
   PrimitiveType primitive_type_;
   unsigned int number_vertices_;

@@ -35,7 +35,7 @@ namespace o3d {
   The StreamBank a collection of streams that hold vertices.
 %]
 [nocpp, include="core/cross/primitive.h"]
-class StreamBank : NamedObject {
+class StreamBank : VertexSource {
 
   %[
     Binds a VertexBuffer field to the StreamBank and defines how the data in
@@ -69,29 +69,6 @@ class StreamBank : NamedObject {
     \return true if the specified stream existed.
   %]
   bool RemoveVertexStream(Stream::Semantic semantic, int semantic_index);
-
-  %[
-    Binds the source stream to the corresponding stream in this VertexSource.
-
-    \param source Source to get vertices from.
-    \param semantic The semantic of the vertices to get
-    \param semantic_index The semantic index of the vertices to get.
-    \return True if success. False if failure. If the requested semantic or
-      semantic index do not exist on the source or this source the bind will
-      fail.
-  %]
-  bool BindStream(VertexSource source,
-                  Stream::Semantic semantic,
-                  int semantic_index);
-
-  %[
-    Unbinds the requested stream.
-    \param semantic The semantic of the vertices to unbind
-    \param semantic_index The semantic index of the vertices to unbind.
-    \return True if unbound. False those vertices do not exist or were not
-        bound.
-  %]
-  bool UnbindStream(Stream::Semantic semantic, int semantic_index);
 
   %[
     An array of the vertex streams on this StreamBank.

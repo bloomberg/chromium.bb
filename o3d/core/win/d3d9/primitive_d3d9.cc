@@ -70,12 +70,13 @@ PrimitiveD3D9::~PrimitiveD3D9() {
 // was called (or it's the first time it's getting called) then it forces
 // an update of the mapping between the Material's Params and the shader
 // parameters and also fills in for any missing streams.
-void PrimitiveD3D9::Render(Renderer* renderer,
-                           DrawElement* draw_element,
-                           Material* material,
-                           ParamObject* override,
-                           ParamCache* param_cache) {
+void PrimitiveD3D9::PlatformSpecificRender(Renderer* renderer,
+                                           DrawElement* draw_element,
+                                           Material* material,
+                                           ParamObject* override,
+                                           ParamCache* param_cache) {
   DLOG_ASSERT(param_cache != NULL);
+  DLOG_ASSERT(material != NULL);
   ParamCacheD3D9* param_cache_d3d9 = down_cast<ParamCacheD3D9*>(param_cache);
 
   if (!material) {
@@ -85,18 +86,9 @@ void PrimitiveD3D9::Render(Renderer* renderer,
   }
 
   EffectD3D9* effect_d3d9 = down_cast<EffectD3D9*>(material->effect());
-  if (!effect_d3d9) {
-    O3D_ERROR(service_locator())
-        << "No effect on material '" << material->name() << "'";
-    return;
-  }
-
+  DLOG_ASSERT(effect_d3d9);
   StreamBankD3D9* stream_bank_d3d9 = down_cast<StreamBankD3D9*>(stream_bank());
-  if (!stream_bank_d3d9) {
-    O3D_ERROR(service_locator())
-        << "No stream bank on Primitive '" << name() << "'";
-    return;
-  }
+  DLOG_ASSERT(stream_bank_d3d9);
 
   DrawElementD3D9* draw_element_d3d9 = down_cast<DrawElementD3D9*>(
       draw_element);

@@ -54,14 +54,13 @@ class PrimitiveStub : public Primitive {
       : Primitive(service_locator) {}
   virtual ~PrimitiveStub() {}
 
-  // Overridden from Element
-  // Renders this Element using the parameters from override first, followed by
-  // the draw_element, followed by params on this Primitive and material.
-  virtual void Render(Renderer* renderer,
-                      DrawElement* draw_element,
-                      Material* material,
-                      ParamObject* override,
-                      ParamCache* param_cache) {}
+ protected:
+  // Overridden from Primitive.
+  virtual void PlatformSpecificRender(Renderer* renderer,
+                                      DrawElement* draw_element,
+                                      Material* material,
+                                      ParamObject* override,
+                                      ParamCache* param_cache) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrimitiveStub);

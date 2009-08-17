@@ -72,38 +72,21 @@ PrimitiveGL::~PrimitiveGL() {
 // was called (or it's the first time it's getting called) then it forces
 // an update of the mapping between the Shape Param's and the shader parameters
 // and also fills in for any missing streams.
-void PrimitiveGL::Render(Renderer* renderer,
-                         DrawElement* draw_element,
-                         Material* material,
-                         ParamObject* override,
-                         ParamCache* param_cache) {
+void PrimitiveGL::PlatformSpecificRender(Renderer* renderer,
+                                         DrawElement* draw_element,
+                                         Material* material,
+                                         ParamObject* override,
+                                         ParamCache* param_cache) {
+  DLOG_ASSERT(material);
   DLOG_ASSERT(draw_element);
   DLOG_ASSERT(param_cache);
   DLOG_FIRST_N(INFO, kNumLoggedEvents) << "PrimitiveGL Draw \""
                                        << draw_element->name() << "\"";
-  // If there's no material attached to this Shape.
-  if (!material) {
-    O3D_ERROR(service_locator()) << "No Material attached to Shape \""
-                                 << draw_element->name() << "\"";
-    return;
-  }
   DrawElementGL* draw_element_gl = down_cast<DrawElementGL*>(draw_element);
   EffectGL* effect_gl = down_cast<EffectGL*>(material->effect());
-  // If there's no effect attached to this Material.
-  if (!effect_gl) {
-    O3D_ERROR(service_locator()) << "No Effect attached to Material '"
-                                 << material->name() << "' in Shape '"
-                                 << draw_element_gl->name() << "'";
-    return;
-  }
+  DLOG_ASSERT(effect_gl);
   StreamBankGL* stream_bank_gl = down_cast<StreamBankGL*>(stream_bank());
-  if (!stream_bank_gl) {
-    O3D_ERROR(service_locator())
-        << "No StreambBank attached to Primitive '"
-        << material->name() << "' in Shape '"
-        << draw_element_gl->name() << "'";
-    return;
-  }
+  DLOG_ASSERT(stream_bank_gl); 
 
   ParamCacheGL* param_cache_gl = down_cast<ParamCacheGL*>(param_cache);
   ParamCacheGL::VaryingParameterMap& varying_map =

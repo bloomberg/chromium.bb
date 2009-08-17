@@ -40,7 +40,7 @@
 
 namespace o3d {
 
-O3D_DEFN_CLASS(StreamBank, NamedObject);
+O3D_DEFN_CLASS(StreamBank, VertexSource);
 O3D_DEFN_CLASS(ParamStreamBank, RefParamBase);
 
 ObjectBase::Ref StreamBank::Create(ServiceLocator* service_locator) {
@@ -54,9 +54,10 @@ ObjectBase::Ref StreamBank::Create(ServiceLocator* service_locator) {
 }
 
 StreamBank::StreamBank(ServiceLocator* service_locator)
-    : NamedObject(service_locator),
+    : VertexSource(service_locator),
       number_binds_(0),
       change_count_(1),
+      renderable_(true),
       weak_pointer_manager_(this) {
 }
 
@@ -75,6 +76,21 @@ unsigned StreamBank::GetMaxVertices() const {
   return max_vertices;
 }
 
+void StreamBank::UpdateRenderable() {
+  StreamParamVector::const_iterator stream_iter;
+  for (stream_iter = vertex_stream_params_.begin();
+       stream_iter != vertex_stream_params_.end();
+       ++stream_iter) {
+    const Stream& stream = (*stream_iter)->stream();
+    Buffer* buffer = stream.field().buffer();
+    if (!buffer || !buffer->IsA(VertexBuffer::GetApparentClass())) {
+      renderable_ = false;
+      return;
+    }
+  }
+  renderable_ = true;
+}
+
 // Adds a new vertex Stream to the StreamBank.  If a Stream with the same
 // semantic is already bound to the StreamBank then it removes it before adding
 // the new one. Otherwise, it creates a new stream with the information supplied
@@ -87,13 +103,6 @@ bool StreamBank::SetVertexStream(Stream::Semantic stream_semantic,
   Buffer* buffer = field->buffer();
   if (!buffer) {
     O3D_ERROR(service_locator()) << "No buffer on field";
-    return false;
-  }
-
-  // Check that this buffer is renderable. StreamBanks are used to submit
-  // data to GPU so we can only allow GPU accessible buffers through here.
-  if (!buffer->IsA(VertexBuffer::GetApparentClass())) {
-    O3D_ERROR(service_locator()) << "Buffer is not a VertexBuffer";
     return false;
   }
 
@@ -112,6 +121,7 @@ bool StreamBank::SetVertexStream(Stream::Semantic stream_semantic,
       new SlaveParamVertexBufferStream(service_locator(), this, stream));
   vertex_stream_params_.push_back(stream_param);
 
+  UpdateRenderable();
   OnUpdateStreams();
 
   return true;
@@ -150,39 +160,10 @@ bool StreamBank::RemoveVertexStream(Stream::Semantic stream_semantic,
         stream.semantic_index() == semantic_index) {
       ++change_count_;
       vertex_stream_params_.erase(iter);
+      UpdateRenderable();
       OnUpdateStreams();
       return true;
     }
-  }
-  return false;
-}
-
-bool StreamBank::BindStream(VertexSource* source,
-                            Stream::Semantic semantic,
-                            int semantic_index) {
-  if (source) {
-    ParamVertexBufferStream* source_param = source->GetVertexStreamParam(
-        semantic, semantic_index);
-    ParamVertexBufferStream* dest_param = GetVertexStreamParam(
-        semantic, semantic_index);
-    if (source_param && dest_param &&
-        source_param->stream().field().IsA(
-            dest_param->stream().field().GetClass()) &&
-        source_param->stream().field().num_components() ==
-        dest_param->stream().field().num_components()) {
-      return dest_param->Bind(source_param);
-    }
-  }
-
-  return false;
-}
-
-bool StreamBank::UnbindStream(Stream::Semantic semantic, int semantic_index) {
-  ParamVertexBufferStream* dest_param = GetVertexStreamParam(
-      semantic, semantic_index);
-  if (dest_param && dest_param->input_connection() != NULL) {
-    dest_param->UnbindInput();
-    return true;
   }
   return false;
 }
