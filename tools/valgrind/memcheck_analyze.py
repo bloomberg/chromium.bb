@@ -196,6 +196,17 @@ class ValgrindError:
   def __eq__(self, rhs):
     return self.UniqueString() == rhs
 
+def find_and_truncate(f):
+  f.seek(0)
+  while True:
+    line = f.readline()
+    if line == "":
+      return False
+    if '</valgrindoutput>' in line:
+      # valgrind often has garbage after </valgrindoutput> upon crash
+      f.truncate()
+      return True
+
 class MemcheckAnalyze:
   ''' Given a set of Valgrind XML files, parse all the errors out of them,
   unique them and output the results.'''
@@ -216,20 +227,23 @@ class MemcheckAnalyze:
     for file in files:
       # Wait up to three minutes for valgrind to finish writing all files,
       # but after that, just skip incomplete files and warn.
-      f = open(file, "r")
+      f = open(file, "r+")
       found = False
       firstrun = True
-      while (firstrun or ((time.time() - start) < 180.0)):
+      origsize = os.path.getsize(file)
+      while (not found and (firstrun or ((time.time() - start) < 180.0))):
         firstrun = False
         f.seek(0)
-        if sum((1 for line in f if '</valgrindoutput>' in line)) > 0:
-          found = True
-          break
-        time.sleep(1)
+        found = find_and_truncate(f)
+        if not found:
+          time.sleep(1)
       f.close()
       if not found:
         badfiles.add(file)
       else:
+        newsize = os.path.getsize(file)
+        if origsize > newsize+1:
+          logging.warn(str(origsize - newsize) + " bytes of junk were after </valgrindoutput> in %s!" % file)
         try:
           raw_errors = parse(file).getElementsByTagName("error")
           for raw_error in raw_errors:
@@ -259,8 +273,8 @@ class MemcheckAnalyze:
     if len(badfiles) > 0:
       logging.warn("valgrind didn't finish writing %d files?!" % len(badfiles))
       for file in badfiles:
-        logging.warn("Last 100 lines of %s :" % file)
-        os.system("tail -n 100 '%s'" % file)
+        logging.warn("Last 20 lines of %s :" % file)
+        os.system("tail -n 20 '%s' 1>&2" % file)
 
   def Report(self):
     if self._parse_failed:
