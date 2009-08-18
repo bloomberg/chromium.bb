@@ -84,23 +84,6 @@ void TabContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
 }
 
 void TabContentsViewMac::StartDragging(const WebDropData& drop_data) {
-  // We are only allowed to call dragImage:... from inside mouseDragged:, which
-  // we will never be (we're called back async), but it seems that the mouse
-  // event is still always the proper left mouse drag, so everything works out
-  // in the end. However, we occasionally get spurious "start drag" messages
-  // from the back-end when we shouldn't. If we go through with the drag, Cocoa
-  // asserts in a bad way. Just bail for now until we can figure out the root of
-  // why we're getting the messages.
-  // TODO(pinkerton): http://crbug.com/16811
-  NSEvent* currentEvent = [NSApp currentEvent];
-  if ([currentEvent type] != NSLeftMouseDragged) {
-    LOG(INFO) << "Spurious StartDragging() message";
-    RenderViewHost* rvh = tab_contents()->render_view_host();
-    if (rvh)
-      rvh->DragSourceSystemDragEnded();
-    return;
-  }
-
   // The drag invokes a nested event loop, but we need to continue processing
   // events.
   MessageLoop::current()->SetNestableTasksAllowed(true);

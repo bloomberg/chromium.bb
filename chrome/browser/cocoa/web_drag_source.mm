@@ -200,12 +200,26 @@ void PromiseWriterTask::Run() {
 
 - (void)startDrag {
   NSEvent* currentEvent = [NSApp currentEvent];
+
+  // Synthesize an event for dragging, since we can't be sure that
+  // [NSApp currentEvent] will return a valid dragging event.
+  NSWindow* window = [contentsView_ window];
+  NSPoint position = [window mouseLocationOutsideOfEventStream];
+  NSTimeInterval eventTime = [currentEvent timestamp];
+  NSEvent* dragEvent = [NSEvent mouseEventWithType:NSLeftMouseDragged
+                                          location:position
+                                     modifierFlags:NSLeftMouseDraggedMask
+                                         timestamp:eventTime
+                                      windowNumber:[window windowNumber]
+                                           context:nil
+                                       eventNumber:0
+                                        clickCount:1
+                                          pressure:1.0];
+
   [contentsView_ dragImage:[self dragImage]
-                        at:[contentsView_
-                               convertPoint:[currentEvent locationInWindow]
-                                   fromView:nil]
+                        at:position
                     offset:NSZeroSize
-                     event:currentEvent
+                     event:dragEvent
                 pasteboard:pasteboard_
                     source:contentsView_
                  slideBack:YES];
