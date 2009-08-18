@@ -2677,10 +2677,6 @@ BUG16823 MAC : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 
 // Failures from WebKit merge 45936:45958
 BUG18676 LINUX MAC : LayoutTests/fast/js/instanceof-operator.html = CRASH FAIL
-BUG16878 LINUX WIN : LayoutTests/fast/runin/001.html = FAIL
-BUG16878 LINUX WIN : LayoutTests/fast/runin/generated.html = FAIL
-BUG16878 LINUX WIN : LayoutTests/fast/text/shadow-translucent-fill.html = FAIL
-BUG16878 WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
 
 // Failure from WebKit merge 45985:45998
 BUG16962 : LayoutTests/fast/forms/get-file-upload.html = TIMEOUT
@@ -2780,7 +2776,6 @@ BUG18966 LINUX : LayoutTests/fast/overflow/overflow-float-stacking.html = PASS C
 BUG19028 MAC : LayoutTests/fast/dom/Window/window-open-parent-no-parent.html = PASS CRASH
 
 // Fallout from webkit 47041:47189
-BUG19247 : LayoutTests/fast/events/set-event-in-another-frame.html = FAIL
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
 
 BUG_LEVIN : LayoutTests/fast/dom/Window/window-property-shadowing.html = FAIL
