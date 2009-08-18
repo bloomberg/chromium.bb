@@ -16,11 +16,13 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/model_associator.h"
+#include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_profile.h"
 
 using std::vector;
+using browser_sync::ChangeProcessingInterface;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 
@@ -222,9 +224,9 @@ class FakeServerChange {
   }
 
   // Pass the fake change list to |service|.
-  void ApplyPendingChanges(ProfileSyncService* service) {
-    service->ApplyModelChanges(trans_, changes_.size() ? &changes_[0] : NULL,
-                               changes_.size());
+  void ApplyPendingChanges(browser_sync::ChangeProcessingInterface* processor) {
+    processor->ApplyChangesFromSyncModel(trans_,
+        changes_.size() ? &changes_[0] : NULL, changes_.size());
   }
 
   const vector<sync_api::SyncManager::ChangeRecord>& changes() {
@@ -270,6 +272,11 @@ class ProfileSyncServiceTest : public testing::Test {
   ModelAssociator* associator() {
     DCHECK(service_.get());
     return service_->model_associator_;
+  }
+
+  ChangeProcessingInterface* change_processor() {
+    DCHECK(service_.get());
+    return service_->change_processor_.get();
   }
 
   void StartSyncService() {
@@ -539,7 +546,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeProcessing) {
   for (it = adds.changes().begin(); it != adds.changes().end(); ++it)
     ExpectBrowserNodeUnknown(it->id);
 
-  adds.ApplyPendingChanges(service_.get());
+  adds.ApplyPendingChanges(change_processor());
 
   // Make sure the bookmark model received all of the nodes in |adds|.
   for (it = adds.changes().begin(); it != adds.changes().end(); ++it)
@@ -572,7 +579,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeProcessing) {
   ExpectBrowserNodeParent(u3, u3_old_parent);
 
   // Apply the changes.
-  mods.ApplyPendingChanges(service_.get());
+  mods.ApplyPendingChanges(change_processor());
 
   // Check for successful application.
   for (it = mods.changes().begin(); it != mods.changes().end(); ++it)
@@ -587,7 +594,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeProcessing) {
   ExpectBrowserNodeKnown(u2);
   ExpectBrowserNodeKnown(u3);
 
-  dels.ApplyPendingChanges(service_.get());
+  dels.ApplyPendingChanges(change_processor());
 
   ExpectBrowserNodeUnknown(u2);
   ExpectBrowserNodeUnknown(u3);
@@ -622,7 +629,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeRequiringFosterParent) {
   for (it = adds.changes().begin(); it != adds.changes().end(); ++it)
     ExpectBrowserNodeUnknown(it->id);
 
-  adds.ApplyPendingChanges(service_.get());
+  adds.ApplyPendingChanges(change_processor());
 
   // Make sure the bookmark model received all of the nodes in |adds|.
   for (it = adds.changes().begin(); it != adds.changes().end(); ++it)
@@ -640,7 +647,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeRequiringFosterParent) {
   ops.ModifyPosition(u5, f6, 0);
   ops.Delete(f1);
 
-  ops.ApplyPendingChanges(service_.get());
+  ops.ApplyPendingChanges(change_processor());
 
   ExpectModelMatch(&trans);
 }
@@ -658,7 +665,7 @@ TEST_F(ProfileSyncServiceTest, ServerChangeWithNonCanonicalURL) {
     EXPECT_NE(GURL(url).spec(), url);
     int64 u1 = adds.AddURL(L"u1", UTF8ToWide(url), other_bookmarks_id(), 0);
 
-    adds.ApplyPendingChanges(service_.get());
+    adds.ApplyPendingChanges(change_processor());
 
     EXPECT_TRUE(model_->other_node()->GetChildCount() == 1);
     ExpectModelMatch(&trans);
@@ -688,7 +695,7 @@ TEST_F(ProfileSyncServiceTest, DISABLED_ServerChangeWithInvalidURL) {
     EXPECT_FALSE(GURL("x").is_valid());
     int64 u1 = adds.AddURL(L"u1", L"x", other_bookmarks_id(), 0);
 
-    adds.ApplyPendingChanges(service_.get());
+    adds.ApplyPendingChanges(change_processor());
 
     // We're lenient about what should happen -- the model could wind up with
     // the node or without it; but things should be consistent, and we

@@ -145,7 +145,7 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
       SignalStateCompleteWithNextState(WAITING_FOR_READY_TO_PROCESS_CHANGES);
       break;
     case WAITING_FOR_READY_TO_PROCESS_CHANGES:
-      if (service_->ready_to_process_changes_) {
+      if (service_->ShouldPushChanges()) {
         SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
       }
       break;

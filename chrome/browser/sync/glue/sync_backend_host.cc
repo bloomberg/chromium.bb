@@ -7,6 +7,7 @@
 #include "base/file_version_info.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/glue/bookmark_model_worker.h"
@@ -23,11 +24,13 @@ static const FilePath::CharType kSyncDataFolderName[] =
 namespace browser_sync {
 
 SyncBackendHost::SyncBackendHost(SyncFrontend* frontend,
-                                 const FilePath& profile_path)
+                                 const FilePath& profile_path,
+                                 ChangeProcessingInterface* processor)
     : core_thread_("Chrome_SyncCoreThread"),
       frontend_loop_(MessageLoop::current()),
       bookmark_model_worker_(NULL),
       frontend_(frontend),
+      processor_(processor),
       sync_data_folder_path_(profile_path.Append(kSyncDataFolderName)),
       last_auth_error_(AUTH_ERROR_NONE) {
   core_ = new Core(this);
@@ -250,7 +253,7 @@ void SyncBackendHost::Core::OnChangesApplied(
     DLOG(WARNING) << "Could not update bookmark model from non-UI thread";
     return;
   }
-  host_->frontend_->ApplyModelChanges(trans, changes, change_count);
+  host_->processor_->ApplyChangesFromSyncModel(trans, changes, change_count);
 }
 
 void SyncBackendHost::Core::OnSyncCycleCompleted() {

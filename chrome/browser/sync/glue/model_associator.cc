@@ -353,13 +353,15 @@ bool ModelAssociator::BuildAssocations() {
       if (child_node) {
         model->Move(child_node, parent_node, index);
         // Set the favicon for bookmark node from sync node or vice versa.
-        if (!sync_service_->SetBookmarkFavicon(&sync_child_node, child_node))
-          sync_service_->SetSyncNodeFavicon(child_node, &sync_child_node);
+        if (ChangeProcessor::SetBookmarkFavicon(&sync_child_node,
+            child_node, sync_service_->profile())) {
+          ChangeProcessor::SetSyncNodeFavicon(child_node, model,
+                                              &sync_child_node);
+        }
       } else {
         // Create a new bookmark node for the sync node.
-        child_node = sync_service_->CreateBookmarkNode(&sync_child_node,
-                                                       parent_node,
-                                                       index);
+        child_node = ChangeProcessor::CreateBookmarkNode(&sync_child_node,
+            parent_node, model, index);
       }
       AssociateIds(child_node->id(), sync_child_id);
       if (sync_child_node.GetIsFolder())
@@ -375,7 +377,8 @@ bool ModelAssociator::BuildAssocations() {
     // So the children starting from index in the parent bookmark node are the
     // ones that are not present in the parent sync node. So create them.
     for (int i = index; i < parent_node->GetChildCount(); ++i) {
-      sync_child_id = sync_service_->CreateSyncNode(parent_node, i, &trans);
+      sync_child_id = ChangeProcessor::CreateSyncNode(parent_node, model, i,
+          &trans, this, sync_service_);
       if (parent_node->GetChild(i)->is_folder())
         dfs_stack.push(sync_child_id);
     }
@@ -415,7 +418,7 @@ void ModelAssociator::PersistAssociations() {
     int64 sync_id = *iter;
     sync_api::WriteNode sync_node(&trans);
     if (!sync_node.InitByIdLookup(sync_id)) {
-      sync_service_->SetUnrecoverableError();
+      sync_service_->OnUnrecoverableError();
       return;
     }
     int64 node_id;

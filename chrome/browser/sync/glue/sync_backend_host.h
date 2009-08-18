@@ -22,7 +22,48 @@
 
 namespace browser_sync {
 
-class SyncFrontend;
+// SyncFrontend is the interface used by SyncBackendHost to communicate with
+// the entity that created it and, presumably, is interested in sync-related
+// activity.
+// NOTE: All methods will be invoked by a SyncBackendHost on the same thread
+// used to create that SyncBackendHost.
+class SyncFrontend {
+ public:
+  SyncFrontend() {}
+
+  // The backend has completed initialization and it is now ready to accept and
+  // process changes.
+  virtual void OnBackendInitialized() = 0;
+
+  // The backend queried the server recently and received some updates.
+  virtual void OnSyncCycleCompleted() = 0;
+
+  // The backend encountered an authentication problem and requests new
+  // credentials to be provided. See SyncBackendHost::Authenticate for details.
+  virtual void OnAuthError() = 0;
+
+ protected:
+  // Don't delete through SyncFrontend interface.
+  virtual ~SyncFrontend() {
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SyncFrontend);
+};
+
+// An interface used to apply changes from the sync model to the browser's
+// native model.  This does not currently distinguish between model data types.
+class ChangeProcessingInterface {
+ public:
+  // Changes have been applied to the backend model and are ready to be
+  // applied to the frontend model. See syncapi.h for detailed instructions on
+  // how to interpret and process |changes|.
+  virtual void ApplyChangesFromSyncModel(
+      const sync_api::BaseTransaction* trans,
+      const sync_api::SyncManager::ChangeRecord* changes,
+      int change_count) = 0;
+ protected:
+  virtual ~ChangeProcessingInterface() { }
+};
 
 // A UI-thread safe API into the sync backend that "hosts" the top-level
 // syncapi element, the SyncManager, on its own thread. This class handles
@@ -36,8 +77,10 @@ class SyncBackendHost {
 
   // Create a SyncBackendHost with a reference to the |frontend| that it serves
   // and communicates to via the SyncFrontend interface (on the same thread
-  // it used to call the constructor).
-  SyncBackendHost(SyncFrontend* frontend, const FilePath& proifle_path);
+  // it used to call the constructor), and push changes from sync_api through
+  // |processor|.
+  SyncBackendHost(SyncFrontend* frontend, const FilePath& profile_path,
+                  ChangeProcessingInterface* processor);
   ~SyncBackendHost();
 
   // Called on |frontend_loop_| to kick off asynchronous initialization.
@@ -222,6 +265,8 @@ class SyncBackendHost {
   // The frontend which we serve (and are owned by).
   SyncFrontend* frontend_;
 
+  ChangeProcessingInterface* processor_;  // Guaranteed to outlive us.
+
   // Path of the folder that stores the sync data files.
   FilePath sync_data_folder_path_;
 
@@ -229,43 +274,6 @@ class SyncBackendHost {
   AuthErrorState last_auth_error_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
-};
-
-// SyncFrontend is the interface used by SyncBackendHost to communicate with
-// the entity that created it and, presumably, is interested in sync-related
-// activity.
-// NOTE: All methods will be invoked by a SyncBackendHost on the same thread
-// used to create that SyncBackendHost.
-class SyncFrontend {
- public:
-  typedef sync_api::BaseTransaction BaseTransaction;
-  typedef sync_api::SyncManager::ChangeRecord ChangeRecord;
-  SyncFrontend() {
-  }
-
-  // The backend has completed initialization and it is now ready to accept and
-  // process changes.
-  virtual void OnBackendInitialized() = 0;
-
-  // The backend queried the server recently and received some updates.
-  virtual void OnSyncCycleCompleted() = 0;
-
-  // The backend encountered an authentication problem and requests new
-  // credentials to be provided. See SyncBackendHost::Authenticate for details.
-  virtual void OnAuthError() = 0;
-
-  // Changes have been applied to the backend model and are ready to be
-  // applied to the frontend model. See syncapi.h for detailed instructions on
-  // how to interpret and process |changes|.
-  virtual void ApplyModelChanges(const BaseTransaction* trans,
-                                 const ChangeRecord* changes,
-                                 int change_count) = 0;
- protected:
-  // Don't delete through SyncFrontend interface.
-  virtual ~SyncFrontend() {
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(SyncFrontend);
 };
 
 }  // namespace browser_sync

@@ -28,6 +28,8 @@ class ProfileSyncService;
 
 namespace browser_sync {
 
+class ChangeProcessor;
+
 // Contains all model assocation related logic:
 // * Algorithm to associate bookmark model and sync model.
 // * Methods to get a bookmark node for a given sync node and vice versa.

@@ -17,9 +17,11 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/views/sync/sync_setup_wizard.h"
+#include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class CommandLine;
@@ -28,6 +30,18 @@ class Profile;
 
 namespace browser_sync {
 class ModelAssociator;
+
+class UnrecoverableErrorHandler {
+ public:
+  // Call this when normal operation detects that the bookmark model and the
+  // syncer model are inconsistent, or similar.  The ProfileSyncService will
+  // try to avoid doing any work to avoid crashing or corrupting things
+  // further, and will report an error status if queried.
+  virtual void OnUnrecoverableError() = 0;
+ protected:
+  virtual ~UnrecoverableErrorHandler() { }
+};
+
 }
 
 // Various UI components such as the New Tab page can be driven by observing
@@ -47,8 +61,9 @@ class ProfileSyncServiceObserver {
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync backend.
-class ProfileSyncService : public BookmarkModelObserver,
-                           public browser_sync::SyncFrontend {
+class ProfileSyncService : public NotificationObserver,
+                           public browser_sync::SyncFrontend,
+                           public browser_sync::UnrecoverableErrorHandler {
  public:
   typedef ProfileSyncServiceObserver Observer;
   typedef browser_sync::SyncBackendHost::Status Status;
@@ -91,36 +106,15 @@ class ProfileSyncService : public BookmarkModelObserver,
   bool HasSyncSetupCompleted() const;
   void SetSyncSetupCompleted();
 
-  // BookmarkModelObserver implementation.
-  virtual void Loaded(BookmarkModel* model);
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) {}
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
-                                 const BookmarkNode* old_parent,
-                                 int old_index,
-                                 const BookmarkNode* new_parent,
-                                 int new_index);
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index);
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int index,
-                                   const BookmarkNode* node);
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node);
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node);
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node);
+  // NotificationObserver implementation.
+  virtual void ProfileSyncService::Observe(NotificationType type,
+                                           const NotificationSource& source,
+                                           const NotificationDetails& details);
 
   // SyncFrontend implementation.
   virtual void OnBackendInitialized();
   virtual void OnSyncCycleCompleted();
   virtual void OnAuthError();
-  virtual void ApplyModelChanges(
-      const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord* changes,
-      int change_count);
 
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,
@@ -196,21 +190,17 @@ class ProfileSyncService : public BookmarkModelObserver,
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);
 
+  // UnrecoverableErrorHandler implementation.
+  virtual void OnUnrecoverableError();
+
+  browser_sync::SyncBackendHost* backend() { return backend_.get(); }
+
  protected:
   // Call this after any of the subsystems being synced (the bookmark
   // model and the sync backend) finishes its initialization.  When everything
   // is ready, this function will bootstrap the subsystems so that they are
   // initially in sync, and start forwarding changes between the two models.
   void StartProcessingChangesIfReady();
-
-  // Various member accessors needed by unit tests.
-  browser_sync::SyncBackendHost* backend() { return backend_.get(); }
-
-  // Call this when normal operation detects that the bookmark model and the
-  // syncer model are inconsistent, or similar.  The ProfileSyncService will
-  // try to avoid doing any work to avoid crashing or corrupting things
-  // further, and will report an error status if queried.
-  void SetUnrecoverableError();
 
   // Returns whether processing changes is allowed.  Check this before doing
   // any model-modifying operations.
@@ -230,9 +220,7 @@ class ProfileSyncService : public BookmarkModelObserver,
   virtual void InitializeBackend();
 
   // Tests need this.
-  void set_model_associator(browser_sync::ModelAssociator* manager) {
-    model_associator_ = manager;
-  }
+  void set_model_associator(browser_sync::ModelAssociator* associator);
 
   // We keep track of the last auth error observed so we can cover up the first
   // "expected" auth failure from observers.
@@ -244,89 +232,13 @@ class ProfileSyncService : public BookmarkModelObserver,
   std::string last_attempted_user_email_;
 
  private:
-  friend class browser_sync::ModelAssociator;
   friend class ProfileSyncServiceTest;
   friend class ProfileSyncServiceTestHarness;
   friend class TestModelAssociator;
   FRIEND_TEST(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService);
 
-  enum MoveOrCreate {
-    MOVE,
-    CREATE,
-  };
-
   // Initializes the various settings from the command line.
   void InitSettings();
-
-  // Treat the |index|th child of |parent| as a newly added node, and create a
-  // corresponding node in the sync domain using |trans|.  All properties
-  // will be transferred to the new node.  A node corresponding to |parent|
-  // must already exist and be associated for this call to succeed.  Returns
-  // the ID of the just-created node, or if creation fails, kInvalidID.
-  int64 CreateSyncNode(const BookmarkNode* parent,
-                       int index,
-                       sync_api::WriteTransaction* trans);
-
-  // Create a bookmark node corresponding to |src| if one is not already
-  // associated with |src|.  Returns the node that was created or updated.
-  const BookmarkNode* CreateOrUpdateBookmarkNode(
-      sync_api::BaseNode* src,
-      BookmarkModel* model);
-
-  // Creates a bookmark node under the given parent node from the given sync
-  // node. Returns the newly created node.
-  const BookmarkNode* CreateBookmarkNode(
-      sync_api::BaseNode* sync_node,
-      const BookmarkNode* parent,
-      int index) const;
-
-  // Sets the favicon of the given bookmark node from the given sync node.
-  // Returns whether the favicon was set in the bookmark node.
-  bool SetBookmarkFavicon(sync_api::BaseNode* sync_node,
-                          const BookmarkNode* bookmark_node) const;
-
-  // Sets the favicon of the given sync node from the given bookmark node.
-  void SetSyncNodeFavicon(const BookmarkNode* bookmark_node,
-                          sync_api::WriteNode* sync_node) const;
-
-  // Helper function to determine the appropriate insertion index of sync node
-  // |node| under the Bookmark model node |parent|, to make the positions
-  // match up between the two models. This presumes that the predecessor of the
-  // item (in the bookmark model) has already been moved into its appropriate
-  // position.
-  int CalculateBookmarkModelInsertionIndex(
-      const BookmarkNode* parent,
-      const sync_api::BaseNode* node) const;
-
-  // Helper function used to fix the position of a sync node so that it matches
-  // the position of a corresponding bookmark model node. |parent| and
-  // |index| identify the bookmark model position.  |dst| is the node whose
-  // position is to be fixed.  If |operation| is CREATE, treat |dst| as an
-  // uncreated node and set its position via InitByCreation(); otherwise,
-  // |dst| is treated as an existing node, and its position will be set via
-  // SetPosition().  |trans| is the transaction to which |dst| belongs. Returns
-  // false on failure.
-  bool PlaceSyncNode(MoveOrCreate operation,
-                     const BookmarkNode* parent,
-                     int index,
-                     sync_api::WriteTransaction* trans,
-                     sync_api::WriteNode* dst);
-
-  // Copy properties (but not position) from |src| to |dst|.
-  void UpdateSyncNodeProperties(const BookmarkNode* src,
-                                sync_api::WriteNode* dst);
-
-  // Helper function to encode a bookmark's favicon into a PNG byte vector.
-  void EncodeFavicon(const BookmarkNode* src,
-                     std::vector<unsigned char>* dst) const;
-
-  // Remove the sync node corresponding to |node|.  It shouldn't have
-  // any children.
-  void RemoveOneSyncNode(sync_api::WriteTransaction* trans,
-                         const BookmarkNode* node);
-
-  // Remove all the sync nodes associated with |node| and its children.
-  void RemoveSyncNodeHierarchy(const BookmarkNode* node);
 
   // Whether the sync merge warning should be shown.
   bool MergeAndSyncAcceptanceNeeded() const;
@@ -355,6 +267,10 @@ class ProfileSyncService : public BookmarkModelObserver,
   // other threads.
   scoped_ptr<browser_sync::SyncBackendHost> backend_;
 
+  scoped_ptr<browser_sync::ChangeProcessor> change_processor_;
+
+  NotificationRegistrar registrar_;
+
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;
 
@@ -374,11 +290,6 @@ class ProfileSyncService : public BookmarkModelObserver,
   // all auth attempts funnel through, so it makes sense to provide this.
   // As its name suggests, this should NOT be used for anything other than UI.
   bool is_auth_in_progress_;
-
-  // True only after all bootstrapping has succeeded: the bookmark model is
-  // loaded, the sync backend is initialized, and the two domains are
-  // consistent with one another.
-  bool ready_to_process_changes_;
 
   // True if an unrecoverable error (e.g. violation of an assumed invariant)
   // occurred during syncer operation.  This value should be checked before
