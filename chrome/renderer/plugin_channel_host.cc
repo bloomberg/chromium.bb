@@ -6,10 +6,6 @@
 
 #include "chrome/common/plugin_messages.h"
 
-#if defined(OS_POSIX)
-#include "ipc/ipc_channel_posix.h"
-#endif
-
 // A simple MessageFilter that will ignore all messages and respond to sync
 // messages with an error when is_listening_ is false.
 class IsListeningFilter : public IPC::ChannelProxy::MessageFilter {
@@ -80,9 +76,6 @@ PluginChannelHost::PluginChannelHost() {
 }
 
 PluginChannelHost::~PluginChannelHost() {
-#if defined(OS_POSIX)
-  IPC::RemoveAndCloseChannelSocket(channel_name());
-#endif
 }
 
 bool PluginChannelHost::Init(MessageLoop* ipc_message_loop,

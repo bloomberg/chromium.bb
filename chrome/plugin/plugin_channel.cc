@@ -58,7 +58,6 @@ PluginChannel::~PluginChannel() {
   if (renderer_handle_)
     base::CloseProcessHandle(renderer_handle_);
 #if defined(OS_POSIX)
-  IPC::RemoveAndCloseChannelSocket(channel_name());
   // If we still have the renderer FD, close it.
   if (renderer_fd_ != -1) {
     close(renderer_fd_);
