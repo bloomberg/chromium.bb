@@ -75,16 +75,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // navigation observer is returned. This object should NOT be deleted and
   // should be released by calling the corresponding
   // RemoveNavigationStatusListener method.
-  // The template argument NavigationCodeType facilitate the creation of the
-  // approriate NavigationNotificationObserver instance, which subscribes to
-  // the events published by the NotificationService and sends out a response
-  // to the IPC message.
-  template<class NavigationCodeType>
   NotificationObserver* AddNavigationStatusListener(
-      NavigationController* tab, IPC::Message* reply_message,
-      NavigationCodeType success_code,
-      NavigationCodeType auth_needed_code,
-      NavigationCodeType failed_code);
+      NavigationController* tab, IPC::Message* reply_message);
 
   void RemoveNavigationStatusListener(NotificationObserver* obs);
 

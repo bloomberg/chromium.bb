@@ -179,19 +179,17 @@ IPC_BEGIN_MESSAGES(Automation)
   // This message tells the AutomationProvider to provide the given
   // authentication data to the specified tab, in response to an HTTP/FTP
   // authentication challenge.
-  // The response status will be negative on error.
   IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_SetAuth,
                              int,  // tab handle
                              std::wstring,  // username
                              std::wstring,  // password
-                             int) // status
+                             AutomationMsg_NavigationResponseValues)  // status
 
   // This message tells the AutomationProvider to cancel the login in the
   // specified tab.
-  // The response status will be negative on error.
   IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_CancelAuth,
                              int,  // tab handle
-                             int)  // status
+                             AutomationMsg_NavigationResponseValues)  // status
 
   // Requests that the automation provider ask history for the most recent
   // chain of redirects coming from the given URL. The response must be
@@ -461,7 +459,7 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_ShowInterstitialPage,
                              int,
                              std::string,
-                             bool)
+                             AutomationMsg_NavigationResponseValues)
 
   // This message notifies the AutomationProvider to hide the current
   // interstitial page in the tab with given handle. The parameter is the
@@ -607,9 +605,9 @@ IPC_BEGIN_MESSAGES(Automation)
   //   - int: handle of the tab
   //   - bool: whether to proceed or abort the navigation
   // Response:
-  //  - bool: whether the operation was successful.
+  //  - AutomationMsg_NavigationResponseValues: result of the operation.
   IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_ActionOnSSLBlockingPage, int, bool,
-                             bool)
+                             AutomationMsg_NavigationResponseValues)
 
   // Message to request that a browser window is brought to the front and
   // activated.
@@ -776,7 +774,9 @@ IPC_BEGIN_MESSAGES(Automation)
                              int /* tab_handle */,
                              int /* info bar index */,
                              bool /* wait for navigation */,
-                             bool /* success flag */)
+
+                             /* navigation result */
+                             AutomationMsg_NavigationResponseValues)
 
   // This message retrieves the last time a navigation occurred in the specified
   // tab.  The value is intended to be used with WaitForNavigation.
@@ -789,7 +789,9 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_WaitForNavigation,
                              int /* tab_handle */,
                              int64 /* last navigation time */,
-                             bool /* success */)
+
+                             /* navigation result */
+                             AutomationMsg_NavigationResponseValues)
 
   // This messages sets an int-value preference.
   IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_SetIntPreference,

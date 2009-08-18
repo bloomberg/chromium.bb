@@ -75,25 +75,6 @@ void AutomationProvider::GetBrowserForWindow(int window_handle,
   NOTIMPLEMENTED();
 }
 
-void AutomationProvider::GetSecurityState(int handle, bool* success,
-                                          SecurityStyle* security_style,
-                                          int* ssl_cert_status,
-                                          int* mixed_content_status) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::GetPageType(int handle, bool* success,
-                                     NavigationEntry::PageType* page_type) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::ActionOnSSLBlockingPage(int handle, bool proceed,
-                                                 IPC::Message* reply_message) {
-  NOTIMPLEMENTED();
-}
-
 void AutomationProvider::PrintNow(int tab_handle,
                                   IPC::Message* reply_message) {
   NOTIMPLEMENTED();

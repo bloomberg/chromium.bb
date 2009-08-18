@@ -222,22 +222,15 @@ class NavigationControllerRestoredObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerRestoredObserver);
 };
 
-template<class NavigationCodeType>
 class NavigationNotificationObserver : public NotificationObserver {
  public:
   NavigationNotificationObserver(NavigationController* controller,
                                  AutomationProvider* automation,
-                                 IPC::Message* reply_message,
-                                 NavigationCodeType success_code,
-                                 NavigationCodeType auth_needed_code,
-                                 NavigationCodeType failed_code)
+                                 IPC::Message* reply_message)
     : automation_(automation),
       reply_message_(reply_message),
       controller_(controller),
-      navigation_started_(false),
-      success_code_(success_code),
-      auth_needed_code_(auth_needed_code),
-      failed_code_(failed_code) {
+      navigation_started_(false) {
     Source<NavigationController> source(controller_);
     registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED, source);
     registrar_.Add(this, NotificationType::LOAD_START, source);
@@ -251,8 +244,8 @@ class NavigationNotificationObserver : public NotificationObserver {
       // This means we did not receive a notification for this navigation.
       // Send over a failed navigation status back to the caller to ensure that
       // the caller does not hang waiting for the response.
-      IPC::ParamTraits<NavigationCodeType>::Write(reply_message_,
-                                                  failed_code_);
+      IPC::ParamTraits<AutomationMsg_NavigationResponseValues>::Write(
+          reply_message_, AUTOMATION_MSG_NAVIGATION_ERROR);
       automation_->Send(reply_message_);
       reply_message_ = NULL;
     }
@@ -260,11 +253,11 @@ class NavigationNotificationObserver : public NotificationObserver {
     automation_->RemoveNavigationStatusListener(this);
   }
 
-  void ConditionMet(NavigationCodeType navigation_result) {
+  void ConditionMet(AutomationMsg_NavigationResponseValues navigation_result) {
     DCHECK(reply_message_ != NULL);
 
-    IPC::ParamTraits<NavigationCodeType>::Write(reply_message_,
-                                                navigation_result);
+    IPC::ParamTraits<AutomationMsg_NavigationResponseValues>::Write(
+        reply_message_, navigation_result);
     automation_->Send(reply_message_);
     reply_message_ = NULL;
 
@@ -287,7 +280,7 @@ class NavigationNotificationObserver : public NotificationObserver {
     } else if (type == NotificationType::LOAD_STOP) {
       if (navigation_started_) {
         navigation_started_ = false;
-        ConditionMet(success_code_);
+        ConditionMet(AUTOMATION_MSG_NAVIGATION_SUCCESS);
       }
     } else if (type == NotificationType::AUTH_SUPPLIED) {
       // The LoginHandler for this tab is no longer valid.
@@ -306,7 +299,7 @@ class NavigationNotificationObserver : public NotificationObserver {
 
         // Respond that authentication is needed.
         navigation_started_ = false;
-        ConditionMet(auth_needed_code_);
+        ConditionMet(AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED);
       } else {
         NOTREACHED();
       }
@@ -325,9 +318,6 @@ class NavigationNotificationObserver : public NotificationObserver {
   IPC::Message* reply_message_;
   NavigationController* controller_;
   bool navigation_started_;
-  NavigationCodeType success_code_;
-  NavigationCodeType auth_needed_code_;
-  NavigationCodeType failed_code_;
 };
 
 class TabStripNotificationObserver : public NotificationObserver {
@@ -382,10 +372,7 @@ class TabAppendedNotificationObserver : public TabStripNotificationObserver {
       return;
     }
 
-    // Give the same response even if auth is needed, since it doesn't matter.
-    automation_->AddNavigationStatusListener<int>(
-        controller, reply_message_, AUTOMATION_MSG_NAVIGATION_SUCCESS,
-        AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED, AUTOMATION_MSG_NAVIGATION_ERROR);
+    automation_->AddNavigationStatusListener(controller, reply_message_);
   }
 
  protected:
@@ -557,13 +544,9 @@ class ExecuteBrowserCommandObserver : public NotificationObserver {
       case IDC_BACK:
       case IDC_FORWARD:
       case IDC_RELOAD: {
-        automation->
-        AddNavigationStatusListener<AutomationMsg_NavigationResponseValues>(
+        automation->AddNavigationStatusListener(
             &browser->GetSelectedTabContents()->controller(),
-            reply_message,
-            AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
-            AUTOMATION_MSG_NAVIGATION_ERROR);
+            reply_message);
         break;
       }
       default: {
@@ -850,16 +833,10 @@ void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {
   }
 }
 
-template<class NavigationCodeType>
 NotificationObserver* AutomationProvider::AddNavigationStatusListener(
-    NavigationController* tab, IPC::Message* reply_message,
-    NavigationCodeType success_code,
-    NavigationCodeType auth_needed_code,
-    NavigationCodeType failed_code) {
+    NavigationController* tab, IPC::Message* reply_message) {
   NotificationObserver* observer =
-    new NavigationNotificationObserver<NavigationCodeType>(
-        tab, this, reply_message, success_code, auth_needed_code,
-        failed_code);
+      new NavigationNotificationObserver(tab, this, reply_message);
 
   notification_observer_list_.AddObserver(observer);
   return observer;
@@ -1146,10 +1123,7 @@ void AutomationProvider::NavigateToURL(int handle, const GURL& url,
     Browser* browser = FindAndActivateTab(tab);
 
     if (browser) {
-      AddNavigationStatusListener<AutomationMsg_NavigationResponseValues>(
-          tab, reply_message, AUTOMATION_MSG_NAVIGATION_SUCCESS,
-          AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
-          AUTOMATION_MSG_NAVIGATION_ERROR);
+      AddNavigationStatusListener(tab, reply_message);
 
       // TODO(darin): avoid conversion to GURL
       browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
@@ -1187,10 +1161,7 @@ void AutomationProvider::GoBack(int handle, IPC::Message* reply_message) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
-      AddNavigationStatusListener<AutomationMsg_NavigationResponseValues>(
-          tab, reply_message, AUTOMATION_MSG_NAVIGATION_SUCCESS,
-          AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
-          AUTOMATION_MSG_NAVIGATION_ERROR);
+      AddNavigationStatusListener(tab, reply_message);
       browser->GoBack(CURRENT_TAB);
       return;
     }
@@ -1206,10 +1177,7 @@ void AutomationProvider::GoForward(int handle, IPC::Message* reply_message) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
-      AddNavigationStatusListener<AutomationMsg_NavigationResponseValues>(
-          tab, reply_message, AUTOMATION_MSG_NAVIGATION_SUCCESS,
-          AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
-          AUTOMATION_MSG_NAVIGATION_ERROR);
+      AddNavigationStatusListener(tab, reply_message);
       browser->GoForward(CURRENT_TAB);
       return;
     }
@@ -1225,10 +1193,7 @@ void AutomationProvider::Reload(int handle, IPC::Message* reply_message) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_RELOAD)) {
-      AddNavigationStatusListener<AutomationMsg_NavigationResponseValues>(
-          tab, reply_message, AUTOMATION_MSG_NAVIGATION_SUCCESS,
-          AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
-          AUTOMATION_MSG_NAVIGATION_ERROR);
+      AddNavigationStatusListener(tab, reply_message);
       browser->Reload();
       return;
     }
@@ -1243,8 +1208,6 @@ void AutomationProvider::SetAuth(int tab_handle,
                                  const std::wstring& username,
                                  const std::wstring& password,
                                  IPC::Message* reply_message) {
-  int status = -1;
-
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
@@ -1254,22 +1217,19 @@ void AutomationProvider::SetAuth(int tab_handle,
       // not strictly correct, because a navigation can require both proxy and
       // server auth, but it should be OK for now.
       LoginHandler* handler = iter->second;
-      AddNavigationStatusListener<int>(tab, reply_message, 0, -1, -1);
+      AddNavigationStatusListener(tab, reply_message);
       handler->SetAuth(username, password);
-      status = 0;
+      return;
     }
   }
 
-  if (status < 0) {
-    AutomationMsg_SetAuth::WriteReplyParams(reply_message, status);
-    Send(reply_message);
-  }
+  AutomationMsg_SetAuth::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED);
+  Send(reply_message);
 }
 
 void AutomationProvider::CancelAuth(int tab_handle,
                                     IPC::Message* reply_message) {
-  int status = -1;
-
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* tab = tab_tracker_->GetResource(tab_handle);
     LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
@@ -1277,16 +1237,15 @@ void AutomationProvider::CancelAuth(int tab_handle,
     if (iter != login_handler_map_.end()) {
       // If auth is needed again after this, something is screwy.
       LoginHandler* handler = iter->second;
-      AddNavigationStatusListener<int>(tab, reply_message, 0, -1, -1);
+      AddNavigationStatusListener(tab, reply_message);
       handler->CancelAuth();
-      status = 0;
+      return;
     }
   }
 
-  if (status < 0) {
-    AutomationMsg_CancelAuth::WriteReplyParams(reply_message, status);
-    Send(reply_message);
-  }
+  AutomationMsg_CancelAuth::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED);
+  Send(reply_message);
 }
 
 void AutomationProvider::NeedsAuth(int tab_handle, bool* needs_auth) {
@@ -2315,8 +2274,7 @@ void AutomationProvider::ShowInterstitialPage(int tab_handle,
     NavigationController* controller = tab_tracker_->GetResource(tab_handle);
     TabContents* tab_contents = controller->tab_contents();
 
-    AddNavigationStatusListener<bool>(controller, reply_message, true,
-                                      false, false);
+    AddNavigationStatusListener(controller, reply_message);
     AutomationInterstitialPage* interstitial =
         new AutomationInterstitialPage(tab_contents,
                                        GURL("about:interstitial"),
@@ -2325,7 +2283,8 @@ void AutomationProvider::ShowInterstitialPage(int tab_handle,
     return;
   }
 
-  AutomationMsg_ShowInterstitialPage::WriteReplyParams(reply_message, false);
+  AutomationMsg_ShowInterstitialPage::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
   Send(reply_message);
 }
 
@@ -2465,8 +2424,6 @@ void AutomationProvider::SetInitialFocus(const IPC::Message& message,
 #endif
 }
 
-// TODO(port): enable these functions.
-#if defined(OS_WIN)
 void AutomationProvider::GetSecurityState(int handle, bool* success,
                                           SecurityStyle* security_style,
                                           int* ssl_cert_status,
@@ -2515,25 +2472,23 @@ void AutomationProvider::ActionOnSSLBlockingPage(int handle, bool proceed,
           InterstitialPage::GetInterstitialPage(tab_contents);
       if (ssl_blocking_page) {
         if (proceed) {
-          AddNavigationStatusListener<bool>(tab, reply_message, true, true,
-                                            false);
+          AddNavigationStatusListener(tab, reply_message);
           ssl_blocking_page->Proceed();
           return;
         }
         ssl_blocking_page->DontProceed();
-        AutomationMsg_ActionOnSSLBlockingPage::WriteReplyParams(reply_message,
-                                                                true);
+        AutomationMsg_ActionOnSSLBlockingPage::WriteReplyParams(
+            reply_message, AUTOMATION_MSG_NAVIGATION_SUCCESS);
         Send(reply_message);
         return;
       }
     }
   }
   // We failed.
-  AutomationMsg_ActionOnSSLBlockingPage::WriteReplyParams(reply_message,
-                                                          false);
+  AutomationMsg_ActionOnSSLBlockingPage::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
   Send(reply_message);
 }
-#endif  // defined(OS_WIN)
 
 void AutomationProvider::BringBrowserToFront(int browser_handle,
                                              bool* success) {
@@ -2822,8 +2777,7 @@ void AutomationProvider::ClickSSLInfoBarLink(int handle,
       int count = nav_controller->tab_contents()->infobar_delegate_count();
       if (info_bar_index >= 0 && info_bar_index < count) {
         if (wait_for_navigation) {
-          AddNavigationStatusListener<bool>(nav_controller, reply_message,
-                                            true, true, false);
+          AddNavigationStatusListener(nav_controller, reply_message);
         }
         InfoBarDelegate* delegate =
             nav_controller->tab_contents()->GetInfoBarDelegateAt(
@@ -2835,8 +2789,8 @@ void AutomationProvider::ClickSSLInfoBarLink(int handle,
     }
   }
   if (!wait_for_navigation || !success)
-    AutomationMsg_ClickSSLInfoBarLink::WriteReplyParams(reply_message,
-                                                        success);
+    AutomationMsg_ClickSSLInfoBarLink::WriteReplyParams(
+        reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
 }
 
 void AutomationProvider::GetLastNavigationTime(int handle,
@@ -2855,12 +2809,12 @@ void AutomationProvider::WaitForNavigation(int handle,
   Time time = tab_tracker_->GetLastNavigationTime(handle);
   if (time.ToInternalValue() > last_navigation_time || !controller) {
     AutomationMsg_WaitForNavigation::WriteReplyParams(reply_message,
-                                                      controller != NULL);
+        controller == NULL ? AUTOMATION_MSG_NAVIGATION_ERROR :
+                             AUTOMATION_MSG_NAVIGATION_SUCCESS);
     return;
   }
 
-  AddNavigationStatusListener<bool>(controller, reply_message, true, true,
-                                    false);
+  AddNavigationStatusListener(controller, reply_message);
 }
 
 void AutomationProvider::SetIntPreference(int handle,

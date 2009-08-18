@@ -103,19 +103,21 @@ bool TabProxy::SetAuth(const std::wstring& username,
   if (!is_valid())
     return false;
 
-  int navigate_response = -1;
+  AutomationMsg_NavigationResponseValues navigate_response =
+      AUTOMATION_MSG_NAVIGATION_ERROR;
   sender_->Send(new AutomationMsg_SetAuth(0, handle_, username, password,
                                           &navigate_response));
-  return navigate_response >= 0;
+  return navigate_response == AUTOMATION_MSG_NAVIGATION_SUCCESS;
 }
 
 bool TabProxy::CancelAuth() {
   if (!is_valid())
     return false;
 
-  int navigate_response = -1;
+  AutomationMsg_NavigationResponseValues navigate_response =
+      AUTOMATION_MSG_NAVIGATION_ERROR;
   sender_->Send(new AutomationMsg_CancelAuth(0, handle_, &navigate_response));
-  return navigate_response >= 0;
+  return navigate_response == AUTOMATION_MSG_NAVIGATION_SUCCESS;
 }
 
 bool TabProxy::NeedsAuth() const {
@@ -420,10 +422,11 @@ bool TabProxy::ShowInterstitialPage(const std::string& html_text,
   if (!is_valid())
     return false;
 
-  bool succeeded = false;
+  AutomationMsg_NavigationResponseValues result =
+      AUTOMATION_MSG_NAVIGATION_ERROR;
   sender_->SendWithTimeout(new AutomationMsg_ShowInterstitialPage(
-      0, handle_, html_text, &succeeded), timeout_ms, NULL);
-  return succeeded;
+      0, handle_, html_text, &result), timeout_ms, NULL);
+  return result == AUTOMATION_MSG_NAVIGATION_SUCCESS;
 }
 
 bool TabProxy::HideInterstitialPage() {
@@ -506,10 +509,12 @@ bool TabProxy::TakeActionOnSSLBlockingPage(bool proceed) {
   if (!is_valid())
     return false;
 
-  bool success = false;
+  AutomationMsg_NavigationResponseValues result =
+      AUTOMATION_MSG_NAVIGATION_ERROR;
   sender_->Send(new AutomationMsg_ActionOnSSLBlockingPage(0, handle_, proceed,
-                                                          &success));
-  return success;
+                                                          &result));
+  return result == AUTOMATION_MSG_NAVIGATION_SUCCESS ||
+      result == AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED;
 }
 
 bool TabProxy::PrintNow() {
@@ -566,10 +571,12 @@ bool TabProxy::ClickSSLInfoBarLink(int info_bar_index,
   if (!is_valid())
     return false;
 
-  bool success = false;
+  AutomationMsg_NavigationResponseValues result =
+      AUTOMATION_MSG_NAVIGATION_ERROR;
   sender_->Send(new AutomationMsg_ClickSSLInfoBarLink(
-      0, handle_, info_bar_index, wait_for_navigation, &success));
-  return success;
+      0, handle_, info_bar_index, wait_for_navigation, &result));
+  return result == AUTOMATION_MSG_NAVIGATION_SUCCESS ||
+      result == AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED;
 }
 
 bool TabProxy::GetLastNavigationTime(int64* nav_time) {
@@ -586,11 +593,13 @@ bool TabProxy::WaitForNavigation(int64 last_navigation_time) {
   if (!is_valid())
     return false;
 
-  bool success = false;
+  AutomationMsg_NavigationResponseValues result =
+      AUTOMATION_MSG_NAVIGATION_ERROR;
   sender_->Send(new AutomationMsg_WaitForNavigation(0, handle_,
                                                     last_navigation_time,
-                                                    &success));
-  return success;
+                                                    &result));
+  return result == AUTOMATION_MSG_NAVIGATION_SUCCESS ||
+      result == AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED;
 }
 
 bool TabProxy::GetPageCurrentEncoding(std::wstring* encoding) {
