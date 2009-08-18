@@ -205,6 +205,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       determine_page_text_after_loading_stops_(false),
       view_type_(ViewType::INVALID),
       browser_window_id_(-1),
+      last_top_level_navigation_page_id_(-1),
       webkit_preferences_(webkit_preferences) {
   Singleton<RenderViewSet>()->render_view_set_.insert(this);
 }
