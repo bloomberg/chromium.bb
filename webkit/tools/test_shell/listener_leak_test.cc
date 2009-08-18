@@ -76,3 +76,4 @@ TEST_F(ListenerLeakTest, HiddenReferences) {
   test_shell_->WaitTestFinished();
   ASSERT_EQ(1, GetNumObjects(log_skip, "EventListenerLeakTestObject2"));
 }
+
