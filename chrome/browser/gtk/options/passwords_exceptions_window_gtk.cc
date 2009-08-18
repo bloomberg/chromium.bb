@@ -20,7 +20,8 @@
 namespace {
 
 // Initial width of the passwords and exceptions window.
-const int kPasswordsExceptionsWindowInitialWidth = 530;
+const int kPasswordsExceptionsWindowInitialWidth = 565;
+const int kPasswordsExceptionsWindowInitialHeight = 400;
 
 }  // anonymous namespace
 
@@ -78,7 +79,8 @@ PasswordsExceptionsWindowGtk::PasswordsExceptionsWindowGtk(Profile* profile)
       GTK_RESPONSE_CLOSE,
       NULL);
   gtk_window_set_default_size(GTK_WINDOW(dialog_),
-                              kPasswordsExceptionsWindowInitialWidth, -1);
+                              kPasswordsExceptionsWindowInitialWidth,
+                              kPasswordsExceptionsWindowInitialHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
   gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));

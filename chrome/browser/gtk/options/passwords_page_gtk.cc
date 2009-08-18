@@ -20,7 +20,7 @@
 namespace {
 
 // Initial width of the first column.
-const int kSiteColumnInitialSize = 212;
+const int kSiteColumnInitialSize = 265;
 
 // Column ids for |password_list_store_|.
 enum {
