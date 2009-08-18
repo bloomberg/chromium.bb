@@ -45,6 +45,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
@@ -88,8 +89,8 @@ void NaClMicroSleep(int microseconds) {
 }
 
 
-NORETURN void NaClSyscallCSegHook(int32_t ldt_ix) {
-  struct NaClAppThread      *natp = nacl_thread[ldt_ix];
+NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
+  struct NaClAppThread      *natp = nacl_thread[tls_idx];
   struct NaClApp            *nap = natp->nap;
   struct NaClThreadContext  *user = &natp->user;
   uintptr_t                 tramp_addr;
@@ -98,14 +99,7 @@ NORETURN void NaClSyscallCSegHook(int32_t ldt_ix) {
   uint32_t                  sysnum;
   uintptr_t                 stack_ptr;
 
-/* TODO(petr): split into arch-specific functions */
-#if NACL_ARM
-  stack_ptr = (uintptr_t) user->stack_ptr;
-#elif NACL_BUILD_SUBARCH == 64
-  stack_ptr = (uintptr_t) user->stack_ptr.ptr_64;
-#else
-  stack_ptr = (uintptr_t) user->stack_ptr.ptr_32.ptr;
-#endif
+  stack_ptr = (uintptr_t) NaClGetThreadCtxSp(user);
 
   /* esp must be okay for control to have gotten here */
 #if !BENCHMARK
@@ -159,14 +153,7 @@ NORETURN void NaClSyscallCSegHook(int32_t ldt_ix) {
     tramp_ret = aligned_tramp_ret;
   }
 
-/* TODO(petr): split into arch-specific functions */
-#if NACL_ARM
-  user->stack_ptr += NACL_CALL_STEP;
-#elif NACL_BUILD_SUBARCH == 64
-  user->stack_ptr.ptr_64 += NACL_CALL_STEP; /* call, lcall */
-#else
-  user->stack_ptr.ptr_32.ptr += NACL_CALL_STEP; /* call, lcall */
-#endif
+  NaClSetThreadCtxSp(user, stack_ptr + NACL_CALL_STEP);
 
   if (sysnum >= NACL_MAX_SYSCALLS) {
     NaClLog(2, "INVALID system call %d\n", sysnum);

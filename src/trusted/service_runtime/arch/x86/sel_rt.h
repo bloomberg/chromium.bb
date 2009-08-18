@@ -38,8 +38,6 @@
 
 #include "native_client/src/include/portability.h"
 
-void NaClInitGlobals();
-
 uint16_t NaClGetGlobalCs(void);
 
 uint16_t NaClGetGlobalDs(void);

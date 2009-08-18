@@ -29,44 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * NaCl Secure Runtime
- */
-#include "native_client/src/include/portability_string.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
-
-void NaClInitGlobals() {
-  /* intentionally left empty */
-}
-
-
-int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
-                          struct NaClApp            *nap,
-                          uintptr_t                 prog_ctr,
-                          uintptr_t                 stack_ptr,
-                          uint32_t                  tls_idx) {
-  UNREFERENCED_PARAMETER(nap);
-
-  memset((void *)ntcp, 0, sizeof(*ntcp));
-  ntcp->stack_ptr = stack_ptr;
-  ntcp->prog_ctr = prog_ctr;
-  NaClSetTlsThreadIdx(ntcp, tls_idx);
-
-  NaClLog(4, "user.tls_idx: 0x%08x\n", tls_idx);
-  NaClLog(4, "user.stack_ptr: 0x%08x\n", ntcp->stack_ptr);
-  NaClLog(4, "user.prog_ctr: 0x%08x\n", ntcp->prog_ctr);
-
-  return 1;
-}
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 
 uint32_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
-  return (uintptr_t) th_ctx->stack_ptr;
+  return th_ctx->stack_ptr.ptr_64;
 }
 
 
 void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uint32_t sp) {
-  th_ctx->stack_ptr = sp;
+  th_ctx->stack_ptr.ptr_64 = sp;
 }
 

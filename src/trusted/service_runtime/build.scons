@@ -165,11 +165,13 @@ if env['BUILD_ARCHITECTURE'] == 'x86':
     ldr_inputs += [
         'arch/x86_32/nacl_switch.S',
         'arch/x86_32/nacl_syscall.S',
+        'arch/x86_32/sel_rt_32.c',
         ]
   elif env['BUILD_SUBARCH'] == '64':
     ldr_inputs += [
         'arch/x86_64/nacl_switch.S',
         'arch/x86_64/nacl_syscall.S',
+        'arch/x86_64/sel_rt_64.c',
         ]
 elif env['BUILD_ARCHITECTURE'] == 'arm':
   ldr_inputs += [

@@ -38,5 +38,9 @@
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
 #endif
 
+void     NaClInitGlobals();
+uint32_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx);
+void     NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uint32_t sp);
+
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_SEL_RT_H__ */
 

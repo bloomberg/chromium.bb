@@ -122,6 +122,7 @@
             'arch/x86_32/nacl_syscall.S',
             'arch/x86_32/springboard.S',
             'arch/x86_32/tramp.S',
+            'arch/x86_32/sel_rt_32.c',
           ],
           'dependencies': [
             'tramp_gen',

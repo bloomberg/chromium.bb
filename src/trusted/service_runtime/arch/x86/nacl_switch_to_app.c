@@ -62,11 +62,8 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
    * to %esp, then pushes the thread ID (LDT index) onto the stack as
    * argument to NaClSyscallCSegHook.  See nacl_syscall.S.
    */
-#if NACL_BUILD_SUBARCH == 64
-  natp->sys.stack_ptr.ptr_64 = (NaClGetEsp() & ~0xf) + 4;
-#else
-  natp->sys.stack_ptr.ptr_32.ptr = (NaClGetEsp() & ~0xf) + 4;
-#endif
+  NaClSetThreadCtxSp(&natp->sys, (NaClGetEsp() & ~0xf) + 4);
+
   nap = natp->nap;
   context = &natp->user;
   context->spring_addr = NaClSysToUser(nap,

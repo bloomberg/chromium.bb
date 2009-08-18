@@ -38,8 +38,6 @@
 
 #include "native_client/src/include/portability.h"
 
-void NaClInitGlobals();
-
 uint32_t NaClGetSp(void);
 
 struct NaClThreadContext {
