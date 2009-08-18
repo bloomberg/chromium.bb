@@ -116,8 +116,18 @@ void ApplicationCacheHost::selectCacheWithoutManifest()
 
 void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
 {
-    if (m_internal)
-        m_internal->m_outerHost->selectCacheWithManifest(WebURL(manifestURL));
+    if (m_internal) {
+        if (!m_internal->m_outerHost->selectCacheWithManifest(manifestURL)) {
+            // It's a foreign entry, restart the current navigation from the top
+            // of the navigation algorithm. The navigation will not result in the
+            // same resource being loaded, because "foreign" entries are never picked
+            // during navigation.
+            // see WebCore::ApplicationCacheGroup::selectCache()
+            const KURL& docURL = m_documentLoader->frame()->document()->url();
+            String referrer = m_documentLoader->frameLoader()->referrer();
+            m_documentLoader->frameLoader()->scheduleLocationChange(docURL, referrer);
+        }
+    }
 }
 
 bool ApplicationCacheHost::maybeLoadFallbackForMainResponse(const ResourceRequest&, const ResourceResponse& response)

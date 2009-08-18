@@ -73,9 +73,11 @@ namespace WebKit {
         virtual void willStartMainResourceRequest(WebURLRequest&) = 0;
         virtual void willStartSubResourceRequest(WebURLRequest&) = 0;
 
-        // One or the other is called after having parsed the <html> tag.
+        // One or the other selectCache methods is called after having parsed the <html> tag.
+        // The latter returns false if the current document has been identified as a "foreign"
+        // entry, in which case the frame navigation will be restarted by webkit.
         virtual void selectCacheWithoutManifest() = 0;
-        virtual void selectCacheWithManifest(const WebURL& manifestURL) = 0;
+        virtual bool selectCacheWithManifest(const WebURL& manifestURL) = 0;
 
         // Called as the main resource is retrieved.
         virtual void didReceiveResponseForMainResource(const WebURLResponse&) = 0;
