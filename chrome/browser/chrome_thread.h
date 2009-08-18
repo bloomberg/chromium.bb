@@ -29,6 +29,9 @@ class ChromeThread : public base::Thread {
  public:
   // An enumeration of the well-known threads.
   enum ID {
+    // The main thread in the browser.
+    UI,
+
     // This is the thread that processes IPC and network messages.
     IO,
 
@@ -61,6 +64,11 @@ class ChromeThread : public base::Thread {
   // Construct a ChromeThread with the supplied identifier.  It is an error
   // to construct a ChromeThread that already exists.
   explicit ChromeThread(ID identifier);
+
+  // Special constructor for the main (UI) thread. We use a dummy thread here
+  // since the main thread already exists.
+  ChromeThread();
+
   virtual ~ChromeThread();
 
   // Callable on any thread, this helper function returns a pointer to the
@@ -83,6 +91,9 @@ class ChromeThread : public base::Thread {
   static bool CurrentlyOn(ID identifier);
 
  private:
+  // Common initialization code for the constructors.
+  void Initialize();
+
   // The identifier of this thread.  Only one thread can exist with a given
   // identifier at a given time.
   ID identifier_;

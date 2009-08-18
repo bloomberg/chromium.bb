@@ -120,6 +120,10 @@ class Thread : PlatformThread::Delegate {
   static void SetThreadWasQuitProperly(bool flag);
   static bool GetThreadWasQuitProperly();
 
+  void set_message_loop(MessageLoop* message_loop) {
+    message_loop_ = message_loop;
+  }
+
  private:
   // PlatformThread::Delegate methods:
   virtual void ThreadMain();

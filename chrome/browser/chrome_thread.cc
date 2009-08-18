@@ -6,6 +6,7 @@
 
 // Friendly names for the well-known threads.
 static const char* chrome_thread_names[ChromeThread::ID_COUNT] = {
+  "",  // UI (name assembled in browser_main.cc).
   "Chrome_IOThread",  // IO
   "Chrome_FileThread",  // FILE
   "Chrome_DBThread",  // DB
@@ -19,6 +20,7 @@ static const char* chrome_thread_names[ChromeThread::ID_COUNT] = {
 Lock ChromeThread::lock_;
 
 ChromeThread* ChromeThread::chrome_threads_[ID_COUNT] = {
+  NULL,  // UI
   NULL,  // IO
   NULL,  // FILE
   NULL,  // DB
@@ -32,9 +34,20 @@ ChromeThread* ChromeThread::chrome_threads_[ID_COUNT] = {
 ChromeThread::ChromeThread(ChromeThread::ID identifier)
     : Thread(chrome_thread_names[identifier]),
       identifier_(identifier) {
+  Initialize();
+}
+
+ChromeThread::ChromeThread()
+    : Thread(MessageLoop::current()->thread_name().c_str()),
+      identifier_(UI) {
+  set_message_loop(MessageLoop::current());
+  Initialize();
+}
+
+void ChromeThread::Initialize() {
   AutoLock lock(lock_);
-  DCHECK(identifier >= 0 && identifier < ID_COUNT);
-  DCHECK(chrome_threads_[identifier] == NULL);
+  DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
+  DCHECK(chrome_threads_[identifier_] == NULL);
   chrome_threads_[identifier_] = this;
 }
 
@@ -63,3 +76,4 @@ bool ChromeThread::CurrentlyOn(ID identifier) {
   MessageLoop* message_loop = GetMessageLoop(identifier);
   return MessageLoop::current() == message_loop;
 }
+

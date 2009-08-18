@@ -30,6 +30,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/first_run.h"
@@ -321,6 +322,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   PlatformThread::SetName(thread_name);
   main_message_loop.set_thread_name(thread_name);
   bool already_running = Upgrade::IsBrowserAlreadyRunning();
+
+  // Register the main thread by instantiating it, but don't call any methods.
+  ChromeThread main_thread;
 
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
