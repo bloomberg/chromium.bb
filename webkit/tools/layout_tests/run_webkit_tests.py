@@ -609,9 +609,8 @@ class TestRunner:
 
     results_file_path = os.path.join(self._options.results_directory,
         "results.json")
-    # TODO(ojan): get these from the bot
-    builder_name = "WebKitBuilder"
-    build_number = "12346"
+    builder_name = self._options.builder_name # "WebKitBuilder"
+    build_number = self._options.build_number # "12346"
     json_generator = json_results_generator.JSONResultsGenerator(failures,
         individual_test_timings, builder_name, build_number, results_file_path)
     results_json = json_generator.GetJSON()
