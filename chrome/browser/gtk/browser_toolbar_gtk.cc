@@ -7,6 +7,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <X11/XF86keysym.h>
 
+#include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/base_paths_linux.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/go_button_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
-#include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/gtk/standard_menus.h"

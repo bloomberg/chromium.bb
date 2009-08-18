@@ -8,6 +8,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#include "app/gtk_dnd_util.h"
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/gtk/blocked_popup_container_view_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
-#include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/sad_tab_gtk.h"

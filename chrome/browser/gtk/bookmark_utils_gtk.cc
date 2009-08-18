@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 
+#include "app/gtk_dnd_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
 #include "base/pickle.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
-#include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/gtk_util.h"

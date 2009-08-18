@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/gtk/bookmark_context_menu.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
-#include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/profile.h"

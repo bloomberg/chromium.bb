@@ -88,6 +88,8 @@
         'gfx/path.h',
         'gfx/text_elider.cc',
         'gfx/text_elider.h',
+        'gtk_dnd_util.cc',
+        'gtk_dnd_util.h',
         'l10n_util.cc',
         'l10n_util.h',
         'l10n_util_mac.h',
@@ -163,6 +165,12 @@
             'gfx/icon_util.cc',
             'gfx/icon_util.h',
             'os_exchange_data.cc',
+          ],
+        }],
+        ['OS!="linux"', {
+          'sources!': [
+            'gtk_dnd_util.cc',
+            'gtk_dnd_util.h',
           ],
         }],
       ],

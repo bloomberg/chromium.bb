@@ -4,8 +4,8 @@
 
 #include "chrome/browser/gtk/tab_contents_drag_source.h"
 
+#include "app/gtk_dnd_util.h"
 #include "base/mime_util.h"
-#include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"

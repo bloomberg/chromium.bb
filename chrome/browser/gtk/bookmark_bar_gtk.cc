@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "app/gfx/text_elider.h"
+#include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
-#include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"

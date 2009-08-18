@@ -7,6 +7,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <vector>
 
+#include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/path_service.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/bookmark_tree_model.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
-#include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"

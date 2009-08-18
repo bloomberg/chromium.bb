@@ -6,10 +6,10 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include "app/gtk_dnd_util.h"
 #include "app/gfx/path.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/standard_menus.h"
 #include "grit/generated_resources.h"

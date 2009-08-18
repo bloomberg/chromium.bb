@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/gtk_dnd_util.h"
+#include "app/gtk_dnd_util.h"
 
 #include "base/string_util.h"
 #include "base/logging.h"

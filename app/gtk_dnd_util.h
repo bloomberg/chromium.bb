@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GTK_GTK_DND_UTIL_H_
-#define CHROME_BROWSER_GTK_GTK_DND_UTIL_H_
+#ifndef APP_GTK_DND_UTIL_H_
+#define APP_GTK_DND_UTIL_H_
 
 #include <gtk/gtk.h>
 #include <vector>
@@ -67,4 +67,4 @@ class GtkDndUtil {
   static void AddTargetToList(GtkTargetList* targets, int target_code);
 };
 
-#endif  // CHROME_BROWSER_GTK_GTK_DND_UTIL_H_
+#endif  // APP_GTK_DND_UTIL_H_
