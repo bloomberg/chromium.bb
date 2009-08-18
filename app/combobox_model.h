@@ -5,6 +5,8 @@
 #ifndef APP_COMBOBOX_MODEL_H_
 #define APP_COMBOBOX_MODEL_H_
 
+#include <string>
+
 // The interface for models backing a combobox.
 class ComboboxModel {
  public:
