@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
@@ -56,6 +57,9 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
                const NotificationDetails& details);
 
  private:
+  // Helper function for resuming the following of a redirect response.
+  void ResumeRedirect();
+
   NotificationRegistrar registrar_;
   scoped_refptr<ResourceHandler> next_handler_;
   int render_process_host_id_;
@@ -71,6 +75,10 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
   ResourceDispatcherHost* rdh_;
   base::Time pause_time_;
   ResourceType::Type resource_type_;
+  // Context for handling deferred redirects.
+  scoped_refptr<ResourceResponse> redirect_response_;
+  GURL redirect_url_;
+  int redirect_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceHandler);
 };

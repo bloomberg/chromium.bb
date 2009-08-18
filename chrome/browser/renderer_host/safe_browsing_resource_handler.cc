@@ -32,7 +32,8 @@ SafeBrowsingResourceHandler::SafeBrowsingResourceHandler(
       safe_browsing_(safe_browsing),
       queued_error_request_id_(-1),
       rdh_(resource_dispatcher_host),
-      resource_type_(resource_type) {
+      resource_type_(resource_type),
+      redirect_id_(-1) {
   if (safe_browsing_->CheckUrl(url, this)) {
     safe_browsing_result_ = SafeBrowsingService::URL_SAFE;
     safe_browsing_->LogPauseDelay(base::TimeDelta());  // No delay.
@@ -62,9 +63,14 @@ bool SafeBrowsingResourceHandler::OnRequestRedirected(
     ResourceResponse* response,
     bool* defer) {
   if (in_safe_browsing_check_) {
-    Release();
-    in_safe_browsing_check_ = false;
-    safe_browsing_->CancelCheck(this);
+    // Defer following the redirect until the SafeBrowsing check is complete.
+    // Store the redirect context so we can pass it on to other handlers once we
+    // have completed our check.
+    redirect_response_ = response;
+    redirect_url_ = new_url;
+    redirect_id_ = request_id;
+    *defer = true;
+    return true;
   }
 
   if (safe_browsing_->CheckUrl(new_url, this)) {
@@ -151,6 +157,12 @@ void SafeBrowsingResourceHandler::OnUrlCheckResult(
   in_safe_browsing_check_ = false;
 
   if (result == SafeBrowsingService::URL_SAFE) {
+    // Resume following any redirect response we've deferred.
+    if (redirect_id_ != -1) {
+      ResumeRedirect();
+      return;
+    }
+
     if (paused_request_id_ != -1) {
       rdh_->PauseRequest(render_process_host_id_, paused_request_id_, false);
       paused_request_id_ = -1;
@@ -185,6 +197,12 @@ void SafeBrowsingResourceHandler::OnBlockingPageComplete(bool proceed) {
   displaying_blocking_page_ = false;
 
   if (proceed) {
+    // Resume following any deferred redirect.
+    if (redirect_id_ != -1) {
+      ResumeRedirect();
+      return;
+    }
+
     safe_browsing_result_ = SafeBrowsingService::URL_SAFE;
     if (paused_request_id_ != -1) {
       rdh_->PauseRequest(render_process_host_id_, paused_request_id_, false);
@@ -214,4 +232,19 @@ void SafeBrowsingResourceHandler::Observe(NotificationType type,
     in_safe_browsing_check_ = false;
     Release();
   }
+}
+
+void SafeBrowsingResourceHandler::ResumeRedirect() {
+  DCHECK(redirect_id_ != -1);
+
+  // Give the other resource handlers a chance to handle the redirect.
+  bool defer = false;
+  next_handler_->OnRequestRedirected(redirect_id_, redirect_url_,
+                                     redirect_response_, &defer);
+  if (!defer)
+    rdh_->FollowDeferredRedirect(render_process_host_id_, redirect_id_);
+
+  redirect_response_ = NULL;
+  redirect_id_ = -1;
+  Release();
 }
