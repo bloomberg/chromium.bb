@@ -354,21 +354,21 @@ static void cs_gem_print(struct radeon_cs *cs, FILE *file)
     unsigned opcode;
     unsigned reg;
     unsigned cnt;
-    int i, j;
+    unsigned int i, j;
 
     for (i = 0; i < cs->cdw;) {
-        cnt = CP_PACKET_GET_COUNT(cs->packets[i]);
+        cnt = CP_PACKET_GET_COUNT(cs->packets[i]) + 1;
         switch (CP_PACKET_GET_TYPE(cs->packets[i])) {
         case PACKET_TYPE0:
-            fprintf(file, "Pkt0 at %d (%d dwords):\n", i, cnt + 1);
+            fprintf(file, "Pkt0 at %d (%d dwords):\n", i, cnt);
             reg = CP_PACKET0_GET_REG(cs->packets[i]);
             if (CP_PACKET0_GET_ONE_REG_WR(cs->packets[i++])) {
-                for (j = 0; j <= cnt; j++) {
+                for (j = 0; j < cnt; j++) {
                     fprintf(file, "    0x%08X -> 0x%04X\n",
                             cs->packets[i++], reg);
                 }
             } else {
-                for (j = 0; j <= cnt; j++) {
+                for (j = 0; j < cnt; j++) {
                     fprintf(file, "    0x%08X -> 0x%04X\n",
                             cs->packets[i++], reg);
                     reg += 4;
@@ -410,7 +410,7 @@ static void cs_gem_print(struct radeon_cs *cs, FILE *file)
                 fprintf(file, "Unknow opcode 0x%02X at %d\n", opcode, i);
                 return;
             }
-            for (j = 0; j <= cnt; j++) {
+            for (j = 0; j < cnt; j++) {
                 fprintf(file, "        0x%08X\n", cs->packets[i++]);
             }
             break;
