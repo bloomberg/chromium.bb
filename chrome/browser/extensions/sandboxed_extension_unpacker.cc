@@ -143,7 +143,12 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
 
   for (std::set<FilePath>::iterator it = image_paths.begin();
        it != image_paths.end(); ++it) {
-    if (!file_util::Delete(extension_root_.Append(*it), false)) {
+    FilePath path = *it;
+    if (path.IsAbsolute() || path.ReferencesParent()) {
+      ReportFailure("Invalid path for browser image.");
+      return;
+    }
+    if (!file_util::Delete(extension_root_.Append(path), false)) {
       ReportFailure("Error removing old image file.");
       return;
     }
@@ -152,7 +157,12 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
   // Write our parsed images back to disk as well.
   for (size_t i = 0; i < images.size(); ++i) {
     const SkBitmap& image = images[i].a;
-    FilePath path = extension_root_.Append(images[i].b);
+    FilePath path_suffix = images[i].b;
+    if (path_suffix.IsAbsolute() || path_suffix.ReferencesParent()) {
+      ReportFailure("Invalid path for bitmap image.");
+      return;
+    }
+    FilePath path = extension_root_.Append(path_suffix);
 
     std::vector<unsigned char> image_data;
     // TODO(mpcomplete): It's lame that we're encoding all images as PNG, even
