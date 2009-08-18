@@ -131,14 +131,14 @@ int main(int argc, char**argv) {
   scoped_refptr<net::HostResolver> host_resolver(
       net::CreateSystemHostResolver());
 
-  scoped_ptr<net::ProxyService> proxy_service(net::ProxyService::CreateNull());
+  scoped_refptr<net::ProxyService> proxy_service(net::ProxyService::CreateNull());
   net::HttpTransactionFactory* factory = NULL;
   if (use_cache) {
-    factory = new net::HttpCache(host_resolver, proxy_service.get(), 0);
+    factory = new net::HttpCache(host_resolver, proxy_service, 0);
   } else {
     factory = new net::HttpNetworkLayer(
         net::ClientSocketFactory::GetDefaultFactory(), host_resolver,
-        proxy_service.get());
+        proxy_service);
   }
 
   {

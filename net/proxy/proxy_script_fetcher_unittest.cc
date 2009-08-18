@@ -40,7 +40,6 @@ class RequestContext : public URLRequestContext {
   }
   ~RequestContext() {
     delete http_transaction_factory_;
-    delete proxy_service_;
   }
 };
 

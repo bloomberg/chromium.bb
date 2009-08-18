@@ -62,7 +62,6 @@ class TestURLRequestContext : public URLRequestContext {
 
   virtual ~TestURLRequestContext() {
     delete http_transaction_factory_;
-    delete proxy_service_;
   }
 };
 

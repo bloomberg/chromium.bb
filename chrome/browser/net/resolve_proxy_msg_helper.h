@@ -8,6 +8,7 @@
 #include <deque>
 #include <string>
 
+#include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "net/base/completion_callback.h"
@@ -84,7 +85,7 @@ class ResolveProxyMsgHelper {
   };
 
   // Members for the current outstanding proxy request.
-  net::ProxyService* proxy_service_;
+  scoped_refptr<net::ProxyService> proxy_service_;
   net::CompletionCallbackImpl<ResolveProxyMsgHelper> callback_;
   net::ProxyInfo proxy_info_;
 
@@ -96,7 +97,7 @@ class ResolveProxyMsgHelper {
 
   // Specified by unit-tests, to use this proxy service in place of the
   // global one.
-  net::ProxyService* proxy_service_override_;
+  scoped_refptr<net::ProxyService> proxy_service_override_;
 };
 
 #endif  // CHROME_BROWSER_NET_RESOLVE_PROXY_MSG_HELPER_

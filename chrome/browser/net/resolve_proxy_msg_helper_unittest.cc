@@ -54,10 +54,11 @@ class MyDelegate : public ResolveProxyMsgHelper::Delegate {
 // Issue three sequential requests -- each should succeed.
 TEST(ResolveProxyMsgHelperTest, Sequential) {
   net::MockAsyncProxyResolver* resolver = new net::MockAsyncProxyResolver;
-  net::ProxyService service(new MockProxyConfigService, resolver);
+  scoped_refptr<net::ProxyService> service(
+      new net::ProxyService(new MockProxyConfigService, resolver));
 
   MyDelegate delegate;
-  ResolveProxyMsgHelper helper(&delegate, &service);
+  ResolveProxyMsgHelper helper(&delegate, service);
 
   GURL url1("http://www.google1.com/");
   GURL url2("http://www.google2.com/");
@@ -116,10 +117,11 @@ TEST(ResolveProxyMsgHelperTest, Sequential) {
 // Issue a request while one is already in progress -- should be queued.
 TEST(ResolveProxyMsgHelperTest, QueueRequests) {
   net::MockAsyncProxyResolver* resolver = new net::MockAsyncProxyResolver;
-  net::ProxyService service(new MockProxyConfigService, resolver);
+  scoped_refptr<net::ProxyService> service(
+      new net::ProxyService(new MockProxyConfigService, resolver));
 
   MyDelegate delegate;
-  ResolveProxyMsgHelper helper(&delegate, &service);
+  ResolveProxyMsgHelper helper(&delegate, service);
 
   GURL url1("http://www.google1.com/");
   GURL url2("http://www.google2.com/");
@@ -182,11 +184,12 @@ TEST(ResolveProxyMsgHelperTest, QueueRequests) {
 // Delete the helper while a request is in progress, and others are pending.
 TEST(ResolveProxyMsgHelperTest, CancelPendingRequests) {
   net::MockAsyncProxyResolver* resolver = new net::MockAsyncProxyResolver;
-  net::ProxyService service(new MockProxyConfigService, resolver);
+  scoped_refptr<net::ProxyService> service(
+      new net::ProxyService(new MockProxyConfigService, resolver));
 
   MyDelegate delegate;
   scoped_ptr<ResolveProxyMsgHelper> helper(
-      new ResolveProxyMsgHelper(&delegate, &service));
+      new ResolveProxyMsgHelper(&delegate, service));
 
   GURL url1("http://www.google1.com/");
   GURL url2("http://www.google2.com/");

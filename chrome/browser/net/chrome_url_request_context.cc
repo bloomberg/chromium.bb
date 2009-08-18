@@ -196,8 +196,11 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOffTheRecord(
   ChromeURLRequestContext* context = new ChromeURLRequestContext(profile);
 
   // Share the same proxy service and host resolver as the original profile.
-  // This proxy service's lifespan is dependent on the lifespan of the original
-  // profile which we reference (see above).
+  // TODO(eroman): although ProxyService is reference counted, this sharing
+  // still has a subtle dependency on the lifespan of the original profile --
+  // ProxyService holds a (non referencing) pointer to the URLRequestContext
+  // it uses to download PAC scripts, which in this case is the original
+  // profile...
   context->host_resolver_ =
       profile->GetOriginalProfile()->GetRequestContext()->host_resolver();
   context->proxy_service_ =
@@ -513,11 +516,11 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
 
   // Do not delete the cookie store in the case of the media context, as it is
   // owned by the original context.
+  // TODO(eroman): The lifetime expectation of cookie_store_ is not right.
+  // The assumption here is that the original request context (which owns
+  // cookie_store_) is going to outlive the media context (which uses it).
+  // However based on the destruction order of profiles this is not true.
+  // http://crbug.com/15289.
   if (!is_media_)
     delete cookie_store_;
-
-  // Do not delete the proxy service in the case of OTR or media contexts, as
-  // it is owned by the original URLRequestContext.
-  if (!is_off_the_record_ && !is_media_)
-    delete proxy_service_;
 }
