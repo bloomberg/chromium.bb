@@ -6,6 +6,7 @@
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

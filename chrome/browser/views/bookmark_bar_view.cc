@@ -870,20 +870,6 @@ void BookmarkBarView::PaintChildren(gfx::Canvas* canvas) {
   }
 }
 
-bool BookmarkBarView::GetDropFormats(
-      int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  if (!model_ || !model_->IsLoaded())
-    return false;
-  *formats = OSExchangeData::URL;
-  custom_formats->insert(BookmarkDragData::GetBookmarkCustomFormat());
-  return true;
-}
-
-bool BookmarkBarView::AreDropTypesRequired() {
-  return true;
-}
-
 bool BookmarkBarView::CanDrop(const OSExchangeData& data) {
   if (!model_ || !model_->IsLoaded())
     return false;

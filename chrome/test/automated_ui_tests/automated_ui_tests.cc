@@ -26,10 +26,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "googleurl/src/gurl.h"
-
-#if defined(TOOLKIT_VIEWS)
 #include "views/view.h"
-#endif
 
 namespace {
 

@@ -25,9 +25,6 @@ class BrowserRootView : public views::RootView {
   // tabstrip set.
   void set_tabstrip(TabStripWrapper* tabstrip) { tabstrip_ = tabstrip; }
 
-  virtual bool GetDropFormats(
-      int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats);
   virtual bool CanDrop(const OSExchangeData& data);
   virtual void OnDragEntered(const views::DropTargetEvent& event);
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
@@ -45,6 +42,9 @@ class BrowserRootView : public views::RootView {
 
   // The TabStrip.
   TabStripWrapper* tabstrip_;
+
+  // Is a drop allowed? This is set by CanDrop.
+  bool can_drop_;
 
   // If true, drag and drop events are being forwarded to the tab strip.
   // This is used to determine when to send OnDragEntered and OnDragExited

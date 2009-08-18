@@ -1238,18 +1238,7 @@ DragController* View::GetDragController() {
   return drag_controller_;
 }
 
-bool View::GetDropFormats(
-      int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  return false;
-}
-
-bool View::AreDropTypesRequired() {
-  return false;
-}
-
 bool View::CanDrop(const OSExchangeData& data) {
-  // TODO(sky): when I finish up migration, this should default to true.
   return false;
 }
 

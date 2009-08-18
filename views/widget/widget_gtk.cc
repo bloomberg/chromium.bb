@@ -7,43 +7,11 @@
 #include "app/gfx/path.h"
 #include "base/compiler_specific.h"
 #include "views/widget/default_theme_provider.h"
-#include "views/widget/drop_target_gtk.h"
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/window/window_gtk.h"
 
 namespace views {
-
-// During drag and drop GTK sends a drag-leave during a drop. This means we
-// have no way to tell the difference between a normal drag leave and a drop.
-// To work around that we listen for DROP_START, then ignore the subsequent
-// drag-leave that GTK generates.
-class WidgetGtk::DropObserver : public MessageLoopForUI::Observer {
- public:
-  DropObserver() { }
-
-  virtual void WillProcessEvent(GdkEvent* event) {
-    if (event->type == GDK_DROP_START) {
-      WidgetGtk* widget = GetWidgetGtkForEvent(event);
-      if (widget)
-        widget->ignore_drag_leave_ = true;
-    }
-  }
-
-  virtual void DidProcessEvent(GdkEvent* event) {
-  }
-
- private:
-  WidgetGtk* GetWidgetGtkForEvent(GdkEvent* event) {
-    GtkWidget* gtk_widget = gtk_get_event_widget(event);
-    if (!gtk_widget)
-      return NULL;
-
-    return WidgetGtk::GetViewForNative(gtk_widget);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(DropObserver);
-};
 
 // Returns the position of a widget on screen.
 static void GetWidgetPositionOnScreen(GtkWidget* widget, int* x, int *y) {
@@ -101,16 +69,7 @@ WidgetGtk::WidgetGtk(Type type)
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       delete_on_destroy_(true),
       transparent_(false),
-      ignore_drag_leave_(false),
       opacity_(255) {
-  static bool installed_message_loop_observer = false;
-  if (!installed_message_loop_observer) {
-    installed_message_loop_observer = true;
-    MessageLoopForUI* loop = MessageLoopForUI::current();
-    if (loop)
-      loop->AddObserver(new DropObserver());
-  }
-
   if (type_ != TYPE_CHILD)
     focus_manager_.reset(new FocusManager(this));
 }
@@ -245,17 +204,16 @@ void WidgetGtk::Init(GtkWidget* parent,
                      G_CALLBACK(CallWindowPaint), this);
   }
 
-  // Drag and drop.
-  gtk_drag_dest_set(window_contents_, static_cast<GtkDestDefaults>(0),
-                    NULL, 0, GDK_ACTION_COPY);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_motion",
-                   G_CALLBACK(CallDragMotion), this);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_data_received",
-                   G_CALLBACK(CallDragDataReceived), this);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_drop",
-                   G_CALLBACK(CallDragDrop), this);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_leave",
-                   G_CALLBACK(CallDragLeave), this);
+  // TODO(erg): Ignore these signals for now because they're such a drag.
+  //
+  // g_signal_connect(G_OBJECT(widget_), "drag_motion",
+  //                  G_CALLBACK(drag_motion_event_cb), NULL);
+  // g_signal_connect(G_OBJECT(widget_), "drag_leave",
+  //                  G_CALLBACK(drag_leave_event_cb), NULL);
+  // g_signal_connect(G_OBJECT(widget_), "drag_drop",
+  //                  G_CALLBACK(drag_drop_event_cb), NULL);
+  // g_signal_connect(G_OBJECT(widget_), "drag_data_received",
+  //                  G_CALLBACK(drag_data_received_event_cb), NULL);
 
   tooltip_manager_.reset(new TooltipManagerGtk(this));
 
@@ -431,8 +389,8 @@ FocusManager* WidgetGtk::GetFocusManager() {
 
 void WidgetGtk::ViewHierarchyChanged(bool is_add, View *parent,
                                      View *child) {
-  if (drop_target_.get())
-    drop_target_->ResetTargetViewIfEquals(child);
+  // Needs dnd support (see WidgetWin::ViewHierarchyChanged).
+  NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -544,47 +502,6 @@ gboolean WidgetGtk::OnButtonRelease(GtkWidget* widget, GdkEventButton* event) {
 
 void WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   root_view_->OnPaint(event);
-}
-
-void WidgetGtk::OnDragDataReceived(GdkDragContext* context,
-                                   gint x,
-                                   gint y,
-                                   GtkSelectionData* data,
-                                   guint info,
-                                   guint time) {
-  if (drop_target_.get())
-    drop_target_->OnDragDataReceived(context, x, y, data, info, time);
-}
-
-gboolean WidgetGtk::OnDragDrop(GdkDragContext* context,
-                               gint x,
-                               gint y,
-                               guint time) {
-  if (drop_target_.get()) {
-    return drop_target_->OnDragDrop(context, x, y, time);
-  }
-  return FALSE;
-}
-
-void WidgetGtk::OnDragLeave(GdkDragContext* context,
-                            guint time) {
-  if (ignore_drag_leave_) {
-    ignore_drag_leave_ = false;
-    return;
-  }
-  if (drop_target_.get()) {
-    drop_target_->OnDragLeave(context, time);
-    drop_target_.reset(NULL);
-  }
-}
-
-gboolean WidgetGtk::OnDragMotion(GdkDragContext* context,
-                                 gint x,
-                                 gint y,
-                                 guint time) {
-  if (!drop_target_.get())
-    drop_target_.reset(new DropTargetGtk(GetRootView(), context));
-  return drop_target_->OnDragMotion(context, x, y, time);
 }
 
 gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
@@ -706,11 +623,6 @@ WidgetGtk* WidgetGtk::GetViewForNative(GtkWidget* widget) {
   return static_cast<WidgetGtk*>(user_data);
 }
 
-void WidgetGtk::ResetDropTarget() {
-  ignore_drag_leave_ = false;
-  drop_target_.reset(NULL);
-}
-
 // static
 void WidgetGtk::SetViewForNative(GtkWidget* widget, WidgetGtk* view) {
   g_object_set_data(G_OBJECT(widget), "chrome-views", view);
@@ -750,46 +662,6 @@ gboolean WidgetGtk::CallWindowPaint(GtkWidget* widget,
                                     WidgetGtk* widget_gtk) {
   widget_gtk->OnWindowPaint(widget, event);
   return false;  // False indicates other widgets should get the event as well.
-}
-
-// static
-void WidgetGtk::CallDragDataReceived(GtkWidget* widget,
-                                     GdkDragContext* context,
-                                     gint x,
-                                     gint y,
-                                     GtkSelectionData* data,
-                                     guint info,
-                                     guint time,
-                                     WidgetGtk* host) {
-  return host->OnDragDataReceived(context, x, y, data, info, time);
-}
-
-// static
-gboolean WidgetGtk::CallDragDrop(GtkWidget* widget,
-                                 GdkDragContext* context,
-                                 gint x,
-                                 gint y,
-                                 guint time,
-                                 WidgetGtk* host) {
-  return host->OnDragDrop(context, x, y, time);
-}
-
-// static
-void WidgetGtk::CallDragLeave(GtkWidget* widget,
-                              GdkDragContext* context,
-                              guint time,
-                              WidgetGtk* host) {
-  host->OnDragLeave(context, time);
-}
-
-// static
-gboolean WidgetGtk::CallDragMotion(GtkWidget* widget,
-                                   GdkDragContext* context,
-                                   gint x,
-                                   gint y,
-                                   guint time,
-                                   WidgetGtk* host) {
-  return host->OnDragMotion(context, x, y, time);
 }
 
 gboolean WidgetGtk::CallEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {

@@ -7,23 +7,18 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/location_bar_view.h"
+#include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
 #include "views/window/window.h"
-
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/location_bar_view.h"
-#include "chrome/browser/views/tab_contents/tab_contents_container.h"
-#endif
 
 #if defined(OS_LINUX)
 #include "chrome/browser/gtk/view_id_util.h"

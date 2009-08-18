@@ -15,11 +15,8 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
-#include "webkit/glue/webcursor.h"
-
-#if defined(TOOLKIT_VIEWS)
 #include "views/view.h"
-#endif
+#include "webkit/glue/webcursor.h"
 
 #if defined(OS_WIN)
 #include "base/gfx/gdi_util.h"

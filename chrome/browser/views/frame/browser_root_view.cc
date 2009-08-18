@@ -13,27 +13,18 @@
 BrowserRootView::BrowserRootView(views::Widget* widget)
     : views::RootView(widget),
       tabstrip_(NULL),
+      can_drop_(false),
       forwarding_to_tab_strip_(false) {
 }
 
-bool BrowserRootView::GetDropFormats(
-      int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  if (tabstrip_ && tabstrip_->GetView()->IsVisible() &&
-      !tabstrip_->IsAnimating()) {
-    *formats = OSExchangeData::URL;
-    return true;
-  }
-  return false;
-}
-
 bool BrowserRootView::CanDrop(const OSExchangeData& data) {
-  return (tabstrip_ && tabstrip_->GetView()->IsVisible() &&
-          !tabstrip_->IsAnimating());
+  can_drop_ = (tabstrip_ && tabstrip_->GetView()->IsVisible() &&
+               !tabstrip_->IsAnimating() && data.HasURL());
+  return can_drop_;
 }
 
 void BrowserRootView::OnDragEntered(const views::DropTargetEvent& event) {
-  if (ShouldForwardToTabStrip(event)) {
+  if (can_drop_ && ShouldForwardToTabStrip(event)) {
     forwarding_to_tab_strip_ = true;
     scoped_ptr<views::DropTargetEvent> mapped_event(MapEventToTabStrip(event));
     tabstrip_->GetView()->OnDragEntered(*mapped_event.get());
@@ -41,17 +32,19 @@ void BrowserRootView::OnDragEntered(const views::DropTargetEvent& event) {
 }
 
 int BrowserRootView::OnDragUpdated(const views::DropTargetEvent& event) {
-  if (ShouldForwardToTabStrip(event)) {
-    scoped_ptr<views::DropTargetEvent> mapped_event(
-        MapEventToTabStrip(event));
-    if (!forwarding_to_tab_strip_) {
-      tabstrip_->GetView()->OnDragEntered(*mapped_event.get());
-      forwarding_to_tab_strip_ = true;
+  if (can_drop_) {
+    if (ShouldForwardToTabStrip(event)) {
+      scoped_ptr<views::DropTargetEvent> mapped_event(
+          MapEventToTabStrip(event));
+      if (!forwarding_to_tab_strip_) {
+        tabstrip_->GetView()->OnDragEntered(*mapped_event.get());
+        forwarding_to_tab_strip_ = true;
+      }
+      return tabstrip_->GetView()->OnDragUpdated(*mapped_event.get());
+    } else if (forwarding_to_tab_strip_) {
+      forwarding_to_tab_strip_ = false;
+      tabstrip_->GetView()->OnDragExited();
     }
-    return tabstrip_->GetView()->OnDragUpdated(*mapped_event.get());
-  } else if (forwarding_to_tab_strip_) {
-    forwarding_to_tab_strip_ = false;
-    tabstrip_->GetView()->OnDragExited();
   }
   return DragDropTypes::DRAG_NONE;
 }
