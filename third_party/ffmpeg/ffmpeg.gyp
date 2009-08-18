@@ -14,6 +14,10 @@
     ],
   },
   'variables': {
+    # Allow overridding the selection of which ffmpeg binaries to copy via an
+    # environment variable.  Affects the ffmpeg_binaries target.
+    'ffmpeg_branding%': '<(branding)',
+
     'use_system_ffmpeg%': 0,
   },
   'targets': [
@@ -180,9 +184,9 @@
       'msvs_guid': '4E4070E1-EFD9-4EF1-8634-3960956F6F10',
       'variables': {
         'conditions': [
-          [ 'branding=="Chrome"', {
+          [ 'ffmpeg_branding=="Chrome"', {
                'branding_dir': 'chrome',
-          }, { # else branding!="Chrome"
+          }, { # else ffmpeg_branding!="Chrome"
                'branding_dir': 'chromium',
           }],
         ],
