@@ -4900,10 +4900,14 @@ xmlParseNotationType(xmlParserCtxtPtr ctxt) {
 	if (name == NULL) {
 	    xmlFatalErrMsg(ctxt, XML_ERR_NAME_REQUIRED,
 			   "Name expected in NOTATION declaration\n");
-	    return(ret);
+            xmlFreeEnumeration(ret);
+      return(NULL);
 	}
 	cur = xmlCreateEnumeration(name);
-	if (cur == NULL) return(ret);
+  if (cur == NULL) {
+            xmlFreeEnumeration(ret);
+            return(NULL);
+        }
 	if (last == NULL) ret = last = cur;
 	else {
 	    last->next = cur;
@@ -4913,9 +4917,8 @@ xmlParseNotationType(xmlParserCtxtPtr ctxt) {
     } while (RAW == '|');
     if (RAW != ')') {
 	xmlFatalErr(ctxt, XML_ERR_NOTATION_NOT_FINISHED, NULL);
-	if ((last != NULL) && (last != ret))
-	    xmlFreeEnumeration(last);
-	return(ret);
+        xmlFreeEnumeration(ret);
+  return(NULL);
     }
     NEXT;
     return(ret);
@@ -4956,7 +4959,10 @@ xmlParseEnumerationType(xmlParserCtxtPtr ctxt) {
 	}
 	cur = xmlCreateEnumeration(name);
 	xmlFree(name);
-	if (cur == NULL) return(ret);
+  if (cur == NULL) {
+            xmlFreeEnumeration(ret);
+            return(NULL);
+        }
 	if (last == NULL) ret = last = cur;
 	else {
 	    last->next = cur;
@@ -5358,6 +5364,12 @@ xmlParseElementChildrenContentDecl (xmlParserCtxtPtr ctxt, int inputchk) {
     const xmlChar *elem;
     xmlChar type = 0;
 
+    if (ctxt->depth > 128) {
+        xmlFatalErrMsgInt(ctxt, XML_ERR_ELEMCONTENT_NOT_FINISHED,
+                "xmlParseElementChildrenContentDecl : depth %d too deep\n",
+                          ctxt->depth);
+  return(NULL);
+    }
     SKIP_BLANKS;
     GROW;
     if (RAW == '(') {
@@ -5366,7 +5378,9 @@ xmlParseElementChildrenContentDecl (xmlParserCtxtPtr ctxt, int inputchk) {
         /* Recurse on first child */
 	NEXT;
 	SKIP_BLANKS;
+        ctxt->depth++;
         cur = ret = xmlParseElementChildrenContentDecl(ctxt, inputid);
+        ctxt->depth--;
 	SKIP_BLANKS;
 	GROW;
     } else {
@@ -5498,7 +5512,9 @@ xmlParseElementChildrenContentDecl (xmlParserCtxtPtr ctxt, int inputchk) {
 	    /* Recurse on second child */
 	    NEXT;
 	    SKIP_BLANKS;
+            ctxt->depth++;
 	    last = xmlParseElementChildrenContentDecl(ctxt, inputid);
+            ctxt->depth--;
 	    SKIP_BLANKS;
 	} else {
 	    elem = xmlParseName(ctxt);
