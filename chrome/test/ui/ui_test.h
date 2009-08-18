@@ -414,7 +414,8 @@ class UITest : public testing::Test {
   // Profile theme type choices.
   enum {
     DEFAULT_THEME = 0,
-    COMPLEX_THEME = 1
+    COMPLEX_THEME = 1,
+    NATIVE_THEME = 2
   } ProfileType;
 
  private:

@@ -114,4 +114,12 @@ TEST_F(NewTabUIStartupTest, ComplexThemeCold) {
                  UITest::COMPLEX_THEME);
 }
 
+#if defined(OS_LINUX)
+TEST_F(NewTabUIStartupTest, GtkThemeCold) {
+  RunStartupTest("tab_gtk_theme_cold", false /* cold */,
+                 false /* not important */,
+                 UITest::NATIVE_THEME);
+}
+#endif
+
 }  // namespace

@@ -1013,6 +1013,9 @@ FilePath UITest::ComputeTypicalUserDataSource(int profile_type) {
   } else if (profile_type == UITest::COMPLEX_THEME) {
     source_history_file = source_history_file.AppendASCII("profiles")
         .AppendASCII("complex_theme");
+  } else if (profile_type == UITest::NATIVE_THEME) {
+    source_history_file = source_history_file.AppendASCII("profiles")
+        .AppendASCII("gtk_theme");
   } else {
     NOTREACHED();
   }
