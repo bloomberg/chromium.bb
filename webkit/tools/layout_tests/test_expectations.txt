@@ -2675,6 +2675,9 @@ BUG16823 MAC : LayoutTests/editing/style/non-inheritable-styles.html = FAIL
 BUG16823 MAC : LayoutTests/editing/style/smoosh-styles-003.html = FAIL
 BUG16823 MAC : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 
+// Failures from WebKit merge 45916:45936
+BUG16850 DEBUG WIN : LayoutTests/fast/css/rem-dynamic-scaling.html = PASS CRASH
+
 // Failures from WebKit merge 45936:45958
 BUG18676 LINUX MAC : LayoutTests/fast/js/instanceof-operator.html = CRASH FAIL
 
