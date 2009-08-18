@@ -471,7 +471,7 @@ ExprNodeVector[8] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprConstant[0] , 8, ExprSize8 },
-  { ExprConstant[0] , 0x6013a0, ExprSize32 | ExprSignedHex },
+  { ExprConstant[0] , 0x6013a0, ExprSize32 | EpxrUnsignedHex },
 };
 0000000000000000: 89 7d fc                                     mov [%rbp-0x4], %edi
   { 1, { 0x89, 0x00, 0x00 },

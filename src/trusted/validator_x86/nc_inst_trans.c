@@ -586,15 +586,15 @@ static ExprNodeFlags GetExprSizeFlagForBytes(uint8_t num_bytes) {
  * flags that should be associated with the displacement value.
  */
 static void ExtractDisplacement(NcInstState* state,
-                                Displacement* displacement) {
+                                Displacement* displacement,
+                                ExprNodeFlags flags) {
   /* First compute the displacement value. */
   displacement->value = ExtractUnsignedBinaryValue(state,
                                                    state->first_disp_byte,
                                                    state->num_disp_bytes);
 
   /* Now compute any appropriate flags to be associated with the value. */
-  displacement->flags =
-      ExprFlag(ExprSignedHex) | GetExprSizeFlagForBytes(state->num_disp_bytes);
+  displacement->flags = flags | GetExprSizeFlagForBytes(state->num_disp_bytes);
 }
 
 /* Append the displacement value of the given instruction state
@@ -604,7 +604,7 @@ static void ExtractDisplacement(NcInstState* state,
 static ExprNode* AppendDisplacement(NcInstState* state) {
   Displacement displacement;
   DEBUG(printf("append displacement\n"));
-  ExtractDisplacement(state, &displacement);
+  ExtractDisplacement(state, &displacement, ExprFlag(ExprSignedHex));
   return AppendConstant(displacement.value, displacement.flags, &state->nodes);
 }
 
@@ -796,7 +796,10 @@ static ExprNode* AppendSib(NcInstState* state) {
     scale = sib_scale[sib_ss(state->sib)];
   }
   if (state->num_disp_bytes > 0) {
-    ExtractDisplacement(state, &displacement);
+    ExtractDisplacement(state, &displacement,
+                        RegUnknown == base_reg
+                        ? ExprFlag(ExprUnsignedHex)
+                        : ExprFlag(ExprSignedHex));
   } else {
     displacement.flags = ExprFlag(ExprSize8);
   }
@@ -818,7 +821,7 @@ static ExprNode* AppendMod00EffectiveAddress(
     case 5:
       if (NACL_TARGET_SUBARCH == 64) {
         Displacement displacement;
-        ExtractDisplacement(state, &displacement);
+        ExtractDisplacement(state, &displacement, ExprFlag(ExprSignedHex));
         return AppendMemoryOffset(state,
                                   RegRIP,
                                   RegUnknown,
@@ -856,7 +859,7 @@ static ExprNode* AppendMod01EffectiveAddress(
     return AppendSib(state);
   } else {
     Displacement displacement;
-    ExtractDisplacement(state, &displacement);
+    ExtractDisplacement(state, &displacement, ExprFlag(ExprSignedHex));
     return AppendMemoryOffset(state,
                               LookupRegister(
                                   ExtractAddressRegKind(state, operand),
@@ -883,7 +886,7 @@ static ExprNode* AppendMod10EffectiveAddress(
     OperandKind base =
         LookupRegister(ExtractAddressRegKind(state, operand),
                        GetGenRmRegister(state));
-    ExtractDisplacement(state, &displacement);
+    ExtractDisplacement(state, &displacement, ExprFlag(ExprSignedHex));
     return AppendMemoryOffset(state, base, RegUnknown, 1, &displacement);
   }
 }
