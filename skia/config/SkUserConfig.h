@@ -76,8 +76,15 @@
     based on the presence or absence of NDEBUG, but that decision can be changed
     here.
  */
-//#define SK_DEBUG
-//#define SK_RELEASE
+
+// TODO(senorblanco):  Force SK_DEBUG temporarily, so we get asserts even in
+// Release builds.  This is to track down an issue on the reliability bots.
+// See http://crbug.com/17569.
+//
+// This should be removed ASAP.
+
+#define SK_DEBUG
+#undef SK_RELEASE
 
 
 /*  If, in debugging mode, Skia needs to stop (presumably to invoke a debugger)
