@@ -4,6 +4,7 @@
 
 #include "views/controls/combobox/native_combobox_win.h"
 
+#include "app/combobox_model.h"
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -43,9 +44,9 @@ void NativeComboboxWin::UpdateFromModel() {
   gfx::Font font = ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont);
   int max_width = 0;
-  int num_items = combobox_->model()->GetItemCount(combobox_);
+  int num_items = combobox_->model()->GetItemCount();
   for (int i = 0; i < num_items; ++i) {
-    const std::wstring& text = combobox_->model()->GetItemAt(combobox_, i);
+    const std::wstring& text = combobox_->model()->GetItemAt(i);
 
     // Inserting the Unicode formatting characters if necessary so that the
     // text is displayed correctly in right-to-left UIs.

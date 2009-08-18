@@ -71,13 +71,12 @@ void LanguageComboboxModel::InitNativeNames(
                          &locale_names_);
 }
 
-// Overridden from views::Combobox::Model:
-int LanguageComboboxModel::GetItemCount(views::Combobox* source) {
+// Overridden from ComboboxModel:
+int LanguageComboboxModel::GetItemCount() {
   return static_cast<int>(locale_names_.size());
 }
 
-std::wstring LanguageComboboxModel::GetItemAt(views::Combobox* source,
-                                              int index) {
+std::wstring LanguageComboboxModel::GetItemAt(int index) {
   DCHECK(static_cast<int>(locale_names_.size()) > index);
   LocaleDataMap::const_iterator it =
       native_names_.find(locale_names_[index]);

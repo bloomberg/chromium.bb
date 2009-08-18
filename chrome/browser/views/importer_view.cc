@@ -150,8 +150,7 @@ views::View* ImporterView::GetContentsView() {
   return this;
 }
 
-int ImporterView::GetItemCount(views::Combobox* source) {
-  DCHECK(source == profile_combobox_);
+int ImporterView::GetItemCount() {
   DCHECK(importer_host_.get());
   int item_count = importer_host_->GetAvailableProfileCount();
   if (checkbox_items_.size() < static_cast<size_t>(item_count))
@@ -159,8 +158,7 @@ int ImporterView::GetItemCount(views::Combobox* source) {
   return item_count;
 }
 
-std::wstring ImporterView::GetItemAt(views::Combobox* source, int index) {
-  DCHECK(source == profile_combobox_);
+std::wstring ImporterView::GetItemAt(int index) {
   DCHECK(importer_host_.get());
   return importer_host_->GetSourceProfileNameAt(index);
 }

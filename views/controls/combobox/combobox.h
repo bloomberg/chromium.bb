@@ -7,6 +7,8 @@
 
 #include "views/view.h"
 
+class ComboboxModel;
+
 namespace views {
 
 class NativeComboboxWrapper;
@@ -17,15 +19,6 @@ class Combobox : public View {
   // The combobox's class name.
   static const char kViewClassName[];
 
-  class Model {
-   public:
-    // Return the number of items in the combo box.
-    virtual int GetItemCount(Combobox* source) = 0;
-
-    // Return the string that should be used to represent a given item.
-    virtual std::wstring GetItemAt(Combobox* source, int index) = 0;
-  };
-
   class Listener {
    public:
     // This is invoked once the selected item changed.
@@ -35,7 +28,7 @@ class Combobox : public View {
   };
 
   // |model| is not owned by the combo box.
-  explicit Combobox(Model* model);
+  explicit Combobox(ComboboxModel* model);
   virtual ~Combobox();
 
   // Register |listener| for item change events.
@@ -54,7 +47,7 @@ class Combobox : public View {
   void SelectionChanged();
 
   // Accessor for |model_|.
-  Model* model() const { return model_; }
+  ComboboxModel* model() const { return model_; }
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize();
@@ -73,7 +66,7 @@ class Combobox : public View {
 
  private:
   // Our model.
-  Model* model_;
+  ComboboxModel* model_;
 
   // Item change listener.
   Listener* listener_;

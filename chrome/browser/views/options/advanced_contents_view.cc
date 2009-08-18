@@ -12,6 +12,7 @@
 #include <vsstyle.h>
 #include <vssym32.h>
 
+#include "app/combobox_model.h"
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -420,16 +421,16 @@ void AdvancedSection::InitControlLayout() {
 ////////////////////////////////////////////////////////////////////////////////
 // PrivacySection
 
-class CookieBehaviorComboModel : public views::Combobox::Model {
+class CookieBehaviorComboModel : public ComboboxModel {
  public:
   CookieBehaviorComboModel() {}
 
   // Return the number of items in the combo box.
-  virtual int GetItemCount(views::Combobox* source) {
+  virtual int GetItemCount() {
     return 3;
   }
 
-  virtual std::wstring GetItemAt(views::Combobox* source, int index) {
+  virtual std::wstring GetItemAt(int index) {
     const int kStringIDs[] = {
       IDS_OPTIONS_COOKIES_ACCEPT_ALL_COOKIES,
       IDS_OPTIONS_COOKIES_RESTRICT_THIRD_PARTY_COOKIES,

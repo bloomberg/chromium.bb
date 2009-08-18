@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_CLEAR_BROWSING_DATA_H_
 #define CHROME_BROWSER_VIEWS_CLEAR_BROWSING_DATA_H_
 
+#include "app/combobox_model.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
@@ -32,7 +33,7 @@ class MessageLoop;
 class ClearBrowsingDataView : public views::View,
                               public views::DialogDelegate,
                               public views::ButtonListener,
-                              public views::Combobox::Model,
+                              public ComboboxModel,
                               public views::Combobox::Listener,
                               public BrowsingDataRemover::Observer {
  public:
@@ -63,9 +64,9 @@ class ClearBrowsingDataView : public views::View,
   virtual bool Accept();
   virtual views::View* GetContentsView();
 
-  // Overridden from views::Combobox::Model:
-  virtual int GetItemCount(views::Combobox* source);
-  virtual std::wstring GetItemAt(views::Combobox* source, int index);
+  // Overridden from ComboboxModel:
+  virtual int GetItemCount();
+  virtual std::wstring GetItemAt(int index);
 
   // Overridden from views::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* sender, int prev_index,

@@ -11,6 +11,7 @@
 
 #include <vector>
 
+#include "app/combobox_model.h"
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
@@ -38,7 +39,7 @@ static std::vector<CharacterEncoding::EncodingInfo> sorted_encoding_list;
 
 }  // namespace
 
-class DefaultEncodingComboboxModel : public views::Combobox::Model {
+class DefaultEncodingComboboxModel : public ComboboxModel {
  public:
   DefaultEncodingComboboxModel() {
     canonical_encoding_names_length_ =
@@ -57,12 +58,12 @@ class DefaultEncodingComboboxModel : public views::Combobox::Model {
 
   virtual ~DefaultEncodingComboboxModel() {}
 
-  // Overridden from views::Combobox::Model.
-  virtual int GetItemCount(views::Combobox* source) {
+  // Overridden from ComboboxModel.
+  virtual int GetItemCount() {
     return canonical_encoding_names_length_;
   }
 
-  virtual std::wstring GetItemAt(views::Combobox* source, int index) {
+  virtual std::wstring GetItemAt(int index) {
     DCHECK(index >= 0 && canonical_encoding_names_length_ > index);
     return sorted_encoding_list[index].encoding_display_name;
   }

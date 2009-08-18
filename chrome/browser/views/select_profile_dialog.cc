@@ -109,15 +109,13 @@ views::View* SelectProfileDialog::GetContentsView() {
   return this;
 }
 
-int SelectProfileDialog::GetItemCount(views::Combobox* source) {
+int SelectProfileDialog::GetItemCount() {
   // Always show one more item in the combo box that allows the user to select
   // <New Profile>.
   return profiles_.size() + 1;
 }
 
-std::wstring SelectProfileDialog::GetItemAt(views::Combobox* source,
-                                            int index) {
-  DCHECK(source == profile_combobox_);
+std::wstring SelectProfileDialog::GetItemAt(int index) {
   DCHECK(index >= 0 && index <= static_cast<int>(profiles_.size()));
   // For the last item in the drop down, return the <New Profile> text,
   // otherwise return the corresponding profile name from the vector.

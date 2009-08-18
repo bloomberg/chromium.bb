@@ -8,6 +8,7 @@
 // the events don't go to the Chrome window.
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "app/combobox_model.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/rect.h"
 #include "base/keyboard_codes.h"
@@ -255,11 +256,11 @@ class BorderView : public NativeViewHost {
   DISALLOW_COPY_AND_ASSIGN(BorderView);
 };
 
-class DummyComboboxModel : public Combobox::Model {
+class DummyComboboxModel : public ComboboxModel {
  public:
-  virtual int GetItemCount(Combobox* source) { return 10; }
+  virtual int GetItemCount() { return 10; }
 
-  virtual std::wstring GetItemAt(Combobox* source, int index) {
+  virtual std::wstring GetItemAt(int index) {
     return L"Item " + IntToWString(index);
   }
 };
@@ -735,16 +736,16 @@ class TestTextfield : public Textfield {
   }
 };
 
-class TestCombobox : public Combobox, public Combobox::Model {
+class TestCombobox : public Combobox, public ComboboxModel {
  public:
   TestCombobox() : Combobox(this) { }
   virtual gfx::NativeView TestGetNativeControlView() {
     return native_wrapper_->GetTestingHandle();
   }
-  virtual int GetItemCount(Combobox* source) {
+  virtual int GetItemCount() {
     return 10;
   }
-  virtual std::wstring GetItemAt(Combobox* source, int index) {
+  virtual std::wstring GetItemAt(int index) {
     return L"Hello combo";
   }
 };

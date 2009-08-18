@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_BOOKMARK_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_BOOKMARK_BUBBLE_VIEW_H_
 
+#include "app/combobox_model.h"
 #include "base/gfx/rect.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "googleurl/src/gurl.h"
@@ -60,13 +61,13 @@ class BookmarkBubbleView : public views::View,
   // Model for the combobox showing the list of folders to choose from. The
   // list always contains the bookmark bar, other node and parent. The list
   // also contains an extra item that shows the text 'Choose another folder...'.
-  class RecentlyUsedFoldersModel : public views::Combobox::Model {
+  class RecentlyUsedFoldersModel : public ComboboxModel {
    public:
     RecentlyUsedFoldersModel(BookmarkModel* bb_model, const BookmarkNode* node);
 
     // Combobox::Model methods. Call through to nodes_.
-    virtual int GetItemCount(views::Combobox* source);
-    virtual std::wstring GetItemAt(views::Combobox* source, int index);
+    virtual int GetItemCount();
+    virtual std::wstring GetItemAt(int index);
 
     // Returns the node at the specified index.
     const BookmarkNode* GetNodeAt(int index);

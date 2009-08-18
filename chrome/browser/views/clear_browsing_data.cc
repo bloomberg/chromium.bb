@@ -310,16 +310,13 @@ views::View* ClearBrowsingDataView::GetContentsView() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ClearBrowsingDataView, views::Combobox::Model implementation:
+// ClearBrowsingDataView, ComboboxModel implementation:
 
-int ClearBrowsingDataView::GetItemCount(views::Combobox* source) {
-  DCHECK(source == time_period_combobox_);
+int ClearBrowsingDataView::GetItemCount() {
   return 4;
 }
 
-std::wstring ClearBrowsingDataView::GetItemAt(views::Combobox* source,
-                                              int index) {
-  DCHECK(source == time_period_combobox_);
+std::wstring ClearBrowsingDataView::GetItemAt(int index) {
   switch (index) {
     case 0: return l10n_util::GetString(IDS_CLEAR_DATA_DAY);
     case 1: return l10n_util::GetString(IDS_CLEAR_DATA_WEEK);

@@ -105,13 +105,12 @@ BookmarkBubbleView::RecentlyUsedFoldersModel::RecentlyUsedFoldersModel(
       find(nodes_.begin(), nodes_.end(), node->GetParent()) - nodes_.begin());
 }
 
-int BookmarkBubbleView::RecentlyUsedFoldersModel::GetItemCount(
-    Combobox* source) {
+int BookmarkBubbleView::RecentlyUsedFoldersModel::GetItemCount() {
   return static_cast<int>(nodes_.size() + 1);
 }
 
 std::wstring BookmarkBubbleView::RecentlyUsedFoldersModel::GetItemAt(
-    Combobox* source, int index) {
+    int index) {
   if (index == nodes_.size())
     return l10n_util::GetString(IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
   return nodes_[index]->GetTitle();
@@ -336,7 +335,7 @@ void BookmarkBubbleView::LinkActivated(Link* source, int event_flags) {
 void BookmarkBubbleView::ItemChanged(Combobox* combobox,
                                      int prev_index,
                                      int new_index) {
-  if (new_index + 1 == parent_model_.GetItemCount(parent_combobox_)) {
+  if (new_index + 1 == parent_model_.GetItemCount()) {
     UserMetrics::RecordAction(L"BookmarkBubble_EditFromCombobox", profile_);
 
     ShowEditor();
@@ -417,7 +416,7 @@ void BookmarkBubbleView::ApplyEdits() {
     }
     // Last index means 'Choose another folder...'
     if (parent_combobox_->selected_item() <
-        parent_model_.GetItemCount(parent_combobox_) - 1) {
+        parent_model_.GetItemCount() - 1) {
       const BookmarkNode* new_parent =
           parent_model_.GetNodeAt(parent_combobox_->selected_item());
       if (new_parent != node->GetParent()) {

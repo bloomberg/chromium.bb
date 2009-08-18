@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "app/combobox_model.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
@@ -28,7 +29,7 @@ class Window;
 class SelectProfileDialog
     : public views::DialogDelegate,
       public views::View,
-      public views::Combobox::Model,
+      public ComboboxModel,
       public GetProfilesHelper::Delegate {
  public:
   // Creates and runs the dialog.
@@ -54,9 +55,9 @@ class SelectProfileDialog
   virtual std::wstring GetWindowTitle() const;
   virtual bool IsModal() const { return false; }
 
-  // views::Combobox::Model methods.
-  virtual int GetItemCount(views::Combobox* source);
-  virtual std::wstring GetItemAt(views::Combobox* source, int index);
+  // ComboboxModel methods.
+  virtual int GetItemCount();
+  virtual std::wstring GetItemAt(int index);
 
   // GetProfilesHelper::Delegate method.
   virtual void OnGetProfilesDone(const std::vector<std::wstring>& profiles);

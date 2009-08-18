@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/options/general_page_view.h"
 
+#include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/png_decoder.h"
@@ -266,7 +267,7 @@ CustomHomePagesTableModel::Entry*
 ///////////////////////////////////////////////////////////////////////////////
 // SearchEngineListModel
 
-class SearchEngineListModel : public views::Combobox::Model,
+class SearchEngineListModel : public ComboboxModel,
                               public TemplateURLModelObserver {
  public:
   explicit SearchEngineListModel(Profile* profile);
@@ -276,9 +277,9 @@ class SearchEngineListModel : public views::Combobox::Model,
   // so that when the TemplateURLModel changes the combobox can be updated.
   void SetCombobox(views::Combobox* combobox);
 
-  // views::Combobox::Model overrides:
-  virtual int GetItemCount(views::Combobox* source);
-  virtual std::wstring GetItemAt(views::Combobox* source, int index);
+  // ComboboxModel overrides:
+  virtual int GetItemCount();
+  virtual std::wstring GetItemAt(int index);
 
   // Returns the TemplateURL at the specified index.
   const TemplateURL* GetTemplateURLAt(int index);
@@ -331,13 +332,12 @@ void SearchEngineListModel::SetCombobox(views::Combobox* combobox) {
     combobox_->SetEnabled(false);
 }
 
-int SearchEngineListModel::GetItemCount(views::Combobox* source) {
+int SearchEngineListModel::GetItemCount() {
   return static_cast<int>(template_urls_.size());
 }
 
-std::wstring SearchEngineListModel::GetItemAt(views::Combobox* source,
-                                              int index) {
-  DCHECK(index < GetItemCount(combobox_));
+std::wstring SearchEngineListModel::GetItemAt(int index) {
+  DCHECK(index < GetItemCount());
   return template_urls_[index]->short_name();
 }
 

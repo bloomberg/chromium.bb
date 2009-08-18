@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/bug_report_view.h"
 
+#include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "app/win_util.h"
 #include "base/file_version_info.h"
@@ -42,7 +43,7 @@ static const int kDescriptionLines = 5;
 static const char kReportPhishingUrl[] =
     "http://www.google.com/safebrowsing/report_phish/";
 
-class BugReportComboBoxModel : public views::Combobox::Model {
+class BugReportComboBoxModel : public ComboboxModel {
  public:
   BugReportComboBoxModel() {}
 
@@ -57,12 +58,12 @@ class BugReportComboBoxModel : public views::Combobox::Model {
     OTHER_PROBLEM
   };
 
-  // views::Combobox::Model interface.
-  virtual int GetItemCount(views::Combobox* source) {
+  // ComboboxModel interface.
+  virtual int GetItemCount() {
     return OTHER_PROBLEM + 1;
   }
 
-  virtual std::wstring GetItemAt(views::Combobox* source, int index) {
+  virtual std::wstring GetItemAt(int index) {
     return GetItemAtIndex(index);
   }
 

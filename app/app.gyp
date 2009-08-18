@@ -63,6 +63,7 @@
         'app_paths.cc',
         'app_switches.h',
         'app_switches.cc',
+        'combobox_model.h',
         'drag_drop_types_gtk.cc',
         'drag_drop_types_win.cc',
         'drag_drop_types.h',

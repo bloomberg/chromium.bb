@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_FIRST_RUN_CUSTOMIZE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_FIRST_RUN_CUSTOMIZE_VIEW_H_
 
+#include "app/combobox_model.h"
 #include "chrome/browser/views/first_run_view_base.h"
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
@@ -26,7 +27,7 @@ class Profile;
 // some simple customizations during the first run.
 class FirstRunCustomizeView : public FirstRunViewBase,
                               public views::ButtonListener,
-                              public views::Combobox::Model {
+                              public ComboboxModel {
  public:
   class CustomizeViewObserver {
    public:
@@ -54,9 +55,9 @@ class FirstRunCustomizeView : public FirstRunViewBase,
   // Overridden form views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender);
 
-  // Overridden form views::Combobox::Model.
-  virtual int GetItemCount(views::Combobox* source);
-  virtual std::wstring GetItemAt(views::Combobox* source, int index);
+  // Overridden form ComboboxModel.
+  virtual int GetItemCount();
+  virtual std::wstring GetItemAt(int index);
 
   // Overridden from views::WindowDelegate.
   virtual std::wstring GetWindowTitle() const;

@@ -163,12 +163,11 @@ void FirstRunCustomizeView::ButtonPressed(views::Button* sender) {
   }
 }
 
-int FirstRunCustomizeView::GetItemCount(views::Combobox* source) {
+int FirstRunCustomizeView::GetItemCount() {
   return importer_host_->GetAvailableProfileCount();
 }
 
-std::wstring FirstRunCustomizeView::GetItemAt(views::Combobox* source,
-                                              int index) {
+std::wstring FirstRunCustomizeView::GetItemAt(int index) {
   return importer_host_->GetSourceProfileNameAt(index);
 }
 

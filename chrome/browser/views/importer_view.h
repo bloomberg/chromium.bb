@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_IMPORTER_VIEW_H__
 #define CHROME_BROWSER_VIEWS_IMPORTER_VIEW_H__
 
+#include "app/combobox_model.h"
 #include "chrome/browser/importer/importer.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
@@ -25,7 +26,7 @@ class Profile;
 //       So now use dialog as a placeholder.
 class ImporterView : public views::View,
                      public views::DialogDelegate,
-                     public views::Combobox::Model,
+                     public ComboboxModel,
                      public views::Combobox::Listener,
                      public ImportObserver {
  public:
@@ -44,9 +45,9 @@ class ImporterView : public views::View,
   virtual bool Accept();
   virtual views::View* GetContentsView();
 
-  // Overridden from views::Combobox::Model.
-  virtual int GetItemCount(views::Combobox* source);
-  virtual std::wstring GetItemAt(views::Combobox* source, int index);
+  // Overridden from ComboboxModel.
+  virtual int GetItemCount();
+  virtual std::wstring GetItemAt(int index);
 
   // Overridden from ChromeViews::Combobox::Listener
   virtual void ItemChanged(views::Combobox* combobox,
