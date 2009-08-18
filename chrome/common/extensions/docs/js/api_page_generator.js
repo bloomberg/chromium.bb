@@ -293,8 +293,12 @@ function getPageTitle() {
          pageName;
 }
 
+function getModuleName() {
+  return "chrome." + module.namespace;
+}
+
 function getFullyQualifiedFunctionName(func) {
-  return "chrome." + module.namespace + "." + func.name;
+  return getModuleName() + "." + func.name;
 }
 
 function hasCallback(parameters) {

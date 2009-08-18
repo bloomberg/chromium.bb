@@ -71,6 +71,16 @@
               </ol>
             </li>
             <div jsselect="apiDefinition">
+              <li jsdisplay="$this.properties">
+                <a href="#properties">Properties</a>    
+                <ol>
+                  <li jsselect="getPropertyListFromObject($this)">
+                    <a jscontent="name"
+                       jsvalues=".href:'#property-' + name"
+                       href="#property-anchor">propertyName</a>
+                  </li>
+                </ol>
+              </li>
               <li jsdisplay="functions && functions.length > 0">
                 <a href="#methods">Methods</a>    
                 <ol>
@@ -106,13 +116,30 @@
         </div>  
         <!-- /TABLE OF CONTENTS -->
 
-
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"></div>
 
         <!-- API PAGE -->
         <div class="apiPage" jsselect="apiDefinition">
-        
+          
+          <!-- PROPERTIES -->
+          <div jsdisplay="$this.properties" class="apiGroup">
+            <a name="#properties"></a>
+            <h2 id="properties">Properties</h2>
+
+            <div jsselect="getPropertyListFromObject($this)">
+              <a jsvalues=".name:'property-' + name"></a>
+              <h3 jscontent="name">getLastError</h3>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span jscontent="getModuleName() + '.'">chrome.extension</span><span jscontent="$this.name">lastError</span>
+              </div>
+              <div transclude="valueTemplate">
+              </div>
+            </div>
+            
+          </div> <!-- /apiGroup -->
+          
           <!-- METHODS -->
           <div jsdisplay="functions && functions.length > 0" class="apiGroup" id="methods">
             <a name="#methods"></a>
@@ -235,7 +262,7 @@
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks.</span><span jscontent="name">onEvent</span><span class="subdued">.addListener</span>(function(<span jscontent="getSignatureString(parameters)">Type param1, Type param2</span>) <span class="subdued">{...}</span>);
+                <span jscontent="getModuleName() + '.'" class="subdued">chrome.bookmarks</span><span jscontent="name">onEvent</span><span class="subdued">.addListener</span>(function(<span jscontent="getSignatureString(parameters)">Type param1, Type param2</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">

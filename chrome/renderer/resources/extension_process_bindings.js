@@ -61,11 +61,16 @@ var chrome = chrome || {};
   chromeHidden.handleResponse = function(requestId, name,
                                          success, response, error) {
     try {
-      if (!success) {
-        if (!error)
+      if (success) {
+        delete chrome.extension.lastError;
+      } else {
+        if (!error) {
           error = "Unknown error."
+        }
         console.error("Error during " + name + ": " + error);
-        return;
+        chrome.extension.lastError = {
+          "message": error
+        };
       }
 
       if (callbacks[requestId]) {
@@ -77,6 +82,7 @@ var chrome = chrome || {};
       }
     } finally {
       delete callbacks[requestId];
+      delete chrome.extension.lastError;
     }
   };
 
@@ -94,8 +100,9 @@ var chrome = chrome || {};
     
     // Calls with one argument expect singular argument. Calls with multiple
     // expect a list.
-    if (argCount == 1)
+    if (argCount == 1) {
       request.args = args[0];
+    }
     if (argCount > 1) {
       request.args = [];
       for (var k = 0; k < argCount; k++) {

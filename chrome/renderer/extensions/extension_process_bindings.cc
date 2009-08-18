@@ -262,7 +262,7 @@ class ExtensionImpl : public ExtensionBase {
         v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
     DCHECK(!current_context.IsEmpty());
     GetPendingRequestMap()[request_id].reset(new PendingRequest(
-        current_context, *v8::String::AsciiValue(args.Data())));
+        current_context, name));
 
     renderview->SendExtensionRequest(name, json_args, request_id, has_callback);
 

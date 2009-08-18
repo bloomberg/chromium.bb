@@ -361,6 +361,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
   EXPECT_TRUE(result);
 }
 
+// Tests that an error raised during an async function still fires
+// the callback, but sets chrome.extension.lastError.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("browsertest").AppendASCII("last_error")));
+
+  // Get the ExtensionHost that is hosting our toolstrip page.
+  ExtensionProcessManager* manager =
+      browser()->profile()->GetExtensionProcessManager();
+  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip.html", 1);
+
+  bool result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      host->render_view_host(), L"", L"testLastError()", &result);
+  EXPECT_TRUE(result);
+}
+
 // Tests that message passing between extensions and content scripts works.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   ASSERT_TRUE(LoadExtension(
