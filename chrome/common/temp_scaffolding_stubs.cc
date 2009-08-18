@@ -236,6 +236,7 @@ MemoryDetails::MemoryDetails() {
 
 void MemoryDetails::StartFetch() {
   NOTIMPLEMENTED();
+  OnDetailsAvailable();
 }
 
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
