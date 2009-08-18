@@ -40,6 +40,22 @@ BookmarkMenuButton::~BookmarkMenuButton() {
     bookmark_drop_menu_->set_observer(NULL);
 }
 
+bool BookmarkMenuButton::GetDropFormats(
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats) {
+  BookmarkModel* bookmark_model = GetBookmarkModel();
+  if (!bookmark_model || !bookmark_model->IsLoaded())
+    return false;
+
+  *formats = OSExchangeData::URL;
+  custom_formats->insert(BookmarkDragData::GetBookmarkCustomFormat());
+  return true;
+}
+
+bool BookmarkMenuButton::AreDropTypesRequired() {
+  return true;
+}
+
 bool BookmarkMenuButton::CanDrop(const OSExchangeData& data) {
   BookmarkModel* bookmark_model = GetBookmarkModel();
   if (!bookmark_model || !bookmark_model->IsLoaded())

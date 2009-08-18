@@ -87,6 +87,10 @@ View* DropHelper::CalculateTargetViewImpl(
   }
   if (deepest_view)
     *deepest_view = view;
+  // TODO(sky): for the time being these are separate. Once I port chrome menu
+  // I can switch to the #else implementation and nuke the OS_WIN
+  // implementation.
+#if defined(OS_WIN)
   // View under mouse changed, which means a new view may want the drop.
   // Walk the tree, stopping at target_view_ as we know it'll accept the
   // drop.
@@ -94,6 +98,22 @@ View* DropHelper::CalculateTargetViewImpl(
          (!view->IsEnabled() || !view->CanDrop(data))) {
     view = view->GetParent();
   }
+#else
+  int formats = 0;
+  std::set<OSExchangeData::CustomFormat> custom_formats;
+  while (view && view != target_view_) {
+    if (view->IsEnabled() &&
+        view->GetDropFormats(&formats, &custom_formats) &&
+        data.HasAnyFormat(formats, custom_formats) &&
+        (!check_can_drop || view->CanDrop(data))) {
+      // Found the view.
+      return view;
+    }
+    formats = 0;
+    custom_formats.clear();
+    view = view->GetParent();
+  }
+#endif
   return view;
 }
 

@@ -26,6 +26,10 @@ class BookmarkMenuButton : public views::MenuButton,
   virtual ~BookmarkMenuButton();
 
   // View drop methods.
+  virtual bool GetDropFormats(
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats);
+  virtual bool AreDropTypesRequired();
   virtual bool CanDrop(const OSExchangeData& data);
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
   virtual void OnDragExited();
