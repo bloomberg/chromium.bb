@@ -23,6 +23,12 @@ class StatusAreaView : public views::View,
                        public views::SimpleMenuModel::Delegate,
                        public views::ViewMenuDelegate {
  public:
+  enum OpenTabsMode {
+    OPEN_TABS_ON_LEFT = 1,
+    OPEN_TABS_CLOBBER,
+    OPEN_TABS_ON_RIGHT
+  };
+
   StatusAreaView(Browser* browser);
   virtual ~StatusAreaView();
 
@@ -32,6 +38,9 @@ class StatusAreaView : public views::View,
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
+
+  static OpenTabsMode GetOpenTabsMode();
+  static void SetOpenTabsMode(OpenTabsMode mode);
 
  private:
   void CreateAppMenu();
@@ -54,7 +63,10 @@ class StatusAreaView : public views::View,
   views::MenuButton* menu_view_;
 
   scoped_ptr<views::SimpleMenuModel> app_menu_contents_;
+  scoped_ptr<views::SimpleMenuModel> options_menu_contents_;
   scoped_ptr<views::Menu2> app_menu_menu_;
+
+  static OpenTabsMode open_tabs_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaView);
 };

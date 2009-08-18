@@ -16,6 +16,7 @@
 #include "base/timer.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -75,7 +76,7 @@ void ClockView::Paint(gfx::Canvas* canvas) {
   base::Time::Exploded now_exploded;
   now.LocalExplode(&now_exploded);
 
-  std::wstring time_string = StringPrintf(L"%d:%d",
+  std::wstring time_string = StringPrintf(L"%d:%02d",
                                           now_exploded.hour,
                                           now_exploded.minute);
   canvas->DrawStringInt(time_string, font_, SK_ColorWHITE, 0, 0,
@@ -109,7 +110,55 @@ void ClockView::OnTimer() {
   SetNextTimer();
 }
 
+class OptionsMenuModel : public views::SimpleMenuModel,
+                         public views::SimpleMenuModel::Delegate {
+ public:
+  explicit OptionsMenuModel(views::SimpleMenuModel::Delegate* delegate)
+      : SimpleMenuModel(this) {
+    AddItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_LEFT),
+            ASCIIToUTF16("Open tabs on left"));
+    AddItem(static_cast<int>(StatusAreaView::OPEN_TABS_CLOBBER),
+            ASCIIToUTF16("Open tabs clobber"));
+    AddItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_RIGHT),
+            ASCIIToUTF16("Open tabs on right"));
+  }
+  virtual ~OptionsMenuModel() {
+  }
+
+  // SimpleMenuModel::Delegate implementation.
+  virtual bool IsCommandIdChecked(int command_id) const {
+    return StatusAreaView::GetOpenTabsMode() == command_id;
+  }
+  virtual bool IsCommandIdEnabled(int command_id) const {
+    return true;
+  }
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      views::Accelerator* accelerator) {
+    return false;
+  }
+  virtual void ExecuteCommand(int command_id) {
+    switch (command_id) {
+      case StatusAreaView::OPEN_TABS_ON_LEFT:
+      case StatusAreaView::OPEN_TABS_CLOBBER:
+      case StatusAreaView::OPEN_TABS_ON_RIGHT:
+        StatusAreaView::SetOpenTabsMode(
+            static_cast<StatusAreaView::OpenTabsMode>(command_id));
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OptionsMenuModel);
+};
+
 }  // namespace
+
+// Default to opening new tabs on the left.
+StatusAreaView::OpenTabsMode StatusAreaView::open_tabs_mode_ =
+    StatusAreaView::OPEN_TABS_ON_LEFT;
 
 StatusAreaView::StatusAreaView(Browser* browser)
     : browser_(browser),
@@ -172,13 +221,29 @@ void StatusAreaView::Paint(gfx::Canvas* canvas) {
   ThemeProvider* theme = browser_->profile()->GetThemeProvider();
 
   // Fill the background.
-  SkBitmap* background = theme->GetBitmapNamed(IDR_THEME_FRAME);
+  SkBitmap* background;
+  if (browser_->window()->IsActive())
+    background = theme->GetBitmapNamed(IDR_THEME_FRAME);
+  else
+    background = theme->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
   canvas->TileImageInt(*background, 0, 0, width(), height());
+}
+
+// static
+StatusAreaView::OpenTabsMode StatusAreaView::GetOpenTabsMode() {
+  return open_tabs_mode_;
+}
+
+// static
+void StatusAreaView::SetOpenTabsMode(OpenTabsMode mode) {
+  open_tabs_mode_ = mode;
 }
 
 void StatusAreaView::CreateAppMenu() {
   if (app_menu_contents_.get())
     return;
+
+  options_menu_contents_.reset(new OptionsMenuModel(this));
 
   app_menu_contents_.reset(new views::SimpleMenuModel(this));
   app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
@@ -205,6 +270,8 @@ void StatusAreaView::CreateAppMenu() {
                               l10n_util::GetStringFUTF16(
                                   IDS_OPTIONS,
                                   l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  app_menu_contents_->AddSubMenu(ASCIIToUTF16("Compact nav bar options"),
+                                 options_menu_contents_.get());
   app_menu_contents_->AddItem(IDC_ABOUT,
                               l10n_util::GetStringFUTF16(
                                   IDS_ABOUT,

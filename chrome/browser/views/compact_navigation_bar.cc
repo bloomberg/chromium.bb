@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
+#include "chrome/browser/views/frame/status_area_view.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/theme_resources.h"
@@ -101,8 +103,7 @@ void CompactNavigationBar::Layout() {
 
   int curx = 0;
 
-  // Make the chrome button square since it looks better that way.
-  chrome_button_->SetBounds(curx, 0, kChromeButtonSize, kChromeButtonSize);
+  chrome_button_->SetBounds(curx, 0, kChromeButtonSize, height());
   curx += kChromeButtonSize + kHorizPadding;
 
   // URL bar.
@@ -112,16 +113,16 @@ void CompactNavigationBar::Layout() {
   // "Back | Forward" section.
   gfx::Size button_size = back_button_->GetPreferredSize();
   button_size.set_width(button_size.width() + kInnerPadding * 2);
-  back_button_->SetBounds(curx, 1, button_size.width(), height() - 1);
+  back_button_->SetBounds(curx, 0, button_size.width(), height());
   curx += button_size.width() + kHorizPadding;
 
   button_size = bf_separator_->GetPreferredSize();
-  bf_separator_->SetBounds(curx, 1, button_size.width(), height() - 1);
+  bf_separator_->SetBounds(curx, 0, button_size.width(), height());
   curx += button_size.width() + kHorizPadding;
 
   button_size = forward_button_->GetPreferredSize();
   button_size.set_width(button_size.width() + kInnerPadding * 2);
-  forward_button_->SetBounds(curx, 1, button_size.width(), height() - 1);
+  forward_button_->SetBounds(curx, 0, button_size.width(), height());
   curx += button_size.width() + kHorizPadding;
 }
 
@@ -129,7 +130,11 @@ void CompactNavigationBar::Paint(gfx::Canvas* canvas) {
   ThemeProvider* theme = browser_->profile()->GetThemeProvider();
 
   // Fill the background.
-  SkBitmap* background = theme->GetBitmapNamed(IDR_THEME_FRAME);
+  SkBitmap* background;
+  if (browser_->window()->IsActive())
+    background = theme->GetBitmapNamed(IDR_THEME_FRAME);
+  else
+    background = theme->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
   canvas->TileImageInt(*background, 0, 0, width(), height());
 }
 
@@ -139,7 +144,8 @@ void CompactNavigationBar::ButtonPressed(views::Button* sender) {
     return;
 
   if (sender == chrome_button_) {
-    NOTIMPLEMENTED();  // TODO(brettw) hook this up to something.
+    AddTabWithURL(GURL("http://goto.ext.google.com/tik-tok"),
+                  PageTransition::START_PAGE);
   } else if (sender == back_button_) {
     if (tab_contents->controller().CanGoBack())
       tab_contents->controller().GoBack();
@@ -156,10 +162,7 @@ void CompactNavigationBar::OnAutocompleteAccept(
     WindowOpenDisposition disposition,
     PageTransition::Type transition,
     const GURL& alternate_nav_url) {
-  // Add the new tab at the first non-pinned location.
-  int index = browser_->tabstrip_model()->IndexOfFirstNonPinnedTab();
-  browser_->AddTabWithURL(url, GURL(), PageTransition::TYPED,
-                          true, index, true, NULL);
+  AddTabWithURL(url, transition);
 }
 
 void CompactNavigationBar::OnChanged() {
@@ -181,4 +184,26 @@ gfx::Rect CompactNavigationBar::GetPopupBounds() const {
   gfx::Point upper_left(0, height());
   ConvertPointToScreen(this, &upper_left);
   return gfx::Rect(upper_left.x(), upper_left.y(), 700, 100);
+}
+
+void CompactNavigationBar::AddTabWithURL(const GURL& url,
+                                         PageTransition::Type transition) {
+  switch (StatusAreaView::GetOpenTabsMode()) {
+    case StatusAreaView::OPEN_TABS_ON_LEFT: {
+      // Add the new tab at the first non-pinned location.
+      int index = browser_->tabstrip_model()->IndexOfFirstNonPinnedTab();
+      browser_->AddTabWithURL(url, GURL(), transition,
+                              true, index, true, NULL);
+      break;
+    }
+    case StatusAreaView::OPEN_TABS_CLOBBER: {
+      browser_->GetSelectedTabContents()->controller().LoadURL(
+          url, GURL(), transition);
+      break;
+    }
+    case StatusAreaView::OPEN_TABS_ON_RIGHT: {
+      browser_->AddTabWithURL(url, GURL(), transition, true, -1, true, NULL);
+      break;
+    }
+  }
 }

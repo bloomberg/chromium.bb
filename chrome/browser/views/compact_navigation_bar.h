@@ -57,6 +57,8 @@ class CompactNavigationBar : public views::View,
   // AutocompletePopupPositioner implementation.
   virtual gfx::Rect GetPopupBounds() const;
 
+  void AddTabWithURL(const GURL& url, PageTransition::Type transition);
+
   Browser* browser_;
 
   bool initialized_;
