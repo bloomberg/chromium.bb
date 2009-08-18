@@ -467,7 +467,7 @@ html[dir='rtl'] .item {
 
 #recently-closed > * {
   display: inline-block;
-  max-width: 200px;
+  max-width: 114px; /* Selected so that we can fit 5 items in EN-US */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

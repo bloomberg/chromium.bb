@@ -141,6 +141,7 @@ function createRecentItem(data) {
     el.textContent = data.title;
   }
   el.sessionId = data.sessionId;
+  el.xtitle = data.title;
   var wrapperEl = document.createElement('span');
   wrapperEl.appendChild(el);
   return wrapperEl;
