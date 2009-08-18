@@ -31,3 +31,6 @@ DnsMasterTest.MassiveConcurrentLookupTest
 
 # issue 19467
 ExpireHistoryTest.*
+
+# issue 19606
+HistoryTest.AddPage
