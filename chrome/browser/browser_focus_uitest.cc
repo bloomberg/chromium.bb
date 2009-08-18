@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/automation/ui_controls.h"
@@ -390,7 +391,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
           &actual));
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
-      ui_controls::SendKeyPressNotifyWhenDone(L'\t', false, false, false,
+      ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_TAB, false,
+                                              false, false,
                                               new MessageLoop::QuitTask());
       ui_test_utils::RunMessageLoop();
       // Ideally, we wouldn't sleep here and instead would use the event
@@ -413,7 +415,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
 
     // Now let's press shift-tab to move the focus in reverse.
     for (int j = 0; j < 7; ++j) {
-      ui_controls::SendKeyPressNotifyWhenDone(L'\t', false, true, false,
+      ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_TAB, false,
+                                              true, false,
                                               new MessageLoop::QuitTask());
       ui_test_utils::RunMessageLoop();
       ::Sleep(kActionDelayMs);
@@ -490,7 +493,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversalOnInterstitial) {
       std::string actual = interstitial_page->GetFocusedElement();
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
-      ui_controls::SendKeyPressNotifyWhenDone(L'\t', false, false, false,
+      ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_TAB, false,
+                                              false, false,
                                               new MessageLoop::QuitTask());
       ui_test_utils::RunMessageLoop();
       // Ideally, we wouldn't sleep here and instead would use the event
@@ -513,7 +517,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversalOnInterstitial) {
 
     // Now let's press shift-tab to move the focus in reverse.
     for (int j = 0; j < 7; ++j) {
-      ui_controls::SendKeyPressNotifyWhenDone(L'\t', false, true, false,
+      ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_TAB, false,
+                                              true, false,
                                               new MessageLoop::QuitTask());
       ui_test_utils::RunMessageLoop();
       ::Sleep(kActionDelayMs);
@@ -591,8 +596,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   LocationBarView* location_bar = browser_view->GetLocationBarView();
 
   // Press Ctrl+F, which will make the Find box open and request focus.
-  static const int VK_F = 0x46;
-  ui_controls::SendKeyPressNotifyWhenDone(L'F', true, false, false,
+  ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_F, true,
+                                          false, false,
                                           new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
 
@@ -620,7 +625,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   EXPECT_EQ(location_bar, focus_manager->GetFocusedView());
 
   // Now press Ctrl+F again and focus should move to the Find box.
-  ui_controls::SendKeyPressNotifyWhenDone(L'F', true, false, false,
+  ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_F, true,
+                                          false, false,
                                           new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
   focused_view = focus_manager->GetFocusedView();
@@ -638,8 +644,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
             focus_manager->GetFocusedView());
 
   // Now press Ctrl+F again and focus should move to the Find box.
-  ui_controls::SendKeyPressNotifyWhenDone(VK_F, true, false, false,
-                                          new MessageLoop::QuitTask());
+  ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_F, true, false,
+                                          false, new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
 
   // See remark above on why we wait.

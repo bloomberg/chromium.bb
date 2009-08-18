@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/idle_timer.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/thread.h"
@@ -1019,44 +1020,20 @@ void Browser::OverrideEncoding(int encoding_id) {
 
 void Browser::Cut() {
   UserMetrics::RecordAction(L"Cut", profile_);
-  ui_controls::SendKeyPress(window()->GetNativeHandle(), L'X', true, false,
-                            false);
+  ui_controls::SendKeyPress(window()->GetNativeHandle(), base::VKEY_X, true,
+                            false, false);
 }
 
 void Browser::Copy() {
   UserMetrics::RecordAction(L"Copy", profile_);
-  ui_controls::SendKeyPress(window()->GetNativeHandle(), L'C', true, false,
-                            false);
-}
-
-void Browser::CopyCurrentPageURL() {
-  UserMetrics::RecordAction(L"CopyURLToClipBoard", profile_);
-  std::string url = GetSelectedTabContents()->GetURL().spec();
-
-  if (!::OpenClipboard(NULL)) {
-    NOTREACHED();
-    return;
-  }
-
-  if (::EmptyClipboard()) {
-    HGLOBAL text = ::GlobalAlloc(GMEM_MOVEABLE, url.size() + 1);
-    LPSTR ptr = static_cast<LPSTR>(::GlobalLock(text));
-    memcpy(ptr, url.c_str(), url.size());
-    ptr[url.size()] = '\0';
-    ::GlobalUnlock(text);
-
-    ::SetClipboardData(CF_TEXT, text);
-  }
-
-  if (!::CloseClipboard()) {
-    NOTREACHED();
-  }
+  ui_controls::SendKeyPress(window()->GetNativeHandle(), base::VKEY_C, true,
+                            false, false);
 }
 
 void Browser::Paste() {
   UserMetrics::RecordAction(L"Paste", profile_);
-  ui_controls::SendKeyPress(window()->GetNativeHandle(), L'V', true, false,
-                            false);
+  ui_controls::SendKeyPress(window()->GetNativeHandle(), base::VKEY_V, true,
+                            false, false);
 }
 #endif  // #if defined(OS_WIN)
 
@@ -1389,7 +1366,6 @@ void Browser::ExecuteCommandWithDisposition(
     // Clipboard commands
     case IDC_CUT:                   Cut();                         break;
     case IDC_COPY:                  Copy();                        break;
-    case IDC_COPY_URL:              CopyCurrentPageURL();          break;
     case IDC_PASTE:                 Paste();                       break;
 #endif
 

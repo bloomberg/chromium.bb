@@ -300,7 +300,8 @@ bool SendKeyPress(gfx::NativeWindow window, wchar_t key, bool control,
   return SendKeyPressImpl(key, control, shift, alt, NULL);
 }
 
-bool SendKeyPressNotifyWhenDone(wchar_t key, bool control, bool shift,
+bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,
+                                bool control, bool shift,
                                 bool alt, Task* task) {
   return SendKeyPressImpl(key, control, shift, alt, task);
 }

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -488,35 +489,35 @@ bool AutomatedUITest::Options() {
 }
 
 bool AutomatedUITest::PressDownArrow() {
-  return SimulateKeyPressInActiveWindow(VK_DOWN, 0);
+  return SimulateKeyPressInActiveWindow(base::VKEY_DOWN, 0);
 }
 
 bool AutomatedUITest::PressEnterKey() {
-  return SimulateKeyPressInActiveWindow(VK_RETURN, 0);
+  return SimulateKeyPressInActiveWindow(base::VKEY_RETURN, 0);
 }
 
 bool AutomatedUITest::PressEscapeKey() {
-  return SimulateKeyPressInActiveWindow(VK_ESCAPE, 0);
+  return SimulateKeyPressInActiveWindow(base::VKEY_ESCAPE, 0);
 }
 
 bool AutomatedUITest::PressPageDown() {
-  return SimulateKeyPressInActiveWindow(VK_PRIOR, 0);
+  return SimulateKeyPressInActiveWindow(base::VKEY_PRIOR, 0);
 }
 
 bool AutomatedUITest::PressPageUp() {
-  return SimulateKeyPressInActiveWindow(VK_NEXT, 0);
+  return SimulateKeyPressInActiveWindow(base::VKEY_NEXT, 0);
 }
 
 bool AutomatedUITest::PressSpaceBar() {
-  return SimulateKeyPressInActiveWindow(VK_SPACE, 0);
+  return SimulateKeyPressInActiveWindow(base::VKEY_SPACE, 0);
 }
 
 bool AutomatedUITest::PressTabKey() {
-  return SimulateKeyPressInActiveWindow(VK_TAB, 0);
+  return SimulateKeyPressInActiveWindow(base::VKEY_TAB, 0);
 }
 
 bool AutomatedUITest::PressUpArrow() {
-  return SimulateKeyPressInActiveWindow(VK_UP, 0);
+  return SimulateKeyPressInActiveWindow(base::VKEY_UP, 0);
 }
 
 bool AutomatedUITest::SelectNextTab() {

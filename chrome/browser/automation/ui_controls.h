@@ -26,12 +26,24 @@ namespace ui_controls {
 
 // Many of the functions in this class include a variant that takes a Task.
 // The version that takes a Task waits until the generated event is processed.
-// Once the generated event is processed the Task is Run (and deleted).
+// Once the generated event is processed the Task is Run (and deleted). Note
+// that this is a somewhat fragile process in that any event of the correct
+// type (key down, mouse click, etc.) will trigger the Task to be run. Hence
+// a usage such as
+//
+//   SendKeyPress(...);
+//   SendKeyPressNotifyWhenDone(..., task);
+//
+// might trigger |task| early.
+//
+// Note: Windows does not currently do anything with the |window| argument for
+// these functions, so passing NULL is ok.
 
 // Send a key press with/without modifier keys.
 bool SendKeyPress(gfx::NativeWindow window, wchar_t key, bool control,
                   bool shift, bool alt);
-bool SendKeyPressNotifyWhenDone(wchar_t key, bool control, bool shift,
+bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,
+                                bool control, bool shift,
                                 bool alt, Task* task);
 
 // Send a key down event. Use VK_CONTROL for ctrl key,

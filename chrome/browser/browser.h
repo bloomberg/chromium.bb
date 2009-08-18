@@ -341,11 +341,10 @@ class Browser : public TabStripModelDelegate,
   void ToggleEncodingAutoDetect();
   void OverrideEncoding(int encoding_id);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   // Clipboard commands
   void Cut();
   void Copy();
-  void CopyCurrentPageURL();
   void Paste();
 #endif
 

@@ -8,26 +8,45 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "chrome/test/automation/automation_constants.h"
 
 namespace {
 
-int GdkKeycodeForWindowsKeycode(wchar_t windows_keyval) {
-  switch (windows_keyval) {
-    case VK_SPACE:
-      return GDK_space;
-    default:
-      NOTREACHED() << "Unsupported keyval: " << windows_keyval;
-      return 0;
+class EventWaiter : public MessageLoopForUI::Observer {
+ public:
+  EventWaiter(Task* task, GdkEventType type) : task_(task), type_(type) {
+    MessageLoopForUI::current()->AddObserver(this);
   }
-}
 
-}  // namespace
+  virtual ~EventWaiter() {
+    MessageLoopForUI::current()->RemoveObserver(this);
+  }
+
+  // MessageLoop::Observer implementation:
+  virtual void WillProcessEvent(GdkEvent* event) {
+    // No-op.
+  }
+
+  virtual void DidProcessEvent(GdkEvent* event) {
+    if (event->any.type == type_) {
+      task_->Run();
+      delete this;
+    }
+  }
+
+ private:
+  Task* task_;
+  GdkEventType type_;
+};
+
+}
 
 namespace ui_controls {
 
 bool SendKeyPress(gfx::NativeWindow window,
                   wchar_t key, bool control, bool shift, bool alt) {
+  // TODO(estade): send a release as well?
   GdkEvent* event = gdk_event_new(GDK_KEY_PRESS);
 
   event->key.type = GDK_KEY_PRESS;
@@ -41,7 +60,7 @@ bool SendKeyPress(gfx::NativeWindow window,
   event->key.state = (control ? GDK_CONTROL_MASK : 0) |
                      (shift ? GDK_SHIFT_MASK : 0) |
                      (alt ? GDK_MOD1_MASK : 0);
-  event->key.keyval = GdkKeycodeForWindowsKeycode(key);
+  event->key.keyval = key;
   // TODO(estade): fill in the string?
 
   GdkKeymapKey* keys;
@@ -60,10 +79,12 @@ bool SendKeyPress(gfx::NativeWindow window,
   return true;
 }
 
-bool SendKeyPressNotifyWhenDone(wchar_t key, bool control, bool shift,
+bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,
+                                bool control, bool shift,
                                 bool alt, Task* task) {
-  NOTIMPLEMENTED();
-  return false;
+  // This object will delete itself after running |task|.
+  new EventWaiter(task, GDK_KEY_PRESS);
+  return SendKeyPress(window, key, control, shift, alt);
 }
 
 // TODO(estade): this appears to be unused on Windows. Can we remove it?
