@@ -471,6 +471,9 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
     // as format error. Should post a task to call to |webmediaplayer_|.
     SetNetworkState(WebKit::WebMediaPlayer::FormatError);
   }
+
+  // Repaint to trigger UI update.
+  Repaint();
 }
 
 void WebMediaPlayerImpl::OnPipelineSeek() {

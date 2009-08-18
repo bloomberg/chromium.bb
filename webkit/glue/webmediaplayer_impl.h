@@ -181,7 +181,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   virtual void paint(WebKit::WebCanvas* canvas, const WebKit::WebRect& rect);
 
-  // True if a video is loaded.
+  // True if the loaded media has a playable video/audio track.
   virtual bool hasVideo() const;
   virtual bool hasAudio() const;
 

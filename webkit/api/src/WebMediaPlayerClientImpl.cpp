@@ -150,6 +150,13 @@ bool WebMediaPlayerClientImpl::hasVideo() const
     return false;
 }
 
+bool WebMediaPlayerClientImpl::hasAudio() const
+{
+    if (m_webMediaPlayer.get())
+        return m_webMediaPlayer->hasAudio();
+    return false;
+}
+
 void WebMediaPlayerClientImpl::setVisible(bool visible)
 {
     if (m_webMediaPlayer.get())

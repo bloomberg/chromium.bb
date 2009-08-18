@@ -70,6 +70,7 @@ namespace WebKit {
         virtual bool supportsSave() const;
         virtual WebCore::IntSize naturalSize() const;
         virtual bool hasVideo() const;
+        virtual bool hasAudio() const;
         virtual void setVisible(bool);
         virtual float duration() const;
         virtual float currentTime() const;

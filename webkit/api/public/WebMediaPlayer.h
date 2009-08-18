@@ -90,8 +90,9 @@ namespace WebKit {
 
         virtual void paint(WebCanvas*, const WebRect&) = 0;
 
-        // True if a video is loaded.
+        // True if the loaded media has a playable video/audio track.
         virtual bool hasVideo() const = 0;
+        virtual bool hasAudio() const = 0;
 
         // Dimension of the video.
         virtual WebSize naturalSize() const = 0;
