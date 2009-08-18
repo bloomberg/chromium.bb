@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_registrar.h"
 
 class Browser;
 class DictionaryValue;
@@ -52,6 +53,7 @@ class ExtensionUpdateService {
 // Manages installed and running Chromium extensions.
 class ExtensionsService
     : public ExtensionUpdateService,
+      public NotificationObserver,
       public base::RefCountedThreadSafe<ExtensionsService> {
  public:
 
@@ -209,6 +211,11 @@ class ExtensionsService
   // Whether the extension service is ready.
   bool is_ready() { return ready_; }
 
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.
@@ -245,6 +252,8 @@ class ExtensionsService
 
   // Is the service ready to go?
   bool ready_;
+
+  NotificationRegistrar registrar_;
 
   // Our extension updater, if updates are turned on.
   scoped_refptr<ExtensionUpdater> updater_;
