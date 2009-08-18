@@ -17,6 +17,7 @@
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
+#import "chrome/common/cocoa_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -185,7 +186,9 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 
 - (IBAction)openBookmark:(id)sender {
   BookmarkNode* node = [self nodeFromButton:sender];
-  [urlDelegate_ openBookmarkURL:node->GetURL() disposition:CURRENT_TAB];
+  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
+      [[NSApp currentEvent] modifierFlags]);
+  [urlDelegate_ openBookmarkURL:node->GetURL() disposition:disposition];
 }
 
 // Given a NSMenuItem tag, return the appropriate bookmark node id.
@@ -498,7 +501,9 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 - (IBAction)openBookmarkMenuItem:(id)sender {
   int64 tag = [self nodeIdFromMenuTag:[sender tag]];
   const BookmarkNode* node = bookmarkModel_->GetNodeByID(tag);
-  [urlDelegate_ openBookmarkURL:node->GetURL() disposition:CURRENT_TAB];
+  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
+      [[NSApp currentEvent] modifierFlags]);
+  [urlDelegate_ openBookmarkURL:node->GetURL() disposition:disposition];
 }
 
 // Add all items from the given model to our bookmark bar.

@@ -9,6 +9,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
+#import "chrome/common/cocoa_utils.h"
 
 namespace {
 
@@ -379,7 +380,9 @@ void AutocompletePopupViewMac::AcceptInput() {
     PaintUpdatesNow();
   } else {
     model_->SetSelectedLine(selectedRow, false);
-    edit_view_->AcceptInput(CURRENT_TAB, false);
+    WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
+          [[NSApp currentEvent] modifierFlags]);
+    edit_view_->AcceptInput(disposition, false);
   }
 }
 

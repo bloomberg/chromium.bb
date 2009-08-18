@@ -10,7 +10,8 @@
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "webkit/glue/window_open_disposition.h"  // CURRENT_TAB
+#import "chrome/common/cocoa_utils.h"
+#include "webkit/glue/window_open_disposition.h"
 
 namespace {
 
@@ -60,7 +61,9 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   DCHECK(tab_contents);
 
   // A TabContents is a PageNavigator, so we can OpenURL() on it.
-  tab_contents->OpenURL(node->GetURL(), GURL(), CURRENT_TAB,
+  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
+      [[NSApp currentEvent] modifierFlags]);
+  tab_contents->OpenURL(node->GetURL(), GURL(), disposition,
                         PageTransition::AUTO_BOOKMARK);
 }
 

@@ -10,7 +10,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "webkit/glue/window_open_disposition.h"  // CURRENT_TAB
+#import "chrome/common/cocoa_utils.h"
+#include "webkit/glue/window_open_disposition.h"
 
 @implementation HistoryMenuCocoaController
 
@@ -35,7 +36,9 @@
   DCHECK(tab_contents);
 
   // A TabContents is a PageNavigator, so we can OpenURL() on it.
-  tab_contents->OpenURL(node.url, GURL(), CURRENT_TAB,
+  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
+      [[NSApp currentEvent] modifierFlags]);
+  tab_contents->OpenURL(node.url, GURL(), disposition,
                         PageTransition::AUTO_BOOKMARK);
 }
 

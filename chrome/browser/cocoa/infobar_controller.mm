@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/infobar_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#import "chrome/common/cocoa_utils.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -176,8 +177,8 @@
 // is called by the InfobarTextField on its delegate (the
 // LinkInfoBarController).
 - (void)linkClicked {
-  // TODO(rohitrao): Set the disposition correctly based on modifier keys.
-  WindowOpenDisposition disposition = CURRENT_TAB;
+  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
+      [[NSApp currentEvent] modifierFlags]);
   if (delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition))
     [self closeInfoBar];
 }
