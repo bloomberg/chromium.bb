@@ -15,8 +15,8 @@ class CMruList : public CWindowImpl<CMruList, CListBox> {
     size_.cy = 150;
   }
 
-  HWND Create(HWND hwnd) {
-    CWindowImpl<CMruList, CListBox>::Create(hwnd, rcDefault, NULL,
+  HWND Create(HWND parent) {
+    CWindowImpl<CMruList, CListBox>::Create(parent, rcDefault, NULL,
       WS_POPUP | WS_THICKFRAME | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
       WS_VSCROLL | LBS_NOINTEGRALHEIGHT,
       WS_EX_CLIENTEDGE);
