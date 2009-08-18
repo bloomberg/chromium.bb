@@ -1,8 +1,8 @@
-layer at (0,0) size 785x1314
+layer at (0,0) size 785x1324
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1314
-  RenderBlock {HTML} at (0,0) size 785x1314
-    RenderBody {BODY} at (8,8) size 769x1298 [bgcolor=#CCCCCC]
+layer at (0,0) size 785x1324
+  RenderBlock {HTML} at (0,0) size 785x1324
+    RenderBody {BODY} at (8,8) size 769x1308 [bgcolor=#CCCCCC]
       RenderBlock {P} at (0,0) size 769x20
         RenderText {#text} at (0,0) size 337x19
           text run at (0,0) width 337: "The style declarations which apply to the text below are:"
@@ -50,11 +50,11 @@ layer at (0,0) size 785x1314
       RenderBlock {P} at (0,440) size 769x19
         RenderText {#text} at (0,0) size 383x18
           text run at (0,0) width 383: "This sentence should be in a sans-serif font, not cursive."
-      RenderBlock {P} at (0,475) size 769x16
-        RenderText {#text} at (0,0) size 440x16
-          text run at (0,0) width 440: "This sentence should be in a monospace font, not serif."
-      RenderBlock {HR} at (0,504) size 769x2 [border: (1px inset #000000)]
-      RenderBlock {DIV} at (0,519) size 769x210
+      RenderBlock {P} at (0,475) size 769x18
+        RenderText {#text} at (0,0) size 550x18
+          text run at (0,0) width 550: "This sentence should be in a monospace font, not serif."
+      RenderBlock {HR} at (0,509) size 769x2 [border: (1px inset #000000)]
+      RenderBlock {DIV} at (0,524) size 769x210
         RenderBlock {P} at (0,0) size 769x32
           RenderText {#text} at (0,0) size 768x32
             text run at (0,0) width 768: "This sentence is normal for the first division, which is the next five sentences; it should be a"
@@ -74,18 +74,18 @@ layer at (0,0) size 785x1314
         RenderBlock {P} at (0,194) size 769x16
           RenderText {#text} at (0,0) size 352x16
             text run at (0,0) width 352: "This sentence should be in a monospace font."
-      RenderTable {TABLE} at (0,742) size 769x556 [border: (1px outset #808080)]
-        RenderTableSection {TBODY} at (1,1) size 767x554
+      RenderTable {TABLE} at (0,747) size 769x561 [border: (1px outset #808080)]
+        RenderTableSection {TBODY} at (1,1) size 767x559
           RenderTableRow {TR} at (0,0) size 767x28
             RenderTableCell {TD} at (0,0) size 767x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               RenderInline {STRONG} at (0,0) size 159x19
                 RenderText {#text} at (4,4) size 159x19
                   text run at (4,4) width 159: "TABLE Testing Section"
-          RenderTableRow {TR} at (0,28) size 767x526
-            RenderTableCell {TD} at (0,277) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          RenderTableRow {TR} at (0,28) size 767x531
+            RenderTableCell {TD} at (0,279) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               RenderText {#text} at (4,4) size 4x19
                 text run at (4,4) width 4: " "
-            RenderTableCell {TD} at (12,28) size 755x526 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            RenderTableCell {TD} at (12,28) size 755x531 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (4,4) size 747x198
                 RenderBlock {P} at (0,0) size 747x20
                   RenderText {#text} at (0,0) size 599x19
@@ -109,11 +109,11 @@ layer at (0,0) size 785x1314
               RenderBlock {P} at (4,233) size 747x19
                 RenderText {#text} at (0,0) size 383x18
                   text run at (0,0) width 383: "This sentence should be in a sans-serif font, not cursive."
-              RenderBlock {P} at (4,268) size 747x16
-                RenderText {#text} at (0,0) size 440x16
-                  text run at (0,0) width 440: "This sentence should be in a monospace font, not serif."
-              RenderBlock {HR} at (4,297) size 747x2 [border: (1px inset #000000)]
-              RenderBlock {DIV} at (4,312) size 747x210
+              RenderBlock {P} at (4,268) size 747x18
+                RenderText {#text} at (0,0) size 550x18
+                  text run at (0,0) width 550: "This sentence should be in a monospace font, not serif."
+              RenderBlock {HR} at (4,302) size 747x2 [border: (1px inset #000000)]
+              RenderBlock {DIV} at (4,317) size 747x210
                 RenderBlock {P} at (0,0) size 747x32
                   RenderText {#text} at (0,0) size 728x32
                     text run at (0,0) width 728: "This sentence is normal for the first division, which is the next five sentences; it should"
