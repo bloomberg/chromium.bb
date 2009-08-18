@@ -905,19 +905,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               FilePath /* filename */,
                               std::string /* actual mime type for url */)
 
-  // Allows a chrome plugin loaded in a renderer process to send arbitrary
-  // data to an instance of the same plugin loaded in the browser process.
-  IPC_MESSAGE_CONTROL2(ViewHostMsg_PluginMessage,
-                       FilePath /* plugin_path of plugin */,
-                       std::vector<uint8> /* opaque data */)
-
-  // Allows a chrome plugin loaded in a renderer process to send arbitrary
-  // data to an instance of the same plugin loaded in the browser process.
-  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_PluginSyncMessage,
-                              FilePath /* plugin_path of plugin */,
-                              std::vector<uint8> /* opaque data */,
-                              std::vector<uint8> /* opaque data */)
-
   // Requests spellcheck for a word.
   IPC_SYNC_MESSAGE_ROUTED1_2(ViewHostMsg_SpellCheck,
                              std::wstring /* word to check */,

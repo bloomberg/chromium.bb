@@ -283,8 +283,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetCookies, OnGetCookies)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_PluginMessage, OnPluginMessage)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_PluginSyncMessage, OnPluginSyncMessage)
 #if defined(OS_WIN)  // This hack is Windows-specific.
       IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
@@ -460,39 +458,6 @@ void ResourceMessageFilter::OnGetCookies(const GURL& url,
       extensions_request_context_.get() : request_context_.get();
   if (context->cookie_policy()->CanGetCookies(url, first_party_for_cookies))
     *cookies = context->cookie_store()->GetCookies(url);
-}
-
-void ResourceMessageFilter::OnPluginMessage(const FilePath& plugin_path,
-                                            const std::vector<uint8>& data) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-
-  ChromePluginLib *chrome_plugin = ChromePluginLib::Find(plugin_path);
-  if (chrome_plugin) {
-    void *data_ptr = const_cast<void*>(reinterpret_cast<const void*>(&data[0]));
-    uint32 data_len = static_cast<uint32>(data.size());
-    chrome_plugin->functions().on_message(data_ptr, data_len);
-  }
-}
-
-void ResourceMessageFilter::OnPluginSyncMessage(const FilePath& plugin_path,
-                                                const std::vector<uint8>& data,
-                                                std::vector<uint8> *retval) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-
-  ChromePluginLib *chrome_plugin = ChromePluginLib::Find(plugin_path);
-  if (chrome_plugin) {
-    void *data_ptr = const_cast<void*>(reinterpret_cast<const void*>(&data[0]));
-    uint32 data_len = static_cast<uint32>(data.size());
-    void *retval_buffer = 0;
-    uint32 retval_size = 0;
-    chrome_plugin->functions().on_sync_message(data_ptr, data_len,
-                                               &retval_buffer, &retval_size);
-    if (retval_buffer) {
-      retval->resize(retval_size);
-      memcpy(&(retval->at(0)), retval_buffer, retval_size);
-      CPB_Free(retval_buffer);
-    }
-  }
 }
 
 #if defined(OS_WIN)  // This hack is Windows-specific.

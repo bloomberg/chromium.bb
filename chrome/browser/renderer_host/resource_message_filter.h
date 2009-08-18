@@ -119,11 +119,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetCookies(const GURL& url,
                     const GURL& first_party_for_cookies,
                     std::string* cookies);
-  void OnPluginMessage(const FilePath& plugin_path,
-                       const std::vector<uint8>& message);
-  void OnPluginSyncMessage(const FilePath& plugin_path,
-                           const std::vector<uint8>& message,
-                           std::vector<uint8> *retval);
   void OnPluginFileDialog(const IPC::Message& msg,
                           bool multiple_files,
                           const std::wstring& title,
