@@ -6,12 +6,6 @@
   'variables': {
     'chromium_code': 1,
 
-    # Whether or not browser sync code is built in.
-    'chrome_personalization': 1,
-
-    # Used to build and statically link a stub (no-op) syncapi engine.
-    'use_syncapi_stub' : 1,
-
     # Define the common dependencies that contain all the actual
     # Chromium functionality.  This list gets pulled in below by
     # the link of the actual chrome (or chromium) executable on
@@ -21,6 +15,7 @@
       'browser',
       'debugger',
       'renderer',
+      'syncapi',
       'utility',
       'worker',
       '../printing/printing.gyp:printing',
@@ -88,8 +83,24 @@
           }],  # branding
         ],  # conditions
       }],  # OS=="mac"
+      ['OS=="win"', {
+        # Whether or not browser sync code is built in.
+        'chrome_personalization%': 1,
+
+        # Used to build a stub (no-op) syncapi engine.
+        'conditions': [
+          ['branding=="Chrome"', {
+            'use_syncapi_stub%': 0,
+          }, {
+            'use_syncapi_stub%': 1,
+          }],
+        ],
+      }, {
+        'chrome_personalization%': 0,
+        'use_syncapi_stub%': 1,
+      }],
     ],  # conditions
-  },
+  },  # variables
   'includes': [
     '../build/common.gypi',
   ],
@@ -121,9 +132,6 @@
       ['OS=="linux" and toolkit_views==1', {'sources/': [
         ['include', '_views\\.cc$'],
       ]}],
-      ['OS=="win" and use_syncapi_stub==1', {
-        'defines': ['COMPILING_SYNCAPI_STUB'],
-      }],  # use_syncapi_stub==1
       ['OS=="win" and chrome_personalization==1', {
          'defines': ['CHROME_PERSONALIZATION=1'],
       }],  # chrome_personalization==1
@@ -854,8 +862,8 @@
         'browser/cocoa/download_shelf_view.h',
         'browser/cocoa/download_shelf_view.mm',
         'browser/cocoa/download_started_animation_mac.mm',
-	'browser/cocoa/download_util_mac.h',
-	'browser/cocoa/download_util_mac.mm',
+        'browser/cocoa/download_util_mac.h',
+        'browser/cocoa/download_util_mac.mm',
         'browser/cocoa/encoding_menu_controller_delegate_mac.h',
         'browser/cocoa/encoding_menu_controller_delegate_mac.mm',
         'browser/cocoa/find_bar_bridge.h',
@@ -2244,13 +2252,6 @@
               'msvs_precompiled_source': 'tools/build/win/precompiled_wtl.cc',
             },
           },
-          'conditions': [
-            ['use_syncapi_stub==1', {
-              'sources': [
-                'browser/sync/engine/syncapi_stub.cc',
-              ],
-            }]  # use_syncapi_stub==1
-          ],
         }, {  # 'OS!="win"
           'sources/': [
             # Exclude all of hang_monitor.
@@ -3582,6 +3583,7 @@
         'common',
         'chrome_resources',
         'chrome_strings',
+        'syncapi',
         'test_support_ui',
         '../base/base.gyp:base',
         '../net/net.gyp:net',
@@ -3726,6 +3728,7 @@
         'common',
         'debugger',
         'renderer',
+        'syncapi',
         'test_support_unit',
         'utility',
         '../app/app.gyp:app_resources',
@@ -4162,6 +4165,11 @@
             'test/browser_with_test_window_test.h',
           ],
         }],
+        ['use_syncapi_stub==1', {  # These tests require a non-stub sync impl.
+          'sources!': [
+            'browser/sync/profile_sync_service_unittest.cc',
+          ]
+        }],
       ],
     },
     {
@@ -4198,6 +4206,89 @@
           ],
         }],
       ],
+    },
+    {
+      # Provides a syncapi dynamic library target from checked-in binaries,
+      # or from compiling a stub implementation.
+      'target_name': 'syncapi',
+      
+      'conditions': [
+        ['chrome_personalization==0', {
+          # Empty target.
+          'type': 'none',
+        }],
+        ['chrome_personalization==1 and use_syncapi_stub==1', {
+          # Build a stub library.
+          'type': 'shared_library',
+          'defines': [
+            'COMPILING_SYNCAPI_LIBRARY'
+          ],
+          'sources': [
+            'browser/sync/engine/syncapi_stub.cc',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+        }],
+        ['chrome_personalization==1 and use_syncapi_stub==0', {
+          'type': 'none',
+          'conditions': [
+            # Linux-specific rules for using syncapi binaries.
+            ['OS=="linux"', {
+              # TODO(timsteele):  Not sure if this linux-specific stuff
+              # works anymore.
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/lib',
+                  'files': [
+                    'personalization/sync/engine/<(CONFIGURATION_NAME)/libsyncapi.so',
+                  ],
+                },
+              ],
+              'link_settings': {
+                'libraries': [
+                  '-lsyncapi',
+                ],
+              },
+            }],  # OS=="linux"
+            # Windows-specific rules for using syncapi binaries.
+            ['OS=="win"', {
+              'direct_dependent_settings': {
+                'link_settings': {
+                  'libraries': [
+                    'personalization/sync/engine/<(CONFIGURATION_NAME)/syncapi.lib',
+                  ],
+                },
+              },
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)',
+                  'files': [
+                    'personalization/sync/engine/<(CONFIGURATION_NAME)/syncapi.dll',
+                    'personalization/sync/engine/<(CONFIGURATION_NAME)/syncapi_dll.pdb',
+                    'personalization/sync/engine/<(CONFIGURATION_NAME)/pthreads.dll',
+                    'personalization/sync/engine/<(CONFIGURATION_NAME)/pthreads_dll.pdb',
+                  ],
+                },
+              ],
+            }],  # OS=="win"
+          ],
+        }],
+        ['chrome_personalization==1 and OS=="win"', {
+          'direct_dependent_settings': {  # Shared by stub and non-stub.
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'DelayLoadDLLs': [
+                  'syncapi.dll',
+                ],
+              },
+            },
+          },
+        }],
+      ],  # chrome_personalization / use_syncapi_stub condition chain.
     },
     {
       'target_name': 'page_cycler_tests',
@@ -4752,6 +4843,7 @@
             'common',
             'debugger',
             'renderer',
+            'syncapi',
             'chrome_resources',
             'chrome_strings',
             '../base/base.gyp:base',
@@ -4810,6 +4902,7 @@
             'debugger',
             'test_support_common',
             'test_support_ui',
+            'syncapi',
             'third_party/hunspell/hunspell.gyp:hunspell',
             '../net/net.gyp:net_resources',
             '../skia/skia.gyp:skia',
@@ -5162,6 +5255,7 @@
               'renderer',
               'chrome_resources',
               'chrome_strings',
+              'syncapi',
               'test_support_unit',
               '../printing/printing.gyp:printing',
               '../webkit/webkit.gyp:webkit',
@@ -5245,6 +5339,7 @@
             'installer/installer.gyp:installer_util_strings',
             'debugger',
             'renderer',
+            'syncapi',
             '../base/base.gyp:test_support_base',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
@@ -5342,6 +5437,7 @@
             'browser',
             'debugger',
             'renderer',
+            'syncapi',
             '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
           ],

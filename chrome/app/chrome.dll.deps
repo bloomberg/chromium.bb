@@ -33,4 +33,5 @@ delay_loaded = [
   'avcodec-52.dll',
   'avformat-52.dll',
   'avutil-50.dll',
+  'syncapi.dll',
 ]

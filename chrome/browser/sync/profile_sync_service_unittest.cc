@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #ifdef CHROME_PERSONALIZATION
-#ifndef COMPILING_SYNCAPI_STUB  // This test requires the real-deal syncapi.
 
 #include <stack>
 #include <vector>
@@ -1267,5 +1266,4 @@ TEST_F(ProfileSyncServiceTestWithData, RecoverAfterDeletingSyncDataDirectory) {
   ExpectModelMatch();
 }
 
-#endif  // COMPILING_SYNCAPI_STUB
 #endif  // CHROME_PERSONALIZATION
