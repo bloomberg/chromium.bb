@@ -838,9 +838,6 @@ BUG10297 LINUX : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repain
 // No anti-aliasing on the text.
 BUG10298 LINUX : LayoutTests/svg/custom/use-on-disallowed-foreign-object-3.svg = FAIL
 
-// SVG text fills not working. Note that linux baseline is wrong.
-BUG10299 LINUX : LayoutTests/svg/custom/pointer-events-text.svg = FAIL
-
 // Marking this again as failed. This test failed even after rebaseline due to
 // the fact that the font is not specified in the test and it seems that the
 // test falls back on a different font locally than on the buildbot so the
