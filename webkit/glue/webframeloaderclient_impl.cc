@@ -939,16 +939,7 @@ void WebFrameLoaderClient::postProgressFinishedNotification() {
 }
 
 void WebFrameLoaderClient::setMainFrameDocumentReady(bool ready) {
-  WebViewImpl* web_view = webframe_->GetWebViewImpl();
-  if (!web_view)
-    return;
-  WebDevToolsAgentImpl* tools_agent = web_view->GetWebDevToolsAgentImpl();
-  if (!tools_agent)
-    return;
-
-  if (webframe_ == web_view->GetMainFrame()) {
-    tools_agent->SetMainFrameDocumentReady(ready);
-  }
+  // FIXME
 }
 
 // Creates a new connection and begins downloading from that (contrast this

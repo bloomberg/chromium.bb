@@ -57,7 +57,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     : host_id_(delegate->GetHostId()),
       delegate_(delegate),
       web_view_impl_(web_view_impl),
-      document_(NULL),
       attached_(false) {
   debugger_agent_delegate_stub_.set(new DebuggerAgentDelegateStub(this));
   tools_agent_delegate_stub_.set(new ToolsAgentDelegateStub(this));
@@ -85,34 +84,25 @@ void WebDevToolsAgentImpl::Attach() {
                             debugger_agent_delegate_stub_.get(),
                             this));
   Page* page = web_view_impl_->page();
+  debugger_agent_impl_->CreateUtilityContext(page->mainFrame(), &utility_context_);
+  InitDevToolsAgentHost();
 
-  // We are potentially attaching to the running page -> init agents with
-  // Document if any.
-  Document* doc = page->mainFrame()->document();
-  if (doc) {
-    // Reuse existing context in case detached/attached.
-    if (utility_context_.IsEmpty()) {
-      debugger_agent_impl_->ResetUtilityContext(doc, &utility_context_);
-      InitDevToolsAgentHost();
-    }
+  InspectorController* ic = web_view_impl_->page()->inspectorController();
+  // Unhide resources panel if necessary.
+  tools_agent_delegate_stub_->SetResourcesPanelEnabled(
+      ic->resourceTrackingEnabled());
+  v8::HandleScope scope;
+  v8::Context::Scope context_scope(utility_context_);
 
-    InspectorController* ic = web_view_impl_->page()->inspectorController();
-    // Unhide resources panel if necessary.
-    tools_agent_delegate_stub_->SetResourcesPanelEnabled(
-        ic->resourceTrackingEnabled());
-    v8::HandleScope scope;
-    v8::Context::Scope context_scope(utility_context_);
-
-    ScriptState* state = scriptStateFromPage(web_view_impl_->page());
-    v8::Handle<v8::Object> injected_script = v8::Local<v8::Object>::Cast(
-        utility_context_->Global()->Get(v8::String::New("InjectedScript")));
-    ic->setFrontendProxyObject(
-        state,
-        ScriptObject(state, utility_context_->Global()),
-        ScriptObject(state, injected_script));
-    // Allow controller to send messages to the frontend.
-    ic->setWindowVisible(true, false);
-  }
+  ScriptState* state = scriptStateFromPage(web_view_impl_->page());
+  v8::Handle<v8::Object> injected_script = v8::Local<v8::Object>::Cast(
+      utility_context_->Global()->Get(v8::String::New("InjectedScript")));
+  ic->setFrontendProxyObject(
+      state,
+      ScriptObject(state, utility_context_->Global()),
+      ScriptObject(state, injected_script));
+  // Allow controller to send messages to the frontend.
+  ic->setWindowVisible(true, false);
   attached_ = true;
 }
 
@@ -120,6 +110,7 @@ void WebDevToolsAgentImpl::Detach() {
   // Prevent controller from sending messages to the frontend.
   InspectorController* ic = web_view_impl_->page()->inspectorController();
   ic->setWindowVisible(false, false);
+  DisposeUtilityContext();
   devtools_agent_host_.set(NULL);
   debugger_agent_impl_.set(NULL);
   attached_ = false;
@@ -129,31 +120,11 @@ void WebDevToolsAgentImpl::OnNavigate() {
   DebuggerAgentManager::OnNavigate();
 }
 
-void WebDevToolsAgentImpl::SetMainFrameDocumentReady(bool ready) {
-  if (!attached_) {
-    return;
-  }
-
-  // We were attached prior to the page load -> init agents with Document.
-  Document* doc;
-  if (ready) {
-    Page* page = web_view_impl_->page();
-    doc = page->mainFrame()->document();
-  } else {
-    doc = NULL;
-  }
-  if (doc) {
-    debugger_agent_impl_->ResetUtilityContext(doc, &utility_context_);
-    InitDevToolsAgentHost();
-  }
-}
-
 void WebDevToolsAgentImpl::DidCommitLoadForFrame(
     WebViewImpl* webview,
     WebFrame* frame,
     bool is_new_navigation) {
   if (!attached_) {
-    DisposeUtilityContext();
     return;
   }
   WebDataSource* ds = frame->dataSource();
@@ -162,6 +133,10 @@ void WebDevToolsAgentImpl::DidCommitLoadForFrame(
       ds->unreachableURL() :
       request.url();
   if (webview->GetMainFrame() == frame) {
+    DisposeUtilityContext();
+    debugger_agent_impl_->CreateUtilityContext(webview->page()->mainFrame(),
+                                               &utility_context_);
+    InitDevToolsAgentHost();
     tools_agent_delegate_stub_->FrameNavigate(
         url.possibly_invalid_spec());
   }
@@ -249,6 +224,7 @@ void WebDevToolsAgentImpl::DispatchMessageFromClient(
 
 void WebDevToolsAgentImpl::InspectElement(int x, int y) {
   // TODO(pfeldman): implement using new inspector controller API.
+
 }
 
 void WebDevToolsAgentImpl::SendRpcMessage(

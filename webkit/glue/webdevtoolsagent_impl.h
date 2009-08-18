@@ -86,7 +86,6 @@ class WebDevToolsAgentImpl
   int host_id_;
   WebDevToolsAgentDelegate* delegate_;
   WebViewImpl* web_view_impl_;
-  WebCore::Document* document_;
   OwnPtr<DebuggerAgentDelegateStub> debugger_agent_delegate_stub_;
   OwnPtr<ToolsAgentDelegateStub> tools_agent_delegate_stub_;
   OwnPtr<ToolsAgentNativeDelegateStub> tools_agent_native_delegate_stub_;

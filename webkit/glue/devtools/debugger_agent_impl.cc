@@ -90,25 +90,21 @@ void DebuggerAgentImpl::DebuggerOutput(const std::string& command) {
 }
 
 // static
-void DebuggerAgentImpl::ResetUtilityContext(
-    Document* document,
+void DebuggerAgentImpl::CreateUtilityContext(
+    Frame* frame,
     v8::Persistent<v8::Context>* context) {
-  if (!context->IsEmpty()) {
-    context->Dispose();
-    context->Clear();
-  }
   v8::HandleScope scope;
 
   // TODO(pfeldman): Validate against Soeren.
   // Set up the DOM window as the prototype of the new global object.
   v8::Handle<v8::Context> window_context =
-      V8Proxy::context(document->frame());
+      V8Proxy::context(frame);
   v8::Handle<v8::Object> window_global = window_context->Global();
   v8::Handle<v8::Object> window_wrapper =
       V8DOMWrapper::lookupDOMWrapper(V8ClassIndex::DOMWINDOW, window_global);
 
   ASSERT(V8DOMWrapper::convertDOMWrapperToNative<DOMWindow>(window_wrapper) ==
-      document->frame()->domWindow());
+      frame->domWindow());
 
   // Create a new environment using an empty template for the shadow
   // object.  Reuse the global object if one has been created earlier.

@@ -26,8 +26,8 @@ class String;
 class DebuggerAgentImpl : public DebuggerAgent {
  public:
   // Creates utility context with injected js agent.
-  static void ResetUtilityContext(WebCore::Document* document,
-                                  v8::Persistent<v8::Context>* context);
+  static void CreateUtilityContext(WebCore::Frame* frame,
+                                   v8::Persistent<v8::Context>* context);
 
   DebuggerAgentImpl(WebViewImpl* web_view_impl,
                     DebuggerAgentDelegate* delegate,
