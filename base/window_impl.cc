@@ -155,14 +155,7 @@ LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
   // Handle the message if it's in our message map; otherwise, let the system
   // handle it.
   if (!ProcessWindowMessage(hwnd_, message, w_param, l_param, result))
-      result = DefWindowProc(hwnd_, message, w_param, l_param);
-
-  if (message == WM_NCDESTROY) {
-    // Notify the subclass that this is the last message before the window
-    // is destroyed.
-    OnFinalMessage(hwnd_);
-    hwnd_ = NULL;
-  }
+    result = DefWindowProc(hwnd_, message, w_param, l_param);
 
   return result;
 }

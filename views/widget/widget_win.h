@@ -303,7 +303,6 @@ class WidgetWin : public base::WindowImpl,
  protected:
   // Overridden from WindowImpl:
   virtual HICON GetDefaultWindowIcon() const;
-  virtual void OnFinalMessage(HWND window);
   virtual LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param);
 
   // Message Handlers
@@ -375,10 +374,7 @@ class WidgetWin : public base::WindowImpl,
   virtual void OnMove(const CPoint& point) { SetMsgHandled(FALSE); }
   virtual void OnMoving(UINT param, const LPRECT new_bounds) { }
   virtual LRESULT OnMouseRange(UINT msg, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnNCActivate(BOOL active) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
+  virtual LRESULT OnNCActivate(BOOL active) { SetMsgHandled(FALSE); return 0; }
   virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param) {
     SetMsgHandled(FALSE);
     return 0;
@@ -451,6 +447,10 @@ class WidgetWin : public base::WindowImpl,
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos) {
     SetMsgHandled(FALSE);
   }
+
+  // deletes this window as it is destroyed, override to provide different
+  // behavior.
+  virtual void OnFinalMessage(HWND window);
 
   // Start tracking all mouse events so that this window gets sent mouse leave
   // messages too. |is_nonclient| is true when we should track WM_NCMOUSELEAVE
