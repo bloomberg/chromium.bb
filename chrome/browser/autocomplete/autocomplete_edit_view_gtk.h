@@ -271,6 +271,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
   void HandleBackSpace();
 
+  static void HandleCopyClipboardThunk(GtkTextView* text_view, gpointer self) {
+    reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandleCopyClipboard();
+  }
+  void HandleCopyClipboard();
+
   // Actual implementation of SelectAll(), but also provides control over
   // whether the PRIMARY selection is set to the selected text (in SelectAll(),
   // it isn't, but we want set the selection when the user clicks in the entry).
