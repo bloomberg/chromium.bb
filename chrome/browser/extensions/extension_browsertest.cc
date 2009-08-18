@@ -168,7 +168,7 @@ void ExtensionBrowserTest::Observe(NotificationType type,
       break;
 
     case NotificationType::EXTENSION_UPDATE_DISABLED:
-      std::cout << "Got EXTENSIONS_DISABLED_LOAD notification.\n";
+      std::cout << "Got EXTENSION_UPDATE_DISABLED notification.\n";
       MessageLoopForUI::current()->Quit();
       break;
 

@@ -246,8 +246,11 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
                                            disabled_extensions_.end(),
                                            extension.get());
   if (iter != disabled_extensions_.end()) {
-    // It's disabled, so don't send the unload notification.
     disabled_extensions_.erase(iter);
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_UNLOADED_DISABLED,
+        Source<ExtensionsService>(this),
+        Details<Extension>(extension.get()));
     return;
   }
 
@@ -313,7 +316,7 @@ void ExtensionsService::OnExtensionsLoaded(ExtensionList* new_extensions) {
         extension->IsTheme() ||
         extension->location() == Extension::LOAD ||
         Extension::IsExternalLocation(extension->location())) {
-      Extension* old = GetExtensionById(extension->id());
+      Extension* old = GetExtensionByIdInternal(extension->id(), true, true);
       if (old) {
         if (extension->version()->CompareTo(*(old->version())) > 0) {
           bool higher_permissions =
@@ -374,7 +377,11 @@ void ExtensionsService::OnExtensionsLoaded(ExtensionList* new_extensions) {
 }
 
 void ExtensionsService::OnExtensionInstalled(Extension* extension) {
-  extension_prefs_->OnExtensionInstalled(extension);
+  // Make sure we don't enable a disabled extension.
+  if (extension_prefs_->GetExtensionState(extension->id()) !=
+      Extension::DISABLED) {
+    extension_prefs_->OnExtensionInstalled(extension);
+  }
 
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
   // to apply it.

@@ -620,6 +620,9 @@ class NotificationType {
     // state.
     EXTENSION_UNLOADED,
 
+    // Same as above, but for a disabled extension.
+    EXTENSION_UNLOADED_DISABLED,
+
     // Sent after a new ExtensionHost is created. The details are
     // an ExtensionHost* and the source is an ExtensionProcessManager*.
     EXTENSION_HOST_CREATED,

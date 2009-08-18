@@ -35,9 +35,10 @@ const int kRightColumnWidth = 290;
 // We could have a collection of funny descriptions for each color.
 class InstallDialogContent : public views::View, public views::DialogDelegate {
  public:
-  InstallDialogContent(CrxInstaller* crx_installer, Extension* extension,
+  InstallDialogContent(ExtensionInstallUI::Delegate* delegate,
+                       Extension* extension,
                        SkBitmap* icon)
-      : crx_installer_(crx_installer), icon_(NULL) {
+      : delegate_(delegate), icon_(NULL) {
     if (icon) {
       icon_ = new views::ImageView();
       icon_->SetImage(*icon);
@@ -93,12 +94,12 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   }
 
   virtual bool Accept() {
-    crx_installer_->ContinueInstall();
+    delegate_->ContinueInstall();
     return true;
   }
 
   virtual bool Cancel() {
-    crx_installer_->AbortInstall();
+    delegate_->AbortInstall();
     return true;
   }
 
@@ -162,7 +163,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     y += severe_->height();
   }
 
-  scoped_refptr<CrxInstaller> crx_installer_;
+  ExtensionInstallUI::Delegate* delegate_;
   views::ImageView* icon_;
   views::Label* heading_;
   views::Label* warning_;
@@ -174,21 +175,21 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
 } // namespace
 
 void ExtensionInstallUI::ShowExtensionInstallPrompt(Profile* profile,
-                                                    CrxInstaller* crx_installer,
+                                                    Delegate* delegate,
                                                     Extension* extension,
                                                     SkBitmap* icon) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
-    crx_installer->AbortInstall();
+    delegate->ContinueInstall();
     return;
   }
 
   BrowserWindow* window = browser->window();
   if (!window) {
-    crx_installer->AbortInstall();
+    delegate->AbortInstall();
     return;
   }
 
   views::Window::CreateChromeWindow(window->GetNativeHandle(), gfx::Rect(),
-      new InstallDialogContent(crx_installer, extension, icon))->Show();
+      new InstallDialogContent(delegate, extension, icon))->Show();
 }

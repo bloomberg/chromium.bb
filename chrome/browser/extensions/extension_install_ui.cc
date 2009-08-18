@@ -28,7 +28,7 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
     : profile_(profile), ui_loop_(MessageLoop::current()) {
 }
 
-void ExtensionInstallUI::ConfirmInstall(CrxInstaller* installer,
+void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
                                         Extension* extension,
                                         SkBitmap* install_icon) {
   DCHECK(ui_loop_ == MessageLoop::current());
@@ -42,12 +42,12 @@ void ExtensionInstallUI::ConfirmInstall(CrxInstaller* installer,
     if (previous_theme)
       previous_theme_id_ = previous_theme->id();
 
-    installer->ContinueInstall();
+    delegate->ContinueInstall();
     return;
   }
 
 #if defined(OS_WIN)
-  ShowExtensionInstallPrompt(profile_, installer, extension, install_icon);
+  ShowExtensionInstallPrompt(profile_, delegate, extension, install_icon);
 
 #elif defined(OS_MACOSX)
   // TODO(port): Implement nicer UI.
@@ -63,14 +63,14 @@ void ExtensionInstallUI::ConfirmInstall(CrxInstaller* installer,
            "This is a temporary message and it will be removed when "
            "extensions UI is finalized."),
       NULL, CFSTR("Cancel"), NULL, &response)) {
-    installer->AbortInstall();
+    delegate->AbortInstall();
   } else {
-    installer->ContinueInstall();
+    delegate->ContinueInstall();
   }
 #else
   // TODO(port): Implement some UI.
   NOTREACHED();
-  installer->ContinueInstall();
+  delegate->ContinueInstall();
 #endif  // OS_*
 }
 

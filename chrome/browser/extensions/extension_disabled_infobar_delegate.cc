@@ -5,6 +5,9 @@
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 
 #include "app/l10n_util.h"
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -13,21 +16,74 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 
+class ExtensionDisabledDialogDelegate
+    : public ExtensionInstallUI::Delegate,
+      public base::RefCountedThreadSafe<ExtensionDisabledDialogDelegate> {
+ public:
+  ExtensionDisabledDialogDelegate(Profile* profile,
+                                  ExtensionsService* service,
+                                  Extension* extension)
+        : profile_(profile), service_(service), extension_(extension),
+          ui_loop_(MessageLoop::current()) {
+    AddRef();  // balanced in ContinueInstall or AbortInstall.
+
+    // Do this now because we can't touch extension on the file loop.
+    install_icon_path_ =
+        extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE);
+
+    ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &ExtensionDisabledDialogDelegate::Start));
+  }
+
+  // ExtensionInstallUI::Delegate
+  virtual void ContinueInstall() {
+    service_->EnableExtension(extension_->id());
+    Release();
+  }
+  virtual void AbortInstall() {
+    // Do nothing. The extension will remain disabled.
+    Release();
+  }
+
+ private:
+  void Start() {
+    // We start on the file thread so we can decode the install icon.
+    CrxInstaller::DecodeInstallIcon(install_icon_path_, &install_icon_);
+    // Then we display the UI on the UI thread.
+    ui_loop_->PostTask(FROM_HERE,
+        NewRunnableMethod(this,
+                          &ExtensionDisabledDialogDelegate::ConfirmInstall));
+  }
+
+  void ConfirmInstall() {
+    DCHECK(MessageLoop::current() == ui_loop_);
+    ExtensionInstallUI ui(profile_);
+    ui.ConfirmInstall(this, extension_, install_icon_.get());
+  }
+
+  Profile* profile_;
+  ExtensionsService* service_;
+  Extension* extension_;
+  FilePath install_icon_path_;
+  scoped_ptr<SkBitmap> install_icon_;
+  MessageLoop* ui_loop_;
+};
+
 class ExtensionDisabledInfobarDelegate
     : public ConfirmInfoBarDelegate,
       public NotificationObserver {
  public:
   ExtensionDisabledInfobarDelegate(TabContents* tab_contents,
                                    ExtensionsService* service,
-                                   const std::string& extension_id,
-                                   const std::string& extension_name)
+                                   Extension* extension)
       : ConfirmInfoBarDelegate(tab_contents),
         tab_contents_(tab_contents),
         service_(service),
-        extension_id_(extension_id),
-        extension_name_(extension_name) {
+        extension_(extension) {
     // The user might re-enable the extension in other ways, so watch for that.
     registrar_.Add(this, NotificationType::EXTENSIONS_LOADED,
+                   Source<ExtensionsService>(service));
+    registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
                    Source<ExtensionsService>(service));
   }
   virtual void InfoBarClosed() {
@@ -35,7 +91,7 @@ class ExtensionDisabledInfobarDelegate
   }
   virtual std::wstring GetMessageText() const {
     return l10n_util::GetStringF(IDS_EXTENSION_DISABLED_INFOBAR_LABEL,
-                                 UTF8ToWide(extension_name_));
+                                 UTF8ToWide(extension_->name()));
   }
   virtual SkBitmap* GetIcon() const {
     return NULL;
@@ -48,24 +104,34 @@ class ExtensionDisabledInfobarDelegate
     return l10n_util::GetString(IDS_EXTENSION_DISABLED_INFOBAR_ENABLE_BUTTON);
   }
   virtual bool Accept() {
-    service_->EnableExtension(extension_id_);
+    // This object manages its own lifetime.
+    new ExtensionDisabledDialogDelegate(tab_contents_->profile(),
+                                        service_, extension_);
     return true;
   }
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    DCHECK(type == NotificationType::EXTENSIONS_LOADED);
-    ExtensionList* extensions = Details<ExtensionList>(details).ptr();
-
-    for (ExtensionList::iterator iter = extensions->begin();
-         iter != extensions->end(); ++iter) {
-       if ((*iter)->id() == extension_id_) {
-         // TODO(mpcomplete): This doesn't seem to always result in us getting
-         // deleted.
-         tab_contents_->RemoveInfoBar(this);
-         return;
-       }
+    // TODO(mpcomplete): RemoveInfoBar doesn't seem to always result in us
+    // getting deleted.
+    switch (type.value) {
+      case NotificationType::EXTENSIONS_LOADED: {
+        ExtensionList* extensions = Details<ExtensionList>(details).ptr();
+        ExtensionList::iterator iter = std::find(extensions->begin(),
+                                                 extensions->end(), extension_);
+        if (iter != extensions->end())
+          tab_contents_->RemoveInfoBar(this);
+        break;
+      }
+      case NotificationType::EXTENSION_UNLOADED_DISABLED: {
+        Extension* extension = Details<Extension>(details).ptr();
+        if (extension == extension_)
+          tab_contents_->RemoveInfoBar(this);
+        break;
+      }
+      default:
+        NOTREACHED();
     }
   }
 
@@ -73,8 +139,7 @@ class ExtensionDisabledInfobarDelegate
   NotificationRegistrar registrar_;
   TabContents* tab_contents_;
   ExtensionsService* service_;
-  std::string extension_id_;
-  std::string extension_name_;
+  Extension* extension_;
 };
 
 void ShowExtensionDisabledUI(ExtensionsService* service, Profile* profile,
@@ -88,5 +153,5 @@ void ShowExtensionDisabledUI(ExtensionsService* service, Profile* profile,
     return;
 
   tab_contents->AddInfoBar(new ExtensionDisabledInfobarDelegate(
-      tab_contents, service, extension->id(), extension->name()));
+      tab_contents, service, extension));
 }

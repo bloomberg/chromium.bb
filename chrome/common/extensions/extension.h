@@ -223,7 +223,12 @@ class Extension {
   // the browser might load (like themes and page action icons).
   std::set<FilePath> GetBrowserImages();
 
+  // Calculates and returns the permission class this extension is in.
   PermissionClass GetPermissionClass();
+
+  // Returns an absolute path to the given icon inside of the extension. Returns
+  // an empty FilePath if the extension does not have that icon.
+  FilePath GetIconPath(Icons icon);
 
 
   // Runtime data:

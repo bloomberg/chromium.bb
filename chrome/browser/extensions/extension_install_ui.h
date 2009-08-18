@@ -8,32 +8,55 @@
 #include "base/file_path.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/extensions/crx_installer.h"
 
+class Extension;
 class ExtensionsService;
 class MessageLoop;
 class Profile;
 class SandboxedExtensionUnpacker;
+class SkBitmap;
 
 // Displays all the UI around extension installation.
-class ExtensionInstallUI : public CrxInstallerClient {
+class ExtensionInstallUI {
  public:
+  class Delegate {
+   public:
+    // We call this method after ConfirmInstall() to signal that the
+    // installation should continue.
+    virtual void ContinueInstall() = 0;
+
+    // We call this method after ConfirmInstall() to signal that the
+    // installation should stop.
+    virtual void AbortInstall() = 0;
+  };
+
   // NOTE: The implementation of this is platform-specific.
   static void ShowExtensionInstallPrompt(Profile* profile,
-                                         CrxInstaller* installer,
+                                         Delegate* delegate,
                                          Extension* extension,
                                          SkBitmap* install_icon);
 
   ExtensionInstallUI(Profile* profile);
 
- private:
-  // CrxInstallerClient
-  virtual void ConfirmInstall(CrxInstaller* installer, Extension* extension,
-                              SkBitmap* icon);
-  virtual void OnInstallSuccess(Extension* extension);
-  virtual void OnInstallFailure(const std::string& error);
-  virtual void OnOverinstallAttempted(Extension* extension);
+  // This is called by the installer to verify whether the installation should
+  // proceed.
+  //
+  // We *MUST* eventually call either ContinueInstall() or AbortInstall()
+  // on |delegate|.
+  void ConfirmInstall(Delegate* delegate, Extension* extension,
+                      SkBitmap* icon);
 
+  // Installation was successful.
+  void OnInstallSuccess(Extension* extension);
+
+  // Intallation failed.
+  void OnInstallFailure(const std::string& error);
+
+  // The install was rejected because the same extension/version is already
+  // installed.
+  void OnOverinstallAttempted(Extension* extension);
+
+ private:
   void ShowThemeInfoBar(Extension* new_theme);
 
   Profile* profile_;

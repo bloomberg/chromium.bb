@@ -31,7 +31,7 @@ void CrxInstaller::Start(const FilePath& crx_path,
                          bool delete_crx,
                          MessageLoop* file_loop,
                          ExtensionsService* frontend,
-                         CrxInstallerClient* client) {
+                         ExtensionInstallUI* client) {
   // Note: We don't keep a reference because this object manages its own
   // lifetime.
   new CrxInstaller(crx_path, install_directory, install_source, expected_id,
@@ -45,7 +45,7 @@ CrxInstaller::CrxInstaller(const FilePath& crx_path,
                            bool delete_crx,
                            MessageLoop* file_loop,
                            ExtensionsService* frontend,
-                           CrxInstallerClient* client)
+                           ExtensionInstallUI* client)
     : crx_path_(crx_path),
       install_directory_(install_directory),
       install_source_(install_source),
@@ -116,23 +116,25 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
         expected_id_.c_str()));
     return;
   }
-  if (client_.get())  DecodeInstallIcon();
 
+  if (client_.get()) {
+    DecodeInstallIcon(extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE),
+                      &install_icon_);
+  }
   ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-    &CrxInstaller::ConfirmInstall));
+      &CrxInstaller::ConfirmInstall));
 }
 
-void CrxInstaller::DecodeInstallIcon() {
-  std::map<int, std::string>::const_iterator iter =
-      extension_->icons().find(128);
-  if (iter == extension_->icons().end())
+// static
+void CrxInstaller::DecodeInstallIcon(const FilePath& large_icon_path,
+                                     scoped_ptr<SkBitmap>* result) {
+  if (large_icon_path.empty())
     return;
 
-  FilePath path = extension_->GetResourcePath(iter->second);
   std::string file_contents;
-  if (!file_util::ReadFileToString(path, &file_contents)) {
+  if (!file_util::ReadFileToString(large_icon_path, &file_contents)) {
     LOG(ERROR) << "Could not read icon file: "
-               << WideToUTF8(path.ToWStringHack());
+               << WideToUTF8(large_icon_path.ToWStringHack());
     return;
   }
 
@@ -144,7 +146,7 @@ void CrxInstaller::DecodeInstallIcon() {
   *decoded = decoder.Decode(data, file_contents.length());
   if (decoded->empty()) {
     LOG(ERROR) << "Could not decode icon file: "
-               << WideToUTF8(path.ToWStringHack());
+               << WideToUTF8(large_icon_path.ToWStringHack());
     return;
   }
 
@@ -155,7 +157,7 @@ void CrxInstaller::DecodeInstallIcon() {
     return;
   }
 
-  install_icon_.reset(decoded.release());
+  result->swap(decoded);
 }
 
 void CrxInstaller::ConfirmInstall() {
@@ -163,13 +165,13 @@ void CrxInstaller::ConfirmInstall() {
   if (frontend_->extension_prefs()->IsExtensionBlacklisted(extension_->id())) {
     LOG(INFO) << "This extension: " << extension_->id()
       << " is blacklisted. Install failed.";
-    if (client_) {
+    if (client_.get()) {
       client_->OnInstallFailure("This extension is blacklisted.");
     }
     return;
   }
 
-  if (client_) {
+  if (client_.get()) {
     AddRef();  // balanced in ContinueInstall() and AbortInstall().
     client_->ConfirmInstall(this, extension_.get(), install_icon_.get());
   } else {
@@ -250,7 +252,7 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
   // rid of this line.
   ExtensionErrorReporter::GetInstance()->ReportError(error, false);  // quiet
 
-  if (client_)
+  if (client_.get())
     client_->OnInstallFailure(error);
 }
 

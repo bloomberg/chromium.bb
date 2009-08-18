@@ -1003,3 +1003,11 @@ void Extension::SetBackgroundPageReady() {
       Source<Extension>(this),
       NotificationService::NoDetails());
 }
+
+FilePath Extension::GetIconPath(Icons icon) {
+  std::map<int, std::string>::const_iterator iter =
+      icons_.find(Extension::EXTENSION_ICON_LARGE);
+  if (iter == icons_.end())
+    return FilePath();
+  return GetResourcePath(iter->second);
+}
