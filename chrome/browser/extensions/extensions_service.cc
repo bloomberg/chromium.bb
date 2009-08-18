@@ -81,9 +81,6 @@ ExtensionsService::ExtensionsService(Profile* profile,
   }
 
   backend_ = new ExtensionsServiceBackend(install_directory_, frontend_loop);
-
-  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CRASHED,
-                 Source<ExtensionsService>(this));
 }
 
 ExtensionsService::~ExtensionsService() {
@@ -136,13 +133,11 @@ void ExtensionsService::UpdateExtension(const std::string& id,
 }
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
-  // Unload the extension if it's loaded.
-  if (GetExtensionById(extension_id))
-    UnloadExtension(extension_id);
+  Extension* extension = GetExtensionById(extension_id);
+  FilePath extension_path = extension->path();
 
-  // At this point we have to reconstruct the path from prefs, because
-  // we have no information about this extension in memory.
-  LoadExtension(extension_prefs_->GetExtensionPath(extension_id));
+  UnloadExtension(extension_id);
+  LoadExtension(extension_path);
 }
 
 void ExtensionsService::UninstallExtension(const std::string& extension_id,
@@ -478,25 +473,6 @@ void ExtensionsService::OnExternalExtensionFound(const std::string& id,
                       backend_loop_,
                       this,
                       NULL);  // no client (silent install)
-}
-
-void ExtensionsService::Observe(NotificationType type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::EXTENSION_PROCESS_CRASHED: {
-        DCHECK_EQ(this, Source<ExtensionsService>(source).ptr());
-        ExtensionHost* host = Details<ExtensionHost>(details).ptr();
-
-        // Unload the entire extension to make sure its state is consistent
-        // (either fully operational, or fully unloaded, but not half-crashed).
-        UnloadExtension(host->extension()->id());
-      }
-      break;
-
-    default:
-      NOTREACHED();
-  }
 }
 
 

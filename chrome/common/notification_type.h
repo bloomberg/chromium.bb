@@ -633,7 +633,7 @@ class NotificationType {
     EXTENSION_PROCESS_CREATED,
 
     // Sent when extension render process crashes. The details are
-    // an ExtensionHost* and the source is an ExtensionsService*.
+    // an ExtensionHost*.
     EXTENSION_PROCESS_CRASHED,
 
     // Sent when the contents or order of toolstrips in the shelf model change.
