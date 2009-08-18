@@ -2792,10 +2792,6 @@ BUG18939 MAC : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = C
 // Flakiness from WebKit merge to 46977
 BUG18966 LINUX : LayoutTests/fast/overflow/overflow-float-stacking.html = PASS CRASH
 
-// Fallout from webkit roll 46977:47010
-BUG18995 LINUX WIN : LayoutTests/editing/inserting/5994480-2.html = FAIL
-BUG18995 LINUX WIN : LayoutTests/editing/pasteboard/select-element-1.html = FAIL
-
 // Fallout from webkit roll 47010:47034
 BUG19028 MAC : LayoutTests/fast/dom/Window/window-open-parent-no-parent.html = PASS CRASH
 
