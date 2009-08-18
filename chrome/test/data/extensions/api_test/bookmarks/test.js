@@ -1,37 +1,5 @@
-var completed = false;
-
-function complete() {
-  completed = true;
-  // a bit of a hack just to try to get the script to stop running at this point
-  throw "completed";
-}
-
-function fail(message) {
-  if (completed) throw "completed";
-
-  console.log("FAIL: " + message);
-  chrome.test.fail(message);
-  complete();
-}
-
-function succeed() {
-  if (completed) throw "completed";
-
-  chrome.test.pass();
-  complete();
-}
-
-window.onerror = function(message, url, code) {
-  if (completed) return;
-
-  fail(message);
-};
-
-function expectTrue(test, message) {
-  if (!test) {
-    fail(message);
-  }
-}
+// bookmarks api test
+// browser_tests.exe --gtest_filter=ExtensionApiTest.Bookmarks
 
 var expected = [
   {"children": [
@@ -42,35 +10,89 @@ var expected = [
   }
 ];
 
-function compareTrees(left, right) {
-  console.log("compare");
-  console.log(JSON.stringify(right));
-  console.log(JSON.stringify(left));
+function compareNode(left, right) {
+  //console.log(JSON.stringify(left));
+  //console.log(JSON.stringify(right));
   // TODO(erikkay): do some comparison of dateAdded
+  if (left.id != right.id)
+    return "id mismatch: " + left.id + " != " + right.id;
+  if (left.title != right.title)
+    return "title mismatch: " + left.title + " != " + right.title;
+  if (left.url != right.url)
+    return "url mismatch: " + left.url + " != " + right.url;
+  if (left.index != right.index)
+    return "index mismatch: " + left.index + " != " + right.index;
+  return true;
+}
+
+function compareTrees(left, right) {
+  //console.log(JSON.stringify(left));
+  //console.log(JSON.stringify(right));
   if (left == null && right == null) {
     console.log("both left and right are NULL");
     return true;
   }
   if (left == null || right == null)
-    return false;
-  if (left.length < right.length)
-    return false;
+    return left + " !+ " + right;
+  if (left.length != right.length)
+    return "count mismatch: " + left.length + " != " + right.length;
   for (var i = 0; i < left.length; i++) {
-    if (left[i].id != right[i].id)
-      return false;
-    console.log(left[i].title + " ? " + right[i].title);
-    if (left[i].title != right[i].title)
-      return false;
-    if (!compareTrees(left[i].children, right[i].children))
-      return false;
+    var result = compareNode(left[i], right[i]);
+    if (result !== true)
+      return result;
+    result = compareTrees(left[i].children, right[i].children);
+    if (result !== true)
+      return result;
   }
   return true;
 }
 
-chrome.bookmarks.getTree(function(results) {
-  expectTrue(compareTrees(results, expected),
-             "getTree() result doesn't match expected");
-  expected = results;
-  console.log("done");
-  succeed();
-});
+var tests = [
+  function getTree() {
+    chrome.bookmarks.getTree(function(results) {
+      expectTrue(compareTrees(results, expected),
+                 "getTree() result != expected");
+      expected = results;
+      succeed();
+    });
+  },
+  
+  function get() {
+    chrome.bookmarks.get("1", function(results) {
+      expectTrue(compareNode(results[0], expected[0].children[0]));
+      succeed();
+    });
+  },
+  
+  function getArray() {
+    chrome.bookmarks.get(["1", "2"], function(results) {
+      expectTrue(compareNode(results[0], expected[0].children[0]),
+                 "get() result != expected");
+      expectTrue(compareNode(results[1], expected[0].children[1]),
+                 "get() result != expected");
+      succeed();
+    });
+  },
+  
+  function getChildren() {
+    chrome.bookmarks.getChildren("0", function(results) {
+      expectTrue(compareNode(results[0], expected[0].children[0]),
+                 "getChildren() result != expected");
+      expectTrue(compareNode(results[1], expected[0].children[1]),
+                 "getChildren() result != expected");
+      succeed();
+    });
+  },
+  
+  function create() {
+    var node = {parentId: "1", title:"google", url:"http://www.google.com/"};
+    chrome.bookmarks.create(node, function(results) {
+      node.id = results.id;  // since we couldn't know this going in
+      expectTrue(compareNode(node, results),
+                 "created node != source");
+      succeed();
+    });
+  },
+];
+
+runNextTest();
