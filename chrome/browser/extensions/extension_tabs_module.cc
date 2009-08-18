@@ -669,6 +669,10 @@ bool CaptureVisibleTabFunction::RunImpl() {
 #elif defined(OS_MACOSX)
   screen_capture = backing_store->canvas()->getTopPlatformDevice()
       .accessBitmap(false);
+#elif defined(OS_LINUX)
+  screen_capture = backing_store->PaintRectToBitmap(
+      gfx::Rect(0, 0, backing_store->size().width(),
+                backing_store->size().height()));
 #else
   // TODO(port)
   error_ = keys::kNotImplementedError;
