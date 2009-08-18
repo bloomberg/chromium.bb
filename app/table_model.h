@@ -95,7 +95,7 @@ class TableModel {
 
  protected:
   // Returns the collator used by CompareValues.
-  Collator* GetCollator();
+  icu::Collator* GetCollator();
 };
 
 // TableColumn specifies the title, alignment and size of a particular column.

@@ -261,7 +261,7 @@ void WrapPathWithLTRFormatting(const FilePath& path,
 int DefaultCanvasTextAlignment();
 
 // Compares the two strings using the specified collator.
-UCollationResult CompareStringWithCollator(const Collator* collator,
+UCollationResult CompareStringWithCollator(const icu::Collator* collator,
                                            const std::wstring& lhs,
                                            const std::wstring& rhs);
 
@@ -273,7 +273,7 @@ class StringMethodComparatorWithCollator :
                                 const std::wstring&,
                                 bool> {
  public:
-  StringMethodComparatorWithCollator(Collator* collator, Method method)
+  StringMethodComparatorWithCollator(icu::Collator* collator, Method method)
       : collator_(collator),
         method_(method) { }
 
@@ -284,7 +284,7 @@ class StringMethodComparatorWithCollator :
   }
 
  private:
-  Collator* collator_;
+  icu::Collator* collator_;
   Method method_;
 };
 
@@ -314,8 +314,8 @@ void SortStringsUsingMethod(const std::wstring& locale,
                             std::vector<T*>* elements,
                             Method method) {
   UErrorCode error = U_ZERO_ERROR;
-  Locale loc(WideToUTF8(locale).c_str());
-  scoped_ptr<Collator> collator(Collator::createInstance(loc, error));
+  icu::Locale loc(WideToUTF8(locale).c_str());
+  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
   if (U_FAILURE(error)) {
     sort(elements->begin(), elements->end(),
          StringMethodComparator<T,Method>(method));
@@ -336,7 +336,7 @@ class StringComparator : public std::binary_function<const Element&,
                                                      const Element&,
                                                      bool> {
  public:
-  explicit StringComparator(Collator* collator)
+  explicit StringComparator(icu::Collator* collator)
       : collator_(collator) { }
 
   // Returns true if lhs precedes rhs.
@@ -349,7 +349,7 @@ class StringComparator : public std::binary_function<const Element&,
   }
 
  private:
-  Collator* collator_;
+  icu::Collator* collator_;
 };
 
 // Specialization of operator() method for std::wstring version.
@@ -371,8 +371,8 @@ void SortVectorWithStringKey(const std::string& locale,
   DCHECK(begin_index >= 0 && begin_index < end_index &&
          end_index <= static_cast<unsigned int>(elements->size()));
   UErrorCode error = U_ZERO_ERROR;
-  Locale loc(locale.c_str());
-  scoped_ptr<Collator> collator(Collator::createInstance(loc, error));
+  icu::Locale loc(locale.c_str());
+  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
   if (U_FAILURE(error))
     collator.reset();
   StringComparator<Element> c(collator.get());

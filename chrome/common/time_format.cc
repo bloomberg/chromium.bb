@@ -113,7 +113,7 @@ enum FormatType {
 
 class TimeFormatter {
   public:
-    const std::vector<PluralFormat*>& formatter(FormatType format_type) {
+    const std::vector<icu::PluralFormat*>& formatter(FormatType format_type) {
       switch (format_type) {
         case FORMAT_SHORT:
           return short_formatter_;
@@ -171,39 +171,38 @@ class TimeFormatter {
     friend class Singleton<TimeFormatter>;
     friend struct DefaultSingletonTraits<TimeFormatter>;
 
-    std::vector<PluralFormat*> short_formatter_;
-    std::vector<PluralFormat*> time_left_formatter_;
-    std::vector<PluralFormat*> time_elapsed_formatter_;
+    std::vector<icu::PluralFormat*> short_formatter_;
+    std::vector<icu::PluralFormat*> time_left_formatter_;
+    std::vector<icu::PluralFormat*> time_elapsed_formatter_;
     static void BuildFormats(FormatType format_type,
-                             std::vector<PluralFormat*>* time_formats);
-    static PluralFormat* createFallbackFormat(const PluralRules& rules,
-                                              int index,
-                                              FormatType format_type);
+                             std::vector<icu::PluralFormat*>* time_formats);
+    static icu::PluralFormat* createFallbackFormat(
+        const icu::PluralRules& rules, int index, FormatType format_type);
 
     DISALLOW_EVIL_CONSTRUCTORS(TimeFormatter);
 };
 
-void TimeFormatter::BuildFormats(FormatType format_type,
-                                 std::vector<PluralFormat*>* time_formats) {
-  const static UnicodeString kKeywords[] = {
+void TimeFormatter::BuildFormats(
+    FormatType format_type, std::vector<icu::PluralFormat*>* time_formats) {
+  static const icu::UnicodeString kKeywords[] = {
     UNICODE_STRING_SIMPLE("other"), UNICODE_STRING_SIMPLE("one"),
     UNICODE_STRING_SIMPLE("zero"), UNICODE_STRING_SIMPLE("two"),
     UNICODE_STRING_SIMPLE("few"), UNICODE_STRING_SIMPLE("many")
   };
   UErrorCode err = U_ZERO_ERROR;
-  scoped_ptr<PluralRules> rules(
-      PluralRules::forLocale(Locale::getDefault(), err));
+  scoped_ptr<icu::PluralRules> rules(
+      icu::PluralRules::forLocale(icu::Locale::getDefault(), err));
   if (U_FAILURE(err)) {
     err = U_ZERO_ERROR;
-    UnicodeString fallback_rules("one: n is 1", -1, US_INV);
-    rules.reset(PluralRules::createRules(fallback_rules, err));
+    icu::UnicodeString fallback_rules("one: n is 1", -1, US_INV);
+    rules.reset(icu::PluralRules::createRules(fallback_rules, err));
     DCHECK(U_SUCCESS(err));
   }
 
   const MessageIDs& message_ids = GetMessageIDs(format_type);
 
   for (int i = 0; i < 4; ++i) {
-    UnicodeString pattern;
+    icu::UnicodeString pattern;
     for (size_t j = 0; j < arraysize(kKeywords); ++j) {
       int msg_id = message_ids.ids[i][j];
       std::string sub_pattern = WideToUTF8(l10n_util::GetString(msg_id));
@@ -216,11 +215,11 @@ void TimeFormatter::BuildFormats(FormatType format_type,
           (j == 0 || rules->isKeyword(kKeywords[j]))) {
           pattern += kKeywords[j];
           pattern += UNICODE_STRING_SIMPLE("{");
-          pattern += UnicodeString(sub_pattern.c_str(), "UTF-8");
+          pattern += icu::UnicodeString(sub_pattern.c_str(), "UTF-8");
           pattern += UNICODE_STRING_SIMPLE("}");
       }
     }
-    PluralFormat* format = new PluralFormat(*rules, pattern, err);
+    icu::PluralFormat* format = new icu::PluralFormat(*rules, pattern, err);
     if (U_SUCCESS(err)) {
       time_formats->push_back(format);
     } else {
@@ -234,23 +233,22 @@ void TimeFormatter::BuildFormats(FormatType format_type,
 
 // Create a hard-coded fallback plural format. This will never be called
 // unless translators make a mistake.
-PluralFormat* TimeFormatter::createFallbackFormat(const PluralRules& rules,
-                                                  int index,
-                                                  FormatType format_type) {
-  const static UnicodeString kUnits[4][2] = {
+icu::PluralFormat* TimeFormatter::createFallbackFormat(
+    const icu::PluralRules& rules, int index, FormatType format_type) {
+  static const icu::UnicodeString kUnits[4][2] = {
     { UNICODE_STRING_SIMPLE("sec"), UNICODE_STRING_SIMPLE("secs") },
     { UNICODE_STRING_SIMPLE("min"), UNICODE_STRING_SIMPLE("mins") },
     { UNICODE_STRING_SIMPLE("hour"), UNICODE_STRING_SIMPLE("hours") },
     { UNICODE_STRING_SIMPLE("day"), UNICODE_STRING_SIMPLE("days") }
   };
-  UnicodeString suffix(GetFallbackFormatSuffix(format_type), -1, US_INV);
-  UnicodeString pattern;
+  icu::UnicodeString suffix(GetFallbackFormatSuffix(format_type), -1, US_INV);
+  icu::UnicodeString pattern;
   if (rules.isKeyword(UNICODE_STRING_SIMPLE("one"))) {
     pattern += UNICODE_STRING_SIMPLE("one{# ") + kUnits[index][0] + suffix;
   }
   pattern += UNICODE_STRING_SIMPLE(" other{# ") + kUnits[index][1] + suffix;
   UErrorCode err = U_ZERO_ERROR;
-  PluralFormat* format = new PluralFormat(rules, pattern, err);
+  icu::PluralFormat* format = new icu::PluralFormat(rules, pattern, err);
   DCHECK(U_SUCCESS(err));
   return format;
 }
@@ -266,11 +264,11 @@ static std::wstring FormatTimeImpl(const TimeDelta& delta,
 
   int number;
 
-  const std::vector<PluralFormat*>& formatters =
+  const std::vector<icu::PluralFormat*>& formatters =
     time_formatter->formatter(format_type);
 
   UErrorCode error = U_ZERO_ERROR;
-  UnicodeString time_string;
+  icu::UnicodeString time_string;
   // Less than a minute gets "X seconds left"
   if (delta.ToInternalValue() < Time::kMicrosecondsPerMinute) {
     number = static_cast<int>(delta.ToInternalValue() /

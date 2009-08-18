@@ -24,7 +24,7 @@ class IllegalCharacters {
   }
 
   bool containsNone(const string16 &s) {
-    return !!set->containsNone(UnicodeString(s.c_str(), s.size()));
+    return !!set->containsNone(icu::UnicodeString(s.c_str(), s.size()));
   }
 
  private:
@@ -34,7 +34,7 @@ class IllegalCharacters {
   IllegalCharacters();
   ~IllegalCharacters() { }
 
-  scoped_ptr<UnicodeSet> set;
+  scoped_ptr<icu::UnicodeSet> set;
 
   DISALLOW_COPY_AND_ASSIGN(IllegalCharacters);
 };
@@ -52,10 +52,10 @@ IllegalCharacters::IllegalCharacters() {
   // freeze it only once. Note that there's a trade-off between memory and
   // speed.
 #if defined(WCHAR_T_IS_UTF16)
-  set.reset(new UnicodeSet(UnicodeString(
+  set.reset(new icu::UnicodeSet(icu::UnicodeString(
       L"[[\"*/:<>?\\\\|][:Cc:][:Cf:] - [\u200c\u200d]]"), status));
 #else
-  set.reset(new UnicodeSet(UNICODE_STRING_SIMPLE(
+  set.reset(new icu::UnicodeSet(UNICODE_STRING_SIMPLE(
       "[[\"*/:<>?\\\\|][:Cc:][:Cf:] - [\\u200c\\u200d]]").unescape(),
       status));
 #endif

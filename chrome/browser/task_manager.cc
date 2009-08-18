@@ -202,10 +202,10 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
   switch (col_id) {
     case IDS_TASK_MANAGER_PAGE_COLUMN: {
       // Let's do the default, string compare on the resource title.
-      static Collator* collator = NULL;
+      static icu::Collator* collator = NULL;
       if (!collator) {
         UErrorCode create_status = U_ZERO_ERROR;
-        collator = Collator::createInstance(create_status);
+        collator = icu::Collator::createInstance(create_status);
         if (!U_SUCCESS(create_status)) {
           collator = NULL;
           NOTREACHED();

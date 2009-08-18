@@ -84,16 +84,16 @@ void SpellcheckCharAttribute::SetDefaultLanguage(const std::string& language) {
     // combining characters for such languages.
     // To treat such combining characters as word characters, we decompose
     // this exemplar set and treat the decomposed characters as word characters.
-    UnicodeString composed;
+    icu::UnicodeString composed;
     for (int i = 0; i < length; ++i)
       composed.append(uset_charAt(exemplar_set, i));
 
-    UnicodeString decomposed;
-    Normalizer::decompose(composed, FALSE, 0, decomposed, status);
+    icu::UnicodeString decomposed;
+    icu::Normalizer::decompose(composed, FALSE, 0, decomposed, status);
     if (U_SUCCESS(status)) {
-      StringCharacterIterator iterator(decomposed);
+      icu::StringCharacterIterator iterator(decomposed);
       UChar32 character = iterator.first32();
-      while (character != CharacterIterator::DONE) {
+      while (character != icu::CharacterIterator::DONE) {
         SetWordScript(GetScriptCode(character), true);
         character = iterator.next32();
       }
@@ -264,10 +264,10 @@ bool SpellcheckWordIterator::Normalize(int input_start,
   // does not only write NFKD and NFKC can compose ligatures into their ASCII
   // alternatives, but also write NFKC keeps accents of characters.
   // Therefore, NFKC seems to be the best option for hunspell.
-  UnicodeString input(FALSE, &word_[input_start], input_length);
+  icu::UnicodeString input(FALSE, &word_[input_start], input_length);
   UErrorCode status = U_ZERO_ERROR;
-  UnicodeString output;
-  Normalizer::normalize(input, UNORM_NFKC, 0, output, status);
+  icu::UnicodeString output;
+  icu::Normalizer::normalize(input, UNORM_NFKC, 0, output, status);
   if (U_SUCCESS(status))
     output_string->assign(output.getTerminatedBuffer());
   return status == U_ZERO_ERROR || status == U_STRING_NOT_TERMINATED_WARNING;

@@ -234,7 +234,8 @@ TEST(TextEliderTest, SortedDisplayURL) {
 // Verifies DisplayURL::Compare works correctly.
 TEST(TextEliderTest, SortedDisplayURLCompare) {
   UErrorCode create_status = U_ZERO_ERROR;
-  scoped_ptr<Collator> collator(Collator::createInstance(create_status));
+  scoped_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(create_status));
   if (!U_SUCCESS(create_status))
     return;
 

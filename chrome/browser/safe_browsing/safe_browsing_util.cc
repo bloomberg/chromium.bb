@@ -193,7 +193,7 @@ void FreeChunks(std::deque<SBChunk>* chunks) {
 
 GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report) {
-  Locale locale = Locale::getDefault();
+  icu::Locale locale = icu::Locale::getDefault();
   const char* lang = locale.getLanguage();
   if (!lang)
     lang = "en";  // fallback

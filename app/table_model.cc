@@ -68,7 +68,7 @@ TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
 // TableModel -----------------------------------------------------------------
 
 // Used for sorting.
-static Collator* collator = NULL;
+static icu::Collator* collator = NULL;
 
 SkBitmap TableModel::GetIcon(int row) {
   return SkBitmap();
@@ -79,7 +79,7 @@ int TableModel::CompareValues(int row1, int row2, int column_id) {
          row2 >= 0 && row2 < RowCount());
   std::wstring value1 = GetText(row1, column_id);
   std::wstring value2 = GetText(row2, column_id);
-  Collator* collator = GetCollator();
+  icu::Collator* collator = GetCollator();
 
   if (collator)
     return l10n_util::CompareStringWithCollator(collator, value1, value2);
@@ -88,10 +88,10 @@ int TableModel::CompareValues(int row1, int row2, int column_id) {
   return 0;
 }
 
-Collator* TableModel::GetCollator() {
+icu::Collator* TableModel::GetCollator() {
   if (!collator) {
     UErrorCode create_status = U_ZERO_ERROR;
-    collator = Collator::createInstance(create_status);
+    collator = icu::Collator::createInstance(create_status);
     if (!U_SUCCESS(create_status)) {
       collator = NULL;
       NOTREACHED();

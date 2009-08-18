@@ -337,7 +337,7 @@ SortedDisplayURL::SortedDisplayURL(const GURL& url,
 }
 
 int SortedDisplayURL::Compare(const SortedDisplayURL& other,
-                              Collator* collator) const {
+                              icu::Collator* collator) const {
   // Compare on hosts first. The host won't contain 'www.'.
   UErrorCode compare_status = U_ZERO_ERROR;
   UCollationResult host_compare_result = collator->compare(

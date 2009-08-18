@@ -60,7 +60,7 @@ class SortedDisplayURL {
   // Compares this SortedDisplayURL to |url| using |collator|. Returns a value
   // < 0, = 1 or > 0 as to whether this url is less then, equal to or greater
   // than the supplied url.
-  int Compare(const SortedDisplayURL& other, Collator* collator) const;
+  int Compare(const SortedDisplayURL& other, icu::Collator* collator) const;
 
   // Returns the display string for the URL.
   const string16& display_url() const { return display_url_; }

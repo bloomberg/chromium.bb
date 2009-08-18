@@ -85,9 +85,9 @@ TEST_F(L10nUtilTest, TruncateString) {
 }
 
 void SetICUDefaultLocale(const std::string& locale_string) {
-  Locale locale(locale_string.c_str());
+  icu::Locale locale(locale_string.c_str());
   UErrorCode error_code = U_ZERO_ERROR;
-  Locale::setDefault(locale, error_code);
+  icu::Locale::setDefault(locale, error_code);
   EXPECT_TRUE(U_SUCCESS(error_code));
 }
 
@@ -134,7 +134,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   }
 
   // Keep a copy of ICU's default locale before we overwrite it.
-  Locale locale = Locale::getDefault();
+  icu::Locale locale = icu::Locale::getDefault();
 
   SetICUDefaultLocale("en-US");
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L""));
@@ -213,7 +213,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   PathService::Override(app::DIR_LOCALES, orig_locale_dir.ToWStringHack());
   file_util::Delete(new_locale_dir, true);
   UErrorCode error_code = U_ZERO_ERROR;
-  Locale::setDefault(locale, error_code);
+  icu::Locale::setDefault(locale, error_code);
 }
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 

@@ -118,7 +118,7 @@ size_t AdvanceAndReturnWidePos(const char* utf8_string,
 // Given a character break iterator over a UTF-8 string, set the iterator
 // position to |*utf8_pos| and move by |count| characters. |count| can
 // be either positive or negative.
-void MoveByNGraphemes(BreakIterator* bi, int count, size_t* utf8_pos) {
+void MoveByNGraphemes(icu::BreakIterator* bi, int count, size_t* utf8_pos) {
   // Ignore the return value. A side effect of the current position
   // being set at or following |*utf8_pos| is exploited here.
   // It's simpler than calling following(n) and then previous().
@@ -136,7 +136,7 @@ const int kSnippetContext = 50;
 // Returns true if next match falls within a snippet window
 // from the previous match. The window size is counted in terms
 // of graphemes rather than bytes in UTF-8.
-bool IsNextMatchWithinSnippetWindow(BreakIterator* bi,
+bool IsNextMatchWithinSnippetWindow(icu::BreakIterator* bi,
                                     size_t previous_match_end,
                                     size_t next_match_start) {
   // If it's within a window in terms of bytes, it's certain
@@ -152,7 +152,7 @@ bool IsNextMatchWithinSnippetWindow(BreakIterator* bi,
   bi->next(kSnippetContext);
   int64 current = bi->current();
   return (next_match_start < static_cast<uint64>(current) ||
-          current == BreakIterator::DONE);
+          current == icu::BreakIterator::DONE);
 }
 
 }  // namespace
@@ -211,8 +211,8 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
                                   document.size(), &status);
   // Locale does not matter because there's no per-locale customization
   // for character iterator.
-  scoped_ptr<BreakIterator> bi(
-    BreakIterator::createCharacterInstance(Locale::getDefault(), status));
+  scoped_ptr<icu::BreakIterator> bi(icu::BreakIterator::createCharacterInstance(
+      icu::Locale::getDefault(), status));
   bi->setText(document_utext, status);
   DCHECK(U_SUCCESS(status));
 

@@ -45,7 +45,7 @@ void GetLanguageAndRegionFromOS(std::string* lang, std::string* region) {
   // it's not affected by ICU's default locale. It's all right
   // to do this way because SetICUDefaultLocale is internal
   // to this file and we know where/when it's called.
-  Locale locale = Locale::getDefault();
+  icu::Locale locale = icu::Locale::getDefault();
   const char* language = locale.getLanguage();
   const char* country = locale.getCountry();
   DCHECK(language);
@@ -89,9 +89,9 @@ std::string ICULocaleName(const std::string& locale_string) {
 // everytime we call locale-dependent ICU APIs as long as we make sure
 // that this is called before any locale-dependent API is called.
 UBool SetICUDefaultLocale(const std::string& locale_string) {
-  Locale locale(ICULocaleName(locale_string).c_str());
+  icu::Locale locale(ICULocaleName(locale_string).c_str());
   UErrorCode error_code = U_ZERO_ERROR;
-  Locale::setDefault(locale, error_code);
+  icu::Locale::setDefault(locale, error_code);
   // This return value is actually bogus because Locale object is
   // an ID and setDefault seems to always succeed (regardless of the
   // presence of actual locale data). However,
@@ -455,19 +455,20 @@ std::wstring TruncateString(const std::wstring& string, size_t length) {
 #endif
   // Use a line iterator to find the first boundary.
   UErrorCode status = U_ZERO_ERROR;
-  scoped_ptr<RuleBasedBreakIterator> bi(static_cast<RuleBasedBreakIterator*>(
-      RuleBasedBreakIterator::createLineInstance(Locale::getDefault(),
-                                                 status)));
+  scoped_ptr<icu::RuleBasedBreakIterator> bi(
+      static_cast<icu::RuleBasedBreakIterator*>(
+          icu::RuleBasedBreakIterator::createLineInstance(
+              icu::Locale::getDefault(), status)));
   if (U_FAILURE(status))
     return string.substr(0, max) + kElideString;
   bi->setText(string_utf16.c_str());
   int32_t index = bi->preceding(static_cast<int32_t>(max));
-  if (index == BreakIterator::DONE) {
+  if (index == icu::BreakIterator::DONE) {
     index = static_cast<int32_t>(max);
   } else {
     // Found a valid break (may be the beginning of the string). Now use
     // a character iterator to find the previous non-whitespace character.
-    StringCharacterIterator char_iterator(string_utf16.c_str());
+    icu::StringCharacterIterator char_iterator(string_utf16.c_str());
     if (index == 0) {
       // No valid line breaks. Start at the end again. This ensures we break
       // on a valid character boundary.
@@ -503,8 +504,8 @@ std::wstring ToLower(const std::wstring& string) {
 #endif  // defined(WCHAR_T_IS_UTF32)
 
 string16 ToLower(const string16& string) {
-  UnicodeString lower_u_str(
-      UnicodeString(string.c_str()).toLower(Locale::getDefault()));
+  icu::UnicodeString lower_u_str(
+      icu::UnicodeString(string.c_str()).toLower(icu::Locale::getDefault()));
   string16 result;
   lower_u_str.extract(0, lower_u_str.length(),
                       WriteInto(&result, lower_u_str.length() + 1));
@@ -521,7 +522,7 @@ TextDirection GetTextDirection() {
     g_text_direction =
         (gtk_dir == GTK_TEXT_DIR_LTR) ? LEFT_TO_RIGHT : RIGHT_TO_LEFT;
 #else
-    const Locale& locale = Locale::getDefault();
+    const icu::Locale& locale = icu::Locale::getDefault();
     g_text_direction = GetTextDirectionForLocale(locale.getName());
 #endif
   }
@@ -668,7 +669,7 @@ int DefaultCanvasTextAlignment() {
 
 // Compares the character data stored in two different strings by specified
 // Collator instance.
-UCollationResult CompareStringWithCollator(const Collator* collator,
+UCollationResult CompareStringWithCollator(const icu::Collator* collator,
                                            const std::wstring& lhs,
                                            const std::wstring& rhs) {
   DCHECK(collator);

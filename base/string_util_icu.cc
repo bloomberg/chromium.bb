@@ -631,10 +631,10 @@ bool CodepageToUTF16(const std::string& encoded,
 namespace {
 
 struct NumberFormatSingletonTraits
-    : public DefaultSingletonTraits<NumberFormat> {
-  static NumberFormat* New() {
+    : public DefaultSingletonTraits<icu::NumberFormat> {
+  static icu::NumberFormat* New() {
     UErrorCode status = U_ZERO_ERROR;
-    NumberFormat* formatter = NumberFormat::createInstance(status);
+    icu::NumberFormat* formatter = icu::NumberFormat::createInstance(status);
     DCHECK(U_SUCCESS(status));
     return formatter;
   }
@@ -647,14 +647,14 @@ struct NumberFormatSingletonTraits
 }  // namespace
 
 std::wstring FormatNumber(int64 number) {
-  NumberFormat* number_format =
-      Singleton<NumberFormat, NumberFormatSingletonTraits>::get();
+  icu::NumberFormat* number_format =
+      Singleton<icu::NumberFormat, NumberFormatSingletonTraits>::get();
 
   if (!number_format) {
     // As a fallback, just return the raw number in a string.
     return StringPrintf(L"%lld", number);
   }
-  UnicodeString ustr;
+  icu::UnicodeString ustr;
   number_format->format(number, ustr);
 
 #if defined(WCHAR_T_IS_UTF16)

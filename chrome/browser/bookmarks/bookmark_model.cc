@@ -83,7 +83,7 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
                                                    const BookmarkNode*,
                                                    bool> {
  public:
-  explicit SortComparator(Collator* collator) : collator_(collator) { }
+  explicit SortComparator(icu::Collator* collator) : collator_(collator) { }
 
   // Returns true if lhs preceeds rhs.
   bool operator() (const BookmarkNode* n1, const BookmarkNode* n2) {
@@ -99,7 +99,7 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
   }
 
  private:
-  Collator* collator_;
+  icu::Collator* collator_;
 };
 
 }  // namespace
@@ -343,9 +343,9 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
   }
 
   UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<Collator> collator(
-      Collator::createInstance(
-          Locale(g_browser_process->GetApplicationLocale().c_str()),
+  scoped_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(
+          icu::Locale(g_browser_process->GetApplicationLocale().c_str()),
           error));
   if (U_FAILURE(error))
     collator.reset(NULL);
