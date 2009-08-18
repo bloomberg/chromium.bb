@@ -262,9 +262,13 @@ bool WebMediaPlayerImpl::supportsSave() const {
 void WebMediaPlayerImpl::seek(float seconds) {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  // TODO(scherkus): WebKit fires a seek(0) at the very start, however pipeline
-  // already does a seek(0) internally.  Investigate whether doing two seek(0)
-  // at the start impacts startup latency.
+  // WebKit fires a seek(0) at the very start, however pipeline already does a
+  // seek(0) internally.  Avoid doing seek(0) the second time because this will
+  // cause extra pre-rolling and will break servers without range request
+  // support.
+  if (pipeline_->GetCurrentTime().ToInternalValue() == 0 && seconds == 0) {
+    return;
+  }
 
   // Try to preserve as much accuracy as possible.
   float microseconds = seconds * base::Time::kMicrosecondsPerSecond;
