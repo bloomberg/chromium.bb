@@ -416,11 +416,6 @@ BUG8941 MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL TIM
 // This class of test fails because of size differences in text runs.
 // Mostly this is because of international text rendering differences.
 
-// These fail now that we use the same font code path in test_shell
-// as in Chrome
-BUG1316221 LINUX WIN : LayoutTests/css2.1/t1202-counter-04-b.html = FAIL
-BUG1316221 LINUX WIN : LayoutTests/css2.1/t1202-counters-04-b.html = FAIL
-
 // The max length doesn't appear to be applied correctly (or the test needs	
 // changing), and furthermore, the over- and under-lines aren't placed	
 // properly over the "x".	
@@ -749,8 +744,8 @@ BUG8635 LINUX WIN : LayoutTests/svg/custom/pattern-cycle-detection.svg = FAIL
 // Shows garbage instead of an image
 BUG8635 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = FAIL
 
-BUG5641 LINUX WIN : LayoutTests/svg/batik/text/textEffect.svg = FAIL
-BUG5641 LINUX WIN : LayoutTests/svg/batik/text/textEffect3.svg = FAIL
+BUG19559 LINUX WIN : LayoutTests/svg/batik/text/textEffect.svg = FAIL
+BUG19559 LINUX WIN : LayoutTests/svg/batik/text/textEffect3.svg = FAIL
 
 BUG8763 LINUX WIN : LayoutTests/svg/custom/use-on-g-containing-foreignObject-and-image.svg = FAIL
 
@@ -860,8 +855,6 @@ BUG992321 SKIP : LayoutTests/svg/batik/text/smallFonts.svg = FAIL
 BUG992321 : LayoutTests/svg/batik/text/textBiDi.svg = FAIL
 
 // pixeltest failure: font baseline should be on the path, not the centerline
-BUG992321 LINUX WIN : LayoutTests/svg/batik/text/textOnPath.svg = FAIL
-// pixeltest failure: font baseline should be on the path, not the centerline
 BUG992321 LINUX WIN : LayoutTests/svg/batik/text/verticalTextOnPath.svg = FAIL
 BUG992321 LINUX WIN : LayoutTests/svg/custom/path-textPath-simulation.svg = FAIL
 
@@ -899,11 +892,6 @@ BUG992321 LINUX : LayoutTests/svg/hixie/text/001-broken.xml = FAIL
 // in tests_fixable in case we change the test shell's webview delegate to
 // ignore console messages while doing a pixel dump
 BUG992321 : LayoutTests/svg/custom/clip-path-referencing-use2.svg = FAIL PASS
-
-// These flakily fail image diffs.  Punting on SVG for now.
-// Note that the "expected" images checked in are not necessarily correct.
-// pixeltest failure: font baseline should be on the path, not the centerline
-BUG1107191 : LayoutTests/svg/batik/text/textStyles.svg = FAIL PASS
 
 // These two tests have a highlight color that is different from the Mac,
 // which is normal because selection color is different between Mac and
