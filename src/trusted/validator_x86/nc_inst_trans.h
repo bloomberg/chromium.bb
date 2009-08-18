@@ -64,4 +64,9 @@ Bool NcIs64Subregister(OperandKind subreg, OperandKind reg64);
  */
 OperandKind NcGet64For32BitRegister(OperandKind reg32);
 
+/* Given a 64-bit register, return the corresponding 32-bit register.
+ * Returns RegUnknown if no such register exists.
+ */
+OperandKind NcGet32For64BitRegister(OperandKind reg64);
+
 #endif   /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_TRANS_H_ */

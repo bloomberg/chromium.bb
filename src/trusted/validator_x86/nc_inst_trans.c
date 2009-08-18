@@ -239,6 +239,18 @@ OperandKind NcGet64For32BitRegister(OperandKind reg32) {
   return RegUnknown;
 }
 
+OperandKind NcGet32For64BitRegister(OperandKind reg64) {
+#if NACL_TARGET_SUBARCH == 64
+  int i;
+  for (i = 0; i < REGISTER_TABLE_SIZE; ++i) {
+    if (reg64 == RegisterTable64[i]) {
+      return RegisterTable32[i];
+    }
+  }
+#endif
+  return RegUnknown;
+}
+
 Bool NcIs64Subregister(OperandKind subreg, OperandKind reg64) {
 #if NACL_TARGET_SUBARCH == 64
   int i;
