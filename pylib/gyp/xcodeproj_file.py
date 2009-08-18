@@ -1293,8 +1293,12 @@ class PBXGroup(XCHierarchicalElement):
     a group for a/b/c containing a group for d3/e.
     """
 
+    # At this stage, check that child class types are PBXGroup exactly,
+    # instead of using isinstance.  The only subclass of PBXGroup,
+    # PBXVariantGroup, should not participate in reparenting in the same way:
+    # reparenting by merging different object types would be wrong.
     while len(self._properties['children']) == 1 and \
-          isinstance(self._properties['children'][0], PBXGroup):
+          self._properties['children'][0].__class__ == PBXGroup:
       # Loop to take over the innermost only-child group possible.
 
       child = self._properties['children'][0]
@@ -1340,7 +1344,7 @@ class PBXGroup(XCHierarchicalElement):
     # If asked to recurse, recurse.
     if recurse:
       for child in self._properties['children']:
-        if isinstance(child, PBXGroup):
+        if child.__class__ == PBXGroup:
           child.TakeOverOnlyChild(recurse)
 
   def SortGroup(self):
