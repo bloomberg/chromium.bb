@@ -101,7 +101,7 @@ TEST_F(FileSystemAccessorTest, GetFileSizeWithParam) {
 
 TEST_F(FileSystemAccessorTest, GetFileSizeEmptyFile) {
   FilePath path;
-  EXPECT_TRUE(file_util::CreateTemporaryFileName(&path));
+  EXPECT_TRUE(file_util::CreateTemporaryFile(&path));
   FileAutoDeleter deleter(path);
 
   TestGetFileSize(path, NULL, 0, NULL);

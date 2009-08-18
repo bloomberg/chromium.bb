@@ -158,22 +158,25 @@ bool DeleteFilesAndFolders(const std::wstring& exe_path, bool system_uninstall,
       install_path, installed_version.GetString()));
   file_util::AppendToPath(&setup_exe, file_util::GetFilenameFromPath(exe_path));
 
-  std::wstring temp_file;
-  if (!file_util::CreateTemporaryFileName(&temp_file))
+  FilePath temp_file;
+  if (!file_util::CreateTemporaryFile(&temp_file)) {
     LOG(ERROR) << "Failed to create temporary file for setup.exe.";
-  else
-    file_util::Move(setup_exe, temp_file);
+  } else {
+    FilePath setup_exe_path = FilePath::FromWStringHack(setup_exe);
+    file_util::Move(setup_exe_path, temp_file);
+  }
 
   // Move the browser's persisted local state
   FilePath user_local_state;
   if (chrome::GetDefaultUserDataDirectory(&user_local_state)) {
-    std::wstring user_local_file(
-        user_local_state.Append(chrome::kLocalStateFilename).value());
+    FilePath user_local_file(
+        user_local_state.Append(chrome::kLocalStateFilename));
 
-    if (!file_util::CreateTemporaryFileName(local_state_path))
+    FilePath path = FilePath::FromWStringHack(*local_state_path);
+    if (!file_util::CreateTemporaryFile(&path))
       LOG(ERROR) << "Failed to create temporary file for Local State.";
-    else 
-      file_util::CopyFile(user_local_file, *local_state_path);
+    else
+      file_util::CopyFile(user_local_file, path);
   }
 
   LOG(INFO) << "Deleting install path " << install_path;
@@ -317,7 +320,7 @@ bool installer_setup::DeleteChromeRegistrationKeys(HKEY root,
   file_util::AppendToPath(&app_path_key, installer_util::kChromeExe);
   DeleteRegistryKey(key, app_path_key);
 
-  //Cleanup OpenWithList
+  // Cleanup OpenWithList
   for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; i++) {
     std::wstring open_with_key(ShellUtil::kRegClasses);
     file_util::AppendToPath(&open_with_key, ShellUtil::kFileAssociations[i]);

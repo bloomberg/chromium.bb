@@ -66,8 +66,8 @@ TEST_F(SetupUtilTest, ApplyDiffPatchTest) {
 // Test that we are parsing master preferences correctly.
 TEST_F(SetupUtilTest, GetInstallPreferencesTest) {
   // Create a temporary prefs file.
-  std::wstring prefs_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileName(&prefs_file));
+  FilePath prefs_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file));
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
@@ -81,7 +81,8 @@ TEST_F(SetupUtilTest, GetInstallPreferencesTest) {
   EXPECT_TRUE(file_util::WriteFile(prefs_file, text, sizeof(text)));
 
   // Make sure command line values override the values in master preferences.
-  std::wstring cmd_str(L"setup.exe --installerdata=\"" + prefs_file + L"\"");
+  std::wstring cmd_str(
+      L"setup.exe --installerdata=\"" + prefs_file.value() + L"\"");
   cmd_str.append(L" --create-all-shortcuts");
   cmd_str.append(L" --do-not-launch-chrome");
   cmd_str.append(L" --alt-desktop-shortcut");

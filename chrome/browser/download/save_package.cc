@@ -345,7 +345,7 @@ bool SavePackage::GenerateFilename(const std::string& disposition,
     if (ordinal_number > (kMaxFileOrdinalNumber - 1)) {
       // Use a random file from temporary file.
       FilePath temp_file;
-      file_util::CreateTemporaryFileName(&temp_file);
+      file_util::CreateTemporaryFile(&temp_file);
       file_name = temp_file.RemoveExtension().BaseName().value();
       // Get safe pure file name.
       if (!GetSafePureFileName(saved_main_directory_path_,

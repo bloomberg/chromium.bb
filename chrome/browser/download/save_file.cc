@@ -22,7 +22,7 @@ SaveFile::SaveFile(const SaveFileCreateInfo* info)
       in_progress_(true) {
   DCHECK(info);
   DCHECK(info->path.empty());
-  if (file_util::CreateTemporaryFileName(&full_path_))
+  if (file_util::CreateTemporaryFile(&full_path_))
     Open("wb");
 }
 

@@ -478,11 +478,11 @@ TEST_F(RenderViewTest, PrintLayoutTest) {
       // Save the source data and the bitmap data into temporary files to
       // create base-line results.
       FilePath source_path;
-      file_util::CreateTemporaryFileName(&source_path);
+      file_util::CreateTemporaryFile(&source_path);
       render_thread_.printer()->SaveSource(0, source_path.value());
 
       FilePath bitmap_path;
-      file_util::CreateTemporaryFileName(&bitmap_path);
+      file_util::CreateTemporaryFile(&bitmap_path);
       render_thread_.printer()->SaveBitmap(0, bitmap_path.value());
     }
   }

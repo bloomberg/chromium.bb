@@ -73,7 +73,7 @@ DownloadFile::~DownloadFile() {
 }
 
 bool DownloadFile::Initialize() {
-  if (file_util::CreateTemporaryFileName(&full_path_))
+  if (file_util::CreateTemporaryFile(&full_path_))
     return Open("wb");
   return false;
 }

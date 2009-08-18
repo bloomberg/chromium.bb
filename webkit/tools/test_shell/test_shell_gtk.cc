@@ -184,7 +184,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
   StringPiece font_config_xml;
   g_resource_data_pack->Get(IDR_LINUX_FONT_CONFIG, &font_config_xml);
   FilePath fontconfig_path;
-  if (!file_util::CreateTemporaryFileName(&fontconfig_path)) {
+  if (!file_util::CreateTemporaryFile(&fontconfig_path)) {
     LOG(FATAL) << "failed to create temp font config file";
   }
   if (-1 == file_util::WriteFile(fontconfig_path.ToWStringHack(),
@@ -273,7 +273,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
   StringPiece ahem_font;
   g_resource_data_pack->Get(IDR_AHEM_FONT, &ahem_font);
   g_ahem_path = new FilePath;
-  if (!file_util::CreateTemporaryFileName(g_ahem_path)) {
+  if (!file_util::CreateTemporaryFile(g_ahem_path)) {
     LOG(FATAL) << "failed to create temp ahem font";
   }
   if (-1 == file_util::WriteFile(g_ahem_path->ToWStringHack(), ahem_font.data(),

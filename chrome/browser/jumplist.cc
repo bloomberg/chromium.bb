@@ -243,18 +243,18 @@ bool CreateIconFile(const SkBitmap& bitmap,
   // Retrieve the path to a temporary file.
   // We don't have to care about the extension of this temporary file because
   // JumpList does not care about it.
-  std::wstring path;
-  if (!file_util::CreateTemporaryFileNameInDir(icon_dir, &path))
+  FilePath path;
+  if (!file_util::CreateTemporaryFileInDir(FilePath(icon_dir), &path))
     return false;
 
   // Create an icon file from the favicon attached to the given |page|, and
   // save it as the temporary file.
-  if (!IconUtil::CreateIconFileFromSkBitmap(bitmap, path))
+  if (!IconUtil::CreateIconFileFromSkBitmap(bitmap, path.value()))
     return false;
 
   // Add this icon file to the list and return its absolute path.
   // The IShellLink::SetIcon() function needs the absolute path to an icon.
-  icon_path->assign(path);
+  icon_path->assign(path.value());
   return true;
 }
 

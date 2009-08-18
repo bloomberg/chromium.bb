@@ -72,7 +72,7 @@ class ExtensionUpdaterFileHandler
     DCHECK(MessageLoop::current() == file_io_loop_);
 
     FilePath path;
-    if (!file_util::CreateTemporaryFileName(&path)) {
+    if (!file_util::CreateTemporaryFile(&path)) {
       LOG(WARNING) << "Failed to create temporary file path";
       return;
     }

@@ -30,20 +30,26 @@ bool MoveTreeWorkItem::Do() {
     return false;
   }
 
+  FilePath backup_path;
+
   // If dest_path_ exists, move destination to a backup path.
   if (file_util::PathExists(dest_path_)) {
     // Generate a backup path that can keep the original files under dest_path_.
-    if (!file_util::CreateTemporaryFileNameInDir(temp_dir_, &backup_path_)) {
+    if (!file_util::CreateTemporaryFileInDir(FilePath(temp_dir_),
+                                             &backup_path)) {
       LOG(ERROR) << "Failed to get backup path in folder " << temp_dir_;
       return false;
     }
+
+    backup_path_ = backup_path.value();
 
     if (file_util::Move(dest_path_, backup_path_)) {
       moved_to_backup_ = true;
       LOG(INFO) << "Moved destination " << dest_path_
                 << " to backup path " << backup_path_;
     } else {
-      LOG(ERROR) << "failed moving " << dest_path_ << " to " << backup_path_;
+      LOG(ERROR) << "failed moving " << dest_path_
+                 << " to " << backup_path_;
       return false;
     }
   }

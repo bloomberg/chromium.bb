@@ -24,8 +24,8 @@ class MasterPreferencesTest : public testing::Test {
 }  // namespace
 
 TEST(MasterPreferencesTest, ParseDistroParams) {
-  std::wstring prefs_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileName(&prefs_file));
+  FilePath prefs_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file));
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
@@ -54,8 +54,7 @@ TEST(MasterPreferencesTest, ParseDistroParams) {
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file, text, sizeof(text)));
   scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(
-      FilePath::FromWStringHack(prefs_file)));
+      installer_util::ParseDistributionPreferences(prefs_file));
   EXPECT_TRUE(prefs.get() != NULL);
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroSkipFirstRunPref));
@@ -104,8 +103,8 @@ TEST(MasterPreferencesTest, ParseDistroParams) {
 }
 
 TEST(MasterPreferencesTest, ParseMissingDistroParams) {
-  std::wstring prefs_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileName(&prefs_file));
+  FilePath prefs_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file));
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
@@ -120,8 +119,7 @@ TEST(MasterPreferencesTest, ParseMissingDistroParams) {
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file, text, sizeof(text)));
   scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(
-      FilePath::FromWStringHack(prefs_file)));
+      installer_util::ParseDistributionPreferences(prefs_file));
   EXPECT_TRUE(prefs.get() != NULL);
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroSkipFirstRunPref));
@@ -159,8 +157,8 @@ TEST(MasterPreferencesTest, ParseMissingDistroParams) {
 }
 
 TEST(MasterPreferencesTest, FirstRunTabs) {
-  std::wstring prefs_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileName(&prefs_file));
+  FilePath prefs_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file));
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
@@ -175,8 +173,7 @@ TEST(MasterPreferencesTest, FirstRunTabs) {
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file, text, sizeof(text)));
   scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(
-      FilePath::FromWStringHack(prefs_file)));
+      installer_util::ParseDistributionPreferences(prefs_file));
   EXPECT_TRUE(prefs.get() != NULL);
 
   typedef std::vector<std::wstring> TabsVector;
