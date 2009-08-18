@@ -65,8 +65,11 @@ nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
 	struct drm_nouveau_gem_pushbuf_bo *pbbo;
 	uint32_t domains = 0;
 
-	if (nvpb->nr_relocs >= NOUVEAU_GEM_MAX_RELOCS)
+	if (nvpb->nr_relocs >= NOUVEAU_GEM_MAX_RELOCS) {
+		fprintf(stderr, "too many relocs!!\n");
+		assert(0);
 		return -ENOMEM;
+	}
 
 	if (nouveau_bo(bo)->user && (flags & NOUVEAU_BO_WR)) {
 		fprintf(stderr, "write to user buffer!!\n");
@@ -74,8 +77,11 @@ nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
 	}
 
 	pbbo = nouveau_bo_emit_buffer(chan, bo);
-	if (!pbbo)
+	if (!pbbo) {
+		fprintf(stderr, "buffer emit fail :(\n");
+		assert(0);
 		return -ENOMEM;
+	}
 
 	if (flags & NOUVEAU_BO_VRAM)
 		domains |= NOUVEAU_GEM_DOMAIN_VRAM;
