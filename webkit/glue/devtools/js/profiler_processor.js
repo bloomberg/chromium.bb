@@ -177,13 +177,14 @@ devtools.profiler.Processor = function() {
           processor: this.processHeapSampleBegin_ },
       'heap-sample-stats': { parsers: [null, null, parseInt, parseInt],
           processor: this.processHeapSampleStats_ },
+      'heap-sample-item': { parsers: [null, parseInt, parseInt],
+          processor: this.processHeapSampleItem_ },
       'heap-js-cons-item': { parsers: [null, parseInt, parseInt],
           processor: this.processHeapJsConsItem_ },
       'heap-sample-end': { parsers: [null, null],
           processor: this.processHeapSampleEnd_ },
       // Not used in DevTools Profiler.
       'shared-library': null,
-      'heap-sample-item': null,
       // Obsolete row types.
       'code-allocate': null,
       'begin-code-region': null,
@@ -388,6 +389,7 @@ devtools.profiler.Processor.prototype.processHeapSampleBegin_ = function(
   this.currentHeapSnapshot_ = {
       number: this.heapSnapshotId_++,
       entries: {},
+      lowlevels: {},
       ticks: ticks
   };
 };
@@ -398,6 +400,15 @@ devtools.profiler.Processor.prototype.processHeapSampleStats_ = function(
   if (space != 'Heap') return;
   this.currentHeapSnapshot_.capacity = capacity;
   this.currentHeapSnapshot_.used = used;
+};
+
+
+devtools.profiler.Processor.prototype.processHeapSampleItem_ = function(
+    item, number, size) {
+  if (!this.currentHeapSnapshot_) return;
+  this.currentHeapSnapshot_.lowlevels[item] = {
+    type: item, count: number, size: size
+  };
 };
 
 
@@ -413,8 +424,15 @@ devtools.profiler.Processor.prototype.processHeapJsConsItem_ = function(
 devtools.profiler.Processor.prototype.processHeapSampleEnd_ = function(
     space, state) {
   if (space != 'Heap') return;
-  WebInspector.panels.heap.addSnapshot(this.currentHeapSnapshot_);
+  var snapshot = this.currentHeapSnapshot_;
   this.currentHeapSnapshot_ = null;
+  // For some reason, 'used' from 'heap-sample-stats' sometimes differ from
+  // the sum of objects sizes. To avoid discrepancy, we re-calculate 'used'.
+  snapshot.used = 0;
+  for (var item in snapshot.lowlevels) {
+      snapshot.used += snapshot.lowlevels[item].size;
+  }
+  WebInspector.panels.heap.addSnapshot(snapshot);
 };
 
 

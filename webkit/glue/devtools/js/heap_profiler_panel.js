@@ -194,6 +194,20 @@ WebInspector.HeapSnapshotView = function(parent, snapshot)
     this.showCountDeltaAsPercent = true;
     this.showSizeDeltaAsPercent = true;
 
+    this.summaryElement = document.createElement("div");
+    this.summaryElement.id = "resources-summary";
+    this.element.appendChild(this.summaryElement);
+
+    this.summaryGraphElement = document.createElement("canvas");
+    this.summaryGraphElement.setAttribute("width", "450");
+    this.summaryGraphElement.setAttribute("height", "38");
+    this.summaryGraphElement.id = "resources-summary-graph";
+    this.summaryElement.appendChild(this.summaryGraphElement);
+
+    this.legendElement = document.createElement("div");
+    this.legendElement.id = "resources-graph-legend";
+    this.summaryElement.appendChild(this.legendElement);
+
     var columns = { "cons": { title: WebInspector.UIString("Constructor"), disclosure: true, sortable: true },
                     "count": { title: WebInspector.UIString("Count"), width: "54px", sortable: true },
                     "size": { title: WebInspector.UIString("Size"), width: "72px", sort: "descending", sortable: true },
@@ -261,6 +275,8 @@ WebInspector.HeapSnapshotView.prototype = {
         var count = children.length;
         for (var index = 0; index < count; ++index)
             this.dataGrid.appendChild(children[index]);
+
+        this._updateSummaryGraph();
     },
 
     refreshShowAsPercents: function()
@@ -276,6 +292,7 @@ WebInspector.HeapSnapshotView.prototype = {
             child.refresh();
             child = child.traverseNextNode(false, null, true);
         }
+        this._updateSummaryGraph();
     },
 
     _changeBase: function() {
@@ -384,8 +401,51 @@ WebInspector.HeapSnapshotView.prototype = {
             this.percentButton.title = WebInspector.UIString("Show counts and sizes as percentages.");
             this.percentButton.toggled = false;
         }
+    },
+
+    _updateSummaryGraph: function()
+    {
+        function highFromLow(type) {
+            if (type == "CODE_TYPE" || type == "SHARED_FUNCTION_INFO_TYPE" || type == "SCRIPT_TYPE") return "code";
+            if (type == "STRING_TYPE" || type == "HEAP_NUMBER_TYPE" || type.match(/^JS_/) || type.match(/_ARRAY_TYPE$/)) return "data";
+            return "other";
+        }
+        var lowLevels = this.snapshot.lowlevels;
+        var highLevels = {data: 0, code: 0, other: 0};
+        for (var item in lowLevels) {
+            var highItem = highFromLow(item);
+            highLevels[highItem] += lowLevels[item].size;
+        }
+
+        var colors = {data: [47, 102, 236], code: [255, 121, 0], other: [186, 186, 186]};
+        var titles = {data: WebInspector.UIString("Objects and Data"), code: WebInspector.UIString("Code"), other: WebInspector.UIString("Other")};
+        var itemsOrder = ["code", "data", "other"];
+        var fillSegments = [];
+        this.legendElement.removeChildren();
+        for (var i = 0; i < itemsOrder.length; ++i) {
+            var highItem = itemsOrder[i];
+            var colorString = "rgb(" + colors[highItem].join(",") + ")";
+            var size = highLevels[highItem];
+            fillSegments.push({color: colorString, value: size});
+  
+            var sizeStr;
+            if (this._isShowingAsPercent)
+                sizeStr = WebInspector.UIString("%.2f%%", size / this.snapshot.used * 100.0);
+            else
+                sizeStr = Number.bytesToString(size);
+            var legendLabel = this._makeLegendElement(titles[highItem], sizeStr, colorString);
+            this.legendElement.appendChild(legendLabel);
+        }
+        this._drawSummaryGraph(fillSegments);
     }
 };
+
+// Import summary graph drawing functions from ResourcesPanel.
+// TODO(mnaganov): Refactor ResourcesPanel to make this functionality public.
+WebInspector.HeapSnapshotView.prototype._drawSwatch = WebInspector.ResourcesPanel.prototype._drawSwatch;
+WebInspector.HeapSnapshotView.prototype._drawSummaryGraph = WebInspector.ResourcesPanel.prototype._drawSummaryGraph;
+WebInspector.HeapSnapshotView.prototype._fadeOutRect = WebInspector.ResourcesPanel.prototype._fadeOutRect;
+WebInspector.HeapSnapshotView.prototype._makeLegendElement = WebInspector.ResourcesPanel.prototype._makeLegendElement;
 
 WebInspector.HeapSnapshotView.prototype.__proto__ = WebInspector.View.prototype;
 

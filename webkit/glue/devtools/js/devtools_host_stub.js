@@ -41,6 +41,10 @@ RemoteDebuggerAgentStub.prototype.StartProfiling = function(modules) {
           'heap-sample-begin,"Heap","allocated",' +
               (new Date()).getTime() + '\n' +
           'heap-sample-stats,"Heap","allocated",10000,1000\n';
+      this.heapProfLog_ +=
+          'heap-sample-item,STRING_TYPE,100,1000\n' +
+          'heap-sample-item,CODE_TYPE,10,200\n' +
+          'heap-sample-item,MAP_TYPE,20,350\n';
       var sample = RemoteDebuggerAgentStub.HeapSamples[this.heapProfSample_];
       if (++this.heapProfSample_ == RemoteDebuggerAgentStub.HeapSamples.length)
           this.heapProfSample_ = 0;

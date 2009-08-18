@@ -97,6 +97,12 @@ Google Chrome Developer Tools. -->
       <message name="IDS_SIGNED_STRING_DELTA" desc="Signed string delta.">
         %$1s%$2s
       </message>
+      <message name="IDS_OBJECTS_AND_DATA_SIZE_LABEL" desc="Label for objects and data size legend item.">
+        Objects and Data
+      </message>
+      <message name="IDS_CODE_SIZE_LABEL" desc="Label for code size legend item.">
+        Code
+      </message>
     </messages>
   </release>
 </grit>
