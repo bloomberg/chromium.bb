@@ -56,7 +56,7 @@ SaveFileManager::~SaveFileManager() {
 // Called during the browser shutdown process to clean up any state (open files,
 // timers) that live on the saving thread (file thread).
 void SaveFileManager::Shutdown() {
-  MessageLoop* loop = GetSaveLoop();
+  MessageLoop* loop = file_loop();
   if (loop) {
     loop->PostTask(FROM_HERE,
         NewRunnableMethod(this, &SaveFileManager::OnShutdown));
@@ -65,7 +65,7 @@ void SaveFileManager::Shutdown() {
 
 // Stop file thread operations.
 void SaveFileManager::OnShutdown() {
-  DCHECK(MessageLoop::current() == GetSaveLoop());
+  DCHECK(MessageLoop::current() == file_loop());
   STLDeleteValues(&save_file_map_);
 }
 
@@ -225,7 +225,7 @@ SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
 void SaveFileManager::DeleteDirectoryOrFile(const FilePath& full_path,
                                             bool is_dir) {
   DCHECK(MessageLoop::current() == ui_loop_);
-  MessageLoop* loop = GetSaveLoop();
+  MessageLoop* loop = file_loop();
   DCHECK(loop);
   loop->PostTask(FROM_HERE,
       NewRunnableMethod(this,
@@ -237,7 +237,7 @@ void SaveFileManager::DeleteDirectoryOrFile(const FilePath& full_path,
 void SaveFileManager::SendCancelRequest(int save_id) {
   // Cancel the request which has specific save id.
   DCHECK(save_id > -1);
-  MessageLoop* loop = GetSaveLoop();
+  MessageLoop* loop = file_loop();
   DCHECK(loop);
   loop->PostTask(FROM_HERE,
       NewRunnableMethod(this,
@@ -251,7 +251,7 @@ void SaveFileManager::SendCancelRequest(int save_id) {
 // to create a SaveFile which will hold and finally destroy |info|. It will
 // then passes |info| to the UI thread for reporting saving status.
 void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
-  DCHECK(MessageLoop::current() == GetSaveLoop());
+  DCHECK(MessageLoop::current() == file_loop());
   DCHECK(info);
   SaveFile* save_file = new SaveFile(info);
   DCHECK(LookupSaveFile(info->save_id) == NULL);
@@ -271,7 +271,7 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
 void SaveFileManager::UpdateSaveProgress(int save_id,
                                          net::IOBuffer* data,
                                          int data_len) {
-  DCHECK(MessageLoop::current() == GetSaveLoop());
+  DCHECK(MessageLoop::current() == file_loop());
   SaveFile* save_file = LookupSaveFile(save_id);
   if (save_file) {
     bool write_success = save_file->AppendDataToFile(data->data(), data_len);
@@ -295,7 +295,7 @@ void SaveFileManager::SaveFinished(int save_id,
                                    GURL save_url,
                                    int render_process_id,
                                    bool is_success) {
-  DCHECK(MessageLoop::current() == GetSaveLoop());
+  DCHECK(MessageLoop::current() == file_loop());
   SaveFileMap::iterator it = save_file_map_.find(save_id);
   if (it != save_file_map_.end()) {
     SaveFile* save_file = it->second;
@@ -412,7 +412,7 @@ void SaveFileManager::OnRequireSaveJobFromOtherSource(
   // Generate a unique save id.
   info->save_id = GetNextId();
   // Start real saving action.
-  MessageLoop* loop = GetSaveLoop();
+  MessageLoop* loop = file_loop();
   DCHECK(loop);
   loop->PostTask(FROM_HERE,
                  NewRunnableMethod(this,
@@ -436,7 +436,7 @@ void SaveFileManager::ExecuteCancelSaveRequest(int render_process_id,
 // sent from the UI thread, the saving job may have already completed and
 // won't exist in our map.
 void SaveFileManager::CancelSave(int save_id) {
-  DCHECK(MessageLoop::current() == GetSaveLoop());
+  DCHECK(MessageLoop::current() == file_loop());
   SaveFileMap::iterator it = save_file_map_.find(save_id);
   if (it != save_file_map_.end()) {
     SaveFile* save_file = it->second;
@@ -473,7 +473,7 @@ void SaveFileManager::CancelSave(int save_id) {
 void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
                                     int save_id,
                                     int render_process_id) {
-  DCHECK(MessageLoop::current() == GetSaveLoop());
+  DCHECK(MessageLoop::current() == file_loop());
   SaveFile* save_file = LookupSaveFile(save_id);
   if (!save_file)
     return;
@@ -503,7 +503,7 @@ void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
 
 void SaveFileManager::OnDeleteDirectoryOrFile(const FilePath& full_path,
                                               bool is_dir) {
-  DCHECK(MessageLoop::current() == GetSaveLoop());
+  DCHECK(MessageLoop::current() == file_loop());
   DCHECK(!full_path.empty());
 
   file_util::Delete(full_path, is_dir);
@@ -511,17 +511,19 @@ void SaveFileManager::OnDeleteDirectoryOrFile(const FilePath& full_path,
 
 // Open a saved page package, show it in a Windows Explorer window.
 // We run on this thread to avoid blocking the UI with slow Shell operations.
+#if !defined(OS_MACOSX)
 void SaveFileManager::OnShowSavedFileInShell(const FilePath full_path) {
-  DCHECK(MessageLoop::current() == GetSaveLoop());
+  DCHECK(MessageLoop::current() == file_loop());
   platform_util::ShowItemInFolder(full_path);
 }
+#endif
 
 void SaveFileManager::RenameAllFiles(
     const FinalNameList& final_names,
     const FilePath& resource_dir,
     int render_process_id,
     int render_view_id) {
-  DCHECK(MessageLoop::current() == GetSaveLoop());
+  DCHECK(MessageLoop::current() == file_loop());
 
   if (!resource_dir.empty() && !file_util::PathExists(resource_dir))
     file_util::CreateDirectory(resource_dir);
@@ -560,7 +562,7 @@ void SaveFileManager::OnFinishSavePageJob(int render_process_id,
 
 void SaveFileManager::RemoveSavedFileFromFileMap(
     const SaveIDList& save_ids) {
-  DCHECK(MessageLoop::current() == GetSaveLoop());
+  DCHECK(MessageLoop::current() == file_loop());
 
   for (SaveIDList::const_iterator i = save_ids.begin();
       i != save_ids.end(); ++i) {

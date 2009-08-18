@@ -115,14 +115,19 @@ class SaveFileManager
   void RemoveSaveFile(int save_id, const GURL& save_url,
                       SavePackage* package);
 
-  // Handler for shell operations sent from the UI to the file thread.
+#if !defined(OS_MACOSX)
+  // Handler for shell operations sent from the UI to the file thread. Mac OS X
+  // requires opening downloads on the UI thread, so it does not use this
+  // method.
   void OnShowSavedFileInShell(const FilePath full_path);
+#endif
 
   // Helper function for deleting specified file.
   void DeleteDirectoryOrFile(const FilePath& full_path, bool is_dir);
 
-  // For posting notifications from the UI and IO threads.
-  MessageLoop* GetSaveLoop() const { return file_loop_; }
+  // For posting notifications from the UI and file threads.
+  MessageLoop* ui_loop() const { return ui_loop_; }
+  MessageLoop* file_loop() const { return file_loop_; }
 
   // Runs on file thread to save a file by copying from file system when
   // original url is using file scheme.

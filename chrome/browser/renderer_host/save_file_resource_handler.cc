@@ -44,7 +44,7 @@ bool SaveFileResourceHandler::OnResponseStarted(int request_id,
   info->request_id = request_id;
   info->content_disposition = content_disposition_;
   info->save_source = SaveFileCreateInfo::SAVE_FILE_FROM_NET;
-  save_manager_->GetSaveLoop()->PostTask(FROM_HERE,
+  save_manager_->file_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(save_manager_,
                         &SaveFileManager::StartSave,
                         info));
@@ -69,7 +69,7 @@ bool SaveFileResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   // We are passing ownership of this buffer to the save file manager.
   net::IOBuffer* buffer = NULL;
   read_buffer_.swap(&buffer);
-  save_manager_->GetSaveLoop()->PostTask(FROM_HERE,
+  save_manager_->file_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(save_manager_,
                         &SaveFileManager::UpdateSaveProgress,
                         save_id_,
@@ -82,7 +82,7 @@ bool SaveFileResourceHandler::OnResponseCompleted(
     int request_id,
     const URLRequestStatus& status,
     const std::string& security_info) {
-  save_manager_->GetSaveLoop()->PostTask(FROM_HERE,
+  save_manager_->file_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(save_manager_,
                         &SaveFileManager::SaveFinished,
                         save_id_,

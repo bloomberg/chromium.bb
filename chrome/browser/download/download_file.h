@@ -201,12 +201,18 @@ class DownloadFileManager
   void RemoveDownloadManager(DownloadManager* manager);
   void RemoveDownload(int id, DownloadManager* manager);
 
+#if !defined(OS_MACOSX)
+  // The open and show methods run on the file thread, which does not work on
+  // Mac OS X (which uses the UI thread for opens).
+
   // Handler for shell operations sent from the UI to the download thread.
   void OnShowDownloadInShell(const FilePath& full_path);
+
   // Handler to open or execute a downloaded file.
   void OnOpenDownloadInShell(const FilePath& full_path,
                              const GURL& url,
                              gfx::NativeView parent_window);
+#endif
 
   // The download manager has provided a final name for a download. Sent from
   // the UI thread and run on the download thread.

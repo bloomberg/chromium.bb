@@ -1233,10 +1233,16 @@ void DownloadManager::RemoveObserver(Observer* observer) {
 // user interface.
 void DownloadManager::ShowDownloadInShell(const DownloadItem* download) {
   DCHECK(file_manager_);
+  DCHECK(MessageLoop::current() == ui_loop_);
+#if defined(OS_MACOSX)
+  // Mac needs to run this operation on the UI thread.
+  platform_util::ShowItemInFolder(download->full_path());
+#else
   file_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(file_manager_,
                         &DownloadFileManager::OnShowDownloadInShell,
                         FilePath(download->full_path())));
+#endif
 }
 
 void DownloadManager::OpenDownload(const DownloadItem* download,
@@ -1271,10 +1277,16 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
 void DownloadManager::OpenDownloadInShell(const DownloadItem* download,
                                           gfx::NativeView parent_window) {
   DCHECK(file_manager_);
+  DCHECK(MessageLoop::current() == ui_loop_);
+#if defined(OS_MACOSX)
+  // Mac OS X requires opening downloads on the UI thread.
+  platform_util::OpenItem(download->full_path());
+#else
   file_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(file_manager_,
                         &DownloadFileManager::OnOpenDownloadInShell,
                         download->full_path(), download->url(), parent_window));
+#endif
 }
 
 void DownloadManager::OpenFilesOfExtension(

@@ -526,14 +526,17 @@ void DownloadFileManager::OnDownloadUrl(const GURL& url,
 // Open a download, or show it in a file explorer window. We run on this
 // thread to avoid blocking the UI with (potentially) slow Shell operations.
 // TODO(paulg): File 'stat' operations.
+#if !defined(OS_MACOSX)
 void DownloadFileManager::OnShowDownloadInShell(const FilePath& full_path) {
   DCHECK(MessageLoop::current() == file_loop_);
   platform_util::ShowItemInFolder(full_path);
 }
+#endif
 
 // Launches the selected download using ShellExecute 'open' verb. For windows,
 // if there is a valid parent window, the 'safer' version will be used which can
 // display a modal dialog asking for user consent on dangerous files.
+#if !defined(OS_MACOSX)
 void DownloadFileManager::OnOpenDownloadInShell(const FilePath& full_path,
                                                 const GURL& url,
                                                 gfx::NativeView parent_window) {
@@ -545,9 +548,9 @@ void DownloadFileManager::OnOpenDownloadInShell(const FilePath& full_path,
     return;
   }
 #endif
-
   platform_util::OpenItem(full_path);
 }
+#endif  // OS_MACOSX
 
 // The DownloadManager in the UI thread has provided a final name for the
 // download specified by 'id'. Rename the in progress download, and remove it
