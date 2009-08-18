@@ -600,7 +600,7 @@ if src_dir:
   sconsbuild_dir.clear()
   sconsbuild_dir.repositories = []
 else:
-  src_dir = '$SCONSBUILD_DIR/..'
+  src_dir = Dir(%(src_dir)s)
 
 
 class FileList(object):
@@ -918,7 +918,10 @@ def GenerateSConscriptWrapper(build_file_data, name,
   Generates the "wrapper" SConscript file (analogous to the Visual Studio
   solution) that calls all the individual target SConscript files.
   """
-  subdir = os.path.basename(os.path.split(output_filename)[0])
+  output_dir = os.path.dirname(output_filename)
+  src_dir = build_file_data['_DEPTH']
+  src_dir_rel = gyp.common.RelativePath(src_dir, output_dir)
+  subdir = gyp.common.RelativePath(output_dir, src_dir)
   scons_settings = build_file_data.get('scons_settings', {})
   sconsbuild_dir = scons_settings.get('sconsbuild_dir', '#')
   scons_tools = scons_settings.get('tools', ['default'])
@@ -937,6 +940,7 @@ def GenerateSConscriptWrapper(build_file_data, name,
                'scons_tools' : repr(scons_tools),
                'sconsbuild_dir' : repr(sconsbuild_dir),
                'sconscript_files' : '\n'.join(sconscript_file_lines),
+               'src_dir' : repr(src_dir_rel),
                'subdir' : subdir,
            })
   fp.close()

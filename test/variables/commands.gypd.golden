@@ -1,4 +1,5 @@
-{'included_files': ['commands.gyp', 'commands.gypi'],
+{'_DEPTH': '.',
+ 'included_files': ['commands.gyp', 'commands.gypi'],
  'targets': [{'actions': [{'action': ['echo',
                                       '"3.14159265359 ABCD"',
                                       'ABCD letters_list'],

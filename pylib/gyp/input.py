@@ -220,6 +220,9 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   build_file_data = LoadOneBuildFile(build_file_path, data, aux_data, variables,
                                      includes, True)
 
+  # Store DEPTH for later use in generators.
+  build_file_data['_DEPTH'] = depth
+
   # Set up the included_files key indicating which .gyp files contributed to
   # this target dict.
   if 'included_files' in build_file_data:

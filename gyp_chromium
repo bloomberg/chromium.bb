@@ -18,7 +18,7 @@ except ImportError, e:
 
 if __name__ == '__main__':
   args = sys.argv[1:]
-  
+
   # If we didn't get a file, check an env var, and then fall back to
   # assuming 'src/build/all.gyp'
   if len(args) == 0:

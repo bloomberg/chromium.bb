@@ -47,6 +47,7 @@ VARIABLES: Expanding 'ABCDEFGHIJK' to 'ABCDEFGHIJK'
 VARIABLES: Expanding 'ABCDEFGHIJK' to 'ABCDEFGHIJK'
 VARIABLES: Expanding '<(letters_list)EFGHIJK' to 'ABCDEFGHIJK'
 VARIABLES: Expanding '<(other_letters)HIJK' to 'ABCDEFGHIJK'
+VARIABLES: Expanding '.' to '.'
 VARIABLES: Expanding 'letters_' to 'letters_'
 VARIABLES: Matches: {'content': '<!(python -c "print \'letters_list\'"', 'is_array': '', 'type': '<', 'replace': '<(<!(python -c "print \'letters_list\'")'}
 VARIABLES: Matches: {'content': 'python -c "print \'letters_list\'"', 'is_array': '', 'type': '<!', 'replace': '<!(python -c "print \'letters_list\'")'}
