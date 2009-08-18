@@ -75,10 +75,13 @@ class HistogramSynchronizer : public
   // Calls the callback task, if there is a callback_task.
   void CallCallbackTaskAndResetData();
 
-  // Method to get a new sequence number to be sent to renderers from broswer
-  // process.
-  int GetNextAvaibleSequenceNumber(RendererHistogramRequester requster,
-                                   size_t renderer_histograms_requested);
+  // Gets a new sequence number to be sent to renderers from broswer process.
+  // This will also reset the current pending renderers for the given type.
+  int GetNextAvaibleSequenceNumber(RendererHistogramRequester requster);
+
+  // Increments the count of the renderers we're waiting for for the request
+  // of the given type.
+  void IncrementPendingRenderers(RendererHistogramRequester requester);
 
   // For use ONLY in a DCHECK. This method initializes io_message_loop_ in its
   // first call and then compares io_message_loop_ with MessageLoop::current()

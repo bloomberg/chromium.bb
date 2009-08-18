@@ -59,25 +59,22 @@ void OnShutdownStarting(ShutdownType type) {
     // since we can't safely count the number of plugin processes from this
     // thread, and we'd really like to avoid anything which might add further
     // delays to shutdown time.
-    shutdown_num_processes_ = static_cast<int>(RenderProcessHost::size());
     shutdown_started_ = Time::Now();
 
     // Call FastShutdown on all of the RenderProcessHosts.  This will be
     // a no-op in some cases, so we still need to go through the normal
     // shutdown path for the ones that didn't exit here.
+    shutdown_num_processes_ = 0;
     shutdown_num_processes_slow_ = 0;
-    size_t start_rph_size = RenderProcessHost::size();
     RenderProcessHost::iterator hosts(RenderProcessHost::AllHostsIterator());
     while (!hosts.IsAtEnd()) {
+      shutdown_num_processes_++;
       if (!hosts.GetCurrentValue()->FastShutdownIfPossible()) {
         // TODO(ojan): I think now that we deal with beforeunload/unload
         // higher up, it's not possible to get here. Confirm this and change
         // FastShutdownIfPossible to just be FastShutdown.
         shutdown_num_processes_slow_++;
       }
-      // The number of RPHs should not have changed as the result of invoking
-      // FastShutdownIfPossible.
-      CHECK(start_rph_size == RenderProcessHost::size());
 
       hosts.Advance();
     }

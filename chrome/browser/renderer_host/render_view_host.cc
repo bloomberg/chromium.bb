@@ -147,7 +147,6 @@ void RenderViewHost::Observe(NotificationType type,
   RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
   if (rph == process()) {
     // Try to get some debugging information on the stack.
-    size_t num_hosts = RenderProcessHost::size();
     bool no_listeners = rph->ListenersIterator().IsAtEnd();
     bool live_instance = site_instance() != NULL;
     CHECK(live_instance);
@@ -156,7 +155,6 @@ void RenderViewHost::Observe(NotificationType type,
     CHECK(no_listeners);
     CHECK(live_process);
     CHECK(same_process);
-    CHECK(num_hosts > 0);
     CHECK(false) << "RenderViewHost should outlive its RenderProcessHost.";
   }
 }

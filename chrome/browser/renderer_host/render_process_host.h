@@ -194,7 +194,6 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // Allows iteration over all the RenderProcessHosts in the browser. Note
   // that each host may not be active, and therefore may have NULL channels.
   static iterator AllHostsIterator();
-  static size_t size();  // TODO(brettw) rename this, it's very unclear.
 
   // Returns the RenderProcessHost given its ID.  Returns NULL if the ID does
   // not correspond to a live RenderProcessHost.

@@ -130,11 +130,6 @@ RenderProcessHost::iterator RenderProcessHost::AllHostsIterator() {
 }
 
 // static
-size_t RenderProcessHost::size() {
-  return all_hosts.size();
-}
-
-// static
 RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
   return all_hosts.Lookup(render_process_id);
 }
@@ -158,7 +153,7 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(Profile* profile,
                                                              Type type) {
   // First figure out which existing renderers we can use.
   std::vector<RenderProcessHost*> suitable_renderers;
-  suitable_renderers.reserve(size());
+  suitable_renderers.reserve(all_hosts.size());
 
   iterator iter(AllHostsIterator());
   while (!iter.IsAtEnd()) {

@@ -35,6 +35,18 @@ std::wstring WindowCaptionFromPageTitle(std::wstring page_title) {
 #endif
 }
 
+// Returns the number of active RenderProcessHosts.
+int CountRenderProcessHosts() {
+  int result = 0;
+  RenderProcessHost::iterator renderer_iter(
+      RenderProcessHost::AllHostsIterator());
+  while (!renderer_iter.IsAtEnd()) {
+    result++;
+    renderer_iter.Advance();
+  }
+  return result;
+}
+
 }  // namespace
 
 class BrowserTest : public InProcessBrowserTest {
@@ -118,8 +130,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
   // See browser\renderer_host\render_process_host.cc for the algorithm to
   // decide how many processes to create.
   if (base::SysInfo::AmountOfPhysicalMemoryMB() >= 2048) {
-    EXPECT_GE(RenderProcessHost::size(), 24U);
+    EXPECT_GE(CountRenderProcessHosts(), 24);
   } else {
-    EXPECT_LE(RenderProcessHost::size(), 23U);
+    EXPECT_LE(CountRenderProcessHosts(), 23);
   }
 }
