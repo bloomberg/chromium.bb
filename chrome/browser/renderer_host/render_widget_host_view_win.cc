@@ -12,6 +12,7 @@
 #include "base/gfx/gdi_util.h"
 #include "base/gfx/rect.h"
 #include "base/histogram.h"
+#include "base/thread.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_accessibility_manager.h"
 #include "chrome/browser/browser_process.h"

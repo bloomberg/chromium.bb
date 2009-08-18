@@ -10,6 +10,7 @@
 #include "base/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/thread.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/browser_process.h"
