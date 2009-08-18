@@ -913,11 +913,7 @@ LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
   if (ProcessNativeControlMessage(message, w_param, l_param, &result))
     return result;
 
-  // Otherwise we handle everything else.
-  if (!ProcessWindowMessage(window, message, w_param, l_param, result))
-    result = DefWindowProc(window, message, w_param, l_param);
-  if (message == WM_NCDESTROY)
-    OnFinalMessage(window);
+  result = base::WindowImpl::OnWndProc(message, w_param, l_param);
   if (message == WM_ACTIVATE)
     PostProcessActivateMessage(this, LOWORD(w_param));
   return result;

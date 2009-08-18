@@ -50,6 +50,9 @@ class WindowImpl : public MessageMapInterface {
   // Retrieves the default window icon to use for windows if none is specified.
   virtual HICON GetDefaultWindowIcon() const;
 
+  // Override this to be notified of the last message.
+  virtual void OnFinalMessage(HWND window) {}
+
   // Returns the HWND associated with this Window.
   HWND hwnd() const { return hwnd_; }
 

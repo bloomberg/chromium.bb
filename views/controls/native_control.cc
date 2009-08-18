@@ -4,15 +4,12 @@
 
 #include "views/controls/native_control.h"
 
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlcrack.h>
-#include <atlframe.h>
-#include <atlmisc.h>
+#include <algorithm>
 
 #include "app/l10n_util_win.h"
 #include "base/logging.h"
 #include "base/win_util.h"
+#include "base/window_impl.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/native/native_view_host.h"
@@ -30,16 +27,13 @@ static const wchar_t* const kHandlerKey =
 // Maps to the NativeControl.
 static const wchar_t* const kNativeControlKey = L"__NATIVE_CONTROL__";
 
-class NativeControlContainer : public CWindowImpl<NativeControlContainer,
-                               CWindow,
-                               CWinTraits<WS_CHILD | WS_CLIPSIBLINGS |
-                                          WS_CLIPCHILDREN>> {
+class NativeControlContainer : public base::WindowImpl {
  public:
-
   explicit NativeControlContainer(NativeControl* parent) : parent_(parent),
                                                            control_(NULL) {
-    Create(parent->GetWidget()->GetNativeView());
-    ::ShowWindow(m_hWnd, SW_SHOW);
+    set_window_style(WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+    Init(parent->GetWidget()->GetNativeView(), gfx::Rect());
+    ShowWindow(hwnd(), SW_SHOW);
   }
 
   virtual ~NativeControlContainer() {
@@ -47,8 +41,7 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
 
   // NOTE: If you add a new message, be sure and verify parent_ is valid before
   // calling into parent_.
-  DECLARE_FRAME_WND_CLASS(L"ChromeViewsNativeControlContainer", NULL);
-  BEGIN_MSG_MAP(NativeControlContainer);
+  BEGIN_MSG_MAP_EX(NativeControlContainer);
     MSG_WM_CREATE(OnCreate);
     MSG_WM_ERASEBKGND(OnEraseBkgnd);
     MSG_WM_PAINT(OnPaint);
@@ -79,7 +72,7 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
  private:
 
   LRESULT OnCreate(LPCREATESTRUCT create_struct) {
-    control_ = parent_->CreateNativeControl(m_hWnd);
+    control_ = parent_->CreateNativeControl(hwnd());
 
     // We subclass the control hwnd so we get the WM_KEYDOWN messages.
     WNDPROC original_handler =
@@ -88,7 +81,7 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
     SetProp(control_, kHandlerKey, original_handler);
     SetProp(control_, kNativeControlKey , parent_);
 
-    ::ShowWindow(control_, SW_SHOW);
+    ShowWindow(control_, SW_SHOW);
     return 1;
   }
 
@@ -98,12 +91,12 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
 
   void OnPaint(HDC ignore) {
     PAINTSTRUCT ps;
-    HDC dc = ::BeginPaint(*this, &ps);
-    ::EndPaint(*this, &ps);
+    HDC dc = BeginPaint(hwnd(), &ps);
+    EndPaint(hwnd(), &ps);
   }
 
   void OnSize(int type, const CSize& sz) {
-    ::MoveWindow(control_, 0, 0, sz.cx, sz.cy, TRUE);
+    MoveWindow(control_, 0, 0, sz.cx, sz.cy, TRUE);
   }
 
   LRESULT OnCommand(UINT code, int id, HWND source) {
@@ -174,7 +167,7 @@ NativeControl::NativeControl() : hwnd_view_(NULL),
 NativeControl::~NativeControl() {
   if (container_) {
     container_->ResetParent();
-    ::DestroyWindow(*container_);
+    DestroyWindow(container_->hwnd());
   }
 }
 
@@ -186,15 +179,15 @@ void NativeControl::ValidateNativeControl() {
 
   if (!container_ && IsVisible()) {
     container_ = new NativeControlContainer(this);
-    hwnd_view_->Attach(*container_);
+    hwnd_view_->Attach(container_->hwnd());
     if (!enabled_)
       EnableWindow(GetNativeControlHWND(), enabled_);
 
     // This message ensures that the focus border is shown.
-    ::SendMessage(container_->GetControl(),
-                  WM_CHANGEUISTATE,
-                  MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
-                  0);
+    SendMessage(container_->GetControl(),
+                WM_CHANGEUISTATE,
+                MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
+                0);
   }
 }
 
@@ -274,7 +267,7 @@ void NativeControl::OnContextMenu(const CPoint& location) {
 void NativeControl::Focus() {
   if (container_) {
     DCHECK(container_->GetControl());
-    ::SetFocus(container_->GetControl());
+    SetFocus(container_->GetControl());
   }
 }
 
@@ -295,7 +288,7 @@ void NativeControl::SetVisible(bool f) {
   if (f != IsVisible()) {
     View::SetVisible(f);
     if (!f && container_) {
-      ::DestroyWindow(*container_);
+      DestroyWindow(container_->hwnd());
     } else if (f && !container_) {
       ValidateNativeControl();
     }
@@ -319,13 +312,13 @@ void NativeControl::VisibilityChanged(View* starting_from, bool is_visible) {
 }
 
 void NativeControl::SetFixedWidth(int width, Alignment alignment) {
-  DCHECK(width > 0);
+  DCHECK_GT(width, 0);
   fixed_width_ = width;
   horizontal_alignment_ = alignment;
 }
 
 void NativeControl::SetFixedHeight(int height, Alignment alignment) {
-  DCHECK(height > 0);
+  DCHECK_GT(height, 0);
   fixed_height_ = height;
   vertical_alignment_ = alignment;
 }
