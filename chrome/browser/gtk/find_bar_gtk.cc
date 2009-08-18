@@ -245,8 +245,6 @@ void FindBarGtk::InitWidgets() {
   gtk_widget_set_size_request(content_hbox, kTextEntryWidth, -1);
 
   text_entry_ = gtk_entry_new();
-  gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL, &kEntryBackgroundColor);
-  gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL, &kEntryTextColor);
 
   match_count_label_ = gtk_label_new(NULL);
   // This line adds padding on the sides so that the label has even padding on
@@ -263,7 +261,6 @@ void FindBarGtk::InitWidgets() {
   gtk_container_add(GTK_CONTAINER(match_count_event_box_), match_count_label_);
   UpdateMatchLabelAppearance(false);
 
-  gtk_entry_set_has_frame(GTK_ENTRY(text_entry_), FALSE);
   // Until we switch to vector graphics, force the font size.
   gtk_util::ForceFontSizePixels(text_entry_, 13.4);  // 13.4px == 10pt @ 96dpi
   gtk_util::ForceFontSizePixels(match_count_centerer, 13.4);
@@ -274,16 +271,11 @@ void FindBarGtk::InitWidgets() {
 
   // This event box is necessary to color in the area above and below the
   // match count label.
-  GtkWidget* content_event_box = gtk_event_box_new();
-  // Force the text widget height so it lines up with the buttons regardless of
-  // font size.
-  gtk_widget_set_size_request(content_event_box, -1, 20);
-  gtk_widget_modify_bg(content_event_box, GTK_STATE_NORMAL,
-                       &kEntryBackgroundColor);
-  gtk_container_add(GTK_CONTAINER(content_event_box), content_hbox);
+  content_event_box_ = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(content_event_box_), content_hbox);
 
   // We fake anti-aliasing by having two borders.
-  border_bin_ = gtk_util::CreateGtkBorderBin(content_event_box, NULL,
+  border_bin_ = gtk_util::CreateGtkBorderBin(content_event_box_, NULL,
                                              1, 1, 1, 0);
   border_bin_aa_ = gtk_util::CreateGtkBorderBin(border_bin_, NULL,
                                                 1, 1, 1, 0);
@@ -462,10 +454,29 @@ void FindBarGtk::Observe(NotificationType type,
     GdkColor color = theme_provider_->GetBorderColor();
     gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &color);
 
+    gtk_entry_set_has_frame(GTK_ENTRY(text_entry_), TRUE);
+    gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL, NULL);
+    gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL, NULL);
+
+    gtk_widget_set_size_request(content_event_box_, -1, -1);
+    gtk_widget_modify_bg(content_event_box_, GTK_STATE_NORMAL, NULL);
+
     gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, NULL);
   } else {
     gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &kFrameBorderColor);
+
+    gtk_entry_set_has_frame(GTK_ENTRY(text_entry_), FALSE);
+    gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL,
+                           &kEntryBackgroundColor);
+    gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL,
+                           &kEntryTextColor);
+
+    // Force the text widget height so it lines up with the buttons regardless
+    // of font size.
+    gtk_widget_set_size_request(content_event_box_, -1, 20);
+    gtk_widget_modify_bg(content_event_box_, GTK_STATE_NORMAL,
+                         &kEntryBackgroundColor);
 
     gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, &kTextBorderColor);
     gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, &kTextBorderColorAA);
@@ -497,10 +508,14 @@ void FindBarGtk::FindEntryTextInContents(bool forward_search) {
 }
 
 void FindBarGtk::UpdateMatchLabelAppearance(bool failure) {
+  bool use_gtk = theme_provider_->UseGtkTheme();
+
   gtk_widget_modify_bg(match_count_event_box_, GTK_STATE_NORMAL,
-      failure ? &kFindFailureBackgroundColor : &kEntryBackgroundColor);
+      failure ? &kFindFailureBackgroundColor :
+      (use_gtk ? NULL : &kEntryBackgroundColor));
   gtk_widget_modify_fg(match_count_label_, GTK_STATE_NORMAL,
-      failure ? &kEntryTextColor : &kFindSuccessTextColor);
+      failure ? &kEntryTextColor :
+      (use_gtk ? NULL : &kFindSuccessTextColor));
 }
 
 void FindBarGtk::StoreOutsideFocus() {

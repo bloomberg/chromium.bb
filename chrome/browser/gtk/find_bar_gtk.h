@@ -146,6 +146,9 @@ class FindBarGtk : public FindBar,
   // The widget where text is entered.
   GtkWidget* text_entry_;
 
+  // An event box and alignment that wrap the entry area and the count label.
+  GtkWidget* content_event_box_;
+
   // The border around the text entry area.
   GtkWidget* border_bin_;
   GtkWidget* border_bin_aa_;
