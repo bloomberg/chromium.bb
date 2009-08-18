@@ -33,9 +33,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/* TODO: local includes */
-#include "nacl_srpc.h"
-#include "nacl_srpc_internal.h"
+
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
 /*
  * Each server rpc loop keeps its own copy of the descriptors.
@@ -122,7 +122,7 @@ char* __NaClSrpcBuildSDString(const struct NaClSrpcHandlerDesc methods[],
   p = str;
   for (i = 0; i < method_count; ++i) {
     size_t buf_limit = str + *length - p;
-    /* TODO: use portability_io.h */
+    /* TODO(robertm): explore use portability_io.h */
 #if NACL_WINDOWS
     p += _snprintf(p, buf_limit, "%s\n", methods[i].entry_fmt);
 #else

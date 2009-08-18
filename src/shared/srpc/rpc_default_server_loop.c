@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,25 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-/*
- * NaCl simple rpc service main loop
- */
+#include <sys/nacl_syscalls.h>
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
-#include <sys/nacl_syscalls.h>
-
-int __attribute__ ((weak)) main(int argc, char* argv[]) {
-  const int is_embedded = (-1 != srpc_get_fd());
-
-  if (!is_embedded) {
-    /*
-     * Message processing loop goes here.  For now, just do a sel_universal.
-     */
-    __CommandLoop();
-  }
-
-  return 0;
+int NaClSrpcDefaultServerLoop(void* server_instance_data) {
+  return NaClSrpcServerLoop(srpc_get_fd(),
+                            __kNaClSrpcHandlers,
+                            server_instance_data);
 }

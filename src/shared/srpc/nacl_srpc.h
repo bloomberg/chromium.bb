@@ -507,6 +507,8 @@ int NaClSrpcServerLoopImcDesc(NaClSrpcImcDescType              imc_socket_desc,
                               const struct NaClSrpcHandlerDesc methods[],
                               void                             *instance_data);
 
+/* NOTE: we may consider moving this and other untrusted only APIs
+         into a separate header file */
 #ifdef __native_client__
 /**
  *  Runs an SRPC receive-dispatch-respond loop on the "default" descriptor.

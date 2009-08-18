@@ -30,7 +30,8 @@
 
 Import('env')
 
-env.ComponentLibrary('nonnacl_srpc', [
+# NOTE: keep this sync'ed with nacl.scons
+trusted_untrusted_shared = [
     'imc_buffer.c',
     'invoke.c',
     'nacl_srpc.c',
@@ -39,4 +40,6 @@ env.ComponentLibrary('nonnacl_srpc', [
     'rpc_server_loop.c',
     'rpc_type_check.c',
     'utility.c',
-])
+]
+
+env.ComponentLibrary('nonnacl_srpc', trusted_untrusted_shared)
