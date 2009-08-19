@@ -51,7 +51,7 @@ public:
   int                 change_token(const char * word);
   int                 get_tokenpos();
   int                 is_wordchar(char * w);
-  char *              get_latin1(char * s);
+  const char *        get_latin1(char * s);
   char *              next_char();
   
 };
