@@ -2400,9 +2400,6 @@ BUG15217 : LayoutTests/fast/events/prevent-drag-to-navigate.html = TIMEOUT
 BUG15217 MAC : LayoutTests/fast/js/switch-behaviour.html = FAIL
 
 // WebKit 45086:45111
-BUG15270 LINUX WIN : LayoutTests/svg/custom/js-update-image-and-display.svg = FAIL
-BUG15270 LINUX WIN : LayoutTests/svg/custom/js-update-image-and-display2.svg = FAIL
-BUG15270 LINUX WIN : LayoutTests/svg/custom/js-update-image-and-display3.svg = FAIL
 BUG15270 : LayoutTests/fast/js/excessive-comma-usage.html = FAIL
 
 // WebKit 45134:45176
