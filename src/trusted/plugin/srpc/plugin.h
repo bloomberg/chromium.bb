@@ -107,6 +107,7 @@ class Plugin : public PortableHandle {
   // Functions exported through MethodMap
   static bool UrlAsNaClDesc(void* obj, SrpcParams* params);
   static bool ShmFactory(void* obj, SrpcParams* params);
+  static bool SocketAddressFactory(void* obj, SrpcParams* params);
 
   static bool GetHeightProperty(void* obj, SrpcParams* params);
   static bool SetHeightProperty(void* obj, SrpcParams* params);

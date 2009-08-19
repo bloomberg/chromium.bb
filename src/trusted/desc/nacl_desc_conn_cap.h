@@ -37,6 +37,8 @@
 
 #include "native_client/src/include/portability.h"
 
+EXTERN_C_BEGIN
+
 struct NaClDesc;
 struct NaClDescConnCap;
 struct NaClDescEffector;
@@ -67,5 +69,7 @@ int NaClDescConnCapConnectAddr(struct NaClDesc          *vself,
 
 int NaClDescConnCapAcceptConn(struct NaClDesc         *vself,
                               struct NaClDescEffector *effp);
+
+EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_CONN_CAP_H_

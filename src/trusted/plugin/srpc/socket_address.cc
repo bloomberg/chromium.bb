@@ -55,6 +55,7 @@ bool SocketAddress::Init(struct PortableHandleInitializer* init_info) {
 // SocketAddress implements only the connect method.
 void SocketAddress::LoadMethods() {
   AddMethodToMap(RpcConnect, "connect", METHOD_CALL, "", "h");
+  AddMethodToMap(RpcToString, "toString", METHOD_CALL, "", "s");
 }
 
 bool SocketAddress::RpcConnect(void* obj, SrpcParams *params) {
@@ -67,6 +68,22 @@ bool SocketAddress::RpcConnect(void* obj, SrpcParams *params) {
   params->outs[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
   params->outs[0]->u.oval =
       static_cast<BrowserScriptableObject*>(connected_socket);
+  return true;
+}
+
+bool SocketAddress::RpcToString(void* obj, SrpcParams *params) {
+  SocketAddress* socket_addr = reinterpret_cast<SocketAddress*>(obj);
+  struct NaClDescConnCap* conn_cap =
+      reinterpret_cast<struct NaClDescConnCap*>(socket_addr->desc());
+  size_t len = strnlen(conn_cap->cap.path, NACL_PATH_MAX);
+  // strnlen ensures that len <= NACL_PATH_MAX < SIZE_T_MAX, so no overflow.
+  char* ret_string = reinterpret_cast<char*>(malloc(len + 1));
+  if (NULL == ret_string) {
+    return false;
+  }
+  strncpy(ret_string, conn_cap->cap.path, len + 1);
+  params->outs[0]->tag = NACL_SRPC_ARG_TYPE_STRING;
+  params->outs[0]->u.sval = ret_string;
   return true;
 }
 

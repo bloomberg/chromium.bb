@@ -43,6 +43,7 @@
 
 #include <string>
 
+#include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
@@ -68,6 +69,8 @@ void Plugin::LoadMethods() {
   // the only method supported by PortableHandle
   AddMethodToMap(UrlAsNaClDesc, "__urlAsNaClDesc", METHOD_CALL, "so", "");
   AddMethodToMap(ShmFactory, "__shmFactory", METHOD_CALL, "i", "h");
+  AddMethodToMap(SocketAddressFactory,
+      "__socketAddressFactory", METHOD_CALL, "s", "h");
   AddMethodToMap(GetHeightProperty, "height", PROPERTY_GET, "", "i");
   AddMethodToMap(SetHeightProperty, "height", PROPERTY_SET, "i", "");
   AddMethodToMap(GetWidthProperty, "width", PROPERTY_GET, "", "i");
@@ -134,6 +137,58 @@ bool Plugin::ShmFactory(void *obj, SrpcParams *params) {
   params->Output(0)->tag = NACL_SRPC_ARG_TYPE_OBJECT;
   params->Output(0)->u.oval =
       static_cast<BrowserScriptableObject*>(shared_memory);
+  return true;
+}
+
+bool Plugin::SocketAddressFactory(void *obj, SrpcParams *params) {
+  Plugin *plugin = reinterpret_cast<Plugin*>(obj);
+  // Type check the input parameter.
+  if (NACL_SRPC_ARG_TYPE_STRING != params->Input(0)->tag) {
+    return false;
+  }
+  // Ensure it's a valid string short enough to be a socket address.
+  char* str = params->Input(0)->u.sval;
+  if (NULL == str || NACL_PATH_MAX == strnlen(str, NACL_PATH_MAX)) {
+    return false;
+  }
+  // Create a NaClSocketAddress from the string.
+  struct NaClSocketAddress* nsap =
+      reinterpret_cast<struct NaClSocketAddress*>(
+          malloc(sizeof(struct NaClSocketAddress)));
+  if (NULL == nsap) {
+    return false;
+  }
+  strncpy(nsap->path, str, strnlen(str, NACL_PATH_MAX));
+  // Create a NaClDescConnCap from the socket address.
+  struct NaClDescConnCap* conn_cap =
+      reinterpret_cast<struct NaClDescConnCap*>(
+          malloc(sizeof(struct NaClDescConnCap)));
+  if (NULL == conn_cap) {
+    free(nsap);
+    return false;
+  }
+  if (!NaClDescConnCapCtor(conn_cap, nsap)) {
+    free(nsap);
+    free(conn_cap);
+    return false;
+  }
+  // The Ctor copies the NaClSocketAddress, so it's no longer needed.
+  free(nsap);
+  // Create a scriptable object to return.
+  DescHandleInitializer init_info(plugin->GetPortablePluginInterface(),
+                                  reinterpret_cast<struct NaClDesc*>(conn_cap),
+                                  plugin);
+  ScriptableHandle<SocketAddress>* socket_address =
+      ScriptableHandle<SocketAddress>::New(&init_info);
+  if (NULL == socket_address) {
+    NaClDescUnref(reinterpret_cast<struct NaClDesc*>(conn_cap));
+    params->SetExceptionInfo("out of memory");
+    return false;
+  }
+  // Plug the scriptable object into the return values.
+  params->Output(0)->tag = NACL_SRPC_ARG_TYPE_OBJECT;
+  params->Output(0)->u.oval =
+      static_cast<BrowserScriptableObject*>(socket_address);
   return true;
 }
 

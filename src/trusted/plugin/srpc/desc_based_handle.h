@@ -58,7 +58,7 @@ namespace nacl_srpc {
 
   // PortableHandle is the struct used to represent handles that are opaque to
   // the javascript bridge.
-  class DescBasedHandle :public PortableHandle{
+  class DescBasedHandle : public PortableHandle {
    public:
 
     // Get the contained descriptor.

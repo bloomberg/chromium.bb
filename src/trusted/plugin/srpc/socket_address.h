@@ -54,11 +54,13 @@ typedef DescHandleInitializer SocketAddressInitializer;
 // SocketAddress is used to represent socket address descriptors.
 class SocketAddress : public DescBasedHandle {
  public:
-   explicit SocketAddress();
-   ~SocketAddress();
+  explicit SocketAddress();
+  ~SocketAddress();
 
   // Connect to a SocketAddress.
   static bool RpcConnect(void* obj, SrpcParams* params);
+  // Return a string from a SocketAddress.
+  static bool RpcToString(void* obj, SrpcParams* params);
   ScriptableHandle<ConnectedSocket>* Connect(ServiceRuntimeInterface* sri);
   bool Init(struct PortableHandleInitializer* init_info);
   // override - this class implements a different set of methods
