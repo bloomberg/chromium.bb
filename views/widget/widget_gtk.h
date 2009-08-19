@@ -17,6 +17,7 @@ class Rect;
 namespace views {
 
 class DefaultThemeProvider;
+class DropTargetGtk;
 class TooltipManagerGtk;
 class View;
 class WindowGtk;
@@ -106,9 +107,29 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   // Retrieves the WindowGtk associated with |widget|.
   static WindowGtk* GetWindowForNative(GtkWidget* widget);
 
+  // Sets the drop target to NULL. This is invoked by DropTargetGTK when the
+  // drop is done.
+  void ResetDropTarget();
+
  protected:
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
   virtual void OnPaint(GtkWidget* widget, GdkEventExpose* event);
+  virtual void OnDragDataReceived(GdkDragContext* context,
+                                  gint x,
+                                  gint y,
+                                  GtkSelectionData* data,
+                                  guint info,
+                                  guint time);
+  virtual gboolean OnDragDrop(GdkDragContext* context,
+                              gint x,
+                              gint y,
+                              guint time);
+  virtual void OnDragLeave(GdkDragContext* context,
+                           guint time);
+  virtual gboolean OnDragMotion(GdkDragContext* context,
+                                gint x,
+                                gint y,
+                                guint time);
   virtual gboolean OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event);
   virtual gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event);
   virtual gboolean OnMotionNotify(GtkWidget* widget, GdkEventMotion* event);
@@ -144,6 +165,9 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   bool is_window_;
 
  private:
+  class DropObserver;
+  friend class DropObserver;
+
   virtual RootView* CreateRootView();
 
   void OnWindowPaint(GtkWidget* widget, GdkEventExpose* event);
@@ -166,6 +190,30 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   static gboolean CallWindowPaint(GtkWidget* widget,
                                   GdkEventExpose* event,
                                   WidgetGtk* widget_gtk);
+  static void CallDragDataReceived(GtkWidget* widget,
+                                   GdkDragContext* context,
+                                   gint x,
+                                   gint y,
+                                   GtkSelectionData* data,
+                                   guint info,
+                                   guint time,
+                                   WidgetGtk* host);
+  static gboolean CallDragDrop(GtkWidget* widget,
+                               GdkDragContext* context,
+                               gint x,
+                               gint y,
+                               guint time,
+                               WidgetGtk* host);
+  static void CallDragLeave(GtkWidget* widget,
+                            GdkDragContext* context,
+                            guint time,
+                            WidgetGtk* host);
+  static gboolean CallDragMotion(GtkWidget* widget,
+                                 GdkDragContext* context,
+                                 gint x,
+                                 gint y,
+                                 guint time,
+                                 WidgetGtk* host);
   static gboolean CallEnterNotify(GtkWidget* widget, GdkEventCrossing* event);
   static gboolean CallLeaveNotify(GtkWidget* widget, GdkEventCrossing* event);
   static gboolean CallMotionNotify(GtkWidget* widget, GdkEventMotion* event);
@@ -216,6 +264,8 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   // must be destroyed AFTER root_view_.
   scoped_ptr<TooltipManagerGtk> tooltip_manager_;
 
+  scoped_ptr<DropTargetGtk> drop_target_;
+
   // The focus manager keeping track of focus for this Widget and any of its
   // children.  NULL for non top-level widgets.
   // WARNING: RootView's destructor calls into the FocusManager. As such, this
@@ -252,6 +302,9 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   bool transparent_;
 
   scoped_ptr<DefaultThemeProvider> default_theme_provider_;
+
+  // See note in DropObserver for details on this.
+  bool ignore_drag_leave_;
 
   unsigned char opacity_;
 

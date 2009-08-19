@@ -9,7 +9,10 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+
+#if defined(TOOLKIT_VIEWS)
 #include "views/view.h"
+#endif
 
 AutomatedUITestBase::AutomatedUITestBase() {}
 

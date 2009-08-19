@@ -24,7 +24,6 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-
 class BookmarkContextMenu;
 class BookmarkNode;
 class Browser;
@@ -362,14 +361,6 @@ class FontsLanguagesWindowView {
   explicit FontsLanguagesWindowView(Profile* profile) { NOTIMPLEMENTED(); }
   void SelectLanguagesTab() { NOTIMPLEMENTED(); }
 };
-
-#if !defined(TOOLKIT_VIEWS)
-class OSExchangeData {
- public:
-  void SetString(const std::wstring& data) { NOTIMPLEMENTED(); }
-  void SetURL(const GURL& url, const std::wstring& title) { NOTIMPLEMENTED(); }
-};
-#endif
 
 class BaseDragSource {
 };

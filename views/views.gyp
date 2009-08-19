@@ -214,6 +214,8 @@
         'widget/default_theme_provider.h',
         'widget/drop_helper.cc',
         'widget/drop_helper.h',
+        'widget/drop_target_gtk.cc',
+        'widget/drop_target_gtk.h',
         'widget/drop_target_win.cc',
         'widget/drop_target_win.h',
         'widget/root_view.cc',
