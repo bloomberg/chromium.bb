@@ -639,6 +639,25 @@ o3djs.math.copyMatrix = function(m) {
 };
 
 /**
+ * Returns the elements of a matrix as a one-dimensional array. The
+ * rows or columns (depending on whether the matrix is row-major or
+ * column-major) are concatenated.
+ * @param {!o3djs.math.Matrix} m The matrix.
+ * @return {!Array.<number>} The matrix's elements as a one-dimensional array.
+ */
+o3djs.math.getMatrixElements = function(m) {
+  var r = [];
+  var mLength = m.length;
+  var k = 0;
+  for (var i = 0; i < mLength; i++) {
+    for (var j = 0; j < m[i].length; j++) {
+      r[k++] = m[i][j];
+    }
+  }
+  return r;
+};
+
+/**
  * Multiplies two scalars.
  * @param {number} a Operand scalar.
  * @param {number} b Operand scalar.
@@ -1747,6 +1766,24 @@ o3djs.math.matrix4.identity = function() {
     [0, 0, 1, 0],
     [0, 0, 0, 1]
   ];
+};
+
+/**
+ * Sets the given 4-by-4 matrix to the identity matrix.
+ * @param {!o3djs.math.Matrix4} m The matrix to set to identity.
+ * @return {!o3djs.math.Matrix4} m once modified.
+ */
+o3djs.math.matrix4.setIdentity = function(m) {
+  for (var i = 0; i < 4; i++) {
+    for (var j = 0; j < 4; j++) {
+      if (i == j) {
+        m[i][j] = 1;
+      } else {
+        m[i][j] = 0;
+      }
+    }
+  }
+  return m;
 };
 
 /**
