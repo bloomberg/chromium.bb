@@ -199,8 +199,7 @@ TestSuite.prototype.testHostIsPresent = function() {
  */
 TestSuite.prototype.testElementsTreeRoot = function() {
   var doc = WebInspector.domAgent.document;
-//  Re-enable once DOMAgent.js is fixed upstream.
-//  this.assertEquals('HTML', doc.documentElement.nodeName);
+  this.assertEquals('HTML', doc.documentElement.nodeName);
   this.assertTrue(doc.documentElement.hasChildNodes());
 };
 
