@@ -249,7 +249,7 @@ class MemoryTest : public UITest {
 
       const int kMaxWaitTime = 5000;
       bool timed_out = false;
-      tab->NavigateToURLWithTimeout(GURL(urls[counter]), 1, kMaxWaitTime,
+      tab->NavigateToURLWithTimeout(GURL(urls[counter]), kMaxWaitTime,
                                     &timed_out);
       if (timed_out)
         printf("warning: %s timed out!\n", urls[counter].c_str());

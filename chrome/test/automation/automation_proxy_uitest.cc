@@ -282,7 +282,7 @@ TEST_F(AutomationProxyTest, NavigateToURLWithTimeout1) {
 
   bool is_timeout;
   tab->NavigateToURLWithTimeout(net::FilePathToFileURL(filename),
-                                1, 5000, &is_timeout);
+                                5000, &is_timeout);
   ASSERT_FALSE(is_timeout);
 
   std::wstring title;
@@ -294,7 +294,7 @@ TEST_F(AutomationProxyTest, NavigateToURLWithTimeout1) {
   ASSERT_GE(URLRequestSlowHTTPJob::kDelayMs, kLowTimeoutMs);
   tab->NavigateToURLWithTimeout(
       URLRequestSlowHTTPJob::GetMockUrl(filename.ToWStringHack()),
-      1, kLowTimeoutMs, &is_timeout);
+      kLowTimeoutMs, &is_timeout);
   ASSERT_TRUE(is_timeout);
 }
 
@@ -314,13 +314,13 @@ TEST_F(AutomationProxyTest, NavigateToURLWithTimeout2) {
   ASSERT_GE(URLRequestSlowHTTPJob::kDelayMs, kLowTimeoutMs);
   tab->NavigateToURLWithTimeout(
       URLRequestSlowHTTPJob::GetMockUrl(filename1.ToWStringHack()),
-      1, kLowTimeoutMs, &is_timeout);
+      kLowTimeoutMs, &is_timeout);
   ASSERT_TRUE(is_timeout);
 
   FilePath filename2(test_data_directory_);
   filename2 = filename2.AppendASCII("title1.html");
   tab->NavigateToURLWithTimeout(net::FilePathToFileURL(filename2),
-                                1, 5000, &is_timeout);
+                                5000, &is_timeout);
   ASSERT_FALSE(is_timeout);
 }
 

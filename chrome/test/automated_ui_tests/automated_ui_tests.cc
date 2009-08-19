@@ -623,8 +623,7 @@ bool AutomatedUITest::ForceCrash() {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   GURL test_url("about:crash");
   bool did_timeout;
-  tab->NavigateToURLWithTimeout(test_url, 1, kDebuggingTimeoutMsec,
-                                &did_timeout);
+  tab->NavigateToURLWithTimeout(test_url, kDebuggingTimeoutMsec, &did_timeout);
   if (!did_timeout) {
     AddInfoAttribute("expected_crash");
     return false;

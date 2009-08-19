@@ -226,14 +226,11 @@ class NavigationNotificationObserver : public NotificationObserver {
  public:
   NavigationNotificationObserver(NavigationController* controller,
                                  AutomationProvider* automation,
-                                 IPC::Message* reply_message,
-                                 int number_of_navigations)
+                                 IPC::Message* reply_message)
     : automation_(automation),
       reply_message_(reply_message),
       controller_(controller),
-      navigations_remaining_(number_of_navigations),
       navigation_started_(false) {
-    DCHECK_LT(0, navigations_remaining_);
     Source<NavigationController> source(controller_);
     registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED, source);
     registrar_.Add(this, NotificationType::LOAD_START, source);
@@ -283,8 +280,7 @@ class NavigationNotificationObserver : public NotificationObserver {
     } else if (type == NotificationType::LOAD_STOP) {
       if (navigation_started_) {
         navigation_started_ = false;
-        if (--navigations_remaining_ == 0)
-          ConditionMet(AUTOMATION_MSG_NAVIGATION_SUCCESS);
+        ConditionMet(AUTOMATION_MSG_NAVIGATION_SUCCESS);
       }
     } else if (type == NotificationType::AUTH_SUPPLIED) {
       // The LoginHandler for this tab is no longer valid.
@@ -321,7 +317,6 @@ class NavigationNotificationObserver : public NotificationObserver {
   AutomationProvider* automation_;
   IPC::Message* reply_message_;
   NavigationController* controller_;
-  int navigations_remaining_;
   bool navigation_started_;
 };
 
@@ -377,7 +372,7 @@ class TabAppendedNotificationObserver : public TabStripNotificationObserver {
       return;
     }
 
-    automation_->AddNavigationStatusListener(controller, reply_message_, 1);
+    automation_->AddNavigationStatusListener(controller, reply_message_);
   }
 
  protected:
@@ -551,7 +546,7 @@ class ExecuteBrowserCommandObserver : public NotificationObserver {
       case IDC_RELOAD: {
         automation->AddNavigationStatusListener(
             &browser->GetSelectedTabContents()->controller(),
-            reply_message, 1);
+            reply_message);
         break;
       }
       default: {
@@ -839,11 +834,9 @@ void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {
 }
 
 NotificationObserver* AutomationProvider::AddNavigationStatusListener(
-    NavigationController* tab, IPC::Message* reply_message,
-    int number_of_navigations) {
+    NavigationController* tab, IPC::Message* reply_message) {
   NotificationObserver* observer =
-      new NavigationNotificationObserver(tab, this, reply_message,
-                                         number_of_navigations);
+      new NavigationNotificationObserver(tab, this, reply_message);
 
   notification_observer_list_.AddObserver(observer);
   return observer;
@@ -926,9 +919,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookies, GetCookies)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetCookie, SetCookie)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_NavigateToURL, NavigateToURL)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        AutomationMsg_NavigateToURLBlockUntilNavigationsComplete,
-        NavigateToURLBlockUntilNavigationsComplete)
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsync, NavigationAsync)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_GoBack, GoBack)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_GoForward, GoForward)
@@ -1125,12 +1115,6 @@ void AutomationProvider::AppendTab(int handle, const GURL& url,
 
 void AutomationProvider::NavigateToURL(int handle, const GURL& url,
                                        IPC::Message* reply_message) {
-  NavigateToURLBlockUntilNavigationsComplete(handle, url, 1, reply_message);
-}
-
-void AutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
-    int handle, const GURL& url, int number_of_navigations,
-    IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
 
@@ -1139,7 +1123,7 @@ void AutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
     Browser* browser = FindAndActivateTab(tab);
 
     if (browser) {
-      AddNavigationStatusListener(tab, reply_message, number_of_navigations);
+      AddNavigationStatusListener(tab, reply_message);
 
       // TODO(darin): avoid conversion to GURL
       browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
@@ -1151,6 +1135,7 @@ void AutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
       reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
   Send(reply_message);
 }
+
 void AutomationProvider::NavigationAsync(int handle, const GURL& url,
                                          bool* status) {
   *status = false;
@@ -1176,7 +1161,7 @@ void AutomationProvider::GoBack(int handle, IPC::Message* reply_message) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
-      AddNavigationStatusListener(tab, reply_message, 1);
+      AddNavigationStatusListener(tab, reply_message);
       browser->GoBack(CURRENT_TAB);
       return;
     }
@@ -1192,7 +1177,7 @@ void AutomationProvider::GoForward(int handle, IPC::Message* reply_message) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
-      AddNavigationStatusListener(tab, reply_message, 1);
+      AddNavigationStatusListener(tab, reply_message);
       browser->GoForward(CURRENT_TAB);
       return;
     }
@@ -1208,7 +1193,7 @@ void AutomationProvider::Reload(int handle, IPC::Message* reply_message) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     Browser* browser = FindAndActivateTab(tab);
     if (browser && browser->command_updater()->IsCommandEnabled(IDC_RELOAD)) {
-      AddNavigationStatusListener(tab, reply_message, 1);
+      AddNavigationStatusListener(tab, reply_message);
       browser->Reload();
       return;
     }
@@ -1232,7 +1217,7 @@ void AutomationProvider::SetAuth(int tab_handle,
       // not strictly correct, because a navigation can require both proxy and
       // server auth, but it should be OK for now.
       LoginHandler* handler = iter->second;
-      AddNavigationStatusListener(tab, reply_message, 1);
+      AddNavigationStatusListener(tab, reply_message);
       handler->SetAuth(username, password);
       return;
     }
@@ -1252,7 +1237,7 @@ void AutomationProvider::CancelAuth(int tab_handle,
     if (iter != login_handler_map_.end()) {
       // If auth is needed again after this, something is screwy.
       LoginHandler* handler = iter->second;
-      AddNavigationStatusListener(tab, reply_message, 1);
+      AddNavigationStatusListener(tab, reply_message);
       handler->CancelAuth();
       return;
     }
@@ -2289,7 +2274,7 @@ void AutomationProvider::ShowInterstitialPage(int tab_handle,
     NavigationController* controller = tab_tracker_->GetResource(tab_handle);
     TabContents* tab_contents = controller->tab_contents();
 
-    AddNavigationStatusListener(controller, reply_message, 1);
+    AddNavigationStatusListener(controller, reply_message);
     AutomationInterstitialPage* interstitial =
         new AutomationInterstitialPage(tab_contents,
                                        GURL("about:interstitial"),
@@ -2487,7 +2472,7 @@ void AutomationProvider::ActionOnSSLBlockingPage(int handle, bool proceed,
           InterstitialPage::GetInterstitialPage(tab_contents);
       if (ssl_blocking_page) {
         if (proceed) {
-          AddNavigationStatusListener(tab, reply_message, 1);
+          AddNavigationStatusListener(tab, reply_message);
           ssl_blocking_page->Proceed();
           return;
         }
@@ -2792,7 +2777,7 @@ void AutomationProvider::ClickSSLInfoBarLink(int handle,
       int count = nav_controller->tab_contents()->infobar_delegate_count();
       if (info_bar_index >= 0 && info_bar_index < count) {
         if (wait_for_navigation) {
-          AddNavigationStatusListener(nav_controller, reply_message, 1);
+          AddNavigationStatusListener(nav_controller, reply_message);
         }
         InfoBarDelegate* delegate =
             nav_controller->tab_contents()->GetInfoBarDelegateAt(
@@ -2829,7 +2814,7 @@ void AutomationProvider::WaitForNavigation(int handle,
     return;
   }
 
-  AddNavigationStatusListener(controller, reply_message, 1);
+  AddNavigationStatusListener(controller, reply_message);
 }
 
 void AutomationProvider::SetIntPreference(int handle,

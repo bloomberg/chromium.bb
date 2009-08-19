@@ -30,10 +30,11 @@ class ErrorPageTest : public UITest {
   }
 };
 
-TEST_F(ErrorPageTest, DNSError_Basic) {
+// Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
+TEST_F(ErrorPageTest, DISABLED_DNSError_Basic) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
-  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
+  NavigateToURL(test_url);
 
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 }

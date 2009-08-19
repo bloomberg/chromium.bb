@@ -292,7 +292,6 @@ bool AutomatedUITestBase::Navigate(const GURL& url) {
   }
   bool did_timeout = false;
   tab->NavigateToURLWithTimeout(url,
-                                1,
                                 command_execution_timeout_ms(),
                                 &did_timeout);
 
