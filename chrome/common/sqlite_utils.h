@@ -373,4 +373,10 @@ inline bool DoesSqliteColumnExist(sqlite3* db,
 // has one or more rows and false if the table is empty or doesn't exist.
 bool DoesSqliteTableHaveRow(sqlite3* db, const char* table_name);
 
+#if defined(USE_SYSTEM_SQLITE)
+// This function is a local change to sqlite3 which doesn't exist when one is
+// using the system sqlite library. Thus, we stub it out here.
+int sqlite3Preload(sqlite3* db);
+#endif
+
 #endif  // CHROME_COMMON_SQLITEUTILS_H_
