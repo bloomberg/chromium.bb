@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GTK_TABS_TAB_RENDERER_GTK_H_
 
 #include <gtk/gtk.h>
+#include <map>
 
 #include "app/animation.h"
 #include "app/gfx/canvas.h"
@@ -190,6 +191,17 @@ class TabRendererGtk : public AnimationDelegate {
  private:
   class FavIconCrashAnimation;
 
+  // The data structure used to hold cached bitmaps.  We need to manually free
+  // the bitmap in CachedBitmap when we remove it from |cached_bitmaps_|.  We
+  // handle this when we replace images in the map and in the destructor.
+  struct CachedBitmap {
+    int bg_offset_x;
+    int bg_offset_y;
+    SkBitmap* bitmap;
+  };
+  typedef std::map<std::pair<const SkBitmap*, const SkBitmap*>, CachedBitmap>
+      BitmapCache;
+
   // Model data. We store this here so that we don't need to ask the underlying
   // model, which is tricky since instances of this object can outlive the
   // corresponding objects in the underlying model.
@@ -244,6 +256,15 @@ class TabRendererGtk : public AnimationDelegate {
   // Returns the largest of the favicon, title text, and the close button.
   static int GetContentHeight();
 
+  // A helper method for generating the masked bitmaps used to draw the curved
+  // edges of tabs.  We cache the generated bitmaps because they can take a
+  // long time to compute.
+  SkBitmap* GetMaskedBitmap(const SkBitmap* mask,
+                            const SkBitmap* background,
+                            int bg_offset_x,
+                            int bg_offset_y);
+  BitmapCache cached_bitmaps_;
+
   // Paints the tab, minus the close button.
   void PaintTab(GdkEventExpose* event);
 
@@ -297,7 +318,7 @@ class TabRendererGtk : public AnimationDelegate {
 
   static TabImage tab_active_;
   static TabImage tab_inactive_;
-  static TabImage tab_alpha;
+  static TabImage tab_alpha_;
 
   static gfx::Font* title_font_;
   static int title_font_height_;

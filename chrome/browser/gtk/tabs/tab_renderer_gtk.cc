@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "app/gfx/canvas_paint.h"
 #include "app/gfx/favicon_size.h"
@@ -119,7 +120,7 @@ TabRendererGtk::LoadingAnimation::Data::Data(
 bool TabRendererGtk::initialized_ = false;
 TabRendererGtk::TabImage TabRendererGtk::tab_active_ = {0};
 TabRendererGtk::TabImage TabRendererGtk::tab_inactive_ = {0};
-TabRendererGtk::TabImage TabRendererGtk::tab_alpha = {0};
+TabRendererGtk::TabImage TabRendererGtk::tab_alpha_ = {0};
 gfx::Font* TabRendererGtk::title_font_ = NULL;
 int TabRendererGtk::title_font_height_ = 0;
 int TabRendererGtk::close_button_width_ = 0;
@@ -250,6 +251,10 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
 
 TabRendererGtk::~TabRendererGtk() {
   tab_.Destroy();
+  for (BitmapCache::iterator it = cached_bitmaps_.begin();
+       it != cached_bitmaps_.end(); ++it) {
+    delete it->second.bitmap;
+  }
 }
 
 void TabRendererGtk::UpdateData(TabContents* contents, bool loading_only) {
@@ -367,8 +372,8 @@ int TabRendererGtk::GetContentHeight() {
 void TabRendererGtk::LoadTabImages() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  tab_alpha.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_LEFT);
-  tab_alpha.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_RIGHT);
+  tab_alpha_.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_LEFT);
+  tab_alpha_.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_RIGHT);
 
   tab_active_.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_LEFT);
   tab_active_.image_c = rb.GetBitmapNamed(IDR_TAB_ACTIVE_CENTER);
@@ -603,6 +608,33 @@ void TabRendererGtk::MoveCloseButtonWidget() {
   }
 }
 
+SkBitmap* TabRendererGtk::GetMaskedBitmap(const SkBitmap* mask,
+    const SkBitmap* background, int bg_offset_x, int bg_offset_y) {
+  // We store a bitmap for each mask + background pair (4 total bitmaps).  We
+  // replace the cached image if the tab has moved relative to the background.
+  BitmapCache::iterator it = cached_bitmaps_.find(std::make_pair(mask,
+                                                                 background));
+  if (it != cached_bitmaps_.end()) {
+    if (it->second.bg_offset_x == bg_offset_x &&
+        it->second.bg_offset_y == bg_offset_y) {
+      return it->second.bitmap;
+    }
+    // The background offset changed so we should re-render with the new
+    // offsets.
+    delete it->second.bitmap;
+  }
+  SkBitmap image = skia::ImageOperations::CreateTiledBitmap(
+      *background, bg_offset_x, bg_offset_y, mask->width(),
+      height() + kToolbarOverlap);
+  CachedBitmap bitmap = {
+    bg_offset_x,
+    bg_offset_y,
+    new SkBitmap(skia::ImageOperations::CreateMaskedBitmap(image, *mask))
+  };
+  cached_bitmaps_[std::make_pair(mask, background)] = bitmap;
+  return bitmap.bitmap;
+}
+
 void TabRendererGtk::PaintTab(GdkEventExpose* event) {
   gfx::CanvasPaint canvas(event, false);
   if (canvas.is_empty())
@@ -706,7 +738,7 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.
-  int offset = background_offset_x_;
+  int offset_x = background_offset_x_;
 
   int tab_id = is_otr ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
@@ -719,25 +751,19 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   int offset_y = theme_provider_->HasCustomImage(tab_id) ? 0 : 20;
 
   // Draw left edge.
-  SkBitmap tab_l = skia::ImageOperations::CreateTiledBitmap(
-      *tab_bg, offset, offset_y,
-      tab_active_.l_width, height() + kToolbarOverlap);
-  SkBitmap theme_l = skia::ImageOperations::CreateMaskedBitmap(
-      tab_l, *tab_alpha.image_l);
-  canvas->DrawBitmapInt(theme_l, 0, 0);
+  SkBitmap* theme_l = GetMaskedBitmap(tab_alpha_.image_l, tab_bg, offset_x,
+                                      offset_y);
+  canvas->DrawBitmapInt(*theme_l, 0, 0);
 
   // Draw right edge.
-  SkBitmap tab_r = skia::ImageOperations::CreateTiledBitmap(
-      *tab_bg,
-      offset + width() - tab_active_.r_width, offset_y,
-      tab_active_.r_width, height() + kToolbarOverlap);
-  SkBitmap theme_r = skia::ImageOperations::CreateMaskedBitmap(
-      tab_r, *tab_alpha.image_r);
-  canvas->DrawBitmapInt(theme_r, width() - theme_r.width(), 0);
+  SkBitmap* theme_r = GetMaskedBitmap(tab_alpha_.image_r, tab_bg,
+      offset_x + width() - tab_active_.r_width, offset_y);
+
+  canvas->DrawBitmapInt(*theme_r, width() - theme_r->width(), 0);
 
   // Draw center.
   canvas->TileImageInt(*tab_bg,
-      offset + tab_active_.l_width, kDropShadowOffset + offset_y,
+      offset_x + tab_active_.l_width, kDropShadowOffset + offset_y,
       tab_active_.l_width, 2,
       width() - tab_active_.l_width - tab_active_.r_width, height() - 2);
 
@@ -749,29 +775,22 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 }
 
 void TabRendererGtk::PaintActiveTabBackground(gfx::Canvas* canvas) {
-  int offset = background_offset_x_;
+  int offset_x = background_offset_x_;
 
   SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
   // Draw left edge.
-  SkBitmap tab_l = skia::ImageOperations::CreateTiledBitmap(
-      *tab_bg, offset, 0, tab_active_.l_width, height() + kToolbarOverlap);
-  SkBitmap theme_l = skia::ImageOperations::CreateMaskedBitmap(
-      tab_l, *tab_alpha.image_l);
-  canvas->DrawBitmapInt(theme_l, 0, 0);
+  SkBitmap* theme_l = GetMaskedBitmap(tab_alpha_.image_l, tab_bg, offset_x, 0);
+  canvas->DrawBitmapInt(*theme_l, 0, 0);
 
   // Draw right edge.
-  SkBitmap tab_r = skia::ImageOperations::CreateTiledBitmap(
-      *tab_bg,
-      offset + width() - tab_active_.r_width, 0,
-      tab_active_.r_width, height() + kToolbarOverlap);
-  SkBitmap theme_r = skia::ImageOperations::CreateMaskedBitmap(
-      tab_r, *tab_alpha.image_r);
-  canvas->DrawBitmapInt(theme_r, width() - tab_active_.r_width, 0);
+  SkBitmap* theme_r = GetMaskedBitmap(tab_alpha_.image_r, tab_bg,
+      offset_x + width() - tab_active_.r_width, 0);
+  canvas->DrawBitmapInt(*theme_r, width() - tab_active_.r_width, 0);
 
   // Draw center.
   canvas->TileImageInt(*tab_bg,
-      offset + tab_active_.l_width, kDropShadowHeight,
+      offset_x + tab_active_.l_width, kDropShadowHeight,
       tab_active_.l_width, kDropShadowHeight,
       width() - tab_active_.l_width - tab_active_.r_width,
       height() - kDropShadowHeight);
