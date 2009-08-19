@@ -73,6 +73,10 @@
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+// For GdkScreen
+#include <gdk/gdk.h>
+#endif
 // Cross-Site Navigations
 //
 // If a TabContents is told to navigate to a different web site (as determined
@@ -119,6 +123,13 @@ namespace {
 const int kQueryStateDelay = 5000;
 
 const int kSyncWaitDelay = 40;
+
+#if defined(OS_CHROMEOS)
+// If a popup window is bigger than this fraction of the screen on chrome os,
+// turn it into a tab
+const float kMaxWidthFactor = 0.5;
+const float kMaxHeightFactor = 0.6;
+#endif
 
 // If another javascript message box is displayed within
 // kJavascriptMessageExpectedDelay of a previous javascript message box being
@@ -802,6 +813,20 @@ void TabContents::AddNewContents(TabContents* new_contents,
         initial_pos,
         creator_url.is_valid() ? creator_url.host() : std::string());
   } else {
+#if defined(OS_CHROMEOS)
+    if (disposition == NEW_POPUP) {
+      // If the popup is bigger than a given factor of the screen, then
+      // turn it into a foreground tab (on chrome os only)
+      GdkScreen* screen = gdk_screen_get_default();
+      int max_width = gdk_screen_get_width(screen) * kMaxWidthFactor;
+      int max_height = gdk_screen_get_height(screen) * kMaxHeightFactor;
+      if (initial_pos.width() > max_width ||
+          initial_pos.height() > max_height) {
+        disposition = NEW_FOREGROUND_TAB;
+      }
+    }
+#endif
+
     new_contents->DisassociateFromPopupCount();
     delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
                               user_gesture);
