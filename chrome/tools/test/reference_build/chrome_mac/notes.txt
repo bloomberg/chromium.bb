@@ -1,0 +1,10 @@
+You want to be very careful about updating the reference builds, because it
+means changing the baseline all new builds are compared to on the performance
+graphs and can easily let regressions slip in.
+
+The Chromium and Google Chrome builds the same revisions so you can compare
+Google Chrome and Chromium performance data.
+
+For the Google Chrome build, you need to disable Keystone within the build so
+the bots won't have it updated to more recent builds (just remove the framework
+and nuke the plist keys).
