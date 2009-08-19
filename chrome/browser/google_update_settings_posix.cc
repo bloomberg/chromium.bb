@@ -11,9 +11,11 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
 
+#if !defined(OS_MACOSX)
 namespace google_update {
 std::string linux_guid;
 }
+#endif  // !OS_MACOSX
 
 // File name used in the user data dir to indicate consent.
 static const char kConsentToSendStats[] = "Consent To Send Stats";
@@ -21,17 +23,28 @@ static const int kGuidLen = sizeof(uint64) * 4;  // 128 bits -> 32 bytes hex.
 
 // static
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
+#if defined(OS_MACOSX)
+  std::string linux_guid;
+#else
+  using google_update::linux_guid;
+#endif  // OS_MACOSX
   FilePath consent_file;
   PathService::Get(chrome::DIR_USER_DATA, &consent_file);
   consent_file = consent_file.Append(kConsentToSendStats);
   bool r = file_util::ReadFileToString(consent_file,
-                                       &google_update::linux_guid);
-  google_update::linux_guid.resize(kGuidLen, '0');
+                                       &linux_guid);
+  linux_guid.resize(kGuidLen, '0');
   return r;
 }
 
 // static
 bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
+#if defined(OS_MACOSX)
+  std::string linux_guid;
+#else
+  using google_update::linux_guid;
+#endif  // OS_MACOSX
+
   FilePath consent_dir;
   PathService::Get(chrome::DIR_USER_DATA, &consent_dir);
   if (!file_util::DirectoryExists(consent_dir))
@@ -40,17 +53,17 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   FilePath consent_file = consent_dir.AppendASCII(kConsentToSendStats);
   if (consented) {
     uint64 random;
-    google_update::linux_guid.clear();
+    linux_guid.clear();
     for (int i = 0; i < 2; i++) {
       random = base::RandUint64();
-      google_update::linux_guid += HexEncode(&random, sizeof(uint64));
+      linux_guid += HexEncode(&random, sizeof(uint64));
     }
-    const char* c_str = google_update::linux_guid.c_str();
+    const char* c_str = linux_guid.c_str();
     return file_util::WriteFile(consent_file, c_str, kGuidLen) == kGuidLen;
   }
   else {
-    google_update::linux_guid .clear();
-    google_update::linux_guid.resize(kGuidLen, '0');
+    linux_guid .clear();
+    linux_guid.resize(kGuidLen, '0');
     return file_util::Delete(consent_file, false);
   }
 }
