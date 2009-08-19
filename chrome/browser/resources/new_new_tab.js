@@ -832,11 +832,19 @@ function updateOptionMenu() {
     var item = menuItems[i];
     var command = item.getAttribute('command');
     if (command == 'show' || command == 'hide') {
-      var show = command == 'show';
       var section = Section[item.getAttribute('section')];
-      // Hide show items if already shown. Hide hide items if already hidden.
-      var hideMenuItem = show == !!(shownSections & section);
-      item.style.display = hideMenuItem ? 'none' : '';
+      var visible;
+      if (section == Section.THUMB || section == Section.LIST) {
+        visible = shownSections & Section.THUMB || shownSections & Section.LIST;
+        // If visible we need to make sure we are hiding the visible section.
+        if (visible) {
+          item.setAttribute('section',
+                            shownSections & Section.THUMB ? 'THUMB' : 'LIST');
+        }
+      } else {
+        visible = shownSections & section;
+      }
+      item.setAttribute('command', visible ? 'hide' : 'show');
     }
   }
 }
@@ -1465,7 +1473,6 @@ var dnd = {
         mostVisited.layout();
         self.dragItem = null;
       }, 10);
-
     }
   },
 

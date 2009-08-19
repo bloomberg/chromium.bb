@@ -415,11 +415,11 @@ html[dir='rtl'] .item {
 }
 
 .window-menu {
-  color: rgb(75, 140, 220);
   position: absolute;
   display: none;
   border: 1px solid #999;
   -webkit-box-shadow: 2px 2px 3px hsla(0, 0%, 0%, .3);
+  color: black;
   background-color: hsla(213, 0%, 100%, .95);
   left: 0;
   white-space: nowrap;
@@ -629,6 +629,28 @@ html[dir='rtl'] #option-menu {
 #option-menu > [selected] {
   background-color: hsl(213, 66%, 57%);
   color: white;
+}
+
+#option-menu > [command='show']:before,
+#option-menu > [command='hide']:before {
+  display: inline-block;
+  width: 12px;
+  content: '\00a0'; /* non breaking space */
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+}
+
+html[dir='rtl'] #option-menu > [command='show']:before,
+html[dir='rtl'] #option-menu > [command='hide']:before {
+  background-position-x: 100%;
+}
+
+#option-menu > [command='hide']:before {
+  background-image: url(chrome://theme/newtab_checkbox_black);
+}
+
+#option-menu > [selected][command='hide']:before {
+  background-image: url(chrome://theme/newtab_checkbox_white);
 }
 
 /* Hard code thumbnail positions to improve initial layout speed */

@@ -197,6 +197,8 @@
       <include name="IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON" file="ntp_welcome_favicon.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THEMES_GALLERY_THUMBNAIL" file="ntp_themes_gallery_thumb.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THEMES_GALLERY_FAVICON" file="ntp_themes_gallery_favicon.png" type="BINDATA" />
+      <include name="IDR_NEWTAB_CHECKBOX_BLACK" file="checkbox_black.png" type="BINDATA" />
+      <include name="IDR_NEWTAB_CHECKBOX_WHITE" file="checkbox_white.png" type="BINDATA" />
       <include name="IDR_ARROW_RIGHT" file="arrow_right.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />
       <include name="IDR_OTR_ICON" file="otr_icon.png" type="BINDATA" />
