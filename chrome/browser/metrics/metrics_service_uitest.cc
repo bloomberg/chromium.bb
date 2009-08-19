@@ -31,18 +31,18 @@ class MetricsServiceTest : public UITest {
 
   // Open a few tabs of random content
   void OpenTabs() {
-    window_ = automation()->GetBrowserWindow(0);
-    ASSERT_TRUE(window_.get());
+    scoped_refptr<BrowserProxy> window = automation()->GetBrowserWindow(0);
+    ASSERT_TRUE(window.get());
 
     FilePath page1_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &page1_path));
     page1_path = page1_path.AppendASCII("title2.html");
-    ASSERT_TRUE(window_->AppendTab(net::FilePathToFileURL(page1_path)));
+    ASSERT_TRUE(window->AppendTab(net::FilePathToFileURL(page1_path)));
 
     FilePath page2_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &page2_path));
     page2_path = page2_path.AppendASCII("iframe.html");
-    ASSERT_TRUE(window_->AppendTab(net::FilePathToFileURL(page2_path)));
+    ASSERT_TRUE(window->AppendTab(net::FilePathToFileURL(page2_path)));
   }
 
   // Get a PrefService whose contents correspond to the Local State file
@@ -55,14 +55,6 @@ class MetricsServiceTest : public UITest {
     PrefService* local_state(new PrefService(local_state_path, NULL));
     return local_state;
   }
-
-  virtual void TearDown() {
-    window_ = NULL;
-    UITest::TearDown();
-  }
-
- protected:
-  scoped_refptr<BrowserProxy> window_;
 };
 
 TEST_F(MetricsServiceTest, CloseRenderersNormally) {
@@ -87,15 +79,23 @@ TEST_F(MetricsServiceTest, CrashRenderers) {
 
   OpenTabs();
 
-  // kill the process for one of the tabs
-  scoped_refptr<TabProxy> tab(window_->GetTab(1));
-  ASSERT_TRUE(tab.get());
+  {
+    // Limit the lifetime of various automation proxies used here. We must
+    // destroy them before calling QuitBrowser.
+
+    scoped_refptr<BrowserProxy> window = automation()->GetBrowserWindow(0);
+    ASSERT_TRUE(window.get());
+
+    // Kill the process for one of the tabs.
+    scoped_refptr<TabProxy> tab(window->GetTab(1));
+    ASSERT_TRUE(tab.get());
 
 // Only windows implements the crash service for now.
 #if defined(OS_WIN)
-  expected_crashes_ = 1;
+    expected_crashes_ = 1;
 #endif
-  tab->NavigateToURLAsync(GURL("about:crash"));
+    tab->NavigateToURLAsync(GURL("about:crash"));
+  }
 
   // Give the browser a chance to notice the crashed tab.
   PlatformThread::Sleep(1000);

@@ -41,8 +41,8 @@ static const int kWaitForActionMsec = 2000;
 static const int kWaitForActionMaxMsec = 10000;
 // Delay to let the browser complete the test.
 static const int kMaxTestExecutionTime = 30000;
-// Delay to let the browser shut down.
-static const int kWaitForTerminateMsec = 5000;
+// Delay to let the browser shut down before trying more brutal methods.
+static const int kWaitForTerminateMsec = 30000;
 
 const wchar_t UITest::kFailedNoCrashService[] =
     L"NOTE: This test is expected to fail if crash_service.exe is not "
@@ -478,31 +478,31 @@ void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
 }
 
 void UITest::QuitBrowser() {
-  typedef std::vector<scoped_refptr<BrowserProxy> > BrowserVector;
-
   // There's nothing to do here if the browser is not running.
   if (IsBrowserRunning()) {
     automation()->SetFilteredInet(false);
-    BrowserVector browsers;
 
-    // Build up a list of HWNDs; we do this as a separate step so that closing
-    // the windows doesn't mess up the iteration.
     int window_count = 0;
     EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
 
-    for (int i = 0; i < window_count; ++i) {
+    // Synchronously close all but the last browser window. Closing them
+    // one-by-one may help with stability.
+    while (window_count > 1) {
       scoped_refptr<BrowserProxy> browser_proxy =
-          automation()->GetBrowserWindow(i);
-      browsers.push_back(browser_proxy);
+          automation()->GetBrowserWindow(0);
+      EXPECT_TRUE(browser_proxy->RunCommand(IDC_CLOSE_WINDOW));
+      EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
     }
 
-    for (BrowserVector::iterator iter = browsers.begin();
-      iter != browsers.end(); ++iter) {
-      // Use ApplyAccelerator since it doesn't wait
-      (*iter)->ApplyAccelerator(IDC_CLOSE_WINDOW);
+    // Close the last window asynchronously, because the browser may shutdown
+    // faster than it will be able to send a synchronous response to our
+    // message.
+    scoped_refptr<BrowserProxy> browser_proxy =
+        automation()->GetBrowserWindow(0);
+    if (browser_proxy.get()) {
+      browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW);
+      browser_proxy = NULL;
     }
-
-    browsers.clear();
 
     // Now, drop the automation IPC channel so that the automation provider in
     // the browser notices and drops its reference to the browser process.
