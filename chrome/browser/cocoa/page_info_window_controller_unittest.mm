@@ -9,8 +9,9 @@
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
-class PageInfoWindowControllerTest : public testing::Test {
+class PageInfoWindowControllerTest : public PlatformTest {
  public:
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   BrowserTestHelper helper_;
