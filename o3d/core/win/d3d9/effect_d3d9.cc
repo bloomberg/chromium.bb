@@ -509,6 +509,7 @@ bool EffectD3D9::PrepareFX(const String& effect,
   }
 
   *prepared_effect = effect +
+      "\n"
       "technique Shaders { "
       "  pass p0 { "
       "    VertexShader = compile vs_2_0 " + vertex_shader_entry_point + "();"
