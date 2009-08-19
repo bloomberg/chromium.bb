@@ -62,6 +62,8 @@ class ValgrindTool(object):
                                  "(used to normalize source paths in baseline)")
     self._parser.add_option("", "--gtest_filter", default="",
                             help="which test case to run")
+    self._parser.add_option("", "--gtest_repeat",
+                            help="how many times to run each test")
     self._parser.add_option("", "--gtest_print_time", action="store_true",
                             default=False,
                             help="show how long each test takes")
@@ -123,6 +125,8 @@ class ValgrindTool(object):
     self._nocleanup_on_exit = self._options.nocleanup_on_exit
     if self._options.gtest_filter != "":
       self._args.append("--gtest_filter=%s" % self._options.gtest_filter)
+    if self._options.gtest_repeat:
+      self._args.append("--gtest_repeat=%s" % self._options.gtest_repeat)
     if self._options.gtest_print_time:
       self._args.append("--gtest_print_time");
 

@@ -168,6 +168,8 @@ class ChromeTests:
       # Valgrind runs tests slowly, so slow tests hurt more; show elapased time
       # so we can find the slowpokes.
       cmd.append("--gtest_print_time")
+    if self._options.gtest_repeat:
+      cmd.append("--gtest_repeat=%s" % self._options.gtest_repeat)
     return cmd
 
   def Run(self):
@@ -387,6 +389,8 @@ def _main(_):
                     help="generate baseline data instead of validating")
   parser.add_option("", "--gtest_filter",
                     help="additional arguments to --gtest_filter")
+  parser.add_option("", "--gtest_repeat",
+                    help="argument for --gtest_repeat")
   parser.add_option("-v", "--verbose", action="store_true", default=False,
                     help="verbose output - enable debug log messages")
   parser.add_option("", "--tool", dest="valgrind_tool", default="memcheck",
