@@ -32,7 +32,7 @@ if __name__ == '__main__':
     args += ['-I', supplement]
 
   # Pick depth explicitly.
-  args += ['--depth', '../..']
+  args += ['--depth', '.']
 
   # Off we go...
   sys.exit(gyp.main(args))
