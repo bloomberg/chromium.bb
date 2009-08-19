@@ -326,12 +326,12 @@ o3djs.io.loadTextFile = function(url, callback) {
  *
  * function callback(archiveInfo, exception) {
  *   if (!exception) {
- *     pack.createTextureFromRawData(
- *         archiveInfo.getFileByURI('logo.jpg'), true);
- *     pack.createTextureFromRawData(
- *         archiveInfo.getFileByURI('wood/oak.png'), true);
- *     pack.createTextureFromRawData(
- *         archiveInfo.getFileByURI('wood/maple.dds'), true);
+ *     o3djs.texture.createTextureFromRawData(
+ *         pack, archiveInfo.getFileByURI('logo.jpg'), true);
+ *     o3djs.texture.createTextureFromRawData(
+ *         pack, archiveInfo.getFileByURI('wood/oak.png'), true);
+ *     o3djs.texture.createTextureFromRawData(
+ *         pack, archiveInfo.getFileByURI('wood/maple.dds'), true);
  *     archiveInfo.destroy();
  *   } else {
  *     alert(exception);
