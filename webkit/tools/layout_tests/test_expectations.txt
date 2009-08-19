@@ -2792,3 +2792,25 @@ BUG19519 MAC DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL 
 BUG19544 : LayoutTests/http/tests/security/xssAuditor/link-opens-new-window.html = FAIL
 BUG19544 : LayoutTests/fast/loader/user-style-sheet-resource-load-callbacks.html = FAIL
 
+// Fallout from webkit 47305:47383
+BUG19655 : LayoutTests/fast/dom/Window/HTMLBodyElement-window-eventListener-attributes.html = FAIL
+BUG19655 : LayoutTests/fast/dom/Window/HTMLFrameSetElement-window-eventListener-attributes.html = FAIL
+// WebKit added implementation of the EventSource object that enables
+// server-sent events from HTML5.  Not implemented in Chrome yet.
+BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/workers/eventsource-simple.html = CRASH
+BUG19625 : LayoutTests/fast/eventsource/eventsource-attribute-listeners.html = TIMEOUT
+BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/eventsource-bad-mime-type.html = TIMEOUT
+BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/eventsource-parse-event-stream.html = TIMEOUT
+BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/eventsource-reconnect.html = TIMEOUT
+BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/eventsource-status-code-states.html = TIMEOUT
+BUG19625 : LayoutTests/fast/eventsource/eventsource-constructor.html = FAIL
+
+// New test added, doesn't yet pass for Chrome
+BUG19635 : LayoutTests/fast/harness/use-page-cache.html = FAIL
+
+// New functionality added to DRT, not in test shell
+BUG19640 WIN : LayoutTests/platform/win/accessibility/focus-events.html = FAIL
+
+// Code was checked into webkit without expectations in 47329, added in 47437.
+// Remove this once we roll deps that far
+BUG_JPARENT SKIP : LayoutTests/fast/wml/html-fieldset-crash.html = FAIL
