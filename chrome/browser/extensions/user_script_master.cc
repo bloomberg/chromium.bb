@@ -31,7 +31,7 @@ static bool GetDeclarationValue(const StringPiece& line,
 
   std::string temp(line.data() + prefix.length(),
                    line.length() - prefix.length());
-  TrimWhitespace(temp, TRIM_ALL, value);
+  TrimWhitespaceASCII(temp, TRIM_ALL, value);
   return true;
 }
 

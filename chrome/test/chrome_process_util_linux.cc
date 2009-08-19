@@ -27,7 +27,7 @@ base::ProcessId ChromeBrowserProcessId(const FilePath& data_dir) {
     return -1;
 
   std::string trimmed_output;
-  TrimWhitespace(fuser_output, TRIM_ALL, &trimmed_output);
+  TrimWhitespaceASCII(fuser_output, TRIM_ALL, &trimmed_output);
 
   if (trimmed_output.find(' ') != std::string::npos) {
     LOG(FATAL) << "Expected exactly 1 process to have socket open: " <<

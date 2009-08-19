@@ -80,7 +80,7 @@ bool ReadCurrentVersion(const FilePath& dir, std::string* version_string) {
   FilePath current_version = dir.AppendASCII(kCurrentVersionFileName);
   if (file_util::PathExists(current_version)) {
     if (file_util::ReadFileToString(current_version, version_string)) {
-      TrimWhitespace(*version_string, TRIM_ALL, version_string);
+      TrimWhitespaceASCII(*version_string, TRIM_ALL, version_string);
       return true;
     }
   }

@@ -75,9 +75,11 @@ void UTF8PartsToWideParts(const string& text_utf8,
 // does some basic fixes for input that we want to test for file-ness
 static void PrepareStringForFileOps(const FilePath& text,
                                     FilePath::StringType* output) {
-  TrimWhitespace(text.value(), TRIM_ALL, output);
 #if defined(OS_WIN)
+  TrimWhitespace(text.value(), TRIM_ALL, output);
   replace(output->begin(), output->end(), '/', '\\');
+#else
+  TrimWhitespaceUTF8(text.value(), TRIM_ALL, output);
 #endif
 }
 
@@ -430,7 +432,7 @@ string URLFixerUpper::SegmentURL(const string& text,
 string URLFixerUpper::FixupURL(const string& text,
                                const string& desired_tld) {
   string trimmed;
-  TrimWhitespace(text, TRIM_ALL, &trimmed);
+  TrimWhitespaceUTF8(text, TRIM_ALL, &trimmed);
   if (trimmed.empty())
     return string();  // Nothing here.
 

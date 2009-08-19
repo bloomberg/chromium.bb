@@ -20,7 +20,7 @@ void TrimLine(std::string* line) {
       static_cast<unsigned char>((*line)[2]) == 0xbf)
     *line = line->substr(3);
 
-  TrimWhitespace(*line, TRIM_ALL, line);
+  TrimWhitespaceUTF8(*line, TRIM_ALL, line);
 }
 
 std::string ReadLine(FILE* file) {

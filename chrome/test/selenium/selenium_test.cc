@@ -50,7 +50,7 @@ class SeleniumTest : public UITest {
     std::vector<std::string> tokens;
     SplitString(input, ',', &tokens);
     for (size_t i = 0; i < tokens.size(); ++i) {
-      TrimWhitespace(tokens[i], TRIM_ALL, &tokens[i]);
+      TrimWhitespaceASCII(tokens[i], TRIM_ALL, &tokens[i]);
       output->insert(tokens[i]);
     }
   }
