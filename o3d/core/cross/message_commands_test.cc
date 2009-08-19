@@ -45,7 +45,6 @@ TEST_F(MessageCommandsTest, GetMessageDescription) {
 
 TEST_F(MessageCommandsTest, MessageInvalidIdTest) {
   EXPECT_EQ(static_cast<int>(imc::INVALID_ID), 0);
-  //EXPECT_EQ(imc::INVALID_ID, MessageInvalidId::Msg::KMessageId);
   EXPECT_EQ(0u, offsetof(MessageInvalidId::Msg, message_id));
   MessageInvalidId msg;
   EXPECT_EQ(imc::INVALID_ID, msg.msg.message_id);
@@ -54,7 +53,6 @@ TEST_F(MessageCommandsTest, MessageInvalidIdTest) {
 
 TEST_F(MessageCommandsTest, MessageHelloTest) {
   EXPECT_EQ(static_cast<int>(imc::HELLO), 1);
-  //EXPECT_EQ(imc::HELLO, MessageHello::Msg::KMessageId);
   EXPECT_EQ(0u, offsetof(MessageHello::Msg, message_id));
   MessageHello msg;
   EXPECT_EQ(imc::HELLO, msg.msg.message_id);
@@ -63,8 +61,6 @@ TEST_F(MessageCommandsTest, MessageHelloTest) {
 
 TEST_F(MessageCommandsTest, MessageAllocateSharedMemoryTest) {
   EXPECT_EQ(static_cast<int>(imc::ALLOCATE_SHARED_MEMORY), 2);
-  //EXPECT_EQ(imc::ALLOCATE_SHARED_MEMORY,
-  //          MessageAllocateSharedMemory::Msg::KMessageId);
   EXPECT_EQ(0u, offsetof(MessageAllocateSharedMemory::Msg, message_id));
   EXPECT_EQ(4u, offsetof(MessageAllocateSharedMemory::Msg, mem_size));
   MessageAllocateSharedMemory msg;
@@ -77,8 +73,6 @@ TEST_F(MessageCommandsTest, MessageAllocateSharedMemoryTest) {
 
 TEST_F(MessageCommandsTest, MessageUpdateTexture2D) {
   EXPECT_EQ(static_cast<int>(imc::UPDATE_TEXTURE2D), 3);
-  //EXPECT_EQ(imc::UPDATE_TEXTURE2D,
-  //          MessageUpdateTexture2D::Msg::KMessageId);
   EXPECT_EQ(0u, offsetof(MessageUpdateTexture2D::Msg, message_id));
   EXPECT_EQ(4u, offsetof(MessageUpdateTexture2D::Msg, texture_id));
   EXPECT_EQ(8u, offsetof(MessageUpdateTexture2D::Msg, level));
@@ -90,7 +84,7 @@ TEST_F(MessageCommandsTest, MessageUpdateTexture2D) {
   EXPECT_EQ(24u, sizeof msg.msg);
   MessageUpdateTexture2D msg2(2, 3, 4, 5, 6);
   EXPECT_EQ(imc::UPDATE_TEXTURE2D, msg2.msg.message_id);
-  EXPECT_EQ(2, msg2.msg.texture_id);
+  EXPECT_EQ(2u, msg2.msg.texture_id);
   EXPECT_EQ(3, msg2.msg.level);
   EXPECT_EQ(4, msg2.msg.shared_memory_id);
   EXPECT_EQ(5, msg2.msg.offset);
@@ -99,8 +93,6 @@ TEST_F(MessageCommandsTest, MessageUpdateTexture2D) {
 
 TEST_F(MessageCommandsTest, MessageRegisterSharedMemory) {
   EXPECT_EQ(static_cast<int>(imc::REGISTER_SHARED_MEMORY), 4);
-  //EXPECT_EQ(imc::REGISTER_SHARED_MEMORY,
-  //          MessageRegisterSharedMemory::Msg::KMessageId);
   EXPECT_EQ(0u, offsetof(MessageRegisterSharedMemory::Msg, message_id));
   EXPECT_EQ(4u, offsetof(MessageRegisterSharedMemory::Msg, mem_size));
   MessageRegisterSharedMemory msg;
@@ -113,8 +105,6 @@ TEST_F(MessageCommandsTest, MessageRegisterSharedMemory) {
 
 TEST_F(MessageCommandsTest, MessageUnregisterSharedMemory) {
   EXPECT_EQ(static_cast<int>(imc::UNREGISTER_SHARED_MEMORY), 5);
-  //EXPECT_EQ(imc::UNREGISTER_SHARED_MEMORY,
-  //          MessageUnregisterSharedMemory::Msg::KMessageId);
   EXPECT_EQ(0u, offsetof(MessageUnregisterSharedMemory::Msg, message_id));
   EXPECT_EQ(4u, offsetof(MessageUnregisterSharedMemory::Msg, buffer_id));
   MessageUnregisterSharedMemory msg;
@@ -127,8 +117,6 @@ TEST_F(MessageCommandsTest, MessageUnregisterSharedMemory) {
 
 TEST_F(MessageCommandsTest, MessageUpdateTexture2DRect) {
   EXPECT_EQ(static_cast<int>(imc::UPDATE_TEXTURE2D_RECT), 6);
-  //EXPECT_EQ(imc::UPDATE_TEXTURE2D_RECT,
-  //          MessageUpdateTexture2DRect::Msg::KMessageId);
   EXPECT_EQ(0u, offsetof(MessageUpdateTexture2DRect::Msg, message_id));
   EXPECT_EQ(4u, offsetof(MessageUpdateTexture2DRect::Msg, texture_id));
   EXPECT_EQ(8u, offsetof(MessageUpdateTexture2DRect::Msg, level));
@@ -144,7 +132,7 @@ TEST_F(MessageCommandsTest, MessageUpdateTexture2DRect) {
   EXPECT_EQ(40u, sizeof msg.msg);
   MessageUpdateTexture2DRect msg2(2, 3, 4, 5, 6, 7, 8, 9, 10);
   EXPECT_EQ(imc::UPDATE_TEXTURE2D_RECT, msg2.msg.message_id);
-  EXPECT_EQ(2, msg2.msg.texture_id);
+  EXPECT_EQ(2u, msg2.msg.texture_id);
   EXPECT_EQ(3, msg2.msg.level);
   EXPECT_EQ(4, msg2.msg.x);
   EXPECT_EQ(5, msg2.msg.y);

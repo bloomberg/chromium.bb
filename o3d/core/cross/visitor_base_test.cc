@@ -40,7 +40,6 @@
 
 namespace o3d {
 
-namespace {
 class TestClass : public ObjectBase {
  public:
   explicit TestClass(ServiceLocator* service_locator)
@@ -78,7 +77,6 @@ class TestVisitor : public VisitorBase<TestVisitor> {
   int visit_test_class_calls_;
   TestClass* visit_test_class_param_;
 };
-}
 
 class VisitorBaseTest : public testing::Test {
  protected:

@@ -50,7 +50,6 @@ using ::base::TimeDelta;
 
 namespace o3d {
 
-namespace {
 //----------------------------------------------------------------------
 // These are helper classes for the little multithreaded test harness
 // below.
@@ -566,7 +565,6 @@ bool TextureUpdateHelper::UnregisterSharedMemory(int shared_memory_id) {
 }
 
 
-}  // anonymous namespace.
 
 //----------------------------------------------------------------------
 // This is the main class containing all of the other ones. It knows

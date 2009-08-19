@@ -93,7 +93,12 @@
             ],
             'link_settings': {
               'libraries': [
+                '$(SDKROOT)/System/Library/Frameworks/AGL.framework',
                 '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+                '$(SDKROOT)/System/Library/Frameworks/GLUT.framework',
+                '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+                '../../third_party/cg/files/mac/Cg.framework',
+                '../../third_party/glew/files/lib/libGLEW.a',
               ],
             },
           },
