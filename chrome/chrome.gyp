@@ -384,7 +384,6 @@
         'common/extensions/user_script.cc',
         'common/extensions/user_script.h',
         'common/gfx/utils.h',
-        'common/id_map.h',
         'common/net/cookie_monster_sqlite.cc',
         'common/net/cookie_monster_sqlite.h',
         'common/net/dns.h',
@@ -3982,7 +3981,6 @@
         'common/extensions/extension_unittest.cc',
         'common/extensions/url_pattern_unittest.cc',
         'common/extensions/user_script_unittest.cc',
-        'common/id_map_unittest.cc',
         'common/important_file_writer_unittest.cc',
         'common/json_value_serializer_unittest.cc',
         'common/mru_cache_unittest.cc',
@@ -4216,7 +4214,7 @@
       # Provides a syncapi dynamic library target from checked-in binaries,
       # or from compiling a stub implementation.
       'target_name': 'syncapi',
-      
+
       'conditions': [
         ['chrome_personalization==0', {
           # Empty target.

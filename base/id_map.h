@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_ID_MAP_H_
-#define CHROME_COMMON_ID_MAP_H_
+#ifndef BASE_ID_MAP_H_
+#define BASE_ID_MAP_H_
 
 #include <set>
 
@@ -159,4 +159,4 @@ class IDMap {
   DISALLOW_COPY_AND_ASSIGN(IDMap);
 };
 
-#endif  // CHROME_COMMON_ID_MAP_H_
+#endif  // BASE_ID_MAP_H_

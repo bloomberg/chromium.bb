@@ -7,8 +7,8 @@
 
 #include <map>
 
+#include "base/id_map.h"
 #include "chrome/common/chrome_plugin_api.h"
-#include "chrome/common/id_map.h"
 #include "chrome/common/notification_registrar.h"
 
 class URLRequestContext;

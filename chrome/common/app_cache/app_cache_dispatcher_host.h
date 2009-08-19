@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_APP_CACHE_APP_CACHE_DISPATCHER_HOST_H_
 #define CHROME_COMMON_APP_CACHE_APP_CACHE_DISPATCHER_HOST_H_
 
-#include "chrome/common/id_map.h"
+#include "base/id_map.h"
 #include "ipc/ipc_message.h"
 #include "webkit/glue/webappcachecontext.h"
 
