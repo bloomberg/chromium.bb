@@ -1054,15 +1054,13 @@ void ResourceDispatcherHost::OnResponseStarted(URLRequest* request) {
     if (!CompleteResponseStarted(request)) {
       CancelRequest(info->process_id, info->request_id, false);
     } else {
-      // Start reading.
-      int bytes_read = 0;
-      if (Read(request, &bytes_read)) {
-        OnReadCompleted(request, bytes_read);
-      } else if (!request->status().is_io_pending()) {
-        DCHECK(!info->is_paused);
-        // If the error is not an IO pending, then we're done reading.
-        OnResponseCompleted(request);
+      // Check if the handler paused the request in their OnResponseStarted.
+      if (PauseRequestIfNeeded(info)) {
+        RESOURCE_LOG("OnResponseStarted pausing2: " << request->url().spec());
+        return;
       }
+
+      StartReading(request);
     }
   } else {
     OnResponseCompleted(request);
@@ -1102,6 +1100,7 @@ bool ResourceDispatcherHost::CompleteResponseStarted(URLRequest* request) {
   }
 
   NotifyResponseStarted(request, info->process_id);
+  info->called_on_response_started = true;
   return info->resource_handler->OnResponseStarted(info->request_id,
                                                    response.get());
 }
@@ -1278,10 +1277,27 @@ void ResourceDispatcherHost::ResumeRequest(const GlobalRequestID& request_id) {
 
   info->is_paused = false;
 
-  if (info->has_started_reading)
-    OnReadCompleted(i->second, info->paused_read_bytes);
-  else
+  if (info->called_on_response_started) {
+    if (info->has_started_reading) {
+      OnReadCompleted(i->second, info->paused_read_bytes);
+    } else {
+      StartReading(request);
+    }
+  } else {
     OnResponseStarted(i->second);
+  }
+}
+
+void ResourceDispatcherHost::StartReading(URLRequest* request) {
+  // Start reading.
+  int bytes_read = 0;
+  if (Read(request, &bytes_read)) {
+    OnReadCompleted(request, bytes_read);
+  } else if (!request->status().is_io_pending()) {
+    DCHECK(!ExtraInfoForRequest(request)->is_paused);
+    // If the error is not an IO pending, then we're done reading.
+    OnResponseCompleted(request);
+  }
 }
 
 bool ResourceDispatcherHost::Read(URLRequest* request, int* bytes_read) {

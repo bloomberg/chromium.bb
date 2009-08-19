@@ -105,6 +105,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
           waiting_for_upload_progress_ack(false),
           memory_cost(0),
           is_paused(false),
+          called_on_response_started(false),
           has_started_reading(false),
           paused_read_bytes(0) {
     }
@@ -174,6 +175,9 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
     // Request is temporarily not handling network data. Should be used only
     // by the ResourceDispatcherHost, not the event handlers.
     bool is_paused;
+
+    // Whether we called OnResponseStarted for this request or not.
+    bool called_on_response_started;
 
     // Whether this request has started reading any bytes from the response
     // yet.  Will be true after the first (unpaused) call to Read.
@@ -412,6 +416,9 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // Resumes the given request by calling OnResponseStarted or OnReadCompleted.
   void ResumeRequest(const GlobalRequestID& request_id);
+
+  // Internal function to start reading for the first time.
+  void StartReading(URLRequest* request);
 
   // Reads data from the response using our internal buffer as async IO.
   // Returns true if data is available immediately, false otherwise.  If the
