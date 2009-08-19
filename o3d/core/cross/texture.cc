@@ -102,7 +102,7 @@ void Texture2D::DrawImage(const Bitmap& src_img,
     O3D_ERROR(service_locator()) << "Mip out of range";
   }
 
-  if (src_mip < 0 || src_mip >= src_img.num_mipmaps()) {
+  if (src_mip < 0 || src_mip >= static_cast<int>(src_img.num_mipmaps())) {
     O3D_ERROR(service_locator()) << "Source Mip out of range";
   }
 
@@ -213,7 +213,11 @@ void Texture2D::DrawImage(const Canvas& src_img,
   }
 
   unsigned int mip_width = image::ComputeMipDimension(dst_mip, width());
+  DCHECK(mip_width > 0);
+
   unsigned int mip_height = image::ComputeMipDimension(dst_mip, height());
+  DCHECK(mip_height > 0);
+
   unsigned int components = image::GetNumComponentsForFormat(format());
   DCHECK(components > 0);
 
@@ -387,7 +391,7 @@ void TextureCUBE::DrawImage(const Bitmap& src_img, int src_mip,
     O3D_ERROR(service_locator()) << "Destination Mip out of range";
   }
 
-  if (src_mip < 0 || src_mip >= src_img.num_mipmaps()) {
+  if (src_mip < 0 || src_mip >= static_cast<int>(src_img.num_mipmaps())) {
     O3D_ERROR(service_locator()) << "Source Mip out of range";
   }
 
@@ -501,6 +505,8 @@ void TextureCUBE::DrawImage(const Canvas& src_img,
   }
 
   unsigned int mip_length = image::ComputeMipDimension(dest_mip, edge_length());
+  DCHECK(mip_length > 0u);
+
   unsigned int components = image::GetNumComponentsForFormat(format());
   DCHECK(components > 0);
 

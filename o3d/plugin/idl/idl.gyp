@@ -87,9 +87,6 @@
           'outputs': [
             '<(idl_out_dir)/<(RULE_INPUT_ROOT)_glue.cc',
             '<(idl_out_dir)/<(RULE_INPUT_ROOT)_glue.h',
-            '<(idl_out_dir)/hash',
-            '<(idl_out_dir)/parsetab.py',
-            '<(idl_out_dir)/parsetab.pyc',
           ],
           'action': [
             'python',

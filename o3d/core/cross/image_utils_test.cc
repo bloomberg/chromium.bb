@@ -53,14 +53,14 @@ class ImageTest : public testing::Test {
 };
 
 TEST_F(ImageTest, GetNumComponentsForFormat) {
-  EXPECT_EQ(4, image::GetNumComponentsForFormat(Texture::XRGB8));
-  EXPECT_EQ(4, image::GetNumComponentsForFormat(Texture::ARGB8));
-  EXPECT_EQ(4, image::GetNumComponentsForFormat(Texture::ABGR16F));
-  EXPECT_EQ(4, image::GetNumComponentsForFormat(Texture::ABGR32F));
-  EXPECT_EQ(1, image::GetNumComponentsForFormat(Texture::R32F));
-  EXPECT_EQ(0, image::GetNumComponentsForFormat(Texture::DXT1));
-  EXPECT_EQ(0, image::GetNumComponentsForFormat(Texture::DXT3));
-  EXPECT_EQ(0, image::GetNumComponentsForFormat(Texture::DXT5));
+  EXPECT_EQ(4u, image::GetNumComponentsForFormat(Texture::XRGB8));
+  EXPECT_EQ(4u, image::GetNumComponentsForFormat(Texture::ARGB8));
+  EXPECT_EQ(4u, image::GetNumComponentsForFormat(Texture::ABGR16F));
+  EXPECT_EQ(4u, image::GetNumComponentsForFormat(Texture::ABGR32F));
+  EXPECT_EQ(1u, image::GetNumComponentsForFormat(Texture::R32F));
+  EXPECT_EQ(0u, image::GetNumComponentsForFormat(Texture::DXT1));
+  EXPECT_EQ(0u, image::GetNumComponentsForFormat(Texture::DXT3));
+  EXPECT_EQ(0u, image::GetNumComponentsForFormat(Texture::DXT5));
 }
 
 TEST_F(ImageTest, IsPOT) {

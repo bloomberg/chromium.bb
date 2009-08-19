@@ -344,11 +344,11 @@ void Bitmap::DrawImage(const Bitmap& src_img,
   DCHECK(src_img.image_data());
   DCHECK(image_data());
 
-  if (dst_level < 0 || dst_level >= num_mipmaps()) {
+  if (dst_level < 0 || dst_level >= static_cast<int>(num_mipmaps())) {
     O3D_ERROR(service_locator()) << "Destination Mip out of range";
   }
 
-  if (src_level < 0 || src_level >= src_img.num_mipmaps()) {
+  if (src_level < 0 || src_level >= static_cast<int>(src_img.num_mipmaps())) {
     O3D_ERROR(service_locator()) << "Source Mip out of range";
   }
 

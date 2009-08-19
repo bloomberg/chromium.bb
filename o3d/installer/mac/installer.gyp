@@ -25,7 +25,6 @@
       'dependencies': [
         '../../converter/converter.gyp:o3dConverter',
         '../../breakpad/breakpad.gyp:reporter',
-        '../../google_update/google_update.gyp:getextras',
         '../../documentation/documentation.gyp:*',
         '../../plugin/plugin.gyp:npo3dautoplugin',
         '../../samples/samples.gyp:samples',

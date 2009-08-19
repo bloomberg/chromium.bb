@@ -58,6 +58,18 @@
       'conditions' : [
         ['OS == "mac"',
           {
+            'postbuilds': [
+              {
+                'variables': {
+                  # Define install_name in a variable ending in _path
+                  # so that gyp understands it's a path and performs proper
+                  # relativization during dict merging.
+                  'install_name_path': 'mac/converter_install_name.sh',
+                },
+                'postbuild_name': 'Fix Framework Paths',
+                'action': ['<(install_name_path)'],
+              },
+            ],
             'sources': [
               'mac/converter_main.mm',
             ],
@@ -66,7 +78,7 @@
                 '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
                 '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework',
                 '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
-                '../../../<(cgdir)/Cg.framework',
+                '../../<(cgdir)/Cg.framework',
               ],
             },
           },
