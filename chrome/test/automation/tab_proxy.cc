@@ -71,19 +71,38 @@ int TabProxy::FindInPage(const std::wstring& search_string,
 
 AutomationMsg_NavigationResponseValues TabProxy::NavigateToURL(
     const GURL& url) {
-  return NavigateToURLWithTimeout(url, base::kNoTimeout, NULL);
+  return NavigateToURLBlockUntilNavigationsComplete(url, 1);
+}
+
+AutomationMsg_NavigationResponseValues
+    TabProxy::NavigateToURLBlockUntilNavigationsComplete(
+        const GURL& url, int number_of_navigations) {
+  return NavigateToURLWithTimeout(url, number_of_navigations, base::kNoTimeout,
+                                  NULL);
 }
 
 AutomationMsg_NavigationResponseValues TabProxy::NavigateToURLWithTimeout(
-    const GURL& url, uint32 timeout_ms, bool* is_timeout) {
+    const GURL& url, int number_of_navigations, uint32 timeout_ms,
+    bool* is_timeout) {
   if (!is_valid())
     return AUTOMATION_MSG_NAVIGATION_ERROR;
 
   AutomationMsg_NavigationResponseValues navigate_response =
       AUTOMATION_MSG_NAVIGATION_ERROR;
 
-  sender_->SendWithTimeout(new AutomationMsg_NavigateToURL(
-      0, handle_, url, &navigate_response), timeout_ms, is_timeout);
+  if (number_of_navigations == 1) {
+    // TODO(phajdan.jr): Remove when the reference build gets updated.
+    // This is only for backwards compatibility.
+    sender_->SendWithTimeout(
+        new AutomationMsg_NavigateToURL(
+            0, handle_, url, &navigate_response),
+            timeout_ms, is_timeout);
+  } else {
+    sender_->SendWithTimeout(
+        new AutomationMsg_NavigateToURLBlockUntilNavigationsComplete(
+            0, handle_, url, number_of_navigations, &navigate_response),
+            timeout_ms, is_timeout);
+  }
 
   return navigate_response;
 }

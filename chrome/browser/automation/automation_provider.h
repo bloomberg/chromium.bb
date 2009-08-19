@@ -69,14 +69,15 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void SetExpectedTabCount(size_t expected_tabs);
 
   // Add a listener for navigation status notification. Currently only
-  // navigation completion is observed; when the navigation completes, the
-  // completed_response object is sent; if the server requires authentication,
-  // we instead send the auth_needed_response object.  A pointer to the added
-  // navigation observer is returned. This object should NOT be deleted and
-  // should be released by calling the corresponding
+  // navigation completion is observed; when the |number_of_navigations|
+  // complete, the completed_response object is sent; if the server requires
+  // authentication, we instead send the auth_needed_response object.  A pointer
+  // to the added navigation observer is returned. This object should NOT be
+  // deleted and should be released by calling the corresponding
   // RemoveNavigationStatusListener method.
   NotificationObserver* AddNavigationStatusListener(
-      NavigationController* tab, IPC::Message* reply_message);
+      NavigationController* tab, IPC::Message* reply_message,
+      int number_of_navigations);
 
   void RemoveNavigationStatusListener(NotificationObserver* obs);
 
@@ -198,6 +199,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void GetTabURL(int handle, bool* success, GURL* url);
   void HandleUnused(const IPC::Message& message, int handle);
   void NavigateToURL(int handle, const GURL& url, IPC::Message* reply_message);
+  void NavigateToURLBlockUntilNavigationsComplete(int handle, const GURL& url,
+                                                  int number_of_navigations,
+                                                  IPC::Message* reply_message);
   void NavigationAsync(int handle, const GURL& url, bool* status);
   void GoBack(int handle, IPC::Message* reply_message);
   void GoForward(int handle, IPC::Message* reply_message);

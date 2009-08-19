@@ -576,6 +576,11 @@ void UITest::NavigateToURLAsync(const GURL& url) {
 }
 
 void UITest::NavigateToURL(const GURL& url) {
+  NavigateToURLBlockUntilNavigationsComplete(url, 1);
+}
+
+void UITest::NavigateToURLBlockUntilNavigationsComplete(
+    const GURL& url, int number_of_navigations) {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
   if (!tab_proxy.get())
@@ -583,7 +588,8 @@ void UITest::NavigateToURL(const GURL& url) {
 
   bool is_timeout = true;
   ASSERT_TRUE(tab_proxy->NavigateToURLWithTimeout(
-      url, command_execution_timeout_ms(), &is_timeout)) << url.spec();
+      url, number_of_navigations, command_execution_timeout_ms(),
+      &is_timeout)) << url.spec();
   ASSERT_FALSE(is_timeout) << url.spec();
 }
 

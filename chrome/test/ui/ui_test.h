@@ -89,6 +89,13 @@ class UITest : public testing::Test {
   // This method doesn't return until the navigation is complete.
   void NavigateToURL(const GURL& url);
 
+  // Tells the browser to navigate to the given URL in the active tab
+  // of the first app window.
+  // This method doesn't return until the |number_of_navigations| navigations
+  // complete.
+  void NavigateToURLBlockUntilNavigationsComplete(const GURL& url,
+                                                  int number_of_navigations);
+
   // Returns the URL of the currently active tab. Only looks in the first
   // window, for backward compatibility. If there is no active tab, or some
   // other error, the returned URL will be empty.
