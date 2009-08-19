@@ -80,9 +80,10 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   // Anything using QuickDraw-based drawing, for example, would crash
   // immediately.
   std::string plugin_name = WideToUTF8(info.name);
-  if (!(plugin_name == "WebKit Test PlugIn" ||  // Test plugin.
-        plugin_name == "Shockwave Flash" ||     // CG drawing + Carbon events.
-        plugin_name == "Picasa")) {             // No drawing or event handling.
+  if (!(plugin_name == "WebKit Test PlugIn" ||
+        plugin_name == "Shockwave Flash" ||
+        plugin_name == "Picasa" ||
+        plugin_name == "Google Talk Browser Plugin")) {
     return false;
   }
 
