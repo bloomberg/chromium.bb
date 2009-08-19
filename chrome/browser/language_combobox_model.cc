@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/options/language_combobox_model.h"
+#include "chrome/browser/language_combobox_model.h"
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
@@ -50,20 +50,21 @@ void LanguageComboboxModel::InitNativeNames(
 
     UErrorCode error = U_ZERO_ERROR;
     const int buffer_size = 1024;
-    std::wstring name_local;
+    string16 name_local;
     int actual_size = uloc_getDisplayName(locale_code, app_locale.c_str(),
         WriteInto(&name_local, buffer_size + 1), buffer_size, &error);
     DCHECK(U_SUCCESS(error));
     name_local.resize(actual_size);
 
-    std::wstring name_native;
+    string16 name_native;
     actual_size = uloc_getDisplayName(locale_code, locale_code,
         WriteInto(&name_native, buffer_size + 1), buffer_size, &error);
     DCHECK(U_SUCCESS(error));
     name_native.resize(actual_size);
 
-    locale_names_.push_back(name_local);
-    native_names_[name_local] = LocaleData(name_native, locale_codes[i]);
+    locale_names_.push_back(UTF16ToWideHack(name_local));
+    native_names_[UTF16ToWideHack(name_local)] = LocaleData(
+        UTF16ToWideHack(name_native), locale_codes[i]);
   }
 
   // Sort using locale specific sorter.

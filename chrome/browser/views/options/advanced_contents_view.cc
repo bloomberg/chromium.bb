@@ -31,7 +31,6 @@
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/views/options/cookies_view.h"
 #include "chrome/browser/views/options/fonts_languages_window_view.h"
-#include "chrome/browser/views/options/language_combobox_model.h"
 #include "chrome/browser/views/restart_message_box.h"
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
