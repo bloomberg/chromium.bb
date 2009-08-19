@@ -82,6 +82,11 @@ IPC_BEGIN_MESSAGES(Automation)
   // the tab resource. The second parameter is the target url.  The return
   // value contains a status code which is nonnegative on success.
   // See AutomationMsg_NavigationResponseValues for the return value.
+  //
+  // This is deprecated in favor of
+  // AutomationMsg_NavigateToURLBlockUntilNavigationsComplete.
+  //
+  // TODO(phajdan.jr): Remove when the reference build gets updated.
   IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_NavigateToURL, int, GURL,
                              AutomationMsg_NavigationResponseValues)
 
@@ -1007,5 +1012,15 @@ IPC_BEGIN_MESSAGES(Automation)
   // defined twice.
   IPC_MESSAGE_ROUTED3(AutomationMsg_WindowClick, int, gfx::Point, int)
 #endif
+
+  // This message notifies the AutomationProvider to navigate to a specified
+  // url in the tab with given handle. The first parameter is the handle to
+  // the tab resource. The second parameter is the target url.  The third
+  // parameter is the number of navigations that are required for a successful
+  // return value. See AutomationMsg_NavigationResponseValues for the return
+  // value.
+  IPC_SYNC_MESSAGE_ROUTED3_1(
+      AutomationMsg_NavigateToURLBlockUntilNavigationsComplete, int, GURL, int,
+      AutomationMsg_NavigationResponseValues)
 
 IPC_END_MESSAGES(Automation)

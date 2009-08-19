@@ -77,13 +77,23 @@ class TabProxy : public AutomationResourceProxy {
   // Navigates to a url. This method accepts the same kinds of URL input that
   // can be passed to Chrome on the command line. This is a synchronous call and
   // hence blocks until the navigation completes.
-  AutomationMsg_NavigationResponseValues NavigateToURL(const GURL& url);
+  AutomationMsg_NavigationResponseValues NavigateToURL(
+      const GURL& url);
+
+  // Navigates to a url. This method accepts the same kinds of URL input that
+  // can be passed to Chrome on the command line. This is a synchronous call and
+  // hence blocks until the |number_of_navigations| navigations complete.
+  AutomationMsg_NavigationResponseValues
+      NavigateToURLBlockUntilNavigationsComplete(const GURL& url,
+                                                 int number_of_navigations);
 
   // Navigates to a url. This is same as NavigateToURL with a timeout option.
-  // The function returns until the navigation completes or timeout (in
-  // milliseconds) occurs. If return after timeout, is_timeout is set to true.
+  // The function blocks until the |number_of_navigations| navigations
+  // completes or timeout (in milliseconds) occurs. If return after timeout,
+  // is_timeout is set to true.
   AutomationMsg_NavigationResponseValues NavigateToURLWithTimeout(
-      const GURL& url, uint32 timeout_ms, bool* is_timeout);
+      const GURL& url, int number_of_navigations, uint32 timeout_ms,
+      bool* is_timeout);
 
   // Navigates to a url in an externally hosted tab.
   // This method accepts the same kinds of URL input that

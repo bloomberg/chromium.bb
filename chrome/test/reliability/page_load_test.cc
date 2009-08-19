@@ -193,7 +193,7 @@ class PageLoadTest : public UITest {
       // TabProxy should be released before Browser is closed.
       scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
       if (tab_proxy.get()) {
-        result = tab_proxy->NavigateToURLWithTimeout(url, g_timeout_ms,
+        result = tab_proxy->NavigateToURLWithTimeout(url, 1, g_timeout_ms,
                                                      &is_timeout);
       }
 
