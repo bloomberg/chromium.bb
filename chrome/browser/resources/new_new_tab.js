@@ -1477,12 +1477,27 @@ var dnd = {
   },
 
   handleDrag: function(e) {
+    // Moves the drag item making sure that it is not displayed outside the
+    // browser viewport.
     var item = mostVisited.getItem(e.target);
     var rect = document.querySelector('#most-visited').getBoundingClientRect();
     item.style.pointerEvents = 'none';
 
-    item.style.left = this.startX + e.screenX - this.startScreenX + 'px';
-    item.style.top = this.startY + e.screenY - this.startScreenY + 'px';
+    var x = this.startX + e.screenX - this.startScreenX;
+    var y = this.startY + e.screenY - this.startScreenY;
+
+    // The position of the item is relative to #most-visited so we need to
+    // subtract that when calculating the allowed position.
+    x = Math.max(x, -rect.left);
+    x = Math.min(x, document.body.clientWidth - rect.left - item.offsetWidth -
+                 2);
+    // The shadow is 2px
+    y = Math.max(-rect.top, y);
+    y = Math.min(y, document.body.clientHeight - rect.top - item.offsetHeight -
+                 2);
+
+    item.style.left = x + 'px';
+    item.style.top = y + 'px';
   },
 
   // We listen to mousedown to get the relative position of the cursor for dnd.
