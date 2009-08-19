@@ -267,6 +267,8 @@ nouveau_pushbuf_flush(struct nouveau_channel *chan, unsigned min)
 
 		*(nvpb->base.cur++) = nvpb->cal_suffix0;
 		*(nvpb->base.cur++) = nvpb->cal_suffix1;
+		if (nvpb->base.remaining > 2) /* space() will fixup if not */
+			nvpb->base.remaining -= 2;
 
 		req.channel = chan->id;
 		req.handle = nvpb->buffer[nvpb->current]->handle;
