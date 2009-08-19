@@ -11,8 +11,6 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_shelf_model.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class Browser;
@@ -22,8 +20,7 @@ class NineBox;
 class Profile;
 struct GtkThemeProvider;
 
-class ExtensionShelfGtk : public ExtensionShelfModelObserver,
-                          public NotificationObserver {
+class ExtensionShelfGtk : public ExtensionShelfModelObserver {
  public:
   ExtensionShelfGtk(Profile* profile, Browser* browser);
   virtual ~ExtensionShelfGtk();
@@ -53,14 +50,6 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   // Create the contents of the extension shelf.
   void Init(Profile* profile);
 
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // Loads the background image into memory, or does nothing if already loaded.
-  void InitBackground();
-
   // Determines what is our target height and sets it.
   void AdjustHeight();
 
@@ -82,11 +71,6 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   GtkWidget* shelf_hbox_;
 
   GtkThemeProvider* theme_provider_;
-
-  // Paints the background for our bookmark bar.
-  scoped_ptr<NineBox> background_ninebox_;
-
-  NotificationRegistrar registrar_;
 
   // The model representing the toolstrips on the shelf.
   ExtensionShelfModel* model_;

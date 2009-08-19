@@ -49,6 +49,7 @@ enum ViewID {
 
   // Tab Container window.
   VIEW_ID_TAB_CONTAINER,
+  VIEW_ID_TAB_CONTAINER_FOCUS_VIEW,
 
   VIEW_ID_PREDEFINED_COUNT
 };

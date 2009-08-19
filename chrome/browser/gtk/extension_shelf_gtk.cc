@@ -8,8 +8,8 @@
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/nine_box.h"
+#include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -65,9 +65,6 @@ ExtensionShelfGtk::ExtensionShelfGtk(Profile* profile, Browser* browser)
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
       model_(browser->extension_shelf_model()) {
   Init(profile);
-
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
 }
 
 ExtensionShelfGtk::~ExtensionShelfGtk() {
@@ -161,25 +158,6 @@ void ExtensionShelfGtk::Init(Profile* profile) {
   model_->AddObserver(this);
 }
 
-void ExtensionShelfGtk::Observe(NotificationType type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
-  if (type == NotificationType::BROWSER_THEME_CHANGED) {
-    // TODO(phajdan.jr): Handle theme changes.
-  } else {
-    NOTREACHED() << "unexpected notification";
-  }
-}
-
-void ExtensionShelfGtk::InitBackground() {
-  if (background_ninebox_.get())
-    return;
-
-  background_ninebox_.reset(new NineBox(
-      browser_->profile()->GetThemeProvider(),
-      0, IDR_THEME_TOOLBAR, 0, 0, 0, 0, 0, 0, 0));
-}
-
 void ExtensionShelfGtk::AdjustHeight() {
   if (model_->empty() || toolstrips_.empty()) {
     // It's possible that |model_| is not empty, but |toolstrips_| are empty
@@ -213,10 +191,18 @@ gboolean ExtensionShelfGtk::OnHBoxExpose(GtkWidget* widget,
   cairo_rectangle(cr, event->area.x, event->area.y,
                   event->area.width, event->area.height);
   cairo_clip(cr);
-  bar->InitBackground();
-  bar->background_ninebox_->RenderTopCenterStrip(
-      cr, event->area.x, event->area.y,
-      event->area.x + event->area.width);
+  gfx::Point tabstrip_origin =
+      static_cast<BrowserWindowGtk*>(bar->browser_->window())->
+          tabstrip()->GetTabStripOriginForWidget(widget);
+  GdkPixbuf* background = bar->browser_->profile()->GetThemeProvider()->
+      GetPixbufNamed(IDR_THEME_TOOLBAR);
+  gdk_cairo_set_source_pixbuf(cr, background,
+                              tabstrip_origin.x(), tabstrip_origin.y());
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr, tabstrip_origin.x(), tabstrip_origin.y(),
+                      event->area.x + event->area.width - tabstrip_origin.x(),
+                      gdk_pixbuf_get_height(background));
+  cairo_fill(cr);
   cairo_destroy(cr);
 
   return FALSE;  // Propagate expose to children.

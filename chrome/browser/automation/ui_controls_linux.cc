@@ -40,7 +40,7 @@ class EventWaiter : public MessageLoopForUI::Observer {
   GdkEventType type_;
 };
 
-}
+}  // namespace
 
 namespace ui_controls {
 
@@ -53,8 +53,11 @@ bool SendKeyPress(gfx::NativeWindow window,
   event->key.window = GTK_WIDGET(window)->window;
   g_object_ref(event->key.window);
   event->key.send_event = false;
-  // TODO(estade): Put the real time?
-  event->key.time = GDK_CURRENT_TIME;
+
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  event->key.time = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+
   // TODO(estade): handle other state flags besides control, shift, alt?
   // For example caps lock.
   event->key.state = (control ? GDK_CONTROL_MASK : 0) |

@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
@@ -17,7 +18,8 @@ class TabContents;
 
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 
-class TabContentsContainerGtk : public NotificationObserver {
+class TabContentsContainerGtk : public NotificationObserver,
+                                public ViewIDUtil::Delegate {
  public:
   explicit TabContentsContainerGtk(StatusBubbleGtk* status_bubble);
   ~TabContentsContainerGtk();
@@ -37,6 +39,9 @@ class TabContentsContainerGtk : public NotificationObserver {
                        const NotificationDetails& details);
 
   GtkWidget* widget() { return floating_.get(); }
+
+  // ViewIDUtil::Delegate implementation ---------------------------------------
+  virtual GtkWidget* GetWidgetForViewID(ViewID id);
 
  private:
   // Add or remove observers for events that we care about.

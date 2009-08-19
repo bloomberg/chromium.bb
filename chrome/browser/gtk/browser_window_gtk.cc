@@ -486,38 +486,29 @@ void BrowserWindowGtk::HandleAccelerator(guint keyval,
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
                                                GdkEventExpose* event,
                                                BrowserWindowGtk* window) {
-  static NineBox* default_background = NULL;
-  static NineBox* default_background_inactive = NULL;
-  static NineBox* default_background_otr = NULL;
-  static NineBox* default_background_otr_inactive = NULL;
-
   ThemeProvider* theme_provider =
       window->browser()->profile()->GetThemeProvider();
-  if (!default_background) {
-    default_background = new NineBox(theme_provider,
-        0, IDR_THEME_FRAME, 0, 0, 0, 0, 0, 0, 0);
-    default_background_inactive = new NineBox(theme_provider,
-        0, IDR_THEME_FRAME_INACTIVE, 0, 0, 0, 0, 0, 0, 0);
-    default_background_otr = new NineBox(theme_provider,
-        0, IDR_THEME_FRAME_INCOGNITO, 0, 0, 0, 0, 0, 0, 0);
-    default_background_otr_inactive = new NineBox(theme_provider,
-        0, IDR_THEME_FRAME_INCOGNITO_INACTIVE, 0, 0, 0, 0, 0, 0, 0);
-  }
 
   // Draw the default background.
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   cairo_rectangle(cr, event->area.x, event->area.y, event->area.width,
                   event->area.height);
   cairo_clip(cr);
-  NineBox* image = NULL;
+
+  int image_name;
   if (window->IsActive()) {
-    image = window->browser()->profile()->IsOffTheRecord()
-        ? default_background_otr : default_background;
+    image_name = window->browser()->profile()->IsOffTheRecord() ?
+                 IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
   } else {
-    image = window->browser()->profile()->IsOffTheRecord()
-        ? default_background_otr_inactive : default_background_inactive;
+    image_name = window->browser()->profile()->IsOffTheRecord() ?
+                 IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
   }
-  image->RenderTopCenterStrip(cr, 0, 0, widget->allocation.width);
+  GdkPixbuf* pixbuf = theme_provider->GetPixbufNamed(image_name);
+  gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr, event->area.x, event->area.y,
+                      event->area.width, event->area.height);
+  cairo_fill(cr);
 
   if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
     GdkPixbuf* theme_overlay = theme_provider->GetPixbufNamed(
@@ -533,16 +524,15 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
 
   if (window->use_custom_frame_.GetValue() && !window->IsMaximized()) {
     static NineBox custom_frame_border(
-          theme_provider,
-          IDR_WINDOW_TOP_LEFT_CORNER,
-          IDR_WINDOW_TOP_CENTER,
-          IDR_WINDOW_TOP_RIGHT_CORNER,
-          IDR_WINDOW_LEFT_SIDE,
-          NULL,
-          IDR_WINDOW_RIGHT_SIDE,
-          IDR_WINDOW_BOTTOM_LEFT_CORNER,
-          IDR_WINDOW_BOTTOM_CENTER,
-          IDR_WINDOW_BOTTOM_RIGHT_CORNER);
+        IDR_WINDOW_TOP_LEFT_CORNER,
+        IDR_WINDOW_TOP_CENTER,
+        IDR_WINDOW_TOP_RIGHT_CORNER,
+        IDR_WINDOW_LEFT_SIDE,
+        NULL,
+        IDR_WINDOW_RIGHT_SIDE,
+        IDR_WINDOW_BOTTOM_LEFT_CORNER,
+        IDR_WINDOW_BOTTOM_CENTER,
+        IDR_WINDOW_BOTTOM_RIGHT_CORNER);
 
     custom_frame_border.RenderToWidget(widget);
   }
@@ -556,15 +546,20 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   // Draw the shadow above the toolbar. Tabs on the tabstrip will draw over us.
   ThemeProvider* theme_provider =
       window->browser()->profile()->GetThemeProvider();
-  static NineBox top_shadow(theme_provider,
-                            0, IDR_CONTENT_TOP_CENTER, 0, 0, 0, 0, 0, 0, 0);
   int left_x, top_y;
   gtk_widget_translate_coordinates(window->content_vbox_,
       GTK_WIDGET(window->window_), 0, 0, &left_x,
       &top_y);
   int width = window->content_vbox_->allocation.width;
-  top_shadow.RenderTopCenterStrip(cr,
-      left_x, top_y - kContentShadowThickness, width);
+
+  GdkPixbuf* top_center =
+      theme_provider->GetPixbufNamed(IDR_CONTENT_TOP_CENTER);
+  gdk_cairo_set_source_pixbuf(cr, top_center,
+                              left_x, top_y - kContentShadowThickness);
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr, left_x, top_y - kContentShadowThickness, width,
+                  gdk_pixbuf_get_height(top_center));
+  cairo_fill(cr);
 
   // Only draw the rest of the shadow if the user has the custom frame enabled.
   if (!window->use_custom_frame_.GetValue())

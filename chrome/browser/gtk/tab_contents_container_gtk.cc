@@ -8,7 +8,6 @@
 #include "base/gfx/native_widget_types.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/status_bubble_gtk.h"
-#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/common/notification_service.h"
@@ -70,7 +69,7 @@ void TabContentsContainerGtk::Init() {
   gtk_widget_show(fixed_);
   gtk_widget_show(floating_.get());
 
-  ViewIDUtil::SetID(widget(), VIEW_ID_TAB_CONTAINER);
+  ViewIDUtil::SetDelegateForWidget(widget(), this);
 }
 
 void TabContentsContainerGtk::SetTabContents(TabContents* tab_contents) {
@@ -158,6 +157,20 @@ void TabContentsContainerGtk::TabContentsDestroyed(TabContents* contents) {
   DCHECK(contents == tab_contents_);
   SetTabContents(NULL);
 }
+
+// -----------------------------------------------------------------------------
+// ViewIDUtil::Delegate implementation
+
+GtkWidget* TabContentsContainerGtk::GetWidgetForViewID(ViewID view_id) {
+  if (view_id == VIEW_ID_TAB_CONTAINER ||
+      view_id == VIEW_ID_TAB_CONTAINER_FOCUS_VIEW) {
+    return widget();
+  }
+
+  return NULL;
+}
+
+// -----------------------------------------------------------------------------
 
 // static
 void TabContentsContainerGtk::OnFixedSizeAllocate(

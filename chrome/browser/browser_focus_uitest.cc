@@ -11,6 +11,8 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -56,12 +58,36 @@ class BrowserFocusTest : public InProcessBrowserTest {
     views::FocusManager* focus_manager =
         views::FocusManager::GetFocusManagerForNativeView(window);
     ASSERT_TRUE(focus_manager);
-    EXPECT_EQ(reinterpret_cast<views::View*>(browser_window)->GetViewByID(vid),
-              focus_manager->GetFocusedView());
+    EXPECT_EQ(reinterpret_cast<BrowserView*>(browser_window)->GetViewByID(vid),
+              focus_manager->GetFocusedView()) << "For view id " << vid;
 #elif defined(OS_LINUX)
     GtkWidget* widget = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
     ASSERT_TRUE(widget);
     EXPECT_TRUE(WidgetInFocusChain(GTK_WIDGET(window), widget));
+#else
+    NOTIMPLEMENTED();
+#endif
+  }
+
+  static void HideNativeWindow(gfx::NativeWindow window) {
+#if defined(OS_WIN)
+    // TODO(jcampan): retrieve the WidgetWin and show/hide on it instead of
+    // using Windows API.
+    ::ShowWindow(window, SW_HIDE);
+#elif defined(OS_LINUX)
+    gtk_widget_hide(GTK_WIDGET(window));
+#else
+    NOTIMPLEMENTED();
+#endif
+  }
+
+  static void ShowNativeWindow(gfx::NativeWindow window) {
+#if defined(OS_WIN)
+    // TODO(jcampan): retrieve the WidgetWin and show/hide on it instead of
+    // using Windows API.
+    ::ShowWindow(window, SW_SHOW);
+#elif defined(OS_LINUX)
+    gtk_widget_hide(GTK_WIDGET(window));
 #else
     NOTIMPLEMENTED();
 #endif
@@ -147,7 +173,32 @@ class TestInterstitialPage : public InterstitialPage {
 
 }  // namespace
 
+// TODO(estade): port.
 #if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
+  browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::LINK,
+                           true, -1, false, NULL);
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  ui_controls::MoveMouseToCenterAndPress(
+      browser_view->GetTabContentsContainerView(),
+      ui_controls::LEFT,
+      ui_controls::DOWN | ui_controls::UP,
+      new MessageLoop::QuitTask());
+  ui_test_utils::RunMessageLoop();
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+
+  ui_controls::MoveMouseToCenterAndPress(
+      browser_view->GetLocationBarView(),
+      ui_controls::LEFT,
+      ui_controls::DOWN | ui_controls::UP,
+      new MessageLoop::QuitTask());
+  ui_test_utils::RunMessageLoop();
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+}
+#endif
+
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
   HTTPTestServer* server = StartHTTPServer();
 
@@ -155,40 +206,25 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
   GURL url = server->TestServerPageW(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
+  gfx::NativeWindow window = browser()->window()->GetNativeHandle();
+
   // The focus should be on the Tab contents.
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  ASSERT_TRUE(browser_view);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd);
-  ASSERT_TRUE(focus_manager);
-
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
-
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
   // Now hide the window, show it again, the focus should not have changed.
-  // TODO(jcampan): retrieve the WidgetWin and show/hide on it instead of
-  // using Windows API.
-  ::ShowWindow(hwnd, SW_HIDE);
-  ::ShowWindow(hwnd, SW_SHOW);
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
+  HideNativeWindow(window);
+  ShowNativeWindow(window);
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 
-  // Click on the location bar.
-  LocationBarView* location_bar = browser_view->GetLocationBarView();
-  ui_controls::MoveMouseToCenterAndPress(location_bar,
-                                         ui_controls::LEFT,
-                                         ui_controls::DOWN | ui_controls::UP,
-                                         new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
-  // Location bar should have focus.
-  EXPECT_EQ(location_bar, focus_manager->GetFocusedView());
-
+  browser()->FocusLocationBar();
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
   // Hide the window, show it again, the focus should not have changed.
-  ::ShowWindow(hwnd, SW_HIDE);
-  ::ShowWindow(hwnd, SW_SHOW);
-  EXPECT_EQ(location_bar, focus_manager->GetFocusedView());
+  HideNativeWindow(window);
+  ShowNativeWindow(window);
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
+  // The rest of this test does not make sense on Linux because the behavior
+  // of Activate() is not well defined and can vary by window manager.
+#if defined(OS_WIN)
   // Open a new browser window.
   Browser* browser2 = Browser::Create(browser()->profile());
   ASSERT_TRUE(browser2);
@@ -209,17 +245,20 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
   // Switch to the 1st browser window, focus should still be on the location
   // bar and the second browser should have nothing focused.
   browser()->window()->Activate();
-  EXPECT_EQ(location_bar, focus_manager->GetFocusedView());
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
   EXPECT_EQ(NULL, focus_manager2->GetFocusedView());
 
   // Switch back to the second browser, focus should still be on the page.
   browser2->window()->Activate();
-  EXPECT_EQ(NULL, focus_manager->GetFocusedView());
+  EXPECT_EQ(NULL,
+            views::FocusManager::GetFocusManagerForNativeView(
+                browser()->window()->GetNativeHandle())->GetFocusedView());
   EXPECT_EQ(browser_view2->GetTabContentsContainerView(),
             focus_manager2->GetFocusedView());
 
   // Close the 2nd browser to avoid a DCHECK().
   browser_view2->Close();
+#endif
 }
 
 // Tabs remember focus.
@@ -229,14 +268,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
   // First we navigate to our test page.
   GURL url = server->TestServerPageW(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
-
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  ASSERT_TRUE(browser_view);
-
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd);
-  ASSERT_TRUE(focus_manager);
 
   // Create several tabs.
   for (int i = 0; i < 4; ++i) {
@@ -257,19 +288,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
       browser()->SelectTabContentsAt(j, true);
 
       // Activate the location bar or the page.
-      views::View* view_to_focus;
       if (kFocusPage[i][j]) {
-        view_to_focus = browser_view->GetTabContentsContainerView();
+        browser()->GetTabContentsAt(j)->view()->Focus();
       } else {
-        view_to_focus = browser_view->GetLocationBarView();
+        browser()->FocusLocationBar();
       }
-
-      ui_controls::MoveMouseToCenterAndPress(view_to_focus,
-                                             ui_controls::LEFT,
-                                             ui_controls::DOWN |
-                                                 ui_controls::UP,
-                                             new MessageLoop::QuitTask());
-      ui_test_utils::RunMessageLoop();
     }
 
     // Now come back to the tab and check the right view is focused.
@@ -277,14 +300,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
       // Activate the tab.
       browser()->SelectTabContentsAt(j, true);
 
-      // Activate the location bar or the page.
-      views::View* view;
-      if (kFocusPage[i][j]) {
-        view = browser_view->GetTabContentsContainerView();
-      } else {
-        view = browser_view->GetLocationBarView();
-      }
-      EXPECT_EQ(view, focus_manager->GetFocusedView());
+      ViewID vid = kFocusPage[i][j] ? VIEW_ID_TAB_CONTAINER_FOCUS_VIEW :
+                                      VIEW_ID_LOCATION_BAR;
+      CheckViewHasFocus(vid);
     }
   }
 }
@@ -302,26 +320,40 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   ASSERT_TRUE(browser2);
   browser2->tabstrip_model()->delegate()->AddBlankTab(true);
   browser2->window()->Show();
+
+  Browser* focused_browser;
+  Browser* unfocused_browser;
+#if defined(OS_LINUX)
+  // On Linux, calling Activate() is not guaranteed to move focus, so we have
+  // to figure out which browser does have focus.
+  if (browser2->window()->IsActive()) {
+    focused_browser = browser2;
+    unfocused_browser = browser();
+  } else if (browser()->window()->IsActive()) {
+    focused_browser = browser();
+    unfocused_browser = browser2;
+  } else {
+    ASSERT_TRUE(false);
+  }
+#elif defined(OS_WIN)
+  focused_browser = browser();
+  unfocused_browser = browser2;
+#endif
+
   GURL steal_focus_url = server->TestServerPageW(kStealFocusPage);
-  ui_test_utils::NavigateToURL(browser2, steal_focus_url);
+  ui_test_utils::NavigateToURL(unfocused_browser, steal_focus_url);
 
   // Activate the first browser.
-  browser()->window()->Activate();
+  focused_browser->window()->Activate();
 
   // Wait for the focus to be stolen by the other browser.
-  ::Sleep(2000);
+  PlatformThread::Sleep(2000);
 
   // Make sure the first browser is still active.
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  ASSERT_TRUE(browser_view);
-  EXPECT_TRUE(browser_view->frame()->GetWindow()->IsActive());
+  EXPECT_TRUE(focused_browser->window()->IsActive());
 
   // Close the 2nd browser to avoid a DCHECK().
-  HWND hwnd2 = reinterpret_cast<HWND>(browser2->window()->GetNativeHandle());
-  BrowserView* browser_view2 =
-      BrowserView::GetBrowserViewForNativeWindow(hwnd2);
-  browser_view2->Close();
+  browser2->window()->Close();
 }
 
 // Page cannot steal focus when focus is on location bar.
@@ -332,24 +364,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
   GURL url = server->TestServerPageW(kStealFocusPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd);
-
-  // Click on the location bar.
-  LocationBarView* location_bar = browser_view->GetLocationBarView();
-  ui_controls::MoveMouseToCenterAndPress(location_bar,
-                                         ui_controls::LEFT,
-                                         ui_controls::DOWN | ui_controls::UP,
-                                         new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+  browser()->FocusLocationBar();
 
   // Wait for the page to steal focus.
-  ::Sleep(2000);
+  PlatformThread::Sleep(2000);
 
   // Make sure the location bar is still focused.
-  EXPECT_EQ(location_bar, focus_manager->GetFocusedView());
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 }
 
 // Focus traversal on a regular page.
@@ -360,18 +381,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
   GURL url = server->TestServerPageW(kTypicalPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd);
-
-  // Click on the location bar.
-  LocationBarView* location_bar = browser_view->GetLocationBarView();
-  ui_controls::MoveMouseToCenterAndPress(location_bar,
-                                         ui_controls::LEFT,
-                                         ui_controls::DOWN | ui_controls::UP,
-                                         new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+  browser()->FocusLocationBar();
 
   const char* kExpElementIDs[] = {
     "",  // Initially no element in the page should be focused
@@ -380,10 +390,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
     "gmapLink"
   };
 
+  gfx::NativeWindow window = browser()->window()->GetNativeHandle();
+
   // Test forward focus traversal.
   for (int i = 0; i < 3; ++i) {
     // Location bar should be focused.
-    EXPECT_EQ(location_bar, focus_manager->GetFocusedView());
+    CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
     // Now let's press tab to move the focus.
     for (int j = 0; j < 7; ++j) {
@@ -396,14 +408,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
           &actual));
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
-      ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_TAB, false,
+      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, false,
                                               false, false,
                                               new MessageLoop::QuitTask());
       ui_test_utils::RunMessageLoop();
       // Ideally, we wouldn't sleep here and instead would use the event
       // processed ack notification from the renderer.  I am reluctant to create
       // a new notification/callback for that purpose just for this test.
-      ::Sleep(kActionDelayMs);
+      PlatformThread::Sleep(kActionDelayMs);
     }
 
     // At this point the renderer has sent us a message asking to advance the
@@ -416,15 +428,15 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
   // Now let's try reverse focus traversal.
   for (int i = 0; i < 3; ++i) {
     // Location bar should be focused.
-    EXPECT_EQ(location_bar, focus_manager->GetFocusedView());
+    CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
     // Now let's press shift-tab to move the focus in reverse.
     for (int j = 0; j < 7; ++j) {
-      ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_TAB, false,
+      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, false,
                                               true, false,
                                               new MessageLoop::QuitTask());
       ui_test_utils::RunMessageLoop();
-      ::Sleep(kActionDelayMs);
+      PlatformThread::Sleep(kActionDelayMs);
 
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
@@ -444,6 +456,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
   }
 }
 
+#if defined(OS_WIN)
 // Focus traversal while an interstitial is showing.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversalOnInterstitial) {
   HTTPTestServer* server = StartHTTPServer();
@@ -667,10 +680,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 // Makes sure the focus is in the right location when opening the different
 // types of tabs.
 // TODO(estade): undisable this.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER);
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 
   // Open the new tab, focus should be on the location bar.
   browser()->NewTab();
@@ -678,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
 
   // Open the download tab, focus should be on the tab contents.
   browser()->ShowDownloadsTab();
-  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER);
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 
   // Open about:blank, focus should be on the location bar.
   browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::LINK,

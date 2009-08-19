@@ -151,10 +151,6 @@ FindBarGtk::FindBarGtk(Browser* browser)
   InitWidgets();
   ViewIDUtil::SetID(text_entry_, VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
 
-  dialog_background_.reset(new NineBox(browser->profile()->GetThemeProvider(),
-                                       0, IDR_THEME_TOOLBAR, 0,
-                                       0, 0, 0, 0, 0, 0));
-
   // Insert the widget into the browser gtk hierarchy.
   window_->AddFindBar(this);
 
@@ -669,9 +665,15 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     cairo_clip(cr);
     gfx::Point tabstrip_origin =
         bar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
-    bar->dialog_background_->RenderTopCenterStrip(
-        cr, tabstrip_origin.x(), tabstrip_origin.y(),
-        e->area.x + e->area.width - tabstrip_origin.x());
+    GdkPixbuf* background = bar->browser_->profile()->GetThemeProvider()->
+        GetPixbufNamed(IDR_THEME_TOOLBAR);
+    gdk_cairo_set_source_pixbuf(cr, background,
+                                tabstrip_origin.x(), tabstrip_origin.y());
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(cr, tabstrip_origin.x(), tabstrip_origin.y(),
+                        e->area.x + e->area.width - tabstrip_origin.x(),
+                        gdk_pixbuf_get_height(background));
+    cairo_fill(cr);
     cairo_destroy(cr);
 
     // Draw the border.

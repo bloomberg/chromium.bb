@@ -7,6 +7,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/views/tab_contents/tab_contents_view_win.h"
 
@@ -18,6 +19,7 @@
 NativeTabContentsContainerWin::NativeTabContentsContainerWin(
     TabContentsContainer* container)
     : container_(container) {
+  SetID(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 }
 
 NativeTabContentsContainerWin::~NativeTabContentsContainerWin() {

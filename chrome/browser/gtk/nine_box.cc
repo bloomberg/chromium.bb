@@ -11,7 +11,6 @@
 #include "base/gfx/gtk_util.h"
 #include "base/gfx/point.h"
 #include "base/logging.h"
-#include "chrome/common/notification_service.h"
 
 namespace {
 
@@ -44,29 +43,6 @@ NineBox::NineBox(int top_left, int top, int top_right, int left, int center,
   images_[6] = bottom_left ? rb.GetPixbufNamed(bottom_left) : NULL;
   images_[7] = bottom ? rb.GetPixbufNamed(bottom) : NULL;
   images_[8] = bottom_right ? rb.GetPixbufNamed(bottom_right) : NULL;
-}
-
-NineBox::NineBox(ThemeProvider* theme_provider,
-                 int top_left, int top, int top_right, int left, int center,
-                 int right, int bottom_left, int bottom, int bottom_right)
-    : theme_provider_(theme_provider) {
-  image_ids_[0] = top_left;
-  image_ids_[1] = top;
-  image_ids_[2] = top_right;
-  image_ids_[3] = left;
-  image_ids_[4] = center;
-  image_ids_[5] = right;
-  image_ids_[6] = bottom_left;
-  image_ids_[7] = bottom;
-  image_ids_[8] = bottom_right;
-
-  // Load images by pretending that we got a BROWSER_THEME_CHANGED
-  // notification.
-  Observe(NotificationType::BROWSER_THEME_CHANGED,
-          NotificationService::AllSources(),
-          NotificationService::NoDetails());
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
 }
 
 NineBox::~NineBox() {
@@ -213,18 +189,4 @@ void NineBox::ContourWidget(GtkWidget* widget) const {
   }
 
   g_object_unref(mask);
-}
-
-void NineBox::Observe(NotificationType type, const NotificationSource& source,
-                      const NotificationDetails& details) {
-  if (NotificationType::BROWSER_THEME_CHANGED != type) {
-    NOTREACHED();
-    return;
-  }
-
-  // Reload images.
-  for (size_t i = 0; i < arraysize(image_ids_); ++i) {
-    images_[i] = image_ids_[i] ?
-                 theme_provider_->GetPixbufNamed(image_ids_[i]) : NULL;
-  }
 }
