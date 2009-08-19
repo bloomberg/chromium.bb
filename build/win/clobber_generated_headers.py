@@ -52,9 +52,12 @@ for path in sys.argv[1:]:
                                      'global_intermediate', path_components[1])
 
     for header in output_headers:
-      full_path = os.path.join(intermediate_path, header)
-      try:
-        os.remove(full_path)
-        print 'Clobbered ' + full_path
-      except OSError:
-        print 'Could not remove ' + full_path + '. Continuing.'
+      full_path = os.path.normpath(os.path.join(intermediate_path, header))
+      if os.path.exists(full_path):
+        try:
+          os.remove(full_path)
+        except OSError, e:
+            fmt = 'Could not remove %s:  %s.  Continuing.\n'
+            sys.stderr.write(fmt % (full_path, e))
+        else:
+          print 'Clobbered ' + full_path
