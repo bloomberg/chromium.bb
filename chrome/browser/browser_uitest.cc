@@ -212,14 +212,14 @@ class ShowModalDialogTest : public UITest {
   }
 };
 
-// This test is flaky, see http://crbug.com/17806.
-TEST_F(ShowModalDialogTest, DISABLED_BasicTest) {
+TEST_F(ShowModalDialogTest, BasicTest) {
   // Test that a modal dialog is shown.
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("showmodaldialog.html");
   NavigateToURL(net::FilePathToFileURL(test_file));
 
-  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2, action_timeout_ms()));
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(
+      2, action_max_timeout_ms()));
 
   scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(1);
   scoped_refptr<TabProxy> tab = browser->GetActiveTab();
@@ -233,7 +233,8 @@ TEST_F(ShowModalDialogTest, DISABLED_BasicTest) {
   // JS function on the page through TabProxy, reload it and use an unload
   // handler that closes the page.
   ASSERT_EQ(tab->Reload(), AUTOMATION_MSG_NAVIGATION_SUCCESS);
-  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(1, action_timeout_ms()));
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(
+      1, action_max_timeout_ms()));
 }
 #endif
 
