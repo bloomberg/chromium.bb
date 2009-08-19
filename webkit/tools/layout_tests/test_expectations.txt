@@ -1044,6 +1044,9 @@ BUG10320 SKIP : LayoutTests/transitions/opacity-transition-zindex.html = PASS
 // Issue 3273: TextInputController::firstRectForCharacterRange not implemented
 // http://code.google.com/p/chromium/issues/detail?id=3273
 BUG10321 : LayoutTests/editing/selection/move-left-right.html = FAIL
+BUG10321 MAC : LayoutTests/platform/mac/editing/input/caret-primary-bidi.html = FAIL
+BUG10321 MAC : LayoutTests/platform/mac/editing/input/firstrectforcharacterrange-plain.html = FAIL
+BUG10321 MAC : LayoutTests/platform/mac/editing/input/range-for-empty-document.html = FAIL
 
 // Regression from the 41362:41402 merge.
 BUG8402 MAC : LayoutTests/fast/forms/drag-out-of-textarea.html = FAIL PASS
@@ -1079,6 +1082,8 @@ BUG16018 : LayoutTests/fast/dom/HTMLDocument/hasFocus.html = FAIL
 BUG10322 : LayoutTests/accessibility = FAIL
 BUG10322 : LayoutTests/accessibility/non-native-image-crash.html = PASS
 BUG10322 : LayoutTests/accessibility/input-slider.html = TIMEOUT
+BUG10322 : LayoutTests/platform/mac/accessibility = FAIL
+BUG10322 : LayoutTests/platform/win/accessibility = FAIL
 
 // Border radius not anti-aliased.
 // New test. We should fix it, but it doesn't need to block the current release
@@ -2218,7 +2223,6 @@ WONTFIX SKIP : LayoutTests/webarchive/adopt-inline-styled-node-webarchive.html =
 
 // Regressions from WebKit Merge 42932:42994
 BUG11239 : LayoutTests/fast/dom/Window/setTimeout-string-argument.html = FAIL
-BUG11239 : LayoutTests/platform/win/accessibility/document-role.html = FAIL
 BUG11239 MAC : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL PASS
 
 // Regressions from WebKit Merge 42932:42994 due to text metric changes.
@@ -2353,10 +2357,6 @@ BUG12882 : LayoutTests/fast/dom/Window/open-existing-pop-up-blocking.html = TIME
 // This test crashes the next layout tests, so skip until resolved.
 BUG13176 SKIP : LayoutTests/fast/workers/worker-close.html = FAIL
 BUG13174 WIN : LayoutTests/transitions/shorthand-border-transitions.html = PASS FAIL
-
-// WebKit 44372:44405	
-// New Linux crashes and failures. Why are we running platform/mac test on Linux?
-BUG13314 LINUX : LayoutTests/platform/mac/accessibility/accesskey.html = CRASH FAIL
 
 // WebKit 44438:44544
 BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
@@ -2808,3 +2808,7 @@ BUG_JPARENT LINUX DEBUG : LayoutTests/fast/lists/dynamic-marker-crash.html = FAI
 BUG_JPARENT WIN LINUX DEBUG : LayoutTests/fast/lists/ol-display-types.html = FAIL
 BUG_JPARENT LINUX DEBUG : LayoutTests/fast/lists/ol-start-dynamic.html = FAIL
 BUG_JPARENT WIN DEBUG : LayoutTests/fast/lists/drag-into-marker.html = FAIL
+
+// Fails due to textInputController.setInputMethod not implemented for Mac.
+BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
+BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.html = FAIL
