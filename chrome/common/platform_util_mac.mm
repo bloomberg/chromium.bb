@@ -16,12 +16,14 @@
 namespace platform_util {
 
 void ShowItemInFolder(const FilePath& full_path) {
+  DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
   [[NSWorkspace sharedWorkspace] selectFile:path_string
                    inFileViewerRootedAtPath:nil];
 }
 
 void OpenItem(const FilePath& full_path) {
+  DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
   [[NSWorkspace sharedWorkspace] openFile:path_string];
 }
