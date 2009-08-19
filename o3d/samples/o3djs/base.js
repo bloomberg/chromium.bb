@@ -528,7 +528,7 @@ o3djs.base = o3djs.base || {};
 /**
  * The a Javascript copy of the o3d namespace object. (holds constants, enums,
  * etc...)
- * @type {o3d.o3d}
+ * @type {o3d}
  */
 o3djs.base.o3d = null;
 
@@ -557,7 +557,7 @@ o3djs.base.snapshotProvidedNamespaces = function()  {
  * Initializes the o3djs.sample library in a v8 instance. This should be called
  * for every V8 instance that uses the sample library. It is automatically
  * called by o3djs.util.makeClients.
- * @param {!o3d.plugin} clientObject O3D.Plugin Object.
+ * @param {!Element} clientObject O3D.Plugin Object.
  */
 o3djs.base.initV8 = function(clientObject)  {
   var v8Init = function(initializer, args) {

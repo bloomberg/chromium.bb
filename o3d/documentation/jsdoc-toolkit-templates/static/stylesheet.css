@@ -118,6 +118,9 @@ TD.mdname1 {
   font-weight: bold;
   -moz-border-radius: 8px 8px 8px 8px;
 }
+.memproto .deprecated {
+  color: red;
+}
 .paramkey {
   text-align: right;
 }

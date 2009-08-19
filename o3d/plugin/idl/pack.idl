@@ -308,6 +308,8 @@ typedef Bitmap[] BitmapArray;
     \param generate_mips True if you want O3D to generate mip maps for the
         texture.
     \return the Texture
+    \sa o3d.Pack.createBitmapsFromRawData
+    @deprecated
   %]
   Texture? CreateTextureFromRawData(RawData raw_data,
                                     bool generate_mips);

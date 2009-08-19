@@ -738,7 +738,7 @@ o3djs.debug.DebugLineGroup.prototype.getLine_ = function() {
  * @param {!o3djs.math.Vector3} opt_start Start position for line.
  * @param {!o3djs.math.Vector3} opt_end End position for line.
  * @param {!o3djs.math.Vector4} opt_color Color for line.
- * @return {!o3djs.debug.debugLine} The DebugLine.
+ * @return {!o3djs.debug.DebugLine} The DebugLine.
  */
 o3djs.debug.DebugLineGroup.prototype.addLine = function(opt_start,
                                                         opt_end,
@@ -795,7 +795,7 @@ o3djs.debug.DebugLineGroup.prototype.remove = function(line) {
  * @constructor
  * @param {!o3d.Pack} pack Pack for this debug object to use to manage
  *     its resources.
- * @param {!o3djs.rendergraph.viewInfo} viewInfo ViewInfo for debug
+ * @param {!o3djs.rendergraph.ViewInfo} viewInfo ViewInfo for debug
  *     visuals.
  */
 o3djs.debug.DebugHelper = function(pack, viewInfo) {
@@ -1330,7 +1330,7 @@ o3djs.debug.DebugHelper.prototype.createDebugLineGroup =
  *
  * @param {!o3d.Pack} pack Pack for DebugHelper to manage its resources
  *      with.
- * @param {!o3djs.rendergraph.viewInfo} viewInfo ViewInfo for debug
+ * @param {!o3djs.rendergraph.ViewInfo} viewInfo ViewInfo for debug
  *     visuals.
  * @return {!o3djs.debug.DebugHelper} the DebugHelper object.
  */

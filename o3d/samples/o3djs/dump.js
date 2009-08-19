@@ -175,17 +175,6 @@ o3djs.dump.getMatrixAsString = function(matrix, opt_prefix) {
 };
 
 /**
- * Dumps a point3
- * @param {string} label Label to put in front of dump.
- * @param {!o3d.Point3} point3 Point3 to dump.
- * @param {string} opt_prefix optional prefix for indenting.
- */
-o3djs.dump.dumpPoint3 = function(label, point3, opt_prefix) {
-  opt_prefix = opt_prefix || '';
-  o3djs.dump.dumpXYZ_(label, point3, opt_prefix);
-};
-
-/**
  * Dumps a float3
  * @param {string} label Label to put in front of dump.
  * @param {!o3d.Float3} float3 Float3 to dump.
@@ -194,17 +183,6 @@ o3djs.dump.dumpPoint3 = function(label, point3, opt_prefix) {
 o3djs.dump.dumpFloat3 = function(label, float3, opt_prefix) {
   opt_prefix = opt_prefix || '';
   o3djs.dump.dumpXYZ_(label, float3, opt_prefix);
-};
-
-/**
- * Dumps a vector3
- * @param {string} label Label to put in front of dump.
- * @param {!o3d.Vector3} vector3 Vector3 to dump.
- * @param {string} opt_prefix optional prefix for indenting.
- */
-o3djs.dump.dumpVector3 = function(label, vector3, opt_prefix) {
-  opt_prefix = opt_prefix || '';
-  o3djs.dump.dumpXYZ_(label, vector3, opt_prefix);
 };
 
 /**
@@ -254,10 +232,10 @@ o3djs.dump.dumpBoundingBox = function(label,
                                       opt_prefix) {
   opt_prefix = opt_prefix || '';
   o3djs.dump.dump(opt_prefix + label + ' :\n');
-  o3djs.dump.dumpPoint3('min : ',
+  o3djs.dump.dumpFloat3('min : ',
                         boundingBox.minExtent,
                         opt_prefix + '    ');
-  o3djs.dump.dumpPoint3('max : ',
+  o3djs.dump.dumpFloat3('max : ',
                         boundingBox.maxExtent,
                         opt_prefix + '    ');
 };

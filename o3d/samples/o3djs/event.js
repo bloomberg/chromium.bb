@@ -204,8 +204,8 @@ o3djs.event.startKeyboardEventSynthesis = function(pluginObject) {
  * see http://www.w3.org/TR/DOM-Level-3-Events/events.html
  * #Events-KeyboardEvents-Interfaces
  * see http://developer.mozilla.org/en/DOM/event.initKeyEvent
- * @param {!Element} event an O3D event object.
- * @param {!o3d.Plugin} pluginObject the plugin object on the page.
+ * @param {!Event} event an O3D event object.
+ * @param {!Element} pluginObject the plugin object on the page.
  */
 o3djs.event.onKey = function(event, pluginObject) {
   var k_evt = o3djs.event.createKeyEvent(event.type, event.charCode,

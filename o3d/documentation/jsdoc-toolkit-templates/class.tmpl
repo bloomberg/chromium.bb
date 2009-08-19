@@ -285,6 +285,9 @@ thisClass = data;
           <td>{+tempInherited+}</td>
         </tr>
         </if>
+        <if test="isDeprecated(member)">
+          <td colspan="6" class="deprecated">[[]**DEPRECATED**]</td>
+        </if>
       </table>
     </div>
 

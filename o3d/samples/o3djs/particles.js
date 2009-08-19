@@ -287,7 +287,7 @@ o3djs.particles.CORNERS_ = [
  * You only need one of these to run multiple emitters of different types
  * of particles.
  * @param {!o3d.Pack} pack The pack for the particle system to manage resources.
- * @param {!o3djs.rendergraph.viewInfo} viewInfo A viewInfo so the particle
+ * @param {!o3djs.rendergraph.ViewInfo} viewInfo A viewInfo so the particle
  *     system can do the default setup. The only thing used from viewInfo
  *     is the zOrderedDrawList. If that is not where you want your particles,
  *     after you create the particleEmitter use
@@ -674,7 +674,7 @@ o3djs.particles.ParticleSpec = function() {
 
   /**
    * The orientation of a particle. This is only used if billboard is false.
-   * @type {!o3djs.quaternions.Quaterinion}
+   * @type {!o3djs.quaternions.Quaternion}
    */
   this.orientation = [0, 0, 0, 1];
 };
@@ -830,7 +830,7 @@ o3djs.particles.ParticleEmitter = function(particleSystem,
 
   /**
    * The material used by this emitter.
-   * @type {!o3d.Matrerial}
+   * @type {!o3d.Material}
    */
   this.material = material;
 

@@ -112,6 +112,7 @@ class Canvas : ParamObject {
     \param texture The Texture2D object where the bitmap is extracted from.
     \param left The position of the left side of the bitmap.
     \param bottom The position of the bottom side of the bitmap.
+    @deprecated
   %]
   void DrawBitmap(Texture2D texture, float left, float bottom);
 
@@ -157,6 +158,8 @@ class Canvas : ParamObject {
     texture must match exactly the size of the Canvas set by the setSize() method.
     The format of the texture must be set to either ARGB8 or XRGB8.
     \param texture Texture to copy to.
+    @deprecated
+    \sa o3d.Texture2D.drawImage
   %]
   void CopyToTexture(Texture2D texture);
 

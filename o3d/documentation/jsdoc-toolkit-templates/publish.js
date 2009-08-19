@@ -200,7 +200,7 @@ function publishInternal(symbolSet) {
     filteredClasses.push(symbol);
 
     // Comment these lines in to see what data is available to the templates.
-    //if (symbol.name == 'Client' || symbol.name == 'particles') {
+    //if (symbol.name == 'Canvas') {
     //  print('------[' + symbol.name + ']-----------------------------------');
     //  dumpObject(symbol, 5);
     //}
@@ -542,6 +542,18 @@ function getParameters(symbol) {
 }
 
 /**
+ * Returns whether or not the symbol is deprecated.  Apparently jsdoctoolkit is
+ * supposed to extract this info for us but it's not so we have to do it
+ * manually.
+ * @param {!Symbol} symbol The symbol to check.
+ * @return {boolean} True if the symbol is deprecated.
+ */
+function isDeprecated(symbol) {
+  var tags = symbol.comment.getTag('deprecated');
+  return tags.length > 0;
+}
+
+/**
  * Converts [ to [[] for ezt files.
  * Also converts '\n\n' to <br/></br>
  * @param {string} str to sanitize.
@@ -795,8 +807,9 @@ function linkifySingleType(place, type) {
       var period = type.lastIndexOf('.');
       if (period >= 0 && type != '...') {
         var subType = type.substring(0, period);
+        var member = type.substring(period + 1);
         symbol = getSymbol(subType);
-        if (symbol) {
+        if (symbol && symbol.hasMember(member)) {
           var field = type.substring(period + 1);
           link = '<a class="el" href="' + getLinkToSymbol(symbol) + '#' +
               field + '">' +  type + '</a>';

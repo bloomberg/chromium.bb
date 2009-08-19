@@ -223,7 +223,7 @@ o3djs.rendergraph.ViewInfo = function(pack,
    * <pre>
    * viewInfo.root.priority = desiredPriority;
    * </pre>
-   * @type {!o3d.RenderGraph}
+   * @type {!o3d.RenderNode}
    */
   this.root = viewport;
 

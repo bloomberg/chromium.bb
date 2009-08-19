@@ -418,19 +418,6 @@ o3djs.simple.SimpleInfo.prototype.createSphere = function(radius,
 };
 
 /**
- * Loads a scene from a URL.
- * TODO: Implement
- * @param {string} url Url of scene to load.
- * @return {!o3djs.simple.Scene} A Javascript object to manage the scene.
- */
-o3djs.simple.SimpleInfo.prototype.loadScene = function(url) {
-  if (true) {
-    throw('not implemented');
-  }
-  return null;
-};
-
-/**
  * Moves the camera so everything in the current scene is visible.
  */
 o3djs.simple.SimpleInfo.prototype.viewAll = function() {

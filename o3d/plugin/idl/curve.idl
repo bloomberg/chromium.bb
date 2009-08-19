@@ -155,7 +155,7 @@ class Curve : Function {
   %[
     Whether or not a cache is used to speed up evaluation of this Curve
     Default = true.
-    \sa o3d.Curve.setSampleRate
+    \sa o3d.Curve.sampleRate
   %]
   [getter, setter] bool use_cache;
 

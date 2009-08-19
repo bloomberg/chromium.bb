@@ -246,7 +246,7 @@ o3djs.picking.PickInfo = function(element,
 
   /**
    * Information about the pick.
-   * @type {!o3d.RayInterstionInfo}
+   * @type {!o3d.RayIntersectionInfo}
    */
   this.rayIntersectionInfo = rayIntersectionInfo;
 
