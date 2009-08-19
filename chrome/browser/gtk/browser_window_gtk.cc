@@ -1963,8 +1963,9 @@ bool BrowserWindowGtk::GetCustomFramePrefDefault() {
   }
 
   // Ideally, we'd use the custom frame by default and just fall back on using
-  // system decorations for the few (?) tiling window managers where it doesn't
-  // make sense (e.g. awesome, ion3, ratpoison, xmonad, etc.).  The EWMH
+  // system decorations for the few (?) tiling window managers where the custom
+  // frame doesn't make sense (e.g. awesome, ion3, ratpoison, xmonad, etc.) or
+  // other WMs where it has issues (e.g. Fluxbox -- see issue 19130).  The EWMH
   // _NET_SUPPORTING_WM property makes it easy to look up a name for the current
   // WM, but at least some of the WMs in the latter group don't set it.
   // Instead, we default to using system decorations for all WMs and
@@ -1973,7 +1974,6 @@ bool BrowserWindowGtk::GetCustomFramePrefDefault() {
   return (wm_name == "Blackbox" ||
           wm_name == "compiz" ||
           wm_name == "e16" ||  // Enlightenment DR16
-          wm_name == "Fluxbox" ||
           wm_name == "KWin" ||
           wm_name == "Metacity" ||
           wm_name == "Openbox" ||
