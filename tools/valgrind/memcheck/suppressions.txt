@@ -300,6 +300,20 @@
    ...
    fun:_ZN2v88internal8FlagList18SetFlagsFromStringEPKci
 }
+{
+   # Non-joinable thread doesn't clean up all state on program exit
+   # very common in ui tests
+   bug_16096
+   Memcheck:Leak
+   fun:_Znwj
+   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
+   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
+   fun:_ZNSs7reserveEj
+   fun:_ZNSs6appendEPKcj
+   fun:_Z14StringAppendVTISsEvPT_PKNS0_10value_typeEPc
+   fun:_Z13StringAppendVPSsPKcPc
+   fun:_Z12StringPrintfPKcz
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -603,19 +617,6 @@
    ...
    fun:_ZN11MessageLoop21AddToDelayedWorkQueueERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
-}
-{
-   # very common in ui tests
-   bug_16096
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
-   fun:_ZNSs7reserveEj
-   fun:_ZNSs6appendEPKcj
-   fun:_Z14StringAppendVTISsEvPT_PKNS0_10value_typeEPc
-   fun:_Z13StringAppendVPSsPKcPc
-   fun:_Z12StringPrintfPKcz
 }
 {
    # Somewhat common in ui tests.  See also bug 9245.
