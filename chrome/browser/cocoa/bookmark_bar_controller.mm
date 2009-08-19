@@ -14,13 +14,24 @@
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
+#import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
-#import "chrome/common/cocoa_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "skia/ext/skia_utils_mac.h"
+
+// Specialization of NSButton that responds to middle-clicks. By default,
+// NSButton ignores them.
+@interface BookmarkButton : NSButton
+@end
+
+@implementation BookmarkButton
+- (void)otherMouseUp:(NSEvent*) event {
+  [self performClick:self];
+}
+@end
 
 @interface BookmarkBarController(Private)
 - (void)applyContentAreaOffset:(BOOL)apply immediately:(BOOL)immediately;
@@ -40,7 +51,8 @@ const int kBookmarkBarHeight = 30;
 const CGFloat kDefaultBookmarkWidth = 150.0;
 const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkHorizontalPadding = 1.0;
-};
+
+}  // namespace
 
 @implementation BookmarkBarController
 
@@ -186,9 +198,9 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 
 - (IBAction)openBookmark:(id)sender {
   BookmarkNode* node = [self nodeFromButton:sender];
-  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
-      [[NSApp currentEvent] modifierFlags]);
-  [urlDelegate_ openBookmarkURL:node->GetURL() disposition:disposition];
+  [urlDelegate_ openBookmarkURL:node->GetURL()
+                    disposition:event_utils::WindowOpenDispositionFromNSEvent(
+                        [NSApp currentEvent])];
 }
 
 // Given a NSMenuItem tag, return the appropriate bookmark node id.
@@ -501,8 +513,8 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 - (IBAction)openBookmarkMenuItem:(id)sender {
   int64 tag = [self nodeIdFromMenuTag:[sender tag]];
   const BookmarkNode* node = bookmarkModel_->GetNodeByID(tag);
-  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
-      [[NSApp currentEvent] modifierFlags]);
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   [urlDelegate_ openBookmarkURL:node->GetURL() disposition:disposition];
 }
 
@@ -523,7 +535,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 
     NSCell* cell = [self cellForBookmarkNode:child];
     NSRect frame = [self frameForBookmarkButtonFromCell:cell xOffset:&x_offset];
-    NSButton* button = [[[NSButton alloc] initWithFrame:frame]
+    NSButton* button = [[[BookmarkButton alloc] initWithFrame:frame]
                          autorelease];
     DCHECK(button);
     [buttons_ addObject:button];

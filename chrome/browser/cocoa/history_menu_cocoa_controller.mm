@@ -7,10 +7,10 @@
 #import "chrome/browser/cocoa/history_menu_cocoa_controller.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#import "chrome/common/cocoa_utils.h"
 #include "webkit/glue/window_open_disposition.h"
 
 @implementation HistoryMenuCocoaController
@@ -25,21 +25,11 @@
 
 // Open the URL of the given history item in the current tab.
 - (void)openURLForItem:(HistoryMenuBridge::HistoryItem&)node {
-  Browser* browser = BrowserList::GetLastActive();
-
-  if (!browser) {  // No windows open?
-    Browser::OpenEmptyWindow(bridge_->profile());
-    browser = BrowserList::GetLastActive();
-  }
-  DCHECK(browser);
-  TabContents* tab_contents = browser->GetSelectedTabContents();
-  DCHECK(tab_contents);
-
-  // A TabContents is a PageNavigator, so we can OpenURL() on it.
-  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
-      [[NSApp currentEvent] modifierFlags]);
-  tab_contents->OpenURL(node.url, GURL(), disposition,
-                        PageTransition::AUTO_BOOKMARK);
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(bridge_->profile());
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+  browser->OpenURL(node.url, GURL(), disposition,
+                   PageTransition::AUTO_BOOKMARK);
 }
 
 - (HistoryMenuBridge::HistoryItem)itemForTag:(NSInteger)tag {

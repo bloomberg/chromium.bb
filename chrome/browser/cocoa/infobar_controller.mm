@@ -7,11 +7,11 @@
 #include "base/logging.h"  // for NOTREACHED()
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/cocoa/infobar.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/infobar_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#import "chrome/common/cocoa_utils.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -177,8 +177,8 @@
 // is called by the InfobarTextField on its delegate (the
 // LinkInfoBarController).
 - (void)linkClicked {
-  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
-      [[NSApp currentEvent] modifierFlags]);
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   if (delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition))
     [self closeInfoBar];
 }

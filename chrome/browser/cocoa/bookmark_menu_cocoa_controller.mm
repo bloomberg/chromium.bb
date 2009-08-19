@@ -8,9 +8,9 @@
 #include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
+#include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#import "chrome/common/cocoa_utils.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {
@@ -50,21 +50,12 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 // Open the URL of the given BookmarkNode in the current tab.
 - (void)openURLForNode:(const BookmarkNode*)node {
-  Browser* browser = BrowserList::GetLastActive();
-
-  if (!browser) {  // No windows open?
-    Browser::OpenEmptyWindow(bridge_->GetDefaultProfile());
-    browser = BrowserList::GetLastActive();
-  }
-  DCHECK(browser);
-  TabContents* tab_contents = browser->GetSelectedTabContents();
-  DCHECK(tab_contents);
-
-  // A TabContents is a PageNavigator, so we can OpenURL() on it.
-  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
-      [[NSApp currentEvent] modifierFlags]);
-  tab_contents->OpenURL(node->GetURL(), GURL(), disposition,
-                        PageTransition::AUTO_BOOKMARK);
+  Browser* browser =
+      Browser::GetOrCreateTabbedBrowser(bridge_->GetDefaultProfile());
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+  browser->OpenURL(node->GetURL(), GURL(), disposition,
+                   PageTransition::AUTO_BOOKMARK);
 }
 
 - (IBAction)openBookmarkMenuItem:(id)sender {

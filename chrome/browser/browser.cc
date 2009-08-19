@@ -580,7 +580,7 @@ TabContents* Browser::AddTabWithURL(
   } else {
     // We're in an app window or a popup window. Find an existing browser to
     // open this URL in, creating one if none exists.
-    Browser* b = GetOrCreateTabbedBrowser();
+    Browser* b = GetOrCreateTabbedBrowser(profile_);
     contents = b->AddTabWithURL(url, referrer, transition, foreground, index,
                                 force_index, instance);
     b->window()->Show();
@@ -832,7 +832,7 @@ void Browser::NewTab() {
   if (type() == TYPE_NORMAL) {
     AddBlankTab(true);
   } else {
-    Browser* b = GetOrCreateTabbedBrowser();
+    Browser* b = GetOrCreateTabbedBrowser(profile_);
     b->AddBlankTab(true);
     b->window()->Show();
     // The call to AddBlankTab above did not set the focus to the tab as its
@@ -1779,7 +1779,7 @@ void Browser::AddNewContents(TabContents* source,
   if (tabstrip_model_.count() > 0 &&
       disposition != NEW_WINDOW && disposition != NEW_POPUP &&
       type_ != TYPE_NORMAL) {
-    Browser* b = GetOrCreateTabbedBrowser();
+    Browser* b = GetOrCreateTabbedBrowser(profile_);
     DCHECK(b);
     PageTransition::Type transition = PageTransition::LINK;
     // If we were called from an "installed webapp" we want to emulate the code
@@ -2585,11 +2585,12 @@ bool Browser::CanCloseWithInProgressDownloads() {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted utility functions (private):
 
-Browser* Browser::GetOrCreateTabbedBrowser() {
+// static
+Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
   Browser* browser = BrowserList::FindBrowserWithType(
-      profile_, TYPE_NORMAL);
+      profile, TYPE_NORMAL);
   if (!browser)
-    browser = Browser::Create(profile_);
+    browser = Browser::Create(profile);
   return browser;
 }
 
@@ -2637,7 +2638,7 @@ void Browser::OpenURLAtIndex(TabContents* source,
       return;
     }
 
-    Browser* b = GetOrCreateTabbedBrowser();
+    Browser* b = GetOrCreateTabbedBrowser(profile_);
     DCHECK(b);
 
     // If we have just created a new browser window, make sure we select the

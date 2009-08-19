@@ -403,6 +403,9 @@ class Browser : public TabStripModelDelegate,
   static Browser* GetBrowserForController(
       const NavigationController* controller, int* index);
 
+  // Retrieve the last active tabbed browser with a profile matching |profile|.
+  // Creates a new Browser if none are available.
+  static Browser* GetOrCreateTabbedBrowser(Profile* profile);
 
   // Helper function to create a new popup window.
   static void BuildPopupWindowHelper(TabContents* source,
@@ -612,10 +615,6 @@ class Browser : public TabStripModelDelegate,
   bool CanCloseWithInProgressDownloads();
 
   // Assorted utility functions ///////////////////////////////////////////////
-
-  // Retrieve the last active tabbed browser with the same profile as the
-  // receiving Browser. Creates a new Browser if none are available.
-  Browser* GetOrCreateTabbedBrowser();
 
   // The low-level function that other OpenURL...() functions call.  This
   // determines the appropriate SiteInstance to pass to AddTabWithURL(), focuses

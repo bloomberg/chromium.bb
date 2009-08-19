@@ -9,6 +9,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/cocoa/test_event_utils.h"
 #import "chrome/browser/cocoa/view_resizer_pong.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -501,6 +502,25 @@ TEST_F(BookmarkBarControllerTest, Contents) {
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(BookmarkBarControllerTest, Display) {
   [[bar_ view] display];
+}
+
+// Test that middle clicking on a bookmark button results in an open action.
+TEST_F(BookmarkBarControllerTest, MiddleClick) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  GURL gurl1("http://www.google.com/");
+  std::wstring title1(L"x");
+  model->SetURLStarred(gurl1, title1, true);
+
+  EXPECT_EQ(1U, [[bar_ buttons] count]);
+  NSButton* first = [[bar_ buttons] objectAtIndex:0];
+  EXPECT_TRUE(first);
+
+  scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
+                                                  init]);
+  [bar_ setUrlDelegate:pong.get()];
+  [first otherMouseUp:test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0)];
+  EXPECT_EQ(pong.get()->urls_.size(), 1U);
+  [bar_ setUrlDelegate:nil];
 }
 
 // Cannot test these methods since they simply call a single static

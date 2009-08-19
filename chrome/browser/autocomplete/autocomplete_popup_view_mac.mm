@@ -8,8 +8,8 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
-#import "chrome/common/cocoa_utils.h"
 
 namespace {
 
@@ -268,9 +268,9 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
 
     // We need the popup to follow window resize.
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:matrix_target_ 
-           selector:@selector(windowDidResize:) 
-               name:NSWindowDidResizeNotification 
+    [nc addObserver:matrix_target_
+           selector:@selector(windowDidResize:)
+               name:NSWindowDidResizeNotification
              object:[field_ window]];
   }
 }
@@ -287,7 +287,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
 
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc removeObserver:matrix_target_
-                  name:NSWindowDidResizeNotification 
+                  name:NSWindowDidResizeNotification
                 object:[field_ window]];
 
     popup_.reset(nil);
@@ -380,8 +380,8 @@ void AutocompletePopupViewMac::AcceptInput() {
     PaintUpdatesNow();
   } else {
     model_->SetSelectedLine(selectedRow, false);
-    WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
-          [[NSApp currentEvent] modifierFlags]);
+    WindowOpenDisposition disposition =
+        event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
     edit_view_->AcceptInput(disposition, false);
   }
 }

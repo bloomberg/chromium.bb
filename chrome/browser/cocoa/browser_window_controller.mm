@@ -871,10 +871,7 @@ willPositionSheet:(NSWindow*)sheet
 // Called by the bookmark bar to open a URL.
 - (void)openBookmarkURL:(const GURL&)url
             disposition:(WindowOpenDisposition)disposition {
-  TabContents* tab_contents = browser_->GetSelectedTabContents();
-  DCHECK(tab_contents);
-  tab_contents->OpenURL(url, GURL(), disposition,
-                        PageTransition::AUTO_BOOKMARK);
+  browser_->OpenURL(url, GURL(), disposition, PageTransition::AUTO_BOOKMARK);
 }
 
 - (NSInteger)numberOfTabs {

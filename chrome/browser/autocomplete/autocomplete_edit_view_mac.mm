@@ -15,8 +15,8 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cocoa/autocomplete_text_field.h"
+#include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#import "chrome/common/cocoa_utils.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
 // Other platforms detect change of focus, which is inconvenient
@@ -692,8 +692,8 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
   NSEvent* event = [NSApp currentEvent];
   if (cmd == @selector(insertNewline:) ||
      (cmd == @selector(noop:) && [event keyCode] == kVK_Return)) {
-    WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
-        [event modifierFlags]);
+    WindowOpenDisposition disposition =
+        event_utils::WindowOpenDispositionFromNSEvent(event);
     edit_view_->AcceptInput(disposition, false);
     return YES;
   }
@@ -704,8 +704,8 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
   // is safe to tell it twice.
   if (cmd == @selector(insertLineBreak:)) {
     edit_view_->OnControlKeyChanged(true);
-    WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
-          [[NSApp currentEvent] modifierFlags]);
+    WindowOpenDisposition disposition =
+        event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
     edit_view_->AcceptInput(disposition, false);
     return YES;
   }

@@ -9,8 +9,8 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
+#include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/command_updater.h"
-#import "chrome/common/cocoa_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // TODO(shess): This code is mostly copied from the gtk
@@ -49,8 +49,8 @@ PageTransition::Type LocationBarViewMac::GetPageTransition() const {
 }
 
 void LocationBarViewMac::AcceptInput() {
-  WindowOpenDisposition disposition = event_utils::DispositionFromEventFlags(
-      [[NSApp currentEvent] modifierFlags]);
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   AcceptInputWithDisposition(disposition);
 }
 
