@@ -21,6 +21,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/profile_manager.h"
@@ -339,6 +340,10 @@ class OffTheRecordProfileImpl : public Profile,
     return extensions_request_context_;
   }
 
+  virtual net::SSLConfigService* GetSSLConfigService() {
+    return GetOriginalProfile()->GetSSLConfigService();
+  }
+
   virtual Blacklist* GetBlacklist() {
     return GetOriginalProfile()->GetBlacklist();
   }
@@ -539,6 +544,9 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   // Listen for bookmark model load, to bootstrap the sync service.
   registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
                  Source<Profile>(this));
+
+  ssl_config_service_manager_.reset(
+      SSLConfigServiceManager::CreateDefaultManager(this));
 }
 
 void ProfileImpl::InitExtensions() {
@@ -851,6 +859,10 @@ URLRequestContext* ProfileImpl::GetRequestContextForExtensions() {
   }
 
   return extensions_request_context_;
+}
+
+net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
+  return ssl_config_service_manager_->Get();
 }
 
 Blacklist* ProfileImpl::GetBlacklist() {

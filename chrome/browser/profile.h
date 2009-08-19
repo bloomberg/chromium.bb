@@ -20,6 +20,7 @@
 
 namespace net {
 class ForceTLSState;
+class SSLConfigService;
 }
 class Blacklist;
 class BookmarkModel;
@@ -37,6 +38,7 @@ class PrefService;
 class ProfileSyncService;
 class SessionService;
 class SpellChecker;
+class SSLConfigServiceManager;
 class SSLHostState;
 class SQLitePersistentCookieStore;
 class TabRestoreService;
@@ -223,6 +225,9 @@ class Profile {
   // is only used for a separate cookie store currently.
   virtual URLRequestContext* GetRequestContextForExtensions() = 0;
 
+  // Returns the SSLConfigService for this profile.
+  virtual net::SSLConfigService* GetSSLConfigService() = 0;
+
   // Returns the Privacy Blaclist for this profile.
   virtual Blacklist* GetBlacklist() = 0;
 
@@ -360,6 +365,7 @@ class ProfileImpl : public Profile,
   virtual URLRequestContext* GetRequestContext();
   virtual URLRequestContext* GetRequestContextForMedia();
   virtual URLRequestContext* GetRequestContextForExtensions();
+  virtual net::SSLConfigService* GetSSLConfigService();
   virtual Blacklist* GetBlacklist();
   virtual SessionService* GetSessionService();
   virtual void ShutdownSessionService();
@@ -441,6 +447,8 @@ class ProfileImpl : public Profile,
   ChromeURLRequestContext* media_request_context_;
 
   ChromeURLRequestContext* extensions_request_context_;
+
+  scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
   Blacklist* blacklist_;
 

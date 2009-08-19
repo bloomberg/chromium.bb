@@ -23,6 +23,12 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kCookieBehavior,
     prefs::kDefaultCharset,
     prefs::kDnsPrefetchingEnabled,
+#if defined(OS_LINUX)
+    prefs::kCertRevocationCheckingEnabled,
+    prefs::kSSL2Enabled,
+    prefs::kSSL3Enabled,
+    prefs::kTLS1Enabled,
+#endif
     prefs::kDownloadDefaultDirectory,
     prefs::kDownloadExtensionsToOpen,
     prefs::kEnableSpellCheck,

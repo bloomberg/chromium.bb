@@ -120,6 +120,9 @@ class AutomationProfileImpl : public Profile {
   virtual URLRequestContext* GetRequestContextForExtensions() {
     return original_profile_->GetRequestContextForExtensions();
   }
+  virtual net::SSLConfigService* GetSSLConfigService() {
+    return original_profile_->GetSSLConfigService();
+  }
   virtual Blacklist* GetBlacklist() {
     return original_profile_->GetBlacklist();
   }
@@ -199,4 +202,3 @@ class AutomationProfileImpl : public Profile {
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROFILE_IMPL_H_
-

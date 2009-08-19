@@ -62,6 +62,16 @@ GtkWidget* CreateCheckButtonWithWrappedLabel(int string_id) {
   return checkbox;
 }
 
+GtkWidget* AddCheckButtonWithWrappedLabel(int string_id,
+                                          GtkWidget* container,
+                                          GCallback handler,
+                                          gpointer data) {
+  GtkWidget* checkbox = CreateCheckButtonWithWrappedLabel(string_id);
+  gtk_box_pack_start(GTK_BOX(container), checkbox, FALSE, FALSE, 0);
+  g_signal_connect(checkbox, "toggled", handler, data);
+  return checkbox;
+}
+
 // Don't let the widget handle scroll events. Instead, pass it on to the
 // parent widget.
 gboolean PassScrollToParent(GtkWidget* widget, GdkEvent* event,
@@ -142,13 +152,13 @@ class DownloadSection : public OptionsPageBase {
 
   // Flag to ignore gtk callbacks while we are loading prefs, to avoid
   // then turning around and saving them again.
-  bool initializing_;
+  bool pref_changing_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadSection);
 };
 
 DownloadSection::DownloadSection(Profile* profile)
-    : OptionsPageBase(profile), initializing_(true) {
+    : OptionsPageBase(profile), pref_changing_(true) {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   // Download location options.
@@ -223,7 +233,7 @@ DownloadSection::DownloadSection(Profile* profile)
 }
 
 void DownloadSection::NotifyPrefChanged(const std::wstring* pref_name) {
-  initializing_ = true;
+  pref_changing_ = true;
   if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
     gtk_file_chooser_set_current_folder(
         GTK_FILE_CHOOSER(download_location_button_),
@@ -243,13 +253,13 @@ void DownloadSection::NotifyPrefChanged(const std::wstring* pref_name) {
     gtk_widget_set_sensitive(reset_file_handlers_label_, enabled);
     gtk_widget_set_sensitive(reset_file_handlers_button_, enabled);
   }
-  initializing_ = false;
+  pref_changing_ = false;
 }
 
 // static
 void DownloadSection::OnDownloadLocationChanged(GtkFileChooser* widget,
                                                 DownloadSection* section) {
-  if (section->initializing_)
+  if (section->pref_changing_)
     return;
 
   gchar* folder = gtk_file_chooser_get_filename(widget);
@@ -267,7 +277,7 @@ void DownloadSection::OnDownloadLocationChanged(GtkFileChooser* widget,
 // static
 void DownloadSection::OnDownloadAskForSaveLocationChanged(
     GtkWidget* widget, DownloadSection* section) {
-  if (section->initializing_)
+  if (section->pref_changing_)
     return;
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if (enabled) {
@@ -464,14 +474,14 @@ class PrivacySection : public OptionsPageBase {
 
   // Flag to ignore gtk callbacks while we are loading prefs, to avoid
   // then turning around and saving them again.
-  bool initializing_;
+  bool pref_changing_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivacySection);
 };
 
 PrivacySection::PrivacySection(Profile* profile)
     : OptionsPageBase(profile),
-      initializing_(true) {
+      pref_changing_(true) {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   GtkWidget* section_description_label = CreateWrappedLabel(
@@ -591,7 +601,7 @@ void PrivacySection::OnLearnMoreLinkClicked(GtkButton *button,
 // static
 void PrivacySection::OnEnableLinkDoctorChange(GtkWidget* widget,
                                               PrivacySection* privacy_section) {
-  if (privacy_section->initializing_)
+  if (privacy_section->pref_changing_)
     return;
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   privacy_section->UserMetricsRecordAction(
@@ -605,7 +615,7 @@ void PrivacySection::OnEnableLinkDoctorChange(GtkWidget* widget,
 // static
 void PrivacySection::OnEnableSuggestChange(GtkWidget* widget,
                                            PrivacySection* privacy_section) {
-  if (privacy_section->initializing_)
+  if (privacy_section->pref_changing_)
     return;
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   privacy_section->UserMetricsRecordAction(
@@ -619,7 +629,7 @@ void PrivacySection::OnEnableSuggestChange(GtkWidget* widget,
 // static
 void PrivacySection::OnDNSPrefetchingChange(GtkWidget* widget,
                                            PrivacySection* privacy_section) {
-  if (privacy_section->initializing_)
+  if (privacy_section->pref_changing_)
     return;
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   privacy_section->UserMetricsRecordAction(
@@ -634,7 +644,7 @@ void PrivacySection::OnDNSPrefetchingChange(GtkWidget* widget,
 // static
 void PrivacySection::OnSafeBrowsingChange(GtkWidget* widget,
                                           PrivacySection* privacy_section) {
-  if (privacy_section->initializing_)
+  if (privacy_section->pref_changing_)
     return;
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   privacy_section->UserMetricsRecordAction(
@@ -652,7 +662,7 @@ void PrivacySection::OnSafeBrowsingChange(GtkWidget* widget,
 // static
 void PrivacySection::OnLoggingChange(GtkWidget* widget,
                                      PrivacySection* privacy_section) {
-  if (privacy_section->initializing_)
+  if (privacy_section->pref_changing_)
     return;
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   privacy_section->UserMetricsRecordAction(
@@ -677,7 +687,7 @@ void PrivacySection::OnLoggingChange(GtkWidget* widget,
 // static
 void PrivacySection::OnCookieBehaviorChanged(GtkComboBox* combo_box,
                                              PrivacySection* privacy_section) {
-  if (privacy_section->initializing_)
+  if (privacy_section->pref_changing_)
     return;
   net::CookiePolicy::Type cookie_policy =
       net::CookiePolicy::FromInt(gtk_combo_box_get_active(combo_box));
@@ -704,7 +714,7 @@ void PrivacySection::OnShowCookiesButtonClicked(
 }
 
 void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
-  initializing_ = true;
+  pref_changing_ = true;
   if (!pref_name || *pref_name == prefs::kAlternateErrorPagesEnabled) {
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(enable_link_doctor_checkbox_),
@@ -737,7 +747,7 @@ void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
         GTK_COMBO_BOX(cookie_behavior_combobox_),
         net::CookiePolicy::FromInt(cookie_behavior_.GetValue()));
   }
-  initializing_ = false;
+  pref_changing_ = false;
 }
 
 void PrivacySection::ResolveMetricsReportingEnabled() {
@@ -780,18 +790,43 @@ class SecuritySection : public OptionsPageBase {
   }
 
  private:
+  // Overridden from OptionsPageBase.
+  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+
   // The callback functions for the options widgets.
   static void OnManageCertificatesClicked(GtkButton* button,
                                           SecuritySection* section);
+  static void OnRevCheckingEnabledToggled(GtkToggleButton* togglebutton,
+                                          SecuritySection* section);
+  static void OnSSL2EnabledToggled(GtkToggleButton* togglebutton,
+                                   SecuritySection* section);
+  static void OnSSL3EnabledToggled(GtkToggleButton* togglebutton,
+                                   SecuritySection* section);
+  static void OnTLS1EnabledToggled(GtkToggleButton* togglebutton,
+                                   SecuritySection* section);
 
   // The widget containing the options for this section.
   GtkWidget* page_;
+  GtkWidget* rev_checking_enabled_checkbox_;
+  GtkWidget* ssl2_enabled_checkbox_;
+  GtkWidget* ssl3_enabled_checkbox_;
+  GtkWidget* tls1_enabled_checkbox_;
+
+  // SSLConfigService prefs.
+  BooleanPrefMember rev_checking_enabled_;
+  BooleanPrefMember ssl2_enabled_;
+  BooleanPrefMember ssl3_enabled_;
+  BooleanPrefMember tls1_enabled_;
+
+  // Flag to ignore gtk callbacks while we are loading prefs, to avoid
+  // then turning around and saving them again.
+  bool pref_changing_;
 
   DISALLOW_COPY_AND_ASSIGN(SecuritySection);
 };
 
 SecuritySection::SecuritySection(Profile* profile)
-    : OptionsPageBase(profile) {
+    : OptionsPageBase(profile), pref_changing_(true) {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   GtkWidget* manage_certificates_label = CreateWrappedLabel(
@@ -814,8 +849,51 @@ SecuritySection::SecuritySection(Profile* profile)
   g_signal_connect(manage_certificates_link, "clicked",
                    G_CALLBACK(OnManageCertificatesClicked), this);
 
-  // TODO(mattm): add SSLConfigService options when that is ported to Linux
+  // TODO(mattm): should have a description label here and have the checkboxes
+  // indented, but IDS_OPTIONS_SSL_GROUP_DESCRIPTION isn't appropriate and
+  // didn't think of adding a Linux specific one before the string freeze.
+  rev_checking_enabled_checkbox_ = AddCheckButtonWithWrappedLabel(
+      IDS_OPTIONS_SSL_CHECKREVOCATION, page_,
+      G_CALLBACK(OnRevCheckingEnabledToggled), this);
+  ssl2_enabled_checkbox_ = AddCheckButtonWithWrappedLabel(
+      IDS_OPTIONS_SSL_USESSL2, page_, G_CALLBACK(OnSSL2EnabledToggled), this);
+  ssl3_enabled_checkbox_ = AddCheckButtonWithWrappedLabel(
+      IDS_OPTIONS_SSL_USESSL3, page_, G_CALLBACK(OnSSL3EnabledToggled), this);
+  tls1_enabled_checkbox_ = AddCheckButtonWithWrappedLabel(
+      IDS_OPTIONS_SSL_USETLS1, page_, G_CALLBACK(OnTLS1EnabledToggled), this);
+
+
+  rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
+                             profile->GetPrefs(), this);
+  ssl2_enabled_.Init(prefs::kSSL2Enabled, profile->GetPrefs(), this);
+  ssl3_enabled_.Init(prefs::kSSL3Enabled, profile->GetPrefs(), this);
+  tls1_enabled_.Init(prefs::kTLS1Enabled, profile->GetPrefs(), this);
+
+  NotifyPrefChanged(NULL);
 }
+
+void SecuritySection::NotifyPrefChanged(const std::wstring* pref_name) {
+  pref_changing_ = true;
+  if (!pref_name || *pref_name == prefs::kCertRevocationCheckingEnabled) {
+    gtk_toggle_button_set_active(
+        GTK_TOGGLE_BUTTON(rev_checking_enabled_checkbox_),
+        rev_checking_enabled_.GetValue());
+  }
+  if (!pref_name || *pref_name == prefs::kSSL2Enabled) {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ssl2_enabled_checkbox_),
+                                 ssl2_enabled_.GetValue());
+  }
+  if (!pref_name || *pref_name == prefs::kSSL3Enabled) {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ssl3_enabled_checkbox_),
+                                 ssl3_enabled_.GetValue());
+  }
+  if (!pref_name || *pref_name == prefs::kTLS1Enabled) {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tls1_enabled_checkbox_),
+                                 tls1_enabled_.GetValue());
+  }
+  pref_changing_ = false;
+}
+
 
 // static
 void SecuritySection::OnManageCertificatesClicked(GtkButton* button,
@@ -823,6 +901,68 @@ void SecuritySection::OnManageCertificatesClicked(GtkButton* button,
   BrowserList::GetLastActive()->
       OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_CERTIFICATES_CONFIG_URL)),
               GURL(), NEW_WINDOW, PageTransition::LINK);
+}
+
+// static
+void SecuritySection::OnRevCheckingEnabledToggled(GtkToggleButton* togglebutton,
+                                                  SecuritySection* section) {
+  if (section->pref_changing_)
+    return;
+
+  bool enabled = gtk_toggle_button_get_active(togglebutton);
+  if (enabled) {
+    section->UserMetricsRecordAction(L"Options_CheckCertRevocation_Enable",
+                                     NULL);
+  } else {
+    section->UserMetricsRecordAction(L"Options_CheckCertRevocation_Disable",
+                                     NULL);
+  }
+  section->rev_checking_enabled_.SetValue(enabled);
+}
+
+// static
+void SecuritySection::OnSSL2EnabledToggled(GtkToggleButton* togglebutton,
+                                           SecuritySection* section) {
+  if (section->pref_changing_)
+    return;
+
+  bool enabled = gtk_toggle_button_get_active(togglebutton);
+  if (enabled) {
+    section->UserMetricsRecordAction(L"Options_SSL2_Enable", NULL);
+  } else {
+    section->UserMetricsRecordAction(L"Options_SSL2_Disable", NULL);
+  }
+  section->ssl2_enabled_.SetValue(enabled);
+}
+
+// static
+void SecuritySection::OnSSL3EnabledToggled(GtkToggleButton* togglebutton,
+                                           SecuritySection* section) {
+  if (section->pref_changing_)
+    return;
+
+  bool enabled = gtk_toggle_button_get_active(togglebutton);
+  if (enabled) {
+    section->UserMetricsRecordAction(L"Options_SSL3_Enable", NULL);
+  } else {
+    section->UserMetricsRecordAction(L"Options_SSL3_Disable", NULL);
+  }
+  section->ssl3_enabled_.SetValue(enabled);
+}
+
+// static
+void SecuritySection::OnTLS1EnabledToggled(GtkToggleButton* togglebutton,
+                                           SecuritySection* section) {
+  if (section->pref_changing_)
+    return;
+
+  bool enabled = gtk_toggle_button_get_active(togglebutton);
+  if (enabled) {
+    section->UserMetricsRecordAction(L"Options_TLS1_Enable", NULL);
+  } else {
+    section->UserMetricsRecordAction(L"Options_TLS1_Disable", NULL);
+  }
+  section->tls1_enabled_.SetValue(enabled);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

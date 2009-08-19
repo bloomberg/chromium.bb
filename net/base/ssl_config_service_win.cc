@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/ssl_config_service.h"
+#include "net/base/ssl_config_service_win.h"
 
 #include "base/registry.h"
 
@@ -40,22 +40,24 @@ enum {
   PROTOCOLS_DEFAULT = SSL3 | TLS1
 };
 
-SSLConfigService::SSLConfigService() {
-  UpdateConfig(TimeTicks::Now());
+SSLConfigServiceWin::SSLConfigServiceWin() : ever_updated_(false) {
+  // We defer retrieving the settings until the first call to GetSSLConfig, to
+  // avoid a blocking call on the UI thread.
 }
 
-SSLConfigService::SSLConfigService(TimeTicks now) {
+SSLConfigServiceWin::SSLConfigServiceWin(TimeTicks now) : ever_updated_(false) {
   UpdateConfig(now);
 }
 
-void SSLConfigService::GetSSLConfigAt(SSLConfig* config, TimeTicks now) {
-  if (now - config_time_ > TimeDelta::FromSeconds(kConfigUpdateInterval))
+void SSLConfigServiceWin::GetSSLConfigAt(SSLConfig* config, TimeTicks now) {
+  if (!ever_updated_ ||
+      now - config_time_ > TimeDelta::FromSeconds(kConfigUpdateInterval))
     UpdateConfig(now);
   *config = config_info_;
 }
 
 // static
-bool SSLConfigService::GetSSLConfigNow(SSLConfig* config) {
+bool SSLConfigServiceWin::GetSSLConfigNow(SSLConfig* config) {
   RegKey internet_settings;
   if (!internet_settings.Open(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
                               KEY_READ))
@@ -78,15 +80,17 @@ bool SSLConfigService::GetSSLConfigNow(SSLConfig* config) {
 }
 
 // static
-void SSLConfigService::SetRevCheckingEnabled(bool enabled) {
+void SSLConfigServiceWin::SetRevCheckingEnabled(bool enabled) {
   DWORD value = enabled;
   RegKey internet_settings(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
                            KEY_WRITE);
   internet_settings.WriteValue(kRevocationValueName, value);
+  // TODO(mattm): We should call UpdateConfig after updating settings, but these
+  // methods are static.
 }
 
 // static
-void SSLConfigService::SetSSL2Enabled(bool enabled) {
+void SSLConfigServiceWin::SetSSL2Enabled(bool enabled) {
   RegKey internet_settings(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
                            KEY_READ | KEY_WRITE);
   DWORD value;
@@ -97,11 +101,14 @@ void SSLConfigService::SetSSL2Enabled(bool enabled) {
   else
     value &= ~SSL2;
   internet_settings.WriteValue(kProtocolsValueName, value);
+  // TODO(mattm): We should call UpdateConfig after updating settings, but these
+  // methods are static.
 }
 
-void SSLConfigService::UpdateConfig(TimeTicks now) {
+void SSLConfigServiceWin::UpdateConfig(TimeTicks now) {
   GetSSLConfigNow(&config_info_);
   config_time_ = now;
+  ever_updated_ = true;
 }
 
 }  // namespace net

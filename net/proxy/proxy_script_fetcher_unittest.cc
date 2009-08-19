@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/path_service.h"
 #include "net/base/net_util.h"
+#include "net/base/ssl_config_service_defaults.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_unittest.h"
@@ -32,10 +33,11 @@ class RequestContext : public URLRequestContext {
     net::ProxyConfig no_proxy;
     host_resolver_ = net::CreateSystemHostResolver();
     proxy_service_ = net::ProxyService::CreateFixed(no_proxy);
+    ssl_config_service_ = new net::SSLConfigServiceDefaults;
 
     http_transaction_factory_ =
         new net::HttpCache(net::HttpNetworkLayer::CreateFactory(
-            host_resolver_, proxy_service_),
+            host_resolver_, proxy_service_, ssl_config_service_),
             disk_cache::CreateInMemoryCacheBackend(0));
   }
   ~RequestContext() {

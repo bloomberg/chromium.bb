@@ -1425,6 +1425,8 @@
         'browser/net/resolve_proxy_msg_helper.h',
         'browser/net/sdch_dictionary_fetcher.cc',
         'browser/net/sdch_dictionary_fetcher.h',
+        'browser/net/ssl_config_service_manager.h',
+        'browser/net/ssl_config_service_manager_win.cc',
         'browser/net/url_fetcher.cc',
         'browser/net/url_fetcher.h',
         'browser/net/url_fetcher_protect.cc',
@@ -2070,6 +2072,9 @@
             'browser/password_manager/password_store_win.cc',
             'browser/password_manager/password_store_win.h',
           ],
+          'sources': [
+            'browser/net/ssl_config_service_manager_pref.cc',
+          ],
           'conditions': [
             ['linux_breakpad==1', {
               'sources': [
@@ -2125,6 +2130,7 @@
             'browser/views/extensions/extension_view.h',
           ],
           'sources': [
+            'browser/net/ssl_config_service_manager_defaults.cc',
             # Build the necessary GTM sources
             '../third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.m',
             '../third_party/GTM/AppKit/GTMNSColor+Luminance.m',

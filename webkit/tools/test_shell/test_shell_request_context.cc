@@ -4,8 +4,15 @@
 
 #include "webkit/tools/test_shell/test_shell_request_context.h"
 
+#include "build/build_config.h"
+
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
+#if defined(OS_WIN)
+#include "net/base/ssl_config_service_win.h"
+#else
+#include "net/base/ssl_config_service_defaults.h"
+#endif
 #include "net/ftp/ftp_network_layer.h"
 #include "net/proxy/proxy_service.h"
 #include "webkit/glue/webkit_glue.h"
@@ -46,12 +53,19 @@ void TestShellRequestContext::Init(
   host_resolver_ = net::CreateSystemHostResolver();
   proxy_service_ = net::ProxyService::Create(no_proxy ? &proxy_config : NULL,
                                              false, NULL, NULL);
+#if defined(OS_WIN)
+  ssl_config_service_ = new net::SSLConfigServiceWin;
+#else
+  ssl_config_service_ = new net::SSLConfigServiceDefaults;
+#endif
 
   net::HttpCache *cache;
   if (cache_path.empty()) {
-    cache = new net::HttpCache(host_resolver_, proxy_service_, 0);
+    cache = new net::HttpCache(host_resolver_, proxy_service_,
+                               ssl_config_service_, 0);
   } else {
-    cache = new net::HttpCache(host_resolver_, proxy_service_, cache_path, 0);
+    cache = new net::HttpCache(host_resolver_, proxy_service_,
+                               ssl_config_service_, cache_path, 0);
   }
   cache->set_mode(cache_mode);
   http_transaction_factory_ = cache;

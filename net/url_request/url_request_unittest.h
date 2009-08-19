@@ -24,6 +24,7 @@
 #include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/ssl_config_service_defaults.h"
 #include "net/http/http_network_layer.h"
 #include "net/socket/ssl_test_util.h"
 #include "net/url_request/url_request.h"
@@ -45,9 +46,10 @@ class TestURLRequestContext : public URLRequestContext {
   TestURLRequestContext() {
     host_resolver_ = net::CreateSystemHostResolver();
     proxy_service_ = net::ProxyService::CreateNull();
+    ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_transaction_factory_ =
         net::HttpNetworkLayer::CreateFactory(host_resolver_,
-            proxy_service_);
+            proxy_service_, ssl_config_service_);
   }
 
   explicit TestURLRequestContext(const std::string& proxy) {
@@ -55,9 +57,10 @@ class TestURLRequestContext : public URLRequestContext {
     net::ProxyConfig proxy_config;
     proxy_config.proxy_rules.ParseFromString(proxy);
     proxy_service_ = net::ProxyService::CreateFixed(proxy_config);
+    ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_transaction_factory_ =
         net::HttpNetworkLayer::CreateFactory(host_resolver_,
-            proxy_service_);
+            proxy_service_, ssl_config_service_);
   }
 
   virtual ~TestURLRequestContext() {

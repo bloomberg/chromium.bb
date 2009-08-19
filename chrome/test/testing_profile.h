@@ -153,6 +153,9 @@ class TestingProfile : public Profile {
   virtual URLRequestContext* GetRequestContextForExtensions() {
     return NULL;
   }
+  virtual net::SSLConfigService* GetSSLConfigService() {
+    return NULL;
+  }
   virtual Blacklist* GetBlacklist() {
     return NULL;
   }

@@ -65,6 +65,12 @@ extern const wchar_t kAlternateErrorPagesEnabled[];
 extern const wchar_t kDnsPrefetchingEnabled[];
 extern const wchar_t kDnsStartupPrefetchList[];
 extern const wchar_t kDnsHostReferralList[];
+#if defined(OS_LINUX)
+extern const wchar_t kCertRevocationCheckingEnabled[];
+extern const wchar_t kSSL2Enabled[];
+extern const wchar_t kSSL3Enabled[];
+extern const wchar_t kTLS1Enabled[];
+#endif
 extern const wchar_t kIpcDisabledMessages[];
 extern const wchar_t kShowHomeButton[];
 extern const wchar_t kShowPageOptionsButtons[];

@@ -58,8 +58,10 @@ HttpBridge::RequestContext::RequestContext(
   // We don't use a cache for bridged loads, but we do want to share proxy info.
   host_resolver_ = baseline_context->host_resolver();
   proxy_service_ = baseline_context->proxy_service();
+  ssl_config_service_ = baseline_context->ssl_config_service();
   http_transaction_factory_ =
-      net::HttpNetworkLayer::CreateFactory(host_resolver_, proxy_service_);
+      net::HttpNetworkLayer::CreateFactory(host_resolver_, proxy_service_,
+                                           ssl_config_service_);
 
   // TODO(timsteele): We don't currently listen for pref changes of these
   // fields or CookiePolicy; I'm not sure we want to strictly follow the

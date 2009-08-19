@@ -193,6 +193,16 @@ const wchar_t kDnsStartupPrefetchList[] = L"StartupDNSPrefetchList";
 // This list is adaptively grown and pruned.
 extern const wchar_t kDnsHostReferralList[] = L"HostReferralList";
 
+#if defined(OS_LINUX)
+// Prefs for SSLConfigServicePref.  Currently, these are only present on
+// and used by Linux.
+extern const wchar_t kCertRevocationCheckingEnabled[] =
+    L"ssl.rev_checking.enabled";
+extern const wchar_t kSSL2Enabled[] = L"ssl.ssl2.enabled";
+extern const wchar_t kSSL3Enabled[] = L"ssl.ssl3.enabled";
+extern const wchar_t kTLS1Enabled[] = L"ssl.tls1.enabled";
+#endif
+
 // The disabled messages in IPC logging.
 const wchar_t kIpcDisabledMessages[] = L"ipc_log_disabled_messages";
 

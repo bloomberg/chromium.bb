@@ -39,7 +39,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "net/base/ssl_config_service.h"
+#include "net/base/ssl_config_service_win.h"
 #include "net/base/cookie_policy.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -889,7 +889,7 @@ void SecuritySection::ButtonPressed(views::Button* sender) {
     } else {
       UserMetricsRecordAction(L"Options_SSL2_Disable", NULL);
     }
-    net::SSLConfigService::SetSSL2Enabled(enabled);
+    net::SSLConfigServiceWin::SetSSL2Enabled(enabled);
   } else if (sender == check_for_cert_revocation_checkbox_) {
     bool enabled = check_for_cert_revocation_checkbox_->checked();
     if (enabled) {
@@ -897,7 +897,7 @@ void SecuritySection::ButtonPressed(views::Button* sender) {
     } else {
       UserMetricsRecordAction(L"Options_CheckCertRevocation_Disable", NULL);
     }
-    net::SSLConfigService::SetRevCheckingEnabled(enabled);
+    net::SSLConfigServiceWin::SetRevCheckingEnabled(enabled);
   } else if (sender == manage_certificates_button_) {
     UserMetricsRecordAction(L"Options_ManagerCerts", NULL);
     CRYPTUI_CERT_MGR_STRUCT cert_mgr = { 0 };
@@ -955,7 +955,7 @@ void SecuritySection::NotifyPrefChanged(const std::wstring* pref_name) {
   // These SSL options are system settings and stored in the OS.
   if (!pref_name) {
     net::SSLConfig config;
-    if (net::SSLConfigService::GetSSLConfigNow(&config)) {
+    if (net::SSLConfigServiceWin::GetSSLConfigNow(&config)) {
       enable_ssl2_checkbox_->SetChecked(config.ssl2_enabled);
       check_for_cert_revocation_checkbox_->SetChecked(
           config.rev_checking_enabled);

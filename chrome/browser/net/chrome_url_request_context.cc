@@ -121,6 +121,7 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
   net::HttpCache* cache =
       new net::HttpCache(context->host_resolver_,
                          context->proxy_service_,
+                         context->ssl_config_service_,
                          disk_cache_path.ToWStringHack(), cache_size);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -207,7 +208,8 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOffTheRecord(
       profile->GetOriginalProfile()->GetRequestContext()->proxy_service();
 
   context->http_transaction_factory_ =
-      new net::HttpCache(context->host_resolver_, context->proxy_service_, 0);
+      new net::HttpCache(context->host_resolver_, context->proxy_service_,
+                         context->ssl_config_service_, 0);
   context->cookie_store_ = new net::CookieMonster;
 
   // The kNewFtp switch is Windows specific because we have multiple FTP
@@ -274,6 +276,7 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateRequestContextForMedia(
     // new set of network stack.
     cache = new net::HttpCache(original_context->host_resolver(),
                                original_context->proxy_service(),
+                               original_context->ssl_config_service(),
                                disk_cache_path.ToWStringHack(), cache_size);
   }
 
@@ -337,6 +340,8 @@ ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                    NotificationService::AllSources());
   }
+
+  ssl_config_service_ = profile->GetSSLConfigService();
 }
 
 ChromeURLRequestContext::ChromeURLRequestContext(
@@ -344,6 +349,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   // Set URLRequestContext members
   host_resolver_ = other->host_resolver_;
   proxy_service_ = other->proxy_service_;
+  ssl_config_service_ = other->ssl_config_service_;
   http_transaction_factory_ = other->http_transaction_factory_;
   ftp_transaction_factory_ = other->ftp_transaction_factory_;
   cookie_store_ = other->cookie_store_;
