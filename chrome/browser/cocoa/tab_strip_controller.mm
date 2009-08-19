@@ -52,6 +52,8 @@ static const float kUseFullAvailableWidth = -1.0;
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
+- (void)updateFavIconForContents:(TabContents*)contents
+                         atIndex:(NSInteger)index;
 @end
 
 @implementation TabStripController
@@ -492,6 +494,13 @@ static const float kUseFullAvailableWidth = -1.0;
     [self layoutTabs];
   }
 
+  // During normal loading, we won't yet have a favicon and we'll get
+  // subsequent state change notifications to show the throbber, but when we're
+  // dragging a tab out into a new window, we have to put the tab's favicon
+  // into the right state up front as we won't be told to do it from anywhere
+  // else.
+  [self updateFavIconForContents:contents atIndex:index];
+
   // Send a broadcast that the number of tabs have changed.
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kTabStripNumberOfTabsChanged
@@ -598,6 +607,57 @@ static const float kUseFullAvailableWidth = -1.0;
   return view;
 }
 
+// Update the current loading state, replacing the favicon with a throbber, or
+// vice versa. This will get called repeatedly with the same state during a
+// load, so we need to make sure we're not creating the throbber view over and
+// over. However, when the page is done, every state change is important.
+- (void)updateFavIconForContents:(TabContents*)contents
+                         atIndex:(NSInteger)index {
+  if (!contents)
+    return;
+
+  static NSImage* throbberWaitingImage =
+      [nsimage_cache::ImageNamed(@"throbber_waiting.png") retain];
+  static NSImage* throbberLoadingImage =
+      [nsimage_cache::ImageNamed(@"throbber.png") retain];
+  static NSImage* sadFaviconImage =
+      [nsimage_cache::ImageNamed(@"sadfavicon.png") retain];
+
+  TabController* tabController = [tabArray_ objectAtIndex:index];
+  TabLoadingState oldState = [tabController loadingState];
+  TabLoadingState newState = kTabDone;
+  NSImage* throbberImage = nil;
+  if (contents->waiting_for_response()) {
+    newState = kTabWaiting;
+    throbberImage = throbberWaitingImage;
+  } else if (contents->is_loading()) {
+    newState = kTabLoading;
+    throbberImage = throbberLoadingImage;
+  } else if (contents->is_crashed()) {
+    newState = kTabCrashed;
+  }
+
+  if (oldState != newState || newState == kTabDone) {
+    NSView* iconView = nil;
+    if (newState == kTabDone) {
+      iconView = [self favIconImageViewForContents:contents];
+    } else if (newState == kTabCrashed) {
+      NSImage* oldImage = [[self favIconImageViewForContents:contents] image];
+      NSRect frame = NSMakeRect(0, 0, 16, 16);
+      iconView = [ThrobberView toastThrobberViewWithFrame:frame
+                                              beforeImage:oldImage
+                                               afterImage:sadFaviconImage];
+    } else {
+      NSRect frame = NSMakeRect(0, 0, 16, 16);
+      iconView = [ThrobberView filmstripThrobberViewWithFrame:frame
+                                                        image:throbberImage];
+    }
+
+    [tabController setLoadingState:newState];
+    [tabController setIconView:iconView];
+  }
+}
+
 // Called when a notification is received from the model that the given tab
 // has been updated. |loading| will be YES when we only want to update the
 // throbber state, not anything else about the (partially) loading tab.
@@ -607,54 +667,7 @@ static const float kUseFullAvailableWidth = -1.0;
   if (!loading)
     [self setTabTitle:[tabArray_ objectAtIndex:index] withContents:contents];
 
-  // Update the current loading state, replacing the icon with a throbber, or
-  // vice versa. This will get called repeatedly with the same state during a
-  // load, so we need to make sure we're not creating the throbber view over and
-  // over. However, when the page is done, every state change is important.
-  if (contents) {
-    static NSImage* throbberWaitingImage =
-        [nsimage_cache::ImageNamed(@"throbber_waiting.png") retain];
-    static NSImage* throbberLoadingImage =
-        [nsimage_cache::ImageNamed(@"throbber.png") retain];
-    static NSImage* sadFaviconImage =
-        [nsimage_cache::ImageNamed(@"sadfavicon.png") retain];
-
-    TabController* tabController = [tabArray_ objectAtIndex:index];
-
-    TabLoadingState oldState = [tabController loadingState];
-
-    TabLoadingState newState = kTabDone;
-    NSImage* throbberImage = nil;
-    if (contents->waiting_for_response()) {
-      newState = kTabWaiting;
-      throbberImage = throbberWaitingImage;
-    } else if (contents->is_loading()) {
-      newState = kTabLoading;
-      throbberImage = throbberLoadingImage;
-    } else if (contents->is_crashed()) {
-      newState = kTabCrashed;
-    }
-
-    if (oldState != newState || newState == kTabDone) {
-      NSView* iconView = nil;
-      if (newState == kTabDone) {
-        iconView = [self favIconImageViewForContents:contents];
-      } else if (newState == kTabCrashed) {
-        NSImage* oldImage = [[self favIconImageViewForContents:contents] image];
-        NSRect frame = NSMakeRect(0, 0, 16, 16);
-        iconView = [ThrobberView toastThrobberViewWithFrame:frame
-                                                beforeImage:oldImage
-                                                 afterImage:sadFaviconImage];
-      } else {
-        NSRect frame = NSMakeRect(0, 0, 16, 16);
-        iconView = [ThrobberView filmstripThrobberViewWithFrame:frame
-                                                          image:throbberImage];
-      }
-
-      [tabController setLoadingState:newState];
-      [tabController setIconView:iconView];
-    }
-  }
+  [self updateFavIconForContents:contents atIndex:index];
 
   TabContentsController* updatedController =
       [tabContentsArray_ objectAtIndex:index];
