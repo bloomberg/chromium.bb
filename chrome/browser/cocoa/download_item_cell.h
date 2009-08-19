@@ -34,6 +34,8 @@ enum DownloadItemMousePosition {
   FilePath downloadPath_;  // stored unelided
   NSString* secondaryTitle_;
   NSFont* secondaryFont_;
+  int percentDone_;
+  scoped_nsobject<NSAnimation> completionAnimation_;
 
   BOOL isStatusTextVisible_;
   CGFloat titleY_;

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/download_item_cell.h"
 
+#include "app/gfx/canvas_paint.h"
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
@@ -11,15 +12,16 @@
 #import "chrome/browser/cocoa/download_item_cell.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_util.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 namespace {
 
 // Distance from top border to icon
-const CGFloat kImagePaddingTop = 8;
+const CGFloat kImagePaddingTop = 7;
 
 // Distance from left border to icon
-const CGFloat kImagePaddingLeft = 5;
+const CGFloat kImagePaddingLeft = 8;
 
 // Width of icon
 const CGFloat kImageWidth = 16;
@@ -28,7 +30,8 @@ const CGFloat kImageWidth = 16;
 const CGFloat kImageHeight = 16;
 
 // x coordinate of download name string, in view coords
-const CGFloat kTextPosLeft = kImagePaddingLeft + kImageWidth + 4 + 1;
+const CGFloat kTextPosLeft = kImagePaddingLeft +
+    kImageWidth + download_util::kSmallProgressIconOffset;
 
 // Distance from end of download name string to dropdown area
 const CGFloat kTextPaddingRight = 3;
@@ -57,19 +60,25 @@ const CGFloat kDropdownArrowHeight = 3;
 // Duration of the two-lines-to-one-line animation, in seconds
 NSTimeInterval kHideStatusDuration = 0.3;
 
+// Duration of the 'download complete' animation, in seconds
+const int kCompleteAnimationDuration = 2.5;
+
 }
 
 // This is a helper class to animate the fading out of the status text.
-@interface HideSecondaryTitleAnimation : NSAnimation {
+@interface DownloadItemCellAnimation : NSAnimation {
   DownloadItemCell* cell_;
 }
-- (id)initWithDownloadItemCell:(DownloadItemCell*)cell;
+- (id)initWithDownloadItemCell:(DownloadItemCell*)cell
+                      duration:(NSTimeInterval)duration
+                animationCurve:(NSAnimationCurve)animationCurve;
 @end
 
 @interface DownloadItemCell(Private)
 - (void)updateTrackingAreas:(id)sender;
 - (void)hideSecondaryTitle;
-- (void)animationProgressed:(NSAnimationProgress)progress;
+- (void)animation:(NSAnimation*)animation
+       progressed:(NSAnimationProgress)progress;
 @end
 
 @implementation DownloadItemCell
@@ -132,6 +141,27 @@ NSTimeInterval kHideStatusDuration = 0.3;
     NSString* statusString = base::SysWideToNSString(statusText);
     [self setSecondaryTitle:statusString];
     isStatusTextVisible_ = YES;
+  }
+
+  switch (downloadModel->download()->state()) {
+    case DownloadItem::COMPLETE:
+      completionAnimation_.reset([[DownloadItemCellAnimation alloc]
+          initWithDownloadItemCell:self
+                          duration:kCompleteAnimationDuration
+                    animationCurve:NSAnimationLinear]);
+      [completionAnimation_.get() setDelegate:self];
+      [completionAnimation_.get() startAnimation];
+      percentDone_ = -1;
+      break;
+    case DownloadItem::CANCELLED:
+      percentDone_ = -1;
+      break;
+    case DownloadItem::IN_PROGRESS:
+      percentDone_ = downloadModel->download()->is_paused() ?
+          -1 : downloadModel->download()->PercentComplete();
+      break;
+    default:
+      NOTREACHED();
   }
 
   [[self controlView] setNeedsDisplay:YES];
@@ -263,8 +293,8 @@ NSTimeInterval kHideStatusDuration = 0.3;
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   // Constants from Cole.  Will kConstant them once the feedback loop
   // is complete.
-  NSRect drawFrame = NSInsetRect(cellFrame, 0.5, 0.5);
-  NSRect innerFrame = NSInsetRect(cellFrame, 1, 1);
+  NSRect drawFrame = NSInsetRect(cellFrame, 1.5, 1.5);
+  NSRect innerFrame = NSInsetRect(cellFrame, 2, 2);
 
   const float radius = 5;
   NSWindow* window = [controlView window];
@@ -346,6 +376,39 @@ NSTimeInterval kHideStatusDuration = 0.3;
         withAttributes:secondaryTextAttributes];
   }
 
+  // Draw progress disk
+  {
+    // CanvasPaint draws its content to the current NSGraphicsContext in its
+    // destructor, which needs to be invoked before the icon is drawn below -
+    // hence this nested block.
+
+    // Always repaint the whole disk.
+    NSPoint imagePosition = [self imageRectForBounds:cellFrame].origin;
+    int x = imagePosition.x - download_util::kSmallProgressIconOffset;
+    int y = imagePosition.y - download_util::kSmallProgressIconOffset;
+    NSRect dirtyRect = NSMakeRect(
+        x, y,
+        download_util::kSmallProgressIconSize,
+        download_util::kSmallProgressIconSize);
+
+    gfx::CanvasPaint canvas(dirtyRect, false);
+    canvas.set_composite_alpha(true);
+    if (completionAnimation_.get()) {
+      if ([completionAnimation_ isAnimating]) {
+        download_util::PaintDownloadComplete(&canvas,
+            x, y,
+            [completionAnimation_ currentValue],
+            download_util::SMALL);
+      }
+    } else if (percentDone_ >= 0) {
+      download_util::PaintDownloadProgress(&canvas,
+          x, y,
+          download_util::kStartAngleDegrees,  // TODO(thakis): Animate
+          percentDone_,
+          download_util::SMALL);
+    }
+  }
+
   // Draw icon
   NSRect imageRect = NSZeroRect;
   imageRect.size = [[self image] size];
@@ -377,41 +440,56 @@ NSTimeInterval kHideStatusDuration = 0.3;
 }
 
 - (NSRect)imageRectForBounds:(NSRect)cellFrame {
-  return NSMakeRect(
-      kImagePaddingLeft, kImagePaddingTop, kImageWidth, kImageHeight);
+  return NSMakeRect(cellFrame.origin.x + kImagePaddingLeft,
+                    cellFrame.origin.y + kImagePaddingTop,
+                    kImageWidth,
+                    kImageHeight);
 }
 
 - (void)hideSecondaryTitle {
   if (isStatusTextVisible_) {
     // No core animation -- text in CA layers is not subpixel antialiased :-/
-    hideStatusAnimation_.reset([[HideSecondaryTitleAnimation alloc]
-        initWithDownloadItemCell:self]);
+    hideStatusAnimation_.reset([[DownloadItemCellAnimation alloc]
+        initWithDownloadItemCell:self
+                        duration:kHideStatusDuration
+                  animationCurve:NSAnimationEaseIn]);
     [hideStatusAnimation_.get() setDelegate:self];
     [hideStatusAnimation_.get() startAnimation];
   } else {
     // If the download is done so quickly that the status line is never visible,
     // don't show an animation
-    [self animationProgressed:1.0];
+    [self animation:nil progressed:1.0];
   }
 }
 
-- (void)animationProgressed:(NSAnimationProgress)progress {
-  titleY_ = progress*kPrimaryTextOnlyPosTop + (1 - progress)*kPrimaryTextPosTop;
-  statusAlpha_ = 1 - progress;
-  [[self controlView] setNeedsDisplay:YES];
+- (void)animation:(NSAnimation*)animation
+      progressed:(NSAnimationProgress)progress {
+  if (animation == hideStatusAnimation_ || animation == nil) {
+    titleY_ = progress*kPrimaryTextOnlyPosTop +
+        (1 - progress)*kPrimaryTextPosTop;
+    statusAlpha_ = 1 - progress;
+    [[self controlView] setNeedsDisplay:YES];
+  } else if (animation == completionAnimation_) {
+    [[self controlView] setNeedsDisplay:YES];
+  }
 }
 
 - (void)animationDidEnd:(NSAnimation *)animation {
-  hideStatusAnimation_.reset();
+  if (animation == hideStatusAnimation_)
+    hideStatusAnimation_.reset();
+  else if (animation == completionAnimation_)
+    completionAnimation_.reset();
 }
 
 @end
 
-@implementation HideSecondaryTitleAnimation
+@implementation DownloadItemCellAnimation
 
-- (id)initWithDownloadItemCell:(DownloadItemCell*)cell {
-  if ((self = [super initWithDuration:kHideStatusDuration
-                       animationCurve:NSAnimationEaseIn])) {
+- (id)initWithDownloadItemCell:(DownloadItemCell*)cell
+                      duration:(NSTimeInterval)duration
+                animationCurve:(NSAnimationCurve)animationCurve {
+  if ((self = [super initWithDuration:duration
+                       animationCurve:animationCurve])) {
     cell_ = cell;
     [self setAnimationBlockingMode:NSAnimationNonblocking];
   }
@@ -420,7 +498,7 @@ NSTimeInterval kHideStatusDuration = 0.3;
 
 - (void)setCurrentProgress:(NSAnimationProgress)progress {
   [super setCurrentProgress:progress];
-  [cell_ animationProgressed:progress];
+  [cell_ animation:self progressed:progress];
 }
 
 @end

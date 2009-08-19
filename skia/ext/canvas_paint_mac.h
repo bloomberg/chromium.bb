@@ -42,13 +42,22 @@ class CanvasPaintT : public T {
       CGImageRef image = CGBitmapContextCreateImage(context_);
       CGRect destRect = NSRectToCGRect(rectangle_);
 
-      CGContextRef context =
+      CGContextRef destinationContext =
           (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-      CGContextSaveGState(context);
+      CGContextSaveGState(destinationContext);
       CGContextSetBlendMode(
-          context, composite_alpha_ ? kCGBlendModeNormal : kCGBlendModeCopy);
-      CGContextDrawImage(context, destRect, image);
-      CGContextRestoreGState(context);
+          destinationContext,
+          composite_alpha_ ? kCGBlendModeNormal : kCGBlendModeCopy);
+
+      if ([[NSGraphicsContext currentContext] isFlipped]) {
+        // Mirror context on the target's rect middle scanline.
+        CGContextTranslateCTM(destinationContext, 0.0, NSMidY(rectangle_));
+        CGContextScaleCTM(destinationContext, 1.0, -1.0);
+        CGContextTranslateCTM(destinationContext, 0.0, -NSMidY(rectangle_));
+      }
+
+      CGContextDrawImage(destinationContext, destRect, image);
+      CGContextRestoreGState(destinationContext);
 
       CFRelease(image);
     }

@@ -327,7 +327,7 @@
 					<object class="NSCustomView" id="931787328">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">258</int>
-						<string key="NSFrame">{{3, 5}, {240, 34}}</string>
+						<string key="NSFrame">{{3, 6}, {240, 34}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<string key="NSClassName">NSView</string>
 					</object>
