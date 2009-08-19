@@ -2386,7 +2386,6 @@ BUG14951 WIN LINUX : LayoutTests/fast/repaint/background-generated.html = FAIL
 
 // WebKit 44969:45017
 BUG15132 WIN LINUX : LayoutTests/editing/execCommand/5482023.html = FAIL
-BUG15132 WIN LINUX : LayoutTests/fast/dom/HTMLTableColElement/resize-table-using-col-width.html = FAIL
 BUG15132 WIN : LayoutTests/media/event-attributes.html = FAIL
 
 // The Mac layout test buildbots haven't generated a package for 20 days so
