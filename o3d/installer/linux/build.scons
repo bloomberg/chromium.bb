@@ -149,8 +149,8 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
                $$(dirname $TARGET)""")
     return targets
 
-
-  BuildDebianPackage(["debian_amd64/changelog",
+  # Build amd64 package.
+  BuildDebianPackage(["debian_common/changelog",
                       "debian_amd64/control",
                       "debian_amd64/google-o3d.install",
                       "debian_amd64/links",
@@ -167,7 +167,18 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
                      output_dir='$ARTIFACTS_DIR',
                      force_version=env.get('O3D_PLUGIN_VERSION'))
 
-  # TODO(tschmelcher): Also build an i386 deb.
+  # Build i386 package.
+  BuildDebianPackage(["debian_common/changelog",
+                      "debian_i386/control",
+                      "debian_i386/google-o3d.install",
+                      "debian_i386/links",
+                      "debian_i386/rules"
+                     ],
+                     [("libnpo3dautoplugin.so",
+                           '$ARTIFACTS_DIR/libnpo3dautoplugin.so')
+                     ],
+                     output_dir='$ARTIFACTS_DIR',
+                     force_version=env.get('O3D_PLUGIN_VERSION'))
 
 else:
   print('dpkg-buildpackage not found in PATH; Debian packages will not be '
