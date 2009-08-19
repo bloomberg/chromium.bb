@@ -215,6 +215,10 @@ GtkWidget* GeneralPageGtk::InitStartupGroup() {
       GTK_TREE_MODEL(startup_custom_pages_model_));
   gtk_container_add(GTK_CONTAINER(scroll_window), startup_custom_pages_tree_);
 
+  // Release |startup_custom_pages_model_| so that |startup_custom_pages_tree_|
+  // owns the model.
+  g_object_unref(startup_custom_pages_model_);
+
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(startup_custom_pages_tree_),
                                     FALSE);
   GtkTreeViewColumn* column = gtk_tree_view_column_new();

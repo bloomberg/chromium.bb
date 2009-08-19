@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gtk/list_store_favicon_loader.h"
 
+#include <vector>
+
 #include "base/gfx/gtk_util.h"
 #include "base/gfx/png_decoder.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
@@ -20,7 +22,6 @@ ListStoreFavIconLoader::ListStoreFavIconLoader(
 }
 
 ListStoreFavIconLoader::~ListStoreFavIconLoader() {
-  g_object_unref(default_favicon_);
 }
 
 void ListStoreFavIconLoader::LoadFaviconForRow(const GURL& url,
