@@ -453,7 +453,7 @@ void BugReportView::SendReport() {
   post_body.append(os_version + "\r\n");
 
   // Add locale.
-  Locale locale = Locale::getDefault();
+  icu::Locale locale = icu::Locale::getDefault();
   const char *lang = locale.getLanguage();
   std::string chrome_locale = (lang)? lang:"en";
   post_body.append("--" + mime_boundary + "\r\n");

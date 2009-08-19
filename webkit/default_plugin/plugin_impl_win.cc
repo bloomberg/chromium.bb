@@ -404,7 +404,7 @@ LRESULT PluginInstallerImpl::OnEraseBackGround(UINT message, WPARAM wparam,
 // Chrome. We can fix this by pulling (at least part of) the l10n_util
 // functionality up into the Base module.
 bool PluginInstallerImpl::IsRTLLayout() const {
-  const Locale& locale = Locale::getDefault();
+  const icu::Locale& locale = icu::Locale::getDefault();
   const char* lang = locale.getLanguage();
 
   // Check only for Arabic and Hebrew languages for now.
