@@ -32,17 +32,18 @@ std::wstring LanguageOrderTableModel::GetText(int row, int column_id) {
                                                         true));
 }
 
-void LanguageOrderTableModel::Add(const std::string& language) {
+bool LanguageOrderTableModel::Add(const std::string& language) {
   if (language.empty())
-    return;
+    return false;
   // Check for selecting duplicated language.
   for (std::vector<std::string>::const_iterator cit = languages_.begin();
        cit != languages_.end(); ++cit)
     if (*cit == language)
-      return;
+      return false;
   languages_.push_back(language);
   if (observer_)
     observer_->OnItemsAdded(RowCount() - 1, 1);
+  return true;
 }
 
 void LanguageOrderTableModel::Remove(int index) {

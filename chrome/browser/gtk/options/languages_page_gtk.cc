@@ -1,0 +1,342 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/gtk/options/languages_page_gtk.h"
+
+#include <set>
+#include <string>
+
+#include "app/l10n_util.h"
+#include "base/message_loop.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/language_combobox_model.h"
+#include "chrome/browser/language_order_table_model.h"
+#include "chrome/common/gtk_util.h"
+#include "chrome/common/pref_names.h"
+#include "grit/generated_resources.h"
+
+namespace {
+
+const int kWrapWidth = 475;
+
+GtkWidget* NewComboboxFromModel(ComboboxModel* model) {
+  GtkWidget* combobox = gtk_combo_box_new_text();
+  int count = model->GetItemCount();
+  for (int i = 0; i < count; ++i)
+    gtk_combo_box_append_text(GTK_COMBO_BOX(combobox),
+                              WideToUTF8(model->GetItemAt(i)).c_str());
+  return combobox;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AddLanguageDialog
+
+class AddLanguageDialog {
+ public:
+  AddLanguageDialog(Profile* profile, LanguagesPageGtk* delegate);
+ private:
+  // Callback for dialog buttons.
+  static void OnResponse(GtkDialog* dialog, int response_id,
+                         AddLanguageDialog* window);
+
+  // Callback for window destruction.
+  static void OnWindowDestroy(GtkWidget* widget, AddLanguageDialog* window);
+
+  // The dialog window.
+  GtkWidget* dialog_;
+
+  // The language chooser combobox.
+  GtkWidget* combobox_;
+  scoped_ptr<LanguageComboboxModel> accept_language_combobox_model_;
+
+  // Used for call back to LanguagePageGtk that language has been selected.
+  LanguagesPageGtk* language_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddLanguageDialog);
+};
+
+AddLanguageDialog::AddLanguageDialog(Profile* profile,
+                                     LanguagesPageGtk* delegate)
+    : language_delegate_(delegate) {
+  GtkWindow* parent = GTK_WINDOW(
+      gtk_widget_get_toplevel(delegate->get_page_widget()));
+
+  dialog_ = gtk_dialog_new_with_buttons(
+      l10n_util::GetStringUTF8(
+          IDS_FONT_LANGUAGE_SETTING_LANGUAGES_TAB_TITLE).c_str(),
+      parent,
+      static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
+      GTK_STOCK_CANCEL,
+      GTK_RESPONSE_CANCEL,
+      GTK_STOCK_ADD,
+      GTK_RESPONSE_OK,
+      NULL);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_OK);
+  gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
+                      gtk_util::kContentAreaSpacing);
+
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  std::vector<std::string> locale_codes;
+  l10n_util::GetAcceptLanguagesForLocale(app_locale, &locale_codes);
+  accept_language_combobox_model_.reset(
+      new LanguageComboboxModel(profile, locale_codes));
+  combobox_ = NewComboboxFromModel(accept_language_combobox_model_.get());
+  gtk_combo_box_set_active(GTK_COMBO_BOX(combobox_), 0);
+  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), combobox_);
+
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+
+  gtk_widget_show_all(dialog_);
+}
+
+// static
+void AddLanguageDialog::OnResponse(GtkDialog* dialog,
+                                   int response_id,
+                                   AddLanguageDialog* window) {
+  if (response_id == GTK_RESPONSE_OK) {
+    int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(window->combobox_));
+    window->language_delegate_->OnAddLanguage(
+        window->accept_language_combobox_model_->GetLocaleFromIndex(selected));
+  }
+  gtk_widget_destroy(window->dialog_);
+}
+
+// static
+void AddLanguageDialog::OnWindowDestroy(GtkWidget* widget,
+                                        AddLanguageDialog* window) {
+  MessageLoop::current()->DeleteSoon(FROM_HERE, window);
+}
+
+}  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// LanguagesPageGtk
+
+LanguagesPageGtk::LanguagesPageGtk(Profile* profile)
+    : OptionsPageBase(profile), initializing_(true) {
+  Init();
+}
+
+LanguagesPageGtk::~LanguagesPageGtk() {
+}
+
+void LanguagesPageGtk::Init() {
+  page_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);
+  gtk_container_set_border_width(GTK_CONTAINER(page_),
+                                 gtk_util::kContentAreaBorder);
+
+  // Languages order controls.
+  GtkWidget* languages_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(page_), languages_vbox,
+                     TRUE, TRUE, 0);
+
+  GtkWidget* languages_instructions_label = gtk_label_new(
+      l10n_util::GetStringUTF8(
+          IDS_FONT_LANGUAGE_SETTING_LANGUAGES_INSTRUCTIONS).c_str());
+  gtk_misc_set_alignment(GTK_MISC(languages_instructions_label), 0, .5);
+  gtk_label_set_line_wrap(GTK_LABEL(languages_instructions_label), TRUE);
+  gtk_widget_set_size_request(languages_instructions_label, kWrapWidth, -1);
+  gtk_box_pack_start(GTK_BOX(languages_vbox), languages_instructions_label,
+                     FALSE, FALSE, 0);
+
+  GtkWidget* languages_list_hbox = gtk_hbox_new(FALSE,
+                                                gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(languages_vbox), languages_list_hbox,
+                     TRUE, TRUE, 0);
+
+  // Languages order tree.
+  language_order_store_ = gtk_list_store_new(COL_COUNT,
+                                             G_TYPE_STRING);
+  language_order_tree_ = gtk_tree_view_new_with_model(
+      GTK_TREE_MODEL(language_order_store_));
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(language_order_tree_), FALSE);
+  GtkTreeViewColumn* lang_column = gtk_tree_view_column_new_with_attributes(
+      "",
+      gtk_cell_renderer_text_new(),
+      "text", COL_LANG,
+      NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(language_order_tree_), lang_column);
+  language_order_selection_ = gtk_tree_view_get_selection(
+      GTK_TREE_VIEW(language_order_tree_));
+  gtk_tree_selection_set_mode(language_order_selection_,
+                              GTK_SELECTION_MULTIPLE);
+  g_signal_connect(G_OBJECT(language_order_selection_), "changed",
+                   G_CALLBACK(OnSelectionChanged), this);
+  GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
+                                 GTK_POLICY_AUTOMATIC,
+                                 GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scroll_window),
+                                      GTK_SHADOW_ETCHED_IN);
+  gtk_container_add(GTK_CONTAINER(scroll_window), language_order_tree_);
+  gtk_box_pack_start(GTK_BOX(languages_list_hbox), scroll_window,
+                     TRUE, TRUE, 0);
+
+  language_order_table_model_.reset(new LanguageOrderTableModel);
+  language_order_table_adapter_.reset(
+      new gtk_tree::ModelAdapter(this, language_order_store_,
+                                 language_order_table_model_.get()));
+
+  // Languages order buttons.
+  GtkWidget* languages_buttons_vbox = gtk_vbox_new(FALSE,
+                                                   gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(languages_list_hbox), languages_buttons_vbox,
+                     FALSE, FALSE, 0);
+
+  add_button_ = gtk_button_new_with_label(l10n_util::GetStringUTF8(
+      IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_ADD_BUTTON_LABEL).c_str());
+  g_signal_connect(G_OBJECT(add_button_), "clicked",
+                   G_CALLBACK(OnAddButtonClicked), this);
+  gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), add_button_,
+                     FALSE, FALSE, 0);
+
+  std::string remove_button_text  = l10n_util::GetStringUTF8(
+      IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_REMOVE_BUTTON_LABEL);
+  remove_button_ = gtk_button_new_with_label(remove_button_text.c_str());
+  g_signal_connect(G_OBJECT(remove_button_), "clicked",
+                   G_CALLBACK(OnRemoveButtonClicked), this);
+  gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), remove_button_,
+                     FALSE, FALSE, 0);
+
+  std::string move_up_button_text  = l10n_util::GetStringUTF8(
+      IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_MOVEUP_BUTTON_LABEL);
+  move_up_button_ = gtk_button_new_with_label(move_up_button_text.c_str());
+  g_signal_connect(G_OBJECT(move_up_button_), "clicked",
+                   G_CALLBACK(OnMoveUpButtonClicked), this);
+  gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), move_up_button_,
+                     FALSE, FALSE, 0);
+
+  std::string move_down_button_text  = l10n_util::GetStringUTF8(
+      IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_MOVEDOWN_BUTTON_LABEL);
+  move_down_button_ = gtk_button_new_with_label(move_down_button_text.c_str());
+  g_signal_connect(G_OBJECT(move_down_button_), "clicked",
+                   G_CALLBACK(OnMoveDownButtonClicked), this);
+  gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), move_down_button_,
+                     FALSE, FALSE, 0);
+
+  GtkWidget* spellchecker_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(page_), spellchecker_vbox,
+                     FALSE, FALSE, 0);
+
+  // TODO(mattm): Spell checker controls.
+
+  // Initialize.
+  accept_languages_.Init(prefs::kAcceptLanguages,
+                         profile()->GetPrefs(), this);
+  dictionary_language_.Init(prefs::kSpellCheckDictionary,
+                            profile()->GetPrefs(), this);
+  enable_spellcheck_.Init(prefs::kEnableSpellCheck,
+                          profile()->GetPrefs(), this);
+  enable_autospellcorrect_.Init(prefs::kEnableAutoSpellCorrect,
+                                profile()->GetPrefs(), this);
+  NotifyPrefChanged(NULL);
+  EnableControls();
+}
+
+void LanguagesPageGtk::SetColumnValues(int row, GtkTreeIter* iter) {
+  std::wstring lang = language_order_table_model_->GetText(row, 0);
+  gtk_list_store_set(language_order_store_, iter,
+                     COL_LANG, WideToUTF8(lang).c_str(),
+                     -1);
+}
+
+void LanguagesPageGtk::OnAnyModelUpdate() {
+  if (!initializing_) {
+    accept_languages_.SetValue(ASCIIToWide(
+        language_order_table_model_->GetLanguageList()));
+  }
+  EnableControls();
+}
+
+void LanguagesPageGtk::EnableControls() {
+  int num_selected = gtk_tree_selection_count_selected_rows(
+      language_order_selection_);
+  int row_count = gtk_tree_model_iter_n_children(
+      GTK_TREE_MODEL(language_order_store_), NULL);
+  gtk_widget_set_sensitive(move_up_button_,
+                           num_selected == 1 && FirstSelectedRowNum() > 0);
+  gtk_widget_set_sensitive(move_down_button_,
+                           num_selected == 1 &&
+                           FirstSelectedRowNum() < row_count - 1);
+  gtk_widget_set_sensitive(remove_button_, num_selected > 0);
+}
+
+int LanguagesPageGtk::FirstSelectedRowNum() {
+  int row_num = -1;
+  GList* list = gtk_tree_selection_get_selected_rows(language_order_selection_,
+                                                     NULL);
+  if (list) {
+    row_num = gtk_tree::GetRowNumForPath(static_cast<GtkTreePath*>(list->data));
+    g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+    g_list_free(list);
+  }
+  return row_num;
+}
+
+void LanguagesPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
+  initializing_ = true;
+  if (!pref_name || *pref_name == prefs::kAcceptLanguages) {
+    language_order_table_model_->SetAcceptLanguagesString(
+        WideToASCII(accept_languages_.GetValue()));
+  }
+  // TODO(mattm): Spell checker prefs.
+  initializing_ = false;
+}
+
+void LanguagesPageGtk::OnAddLanguage(const std::string& new_language) {
+  if (language_order_table_model_->Add(new_language))
+    gtk_tree::SelectAndFocusRowNum(language_order_table_model_->RowCount() - 1,
+                                   GTK_TREE_VIEW(language_order_tree_));
+}
+
+// static
+void LanguagesPageGtk::OnSelectionChanged(GtkTreeSelection *selection,
+                                          LanguagesPageGtk* languages_page) {
+  languages_page->EnableControls();
+}
+
+// static
+void LanguagesPageGtk::OnAddButtonClicked(GtkButton* button,
+                                          LanguagesPageGtk* languages_page) {
+  new AddLanguageDialog(languages_page->profile(), languages_page);
+}
+
+// static
+void LanguagesPageGtk::OnRemoveButtonClicked(GtkButton* button,
+                                             LanguagesPageGtk* languages_page) {
+  GList* list = gtk_tree_selection_get_selected_rows(
+      languages_page->language_order_selection_, NULL);
+  std::set<int> selected_rows;
+  GList* node;
+  for (node = list; node != NULL; node = node->next) {
+    selected_rows.insert(
+        gtk_tree::GetRowNumForPath(static_cast<GtkTreePath*>(node->data)));
+  }
+  g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+  g_list_free(list);
+
+  for (std::set<int>::reverse_iterator selected = selected_rows.rbegin();
+       selected != selected_rows.rend(); ++selected) {
+    languages_page->language_order_table_model_->Remove(*selected);
+  }
+}
+
+// static
+void LanguagesPageGtk::OnMoveUpButtonClicked(GtkButton* button,
+                                             LanguagesPageGtk* languages_page) {
+  int item_selected = languages_page->FirstSelectedRowNum();
+  languages_page->language_order_table_model_->MoveUp(item_selected);
+  gtk_tree::SelectAndFocusRowNum(
+      item_selected - 1, GTK_TREE_VIEW(languages_page->language_order_tree_));
+}
+
+// static
+void LanguagesPageGtk::OnMoveDownButtonClicked(
+    GtkButton* button, LanguagesPageGtk* languages_page) {
+  int item_selected = languages_page->FirstSelectedRowNum();
+  languages_page->language_order_table_model_->MoveDown(item_selected);
+  gtk_tree::SelectAndFocusRowNum(
+      item_selected + 1, GTK_TREE_VIEW(languages_page->language_order_tree_));
+}

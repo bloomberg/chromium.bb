@@ -402,6 +402,10 @@ void SortStrings(const std::string& locale,
 // en-US, es, fr, fi, pt-PT, pt-BR, etc.
 const std::vector<std::string>& GetAvailableLocales();
 
+// Returns a vector of locale codes usable for accept-languages.
+void GetAcceptLanguagesForLocale(const std::string& display_locale,
+                                 std::vector<std::string>* locale_codes);
+
 // A simple wrapper class for the bidirectional iterator of ICU.
 // This class uses the bidirectional iterator of ICU to split a line of
 // bidirectional texts into visual runs in its display order.

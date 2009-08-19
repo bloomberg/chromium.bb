@@ -39,6 +39,141 @@ static const FilePath::CharType kLocaleFileExtension[] = ".pak";
 // Added to the end of strings that are too big in TrucateString.
 static const wchar_t* const kElideString = L"\x2026";
 
+static const char* const kAcceptLanguageList[] = {
+  "af",     // Afrikaans
+  "am",     // Amharic
+  "ar",     // Arabic
+  "az",     // Azerbaijani
+  "be",     // Belarusian
+  "bg",     // Bulgarian
+  "bh",     // Bihari
+  "bn",     // Bengali
+  "br",     // Breton
+  "bs",     // Bosnian
+  "ca",     // Catalan
+  "co",     // Corsican
+  "cs",     // Czech
+  "cy",     // Welsh
+  "da",     // Danish
+  "de",     // German
+  "de-AT",  // German (Austria)
+  "de-CH",  // German (Switzerland)
+  "de-DE",  // German (Germany)
+  "el",     // Greek
+  "en",     // English
+  "en-AU",  // English (Austrailia)
+  "en-CA",  // English (Canada)
+  "en-GB",  // English (UK)
+  "en-NZ",  // English (New Zealand)
+  "en-US",  // English (US)
+  "en-ZA",  // English (South Africa)
+  "eo",     // Esperanto
+  // TODO(jungshik) : Do we want to list all es-Foo for Latin-American
+  // Spanish speaking countries?
+  "es",     // Spanish
+  "et",     // Estonian
+  "eu",     // Basque
+  "fa",     // Persian
+  "fi",     // Finnish
+  "fil",    // Filipino
+  "fo",     // Faroese
+  "fr",     // French
+  "fr-CA",  // French (Canada)
+  "fr-CH",  // French (Switzerland)
+  "fr-FR",  // French (France)
+  "fy",     // Frisian
+  "ga",     // Irish
+  "gd",     // Scots Gaelic
+  "gl",     // Galician
+  "gn",     // Guarani
+  "gu",     // Gujarati
+  "he",     // Hebrew
+  "hi",     // Hindi
+  "hr",     // Croatian
+  "hu",     // Hungarian
+  "hy",     // Armenian
+  "ia",     // Interlingua
+  "id",     // Indonesian
+  "is",     // Icelandic
+  "it",     // Italian
+  "it-CH",  // Italian (Switzerland)
+  "it-IT",  // Italian (Italy)
+  "ja",     // Japanese
+  "jw",     // Javanese
+  "ka",     // Georgian
+  "kk",     // Kazakh
+  "km",     // Cambodian
+  "kn",     // Kannada
+  "ko",     // Korean
+  "ku",     // Kurdish
+  "ky",     // Kyrgyz
+  "la",     // Latin
+  "ln",     // Lingala
+  "lo",     // Laothian
+  "lt",     // Lithuanian
+  "lv",     // Latvian
+  "mk",     // Macedonian
+  "ml",     // Malayalam
+  "mn",     // Mongolian
+  "mo",     // Moldavian
+  "mr",     // Marathi
+  "ms",     // Malay
+  "mt",     // Maltese
+  "nb",     // Norwegian (Bokmal)
+  "ne",     // Nepali
+  "nl",     // Dutch
+  "nn",     // Norwegian (Nynorsk)
+  "no",     // Norwegian
+  "oc",     // Occitan
+  "or",     // Oriya
+  "pa",     // Punjabi
+  "pl",     // Polish
+  "ps",     // Pashto
+  "pt",     // Portuguese
+  "pt-BR",  // Portuguese (Brazil)
+  "pt-PT",  // Portuguese (Portugal)
+  "qu",     // Quechua
+  "rm",     // Romansh
+  "ro",     // Romanian
+  "ru",     // Russian
+  "sd",     // Sindhi
+  "sh",     // Serbo-Croatian
+  "si",     // Sinhalese
+  "sk",     // Slovak
+  "sl",     // Slovenian
+  "sn",     // Shona
+  "so",     // Somali
+  "sq",     // Albanian
+  "sr",     // Serbian
+  "st",     // Sesotho
+  "su",     // Sundanese
+  "sv",     // Swedish
+  "sw",     // Swahili
+  "ta",     // Tamil
+  "te",     // Telugu
+  "tg",     // Tajik
+  "th",     // Thai
+  "ti",     // Tigrinya
+  "tk",     // Turkmen
+  "to",     // Tonga
+  "tr",     // Turkish
+  "tt",     // Tatar
+  "tw",     // Twi
+  "ug",     // Uighur
+  "uk",     // Ukrainian
+  "ur",     // Urdu
+  "uz",     // Uzbek
+  "vi",     // Vietnamese
+  "xh",     // Xhosa
+  "yi",     // Yiddish
+  "yo",     // Yoruba
+  "zh",     // Chinese
+  "zh-CN",  // Chinese (Simplified)
+  "zh-TW",  // Chinese (Traditional)
+  "zu",     // Zulu
+};
+
+
 // Get language and region from the OS.
 void GetLanguageAndRegionFromOS(std::string* lang, std::string* region) {
   // Later we may have to change this to be OS-dependent so that
@@ -740,6 +875,24 @@ const std::vector<std::string>& GetAvailableLocales() {
     locales.push_back("es-419");
   }
   return locales;
+}
+
+void GetAcceptLanguagesForLocale(const std::string& display_locale,
+                                 std::vector<std::string>* locale_codes) {
+  for (size_t i = 0; i < arraysize(kAcceptLanguageList); ++i) {
+    string16 display_name =
+        l10n_util::GetDisplayNameForLocale(kAcceptLanguageList[i],
+                                           display_locale, false);
+    // This is a hack. If ICU doesn't have a translated name for
+    // this language, GetDisplayNameForLocale will just return the
+    // language code. In that case, we skip it.
+    // TODO(jungshik) : Put them at the of the list with language codes
+    // enclosed by brackets.
+    if (IsStringASCII(display_name) &&
+        UTF16ToASCII(display_name) == kAcceptLanguageList[i])
+      continue;
+    locale_codes->push_back(kAcceptLanguageList[i]);
+  }
 }
 
 BiDiLineIterator::~BiDiLineIterator() {

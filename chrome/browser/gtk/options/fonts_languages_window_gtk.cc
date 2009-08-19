@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/gtk/options/fonts_page_gtk.h"
+#include "chrome/browser/gtk/options/languages_page_gtk.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -43,6 +44,9 @@ class FontsLanguagesWindowGtk {
   // The fonts page.
   FontsPageGtk fonts_page_;
 
+  // The languages page.
+  LanguagesPageGtk languages_page_;
+
   DISALLOW_COPY_AND_ASSIGN(FontsLanguagesWindowGtk);
 };
 
@@ -56,7 +60,8 @@ FontsLanguagesWindowGtk::FontsLanguagesWindowGtk(Profile* profile)
       // the record comes from the original profile, but we explicitly use
       // the original profile to avoid potential problems.
     : profile_(profile->GetOriginalProfile()),
-      fonts_page_(profile_) {
+      fonts_page_(profile_),
+      languages_page_(profile_) {
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringFUTF8(IDS_FONT_LANGUAGE_SETTING_WINDOWS_TITLE,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str(),
@@ -87,7 +92,7 @@ FontsLanguagesWindowGtk::FontsLanguagesWindowGtk(Profile* profile)
   // Langauges tab.
   gtk_notebook_append_page(
       GTK_NOTEBOOK(notebook_),
-      gtk_label_new("TODO content"),
+      languages_page_.get_page_widget(),
       gtk_label_new(
           l10n_util::GetStringUTF8(
               IDS_FONT_LANGUAGE_SETTING_LANGUAGES_TAB_TITLE).c_str()));

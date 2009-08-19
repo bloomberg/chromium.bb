@@ -18,8 +18,8 @@ class LanguageOrderTableModel : public TableModel {
   // Set Language List.
   void SetAcceptLanguagesString(const std::string& language_list);
 
-  // Add at the end.
-  void Add(const std::string& language);
+  // Add at the end.  Return true if the language was added.
+  bool Add(const std::string& language);
 
   // Removes the entry at the specified index.
   void Remove(int index);

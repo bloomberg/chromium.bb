@@ -2,3 +2,4 @@
 # Only fails on the bots?
 BookmarkEditorGtkTest.*
 CookiesViewTest.*
+LanguagesPageGtkTest.*
