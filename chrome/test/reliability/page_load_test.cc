@@ -40,6 +40,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/keyboard_codes.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/test_file_util.h"
@@ -159,15 +160,19 @@ class PageLoadTest : public UITest {
     g_test_log_path = FilePath(FILE_PATH_LITERAL("test_log.log"));
     test_log.open(g_test_log_path.value().c_str());
 
-// TODO(estade): port.
-#if defined(OS_WIN)
     // Check file version info for chrome dll.
     scoped_ptr<FileVersionInfo> file_info;
+#if defined(OS_WIN)
     file_info.reset(FileVersionInfo::CreateFileVersionInfo(kChromeDll));
+#elif defined(OS_LINUX)
+    // TODO(fmeawad): the version retrieved here belongs to the test module and
+    // not the chrome binary, need to be changed to chrome binary instead.
+    file_info.reset(FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+#endif  // !defined(OS_WIN)
     std::wstring last_change = file_info->last_change();
     test_log << "Last Change: ";
     test_log << last_change << std::endl;
-#endif  // defined(OS_WIN)
+
 
     // Log timestamp for test start.
     base::Time time_now = base::Time::Now();
@@ -209,13 +214,10 @@ class PageLoadTest : public UITest {
               browser->BringToFrontWithTimeout(action_max_timeout_ms(),
                                                &activation_timeout);
               if (!activation_timeout) {
-// TODO(estade): port.
-#if defined(OS_WIN)
-                window->SimulateOSKeyPress(VK_NEXT, 0);
+                window->SimulateOSKeyPress(base::VKEY_NEXT, 0);
                 PlatformThread::Sleep(sleep_timeout_ms());
-                window->SimulateOSKeyPress(VK_NEXT, 0);
+                window->SimulateOSKeyPress(base::VKEY_NEXT, 0);
                 PlatformThread::Sleep(sleep_timeout_ms());
-#endif  // defined(OS_WIN)
               }
             }
           }
@@ -309,11 +311,8 @@ class PageLoadTest : public UITest {
     if (log_file.is_open() && g_save_debug_log && !g_continuous_load)
       SaveDebugLogs(log_file);
 
-// TODO(estade): port.
-#if defined(OS_WIN)
     // Log revision information for Chrome build under test.
     log_file << " " << "revision=" << last_change;
-#endif  // defined(OS_WIN)
 
     // Get crash dumps.
     LogOrDeleteNewCrashDumps(log_file, &metrics);
@@ -454,26 +453,16 @@ class PageLoadTest : public UITest {
     UITest::SetUp();
     g_browser_existing = true;
 
-// TODO(estade): port.
-#if defined(OS_WIN)
     // Initialize crash_dumps_dir_path_.
     PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dumps_dir_path_);
-    // Initialize crash_dumps_.
-    WIN32_FIND_DATAW find_data;
-    HANDLE find_handle;
-    std::wstring dir_spec(crash_dumps_dir_path_);
-    dir_spec.append(L"\\*");  // list all files in the directory
-    find_handle = FindFirstFileW(dir_spec.c_str(), &find_data);
-    if (find_handle != INVALID_HANDLE_VALUE) {
-      if (wcsstr(find_data.cFileName, L".dmp"))
-        crash_dumps_[std::wstring(find_data.cFileName)] = true;
-      while (FindNextFile(find_handle, &find_data)) {
-        if (wcsstr(find_data.cFileName, L".dmp"))
-          crash_dumps_[std::wstring(find_data.cFileName)] = true;
-      }
-      FindClose(find_handle);
+    file_util::FileEnumerator enumerator(crash_dumps_dir_path_,
+                                         false,  // not recursive
+                                         file_util::FileEnumerator::FILES);
+    for (FilePath path = enumerator.Next(); !path.value().empty();
+         path = enumerator.Next()) {
+      if (path.MatchesExtension(FILE_PATH_LITERAL(".dmp")))
+        crash_dumps_[path.BaseName()] = true;
     }
-#endif  // defined(OS_WIN)
   }
 
   FilePath ConstructSavedDebugLogPath(const FilePath& debug_log_path,
@@ -507,22 +496,20 @@ class PageLoadTest : public UITest {
   // If a log_file is provided, log the crash dump with the given path;
   // otherwise, delete the crash dump file.
   void LogOrDeleteCrashDump(std::ofstream& log_file,
-                            std::wstring crash_dump_file_name) {
-    std::wstring crash_dump_file_path(crash_dumps_dir_path_);
-    crash_dump_file_path.append(L"\\");
-    crash_dump_file_path.append(crash_dump_file_name);
-    std::wstring crash_text_file_path(crash_dump_file_path);
-    crash_text_file_path.replace(crash_text_file_path.length() - 3,
-                                 3, L"txt");
+                            FilePath crash_dump_file_name) {
+    FilePath crash_dump_file_path(crash_dumps_dir_path_);
+    crash_dump_file_path = crash_dump_file_path.Append(crash_dump_file_name);
+    FilePath crash_text_file_path =
+        crash_dump_file_path.ReplaceExtension(FILE_PATH_LITERAL("txt"));
 
     if (log_file.is_open()) {
       crash_dumps_[crash_dump_file_name] = true;
-      log_file << " crash_dump=" << crash_dump_file_path;
+      log_file << " crash_dump=" << crash_dump_file_path.value().c_str();
     } else {
       ASSERT_TRUE(file_util::DieFileDie(
-          FilePath::FromWStringHack(crash_dump_file_path), false));
+          crash_dump_file_path, false));
       ASSERT_TRUE(file_util::DieFileDie(
-          FilePath::FromWStringHack(crash_text_file_path), false));
+          crash_text_file_path, false));
     }
   }
 
@@ -531,34 +518,21 @@ class PageLoadTest : public UITest {
   // to log_file.
   void LogOrDeleteNewCrashDumps(std::ofstream& log_file,
                                 NavigationMetrics* metrics) {
-// TODO(estade): port.
-#if defined(OS_WIN)
-    WIN32_FIND_DATAW find_data;
-    HANDLE find_handle;
     int num_dumps = 0;
 
-    std::wstring dir_spec(crash_dumps_dir_path_);
-    dir_spec.append(L"\\*");  // list all files in the directory
-    find_handle = FindFirstFileW(dir_spec.c_str(), &find_data);
-    if (find_handle != INVALID_HANDLE_VALUE) {
-      if (wcsstr(find_data.cFileName, L".dmp") &&
-          !crash_dumps_[std::wstring(find_data.cFileName)]) {
-        LogOrDeleteCrashDump(log_file, find_data.cFileName);
+    file_util::FileEnumerator enumerator(crash_dumps_dir_path_,
+                                         false,  // not recursive
+                                         file_util::FileEnumerator::FILES);
+    for (FilePath path = enumerator.Next(); !path.value().empty();
+         path = enumerator.Next()) {
+      if (path.MatchesExtension(FILE_PATH_LITERAL(".dmp")) &&
+          !crash_dumps_[path.BaseName()]) {
+        LogOrDeleteCrashDump(log_file, path.BaseName());
         num_dumps++;
       }
-      while (FindNextFile(find_handle, &find_data)) {
-        if (wcsstr(find_data.cFileName, L".dmp") &&
-            !crash_dumps_[std::wstring(find_data.cFileName)]) {
-          LogOrDeleteCrashDump(log_file, find_data.cFileName);
-          num_dumps++;
-        }
-      }
-      FindClose(find_handle);
     }
-
     if (metrics)
       metrics->crash_dump_count = num_dumps;
-#endif  // defined(OS_WIN)
   }
 
   // Get a PrefService whose contents correspond to the Local State file
@@ -610,7 +584,7 @@ class PageLoadTest : public UITest {
   }
 
   // The pathname of Chrome's crash dumps directory.
-  std::wstring crash_dumps_dir_path_;
+  FilePath crash_dumps_dir_path_;
 
   // The set of all the crash dumps we have seen.  Each crash generates a
   // .dmp and a .txt file in the crash dumps directory.  We only store the
@@ -621,7 +595,7 @@ class PageLoadTest : public UITest {
   // in the set).  The initial value for any key in std::map is 0 (false),
   // which in this case means a new file is not in the set initially,
   // exactly the semantics we want.
-  std::map<std::wstring, bool> crash_dumps_;
+  std::map<FilePath, bool> crash_dumps_;
 };
 
 }  // namespace
