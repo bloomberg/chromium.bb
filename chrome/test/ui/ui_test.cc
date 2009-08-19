@@ -1013,17 +1013,26 @@ FilePath UITest::ComputeTypicalUserDataSource(int profile_type) {
   FilePath source_history_file;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA,
                                &source_history_file));
-  if (profile_type == UITest::DEFAULT_THEME) {
-    source_history_file = source_history_file.AppendASCII("profiles")
-        .AppendASCII("typical_history");
-  } else if (profile_type == UITest::COMPLEX_THEME) {
-    source_history_file = source_history_file.AppendASCII("profiles")
-        .AppendASCII("complex_theme");
-  } else if (profile_type == UITest::NATIVE_THEME) {
-    source_history_file = source_history_file.AppendASCII("profiles")
-        .AppendASCII("gtk_theme");
-  } else {
-    NOTREACHED();
+  source_history_file = source_history_file.AppendASCII("profiles");
+  switch (profile_type) {
+    case UITest::DEFAULT_THEME:
+      source_history_file = source_history_file.AppendASCII("typical_history");
+      break;
+    case UITest::COMPLEX_THEME:
+      source_history_file = source_history_file.AppendASCII("complex_theme");
+      break;
+    case UITest::NATIVE_THEME:
+      source_history_file = source_history_file.AppendASCII("gtk_theme");
+      break;
+    case UITest::CUSTOM_FRAME:
+      source_history_file = source_history_file.AppendASCII("custom_frame");
+      break;
+    case UITest::CUSTOM_FRAME_NATIVE_THEME:
+      source_history_file =
+          source_history_file.AppendASCII("custom_frame_gtk_theme");
+      break;
+    default:
+      NOTREACHED();
   }
   return source_history_file;
 }

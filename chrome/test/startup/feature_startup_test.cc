@@ -120,6 +120,18 @@ TEST_F(NewTabUIStartupTest, GtkThemeCold) {
                  false /* not important */,
                  UITest::NATIVE_THEME);
 }
+
+TEST_F(NewTabUIStartupTest, NativeFrameCold) {
+  RunStartupTest("tab_custom_frame_cold", false /* cold */,
+                 false /* not important */,
+                 UITest::CUSTOM_FRAME);
+}
+
+TEST_F(NewTabUIStartupTest, NativeFrameGtkThemeCold) {
+  RunStartupTest("tab_custom_frame_gtk_theme_cold", false /* cold */,
+                 false /* not important */,
+                 UITest::CUSTOM_FRAME_NATIVE_THEME);
+}
 #endif
 
 }  // namespace
