@@ -10,6 +10,7 @@ namespace extension_manifest_keys {
   extern const wchar_t* kBackground;
   extern const wchar_t* kContentScripts;
   extern const wchar_t* kCss;
+  extern const wchar_t* kDefaultLocale;
   extern const wchar_t* kDescription;
   extern const wchar_t* kIcons;
   extern const wchar_t* kJs;
@@ -38,7 +39,7 @@ namespace extension_manifest_keys {
   extern const wchar_t* kType;
   extern const wchar_t* kVersion;
   extern const wchar_t* kUpdateURL;
-} // namespace extension_manifest_keys
+}  // namespace extension_manifest_keys
 
 // Some values expected in manifests.
 namespace extension_manifest_values {
@@ -96,6 +97,9 @@ namespace extension_manifest_errors {
   extern const char* kThemesCannotContainExtensions;
   extern const char* kMissingFile;
   extern const char* kInvalidUpdateURL;
+  extern const char* kInvalidDefaultLocale;
+  extern const char* kLocalesNoDefaultLocaleSpecified;
+  extern const char* kLocalesNoValidLocaleNamesListed;
 }  // namespace extension_manifest_errors
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

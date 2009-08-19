@@ -231,6 +231,12 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   privacy_blacklists->Set(0, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidPrivacyBlacklistsPath));
+
+  // Test invalid default locale.
+  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value->SetInteger(keys::kDefaultLocale, 42);
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_EQ(errors::kInvalidDefaultLocale, error);
 }
 
 TEST(ExtensionTest, InitFromValueValid) {

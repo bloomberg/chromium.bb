@@ -78,6 +78,13 @@ void UninstallExtension(const std::string& id, const FilePath& extensions_dir);
 // removing others?
 void GarbageCollectExtensions(const FilePath& extensions_dir);
 
+// We need to reserve the namespace of entries that start with "_" for future
+// use by Chrome.
+// If any files or directories are found using "_" prefix and are not on
+// reserved list we return false, and set error message.
+bool CheckForIllegalFilenames(const FilePath& extension_path,
+                              std::string* error);
+
 }  // extension_file_util
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FILE_UTIL_H_

@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -94,6 +95,12 @@ class Extension {
 
   // The name of the manifest inside an extension.
   static const char kManifestFilename[];
+
+  // The name of locale folder inside an extension.
+  static const char kLocaleFolder[];
+
+  // The name of the messages file inside an extension.
+  static const char kMessagesFilename[];
 
 #if defined(OS_WIN)
   static const char* kExtensionRegistryPath;
@@ -230,6 +237,20 @@ class Extension {
   // an empty FilePath if the extension does not have that icon.
   FilePath GetIconPath(Icons icon);
 
+  // Returns a list of all locales supported by the extension.
+  const std::set<std::string>& supported_locales() const {
+    return supported_locales_;
+  }
+  // Add locale to the list of supported locales.
+  void AddSupportedLocale(const std::string& supported_locale) {
+    supported_locales_.insert(supported_locale);
+  }
+
+  // Getter/setter for a default_locale_.
+  const std::string& default_locale() const { return default_locale_; }
+  void set_default_locale(const std::string& default_locale) {
+    default_locale_ = default_locale;
+  }
 
   // Runtime data:
   // Put dynamic data about the state of a running extension below.
@@ -342,6 +363,11 @@ class Extension {
   // URL for fetching an update manifest
   GURL update_url_;
 
+  // List of all locales extension supports.
+  std::set<std::string> supported_locales_;
+
+  // Default locale, used for fallback.
+  std::string default_locale_;
 
   // Runtime data:
 

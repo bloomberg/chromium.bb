@@ -8,7 +8,12 @@
 #include "base/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace keys = extension_manifest_keys;
 
 TEST(ExtensionFileUtil, MoveDirSafely) {
   // Create a test directory structure with some data in it.
@@ -160,6 +165,110 @@ TEST(ExtensionFileUtil, CompareToInstalledVersion) {
                 temp.path(), "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "0.0.1.0",
                 &version_out));
   ASSERT_EQ("", version_out);
+}
+
+// Creates minimal manifest, with or without default_locale section.
+bool CreateMinimalManifest(const std::string& locale,
+                           const FilePath& manifest_path) {
+  DictionaryValue manifest;
+
+  manifest.SetString(keys::kVersion, "1.0.0.0");
+  manifest.SetString(keys::kName, "my extension");
+  if (!locale.empty()) {
+    manifest.SetString(keys::kDefaultLocale, locale);
+  }
+
+  JSONFileValueSerializer serializer(manifest_path);
+  return serializer.Serialize(manifest);
+}
+
+TEST(ExtensionFileUtil, LoadExtensionWithValidLocales) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  ASSERT_TRUE(CreateMinimalManifest(
+      "en_US", temp.path().AppendASCII(Extension::kManifestFilename)));
+
+  FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
+  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+
+  FilePath locale_1 = src_path.AppendASCII("sr");
+  ASSERT_TRUE(file_util::CreateDirectory(locale_1));
+
+  std::string data = "foobar";
+  ASSERT_TRUE(
+      file_util::WriteFile(locale_1.AppendASCII(Extension::kMessagesFilename),
+                           data.c_str(), data.length()));
+
+  FilePath locale_2 = src_path.AppendASCII("en_US");
+  ASSERT_TRUE(file_util::CreateDirectory(locale_2));
+
+  ASSERT_TRUE(
+      file_util::WriteFile(locale_2.AppendASCII(Extension::kMessagesFilename),
+                           data.c_str(), data.length()));
+
+  std::string error;
+  scoped_ptr<Extension> extension(
+      extension_file_util::LoadExtension(temp.path(), false, &error));
+  ASSERT_FALSE(extension == NULL);
+  EXPECT_EQ(static_cast<unsigned int>(2),
+            extension->supported_locales().size());
+  EXPECT_EQ("en-US", extension->default_locale());
+}
+
+TEST(ExtensionFileUtil, LoadExtensionWithoutLocalesFolder) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  ASSERT_TRUE(CreateMinimalManifest(
+      "", temp.path().AppendASCII(Extension::kManifestFilename)));
+
+  std::string error;
+  scoped_ptr<Extension> extension(
+      extension_file_util::LoadExtension(temp.path(), false, &error));
+  ASSERT_FALSE(extension == NULL);
+  EXPECT_TRUE(extension->supported_locales().empty());
+  EXPECT_TRUE(extension->default_locale().empty());
+}
+
+TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  FilePath src_path = temp.path().AppendASCII("some_dir");
+  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+
+  std::string data = "foobar";
+  ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("some_file.txt"),
+                                   data.c_str(), data.length()));
+  std::string error;
+  EXPECT_TRUE(extension_file_util::CheckForIllegalFilenames(temp.path(),
+                                                            &error));
+}
+
+TEST(ExtensionFileUtil, CheckIllegalFilenamesOnlyReserved) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
+  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+
+  std::string error;
+  EXPECT_TRUE(extension_file_util::CheckForIllegalFilenames(temp.path(),
+                                                            &error));
+}
+
+TEST(ExtensionFileUtil, CheckIllegalFilenamesReservedAndIllegal) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
+  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+
+  src_path = temp.path().AppendASCII("_some_dir");
+  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+
+  std::string error;
+  EXPECT_FALSE(extension_file_util::CheckForIllegalFilenames(temp.path(),
+                                                             &error));
 }
 
 // TODO(aa): More tests as motivation allows. Maybe steal some from

@@ -67,6 +67,8 @@ static bool IsAPIPermission(const std::string& str) {
 int Extension::id_counter_ = 0;
 
 const char Extension::kManifestFilename[] = "manifest.json";
+const char Extension::kLocaleFolder[] = "_locales";
+const char Extension::kMessagesFilename[] = "messages";
 
 // A list of all the keys allowed by themes.
 static const wchar_t* kValidThemeKeys[] = {
@@ -933,6 +935,18 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
 
       host_permissions_.push_back(pattern);
     }
+  }
+
+  // Initialize default locale (if present).
+  if (source.HasKey(keys::kDefaultLocale)) {
+    std::string default_locale;
+    if (!source.GetString(keys::kDefaultLocale, &default_locale)) {
+      *error = errors::kInvalidDefaultLocale;
+      return false;
+    }
+    // Normalize underscores to hyphens.
+    std::replace(default_locale.begin(), default_locale.end(), '_', '-');
+    set_default_locale(default_locale);
   }
 
   return true;

@@ -9,6 +9,7 @@ namespace extension_manifest_keys {
 const wchar_t* kBackground = L"background_page";
 const wchar_t* kContentScripts = L"content_scripts";
 const wchar_t* kCss = L"css";
+const wchar_t* kDefaultLocale = L"default_locale";
 const wchar_t* kDescription = L"description";
 const wchar_t* kIcons = L"icons";
 const wchar_t* kJs = L"js";
@@ -142,6 +143,12 @@ const char* kInvalidThemeTints =
     "Invalid value for theme images - tints must be decimal numbers.";
 const char* kInvalidUpdateURL =
     "Invalid value for update url: '[*]'.";
+const char* kInvalidDefaultLocale =
+    "Invalid value for default locale - locale name must be a string.";
 const char* kThemesCannotContainExtensions =
     "A theme cannot contain extensions code.";
+const char* kLocalesNoDefaultLocaleSpecified =
+    "Localization used, but default_locale wasn't specified in the manifest.";
+const char* kLocalesNoValidLocaleNamesListed =
+    "No valid locale name could be found in _locales directory.";
 }  // namespace extension_manifest_errors

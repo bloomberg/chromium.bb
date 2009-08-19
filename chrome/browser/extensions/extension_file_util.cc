@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "chrome/browser/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/json_value_serializer.h"
@@ -276,6 +277,27 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
     }
   }
 
+  // Load locale information if available.
+  FilePath locale_path = extension_path.AppendASCII(Extension::kLocaleFolder);
+  if (file_util::PathExists(locale_path)) {
+    if (!extension_l10n_util::AddValidLocales(locale_path,
+                                              extension.get(),
+                                              error)) {
+      return NULL;
+    }
+
+    if (!extension_l10n_util::ValidateDefaultLocale(extension.get())) {
+      *error = extension_manifest_errors::kLocalesNoDefaultLocaleSpecified;
+      return NULL;
+    }
+  }
+
+  // Check children of extension root to see if any of them start with _ and is
+  // not on the reserved list.
+  if (!CheckForIllegalFilenames(extension_path, error)) {
+    return NULL;
+  }
+
   return extension.release();
 }
 
@@ -347,6 +369,44 @@ void GarbageCollectExtensions(const FilePath& install_directory) {
       continue;
     }
   }
+}
+
+bool CheckForIllegalFilenames(const FilePath& extension_path,
+                              std::string* error) {
+  // Reserved underscore names.
+  static const char* reserved_names[] = {
+    Extension::kLocaleFolder
+  };
+  static std::set<std::string> reserved_underscore_names(
+    reserved_names, reserved_names + arraysize(reserved_names));
+
+  // Enumerate all files and directories in the extension root.
+  // There is a problem when using pattern "_*" with FileEnumerator, so we have
+  // to cheat with find_first_of and match all.
+  file_util::FileEnumerator all_files(
+    extension_path,
+    false,
+    static_cast<file_util::FileEnumerator::FILE_TYPE>(
+        file_util::FileEnumerator::DIRECTORIES |
+          file_util::FileEnumerator::FILES));
+
+  FilePath files;
+  while (!(files = all_files.Next()).empty()) {
+    std::string filename =
+        WideToASCII(files.BaseName().ToWStringHack());
+    // Skip all that don't start with "_".
+    if (filename.find_first_of("_") != 0) continue;
+    if (reserved_underscore_names.find(filename) ==
+          reserved_underscore_names.end()) {
+      *error = StringPrintf(
+        "Cannot load extension with file or directory name %s."
+        "Filenames starting with \"_\" are reserved for use by the system",
+        filename.c_str());
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // extensionfile_util
