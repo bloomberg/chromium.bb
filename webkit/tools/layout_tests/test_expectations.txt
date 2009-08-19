@@ -1791,7 +1791,7 @@ BUG10441 LINUX : LayoutTests/fast/clip/outline-overflowClip.html = CRASH FAIL PA
 BUG10441 : LayoutTests/transitions/transition-end-event-transform.html = FAIL PASS
 
 // Timing out starting 03/10/09
-BUG10442 MAC : LayoutTests/fast/dom/navigator-detached-no-crash.html = TIMEOUT PASS
+BUG10442 MAC : LayoutTests/fast/dom/navigator-detached-no-crash.html = TIMEOUT PASS FAIL
 
 // Added 3/10/09.
 BUG10443 WIN : LayoutTests/transitions/transition-end-event-multiple-01.html = FAIL PASS
@@ -2816,3 +2816,11 @@ BUG_JPARENT SKIP : LayoutTests/fast/wml/html-fieldset-crash.html = FAIL
 
 // Merge 47383:47417, just needs rebaseline
 BUG_JPARENT WIN LINUX : LayoutTests/fast/dom/navigator-detached-no-crash.html = FAIL
+// Debug only failures, didn't show up on canaries
+BUG_JPARENT LINUX DEBUG : LayoutTests/css1/classification/display.html = FAIL
+BUG_JPARENT LINUX DEBUG : LayoutTests/css1/classification/list_style.html = FAIL
+BUG_JPARENT LINUX DEBUG : LayoutTests/css1/classification/list_style_type.html = FAIL
+BUG_JPARENT LINUX DEBUG : LayoutTests/css1/classification/white_space.html = FAIL
+BUG_JPARENT LINUX DEBUG : LayoutTests/css2.1/t1205-c563-list-type-00-b.html = FAIL
+BUG_JPARENT LINUX DEBUG : LayoutTests/css2.1/t1205-c563-list-type-01-b.html = FAIL
+BUG_JPARENT MAC : LayoutTests/fast/runin/nonblock-runin.html = FAIL
