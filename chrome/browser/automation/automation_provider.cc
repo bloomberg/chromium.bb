@@ -1001,6 +1001,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigateInExternalTab,
                         NavigateInExternalTab)
+    IPC_MESSAGE_HANDLER(AutomationMsg_NavigateExternalTabAtIndex,
+                        NavigateExternalTabAtIndex)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ShowInterstitialPage,
                                     ShowInterstitialPage)
     IPC_MESSAGE_HANDLER(AutomationMsg_HideInterstitialPage,
@@ -2401,6 +2403,18 @@ void AutomationProvider::NavigateInExternalTab(
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     tab->LoadURL(url, GURL(), PageTransition::TYPED);
+    *status = AUTOMATION_MSG_NAVIGATION_SUCCESS;
+  }
+}
+
+void AutomationProvider::NavigateExternalTabAtIndex(
+    int handle, int navigation_index,
+    AutomationMsg_NavigationResponseValues* status) {
+  *status = AUTOMATION_MSG_NAVIGATION_ERROR;
+
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    tab->GoToIndex(navigation_index);
     *status = AUTOMATION_MSG_NAVIGATION_SUCCESS;
   }
 }

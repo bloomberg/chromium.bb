@@ -11,6 +11,7 @@
 #include "chrome/browser/automation/automation_profile_impl.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/widget/widget_win.h"
@@ -19,6 +20,10 @@ class AutomationProvider;
 class Profile;
 class TabContentsContainer;
 class RenderViewContextMenuExternalWin;
+
+namespace IPC {
+struct NavigationInfo;
+}
 
 // This class serves as the container window for an external tab.
 // An external tab is a Chrome tab that is meant to displayed in an
@@ -126,6 +131,9 @@ class ExternalTabContainer : public TabContentsDelegate,
  protected:
   // Overridden from views::WidgetWin:
   virtual void OnDestroy();
+  void InitNavigationInfo(IPC::NavigationInfo* nav_info,
+                          NavigationType::Type nav_type,
+                          int relative_offset);
 
  private:
   // Unhook the keystroke listener and notify about the closing TabContents.

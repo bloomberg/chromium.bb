@@ -70,10 +70,6 @@ bool ExternalTabContainer::Init(Profile* profile,
   // is the same as the lifetime of the window
   SetProp(GetNativeView(), kWindowObjectKey, this);
 
-  // If we are sending top level requests through the automation then
-  // we should be using automation to load url requests as well.
-  DCHECK(handle_top_level_requests ? load_requests_via_automation : 1);
-
   if (load_requests_via_automation) {
     // Customize our profile.
     // TODO(joshia): If we are loading requests via automation
@@ -208,8 +204,11 @@ void ExternalTabContainer::OpenURLFromTab(TabContents* source,
 void ExternalTabContainer::NavigationStateChanged(const TabContents* source,
                                                   unsigned changed_flags) {
   if (automation_) {
+    IPC::NavigationInfo nav_info;
+    InitNavigationInfo(&nav_info, NavigationType::NAV_IGNORE, 0);
     automation_->Send(new AutomationMsg_NavigationStateChanged(0, tab_handle_,
-                                                               changed_flags));
+                                                               changed_flags,
+                                                               nav_info));
   }
 }
 
@@ -405,14 +404,15 @@ void ExternalTabContainer::Observe(NotificationType type,
 
           ignore_next_load_notification_ = true;
         } else {
+          IPC::NavigationInfo navigation_info;
           // When the previous entry index is invalid, it will be -1, which
           // will still make the computation come out right (navigating to the
           // 0th entry will be +1).
-          automation_->Send(new AutomationMsg_DidNavigate(
-              0, tab_handle_, commit->type,
+          InitNavigationInfo(&navigation_info, commit->type,
               commit->previous_entry_index -
-                  tab_contents_->controller().last_committed_entry_index(),
-              commit->entry->url()));
+                  tab_contents_->controller().last_committed_entry_index());
+          automation_->Send(new AutomationMsg_DidNavigate(0, tab_handle_,
+                                                          navigation_info));
         }
         break;
       }
@@ -516,3 +516,19 @@ bool ExternalTabContainer::ProcessUnhandledKeyStroke(HWND window,
 
   return false;
 }
+
+void ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,
+                                              NavigationType::Type nav_type,
+                                              int relative_offset) {
+  NavigationEntry* entry = tab_contents_->controller().GetActiveEntry();
+  DCHECK(nav_info);
+  DCHECK(entry);
+
+  nav_info->navigation_type = nav_type;
+  nav_info->relative_offset = relative_offset;
+  nav_info->navigation_index =
+      tab_contents_->controller().GetCurrentEntryIndex();
+  nav_info->title =  UTF16ToWideHack(entry->title());
+  nav_info->url = entry->url();
+}
+

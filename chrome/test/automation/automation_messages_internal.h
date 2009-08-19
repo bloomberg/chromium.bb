@@ -438,9 +438,10 @@ IPC_BEGIN_MESSAGES(Automation)
   //         (see TabContents::InvalidateTypes)
   // Response:
   //   None expected
-  IPC_MESSAGE_ROUTED2(AutomationMsg_NavigationStateChanged,
-                      int, // tab handle
-                      int) // TabContents::InvalidateTypes
+  IPC_MESSAGE_ROUTED3(AutomationMsg_NavigationStateChanged,
+                      int,  // tab handle
+                      int,  // TabContents::InvalidateTypes
+                      IPC::NavigationInfo)  // title, url etc.
 
   // This message is an outgoing message from Chrome to an external host.
   // It is a notification that the target URL has changed (the target URL
@@ -561,15 +562,11 @@ IPC_BEGIN_MESSAGES(Automation)
   // This message is an outgoing message from Chrome to an external host.
   // It is a notification that a navigation happened
   // Request:
-  //   -int: Tab handle
-  //   -int : Indicates the type of navigation (see the NavigationType enum)
-  //   -int:  If this was not a new navigation, then this value indicates the
-  //          relative offset of the navigation. A positive offset means a
-  //          forward navigation, a negative value means a backward navigation
-  //          and 0 means this was a redirect
+  //   -int:  Tab handle
+  //
   // Response:
   //   None expected
-  IPC_MESSAGE_ROUTED4(AutomationMsg_DidNavigate, int, int, int, GURL)
+  IPC_MESSAGE_ROUTED2(AutomationMsg_DidNavigate, int, IPC::NavigationInfo)
 
   // This message requests the different security states of the page displayed
   // in the specified tab.
@@ -1018,5 +1015,14 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED3_1(
       AutomationMsg_NavigateToURLBlockUntilNavigationsComplete, int, GURL, int,
       AutomationMsg_NavigationResponseValues)
+
+  // This message notifies the AutomationProvider to navigate to a specified
+  // navigation entry index in the external tab with given handle. The first
+  // parameter is the handle to the tab resource. The second parameter is the
+  // index of navigation entry.
+  // The return value contains a status code which is nonnegative on success.
+  // see AutomationMsg_NavigationResponseValues for the navigation response.
+  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_NavigateExternalTabAtIndex, int, int,
+                             AutomationMsg_NavigationResponseValues)
 
 IPC_END_MESSAGES(Automation)

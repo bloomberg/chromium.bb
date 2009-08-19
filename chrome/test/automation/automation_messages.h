@@ -359,6 +359,47 @@ struct ParamTraits<ExternalTabSettings> {
   }
 };
 
+struct NavigationInfo {
+  int navigation_type;
+  int relative_offset;
+  int navigation_index;
+  std::wstring title;
+  GURL url;
+};
+
+// Traits for NavigationInfo structure to pack/unpack.
+template <>
+struct ParamTraits<NavigationInfo> {
+  typedef NavigationInfo param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.navigation_type);
+    WriteParam(m, p.relative_offset);
+    WriteParam(m, p.navigation_index);
+    WriteParam(m, p.title);
+    WriteParam(m, p.url);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->navigation_type) &&
+           ReadParam(m, iter, &p->relative_offset) &&
+           ReadParam(m, iter, &p->navigation_index) &&
+           ReadParam(m, iter, &p->title) &&
+           ReadParam(m, iter, &p->url);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.navigation_type, l);
+    l->append(L", ");
+    LogParam(p.relative_offset, l);
+    l->append(L", ");
+    LogParam(p.navigation_index, l);
+    l->append(L", ");
+    LogParam(p.title, l);
+    l->append(L", ");
+    LogParam(p.url, l);
+    l->append(L")");
+  }
+};
+
 }  // namespace IPC
 
 #define MESSAGES_INTERNAL_FILE \

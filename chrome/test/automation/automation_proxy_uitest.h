@@ -71,8 +71,7 @@ class AutomationProxyForExternalTab : public AutomationProxy {
  protected:
   virtual void OnMessageReceived(const IPC::Message& msg);
 
-  void OnDidNavigate(int tab_handle, int navigation_type, int relative_offset,
-                     const GURL& url) {
+  void OnDidNavigate(int tab_handle, const IPC::NavigationInfo& nav_info) {
     navigate_complete_ = true;
   }
 

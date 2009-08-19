@@ -117,6 +117,17 @@ AutomationMsg_NavigationResponseValues TabProxy::NavigateInExternalTab(
   return rv;
 }
 
+AutomationMsg_NavigationResponseValues TabProxy::NavigateExternalTabAtIndex(
+    int index) {
+  if (!is_valid())
+    return AUTOMATION_MSG_NAVIGATION_ERROR;
+
+  AutomationMsg_NavigationResponseValues rv = AUTOMATION_MSG_NAVIGATION_ERROR;
+  sender_->Send(new AutomationMsg_NavigateExternalTabAtIndex(0, handle_, index,
+                                                             &rv));
+  return rv;
+}
+
 bool TabProxy::SetAuth(const std::wstring& username,
                        const std::wstring& password) {
   if (!is_valid())

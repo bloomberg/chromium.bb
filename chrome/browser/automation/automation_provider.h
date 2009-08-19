@@ -302,6 +302,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void NavigateInExternalTab(
       int handle, const GURL& url,
       AutomationMsg_NavigationResponseValues* status);
+  void NavigateExternalTabAtIndex(
+      int handle, int index, AutomationMsg_NavigationResponseValues* status);
 
 // TODO(port): remove windowisms.
 #if defined(OS_WIN)
