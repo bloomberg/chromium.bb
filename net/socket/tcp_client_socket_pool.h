@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "net/base/host_resolver.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/client_socket_pool.h"
 
@@ -104,6 +105,9 @@ class TCPClientSocketPool : public ClientSocketPool {
   virtual LoadState GetLoadState(const std::string& group_name,
                                  const ClientSocketHandle* handle) const;
 
+ protected:
+  virtual ~TCPClientSocketPool();
+
  private:
   typedef ClientSocketPoolBase<HostResolver::RequestInfo> PoolBase;
 
@@ -131,12 +135,12 @@ class TCPClientSocketPool : public ClientSocketPool {
     DISALLOW_COPY_AND_ASSIGN(TCPConnectJobFactory);
   };
 
-  virtual ~TCPClientSocketPool();
-
   PoolBase base_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocketPool);
 };
+
+REGISTER_SOCKET_PARAMS_FOR_POOL(TCPClientSocketPool, HostResolver::RequestInfo)
 
 }  // namespace net
 

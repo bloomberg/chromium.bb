@@ -189,7 +189,8 @@ class MockClientSocketFactory : public ClientSocketFactory {
 class TCPClientSocketPoolTest : public ClientSocketPoolTest {
  protected:
   TCPClientSocketPoolTest()
-      : host_resolver_(new MockHostResolver),
+      : ignored_request_info_("ignored", 80),
+        host_resolver_(new MockHostResolver),
         pool_(new TCPClientSocketPool(kMaxSockets,
                                       kMaxSocketsPerGroup,
                                       host_resolver_,
@@ -197,9 +198,11 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
   }
 
   int StartRequest(const std::string& group_name, int priority) {
-    return StartRequestUsingPool(pool_.get(), group_name, priority);
+    return StartRequestUsingPool(
+        pool_.get(), group_name, priority, ignored_request_info_);
   }
 
+  HostResolver::RequestInfo ignored_request_info_;
   scoped_refptr<MockHostResolver> host_resolver_;
   MockClientSocketFactory client_socket_factory_;
   scoped_refptr<TCPClientSocketPool> pool_;
