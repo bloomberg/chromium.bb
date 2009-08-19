@@ -2813,3 +2813,6 @@ BUG19640 WIN : LayoutTests/platform/win/accessibility/focus-events.html = FAIL
 // Code was checked into webkit without expectations in 47329, added in 47437.
 // Remove this once we roll deps that far
 BUG_JPARENT SKIP : LayoutTests/fast/wml/html-fieldset-crash.html = FAIL
+
+// Merge 47383:47417, just needs rebaseline
+BUG_JPARENT WIN LINUX : LayoutTests/fast/dom/navigator-detached-no-crash.html = FAIL
