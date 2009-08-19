@@ -17,12 +17,15 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/custom_button.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/app_resources.h"
@@ -90,6 +93,34 @@ GdkPixbuf* GetOTRAvatar() {
   return otr_avatar;
 }
 
+// Converts a GdkColor to a skia::HSL.
+skia::HSL GdkColorToHSL(const GdkColor* color) {
+  skia::HSL hsl;
+  skia::SkColorToHSL(SkColorSetRGB(color->red >> 8,
+                                   color->green >> 8,
+                                   color->blue >> 8), hsl);
+  return hsl;
+}
+
+// Returns either |one| or |two| based on which has a greater difference in
+// luminosity.
+GdkColor PickLuminosityContrastingColor(const GdkColor* base,
+                                        const GdkColor* one,
+                                        const GdkColor* two) {
+  // Convert all GdkColors to skia::HSLs.
+  skia::HSL baseHSL = GdkColorToHSL(base);
+  skia::HSL oneHSL = GdkColorToHSL(one);
+  skia::HSL twoHSL = GdkColorToHSL(two);
+  double one_difference = fabs(baseHSL.l - oneHSL.l);
+  double two_difference = fabs(baseHSL.l - twoHSL.l);
+
+  // Be biased towards the first color presented.
+  if (two_difference > one_difference + 0.1)
+    return *two;
+  else
+    return *one;
+}
+
 }  // namespace
 
 BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
@@ -97,7 +128,9 @@ BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
     : browser_window_(browser_window), window_(window),
       app_mode_favicon_(NULL),
       app_mode_title_(NULL),
-      using_custom_frame_(false) {
+      using_custom_frame_(false),
+      window_has_focus_(false),
+      theme_provider_(NULL) {
   Init();
 }
 
@@ -189,6 +222,14 @@ void BrowserTitlebar::Init() {
     gtk_misc_set_alignment(GTK_MISC(app_mode_title_), 0.0, 0.5);
     gtk_box_pack_start(GTK_BOX(app_mode_hbox), app_mode_title_, TRUE, TRUE,
                        0);
+
+    // Register with the theme provider to set the |app_mode_title_| label
+    // color.
+    theme_provider_ = GtkThemeProvider::GetFrom(
+        browser_window_->browser()->profile());
+    registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                   NotificationService::AllSources());
+    theme_provider_->InitThemesFor(this);
     UpdateTitle();
   }
 
@@ -230,6 +271,9 @@ void BrowserTitlebar::Init() {
                    FALSE, 0);
 
   gtk_widget_show_all(container_);
+
+  registrar_.Add(this, NotificationType::ACTIVE_WINDOW_CHANGED,
+                 NotificationService::AllSources());
 }
 
 CustomDrawButton* BrowserTitlebar::BuildTitlebarButton(int image,
@@ -263,13 +307,7 @@ void BrowserTitlebar::UpdateTitle() {
 
   // Get the page title and elide it to the available space.
   string16 title = browser_window_->browser()->GetWindowTitleForCurrentTab();
-
-  // TODO(tc): Seems like this color should be themable, but it's hardcoded to
-  // white on Windows.  http://crbug.com/18093
-  gchar* label_markup = g_markup_printf_escaped("<span color='white'>%s</span>",
-      UTF16ToUTF8(title).c_str());
-  gtk_label_set_markup(GTK_LABEL(app_mode_title_), label_markup);
-  g_free(label_markup);
+  gtk_label_set_text(GTK_LABEL(app_mode_title_), UTF16ToUTF8(title).c_str());
 }
 
 void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
@@ -343,6 +381,41 @@ void BrowserTitlebar::UpdateTitlebarAlignment() {
                               restore_button_req.height);
 }
 
+void BrowserTitlebar::UpdateTextColor() {
+  if (app_mode_title_) {
+    if (theme_provider_ && theme_provider_->UseGtkTheme()) {
+      // We don't really have any good options here.
+      //
+      // Colors from window manager themes aren't exposed in GTK; the window
+      // manager is a separate component and when there is information sharing
+      // (in the case of metacity), it's one way where the window manager reads
+      // data from the GTK theme (which allows us to do a decent job with
+      // picking the frame color).
+      //
+      // We probably won't match in the majority of cases, but we can at the
+      // very least make things legible. The default metacity and xfwm themes
+      // on ubuntu have white text hardcoded. Determine whether black or white
+      // has more luminosity contrast and then set that color as the text
+      // color.
+      GdkColor frame_color;
+      if (window_has_focus_) {
+        frame_color = theme_provider_->GetGdkColor(
+          BrowserThemeProvider::COLOR_FRAME);
+      } else {
+        frame_color = theme_provider_->GetGdkColor(
+          BrowserThemeProvider::COLOR_FRAME_INACTIVE);
+      }
+      GdkColor text_color = PickLuminosityContrastingColor(
+          &frame_color, &gfx::kGdkWhite, &gfx::kGdkBlack);
+      gtk_util::SetLabelColor(app_mode_title_, &text_color);
+    } else {
+      // TODO(tc): Seems like this color should be themable, but it's hardcoded
+      // to white on Windows.  http://crbug.com/18093
+      gtk_util::SetLabelColor(app_mode_title_, &gfx::kGdkWhite);
+    }
+  }
+}
+
 // static
 gboolean BrowserTitlebar::OnWindowStateChanged(GtkWindow* window,
     GdkEventWindowState* event, BrowserTitlebar* titlebar) {
@@ -355,6 +428,7 @@ gboolean BrowserTitlebar::OnWindowStateChanged(GtkWindow* window,
     gtk_widget_show(titlebar->maximize_button_->widget());
   }
   titlebar->UpdateTitlebarAlignment();
+  titlebar->UpdateTextColor();
   return FALSE;
 }
 
@@ -450,6 +524,24 @@ void BrowserTitlebar::ExecuteCommand(int command_id) {
       break;
     }
 
+    default:
+      NOTREACHED();
+  }
+}
+
+void BrowserTitlebar::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::BROWSER_THEME_CHANGED:
+      UpdateTextColor();
+      break;
+    case NotificationType::ACTIVE_WINDOW_CHANGED: {
+      const GdkWindow* active_window = Details<const GdkWindow>(details).ptr();
+      window_has_focus_ = GTK_WIDGET(window_)->window == active_window;
+      UpdateTextColor();
+      break;
+    }
     default:
       NOTREACHED();
   }

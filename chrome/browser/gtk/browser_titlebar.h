@@ -14,13 +14,17 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 class BrowserWindowGtk;
 class CustomDrawButton;
+class GtkThemeProvider;
 class TabContents;
 class TabStripGtk;
 
-class BrowserTitlebar : public MenuGtk::Delegate {
+class BrowserTitlebar : public MenuGtk::Delegate,
+                        public NotificationObserver {
  public:
   BrowserTitlebar(BrowserWindowGtk* browser_window, GtkWindow* window);
   virtual ~BrowserTitlebar() { }
@@ -83,6 +87,10 @@ class BrowserTitlebar : public MenuGtk::Delegate {
   // Update the titlebar spacing based on the custom frame and maximized state.
   void UpdateTitlebarAlignment();
 
+  // Updates the color of the title bar. Called whenever we have a state
+  // change in the window.
+  void UpdateTextColor();
+
   // Callback for changes to window state.  This includes
   // maximizing/restoring/minimizing the window.
   static gboolean OnWindowStateChanged(GtkWindow* window,
@@ -102,6 +110,11 @@ class BrowserTitlebar : public MenuGtk::Delegate {
   virtual bool IsCommandEnabled(int command_id) const;
   virtual bool IsItemChecked(int command_id) const;
   virtual void ExecuteCommand(int command_id);
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Pointers to the browser window that owns us and it's GtkWindow.
   BrowserWindowGtk* browser_window_;
@@ -127,6 +140,10 @@ class BrowserTitlebar : public MenuGtk::Delegate {
   // Whether we are using a custom frame.
   bool using_custom_frame_;
 
+  // Whether we have focus (gtk_window_is_active() sometimes returns the wrong
+  // value, so manually track the focus-in and focus-out events.)
+  bool window_has_focus_;
+
   // We change the size of these three buttons when the window is maximized, so
   // we use these structs to keep track of their original size.
   GtkRequisition close_button_req_;
@@ -144,6 +161,11 @@ class BrowserTitlebar : public MenuGtk::Delegate {
 
   // The throbber used when the window is in app mode or popup window mode.
   Throbber throbber_;
+
+  // Theme provider for building buttons.
+  GtkThemeProvider* theme_provider_;
+
+  NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_GTK_BROWSER_TITLEBAR_H_
