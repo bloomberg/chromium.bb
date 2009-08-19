@@ -1,11 +1,15 @@
 {
   "name": "Mappy",
-  "version": "0.2",
-  "description": "Map stuff",
+  "version": "0.3",
+  "description": "Finds addresses in the web page you're on and pops up a map window.",
   "toolstrips": [
     "mappy_toolstrip.html"
   ],
   "content_scripts": [
     { "matches": ["http://*/*"], "js": ["mappy_content_script.js"] }
+  ],
+  "permissions": [ 
+    "tabs",
+    "http://maps.google.com/*"
   ]
 }
