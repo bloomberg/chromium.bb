@@ -7,11 +7,18 @@
 #include <gdk/gdk.h>
 
 #include "base/scoped_ptr.h"
+#include "base/command_line.h"
 
 namespace gfx {
 
 GdkRegion* Path::CreateGdkRegion() const {
   int point_count = getPoints(NULL, 0);
+  if (point_count <= 1) {
+    // NOTE: ideally this would return gdk_empty_region, but that returns a
+    // region with nothing in it.
+    return NULL;
+  }
+
   scoped_array<SkPoint> points(new SkPoint[point_count]);
   getPoints(points.get(), point_count);
 

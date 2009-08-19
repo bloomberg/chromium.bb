@@ -315,7 +315,10 @@ void WindowGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
                                   &window_mask);
   GdkRegion* mask_region = window_mask.CreateGdkRegion();
   gdk_window_shape_combine_region(GetNativeView()->window, mask_region, 0, 0);
-  gdk_region_destroy(mask_region);
+  if (mask_region)
+    gdk_region_destroy(mask_region);
+
+  SaveWindowPosition();
 }
 
 gboolean WindowGtk::OnWindowStateEvent(GtkWidget* widget,
