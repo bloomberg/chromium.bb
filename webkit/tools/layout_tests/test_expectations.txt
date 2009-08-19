@@ -2795,6 +2795,8 @@ BUG19544 : LayoutTests/fast/loader/user-style-sheet-resource-load-callbacks.html
 // Fallout from webkit 47305:47383
 BUG19655 : LayoutTests/fast/dom/Window/HTMLBodyElement-window-eventListener-attributes.html = FAIL
 BUG19655 : LayoutTests/fast/dom/Window/HTMLFrameSetElement-window-eventListener-attributes.html = FAIL
+BUG_JPARENT LINUX MAC: LayoutTests/fast/history/back-forward-is-asynchronous.html = TIMEOUT
+BUG_JPARENT LINUX DEBUG : LayoutTests/fast/multicol/columns-shorthand-parsing.html = CRASH
 // WebKit added implementation of the EventSource object that enables
 // server-sent events from HTML5.  Not implemented in Chrome yet.
 BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/workers/eventsource-simple.html = CRASH
