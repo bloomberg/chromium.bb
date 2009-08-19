@@ -926,7 +926,6 @@ BUG10304 LINUX : LayoutTests/svg/carto.net/slider.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/carto.net/textbox.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/carto.net/window.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/custom/coords-relative-units-transforms.svg = FAIL
-BUG10304 LINUX : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 BUG10304 LINUX : LayoutTests/svg/custom/use-referencing-nonexisting-symbol.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/hixie/perf/003.xml = FAIL
 BUG10304 LINUX : LayoutTests/svg/hixie/perf/004.xml = FAIL
@@ -2715,9 +2714,6 @@ BUG17883 WIN LINUX : LayoutTests/editing/deleting/delete-3857753-fix.html = FAIL
 BUG17883 WIN LINUX : LayoutTests/editing/deleting/pruning-after-merge-2.html = FAIL
 BUG17883 WIN LINUX : LayoutTests/editing/execCommand/5138441.html = FAIL
 BUG17883 WIN LINUX : LayoutTests/editing/pasteboard/display-block-on-spans.html = FAIL
-
-// Test failures from WebKit merge 46508 to 46531
-BUG17974 WIN : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 
 // This happened when I enabled DOM Storage.  Adam asked me to just exclude and
 // file a bug.
