@@ -1516,8 +1516,8 @@ class GClient(object):
                            {})
         (url, rev) = GetURLAndRev(d, sub_deps[d])
         entries[d] = "%s@%d" % (url, rev)
-
-    print(";".join(["%s,%s" % (x, entries[x]) for x in sorted(entries.keys())]))
+    print(";\n\n".join(["%s: %s" % (x, entries[x])
+                        for x in sorted(entries.keys())]))
 
 
 ## gclient commands.
