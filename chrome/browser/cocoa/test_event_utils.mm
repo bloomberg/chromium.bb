@@ -26,10 +26,12 @@ NSEvent* MakeMouseEvent(NSEventType type, NSUInteger modifiers) {
     // appropriate buttonNumber field. NSEvent provides no way to create a
     // mouse event with a buttonNumber directly.
     CGPoint location = { 0, 0 };
-    CGEventRef event = CGEventCreateMouseEvent(NULL, kCGEventOtherMouseUp,
-                                               location,
-                                               kCGMouseButtonCenter);
-    return [NSEvent eventWithCGEvent:event];
+    CGEventRef cg_event = CGEventCreateMouseEvent(NULL, kCGEventOtherMouseUp,
+                                                 location,
+                                                 kCGMouseButtonCenter);
+    NSEvent* event = [NSEvent eventWithCGEvent:cg_event];
+    CFRelease(cg_event);
+    return event;
   }
   return [NSEvent mouseEventWithType:type
                             location:NSMakePoint(0, 0)
