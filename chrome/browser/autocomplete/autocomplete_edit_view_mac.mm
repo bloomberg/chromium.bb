@@ -364,6 +364,18 @@ void AutocompleteEditViewMac::ClosePopup() {
 }
 
 void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
+  // Exit if an input method is composing text.
+  // NSTextView finishes an ongoing composition when updating the value of an
+  // NSTextField instance. This prevents inputting non-ASCII characters which
+  // need input methods, such as Latin characters, CJK characters, etc.
+  // To prevent updating this NSTextField value while an input method is
+  // composing text, we check whether or not the field editor for this control
+  // has marked text, text being composed by an input method, and return if
+  // the editor has marked text.
+  NSTextView* text_view = static_cast<NSTextView*>([field_ currentEditor]);
+  if (text_view && [text_view hasMarkedText])
+    return;
+
   NSString* ss = base::SysWideToNSString(display_text);
   NSMutableAttributedString* as =
       [[[NSMutableAttributedString alloc] initWithString:ss] autorelease];
