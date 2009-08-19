@@ -65,27 +65,50 @@ case $TOOL_NAME in
   *)          setup_unknown;;
 esac
 
-# Prefer a local install of valgrind if it's available.
-VALGRIND="/usr/local/bin/valgrind"
-if [ ! -x $VALGRIND ]; then
-  VALGRIND="valgrind"
+SUPPRESSIONS="$(cd `dirname "$0"` && pwd)/$TOOL_NAME/suppressions.txt"
+
+if test x"$CHROME_VALGRIND_BIN" = x
+then
+  # Figure out which valgrind is installed.  Use most recent one.
+  # See build-valgrind-for-chromium.sh and its history for these constants.
+  for SVNREV in '10771' '{2009-07-15}'
+  do
+    SHORTSVNREV=`echo $SVNREV | tr -d '{\-}'`
+    CHROME_VALGRIND_BIN=/usr/local/valgrind-$SHORTSVNREV/bin
+    test -x $CHROME_VALGRIND_BIN/valgrind && break
+  done
 fi
 
-SUPPRESSIONS="$(cd `dirname "$0"` && pwd)/$TOOL_NAME/suppressions.txt"
+if ! test -x $CHROME_VALGRIND_BIN/valgrind
+then
+  echo "Could not find chromium's version of valgrind."
+  echo "Please run build-valgrind-for-chromium.sh or set CHROME_VALGRIND_BIN."
+  echo "Defaulting to system valgrind."
+else
+  echo "Using ${CHROME_VALGRIND_BIN}/valgrind."
+  PATH="${CHROME_VALGRIND_BIN}:$PATH"
+fi
 
 set -x
 
-# Pass GTK glib allocations through to system malloc so valgrind sees them.
-# Prevent NSS from recycling memory arenas so valgrind can track origins.
-# Ask GTK to abort on any critical or warning assertions.
-# Overwrite newly allocated or freed objects with 0x41 to catch inproper use.
-# smc-check=all is required for valgrind to see v8's dynamic code generation.
-# trace-children to follow into the renderer processes.
+# G_SLICE=always-malloc: make glib use system malloc
+# NSS_DISABLE_ARENA_FREE_LIST=1: make nss use system malloc
+# G_DEBUG=fatal_warnings: make  GTK abort on any critical or warning assertions.
+# If it crashes on you in the Options menu, you hit bug 19751,
+# comment out the G_DEBUG=fatal_warnings line.
+#
+# --smc-check=all: handle v8's dynamic code generation.
+# (though we can probably remove that now that v8 is annotated).
+# --trace-children to follow into the renderer processes.
+#
+# When everyone has the latest valgrind, we might want to add
+#  --show-possible=no
+# to ignore possible but not definite leaks.
 
 G_SLICE=always-malloc \
 NSS_DISABLE_ARENA_FREE_LIST=1 \
 G_DEBUG=fatal_warnings \
-"$VALGRIND" \
+valgrind \
   --tool=$TOOL_NAME \
   --trace-children=yes \
   --suppressions="$SUPPRESSIONS" \
