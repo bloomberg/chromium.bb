@@ -2695,13 +2695,7 @@ BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
 // Test failures from WebKit merge r46282:r46288
 BUG17635 MAC : LayoutTests/fast/css/only-child-pseudo-class.html = PASS FAIL
 
-// Test failures from WebKit merge 46288:46363
-BUG17942 WIN LINUX : LayoutTests/traversal/acid3-test-2.html = CRASH PASS
-BUG17942 WIN : LayoutTests/fast/replaced/image-map-2.html = CRASH PASS
-BUG17942 LINUX : LayoutTests/transforms/2d/compound-2d-transforms.html = CRASH PASS
-BUG17942 LINUX : LayoutTests/fast/overflow/008.html = CRASH PASS
-BUG17942 WIN : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
-// New tests with this merge:
+// New tests with WebKit merge 46288:46363
 BUG18116 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
 BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 
