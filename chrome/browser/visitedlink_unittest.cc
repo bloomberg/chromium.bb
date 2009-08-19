@@ -399,6 +399,25 @@ TEST_F(VisitedLinkTest, Rebuild) {
   EXPECT_FALSE(master_->IsVisited(TestURL(g_test_count)));
 }
 
+// Test that importing a large number of URLs will work
+TEST_F(VisitedLinkTest, BigImport) {
+  ASSERT_TRUE(InitHistory());
+  ASSERT_TRUE(InitVisited(0, false));
+
+  // Before the table rebuilds, add a large number of URLs
+  int total_count = VisitedLinkMaster::kDefaultTableSize + 10;
+  for (int i = 0; i < total_count; i++)
+    master_->AddURL(TestURL(i));
+
+  // Wait for the rebuild to complete.
+  master_->set_rebuild_complete_task(new MessageLoop::QuitTask);
+  MessageLoop::current()->Run();
+
+  // Ensure that the right number of URLs are present
+  int used_count = master_->GetUsedCount();
+  ASSERT_EQ(used_count, total_count);
+}
+
 TEST_F(VisitedLinkTest, Listener) {
   ASSERT_TRUE(InitHistory());
   ASSERT_TRUE(InitVisited(0, true));

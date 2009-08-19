@@ -138,6 +138,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
  private:
   FRIEND_TEST(VisitedLinkTest, Delete);
   FRIEND_TEST(VisitedLinkTest, BigDelete);
+  FRIEND_TEST(VisitedLinkTest, BigImport);
 
   // Object to rebuild the table on the history thread (see the .cc file).
   class TableBuilder;

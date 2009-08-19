@@ -884,7 +884,7 @@ bool VisitedLinkMaster::RebuildTableFromHistory() {
   return true;
 }
 
-// See the TableBuilder definition in the header file for how this works.
+// See the TableBuilder declaration above for how this works.
 void VisitedLinkMaster::OnTableRebuildComplete(
     bool success,
     const std::vector<Fingerprint>& fingerprints) {
@@ -897,7 +897,7 @@ void VisitedLinkMaster::OnTableRebuildComplete(
     base::SharedMemory* old_shared_memory = shared_memory_;
 
     int new_table_size = NewTableSizeForCount(
-        static_cast<int>(fingerprints.size()));
+        static_cast<int>(fingerprints.size() + added_since_rebuild_.size()));
     if (BeginReplaceURLTable(new_table_size)) {
       // Free the old table.
       delete old_shared_memory;
