@@ -1534,7 +1534,7 @@
         'browser/renderer_host/backing_store.h',
         'browser/renderer_host/backing_store_manager.cc',
         'browser/renderer_host/backing_store_manager.h',
-        'browser/renderer_host/backing_store_mac.cc',
+        'browser/renderer_host/backing_store_mac.mm',
         'browser/renderer_host/backing_store_win.cc',
         'browser/renderer_host/backing_store_x.cc',
         'browser/renderer_host/browser_render_process_host.cc',

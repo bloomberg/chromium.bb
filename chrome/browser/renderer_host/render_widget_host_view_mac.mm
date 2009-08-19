@@ -545,11 +545,11 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
   renderWidgetHostView_->about_to_validate_and_paint_ = true;
   BackingStore* backing_store =
       renderWidgetHostView_->render_widget_host_->GetBackingStore(true);
-  skia::PlatformCanvas* canvas = backing_store->canvas();
   renderWidgetHostView_->about_to_validate_and_paint_ = false;
   dirtyRect = renderWidgetHostView_->invalid_rect_;
 
   if (backing_store) {
+    NSRect view_bounds = [self bounds];
     gfx::Rect damaged_rect([self NSRectToRect:dirtyRect]);
 
     gfx::Rect bitmap_rect(0, 0,
@@ -561,11 +561,9 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
       CGContextRef context = static_cast<CGContextRef>(
           [[NSGraphicsContext currentContext] graphicsPort]);
 
-      CGRect paint_rect_cg = paint_rect.ToCGRect();
-      NSRect paint_rect_ns = [self RectToNSRect:paint_rect];
-      canvas->getTopPlatformDevice().DrawToContext(
-          context, paint_rect_ns.origin.x, paint_rect_ns.origin.y,
-          &paint_rect_cg);
+      // TODO: add clipping to dirtyRect if it improves drawing performance.
+      CGContextDrawLayerAtPoint(context, CGPointMake(0.0, 0.0),
+                                backing_store->cg_layer());
     }
 
     // Fill the remaining portion of the damaged_rect with white
