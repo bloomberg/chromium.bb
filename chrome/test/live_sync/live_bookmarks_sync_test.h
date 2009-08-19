@@ -49,6 +49,11 @@ class LiveBookmarksSyncTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
+  // Append command line flag to enable sync.
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kEnableSync);
+  }
+
   // Helper to get a handle on a bookmark in |m| when the url is known to be
   // unique.
   static const BookmarkNode* GetByUniqueURL(BookmarkModel* m, const GURL& url);
