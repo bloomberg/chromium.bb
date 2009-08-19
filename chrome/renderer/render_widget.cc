@@ -21,6 +21,7 @@
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebSize.h"
+#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_POSIX)
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -356,7 +357,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     canvas->drawPaint(paint);
   }
 
-  webwidget_->paint(canvas, rect);
+  webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
 
   // Flush to underlying bitmap.  TODO(darin): is this needed?
   canvas->getTopPlatformDevice().accessBitmap(false);

@@ -179,7 +179,7 @@ class WebFrameImpl : public WebKit::WebFrame,
       WebCore::HTMLFrameOwnerElement* owner_element);
 
   void Layout();
-  void Paint(skia::PlatformCanvas* canvas, const WebKit::WebRect& rect);
+  void Paint(WebKit::WebCanvas* canvas, const WebKit::WebRect& rect);
 
   void CreateFrameView();
 

@@ -425,7 +425,12 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
   DCHECK(MessageLoop::current() == main_loop_);
   DCHECK(proxy_);
 
+#if WEBKIT_USING_SKIA
   proxy_->Paint(canvas, rect);
+#else
+  // TODO(darin): Implement this for Mac, where WebCanvas is a CGContext.
+  NOTIMPLEMENTED();
+#endif
 }
 
 bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {

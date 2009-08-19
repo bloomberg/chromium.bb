@@ -594,7 +594,8 @@ bool RenderView::CaptureThumbnail(WebView* view,
   skia::PlatformCanvas canvas;
   if (!canvas.initialize(size.width, size.height, true))
     return false;
-  view->paint(&canvas, WebRect(0, 0, size.width, size.height));
+  view->paint(webkit_glue::ToWebCanvas(&canvas),
+              WebRect(0, 0, size.width, size.height));
 
   skia::BitmapPlatformDevice& device =
       static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());

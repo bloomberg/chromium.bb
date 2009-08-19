@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,12 +17,17 @@
 #include "base/clipboard.h"
 #include "base/file_path.h"
 #include "base/string16.h"
+#include "webkit/api/public/WebCanvas.h"
 
 class GURL;
 class SkBitmap;
 class StringPiece;
 class WebView;
 struct WebPluginInfo;
+
+namespace skia {
+class PlatformCanvas;
+}
 
 namespace WebKit {
 class WebFrame;
@@ -103,6 +108,9 @@ bool ShouldForcefullyTerminatePluginProcess();
 // File path string conversions.
 FilePath::StringType WebStringToFilePathString(const WebKit::WebString& str);
 WebKit::WebString FilePathStringToWebString(const FilePath::StringType& str);
+
+// Returns a WebCanvas pointer associated with the given Skia canvas.
+WebKit::WebCanvas* ToWebCanvas(skia::PlatformCanvas*);
 
 //---- END FUNCTIONS IMPLEMENTED BY WEBKIT/GLUE -------------------------------
 

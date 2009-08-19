@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,7 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/api/public/WebHistoryItem.h"
 #include "webkit/api/public/WebString.h"
@@ -48,6 +49,7 @@
 
 #include "webkit_version.h"  // Generated
 
+using WebKit::WebCanvas;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebString;
@@ -435,6 +437,17 @@ void SetForcefullyTerminatePluginProcess(bool value) {
 
 bool ShouldForcefullyTerminatePluginProcess() {
   return g_forcefully_terminate_plugin_process;
+}
+
+WebCanvas* ToWebCanvas(skia::PlatformCanvas* canvas) {
+#if WEBKIT_USING_SKIA
+  return canvas;
+#elif WEBKIT_USING_CG
+  return canvas->getTopPlatformDevice().GetBitmapContext();
+#else
+  NOTIMPLEMENTED();
+  return NULL;
+#endif
 }
 
 } // namespace webkit_glue

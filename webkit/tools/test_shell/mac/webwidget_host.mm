@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "webkit/api/public/WebPopupMenu.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebSize.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
 using WebKit::WebInputEvent;
@@ -280,6 +281,6 @@ void WebWidgetHost::PaintRect(const gfx::Rect& rect) {
   DCHECK(canvas_.get());
 
   set_painting(true);
-  webwidget_->paint(canvas_.get(), rect);
+  webwidget_->paint(webkit_glue::ToWebCanvas(canvas_.get()), rect);
   set_painting(false);
 }

@@ -1054,8 +1054,7 @@ float WebFrameImpl::printPage(int page, WebCanvas* canvas) {
   PlatformContextSkia context(canvas);
   GraphicsContext spool(&context);
 #elif defined(OS_MACOSX)
-  CGContextRef context = canvas->beginPlatformPaint();
-  GraphicsContext spool(context);
+  GraphicsContext spool(canvas);
   WebCore::LocalCurrentGraphicsContext localContext(&spool);
 #endif
 
@@ -1526,21 +1525,22 @@ void WebFrameImpl::Layout() {
     FromFrame(child)->Layout();
 }
 
-void WebFrameImpl::Paint(skia::PlatformCanvas* canvas, const WebRect& rect) {
+void WebFrameImpl::Paint(WebCanvas* canvas, const WebRect& rect) {
   static StatsRate rendering("WebFramePaintTime");
   StatsScope<StatsRate> rendering_scope(rendering);
 
   if (!rect.isEmpty()) {
     IntRect dirty_rect(webkit_glue::WebRectToIntRect(rect));
-#if defined(OS_MACOSX)
-    CGContextRef context = canvas->getTopPlatformDevice().GetBitmapContext();
-    GraphicsContext gc(context);
+#if WEBKIT_USING_CG
+    GraphicsContext gc(canvas);
     WebCore::LocalCurrentGraphicsContext localContext(&gc);
-#else
+#elif WEBKIT_USING_SKIA
     PlatformContextSkia context(canvas);
 
     // PlatformGraphicsContext is actually a pointer to PlatformContextSkia
     GraphicsContext gc(reinterpret_cast<PlatformGraphicsContext*>(&context));
+#else
+    NOTIMPLEMENTED();
 #endif
     if (frame_->document() && frameview()) {
       frameview()->paint(&gc, dirty_rect);

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,15 +144,15 @@ void WebPopupMenuImpl::paint(WebCanvas* canvas, const WebRect& rect) {
     return;
 
   if (!rect.isEmpty()) {
-#if defined(OS_MACOSX)
-    CGContextRef context = canvas->getTopPlatformDevice().GetBitmapContext();
-    GraphicsContext gc(context);
-#else
+#if WEBKIT_USING_CG
+    GraphicsContext gc(canvas);
+#elif WEBKIT_USING_SKIA
     PlatformContextSkia context(canvas);
     // PlatformGraphicsContext is actually a pointer to PlatformContextSkia.
     GraphicsContext gc(reinterpret_cast<PlatformGraphicsContext*>(&context));
+#else
+    NOTIMPLEMENTED();
 #endif
-
     widget_->paint(&gc, webkit_glue::WebRectToIntRect(rect));
   }
 }
