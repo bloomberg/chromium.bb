@@ -27,7 +27,6 @@
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebScreenInfo.h"
-#include "webkit/api/public/WebSettings.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLError.h"
@@ -806,16 +805,16 @@ int TestWebViewDelegate::GetHistoryForwardListCount() {
 }
 
 void TestWebViewDelegate::SetUserStyleSheetEnabled(bool is_enabled) {
-  // Disabling/enabling this is really just setting it to an empty URL or
-  // setting it to something else.  From this location in the code, there's
-  // no way to know what it's supposed to be.  Luckily, right now, this is only
-  // used to disable the user style sheet.
-  DCHECK(!is_enabled);
-  shell_->webView()->GetSettings()->setUserStyleSheetLocation(WebURL());
+  WebPreferences* prefs = shell_->GetWebPreferences();
+  prefs->user_style_sheet_enabled = is_enabled;
+  prefs->Apply(shell_->webView());
 }
 
 void TestWebViewDelegate::SetUserStyleSheetLocation(const GURL& location) {
-  shell_->webView()->GetSettings()->setUserStyleSheetLocation(location);
+  WebPreferences* prefs = shell_->GetWebPreferences();
+  prefs->user_style_sheet_enabled = true;
+  prefs->user_style_sheet_location = location;
+  prefs->Apply(shell_->webView());
 }
 
 // WebWidgetDelegate ---------------------------------------------------------

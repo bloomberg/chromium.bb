@@ -2789,9 +2789,6 @@ BUG19409 WIN : LayoutTests/media/video-empty-source.html = PASS TIMEOUT
 
 BUG19519 MAC DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
 
-BUG19544 : LayoutTests/http/tests/security/xssAuditor/link-opens-new-window.html = FAIL
-BUG19544 : LayoutTests/fast/loader/user-style-sheet-resource-load-callbacks.html = FAIL
-
 // Fallout from webkit 47305:47383
 BUG19655 : LayoutTests/fast/dom/Window/HTMLBodyElement-window-eventListener-attributes.html = FAIL
 BUG19655 : LayoutTests/fast/dom/Window/HTMLFrameSetElement-window-eventListener-attributes.html = FAIL

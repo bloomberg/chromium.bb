@@ -16,7 +16,6 @@
 #include "base/string_util.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebScriptSource.h"
-#include "webkit/api/public/WebSettings.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
@@ -557,8 +556,9 @@ void LayoutTestController::setPopupBlockingEnabled(
     const CppArgumentList& args, CppVariant* result) {
   if (args.size() > 0 && args[0].isBool()) {
     bool block_popups = args[0].ToBoolean();
-    shell_->webView()->GetSettings()->setJavaScriptCanOpenWindowsAutomatically(
-        !block_popups);
+    WebPreferences* prefs = shell_->GetWebPreferences();
+    prefs->javascript_can_open_windows_automatically = !block_popups;
+    prefs->Apply(shell_->webView());
   }
   result->SetNull();
 }
@@ -705,7 +705,9 @@ void LayoutTestController::numberOfActiveAnimations(const CppArgumentList& args,
 
 void LayoutTestController::disableImageLoading(const CppArgumentList& args,
                                                CppVariant* result) {
-  shell_->webView()->GetSettings()->setLoadsImagesAutomatically(false);
+  WebPreferences* prefs = shell_->GetWebPreferences();
+  prefs->loads_images_automatically = false;
+  prefs->Apply(shell_->webView());
   result->SetNull();
 }
 
@@ -789,8 +791,9 @@ void LayoutTestController::setPrivateBrowsingEnabled(
 void LayoutTestController::setXSSAuditorEnabled(
     const CppArgumentList& args, CppVariant* result) {
   if (args.size() > 0 && args[0].isBool()) {
-    bool enabled = args[0].value.boolValue;
-    shell_->webView()->GetSettings()->setXSSAuditorEnabled(enabled);
+    WebPreferences* prefs = shell_->GetWebPreferences();
+    prefs->xss_auditor_enabled = args[0].value.boolValue;
+    prefs->Apply(shell_->webView());
   }
   result->SetNull();
 }
