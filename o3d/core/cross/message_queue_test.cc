@@ -35,6 +35,7 @@
 #include "core/cross/message_queue.h"
 #include "core/cross/object_manager.h"
 #include "core/cross/pack.h"
+#include "core/cross/error_status.h"
 #include "core/cross/service_dependency.h"
 #include "core/cross/texture.h"
 #include "core/cross/types.h"
@@ -574,6 +575,7 @@ class MessageQueueTest : public testing::Test {
  protected:
   MessageQueueTest()
       : object_manager_(g_service_locator),
+        error_status_(g_service_locator),
         socket_handles_(NULL),
         num_socket_handles_(0) {}
 
@@ -588,8 +590,16 @@ class MessageQueueTest : public testing::Test {
 
   Pack* pack() { return pack_; }
 
+  // Checks if an error has occured on the client then clears the error.
+  bool CheckErrorExists() {
+    bool have_error = !error_status_.GetLastError().empty();
+    error_status_.ClearLastError();
+    return have_error;
+  }
+
  private:
   ServiceDependency<ObjectManager> object_manager_;
+  ErrorStatus error_status_;
   Pack *pack_;
   nacl::Handle* socket_handles_;
   int num_socket_handles_;
@@ -704,6 +714,7 @@ TEST_F(MessageQueueTest, Initialize) {
   EXPECT_EQ(0U, socket_addr.find("o3d"));
 
   delete message_queue;
+  EXPECT_FALSE(CheckErrorExists());
 }
 
 // Tests that the a client can actually establish a connection to the
@@ -733,6 +744,7 @@ TEST_F(MessageQueueTest, TestConnection) {
 
   Provider provider;
   RunTests(1, TimeDelta::FromSeconds(1), &provider);
+  EXPECT_FALSE(CheckErrorExists());
 }
 
 // Tests a request for shared memory.
@@ -783,12 +795,10 @@ TEST_F(MessageQueueTest, GetSharedMemory) {
 // Tests a request to update a texture.
 TEST_F(MessageQueueTest, UpdateTexture2D) {
   class UpdateTexture2DTest : public PerThreadConnectedTest {
-   private:
-    int texture_id_;
-
    public:
-    explicit UpdateTexture2DTest(int texture_id) {
-      texture_id_ = texture_id;
+    UpdateTexture2DTest(int texture_id, int buffer_size)
+        : texture_id_(texture_id),
+          buffer_size_(buffer_size) {
     }
 
     void Run(MessageQueue* queue,
@@ -817,30 +827,36 @@ TEST_F(MessageQueueTest, UpdateTexture2D) {
         FAIL_TEST("Memory request failed");
       }
 
-      int texture_buffer_size = 128 * 128 * 4;
-
       if (!helper.RequestTextureUpdate(texture_id_,
                                        0,
                                        shared_mem_id,
                                        0,
-                                       texture_buffer_size)) {
+                                       buffer_size_)) {
         FAIL_TEST("RequestTextureUpdate failed");
       }
 
       Pass();
     }
+
+   private:
+    int texture_id_;
+    int buffer_size_;
   };
 
   class Provider : public TestProvider {
-   private:
-    int texture_id_;
-
    public:
-    explicit Provider(int texture_id) : texture_id_(texture_id) {}
+    Provider(int texture_id, int buffer_size)
+        : texture_id_(texture_id),
+          buffer_size_(buffer_size) {
+    }
 
     virtual PerThreadConnectedTest* CreateTest() {
-      return new UpdateTexture2DTest(texture_id_);
+      return new UpdateTexture2DTest(texture_id_, buffer_size_);
     }
+
+   private:
+    int texture_id_;
+    int buffer_size_;
   };
 
   Texture2D* texture = pack()->CreateTexture2D(128,
@@ -851,8 +867,92 @@ TEST_F(MessageQueueTest, UpdateTexture2D) {
 
   ASSERT_TRUE(texture != NULL);
 
-  Provider provider(texture->id());
+  Provider provider(texture->id(), 128 * 128 * 4);
   RunTests(1, TimeDelta::FromSeconds(1), &provider);
+  EXPECT_FALSE(CheckErrorExists());
+}
+
+// Tests a request to update a partial texture.
+TEST_F(MessageQueueTest, UpdateTexture2DPartial) {
+  class UpdateTexture2DTest : public PerThreadConnectedTest {
+   public:
+    UpdateTexture2DTest(int texture_id, int buffer_size)
+        : texture_id_(texture_id),
+          buffer_size_(buffer_size) {
+    }
+
+    void Run(MessageQueue* queue,
+             nacl::Handle socket_handle) {
+      String socket_addr = queue->GetSocketAddress();
+      TextureUpdateHelper helper;
+      if (!helper.ConnectToO3D(socket_addr.c_str(),
+                               socket_handle)) {
+        FAIL_TEST("Failed to connect to O3D");
+      }
+
+      void *shared_mem_address = NULL;
+      int shared_mem_id = -1;
+      bool memory_ok = helper.RequestSharedMemory(65536,
+                                                  &shared_mem_id,
+                                                  &shared_mem_address);
+      if (shared_mem_id == -1) {
+        FAIL_TEST("Shared memory id was -1");
+      }
+
+      if (shared_mem_address == NULL) {
+        FAIL_TEST("Shared memory address was NULL");
+      }
+
+      if (!memory_ok) {
+        FAIL_TEST("Memory request failed");
+      }
+
+      if (!helper.RequestTextureUpdate(texture_id_,
+                                       0,
+                                       shared_mem_id,
+                                       0,
+                                       buffer_size_)) {
+        FAIL_TEST("RequestTextureUpdate failed");
+      }
+
+      Pass();
+    }
+
+   private:
+    int texture_id_;
+    int buffer_size_;
+  };
+
+  class Provider : public TestProvider {
+   public:
+    Provider(int texture_id, int buffer_size)
+        : texture_id_(texture_id),
+          buffer_size_(buffer_size) {
+    }
+
+    virtual PerThreadConnectedTest* CreateTest() {
+      return new UpdateTexture2DTest(texture_id_, buffer_size_);
+    }
+
+   private:
+    int texture_id_;
+    int buffer_size_;
+  };
+
+  // Check updating a partial texture.
+  // Because we pass in 8 * 127 * 4 + 4 that means we'll update
+  // 127 rows and 1 pixel in the last row.
+  Texture2D* texture = pack()->CreateTexture2D(8,
+                                               128,
+                                               Texture::ARGB8,
+                                               0,
+                                               false);
+
+  ASSERT_TRUE(texture != NULL);
+
+  Provider provider(texture->id(), 8 * 127 * 4 + 4);
+  RunTests(1, TimeDelta::FromSeconds(1), &provider);
+  EXPECT_FALSE(CheckErrorExists());
 }
 
 // Tests a request to update a texture.
@@ -937,6 +1037,7 @@ TEST_F(MessageQueueTest, UpdateTexture2DRect) {
 
   Provider provider(texture->id());
   RunTests(1, TimeDelta::FromSeconds(1), &provider);
+  EXPECT_FALSE(CheckErrorExists());
 }
 
 namespace {
@@ -1004,6 +1105,7 @@ TEST_F(MessageQueueTest, RegisterAndUnregisterSharedMemory) {
 
   Provider provider;
   RunTests(1, TimeDelta::FromSeconds(1), &provider);
+  EXPECT_FALSE(CheckErrorExists());
 }
 
 // Tests that multiple concurrent clients of the MessageQueue don't
@@ -1018,6 +1120,7 @@ TEST_F(MessageQueueTest, ConcurrentSharedMemoryOperations) {
 
   Provider provider;
   RunTests(2, TimeDelta::FromSeconds(6), &provider);
+  EXPECT_FALSE(CheckErrorExists());
 }
 
 }  // namespace o3d

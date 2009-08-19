@@ -606,7 +606,7 @@ bool MessageQueue::ProcessMessageUpdateTexture2D(
   if (remain) {
     int width = remain / image::ComputePitch(texture_object->format(), 1);
     texture_object->SetRect(
-      message.level, rows, 0, width, 1,
+        message.level, 0, rows, width, 1,
         AddPointerOffset<void*>(target_address, rows * pitch), pitch);
   }
 
