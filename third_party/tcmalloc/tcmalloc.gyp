@@ -16,9 +16,9 @@
       ],
       'include_dirs': [
         '.',
-        'tcmalloc/src/windows',
         'tcmalloc/src/base',
         'tcmalloc/src',
+        '../..',
       ],
       'direct_dependent_settings': {
         'configurations': {
@@ -49,6 +49,10 @@
         },
       },
       'sources': [
+        'config.h',
+        'config_linux.h',
+        'config_win.h',
+
         # tcmalloc files
         'tcmalloc/src/base/dynamic_annotations.cc',
         'tcmalloc/src/base/dynamic_annotations.h',
@@ -72,6 +76,8 @@
         'tcmalloc/src/malloc_extension.cc',
         'tcmalloc/src/malloc_hook.cc',
         'tcmalloc/src/malloc_hook-inl.h',
+        'tcmalloc/src/page_heap.cc',
+        'tcmalloc/src/page_heap.h',
         'tcmalloc/src/port.h',
         'tcmalloc/src/sampler.cc',
         'tcmalloc/src/sampler.h',
@@ -86,13 +92,39 @@
         'tcmalloc/src/thread_cache.cc',
         'tcmalloc/src/thread_cache.h',
 
+        # non-windows
+        'tcmalloc/src/base/linuxthreads.cc',
+        'tcmalloc/src/base/linuxthreads.h',
+        'tcmalloc/src/base/vdso_support.cc',
+        'tcmalloc/src/base/vdso_support.h',
+        'tcmalloc/src/google/tcmalloc.h',
+        'tcmalloc/src/maybe_threads.cc',
+        'tcmalloc/src/maybe_threads.h',
+        'tcmalloc/src/system-alloc.cc',
+        'tcmalloc/src/system-alloc.h',
+        'tcmalloc/src/tcmalloc.cc',
+
+        # heap-profiler/checker
+        'tcmalloc/src/base/thread_lister.c',
+        'tcmalloc/src/base/thread_lister.h',
+        'tcmalloc/src/heap-checker-bcad.cc',
+        'tcmalloc/src/heap-checker.cc',
+        'tcmalloc/src/heap-profiler.cc',
+        'tcmalloc/src/memory_region_map.cc',
+        'tcmalloc/src/memory_region_map.h',
+        'tcmalloc/src/raw_printer.cc',
+        'tcmalloc/src/raw_printer.h',
+
         # tcmalloc forked files
         'allocator_shim.cc',
+        'generic_allocators.cc',
         'page_heap.cc',
         'port.cc',
         'system-alloc.h',
         'tcmalloc.cc',
         'win_allocator.cc',        
+
+        'malloc_hook.cc',
 
         # jemalloc files
         'jemalloc/jemalloc.c',
@@ -103,6 +135,7 @@
       ],
       # sources! means that these are not compiled directly.
       'sources!': [
+        'generic_allocators.cc',
         'tcmalloc.cc',
         'win_allocator.cc',
       ],
@@ -126,6 +159,71 @@
           },
         },
       },
+      'conditions': [
+        ['OS=="win"', {
+          'include_dirs': [
+            'tcmalloc/src/windows',
+          ],
+          'sources!': [
+            'tcmalloc/src/base/linuxthreads.cc',
+            'tcmalloc/src/base/linuxthreads.h',
+            'tcmalloc/src/base/vdso_support.cc',
+            'tcmalloc/src/base/vdso_support.h',
+            'tcmalloc/src/maybe_threads.cc',
+            'tcmalloc/src/maybe_threads.h',
+            'tcmalloc/src/system-alloc.cc',
+            'tcmalloc/src/system-alloc.h',
+
+            # use forked version in windows
+            'tcmalloc/src/tcmalloc.cc',
+            'tcmalloc/src/page_heap.cc',
+            'tcmalloc/src/page_heap.h',
+
+            # heap-profiler/checker
+            'tcmalloc/src/base/thread_lister.c',
+            'tcmalloc/src/base/thread_lister.h',
+            'tcmalloc/src/heap-checker-bcad.cc',
+            'tcmalloc/src/heap-checker.cc',
+            'tcmalloc/src/heap-profiler.cc',
+            'tcmalloc/src/memory_region_map.cc',
+            'tcmalloc/src/memory_region_map.h',
+            'tcmalloc/src/raw_printer.cc',
+            'tcmalloc/src/raw_printer.h',
+
+            # don't use linux forked versions
+            'malloc_hook.cc',
+          ],
+        }],
+        ['OS=="linux"', {
+          'sources!': [
+            'page_heap.cc',
+            'port.cc',
+            'system-alloc.h',
+            'win_allocator.cc',        
+
+            # TODO(willchan): Support allocator shim later on.
+            'allocator_shim.cc',
+
+            # TODO(willchan): support jemalloc on other platforms
+            # jemalloc files
+            'jemalloc/jemalloc.c',
+            'jemalloc/jemalloc.h',
+            'jemalloc/ql.h',
+            'jemalloc/qr.h',
+            'jemalloc/rb.h',
+
+            # TODO(willchan): Unfork linux.
+            'tcmalloc/src/malloc_hook.cc',
+          ],
+          'link_settings': {
+            'ldflags': [
+              # Don't let linker rip this symbol out, otherwise the heap
+              # profiler will not initialize properly on startup.
+              '-Wl,-uIsHeapProfilerRunning',
+            ],
+          },
+        }],
+      ],
     },
     {
       'target_name': 'libcmt',
