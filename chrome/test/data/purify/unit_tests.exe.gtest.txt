@@ -33,4 +33,4 @@ DnsMasterTest.MassiveConcurrentLookupTest
 ExpireHistoryTest.*
 
 # issue 19606
-HistoryTest.*
+ThumbnailDatabaseTest.*
