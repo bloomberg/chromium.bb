@@ -1265,7 +1265,9 @@ BrowserWindowGtk* BrowserWindowGtk::GetBrowserWindowForNativeWindow(
 
 // static
 GtkWindow* BrowserWindowGtk::GetBrowserWindowForXID(XID xid) {
-  return BrowserWindowGtk::xid_map_.find(xid)->second;
+  std::map<XID, GtkWindow*>::iterator iter =
+      BrowserWindowGtk::xid_map_.find(xid);
+  return (iter != BrowserWindowGtk::xid_map_.end()) ? iter->second : NULL;
 }
 
 // static
