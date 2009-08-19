@@ -449,8 +449,9 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
   }
 
   unsigned int num_bitmaps = is_cubemap ? 6 : 1;
-  size_t face_size = image::ComputeMipChainSize(
-      dds_width, dds_height, format, mip_count);
+  // Bitmap requires we allocate enough memory for all mips even if we don't use
+  // them.
+  size_t face_size = Bitmap::ComputeMaxSize(dds_width, dds_height, format);
 
   BitmapRefArray temp_bitmaps;
 

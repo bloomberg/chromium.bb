@@ -316,7 +316,7 @@ typedef Param[] ParamVector;
 %[
   A Param which stores a DrawList.
 %]
-[nocpp, include="core/cross/param.h"] class ParamDrawList : Param {
+[nocpp, include="core/cross/draw_context.h"] class ParamDrawList : Param {
   %[
     The DrawList stored by the Param.
   %]

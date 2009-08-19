@@ -38,6 +38,7 @@
 #include "core/cross/canvas_utils.h"
 #include "core/cross/client.h"
 #include "core/cross/error.h"
+#include "core/cross/features.h"
 
 #include "third_party/skia/include/core/SkPath.h"
 
@@ -49,6 +50,10 @@ Canvas::Canvas(ServiceLocator* service_locator)
     : ParamObject(service_locator),
       width_(0),
       height_(0) {
+  Features* features = service_locator->GetService<Features>();
+  DCHECK(features);
+  flip_ = features->flip_textures();
+
   // Initialize a 0x0 bitmap
   sk_bitmap_.setConfig(SkBitmap::kARGB_8888_Config, 0, 0);
   sk_canvas_.setBitmapDevice(sk_bitmap_);
@@ -67,11 +72,14 @@ bool Canvas::SetSize(int width, int height) {
     return false;
   }
   sk_canvas_.setBitmapDevice(sk_bitmap_);
-  // Translate and flip our canvas to change from o3d coordinates
-  // (where the lower left is (0,0)) to skia coordinates (where the
-  // upper left is (0,0))
-  sk_canvas_.translate(0, SkIntToScalar(sk_bitmap_.height()));
-  sk_canvas_.scale(SK_Scalar1, -SK_Scalar1);
+
+  if (flip_) {
+    // Translate and flip our canvas to change from o3d coordinates
+    // (where the lower left is (0,0)) to skia coordinates (where the
+    // upper left is (0,0))
+    sk_canvas_.translate(0, SkIntToScalar(sk_bitmap_.height()));
+    sk_canvas_.scale(SK_Scalar1, -SK_Scalar1);
+  }
 
   return true;
 }
@@ -205,12 +213,10 @@ void Canvas::DrawBitmap(Texture2D* texture2d,
   }
 
   // Now copy from the temporary bitmap to the canvas bitmap.
-  // Note that we scale Y by -1 to flip the image vertically.  The reason is
-  // that in O3D textures the first byte is the bottom left corner whereas
-  // in Skia the first byte is the top left of a bitmap.
   SaveMatrix();
-  Scale(1, -1);
-
+  if (flip_) {
+    Scale(1, -1);
+  }
   sk_canvas_.drawBitmap(bitmap,
                         SkFloatToScalar(left),
                         SkFloatToScalar(-bottom),
@@ -231,7 +237,7 @@ void Canvas::Translate(float dx, float dy) {
 }
 
 // Copy the contents of the local bitmap to a Texture object.
-bool Canvas::CopyToTexture(Texture2D* texture_2d) {
+bool Canvas::CopyToTexture(Texture2D* texture_2d) const {
   DCHECK(texture_2d);
 
   if (texture_2d->width() != sk_bitmap_.width() ||

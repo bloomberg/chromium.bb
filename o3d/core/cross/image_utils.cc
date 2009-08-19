@@ -96,8 +96,8 @@ size_t ComputeMipChainSize(unsigned int base_width,
 bool ScaleUpToPOT(unsigned int width,
                   unsigned int height,
                   Texture::Format format,
-                  const uint8 *src,
-                  uint8 *dst,
+                  const void *src,
+                  void *dst,
                   int dst_pitch) {
   DCHECK(CheckImageDimensions(width, height));
   switch (format) {
@@ -164,10 +164,10 @@ uint8 Safe8Round(float f) {
 template <typename T>
 void PointScale(
     unsigned components,
-    const uint8* src,
+    const void* src,
     unsigned src_width,
     unsigned src_height,
-    uint8* dst,
+    void* dst,
     int dst_pitch,
     unsigned dst_width,
     unsigned dst_height) {
@@ -198,10 +198,10 @@ void PointScale(
 bool Scale(unsigned int src_width,
            unsigned int src_height,
            Texture::Format format,
-           const uint8 *src,
+           const void *src,
            unsigned int dst_width,
            unsigned int dst_height,
-           uint8 *dst,
+           void *dst,
            int dst_pitch) {
   DCHECK(CheckImageDimensions(src_width, src_height));
   DCHECK(CheckImageDimensions(dst_width, dst_height));
@@ -243,8 +243,9 @@ namespace  {
 bool AdjustDrawImageBoundHelper(int* src_a, int* dest_a,
                                 int* src_length, int* dest_length,
                                 int src_bmp_length) {
-  if (*src_length == 0 || *dest_length == 0)
+  if (*src_length == 0 || *dest_length == 0) {
     return false;
+  }
 
   // check if start point is out of boundary.
   // if src_a < 0, src_length must be positive.
@@ -266,8 +267,9 @@ bool AdjustDrawImageBoundHelper(int* src_a, int* dest_a,
     *src_a = src_bmp_length - 1;
   }
 
-  if (*src_length == 0 || *dest_length == 0)
+  if (*src_length == 0 || *dest_length == 0) {
     return false;
+  }
   // check whether start point + related length is out of boundary.
   // if src_a + src_length > src_bmp_length, src_length must be positive.
   if (*src_a + *src_length > src_bmp_length) {
@@ -287,15 +289,16 @@ bool AdjustDrawImageBoundHelper(int* src_a, int* dest_a,
   return true;
 }
 
-void LanczosResize1D(const uint8* src, int src_x, int src_y,
+template <typename OriginalType,
+          float convert_to_float(OriginalType value),
+          OriginalType convert_to_original(float)>
+void LanczosResize1D(const void* src_data, int src_pitch,
+                     int src_x, int src_y,
                      int width, int height,
-                     int src_bmp_width, int src_bmp_height,
-                     uint8* out, int dest_pitch,
+                     void* dest_data, int dest_pitch,
                      int dest_x, int dest_y,
                      int nwidth,
-                     int dest_bmp_width, int dest_bmp_height,
-                     bool isWidth, int components) {
-  int pitch = dest_pitch / components;
+                     bool is_width, int components) {
   // calculate scale factor and init the weight array for lanczos filter.
   float scale = fabs(static_cast<float>(width) / nwidth);
   float support = kFilterSize * scale;
@@ -306,10 +309,14 @@ void LanczosResize1D(const uint8* src, int src_x, int src_y,
     // center is the corresponding coordinate of i in original img.
     float center = (i + 0.5f) * scale;
     // boundary of weight array in original img.
-    int xmin = static_cast<int>(floor(center - support));
-    if (xmin < 0) xmin = 0;
-    int xmax = static_cast<int>(ceil(center + support));
-    if (xmax >= abs(width)) xmax = abs(width) - 1;
+    int xmin = static_cast<int>(floorf(center - support));
+    if (xmin < 0) {
+      xmin = 0;
+    }
+    int xmax = static_cast<int>(ceilf(center + support));
+    if (xmax >= abs(width)) {
+      xmax = abs(width) - 1;
+    }
 
     // fill up weight array by lanczos filter.
     float wsum = 0.0;
@@ -341,55 +348,93 @@ void LanczosResize1D(const uint8* src, int src_x, int src_y,
     // of the image, we can apply that filter to all pixels in that
     // column.
     // calculate coordinate in new img.
-    int x = i;
-    if (nwidth < 0)
-      x = -1 * x;
+    int x = nwidth >= 0 ? i : -i;
     // lower bound of coordinate in original img.
-    if (width < 0)
+    if (width < 0) {
       xmin = -1 * xmin;
+    }
     for (int j = 0; j < abs(height); ++j) {
       // coordinate in height, same in src and dest img.
-      int base_y = j;
-      if (height < 0)
-        base_y = -1 * base_y;
+      int base_y = height >= 0 ? j : -j;
       // TODO(yux): fix the vertical flip problem and merge this if-else
       // statement coz at that time, there would be no need to check
       // which measure we are scaling.
-      if (isWidth) {
-        const uint8* inrow = src + ((src_bmp_height - (src_y + base_y) - 1) *
-                             src_bmp_width + src_x + xmin) * components;
-        uint8* outpix = out + ((dest_bmp_height - (dest_y + base_y) - 1) *
-                        pitch + dest_x + x) * components;
-        int step = components;
-        if (width < 0)
-          step = -1 * step;
+      if (is_width) {
+        const OriginalType* inrow = PointerFromVoidPointer<const OriginalType*>(
+            src_data, (src_y + base_y) * src_pitch) +
+            (src_x + xmin) * components;
+        OriginalType* outpix = PointerFromVoidPointer<OriginalType*>(
+            dest_data, (dest_y + base_y) * dest_pitch) +
+            (dest_x + x) * components;
+        int step = width >= 0 ? components : -components;
         for (int b = 0; b < components; ++b) {
           float sum = 0.0;
-          for (int k = 0, xk = b; k < wcount; ++k, xk += step)
-            sum += weight[k] * inrow[xk];
-
-          outpix[b] = Safe8Round(sum);
+          for (int k = 0, xk = b; k < wcount; ++k, xk += step) {
+            sum += weight[k] * convert_to_float(inrow[xk]);
+          }
+          outpix[b] = convert_to_original(sum);
         }
       } else {
-        const uint8* inrow = src + (src_x + base_y + (src_bmp_height -
-                             (src_y + xmin) - 1) * src_bmp_width) *
-                             components;
-        uint8* outpix = out + (dest_x + base_y + (dest_bmp_height -
-                        (dest_y + x) - 1) * pitch) * components;
-
-        int step = src_bmp_width * components;
-        if (width < 0)
-          step = -1 * step;
+        const OriginalType* inrow = PointerFromVoidPointer<const OriginalType*>(
+            src_data,
+            (src_y + xmin) * src_pitch) +
+            (src_x + base_y) * components;
+        OriginalType* outpix = PointerFromVoidPointer<OriginalType*>(
+            dest_data,
+            (dest_y + x) * dest_pitch) +
+            (dest_x + base_y) * components;
+        int step = width >= 0 ? src_pitch : -src_pitch;
         for (int b = 0; b < components; ++b) {
           float sum = 0.0;
-          for (int k = 0, xk = b; k < wcount; ++k, xk -= step)
-            sum += weight[k] * inrow[xk];
-
-          outpix[b] = Safe8Round(sum);
+          const OriginalType* work = inrow + b;
+          for (int k = 0; k < wcount; ++k) {
+            sum += weight[k] * convert_to_float(*work);
+            work = AddPointerOffset<const OriginalType*>(work, step);
+          }
+          outpix[b] = convert_to_original(sum);
         }
       }
     }
   }
+}
+
+template <typename OriginalType,
+          float convert_to_float(OriginalType value),
+          OriginalType convert_to_original(float)>
+void TypedLanczosScale(const void* src, int src_pitch,
+                       int src_x, int src_y,
+                       int src_width, int src_height,
+                       void* dest, int dest_pitch,
+                       int dest_x, int dest_y,
+                       int dest_width, int dest_height,
+                       int components) {
+  // Scale the image horizontally to a temp buffer.
+  int temp_img_width = abs(dest_width);
+  int temp_img_height = abs(src_height);
+  int temp_width = dest_width;
+  int temp_height = src_height;
+  int temp_x = 0, temp_y = 0;
+  if (temp_width < 0)
+    temp_x = abs(temp_width) - 1;
+  if (temp_height < 0)
+    temp_y = abs(temp_height) - 1;
+
+  scoped_array<OriginalType> temp(
+      new OriginalType[temp_img_width * temp_img_height * components]);
+
+  LanczosResize1D<OriginalType, convert_to_float, convert_to_original>(
+      src, src_pitch, src_x, src_y, src_width, src_height,
+      temp.get(), temp_img_width * components * sizeof(OriginalType),
+      temp_x, temp_y, temp_width,
+      true, components);
+
+  // Scale the temp buffer vertically to get the final result.
+  LanczosResize1D<OriginalType, convert_to_float, convert_to_original>(
+      temp.get(), temp_img_width * components * sizeof(OriginalType),
+      temp_x, temp_y, temp_height, temp_width,
+      dest, dest_pitch,
+      dest_x, dest_y, dest_height,
+      false, components);
 }
 
 // Compute a texel, filtered from several source texels. This function assumes
@@ -400,9 +445,11 @@ void LanczosResize1D(const uint8* src, int src_x, int src_y,
 //   dst_width: width of the destination image
 //   dst_height: height of the destination image
 //   dst_data: address of the destination image data
+//   dst_pitch: the number of bytes per row of the destination.
 //   src_width: width of the source image
 //   src_height: height of the source image
 //   src_data: address of the source image data
+//   src_pitch: the number of bytes per row of the source.
 //   components: number of components in the image.
 template <typename OriginalType,
           typename WorkType,
@@ -428,14 +475,6 @@ void FilterTexel(unsigned int x,
   DCHECK_LE(static_cast<int>(src_width), src_pitch);
   DCHECK_LE(static_cast<int>(dst_width), dst_pitch);
 
-  const OriginalType* src = static_cast<const OriginalType*>(src_data);
-  OriginalType* dst = static_cast<OriginalType*>(dst_data);
-
-  DCHECK_EQ(src_pitch % (components * sizeof(*src)), 0u);
-  DCHECK_EQ(dst_pitch % (components * sizeof(*dst)), 0u);
-
-  src_pitch /= components;
-  dst_pitch /= components;
   // the texel at (x, y) represents the square of texture coordinates
   // [x/dst_w, (x+1)/dst_w) x [y/dst_h, (y+1)/dst_h).
   // This takes contributions from the texels:
@@ -477,7 +516,7 @@ void FilterTexel(unsigned int x,
         // source texel is across the left border of the footprint of the
         // destination texel.
         x_contrib = (src_x + 1) * dst_width - x * src_width;
-      } else if ((src_x + 1) * dst_width > (x+1) * src_width) {
+      } else if ((src_x + 1) * dst_width > (x + 1) * src_width) {
         // source texel is across the right border of the footprint of the
         // destination texel.
         x_contrib = (x+1) * src_width - src_x * dst_width;
@@ -489,23 +528,27 @@ void FilterTexel(unsigned int x,
         // source texel is across the top border of the footprint of the
         // destination texel.
         y_contrib = (src_y + 1) * dst_height - y * src_height;
-      } else if ((src_y + 1) * dst_height > (y+1) * src_height) {
+      } else if ((src_y + 1) * dst_height > (y + 1) * src_height) {
         // source texel is across the bottom border of the footprint of the
         // destination texel.
-        y_contrib = (y+1) * src_height - src_y * dst_height;
+        y_contrib = (y + 1) * src_height - src_y * dst_height;
       }
       DCHECK(y_contrib > 0);
       DCHECK(y_contrib <= dst_height);
       WorkType contrib = static_cast<WorkType>(x_contrib * y_contrib);
+      const OriginalType* src = PointerFromVoidPointer<const OriginalType*>(
+          src_data, src_y * src_pitch);
       for (unsigned int c = 0; c < components; ++c) {
         accum[c] += contrib *
-          convert_to_work(src[(src_y * src_pitch + src_x) * components + c]);
+          convert_to_work(src[src_x * components + c]);
       }
     }
   }
+  OriginalType* dst = PointerFromVoidPointer<OriginalType*>(
+      dst_data, y * dst_pitch);
   for (unsigned int c = 0; c < components; ++c) {
     WorkType value = accum[c] / static_cast<WorkType>(src_height * src_width);
-    dst[(y * dst_pitch + x) * components + c] = convert_to_original(value);
+    dst[x * components + c] = convert_to_original(value);
   }
 }
 
@@ -526,27 +569,24 @@ void GenerateMip(unsigned int components,
   unsigned int mip_width = std::max(1U, src_width >> 1);
   unsigned int mip_height = std::max(1U, src_height >> 1);
 
-  const OriginalType* src = static_cast<const OriginalType*>(src_data);
-  OriginalType* dst = static_cast<OriginalType*>(dst_data);
-
   if (mip_width * 2 == src_width && mip_height * 2 == src_height) {
-    DCHECK_EQ(src_pitch % (components * sizeof(*src)), 0u);
-    DCHECK_EQ(dst_pitch % (components * sizeof(*dst)), 0u);
-    src_pitch /= components;
-    dst_pitch /= components;
     // Easy case: every texel maps to exactly 4 texels in the previous level.
     for (unsigned int y = 0; y < mip_height; ++y) {
+      const OriginalType* src0 = PointerFromVoidPointer<const OriginalType*>(
+          src_data, y * 2 * src_pitch);
+      const OriginalType* src1 =
+          AddPointerOffset<const OriginalType*>(src0, src_pitch);
+      OriginalType* dst = PointerFromVoidPointer<OriginalType*>(
+          dst_data, y * dst_pitch);
       for (unsigned int x = 0; x < mip_width; ++x) {
         for (unsigned int c = 0; c < components; ++c) {
           // Average the 4 texels.
-          unsigned int offset = (y * 2 * src_pitch + x * 2) * components + c;
-          WorkType value = convert_to_work(src[offset]);        // (2x, 2y)
-          value += convert_to_work(src[offset + components]);   // (2x+1, 2y)
-          value += convert_to_work(src[offset + src_width * components]);
-                                                                // (2x, 2y+1)
-          value += convert_to_work(src[offset + (src_width + 1) * components]);
-                                                                // (2x+1, 2y+1)
-          dst[(y * dst_pitch + x) * components + c] =
+          unsigned int offset = x * 2 * components + c;
+          WorkType value = convert_to_work(src0[offset]);       // (2x, 2y)
+          value += convert_to_work(src0[offset + components]);  // (2x+1, 2y)
+          value += convert_to_work(src1[offset]);               // (2x, 2y+1)
+          value += convert_to_work(src1[offset + components]);  // (2x+1, 2y+1)
+          dst[x * components + c] =
               convert_from_work(value / static_cast<WorkType>(4));
         }
       }
@@ -581,6 +621,10 @@ uint8 UInt64ToUInt8(uint64 value) {
   return static_cast<uint8>(value);
 };
 
+float UInt8ToFloat(uint8 value) {
+  return static_cast<float>(value);
+};
+
 float FloatToFloat(float value) {
   return value;
 }
@@ -611,12 +655,44 @@ uint16 DoubleToHalf(double value) {
 
 }  // anonymous namespace
 
+bool AdjustForSetRect(int* src_y,
+                      int src_width,
+                      int src_height,
+                      int* src_pitch,
+                      int* dst_y,
+                      int dst_width,
+                      int* dst_height) {
+  if (src_width != dst_width || abs(src_height) != abs(*dst_height) ||
+      src_width < 0) {
+    return false;
+  }
+
+  if (*dst_height < 0) {
+    *dst_y = *dst_y + *dst_height + 1;
+    *dst_height = -*dst_height;
+    if (src_height < 0) {
+      *src_y = *src_y + src_height + 1;
+    } else {
+      *src_y = *src_y + src_height - 1;
+      *src_pitch = -*src_pitch;
+    }
+  } else {
+    if (src_height < 0) {
+      *src_pitch = -*src_pitch;
+    }
+  }
+
+  return true;
+}
+
 // Adjust boundaries when using DrawImage function in bitmap or texture.
 bool AdjustDrawImageBoundary(int* src_x, int* src_y,
                              int* src_width, int* src_height,
+                             int src_bmp_level,
                              int src_bmp_width, int src_bmp_height,
                              int* dest_x, int* dest_y,
                              int* dest_width, int* dest_height,
+                             int dest_bmp_level,
                              int dest_bmp_width, int dest_bmp_height) {
   // if src or dest rectangle is out of boundaries, do nothing.
   if ((*src_x < 0 && *src_x + *src_width <= 0) ||
@@ -630,25 +706,35 @@ bool AdjustDrawImageBoundary(int* src_x, int* src_y,
       (*dest_x >= dest_bmp_width &&
        *dest_x + *dest_width >= dest_bmp_width - 1) ||
       (*dest_y >= dest_bmp_height &&
-       *dest_y + *dest_height >= dest_bmp_height - 1))
+       *dest_y + *dest_height >= dest_bmp_height - 1) ||
+      (src_bmp_level < 0) || (dest_bmp_level < 0))
     return false;
+
+  int src_mip_width = static_cast<int>(
+      image::ComputeMipDimension(src_bmp_level, src_bmp_width));
+  int src_mip_height = static_cast<int>(
+      image::ComputeMipDimension(src_bmp_level, src_bmp_height));
+  int dest_mip_width = static_cast<int>(
+      image::ComputeMipDimension(dest_bmp_level, dest_bmp_width));
+  int dest_mip_height = static_cast<int>(
+      image::ComputeMipDimension(dest_bmp_level, dest_bmp_height));
 
   // if start points are negative.
   // check whether src_x is negative.
   if (!AdjustDrawImageBoundHelper(src_x, dest_x,
-                                  src_width, dest_width, src_bmp_width))
+                                  src_width, dest_width, src_mip_width))
     return false;
   // check whether dest_x is negative.
   if (!AdjustDrawImageBoundHelper(dest_x, src_x,
-                                  dest_width, src_width, dest_bmp_width))
+                                  dest_width, src_width, dest_mip_width))
     return false;
   // check whether src_y is negative.
   if (!AdjustDrawImageBoundHelper(src_y, dest_y,
-                                  src_height, dest_height, src_bmp_height))
+                                  src_height, dest_height, src_mip_height))
     return false;
   // check whether dest_y is negative.
   if (!AdjustDrawImageBoundHelper(dest_y, src_y,
-                                  dest_height, src_height, dest_bmp_height))
+                                  dest_height, src_height, dest_mip_height))
     return false;
 
   // check any width or height becomes negative after adjustment.
@@ -660,49 +746,46 @@ bool AdjustDrawImageBoundary(int* src_x, int* src_y,
   return true;
 }
 
-void LanczosScale(const uint8* src,
+void LanczosScale(Texture::Format format, const void* src, int src_pitch,
                   int src_x, int src_y,
                   int src_width, int src_height,
-                  int src_img_width, int src_img_height,
-                  uint8* dest, int dest_pitch,
+                  void* dest, int dest_pitch,
                   int dest_x, int dest_y,
                   int dest_width, int dest_height,
-                  int dest_img_width, int dest_img_height,
                   int components) {
-  // Scale the image horizontally to a temp buffer.
-  int temp_img_width = abs(dest_width);
-  int temp_img_height = abs(src_height);
-  int temp_width = dest_width;
-  int temp_height = src_height;
-  int temp_x = 0, temp_y = 0;
-  if (temp_width < 0)
-    temp_x = abs(temp_width) - 1;
-  if (temp_height < 0)
-    temp_y = abs(temp_height) - 1;
-
-  scoped_array<uint8> temp(new uint8[temp_img_width *
-                                     temp_img_height * components]);
-
-  LanczosResize1D(src, src_x, src_y, src_width, src_height,
-                  src_img_width, src_img_height,
-                  temp.get(), temp_img_width * components,
-                  temp_x, temp_y, temp_width,
-                  temp_img_width, temp_img_height, true, components);
-
-  // Scale the temp buffer vertically to get the final result.
-  LanczosResize1D(temp.get(), temp_x, temp_y, temp_height, temp_width,
-                  temp_img_width, temp_img_height,
-                  dest, dest_pitch,
-                  dest_x, dest_y, dest_height,
-                  dest_img_width, dest_img_height, false, components);
+  switch (format) {
+    case Texture::ARGB8:
+    case Texture::XRGB8:
+      TypedLanczosScale<uint8, UInt8ToFloat, Safe8Round>(
+          src, src_pitch, src_x, src_y, src_width, src_height,
+          dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
+          components);
+      break;
+    case Texture::ABGR16F:
+      TypedLanczosScale<uint16, HalfToFloat, FloatToHalf>(
+          src, src_pitch, src_x, src_y, src_width, src_height,
+          dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
+          components);
+      break;
+    case Texture::ABGR32F:
+    case Texture::R32F:
+      TypedLanczosScale<float, FloatToFloat, FloatToFloat>(
+          src, src_pitch, src_x, src_y, src_width, src_height,
+          dest, dest_pitch, dest_x, dest_y, dest_width, dest_height,
+          components);
+      break;
+    default:
+      DLOG(ERROR) << "Mip-map generation not supported for format: " << format;
+      return;
+  }
 }
 
 bool GenerateMipmap(unsigned int src_width,
                     unsigned int src_height,
                     Texture::Format format,
-                    const uint8 *src_data,
+                    const void *src_data,
                     int src_pitch,
-                    uint8 *dst_data,
+                    void *dst_data,
                     int dst_pitch) {
   unsigned int components = GetNumComponentsForFormat(format);
   if (components == 0) {
@@ -737,7 +820,6 @@ bool GenerateMipmap(unsigned int src_width,
     default:
       DLOG(ERROR) << "Mip-map generation not supported for format: " << format;
       return false;
-      break;
   }
   return true;
 }

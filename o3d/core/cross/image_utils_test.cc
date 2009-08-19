@@ -35,11 +35,39 @@
 #include "tests/common/win/testing_common.h"
 #include "base/file_path.h"
 #include "utils/cross/file_path_utils.h"
+#include "core/cross/math_utilities.h"
 
 namespace o3d {
 
+namespace {
+
+void ConvertToHalf(const float* src, size_t count, uint16* dst) {
+  for (; count != 0; --count) {
+    *dst++ = Vectormath::Aos::FloatToHalf(*src++);
+  }
+}
+
+}  // anonymous namespace.
+
 class ImageTest : public testing::Test {
 };
+
+TEST_F(ImageTest, GetNumComponentsForFormat) {
+  EXPECT_EQ(4, image::GetNumComponentsForFormat(Texture::XRGB8));
+  EXPECT_EQ(4, image::GetNumComponentsForFormat(Texture::ARGB8));
+  EXPECT_EQ(4, image::GetNumComponentsForFormat(Texture::ABGR16F));
+  EXPECT_EQ(4, image::GetNumComponentsForFormat(Texture::ABGR32F));
+  EXPECT_EQ(1, image::GetNumComponentsForFormat(Texture::R32F));
+  EXPECT_EQ(0, image::GetNumComponentsForFormat(Texture::DXT1));
+  EXPECT_EQ(0, image::GetNumComponentsForFormat(Texture::DXT3));
+  EXPECT_EQ(0, image::GetNumComponentsForFormat(Texture::DXT5));
+}
+
+TEST_F(ImageTest, IsPOT) {
+  EXPECT_TRUE(image::IsPOT(2, 2));
+  EXPECT_FALSE(image::IsPOT(3, 2));
+  EXPECT_FALSE(image::IsPOT(2, 3));
+}
 
 TEST_F(ImageTest, CheckImageDimensions) {
   EXPECT_TRUE(image::CheckImageDimensions(1u, 1u));
@@ -148,7 +176,6 @@ TEST_F(ImageTest, ScaleUpToPOT) {
   EXPECT_EQ(0, memcmp(data.get(), kScaleUPDataPOT, dst_size));
 }
 
-
 // NOTE: untested ffile types are:
 //    png grayscale textures
 //    dds cube maps
@@ -176,7 +203,7 @@ static const uint8 kMipmapDataPOT[] = {
 
 // Generates mip-maps from a known power-of-two image, compare with expected
 // results.
-TEST_F(ImageTest, GenerateMipmapsPOT) {
+TEST_F(ImageTest, GenerateMipmapsPOTUInt8) {
   const unsigned int kWidth = 4;
   const unsigned int kHeight = 4;
   const Texture::Format format = Texture::ARGB8;
@@ -204,6 +231,97 @@ TEST_F(ImageTest, GenerateMipmapsPOT) {
       image::ComputeMipPitch(format, 2, kWidth));
   // Check the result.
   EXPECT_EQ(0, memcmp(data.get(), kMipmapDataPOT, size));
+}
+
+TEST_F(ImageTest, GenerateMipmapsPOTFloat) {
+  static const float original[] = { 0.0f, 2.0f, 3.0f, 5.0f, };
+  static const float expected_mip1[] = { 1.0f, 4.0f, };
+  static const float expected_mip2[] = { 2.5f, };
+
+  const unsigned int kWidth = 4;
+  const unsigned int kHeight = 1;
+  const Texture::Format kFormat = Texture::R32F;
+  unsigned int mipmaps = image::ComputeMipMapCount(kWidth, kHeight);
+  EXPECT_EQ(3u, mipmaps);
+  float mip1[2 + 1];
+  float mip2[1 + 1];
+  // Put sentinels at the ends
+  const float kSentinel = 123.12345f;
+  mip1[2] = kSentinel;
+  mip2[1] = kSentinel;
+  image::GenerateMipmap(
+      kWidth, kHeight, kFormat,
+      original, image::ComputeMipPitch(kFormat, 0, kWidth),
+      mip1,
+      image::ComputeMipPitch(kFormat, 1, kWidth));
+  image::GenerateMipmap(
+      image::ComputeMipDimension(1, kWidth),
+      image::ComputeMipDimension(1, kHeight),
+      kFormat,
+      mip1,
+      image::ComputeMipPitch(kFormat, 1, kWidth),
+      mip2,
+      image::ComputeMipPitch(kFormat, 2, kWidth));
+  // Check the result.
+  EXPECT_EQ(0, memcmp(mip1, expected_mip1, sizeof(expected_mip1)));
+  EXPECT_EQ(0, memcmp(mip2, expected_mip2, sizeof(expected_mip2)));
+  EXPECT_EQ(mip1[2], kSentinel);
+  EXPECT_EQ(mip2[1], kSentinel);
+}
+
+TEST_F(ImageTest, GenerateMipmapsPOTHalf) {
+  static const float original_f[] = {
+    0.0f, 0.0f, 0.0f, 0.0f,
+    2.0f, 2.0f, 2.0f, 2.0f,
+    3.0f, 3.0f, 3.0f, 3.0f,
+    5.0f, 5.0f, 5.0f, 5.0f,
+  };
+  static const float expected_mip1_f[] = {
+    1.0f, 1.0f, 1.0f, 1.0f,
+    4.0f, 4.0f, 4.0f, 4.0f,
+  };
+  static const float expected_mip2_f[] = {
+    2.5f, 2.5f, 2.5f, 2.5f,
+  };
+
+  uint16 original[arraysize(original_f)];
+  uint16 expected_mip1[arraysize(expected_mip1_f)];
+  uint16 expected_mip2[arraysize(expected_mip2_f)];
+
+  ConvertToHalf(original_f, arraysize(original_f), original);
+  ConvertToHalf(expected_mip1_f, arraysize(expected_mip1_f), expected_mip1);
+  ConvertToHalf(expected_mip2_f, arraysize(expected_mip2_f), expected_mip2);
+
+  const unsigned int kWidth = 4;
+  const unsigned int kHeight = 1;
+  const Texture::Format kFormat = Texture::ABGR16F;
+  unsigned int mipmaps = image::ComputeMipMapCount(kWidth, kHeight);
+  EXPECT_EQ(3u, mipmaps);
+  uint16 mip1[2 * 4 + 1];
+  uint16 mip2[1 * 4 + 1];
+  // Put sentinels at the ends
+  const float kSentinel = 123.12345f;
+  uint16 sentinel = Vectormath::Aos::FloatToHalf(kSentinel);
+  mip1[2 * 4] = sentinel;
+  mip2[1 * 4] = sentinel;
+  image::GenerateMipmap(
+      kWidth, kHeight, kFormat,
+      original, image::ComputeMipPitch(kFormat, 0, kWidth),
+      mip1,
+      image::ComputeMipPitch(kFormat, 1, kWidth));
+  image::GenerateMipmap(
+      image::ComputeMipDimension(1, kWidth),
+      image::ComputeMipDimension(1, kHeight),
+      kFormat,
+      mip1,
+      image::ComputeMipPitch(kFormat, 1, kWidth),
+      mip2,
+      image::ComputeMipPitch(kFormat, 2, kWidth));
+  // Check the result.
+  EXPECT_EQ(0, memcmp(mip1, expected_mip1, sizeof(expected_mip1)));
+  EXPECT_EQ(0, memcmp(mip2, expected_mip2, sizeof(expected_mip2)));
+  EXPECT_EQ(mip1[2 * 4], sentinel);
+  EXPECT_EQ(mip2[1 * 4], sentinel);
 }
 
 static const uint8 kMipmapDataNPOT[] = {
@@ -300,6 +418,147 @@ TEST_F(ImageTest, GetFileTypeFromMimeType) {
   EXPECT_EQ(image::UNKNOWN, image::GetFileTypeFromFilename("text/plain"));
   EXPECT_EQ(image::UNKNOWN,
             image::GetFileTypeFromFilename("application/x-123"));
+}
+
+TEST_F(ImageTest, LanczosScaleFloat) {
+  static const float original[] = { 0.0f, 2.0f, 3.0f, 5.0f, };
+  static const float expected_mip1[] = { 0.84352076f, 4.1564794f, };
+  static const float expected_mip2[] = { 2.5f, };
+
+  const unsigned int kWidth = 4;
+  const unsigned int kHeight = 1;
+  const Texture::Format kFormat = Texture::R32F;
+  unsigned int mipmaps = image::ComputeMipMapCount(kWidth, kHeight);
+  EXPECT_EQ(3u, mipmaps);
+  float mip1[2 + 1];
+  float mip2[1 + 1];
+  // Put sentinels at the ends
+  const float kSentinel = 123.12345f;
+  mip1[2] = kSentinel;
+  mip2[1] = kSentinel;
+  image::LanczosScale(
+      kFormat,
+      original, image::ComputeMipPitch(kFormat, 0, kWidth),
+      0, 0, 4, 1,
+      mip1, image::ComputeMipPitch(kFormat, 1, kWidth),
+      0, 0, 2, 1,
+      1);
+  image::LanczosScale(
+      kFormat,
+      mip1,
+      image::ComputeMipPitch(kFormat, 1, kWidth),
+      0, 0, 2, 1,
+      mip2, image::ComputeMipPitch(kFormat, 2, kWidth),
+      0, 0, 1, 1,
+      1);
+  // Check the result.
+  EXPECT_EQ(0, memcmp(mip1, expected_mip1, sizeof(expected_mip1)));
+  EXPECT_EQ(0, memcmp(mip2, expected_mip2, sizeof(expected_mip2)));
+  EXPECT_EQ(mip1[2], kSentinel);
+  EXPECT_EQ(mip2[1], kSentinel);
+}
+
+TEST_F(ImageTest, LanczosScaleHalf) {
+  static const uint16 original[] = {
+    0x0000, 0x0000, 0x0000, 0x0000,
+    0x4000, 0x4000, 0x4000, 0x4000,
+    0x4200, 0x4200, 0x4200, 0x4200,
+    0x4500, 0x4500, 0x4500, 0x4500,
+  };
+  static const uint16 expected_mip1[] = {
+    0x3abf, 0x3abf, 0x3abf, 0x3abf,
+    0x4428, 0x4428, 0x4428, 0x4428,
+  };
+  static const uint16 expected_mip2[] = {
+    0x40ff, 0x40ff, 0x40ff, 0x40ff,
+  };
+
+  const unsigned int kWidth = 4;
+  const unsigned int kHeight = 1;
+  const Texture::Format kFormat = Texture::ABGR16F;
+  unsigned int mipmaps = image::ComputeMipMapCount(kWidth, kHeight);
+  EXPECT_EQ(3u, mipmaps);
+  uint16 mip1[2 * 4 + 1];
+  uint16 mip2[1 * 4 + 1];
+  // Put sentinels at the ends
+  const float kSentinel = 123.12345f;
+  uint16 sentinel = Vectormath::Aos::FloatToHalf(kSentinel);
+  mip1[2 * 4] = sentinel;
+  mip2[1 * 4] = sentinel;
+  image::LanczosScale(
+      kFormat,
+      original, image::ComputeMipPitch(kFormat, 0, kWidth),
+      0, 0, 4, 1,
+      mip1, image::ComputeMipPitch(kFormat, 1, kWidth),
+      0, 0, 2, 1,
+      4);
+  image::LanczosScale(
+      kFormat,
+      mip1,
+      image::ComputeMipPitch(kFormat, 1, kWidth),
+      0, 0, 2, 1,
+      mip2, image::ComputeMipPitch(kFormat, 2, kWidth),
+      0, 0, 1, 1,
+      4);
+  // Check the result.
+  EXPECT_EQ(0, memcmp(mip1, expected_mip1, sizeof(expected_mip1)));
+  EXPECT_EQ(0, memcmp(mip2, expected_mip2, sizeof(expected_mip2)));
+  EXPECT_EQ(mip1[2 * 4], sentinel);
+  EXPECT_EQ(mip2[1 * 4], sentinel);
+}
+
+TEST_F(ImageTest, AdjustForSetRect) {
+  int src_y = 1;
+  int src_pitch = 2;
+  int dst_y = 3;
+  int dst_height = 10;
+  // Different widths
+  EXPECT_FALSE(image::AdjustForSetRect(&src_y, 10, 10, &src_pitch,
+                                       &dst_y, 11, &dst_height));
+  // Different heights
+  EXPECT_FALSE(image::AdjustForSetRect(&src_y, 10, 11, &src_pitch,
+                                       &dst_y, 10, &dst_height));
+  // width < 0
+  EXPECT_FALSE(image::AdjustForSetRect(&src_y, -10, 10, &src_pitch,
+                                       &dst_y, -10, &dst_height));
+  // SH > 0, DH > 0
+  EXPECT_TRUE(image::AdjustForSetRect(&src_y, 10, 10, &src_pitch,
+                                      &dst_y, 10, &dst_height));
+  EXPECT_EQ(1, src_y);
+  EXPECT_EQ(2, src_pitch);
+  EXPECT_EQ(3, dst_y);
+  EXPECT_EQ(10, dst_height);
+  // SH > 0, DH < 0
+  dst_y = 9;
+  dst_height = -10;
+  EXPECT_TRUE(image::AdjustForSetRect(&src_y, 10, 10, &src_pitch,
+                                      &dst_y, 10, &dst_height));
+  EXPECT_EQ(10, src_y);
+  EXPECT_EQ(-2, src_pitch);
+  EXPECT_EQ(0, dst_y);
+  EXPECT_EQ(10, dst_height);
+  // SH < 0, DH < 0
+  src_y = 10;
+  src_pitch = 2;
+  dst_y = 15;
+  dst_height = -10;
+  EXPECT_TRUE(image::AdjustForSetRect(&src_y, 10, -10, &src_pitch,
+                                      &dst_y, 10, &dst_height));
+  EXPECT_EQ(1, src_y);
+  EXPECT_EQ(2, src_pitch);
+  EXPECT_EQ(6, dst_y);
+  EXPECT_EQ(10, dst_height);
+  // SH < 0, DH > 0
+  src_y = 10;
+  src_pitch = 2;
+  dst_y = 3;
+  dst_height = 10;
+  EXPECT_TRUE(image::AdjustForSetRect(&src_y, 10, -10, &src_pitch,
+                                      &dst_y, 10, &dst_height));
+  EXPECT_EQ(10, src_y);
+  EXPECT_EQ(-2, src_pitch);
+  EXPECT_EQ(3, dst_y);
+  EXPECT_EQ(10, dst_height);
 }
 
 }  // namespace

@@ -200,8 +200,9 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
   }
   unsigned int image_components = 4;
   Texture::Format format = Texture::XRGB8;
-  // Allocate storage for the pixels.
-  size_t image_size = image::ComputeMipChainSize(width, height, format, 1);
+  // Allocate storage for the pixels. Bitmap requires we allocate enough
+  // memory for all mips even if we don't use them.
+  size_t image_size = Bitmap::ComputeMaxSize(width, height, format);
   image_data.reset(new uint8[image_size]);
   if (image_data.get() == NULL) {
     DLOG(ERROR) << "JPEG memory allocation error \"" << filename << "\"";
@@ -249,13 +250,13 @@ bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
     // copy the scanline to its final destination
     for (unsigned int i = 0; i < width; ++i) {
       // RGB -> BGRX
-      image_write_ptr[i*image_components+0] =
-          buffer[0][i*cinfo.output_components+2];
-      image_write_ptr[i*image_components+1] =
-          buffer[0][i*cinfo.output_components+1];
-      image_write_ptr[i*image_components+2] =
-          buffer[0][i*cinfo.output_components+0];
-      image_write_ptr[i*image_components+3] = 0xff;
+      image_write_ptr[i * image_components + 0] =
+          buffer[0][i * cinfo.output_components + 2];
+      image_write_ptr[i * image_components + 1] =
+          buffer[0][i * cinfo.output_components + 1];
+      image_write_ptr[i * image_components + 2] =
+          buffer[0][i * cinfo.output_components + 0];
+      image_write_ptr[i * image_components + 3] = 0xff;
     }
   }
 

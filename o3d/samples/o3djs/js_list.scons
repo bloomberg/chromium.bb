@@ -55,6 +55,7 @@ O3D_JS_SOURCES = [
   'shape.js',
   'simple.js',
   'test.js',
+  'texture.js',
   'util.js',
 ]
 

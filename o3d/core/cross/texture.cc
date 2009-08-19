@@ -36,6 +36,7 @@
 #include <cmath>
 #include "core/cross/texture.h"
 #include "core/cross/bitmap.h"
+#include "core/cross/canvas.h"
 #include "core/cross/renderer.h"
 #include "core/cross/client_info.h"
 #include "core/cross/error.h"
@@ -89,18 +90,21 @@ Texture2D::~Texture2D() {
 }
 
 void Texture2D::DrawImage(const Bitmap& src_img,
+                          int src_mip,
                           int src_x, int src_y,
                           int src_width, int src_height,
+                          int dst_mip,
                           int dst_x, int dst_y,
-                          int dst_width, int dst_height, int dest_mip) {
+                          int dst_width, int dst_height) {
   DCHECK(src_img.image_data());
 
-  if (dest_mip < 0 || dest_mip >= levels()) {
+  if (dst_mip < 0 || dst_mip >= levels()) {
     O3D_ERROR(service_locator()) << "Mip out of range";
   }
 
-  unsigned int mip_width = std::max(1, width() >> dest_mip);
-  unsigned int mip_height = std::max(1, height() >> dest_mip);
+  if (src_mip < 0 || src_mip >= src_img.num_mipmaps()) {
+    O3D_ERROR(service_locator()) << "Source Mip out of range";
+  }
 
   // Clip source and destination rectangles to
   // source and destination bitmaps.
@@ -108,21 +112,25 @@ void Texture2D::DrawImage(const Bitmap& src_img,
   // do nothing and return.
   if (!image::AdjustDrawImageBoundary(&src_x, &src_y,
                                       &src_width, &src_height,
+                                      src_mip,
                                       src_img.width(), src_img.height(),
                                       &dst_x, &dst_y,
                                       &dst_width, &dst_height,
-                                      mip_width, mip_height)) {
+                                      dst_mip,
+                                      width(), height())) {
     return;
   }
 
-  unsigned int components = 0;
   // check formats of source and dest images.
   // format of source and dest should be the same.
   if (src_img.format() != format()) {
-    O3D_ERROR(service_locator()) << "DrawImage does not support "
-                                 << "different formats.";
+    O3D_ERROR(service_locator()) << "formats must be the same.";
     return;
   }
+
+  unsigned int mip_width = image::ComputeMipDimension(dst_mip, width());
+  unsigned int mip_height = image::ComputeMipDimension(dst_mip, height());
+
   // if src and dest are in the same size and drawImage is copying
   // the entire bitmap on dest image, just perform memcpy.
   if (src_x == 0 && src_y == 0 && dst_x == 0 && dst_y == 0 &&
@@ -131,15 +139,14 @@ void Texture2D::DrawImage(const Bitmap& src_img,
       static_cast<unsigned int>(src_height) == src_img.height() &&
       static_cast<unsigned int>(dst_width) == mip_width &&
       static_cast<unsigned int>(dst_height) == mip_height) {
-    SetRect(dest_mip, 0, 0, mip_width, mip_height,
-            src_img.image_data(),
-            src_img.GetMipPitch(0));
+    SetRect(dst_mip, 0, 0, mip_width, mip_height,
+            src_img.GetMipData(src_mip),
+            src_img.GetMipPitch(src_mip));
     return;
   }
-  if (src_img.format() == Texture::XRGB8 ||
-      src_img.format() == Texture::ARGB8) {
-    components = 4;
-  } else {
+
+  unsigned int components = image::GetNumComponentsForFormat(format());
+  if (components == 0) {
     O3D_ERROR(service_locator()) << "DrawImage does not support format: "
                                  << src_img.format() << " unless src and "
                                  << "dest images are in the same size and "
@@ -147,21 +154,93 @@ void Texture2D::DrawImage(const Bitmap& src_img,
     return;
   }
 
-  LockHelper helper(this, dest_mip);
+  int src_pitch = src_img.GetMipPitch(src_mip);
+  if (image::AdjustForSetRect(&src_y, src_width, src_height, &src_pitch,
+                              &dst_y, dst_width, &dst_height)) {
+    SetRect(dst_mip, dst_x, dst_y, dst_width, dst_height,
+            src_img.GetPixelData(src_mip, src_x, src_y),
+            src_pitch);
+    return;
+  }
+
+  LockHelper helper(this, dst_mip);
   uint8* mip_data = helper.GetDataAs<uint8>();
   if (!mip_data) {
     return;
   }
 
-  uint8* src_img_data = src_img.image_data();
-
-  image::LanczosScale(src_img_data, src_x, src_y,
+  image::LanczosScale(src_img.format(),
+                      src_img.GetMipData(src_mip),
+                      src_img.GetMipPitch(src_mip),
+                      src_x, src_y,
                       src_width, src_height,
-                      src_img.width(), src_img.height(),
                       mip_data, helper.pitch(),
                       dst_x, dst_y,
                       dst_width, dst_height,
-                      mip_width, mip_height, components);
+                      components);
+}
+
+void Texture2D::DrawImage(const Canvas& src_img,
+                          int src_x, int src_y,
+                          int src_width, int src_height,
+                          int dst_mip,
+                          int dst_x, int dst_y,
+                          int dst_width, int dst_height) {
+  if (dst_mip < 0 || dst_mip >= levels()) {
+    O3D_ERROR(service_locator()) << "Mip out of range";
+  }
+
+  // Clip source and destination rectangles to
+  // source and destination bitmaps.
+  // if src or dest rectangle is out of boundary,
+  // do nothing and return.
+  if (!image::AdjustDrawImageBoundary(&src_x, &src_y,
+                                      &src_width, &src_height,
+                                      0,
+                                      src_img.width(), src_img.height(),
+                                      &dst_x, &dst_y,
+                                      &dst_width, &dst_height,
+                                      dst_mip,
+                                      width(), height())) {
+    return;
+  }
+
+  // check formats of source and dest images.
+  // format of source and dest should be the same.
+  if (format() != Texture::ARGB8 && format() != Texture::XRGB8) {
+    O3D_ERROR(service_locator()) << "format must be ARGB8 or XRGB8.";
+    return;
+  }
+
+  unsigned int mip_width = image::ComputeMipDimension(dst_mip, width());
+  unsigned int mip_height = image::ComputeMipDimension(dst_mip, height());
+  unsigned int components = image::GetNumComponentsForFormat(format());
+  DCHECK(components > 0);
+
+  int src_pitch = src_img.GetPitch();
+  if (image::AdjustForSetRect(&src_y, src_width, src_height, &src_pitch,
+                              &dst_y, dst_width, &dst_height)) {
+    SetRect(dst_mip, dst_x, dst_y, dst_width, dst_height,
+            src_img.GetPixelData(src_x, src_y),
+            src_pitch);
+    return;
+  }
+
+  LockHelper helper(this, dst_mip);
+  uint8* mip_data = helper.GetDataAs<uint8>();
+  if (!mip_data) {
+    return;
+  }
+
+  image::LanczosScale(format(),
+                      src_img.GetPixelData(0, 0),
+                      src_img.GetPitch(),
+                      src_x, src_y,
+                      src_width, src_height,
+                      mip_data, helper.pitch(),
+                      dst_x, dst_y,
+                      dst_width, dst_height,
+                      components);
 }
 
 void Texture2D::SetFromBitmap(const Bitmap& bitmap) {
@@ -291,12 +370,12 @@ ObjectBase::Ref TextureCUBE::Create(ServiceLocator* service_locator) {
   return ObjectBase::Ref();
 }
 
-void TextureCUBE::DrawImage(const Bitmap& src_img,
+void TextureCUBE::DrawImage(const Bitmap& src_img, int src_mip,
                             int src_x, int src_y,
                             int src_width, int src_height,
+                            CubeFace dest_face, int dest_mip,
                             int dst_x, int dst_y,
-                            int dst_width, int dst_height,
-                            CubeFace dest_face, int dest_mip) {
+                            int dst_width, int dst_height) {
   DCHECK(src_img.image_data());
 
   if (dest_face >= NUMBER_OF_FACES) {
@@ -305,10 +384,12 @@ void TextureCUBE::DrawImage(const Bitmap& src_img,
   }
 
   if (dest_mip < 0 || dest_mip >= levels()) {
-    O3D_ERROR(service_locator()) << "Mip out of range";
+    O3D_ERROR(service_locator()) << "Destination Mip out of range";
   }
 
-  unsigned int mip_length = std::max(1, edge_length() >> dest_mip);
+  if (src_mip < 0 || src_mip >= src_img.num_mipmaps()) {
+    O3D_ERROR(service_locator()) << "Source Mip out of range";
+  }
 
   // Clip source and destination rectangles to
   // source and destination bitmaps.
@@ -316,14 +397,15 @@ void TextureCUBE::DrawImage(const Bitmap& src_img,
   // do nothing and return true.
   if (!image::AdjustDrawImageBoundary(&src_x, &src_y,
                                       &src_width, &src_height,
+                                      src_mip,
                                       src_img.width(), src_img.height(),
                                       &dst_x, &dst_y,
                                       &dst_width, &dst_height,
-                                      mip_length, mip_length)) {
+                                      dest_mip,
+                                      edge_length(), edge_length())) {
     return;
   }
 
-  unsigned int components = 0;
   // check formats of source and dest images.
   // format of source and dest should be the same.
   if (src_img.format() != format()) {
@@ -331,6 +413,9 @@ void TextureCUBE::DrawImage(const Bitmap& src_img,
                                  << "different formats.";
     return;
   }
+
+  unsigned int mip_length = image::ComputeMipDimension(dest_mip, edge_length());
+
   // if src and dest are in the same size and drawImage is copying
   // the entire bitmap on dest image, just perform memcpy.
   if (src_x == 0 && src_y == 0 && dst_x == 0 && dst_y == 0 &&
@@ -341,17 +426,90 @@ void TextureCUBE::DrawImage(const Bitmap& src_img,
       static_cast<unsigned int>(dst_height) == mip_length) {
     SetRect(dest_face, dest_mip, 0, 0, mip_length, mip_length,
             src_img.image_data(),
-            src_img.GetMipPitch(0));
+            src_img.GetMipPitch(src_mip));
     return;
   }
-  if (src_img.format() == Texture::XRGB8 ||
-      src_img.format() == Texture::ARGB8) {
-    components = 4;
-  } else {
+
+  unsigned int components = image::GetNumComponentsForFormat(format());
+  if (components == 0) {
     O3D_ERROR(service_locator()) << "DrawImage does not support format: "
                                  << src_img.format() << " unless src and "
                                  << "dest images are in the same size and "
                                  << "copying the entire bitmap";
+    return;
+  }
+
+  int src_pitch = src_img.GetMipPitch(src_mip);
+  if (image::AdjustForSetRect(&src_y, src_width, src_height, &src_pitch,
+                              &dst_y, dst_width, &dst_height)) {
+    SetRect(dest_face, dest_mip, dst_x, dst_y, dst_width, dst_height,
+            src_img.GetPixelData(src_mip, src_x, src_y),
+            src_pitch);
+  }
+
+  LockHelper helper(this, dest_face, dest_mip);
+  uint8* mip_data = helper.GetDataAs<uint8>();
+  if (!mip_data) {
+    return;
+  }
+
+  image::LanczosScale(src_img.format(), src_img.GetMipData(src_mip),
+                      src_img.GetMipPitch(src_mip),
+                      src_x, src_y,
+                      src_width, src_height,
+                      mip_data, helper.pitch(),
+                      dst_x, dst_y,
+                      dst_width, dst_height,
+                      components);
+}
+
+void TextureCUBE::DrawImage(const Canvas& src_img,
+                            int src_x, int src_y,
+                            int src_width, int src_height,
+                            CubeFace dest_face, int dest_mip,
+                            int dst_x, int dst_y,
+                            int dst_width, int dst_height) {
+  if (dest_face >= NUMBER_OF_FACES) {
+    O3D_ERROR(service_locator()) << "Invalid face specification";
+    return;
+  }
+
+  if (dest_mip < 0 || dest_mip >= levels()) {
+    O3D_ERROR(service_locator()) << "Destination Mip out of range";
+  }
+
+  // Clip source and destination rectangles to
+  // source and destination bitmaps.
+  // if src or dest rectangle is out of boundary,
+  // do nothing and return true.
+  if (!image::AdjustDrawImageBoundary(&src_x, &src_y,
+                                      &src_width, &src_height,
+                                      0,
+                                      src_img.width(), src_img.height(),
+                                      &dst_x, &dst_y,
+                                      &dst_width, &dst_height,
+                                      dest_mip,
+                                      edge_length(), edge_length())) {
+    return;
+  }
+
+  // check formats of source and dest images.
+  // format of source and dest should be the same.
+  if (format() != Texture::ARGB8 && format() != Texture::XRGB8) {
+    O3D_ERROR(service_locator()) << "format must be ARGB8 or XRGB8.";
+    return;
+  }
+
+  unsigned int mip_length = image::ComputeMipDimension(dest_mip, edge_length());
+  unsigned int components = image::GetNumComponentsForFormat(format());
+  DCHECK(components > 0);
+
+  int src_pitch = src_img.GetPitch();
+  if (image::AdjustForSetRect(&src_y, src_width, src_height, &src_pitch,
+                              &dst_y, dst_width, &dst_height)) {
+    SetRect(dest_face, dest_mip, dst_x, dst_y, dst_width, dst_height,
+            src_img.GetPixelData(src_x, src_y),
+            src_pitch);
     return;
   }
 
@@ -361,15 +519,15 @@ void TextureCUBE::DrawImage(const Bitmap& src_img,
     return;
   }
 
-  uint8* src_img_data = src_img.image_data();
-
-  image::LanczosScale(src_img_data, src_x, src_y,
+  image::LanczosScale(format(),
+                      src_img.GetPixelData(0, 0),
+                      src_img.GetPitch(),
+                      src_x, src_y,
                       src_width, src_height,
-                      src_img.width(), src_img.height(),
                       mip_data, helper.pitch(),
                       dst_x, dst_y,
                       dst_width, dst_height,
-                      mip_length, mip_length, components);
+                      components);
 }
 
 void TextureCUBE::SetFromBitmap(CubeFace face, const Bitmap& bitmap) {

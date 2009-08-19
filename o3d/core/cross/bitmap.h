@@ -149,6 +149,11 @@ class Bitmap : public ParamObject {
   //   level: mip level to get.
   uint8 *GetMipData(unsigned int level) const;
 
+  // Gets the address of a particular pixel.
+  // Parameters:
+  //   level: mip level to get.
+  uint8 *GetPixelData(unsigned int level, unsigned int x, unsigned int y) const;
+
   // Gets the size of mip.
   size_t GetMipSize(unsigned int level) const;
 
@@ -208,16 +213,20 @@ class Bitmap : public ParamObject {
   // and dest do not match.
   // Parameters:
   //   source_img: source bitmap which would be drawn.
+  //   source_level: level to draw.
   //   source_x: x-coordinate of the starting pixel in the source image.
   //   source_x: y-coordinate of the starting pixel in the source image.
   //   source_width: width of the source image to draw.
   //   source_height: Height of the source image to draw.
+  //   dest_level: level to target.
   //   dest_x: x-coordinate of the starting pixel in the dest image.
   //   dest_y: y-coordinate of the starting pixel in the dest image.
   //   dest_width: width of the dest image to draw.
   //   dest_height: height of the dest image to draw.
-  void DrawImage(const Bitmap& source_img, int source_x, int source_y,
+  void DrawImage(const Bitmap& source_img, int source_level,
+                 int source_x, int source_y,
                  int source_width, int source_height,
+                 int dest_level,
                  int dest_x, int dest_y,
                  int dest_width, int dest_height);
 
@@ -295,6 +304,9 @@ class Bitmap : public ParamObject {
   size_t GetTotalSize() const {
     return GetMipChainSize(image::ComputeMipMapCount(width_, height_));
   }
+
+  static size_t ComputeMaxSize(
+      unsigned width, unsigned height, Texture::Format format);
 
   // pointer to the raw bitmap data
   // NOTE: image_data_ is either NULL or it has space for the maximum number

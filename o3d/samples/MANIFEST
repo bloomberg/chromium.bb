@@ -198,6 +198,7 @@ o3djs/serialization.js
 o3djs/shape.js
 o3djs/simple.js
 o3djs/test.js
+o3djs/texture.js
 o3djs/util.js
 pingpong/instructions.gif
 pingpong/logo.gif

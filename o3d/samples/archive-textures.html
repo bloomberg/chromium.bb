@@ -49,6 +49,7 @@ o3djs.require('o3djs.io');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
 o3djs.require('o3djs.effect');
+o3djs.require('o3djs.texture');
 
 // Events
 // Run the init() once the page has finished loading.
@@ -173,7 +174,7 @@ function createArchiveRequest(effect) {
     g_streamingStarted = true;
 
     // Create a texture from the RawData object that was just made available.
-    var texture = g_pack.createTextureFromRawData(rawData, true);
+    var texture = o3djs.texture.createTextureFromRawData(g_pack, rawData, true);
 
     // Free the raw data object immediately since we're done with it.
     // If we don't call this the RawData will stay around so we can use it

@@ -74,6 +74,13 @@ size_t Bitmap::GetMipSize(unsigned int level) const {
   return image::ComputeMipChainSize(mip_width, mip_height, format(), 1);
 }
 
+size_t Bitmap::ComputeMaxSize(
+    unsigned width, unsigned height, Texture::Format format) {
+  return image::ComputeMipChainSize(
+      width, height, format,
+      image::ComputeMipMapCount(width, height));
+}
+
 void Bitmap::SetContents(Texture::Format format,
                          unsigned int num_mipmaps,
                          unsigned int width,
@@ -138,6 +145,15 @@ uint8 *Bitmap::GetMipData(unsigned int level) const {
   return data + GetMipChainSize(level);
 }
 
+uint8 *Bitmap::GetPixelData(
+    unsigned int level, unsigned int x, unsigned int y) const {
+  uint8* data = GetMipData(level);
+  if (data) {
+    data += GetMipPitch(level) * y + image::ComputePitch(format(), 1) * x;
+  }
+  return data;
+}
+
 void Bitmap::SetRect(
     int level,
     unsigned dst_left,
@@ -157,10 +173,7 @@ void Bitmap::SetRect(
                      src_width == mip_width && src_height == mip_height;
   DCHECK(!compressed || entire_rect);
 
-  uint8* dst =
-      GetMipData(level) +
-      image::ComputePitch(format(), mip_width) * dst_top +
-      image::ComputePitch(format(), dst_left);
+  uint8* dst = GetPixelData(level, dst_left, dst_top);
 
   const uint8* src = static_cast<const uint8*>(src_data);
   if (!compressed) {
@@ -322,12 +335,22 @@ bool Bitmap::LoadFromRawData(RawData *raw_data,
 }
 
 void Bitmap::DrawImage(const Bitmap& src_img,
+                       int src_level,
                        int src_x, int src_y,
                        int src_width, int src_height,
+                       int dst_level,
                        int dst_x, int dst_y,
                        int dst_width, int dst_height) {
   DCHECK(src_img.image_data());
   DCHECK(image_data());
+
+  if (dst_level < 0 || dst_level >= num_mipmaps()) {
+    O3D_ERROR(service_locator()) << "Destination Mip out of range";
+  }
+
+  if (src_level < 0 || src_level >= src_img.num_mipmaps()) {
+    O3D_ERROR(service_locator()) << "Source Mip out of range";
+  }
 
   // Clip source and destination rectangles to
   // source and destination bitmaps.
@@ -335,13 +358,14 @@ void Bitmap::DrawImage(const Bitmap& src_img,
   // do nothing and return.
   if (!image::AdjustDrawImageBoundary(&src_x, &src_y,
                                       &src_width, &src_height,
+                                      src_level,
                                       src_img.width_, src_img.height_,
                                       &dst_x, &dst_y,
                                       &dst_width, &dst_height,
+                                      dst_level,
                                       width_, height_))
     return;
 
-  unsigned int components = 0;
   // check formats of source and dest images.
   // format of source and dest should be the same.
   if (src_img.format_ != format_) {
@@ -355,16 +379,13 @@ void Bitmap::DrawImage(const Bitmap& src_img,
       src_img.width_ == width_ && src_img.height_ == height_ &&
       src_width == src_img.width_ && src_height == src_img.height_ &&
       dst_width == width_ && dst_height == height_) {
-    memcpy(image_data(), src_img.image_data(), GetTotalSize());
+    SetRect(dst_level, 0, 0, dst_width, dst_height,
+            src_img.GetMipData(src_level), src_img.GetMipPitch(src_level));
     return;
   }
 
-  // if drawImage is not copying the whole bitmap, we need to check
-  // the format. currently only support XRGB8 and ARGB8
-  if (src_img.format_ == Texture::XRGB8 ||
-      src_img.format_ == Texture::ARGB8) {
-    components = 4;
-  } else {
+  unsigned int components = image::GetNumComponentsForFormat(format_);
+  if (components == 0) {
     O3D_ERROR(service_locator()) << "DrawImage does not support format: "
                                  << src_img.format_ << " unless src and "
                                  << "dest images are in the same size and "
@@ -372,21 +393,29 @@ void Bitmap::DrawImage(const Bitmap& src_img,
     return;
   }
 
-  uint8* src_img_data = src_img.image_data();
-  uint8* dst_img_data = image_data();
+  int src_pitch = src_img.GetMipPitch(src_level);
+  if (image::AdjustForSetRect(&src_y, src_width, src_height, &src_pitch,
+                              &dst_y, dst_width, &dst_height)) {
+    SetRect(dst_level, dst_x, dst_y, dst_width, dst_height,
+            src_img.GetPixelData(src_level, src_x, src_y),
+            src_pitch);
+    return;
+  }
 
   // crop part of image from src img, scale it in
   // bilinear interpolation fashion, and paste it
   // on dst img.
-  image::LanczosScale(src_img_data, src_x, src_y,
+  image::LanczosScale(src_img.format_,
+                      src_img.GetMipData(src_level),
+                      src_img.GetMipPitch(src_level),
+                      src_x, src_y,
                       src_width, src_height,
-                      src_img.width_, src_img.height_,
-                      dst_img_data, width_ * components,
+                      GetMipData(dst_level),
+                      GetMipPitch(dst_level),
                       dst_x, dst_y,
                       dst_width, dst_height,
-                      width_, height_, components);
+                      components);
 }
-
 
 void Bitmap::GenerateMips(int source_level, int num_levels) {
   if (source_level >= static_cast<int>(num_mipmaps()) || source_level < 0) {

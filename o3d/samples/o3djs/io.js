@@ -36,6 +36,9 @@
 
 o3djs.provide('o3djs.io');
 
+o3djs.require('o3djs.texture');
+
+
 /**
  * A Module with various io functions and classes.
  * @namespace
@@ -543,11 +546,10 @@ o3djs.io.loadArchiveAdvanced = function(pack,
  *     texture is loaded. It will be passed the texture and an exception on
  *     error or null on success.
  * @return {!o3djs.io.LoadInfo} A LoadInfo to track progress.
- * @see o3djs.io.createLoader
+ * @see o3djs.loader.createLoader
  */
 o3djs.io.loadTexture = function(pack, url, callback) {
-  // TODO: change this to get use RawData and Bitmap
-  var request = pack.createFileRequest('TEXTURE');
+  var request = pack.createFileRequest('RAWDATA');
   var loadInfo = o3djs.io.createLoadInfo(
       /** @type {!o3d.FileRequest} */ (request),
       false);
@@ -557,9 +559,13 @@ o3djs.io.loadTexture = function(pack, url, callback) {
    */
   request.onreadystatechange = function() {
     if (request.done) {
-      var texture = request.texture;
+      var rawData = /** @type {!o3d.RawData} */ request.data;
       var success = request.success;
       var exception = request.error;
+      var texture = null;
+      if (success) {
+        texture = o3djs.texture.createTextureFromRawData(pack, rawData, true);
+      }
       loadInfo.finish();
       pack.removeObject(request);
       if (!success && !exception) {
@@ -571,5 +577,4 @@ o3djs.io.loadTexture = function(pack, url, callback) {
   request.send();
   return loadInfo;
 };
-
 

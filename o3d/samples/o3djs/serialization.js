@@ -39,6 +39,7 @@
 o3djs.provide('o3djs.serialization');
 
 o3djs.require('o3djs.error');
+o3djs.require('o3djs.texture');
 
 /**
  * A Module for handling events related to o3d and various browsers.
@@ -162,9 +163,7 @@ o3djs.serialization.Deserializer = function(pack, json) {
         if (!rawData) {
           throw 'Could not find texture ' + uri + ' in the archive';
         }
-        return deserializer.pack.createTextureFromRawData(
-            rawData,
-            true);
+        return o3djs.texture.createTextureFromRawData(pack, rawData, true);
       } else {
         return deserializer.pack.createTexture2D(
             json.custom.width,
@@ -182,9 +181,7 @@ o3djs.serialization.Deserializer = function(pack, json) {
         if (!rawData) {
           throw 'Could not find texture ' + uri + ' in the archive';
         }
-        return deserializer.pack.createTextureFromRawData(
-            rawData,
-            true);
+        return o3djs.texture.createTextureFromRawData(pack, rawData, true);
       } else {
         return deserializer.pack.createTextureCUBE(
             json.custom.edgeLength,
@@ -683,7 +680,7 @@ o3djs.serialization.deserialize = function(pack, json) {
 /**
  * Deserializes a single json object named 'scene.json' from a loaded
  * o3djs.io.ArchiveInfo.
- * @param {!o3djs.io.archiveInfo} archiveInfo Archive to load from.
+ * @param {!o3djs.io.ArchiveInfo} archiveInfo Archive to load from.
  * @param {string} sceneJsonUri The relative URI of the scene JSON file within
  *     the archive.
  * @param {!o3d.Client} client An O3D client object.

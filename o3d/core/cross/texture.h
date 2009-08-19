@@ -42,6 +42,7 @@ namespace o3d {
 
 class Pack;
 class Bitmap;
+class Canvas;
 
 // An abstract class for 2D textures that defines the interface for getting
 // the dimensions of the texture and number of mipmap levels.
@@ -130,19 +131,43 @@ class Texture2D : public Texture {
   // Scales if the width and height of source and dest do not match.
   // Parameters:
   //   source_img: source bitmap which would be drawn.
+  //   source_mip: source mip to draw.
   //   source_x: x-coordinate of the starting pixel in the source image.
   //   source_y: y-coordinate of the starting pixel in the source image.
   //   source_width: width of the source image to draw.
   //   source_height: Height of the source image to draw.
+  //   dest_mip: on which mip level the sourceImg would be drawn.
   //   dest_x: x-coordinate of the starting pixel in the dest image.
   //   dest_y: y-coordinate of the starting pixel in the dest image.
   //   dest_width: width of the dest image.
   //   dest_height: height of the dest image.
-  //   dest_mip: on which mip level the sourceImg would be drawn.
-  void DrawImage(const Bitmap& source_img, int source_x, int source_y,
+  void DrawImage(const Bitmap& source_img, int src_mip,
+                 int source_x, int source_y,
                  int source_width, int source_height,
+                 int dest_mip,
                  int dest_x, int dest_y,
-                 int dest_width, int dest_height, int dest_mip);
+                 int dest_width, int dest_height);
+
+  // Copy pixels from source bitmap to certain mip level.
+  // Scales if the width and height of source and dest do not match.
+  // Parameters:
+  //   source_img: source canvas to draw.
+  //   source_x: x-coordinate of the starting pixel in the source image.
+  //   source_y: y-coordinate of the starting pixel in the source image.
+  //   source_width: width of the source image to draw.
+  //   source_height: Height of the source image to draw.
+  //   dest_mip: the dest mip to draw to.
+  //   dest_x: x-coordinate of the starting pixel in the dest image.
+  //   dest_y: y-coordinate of the starting pixel in the dest image.
+  //   dest_width: width of the dest image.
+  //   dest_height: height of the dest image.
+  void DrawImage(const Canvas& source_img,
+                 int source_x, int source_y,
+                 int source_width, int source_height,
+                 int dest_mip,
+                 int dest_x, int dest_y,
+                 int dest_width, int dest_height);
+
 
   // Sets the contents of the texture from a Bitmap.
   void SetFromBitmap(const Bitmap& bitmap);
@@ -293,21 +318,45 @@ class TextureCUBE : public Texture {
   // Copy pixels from source bitmap to certain mip level.
   // Scales if the width and height of source and dest do not match.
   // Parameters:
-  //   source_img: source bitmap which would be drawn.
+  //   source_img: source bitmap.
+  //   source_mip: source mip to draw.
   //   source_x: x-coordinate of the starting pixel in the source image.
   //   source_y: y-coordinate of the starting pixel in the source image.
   //   source_width: width of the source image to draw.
   //   source_height: Height of the source image to draw.
+  //   face: face to draw to.
+  //   dest_mip: mip to draw to.
   //   dest_x: x-coordinate of the starting pixel in the dest image.
   //   dest_y: y-coordinate of the starting pixel in the dest image.
   //   dest_width: width of the dest image.
   //   dest_height: height of the dest image.
-  //   face: on which face the sourceImg would be drawn.
-  //   dest_mip: on which mip level the sourceImg would be drawn.
-  void DrawImage(const Bitmap& source_img, int source_x, int source_y,
+  void DrawImage(const Bitmap& source_img, int source_mip,
+                 int source_x, int source_y,
                  int source_width, int source_height,
+                 CubeFace face, int dest_mip,
                  int dest_x, int dest_y, int dest_width,
-                 int dest_height, CubeFace face, int dest_mip);
+                 int dest_height);
+
+  // Copy pixels from source canvas to certain mip level.
+  // Scales if the width and height of source and dest do not match.
+  // Parameters:
+  //   source_img: source canvas.
+  //   source_x: x-coordinate of the starting pixel in the source image.
+  //   source_y: y-coordinate of the starting pixel in the source image.
+  //   source_width: width of the source image to draw.
+  //   source_height: Height of the source image to draw.
+  //   face: face to draw to.
+  //   dest_mip: mip to draw to.
+  //   dest_x: x-coordinate of the starting pixel in the dest image.
+  //   dest_y: y-coordinate of the starting pixel in the dest image.
+  //   dest_width: width of the dest image.
+  //   dest_height: height of the dest image.
+  void DrawImage(const Canvas& source_img,
+                 int source_x, int source_y,
+                 int source_width, int source_height,
+                 CubeFace face, int dest_mip,
+                 int dest_x, int dest_y, int dest_width,
+                 int dest_height);
 
   // Sets the contents of the texture from a Bitmap.
   void SetFromBitmap(CubeFace face, const Bitmap& bitmap);

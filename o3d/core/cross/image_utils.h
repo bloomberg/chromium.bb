@@ -122,35 +122,31 @@ size_t ComputeBufferSize(unsigned int width,
 // and paste in dest image. Utility function for all DrawImage
 // function in bitmap and textures. Scale operation is based on
 // Lanczos resampling.
-// Note: this doesn't work for DXTC, or floating-point images.
+// Note: this doesn't work for DXTC.
 //
 // Parameters:
+//   format: The format of the images.
 //   src: source image which would be copied from.
+//   src_pitch: The number of bytes per row in the src image.
 //   src_x: x-coordinate of the starting pixel in the src image.
 //   src_y: y-coordinate of the starting pixel in the src image.
 //   src_width: width of the part in src image to be croped.
 //   src_height: height of the part in src image to be croped.
-//   src_img_width: width of the src image.
-//   src_img_height: height of the src image.
 //   dest: dest image which would be copied to.
+//   dest_pitch: The number of bytes per row in the dest image.
 //   dest_x: x-coordinate of the starting pixel in the dest image.
 //   dest_y: y-coordinate of the starting pixel in the dest image.
 //   dest_width: width of the part in dest image to be pasted to.
 //   dest_height: height of the part in dest image to be pasted to.
-//   dest_img_width: width of the dest image.
-//   dest_img_height: height of the src image.
-//   component: size of each pixel in terms of array element.
-// Returns:
-//   true if crop and scale succeeds.
-void LanczosScale(const uint8* src,
+//   components: number of components per pixel.
+void LanczosScale(Texture::Format format,
+                  const void* src, int src_pitch,
                   int src_x, int src_y,
                   int src_width, int src_height,
-                  int src_img_width, int src_img_height,
-                  uint8* dest, int dest_pitch,
+                  void* dest, int dest_pitch,
                   int dest_x, int dest_y,
                   int dest_width, int dest_height,
-                  int dest_img_width, int dest_img_height,
-                  int component);
+                  int components);
 
 // Detects the type of image file based on the filename.
 ImageFileType GetFileTypeFromFilename(const char *filename);
@@ -167,7 +163,7 @@ void XYZToXYZA(uint8 *image_data, int pixel_count);
 void RGBAToBGRA(uint8 *image_data, int pixel_count);
 
 // Generates a mip-map for 1 level.
-// NOTE: this doesn't work for DXTC, or floating-point images.
+// NOTE: this doesn't work for DXTC images.
 //
 // Parameters:
 //   src_width: the width of the source image.
@@ -182,13 +178,13 @@ void RGBAToBGRA(uint8 *image_data, int pixel_count);
 bool GenerateMipmap(unsigned int src_width,
                     unsigned int src_height,
                     Texture::Format format,
-                    const uint8 *src_data,
+                    const void *src_data,
                     int src_pitch,
-                    uint8 *dst_data,
+                    void *dst_data,
                     int dst_pitch);
 
 // Scales an image up to power-of-two textures, using point filtering.
-// NOTE: this doesn't work for DXTC, or floating-point images.
+// NOTE: this doesn't work for DXTC images.
 //
 // Parameters:
 //   width: the non-power-of-two width of the original image.
@@ -202,12 +198,12 @@ bool GenerateMipmap(unsigned int src_width,
 bool ScaleUpToPOT(unsigned int width,
                   unsigned int height,
                   Texture::Format format,
-                  const uint8 *src,
-                  uint8 *dst,
+                  const void *src,
+                  void *dst,
                   int dst_pitch);
 
 // Scales an image to an arbitrary size, using point filtering.
-// NOTE: this doesn't work for DXTC, or floating-point images.
+// NOTE: this doesn't work for DXTC images.
 //
 // Parameters:
 //   src_width: the width of the original image.
@@ -223,10 +219,10 @@ bool ScaleUpToPOT(unsigned int width,
 bool Scale(unsigned int src_width,
            unsigned int src_height,
            Texture::Format format,
-           const uint8 *src,
+           const void *src,
            unsigned int dst_width,
            unsigned int dst_height,
-           uint8 *dst,
+           void *dst,
            int dst_pitch);
 
 // adjust start points and boundaries when using DrawImage data
@@ -236,22 +232,54 @@ bool Scale(unsigned int src_width,
 //   src_y: y-coordinate of the starting pixel in the source image.
 //   src_width: width of the source image to draw.
 //   src_height: height of the source image to draw.
+//   src_bmp_level: which mip in source.
 //   src_bmp_width: original width of source bitmap.
 //   src_bmp_height: original height of source bitmap.
 //   dest_x: x-coordinate of the starting pixel in the dest image.
 //   dest_y: y-coordinate of the starting pixel in the dest image.
 //   dest_width: width of the dest image to draw.
 //   dest_height: height of the dest image to draw.
+//   dest_bmp_level: which mip in dest.
 //   dest_bmp_width: original width of dest bitmap.
 //   dest_bmp_height: original height of dest bitmap.
 // Returns:
 //   false if src or dest rectangle is out of boundaries.
 bool AdjustDrawImageBoundary(int* src_x, int* src_y,
                              int* src_width, int* src_height,
+                             int src_level,
                              int src_bmp_width, int src_bmp_height,
                              int* dest_x, int* dest_y,
                              int* dest_width, int* dest_height,
+                             int dest_level,
                              int dest_bmp_width, int dest_bmp_height);
+
+// Checks whether or not we can call SetRect and adjust the inputs
+// accordingly so SetRect will work.
+//
+// Assumes that both the source and destination rectangles are within the
+// bounds of their respective images.
+//
+// Parameters:
+//   src_y: A pointer to an int holding the Y position of the source
+//       rect. Will be adjusted if SetRect can be called.
+//   src_width: The width of the source rect.
+//   src_height: The height of the source rect.
+//   src_pitch: A pointer to an int holding the pitch of the source. Will be
+//       adjusted if SetRect can be called.
+//   dst_y: A pointer to an int holding the Y position of the dest rect. Will be
+//       adjusted if SetRect can be called.
+//   dst_width: The width of the dest rect.
+//   dst_height: A pointer to an int holding the height of the dest rect. Will
+//       adjusted if SetRect can be called.
+// Returns:
+//    True if SetRect can be called.
+bool AdjustForSetRect(int* src_y,
+                      int src_width,
+                      int src_height,
+                      int* src_pitch,
+                      int* dst_y,
+                      int dst_width,
+                      int* dst_height);
 
 }  // namespace image
 }  // namespace o3d

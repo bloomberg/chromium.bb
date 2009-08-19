@@ -177,28 +177,33 @@ function initStep2(clientElements) {
   function callback(archiveInfo, exception) {
     if (!exception) {
       var rawdata1 = archiveInfo.getFileByURI('shaving_cream_300x300.jpg', true);
-      var bitmap1 = g_pack.createBitmapFromRawData(rawdata1);
+      var bitmap1 = g_pack.createBitmapsFromRawData(rawdata1)[0];
+      bitmap1.flipVertically();
       var rawdata2 = archiveInfo.getFileByURI('four_pixel.png', true);
-      var bitmap2 = g_pack.createBitmapFromRawData(rawdata2);
+      var bitmap2 = g_pack.createBitmapsFromRawData(rawdata2)[0];
+      bitmap2.flipVertically();
       var rawdata_hi = archiveInfo.getFileByURI('hi.jpg', true);
-      var bitmap_hi = g_pack.createBitmapFromRawData(rawdata_hi);
+      var bitmapHi = g_pack.createBitmapsFromRawData(rawdata_hi)[0];
+      bitmapHi.flipVertically();
       var texture = g_pack.createTexture2D(300, 300, g_o3d.Texture.XRGB8, 0,
                                            false);
       // draw image on bitmap.
       // scale down on top left corner.
-      texture.drawImage(bitmap1, 0, 0, 300, 300, 0, 0, 150, 150, 0);
+      texture.drawImage(bitmap1, 0, 0, 0, 300, 300, 0, 0, 0, 150, 150);
       // scale up on top right corner.
-      texture.drawImage(bitmap1, 0, 0, 100, 100, 150, 0, 150, 150, 0);
+      texture.drawImage(bitmap1, 0, 0, 156, 100, 100, 0, 150, 0, 150, 150);
       // flip and draw part of the img on bottom left.
-      texture.drawImage(bitmap1, 150, 0, 150, 150, 149, 299, -150, -150, 0);
+      texture.drawImage(
+          bitmap1, 0, 150, 100, 150, 150, 0, 149, 299, -150, -150);
       // draw out of boundary.
-      texture.drawImage(bitmap1, 0, 0, 300, 300, 150, 150, 300, 300, 0);
+      texture.drawImage(bitmap1, 0, 0, 135, 300, 300, 0, 150, 150, 300, 300);
       // draw o3d.
-      texture.drawImage(bitmap_hi, 0, 0, 100, 50, 100, 125, 100, 50, 0);
+      texture.drawImage(bitmapHi, 0, 0, 0, 100, 50, 0, 100, 125, 100, 50);
 
       // draw image on different mip-maps.
-      texture.drawImage(bitmap1, 0, 0, 300, 300, 0, 0, 150, 150, 1);
-      texture.drawImage(bitmap2, 0, 0, 2, 2, 0, 0, 75, 75, 2);
+      texture.drawImage(bitmap1, 0, 0, 0, 300, 300, 1, 0, 0, 150, 150);
+      texture.drawImage(bitmap2, 0, 0, 0, 2, 2, 2, 0, 0, 75, 75);
+      texture.setRect(0, 0, 0, 1, [1, 0, 0]);
 
       makeShape(texture, effect);
     }

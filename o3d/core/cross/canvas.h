@@ -50,7 +50,7 @@ class CanvasPaint;
 
 // The Canvas class provides an API for drawing text and 2D primitives onto
 // a 2D bitmap surface whose contents can be transfered to a compatible
-// Texture2D object via the CopyToTexture() method.  Each Canvas object 
+// Texture2D object via the CopyToTexture() method.  Each Canvas object
 // maintains a stack of 2D transformation matrices which allow fine control over
 // the placement of drawable elements.  Both geometry and drawing coordinates
 // provided to every draw call are transformed by the concatenation of
@@ -115,6 +115,7 @@ class Canvas : public ParamObject {
   // Draws the contents of the specified texture onto the canvas surface.
   // The bottom left corner of the bitmap will be at (x, y) and transformed by
   // the current matrix.
+  // DEPRECATED
   // Parameters:
   //   texture: Pointer to Texture2D object where the bitmap is extracted from
   //   left: The position of the left side of the bitmap.
@@ -153,15 +154,27 @@ class Canvas : public ParamObject {
   // Copies the contents of the Canvas bitmap to a Texture2D object.  The
   // texture object must have the same size as the canvas and a ARGB8 or XRGB8
   // format.  All mip levels of the the texture will be filled.
+  // DEPRECATED
   // Parameters:
   //   texture_2d:  The texture object to copy the bitmap to.
-  bool CopyToTexture(Texture2D* texture_2d);
+  bool CopyToTexture(Texture2D* texture_2d) const;
 
   // Returns the width of the canvas bitmap.
-  int width() { return width_; }
+  int width() const { return width_; }
 
   // Returns the height of the canvas bitmap.
-  int height() { return height_; }
+  int height() const { return height_; }
+
+  // Returns the actual pixels of the canvas
+  const uint8* GetPixelData(int x, int y) const {
+    return static_cast<const uint8*>(sk_bitmap_.getPixels()) +
+           y * GetPitch() + x * 4;
+  }
+
+  // Returns the pitch of the pixel data
+  int GetPitch() const {
+    return width_ * 4;
+  }
 
  protected:
   explicit Canvas(ServiceLocator* service_locator);
@@ -177,6 +190,9 @@ class Canvas : public ParamObject {
   // bitmap width and height.
   int width_;
   int height_;
+
+  // For backward compatibility. Whether to flip the bitmap.
+  bool flip_;
 
   O3D_DECL_CLASS(Canvas, ParamObject)
   DISALLOW_COPY_AND_ASSIGN(Canvas);

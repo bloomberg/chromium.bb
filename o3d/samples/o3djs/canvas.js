@@ -355,7 +355,10 @@ o3djs.canvas.CanvasQuad = function(canvasInfo,
  * been issued to the CanvasQuad's Canvas object.
  */
 o3djs.canvas.CanvasQuad.prototype.updateTexture = function() {
-  this.canvas.copyToTexture(this.texture);
+  var width = this.texture.width;
+  var height = this.texture.height;
+  this.texture.drawImage(this.canvas, 0, height - 1, width, -height,
+                         0, 0, 0, width, height);
 };
 
 /**

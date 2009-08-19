@@ -242,34 +242,74 @@ namespace o3d {
     Copy pixels from source bitmap to certain mip level.
     Scales if the width and height of source and dest do not match.
 
-    \param source_img source bitmap which would be drawn.
+    \param source_img The source bitmap.
+    \param source_mip which mip from the source to copy from.
     \param source_x x-coordinate of the starting pixel in the source image.
     \param source_y y-coordinate of the starting pixel in the source image.
     \param source_width width of the source image to draw.
     \param source_height Height of the source image to draw.
-    \param dest_x x-coordinate of the starting pixel in the dest image.
-    \param dest_y y-coordinate of the starting pixel in the dest image.
+    \param dest_mip on which mip level to draw to.
+    \param dest_x x-coordinate of the starting pixel in the destination texture.
+    \param dest_y y-coordinate of the starting pixel in the destination texture.
     \param dest_width width of the dest image.
     \param dest_height height of the dest image.
-    \param dest_mip on which mip level the sourceImg would be drawn.
   %]
   [userglue]
-  void DrawImage(Bitmap source_img, int source_x, int source_y,
+  void DrawImage(Bitmap source_img, int source_mip,
+                 int source_x, int source_y,
                  int source_width, int source_height,
+                 int dest_mip,
                  int dest_x, int dest_y,
-                 int dest_width, int dest_height, int dest_mip);
+                 int dest_width, int dest_height);
+
+  %[
+    Copy pixels from source canvas to certain mip level.
+    Scales if the width and height of source and dest do not match.
+
+    \param source_img The source canvas.
+    \param source_x x-coordinate of the starting pixel in the source image.
+    \param source_y y-coordinate of the starting pixel in the source image.
+    \param source_width width of the source image to draw.
+    \param source_height Height of the source image to draw.
+    \param dest_mip on which mip level to draw to.
+    \param dest_x x-coordinate of the starting pixel in the destination texture.
+    \param dest_y y-coordinate of the starting pixel in the destination texture.
+    \param dest_width width of the dest image.
+    \param dest_height height of the dest image.
+  %]
+  [userglue, include="core/cross/canvas.h"]
+  void DrawImage(Canvas source_img,
+                 int source_x, int source_y,
+                 int source_width, int source_height,
+                 int dest_mip,
+                 int dest_x, int dest_y,
+                 int dest_width, int dest_height);
+
 
   [verbatim=cpp_glue] %{
   void userglue_method_DrawImage(
        o3d::Texture2D* self,
-       o3d::Bitmap* source_img, int source_x, int source_y,
+       o3d::Bitmap* source_img, int source_mip, int source_x, int source_y,
        int source_width, int source_height,
+       int dest_mip,
        int dest_x, int dest_y,
-       int dest_width, int dest_height, int dest_mip) {
+       int dest_width, int dest_height) {
+    self->DrawImage(*source_img, source_mip, source_x, source_y,
+                    source_width, source_height,
+                    dest_mip, dest_x, dest_y,
+                    dest_width, dest_height);
+  }
+  void userglue_method_DrawImage(
+       o3d::Texture2D* self,
+       o3d::Canvas* source_img, int source_x, int source_y,
+       int source_width, int source_height,
+       int dest_mip,
+       int dest_x, int dest_y,
+       int dest_width, int dest_height) {
     self->DrawImage(*source_img, source_x, source_y,
                     source_width, source_height,
-                    dest_x, dest_y,
-                    dest_width, dest_height, dest_mip);
+                    dest_mip, dest_x, dest_y,
+                    dest_width, dest_height);
   }
 %}
 };  // Texture2D
@@ -402,40 +442,78 @@ namespace o3d {
   %}
 
   %[
-    Copy pixels from source bitmap to certain mip level.
+    Copy pixels from source bitmap to certain face and mip level.
     Scales if the width and height of source and dest do not match.
 
-    \param source_img source bitmap which would be drawn.
+    \param source_img The source bitmap.
+    \param source_mip which mip of the source to copy from.
     \param source_x x-coordinate of the starting pixel in the source image.
     \param source_y y-coordinate of the starting pixel in the source image.
     \param source_width width of the source image to draw.
     \param source_height Height of the source image to draw.
-    \param dest_x x-coordinate of the starting pixel in the dest image.
-    \param dest_y y-coordinate of the starting pixel in the dest image.
-    \param dest_width width of the dest image.
-    \param dest_height height of the dest image.
-    \param face on which face the sourceImg would be drawn.
-    \param dest_mip on which mip level the sourceImg would be drawn.
+    \param face on which face to draw on.
+    \param dest_mip on which mip level to draw on.
+    \param dest_x x-coordinate of the starting pixel in the destination texture.
+    \param dest_y y-coordinate of the starting pixel in the destination texture.
+    \param dest_width width of the destination image.
+    \param dest_height height of the destination image.
   %]
   [userglue]
-  void DrawImage(Bitmap source_img, int source_x, int source_y,
+  void DrawImage(Bitmap source_img, int source_mip, int source_x, int source_y,
                  int source_width, int source_height,
+                 CubeFace face, int dest_mip,
                  int dest_x, int dest_y,
-                 int dest_width, int dest_height,
-                 CubeFace face, int dest_mip);
+                 int dest_width, int dest_height);
+
+  %[
+    Copy pixels from source canvas to certain face and mip level.
+    Scales if the width and height of source and dest do not match.
+
+    \param source_img The source canvas.
+    \param source_x x-coordinate of the starting pixel in the source image.
+    \param source_y y-coordinate of the starting pixel in the source image.
+    \param source_width width of the source image to draw.
+    \param source_height Height of the source image to draw.
+    \param face on which face to draw on.
+    \param dest_mip on which mip level to draw on.
+    \param dest_x x-coordinate of the starting pixel in the destination texture.
+    \param dest_y y-coordinate of the starting pixel in the destination texture.
+    \param dest_width width of the destination image.
+    \param dest_height height of the destination image.
+  %]
+  [userglue, include="core/cross/canvas.h"]
+  void DrawImage(Canvas source_img, int source_x, int source_y,
+                 int source_width, int source_height,
+                 CubeFace face, int dest_mip,
+                 int dest_x, int dest_y,
+                 int dest_width, int dest_height);
 
   [verbatim=cpp_glue] %{
     void userglue_method_DrawImage(
          o3d::TextureCUBE* self,
-         o3d::Bitmap* source_img, int source_x, int source_y,
+         o3d::Bitmap* source_img, int source_mip, int source_x, int source_y,
          int source_width, int source_height,
+         o3d::TextureCUBE::CubeFace dest_face, int dest_mip,
          int dest_x, int dest_y,
-         int dest_width, int dest_height,
-         o3d::TextureCUBE::CubeFace dest_face, int dest_mip) {
+         int dest_width, int dest_height) {
+      self->DrawImage(*source_img, source_mip, source_x, source_y,
+                      source_width, source_height,
+                      dest_face, dest_mip,
+                      dest_x, dest_y,
+                      dest_width, dest_height);
+    }
+    void userglue_method_DrawImage(
+         o3d::TextureCUBE* self,
+         o3d::Canvas* source_img, int source_x, int source_y,
+         int source_width, int source_height,
+         o3d::TextureCUBE::CubeFace dest_face, int dest_mip,
+         int dest_x, int dest_y,
+         int dest_width, int dest_height) {
       self->DrawImage(*source_img, source_x, source_y,
                       source_width, source_height,
+                      dest_face, dest_mip,
                       dest_x, dest_y,
-                      dest_width, dest_height, dest_face, dest_mip);
+                      dest_width, dest_height);
     }
   %}
 };  // TextureCUBE

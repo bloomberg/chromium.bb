@@ -226,9 +226,9 @@ bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
   // selected such a transform above).
   png_read_update_info(png_ptr, info_ptr);
 
-  // Allocate storage for the pixels.
-  size_t png_image_size =
-      image::ComputeMipChainSize(png_width, png_height, format, 1);
+  // Allocate storage for the pixels. Bitmap requires we allocate enough
+  // memory for all mips even if we don't use them.
+  size_t png_image_size = Bitmap::ComputeMaxSize(png_width, png_height, format);
   image_data.reset(new uint8[png_image_size]);
   if (image_data.get() == NULL) {
     DLOG(ERROR) << "PNG image memory allocation error \"" << filename << "\"";

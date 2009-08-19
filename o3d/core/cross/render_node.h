@@ -37,7 +37,6 @@
 
 #include <vector>
 #include "core/cross/param_object.h"
-#include "core/cross/draw_context.h"
 #include "core/cross/render_context.h"
 
 namespace o3d {

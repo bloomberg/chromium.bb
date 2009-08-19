@@ -35,8 +35,9 @@
 #ifndef O3D_CORE_CROSS_DRAW_PASS_H_
 #define O3D_CORE_CROSS_DRAW_PASS_H_
 
-#include "core/cross/render_node.h"
+#include "core/cross/draw_context.h"
 #include "core/cross/draw_list.h"
+#include "core/cross/render_node.h"
 
 namespace o3d {
 

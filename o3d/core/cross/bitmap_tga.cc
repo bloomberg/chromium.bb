@@ -111,8 +111,9 @@ bool Bitmap::LoadFromTGAStream(ServiceLocator* service_locator,
   unsigned int pixel_count = tga_width * tga_height;
   // Allocate storage for the pixels.
   Texture::Format format = components == 3 ? Texture::XRGB8 : Texture::ARGB8;
-  size_t image_size =
-      image::ComputeMipChainSize(tga_width, tga_height, format, 1);
+  // Allocate storage for the pixels. Bitmap requires we allocate enough
+  // memory for all mips even if we don't use them.
+  size_t image_size = Bitmap::ComputeMaxSize(tga_width, tga_height, format);
   scoped_array<uint8> image_data(new uint8[image_size]);
   if (image_data.get() == NULL) {
     DLOG(ERROR) << "Targa file memory allocation error \"" << filename << "\"";
