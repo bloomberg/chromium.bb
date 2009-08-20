@@ -2107,10 +2107,10 @@ each locale. -->
         Install "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_1" desc="Humorous warning displayed in the extension install prompt that tells users that extensions have access to their computer and private data.">
-        Extensions have access your computer and private data. This means they could forward all your email to your spouse.
+        Extensions have access to your computer and private data. This means they could forward all your email to your spouse.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_2" desc="Humorous warning displayed in the extension install prompt that tells users that extensions have access to their computer and private data.">
-        Extensions have access your computer and private data. They could send tweets or email on your behalf.
+        Extensions have access to your computer and private data. They could send tweets or email on your behalf.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_3" desc="Humorous warning displayed in the extension install prompt that tells users that extensions have access to their computer and private data.">
         Extensions can access your computer and private data. They could post unflattering pictures to your Wall.
