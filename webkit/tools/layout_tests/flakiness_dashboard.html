@@ -98,6 +98,7 @@
     .current-builder {
       text-decoration: none;
       color: black;
+      font-weight: bold;
     }
   </style>
 
@@ -118,7 +119,27 @@
    *   -copy them to the appropriate location
    *   -add the builder name to the list of builders below.
    */
-  var builders = ['WebKit', 'WebKitDebug'];
+
+  // Default to layout_tests.
+  var testType = window.location.search.substring(1) || 'layout_test_results';
+
+  // Map of builderName (the name shown in the waterfall)
+  // to builderPath (the path used in the builder's URL)
+  // TODO(ojan): Make this switch based off of the testType.
+  var builders = { 
+    'Webkit': 'webkit-rel',
+    'Webkit (dbg)(1)': 'webkit-dbg-1',
+    'Webkit (dbg)(2)': 'webkit-dbg-2',
+    'Webkit (dbg)(3)': 'webkit-dbg-3',
+    'Webkit Linux': 'webkit-rel-linux',
+    'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
+    'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',    
+    'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
+    'Webkit Mac10.5': 'webkit-rel-mac5',
+    'Webkit Mac10.5 (dbg)(1)': 'webkit-dbg-mac5-1',
+    'Webkit Mac10.5 (dbg)(2)': 'webkit-dbg-mac5-2',
+    'Webkit Mac10.5 (dbg)(3)': 'webkit-dbg-mac5-3'
+  };
 
   /* TODO
   PYTHON
@@ -140,25 +161,29 @@
   */
   var resultsByBuilder = {};
   var expectationsByTest = {};
-  var testType = window.location.search.substring(1);
   function ADD_RESULTS(builds) {
-    for (var builderName in builds)
-      resultsByBuilder[builderName] = builds[builderName];
+    for (var builderName in builds) {
+      // TODO(ojan): Remove this if statement once all the bots have been
+      // clobbered. For now, skip this dummy builder that got added to the
+      // results JSON.
+      if (builderName != "WebKitBuilder")
+        resultsByBuilder[builderName] = builds[builderName];
+    }
   }
-  var BUILDER_BASE = 'LayoutTestDashBoard';
+  var BUILDER_BASE = 'http://build.chromium.org/buildbot/';
   function getPathToBuilderResultsFile(builderName) {
     // TODO(ojan): Make this match the actual path to the bots.
-    return BUILDER_BASE + testType + builders[i]
+    return BUILDER_BASE + testType + '/' + builders[builderName] + '/';
   }
-  for (var i = 0; i < builders.length; i++) {
+  for (var builderName in builders) {
     var script = document.createElement('script');
-    script.src = getPathToBuilderResultsFile(builders[i]) + 'results.js';
+    script.src = getPathToBuilderResultsFile(builderName) + 'results.json';
     document.getElementsByTagName('head')[0].appendChild(script);
   }
 
   var script = document.createElement('script');
   // Grab expectations file from any builder.
-  script.src = getPathToBuilderResultsFile(builders[0]) + 'expectations.json';
+  script.src = getPathToBuilderResultsFile(builderName) + 'expectations.json';
   document.getElementsByTagName('head')[0].appendChild(script);
 
   function ADD_EXPECTATIONS(expectations) {
@@ -475,9 +500,9 @@
     var html = '<div class=header-container>';
 
     html += '<span class=builders>';
-    for (var builder in resultsByBuilder) {
+    for (var builder in builders) {
       var className = builder == currentState.builder ? 'current-builder' : '';
-      html += '<a' + (className ? ' class="' + className : '') + '" link"' +
+      html += '<a href="#" class="' + (className || '') + '" link"' +
           ' onclick=\'setState("builder", "' + builder +
           '");return false;\'>' + builder + '</a>';
     }

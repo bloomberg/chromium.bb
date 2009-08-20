@@ -601,9 +601,8 @@ class TestRunner:
     # TODO(ojan): Generate JSON using a JSON library instead of relying on
     # GetExpectationsForAllPlatforms returning an object that only uses
     # primitive types.
-    # Strip whitespace to reduce filesize.
-    expectations_json = re.sub(r'\s+', '',
-        repr(self._expectations.GetExpectationsForAllPlatforms()))
+    expectations_json = repr(
+        self._expectations.GetExpectationsForAllPlatforms())
     expectations_file.write(("ADD_EXPECTATIONS(" + expectations_json + ");"))
     expectations_file.close()
 
