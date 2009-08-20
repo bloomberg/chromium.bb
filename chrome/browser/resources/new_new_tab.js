@@ -1217,25 +1217,35 @@ WindowTooltip.prototype = {
 
     processData('#window-tooltip', tabs);
     var rect = linkEl.getBoundingClientRect();
-    var bodyRect = document.body.getBoundingClientRect()
+    var bodyRect = document.body.getBoundingClientRect();
     var rtl = document.documentElement.dir == 'rtl';
 
     this.tooltipEl.style.display = 'block';
+    var tooltipRect = this.tooltipEl.getBoundingClientRect();
+    var x, y;
 
     // When focused show below, like a drop down menu.
     if (type == 'focus') {
-      this.tooltipEl.style.left = (rtl ?
+      x = rtl ?
           rect.left + bodyRect.left + rect.width - this.tooltipEl.offsetWidth :
-          rect.left + bodyRect.left) + 'px';
-      this.tooltipEl.style.top = rect.top + bodyRect.top + rect.height + 'px';
+          rect.left + bodyRect.left;
+      y = rect.top + bodyRect.top + rect.height;
     } else {
-      this.tooltipEl.style.left = bodyRect.left + (rtl ?
+      x = bodyRect.left + (rtl ?
           WindowTooltip.clientX - this.tooltipEl.offsetWidth :
-          WindowTooltip.clientX) + 'px';
+          WindowTooltip.clientX);
       // Offset like a tooltip
-      this.tooltipEl.style.top = 20 + WindowTooltip.clientY + bodyRect.top +
-                                 'px';
+      y = 20 + WindowTooltip.clientY + bodyRect.top;
     }
+
+    // We need to ensure that the tooltip is inside the window viewport.
+    x = Math.min(x, bodyRect.width - tooltipRect.width);
+    x = Math.max(x, 0);
+    y = Math.min(y, bodyRect.height - tooltipRect.height);
+    y = Math.max(y, 0);
+
+    this.tooltipEl.style.left = x + 'px';
+    this.tooltipEl.style.top = y + 'px';
   },
   handleMouseOut: function(e) {
     // Don't hide when move to another item in the link.
