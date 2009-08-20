@@ -2803,8 +2803,6 @@ BUG19766 WIN LINUX : LayoutTests/editing/inserting/insert-3659587-fix.html = FAI
 BUG19766 WIN LINUX : LayoutTests/editing/pasteboard/4631972.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/editing/pasteboard/select-element-1.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/editing/pasteboard/styled-element-markup.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/editing/style/remove-underline-across-paragraph-in-bold.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/editing/style/remove-underline-after-paragraph-in-bold.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/fast/block/basic/quirk-percent-height-table-cell.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/fast/block/positioning/auto-height-with-top-and-bottom.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/fast/block/positioning/relative-overflow-block.html = FAIL
@@ -2899,10 +2897,6 @@ BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.html = FAIL
 
 // Fallout from r47528:47546
-BUG19796 LINUX WIN : LayoutTests/editing/style/remove-underline-across-paragraph.html = FAIL
-BUG19796 LINUX WIN : LayoutTests/editing/style/remove-underline-after-paragraph.html = FAIL
-BUG19796 LINUX WIN : LayoutTests/editing/style/remove-underline.html = FAIL
-BUG19796 LINUX WIN : LayoutTests/editing/style/underline.html = FAIL
 BUG19796 LINUX WIN : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = FAIL
 BUG19796 WIN :  LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
 
