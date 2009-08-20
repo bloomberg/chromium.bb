@@ -39,12 +39,16 @@ _mainCRTStartup:
 _start:
 start:
      .align 4
-# write(0, "hello world\n", 12)
+
+# write(1, "hello world\n", 12)
      mov r2, 12
      ldr r1, .string_address
      mov r0, 1
      mov r10, 0x10000
+
      add r10, r10, (32 * 13)
+     nop
+     nop
      blx  r10
 
 # exit(0)
@@ -52,6 +56,7 @@ start:
      mov r10, 0x10000
      add r10, r10, (32 * 30)
      blx  r10
+
      bkpt
 .string_address:
      .long   .string
