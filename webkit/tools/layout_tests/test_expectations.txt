@@ -2897,9 +2897,8 @@ BUG19782 WIN DEBUG : LayoutTests/fast/dom/text-control-crash-on-select.html = CR
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.html = FAIL
 
-// Fallout from r47528:47546
-BUG19796 LINUX WIN : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = FAIL
-BUG19796 WIN :  LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
+BUG19888 LINUX WIN : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = FAIL
+BUG19888 WIN :  LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
 
 // Temporary supression while we investigate.
 BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
