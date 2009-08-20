@@ -84,21 +84,21 @@ std::vector<GdkPoint> MakeFramePolygonPoints(int width,
   // Top left corner
   points.push_back(MakeBidiGdkPoint(x_off_r, 0, width, ltr));
   points.push_back(MakeBidiGdkPoint(
-      kCornerSize - x_off_r, kCornerSize, width, ltr));
+      kCornerSize + x_off_r, kCornerSize, width, ltr));
 
   // Bottom left corner
   points.push_back(MakeBidiGdkPoint(
-      kCornerSize - x_off_r, height - kCornerSize + y_off, width, ltr));
+      kCornerSize + x_off_r, height - kCornerSize, width, ltr));
   points.push_back(MakeBidiGdkPoint(
-      (2 * kCornerSize) - x_off_r - 1, height + y_off,
+      (2 * kCornerSize) + x_off_l, height + y_off,
       width, ltr));
 
   // Bottom right corner
   points.push_back(MakeBidiGdkPoint(
-      width - (2 * kCornerSize) + x_off_l, height + y_off,
+      width - (2 * kCornerSize) + x_off_r, height + y_off,
       width, ltr));
   points.push_back(MakeBidiGdkPoint(
-      width - kCornerSize + x_off_l, height - kCornerSize + y_off, width, ltr));
+      width - kCornerSize + x_off_l, height - kCornerSize, width, ltr));
 
   // Top right corner
   points.push_back(MakeBidiGdkPoint(
