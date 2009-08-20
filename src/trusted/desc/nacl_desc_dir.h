@@ -36,7 +36,10 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_DIR_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_DIR_H_
 
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
+
+EXTERN_C_BEGIN
 
 struct NaClDesc;
 struct NaClDescEffector;
@@ -73,5 +76,7 @@ ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
 int NaClDescDirDescExternalizeSize(struct NaClDesc *vself,
                                    size_t          *nbytes,
                                    size_t          *nhandles);
+
+EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_DIR_H_
