@@ -702,7 +702,7 @@ class AutocompleteController : public ACProviderListener {
       : providers_(providers),
         history_contents_provider_(NULL),
         updated_latest_result_(false),
-        delay_interval_has_passed(false),
+        delay_interval_has_passed_(false),
         have_committed_during_this_query_(false),
         done_(true) {
   }
