@@ -54,18 +54,19 @@ TEST(LoadLogTest, Basic) {
   log->Add(MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL, LoadLog::PHASE_BEGIN);
   log->Add(MakeTime(2), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
   log->Add(MakeTime(11), LoadLog::TYPE_HOST_RESOLVER_IMPL_OBSERVER_ONSTART,
-      LoadLog::PHASE_END);
+           LoadLog::PHASE_END);
 
   EXPECT_EQ(3u, log->events().size());
 
   ExpectLogContains(log, 0, MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL,
-      LoadLog::PHASE_BEGIN);
+                    LoadLog::PHASE_BEGIN);
 
-  ExpectLogContains(log, 1, MakeTime(2),
-      LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
+  ExpectLogContains(log, 1, MakeTime(2), LoadLog::TYPE_CANCELLED,
+                    LoadLog::PHASE_NONE);
 
   ExpectLogContains(log, 2, MakeTime(11),
-      LoadLog::TYPE_HOST_RESOLVER_IMPL_OBSERVER_ONSTART, LoadLog::PHASE_END);
+                    LoadLog::TYPE_HOST_RESOLVER_IMPL_OBSERVER_ONSTART,
+                    LoadLog::PHASE_END);
 }
 
 // Test that the log's size is strictly bounded.
@@ -90,7 +91,7 @@ TEST(LoadLogTest, Truncation) {
 
   // We terminated with a "truncation" event.
   ExpectLogContains(log, LoadLog::kMaxNumEntries - 1, MakeTime(0),
-      LoadLog::TYPE_LOG_TRUNCATED, LoadLog::PHASE_NONE);
+                    LoadLog::TYPE_LOG_TRUNCATED, LoadLog::PHASE_NONE);
 }
 
 TEST(LoadLogTest, Append) {
