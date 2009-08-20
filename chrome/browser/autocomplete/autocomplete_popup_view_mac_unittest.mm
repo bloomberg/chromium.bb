@@ -4,11 +4,14 @@
 
 #import "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 
+#include "base/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "testing/platform_test.h"
 
 namespace {
+
+const float kLargeWidth = 10000;
 
 class AutocompletePopupViewMacTest : public PlatformTest {
  public:
@@ -20,7 +23,8 @@ class AutocompletePopupViewMacTest : public PlatformTest {
     // These are here because there is no autorelease pool for the
     // constructor.
     color_ = [NSColor blackColor];
-    font_ = [NSFont userFontOfSize:12];
+    font_ = gfx::Font::CreateFont(
+        base::SysNSStringToWide([[NSFont userFontOfSize:12] fontName]), 12);
   }
 
   // Returns the length of the run starting at |location| for which
@@ -88,7 +92,7 @@ class AutocompletePopupViewMacTest : public PlatformTest {
   }
 
   NSColor* color_;  // weak
-  NSFont* font_;  // weak
+  gfx::Font font_;
 };
 
 // Simple inputs with no matches should result in styled output who's
@@ -288,7 +292,8 @@ TEST_F(AutocompletePopupViewMacTest, MatchText) {
   AutocompleteMatch m = MakeMatch(base::SysNSStringToWide(contents),
                                   base::SysNSStringToWide(description));
 
-  NSAttributedString* decorated = AutocompletePopupViewMac::MatchText(m, font_);
+  NSAttributedString* decorated =
+      AutocompletePopupViewMac::MatchText(m, font_, kLargeWidth);
 
   // Result contains the characters of the input in the right places.
   EXPECT_GT([decorated length], [contents length] + [description length]);
@@ -332,7 +337,8 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextContentsMatch) {
       ACMatchClassification(runLength1 + runLength2,
                             ACMatchClassification::NONE));
 
-  NSAttributedString* decorated = AutocompletePopupViewMac::MatchText(m, font_);
+  NSAttributedString* decorated =
+      AutocompletePopupViewMac::MatchText(m, font_, kLargeWidth);
 
   // Result has same characters as the input.
   EXPECT_EQ([decorated length], [contents length]);
@@ -376,7 +382,8 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextDescriptionMatch) {
   m.description_class.push_back(
       ACMatchClassification(runLength1, ACMatchClassification::NONE));
 
-  NSAttributedString* decorated = AutocompletePopupViewMac::MatchText(m, font_);
+  NSAttributedString* decorated =
+      AutocompletePopupViewMac::MatchText(m, font_, kLargeWidth);
 
   // Result contains the characters of the input.
   EXPECT_GT([decorated length], [contents length] + [description length]);

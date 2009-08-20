@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 
+#include "app/gfx/text_elider.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
@@ -25,11 +26,18 @@ const int kCellHeightAdjust = 7.0;
 // buttons.
 const CGFloat kPopupRoundingRadius = 4.0;
 
-// How far to offset the image column from the left.
-const CGFloat kImageXOffset = 8.0;
+// How much space to leave for the left and right margins.
+const CGFloat kLeftRightMargin = 8.0;
 
 // How far to offset the text column from the left.
 const CGFloat kTextXOffset = 33.0;
+
+// Animation duration when animating the popup window smaller.
+const float kShrinkAnimationDuration = 0.1;
+
+// Maximum fraction of the popup width that can be used to display match
+// contents.
+const float kMaxMatchContentsWidth = 0.7;
 
 // Background colors for different states of the popup elements.
 NSColor* BackgroundColor() {
@@ -99,14 +107,14 @@ NSImage* MatchIcon(const AutocompleteMatch& match) {
 NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
     const std::wstring &matchString,
     const AutocompleteMatch::ACMatchClassifications &classifications,
-    NSColor* textColor, NSFont* font) {
+    NSColor* textColor, gfx::Font& font) {
   // Cache for on-demand computation of the bold version of |font|.
   NSFont* boldFont = nil;
 
   // Start out with a string using the default style info.
   NSString* s = base::SysWideToNSString(matchString);
   NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  font, NSFontAttributeName,
+                                  font.nativeFont(), NSFontAttributeName,
                                   textColor, NSForegroundColorAttributeName,
                                   nil];
   NSMutableAttributedString* as =
@@ -131,7 +139,8 @@ NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
     if (0 != (i->style & ACMatchClassification::MATCH)) {
       if (!boldFont) {
         NSFontManager* fontManager = [NSFontManager sharedFontManager];
-        boldFont = [fontManager convertFont:font toHaveTrait:NSBoldFontMask];
+        boldFont = [fontManager convertFont:font.nativeFont()
+                                toHaveTrait:NSBoldFontMask];
       }
       [as addAttribute:NSFontAttributeName value:boldFont range:range];
     }
@@ -144,9 +153,18 @@ NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
 // contents and description.  Result will be in |font|, with the
 // boldfaced version used for matches.
 NSAttributedString* AutocompletePopupViewMac::MatchText(
-    const AutocompleteMatch& match, NSFont* font) {
+    const AutocompleteMatch& match, gfx::Font& font, float cellWidth) {
+  // If there is a description, then the URL can take at most 70% of the
+  // available width, with 30% being reserved for the description.  If there is
+  // no description, then the URL can take the full 100%.
+  float availableWidth = cellWidth - kTextXOffset - kLeftRightMargin;
+  BOOL hasDescription = match.description.empty() ? NO : YES;
+  float urlWidth = hasDescription ? availableWidth * kMaxMatchContentsWidth
+                                  : availableWidth;
+
   NSMutableAttributedString *as =
-      DecorateMatchedString(match.contents, match.contents_class,
+      DecorateMatchedString(gfx::ElideText(match.contents, font, urlWidth),
+                            match.contents_class,
                             ContentTextColor(), font);
 
   // If there is a description, append it, separated from the contents
@@ -154,7 +172,7 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
   if (!match.description.empty()) {
     NSDictionary* attributes =
         [NSDictionary dictionaryWithObjectsAndKeys:
-             font, NSFontAttributeName,
+             font.nativeFont(), NSFontAttributeName,
              ContentTextColor(), NSForegroundColorAttributeName,
              nil];
     NSString* rawEnDash = [NSString stringWithFormat:@" %C ", 0x2013];
@@ -297,25 +315,6 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
 
   CreatePopupIfNeeded();
 
-  // The popup's font is a slightly smaller version of what |field_|
-  // uses.
-  NSFont* fieldFont = [field_ font];
-  const CGFloat resultFontSize = [fieldFont pointSize] + kEditFontAdjust;
-  NSFont* resultFont =
-      [NSFont fontWithName:[fieldFont fontName] size:resultFontSize];
-
-  // Load the results into the popup's matrix.
-  AutocompleteMatrix* matrix = [popup_ contentView];
-  const size_t rows = model_->result().size();
-  DCHECK_GT(rows, 0U);
-  [matrix renewRows:rows columns:1];
-  for (size_t ii = 0; ii < rows; ++ii) {
-    AutocompleteButtonCell* cell = [matrix cellAtRow:ii column:0];
-    const AutocompleteMatch& match = model_->result().match_at(ii);
-    [cell setImage:MatchIcon(match)];
-    [cell setAttributedTitle:MatchText(match, resultFont)];
-  }
-
   // Layout the popup and size it to land underneath the field.
   // TODO(shess) Consider refactoring to remove this depenency,
   // because the popup doesn't need any of the field-like aspects of
@@ -333,6 +332,26 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   r.size.width += 2 * r.size.height;
   r.origin = [[field_ window] convertBaseToScreen:r.origin];
   DCHECK_GT(r.size.width, 0.0);
+
+  // The popup's font is a slightly smaller version of what |field_|
+  // uses.
+  NSFont* fieldFont = [field_ font];
+  const CGFloat resultFontSize = [fieldFont pointSize] + kEditFontAdjust;
+  gfx::Font resultFont = gfx::Font::CreateFont(
+      base::SysNSStringToWide([fieldFont fontName]), (int)resultFontSize);
+
+  // Load the results into the popup's matrix.  The popup window must be
+  // correctly sized before calling MatchText().
+  AutocompleteMatrix* matrix = [popup_ contentView];
+  const size_t rows = model_->result().size();
+  DCHECK_GT(rows, 0U);
+  [matrix renewRows:rows columns:1];
+  for (size_t ii = 0; ii < rows; ++ii) {
+    AutocompleteButtonCell* cell = [matrix cellAtRow:ii column:0];
+    const AutocompleteMatch& match = model_->result().match_at(ii);
+    [cell setImage:MatchIcon(match)];
+    [cell setAttributedTitle:MatchText(match, resultFont, r.size.width)];
+  }
 
   // Set the cell size to fit a line of text in the cell's font.  All
   // cells should use the same font and each should layout in one
@@ -352,7 +371,19 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   // Update the selection.
   PaintUpdatesNow();
 
-  [popup_ setFrame:r display:YES];
+  // Animate the frame change if the only change is that the height got smaller.
+  // Otherwise, resize immediately.
+  NSRect oldFrame = [popup_ frame];
+  if (r.size.height < oldFrame.size.height &&
+      r.origin.x == oldFrame.origin.x &&
+      r.size.width == oldFrame.size.width) {
+    [NSAnimationContext beginGrouping];
+    [[NSAnimationContext currentContext] setDuration:kShrinkAnimationDuration];
+    [[popup_ animator] setFrame:r display:YES];
+    [NSAnimationContext endGrouping];
+  } else {
+    [popup_ setFrame:r display:YES];
+  }
 
   if (!IsOpen()) {
     [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
@@ -431,7 +462,7 @@ void AutocompletePopupViewMac::AcceptInput() {
     imageRect.size = [image size];
     imageRect.origin.y +=
         floor((NSHeight(cellFrame) - NSHeight(imageRect)) / 2);
-    imageRect.origin.x += kImageXOffset;
+    imageRect.origin.x += kLeftRightMargin;
     [self drawImage:image withFrame:imageRect inView:controlView];
   }
 
@@ -439,7 +470,7 @@ void AutocompletePopupViewMac::AcceptInput() {
   NSAttributedString* title = [self attributedTitle];
   if (title) {
     NSRect titleRect = cellFrame;
-    titleRect.size.width -= kTextXOffset;
+    titleRect.size.width -= (kTextXOffset + kLeftRightMargin);
     titleRect.origin.x += kTextXOffset;
     [self drawTitle:title withFrame:titleRect inView:controlView];
   }

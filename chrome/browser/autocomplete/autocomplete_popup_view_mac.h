@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "app/gfx/font.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
@@ -24,6 +25,9 @@ class Profile;
 
 // Implements AutocompletePopupView using a raw NSWindow containing an
 // NSTableView.
+//
+// TODO(rohitrao): This class is set up in a way that makes testing hard.
+// Refactor and write unittests.  http://crbug.com/9977
 
 class AutocompletePopupViewMac : public AutocompletePopupView {
  public:
@@ -74,7 +78,8 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   // contents and description.  Result will be in |font|, with the
   // boldfaced version used for matches.
   static NSAttributedString* MatchText(const AutocompleteMatch& match,
-                                       NSFont* font);
+                                gfx::Font& font,
+                                float cellWidth);
 
   // Helper for MatchText() to allow sharing code between the contents
   // and description cases.  Returns NSMutableAttributedString as a
@@ -82,7 +87,7 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   static NSMutableAttributedString* DecorateMatchedString(
       const std::wstring &matchString,
       const AutocompleteMatch::ACMatchClassifications &classifications,
-      NSColor* textColor, NSFont* font);
+      NSColor* textColor, gfx::Font& font);
 
  private:
   // Create the popup_ instance if needed.
