@@ -38,10 +38,13 @@
 
 namespace {
 
-// Command used to configure the gconf proxy settings.  The command was renamed
+// Command used to configure GNOME proxy settings. The command was renamed
 // in January 2009, so both are used to work on both old and new systems.
-const char kOldProxyConfigBinary[] = "gnome-network-preferences";
-const char kProxyConfigBinary[] = "gnome-network-properties";
+const char* kOldGNOMEProxyConfigCommand[] = {"gnome-network-preferences", NULL};
+const char* kGNOMEProxyConfigCommand[] = {"gnome-network-properties", NULL};
+// KDE3 and KDE4 are only slightly different, but incompatible. Go figure.
+// const char* kKDE3ProxyConfigCommand[] = {"kcmshell", "proxy", NULL};
+// const char* kKDE4ProxyConfigCommand[] = {"kcmshell4", "proxy", NULL};
 
 // The pixel width we wrap labels at.
 // TODO(evanm): make the labels wrap at the appropriate width.
@@ -311,9 +314,19 @@ class NetworkSection : public OptionsPageBase {
   }
 
  private:
+  struct ProxyConfigCommand {
+    std::string binary;
+    const char** argv;
+  };
   // The callback functions for invoking the proxy config dialog.
   static void OnChangeProxiesButtonClicked(GtkButton *button,
                                            NetworkSection* section);
+  // Search $PATH to find one of the commands. Store the full path to
+  // it in the |binary| field and the command array index in in |index|.
+  static bool SearchPATH(ProxyConfigCommand* commands, size_t ncommands,
+                         size_t* index);
+  // Start the given proxy configuration utility.
+  static void StartProxyConfigUtil(const ProxyConfigCommand& command);
 
   // The widget containing the options for this section.
   GtkWidget* page_;
@@ -354,59 +367,86 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
   scoped_ptr<base::EnvironmentVariableGetter> env_getter(
       base::EnvironmentVariableGetter::Create());
 
+  ProxyConfigCommand command;
+  bool found_command = false;
   switch (base::GetDesktopEnvironment(env_getter.get())) {
     case base::DESKTOP_ENVIRONMENT_GNOME: {
-      const char* path = getenv("PATH");
-      FilePath bin_path;
-      bool have_bin_path = false;
-      StringTokenizer tk(path, ":");
-      while (tk.GetNext()) {
-        bin_path = FilePath(tk.token()).Append(kProxyConfigBinary);
-        if (file_util::PathExists(bin_path)) {
-          have_bin_path = true;
-          break;
-        }
-        bin_path = FilePath(tk.token()).Append(kOldProxyConfigBinary);
-        if (file_util::PathExists(bin_path)) {
-          have_bin_path = true;
-          break;
-        }
-      }
-      if (!have_bin_path) {
-        LOG(ERROR) << "Could not find Gnome network settings in PATH";
-        BrowserList::GetLastActive()->
-            OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
-                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-        return;
-      }
-      std::vector<std::string> argv;
-      argv.push_back(bin_path.value());
-      base::file_handle_mapping_vector no_files;
-      base::environment_vector env;
-      base::ProcessHandle handle;
-      env.push_back(std::make_pair("GTK_PATH",
-                                   getenv("CHROMIUM_SAVED_GTK_PATH")));
-      if (!base::LaunchApp(argv, env, no_files, false, &handle)) {
-        LOG(ERROR) << "OpenProxyConfigDialogTask failed";
-        BrowserList::GetLastActive()->
-            OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
-                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-        return;
-      }
-      ProcessWatcher::EnsureProcessGetsReaped(handle);
+      size_t index;
+      ProxyConfigCommand commands[2];
+      commands[0].argv = kGNOMEProxyConfigCommand;
+      commands[1].argv = kOldGNOMEProxyConfigCommand;
+      found_command = SearchPATH(commands, 2, &index);
+      if (found_command)
+        command = commands[index];
       break;
     }
 
-    case base::DESKTOP_ENVIRONMENT_KDE:
-      NOTIMPLEMENTED() << "Bug 17363: obey KDE proxy settings.";
-      // Fall through to default behavior for now.
+    case base::DESKTOP_ENVIRONMENT_KDE3:
+    //  command.argv = kKDE3ProxyConfigCommand;
+    //  found_command = SearchPATH(&command, 1, NULL);
+      break;
+
+    case base::DESKTOP_ENVIRONMENT_KDE4:
+    //  command.argv = kKDE4ProxyConfigCommand;
+    //  found_command = SearchPATH(&command, 1, NULL);
+      break;
 
     case base::DESKTOP_ENVIRONMENT_OTHER:
-      BrowserList::GetLastActive()->
-          OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
-                  GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
   }
+
+  if (found_command) {
+    StartProxyConfigUtil(command);
+  } else {
+    const char* name = base::GetDesktopEnvironmentName(env_getter.get());
+    if (name)
+      LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
+    BrowserList::GetLastActive()->
+        OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
+                GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  }
+}
+
+// static
+bool NetworkSection::SearchPATH(ProxyConfigCommand* commands, size_t ncommands,
+                                size_t* index) {
+  const char* path = getenv("PATH");
+  FilePath bin_path;
+  StringTokenizer tk(path, ":");
+  // Search $PATH looking for the commands in order.
+  while (tk.GetNext()) {
+    for (size_t i = 0; i < ncommands; i++) {
+      bin_path = FilePath(tk.token()).Append(commands[i].argv[0]);
+      if (file_util::PathExists(bin_path)) {
+        commands[i].binary = bin_path.value();
+        if (index)
+          *index = i;
+        return true;
+      }
+    }
+  }
+  // Did not find any of the binaries in $PATH.
+  return false;
+}
+
+// static
+void NetworkSection::StartProxyConfigUtil(const ProxyConfigCommand& command) {
+  std::vector<std::string> argv;
+  argv.push_back(command.binary);
+  for (size_t i = 1; command.argv[i]; i++)
+    argv.push_back(command.argv[i]);
+  base::file_handle_mapping_vector no_files;
+  base::environment_vector env;
+  base::ProcessHandle handle;
+  env.push_back(std::make_pair("GTK_PATH", getenv("CHROMIUM_SAVED_GTK_PATH")));
+  if (!base::LaunchApp(argv, env, no_files, false, &handle)) {
+    LOG(ERROR) << "StartProxyConfigUtil failed to start " << command.binary;
+    BrowserList::GetLastActive()->
+        OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
+                GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+    return;
+  }
+  ProcessWatcher::EnsureProcessGetsReaped(handle);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
