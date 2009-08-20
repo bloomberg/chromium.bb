@@ -38,10 +38,10 @@
 namespace appcache {
 
 enum Mode {
-  kExplicit,
-  kFallback,
-  kOnlineWhitelist,
-  kUnknown,
+  EXPLICIT,
+  FALLBACK,
+  ONLINE_WHITELIST,
+  UNKNOWN,
 };
 
 bool ParseManifest(const GURL& manifest_url, const char* data, int length,
@@ -53,7 +53,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
   DCHECK(manifest.online_whitelist_namespaces.empty());
   DCHECK(!manifest.online_whitelist_all);
 
-  Mode mode = kExplicit;
+  Mode mode = EXPLICIT;
 
   std::wstring data_string;
   // TODO(jennb): cannot do UTF8ToWide(data, length, &data_string);
@@ -117,19 +117,19 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
     std::wstring line(line_start, tmp - line_start + 1);
 
     if (line == L"CACHE:") {
-      mode = kExplicit;
+      mode = EXPLICIT;
     } else if (line == L"FALLBACK:") {
-      mode = kFallback;
+      mode = FALLBACK;
     } else if (line == L"NETWORK:") {
-      mode = kOnlineWhitelist;
+      mode = ONLINE_WHITELIST;
     } else if (*(line.end() - 1) == ':') {
-      mode = kUnknown;
-    } else if (mode == kUnknown) {
+      mode = UNKNOWN;
+    } else if (mode == UNKNOWN) {
       continue;
-    } else if (line == L"*" && mode == kOnlineWhitelist) {
+    } else if (line == L"*" && mode == ONLINE_WHITELIST) {
       manifest.online_whitelist_all = true;
       continue;
-    } else if (mode == kExplicit || mode == kOnlineWhitelist) {
+    } else if (mode == EXPLICIT || mode == ONLINE_WHITELIST) {
       const wchar_t *line_p = line.c_str();
       const wchar_t *line_end = line_p + line.length();
 
@@ -153,12 +153,12 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
         continue;
       }
 
-      if (mode == kExplicit) {
+      if (mode == EXPLICIT) {
         manifest.explicit_urls.insert(url.spec());
       } else {
         manifest.online_whitelist_namespaces.push_back(url);
       }
-    } else if (mode == kFallback) {
+    } else if (mode == FALLBACK) {
       const wchar_t* line_p = line.c_str();
       const wchar_t* line_end = line_p + line.length();
 
