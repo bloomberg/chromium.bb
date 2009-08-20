@@ -6,7 +6,9 @@
 
 #include "base/file_util.h"
 #include "base/rand_util.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/thread.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/net/test_url_fetcher_factory.h"
@@ -18,83 +20,8 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "libxml/globals.h"
 
-const char *valid_xml =
-"<?xml version='1.0' encoding='UTF-8'?>"
-"<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
-" <app appid='12345'>"
-"  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-"               version='1.2.3.4' prodversionmin='2.0.143.0' />"
-" </app>"
-"</gupdate>";
-
-const char *valid_xml_with_hash =
-"<?xml version='1.0' encoding='UTF-8'?>"
-"<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
-" <app appid='12345'>"
-"  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-"               version='1.2.3.4' prodversionmin='2.0.143.0' "
-"               hash='1234'/>"
-" </app>"
-"</gupdate>";
-
-const char* missing_appid =
-"<?xml version='1.0'?>"
-"<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
-" <app>"
-"  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-"               version='1.2.3.4' />"
-" </app>"
-"</gupdate>";
-
-const char* invalid_codebase =
-"<?xml version='1.0'?>"
-"<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
-" <app appid='12345' status='ok'>"
-"  <updatecheck codebase='example.com/extension_1.2.3.4.crx'"
-"               version='1.2.3.4' />"
-" </app>"
-"</gupdate>";
-
-const char* missing_version =
-"<?xml version='1.0'?>"
-"<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
-" <app appid='12345' status='ok'>"
-"  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx' />"
-" </app>"
-"</gupdate>";
-
-const char* invalid_version =
-"<?xml version='1.0'?>"
-"<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
-" <app appid='12345' status='ok'>"
-"  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx' "
-"               version='1.2.3.a'/>"
-" </app>"
-"</gupdate>";
-
-const char *uses_namespace_prefix =
-"<?xml version='1.0' encoding='UTF-8'?>"
-"<g:gupdate xmlns:g='http://www.google.com/update2/response' protocol='2.0'>"
-" <g:app appid='12345'>"
-"  <g:updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-"               version='1.2.3.4' prodversionmin='2.0.143.0' />"
-" </g:app>"
-"</g:gupdate>";
-
-// Includes unrelated <app> tags from other xml namespaces - this should
-// not cause problems.
-const char *similar_tagnames =
-"<?xml version='1.0' encoding='UTF-8'?>"
-"<gupdate xmlns='http://www.google.com/update2/response'"
-"         xmlns:a='http://a' protocol='2.0'>"
-" <a:app/>"
-" <b:app xmlns:b='http://b' />"
-" <app appid='12345'>"
-"  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-"               version='1.2.3.4' prodversionmin='2.0.143.0' />"
-" </app>"
-"</gupdate>";
 
 
 // Do-nothing base class for further specialized test classes.
@@ -205,12 +132,22 @@ class ServiceForDownloadTests : public MockService {
     install_path_ = extension_path;
   }
 
+  virtual Extension* GetExtensionById(const std::string& id) {
+    last_inquired_extension_id_ = id;
+    return NULL;
+  }
+
   const std::string& extension_id() { return extension_id_; }
   const FilePath& install_path() { return install_path_; }
+  const std::string& last_inquired_extension_id() {
+    return last_inquired_extension_id_;
+  }
 
  private:
   std::string extension_id_;
   FilePath install_path_;
+  // The last extension_id that GetExtensionById was called with.
+  std::string last_inquired_extension_id_;
 };
 
 class ServiceForBlacklistTests : public MockService {
@@ -261,10 +198,7 @@ static void ExtractParameters(const std::string& params,
 // inside this class (which is a friend to ExtensionUpdater).
 class ExtensionUpdaterTest : public testing::Test {
  public:
-  static void expectParseFailure(const char *xml) {
-    ScopedVector<ExtensionUpdater::ParseResult> result;
-    EXPECT_FALSE(ExtensionUpdater::Parse(xml, &result.get()));
-  }
+
 
   static void SimulateTimerFired(ExtensionUpdater* updater) {
     EXPECT_TRUE(updater->timer_.IsRunning());
@@ -272,52 +206,17 @@ class ExtensionUpdaterTest : public testing::Test {
     updater->TimerFired();
   }
 
-  // Make a test ParseResult
-  static ExtensionUpdater::ParseResult* MakeParseResult(
+  // Adds a Result with the given data to results.
+  static void AddParseResult(
       const std::string& id,
       const std::string& version,
-      const std::string& url) {
-    ExtensionUpdater::ParseResult *result = new ExtensionUpdater::ParseResult;
-    result->extension_id = id;
-    result->version.reset(Version::GetVersionFromString(version));
-    result->crx_url = GURL(url);
-    return result;
-  }
-
-  static void TestXmlParsing() {
-    ExtensionErrorReporter::Init(false);
-
-    // Test parsing of a number of invalid xml cases
-    expectParseFailure("");
-    expectParseFailure(missing_appid);
-    expectParseFailure(invalid_codebase);
-    expectParseFailure(missing_version);
-    expectParseFailure(invalid_version);
-
-    // Parse some valid XML, and check that all params came out as expected
-    ScopedVector<ExtensionUpdater::ParseResult> results;
-    EXPECT_TRUE(ExtensionUpdater::Parse(valid_xml, &results.get()));
-    EXPECT_FALSE(results->empty());
-    ExtensionUpdater::ParseResult* firstResult = results->at(0);
-    EXPECT_EQ(GURL("http://example.com/extension_1.2.3.4.crx"),
-              firstResult->crx_url);
-    EXPECT_TRUE(firstResult->package_hash.empty());
-    scoped_ptr<Version> version(Version::GetVersionFromString("1.2.3.4"));
-    EXPECT_EQ(0, version->CompareTo(*firstResult->version.get()));
-    version.reset(Version::GetVersionFromString("2.0.143.0"));
-    EXPECT_EQ(0, version->CompareTo(*firstResult->browser_min_version.get()));
-
-    // Parse some xml that uses namespace prefixes.
-    results.reset();
-    EXPECT_TRUE(ExtensionUpdater::Parse(uses_namespace_prefix, &results.get()));
-    EXPECT_TRUE(ExtensionUpdater::Parse(similar_tagnames, &results.get()));
-
-    // Parse xml with hash value
-    results.reset();
-    EXPECT_TRUE(ExtensionUpdater::Parse(valid_xml_with_hash, &results.get()));
-    EXPECT_FALSE(results->empty());
-    firstResult = results->at(0);
-    EXPECT_EQ("1234", firstResult->package_hash);
+      const std::string& url,
+      std::vector<UpdateManifest::Result>* results) {
+    UpdateManifest::Result result;
+    result.extension_id = id;
+    result.version = version;
+    result.crx_url = GURL(url);
+    results->push_back(result);
   }
 
   static void TestExtensionUpdateCheckRequests() {
@@ -334,7 +233,7 @@ class ExtensionUpdaterTest : public testing::Test {
     MessageLoop message_loop;
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, prefs.get(), 60*60*24, &message_loop);
+      new ExtensionUpdater(&service, prefs.get(), 60*60*24, NULL, NULL);
     updater->Start();
 
     // Tell the update that it's time to do update checks.
@@ -377,7 +276,7 @@ class ExtensionUpdaterTest : public testing::Test {
     MessageLoop message_loop;
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, prefs.get(), 60*60*24, &message_loop);
+      new ExtensionUpdater(&service, prefs.get(), 60*60*24, NULL, NULL);
     updater->Start();
 
     // Tell the updater that it's time to do update checks.
@@ -421,10 +320,10 @@ class ExtensionUpdaterTest : public testing::Test {
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
       new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
-                           &message_loop);
+                           NULL, NULL);
 
     // Check passing an empty list of parse results to DetermineUpdates
-    ExtensionUpdater::ParseResultList updates;
+    std::vector<UpdateManifest::Result> updates;
     std::vector<int> updateable = updater->DetermineUpdates(updates);
     EXPECT_TRUE(updateable.empty());
 
@@ -433,14 +332,13 @@ class ExtensionUpdaterTest : public testing::Test {
     // installed and available at v2.0).
     scoped_ptr<Version> one(Version::GetVersionFromString("1.0"));
     EXPECT_TRUE(tmp[0]->version()->Equals(*one));
-    updates.push_back(MakeParseResult(tmp[0]->id(),
-        "1.1", "http://localhost/e1_1.1.crx"));
-    updates.push_back(MakeParseResult(tmp[1]->id(),
-        tmp[1]->VersionString(), "http://localhost/e2_2.0.crx"));
+    AddParseResult(tmp[0]->id(),
+        "1.1", "http://localhost/e1_1.1.crx", &updates);
+    AddParseResult(tmp[1]->id(),
+        tmp[1]->VersionString(), "http://localhost/e2_2.0.crx", &updates);
     updateable = updater->DetermineUpdates(updates);
     EXPECT_EQ(1u, updateable.size());
     EXPECT_EQ(0, updateable[0]);
-    STLDeleteElements(&updates);
     STLDeleteElements(&tmp);
   }
 
@@ -449,11 +347,16 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
     ServiceForDownloadTests service;
-    MessageLoop message_loop;
+    MessageLoop ui_loop;
+    base::Thread file_thread("File Thread");
+    file_thread.Start();
+    base::Thread io_thread("IO Thread");
+    io_thread.Start();
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
       new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
-                           &message_loop);
+                           file_thread.message_loop(),
+                           io_thread.message_loop());
 
     GURL url1("http://localhost/manifest1");
     GURL url2("http://localhost/manifest2");
@@ -463,24 +366,45 @@ class ExtensionUpdaterTest : public testing::Test {
     updater->StartUpdateCheck(url1);
     updater->StartUpdateCheck(url2);
 
-    std::string manifest_data("invalid xml");
+    std::string invalid_xml = "invalid xml";
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     fetcher->delegate()->OnURLFetchComplete(
         fetcher, url1, URLRequestStatus(), 200, ResponseCookies(),
-        manifest_data);
+        invalid_xml);
 
     // Now that the first request is complete, make sure the second one has
     // been started.
+    const std::string kValidXml =
+        "<?xml version='1.0' encoding='UTF-8'?>"
+        "<gupdate xmlns='http://www.google.com/update2/response'"
+        "                protocol='2.0'>"
+        " <app appid='12345'>"
+        "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
+        "               version='1.2.3.4' prodversionmin='2.0.143.0' />"
+        " </app>"
+        "</gupdate>";
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     fetcher->delegate()->OnURLFetchComplete(
         fetcher, url2, URLRequestStatus(), 200, ResponseCookies(),
-        manifest_data);
+        kValidXml);
+
+    // This should run the manifest parsing, then we want to make sure that our
+    // service was called with GetExtensionById with the matching id from
+    // kValidXml.
+    file_thread.Stop();
+    io_thread.Stop();
+    ui_loop.RunAllPending();
+    EXPECT_EQ("12345", service.last_inquired_extension_id());
+    xmlCleanupGlobals();
   }
 
   static void TestSingleExtensionDownloading() {
-    MessageLoop message_loop;
+    MessageLoop ui_loop;
+    base::Thread file_thread("File Thread");
+    file_thread.Start();
+
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
@@ -488,14 +412,12 @@ class ExtensionUpdaterTest : public testing::Test {
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
       new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
-                           &message_loop);
+                           file_thread.message_loop(), NULL);
 
     GURL test_url("http://localhost/extension.crx");
 
     std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-
     std::string hash = "";
-
     std::string version = "0.0.1";
 
     updater->FetchUpdatedExtension(id, test_url, hash, version);
@@ -508,7 +430,8 @@ class ExtensionUpdaterTest : public testing::Test {
         fetcher, test_url, URLRequestStatus(), 200, ResponseCookies(),
         extension_data);
 
-    message_loop.RunAllPending();
+    file_thread.Stop();
+    ui_loop.RunAllPending();
 
     // Expect that ExtensionUpdater asked the mock extensions service to install
     // a file with the test data for the right id.
@@ -531,7 +454,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
       new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
-                           &message_loop);
+                           NULL, NULL);
     prefs.get()->
       RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion, L"0");
     GURL test_url("http://localhost/extension.crx");
@@ -574,7 +497,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
       new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
-                           &message_loop);
+                           &message_loop, NULL);
 
     GURL url1("http://localhost/extension1.crx");
     GURL url2("http://localhost/extension2.crx");
@@ -629,10 +552,6 @@ class ExtensionUpdaterTest : public testing::Test {
 // Because we test some private methods of ExtensionUpdater, it's easer for the
 // actual test code to live in ExtenionUpdaterTest methods instead of TEST_F
 // subclasses where friendship with ExtenionUpdater is not inherited.
-
-TEST(ExtensionUpdaterTest, TestXmlParsing) {
-  ExtensionUpdaterTest::TestXmlParsing();
-}
 
 TEST(ExtensionUpdaterTest, TestExtensionUpdateCheckRequests) {
   ExtensionUpdaterTest::TestExtensionUpdateCheckRequests();

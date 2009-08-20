@@ -11,22 +11,24 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/rand_util.h"
+#include "base/scoped_vector.h"
 #include "base/sha2.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/thread.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/utility_process_host.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
-#include "chrome/common/libxml_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
-#include "libxml/tree.h"
 
 using base::RandDouble;
 using base::RandInt;
@@ -36,17 +38,13 @@ using prefs::kExtensionBlacklistUpdateVersion;
 using prefs::kLastExtensionsUpdateCheck;
 using prefs::kNextExtensionsUpdateCheck;
 
-const char* ExtensionUpdater::kExpectedGupdateProtocol = "2.0";
-const char* ExtensionUpdater::kExpectedGupdateXmlns =
-    "http://www.google.com/update2/response";
-
 // NOTE: HTTPS is used here to ensure the response from omaha can be trusted.
 // The response contains a url for fetching the blacklist and a hash value
 // for validation.
 const char* ExtensionUpdater::kBlacklistUpdateUrl =
     "https://clients2.google.com/service/update2/crx";
 
-// Update AppID for extesnion blacklist.
+// Update AppID for extension blacklist.
 const char* ExtensionUpdater::kBlacklistAppID = "com.google.crx.blacklist";
 
 // Wait at least 5 minutes after browser startup before we do any checks. If you
@@ -111,9 +109,10 @@ class ExtensionUpdaterFileHandler
 ExtensionUpdater::ExtensionUpdater(ExtensionUpdateService* service,
                                    PrefService* prefs,
                                    int frequency_seconds,
-                                   MessageLoop* file_io_loop)
+                                   MessageLoop* file_io_loop,
+                                   MessageLoop* io_loop)
     : service_(service), frequency_seconds_(frequency_seconds),
-      file_io_loop_(file_io_loop), prefs_(prefs),
+      file_io_loop_(file_io_loop), io_loop_(io_loop), prefs_(prefs),
       file_handler_(new ExtensionUpdaterFileHandler(MessageLoop::current(),
                                                     file_io_loop_)) {
   Init();
@@ -221,6 +220,77 @@ void ExtensionUpdater::OnURLFetchComplete(
   }
 }
 
+// Utility class to handle doing xml parsing in a sandboxed utility process.
+class SafeManifestParser : public UtilityProcessHost::Client {
+ public:
+  SafeManifestParser(const std::string& xml, ExtensionUpdater* updater,
+                     MessageLoop* updater_loop, MessageLoop* io_loop)
+      : xml_(xml), updater_loop_(updater_loop), io_loop_(io_loop),
+        updater_(updater) {
+  }
+
+  ~SafeManifestParser() {}
+
+  // Posts a task over to the IO loop to start the parsing of xml_ in a
+  // utility process.
+  void Start() {
+    DCHECK(MessageLoop::current() == updater_loop_);
+    io_loop_->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &SafeManifestParser::ParseInSandbox,
+            g_browser_process->resource_dispatcher_host()));
+  }
+
+  // Creates the sandboxed utility process and tells it to start parsing.
+  void ParseInSandbox(ResourceDispatcherHost* rdh) {
+    DCHECK(MessageLoop::current() == io_loop_);
+
+    // TODO(asargent) we shouldn't need to do this branch here - instead
+    // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
+    if (rdh && !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+      UtilityProcessHost* host = new UtilityProcessHost(
+          rdh, this, updater_loop_);
+      host->StartUpdateManifestParse(xml_);
+    } else {
+      UpdateManifest manifest;
+      if (manifest.Parse(xml_)) {
+        updater_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+            &SafeManifestParser::OnParseUpdateManifestSucceeded,
+            manifest.results()));
+      } else {
+        updater_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+            &SafeManifestParser::OnParseUpdateManifestFailed,
+            manifest.errors()));
+      }
+    }
+  }
+
+  // Callback from the utility process when parsing succeeded.
+  virtual void OnParseUpdateManifestSucceeded(
+      const UpdateManifest::ResultList& list) {
+    DCHECK(MessageLoop::current() == updater_loop_);
+    updater_->HandleManifestResults(list);
+  }
+
+  // Callback from the utility process when parsing failed.
+  virtual void OnParseUpdateManifestFailed(const std::string& error_message) {
+    DCHECK(MessageLoop::current() == updater_loop_);
+    LOG(WARNING) << "Error parsing update manifest:\n" << error_message;
+  }
+
+ private:
+  const std::string& xml_;
+
+  // The MessageLoop we use to call back the ExtensionUpdater.
+  MessageLoop* updater_loop_;
+
+  // The MessageLoop where we create the utility process.
+  MessageLoop* io_loop_;
+
+  scoped_refptr<ExtensionUpdater> updater_;
+};
+
+
 void ExtensionUpdater::OnManifestFetchComplete(const GURL& url,
                                                const URLRequestStatus& status,
                                                int response_code,
@@ -228,17 +298,9 @@ void ExtensionUpdater::OnManifestFetchComplete(const GURL& url,
   // We want to try parsing the manifest, and if it indicates updates are
   // available, we want to fire off requests to fetch those updates.
   if (status.status() == URLRequestStatus::SUCCESS && response_code == 200) {
-    ScopedVector<ParseResult> parsed;
-    // TODO(asargent) - We should do the xml parsing in a sandboxed process.
-    // (http://crbug.com/12677).
-    if (Parse(data, &parsed.get())) {
-      std::vector<int> updates = DetermineUpdates(parsed.get());
-      for (size_t i = 0; i < updates.size(); i++) {
-        ParseResult* update = parsed[updates[i]];
-        FetchUpdatedExtension(update->extension_id, update->crx_url,
-          update->package_hash, update->version->GetString());
-      }
-    }
+    scoped_refptr<SafeManifestParser>  safe_parser =
+        new SafeManifestParser(data, this, MessageLoop::current(), io_loop_);
+    safe_parser->Start();
   } else {
     // TODO(asargent) Do exponential backoff here. (http://crbug.com/12546).
     LOG(INFO) << "Failed to fetch manifst '" << url.possibly_invalid_spec() <<
@@ -251,6 +313,16 @@ void ExtensionUpdater::OnManifestFetchComplete(const GURL& url,
     GURL url = manifests_pending_.front();
     manifests_pending_.pop_front();
     StartUpdateCheck(url);
+  }
+}
+
+void ExtensionUpdater::HandleManifestResults(
+    const UpdateManifest::ResultList& results) {
+  std::vector<int> updates = DetermineUpdates(results);
+  for (size_t i = 0; i < updates.size(); i++) {
+    const UpdateManifest::Result* update = &(results.at(updates[i]));
+    FetchUpdatedExtension(update->extension_id, update->crx_url,
+        update->package_hash, update->version);
   }
 }
 
@@ -365,7 +437,7 @@ void AppendExtensionInfo(std::string* str, const Extension& extension) {
 // Creates a blacklist update url.
 GURL ExtensionUpdater::GetBlacklistUpdateUrl(const std::wstring& version) {
   std::string blklist_info = StringPrintf("id=%s&v=%s&uc", kBlacklistAppID,
-    WideToASCII(version).c_str());
+      WideToASCII(version).c_str());
   return GURL(StringPrintf("%s?x=%s", kBlacklistUpdateUrl,
                            EscapeQueryParamValue(blklist_info).c_str()));
 }
@@ -435,206 +507,6 @@ void ExtensionUpdater::TimerFired() {
   ScheduleNextCheck(TimeDelta::FromSeconds(frequency_seconds_));
 }
 
-static void ManifestParseError(const char* details, ...) {
-  va_list args;
-  va_start(args, details);
-  std::string message("Extension update manifest parse error: ");
-  StringAppendV(&message, details, args);
-  LOG(WARNING) << message;
-}
-
-// Checks whether a given node's name matches |expected_name| and
-// |expected_namespace|.
-static bool TagNameEquals(const xmlNode* node, const char* expected_name,
-                          const xmlNs* expected_namespace) {
-  if (node->ns != expected_namespace) {
-    return false;
-  }
-  return 0 == strcmp(expected_name, reinterpret_cast<const char*>(node->name));
-}
-
-// Returns child nodes of |root| with name |name| in namespace |xml_namespace|.
-static std::vector<xmlNode*> GetChildren(xmlNode* root, xmlNs* xml_namespace,
-                                         const char* name) {
-  std::vector<xmlNode*> result;
-  for (xmlNode* child = root->children; child != NULL; child = child->next) {
-    if (!TagNameEquals(child, name, xml_namespace)) {
-      continue;
-    }
-    result.push_back(child);
-  }
-  return result;
-}
-
-// Returns the value of a named attribute, or the empty string.
-static std::string GetAttribute(xmlNode* node, const char* attribute_name) {
-  const xmlChar* name = reinterpret_cast<const xmlChar*>(attribute_name);
-  for (xmlAttr* attr = node->properties; attr != NULL; attr = attr->next) {
-    if (!xmlStrcmp(attr->name, name) && attr->children &&
-        attr->children->content) {
-      return std::string(reinterpret_cast<const char*>(
-          attr->children->content));
-    }
-  }
-  return std::string();
-}
-
-// This is used for the xml parser to report errors. This assumes the context
-// is a pointer to a std::string where the error message should be appended.
-static void XmlErrorFunc(void *context, const char *message, ...) {
-  va_list args;
-  va_start(args, message);
-  std::string* error = static_cast<std::string*>(context);
-  StringAppendV(error, message, args);
-}
-
-// Utility class for cleaning up xml parser state when leaving a scope.
-class ScopedXmlParserCleanup {
- public:
-  ScopedXmlParserCleanup() : document_(NULL) {}
-  ~ScopedXmlParserCleanup() {
-    if (document_)
-      xmlFreeDoc(document_);
-    xmlCleanupParser();
-  }
-  void set_document(xmlDocPtr document) {
-    document_ = document;
-  }
-
- private:
-  xmlDocPtr document_;
-};
-
-// Returns a pointer to the xmlNs on |node| with the |expected_href|, or
-// NULL if there isn't one with that href.
-static xmlNs* GetNamespace(xmlNode* node, const char* expected_href) {
-  const xmlChar* href = reinterpret_cast<const xmlChar*>(expected_href);
-  for (xmlNs* ns = node->ns; ns != NULL; ns = ns->next) {
-    if (ns->href && !xmlStrcmp(ns->href, href)) {
-      return ns;
-    }
-  }
-  return NULL;
-}
-
-// This is a separate sub-class so that we can have access to the private
-// ParseResult struct, but avoid making the .h file include the xml api headers.
-class ExtensionUpdater::ParseHelper {
- public:
-  // Helper function for ExtensionUpdater::Parse that reads in values for a
-  // single <app> tag. It returns a boolean indicating success or failure.
-  static bool ParseSingleAppTag(xmlNode* app_node, xmlNs* xml_namespace,
-                                ParseResult* result) {
-    // Read the extension id.
-    result->extension_id = GetAttribute(app_node, "appid");
-    if (result->extension_id.length() == 0) {
-      ManifestParseError("Missing appid on app node");
-      return false;
-    }
-
-    // Get the updatecheck node.
-    std::vector<xmlNode*> updates = GetChildren(app_node, xml_namespace,
-                                                "updatecheck");
-    if (updates.size() > 1) {
-      ManifestParseError("Too many updatecheck tags on app (expecting only 1)");
-      return false;
-    }
-    if (updates.size() == 0) {
-      ManifestParseError("Missing updatecheck on app");
-      return false;
-    }
-    xmlNode *updatecheck = updates[0];
-
-    // Find the url to the crx file.
-    result->crx_url = GURL(GetAttribute(updatecheck, "codebase"));
-    if (!result->crx_url.is_valid()) {
-      ManifestParseError("Invalid codebase url");
-      return false;
-    }
-
-    // Get the version.
-    std::string tmp = GetAttribute(updatecheck, "version");
-    if (tmp.length() == 0) {
-      ManifestParseError("Missing version for updatecheck");
-      return false;
-    }
-    result->version.reset(Version::GetVersionFromString(tmp));
-    if (!result->version.get()) {
-      ManifestParseError("Invalid version");
-      return false;
-    }
-
-    // Get the minimum browser version (not required).
-    tmp = GetAttribute(updatecheck, "prodversionmin");
-    if (tmp.length()) {
-      result->browser_min_version.reset(Version::GetVersionFromString(tmp));
-      if (!result->browser_min_version.get()) {
-        ManifestParseError("Invalid prodversionmin");
-        return false;
-      }
-    }
-
-    // package_hash is optional. It is only required for blacklist. It is a
-    // sha256 hash of the package in hex format.
-    result->package_hash = GetAttribute(updatecheck, "hash");
-    return true;
-  }
-};
-
-bool ExtensionUpdater::Parse(const std::string& manifest_xml,
-                                ParseResultList* results) {
-  std::string xml_errors;
-  ScopedXmlErrorFunc error_func(&xml_errors, &XmlErrorFunc);
-  ScopedXmlParserCleanup xml_cleanup;
-
-  xmlDocPtr document = xmlParseDoc(
-      reinterpret_cast<const xmlChar*>(manifest_xml.c_str()));
-  if (!document) {
-    ManifestParseError(xml_errors.c_str());
-    return false;
-  }
-  xml_cleanup.set_document(document);
-
-  xmlNode *root = xmlDocGetRootElement(document);
-  if (!root) {
-    ManifestParseError("Missing root node");
-    return false;
-  }
-
-  // Look for the required namespace declaration.
-  xmlNs* gupdate_ns = GetNamespace(root, kExpectedGupdateXmlns);
-  if (!gupdate_ns) {
-    ManifestParseError("Missing or incorrect xmlns on gupdate tag");
-    return false;
-  }
-
-  if (!TagNameEquals(root, "gupdate", gupdate_ns)) {
-    ManifestParseError("Missing gupdate tag");
-    return false;
-  }
-
-  // Check for the gupdate "protocol" attribute.
-  if (GetAttribute(root, "protocol") != kExpectedGupdateProtocol) {
-    ManifestParseError("Missing/incorrect protocol on gupdate tag "
-        "(expected '%s')", kExpectedGupdateProtocol);
-    return false;
-  }
-
-  // Parse each of the <app> tags.
-  ScopedVector<ParseResult> tmp_results;
-  std::vector<xmlNode*> apps = GetChildren(root, gupdate_ns, "app");
-  for (unsigned int i = 0; i < apps.size(); i++) {
-    ParseResult* current = new ParseResult();
-    tmp_results.push_back(current);
-    if (!ParseHelper::ParseSingleAppTag(apps[i], gupdate_ns, current)) {
-      return false;
-    }
-  }
-  results->insert(results->end(), tmp_results.begin(), tmp_results.end());
-  tmp_results.get().clear();
-
-  return true;
-}
 
 bool ExtensionUpdater::GetExistingVersion(const std::string& id,
                                           std::string* version) {
@@ -652,7 +524,7 @@ bool ExtensionUpdater::GetExistingVersion(const std::string& id,
 }
 
 std::vector<int> ExtensionUpdater::DetermineUpdates(
-    const ParseResultList& possible_updates) {
+    const std::vector<UpdateManifest::Result>& possible_updates) {
 
   std::vector<int> result;
 
@@ -661,22 +533,27 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
   scoped_ptr<Version> browser_version;
 
   for (size_t i = 0; i < possible_updates.size(); i++) {
-    ParseResult* update = possible_updates[i];
+    const UpdateManifest::Result* update = &possible_updates[i];
 
     std::string version;
     if (!GetExistingVersion(update->extension_id, &version)) {
       continue;
     }
+
     // If the update version is the same or older than what's already installed,
     // we don't want it.
     scoped_ptr<Version> existing_version(
-      Version::GetVersionFromString(version));
-    if (update->version.get()->CompareTo(*(existing_version.get())) <= 0) {
+        Version::GetVersionFromString(version));
+    scoped_ptr<Version> update_version(
+        Version::GetVersionFromString(update->version));
+
+    if (!update_version.get() ||
+        update_version->CompareTo(*(existing_version.get())) <= 0) {
       continue;
     }
 
     // If the update specifies a browser minimum version, do we qualify?
-    if (update->browser_min_version.get()) {
+    if (update->browser_min_version.length() > 0) {
       // First determine the browser version if we haven't already.
       if (!browser_version.get()) {
         scoped_ptr<FileVersionInfo> version_info(
@@ -686,13 +563,16 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
             version_info->product_version()));
         }
       }
-      if (browser_version.get() &&
-          update->browser_min_version->CompareTo(*browser_version.get()) > 0) {
+      scoped_ptr<Version> browser_min_version(
+          Version::GetVersionFromString(update->browser_min_version));
+      if (browser_version.get() && browser_min_version.get() &&
+          browser_min_version->CompareTo(*browser_version.get()) > 0) {
         // TODO(asargent) - We may want this to show up in the extensions UI
         // eventually. (http://crbug.com/12547).
         LOG(WARNING) << "Updated version of extension " << update->extension_id
           << " available, but requires chrome version "
-          << update->browser_min_version->GetString();
+          << update->browser_min_version;
+
         continue;
       }
     }

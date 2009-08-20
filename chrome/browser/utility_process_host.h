@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/common/child_process_host.h"
+#include "chrome/common/extensions/update_manifest.h"
 #include "ipc/ipc_channel.h"
 
 class CommandLine;
@@ -54,6 +55,15 @@ class UtilityProcessHost : public ChildProcessHost {
     virtual void OnUnpackWebResourceFailed(
         const std::string& error_message) {}
 
+    // Called when an update manifest xml file was successfully parsed.
+    virtual void OnParseUpdateManifestSucceeded(
+        const UpdateManifest::ResultList& list) {}
+
+    // Called when an update manifest xml file failed parsing. |error_message|
+    // contains details suitable for logging.
+    virtual void OnParseUpdateManifestFailed(
+        const std::string& error_message) {}
+
    private:
     friend class UtilityProcessHost;
     void OnMessageReceived(const IPC::Message& message);
@@ -78,6 +88,9 @@ class UtilityProcessHost : public ChildProcessHost {
   // doesn't do any unpacking.  This should change once we finalize the
   // web resource server format(s).
   bool StartWebResourceUnpacker(const std::string& data);
+
+  // Start parsing an extensions auto-update manifest xml file.
+  bool StartUpdateManifestParse(const std::string& xml);
 
  protected:
   // Allow these methods to be overridden for tests.

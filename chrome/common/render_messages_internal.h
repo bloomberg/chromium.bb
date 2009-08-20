@@ -19,6 +19,7 @@
 #include "base/shared_memory.h"
 #include "base/values.h"
 #include "chrome/common/css_colors.h"
+#include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/common/view_types.h"
 #include "ipc/ipc_channel_handle.h"
@@ -628,24 +629,9 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
                       bool /* active */)
 
-  //---------------------------------------------------------------------------
-  // Utility process messages:
-  // These are messages from the browser to the utility process.  They're here
-  // because we ran out of spare message types.
-
-  // Tell the utility process to unpack the given extension file in its
-  // directory and verify that it is valid.
-  IPC_MESSAGE_CONTROL1(UtilityMsg_UnpackExtension,
-                       FilePath /* extension_filename */)
-
   // Response message to ViewHostMsg_CreateDedicatedWorker.  Sent when the
   // worker has started.
   IPC_MESSAGE_ROUTED0(ViewMsg_DedicatedWorkerCreated)
-
-  // Tell the utility process to parse the given JSON data and verify its
-  // validity.
-  IPC_MESSAGE_CONTROL1(UtilityMsg_UnpackWebResource,
-                       std::string /* JSON data */)
 
   // Tell the renderer which browser window it's being attached to.
   IPC_MESSAGE_ROUTED1(ViewMsg_UpdateBrowserWindowId,
@@ -674,6 +660,25 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseGetFileSizeResponse,
                        int32 /* the ID of the message we're replying to */,
                        int64 /* the size of the given DB file */)
+
+  //---------------------------------------------------------------------------
+  // Utility process messages:
+  // These are messages from the browser to the utility process.  They're here
+  // because we ran out of spare message types.
+
+  // Tell the utility process to unpack the given extension file in its
+  // directory and verify that it is valid.
+  IPC_MESSAGE_CONTROL1(UtilityMsg_UnpackExtension,
+                       FilePath /* extension_filename */)
+
+  // Tell the utility process to parse the given JSON data and verify its
+  // validity.
+  IPC_MESSAGE_CONTROL1(UtilityMsg_UnpackWebResource,
+                       std::string /* JSON data */)
+
+  // Tell the utility process to parse the given xml document.
+  IPC_MESSAGE_CONTROL1(UtilityMsg_ParseUpdateManifest,
+                       std::string /* xml document contents */)
 
 IPC_END_MESSAGES(View)
 
@@ -1624,6 +1629,16 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // web resource.  |error_message| is a user-readable explanation of what
   // went wrong.
   IPC_MESSAGE_CONTROL1(UtilityHostMsg_UnpackWebResource_Failed,
+                       std::string /* error_message, if any */)
+
+  // Reply when the utility process has succeeded in parsing an update manifest
+  // xml document.
+  IPC_MESSAGE_CONTROL1(UtilityHostMsg_ParseUpdateManifest_Succeeded,
+                       std::vector<UpdateManifest::Result> /* updates */)
+
+  // Reply when an error occured parsing the update manifest. |error_message|
+  // is a description of what went wrong suitable for logging.
+  IPC_MESSAGE_CONTROL1(UtilityHostMsg_ParseUpdateManifest_Failed,
                        std::string /* error_message, if any */)
 
   // Sent by the renderer process to acknowledge receipt of a

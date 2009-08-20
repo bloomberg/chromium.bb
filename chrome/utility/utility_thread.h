@@ -30,6 +30,9 @@ class UtilityThread : public ChildThread {
   // IPC messages for web resource service.
   void OnUnpackWebResource(const std::string& resource_data);
 
+  // IPC for parsing an extensions auto-update manifest xml file.
+  void OnParseUpdateManifest(const std::string& xml);
+
   DISALLOW_COPY_AND_ASSIGN(UtilityThread);
 };
 

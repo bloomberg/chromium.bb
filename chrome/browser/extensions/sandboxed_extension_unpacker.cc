@@ -60,6 +60,9 @@ void SandboxedExtensionUnpacker::Start() {
 
   // If we are supposed to use a subprocess, copy the crx to the temp directory
   // and kick off the subprocess.
+  //
+  // TODO(asargent) we shouldn't need to do this branch here - instead
+  // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
   if (rdh_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
     ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,

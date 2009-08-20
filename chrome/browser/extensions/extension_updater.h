@@ -12,13 +12,12 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "base/scoped_vector.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "base/version.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/net/url_fetcher.h"
+#include "chrome/common/extensions/update_manifest.h"
 #include "googleurl/src/gurl.h"
 
 class Extension;
@@ -32,7 +31,8 @@ class PrefService;
 // ExtensionUpdater* updater = new ExtensionUpdater(my_extensions_service,
 //                                                  pref_service,
 //                                                  update_frequency_secs,
-//                                                  file_io_loop);
+//                                                  file_io_loop,
+//                                                  io_loop);
 // updater.Start();
 // ....
 // updater.Stop();
@@ -46,7 +46,8 @@ class ExtensionUpdater
   ExtensionUpdater(ExtensionUpdateService* service,
                    PrefService* prefs,
                    int frequency_seconds,
-                   MessageLoop* file_io_loop);
+                   MessageLoop* file_io_loop,
+                   MessageLoop* io_loop);
 
   virtual ~ExtensionUpdater();
 
@@ -60,34 +61,8 @@ class ExtensionUpdater
  private:
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;
-  class ParseHelper;
+  friend class SafeManifestParser;
 
-  // An update manifest looks like this:
-  //
-  // <?xml version='1.0' encoding='UTF-8'?>
-  // <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
-  //  <app appid='12345'>
-  //   <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'
-  //                version='1.2.3.4' prodversionmin='2.0.143.0'
-  //                hash="12345"/>
-  //  </app>
-  // </gupdate>
-  //
-  // The "appid" attribute of the <app> tag refers to the unique id of the
-  // extension. The "codebase" attribute of the <updatecheck> tag is the url to
-  // fetch the updated crx file, and the "prodversionmin" attribute refers to
-  // the minimum version of the chrome browser that the update applies to.
-  // The hash is only required for blacklist. It is a sha256 hash value against
-  // the payload in hex format.
-
-  // The result of parsing one <app> tag in an xml update check manifest.
-  struct ParseResult {
-    std::string extension_id;
-    scoped_ptr<Version> version;
-    scoped_ptr<Version> browser_min_version;
-    std::string package_hash;
-    GURL crx_url;
-  };
 
   // We need to keep track of some information associated with a url
   // when doing a fetch.
@@ -106,10 +81,6 @@ class ExtensionUpdater
   // URLFetcher objects.
   static const int kManifestFetcherId = 1;
   static const int kExtensionFetcherId = 1;
-
-  // Constants for the update manifest.
-  static const char* kExpectedGupdateProtocol;
-  static const char* kExpectedGupdateXmlns;
 
   static const char* kBlacklistUpdateUrl;
   static const char* kBlacklistAppID;
@@ -165,20 +136,17 @@ class ExtensionUpdater
   void FetchUpdatedExtension(const std::string& id, const GURL& url,
     const std::string& hash, const std::string& version);
 
+  // Once a manifest is parsed, this starts fetches of any relevant crx files.
+  void HandleManifestResults(const UpdateManifest::ResultList& results);
+
   // Determines the version of an existing extension.
   // Returns true on success and false on failures.
   bool GetExistingVersion(const std::string& id, std::string* version);
 
-  typedef std::vector<ParseResult*> ParseResultList;
-
   // Given a list of potential updates, returns the indices of the ones that are
   // applicable (are actually a new version, etc.) in |result|.
-  std::vector<int> DetermineUpdates(const ParseResultList& possible_updates);
-
-  // Parses an update manifest xml string into ParseResult data. On success, it
-  // inserts new ParseResult items into |result| and returns true. On failure,
-  // it returns false and puts nothing into |result|.
-  static bool Parse(const std::string& manifest_xml, ParseResultList* result);
+  std::vector<int> DetermineUpdates(
+      const std::vector<UpdateManifest::Result>& possible_updates);
 
   // Creates a blacklist update url.
   static GURL GetBlacklistUpdateUrl(const std::wstring& version);
@@ -203,6 +171,9 @@ class ExtensionUpdater
 
   // The MessageLoop where we should do file I/O.
   MessageLoop* file_io_loop_;
+
+  // The IO loop for IPC.
+  MessageLoop* io_loop_;
 
   PrefService* prefs_;
 

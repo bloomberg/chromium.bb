@@ -16,6 +16,7 @@
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/css_colors.h"
+#include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/filter_policy.h"
 #include "chrome/common/modal_dialog_event.h"
 #include "chrome/common/page_transition_types.h"
@@ -2002,6 +2003,39 @@ struct ParamTraits<ViewHostMsg_ScriptedPrint_Params> {
 template <>
 struct SimilarTypeTraits<ViewType::Type> {
   typedef int Type;
+};
+
+// Traits for UpdateManifest::Result.
+template <>
+struct ParamTraits<UpdateManifest::Result> {
+  typedef UpdateManifest::Result param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.extension_id);
+    WriteParam(m, p.version);
+    WriteParam(m, p.browser_min_version);
+    WriteParam(m, p.package_hash);
+    WriteParam(m, p.crx_url);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->extension_id) &&
+           ReadParam(m, iter, &p->version) &&
+           ReadParam(m, iter, &p->browser_min_version) &&
+           ReadParam(m, iter, &p->package_hash) &&
+           ReadParam(m, iter, &p->crx_url);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.extension_id, l);
+    l->append(L", ");
+    LogParam(p.version, l);
+    l->append(L", ");
+    LogParam(p.browser_min_version, l);
+    l->append(L", ");
+    LogParam(p.package_hash, l);
+    l->append(L", ");
+    LogParam(p.crx_url, l);
+    l->append(L")");
+  }
 };
 
 }  // namespace IPC

@@ -51,6 +51,14 @@ bool UtilityProcessHost::StartWebResourceUnpacker(const std::string& data) {
   return true;
 }
 
+bool UtilityProcessHost::StartUpdateManifestParse(const std::string& xml) {
+  if (!StartProcess(FilePath()))
+    return false;
+
+  Send(new UtilityMsg_ParseUpdateManifest(xml));
+  return true;
+}
+
 std::wstring UtilityProcessHost::GetUtilityProcessCmd() {
   return GetChildPath();
 }
@@ -142,5 +150,9 @@ void UtilityProcessHost::Client::OnMessageReceived(
                         Client::OnUnpackWebResourceSucceeded)
     IPC_MESSAGE_HANDLER(UtilityHostMsg_UnpackWebResource_Failed,
                         Client::OnUnpackWebResourceFailed)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseUpdateManifest_Succeeded,
+                        Client::OnParseUpdateManifestSucceeded)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_ParseUpdateManifest_Failed,
+                        Client::OnParseUpdateManifestFailed)
   IPC_END_MESSAGE_MAP_EX()
 }

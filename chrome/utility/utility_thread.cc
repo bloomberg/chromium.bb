@@ -6,10 +6,11 @@
 
 #include "base/file_util.h"
 #include "base/values.h"
-#include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/extensions/extension_unpacker.h"
+#include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/web_resource/web_resource_unpacker.h"
 
 UtilityThread::UtilityThread() {
   ChildProcess::current()->AddRefProcess();
@@ -22,6 +23,7 @@ void UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(UtilityThread, msg)
     IPC_MESSAGE_HANDLER(UtilityMsg_UnpackExtension, OnUnpackExtension)
     IPC_MESSAGE_HANDLER(UtilityMsg_UnpackWebResource, OnUnpackWebResource)
+    IPC_MESSAGE_HANDLER(UtilityMsg_ParseUpdateManifest, OnParseUpdateManifest)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -53,3 +55,12 @@ void UtilityThread::OnUnpackWebResource(const std::string& resource_data) {
   ChildProcess::current()->ReleaseProcess();
 }
 
+void UtilityThread::OnParseUpdateManifest(const std::string& xml) {
+  UpdateManifest manifest;
+  if (!manifest.Parse(xml)) {
+    Send(new UtilityHostMsg_ParseUpdateManifest_Failed(manifest.errors()));
+  } else {
+    Send(new UtilityHostMsg_ParseUpdateManifest_Succeeded(manifest.results()));
+  }
+  ChildProcess::current()->ReleaseProcess();
+}
