@@ -359,7 +359,7 @@ o3djs.primitives.VertexInfo.prototype.getTriangle = function(
 };
 
 /**
- * Sets the vertex indices of thye triangle at the given triangle index.
+ * Sets the vertex indices of the triangle at the given triangle index.
  * @param {number} triangleIndex The index of the triangle.
  * @param {number} index1 The index of the first vertex of the triangle.
  * @param {number} index2 The index of the second vertex of the triangle.
@@ -371,6 +371,74 @@ o3djs.primitives.VertexInfo.prototype.setTriangle = function(
   this.indices[indexIndex + 0] = index1;
   this.indices[indexIndex + 1] = index2;
   this.indices[indexIndex + 2] = index3;
+};
+
+/**
+ * Appends all of the information in the passed VertexInfo on to the
+ * end of this one. This is useful for putting multiple primitives'
+ * vertices, appropriately transformed, into a single Shape. Both
+ * VertexInfo objects must contain the same number of streams, with
+ * the same semantics and number of components.
+ * @param {!o3djs.primitives.VertexInfo} info The VertexInfo whose
+ *     information should be appended to this one.
+ */
+o3djs.primitives.VertexInfo.prototype.append = function(info) {
+  if (this.streams.length == 0 && info.streams.length != 0) {
+    // Special case
+    for (var i = 0; i < info.streams.length; i++) {
+      var srcStream = info.streams[i];
+      var stream = this.addStream(srcStream.numComponents,
+                                  srcStream.semantic,
+                                  srcStream.semanticIndex);
+      stream.elements = stream.elements.concat(srcStream.elements);
+    }
+    this.indices = this.indices.concat(info.indices);
+    return;
+  }
+
+  // First verify that both have the same streams
+  if (this.streams.length != info.streams.length) {
+    throw 'Number of VertexInfoStreams did not match';
+  }
+  for (var i = 0; i < this.streams.length; i++) {
+    var found = false;
+    var semantic = this.streams[i].semantic;
+    var numComponents = this.streams[i].numComponents;
+    var semanticIndex = this.streams[i].semanticIndex;
+    for (var j = 0; j < info.streams.length; j++) {
+      var otherStream = info.streams[j];
+      if (otherStream.semantic === semantic &&
+          otherStream.numComponents == numComponents &&
+          otherStream.semanticIndex == semanticIndex) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      throw 'Did not find stream with semantic=' + semantic +
+        ', numComponents=' + numComponents +
+        ', and semantic index=' + semanticIndex +
+        ' in given VertexInfo';
+    }
+  }
+
+  // Compute the number of vertices currently in the shape
+  var positionStream = this.findStream(o3djs.base.o3d.Stream.POSITION);
+  if (!positionStream)
+    throw 'POSITION stream is missing';
+  var numVertices = positionStream.numElements();
+
+  // Concatenate all VertexStreamInfos' data
+  for (var i = 0; i < this.streams.length; i++) {
+    var stream = this.streams[i];
+    var srcStream = info.findStream(stream.semantic, stream.semanticIndex);
+    stream.elements = stream.elements.concat(srcStream.elements);
+  }
+
+  // Concatenate and adjust indices
+  for (var i = 0; i < info.indices.length; i++) {
+    this.indices.push(info.indices[i] + numVertices);
+  }
 };
 
 /**
@@ -1147,6 +1215,72 @@ o3djs.primitives.createCylinderVertices = function(radius,
                                                    radialSubdivisions,
                                                    verticalSubdivisions,
                                                    opt_matrix) {
+  return o3djs.primitives.createTruncatedConeVertices(radius,
+                                                      radius,
+                                                      height,
+                                                      radialSubdivisions,
+                                                      verticalSubdivisions,
+                                                      opt_matrix);
+};
+
+/**
+ * Creates a cylinder shape. The cylinder will be created around the
+ * origin along the y-axis. The created cylinder has position, normal
+ * and uv streams.
+ *
+ * @param {!o3d.Pack} pack Pack to create cylinder elements in.
+ * @param {!o3d.Material} material to use.
+ * @param {number} radius Radius of cylinder.
+ * @param {number} height Height of cylinder.
+ * @param {number} radialSubdivisions The number of subdivisions around the
+ *     cylinder.
+ * @param {number} verticalSubdivisions The number of subdivisions down the
+ *     cylinder.
+ * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply
+ *     all the vertices.
+ * @return {!o3d.Shape} The created cylinder.
+ */
+o3djs.primitives.createCylinder = function(pack,
+                                           material,
+                                           radius,
+                                           height,
+                                           radialSubdivisions,
+                                           verticalSubdivisions,
+                                           opt_matrix) {
+  var vertexInfo = o3djs.primitives.createCylinderVertices(
+      radius,
+      height,
+      radialSubdivisions,
+      verticalSubdivisions,
+      opt_matrix);
+  return vertexInfo.createShape(pack, material);
+};
+
+/**
+ * Creates vertices for a truncated cone, which is like a cylinder
+ * except that it has different top and bottom radii. A truncated cone
+ * can also be used to create cylinders and regular cones. The
+ * truncated cone will be created centered about the origin, with the
+ * y axis as its vertical axis. The created cone has position, normal
+ * and uv streams.
+ *
+ * @param {number} bottomRadius Bottom radius of truncated cone.
+ * @param {number} topRadius Top radius of truncated cone.
+ * @param {number} height Height of truncated cone.
+ * @param {number} radialSubdivisions The number of subdivisions around the
+ *     truncated cone.
+ * @param {number} verticalSubdivisions The number of subdivisions down the
+ *     truncated cone.
+ * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply
+ *     all the vertices.
+ * @return {o3djs.primitives.VertexInfo} The created truncated cone vertices.
+ */
+o3djs.primitives.createTruncatedConeVertices = function(bottomRadius,
+                                                        topRadius,
+                                                        height,
+                                                        radialSubdivisions,
+                                                        verticalSubdivisions,
+                                                        opt_matrix) {
   if (radialSubdivisions < 1) {
     throw Error('radialSubdivisions must be 1 or greater');
   }
@@ -1167,16 +1301,26 @@ o3djs.primitives.createCylinderVertices = function(radius,
   var vertices = [];
   var vertsAroundEdge = radialSubdivisions + 1;
 
+  // The slant of the cone is constant across its surface
+  var slant = Math.atan2(bottomRadius - topRadius, height);
+  var cosSlant = Math.cos(slant);
+  var sinSlant = Math.sin(slant);
+
   for (var yy = -2; yy <= verticalSubdivisions + 2; ++yy) {
-    var ringRadius = radius;
     var v = yy / verticalSubdivisions
     var y = height * v;
+    var ringRadius;
     if (yy < 0) {
       y = 0;
       v = 1;
+      ringRadius = bottomRadius;
     } else if (yy > verticalSubdivisions) {
       y = height;
       v = 1;
+      ringRadius = topRadius;      
+    } else {
+      ringRadius = bottomRadius +
+        (topRadius - bottomRadius) * (yy / verticalSubdivisions);
     }
     if (yy == -2 || yy == verticalSubdivisions + 2) {
       ringRadius = 0;
@@ -1188,9 +1332,9 @@ o3djs.primitives.createCylinderVertices = function(radius,
       var cos = Math.cos(ii * Math.PI * 2 / radialSubdivisions);
       positionStream.addElement(sin * ringRadius, y, cos * ringRadius);
       normalStream.addElement(
-          (yy < 0 || yy > verticalSubdivisions) ? 0 : sin,
-          (yy < 0) ? -1 : (yy > verticalSubdivisions ? 1 : 0),
-          (yy < 0 || yy > verticalSubdivisions) ? 0 : cos);
+          (yy < 0 || yy > verticalSubdivisions) ? 0 : (sin * cosSlant),
+          (yy < 0) ? -1 : (yy > verticalSubdivisions ? 1 : sinSlant),
+          (yy < 0 || yy > verticalSubdivisions) ? 0 : (cos * cosSlant));
       texCoordStream.addElement(ii / radialSubdivisions, v);
     }
   }
@@ -1214,32 +1358,39 @@ o3djs.primitives.createCylinderVertices = function(radius,
 };
 
 /**
- * Creates cylinder a cylinder shape. The cylinder will be created around the
- * origin along the y-axis. The created cylinder has position, normal and uv
- * streams.
+ * Creates a truncated cone shape, which is like a cylinder except
+ * that it has different top and bottom radii. A truncated cone can
+ * also be used to create cylinders, by setting the bottom and top
+ * radii equal, and cones, by setting either the top or bottom radius
+ * to 0. The truncated cone will be created with the bottom face in
+ * the xz plane, and the y axis in the center. The created cone has
+ * position, normal and uv streams.
  *
- * @param {!o3d.Pack} pack Pack to create cylinder elements in.
+ * @param {!o3d.Pack} pack Pack in which to create the truncated cone.
  * @param {!o3d.Material} material to use.
- * @param {number} radius Radius of cylinder.
- * @param {number} depth Depth of cylinder.
+ * @param {number} bottomRadius Bottom radius of truncated cone.
+ * @param {number} topRadius Top radius of truncated cone.
+ * @param {number} height Height of truncated cone.
  * @param {number} radialSubdivisions The number of subdivisions around the
- *     cylinder.
+ *     truncated cone.
  * @param {number} verticalSubdivisions The number of subdivisions down the
- *     cylinder.
+ *     truncated cone.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply
  *     all the vertices.
- * @return {!o3d.Shape} The created cylinder.
+ * @return {!o3d.Shape} The created truncated cone.
  */
-o3djs.primitives.createCylinder = function(pack,
-                                           material,
-                                           radius,
-                                           depth,
-                                           radialSubdivisions,
-                                           verticalSubdivisions,
-                                           opt_matrix) {
-  var vertexInfo = o3djs.primitives.createCylinderVertices(
-      radius,
-      depth,
+o3djs.primitives.createTruncatedCone = function(pack,
+                                                material,
+                                                bottomRadius,
+                                                topRadius,
+                                                height,
+                                                radialSubdivisions,
+                                                verticalSubdivisions,
+                                                opt_matrix) {
+  var vertexInfo = o3djs.primitives.createTruncatedConeVertices(
+      bottomRadius,
+      topRadius,
+      height,
       radialSubdivisions,
       verticalSubdivisions,
       opt_matrix);

@@ -60,7 +60,7 @@ var g_pack;
 var g_viewInfo;
 
 var g_lightPosition = [5, 5, 7];
-var g_eyePosition = [1, 3, 12];
+var g_eyePosition = [3, 4, 14];
 
 /**
  * Creates the client area.
@@ -176,7 +176,25 @@ function createShapes() {
       g_pack,
       createPhongMaterial([1,0,1,1]),
       0.5,   // Radius.
-      1.5,   // Depth.
+      1.5,   // Height.
+      20,    // Number of radial subdivisions.
+      20);   // Number of vertical subdivisions.
+
+  var truncatedCone = o3djs.primitives.createTruncatedCone(
+      g_pack,
+      createPhongMaterial([0,0,1,1]),
+      0.3,   // Bottom radius.
+      0.5,   // Top radius.
+      1.5,   // Height.
+      20,    // Number of radial subdivisions.
+      20);   // Number of vertical subdivisions.
+
+  var cone = o3djs.primitives.createTruncatedCone(
+      g_pack,
+      createPhongMaterial([0,1,0,1]),
+      0.5,   // Bottom radius.
+      0.0,   // Top radius.
+      1.5,   // Height.
       20,    // Number of radial subdivisions.
       20);   // Number of vertical subdivisions.
 
@@ -214,12 +232,14 @@ function createShapes() {
 
   // Add the shapes to the transforms.
   var transformTable = [
-    {shape: cube, translation: [-2, 1, 0]},
-    {shape: sphere, translation: [0, 1, 0]},
-    {shape: cylinder, translation: [2, 1, 0]},
-    {shape: plane, translation: [-2, -1, 0]},
-    {shape: prism, translation: [0, -1, 0]},
-    {shape: disc, translation: [2, -1, 0]}
+    {shape: cube, translation: [-3, 1, 0]},
+    {shape: sphere, translation: [-1, 1, 0]},
+    {shape: cylinder, translation: [1, 1, 0]},
+    {shape: truncatedCone, translation: [3, 1, 0]},
+    {shape: plane, translation: [-3, -1, 0]},
+    {shape: prism, translation: [-1, -1, 0]},
+    {shape: disc, translation: [1, -1, 0]},
+    {shape: cone, translation: [3, -1, 0]},
   ];
 
   for (var tt = 0; tt < transformTable.length; ++tt) {
