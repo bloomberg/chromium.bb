@@ -30,6 +30,8 @@
  */
 
 
+#include "build/build_config.h"
+
 #ifndef OS_WIN
 #include <unistd.h>
 #endif
