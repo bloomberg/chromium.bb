@@ -92,6 +92,7 @@ class WebPluginImpl : public WebPlugin,
       const WebKit::WebVector<WebKit::WebRect>& cut_outs);
   virtual void updateFocus(bool focused);
   virtual void updateVisibility(bool visible);
+  virtual bool acceptsInputEvents();
   virtual bool handleInputEvent(
       const WebKit::WebInputEvent& event, WebKit::WebCursorInfo& cursor_info);
   virtual void didReceiveResponse(const WebKit::WebURLResponse& response);

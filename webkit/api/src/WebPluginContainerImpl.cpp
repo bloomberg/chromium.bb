@@ -155,6 +155,9 @@ void WebPluginContainerImpl::hide()
 
 void WebPluginContainerImpl::handleEvent(Event* event)
 {
+    if (!m_webPlugin->acceptsInputEvents())
+        return;
+
     // The events we pass are defined at:
     //    http://devedge-temp.mozilla.org/library/manuals/2002/plugin/1.0/structures5.html#1000000
     // Don't take the documentation as truth, however.  There are many cases

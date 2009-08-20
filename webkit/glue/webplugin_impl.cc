@@ -362,6 +362,10 @@ void WebPluginImpl::updateVisibility(bool visible) {
   webview->delegate()->DidMovePlugin(move);
 }
 
+bool WebPluginImpl::acceptsInputEvents() {
+  return windowless_;
+}
+
 bool WebPluginImpl::handleInputEvent(
     const WebInputEvent& event, WebCursorInfo& cursor_info) {
   return delegate_->HandleInputEvent(event, &cursor_info);

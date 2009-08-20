@@ -59,6 +59,7 @@ namespace WebKit {
         virtual void updateFocus(bool) = 0;
         virtual void updateVisibility(bool) = 0;
 
+        virtual bool acceptsInputEvents() = 0;
         virtual bool handleInputEvent(const WebInputEvent&, WebCursorInfo&) = 0;
 
         virtual void didReceiveResponse(const WebURLResponse&) = 0;
