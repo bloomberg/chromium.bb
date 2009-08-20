@@ -76,36 +76,37 @@ bool WaitableEvent::IsSignaled() {
 // Synchronous waits
 
 // -----------------------------------------------------------------------------
-// This is an synchronous waiter. The thread is waiting on the given condition
+// This is a synchronous waiter. The thread is waiting on the given condition
 // variable and the fired flag in this object.
 // -----------------------------------------------------------------------------
 class SyncWaiter : public WaitableEvent::Waiter {
  public:
-  SyncWaiter(ConditionVariable* cv, Lock* lock)
+  SyncWaiter()
       : fired_(false),
-        cv_(cv),
-        lock_(lock),
-        signaling_event_(NULL) {
+        signaling_event_(NULL),
+        lock_(),
+        cv_(&lock_) {
   }
 
-  bool Fire(WaitableEvent *signaling_event) {
-    lock_->Acquire();
-      const bool previous_value = fired_;
-      fired_ = true;
-      if (!previous_value)
-        signaling_event_ = signaling_event;
-    lock_->Release();
+  bool Fire(WaitableEvent* signaling_event) {
+    AutoLock locked(lock_);
 
-    if (previous_value)
+    if (fired_)
       return false;
 
-    cv_->Broadcast();
+    fired_ = true;
+    signaling_event_ = signaling_event;
 
-    // SyncWaiters are stack allocated on the stack of the blocking thread.
+    cv_.Broadcast();
+
+    // Unlike AsyncWaiter objects, SyncWaiter objects are stack-allocated on
+    // the blocking thread's stack.  There is no |delete this;| in Fire.  The
+    // SyncWaiter object is destroyed when it goes out of scope.
+
     return true;
   }
 
-  WaitableEvent* signaled_event() const {
+  WaitableEvent* signaling_event() const {
     return signaling_event_;
   }
 
@@ -133,11 +134,19 @@ class SyncWaiter : public WaitableEvent::Waiter {
     fired_ = true;
   }
 
+  Lock* lock() {
+    return &lock_;
+  }
+
+  ConditionVariable* cv() {
+    return &cv_;
+  }
+
  private:
   bool fired_;
-  ConditionVariable *const cv_;
-  Lock *const lock_;
   WaitableEvent* signaling_event_;  // The WaitableEvent which woke us
+  Lock lock_;
+  ConditionVariable cv_;
 };
 
 bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
@@ -156,10 +165,8 @@ bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
       return true;
     }
 
-    Lock lock;
-    lock.Acquire();
-    ConditionVariable cv(&lock);
-    SyncWaiter sw(&cv, &lock);
+    SyncWaiter sw;
+    sw.lock()->Acquire();
 
     Enqueue(&sw);
   kernel_->lock_.Release();
@@ -173,13 +180,13 @@ bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
     if (sw.fired() || (finite_time && current_time >= end_time)) {
       const bool return_value = sw.fired();
 
-      // We can't acquire @lock_ before releasing @lock (because of locking
-      // order), however, inbetween the two a signal could be fired and @sw
-      // would accept it, however we will still return false, so the signal
-      // would be lost on an auto-reset WaitableEvent. Thus we call Disable
-      // which makes sw::Fire return false.
+      // We can't acquire @lock_ before releasing the SyncWaiter lock (because
+      // of locking order), however, in between the two a signal could be fired
+      // and @sw would accept it, however we will still return false, so the
+      // signal would be lost on an auto-reset WaitableEvent. Thus we call
+      // Disable which makes sw::Fire return false.
       sw.Disable();
-      lock.Release();
+      sw.lock()->Release();
 
       kernel_->lock_.Acquire();
         kernel_->Dequeue(&sw, &sw);
@@ -190,9 +197,9 @@ bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
 
     if (finite_time) {
       const TimeDelta max_wait(end_time - current_time);
-      cv.TimedWait(max_wait);
+      sw.cv()->TimedWait(max_wait);
     } else {
-      cv.Wait();
+      sw.cv()->Wait();
     }
   }
 }
@@ -237,9 +244,7 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables,
     DCHECK(waitables[i].first != waitables[i+1].first);
   }
 
-  Lock lock;
-  ConditionVariable cv(&lock);
-  SyncWaiter sw(&cv, &lock);
+  SyncWaiter sw;
 
   const size_t r = EnqueueMany(&waitables[0], count, &sw);
   if (r) {
@@ -252,7 +257,7 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables,
 
   // At this point, we hold the locks on all the WaitableEvents and we have
   // enqueued our waiter in them all.
-  lock.Acquire();
+  sw.lock()->Acquire();
     // Release the WaitableEvent locks in the reverse order
     for (size_t i = 0; i < count; ++i) {
       waitables[count - (1 + i)].first->kernel_->lock_.Release();
@@ -262,12 +267,12 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables,
       if (sw.fired())
         break;
 
-      cv.Wait();
+      sw.cv()->Wait();
     }
-  lock.Release();
+  sw.lock()->Release();
 
   // The address of the WaitableEvent which fired is stored in the SyncWaiter.
-  WaitableEvent *const signaled_event = sw.signaled_event();
+  WaitableEvent *const signaled_event = sw.signaling_event();
   // This will store the index of the raw_waitables which fired.
   size_t signaled_index = 0;
 
