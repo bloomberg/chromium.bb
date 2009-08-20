@@ -11,9 +11,6 @@
       'target_name': 'tcmalloc',
       'type': '<(library)',
       'msvs_guid': 'C564F145-9172-42C3-BFCB-60FDEA124321',
-      'dependencies': [
-        'libcmt',
-      ],
       'include_dirs': [
         '.',
         'tcmalloc/src/base',
@@ -104,7 +101,7 @@
         'tcmalloc/src/system-alloc.h',
         'tcmalloc/src/tcmalloc.cc',
 
-        # heap-profiler/checker
+        # heap-profiler/checker/cpuprofiler
         'tcmalloc/src/base/thread_lister.c',
         'tcmalloc/src/base/thread_lister.h',
         'tcmalloc/src/heap-checker-bcad.cc',
@@ -112,6 +109,11 @@
         'tcmalloc/src/heap-profiler.cc',
         'tcmalloc/src/memory_region_map.cc',
         'tcmalloc/src/memory_region_map.h',
+        'tcmalloc/src/profiledata.cc',
+        'tcmalloc/src/profiledata.h',
+        'tcmalloc/src/profile-handler.cc',
+        'tcmalloc/src/profile-handler.h',
+        'tcmalloc/src/profiler.cc',
         'tcmalloc/src/raw_printer.cc',
         'tcmalloc/src/raw_printer.h',
 
@@ -161,6 +163,9 @@
       },
       'conditions': [
         ['OS=="win"', {
+          'dependencies': [
+            'libcmt',
+          ],
           'include_dirs': [
             'tcmalloc/src/windows',
           ],
@@ -179,7 +184,7 @@
             'tcmalloc/src/page_heap.cc',
             'tcmalloc/src/page_heap.h',
 
-            # heap-profiler/checker
+            # heap-profiler/checker/cpuprofiler
             'tcmalloc/src/base/thread_lister.c',
             'tcmalloc/src/base/thread_lister.h',
             'tcmalloc/src/heap-checker-bcad.cc',
@@ -187,6 +192,11 @@
             'tcmalloc/src/heap-profiler.cc',
             'tcmalloc/src/memory_region_map.cc',
             'tcmalloc/src/memory_region_map.h',
+            'tcmalloc/src/profiledata.cc',
+            'tcmalloc/src/profiledata.h',
+            'tcmalloc/src/profile-handler.cc',
+            'tcmalloc/src/profile-handler.h',
+            'tcmalloc/src/profiler.cc',
             'tcmalloc/src/raw_printer.cc',
             'tcmalloc/src/raw_printer.h',
 
@@ -217,9 +227,9 @@
           ],
           'link_settings': {
             'ldflags': [
-              # Don't let linker rip this symbol out, otherwise the heap
-              # profiler will not initialize properly on startup.
-              '-Wl,-uIsHeapProfilerRunning',
+              # Don't let linker rip this symbol out, otherwise the heap&cpu
+              # profilers will not initialize properly on startup.
+              '-Wl,-uIsHeapProfilerRunning,-uProfilerStart',
             ],
           },
         }],
