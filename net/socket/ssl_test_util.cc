@@ -162,7 +162,7 @@ void AppendToPythonPath(const FilePath& dir) {
 
 void TestServerLauncher::SetPythonPath() {
   FilePath third_party_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &third_party_dir));
+  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &third_party_dir));
   third_party_dir = third_party_dir.Append(FILE_PATH_LITERAL("third_party"));
 
   AppendToPythonPath(third_party_dir.Append(FILE_PATH_LITERAL("tlslite")));
