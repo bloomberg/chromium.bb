@@ -701,6 +701,7 @@ class AutocompleteController : public ACProviderListener {
   explicit AutocompleteController(const ACProviders& providers)
       : providers_(providers),
         history_contents_provider_(NULL),
+        have_committed_during_this_query_(false),
         done_(true) {
   }
 #endif
