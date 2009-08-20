@@ -407,7 +407,7 @@ each locale. -->
       <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="The name of the Unmute command for audio and video playback in the content area context menu">
         Un&amp;mute
       </message>
-      
+
       <message name="IDS_CONTENT_CONTEXT_FULLSCREEN" desc="The name of the Fullscreen command for the video element in the content area context menu">
         &amp;Fullscreen
       </message>
@@ -433,7 +433,7 @@ each locale. -->
       <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="The name of the Open Audio in New Tab command in the content area context menu">
         &amp;Open audio in new tab
       </message>
-      
+
       <message name="IDS_CONTENT_CONTEXT_UNDO" desc="The name of the Undo command in the content area context menu">
         &amp;Undo
       </message>
@@ -1656,7 +1656,7 @@ each locale. -->
         <ph name="DOWNLOAD_SIZE">$1<ex>54kB</ex></ph>, Complete
       </message>
       <message name="IDS_DOWNLOAD_STATUS_CANCELED" desc="Canceled text.">
-        Canceled 
+        Canceled
       </message>
       <message name="IDS_DOWNLOAD_BUTTON_OPEN"
                desc="Button open text.">
@@ -1796,6 +1796,20 @@ each locale. -->
       <!-- Gears shortcut strings -->
       <message name="IDS_CREATE_SHORTCUTS" desc="Default installation menu label">
         Create application &amp;shortcuts...
+      </message>
+
+      <!-- "Create application shortcuts" dialog (non-Gears) -->
+      <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
+        Create application shortcuts
+      </message>
+      <message name="IDS_CREATE_SHORTCUTS_LABEL" desc="Contents of the main label in the create application shortcuts dialog explaining the dialog.">
+        Create application shortcuts in the following places:
+      </message>
+      <message name="IDS_CREATE_SHORTCUTS_DESKTOP_CHKBOX" desc="Label of the checkbox to create an application shortcut on the desktop.">
+        Desktop
+      </message>
+      <message name="IDS_CREATE_SHORTCUTS_COMMIT" desc="Title of the button to actually create the shortcuts.">
+        Create
       </message>
 
       <!-- SSL error strings -->
@@ -2421,7 +2435,7 @@ each locale. -->
       <message name="IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL" desc="Confirm MessageBox Dialog's 'No' button text">
         No
       </message>
-      
+
       <!-- Password Manager -->
       <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
         Save password
@@ -3852,8 +3866,8 @@ each locale. -->
       <message name="IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE"
          desc="Title for the hard coded thumbnail that represents the Google Chrome Themes Gallery page. This is used on the NTP when there aren't enough thumbnails to show.">
         Google Chrome Themes Gallery
-      </message>      
-      
+      </message>
+
       <!-- New tab page web clips. These are not in use yet -->
       <message name="IDS_NEW_TAB_WEB_CLIPS_WEB_CLIPS"
                desc="Web Clips module header">
@@ -4703,7 +4717,7 @@ each locale. -->
 
     <!-- Privacy Blacklist -->
     <message name="IDS_BLACKLIST_TITLE" desc="Title of the page displayed when a page is blocked.">
-      Blocked Resource    
+      Blocked Resource
     </message>
     <message name="IDS_BLACKLIST_MESSAGE" desc="Message shown instead of a blocked element.">
       The following Privacy Blacklists prevented this content from showing:

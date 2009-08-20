@@ -45,7 +45,6 @@
 #include "chrome/browser/thumbnail_store.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_action.h"
@@ -76,7 +75,12 @@
 #if defined(OS_CHROMEOS)
 // For GdkScreen
 #include <gdk/gdk.h>
-#endif
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_LINUX)
+#include "chrome/browser/gtk/create_application_shortcuts_dialog_gtk.h"
+#endif  // defined(OS_LINUX)
+
 // Cross-Site Navigations
 //
 // If a TabContents is told to navigate to a different web site (as determined
@@ -756,8 +760,8 @@ void TabContents::CreateShortcut() {
     return;
 
 #if defined(OS_LINUX)
-  // TODO(phajdan.jr): Finish creating shortcuts (UI etc).
-  ShellIntegration::CreateDesktopShortcut(GetURL(), GetTitle());
+  CreateApplicationShortcutsDialogGtk::Show(view()->GetTopLevelNativeWindow(),
+                                            GetURL(), GetTitle());
 #else
   // We only allow one pending install request. By resetting the page id we
   // effectively cancel the pending install request.

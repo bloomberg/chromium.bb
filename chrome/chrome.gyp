@@ -1157,6 +1157,8 @@
         'browser/gtk/clear_browsing_data_dialog_gtk.h',
         'browser/gtk/constrained_window_gtk.cc',
         'browser/gtk/constrained_window_gtk.h',
+        'browser/gtk/create_application_shortcuts_dialog_gtk.cc',
+        'browser/gtk/create_application_shortcuts_dialog_gtk.h',
         'browser/gtk/custom_button.cc',
         'browser/gtk/custom_button.h',
         'browser/gtk/dialogs_gtk.cc',
