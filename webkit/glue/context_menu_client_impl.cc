@@ -18,6 +18,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "KURL.h"
+#include "MediaError.h"
 #include "Widget.h"
 MSVC_POP_WARNING();
 #undef LOG
@@ -191,6 +192,9 @@ WebCore::PlatformMenuDescription
       node_type.type |= ContextNodeType::AUDIO;
     }
 
+    if (media_element->error()) {
+      media_params.player_state |= ContextMenuMediaParams::IN_ERROR;
+    }
     if (media_element->paused()) {
       media_params.player_state |= ContextMenuMediaParams::PAUSED;
     }
@@ -203,7 +207,6 @@ WebCore::PlatformMenuDescription
     if (media_element->supportsSave()) {
       media_params.player_state |= ContextMenuMediaParams::CAN_SAVE;
     }
-    // TODO(ajwong): Report error states in the media player.
   }
 
   // If it's not a link, an image, a media element, or an image/media link,
