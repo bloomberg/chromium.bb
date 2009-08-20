@@ -723,6 +723,7 @@ void BrowserWindowGtk::Close() {
   // To help catch bugs in any event handlers that might get fired during the
   // destruction, set window_ to NULL before any handlers will run.
   window_ = NULL;
+  titlebar_->set_window(NULL);
   gtk_widget_destroy(window);
 
 #if defined(OS_CHROMEOS)
