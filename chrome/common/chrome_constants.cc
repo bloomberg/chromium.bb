@@ -8,34 +8,40 @@
 
 #define FPL FILE_PATH_LITERAL
 
+#if defined(OS_MACOSX)
+#if defined(GOOGLE_CHROME_BUILD)
+#define PRODUCT_STRING L"Google Chrome"
+#else
+#define PRODUCT_STRING L"Chromium"
+#endif
+#endif  // OS_MACOSX
+
 namespace chrome {
 
 // The following should not be used for UI strings; they are meant
 // for system strings only. UI changes should be made in the GRD.
 #if defined(OS_WIN)
 const wchar_t kBrowserProcessExecutableName[] = L"chrome.exe";
+const wchar_t kHelperProcessExecutableName[] = L"chrome.exe";
 #elif defined(OS_LINUX)
 const wchar_t kBrowserProcessExecutableName[] = L"chrome";
+const wchar_t kHelperProcessExecutableName[] = L"chrome";
 #elif defined(OS_MACOSX)
-#if defined(GOOGLE_CHROME_BUILD)
-const wchar_t kBrowserProcessExecutableName[] = L"Google Chrome";
-const wchar_t kHelperProcessExecutableName[] = L"Google Chrome Helper";
-#else
-const wchar_t kBrowserProcessExecutableName[] = L"Chromium";
-const wchar_t kHelperProcessExecutableName[] = L"Chromium Helper";
-#endif  // GOOGLE_CHROME_BUILD
+const wchar_t kBrowserProcessExecutableName[] = PRODUCT_STRING;
+const wchar_t kHelperProcessExecutableName[] = PRODUCT_STRING L" Helper";
 #endif  // OS_*
 #if defined(OS_WIN)
 const wchar_t kBrowserProcessExecutablePath[] = L"chrome.exe";
+const wchar_t kHelperProcessExecutablePath[] = L"chrome.exe";
 #elif defined(OS_LINUX)
 const wchar_t kBrowserProcessExecutablePath[] = L"chrome";
+const wchar_t kHelperProcessExecutablePath[] = L"chrome";
 #elif defined(OS_MACOSX)
 const wchar_t kBrowserProcessExecutablePath[] =
-#if defined(GOOGLE_CHROME_BUILD)
-    L"Google Chrome.app/Contents/MacOS/Google Chrome";
-#else
-    L"Chromium.app/Contents/MacOS/Chromium";
-#endif  // GOOGLE_CHROME_BUILD
+    PRODUCT_STRING L".app/Contents/MacOS/" PRODUCT_STRING;
+const wchar_t kHelperProcessExecutablePath[] =
+    PRODUCT_STRING L".app/Contents/Resources/"
+    PRODUCT_STRING L" Helper.app/Contents/MacOS/" PRODUCT_STRING L" Helper";
 #endif  // OS_*
 #if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kBrowserAppName[] = L"Chrome";
@@ -99,3 +105,5 @@ const bool kRecordModeEnabled = false;
 #endif
 
 }  // namespace chrome
+
+#undef FPL

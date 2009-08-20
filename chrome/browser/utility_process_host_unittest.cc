@@ -80,7 +80,7 @@ class TestUtilityProcessHost : public UtilityProcessHost {
     FilePath exe_path;
     PathService::Get(base::DIR_EXE, &exe_path);
     exe_path = exe_path.AppendASCII(WideToASCII(
-        chrome::kBrowserProcessExecutablePath));
+        chrome::kHelperProcessExecutablePath));
     return exe_path.ToWStringHack();
   }
 

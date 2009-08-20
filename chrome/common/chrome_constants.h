@@ -12,11 +12,9 @@
 namespace chrome {
 
 extern const wchar_t kBrowserProcessExecutableName[];
-#if defined(OS_MACOSX)
-// Helpers (renderers, etc.) are different bundles on Mac OS X.
 extern const wchar_t kHelperProcessExecutableName[];
-#endif  // defined(OS_MACOSX)
 extern const wchar_t kBrowserProcessExecutablePath[];
+extern const wchar_t kHelperProcessExecutablePath[];
 extern const wchar_t kBrowserAppName[];
 extern const wchar_t kMessageWindowClass[];
 extern const wchar_t kCrashReportLog[];
