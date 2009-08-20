@@ -38,6 +38,7 @@
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebVector.h"
+#include "webkit/api/src/WebPluginContainerImpl.h"
 #include "webkit/api/src/WrappedResourceRequest.h"
 #include "webkit/api/src/WrappedResourceResponse.h"
 #include "webkit/glue/glue_util.h"
@@ -60,6 +61,7 @@ using base::TimeDelta;
 using WebKit::WebData;
 using WebKit::WebNavigationType;
 using WebKit::WebNavigationPolicy;
+using WebKit::WebPluginContainerImpl;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLError;
@@ -907,7 +909,7 @@ void WebFrameLoaderClient::setMainDocumentError(DocumentLoader*,
                                                 const ResourceError& error) {
   if (plugin_widget_.get()) {
     if (sent_initial_response_to_plugin_) {
-      plugin_widget_->didFail(error);
+      plugin_widget_->didFailLoading(error);
       sent_initial_response_to_plugin_ = false;
     }
     plugin_widget_ = NULL;
@@ -1321,7 +1323,7 @@ PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(const IntSize& size, // TO
 // This method gets called when a plugin is put in place of html content
 // (e.g., acrobat reader).
 void WebFrameLoaderClient::redirectDataToPlugin(Widget* pluginWidget) {
-  plugin_widget_ = static_cast<WebPluginContainer*>(pluginWidget);
+  plugin_widget_ = static_cast<WebPluginContainerImpl*>(pluginWidget);
   DCHECK(plugin_widget_.get());
 }
 

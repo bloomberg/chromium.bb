@@ -28,27 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TemporaryGlue_h
-#define TemporaryGlue_h
-
-// This is a temporary file declaring some functions that the WebKit layer can
-// use to call to the Glue layer.  Once the Glue layer moves entirely into the
-// WebKit layer, this file will be deleted.
-
-namespace WebCore {
-    class Frame;
-} // namespace WebCore
+#ifndef WebPluginContainer_h
+#define WebPluginContainer_h
 
 namespace WebKit {
-    class WebMediaPlayer;
-    class WebMediaPlayerClient;
-    struct WebCursorInfo;
+    struct WebRect;
 
-    class TemporaryGlue {
+    class WebPluginContainer {
     public:
-        static WebMediaPlayer* createWebMediaPlayer(WebMediaPlayerClient*, WebCore::Frame*);
+        virtual void invalidate() = 0;
+        virtual void invalidateRect(const WebRect&) = 0;
 
-        static void setCursorForPlugin(const WebCursorInfo&, WebCore::Frame*);
+    protected:
+        ~WebPluginContainer() { }
     };
 
 } // namespace WebKit

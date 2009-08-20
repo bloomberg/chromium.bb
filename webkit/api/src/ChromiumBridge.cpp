@@ -39,6 +39,7 @@
 #include "WebKit.h"
 #include "WebKitClient.h"
 #include "WebMimeRegistry.h"
+#include "WebPluginContainerImpl.h"
 #include "WebPluginListBuilderImpl.h"
 #include "WebString.h"
 #include "WebURL.h"
@@ -298,6 +299,19 @@ bool ChromiumBridge::plugins(bool refresh, Vector<PluginInfo*>* results)
     WebPluginListBuilderImpl builder(results);
     webKitClient()->getPluginList(refresh, &builder);
     return true;  // FIXME: There is no need for this function to return a value.
+}
+
+NPObject* ChromiumBridge::pluginScriptableObject(Widget* widget)
+{
+    if (!widget)
+        return NULL;
+
+    ASSERT(!widget->isFrameView());
+
+    // NOTE:  We have to trust that the widget passed to us here is a
+    // WebPluginContainerImpl.  There isn't a way to dynamically verify it,
+    // since the derived class (Widget) has no identifier.
+    return static_cast<WebPluginContainerImpl*>(widget)->scriptableObject();
 }
 
 // Resources ------------------------------------------------------------------

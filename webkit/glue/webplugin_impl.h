@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/linked_ptr.h"
+#include "webkit/api/public/WebPlugin.h"
 #include "webkit/api/public/WebURLLoaderClient.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/glue/webframe_impl.h"
@@ -40,6 +41,7 @@ class Widget;
 }
 
 namespace WebKit {
+class WebPluginContainer;
 class WebURLResponse;
 class WebURLLoader;
 }
@@ -48,75 +50,11 @@ namespace webkit_glue {
 class MultipartResponseDelegate;
 }
 
-// Implements WebCore::Widget functions that WebPluginImpl needs.  This class
-// exists because it is possible for the plugin widget to be deleted at any
-// time because of a delegate javascript call.  However we don't want the
-// WebPluginImpl to be deleted from under us because it could be lower in the
-// call stack.
-class WebPluginContainer : public WebCore::Widget {
- public:
-  WebPluginContainer(WebPluginImpl* impl);
-  virtual ~WebPluginContainer();
-  NPObject* GetPluginScriptableObject();
-
-  // Widget methods:
-  virtual void setFrameRect(const WebCore::IntRect& rect);
-  virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect& rect);
-  virtual void invalidateRect(const WebCore::IntRect&);
-  virtual void setFocus();
-  virtual void show();
-  virtual void hide();
-  virtual void handleEvent(WebCore::Event* event);
-  virtual void frameRectsChanged();
-  virtual void setParentVisible(bool visible);
-  virtual void setParent(WebCore::ScrollView* view);
-
-#if USE(JSC)
-  virtual bool isPluginView() const;
-#endif
-
-  // Returns window-relative rectangles that should clip this widget.
-  // Only rects that intersect the given bounds are relevant.
-  // Use this to implement iframe shim behavior.
-  //
-  // TODO(tulrich): add this method to WebCore/platform/Widget.h so it
-  // can be used by any platform.
-  void windowCutoutRects(const WebCore::IntRect& bounds,
-                         WTF::Vector<WebCore::IntRect>* cutouts) const;
-
-  // These methods are invoked from webkit when it has data to be sent to the
-  // plugin. The plugin in this case does not initiate a download for the data.
-  void didReceiveResponse(const WebCore::ResourceResponse& response);
-  void didReceiveData(const char *buffer, int length);
-  void didFinishLoading();
-  void didFail(const WebCore::ResourceError&);
-
-  void set_ignore_response_error(bool ignore_response_error) {
-    ignore_response_error_ = ignore_response_error;
-  }
-
-  struct HttpResponseInfo {
-    std::string url;
-    std::wstring mime_type;
-    uint32 last_modified;
-    uint32 expected_length;
-  };
-
-  // Helper function to read fields in a HTTP response structure.
-  // These fields are written to the HttpResponseInfo structure passed in.
-  static void ReadHttpResponseInfo(const WebCore::ResourceResponse& response,
-                                   HttpResponseInfo* http_response);
-
- private:
-  WebPluginImpl* impl_;
-  // Set to true if the next response error should be ignored.
-  bool ignore_response_error_;
-};
-
 // This is the WebKit side of the plugin implementation that forwards calls,
 // after changing out of WebCore types, to a delegate.  The delegate may
 // be in a different process.
 class WebPluginImpl : public WebPlugin,
+                      public WebKit::WebPlugin,
                       public WebKit::WebURLLoaderClient {
  public:
   // Creates a WebPlugin instance, as long as the delegate's initialization
@@ -133,20 +71,33 @@ class WebPluginImpl : public WebPlugin,
                                  const std::string& mime_type);
   virtual ~WebPluginImpl();
 
-  virtual NPObject* GetPluginScriptableObject();
-
   // Helper function for sorting post data.
   static bool SetPostData(WebKit::WebURLRequest* request,
                           const char* buf,
                           uint32 length);
 
  private:
-  friend class WebPluginContainer;
-
   WebPluginImpl(WebCore::HTMLPlugInElement* element, WebFrameImpl* frame,
                 WebPluginDelegate* delegate, const GURL& plugin_url,
                 bool load_manually, const std::string& mime_type,
                 int arg_count, char** arg_names, char** arg_values);
+
+  // WebKit::WebPlugin methods:
+  virtual void destroy();
+  virtual NPObject* scriptableObject();
+  virtual void paint(
+      WebKit::WebCanvas* canvas, const WebKit::WebRect& paint_rect);
+  virtual void updateGeometry(
+      const WebKit::WebRect& frame_rect, const WebKit::WebRect& clip_rect,
+      const WebKit::WebVector<WebKit::WebRect>& cut_outs);
+  virtual void updateFocus(bool focused);
+  virtual void updateVisibility(bool visible);
+  virtual bool handleInputEvent(
+      const WebKit::WebInputEvent& event, WebKit::WebCursorInfo& cursor_info);
+  virtual void didReceiveResponse(const WebKit::WebURLResponse& response);
+  virtual void didReceiveData(const char* data, int data_length);
+  virtual void didFinishLoading();
+  virtual void didFailLoading(const WebKit::WebURLError& error);
 
   // WebPlugin implementation:
 #if defined(OS_LINUX)
@@ -208,46 +159,13 @@ class WebPluginImpl : public WebPlugin,
   void Invalidate();
   void InvalidateRect(const gfx::Rect& rect);
 
-  // Widget implementation:
-  WebCore::IntRect windowClipRect() const;
-
-  // Returns window-relative rectangles that should clip this widget.
-  // Only rects that intersect the given bounds are relevant.
-  // Use this to implement iframe shim behavior.
-  //
-  // TODO(tulrich): windowCutoutRects() is not in WebCore::Widgets
-  // yet; need to add it.
-  void windowCutoutRects(const WebCore::IntRect& bounds,
-                         WTF::Vector<WebCore::IntRect>* rects) const;
-
-  // Called by WebPluginContainer::setFrameRect, which overrides
-  // Widget setFrameRect when our window changes size or position.
-  // Used to notify the plugin when the size or position changes.
-  void setFrameRect(const WebCore::IntRect& rect);
-
-  // Called by WebPluginContainer::paint, which overrides Widget::paint so we
-  // can notify the underlying widget to repaint.
-  void paint(WebCore::GraphicsContext*, const WebCore::IntRect& rect);
-  void print(WebCore::GraphicsContext*);
-
-  // Called by WebPluginContainer::setFocus, which overrides Widget::setFocus.
-  // Notifies the plugin about focus changes.
-  void setFocus();
-
-  // Handle widget events.
-  void handleEvent(WebCore::Event* event);
-  void handleMouseEvent(WebCore::MouseEvent* event);
-  void handleKeyboardEvent(WebCore::KeyboardEvent* event);
-
   // Sets the actual Widget for the plugin.
-  void SetContainer(WebPluginContainer* container);
+  void SetContainer(WebKit::WebPluginContainer* container);
 
   // Destroys the plugin instance.
   // The response_handle_to_ignore parameter if not NULL indicates the
   // resource handle to be left valid during plugin shutdown.
   void TearDownPluginInstance(WebKit::WebURLLoader* loader_to_ignore);
-
-  WebCore::ScrollView* parent() const;
 
   // WebURLLoaderClient implementation.  We implement this interface in the
   // renderer process, and then use the simple WebPluginResourceClient interface
@@ -274,13 +192,6 @@ class WebPluginImpl : public WebPlugin,
   void RemoveClient(WebKit::WebURLLoader* loader);
 
   WebCore::Frame* frame() { return webframe_ ? webframe_->frame() : NULL; }
-
-  // Calculates the bounds of the plugin widget based on the frame
-  // rect passed in.
-  void CalculateBounds(const WebCore::IntRect& frame_rect,
-                       gfx::Rect* window_rect,
-                       gfx::Rect* clip_rect,
-                       std::vector<gfx::Rect>* cutout_rects);
 
   void HandleURLRequest(const char *method,
                         bool is_javascript_url,
@@ -316,9 +227,6 @@ class WebPluginImpl : public WebPlugin,
   // to handle the response identified by the loader parameter.
   bool ReinitializePluginForResponse(WebKit::WebURLLoader* loader);
 
-  // Notifies us that the visibility of the plugin has changed.
-  void UpdateVisibility();
-
   // Helper functions to convert an array of names/values to a vector.
   static void ArrayToVector(int total_values, char** values,
                             std::vector<std::string>* value_vector);
@@ -349,7 +257,7 @@ class WebPluginImpl : public WebPlugin,
   // Don't use RefPtr here since doing so extends the lifetime of a plugin
   // beyond the frame which causes crashes and videos playing after navigating
   // away etc.
-  WebPluginContainer* widget_;
+  WebKit::WebPluginContainer* widget_;
 
   typedef std::map<WebPluginResourceClient*,
                    webkit_glue::MultipartResponseDelegate*>
@@ -366,6 +274,9 @@ class WebPluginImpl : public WebPlugin,
 
   // Indicates if this is the first geometry update received by the plugin.
   bool first_geometry_update_;
+
+  // Set to true if the next response error should be ignored.
+  bool ignore_response_error_;
 
   // The current plugin geometry and clip rectangle.
   gfx::Rect window_rect_;

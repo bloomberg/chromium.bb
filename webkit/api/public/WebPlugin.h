@@ -28,27 +28,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TemporaryGlue_h
-#define TemporaryGlue_h
+#ifndef WebPlugin_h
+#define WebPlugin_h
 
-// This is a temporary file declaring some functions that the WebKit layer can
-// use to call to the Glue layer.  Once the Glue layer moves entirely into the
-// WebKit layer, this file will be deleted.
+#include "WebCanvas.h"
 
-namespace WebCore {
-    class Frame;
-} // namespace WebCore
+struct NPObject;
 
 namespace WebKit {
-    class WebMediaPlayer;
-    class WebMediaPlayerClient;
+    class WebInputEvent;
+    class WebURLResponse;
     struct WebCursorInfo;
+    struct WebRect;
+    struct WebURLError;
+    template <typename T> class WebVector;
 
-    class TemporaryGlue {
+    class WebPlugin {
     public:
-        static WebMediaPlayer* createWebMediaPlayer(WebMediaPlayerClient*, WebCore::Frame*);
+        virtual void destroy() = 0;
 
-        static void setCursorForPlugin(const WebCursorInfo&, WebCore::Frame*);
+        virtual NPObject* scriptableObject() = 0;
+
+        virtual void paint(WebCanvas*, const WebRect&) = 0;
+
+        // Coordinates are relative to the containing window.
+        virtual void updateGeometry(
+            const WebRect& frameRect, const WebRect& clipRect,
+            const WebVector<WebRect>& cutOutsRects) = 0;
+
+        virtual void updateFocus(bool) = 0;
+        virtual void updateVisibility(bool) = 0;
+
+        virtual bool handleInputEvent(const WebInputEvent&, WebCursorInfo&) = 0;
+
+        virtual void didReceiveResponse(const WebURLResponse&) = 0;
+        virtual void didReceiveData(const char* data, int dataLength) = 0;
+        virtual void didFinishLoading() = 0;
+        virtual void didFailLoading(const WebURLError&) = 0;
+
+    protected:
+        ~WebPlugin() { }
     };
 
 } // namespace WebKit

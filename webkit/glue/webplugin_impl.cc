@@ -6,38 +6,17 @@
 
 #include "Document.h"
 #include "DocumentLoader.h"
-#include "Event.h"
-#include "EventNames.h"
-#include "FloatPoint.h"
-#include "FormData.h"
 #include "FormState.h"
-#include "FocusController.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameLoadRequest.h"
-#include "FrameTree.h"
-#include "FrameView.h"
-#include "GraphicsContext.h"
 #include "HTMLFormElement.h"
-#include "HTMLNames.h"
 #include "HTMLPlugInElement.h"
-#include "IntRect.h"
 #include "KURL.h"
-#include "KeyboardEvent.h"
-#include "MouseEvent.h"
-#include "Page.h"
-#include "PlatformContextSkia.h"
-#include "PlatformMouseEvent.h"
-#include "PlatformKeyboardEvent.h"
 #include "PlatformString.h"
-#include "PlatformWidget.h"
-#include "RenderBox.h"
-#include "ResourceHandle.h"
-#include "ResourceHandleClient.h"
 #include "ResourceResponse.h"
 #include "ScriptController.h"
 #include "ScriptValue.h"
-#include "ScrollView.h"
 #include "Widget.h"
 
 #undef LOG
@@ -45,20 +24,23 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+//#include "base/sys_string_conversions.h"
 #include "net/base/escape.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebHTTPBody.h"
+#include "webkit/api/public/WebHTTPHeaderVisitor.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebKitClient.h"
+#include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLLoader.h"
 #include "webkit/api/public/WebURLLoaderClient.h"
 #include "webkit/api/public/WebURLResponse.h"
-#include "webkit/api/src/WebInputEventConversion.h"
+#include "webkit/api/public/WebVector.h"
+#include "webkit/api/src/WebPluginContainerImpl.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/multipart_response_delegate.h"
@@ -71,21 +53,27 @@
 #include "webkit/glue/webview_impl.h"
 #include "googleurl/src/gurl.h"
 
+using WebKit::WebCanvas;
 using WebKit::WebCursorInfo;
 using WebKit::WebData;
 using WebKit::WebHTTPBody;
+using WebKit::WebHTTPHeaderVisitor;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
-using WebKit::WebKeyboardEventBuilder;
 using WebKit::WebMouseEvent;
-using WebKit::WebMouseEventBuilder;
+using WebKit::WebPluginContainer;
+using WebKit::WebPluginContainerImpl;
+using WebKit::WebRect;
 using WebKit::WebString;
 using WebKit::WebURLError;
 using WebKit::WebURLLoader;
 using WebKit::WebURLLoaderClient;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
+using WebKit::WebVector;
 using webkit_glue::MultipartResponseDelegate;
+
+namespace {
 
 // This class handles individual multipart responses. It is instantiated when
 // we receive HTTP status code 206 in the HTTP response. This indicates
@@ -147,198 +135,79 @@ class MultiPartResponseClient : public WebURLLoaderClient {
   WebPluginResourceClient* resource_client_;
 };
 
-static std::wstring GetAllHeaders(const WebCore::ResourceResponse& response) {
-  std::wstring result;
-  const WebCore::String& status = response.httpStatusText();
+class HeaderFlattener : public WebHTTPHeaderVisitor {
+ public:
+  HeaderFlattener(std::string* buf) : buf_(buf) {
+  }
+
+  virtual void visitHeader(const WebString& name, const WebString& value) {
+    // TODO(darin): Should we really exclude headers with an empty value?
+    if (!name.isEmpty() && !value.isEmpty()) {
+      buf_->append(name.utf8());
+      buf_->append(": ");
+      buf_->append(value.utf8());
+      buf_->append("\n");
+    }
+  }
+
+ private:
+  std::string* buf_;
+};
+
+std::string GetAllHeaders(const WebURLResponse& response) {
+  // TODO(darin): It is possible for httpStatusText to be empty and still have
+  // an interesting response, so this check seems wrong.
+  std::string result;
+  const WebString& status = response.httpStatusText();
   if (status.isEmpty())
     return result;
 
-  result.append(L"HTTP ");
-  result.append(FormatNumber(response.httpStatusCode()));
-  result.append(L" ");
-  result.append(webkit_glue::StringToStdWString(status));
-  result.append(L"\n");
+  // TODO(darin): Shouldn't we also report HTTP version numbers?
+  result.append("HTTP ");
+  result.append(WideToUTF8(FormatNumber(response.httpStatusCode())));
+  result.append(" ");
+  result.append(status.utf8());
+  result.append("\n");
 
-  WebCore::HTTPHeaderMap::const_iterator it =
-      response.httpHeaderFields().begin();
-  for (; it != response.httpHeaderFields().end(); ++it) {
-    if (!it->first.isEmpty() && !it->second.isEmpty()) {
-      result.append(webkit_glue::StringToStdWString(it->first));
-      result.append(L": ");
-      result.append(webkit_glue::StringToStdWString(it->second));
-      result.append(L"\n");
-    }
-  }
+  HeaderFlattener flattener(&result);
+  response.visitHTTPHeaderFields(&flattener);
 
   return result;
 }
 
-WebPluginContainer::WebPluginContainer(WebPluginImpl* impl)
-    : impl_(impl),
-      ignore_response_error_(false) {
-}
+struct ResponseInfo {
+  std::string url;
+  std::string mime_type;
+  uint32 last_modified;
+  uint32 expected_length;
+};
 
-WebPluginContainer::~WebPluginContainer() {
-  impl_->SetContainer(NULL);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, impl_);
-}
+void GetResponseInfo(const WebURLResponse& response,
+                     ResponseInfo* response_info) {
+  response_info->url = response.url().spec();
+  response_info->mime_type = response.mimeType().utf8();
 
-NPObject* WebPluginContainer::GetPluginScriptableObject() {
-  return impl_->GetPluginScriptableObject();
-}
-
-#if USE(JSC)
-bool WebPluginContainer::isPluginView() const {
-  return true;
-}
-#endif
-
-
-void WebPluginContainer::setFrameRect(const WebCore::IntRect& rect) {
-  WebCore::Widget::setFrameRect(rect);
-  impl_->setFrameRect(rect);
-}
-
-void WebPluginContainer::paint(WebCore::GraphicsContext* gc,
-                               const WebCore::IntRect& damage_rect) {
-  // In theory, we should call impl_->print(gc); when
-  // impl_->webframe_->printing() is true but it still has placement issues so
-  // keep that code off for now.
-  impl_->paint(gc, damage_rect);
-}
-
-void WebPluginContainer::invalidateRect(const WebCore::IntRect& rect) {
-  if (parent()) {
-    WebCore::IntRect damageRect = convertToContainingWindow(rect);
-
-    // Get our clip rect and intersect with it to ensure we don't
-    // invalidate too much.
-    WebCore::IntRect clipRect = parent()->windowClipRect();
-    damageRect.intersect(clipRect);
-
-    parent()->hostWindow()->repaint(damageRect, true);
-  }
-}
-
-void WebPluginContainer::setFocus() {
-  WebCore::Widget::setFocus();
-  impl_->setFocus();
-}
-
-void WebPluginContainer::show() {
-  setSelfVisible(true);
-  impl_->UpdateVisibility();
-
-  WebCore::Widget::show();
-}
-
-void WebPluginContainer::hide() {
-  setSelfVisible(false);
-  impl_->UpdateVisibility();
-
-  WebCore::Widget::hide();
-}
-
-void WebPluginContainer::handleEvent(WebCore::Event* event) {
-  impl_->handleEvent(event);
-}
-
-void WebPluginContainer::frameRectsChanged() {
-  WebCore::Widget::frameRectsChanged();
-  // This is a hack to tickle re-positioning of the plugin in the case where
-  // our parent view was scrolled.
-  impl_->setFrameRect(frameRect());
-}
-
-// We override this function, to make sure that geometry updates are sent
-// over to the plugin. For e.g. when a plugin is instantiated it does
-// not have a valid parent. As a result the first geometry update from
-// webkit is ignored. This function is called when the plugin eventually
-// gets a parent.
-void WebPluginContainer::setParentVisible(bool visible) {
-  if (isParentVisible() == visible)
-    return;  // No change.
-
-  WebCore::Widget::setParentVisible(visible);
-  if (!isSelfVisible())
-    return;  // This widget has explicitely been marked as not visible.
-
-  impl_->UpdateVisibility();
-}
-
-// We override this function so that if the plugin is windowed, we can call
-// NPP_SetWindow at the first possible moment.  This ensures that NPP_SetWindow
-// is called before the manual load data is sent to a plugin.  If this order is
-// reversed, Flash won't load videos.
-void WebPluginContainer::setParent(WebCore::ScrollView* view) {
-  WebCore::Widget::setParent(view);
-  if (view) {
-    impl_->setFrameRect(frameRect());
-  }
-}
-
-void WebPluginContainer::windowCutoutRects(const WebCore::IntRect& bounds,
-                                           WTF::Vector<WebCore::IntRect>*
-                                           cutouts) const {
-  impl_->windowCutoutRects(bounds, cutouts);
-}
-
-void WebPluginContainer::didReceiveResponse(
-    const WebCore::ResourceResponse& response) {
-  set_ignore_response_error(false);
-
-  // Manual loading, so make sure that the plugin receives window geometry
-  // before data, or else plugins misbehave.
-  frameRectsChanged();
-
-  HttpResponseInfo http_response_info;
-  ReadHttpResponseInfo(response, &http_response_info);
-
-  impl_->delegate_->DidReceiveManualResponse(
-      http_response_info.url,
-      base::SysWideToNativeMB(http_response_info.mime_type),
-      base::SysWideToNativeMB(GetAllHeaders(response)),
-      http_response_info.expected_length,
-      http_response_info.last_modified);
-}
-
-void WebPluginContainer::didReceiveData(const char *buffer, int length) {
-  impl_->delegate_->DidReceiveManualData(buffer, length);
-}
-
-void WebPluginContainer::didFinishLoading() {
-  impl_->delegate_->DidFinishManualLoading();
-}
-
-void WebPluginContainer::didFail(const WebCore::ResourceError&) {
-  if (!ignore_response_error_)
-    impl_->delegate_->DidManualLoadFail();
-}
-
-void WebPluginContainer::ReadHttpResponseInfo(
-    const WebCore::ResourceResponse& response,
-    HttpResponseInfo* http_response) {
-  std::wstring url = webkit_glue::StringToStdWString(response.url().string());
-  http_response->url = WideToASCII(url);
-
-  http_response->mime_type =
-      webkit_glue::StringToStdWString(response.mimeType());
-
-  http_response->last_modified =
+  // Measured in seconds since 12:00 midnight GMT, January 1, 1970.
+  response_info->last_modified =
       static_cast<uint32>(response.lastModifiedDate());
+
   // If the length comes in as -1, then it indicates that it was not
   // read off the HTTP headers. We replicate Safari webkit behavior here,
   // which is to set it to 0.
-  http_response->expected_length =
+  response_info->expected_length =
       static_cast<uint32>(std::max(response.expectedContentLength(), 0LL));
-  WebCore::String content_encoding =
-      response.httpHeaderField("Content-Encoding");
-  if (!content_encoding.isNull() && content_encoding != "identity") {
+
+  WebString content_encoding =
+      response.httpHeaderField(WebString::fromUTF8("Content-Encoding"));
+  if (!content_encoding.isNull() &&
+      !EqualsASCII(content_encoding, "identity")) {
     // Don't send the compressed content length to the plugin, which only
     // cares about the decoded length.
-    http_response->expected_length = 0;
+    response_info->expected_length = 0;
   }
 }
+
+}  // namespace
 
 PassRefPtr<WebCore::Widget> WebPluginImpl::Create(const GURL& url,
                                        char** argn,
@@ -360,9 +229,10 @@ PassRefPtr<WebCore::Widget> WebPluginImpl::Create(const GURL& url,
     return NULL;
   }
 
-  WebPluginContainer* container = new WebPluginContainer(webplugin);
-  webplugin->SetContainer(container);
-  return adoptRef(container);
+  PassRefPtr<WebPluginContainerImpl> container =
+      WebPluginContainerImpl::create(element, webplugin);
+  webplugin->SetContainer(container.get());
+  return container;
 }
 
 WebPluginImpl::WebPluginImpl(WebCore::HTMLPlugInElement* element,
@@ -383,12 +253,149 @@ WebPluginImpl::WebPluginImpl(WebCore::HTMLPlugInElement* element,
       plugin_url_(plugin_url),
       load_manually_(load_manually),
       first_geometry_update_(true),
+      ignore_response_error_(false),
       mime_type_(mime_type),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 
   ArrayToVector(arg_count, arg_names, &arg_names_);
   ArrayToVector(arg_count, arg_values, &arg_values_);
 }
+
+// WebKit::WebPlugin -----------------------------------------------------------
+
+void WebPluginImpl::destroy() {
+  SetContainer(NULL);
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+NPObject* WebPluginImpl::scriptableObject() {
+  return delegate_->GetPluginScriptableObject();
+}
+
+void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& paint_rect) {
+  // Note that |context| is only used when in windowless mode.
+#if WEBKIT_USING_SKIA
+  gfx::NativeDrawingContext context = canvas->beginPlatformPaint();
+#elif WEBKIT_USING_CG
+  gfx::NativeDrawingContext context = canvas;
+#endif
+
+  delegate_->Paint(context, paint_rect);
+
+#if WEBKIT_USING_SKIA
+  canvas->endPlatformPaint();
+#endif
+}
+
+void WebPluginImpl::updateGeometry(
+    const WebRect& window_rect, const WebRect& clip_rect,
+    const WebVector<WebRect>& cutout_rects) {
+  if (window_) {
+    WebCore::Frame* frame = element_->document()->frame();
+    WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
+    WebViewImpl* webview = webframe->GetWebViewImpl();
+    if (webview->delegate()) {
+      // Notify the window hosting the plugin (the WebViewDelegate) that
+      // it needs to adjust the plugin, so that all the HWNDs can be moved
+      // at the same time.
+      WebPluginGeometry move;
+      move.window = window_;
+      move.window_rect = window_rect;
+      move.clip_rect = clip_rect;
+      for (size_t i = 0; i < cutout_rects.size(); ++i)
+        move.cutout_rects.push_back(cutout_rects[i]);
+      move.rects_valid = true;
+      move.visible = true;  // Assume visible or else we wouldn't be here.
+
+      webview->delegate()->DidMovePlugin(move);
+    }
+  }
+
+  if (first_geometry_update_ || window_rect != window_rect_ ||
+      clip_rect != clip_rect_) {
+    window_rect_ = window_rect;
+    clip_rect_ = clip_rect;
+    // Notify the plugin that its parameters have changed.
+    delegate_->UpdateGeometry(window_rect_, clip_rect_);
+
+    // Initiate a download on the plugin url. This should be done for the
+    // first update geometry sequence. We need to ensure that the plugin
+    // receives the geometry update before it starts receiving data.
+    if (first_geometry_update_) {
+      first_geometry_update_ = false;
+      // An empty url corresponds to an EMBED tag with no src attribute.
+      if (!load_manually_ && plugin_url_.is_valid()) {
+        // The Flash plugin hangs for a while if it receives data before
+        // receiving valid plugin geometry. By valid geometry we mean the
+        // geometry received by a call to setFrameRect in the Webkit
+        // layout code path. To workaround this issue we download the
+        // plugin source url on a timer.
+        MessageLoop::current()->PostDelayedTask(
+            FROM_HERE, method_factory_.NewRunnableMethod(
+                &WebPluginImpl::OnDownloadPluginSrcUrl), 0);
+      }
+    }
+  }
+}
+
+void WebPluginImpl::updateFocus(bool focused) {
+  if (focused && windowless_)
+    delegate_->SetFocus();
+}
+
+void WebPluginImpl::updateVisibility(bool visible) {
+  if (!window_)
+    return;
+
+  WebCore::Frame* frame = element_->document()->frame();
+  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
+  WebViewImpl* webview = webframe->GetWebViewImpl();
+  if (!webview->delegate())
+    return;
+
+  WebPluginGeometry move;
+  move.window = window_;
+  move.window_rect = gfx::Rect();
+  move.clip_rect = gfx::Rect();
+  move.rects_valid = false;
+  move.visible = visible;
+
+  webview->delegate()->DidMovePlugin(move);
+}
+
+bool WebPluginImpl::handleInputEvent(
+    const WebInputEvent& event, WebCursorInfo& cursor_info) {
+  return delegate_->HandleInputEvent(event, &cursor_info);
+}
+
+void WebPluginImpl::didReceiveResponse(const WebURLResponse& response) {
+  ignore_response_error_ = false;
+
+  ResponseInfo response_info;
+  GetResponseInfo(response, &response_info);
+
+  delegate_->DidReceiveManualResponse(
+      response_info.url,
+      response_info.mime_type,
+      GetAllHeaders(response),
+      response_info.expected_length,
+      response_info.last_modified);
+}
+
+void WebPluginImpl::didReceiveData(const char* data, int data_length) {
+  delegate_->DidReceiveManualData(data, data_length);
+}
+
+void WebPluginImpl::didFinishLoading() {
+  delegate_->DidFinishManualLoading();
+}
+
+void WebPluginImpl::didFailLoading(const WebURLError& error) {
+  if (!ignore_response_error_)
+    delegate_->DidManualLoadFail();
+}
+
+// -----------------------------------------------------------------------------
 
 WebPluginImpl::~WebPluginImpl() {
 }
@@ -661,265 +668,13 @@ void WebPluginImpl::Invalidate() {
 
 void WebPluginImpl::InvalidateRect(const gfx::Rect& rect) {
   if (widget_)
-    widget_->invalidateRect(webkit_glue::ToIntRect(rect));
-}
-
-WebCore::IntRect WebPluginImpl::windowClipRect() const {
-  // This is based on the code in WebCore/plugins/win/PluginViewWin.cpp:
-  WebCore::IntRect rect(0, 0, widget_->width(), widget_->height());
-
-  // Start by clipping to our bounds.
-  WebCore::IntRect clip_rect = widget_->convertToContainingWindow(
-      WebCore::IntRect(0, 0, widget_->width(), widget_->height()));
-
-  // Take our element and get the clip rect from the enclosing layer and
-  // frame view.
-  WebCore::RenderLayer* layer = element_->renderer()->enclosingLayer();
-
-  // document()->renderer() can be NULL when we receive messages from the
-  // plugins while we are destroying a frame.
-  if (element_->renderer()->document()->renderer()) {
-    WebCore::FrameView* parent_view = element_->document()->view();
-    clip_rect.intersect(parent_view->windowClipRectForLayer(layer, true));
-  }
-
-  return clip_rect;
-}
-
-void WebPluginImpl::windowCutoutRects(
-    const WebCore::IntRect& bounds,
-    WTF::Vector<WebCore::IntRect>* cutouts) const {
-  WebCore::RenderObject* plugin_node = element_->renderer();
-  ASSERT(plugin_node);
-
-  // Find all iframes that stack higher than this plugin.
-  bool higher = false;
-  StackingOrderIterator iterator;
-  WebCore::RenderLayer* root = element_->document()->renderer()->
-                               enclosingLayer();
-  iterator.Reset(bounds, root);
-
-  while (WebCore::RenderObject* ro = iterator.Next()) {
-    if (ro == plugin_node) {
-      // All nodes after this one are higher than plugin.
-      higher = true;
-    } else if (higher) {
-      // Is this a visible iframe?
-      WebCore::Node* n = ro->node();
-      if (n && n->hasTagName(WebCore::HTMLNames::iframeTag)) {
-        if (!ro->style() || ro->style()->visibility() == WebCore::VISIBLE) {
-          WebCore::IntPoint point = roundedIntPoint(ro->localToAbsolute());
-          WebCore::RenderBox* rbox = WebCore::toRenderBox(ro);
-          WebCore::IntSize size(rbox->width(), rbox->height());
-          cutouts->append(WebCore::IntRect(point, size));
-        }
-      }
-    }
-  }
-}
-
-void WebPluginImpl::setFrameRect(const WebCore::IntRect& rect) {
-  if (!parent())
-    return;
-
-  // Compute a new position and clip rect for ourselves relative to the
-  // containing window.  We ask our delegate to reposition us accordingly.
-  WebCore::Frame* frame = element_->document()->frame();
-  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
-  WebViewImpl* webview = webframe->GetWebViewImpl();
-  // It is valid for this function to be invoked in code paths where the
-  // the webview is closed.
-  if (!webview->delegate()) {
-    return;
-  }
-
-  gfx::Rect window_rect;
-  gfx::Rect clip_rect;
-  std::vector<gfx::Rect> cutout_rects;
-  CalculateBounds(rect, &window_rect, &clip_rect, &cutout_rects);
-
-  if (window_) {
-    // Notify the window hosting the plugin (the WebViewDelegate) that
-    // it needs to adjust the plugin, so that all the HWNDs can be moved
-    // at the same time.
-    WebPluginGeometry move;
-    move.window = window_;
-    move.window_rect = window_rect;
-    move.clip_rect = clip_rect;
-    move.cutout_rects = cutout_rects;
-    move.rects_valid = true;
-    move.visible = widget_->isVisible();
-
-    webview->delegate()->DidMovePlugin(move);
-  }
-
-  if (first_geometry_update_ || window_rect != window_rect_ ||
-      clip_rect != clip_rect_) {
-    window_rect_ = window_rect;
-    clip_rect_ = clip_rect;
-    // Notify the plugin that its parameters have changed.
-    delegate_->UpdateGeometry(window_rect_, clip_rect_);
-
-    // Initiate a download on the plugin url. This should be done for the
-    // first update geometry sequence. We need to ensure that the plugin
-    // receives the geometry update before it starts receiving data.
-    if (first_geometry_update_) {
-      first_geometry_update_ = false;
-      // An empty url corresponds to an EMBED tag with no src attribute.
-      if (!load_manually_ && plugin_url_.is_valid()) {
-        // The Flash plugin hangs for a while if it receives data before
-        // receiving valid plugin geometry. By valid geometry we mean the
-        // geometry received by a call to setFrameRect in the Webkit
-        // layout code path. To workaround this issue we download the
-        // plugin source url on a timer.
-        MessageLoop::current()->PostDelayedTask(
-            FROM_HERE, method_factory_.NewRunnableMethod(
-                &WebPluginImpl::OnDownloadPluginSrcUrl), 0);
-      }
-    }
-  }
+    widget_->invalidateRect(rect);
 }
 
 void WebPluginImpl::OnDownloadPluginSrcUrl() {
   HandleURLRequestInternal("GET", false, NULL, 0, NULL, false, false,
                            plugin_url_.spec().c_str(), NULL, false,
                            false);
-}
-
-void WebPluginImpl::paint(WebCore::GraphicsContext* gc,
-                          const WebCore::IntRect& damage_rect) {
-  if (gc->paintingDisabled())
-    return;
-
-  if (!parent())
-    return;
-
-  // Don't paint anything if the plugin doesn't intersect the damage rect.
-  if (!widget_->frameRect().intersects(damage_rect))
-    return;
-
-  gc->save();
-
-  DCHECK(parent()->isFrameView());
-  WebCore::FrameView* view = static_cast<WebCore::FrameView*>(parent());
-
-  // The plugin is positioned in window coordinates, so it needs to be painted
-  // in window coordinates.
-  WebCore::IntPoint origin = view->windowToContents(WebCore::IntPoint(0, 0));
-  gc->translate(static_cast<float>(origin.x()),
-                static_cast<float>(origin.y()));
-
-#if defined(OS_WIN) || defined(OS_LINUX)
-  // Note that |context| is only used when in windowless mode.
-  gfx::NativeDrawingContext context =
-      gc->platformContext()->canvas()->beginPlatformPaint();
-#elif defined(OS_MACOSX)
-  gfx::NativeDrawingContext context = gc->platformContext();
-#endif
-
-  WebCore::IntRect window_rect =
-      WebCore::IntRect(view->contentsToWindow(damage_rect.location()),
-                       damage_rect.size());
-
-  delegate_->Paint(context, webkit_glue::FromIntRect(window_rect));
-
-#if defined(OS_WIN) || defined(OS_LINUX)
-  gc->platformContext()->canvas()->endPlatformPaint();
-#endif
-  gc->restore();
-}
-
-void WebPluginImpl::print(WebCore::GraphicsContext* gc) {
-  if (gc->paintingDisabled())
-    return;
-
-  if (!parent())
-    return;
-
-  gc->save();
-#if defined(OS_WIN)
-  gfx::NativeDrawingContext hdc =
-       gc->platformContext()->canvas()->beginPlatformPaint();
-  delegate_->Print(hdc);
-  gc->platformContext()->canvas()->endPlatformPaint();
-#else
-  NOTIMPLEMENTED();
-#endif
-  gc->restore();
-}
-
-void WebPluginImpl::setFocus() {
-  if (windowless_)
-    delegate_->SetFocus();
-}
-
-void WebPluginImpl::handleEvent(WebCore::Event* event) {
-  if (!windowless_)
-    return;
-
-  // Pass events to the plugin.
-  // The events we pass are defined at:
-  //    http://devedge-temp.mozilla.org/library/manuals/2002/plugin/1.0/structures5.html#1000000
-  // Don't take the documentation as truth, however.  I've found
-  // many cases where mozilla behaves differently than the spec.
-  if (event->isMouseEvent())
-    handleMouseEvent(static_cast<WebCore::MouseEvent*>(event));
-  else if (event->isKeyboardEvent())
-    handleKeyboardEvent(static_cast<WebCore::KeyboardEvent*>(event));
-}
-
-void WebPluginImpl::handleMouseEvent(WebCore::MouseEvent* event) {
-  DCHECK(parent()->isFrameView());
-  // We cache the parent FrameView here as the plugin widget could be deleted
-  // in the call to HandleEvent. See http://b/issue?id=1362948
-  WebCore::FrameView* parent_view = static_cast<WebCore::FrameView*>(parent());
-
-  WebMouseEventBuilder web_event(parent_view, *event);
-  if (web_event.type == WebInputEvent::Undefined)
-    return;
-
-  if (event->type() == WebCore::eventNames().mousedownEvent) {
-    // Ensure that the frame containing the plugin has focus.
-    WebCore::Frame* containing_frame = webframe_->frame();
-    if (WebCore::Page* current_page = containing_frame->page()) {
-      current_page->focusController()->setFocusedFrame(containing_frame);
-    }
-    // Give focus to our containing HTMLPluginElement.
-    containing_frame->document()->setFocusedNode(element_);
-  }
-
-  // TODO(pkasting): http://b/1119691 This conditional seems exactly backwards,
-  // but it matches Safari's code, and if I reverse it, giving focus to a
-  // transparent (windowless) plugin fails.
-  WebCursorInfo cursor_info;
-  if (!delegate_->HandleInputEvent(web_event, &cursor_info))
-    event->setDefaultHandled();
-
-  WebCore::Page* page = parent_view->frame()->page();
-  if (!page)
-    return;
-
-  ChromeClientImpl* chrome_client =
-      static_cast<ChromeClientImpl*>(page->chrome()->client());
-
-  // A windowless plugin can change the cursor in response to the WM_MOUSEMOVE
-  // event. We need to reflect the changed cursor in the frame view as the
-  // mouse is moved in the boundaries of the windowless plugin.
-  chrome_client->SetCursorForPlugin(cursor_info);
-}
-
-void WebPluginImpl::handleKeyboardEvent(WebCore::KeyboardEvent* event) {
-  WebKeyboardEventBuilder web_event(*event);
-  if (web_event.type == WebInputEvent::Undefined)
-    return;
-  // TODO(pkasting): http://b/1119691 See above.
-  WebCursorInfo cursor_info;
-  if (!delegate_->HandleInputEvent(web_event, &cursor_info))
-    event->setDefaultHandled();
-}
-
-NPObject* WebPluginImpl::GetPluginScriptableObject() {
-  return delegate_->GetPluginScriptableObject();
 }
 
 WebPluginResourceClient* WebPluginImpl::GetClientFromLoader(
@@ -963,12 +718,8 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
   if (!client)
     return;
 
-  const WebCore::ResourceResponse& resource_response =
-      *webkit_glue::WebURLResponseToResourceResponse(&response);
-
-  WebPluginContainer::HttpResponseInfo http_response_info;
-  WebPluginContainer::ReadHttpResponseInfo(resource_response,
-                                           &http_response_info);
+  ResponseInfo response_info;
+  GetResponseInfo(response, &response_info);
 
   bool cancel = false;
   bool request_is_seekable = true;
@@ -1022,10 +773,11 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
   loader->setDefersLoading(true);
 
   client->DidReceiveResponse(
-      base::SysWideToNativeMB(http_response_info.mime_type),
-      base::SysWideToNativeMB(GetAllHeaders(resource_response)),
-      http_response_info.expected_length,
-      http_response_info.last_modified, request_is_seekable);
+      response_info.mime_type,
+      GetAllHeaders(response),
+      response_info.expected_length,
+      response_info.last_modified,
+      request_is_seekable);
 
   // Bug http://b/issue?id=925559. The flash plugin would not handle the HTTP
   // error codes in the stream header and as a result, was unaware of the
@@ -1118,39 +870,6 @@ void WebPluginImpl::SetContainer(WebPluginContainer* container) {
     TearDownPluginInstance(NULL);
   }
   widget_ = container;
-}
-
-WebCore::ScrollView* WebPluginImpl::parent() const {
-  if (widget_)
-    return widget_->parent();
-
-  return NULL;
-}
-
-void WebPluginImpl::CalculateBounds(const WebCore::IntRect& frame_rect,
-                                    gfx::Rect* window_rect,
-                                    gfx::Rect* clip_rect,
-                                    std::vector<gfx::Rect>* cutout_rects) {
-  DCHECK(parent()->isFrameView());
-  WebCore::FrameView* view = static_cast<WebCore::FrameView*>(parent());
-
-  WebCore::IntRect web_window_rect =
-      WebCore::IntRect(view->contentsToWindow(frame_rect.location()),
-                                              frame_rect.size());
-  *window_rect = webkit_glue::FromIntRect(web_window_rect);
-  // Calculate a clip-rect so that we don't overlap the scrollbars, etc.
-  *clip_rect = webkit_glue::FromIntRect(windowClipRect());
-  clip_rect->Offset(-window_rect->x(), -window_rect->y());
-
-  cutout_rects->clear();
-  WTF::Vector<WebCore::IntRect> rects;
-  widget_->windowCutoutRects(frame_rect, &rects);
-  // Convert to gfx::Rect and subtract out the plugin position.
-  for (size_t i = 0; i < rects.size(); i++) {
-    gfx::Rect r = webkit_glue::FromIntRect(rects[i]);
-    r.Offset(-frame_rect.x(), -frame_rect.y());
-    cutout_rects->push_back(r);
-  }
 }
 
 void WebPluginImpl::HandleURLRequest(const char *method,
@@ -1293,7 +1012,7 @@ bool WebPluginImpl::InitiateHTTPRequest(int resource_id,
 
 void WebPluginImpl::CancelDocumentLoad() {
   if (frame()->loader()->activeDocumentLoader()) {
-    widget_->set_ignore_response_error(true);
+    ignore_response_error_ = true;
     frame()->loader()->activeDocumentLoader()->stopLoading();
   }
 }
@@ -1397,13 +1116,14 @@ bool WebPluginImpl::ReinitializePluginForResponse(
 
   mime_type_ = actual_mime_type;
   delegate_ = plugin_delegate;
+
   // Force a geometry update to occur to ensure that the plugin becomes
-  // visible.
-  widget_->frameRectsChanged();
+  // visible.  TODO(darin): Avoid this cast!
+  static_cast<WebPluginContainerImpl*>(widget_)->frameRectsChanged();
   // The plugin move sequences accumulated via DidMove are sent to the browser
   // whenever the renderer paints. Force a paint here to ensure that changes
   // to the plugin window are propagated to the browser.
-  widget_->invalidateRect(widget_->frameRect());
+  widget_->invalidate();
   return true;
 }
 
@@ -1457,24 +1177,4 @@ void WebPluginImpl::TearDownPluginInstance(
   webframe_->set_plugin_delegate(NULL);
   webframe_ = NULL;
   method_factory_.RevokeAll();
-}
-
-void WebPluginImpl::UpdateVisibility() {
-  if (!window_)
-    return;
-
-  WebCore::Frame* frame = element_->document()->frame();
-  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
-  WebViewImpl* webview = webframe->GetWebViewImpl();
-  if (!webview->delegate())
-    return;
-
-  WebPluginGeometry move;
-  move.window = window_;
-  move.window_rect = gfx::Rect();
-  move.clip_rect = gfx::Rect();
-  move.rects_valid = false;
-  move.visible = widget_->isVisible();
-
-  webview->delegate()->DidMovePlugin(move);
 }

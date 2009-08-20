@@ -13,7 +13,10 @@
 #include "webkit/glue/webview_delegate.h"
 
 class WebFrameImpl;
-class WebPluginContainer;
+
+namespace WebKit {
+class WebPluginContainerImpl;
+}
 
 class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
  public:
@@ -226,7 +229,7 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   GURL expected_client_redirect_dest_;
 
   // Contains a pointer to the plugin widget.
-  WTF::RefPtr<WebPluginContainer> plugin_widget_;
+  WTF::RefPtr<WebKit::WebPluginContainerImpl> plugin_widget_;
 
   // Indicates if we need to send over the initial notification to the plugin
   // which specifies that the plugin should be ready to accept data.

@@ -37,7 +37,6 @@
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/webview_impl.h"
 
 #if defined(OS_WIN)
@@ -103,16 +102,6 @@ void ChromiumBridge::notifyJSOutOfMemory(Frame* frame) {
 }
 
 // Plugin ---------------------------------------------------------------------
-
-NPObject* ChromiumBridge::pluginScriptableObject(Widget* widget) {
-  if (!widget)
-    return NULL;
-
-  // NOTE:  We have to trust that the widget passed to us here is a
-  // WebPluginImpl.  There isn't a way to dynamically verify it, since the
-  // derived class (Widget) has no identifier.
-  return static_cast<WebPluginContainer*>(widget)->GetPluginScriptableObject();
-}
 
 bool ChromiumBridge::popupsAllowed(NPP npp) {
   bool popups_allowed = false;
