@@ -128,20 +128,15 @@ class RemoteDebuggerCommandExecutor : public CppBoundClass {
 // static
 WebDevToolsClient* WebDevToolsClient::Create(
     WebView* view,
-    WebDevToolsClientDelegate* delegate,
-    const std::string& application_locale) {
-  return new WebDevToolsClientImpl(static_cast<WebViewImpl*>(view),
-                                   delegate,
-                                   application_locale);
+    WebDevToolsClientDelegate* delegate) {
+  return new WebDevToolsClientImpl(static_cast<WebViewImpl*>(view), delegate);
 }
 
 WebDevToolsClientImpl::WebDevToolsClientImpl(
     WebViewImpl* web_view_impl,
-    WebDevToolsClientDelegate* delegate,
-    const std::string& application_locale)
+    WebDevToolsClientDelegate* delegate)
     : web_view_impl_(web_view_impl),
       delegate_(delegate),
-      application_locale_(application_locale.c_str()),
       loaded_(false) {
   WebFrameImpl* frame = web_view_impl_->main_frame();
 
@@ -189,9 +184,6 @@ WebDevToolsClientImpl::WebDevToolsClientImpl(
   dev_tools_host_->AddProtoFunction(
       "toggleInspectElementMode",
       WebDevToolsClientImpl::JsToggleInspectElementMode);
-  dev_tools_host_->AddProtoFunction(
-      "getApplicationLocale",
-      WebDevToolsClientImpl::JsGetApplicationLocale);
   dev_tools_host_->Build();
 }
 
@@ -379,12 +371,4 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsToggleInspectElementMode(
   int enabled = static_cast<int>(args[0]->BooleanValue());
   client->delegate_->ToggleInspectElementMode(enabled);
   return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsClientImpl::JsGetApplicationLocale(
-    const v8::Arguments& args) {
-  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  return v8String(client->application_locale_);
 }

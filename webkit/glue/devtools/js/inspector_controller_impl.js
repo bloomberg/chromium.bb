@@ -134,34 +134,6 @@ devtools.InspectorControllerImpl.prototype.inspectedWindow = function() {
 
 
 /**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.localizedStringsURL = function() {
-  var locale = DevToolsHost.getApplicationLocale();
-  locale = locale.replace('_', '-');
-  return 'l10n/inspectorStrings_' + locale + '.js';
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.enableResourceTracking =
-    function(always) {
-  devtools.tools.setResourceTrackingEnabled(true, always);
-}
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.disableResourceTracking =
-    function(always) {
-  devtools.tools.setResourceTrackingEnabled(false, always);
-};
-
-
-/**
  * @override
  */
 devtools.InspectorControllerImpl.prototype.debuggerEnabled = function() {

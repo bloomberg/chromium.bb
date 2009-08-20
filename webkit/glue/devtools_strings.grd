@@ -5,58 +5,14 @@ Google Chrome Developer Tools. -->
 <grit base_dir="." latest_public_release="0" current_release="1"
       source_lang_id="en" enc_check="möl">
   <outputs>
-    <output filename="devtoolsStrings_ar.js" type="js_map_format" lang="ar" />
-    <output filename="devtoolsStrings_bg.js" type="js_map_format" lang="bg" />
-    <output filename="devtoolsStrings_bn.js" type="js_map_format" lang="bn" />
-    <output filename="devtoolsStrings_ca.js" type="js_map_format" lang="ca" />
-    <output filename="devtoolsStrings_cs.js" type="js_map_format" lang="cs" />
-    <output filename="devtoolsStrings_da.js" type="js_map_format" lang="da" />
-    <output filename="devtoolsStrings_de.js" type="js_map_format" lang="de" />
-    <output filename="devtoolsStrings_el.js" type="js_map_format" lang="el" />
-    <output filename="devtoolsStrings_en-GB.js" type="js_map_format" lang="en-GB" />
-    <output filename="devtoolsStrings_en-US.js" type="js_map_format" lang="en" />
-    <output filename="devtoolsStrings_es.js" type="js_map_format" lang="es" />
-    <output filename="devtoolsStrings_es-419.js" type="js_map_format" lang="es-419" />
-    <output filename="devtoolsStrings_et.js" type="js_map_format" lang="et" />
-    <output filename="devtoolsStrings_fi.js" type="js_map_format" lang="fi" />
-    <output filename="devtoolsStrings_fil.js" type="js_map_format" lang="fil" />
-    <output filename="devtoolsStrings_fr.js" type="js_map_format" lang="fr" />
-    <output filename="devtoolsStrings_gu.js" type="js_map_format" lang="gu" />
-    <output filename="devtoolsStrings_he.js" type="js_map_format" lang="he" />
-    <output filename="devtoolsStrings_hi.js" type="js_map_format" lang="hi" />
-    <output filename="devtoolsStrings_hr.js" type="js_map_format" lang="hr" />
-    <output filename="devtoolsStrings_hu.js" type="js_map_format" lang="hu" />
-    <output filename="devtoolsStrings_id.js" type="js_map_format" lang="id" />
-    <output filename="devtoolsStrings_it.js" type="js_map_format" lang="it" />
-    <output filename="devtoolsStrings_ja.js" type="js_map_format" lang="ja" />
-    <output filename="devtoolsStrings_kn.js" type="js_map_format" lang="kn" />
-    <output filename="devtoolsStrings_ko.js" type="js_map_format" lang="ko" />
-    <output filename="devtoolsStrings_lt.js" type="js_map_format" lang="lt" />
-    <output filename="devtoolsStrings_lv.js" type="js_map_format" lang="lv" />
-    <output filename="devtoolsStrings_ml.js" type="js_map_format" lang="ml" />
-    <output filename="devtoolsStrings_mr.js" type="js_map_format" lang="mr" />
-    <output filename="devtoolsStrings_nl.js" type="js_map_format" lang="nl" />
-    <!-- The translation console uses 'no' for Norwegian Bokmål. It should
-         be 'nb'. -->
-    <output filename="devtoolsStrings_nb.js" type="js_map_format" lang="no" />
-    <output filename="devtoolsStrings_or.js" type="js_map_format" lang="or" />
-    <output filename="devtoolsStrings_pl.js" type="js_map_format" lang="pl" />
-    <output filename="devtoolsStrings_pt-BR.js" type="js_map_format" lang="pt-BR" />
-    <output filename="devtoolsStrings_pt-PT.js" type="js_map_format" lang="pt-PT" />
-    <output filename="devtoolsStrings_ro.js" type="js_map_format" lang="ro" />
-    <output filename="devtoolsStrings_ru.js" type="js_map_format" lang="ru" />
-    <output filename="devtoolsStrings_sk.js" type="js_map_format" lang="sk" />
-    <output filename="devtoolsStrings_sl.js" type="js_map_format" lang="sl" />
-    <output filename="devtoolsStrings_sr.js" type="js_map_format" lang="sr" />
-    <output filename="devtoolsStrings_sv.js" type="js_map_format" lang="sv" />
-    <output filename="devtoolsStrings_ta.js" type="js_map_format" lang="ta" />
-    <output filename="devtoolsStrings_te.js" type="js_map_format" lang="te" />
-    <output filename="devtoolsStrings_th.js" type="js_map_format" lang="th" />
-    <output filename="devtoolsStrings_tr.js" type="js_map_format" lang="tr" />
-    <output filename="devtoolsStrings_uk.js" type="js_map_format" lang="uk" />
-    <output filename="devtoolsStrings_vi.js" type="js_map_format" lang="vi" />
-    <output filename="devtoolsStrings_zh-CN.js" type="js_map_format" lang="zh-CN" />
-    <output filename="devtoolsStrings_zh-TW.js" type="js_map_format" lang="zh-TW" />
+    <!-- TODO add each of your output files.  Modify the three below, and add
+    your own for your various languages.  See the user's guide
+    (http://wiki/Main/GritUsersGuide) for mor details.
+    Note that all output references are relative to the output directory
+    which is specified at build time. -->
+    <!--
+    <output filename="localizedStrings_en.js" type="js_map_format" lang="en" />
+    -->
   </outputs>
   <translations>
     <!-- TODO add references to each of the XTB files (from the Translation

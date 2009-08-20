@@ -17,8 +17,7 @@ class WebDevToolsClient {
  public:
   static WebDevToolsClient* Create(
       WebView* view,
-      WebDevToolsClientDelegate* delegate,
-      const std::string& application_locale);
+      WebDevToolsClientDelegate* delegate);
 
   WebDevToolsClient() {}
   virtual ~WebDevToolsClient() {}

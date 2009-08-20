@@ -1244,9 +1244,7 @@
       'msvs_guid': 'C66B126D-0ECE-4CA2-B6DC-FA780AFBBF09',
       'dependencies': [
         '../net/net.gyp:net',
-        'devtools_strings',
         'inspector_resources',
-        'inspector_strings',
         'webcore',
         'webkit',
         'webkit_resources',
@@ -1566,72 +1564,6 @@
 
           ],
         },
-      ],
-    },
-    {
-      'target_name': 'inspector_strings',
-      'type': 'none',
-      'msvs_guid': '14F3FA5A-C401-4A7F-8F25-C23739D1C0BE',
-      'variables': {
-	'grit_path': '../tools/grit/grit.py',
-	'grit_out_dir': '<(PRODUCT_DIR)/resources/inspector/l10n',
-      },
-      'actions': [
-	{
-	  'action_name': 'inspector_strings',
-	  'variables': {
-	    'input_path': 'glue/inspector_strings.grd',
-	  },
-	  'inputs': [
-	    '<(input_path)',
-	  ],
-	  'outputs': [
-	    '<(grit_out_dir)/inspectorStrings_da.js',
-	    '<(grit_out_dir)/inspectorStrings_en-US.js',
-	    '<(grit_out_dir)/inspectorStrings_he.js',
-	    '<(grit_out_dir)/inspectorStrings_zh-TW.js',
-	  ],
-	  'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)'],
-	  'message': 'Generating resources from <(input_path)',
-	},
-      ],
-      'conditions': [
-	['OS=="win"', {
-	  'dependencies': ['../build/win/system.gyp:cygwin'],
-	}],
-      ],
-    },
-    {
-      'target_name': 'devtools_strings',
-      'type': 'none',
-      'msvs_guid': 'AE42E1EB-E848-4FD2-B42F-800604062918',
-      'variables': {
-	'grit_path': '../tools/grit/grit.py',
-	'grit_out_dir': '<(PRODUCT_DIR)/resources/inspector/l10n',
-      },
-      'actions': [
-	{
-	  'action_name': 'devtools_strings',
-	  'variables': {
-	    'input_path': 'glue/devtools_strings.grd',
-	  },
-	  'inputs': [
-	    '<(input_path)',
-	  ],
-	  'outputs': [
-	    '<(grit_out_dir)/devtoolsStrings_da.js',
-	    '<(grit_out_dir)/devtoolsStrings_en-US.js',
-	    '<(grit_out_dir)/devtoolsStrings_he.js',
-	    '<(grit_out_dir)/devtoolsStrings_zh-TW.js',
-	  ],
-	  'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)'],
-	  'message': 'Generating resources from <(input_path)',
-	},
-      ],
-      'conditions': [
-	['OS=="win"', {
-	  'dependencies': ['../build/win/system.gyp:cygwin'],
-	}],
       ],
     },
   ],
