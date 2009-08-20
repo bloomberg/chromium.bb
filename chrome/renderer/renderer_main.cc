@@ -97,10 +97,16 @@ int RendererMain(const MainFunctionParams& parameters) {
   StatsScope<StatsCounterTimer>
       startup_timer(chrome::Counters::renderer_main());
 
+#if defined(OS_MACOSX)
+  // As long as we use Cocoa in the renderer (for the forseeable future as of
+  // now; see http://crbug.com/13890 for info) we need to have a UI loop.
+  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
+#else
   // The main message loop of the renderer services doesn't have IO or UI tasks,
   // unless in-process-plugins is used.
   MessageLoop main_message_loop(RenderProcess::InProcessPlugins() ?
               MessageLoop::TYPE_UI : MessageLoop::TYPE_DEFAULT);
+#endif
 
   std::wstring app_name = chrome::kBrowserAppName;
   PlatformThread::SetName(WideToASCII(app_name + L"_RendererMain").c_str());

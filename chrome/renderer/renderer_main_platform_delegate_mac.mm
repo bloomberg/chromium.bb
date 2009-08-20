@@ -5,7 +5,6 @@
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 
 #include "base/debug_util.h"
-#include "base/message_loop.h"
 
 #import <Foundation/Foundation.h>
 #import <ApplicationServices/ApplicationServices.h>
@@ -76,34 +75,6 @@ void SandboxWarmup() {
   }
 }
 
-namespace {
-
-// Since we use Cocoa in the renderer process <http://crbug.com/13890>, the
-// windowserver believes we are a UI process and sends events to us. If we do
-// not process them (or at least remove them from the queue), the windowserver
-// will mark us as "not responding" and will start doing bad things like run
-// spindump on us (see <http://crbug.com/11319>). This function just keeps the
-// event queue empty. It uses a custom run loop mode so that no timers or
-// notifications fire and surprise Cocoa that's running in another thread.
-// TODO(avi):Once Cocoa is gone from the renderer, remove this code
-// <http://crbug.com/13893>.
-void PullAccumulatedWindowserverEvents() {
-  base::ScopedNSAutoreleasePool scoped_pool;
-
-  while ([[NSApplication sharedApplication]
-      nextEventMatchingMask:NSAnyEventMask
-                  untilDate:nil
-                     inMode:@"org.chromium.CustomRunLoopModeSoThatNothingFires"
-                    dequeue:YES]) {
-    // just drop all pending events on the floor
-  }
-
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      NewRunnableFunction(PullAccumulatedWindowserverEvents), 1000);
-}
-
-}  // namepsace
-
 // TODO(mac-port): Any code needed to initialize a process for
 // purposes of running a renderer needs to also be reflected in
 // chrome_dll_main.cc for --single-process support.
@@ -124,11 +95,6 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
   // Initialize Cocoa.  Without this call, drawing of native UI
   // elements (e.g. buttons) in WebKit will explode.
   [NSApplication sharedApplication];
-
-  // Start up the windowserver event pumping. (See comment on
-  // PullAccumulatedWindowserverEvents above.)
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      NewRunnableFunction(PullAccumulatedWindowserverEvents), 1000);
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {
