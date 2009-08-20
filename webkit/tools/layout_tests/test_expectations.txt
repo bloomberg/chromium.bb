@@ -171,6 +171,8 @@ BUG10395 WONTFIX : LayoutTests/svg/webarchive = FAIL PASS
 BUG10395 WONTFIX : LayoutTests/svg/custom/image-with-prefix-in-webarchive.svg = FAIL PASS
 BUG10395 WONTFIX SKIP : LayoutTests/http/tests/webarchive = FAIL PASS
 BUG10395 WONTFIX SKIP : LayoutTests/svg/webarchive/svg-cursor-subresources.svg = FAIL
+BUG10395 WONTFIX SKIP : LayoutTests/webarchive/test-css-url-resources-in-stylesheets.html = FAIL
+BUG10395 WONTFIX SKIP : LayoutTests/webarchive/test-css-url-resources-inline-styles.html = FAIL
 
 // We don't support ACCELERATED_COMPOSITING. Skipping because some tests in this
 // directory don't have pixel results.
