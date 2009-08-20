@@ -61,7 +61,7 @@ class BlockedPopupContainerInteractiveTest : public UITest {
   scoped_refptr<TabProxy> tab_;
 };
 
-TEST_F(BlockedPopupContainerInteractiveTest, TestOpenAndResizeTo) {
+TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_TestOpenAndResizeTo) {
   NavigateMainTabTo(L"constrained_window_onload_resizeto.html");
   SimulateClickInCenterOf(window_);
 
@@ -128,7 +128,7 @@ bool ParseCountOutOfTitle(const std::wstring& title, int* output) {
 
 // Tests that in the window.open() equivalent of a fork bomb, we stop building
 // windows.
-TEST_F(BlockedPopupContainerInteractiveTest, DontSpawnEndlessPopups) {
+TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_DontSpawnEndlessPopups) {
   NavigateMainTabTo(L"infinite_popups.html");
   SimulateClickInCenterOf(window_);
 
@@ -171,7 +171,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, DontSpawnEndlessPopups) {
 
 // Make sure that we refuse to close windows when a constrained popup is
 // displayed.
-TEST_F(BlockedPopupContainerInteractiveTest, WindowOpenWindowClosePopup) {
+TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_WindowOpenWindowClosePopup) {
   NavigateMainTabTo(L"openclose_main.html");
   SimulateClickInCenterOf(window_);
 
@@ -207,7 +207,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, BlockAlertFromBlockedPopup) {
   ASSERT_EQ(1, popup_count);
 }
 
-TEST_F(BlockedPopupContainerInteractiveTest, ShowAlertFromNormalPopup) {
+TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_ShowAlertFromNormalPopup) {
   NavigateMainTabTo(L"show_alert.html");
   SimulateClickInCenterOf(window_);
 
@@ -228,7 +228,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, ShowAlertFromNormalPopup) {
 
 // Make sure that window focus works while creating a popup window so that we
 // don't
-TEST_F(BlockedPopupContainerInteractiveTest, DontBreakOnBlur) {
+TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_DontBreakOnBlur) {
   NavigateMainTabTo(L"window_blur_test.html");
   SimulateClickInCenterOf(window_);
 
