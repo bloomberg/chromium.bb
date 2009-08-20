@@ -39,7 +39,7 @@
 }
 
 // TODO(jrg): consider NSModalSession.
-- (void)runModal {
+- (void)runAsModalSheet {
   [NSApp beginSheet:[self window]
      modalForWindow:parentWindow_
       modalDelegate:self

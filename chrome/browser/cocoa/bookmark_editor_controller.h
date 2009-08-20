@@ -39,6 +39,9 @@
              configuration:(BookmarkEditor::Configuration)configuration
                    handler:(BookmarkEditor::Handler*)handler;
 
+// Run the bookmark editor as a modal sheet.  Does not block.
+- (void)runAsModalSheet;
+
 // Actions for the buttons at the bottom of the window.
 - (IBAction)newFolder:(id)sender;
 - (IBAction)cancel:(id)sender;

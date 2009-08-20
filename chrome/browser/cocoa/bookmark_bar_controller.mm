@@ -411,9 +411,9 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
       initWithParentWindow:[[self view] window]
                    profile:profile_
                       node:node];
-  [controller runModal];
+  [controller runAsModalSheet];
 
-  // runModal will run the window as a sheet.  The
+  // runAsModalSheet will run the window as a sheet.  The
   // BookmarkNameFolderController will release itself when the sheet
   // ends.
 }

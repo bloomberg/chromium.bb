@@ -816,6 +816,12 @@
         'browser/cocoa/bookmark_bar_controller.mm',
         'browser/cocoa/bookmark_bar_view.h',
         'browser/cocoa/bookmark_bar_view.mm',
+        'browser/cocoa/bookmark_bubble_controller.h',
+        'browser/cocoa/bookmark_bubble_controller.mm',
+        'browser/cocoa/bookmark_bubble_view.h',
+        'browser/cocoa/bookmark_bubble_view.mm',
+        'browser/cocoa/bookmark_bubble_window.h',
+        'browser/cocoa/bookmark_bubble_window.mm',
         'browser/cocoa/bookmark_button_cell.h',
         'browser/cocoa/bookmark_button_cell.mm',
         'browser/cocoa/bookmark_editor_controller.h',
@@ -2173,6 +2179,7 @@
                 'xib_files_to_scan': [
                   # The xib that need localization
                   'app/nibs/BookmarkBar.xib',
+                  'app/nibs/BookmarkBubble.xib',
                   'app/nibs/BookmarkEditor.xib',
                   'app/nibs/BookmarkNameFolder.xib',
                   'app/nibs/MainMenu.xib',
@@ -2879,6 +2886,7 @@
         # them.
         'app/nibs/About.xib',
         'app/nibs/BookmarkBar.xib',
+        'app/nibs/BookmarkBubble.xib',
         'app/nibs/BookmarkEditor.xib',
         'app/nibs/BookmarkNameFolder.xib',
         'app/nibs/BrowserWindow.xib',
@@ -3816,6 +3824,9 @@
         'browser/cocoa/bookmark_bar_bridge_unittest.mm',
         'browser/cocoa/bookmark_bar_controller_unittest.mm',
         'browser/cocoa/bookmark_bar_view_unittest.mm',
+        'browser/cocoa/bookmark_bubble_controller_unittest.mm',
+        'browser/cocoa/bookmark_bubble_view_unittest.mm',
+        'browser/cocoa/bookmark_bubble_window_unittest.mm',
         'browser/cocoa/bookmark_button_cell_unittest.mm',
         'browser/cocoa/bookmark_editor_controller_unittest.mm',
         'browser/cocoa/bookmark_menu_bridge_unittest.mm',

@@ -26,7 +26,7 @@
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile
                       node:(const BookmarkNode*)node;
-- (void)runModal;
+- (void)runAsModalSheet;
 - (IBAction)cancel:(id)sender;
 - (IBAction)ok:(id)sender;
 @end

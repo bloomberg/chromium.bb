@@ -9,6 +9,7 @@
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_*
+#include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
@@ -931,6 +933,53 @@ willPositionSheet:(NSWindow*)sheet
 
 - (GTMTheme *)gtm_themeForWindow:(NSWindow*)window {
   return theme_ ? theme_ : [GTMTheme defaultTheme];
+}
+
+- (NSPoint)topLeftForBubble {
+  NSRect rect = [toolbarController_ starButtonInWindowCoordinates];
+  NSPoint p = NSMakePoint(NSMinX(rect), NSMinY(rect));  // bottom left
+  return p;
+}
+
+// Show the bookmark bubble (e.g. user just clicked on the STAR).
+- (void)showBookmarkBubbleForURL:(const GURL&)url
+               alreadyBookmarked:(BOOL)alreadyBookmarked {
+  BookmarkModel* model = browser_->profile()->GetBookmarkModel();
+  const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url);
+
+  // Bring up the bubble.  But clicking on STAR while the bubble is
+  // open should make it go away.
+  if (bookmarkBubbleController_.get()) {
+    [self doneWithBubbleController:bookmarkBubbleController_.get()];
+  } else {
+    bookmarkBubbleController_.reset([[BookmarkBubbleController alloc]
+                                      initWithDelegate:self
+                                          parentWindow:[self window]
+                                      topLeftForBubble:[self topLeftForBubble]
+                                                 model:model
+                                                  node:node
+                                     alreadyBookmarked:alreadyBookmarked]);
+    [bookmarkBubbleController_ showWindow];
+  }
+}
+
+// Implement BookmarkBubbleControllerDelegate
+- (void)editBookmarkNode:(const BookmarkNode*)node {
+  // A BookmarkEditorController is a sheet that owns itself, and
+  // deallocates itself when closed.
+  [[[BookmarkEditorController alloc]
+     initWithParentWindow:[self window]
+                  profile:browser_->profile()
+                   parent:node->GetParent()
+                     node:node
+            configuration:BookmarkEditor::SHOW_TREE
+                  handler:NULL]
+    runAsModalSheet];
+}
+
+// Implement BookmarkBubbleControllerDelegate
+- (void)doneWithBubbleController:(BookmarkBubbleController*)controller {
+  bookmarkBubbleController_.reset(nil);
 }
 
 @end

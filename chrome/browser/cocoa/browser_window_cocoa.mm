@@ -202,7 +202,8 @@ void BrowserWindowCocoa::ShowBookmarkManager() {
 
 void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
                                             bool already_bookmarked) {
-  NOTIMPLEMENTED();
+  [controller_ showBookmarkBubbleForURL:url
+                      alreadyBookmarked:(already_bookmarked ? YES : NO)];
 }
 
 bool BrowserWindowCocoa::IsDownloadShelfVisible() const {

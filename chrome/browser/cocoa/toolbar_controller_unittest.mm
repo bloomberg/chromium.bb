@@ -248,4 +248,13 @@ TEST_F(ToolbarControllerTest, BookmarkBarIsFullWidth) {
   EXPECT_TRUE([bookmarkBarView isDescendantOf:[bar_ view]]);
 }
 
+TEST_F(ToolbarControllerTest, StarButtonInWindowCoordinates) {
+  NSRect star = [bar_ starButtonInWindowCoordinates];
+  NSRect all = [[[bar_ view] window] frame];
+
+  // Make sure the star is completely inside the window rect
+  EXPECT_TRUE(NSContainsRect(all, star));
+}
+
+
 }  // namespace

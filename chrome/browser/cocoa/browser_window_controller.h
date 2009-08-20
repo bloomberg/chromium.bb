@@ -16,6 +16,7 @@
 #include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
@@ -40,6 +41,7 @@ class TabStripModelObserverBridge;
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
                       BookmarkURLOpener,
+                      BookmarkBubbleControllerDelegate,
                       ViewResizer,
                       GTMThemeDelegate> {
  @private
@@ -63,6 +65,7 @@ class TabStripModelObserverBridge;
   scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
   scoped_ptr<StatusBubble> statusBubble_;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
+  scoped_nsobject<BookmarkBubbleController> bookmarkBubbleController_;
   scoped_nsobject<GTMTheme> theme_;
   BOOL ownsBrowser_;  // Only ever NO when testing
   BOOL fullscreen_;
@@ -139,6 +142,10 @@ class TabStripModelObserverBridge;
 // Delegate method for the status bubble to query about its vertical offset.
 - (float)verticalOffsetForStatusBubble;
 
+// Show the bookmark bubble (e.g. user just clicked on the STAR)
+- (void)showBookmarkBubbleForURL:(const GURL&)url
+               alreadyBookmarked:(BOOL)alreadyBookmarked;
+
 // Returns the (lazily created) window sheet controller of this window. Used
 // for the per-tab sheets.
 - (GTMWindowSheetController*)sheetController;
@@ -164,6 +171,9 @@ class TabStripModelObserverBridge;
 
 // Return an autoreleased NSWindow suitable for fullscreen use.
 - (NSWindow*)fullscreenWindow;
+
+// Return a point suitable for the topLeft for a bookmark bubble.
+- (NSPoint)topLeftForBubble;
 
 @end  // BrowserWindowController(TestingAPI)
 

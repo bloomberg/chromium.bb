@@ -128,6 +128,10 @@ class ToolbarView;
 - (IBAction)showPageMenu:(id)sender;
 - (IBAction)showWrenchMenu:(id)sender;
 
+// The bookmark bubble (when you click the star) needs to know where to go.
+// Somewhere near the star button seems like a good start.
+- (NSRect)starButtonInWindowCoordinates;
+
 @end
 
 // A set of private methods used by tests, in the absence of "friends" in ObjC.

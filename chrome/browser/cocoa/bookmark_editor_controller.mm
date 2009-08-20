@@ -10,11 +10,6 @@
 #include "chrome/browser/profile.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 
-@interface BookmarkEditorController(Private)
-// Run the bookmark editor as a modal sheet.  Does not block.
-- (void)runModal;
-@end
-
 // static; implemented for each platform.
 void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
                           Profile* profile,
@@ -30,7 +25,7 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
                                                            node:node
                                                   configuration:configuration
                                                         handler:handler];
-  [controller runModal];
+  [controller runAsModalSheet];
 }
 
 
@@ -107,7 +102,7 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
 */
 
 // TODO(jrg): consider NSModalSession.
-- (void)runModal {
+- (void)runAsModalSheet {
   [NSApp beginSheet:[self window]
      modalForWindow:parentWindow_
       modalDelegate:self

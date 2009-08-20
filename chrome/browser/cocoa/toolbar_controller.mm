@@ -373,4 +373,10 @@ class PrefObserverBridge : public NotificationObserver {
                    forView:wrenchButton_];
 }
 
+- (NSRect)starButtonInWindowCoordinates {
+  return [[[starButton_ window] contentView] convertRect:[starButton_ bounds]
+                                                fromView:starButton_];
+}
+
+
 @end

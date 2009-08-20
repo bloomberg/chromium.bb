@@ -1,0 +1,33 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "chrome/browser/cocoa/bookmark_bubble_window.h"
+
+@implementation BookmarkBubbleWindow
+
+- (id)initWithContentRect:(NSRect)contentRect {
+  if ((self = [super initWithContentRect:contentRect
+                               styleMask:NSBorderlessWindowMask
+                                 backing:NSBackingStoreBuffered
+                                   defer:YES])) {
+    [self setReleasedWhenClosed:NO];
+    [self setBackgroundColor:[NSColor clearColor]];
+    [self setExcludedFromWindowsMenu:YES];
+    [self setAlphaValue:1.0];
+    [self setOpaque:NO];
+  }
+  return self;
+}
+
+// According to
+// http://www.cocoabuilder.com/archive/message/cocoa/2006/6/19/165953,
+// NSBorderlessWindowMask windows cannot become key or main.  In our
+// case, however, we don't want all of that behavior.  (As an example,
+// our bubble has buttons!)
+
+- (BOOL)canBecomeKeyWindow {
+  return YES;
+}
+
+@end
