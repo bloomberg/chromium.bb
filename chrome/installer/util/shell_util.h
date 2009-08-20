@@ -10,7 +10,6 @@
 #define CHROME_INSTALLER_UTIL_SHELL_UTIL_H_
 
 #include <windows.h>
-#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -139,11 +138,6 @@ class ShellUtil {
   // to Default Users Quick Launch shortcuts path. Adding a shortcut to Default
   // User's profile only affects any new user profiles (not existing ones).
   static bool GetQuickLaunchPath(bool system_level, std::wstring* path);
-
-  // Gets a mapping of all registered browser (on local machine) names and
-  // thier reinstall command (which usually sets browser as default).
-  static void GetRegisteredBrowsers(std::map<std::wstring,
-                                    std::wstring>* browsers);
 
   // This function gets a suffix (user's login name) that can be added
   // to Chromium default browser entry in the registry to create a unique name

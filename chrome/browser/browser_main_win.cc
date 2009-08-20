@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@
 #include "base/win_util.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/views/uninstall_view.h"
+#include "chrome/browser/views/uninstall_dialog.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/result_codes.h"
@@ -24,6 +24,7 @@
 #include "chrome/installer/util/shell_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "views/controls/message_box_view.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/window/window.h"
 
@@ -42,8 +43,7 @@ bool CheckForWin2000() {
 
 int AskForUninstallConfirmation() {
   int ret = ResultCodes::NORMAL_EXIT;
-  views::Window::CreateChromeWindow(NULL, gfx::Rect(),
-                                    new UninstallView(ret))->Show();
+  UninstallDialog::ShowUninstallDialog(ret);
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
   return ret;
@@ -57,20 +57,11 @@ void ShowCloseBrowserFirstMessageBox() {
 }
 
 int DoUninstallTasks(bool chrome_still_running) {
-  // We want to show a warning to user (and exit) if Chrome is already running
-  // *before* we show the uninstall confirmation dialog box. But while the
-  // uninstall confirmation dialog is up, user might start Chrome, so we
-  // check once again after user acknowledges Uninstall dialog.
   if (chrome_still_running) {
     ShowCloseBrowserFirstMessageBox();
     return ResultCodes::UNINSTALL_CHROME_ALIVE;
   }
   int ret = AskForUninstallConfirmation();
-  if (Upgrade::IsBrowserAlreadyRunning()) {
-    ShowCloseBrowserFirstMessageBox();
-    return ResultCodes::UNINSTALL_CHROME_ALIVE;
-  }
-
   if (ret != ResultCodes::UNINSTALL_USER_CANCEL) {
     // The following actions are just best effort.
     LOG(INFO) << "Executing uninstall actions";
