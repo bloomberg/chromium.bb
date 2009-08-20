@@ -10,6 +10,7 @@
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/automation_proxy_uitest.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"

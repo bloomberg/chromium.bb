@@ -9,13 +9,15 @@
 
 #include "app/message_box_flags.h"
 #include "base/basictypes.h"
+#include "base/gfx/native_widget_types.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
@@ -23,6 +25,10 @@
 class BrowserProxy;
 class TabProxy;
 class WindowProxy;
+
+namespace IPC {
+struct ExternalTabSettings;
+}
 
 // This is an interface that AutomationProxy-related objects can use to
 // access the message-sending abilities of the Proxy.

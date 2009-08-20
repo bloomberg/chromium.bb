@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/common/native_web_keyboard_event.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 

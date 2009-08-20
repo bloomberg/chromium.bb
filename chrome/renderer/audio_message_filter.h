@@ -12,7 +12,6 @@
 
 #include "base/id_map.h"
 #include "base/shared_memory.h"
-#include "chrome/common/render_messages.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 

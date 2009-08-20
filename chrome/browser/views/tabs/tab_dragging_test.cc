@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_paths.h"

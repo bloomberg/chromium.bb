@@ -15,7 +15,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/owned_widget_gtk.h"
-#include "chrome/common/render_messages.h"
 #include "webkit/glue/plugins/gtk_plugin_container_manager.h"
 #include "webkit/glue/webcursor.h"
 

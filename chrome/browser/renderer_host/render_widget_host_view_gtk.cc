@@ -4,6 +4,11 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 
+// If this gets included after the gtk headers, then a bunch of compiler
+// errors happen because of a "#define Status int" in Xlib.h, which interacts
+// badly with URLRequestStatus::Status.
+#include "chrome/common/render_messages.h"
+
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -19,9 +24,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/browser/plugin_process_host.h"
 #include "chrome/common/native_web_keyboard_event.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/x11_util.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"

@@ -6,6 +6,7 @@
 #include "base/gfx/rect.h"
 #include "base/path_service.h"
 #include "base/perftimer.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_paths.h"
