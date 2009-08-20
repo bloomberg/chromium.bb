@@ -152,6 +152,8 @@ WONTFIX : LayoutTests/svg/custom/embedded-svg-disallowed-in-dashboard.xml = FAIL
 WONTFIX : LayoutTests/svg/custom/manually-parsed-embedded-svg-disallowed-in-dashboard.html = FAIL
 WONTFIX : LayoutTests/svg/custom/manually-parsed-svg-disallowed-in-dashboard.html = FAIL
 WONTFIX SKIP : LayoutTests/svg/custom/svg-disallowed-in-dashboard-object.html = FAIL
+WONTFIX : LayoutTests/fast/canvas/canvas-gradient-addStop-error.html = FAIL
+
 
 // Chrome uses different keyboard accelerators from those used by Safari, so
 // these tests will always fail.
@@ -167,8 +169,9 @@ BUG761653 WONTFIX : LayoutTests/svg/webarchive = FAIL PASS
 BUG761653 WONTFIX : LayoutTests/svg/custom/image-with-prefix-in-webarchive.svg = FAIL PASS
 BUG761653 WONTFIX SKIP : LayoutTests/http/tests/webarchive = FAIL PASS
 
-// We don't support ACCELERATED_COMPOSITING, so skip all related tests
-WONTFIX SKIP : LayoutTests/compositing = FAIL
+// We don't support ACCELERATED_COMPOSITING. Skipping because some tests in this
+// directory don't have pixel results.
+BUG15733 WONTFIX SKIP : LayoutTests/compositing = FAIL PASS TIMEOUT
 
 // Run the Mac-specific platform tests, but only to check for crashes.
 WONTFIX : LayoutTests/platform/gtk = FAIL PASS
@@ -1079,6 +1082,7 @@ BUG16018 : LayoutTests/fast/dom/HTMLDocument/hasFocus.html = FAIL
 
 // Accessibility is off in the browser, and accessibility is not a priority
 // for the current release.
+// Need to implement window.accessibilityController for these to work.
 BUG10322 : LayoutTests/accessibility = FAIL
 BUG10322 : LayoutTests/accessibility/non-native-image-crash.html = PASS
 BUG10322 : LayoutTests/accessibility/input-slider.html = TIMEOUT
@@ -1834,8 +1838,6 @@ BUG10452 MAC : LayoutTests/fast/events/popup-blocking-click-in-iframe.html = CRA
 BUG10452 MAC : LayoutTests/fast/html/body-offset-properties.html = CRASH PASS
 BUG10452 DEBUG WIN : LayoutTests/fast/dom/HTMLElement/innerHTML-selection-crash.html = CRASH PASS
 
-// Newly added test from 41613:41660
-BUG9155 MAC LINUX WIN : LayoutTests/fast/canvas/canvas-gradient-addStop-error.html = FAIL
 
 // Newly added test from 41613:41660 -- relies on ScriptCallStack::state() -- dglazkov should fix.
 BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAIL
@@ -2424,10 +2426,6 @@ BUG15267 WIN LINUX : LayoutTests/transitions/cancel-transition.html = PASS FAIL
 // Started crashing without a clear reason.
 BUG15425 WIN : LayoutTests/dom/html/level2/html/HTMLElement142.html = PASS CRASH
 
-// Webkit 45403:45431
-BUG15733 LINUX WIN : LayoutTests/compositing/repaint/content-into-overflow.html = FAIL
-BUG15733 LINUX WIN : LayoutTests/compositing/repaint/overflow-into-content.html = FAIL
-
 // WebKit 45431:45444
 BUG10384 MAC : LayoutTests/fast/events/frame-tab-focus.html = CRASH FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/tabbing-input-iframe.html = FAIL
@@ -2783,9 +2781,6 @@ BUG19625 : LayoutTests/fast/eventsource/eventsource-constructor.html = FAIL
 
 // New test added, doesn't yet pass for Chrome
 BUG19635 : LayoutTests/fast/harness/use-page-cache.html = FAIL
-
-// New functionality added to DRT, not in test shell
-BUG19640 WIN : LayoutTests/platform/win/accessibility/focus-events.html = FAIL
 
 // Code was checked into webkit without expectations in 47329, added in 47437.
 // Remove this once we roll deps that far
