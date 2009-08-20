@@ -22,7 +22,6 @@
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/dom_ui/dom_ui_thumbnail_source.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
-#include "chrome/browser/dom_ui/downloads_dom_handler.h"
 #include "chrome/browser/dom_ui/history_ui.h"
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
@@ -1526,18 +1525,6 @@ NewTabUI::NewTabUI(TabContents* contents)
             &ChromeURLDataManager::AddDataSource,
             html_source));
   } else {
-    DownloadManager* dlm = GetProfile()->GetDownloadManager();
-    // This might be null in the case of running inside a unit test.
-    // TODO(arv): Fix unit tests to provide a working mock download manager.
-    if (dlm) {
-      DownloadManager* dlm = GetProfile()->GetDownloadManager();
-      DownloadsDOMHandler* downloads_handler =
-          new DownloadsDOMHandler(dlm);
-      downloads_handler->Attach(this);
-      AddMessageHandler(downloads_handler);
-      downloads_handler->Init();
-    }
-
     AddMessageHandler((new ShownSectionsHandler())->Attach(this));
     AddMessageHandler((new MostVisitedHandler())->Attach(this));
     AddMessageHandler((new RecentlyClosedTabsHandler())->Attach(this));
