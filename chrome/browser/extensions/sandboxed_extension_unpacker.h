@@ -69,17 +69,17 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   struct ExtensionHeader {
     char magic[kExtensionHeaderMagicSize];
     uint32 version;
-    size_t key_size;  // The size of the public key, in bytes.
-    size_t signature_size;  // The size of the signature, in bytes.
+    uint32 key_size;  // The size of the public key, in bytes.
+    uint32 signature_size;  // The size of the signature, in bytes.
     // An ASN.1-encoded PublicKeyInfo structure follows.
     // The signature follows.
   };
 
   // The maximum size the crx parser will tolerate for a public key.
-  static const size_t kMaxPublicKeySize = 1 << 16;
+  static const uint32 kMaxPublicKeySize = 1 << 16;
 
   // The maximum size the crx parser will tolerate for a signature.
-  static const size_t kMaxSignatureSize = 1 << 16;
+  static const uint32 kMaxSignatureSize = 1 << 16;
 
   // The magic character sequence at the beginning of each crx file.
   static const char kExtensionHeaderMagic[];
