@@ -24,7 +24,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-//#include "base/sys_string_conversions.h"
 #include "net/base/escape.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebData.h"
@@ -1142,7 +1141,10 @@ void WebPluginImpl::TearDownPluginInstance(
   // of those sub JSObjects.
   if (frame()) {
     ASSERT(widget_);
-    frame()->script()->cleanupScriptObjectsForPlugin(widget_);
+    // TODO(darin): Avoid these casts!
+    frame()->script()->cleanupScriptObjectsForPlugin(
+        static_cast<WebCore::Widget*>(
+            static_cast<WebKit::WebPluginContainerImpl*>(widget_)));
   }
 
   if (delegate_) {
