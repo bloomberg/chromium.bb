@@ -2888,7 +2888,6 @@ BUG19766 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/bugs/bug72393.
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/bugs/bug89315.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-quirks.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/table_overflow_caption_bottom.html = FAIL
-BUG19766 WIN : LayoutTests/media/progress-event-at-least-one.html = TIMEOUT
 BUG19766 WIN : LayoutTests/media/video-no-audio.html = TIMEOUT
 BUG19766 : LayoutTests/storage/open-database-while-transaction-in-progress.html = TIMEOUT
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
@@ -2912,3 +2911,11 @@ BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-h
 BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses-with-subdomains.html = TIMEOUT
 BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html = TIMEOUT
 BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html = TIMEOUT
+
+// WebKit merge 47575:47591 new test, needs baselines. WebKit change http://trac.webkit.org/changeset/47590
+BUG_DIMICH LINUX WIN : LayoutTests/fast/repaint/inline-block-resize.html = FAIL
+
+// WebKit merge 47575:47591 updated test, perhaps needs rebaseline on Win.
+// WebKit change http://trac.webkit.org/changeset/47579
+// This test timed out before, not it appears to run but fail.
+BUG_DIMICH WIN : LayoutTests/media/progress-event-at-least-one.html = FAIL TIMEOUT
