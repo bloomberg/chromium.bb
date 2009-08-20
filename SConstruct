@@ -1056,6 +1056,7 @@ MAYBE_RELEVANT_CONFIG = ['BUILD_OS',
                          'TARGET_OS',
                          'TARGET_ARCHITECTURE',
                          'TARGET_SUBARCH',
+                         'EMULATOR',
                          ]
 
 def DumpCompilerVersion(cc, env):
@@ -1079,7 +1080,7 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
   # simple completeness check
   for env in all_envs:
     for tag in RELEVANT_CONFIG:
-      assert tag in   env
+      assert tag in env
       assert env[tag]
 
   # collect build families and enforce now dup rules
@@ -1101,18 +1102,14 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
       """
       assert 0
 
-  # sytem info
-  if ARGUMENTS.get('sysinfo', 1):
-    os.system(pre_base_env.subst('${PYTHON} tools/sysinfo.py'))
-
   Banner("The following environments have been configured")
   for family in family_map:
     env = family_map[family]
     for tag in RELEVANT_CONFIG:
-      print "%s:  %s" % (tag, env.subst(env[tag]))
+      assert tag in env
+      print "%s:  %s" % (tag, env.subst(env.get(tag)))
     for tag in MAYBE_RELEVANT_CONFIG:
-      if tag in env:
-        print "%s:  %s" % (tag, env.subst(env[tag]))
+        print "%s:  %s" % (tag, env.subst(env.get(tag)))
     cc = env.subst('${CC}')
     print 'CC:', cc
     if ARGUMENTS.get('sysinfo', 1) and not env.Bit('prebuilt'):
@@ -1139,6 +1136,13 @@ Default(None)
 if os.path.exists(pre_base_env.subst('$MAIN_DIR/supplement/supplement.scons')):
   SConscript('supplement/supplement.scons',
       exports=['environment_list', 'linux_env'])
+
+# print sytem info (optionally)
+if ARGUMENTS.get('sysinfo', 1):
+  Banner('SCONS ARGS:' + str(sys.argv))
+  os.system(pre_base_env.subst('${PYTHON} tools/sysinfo.py'))
+
+
 
 selected_envs = FilterEnvironments(environment_list)
 family_map = SanityCheckAndMapExtraction(environment_list, selected_envs)
