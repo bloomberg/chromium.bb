@@ -24,6 +24,7 @@
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -122,7 +123,7 @@ gboolean MainWindowConfigured(GtkWindow* window, GdkEventConfigure* event,
 
 gboolean MainWindowStateChanged(GtkWindow* window, GdkEventWindowState* event,
                                 BrowserWindowGtk* browser_win) {
-  browser_win->OnStateChanged(event->new_window_state);
+  browser_win->OnStateChanged(event->new_window_state, event->changed_mask);
   return FALSE;
 }
 
@@ -1164,6 +1165,8 @@ void BrowserWindowGtk::DestroyBrowser() {
 }
 
 void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
+  GetLocationBar()->location_entry()->ClosePopup();
+
   if (bounds_.size() != bounds.size())
     OnSizeChanged(bounds.width(), bounds.height());
 
@@ -1173,15 +1176,11 @@ void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
   SaveWindowPosition();
 }
 
-void BrowserWindowGtk::OnStateChanged(GdkWindowState state) {
-  // If we care about more than full screen changes, we should pass through
-  // |changed_mask| from GdkEventWindowState.
-  bool fullscreen_state_changed = (state_ & GDK_WINDOW_STATE_FULLSCREEN) !=
-      (state & GDK_WINDOW_STATE_FULLSCREEN);
-
+void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
+                                      GdkWindowState changed_mask) {
   state_ = state;
 
-  if (fullscreen_state_changed) {
+  if (changed_mask & GDK_WINDOW_STATE_FULLSCREEN) {
     bool is_fullscreen = state & GDK_WINDOW_STATE_FULLSCREEN;
     browser_->UpdateCommandsForFullscreenMode(is_fullscreen);
     if (is_fullscreen) {

@@ -134,7 +134,7 @@ class BrowserWindowGtk : public BrowserWindow,
   void UpdateUIForContents(TabContents* contents);
 
   void OnBoundsChanged(const gfx::Rect& bounds);
-  void OnStateChanged(GdkWindowState state);
+  void OnStateChanged(GdkWindowState state, GdkWindowState changed_mask);
 
   // Returns false if we're not ready to close yet.  E.g., a tab may have an
   // onbeforeunload handler that prevents us from closing.
