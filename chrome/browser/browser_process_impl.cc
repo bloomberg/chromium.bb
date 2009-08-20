@@ -128,7 +128,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_debugger_wrapper_(false),
       created_devtools_manager_(false),
       module_ref_count_(0),
-      memory_model_(MEDIUM_MEMORY_MODEL),
+      memory_model_(HIGH_MEMORY_MODEL),
       checked_for_new_frames_(false),
       using_new_frames_(false) {
   g_browser_process = this;
