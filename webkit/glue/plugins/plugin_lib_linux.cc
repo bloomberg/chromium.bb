@@ -58,7 +58,7 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
       WebPluginMimeType mime_type;
       mime_type.mime_type = fields[0];
       SplitString(fields[1], ',', &mime_type.file_extensions);
-      mime_type.description = ASCIIToWide(fields[2]);
+      mime_type.description = UTF8ToWide(fields[2]);
       info->mime_types.push_back(mime_type);
     }
   }
