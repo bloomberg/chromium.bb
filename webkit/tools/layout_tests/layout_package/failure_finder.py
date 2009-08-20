@@ -81,6 +81,8 @@ WEBKIT_FILE_AGE_REGEX = ('<a class="file" title="View File" href="%s">.*?</a>.'
 
 UPSTREAM_IMAGE_FILE_ENDING = "-upstream.png"
 
+TEST_EXPECTATIONS_WONTFIX = "WONTFIX"
+
 def GetURLBase(use_fyi):
   if use_fyi:
     return FYI_BUILDER_BASE
@@ -109,16 +111,15 @@ def IsLinuxPlatform(platform):
 def IsMacPlatform(platform):
   return (platform and platform.find("Mac") > -1)
 
-def CreateDirectory(dirname):
+def CreateDirectory(dir):
   """
   Method that creates the directory structure given.
   This will create directories recursively until the given dir exists.
   """
-  dir = "./" + dirname
   if not os.path.isdir(dir):
     if not os.path.isdir(dir[0:dir.rfind("/")]):
       CreateDirectory(dir[0:dir.rfind("/")])
-    os.mkdir("./" + dirname + "/")
+    os.mkdir(dir)
 
 def ExtractFirstValue(string, regex):
   m = re.search(regex, string)
@@ -170,6 +171,18 @@ def GenerateTextDiff(file1, file2, output_file):
   output.write("\n".join(diffs))
   output.close()
 
+class BaselineCandidate(object):
+  """Simple data object for holding the URL and local file path of a
+  possible baseline.  The local file path is meant to refer to the locally-
+  cached version of the file at the URL."""
+
+  def __init__(self, local, url):
+    self.local_file = local
+    self.baseline_url = url
+
+  def IsValid(self):
+    return self.local_file != None and self.baseline_url != None
+
 class FailureFinder(object):
 
   def __init__(self,
@@ -188,6 +201,7 @@ class FailureFinder(object):
     # TODO(gwilson): add full url-encoding for the platform.
     self.SetPlatform(builder_name)
     self.exclude_known_failures = exclude_known_failures
+    self.exclude_wontfix = True
     self.test_regex = test_regex
     self.output_dir = output_dir
     self.max_failures = max_failures
@@ -252,7 +266,7 @@ class FailureFinder(object):
       print "%s failures found." % len(matches)
 
     failures = []
-
+    matches.sort()
     for match in matches:
       if (len(failures) < self.max_failures and
           (not self.test_regex or match[0].find(self.test_regex) > -1)):
@@ -359,15 +373,19 @@ class FailureFinder(object):
         print 'Extracting files...'
       directory = "%s/layout-test-results-%s" % (self.output_dir, self.build)
       CreateDirectory(directory)
+
       for failure in self.failures:
+        failure.test_expectations_line = (
+          self._GetTestExpectationsLine(failure.test_path))
+        if self.exclude_wontfix and failure.IsWontFix():
+          self.failures.remove(failure)
+          continue
         if failure.text_diff_mismatch or failure.simplified_text_diff_mismatch:
           self._PopulateTextFailure(failure, directory, zip)
         if failure.image_mismatch:
           self._PopulateImageFailure(failure, directory, zip)
         failure.test_age = self._GetFileAge(failure.GetTestHome())
         failure.flakiness = self._GetFlakiness(failure.test_path, self.platform)
-        failure.test_expectations_line = (
-          self._GetTestExpectationsLine(failure.test_path, self.platform))
       zip.close()
       if self.verbose:
         print "Files extracted."
@@ -393,15 +411,15 @@ class FailureFinder(object):
     return (revision, build_name)
 
   def _PopulateTextFailure(self, failure, directory, zip):
-    baselines = self._GetBaseline(failure.GetExpectedTextFilename(),
-                                  directory)
-    failure.text_baseline_local = baselines[0]
-    failure.text_baseline_url = baselines[1]
+    baseline = self._GetBaseline(failure.GetExpectedTextFilename(), directory)
+    failure.text_baseline_local = baseline.local_file
+    failure.text_baseline_url = baseline.baseline_url
     failure.text_baseline_age = (
       self._GetFileAge(failure.GetTextBaselineTracHome()))
     failure.text_actual_local = "%s/%s" % (directory,
                                            failure.GetActualTextFilename())
-    if (not self.dont_download and
+    if (baseline and baseline.IsValid() and
+        not self.dont_download and
         self._ExtractFileFromZip(zip,
                                  failure.GetTextResultLocationInZipFile(),
                                  failure.text_actual_local)):
@@ -410,11 +428,10 @@ class FailureFinder(object):
                        directory + "/" + failure.GetTextDiffFilename())
 
   def _PopulateImageFailure(self, failure, directory, zip):
-    baselines = self._GetBaseline(failure.GetExpectedImageFilename(),
-                                   directory)
-    failure.image_baseline_local = baselines[0]
-    failure.image_baseline_url = baselines[1]
-    if baselines[0] and baselines[1]:
+    baseline = self._GetBaseline(failure.GetExpectedImageFilename(), directory)
+    failure.image_baseline_local = baseline.local_file
+    failure.image_baseline_url = baseline.baseline_url
+    if baseline and baseline.IsValid():
       failure.image_baseline_age = (
         self._GetFileAge(failure.GetImageBaselineTracHome()))
       failure.image_actual_local = "%s/%s" % (directory,
@@ -422,18 +439,18 @@ class FailureFinder(object):
       self._ExtractFileFromZip(zip,
                                failure.GetImageResultLocationInZipFile(),
                                failure.image_actual_local)
-      if (not GeneratePNGDiff("./" + failure.image_baseline_local,
-                             "./" + failure.image_actual_local,
-                             "./%s/%s" %
+      if (not GeneratePNGDiff(failure.image_baseline_local,
+                              failure.image_actual_local,
+                             "%s/%s" %
                              (directory, failure.GetImageDiffFilename()))
           and self.verbose):
         print "Could not generate PNG diff for %s" % failure.test_path
       if failure.IsImageBaselineInChromium():
-        upstream_baselines = (
+        upstream_baseline = (
           self._GetUpstreamBaseline(failure.GetExpectedImageFilename(),
                                     directory))
-        failure.image_baseline_upstream_local = upstream_baselines[0]
-        failure.image_baseline_upstream_url = upstream_baselines[1]
+        failure.image_baseline_upstream_local = upstream_baseline.local_file
+        failure.image_baseline_upstream_url = upstream_baseline.baseline_url
 
   def _GetBaseline(self, filename, directory, upstream_only = False):
     """ Search and download the baseline for the given test (put it in the
@@ -472,7 +489,7 @@ class FailureFinder(object):
     if local_baseline and self.verbose:
       print "Found baseline: %s" % url_of_baseline
 
-    return (local_baseline, url_of_baseline)
+    return BaselineCandidate(local_baseline, url_of_baseline)
 
   # TODO(gwilson): Refactor this with path_utils' candidate directory
   # generation.
@@ -583,7 +600,7 @@ class FailureFinder(object):
       try:
         if self.test_expectations_file:
           log = open(self.test_expectations_file, 'r')
-          self._test_expectations_cache = "".join(log.readlines())
+          self._test_expectations_cache = "\n".join(log.readlines())
         else:
           self._test_expectations_cache = ScrapeURL(TEST_EXPECTATIONS_URL)
       except HTTPError:
@@ -592,32 +609,19 @@ class FailureFinder(object):
 
     return self._test_expectations_cache
 
-  def _GetTestExpectationsLine(self, test_path, target_platform):
+  def _GetTestExpectationsLine(self, test_path):
     content = self._GetTestExpectations()
 
     if not content:
       return None
 
-    translated_platform = "WIN"
-    if IsMacPlatform(target_platform):
-      translated_platform = "MAC"
-    if IsLinuxPlatform(target_platform):
-      translated_platform = "LINUX"
+    for match in content.splitlines():
+      line = re.search(".*? : (.*?) = .*", match)
+      if line and test_path.find(line.group(1)) > -1:
+        return match
 
-    test_parent_dir = test_path[:test_path.rfind("/")]
-    # TODO(gwilson): change this to look in (recursively?) higher paths.
-    possible_lines = [
-      TEST_EXPECTATIONS_PLATFORM_REGEX % (translated_platform, test_path),
-      TEST_EXPECTATIONS_NO_PLATFORM_REGEX % (test_path),
-      TEST_EXPECTATIONS_PLATFORM_REGEX % (translated_platform, test_parent_dir),
-      TEST_EXPECTATIONS_NO_PLATFORM_REGEX % (test_parent_dir)
-    ]
+    return None
 
-    line = None
-    for regex in possible_lines:
-      if not line:
-        line = ExtractFirstValue(content, regex)
-    return line
 
   def _ExtractFileFromZip(self, zip, file_in_zip, file_to_create):
     modifiers = ""

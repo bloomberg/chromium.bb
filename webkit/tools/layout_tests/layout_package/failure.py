@@ -34,6 +34,12 @@ WEBKIT_TRAC_IMAGE_BASELINE_BASE_URL_WIN = WEBKIT_PLATFORM_URL_BASE + "/win/"
 
 LAYOUT_TEST_RESULTS_DIR = "layout-test-results"
 
+FAIL = "FAIL"
+TIMEOUT = "TIMEOUT"
+CRASH = "CRASH"
+PASS = "PASS"
+WONTFIX = "WONTFIX"
+
 class Failure(object):
   """
   This class represents a failure in the test output, and is
@@ -163,16 +169,19 @@ class Failure(object):
   # in order to know whether to retrieve expected test results for it.
   # (test results dont exist for tests expected to fail/crash.)
   def IsExpectedToFail(self):
-    return self._FindKeywordInExpectations("FAIL")
+    return self._FindKeywordInExpectations(FAIL)
 
   def IsExpectedToTimeout(self):
-    return self._FindKeywordInExpectations("TIMEOUT")
+    return self._FindKeywordInExpectations(TIMEOUT)
 
   def IsExpectedToCrash(self):
-    return self._FindKeywordInExpectations("CRASH")
+    return self._FindKeywordInExpectations(CRASH)
 
   def IsExpectedToPass(self):
-    return self._FindKeywordInExpectations("PASS")
+    return self._FindKeywordInExpectations(PASS)
+
+  def IsWontFix(self):
+    return self._FindKeywordInExpectations(WONTFIX)
 
   def _FindKeywordInExpectations(self, keyword):
     if (not self.test_expectations_line or

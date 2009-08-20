@@ -99,6 +99,16 @@ DOM_TEST_EXPECTATION_UPSTREAM = ("LayoutTests/fast/dom/"
                                  "attribute-downcast-right-"
                                  "expected-upstream.png")
 
+TEST_EXPECTATIONS = """
+BUG1234 WONTFIX : LayoutTests/fast/backgrounds/svg-as-background-3.html = FAIL
+BUG3456 WIN : LayoutTests/fast/backgrounds/svg-as-background-6.html = CRASH
+BUG4567 : LayoutTests/fast/backgrounds/svg-as-mask.html = PASS
+WONTFIX : LayoutTests/fast/block/ = FAIL
+"""
+
+EXPECT_EXACT_MATCH = "LayoutTests/fast/backgrounds/svg-as-background-6.html"
+EXPECT_GENERAL_MATCH = "LayoutTests/fast/block/float/013.html"
+EXPECT_NO_MATCH = "LayoutTests/fast/backgrounds/svg-as-background-99.html"
 
 WEBKIT_ORG = "webkit.org"
 CHROMIUM_ORG = "chromium.org"
@@ -118,6 +128,7 @@ class FailureFinderTest(object):
              "testUseLocalOutput",
              "testTranslateBuildToZip",
              "testGetBaseline",
+             "testFindTestExpectations",
              "testFull"]
 
     for test in tests:
@@ -191,10 +202,11 @@ def testFindMatchesInBuilderOutput():
 def _testBaseline(test_name, expected_local, expected_url):
   test = _getBasicFailureFinder()
   # Test baseline that is obviously in Chromium's tree.
-  local, url = test._GetBaseline(test_name, ".", False)
+  baseline = test._GetBaseline(test_name, ".", False)
   try:
-    os.remove(local)
-    if (local != expected_local or url != expected_url):
+    os.remove(baseline.local_file)
+    if (baseline.local_file != expected_local or
+        baseline.baseline_url != expected_url):
       return False
   except:
     return False
@@ -265,23 +277,22 @@ def testTranslateBuildToZip():
 def testGetBaseline():
   test = _getBasicFailureFinder()
   result = True
-  #test.dont_download = True
   test.platform = "chromium-mac"
-  local, url = test._GetBaseline(WEBARCHIVE_TEST_EXPECTATION, ".")
-  if not local or url.find(WEBKIT_ORG) == -1:
+  baseline = test._GetBaseline(WEBARCHIVE_TEST_EXPECTATION, ".")
+  if not baseline.local_file or baseline.baseline_url.find(WEBKIT_ORG) == -1:
     result = False
     print "Webarchive layout test not found at webkit.org: %s" % url
   test.platform = "chromium-win"
-  local, url = test._GetBaseline(SVG_TEST_EXPECTATION, ".")
-  if not local or url.find(CHROMIUM_ORG) == -1:
+  baseline = test._GetBaseline(SVG_TEST_EXPECTATION, ".")
+  if not baseline.local_file or baseline.baseline_url.find(CHROMIUM_ORG) == -1:
     result = False
     print "SVG layout test found at %s, not chromium.org" % url
-  local, url = test._GetBaseline(SVG_TEST_EXPECTATION, ".", True)
-  if not local or url.find(WEBKIT_ORG) == -1:
+  baseline = test._GetBaseline(SVG_TEST_EXPECTATION, ".", True)
+  if not baseline.local_file or baseline.baseline_url.find(WEBKIT_ORG) == -1:
     result = False
     print "Upstream SVG layout test NOT found at webkit.org!"
-  local, url = test._GetBaseline(DOM_TEST_EXPECTATION, ".", True)
-  if not local or url.find("/platform/") > -1:
+  baseline = test._GetBaseline(DOM_TEST_EXPECTATION, ".", True)
+  if not baseline.local_file or baseline.baseline_url.find("/platform/") > -1:
     result = False
     print "Upstream SVG layout test found in a platform directory: %s" % url
   os.remove(WEBARCHIVE_TEST_EXPECTATION)
@@ -320,6 +331,19 @@ def testFull():
       return False
 
   return True
+
+def testFindTestExpectations():
+  test = _getBasicFailureFinder()
+  test._test_expectations_cache = TEST_EXPECTATIONS
+  match = test._GetTestExpectationsLine(EXPECT_EXACT_MATCH)
+  if not match:
+    return False
+  match = test._GetTestExpectationsLine(EXPECT_GENERAL_MATCH)
+  if not match:
+    return False
+  match = test._GetTestExpectationsLine(EXPECT_NO_MATCH)
+  return not match
+
 
 if __name__ == "__main__":
   fft = FailureFinderTest()

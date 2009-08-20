@@ -76,9 +76,10 @@ class HTMLGenerator(object):
                 <tr>
                   <td style="background-color: #CDECDE;
                     border-bottom: 1px solid black;">
-                    <span class="titlelink">%s</span></td></tr>
+                    <span class="titlelink">%s.&nbsp;&nbsp;%s</span></td></tr>
                 <tr><td>&nbsp;&nbsp;Last modified: <a href="%s">%s</a>
-              """ % (failure.test_path,
+              """ % (test_number,
+                     failure.test_path,
                      failure.GetTestHome(),
                      failure.test_age)
       html += "<div class='detail'>"
