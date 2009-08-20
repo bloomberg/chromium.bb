@@ -238,8 +238,9 @@ void URLRequestAutomationJob::OnRequestStarted(
   URLRequestContext* ctx = request_->context();
 
   if (!response.headers.empty()) {
-    headers_ = new net::HttpResponseHeaders(response.headers);
-
+    headers_ = new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(response.headers.data(),
+                                          response.headers.size()));
     // Parse and set HTTP cookies.
     const std::string name = "Set-Cookie";
     std::string value;
