@@ -210,6 +210,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleDragDataReceivedThunk), this);
   g_signal_connect(text_view_, "backspace",
                    G_CALLBACK(&HandleBackSpaceThunk), this);
+  g_signal_connect(text_view_, "copy-clipboard",
+                   G_CALLBACK(&HandleCopyClipboardThunk), this);
 
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
@@ -919,6 +921,31 @@ void AutocompleteEditViewGtk::HandleBackSpace() {
   // Stop propagating the signal emission into GtkTextView.
   static guint signal_id = g_signal_lookup("backspace", GTK_TYPE_TEXT_VIEW);
   g_signal_stop_emission(text_view_, signal_id, 0);
+}
+
+void AutocompleteEditViewGtk::HandleCopyClipboard() {
+  // On copy, we manually update the PRIMARY selection to contain the
+  // highlighted text.  This matches Firefox -- we highlight the URL but don't
+  // update PRIMARY on Ctrl-L, so Ctrl-L, Ctrl-C and then middle-click is a
+  // convenient way to paste the current URL somewhere.
+  if (!gtk_text_buffer_get_has_selection(text_buffer_))
+    return;
+
+  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+  DCHECK(clipboard);
+  if (!clipboard)
+    return;
+
+  // Passing gtk_text_buffer_copy_clipboard() a text buffer that already owns
+  // the clipboard that's being updated clears the highlighted text, which we
+  // don't want to do (and it also appears to at least sometimes trigger a
+  // failed G_IS_OBJECT() assertion).
+  if (gtk_clipboard_get_owner(clipboard) == G_OBJECT(text_buffer_))
+    return;
+
+  // We can't just call SavePrimarySelection(); that makes the text view lose
+  // the selection and unhighlight its text.
+  gtk_text_buffer_copy_clipboard(text_buffer_, clipboard);
 }
 
 void AutocompleteEditViewGtk::SelectAllInternal(bool reversed,
