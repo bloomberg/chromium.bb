@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/file_version_info.h"
 #include "base/histogram.h"
+#include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/stats_table.h"
 #include "base/string_piece.h"
@@ -22,9 +23,11 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/net/dns_global.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/sync/personalization.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/histogram_synchronizer.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
@@ -46,6 +49,13 @@
 #include "chrome/browser/views/about_ipc_dialog.h"
 #include "chrome/browser/views/about_network_dialog.h"
 #endif
+
+#ifdef CHROME_PERSONALIZATION
+#include "chrome/browser/sync/auth_error_state.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+using sync_api::SyncManager;
+#endif
+
 
 using base::Time;
 using base::TimeDelta;
@@ -387,6 +397,100 @@ std::string AboutVersion() {
       version_html, &localized_strings);
 }
 
+#ifdef CHROME_PERSONALIZATION
+static void AddBoolSyncDetail(ListValue* details, const std::wstring& stat_name,
+                              bool stat_value) {
+  DictionaryValue* val = new DictionaryValue;
+  val->SetString(L"stat_name", stat_name);
+  val->SetBoolean(L"stat_value", stat_value);
+  details->Append(val);
+}
+
+static void AddIntSyncDetail(ListValue* details, const std::wstring& stat_name,
+                             int64 stat_value) {
+  DictionaryValue* val = new DictionaryValue;
+  val->SetString(L"stat_name", stat_name);
+  val->SetString(L"stat_value", FormatNumber(stat_value));
+  details->Append(val);
+}
+
+static std::wstring MakeSyncAuthErrorText(AuthErrorState state) {
+  switch (state) {
+    case AUTH_ERROR_INVALID_GAIA_CREDENTIALS:
+      return L"INVALID_GAIA_CREDENTIALS";
+    case AUTH_ERROR_USER_NOT_SIGNED_UP:
+      return L"USER_NOT_SIGNED_UP";
+    case AUTH_ERROR_CONNECTION_FAILED:
+      return L"CONNECTION_FAILED";
+    default:
+      return std::wstring();
+  }
+}
+
+std::string AboutSync() {
+  FilePath user_data_dir;
+  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+    return std::string();
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+  ProfileSyncService* service = profile->GetProfileSyncService();
+
+  DictionaryValue strings;
+  if (!service || !service->HasSyncSetupCompleted()) {
+    strings.SetString(L"summary", L"SYNC DISABLED");
+  } else {
+    SyncManager::Status full_status(service->QueryDetailedSyncStatus());
+
+    strings.SetString(L"summary",
+        ProfileSyncService::BuildSyncStatusSummaryText(
+            full_status.summary));
+
+    strings.Set(L"authenticated",
+        new FundamentalValue(full_status.authenticated));
+    strings.SetString(L"auth_problem",
+        MakeSyncAuthErrorText(service->GetAuthErrorState()));
+
+    strings.SetString(L"time_since_sync", service->GetLastSyncedTimeString());
+
+    ListValue* details = new ListValue();
+    strings.Set(L"details", details);
+    AddBoolSyncDetail(details, L"Server Up", full_status.server_up);
+    AddBoolSyncDetail(details, L"Server Reachable",
+                      full_status.server_reachable);
+    AddBoolSyncDetail(details, L"Server Broken", full_status.server_broken);
+    AddBoolSyncDetail(details, L"Notifications Enabled",
+                      full_status.notifications_enabled);
+    AddIntSyncDetail(details, L"Notifications Received",
+                     full_status.notifications_received);
+    AddIntSyncDetail(details, L"Notifications Sent",
+                     full_status.notifications_sent);
+    AddIntSyncDetail(details, L"Unsynced Count", full_status.unsynced_count);
+    AddIntSyncDetail(details, L"Conflicting Count",
+                     full_status.conflicting_count);
+    AddBoolSyncDetail(details, L"Syncing", full_status.syncing);
+    AddBoolSyncDetail(details, L"Syncer Paused", full_status.syncer_paused);
+    AddBoolSyncDetail(details, L"Initial Sync Ended",
+                      full_status.initial_sync_ended);
+    AddBoolSyncDetail(details, L"Syncer Stuck", full_status.syncer_stuck);
+    AddIntSyncDetail(details, L"Updates Available",
+                     full_status.updates_available);
+    AddIntSyncDetail(details, L"Updates Received",
+                     full_status.updates_received);
+    AddBoolSyncDetail(details, L"Disk Full", full_status.disk_full);
+    AddBoolSyncDetail(details, L"Invalid Store", full_status.invalid_store);
+    AddIntSyncDetail(details, L"Max Consecutive Errors",
+                     full_status.max_consecutive_errors);
+  }
+
+  static const StringPiece sync_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_ABOUT_SYNC_HTML));
+
+  return jstemplate_builder::GetTemplateHtml(
+      sync_html, &strings , "t" /* template root node id */);
+}
+#endif
+
 // AboutSource -----------------------------------------------------------------
 
 AboutSource::AboutSource()
@@ -440,7 +544,7 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
     response = AboutTerms();
   } else if (path == kSyncPath) {
 #ifdef CHROME_PERSONALIZATION
-    response = Personalization::AboutSync();
+    response = AboutSync();
 #endif
   }
 #if defined(OS_LINUX)

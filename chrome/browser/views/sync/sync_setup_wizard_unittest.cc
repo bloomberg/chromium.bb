@@ -10,7 +10,6 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/sync/personalization.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/sync/sync_setup_flow.h"
 #include "chrome/browser/views/sync/sync_setup_wizard.h"

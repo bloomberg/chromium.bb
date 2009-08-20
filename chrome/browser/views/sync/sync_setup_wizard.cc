@@ -21,7 +21,7 @@
 class SyncResourcesSource : public ChromeURLDataManager::DataSource {
  public:
   SyncResourcesSource()
-      : DataSource(chrome::kSyncResourcesPath, MessageLoop::current()) {
+      : DataSource(chrome::kSyncResourcesHost, MessageLoop::current()) {
   }
   virtual ~SyncResourcesSource() { }
 

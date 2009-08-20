@@ -40,7 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #ifdef CHROME_PERSONALIZATION
-#include "chrome/browser/sync/personalization.h"
+#include "chrome/browser/sync/personalization_strings.h"
 #endif
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1086,8 +1086,7 @@ void ToolbarView::CreateAppMenu() {
   app_menu_contents_->AddSeparator();
 #ifdef CHROME_PERSONALIZATION
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync)) {
-    app_menu_contents_->AddItem(IDC_P13N_INFO,
-        Personalization::GetMenuItemInfoText(browser()));
+    app_menu_contents_->AddItem(IDC_SYNC_BOOKMARKS, kMenuLabelStartSync);
   }
 #endif
   app_menu_contents_->AddItemWithStringId(IDC_CLEAR_BROWSING_DATA,

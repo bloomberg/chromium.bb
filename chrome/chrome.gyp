@@ -1704,8 +1704,6 @@
         'browser/sync/glue/model_associator.h',
         'browser/sync/glue/sync_backend_host.cc',
         'browser/sync/glue/sync_backend_host.h',
-        'browser/sync/personalization.cc',
-        'browser/sync/personalization.h',
         'browser/sync/personalization_strings.h',
         'browser/sync/profile_sync_service.cc',
         'browser/sync/profile_sync_service.h',

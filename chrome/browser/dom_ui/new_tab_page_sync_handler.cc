@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/sync/personalization.h"
 #include "chrome/browser/sync/personalization_strings.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"

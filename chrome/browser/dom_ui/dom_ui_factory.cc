@@ -16,9 +16,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
-#ifdef CHROME_PERSONALIZATION
-#include "chrome/browser/sync/personalization.h"
-#endif
 #include "googleurl/src/gurl.h"
 
 // Backend for both querying for and creating new DOMUI objects. If you're just
@@ -67,19 +64,17 @@ static bool CreateDOMUI(const GURL& url, TabContents* tab_contents,
   }
 #endif
 
-#ifdef CHROME_PERSONALIZATION
-  if (Personalization::NeedsDOMUI(url)) {
-    if (new_ui)
-      *new_ui = new HtmlDialogUI(tab_contents);
-    return true;
-  }
-#endif
-
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes (gears was handled above) to filter out most URLs.
   if (!url.SchemeIs(chrome::kChromeInternalScheme) &&
       !url.SchemeIs(chrome::kChromeUIScheme))
     return false;
+
+  if (url.host() == chrome::kSyncResourcesHost) {
+      if (new_ui)
+        *new_ui = new HtmlDialogUI(tab_contents);
+      return true;
+  }
 
   // Special case the new tab page. In older versions of Chrome, the new tab
   // page was hosted at chrome-internal:<blah>. This might be in people's saved

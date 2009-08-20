@@ -53,7 +53,7 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
 #ifdef CHROME_PERSONALIZATION
-#include "chrome/browser/sync/personalization.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #endif
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -699,6 +699,7 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_REPORT_BUG, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
@@ -1181,6 +1182,22 @@ void Browser::OpenImportSettingsDialog() {
   window_->ShowImportDialog();
 }
 
+#ifdef CHROME_PERSONALIZATION
+void Browser::OpenSyncMyBookmarksDialog() {
+  ProfileSyncService* service = profile_->GetProfileSyncService();
+  // TODO(timsteele): Incognito has no sync service for the time being,
+  // so protect against this case.
+  if (!service)
+    return;
+  if (service->HasSyncSetupCompleted()) {
+    ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile_);
+  } else {
+    service->EnableForUser();
+    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_WRENCH);
+  }
+}
+#endif
+
 void Browser::OpenAboutChromeDialog() {
   UserMetrics::RecordAction(L"AboutChrome", profile_);
   window_->ShowAboutChromeDialog();
@@ -1398,11 +1415,8 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();         break;
     case IDC_SHOW_HISTORY:          ShowHistoryTab();              break;
     case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();            break;
-#if defined(OS_WIN)
 #ifdef CHROME_PERSONALIZATION
-    case IDC_P13N_INFO:
-      Personalization::HandleMenuItemClick(profile());             break;
-#endif
+    case IDC_SYNC_BOOKMARKS:        OpenSyncMyBookmarksDialog();   break;
 #endif
     case IDC_OPTIONS:               OpenOptionsDialog();           break;
     case IDC_EDIT_SEARCH_ENGINES:   OpenKeywordEditor();           break;

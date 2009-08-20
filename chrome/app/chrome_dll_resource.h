@@ -188,7 +188,7 @@
 #define IDC_SPELLCHECK_LANGUAGES_FIRST  41006
 #define IDC_SPELLCHECK_LANGUAGES_LAST   41106
 #define IDC_CHECK_SPELLING_OF_THIS_FIELD  41107
-#define IDC_P13N_INFO                   41108
+#define IDC_SYNC_BOOKMARKS              41108
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

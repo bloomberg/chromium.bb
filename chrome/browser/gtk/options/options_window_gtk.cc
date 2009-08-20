@@ -13,9 +13,6 @@
 #include "chrome/browser/gtk/options/content_page_gtk.h"
 #include "chrome/browser/gtk/options/general_page_gtk.h"
 #include "chrome/browser/profile.h"
-#ifdef CHROME_PERSONALIZATION
-#include "chrome/browser/sync/personalization.h"
-#endif
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"

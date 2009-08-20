@@ -63,7 +63,7 @@ extern const char kChromeUIThumbnailPath[];
 extern const char kChromeUIThemePath[];
 
 // Sync related URL components.
-extern const char kSyncResourcesPath[];
+extern const char kSyncResourcesHost[];
 extern const char kSyncGaiaLoginPath[];
 extern const char kSyncMergeAndSyncPath[];
 extern const char kSyncThrobberPath[];

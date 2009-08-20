@@ -381,6 +381,9 @@ class Browser : public TabStripModelDelegate,
   void OpenOptionsDialog();
   void OpenKeywordEditor();
   void OpenPasswordManager();
+#ifdef CHROME_PERSONALIZATION
+  void OpenSyncMyBookmarksDialog();
+#endif
   void OpenImportSettingsDialog();
   void OpenAboutChromeDialog();
   void OpenHelpTab();

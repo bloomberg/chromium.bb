@@ -55,7 +55,7 @@ const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIThumbnailPath[] = "thumb";
 const char kChromeUIThemePath[] = "theme";
 
-const char kSyncResourcesPath[] = "syncresources";
+const char kSyncResourcesHost[] = "syncresources";
 const char kSyncGaiaLoginPath[] = "gaialogin";
 const char kSyncMergeAndSyncPath[] = "mergeandsync";
 const char kSyncThrobberPath[] = "throbber.png";

@@ -22,7 +22,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/personalization.h"
 #include "chrome/browser/sync/personalization_strings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"

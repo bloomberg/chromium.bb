@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/browser/sync/personalization.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "googleurl/src/gurl.h"
 

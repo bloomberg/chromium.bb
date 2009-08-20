@@ -8,7 +8,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/sync/personalization.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/test/live_sync/bookmark_model_verifier.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
