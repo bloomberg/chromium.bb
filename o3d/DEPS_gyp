@@ -2,9 +2,9 @@ vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "29",
   "chromium_rev": "22547",
-  "o3d_code_rev": "113",
+  "o3d_code_rev": "119",
   "skia_rev": "279",
-  "gyp_rev": "596",
+  "gyp_rev": "601",
   "gtest_rev": "267",
   "gflags_rev": "30",
   "breakpad_rev": "346",
@@ -51,17 +51,17 @@ deps = {
 
 # Stuff from the Chromium tree.
 
-  "third_party/skia":
-    "http://skia.googlecode.com/svn/trunk@" + Var("skia_rev"),
-
-  "third_party/libevent":
-    Var("chromium_trunk") + "/src/third_party/libevent@" + Var("chromium_rev"),
-
   "third_party/boost":
     Var("chromium_trunk") + "/src/third_party/boost@" + Var("chromium_rev"),
 
+  "third_party/harfbuzz":
+    Var("chromium_trunk") + "/src/third_party/harfbuzz@" + Var("chromium_rev"),
+
   "third_party/icu38":
     Var("chromium_trunk") + "/deps/third_party/icu38@" + Var("icu38_rev"),
+
+  "third_party/libevent":
+    Var("chromium_trunk") + "/src/third_party/libevent@" + Var("chromium_rev"),
 
   "third_party/libjpeg":
     Var("chromium_trunk") + "/src/third_party/libjpeg@" + Var("chromium_rev"),
@@ -71,6 +71,9 @@ deps = {
 
   "third_party/zlib":
     Var("chromium_trunk") + "/src/third_party/zlib@" + Var("chromium_rev"),
+
+  "third_party/skia":
+    "http://skia.googlecode.com/svn/trunk@" + Var("skia_rev"),
 
   "v8":
     "http://v8.googlecode.com/svn/trunk@" + Var("v8_rev"),
@@ -132,6 +135,11 @@ deps_os = {
 
     "third_party/python_24":
       Var("chromium_trunk") + "/deps/third_party/python_24@19441",
+  },
+  "unix": {
+    # Linux, really.
+    "site_scons":
+      Var("chromium_trunk") + "/src/site_scons@" + Var("chromium_rev"),
   },
 }
 
