@@ -152,7 +152,7 @@ void CopyPreferenceFileForFirstRun(bool system_level,
   file_util::AppendToPath(&prefs_dest_path,
                           installer_util::kDefaultMasterPrefs);
   if (!file_util::CopyFile(prefs_source_path, prefs_dest_path))
-    LOG(ERROR) << "failed copying master profile";
+    LOG(INFO) << "Failed to copy master preferences.";
 }
 
 // This method creates Chrome shortcuts in Start->Programs for all users or
@@ -566,4 +566,3 @@ std::wstring installer::GetInstallerPathUnderChrome(
   file_util::AppendToPath(&installer_path, installer_util::kInstallerDir);
   return installer_path;
 }
-
