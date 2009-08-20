@@ -107,6 +107,9 @@ WONTFIX SKIP : LayoutTests/fast/frames/hover-timer-crash.html = TIMEOUT
 // (sans the nonterminating ones) as part of the v8 tests.
 WONTFIX SKIP : LayoutTests/fast/regex/test1.html = PASS
 
+// We disallow file:// urls from doing XHR to data:.
+WONTFIX BUG9275 : LayoutTests/fast/encoding/char-decoding.html = FAIL
+
 // -----------------------------------------------------------------
 // FAILING TESTS
 // -----------------------------------------------------------------
@@ -1635,9 +1638,6 @@ BUG10408 MAC : LayoutTests/fast/forms/menulist-no-overflow.html = FAIL
 // Pass locally but fail on the bots.
 BUG10409 MAC : LayoutTests/fast/forms/002.html = FAIL
 BUG10409 MAC LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = FAIL
-
-// We disallow file:// urls from doing XHR to data:.
-BUG9275 : LayoutTests/fast/encoding/char-decoding.html = FAIL
 
 // intermittent failures on the buildbot
 BUG10411 : LayoutTests/svg/custom/gradient-stop-style-change.svg = FAIL PASS
