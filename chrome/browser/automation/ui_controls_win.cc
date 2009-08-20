@@ -306,20 +306,12 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,
   return SendKeyPressImpl(key, control, shift, alt, task);
 }
 
-bool SendKeyDown(wchar_t key) {
-  return SendKeyEvent(key, false);
-}
-
-bool SendKeyUp(wchar_t key) {
-  return SendKeyEvent(key, true);
-}
-
 bool SendMouseMove(long x, long y) {
   return SendMouseMoveImpl(x, y, NULL);
 }
 
-void SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
-  SendMouseMoveImpl(x, y, task);
+bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
+  return SendMouseMoveImpl(x, y, task);
 }
 
 bool SendMouseEvents(MouseButton type, int state) {
@@ -330,8 +322,7 @@ void SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
   SendMouseEventsImpl(type, state, task);
 }
 
-bool SendMouseClick(gfx::NativeWindow window, const gfx::Point& point,
-                    MouseButton type) {
+bool SendMouseClick(const gfx::Point& point, MouseButton type) {
   return SendMouseEventsImpl(type, UP | DOWN, NULL);
 }
 

@@ -46,15 +46,9 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,
                                 bool control, bool shift,
                                 bool alt, Task* task);
 
-// Send a key down event. Use VK_CONTROL for ctrl key,
-// VK_MENU for alt key and VK_SHIFT for shift key.
-// Refer MSDN for more virtual key codes.
-bool SendKeyDown(wchar_t key);
-bool SendKeyUp(wchar_t key);
-
 // Simulate a mouse move. (x,y) are absolute screen coordinates.
 bool SendMouseMove(long x, long y);
-void SendMouseMoveNotifyWhenDone(long x, long y, Task* task);
+bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task);
 
 enum MouseButton {
   LEFT = 0,
@@ -73,8 +67,9 @@ bool SendMouseEvents(MouseButton type, int state);
 void SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task);
 
 // Simulate a single mouse click with given button type.
-bool SendMouseClick(gfx::NativeWindow window, const gfx::Point& point,
-                    MouseButton type);
+// The click will be sent to whichever window is under the cursor, so make sure
+// the cursor is where you want it before calling this.
+bool SendMouseClick(const gfx::Point& point, MouseButton type);
 
 // A combination of SendMouseMove to the middle of the view followed by
 // SendMouseEvents.

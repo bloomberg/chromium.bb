@@ -15,6 +15,16 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
+
+#if defined(OS_WIN)
+#define MAYBE_TestShowScriptsTab TestShowScriptsTab
+#define MAYBE_TestSetBreakpoint TestSetBreakpoint
+#elif defined(OS_LINUX)
+// http://crbug.com/19748
+#define MAYBE_TestShowScriptsTab DISABLED_TestShowScriptsTab
+#define MAYBE_TestSetBreakpoint DISABLED_TestSetBreakpoint
+#endif
+
 namespace {
 
 // Used to block until a dev tools client window's browser is closed.
@@ -152,13 +162,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
 
 // Tests scripts panel showing.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
 // Tests set breakpoint.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 

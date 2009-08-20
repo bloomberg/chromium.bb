@@ -71,6 +71,8 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/gtk/view_id_util.h"
 #endif
 
 using base::Time;
@@ -787,6 +789,38 @@ class AutomationInterstitialPage : public InterstitialPage {
   DISALLOW_COPY_AND_ASSIGN(AutomationInterstitialPage);
 };
 
+#if !defined(OS_MACOSX)
+class ClickTask : public Task {
+ public:
+  ClickTask(gfx::Point point, int flags) : point_(point), flags_(flags) {}
+  virtual ~ClickTask() {}
+
+  virtual void Run() {
+    ui_controls::MouseButton button = ui_controls::LEFT;
+    if ((flags_ & views::Event::EF_LEFT_BUTTON_DOWN) ==
+        views::Event::EF_LEFT_BUTTON_DOWN) {
+      button = ui_controls::LEFT;
+    } else if ((flags_ & views::Event::EF_RIGHT_BUTTON_DOWN) ==
+        views::Event::EF_RIGHT_BUTTON_DOWN) {
+      button = ui_controls::RIGHT;
+    } else if ((flags_ & views::Event::EF_MIDDLE_BUTTON_DOWN) ==
+        views::Event::EF_MIDDLE_BUTTON_DOWN) {
+      button = ui_controls::MIDDLE;
+    } else {
+      NOTREACHED();
+    }
+
+    ui_controls::SendMouseClick(point_, button);
+  }
+
+ private:
+  gfx::Point point_;
+  int flags_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClickTask);
+};
+#endif
+
 AutomationProvider::AutomationProvider(Profile* profile)
     : redirect_query_(0),
       profile_(profile),
@@ -1481,6 +1515,27 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
         bounds->set_origin(point);
       }
     }
+#elif defined(OS_LINUX)
+    gfx::NativeWindow window = window_tracker_->GetResource(handle);
+    GtkWidget* widget = ViewIDUtil::GetWidget(GTK_WIDGET(window),
+                                              static_cast<ViewID>(view_id));
+    if (!widget)
+      return;
+    *success = true;
+    *bounds = gfx::Rect(0, 0,
+                        widget->allocation.width, widget->allocation.height);
+    gint x, y;
+    if (screen_coordinates) {
+      gdk_window_get_origin(widget->window, &x, &y);
+      if (GTK_WIDGET_NO_WINDOW(widget)) {
+        x += widget->allocation.x;
+        y += widget->allocation.y;
+      }
+    } else {
+      gtk_widget_translate_coordinates(widget, GTK_WIDGET(window),
+                                       0, 0, &x, &y);
+    }
+    bounds->set_origin(gfx::Point(x, y));
 #else
     NOTIMPLEMENTED();
 #endif
@@ -1600,23 +1655,8 @@ void AutomationProvider::WindowSimulateClick(const IPC::Message& message,
                                              int flags) {
 
   if (window_tracker_->ContainsHandle(handle)) {
-    gfx::NativeWindow window = window_tracker_->GetResource(handle);
-    ui_controls::SendMouseMove(click.x(), click.y());
-
-    ui_controls::MouseButton button = ui_controls::LEFT;
-    if ((flags & views::Event::EF_LEFT_BUTTON_DOWN) ==
-        views::Event::EF_LEFT_BUTTON_DOWN) {
-      button = ui_controls::LEFT;
-    } else if ((flags & views::Event::EF_RIGHT_BUTTON_DOWN) ==
-        views::Event::EF_RIGHT_BUTTON_DOWN) {
-      button = ui_controls::RIGHT;
-    } else if ((flags & views::Event::EF_MIDDLE_BUTTON_DOWN) ==
-        views::Event::EF_MIDDLE_BUTTON_DOWN) {
-      button = ui_controls::MIDDLE;
-    } else {
-      NOTREACHED();
-    }
-    ui_controls::SendMouseClick(window, click, button);
+    ui_controls::SendMouseMoveNotifyWhenDone(click.x(), click.y(),
+                                             new ClickTask(click, flags));
   }
 }
 #endif
