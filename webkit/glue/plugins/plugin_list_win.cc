@@ -357,7 +357,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
 
 void PluginList::LoadInternalPlugins(std::vector<WebPluginInfo>* plugins) {
   if (!use_internal_activex_shim_)
-
+    return;
   LoadPlugin(FilePath(kActiveXShimFileName), plugins);
   LoadPlugin(FilePath(kActiveXShimFileNameForMediaPlayer), plugins);
 }
