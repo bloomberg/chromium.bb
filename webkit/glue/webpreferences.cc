@@ -73,4 +73,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   // submenu to a context menu. it is not only because we don't need the result
   // but also because it cause a possible crash in Editor::hasBidiSelection().
   settings->setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
+
+  // Web inspector settings need to be passed in differently.
+  web_view->SetInspectorSettings(inspector_settings);
 }
