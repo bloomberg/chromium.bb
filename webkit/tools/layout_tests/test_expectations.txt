@@ -2698,12 +2698,6 @@ BUG17635 MAC : LayoutTests/fast/css/only-child-pseudo-class.html = PASS FAIL
 BUG18116 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
 BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 
-// Test failures from WebKit merge 46426 to 46471
-// These probably just need to be rebaselined on win/linux.
-BUG17883 WIN LINUX : LayoutTests/editing/deleting/delete-3857753-fix.html = FAIL
-BUG17883 WIN LINUX : LayoutTests/editing/pasteboard/display-block-on-spans.html = FAIL
-BUG17883 LINUX : LayoutTests/editing/execCommand/5138441.html = FAIL
-
 // This happened when I enabled DOM Storage.  Adam asked me to just exclude and
 // file a bug.
 BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-properties.html = FAIL
