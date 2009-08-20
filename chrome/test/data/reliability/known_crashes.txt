@@ -69,9 +69,6 @@ PREFIX : npapi::pluginstream::trywritetoplugin___npapi::pluginstream::writetoplu
 # 8020
 PREFIX : passwordformdommanager::findpasswordformfields___passwordformdommanager::createpasswordform___webframeloaderclient::dispatchdidfinishdocumentload
 
-# 18358
-PREFIX : resolveproxymsghelper::startpendingrequest___resolveproxymsghelper::start
-
 # 12156
 SUBSTRING : views::focuswindowcallback___base::messagepumpforui::dorunloop
 

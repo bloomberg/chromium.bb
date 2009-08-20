@@ -53,7 +53,16 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
   DCHECK(NULL == proxy_service_);
 
   // Start the request.
-  proxy_service_ = GetProxyService();
+  bool ok = GetProxyService(&proxy_service_);
+
+  if (!ok) {
+    // During shutdown, there may be no ProxyService to use, because the
+    // default ChromeURLRequestContext has already been NULL-ed out.
+    LOG(WARNING) << "Failed getting default URLRequestContext";
+    OnResolveProxyCompleted(net::ERR_FAILED);
+    return;
+  }
+
   int result = proxy_service_->ResolveProxy(
       req.url, &proxy_info_, &callback_, &req.pac_req, NULL);
 
@@ -62,13 +71,22 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
     OnResolveProxyCompleted(result);
 }
 
-net::ProxyService* ResolveProxyMsgHelper::GetProxyService() const {
+bool ResolveProxyMsgHelper::GetProxyService(
+    scoped_refptr<net::ProxyService>* out) const {
   // Unit-tests specify their own proxy service to use.
-  if (proxy_service_override_)
-    return proxy_service_override_;
+  if (proxy_service_override_) {
+    *out = proxy_service_override_;
+    return true;
+  }
+
+  // If there is no default request context (say during shut down).
+  URLRequestContext* context = Profile::GetDefaultRequestContext();
+  if (!context)
+    return false;
 
   // Otherwise use the browser's global proxy service.
-  return Profile::GetDefaultRequestContext()->proxy_service();
+  *out = context->proxy_service();
+  return true;
 }
 
 ResolveProxyMsgHelper::~ResolveProxyMsgHelper() {

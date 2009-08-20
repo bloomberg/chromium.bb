@@ -43,13 +43,13 @@ class ResolveProxyMsgHelper {
     virtual ~Delegate() {}
   };
 
-  // Construct a ResolveProxyMsgHelper instance that notifies request
+  // Constructs a ResolveProxyMsgHelper instance that notifies request
   // completion to |delegate|. Note that |delegate| must be live throughout
   // our lifespan. If |proxy_service| is NULL, then the current profile's
   // proxy service will be used.
   ResolveProxyMsgHelper(Delegate* delegate, net::ProxyService* proxy_service);
 
-  // Resolve proxies for |url|. Completion is notified through the delegate.
+  // Resolves proxies for |url|. Completion is notified through the delegate.
   // If multiple requests are started at the same time, they will run in
   // FIFO order, with only 1 being outstanding at a time.
   void Start(const GURL& url, IPC::Message* reply_msg);
@@ -62,11 +62,12 @@ class ResolveProxyMsgHelper {
   // Callback for the ProxyService (bound to |callback_|).
   void OnResolveProxyCompleted(int result);
 
-  // Start the first pending request.
+  // Starts the first pending request.
   void StartPendingRequest();
 
-  // Get the proxy service instance to use.
-  net::ProxyService* GetProxyService() const;
+  // Get the proxy service instance to use. On success returns true and
+  // sets |*out|. Otherwise returns false.
+  bool GetProxyService(scoped_refptr<net::ProxyService>* out) const;
 
   // A PendingRequest is a resolve request that is in progress, or queued.
   struct PendingRequest {
