@@ -237,6 +237,10 @@ class Extension {
   // an empty FilePath if the extension does not have that icon.
   FilePath GetIconPath(Icons icon);
 
+  const DictionaryValue* manifest_value() const {
+    return manifest_value_.get();
+  }
+
   // Returns a list of all locales supported by the extension.
   const std::set<std::string>& supported_locales() const {
     return supported_locales_;
@@ -363,7 +367,10 @@ class Extension {
   // URL for fetching an update manifest
   GURL update_url_;
 
-  // List of all locales extension supports.
+  // A copy of the manifest that this extension was created from.
+  scoped_ptr<DictionaryValue> manifest_value_;
+
+    // List of all locales extension supports.
   std::set<std::string> supported_locales_;
 
   // Default locale, used for fallback.

@@ -138,6 +138,10 @@ class CrxInstaller :
   // ExtensionsService on success, or delete it on failure.
   scoped_ptr<Extension> extension_;
 
+  // If non-empty, contains the current version of the extension we're
+  // installing (for upgrades).
+  std::string current_version_;
+
   // The icon we will display in the installation UI, if any.
   scoped_ptr<SkBitmap> install_icon_;
 

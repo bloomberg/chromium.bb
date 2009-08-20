@@ -171,6 +171,9 @@ void CrxInstaller::ConfirmInstall() {
     return;
   }
 
+  current_version_ =
+      frontend_->extension_prefs()->GetVersionString(extension_->id());
+
   if (client_.get()) {
     AddRef();  // balanced in ContinueInstall() and AbortInstall().
     client_->ConfirmInstall(this, extension_.get(), install_icon_.get());
@@ -199,17 +202,10 @@ void CrxInstaller::CompleteInstall() {
   DCHECK(MessageLoop::current() == file_loop_);
 
   FilePath version_dir;
-  Extension::InstallType install_type = Extension::INSTALL_ERROR;
-  std::string error_msg;
-  if (!extension_file_util::InstallExtension(unpacked_extension_root_,
-                                             install_directory_,
-                                             extension_->id(),
-                                             extension_->VersionString(),
-                                             &version_dir,
-                                             &install_type, &error_msg)) {
-    ReportFailureFromFileThread(error_msg);
-    return;
-  }
+  Extension::InstallType install_type =
+      extension_file_util::CompareToInstalledVersion(
+          install_directory_, extension_->id(), current_version_,
+          extension_->VersionString(), &version_dir);
 
   if (install_type == Extension::DOWNGRADE) {
     ReportFailureFromFileThread("Attempted to downgrade extension.");
@@ -219,6 +215,13 @@ void CrxInstaller::CompleteInstall() {
   if (install_type == Extension::REINSTALL) {
     // We use this as a signal to switch themes.
     ReportOverinstallFromFileThread();
+    return;
+  }
+
+  std::string error_msg;
+  if (!extension_file_util::InstallExtension(unpacked_extension_root_,
+                                             version_dir, &error_msg)) {
+    ReportFailureFromFileThread(error_msg);
     return;
   }
 

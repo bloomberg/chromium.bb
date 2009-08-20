@@ -303,7 +303,9 @@ class ExtensionsServiceBackend
                                         Extension::Location location);
  private:
   // Loads a single installed extension.
-  void LoadInstalledExtension(const std::string& id, const FilePath& path,
+  void LoadInstalledExtension(DictionaryValue* manifest,
+                              const std::string& id,
+                              const FilePath& path,
                               Extension::Location location);
 
   // Finish installing the extension in |crx_path| after it has been unpacked to

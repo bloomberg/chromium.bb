@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -17,6 +18,8 @@
 namespace extension_file_util {
 
 const char kInstallDirectoryName[] = "Extensions";
+// TODO(mpcomplete): obsolete. remove after migration period.
+// http://code.google.com/p/chromium/issues/detail?id=19733
 const char kCurrentVersionFileName[] = "Current Version";
 
 bool MoveDirSafely(const FilePath& source_dir, const FilePath& dest_dir) {
@@ -37,76 +40,34 @@ bool MoveDirSafely(const FilePath& source_dir, const FilePath& dest_dir) {
   return true;
 }
 
-bool SetCurrentVersion(const FilePath& dest_dir, const std::string& version,
-                       std::string* error) {
-  // Write out the new CurrentVersion file.
-  // <profile>/Extension/<name>/CurrentVersion
-  FilePath current_version = dest_dir.AppendASCII(kCurrentVersionFileName);
-  FilePath current_version_old =
-    current_version.InsertBeforeExtension(FILE_PATH_LITERAL("_old"));
-  if (file_util::PathExists(current_version_old)) {
-    if (!file_util::Delete(current_version_old, false)) {
-      *error = "Couldn't remove CurrentVersion_old file.";
-      return false;
-    }
-  }
-
-  if (file_util::PathExists(current_version)) {
-    if (!file_util::Move(current_version, current_version_old)) {
-      *error = "Couldn't move CurrentVersion file.";
-      return false;
-    }
-  }
-  net::FileStream stream;
-  int flags = base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE;
-  if (stream.Open(current_version, flags) != 0)
-    return false;
-  if (stream.Write(version.c_str(), version.size(), NULL) < 0) {
-    // Restore the old CurrentVersion.
-    if (file_util::PathExists(current_version_old)) {
-      if (!file_util::Move(current_version_old, current_version)) {
-        LOG(WARNING) << "couldn't restore " << current_version_old.value() <<
-            " to " << current_version.value();
-
-        // TODO(erikkay): This is an ugly state to be in.  Try harder?
-      }
-    }
-    *error = "Couldn't create CurrentVersion file.";
-    return false;
-  }
-  return true;
-}
-
-bool ReadCurrentVersion(const FilePath& dir, std::string* version_string) {
-  FilePath current_version = dir.AppendASCII(kCurrentVersionFileName);
-  if (file_util::PathExists(current_version)) {
-    if (file_util::ReadFileToString(current_version, version_string)) {
-      TrimWhitespaceASCII(*version_string, TRIM_ALL, version_string);
-      return true;
-    }
-  }
-  return false;
-}
-
 Extension::InstallType CompareToInstalledVersion(
-    const FilePath& install_directory, const std::string& id,
-    const std::string& new_version_str, std::string *current_version_str) {
-  CHECK(current_version_str);
-  FilePath dir(install_directory.AppendASCII(id.c_str()));
-  if (!ReadCurrentVersion(dir, current_version_str))
+    const FilePath& extensions_dir,
+    const std::string& extension_id,
+    const std::string& current_version_str,
+    const std::string& new_version_str,
+    FilePath* version_dir) {
+  FilePath dest_dir = extensions_dir.AppendASCII(extension_id);
+  FilePath current_version_dir = dest_dir.AppendASCII(current_version_str);
+  *version_dir = dest_dir.AppendASCII(new_version_str);
+
+  if (current_version_str.empty())
     return Extension::NEW_INSTALL;
 
   scoped_ptr<Version> current_version(
-    Version::GetVersionFromString(*current_version_str));
+    Version::GetVersionFromString(current_version_str));
   scoped_ptr<Version> new_version(
     Version::GetVersionFromString(new_version_str));
   int comp = new_version->CompareTo(*current_version);
   if (comp > 0)
     return Extension::UPGRADE;
-  else if (comp == 0)
-    return Extension::REINSTALL;
-  else
+  if (comp < 0)
     return Extension::DOWNGRADE;
+
+  // Same version. Treat corrupted existing installation as new install case.
+  if (!SanityCheckExtension(current_version_dir))
+    return Extension::NEW_INSTALL;
+
+  return Extension::REINSTALL;
 }
 
 bool SanityCheckExtension(const FilePath& dir) {
@@ -118,43 +79,16 @@ bool SanityCheckExtension(const FilePath& dir) {
 }
 
 bool InstallExtension(const FilePath& src_dir,
-                      const FilePath& extensions_dir,
-                      const std::string& extension_id,
-                      const std::string& extension_version,
-                      FilePath* version_dir,
-                      Extension::InstallType* install_type,
+                      const FilePath& version_dir,
                       std::string* error) {
-  FilePath dest_dir = extensions_dir.AppendASCII(extension_id);
-  *version_dir = dest_dir.AppendASCII(extension_version);
-
-  std::string current_version;
-  *install_type = CompareToInstalledVersion(
-      extensions_dir, extension_id, extension_version, &current_version);
-
-  // Do not allow downgrade.
-  if (*install_type == Extension::DOWNGRADE)
-    return true;
-
-  if (*install_type == Extension::REINSTALL) {
-    if (!SanityCheckExtension(*version_dir)) {
-      // Treat corrupted existing installation as new install case.
-      *install_type = Extension::NEW_INSTALL;
-    } else {
-      return true;
-    }
-  }
-
   // If anything fails after this, we want to delete the extension dir.
   ScopedTempDir scoped_version_dir;
-  scoped_version_dir.Set(*version_dir);
+  scoped_version_dir.Set(version_dir);
 
-  if (!MoveDirSafely(src_dir, *version_dir)) {
+  if (!MoveDirSafely(src_dir, version_dir)) {
     *error = "Could not move extension directory into profile.";
     return false;
   }
-
-  if (!SetCurrentVersion(dest_dir, extension_version, error))
-    return false;
 
   scoped_version_dir.Take();
   return true;
@@ -184,13 +118,20 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
                                 require_key, error))
     return NULL;
 
+  if (!ValidateExtension(extension.get(), error))
+    return NULL;
+
+  return extension.release();
+}
+
+bool ValidateExtension(Extension* extension, std::string* error) {
   // Validate icons exist.
   for (std::map<int, std::string>::const_iterator iter =
        extension->icons().begin(); iter != extension->icons().end(); ++iter) {
     if (!file_util::PathExists(extension->GetResourcePath(iter->second))) {
       *error = StringPrintf("Could not load extension icon '%s'.",
                             iter->second.c_str());
-      return NULL;
+      return false;
     }
   }
 
@@ -207,14 +148,14 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
             *error = StringPrintf(
                 "Could not load '%s' for theme.",
                 WideToUTF8(image_path.ToWStringHack()).c_str());
-            return NULL;
+            return false;
           }
         }
       }
     }
 
     // Themes cannot contain other extension types.
-    return extension.release();
+    return true;
   }
 
   // Validate that claimed script resources actually exist.
@@ -226,7 +167,7 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
       if (!file_util::PathExists(path)) {
         *error = StringPrintf("Could not load '%s' for content script.",
                               WideToUTF8(path.ToWStringHack()).c_str());
-        return NULL;
+        return false;
       }
     }
 
@@ -235,7 +176,7 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
       if (!file_util::PathExists(path)) {
         *error = StringPrintf("Could not load '%s' for content script.",
                               WideToUTF8(path.ToWStringHack()).c_str());
-        return NULL;
+        return false;
       }
     }
   }
@@ -246,7 +187,7 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
     if (!file_util::PathExists(plugin.path)) {
       *error = StringPrintf("Could not load '%s' for plugin.",
                             WideToUTF8(plugin.path.ToWStringHack()).c_str());
-      return NULL;
+      return false;
     }
   }
 
@@ -257,7 +198,7 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
     if (!file_util::PathExists(blacklist.path)) {
       *error = StringPrintf("Could not load '%s' for privacy blacklist.",
                             WideToUTF8(blacklist.path.ToWStringHack()).c_str());
-      return NULL;
+      return false;
     }
   }
 
@@ -272,33 +213,34 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
       if (!file_util::PathExists(extension->GetResourcePath(*iter))) {
         *error = StringPrintf("Could not load icon '%s' for page action.",
                               iter->c_str());
-        return NULL;
+        return false;
       }
     }
   }
 
   // Load locale information if available.
-  FilePath locale_path = extension_path.AppendASCII(Extension::kLocaleFolder);
+  FilePath locale_path =
+      extension->path().AppendASCII(Extension::kLocaleFolder);
   if (file_util::PathExists(locale_path)) {
     if (!extension_l10n_util::AddValidLocales(locale_path,
-                                              extension.get(),
+                                              extension,
                                               error)) {
-      return NULL;
+      return false;
     }
 
-    if (!extension_l10n_util::ValidateDefaultLocale(extension.get())) {
+    if (!extension_l10n_util::ValidateDefaultLocale(extension)) {
       *error = extension_manifest_errors::kLocalesNoDefaultLocaleSpecified;
-      return NULL;
+      return false;
     }
   }
 
   // Check children of extension root to see if any of them start with _ and is
   // not on the reserved list.
-  if (!CheckForIllegalFilenames(extension_path, error)) {
-    return NULL;
+  if (!CheckForIllegalFilenames(extension->path(), error)) {
+    return false;
   }
 
-  return extension.release();
+  return true;
 }
 
 void UninstallExtension(const std::string& id, const FilePath& extensions_dir) {
@@ -314,8 +256,7 @@ void UninstallExtension(const std::string& id, const FilePath& extensions_dir) {
   FilePath current_version_file = extension_root.AppendASCII(
       kCurrentVersionFileName);
   if (!file_util::PathExists(current_version_file)) {
-    LOG(WARNING) << "Extension " << id
-                 << " does not have a Current Version file.";
+    // This is OK, since we're phasing out the current version file.
   } else {
     if (!file_util::Delete(current_version_file, false)) {
       LOG(WARNING) << "Could not delete Current Version file for extension "
@@ -332,7 +273,8 @@ void UninstallExtension(const std::string& id, const FilePath& extensions_dir) {
     LOG(WARNING) << "Could not delete directory for extension " << id;
 }
 
-void GarbageCollectExtensions(const FilePath& install_directory) {
+void GarbageCollectExtensions(const FilePath& install_directory,
+                              const std::set<std::string>& installed_ids) {
   // Nothing to clean up if it doesn't exist.
   if (!file_util::DirectoryExists(install_directory))
     return;
@@ -347,13 +289,11 @@ void GarbageCollectExtensions(const FilePath& install_directory) {
     std::string extension_id = WideToASCII(
         extension_path.BaseName().ToWStringHack());
 
-    // If there is no Current Version file, just delete the directory and move
-    // on. This can legitimately happen when an uninstall does not complete, for
-    // example, when a plugin is in use at uninstall time.
-    FilePath current_version_path = extension_path.AppendASCII(
-        kCurrentVersionFileName);
-    if (!file_util::PathExists(current_version_path)) {
-      LOG(INFO) << "Deleting incomplete install for directory "
+    // If there is no entry in the prefs file, just delete the directory and
+    // move on. This can legitimately happen when an uninstall does not
+    // complete, for example, when a plugin is in use at uninstall time.
+    if (installed_ids.count(extension_id) == 0) {
+      LOG(INFO) << "Deleting unreferenced install for directory "
                 << WideToASCII(extension_path.ToWStringHack()) << ".";
       file_util::Delete(extension_path, true);  // Recursive.
       continue;
@@ -409,4 +349,4 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
   return true;
 }
 
-}  // extensionfile_util
+}  // extension_file_util

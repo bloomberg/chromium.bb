@@ -459,7 +459,7 @@ Extension::Extension(const FilePath& path)
 // util class in base:
 // http://code.google.com/p/chromium/issues/detail?id=13572
 bool Extension::ParsePEMKeyBytes(const std::string& input,
-                                        std::string* output) {
+                                 std::string* output) {
   DCHECK(output);
   if (!output)
     return false;
@@ -498,8 +498,8 @@ bool Extension::ProducePEM(const std::string& input,
 }
 
 bool Extension::FormatPEMForFileOutput(const std::string input,
-                                              std::string* output,
-                                              bool is_public) {
+                                       std::string* output,
+                                       bool is_public) {
   CHECK(output);
   if (input.length() == 0)
     return false;
@@ -549,6 +549,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     // Convert to our mp-decimal.
     ConvertHexadecimalToIDAlphabet(&id_);
   }
+
+  // Make a copy of the manifest so we can store it in prefs.
+  manifest_value_.reset(static_cast<DictionaryValue*>(source.DeepCopy()));
 
   // Initialize the URL.
   extension_url_ = GURL(std::string(chrome::kExtensionScheme) +

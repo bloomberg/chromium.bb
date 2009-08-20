@@ -28,6 +28,31 @@
 #include "chrome/browser/extensions/external_registry_extension_provider_win.h"
 #endif
 
+namespace {
+
+// Helper class to collect the IDs of every extension listed in the prefs.
+class InstalledExtensionSet {
+ public:
+  InstalledExtensionSet(InstalledExtensions* installed) {
+    scoped_ptr<InstalledExtensions> cleanup(installed);
+    installed->VisitInstalledExtensions(
+        NewCallback(this, &InstalledExtensionSet::ExtensionVisited));
+  }
+
+  const std::set<std::string>& extensions() { return extensions_; }
+
+ private:
+  void ExtensionVisited(
+      DictionaryValue* manifest, const std::string& id,
+      const FilePath& path, Extension::Location location) {
+    extensions_.insert(id);
+  }
+
+  std::set<std::string> extensions_;
+};
+
+} // namespace
+
 // ExtensionsService.
 
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
@@ -283,8 +308,11 @@ void ExtensionsService::ReloadExtensions() {
 }
 
 void ExtensionsService::GarbageCollectExtensions() {
+  InstalledExtensionSet installed(
+      new InstalledExtensions(extension_prefs_.get()));
   backend_loop_->PostTask(FROM_HERE, NewRunnableFunction(
-      &extension_file_util::GarbageCollectExtensions, install_directory_));
+      &extension_file_util::GarbageCollectExtensions, install_directory_,
+      installed.extensions()));
 }
 
 void ExtensionsService::OnLoadedInstalledExtensions() {
@@ -347,6 +375,8 @@ void ExtensionsService::OnExtensionsLoaded(ExtensionList* new_extensions) {
 
       switch (extension_prefs_->GetExtensionState(extension->id())) {
         case Extension::ENABLED:
+          if (extension->location() != Extension::LOAD)
+            extension_prefs_->MigrateToPrefs(extension.get());
           enabled_extensions.push_back(extension.get());
           extensions_.push_back(extension.release());
           break;
@@ -378,11 +408,7 @@ void ExtensionsService::OnExtensionsLoaded(ExtensionList* new_extensions) {
 }
 
 void ExtensionsService::OnExtensionInstalled(Extension* extension) {
-  // Make sure we don't enable a disabled extension.
-  if (extension_prefs_->GetExtensionState(extension->id()) !=
-      Extension::DISABLED) {
-    extension_prefs_->OnExtensionInstalled(extension);
-  }
+  extension_prefs_->OnExtensionInstalled(extension);
 
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
   // to apply it.
@@ -516,9 +542,8 @@ void ExtensionsServiceBackend::LoadInstalledExtensions(
   alert_on_error_ = false;
 
   // Call LoadInstalledExtension for each extension |installed| knows about.
-  scoped_ptr<InstalledExtensions::Callback> callback(
+  installed->VisitInstalledExtensions(
       NewCallback(this, &ExtensionsServiceBackend::LoadInstalledExtension));
-  installed->VisitInstalledExtensions(callback.get());
 
   frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
       frontend_, &ExtensionsService::OnLoadedInstalledExtensions));
@@ -555,7 +580,8 @@ void ExtensionsServiceBackend::LoadSingleExtension(
 }
 
 void ExtensionsServiceBackend::LoadInstalledExtension(
-    const std::string& id, const FilePath& path, Extension::Location location) {
+    DictionaryValue* manifest, const std::string& id,
+    const FilePath& path, Extension::Location location) {
   if (CheckExternalUninstall(id, location)) {
     frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
         frontend_,
@@ -567,10 +593,20 @@ void ExtensionsServiceBackend::LoadInstalledExtension(
   }
 
   std::string error;
-  Extension* extension = extension_file_util::LoadExtension(
-      path,
-      true,  // Require id
-      &error);
+  Extension* extension = NULL;
+  if (manifest) {
+    scoped_ptr<Extension> tmp(new Extension(path));
+    if (tmp->InitFromValue(*manifest, true, &error) &&
+        extension_file_util::ValidateExtension(tmp.get(), &error)) {
+      extension = tmp.release();
+    }
+  } else {
+    // TODO(mpcomplete): obsolete. remove after migration period.
+    // http://code.google.com/p/chromium/issues/detail?id=19733
+    extension = extension_file_util::LoadExtension(path,
+                                                   true,  // Require id
+                                                   &error);
+  }
 
   if (!extension) {
     ReportExtensionLoadError(path, error);

@@ -24,6 +24,12 @@ const wchar_t kPrefState[] = L"state";
 // The path to the current version's manifest file.
 const wchar_t kPrefPath[] = L"path";
 
+// The dictionary containing the extension's manifest.
+const wchar_t kPrefManifest[] = L"manifest";
+
+// The version number.
+const wchar_t kPrefVersion[] = L"manifest.version";
+
 // Indicates if an extension is blacklisted:
 const wchar_t kPrefBlacklist[] = L"blacklist";
 
@@ -43,6 +49,7 @@ InstalledExtensions::~InstalledExtensions() {
 
 void InstalledExtensions::VisitInstalledExtensions(
     InstalledExtensions::Callback *callback) {
+  scoped_ptr<InstalledExtensions::Callback> cleanup(callback);
   DictionaryValue::key_iterator extension_id = extension_data_->begin_keys();
   for (; extension_id != extension_data_->end_keys(); ++extension_id) {
     DictionaryValue* ext;
@@ -74,9 +81,16 @@ void InstalledExtensions::VisitInstalledExtensions(
       NOTREACHED();
       continue;
     }
+    DictionaryValue* manifest = NULL;
+    if (!ext->GetDictionary(kPrefManifest, &manifest)) {
+      LOG(WARNING) << "Missing manifest for extension " << *extension_id;
+      // Just a warning for now.
+    }
+
     Extension::Location location =
         static_cast<Extension::Location>(location_value);
-    callback->Run(WideToASCII(*extension_id), FilePath(path), location);
+    callback->Run(manifest, WideToASCII(*extension_id), FilePath(path),
+                  location);
   }
 }
 
@@ -300,13 +314,18 @@ void ExtensionPrefs::SetShelfToolstripOrder(const URLList& urls) {
 
 void ExtensionPrefs::OnExtensionInstalled(Extension* extension) {
   const std::string& id = extension->id();
-  UpdateExtensionPref(id, kPrefState,
-                      Value::CreateIntegerValue(Extension::ENABLED));
+  // Make sure we don't enable a disabled extension.
+  if (GetExtensionState(extension->id()) != Extension::DISABLED) {
+    UpdateExtensionPref(id, kPrefState,
+                        Value::CreateIntegerValue(Extension::ENABLED));
+  }
   UpdateExtensionPref(id, kPrefLocation,
                       Value::CreateIntegerValue(extension->location()));
   FilePath::StringType path = MakePathRelative(install_directory_,
       extension->path(), NULL);
   UpdateExtensionPref(id, kPrefPath, Value::CreateStringValue(path));
+  UpdateExtensionPref(id, kPrefManifest,
+                      extension->manifest_value()->DeepCopy());
   prefs_->SavePersistentPrefs();
 }
 
@@ -349,6 +368,25 @@ void ExtensionPrefs::SetExtensionState(Extension* extension,
   UpdateExtensionPref(extension->id(), kPrefState,
                       Value::CreateIntegerValue(state));
   prefs_->SavePersistentPrefs();
+}
+
+std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {
+  DictionaryValue* extension = GetExtensionPref(extension_id);
+  if (!extension)
+    return std::string();
+
+  std::string version;
+  if (!extension->GetString(kPrefVersion, &version)) {
+    LOG(ERROR) << "Bad or missing pref 'version' for extension '"
+               << extension_id << "'";
+  }
+
+  return version;
+}
+
+void ExtensionPrefs::MigrateToPrefs(Extension* extension) {
+  UpdateExtensionPref(extension->id(), kPrefManifest,
+                      extension->manifest_value()->DeepCopy());
 }
 
 bool ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,

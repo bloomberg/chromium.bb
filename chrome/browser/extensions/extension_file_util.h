@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_FILE_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_FILE_UTIL_H_
 
+#include <set>
 #include <string>
 
 #include "base/file_path.h"
@@ -33,24 +34,26 @@ bool SetCurrentVersion(const FilePath& dest_dir, const std::string& version,
 // Reads the Current Version file.
 bool ReadCurrentVersion(const FilePath& dir, std::string* version_string);
 
-// Determine what type of install (new, upgrade, overinstall, downgrade) a given
-// id/version combination is. Also returns the current version, if any, in
-// current_version_str.
+// Determine what type of install it is (new, upgrade, overinstall, downgrade)
+// given the current version and a newly installing version. |extensions_dir| is
+// the root directory containing all extensions in the user profile.
+// |extension_id| and |current_version_str| are the id and version of the
+// extension contained in |src_dir|, if any.
+//
+// Returns the full path to the destination version directory and the type of
+// install that was attempted.
 Extension::InstallType CompareToInstalledVersion(
-    const FilePath& install_directory, const std::string& id,
-    const std::string& new_version_str, std::string *current_version_str);
+    const FilePath& extensions_dir,
+    const std::string& extension_id,
+    const std::string& current_version_str,
+    const std::string& new_version_str,
+    FilePath* version_dir);
 
 // Sanity check that the directory has the minimum files to be a working
 // extension.
 bool SanityCheckExtension(const FilePath& extension_root);
 
-// Installs an extension unpacked in |src_dir|. |extensions_dir| is the root
-// directory containing all extensions in the user profile. |extension_id| and
-// |extension_version| are the id and version of the extension contained in
-// |src_dir|.
-//
-// Returns the full path to the destination version directory and the type of
-// install that was attempted.
+// Installs an extension unpacked in |src_dir|.
 //
 // On failure, also returns an error message.
 //
@@ -58,17 +61,17 @@ bool SanityCheckExtension(const FilePath& extension_root);
 // overinstall of previous verisons of the extension. In that case, the function
 // returns true and install_type is populated.
 bool InstallExtension(const FilePath& src_dir,
-                      const FilePath& extensions_dir,
-                      const std::string& extension_id,
-                      const std::string& extension_version,
-                      FilePath* version_dir,
-                      Extension::InstallType* install_type,
+                      const FilePath& version_dir,
                       std::string* error);
 
-// Load an extension from the specified directory. Returns NULL on failure, with
-// a description of the error in |error|.
+// Loads and validates an extension from the specified directory. Returns NULL
+// on failure, with a description of the error in |error|.
 Extension* LoadExtension(const FilePath& extension_root, bool require_key,
                          std::string* error);
+
+// Returns true if the given extension object is valid and consistent.
+// Otherwise, a description of the error is returned in |error|.
+bool ValidateExtension(Extension* extension, std::string* error);
 
 // Uninstalls the extension |id| from the install directory |extensions_dir|.
 void UninstallExtension(const std::string& id, const FilePath& extensions_dir);
@@ -76,7 +79,8 @@ void UninstallExtension(const std::string& id, const FilePath& extensions_dir);
 // Clean up directories that aren't valid extensions from the install directory.
 // TODO(aa): Also consider passing in a list of known current extensions and
 // removing others?
-void GarbageCollectExtensions(const FilePath& extensions_dir);
+void GarbageCollectExtensions(const FilePath& extensions_dir,
+                              const std::set<std::string>& installed_ids);
 
 // We need to reserve the namespace of entries that start with "_" for future
 // use by Chrome.

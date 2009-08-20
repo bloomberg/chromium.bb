@@ -636,25 +636,21 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
 // Test that partially deleted extensions are cleaned up during startup
 // Test loading bad extensions from the profile directory.
 TEST_F(ExtensionsServiceTest, CleanupOnStartup) {
-  InitializeEmptyExtensionsService();
+  FilePath source_install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
+  source_install_dir = source_install_dir
+      .AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions");
+  FilePath pref_path = source_install_dir
+      .DirName()
+      .AppendASCII("Preferences");
 
-  FilePath source_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_path));
-  source_path = source_path.AppendASCII("extensions")
-                           .AppendASCII("good")
-                           .AppendASCII("Extensions");
+  InitializeInstalledExtensionsService(pref_path, source_install_dir);
 
-  file_util::Delete(extensions_install_dir_, true);
-
-  // Recursive.
-  file_util::CopyDirectory(source_path, extensions_install_dir_, true);
-
-  // Simulate that one of them got partially deleted by deling the
-  // Current Version file.
-  FilePath vers = extensions_install_dir_
-      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-      .AppendASCII(ExtensionsService::kCurrentVersionFileName);
-  ASSERT_TRUE(file_util::Delete(vers, false));  // not recursive
+  // Simulate that one of them got partially deleted by clearing its pref.
+  prefs_->GetMutableDictionary(L"extensions.settings")->
+      Remove(L"behllobkkfkfnphdnhnkndlbkcpglgmj", NULL);
 
   service_->Init();
   loop_.RunAllPending();
@@ -669,8 +665,9 @@ TEST_F(ExtensionsServiceTest, CleanupOnStartup) {
   EXPECT_EQ(2u, count);
 
   // And extension1 dir should now be toast.
-  vers = vers.DirName();
-  ASSERT_FALSE(file_util::PathExists(vers));
+  FilePath extension_dir = extensions_install_dir_
+      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj");
+  ASSERT_FALSE(file_util::PathExists(extension_dir));
 }
 
 // Test installing extensions. This test tries to install few extensions using
@@ -1148,19 +1145,6 @@ TEST_F(ExtensionsServiceTest, UninstallExtension) {
 
   // The directory should be gone.
   EXPECT_FALSE(file_util::PathExists(extension_path));
-
-  // Try uinstalling one that doesn't have a Current Version file for some
-  // reason.
-  unloaded_id_.clear();
-  InstallExtension(path, true);
-  FilePath current_version_file =
-      extension_path.AppendASCII(ExtensionsService::kCurrentVersionFileName);
-  EXPECT_TRUE(file_util::Delete(current_version_file, true));
-  service_->UninstallExtension(extension_id, false);
-  loop_.RunAllPending();
-  EXPECT_FALSE(file_util::PathExists(extension_path));
-
-  ValidatePrefKeyCount(0);
 }
 
 // Tests loading single extensions (like --load-extension)

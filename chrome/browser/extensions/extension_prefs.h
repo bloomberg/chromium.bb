@@ -49,6 +49,13 @@ class ExtensionPrefs {
   // Called to change the extension's state when it is enabled/disabled.
   void SetExtensionState(Extension* extension, Extension::State);
 
+  // Returns the version string for the currently installed extension, or
+  // the empty string if not found.
+  std::string GetVersionString(const std::string& extension_id);
+
+  // Ensure old extensions have fully up-to-date prefs values.
+  void MigrateToPrefs(Extension* extension);
+
   // Returns base extensions install directory.
   const FilePath& install_directory() const { return install_directory_; }
 
@@ -106,18 +113,15 @@ class InstalledExtensions {
   explicit InstalledExtensions(ExtensionPrefs* prefs);
   ~InstalledExtensions();
 
-  typedef Callback3<const std::string&,
+  typedef Callback4<DictionaryValue*,
+                    const std::string&,
                     const FilePath&,
                     Extension::Location>::Type Callback;
 
   // Runs |callback| for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't trigger
-  // the callback.
+  // the callback. Ownership of |callback| is transferred to callee.
   void VisitInstalledExtensions(Callback *callback);
-
-  // Same as above, but only for the given extension.
-  void VisitInstalledExtension(const std::string& extension_id,
-                               Callback *callback);
 
  private:
   // A copy of the extensions pref dictionary so that this can be passed
