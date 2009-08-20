@@ -29,8 +29,5 @@ FirefoxImporterTest.Firefox3NSS3Decryptor
 # issue 18122
 DnsMasterTest.MassiveConcurrentLookupTest
 
-# issue 19467
-ExpireHistoryTest.*
-
-# issue 19606
+# issue 19834
 SpellCheckTest.*
