@@ -19,7 +19,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/browser/sync/personalization_strings.h"
 #include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -1889,16 +1888,16 @@ bool BookmarkBarView::ShouldShowSyncErrorButton() {
 
 views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
   views::TextButton* sync_error_button =
-      new views::TextButton(this, kBookmarkBarSyncErrorButtonText);
+      new views::TextButton(this,
+              l10n_util::GetString(IDS_SYNC_BOOKMARK_BAR_ERROR));
   sync_error_button->set_tag(kSyncErrorButtonTag);
 
   // The tooltip is the only way we have to display text explaining the error
   // to the user.
-  sync_error_button->SetTooltipText(kBookmarkBarErrorTooltip);
-
-  // TODO(idana): set an appropriate accessible name when the personalization
-  // strings are moved to the .GRD file.
-  sync_error_button->SetAccessibleName(kBookmarkBarErrorTooltip);
+  sync_error_button->SetTooltipText(
+      l10n_util::GetString(IDS_SYNC_BOOKMARK_BAR_ERROR_DESC));
+  sync_error_button->SetAccessibleName(
+      l10n_util::GetString(IDS_ACCNAME_SYNC_ERROR_BUTTON));
   sync_error_button->SetIcon(
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING));
   return sync_error_button;

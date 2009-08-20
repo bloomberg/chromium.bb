@@ -8,6 +8,7 @@
 #include <stack>
 #include <vector>
 
+#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -22,13 +23,13 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/personalization_strings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/time_format.h"
+#include "grit/generated_resources.h"
 #include "views/window/window.h"
 
 using browser_sync::ChangeProcessor;
@@ -308,12 +309,12 @@ std::wstring ProfileSyncService::BuildSyncStatusSummaryText(
 
 std::wstring ProfileSyncService::GetLastSyncedTimeString() const {
   if (last_synced_time_.is_null())
-    return kLastSyncedTimeNever;
+    return l10n_util::GetString(IDS_SYNC_TIME_NEVER);
 
   base::TimeDelta last_synced = base::Time::Now() - last_synced_time_;
 
   if (last_synced < base::TimeDelta::FromMinutes(1))
-    return kLastSyncedTimeWithinLastMinute;
+    return l10n_util::GetString(IDS_SYNC_TIME_JUST_NOW);
 
   return TimeFormat::TimeElapsed(last_synced);
 }

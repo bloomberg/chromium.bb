@@ -2359,6 +2359,9 @@ each locale. -->
       <message name="IDS_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
       </message>
+      <message name="IDS_ACCNAME_SYNC_ERROR_BUTTON" desc="The accessible name for the sync error button on the bookmarks bar.">
+        Sync Error - please relogin
+      </message>
 
       <!-- Browser Hung Plugin Detector -->
       <message name="IDS_UNKNOWN_PLUGIN_NAME" desc="Name for a plugin whose name could not be determined">
@@ -4501,6 +4504,95 @@ each locale. -->
       </message>
       <message name="IDS_OMNIBOX_SEARCH_HINT_OMNIBOX_TEXT" desc="The text displayed selected in the omnibox once the user clicked the 'Show Me' button on the omnibox search hint infobar.">
         Type your search query here
+      </message>
+
+      <!-- Sync strings -->
+
+      <!-- Sync options dialog strings -->
+      <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
+        Bookmark Sync:
+      </message>
+      <message name="IDS_SYNC_NOT_SET_UP_INFO" desc="The message that appears in the options dialog when sync has not been set up by the user.">
+        You are not set up to sync your bookmarks with your other computers.
+      </message>
+      <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
+        Synchronize my bookmarks...
+      </message>
+      <message name="IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME" desc="The message that appears in the options dialog indicating that account is synced to a user with the given email address. The last sync also appears in the message.">
+        Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>\nLast synced: <ph name="LAST_SYNC_TIME">$2<ex>12 seconds ago</ex></ph>
+      </message>
+      <message name="IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED" desc="The sync setup is underway and the user has not yet entered credentials.">
+        Account login details are not yet entered.
+      </message>
+      <message name="IDS_SYNC_AUTHENTICATING_LABEL" desc="Label to display while the user is being authenticated to use sync.">
+        Authenticating...
+      </message>
+      <message name="IDS_SYNC_INVALID_USER_CREDENTIALS" desc="Error message to display when the user name or password entered by the user are invalid.">
+        Invalid user name or password.
+      </message>
+      <message name="IDS_SYNC_ERROR_SIGNING_IN" desc="An error was encountered while signing the user in.">
+        Error signing in.
+      </message>
+      <message name="IDS_SYNC_LOGIN_INFO_OUT_OF_DATE" desc="The login information for the user is out of date - for example, the user changed their password and therefore a re-login is required.">
+        Login details are out of date.
+      </message>
+      <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to disaplay in the New Tab Page sync section when the server is unreachable.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex> could not sync your bookmarks because it could not connect to the sync server. Retrying...</ph>
+      </message>
+      <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to relogin to use sync.">
+        Login again
+      </message>
+      <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
+        Stop syncing this account
+      </message>
+
+      <!-- Sync time strings -->
+      <message name="IDS_SYNC_TIME_NEVER" desc="Indicates that the first sync has never completed.">
+        Never
+      </message>
+      <message name="IDS_SYNC_TIME_JUST_NOW" desc="Indicates that a sync cycle just finished.">
+        Just now
+      </message>
+
+      <!-- Sync New Tab Page strings -->
+      <message name="IDS_SYNC_NTP_SYNC_SECTION_TITLE" desc="The title of the sync status section in the New Tab Page.">
+        Bookmark Sync
+      </message>
+      <message name="IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE" desc="The title to display in the New Tab Page sync status section in case of an error.">
+        Bookmark Sync Error!
+      </message>
+      <message name="IDS_SYNC_NTP_PROMOTION_MESSAGE" desc="The New Tab Page sync promotion message to display in the sync status section.">
+        You can sync your bookmarks across computers using your Google account
+      </message>
+      <message name="IDS_SYNC_NTP_START_NOW_LINK_LABEL" desc="The label to display for the New Tab Page promotion link.">
+        Start now
+      </message>
+      <message name="IDS_SYNC_NTP_SETUP_IN_PROGRESS" desc="The message to display in the New Tab Page sync section when the sync setup is underway.">
+        Setup in progress...
+      </message>
+      <message name="IDS_SYNC_NTP_SYNCED_TO" desc="The message to display in the New Tab Page sync section when the user is in sync.">
+        Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_SYNC_NTP_VIEW_ONLINE_LINK" desc="The message to display in the New Tab Page link inside the sync section which allows the user to view the synced data online.">
+        View in Google Docs
+      </message>
+
+      <!-- Sync menu item strings -->
+      <message name="IDS_SYNC_MENU_LABEL" desc="Text to show in the menu item for bookmark sync.">
+        Sync my bookmarks...
+      </message>
+
+      <!-- Login dialog strings -->
+      <message name="IDS_SYNC_LOGIN_DIALOG_TITLE" desc="The title of the sync login dialog.">
+        Sync my bookmarks
+      </message>
+
+      <!-- Bookmarks bar strings -->
+      <message name="IDS_SYNC_BOOKMARK_BAR_ERROR" desc="The text to display on the bookmark bar button which indicates a sync error.">
+        Sync Error
+      </message>
+      <message name="IDS_SYNC_BOOKMARK_BAR_ERROR_DESC" desc="The detailed description of the error to associate with the bookmark bar error button.">
+        Your login details are out of date. Click to re-enter your password.
       </message>
 
       <!-- Mac Menubar Menus -->

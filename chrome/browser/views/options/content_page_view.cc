@@ -16,7 +16,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/sync/personalization_strings.h"
 #include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/views/clear_browsing_data.h"
 #include "chrome/browser/views/importer_view.h"
@@ -445,9 +444,7 @@ void ContentPageView::InitSyncGroup() {
   layout->AddView(sync_start_stop_button_);
 
   sync_group_ = new OptionsGroupView(contents,
-                                     kSyncGroupName,
-                                     std::wstring(),
-                                     true);
+      l10n_util::GetString(IDS_SYNC_OPTIONS_GROUP_NAME), std::wstring(), true);
 }
 
 void ContentPageView::UpdateSyncControls() {
@@ -458,9 +455,13 @@ void ContentPageView::UpdateSyncControls() {
   bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
   bool status_has_error = SyncStatusUIHelper::GetLabels(sync_service_,
       &status_label, &link_label) == SyncStatusUIHelper::SYNC_ERROR;
-  button_label = sync_setup_completed ? kStopSyncButtonLabel :
-                 sync_service_->SetupInProgress() ? UTF8ToWide(kSettingUpText)
-                 : kStartSyncButtonLabel;
+  if (sync_setup_completed) {
+    button_label = l10n_util::GetString(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
+  } else if (sync_service_->SetupInProgress()) {
+    button_label = l10n_util::GetString(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+  } else {
+    button_label = l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+  }
 
   sync_status_label_->SetText(status_label);
   sync_start_stop_button_->SetEnabled(!sync_service_->WizardIsVisible());

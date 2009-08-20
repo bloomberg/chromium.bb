@@ -6,18 +6,26 @@
 
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
 
+#include "app/l10n_util.h"
 #include "base/json_writer.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/sync/personalization_strings.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/browser_resources.h"
+#include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
+
+// Default URL for the sync web interface.
+//
+// TODO(idana): when we figure out how we are going to allow third parties to
+// plug in their own sync engine, we should allow this value to be
+// configurable.
+static const char kSyncDefaultViewOnlineUrl[] = "http://docs.google.com";
 
 // TODO(idana): the following code was originally copied from
 // toolbar_importer.h/cc and it needs to be moved to a common Google Accounts
@@ -111,8 +119,9 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   if (!sync_service_->HasSyncSetupCompleted() &&
       !sync_service_->SetupInProgress()) {
     if (IsGoogleGAIACookieInstalled()) {
-      SendSyncMessageToPage(SyncStatusUIHelper::PRE_SYNCED, kSyncPromotionMsg,
-                            kStartNowLinkText);
+      SendSyncMessageToPage(SyncStatusUIHelper::PRE_SYNCED,
+          WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_PROMOTION_MESSAGE)),
+          WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_START_NOW_LINK_LABEL)));
     } else {
       HideSyncStatusSection();
     }
@@ -160,7 +169,9 @@ void NewTabPageSyncHandler::SendSyncMessageToPage(
     std::string linktext) {
   DictionaryValue value;
   std::string msgtype;
-  std::string title = kSyncSectionTitle;
+  std::wstring user;
+  std::string title =
+      WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_SYNC_SECTION_TITLE));
   std::string linkurl;
   switch (type) {
     case SyncStatusUIHelper::PRE_SYNCED:
@@ -168,12 +179,16 @@ void NewTabPageSyncHandler::SendSyncMessageToPage(
       break;
     case SyncStatusUIHelper::SYNCED:
       msgtype = "synced";
-      linktext = kSyncViewOnlineLinkLabel;
-      linkurl = kSyncViewOnlineLinkUrl;
-      msg = msg.substr(0, msg.find(WideToUTF8(kLastSyncedLabel)));
+      linktext =
+          WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_VIEW_ONLINE_LINK));
+      linkurl = kSyncDefaultViewOnlineUrl;
+      user = UTF16ToWide(sync_service_->GetAuthenticatedUsername());
+      msg = WideToUTF8(l10n_util::GetStringF(IDS_SYNC_NTP_SYNCED_TO, user));
       break;
     case SyncStatusUIHelper::SYNC_ERROR:
-      title = kSyncErrorSectionTitle;
+      title =
+          WideToUTF8(
+              l10n_util::GetString(IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE));
       msgtype = "error";
       break;
   }
