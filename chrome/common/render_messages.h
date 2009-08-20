@@ -879,10 +879,12 @@ struct ParamTraits<ContextMenuMediaParams> {
   typedef ContextMenuMediaParams param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.player_state);
+    WriteParam(m, p.has_audio);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
-      ReadParam(m, iter, &p->player_state);
+      ReadParam(m, iter, &p->player_state) &&
+      ReadParam(m, iter, &p->has_audio);
   }
 };
 

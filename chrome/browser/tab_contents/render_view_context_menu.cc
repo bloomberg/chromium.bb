@@ -317,10 +317,15 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     // error state.
     case IDS_CONTENT_CONTEXT_PLAY:
     case IDS_CONTENT_CONTEXT_PAUSE:
-    case IDS_CONTENT_CONTEXT_MUTE:
-    case IDS_CONTENT_CONTEXT_UNMUTE:
     case IDS_CONTENT_CONTEXT_LOOP:
       return (params_.media_params.player_state &
+              ContextMenuMediaParams::IN_ERROR) == 0;
+
+    // Mute and unmute should also be disabled if the player has no audio.
+    case IDS_CONTENT_CONTEXT_MUTE:
+    case IDS_CONTENT_CONTEXT_UNMUTE:
+      return params_.media_params.has_audio &&
+             (params_.media_params.player_state &
               ContextMenuMediaParams::IN_ERROR) == 0;
 
     case IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS:

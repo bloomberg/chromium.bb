@@ -207,6 +207,8 @@ WebCore::PlatformMenuDescription
     if (media_element->supportsSave()) {
       media_params.player_state |= ContextMenuMediaParams::CAN_SAVE;
     }
+
+    media_params.has_audio = media_element->hasAudio();
   }
 
   // If it's not a link, an image, a media element, or an image/media link,

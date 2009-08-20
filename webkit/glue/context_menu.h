@@ -82,8 +82,11 @@ struct ContextMenuMediaParams {
   // playing, muted, etc.
   int32 player_state;
 
+  // Whether a playable audio track is present.
+  bool has_audio;
+
   ContextMenuMediaParams()
-      : player_state(NO_STATE) {
+      : player_state(NO_STATE), has_audio(false) {
   }
 };
 
