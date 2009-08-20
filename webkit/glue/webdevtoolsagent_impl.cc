@@ -75,6 +75,14 @@ void WebDevToolsAgentImpl::DisposeUtilityContext() {
   }
 }
 
+void WebDevToolsAgentImpl::UnhideResourcesPanelIfNecessary() {
+  InspectorController* ic = web_view_impl_->page()->inspectorController();
+  ic->ensureResourceTrackingSettingsLoaded();
+  String command = String::format("[\"setResourcesPanelEnabled\", %s]",
+      ic->resourceTrackingEnabled() ? "true" : "false");
+  tools_agent_delegate_stub_->DispatchOnClient(command);
+}
+
 void WebDevToolsAgentImpl::Attach() {
   if (attached_) {
     return;
@@ -87,16 +95,14 @@ void WebDevToolsAgentImpl::Attach() {
   debugger_agent_impl_->CreateUtilityContext(page->mainFrame(), &utility_context_);
   InitDevToolsAgentHost();
 
-  InspectorController* ic = web_view_impl_->page()->inspectorController();
-  // Unhide resources panel if necessary.
-  tools_agent_delegate_stub_->SetResourcesPanelEnabled(
-      ic->resourceTrackingEnabled());
+  UnhideResourcesPanelIfNecessary();
   v8::HandleScope scope;
   v8::Context::Scope context_scope(utility_context_);
 
   ScriptState* state = scriptStateFromPage(web_view_impl_->page());
   v8::Handle<v8::Object> injected_script = v8::Local<v8::Object>::Cast(
       utility_context_->Global()->Get(v8::String::New("InjectedScript")));
+  InspectorController* ic = web_view_impl_->page()->inspectorController();
   ic->setFrontendProxyObject(
       state,
       ScriptObject(state, utility_context_->Global()),
@@ -140,10 +146,7 @@ void WebDevToolsAgentImpl::DidCommitLoadForFrame(
     tools_agent_delegate_stub_->FrameNavigate(
         url.possibly_invalid_spec());
   }
-  InspectorController* ic = webview->page()->inspectorController();
-  // Unhide resources panel if necessary.
-  tools_agent_delegate_stub_->SetResourcesPanelEnabled(
-      ic->resourceTrackingEnabled());
+  UnhideResourcesPanelIfNecessary();
 }
 
 void WebDevToolsAgentImpl::WindowObjectCleared(WebFrameImpl* webframe) {
@@ -185,20 +188,6 @@ void WebDevToolsAgentImpl::GetResourceContent(
   tools_agent_native_delegate_stub_->DidGetResourceContent(call_id, content);
 }
 
-void WebDevToolsAgentImpl::SetResourceTrackingEnabled(
-    bool enabled,
-    bool always) {
-  // Hide / unhide resources panel if necessary.
-  tools_agent_delegate_stub_->SetResourcesPanelEnabled(enabled);
-
-  InspectorController* ic = web_view_impl_->page()->inspectorController();
-  if (enabled) {
-    ic->enableResourceTracking(always);
-  } else {
-    ic->disableResourceTracking(always);
-  }
-}
-
 void WebDevToolsAgentImpl::DispatchMessageFromClient(
     const std::string& class_name,
     const std::string& method_name,
@@ -223,8 +212,10 @@ void WebDevToolsAgentImpl::DispatchMessageFromClient(
 }
 
 void WebDevToolsAgentImpl::InspectElement(int x, int y) {
-  // TODO(pfeldman): implement using new inspector controller API.
-
+  Node* node = web_view_impl_->GetNodeForWindowPos(x, y);
+  if (!node) {
+    return;
+  }
 }
 
 void WebDevToolsAgentImpl::SendRpcMessage(

@@ -16,10 +16,7 @@
   \
   /* Requests that the agent sends content of the resource with given id to the
      delegate. */ \
-  METHOD2(GetResourceContent, int /* call_id */, int /* identifier */) \
-  \
-  /* Turns resource tracking on / off. */ \
-  METHOD2(SetResourceTrackingEnabled, bool /* enabled */, bool /* always */)
+  METHOD2(GetResourceContent, int /* call_id */, int /* identifier */)
 
 DEFINE_RPC_CLASS(ToolsAgent, TOOLS_AGENT_STRUCT)
 
@@ -33,10 +30,7 @@ DEFINE_RPC_CLASS(ToolsAgent, TOOLS_AGENT_STRUCT)
       String /* exception */) \
   \
   /* Sends InspectorFrontend message to be dispatched on client. */ \
-  METHOD1(DispatchOnClient, String /* data */) \
-  \
-  /* Tells frontend if resources panel should be enabled in the UI. */ \
-  METHOD1(SetResourcesPanelEnabled, bool /* enabled. */)
+  METHOD1(DispatchOnClient, String /* data */)
 
 DEFINE_RPC_CLASS(ToolsAgentDelegate, TOOLS_AGENT_DELEGATE_STRUCT)
 

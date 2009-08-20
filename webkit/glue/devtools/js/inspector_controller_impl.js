@@ -21,6 +21,8 @@ devtools.InspectorControllerImpl = function() {
   this.installInspectorControllerDelegate_('setAttribute');
   this.installInspectorControllerDelegate_('removeAttribute');
   this.installInspectorControllerDelegate_('setTextNodeValue');
+  this.installInspectorControllerDelegate_('enableResourceTracking');
+  this.installInspectorControllerDelegate_('disableResourceTracking');
 
   this.installInjectedScriptDelegate_('getStyles');
   this.installInjectedScriptDelegate_('getComputedStyle');
@@ -132,24 +134,6 @@ devtools.InspectorControllerImpl.prototype.inspectedWindow = function() {
 
 
 /**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.enableResourceTracking =
-    function(always) {
-  devtools.tools.setResourceTrackingEnabled(true, always);
-}
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.disableResourceTracking =
-    function(always) {
-  devtools.tools.setResourceTrackingEnabled(false, always);
-};
-
-
-/**
  * @override
  */
 devtools.InspectorControllerImpl.prototype.debuggerEnabled = function() {
@@ -234,14 +218,6 @@ devtools.InspectorControllerImpl.prototype.startProfiling = function() {
 devtools.InspectorControllerImpl.prototype.stopProfiling = function() {
   devtools.tools.getDebuggerAgent().stopProfiling(
       devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_CPU);
-};
-
-
-devtools.InspectorControllerImpl.prototype.storeLastActivePanel =
-    function(panel) {
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.Callback.wrap(undefined),
-      'InspectorController', JSON.stringify(['storeLastActivePanel', panel]));
 };
 
 

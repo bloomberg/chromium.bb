@@ -49,7 +49,6 @@ class WebDevToolsAgentImpl
   virtual void GetResourceContent(
       int call_id,
       int identifier);
-  virtual void SetResourceTrackingEnabled(bool enabled, bool always);
 
   // WebDevToolsAgent implementation.
   virtual void Attach();
@@ -80,6 +79,7 @@ class WebDevToolsAgentImpl
  private:
   static v8::Handle<v8::Value> JsDispatchOnClient(const v8::Arguments& args);
   void DisposeUtilityContext();
+  void UnhideResourcesPanelIfNecessary();
 
   void InitDevToolsAgentHost();
 

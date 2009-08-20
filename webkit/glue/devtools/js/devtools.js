@@ -41,8 +41,6 @@ devtools.ToolsAgent = function() {
       goog.bind(this.frameNavigate_, this);
   RemoteToolsAgent.DispatchOnClient =
       goog.bind(this.dispatchOnClient_, this);
-  RemoteToolsAgent.SetResourcesPanelEnabled =
-      goog.bind(this.setResourcesPanelEnabled_, this);
   this.debuggerAgent_ = new devtools.DebuggerAgent();
 };
 
@@ -115,39 +113,12 @@ devtools.ToolsAgent.prototype.evaluate = function(expr) {
 
 
 /**
- * Enables / disables resource tracking.
- * @param {boolean} enabled Sets tracking status.
- * @param {boolean} always Determines whether tracking status should be sticky.
- */
-devtools.ToolsAgent.prototype.setResourceTrackingEnabled = function(enabled,
-    always) {
-  RemoteToolsAgent.SetResourceTrackingEnabled(enabled, always);
-};
-
-
-/**
  * Enables / disables resources panel in the ui.
  * @param {boolean} enabled New panel status.
  */
-devtools.ToolsAgent.prototype.setResourcesPanelEnabled_ = function(enabled) {
+WebInspector.setResourcesPanelEnabled = function(enabled) {
   InspectorController.resourceTrackingEnabled_ = enabled;
-  // TODO(pfeldman): Extract this upstream.
-  var panel = WebInspector.panels.resources;
-  if (enabled) {
-    panel.enableToggleButton.title =
-        WebInspector.UIString("Resource tracking enabled. Click to disable.");
-    panel.enableToggleButton.toggled = true;
-    panel.largerResourcesButton.visible = true;
-    panel.sortingSelectElement.visible = false;
-    panel.panelEnablerView.visible = false;
-  } else {
-    panel.enableToggleButton.title =
-        WebInspector.UIString("Resource tracking disabled. Click to enable.");
-    panel.enableToggleButton.toggled = false;
-    panel.largerResourcesButton.visible = false;
-    panel.sortingSelectElement.visible = false;
-    panel.panelEnablerView.visible = true;
-  }
+  WebInspector.panels.resources.reset();
 };
 
 
@@ -671,3 +642,16 @@ WebInspector.ConsoleView.prototype._formatobject = function(object, elem) {
     this.panels.heap = new WebInspector.HeapProfilerPanel();
   };
 })();
+
+
+WebInspector.resourceTrackingWasEnabled = function()
+{
+    InspectorController.resourceTrackingEnabled_ = true;
+    this.panels.resources.resourceTrackingWasEnabled();
+}
+
+WebInspector.resourceTrackingWasDisabled = function()
+{
+    InspectorController.resourceTrackingEnabled_ = false;
+    this.panels.resources.resourceTrackingWasDisabled();
+}
