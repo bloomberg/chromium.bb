@@ -93,7 +93,14 @@ class LoadLog : public base::RefCounted<LoadLog> {
   // Returns a C-String symbolic name for |event|.
   static const char* EventTypeToString(EventType event);
 
-  void Add(base::TimeTicks t, EventType event, EventPhase phase);
+  void Add(const Event& event);
+
+  void Add(base::TimeTicks t, EventType event, EventPhase phase) {
+    Add(Event(t, event, phase));
+  }
+
+  // Copies all events from |log|, appending it to the end of |this|.
+  void Append(const LoadLog* log);
 
  private:
   EventList events_;

@@ -30,7 +30,8 @@ class TCPConnectJob : public ConnectJob {
                 base::TimeDelta timeout_duration,
                 ClientSocketFactory* client_socket_factory,
                 HostResolver* host_resolver,
-                Delegate* delegate);
+                Delegate* delegate,
+                LoadLog* load_log);
   virtual ~TCPConnectJob();
 
   // ConnectJob methods.
@@ -126,7 +127,8 @@ class TCPClientSocketPool : public ClientSocketPool {
     virtual ConnectJob* NewConnectJob(
         const std::string& group_name,
         const PoolBase::Request& request,
-        ConnectJob::Delegate* delegate) const;
+        ConnectJob::Delegate* delegate,
+        LoadLog* load_log) const;
 
    private:
     ClientSocketFactory* const client_socket_factory_;

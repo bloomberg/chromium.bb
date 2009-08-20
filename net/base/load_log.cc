@@ -19,7 +19,7 @@ const char* LoadLog::EventTypeToString(EventType event) {
   return NULL;
 }
 
-void LoadLog::Add(base::TimeTicks t, EventType event, EventPhase phase) {
+void LoadLog::Add(const Event& event) {
   // Minor optimization. TODO(eroman): use StackVector instead.
   if (events_.empty())
     events_.reserve(kMaxNumEntries / 2);
@@ -28,10 +28,14 @@ void LoadLog::Add(base::TimeTicks t, EventType event, EventPhase phase) {
   // final entry in the list is |TYPE_LOG_TRUNCATED|.
 
   if (events_.size() + 1 == kMaxNumEntries)
-    events_.push_back(Event(t, TYPE_LOG_TRUNCATED, PHASE_NONE));
+    events_.push_back(Event(event.time, TYPE_LOG_TRUNCATED, PHASE_NONE));
+  else if (events_.size() < kMaxNumEntries)
+    events_.push_back(event);
+}
 
-  if (events_.size() < kMaxNumEntries)
-    events_.push_back(Event(t, event, phase));
+void LoadLog::Append(const LoadLog* log) {
+  for (size_t i = 0; i < log->events().size(); ++i)
+    Add(log->events()[i]);
 }
 
 }  // namespace net

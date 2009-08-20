@@ -93,6 +93,55 @@ TEST(LoadLogTest, Truncation) {
       LoadLog::TYPE_LOG_TRUNCATED, LoadLog::PHASE_NONE);
 }
 
+TEST(LoadLogTest, Append) {
+  scoped_refptr<LoadLog> log1(new LoadLog);
+  scoped_refptr<LoadLog> log2(new LoadLog);
+
+  log1->Add(MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL,
+            LoadLog::PHASE_BEGIN);
+
+  log2->Add(MakeTime(3), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
+  log2->Add(MakeTime(9), LoadLog::TYPE_HOST_RESOLVER_IMPL, LoadLog::PHASE_END);
+
+  log1->Append(log2);
+
+  // Add something else to log2 (should NOT be reflected in log1).
+  log2->Add(MakeTime(19), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
+
+  EXPECT_EQ(3u, log1->events().size());
+
+  ExpectLogContains(log1, 0, MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL,
+                    LoadLog::PHASE_BEGIN);
+
+  ExpectLogContains(log1, 1, MakeTime(3), LoadLog::TYPE_CANCELLED,
+                    LoadLog::PHASE_NONE);
+
+  ExpectLogContains(log1, 2, MakeTime(9), LoadLog::TYPE_HOST_RESOLVER_IMPL,
+                    LoadLog::PHASE_END);
+}
+
+TEST(LoadLogTest, AppendWithTruncation) {
+  // Append() should also respect the maximum number of entries bound.
+  // (This is basically the same test as LoadLogTest.Truncation).
+
+  // Create two load logs, which are 2/3 capcity.
+  scoped_refptr<LoadLog> log1(new LoadLog);
+  scoped_refptr<LoadLog> log2(new LoadLog);
+  for (size_t i = 0; i < 2 * LoadLog::kMaxNumEntries / 3; ++i) {
+    log1->Add(MakeTime(1), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
+    log2->Add(MakeTime(2), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE);
+  }
+
+  // Append log2 to log1.
+  log1->Append(log2);
+
+  EXPECT_EQ(LoadLog::kMaxNumEntries, log1->events().size());
+
+  // We terminated with a "truncation" event.
+  ExpectLogContains(log1, LoadLog::kMaxNumEntries - 1, MakeTime(2),
+                    LoadLog::TYPE_LOG_TRUNCATED, LoadLog::PHASE_NONE);
+}
+
 TEST(LoadLogTest, EventTypeToString) {
   EXPECT_STREQ("HOST_RESOLVER_IMPL",
                LoadLog::EventTypeToString(LoadLog::TYPE_HOST_RESOLVER_IMPL));

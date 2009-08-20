@@ -60,3 +60,31 @@ EVENT_TYPE(PROXY_SERVICE)
 // are found from ProxyService::init_proxy_resolver_log().
 EVENT_TYPE(PROXY_SERVICE_WAITING_FOR_INIT_PAC)
 
+// ------------------------------------------------------------------------
+// ClientSocketPoolBase::ConnectJob
+// ------------------------------------------------------------------------
+
+// The start/end of a ConnectJob.
+EVENT_TYPE(SOCKET_POOL_CONNECT_JOB)
+
+// Whether the connect job timed out.
+EVENT_TYPE(SOCKET_POOL_CONNECT_JOB_TIMED_OUT)
+
+// ------------------------------------------------------------------------
+// ClientSocketPoolBaseHelper
+// ------------------------------------------------------------------------
+
+// The start/end of a client socket pool request for a socket.
+EVENT_TYPE(SOCKET_POOL)
+
+// The start/end of when a request is sitting in the queue waiting for
+// a connect job to finish. (Only applies to late_binding).
+EVENT_TYPE(SOCKET_POOL_WAITING_IN_QUEUE)
+
+// The request stalled because there are too many sockets in the pool.
+EVENT_TYPE(SOCKET_POOL_STALLED_MAX_SOCKETS)
+
+// The request stalled because there are too many sockets in the group.
+EVENT_TYPE(SOCKET_POOL_STALLED_MAX_SOCKETS_PER_GROUP)
+
+

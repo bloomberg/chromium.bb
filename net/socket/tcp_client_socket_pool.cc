@@ -29,8 +29,9 @@ TCPConnectJob::TCPConnectJob(
     base::TimeDelta timeout_duration,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
-    Delegate* delegate)
-    : ConnectJob(group_name, handle, timeout_duration, delegate),
+    Delegate* delegate,
+    LoadLog* load_log)
+    : ConnectJob(group_name, handle, timeout_duration, delegate, load_log),
       resolve_info_(resolve_info),
       client_socket_factory_(client_socket_factory),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -51,7 +52,7 @@ int TCPConnectJob::ConnectInternal() {
 void TCPConnectJob::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING)
-    delegate()->OnConnectJobComplete(rv, this);  // Deletes |this|
+    NotifyDelegateOfCompletion(rv);  // Deletes |this|
 }
 
 int TCPConnectJob::DoLoop(int result) {
@@ -89,7 +90,7 @@ int TCPConnectJob::DoLoop(int result) {
 int TCPConnectJob::DoResolveHost() {
   set_load_state(LOAD_STATE_RESOLVING_HOST);
   next_state_ = kStateResolveHostComplete;
-  return resolver_.Resolve(resolve_info_, &addresses_, &callback_, NULL);
+  return resolver_.Resolve(resolve_info_, &addresses_, &callback_, load_log());
 }
 
 int TCPConnectJob::DoResolveHostComplete(int result) {
@@ -104,6 +105,7 @@ int TCPConnectJob::DoTCPConnect() {
   set_load_state(LOAD_STATE_CONNECTING);
   set_socket(client_socket_factory_->CreateTCPClientSocket(addresses_));
   connect_start_time_ = base::TimeTicks::Now();
+  // TODO(eroman): Socket::Connect() should take a LoadLog.
   return socket()->Connect(&callback_);
 }
 
@@ -130,11 +132,12 @@ int TCPConnectJob::DoTCPConnectComplete(int result) {
 ConnectJob* TCPClientSocketPool::TCPConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
-    ConnectJob::Delegate* delegate) const {
+    ConnectJob::Delegate* delegate,
+    LoadLog* load_log) const {
   return new TCPConnectJob(
       group_name, request.params(), request.handle(),
       base::TimeDelta::FromSeconds(kTCPConnectJobTimeoutInSeconds),
-      client_socket_factory_, host_resolver_, delegate);
+      client_socket_factory_, host_resolver_, delegate, load_log);
 }
 
 TCPClientSocketPool::TCPClientSocketPool(
