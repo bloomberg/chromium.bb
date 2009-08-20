@@ -334,19 +334,6 @@
             '..',
           ],
         },
-        {
-          'target_name': 'minidump_2_core',
-          'type': 'executable',
-
-          'sources': [
-            'linux/minidump-2-core.cc',
-          ],
-
-          'include_dirs': [
-            'src',
-            '..',
-          ],
-        },
       ],
     }],
   ],
