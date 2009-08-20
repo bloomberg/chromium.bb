@@ -129,13 +129,13 @@ static INLINE size_t size_min(size_t a, size_t b) {
  * thus UnmapViewOfFile).
  */
 
-int NaClHostDescMap(struct NaClHostDesc *d,
-                    void                *start_addr,
-                    size_t              len,
-                    int                 prot,
-                    int                 flags,
-                    off_t               offset) {
-  int       retval;
+uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
+                          void                *start_addr,
+                          size_t              len,
+                          int                 prot,
+                          int                 flags,
+                          off_t               offset) {
+  uintptr_t retval;
   uintptr_t addr;
   HANDLE    hFile;
   HANDLE    hMap;
@@ -215,7 +215,7 @@ int NaClHostDescMap(struct NaClHostDesc *d,
       }
     }
     NaClLog(3, "NaClHostDescMap: returning 0x%08x\n", (int) start_addr);
-    return (int) start_addr;
+    return (uintptr_t) start_addr;
   }
 
   hFile = (HANDLE) _get_osfhandle(d->d);
@@ -241,7 +241,7 @@ int NaClHostDescMap(struct NaClHostDesc *d,
     return -NaClXlateSystemError(err);
   }
 
-  retval = -NACL_ABI_EINVAL;
+  retval = (uintptr_t) -NACL_ABI_EINVAL;
 
   for (chunk_offset = 0;
        chunk_offset < len;
@@ -266,11 +266,11 @@ int NaClHostDescMap(struct NaClHostDesc *d,
            unmap_offset += NACL_MAP_PAGESIZE) {
         (void) UnmapViewOfFile((void *) (addr + unmap_offset));
       }
-      retval = -NaClXlateSystemError(err);
+      retval = (uintptr_t) -NaClXlateSystemError(err);
       goto cleanup;
     }
   }
-  retval = (int) start_addr;
+  retval = (uintptr_t) start_addr;
 cleanup:
   (void) CloseHandle(hMap);
   return retval;

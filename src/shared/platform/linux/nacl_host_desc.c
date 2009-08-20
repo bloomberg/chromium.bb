@@ -124,12 +124,12 @@ static INLINE int NaClMapFlagMap(int nacl_map_flags) {
   return host_os_flags;
 }
 
-int NaClHostDescMap(struct NaClHostDesc *d,
-                    void                *start_addr,
-                    size_t              len,
-                    int                 prot,
-                    int                 flags,
-                    off_t               offset) {
+uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
+                          void                *start_addr,
+                          size_t              len,
+                          int                 prot,
+                          int                 flags,
+                          off_t               offset) {
   int   desc;
   void  *map_addr;
   int   host_prot;
@@ -186,7 +186,8 @@ int NaClHostDescMap(struct NaClHostDesc *d,
   }
   NaClLog(4, "NaClHostDescMap: returning 0x%08"PRIxPTR"\n",
           (uintptr_t) start_addr);
-  return (uintptr_t) start_addr;  /* and convert to int */
+
+  return (uintptr_t) start_addr;
 }
 
 int NaClHostDescUnmapUnsafe(void    *start_addr,

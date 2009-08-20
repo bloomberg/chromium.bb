@@ -138,7 +138,7 @@ uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
                             off_t                   offset) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
   int                   rv;
-  int                   status;
+  uintptr_t             status;
 
   /*
    * prot must be PROT_NONE or a combination of PROT_{READ|WRITE}

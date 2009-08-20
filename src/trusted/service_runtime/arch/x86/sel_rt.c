@@ -73,7 +73,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->ebx = 0;
   ntcp->esi = 0;
   ntcp->edi = 0;
-#if NACL_TARGET_SUBARCH == 64
+#if NACL_BUILD_SUBARCH == 64
   ntcp->frame_ptr.ptr_64 = 0;
   ntcp->stack_ptr.ptr_64 = stack_ptr;
 #else

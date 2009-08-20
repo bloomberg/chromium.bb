@@ -97,13 +97,14 @@ extern int NaClXlateNaClSyncStatus(NaClSyncStatus status);
  *
  * Underlying host-OS syscalls:  mmap / MapViewOfFileEx
  *
+ * 4GB file max
  */
-extern int NaClHostDescMap(struct NaClHostDesc  *d,
-                           void                 *start_addr,
-                           size_t               len,
-                           int                  prot,
-                           int                  flags,
-                           off_t                offset);  /* 4GB file max */
+extern uintptr_t NaClHostDescMap(struct NaClHostDesc  *d,
+                                 void                 *start_addr,
+                                 size_t               len,
+                                 int                  prot,
+                                 int                  flags,
+                                 off_t                offset);
 
 /*
  * Undo a file mapping.  The memory range specified by start_address,

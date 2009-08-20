@@ -493,7 +493,7 @@ if not env.Bit('windows') or not env.get('COVERAGE_ENABLED'):
 # Integration Tests With Canned x86 Binaries
 # ----------------------------------------------------------
 
-if env['TARGET_ARCHITECTURE'] == 'x86':
+if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
   node = env.CommandSelLdrTestNacl(
       "mandel_canned.out",
       command=[env.File('testdata/mandel.nexe')],
@@ -544,7 +544,7 @@ ERROR_WHILE_LOADING = '"^(Error while loading).*' +  '(:[^:]*)"'
 NULL_POINTER_EXIT_CODE = GetNullPointerExitCode(env)
 
 
-if env['TARGET_ARCHITECTURE'] == 'x86':
+if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
   node = env.CommandSelLdrTestNacl(
       'integer_overflow_while_madvising.out',
       command=[env.File('testdata/integer_overflow_while_madvising.nexe')],

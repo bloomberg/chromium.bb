@@ -40,57 +40,55 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-	.globl	IDENTIFIER(nacl_user)
-	.globl	IDENTIFIER(nacl_sys)
+        .globl  IDENTIFIER(nacl_user)
+        .globl  IDENTIFIER(nacl_sys)
 
-	.globl	IDENTIFIER(NaClSyscallCSegHook)
-	.globl	IDENTIFIER(NaClSyscallSeg)
+        .globl  IDENTIFIER(NaClSyscallCSegHook)
+        .globl  IDENTIFIER(NaClSyscallSeg)
 IDENTIFIER(NaClSyscallSeg):
         /*
-	 * As far as we know, glibc-derived code always explicitly clears
-	 * (or sets) the direction flag, so this is an issue only for Windows.
-	 */
+         * As far as we know, glibc-derived code always explicitly clears
+         * (or sets) the direction flag, so this is an issue only for Windows.
+         */
 
-	cld
-	xor	%eax, %eax
-	mov	%gs, %ax
-	shr	$3, %eax
-	lea	IDENTIFIER(nacl_user)(,%eax,4), %edx
+        cld
+        xor     %eax, %eax
+        mov     %gs, %ax
+        shr     $3, %eax
+        lea     IDENTIFIER(nacl_user)(,%eax,4), %edx
 
-	/* check NaClThreadContext in sel_rt.h for the offsets */
-	movl	0(%edx), %edx
-	movl	%ebx, 0x0(%edx)
-	movl	%esi, 0x4(%edx)
-	movl	%edi, 0x8(%edx)
-	mov	%rbp, 0x10(%edx)
-	mov	%rsp, 0x18(%edx)
+        /* check NaClThreadContext in sel_rt.h for the offsets */
+        movl    0(%edx), %edx
+        movl    %ebx, 0x0(%edx)
+        movl    %esi, 0x4(%edx)
+        movl    %edi, 0x8(%edx)
+        movl    %ebp, 0x14(%edx)
+        mov     %rsp, 0x18(%edx)
 
-	/*
-	 * load only the system segments; called code do not depend on
-	 * any registers having particular values.  we will clear/discard
-	 * caller-saved registers at system call return.
-	 */
-	lea	IDENTIFIER(nacl_sys)(,%eax,4), %edx
-	mov	0(%edx), %edx
-	/*
-	 * %cs and %ds already taken care of by NaCl_trampoline_seg_code
-	 *
-	 * %ebx need not be saved/restored even if -fpic were used, since
-	 * in that case %ebx is initialized on fn entry.
-	 */
-	mov	0x28(%edx), %es
-	mov	0x2A(%edx), %fs
-	mov	0x2C(%edx), %gs
+        /*
+         * load only the system segments; called code do not depend on
+         * any registers having particular values.  we will clear/discard
+         * caller-saved registers at system call return.
+         */
+        lea     IDENTIFIER(nacl_sys)(,%eax,4), %edx
+        mov     0(%edx), %edx
+        /*
+         * %cs and %ds already taken care of by NaCl_trampoline_seg_code
+         *
+         * %ebx need not be saved/restored even if -fpic were used, since
+         * in that case %ebx is initialized on fn entry.
+         */
+        mov     0x2c(%edx), %fs
+        mov     0x2e(%edx), %gs
 
-	mov	0x2E(%edx), %ecx  /* ss */
-	mov	0x18(%edx), %edx  /* sp */
-	mov	%ecx, %ss  /* disable intr */
-	mov	%edx, %esp
-	push	%rax
-	call	IDENTIFIER(NaClSyscallCSegHook)
-	/*
-	 * If stack usage in the above code changes, modify initial %esp
-	 * computation -- see nacl_switch_to_app.c:NaClStartThreadInApp.
-	 */
-	hlt
-	/* noret */
+        mov     0x18(%edx), %edx  /* sp */
+        mov     %ecx, %ss  /* disable intr */
+        mov     %rdx, %rsp
+        push    %rax
+        call    IDENTIFIER(NaClSyscallCSegHook)
+        /*
+         * If stack usage in the above code changes, modify initial %esp
+         * computation -- see nacl_switch_to_app.c:NaClStartThreadInApp.
+         */
+        hlt
+        /* noret */

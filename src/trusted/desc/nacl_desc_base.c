@@ -404,6 +404,7 @@ int NaClDescMapDescriptor(struct NaClDesc *desc,
   int tries = 0;
   void* map_addr = NULL;
   int rval;
+  uintptr_t rval_ptr;
 
   *addr = NULL;
   *size = 0;
@@ -450,7 +451,8 @@ int NaClDescMapDescriptor(struct NaClDesc *desc,
                            NACL_ABI_MAP_SHARED,
                            0);
     if (!NaClIsNegErrno(rval)) {
-      map_addr = (void*)(rval);
+      rval_ptr = (uintptr_t) rval;
+      map_addr = (void*)(rval_ptr);
       break;
     }
   } while (NULL == map_addr && tries < kMaxTries);

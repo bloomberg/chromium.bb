@@ -35,10 +35,10 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_SEL_UTIL_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_SEL_UTIL_H_ 1
 
-#include "native_client/src/include/portability.h"
-#include "native_client/src/include/nacl_base.h"
-
 #include <sys/types.h>
+
+#include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/portability.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
@@ -51,19 +51,19 @@ size_t  NaClAppPow2Ceil(size_t  max_addr);
  * page size, not the nearest.
  */
 static INLINE size_t  NaClRoundPage(size_t    nbytes) {
-  return (nbytes + NACL_PAGESIZE - 1) & ~(NACL_PAGESIZE - 1);
+  return (nbytes + NACL_PAGESIZE - 1) & ~((size_t) NACL_PAGESIZE - 1);
 }
 
 static INLINE size_t  NaClRoundAllocPage(size_t    nbytes) {
-  return (nbytes + NACL_MAP_PAGESIZE - 1) & ~(NACL_MAP_PAGESIZE - 1);
+  return (nbytes + NACL_MAP_PAGESIZE - 1) & ~((size_t) NACL_MAP_PAGESIZE - 1);
 }
 
 static INLINE size_t NaClTruncPage(size_t  nbytes) {
-  return nbytes & ~(NACL_PAGESIZE - 1);
+  return nbytes & ~((size_t) NACL_PAGESIZE - 1);
 }
 
 static INLINE size_t NaClTruncAllocPage(size_t  nbytes) {
-  return nbytes & ~(NACL_MAP_PAGESIZE - 1);
+  return nbytes & ~((size_t) NACL_MAP_PAGESIZE - 1);
 }
 
 static INLINE size_t  NaClBytesToPages(size_t nbytes) {
@@ -90,11 +90,11 @@ static INLINE size_t NaClRoundHostAllocPage(size_t  nbytes) {
 }
 
 static INLINE size_t NaClRoundPageNumUpToMapMultiple(size_t npages) {
-  return (npages + NACL_PAGES_PER_MAP - 1) & ~(NACL_PAGES_PER_MAP - 1);
+  return (npages + NACL_PAGES_PER_MAP - 1) & ~((size_t) NACL_PAGES_PER_MAP - 1);
 }
 
 static INLINE size_t NaClTruncPageNumDownToMapMultiple(size_t npages) {
-  return npages & ~(NACL_PAGES_PER_MAP - 1);
+  return npages & ~((size_t) NACL_PAGES_PER_MAP - 1);
 }
 
 typedef uint64_t tick_t;
