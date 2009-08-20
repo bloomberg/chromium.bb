@@ -27,6 +27,7 @@ import re  # Exposed through the API.
 import subprocess  # Exposed through the API.
 import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
+import time
 import traceback  # Exposed through the API.
 import types
 import unittest  # Exposed through the API.
@@ -811,6 +812,7 @@ def DoPresubmitChecks(change,
   Return:
     True if execution can continue, False if not.
   """
+  start_time = time.time()
   presubmit_files = ListRelevantPresubmitFiles(change.AbsoluteLocalPaths(True),
                                                change.RepositoryRoot())
   if not presubmit_files and verbose:
@@ -859,6 +861,9 @@ def DoPresubmitChecks(change,
     if response.strip().lower() != 'y':
       error_count += 1
 
+  total_time = time.time() - start_time
+  if total_time > 1.0:
+    print "Presubmit checks took %.1fs to calculate." % total_time
   global _ASKED_FOR_FEEDBACK
   # Ask for feedback one time out of 5.
   if (len(results) and random.randint(0, 4) == 0 and not _ASKED_FOR_FEEDBACK):
