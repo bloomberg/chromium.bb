@@ -34,9 +34,9 @@ devtools.InspectorControllerImpl = function() {
   this.installInjectedScriptDelegate_('getPrototypes');
   this.installInjectedScriptDelegate_('getProperties');
   this.installInjectedScriptDelegate_('setPropertyValue');
-
   this.installInjectedScriptDelegate_('evaluate');
   this.installInjectedScriptDelegate_('addInspectedNode');
+  this.installInjectedScriptDelegate_('pushNodeToFrontend');
   this.installInjectedScriptDelegate_('performSearch');
   this.installInjectedScriptDelegate_('searchCanceled');
 };
