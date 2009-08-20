@@ -2895,7 +2895,6 @@ BUG19766 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/table_o
 BUG19766 WIN : LayoutTests/media/video-no-audio.html = TIMEOUT
 BUG19766 : LayoutTests/storage/open-database-while-transaction-in-progress.html = TIMEOUT
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
-BUG19782 WIN DEBUG : LayoutTests/fast/dom/text-control-crash-on-select.html = CRASH PASS
 
 // Fails due to textInputController.setInputMethod not implemented for Mac.
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
