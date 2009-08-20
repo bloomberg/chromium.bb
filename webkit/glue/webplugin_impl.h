@@ -23,7 +23,6 @@
 
 class WebFrameImpl;
 class WebPluginDelegate;
-class WebPluginImpl;
 
 namespace WebCore {
 class Event;
@@ -77,10 +76,10 @@ class WebPluginImpl : public WebPlugin,
                           uint32 length);
 
  private:
-  WebPluginImpl(WebCore::HTMLPlugInElement* element, WebFrameImpl* frame,
-                WebPluginDelegate* delegate, const GURL& plugin_url,
-                bool load_manually, const std::string& mime_type,
-                int arg_count, char** arg_names, char** arg_values);
+  WebPluginImpl(
+      WebFrameImpl* frame, WebPluginDelegate* delegate, const GURL& plugin_url,
+      bool load_manually, const std::string& mime_type, int arg_count,
+      char** arg_names, char** arg_values);
 
   // WebKit::WebPlugin methods:
   virtual void destroy();
@@ -235,6 +234,9 @@ class WebPluginImpl : public WebPlugin,
   // Delayed task for downloading the plugin source URL.
   void OnDownloadPluginSrcUrl();
 
+  // Returns the WebViewDelegate associated with webframe_;
+  WebViewDelegate* GetWebViewDelegate();
+
   struct ClientInfo {
     int id;
     WebPluginResourceClient* client;
@@ -250,15 +252,12 @@ class WebPluginImpl : public WebPlugin,
 
   bool windowless_;
   gfx::PluginWindowHandle window_;
-  WebCore::HTMLPlugInElement* element_;
   WebFrameImpl* webframe_;
 
   WebPluginDelegate* delegate_;
 
-  // Don't use RefPtr here since doing so extends the lifetime of a plugin
-  // beyond the frame which causes crashes and videos playing after navigating
-  // away etc.
-  WebKit::WebPluginContainer* widget_;
+  // This is just a weak reference.
+  WebKit::WebPluginContainer* container_;
 
   typedef std::map<WebPluginResourceClient*,
                    webkit_glue::MultipartResponseDelegate*>

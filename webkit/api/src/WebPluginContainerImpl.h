@@ -75,6 +75,7 @@ namespace WebKit {
         // WebPluginContainer methods
         virtual void invalidate();
         virtual void invalidateRect(const WebRect&);
+        virtual NPObject* scriptableObjectForElement();
 
         // Resource load events for the plugin's source data:
         void didReceiveResponse(const WebCore::ResourceResponse&);

@@ -217,6 +217,11 @@ void WebPluginContainerImpl::invalidateRect(const WebRect& rect)
     invalidateRect(static_cast<IntRect>(rect));
 }
 
+NPObject* WebPluginContainerImpl::scriptableObjectForElement()
+{
+    return m_element->getNPObject();
+}
+
 void WebPluginContainerImpl::didReceiveResponse(const ResourceResponse& response)
 {
     // Make sure that the plugin receives window geometry before data, or else

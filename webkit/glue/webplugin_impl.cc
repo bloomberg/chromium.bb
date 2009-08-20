@@ -11,7 +11,6 @@
 #include "FrameLoader.h"
 #include "FrameLoadRequest.h"
 #include "HTMLFormElement.h"
-#include "HTMLPlugInElement.h"
 #include "KURL.h"
 #include "PlatformString.h"
 #include "ResourceResponse.h"
@@ -208,22 +207,23 @@ void GetResponseInfo(const WebURLResponse& response,
 
 }  // namespace
 
-PassRefPtr<WebCore::Widget> WebPluginImpl::Create(const GURL& url,
-                                       char** argn,
-                                       char** argv,
-                                       int argc,
-                                       WebCore::HTMLPlugInElement* element,
-                                       WebFrameImpl* frame,
-                                       WebPluginDelegate* delegate,
-                                       bool load_manually,
-                                       const std::string& mime_type) {
-  WebPluginImpl* webplugin = new WebPluginImpl(element, frame, delegate, url,
-                                               load_manually, mime_type, argc,
-                                               argn, argv);
+PassRefPtr<WebCore::Widget> WebPluginImpl::Create(
+    const GURL& url,
+    char** argn,
+    char** argv,
+    int argc,
+    WebCore::HTMLPlugInElement* element,
+    WebFrameImpl* frame,
+    WebPluginDelegate* delegate,
+    bool load_manually,
+    const std::string& mime_type) {
+  // NOTE: frame contains element
+
+  WebPluginImpl* webplugin = new WebPluginImpl(
+      frame, delegate, url, load_manually, mime_type, argc, argn, argv);
 
   if (!delegate->Initialize(url, argn, argv, argc, webplugin, load_manually)) {
     delegate->PluginDestroyed();
-    delegate = NULL;
     delete webplugin;
     return NULL;
   }
@@ -234,8 +234,7 @@ PassRefPtr<WebCore::Widget> WebPluginImpl::Create(const GURL& url,
   return container;
 }
 
-WebPluginImpl::WebPluginImpl(WebCore::HTMLPlugInElement* element,
-                             WebFrameImpl* webframe,
+WebPluginImpl::WebPluginImpl(WebFrameImpl* webframe,
                              WebPluginDelegate* delegate,
                              const GURL& plugin_url,
                              bool load_manually,
@@ -245,10 +244,9 @@ WebPluginImpl::WebPluginImpl(WebCore::HTMLPlugInElement* element,
                              char** arg_values)
     : windowless_(false),
       window_(NULL),
-      element_(element),
       webframe_(webframe),
       delegate_(delegate),
-      widget_(NULL),
+      container_(NULL),
       plugin_url_(plugin_url),
       load_manually_(load_manually),
       first_geometry_update_(true),
@@ -290,10 +288,8 @@ void WebPluginImpl::updateGeometry(
     const WebRect& window_rect, const WebRect& clip_rect,
     const WebVector<WebRect>& cutout_rects) {
   if (window_) {
-    WebCore::Frame* frame = element_->document()->frame();
-    WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
-    WebViewImpl* webview = webframe->GetWebViewImpl();
-    if (webview->delegate()) {
+    WebViewDelegate* view_delegate = GetWebViewDelegate();
+    if (view_delegate) {
       // Notify the window hosting the plugin (the WebViewDelegate) that
       // it needs to adjust the plugin, so that all the HWNDs can be moved
       // at the same time.
@@ -306,7 +302,7 @@ void WebPluginImpl::updateGeometry(
       move.rects_valid = true;
       move.visible = true;  // Assume visible or else we wouldn't be here.
 
-      webview->delegate()->DidMovePlugin(move);
+      view_delegate->DidMovePlugin(move);
     }
   }
 
@@ -346,10 +342,8 @@ void WebPluginImpl::updateVisibility(bool visible) {
   if (!window_)
     return;
 
-  WebCore::Frame* frame = element_->document()->frame();
-  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
-  WebViewImpl* webview = webframe->GetWebViewImpl();
-  if (!webview->delegate())
+  WebViewDelegate* view_delegate = GetWebViewDelegate();
+  if (!view_delegate)
     return;
 
   WebPluginGeometry move;
@@ -359,7 +353,7 @@ void WebPluginImpl::updateVisibility(bool visible) {
   move.rects_valid = false;
   move.visible = visible;
 
-  webview->delegate()->DidMovePlugin(move);
+  view_delegate->DidMovePlugin(move);
 }
 
 bool WebPluginImpl::acceptsInputEvents() {
@@ -405,12 +399,10 @@ WebPluginImpl::~WebPluginImpl() {
 
 #if defined(OS_LINUX)
 gfx::PluginWindowHandle WebPluginImpl::CreatePluginContainer() {
-  WebCore::Frame* frame = element_->document()->frame();
-  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
-  WebViewImpl* webview = webframe->GetWebViewImpl();
-  if (!webview->delegate())
+  WebViewDelegate* view_delegate = GetWebViewDelegate();
+  if (!view_delegate)
     return 0;
-  return webview->delegate()->CreatePluginContainer();
+  return view_delegate->CreatePluginContainer();
 }
 #endif
 
@@ -427,12 +419,10 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
 void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {
   DCHECK_EQ(window, window_);
   window_ = NULL;
-  WebCore::Frame* frame = element_->document()->frame();
-  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
-  WebViewImpl* webview = webframe->GetWebViewImpl();
-  if (!webview->delegate())
+  WebViewDelegate* view_delegate = GetWebViewDelegate();
+  if (!view_delegate)
     return;
-  webview->delegate()->WillDestroyPluginWindow(window);
+  view_delegate->WillDestroyPluginWindow(window);
 }
 
 bool WebPluginImpl::CompleteURL(const std::string& url_in,
@@ -635,7 +625,7 @@ NPObject* WebPluginImpl::GetWindowScriptNPObject() {
 }
 
 NPObject* WebPluginImpl::GetPluginElement() {
-  return element_->getNPObject();
+  return container_->scriptableObjectForElement();
 }
 
 void WebPluginImpl::SetCookie(const GURL& url,
@@ -652,10 +642,9 @@ std::string WebPluginImpl::GetCookies(const GURL& url, const GURL& policy_url) {
 void WebPluginImpl::ShowModalHTMLDialog(const GURL& url, int width, int height,
                                         const std::string& json_arguments,
                                         std::string* json_retval) {
-  if (webframe_ &&
-      webframe_->GetWebViewImpl() &&
-      webframe_->GetWebViewImpl()->GetDelegate()) {
-    webframe_->GetWebViewImpl()->GetDelegate()->ShowModalHTMLDialog(
+  WebViewDelegate* view_delegate = GetWebViewDelegate();
+  if (view_delegate) {
+    view_delegate->ShowModalHTMLDialog(
         url, width, height, json_arguments, json_retval);
   }
 }
@@ -665,13 +654,13 @@ void WebPluginImpl::OnMissingPluginStatus(int status) {
 }
 
 void WebPluginImpl::Invalidate() {
-  if (widget_)
-    widget_->invalidate();
+  if (container_)
+    container_->invalidate();
 }
 
 void WebPluginImpl::InvalidateRect(const gfx::Rect& rect) {
-  if (widget_)
-    widget_->invalidateRect(rect);
+  if (container_)
+    container_->invalidateRect(rect);
 }
 
 void WebPluginImpl::OnDownloadPluginSrcUrl() {
@@ -830,8 +819,8 @@ void WebPluginImpl::didFinishLoading(WebURLLoader* loader) {
       delete (*index).second;
       multi_part_response_map_.erase(index);
 
-      WebView* web_view = webframe_->GetWebViewImpl();
-      web_view->GetDelegate()->DidStopLoading(web_view);
+      WebView* webview = webframe_->GetWebViewImpl();
+      webview->GetDelegate()->DidStopLoading(webview);
     }
     loader->setDefersLoading(true);
     WebPluginResourceClient* resource_client = client_info->client;
@@ -872,7 +861,7 @@ void WebPluginImpl::SetContainer(WebPluginContainer* container) {
   if (container == NULL) {
     TearDownPluginInstance(NULL);
   }
-  widget_ = container;
+  container_ = container;
 }
 
 void WebPluginImpl::HandleURLRequest(const char *method,
@@ -1059,8 +1048,8 @@ void WebPluginImpl::HandleHttpMultipartResponse(
     return;
   }
 
-  WebView* web_view = webframe_->GetWebViewImpl();
-  web_view->GetDelegate()->DidStartLoading(web_view);
+  WebView* webview = webframe_->GetWebViewImpl();
+  webview->GetDelegate()->DidStartLoading(webview);
 
   MultiPartResponseClient* multi_part_response_client =
       new MultiPartResponseClient(client);
@@ -1074,26 +1063,26 @@ void WebPluginImpl::HandleHttpMultipartResponse(
 
 bool WebPluginImpl::ReinitializePluginForResponse(
     WebURLLoader* loader) {
-  WebFrameImpl* web_frame = WebFrameImpl::FromFrame(frame());
-  if (!web_frame)
+  WebFrameImpl* webframe = webframe_;
+  if (!webframe)
     return false;
 
-  WebViewImpl* web_view = web_frame->GetWebViewImpl();
-  if (!web_view)
+  WebViewImpl* webview = webframe->GetWebViewImpl();
+  if (!webview)
     return false;
 
-  WebPluginContainer* container_widget = widget_;
+  WebPluginContainer* container_widget = container_;
 
   // Destroy the current plugin instance.
   TearDownPluginInstance(loader);
 
-  widget_ = container_widget;
-  webframe_ = web_frame;
+  container_ = container_widget;
+  webframe_ = webframe;
 
-  WebViewDelegate* webview_delegate = web_view->GetDelegate();
+  WebViewDelegate* webview_delegate = webview->GetDelegate();
   std::string actual_mime_type;
   WebPluginDelegate* plugin_delegate =
-      webview_delegate->CreatePluginDelegate(web_view, plugin_url_,
+      webview_delegate->CreatePluginDelegate(webview, plugin_url_,
                                              mime_type_, std::string(),
                                              &actual_mime_type);
 
@@ -1112,7 +1101,7 @@ bool WebPluginImpl::ReinitializePluginForResponse(
   delete[] arg_values;
 
   if (!init_ok) {
-    widget_ = NULL;
+    container_ = NULL;
     // TODO(iyengar) Should we delete the current plugin instance here?
     return false;
   }
@@ -1122,11 +1111,11 @@ bool WebPluginImpl::ReinitializePluginForResponse(
 
   // Force a geometry update to occur to ensure that the plugin becomes
   // visible.  TODO(darin): Avoid this cast!
-  static_cast<WebPluginContainerImpl*>(widget_)->frameRectsChanged();
+  static_cast<WebPluginContainerImpl*>(container_)->frameRectsChanged();
   // The plugin move sequences accumulated via DidMove are sent to the browser
   // whenever the renderer paints. Force a paint here to ensure that changes
   // to the plugin window are propagated to the browser.
-  widget_->invalidate();
+  container_->invalidate();
   return true;
 }
 
@@ -1144,11 +1133,11 @@ void WebPluginImpl::TearDownPluginInstance(
   // plugin.  Tell the frame we're gone so that it can invalidate all
   // of those sub JSObjects.
   if (frame()) {
-    ASSERT(widget_);
+    ASSERT(container_);
     // TODO(darin): Avoid these casts!
     frame()->script()->cleanupScriptObjectsForPlugin(
         static_cast<WebCore::Widget*>(
-            static_cast<WebKit::WebPluginContainerImpl*>(widget_)));
+            static_cast<WebKit::WebPluginContainerImpl*>(container_)));
   }
 
   if (delegate_) {
@@ -1183,4 +1172,11 @@ void WebPluginImpl::TearDownPluginInstance(
   webframe_->set_plugin_delegate(NULL);
   webframe_ = NULL;
   method_factory_.RevokeAll();
+}
+
+WebViewDelegate* WebPluginImpl::GetWebViewDelegate() {
+  if (!webframe_)
+    return NULL;
+  WebViewImpl* webview = webframe_->GetWebViewImpl();
+  return webview ? webview->delegate() : NULL;
 }

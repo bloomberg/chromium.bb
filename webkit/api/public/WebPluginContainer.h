@@ -31,6 +31,8 @@
 #ifndef WebPluginContainer_h
 #define WebPluginContainer_h
 
+struct NPObject;
+
 namespace WebKit {
     struct WebRect;
 
@@ -38,6 +40,10 @@ namespace WebKit {
     public:
         virtual void invalidate() = 0;
         virtual void invalidateRect(const WebRect&) = 0;
+
+        // Returns the scriptable object associated with the DOM element
+        // containing the plugin.
+        virtual NPObject* scriptableObjectForElement() = 0;
 
     protected:
         ~WebPluginContainer() { }
