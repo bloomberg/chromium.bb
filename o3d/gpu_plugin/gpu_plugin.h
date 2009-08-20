@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef O3D_GPU_PLUGIN_GPU_PLUGIN_H__
-#define O3D_GPU_PLUGIN_GPU_PLUGIN_H__
+#ifndef O3D_GPU_PLUGIN_GPU_PLUGIN_H_
+#define O3D_GPU_PLUGIN_GPU_PLUGIN_H_
 
 #include "third_party/npapi/bindings/npapi.h"
 
@@ -29,4 +29,4 @@ NPError API_CALL NP_Shutdown();
 }  // namespace gpu_plugin
 }  // namespace o3d
 
-#endif  // O3D_GPU_PLUGIN_GPU_PLUGIN_H__
+#endif  // O3D_GPU_PLUGIN_GPU_PLUGIN_H_
