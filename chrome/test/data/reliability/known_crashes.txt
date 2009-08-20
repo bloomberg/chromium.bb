@@ -112,3 +112,6 @@ PREFIX : npapi::pluginstreamurl::didreceivedata___webplugindelegatestub::ondidre
 # 19428
 PREFIX : webcore::rendertextcontrol::calcprefwidths___webcore::renderbox::minprefwidth___webcore::renderblock::calcinlineprefwidths
 
+# 19813
+PREFIX : npobjectgetproperty___npobjectgetnamedproperty___webcore::v8custom::v8htmlpluginelementnamedpropertygetter
+
