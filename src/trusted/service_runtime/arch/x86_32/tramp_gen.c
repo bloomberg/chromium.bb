@@ -31,9 +31,7 @@
 
 #include <stdio.h>
 #include "native_client/src/include/portability.h"
-
-extern char   NaCl_trampoline_seg_code, NaCl_trampoline_seg_end;
-extern char   NaCl_tramp_cseg_patch, NaCl_tramp_dseg_patch;
+#include "native_client/src/trusted/service_runtime/tramp.h"
 
 
 int main() {

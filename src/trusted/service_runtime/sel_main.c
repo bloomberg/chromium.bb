@@ -62,6 +62,10 @@
 #endif
 
 
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+extern char                   **environ;
+
+
 int verbosity = 0;
 
 static void VmentryPrinter(void                  *state,
@@ -188,7 +192,6 @@ int main(int  ac,
   struct GioMemoryFileSnapshot  gf;
 
   int                           ret_code;
-  extern char                   **environ;
   char                          *log_file = NULL;
   int                           log_desc = -1;
   FILE                          *log_stream;

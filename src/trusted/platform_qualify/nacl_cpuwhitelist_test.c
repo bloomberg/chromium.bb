@@ -40,6 +40,10 @@
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+extern char *GetCPUIDString();
+
+
 static void CPUIDWhitelistUnitTests() {
   if (!NaCl_VerifyWhitelist()) {
     fprintf(stderr, "ERROR: whitelist malformed\n");
@@ -83,8 +87,6 @@ static void CPUIDWhitelistUnitTests() {
 }
 
 int main(int argc, char *argv[]) {
-  extern char *GetCPUIDString();
-
   printf("white list ID: %s\n", GetCPUIDString());
   if (NaCl_ThisCPUIsWhitelisted()) {
     printf("this CPU is on the whitelist\n");

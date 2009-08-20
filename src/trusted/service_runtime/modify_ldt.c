@@ -40,6 +40,12 @@
 #include <sys/types.h>
 #include <asm/ldt.h>
 
+
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[2] */
+extern int modify_ldt(int, void *, unsigned long);
+extern int etext;
+
+
 void hex_dump(uint8_t *buf, int size) {
   int i;
   int sep;
@@ -51,10 +57,6 @@ void hex_dump(uint8_t *buf, int size) {
   }
   printf("\n");
 }
-
-
-extern int modify_ldt(int, void *, unsigned long);
-extern int etext;
 
 unsigned short getds(void) {
   unsigned short  ds;

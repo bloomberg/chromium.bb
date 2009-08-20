@@ -31,8 +31,7 @@
 
 #include <stdio.h>
 #include "native_client/src/include/portability.h"
-
-extern char   NaCl_springboard, NaCl_springboard_end;
+#include "native_client/src/trusted/service_runtime/springboard.h"
 
 
 int main() {

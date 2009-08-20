@@ -60,9 +60,14 @@ HTML_CHECKER = ['tidy', '-errors']
 # to see a list of all filters run: 'depot_tools/cpplint.py --filter='
 CPP_CHECKER = ['cpplint.py', '--filter=-build/header_guard']
 
+# From depot_tools (currently not uses -- too many false positives
+# to see a list of all filters run: 'depot_tools/cpplint.py --filter='
+C_CHECKER = ['cpplint.py', '--filter=-build/header_guard']
+
 # http://pychecker.sourceforge.net/
 PYTHON_CHECKER = ['pychecker']
 
+RE_IGNORE = re.compile(r'@IGNORE_LINES_FOR_CODE_HYGIENE\[([0-9]+)\]')
 
 # ======================================================================
 def Debug(s):
@@ -154,12 +159,13 @@ class CppLintChecker(ExternalChecker):
 # ======================================================================
 class GenericRegexChecker(object):
   """Base Class"""
-  def __init__(self, content_regex, line_regex=None):
+  def __init__(self, content_regex, line_regex=None, analyze_match=False):
     self._content_regex = re.compile(content_regex, re.MULTILINE)
     if line_regex:
       self._line_regex = re.compile(line_regex)
     else:
       self._line_regex = re.compile(content_regex)
+    self._analyze_match = analyze_match
     return
 
   def FindProblems(self, unused_filename, data):
@@ -169,9 +175,21 @@ class GenericRegexChecker(object):
 
     lines = data.split('\n')
     problem = []
+    ignore_line_count = 0
     for no, line in enumerate(lines):
-      if not self._line_regex.search(line):
+      if ignore_line_count > 0:
+        ignore_line_count -= 1
         continue
+      match = RE_IGNORE.search(line)
+      if match:
+        ignore_line_count = int(match.group(1))
+        continue
+      match = self._line_regex.search(line)
+      if not match:
+        continue
+      if self._analyze_match:
+        if not self.IsProblemMatch(match):
+          continue
       problem.append(self._RenderItem(no, line))
     return problem
 
@@ -253,8 +271,16 @@ class FixmeChecker(GenericRegexChecker):
 class ExternChecker(GenericRegexChecker):
 
   def __init__(self):
-    GenericRegexChecker.__init__(self, r'^ *extern')
+    GenericRegexChecker.__init__(self, r'^ *extern\s+(.*)$', analyze_match=True)
     return
+
+  def IsProblemMatch(self, match):
+    extra = match.group(1).strip()
+    # allow 'extern "C" {'
+    # but do not allow plain 'extern "C"'
+    if extra == '"C" {':
+      return False
+    return True
 
   def FileFilter(self, filename):
     return filename.endswith('.c') or filename.endswith('.cc')
@@ -357,10 +383,10 @@ CHECKS = [# fatal checks
           (1, 'cpp_comment', CppCommentChecker()),
           (1, 'fixme', FixmeChecker()),
           (1, 'include', IncludeChecker()),
+          (1, 'extern', ExternChecker()),
           # Non fatal checks
           (0, 'open_curly', OpenCurlyChecker()),
           (0, 'line_length', LineLengthChecker()),
-          (0, 'extern', ExternChecker()),
           (0, 'carriage_return', CarriageReturnChecker()),
           (0, 'rewrite', RewriteChecker()),
           (0, 'tidy', TidyChecker()),
@@ -413,12 +439,14 @@ def CheckFile(filename, report):
           warnings[info] = items
     return errors, warnings
 
+
 def HasGypFileCorrespondingToSconsFile(sconsfile, list):
   scons_root = os.path.dirname(sconsfile)
   for name in list:
     if name.startswith(scons_root) and name.endswith('.gyp'):
       return True
   return False
+
 
 def main(argv):
   num_error = 0

@@ -31,10 +31,7 @@
  */
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 extern void NaClMain(void);
 
 int main(int argc, char **argv) {
