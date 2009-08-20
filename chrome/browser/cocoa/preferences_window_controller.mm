@@ -231,9 +231,7 @@ class PrefObserverBridge : public NotificationObserver {
                         context:context];
 }
 
-// Called when the user hits the escape key. Closes the window. This will
-// automatically abandon/cancel any in-progress edits in text fields, we don't
-// have to do anything special.
+// Called when the user hits the escape key. Closes the window.
 - (void)cancel:(id)sender {
   [[self window] performClose:self];
 }
@@ -923,9 +921,18 @@ const int kDisabledIndex = 1;
   [self showWindow:sender];
 }
 
-// Called when the window is being closed. Send out a notification that the
-// user is done editing preferences.
+// Called when the window is being closed. Send out a notification that the user
+// is done editing preferences. Make sure there are no pending field editors
+// by clearing the first responder.
 - (void)windowWillClose:(NSNotification *)notification {
+  // Setting the first responder to the window ends any in-progress field
+  // editor. This will update the model appropriately so there's nothing left
+  // to do.
+  if (![[self window] makeFirstResponder:[self window]]) {
+    // We've hit a recalcitrant field editor, force it to go away.
+    [[self window] endEditingFor:nil];
+  }
+
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kUserDoneEditingPrefsNotification
                     object:self];
