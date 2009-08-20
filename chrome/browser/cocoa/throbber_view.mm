@@ -26,7 +26,7 @@ static const float kAnimationIntervalSeconds = 0.03;  // 30ms, same as windows
 
 @interface ThrobberFilmstripDelegate : NSObject
                                        <ThrobberDataDelegate> {
-  scoped_nsobject<CIImage> image_;
+  scoped_nsobject<NSImage> image_;
   unsigned int numFrames_;  // Number of frames in this animation.
   unsigned int animationFrame_;  // Current frame of the animation,
                                  // [0..numFrames_)
@@ -55,18 +55,7 @@ static const float kAnimationIntervalSeconds = 0.03;  // 30ms, same as windows
     DCHECK((int)imageSize.width % (int)imageSize.height == 0);
     numFrames_ = (int)imageSize.width / (int)imageSize.height;
     DCHECK(numFrames_);
-
-    // First check if we have a bitmap image rep and use it, otherwise fall
-    // back to creating one.
-    NSBitmapImageRep* rep = [[image representations] objectAtIndex:0];
-    if (![rep isKindOfClass:[NSBitmapImageRep class]]) {
-      [image lockFocus];
-      NSRect imageRect = NSMakeRect(0, 0, imageSize.width, imageSize.height);
-      rep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:imageRect]
-             autorelease];
-      [image unlockFocus];
-    }
-    image_.reset([[CIImage alloc] initWithBitmapImageRep:rep]);
+    image_.reset([image retain]);
   }
   return self;
 }
@@ -76,7 +65,7 @@ static const float kAnimationIntervalSeconds = 0.03;  // 30ms, same as windows
 }
 
 - (void)drawFrameInRect:(NSRect)rect {
-  float imageDimension = [image_ extent].size.height;
+  float imageDimension = [image_ size].height;
   float xOffset = animationFrame_ * imageDimension;
   NSRect sourceImageRect =
       NSMakeRect(xOffset, 0, imageDimension, imageDimension);
