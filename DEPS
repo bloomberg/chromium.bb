@@ -13,7 +13,7 @@ deps = {
 
 hooks = [
   {
-    "pattern": "\\.gypi?$[|[/\\\]src[/\\\]tools[/\\\]gyp[/\\\]",
+    "pattern": "\\.gypi?$|[/\\\]tools[/\\\]gyp[/\\\]",
     "action": ["python", "native_client/build/gyp_nacl",
                "native_client/build/all.gyp"],
   },
