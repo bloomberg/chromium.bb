@@ -29,6 +29,12 @@
 #include "base/time.h"
 #include "base/timer.h"
 
+#ifndef CHROMIUM_ENABLE_TRACE_EVENT
+#define TRACE_EVENT_BEGIN(name, id, extra) ((void) 0)
+#define TRACE_EVENT_END(name, id, extra) ((void) 0)
+#define TRACE_EVENT_INSTANT(name, id, extra) ((void) 0)
+
+#else
 // Use the following macros rather than using the TraceLog class directly as the
 // underlying implementation may change in the future.  Here's a sample usage:
 // TRACE_EVENT_BEGIN("v8.run", documentId, scriptLocation);
@@ -63,6 +69,7 @@
                                           extra, \
                                           __FILE__, \
                                           __LINE__)
+#endif  // CHROMIUM_ENABLE_TRACE_EVENT
 
 namespace base {
 class ProcessMetrics;
