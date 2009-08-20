@@ -2918,6 +2918,9 @@ BUG19796 LINUX WIN : LayoutTests/editing/style/underline.html = FAIL
 BUG19796 LINUX WIN : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = FAIL
 BUG19796 WIN :  LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
 
+// Temporary supression while we investigate.
+BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
+
 // WebKit merge 47546:47575 new tests, WebKit change http://trac.webkit.org/changeset/47548
 BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-all.html = TIMEOUT
 BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html = TIMEOUT
