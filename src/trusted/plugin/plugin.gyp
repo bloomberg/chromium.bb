@@ -67,7 +67,6 @@
       '../../shared/srpc/srpc.gyp:nonnacl_srpc',
       '../desc/desc.gyp:nrd_xfer',
       '../../shared/imc/imc.gyp:libgoogle_nacl_imc_c',
-      '../../shared/platform/platform.gyp:platform',
       '../service_runtime/service_runtime.gyp:gio',
       '../service_runtime/service_runtime.gyp:expiration',
       ],
@@ -125,6 +124,7 @@
       'dependencies': [
         '../nonnacl_util/nonnacl_util.gyp:nonnacl_util',
         '../../shared/npruntime/npruntime.gyp:google_nacl_npruntime',
+        '../../shared/platform/platform.gyp:platform',
       ],
       'sources': [
         '<@(common_sources)',
@@ -158,6 +158,7 @@
       ],
       'dependencies': [
         '../nonnacl_util/nonnacl_util_chrome.gyp:nonnacl_util_chrome',
+        '../../shared/platform/platform.gyp:platform_chrome',
       ],
       'sources': [
         '<@(common_sources)',

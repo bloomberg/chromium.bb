@@ -189,7 +189,12 @@ static void NaClSecureRngFilbuf(struct NaClSecureRng *self) {
 static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself) {
   struct NaClSecureRng *self = (struct NaClSecureRng *) vself;
 
-  if (0 <= self->nvalid) {
+  if (0 > self->nvalid) {
+    NaClLog(LOG_FATAL,
+            "NaClSecureRngGenByte: illegal buffer state, nvalid = %d\n",
+            self->nvalid);
+  }
+  if (0 == self->nvalid) {
     NaClSecureRngFilbuf(self);
   }
   /* 0 < self->nvalid <= sizeof self->buf */

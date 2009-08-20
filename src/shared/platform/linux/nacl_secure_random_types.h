@@ -46,7 +46,11 @@
  * library dependency?
  */
 #ifndef USE_CRYPTO
-# define USE_CRYPTO  1
+#if defined(CHROME_BUILD)
+# define USE_CRYPTO 0
+#else
+# define USE_CRYPTO 1
+#endif
 #endif
 
 struct NaClSecureRngVtbl;

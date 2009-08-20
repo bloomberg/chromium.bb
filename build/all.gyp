@@ -10,7 +10,7 @@
       'dependencies': [
         '../src/shared/npruntime/npruntime.gyp:*',
         '../src/shared/imc/imc.gyp:*',
-        '../src/shared/platform/platform.gyp:*',
+        '../src/shared/platform/platform.gyp:platform',
         '../src/shared/srpc/srpc.gyp:*',
         '../src/shared/utils/utils.gyp:*',
         '../src/trusted/desc/desc.gyp:*',

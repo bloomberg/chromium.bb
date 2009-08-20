@@ -80,6 +80,7 @@ int NaClSecureRngTestingCtor(struct NaClSecureRng *self,
                              size_t               seed_bytes) {
   /* CryptImportKey does not import unencrypted symmetric keys */
   self->base.vtbl = NULL;
+  self->nvalid = 0;
   return 0;
 }
 
@@ -98,8 +99,12 @@ static void NaClSecureRngFilbuf(struct NaClSecureRng *self) {
 
 static uint8_t NaClSecureRngGenByte(struct NaClSecureRngIf *vself) {
   struct NaClSecureRng *self = (struct NaClSecureRng *) vself;
-
-  if (0 <= self->nvalid) {
+  if (0 > self->nvalid) {
+    NaClLog(LOG_FATAL,
+            "NaClSecureRngGenByte: illegal buffer state, nvalid = %d\n",
+            self->nvalid);
+  }
+  if (0 == self->nvalid) {
     NaClSecureRngFilbuf(self);
   }
   return self->buf[--self->nvalid];

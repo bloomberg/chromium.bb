@@ -244,8 +244,6 @@
           'libraries': [
             '-lrt',
             '-lpthread',
-            '-lssl',
-            '-lcrypto',
           ],
         },
         'scons_variable_settings': {
