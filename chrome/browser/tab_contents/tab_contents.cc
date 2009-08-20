@@ -759,7 +759,7 @@ void TabContents::CreateShortcut() {
   if (!entry)
     return;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   CreateApplicationShortcutsDialogGtk::Show(view()->GetTopLevelNativeWindow(),
                                             GetURL(), GetTitle());
 #else
