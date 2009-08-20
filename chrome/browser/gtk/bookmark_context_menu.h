@@ -13,8 +13,8 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 // TODO(port): Port this file.
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
-#include "views/controls/menu/chrome_menu.h"
+#if defined(TOOLKIT_VIEWS)
+#include "views/controls/menu/menu_delegate.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/gtk/menu_gtk.h"
 #else
@@ -29,7 +29,7 @@ class Profile;
 // bookmark bar, items on the bookmark bar, submenus of the bookmark bar and
 // the bookmark manager.
 class BookmarkContextMenu : public BookmarkModelObserver,
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
                             public views::MenuDelegate
 #elif defined(OS_LINUX)
                             public MenuGtk::Delegate

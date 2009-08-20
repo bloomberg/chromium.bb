@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
+#include "views/controls/menu/menu_item_view.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BookmarkContextMenu, public:

@@ -37,7 +37,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/menu/chrome_menu.h"
+#include "views/controls/menu/menu_item_view.h"
 #include "views/drag_utils.h"
 #include "views/view_constants.h"
 #include "views/widget/tooltip_manager.h"

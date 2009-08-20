@@ -11,7 +11,12 @@
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/views/bookmark_context_menu.h"
-#include "views/controls/menu/chrome_menu.h"
+#include "views/controls/menu/menu_delegate.h"
+#include "views/controls/menu/menu_item_view.h"
+
+namespace gfx {
+class Rect;
+}
 
 class BookmarkContextMenu;
 class BookmarkNode;

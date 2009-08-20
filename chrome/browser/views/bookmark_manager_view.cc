@@ -31,6 +31,7 @@
 #include "skia/ext/skia_utils.h"
 #include "views/grid_layout.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/menu/menu_item_view.h"
 #include "views/controls/label.h"
 #include "views/controls/single_split_view.h"
 #include "views/standard_layout.h"

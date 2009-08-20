@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VIEWS_BOOKMARK_CONTEXT_MENU_H_
 
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
-#include "views/controls/menu/chrome_menu.h"
+#include "views/controls/menu/menu_delegate.h"
 
 class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
                             public views::MenuDelegate {

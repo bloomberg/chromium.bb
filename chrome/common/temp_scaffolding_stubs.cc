@@ -31,7 +31,7 @@
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_manager.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
-#include "views/controls/menu/chrome_menu.h"
+#include "views/controls/menu/menu_item_view.h"
 #include "views/controls/single_split_view.h"
 #endif
 
