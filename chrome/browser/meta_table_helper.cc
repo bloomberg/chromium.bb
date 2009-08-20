@@ -127,7 +127,7 @@ void MetaTableHelper::SetVersionNumber(int version) {
 }
 
 int MetaTableHelper::GetVersionNumber() {
-  int version;
+  int version = 0;
   if (!GetValue(kVersionKey, &version))
     return 0;
   return version;
@@ -138,7 +138,7 @@ void MetaTableHelper::SetCompatibleVersionNumber(int version) {
 }
 
 int MetaTableHelper::GetCompatibleVersionNumber() {
-  int version;
+  int version = 0;
   if (!GetValue(kCompatibleVersionKey, &version))
     return 0;
   return version;
