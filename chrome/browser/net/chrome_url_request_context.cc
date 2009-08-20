@@ -115,8 +115,9 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
   // Global host resolver for the context.
   context->host_resolver_ = chrome_browser_net::GetGlobalHostResolver();
 
-  context->proxy_service_ = CreateProxyService(
-      context, *CommandLine::ForCurrentProcess());
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  context->proxy_service_ = CreateProxyService(context, command_line);
 
   net::HttpCache* cache =
       new net::HttpCache(context->host_resolver_,
@@ -124,7 +125,6 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
                          context->ssl_config_service_,
                          disk_cache_path.ToWStringHack(), cache_size);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool record_mode = chrome::kRecordModeEnabled &&
                      command_line.HasSwitch(switches::kRecordMode);
   bool playback_mode = command_line.HasSwitch(switches::kPlaybackMode);
@@ -137,10 +137,10 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
   }
   context->http_transaction_factory_ = cache;
 
-  // The kNewFtp switch is Windows specific because we have multiple FTP
+  // The kWininetFtp switch is Windows specific because we have two FTP
   // implementations on Windows.
 #if defined(OS_WIN)
-  if (command_line.HasSwitch(switches::kNewFtp))
+  if (!command_line.HasSwitch(switches::kWininetFtp))
     context->ftp_transaction_factory_ =
         new net::FtpNetworkLayer(context->host_resolver_);
 #else
@@ -212,11 +212,10 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOffTheRecord(
                          context->ssl_config_service_, 0);
   context->cookie_store_ = new net::CookieMonster;
 
-  // The kNewFtp switch is Windows specific because we have multiple FTP
+  // The kWininetFtp switch is Windows specific because we have two FTP
   // implementations on Windows.
 #if defined(OS_WIN)
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kNewFtp))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kWininetFtp))
     context->ftp_transaction_factory_ =
         new net::FtpNetworkLayer(context->host_resolver_);
 #else

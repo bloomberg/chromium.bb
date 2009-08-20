@@ -427,10 +427,10 @@ const wchar_t kRendererCmdPrefix[]             = L"renderer-cmd-prefix";
 // On POSIX only: the contents of this flag are prepended to the utility
 // process command line. Useful values might be "valgrind" or "xterm -e gdb
 // --args".
-const wchar_t kUtilityCmdPrefix[]             = L"utility-cmd-prefix";
+const wchar_t kUtilityCmdPrefix[]              = L"utility-cmd-prefix";
 
-// Temparary option for new ftp implemetation.
-const wchar_t kNewFtp[]                        = L"new-ftp";
+// On Windows only: use the old WinInet-based ftp implemetation.
+const wchar_t kWininetFtp[]                    = L"wininet-ftp";
 
 // Enable Native Web Worker support
 const wchar_t kEnableNativeWebWorkers[]        = L"enable-native-web-workers";

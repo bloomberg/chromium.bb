@@ -160,7 +160,7 @@ extern const wchar_t kRendererCmdPrefix[];
 
 extern const wchar_t kUtilityCmdPrefix[];
 
-extern const wchar_t kNewFtp[];
+extern const wchar_t kWininetFtp[];
 
 extern const wchar_t kEnableNativeWebWorkers[];
 extern const wchar_t kWebWorkerProcessPerCore[];
