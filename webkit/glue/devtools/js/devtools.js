@@ -149,13 +149,28 @@ devtools.tools = null;
 
 
 var context = {};  // Used by WebCore's inspector routines.
-
+var localizedStrings = {};  // Filled in locale-specific scripts.
 
 ///////////////////////////////////////////////////////////////////////////////
 // Here and below are overrides to existing WebInspector methods only.
 // TODO(pfeldman): Patch WebCore and upstream changes.
 var oldLoaded = WebInspector.loaded;
 WebInspector.loaded = function() {
+  var locale = DevToolsHost.getApplicationLocale();
+  locale = locale.replace('_', '-');
+
+  var devtoolsStringsScriptElement = document.createElement('script');
+  devtoolsStringsScriptElement.addEventListener(
+      "load",
+      WebInspector.loaded2.bind(WebInspector),
+      false);
+  devtoolsStringsScriptElement.type = 'text/javascript';
+  devtoolsStringsScriptElement.src = 'l10n/devtoolsStrings_' + locale + '.js';
+  document.getElementsByTagName("head").item(0).appendChild(
+      devtoolsStringsScriptElement);
+};
+ 
+WebInspector.loaded2 = function() {
   devtools.tools = new devtools.ToolsAgent();
   devtools.tools.reset();
 
@@ -532,15 +547,6 @@ WebInspector.ScriptsPanel.prototype.doEvalInCallFrame =
     WebInspector.ProfilesPanel.prototype.show = oldShow;
   };
 })();
-
-
-/**
- * @override
- * TODO(pfeldman): Add l10n.
- */
-WebInspector.UIString = function(string) {
-  return String.vsprintf(string, Array.prototype.slice.call(arguments, 1));
-};
 
 
 // There is no clear way of setting frame title yet. So sniffing main resource

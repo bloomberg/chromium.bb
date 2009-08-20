@@ -317,6 +317,11 @@ DevToolsHostStub.prototype.addSourceToFrame = function(mimeType, source,
 };
 
 
+DevToolsHostStub.prototype.getApplicationLocale = function() {
+  return "en-US";
+};
+
+
 if (!window['DevToolsHost']) {
   window['RemoteDebuggerAgent'] = new RemoteDebuggerAgentStub();
   window['RemoteDebuggerCommandExecutor'] =
