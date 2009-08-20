@@ -93,6 +93,7 @@ class TabGtk : public TabRendererGtk,
   virtual void SetVisible(bool visible) const;
   virtual void CloseButtonClicked();
   virtual void UpdateData(TabContents* contents, bool loading_only);
+  virtual void SetBounds(const gfx::Rect& bounds);
 
   // button-press-event handler that handles mouse clicks.
   static gboolean OnMousePress(GtkWidget* widget, GdkEventButton* event,
@@ -129,6 +130,10 @@ class TabGtk : public TabRendererGtk,
   // Invoked when the context menu closes.
   void ContextMenuClosed();
 
+  // Sets whether the tooltip should be shown or not, depending on the size of
+  // the tab.
+  void UpdateTooltipState();
+
   // An instance of a delegate object that can perform various actions based on
   // user gestures.
   TabDelegate* delegate_;
@@ -149,6 +154,10 @@ class TabGtk : public TabRendererGtk,
 
   // True if this tab is being dragged.
   bool dragging_;
+
+  // The cached width of the title in pixels, updated whenever the title
+  // changes.
+  int title_width_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGtk);
 };

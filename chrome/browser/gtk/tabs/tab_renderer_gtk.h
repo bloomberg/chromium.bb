@@ -130,6 +130,9 @@ class TabRendererGtk : public AnimationDelegate {
   // Notifies the Tab that the close button has been clicked.
   virtual void CloseButtonClicked();
 
+  // Sets the bounds of the tab.
+  virtual void SetBounds(const gfx::Rect& bounds);
+
   // Advance the loading animation to the next frame, or hide the animation if
   // the tab isn't loading.
   void ValidateLoadingAnimation(AnimationState animation_state);
@@ -167,9 +170,6 @@ class TabRendererGtk : public AnimationDelegate {
 
   // Returns the requested bounds of the tab.
   gfx::Rect GetRequisition() const;
-
-  // Sets the bounds of the tab.
-  void SetBounds(const gfx::Rect& bounds);
 
   GtkWidget* widget() const { return tab_.get(); }
 

@@ -23,6 +23,15 @@ void SetEmptyDragIcon(GtkWidget* widget) {
   g_object_unref(pixbuf);
 }
 
+// Returns the width of the title for the current font, in pixels.
+int GetTitleWidth(std::wstring title) {
+  if (!title.empty()) {
+    gfx::Font font;
+    return font.GetStringWidth(title);
+  }
+  return 0;
+}
+
 }  // namespace
 
 class TabGtk::ContextMenuController : public MenuGtk::Delegate {
@@ -109,7 +118,8 @@ TabGtk::TabGtk(TabDelegate* delegate)
     : TabRendererGtk(delegate->GetThemeProvider()),
       delegate_(delegate),
       closing_(false),
-      dragging_(false) {
+      dragging_(false),
+      title_width_(0) {
   event_box_ = gtk_event_box_new();
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
   gtk_drag_source_set(event_box_, GDK_BUTTON1_MASK,
@@ -278,16 +288,15 @@ void TabGtk::CloseButtonClicked() {
 
 void TabGtk::UpdateData(TabContents* contents, bool loading_only) {
   TabRendererGtk::UpdateData(contents, loading_only);
-  std::wstring title = GetTitle();
-  if (!title.empty()) {
-    // Only show the tooltip if the title is truncated.
-    gfx::Font font;
-    if (font.GetStringWidth(title) > title_bounds().width()) {
-      gtk_widget_set_tooltip_text(widget(), WideToUTF8(title).c_str());
-    } else {
-      gtk_widget_set_has_tooltip(widget(), FALSE);
-    }
-  }
+  // Cache the title width so we don't recalculate it every time the tab is
+  // resized.
+  title_width_ = GetTitleWidth(GetTitle());
+  UpdateTooltipState();
+}
+
+void TabGtk::SetBounds(const gfx::Rect& bounds) {
+  TabRendererGtk::SetBounds(bounds);
+  UpdateTooltipState();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -303,4 +312,13 @@ void TabGtk::ShowContextMenu() {
 void TabGtk::ContextMenuClosed() {
   delegate()->StopAllHighlighting();
   menu_controller_.reset();
+}
+
+void TabGtk::UpdateTooltipState() {
+  // Only show the tooltip if the title is truncated.
+  if (title_width_ > title_bounds().width()) {
+    gtk_widget_set_tooltip_text(widget(), WideToUTF8(GetTitle()).c_str());
+  } else {
+    gtk_widget_set_has_tooltip(widget(), FALSE);
+  }
 }
