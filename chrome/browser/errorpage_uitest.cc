@@ -19,6 +19,15 @@ class ErrorPageTest : public UITest {
     }
     return false;
   }
+  bool WaitForTitleContaining(const std::string& title_substring) {
+    for (int i = 0; i < 100; ++i) {
+      std::wstring title = GetActiveTabTitle();
+      if (title.find(UTF8ToWide(title_substring)) != std::wstring::npos)
+        return true;
+      PlatformThread::Sleep(sleep_timeout_ms() / 10);
+    }
+    return false;
+  }
 };
 
 TEST_F(ErrorPageTest, DNSError_Basic) {
@@ -26,7 +35,7 @@ TEST_F(ErrorPageTest, DNSError_Basic) {
 
   NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
 
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 }
 
 // Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
@@ -37,7 +46,7 @@ TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack1) {
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
   NavigateToURL(test_url);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 
   GetActiveTab()->GoBack();
 
@@ -52,11 +61,11 @@ TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2) {
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
   NavigateToURL(test_url);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
 
   GetActiveTab()->GoBack();
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoBack();
 
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
@@ -71,15 +80,15 @@ TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2AndForward) {
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
   NavigateToURL(test_url);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
 
   GetActiveTab()->GoBack();
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoBack();
   GetActiveTab()->GoForward();
 
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 }
 
 // Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
@@ -91,14 +100,14 @@ TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2Forward2) {
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
   NavigateToURL(test_url);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
 
   GetActiveTab()->GoBack();
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoBack();
   GetActiveTab()->GoForward();
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoForward();
 
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
@@ -152,13 +161,13 @@ TEST_F(ErrorPageTest, Page404) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"page404.html"));
 
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining("page404.html"));
 }
 
 TEST_F(ErrorPageTest, Page404_GoBack) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"page404.html"));
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining("page404.html"));
 
   GetActiveTab()->GoBack();
 

@@ -141,6 +141,9 @@ const float kMaxHeightFactor = 0.6;
 // contents.
 const int kJavascriptMessageExpectedDelay = 1000;
 
+const char kLinkDoctorBaseURL[] =
+    "http://linkhelp.clients.google.com/tbproxy/lh/fixurl";
+
 // The list of prefs we want to observe.
 const wchar_t* kPrefsToObserve[] = {
   prefs::kAlternateErrorPagesEnabled,
@@ -2256,8 +2259,7 @@ GURL TabContents::GetAlternateErrorPageURL() const {
   PrefService* prefs = profile()->GetPrefs();
   DCHECK(prefs);
   if (prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled)) {
-    url = google_util::AppendGoogleLocaleParam(
-        GURL(google_util::kLinkDoctorBaseURL));
+    url = google_util::AppendGoogleLocaleParam(GURL(kLinkDoctorBaseURL));
     url = google_util::AppendGoogleTLDParam(url);
   }
   return url;
