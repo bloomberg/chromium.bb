@@ -1449,6 +1449,8 @@
         # are currently used by production code in automation_provider.cc.
         'browser/net/url_request_mock_http_job.cc',
         'browser/net/url_request_mock_http_job.h',
+        'browser/net/url_request_mock_link_doctor_job.cc',
+        'browser/net/url_request_mock_link_doctor_job.h',
         'browser/net/url_request_mock_util.cc',
         'browser/net/url_request_mock_util.h',
         'browser/net/url_request_slow_download_job.cc',

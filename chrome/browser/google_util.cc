@@ -31,6 +31,9 @@ GURL AppendParam(const GURL& url,
 
 namespace google_util {
 
+const char kLinkDoctorBaseURL[] =
+    "http://linkhelp.clients.google.com/tbproxy/lh/fixurl";
+
 GURL AppendGoogleLocaleParam(const GURL& url) {
   return AppendParam(url, "hl",
                      g_browser_process->GetApplicationLocale());
