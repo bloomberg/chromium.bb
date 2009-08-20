@@ -583,6 +583,32 @@ bool ShellUtil::GetQuickLaunchPath(bool system_level, std::wstring* path) {
   return true;
 }
 
+void ShellUtil::GetRegisteredBrowsers(std::map<std::wstring,
+                                      std::wstring>* browsers) {
+  std::wstring base_key(ShellUtil::kRegStartMenuInternet);
+  HKEY root = HKEY_LOCAL_MACHINE;
+  for (RegistryKeyIterator iter(root, base_key.c_str()); iter.Valid(); ++iter) {
+    std::wstring key = base_key + L"\\" + iter.Name();
+    RegKey capabilities(root, (key + L"\\Capabilities").c_str());
+    std::wstring name;
+    if (!capabilities.Valid() ||
+        !capabilities.ReadValue(L"ApplicationName", &name)) {
+      RegKey base_key(root, key.c_str());
+      if (!base_key.ReadValue(L"", &name))
+        continue;
+    }
+    RegKey install_info(root, (key + L"\\InstallInfo").c_str());
+    std::wstring command;
+    if (!install_info.Valid() ||
+        !install_info.ReadValue(L"ReinstallCommand", &command))
+      continue;
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    if (!name.empty() && !command.empty() &&
+        name.find(dist->GetApplicationName()) == std::wstring::npos)
+      (*browsers)[name] = command;
+  }
+}
+
 bool ShellUtil::GetUserSpecificDefaultBrowserSuffix(std::wstring* entry) {
   wchar_t user_name[256];
   DWORD size = _countof(user_name);
