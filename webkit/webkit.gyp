@@ -575,10 +575,11 @@
         '../third_party/WebKit/WebCore/html/HTMLEntityNames.gperf',
         '../third_party/WebKit/WebCore/platform/ColorData.gperf',
 
-        '<@(webcore_files)',
-
-        # This file includes all the .cpp files generated from the above idl.
+        # This file includes all the .cpp files generated from the .idl files
+        # in webcore_files.
         '../third_party/WebKit/WebCore/bindings/v8/DerivedSourcesAllInOne.cpp',
+
+        '<@(webcore_files)',
 
         'extensions/v8/gc_extension.cc',
         'extensions/v8/gc_extension.h',
