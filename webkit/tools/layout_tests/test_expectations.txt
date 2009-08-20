@@ -1082,6 +1082,11 @@ BUG13809 WIN LINUX : LayoutTests/fast/canvas/canvas-empty-image-pattern.html = F
 // added in WebKit.
 BUG16018 : LayoutTests/fast/dom/HTMLDocument/hasFocus.html = FAIL
 
+// We don't draw the spelling markers at all in test shell.
+BUG11577 WIN LINUX : LayoutTests/editing/spelling/inline_spelling_markers.html = FAIL
+BUG11577 LINUX : LayoutTests/editing/spelling/spellcheck-attribute.html = FAIL
+BUG11577 WIN LINUX : LayoutTests/editing/spelling/spelling-linebreak.html = FAIL
+
 // ----------------------------------------------------------------------------
 // NEW FOR THE MERGE
 //
@@ -1254,9 +1259,6 @@ BUG10667 MAC : pending/plugins/iframe-shims.html = FAIL
 
 // NEW FOR MERGE 36102:37604
 
-// We don't draw the spelling markers at all in test shell, and it's a low
-// priority, so I'm DEFERing.
-BUG10352 WIN LINUX : LayoutTests/editing/spelling/inline_spelling_markers.html = FAIL
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10352 : LayoutTests/fast/js/arguments.html = FAIL
 // New test. We should fix it, but it doesn't need to block the current release
@@ -1656,10 +1658,6 @@ BUG10413 : LayoutTests/http/tests/misc/SVGFont-delayed-load.html = FAIL
 // it doesn't need to block the current release
 BUG10413 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
-// Merge 40314:40364 -- new tests
-// See comment above LayoutTests/editing/spelling/inline_spelling_markers.html
-// for why this is disabled.
-BUG10414 WIN LINUX : LayoutTests/editing/spelling/spelling-linebreak.html = FAIL
 
 // Merge 40364:40409 -- new test
 // New test. We should fix it, but it doesn't need to block the current release
@@ -2244,7 +2242,6 @@ BUG11469 MAC : LayoutTests/fast/repaint/outline-shrinking.html = CRASH PASS
 
 // Regresssions from WebKit Merge 43114:43242 that just need to be re-baselined.
 BUG11483 LINUX : LayoutTests/fast/forms/input-text-double-click.html = FAIL
-BUG11483 LINUX : LayoutTests/editing/spelling/spellcheck-attribute.html = FAIL
 BUG11483 LINUX : LayoutTests/svg/text/foreignObject-repaint.xml = FAIL
 
 // Regressions from WebKit merge 43242:43321.  These just need to re-baselining:
