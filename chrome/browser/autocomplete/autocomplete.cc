@@ -581,11 +581,11 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input) {
     matches_.erase(matches_.begin() + max_matches(), matches_.end());
   }
 
-  // HistoryContentsProvider use a negative relevance as a way to avoid
-  // starving out other provider results, yet we may end up using the result. To
-  // make sure such results are sorted correctly we search for all
+  // HistoryContentsProvider uses a negative relevance as a way to avoid
+  // starving out other provider matches, yet we may end up using this match. To
+  // make sure such matches are sorted correctly we search for all
   // relevances < 0 and negate them. If we change our relevance algorithm to
-  // properly mix different providers results, this can go away.
+  // properly mix different providers' matches, this can go away.
   for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i) {
     if (i->relevance < 0)
       i->relevance = -i->relevance;
@@ -617,13 +617,16 @@ void AutocompleteResult::Validate() const {
 const int AutocompleteController::kNoItemSelected = -1;
 
 namespace {
-// The maximum time we'll allow the results to go without updating to the
-// latest set.
-const int kResultUpdateMaxDelayMs = 300;
+// The time we'll wait between sending updates to our observers (balances
+// flicker against lag).
+const int kUpdateDelayMs = 350;
 };
 
 AutocompleteController::AutocompleteController(Profile* profile)
-    : done_(true) {
+    : updated_latest_result_(false),
+      delay_interval_has_passed_(false),
+      have_committed_during_this_query_(false),
+      done_(true) {
   providers_.push_back(new SearchProvider(this, profile));
   providers_.push_back(new HistoryURLProvider(this, profile));
   providers_.push_back(new KeywordProvider(this, profile));
@@ -660,40 +663,56 @@ void AutocompleteController::Start(const std::wstring& text,
   // changes, and when the user finishes an IME composition, inline autocomplete
   // may no longer be prevented.  In both these cases the text itself hasn't
   // changed since the last query, and some providers can do much less work (and
-  // get results back more quickly).  Taking advantage of this reduces flicker.
+  // get matches back more quickly).  Taking advantage of this reduces flicker.
   //
   // NOTE: This comes after constructing |input_| above since that construction
   // can change the text string (e.g. by stripping off a leading '?').
   const bool minimal_changes = (input_.text() == old_input_text) &&
       (input_.synchronous_only() == old_synchronous_only);
 
-  // If we're starting a brand new query, send the previous results to the
-  // observers.
-  if (!minimal_changes && !done_)
+  // If we're interrupting an old query, and committing its result won't shrink
+  // the visible set (which would probably re-expand soon, thus looking very
+  // flickery), then go ahead and commit what we've got, in order to feel more
+  // responsive when the user is typing rapidly.
+  if (!minimal_changes && !done_ && (latest_result_.size() >= result_.size()))
     CommitResult();
 
+  // If the timer is already running, it could fire shortly after starting this
+  // query, when we're likely to only have the synchronous results back, thus
+  // almost certainly causing flicker.  Reset it, except when we haven't
+  // committed anything for the past query, in which case the user is typing
+  // quickly and we need to keep running the timer lest we lag too far behind.
+  if (have_committed_during_this_query_) {
+    update_delay_timer_.Stop();
+    delay_interval_has_passed_ = false;
+  }
+
   // Start the new query.
+  have_committed_during_this_query_ = false;
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
        ++i) {
     (*i)->Start(input_, minimal_changes);
     if (synchronous_only)
       DCHECK((*i)->done());
   }
+  CheckIfDone();
   UpdateLatestResult(true);
 }
 
 void AutocompleteController::Stop(bool clear_result) {
-  for (ACProviders::const_iterator i(providers_.begin());
-       i != providers_.end(); ++i) {
+  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
+       ++i) {
     if (!(*i)->done())
       (*i)->Stop();
   }
 
+  update_delay_timer_.Stop();
+  updated_latest_result_ = false;
+  delay_interval_has_passed_ = false;
   done_ = true;
   if (clear_result)
     result_.Reset();
   latest_result_.CopyFrom(result_);
-  max_delay_timer_.Stop();
 }
 
 void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
@@ -707,38 +726,20 @@ void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
 }
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
-  DCHECK(!input_.synchronous_only());
-
-  if (updated_matches) {
+  CheckIfDone();
+  if (updated_matches || done_) {
     UpdateLatestResult(false);
     return;
   }
-
-  done_ = true;
-  for (ACProviders::const_iterator i(providers_.begin());
-       i != providers_.end(); ++i) {
-    if (!(*i)->done()) {
-      done_ = false;
-      return;
-    }
-  }
-  // In theory we could call Stop() instead of CommitLatestResults() here if we
-  // knew we'd already called CommitLatestResults() at least once for this
-  // query.  In practice, our observers don't do enough work responding to the
-  // updates here for the potentially-extra notification to matter.
-  CommitResult();
 }
 
 void AutocompleteController::UpdateLatestResult(bool is_synchronous_pass) {
-  // Add all providers' results.
+  // Add all providers' matches.
   latest_result_.Reset();
-  done_ = true;
-  for (ACProviders::const_iterator i(providers_.begin());
-       i != providers_.end(); ++i) {
+  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
+       ++i)
     latest_result_.AppendMatches((*i)->matches());
-    if (!(*i)->done())
-      done_ = false;
-  }
+  updated_latest_result_ = true;
 
   // Sort the matches and trim to a small number of "best" matches.
   latest_result_.SortAndCull(input_);
@@ -751,10 +752,10 @@ void AutocompleteController::UpdateLatestResult(bool is_synchronous_pass) {
 #endif
 
   if (is_synchronous_pass) {
-    if (!max_delay_timer_.IsRunning()) {
-      max_delay_timer_.Start(
-          TimeDelta::FromMilliseconds(kResultUpdateMaxDelayMs),
-          this, &AutocompleteController::CommitResult);
+    if (!update_delay_timer_.IsRunning()) {
+      update_delay_timer_.Start(
+          TimeDelta::FromMilliseconds(kUpdateDelayMs),
+          this, &AutocompleteController::DelayTimerFired);
     }
 
     NotificationService::current()->Notify(
@@ -763,23 +764,42 @@ void AutocompleteController::UpdateLatestResult(bool is_synchronous_pass) {
         Details<const AutocompleteResult>(&latest_result_));
   }
 
-  if (done_ || (latest_result_.size() >= result_.size()))
+  // If nothing is visible, commit immediately so that the first character the
+  // user types produces an instant response.  If the query has finished and we
+  // haven't ever committed a result set, commit immediately to minimize lag.
+  // Otherwise, only commit when it's been at least one delay interval since the
+  // last commit, to minimize flicker.
+  if (result_.empty() || (done_ && !have_committed_during_this_query_) ||
+      delay_interval_has_passed_)
     CommitResult();
 }
 
-void AutocompleteController::CommitResult() {
-  // The max update interval timer either needs to be reset (if more updates
-  // are to come) or stopped (when we're done with the query).
-  if (done_)
-    max_delay_timer_.Stop();
-  else
-    max_delay_timer_.Reset();
+void AutocompleteController::DelayTimerFired() {
+  delay_interval_has_passed_ = true;
+  update_delay_timer_.Reset();
+  CommitResult();
+}
 
+void AutocompleteController::CommitResult() {
+  if (!updated_latest_result_) {
+    // Don't send update notifications when nothing's actually changed.
+    if (done_) {
+      update_delay_timer_.Stop();
+      delay_interval_has_passed_ = false;
+    }
+    return;
+  }
+
+  updated_latest_result_ = false;
+  delay_interval_has_passed_ = false;
+  have_committed_during_this_query_ = true;
   result_.CopyFrom(latest_result_);
   NotificationService::current()->Notify(
       NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
       Source<AutocompleteController>(this),
       Details<const AutocompleteResult>(&result_));
+  if (!done_)
+    update_delay_timer_.Reset();
 }
 
 ACMatches AutocompleteController::GetMatchesNotInLatestResult(
@@ -878,4 +898,15 @@ void AutocompleteController::AddHistoryContentsShortcut() {
   match.transition = PageTransition::AUTO_BOOKMARK;
   match.provider = history_contents_provider_;
   latest_result_.AddMatch(match);
+}
+
+void AutocompleteController::CheckIfDone() {
+  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
+       ++i) {
+    if (!(*i)->done()) {
+      done_ = false;
+      return;
+    }
+  }
+  done_ = true;
 }
