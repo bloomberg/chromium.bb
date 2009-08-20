@@ -2918,3 +2918,11 @@ BUG19782 WIN DEBUG : LayoutTests/fast/dom/text-control-crash-on-select.html = CR
 // Fails due to textInputController.setInputMethod not implemented for Mac.
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.html = FAIL
+
+// Fallout from r47528:47546
+BUG19796 LINUX WIN : LayoutTests/editing/style/remove-underline-across-paragraph.html = FAIL
+BUG19796 LINUX WIN : LayoutTests/editing/style/remove-underline-after-paragraph.html = FAIL
+BUG19796 LINUX WIN : LayoutTests/editing/style/remove-underline.html = FAIL
+BUG19796 LINUX WIN : LayoutTests/editing/style/underline.html = FAIL
+BUG19796 LINUX WIN : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = FAIL
+BUG19796 WIN :  LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
