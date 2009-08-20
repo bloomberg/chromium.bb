@@ -75,6 +75,7 @@ MSVC_POP_WARNING();
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/inspector_client_impl.h"
+#include "webkit/glue/media_player_action.h"
 #include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webkit_glue.h"

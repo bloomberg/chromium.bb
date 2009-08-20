@@ -12,6 +12,7 @@
 
 class Profile;
 class TabContents;
+struct MediaPlayerAction;
 
 class RenderViewContextMenu {
  public:

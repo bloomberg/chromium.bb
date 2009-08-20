@@ -32,6 +32,7 @@
 #include "webkit/glue/autofill_form.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/media_player_action.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/resource_loader_bridge.h"

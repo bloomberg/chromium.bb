@@ -28,6 +28,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
+#include "webkit/glue/media_player_action.h"
 
 RenderViewContextMenu::RenderViewContextMenu(
     TabContents* tab_contents,

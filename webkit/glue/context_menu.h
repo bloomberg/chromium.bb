@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_CONTEXT_NODE_TYPES_H__
-#define WEBKIT_GLUE_CONTEXT_NODE_TYPES_H__
+#ifndef WEBKIT_GLUE_CONTEXT_MENU_H_
+#define WEBKIT_GLUE_CONTEXT_MENU_H_
 
 #include <vector>
 
@@ -154,23 +154,4 @@ struct ContextMenuParams {
   std::string frame_charset;
 };
 
-struct MediaPlayerAction {
-  enum CommandTypeBit {
-    NONE = 0x0,
-    PLAY = 0x1,
-    PAUSE = 0x2,
-    MUTE = 0x4,
-    UNMUTE = 0x8,
-    LOOP = 0x10,
-    NO_LOOP = 0x20,
-  };
-
-  // A bitfield representing the actions that the context menu should execute
-  // on the originating node.
-  int32 command;
-
-  MediaPlayerAction() : command(NONE) {}
-  explicit MediaPlayerAction(int c) : command(c) {}
-};
-
-#endif  // WEBKIT_GLUE_CONTEXT_NODE_TYPES_H__
+#endif  // WEBKIT_GLUE_CONTEXT_MENU_H_

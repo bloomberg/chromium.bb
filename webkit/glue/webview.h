@@ -18,10 +18,10 @@ class WebSettings;
 struct WebPoint;
 }
 
-struct MediaPlayerAction;
 class GURL;
 class WebDevToolsAgent;
 class WebViewDelegate;
+struct MediaPlayerAction;
 
 //
 //  @class WebView
