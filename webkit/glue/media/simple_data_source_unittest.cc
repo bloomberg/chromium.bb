@@ -52,10 +52,7 @@ class SimpleDataSourceTest : public testing::Test {
     }
   }
 
-  void InitializeDataSource(const char* url) {
-    // Saves the url first.
-    gurl_ = GURL(url);
-
+  void InitializeDataSource(const char* url, bool is_loaded) {
     media::MediaFormat url_format;
     url_format.SetAsString(media::MediaFormat::kMimeType,
                            media::mime_type::kURL);
@@ -66,9 +63,11 @@ class SimpleDataSourceTest : public testing::Test {
     // There is no need to provide a message loop to data source.
     data_source_->set_host(&host_);
 
+    EXPECT_CALL(host_, SetLoaded(is_loaded));
+
     // First a bridge is created.
     InSequence s;
-    EXPECT_CALL(*bridge_factory_, CreateBridge(gurl_, _, -1, -1))
+    EXPECT_CALL(*bridge_factory_, CreateBridge(GURL(url), _, -1, -1))
         .WillOnce(Return(bridge_.get()));
     EXPECT_CALL(*bridge_, Start(data_source_.get()))
         .WillOnce(Return(true));
@@ -165,32 +164,31 @@ class SimpleDataSourceTest : public testing::Test {
   scoped_refptr<SimpleDataSource> data_source_;
   StrictMock<media::MockFilterHost> host_;
   StrictMock<media::MockFilterCallback> callback_;
-  GURL gurl_;
   char data_[kDataSize];
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDataSourceTest);
 };
 
 TEST_F(SimpleDataSourceTest, InitializeHTTP) {
-  InitializeDataSource(kHttpUrl);
+  InitializeDataSource(kHttpUrl, false);
   RequestSucceeded();
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeHTTPS) {
-  InitializeDataSource(kHttpsUrl);
+  InitializeDataSource(kHttpsUrl, false);
   RequestSucceeded();
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeFTP) {
-  InitializeDataSource(kFtpUrl);
+  InitializeDataSource(kFtpUrl, false);
   RequestSucceeded();
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeFile) {
-  InitializeDataSource(kFileUrl);
+  InitializeDataSource(kFileUrl, true);
   RequestSucceeded();
   DestroyDataSource();
 }
@@ -221,13 +219,13 @@ TEST_F(SimpleDataSourceTest, InitializeInvalid) {
 }
 
 TEST_F(SimpleDataSourceTest, RequestFailed) {
-  InitializeDataSource(kHttpUrl);
+  InitializeDataSource(kHttpUrl, false);
   RequestFailed();
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, StopWhenDownloading) {
-  InitializeDataSource(kHttpUrl);
+  InitializeDataSource(kHttpUrl, false);
 
   EXPECT_CALL(*bridge_, Cancel());
   EXPECT_CALL(*bridge_, OnDestroy())
@@ -237,7 +235,7 @@ TEST_F(SimpleDataSourceTest, StopWhenDownloading) {
 }
 
 TEST_F(SimpleDataSourceTest, AsyncRead) {
-  InitializeDataSource(kFileUrl);
+  InitializeDataSource(kFileUrl, true);
   RequestSucceeded();
   AsyncRead();
   DestroyDataSource();

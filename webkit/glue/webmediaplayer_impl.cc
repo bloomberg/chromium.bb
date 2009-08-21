@@ -272,6 +272,7 @@ void WebMediaPlayerImpl::seek(float seconds) {
 
   // Try to preserve as much accuracy as possible.
   float microseconds = seconds * base::Time::kMicrosecondsPerSecond;
+  SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
   pipeline_->Seek(
       base::TimeDelta::FromMicroseconds(static_cast<int64>(microseconds)),
       NewCallback(proxy_.get(),
@@ -361,7 +362,10 @@ bool WebMediaPlayerImpl::paused() const {
 bool WebMediaPlayerImpl::seeking() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  return false;
+  if (ready_state_ == WebKit::WebMediaPlayer::HaveNothing)
+    return false;
+  
+  return ready_state_ == WebKit::WebMediaPlayer::HaveMetadata;
 }
 
 float WebMediaPlayerImpl::duration() const {
@@ -467,7 +471,11 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
     // TODO(hclam): change this to report the correct status.
     SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
     SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
-    SetNetworkState(WebKit::WebMediaPlayer::Loaded);
+    if (pipeline_->IsLoaded()) {
+      SetNetworkState(WebKit::WebMediaPlayer::Loaded);
+    } else {
+      SetNetworkState(WebKit::WebMediaPlayer::Loading);
+    }
   } else {
     // TODO(hclam): should use pipeline_->GetError() to determine the state
     // properly and reports error using MediaError.
@@ -484,6 +492,7 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
 void WebMediaPlayerImpl::OnPipelineSeek() {
   DCHECK(MessageLoop::current() == main_loop_);
   if (pipeline_->GetError() == media::PIPELINE_OK) {
+    SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
     GetClient()->timeChanged();
   }
 }

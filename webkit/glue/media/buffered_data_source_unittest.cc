@@ -30,7 +30,14 @@ using ::testing::WithArgs;
 namespace {
 
 const char* kHttpUrl = "http://test";
+const char* kFileUrl = "file://test";
 const int kDataSize = 1024;
+
+enum NetworkState {
+  NONE,
+  LOADED,
+  LOADING
+};
 
 }  // namespace
 
@@ -400,7 +407,7 @@ class BufferedDataSourceTest : public testing::Test {
     }
   }
 
-  ~BufferedDataSourceTest() {
+  virtual ~BufferedDataSourceTest() {
     if (data_source_) {
       // Release the bridge factory because we don't own it.
       // Expects bridge factory to be destroyed along with data source.
@@ -414,7 +421,7 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   void InitializeDataSource(const char* url, int error, int probe_error,
-                            int64 instance_size) {
+                            int64 instance_size, NetworkState networkState) {
     // Saves the url first.
     gurl_ = GURL(url);
 
@@ -432,6 +439,14 @@ class BufferedDataSourceTest : public testing::Test {
     loader_ = new StrictMock<MockBufferedResourceLoader>();
     probe_loader_ = new StrictMock<MockBufferedResourceLoader>();
 
+    if (networkState == LOADED) {
+      EXPECT_CALL(host_, SetLoaded(true));
+    } else if (networkState == LOADING) {
+      EXPECT_CALL(host_, SetLoaded(false));
+    }
+
+    // TODO(ajwong): This mock is too strict.  We do not need to guarantee a
+    // full sequencing each of these expectations.
     InSequence s;
     StrictMock<media::MockFilterCallback> callback;
 
@@ -448,6 +463,7 @@ class BufferedDataSourceTest : public testing::Test {
         .WillOnce(DoAll(Assign(&error_, error),
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeStartCallback)));
+
     if (error == net::OK) {
       EXPECT_CALL(*loader_, instance_size())
           .WillOnce(Return(instance_size));
@@ -689,36 +705,36 @@ class BufferedDataSourceTest : public testing::Test {
 };
 
 TEST_F(BufferedDataSourceTest, InitializationSuccess) {
-  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024, LOADING);
   StopDataSource();
 }
 
 TEST_F(BufferedDataSourceTest, InitiailizationFailed) {
   InitializeDataSource(kHttpUrl, net::ERR_FILE_NOT_FOUND,
-                       net::ERR_FILE_NOT_FOUND, 0);
+                       net::ERR_FILE_NOT_FOUND, 0, NONE);
   StopDataSource();
 }
 
 TEST_F(BufferedDataSourceTest, MissingContentLength) {
-  InitializeDataSource(kHttpUrl, net::OK, net::OK, -1);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, -1, LOADING);
   StopDataSource();
 }
 
 TEST_F(BufferedDataSourceTest, RangeRequestNotSupported) {
   InitializeDataSource(kHttpUrl, net::OK,
-                       net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, 1024);
+                       net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, 1024, LOADING);
   StopDataSource();
 }
 
 TEST_F(BufferedDataSourceTest,
        MissingContentLengthAndRangeRequestNotSupported) {
   InitializeDataSource(kHttpUrl, net::OK,
-                       net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, -1);
+                       net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, -1, LOADING);
   StopDataSource();
 }
 
 TEST_F(BufferedDataSourceTest, ReadCacheHit) {
-  InitializeDataSource(kHttpUrl, net::OK, net::OK, 25);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, 25, LOADING);
 
   // Performs read with cache hit.
   ReadDataSourceHit(10, 10, 10);
@@ -730,21 +746,27 @@ TEST_F(BufferedDataSourceTest, ReadCacheHit) {
 }
 
 TEST_F(BufferedDataSourceTest, ReadCacheMiss) {
-  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024, LOADING);
   ReadDataSourceMiss(1000, 10);
   ReadDataSourceMiss(20, 10);
   StopDataSource();
 }
 
 TEST_F(BufferedDataSourceTest, ReadFailed) {
-  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024, LOADING);
   ReadDataSourceHit(10, 10, 10);
   ReadDataSourceFailed(10, 10, net::ERR_CONNECTION_RESET);
   StopDataSource();
 }
 
 TEST_F(BufferedDataSourceTest, ReadTimesOut) {
-  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024, LOADING);
+  ReadDataSourceTimesOut(20, 10);
+  StopDataSource();
+}
+
+TEST_F(BufferedDataSourceTest, FileHasLoadedState) {
+  InitializeDataSource(kFileUrl, net::OK, net::OK, 1024, LOADED);
   ReadDataSourceTimesOut(20, 10);
   StopDataSource();
 }

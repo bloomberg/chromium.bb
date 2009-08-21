@@ -37,6 +37,7 @@ class MockFilterHost : public FilterHost {
   MOCK_METHOD1(SetBufferedBytes, void(int64 buffered_bytes));
   MOCK_METHOD2(SetVideoSize, void(size_t width, size_t height));
   MOCK_METHOD1(SetStreaming, void(bool streamed));
+  MOCK_METHOD1(SetLoaded, void(bool loaded));
   MOCK_METHOD0(NotifyEnded, void());
   MOCK_METHOD1(BroadcastMessage, void(FilterMessage message));
 
