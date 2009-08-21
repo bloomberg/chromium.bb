@@ -485,7 +485,7 @@ def TryChange(argv,
 
   # Switch the default accordingly if there was no default send_patch.
   if not options.send_patch:
-    if options.http_port and options.http_host:
+    if options.port and options.host:
       options.send_patch = _SendChangeHTTP
     elif options.svn_repo:
       options.send_patch = _SendChangeSVN
