@@ -257,7 +257,7 @@ void RenderWidgetHostViewMac::DidScrollRect(
   // TODO(rohitrao): Evaluate how slow this full redraw is.  If it
   // turns out to be a problem, consider scrolling only a portion of
   // the view, based on where the findbar and blocked popups are.
-  [cocoa_view_ setNeedsDisplay:YES];
+  DidPaintRect(rect);
 }
 
 void RenderWidgetHostViewMac::RenderViewGone() {

@@ -5,6 +5,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 
 #include "base/logging.h"
 #include "chrome/common/transport_dib.h"
@@ -22,9 +24,15 @@
 BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
     : render_widget_host_(widget),
       size_(size),
-      cg_layer_(CGLayerCreateWithContext(static_cast<CGContextRef>(
-          [[NSGraphicsContext currentContext] graphicsPort]), size.ToCGSize(),
-          NULL)) {
+      cg_layer_(NULL) {
+  // We want our CGLayer to be optimized for drawing into our containing
+  // window, so extract a CGContext corresponding to that window that we can
+  // pass to CGLayerCreateWithContext.
+  NSWindow* containing_window = [widget->view()->GetNativeView() window];
+  CHECK(containing_window != NULL);
+  CGContextRef context = static_cast<CGContextRef>([[containing_window graphicsContext] graphicsPort]);
+  CGLayerRef layer = CGLayerCreateWithContext(context, size.ToCGSize(), NULL);
+  cg_layer_.reset(layer);
   CHECK(cg_layer_.get() != NULL);
 }
 
