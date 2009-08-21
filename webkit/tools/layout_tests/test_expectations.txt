@@ -2772,19 +2772,6 @@ BUG_JPARENT SKIP : LayoutTests/fast/wml/html-fieldset-crash.html = FAIL
 
 // Merge 47383:47417, just needs rebaseline
 BUG_JPARENT WIN LINUX : LayoutTests/fast/dom/navigator-detached-no-crash.html = FAIL
-// Debug only failures, didn't show up on canaries
-BUG_JPARENT WIN LINUX DEBUG : LayoutTests/css1/classification/display.html = FAIL
-BUG_JPARENT LINUX DEBUG : LayoutTests/css1/classification/list_style.html = FAIL
-BUG_JPARENT WIN LINUX DEBUG : LayoutTests/css1/classification/list_style_type.html = FAIL
-BUG_JPARENT LINUX DEBUG : LayoutTests/css1/classification/white_space.html = FAIL
-BUG_JPARENT WIN LINUX DEBUG : LayoutTests/css2.1/t1205-c563-list-type-00-b.html = FAIL
-BUG_JPARENT LINUX DEBUG : LayoutTests/css2.1/t1205-c563-list-type-01-b.html = FAIL
-BUG_JPARENT MAC : LayoutTests/fast/runin/nonblock-runin.html = FAIL
-BUG_JPARENT LINUX DEBUG : LayoutTests/fast/events/ondragenter.html = FAIL
-BUG_JPARENT LINUX DEBUG : LayoutTests/fast/lists/dynamic-marker-crash.html = FAIL
-BUG_JPARENT WIN LINUX DEBUG : LayoutTests/fast/lists/ol-display-types.html = FAIL
-BUG_JPARENT LINUX DEBUG : LayoutTests/fast/lists/ol-start-dynamic.html = FAIL
-BUG_JPARENT WIN DEBUG : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 
 // WebKit roll r47417:47528
 BUG19766 WIN LINUX : LayoutTests/editing/deleting/delete-br-011.html = FAIL
