@@ -72,9 +72,6 @@ PREFIX : passwordformdommanager::findpasswordformfields___passwordformdommanager
 # 12156
 SUBSTRING : views::focuswindowcallback___base::messagepumpforui::dorunloop
 
-# 9947
-SUBSTRING : webcore::frameloader::didreceiveresponse___webcore::resourceloader::didreceiveresponse___webcore::subresourceloader::didreceiveresponse___webcore::resourceloader::didreceiveresponse___webcore::resourcehandleinternal::onreceivedresponse
-
 # 10978
 PREFIX : webcore::renderobject::localtoabsolute___webcore::layoutstate::layoutstate___webcore::renderview::pushlayoutstate___webcore::frameview::layout
 
