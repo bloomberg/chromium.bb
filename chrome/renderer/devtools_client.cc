@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/devtools_client.h"
 
+#include "app/app_switches.h"
+#include "base/command_line.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
@@ -12,8 +14,12 @@
 
 DevToolsClient::DevToolsClient(RenderView* view)
     : render_view_(view) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   web_tools_client_.reset(
-      WebDevToolsClient::Create(view->webview(), this));
+      WebDevToolsClient::Create(
+          view->webview(),
+          this,
+          WideToASCII(command_line.GetSwitchValue(switches::kLang))));
 }
 
 DevToolsClient::~DevToolsClient() {

@@ -106,6 +106,22 @@ devtools.InspectorControllerImpl.prototype.toggleNodeSearch = function() {
 /**
  * {@inheritDoc}.
  */
+devtools.InspectorControllerImpl.prototype.localizedStringsURL = function() {
+  // l10n is turned off in test mode because delayed loading of strings
+  // causes test failures.
+  if (!window.___interactiveUiTestsMode) {
+    var locale = DevToolsHost.getApplicationLocale();
+    locale = locale.replace('_', '-');
+    return 'l10n/inspectorStrings_' + locale + '.js';
+  } else {
+    return undefined;
+  }
+};
+
+
+/**
+ * {@inheritDoc}.
+ */
 devtools.InspectorControllerImpl.prototype.addSourceToFrame =
     function(mimeType, source, element) {
   return DevToolsHost.addSourceToFrame(mimeType, source, element);

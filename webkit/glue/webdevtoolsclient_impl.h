@@ -36,7 +36,8 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
  public:
   WebDevToolsClientImpl(
       WebViewImpl* web_view_impl,
-      WebDevToolsClientDelegate* delegate);
+      WebDevToolsClientDelegate* delegate,
+      const std::string& application_locale);
   virtual ~WebDevToolsClientImpl();
 
   // DevToolsRpc::Delegate implementation.
@@ -68,9 +69,12 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
   static v8::Handle<v8::Value> JsUndockWindow(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsToggleInspectElementMode(
       const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsGetApplicationLocale(
+      const v8::Arguments& args);
 
   WebViewImpl* web_view_impl_;
   WebDevToolsClientDelegate* delegate_;
+  String application_locale_;
   OwnPtr<CppBoundClass> debugger_command_executor_obj_;
   OwnPtr<JsDebuggerAgentBoundObj> debugger_agent_obj_;
   OwnPtr<JsToolsAgentBoundObj> tools_agent_obj_;

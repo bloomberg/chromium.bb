@@ -12,6 +12,7 @@
 
 if (window.domAutomationController) {
 
+var ___interactiveUiTestsMode = true;
 
 /**
  * Test suite for interactive UI tests.
