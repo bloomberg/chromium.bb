@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,27 +30,21 @@
  */
 
 /*
- * NaCl Simple/secure ELF loader (NaCl SEL) misc utilities.
+ * NaCl Simple/secure ELF loader (NaCl SEL) misc utilities.  Inlined
+ * functions.  Needed since C++ static inline declaractions can
+ * generate undefined external references (at least as of gcc 4.3.3
+ * used in Jaunty), in the debug build.
  */
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_SEL_UTIL_H_
-#define NATIVE_CLIENT_SERVICE_RUNTIME_SEL_UTIL_H_ 1
+
+#include "native_client/src/include/portability.h"
+#include "native_client/src/include/nacl_base.h"
 
 #include <sys/types.h>
 
-#include "native_client/src/include/nacl_base.h"
-#include "native_client/src/include/portability.h"
-
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-EXTERN_C_BEGIN
+#define static
+#undef INLINE
+#define INLINE
 
 #include "native_client/src/trusted/service_runtime/sel_util-inl.h"
-
-size_t  NaClAppPow2Ceil(size_t  max_addr);
-
-typedef uint64_t tick_t;
-tick_t get_ticks();
-
-EXTERN_C_END
-
-#endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_SEL_UTIL_H_ */

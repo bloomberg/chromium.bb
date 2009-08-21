@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,28 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * NaCl Simple/secure ELF loader (NaCl SEL) misc utilities.
- */
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_SEL_UTIL_H_
-#define NATIVE_CLIENT_SERVICE_RUNTIME_SEL_UTIL_H_ 1
+#define NACL_NO_INLINE
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-#include <sys/types.h>
+#define static
+#undef INLINE
+#define INLINE
 
-#include "native_client/src/include/nacl_base.h"
-#include "native_client/src/include/portability.h"
-
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-
-EXTERN_C_BEGIN
-
-#include "native_client/src/trusted/service_runtime/sel_util-inl.h"
-
-size_t  NaClAppPow2Ceil(size_t  max_addr);
-
-typedef uint64_t tick_t;
-tick_t get_ticks();
-
-EXTERN_C_END
-
-#endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_SEL_UTIL_H_ */
+#include "native_client/src/trusted/service_runtime/sel_ldr-inl.h"

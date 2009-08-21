@@ -143,10 +143,12 @@ ldr_inputs = [
     'nacl_syscall_hook.c',
     'sel_addrspace.c',
     'sel_ldr.c',
+    'sel_ldr-inl.c',
     'sel_ldr_standard.c',
     'sel_load_image.c',
     'sel_mem.c',
     'sel_util.c',
+    'sel_util-inl.c',
     'sel_validate_image.c',
     'web_worker_stub.c',
 ]
