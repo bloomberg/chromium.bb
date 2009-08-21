@@ -63,15 +63,17 @@ class AutomationRequestInterceptor : public URLRequest::Interceptor {
 
 URLRequestJob* AutomationRequestInterceptor::MaybeIntercept(
     URLRequest* request) {
-  ResourceDispatcherHost::ExtraRequestInfo* request_info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request);
-  if (request_info) {
-    AutomationResourceMessageFilter::AutomationDetails details;
-    if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
-            request_info->process_id, request_info->route_id, &details)) {
-      URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
-          details.tab_handle, details.filter);
-      return job;
+  if (request->url().SchemeIs("http") || request->url().SchemeIs("https")) {
+    ResourceDispatcherHost::ExtraRequestInfo* request_info =
+        ResourceDispatcherHost::ExtraInfoForRequest(request);
+    if (request_info) {
+      AutomationResourceMessageFilter::AutomationDetails details;
+      if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
+              request_info->process_id, request_info->route_id, &details)) {
+        URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
+            details.tab_handle, details.filter);
+        return job;
+      }
     }
   }
 
