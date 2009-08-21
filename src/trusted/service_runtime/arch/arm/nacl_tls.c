@@ -54,7 +54,7 @@ __thread uint32_t nacl_tls_idx;
 
 /*
  * This function is used by a nacl module to obtain its TLS pointer. It is
- * called from a trampoline code (nacl_tls.S)
+ * called from code patched into trampoline region (nacl_tls_tramp.S)
  */
 uint32_t NaClGetUserTls() {
   return TLS_IDX_GET_ADDR(nacl_tls_idx);

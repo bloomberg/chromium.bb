@@ -532,6 +532,21 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
+/* TODO(petr): get rid of NACL_ARM */
+#if NACL_ARM
+static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
+  UNREFERENCED_PARAMETER(nap);
+
+  /* BUG: not implemented */
+
+  return addr;
+}
+#else
+static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
+  return addr & ~(uintptr_t)((1 << nap->align_boundary) - 1);
+}
+#endif
+
 EXTERN_C_END
 
 #endif

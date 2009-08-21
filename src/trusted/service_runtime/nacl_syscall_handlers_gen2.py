@@ -120,7 +120,7 @@ def MemberList(name, alist):
   return """\
   struct %(name)sArgs {
 %(members)s
-  } p = *(struct %(name)sArgs *) natp->x_esp;
+  } p = *(struct %(name)sArgs *) natp->x_sp;
 
 """ % values
 

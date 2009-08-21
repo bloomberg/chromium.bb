@@ -32,12 +32,12 @@
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 
-uint32_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
+uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
   return th_ctx->stack_ptr.ptr_64;
 }
 
 
-void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uint32_t sp) {
-  th_ctx->stack_ptr.ptr_64 = sp;
+void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uintptr_t sp) {
+  th_ctx->stack_ptr.ptr_64 = (uint64_t) sp;
 }
 

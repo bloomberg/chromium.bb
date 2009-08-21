@@ -110,14 +110,26 @@
 # define IDENTIFIER(n)  n
 #endif
 
-#if NACL_ARM
-#define NACL_HALT mov pc, #0
-#endif
-
-#if NACL_BUILD_SUBARCH == 64
-# define NACL_CALL_STEP               0x10
-#else
-# define NACL_CALL_STEP               0xc
+/*
+ * TODO(petr): replace NACL_ARM with NACL_BUILD_ARCH
+ * #if NACL_BUILD_ARCH == arm
+ * #elif NACL_BUILD_ARCH == x86
+ *  #if NACL_BUILD_SUBARCH == 32
+ *  #else
+ *  #endif
+ * #endif
+ */
+#ifdef NACL_ARM
+#define NACL_HALT         mov pc, #0
+#define NACL_USERRET_FIX  0x4
+#define NACL_SYSARGS_FIX  NACL_USERRET_FIX + 0x4
+#elif NACL_BUILD_SUBARCH == 32
+#define NACL_USERRET_FIX  0x8
+#define NACL_SYSARGS_FIX  NACL_USERRET_FIX + 0x4
+#elif NACL_BUILD_SUBARCH == 64
+#define NACL_USERRET_FIX  0xc
+#define NACL_SYSARGS_FIX  NACL_USERRET_FIX + 0x4
 #endif
 
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_ */
+

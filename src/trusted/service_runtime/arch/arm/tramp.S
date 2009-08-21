@@ -50,17 +50,38 @@
 IDENTIFIER(NaCl_trampoline_seg_code):
 /*
  * ARM passes parameters to a callee in registers r0-r3. If there are more
- * than 4 parameters, they are placed on stack.
- * lr - keeps the return address
+ * than 4 parameters, the first four args are passed in registers the rest are
+ * placed on the stack. This code pushes all parameters from registers into the
+ * stack; thus, we keep all parameters on the stack as follows:
+ * top - arg0, arg1, arg2, arg3 .... argN
+ *
+ * On top of that we push the return address, so we will know where to return
+ * after the system call.
+ *
+ * After this code the stack layout must look like:
+ *
+ * sp+0: retaddr to user module
+ * sp+4: arg0 (system call argument)
+ * sp+8: arg1
+ * ..........
+ * sp+X: argN
+ *
+ * When service runtime serves a system call, it first creates a structure which
+ * utilizes these arguments. The structure is created by Decoder functions in
+ * nacl_syscall_handlers.c. (nacl_syscall_handlers.c is an automatically
+ * generated file and placed in
+ * scons-out//gen/native_client/src/trusted/service_runtime).
+ *
  */
 
   push {r0, r1, r2, r3}
-  /* r0 is for alignment in order not to modify  NaClSyscallCSegHook */
-  push {r0, lr}
+  push {lr}
 
   ldr r0, [pc, #4]
   blx r0
-  pop {pc}
+
+  /* NORETURN */
+  NACL_HALT
 
   .word   NaClSyscallSeg
 IDENTIFIER(NaCl_trampoline_seg_end):

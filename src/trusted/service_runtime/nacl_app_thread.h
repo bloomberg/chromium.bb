@@ -148,9 +148,9 @@ struct NaClAppThread {
    * should be automatically released.
    */
 
-  uint32_t                  *x_esp;
+  uint32_t                  *x_sp;
   /*
-   * user's %esp translated to system address, used for accessing syscall
+   * user's sp translated to system address, used for accessing syscall
    * arguments
    */
 };

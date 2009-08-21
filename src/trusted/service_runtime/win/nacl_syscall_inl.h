@@ -38,7 +38,7 @@
 
 static INLINE uint32_t NaClAppArg(struct NaClAppThread  *natp,
                                   int                   wordnum) {
-  return natp->x_esp[wordnum];
+  return natp->x_sp[wordnum];
 }
 
 /*

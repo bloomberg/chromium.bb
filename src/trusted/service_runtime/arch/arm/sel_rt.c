@@ -61,12 +61,12 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 }
 
 
-uint32_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
+uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
   return (uintptr_t) th_ctx->stack_ptr;
 }
 
 
-void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uint32_t sp) {
-  th_ctx->stack_ptr = sp;
+void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uintptr_t sp) {
+  th_ctx->stack_ptr = (uint32_t) sp;
 }
 

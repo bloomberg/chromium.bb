@@ -93,67 +93,63 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   struct NaClAppThread      *natp = nacl_thread[tls_idx];
   struct NaClApp            *nap = natp->nap;
   struct NaClThreadContext  *user = &natp->user;
-  uintptr_t                 tramp_addr;
-  uint32_t                  tramp_ret;
-  uint32_t                  aligned_tramp_ret;
+  uintptr_t                 tramp_ret;
+  uintptr_t                 user_ret;
   uint32_t                  sysnum;
-  uintptr_t                 stack_ptr;
+  uintptr_t                 sp_user;
+  uintptr_t                 sp_sys;
 
-  stack_ptr = (uintptr_t) NaClGetThreadCtxSp(user);
+  sp_user = NaClGetThreadCtxSp(user);
 
-  /* esp must be okay for control to have gotten here */
+  /* sp must be okay for control to have gotten here */
 #if !BENCHMARK
   NaClLog(4, "Entered NaClSyscallCSegHook\n");
-  NaClLog(4, "user sp %"PRIxPTR"\n", stack_ptr);
+  NaClLog(4, "user sp %"PRIxPTR"\n", sp_user);
 #endif
 
   /*
-   * on user stack:
+   * on x86_32 user stack:
    *  esp+0:  retaddr from lcall
    *  esp+4:  code seg from lcall
-   *  esp+8:  retaddr from syscall wrapper
+   *  esp+8:  retaddr to user module
    *  esp+c:  ...
+   *
+   * on ARM user stack
+   *   sp+0:  retaddr from trampoline slot
+   *   sp+4:  retaddr to user module
+   *   sp+8:  arg0 to system call
+   *   sp+c:  arg1 to system call
+   *   sp+10: ....
    */
-  tramp_addr = NaClUserToSys(nap, stack_ptr);
-  tramp_ret = *(uint32_t *) tramp_addr;
-  tramp_ret = NaClUserToSys(nap, tramp_ret);
+
+  sp_sys = NaClUserToSys(nap, sp_user);
   /*
-   * return addr could have been tampered with by another thread, but
-   * the only result would be a bad sysnum.
+   * sp_sys points to the top of user stack where there is a retaddr to
+   * trampoline slot
    */
+  tramp_ret = *(uintptr_t *)sp_sys;
+  tramp_ret = NaClUserToSys(nap, tramp_ret);
+
   sysnum = (tramp_ret - (nap->mem_start + NACL_SYSCALL_START_ADDR))
       >> NACL_SYSCALL_BLOCK_SHIFT;
 
 #if !BENCHMARK
   NaClLog(4, "system call %d\n", sysnum);
 #endif
-  /*
-   * keep tramp_ret in user addr; do not bother to ensure tramp_addr +
-   * 8 is valid, since even if we loaded two NaClApps next to each
-   * other this would just load the trampoline code, or hit the
-   * inaccessible page for NULL pointer detection (once we get that
-   * implemented).  if it is not a valid address, we would just crash.
-   */
-  tramp_ret = *(uint32_t *) (tramp_addr + 8);
-  if (0 != nap->xlate_base) {
-    /*
-     * ensure that tramp_ret value is ok.  no need to ensure that this
-     * is in the app's address space, since the syscall return will
-     * just result in a fault after we reconstitute the sandbox and
-     * attempt to pass control to this address.
-     */
-    aligned_tramp_ret = tramp_ret & ~(nap->align_boundary - 1);
-    if (tramp_ret != aligned_tramp_ret) {
-      NaClLog(LOG_FATAL, ("NaClSyscallCSegHook: tramp_ret infinite loop:"
-                          " %08x != %08x\nMake sure NaCl SDK and sel_ldr"
-                          " agree on alignment (ELF header of NaCl app"
-                          " claims alignment is %d).\n"),
-              tramp_ret, aligned_tramp_ret, nap->align_boundary);
-    }
-    tramp_ret = aligned_tramp_ret;
-  }
 
-  NaClSetThreadCtxSp(user, stack_ptr + NACL_CALL_STEP);
+  /*
+   * getting user return address (the address where we need to return after
+   * system call) from the user stack. (see stack layout above)
+   */
+  user_ret = *(uint32_t *) (sp_sys + NACL_USERRET_FIX);
+  /*
+   * Fix the user stack, throw away return addresses from the top of the stack.
+   * After this fix, the first argument to a system call must be on the top of
+   * the user stack (see user stack layout above)
+   */
+  sp_sys += NACL_SYSARGS_FIX;
+  sp_user += NACL_SYSARGS_FIX;
+  NaClSetThreadCtxSp(user, sp_user);
 
   if (sysnum >= NACL_MAX_SYSCALLS) {
     NaClLog(2, "INVALID system call %d\n", sysnum);
@@ -163,8 +159,14 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
     NaClLog(4, "making system call %d, handler 0x%08"PRIxPTR"\n",
             sysnum, (uintptr_t) nacl_syscall[sysnum].handler);
 #endif
-
-    natp->x_esp = (uint32_t *) (tramp_addr + 0xc);
+    /*
+     * x_sp is used by Decoder functions in nacl_syscall_handlers.c which is
+     * automatically generated file and placed in
+     * scons-out/.../gen/native_client/src/trusted/service_runtime. x_sp must
+     * point to the first argument of a system call. System call arguments are
+     * placed on the stack.
+     */
+    natp->x_sp = (uint32_t *) sp_sys;
     natp->sysret = (*nacl_syscall[sysnum].handler)(natp);
   }
 #if !BENCHMARK
@@ -173,8 +175,8 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
            " (0x%"PRIx32")\n"),
           sysnum, natp->sysret, natp->sysret);
 
-  NaClLog(4, "return target 0x%08"PRIx32"\n", tramp_ret);
-  NaClLog(4, "user sp %"PRIxPTR"\n", stack_ptr);
+  NaClLog(4, "return target 0x%08"PRIxPTR"\n", user_ret);
+  NaClLog(4, "user sp %"PRIxPTR"\n", sp_user);
 #endif
   if (-1 == NaClArtificialDelay) {
     char *delay = getenv("NACLDELAY");
@@ -188,9 +190,17 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   if (0 != NaClArtificialDelay) {
     NaClMicroSleep(NaClArtificialDelay);
   }
-  NaClSwitchToApp(natp, tramp_ret);
+
+  /*
+   * before switching back to user module, we need to make sure that the
+   * user_ret is properly sandboxed.
+   */
+  user_ret = NaClSandboxAddr(nap, user_ret);
+
+  NaClSwitchToApp(natp, user_ret);
  /* NOTREACHED */
 
   fprintf(stderr, "NORETURN NaClSwitchToApp returned!?!\n");
   abort();
 }
+
