@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -27,6 +27,16 @@ import os
 import subprocess
 import sys
 import time
+
+# We have a chicken-and-egg problem here, since the utils we'd like to use to
+# find the paths we need are located in the utils files we're trying to find.
+# So we'll make a rough attempt based on the current repository setup, and
+# give an error message if it still doesn't work.
+this_script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+# This script lives in chrome/tools/test. The utils live in tools/python.
+python_google_path = os.path.join(this_script_dir[:-len('chrome/tools/test')],
+                                                  'tools', 'python')
+sys.path.insert(0, python_google_path)
 
 try:
   import google.httpd_utils
@@ -78,10 +88,21 @@ SKIPPED = {'Release': ['plugin'],
            'Debug':   ['selenium', 'webkit']}
 
 def _BuildbotScriptPath(sub_dir):
-  """Returns the full path to the given subdir of tools/buildbot/scripts."""
+  """Returns the full path to the given subdir of tools/buildbot/scripts,
+  or None if that path cannot be found.
+  """
   this_script_dir = google.path_utils.ScriptDir()
-  return google.path_utils.FindUpward(this_script_dir, 'tools', 'buildbot',
-                                      'scripts', sub_dir)
+  # Most tests don't actually need this, so defer failure until something
+  # tries to use the result.
+  try:
+    buildbot_path = google.path_utils.FindUpward(this_script_dir,
+                                                 'tools',
+                                                 'buildbot',
+                                                 'scripts',
+                                                  sub_dir)
+  except google.path_utils.PathNotFound:
+    buildbot_path = None
+  return buildbot_path
 
 
 def _MakeSubstitutions(list, options):
@@ -91,6 +112,10 @@ def _MakeSubstitutions(list, options):
     list: a list of strings, optionally containing certain %()s substitution
         tags listed below
     options: options as returned by optparse
+
+  Raises:
+    google.path_utils.PathNotFound if slave_scripts substitution is needed
+        but not available
   """
   this_script_dir = google.path_utils.ScriptDir()
   python_path = google.path_utils.FindUpward(this_script_dir,
@@ -106,6 +131,13 @@ def _MakeSubstitutions(list, options):
                   }
   if options.build_type == 'kjs':
     substitutions['page_heap'] = '--enable-pageheap'
+  # If we need the slave_scripts substitution but don't have it, raise an
+  # exception. This allows running most of the tests without checking out all
+  # the buildbot infrastructure.
+  if not substitutions['slave_scripts']:
+    for word in list:
+      if word.find('%(slave_scripts)s') != -1:
+        raise google.path_utils.PathNotFound('Unable to find buildbot scripts')
   return [word % substitutions for word in list]
 
 
@@ -211,7 +243,12 @@ def main(options, args):
   start_time = time.time()
   for test in tests:
     test_start_time = time.time()
-    command = _MakeSubstitutions(COMMANDS[test], options)
+    try:
+      command = _MakeSubstitutions(COMMANDS[test], options)
+    except google.path_utils.PathNotFound, e:
+      print 'Skipping %s: %s' % (test, e)
+      failures.append(test)
+      continue
     command[0] = os.path.join(test_path, command[0])
     if options.verbose:
       print
