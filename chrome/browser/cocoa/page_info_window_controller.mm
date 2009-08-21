@@ -5,7 +5,16 @@
 #import "chrome/browser/cocoa/page_info_window_controller.h"
 
 #include "base/mac_util.h"
+#include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
+
+@interface PageInfoWindowController (Private)
+// Saves the window preference to the local state.
+- (void)saveWindowPositionToLocalState;
+@end
 
 @implementation PageInfoWindowController
 @synthesize identityImg = identityImg_;
@@ -33,6 +42,22 @@
 }
 
 - (void)awakeFromNib {
+  if (g_browser_process && g_browser_process->local_state()) {
+    // Get the positioning information.
+    PrefService* prefs = g_browser_process->local_state();
+    DictionaryValue* windowPrefs =
+        prefs->GetMutableDictionary(prefs::kPageInfoWindowPlacement);
+    int x = 0, y = 0;
+    windowPrefs->GetInteger(L"x", &x);
+    windowPrefs->GetInteger(L"y", &y);
+    // Turn the origin (lower-left) into an upper-left window point.
+    NSPoint upperLeft = NSMakePoint(x, y + [[self window] frame].size.height);
+    NSPoint cascadePoint = [[self window] cascadeTopLeftFromPoint:upperLeft];
+    // Cascade again to get the offset when opening new windows.
+    [[self window] cascadeTopLeftFromPoint:cascadePoint];
+    [self saveWindowPositionToLocalState];  // Force a save of the pref.
+  }
+
   // By default, assume we have no history information.
   [self setShowHistoryBox:NO];
 }
@@ -86,6 +111,30 @@
 // can clean ourselves up.
 - (void)windowWillClose:(NSNotification*)notif {
   [self autorelease];
+}
+
+// The last page info window that was moved will determine the location of the
+// next new one.
+- (void)windowDidMove:(NSNotification*)notif {
+  [self saveWindowPositionToLocalState];
+}
+
+// Saves the window preference to the local state.
+- (void)saveWindowPositionToLocalState {
+  if (!g_browser_process || !g_browser_process->local_state())
+    return;
+  [self saveWindowPositionToPrefs:g_browser_process->local_state()];
+}
+
+// Saves the window's origin into the given PrefService. Caller is responsible
+// for making sure |prefs| is not NULL.
+- (void)saveWindowPositionToPrefs:(PrefService*)prefs {
+  // Save the origin of the window.
+  DictionaryValue* windowPrefs = prefs->GetMutableDictionary(
+      prefs::kPageInfoWindowPlacement);
+  NSRect frame = [[self window] frame];
+  windowPrefs->SetInteger(L"x", frame.origin.x);
+  windowPrefs->SetInteger(L"y", frame.origin.y);
 }
 
 @end

@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 
 class PageInfoWindowMac;
+class PrefService;
 
 // This NSWindowController subclass implements the Cocoa window for
 // PageInfoWindow. This creates and owns the PageInfoWindowMac subclass.
@@ -56,5 +57,13 @@ class PageInfoWindowMac;
 // Sets whether or not to show or hide the history box. This will resize the
 // frame of the window.
 - (void)setShowHistoryBox:(BOOL)show;
+
+@end
+
+@interface PageInfoWindowController (ExposedForTesting)
+
+// Saves the window's origin into the given PrefService. Caller is responsible
+// for making sure |prefs| is not NULL.
+- (void)saveWindowPositionToPrefs:(PrefService*)prefs;
 
 @end
