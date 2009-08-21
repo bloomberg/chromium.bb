@@ -499,6 +499,78 @@ class BrowserClosedNotificationObserver : public NotificationObserver {
   bool for_browser_command_;
 };
 
+class BrowserCountChangeNotificationObserver : public NotificationObserver {
+ public:
+  BrowserCountChangeNotificationObserver(int target_count,
+                                         AutomationProvider* automation,
+                                         IPC::Message* reply_message)
+      : target_count_(target_count),
+        automation_(automation),
+        reply_message_(reply_message) {
+    registrar_.Add(this, NotificationType::BROWSER_OPENED,
+                   NotificationService::AllSources());
+    registrar_.Add(this, NotificationType::BROWSER_CLOSED,
+                   NotificationService::AllSources());
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK(type == NotificationType::BROWSER_OPENED ||
+           type == NotificationType::BROWSER_CLOSED);
+    int current_count = static_cast<int>(BrowserList::size());
+    if (type == NotificationType::BROWSER_CLOSED) {
+      // At the time of the notification the browser being closed is not removed
+      // from the list. The real count is one less than the reported count.
+      DCHECK_LT(0, current_count);
+      current_count--;
+    }
+    if (current_count == target_count_) {
+      AutomationMsg_WaitForBrowserWindowCountToBecome::WriteReplyParams(
+          reply_message_, true);
+      automation_->Send(reply_message_);
+      reply_message_ = NULL;
+      delete this;
+    }
+  }
+
+ private:
+  int target_count_;
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+};
+
+class AppModalDialogShownObserver : public NotificationObserver {
+ public:
+  AppModalDialogShownObserver(AutomationProvider* automation,
+                              IPC::Message* reply_message)
+      : automation_(automation),
+        reply_message_(reply_message) {
+    registrar_.Add(this, NotificationType::APP_MODAL_DIALOG_SHOWN,
+                   NotificationService::AllSources());
+  }
+
+  ~AppModalDialogShownObserver() {
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK(type == NotificationType::APP_MODAL_DIALOG_SHOWN);
+    AutomationMsg_WaitForAppModalDialogToBeShown::WriteReplyParams(
+        reply_message_, true);
+    automation_->Send(reply_message_);
+    reply_message_ = NULL;
+    delete this;
+  }
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+};
+
 namespace {
 
 // Define mapping from command to notification
@@ -1115,6 +1187,12 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_Paste, Paste)
     IPC_MESSAGE_HANDLER(AutomationMsg_ReloadAsync, ReloadAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_StopAsync, StopAsync)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        AutomationMsg_WaitForBrowserWindowCountToBecome,
+        WaitForBrowserWindowCountToBecome)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        AutomationMsg_WaitForAppModalDialogToBeShown,
+        WaitForAppModalDialogToBeShown)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -1187,6 +1265,7 @@ void AutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
       reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
   Send(reply_message);
 }
+
 void AutomationProvider::NavigationAsync(int handle, const GURL& url,
                                          bool* status) {
   *status = false;
@@ -3119,6 +3198,32 @@ void AutomationProvider::StopAsync(int tab_handle) {
   }
 
   view->Stop();
+}
+
+void AutomationProvider::WaitForBrowserWindowCountToBecome(
+    int target_count, IPC::Message* reply_message) {
+  if (static_cast<int>(BrowserList::size()) == target_count) {
+    AutomationMsg_WaitForBrowserWindowCountToBecome::WriteReplyParams(
+        reply_message, true);
+    Send(reply_message);
+    return;
+  }
+
+  // Set up an observer (it will delete itself).
+  new BrowserCountChangeNotificationObserver(target_count, this, reply_message);
+}
+
+void AutomationProvider::WaitForAppModalDialogToBeShown(
+    IPC::Message* reply_message) {
+  if (Singleton<AppModalDialogQueue>()->HasActiveDialog()) {
+    AutomationMsg_WaitForAppModalDialogToBeShown::WriteReplyParams(
+        reply_message, true);
+    Send(reply_message);
+    return;
+  }
+
+  // Set up an observer (it will delete itself).
+  new AppModalDialogShownObserver(this, reply_message);
 }
 
 RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {

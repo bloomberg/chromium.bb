@@ -461,6 +461,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void ReloadAsync(int tab_handle);
   void StopAsync(int tab_handle);
 
+  void WaitForBrowserWindowCountToBecome(int target_count,
+                                         IPC::Message* reply_message);
+
+  void WaitForAppModalDialogToBeShown(IPC::Message* reply_message);
+
   // Convert a tab handle into a TabContents. If |tab| is non-NULL a pointer
   // to the tab is also returned. Returns NULL in case of failure or if the tab
   // is not of the TabContents type.

@@ -259,21 +259,12 @@ bool AutomationProxy::GetNormalBrowserWindowCount(int* num_windows) {
 
 bool AutomationProxy::WaitForWindowCountToBecome(int count,
                                                  int wait_timeout) {
-  const TimeTicks start = TimeTicks::Now();
-  const TimeDelta timeout = TimeDelta::FromMilliseconds(wait_timeout);
-  while (TimeTicks::Now() - start < timeout) {
-    int new_count;
-    bool succeeded = GetBrowserWindowCount(&new_count);
-    if (!succeeded) {
-      // Try again next round, but log it.
-      DLOG(ERROR) << "GetBrowserWindowCount returned false";
-    } else if (count == new_count) {
-      return true;
-    }
-    PlatformThread::Sleep(automation::kSleepTime);
-  }
-  // Window count never reached the value we sought.
-  return false;
+  bool wait_success = false;
+  bool send_success = SendWithTimeout(
+      new AutomationMsg_WaitForBrowserWindowCountToBecome(0, count,
+                                                          &wait_success),
+      wait_timeout, NULL);
+  return wait_success && send_success;
 }
 
 bool AutomationProxy::GetShowingAppModalDialog(
@@ -313,22 +304,11 @@ bool AutomationProxy::ClickAppModalDialogButton(
 }
 
 bool AutomationProxy::WaitForAppModalDialog(int wait_timeout) {
-  const TimeTicks start = TimeTicks::Now();
-  const TimeDelta timeout = TimeDelta::FromMilliseconds(wait_timeout);
-  while (TimeTicks::Now() - start < timeout) {
-    bool dialog_shown = false;
-    MessageBoxFlags::DialogButton button = MessageBoxFlags::DIALOGBUTTON_NONE;
-    bool succeeded = GetShowingAppModalDialog(&dialog_shown, &button);
-    if (!succeeded) {
-      // Try again next round, but log it.
-      DLOG(ERROR) << "GetShowingAppModalDialog returned false";
-    } else if (dialog_shown) {
-      return true;
-    }
-    PlatformThread::Sleep(automation::kSleepTime);
-  }
-  // Dialog never shown.
-  return false;
+  bool wait_success = false;
+  bool send_success = SendWithTimeout(
+      new AutomationMsg_WaitForAppModalDialogToBeShown(0, &wait_success),
+      wait_timeout, NULL);
+  return wait_success && send_success;
 }
 
 bool AutomationProxy::WaitForURLDisplayed(GURL url, int wait_timeout) {

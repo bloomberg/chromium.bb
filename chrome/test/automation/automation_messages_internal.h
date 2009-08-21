@@ -1025,4 +1025,19 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_NavigateExternalTabAtIndex, int, int,
                              AutomationMsg_NavigationResponseValues)
 
+  // This message requests the provider to wait until the window count
+  // reached the specified value.
+  // Request:
+  //   - int: target browser window count
+  // Response:
+  //  - bool: whether the operation was successful.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_WaitForBrowserWindowCountToBecome,
+                             int, bool)
+
+  // This message requests the provider to wait until an application modal
+  // dialog is shown.
+  // Response:
+  //  - bool: whether the operation was successful
+  IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_WaitForAppModalDialogToBeShown, bool)
+
 IPC_END_MESSAGES(Automation)
