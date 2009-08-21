@@ -61,6 +61,9 @@ class FilterHost {
   // endpoints such as renderers.
   virtual void NotifyEnded() = 0;
 
+  // Sets the flag to indicate that our media is now loaded.
+  virtual void SetLoaded(bool loaded) = 0;
+
   // Broadcast a message of type |message| to all other filters from |source|.
   virtual void BroadcastMessage(FilterMessage message) = 0;
 

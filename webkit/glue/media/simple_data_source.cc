@@ -71,6 +71,8 @@ void SimpleDataSource::Initialize(const std::string& url,
     return;
   }
 
+  host()->SetLoaded(url_.SchemeIsFile());
+
   // Post a task to the render thread to start loading the resource.
   render_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &SimpleDataSource::StartTask));
