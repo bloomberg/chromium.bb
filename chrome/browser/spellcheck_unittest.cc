@@ -31,7 +31,6 @@ FilePath GetHunspellDirectory() {
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &hunspell_directory))
     return FilePath();
 
-  hunspell_directory = hunspell_directory.AppendASCII("chrome");
   hunspell_directory = hunspell_directory.AppendASCII("third_party");
   hunspell_directory = hunspell_directory.AppendASCII("hunspell");
   hunspell_directory = hunspell_directory.AppendASCII("dictionaries");

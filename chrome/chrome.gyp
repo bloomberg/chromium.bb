@@ -630,7 +630,7 @@
         '../third_party/icu38/icu38.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
-        'third_party/hunspell/hunspell.gyp:hunspell',
+        '../third_party/hunspell/hunspell.gyp:hunspell',
         '../webkit/webkit.gyp:glue',
       ],
       'include_dirs': [
@@ -2610,7 +2610,7 @@
         '../third_party/icu38/icu38.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
-        'third_party/hunspell/hunspell.gyp:hunspell',
+        '../third_party/hunspell/hunspell.gyp:hunspell',
         '../webkit/webkit.gyp:glue',
       ],
       'include_dirs': [
@@ -4112,7 +4112,7 @@
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
             'browser/tab_contents/navigation_controller_unittest.cc',
             'browser/task_manager_unittest.cc',
-            'third_party/hunspell/google/hunspell_tests.cc',
+            '../third_party/hunspell/google/hunspell_tests.cc',
 
             # Compact Language Detection (cld) is not supported in mac yet.
             '../third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
@@ -4124,7 +4124,7 @@
         }, { # OS != "mac"
           'dependencies': [
             'convert_dict_lib',
-            'third_party/hunspell/hunspell.gyp:hunspell',
+            '../third_party/hunspell/hunspell.gyp:hunspell',
           ],
         }],
         ['OS=="win"', {
@@ -4829,7 +4829,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             'convert_dict_lib',
-            'third_party/hunspell/hunspell.gyp:hunspell',
+            '../third_party/hunspell/hunspell.gyp:hunspell',
           ],
           'sources': [
             'tools/convert_dict/convert_dict.cc',
@@ -4948,7 +4948,7 @@
             'test_support_common',
             'test_support_ui',
             'syncapi',
-            'third_party/hunspell/hunspell.gyp:hunspell',
+            '../third_party/hunspell/hunspell.gyp:hunspell',
             '../net/net.gyp:net_resources',
             '../skia/skia.gyp:skia',
             '../third_party/icu38/icu38.gyp:icui18n',
