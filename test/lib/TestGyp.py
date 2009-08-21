@@ -122,7 +122,7 @@ class TestGypBase(TestCommon.TestCommon):
     Runs gyp against the specified gyp_file with the specified args.
     """
     # TODO:  --depth=. works around Chromium-specific tree climbing.
-    args = ('--depth=.', '--format='+self.format) + args
+    args = ('--depth=.', '--format='+self.format, gyp_file) + args
     return self.run(program=self.gyp, arguments=args, **kw)
 
   def run(self, *args, **kw):
@@ -228,7 +228,8 @@ class TestGypMake(TestGypBase):
     """
     configuration = self.configuration or 'Default'
     os.environ['LD_LIBRARY_PATH'] = self.workpath(configuration, 'lib')
-    program = self.workpath('out', configuration, name)
+    # Enclosing the name in a list avoids prepending the original dir.
+    program = [os.path.join('out', configuration, name)]
     return self.run(program=program, *args, **kw)
 
 
@@ -329,6 +330,9 @@ class TestGypSCons(TestGypBase):
     Runs a scons build using the SCons configuration generated from the
     specified gyp_file.
     """
+    dirname = os.path.dirname(gyp_file)
+    if dirname:
+      args += ('-C', dirname)
     if self.configuration:
       args += ('--mode=' + self.configuration,)
     return self.run(program=self.build_tool, arguments=args, **kw)
