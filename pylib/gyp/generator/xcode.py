@@ -70,6 +70,10 @@ class XcodeProject(object):
     self.gyp_path = gyp_path
     self.path = path
     self.project = gyp.xcodeproj_file.PBXProject(path=path)
+    projectDirPath = gyp.common.RelativePath(
+                         os.path.dirname(os.path.abspath(self.gyp_path)),
+                         os.path.dirname(path) or '.')
+    self.project.SetProperty('projectDirPath', projectDirPath)
     self.project_file = \
         gyp.xcodeproj_file.XCProjectFile({'rootObject': self.project})
     self.build_file_dict = build_file_dict
@@ -79,7 +83,7 @@ class XcodeProject(object):
     # better with "try"?
     self.created_dir = False
     try:
-      os.mkdir(self.path)
+      os.makedirs(self.path)
       self.created_dir = True
     except OSError, e:
       if e.errno != errno.EEXIST:
@@ -512,9 +516,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
     (build_file_root, build_file_ext) = os.path.splitext(build_file)
     if build_file_ext != '.gyp':
       continue
-    xcp = XcodeProject(build_file,
-                       build_file_root + options.suffix + '.xcodeproj',
-                       build_file_dict)
+    xcodeproj_path = build_file_root + options.suffix + '.xcodeproj'
+    if options.generator_output:
+      xcodeproj_path = os.path.join(options.generator_output, xcodeproj_path)
+    xcp = XcodeProject(build_file, xcodeproj_path, build_file_dict)
     xcode_projects[build_file] = xcp
     pbxp = xcp.project
 

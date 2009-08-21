@@ -271,13 +271,15 @@ def GenerateSConscript(output_filename, spec, build_file):
     --  Return the {name} Alias to the calling SConstruct file
         so it can be added to the list of default targets.
   """
-  gyp_dir = os.path.split(output_filename)[0]
+  gyp_dir = os.path.dirname(output_filename)
   if not gyp_dir:
       gyp_dir = '.'
   gyp_dir = os.path.abspath(gyp_dir)
   component_name = os.path.splitext(os.path.basename(build_file))[0]
   target_name = spec['target_name']
 
+  if not os.path.exists(gyp_dir):
+    os.makedirs(gyp_dir)
   fp = open(output_filename, 'w')
   fp.write(header)
 
@@ -839,9 +841,15 @@ if not GetOption('verbose'):
 
 add_gyp_methods(base_env)
 
+generator_output_dir = %(generator_output_dir)r
+
 for conf in conf_list:
   env = base_env.Clone(CONFIG_NAME=conf)
   SConsignFile(env.File('$TOP_BUILDDIR/.sconsign').abspath)
+  if generator_output_dir:
+    # GYP-generated SConscript files are in a separate directory tree;
+    # map the repository so the env.SConscript() call below finds them.
+    env.Dir('$OBJ_DIR').addRepository(env.Dir(generator_output_dir))
   env.Dir('$OBJ_DIR').addRepository(env.Dir('$SRC_DIR'))
   for sconscript in sconscript_files:
     target_alias = env.SConscript('$OBJ_DIR/%(subdir)s/' + sconscript,
@@ -910,7 +918,7 @@ if GetOption('help'):
 #############################################################################
 
 
-def GenerateSConscriptWrapper(build_file_data, name,
+def GenerateSConscriptWrapper(build_file, build_file_data, name,
                               output_filename, sconscript_files,
                               default_configuration):
   """
@@ -920,7 +928,15 @@ def GenerateSConscriptWrapper(build_file_data, name,
   output_dir = os.path.dirname(output_filename)
   src_dir = build_file_data['_DEPTH']
   src_dir_rel = gyp.common.RelativePath(src_dir, output_dir)
-  subdir = gyp.common.RelativePath(output_dir, src_dir)
+  subdir = gyp.common.RelativePath(os.path.dirname(build_file), src_dir)
+  if build_file.startswith(output_dir):
+    # Normal case:  we're generating SConscript files next to the .gyp file.
+    generator_output_dir = None
+  else:
+    # --generator-output was used to generate SConscript files in a seaparate
+    # directory tree.  Signal to the wrapper .scons file that it needs to
+    # use addRepository() to find the generated .scons files in the tree.
+    generator_output_dir = '.'
   scons_settings = build_file_data.get('scons_settings', {})
   sconsbuild_dir = scons_settings.get('sconsbuild_dir', '#')
   scons_tools = scons_settings.get('tools', ['default'])
@@ -935,6 +951,7 @@ def GenerateSConscriptWrapper(build_file_data, name,
   fp.write(header)
   fp.write(_wrapper_template % {
                'default_configuration' : default_configuration,
+               'generator_output_dir' : generator_output_dir,
                'name' : name,
                'scons_tools' : repr(scons_tools),
                'sconsbuild_dir' : repr(sconsbuild_dir),
@@ -964,13 +981,20 @@ def TargetFilename(target, build_file=None, output_suffix=''):
 
 
 def GenerateOutput(target_list, target_dicts, data, params):
-  options = params['options']
   """
   Generates all the output files for the specified targets.
   """
+  options = params['options']
   for build_file, build_file_dict in data.iteritems():
     if not build_file.endswith('.gyp'):
       continue
+
+  if options.generator_output:
+    def output_path(filename):
+      return filename.replace(params['cwd'], options.generator_output)
+  else:
+    def output_path(filename):
+      return filename
 
   default_configuration = None
 
@@ -989,6 +1013,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     build_file, target = gyp.common.BuildFileAndTarget('', qualified_target)[:2]
     output_file = TargetFilename(target, build_file, options.suffix)
+    if options.generator_output:
+      output_file = output_path(output_file)
 
     if not spec.has_key('libraries'):
       spec['libraries'] = []
@@ -1032,7 +1058,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
       tpath = gyp.common.RelativePath(target_filename, output_dir)
       sconscript_files[target] = tpath
 
+    output_filename = output_path(output_filename)
     if sconscript_files:
-      GenerateSConscriptWrapper(data[build_file], basename,
+      GenerateSConscriptWrapper(build_file, data[build_file], basename,
                                 output_filename, sconscript_files,
                                 default_configuration)

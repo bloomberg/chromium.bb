@@ -123,6 +123,9 @@ def main(args):
                     help='suffix to add to generated files')
   parser.add_option('-G', dest='generator_flags', action='append', default=[],
                     metavar='FLAG=VAL', help='sets generator flag FLAG to VAL')
+  parser.add_option('--generator-output', dest='generator_output',
+                    action='store', default=None, metavar='DIR',
+                    help='puts generated build files under DIR')
 
   # We read a few things from ~/.gyp, so set up a var for that.
   home_vars = ['HOME']
@@ -177,6 +180,11 @@ def main(args):
     print >>sys.stderr, (usage + '\n\n%s: error: no build_file') % \
                         (my_name, my_name)
     return 1
+
+  if not options.generator_output:
+    g_o = os.environ.get('GYP_GENERATOR_OUTPUT')
+    if g_o:
+      options.generator_output = g_o
 
   # TODO(mark): Chromium-specific hack!
   # For Chromium, the gyp "depth" variable should always be a relative path
@@ -254,7 +262,8 @@ def main(args):
   for format in set(options.formats):
     params = {'options': options,
               'build_files': build_files,
-              'generator_flags': generator_flags}
+              'generator_flags': generator_flags,
+              'cwd': os.getcwd()}
 
     # Start with the default variables from the command line.
     [generator, flat_list, targets, data] = Load(build_files, format,

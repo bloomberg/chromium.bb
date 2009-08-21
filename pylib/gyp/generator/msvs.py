@@ -43,6 +43,8 @@ generator_additional_path_sections = [
   'msvs_props',
 ]
 
+fixpath_prefix = None
+
 def _FixPath(path):
   """Convert paths to a form that will make sense in a vcproj file.
 
@@ -51,6 +53,8 @@ def _FixPath(path):
   Returns:
     The path with all slashes made into backslashes.
   """
+  if fixpath_prefix and not os.path.isabs(path):
+    path = os.path.join(fixpath_prefix, path)
   return path.replace('/', '\\')
 
 
@@ -468,6 +472,10 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     return guid
 
   #print 'Generating %s' % vcproj_filename
+
+  vcproj_dir = os.path.dirname(vcproj_filename)
+  if vcproj_dir and not os.path.exists(vcproj_dir):
+    os.makedirs(vcproj_dir)
 
   p = MSVSProject.Writer(vcproj_filename, version=version)
   p.Create(spec['target_name'], guid=guid)
@@ -900,6 +908,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     target_dicts: Dict of target properties keyed on target pair.
     data: Dictionary containing per .gyp data.
   """
+  global fixpath_prefix
 
   options = params['options']
   generator_flags = params.get('generator_flags', {})
@@ -928,6 +937,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if not vcproj_filename:
       vcproj_filename = spec['target_name'] + options.suffix + '.vcproj'
     vcproj_path = os.path.join(os.path.split(build_file)[0], vcproj_filename)
+    if options.generator_output:
+      projectDirPath = os.path.dirname(os.path.abspath(vcproj_path))
+      vcproj_path = os.path.join(options.generator_output, vcproj_path)
+      fixpath_prefix = gyp.common.RelativePath(projectDirPath,
+                                               os.path.dirname(vcproj_path))
     projects[qualified_target] = {
         'vcproj_path': vcproj_path,
         'guid': _GenerateProject(vcproj_path, build_file,
@@ -935,11 +949,15 @@ def GenerateOutput(target_list, target_dicts, data, params):
         'spec': spec,
     }
 
+  fixpath_prefix = None
+
   for build_file in data.keys():
     # Validate build_file extension
     if build_file[-4:] != '.gyp':
       continue
     sln_path = build_file[:-4] + options.suffix + '.sln'
+    if options.generator_output:
+      sln_path = os.path.join(options.generator_output, sln_path)
     #print 'Generating %s' % sln_path
     # Get projects in the solution, and their dependents.
     sln_projects = gyp.common.BuildFileTargets(target_list, build_file)

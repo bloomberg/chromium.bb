@@ -2501,8 +2501,10 @@ class PBXProject(XCContainerPortal):
       # that this project's path is relative to.  The other project's path
       # is not necessarily already relative to this project.  Figure out the
       # pathname that this project needs to use to refer to the other one.
-      other_path = gyp.common.RelativePath(other_pbxproject.Path(),
-                                           posixpath.dirname(self.Path()))
+      this_path = self.GetProperty('projectDirPath')
+      if not this_path:
+        this_path = posixpath.dirname(self.Path())
+      other_path = gyp.common.RelativePath(other_pbxproject.Path(), this_path)
 
       # ProjectRef is weak (it's owned by the mainGroup hierarchy).
       project_ref = PBXFileReference({
