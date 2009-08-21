@@ -23,7 +23,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
-#include "third_party/hunspell/src/hunspell/hunspell.hxx"
+#include "chrome/third_party/hunspell/src/hunspell/hunspell.hxx"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/url_request/url_request.h"
@@ -379,7 +379,7 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
       url_request_context_(request_context),
       obtaining_dictionary_(false),
       auto_spell_correct_turned_on_(false),
-      is_using_platform_spelling_engine_(false),
+      is_using_platform_spelling_engine_(false),      
       fetcher_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           on_dictionary_save_complete_callback_factory_(this)) {
