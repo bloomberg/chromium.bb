@@ -125,9 +125,6 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
                          context->ssl_config_service_,
                          disk_cache_path.ToWStringHack(), cache_size);
 
-  if (command_line.HasSwitch(switches::kEnableByteRangeSupport))
-    cache->set_enable_range_support(true);
-
   bool record_mode = chrome::kRecordModeEnabled &&
                      command_line.HasSwitch(switches::kRecordMode);
   bool playback_mode = command_line.HasSwitch(switches::kPlaybackMode);
@@ -210,15 +207,10 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOffTheRecord(
   context->proxy_service_ =
       profile->GetOriginalProfile()->GetRequestContext()->proxy_service();
 
-  net::HttpCache* cache =
+  context->http_transaction_factory_ =
       new net::HttpCache(context->host_resolver_, context->proxy_service_,
                          context->ssl_config_service_, 0);
   context->cookie_store_ = new net::CookieMonster;
-  context->http_transaction_factory_ = cache;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableByteRangeSupport))
-    cache->set_enable_range_support(true);
 
   // The kWininetFtp switch is Windows specific because we have two FTP
   // implementations on Windows.
@@ -286,10 +278,6 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateRequestContextForMedia(
                                original_context->ssl_config_service(),
                                disk_cache_path.ToWStringHack(), cache_size);
   }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableByteRangeSupport))
-    cache->set_enable_range_support(true);
 
   cache->set_type(net::MEDIA_CACHE);
   context->http_transaction_factory_ = cache;

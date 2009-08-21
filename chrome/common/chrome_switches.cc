@@ -591,7 +591,4 @@ const wchar_t kSyncServiceURL[]  = L"sync-url";
 const wchar_t kCookiePipe[] = L"cookie-pipe";
 #endif
 
-// Enable experimental support for cached byte-ranges.
-const wchar_t kEnableByteRangeSupport[] = L"enable-byte-range-support";
-
 }  // namespace switches
