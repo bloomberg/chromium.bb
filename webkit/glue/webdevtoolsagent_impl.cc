@@ -216,6 +216,8 @@ void WebDevToolsAgentImpl::InspectElement(int x, int y) {
   if (!node) {
     return;
   }
+  InspectorController* ic = web_view_impl_->page()->inspectorController();
+  ic->inspect(node);
 }
 
 void WebDevToolsAgentImpl::SendRpcMessage(
