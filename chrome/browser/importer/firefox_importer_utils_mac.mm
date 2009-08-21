@@ -23,27 +23,9 @@ FilePath GetProfilesINI() {
       ini_file = FilePath([profiles_ini fileSystemRepresentation]);
     }
   }
-
+  
   if (file_util::PathExists(ini_file))
     return ini_file;
 
   return FilePath();
-}
-
-FilePath GetFirefoxDylibPath() {
-  CFURLRef appURL = nil;
-  if (LSFindApplicationForInfo(kLSUnknownCreator,
-                              CFSTR("org.mozilla.firefox"),
-                              NULL,
-                              NULL,
-                              &appURL) != noErr) {
-    return FilePath();
-  }
-  NSBundle *ff_bundle = [NSBundle
-      bundleWithPath:[reinterpret_cast<const NSURL*>(appURL) path]];
-  CFRelease(appURL);
-  NSString *ff_library_path = [[ff_bundle executablePath]
-                                  stringByDeletingLastPathComponent];
-
-  return FilePath([ff_library_path fileSystemRepresentation]);
 }

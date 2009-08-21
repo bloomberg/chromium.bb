@@ -8,61 +8,46 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/importer/firefox2_importer.h"
-#include "chrome/browser/importer/firefox_importer_unittest_utils.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/common/chrome_paths.h"
 
 using base::Time;
 
-// The following 2 tests require the use of the NSSDecryptor, on OSX this needs
-// to run in a separate process, so we use a proxy object so we can share the
-// same test between platforms.
+// TODO(jeremy): Port NSSDecryptor to OSX and enable these tests.
+#if !defined(OS_MACOSX)
 TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
   std::wstring nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
-#ifdef OS_MACOSX
-  file_util::AppendToPath(&nss_path, L"firefox2_nss_mac");
-#else
   file_util::AppendToPath(&nss_path, L"firefox2_nss");
-#endif  // !OS_MACOSX
   std::wstring db_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &db_path));
   file_util::AppendToPath(&db_path, L"firefox2_profile");
-
-  FFUnitTestDecryptorProxy decryptor_proxy;
-  ASSERT_TRUE(decryptor_proxy.Setup(nss_path));
-
-  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
-  EXPECT_EQ(L"hello", decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
+  NSSDecryptor decryptor;
+  EXPECT_TRUE(decryptor.Init(nss_path, db_path));
+  EXPECT_EQ(L"hello", decryptor.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
       "wFAYIKoZIhvcNAwcECBJM63MpT9rtBAjMCm7qo/EhlA=="));
   // Test UTF-16 encoding.
-  EXPECT_EQ(L"\x4E2D", decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
+  EXPECT_EQ(L"\x4E2D", decryptor.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
       "wFAYIKoZIhvcNAwcECN9OQ5ZFmhb8BAiFo1Z+fUvaIQ=="));
 }
 
 TEST(FirefoxImporterTest, Firefox3NSS3Decryptor) {
   std::wstring nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
-#ifdef OS_MACOSX
-  file_util::AppendToPath(&nss_path, L"firefox3_nss_mac");
-#else
   file_util::AppendToPath(&nss_path, L"firefox3_nss");
-#endif  // !OS_MACOSX
   std::wstring db_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &db_path));
   file_util::AppendToPath(&db_path, L"firefox3_profile");
-
-  FFUnitTestDecryptorProxy decryptor_proxy;
-  ASSERT_TRUE(decryptor_proxy.Setup(nss_path));
-
-  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
-  EXPECT_EQ(L"hello", decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
+  NSSDecryptor decryptor;
+  EXPECT_TRUE(decryptor.Init(nss_path, db_path));
+  EXPECT_EQ(L"hello", decryptor.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
       "wFAYIKoZIhvcNAwcECKajtRg4qFSHBAhv9luFkXgDJA=="));
   // Test UTF-16 encoding.
-  EXPECT_EQ(L"\x4E2D", decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
+  EXPECT_EQ(L"\x4E2D", decryptor.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
       "wFAYIKoZIhvcNAwcECLWqqiccfQHWBAie74hxnULxlw=="));
 }
+#endif  // !OS_MACOSX
 
 TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
   bool result;
