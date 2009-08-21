@@ -159,10 +159,11 @@ TEST_F(ErrorPageTest, IFrame404) {
 
 #if defined(OS_LINUX)
 // TODO(phajdan.jr): This test is flaky on Linux, http://crbug.com/19361
-TEST_F(ErrorPageTest, DISABLED_Page404) {
-#else
-TEST_F(ErrorPageTest, Page404) {
+#define Page404 DISABLED_Page404
+#define Page404_GoBack DISABLED_Page404_GoBack
 #endif
+
+TEST_F(ErrorPageTest, Page404) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"page404.html"));
 
