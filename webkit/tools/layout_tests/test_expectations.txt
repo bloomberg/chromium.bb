@@ -2428,7 +2428,6 @@ BUG15837 : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-null
 // WebKit 45473:45487
 BUG15873 WIN LINUX : LayoutTests/fast/box-shadow/transform-fringing.html = FAIL
 BUG15873 WIN LINUX : LayoutTests/fast/transforms/shadows.html = FAIL
-BUG15873 WIN : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
 BUG15873 WIN : LayoutTests/fast/text/stroking-decorations.html = FAIL
 
 // WebKit 45495:45535
