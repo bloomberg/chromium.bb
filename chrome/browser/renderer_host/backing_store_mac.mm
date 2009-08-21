@@ -29,11 +29,11 @@ BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
   // window, so extract a CGContext corresponding to that window that we can
   // pass to CGLayerCreateWithContext.
   NSWindow* containing_window = [widget->view()->GetNativeView() window];
-  CHECK(containing_window != NULL);
+  if (!containing_window) // possible in unit tests
+      return;
   CGContextRef context = static_cast<CGContextRef>([[containing_window graphicsContext] graphicsPort]);
   CGLayerRef layer = CGLayerCreateWithContext(context, size.ToCGSize(), NULL);
   cg_layer_.reset(layer);
-  CHECK(cg_layer_.get() != NULL);
 }
 
 BackingStore::~BackingStore() {
@@ -48,12 +48,12 @@ size_t BackingStore::MemorySize() {
 void BackingStore::PaintRect(base::ProcessHandle process,
                              TransportDIB* bitmap,
                              const gfx::Rect& bitmap_rect) {
-  scoped_cftyperef<CGColorSpaceRef> color_space(CGColorSpaceCreateDeviceRGB());
+  if (!cg_layer()) return;
 
+  scoped_cftyperef<CGColorSpaceRef> color_space(CGColorSpaceCreateDeviceRGB());
   scoped_cftyperef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(NULL, bitmap->memory(),
           bitmap_rect.width() * bitmap_rect.height() * 4, NULL));
-
   scoped_cftyperef<CGImageRef> image(CGImageCreate(bitmap_rect.width(),
       bitmap_rect.height(), 8, 32, 4 * bitmap_rect.width(), color_space,
       kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host, data_provider,
@@ -75,6 +75,8 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
                               int dx, int dy,
                               const gfx::Rect& clip_rect,
                               const gfx::Size& view_size) {
+  if (!cg_layer()) return;
+
   // "Scroll" the contents of the layer by creating a new CGLayer,
   // copying the contents of the old one into the new one offset by the scroll
   // amount, swapping in the new CGLayer, and then painting in the new data.
