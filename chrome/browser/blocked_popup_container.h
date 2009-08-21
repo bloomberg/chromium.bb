@@ -7,6 +7,8 @@
 // TabContents should use the appropriate methods on TabContents to access
 // information about blocked popups.
 
+// TODO(idanan): Rename class to BlockedContentContainer.
+
 #ifndef CHROME_BROWSER_BLOCKED_POPUP_CONTAINER_H_
 #define CHROME_BROWSER_BLOCKED_POPUP_CONTAINER_H_
 
@@ -17,6 +19,7 @@
 
 #include "base/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
+#include "base/string16.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/notification_registrar.h"
@@ -99,6 +102,9 @@ class BlockedPopupContainer : public TabContentsDelegate,
 
   // Returns the number of blocked popups
   size_t GetBlockedPopupCount() const;
+
+  // Adds a blocked notice if one is not already there for the same host.
+  void AddBlockedNotice(const GURL& url, const string16& reason);
 
   // Returns true if host |index| is whitelisted.  Returns false if |index| is
   // invalid.

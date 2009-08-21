@@ -55,6 +55,10 @@ TabContents* RenderViewHostDelegate::GetAsTabContents() {
   return NULL;
 }
 
+void RenderViewHostDelegate::AddBlockedNotice(const GURL& url,
+                                              const string16& reason) {
+}
+
 GURL RenderViewHostDelegate::GetAlternateErrorPageURL() const {
   return GURL();
 }

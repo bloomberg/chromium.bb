@@ -4817,6 +4817,12 @@ each locale. -->
     <message name="IDS_BLACKLIST_UNBLOCK" desc="Prompt to unblock a blacklisted element.">
       Click to unblock
     </message>
+    <message name="IDS_BLACKLIST_BLOCKED_COOKIES" desc="Cookies was blacklisted.">
+      Cookies not sent
+    </message>
+    <message name="IDS_BLACKLIST_BLOCKED_REFERRER" desc="Referrer sending was blacklisted.">
+      Referrer not sent
+    </message>
 
     <!-- ProcessSingleton -->
     <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">

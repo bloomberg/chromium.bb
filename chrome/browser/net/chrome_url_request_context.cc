@@ -450,6 +450,11 @@ bool ChromeURLRequestContext::InterceptCookie(const URLRequest* request,
   if (d) {
     const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
     if (match->attributes() & Blacklist::kDontStoreCookies) {
+      NotificationService::current()->Notify(
+          NotificationType::BLACKLIST_BLOCKED_RESOURCE,
+          Source<const ChromeURLRequestContext>(this),
+          Details<const URLRequest>(request));
+
       cookie->clear();
       return false;
     }
@@ -466,8 +471,14 @@ bool ChromeURLRequestContext::AllowSendingCookies(const URLRequest* request)
       request->GetUserData(&Blacklist::kRequestDataKey);
   if (d) {
     const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
-    if (match->attributes() & Blacklist::kDontSendCookies)
+    if (match->attributes() & Blacklist::kDontSendCookies) {
+      NotificationService::current()->Notify(
+          NotificationType::BLACKLIST_BLOCKED_RESOURCE,
+          Source<const ChromeURLRequestContext>(this),
+          Details<const URLRequest>(request));
+
       return false;
+    }
   }
   return true;
 }

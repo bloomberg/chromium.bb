@@ -650,6 +650,11 @@ class NotificationType {
     EXTENSION_TEST_PASSED,
     EXTENSION_TEST_FAILED,
 
+    // Privacy Blacklist -------------------------------------------------------
+
+    // Sent by the resource dispatcher host when a resource is blocked.
+    BLACKLIST_BLOCKED_RESOURCE,
+
     // Debugging ---------------------------------------------------------------
 
     // Count (must be last) ----------------------------------------------------

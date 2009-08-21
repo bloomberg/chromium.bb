@@ -20,6 +20,7 @@
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
+#include "chrome/browser/privacy_blacklist/blacklist_observer.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
@@ -203,6 +204,8 @@ void ResourceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   // Add the observers to intercept.
   registrar_.Add(this, NotificationType::SPELLCHECKER_REINITIALIZED,
                  Source<Profile>(static_cast<Profile*>(profile_)));
+  registrar_.Add(this, NotificationType::BLACKLIST_BLOCKED_RESOURCE,
+                 NotificationService::AllSources());
 }
 
 // Called on the IPC thread:
@@ -880,6 +883,8 @@ void ResourceMessageFilter::Observe(NotificationType type,
   if (type == NotificationType::SPELLCHECKER_REINITIALIZED) {
     spellchecker_ = Details<SpellcheckerReinitializedDetails>
         (details).ptr()->spellchecker;
+  } else if (type == NotificationType::BLACKLIST_BLOCKED_RESOURCE) {
+    BlacklistObserver::ContentBlocked(Details<const URLRequest>(details).ptr());
   }
 }
 

@@ -806,6 +806,7 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();
   virtual RenderViewHostDelegate::Autofill* GetAutofillDelegate();
   virtual TabContents* GetAsTabContents();
+  virtual void AddBlockedNotice(const GURL& url, const string16& reason);
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;
   virtual void RenderViewCreated(RenderViewHost* render_view_host);

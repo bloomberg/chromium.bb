@@ -105,6 +105,11 @@ void BlockedPopupContainer::LaunchPopupAtIndex(size_t index) {
   EraseDataForPopupAndUpdateUI(i);
 }
 
+void BlockedPopupContainer::AddBlockedNotice(const GURL& url,
+                                             const string16& reason) {
+  // TODO(idanan): Implement this. See header for description.
+}
+
 size_t BlockedPopupContainer::GetBlockedPopupCount() const {
   return blocked_popups_.size();
 }

@@ -1805,6 +1805,11 @@ TabContents* TabContents::GetAsTabContents() {
   return this;
 }
 
+void TabContents::AddBlockedNotice(const GURL& url, const string16& reason) {
+  CreateBlockedPopupContainerIfNecessary();
+  blocked_popups_->AddBlockedNotice(url, reason);
+}
+
 ViewType::Type TabContents::GetRenderViewType() const {
   return ViewType::TAB_CONTENTS;
 }

@@ -1533,6 +1533,8 @@
         'browser/privacy_blacklist/blacklist.cc',
         'browser/privacy_blacklist/blacklist_io.h',
         'browser/privacy_blacklist/blacklist_io.cc',
+        'browser/privacy_blacklist/blacklist_observer.h',
+        'browser/privacy_blacklist/blacklist_observer.cc',
         'browser/privacy_blacklist/blacklist_store.h',
         'browser/privacy_blacklist/blacklist_store.cc',
         'browser/privacy_blacklist/blocked_response.h',
