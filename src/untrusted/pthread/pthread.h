@@ -43,16 +43,15 @@
 #define _PTHREAD_H 1
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-/* TODO(gregoryd): Minimize included files. */
 #include <sys/queue.h>
 #include <sys/types.h>
-#include <sys/time.h>
-#include "nc_system.h"
 #include "atomic_ops.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct timespec;
 
 /** Fast mutex type; for use with pthread_mutexattr_settype() */
 #define PTHREAD_MUTEX_FAST_NP 0
@@ -161,8 +160,8 @@ typedef struct {
  *
  * @return 0 upon success, 1 otherwise
  */
-extern int pthread_mutex_init (pthread_mutex_t *mutex,
-                               pthread_mutexattr_t *mutex_attr);
+extern int pthread_mutex_init(pthread_mutex_t *mutex,
+                              pthread_mutexattr_t *mutex_attr);
 
 /** @nqPosix
 * Destroys a mutex.
@@ -173,7 +172,7 @@ extern int pthread_mutex_init (pthread_mutex_t *mutex,
 *
 * @return 0 upon success, non-zero error code otherwise
 */
-extern int pthread_mutex_destroy (pthread_mutex_t *mutex);
+extern int pthread_mutex_destroy(pthread_mutex_t *mutex);
 
 /** @nqPosix
 * Tries to lock a mutex.
@@ -185,7 +184,7 @@ extern int pthread_mutex_destroy (pthread_mutex_t *mutex);
 * @return 0 upon success, EBUSY if the mutex is locked by another thread,
 * non-zero error code otherwise.
 */
-extern int pthread_mutex_trylock (pthread_mutex_t *mutex);
+extern int pthread_mutex_trylock(pthread_mutex_t *mutex);
 
 /** @nqPosix
 * Locks a mutex.
@@ -196,14 +195,14 @@ extern int pthread_mutex_trylock (pthread_mutex_t *mutex);
 *
 * @return 0 upon success, non-zero error code otherwise.
 */
-extern int pthread_mutex_lock (pthread_mutex_t *mutex);
+extern int pthread_mutex_lock(pthread_mutex_t *mutex);
 
 /* TODO(gregoryd) - depends on implementation */
 #if 0
 /* Wait until lock becomes available, or specified time passes. */
 /* TODO(gregoryd): consider implementing this function. */
-extern int pthread_mutex_timedlock (pthread_mutex_t *mutex,
-                                    struct timespec *abstime);
+extern int pthread_mutex_timedlock(pthread_mutex_t *mutex,
+                                   struct timespec *abstime);
 #endif
 
 /** @nqPosix
@@ -215,7 +214,7 @@ extern int pthread_mutex_timedlock (pthread_mutex_t *mutex,
 *
 * @return 0 upon success, non-zero error code otherwise.
 */
-extern int pthread_mutex_unlock (pthread_mutex_t *mutex);
+extern int pthread_mutex_unlock(pthread_mutex_t *mutex);
 
 /* Mutex attributes manipulation */
 
@@ -282,8 +281,8 @@ extern int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr,
 *
 * @return 0 for success, 1 otherwise.
 */
-extern int pthread_cond_init (pthread_cond_t *cond,
-                              pthread_condattr_t *cond_attr);
+extern int pthread_cond_init(pthread_cond_t *cond,
+                             pthread_condattr_t *cond_attr);
 
 /** @nqPosix
 * Destroys a condition variable.
@@ -294,7 +293,7 @@ extern int pthread_cond_init (pthread_cond_t *cond,
 *
 * @return 0 for success, non-zero error code otherwise.
 */
-extern int pthread_cond_destroy (pthread_cond_t *cond);
+extern int pthread_cond_destroy(pthread_cond_t *cond);
 
 /** @nqPosix
 * Signals a condition variable, waking up one of the threads waiting on it.
@@ -305,7 +304,7 @@ extern int pthread_cond_destroy (pthread_cond_t *cond);
 *
 * @return 0 for success, non-zero error code otherwise.
 */
-extern int pthread_cond_signal (pthread_cond_t *cond);
+extern int pthread_cond_signal(pthread_cond_t *cond);
 
 /** @nqPosix
 * Wakes up all threads waiting on a condition variable.
@@ -316,7 +315,7 @@ extern int pthread_cond_signal (pthread_cond_t *cond);
 *
 * @return 0 for success, non-zero error code otherwise.
 */
-extern int pthread_cond_broadcast (pthread_cond_t *cond);
+extern int pthread_cond_broadcast(pthread_cond_t *cond);
 
 /** @nqPosix
 * Waits for a condition variable to be signaled or broadcast.
@@ -329,8 +328,8 @@ extern int pthread_cond_broadcast (pthread_cond_t *cond);
 *
 * @return 0 for success, non-zero error code otherwise.
 */
-extern int pthread_cond_wait (pthread_cond_t *cond,
-                              pthread_mutex_t *mutex);
+extern int pthread_cond_wait(pthread_cond_t *cond,
+                             pthread_mutex_t *mutex);
 
 /** @nqPosix
 * Waits for condition variable cond to be signaled or broadcast until
@@ -376,7 +375,7 @@ int pthread_cond_timedwait_rel(pthread_cond_t *cond,
 
 /* Threads */
 /** Thread entry function type. */
-typedef void*( *nc_thread_function )( void * );
+typedef void *(*nc_thread_function)(void *p);
 /** Thread identifier type. */
 typedef uint32_t pthread_t;
 
@@ -408,10 +407,10 @@ typedef struct {
 *
 * @return 0 for success, non-zero error code otherwise.
 */
-extern int pthread_create (pthread_t *thread_id,
-                           pthread_attr_t *attr,
-                           void *(*start_routine) (void *),
-                           void *arg);
+extern int pthread_create(pthread_t *thread_id,
+                          pthread_attr_t *attr,
+                          void *(*start_routine) (void *p),
+                          void *arg);
 
 /** @nqPosix
 * Obtains the identifier of the current thread.
@@ -420,7 +419,7 @@ extern int pthread_create (pthread_t *thread_id,
 *
 * @return Thread ID of the current thread.
 */
-extern pthread_t pthread_self (void);
+extern pthread_t pthread_self(void);
 
 /** @nqPosix
 * Compares two thread identifiers.
@@ -432,7 +431,7 @@ extern pthread_t pthread_self (void);
 *
 * @return 1 if both identifiers belong to the same thread, 0 otherwise.
 */
-extern int pthread_equal (pthread_t thread1, pthread_t thread2);
+extern int pthread_equal(pthread_t thread1, pthread_t thread2);
 
 /** @nqPosix
 * Terminates the calling thread.
@@ -443,7 +442,7 @@ extern int pthread_equal (pthread_t thread1, pthread_t thread2);
 *
 * @return The function never returns.
 */
-extern void pthread_exit (void *retval);
+extern void pthread_exit(void *retval);
 
 /** @nqPosix
 * Makes the calling thread wait for termination of another thread.
@@ -456,7 +455,7 @@ extern void pthread_exit (void *retval);
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_join (pthread_t th, void **thread_return);
+extern int pthread_join(pthread_t th, void **thread_return);
 
 /** @nqPosix
 * Indicates that the specified thread is never to be joined with pthread_join().
@@ -470,7 +469,7 @@ extern int pthread_join (pthread_t th, void **thread_return);
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_detach (pthread_t th);
+extern int pthread_detach(pthread_t th);
 
 
 /* Functions for handling thread attributes.  */
@@ -485,7 +484,7 @@ extern int pthread_detach (pthread_t th);
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_attr_init (pthread_attr_t *attr);
+extern int pthread_attr_init(pthread_attr_t *attr);
 
 /** @nqPosix
 * Destroys a thread attributes structure.
@@ -496,7 +495,7 @@ extern int pthread_attr_init (pthread_attr_t *attr);
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_attr_destroy (pthread_attr_t *attr);
+extern int pthread_attr_destroy(pthread_attr_t *attr);
 
 /** @nqPosix
 * Sets the detachstate attribute in thread attributes.
@@ -508,8 +507,8 @@ extern int pthread_attr_destroy (pthread_attr_t *attr);
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_attr_setdetachstate (pthread_attr_t *attr,
-                                        int detachstate);
+extern int pthread_attr_setdetachstate(pthread_attr_t *attr,
+                                       int detachstate);
 
 /** @nqPosix
 * Gets the detachstate attribute from thread attributes.
@@ -522,8 +521,8 @@ extern int pthread_attr_setdetachstate (pthread_attr_t *attr,
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_attr_getdetachstate (pthread_attr_t *attr,
-                                        int *detachstate);
+extern int pthread_attr_getdetachstate(pthread_attr_t *attr,
+                                       int *detachstate);
 
 /* Functions for handling thread-specific data.  */
 
@@ -546,8 +545,8 @@ typedef int pthread_key_t;
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_key_create (pthread_key_t *key,
-                               void (*destr_function) (void *));
+extern int pthread_key_create(pthread_key_t *key,
+                              void (*destr_function)(void *p));
 
 
 /** @nqPosix
@@ -559,7 +558,7 @@ extern int pthread_key_create (pthread_key_t *key,
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_key_delete (pthread_key_t key);
+extern int pthread_key_delete(pthread_key_t key);
 
 /** @nqPosix
 * Stores a value in the thread-specific data slot identified by a key value.
@@ -571,8 +570,8 @@ extern int pthread_key_delete (pthread_key_t key);
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_setspecific (pthread_key_t key,
-                                const void *pointer);
+extern int pthread_setspecific(pthread_key_t key,
+                               const void *pointer);
 
 /** @nqPosix
 * Gets the value currently stored at the thread-specific data slot
@@ -585,7 +584,7 @@ extern int pthread_setspecific (pthread_key_t key,
 * @return The value that was previously stored using pthread_setspecific is
 * returned on success, otherwise NULL.
 */
-extern void *pthread_getspecific (pthread_key_t key);
+extern void *pthread_getspecific(pthread_key_t key);
 
 /**
  * A structure describing a control block
@@ -615,8 +614,8 @@ typedef struct {
 *
 * @return 0.
 */
-extern int pthread_once (pthread_once_t *__once_control,
-                         void (*__init_routine) (void));
+extern int pthread_once(pthread_once_t *__once_control,
+                        void (*__init_routine)(void));
 
 /**
 * @} End of PTHREAD group

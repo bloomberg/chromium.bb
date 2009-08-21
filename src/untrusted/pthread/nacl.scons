@@ -30,27 +30,17 @@
 
 Import('env')
 
-sources_c = [
-    'nc_thread.c',
-    'nc_mutex.c',
-    'nc_condvar.c',
-    'nc_semaphore.c',
-    'nc_hash.c',
-]
-
-# TODO(ARM_PORT)
-if env.get('TARGET_ARCHITECTURE') == 'x86':
-  sources_asm = ['nacl_mutex.S',]
-else:
-  sources_asm = []
-
-env.ComponentLibrary('libpthread', sources_c + sources_asm)
+env.ComponentLibrary('libpthread', ['nc_thread.c',
+                                    'nc_mutex.c',
+                                    'nc_condvar.c',
+                                    'nc_semaphore.c',
+                                    'nc_hash.c',
+                                    ])
 
 env.AddLibraryToSdk(['libpthread'])
 
 Alias('install_libpthread',
        # Copy the header file to the include directory.
        [env.Replicate('${NACL_SDK_INCLUDE}', ['pthread.h',
-                                              'nc_system.h',
                                               'atomic_ops.h',
                                               'semaphore.h' ])])

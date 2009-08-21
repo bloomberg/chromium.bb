@@ -38,7 +38,6 @@
 #define NATIVE_CLIENT_SRC_UNTRUSTED_PTHREAD_NC_PTHREAD_TYPES_H_ 1
 
 #include "nc_hash.h"
-#include "nc_system.h"
 #include "pthread.h"
 
 
@@ -103,7 +102,7 @@ typedef struct nc_basic_thread_data {
 /* Structures for handling thread-specific data.  */
 
 typedef struct {
-  void (*destruction_callback)(void*);
+  void (*destruction_callback)(void *p);
   unsigned int generation;
 } tsd_status_t;
 

@@ -32,6 +32,9 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_SYSCALL_BINDINGS_TRAMPOLINE_H
 #define NATIVE_CLIENT_SRC_UNTRUSTED_SYSCALL_BINDINGS_TRAMPOLINE_H
 
+#if __cplusplus
+extern "C" {
+#endif
 
 #include <sys/types.h>
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
@@ -40,6 +43,7 @@
 struct NaClImcMsgHdr;
 struct stat;
 struct timeval;
+struct timespec;
 
 
 #define NACL_SYSCALL(s) ((TYPE_nacl_ ## s) NACL_SYSCALL_ADDR(NACL_sys_ ## s))
@@ -95,6 +99,45 @@ typedef void *(*TYPE_nacl_mmap) (void *start,
 typedef int (*TYPE_nacl_munmap) (void *start, size_t length);
 
 /* ============================================================ */
+/* threads */
+/* ============================================================ */
+
+typedef void (*TYPE_nacl_thread_exit) (int32_t *stack_flag);
+typedef int (*TYPE_nacl_thread_create) (void *start_user_address,
+                                        void *stack,
+                                        void *tdb,
+                                        size_t tdb_size);
+
+/* ============================================================ */
+/* mutex */
+/* ============================================================ */
+
+typedef int (*TYPE_nacl_mutex_create) ();
+typedef int (*TYPE_nacl_mutex_lock) (int mutex);
+typedef int (*TYPE_nacl_mutex_unlock) (int mutex);
+typedef int (*TYPE_nacl_mutex_trylock) (int mutex);
+
+/* ============================================================ */
+/* condvar */
+/* ============================================================ */
+
+typedef int (*TYPE_nacl_cond_create) ();
+typedef int (*TYPE_nacl_cond_wait) (int cv, int mutex);
+typedef int (*TYPE_nacl_cond_signal) (int cv);
+typedef int (*TYPE_nacl_cond_broadcast) (int cv);
+typedef int (*TYPE_nacl_cond_timed_wait_abs) (int condvar,
+                                              int mutex,
+                                              struct timespec *abstime);
+
+/* ============================================================ */
+/* semaphore */
+/* ============================================================ */
+
+typedef int (*TYPE_nacl_sem_create) (int32_t value);
+typedef int (*TYPE_nacl_sem_wait) (int sem);
+typedef int (*TYPE_nacl_sem_post) (int sem);
+
+/* ============================================================ */
 /* misc */
 /* ============================================================ */
 
@@ -119,5 +162,9 @@ typedef void (*TYPE_nacl_null) (void);
 typedef int (*TYPE_nacl_tls_init) (void *tdb, int size);
 
 typedef int (*TYPE_nacl_srpc_get_fd) (void);
+
+#if __cplusplus
+}
+#endif
 
 #endif  /*  NATIVE_CLIENT_SRC_UNTRUSTED_SYSCALL_BINDINGS_TRAMPOLINE_H */

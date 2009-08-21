@@ -43,6 +43,7 @@
 #include <sys/unistd.h>
 
 #include "native_client/src/untrusted/nacl/tls.h"
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 #include "native_client/src/untrusted/pthread/nc_hash.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
@@ -471,16 +472,16 @@ int pthread_create(pthread_t *thread_id,
 
   /*
    * Put 0 on the stack as a return address - it is needed to satisfy
-   * the alignment requirement when we call __nacl_exit_thread syscall
+   * the alignment requirement when we call nacl's exit_thread syscall
    * when the thread terminates.
    */
   *(int32_t*)esp = 0;
 
   /* start the thread */
-  retval = __nacl_create_thread(FUN_TO_VOID_PTR(nc_thread_starter),
-                                esp,
-                                new_tdb,
-                                sizeof(nc_thread_descriptor_t));
+  retval = NACL_SYSCALL(thread_create)(FUN_TO_VOID_PTR(nc_thread_starter),
+                                       esp,
+                                       new_tdb,
+                                       sizeof(nc_thread_descriptor_t));
   if (0 != retval) {
     goto ret;
   }
@@ -567,7 +568,7 @@ void pthread_exit (void* retval) {
     /* This is the main thread - wait for other threads to complete */
     __pthread_shutdown();
     /* TODO(gregoryd): should we call exit() or __nacl_exit_thread? */
-    __nacl_exit_thread(NULL);
+    NACL_SYSCALL(thread_exit)(NULL);
   }
 
   pthread_mutex_lock(&__nc_thread_management_lock);
@@ -602,7 +603,7 @@ void pthread_exit (void* retval) {
   }
 
   pthread_mutex_unlock(&__nc_thread_management_lock);
-  __nacl_exit_thread(is_used);
+  NACL_SYSCALL(thread_exit)(is_used);
 }
 
 int pthread_join(pthread_t thread_id, void **thread_return) {

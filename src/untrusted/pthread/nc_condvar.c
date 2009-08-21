@@ -35,8 +35,12 @@
  */
 
 #include <unistd.h>
-#include "pthread.h"
-#include "pthread_types.h"
+
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+
+#include "native_client/src/untrusted/pthread/pthread.h"
+#include "native_client/src/untrusted/pthread/pthread_types.h"
+
 
 /* TODO(gregoryd): make this static?  */
 void pthread_cond_validate(pthread_cond_t* cond) {
@@ -56,7 +60,7 @@ void pthread_cond_validate(pthread_cond_t* cond) {
  */
 int pthread_cond_init (pthread_cond_t *cond,
                        pthread_condattr_t *cond_attr) {
-  cond->handle = __nacl_create_condvar();
+  cond->handle = NACL_SYSCALL(cond_create)();
 
   /* 0 for success, 1 for failure */
   return (cond->handle < 0);
@@ -78,33 +82,31 @@ int pthread_cond_destroy (pthread_cond_t *cond) {
  */
 int pthread_cond_signal (pthread_cond_t *cond) {
   pthread_cond_validate(cond);
-  return __nacl_signal_condvar(cond->handle);
+  return NACL_SYSCALL(cond_signal)(cond->handle);
 }
 
 
 int pthread_cond_broadcast (pthread_cond_t *cond) {
   pthread_cond_validate(cond);
-  return __nacl_broadcast_condvar(cond->handle);
+  return NACL_SYSCALL(cond_broadcast)(cond->handle);
 }
 
 int pthread_cond_wait (pthread_cond_t *cond,
                        pthread_mutex_t *mutex) {
   pthread_cond_validate(cond);
-  return __nacl_wait_condvar(cond->handle, mutex->mutex_handle);
+  return NACL_SYSCALL(cond_wait)(cond->handle, mutex->mutex_handle);
 }
 
 int pthread_cond_timedwait_abs(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
                                struct timespec *abstime) {
   pthread_cond_validate(cond);
-  return __nacl_absolute_timed_wait_condvar(cond->handle,
-                                            mutex->mutex_handle,
-                                            abstime);
-
+  return NACL_SYSCALL(cond_timed_wait_abs)(cond->handle,
+                                           mutex->mutex_handle,
+                                           abstime);
 }
 
-int nc_pthread_condvar_ctor(pthread_cond_t * cond)
-{
+int nc_pthread_condvar_ctor(pthread_cond_t *cond) {
   cond->handle = NC_INVALID_HANDLE;
   cond->spinlock = 0;
   return 1;

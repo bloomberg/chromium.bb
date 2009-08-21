@@ -37,15 +37,17 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include "pthread.h"
-#include "pthread_types.h"
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+
+#include "native_client/src/untrusted/pthread/pthread.h"
+#include "native_client/src/untrusted/pthread/pthread_types.h"
 
 /* Mutex functions */
 
 static int nc_thread_mutex_init(pthread_mutex_t *mutex) {
   mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   mutex->recursion_counter = 0;
-  mutex->mutex_handle = __nacl_create_mutex();
+  mutex->mutex_handle = NACL_SYSCALL(mutex_create)();
 
   /* 0 for success, 1 for failure */
   return (mutex->mutex_handle < 0);
@@ -115,9 +117,9 @@ static int nc_thread_mutex_lock(pthread_mutex_t *mutex, int try_only) {
     }
   }
   if (try_only) {
-    rv = __nacl_try_lock_mutex(mutex->mutex_handle);
+    rv = NACL_SYSCALL(mutex_trylock)(mutex->mutex_handle);
   } else {
-    rv = __nacl_lock_mutex(mutex->mutex_handle);
+    rv = NACL_SYSCALL(mutex_lock)(mutex->mutex_handle);
   }
   if (rv) {
     return rv;
@@ -157,7 +159,7 @@ int pthread_mutex_unlock (pthread_mutex_t *mutex) {
   }
   mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   mutex->recursion_counter = 0;
-  return __nacl_unlock_mutex(mutex->mutex_handle);
+  return NACL_SYSCALL(mutex_unlock)(mutex->mutex_handle);
 }
 
 /*
