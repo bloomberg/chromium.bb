@@ -185,11 +185,21 @@ else:
   # we need this to build the plugin, so register it here
   env.AddPluginPrerequisite([bundle_name])
 
-if env['TARGET_ARCHITECTURE'] == 'x86' and env.Bit('linux'):
-  unittest = env.ComponentProgram('plugin_unittest',
-                                  'plugin_unittest.cc',
-                                  no_import_lib=True)
-  node = env.CommandTestAgainstGoldenOutput(
-             'plugin_unittest.out',
-             command=[unittest, plugin])
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
+test_env = env.Clone()
+test_env.FilterOut(LINKFLAGS=['-bundle'])
+
+if test_env['TARGET_ARCHITECTURE'] == 'x86' and test_env.Bit('linux'):
+  unittest = test_env.ComponentProgram('plugin_unittest',
+                                       'plugin_unittest.cc',
+                                       no_import_lib=True)
+  node = test_env.CommandTestAgainstGoldenOutput(
+                     'plugin_unittest.out',
+                     command=[unittest, plugin])
+  test_env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
+elif env['TARGET_ARCHITECTURE'] == 'x86' and test_env.Bit('mac'):
+  unittest = test_env.ComponentProgram('plugin_unittest',
+                                       'plugin_unittest.cc')
+  node = test_env.CommandTestAgainstGoldenOutput(
+                     'plugin_unittest.out',
+                     command=[unittest, exe])
+  test_env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')

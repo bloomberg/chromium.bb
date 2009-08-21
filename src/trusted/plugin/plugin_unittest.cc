@@ -30,6 +30,8 @@
  */
 
 // Unit tests for libnpGoogleNaClPlugin.so
+// This test is specifically targeted at finding undefined external references
+// prior to when loading the plugin in the browser.
 
 #include <dlfcn.h>
 #include <stdio.h>
@@ -100,14 +102,15 @@ int main(int argc, char** argv) {
     return 1;
   }
   // Test opening the .so
-  // By using RTLD_DEEPBIND we check that all symbols are resolved
-  // rather than finding them when loading the plugin in the browser.
-  dl_handle = dlopen(argv[1], RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);
+  // By using RTLD_NOW we check that all symbols are resolved before the
+  // dlopen completes, or it fails.
+  dl_handle = dlopen(argv[1], RTLD_NOW | RTLD_LOCAL);
   if (NULL == dl_handle) {
     fprintf(stderr, "Couldn't open: %s\n", dlerror());
     return 1;
   }
 
+  // Exercise some bare minimum functionality for NPAPI plugins.
   bool success =
     (TestMIMEDescription() &&
      TestInitialize() &&
