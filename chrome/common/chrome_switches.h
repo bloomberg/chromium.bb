@@ -230,6 +230,11 @@ extern const wchar_t kEnableDatabases[];
 extern const wchar_t kEnableApplicationCache[];
 
 extern const wchar_t kSyncServiceURL[];
+
+#if defined(OS_CHROMEOS)
+extern const wchar_t kCookiePipe[];
+#endif
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

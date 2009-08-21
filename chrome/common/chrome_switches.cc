@@ -578,4 +578,11 @@ const wchar_t kEnableApplicationCache[] = L"enable-application-cache";
 
 // Override the default server used for profile sync.
 const wchar_t kSyncServiceURL[]  = L"sync-url";
+
+#if defined(OS_CHROMEOS)
+// The name of the pipe over which the Chrome OS login manager will send
+// single-sign-on cookies.
+const wchar_t kCookiePipe[] = L"cookie-pipe";
+#endif
+
 }  // namespace switches

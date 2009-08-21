@@ -117,6 +117,10 @@
 #include "views/focus/accelerator_handler.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/external_cookie_handler.h"
+#endif
+
 namespace Platform {
 
 void WillInitializeMainMessageLoop(const MainFunctionParams& parameters);
@@ -792,6 +796,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // short delay so as not to interfere with startup time.
   if (parsed_command_line.HasSwitch(switches::kEnableWebResources))
     profile->InitWebResources();
+
+#if defined(OS_CHROMEOS)
+  ExternalCookieHandler::GetCookies(parsed_command_line, profile);
+#endif
 
   // Stat the directory with the inspector's files so that we can know if we
   // should display the entry in the context menu or not.

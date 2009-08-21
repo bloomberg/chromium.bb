@@ -63,13 +63,13 @@
     # TODO(jcampan): move these vars to views.gyp.
     'views_unit_tests_sources': [
       '../views/view_unittest.cc',
-      '../views/focus/focus_manager_unittest.cc',
     ],
     'views_unit_tests_sources_win_specific': [
       # TODO(jcampan): make the following tests work on Linux.
       '../views/controls/label_unittest.cc',
       '../views/controls/table/table_view_unittest.cc',
       '../views/grid_layout_unittest.cc',
+      '../views/focus/focus_manager_unittest.cc',
     ],
     'conditions': [
       ['OS=="mac"', {
@@ -791,6 +791,10 @@
         'browser/chrome_plugin_host.h',
         'browser/chrome_thread.cc',
         'browser/chrome_thread.h',
+        'browser/chromeos/pipe_reader.cc',
+        'browser/chromeos/pipe_reader.h',
+        'browser/chromeos/external_cookie_handler.cc',
+        'browser/chromeos/external_cookie_handler.h',
         'browser/cocoa/about_window_controller.h',
         'browser/cocoa/about_window_controller.mm',
         'browser/cocoa/autocomplete_text_field.h',
@@ -2058,6 +2062,14 @@
         ['javascript_engine=="v8"', {
           'defines': [
             'CHROME_V8',
+          ],
+        }],
+        ['chromeos==0', {
+          'sources!': [
+            'browser/chromeos/pipe_reader.cc',
+            'browser/chromeos/pipe_reader.h',
+            'browser/chromeos/external_cookie_handler.cc',
+            'browser/chromeos/external_cookie_handler.h',
           ],
         }],
         ['OS=="linux"', {
@@ -3811,6 +3823,8 @@
         'browser/debugger/devtools_remote_listen_socket_unittest.h',
         'browser/child_process_security_policy_unittest.cc',
         'browser/chrome_thread_unittest.cc',
+        'browser/chromeos/pipe_reader_unittest.cc',
+        'browser/chromeos/external_cookie_handler_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
         # exclude them from non-Mac builds.
@@ -4041,6 +4055,12 @@
         'tools/build/win/precompiled_wtl.cc',
       ],
       'conditions': [
+        ['chromeos==0', {
+          'sources!': [
+            'browser/chromeos/pipe_reader_unittest.cc',
+            'browser/chromeos/external_cookie_handler_unittest.cc',
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
