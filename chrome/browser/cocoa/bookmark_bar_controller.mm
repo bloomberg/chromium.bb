@@ -73,6 +73,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 }
 
 - (void)dealloc {
+  bridge_.reset(NULL);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
