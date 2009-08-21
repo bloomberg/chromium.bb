@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "media/base/buffers.h"
 #include "media/base/clock_impl.h"
 
 namespace media {
@@ -32,6 +33,10 @@ base::TimeDelta ClockImpl::Pause() {
 }
 
 void ClockImpl::SetTime(const base::TimeDelta& time) {
+  if (time == StreamSample::kInvalidTimestamp) {
+    NOTREACHED();
+    return;
+  }
   if (playing_) {
     reference_ = time_provider_();
   }
