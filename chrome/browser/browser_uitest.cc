@@ -212,7 +212,9 @@ class ShowModalDialogTest : public UITest {
   }
 };
 
-TEST_F(ShowModalDialogTest, BasicTest) {
+// So flaky, http://crbug.com/17806. Do *not* re-enable without a real fix.
+// Increasing timeouts is not a fix.
+TEST_F(ShowModalDialogTest, DISABLED_BasicTest) {
   // Test that a modal dialog is shown.
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("showmodaldialog.html");
