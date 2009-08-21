@@ -43,7 +43,7 @@ deps = {
     "http://nativeclient.googlecode.com/svn/trunk/src/native_client@385",
 
   "src/third_party/skia":
-    "http://skia.googlecode.com/svn/trunk@323",
+    "http://skia.googlecode.com/svn/trunk@330",
 
   "src/third_party/WebKit/LayoutTests":
     Var("webkit_trunk") + "/LayoutTests@" + Var("webkit_revision"),
