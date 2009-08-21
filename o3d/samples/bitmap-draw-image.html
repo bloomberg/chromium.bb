@@ -30,8 +30,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
 <!--
-In this tutorial, we show how to create bitmap and how to draw
-image on both bitmap and texture.
+In this tutorial, we show how to create bitmaps and how to draw
+images on both bitmaps and textures.
 -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
   "http://www.w3.org/TR/html4/loose.dtd">
@@ -45,7 +45,7 @@ Bitmap Draw Image Demo
 <script type="text/javascript" id="o3dscript">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
-o3djs.require('o3djs.io');
+o3djs.require('o3djs.loader');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
 o3djs.require('o3djs.effect');
@@ -64,6 +64,7 @@ var g_finished = false;  // for selenium testing
 var g_eye;
 var g_target;
 var g_up;
+var g_bitmaps = [];  // bitmaps by URL.
 
 function makeShape(texture, effect) {
   // Create a Material for the effect.
@@ -120,11 +121,24 @@ function makeShape(texture, effect) {
   return myShape;
 }
 
+function loadBitmap(loader, url) {
+  loader.loadBitmaps(g_pack, o3djs.util.getAbsoluteURI('assets/' + url),
+                     function(bitmaps, exception) {
+      if (!exception) {
+        // We know we are only loading 2D images so there will only be 1 bitmap.
+        g_bitmaps[url] = bitmaps[0];
+      } else {
+        alert(exception);
+      }
+  });
+
+}
+
 /**
  * Creates the client area.
  */
 function init() {
-  o3djs.util.makeClients(initStep2);
+  o3djs.util.makeClients(initStep2, 'NotAntiAliased');
 }
 
 /**
@@ -168,45 +182,45 @@ function initStep2(clientElements) {
   var effect = g_pack.createObject('Effect');
   o3djs.effect.loadEffect(effect, 'shaders/texture-only.shader');
 
+  var loader = o3djs.loader.createLoader(callback);
+  loadBitmap(loader, 'shaving_cream_300x300.jpg');
+  loadBitmap(loader, 'four_pixel.png');
+  loadBitmap(loader, 'hi.jpg');
+  loader.finish();
+
   // Start a request for loading the tar.gz archive containing a bunch of
   // image files.  We'll then make textures from each one...
-  var loadInfo = o3djs.io.loadArchive(
-      g_pack,
-      './assets/bmp_mip.o3dtgz',
-      callback);
-  function callback(archiveInfo, exception) {
-    if (!exception) {
-      var rawdata1 = archiveInfo.getFileByURI('shaving_cream_300x300.jpg', true);
-      var bitmap1 = g_pack.createBitmapsFromRawData(rawdata1)[0];
-      bitmap1.flipVertically();
-      var rawdata2 = archiveInfo.getFileByURI('four_pixel.png', true);
-      var bitmap2 = g_pack.createBitmapsFromRawData(rawdata2)[0];
-      bitmap2.flipVertically();
-      var rawdata_hi = archiveInfo.getFileByURI('hi.jpg', true);
-      var bitmapHi = g_pack.createBitmapsFromRawData(rawdata_hi)[0];
-      bitmapHi.flipVertically();
-      var texture = g_pack.createTexture2D(300, 300, g_o3d.Texture.XRGB8, 0,
-                                           false);
-      // draw image on bitmap.
-      // scale down on top left corner.
-      texture.drawImage(bitmap1, 0, 0, 0, 300, 300, 0, 0, 0, 150, 150);
-      // scale up on top right corner.
-      texture.drawImage(bitmap1, 0, 0, 156, 100, 100, 0, 150, 0, 150, 150);
-      // flip and draw part of the img on bottom left.
-      texture.drawImage(
-          bitmap1, 0, 150, 100, 150, 150, 0, 149, 299, -150, -150);
-      // draw out of boundary.
-      texture.drawImage(bitmap1, 0, 0, 135, 300, 300, 0, 150, 150, 300, 300);
-      // draw o3d.
-      texture.drawImage(bitmapHi, 0, 0, 0, 100, 50, 0, 100, 125, 100, 50);
+  function callback() {
+    var bitmap1 = g_bitmaps['shaving_cream_300x300.jpg'];
+    bitmap1.flipVertically();
+    var bitmap2 = g_bitmaps['four_pixel.png'];
+    bitmap2.flipVertically();
+    var bitmapHi = g_bitmaps['hi.jpg'];
+    bitmapHi.flipVertically();
 
-      // draw image on different mip-maps.
-      texture.drawImage(bitmap1, 0, 0, 0, 300, 300, 1, 0, 0, 150, 150);
-      texture.drawImage(bitmap2, 0, 0, 0, 2, 2, 2, 0, 0, 75, 75);
-      texture.setRect(0, 0, 0, 1, [1, 0, 0]);
+    var texture = g_pack.createTexture2D(300, 300, g_o3d.Texture.XRGB8, 0,
+                                         false);
+    // draw image on bitmap.
+    // scale down on top left corner.
+    texture.drawImage(bitmap1, 0, 0, 0, 300, 300, 0, 0, 0, 150, 150);
 
-      makeShape(texture, effect);
-    }
+    // scale up on top right corner.
+    texture.drawImage(bitmap1, 0, 0, 156, 100, 100, 0, 150, 0, 150, 150);
+
+    // flip and draw part of the img on bottom left.
+    texture.drawImage(bitmap1, 0, 150, 100, 150, 150, 0, 149, 299, -150, -150);
+
+    // draw out of boundary.
+    texture.drawImage(bitmap1, 0, 0, 135, 300, 300, 0, 150, 150, 300, 300);
+
+    // draw o3d.
+    texture.drawImage(bitmapHi, 0, 0, 0, 100, 50, 0, 100, 125, 100, 50);
+
+    // draw image on different mip-maps.
+    texture.drawImage(bitmap1, 0, 0, 0, 300, 300, 1, 0, 0, 150, 150);
+    texture.drawImage(bitmap2, 0, 0, 0, 2, 2, 2, 0, 0, 75, 75);
+
+    makeShape(texture, effect);
   }
   o3djs.event.addEventListener(o3dElement, 'wheel', scrollMe);
 }
@@ -219,8 +233,8 @@ function scrollMe(e) {
 </head>
 <body>
 <h1>Bitmap Draw Image Demo</h1>
-This tutorial shows how to create bitmap and how to draw image
-on both bitmap and texture mipmap.
+This tutorial shows how to create bitmaps and how to draw images
+on both bitmaps and texture mipmaps.
 <br/>
 Scroll wheel to see different mipmaps.
 <br/>

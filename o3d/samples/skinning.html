@@ -220,7 +220,7 @@ function initStep2(clientElements) {
   // to the SkinEval so the SkinEval will fill them in each frame.
   var streamBank = shape.elements[0].streamBank;
   streamBank.bindStream(skinEval, g_o3d.Stream.POSITION, 0);
-  streamBank.bindStream(skinEval, g_o3d.Stream.POSITION, 0);
+  streamBank.bindStream(skinEval, g_o3d.Stream.NORMAL, 0);
 
   // Setup an onrender callback for animation.
   g_client.setRenderCallback(onrender);
