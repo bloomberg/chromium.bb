@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -36,6 +37,14 @@ struct MenuCreateMaterial developer_menu_materials[] = {
   { MENU_END }
 };
 
+struct MenuCreateMaterial developer_menu_materials_no_inspector[] = {
+  { MENU_NORMAL, IDC_VIEW_SOURCE, IDS_VIEW_SOURCE, 0, NULL,
+    GDK_u, GDK_CONTROL_MASK },
+  { MENU_NORMAL, IDC_TASK_MANAGER, IDS_TASK_MANAGER, 0, NULL,
+    GDK_Escape, GDK_SHIFT_MASK },
+  { MENU_END }
+};
+
 struct MenuCreateMaterial standard_page_menu_materials[] = {
   { MENU_NORMAL, IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS },
   { MENU_SEPARATOR },
@@ -52,8 +61,8 @@ struct MenuCreateMaterial standard_page_menu_materials[] = {
   // The encoding menu submenu is filled in by code below.
   { MENU_NORMAL, IDC_ENCODING_MENU, IDS_ENCODING_MENU },
   { MENU_SEPARATOR },
-  { MENU_NORMAL, IDC_DEVELOPER_MENU, IDS_DEVELOPER_MENU, 0,
-    developer_menu_materials },
+  // The developer menu submenu is filled in by code below.
+  { MENU_NORMAL, IDC_DEVELOPER_MENU, IDS_DEVELOPER_MENU },
 
   // The Report Bug menu hasn't been implemented yet.  Remove it until it is.
   // http://code.google.com/p/chromium/issues/detail?id=11600
@@ -106,7 +115,9 @@ const MenuCreateMaterial* GetStandardPageMenu(MenuGtk* encodings_menu) {
        entry->type != MENU_END; ++entry) {
     if (entry->id == IDC_ENCODING_MENU) {
       entry->custom_submenu = encodings_menu;
-      break;
+    } else if (entry->id == IDC_DEVELOPER_MENU) {
+      entry->submenu = g_browser_process->have_inspector_files() ?
+        developer_menu_materials : developer_menu_materials_no_inspector;
     }
   }
 

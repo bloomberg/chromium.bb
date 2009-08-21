@@ -83,12 +83,15 @@ void RenderViewContextMenu::InitMenu(ContextNodeType node_type,
 
   if (node_type.type & ContextNodeType::SELECTION)
     AppendSearchProvider();
-  AppendSeparator();
+
   AppendDeveloperItems();
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {
-  AppendMenuItem(IDS_CONTENT_CONTEXT_INSPECTELEMENT);
+  if (g_browser_process->have_inspector_files()) {
+    AppendSeparator();
+    AppendMenuItem(IDS_CONTENT_CONTEXT_INSPECTELEMENT);
+  }
 }
 
 void RenderViewContextMenu::AppendLinkItems() {

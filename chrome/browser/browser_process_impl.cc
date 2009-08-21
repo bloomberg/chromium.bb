@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/clipboard.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
@@ -130,7 +131,8 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       module_ref_count_(0),
       memory_model_(HIGH_MEMORY_MODEL),
       checked_for_new_frames_(false),
-      using_new_frames_(false) {
+      using_new_frames_(false),
+      have_inspector_files_(true) {
   g_browser_process = this;
   clipboard_.reset(new Clipboard);
   main_notification_service_.reset(new NotificationService);
@@ -421,4 +423,31 @@ void BrowserProcessImpl::CreateGoogleURLTracker() {
   DCHECK(google_url_tracker_.get() == NULL);
   scoped_ptr<GoogleURLTracker> google_url_tracker(new GoogleURLTracker);
   google_url_tracker_.swap(google_url_tracker);
+}
+
+// The BrowserProcess object must outlive the file thread so we use traits
+// which don't do any management.
+template <>
+struct RunnableMethodTraits<BrowserProcessImpl> {
+  static void RetainCallee(BrowserProcessImpl*) {}
+  static void ReleaseCallee(BrowserProcessImpl*) {}
+};
+
+void BrowserProcessImpl::CheckForInspectorFiles() {
+  file_thread()->message_loop()->PostTask
+      (FROM_HERE,
+       NewRunnableMethod(this, &BrowserProcessImpl::DoInspectorFilesCheck));
+}
+
+void BrowserProcessImpl::DoInspectorFilesCheck() {
+  // Runs on FILE thread.
+  DCHECK(file_thread_->message_loop() == MessageLoop::current());
+  bool result = false;
+
+  FilePath inspector_dir;
+  if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
+    result = file_util::PathExists(inspector_dir);
+  }
+
+  have_inspector_files_ = result;
 }

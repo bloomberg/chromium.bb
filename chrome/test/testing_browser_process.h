@@ -140,6 +140,9 @@ class TestingBrowserProcess : public BrowserProcess {
     return shutdown_event_.get();
   }
 
+  virtual void CheckForInspectorFiles() {}
+  virtual bool have_inspector_files() const { return true; }
+
  private:
   NotificationService notification_service_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;

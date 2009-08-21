@@ -782,6 +782,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (parsed_command_line.HasSwitch(switches::kEnableWebResources))
     profile->InitWebResources();
 
+  // Stat the directory with the inspector's files so that we can know if we
+  // should display the entry in the context menu or not.
+  browser_process->CheckForInspectorFiles();
+
   int result_code = ResultCodes::NORMAL_EXIT;
   if (parameters.ui_task) {
     // We are in test mode. Run one task and enter the main message loop.

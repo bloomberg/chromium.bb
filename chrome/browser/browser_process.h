@@ -138,6 +138,15 @@ class BrowserProcess {
     return user_data_dir_profiles_;
   }
 
+  // Trigger an asynchronous check to see if we have the inspector's files on
+  // disk.
+  virtual void CheckForInspectorFiles() = 0;
+
+  // Return true iff we found the inspector files on disk. It's possible to
+  // call this function before we have a definite answer from the disk. In that
+  // case, we default to returning true.
+  virtual bool have_inspector_files() const = 0;
+
  private:
   // User-data-dir based profiles.
   std::vector<std::wstring> user_data_dir_profiles_;

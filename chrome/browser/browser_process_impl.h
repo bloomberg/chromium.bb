@@ -189,6 +189,12 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return shutdown_event_.get();
   }
 
+  virtual void CheckForInspectorFiles();
+
+  virtual bool have_inspector_files() const {
+    return have_inspector_files_;
+  }
+
  private:
   void CreateResourceDispatcherHost();
   void CreatePrefService();
@@ -275,6 +281,12 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   // An event that notifies when we are shutting-down.
   scoped_ptr<base::WaitableEvent> shutdown_event_;
+
+  // Runs on the file thread and stats the inspector's directory, filling in
+  // have_inspector_files_ with the result.
+  void DoInspectorFilesCheck();
+  // Our best estimate about the existence of the inspector directory.
+  bool have_inspector_files_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

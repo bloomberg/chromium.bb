@@ -1043,8 +1043,10 @@ void ToolbarView::CreateDevToolsMenuContents() {
   devtools_menu_contents_.reset(new views::SimpleMenuModel(this));
   devtools_menu_contents_->AddItem(IDC_VIEW_SOURCE,
                                    l10n_util::GetString(IDS_VIEW_SOURCE));
-  devtools_menu_contents_->AddItem(IDC_DEV_TOOLS,
-                                   l10n_util::GetString(IDS_DEV_TOOLS));
+  if (g_browser_process->have_inspector_files()) {
+    devtools_menu_contents_->AddItem(IDC_DEV_TOOLS,
+                                     l10n_util::GetString(IDS_DEV_TOOLS));
+  }
   devtools_menu_contents_->AddItem(IDC_TASK_MANAGER,
                                    l10n_util::GetString(IDS_TASK_MANAGER));
 }
