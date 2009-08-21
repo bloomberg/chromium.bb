@@ -316,6 +316,12 @@ const wchar_t kFirstRun[]                      = L"first-run";
 // you're for some reason tempted to pass them both.
 const wchar_t kNoFirstRun[]                    = L"no-first-run";
 
+#if defined(OS_POSIX)
+// Bypass the error dialog when the profile lock couldn't be attained.
+// This switch is used during automated testing.
+const wchar_t kNoProcessSingletonDialog[]      = L"no-process-singleton-dialog";
+#endif
+
 // Enable histograming of tasks served by MessageLoop. See about:histograms/Loop
 // for results, which show frequency of messages on each thread, including APC
 // count, object signalling count, etc.

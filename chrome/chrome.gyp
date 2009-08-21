@@ -1255,6 +1255,8 @@
         'browser/gtk/options/url_picker_dialog_gtk.cc',
         'browser/gtk/options/url_picker_dialog_gtk.h',
         'browser/gtk/page_info_window_gtk.cc',
+        'browser/gtk/process_singleton_dialog.cc',
+        'browser/gtk/process_singleton_dialog.h',
         'browser/gtk/sad_tab_gtk.cc',
         'browser/gtk/sad_tab_gtk.h',
         'browser/gtk/slide_animator_gtk.cc',

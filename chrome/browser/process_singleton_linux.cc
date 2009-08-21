@@ -60,10 +60,14 @@
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/process_singleton_dialog.h"
+#endif
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
@@ -255,13 +259,17 @@ std::string ParseLockPath(const std::string& path,
 void DisplayProfileInUseError(const std::string& lock_path,
                               const std::string& hostname,
                               int pid) {
-  // TODO(mattm): display in a dialog.
   std::wstring error = l10n_util::GetStringF(IDS_PROFILE_IN_USE_LINUX,
         IntToWString(pid),
         ASCIIToWide(hostname),
         base::SysNativeMBToWide(lock_path),
         l10n_util::GetString(IDS_PRODUCT_NAME));
   LOG(ERROR) << base::SysWideToNativeMB(error).c_str();
+#if defined(TOOLKIT_GTK)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoProcessSingletonDialog))
+    ProcessSingletonDialog::ShowAndRun(WideToUTF8(error));
+#endif
 }
 
 // Check if the lock is on a different host.  If so, return false.  If not,

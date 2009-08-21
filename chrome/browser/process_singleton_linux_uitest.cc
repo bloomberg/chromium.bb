@@ -19,6 +19,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/chrome_process_util.h"
 #include "chrome/test/ui/ui_test.h"
@@ -50,6 +51,7 @@ class ProcessSingletonLinuxTest : public UITest {
     std::vector<std::string> argv;
     argv.push_back(old_argv_[0]);
     argv.push_back(url);
+    argv.push_back("--" + WideToASCII(switches::kNoProcessSingletonDialog));
 
     CommandLine::Reset();
     CommandLine::Init(argv);

@@ -111,6 +111,10 @@ extern const wchar_t kFirstRun[];
 
 extern const wchar_t kNoFirstRun[];
 
+#if defined(OS_POSIX)
+extern const wchar_t kNoProcessSingletonDialog[];
+#endif
+
 extern const wchar_t kMessageLoopHistogrammer[];
 
 extern const wchar_t kImport[];
