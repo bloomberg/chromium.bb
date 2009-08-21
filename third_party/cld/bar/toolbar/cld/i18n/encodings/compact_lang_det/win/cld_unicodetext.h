@@ -30,5 +30,19 @@ Language DetectLanguageOfUnicodeText(const WCHAR* text, bool is_plain_text,
                                      bool* is_reliable, int* num_languages,
                                      DWORD* error_code);
 
+// Detects the top 3 languages in the UTF-16 encoded zero-terminated text.
+// [in] text - UTF-16 encoded text.
+// [in] is_plain_text - true if plain text, false otherwise (e.g. HTML).
+// [out] language[3] - Top 3 languages (default: UNKNOWN_LANGUAGE)
+// [out] percent[3] - Percentages of the languages (default: language3[0] = 100.
+//                  language3[1] = language3[2] = 0).
+// [out] is_reliable - true if reliable.
+// See CompactLangDet::DetectLanguageSummary() for more information.
+void DetectLanguageSummaryOfUnicodeText(const WCHAR* text,
+                                        bool is_plain_text,
+                                        Language language[3],
+                                        int percent[3],
+                                        int* text_bytes,
+                                        bool* is_reliable);
 
 #endif  // BAR_TOOLBAR_CLD_I18N_ENCODINGS_COMPACT_LANG_DET_WIN_CLD_UNICODETEXT_H_

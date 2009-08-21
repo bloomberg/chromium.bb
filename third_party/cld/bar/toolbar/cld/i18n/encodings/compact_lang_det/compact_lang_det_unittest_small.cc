@@ -24,6 +24,7 @@
 #include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/unittest_data.h"
 
 #include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h"
+#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_google.h"
 
 //DEFINE_bool(html, false, "Print language spans in HTML on stderr");
@@ -38,6 +39,10 @@ const char* kTeststr_en =
   "jury of members two courts combine for the purpose the most important cases "
   "of all are brought jurors or";
 
+const char* kTeststr_en_fr_de =
+    " a backup credit card by visiting your billing preferences page or visit the adwords help centre for more details https adwords google com support bin answer py answer hl en we were unable to process the payment of for your outstanding google adwords"  // ENGLISH
+    " a accès aux collections et aux frontaux qui lui ont été attribués il peut consulter et modifier ses collections et exporter des configurations de collection toutefois il ne peut pas créer ni supprimer des collections enfin il a accès aux fonctions"  // FRENCH
+    " abschnitt ordner aktivieren werden die ordnereinstellungen im farbabschnitt deaktiviert öchten sie wirklich fortfahren eldtypen angeben optional n diesem schritt geben sie für jedesfeld aus dem datenset den typ an ieser schritt ist optional eldtypen";  // GERMAN
 
 // UTF8 constants. Use a UTF-8 aware editor for this file
 const char* kTeststr_ks =
@@ -134,6 +139,18 @@ class CompactLangDetTest : public testing::Test {
                             &text_bytes,
                             &is_reliable);
     return lang;
+  }
+
+  // Detect the top three languages using DetectLanguageSummary.
+  void TestDetectLanguageSummary(const char* src, Language* language3) {
+    bool is_plain_text = true;
+    int percent3[3];
+    int text_bytes;
+    bool is_reliable;
+
+    CompactLangDet::DetectLanguageSummary(src, strlen(src), is_plain_text,
+                                          language3, percent3, &text_bytes,
+                                          &is_reliable);
   }
 };  // End class CompactLangDetTest.
 
@@ -389,3 +406,13 @@ TEST_F(CompactLangDetTest, ExtendedTests) {
   EXPECT_EQ(ENGLISH, TestCompactLangDetPlain(kTeststr_zzh_Latn));
   EXPECT_EQ(ENGLISH, TestExtCompactLangDetPlain(kTeststr_zzh_Latn));
 }
+
+
+TEST_F(CompactLangDetTest, DetectLanguageSummaryTests) {
+  Language language3[3];
+  TestDetectLanguageSummary(kTeststr_en_fr_de, language3);
+  EXPECT_EQ(FRENCH, language3[0]);
+  EXPECT_EQ(GERMAN, language3[1]);
+  EXPECT_EQ(ENGLISH, language3[2]);
+}
+
