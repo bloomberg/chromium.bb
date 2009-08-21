@@ -119,6 +119,7 @@
             'libraries': [
               '-lssl',
               '-lcrypto',
+              '-lstdc++',
             ],
           },
         }],
