@@ -1,0 +1,3 @@
+# Check that the start address of the segment is not (32-bit) aligned.
+@F0
+90

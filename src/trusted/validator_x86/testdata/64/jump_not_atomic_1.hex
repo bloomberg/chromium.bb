@@ -1,0 +1,3 @@
+# Models a jump into the middle of an instruction.
+EB 02
+83 e2 e0

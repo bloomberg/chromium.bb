@@ -1,0 +1,5 @@
+# Models a jump into the middle of an atomic sequence.
+EB 03
+83 e2 e0
+4D8D0C17
+41FFE1

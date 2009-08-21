@@ -1,0 +1,3 @@
+# Models a jump to the begining of an atomic operation.
+EB 00
+83 e2 e0

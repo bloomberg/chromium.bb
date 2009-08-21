@@ -1,0 +1,5 @@
+0000000000000003: 4b 89 44 e7 36                               mov [%r15+%r12*8+0x36], %rax
+ERROR: Invalid index register in memory store
+Checking jump targets: 0 to 8
+Checking that basic blocks are aligned
+***MODULE IS UNSAFE***

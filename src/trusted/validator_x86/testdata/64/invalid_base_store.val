@@ -1,0 +1,5 @@
+0000000000000007: 49 89 44 cd 36                               mov [%r13+%rcx*8+0x36], %rax
+ERROR: Invalid base register in memory store
+Checking jump targets: 0 to c
+Checking that basic blocks are aligned
+***MODULE IS UNSAFE***

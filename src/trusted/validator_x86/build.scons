@@ -98,6 +98,7 @@ ncdecode_tablegen = env_decode_table.ComponentProgram(
 env.Requires(ncdecode_tablegen, crt)
 env.Requires(ncdecode_tablegen, sdl_dll)
 
+# Segment register validator library
 env.ComponentLibrary('ncvalidate', ['nacl_cpuid.c',
                                     'ncdecode.c',
                                     'nc_segment.c',
@@ -107,6 +108,18 @@ env.ComponentLibrary('ncvalidate', ['nacl_cpuid.c',
                                     'ncop_exps.c',
                                     'nc_read_segment.c',
                                     'ncvalidate.c'])
+
+# SFI validator library
+env.ComponentLibrary('ncvalidate_sfi',
+                     ['ncvalidate_iter.c',
+                      'nc_opcode_histogram.c',
+                      'nc_cpu_checks.c',
+                      'nc_illegal.c',
+                      'nc_protect_base.c',
+                      'nc_store_protect.c',
+                      'ncvalidate_utils.c',
+                      'nc_jumps.c',
+                      'ncval_driver.c'])
 
 env.ComponentLibrary('ncdis_util', ['ncdis_util.c'])
 
@@ -287,6 +300,7 @@ env.AddNodeToTestSuite(ncdis_iter_hex_test,
                        NCDIS_ITER_TEST_NAME)
 
 # ======================================================================
+# Segment register validator.
 ncval = env.ComponentProgram('ncval',
                              ['ncval.c'],
                              EXTRA_LIBS=['ncvalidate', 'nchelper'])
@@ -308,3 +322,64 @@ if env['TARGET_SUBARCH'] == '32':
         [ncval[0], '-t', env.File(TESTDATA_DIR + vtest)],
         )
     env.AddNodeToTestSuite(node, ['large_tests'])
+
+# ======================================================================
+# SFI validator.
+ncval_sfi = env.ComponentProgram(
+    'ncval_sfi',
+    ['ncval_iter.c'],
+    EXTRA_LIBS=['ncvalidate_sfi',
+                'ncvalidate',
+                'ncopcode_utils',
+                'nchelper',
+                'platform',
+                'gio',
+                'utils'])
+
+env.Requires(ncval, crt)
+env.Requires(ncval, sdl_dll)
+
+# ======================================================================
+# Tester for SFI validator.
+ncval_iter_test = env.ComponentProgram(
+    'ncval_sfi_test',
+    ['ncval_iter_test.c'],
+    EXTRA_LIBS=['ncvalidate_sfi',
+                'ncvalidate',
+                'ncopcode_utils',
+                'nchelper',
+                'platform',
+                'gio',
+                'utils'])
+
+# Directory where test files are located.
+TESTDATA_DIR = 'testdata/' + env['TARGET_SUBARCH'] + '/'
+
+# Generates base names (i.e. minus path and .val suffix) of
+# all test data input files.
+def __FilterOutTestFileBaseGen(files):
+  for f in files:
+    yield os.path.basename(f.path).replace('.val', "")
+
+if env['TARGET_SUBARCH'] == '64':
+  golden_files = Glob(TESTDATA_DIR + '*.val')
+  for vtest in __FilterOutTestFileBaseGen(golden_files):
+    TEST_PREFIX = 'ncval_test_' + vtest
+    DIS_TEST_NAME = TEST_PREFIX + "_dis"
+    node_dis = env.CommandTestAgainstGoldenOutput(
+        DIS_TEST_NAME + ".out",
+        ['$OBJ_ROOT/src/trusted/validator_x86/ncdis',
+         '-use_iter', '-hex_text=-'],
+        stdin = env.File(TESTDATA_DIR + vtest + ".hex"),
+        stdout_golden = env.File(TESTDATA_DIR + vtest + ".dis"))
+
+    env.AddNodeToTestSuite(node_dis, ['small_tests'], DIS_TEST_NAME)
+
+    VAL_TEST_NAME = TEST_PREFIX + "_val"
+    node_val = env.CommandTestAgainstGoldenOutput(
+        VAL_TEST_NAME + ".out",
+        [ncval_iter_test[0]],
+        stdin = env.File(TESTDATA_DIR + vtest + ".hex"),
+        stdout_golden = env.File(TESTDATA_DIR + vtest + ".val"))
+
+    env.AddNodeToTestSuite(node_val, ['small_tests'], VAL_TEST_NAME)

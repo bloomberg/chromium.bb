@@ -1,0 +1,4 @@
+Checking jump targets: f0 to f1
+Checking that basic blocks are aligned
+ERROR: Code segment starts at 0xf0, which isn't aligned properly.
+***MODULE IS UNSAFE***
