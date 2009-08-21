@@ -59,6 +59,11 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
 - (void)awakeFromNib {
   [self setStateFromDownload:bridge_->download_model()];
   bridge_->LoadIcon();

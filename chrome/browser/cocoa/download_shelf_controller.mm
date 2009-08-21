@@ -82,10 +82,8 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 }
 
 - (void)dealloc {
-  for (DownloadItemController* itemController
-      in downloadItemControllers_.get()) {
-    [[NSNotificationCenter defaultCenter] removeObserver:itemController];
-  }
+  // The controllers will unregister themselves as observers when they are
+  // deallocated. No need to do that here.
   [super dealloc];
 }
 
@@ -215,6 +213,8 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 
   [itemContainerView_ addSubview:[controller.get() view]];
 
+  // The controller is in charge of removing itself as an observer in its
+  // dealloc.
   [[NSNotificationCenter defaultCenter]
     addObserver:controller
        selector:@selector(updateVisibility:)
