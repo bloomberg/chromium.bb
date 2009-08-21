@@ -15,7 +15,9 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "webkit/api/public/WebFrame.h"
+#include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebScriptSource.h"
+#include "webkit/api/public/WebURL.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
@@ -118,6 +120,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) {
   BindMethod("setCustomPolicyDelegate", &LayoutTestController::setCustomPolicyDelegate);
   BindMethod("waitForPolicyDelegate", &LayoutTestController::waitForPolicyDelegate);
   BindMethod("setWillSendRequestReturnsNullOnRedirect", &LayoutTestController::setWillSendRequestReturnsNullOnRedirect);
+  BindMethod("whiteListAccessFromOrigin", &LayoutTestController::whiteListAccessFromOrigin);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -424,6 +427,8 @@ void LayoutTestController::Reset() {
   stop_provisional_frame_loads_ = false;
   globalFlag_.Set(false);
   webHistoryItemCount_.Set(0);
+
+  WebKit::resetOriginAccessWhiteLists();
 
   if (close_remaining_windows_) {
     // Iterate through the window list and close everything except the original
@@ -923,4 +928,23 @@ void LayoutTestController::fallbackMethod(
     printf("CONSOLE MESSAGE: %S\n", message.c_str());
   }
   result->SetNull();
+}
+
+void LayoutTestController::whiteListAccessFromOrigin(
+    const CppArgumentList& args, CppVariant* result)
+{
+  result->SetNull();
+
+  if (args.size() != 4 || !args[0].isString() || !args[1].isString() ||
+      !args[2].isString() || !args[3].isBool())
+    return;
+
+  WebKit::WebURL url(GURL(args[0].ToString()));
+  if (!url.isValid())
+    return;
+
+  WebKit::whiteListAccessFromOrigin(url,
+                                    WebString::fromUTF8(args[1].ToString()),
+                                    WebString::fromUTF8(args[2].ToString()),
+                                    args[3].ToBoolean());
 }

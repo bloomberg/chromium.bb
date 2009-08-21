@@ -1948,6 +1948,7 @@ BUG10475 WIN LINUX : LayoutTests/fast/forms/range-thumb-height-percentage.html =
 SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PASS
 
 BUG10476 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = FAIL PASS
+BUG10476 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post-sync.html = FAIL PASS
 
 // Merge WebKit 42133:42199 regressions
 BUG10477 WIN LINUX : LayoutTests/fast/repaint/reflection-repaint-test.html = FAIL
@@ -2893,12 +2894,3 @@ BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
 // New test. WebKit change http://trac.webkit.org/changeset/47431
 // Does not work in Chromium yet (not supporting wav format)
 BUG19904 WIN : LayoutTests/media/progress-event-at-least-one.html = FAIL TIMEOUT
-
-// WebKit merge 47546:47575 new tests, WebKit change http://trac.webkit.org/changeset/47548
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-all.html = TIMEOUT
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html = TIMEOUT
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-https.html = TIMEOUT
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses-with-subdomains.html = TIMEOUT
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html = TIMEOUT
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html = TIMEOUT
-
