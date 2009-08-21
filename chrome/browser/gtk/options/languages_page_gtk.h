@@ -4,11 +4,17 @@
 
 // The languages page of the Languages & languages options dialog, which
 // contains accept-languages and spellchecker language options.
+//
+// Note that we intentionally do not implement the application locale setting,
+// as it does not make sense on Linux, where locale is set through the LANG and
+// LC_* environment variables.
 
 #ifndef CHROME_BROWSER_GTK_OPTIONS_LANGUAGES_PAGE_GTK_H_
 #define CHROME_BROWSER_GTK_OPTIONS_LANGUAGES_PAGE_GTK_H_
 
 #include <gtk/gtk.h>
+
+#include <string>
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/options_page_base.h"
@@ -16,6 +22,7 @@
 #include "chrome/common/pref_member.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
+class LanguageComboboxModel;
 class LanguageOrderTableModel;
 
 class LanguagesPageGtk
@@ -66,6 +73,15 @@ class LanguagesPageGtk
   static void OnMoveDownButtonClicked(GtkButton* button,
                                       LanguagesPageGtk* languages_page);
 
+  // Callbacks for spellchecker option widgets.
+  static void OnEnableSpellCheckingToggled(GtkToggleButton* toggle_button,
+                                           LanguagesPageGtk* languages_page);
+  static void OnEnableAutoSpellCheckingToggled(
+      GtkToggleButton* toggle_button, LanguagesPageGtk* languages_page);
+  static void OnDictionaryLanguageChangedThunk(
+      GtkComboBox* combo_box, LanguagesPageGtk* languages_page);
+  void OnDictionaryLanguageChanged();
+
   // The accept languages widgets.
   GtkListStore* language_order_store_;
   GtkWidget* language_order_tree_;
@@ -90,8 +106,14 @@ class LanguagesPageGtk
   // Accept languages pref.
   StringPrefMember accept_languages_;
 
-  // The spellchecker "dictionary language" pref.
+  // The spellchecker "dictionary language" pref and model.
   StringPrefMember dictionary_language_;
+  scoped_ptr<LanguageComboboxModel> dictionary_language_model_;
+
+  // If a language was auto-added to accept_languages_ due to being selected as
+  // the dictionary language, it is saved in this string, so that it can be
+  // removed if the dictionary language is changed again.
+  std::string spellcheck_language_added_;
 
   // SpellChecker enable pref.
   BooleanPrefMember enable_spellcheck_;
@@ -108,6 +130,8 @@ class LanguagesPageGtk
   FRIEND_TEST(LanguagesPageGtkTest, RemoveMultipleAcceptLang);
   FRIEND_TEST(LanguagesPageGtkTest, MoveAcceptLang);
   FRIEND_TEST(LanguagesPageGtkTest, AddAcceptLang);
+  FRIEND_TEST(LanguagesPageGtkTest, EnableSpellChecking);
+  FRIEND_TEST(LanguagesPageGtkTest, DictionaryLanguage);
 
   DISALLOW_COPY_AND_ASSIGN(LanguagesPageGtk);
 };

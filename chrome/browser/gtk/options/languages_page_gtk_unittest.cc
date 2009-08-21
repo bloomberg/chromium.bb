@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/string_util.h"
+#include "chrome/browser/language_combobox_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,13 +39,23 @@ class LanguagesPageGtkTest : public testing::Test {
     return JoinString(parts, ',');
   }
 
+  std::string GetDisplayedSpellCheckerLang(const LanguagesPageGtk& page) {
+    gchar* text = gtk_combo_box_get_active_text(
+        GTK_COMBO_BOX(page.dictionary_language_combobox_));
+    std::string result = text;
+    g_free(text);
+    int space_pos = result.find(' ');
+    if (space_pos)
+      result = result.substr(0, space_pos);
+    return result;
+  }
+
  protected:
   MessageLoopForUI message_loop_;
   scoped_ptr<TestingProfile> profile_;
 };
 
 TEST_F(LanguagesPageGtkTest, RemoveAcceptLang) {
-  //profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, L"en,ja,es,fr,it");
   profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, L"en,ja,es");
   LanguagesPageGtk page(profile_.get());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
@@ -223,4 +234,69 @@ TEST_F(LanguagesPageGtkTest, AddAcceptLang) {
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.remove_button_));
   EXPECT_EQ(0, gtk_tree_selection_count_selected_rows(
       page.language_order_selection_));
+}
+
+TEST_F(LanguagesPageGtkTest, EnableSpellChecking) {
+  profile_->GetPrefs()->SetBoolean(prefs::kEnableSpellCheck, false);
+  LanguagesPageGtk page(profile_.get());
+  EXPECT_EQ(FALSE, gtk_toggle_button_get_active(
+      GTK_TOGGLE_BUTTON(page.enable_spellchecking_checkbox_)));
+
+  profile_->GetPrefs()->SetBoolean(prefs::kEnableSpellCheck, true);
+  EXPECT_EQ(TRUE, gtk_toggle_button_get_active(
+      GTK_TOGGLE_BUTTON(page.enable_spellchecking_checkbox_)));
+
+  gtk_button_clicked(GTK_BUTTON(page.enable_spellchecking_checkbox_));
+  EXPECT_EQ(FALSE, gtk_toggle_button_get_active(
+      GTK_TOGGLE_BUTTON(page.enable_spellchecking_checkbox_)));
+  EXPECT_EQ(false, profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+
+  gtk_button_clicked(GTK_BUTTON(page.enable_spellchecking_checkbox_));
+  EXPECT_EQ(TRUE, gtk_toggle_button_get_active(
+      GTK_TOGGLE_BUTTON(page.enable_spellchecking_checkbox_)));
+  EXPECT_EQ(true, profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
+}
+
+// TODO(mattm): add EnableAutoSpellChecking test
+
+TEST_F(LanguagesPageGtkTest, DictionaryLanguage) {
+  profile_->GetPrefs()->SetString(prefs::kAcceptLanguages, L"it");
+  profile_->GetPrefs()->SetString(prefs::kSpellCheckDictionary, L"es");
+  LanguagesPageGtk page(profile_.get());
+  EXPECT_STREQ("Italian", GetDisplayedLangs(page).c_str());
+  EXPECT_STREQ("it", WideToASCII(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("Spanish", GetDisplayedSpellCheckerLang(page).c_str());
+  int spanish_index = gtk_combo_box_get_active(
+        GTK_COMBO_BOX(page.dictionary_language_combobox_));
+
+  profile_->GetPrefs()->SetString(prefs::kSpellCheckDictionary, L"fr");
+  EXPECT_STREQ("Italian", GetDisplayedLangs(page).c_str());
+  EXPECT_STREQ("it", WideToASCII(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("French", GetDisplayedSpellCheckerLang(page).c_str());
+  int french_index = gtk_combo_box_get_active(
+        GTK_COMBO_BOX(page.dictionary_language_combobox_));
+
+  gtk_combo_box_set_active(
+        GTK_COMBO_BOX(page.dictionary_language_combobox_), spanish_index);
+  EXPECT_STREQ("Italian,Spanish", GetDisplayedLangs(page).c_str());
+  EXPECT_STREQ("it,es", WideToASCII(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("Spanish", GetDisplayedSpellCheckerLang(page).c_str());
+
+  gtk_combo_box_set_active(
+        GTK_COMBO_BOX(page.dictionary_language_combobox_), french_index);
+  EXPECT_STREQ("Italian,French", GetDisplayedLangs(page).c_str());
+  EXPECT_STREQ("it,fr", WideToASCII(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("French", GetDisplayedSpellCheckerLang(page).c_str());
+
+  gtk_combo_box_set_active(
+        GTK_COMBO_BOX(page.dictionary_language_combobox_),
+        page.dictionary_language_model_->GetIndexFromLocale("it"));
+  EXPECT_STREQ("Italian", GetDisplayedLangs(page).c_str());
+  EXPECT_STREQ("it", WideToASCII(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
+  EXPECT_STREQ("Italian", GetDisplayedSpellCheckerLang(page).c_str());
 }

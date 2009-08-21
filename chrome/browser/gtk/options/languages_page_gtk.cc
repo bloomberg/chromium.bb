@@ -8,10 +8,13 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/language_order_table_model.h"
+#include "chrome/browser/spellchecker.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -115,7 +118,9 @@ void AddLanguageDialog::OnWindowDestroy(GtkWidget* widget,
 // LanguagesPageGtk
 
 LanguagesPageGtk::LanguagesPageGtk(Profile* profile)
-    : OptionsPageBase(profile), initializing_(true) {
+    : OptionsPageBase(profile),
+      enable_autospellcorrect_checkbox_(NULL),
+      initializing_(true) {
   Init();
 }
 
@@ -216,11 +221,45 @@ void LanguagesPageGtk::Init() {
   gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), move_down_button_,
                      FALSE, FALSE, 0);
 
+  // Spell checker controls.
   GtkWidget* spellchecker_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(page_), spellchecker_vbox,
                      FALSE, FALSE, 0);
 
-  // TODO(mattm): Spell checker controls.
+  enable_spellchecking_checkbox_ = gtk_check_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_ENABLE_SPELLCHECK).c_str());
+  g_signal_connect(G_OBJECT(enable_spellchecking_checkbox_), "toggled",
+                   G_CALLBACK(OnEnableSpellCheckingToggled), this);
+  gtk_box_pack_start(GTK_BOX(spellchecker_vbox), enable_spellchecking_checkbox_,
+                     FALSE, FALSE, 0);
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kAutoSpellCorrect)) {
+    enable_autospellcorrect_checkbox_ = gtk_check_button_new_with_label(
+        l10n_util::GetStringUTF8(
+            IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION).c_str());
+    g_signal_connect(G_OBJECT(enable_autospellcorrect_checkbox_), "toggled",
+                     G_CALLBACK(OnEnableAutoSpellCheckingToggled), this);
+    gtk_box_pack_start(GTK_BOX(spellchecker_vbox),
+                       enable_autospellcorrect_checkbox_, FALSE, FALSE, 0);
+  }
+
+  std::vector<std::string> spell_check_languages;
+  SpellChecker::SpellCheckLanguages(&spell_check_languages);
+  dictionary_language_model_.reset(new LanguageComboboxModel(profile(),
+      spell_check_languages));
+  dictionary_language_combobox_ = NewComboboxFromModel(
+      dictionary_language_model_.get());
+  g_signal_connect(G_OBJECT(dictionary_language_combobox_), "changed",
+                   G_CALLBACK(OnDictionaryLanguageChangedThunk), this);
+  GtkWidget* dictionary_language_control =
+      gtk_util::CreateLabeledControlsGroup(NULL,
+          l10n_util::GetStringUTF8(
+              IDS_OPTIONS_CHROME_DICTIONARY_LANGUAGE).c_str(),
+          dictionary_language_combobox_,
+          NULL);
+  gtk_box_pack_start(GTK_BOX(spellchecker_vbox), dictionary_language_control,
+                     FALSE, FALSE, 0);
 
   // Initialize.
   accept_languages_.Init(prefs::kAcceptLanguages,
@@ -281,7 +320,35 @@ void LanguagesPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
     language_order_table_model_->SetAcceptLanguagesString(
         WideToASCII(accept_languages_.GetValue()));
   }
-  // TODO(mattm): Spell checker prefs.
+  if (!pref_name || *pref_name == prefs::kSpellCheckDictionary) {
+    int index = dictionary_language_model_->GetSelectedLanguageIndex(
+        prefs::kSpellCheckDictionary);
+
+    // If not found, fall back from "language-region" to "language".
+    if (index < 0) {
+      const std::string& lang_region = WideToASCII(
+          dictionary_language_.GetValue());
+      dictionary_language_.SetValue(ASCIIToWide(
+          SpellChecker::GetLanguageFromLanguageRegion(lang_region)));
+      index = dictionary_language_model_->GetSelectedLanguageIndex(
+          prefs::kSpellCheckDictionary);
+    }
+
+    gtk_combo_box_set_active(GTK_COMBO_BOX(dictionary_language_combobox_),
+                             index);
+  }
+  if (!pref_name || *pref_name == prefs::kEnableSpellCheck) {
+    gtk_toggle_button_set_active(
+        GTK_TOGGLE_BUTTON(enable_spellchecking_checkbox_),
+        enable_spellcheck_.GetValue());
+  }
+  if (!pref_name || *pref_name == prefs::kEnableAutoSpellCorrect) {
+    if (enable_autospellcorrect_checkbox_) {
+      gtk_toggle_button_set_active(
+          GTK_TOGGLE_BUTTON(enable_autospellcorrect_checkbox_),
+          enable_autospellcorrect_.GetValue());
+    }
+  }
   initializing_ = false;
 }
 
@@ -339,4 +406,69 @@ void LanguagesPageGtk::OnMoveDownButtonClicked(
   languages_page->language_order_table_model_->MoveDown(item_selected);
   gtk_tree::SelectAndFocusRowNum(
       item_selected + 1, GTK_TREE_VIEW(languages_page->language_order_tree_));
+}
+
+// static
+void LanguagesPageGtk::OnEnableSpellCheckingToggled(
+    GtkToggleButton* toggle_button,
+    LanguagesPageGtk* languages_page) {
+  if (languages_page->initializing_)
+    return;
+  languages_page->enable_spellcheck_.SetValue(
+      gtk_toggle_button_get_active(toggle_button));
+}
+
+// static
+void LanguagesPageGtk::OnEnableAutoSpellCheckingToggled(
+    GtkToggleButton* toggle_button,
+    LanguagesPageGtk* languages_page) {
+  if (languages_page->initializing_)
+    return;
+  languages_page->enable_autospellcorrect_.SetValue(
+      gtk_toggle_button_get_active(toggle_button));
+}
+
+// static
+void LanguagesPageGtk::OnDictionaryLanguageChangedThunk(
+    GtkComboBox* combo_box,
+    LanguagesPageGtk* languages_page) {
+  if (languages_page->initializing_)
+    return;
+  languages_page->OnDictionaryLanguageChanged();
+}
+
+void LanguagesPageGtk::OnDictionaryLanguageChanged() {
+  int new_index = gtk_combo_box_get_active(
+      GTK_COMBO_BOX(dictionary_language_combobox_));
+
+  if (new_index < 0 ||
+      new_index >= dictionary_language_model_->GetItemCount()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Remove the previously added spell check language to the accept list.
+  if (!spellcheck_language_added_.empty()) {
+    int old_index = language_order_table_model_->GetIndex(
+        spellcheck_language_added_);
+    if (old_index > -1)
+      language_order_table_model_->Remove(old_index);
+  }
+
+  // Add this new spell check language only if it is not already in the
+  // accept language list.
+  std::string language =
+      dictionary_language_model_->GetLocaleFromIndex(new_index);
+  int index = language_order_table_model_->GetIndex(language);
+  if (index == -1) {
+    // Add the new language.
+    OnAddLanguage(language);
+    spellcheck_language_added_ = language;
+  } else {
+    spellcheck_language_added_ = "";
+  }
+
+  UserMetricsRecordAction(L"Options_DictionaryLanguage",
+                          profile()->GetPrefs());
+  dictionary_language_.SetValue(ASCIIToWide(language));
 }

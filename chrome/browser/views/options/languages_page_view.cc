@@ -428,15 +428,8 @@ void LanguagesPageView::NotifyPrefChanged(const std::wstring* pref_name) {
     // dictionary language in the user profile now correctly stores "fr"
     // instead of "fr-FR".
     if (index < 0) {
-      PrefService* local_state;
-      if (!profile())
-        local_state = g_browser_process->local_state();
-      else
-        local_state = profile()->GetPrefs();
-
-      DCHECK(local_state);
       const std::string& lang_region = WideToASCII(
-          local_state->GetString(prefs::kSpellCheckDictionary));
+          dictionary_language_.GetValue());
       dictionary_language_.SetValue(ASCIIToWide(
           SpellChecker::GetLanguageFromLanguageRegion(lang_region)));
       index = dictionary_language_model_->GetSelectedLanguageIndex(
