@@ -83,6 +83,10 @@
 // This command-line switch enables the compact navigation bar instead of the
 // regular toolbar.
 static const wchar_t kUseCompactNavBar[] = L"compact-nav";
+
+// This command-line switch enables the main menu button in the upper left
+// corner. By default it isn't shown.
+static const wchar_t kShowMainMenuButton[] = L"main-menu-button";
 #endif
 
 namespace {
@@ -1422,6 +1426,8 @@ void BrowserWindowGtk::InitWidgets() {
   bool has_compact_nav_bar =
       CommandLine::ForCurrentProcess()->HasSwitch(kUseCompactNavBar);
   if (browser_->type() == Browser::TYPE_NORMAL) {
+    bool show_main_menu_button =
+        CommandLine::ForCurrentProcess()->HasSwitch(kShowMainMenuButton);
     // Make a box that we'll later insert the compact navigation bar into. The
     // tabstrip must go into an hbox with our box so that they can get arranged
     // horizontally.
@@ -1431,7 +1437,7 @@ void BrowserWindowGtk::InitWidgets() {
       navbar_hbox = gtk_hbox_new(FALSE, 0);
       gtk_widget_show(navbar_hbox);
       gtk_box_pack_start(GTK_BOX(titlebar_hbox), navbar_hbox, FALSE, FALSE, 0);
-    } else {
+    } else if (show_main_menu_button) {
       CustomDrawButton* main_menu_button =
           new CustomDrawButton(IDR_MAIN_MENU_BUTTON, IDR_MAIN_MENU_BUTTON,
                                IDR_MAIN_MENU_BUTTON, 0);
