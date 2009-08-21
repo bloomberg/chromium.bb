@@ -361,6 +361,8 @@
 
         <include name="IDR_STATUSBAR_MENU" file="statusbar_menu.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY" file="statusbar_battery.png" type="BINDATA" />
+        <include name="IDR_MAIN_MENU_BUTTON" file="google_chrome/button_menu.png" type="BINDATA" />
+        <include name="IDR_MAIN_MENU_BUTTON_DROP_DOWN" file="google_chrome/button_menu_drop_down.png" type="BINDATA" />
       </if>
 
       <if expr="not pp_ifdef('chromeos')">

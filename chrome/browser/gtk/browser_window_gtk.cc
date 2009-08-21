@@ -72,10 +72,12 @@
 #include "skia/ext/skia_utils.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/views/compact_navigation_bar.h"
 #include "chrome/browser/views/frame/status_area_view.h"
 #include "chrome/browser/views/panel_controller.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
+#include "views/controls/button/image_button.h"
 #include "views/widget/widget_gtk.h"
 
 // This command-line switch enables the compact navigation bar instead of the
@@ -286,6 +288,57 @@ const struct AcceleratorMapping {
   { GDK_comma, IDC_CONTROL_PANEL, GdkModifierType(GDK_CONTROL_MASK) },
 #endif
 };
+
+#if defined(OS_CHROMEOS)
+
+// Popup shown when main menu button is clicked.
+static views::WidgetGtk* menu_popup = NULL;
+
+namespace {
+
+// Installed as a listener on the button in the main menu popup. When clicked
+// the popup closes.
+class MenuPopupCloser : public views::ButtonListener {
+ public:
+  MenuPopupCloser() {}
+
+  virtual void ButtonPressed(views::Button* sender) {
+    if (menu_popup) {
+      menu_popup->Close();
+      // Close takes care of deleting the popup.
+      menu_popup = NULL;
+    }
+
+    // The only reference to is was from the Popup, which has been closed (and
+    // will be deleted) and won't delete us. We need to delete ourselves so
+    // that we don't leak.
+    delete this;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MenuPopupCloser);
+};
+
+}  // namespace
+
+// Callback from GTK when the user clicks the main menu button.
+static void OnMainMenuButtonClicked(GtkWidget* widget,
+                                    BrowserWindowGtk* browser) {
+  if (menu_popup)
+    return;
+
+  SkBitmap* drop_down_image = ResourceBundle::GetSharedInstance().
+      GetBitmapNamed(IDR_MAIN_MENU_BUTTON_DROP_DOWN);
+  views::ImageButton* button = new views::ImageButton(new MenuPopupCloser());
+  button->SetImage(views::ImageButton::BS_NORMAL, drop_down_image);
+  menu_popup = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
+  menu_popup->MakeTransparent();
+  menu_popup->Init(NULL, gfx::Rect(0, 0, drop_down_image->width(),
+                                   drop_down_image->height()));
+  menu_popup->SetContentsView(button);
+  menu_popup->Show();
+}
+#endif
 
 int GetCommandId(guint accel_key, GdkModifierType modifier) {
   // Bug 9806: If capslock is on, we will get a capital letter as accel_key.
@@ -1378,6 +1431,16 @@ void BrowserWindowGtk::InitWidgets() {
       navbar_hbox = gtk_hbox_new(FALSE, 0);
       gtk_widget_show(navbar_hbox);
       gtk_box_pack_start(GTK_BOX(titlebar_hbox), navbar_hbox, FALSE, FALSE, 0);
+    } else {
+      CustomDrawButton* main_menu_button =
+          new CustomDrawButton(IDR_MAIN_MENU_BUTTON, IDR_MAIN_MENU_BUTTON,
+                               IDR_MAIN_MENU_BUTTON, 0);
+      gtk_widget_show(main_menu_button->widget());
+      g_signal_connect(G_OBJECT(main_menu_button->widget()), "clicked",
+                       G_CALLBACK(OnMainMenuButtonClicked), this);
+      GTK_WIDGET_UNSET_FLAGS(main_menu_button->widget(), GTK_CAN_FOCUS);
+      gtk_box_pack_start(GTK_BOX(titlebar_hbox), main_menu_button->widget(),
+                         FALSE, FALSE, 0);
     }
     status_hbox = gtk_hbox_new(FALSE, 0);
     gtk_widget_show(status_hbox);
