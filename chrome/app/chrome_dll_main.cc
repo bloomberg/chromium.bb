@@ -334,22 +334,6 @@ int ChromeMain(int argc, const char** argv) {
   CommandLine::Init(argc, argv);
 #endif
 
-#if defined(OS_MACOSX)
-  // TODO(mark): Right now, InitCrashReporter() needs to be called after
-  // CommandLine::Init().  Ideally, Breakpad initialization could occur
-  // sooner, preferably even before the framework dylib is even loaded, to
-  // catch potential early early crashes.
-  InitCrashReporter();
-
-  // If Breakpad is not present, turn off OS crash dumps to avoid having
-  // to wait eons for Apple's Crash Reporter to generate dumps for builds
-  // where debugging symbols are present.
-  if (IsCrashReporterDisabled())
-    DebugUtil::DisableOSCrashDumps();
-  else
-    InitCrashProcessInfo();
-#endif  // OS_MACOSX
-
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
 
 #if defined(OS_WIN)
@@ -423,6 +407,22 @@ int ChromeMain(int argc, const char** argv) {
   // Initialize the Chrome path provider.
   app::RegisterPathProvider();
   chrome::RegisterPathProvider();
+
+#if defined(OS_MACOSX)
+  // TODO(mark): Right now, InitCrashReporter() needs to be called after
+  // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally, Breakpad
+  // initialization could occur sooner, preferably even before the framework
+  // dylib is even loaded, to catch potential early crashes.
+  InitCrashReporter();
+
+  // If Breakpad is not present, turn off OS crash dumps to avoid having
+  // to wait eons for Apple's Crash Reporter to generate dumps for builds
+  // where debugging symbols are present.
+  if (IsCrashReporterDisabled())
+    DebugUtil::DisableOSCrashDumps();
+  else
+    InitCrashProcessInfo();
+#endif  // OS_MACOSX
 
   // Initialize the Stats Counters table.  With this initialized,
   // the StatsViewer can be utilized to read counters outside of
