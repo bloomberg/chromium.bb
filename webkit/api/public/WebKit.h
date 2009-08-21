@@ -32,6 +32,7 @@
 #define WebKit_h
 
 #include "WebCommon.h"
+#include "WebURL.h"
 
 namespace v8 {
     class Extension;
@@ -100,6 +101,13 @@ namespace WebKit {
     // Enables HTML5 database support.
     WEBKIT_API void enableDatabases();
     WEBKIT_API bool databasesEnabled();
+
+    // Support for whitelisting access to origins beyond the same-origin policy.
+    WEBKIT_API void whiteListAccessFromOrigin(
+        const WebURL& sourceOrigin, const WebString& destinationProtocol,
+        const WebString& destinationHost, bool allowDestinationSubdomains);
+    WEBKIT_API void resetOriginAccessWhiteLists();
+
 } // namespace WebKit
 
 #endif

@@ -191,6 +191,9 @@ class LayoutTestController : public CppBoundClass {
   // that case (as the Mac does).
   void fallbackMethod(const CppArgumentList& args, CppVariant* result);
 
+  // Allows layout tests to call SecurityOrigin::whiteListAccessFromOrigin().
+  void whiteListAccessFromOrigin(const CppArgumentList& args, CppVariant* result);
+
  public:
   // The following methods are not exposed to JavaScript.
   void SetWorkQueueFrozen(bool frozen) { work_queue_.set_frozen(frozen); }

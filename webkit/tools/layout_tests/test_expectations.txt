@@ -2903,14 +2903,6 @@ BUG19888 WIN :  LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
 // Temporary supression while we investigate.
 BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
 
-// WebKit merge 47546:47575 new tests, WebKit change http://trac.webkit.org/changeset/47548
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-all.html = TIMEOUT
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html = TIMEOUT
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-https.html = TIMEOUT
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses-with-subdomains.html = TIMEOUT
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html = TIMEOUT
-BUG19835 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html = TIMEOUT
-
 // WebKit merge 47575:47591 new test, needs baselines. WebKit change http://trac.webkit.org/changeset/47590
 BUG_DIMICH LINUX WIN : LayoutTests/fast/repaint/inline-block-resize.html = FAIL
 
