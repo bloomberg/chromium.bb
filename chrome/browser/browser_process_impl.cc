@@ -123,8 +123,10 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_db_thread_(false),
       created_profile_manager_(false),
       created_local_state_(false),
+#if defined(OS_WIN)
       initialized_broker_services_(false),
       broker_services_(NULL),
+#endif  // defined(OS_WIN)
       created_icon_manager_(false),
       created_debugger_wrapper_(false),
       created_devtools_manager_(false),
@@ -392,6 +394,7 @@ void BrowserProcessImpl::CreateLocalState() {
   local_state_.reset(new PrefService(local_state_path, file_thread()));
 }
 
+#if defined(OS_WIN)
 void BrowserProcessImpl::InitBrokerServices(
     sandbox::BrokerServices* broker_services) {
   DCHECK(!initialized_broker_services_ && broker_services_ == NULL);
@@ -399,6 +402,7 @@ void BrowserProcessImpl::InitBrokerServices(
   initialized_broker_services_ = true;
   broker_services_ = broker_services;
 }
+#endif  // defined(OS_WIN)
 
 void BrowserProcessImpl::CreateIconManager() {
   DCHECK(!created_icon_manager_ && icon_manager_.get() == NULL);

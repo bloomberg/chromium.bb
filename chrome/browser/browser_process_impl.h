@@ -32,7 +32,7 @@ class NotificationService;
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
  public:
-  BrowserProcessImpl(const CommandLine& command_line);
+  explicit BrowserProcessImpl(const CommandLine& command_line);
   virtual ~BrowserProcessImpl();
 
   virtual void EndSession();
@@ -96,6 +96,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return local_state_.get();
   }
 
+#if defined(OS_WIN)
   virtual sandbox::BrokerServices* broker_services() {
     // TODO(abarth): DCHECK(CalledOnValidThread());
     //               See <http://b/1287166>.
@@ -103,6 +104,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
       return NULL;
     return broker_services_;
   }
+#endif  // defined(OS_WIN)
 
   virtual DebuggerWrapper* debugger_wrapper() {
     DCHECK(CalledOnValidThread());
@@ -216,7 +218,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateDevToolsManager();
   void CreateGoogleURLTracker();
 
+#if defined(OS_WIN)
   void InitBrokerServices(sandbox::BrokerServices* broker_services);
+#endif  // defined(OS_WIN)
 
   bool created_resource_dispatcher_host_;
   scoped_ptr<ResourceDispatcherHost> resource_dispatcher_host_;
@@ -243,8 +247,10 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   bool created_local_state_;
   scoped_ptr<PrefService> local_state_;
 
+#if defined(OS_WIN)
   bool initialized_broker_services_;
   sandbox::BrokerServices* broker_services_;
+#endif  // defined(OS_WIN)
 
   bool created_icon_manager_;
   scoped_ptr<IconManager> icon_manager_;

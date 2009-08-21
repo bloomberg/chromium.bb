@@ -56,7 +56,6 @@ void InstallJankometer(const CommandLine&);
 //---------------------------------------------------------------------------
 // These stubs are for BrowserProcessImpl
 
-class CancelableTask;
 class ViewMsg_Print_Params;
 
 // Printing is all (obviously) not implemented.
@@ -124,30 +123,6 @@ class PrintJobManager {
 };
 
 }  // namespace printing
-
-namespace sandbox {
-
-enum ResultCode {
-  SBOX_ALL_OK = 0,
-  SBOX_ERROR_GENERIC = 1,
-  SBOX_ERROR_BAD_PARAMS = 2,
-  SBOX_ERROR_UNSUPPORTED = 3,
-  SBOX_ERROR_NO_SPACE = 4,
-  SBOX_ERROR_INVALID_IPC = 5,
-  SBOX_ERROR_FAILED_IPC = 6,
-  SBOX_ERROR_NO_HANDLE = 7,
-  SBOX_ERROR_UNEXPECTED_CALL = 8,
-  SBOX_ERROR_WAIT_ALREADY_CALLED = 9,
-  SBOX_ERROR_CHANNEL_ERROR = 10,
-  SBOX_ERROR_LAST
-};
-
-class BrokerServices {
- public:
-  void Init() { NOTIMPLEMENTED(); }
-};
-
-}  // namespace sandbox
 
 struct ViewHostMsg_DidPrintPage_Params;
 

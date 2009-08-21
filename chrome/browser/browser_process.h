@@ -34,9 +34,13 @@ namespace base {
 class Thread;
 class WaitableEvent;
 }
+
+#if defined(OS_WIN)
 namespace sandbox {
 class BrokerServices;
 }
+#endif  // defined(OS_WIN)
+
 namespace printing {
 class PrintJobManager;
 }
@@ -103,13 +107,15 @@ class BrowserProcess {
   virtual base::Thread* background_x11_thread() = 0;
 #endif
 
+#if defined(OS_WIN)
   virtual sandbox::BrokerServices* broker_services() = 0;
+  virtual void InitBrokerServices(sandbox::BrokerServices*) = 0;
+#endif  // defined(OS_WIN)
 
   virtual IconManager* icon_manager() = 0;
 
   virtual ThumbnailGenerator* GetThumbnailGenerator() = 0;
 
-  virtual void InitBrokerServices(sandbox::BrokerServices*) = 0;
   virtual AutomationProviderList* InitAutomationProviderList() = 0;
 
   virtual void InitDebuggerWrapper(int port) = 0;
