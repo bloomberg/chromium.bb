@@ -1442,7 +1442,6 @@
         'browser/net/sdch_dictionary_fetcher.cc',
         'browser/net/sdch_dictionary_fetcher.h',
         'browser/net/ssl_config_service_manager.h',
-        'browser/net/ssl_config_service_manager_win.cc',
         'browser/net/url_fetcher.cc',
         'browser/net/url_fetcher.h',
         'browser/net/url_fetcher_protect.cc',
@@ -2153,7 +2152,7 @@
             'browser/views/extensions/extension_view.h',
           ],
           'sources': [
-            'browser/net/ssl_config_service_manager_defaults.cc',
+            'browser/net/ssl_config_service_manager_system.cc',
             # Build the necessary GTM sources
             '../third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.m',
             '../third_party/GTM/AppKit/GTMNSColor+Luminance.m',
@@ -2239,6 +2238,7 @@
             '../views/views.gyp:views',
           ],
           'sources': [
+            'browser/net/ssl_config_service_manager_system.cc',
             # Using built-in rule in vstudio for midl.
             'browser/history/history_indexer.idl',
           ],

@@ -14,11 +14,7 @@
 #include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#if defined(OS_WIN)
-#include "net/base/ssl_config_service_win.h"
-#else
-#include "net/base/ssl_config_service_defaults.h"
-#endif
+#include "net/base/ssl_config_service.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_request_info.h"
@@ -138,14 +134,10 @@ int main(int argc, char**argv) {
   scoped_refptr<net::HostResolver> host_resolver(
       net::CreateSystemHostResolver());
 
-  scoped_refptr<net::ProxyService> proxy_service(net::ProxyService::CreateNull());
-#if defined(OS_WIN)
+  scoped_refptr<net::ProxyService> proxy_service(
+      net::ProxyService::CreateNull());
   scoped_refptr<net::SSLConfigService> ssl_config_service(
-      new net::SSLConfigServiceWin);
-#else
-  scoped_refptr<net::SSLConfigService> ssl_config_service(
-      new net::SSLConfigServiceDefaults);
-#endif
+      net::SSLConfigService::CreateSystemSSLConfigService());
   net::HttpTransactionFactory* factory = NULL;
   if (use_cache) {
     factory = new net::HttpCache(host_resolver, proxy_service,

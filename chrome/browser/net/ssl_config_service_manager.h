@@ -16,12 +16,12 @@ class SSLConfigServiceManager {
  public:
   // Create an instance of the default SSLConfigServiceManager for the current
   // platform. The lifetime of the profile must be longer than that of the
-  // factory.
+  // manager.
   static SSLConfigServiceManager* CreateDefaultManager(Profile* profile);
 
   virtual ~SSLConfigServiceManager() {}
 
-  // Get an SSLConfigService instance.  It may be a new instance or the factory
+  // Get an SSLConfigService instance.  It may be a new instance or the manager
   // may return the same instance multiple times.
   // The caller should hold a reference as long as it needs the instance (eg,
   // using scoped_refptr.)

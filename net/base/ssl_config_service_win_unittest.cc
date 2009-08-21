@@ -13,12 +13,12 @@ namespace {
 class SSLConfigServiceWinTest : public testing::Test {
 };
 
-} // namespace
+}  // namespace
 
 TEST(SSLConfigServiceWinTest, GetNowTest) {
   // Verify that the constructor sets the correct default values.
   net::SSLConfig config;
-  EXPECT_EQ(false, config.rev_checking_enabled);
+  EXPECT_EQ(true, config.rev_checking_enabled);
   EXPECT_EQ(false, config.ssl2_enabled);
   EXPECT_EQ(true, config.ssl3_enabled);
   EXPECT_EQ(true, config.tls1_enabled);

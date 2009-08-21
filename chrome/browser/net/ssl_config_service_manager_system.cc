@@ -3,28 +3,32 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/net/ssl_config_service_manager.h"
-#include "net/base/ssl_config_service_defaults.h"
+#include "net/base/ssl_config_service.h"
+
+class Profile;
 
 ////////////////////////////////////////////////////////////////////////////////
-//  SSLConfigServiceManagerDefaults
+//  SSLConfigServiceManagerSystem
 
-// The factory for creating an SSLConfigServiceDefaults instance.
-class SSLConfigServiceManagerDefaults
+// The manager for holding a system SSLConfigService instance.  System
+// SSLConfigService objects do not depend on the profile.
+class SSLConfigServiceManagerSystem
     : public SSLConfigServiceManager {
  public:
-  SSLConfigServiceManagerDefaults()
-      : ssl_config_service_(new net::SSLConfigServiceDefaults()) {
+  SSLConfigServiceManagerSystem()
+      : ssl_config_service_(
+          net::SSLConfigService::CreateSystemSSLConfigService()) {
   }
-  virtual ~SSLConfigServiceManagerDefaults() {}
+  virtual ~SSLConfigServiceManagerSystem() {}
 
   virtual net::SSLConfigService* Get() {
     return ssl_config_service_;
   }
 
  private:
-  scoped_refptr<net::SSLConfigServiceDefaults> ssl_config_service_;
+  scoped_refptr<net::SSLConfigService> ssl_config_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(SSLConfigServiceManagerDefaults);
+  DISALLOW_COPY_AND_ASSIGN(SSLConfigServiceManagerSystem);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,5 +37,5 @@ class SSLConfigServiceManagerDefaults
 // static
 SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
     Profile* profile) {
-  return new SSLConfigServiceManagerDefaults();
+  return new SSLConfigServiceManagerSystem();
 }

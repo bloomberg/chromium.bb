@@ -52,7 +52,7 @@ void SSLConfigServicePref::SetNewSSLConfig(
 ////////////////////////////////////////////////////////////////////////////////
 //  SSLConfigServiceManagerPref
 
-// The factory for creating and updating an SSLConfigServicePref instance.
+// The manager for holding and updating an SSLConfigServicePref instance.
 class SSLConfigServiceManagerPref
     : public SSLConfigServiceManager,
       public NotificationObserver {

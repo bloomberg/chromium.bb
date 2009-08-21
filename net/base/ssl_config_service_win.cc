@@ -42,7 +42,7 @@ enum {
 
 SSLConfigServiceWin::SSLConfigServiceWin() : ever_updated_(false) {
   // We defer retrieving the settings until the first call to GetSSLConfig, to
-  // avoid a blocking call on the UI thread.
+  // avoid an expensive call on the UI thread, which could affect startup time.
 }
 
 SSLConfigServiceWin::SSLConfigServiceWin(TimeTicks now) : ever_updated_(false) {
