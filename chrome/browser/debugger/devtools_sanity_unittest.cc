@@ -143,19 +143,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestMainResource) {
 }
 
 // Tests resources panel enabling.
-// http://crbug.com/16767
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
   RunTest("testEnableResourcesTab", kSimplePage);
 }
 
 // Tests resource headers.
-// http://crbug.com/16767
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceHeaders) {
   RunTest("testResourceHeaders", kDebuggerTestPage);
 }
 
 // Tests profiler panel.
-// http://crbug.com/16767
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
 }
@@ -178,14 +175,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
 }
 
 // Tests console eval.
-// DISABLED:  See http://crbug.com/18786
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleEval) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
   RunTest("testConsoleEval", kConsoleTestPage);
 }
 
 // Tests console log.
-// DISABLED:  See http://crbug.com/18786
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleLog) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleLog) {
   RunTest("testConsoleLog", kConsoleTestPage);
 }
 

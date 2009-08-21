@@ -610,6 +610,8 @@ WebInspector.ScriptsPanel.prototype.doEvalInCallFrame =
 })();
 
 
+(function() {
+var oldFormatObject = WebInspector.ConsoleView.prototype._formatobject;
 WebInspector.ConsoleView.prototype._formatobject = function(object, elem) {
   var section;
   if (object.handle && object.className) {
@@ -622,13 +624,12 @@ WebInspector.ConsoleView.prototype._formatobject = function(object, elem) {
         _expandedProperties : { className : '' }
       }
     };
+    elem.appendChild(section.element);
   } else {
-    section = new WebInspector.ObjectPropertiesSection(
-        new WebInspector.ObjectProxy(object.___devtools_id),
-        object.___devtools_class_name);
+    return oldFormatObject.apply(this, arguments);
   }
-  elem.appendChild(section.element);
 };
+})();
 
 
 /** Pending WebKit upstream by apavlov). Fixes iframe vs drag problem. */
