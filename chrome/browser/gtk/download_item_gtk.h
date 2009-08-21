@@ -83,7 +83,11 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   static void InitNineBoxes();
 
-  // Used for the download item's body and menu button.
+  // Draws everything in GTK rendering mode.
+  static gboolean OnHboxExpose(GtkWidget* widget, GdkEventExpose* e,
+                               DownloadItemGtk* download_item);
+
+  // Used for the download item's body and menu button in chrome theme mode.
   static gboolean OnExpose(GtkWidget* widget, GdkEventExpose* e,
                            DownloadItemGtk* download_item);
 
@@ -145,6 +149,10 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // The widget that creates a dropdown menu when pressed.
   GtkWidget* menu_button_;
+
+  // A gtk arrow pointing downward displayed in |menu_button_|. Only displayed
+  // in GTK mode.
+  GtkWidget* arrow_;
 
   // Whether the menu is currently showing for |menu_button_|. Affects how we
   // draw the button.

@@ -178,6 +178,7 @@ NineBox* DownloadItemGtk::dangerous_nine_box_ = NULL;
 DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
                                  BaseDownloadItemModel* download_model)
     : parent_shelf_(parent_shelf),
+      arrow_(NULL),
       menu_showing_(false),
       theme_provider_(GtkThemeProvider::GetFrom(
                           parent_shelf->browser()->profile())),
@@ -187,7 +188,6 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
       dangerous_prompt_(NULL),
       icon_(NULL),
       creation_time_(base::Time::Now()) {
-  InitNineBoxes();
   LoadIcon();
 
   body_.Own(gtk_button_new());
@@ -251,10 +251,11 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
                    G_CALLBACK(OnMenuButtonPressEvent), this);
   g_object_set_data(G_OBJECT(menu_button_), "left-align-popup",
                     reinterpret_cast<void*>(true));
-  gtk_widget_set_size_request(menu_button_, kMenuButtonWidth, 0);
 
   GtkWidget* shelf_hbox = parent_shelf->GetHBox();
   hbox_.Own(gtk_hbox_new(FALSE, 0));
+  g_signal_connect(hbox_.get(), "expose-event",
+                   G_CALLBACK(OnHboxExpose), this);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), body_.get(), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), menu_button_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(shelf_hbox), hbox_.get(), FALSE, FALSE, 0);
@@ -353,6 +354,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
+  theme_provider_->InitThemesFor(this);
 
   new_item_animation_->Show();
 }
@@ -452,6 +454,25 @@ void DownloadItemGtk::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   if (type == NotificationType::BROWSER_THEME_CHANGED) {
+    // Our GtkArrow is only visible in gtk mode. Otherwise, we let the custom
+    // rendering code do whatever it wants.
+    if (theme_provider_->UseGtkTheme()) {
+      if (!arrow_) {
+        arrow_ = gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+        gtk_container_add(GTK_CONTAINER(menu_button_), arrow_);
+      }
+
+      gtk_widget_set_size_request(menu_button_, -1, -1);
+      gtk_widget_show(arrow_);
+    } else {
+      InitNineBoxes();
+
+      gtk_widget_set_size_request(menu_button_, kMenuButtonWidth, 0);
+
+      if (arrow_)
+        gtk_widget_hide(arrow_);
+    }
+
     UpdateNameLabel();
     UpdateStatusLabel(status_label_, status_text_);
   }
@@ -602,26 +623,103 @@ void DownloadItemGtk::InitNineBoxes() {
       IDR_DOWNLOAD_BUTTON_RIGHT_BOTTOM_NO_DD);
 }
 
+gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e,
+                                       DownloadItemGtk* download_item) {
+  if (download_item->theme_provider_->UseGtkTheme()) {
+    int border_width = GTK_CONTAINER(widget)->border_width;
+    int x = widget->allocation.x + border_width;
+    int y = widget->allocation.y + border_width;
+    int width = widget->allocation.width - border_width * 2;
+    int height = widget->allocation.height - border_width * 2;
+
+    if (download_item->IsDangerous()) {
+      // Draw a simple frame around the area when we're displaying the warning.
+      gtk_paint_shadow(widget->style, widget->window,
+                       static_cast<GtkStateType>(widget->state),
+                       static_cast<GtkShadowType>(GTK_SHADOW_OUT),
+                       &e->area, widget, "frame",
+                       x, y, width, height);
+    } else {
+      // Manually draw the GTK button border around the download item. We draw
+      // the left part of the button (the file), a divider, and then the right
+      // part of the button (the menu). We can't draw a button on top of each
+      // other (*cough*Clearlooks*cough*) so instead, to draw the left part of
+      // the button, we instruct GTK to draw the entire button...with a
+      // doctored clip rectangle to the left part of the button sans
+      // separator. We then repeat this for the right button.
+      GtkStyle* style = download_item->body_.get()->style;
+
+      GtkAllocation left_allocation = download_item->body_.get()->allocation;
+      GdkRectangle left_clip = {
+        left_allocation.x, left_allocation.y,
+        left_allocation.width, left_allocation.height
+      };
+
+      GtkAllocation right_allocation = download_item->menu_button_->allocation;
+      GdkRectangle right_clip = {
+        right_allocation.x, right_allocation.y,
+        right_allocation.width, right_allocation.height
+      };
+
+      GtkShadowType body_shadow =
+          GTK_BUTTON(download_item->body_.get())->depressed ?
+          GTK_SHADOW_IN : GTK_SHADOW_OUT;
+      gtk_paint_box(style, widget->window,
+                    static_cast<GtkStateType>(
+                        GTK_WIDGET_STATE(download_item->body_.get())),
+                    body_shadow,
+                    &left_clip, widget, "button",
+                    x, y, width, height);
+
+      GtkShadowType menu_shadow =
+          GTK_BUTTON(download_item->menu_button_)->depressed ?
+          GTK_SHADOW_IN : GTK_SHADOW_OUT;
+      gtk_paint_box(style, widget->window,
+                    static_cast<GtkStateType>(
+                        GTK_WIDGET_STATE(download_item->menu_button_)),
+                    menu_shadow,
+                    &right_clip, widget, "button",
+                    x, y, width, height);
+
+      // Doing the math to reverse engineer where we should be drawing our line
+      // is hard and relies on copying GTK internals, so instead steal the
+      // allocation of the gtk arrow which is close enough (and will error on
+      // the conservative side).
+      GtkAllocation arrow_allocation = download_item->arrow_->allocation;
+      gtk_paint_vline(style, widget->window,
+                      static_cast<GtkStateType>(GTK_WIDGET_STATE(widget)),
+                      &e->area, widget, "button",
+                      arrow_allocation.y,
+                      arrow_allocation.y + arrow_allocation.height,
+                      left_allocation.x + left_allocation.width);
+    }
+  }
+  return FALSE;
+}
+
 // static
 gboolean DownloadItemGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
                                    DownloadItemGtk* download_item) {
-  NineBox* nine_box = NULL;
-  // If true, this widget is |body_|, otherwise it is |menu_button_|.
-  bool is_body = widget == download_item->body_.get();
-  if (GTK_WIDGET_STATE(widget) == GTK_STATE_PRELIGHT)
-    nine_box = is_body ? body_nine_box_prelight_ : menu_nine_box_prelight_;
-  else if (GTK_WIDGET_STATE(widget) == GTK_STATE_ACTIVE)
-    nine_box = is_body ? body_nine_box_active_ : menu_nine_box_active_;
-  else
-    nine_box = is_body ? body_nine_box_normal_ : menu_nine_box_normal_;
+  if (!download_item->theme_provider_->UseGtkTheme()) {
+    bool is_body = widget == download_item->body_.get();
 
-  // When the button is showing, we want to draw it as active. We have to do
-  // this explicitly because the button's state will be NORMAL while the menu
-  // has focus.
-  if (!is_body && download_item->menu_showing_)
-    nine_box = menu_nine_box_active_;
+    NineBox* nine_box = NULL;
+    // If true, this widget is |body_|, otherwise it is |menu_button_|.
+    if (GTK_WIDGET_STATE(widget) == GTK_STATE_PRELIGHT)
+      nine_box = is_body ? body_nine_box_prelight_ : menu_nine_box_prelight_;
+    else if (GTK_WIDGET_STATE(widget) == GTK_STATE_ACTIVE)
+      nine_box = is_body ? body_nine_box_active_ : menu_nine_box_active_;
+    else
+      nine_box = is_body ? body_nine_box_normal_ : menu_nine_box_normal_;
 
-  nine_box->RenderToWidget(widget);
+    // When the button is showing, we want to draw it as active. We have to do
+    // this explicitly because the button's state will be NORMAL while the menu
+    // has focus.
+    if (!is_body && download_item->menu_showing_)
+      nine_box = menu_nine_box_active_;
+
+    nine_box->RenderToWidget(widget);
+  }
 
   GtkWidget* child = gtk_bin_get_child(GTK_BIN(widget));
   if (child)
@@ -722,7 +820,10 @@ void DownloadItemGtk::OnShelfResized(GtkWidget *widget,
 // static
 gboolean DownloadItemGtk::OnDangerousPromptExpose(GtkWidget* widget,
     GdkEventExpose* event, DownloadItemGtk* item) {
-  dangerous_nine_box_->RenderToWidget(widget);
+  if (!item->theme_provider_->UseGtkTheme()) {
+    // The hbox renderer will take care of the border when in GTK mode.
+    dangerous_nine_box_->RenderToWidget(widget);
+  }
   return FALSE;  // Continue propagation.
 }
 
