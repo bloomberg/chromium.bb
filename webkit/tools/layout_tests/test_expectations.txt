@@ -2903,10 +2903,6 @@ BUG19888 WIN :  LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
 // Temporary supression while we investigate.
 BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
 
-// WebKit merge 47575:47591 new test, needs baselines. WebKit change http://trac.webkit.org/changeset/47590
-BUG_DIMICH LINUX WIN : LayoutTests/fast/repaint/inline-block-resize.html = FAIL
-
-// WebKit merge 47575:47591 updated test, perhaps needs rebaseline on Win.
-// WebKit change http://trac.webkit.org/changeset/47579
-// This test timed out before, not it appears to run but fail.
-BUG_DIMICH WIN : LayoutTests/media/progress-event-at-least-one.html = FAIL TIMEOUT
+// New test. WebKit change http://trac.webkit.org/changeset/47431
+// Does not work in Chromium yet (not supporting wav format)
+BUG19904 WIN : LayoutTests/media/progress-event-at-least-one.html = FAIL TIMEOUT
