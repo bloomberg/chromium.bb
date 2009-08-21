@@ -1394,8 +1394,6 @@
         'glue/searchable_form_data.h',
         'glue/simple_webmimeregistry_impl.cc',
         'glue/simple_webmimeregistry_impl.h',
-        'glue/stacking_order_iterator.cc',
-        'glue/stacking_order_iterator.h',
         'glue/temporary_glue.cc',
         'glue/webaccessibility.h',
         'glue/webaccessibilitymanager.h',

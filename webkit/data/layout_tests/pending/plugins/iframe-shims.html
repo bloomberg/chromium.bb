@@ -1,39 +1,219 @@
 <html><head>
 <script>
-  function noop(x) {
+    var expected_clicks = [];
+    var clicks = [];
+
+    var HEIGHT = 100;
+    var WIDTH = 100;
+    var items = 0;
+
+    function makePluginElement() {
+      var f = document.createElement('embed');
+      f.setAttribute('id', 'swf_embed_' + items);
+      f.setAttribute('width', WIDTH + '');
+      f.setAttribute('height', HEIGHT + '');
+      f.setAttribute('wmode', 'window');
+      f.setAttribute('loop', 'false');
+      f.setAttribute('src', 'simple_blank.swf');
+      f.setAttribute('type', 'application/x-shockwave-flash');
+      return f;
+    }
+
+    function makeIframeDiv() {
+      var i = document.createElement('iframe');
+      i.style.position = 'absolute';
+      i.style.top = '10px';
+      i.style.left = '30px';
+      i.style.width = '80px';
+      i.style.height = '80px';
+      i.style.filter='progid:DXImageTransform.Microsoft.Alpha(style=0,opacity=0)';
+      i.setAttribute('frameborder', '0');
+      i.setAttribute('src', 'javascript:void(0);');
+      return i;
+    }
+
+    function makeOverlayDiv(color, case_id) {
+      var o = document.createElement('div');
+      o.style.position = 'absolute';
+      o.style.top = '10px';
+      o.style.left = '30px';
+      o.style.width = '80px';
+      o.style.height = '80px';
+      o.style.backgroundColor = color;
+      o.style.overflow = 'hidden';
+      o.innerHTML = '<input type="button" id="button' + case_id + '" ' +
+          'onclick="doClick(' + case_id +
+          ');" value="clickme" style="position: absolute; top: 10; left: 10; width: 60px; height: 60px;"/>';
+      return o;
+    }
+
+    function addCase(x, y, tags) {
+      var case_id = items;
+      items++;
+
+      var desc = case_id + ":";
+
+      var expect_clickable = tags.expect && tags.expect.indexOf('UNDER') == -1;
+      expected_clicks[case_id] = expect_clickable;
+
+      var container = document.getElementById('container');
+      var root = document.createElement('div');
+      root.style.position = 'absolute';
+      root.style.left = x * (WIDTH + 40) + 'px';
+      root.style.top = y * (HEIGHT + 20) + 'px';
+      container.appendChild(root);
+
+      var plugin_div_z;
+      var overlay_div_z_iframe;
+      var overlay_div_z_overlay;
+      if (tags.plugin_lowerz) {
+        desc += ' plugin_lowerz';
+        plugin_div_z = 100;
+        overlay_div_z_iframe = 200;
+        overlay_div_z_overlay = 201;
+      } else if (tags.plugin_higherz) {
+        desc += ' plugin_higherz';
+        plugin_div_z = 200;
+        overlay_div_z_iframe = 100;
+        overlay_div_z_overlay = 101;
+      } else if (tags.plugin_equalz) {
+        desc += ' plugin_equalz';
+        plugin_div_z = 100;
+        overlay_div_z_iframe = 100;
+        overlay_div_z_overlay = 100;
+      }
+
+    var append_plugin = function() {
+      var pd = makePluginElement();
+      if (tags.plugin_inside_div || plugin_div_z) {
+        desc += ' plugin_inside_div';
+        var parentdiv = document.createElement('div');
+        parentdiv.appendChild(pd)
+        if (!tags.plugin_norelative) {
+          parentdiv.style.position = 'relative';
+        } else {
+          desc += ' plugin_norelative';
+        }
+
+        if (plugin_div_z) {
+          parentdiv.style.zIndex = plugin_div_z;
+        }
+        root.appendChild(parentdiv);
+      } else {
+        if (!tags.plugin_norelative) {
+          pd.style.position = 'relative';
+        } else {
+          desc += ' plugin_norelative';
+        }
+        root.appendChild(pd);
+      }
+    };
+
+    var append_overlay = function() {
+      var id = makeIframeDiv();
+      if (overlay_div_z_iframe) {
+        id.style.zIndex = overlay_div_z_iframe;
+      }
+
+      var od = makeOverlayDiv(expect_clickable ? 'green' : 'red', case_id);
+      od.style.position = 'absolute';
+      if (overlay_div_z_overlay) {
+        od.style.zIndex = overlay_div_z_overlay;
+      }
+
+      if (tags.overlay_inside_div) {
+        desc += ' overlay_inside_div';
+        var parentdiv = document.createElement('div');
+        if (overlay_div_z_overlay) {
+          parentdiv.style.zIndex = overlay_div_z_overlay;
+        }
+
+        parentdiv.style.position = 'absolute';
+        parentdiv.style.top = '0px';
+        parentdiv.style.left = '0px';
+        parentdiv.appendChild(id);
+        parentdiv.appendChild(od);
+        root.appendChild(parentdiv);
+      } else {
+        root.appendChild(id);
+        root.appendChild(od);
+      }
+    };
+
+    if (tags.overlay_earlier) {
+      desc += ' overlay_earlier';
+      append_overlay();
+      append_plugin();
+    } else {
+      append_plugin();
+      append_overlay();
+    }
+
+    if (tags.expect) {
+      desc += ' <i>(expect:' + tags.expect + ')</i>';
+    }
+
+    // Description.
+    if (0) {
+      var dd = document.createElement('div');
+      dd.style.position = 'absolute';
+      dd.style.top = '0px';
+      dd.style.left = (WIDTH + 50) + 'px';
+      dd.innerHTML = desc;
+      root.appendChild(dd);
+    }
   }
 
-  var red1_clicks = 0;
-  var green1_clicks = 0;
-  var red2_clicks = 0;
-  var green2_clicks = 0;
-  
-  function red1Clicked() {
-    red1_clicks++;
-    checkResult();
-  }
-  
-  function green1Clicked() {
-    green1_clicks++;
-    checkResult();
-  }
+  function doClick(id) {
+    clicks[id] = true;
 
-  function red2Clicked() {
-    red2_clicks++;
-    checkResult();
-  }
-  
-  function green2Clicked() {
-    green2_clicks++;
-    checkResult();
-  }
-
-  function checkResult() {
+    // Check success/failure.
     var output = document.getElementById("output");
-    var success = green1_clicks > 0 && green2_clicks > 0 &&
-        red1_clicks == 0 && red2_clicks == 0;
-    output.innerHTML = success ? "SUCCESS" : "FAILURE";
-    document.title = output.innerHTML;
+    var waiting_for_more_clicks = false;
+    var k;
+    for (k in expected_clicks) {
+      if (expected_clicks[k] && !clicks[k]) {
+        waiting_for_more_clicks = true;
+      } else if (!expected_clicks[k] && clicks[k]) {
+        output.innerHTML = 'FAILURE';
+        return;
+      }
+    }
+
+    if (!waiting_for_more_clicks) {
+      output.innerHTML = 'SUCCESS';
+      return;
+    }
+  }
+
+  function init() {
+    addCase(0, 0, {expect:'overlay OVER'});
+    addCase(1, 0, {'overlay_earlier':1, 'overlay_inside_div': 1, 'plugin_inside_div':1, expect:'overlay UNDER'});
+    addCase(2, 0, {'plugin_lowerz':1, expect:'overlay OVER'});
+    addCase(3, 0, {'plugin_higherz':1, expect:'overlay UNDER'});
+    addCase(0, 1, {'overlay_inside_div':1, expect:'overlay OVER'});
+    addCase(1, 1, {'plugin_lowerz':1, 'overlay_inside_div':1, expect:'overlay OVER'});
+    addCase(2, 1, {'plugin_higherz':1, 'overlay_inside_div':1, expect:'overlay UNDER'});
+    addCase(0, 2, {'plugin_equalz':1, 'overlay_inside_div':1, expect:'overlay OVER'});
+    addCase(1, 2, {'plugin_equalz':1, 'overlay_inside_div':1, 'overlay_earlier':1, expect:'overlay UNDER'});
+    addCase(2, 2, {'overlay_earlier':1, expect:'overlay UNDER'});
+    addCase(3, 2, {'overlay_earlier':1, 'plugin_norelative':1, expect:'overlay OVER'});
+    addCase(0, 3, {'plugin_norelative':1, expect:'overlay OVER'});
+    addCase(1, 3, {'overlay_earlier':1, 'plugin_norelative':1, 'plugin_inside_div':1, expect:'overlay OVER'});
+    addCase(2, 3, {'plugin_norelative':1, 'plugin_inside_div':1, expect:'overlay OVER'});
+
+    runTest();
+  }
+
+  // Automation: try to click on each button.
+  var next_id_to_click = 0;
+
+  function runTest() {
+    if (window.layoutTestController && window.eventSender) {
+      layoutTestController.waitUntilDone();
+      layoutTestController.dumpAsText();
+      setTimeout(doNextClick, 0);
+    }
   }
 
   function moveMouseOver(elem_name) {
@@ -49,96 +229,34 @@
     eventSender.mouseMoveTo(x, y);
   }
 
-  function runTest() {
-    if (window.layoutTestController && window.eventSender) {
-      layoutTestController.waitUntilDone();
-      layoutTestController.dumpAsText();
-      setTimeout(doClickRed1, 0);
+  function doNextClick() {
+    eventSender.mouseUp();
+    if (next_id_to_click < expected_clicks.length) {
+      moveMouseOver('button' + next_id_to_click);
+      eventSender.mouseDown();
+      next_id_to_click++;
+      setTimeout(doNextClick, 0);
+    } else {
+      setTimeout(function() {
+          layoutTestController.notifyDone();
+        }, 0);
     }
   }
 
-  function doClickRed1() {
-    moveMouseOver("red_square1");
-    eventSender.mouseDown();
-    setTimeout(doClickGreen1, 0);
-  }
-
-  function doClickGreen1() {
-    eventSender.mouseUp();
-    moveMouseOver("green_square1");
-    eventSender.mouseDown();
-    setTimeout(doClickRed2, 0);
-  }
-
-  function doClickRed2() {
-    eventSender.mouseUp();
-    moveMouseOver("red_square2");
-    eventSender.mouseDown();
-    setTimeout(doClickGreen2, 0);
-  }
-
-  function doClickGreen2() {
-    eventSender.mouseUp();
-    moveMouseOver("green_square2");
-    eventSender.mouseDown();
-    setTimeout(finishTest, 0);
-  }
-
-  function finishTest() {
-    eventSender.mouseUp();
-    layoutTestController.notifyDone();
-  }
 </script>
 </head>
-<body onload="runTest()">
+<body onload="init()">
 
-<p>Test that iframe shims can be used to overlay HTML above a windowed
-plugin.  The red squares should be hidden by the blue flash plugin, and
-the green squares should appear over it.  To test interactively, click
-over the buttons on the squares.  You should not be able to reach the
-red squares' buttons.</p>
+    <p>Test that iframe shims can be used to overlay HTML above a
+    windowed plugin.  The red squares should be hidden by the blue
+    flash plugins, and the green squares should appear over the
+    plugins.  To test interactively, click over the buttons on the
+    squares.  You should not be able to reach the red squares'
+    buttons.</p>
 
-<p>Prints "SUCCESS" on success, "FAILURE" on failure.</p>
-
-<div id=output>NONE</div>
-
-<div style="position: relative;">
-
-   <!-- div with a lower stacking order than the plugin, appearing earlier in the document -->
-   <div id="red_square1"
-	style="z-index: 50; background-color: #FF0000; position: absolute; top: -10; left: 50; width: 100px; height: 100px; overflow: hidden;">
-     <input type="button" onclick="red1Clicked()" value="red" style="position: absolute; top: 10; left: 10; width: 80px; height: 80px;"/>
-     <iframe src="javascript:void(0);" frameborder=0 style="z-index: -1; position: absolute; left: 0px; top: 0px; width: 100%; height: 100%;"></iframe>
-   </div>
-  
-   <!-- div with a higher stacking order than the plugin, appearing earlier in the document -->
-   <div id="green_square1"
-	style="z-index: 150; background-color: #00FF00; position: absolute; top: -10; left: 250; width: 100px; height: 100px; overflow: hidden;">
-     <input type="button" onclick="green1Clicked()" value="green" style="position: absolute; top: 10; left: 10; width: 80px; height: 80px;"/>
-     <iframe src="javascript:void(0);" frameborder=0 style="z-index: -1; position: absolute; left: 0px; top: 0px; width: 100%; height: 100%;"></iframe>
-   </div>
-
-   <div id="embed_parent" style="position: absolute; z-index: 100"
-     <embed width="400" height="200" wmode="window" loop="false" quality="high" src="simple_blank.swf" type="application/x-shockwave-flash" />
-   </div>
-
-   <!-- div with a lower stacking order than the plugin, appearing later in the document -->
-   <div id="red_square2"
-	style="z-index: 50; background-color: #FF0000; position: absolute; top: 110; left: 50; width: 100px; height: 100px; overflow: hidden;">
-     <input type="button" onclick="red2Clicked()" value="red" style="position: absolute; top: 10; left: 10; width: 80px; height: 80px;"/>
-     <iframe src="javascript:void(0);" frameborder=0 style="z-index: -1; position: absolute; left: 0px; top: 0px; width: 100%; height: 100%;"></iframe>
-   </div>
-  
-   <!-- div with a higher stacking order than the plugin, appearing later in the document -->
-   <div id="green_square2"
-	style="z-index: 150; background-color: #00FF00; position: absolute; top: 110; left: 250; width: 100px; height: 100px; overflow: hidden;">
-     <input type="button" onclick="green2Clicked()" value="green" style="position: absolute; top: 10; left: 10; width: 80px; height: 80px;"/>
-     <iframe src="javascript:void(0);" frameborder=0 style="z-index: -1; position: absolute; left: 0px; top: 0px; width: 100%; height: 100%;"></iframe>
-   </div>
-
-
-
-</div>
+    <p>Prints "SUCCESS" on success, "FAILURE" on failure.</p>
+    <div id=output>NONE</div>
+    <div id="container" style="position: relative;"></div>
 
 </body>
 </html>

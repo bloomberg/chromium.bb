@@ -58,9 +58,6 @@
 #include "PlatformContextSkia.h"
 #endif
 
-// FIXME: Remove this dependency on glue!
-#include "webkit/glue/stacking_order_iterator.h"
-
 using namespace WebCore;
 
 namespace WebKit {
@@ -342,31 +339,120 @@ WebCore::IntRect WebPluginContainerImpl::windowClipRect() const
     return clipRect;
 }
 
+static void getObjectStack(const RenderObject* ro,
+                           Vector<const RenderObject*>* roStack)
+{
+    roStack->clear();
+    while (ro) {
+        roStack->append(ro);
+        ro = ro->parent();
+    }
+}
+
+// Returns true if stack1 is at or above stack2
+static bool checkStackOnTop(
+        const Vector<const RenderObject*>& iframeZstack,
+        const Vector<const RenderObject*>& pluginZstack)
+{
+    for (size_t i1 = 0, i2 = 0;
+         i1 < iframeZstack.size() && i2 < pluginZstack.size();
+         i1++, i2++) {
+        // The root is at the end of these stacks.  We want to iterate
+        // root-downwards so we index backwards from the end.
+        const RenderObject* ro1 = iframeZstack[iframeZstack.size() - 1 - i1];
+        const RenderObject* ro2 = pluginZstack[pluginZstack.size() - 1 - i2];
+
+        if (ro1 != ro2) {
+            // When we find nodes in the stack that are not the same, then
+            // we've found the nodes just below the lowest comment ancestor.
+            // Determine which should be on top.
+
+            // See if z-index determines an order.
+            if (ro1->style() && ro2->style()) {
+                int z1 = ro1->style()->zIndex();
+                int z2 = ro2->style()->zIndex();
+                if (z1 > z2)
+                    return true;
+                if (z1 < z2)
+                    return false;
+            }
+
+            // For compatibility with IE: when the plugin is not positioned,
+            // it stacks behind the iframe, even if it's later in the
+            // document order.
+            if (ro2->style()->position() == StaticPosition)
+                return true;
+
+            // Inspect the document order.  Later order means higher
+            // stacking.
+            const RenderObject* parent = ro1->parent();
+            if (!parent)
+                return false;
+            ASSERT(parent == ro2->parent());
+
+            for (const RenderObject* ro = parent->firstChild(); ro; ro = ro->nextSibling()) {
+                if (ro == ro1)
+                    return false;
+                if (ro == ro2)
+                    return true;
+            }
+            ASSERT(false);  // We should have seen ro1 and ro2 by now.
+            return false;
+        }
+    }
+    return true;
+}
+
+// Return a set of rectangles that should not be overdrawn by the
+// plugin ("cutouts").  This helps implement the "iframe shim"
+// technique of overlaying a windowed plugin with content from the
+// page.  In a nutshell, iframe elements should occlude plugins when
+// they occur higher in the stacking order.
 void WebPluginContainerImpl::windowCutOutRects(const IntRect& frameRect,
                                                Vector<IntRect>& cutOutRects)
 {
-    RenderObject* pluginRenderObject = m_element->renderer();
-    ASSERT(pluginRenderObject);
+    RenderObject* pluginNode = m_element->renderer();
+    ASSERT(pluginNode);
+    if (!pluginNode->style())
+        return;
+    Vector<const RenderObject*> pluginZstack;
+    Vector<const RenderObject*> iframeZstack;
+    getObjectStack(pluginNode, &pluginZstack);
 
-    // Find all iframes that stack higher than this plugin.
-    bool higher = false;
-    StackingOrderIterator iterator;
-    RenderLayer* root = m_element->document()->renderer()->enclosingLayer();
-    iterator.Reset(frameRect, root);
+    // Get the parent widget
+    Widget* parentWidget = this->parent();
+    if (!parentWidget->isFrameView())
+        return;
 
-    while (RenderObject* renderObject = iterator.Next()) {
-        if (renderObject == pluginRenderObject)
-            higher = true; // All nodes after this one are higher than plugin.
-        else if (higher) {
-            // Is this a visible iframe?
-            Node* node = renderObject->node();
-            if (node && node->hasTagName(HTMLNames::iframeTag)) {
-                if (!renderObject->style() || renderObject->style()->visibility() == VISIBLE) {
-                    IntPoint point = roundedIntPoint(renderObject->localToAbsolute());
-                    RenderBox* rbox = toRenderBox(renderObject);
-                    IntSize size(rbox->width(), rbox->height());
-                    cutOutRects.append(IntRect(point, size));
-                }
+    FrameView* parentFrameView = static_cast<FrameView*>(parentWidget);
+
+    const HashSet<RefPtr<Widget> >* children = parentFrameView->children();
+    for (HashSet<RefPtr<Widget> >::const_iterator it = children->begin(); it != children->end(); ++it) {
+        // We only care about FrameView's because iframes show up as FrameViews.
+        if (!(*it)->isFrameView())
+            continue;
+
+        const FrameView* frameView =
+            static_cast<const FrameView*>((*it).get());
+        // Check to make sure we can get both the element and the RenderObject
+        // for this FrameView, if we can't just move on to the next object.
+        if (!frameView->frame() || !frameView->frame()->ownerElement()
+            || !frameView->frame()->ownerElement()->renderer())
+            continue;
+
+        HTMLElement* element = frameView->frame()->ownerElement();
+        RenderObject* iframeRenderer = element->renderer();
+
+        if (element->hasTagName(HTMLNames::iframeTag)
+            && iframeRenderer->absoluteBoundingBoxRect().intersects(frameRect)
+            && (!iframeRenderer->style() || iframeRenderer->style()->visibility() == VISIBLE)) {
+            getObjectStack(iframeRenderer, &iframeZstack);
+            if (checkStackOnTop(iframeZstack, pluginZstack)) {
+                IntPoint point =
+                    roundedIntPoint(iframeRenderer->localToAbsolute());
+                RenderBox* rbox = toRenderBox(iframeRenderer);
+                IntSize size(rbox->width(), rbox->height());
+                cutOutRects.append(IntRect(point, size));
             }
         }
     }
