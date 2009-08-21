@@ -2087,7 +2087,11 @@ FcEndElement(void *userData, const XML_Char *name)
 	{
 	    int rc;
 	    data = buffer;
+#if _WIN32_WINNT >= 0x0500
 	    rc = GetSystemWindowsDirectory (buffer, sizeof (buffer) - 20);
+#else
+	    rc = GetWindowsDirectory (buffer, sizeof (buffer) - 20);
+#endif
 	    if (rc == 0 || rc > sizeof (buffer) - 20)
 	    {
 		FcConfigMessage (parse, FcSevereError, "GetSystemWindowsDirectory failed");
