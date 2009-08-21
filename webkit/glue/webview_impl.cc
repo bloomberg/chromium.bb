@@ -603,7 +603,7 @@ bool WebViewImpl::KeyEvent(const WebKeyboardEvent& event) {
 
   // It's not clear if we should continue after detecting a capslock keypress.
   // I'll err on the side of continuing, which is the pre-existing behaviour.
-  if (event.windowsKeyCode == base::VKEY_CAPITAL)
+  if (event.windowsKeyCode == VKEY_CAPITAL)
     handler->capsLockStateMayHaveChanged();
 
   PlatformKeyboardEventBuilder evt(event);
@@ -625,14 +625,14 @@ bool WebViewImpl::KeyEvent(const WebKeyboardEvent& event) {
 bool WebViewImpl::AutocompleteHandleKeyEvent(const WebKeyboardEvent& event) {
   if (!autocomplete_popup_showing_ ||
       // Home and End should be left to the text field to process.
-      event.windowsKeyCode == base::VKEY_HOME ||
-      event.windowsKeyCode == base::VKEY_END) {
+      event.windowsKeyCode == VKEY_HOME ||
+      event.windowsKeyCode == VKEY_END) {
     return false;
   }
 
   // Pressing delete triggers the removal of the selected suggestion from the
   // DB.
-  if (event.windowsKeyCode == base::VKEY_DELETE &&
+  if (event.windowsKeyCode == VKEY_DELETE &&
       autocomplete_popup_->selectedIndex() != -1) {
     Node* node = GetFocusedNode();
     if (!node || (node->nodeType() != WebCore::Node::ELEMENT_NODE)) {
