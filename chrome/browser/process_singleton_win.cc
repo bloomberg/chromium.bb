@@ -51,16 +51,16 @@ ProcessSingleton::~ProcessSingleton() {
   }
 }
 
-bool ProcessSingleton::NotifyOtherProcess() {
+ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   if (!remote_window_)
-    return false;
+    return PROCESS_NONE;
 
   // Found another window, send our command line to it
   // format is "START\0<<<current directory>>>\0<<<commandline>>>".
   std::wstring to_send(L"START\0", 6);  // want the NULL in the string.
   std::wstring cur_dir;
   if (!PathService::Get(base::DIR_CURRENT, &cur_dir))
-    return false;
+    return PROCESS_NONE;
   to_send.append(cur_dir);
   to_send.append(L"\0", 1);  // Null separator.
   to_send.append(GetCommandLineW());
@@ -73,7 +73,7 @@ bool ProcessSingleton::NotifyOtherProcess() {
   // It is possible that the process owning this window may have died by now.
   if (!thread_id || !process_id) {
     remote_window_ = NULL;
-    return false;
+    return PROCESS_NONE;
   }
 
   AllowSetForegroundWindow(process_id);
@@ -93,15 +93,15 @@ bool ProcessSingleton::NotifyOtherProcess() {
     // It is possible that the process owning this window may have died by now.
     if (!result) {
       remote_window_ = NULL;
-      return false;
+      return PROCESS_NONE;
     }
-    return true;
+    return PROCESS_NOTIFIED;
   }
 
   // It is possible that the process owning this window may have died by now.
   if (!IsWindow(remote_window_)) {
     remote_window_ = NULL;
-    return false;
+    return PROCESS_NONE;
   }
 
   // The window is hung. Scan for every window to find a visible one.
@@ -117,14 +117,14 @@ bool ProcessSingleton::NotifyOtherProcess() {
     if (IDYES != win_util::MessageBox(NULL, text, caption,
                                       MB_YESNO | MB_ICONSTOP | MB_TOPMOST)) {
       // The user denied. Quit silently.
-      return true;
+      return PROCESS_NOTIFIED;
     }
   }
 
   // Time to take action. Kill the browser process.
   base::KillProcessById(process_id, ResultCodes::HUNG, true);
   remote_window_ = NULL;
-  return false;
+  return PROCESS_NONE;
 }
 
 // For windows, there is no need to call Create() since the call is made in
@@ -155,6 +155,9 @@ void ProcessSingleton::Create() {
   DCHECK(window_);
 
   win_util::SetWindowUserData(window_, this);
+}
+
+void ProcessSingleton::Cleanup() {
 }
 
 LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {

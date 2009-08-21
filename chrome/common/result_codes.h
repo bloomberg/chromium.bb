@@ -49,6 +49,8 @@ class ResultCodes {
     NORMAL_EXIT_EXP4,           // used for experiments and the actual meaning
                                 // depends on the experiment.
 
+    PROFILE_IN_USE,             // The profile was in use on another host.
+
     EXIT_LAST_CODE              // Last return code (keep it last).
   };
 };

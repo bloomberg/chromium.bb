@@ -27,11 +27,15 @@ ProcessSingleton::~ProcessSingleton() {
   // This space intentionally left blank.
 }
 
-bool ProcessSingleton::NotifyOtherProcess() {
+ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   // This space intentionally left blank.
-  return false;
+  return PROCESS_NONE;
 }
 
 void ProcessSingleton::Create() {
+  // This space intentionally left blank.
+}
+
+void ProcessSingleton::Cleanup() {
   // This space intentionally left blank.
 }

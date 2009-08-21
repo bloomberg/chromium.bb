@@ -588,12 +588,23 @@ int BrowserMain(const MainFunctionParams& parameters) {
     return FirstRun::ImportNow(profile, parsed_command_line);
 
   // When another process is running, use it instead of starting us.
-  if (process_singleton.NotifyOtherProcess()) {
+  switch (process_singleton.NotifyOtherProcess()) {
+    case ProcessSingleton::PROCESS_NONE:
+      // No process already running, fall through to starting a new one.
+      break;
+
+    case ProcessSingleton::PROCESS_NOTIFIED:
 #if defined(OS_LINUX)
-    printf("%s\n", base::SysWideToNativeMB(
-               l10n_util::GetString(IDS_USED_EXISTING_BROWSER)).c_str());
+      printf("%s\n", base::SysWideToNativeMB(
+                 l10n_util::GetString(IDS_USED_EXISTING_BROWSER)).c_str());
 #endif
-    return ResultCodes::NORMAL_EXIT;
+      return ResultCodes::NORMAL_EXIT;
+
+    case ProcessSingleton::PROFILE_IN_USE:
+      return ResultCodes::PROFILE_IN_USE;
+
+    default:
+      NOTREACHED();
   }
 
   // Do the tasks if chrome has been upgraded while it was last running.
@@ -805,6 +816,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
       RunUIMessageLoop(browser_process.get());
     }
   }
+
+  process_singleton.Cleanup();
 
   Platform::WillTerminate();
 

@@ -31,6 +31,12 @@
 
 class ProcessSingleton : public NonThreadSafe {
  public:
+  enum NotifyResult {
+    PROCESS_NONE,
+    PROCESS_NOTIFIED,
+    PROFILE_IN_USE,
+  };
+
   explicit ProcessSingleton(const FilePath& user_data_dir);
   ~ProcessSingleton();
 
@@ -41,10 +47,13 @@ class ProcessSingleton : public NonThreadSafe {
   // TODO(brettw): this will not handle all cases. If two process start up too
   // close to each other, the Create() might not yet have happened for the
   // first one, so this function won't find it.
-  bool NotifyOtherProcess();
+  NotifyResult NotifyOtherProcess();
 
   // Sets ourself up as the singleton instance.
   void Create();
+
+  // Clear any lock state during shutdown.
+  void Cleanup();
 
   // Blocks the dispatch of CopyData messages. foreground_window refers
   // to the window that should be set to the foreground if a CopyData message
@@ -100,6 +109,9 @@ class ProcessSingleton : public NonThreadSafe {
 #elif defined(OS_LINUX)
   // Path in file system to the socket.
   FilePath socket_path_;
+
+  // Path in file system to the lock.
+  FilePath lock_path_;
 
   // Helper class for linux specific messages.  LinuxWatcher is ref counted
   // because it posts messages between threads.

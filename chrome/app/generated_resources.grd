@@ -4818,6 +4818,11 @@ each locale. -->
       Click to unblock
     </message>
 
+    <!-- ProcessSingleton -->
+    <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">
+      The profile appears to be in use by process <ph name="PROCESS_ID">$1<ex>12345</ex></ph> on host <ph name="HOST_NAME">$2<ex>example.com</ex></ph>.  If you are sure no other processes are using this profile, delete the file <ph name="LOCK_FILE">$3<ex>/home/user/.config/google-chrome/SingletonLock</ex></ph> and restart <ph name="PRODUCT_NAME">$4<ex>Google Chrome</ex></ph>.
+    </message>
+
     <message translateable="false" name="IDS_GLEN" desc="Glen">
       Glen
     </message>

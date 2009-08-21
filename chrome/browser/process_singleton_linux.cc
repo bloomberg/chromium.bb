@@ -8,15 +8,17 @@
 // directory and second process command line flags.  The second process then
 // exits.
 //
-// The socket file's name contains the process id of chrome's browser process,
-// eg. "SingletonSocket-9156". A symbol link named "SingletonSocket" will be
-// created and pointed to the real socket file, so they would look like:
+// We also have a lock file, which is a symlink to a non-existent destination.
+// The destination is a string containing the hostname and process id of
+// chrome's browser process, eg. "SingletonLock -> example.com-9156".  When the
+// first copy of chrome exits it will delete the lock file on shutdown, so that
+// a different instance on a different host may then use the profile directory.
 //
-// SingletonSocket -> SingletonSocket-9156
-// SingletonSocket-9156
-//
-// So that the socket file can be connected through "SingletonSocket" and the
-// process id can also be retrieved from it by calling readlink().
+// If writing to the socket fails, the hostname in the lock is checked to see if
+// another instance is running a different host using a shared filesystem (nfs,
+// etc.) If the hostname differs an error is displayed and the second process
+// exits.  Otherwise the first process (if any) is killed and the second process
+// starts as normal.
 //
 // When the second process sends the current directory and command line flags to
 // the first process, it waits for an ACK message back from the first process
@@ -41,6 +43,7 @@
 #include <set>
 #include <string>
 
+#include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -51,6 +54,7 @@
 #include "base/process_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_init.h"
@@ -60,6 +64,9 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "net/base/net_util.h"
 
 const int ProcessSingleton::kTimeoutInSeconds;
 
@@ -71,6 +78,8 @@ const char kShutdownToken[] = "SHUTDOWN";
 const char kTokenDelimiter = '\0';
 const int kMaxMessageLength = 32 * 1024;
 const int kMaxACKMessageLength = arraysize(kShutdownToken) - 1;
+
+const char kLockDelimiter = '-';
 
 // Set a file descriptor to be non-blocking.
 // Return 0 on success, -1 on failure.
@@ -201,13 +210,7 @@ std::string ReadLink(const std::string& path) {
     ssize_t len = readlink(path.c_str(), buf, PATH_MAX);
     if (len > 0) {
       buf[len] = '\0';
-      FilePath real_path(buf);
-      // If it's not an absolute path, then it's necessary to prepend the
-      // original path's dirname.
-      if (!real_path.IsAbsolute()) {
-        real_path = FilePath(path).DirName().Append(real_path);
-      }
-      return real_path.value();
+      return std::string(buf);
     } else {
       LOG(ERROR) << "readlink(" << path << ") failed: " << strerror(errno);
     }
@@ -216,50 +219,89 @@ std::string ReadLink(const std::string& path) {
   return std::string();
 }
 
-// Unlink a socket path. If the path is a symbol link, then the symbol link
-// and the real path referenced by the symbol link will be unlinked together.
-bool UnlinkSocketPath(const std::string& path) {
-  std::string real_path = ReadLink(path);
-
-  bool ret = true;
-  if (real_path.length())
-    ret = UnlinkSocketPath(real_path);
-
+// Unlink a path. Return true on success.
+bool UnlinkPath(const std::string& path) {
   int rv = unlink(path.c_str());
   if (rv < 0)
     DCHECK_EQ(errno, ENOENT);
 
-  return rv == 0 && ret;
+  return rv == 0;
 }
 
-// Extract the process's pid from a symbol link path and kill it.
-// The pid will be appended to the end of path with a preceding dash, such as:
-// .../SingletonSocket-1234
-void KillProcessBySocketPath(const std::string& path) {
+// Extract the hostname and pid from the lock symlink.
+std::string ParseLockPath(const std::string& path,
+                          std::string* hostname,
+                          int* pid) {
   std::string real_path = ReadLink(path);
+  std::string::size_type pos = real_path.rfind('-');
 
-  // If the path is not a symbol link, try to extract pid from the path itself.
-  if (real_path.empty())
-    real_path = path;
-
-  // Only extract pid from the base name, to avoid finding wrong value from its
-  // parent path name.
-  std::string base_name = FilePath(real_path).BaseName().value();
-  DCHECK(base_name.length());
-
-  std::string::size_type pos = base_name.rfind('-');
-  if (pos != std::string::npos) {
-    std::string pid_str = base_name.substr(pos + 1);
-    int pid;
-    if (StringToInt(pid_str, &pid)) {
-      // TODO(james.su@gmail.com): Is SIGKILL ok?
-      int rv = kill(static_cast<base::ProcessHandle>(pid), SIGKILL);
-      DCHECK_EQ(0, rv) << "Error killing process:" << strerror(errno);
-      return;
-    }
+  // If the path is not a symbolic link, or doesn't contain what we expect,
+  // bail.
+  if (pos == std::string::npos) {
+    *hostname = "";
+    *pid = -1;
+    return "";
   }
 
-  LOG(ERROR) << "Failed to extract pid from path: " << real_path;
+  *hostname = real_path.substr(0, pos);
+
+  const std::string& pid_str = real_path.substr(pos + 1);
+  if (!StringToInt(pid_str, pid))
+    *pid = -1;
+
+  return real_path;
+}
+
+void DisplayProfileInUseError(const std::string& lock_path,
+                              const std::string& hostname,
+                              int pid) {
+  // TODO(mattm): display in a dialog.
+  std::wstring error = l10n_util::GetStringF(IDS_PROFILE_IN_USE_LINUX,
+        IntToWString(pid),
+        ASCIIToWide(hostname),
+        base::SysNativeMBToWide(lock_path),
+        l10n_util::GetString(IDS_PRODUCT_NAME));
+  LOG(ERROR) << base::SysWideToNativeMB(error).c_str();
+}
+
+// Check if the lock is on a different host.  If so, return false.  If not,
+// unlink the lock file and return true.
+bool CheckLockHostnameAndCleanup(const std::string& path) {
+  std::string hostname;
+  int pid;
+  ParseLockPath(path, &hostname, &pid);
+
+  if (!hostname.empty() && hostname != net::GetHostName()){
+    DisplayProfileInUseError(path, hostname, pid);
+    return false;
+  }
+  UnlinkPath(path);
+  return true;
+}
+
+// Extract the process's pid from a symbol link path and if it is on
+// the same host, kill the process, unlink the lock file and return true.
+// If the process is on a different host, return false.
+bool KillProcessByLockPath(const std::string& path) {
+  std::string hostname;
+  int pid;
+  ParseLockPath(path, &hostname, &pid);
+
+  if (!hostname.empty() && hostname != net::GetHostName()) {
+    DisplayProfileInUseError(path, hostname, pid);
+    return false;
+  }
+  UnlinkPath(path);
+
+  if (pid >= 0) {
+    // TODO(james.su@gmail.com): Is SIGKILL ok?
+    int rv = kill(static_cast<base::ProcessHandle>(pid), SIGKILL);
+    DCHECK_EQ(0, rv) << "Error killing process:" << strerror(errno);
+    return true;
+  }
+
+  LOG(ERROR) << "Failed to extract pid from path: " << path;
+  return true;
 }
 
 // A helper class to close a socket automatically.
@@ -570,12 +612,13 @@ ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
       foreground_window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(watcher_(new LinuxWatcher(this))) {
   socket_path_ = user_data_dir.Append(chrome::kSingletonSocketFilename);
+  lock_path_ = user_data_dir.Append(chrome::kSingletonLockFilename);
 }
 
 ProcessSingleton::~ProcessSingleton() {
 }
 
-bool ProcessSingleton::NotifyOtherProcess() {
+ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   int socket;
   sockaddr_un addr;
   SetupSocket(socket_path_.value(), &socket, &addr);
@@ -587,8 +630,15 @@ bool ProcessSingleton::NotifyOtherProcess() {
   int ret = HANDLE_EINTR(connect(socket,
                                  reinterpret_cast<sockaddr*>(&addr),
                                  sizeof(addr)));
-  if (ret < 0)
-    return false;  // Tell the caller there's nobody to notify.
+  if (ret < 0) {
+    // TODO(mattm): there is a bit of a race here if another instance on the
+    // same host is in Create() and has created the lock but not attached to the
+    // socket.  Our CheckLockHostnameAndCleanup call will clean up their lock
+    // and allow us to create a new one.
+    if (!CheckLockHostnameAndCleanup(lock_path_.value()))
+      return PROFILE_IN_USE;
+    return PROCESS_NONE;  // Tell the caller there's nobody to notify.
+  }
 
   timeval timeout = {20, 0};
   setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
@@ -600,7 +650,7 @@ bool ProcessSingleton::NotifyOtherProcess() {
 
   FilePath current_dir;
   if (!PathService::Get(base::DIR_CURRENT, &current_dir))
-    return false;
+    return PROCESS_NONE;
   to_send.append(current_dir.value());
 
   const std::vector<std::string>& argv =
@@ -614,8 +664,9 @@ bool ProcessSingleton::NotifyOtherProcess() {
   // Send the message
   if (!WriteToSocket(socket, to_send.data(), to_send.length())) {
     // Try to kill the other process, because it might have been dead.
-    KillProcessBySocketPath(socket_path_.value());
-    return false;
+    if (!KillProcessByLockPath(lock_path_.value()))
+      return PROFILE_IN_USE;
+    return PROCESS_NONE;
   }
 
   if (shutdown(socket, SHUT_WR) < 0)
@@ -629,42 +680,54 @@ bool ProcessSingleton::NotifyOtherProcess() {
 
   // Failed to read ACK, the other process might have been frozen.
   if (len <= 0) {
-    KillProcessBySocketPath(socket_path_.value());
-    return false;
+    if (!KillProcessByLockPath(lock_path_.value()))
+      return PROFILE_IN_USE;
+    return PROCESS_NONE;
   }
 
   buf[len] = '\0';
   if (strncmp(buf, kShutdownToken, arraysize(kShutdownToken) - 1) == 0) {
     // The other process is shutting down, it's safe to start a new process.
-    return false;
+    return PROCESS_NONE;
   } else if (strncmp(buf, kACKToken, arraysize(kACKToken) - 1) == 0) {
     // Assume the other process is handling the request.
-    return true;
+    return PROCESS_NOTIFIED;
   }
 
   NOTREACHED() << "The other process returned unknown message: " << buf;
-  return true;
+  return PROCESS_NOTIFIED;
 }
 
 void ProcessSingleton::Create() {
   int sock;
   sockaddr_un addr;
 
-  // Append the process id to the socket path, so that other process can find it
-  // out.
-  std::string path = StringPrintf(
-      "%s-%u", socket_path_.value().c_str(), base::GetCurrentProcId());
-  SetupSocket(path, &sock, &addr);
+  // The symlink lock is pointed to the hostname and process id, so other
+  // processes can find it out.
+  std::string symlink_content = StringPrintf(
+      "%s%c%u",
+      net::GetHostName().c_str(),
+      kLockDelimiter,
+      base::GetCurrentProcId());
 
-  UnlinkSocketPath(socket_path_.value());
+  // Create symbol link before binding the socket, to ensure only one instance
+  // can have the socket open.
+  if (symlink(symlink_content.c_str(), lock_path_.value().c_str()) < 0) {
+    // Double check the value in case symlink suceeded but we got an incorrect
+    // failure due to NFS packet loss & retry.
+    int saved_errno = errno;
+    if (ReadLink(lock_path_.value()) != symlink_content) {
+      // If we failed to create the lock, most likely another instance won the
+      // startup race.
+      // TODO(mattm): If the other instance is on the same host, we could try
+      // to notify it rather than just failing.
+      LOG(FATAL) << "Failed to create SingletonLock: " << strerror(saved_errno);
+    }
+  }
 
-  // Create symbol link before binding the socket, so that the socket file can
-  // always be reached and removed by another process.
-  // The symbol link only contains the filename part of the socket file, so that
-  // the whole config directory can be moved without breaking the symbol link.
-  std::string symlink_content = FilePath(path).BaseName().value();
-  if (symlink(symlink_content.c_str(), socket_path_.value().c_str()) < 0)
-    NOTREACHED() << "Failed to create symbol link: " << strerror(errno);
+  SetupSocket(socket_path_.value(), &sock, &addr);
+
+  UnlinkPath(socket_path_.value());
 
   if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
     LOG(ERROR) << "bind() failed: " << strerror(errno);
@@ -688,4 +751,8 @@ void ProcessSingleton::Create() {
     watcher_.get(),
     &ProcessSingleton::LinuxWatcher::StartListening,
     sock));
+}
+
+void ProcessSingleton::Cleanup() {
+  UnlinkPath(lock_path_.value());
 }

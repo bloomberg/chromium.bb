@@ -38,6 +38,7 @@ extern const FilePath::CharType kLocalStateFilename[];
 extern const FilePath::CharType kPreferencesFilename[];
 extern const FilePath::CharType kSafeBrowsingFilename[];
 extern const FilePath::CharType kSingletonSocketFilename[];
+extern const FilePath::CharType kSingletonLockFilename[];
 extern const FilePath::CharType kThumbnailsFilename[];
 extern const FilePath::CharType kNewTabThumbnailsFilename[];
 extern const wchar_t kUserDataDirname[];

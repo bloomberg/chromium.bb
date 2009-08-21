@@ -74,6 +74,7 @@ const FilePath::CharType kSafeBrowsingFilename[] = FPL("Safe Browsing");
 // WARNING: SingletonSocket can't contain spaces, because otherwise
 // chrome_process_util_linux would be broken.
 const FilePath::CharType kSingletonSocketFilename[] = FPL("SingletonSocket");
+const FilePath::CharType kSingletonLockFilename[] = FPL("SingletonLock");
 const FilePath::CharType kThumbnailsFilename[] = FPL("Thumbnails");
 const FilePath::CharType kNewTabThumbnailsFilename[] = FPL("Top Thumbnails");
 const wchar_t kUserDataDirname[] = L"User Data";
