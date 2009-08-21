@@ -41,9 +41,6 @@ class TabContents;
 
 #if defined(OS_MACOSX)
 void AutomationProvider::GetActiveWindow(int* handle) { NOTIMPLEMENTED(); }
-#endif
-
-void AutomationProvider::ActivateWindow(int handle) { NOTIMPLEMENTED(); }
 
 void AutomationProvider::SetWindowVisible(int handle, bool visible,
                                           bool* result) { NOTIMPLEMENTED(); }
@@ -53,12 +50,6 @@ void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
   NOTIMPLEMENTED();
 }
 
-
-void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
-  NOTIMPLEMENTED();
-}
-
-#if defined(OS_MACOSX)
 void AutomationProvider::GetAutocompleteEditForBrowser(
     int browser_handle,
     bool* success,
@@ -66,25 +57,7 @@ void AutomationProvider::GetAutocompleteEditForBrowser(
   *success = false;
   NOTIMPLEMENTED();
 }
-#endif
 
-void AutomationProvider::GetBrowserForWindow(int window_handle,
-                                             bool* success,
-                                             int* browser_handle) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::PrintNow(int tab_handle,
-                                  IPC::Message* reply_message) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::PrintAsync(int tab_handle) {
-  NOTIMPLEMENTED();
-}
-
-#if defined(OS_MACOSX)
 void AutomationProvider::GetAutocompleteEditText(int autocomplete_edit_handle,
                                                  bool* success,
                                                  std::wstring* text) {
@@ -120,7 +93,45 @@ void AutomationProvider::OnMessageFromExternalHost(
     const std::string& target) {
   NOTIMPLEMENTED();
 }
+
+void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
+                                             bool screen_coordinates,
+                                             bool* success,
+                                             gfx::Rect* bounds) {
+  *success = false;
+  NOTIMPLEMENTED();
+}
+
 #endif  // defined(OS_MACOSX)
+
+void AutomationProvider::ActivateWindow(int handle) { NOTIMPLEMENTED(); }
+
+void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::GetBrowserForWindow(int window_handle,
+                                             bool* success,
+                                             int* browser_handle) {
+  *success = false;
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::PrintAsync(int tab_handle) {
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::SetInitialFocus(const IPC::Message& message,
+                                         int handle, bool reverse) {
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::GetBookmarkBarVisibility(int handle, bool* visible,
+                                                  bool* animating) {
+  *visible = false;
+  *animating = false;
+  NOTIMPLEMENTED();
+}
 
 //--------------------------------------------------------------------------
 
