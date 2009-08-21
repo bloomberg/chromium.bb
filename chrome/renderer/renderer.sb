@@ -6,9 +6,8 @@
 (version 1)
 (deny default)
 
-; Needed for full-page-zoomed checkboxes etc -- http://crbug.com/11325
+; Needed for full-page-zoomed controls - http://crbug.com/11325
 (allow sysctl-read)
-
 
 ; Each line is marked with the System version that needs it.
 ; This profile is tested with the following system versions:
@@ -16,13 +15,20 @@
 
 ; Allow following symlinks
 (allow file-read-metadata)  ; 10.5.6
-; Allow reading files out of /System/Library
-(allow file-read-data (regex #"^/System/Library"))  ; 10.5.6
 
-; Needed for Fonts
+; Loading System Libraries.
+(allow file-read-data (regex #"^/System/Library/Frameworks"))  ; 10.5.6
+(allow file-read-data (regex #"^/System/Library/PrivateFrameworks"))  ; 10.5.6
+(allow file-read-data (regex #"^/System/Library/CoreServices"))  ; 10.5.6
+
+; Needed for Fonts.
+(allow file-read-data (regex #"^/System/Library/Fonts"))  ; 10.5.6
+(allow file-read-data (regex #"^/Library/Fonts"))  ; 10.6 seed release
 (allow mach-lookup (global-name "com.apple.FontObjectsServer"))  ; 10.5.6
 (allow mach-lookup (global-name "com.apple.FontServer"))  ; 10.6 seed release
-(allow file-read-data (regex #"^/Library/Fonts"))  ; 10.6 seed release
+
+; USER_HOMEDIR is substitued at runtime - http://crbug.com/11269 
+(allow file-read-data (regex #"^USER_HOMEDIR/Library/Fonts"))  ; 10.6 seed release
 
 ; Needed for IPC on 10.6
 (allow ipc-posix-shm)
