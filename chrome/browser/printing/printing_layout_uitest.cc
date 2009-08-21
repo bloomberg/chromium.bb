@@ -60,8 +60,8 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
   // data pixels and returns the percentage of different pixels; 0 for success,
   // ]0, 100] for failure.
   double CompareWithResult(const std::wstring& verification_name) {
-    std::wstring test_result(ScanFiles(verification_name));
-    if (test_result.empty()) {
+    FilePath test_result(ScanFiles(verification_name));
+    if (test_result.value().empty()) {
       // 100% different, the print job buffer is not there.
       return 100.;
     }
@@ -69,27 +69,27 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
     std::wstring verification_file(test_data_directory_.ToWStringHack());
     file_util::AppendToPath(&verification_file, L"printing");
     file_util::AppendToPath(&verification_file, verification_name);
-    std::wstring emf(verification_file + L".emf");
-    std::wstring png(verification_file + L".png");
+    FilePath emf(verification_file + L".emf");
+    FilePath png(verification_file + L".png");
 
     // Looks for Cleartype override.
     if (file_util::PathExists(verification_file + L"_cleartype.png") &&
         IsClearTypeEnabled()) {
-      png = verification_file + L"_cleartype.png";
+      png = FilePath(verification_file + L"_cleartype.png");
     }
 
     if (GenerateFiles()) {
       // Copy the .emf and generate an .png.
       file_util::CopyFile(test_result, emf);
-      Image emf_content(emf);
-      emf_content.SaveToPng(png);
+      Image emf_content(emf.value());
+      emf_content.SaveToPng(png.value());
       // Saving is always fine.
       return 0;
     } else {
       // File compare between test and result.
-      Image emf_content(emf);
-      Image test_content(test_result);
-      Image png_content(png);
+      Image emf_content(emf.value());
+      Image test_content(test_result.value());
+      Image png_content(png.value());
       double diff_emf = emf_content.PercentageDifferent(test_content);
 
       EXPECT_EQ(0., diff_emf) << verification_name <<
@@ -97,7 +97,8 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
           L" result size:" << test_content.size();
       if (diff_emf) {
         // Backup the result emf file.
-        file_util::CopyFile(test_result, verification_file + L"_failed.emf");
+        file_util::CopyFile(test_result, FilePath(
+              verification_file + L"_failed.emf"));
       }
 
       // This verification is only to know that the EMF rendering stays
