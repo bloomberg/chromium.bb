@@ -173,7 +173,7 @@ o3djs.simple.SimpleInfo = function(clientObject) {
 
   /**
    * The ViewInfo created by this SimpleInfo.
-   * @type {!o3d.ViewInfo}
+   * @type {!o3djs.rendergraph.ViewInfo}
    */
   this.viewInfo = o3djs.rendergraph.createBasicView(
       this.pack,
@@ -509,7 +509,7 @@ o3djs.simple.SimpleInfo.prototype.createSphere = function(radius,
  * @param {!function(o3djs.simple.SimpleScene, *): void} callback a callback to
  *     call when the scene is loaded. The first argument will be null if the
  *     scene failed to load and last object will be an exception.
- * @return {!o3djs.io.loadInfo}
+ * @return {!o3djs.io.LoadInfo}
  */
 o3djs.simple.SimpleInfo.prototype.loadScene = function(url, callback) {
   var pack = this.client.createPack();
@@ -567,6 +567,7 @@ o3djs.simple.SimpleObject = function() {
 };
 
 /**
+ * Initializes a SimpleObject.
  * @param {!o3djs.simple.SimpleInfo} simpleInfo The SimpleInfo to manage this
  *     object.
  * @param {!o3d.Transform} transform Transform that orients this object.
@@ -605,7 +606,13 @@ o3djs.simple.SimpleObject.prototype.init = function(simpleInfo, transform) {
   this.pickCallback_ = null;
 };
 
+/**
+ * Registers on an on picked callback.
+ * @param {!function(!o3djs.simple.SimpleObject): void} onPickedCallback A
+ *     function called when this object is picked.
+ */
 o3djs.simple.SimpleObject.prototype.onPicked = function(onPickedCallback) {
+  throw 'not implemented';
 };
 
 /**
@@ -625,7 +632,7 @@ o3djs.simple.SimpleObject.prototype.onUpdate = function(elapsedTime) {
  * Sets a function to be called every frame for this object.
  * @param {function(number): void} onUpdateCallback A function that is passed
  *     the elapsed time in seconds. Pass in null to clear the callback function.
- * @return {?function(number): void} The previous callback function.
+ * @return {(function(number): void|null)} The previous callback function.
  */
 o3djs.simple.SimpleObject.prototype.setOnUpdate = function(onUpdateCallback) {
   if (onUpdateCallback) {
@@ -642,7 +649,7 @@ o3djs.simple.SimpleObject.prototype.setOnUpdate = function(onUpdateCallback) {
  * A SimpleShape manages a transform with 1 shape that holds 1 primitive
  * and 1 unique material.
  * @constructor
- * @extends o3djs.simple.SimpleObject
+ * @extends {o3djs.simple.SimpleObject}
  * @param {!o3djs.simple.SimpleInfo} simpleInfo The SimpleInfo to manage this
  *     shape.
  * @param {!o3d.Transform} transform Transform with 1 shape that holds 1
@@ -743,7 +750,7 @@ o3djs.simple.SimpleShape.prototype.loadTexture = function(url) {
 /**
  * An object to simply manage a scene.
  * @constructor
- * @extends o3djs.simple.SimpleObject
+ * @extends {o3djs.simple.SimpleObject}
  * @param {!o3djs.simple.SimpleInfo} simpleInfo The SimpleInfo to manage this
  *     scene.
  * @param {string} url Url scene was loaded from.
