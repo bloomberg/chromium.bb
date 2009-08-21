@@ -29,34 +29,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Unit tests for npnacl_plugin.so
+// Unit tests for libnpGoogleNaClPlugin.so
 
 #include <dlfcn.h>
 #include <stdio.h>
-#include "bindings/npapi.h"
-#include "bindings/npruntime.h"
-#include "nphostapi.h"
+#include <inttypes.h>
+#include "native_client/src/third_party/npapi/files/include/npapi.h"
+#include "native_client/src/third_party/npapi/files/include/npruntime.h"
+#include "native_client/src/third_party/npapi/files/include/npupp.h"
 
 void* dl_handle;
 
-void* GetSymbolHandle(const char* name) {
+uintptr_t GetSymbolHandle(const char* name) {
   void*  sym_handle = dlsym(dl_handle, name);
   char*  error_string = dlerror();
-  if (!sym_handle || error_string) {
+  if (NULL == sym_handle || error_string) {
     fprintf(stderr, "Couldn't get symbol %s: %s\n", name, error_string);
     return NULL;
   }
-  return sym_handle;
+  return reinterpret_cast<uintptr_t>(sym_handle);
 }
 
 bool TestMIMEDescription() {
   typedef char* (*FP)();
   FP func = reinterpret_cast<FP>(GetSymbolHandle("NP_GetMIMEDescription"));
-  if (!func) {
+  if (NULL == func) {
     return false;
   }
   char* mime_string = (*func)();
-  if (!mime_string) {
+  if (NULL == mime_string) {
     fprintf(stderr, "ERROR: NP_GetMIMEDescriptor returned no string\n");
     return false;
   }
@@ -66,7 +67,7 @@ bool TestMIMEDescription() {
 bool TestInitialize() {
   typedef NPError (*FP)(NPNetscapeFuncs*, NPPluginFuncs*);
   FP func = reinterpret_cast<FP>(GetSymbolHandle("NP_Initialize"));
-  if (!func) {
+  if (NULL == func) {
     return false;
   }
   NPNetscapeFuncs browser_funcs;
@@ -80,24 +81,10 @@ bool TestInitialize() {
   return true;
 }
 
-bool TestEntryPoints() {
-  typedef NPError (*FP)(NPPluginFuncs*);
-  FP func = reinterpret_cast<FP>(GetSymbolHandle("NP_GetEntryPoints"));
-  if (!func) {
-    return false;
-  }
-  NPPluginFuncs plugin_funcs;
-  if (NPERR_NO_ERROR != (*func)(&plugin_funcs)) {
-    fprintf(stderr, "ERROR: NP_GetEntryPoints returned error\n");
-    return false;
-  }
-  return true;
-}
-
 bool TestShutdown() {
   typedef NPError (*FP)(void);
   FP func = reinterpret_cast<FP>(GetSymbolHandle("NP_Shutdown"));
-  if (!func) {
+  if (NULL == func) {
     return false;
   }
   if (NPERR_NO_ERROR != (*func)()) {
@@ -108,13 +95,15 @@ bool TestShutdown() {
 }
 
 int main(int argc, char** argv) {
-  if (argc != 2) {
+  if (2 != argc) {
     fprintf(stderr, "Usage: %s <soname>\n", argv[0]);
     return 1;
   }
   // Test opening the .so
-  dl_handle = dlopen(argv[1], RTLD_NOW);
-  if (!dl_handle) {
+  // By using RTLD_DEEPBIND we check that all symbols are resolved
+  // rather than finding them when loading the plugin in the browser.
+  dl_handle = dlopen(argv[1], RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);
+  if (NULL == dl_handle) {
     fprintf(stderr, "Couldn't open: %s\n", dlerror());
     return 1;
   }
@@ -122,11 +111,10 @@ int main(int argc, char** argv) {
   bool success =
     (TestMIMEDescription() &&
      TestInitialize() &&
-     TestEntryPoints() &&
      TestShutdown());
 
   // Test closing the .so
-  if (dlclose(dl_handle)) {
+  if (0 != dlclose(dl_handle)) {
     fprintf(stderr, "Couldn't close: %s\n", dlerror());
     return 1;
   }
