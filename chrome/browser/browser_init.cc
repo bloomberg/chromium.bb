@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browser_init.h"
 
+#include <algorithm>
+
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #endif
@@ -577,7 +579,8 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
         urls[i], GURL(), PageTransition::START_PAGE, (i == 0), -1, false, NULL);
     if (i < static_cast<size_t>(pin_count))
       browser->tabstrip_model()->SetTabPinned(browser->tab_count() - 1, true);
-    if (i == 0 && process_startup && !browser_defaults::kSuppressCrashInfoBar)
+    if (profile_ && i == 0 &&
+        process_startup && !browser_defaults::kSuppressCrashInfoBar)
       AddCrashedInfoBarIfNecessary(tab);
   }
   browser->window()->Show();
@@ -790,7 +793,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
             L"Extension Packaging Error", MB_OK | MB_SETFOREGROUND);
         return false;
       }
-#endif // defined(OS_WIN)
+#endif  // defined(OS_WIN)
       return false;
     }
   }
