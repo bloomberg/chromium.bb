@@ -197,7 +197,7 @@ class ExtensionsServiceTest
   : public testing::Test, public NotificationObserver {
  public:
   ExtensionsServiceTest() : installed_(NULL) {
-    registrar_.Add(this, NotificationType::EXTENSIONS_LOADED,
+    registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                    NotificationService::AllSources());
@@ -275,12 +275,9 @@ class ExtensionsServiceTest
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     switch (type.value) {
-      case NotificationType::EXTENSIONS_LOADED: {
-        ExtensionList* list = Details<ExtensionList>(details).ptr();
-        for (ExtensionList::iterator iter = list->begin(); iter != list->end();
-             ++iter) {
-          loaded_.push_back(*iter);
-        }
+      case NotificationType::EXTENSION_LOADED: {
+        Extension* extension = Details<Extension>(details).ptr();
+        loaded_.push_back(extension);
         // The tests rely on the errors being in a certain order, which can vary
         // depending on how filesystem iteration works.
         std::stable_sort(loaded_.begin(), loaded_.end(), ExtensionsOrder());

@@ -334,7 +334,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
   prefs_->AddPrefObserver(prefs::kDefaultCharset, this);
 
   if (!is_off_the_record_) {
-    registrar_.Add(this, NotificationType::EXTENSIONS_LOADED,
+    registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                    NotificationService::AllSources());
@@ -397,15 +397,12 @@ void ChromeURLRequestContext::Observe(NotificationType type,
                             &ChromeURLRequestContext::OnDefaultCharsetChange,
                             default_charset));
     }
-  } else if (NotificationType::EXTENSIONS_LOADED == type) {
+  } else if (NotificationType::EXTENSION_LOADED == type) {
     ExtensionPaths* new_paths = new ExtensionPaths;
-    ExtensionList* extensions = Details<ExtensionList>(details).ptr();
-    DCHECK(extensions);
-    for (ExtensionList::const_iterator iter = extensions->begin();
-         iter != extensions->end(); ++iter) {
-      new_paths->insert(ExtensionPaths::value_type((*iter)->id(),
-                                                   (*iter)->path()));
-    }
+    Extension* extension = Details<Extension>(details).ptr();
+    DCHECK(extension);
+    new_paths->insert(ExtensionPaths::value_type(extension->id(),
+                                                 extension->path()));
     g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(this, &ChromeURLRequestContext::OnNewExtensions,
                           new_paths));

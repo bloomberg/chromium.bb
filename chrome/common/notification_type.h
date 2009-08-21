@@ -600,8 +600,8 @@ class NotificationType {
     // unloaded and reloaded.
     EXTENSIONS_READY,
 
-    // Sent when new extensions are loaded. The details are an ExtensionList*.
-    EXTENSIONS_LOADED,
+    // Sent when a new extension is loaded. The details are an Extension.
+    EXTENSION_LOADED,
 
     // Sent when attempting to load a new extension, but they are disabled. The
     // details are an Extension*.

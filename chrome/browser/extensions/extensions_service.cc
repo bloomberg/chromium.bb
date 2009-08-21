@@ -51,6 +51,15 @@ class InstalledExtensionSet {
   std::set<std::string> extensions_;
 };
 
+static void ReportExtensionLoadError(
+    const FilePath& extension_path, const std::string &error, bool be_noisy) {
+  // TODO(port): note that this isn't guaranteed to work properly on Linux.
+  std::string path_str = WideToASCII(extension_path.ToWStringHack());
+  std::string message = StringPrintf("Could not load extension from '%s'. %s",
+                                     path_str.c_str(), error.c_str());
+  ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);
+}
+
 } // namespace
 
 // ExtensionsService.
@@ -200,12 +209,10 @@ void ExtensionsService::EnableExtension(const std::string& extension_id) {
                                            extension);
   disabled_extensions_.erase(iter);
 
-  ExtensionList extensions;
-  extensions.push_back(extension);
   NotificationService::current()->Notify(
-      NotificationType::EXTENSIONS_LOADED,
+      NotificationType::EXTENSION_LOADED,
       Source<ExtensionsService>(this),
-      Details<ExtensionList>(&extensions));
+      Details<Extension>(extension));
 }
 
 void ExtensionsService::LoadExtension(const FilePath& extension_path) {
@@ -216,10 +223,45 @@ void ExtensionsService::LoadExtension(const FilePath& extension_path) {
 
 void ExtensionsService::LoadAllExtensions() {
   // Load the previously installed extensions.
-  backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-      &ExtensionsServiceBackend::LoadInstalledExtensions,
-      scoped_refptr<ExtensionsService>(this),
-      new InstalledExtensions(extension_prefs_.get())));
+  scoped_ptr<InstalledExtensions> installed(
+      new InstalledExtensions(extension_prefs_.get()));
+  installed->VisitInstalledExtensions(
+      NewCallback(this, &ExtensionsService::LoadInstalledExtension));
+  OnLoadedInstalledExtensions();
+}
+
+void ExtensionsService::LoadInstalledExtension(
+    DictionaryValue* manifest, const std::string& id,
+    const FilePath& path, Extension::Location location) {
+  std::string error;
+  Extension* extension = NULL;
+  if (manifest) {
+    scoped_ptr<Extension> tmp(new Extension(path));
+    if (tmp->InitFromValue(*manifest, true, &error)) {
+      extension = tmp.release();
+    }
+  } else {
+    // TODO(mpcomplete): obsolete. remove after migration period.
+    // http://code.google.com/p/chromium/issues/detail?id=19733
+    extension = extension_file_util::LoadExtension(path,
+                                                   true,  // Require id
+                                                   &error);
+  }
+
+  if (!extension) {
+    ReportExtensionLoadError(path, error, false);
+    return;
+  }
+
+  extension->set_location(location);
+  OnExtensionLoaded(extension);
+
+  if (location == Extension::EXTERNAL_PREF ||
+      location == Extension::EXTERNAL_REGISTRY) {
+    backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
+        &ExtensionsServiceBackend::CheckExternalUninstall,
+        scoped_refptr<ExtensionsService>(this), id, location));
+  }
 }
 
 void ExtensionsService::UpdateExtensionBlacklist(
@@ -326,83 +368,65 @@ void ExtensionsService::OnLoadedInstalledExtensions() {
       NotificationService::NoDetails());
 }
 
-void ExtensionsService::OnExtensionsLoaded(ExtensionList* new_extensions) {
-  scoped_ptr<ExtensionList> cleanup(new_extensions);
+void ExtensionsService::OnExtensionLoaded(Extension* extension) {
+  // Ensure extension is deleted unless we transfer ownership.
+  scoped_ptr<Extension> scoped_extension(extension);
 
-  // Filter out any extensions that shouldn't be loaded. If extensions are
-  // enabled, load everything. Otherwise load only:
-  // - themes
-  // - --load-extension
-  // - externally installed extensions
-  ExtensionList enabled_extensions;
-  ExtensionList disabled_extensions;
-  for (ExtensionList::iterator iter = new_extensions->begin();
-       iter != new_extensions->end(); ++iter) {
-    // Extensions that get enabled get added to extensions_ and deleted later.
-    // Anything skipped must be deleted now so we don't leak.
-    scoped_ptr<Extension> extension(*iter);
-    if (extensions_enabled() ||
-        extension->IsTheme() ||
-        extension->location() == Extension::LOAD ||
-        Extension::IsExternalLocation(extension->location())) {
-      Extension* old = GetExtensionByIdInternal(extension->id(), true, true);
-      if (old) {
-        if (extension->version()->CompareTo(*(old->version())) > 0) {
-          bool higher_permissions =
-              (extension->GetPermissionClass() > old->GetPermissionClass());
+  if (extensions_enabled() ||
+      extension->IsTheme() ||
+      extension->location() == Extension::LOAD ||
+      Extension::IsExternalLocation(extension->location())) {
+    Extension* old = GetExtensionByIdInternal(extension->id(), true, true);
+    if (old) {
+      if (extension->version()->CompareTo(*(old->version())) > 0) {
+        bool higher_permissions =
+            (extension->GetPermissionClass() > old->GetPermissionClass());
 
-          // To upgrade an extension in place, unload the old one and
-          // then load the new one.
-          UnloadExtension(old->id());
-          old = NULL;
+        // To upgrade an extension in place, unload the old one and
+        // then load the new one.
+        UnloadExtension(old->id());
+        old = NULL;
 
-          if (higher_permissions) {
-            // Extension was upgraded to a high permission class. Disable it and
-            // notify the user.
-            extension_prefs_->SetExtensionState(extension.get(),
-                                                Extension::DISABLED);
-            NotificationService::current()->Notify(
-                NotificationType::EXTENSION_UPDATE_DISABLED,
-                Source<ExtensionsService>(this),
-                Details<Extension>(extension.get()));
-          }
-        } else {
-          // We already have the extension of the same or older version.
-          LOG(WARNING) << "Duplicate extension load attempt: " << (*iter)->id();
-          continue;
+        if (higher_permissions) {
+          // Extension was upgraded to a high permission class. Disable it and
+          // notify the user.
+          extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
+          NotificationService::current()->Notify(
+              NotificationType::EXTENSION_UPDATE_DISABLED,
+              Source<ExtensionsService>(this),
+              Details<Extension>(extension));
         }
-      }
-
-      switch (extension_prefs_->GetExtensionState(extension->id())) {
-        case Extension::ENABLED:
-          if (extension->location() != Extension::LOAD)
-            extension_prefs_->MigrateToPrefs(extension.get());
-          enabled_extensions.push_back(extension.get());
-          extensions_.push_back(extension.release());
-          break;
-        case Extension::DISABLED:
-          disabled_extensions.push_back(extension.get());
-          disabled_extensions_.push_back(extension.release());
-          break;
-        default:
-          break;
+      } else {
+        // We already have the extension of the same or older version.
+        LOG(WARNING) << "Duplicate extension load attempt: " << extension->id();
+        return;
       }
     }
-  }
 
-  if (enabled_extensions.size()) {
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSIONS_LOADED,
-        Source<ExtensionsService>(this),
-        Details<ExtensionList>(&enabled_extensions));
-    for (ExtensionList::iterator iter = enabled_extensions.begin();
-         iter != enabled_extensions.end(); ++iter) {
-      if ((*iter)->IsTheme() && (*iter)->location() == Extension::LOAD) {
+    switch (extension_prefs_->GetExtensionState(extension->id())) {
+      case Extension::ENABLED:
+        extensions_.push_back(scoped_extension.release());
+
+        if (extension->location() != Extension::LOAD)
+          extension_prefs_->MigrateToPrefs(extension);
+
         NotificationService::current()->Notify(
-            NotificationType::THEME_INSTALLED,
+            NotificationType::EXTENSION_LOADED,
             Source<ExtensionsService>(this),
-            Details<Extension>(*iter));
-      }
+            Details<Extension>(extension));
+
+        if (extension->IsTheme() && extension->location() == Extension::LOAD) {
+          NotificationService::current()->Notify(
+              NotificationType::THEME_INSTALLED,
+              Source<ExtensionsService>(this),
+              Details<Extension>(extension));
+        }
+        break;
+      case Extension::DISABLED:
+        disabled_extensions_.push_back(scoped_extension.release());
+        break;
+      default:
+        break;
     }
   }
 }
@@ -425,9 +449,7 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension) {
   }
 
   // Also load the extension.
-  ExtensionList* list = new ExtensionList;
-  list->push_back(extension);
-  OnExtensionsLoaded(list);
+  OnExtensionLoaded(extension);
 }
 
 void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
@@ -534,21 +556,6 @@ ExtensionsServiceBackend::ExtensionsServiceBackend(
 ExtensionsServiceBackend::~ExtensionsServiceBackend() {
 }
 
-void ExtensionsServiceBackend::LoadInstalledExtensions(
-    scoped_refptr<ExtensionsService> frontend,
-    InstalledExtensions* installed) {
-  scoped_ptr<InstalledExtensions> cleanup(installed);
-  frontend_ = frontend;
-  alert_on_error_ = false;
-
-  // Call LoadInstalledExtension for each extension |installed| knows about.
-  installed->VisitInstalledExtensions(
-      NewCallback(this, &ExtensionsServiceBackend::LoadInstalledExtension));
-
-  frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      frontend_, &ExtensionsService::OnLoadedInstalledExtensions));
-}
-
 void ExtensionsServiceBackend::LoadSingleExtension(
     const FilePath& path_in, scoped_refptr<ExtensionsService> frontend) {
   frontend_ = frontend;
@@ -574,67 +581,18 @@ void ExtensionsServiceBackend::LoadSingleExtension(
   }
 
   extension->set_location(Extension::LOAD);
-  ExtensionList* extensions = new ExtensionList;
-  extensions->push_back(extension);
-  ReportExtensionsLoaded(extensions);
+  ReportExtensionLoaded(extension);
 }
 
-void ExtensionsServiceBackend::LoadInstalledExtension(
-    DictionaryValue* manifest, const std::string& id,
-    const FilePath& path, Extension::Location location) {
-  if (CheckExternalUninstall(id, location)) {
-    frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        frontend_,
-        &ExtensionsService::UninstallExtension,
-        id, true));
-
-    // No error needs to be reported. The extension effectively doesn't exist.
-    return;
-  }
-
-  std::string error;
-  Extension* extension = NULL;
-  if (manifest) {
-    scoped_ptr<Extension> tmp(new Extension(path));
-    if (tmp->InitFromValue(*manifest, true, &error) &&
-        extension_file_util::ValidateExtension(tmp.get(), &error)) {
-      extension = tmp.release();
-    }
-  } else {
-    // TODO(mpcomplete): obsolete. remove after migration period.
-    // http://code.google.com/p/chromium/issues/detail?id=19733
-    extension = extension_file_util::LoadExtension(path,
-                                                   true,  // Require id
-                                                   &error);
-  }
-
-  if (!extension) {
-    ReportExtensionLoadError(path, error);
-    return;
-  }
-
-  // TODO(erikkay) now we only report a single extension loaded at a time.
-  // Perhaps we should change the notifications to remove ExtensionList.
-  extension->set_location(location);
-  ExtensionList* extensions = new ExtensionList;
-  if (extension)
-    extensions->push_back(extension);
-  ReportExtensionsLoaded(extensions);
-}
 
 void ExtensionsServiceBackend::ReportExtensionLoadError(
     const FilePath& extension_path, const std::string &error) {
-  // TODO(port): note that this isn't guaranteed to work properly on Linux.
-  std::string path_str = WideToASCII(extension_path.ToWStringHack());
-  std::string message = StringPrintf("Could not load extension from '%s'. %s",
-                                     path_str.c_str(), error.c_str());
-  ExtensionErrorReporter::GetInstance()->ReportError(message, alert_on_error_);
+  ::ReportExtensionLoadError(extension_path, error, alert_on_error_);
 }
 
-void ExtensionsServiceBackend::ReportExtensionsLoaded(
-    ExtensionList* extensions) {
+void ExtensionsServiceBackend::ReportExtensionLoaded(Extension* extension) {
   frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      frontend_, &ExtensionsService::OnExtensionsLoaded, extensions));
+      frontend_, &ExtensionsService::OnExtensionLoaded, extension));
 }
 
 bool ExtensionsServiceBackend::LookupExternalExtension(
@@ -679,21 +637,26 @@ void ExtensionsServiceBackend::CheckForExternalUpdates(
   }
 }
 
-bool ExtensionsServiceBackend::CheckExternalUninstall(
-    const std::string& id, Extension::Location location) {
+void ExtensionsServiceBackend::CheckExternalUninstall(
+    scoped_refptr<ExtensionsService> frontend, const std::string& id,
+    Extension::Location location) {
   // Check if the providers know about this extension.
   ProviderMap::const_iterator i = external_extension_providers_.find(location);
-  if (i != external_extension_providers_.end()) {
-    scoped_ptr<Version> version;
-    version.reset(i->second->RegisteredVersion(id, NULL));
-    if (version.get())
-      return false;  // Yup, known extension, don't uninstall.
-  } else {
-    // Not from an external provider, so it's fine.
-    return false;
+  if (i == external_extension_providers_.end()) {
+    NOTREACHED() << "CheckExternalUninstall called for non-external extension "
+                 << location;
+    return;
   }
 
-  return true;  // This is not a known extension, uninstall.
+  scoped_ptr<Version> version;
+  version.reset(i->second->RegisteredVersion(id, NULL));
+  if (version.get())
+    return;  // Yup, known extension, don't uninstall.
+
+  // This is an external extension that we don't have registered.  Uninstall.
+  frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
+      frontend.get(), &ExtensionsService::UninstallExtension,
+      id, true));
 }
 
 void ExtensionsServiceBackend::ClearProvidersForTesting() {

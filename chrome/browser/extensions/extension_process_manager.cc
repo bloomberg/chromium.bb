@@ -15,13 +15,18 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
 
+static void CreateBackgroundHost(
+    ExtensionProcessManager* manager, Extension* extension) {
+  // Start the process for the master page, if it exists.
+  if (extension->background_url().is_valid())
+    manager->CreateBackgroundHost(extension, extension->background_url());
+}
+
 static void CreateBackgroundHosts(
     ExtensionProcessManager* manager, const ExtensionList* extensions) {
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    // Start the process for the master page, if it exists.
-    if ((*extension)->background_url().is_valid())
-      manager->CreateBackgroundHost(*extension, (*extension)->background_url());
+    CreateBackgroundHost(manager, *extension);
   }
 }
 
@@ -29,7 +34,7 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
     : browsing_instance_(new BrowsingInstance(profile)) {
   registrar_.Add(this, NotificationType::EXTENSIONS_READY,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSIONS_LOADED,
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
@@ -146,11 +151,11 @@ void ExtensionProcessManager::Observe(NotificationType type,
           Source<ExtensionsService>(source).ptr()->extensions());
       break;
 
-    case NotificationType::EXTENSIONS_LOADED: {
+    case NotificationType::EXTENSION_LOADED: {
       ExtensionsService* service = Source<ExtensionsService>(source).ptr();
       if (service->is_ready()) {
-        const ExtensionList* extensions = Details<ExtensionList>(details).ptr();
-        CreateBackgroundHosts(this, extensions);
+        Extension* extension = Details<Extension>(details).ptr();
+        ::CreateBackgroundHost(this, extension);
       }
       break;
     }

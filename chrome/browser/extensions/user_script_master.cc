@@ -268,7 +268,7 @@ UserScriptMaster::UserScriptMaster(MessageLoop* worker_loop,
 
   registrar_.Add(this, NotificationType::EXTENSIONS_READY,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSIONS_LOADED,
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
@@ -336,22 +336,18 @@ void UserScriptMaster::Observe(NotificationType type,
       extensions_service_ready_ = true;
       StartScan();
       break;
-    case NotificationType::EXTENSIONS_LOADED: {
+    case NotificationType::EXTENSION_LOADED: {
       // TODO(aa): Fix race here. A page could need a content script on startup,
       // before the extension has loaded.  We need to freeze the renderer in
       // that case.
       // See: http://code.google.com/p/chromium/issues/detail?id=11547.
 
       // Add any content scripts inside the extension.
-      ExtensionList* extensions = Details<ExtensionList>(details).ptr();
-      for (ExtensionList::iterator extension_iterator = extensions->begin();
-           extension_iterator != extensions->end(); ++extension_iterator) {
-        Extension* extension = *extension_iterator;
-        const UserScriptList& scripts = extension->content_scripts();
-        for (UserScriptList::const_iterator iter = scripts.begin();
-             iter != scripts.end(); ++iter) {
-          lone_scripts_.push_back(*iter);
-        }
+      Extension* extension = Details<Extension>(details).ptr();
+      const UserScriptList& scripts = extension->content_scripts();
+      for (UserScriptList::const_iterator iter = scripts.begin();
+           iter != scripts.end(); ++iter) {
+        lone_scripts_.push_back(*iter);
       }
       if (extensions_service_ready_)
         StartScan();

@@ -81,7 +81,7 @@ class ExtensionDisabledInfobarDelegate
         service_(service),
         extension_(extension) {
     // The user might re-enable the extension in other ways, so watch for that.
-    registrar_.Add(this, NotificationType::EXTENSIONS_LOADED,
+    registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                    Source<ExtensionsService>(service));
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
                    Source<ExtensionsService>(service));
@@ -116,14 +116,7 @@ class ExtensionDisabledInfobarDelegate
     // TODO(mpcomplete): RemoveInfoBar doesn't seem to always result in us
     // getting deleted.
     switch (type.value) {
-      case NotificationType::EXTENSIONS_LOADED: {
-        ExtensionList* extensions = Details<ExtensionList>(details).ptr();
-        ExtensionList::iterator iter = std::find(extensions->begin(),
-                                                 extensions->end(), extension_);
-        if (iter != extensions->end())
-          tab_contents_->RemoveInfoBar(this);
-        break;
-      }
+      case NotificationType::EXTENSION_LOADED:
       case NotificationType::EXTENSION_UNLOADED_DISABLED: {
         Extension* extension = Details<Extension>(details).ptr();
         if (extension == extension_)

@@ -61,7 +61,7 @@ PluginService::PluginService()
   }
 #endif
 
-  registrar_.Add(this, NotificationType::EXTENSIONS_LOADED,
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
@@ -208,22 +208,18 @@ void PluginService::Observe(NotificationType type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::EXTENSIONS_LOADED: {
+    case NotificationType::EXTENSION_LOADED: {
       // TODO(mpcomplete): We also need to force a renderer to refresh its
       // cache of the plugin list when we inject user scripts, since it could
       // have a stale version by the time extensions are loaded.
       // See: http://code.google.com/p/chromium/issues/detail?id=12306
-
-      ExtensionList* extensions = Details<ExtensionList>(details).ptr();
-      for (ExtensionList::iterator extension = extensions->begin();
-           extension != extensions->end(); ++extension) {
-        for (size_t i = 0; i < (*extension)->plugins().size(); ++i ) {
-          const Extension::PluginInfo& plugin = (*extension)->plugins()[i];
-          NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
-          NPAPI::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
-          if (!plugin.is_public)
-            private_plugins_[plugin.path] = (*extension)->url();
-        }
+      Extension* extension = Details<Extension>(details).ptr();
+      for (size_t i = 0; i < extension->plugins().size(); ++i ) {
+        const Extension::PluginInfo& plugin = extension->plugins()[i];
+        NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
+        NPAPI::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
+        if (!plugin.is_public)
+          private_plugins_[plugin.path] = extension->url();
       }
       break;
     }
