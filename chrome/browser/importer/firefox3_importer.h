@@ -80,7 +80,7 @@ class Firefox3Importer : public Importer {
   std::wstring source_path_;
   std::wstring app_path_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Firefox3Importer);
+  DISALLOW_COPY_AND_ASSIGN(Firefox3Importer);
 };
 
 #endif  // CHROME_BROWSER_IMPORTER_FIREFOX3_IMPORTER_H_

@@ -114,9 +114,8 @@ class NSSDecryptor {
       : NSS_Init(NULL), NSS_Shutdown(NULL), PK11_GetInternalKeySlot(NULL),
         PK11_CheckUserPassword(NULL), PK11_FreeSlot(NULL),
         PK11_Authenticate(NULL), PK11SDR_Decrypt(NULL), SECITEM_FreeItem(NULL),
-        PL_ArenaFinish(NULL), PR_Cleanup(NULL),
         is_nss_initialized_(false) {}
-  ~NSSDecryptor() {}
+  ~NSSDecryptor();
 
   // Initializes NSS if it hasn't already been initialized.
   bool Init(const std::wstring& /* dll_path */,
@@ -150,14 +149,9 @@ class NSSDecryptor {
   PK11AuthenticateFunc PK11_Authenticate;
   PK11SDRDecryptFunc PK11SDR_Decrypt;
   SECITEMFreeItemFunc SECITEM_FreeItem;
-  PLArenaFinishFunc PL_ArenaFinish;
-  PRCleanupFunc PR_Cleanup;
 
   // Libraries necessary for decrypting the passwords.
   static const wchar_t kNSS3Library[];
-  static const wchar_t kSoftokn3Library[];
-  static const wchar_t kPLDS4Library[];
-  static const wchar_t kNSPR4Library[];
 
   // True if NSS_Init() has been called
   bool is_nss_initialized_;
