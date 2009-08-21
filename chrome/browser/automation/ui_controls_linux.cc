@@ -7,8 +7,10 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
+#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/test/automation/automation_constants.h"
 
 namespace {
@@ -44,6 +46,24 @@ class EventWaiter : public MessageLoopForUI::Observer {
  private:
   scoped_ptr<Task> task_;
   GdkEventType type_;
+};
+
+class ClickTask : public Task {
+ public:
+  ClickTask(ui_controls::MouseButton button, int state, Task* followup)
+      : button_(button), state_(state), followup_(followup)  {
+  }
+
+  virtual ~ClickTask() {}
+
+  virtual void Run() {
+    ui_controls::SendMouseEventsNotifyWhenDone(button_, state_, followup_);
+  }
+
+ private:
+  ui_controls::MouseButton button_;
+  int state_;
+  Task* followup_;
 };
 
 }  // namespace
@@ -109,20 +129,21 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
   return rv;
 }
 
-bool SendMouseClick(const gfx::Point& point, MouseButton type) {
+bool SendMouseEvents(MouseButton type, int state) {
   GdkEvent* event = gdk_event_new(GDK_BUTTON_PRESS);
 
-  event->button.window = gdk_window_at_pointer(NULL, NULL);
-  g_object_ref(event->button.window);
   event->button.send_event = false;
   event->button.time = EventTimeNow();
 
-  event->motion.x_root = point.x();
-  event->motion.y_root = point.x();
+  gint x, y;
+  event->button.window = gdk_window_at_pointer(&x, &y);
+  g_object_ref(event->button.window);
+  event->motion.x = x;
+  event->motion.y = y;
   gint origin_x, origin_y;
   gdk_window_get_origin(event->button.window, &origin_x, &origin_y);
-  event->button.x = point.x() - origin_x;
-  event->button.y = point.y() - origin_y;
+  event->button.x_root = x + origin_x;
+  event->button.y_root = y + origin_y;
 
   event->button.axes = NULL;
   // TODO(estade): as above, we may want to pack this with the actual state.
@@ -131,13 +152,15 @@ bool SendMouseClick(const gfx::Point& point, MouseButton type) {
   event->button.device = gdk_device_get_core_pointer();
 
   event->button.type = GDK_BUTTON_PRESS;
-  gdk_event_put(event);
+  if (state & DOWN)
+    gdk_event_put(event);
 
   // Also send a release event.
   GdkEvent* release_event = gdk_event_copy(event);
   release_event->button.type = GDK_BUTTON_RELEASE;
   release_event->button.time++;
-  gdk_event_put(release_event);
+  if (state & UP)
+    gdk_event_put(release_event);
 
   gdk_event_free(event);
   gdk_event_free(release_event);
@@ -145,12 +168,24 @@ bool SendMouseClick(const gfx::Point& point, MouseButton type) {
   return false;
 }
 
-// TODO(estade): need to figure out a better type for this than View.
-void MoveMouseToCenterAndPress(views::View* view,
+bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
+  bool rv = SendMouseEvents(type, state);
+  MessageLoop::current()->PostTask(FROM_HERE, task);
+  return rv;
+}
+
+bool SendMouseClick(MouseButton type) {
+  return SendMouseEvents(type, UP | DOWN);
+}
+
+void MoveMouseToCenterAndPress(GtkWidget* widget,
                                MouseButton button,
                                int state,
                                Task* task) {
-  NOTIMPLEMENTED();
+  gfx::Rect bounds = gtk_util::GetWidgetScreenBounds(widget);
+  SendMouseMoveNotifyWhenDone(bounds.x() + bounds.width() / 2,
+                              bounds.y() + bounds.height() / 2,
+                              new ClickTask(button, state, task));
 }
 
 }  // namespace ui_controls

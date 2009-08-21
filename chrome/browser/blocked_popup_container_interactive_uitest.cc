@@ -61,7 +61,7 @@ class BlockedPopupContainerInteractiveTest : public UITest {
   scoped_refptr<TabProxy> tab_;
 };
 
-TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_TestOpenAndResizeTo) {
+TEST_F(BlockedPopupContainerInteractiveTest, TestOpenAndResizeTo) {
   NavigateMainTabTo(L"constrained_window_onload_resizeto.html");
   SimulateClickInCenterOf(window_);
 
@@ -100,12 +100,17 @@ TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_TestOpenAndResizeTo) {
   ASSERT_TRUE(popup_window->GetViewBoundsWithTimeout(
                  VIEW_ID_TAB_CONTAINER, &rect, false, 1000, &is_timeout));
   ASSERT_FALSE(is_timeout);
-  EXPECT_LT(rect.width(), 200);
   EXPECT_LT(rect.height(), 200);
+#if defined(OS_LINUX)
+  // On Linux we may run in an environment where there is no window frame. In
+  // this case our width might be exactly 200. The height will still be less
+  // because we have to show the location bar.
+  EXPECT_LE(rect.width(), 200);
+#else
+  EXPECT_LT(rect.width(), 200);
+#endif
 }
 
-// TODO(estade): port.
-#if !defined(OS_LINUX)
 // Helper function used to get the number of blocked popups out of the window
 // title.
 bool ParseCountOutOfTitle(const std::wstring& title, int* output) {
@@ -128,7 +133,7 @@ bool ParseCountOutOfTitle(const std::wstring& title, int* output) {
 
 // Tests that in the window.open() equivalent of a fork bomb, we stop building
 // windows.
-TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_DontSpawnEndlessPopups) {
+TEST_F(BlockedPopupContainerInteractiveTest, DontSpawnEndlessPopups) {
   NavigateMainTabTo(L"infinite_popups.html");
   SimulateClickInCenterOf(window_);
 
@@ -171,7 +176,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_DontSpawnEndlessPopups) {
 
 // Make sure that we refuse to close windows when a constrained popup is
 // displayed.
-TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_WindowOpenWindowClosePopup) {
+TEST_F(BlockedPopupContainerInteractiveTest, WindowOpenWindowClosePopup) {
   NavigateMainTabTo(L"openclose_main.html");
   SimulateClickInCenterOf(window_);
 
@@ -207,7 +212,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, BlockAlertFromBlockedPopup) {
   ASSERT_EQ(1, popup_count);
 }
 
-TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_ShowAlertFromNormalPopup) {
+TEST_F(BlockedPopupContainerInteractiveTest, ShowAlertFromNormalPopup) {
   NavigateMainTabTo(L"show_alert.html");
   SimulateClickInCenterOf(window_);
 
@@ -228,7 +233,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_ShowAlertFromNormalPopup) 
 
 // Make sure that window focus works while creating a popup window so that we
 // don't
-TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_DontBreakOnBlur) {
+TEST_F(BlockedPopupContainerInteractiveTest, DontBreakOnBlur) {
   NavigateMainTabTo(L"window_blur_test.html");
   SimulateClickInCenterOf(window_);
 
@@ -238,4 +243,3 @@ TEST_F(BlockedPopupContainerInteractiveTest, DISABLED_DontBreakOnBlur) {
   // We popup shouldn't be closed by the onblur handler.
   ASSERT_FALSE(automation()->WaitForWindowCountToBecome(1, 1500));
 }
-#endif

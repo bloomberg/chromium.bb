@@ -4,13 +4,16 @@
 
 #include "chrome/browser/automation/automation_provider.h"
 
+#include "base/gfx/point.h"
+#include "base/gfx/rect.h"
 #include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/common/gtk_util.h"
 
 void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
                                          bool* success) {
   *success = false;
-  if (window_tracker_->ContainsHandle(handle)) {
-    GtkWindow* window = window_tracker_->GetResource(handle);
+  GtkWindow* window = window_tracker_->GetResource(handle);
+  if (window) {
     gtk_window_move(window, bounds.x(), bounds.height());
     gtk_window_resize(window, bounds.width(), bounds.height());
     *success = true;
@@ -20,8 +23,8 @@ void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
 void AutomationProvider::SetWindowVisible(int handle, bool visible,
                                           bool* result) {
   *result = false;
-  if (window_tracker_->ContainsHandle(handle)) {
-    GtkWindow* window = window_tracker_->GetResource(handle);
+  GtkWindow* window = window_tracker_->GetResource(handle);
+  if (window) {
     if (visible) {
       gtk_window_present(window);
     } else {
@@ -37,8 +40,8 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
                                              gfx::Rect* bounds) {
   *success = false;
 
-  if (window_tracker_->ContainsHandle(handle)) {
-    gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  GtkWindow* window = window_tracker_->GetResource(handle);
+  if (window) {
     GtkWidget* widget = ViewIDUtil::GetWidget(GTK_WIDGET(window),
                                               static_cast<ViewID>(view_id));
     if (!widget)
@@ -48,11 +51,9 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
                         widget->allocation.width, widget->allocation.height);
     gint x, y;
     if (screen_coordinates) {
-      gdk_window_get_origin(widget->window, &x, &y);
-      if (GTK_WIDGET_NO_WINDOW(widget)) {
-        x += widget->allocation.x;
-        y += widget->allocation.y;
-      }
+      gfx::Point point = gtk_util::GetWidgetScreenPosition(widget);
+      x = point.x();
+      y = point.y();
     } else {
       gtk_widget_translate_coordinates(widget, GTK_WIDGET(window),
                                        0, 0, &x, &y);

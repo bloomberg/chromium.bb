@@ -219,6 +219,15 @@ bool SendKeyPressImpl(wchar_t key, bool control, bool shift, bool alt,
 }
 
 bool SendMouseMoveImpl(long x, long y, Task* task) {
+  // First check if the mouse is already there.
+  POINT current_pos;
+  ::GetCursorPos(&current_pos);
+  if (x == current_pos.x && y == current_pos.y) {
+    if (task)
+      MessageLoop::current()->PostTask(FROM_HERE, task);
+    return true;
+  }
+
   INPUT input = { 0 };
 
   int screen_width = ::GetSystemMetrics(SM_CXSCREEN) - 1;
@@ -318,11 +327,11 @@ bool SendMouseEvents(MouseButton type, int state) {
   return SendMouseEventsImpl(type, state, NULL);
 }
 
-void SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
-  SendMouseEventsImpl(type, state, task);
+bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
+  return SendMouseEventsImpl(type, state, task);
 }
 
-bool SendMouseClick(const gfx::Point& point, MouseButton type) {
+bool SendMouseClick(MouseButton type) {
   return SendMouseEventsImpl(type, UP | DOWN, NULL);
 }
 

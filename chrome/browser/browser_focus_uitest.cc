@@ -31,6 +31,14 @@
 #include "chrome/browser/gtk/view_id_util.h"
 #endif
 
+#if defined(OS_LINUX)
+// For some reason we hit an external DNS lookup in this test in Linux but not
+// on Windows. TODO(estade): investigate.
+#define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
+#else
+#define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
+#endif
+
 namespace {
 
 // The delay waited in some cases where we don't have a notifications for an
@@ -58,15 +66,36 @@ class BrowserFocusTest : public InProcessBrowserTest {
     views::FocusManager* focus_manager =
         views::FocusManager::GetFocusManagerForNativeView(window);
     ASSERT_TRUE(focus_manager);
-    EXPECT_EQ(reinterpret_cast<BrowserView*>(browser_window)->GetViewByID(vid),
-              focus_manager->GetFocusedView()) << "For view id " << vid;
+    EXPECT_EQ(vid, focus_manager->GetFocusedView()->GetID()) <<
+        "For view id " << vid;
 #elif defined(OS_LINUX)
     GtkWidget* widget = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
     ASSERT_TRUE(widget);
-    EXPECT_TRUE(WidgetInFocusChain(GTK_WIDGET(window), widget));
+    EXPECT_TRUE(WidgetInFocusChain(GTK_WIDGET(window), widget)) <<
+        "For view id " << vid;
 #else
     NOTIMPLEMENTED();
 #endif
+  }
+
+  void ClickOnView(ViewID vid) {
+    BrowserWindow* browser_window = browser()->window();
+    ASSERT_TRUE(browser_window);
+#if defined(OS_WIN)
+    views::View* view =
+        reinterpret_cast<BrowserView*>(browser_window)->GetViewByID(vid);
+#elif defined(OS_LINUX)
+    gfx::NativeWindow window = browser_window->GetNativeHandle();
+    ASSERT_TRUE(window);
+    GtkWidget* view = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
+#endif
+    ASSERT_TRUE(view);
+    ui_controls::MoveMouseToCenterAndPress(
+        view,
+        ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
+        new MessageLoop::QuitTask());
+    ui_test_utils::RunMessageLoop();
   }
 
   static void HideNativeWindow(gfx::NativeWindow window) {
@@ -173,31 +202,24 @@ class TestInterstitialPage : public InterstitialPage {
 
 }  // namespace
 
-// TODO(estade): port.
-#if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
-  browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::LINK,
-                           true, -1, false, NULL);
+#if defined(OS_LINUX)
+  // It seems we have to wait a little bit for the widgets to spin up before
+  // we can start clicking on them.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          new MessageLoop::QuitTask(),
+                                          kActionDelayMs);
+  ui_test_utils::RunMessageLoop();
+#endif
+
   CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
-  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  ui_controls::MoveMouseToCenterAndPress(
-      browser_view->GetTabContentsContainerView(),
-      ui_controls::LEFT,
-      ui_controls::DOWN | ui_controls::UP,
-      new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+  ClickOnView(VIEW_ID_TAB_CONTAINER);
   CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 
-  ui_controls::MoveMouseToCenterAndPress(
-      browser_view->GetLocationBarView(),
-      ui_controls::LEFT,
-      ui_controls::DOWN | ui_controls::UP,
-      new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+  ClickOnView(VIEW_ID_LOCATION_BAR);
   CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
   HTTPTestServer* server = StartHTTPServer();
@@ -456,23 +478,16 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
   }
 }
 
-#if defined(OS_WIN)
 // Focus traversal while an interstitial is showing.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversalOnInterstitial) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our test page.
   GURL url = server->TestServerPageW(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd);
-
   // Focus should be on the page.
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 
   // Let's show an interstitial.
   TestInterstitialPage* interstitial_page =
@@ -485,13 +500,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversalOnInterstitial) {
                                           1000);
   ui_test_utils::RunMessageLoop();
 
-  // Click on the location bar.
-  LocationBarView* location_bar = browser_view->GetLocationBarView();
-  ui_controls::MoveMouseToCenterAndPress(location_bar,
-                                         ui_controls::LEFT,
-                                         ui_controls::DOWN | ui_controls::UP,
-                                         new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+  browser()->FocusLocationBar();
 
   const char* kExpElementIDs[] = {
     "",  // Initially no element in the page should be focused
@@ -500,10 +509,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversalOnInterstitial) {
     "gmapLink"
   };
 
+  gfx::NativeWindow window = browser()->window()->GetNativeHandle();
+
   // Test forward focus traversal.
   for (int i = 0; i < 2; ++i) {
     // Location bar should be focused.
-    EXPECT_EQ(location_bar, focus_manager->GetFocusedView());
+    CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
     // Now let's press tab to move the focus.
     for (int j = 0; j < 7; ++j) {
@@ -511,14 +522,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversalOnInterstitial) {
       std::string actual = interstitial_page->GetFocusedElement();
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
-      ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_TAB, false,
+      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, false,
                                               false, false,
                                               new MessageLoop::QuitTask());
       ui_test_utils::RunMessageLoop();
       // Ideally, we wouldn't sleep here and instead would use the event
       // processed ack notification from the renderer.  I am reluctant to create
       // a new notification/callback for that purpose just for this test.
-      ::Sleep(kActionDelayMs);
+      PlatformThread::Sleep(kActionDelayMs);
     }
 
     // At this point the renderer has sent us a message asking to advance the
@@ -531,15 +542,15 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversalOnInterstitial) {
   // Now let's try reverse focus traversal.
   for (int i = 0; i < 2; ++i) {
     // Location bar should be focused.
-    EXPECT_EQ(location_bar, focus_manager->GetFocusedView());
+    CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
     // Now let's press shift-tab to move the focus in reverse.
     for (int j = 0; j < 7; ++j) {
-      ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_TAB, false,
+      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, false,
                                               true, false,
                                               new MessageLoop::QuitTask());
       ui_test_utils::RunMessageLoop();
-      ::Sleep(kActionDelayMs);
+      PlatformThread::Sleep(kActionDelayMs);
 
       // Let's make sure the focus is on the expected element in the page.
       std::string actual = interstitial_page->GetFocusedElement();
@@ -562,14 +573,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   GURL url = server->TestServerPageW(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd);
-
   // Page should have focus.
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
   EXPECT_TRUE(browser()->GetSelectedTabContents()->render_view_host()->view()->
       HasFocus());
 
@@ -585,18 +590,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   ui_test_utils::RunMessageLoop();
 
   // The interstitial should have focus now.
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
   EXPECT_TRUE(interstitial_page->HasFocus());
 
   // Hide the interstitial.
   interstitial_page->DontProceed();
 
   // Focus should be back on the original page.
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
-  EXPECT_TRUE(browser()->GetSelectedTabContents()->render_view_host()->view()->
-      HasFocus());
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 }
 
 // Make sure Find box can request focus, even when it is already open.
@@ -607,14 +608,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   GURL url = server->TestServerPageW(kTypicalPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd);
-  LocationBarView* location_bar = browser_view->GetLocationBarView();
+  gfx::NativeWindow window = browser()->window()->GetNativeHandle();
 
   // Press Ctrl+F, which will make the Find box open and request focus.
-  ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_F, true,
+  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
                                           false, false,
                                           new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
@@ -624,62 +621,40 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   // could create a RenderViewHostDelegate wrapper and hook-it up by either:
   // - creating a factory used to create the delegate
   // - making the test a private and overwriting the delegate member directly.
-  ::Sleep(kActionDelayMs);
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, new MessageLoop::QuitTask(), kActionDelayMs);
   ui_test_utils::RunMessageLoop();
 
-  views::View* focused_view = focus_manager->GetFocusedView();
-  ASSERT_TRUE(focused_view != NULL);
-  EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, focused_view->GetID());
+  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
 
-  // Click on the location bar.
-  ui_controls::MoveMouseToCenterAndPress(location_bar,
-                                         ui_controls::LEFT,
-                                         ui_controls::DOWN | ui_controls::UP,
-                                         new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
-
-  // Make sure the location bar is focused.
-  EXPECT_EQ(location_bar, focus_manager->GetFocusedView());
+  browser()->FocusLocationBar();
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
   // Now press Ctrl+F again and focus should move to the Find box.
-  ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_F, true,
+  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
                                           false, false,
                                           new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
-  focused_view = focus_manager->GetFocusedView();
-  ASSERT_TRUE(focused_view != NULL);
-  EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, focused_view->GetID());
+  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
 
   // Set focus to the page.
-  ui_controls::MoveMouseToCenterAndPress(
-      browser_view->GetTabContentsContainerView(),
-      ui_controls::LEFT,
-      ui_controls::DOWN | ui_controls::UP,
-      new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
+  ClickOnView(VIEW_ID_TAB_CONTAINER);
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 
   // Now press Ctrl+F again and focus should move to the Find box.
-  ui_controls::SendKeyPressNotifyWhenDone(NULL, base::VKEY_F, true, false,
+  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true, false,
                                           false, new MessageLoop::QuitTask());
   ui_test_utils::RunMessageLoop();
 
   // See remark above on why we wait.
-  ::Sleep(kActionDelayMs);
-  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, new MessageLoop::QuitTask(), kActionDelayMs);
   ui_test_utils::RunMessageLoop();
-
-  focused_view = focus_manager->GetFocusedView();
-  ASSERT_TRUE(focused_view != NULL);
-  EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, focused_view->GetID());
+  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
 }
-#endif  // defined(OS_WIN)
 
 // Makes sure the focus is in the right location when opening the different
 // types of tabs.
-// TODO(estade): undisable this.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
@@ -699,48 +674,31 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
   CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 }
 
-#if defined(OS_WIN)
 // Tests that focus goes where expected when using reload.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   HTTPTestServer* server = StartHTTPServer();
-
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  ASSERT_TRUE(browser_view);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd);
-  ASSERT_TRUE(focus_manager);
 
   // Open the new tab, reload.
   browser()->NewTab();
   browser()->Reload();
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should stay on the location bar.
-  EXPECT_EQ(browser_view->GetLocationBarView(),
-            focus_manager->GetFocusedView());
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
   // Open a regular page, focus the location bar, reload.
   ui_test_utils::NavigateToURL(browser(), server->TestServerPageW(kSimplePage));
-  browser_view->GetLocationBarView()->FocusLocation();
-  EXPECT_EQ(browser_view->GetLocationBarView(),
-            focus_manager->GetFocusedView());
+  browser()->FocusLocationBar();
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
   browser()->Reload();
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should now be on the tab contents.
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
+  browser()->ShowDownloadsTab();
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 }
 
 // Tests that focus goes where expected when using reload on a crashed tab.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReloadCrashedTab) {
   HTTPTestServer* server = StartHTTPServer();
-
-  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-  ASSERT_TRUE(browser_view);
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(hwnd);
-  ASSERT_TRUE(focus_manager);
 
   // Open a regular page, crash, reload.
   ui_test_utils::NavigateToURL(browser(), server->TestServerPageW(kSimplePage));
@@ -748,7 +706,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReloadCrashedTab) {
   browser()->Reload();
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   // Focus should now be on the tab contents.
-  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
-            focus_manager->GetFocusedView());
+  browser()->ShowDownloadsTab();
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 }
-#endif  // defined(OS_WIN)

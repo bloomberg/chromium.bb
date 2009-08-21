@@ -62,21 +62,25 @@ enum MouseButtonState {
   DOWN = 2
 };
 
-// Sends a mouse down and or up message.
+// Sends a mouse down and/or up message. The click will be sent to wherever
+// the cursor currently is, so be sure to move the cursor before calling this
+// (and be sure the cursor has arrived!).
 bool SendMouseEvents(MouseButton type, int state);
-void SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task);
-
-// Simulate a single mouse click with given button type.
-// The click will be sent to whichever window is under the cursor, so make sure
-// the cursor is where you want it before calling this.
-bool SendMouseClick(const gfx::Point& point, MouseButton type);
+bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task);
+// Same as SendMouseEvents with UP | DOWN.
+bool SendMouseClick(MouseButton type);
 
 // A combination of SendMouseMove to the middle of the view followed by
 // SendMouseEvents.
-void MoveMouseToCenterAndPress(views::View* view,
-                               MouseButton button,
-                               int state,
-                               Task* task);
+void MoveMouseToCenterAndPress(
+#if defined(OS_WIN)
+    views::View* view,
+#elif defined(OS_LINUX)
+    GtkWidget* widget,
+#endif
+    MouseButton button,
+    int state,
+    Task* task);
 
 }  // ui_controls
 

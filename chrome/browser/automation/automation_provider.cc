@@ -836,7 +836,7 @@ class AutomationInterstitialPage : public InterstitialPage {
 #if !defined(OS_MACOSX)
 class ClickTask : public Task {
  public:
-  ClickTask(gfx::Point point, int flags) : point_(point), flags_(flags) {}
+  explicit ClickTask(int flags) : flags_(flags) {}
   virtual ~ClickTask() {}
 
   virtual void Run() {
@@ -854,11 +854,10 @@ class ClickTask : public Task {
       NOTREACHED();
     }
 
-    ui_controls::SendMouseClick(point_, button);
+    ui_controls::SendMouseClick(button);
   }
 
  private:
-  gfx::Point point_;
   int flags_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickTask);
@@ -1513,14 +1512,60 @@ void AutomationProvider::ExecuteBrowserCommand(
   Send(reply_message);
 }
 
-#if !defined(OS_MACOSX)
+// This task just adds another task to the event queue.  This is useful if
+// you want to ensure that any tasks added to the event queue after this one
+// have already been processed by the time |task| is run.
+class InvokeTaskLaterTask : public Task {
+ public:
+  explicit InvokeTaskLaterTask(Task* task) : task_(task) {}
+  virtual ~InvokeTaskLaterTask() {}
+
+  virtual void Run() {
+    MessageLoop::current()->PostTask(FROM_HERE, task_);
+  }
+
+ private:
+  Task* task_;
+
+  DISALLOW_COPY_AND_ASSIGN(InvokeTaskLaterTask);
+};
+
+#if defined(OS_WIN)
+// TODO(port): Replace POINT and other windowsisms.
+
+// This task sends a WindowDragResponse message with the appropriate
+// routing ID to the automation proxy.  This is implemented as a task so that
+// we know that the mouse events (and any tasks that they spawn on the message
+// loop) have been processed by the time this is sent.
+class WindowDragResponseTask : public Task {
+ public:
+  WindowDragResponseTask(AutomationProvider* provider,
+                         IPC::Message* reply_message)
+      : provider_(provider), reply_message_(reply_message) {}
+  virtual ~WindowDragResponseTask() {}
+
+  virtual void Run() {
+    DCHECK(reply_message_ != NULL);
+    AutomationMsg_WindowDrag::WriteReplyParams(reply_message_, true);
+    provider_->Send(reply_message_);
+  }
+
+ private:
+  AutomationProvider* provider_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowDragResponseTask);
+};
+#endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_LINUX)
 void AutomationProvider::WindowSimulateClick(const IPC::Message& message,
                                              int handle,
                                              const gfx::Point& click,
                                              int flags) {
   if (window_tracker_->ContainsHandle(handle)) {
     ui_controls::SendMouseMoveNotifyWhenDone(click.x(), click.y(),
-                                             new ClickTask(click, flags));
+                                             new ClickTask(flags));
   }
 }
 
@@ -1541,7 +1586,7 @@ void AutomationProvider::WindowSimulateKeyPress(const IPC::Message& message,
                             ((flags & views::Event::EF_ALT_DOWN) ==
                               views::Event::EF_ALT_DOWN));
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 void AutomationProvider::IsWindowActive(int handle, bool* success,
                                         bool* is_active) {
