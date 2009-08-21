@@ -157,19 +157,4 @@ void enableV8SingleThreadMode()
     WebCore::enableStringImplCache();
 }
 
-void whiteListAccessFromOrigin(const WebURL& sourceOrigin,
-                               const WebString& destinationProtocol,
-                               const WebString& destinationHost,
-                               bool allowDestinationSubdomains)
-{
-    WebCore::SecurityOrigin::whiteListAccessFromOrigin(
-        *WebCore::SecurityOrigin::create(sourceOrigin), destinationProtocol,
-        destinationHost, allowDestinationSubdomains);
-}
-
-void resetOriginAccessWhiteLists()
-{
-    WebCore::SecurityOrigin::resetOriginAccessWhiteLists();
-}
-
 } // namespace WebKit
