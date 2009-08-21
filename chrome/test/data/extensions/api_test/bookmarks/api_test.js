@@ -62,7 +62,7 @@ window.onerror = function(message, url, code) {
   fail(message);
 };
 
-function expectTrue(test, message) {
+function assertTrue(test, message) {
   if (test !== true) {
     if (typeof(test) == "string") {
       if (message) {
@@ -75,3 +75,8 @@ function expectTrue(test, message) {
   }
 }
 
+function assertNoLastError() {
+  if (chrome.extension.lastError != undefined) {
+    fail("lastError.message == " + chrome.extension.lastError.message);
+  }
+}

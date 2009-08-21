@@ -4,8 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-// TODO(brettw) bug 19866: this test is disabled because it is flaky.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Bookmarks) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Bookmarks) {
   // TODO(erikkay) no initial state for this test.
   ASSERT_TRUE(RunExtensionTest("bookmarks")) << message_;
 }

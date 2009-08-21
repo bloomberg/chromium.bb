@@ -3,8 +3,8 @@
 
 var expected = [
   {"children": [
-    {"children": [], "id": "1", "parentId": "0", "title":"Bookmarks bar"},
-    {"children": [], "id": "2", "parentId": "0", "title":"Other bookmarks"}
+    {"children": [], "id": "1", "parentId": "0", "index": 0, "title":"Bookmarks bar"},
+    {"children": [], "id": "2", "parentId": "0", "index": 1, "title":"Other bookmarks"}
     ],
    "id": "0", "title": ""
   }
@@ -38,8 +38,11 @@ function compareTrees(left, right) {
     return "count mismatch: " + left.length + " != " + right.length;
   for (var i = 0; i < left.length; i++) {
     var result = compareNode(left[i], right[i]);
-    if (result !== true)
+    if (result !== true) {
+      console.log(JSON.stringify(left));
+      console.log(JSON.stringify(right));
       return result;
+    }
     result = compareTrees(left[i].children, right[i].children);
     if (result !== true)
       return result;
@@ -50,7 +53,8 @@ function compareTrees(left, right) {
 var tests = [
   function getTree() {
     chrome.bookmarks.getTree(function(results) {
-      expectTrue(compareTrees(results, expected),
+      assertNoLastError();
+      assertTrue(compareTrees(results, expected),
                  "getTree() result != expected");
       expected = results;
       succeed();
@@ -59,16 +63,18 @@ var tests = [
   
   function get() {
     chrome.bookmarks.get("1", function(results) {
-      expectTrue(compareNode(results[0], expected[0].children[0]));
+      assertNoLastError();
+      assertTrue(compareNode(results[0], expected[0].children[0]));
       succeed();
     });
   },
   
   function getArray() {
     chrome.bookmarks.get(["1", "2"], function(results) {
-      expectTrue(compareNode(results[0], expected[0].children[0]),
+      assertNoLastError();
+      assertTrue(compareNode(results[0], expected[0].children[0]),
                  "get() result != expected");
-      expectTrue(compareNode(results[1], expected[0].children[1]),
+      assertTrue(compareNode(results[1], expected[0].children[1]),
                  "get() result != expected");
       succeed();
     });
@@ -76,9 +82,10 @@ var tests = [
   
   function getChildren() {
     chrome.bookmarks.getChildren("0", function(results) {
-      expectTrue(compareNode(results[0], expected[0].children[0]),
+      assertNoLastError();
+      assertTrue(compareNode(results[0], expected[0].children[0]),
                  "getChildren() result != expected");
-      expectTrue(compareNode(results[1], expected[0].children[1]),
+      assertTrue(compareNode(results[1], expected[0].children[1]),
                  "getChildren() result != expected");
       succeed();
     });
@@ -87,8 +94,10 @@ var tests = [
   function create() {
     var node = {parentId: "1", title:"google", url:"http://www.google.com/"};
     chrome.bookmarks.create(node, function(results) {
+      assertNoLastError();
       node.id = results.id;  // since we couldn't know this going in
-      expectTrue(compareNode(node, results),
+      node.index = 0;
+      assertTrue(compareNode(node, results),
                  "created node != source");
       succeed();
     });
