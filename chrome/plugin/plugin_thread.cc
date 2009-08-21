@@ -35,7 +35,6 @@ PluginThread::PluginThread()
   {
     // XEmbed plugins assume they are hosted in a Gtk application, so we need
     // to initialize Gtk in the plugin process.
-    g_thread_init(NULL);
     const std::vector<std::string>& args =
         CommandLine::ForCurrentProcess()->argv();
     int argc = args.size();
