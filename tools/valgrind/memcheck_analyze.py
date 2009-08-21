@@ -10,11 +10,81 @@
 import logging
 import optparse
 import os
+import re
 import subprocess
 import sys
+import tempfile
 import time
 from xml.dom.minidom import parse
 from xml.parsers.expat import ExpatError
+
+# Global symbol table (yuck)
+TheAddressTable = None
+
+GDB_LINE_RE = re.compile(r'Line ([0-9]*) of "([^"]*)".*')
+
+def _GdbOutputToFileLine(output_line):
+  ''' Parse the gdb output line, return a pair (file, line num) '''
+  match =  GDB_LINE_RE.match(output_line)
+  if match:
+    return match.groups()[1], match.groups()[0]
+  else:
+    return None
+
+def ResolveAddressesWithinABinary(binary_name, address_list):
+  ''' For each address, return a pair (file, line num) '''
+  commands = tempfile.NamedTemporaryFile()
+  commands.write('file %s\n' % binary_name)
+  for addr in address_list:
+    commands.write('info line *%s\n' % addr)
+  commands.write('quit\n')
+  commands.flush()
+  gdb_commandline = 'gdb -batch -x %s 2>/dev/null' % commands.name
+  gdb_pipe = os.popen(gdb_commandline)
+  result = gdb_pipe.readlines()
+
+  address_count = 0
+  ret = {}
+  for line in result:
+    if line.startswith('Line'):
+      ret[address_list[address_count]] = _GdbOutputToFileLine(line)
+      address_count += 1
+    if line.startswith('No line'):
+      ret[address_list[address_count]] = (None, None)
+      address_count += 1
+  gdb_pipe.close()
+  commands.close()
+  return ret
+
+class _AddressTable(object):
+  ''' Object to do batched line number lookup. '''
+  def __init__(self):
+    self._binaries = {}
+    self._all_resolved = False
+
+  def Add(self, binary, address):
+    ''' Register a lookup request. '''
+    if binary in self._binaries:
+      self._binaries[binary].append(address)
+    else:
+      self._binaries[binary] = [address]
+    self._all_resolved = False
+
+  def ResolveAll(self):
+    ''' Carry out all lookup requests. '''
+    self._translation = {}
+    for binary in self._binaries.keys():
+      addr = ResolveAddressesWithinABinary(binary, self._binaries[binary])
+      self._translation[binary] = addr
+    self._all_resolved = True
+
+  def GetFileLine(self, binary, addr):
+    ''' Get the (filename, linenum) result of a previously-registered lookup request. '''
+    if self._all_resolved:
+      if binary in self._translation:
+        if addr in self._translation[binary]:
+          return self._translation[binary][addr]
+    return (None, None)
 
 # These are functions (using C++ mangled names) that we look for in stack
 # traces. We don't show stack frames while pretty printing when they are below
@@ -71,6 +141,10 @@ def gatherFrames(node, source_dir):
     frames += [frame_dict]
     if frame_dict[FUNCTION_NAME] in _TOP_OF_STACK_POINTS:
       break
+    global TheAddressTable
+    if TheAddressTable != None and frame_dict[SRC_LINE] == "":
+      # Try using gdb
+      TheAddressTable.Add(frame_dict[OBJECT_FILE], frame_dict[INSTRUCTION_POINTER])
   return frames
 
 class ValgrindError:
@@ -117,6 +191,17 @@ class ValgrindError:
     #     </frame>
     #   </stack>
     #   </origin>
+    #
+    # Each frame looks like this:
+    #  <frame>
+    #    <ip>0x83751BC</ip>
+    #    <obj>/usr/local/google/bigdata/dkegel/chrome-build/src/out/Release/base_unittests</obj>
+    #    <fn>_ZN7testing8internal12TestInfoImpl7RunTestEPNS_8TestInfoE</fn>
+    #    <dir>/data/dkegel/chrome-build/src/testing/gtest/src</dir>
+    #    <file>gtest-internal-inl.h</file>
+    #    <line>655</line>
+    #  </frame>
+    # although the dir, file, and line elements are missing if there is no debug info.
 
     self._kind = getTextOf(error_node, "kind")
     self._backtraces = []
@@ -160,15 +245,21 @@ class ValgrindError:
 
       i = 0
       for frame in backtrace[1]:
-        output += ("  " + demangled_names[i] + " (")
+        output += ("  " + demangled_names[i])
         i = i + 1
 
-        if frame[SRC_FILE_DIR] != "":
-          output += (frame[SRC_FILE_DIR] + "/" + frame[SRC_FILE_NAME] + ":" +
-                     frame[SRC_LINE])
+        global TheAddressTable
+        if TheAddressTable != None and frame[SRC_FILE_DIR] == "":
+           # Try using gdb
+           foo = TheAddressTable.GetFileLine(frame[OBJECT_FILE], frame[INSTRUCTION_POINTER])
+           if foo[0] != None:
+             output += (" (" + foo[0] + ":" + foo[1] + ")")
+        elif frame[SRC_FILE_DIR] != "":
+          output += (" (" + frame[SRC_FILE_DIR] + "/" + frame[SRC_FILE_NAME] + ":" +
+                     frame[SRC_LINE] + ")")
         else:
-          output += frame[OBJECT_FILE]
-        output += ")\n"
+          output += " (" + frame[OBJECT_FILE] + ")"
+        output += "\n"
 
       output += "Suppression:\n"
       for frame in backtrace[1]:
@@ -211,7 +302,7 @@ class MemcheckAnalyze:
   ''' Given a set of Valgrind XML files, parse all the errors out of them,
   unique them and output the results.'''
 
-  def __init__(self, source_dir, files, show_all_leaks=False):
+  def __init__(self, source_dir, files, show_all_leaks=False, use_gdb=False):
     '''Reads in a set of files.
 
     Args:
@@ -220,6 +311,9 @@ class MemcheckAnalyze:
       show_all_leaks: whether to show even less important leaks
     '''
 
+    if use_gdb:
+      global TheAddressTable
+      TheAddressTable = _AddressTable()
     self._errors = set()
     badfiles = set()
     start = time.time()
@@ -284,6 +378,9 @@ class MemcheckAnalyze:
     if self._errors:
       logging.error("FAIL! There were %s errors: " % len(self._errors))
 
+      if TheAddressTable != None:
+        TheAddressTable.ResolveAll()
+
       for error in self._errors:
         logging.error(error)
 
@@ -305,7 +402,7 @@ def _main():
     parser.error("no filename specified")
   filenames = args
 
-  analyzer = MemcheckAnalyze(options.source_dir, filenames)
+  analyzer = MemcheckAnalyze(options.source_dir, filenames, use_gdb=True)
   retcode = analyzer.Report()
 
   sys.exit(retcode)

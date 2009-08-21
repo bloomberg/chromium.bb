@@ -363,7 +363,9 @@ class Memcheck(ValgrindTool):
     # Glob all the files in the "valgrind.tmp" directory
     filenames = glob.glob(self.TMP_DIR + "/memcheck.*")
 
-    analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames, self._options.show_all_leaks)
+    use_gdb = (sys.platform == 'darwin')
+    analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames, self._options.show_all_leaks, 
+                                                use_gdb=use_gdb)
     return analyzer.Report()
 
 class ThreadSanitizer(ValgrindTool):
