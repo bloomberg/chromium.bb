@@ -8,8 +8,10 @@
 
 import difflib
 import errno
+import google.path_utils
 import os
 import path_utils
+import platform_utils
 import re
 import subprocess
 import sys
@@ -138,7 +140,7 @@ def ScrapeURL(url):
 def GeneratePNGDiff(file1, file2, output_file):
   _compare_available = False;
   try:
-    executable = path_utils.ImageDiffPath("Debug")
+    executable = path_utils.ImageDiffBinaryPath("Debug")
     cmd = [executable, '--diff', file1, file2, output_file]
     _compare_available = True;
   except Exception, e:

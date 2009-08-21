@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,6 +16,7 @@ import shutil
 import subprocess
 
 from layout_package import path_utils
+from layout_package import platform_utils
 from layout_package import test_failures
 from test_types import test_type_base
 
@@ -76,7 +77,7 @@ class ImageDiff(test_type_base.TestTypeBase):
     cmd = ''
 
     try:
-      executable = path_utils.ImageDiffPath(target)
+      executable = path_utils.ImageDiffBinaryPath(target)
       cmd = [executable, '--diff', actual_filename, expected_filename,
              diff_filename]
     except Exception, e:
@@ -121,9 +122,13 @@ class ImageDiff(test_type_base.TestTypeBase):
       return failures
 
     # Compare hashes.
-    expected_hash_file = path_utils.ExpectedFilename(filename, '.checksum')
+    expected_hash_file = path_utils.ExpectedFilename(filename,
+                                                     '.checksum',
+                                                     self._platform)
 
-    expected_png_file = path_utils.ExpectedFilename(filename, '.png')
+    expected_png_file = path_utils.ExpectedFilename(filename,
+                                                    '.png',
+                                                    self._platform)
 
     if test_args.show_sources:
       logging.debug('Using %s' % expected_png_file)

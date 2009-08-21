@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -223,9 +223,7 @@ class TestExpectationsFile:
     self._full_test_list = full_test_list
     self._errors = []
     self._non_fatal_errors = []
-    self._platform = self.ToTestPlatformName(platform)
-    if self._platform is None:
-      raise Exception("Unknown platform '%s'" % (platform))
+    self._platform = platform
     self._is_debug_mode = is_debug_mode
 
     # Maps relative test paths as listed in the expectations file to a list of
@@ -250,17 +248,6 @@ class TestExpectationsFile:
       self._expectation_to_tests[expectation] = set()
 
     self._Read(path)
-
-  def ToTestPlatformName(self, name):
-    """Returns the test expectation platform that will be used for a
-    given platform name, or None if there is no match."""
-    chromium_prefix = 'chromium-'
-    name = name.lower()
-    if name.startswith(chromium_prefix):
-      name = name[len(chromium_prefix):]
-    if name in self.PLATFORMS:
-      return name
-    return None
 
   def GetTestSet(self, modifier, expectation=None, include_skips=True):
     if expectation is None:

@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -27,7 +27,9 @@ class FuzzyImageDiff(test_type_base.TestTypeBase):
     if test_args.hash is None:
       return failures
 
-    expected_png_file = path_utils.ExpectedFilename(filename, '.png')
+    expected_png_file = path_utils.ExpectedFilename(filename,
+                                                    '.png',
+                                                    self._platform)
 
     if test_args.show_sources:
       logging.debug('Using %s' % expected_png_file)
@@ -37,7 +39,7 @@ class FuzzyImageDiff(test_type_base.TestTypeBase):
       failures.append(test_failures.FailureMissingImage(self))
 
     # Run the fuzzymatcher
-    r = subprocess.call([path_utils.FuzzyMatchPath(),
+    r = subprocess.call([path_utils.GetPlatformUtil().FuzzyMatchBinaryPath(),
                         test_args.png_path, expected_png_file])
     if r != 0:
       failures.append(test_failures.FailureFuzzyFailure(self))

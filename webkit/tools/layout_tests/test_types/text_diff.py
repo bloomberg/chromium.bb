@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,7 +12,10 @@ import errno
 import logging
 import os.path
 
+import google.path_utils
+
 from layout_package import path_utils
+from layout_package import platform_utils
 from layout_package import test_failures
 from test_types import test_type_base
 
@@ -33,7 +36,8 @@ class TestTextDiff(test_type_base.TestTypeBase):
     and normalize the text.  Returns a string with the expected text, or ''
     if the expected output file was not found."""
     # Read the platform-specific expected text.
-    expected_filename = path_utils.ExpectedFilename(filename, '.txt')
+    expected_filename = path_utils.ExpectedFilename(filename, '.txt',
+                                                    self._platform)
 
     if show_sources:
       logging.debug('Using %s' % expected_filename)
@@ -63,19 +67,21 @@ class TestTextDiff(test_type_base.TestTypeBase):
                                    self.FILENAME_SUFFIX_EXPECTED + modifier)
     if isRenderTreeDump(data):
       relative_dir = os.path.dirname(path_utils.RelativeTestFilename(filename))
-      output_dir = os.path.join(path_utils.ChromiumBaselinePath(),
+      output_dir = os.path.join(path_utils.PlatformResultsEnclosingDir(self._platform),
+                                self._platform_new_results_dir,
                                 relative_dir)
-      path_utils.MaybeMakeDirectory(output_dir)
+      google.path_utils.MaybeMakeDirectory(output_dir)
       open(os.path.join(output_dir, output_file), "wb").write(data)
     else:
       # If it's not a render tree, then the results can be shared between all
       # platforms.  Copy the file into the chromium-win and chromium-mac dirs.
       relative_dir = os.path.dirname(path_utils.RelativeTestFilename(filename))
       for platform in ('chromium-win', 'chromium-mac'):
-        output_dir = os.path.join(path_utils.ChromiumBaselinePath(),
+        output_dir = os.path.join(path_utils.PlatformResultsEnclosingDir(self._platform),
+                                  platform,
                                   relative_dir)
 
-        path_utils.MaybeMakeDirectory(output_dir)
+        google.path_utils.MaybeMakeDirectory(output_dir)
         open(os.path.join(output_dir, output_file), "wb").write(data)
 
   def CompareOutput(self, filename, proc, output, test_args, target):
