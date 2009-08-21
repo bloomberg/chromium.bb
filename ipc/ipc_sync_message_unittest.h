@@ -95,4 +95,4 @@ IPC_BEGIN_MESSAGES(Test)
   IPC_SYNC_MESSAGE_ROUTED3_3(Msg_R_3_3, int, std::string, bool, std::string,
                              int, bool)
 
-IPC_END_MESSAGES(TestMsg)
+IPC_END_MESSAGES(Test)

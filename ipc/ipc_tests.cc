@@ -270,7 +270,7 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
         L"RunTestClient",
         fds_to_map,
         debug_on_start);
-#endif  // defined(OS_POXIX)
+#endif  // defined(OS_POSIX)
 
     ASSERT_TRUE(process_handle);
 

@@ -1,0 +1,7 @@
+The NSPR and NSS DLLs in this directory (libnspr4.dylib, libnssdbm3.dylib, libplc4.dylib, libsoftokn3.dylib
+libfreebl3.dylib, libnss3.dylib, libnssutil3.dylib, libplds4.dylib, libsqlite3.dylib) come from the Firefox 2.0.0.20
+distribution for OS X.
+
+The source code of NSPR and NSS, which you may use, modify, and distribute, is
+available to you free-of-charge from www.mozilla.org under the Mozilla Public
+License and other open source software licenses.

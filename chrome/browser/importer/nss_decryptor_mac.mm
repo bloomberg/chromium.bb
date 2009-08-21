@@ -4,20 +4,68 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include <dlfcn.h>
+
+#include "base/sys_string_conversions.h"
+
 #include "chrome/browser/importer/nss_decryptor_mac.h"
+#include "chrome/browser/importer/firefox_importer_utils.h"
 
 #include "base/logging.h"
 
 // static
 const wchar_t NSSDecryptor::kNSS3Library[] = L"libnss3.dylib";
-const wchar_t NSSDecryptor::kSoftokn3Library[] = L"libsoftokn3.dylib";
-const wchar_t NSSDecryptor::kPLDS4Library[] = L"libplds4.dylib";
-const wchar_t NSSDecryptor::kNSPR4Library[] = L"libnspr4.dylib";
 
+// Important!! : On OS X the nss3 libraries are compiled with depedencies
+// on one another, referenced using dyld's @executable_path directive.
+// To make a long story short in order to get the libraries to load, dyld's
+// fallback path needs to be set to the directory containing the libraries.
+// To do so, the process this function runs in must have the
+// DYLD_FALLBACK_LIBRARY_PATH set on startup to said directory.
 bool NSSDecryptor::Init(const std::wstring& dll_path,
                         const std::wstring& db_path) {
-  // TODO(port): Load the NSS libraries and call InitNSS()
-  // http://code.google.com/p/chromium/issues/detail?id=15455
-  NOTIMPLEMENTED();
-  return false;
+  FilePath dylib_file_path = FilePath::FromWStringHack(dll_path);
+  FilePath nss3_path = dylib_file_path.Append("libnss3.dylib");
+
+  void *nss_3_lib = dlopen(nss3_path.value().c_str(), RTLD_LAZY);
+  if (!nss_3_lib) {
+    LOG(ERROR) << "Failed to load nss3 lib" << dlerror();
+    return false;
+  }
+
+  NSS_Init = (NSSInitFunc)dlsym(nss_3_lib, "NSS_Init");
+  NSS_Shutdown = (NSSShutdownFunc)dlsym(nss_3_lib, "NSS_Shutdown");
+  PK11_GetInternalKeySlot =
+      (PK11GetInternalKeySlotFunc)dlsym(nss_3_lib, "PK11_GetInternalKeySlot");
+  PK11_CheckUserPassword =
+      (PK11CheckUserPasswordFunc)dlsym(nss_3_lib, "PK11_CheckUserPassword");
+  PK11_FreeSlot = (PK11FreeSlotFunc)dlsym(nss_3_lib, "PK11_FreeSlot");
+  PK11_Authenticate =
+      (PK11AuthenticateFunc)dlsym(nss_3_lib, "PK11_Authenticate");
+  PK11SDR_Decrypt = (PK11SDRDecryptFunc)dlsym(nss_3_lib, "PK11SDR_Decrypt");
+  SECITEM_FreeItem = (SECITEMFreeItemFunc)dlsym(nss_3_lib, "SECITEM_FreeItem");
+
+  if (!NSS_Init || !NSS_Shutdown || !PK11_GetInternalKeySlot ||
+      !PK11_CheckUserPassword || !PK11_FreeSlot || !PK11_Authenticate ||
+      !PK11SDR_Decrypt || !SECITEM_FreeItem) {
+    LOG(ERROR) << "NSS3 importer couldn't find entry points";
+    return false;
+  }
+
+  SECStatus result = NSS_Init(base::SysWideToNativeMB(db_path).c_str());
+
+  if (result != SECSuccess) {
+    LOG(ERROR) << "NSS_Init Failed returned: " << result;
+    return false;
+  }
+
+  is_nss_initialized_ = true;
+  return true;
+}
+
+NSSDecryptor::~NSSDecryptor() {
+  if (NSS_Shutdown && is_nss_initialized_) {
+    NSS_Shutdown();
+    is_nss_initialized_ = false;
+  }
 }

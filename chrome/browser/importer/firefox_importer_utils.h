@@ -25,7 +25,16 @@ int GetCurrentFirefoxMajorVersionFromRegistry();
 // Detects where Firefox lives.  Returns a empty string if Firefox
 // is not installed.
 std::wstring GetFirefoxInstallPathFromRegistry();
-#endif
+#endif  // OS_WIN
+
+#if defined(OS_MACOSX)
+
+// Get the directory in which the Firefox .dylibs live, we need to load these
+// in order to decoded FF profile passwords.
+// The Path is usuall FF App Bundle/Contents/Mac OS/
+// Returns empty path on failure.
+FilePath GetFirefoxDylibPath();
+#endif  // OS_MACOSX
 
 // Detects version of Firefox and installation path from given Firefox profile
 bool GetFirefoxVersionAndPathFromProfile(const std::wstring& profile_path,
