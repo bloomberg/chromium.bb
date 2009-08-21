@@ -115,14 +115,20 @@ bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton()) {
     return false;
   }
-  gfx::Point abs_location = event.location();
-  views::View::ConvertPointToScreen(title_content_, &abs_location);
+  GdkEvent* gdk_event = gtk_get_current_event();
+  if (gdk_event->type != GDK_BUTTON_PRESS) {
+    gdk_event_free(gdk_event);
+    NOTREACHED();
+    return false;
+  }
+  GdkEventButton last_button_event = gdk_event->button;
   mouse_down_ = true;
-  mouse_down_abs_x_ = abs_location.x();
-  mouse_down_abs_y_ = abs_location.y();
+  mouse_down_abs_x_ = last_button_event.x_root;
+  mouse_down_abs_y_ = last_button_event.y_root;
   mouse_down_offset_x_ = event.x();
   mouse_down_offset_y_ = event.y();
   dragging_ = false;
+  gdk_event_free(gdk_event);
   return true;
 }
 
@@ -157,22 +163,28 @@ bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
     return false;
   }
 
-  gfx::Point abs_location = event.location();
-  views::View::ConvertPointToScreen(title_content_, &abs_location);
+  GdkEvent* gdk_event = gtk_get_current_event();
+  if (gdk_event->type != GDK_MOTION_NOTIFY) {
+    gdk_event_free(gdk_event);
+    NOTREACHED();
+    return false;
+  }
+  GdkEventMotion last_motion_event = gdk_event->motion;
   if (!dragging_) {
     if (views::View::ExceededDragThreshold(
-        abs_location.x() - mouse_down_abs_x_,
-        abs_location.y() - mouse_down_abs_y_)) {
+        last_motion_event.x_root - mouse_down_abs_x_,
+        last_motion_event.y_root - mouse_down_abs_y_)) {
       dragging_ = true;
     }
   }
   if (dragging_) {
     TabOverviewTypes::Message msg(TabOverviewTypes::Message::WM_MOVE_PANEL);
     msg.set_param(0, panel_xid_);
-    msg.set_param(1, abs_location.x() - mouse_down_offset_x_);
-    msg.set_param(2, abs_location.y() - mouse_down_offset_y_);
+    msg.set_param(1, last_motion_event.x_root - mouse_down_offset_x_);
+    msg.set_param(2, last_motion_event.y_root - mouse_down_offset_y_);
     TabOverviewTypes::instance()->SendMessage(msg);
   }
+  gdk_event_free(gdk_event);
   return true;
 }
 
