@@ -52,35 +52,13 @@
   'includes': [
     '../../../build/common.gypi',
   ],
-  'target_defaults': {
-    'conditions': [
-      ['OS=="win"', {
-        'rules': [
-        {
-          'rule_name': 'cygwin_assembler',
-          'msvs_cygwin_shell': 0,
-          'extension': 'S',
-          'inputs': [
-            '..\\..\\third_party\\gnu_binutils\\files\\as.exe',
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj',
-          ],
-          'action':
-            # TODO(gregoryd): find a way to pass all other 'defines' that exist for the target.
-            ['cl /E /I..\..\..\.. /DNACL_BLOCK_SHIFT=5 /DNACL_WINDOWS=1 <(RULE_INPUT_PATH) | <@(_inputs) -defsym @feat.00=1 -o <(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
-          'message': 'Building assembly file <(RULE_INPUT_PATH)',
-          'process_outputs_as_sources': 1,
-        },],
-      }],
-    ],
-  },
   'targets': [
     {
       'target_name': 'sel',
       'type': 'static_library',
       'sources': [
         'dyn_array.c',
+        'env_cleanser.c',
         'nacl_all_modules.c',
         'nacl_app_thread.c',
         'nacl_bottom_half.c',
@@ -93,15 +71,23 @@
         'nacl_syscall_hook.c',
         'sel_addrspace.c',
         'sel_ldr.c',
+        'sel_ldr-inl.c',
         'sel_ldr_standard.c',
         'sel_load_image.c',
         'sel_mem.c',
         'sel_util.c',
+        'sel_util-inl.c',
         'sel_validate_image.c',
         'web_worker_stub.c',
       ],
       'sources!': [
          '<(syscall_handler)',
+      ],
+      'dependencies': [
+        '../desc/desc.gyp:nrd_xfer',
+        'gio',
+        '../validator_x86/validator_x86.gyp:ncvalidate',
+        '../../shared/srpc/srpc.gyp:nonnacl_srpc',
       ],
       'conditions': [
         # TODO(petr):
@@ -109,67 +95,22 @@
         #   as BUILD_ARCH and TARGET_ARCH in scons (see SConstruct fror details).
         # * rename ia32 to x86_32, ia64 to x86_64 as in scons
         # * introduce buildplatform, targetplatform, platform flags in gyp
-        ['target_arch == "ia32"', {
-          'sources': [
-            'arch/x86/nacl_app.c',
-            'arch/x86/nacl_ldt_x86.c',
-            'arch/x86/nacl_switch_to_app.c',
-            'arch/x86/sel_rt.c',
-            'arch/x86/nacl_tls.c',
-            'arch/x86/sel_ldr_x86.c',
-            'arch/x86/sel_addrspace_x86.c',
-            'arch/x86_32/nacl_switch.S',
-            'arch/x86_32/nacl_syscall.S',
-            'arch/x86_32/springboard.S',
-            'arch/x86_32/tramp.S',
-            'arch/x86_32/sel_rt_32.c',
-          ],
+        ['target_arch == "x86"', {
           'dependencies': [
-            'tramp_gen',
-            'springboard_gen'
-          ],
-          'include_dirs': [
-            '<(INTERMEDIATE_DIR)',
-          ],
-          'actions': [
-            {
-              'action_name': 'header_gen',
-              'conditions': [
-                ['OS=="win"', {
-                  'msvs_cygwin_shell': 0,
-                }],
-              ],
-              'inputs': [
-                '<(PRODUCT_DIR)/tramp_gen',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/tramp_data.h',
-              ],
-              'action':
-                ['<@(_inputs)', '>', '<@(_outputs)'],
-              'process_outputs_as_sources': 1,
-              'message': 'Creating tramp_data.h',
-            },
-            {
-              'action_name': 'sheader_gen',
-              'conditions': [
-                ['OS=="win"', {
-                  'msvs_cygwin_shell': 0,
-                }],
-              ],
-              'inputs': [
-                '<(PRODUCT_DIR)/springboard_gen',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/springboard_data.h',
-              ],
-              'action':
-                ['<@(_inputs)', '>', '<@(_outputs)'],
-              'process_outputs_as_sources': 1,
-              'message': 'Creating springboard_data.h',
-            },
+            'arch/x86/service_runtime_x86.gyp:service_runtime_x86',
           ],
         }],
+        ['target_arch == "x86" and target_sub_arch == "32"', {
+          'dependencies': [
+            'arch/x86_32/service_runtime_x86_32.gyp:service_runtime_x86_32',
+          ],
+        }],
+        ['target_arch == "x86" and target_sub_arch == "64"', {
+          'dependencies': [
+            'arch/x86_32/service_runtime_x86_64.gyp:service_runtime_x86_64',
+          ],
+        }],
+        # TODO(gregoryd): move arm-specific stuff into a separate gyp file.
         ['target_arch=="arm"', {
           'sources': [
             'arch/arm/nacl_app.c',
@@ -190,7 +131,7 @@
             'linux/sel_memory.c',
           ],
           'conditions': [
-            ['target_arch=="ia32"', {
+            ['target_arch=="x86"', {
               'sources': [
                 'linux/x86/nacl_ldt.c',
                 'linux/x86/sel_segments.c',
@@ -286,6 +227,21 @@
         'arch/x86_32/springboard_gen.c',
       ],
     },
+    {
+      'target_name': 'sel_ldr',
+      'type': 'executable',
+      # TODO(gregoryd): currently building sel_ldr without SDL
+      'dependencies': [
+        'expiration',
+        'sel',
+        '../../shared/platform/platform.gyp:platform',
+        '../platform_qualify/platform_qualify.gyp:platform_qual_lib',
+      ],
+      'sources': [
+        'sel_main.c',
+      ],
+    },
+
     # TODO(bsy): no tests are built; see build.scons
   ],
 }

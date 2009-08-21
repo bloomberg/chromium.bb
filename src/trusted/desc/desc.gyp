@@ -107,6 +107,9 @@
             'win/nacl_desc.c',
         ]}],
       ],
+      'dependencies': [
+        '../../shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+      ],
     }
   ]
 }

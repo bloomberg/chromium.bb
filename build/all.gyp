@@ -9,7 +9,7 @@
       # NOTE: Chrome-specific targets should not be part of this project
       'dependencies': [
         '../src/shared/npruntime/npruntime.gyp:*',
-        '../src/shared/imc/imc.gyp:*',
+        '../src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
         '../src/shared/platform/platform.gyp:platform',
         '../src/shared/srpc/srpc.gyp:*',
         '../src/shared/utils/utils.gyp:*',
@@ -23,7 +23,8 @@
       'conditions': [
         ['OS=="linux"', {
           'dependencies': [
-            '../src/trusted/sandbox/sandbox.gyp:*',
+# TODO: fix sandbox.gyp
+#            '../src/trusted/sandbox/sandbox.gyp:*',
           ],
         }],
       ],

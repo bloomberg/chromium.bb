@@ -67,8 +67,12 @@
     # but that doesn't work as we'd like.
     'msvs_debug_link_incremental%': '2',
 
-    # The architecture that we're building on.
-    'target_arch%': 'ia32',
+    # The architecture that we're building for (x86, arm).
+    'target_arch%': 'x86',
+
+    # The sub-architecture that we're building for (32 or 64 in x86 case).
+    'target_sub_arch%': '32',
+
 
     # By default linux does not use views. To turn on views in Linux
     # set the variable GYP_DEFINES to "toolkit_views=1", or modify
@@ -83,9 +87,13 @@
     'include_dirs': [
       '../..',
     ],
-    # TODO(gregoryd): add a way to get the architecture dynamically
-    'defines': ['NACL_TARGET_SUBARCH=32', 'NACL_BUILD_SUBARCH=32',],
     'conditions': [
+      ['target_arch=="x86" and target_sub_arch=="32"', {
+        'defines': [
+          'NACL_TARGET_SUBARCH=32',
+          'NACL_BUILD_SUBARCH=32',
+        ],
+      }],
       ['branding=="Chrome"', {
         'defines': ['GOOGLE_CHROME_BUILD'],
         'conditions': [
@@ -500,6 +508,23 @@
     }],
     ['OS=="win"', {
       'target_defaults': {
+        'rules': [
+        {
+          'rule_name': 'cygwin_assembler',
+          'msvs_cygwin_shell': 0,
+          'extension': 'S',
+          'inputs': [
+            '../src/third_party/gnu_binutils/files/as.exe',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj',
+          ],
+          'action':
+            # TODO(gregoryd): find a way to pass all other 'defines' that exist for the target.
+            ['cl /DNACL_BLOCK_SHIFT=5 /DNACL_WINDOWS=1 /E /I', '<(DEPTH)', '<(RULE_INPUT_PATH)', '|', '<@(_inputs)', '-defsym', '@feat.00=1', '-o', '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
+          'message': 'Building assembly file <(RULE_INPUT_PATH)',
+          'process_outputs_as_sources': 1,
+        },],
         'defines': [
           '_WIN32_WINNT=0x0600',
           'WINVER=0x0600',
