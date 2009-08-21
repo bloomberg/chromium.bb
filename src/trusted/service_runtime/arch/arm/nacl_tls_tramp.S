@@ -53,14 +53,13 @@ IDENTIFIER(NaClReadTP_start):
   bic lr, lr, #0xF000000F
   bx lr
 #else
-  /*
-   * TODO(cbiffle): this allows both a jump to an untrusted LR value, and a
-   * jump to an address stored on the stack (and possibly modified by other
-   * threads).  Fix both.
+  /* By masking the untrusted return address, we can tail-call NaClGetUserTls,
+   * which will then return directly to untrusted code.
+   * TODO(cbiffle): extract a constant #define for the mask.
    */
-  push {lr}
-  bl NaClGetUserTls /* returns Tls pointer in r0 */
-  pop {pc}
+  bic lr, lr, #NACL_CF_MASK
+  b NaClGetUserTls  /* returns Tls pointer in r0 */
+  NACL_HALT  /* Never reached */
 #endif
 
 IDENTIFIER(NaClReadTP_end):
