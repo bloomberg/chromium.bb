@@ -17,7 +17,7 @@
 
 
 #if defined(OS_WIN)
-#define MAYBE_TestShowScriptsTab TestShowScriptsTab
+#define MAYBE_TestShowScriptsTab DISABLED_TestShowScriptsTab
 #define MAYBE_TestSetBreakpoint TestSetBreakpoint
 #elif defined(OS_LINUX)
 // http://crbug.com/19748
