@@ -177,6 +177,16 @@ TEST_F(StartupTest, PerfColdGtkTheme) {
   RunStartupTest("warm", "gtk-theme", false /* warm */,
                  false /* not important */, UITest::NATIVE_THEME);
 }
+
+TEST_F(StartupTest, PrefColdNativeFrame) {
+  RunStartupTest("warm", "custom-frame", false /* warm */,
+                 false /* not important */, UITest::CUSTOM_FRAME);
+}
+
+TEST_F(StartupTest, PerfColdNativeFrameGtkTheme) {
+  RunStartupTest("warm", "custom-frame-gtk-theme", false /* warm */,
+                 false /* not important */, UITest::CUSTOM_FRAME_NATIVE_THEME);
+}
 #endif
 
 }  // namespace
