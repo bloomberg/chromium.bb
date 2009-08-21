@@ -228,6 +228,9 @@ class RendererD3D9 : public Renderer {
   CComPtr<IDirect3DSurface9> back_buffer_surface_;
   CComPtr<IDirect3DSurface9> back_buffer_depth_surface_;
 
+  // The display mode we are in.
+  D3DDISPLAYMODE d3d_display_mode_;
+
   // D3DPresent parameters (for initializing and resetting the device.)
   D3DPRESENT_PARAMETERS d3d_present_parameters_;
 

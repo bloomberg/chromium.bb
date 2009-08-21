@@ -282,7 +282,6 @@ o3djs.rendergraph.ViewInfo = function(pack,
       opt_performanceDrawList);
 
   var performanceState = performanceDrawPassInfo.state;
-  performanceState.getStateParam('ColorWriteEnable').value = 7;
 
   // Setup a z Ordered DrawPass
   var zOrderedDrawPassInfo = createDrawPass(
@@ -291,7 +290,6 @@ o3djs.rendergraph.ViewInfo = function(pack,
 
   var zOrderedState = zOrderedDrawPassInfo.state;
 
-  zOrderedState.getStateParam('ColorWriteEnable').value = 7;
   zOrderedState.getStateParam('AlphaBlendEnable').value = true;
   zOrderedState.getStateParam('SourceBlendFunction').value =
       o3djs.base.o3d.State.BLENDFUNC_SOURCE_ALPHA;
@@ -300,7 +298,6 @@ o3djs.rendergraph.ViewInfo = function(pack,
   zOrderedState.getStateParam('AlphaTestEnable').value = true;
   zOrderedState.getStateParam('AlphaComparisonFunction').value =
       o3djs.base.o3d.State.CMP_GREATER;
-  zOrderedState.getStateParam('ColorWriteEnable').value = 7;
 
   // Parent whatever the root is to the parent passed in.
   if (opt_parent) {

@@ -202,7 +202,9 @@ bool CheckTextureFormatsSupported(LPDIRECT3D9 d3d,
 // Checks that the graphics device meets the necessary minimum requirements.
 // Note that in the current implementation we're being very lenient with the
 // capabilities we require.
-bool CheckDeviceCaps(LPDIRECT3D9 d3d, Features* features) {
+bool CheckDeviceCaps(LPDIRECT3D9 d3d,
+                     Features* features,
+                     D3DDISPLAYMODE* d3d_display_mode) {
   D3DCAPS9 d3d_caps;
   if (!HR(d3d->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &d3d_caps))) {
     LOG(ERROR) << "Failed to get device capabilities.";
@@ -213,9 +215,9 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d, Features* features) {
   DWORD pixel_shader_version = d3d_caps.PixelShaderVersion;
   if (pixel_shader_version < D3DPS_VERSION(2, 0)) {
     LOG(ERROR) << "Device only supports up to pixel shader version "
-        << D3DSHADER_VERSION_MAJOR(pixel_shader_version) << "."
-        << D3DSHADER_VERSION_MINOR(pixel_shader_version)
-        << ".  Version 2.0 is required.";
+               << D3DSHADER_VERSION_MAJOR(pixel_shader_version) << "."
+               << D3DSHADER_VERSION_MINOR(pixel_shader_version)
+               << ".  Version 2.0 is required.";
     return false;
   }
 
@@ -225,37 +227,37 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d, Features* features) {
   DWORD required_texture_size = 2048;
   if (max_texture_height < required_texture_size ||
       max_texture_width < required_texture_size) {
-    LOG(ERROR) << "Device only supports up to " << max_texture_height << "x"
+    LOG(ERROR)
+        << "Device only supports up to " << max_texture_height << "x"
         << max_texture_width << " textures.  " << required_texture_size << "x"
         << required_texture_size << " is required.";
     return false;
   }
 
-  D3DDISPLAYMODE d3d_display_mode;
-  if (!HR(d3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3d_display_mode)))
+  if (!HR(d3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, d3d_display_mode)))
     return false;
 
   // Check that the device supports all the texture formats needed.
-  D3DFORMAT texture_formats[] = {
+  static D3DFORMAT texture_formats[] = {
     D3DFMT_X8R8G8B8, D3DFMT_A8R8G8B8, D3DFMT_DXT1,
     D3DFMT_DXT3, D3DFMT_DXT5
   };
   if (!CheckTextureFormatsSupported(
       d3d,
-      d3d_display_mode.Format,
+      d3d_display_mode->Format,
       texture_formats,
-      sizeof(texture_formats) / sizeof(texture_formats[0]))) {
+      arraysize(texture_formats))) {
     return false;
   }
   if (features->floating_point_textures()) {
-    D3DFORMAT float_texture_formats[] = {
+    static D3DFORMAT float_texture_formats[] = {
       D3DFMT_R32F, D3DFMT_A16B16G16R16F, D3DFMT_A32B32G32R32F
     };
     if (!CheckTextureFormatsSupported(
         d3d,
-        d3d_display_mode.Format,
+        d3d_display_mode->Format,
         float_texture_formats,
-        sizeof(float_texture_formats) / sizeof(float_texture_formats[0]))) {
+        arraysize(float_texture_formats))) {
       return false;
     }
   }
@@ -269,34 +271,44 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d, Features* features) {
 
   // Check render target formats.
   D3DFORMAT render_target_formats[] = { D3DFMT_X8R8G8B8, D3DFMT_A8R8G8B8 };
-  const int kNumRenderTargetFormats = sizeof(render_target_formats) /
-                                      sizeof(render_target_formats[0]);
+  const int kNumRenderTargetFormats = arraysize(render_target_formats);
   for (int i = 0; i < kNumRenderTargetFormats; ++i) {
     if (!SUCCEEDED(d3d->CheckDeviceFormat(D3DADAPTER_DEFAULT,
                                           D3DDEVTYPE_HAL,
-                                          d3d_display_mode.Format,
+                                          d3d_display_mode->Format,
                                           D3DUSAGE_RENDERTARGET,
                                           D3DRTYPE_TEXTURE,
                                           render_target_formats[i]))) {
       LOG(ERROR) << "Device does not support all required texture formats"
-          << " for render targets.";
+                 << " for render targets.";
       return false;
     }
   }
 
   // Check depth stencil formats.
   D3DFORMAT depth_stencil_formats[] = { D3DFMT_D24S8 };
-  const int kNumDepthStencilFormats = sizeof(depth_stencil_formats) /
-                                      sizeof(depth_stencil_formats[0]);
+  const int kNumDepthStencilFormats = arraysize(depth_stencil_formats);
+  bool success = false;
   for (int i = 0; i < kNumDepthStencilFormats; ++i) {
     if (!SUCCEEDED(d3d->CheckDeviceFormat(D3DADAPTER_DEFAULT,
                                           D3DDEVTYPE_HAL,
-                                          d3d_display_mode.Format,
+                                          d3d_display_mode->Format,
                                           D3DUSAGE_DEPTHSTENCIL,
                                           D3DRTYPE_SURFACE,
                                           depth_stencil_formats[i]))) {
       LOG(ERROR) << "Device does not support all required texture formats"
-          << " for depth/stencil buffers.";
+                 << " for depth/stencil buffers.";
+      return false;
+    }
+    // Now check that it's compatible with the given backbuffer format.
+    if (!SUCCEEDED(d3d->CheckDepthStencilMatch(
+                       D3DADAPTER_DEFAULT,
+                       D3DDEVTYPE_HAL,
+                       d3d_display_mode->Format,
+                       D3DFMT_A8R8G8B8,
+                       D3DFMT_D24S8))) {
+      LOG(ERROR) << "Device does not support all required texture formats"
+                 << " for depth/stencil buffers.";
       return false;
     }
   }
@@ -308,7 +320,8 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d, Features* features) {
 // NULL if the object cannot be created or if it does not support the caps.
 Renderer::InitStatus CreateDirect3D(Direct3DCreate9_Ptr d3d_create_function,
                                     LPDIRECT3D9* d3d,
-                                    Features* features) {
+                                    Features* features,
+                                    D3DDISPLAYMODE* d3d_display_mode) {
   if (!d3d_create_function) {
     return Renderer::INITIALIZATION_ERROR;
   }
@@ -319,7 +332,7 @@ Renderer::InitStatus CreateDirect3D(Direct3DCreate9_Ptr d3d_create_function,
   }
 
   // Check that the graphics device meets the minimum capabilities.
-  if (!CheckDeviceCaps(*d3d, features)) {
+  if (!CheckDeviceCaps(*d3d, features, d3d_display_mode)) {
     (*d3d)->Release();
     *d3d = NULL;
     return Renderer::GPU_NOT_UP_TO_SPEC;
@@ -372,12 +385,12 @@ Renderer::InitStatus InitializeD3D9Context(
     LPDIRECT3D9* d3d,
     LPDIRECT3DDEVICE9* d3d_device,
     D3DPRESENT_PARAMETERS* d3d_present_parameters,
+    D3DDISPLAYMODE* d3d_display_mode,
     bool fullscreen,
     Features* features,
     ServiceLocator* service_locator,
     int* out_width,
     int* out_height) {
-
   // Check registry to see if the developer has opted to force the software
   // renderer.
   Renderer::InitStatus status_hardware;
@@ -386,12 +399,13 @@ Renderer::InitStatus InitializeD3D9Context(
     status_hardware = Renderer::GPU_NOT_UP_TO_SPEC;
   } else {
     // Create a hardware device.
-    status_hardware = CreateDirect3D(Direct3DCreate9, d3d, features);
+    status_hardware = CreateDirect3D(
+        Direct3DCreate9, d3d, features, d3d_display_mode);
   }
 
   if (status_hardware != Renderer::SUCCESS) {
     Renderer::InitStatus status_software = CreateDirect3D(
-        Direct3DCreate9Software, d3d, features);
+        Direct3DCreate9Software, d3d, features, d3d_display_mode);
 
     // We should not be requiring caps that are not supported by the software
     // renderer.
@@ -413,56 +427,23 @@ Renderer::InitStatus InitializeD3D9Context(
     client_info_manager->SetSoftwareRenderer(true);
   }
 
-  D3DDISPLAYMODE d3ddm;
-  if (!HR((*d3d)->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm)))
-    return Renderer::GPU_NOT_UP_TO_SPEC;
-
-  // NOTE: make sure the backbuffer matches this format, as it is
-  // currently assumed to be 32-bit 8X8R8G8B
-
+  // Note: SwapEffect=DISCARD is req. for multisample to function
   ZeroMemory(d3d_present_parameters, sizeof(*d3d_present_parameters));
   d3d_present_parameters->Windowed               = !fullscreen;
   d3d_present_parameters->SwapEffect             = D3DSWAPEFFECT_DISCARD;
-  d3d_present_parameters->BackBufferFormat       = d3ddm.Format;
+  d3d_present_parameters->BackBufferFormat       = D3DFMT_A8R8G8B8;
   d3d_present_parameters->EnableAutoDepthStencil = FALSE;
-  d3d_present_parameters->AutoDepthStencilFormat = D3DFMT_UNKNOWN;
+  d3d_present_parameters->AutoDepthStencilFormat = D3DFMT_D24S8;
+  d3d_present_parameters->EnableAutoDepthStencil = TRUE;
   // wait for vsync
   d3d_present_parameters->PresentationInterval   = D3DPRESENT_INTERVAL_ONE;
-
-  // Note: SwapEffect=DISCARD is req. for multisample to function
-  // Note: AutoDepthStencilFormat is 16-bit (not the usual 8-bit)
-  D3DFORMAT depth_stencil_formats[] = { D3DFMT_D24S8, };
-  const int kNumFormats = sizeof(depth_stencil_formats) /
-                          sizeof(depth_stencil_formats[0]);
-  for (int i = 0; i < kNumFormats; ++i) {
-    // Check if this depth/stencil combination is supported.
-    if (SUCCEEDED((*d3d)->CheckDeviceFormat(D3DADAPTER_DEFAULT,
-                                            D3DDEVTYPE_HAL,
-                                            d3ddm.Format,
-                                            D3DUSAGE_DEPTHSTENCIL,
-                                            D3DRTYPE_SURFACE,
-                                            depth_stencil_formats[i]))) {
-      // Now check that it's compatible with the given backbuffer format.
-      if (SUCCEEDED((*d3d)->CheckDepthStencilMatch(
-                        D3DADAPTER_DEFAULT,
-                        D3DDEVTYPE_HAL,
-                        d3ddm.Format,
-                        d3d_present_parameters->BackBufferFormat,
-                        depth_stencil_formats[i]))) {
-        d3d_present_parameters->AutoDepthStencilFormat =
-            depth_stencil_formats[i];
-        d3d_present_parameters->EnableAutoDepthStencil = TRUE;
-        break;
-      }
-    }
-  }
 
   if (features->not_anti_aliased() || ForceAntiAliasingOff(d3d)) {
     d3d_present_parameters->MultiSampleType = D3DMULTISAMPLE_NONE;
     d3d_present_parameters->MultiSampleQuality = 0;
   } else {
     // query multisampling
-    D3DMULTISAMPLE_TYPE multisample_types[] = {
+    static D3DMULTISAMPLE_TYPE multisample_types[] = {
       D3DMULTISAMPLE_5_SAMPLES,
       D3DMULTISAMPLE_4_SAMPLES,
       D3DMULTISAMPLE_2_SAMPLES,
@@ -472,24 +453,24 @@ Renderer::InitStatus InitializeD3D9Context(
     DWORD multisample_quality = 0;
     for (int i = 0; i < arraysize(multisample_types); ++i) {
       // check back-buffer for multisampling at level "i";
-      // back buffer = 32-bit XRGB (i.e. no alpha)
+      // back buffer = 32-bit ARGB
       if (SUCCEEDED((*d3d)->CheckDeviceMultiSampleType(
-                        D3DADAPTER_DEFAULT,
-                        D3DDEVTYPE_HAL,
-                        D3DFMT_X8R8G8B8,
-                        true,  // result is windowed
-                        multisample_types[i],
-                        &multisample_quality))) {
+          D3DADAPTER_DEFAULT,
+          D3DDEVTYPE_HAL,
+          D3DFMT_A8R8G8B8,
+          true,  // result is windowed
+          multisample_types[i],
+          &multisample_quality))) {
         // back buffer succeeded, now check depth-buffer
         // depth buffer = 24-bit, stencil = 8-bit
         // NOTE: 8-bit not 16-bit like the D3DPRESENT_PARAMETERS
         if (SUCCEEDED((*d3d)->CheckDeviceMultiSampleType(
-                          D3DADAPTER_DEFAULT,
-                          D3DDEVTYPE_HAL,
-                          D3DFMT_D24S8,
-                          true,  // result is windowed
-                          multisample_types[i],
-                          &multisample_quality))) {
+            D3DADAPTER_DEFAULT,
+            D3DDEVTYPE_HAL,
+            D3DFMT_D24S8,
+            true,  // result is windowed
+            multisample_types[i],
+            &multisample_quality))) {
           d3d_present_parameters->MultiSampleType = multisample_types[i];
           d3d_present_parameters->MultiSampleQuality = multisample_quality - 1;
           break;
@@ -957,6 +938,7 @@ Renderer::InitStatus RendererD3D9::InitPlatformSpecific(
       &d3d_,
       &d3d_device_,
       &d3d_present_parameters_,
+      &d3d_display_mode_,
       fullscreen_,
       features(),
       service_locator(),
@@ -986,7 +968,7 @@ Renderer::InitStatus RendererD3D9::InitPlatformSpecific(
 
   if (!HR(d3d_->CheckDeviceFormat(D3DADAPTER_DEFAULT,
                                   D3DDEVTYPE_HAL,
-                                  d3d_present_parameters_.BackBufferFormat,
+                                  d3d_display_mode_.Format,
                                   D3DUSAGE_DEPTHSTENCIL,
                                   D3DRTYPE_SURFACE,
                                   D3DFMT_D24S8))) {
@@ -1720,14 +1702,6 @@ Bitmap::Ref RendererD3D9::TakeScreenshot() {
                   surface_description.Height,
                   out_rect.pBits,
                   out_rect.Pitch);
-  // TODO(gman): Remove this when we get the D3D backbuffer to be RGBA
-  // Set the Alpha to 0xFF
-  uint8* data = bitmap->image_data();
-  uint8* end = data + bitmap->width() * bitmap->height() * 4;
-  while (data != end) {
-    data[3] = 0xFF;
-    data += 4;
-  }
   bitmap->FlipVertically();
   return bitmap;
 }
