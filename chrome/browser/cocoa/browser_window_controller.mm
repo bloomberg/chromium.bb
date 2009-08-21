@@ -938,6 +938,11 @@ willPositionSheet:(NSWindow*)sheet
 - (NSPoint)topLeftForBubble {
   NSRect rect = [toolbarController_ starButtonInWindowCoordinates];
   NSPoint p = NSMakePoint(NSMinX(rect), NSMinY(rect));  // bottom left
+
+  // Adjust top-left based on our knowledge of how the view looks.
+  p.x -= 2;
+  p.y += 7;
+
   return p;
 }
 

@@ -2,9 +2,9 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9J61</string>
+		<string key="IBDocument.SystemVersion">9L31a</string>
 		<string key="IBDocument.InterfaceBuilderVersion">677</string>
-		<string key="IBDocument.AppKitVersion">949.46</string>
+		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -42,7 +42,7 @@
 					<object class="NSTextField" id="559397096">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{17, 113}, {244, 19}}</string>
+						<string key="NSFrame">{{17, 121}, {244, 19}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="368795405">
@@ -177,7 +177,7 @@
 											<int key="NSCellFlags">75628032</int>
 											<int key="NSCellFlags2">0</int>
 											<string key="NSContents"/>
-											<object class="NSFont" key="NSSupport" id="930683210">
+											<object class="NSFont" key="NSSupport">
 												<string key="NSName">LucidaGrande</string>
 												<double key="NSSize">1.200000e+01</double>
 												<int key="NSfFlags">16</int>
@@ -275,22 +275,22 @@
 					<object class="NSButton" id="177936093">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{270, 113}, {84, 19}}</string>
+						<string key="NSFrame">{{14, 12}, {96, 32}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="1066753170">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents">^IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK</string>
-							<object class="NSFont" key="NSSupport">
-								<string key="NSName">LucidaGrande</string>
-								<double key="NSSize">1.200000e+01</double>
-								<int key="NSfFlags">4883</int>
-							</object>
+							<reference key="NSSupport" ref="714614853"/>
 							<reference key="NSControlView" ref="177936093"/>
 							<int key="NSButtonFlags">-2038021889</int>
-							<int key="NSButtonFlags2">164</int>
-							<reference key="NSAlternateImage" ref="930683210"/>
+							<int key="NSButtonFlags2">129</int>
+							<object class="NSFont" key="NSAlternateImage">
+								<string key="NSName">LucidaGrande</string>
+								<double key="NSSize">1.300000e+01</double>
+								<int key="NSfFlags">16</int>
+							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
 							<int key="NSPeriodicDelay">400</int>
@@ -298,7 +298,7 @@
 						</object>
 					</object>
 				</object>
-				<string key="NSFrameSize">{374, 152}</string>
+				<string key="NSFrameSize">{374, 160}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">BookmarkBubbleView</string>
 			</object>
@@ -421,9 +421,9 @@
 							<reference ref="977232728"/>
 							<reference ref="82356437"/>
 							<reference ref="303910295"/>
-							<reference ref="559397096"/>
 							<reference ref="430629007"/>
 							<reference ref="177936093"/>
+							<reference ref="559397096"/>
 						</object>
 						<reference key="parent" ref="1002"/>
 					</object>
@@ -580,7 +580,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{553, 1288}, {374, 152}}</string>
+					<string>{{725, 1184}, {374, 160}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{357, 416}, {480, 272}}</string>

@@ -11,7 +11,6 @@ const CGFloat kBubbleCornerRadius = 8.0;
 const CGFloat kBubbleArrowXOffset = 10.0;
 const CGFloat kBubbleArrowWidth = 15.0;
 const CGFloat kBubbleArrowHeight = 8.0;
-const CGFloat kBubbleBorderLineWidth = 1.0;
 }
 
 @implementation BookmarkBubbleView
@@ -20,10 +19,6 @@ const CGFloat kBubbleBorderLineWidth = 1.0;
   // Make room for the border to be seen.
   NSRect bounds = [self bounds];
   bounds.size.height -= kBubbleArrowHeight;
-  bounds = NSInsetRect(bounds,
-                       kBubbleBorderLineWidth/2.0,
-                       kBubbleBorderLineWidth/2.0);
-
   NSBezierPath* bezier = [NSBezierPath bezierPath];
   rect.size.height -= kBubbleArrowHeight;
 
@@ -41,11 +36,6 @@ const CGFloat kBubbleBorderLineWidth = 1.0;
   [bezier lineToPoint:NSMakePoint(arrowStart.x + kBubbleArrowWidth,
                                   arrowStart.y)];
   [bezier closePath];
-
-  // Draw the outline...
-  [[NSColor blackColor] set];
-  [bezier setLineWidth:kBubbleBorderLineWidth];
-  [bezier stroke];
 
   // Then fill the inside.
   GTMTheme *theme = [GTMTheme defaultTheme];

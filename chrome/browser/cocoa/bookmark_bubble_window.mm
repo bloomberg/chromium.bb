@@ -16,6 +16,7 @@
     [self setExcludedFromWindowsMenu:YES];
     [self setAlphaValue:1.0];
     [self setOpaque:NO];
+    [self setHasShadow:YES];
   }
   return self;
 }
