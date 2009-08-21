@@ -15,6 +15,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
@@ -45,6 +46,11 @@ class MimeUtilConstants {
   IconTheme* default_themes_[kDefaultThemeNum];
 
   time_t last_check_time_;
+
+  // This is set by DetectGtkTheme(). We cache it so that we can access the
+  // theme name from threads that aren't allowed to call
+  // gtk_settings_get_default().
+  std::string gtk_theme_name_;
 
  private:
   MimeUtilConstants()
@@ -489,13 +495,9 @@ void InitDefaultThemes() {
     default_themes[2] = IconTheme::LoadTheme(kde_fallback_theme);
   } else {
     // Assume it's Gnome and use GTK to figure out the theme.
-    gchar* gtk_theme_name;
-    g_object_get(gtk_settings_get_default(),
-                 "gtk-icon-theme-name",
-                 &gtk_theme_name, NULL);
-    default_themes[1] = IconTheme::LoadTheme(gtk_theme_name);
+    default_themes[1] = IconTheme::LoadTheme(
+        Singleton<MimeUtilConstants>::get()->gtk_theme_name_);
     default_themes[2] = IconTheme::LoadTheme("gnome");
-    g_free(gtk_theme_name);
   }
   // hicolor needs to be last per icon theme spec.
   default_themes[3] = IconTheme::LoadTheme("hicolor");
@@ -548,6 +550,24 @@ std::string GetFileMimeType(const FilePath& filepath) {
 
 std::string GetDataMimeType(const std::string& data) {
   return xdg_mime_get_mime_type_for_data(data.data(), data.length(), NULL);
+}
+
+void DetectGtkTheme() {
+  // If the theme name is already loaded, do nothing. Chrome doesn't respond
+  // to changes in the system theme, so we never need to set this more than
+  // once.
+  if (!Singleton<MimeUtilConstants>::get()->gtk_theme_name_.empty())
+    return;
+
+  // We should only be called on the UI thread.
+  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+
+  gchar* gtk_theme_name;
+  g_object_get(gtk_settings_get_default(),
+               "gtk-icon-theme-name",
+               &gtk_theme_name, NULL);
+  Singleton<MimeUtilConstants>::get()->gtk_theme_name_.assign(gtk_theme_name);
+  g_free(gtk_theme_name);
 }
 
 FilePath GetMimeIcon(const std::string& mime_type, size_t size) {

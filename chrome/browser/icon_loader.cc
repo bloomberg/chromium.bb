@@ -5,6 +5,7 @@
 #include "chrome/browser/icon_loader.h"
 
 #include "base/message_loop.h"
+#include "base/mime_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -23,6 +24,11 @@ IconLoader::~IconLoader() {
 
 void IconLoader::Start() {
   target_message_loop_ = MessageLoop::current();
+
+#if defined(OS_LINUX)
+  // This call must happen on the UI thread before we can start loading icons.
+  mime_util::DetectGtkTheme();
+#endif
 
   g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this, &IconLoader::ReadIcon));
