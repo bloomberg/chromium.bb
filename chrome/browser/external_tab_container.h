@@ -131,7 +131,7 @@ class ExternalTabContainer : public TabContentsDelegate,
  protected:
   // Overridden from views::WidgetWin:
   virtual void OnDestroy();
-  void InitNavigationInfo(IPC::NavigationInfo* nav_info,
+  bool InitNavigationInfo(IPC::NavigationInfo* nav_info,
                           NavigationType::Type nav_type,
                           int relative_offset);
 
