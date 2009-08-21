@@ -765,9 +765,6 @@ void BufferedDataSource::InitialStartCallback(int error) {
     host()->SetStreaming(true);
   }
 
-  // Currently, only files can be used reliably w/o a network.
-  host()->SetLoaded(url_.SchemeIsFile());
-
   initial_response_received_ = true;
   if (probe_response_received_)
     DoneInitialization();
