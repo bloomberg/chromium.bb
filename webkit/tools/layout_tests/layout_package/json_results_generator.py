@@ -21,6 +21,8 @@ class JSONResultsGenerator:
   MIN_TIME = 1
   JSON_PREFIX = "ADD_RESULTS("
   JSON_SUFFIX = ");"
+  WEBKIT_PATH = "WebKit"
+  LAYOUT_TESTS_PATH = "layout_tests"
 
   def __init__(self, failures, individual_test_timings, builder_name,
       build_number, results_file_path):
@@ -32,28 +34,58 @@ class JSONResultsGenerator:
     build_number: The build number for this run.
     results_file_path: Absolute path to the results json file.
     """
-    self._failures = failures
-    self._test_timings = individual_test_timings
+    # Make sure all test paths are relative to the layout test root directory.
+    self._failures = {}
+    for test in failures:
+      test_path = self._GetPathRelativeToLayoutTestRoot(test)
+      self._failures[test_path] = failures[test]
+
+    self._test_timings = {}
+    for test_tuple in individual_test_timings:
+      test_path = self._GetPathRelativeToLayoutTestRoot(test_tuple.filename)
+      self._test_timings[test_path] = test_tuple.test_run_time
+
     self._builder_name = builder_name
     self._build_number = build_number
     self._results_file_path = results_file_path
+
+  def _GetPathRelativeToLayoutTestRoot(self, test):
+    """Returns the path of the test relative to the layout test root.
+    Example paths are
+      src/third_party/WebKit/LayoutTests/fast/forms/foo.html
+      src/webkit/data/layout_tests/pending/fast/forms/foo.html
+    We would return the following:
+      LayoutTests/fast/forms/foo.html
+      pending/fast/forms/foo.html
+    """
+    index = test.find(self.WEBKIT_PATH)
+    if index is not -1:
+      index += len(self.WEBKIT_PATH)
+    else:
+      index = test.find(self.LAYOUT_TESTS_PATH)
+      if index is not -1:
+        index += len(self.LAYOUT_TESTS_PATH)
+
+    if index is -1:
+      # Already a relative path.
+      return test
+
+    return test[index + 1:]
 
   def GetJSON(self):
     """Gets the results for the results.json file."""
     failures_for_json = {}
     for test in self._failures:
       failures_for_json[test] = ResultAndTime()
-      # TODO(ojan): get relative path here
       failures_for_json[test].result = self._GetResultsCharForFailure(test)
 
-    for test_tuple in self._test_timings:
-      test = test_tuple.filename
+    for test in self._test_timings:
       if not test in failures_for_json:
         failures_for_json[test] = ResultAndTime()
       # Floor for now to get time in seconds.
       # TODO(ojan): As we make tests faster, reduce to tenth of a second
       # granularity.
-      failures_for_json[test].time = int(test_tuple.test_run_time)
+      failures_for_json[test].time = int(self._test_timings[test])
 
     # If results file exists, read it out, put new info in it.
     if os.path.exists(self._results_file_path):
