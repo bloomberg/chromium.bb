@@ -4970,7 +4970,6 @@
             '../testing/gtest.gyp:gtest',
             '../third_party/npapi/npapi.gyp:npapi',
             # run time dependency
-            '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
             '../webkit/webkit.gyp:webkit_resources',
           ],
           'include_dirs': [
@@ -5000,6 +4999,12 @@
                 'test/interactive_ui/npapi_interactive_test.cc',
                 'test/interactive_ui/view_event_test_base.cc',
                 'test/interactive_ui/view_event_test_base.h',
+              ],
+            }],
+            ['target_arch!="x64"', {
+              'dependencies': [
+                # run time dependency
+                '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
               ],
             }],
             ['OS=="linux" and toolkit_views==1', {

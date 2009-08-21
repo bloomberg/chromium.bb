@@ -305,157 +305,6 @@
       ],
     },
     {
-      'target_name': 'npapi_layout_test_plugin',
-      'type': 'loadable_module',
-      'mac_bundle': 1,
-      'product_dir': '<(PRODUCT_DIR)',
-      'msvs_guid': 'BE6D5659-A8D5-4890-A42C-090DD10EF62C',
-      'sources': [
-        '../npapi_layout_test_plugin/PluginObject.cpp',
-        '../npapi_layout_test_plugin/TestObject.cpp',
-        '../npapi_layout_test_plugin/main.cpp',
-        '../npapi_layout_test_plugin/npapi_layout_test_plugin.def',
-        '../npapi_layout_test_plugin/npapi_layout_test_plugin.rc',
-      ],
-      'include_dirs': [
-        '../../..',
-      ],
-      'dependencies': [
-        '../../../third_party/npapi/npapi.gyp:npapi',
-        '../../webkit.gyp:wtf',
-      ],
-      'msvs_disabled_warnings': [ 4996 ],
-      'mac_bundle_resources': [
-        '../npapi_layout_test_plugin/Info.r',
-      ],
-      'xcode_settings': {
-        'INFOPLIST_FILE': '../npapi_layout_test_plugin/Info.plist',
-      },
-      'conditions': [
-        ['OS!="win"', {
-          'sources!': [
-            '../npapi_layout_test_plugin/npapi_layout_test_plugin.def',
-            '../npapi_layout_test_plugin/npapi_layout_test_plugin.rc',
-          ],
-        # TODO(bradnelson):
-        # This copy should really live here, as a post-build step,
-        # but it's currently being implemented via
-        # AdditionalDependencies, which tries to do the copy before
-        # the file is built...
-        #
-        #}, { # OS == "win"
-        #  # The old VS build would explicitly copy the .dll into the
-        #  # plugins subdirectory like this.  It might be possible to
-        #  # use the 'product_dir' setting to build directly into
-        #  # plugins/ (as is done on Linux), but we'd need to verify
-        #  # that nothing breaks first.
-        #  'copies': [
-        #    {
-        #      'destination': '<(PRODUCT_DIR)/plugins',
-        #      'files': ['<(PRODUCT_DIR)/npapi_layout_test_plugin.dll'],
-        #    },
-        #  ],
-        }],
-        ['OS=="mac"', {
-          'product_name': 'TestNetscapePlugIn',
-          'product_extension': 'plugin',
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
-            ],
-          },
-        }],
-      ],
-    },
-    {
-      'target_name': 'npapi_test_plugin',
-      'type': 'loadable_module',
-      'mac_bundle': 1,
-      'product_dir': '<(PRODUCT_DIR)',
-      'msvs_guid': '0D04AEC1-6B68-492C-BCCF-808DFD69ABC6',
-      'dependencies': [
-        '../../../base/base.gyp:base',
-        '../../../third_party/icu38/icu38.gyp:icuuc',
-        '../../../third_party/npapi/npapi.gyp:npapi',
-      ],
-      'sources': [
-        '../../glue/plugins/test/npapi_constants.cc',
-        '../../glue/plugins/test/npapi_constants.h',
-        '../../glue/plugins/test/npapi_test.cc',
-        '../../glue/plugins/test/npapi_test.def',
-        '../../glue/plugins/test/npapi_test.rc',
-        '../../glue/plugins/test/plugin_arguments_test.cc',
-        '../../glue/plugins/test/plugin_arguments_test.h',
-        '../../glue/plugins/test/plugin_client.cc',
-        '../../glue/plugins/test/plugin_client.h',
-        '../../glue/plugins/test/plugin_create_instance_in_paint.cc',
-        '../../glue/plugins/test/plugin_create_instance_in_paint.h',
-        '../../glue/plugins/test/plugin_delete_plugin_in_stream_test.cc',
-        '../../glue/plugins/test/plugin_delete_plugin_in_stream_test.h',
-        '../../glue/plugins/test/plugin_get_javascript_url_test.cc',
-        '../../glue/plugins/test/plugin_get_javascript_url_test.h',
-        '../../glue/plugins/test/plugin_geturl_test.cc',
-        '../../glue/plugins/test/plugin_geturl_test.h',
-        '../../glue/plugins/test/plugin_javascript_open_popup.cc',
-        '../../glue/plugins/test/plugin_javascript_open_popup.h',
-        '../../glue/plugins/test/plugin_new_fails_test.cc',
-        '../../glue/plugins/test/plugin_new_fails_test.h',
-        '../../glue/plugins/test/plugin_npobject_lifetime_test.cc',
-        '../../glue/plugins/test/plugin_npobject_lifetime_test.h',
-        '../../glue/plugins/test/plugin_npobject_proxy_test.cc',
-        '../../glue/plugins/test/plugin_windowed_test.cc',
-        '../../glue/plugins/test/plugin_windowed_test.h',
-        '../../glue/plugins/test/plugin_npobject_proxy_test.h',
-        '../../glue/plugins/test/plugin_private_test.cc',
-        '../../glue/plugins/test/plugin_private_test.h',
-        '../../glue/plugins/test/plugin_test.cc',
-        '../../glue/plugins/test/plugin_test.h',
-        '../../glue/plugins/test/plugin_window_size_test.cc',
-        '../../glue/plugins/test/plugin_window_size_test.h',
-        '../../glue/plugins/test/plugin_windowless_test.cc',
-        '../../glue/plugins/test/plugin_windowless_test.h',
-        '../../glue/plugins/test/resource.h',
-      ],
-      'include_dirs': [
-        '../../..',
-      ],
-      'xcode_settings': {
-        'INFOPLIST_FILE': '../../glue/plugins/test/Info.plist',
-      },
-      'conditions': [
-        ['OS!="win"', {
-          'sources!': [
-            # TODO(port):  Port these.
-
-            # plugin_npobject_lifetime_test.cc has win32-isms
-            #   (HWND, CALLBACK).
-            '../../glue/plugins/test/plugin_npobject_lifetime_test.cc',
-
-            # The windowed/windowless APIs are necessarily
-            # platform-specific.
-            '../../glue/plugins/test/plugin_window_size_test.cc',
-            '../../glue/plugins/test/plugin_windowed_test.cc',
-            '../../glue/plugins/test/plugin_windowless_test.cc',
-
-            # Seems windows specific.
-            '../../glue/plugins/test/plugin_create_instance_in_paint.cc',
-            '../../glue/plugins/test/plugin_create_instance_in_paint.h',
-
-            # windows-specific resources
-            '../../glue/plugins/test/npapi_test.def',
-            '../../glue/plugins/test/npapi_test.rc',
-          ],
-        }],
-        ['OS=="mac"', {
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
-            ],
-          },
-        }],
-      ],
-    },
-    {
       'target_name': 'test_shell_tests',
       'type': 'executable',
       'msvs_guid': 'E6766F81-1FCD-4CD7-BC16-E36964A14867',
@@ -567,6 +416,162 @@
     },
   ],
   'conditions': [
+    # http://code.google.com/p/chromium/issues/detail?id=18337
+    ['target_arch!="x64"', {
+      'targets': [
+        {
+          'target_name': 'npapi_layout_test_plugin',
+          'type': 'loadable_module',
+          'mac_bundle': 1,
+          'product_dir': '<(PRODUCT_DIR)',
+          'msvs_guid': 'BE6D5659-A8D5-4890-A42C-090DD10EF62C',
+          'sources': [
+            '../npapi_layout_test_plugin/PluginObject.cpp',
+            '../npapi_layout_test_plugin/TestObject.cpp',
+            '../npapi_layout_test_plugin/main.cpp',
+            '../npapi_layout_test_plugin/npapi_layout_test_plugin.def',
+            '../npapi_layout_test_plugin/npapi_layout_test_plugin.rc',
+          ],
+          'include_dirs': [
+            '../../..',
+          ],
+          'dependencies': [
+            '../../../third_party/npapi/npapi.gyp:npapi',
+            '../../webkit.gyp:wtf',
+          ],
+          'msvs_disabled_warnings': [ 4996 ],
+          'mac_bundle_resources': [
+            '../npapi_layout_test_plugin/Info.r',
+          ],
+          'xcode_settings': {
+            'INFOPLIST_FILE': '../npapi_layout_test_plugin/Info.plist',
+          },
+          'conditions': [
+            ['OS!="win"', {
+              'sources!': [
+                '../npapi_layout_test_plugin/npapi_layout_test_plugin.def',
+                '../npapi_layout_test_plugin/npapi_layout_test_plugin.rc',
+              ],
+            # TODO(bradnelson):
+            # This copy should really live here, as a post-build step,
+            # but it's currently being implemented via
+            # AdditionalDependencies, which tries to do the copy before
+            # the file is built...
+            #
+            #}, { # OS == "win"
+            #  # The old VS build would explicitly copy the .dll into the
+            #  # plugins subdirectory like this.  It might be possible to
+            #  # use the 'product_dir' setting to build directly into
+            #  # plugins/ (as is done on Linux), but we'd need to verify
+            #  # that nothing breaks first.
+            #  'copies': [
+            #    {
+            #      'destination': '<(PRODUCT_DIR)/plugins',
+            #      'files': ['<(PRODUCT_DIR)/npapi_layout_test_plugin.dll'],
+            #    },
+            #  ],
+            }],
+            ['OS=="mac"', {
+              'product_name': 'TestNetscapePlugIn',
+              'product_extension': 'plugin',
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+                ],
+              },
+            }],
+          ],
+        },
+        {
+          'target_name': 'npapi_test_plugin',
+          'type': 'loadable_module',
+          'mac_bundle': 1,
+          'product_dir': '<(PRODUCT_DIR)',
+          'msvs_guid': '0D04AEC1-6B68-492C-BCCF-808DFD69ABC6',
+          'dependencies': [
+            '../../../base/base.gyp:base',
+            '../../../third_party/icu38/icu38.gyp:icuuc',
+            '../../../third_party/npapi/npapi.gyp:npapi',
+          ],
+          'sources': [
+            '../../glue/plugins/test/npapi_constants.cc',
+            '../../glue/plugins/test/npapi_constants.h',
+            '../../glue/plugins/test/npapi_test.cc',
+            '../../glue/plugins/test/npapi_test.def',
+            '../../glue/plugins/test/npapi_test.rc',
+            '../../glue/plugins/test/plugin_arguments_test.cc',
+            '../../glue/plugins/test/plugin_arguments_test.h',
+            '../../glue/plugins/test/plugin_client.cc',
+            '../../glue/plugins/test/plugin_client.h',
+            '../../glue/plugins/test/plugin_create_instance_in_paint.cc',
+            '../../glue/plugins/test/plugin_create_instance_in_paint.h',
+            '../../glue/plugins/test/plugin_delete_plugin_in_stream_test.cc',
+            '../../glue/plugins/test/plugin_delete_plugin_in_stream_test.h',
+            '../../glue/plugins/test/plugin_get_javascript_url_test.cc',
+            '../../glue/plugins/test/plugin_get_javascript_url_test.h',
+            '../../glue/plugins/test/plugin_geturl_test.cc',
+            '../../glue/plugins/test/plugin_geturl_test.h',
+            '../../glue/plugins/test/plugin_javascript_open_popup.cc',
+            '../../glue/plugins/test/plugin_javascript_open_popup.h',
+            '../../glue/plugins/test/plugin_new_fails_test.cc',
+            '../../glue/plugins/test/plugin_new_fails_test.h',
+            '../../glue/plugins/test/plugin_npobject_lifetime_test.cc',
+            '../../glue/plugins/test/plugin_npobject_lifetime_test.h',
+            '../../glue/plugins/test/plugin_npobject_proxy_test.cc',
+            '../../glue/plugins/test/plugin_windowed_test.cc',
+            '../../glue/plugins/test/plugin_windowed_test.h',
+            '../../glue/plugins/test/plugin_npobject_proxy_test.h',
+            '../../glue/plugins/test/plugin_private_test.cc',
+            '../../glue/plugins/test/plugin_private_test.h',
+            '../../glue/plugins/test/plugin_test.cc',
+            '../../glue/plugins/test/plugin_test.h',
+            '../../glue/plugins/test/plugin_window_size_test.cc',
+            '../../glue/plugins/test/plugin_window_size_test.h',
+            '../../glue/plugins/test/plugin_windowless_test.cc',
+            '../../glue/plugins/test/plugin_windowless_test.h',
+            '../../glue/plugins/test/resource.h',
+          ],
+          'include_dirs': [
+            '../../..',
+          ],
+          'xcode_settings': {
+            'INFOPLIST_FILE': '../../glue/plugins/test/Info.plist',
+          },
+          'conditions': [
+            ['OS!="win"', {
+              'sources!': [
+                # TODO(port):  Port these.
+
+                # plugin_npobject_lifetime_test.cc has win32-isms
+                #   (HWND, CALLBACK).
+                '../../glue/plugins/test/plugin_npobject_lifetime_test.cc',
+
+                # The windowed/windowless APIs are necessarily
+                # platform-specific.
+                '../../glue/plugins/test/plugin_window_size_test.cc',
+                '../../glue/plugins/test/plugin_windowed_test.cc',
+                '../../glue/plugins/test/plugin_windowless_test.cc',
+
+                # Seems windows specific.
+                '../../glue/plugins/test/plugin_create_instance_in_paint.cc',
+                '../../glue/plugins/test/plugin_create_instance_in_paint.h',
+
+                # windows-specific resources
+                '../../glue/plugins/test/npapi_test.def',
+                '../../glue/plugins/test/npapi_test.rc',
+              ],
+            }],
+            ['OS=="mac"', {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+                ],
+              },
+            }],
+          ],
+        },
+      ],
+    }],
     ['OS=="linux"', {
       'targets': [
         {

@@ -75,7 +75,7 @@ static bool DoneCallback(const char* dump_path,
   if (!succeeded)
     return succeeded;
 
-  int fd = (int) context;
+  int fd = (intptr_t) context;
   uint32_t len = my_strlen(minidump_id);
   HANDLE_EINTR(sys_write(fd, &len, sizeof(len)));
   HANDLE_EINTR(sys_write(fd, minidump_id, len));
@@ -134,7 +134,7 @@ static const unsigned kControlMsgSize =
 static bool
 CrashHandler(const void* crash_context, size_t crash_context_size,
              void* context) {
-  const int fd = (int) context;
+  const int fd = (intptr_t) context;
   int fds[2];
   pipe(fds);
 
