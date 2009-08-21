@@ -5,7 +5,11 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "chrome/browser/cocoa/autocomplete_text_field.h"
+#include "chrome/browser/cocoa/autocomplete_text_field_cell.h"
+#include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/location_bar_view_mac.h"
+#import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TODO(shess): Figure out how to unittest this.  The code below was
@@ -51,3 +55,76 @@ TEST_F(LocationBarViewMacTest, GetInputString) {
             ASCIIToWide("https://www.example.com/"));
 }
 #endif
+
+namespace {
+
+class LocationBarViewMacTest : public testing::Test {
+ public:
+  LocationBarViewMacTest() {
+    // Make sure this is wide enough to play games with the cell
+    // decorations.
+    NSRect frame = NSMakeRect(0, 0, 300, 30);
+    field_.reset([[AutocompleteTextField alloc] initWithFrame:frame]);
+    [field_ setStringValue:@"Testing"];
+    [cocoa_helper_.contentView() addSubview:field_.get()];
+  }
+
+  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+  BrowserTestHelper helper_;
+  scoped_nsobject<AutocompleteTextField> field_;
+};
+
+TEST_F(LocationBarViewMacTest, OnChangedImpl) {
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
+
+  const std::wstring kKeyword(L"Google");
+  const NSString* kSearchHint = @"Type to search";
+  const NSString* kKeywordPrefix = @"Press ";
+  const NSString* kKeywordSuffix = @" to search Google";
+  const NSString* kKeywordString = @"Search Google:";
+
+  // With no special hints requested, none set.
+  LocationBarViewMac::OnChangedImpl(
+      field_.get(), std::wstring(), std::wstring(), false, false, image);
+  EXPECT_FALSE([cell keywordString]);
+  EXPECT_FALSE([cell hintString]);
+
+  // Request only a search hint.
+  LocationBarViewMac::OnChangedImpl(
+      field_.get(), std::wstring(), std::wstring(), false, true, image);
+  EXPECT_FALSE([cell keywordString]);
+  EXPECT_TRUE([[[cell hintString] string] isEqualToString:kSearchHint]);
+
+  // Request a keyword hint, same results whether |search_hint|
+  // parameter is true or false.
+  LocationBarViewMac::OnChangedImpl(
+      field_.get(), kKeyword, kKeyword, true, true, image);
+  EXPECT_FALSE([cell keywordString]);
+  EXPECT_TRUE([[[cell hintString] string] hasPrefix:kKeywordPrefix]);
+  EXPECT_TRUE([[[cell hintString] string] hasSuffix:kKeywordSuffix]);
+  LocationBarViewMac::OnChangedImpl(
+      field_.get(), kKeyword, kKeyword, true, false, image);
+  EXPECT_FALSE([cell keywordString]);
+  EXPECT_TRUE([[[cell hintString] string] hasPrefix:kKeywordPrefix]);
+  EXPECT_TRUE([[[cell hintString] string] hasSuffix:kKeywordSuffix]);
+
+  // Request keyword-search mode, same results whether |search_hint|
+  // parameter is true or false.
+  LocationBarViewMac::OnChangedImpl(
+      field_.get(), kKeyword, kKeyword, false, true, image);
+  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kKeywordString]);
+  EXPECT_FALSE([cell hintString]);
+  LocationBarViewMac::OnChangedImpl(
+      field_.get(), kKeyword, kKeyword, false, false, image);
+  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kKeywordString]);
+  EXPECT_FALSE([cell hintString]);
+
+  // Transition back to baseline.
+  LocationBarViewMac::OnChangedImpl(
+      field_.get(), std::wstring(), std::wstring(), false, false, image);
+  EXPECT_FALSE([cell keywordString]);
+  EXPECT_FALSE([cell hintString]);
+}
+
+}  // namespace

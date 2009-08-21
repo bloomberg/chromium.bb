@@ -292,6 +292,7 @@ void AutocompleteEditViewMac::SetUserText(const std::wstring& text,
   if (update_popup) {
     UpdatePopup();
   }
+  controller_->OnChanged();
 }
 
 NSRange AutocompleteEditViewMac::GetSelectedRange() const {
@@ -427,6 +428,22 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
   }
 
   [field_ setObjectValue:as];
+
+  // TODO(shess): This may be an appropriate place to call:
+  //   controller_->OnChanged();
+  // In the current implementation, this tells LocationBarViewMac to
+  // mess around with |model_| and update |field_|.  Unfortunately,
+  // when I look at our peer implementations, it's not entirely clear
+  // to me if this is safe.  SetText() is sort of an utility method,
+  // and different callers sometimes have different needs.  Research
+  // this issue so that it can be added safely.
+
+  // TODO(shess): Also, consider whether this code couldn't just
+  // manage things directly.  Windows uses a series of overlaid view
+  // objects to accomplish the hinting stuff that OnChanged() does, so
+  // it makes sense to have it in the controller that lays those
+  // things out.  Mac instead pushes the support into a custom
+  // text-field implementation.
 }
 
 void AutocompleteEditViewMac::SetTextAndSelectedRange(
@@ -454,6 +471,7 @@ void AutocompleteEditViewMac::OnTemporaryTextMaybeChanged(
   }
 
   SetWindowTextAndCaretPos(display_text, display_text.size());
+  controller_->OnChanged();
 }
 
 bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
@@ -468,6 +486,7 @@ bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
   DCHECK_LE(user_text_length, display_text.size());
   const NSRange range = NSMakeRange(user_text_length, display_text.size());
   SetTextAndSelectedRange(display_text, range);
+  controller_->OnChanged();
 
   return true;
 }
@@ -525,6 +544,7 @@ bool AutocompleteEditViewMac::OnAfterPossibleChange() {
   // fails for us in case you copy the URL and paste the identical URL
   // back (we'll lose the styling).
   EmphasizeURLComponents();
+  controller_->OnChanged();
 
   return something_changed;
 }
@@ -614,6 +634,10 @@ void AutocompleteEditViewMac::AcceptInput(
   model_->AcceptInput(disposition, for_drop);
 }
 
+void AutocompleteEditViewMac::AcceptKeyword() {
+  model_->AcceptKeyword();
+}
+
 void AutocompleteEditViewMac::FocusLocation() {
   [[field_ window] makeFirstResponder:field_];
   DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
@@ -696,6 +720,11 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
 
   if (cmd == @selector(cancelOperation:)) {
     edit_view_->OnEscapeKeyPressed();
+    return YES;
+  }
+
+  if (cmd == @selector(insertTab:)) {
+    edit_view_->AcceptKeyword();
     return YES;
   }
 

@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
@@ -14,6 +15,7 @@
 
 @class AutocompleteTextField;
 class CommandUpdater;
+class Profile;
 class ToolbarModel;
 
 // A C++ bridge class that represents the location bar UI element to
@@ -65,10 +67,24 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual SkBitmap GetFavIcon() const;
   virtual std::wstring GetTitle() const;
 
+  NSImage* GetTabButtonImage();
+
+  // Internals of OnChanged(), pulled out for purposes of unit
+  // testing.  Sets up |field| based on the parameters, which are
+  // pulled from edit_view->model().
+  static void OnChangedImpl(AutocompleteTextField* field,
+                            const std::wstring& keyword,
+                            const std::wstring& short_name,
+                            const bool is_keyword_hint,
+                            const bool show_search_hint,
+                            NSImage* image);
+
  private:
   scoped_ptr<AutocompleteEditViewMac> edit_view_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
+
+  AutocompleteTextField* field_;  // owned by tab controller
 
   // When we get an OnAutocompleteAccept notification from the autocomplete
   // edit, we save the input string so we can give it back to the browser on
@@ -77,6 +93,11 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // The user's desired disposition for how their input should be opened.
   WindowOpenDisposition disposition_;
+
+  Profile* profile_;
+
+  // Image used in drawing keyword hint.
+  scoped_nsobject<NSImage> tab_button_image_;
 
   // The transition type to use for the navigation.
   PageTransition::Type transition_;

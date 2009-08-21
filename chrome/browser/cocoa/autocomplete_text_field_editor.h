@@ -4,6 +4,17 @@
 
 #import <Cocoa/Cocoa.h>
 
+// AutocompleteTextFieldEditor customized the AutocompletTextField
+// field editor (helper text-view used in editing).  It intercepts UI
+// events for forwarding to the core Omnibox code.  It also undoes
+// some of the effects of using styled text in the Omnibox (the text
+// is styled but should not appear that way when copied to the
+// pasteboard).
+
+// AutocompleteTextFieldEditorDelegateMethods are meant to be similar
+// to NSTextView delegate methods, adding additional intercepts
+// relevant to the Omnibox implementation.
+
 @protocol AutocompleteTextFieldEditorDelegateMethods
 
 // Delegate -paste: implementation to the field being edited.  If the

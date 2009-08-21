@@ -112,6 +112,9 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
 
   void AcceptInput(WindowOpenDisposition disposition, bool for_drop);
 
+  // Forwards to |model_| when user hits Tab.
+  void AcceptKeyword();
+
   // Helper for LocationBarViewMac.  Selects all in |field_|.
   void FocusLocation();
 
