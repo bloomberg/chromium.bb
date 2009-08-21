@@ -239,6 +239,8 @@ extern const wchar_t kSyncServiceURL[];
 extern const wchar_t kCookiePipe[];
 #endif
 
+extern const wchar_t kEnableByteRangeSupport[];
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_
