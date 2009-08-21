@@ -77,7 +77,6 @@ void MockFFmpeg::DestructPacket(AVPacket* packet) {
 
 // FFmpeg stubs that delegate to the FFmpegMock instance.
 extern "C" {
-
 void avcodec_init() {
   media::MockFFmpeg::get()->AVCodecInit();
 }
@@ -174,6 +173,9 @@ void av_free(void* ptr) {
   }
 }
 
+int av_dup_packet(AVPacket* packet) {
+  return media::MockFFmpeg::get()->AVDupPacket(packet);
+}
 }  // extern "C"
 
 }  // namespace media

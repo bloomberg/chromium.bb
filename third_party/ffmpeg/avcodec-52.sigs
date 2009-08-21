@@ -15,5 +15,6 @@ int avcodec_close(AVCodecContext *avctx);
 int avcodec_thread_init(AVCodecContext *s, int thread_count);
 void av_free_packet(AVPacket *pkt);
 void av_init_packet(AVPacket *pkt);
+int av_dup_packet(AVPacket *pkt);
 void avcodec_flush_buffers(AVCodecContext *avctx);
 void avcodec_init(void);
