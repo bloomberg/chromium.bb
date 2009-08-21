@@ -52,9 +52,6 @@ class InProcessBrowserTest : public testing::Test {
   // Restores state configured in SetUp.
   virtual void TearDown();
 
-  // This method can be overridden to set user data directory for test.
-  virtual void SetUpUserDataDirForTest() {}
-
   // This method is used to decide if user data dir
   // needs to be deleted or not.
   virtual bool ShouldDeleteProfile() { return true; }

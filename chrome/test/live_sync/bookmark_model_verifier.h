@@ -72,7 +72,14 @@ class BookmarkModelVerifier {
 
   // Asserts that the two hierarchies are equivalent in terms of the data model.
   // (e.g some peripheral fields like creation times are allowed to mismatch).
-  static void ExpectModelsMatch(BookmarkModel* expected, BookmarkModel* actual);
+  static void ExpectModelsMatch(BookmarkModel* expected,
+                                BookmarkModel* actual) {
+    ExpectModelsMatchIncludingFavicon(expected, actual, false);
+  }
+
+  static void ExpectModelsMatchIncludingFavicon(BookmarkModel* expected,
+                                BookmarkModel* actual,
+                                bool compare_favicon);
 
  private:
   BookmarkModelVerifier();

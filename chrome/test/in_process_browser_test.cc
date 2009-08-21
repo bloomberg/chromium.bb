@@ -54,9 +54,6 @@ InProcessBrowserTest::InProcessBrowserTest()
 }
 
 void InProcessBrowserTest::SetUp() {
-  // This method does nothing in default case. But can be overridden
-  // to set user data dir for test.
-  SetUpUserDataDirForTest();
   // Cleanup the user data dir.
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);

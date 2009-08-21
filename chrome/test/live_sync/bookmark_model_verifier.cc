@@ -14,6 +14,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 // static
 void BookmarkModelVerifier::ExpectBookmarkInfoMatch(
@@ -41,8 +42,8 @@ void BookmarkModelVerifier::ExpectMatch(BookmarkModel* actual) {
 }
 
 // static
-void BookmarkModelVerifier::ExpectModelsMatch(
-    BookmarkModel* expected, BookmarkModel* actual) {
+void BookmarkModelVerifier::ExpectModelsMatchIncludingFavicon(
+    BookmarkModel* expected, BookmarkModel* actual, bool compare_favicon) {
   TreeNodeIterator<const BookmarkNode> e_iterator(expected->root_node());
   TreeNodeIterator<const BookmarkNode> a_iterator(actual->root_node());
 
@@ -52,6 +53,23 @@ void BookmarkModelVerifier::ExpectModelsMatch(
     ASSERT_TRUE(a_iterator.has_next());
     const BookmarkNode* a_node = a_iterator.Next();
     ExpectBookmarkInfoMatch(e_node, a_node);
+    // Get Favicon and compare if compare_favicon flag is true.
+    if (compare_favicon) {
+      const SkBitmap& e_node_favicon = expected->GetFavIcon(e_node);
+      const SkBitmap& a_node_favicon = actual->GetFavIcon(a_node);
+      EXPECT_GT(e_node_favicon.getSize(), (size_t) 0);
+      EXPECT_EQ(e_node_favicon.getSize(), a_node_favicon.getSize());
+      EXPECT_EQ(e_node_favicon.width(), a_node_favicon.width());
+      EXPECT_EQ(e_node_favicon.height(), a_node_favicon.height());
+      SkAutoLockPixels bitmap_lock_e(e_node_favicon);
+      SkAutoLockPixels bitmap_lock_a(a_node_favicon);
+      void* e_node_pixel_addr = e_node_favicon.getPixels();
+      ASSERT_TRUE(e_node_pixel_addr);
+      void* a_node_pixel_addr = a_node_favicon.getPixels();
+      ASSERT_TRUE(a_node_pixel_addr);
+      EXPECT_EQ(memcmp(e_node_pixel_addr, a_node_pixel_addr,
+          e_node_favicon.getSize()), 0);
+    }
   }
   ASSERT_FALSE(a_iterator.has_next());
 }
@@ -61,7 +79,7 @@ void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
                                                const BookmarkNode** result) {
   // Climb the tree.
   std::stack<int> path;
-  const BookmarkNode* walker = foreign_node;    
+  const BookmarkNode* walker = foreign_node;
   while (walker != foreign_model->root_node()) {
     path.push(walker->GetParent()->IndexOfChild(walker));
     walker = walker->GetParent();
@@ -69,7 +87,7 @@ void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
 
   // Swing over to the other tree.
   walker = verifier_->root_node();
-  
+
   // Climb down.
   while (!path.empty()) {
     ASSERT_TRUE(walker->is_folder());
@@ -112,7 +130,7 @@ const BookmarkNode* BookmarkModelVerifier::AddURL(BookmarkModel* model,
 }
 
 void BookmarkModelVerifier::SetTitle(BookmarkModel* model,
-                                     const BookmarkNode* node, 
+                                     const BookmarkNode* node,
                                      const string16& title) {
   const BookmarkNode* v_node = NULL;
   FindNodeInVerifier(model, node, &v_node);
