@@ -47,10 +47,17 @@ IDENTIFIER(NaClReadTP_start):
   /* r9 keeps the TLS_IDX which is concatenation of a TLS pointer and index in
    * nacl_thread/nacl_user/nacl_sys arrays. The higher 20 bits are for TLS
    * address and the lower 12 keep the index.
+   */
   mov r0, r9, lsr #NACL_PAGESHIFT
   lsl r0, #NACL_PAGESHIFT
+  bic lr, lr, #0xF000000F
   bx lr
 #else
+  /*
+   * TODO(cbiffle): this allows both a jump to an untrusted LR value, and a
+   * jump to an address stored on the stack (and possibly modified by other
+   * threads).  Fix both.
+   */
   push {lr}
   bl NaClGetUserTls /* returns Tls pointer in r0 */
   pop {pc}
