@@ -766,7 +766,7 @@ def main():
     sys.exit(1)
   platforms = [p.strip().lower() for p in options.platforms.split(',')]
   for platform in platforms:
-    if not TestExpectationsFile.ToTestPlatformName(platform):
+    if not platform in test_expectations.TestExpectationsFile.PLATFORMS:
       logging.error('Invalid platform platform: "%s"' % (platform))
       sys.exit(1)
 
