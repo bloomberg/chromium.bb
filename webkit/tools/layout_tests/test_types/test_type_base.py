@@ -13,11 +13,7 @@ import errno
 import os.path
 import subprocess
 
-
-import google.path_utils
-
 from layout_package import path_utils
-from layout_package import platform_utils
 
 class TestArguments(object):
   """Struct-like wrapper for additional arguments needed by specific tests."""
@@ -48,25 +44,22 @@ class TestTypeBase(object):
   FILENAME_SUFFIX_WDIFF = "-wdiff.html"
   FILENAME_SUFFIX_COMPARE = "-diff.png"
 
-  def __init__(self, platform, root_output_dir, platform_new_results_dir):
+  def __init__(self, platform, root_output_dir):
     """Initialize a TestTypeBase object.
 
     Args:
       platform: the platform (e.g., 'chromium-mac-leopard') identifying the
         platform-specific results to be used.
       root_output_dir: The unix style path to the output dir.
-      platform_new_results_dir: Name of the directory to put newly baselined
-        results in.
     """
     self._root_output_dir = root_output_dir
     self._platform = platform
-    self._platform_new_results_dir = platform_new_results_dir
 
   def _MakeOutputDirectory(self, filename):
     """Creates the output directory (if needed) for a given test filename."""
     output_filename = os.path.join(self._root_output_dir,
                                    path_utils.RelativeTestFilename(filename))
-    google.path_utils.MaybeMakeDirectory(os.path.split(output_filename)[0])
+    path_utils.MaybeMakeDirectory(os.path.split(output_filename)[0])
 
   def _SaveBaselineData(self, filename, data, modifier):
     """Saves a new baseline file into the platform directory.
@@ -80,13 +73,12 @@ class TestTypeBase(object):
       modifier: type of the result file, e.g. ".txt" or ".png"
     """
     relative_dir = os.path.dirname(path_utils.RelativeTestFilename(filename))
-    output_dir = os.path.join(path_utils.PlatformResultsEnclosingDir(self._platform),
-                              self._platform_new_results_dir,
+    output_dir = os.path.join(path_utils.ChromiumBaselinePath(self._platform),
                               relative_dir)
     output_file = os.path.basename(os.path.splitext(filename)[0] +
                                    self.FILENAME_SUFFIX_EXPECTED + modifier)
 
-    google.path_utils.MaybeMakeDirectory(output_dir)
+    path_utils.MaybeMakeDirectory(output_dir)
     open(os.path.join(output_dir, output_file), "wb").write(data)
 
   def OutputFilename(self, filename, modifier):
@@ -180,8 +172,7 @@ class TestTypeBase(object):
 
     if wdiff:
       # Shell out to wdiff to get colored inline diffs.
-      platform_util = platform_utils.PlatformUtility('')
-      executable = platform_util.WDiffExecutablePath()
+      executable = path_utils.WDiffPath()
       cmd = [executable,
              '--start-delete=##WDIFF_DEL##', '--end-delete=##WDIFF_END##',
              '--start-insert=##WDIFF_ADD##', '--end-insert=##WDIFF_END##',

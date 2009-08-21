@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,21 +9,13 @@
 import logging
 import optparse
 import os
-import platform_utils
 import subprocess
 import sys
 import tempfile
 import time
 import urllib
 
-import google.path_utils
-
-# This will be a native path to the directory this file resides in.
-# It can either be relative or absolute depending how it's executed.
-THISDIR = os.path.dirname(os.path.abspath(__file__))
-
-def PathFromBase(*pathies):
-  return google.path_utils.FindUpward(THISDIR, *pathies)
+import path_utils
 
 def RemoveLogFiles(folder, starts_with):
   files = os.listdir(folder)
@@ -38,30 +30,30 @@ class HttpdNotStarted(Exception):
 class Lighttpd:
   # Webkit tests
   try:
-    _webkit_tests = PathFromBase('third_party', 'WebKit',
-                                 'LayoutTests', 'http', 'tests')
-  except google.path_utils.PathNotFound:
+    _webkit_tests = path_utils.PathFromBase('third_party', 'WebKit',
+                                            'LayoutTests', 'http', 'tests')
+  except path_utils.PathNotFound:
     # If third_party/WebKit/LayoutTests/http/tests does not exist, assume wekit
     # tests are located in webkit/data/layout_tests/LayoutTests/http/tests.
     try:
-      _webkit_tests = PathFromBase('webkit', 'data', 'layout_tests',
-                                   'LayoutTests', 'http', 'tests')
-    except google.path_utils.PathNotFound:
+      _webkit_tests = path_utils.PathFromBase('webkit', 'data', 'layout_tests',
+                                              'LayoutTests', 'http', 'tests')
+    except path_utils.PathNotFound:
       _webkit_tests = None
 
   # New tests for Chrome
   try:
-    _pending_tests = PathFromBase('webkit', 'data', 'layout_tests',
-                                  'pending', 'http', 'tests')
-  except google.path_utils.PathNotFound:
+    _pending_tests = path_utils.PathFromBase('webkit', 'data', 'layout_tests',
+                                             'pending', 'http', 'tests')
+  except path_utils.PathNotFound:
     _pending_tests = None
 
   # Path where we can access all of the tests
-  _all_tests = PathFromBase('webkit', 'data', 'layout_tests')
+  _all_tests = path_utils.PathFromBase('webkit', 'data', 'layout_tests')
   # Self generated certificate for SSL server (for client cert get
   # <base-path>\chrome\test\data\ssl\certs\root_ca_cert.crt)
-  _pem_file = PathFromBase('tools', 'python', 'google', 'httpd_config',
-                           'httpd2.pem')
+  _pem_file = path_utils.PathFromBase('tools', 'python', 'google',
+      'httpd_config', 'httpd2.pem')
   VIRTUALCONFIG = [
     # One mapping where we can get to everything
     {'port': 8081, 'docroot': _all_tests}
@@ -103,7 +95,8 @@ class Lighttpd:
     if self.IsRunning():
       raise 'Lighttpd already running'
 
-    base_conf_file = os.path.join(THISDIR, 'lighttpd.conf')
+    base_conf_file = path_utils.PathFromBase('webkit',
+        'tools','layout_tests','layout_package', 'lighttpd.conf')
     out_conf_file = os.path.join(self._output_dir, 'lighttpd.conf')
     time_str = time.strftime("%d%b%Y-%H%M%S")
     access_file_name = "access.log-" + time_str + ".txt"
@@ -126,12 +119,11 @@ class Lighttpd:
     # Write out our cgi handlers.  Run perl through env so that it processes
     # the #! line and runs perl with the proper command line arguments.
     # Emulate apache's mod_asis with a cat cgi handler.
-    platform_util = platform_utils.PlatformUtility('')
     f.write(('cgi.assign = ( ".cgi"  => "/usr/bin/env",\n'
              '               ".pl"   => "/usr/bin/env",\n'
              '               ".asis" => "/bin/cat",\n'
              '               ".php"  => "%s" )\n\n') %
-                                 platform_util.LigHTTPdPHPPath())
+                                 path_utils.LigHTTPdPHPPath())
 
     # Setup log files
     f.write(('server.errorlog = "%s"\n'
@@ -170,11 +162,12 @@ class Lighttpd:
                '}\n\n') % (mapping['port'], mapping['docroot']))
     f.close()
 
-    executable = platform_util.LigHTTPdExecutablePath()
-    module_path = platform_util.LigHTTPdModulePath()
+    executable = path_utils.LigHTTPdExecutablePath()
+    module_path = path_utils.LigHTTPdModulePath()
     start_cmd = [ executable,
                   # Newly written config file
-                  '-f', PathFromBase(self._output_dir, 'lighttpd.conf'),
+                  '-f', path_utils.PathFromBase(self._output_dir,
+                                                'lighttpd.conf'),
                   # Where it can find its module dynamic libraries
                   '-m', module_path,
                   # Don't background
@@ -184,10 +177,12 @@ class Lighttpd:
     env = os.environ
     if sys.platform in ('cygwin', 'win32'):
       env['PATH'] = '%s;%s' % (
-          PathFromBase('third_party', 'cygwin', 'bin'), env['PATH'])
+          path_utils.PathFromBase('third_party', 'cygwin', 'bin'),
+          env['PATH'])
 
     if sys.platform == 'win32' and self._register_cygwin:
-      setup_mount = PathFromBase('third_party', 'cygwin', 'setup_mount.bat')
+      setup_mount = path_utils.PathFromBase('third_party', 'cygwin',
+          'setup_mount.bat')
       subprocess.Popen(setup_mount).wait()
 
     logging.info('Starting http server')
@@ -240,8 +235,7 @@ class Lighttpd:
       return
 
     logging.info('Shutting down http server')
-    platform_util = platform_utils.PlatformUtility('')
-    platform_util.ShutDownHTTPServer(self._process)
+    path_utils.ShutDownHTTPServer(self._process)
 
     if self._process:
       self._process.wait()
