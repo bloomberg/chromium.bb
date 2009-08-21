@@ -245,6 +245,7 @@
             'installer_util',
             'installer_util_strings',
             '../../build/util/build_util.gyp:lastchange',
+            '../../build/util/support/support.gyp:*',
             '../../build/win/system.gyp:cygwin',
           ],
           'include_dirs': [
