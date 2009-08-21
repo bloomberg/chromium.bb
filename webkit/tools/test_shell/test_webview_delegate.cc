@@ -32,11 +32,11 @@
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/public/WebURLResponse.h"
+#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
 #include "webkit/glue/media/simple_data_source.h"
-#include "webkit/glue/webappcachecontext.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
@@ -197,7 +197,7 @@ WebKit::WebMediaPlayer* TestWebViewDelegate::CreateWebMediaPlayer(
           "null",             // frame origin
           "null",             // main_frame_origin
           base::GetCurrentProcId(),
-          WebAppCacheContext::kNoAppCacheContextId,
+          appcache::kNoHostId,
           0);
   factory->AddFactory(webkit_glue::BufferedDataSource::CreateFactory(
       MessageLoop::current(), bridge_factory));

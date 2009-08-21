@@ -19,13 +19,13 @@ MediaResourceLoaderBridgeFactory::MediaResourceLoaderBridgeFactory(
     const std::string& frame_origin,
     const std::string& main_frame_origin,
     int origin_pid,
-    int app_cache_context_id,
+    int appcache_host_id,
     int32 routing_id)
     : referrer_(referrer),
       frame_origin_(frame_origin),
       main_frame_origin_(main_frame_origin),
       origin_pid_(origin_pid),
-      app_cache_context_id_(app_cache_context_id),
+      appcache_host_id_(appcache_host_id),
       routing_id_(routing_id) {
 }
 
@@ -45,7 +45,7 @@ ResourceLoaderBridge* MediaResourceLoaderBridgeFactory::CreateBridge(
       load_flags,
       origin_pid_,
       ResourceType::MEDIA,
-      app_cache_context_id_,
+      appcache_host_id_,
       routing_id_);
 }
 

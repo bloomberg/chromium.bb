@@ -21,7 +21,7 @@ class MediaResourceLoaderBridgeFactory {
       const std::string& frame_origin,
       const std::string& main_frame_origin,
       int origin_pid,
-      int app_cache_context_id,
+      int appcache_host_id,
       int32 routing_id);
 
   virtual ~MediaResourceLoaderBridgeFactory() {}
@@ -67,7 +67,7 @@ class MediaResourceLoaderBridgeFactory {
   std::string main_frame_origin_;
   std::string headers_;
   int origin_pid_;
-  int app_cache_context_id_;
+  int appcache_host_id_;
   int32 routing_id_;
 };
 

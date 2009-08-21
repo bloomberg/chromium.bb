@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "webkit/glue/resource_loader_bridge.h"
-#include "webkit/glue/webappcachecontext.h"
 
+#include "webkit/appcache/appcache_interfaces.h"
 #include "net/http/http_response_headers.h"
 
 namespace webkit_glue {
 
 ResourceLoaderBridge::ResponseInfo::ResponseInfo() {
   content_length = -1;
-  app_cache_id = WebAppCacheContext::kNoAppCacheId;
+  appcache_id = appcache::kNoCacheId;
 }
 
 ResourceLoaderBridge::ResponseInfo::~ResponseInfo() {

@@ -220,13 +220,13 @@ ResourceLoaderBridge* ResourceLoaderBridge::Create(
     int load_flags,
     int origin_pid,
     ResourceType::Type resource_type,
-    int app_cache_context_id,
+    int appcache_host_id,
     int routing_id) {
   ResourceDispatcher* dispatch = ChildThread::current()->resource_dispatcher();
   return dispatch->CreateBridge(method, url, first_party_for_cookies, referrer,
                                 frame_origin, main_frame_origin, headers,
                                 load_flags, origin_pid, resource_type, 0,
-                                app_cache_context_id, routing_id);
+                                appcache_host_id, routing_id);
 }
 
 void NotifyCacheStats() {

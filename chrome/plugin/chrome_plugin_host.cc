@@ -21,10 +21,10 @@
 #include "net/base/io_buffer.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
+#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/resource_type.h"
-#include "webkit/glue/webappcachecontext.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
@@ -160,7 +160,7 @@ class PluginRequestHandlerProxy
             base::GetCurrentProcId(),
             ResourceType::OBJECT,
             cprequest_->context,
-            WebAppCacheContext::kNoAppCacheContextId,
+            appcache::kNoHostId,
             MSG_ROUTING_CONTROL));
     if (!bridge_.get())
       return CPERR_FAILURE;

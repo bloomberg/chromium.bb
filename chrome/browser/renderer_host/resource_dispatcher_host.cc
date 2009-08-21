@@ -52,7 +52,7 @@
 #include "net/base/ssl_cert_request_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/glue/webappcachecontext.h"
+#include "webkit/appcache/appcache_interfaces.h"
 
 // TODO(port): Move these includes to the above section when porting is done.
 #if defined(OS_POSIX)
@@ -237,7 +237,8 @@ void PopulateResourceResponse(URLRequest* request,
   request->GetCharset(&response->response_head.charset);
   response->response_head.filter_policy = filter_policy;
   response->response_head.content_length = request->GetExpectedContentSize();
-  response->response_head.app_cache_id = WebAppCacheContext::kNoAppCacheId;
+  response->response_head.appcache_id = appcache::kNoCacheId;
+  response->response_head.appcache_manifest_url = GURL();
   request->GetMimeType(&response->response_head.mime_type);
 }
 

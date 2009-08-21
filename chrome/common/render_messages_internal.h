@@ -25,8 +25,8 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/dom_operations.h"
-#include "webkit/glue/webappcachecontext.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin.h"
 
@@ -518,13 +518,22 @@ IPC_BEGIN_MESSAGES(View)
   // into a full window).
   IPC_MESSAGE_ROUTED0(ViewMsg_DisassociateFromPopupCount)
 
-  // Notifies the renderer of the AppCache that has been selected for a
-  // a particular context (or frame). This is sent in reply to
-  // one of the two AppCacheMsg_SelectAppCache messages.
-  IPC_MESSAGE_CONTROL3(AppCacheMsg_AppCacheSelected,
-                       int /* context_id */,
-                       int /* select_request_id */,
-                       int64 /* cache_id */)
+  // Notifies the renderer of the appcache that has been selected for a
+  // a particular host. This is sent in reply to AppCacheMsg_SelectCache.
+  IPC_MESSAGE_CONTROL3(AppCacheMsg_CacheSelected,
+                       int /* host_id */,
+                       int64 /* appcache_id */,
+                       appcache::Status)
+
+  // Notifies the renderer of an AppCache status change.
+  IPC_MESSAGE_CONTROL2(AppCacheMsg_StatusChanged,
+                       std::vector<int> /* host_ids */,
+                       appcache::Status)
+
+  // Notifies the renderer of an AppCache event.
+  IPC_MESSAGE_CONTROL2(AppCacheMsg_EventRaised,
+                       std::vector<int> /* host_ids */,
+                       appcache::EventID)
 
   // Reply to the ViewHostMsg_QueryFormFieldAutofill message with the autofill
   // suggestions.
@@ -1341,33 +1350,48 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              gfx::NativeViewId /* window */,
                              gfx::Rect /* Out: Window location */)
 
-  // Informs the browser of a new context.
-  IPC_MESSAGE_CONTROL3(AppCacheMsg_ContextCreated,
-                       WebAppCacheContext::ContextType,
-                       int /* context_id */,
-                       int /* opt_parent_context_id */)
+  // Informs the browser of a new appcache host.
+  IPC_MESSAGE_CONTROL1(AppCacheMsg_RegisterHost,
+                       int /* host_id */)
 
-  // Informs the browser of a context being destroyed.
-  IPC_MESSAGE_CONTROL1(AppCacheMsg_ContextDestroyed,
-                       int /* context_id */)
+  // Informs the browser of an appcache host being destroyed.
+  IPC_MESSAGE_CONTROL1(AppCacheMsg_UnregisterHost,
+                       int /* host_id */)
 
-  // Initiates the cache selection algorithm for the given context.
-  // This is sent after new content has been committed, but prior to
-  // any subresource loads. An AppCacheMsg_AppCacheSelected message will
-  // be sent in response.
-  // 'context_id' indentifies a specific frame or worker
-  // 'select_request_id' indentifies this particular invocation the algorithm
-  //    and will be returned to the caller with the response
-  // 'document_url' the url of the main resource commited to the frame
-  // 'cache_document_was_loaded_frame' the id of the appcache the main resource
-  //    was loaded from or kNoAppCacheId
+  // Initiates the cache selection algorithm for the given host.
+  // This is sent prior to any subresource loads. An AppCacheMsg_CacheSelected
+  // message will be sent in response.
+  // 'host_id' indentifies a specific document or worker
+  // 'document_url' the url of the main resource
+  // 'appcache_document_was_loaded_from' the id of the appcache the main
+  //     resource was loaded from or kNoCacheId
   // 'opt_manifest_url' the manifest url specified in the <html> tag if any
-  IPC_MESSAGE_CONTROL5(AppCacheMsg_SelectAppCache,
-                       int /* context_id */,
-                       int /* select_request_id */,
+  IPC_MESSAGE_CONTROL4(AppCacheMsg_SelectCache,
+                       int /* host_id */,
                        GURL  /* document_url */,
-                       int64 /* cache_document_was_loaded_from */,
+                       int64 /* appcache_document_was_loaded_from */,
                        GURL  /* opt_manifest_url */)
+
+  // Informs the browser of a 'foreign' entry in an appcache.
+  IPC_MESSAGE_CONTROL3(AppCacheMsg_MarkAsForeignEntry,
+                       int /* host_id */,
+                       GURL  /* document_url */,
+                       int64 /* appcache_document_was_loaded_from */)
+
+  // Returns the status of the appcache associated with host_id.
+  IPC_SYNC_MESSAGE_CONTROL1_1(AppCacheMsg_GetStatus,
+                              int /* host_id */,
+                              appcache::Status)
+
+  // Initiates an update of the appcache associated with host_id.
+  IPC_SYNC_MESSAGE_CONTROL1_1(AppCacheMsg_StartUpdate,
+                              int /* host_id */,
+                              bool /* success */)
+
+  // Swaps a new pending appcache, if there is one, into use for host_id.
+  IPC_SYNC_MESSAGE_CONTROL1_1(AppCacheMsg_SwapCache,
+                              int /* host_id */,
+                              bool /* success */)
 
   // Returns the resizer box location in the window this widget is embeded.
   // Important for Mac OS X, but not Win or Linux.

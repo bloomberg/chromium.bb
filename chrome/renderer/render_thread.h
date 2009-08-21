@@ -95,6 +95,10 @@ class RenderThread : public RenderThreadBase,
     return user_script_slave_.get();
   }
 
+  AppCacheDispatcher* appcache_dispatcher() const {
+    return appcache_dispatcher_.get();
+  }
+
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
 
   // Do DNS prefetch resolution of a hostname.
@@ -161,7 +165,7 @@ class RenderThread : public RenderThreadBase,
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<UserScriptSlave> user_script_slave_;
   scoped_ptr<RenderDnsMaster> dns_master_;
-  scoped_ptr<AppCacheDispatcher> app_cache_dispatcher_;
+  scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_refptr<DevToolsAgentFilter> devtools_agent_filter_;
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererWebKitClientImpl> webkit_client_;

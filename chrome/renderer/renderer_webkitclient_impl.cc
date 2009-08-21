@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
+#include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/db_message_filter.h"
 #include "chrome/common/render_messages.h"
@@ -18,6 +19,7 @@
 #include "chrome/renderer/visitedlink_slave.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
+#include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -25,6 +27,8 @@
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
 #endif
 
+using WebKit::WebApplicationCacheHost;
+using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebStorageArea;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
@@ -135,6 +139,12 @@ WebStorageNamespace* RendererWebKitClientImpl::createSessionStorageNamespace() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return WebStorageNamespace::createSessionStorageNamespace();
   return new RendererWebStorageNamespaceImpl(false);
+}
+
+WebApplicationCacheHost* RendererWebKitClientImpl::createApplicationCacheHost(
+      WebApplicationCacheHostClient* client) {
+  return new appcache::WebApplicationCacheHostImpl(client,
+      RenderThread::current()->appcache_dispatcher()->backend_proxy());
 }
 
 //------------------------------------------------------------------------------

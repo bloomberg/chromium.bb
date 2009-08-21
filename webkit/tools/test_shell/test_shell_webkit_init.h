@@ -16,6 +16,7 @@
 #include "webkit/api/public/WebStorageNamespace.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
+#include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkit_glue.h"
@@ -23,6 +24,7 @@
 #include "webkit/extensions/v8/gears_extension.h"
 #include "webkit/extensions/v8/interval_extension.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
+#include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "v8/include/v8.h"
 
@@ -40,6 +42,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     WebKit::enableV8SingleThreadMode();
     WebKit::registerExtension(extensions_v8::GearsExtension::Get());
     WebKit::registerExtension(extensions_v8::IntervalExtension::Get());
+    appcache_system_.Initialize();
 
     // Load libraries for media and enable the media player.
     FilePath module_path;
@@ -144,10 +147,17 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     return WebKit::WebStorageNamespace::createSessionStorageNamespace();
   }
 
+  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
+        WebKit::WebApplicationCacheHostClient* client) {
+    return new appcache::WebApplicationCacheHostImpl(
+                            client, appcache_system_.backend());
+  }
+
  private:
   webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebClipboardImpl real_clipboard_;
+  SimpleAppCacheSystem appcache_system_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBKIT_INIT_H_

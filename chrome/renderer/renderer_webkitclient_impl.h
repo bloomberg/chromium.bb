@@ -48,6 +48,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual bool databaseDeleteFile(const WebKit::WebString& file_name);
   virtual long databaseGetFileAttributes(const WebKit::WebString& file_name);
   virtual long long databaseGetFileSize(const WebKit::WebString& file_name);
+  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
+      WebKit::WebApplicationCacheHostClient*);
 
  private:
   class MimeRegistry : public webkit_glue::SimpleWebMimeRegistryImpl {

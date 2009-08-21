@@ -310,7 +310,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   scoped_refptr<AudioRendererHost> audio_renderer_host_;
 
   // Handles AppCache related messages.
-  scoped_ptr<AppCacheDispatcherHost> app_cache_dispatcher_host_;
+  scoped_ptr<AppCacheDispatcherHost> appcache_dispatcher_host_;
 
   // Handles DOM Storage related messages.
   scoped_refptr<DOMStorageDispatcherHost> dom_storage_dispatcher_host_;

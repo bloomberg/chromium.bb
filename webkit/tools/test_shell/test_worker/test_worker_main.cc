@@ -157,7 +157,7 @@ ResourceLoaderBridge* ResourceLoaderBridge::Create(
     int load_flags,
     int requestor_pid,
     ResourceType::Type request_type,
-    int app_cache_context_id,
+    int appcache_host_id,
     int routing_id) {
   return NULL;
 }

@@ -150,7 +150,9 @@ void PopulateURLResponse(
   response->setTextEncodingName(StdStringToWebString(info.charset));
   response->setExpectedContentLength(info.content_length);
   response->setSecurityInfo(info.security_info);
-  response->setAppCacheID(info.app_cache_id);
+  response->setAppCacheID(info.appcache_id);
+  // TODO(michaeln):
+  // response->setAppCacheManifestUrl(info.appcache_manifest_url);
 
   const net::HttpResponseHeaders* headers = info.headers;
   if (!headers)

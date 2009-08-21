@@ -55,7 +55,7 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
                           int origin_pid,
                           ResourceType::Type resource_type,
                           uint32 request_context,
-                          int app_cache_context_id,
+                          int appcache_host_id,
                           int routing_id);
   virtual ~IPCResourceLoaderBridge();
 
@@ -109,7 +109,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     int origin_pid,
     ResourceType::Type resource_type,
     uint32 request_context,
-    int app_cache_context_id,
+    int appcache_host_id,
     int routing_id)
     : peer_(NULL),
       dispatcher_(dispatcher),
@@ -127,7 +127,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.origin_pid = origin_pid;
   request_.resource_type = resource_type;
   request_.request_context = request_context;
-  request_.app_cache_context_id = app_cache_context_id;
+  request_.appcache_host_id = appcache_host_id;
 
 #ifdef LOG_RESOURCE_REQUESTS
   url_ = url.possibly_invalid_spec();
@@ -543,7 +543,7 @@ webkit_glue::ResourceLoaderBridge* ResourceDispatcher::CreateBridge(
     int origin_pid,
     ResourceType::Type resource_type,
     uint32 request_context,
-    int app_cache_context_id,
+    int appcache_host_id,
     int route_id) {
   return new webkit_glue::IPCResourceLoaderBridge(this, method, url,
                                                   first_party_for_cookies,
@@ -552,7 +552,7 @@ webkit_glue::ResourceLoaderBridge* ResourceDispatcher::CreateBridge(
                                                   flags, origin_pid,
                                                   resource_type,
                                                   request_context,
-                                                  app_cache_context_id,
+                                                  appcache_host_id,
                                                   route_id);
 }
 

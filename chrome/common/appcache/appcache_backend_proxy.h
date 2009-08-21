@@ -1,0 +1,36 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_COMMON_APPCACHE_APPCACHE_BACKEND_PROXY_H_
+#define CHROME_COMMON_APPCACHE_APPCACHE_BACKEND_PROXY_H_
+
+#include "ipc/ipc_message.h"
+#include "webkit/appcache/appcache_interfaces.h"
+
+// Sends appcache related messages to the main process.
+class AppCacheBackendProxy : public appcache::AppCacheBackend {
+ public:
+  explicit AppCacheBackendProxy(IPC::Message::Sender* sender)
+      : sender_(sender) {}
+
+  IPC::Message::Sender* sender() const { return sender_; }
+
+  // AppCacheBackend methods
+  virtual void RegisterHost(int host_id);
+  virtual void UnregisterHost(int host_id);
+  virtual void SelectCache(int host_id,
+                           const GURL& document_url,
+                           const int64 cache_document_was_loaded_from,
+                           const GURL& manifest_url);
+  virtual void MarkAsForeignEntry(int host_id, const GURL& document_url,
+                                  int64 cache_document_was_loaded_from);
+  virtual appcache::Status GetStatus(int host_id);
+  virtual bool StartUpdate(int host_id);
+  virtual bool SwapCache(int host_id);
+
+ private:
+  IPC::Message::Sender* sender_;
+};
+
+#endif  // CHROME_COMMON_APPCACHE_APPCACHE_BACKEND_PROXY_H_

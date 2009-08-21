@@ -67,8 +67,12 @@ class ResourceLoaderBridge {
     // Content length if available. -1 if not available
     int64 content_length;
 
-    // The appcache this response was loaded from, or kNoAppCacheId.
-    int64 app_cache_id;
+    // The appcache this response was loaded from, or kNoCacheId.
+    int64 appcache_id;
+
+    // The manifest url of the appcache this response was loaded from.
+    // Note: this value is only populated for main resource requests.
+    GURL appcache_manifest_url;
   };
 
   // See the SyncLoad method declared below.  (The name of this struct is not
@@ -157,7 +161,7 @@ class ResourceLoaderBridge {
   // request_type indicates if the current request is the main frame load, a
   // sub-frame load, or a sub objects load.
   //
-  // app_cache_context_id identifies that app cache context this request is
+  // appcache_host_id identifies that appcache host this request is
   // associated with.
   //
   // routing_id passed to this function allows it to be associated with a
@@ -172,7 +176,7 @@ class ResourceLoaderBridge {
                                       int load_flags,
                                       int requestor_pid,
                                       ResourceType::Type request_type,
-                                      int app_cache_context_id,
+                                      int appcache_host_id,
                                       int routing_id);
 
   // Call this method before calling Start() to append a chunk of binary data

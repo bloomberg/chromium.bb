@@ -12,8 +12,7 @@
 #include "base/shared_memory.h"
 #include "base/stats_table.h"
 #include "base/thread_local.h"
-#include "chrome/common/app_cache/app_cache_context_impl.h"
-#include "chrome/common/app_cache/app_cache_dispatcher.h"
+#include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/db_message_filter.h"
 #include "chrome/common/render_messages.h"
@@ -61,9 +60,6 @@ namespace {
 static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
 static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
     base::LINKER_INITIALIZED);
-static WebAppCacheContext* CreateAppCacheContextForRenderer() {
-  return new AppCacheContextImpl(RenderThread::current());
-}
 
 #if defined(OS_POSIX)
 class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
@@ -116,8 +112,7 @@ void RenderThread::Init() {
   user_script_slave_.reset(new UserScriptSlave());
   dns_master_.reset(new RenderDnsMaster());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
-  app_cache_dispatcher_.reset(new AppCacheDispatcher());
-  WebAppCacheContext::SetFactory(CreateAppCacheContextForRenderer);
+  appcache_dispatcher_.reset(new AppCacheDispatcher(this));
   devtools_agent_filter_ = new DevToolsAgentFilter();
   AddFilter(devtools_agent_filter_.get());
   db_message_filter_ = new DBMessageFilter();
@@ -134,7 +129,6 @@ RenderThread::~RenderThread() {
   RemoveFilter(devtools_agent_filter_.get());
   RemoveFilter(db_message_filter_.get());
   db_message_filter_ = NULL;
-  WebAppCacheContext::SetFactory(NULL);
   if (webkit_client_.get())
     WebKit::shutdown();
 
@@ -210,7 +204,7 @@ void RenderThread::OnExtensionSetPermissions(
 
 void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   // App cache messages are handled by a delegate.
-  if (app_cache_dispatcher_->OnMessageReceived(msg))
+  if (appcache_dispatcher_->OnMessageReceived(msg))
     return;
 
   IPC_BEGIN_MESSAGE_MAP(RenderThread, msg)

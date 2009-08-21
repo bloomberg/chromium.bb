@@ -10,7 +10,6 @@
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/resource_loader_bridge.h"
-#include "webkit/glue/webappcachecontext.h"
 
 namespace {
 

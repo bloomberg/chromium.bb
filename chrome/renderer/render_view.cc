@@ -71,6 +71,7 @@
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/public/WebURLResponse.h"
 #include "webkit/api/public/WebVector.h"
+#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/dom_operations.h"
@@ -1983,7 +1984,7 @@ WebKit::WebMediaPlayer* RenderView::CreateWebMediaPlayer(
           "null",             // frame origin
           "null",             // main_frame_origin
           base::GetCurrentProcId(),
-          WebAppCacheContext::kNoAppCacheContextId,
+          appcache::kNoHostId,
           routing_id());
 
   if (!cmd_line->HasSwitch(switches::kSimpleDataSource)) {

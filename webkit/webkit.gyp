@@ -1232,11 +1232,20 @@
       'msvs_guid': '0B945915-31A7-4A07-A5B5-568D737A39B1',
       'dependencies': [
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        'webkit',
       ],
       'sources': [
         # This list contains all .h and .cc in appcache except for test code.
+        'appcache/appcache_backend_impl.cc',
+        'appcache/appcache_backend_impl.h',
+        'appcache/appcache_frontend_impl.cc',
+        'appcache/appcache_frontend_impl.h',
+        'appcache/appcache_interfaces.cc',
+        'appcache/appcache_interfaces.h',
         'appcache/manifest_parser.cc',
         'appcache/manifest_parser.h',
+        'appcache/web_application_cache_host_impl.cc',
+        'appcache/web_application_cache_host_impl.h',
       ],
     },
     {
@@ -1399,8 +1408,6 @@
         'glue/webaccessibilitymanager.h',
         'glue/webaccessibilitymanager_impl.cc',
         'glue/webaccessibilitymanager_impl.h',
-        'glue/webappcachecontext.cc',
-        'glue/webappcachecontext.h',
         'glue/webclipboard_impl.cc',
         'glue/webclipboard_impl.h',
         'glue/webcursor.cc',

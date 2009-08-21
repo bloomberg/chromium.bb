@@ -29,7 +29,7 @@
 #include "chrome/browser/spellchecker.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
-#include "chrome/common/app_cache/app_cache_dispatcher_host.h"
+#include "chrome/common/appcache/appcache_dispatcher_host.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -156,7 +156,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       profile_(profile),
       render_widget_helper_(render_widget_helper),
       audio_renderer_host_(audio_renderer_host),
-      app_cache_dispatcher_host_(new AppCacheDispatcherHost),
+      appcache_dispatcher_host_(new AppCacheDispatcherHost),
       ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext(),
               resource_dispatcher_host->webkit_thread()))),
@@ -170,7 +170,7 @@ ResourceMessageFilter::ResourceMessageFilter(
   DCHECK(media_request_context_.get());
   DCHECK(media_request_context_->cookie_store());
   DCHECK(audio_renderer_host_.get());
-  DCHECK(app_cache_dispatcher_host_.get());
+  DCHECK(appcache_dispatcher_host_.get());
   DCHECK(dom_storage_dispatcher_host_.get());
 }
 
@@ -194,7 +194,7 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 void ResourceMessageFilter::Init(int render_process_id) {
   render_process_id_ = render_process_id;
   render_widget_helper_->Init(render_process_id, resource_dispatcher_host_);
-  app_cache_dispatcher_host_->Initialize(this);
+  appcache_dispatcher_host_->Initialize(this);
 }
 
 // Called on the IPC thread:
@@ -257,7 +257,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   bool handled =
       resource_dispatcher_host_->OnMessageReceived(msg, this, &msg_is_ok) ||
-      app_cache_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      appcache_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       dom_storage_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       audio_renderer_host_->OnMessageReceived(msg, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||

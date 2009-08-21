@@ -13,7 +13,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/glue/media/buffered_data_source.h"
-#include "webkit/glue/webappcachecontext.h"
 
 namespace {
 

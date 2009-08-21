@@ -5,8 +5,8 @@
 #ifndef WEBKIT_GLUE_UNITTEST_TEST_SERVER_H__
 #define WEBKIT_GLUE_UNITTEST_TEST_SERVER_H__
 
+#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/resource_loader_bridge.h"
-#include "webkit/glue/webappcachecontext.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_unittest.h"
 
@@ -49,7 +49,7 @@ class UnittestTestServer : public HTTPTestServer {
                                    net::LOAD_NORMAL,
                                    0,
                                    ResourceType::SUB_RESOURCE,
-                                   WebAppCacheContext::kNoAppCacheContextId,
+                                   appcache::kNoHostId,
                                    0));
     EXPECT_TRUE(loader.get());
 

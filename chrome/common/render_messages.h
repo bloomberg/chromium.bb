@@ -29,6 +29,7 @@
 #include "media/audio/audio_output.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
+#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/autofill_form.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/form_data.h"
@@ -37,7 +38,6 @@
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webaccessibility.h"
-#include "webkit/glue/webappcachecontext.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webplugin.h"
@@ -320,8 +320,8 @@ struct ViewHostMsg_Resource_Request {
   uint32 request_context;
 
   // Indicates which frame (or worker context) the request is being loaded into,
-  // or kNoAppCacheContextId.
-  int32 app_cache_context_id;
+  // or kNoHostId.
+  int appcache_host_id;
 
   // Optional upload data (may be null).
   scoped_refptr<net::UploadData> upload_data;
@@ -1265,7 +1265,7 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
     WriteParam(m, p.origin_pid);
     WriteParam(m, p.resource_type);
     WriteParam(m, p.request_context);
-    WriteParam(m, p.app_cache_context_id);
+    WriteParam(m, p.appcache_host_id);
     WriteParam(m, p.upload_data);
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
@@ -1281,7 +1281,7 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
       ReadParam(m, iter, &r->origin_pid) &&
       ReadParam(m, iter, &r->resource_type) &&
       ReadParam(m, iter, &r->request_context) &&
-      ReadParam(m, iter, &r->app_cache_context_id) &&
+      ReadParam(m, iter, &r->appcache_host_id) &&
       ReadParam(m, iter, &r->upload_data);
   }
   static void Log(const param_type& p, std::wstring* l) {
@@ -1304,7 +1304,7 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
     l->append(L", ");
     LogParam(p.request_context, l);
     l->append(L", ");
-    LogParam(p.app_cache_context_id, l);
+    LogParam(p.appcache_host_id, l);
     l->append(L")");
   }
 };
@@ -1344,7 +1344,8 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     WriteParam(m, p.charset);
     WriteParam(m, p.security_info);
     WriteParam(m, p.content_length);
-    WriteParam(m, p.app_cache_id);
+    WriteParam(m, p.appcache_id);
+    WriteParam(m, p.appcache_manifest_url);
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
     return
@@ -1355,7 +1356,8 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
       ReadParam(m, iter, &r->charset) &&
       ReadParam(m, iter, &r->security_info) &&
       ReadParam(m, iter, &r->content_length) &&
-      ReadParam(m, iter, &r->app_cache_id);
+      ReadParam(m, iter, &r->appcache_id) &&
+      ReadParam(m, iter, &r->appcache_manifest_url);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -1373,7 +1375,9 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     l->append(L", ");
     LogParam(p.content_length, l);
     l->append(L", ");
-    LogParam(p.app_cache_id, l);
+    LogParam(p.appcache_id, l);
+    l->append(L", ");
+    LogParam(p.appcache_manifest_url, l);
     l->append(L")");
   }
 };
@@ -1848,8 +1852,8 @@ struct ParamTraits<ViewMsg_AudioStreamState> {
 };
 
 template <>
-struct ParamTraits<WebAppCacheContext::ContextType> {
-  typedef WebAppCacheContext::ContextType param_type;
+struct ParamTraits<appcache::Status> {
+  typedef appcache::Status param_type;
   static void Write(Message* m, const param_type& p) {
     m->WriteInt(static_cast<int>(p));
   }
@@ -1863,17 +1867,75 @@ struct ParamTraits<WebAppCacheContext::ContextType> {
   static void Log(const param_type& p, std::wstring* l) {
     std::wstring state;
     switch (p) {
-     case WebAppCacheContext::MAIN_FRAME:
-      state = L"MAIN_FRAME";
+     case appcache::UNCACHED:
+      state = L"UNCACHED";
       break;
-     case WebAppCacheContext::CHILD_FRAME:
-      state = L"CHILD_FRAME";
+     case appcache::IDLE:
+      state = L"IDLE";
       break;
-     case WebAppCacheContext::DEDICATED_WORKER:
-       state = L"DECICATED_WORKER";
-       break;
+     case appcache::CHECKING:
+      state = L"CHECKING";
+      break;
+     case appcache::DOWNLOADING:
+      state = L"DOWNLOADING";
+      break;
+     case appcache::UPDATE_READY:
+      state = L"UPDATE_READY";
+      break;
+     case appcache::OBSOLETE:
+      state = L"OBSOLETE";
+      break;
      default:
-      state = L"UNKNOWN";
+      state = L"InvalidStatusValue";
+      break;
+    }
+
+    LogParam(state, l);
+  }
+};
+
+template <>
+struct ParamTraits<appcache::EventID> {
+  typedef appcache::EventID param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(static_cast<int>(p));
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int type;
+    if (!m->ReadInt(iter, &type))
+      return false;
+    *p = static_cast<param_type>(type);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    std::wstring state;
+    switch (p) {
+     case appcache::CHECKING_EVENT:
+      state = L"CHECKING_EVENT";
+      break;
+     case appcache::ERROR_EVENT:
+      state = L"ERROR_EVENT";
+      break;
+     case appcache::NO_UPDATE_EVENT:
+      state = L"NO_UPDATE_EVENT";
+      break;
+     case appcache::DOWNLOADING_EVENT:
+      state = L"DOWNLOADING_EVENT";
+      break;
+     case appcache::PROGRESS_EVENT:
+      state = L"PROGRESS_EVENT";
+      break;
+     case appcache::UPDATE_READY_EVENT:
+      state = L"UPDATE_READY_EVENT";
+      break;
+     case appcache::CACHED_EVENT:
+      state = L"CACHED_EVENT";
+      break;
+     case appcache::OBSOLETE_EVENT:
+      state = L"OBSOLETE_EVENT";
+      break;
+     default:
+      state = L"InvalidEventValue";
       break;
     }
 
