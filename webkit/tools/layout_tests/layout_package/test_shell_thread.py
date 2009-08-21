@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,7 +22,6 @@ import threading
 import time
 
 import path_utils
-import platform_utils
 import test_failures
 
 def ProcessOutput(proc, test_info, test_types, test_args, target):
@@ -333,9 +332,7 @@ class TestShellThread(threading.Thread):
       # introducing spurious crashes. We accept that tradeoff in order to
       # avoid losing the rest of this thread's results.
       logging.error('Test thread hung: killing all test_shells')
-      # PlatformUtility() wants a base_dir, but it doesn't matter here.
-      platform_util = platform_utils.PlatformUtility('')
-      platform_util.KillAllTestShells()
+      path_utils.KillAllTestShells()
 
     try:
       stats = worker.GetTestStats()

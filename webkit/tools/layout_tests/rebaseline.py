@@ -30,12 +30,7 @@ import urllib
 import webbrowser
 import zipfile
 
-import google.path_utils
-
 from layout_package import path_utils
-from layout_package import platform_utils_linux
-from layout_package import platform_utils_mac
-from layout_package import platform_utils_win
 from layout_package import test_expectations
 
 BASELINE_SUFFIXES = ['.txt', '.png', '.checksum']
@@ -294,18 +289,6 @@ class Rebaseliner(object):
     logging.info('Archive downloaded and saved to file: "%s"', fn)
     return fn
 
-  def _GetPlatformNewResultsDir(self):
-    """Get the dir name to extract new baselines for the given platform."""
-
-    if self._platform == 'win':
-      return platform_utils_win.PlatformUtility(None).PlatformNewResultsDir()
-    elif self._platform == 'mac':
-      return platform_utils_mac.PlatformUtility(None).PlatformNewResultsDir()
-    elif self._platform == 'linux':
-      return platform_utils_linux.PlatformUtility(None).PlatformNewResultsDir()
-
-    return None
-
   def _ExtractAndAddNewBaselines(self, archive_file):
     """Extract new baselines from archive and add them to SVN repository.
 
@@ -324,13 +307,8 @@ class Rebaseliner(object):
     for name in zip_namelist:
       logging.debug('  ' + name)
 
-    platform_dir = self._GetPlatformNewResultsDir()
-    if not platform_dir:
-      logging.error('Invalid platform new results dir, platform: "%s"',
-                    self._platform)
-      return None
-
-    logging.debug('Platform new results dir: "%s"', platform_dir)
+    platform = path_utils.PlatformName(self._platform)
+    logging.debug('Platform dir: "%s"', platform)
 
     test_no = 1
     self._rebaselined_tests = []
@@ -354,16 +332,14 @@ class Rebaseliner(object):
 
         expected_filename = '%s-expected%s' % (test_basename, suffix)
         expected_fullpath = os.path.join(
-            path_utils.ChromiumPlatformResultsEnclosingDir(),
-            platform_dir,
-            expected_filename)
+            path_utils.ChromiumBaselinePath(platform), expected_filename)
         expected_fullpath = os.path.normpath(expected_fullpath)
         logging.debug('  Expected file full path: "%s"', expected_fullpath)
 
         data = zip_file.read(archive_test_name)
 
         # Create the new baseline directory if it doesn't already exist.
-        google.path_utils.MaybeMakeDirectory(os.path.dirname(expected_fullpath))
+        path_utils.MaybeMakeDirectory(os.path.dirname(expected_fullpath))
 
         f = open(expected_fullpath, 'wb')
         f.write(data)
@@ -788,6 +764,11 @@ def main():
     logging.error('Invalid "platforms" option. --platforms must be specified '
                   'in order to rebaseline.')
     sys.exit(1)
+  platforms = [p.strip().lower() for p in options.platforms.split(',')]
+  for platform in platforms:
+    if not TestExpectationsFile.ToTestPlatformName(platform):
+      logging.error('Invalid platform platform: "%s"' % (platform))
+      sys.exit(1)
 
   if not options.no_html_results:
     options.html_directory = SetupHtmlDirectory(options.html_directory,
@@ -795,7 +776,6 @@ def main():
 
   rebaselining_tests = set()
   backup = options.backup
-  platforms = [p.strip().lower() for p in options.platforms.split(',')]
   for platform in platforms:
     rebaseliner = Rebaseliner(platform, options)
 

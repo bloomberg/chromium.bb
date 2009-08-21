@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -35,14 +35,11 @@ import sys
 import time
 import traceback
 
-import google.path_utils
-
 from layout_package import compare_failures
 from layout_package import test_expectations
 from layout_package import http_server
 from layout_package import json_results_generator
 from layout_package import path_utils
-from layout_package import platform_utils
 from layout_package import test_failures
 from layout_package import test_shell_thread
 from test_types import fuzzy_image_diff
@@ -53,19 +50,16 @@ from test_types import simplified_text_diff
 
 class TestInfo:
   """Groups information about a test for easy passing of data."""
-  def __init__(self, filename, timeout, platform):
+  def __init__(self, filename, timeout):
     """Generates the URI and stores the filename and timeout for this test.
     Args:
       filename: Full path to the test.
       timeout: Timeout for running the test in TestShell.
-      platform: The platform whose test expected results to grab.
       """
     self.filename = filename
     self.uri = path_utils.FilenameToUri(filename)
     self.timeout = timeout
-    expected_hash_file = path_utils.ExpectedFilename(filename,
-                                                     '.checksum',
-                                                     platform)
+    expected_hash_file = path_utils.ExpectedFilename(filename, '.checksum')
     try:
       self.image_hash = open(expected_hash_file, "r").read()
     except IOError, e:
@@ -94,17 +88,14 @@ class TestRunner:
   # test_shell.exe.
   DEFAULT_TEST_TIMEOUT_MS = 10 * 1000
 
-  def __init__(self, options, paths, platform_new_results_dir):
+  def __init__(self, options, paths):
     """Collect a list of files to test.
 
     Args:
       options: a dictionary of command line options
       paths: a list of paths to crawl looking for test files
-      platform_new_results_dir: name of leaf directory to put rebaselined files
-                                in.
     """
     self._options = options
-    self._platform_new_results_dir = platform_new_results_dir
 
     self._http_server = http_server.Lighttpd(options.results_directory)
     # a list of TestType objects
@@ -117,14 +108,13 @@ class TestRunner:
 
     if options.lint_test_files:
       # Creating the expecations for each platform/target pair does all the
-      # test list parsing and ensures it's correct syntax(e.g. no dupes).
+      # test list parsing and ensures it's correct syntax (e.g. no dupes).
       for platform in test_expectations.TestExpectationsFile.PLATFORMS:
         self._ParseExpectations(platform, is_debug_mode=True)
         self._ParseExpectations(platform, is_debug_mode=False)
     else:
       self._GatherTestFiles(paths)
-      self._expectations = self._ParseExpectations(
-          platform_utils.GetTestListPlatformName().lower(),
+      self._expectations = self._ParseExpectations(options.platform,
           options.target == 'Debug')
       self._PrepareListsAndPrintOutput()
 
@@ -286,8 +276,7 @@ class TestRunner:
 
       # update expectations so that the stats are calculated correctly
       self._expectations = self._ParseExpectations(
-          platform_utils.GetTestListPlatformName().lower(),
-          options.target == 'Debug')
+          path_utils.PlatformName(), options.target == 'Debug')
     else:
       logging.info('Run: %d tests' % len(self._test_files))
 
@@ -377,8 +366,7 @@ class TestRunner:
       else:
         timeout = self._options.time_out_ms
 
-      tests_by_dir[directory].append(TestInfo(test_file, timeout,
-          self._options.platform))
+      tests_by_dir[directory].append(TestInfo(test_file, timeout))
 
     # Sort by the number of tests in the dir so that the ones with the most
     # tests get run first in order to maximize parallelization. Number of tests
@@ -460,8 +448,7 @@ class TestRunner:
       test_types = []
       for t in self._test_types:
         test_types.append(t(self._options.platform,
-                            self._options.results_directory,
-                            self._platform_new_results_dir))
+                            self._options.results_directory))
 
       test_args, shell_args = self._GetTestShellArgs(i)
       thread = test_shell_thread.TestShellThread(filename_queue,
@@ -495,12 +482,12 @@ class TestRunner:
     if not self._test_files:
       return 0
     start_time = time.time()
-    test_shell_binary = path_utils.TestShellBinaryPath(self._options.target)
+    test_shell_binary = path_utils.TestShellPath(self._options.target)
 
     # Start up any helper needed
     layout_test_helper_proc = None
     if not options.no_pixel_tests:
-      helper_path = path_utils.LayoutTestHelperBinaryPath(self._options.target)
+      helper_path = path_utils.LayoutTestHelperPath(self._options.target)
       if len(helper_path):
         logging.info("Starting layout helper %s" % helper_path)
         layout_test_helper_proc = subprocess.Popen([helper_path],
@@ -523,7 +510,7 @@ class TestRunner:
     logging.info("Starting tests")
 
     # Create the output directory if it doesn't already exist.
-    google.path_utils.MaybeMakeDirectory(self._options.results_directory)
+    path_utils.MaybeMakeDirectory(self._options.results_directory)
 
     threads = self._InstantiateTestShellThreads(test_shell_binary)
 
@@ -941,7 +928,7 @@ class TestRunner:
     """Launches the test shell open to the results.html page."""
     results_filename = os.path.join(self._options.results_directory,
                                     "results.html")
-    subprocess.Popen([path_utils.TestShellBinaryPath(self._options.target),
+    subprocess.Popen([path_utils.TestShellPath(self._options.target),
                       path_utils.FilenameToUri(results_filename)])
 
 
@@ -980,25 +967,18 @@ def main(options, args):
       options.target = "Release"
 
   if options.results_directory.startswith("/"):
-    # Assume it's an absolute path and normalize
+    # Assume it's an absolute path and normalize.
     options.results_directory = path_utils.GetAbsolutePath(
         options.results_directory)
   else:
     # If it's a relative path, make the output directory relative to Debug or
     # Release.
-    basedir = path_utils.WebKitRoot()
-    basedir = os.path.join(basedir, options.target)
-
+    basedir = path_utils.PathFromBase('webkit')
     options.results_directory = path_utils.GetAbsolutePath(
-        os.path.join(basedir, options.results_directory))
+        os.path.join(basedir, options.target, options.results_directory))
 
-  if options.platform is None:
-    options.platform = path_utils.PlatformDir()
-    platform_new_results_dir = path_utils.PlatformNewResultsDir()
-  else:
-    # If the user specified a platform on the command line then use
-    # that as the name of the output directory for rebaselined files.
-    platform_new_results_dir = options.platform
+  # Ensure platform is valid and force it to the form 'chromium-<platform>'.
+  options.platform = path_utils.PlatformName(options.platform)
 
   if not options.num_test_shells:
     cpus = 1
@@ -1036,7 +1016,7 @@ def main(options, args):
   if options.test_list:
     paths += ReadTestFiles(options.test_list)
 
-  test_runner = TestRunner(options, paths, platform_new_results_dir)
+  test_runner = TestRunner(options, paths)
 
   if options.lint_test_files:
     # Just creating the TestRunner checks the syntax of the test lists.
@@ -1049,18 +1029,18 @@ def main(options, args):
     print("html,txt,checksum,png");
     for t in test_runner._test_files:
       (expected_txt_dir, expected_txt_file) = path_utils.ExpectedBaseline(
-          t, '.txt', options.platform)
+          t, '.txt')
       (expected_png_dir, expected_png_file) = path_utils.ExpectedBaseline(
-          t, '.png', options.platform)
+          t, '.png')
       (expected_checksum_dir,
           expected_checksum_file) = path_utils.ExpectedBaseline(
-          t, '.checksum', options.platform)
+          t, '.checksum')
       print("%s,%s,%s,%s" % (path_utils.RelativeTestFilename(t),
             expected_txt_dir, expected_checksum_dir, expected_png_dir))
     return
 
   try:
-    test_shell_binary_path = path_utils.TestShellBinaryPath(options.target)
+    test_shell_binary_path = path_utils.TestShellPath(options.target)
   except path_utils.PathNotFound:
     print "\nERROR: test_shell is not found. Be sure that you have built it"
     print "and that you are using the correct build. This script will run the"
@@ -1071,8 +1051,7 @@ def main(options, args):
   logging.info("Placing test results in %s" % options.results_directory)
   if options.new_baseline:
     logging.info("Placing new baselines in %s" %
-                 os.path.join(path_utils.PlatformResultsEnclosingDir(options.platform),
-                              platform_new_results_dir))
+                 path_utils.ChromiumBaselinePath())
   logging.info("Using %s build at %s" %
                (options.target, test_shell_binary_path))
   if not options.no_pixel_tests:

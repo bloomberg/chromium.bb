@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,6 +8,8 @@ Any functions whose implementations or values differ from one platform to
 another should be defined in their respective platform_utils_<platform>.py
 modules. The appropriate one of those will be imported into this module to
 provide callers with a common, platform-independent interface.
+
+This file should only ever be imported by layout_package.path_utils.
 """
 
 import sys
