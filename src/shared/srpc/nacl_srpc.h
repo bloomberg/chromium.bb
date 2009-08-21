@@ -379,6 +379,8 @@ struct NaClSrpcChannel {
    */
   struct NaClNrdXferEffector  eff;
 #endif
+  /** The message ID of the next message sent over this channel */
+  uint64_t                    next_message_id;
   /** A structure used to buffer data to be sent over this channel */
   NaClSrpcImcBuffer           send_buf;
   /** A structure used to buffer data received over this channel */

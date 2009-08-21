@@ -56,7 +56,7 @@
  * SRPC headers include a protocol (version) number.
  */
 
-static const int kSrpcProtocolVersion = 0xc0da0001;
+static const int kSrpcProtocolVersion = 0xc0da0002;
 
 /*
  * IMC wrapper functions.
@@ -68,7 +68,7 @@ void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer, int is_write_buf) {
   buffer->header.iov_length = sizeof(buffer->iovec) / sizeof(buffer->iovec[0]);
 #ifdef __native_client__
   buffer->header.descv = buffer->descs;
-  if (is_write_buf) {
+  if (0 != is_write_buf) {
     buffer->header.desc_length = 0;
   } else {
     buffer->header.desc_length =
@@ -77,7 +77,7 @@ void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer, int is_write_buf) {
   buffer->header.flags = 0;
 #else
   buffer->header.ndescv = buffer->descs;
-  if (is_write_buf) {
+  if (0 != is_write_buf) {
     buffer->header.ndesc_length = 0;
   } else {
     buffer->header.ndesc_length =
@@ -96,10 +96,10 @@ NaClSrpcImcDescType NaClSrpcImcDescTypeFromHandle(NaClHandle handle) {
 #else
   struct NaClDescImcDesc* desc =
       (struct NaClDescImcDesc*) malloc(sizeof(struct NaClDescImcDesc));
-  if (desc == NULL) {
+  if (NULL == desc) {
     return NULL;
   }
-  if (!NaClDescImcDescCtor(desc, handle)) {
+  if (0 == NaClDescImcDescCtor(desc, handle)) {
     free(desc);
     return NULL;
   }
@@ -128,7 +128,7 @@ int __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
   dprintf((SIDE "READ: filling buffer from %"PRIxPTR".\n",
            (uintptr_t) channel->imc_handle));
 #endif
-  if (channel->timing_enabled) {
+  if (0 != channel->timing_enabled) {
     start_usec = __NaClSrpcGetUsec();
   }
 #ifdef __native_client__
@@ -142,12 +142,12 @@ int __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
                                    0);
 #endif
   channel->receive_buf.next_desc = 0;
-  if (channel->timing_enabled) {
+  if (0 != channel->timing_enabled) {
     this_usec = __NaClSrpcGetUsec();
     channel->imc_read_usec += this_usec;
   }
   dprintf((SIDE "READ: received %d bytes\n", retval));
-  if (retval >= 0) {
+  if (0 <= retval) {
     channel->receive_buf.next_byte = 0;
     channel->receive_buf.last_byte = retval;
   } else {
@@ -177,12 +177,13 @@ int __NaClSrpcImcRead(void* buffer,
     }
   }
 
-  avail_bytes = channel->receive_buf.last_byte - channel->receive_buf.next_byte;
+  avail_bytes = channel->receive_buf.last_byte -
+                channel->receive_buf.next_byte;
   if (avail_bytes >= request_bytes) {
-    dprintf((SIDE "READ: satisfying request from buffer.\n"));
     /* Channel receive buffer contains enough data to fully satisfy request */
     memcpy(buffer,
-           (void*)(channel->receive_buf.bytes + channel->receive_buf.next_byte),
+           (void*)(channel->receive_buf.bytes +
+                   channel->receive_buf.next_byte),
            request_bytes);
     channel->receive_buf.next_byte += request_bytes;
     return n_elt;
@@ -193,30 +194,64 @@ int __NaClSrpcImcRead(void* buffer,
 }
 
 /*
- * __NaClSrpcImcReadRequestHeader attempts to a request header from the
+ * __NaClSrpcImcReadHeader attempts to read a message header from the
+ * specified channel.  It returns 1 and sets is_request to
+ * the appropriate value if successful, and 0 otherwise.
+ */
+int __NaClSrpcImcReadHeader(NaClSrpcChannel* channel,
+                            uint64_t* message_id,
+                            uint8_t* is_request) {
+  int retval;
+  int server_protocol;
+  uint8_t tmp_is_req = 0;
+  uint64_t tmp_msg_id = 0;
+  dprintf((SIDE "READ: ReadHeader\n"));
+  retval = __NaClSrpcImcRead(&server_protocol,
+                             sizeof(server_protocol),
+                             1,
+                             channel);
+  if (1 != retval) {
+    dprintf((SIDE "READ: protocol read fail\n"));
+    return 0;
+  }
+  if (kSrpcProtocolVersion != server_protocol) {
+    dprintf((SIDE "READ: protocol version mismatch\n"));
+    return 0;
+  }
+  dprintf((SIDE "READ: protocol version %x\n", server_protocol));
+  retval = __NaClSrpcImcRead(&tmp_msg_id, sizeof(tmp_msg_id), 1, channel);
+  if (1 != retval) {
+    dprintf((SIDE "READ: message_id read fail\n"));
+    return 0;
+  }
+  *message_id = tmp_msg_id;
+  dprintf((SIDE "READ: message_id: %"PRIx64".\n", tmp_msg_id));
+  retval = __NaClSrpcImcRead(&tmp_is_req, sizeof(tmp_is_req), 1, channel);
+  if (1 != retval) {
+    dprintf((SIDE "READ: is_request read fail\n"));
+    return 0;
+  }
+  *is_request = tmp_is_req;
+  dprintf((SIDE "READ: is_request: %u.\n", tmp_is_req));
+  return 1;
+}
+
+/*
+ * __NaClSrpcImcReadRequestHeader attempts to read a request header from the
  * specified channel.  It returns 1 and sets the rpc_number from the request
  * if successful, and 0 otherwise.
  */
 int __NaClSrpcImcReadRequestHeader(NaClSrpcChannel* channel,
                                    unsigned int* rpc_number) {
   int retval;
-  int server_protocol;
   int tmp_rpc_num;
-  retval = __NaClSrpcImcRead(&server_protocol,
-                             sizeof(server_protocol),
-                             1,
-                             channel);
-  if (retval != 1) {
-    return 0;
-  }
-  if (server_protocol != kSrpcProtocolVersion) {
-    return 0;
-  }
+
   retval = __NaClSrpcImcRead(&tmp_rpc_num, sizeof(tmp_rpc_num), 1, channel);
-  if (retval != 1) {
+  if (1 != retval) {
     return 0;
   }
   *rpc_number = tmp_rpc_num;
+  dprintf((SIDE "READ: request rpc_num %d\n", tmp_rpc_num));
   return 1;
 }
 
@@ -228,24 +263,17 @@ int __NaClSrpcImcReadRequestHeader(NaClSrpcChannel* channel,
 int __NaClSrpcImcReadResponseHeader(NaClSrpcChannel* channel,
                                     NaClSrpcError* app_error) {
   int retval;
-  int server_protocol;
   int tmp_app_error;
 
-  retval = __NaClSrpcImcRead(&server_protocol,
-                             sizeof(server_protocol),
+  retval = __NaClSrpcImcRead(&tmp_app_error,
+                             sizeof(tmp_app_error),
                              1,
                              channel);
-  if (retval != 1) {
-    return 0;
-  }
-  if (server_protocol != kSrpcProtocolVersion) {
-    return 0;
-  }
-  retval = __NaClSrpcImcRead(&tmp_app_error, sizeof(tmp_app_error), 1, channel);
-  if (retval != 1) {
+  if (1 != retval) {
     return 0;
   }
   *app_error = tmp_app_error;
+  dprintf((SIDE "READ: response app_error %d\n", tmp_app_error));
   return 1;
 }
 
@@ -289,7 +317,7 @@ int __NaClSrpcImcWrite(const void* buffer,
    * Writes are not broken into multiple datagram sends for now either.
    */
   if (avail_bytes < request_bytes) {
-    dprintf((SIDE "WRITE: insufficient space available to satisfy request.\n"));
+    dprintf((SIDE "WRITE: insufficient space available to satisfy.\n"));
     return -1;
   } else {
     memcpy((void*)(channel->send_buf.bytes + channel->send_buf.next_byte),
@@ -302,15 +330,28 @@ int __NaClSrpcImcWrite(const void* buffer,
 }
 
 /*
- * __NaClSrpcImcWriteRequestHeader writes a request header on the channel
- * the header contains an rpc_number.
+ * __NaClSrpcImcWriteHeader writes a header on the specified channel.
+ * The header specifies whether the message is a request.
  */
-void __NaClSrpcImcWriteRequestHeader(NaClSrpcChannel* channel,
-                                     unsigned int rpc_number) {
+static void __NaClSrpcImcWriteHeader(NaClSrpcChannel* channel,
+                                     uint64_t message_id,
+                                     uint8_t is_request) {
   __NaClSrpcImcWrite(&kSrpcProtocolVersion,
                      sizeof(kSrpcProtocolVersion),
                      1,
                      channel);
+  __NaClSrpcImcWrite(&message_id, sizeof(message_id), 1, channel);
+  __NaClSrpcImcWrite(&is_request, sizeof(is_request), 1, channel);
+}
+
+/*
+ * __NaClSrpcImcWriteRequestHeader writes a request header on the channel.
+ * The header contains an rpc_number.
+ */
+void __NaClSrpcImcWriteRequestHeader(NaClSrpcChannel* channel,
+                                     uint64_t message_id,
+                                     unsigned int rpc_number) {
+  __NaClSrpcImcWriteHeader(channel, message_id, 1);
   __NaClSrpcImcWrite(&rpc_number, sizeof(rpc_number), 1, channel);
 }
 
@@ -319,11 +360,9 @@ void __NaClSrpcImcWriteRequestHeader(NaClSrpcChannel* channel,
  * the header contains an app_error.
  */
 void __NaClSrpcImcWriteResponseHeader(NaClSrpcChannel* channel,
+                                      uint64_t message_id,
                                       NaClSrpcError app_error) {
-  __NaClSrpcImcWrite(&kSrpcProtocolVersion,
-                     sizeof(kSrpcProtocolVersion),
-                     1,
-                     channel);
+  __NaClSrpcImcWriteHeader(channel, message_id, 0);
   __NaClSrpcImcWrite(&app_error, sizeof(app_error), 1, channel);
 }
 
@@ -339,7 +378,7 @@ int __NaClSrpcImcWriteDesc(NaClSrpcChannel* channel,
   int desc_index = channel->send_buf.header.ndesc_length;
 #endif
 
-  if (desc_index >= SRPC_DESC_MAX) {
+  if (SRPC_DESC_MAX <= desc_index) {
     return 0;
   } else {
     channel->send_buf.descs[desc_index] = desc;
@@ -367,7 +406,7 @@ int __NaClSrpcImcFlush(NaClSrpcChannel* channel) {
            (uintptr_t) channel->imc_handle));
 #endif
   channel->send_buf.iovec[0].length = channel->send_buf.next_byte;
-  if (channel->timing_enabled) {
+  if (0 != channel->timing_enabled) {
     start_usec = __NaClSrpcGetUsec();
   }
 #ifdef __native_client__
@@ -381,7 +420,7 @@ int __NaClSrpcImcFlush(NaClSrpcChannel* channel) {
   channel->send_buf.header.ndesc_length = 0;
 #endif
   channel->send_buf.next_desc = 0;
-  if (channel->timing_enabled) {
+  if (0 != channel->timing_enabled) {
     this_usec = __NaClSrpcGetUsec();
     channel->imc_write_usec += this_usec;
   }

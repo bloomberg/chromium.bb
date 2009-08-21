@@ -42,9 +42,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #endif  /* __native_client__ */
-#include "nacl_srpc.h"
-#include "nacl_srpc_internal.h"
-
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
 /*
  * A utility function for copying strings needed for ServerCtor
@@ -119,10 +118,10 @@ int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
   channel->imc_handle = handle;
 
 #ifndef __native_client__
-  if (channel->imc_handle == NULL) {
+  if (NULL == channel->imc_handle) {
     return 0;
   }
-  if (!NaClNrdXferEffectorCtor(&channel->eff, channel->imc_handle)) {
+  if (0 == NaClNrdXferEffectorCtor(&channel->eff, channel->imc_handle)) {
     return 0;
   }
 #endif
@@ -135,8 +134,10 @@ int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
   channel->receive_usec = 0.0;
   channel->imc_read_usec = 0.0;
   channel->imc_write_usec = 0.0;
+  /* Initialize message id counter */
+  channel->next_message_id = 0;
   /* Do service discovery to speed method invocation. */
-  if (NaClSrpcBuildInterfaceDesc(channel) == 0) {
+  if (0 == NaClSrpcBuildInterfaceDesc(channel)) {
     return 0;
   }
   /* Return success. */
@@ -152,10 +153,10 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
 
   channel->imc_handle = handle;
 #ifndef __native_client__
-  if (channel->imc_handle == NULL) {
+  if (NULL == channel->imc_handle) {
     return 0;
   }
-  if (!NaClNrdXferEffectorCtor(&channel->eff, channel->imc_handle)) {
+  if (0 == NaClNrdXferEffectorCtor(&channel->eff, channel->imc_handle)) {
     return 0;
   }
 #endif
@@ -184,21 +185,21 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
     p = handlers[i].entry_fmt;
     /* Get name. */
     nextp = strchr(p, ':');
-    if (p == NULL) {
+    if (NULL == p) {
       return 0;
     }
     channel->rpc_descr[i].rpc_name = CopyStringLength(p, nextp - p);
     p = nextp + 1;
     /* Get inargs. */
     nextp = strchr(p, ':');
-    if (p == NULL) {
+    if (NULL == p) {
       return 0;
     }
     channel->rpc_descr[i].in_args = CopyStringLength(p, nextp - p);
     p = nextp + 1;
     /* Get outargs. */
     nextp = strchr(p, '\0');
-    if (p == NULL) {
+    if (NULL == p) {
       return 0;
     }
     channel->rpc_descr[i].out_args = CopyStringLength(p, nextp - p);
@@ -212,6 +213,8 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
   channel->imc_read_usec = 0.0;
   channel->imc_write_usec = 0.0;
   channel->server_instance_data = server_instance_data;
+  /* Initialize message id counter */
+  channel->next_message_id = 0;
   /* Return success. */
   return 1;
 }

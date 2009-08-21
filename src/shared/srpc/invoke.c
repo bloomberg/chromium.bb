@@ -42,27 +42,27 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #endif  /* __native_client__ */
-#include "nacl_srpc.h"
-#include "nacl_srpc_internal.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
 
 static int GetRpcTypes(NaClSrpcChannel* channel,
                        uint32_t rpc_num,
                        const char** in_types,
                        const char** out_types) {
-  if (rpc_num == 0) {
+  if (0 == rpc_num) {
     *in_types = "";
     *out_types = "C";
     return 1;
-  } else if (rpc_num == NACL_SRPC_GET_TIMES_METHOD) {
+  } else if (NACL_SRPC_GET_TIMES_METHOD == rpc_num) {
     *in_types = "";
     *out_types = "dddd";
     return 1;
-  } else if (rpc_num == NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD) {
+  } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_num) {
     *in_types = "i";
     *out_types = "";
     return 1;
-  } else if (rpc_num < channel->rpc_count) {
+  } else if (channel->rpc_count > rpc_num) {
     *in_types = channel->rpc_descr[rpc_num].in_args;
     *out_types = channel->rpc_descr[rpc_num].out_args;
     return 1;
@@ -78,6 +78,8 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
                               uint32_t rpc_number,
                               NaClSrpcArg* args[],
                               NaClSrpcArg* rets[]) {
+  uint64_t        message_id;
+  uint8_t         is_request;
   NaClSrpcError   retval;
   NaClSrpcError   app_error;
   const char*     arg_types;
@@ -99,11 +101,11 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
 
   if (GetRpcTypes(channel, rpc_number, &arg_types, &ret_types)) {
     /* Check input parameters for type conformance */
-    if (!NaClSrpcTypeCheckOne(&arg_types, args)) {
+    if (0 == NaClSrpcTypeCheckOne(&arg_types, args)) {
       return NACL_SRPC_RESULT_IN_ARG_TYPE_MISMATCH;
     }
     /* Check return values for type conformance */
-    if (!NaClSrpcTypeCheckOne(&ret_types, rets)) {
+    if (0 == NaClSrpcTypeCheckOne(&ret_types, rets)) {
       return NACL_SRPC_RESULT_OUT_ARG_TYPE_MISMATCH;
     }
   } else {
@@ -115,14 +117,18 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
    * This requires sending args and the types and array sizes from rets.
    */
   dprintf(("CLIENT: sending RPC request\n"));
-  __NaClSrpcImcWriteRequestHeader(channel, rpc_number);
+  __NaClSrpcImcWriteRequestHeader(channel,
+                                  channel->next_message_id++,
+                                  rpc_number);
   dprintf(("CLIENT:     sent header: request %u\n", (unsigned) rpc_number));
-  if ((retval = __NaClSrpcArgsPut(channel, 1, args)) != NACL_SRPC_RESULT_OK) {
+  retval = __NaClSrpcArgsPut(channel, 1, args);
+  if (NACL_SRPC_RESULT_OK != retval) {
     dprintf(("    CLIENT: input arguments send failed: %d\n", retval));
     return retval;
   }
   dprintf(("CLIENT:     sent arguments\n"));
-  if ((retval = __NaClSrpcArgsPut(channel, 0, rets)) != NACL_SRPC_RESULT_OK) {
+  retval = __NaClSrpcArgsPut(channel, 0, rets);
+  if (NACL_SRPC_RESULT_OK != retval) {
     dprintf(("CLIENT:     return descriptor send failed: %d\n", retval));
     return retval;
   }
@@ -134,23 +140,36 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
    * This requires reading an error code reported by the rpc service itself.
    * If that error code is ok, then we get the return value vector.
    */
-  dprintf(("CLIENT: receive RPC response\n"));
+  retval = __NaClSrpcImcReadHeader(channel, &message_id, &is_request);
+  dprintf(("CLIENT: receive RPC\n"));
+  if (1 != retval) {
+    dprintf(("CLIENT:     RPC header read failed: %d\n", retval));
+    /* Clear the rest of the buffer contents to ensure alignment */
+    __NaClSrpcImcMarkReadBufferEmpty(channel);
+    return NACL_SRPC_RESULT_INTERNAL;
+  }
+  if (1 == is_request) {
+    dprintf(("CLIENT:     RPC header read is not response: %d\n", retval));
+    /* Clear the rest of the buffer contents to ensure alignment */
+    __NaClSrpcImcMarkReadBufferEmpty(channel);
+    return NACL_SRPC_RESULT_INTERNAL;
+  }
   retval = __NaClSrpcImcReadResponseHeader(channel, &app_error);
-  if (retval != 1) {
+  if (1 != retval) {
     dprintf(("CLIENT:     RPC response header read failed: %d\n", retval));
     /* Clear the rest of the buffer contents to ensure alignment */
     __NaClSrpcImcMarkReadBufferEmpty(channel);
     return NACL_SRPC_RESULT_INTERNAL;
   }
-  if (app_error != NACL_SRPC_RESULT_OK) {
+  if (NACL_SRPC_RESULT_OK != app_error) {
     dprintf(("CLIENT:     rpc method returned failure: %d\n", app_error));
     /* Clear the rest of the buffer contents to ensure alignment */
     __NaClSrpcImcMarkReadBufferEmpty(channel);
     return app_error;
   }
   dprintf(("CLIENT:     received return code\n"));
-  if ((retval = __NaClSrpcArgsGet(channel, 0, 1, rets, ret_types))
-    != NACL_SRPC_RESULT_OK) {
+  retval = __NaClSrpcArgsGet(channel, 0, 1, rets, ret_types);
+  if (NACL_SRPC_RESULT_OK != retval) {
     dprintf(("CLIENT:     return arguments receive failed: %d, %s\n", retval,
              NaClSrpcErrorString(retval)));
     /* Clear the rest of the buffer contents to ensure alignment */
@@ -163,7 +182,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
    * If we are timing, collect the current time, compute the delta from
    * the start, and update the cumulative counter.
    */
-  if (channel->timing_enabled) {
+  if (0 != channel->timing_enabled) {
     this_method_usec = __NaClSrpcGetUsec();
     channel->send_usec += this_method_usec;
   }
@@ -190,23 +209,23 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
   NaClSrpcError     rv;
 
   valid_rpc = GetRpcTypes(channel, rpc_num, &in_arglist, &out_arglist);
-  if (!valid_rpc) {
+  if (0 == valid_rpc) {
     return NACL_SRPC_RESULT_BAD_RPC_NUMBER;
   }
 
   num_in = strlen(in_arglist);
   num_out = strlen(out_arglist);
 
-  if (num_in > NACL_SRPC_MAX_ARGS || num_out > NACL_SRPC_MAX_ARGS) {
+  if (NACL_SRPC_MAX_ARGS < num_in || NACL_SRPC_MAX_ARGS < num_out) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
 
   rv = NACL_SRPC_RESULT_NO_MEMORY;
-  inv = (NaClSrpcArg **) malloc((num_in+1) * sizeof *inv);
-  if (NULL == inv) {
+  inv = (NaClSrpcArg **) malloc((num_in + 1) * sizeof *inv);
+  if (inv == NULL) {
     goto abort0;
   }
-  if (num_in) {
+  if (0 != num_in) {
     inv[0] = (NaClSrpcArg *) malloc(num_in * sizeof *inv[0]);
     if (NULL == inv[0]) {
       goto abort1;
@@ -221,7 +240,7 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
   if (NULL == outv) {
     goto abort2;
   }
-  if (num_out) {
+  if (0 != num_out) {
     outv[0] = (NaClSrpcArg *) malloc(num_out * sizeof *outv[0]);
     if (NULL == outv[0]) {
       goto abort3;

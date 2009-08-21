@@ -146,6 +146,9 @@ extern int __NaClSrpcImcRead(void* buffer,
                              size_t elt_size,
                              size_t n_elt,
                              NaClSrpcChannel* channel);
+extern int __NaClSrpcImcReadHeader(NaClSrpcChannel* channel,
+                                   uint64_t* message_id,
+                                   uint8_t* is_request);
 extern int __NaClSrpcImcReadRequestHeader(NaClSrpcChannel* channel,
                                           unsigned int* rpc_number);
 extern int __NaClSrpcImcReadResponseHeader(NaClSrpcChannel* channel,
@@ -156,8 +159,10 @@ extern int __NaClSrpcImcWrite(const void* buffer,
                               size_t n_elt,
                               NaClSrpcChannel* channel);
 extern void __NaClSrpcImcWriteRequestHeader(NaClSrpcChannel* channel,
+                                            uint64_t message_id,
                                             unsigned int rpc_number);
 extern void __NaClSrpcImcWriteResponseHeader(NaClSrpcChannel* channel,
+                                             uint64_t message_id,
                                              NaClSrpcError app_error);
 
 extern int __NaClSrpcImcFlush(NaClSrpcChannel* channel);

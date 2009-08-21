@@ -58,21 +58,26 @@
  * SRPC communicates using two main message types, requests and responses.
  * Both are encoded with variable sizes, according to the table.
  *
- * Request
+ * common header:
  *   protocol               - 4 bytes
+ *   message id             - 8 bytes
+ *   request/response       - 1 byte
+ *
+ * request
+ *   <common header>
  *   rpc method index       - 4 bytes
  *   #args                  - 4 bytes
  *   #args * (arg value)    - varying size
  *   #rets                  - 4 bytes
  *   #rets * (arg template) - varying size
  *
- * Response
- *   protocol               - 4 bytes
+ * response
+ *   <common header>
  *   return code            - 4 bytes
  *   #rets                  - 4 bytes
  *   #rets * (arg value)    - varying size
  *
- * Sub-messages:
+ * sub-messages:
  *
  * arg value:
  *   type               - 1 byte
@@ -92,8 +97,6 @@
  *     double array
  *       length         - 4 bytes
  *       value          - (length) * 8 bytes
- *     descriptor handle
- *       (work in progress)
  *
  * arg template:
  *   type               - 1 byte
@@ -108,8 +111,6 @@
  *       length         - 4 bytes
  *     double array
  *       length         - 4 bytes
- *     descriptor handle
- *       (work in progress)
  */
 
 
@@ -132,6 +133,8 @@ NaClSrpcError NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel) {
   NaClSrpcArg*    rets[NACL_SRPC_MAX_ARGS+1];
   const char*     in_types;
   const char*     out_types;
+  uint64_t        message_id;
+  uint8_t         is_request;
   uint32_t        rpc_number;
   NaClSrpcError   retval;
   NaClSrpcError   app_error;
@@ -149,9 +152,20 @@ NaClSrpcError NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel) {
   /*
    * First we receive the parameters for the method
    */
+  dprintf(("SERVER: receiving RPC\n"));
+  retval = __NaClSrpcImcReadHeader(channel, &message_id, &is_request);
+  if (1 != retval) {
+    dprintf(("SERVER:     RPC header read failed: %d\n", retval));
+    return NACL_SRPC_RESULT_MESSAGE_TRUNCATED;
+  }
+  if (0 == is_request) {
+    dprintf(("SERVER:     RPC header read a request: %d\n", is_request));
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
   dprintf(("SERVER: receiving RPC request\n"));
-  retval = __NaClSrpcImcReadRequestHeader(channel, (unsigned int*) &rpc_number);
-  if (retval != 1) {
+  retval = __NaClSrpcImcReadRequestHeader(channel,
+                                          (unsigned int*) &rpc_number);
+  if (1 != retval) {
     dprintf(("SERVER:     RPC header read failed: %d\n", retval));
     return NACL_SRPC_RESULT_MESSAGE_TRUNCATED;
   }
@@ -204,7 +218,7 @@ NaClSrpcError NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel) {
   /*
    * Then we return the response
    */
-  __NaClSrpcImcWriteResponseHeader(channel, app_error);
+  __NaClSrpcImcWriteResponseHeader(channel, message_id, app_error);
   dprintf(("SERVER:     wrote header: app_error %d\n", app_error));
   if ((retval = __NaClSrpcArgsPut(channel, 1, rets)) != NACL_SRPC_RESULT_OK) {
     dprintf(("SERVER:     return value(s) send failed: %d\n", retval));
@@ -218,7 +232,9 @@ NaClSrpcError NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel) {
      * doesn't send anything.  Therefore we need to return an error message
      * so that the client doesn't wait forever.
      */
-    __NaClSrpcImcWriteResponseHeader(channel, NACL_SRPC_RESULT_INTERNAL);
+    __NaClSrpcImcWriteResponseHeader(channel,
+                                     message_id,
+                                     NACL_SRPC_RESULT_INTERNAL);
     __NaClSrpcImcFlush(channel);
   }
   dprintf(("SERVER: sent response\n"));
@@ -326,7 +342,7 @@ NaClSrpcError __NaClSrpcArgsGet(NaClSrpcChannel* channel,
   uint32_t dimdim;
   size_t dim;
   size_t length;
-  NaClSrpcArg *args;
+  NaClSrpcArg *args = NULL;
   int retval = NACL_SRPC_RESULT_OK;
   size_t i;
 
@@ -629,7 +645,8 @@ NaClSrpcError __NaClSrpcArgsPut(NaClSrpcChannel* channel,
      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
       dprintf(("dim %u\n", (unsigned) arg->u.daval.count));
       __NaClSrpcImcWrite(&arg->u.daval.count, sizeof(uint32_t), 1, channel);
-      dprintf(("PUT:     sent length, darr = %p\n", (void*) arg->u.daval.darr));
+      dprintf(("PUT:     sent length, darr = %p\n",
+               (void*) arg->u.daval.darr));
       if (write_values) {
         __NaClSrpcImcWrite(arg->u.daval.darr,
                  sizeof(double),
@@ -638,10 +655,7 @@ NaClSrpcError __NaClSrpcArgsPut(NaClSrpcChannel* channel,
       }
       break;
      case NACL_SRPC_ARG_TYPE_HANDLE:
-      /* TODO: temporarily disabled because of compiler warning */
-#if 0
-      dprintf(("value %"PRIxPTR"\n", (uintptr_t) arg->u.hval));
-#endif
+      dprintf(("PUT:     handle\n"));
       if (write_values) {
         __NaClSrpcImcWriteDesc(channel, arg->u.hval);
       }
@@ -655,7 +669,8 @@ NaClSrpcError __NaClSrpcArgsPut(NaClSrpcChannel* channel,
      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       dprintf(("dim %u\n", (unsigned) arg->u.iaval.count));
       __NaClSrpcImcWrite(&arg->u.iaval.count, sizeof(uint32_t), 1, channel);
-      dprintf(("PUT:     sent length, iarr = %p\n", (void*) arg->u.iaval.iarr));
+      dprintf(("PUT:     sent length, iarr = %p\n",
+               (void*) arg->u.iaval.iarr));
       if (write_values) {
         __NaClSrpcImcWrite(arg->u.iaval.iarr,
                            sizeof(int),
@@ -676,11 +691,15 @@ NaClSrpcError __NaClSrpcArgsPut(NaClSrpcChannel* channel,
       * in the plugin code
       */
      case NACL_SRPC_ARG_TYPE_OBJECT:
+      dprintf(("PUT:     object\n"));
+      break;
      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+      dprintf(("PUT:     variant_array\n"));
+      break;
      default:
+      dprintf(("PUT:     default???\n"));
       break;
     }
-    dprintf(("PUT:     sent value\n"));
   }
   return NACL_SRPC_RESULT_OK;
 }
