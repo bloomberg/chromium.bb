@@ -160,6 +160,9 @@ class FindBarGtk : public FindBar,
   // The GtkLabel listing how many results were found.
   GtkWidget* match_count_label_;
   GtkWidget* match_count_event_box_;
+  // Cache whether the match count label is showing failure or not so that
+  // we can update its appearance without changing its semantics.
+  bool match_label_failure_;
 
   // The X to close the find bar.
   scoped_ptr<CustomDrawButton> close_button_;

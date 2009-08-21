@@ -146,6 +146,7 @@ FindBarGtk::FindBarGtk(Browser* browser)
       theme_provider_(GtkThemeProvider::GetFrom(browser->profile())),
       container_width_(-1),
       container_height_(-1),
+      match_label_failure_(false),
       ignore_changed_signal_(false),
       current_fixed_width_(-1) {
   InitWidgets();
@@ -194,7 +195,7 @@ void FindBarGtk::InitWidgets() {
 
   slide_widget_.reset(new SlideAnimatorGtk(container_,
                                            SlideAnimatorGtk::DOWN,
-                                           0, false, NULL));
+                                           0, false, false, NULL));
 
   // |fixed_| has to be at least one pixel tall. We color this pixel the same
   // color as the border that separates the toolbar from the tab contents.
@@ -246,16 +247,12 @@ void FindBarGtk::InitWidgets() {
   // This line adds padding on the sides so that the label has even padding on
   // all edges.
   gtk_misc_set_padding(GTK_MISC(match_count_label_), 2, 0);
-  // This line makes sure the baseline of the label text matches the baseline of
-  // the entry text.
-  gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 1.0);
   match_count_event_box_ = gtk_event_box_new();
   GtkWidget* match_count_centerer = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(match_count_centerer), match_count_event_box_,
                      TRUE, TRUE, 0);
   gtk_container_set_border_width(GTK_CONTAINER(match_count_centerer), 1);
   gtk_container_add(GTK_CONTAINER(match_count_event_box_), match_count_label_);
-  UpdateMatchLabelAppearance(false);
 
   // Until we switch to vector graphics, force the font size.
   gtk_util::ForceFontSizePixels(text_entry_, 13.4);  // 13.4px == 10pt @ 96dpi
@@ -459,6 +456,8 @@ void FindBarGtk::Observe(NotificationType type,
 
     gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, NULL);
+
+    gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 0.5);
   } else {
     gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &kFrameBorderColor);
 
@@ -476,7 +475,11 @@ void FindBarGtk::Observe(NotificationType type,
 
     gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, &kTextBorderColor);
     gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, &kTextBorderColorAA);
+
+    gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 1.0);
   }
+
+  UpdateMatchLabelAppearance(match_label_failure_);
 }
 
 bool FindBarGtk::GetFindBarWindowInfo(gfx::Point* position,
@@ -504,6 +507,7 @@ void FindBarGtk::FindEntryTextInContents(bool forward_search) {
 }
 
 void FindBarGtk::UpdateMatchLabelAppearance(bool failure) {
+  match_label_failure_ = failure;
   bool use_gtk = theme_provider_->UseGtkTheme();
 
   gtk_widget_modify_bg(match_count_event_box_, GTK_STATE_NORMAL,
@@ -624,6 +628,10 @@ void FindBarGtk::OnFixedSizeAllocate(GtkWidget* fixed,
 // Used to handle custom painting of |container_|.
 gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
                               FindBarGtk* bar) {
+  GtkRequisition req;
+  gtk_widget_size_request(widget, &req);
+  gtk_widget_set_size_request(bar->slide_widget(), req.width, -1);
+
   if (bar->theme_provider_->UseGtkTheme()) {
     if (bar->container_width_ != widget->allocation.width ||
         bar->container_height_ != widget->allocation.height) {
@@ -632,6 +640,8 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
       GdkRegion* mask_region = gdk_region_polygon(&mask_points[0],
                                                   mask_points.size(),
                                                   GDK_EVEN_ODD_RULE);
+      // Reset the shape.
+      gdk_window_shape_combine_region(widget->window, NULL, 0, 0);
       gdk_window_shape_combine_region(widget->window, mask_region, 0, 0);
       gdk_region_destroy(mask_region);
 
@@ -653,6 +663,8 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
   } else {
     if (bar->container_width_ != widget->allocation.width ||
         bar->container_height_ != widget->allocation.height) {
+      // Reset the shape.
+      gdk_window_shape_combine_region(widget->window, NULL, 0, 0);
       SetDialogShape(bar->container_);
 
       bar->container_width_ = widget->allocation.width;

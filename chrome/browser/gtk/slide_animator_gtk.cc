@@ -24,6 +24,7 @@ SlideAnimatorGtk::SlideAnimatorGtk(GtkWidget* child,
                                    Direction direction,
                                    int duration,
                                    bool linear,
+                                   bool control_child_size,
                                    Delegate* delegate)
     : child_(child),
       direction_(direction),
@@ -32,10 +33,13 @@ SlideAnimatorGtk::SlideAnimatorGtk(GtkWidget* child,
   widget_.Own(gtk_fixed_new());
   gtk_fixed_put(GTK_FIXED(widget_.get()), child, 0, 0);
   gtk_widget_set_size_request(widget_.get(), -1, 0);
-  // We have to manually set the size request for |child_| every time the
-  // GtkFixed changes sizes.
-  g_signal_connect(widget_.get(), "size-allocate",
-                   G_CALLBACK(OnFixedSizeAllocate), child_);
+  if (control_child_size) {
+    // If the child requests it, we will manually set the size request for
+    // |child_| every time the GtkFixed changes sizes. This is mainly useful
+    // for bars, where we want the child to expand to fill all available space.
+    g_signal_connect(widget_.get(), "size-allocate",
+                     G_CALLBACK(OnFixedSizeAllocate), child_);
+  }
 
   // The size of the GtkFixed widget is set during animation. When we open
   // without showing the animation, we have to call AnimationProgressed

@@ -46,6 +46,7 @@ class SlideAnimatorGtk : public AnimationDelegate {
                    Direction direction,
                    int duration,
                    bool linear,
+                   bool control_child_size,
                    Delegate* delegate);
 
   virtual ~SlideAnimatorGtk();

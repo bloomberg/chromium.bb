@@ -120,7 +120,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   slide_widget_.reset(new SlideAnimatorGtk(shelf_.get(),
                                            SlideAnimatorGtk::UP,
                                            kShelfAnimationDurationMs,
-                                           false, NULL));
+                                           false, true, NULL));
 
   theme_provider_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
