@@ -32,6 +32,7 @@
 #else
 #pragma warning(push,1)
 #define PRIu64 "I64u"
+#define PRIX64 "I64x"
 #define uint64_t unsigned __int64
 #define uint32_t unsigned int
 #define uint8_t unsigned char
@@ -135,7 +136,7 @@ int main(int argc, char *argv[])
             ftyp_atom_size = atom_size;
             ftyp_atom = malloc(ftyp_atom_size);
             if (!ftyp_atom) {
-                printf ("could not allocate 0x%llX byte for ftyp atom\n",
+                printf ("could not allocate 0x%"PRIX64" byte for ftyp atom\n",
                         atom_size);
                 goto exit_cleanup;
             }
@@ -163,8 +164,8 @@ int main(int argc, char *argv[])
                (atom_type >> 16) & 255,
                (atom_type >>  8) & 255,
                (atom_type >>  0) & 255,
-               (unsigned long long ) atom_offset,
-               (unsigned long long ) atom_size);
+               atom_offset,
+               atom_size);
 
         if ((atom_type != FREE_ATOM) &&
             (atom_type != JUNK_ATOM) &&
@@ -196,7 +197,7 @@ int main(int argc, char *argv[])
         moov_atom_size = last_atom_size;
         moov_atom = malloc(moov_atom_size);
         if (!moov_atom) {
-            printf ("could not allocate 0x%llX byte for moov atom\n",
+            printf ("could not allocate 0x%"PRIX64" byte for moov atom\n",
                 atom_size);
             goto exit_cleanup;
         }
@@ -259,7 +260,7 @@ int main(int argc, char *argv[])
         }
     } else {
         if (atom_type == FREE_ATOM) {
-            printf ("free atom at %"PRIu64" removed.\n", (unsigned long long ) last_offset);
+            printf ("free atom at %"PRIu64" removed.\n", last_offset);
             just_remove_free = 1;
         } else {
             printf ("Last atom in file was not a moov or free atom.  Skipping.\n");
