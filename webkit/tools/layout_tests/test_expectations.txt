@@ -2664,7 +2664,7 @@ BUG17398 LINUX : LayoutTests/fast/forms/input-appearance-height.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
 
 // Test failures from WebKit merge r46194:46229
-BUG17497 WIN RELEASE : LayoutTests/media/video-play-pause-exception.html = PASS CRASH
+BUG17497 WIN : LayoutTests/media/video-play-pause-exception.html = PASS CRASH FAIL
 BUG17497 WIN DEBUG : LayoutTests/media/unsupported-rtsp.html = FAIL
 BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = FAIL
 
@@ -2881,3 +2881,6 @@ BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
 // New test. WebKit change http://trac.webkit.org/changeset/47431
 // Does not work in Chromium yet (not supporting wav format)
 BUG19904 WIN : LayoutTests/media/progress-event-at-least-one.html = FAIL TIMEOUT
+
+// These became very flakey after r24022. Not sure if because of that change though.
+BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT
