@@ -58,6 +58,8 @@
 
 // Called when the tab's nib is done loading and all outlets are hooked up.
 - (void)awakeFromNib {
+  // Ensure we don't show favicon if the tab is already too small to begin with.
+  [self updateVisibility];
   [(id)iconView_ setImage:nsimage_cache::ImageNamed(@"nav.pdf")];
   [[self view] addSubview:backgroundButton_
                positioned:NSWindowBelow
@@ -107,6 +109,8 @@
   [iconView_ removeFromSuperview];
   iconView_ = iconView;
   [iconView_ setFrame:currentFrame];
+  // Ensure we don't show favicon if the tab is already too small to begin with.
+  [self updateVisibility];
   [[self view] addSubview:iconView_];
 }
 
