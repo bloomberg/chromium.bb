@@ -309,7 +309,7 @@ void WebPluginDelegateStub::OnSendJavaScriptStream(const std::string& url,
 }
 
 void WebPluginDelegateStub::OnDidReceiveManualResponse(
-    const std::string& url,
+    const GURL& url,
     const PluginMsg_DidReceiveResponseParams& params) {
   delegate_->DidReceiveManualResponse(url, params.mime_type, params.headers,
                                       params.expected_length,

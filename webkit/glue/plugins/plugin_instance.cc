@@ -66,13 +66,13 @@ PluginInstance::~PluginInstance() {
     plugin_->CloseInstance();
 }
 
-PluginStreamUrl *PluginInstance::CreateStream(int resource_id,
-                                              const std::string &url,
-                                              const std::string &mime_type,
+PluginStreamUrl* PluginInstance::CreateStream(int resource_id,
+                                              const GURL& url,
+                                              const std::string& mime_type,
                                               bool notify_needed,
-                                              void *notify_data) {
-  PluginStreamUrl *stream = new PluginStreamUrl(
-      resource_id, GURL(url), this, notify_needed, notify_data);
+                                              void* notify_data) {
+  PluginStreamUrl* stream = new PluginStreamUrl(
+      resource_id, url, this, notify_needed, notify_data);
 
   AddStream(stream);
   return stream;
@@ -142,7 +142,6 @@ bool PluginInstance::Start(const GURL& url,
                            int param_count,
                            bool load_manually) {
   load_manually_ = load_manually;
-  instance_url_ = url;
   unsigned short mode = load_manually_ ? NP_FULL : NP_EMBED;
   npp_->ndata = this;
 
@@ -362,16 +361,12 @@ void PluginInstance::SendJavaScriptStream(const std::string& url,
   }
 }
 
-void PluginInstance::DidReceiveManualResponse(const std::string& url,
+void PluginInstance::DidReceiveManualResponse(const GURL& url,
                                               const std::string& mime_type,
                                               const std::string& headers,
                                               uint32 expected_length,
                                               uint32 last_modified) {
   DCHECK(load_manually_);
-  std::string response_url = url;
-  if (response_url.empty()) {
-    response_url = instance_url_.spec();
-  }
 
   plugin_data_stream_ = CreateStream(-1, url, mime_type, false, NULL);
 

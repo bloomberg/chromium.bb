@@ -57,7 +57,7 @@ struct PluginHostMsg_URLRequest_Params {
 
 struct PluginMsg_URLRequestReply_Params {
   int resource_id;
-  std::string url;
+  GURL url;
   bool notify_needed;
   intptr_t notify_data;
   intptr_t stream;

@@ -854,6 +854,21 @@ bool WebFrameImpl::isViewSourceModeEnabled() const {
   return false;
 }
 
+void WebFrameImpl::setReferrerForRequest(
+    WebURLRequest& request, const WebURL& referrer_url) {
+  String referrer;
+  if (referrer_url.isEmpty()) {
+    referrer = frame_->loader()->outgoingReferrer();
+  } else {
+    referrer = webkit_glue::WebStringToString(referrer_url.spec().utf16());
+  }
+  if (FrameLoader::shouldHideReferrer(
+          webkit_glue::WebURLToKURL(request.url()), referrer))
+    return;
+  request.setHTTPHeaderField(WebString::fromUTF8("Referer"),
+                             webkit_glue::StringToWebString(referrer));
+}
+
 void WebFrameImpl::dispatchWillSendRequest(WebURLRequest& request) {
   ResourceResponse response;
   frame_->loader()->client()->dispatchWillSendRequest(NULL, 0,
@@ -1408,6 +1423,14 @@ void WebFrameImpl::reportFindInPageSelection(const WebRect& selection_rect,
 void WebFrameImpl::resetMatchCount() {
   total_matchcount_ = 0;
   frames_scoping_count_ = 0;
+}
+
+WebURL WebFrameImpl::completeURL(const WebString& url) const {
+  if (!frame_ || !frame_->document())
+    return WebURL();
+
+  return webkit_glue::KURLToWebURL(
+      frame_->document()->completeURL(webkit_glue::WebStringToString(url)));
 }
 
 WebString WebFrameImpl::contentAsText(size_t max_chars) const {

@@ -70,7 +70,7 @@ class ResourceClientProxy : public WebPluginResourceClient {
   ~ResourceClientProxy() {
   }
 
-  void Initialize(int resource_id, const std::string &url, bool notify_needed,
+  void Initialize(int resource_id, const GURL& url, bool notify_needed,
                   intptr_t notify_data, intptr_t existing_stream) {
     resource_id_ = resource_id;
     url_ = url;
@@ -150,7 +150,7 @@ class ResourceClientProxy : public WebPluginResourceClient {
   scoped_refptr<PluginChannelHost> channel_;
   int instance_id_;
   int resource_id_;
-  std::string url_;
+  GURL url_;
   bool notify_needed_;
   intptr_t notify_data_;
   // Set to true if the response expected is a multibyte response.
@@ -316,7 +316,7 @@ void WebPluginDelegateProxy::SendJavaScriptStream(const std::string& url,
 }
 
 void WebPluginDelegateProxy::DidReceiveManualResponse(
-    const std::string& url, const std::string& mime_type,
+    const GURL& url, const std::string& mime_type,
     const std::string& headers, uint32 expected_length,
     uint32 last_modified) {
   PluginMsg_DidReceiveResponseParams params;
@@ -1021,7 +1021,7 @@ void WebPluginDelegateProxy::OnHandleURLRequest(
 }
 
 WebPluginResourceClient* WebPluginDelegateProxy::CreateResourceClient(
-    int resource_id, const std::string &url, bool notify_needed,
+    int resource_id, const GURL& url, bool notify_needed,
     intptr_t notify_data, intptr_t npstream) {
   ResourceClientProxy* proxy = new ResourceClientProxy(channel_host_,
                                                        instance_id_);

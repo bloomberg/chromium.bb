@@ -110,7 +110,7 @@ class WebPluginImpl : public WebPlugin,
 #endif
 
   // Given a (maybe partial) url, completes using the base url.
-  bool CompleteURL(const std::string& url_in, std::string* url_out);
+  GURL CompleteURL(const char* url);
 
   // Executes the script passed in. The notify_needed and notify_data arguments
   // are passed in by the plugin process. These indicate whether the plugin

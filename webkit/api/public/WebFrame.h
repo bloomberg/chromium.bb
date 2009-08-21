@@ -276,6 +276,13 @@ namespace WebKit {
         virtual void enableViewSourceMode(bool) = 0;
         virtual bool isViewSourceModeEnabled() const = 0;
 
+        // Sets the referrer for the given request to be the specified URL or
+        // if that is null, then it sets the referrer to the referrer that the
+        // frame would use for subresources.  NOTE: This method also filters
+        // out invalid referrers (e.g., it is invalid to send a HTTPS URL as
+        // the referrer for a HTTP request).
+        virtual void setReferrerForRequest(WebURLRequest&, const WebURL&) = 0;
+
         // Called to associate the WebURLRequest with this frame.  The request
         // will be modified to inherit parameters that allow it to be loaded.
         // This method ends up triggering WebFrameClient::willSendRequest.
@@ -411,6 +418,12 @@ namespace WebKit {
 
 
         // Utility -------------------------------------------------------------
+
+        // Given a relative URL, returns an absolute URL by resolving the URL
+        // relative to the base URL of the frame's document.  This uses the
+        // same algorithm that WebKit uses to resolve hyperlinks found in a
+        // HTML document.
+        virtual WebURL completeURL(const WebString&) const = 0;
 
         // Returns the contents of this frame as a string.  If the text is
         // longer than maxChars, it will be clipped to that length.  WARNING:

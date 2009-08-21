@@ -209,7 +209,7 @@ void WebPluginDelegateImpl::SendJavaScriptStream(const std::string& url,
 }
 
 void WebPluginDelegateImpl::DidReceiveManualResponse(
-    const std::string& url, const std::string& mime_type,
+    const GURL& url, const std::string& mime_type,
     const std::string& headers, uint32 expected_length, uint32 last_modified) {
   if (!windowless_) {
     // Calling NPP_WriteReady before NPP_SetWindow causes movies to not load in
@@ -837,7 +837,7 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
 }
 
 WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
-    int resource_id, const std::string &url, bool notify_needed,
+    int resource_id, const GURL& url, bool notify_needed,
     intptr_t notify_data, intptr_t existing_stream) {
   // Stream already exists. This typically happens for range requests
   // initiated via NPN_RequestRead.
@@ -851,7 +851,7 @@ WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
   }
 
   if (notify_needed) {
-    instance()->SetURLLoadData(GURL(url.c_str()), notify_data);
+    instance()->SetURLLoadData(url, notify_data);
   }
   std::string mime_type;
   NPAPI::PluginStreamUrl *stream = instance()->CreateStream(

@@ -108,7 +108,7 @@ class WebPluginDelegate {
                                     intptr_t notify_data) = 0;
 
   // Receives notification about data being available.
-  virtual void DidReceiveManualResponse(const std::string& url,
+  virtual void DidReceiveManualResponse(const GURL& url,
                                         const std::string& mime_type,
                                         const std::string& headers,
                                         uint32 expected_length,
@@ -131,7 +131,7 @@ class WebPluginDelegate {
 
   // Creates a WebPluginResourceClient instance and returns the same.
   virtual WebPluginResourceClient* CreateResourceClient(int resource_id,
-                                                        const std::string &url,
+                                                        const GURL& url,
                                                         bool notify_needed,
                                                         intptr_t notify_data,
                                                         intptr_t stream) = 0;

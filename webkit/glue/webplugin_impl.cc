@@ -174,7 +174,7 @@ std::string GetAllHeaders(const WebURLResponse& response) {
 }
 
 struct ResponseInfo {
-  std::string url;
+  GURL url;
   std::string mime_type;
   uint32 last_modified;
   uint32 expected_length;
@@ -182,7 +182,7 @@ struct ResponseInfo {
 
 void GetResponseInfo(const WebURLResponse& response,
                      ResponseInfo* response_info) {
-  response_info->url = response.url().spec();
+  response_info->url = response.url();
   response_info->mime_type = response.mimeType().utf8();
 
   // Measured in seconds since 12:00 midnight GMT, January 1, 1970.
@@ -425,18 +425,13 @@ void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {
   view_delegate->WillDestroyPluginWindow(window);
 }
 
-bool WebPluginImpl::CompleteURL(const std::string& url_in,
-                                std::string* url_out) {
-  if (!frame() || !frame()->document()) {
+GURL WebPluginImpl::CompleteURL(const char* url) {
+  if (!webframe_) {
     NOTREACHED();
-    return false;
+    return GURL();
   }
-
-  WebCore::String str(webkit_glue::StdStringToString(url_in));
-  WebCore::String url = frame()->document()->completeURL(str);
-  std::wstring wurl = webkit_glue::StringToStdWString(url);
-  *url_out = WideToUTF8(wurl);
-  return true;
+  // TODO(darin): Is conversion from UTF8 correct here?
+  return webframe_->completeURL(WebString::fromUTF8(url));
 }
 
 bool WebPluginImpl::ExecuteScript(const std::string& url,
@@ -528,7 +523,7 @@ RoutingStatus WebPluginImpl::RouteToFrame(const char *method,
                                           const char* target, unsigned int len,
                                           const char* buf, bool is_file_data,
                                           bool notify, const char* url,
-                                          GURL* completeURL) {
+                                          GURL* unused) {
   // If there is no target, there is nothing to do
   if (!target)
     return NOT_ROUTED;
@@ -556,37 +551,34 @@ RoutingStatus WebPluginImpl::RouteToFrame(const char *method,
   // If we got this far, we're routing content to a target frame.
   // Go fetch the URL.
 
-  WebCore::String complete_url_str = frame()->document()->completeURL(
-      WebCore::String(url));
-
-  WebCore::KURL complete_url_kurl(complete_url_str);
+  GURL complete_url = CompleteURL(url);
 
   if (strcmp(method, "GET") != 0) {
-    const WebCore::String& protocol_scheme =
-          complete_url_kurl.protocol();
     // We're only going to route HTTP/HTTPS requests
-    if ((protocol_scheme != "http") && (protocol_scheme != "https"))
+    if (!(complete_url.SchemeIs("http") || complete_url.SchemeIs("https")))
       return INVALID_URL;
   }
 
-  *completeURL = webkit_glue::KURLToGURL(complete_url_kurl);
-  WebURLRequest request(webkit_glue::KURLToWebURL(complete_url_kurl));
+  WebURLRequest request(complete_url);
   request.setHTTPMethod(WebString::fromUTF8(method));
   if (len > 0) {
     if (!is_file_data) {
       if (!SetPostData(&request, buf, len)) {
         // Uhoh - we're in trouble.  There isn't a good way
         // to recover at this point.  Break out.
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return ROUTED;
       }
     } else {
       // TODO: Support "file" mode.  For now, just break out
       // since proceeding may do something unintentional.
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return ROUTED;
     }
   }
+
+  // TODO(darin): Eliminate these WebCore dependencies.
+
   WebCore::FrameLoadRequest load_request(
       *webkit_glue::WebURLRequestToResourceRequest(&request));
   load_request.setFrameName(str_target);
@@ -600,7 +592,7 @@ RoutingStatus WebPluginImpl::RouteToFrame(const char *method,
       0,      // event
       0);     // form state
 
-  // load() can cause the frame to go away.
+  // loadFrameRequest() can cause the frame to go away.
   if (webframe_) {
     WebPluginDelegate* last_plugin = webframe_->plugin_delegate();
     if (last_plugin) {
@@ -616,12 +608,11 @@ RoutingStatus WebPluginImpl::RouteToFrame(const char *method,
 }
 
 NPObject* WebPluginImpl::GetWindowScriptNPObject() {
-  if (!frame()) {
-    ASSERT_NOT_REACHED();
-    return 0;
+  if (!webframe_) {
+    NOTREACHED();
+    return NULL;
   }
-
-  return frame()->script()->windowScriptNPObject();
+  return webframe_->windowObject();
 }
 
 NPObject* WebPluginImpl::GetPluginElement() {
@@ -745,8 +736,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
       for (size_t i = 0; i < clients_.size(); ++i) {
         if (clients_[i].loader.get() == loader) {
           WebPluginResourceClient* resource_client =
-              delegate_->CreateResourceClient(clients_[i].id,
-                                              plugin_url_.spec().c_str(),
+              delegate_->CreateResourceClient(clients_[i].id, plugin_url_,
                                               false, 0, NULL);
           clients_[i].client = resource_client;
           client = resource_client;
@@ -911,13 +901,11 @@ void WebPluginImpl::HandleURLRequestInternal(
     ExecuteScript(original_url, webkit_glue::StringToStdWString(script), notify,
                   notify_data, popups_allowed);
   } else {
-    std::string complete_url_string;
-    CompleteURL(url, &complete_url_string);
+    GURL complete_url = CompleteURL(url);
 
     int resource_id = GetNextResourceId();
-    WebPluginResourceClient* resource_client =
-        delegate_->CreateResourceClient(resource_id, complete_url_string,
-                                        notify, notify_data, NULL);
+    WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
+        resource_id, complete_url, notify, notify_data, NULL);
 
     // If the RouteToFrame call returned a failure then inform the result
     // back to the plugin asynchronously.
@@ -928,8 +916,7 @@ void WebPluginImpl::HandleURLRequestInternal(
     }
 
     InitiateHTTPRequest(resource_id, resource_client, method, buf, len,
-                        GURL(complete_url_string), NULL,
-                        use_plugin_src_as_referrer);
+                        complete_url, NULL, use_plugin_src_as_referrer);
   }
 }
 
@@ -964,34 +951,21 @@ bool WebPluginImpl::InitiateHTTPRequest(int resource_id,
                                     WebString::fromUTF8(range_info));
   }
 
-  WebCore::String referrer;
-  // GetURL/PostURL requests initiated explicitly by plugins should specify the
-  // plugin SRC url as the referrer if it is available.
-  if (use_plugin_src_as_referrer && !plugin_url_.spec().empty()) {
-    referrer = webkit_glue::StdStringToString(plugin_url_.spec());
-  } else {
-    referrer = frame()->loader()->outgoingReferrer();
-  }
-
-  if (!WebCore::FrameLoader::shouldHideReferrer(webkit_glue::GURLToKURL(url),
-                                                referrer)) {
-    info.request.setHTTPHeaderField(WebString::fromUTF8("Referer"),
-                                    webkit_glue::StringToWebString(referrer));
-  }
-
   if (strcmp(method, "POST") == 0) {
     // Adds headers or form data to a request.  This must be called before
     // we initiate the actual request.
     SetPostData(&info.request, buf, buf_len);
   }
 
+  // GetURL/PostURL requests initiated explicitly by plugins should specify the
+  // plugin SRC url as the referrer if it is available.
+  GURL referrer_url;
+  if (use_plugin_src_as_referrer && !plugin_url_.spec().empty())
+    referrer_url = plugin_url_;
+  webframe_->setReferrerForRequest(info.request, referrer_url);
+
   // Sets the routing id to associate the ResourceRequest with the RenderView.
-  WebCore::ResourceResponse response;
-  frame()->loader()->client()->dispatchWillSendRequest(
-      NULL,
-      0,
-      *webkit_glue::WebURLRequestToMutableResourceRequest(&info.request),
-      response);
+  webframe_->dispatchWillSendRequest(info.request);
 
   info.loader.reset(WebKit::webKitClient()->createURLLoader());
   if (!info.loader.get())
@@ -1015,15 +989,13 @@ void WebPluginImpl::InitiateHTTPRangeRequest(const char* url,
                                              bool notify_needed,
                                              intptr_t notify_data) {
   int resource_id = GetNextResourceId();
-  std::string complete_url_string;
-  CompleteURL(url, &complete_url_string);
+  GURL complete_url = CompleteURL(url);
 
-  WebPluginResourceClient* resource_client =
-      delegate_->CreateResourceClient(resource_id, complete_url_string,
-                                      notify_needed, notify_data,
-                                      existing_stream);
-  InitiateHTTPRequest(resource_id, resource_client, "GET", NULL, 0,
-                      GURL(complete_url_string), range_info, true);
+  WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
+      resource_id, complete_url, notify_needed, notify_data, existing_stream);
+  InitiateHTTPRequest(
+      resource_id, resource_client, "GET", NULL, 0, complete_url, range_info,
+      true);
 }
 
 void WebPluginImpl::SetDeferResourceLoading(int resource_id, bool defer) {
@@ -1134,10 +1106,9 @@ void WebPluginImpl::TearDownPluginInstance(
   // of those sub JSObjects.
   if (frame()) {
     ASSERT(container_);
-    // TODO(darin): Avoid these casts!
+    // TODO(darin): Avoid this cast!
     frame()->script()->cleanupScriptObjectsForPlugin(
-        static_cast<WebCore::Widget*>(
-            static_cast<WebKit::WebPluginContainerImpl*>(container_)));
+        static_cast<WebKit::WebPluginContainerImpl*>(container_));
   }
 
   if (delegate_) {

@@ -123,6 +123,8 @@ class WebFrameImpl : public WebKit::WebFrame,
   virtual WebKit::WebHistoryItem currentHistoryItem() const;
   virtual void enableViewSourceMode(bool enable);
   virtual bool isViewSourceModeEnabled() const;
+  virtual void setReferrerForRequest(
+      WebKit::WebURLRequest& request, const WebKit::WebURL& referrer);
   virtual void dispatchWillSendRequest(WebKit::WebURLRequest& request);
   virtual void commitDocumentData(const char* data, size_t length);
   virtual unsigned unloadListenerCount() const;
@@ -161,6 +163,7 @@ class WebFrameImpl : public WebKit::WebFrame,
       const WebKit::WebRect& selection_rect, int active_match_ordinal,
       int identifier);
   virtual void resetMatchCount();
+  virtual WebKit::WebURL completeURL(const WebKit::WebString& url) const;
   virtual WebKit::WebString contentAsText(size_t max_chars) const;
   virtual WebKit::WebString contentAsMarkup() const;
 

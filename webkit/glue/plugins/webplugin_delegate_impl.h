@@ -65,7 +65,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
                                     const std::wstring& result,
                                     bool success, bool notify_needed,
                                     intptr_t notify_data);
-  virtual void DidReceiveManualResponse(const std::string& url,
+  virtual void DidReceiveManualResponse(const GURL& url,
                                         const std::string& mime_type,
                                         const std::string& headers,
                                         uint32 expected_length,
@@ -76,7 +76,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   virtual FilePath GetPluginPath();
   virtual void InstallMissingPlugin();
   virtual WebPluginResourceClient* CreateResourceClient(int resource_id,
-                                                        const std::string &url,
+                                                        const GURL& url,
                                                         bool notify_needed,
                                                         intptr_t notify_data,
                                                         intptr_t stream);

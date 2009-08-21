@@ -110,11 +110,11 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // Set object_url to true if the load is for the object tag's
   // url, or false if it's for a url that the plugin
   // fetched through NPN_GetUrl[Notify].
-  PluginStreamUrl *CreateStream(int resource_id,
-                                const std::string &url,
-                                const std::string &mime_type,
+  PluginStreamUrl* CreateStream(int resource_id,
+                                const GURL& url,
+                                const std::string& mime_type,
                                 bool notify_needed,
-                                void *notify_data);
+                                void* notify_data);
 
   // For each instance, we track all streams.  When the
   // instance closes, all remaining streams are also
@@ -170,7 +170,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
                             bool success, bool notify_needed,
                             intptr_t notify_data);
 
-  void DidReceiveManualResponse(const std::string& url,
+  void DidReceiveManualResponse(const GURL& url,
                                 const std::string& mime_type,
                                 const std::string& headers,
                                 uint32 expected_length,
@@ -238,7 +238,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 #endif
   MessageLoop*                             message_loop_;
   scoped_refptr<PluginStreamUrl>           plugin_data_stream_;
-  GURL                                     instance_url_;
 
   // This flag if true indicates that the plugin data would be passed from
   // webkit. if false indicates that the plugin should download the data.

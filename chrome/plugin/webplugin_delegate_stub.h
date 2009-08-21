@@ -79,7 +79,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                               intptr_t notify_data);
 
   void OnDidReceiveManualResponse(
-      const std::string& url,
+      const GURL& url,
       const PluginMsg_DidReceiveResponseParams& params);
   void OnDidReceiveManualData(const std::vector<char>& buffer);
   void OnDidFinishManualLoading();

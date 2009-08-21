@@ -205,7 +205,7 @@ IPC_BEGIN_MESSAGES(Plugin)
                       intptr_t /* notify data */)
 
   IPC_MESSAGE_ROUTED2(PluginMsg_DidReceiveManualResponse,
-                      std::string /* url */,
+                      GURL /* url */,
                       PluginMsg_DidReceiveResponseParams)
 
   IPC_MESSAGE_ROUTED1(PluginMsg_DidReceiveManualData,
