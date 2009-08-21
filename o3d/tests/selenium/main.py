@@ -794,6 +794,7 @@ def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
       continue
 
     pixel_threshold = "10"
+    alpha_threshold = "1.0"
     use_colorfactor = False
     use_downsample = False
     use_edge = True
@@ -835,6 +836,7 @@ def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
                    generated_file,
                    "-output", diff_file,
                    "-fov", "45",
+                   "-alphaThreshold", alpha_threshold,
                    # Turn on verbose output for the percetual diff so we
                    # can see how far off we are on the threshold.
                    "-verbose",
@@ -870,6 +872,12 @@ def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
       if pixel_match:
         different_pixels = pixel_match.group(1)
 
+      alpha_re = re.compile("max alpha delta of ([0-9\.]+)", re.DOTALL)
+      alpha_delta = "0.0"
+      alpha_match = alpha_re.search(pdiff_stdout)
+      if alpha_match:
+        alpha_delta = alpha_match.group(1)
+
       if (result == expected_result or (pixel_match and
           int(different_pixels) <= int(pixel_threshold))):
         # The perceptual diff passed.
@@ -890,9 +898,10 @@ def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
           results.AddFailure(
               test_name, browser,
               ("Reference framebuffer (%s) does not match generated "
-               "file (%s): it differed by %s pixels with a threshold of %s." %
-               (reference_file, generated_file, different_pixels,
-                pixel_threshold)))
+               "file (%s):  %s non-matching pixels, max alpha delta: %s, "
+               "threshold: %s, alphaThreshold: %s." %
+               (reference_file, generated_file, different_pixels, alpha_delta, 
+                pixel_threshold, alpha_threshold)))
         else:
           # The perceptual diff failed for some reason other than
           # pixel differencing.
