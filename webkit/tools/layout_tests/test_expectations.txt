@@ -110,6 +110,12 @@ WONTFIX SKIP : LayoutTests/fast/regex/test1.html = PASS
 // We disallow file:// urls from doing XHR to data:.
 WONTFIX BUG9275 : LayoutTests/fast/encoding/char-decoding.html = FAIL
 
+// We use worker_uitests to run workers tests. Don't run them in test_shell.
+WONTFIX SKIP : LayoutTests/fast/workers = PASS TIMEOUT FAIL
+WONTFIX SKIP : LayoutTests/http/tests/workers = PASS TIMEOUT FAIL
+WONTFIX SKIP : LayoutTests/http/tests/xmlhttprequest/workers = PASS TIMEOUT FAIL
+WONTFIX SKIP : LayoutTests/http/tests/eventsource/workers = PASS TIMEOUT FAIL
+
 // -----------------------------------------------------------------
 // FAILING TESTS
 // -----------------------------------------------------------------
@@ -473,20 +479,7 @@ BUG1145887 LINUX WIN : LayoutTests/fast/replaced/table-percent-height-text-contr
 // sense.
 BUG1089231 : LayoutTests/fast/events/stopPropagation-submit.html = FAIL
 
-// -----------------------------------------------------------------
-// Workers
-// -----------------------------------------------------------------
-
-BUG10271 SKIP : LayoutTests/fast/workers = TIMEOUT FAIL
-BUG10271 SKIP : LayoutTests/fast/workers/stress-js-execution.html = TIMEOUT FAIL
-BUG10271 SKIP : LayoutTests/http/tests/workers = TIMEOUT FAIL
-BUG10271 SKIP : LayoutTests/http/tests/xmlhttprequest/workers = TIMEOUT FAIL
 BUG10271 MAC LINUX : LayoutTests/fast/events/dispatchEvent-crash.html = CRASH FAIL
-
-// This is expected to fail after we remove the uses of v8::Locker when we
-// switch to process-per-worker model. Re-enable this when we fully support
-// worker thread.
-BUG12428 SKIP : LayoutTests/fast/workers/worker-terminate.html = CRASH FAIL
 
 // -----------------------------------------------------------------
 // PENDING TESTS (forked to pending/, need to be sent upstream)
@@ -2355,8 +2348,6 @@ BUG12882 WIN : LayoutTests/fast/box-shadow/basic-shadows.html = FAIL
 BUG12882 : LayoutTests/fast/dom/Window/open-existing-pop-up-blocking.html = TIMEOUT
 
 // WebKit 44286:44342
-// This test crashes the next layout tests, so skip until resolved.
-BUG13176 SKIP : LayoutTests/fast/workers/worker-close.html = FAIL
 BUG13174 WIN : LayoutTests/transitions/shorthand-border-transitions.html = PASS FAIL
 
 // WebKit 44438:44544
@@ -2478,9 +2469,6 @@ WONTFIX SKIP : LayoutTests/fast/events/message-port-no-wrapper.html = FAIL
 WONTFIX SKIP : LayoutTests/fast/events/message-port.html = FAIL
 WONTFIX SKIP : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
 WONTFIX SKIP : chrome/fast/dom/messageport-gc.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/workers/worker-cloneport.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/workers/worker-messageport-gc.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/workers/worker-messageport.html = FAIL
 
 // WebKit merge 45685:45738
 BUG16652 : LayoutTests/fast/replaced/embed-display-none.html = PASS CRASH
@@ -2768,9 +2756,6 @@ BUG19655 : LayoutTests/fast/dom/Window/HTMLBodyElement-window-eventListener-attr
 BUG19655 : LayoutTests/fast/dom/Window/HTMLFrameSetElement-window-eventListener-attributes.html = FAIL
 BUG_JPARENT LINUX MAC: LayoutTests/fast/history/back-forward-is-asynchronous.html = TIMEOUT
 BUG_JPARENT LINUX DEBUG : LayoutTests/fast/multicol/columns-shorthand-parsing.html = CRASH
-// WebKit added implementation of the EventSource object that enables
-// server-sent events from HTML5.  Not implemented in Chrome yet.
-BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/workers/eventsource-simple.html = CRASH
 BUG19625 : LayoutTests/fast/eventsource/eventsource-attribute-listeners.html = TIMEOUT
 BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/eventsource-bad-mime-type.html = TIMEOUT
 BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/eventsource-parse-event-stream.html = TIMEOUT
