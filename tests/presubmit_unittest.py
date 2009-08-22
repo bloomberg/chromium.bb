@@ -77,7 +77,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'cPickle', 'cStringIO', 'exceptions',
       'fnmatch', 'gcl', 'gclient', 'glob', 'logging', 'marshal', 'normpath',
       'optparse', 'os', 'pickle',
-      'presubmit_canned_checks', 'random', 're', 'subprocess', 'sys',
+      'presubmit_canned_checks', 'random', 're', 'subprocess', 'sys', 'time',
       'tempfile', 'traceback', 'types', 'unittest', 'urllib2', 'warnings',
     ]
     # If this test fails, you should add the relevant test.
