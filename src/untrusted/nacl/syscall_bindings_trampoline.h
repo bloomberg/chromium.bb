@@ -107,6 +107,7 @@ typedef int (*TYPE_nacl_thread_create) (void *start_user_address,
                                         void *stack,
                                         void *tdb,
                                         size_t tdb_size);
+typedef int (*TYPE_nacl_thread_nice) (const int nice);
 
 /* ============================================================ */
 /* mutex */

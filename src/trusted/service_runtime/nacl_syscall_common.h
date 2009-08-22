@@ -204,6 +204,9 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
                                    void                 *tdb,
                                    size_t               tdb_size);
 
+int32_t NaClCommonSysThread_Nice(struct NaClAppThread *natp,
+                                 const int nice);
+
 #if defined(HAVE_SDL)
 
 int32_t NaClCommonSysMultimedia_Init(struct NaClAppThread *natp,

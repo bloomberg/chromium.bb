@@ -1968,6 +1968,11 @@ cleanup:
   return retval;
 }
 
+int NaClCommonSysThread_Nice(struct NaClAppThread *natp,
+                             const int nice) {
+  return 0;
+}
+
 #if defined(HAVE_SDL)
 
 

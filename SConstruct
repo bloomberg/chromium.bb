@@ -831,6 +831,7 @@ if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
           'tests/tone/nacl.scons',
           'tests/vim/nacl.scons',
           'tests/voronoi/nacl.scons',
+          'tests/pthread_bless/nacl.scons',
 
           'tools/tests/nacl.scons',
           ####  ALPHABETICALLY SORTED ####

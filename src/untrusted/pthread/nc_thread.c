@@ -687,6 +687,14 @@ ret:
   return retval;
 }
 
+int pthread_nice(const int nice) {
+  return NACL_SYSCALL(thread_nice)(nice);
+}
+
+int pthread_bless () {
+  return pthread_nice(NICE_REALTIME);
+}
+
 pthread_t pthread_self() {
   /* get the tdb pointer from gs and use it to return the thread handle*/
   nc_thread_descriptor_t *tdb = nc_get_tdb();
