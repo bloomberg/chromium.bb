@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -54,6 +55,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kWebKitSansSerifFontFamily,
     prefs::kWebKitSerifFontFamily,
   };
+  profile->GetDownloadManager()->ResetAutoOpenFiles();
   for (size_t i = 0; i < arraysize(kUserPrefs); ++i)
     prefs->ClearPref(kUserPrefs[i]);
 
