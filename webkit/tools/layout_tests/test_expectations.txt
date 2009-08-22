@@ -2884,3 +2884,8 @@ BUG19904 WIN : LayoutTests/media/progress-event-at-least-one.html = FAIL TIMEOUT
 
 // These became very flakey after r24022. Not sure if because of that change though.
 BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT
+
+// WebKit 47630:47646. These need rebaseline on Win and Linux. 
+BUG_DIMICH WIN LINUX : LayoutTests/editing/execCommand/5190926.html = FAIL
+BUG_DIMICH WIN LINUX : LayoutTests/editing/pasteboard/5075944.html = FAIL
+BUG_DIMICH WIN LINUX : LayoutTests/editing/style/font-family-with-space.html = FAIL
