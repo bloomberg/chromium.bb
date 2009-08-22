@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-# Repo lives in ~evanm/projects/git-try -- feel free to send patches.
-
 import getpass
 import optparse
 import os
@@ -104,13 +102,12 @@ def TryChange(args):
   """Put a patch on the try server using SVN."""
   root_dir = Backquote(['git', 'rev-parse', '--show-cdup'])
   script_path = os.path.dirname(sys.argv[0])
-  path = os.path.join(script_path, '..')
-  sys.path.append(path)
+  sys.path.append(script_path)
   try:
     import trychange
   except ImportError, e:
-    print "Error trying to import trychange from", path
-    print "git-try expects to live at depot_tools/git-try-repo/git-try"
+    print "Error trying to import trychange from", script_path
+    print "git-try expects to live at depot_tools/git-try"
     raise e
   trychange.checkout_root = os.path.abspath(root_dir)
   trychange.TryChange(args, None, False)
