@@ -93,10 +93,12 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
   const wchar_t* const kAliasTestDir = L"alias_mapping";
 
   FilePath test_dir_path = FilePath::FromWStringHack(kTestDir);
-  test_dir_path = test_dir_path.Append(kAliasTestDir);
+  test_dir_path =
+      test_dir_path.Append(FilePath::FromWStringHack(kAliasTestDir));
   for (int i = 0; i < arraysize(kEncodingTestDatas); ++i) {
     FilePath test_file_path(test_dir_path);
-    test_file_path = test_file_path.Append(kEncodingTestDatas[i].file_name);
+    test_file_path = test_file_path.Append(
+        FilePath::FromWStringHack(kEncodingTestDatas[i].file_name));
     GURL url =
         URLRequestMockHTTPJob::GetMockUrl(test_file_path.ToWStringHack());
 
@@ -119,8 +121,10 @@ TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   const wchar_t* const kOverrideTestDir = L"user_override";
 
   FilePath test_dir_path = FilePath::FromWStringHack(kTestDir);
-  test_dir_path = test_dir_path.Append(kOverrideTestDir);
-  test_dir_path = test_dir_path.Append(kTestFileName);
+  test_dir_path =
+      test_dir_path.Append(FilePath::FromWStringHack(kOverrideTestDir));
+  test_dir_path =
+      test_dir_path.Append(FilePath::FromWStringHack(kTestFileName));
   GURL url = URLRequestMockHTTPJob::GetMockUrl(test_dir_path.ToWStringHack());
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
@@ -156,7 +160,8 @@ TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
   FilePath expected_file_name =
       FilePath::FromWStringHack(kOverrideTestDir);
-  expected_file_name = expected_file_name.Append(kExpectedFileName);
+  expected_file_name =
+      expected_file_name.Append(FilePath::FromWStringHack(kExpectedFileName));
   CheckFile(FilePath::FromWStringHack(full_file_name),
             expected_file_name, true);
 }
@@ -239,7 +244,8 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
   tmp_save_dir += L"sub_resource_files";
 
   FilePath test_dir_path = FilePath::FromWStringHack(kTestDir);
-  test_dir_path = test_dir_path.Append(kAutoDetectDir);
+  test_dir_path =
+      test_dir_path.Append(FilePath::FromWStringHack(kAutoDetectDir));
 
   for (int i = 0;i < arraysize(kTestDatas);i++) {
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -250,7 +256,8 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
     // incorrectly decode the page. Now we use ISO-8859-4.
     browser->SetStringPreference(prefs::kDefaultCharset, L"ISO-8859-4");
     FilePath test_file_path(test_dir_path);
-    test_file_path = test_file_path.Append(kTestDatas[i].test_file_name);
+    test_file_path = test_file_path.Append(
+        FilePath::FromWStringHack(kTestDatas[i].test_file_name));
     GURL url =
         URLRequestMockHTTPJob::GetMockUrl(test_file_path.ToWStringHack());
     scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -290,10 +297,10 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
     // Full path of expect result file.
     FilePath expected_result_file_name =
         FilePath::FromWStringHack(kAutoDetectDir);
-    expected_result_file_name =
-        expected_result_file_name.Append(kExpectedResultDir);
-    expected_result_file_name =
-        expected_result_file_name.Append(kTestDatas[i].expected_result);
+    expected_result_file_name = expected_result_file_name.Append(
+        FilePath::FromWStringHack(kExpectedResultDir));
+    expected_result_file_name = expected_result_file_name.Append(
+        FilePath::FromWStringHack(kTestDatas[i].expected_result));
     EXPECT_TRUE(tab->SavePage(full_saved_file_name, tmp_save_dir,
                               SavePackage::SAVE_AS_COMPLETE_HTML));
     EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
