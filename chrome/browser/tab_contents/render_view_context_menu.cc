@@ -307,7 +307,7 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
       // The images shown in the most visited thumbnails do not currently open
       // in a new tab as they should. Disabling this context menu option for
       // now, as a quick hack, before we resolve this issue (Issue = 2608).
-      // TODO (sidchat): Enable this option once this issue is resolved.
+      // TODO(sidchat): Enable this option once this issue is resolved.
       if (params_.src_url.scheme() == chrome::kChromeUIScheme)
         return false;
       return true;
@@ -352,8 +352,17 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB:
       return true;
 
-    case IDS_CONTENT_CONTEXT_SAVEPAGEAS:
-      return SavePackage::IsSavableURL(source_tab_contents_->GetURL());
+    case IDS_CONTENT_CONTEXT_SAVEPAGEAS: {
+      // Instead of using GetURL here, we use url() (which is the "real" url of
+      // the page) from the NavigationEntry because its reflects their origin
+      // rather than the display one (returned by GetURL) which may be
+      // different (like having "view-source:" on the front).
+      NavigationEntry* active_entry =
+          source_tab_contents_->controller().GetActiveEntry();
+      GURL savable_url = (active_entry) ? active_entry->url() :
+                                          GURL::EmptyGURL();
+      return SavePackage::IsSavableURL(savable_url);
+    }
 
     case IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB:
     case IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW:

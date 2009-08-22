@@ -2274,11 +2274,18 @@ void Browser::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
       active_entry && !active_entry->IsViewSourceMode() &&
       is_source_viewable);
+
+  // Instead of using GetURL here, we use url() (which is the "real" url of the
+  // page) from the NavigationEntry because its reflects their origin rather
+  // than the display one (returned by GetURL) which may be different (like
+  // having "view-source:" on the front).
+  GURL savable_url = (active_entry) ? active_entry->url() : GURL::EmptyGURL();
+
   command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE,
-      SavePackage::IsSavableURL(current_tab->GetURL()));
+      SavePackage::IsSavableURL(savable_url));
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU,
       SavePackage::IsSavableContents(current_tab->contents_mime_type()) &&
-      SavePackage::IsSavableURL(current_tab->GetURL()));
+      SavePackage::IsSavableURL(savable_url));
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
