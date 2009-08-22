@@ -246,7 +246,10 @@ class ProfileSyncService : public NotificationObserver,
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
 
-  // Time at which error UI is presented for the NTP.
+  // Time at which we begin an attempt a GAIA authorization.
+  base::TimeTicks auth_start_time_;
+
+  // Time at which error UI is presented for the new tab page.
   base::TimeTicks auth_error_time_;
 
   // The profile whose data we are synchronizing.

@@ -257,6 +257,12 @@ void ProfileSyncService::OnAuthError() {
     auth_error_time_ == base::TimeTicks::Now();
   }
 
+  if (!auth_start_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("Sync.AuthorizationTimeInNetwork",
+                    base::TimeTicks::Now() - auth_start_time_);
+    auth_start_time_ = base::TimeTicks();
+  }
+
   is_auth_in_progress_ = false;
   // Fan the notification out to interested UI-thread components.
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
@@ -329,17 +335,15 @@ void ProfileSyncService::OnUserSubmittedAuth(
   is_auth_in_progress_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
+  auth_start_time_ = base::TimeTicks::Now();
   backend_->Authenticate(username, password);
-  UMA_HISTOGRAM_TIMES("Sync.AuthorizationTime",
-                      base::TimeTicks::Now() - start_time);
 }
 
 void ProfileSyncService::OnUserAcceptedMergeAndSync() {
   base::TimeTicks start_time = base::TimeTicks::Now();
   bool merge_success = model_associator_->AssociateModels();
-  UMA_HISTOGRAM_TIMES("Sync.BookmarkAssociationWithUITime",
-                      base::TimeTicks::Now() - start_time);
+  UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedBookmarkAssociation",
+                             base::TimeTicks::Now() - start_time);
 
   wizard_.Step(SyncSetupWizard::DONE);  // TODO(timsteele): error state?
   if (!merge_success) {
