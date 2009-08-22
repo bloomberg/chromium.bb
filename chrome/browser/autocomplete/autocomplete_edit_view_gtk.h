@@ -271,6 +271,13 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
   void HandleBackSpace();
 
+  static void HandleViewMoveFocusThunk(GtkWidget* widget, GtkDirectionType dir,
+                                       gpointer self) {
+    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
+        HandleViewMoveFocus(widget);
+  }
+  void HandleViewMoveFocus(GtkWidget* widget);
+
   static void HandleCopyClipboardThunk(GtkTextView* text_view, gpointer self) {
     reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandleCopyClipboard();
   }
@@ -312,6 +319,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Save |selected_text| as the PRIMARY X selection.
   void SavePrimarySelection(const std::string& selected_text);
 
+  // Update the field with |text| and set the selection.
+  void SetTextAndSelectedRange(const std::wstring& text,
+                               const CharRange& range);
+
   // The widget we expose, used for vertically centering the real text edit,
   // since the height will change based on the font / font size, etc.
   OwnedWidgetGtk alignment_;
@@ -340,6 +351,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   bool popup_window_mode_;
 
   ToolbarModel::SecurityLevel scheme_security_level_;
+
+  // Text and selection at the point where the user started using the
+  // arrows to move around in the popup.
+  std::wstring saved_temporary_text_;
+  CharRange saved_temporary_selection_;
 
   // Tracking state before and after a possible change.
   std::wstring text_before_change_;
@@ -378,6 +394,12 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   NotificationRegistrar registrar_;
 #endif
+
+  // Indicates if Tab key was pressed.
+  //
+  // It's only used in the key press handler to detect a Tab key press event
+  // during sync dispatch of "move-focus" signal.
+  bool tab_was_pressed_;
 
   // If a character is inserted, store it in this variable so that it can
   // be used later in "key-press-event" signal handler to determine if a Tab or

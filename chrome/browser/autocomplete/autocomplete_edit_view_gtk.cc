@@ -100,12 +100,11 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       mark_set_handler_id_(0),
       button_1_pressed_(false),
       text_selected_during_click_(false),
-      text_view_focused_before_button_press_(false)
+      text_view_focused_before_button_press_(false),
 #if !defined(TOOLKIT_VIEWS)
-      ,
-      theme_provider_(GtkThemeProvider::GetFrom(profile))
+      theme_provider_(GtkThemeProvider::GetFrom(profile)),
 #endif
-      {
+      tab_was_pressed_(false) {
   model_->set_popup_model(popup_view_->GetModel());
 }
 
@@ -153,13 +152,11 @@ void AutocompleteEditViewGtk::Init() {
   // The text view was floating.  It will now be owned by the alignment.
   gtk_container_add(GTK_CONTAINER(alignment_.get()), text_view_);
 
-  // Allows inserting tab characters when pressing tab key, to prevent
-  // |text_view_| from moving focus.
-  // Tab characters will be filtered out by our "insert-text" signal handler
-  // attached to |text_buffer_| object.
-  // Tab key events will be handled by our "key-press-event" signal handler for
-  // tab to search feature.
-  gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(text_view_), TRUE);
+  // Do not allow inserting tab characters when pressing Tab key, so that when
+  // Tab key is pressed, |text_view_| will emit "move-focus" signal, which will
+  // be intercepted by our own handler to trigger Tab to search feature when
+  // necessary.
+  gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(text_view_), FALSE);
 
   faded_text_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", kTextBaseColor, NULL);
@@ -197,6 +194,8 @@ void AutocompleteEditViewGtk::Init() {
   // signal, but it is very convenient and clean for catching up/down.
   g_signal_connect(text_view_, "move-cursor",
                    G_CALLBACK(&HandleViewMoveCursorThunk), this);
+  g_signal_connect(text_view_, "move-focus",
+                   G_CALLBACK(&HandleViewMoveFocusThunk), this);
   // Override the size request.  We want to keep the original height request
   // from the widget, since that's font dependent.  We want to ignore the width
   // so we don't force a minimum width based on the text length.
@@ -331,13 +330,18 @@ void AutocompleteEditViewGtk::SetUserText(const std::wstring& text,
 
 void AutocompleteEditViewGtk::SetWindowTextAndCaretPos(const std::wstring& text,
                                                        size_t caret_pos) {
+  CharRange range(static_cast<int>(caret_pos), static_cast<int>(caret_pos));
+  SetTextAndSelectedRange(text, range);
+}
+
+void AutocompleteEditViewGtk::SetTextAndSelectedRange(const std::wstring& text,
+                                                      const CharRange& range) {
   std::string utf8 = WideToUTF8(text);
   gtk_text_buffer_set_text(text_buffer_, utf8.data(), utf8.length());
-  EmphasizeURLComponents();
 
-  GtkTextIter cur_pos;
-  gtk_text_buffer_get_iter_at_offset(text_buffer_, &cur_pos, caret_pos);
-  gtk_text_buffer_place_cursor(text_buffer_, &cur_pos);
+  GtkTextIter insert, bound;
+  ItersFromCharRange(range, &insert, &bound);
+  gtk_text_buffer_select_range(text_buffer_, &insert, &bound);
 }
 
 void AutocompleteEditViewGtk::SetForcedQuery() {
@@ -355,8 +359,15 @@ void AutocompleteEditViewGtk::SetForcedQuery() {
 }
 
 bool AutocompleteEditViewGtk::IsSelectAll() {
-  NOTIMPLEMENTED();
-  return false;
+  GtkTextIter sel_start, sel_end;
+  if (!gtk_text_buffer_get_selection_bounds(text_buffer_, &sel_start, &sel_end))
+    return false;
+
+  GtkTextIter start, end;
+  gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+
+  return gtk_text_iter_equal(&start, &sel_start) &&
+      gtk_text_iter_equal(&end, &sel_end);
 }
 
 void AutocompleteEditViewGtk::SelectAll(bool reversed) {
@@ -392,8 +403,14 @@ void AutocompleteEditViewGtk::ClosePopup() {
 void AutocompleteEditViewGtk::OnTemporaryTextMaybeChanged(
     const std::wstring& display_text,
     bool save_original_selection) {
-  // TODO(deanm): Ignoring save_original_selection here, etc.
+  if (save_original_selection) {
+    saved_temporary_selection_ = GetSelection();
+    saved_temporary_text_ = GetText();
+  }
+
+  StartUpdatingHighlightedText();
   SetWindowTextAndCaretPos(display_text, display_text.length());
+  FinishUpdatingHighlightedText();
   TextChanged();
 }
 
@@ -418,7 +435,11 @@ bool AutocompleteEditViewGtk::OnInlineAutocompleteTextMaybeChanged(
 }
 
 void AutocompleteEditViewGtk::OnRevertTemporaryText() {
-  NOTIMPLEMENTED();
+  StartUpdatingHighlightedText();
+  SetTextAndSelectedRange(saved_temporary_text_, saved_temporary_selection_);
+  FinishUpdatingHighlightedText();
+  saved_temporary_text_.clear();
+  TextChanged();
 }
 
 void AutocompleteEditViewGtk::OnBeforePossibleChange() {
@@ -520,7 +541,7 @@ void AutocompleteEditViewGtk::HandleEndUserAction() {
 gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
                                                  GdkEventKey* event) {
   // Background of this piece of complicated code:
-  // The omnibox supports several special behavior which may be triggered by
+  // The omnibox supports several special behaviors which may be triggered by
   // certain key events:
   // Tab to search - triggered by Tab key
   // Accept input - triggered by Enter key
@@ -532,114 +553,100 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
   // signal of |text_view_| object and call its default handler to handle the
   // key event first.
   //
-  // Then if the key event is one of Tab, Enter and Escape, we need trigger
-  // corresponding special behavior if IME did not handle it.
-  // For Escape key if the default signal handler returns FALSE, then we know
+  // Then if the key event is one of Tab, Enter and Escape, we need to trigger
+  // the corresponding special behavior if IME did not handle it.
+  // For Escape key, if the default signal handler returns FALSE, then we know
   // it's not handled by IME.
   //
-  // But for Tab and Enter key, the default signal handler always returns TRUE,
-  // and following operation will be performed by GtkTextView if IME did not
-  // handle it:
-  // Tab key - delete current selection range and insert '\t'
-  // Enter key - delete current selection range and insert '\n'
+  // For Tab key, as "accepts-tab" property of |text_view_| is set to FALSE,
+  // if IME did not handle it then "move-focus" signal will be emitted by the
+  // default signal handler of |text_view_|. So we can intercept "move-focus"
+  // signal of |text_view_| to know if a Tab key press event was handled by IME,
+  // and trigger Tab to search behavior when necessary in the signal handler.
   //
-  // We need dinstinguish if IME handled the key event or not, and avoid above
-  // built-in operation if IME did not handle the key event. Because we don't
-  // want the content of omnibox to be changed before triggering our special
-  // behavior. Otherwise our special behavior would not be performed correctly.
+  // But for Enter key, if IME did not handle the key event, the default signal
+  // handler will delete current selection range and insert '\n' and always
+  // return TRUE. We need to prevent |text_view_| from performing this default
+  // action if IME did not handle the key event, because we don't want the
+  // content of omnibox to be changed before triggering our special behavior.
+  // Otherwise our special behavior would not be performed correctly.
   //
   // But there is no way for us to prevent GtkTextView from handling the key
-  // event and performing above built-in operation. So in order to achieve our
-  // goal, "insert-text" signal of |text_buffer_| object is intercepted, and
+  // event and performing built-in operation. So in order to achieve our goal,
+  // "insert-text" signal of |text_buffer_| object is intercepted, and
   // following actions are done in the signal handler:
   // - If there is only one character in inserted text, save it in
   //   char_inserted_.
   // - Filter out all new line and tab characters.
   //
-  // So if char_inserted_ equals to '\t' after calling |text_view_|'s
-  // default signal handler against a Tab key press event, then we can sure this
-  // Tab key press event is handled by GtkTextView instead of IME. Then we can
-  // perform the special behavior of Tab key safely.
-  //
-  // Enter key press event can be treated in the same way.
+  // So if |char_inserted_| equals '\n' after calling |text_view_|'s
+  // default signal handler against an Enter key press event, then we know that
+  // the Enter key press event was handled by GtkTextView rather than IME, and
+  // can perform the special behavior for Enter key safely.
   //
   // Now the last thing is to prevent the content of omnibox from being changed
   // by GtkTextView when Tab or Enter key is pressed. Because we can't prevent
-  // it, we use backup and restore trick: If Tab or Enter is pressed, backup the
-  // content of omnibox before sending the key event to |text_view_|, and then
-  // restore it afterwards if IME did not handle the event.
+  // it, we use a backup and restore trick: If Enter is pressed, backup the
+  // content of omnibox before sending the key event to |text_view_|, and
+  // then restore it afterwards if IME did not handle the event.
 
   GtkWidgetClass* klass = GTK_WIDGET_GET_CLASS(widget);
-  bool tab_pressed = ((event->keyval == GDK_Tab ||
-                       event->keyval == GDK_ISO_Left_Tab ||
-                       event->keyval == GDK_KP_Tab) &&
-                      !(event->state & GDK_CONTROL_MASK));
 
   bool enter_pressed = (event->keyval == GDK_Return ||
                         event->keyval == GDK_ISO_Enter ||
                         event->keyval == GDK_KP_Enter);
 
-  gchar* original_text = NULL;
+  std::wstring original_text;
 
-  // Tab and Enter key will have special behavior if it's not handled by IME.
+  // Enter key will have special behavior if it's not handled by IME.
   // We need save the original content of |text_buffer_| and restore it when
   // necessary, because GtkTextView might alter the content.
-  if (tab_pressed || enter_pressed) {
-    GtkTextIter start, end;
-    gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
-    original_text = gtk_text_buffer_get_text(text_buffer_, &start, &end, FALSE);
-
-    // Reset these variable, which may be set in "insert-text" signal handler.
-    // So that we can know if Tab or Enter key event is handled by IME or not.
+  if (enter_pressed) {
+    original_text = GetText();
+    // Reset |char_inserted_|, which may be set in the "insert-text" signal
+    // handler, so that we'll know if an Enter key event was handled by IME.
     char_inserted_ = 0;
   }
 
+  // Set |tab_was_pressed_| to true if it's a Tab key press event, so that our
+  // handler of "move-focus" signal can trigger Tab to search behavior when
+  // necessary.
+  tab_was_pressed_ = ((event->keyval == GDK_Tab ||
+                       event->keyval == GDK_ISO_Left_Tab ||
+                       event->keyval == GDK_KP_Tab) &&
+                      !(event->state & GDK_CONTROL_MASK));
+
   // Call the default handler, so that IME can work as normal.
-  // New line and tab characters will be filtered out by our "insert-text"
+  // New line characters will be filtered out by our "insert-text"
   // signal handler attached to |text_buffer_| object.
   gboolean result = klass->key_press_event(widget, event);
 
-  bool tab_inserted = (char_inserted_ == '\t');
-  bool new_line_inserted = (char_inserted_ == '\n' || char_inserted_ == '\r');
-  if ((tab_pressed && tab_inserted) || (enter_pressed && new_line_inserted)) {
-    // Tab or Enter key is handled by GtkTextView, so we are sure that it is not
-    // handled by IME.
-    // Revert the original content in case it has been altered.
-    // Call gtk_text_buffer_{begin|end}_user_action() to make sure |model_| will
-    // be updated correctly.
-    gtk_text_buffer_begin_user_action(text_buffer_);
-    gtk_text_buffer_set_text(text_buffer_, original_text, -1);
-    gtk_text_buffer_end_user_action(text_buffer_);
-  }
+  // Set |tab_was_pressed_| to false, to make sure Tab to search behavior can
+  // only be triggered by pressing Tab key.
+  tab_was_pressed_ = false;
 
-  if (original_text)
-    g_free(original_text);
-
-  if (tab_pressed && tab_inserted) {
-    if (model_->is_keyword_hint() && !model_->keyword().empty()) {
-      model_->AcceptKeyword();
-    } else {
-      // Handle move focus by ourselves.
-      static guint signal_id = g_signal_lookup("move-focus", GTK_TYPE_WIDGET);
-      g_signal_emit(widget, signal_id, 0, (event->state & GDK_SHIFT_MASK) ?
-                    GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
-    }
-    result = TRUE;
-  } else if (enter_pressed && new_line_inserted) {
+  if (enter_pressed && (char_inserted_ == '\n' || char_inserted_ == '\r')) {
     bool alt_held = (event->state & GDK_MOD1_MASK);
+    // Revert the original text in case the text has been changed.
+    SetUserText(original_text);
     model_->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
     result = TRUE;
   } else if (!result && event->keyval == GDK_Escape &&
              (event->state & gtk_accelerator_get_default_mod_mask()) == 0) {
-    // We can handle Escape key if |text_view_| did not handle it.
-    // If it's not handled by us, then we need propagate it upto parent
+    // We can handle the Escape key if |text_view_| did not handle it.
+    // If it's not handled by us, then we need to propagate it up to the parent
     // widgets, so that Escape accelerator can still work.
     result = model_->OnEscapeKeyPressed();
+  } else if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) {
+    // Omnibox2 can switch its contents while pressing a control key. To switch
+    // the contents of omnibox2, we notify the AutocompleteEditModel class when
+    // the control-key state is changed.
+    model_->OnControlKeyChanged(true);
   }
 
-  // If the key event is not handled by |text_view_| and us, then we need
+  // If the key event is not handled by |text_view_| or us, then we need to
   // propagate the key event up to parent widgets by returning FALSE.
-  // In this case we need stop the signal emission explicitly to prevent the
+  // In this case we need to stop the signal emission explicitly to prevent the
   // default "key-press-event" handler of |text_view_| from being called again.
   if (!result) {
     static guint signal_id =
@@ -652,6 +659,13 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
 
 gboolean AutocompleteEditViewGtk::HandleKeyRelease(GtkWidget* widget,
                                                    GdkEventKey* event) {
+  if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) {
+    // Omnibox2 can switch its contents while pressing a control key. To switch
+    // the contents of omnibox2, we notify the AutocompleteEditModel class when
+    // the control-key state is changed.
+    model_->OnControlKeyChanged(false);
+  }
+
   // Even though we handled the press ourselves, let GtkTextView handle the
   // release.  It shouldn't do anything particularly interesting, but it will
   // handle the IME work for us.
@@ -872,8 +886,8 @@ void AutocompleteEditViewGtk::HandleInsertText(
   //
   // If there was only a single character, then it might be generated by a key
   // event. In this case, we save the single character to help our
-  // "key-press-event" signal handler distinguish if a Tab or Enter key event
-  // is handled by IME or not.
+  // "key-press-event" signal handler distinguish if an Enter key event is
+  // handled by IME or not.
   if (len == 1)
     char_inserted_ = text[0];
 
@@ -921,6 +935,21 @@ void AutocompleteEditViewGtk::HandleBackSpace() {
   // Stop propagating the signal emission into GtkTextView.
   static guint signal_id = g_signal_lookup("backspace", GTK_TYPE_TEXT_VIEW);
   g_signal_stop_emission(text_view_, signal_id, 0);
+}
+
+void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget) {
+  // Trigger Tab to search behavior only when Tab key is pressed.
+  if (tab_was_pressed_ && model_->is_keyword_hint() &&
+      !model_->keyword().empty()) {
+    model_->AcceptKeyword();
+
+    // If Tab to search behavior is triggered, then stop the signal emission to
+    // prevent the focus from being moved.
+    static guint signal_id = g_signal_lookup("move-focus", GTK_TYPE_WIDGET);
+    g_signal_stop_emission(widget, signal_id, 0);
+  }
+
+  // Propagate the signal so that focus can be moved as normal.
 }
 
 void AutocompleteEditViewGtk::HandleCopyClipboard() {
