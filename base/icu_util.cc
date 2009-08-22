@@ -16,6 +16,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "unicode/putil.h"
 #include "unicode/udata.h"
@@ -37,8 +38,8 @@
 #endif  // ICU_UTIL_DATA_IMPL
 
 #if defined(OS_WIN)
-#define ICU_UTIL_DATA_SYMBOL "icudt38_dat"
-#define ICU_UTIL_DATA_SHARED_MODULE_NAME L"icudt38.dll"
+#define ICU_UTIL_DATA_SYMBOL "icudt" U_ICU_VERSION_SHORT "_dat"
+#define ICU_UTIL_DATA_SHARED_MODULE_NAME "icudt" U_ICU_VERSION_SHORT ".dll"
 #endif
 
 namespace icu_util {
@@ -57,7 +58,8 @@ bool Initialize() {
   // We expect to find the ICU data module alongside the current module.
   std::wstring data_path;
   PathService::Get(base::DIR_MODULE, &data_path);
-  file_util::AppendToPath(&data_path, ICU_UTIL_DATA_SHARED_MODULE_NAME);
+  file_util::AppendToPath(&data_path,
+                          ASCIIToWide(ICU_UTIL_DATA_SHARED_MODULE_NAME));
 
   HMODULE module = LoadLibrary(data_path.c_str());
   if (!module)
