@@ -95,7 +95,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
   FilePath test_dir_path = FilePath::FromWStringHack(kTestDir);
   test_dir_path =
       test_dir_path.Append(FilePath::FromWStringHack(kAliasTestDir));
-  for (int i = 0; i < arraysize(kEncodingTestDatas); ++i) {
+  for (int i = 0; i < ARRAYSIZE(kEncodingTestDatas); ++i) {
     FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.Append(
         FilePath::FromWStringHack(kEncodingTestDatas[i].file_name));
@@ -247,7 +247,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
   test_dir_path =
       test_dir_path.Append(FilePath::FromWStringHack(kAutoDetectDir));
 
-  for (int i = 0;i < arraysize(kTestDatas);i++) {
+  for (int i = 0;i < ARRAYSIZE(kTestDatas);i++) {
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
     ASSERT_TRUE(browser.get());
 
