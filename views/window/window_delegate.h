@@ -14,11 +14,6 @@ class SkBitmap;
 namespace gfx {
 class Rect;
 }
-// TODO(maruel):  Remove once gfx::Rect is used instead.
-namespace WTL {
-class CRect;
-}
-using WTL::CRect;
 
 namespace views {
 
