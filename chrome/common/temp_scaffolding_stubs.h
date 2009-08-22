@@ -124,11 +124,6 @@ class PrintJobManager {
 
 }  // namespace printing
 
-struct ViewHostMsg_DidPrintPage_Params;
-
-class InputWindowDelegate {
-};
-
 //---------------------------------------------------------------------------
 // These stubs are for Browser
 
@@ -139,17 +134,6 @@ void DragDownload(const DownloadItem* download,
                   gfx::NativeView view);
 }  // namespace download_util
 #endif
-
-class DebuggerWindow : public base::RefCountedThreadSafe<DebuggerWindow> {
- public:
-};
-
-class FaviconStatus {
- public:
-  const GURL& url() const { return url_; }
- private:
-  GURL url_;
-};
 
 #if defined(OS_MACOSX)
 class DockInfo {
@@ -162,67 +146,12 @@ class DockInfo {
 #endif
 
 //---------------------------------------------------------------------------
-// These stubs are for Profile
-
-class WebAppLauncher {
- public:
-  static void Launch(Profile* profile, const GURL& url) {
-    NOTIMPLEMENTED();
-  }
-};
-
-//---------------------------------------------------------------------------
 // These stubs are for TabContents
-
-class WebApp : public base::RefCountedThreadSafe<WebApp> {
- public:
-  class Observer {
-   public:
-  };
-  void AddObserver(Observer* obs) { NOTIMPLEMENTED(); }
-  void RemoveObserver(Observer* obs) { NOTIMPLEMENTED(); }
-  void SetTabContents(TabContents*) { NOTIMPLEMENTED(); }
-  SkBitmap GetFavIcon() {
-    NOTIMPLEMENTED();
-    return SkBitmap();
-  }
-};
-
-class ModalHtmlDialogDelegate : public HtmlDialogUIDelegate {
- public:
-  ModalHtmlDialogDelegate(const GURL&, int, int, const std::string&,
-                          IPC::Message*, TabContents*) { }
-
-   virtual bool IsDialogModal() const { return true; }
-   virtual std::wstring GetDialogTitle() const { return std::wstring(); }
-   virtual GURL GetDialogContentURL() const { return GURL(); }
-   virtual void GetDOMMessageHandlers(
-       std::vector<DOMMessageHandler*>* handlers) const {}
-   virtual void GetDialogSize(gfx::Size* size) const {}
-   virtual std::string GetDialogArgs() const { return std::string(); }
-   virtual void OnDialogClosed(const std::string& json_retval) {}
-};
-
-class HtmlDialogContents {
- public:
-  struct HtmlDialogParams {
-    GURL url;
-    int width;
-    int height;
-    std::string json_input;
-  };
-};
 
 class RepostFormWarningDialog {
  public:
   static void RunRepostFormWarningDialog(NavigationController*) { }
   virtual ~RepostFormWarningDialog() { }
-};
-
-class FontsLanguagesWindowView {
- public:
-  explicit FontsLanguagesWindowView(Profile* profile) { NOTIMPLEMENTED(); }
-  void SelectLanguagesTab() { NOTIMPLEMENTED(); }
 };
 
 class BaseDragSource {

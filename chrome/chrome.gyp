@@ -2552,7 +2552,6 @@
             'browser/importer/ie_importer.cc',
             'browser/jumplist.cc',
             'browser/memory_details.cc',
-            'browser/modal_html_dialog_delegate.cc',
             'browser/sandbox_policy.cc',
             'browser/tab_contents/web_drag_source.cc',
             'browser/tab_contents/web_drop_target.cc',

@@ -28,6 +28,7 @@
 #include "chrome/browser/jsmessage_box_handler.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/load_notification_details.h"
+#include "chrome/browser/modal_html_dialog_delegate.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/plugin_installer.h"
@@ -61,16 +62,6 @@
 #include "net/base/registry_controlled_domain.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webpreferences.h"
-
-#if defined(OS_WIN)
-// For CRect
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlmisc.h>
-// TODO(port): some of these headers should be ported.
-#include "chrome/browser/modal_html_dialog_delegate.h"
-#include "views/controls/scrollbar/native_scroll_bar.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 // For GdkScreen
