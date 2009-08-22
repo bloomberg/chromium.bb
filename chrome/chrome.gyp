@@ -3637,6 +3637,7 @@
       ],
       'sources': [
         'app/chrome_main_uitest.cc',
+        'browser/browser_encoding_uitest.cc',
         'browser/browser_uitest.cc',
         'browser/download/download_uitest.cc',
         'browser/download/save_page_uitest.cc',

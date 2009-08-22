@@ -270,6 +270,17 @@ class UITest : public testing::Test {
   // own the handle returned.
   base::ProcessHandle process() { return process_; }
 
+  // Wait for |generated_file| to be ready and then compare it with 
+  // |original_file| to see if they're identical or not if |compare_file| is
+  // true. If |need_equal| is true, they need to be identical. Otherwise,
+  // they should be different. This function will delete the generated file if
+  // the parameter |delete_generated_file| is true.
+  void WaitForGeneratedFileAndCheck(const FilePath& generated_file,
+                                    const FilePath& original_file,
+                                    bool compare_files,
+                                    bool need_equal,
+                                    bool delete_generated_file);
+
  public:
   // Get/Set a flag to run the renderer in process when running the
   // tests.
@@ -393,9 +404,17 @@ class UITest : public testing::Test {
   // error.
   DictionaryValue* GetDefaultProfilePreferences();
 
+  // Generate the file path for testing a particular test.
+  // The file for the tests is all located in
+  // test_root_directory\test_directory\<testcase>
+  // The returned path is FilePath format.
+  static FilePath GetTestFilePath(const std::wstring& test_directory,
+                                  const std::wstring& test_case);
+
   // Generate the URL for testing a particular test.
   // HTML for the tests is all located in
   // test_root_directory\test_directory\<testcase>
+  // The returned path is GURL format.
   static GURL GetTestUrl(const std::wstring& test_directory,
                          const std::wstring &test_case);
 

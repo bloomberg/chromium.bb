@@ -29,24 +29,16 @@ class SavePageTest : public UITest {
  protected:
   SavePageTest() : UITest() {}
 
-  void CheckFile(const FilePath& client_file,
-                 const FilePath& server_file) {
-    file_util::FileInfo previous, current;
-    bool exist = false;
-    for (int i = 0; i < 20; ++i) {
-      if (exist) {
-        file_util::GetFileInfo(client_file, &current);
-        if (current.size == previous.size)
-          break;
-        previous = current;
-      } else if (file_util::PathExists(client_file)) {
-        file_util::GetFileInfo(client_file, &previous);
-        exist = true;
-      }
-      PlatformThread::Sleep(sleep_timeout_ms());
-    }
-    EXPECT_TRUE(exist);
-    EXPECT_TRUE(file_util::DieFileDie(client_file, false));
+  void CheckFile(const FilePath& generated_file,
+                 const FilePath& expected_result_file) {
+    FilePath expected_result_filepath = UITest::GetTestFilePath(
+        UTF8ToWide(kTestDir), expected_result_file.ToWStringHack());
+    ASSERT_TRUE(file_util::PathExists(expected_result_filepath));
+    WaitForGeneratedFileAndCheck(generated_file,
+                                 expected_result_filepath,
+                                 false,  // Don't care whether they are equal.
+                                 false,
+                                 false);  // Don't delete file
   }
 
   virtual void SetUp() {

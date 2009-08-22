@@ -873,13 +873,20 @@ bool UITest::CloseBrowser(BrowserProxy* browser,
   return result;
 }
 
-GURL UITest::GetTestUrl(const std::wstring& test_directory,
-                        const std::wstring &test_case) {
+// Static
+FilePath UITest::GetTestFilePath(const std::wstring& test_directory,
+                                 const std::wstring& test_case) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.Append(FilePath::FromWStringHack(test_directory));
   path = path.Append(FilePath::FromWStringHack(test_case));
-  return net::FilePathToFileURL(path);
+  return path;
+}
+
+// Static
+GURL UITest::GetTestUrl(const std::wstring& test_directory,
+                        const std::wstring &test_case) {
+  return net::FilePathToFileURL(GetTestFilePath(test_directory, test_case));
 }
 
 void UITest::WaitForFinish(const std::string &name,
@@ -1038,4 +1045,44 @@ FilePath UITest::ComputeTypicalUserDataSource(int profile_type) {
   return source_history_file;
 }
 
+void UITest::WaitForGeneratedFileAndCheck(const FilePath& generated_file,
+                                          const FilePath& original_file,
+                                          bool compare_files,
+                                          bool need_equal,
+                                          bool delete_generated_file) {
+  // Check whether the target file has been generated.
+  file_util::FileInfo previous, current;
+  bool exist = false;
+  for (int i = 0; i < 20; ++i) {
+    if (exist) {
+      file_util::GetFileInfo(generated_file, &current);
+      if (current.size == previous.size)
+        break;
+      previous = current;
+    } else if (file_util::PathExists(generated_file)) {
+      file_util::GetFileInfo(generated_file, &previous);
+      exist = true;
+    }
+    PlatformThread::Sleep(sleep_timeout_ms());
+  }
+  EXPECT_TRUE(exist);
+
+  if (compare_files) {
+    // Check whether the generated file is equal with original file according to
+    // parameter: need_equal.
+    int64 generated_file_size = 0;
+    int64 original_file_size = 0;
+    EXPECT_TRUE(file_util::GetFileSize(generated_file, &generated_file_size));
+    EXPECT_TRUE(file_util::GetFileSize(original_file, &original_file_size));
+    if (need_equal) {
+      EXPECT_EQ(generated_file_size, original_file_size);
+      EXPECT_TRUE(file_util::ContentsEqual(generated_file, original_file));
+    } else {
+      EXPECT_NE(generated_file_size, original_file_size);
+      EXPECT_FALSE(file_util::ContentsEqual(generated_file, original_file));
+    }
+  }
+  if (delete_generated_file)
+    EXPECT_TRUE(file_util::DieFileDie(generated_file, false));
+}
 
