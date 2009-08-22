@@ -2770,8 +2770,7 @@ BUG19635 : LayoutTests/fast/harness/use-page-cache.html = FAIL
 // Remove this once we roll deps that far
 BUG_JPARENT SKIP : LayoutTests/fast/wml/html-fieldset-crash.html = FAIL
 
-// Merge 47383:47417, just needs rebaseline
-BUG_JPARENT WIN LINUX : LayoutTests/fast/dom/navigator-detached-no-crash.html = FAIL
+// Merge 47383:47417
 
 // WebKit roll r47417:47528
 BUG19766 WIN LINUX : LayoutTests/editing/deleting/delete-br-011.html = FAIL
