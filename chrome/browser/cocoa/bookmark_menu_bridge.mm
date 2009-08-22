@@ -11,29 +11,19 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
+#import "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
+#include "skia/ext/skia_utils_mac.h"
 
-BookmarkMenuBridge::BookmarkMenuBridge()
-    : controller_([[BookmarkMenuCocoaController alloc] initWithBridge:this]) {
-  // Depending on when this is constructed, we may or may not have a
-  // browser yet.  If we do, start watching the bookmarks.  If we do
-  // not, delay watching until we see a SetLastActive().  At this time
-  // (6/12/09), the BookmarkMenuBridge object is constructed AFTER the
-  // first SetLastActive in -[AppController applicationDidFinishLaunching:].
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser) {
-    observing_ = false;  // not observing browser activation
+BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile)
+    : profile_(profile),
+      controller_([[BookmarkMenuCocoaController alloc] initWithBridge:this]) {
+  if (GetBookmarkModel())
     ObserveBookmarkModel();
-  } else {
-    observing_ = true;
-    BrowserList::AddObserver(this);
-  }
 }
 
 BookmarkMenuBridge::~BookmarkMenuBridge() {
-  if (observing_)
-    BrowserList::RemoveObserver(this);
   BookmarkModel *model = GetBookmarkModel();
   if (model)
     model->RemoveObserver(this);
@@ -91,40 +81,22 @@ void BookmarkMenuBridge::BookmarkNodeRemoved(BookmarkModel* model,
 
 void BookmarkMenuBridge::BookmarkNodeChanged(BookmarkModel* model,
                                              const BookmarkNode* node) {
-  // TODO(jrg): this is brute force; perhaps we should be nicer.
-  Loaded(model);
+  NSMenuItem* item = MenuItemForNode(node);
+  if (item)
+    ConfigureMenuItem(node, item);
 }
 
 void BookmarkMenuBridge::BookmarkNodeFavIconLoaded(BookmarkModel* model,
                                                    const BookmarkNode* node) {
-  // Nothing to do here -- no icons in the menubar menus yet.
-  // TODO(jrg):
-  // Both Safari and FireFox have icons in their menubars for bookmarks.
+  NSMenuItem* item = MenuItemForNode(node);
+  if (item)
+    ConfigureMenuItem(node, item);
 }
 
 void BookmarkMenuBridge::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
   // TODO(jrg): this is brute force; perhaps we should be nicer.
   Loaded(model);
-}
-
-void BookmarkMenuBridge::OnBrowserAdded(const Browser* browser) {
-  // Intentionally empty -- we don't care, but pure virtual so we must
-  // implement.
-}
-
-void BookmarkMenuBridge::OnBrowserRemoving(const Browser* browser) {
-  // Intentionally empty -- we don't care, but pure virtual so we must
-  // implement.
-}
-
-// The current browser has changed; update the bookmark menus.  For
-// our use, we only care about the first one to know when a profile is
-// complete.
-void BookmarkMenuBridge::OnBrowserSetLastActive(const Browser* browser) {
-  BrowserList::RemoveObserver(this);
-  observing_ = false;
-  ObserveBookmarkModel();
 }
 
 // Watch for changes.
@@ -136,20 +108,17 @@ void BookmarkMenuBridge::ObserveBookmarkModel() {
 }
 
 BookmarkModel* BookmarkMenuBridge::GetBookmarkModel() {
-  // In incognito mode we use the main profile's bookmarks.
-  // Thus, we don't return browser_->profile()->GetBookmarkModel().
-  Profile* profile = GetDefaultProfile();
-  // In unit tests, there is no default profile.
-  // TODO(jrg): refactor so we don't "allow" NULLs in non-test environments.
-  return profile ? profile->GetBookmarkModel() : NULL;
+  if (!profile_)
+    return NULL;
+  return profile_->GetBookmarkModel();
 }
 
-Profile* BookmarkMenuBridge::GetDefaultProfile() {
-  // The delegate of the main application is an AppController
-  return [[NSApp delegate] defaultProfile];
+Profile* BookmarkMenuBridge::GetProfile() {
+  return profile_;
 }
 
 void BookmarkMenuBridge::ClearBookmarkMenu(NSMenu* menu) {
+  bookmark_nodes_.clear();
   // Recursively delete all menus that look like a bookmark.  Assume
   // all items with submenus contain only bookmarks.  This typically
   // deletes everything except the first two items ("Add Bookmark..."
@@ -178,21 +147,50 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
                                                    action:nil
                                             keyEquivalent:@""] autorelease];
     [menu addItem:item];
+    bookmark_nodes_[child] = item;
     if (child->is_folder()) {
       NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
       [menu setSubmenu:submenu forItem:item];
       AddNodeToMenu(child, submenu);  // recursive call
     } else {
-      [item setTarget:controller_];
-      [item setAction:@selector(openBookmarkMenuItem:)];
-      [item setTag:child->id()];
-      // Add a tooltip
-      std::string url_string = child->GetURL().possibly_invalid_spec();
-      NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
-                                    base::SysWideToNSString(child->GetTitle()),
-                                    url_string.c_str()];
-      [item setToolTip:tooltip];
-
+      ConfigureMenuItem(child, item);
     }
   }
+}
+
+void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
+                                           NSMenuItem* item) {
+  [item setTarget:controller_];
+  [item setAction:@selector(openBookmarkMenuItem:)];
+  [item setTag:node->id()];
+  // Add a tooltip
+  std::string url_string = node->GetURL().possibly_invalid_spec();
+  NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
+                                base::SysWideToNSString(node->GetTitle()),
+                                url_string.c_str()];
+  [item setToolTip:tooltip];
+
+  // Check to see if we have a favicon.
+  NSImage* favicon = nil;
+  BookmarkModel* model = GetBookmarkModel();
+  if (model) {
+    const SkBitmap& bitmap = model->GetFavIcon(node);
+    if (!bitmap.isNull())
+      favicon = gfx::SkBitmapToNSImage(bitmap);
+  }
+  // Either we do not have a loaded favicon or the conversion from SkBitmap
+  // failed. Use the default site image instead.
+  if (!favicon)
+    favicon = nsimage_cache::ImageNamed(@"nav.pdf");
+  [item setImage:favicon];
+}
+
+NSMenuItem* BookmarkMenuBridge::MenuItemForNode(const BookmarkNode* node) {
+  if (!node)
+    return nil;
+  std::map<const BookmarkNode*, NSMenuItem*>::iterator it =
+      bookmark_nodes_.find(node);
+  if (it == bookmark_nodes_.end())
+    return nil;
+  return it->second;
 }

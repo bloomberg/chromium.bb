@@ -20,17 +20,18 @@
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_MENU_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_MENU_BRIDGE_H_
 
+#include <map>
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/browser/browser_list.h"
 
-class Browser;
+class BookmarkNode;
+class Profile;
 @class NSMenu;
+@class NSMenuItem;
 @class BookmarkMenuCocoaController;
 
-class BookmarkMenuBridge : public BookmarkModelObserver,
-                           public BrowserList::Observer {
+class BookmarkMenuBridge : public BookmarkModelObserver {
  public:
-  BookmarkMenuBridge();
+  BookmarkMenuBridge(Profile* profile);
   virtual ~BookmarkMenuBridge();
 
   // Overridden from BookmarkModelObserver
@@ -55,14 +56,9 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node);
 
-  // Overridden from BrowserList::Observer
-  virtual void OnBrowserAdded(const Browser* browser);
-  virtual void OnBrowserRemoving(const Browser* browser);
-  virtual void OnBrowserSetLastActive(const Browser* browser);
-
   // I wish I has a "friend @class" construct.
   BookmarkModel* GetBookmarkModel();
-  Profile* GetDefaultProfile();
+  Profile* GetProfile();
 
  protected:
   // Clear all bookmarks from the given bookmark menu.
@@ -73,8 +69,16 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   // TODO(jrg): add a counter to enforce maximum nodes added
   void AddNodeToMenu(const BookmarkNode* node, NSMenu* menu);
 
+  // This configures an NSMenuItem with all the data from a BookmarkNode. This
+  // is used to update existing menu items, as well as to configure newly
+  // created ones, like in AddNodeToMenu().
+  void ConfigureMenuItem(const BookmarkNode* node, NSMenuItem* item);
+
+  // Returns the NSMenuItem for a given BookmarkNode.
+  NSMenuItem* MenuItemForNode(const BookmarkNode* node);
+
   // Return the Bookmark menu.
-  NSMenu* BookmarkMenu();
+  virtual NSMenu* BookmarkMenu();
 
   // Start watching the bookmarks for changes.
   void ObserveBookmarkModel();
@@ -82,8 +86,12 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
  private:
   friend class BookmarkMenuBridgeTest;
 
+  Profile* profile_;  // weak
   BookmarkMenuCocoaController* controller_;  // strong
-  bool observing_;  // are we observing the browser list?
+
+  // In order to appropriately update items in the bookmark menu, without
+  // forcing a rebuild, map the model's nodes to menu items.
+  std::map<const BookmarkNode*, NSMenuItem*> bookmark_nodes_;
 };
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_MENU_BRIDGE_H_

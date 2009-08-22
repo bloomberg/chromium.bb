@@ -263,7 +263,7 @@
   DCHECK(g_browser_process);
   g_browser_process->AddRefModule();
 
-  bookmarkMenuBridge_.reset(new BookmarkMenuBridge());
+  bookmarkMenuBridge_.reset(new BookmarkMenuBridge([self defaultProfile]));
   historyMenuBridge_.reset(new HistoryMenuBridge([self defaultProfile]));
 
   [self setUpdateCheckInterval];
