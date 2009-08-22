@@ -18,12 +18,6 @@ then
   (cd "$base_dir/git-cl-repo"; git pull -q)
 fi
 
-if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/git-try-repo/.git" ]
-then
-  (cd "$base_dir/git-try-repo"; git pull -q)
-fi
-
-
 # Use the batch file as an entry point if on cygwin.
 if [ "${OSTYPE}" = "cygwin" -a "${TERM}" != "xterm" ]; then
    ${base_dir}/gclient.bat "$@"
