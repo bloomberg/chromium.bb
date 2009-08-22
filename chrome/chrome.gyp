@@ -5115,6 +5115,11 @@
                 '../build/linux/system.gyp:gtk',
               ],
             }],
+            ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
+              'dependencies': [
+                '../views/views.gyp:views',
+              ],
+            }],
             ['OS=="mac"', {
               # The test fetches resources which means Mac need the app bundle to
               # exist on disk so it can pull from it.

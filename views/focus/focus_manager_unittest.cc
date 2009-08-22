@@ -12,6 +12,7 @@
 #include "app/resource_bundle.h"
 #include "base/gfx/rect.h"
 #include "base/keyboard_codes.h"
+#include "base/logging.h"
 #include "base/string_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/background.h"
@@ -176,14 +177,14 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
 #if defined(OS_WIN)
     ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_ACTIVE, NULL);
 #else
-  NOTDEFINED();
+  NOTIMPLEMENTED();
 #endif
   }
   void SimulateDeactivateWindow() {
 #if defined(OS_WIN)
     ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_INACTIVE, NULL);
 #else
-  NOTDEFINED();
+  NOTIMPLEMENTED();
 #endif
   }
 
@@ -237,7 +238,7 @@ class BorderView : public NativeViewHost {
         widget_win->SetFocusTraversableParentView(this);
         widget_ = widget_win;
 #else
-        widget_ = new WidgetGtk();
+        widget_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
 #endif
         widget_->SetContentsView(child_);
       }
