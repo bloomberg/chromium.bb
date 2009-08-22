@@ -113,6 +113,10 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
   }
 }
 
+#if defined(OS_WIN)
+// We are disabling this test on MacOS and Linux because on those platforms
+// AutomationProvider::OverrideEncoding is not implemented yet.
+// TODO(port): Enable when encoding-related parts of Browser are ported.
 TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   const wchar_t* const kTestFileName =
       L"gb18030_with_iso88591_meta.html";
@@ -165,6 +169,7 @@ TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   CheckFile(FilePath::FromWStringHack(full_file_name),
             expected_file_name, true);
 }
+#endif  // defined(OS_WIN)
 
 // The following encodings are excluded from the auto-detection test because
 // it's a known issue that the current encoding detector does not detect them:
