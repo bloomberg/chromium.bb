@@ -109,3 +109,6 @@ PREFIX : webcore::rendertextcontrol::calcprefwidths___webcore::renderbox::minpre
 # 19813
 PREFIX : npobjectgetproperty___npobjectgetnamedproperty___webcore::v8custom::v8htmlpluginelementnamedpropertygetter
 
+# 20016
+PREFIX :
+WebCore::Font::primaryFont
