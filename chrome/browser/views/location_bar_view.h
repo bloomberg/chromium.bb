@@ -112,11 +112,11 @@ class LocationBarView : public LocationBar,
   virtual SkBitmap GetFavIcon() const;
   virtual std::wstring GetTitle() const;
 
-  // Returns the accessibility role.
-  bool GetAccessibleRole(AccessibilityTypes::Role* role);
-
   // Overridden from views::View:
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual void SetAccessibleName(const std::wstring& name);
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(bool use_OEM_bubble);
@@ -510,6 +510,11 @@ class LocationBarView : public LocationBar,
 
   // The positioner that places the autocomplete popup.
   AutocompletePopupPositioner* popup_positioner_;
+
+  // Storage of string needed for accessibility.
+  std::wstring accessible_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_LOCATION_BAR_VIEW_H_

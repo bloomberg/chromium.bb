@@ -136,6 +136,22 @@ void ImageView::Paint(gfx::Canvas* canvas) {
   }
 }
 
+bool ImageView::GetAccessibleName(std::wstring* name) {
+  if (!name || tooltip_text_.empty())
+    return false;
+
+  *name = tooltip_text_;
+  return true;
+}
+
+bool ImageView::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  if (!role)
+    return false;
+
+  *role = AccessibilityTypes::ROLE_GRAPHIC;
+  return true;
+}
+
 void ImageView::SetHorizontalAlignment(Alignment ha) {
   if (ha != horiz_alignment_) {
     horiz_alignment_ = ha;
@@ -170,7 +186,7 @@ bool ImageView::GetTooltipText(int x, int y, std::wstring* tooltip) {
   if (tooltip_text_.empty()) {
     return false;
   } else {
-    * tooltip =  GetTooltipText();
+    *tooltip = GetTooltipText();
     return true;
   }
 }

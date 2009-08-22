@@ -373,6 +373,8 @@ static WebAccessibility::Role SupportedRole(WebCore::AccessibilityRole role) {
       return WebAccessibility::ROLE_COLUMN;
     case WebCore::ColumnHeaderRole:
       return WebAccessibility::ROLE_COLUMNHEADER;
+    case WebCore::WebAreaRole:
+      return WebAccessibility::ROLE_DOCUMENT;
     case WebCore::ImageMapRole:
     case WebCore::ImageRole:
       return WebAccessibility::ROLE_GRAPHIC;
@@ -385,6 +387,8 @@ static WebAccessibility::Role SupportedRole(WebCore::AccessibilityRole role) {
       return WebAccessibility::ROLE_LIST;
     case WebCore::ListBoxRole:
       return WebAccessibility::ROLE_LISTBOX;
+    case WebCore::MenuBarRole:
+      return WebAccessibility::ROLE_MENUBAR;
     case WebCore::MenuButtonRole:
     case WebCore::MenuItemRole:
       return WebAccessibility::ROLE_MENUITEM;
@@ -414,6 +418,8 @@ static WebAccessibility::Role SupportedRole(WebCore::AccessibilityRole role) {
     case WebCore::TextFieldRole:
     case WebCore::TextAreaRole:
       return WebAccessibility::ROLE_TEXT;
+    case WebCore::ToolbarRole:
+      return WebAccessibility::ROLE_TOOLBAR;
     case WebCore::UnknownRole:
     default:
         // This is the default role.

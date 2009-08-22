@@ -567,6 +567,8 @@ long BrowserAccessibility::MSAARole(long browser_accessibility_role) {
       return ROLE_SYSTEM_COLUMN;
     case WebAccessibility::ROLE_COLUMNHEADER:
       return ROLE_SYSTEM_COLUMNHEADER;
+    case WebAccessibility::ROLE_DOCUMENT:
+      return ROLE_SYSTEM_DOCUMENT;
     case WebAccessibility::ROLE_GRAPHIC:
       return ROLE_SYSTEM_GRAPHIC;
     case WebAccessibility::ROLE_GROUPING:
@@ -576,6 +578,8 @@ long BrowserAccessibility::MSAARole(long browser_accessibility_role) {
     case WebAccessibility::ROLE_LIST:
     case WebAccessibility::ROLE_LISTBOX:
       return ROLE_SYSTEM_LIST;
+    case WebAccessibility::ROLE_MENUBAR:
+      return ROLE_SYSTEM_MENUBAR;
     case WebAccessibility::ROLE_MENUITEM:
       return ROLE_SYSTEM_MENUITEM;
     case WebAccessibility::ROLE_MENUPOPUP:
@@ -602,6 +606,8 @@ long BrowserAccessibility::MSAARole(long browser_accessibility_role) {
       return ROLE_SYSTEM_TABLE;
     case WebAccessibility::ROLE_TEXT:
       return ROLE_SYSTEM_TEXT;
+    case WebAccessibility::ROLE_TOOLBAR:
+      return ROLE_SYSTEM_TOOLBAR;
     case WebAccessibility::ROLE_CLIENT:
     default:
       // This is the default role for MSAA.

@@ -70,11 +70,13 @@ class WebAccessibility {
     ROLE_CLIENT,
     ROLE_COLUMN,
     ROLE_COLUMNHEADER,
+    ROLE_DOCUMENT,
     ROLE_GRAPHIC,
     ROLE_GROUPING,
     ROLE_LINK,
     ROLE_LIST,
     ROLE_LISTBOX,
+    ROLE_MENUBAR,
     ROLE_MENUITEM,
     ROLE_MENUPOPUP,
     ROLE_OUTLINE,
@@ -87,7 +89,8 @@ class WebAccessibility {
     ROLE_SLIDER,
     ROLE_STATICTEXT,
     ROLE_TABLE,
-    ROLE_TEXT
+    ROLE_TEXT,
+    ROLE_TOOLBAR
   };
 
   // This defines an enumeration (in alphabetical order) of the supported

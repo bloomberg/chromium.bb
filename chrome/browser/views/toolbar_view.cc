@@ -868,6 +868,7 @@ void ToolbarView::CreateCenterStack(Profile *profile) {
 
   LoadCenterStackImages();
 
+  location_bar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_LOCATION));
   AddChildView(location_bar_);
   location_bar_->Init();
   AddChildView(go_);

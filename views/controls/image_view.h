@@ -74,6 +74,8 @@ class ImageView : public View {
   // Overriden from View
   virtual gfx::Size GetPreferredSize();
   virtual void Paint(gfx::Canvas* canvas);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
 
   // Overriden from View.
   virtual bool GetTooltipText(int x, int y, std::wstring* tooltip);
