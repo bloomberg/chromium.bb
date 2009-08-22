@@ -209,6 +209,21 @@ static int bo_wait(struct radeon_bo *bo)
     return ret;
 }
 
+static int bo_is_busy(struct radeon_bo *bo, uint32_t *domain)
+{
+    struct drm_radeon_gem_busy args;
+    int ret;
+
+    args.handle = bo->handle;
+    args.domain = 0;
+
+    ret = drmCommandWriteRead(bo->bom->fd, DRM_RADEON_GEM_BUSY,
+	    &args, sizeof(args));
+
+    *domain = args.domain;
+    return ret;
+}
+
 static int bo_set_tiling(struct radeon_bo *bo, uint32_t tiling_flags,
 				 uint32_t pitch)
 {
@@ -257,6 +272,7 @@ static struct radeon_bo_funcs bo_gem_funcs = {
     NULL,
     bo_set_tiling,
     bo_get_tiling,
+    bo_is_busy,
 };
 
 struct radeon_bo_manager *radeon_bo_manager_gem_ctor(int fd)
