@@ -109,10 +109,10 @@
         "properties": {
           "id": {"type": "integer", "minimum": 0},
           "focused": {"type": "boolean"},
-          "left": {"type": "integer"},
           "top": {"type": "integer"},
-          "bottom": {"type": "integer"},
-          "right": {"type": "integer"},
+          "left": {"type": "integer"},
+          "width": {"type": "integer"},
+          "height": {"type": "integer"},
           "tabs": {"type": "array", "items": { "$ref": "Tab" }, "optional": true}
         }
       }
@@ -178,7 +178,7 @@
             "name": "callback",
             "parameters": [
               {
-                "name": "windows", "type": "array", "items": { "type": "object" }
+                "name": "windows", "type": "array", "items": { "$ref": "Window" }
               }
             ]
           }
@@ -291,7 +291,8 @@
           "selected": {"type": "boolean"},
           "url": {"type": "string"},
           "title": {"type": "string", "optional": true},
-          "favIconUrl": {"type": "string", "optional": true}
+          "favIconUrl": {"type": "string", "optional": true},
+          "status": {"type": "string", "optional": true}
         }
       }
     ],
@@ -468,7 +469,6 @@
             "type": "object",
             "name": "changedProps",
             "properties": {
-              "tabId": {"type": "integer", "name": "tabId", "minimum": 0},
               "status": {"type": "string"},
               "url": {"type": "string", "optional": true}
             }
@@ -599,13 +599,14 @@
         "id": "BookmarkTreeNode",
         "type": "object",
         "properties": {
-          "id": {"type": "integer", "minimum": 0},
-          "index": {"type": "integer", "minimum": 0},
-          "windowId": {"type": "integer", "minimum": 0},
-          "selected": {"type": "boolean"},
-          "url": {"type": "string"},
-          "title": {"type": "string", "optional": true},
-          "favIconUrl": {"type": "string", "optional": true}
+          "id": {"type": "string", "minimum": 0},
+          "parentId": {"type": "string", "minimum": 0, "optional": true},
+          "index": {"type": "string", "optional": true},
+          "url": {"type": "string", "optional": true},
+          "title": {"type": "string"},
+          "dateAdded": {"type": "number", "optional": true},
+          "dateGroupModified": {"type": "number", "optional": true},
+          "children": {"type": "array", "optional": true, "items": {"$ref": "BookmarkTreeNode"}}
         }
       }
     ],
@@ -783,7 +784,7 @@
             "type": "object",
             "name": "removeInfo",
             "properties": {
-              "parentId": { "type": "integer" },
+              "parentId": { "type": "string" },
               "index": { "type": "integer" }
             }
           }
@@ -797,7 +798,10 @@
           {"type": "string", "name": "id"},
           {
             "type": "object",
-            "name": "changeInfo"
+            "name": "changeInfo",
+            "properties": {
+              "title": { "type": "string" }
+            }
           }
         ]
       },
@@ -811,9 +815,9 @@
             "type": "object",
             "name": "moveInfo",
             "properties": {
-              "parentId": { "type": "integer" },
+              "parentId": { "type": "string" },
               "index": { "type": "integer" },
-              "oldParentId": { "type": "integer" },
+              "oldParentId": { "type": "string" },
               "oldIndex": { "type": "integer" }
             }
           }
@@ -826,9 +830,9 @@
         "parameters": [
           {"type": "string", "name": "id"},
           {
-            "type": "arary",
+            "type": "array",
             "name": "childIds",
-            "items": { "type": "integer" }
+            "items": { "type": "string" }
           }
         ]
       }

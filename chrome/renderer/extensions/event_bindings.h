@@ -35,6 +35,8 @@ class EventBindings {
   // events.  If render_view is non-NULL, only call the function in contexts
   // belonging to that view.  See comments on
   // bindings_utils::CallFunctionInContext for more details.
+  // The called javascript function should not return a value other than
+  // v8::Undefined(). A DCHECK is setup to break if it is otherwise.
   static void CallFunction(const std::string& function_name, int argc,
                            v8::Handle<v8::Value>* argv,
                            RenderView* render_view);

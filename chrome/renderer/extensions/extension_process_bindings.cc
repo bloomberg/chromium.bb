@@ -298,8 +298,16 @@ void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
   argv[2] = v8::Boolean::New(success);
   argv[3] = v8::String::New(response.c_str());
   argv[4] = v8::String::New(error.c_str());
-  bindings_utils::CallFunctionInContext(
+  v8::Handle<v8::Value> retval = bindings_utils::CallFunctionInContext(
       request->second->context, "handleResponse", arraysize(argv), argv);
+  // In debug, the js will validate the callback parameters and return a 
+  // string if a validation error has occured.
+#ifdef _DEBUG
+  if (!retval.IsEmpty() && !retval->IsUndefined()) {
+    std::string error = *v8::String::AsciiValue(retval);
+    DCHECK(false) << error;
+  }
+#endif
 
   pending_requests.erase(request);
 }

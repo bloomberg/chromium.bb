@@ -8,6 +8,7 @@
 #include "base/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
+#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/automation/automation_messages.h"
@@ -225,14 +226,29 @@ class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
                                          &has_callback));
 
     if (messages_received_ == 1) {
-      EXPECT_EQ(function_name, "windows.getLastFocused");
+      EXPECT_EQ(function_name, "tabs.getSelected");
       EXPECT_GE(request_id, 0);
       EXPECT_TRUE(has_callback);
 
       DictionaryValue response_dict;
       EXPECT_TRUE(response_dict.SetInteger(keys::kAutomationRequestIdKey,
                                            request_id));
-      EXPECT_TRUE(response_dict.SetString(keys::kAutomationResponseKey, "42"));
+      DictionaryValue tab_dict;
+      EXPECT_TRUE(tab_dict.SetInteger(extension_tabs_module_constants::kIdKey,
+                                      42));
+      EXPECT_TRUE(tab_dict.SetInteger(
+          extension_tabs_module_constants::kIndexKey, 1));
+      EXPECT_TRUE(tab_dict.SetInteger(
+          extension_tabs_module_constants::kWindowIdKey, 1));
+      EXPECT_TRUE(tab_dict.SetBoolean(
+          extension_tabs_module_constants::kSelectedKey, true));
+      EXPECT_TRUE(tab_dict.SetString(
+          extension_tabs_module_constants::kUrlKey, "http://www.google.com"));
+
+      std::string tab_json;
+      JSONWriter::Write(&tab_dict, false, &tab_json);
+
+      EXPECT_TRUE(response_dict.SetString(keys::kAutomationResponseKey, tab_json));
 
       std::string response_json;
       JSONWriter::Write(&response_dict, false, &response_json);
@@ -307,7 +323,7 @@ class BrowserEventAutomationProxy : public MultiMessageAutomationProxy {
   std::map<std::string, int> event_count_;
 
   // Array containing the names of the events to fire to the extension.
-  static const char* event_names_[];
+  static const char* events_[];
 
  protected:
   // Process a message received from the test extension.
@@ -317,27 +333,42 @@ class BrowserEventAutomationProxy : public MultiMessageAutomationProxy {
   void FireEvent(const char* event_name);
 };
 
-const char* BrowserEventAutomationProxy::event_names_[] = {
+const char* BrowserEventAutomationProxy::events_[] = {
   // Window events.
-  "windows.onCreated",
-  "windows.onRemoved",
-  "windows.onFocusChanged",
-
+  "[\"windows.onCreated\", \"[42]\"]",
+  
+  "[\"windows.onRemoved\", \"[42]\"]",
+  
+  "[\"windows.onFocusChanged\", \"[42]\"]",
+  
   // Tab events.
-  "tabs.onCreated",
-  "tabs.onUpdated",
-  "tabs.onMoved",
-  "tabs.onSelectionChanged",
-  "tabs.onAttached",
-  "tabs.onDetached",
-  "tabs.onRemoved",
+  "[\"tabs.onCreated\", \"[{'id\':42,'index':1,'windowId':1,"
+      "'selected':true,'url':'http://www.google.com'}]\"]",
+  
+  "[\"tabs.onUpdated\", \"[42, {'status': 'complete',"
+      "'url':'http://www.google.com'}]\"]",
+  
+  "[\"tabs.onMoved\", \"[42, {'windowId':1,'fromIndex':1,'toIndex':2}]\"]",
+  
+  "[\"tabs.onSelectionChanged\", \"[42, {'windowId':1}]\"]",
+  
+  "[\"tabs.onAttached\", \"[42, {'newWindowId':1,'newPosition':1}]\"]",
+  
+  "[\"tabs.onDetached\", \"[43, {'oldWindowId':1,'oldPosition':1}]\"]",
+  
+  "[\"tabs.onRemoved\", \"[43]\"]",
 
   // Bookmark events.
-  "bookmarks.onAdded",
-  "bookmarks.onRemoved",
-  "bookmarks.onChanged",
-  "bookmarks.onMoved",
-  "bookmarks.onChildrenReordered",
+  "[\"bookmarks.onAdded\", \"['42', {'id':'42','title':'foo',}]\"]",
+  
+  "[\"bookmarks.onRemoved\", \"['42', {'parentId':'2','index':1}]\"]",
+  
+  "[\"bookmarks.onChanged\", \"['42', {'title':'foo'}]\"]",
+  
+  "[\"bookmarks.onMoved\", \"['42', {'parentId':'2','index':1,"
+      "'oldParentId':'3','oldIndex':2}]\"]",
+  
+  "[\"bookmarks.onChildrenReordered\", \"['32', ['1', '2', '3']]\"]"
 };
 
 void BrowserEventAutomationProxy::HandleMessageFromChrome() {
@@ -376,8 +407,8 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
   } else if (target == keys::kAutomationPortResponseTarget) {
     // This is a response to the open channel request.  This means we know
     // that the port is ready to send us messages.  Fire all the events now.
-    for (int i = 0; i < arraysize(event_names_); ++i) {
-      FireEvent(event_names_[i]);
+    for (int i = 0; i < arraysize(events_); ++i) {
+      FireEvent(events_[i]);
     }
   } else if (target == keys::kAutomationPortRequestTarget) {
     // This is the test extension calling us back.  Make sure its telling
@@ -402,15 +433,13 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
   }
 }
 
-void BrowserEventAutomationProxy::FireEvent(const char* event_name) {
+void BrowserEventAutomationProxy::FireEvent(const char* event) {
   namespace keys = extension_automation_constants;
 
   // Build the event message to send to the extension.  The only important
   // part is the name, as the payload is not used by the test extension.
   std::string message;
-  message += "[\"";
-  message += event_name;
-  message += "\", \"[]\"]";
+  message += event;
 
   tab_->HandleMessageFromExternalHost(
       message,
@@ -462,7 +491,7 @@ TEST_F(BrowserEventExtensionTest, RunTest) {
   // src\chrome\test\data\extensions\uitest\event_sink\test.html and see if
   // all the events we are attaching to are valid. Also compare the list against
   // the event_names_ string array above.
-  EXPECT_EQ(arraysize(BrowserEventAutomationProxy::event_names_),
+  EXPECT_EQ(arraysize(BrowserEventAutomationProxy::events_),
             proxy->event_count_.size());
   for (std::map<std::string, int>::iterator i = proxy->event_count_.begin();
       i != proxy->event_count_.end(); ++i) {

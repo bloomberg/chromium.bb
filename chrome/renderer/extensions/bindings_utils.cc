@@ -13,6 +13,7 @@ using WebKit::WebFrame;
 namespace bindings_utils {
 
 const char* kChromeHidden = "chromeHidden";
+const char* kValidateCallbacks = "validateCallbacks";
 
 struct SingletonData {
   ContextList contexts;
@@ -40,6 +41,13 @@ v8::Handle<v8::Value> ExtensionBase::GetChromeHidden(
   if (hidden.IsEmpty() || hidden->IsUndefined()) {
     hidden = v8::Object::New();
     global->SetHiddenValue(v8::String::New(kChromeHidden), hidden);
+
+#ifdef _DEBUG
+    // Tell extension_process_bindings.js to validate callbacks and events
+    // against their schema definitions in api/extension_api.json.
+    v8::Local<v8::Object>::Cast(hidden)
+        ->Set(v8::String::New(kValidateCallbacks), v8::True());
+#endif
   }
 
   DCHECK(hidden->IsObject());
@@ -94,9 +102,9 @@ RenderView* GetRenderViewForCurrentContext() {
   return renderview;
 }
 
-void CallFunctionInContext(v8::Handle<v8::Context> context,
-                           const std::string& function_name, int argc,
-                           v8::Handle<v8::Value>* argv) {
+v8::Handle<v8::Value> CallFunctionInContext(v8::Handle<v8::Context> context,
+    const std::string& function_name, int argc,
+    v8::Handle<v8::Value>* argv) {
   v8::Context::Scope context_scope(context);
 
   // Look up the function name, which may be a sub-property like
@@ -111,12 +119,14 @@ void CallFunctionInContext(v8::Handle<v8::Context> context,
   }
   if (value.IsEmpty() || !value->IsFunction()) {
     NOTREACHED();
-    return;
+    return v8::Undefined();
   }
 
   v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
   if (!function.IsEmpty())
-    function->Call(v8::Object::New(), argc, argv);
+    return function->Call(v8::Object::New(), argc, argv);
+
+  return v8::Undefined();
 }
 
 }  // namespace bindings_utils

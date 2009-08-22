@@ -26,13 +26,15 @@ var chrome = chrome || {};
   var chromeHidden = GetChromeHidden();
 
   // Validate arguments.
-  function validate(args, schemas) {
+  chromeHidden.validationTypes = [];
+  chromeHidden.validate = function(args, schemas) {
     if (args.length > schemas.length)
       throw new Error("Too many arguments.");
 
     for (var i = 0; i < schemas.length; i++) {
       if (i in args && args[i] !== null && args[i] !== undefined) {
         var validator = new chrome.JSONSchemaValidator();
+        validator.addTypes(chromeHidden.validationTypes);
         validator.validate(args[i], schemas[i]);
         if (validator.errors.length == 0)
           continue;
@@ -57,10 +59,11 @@ var chrome = chrome || {};
   }
 
   // Callback handling.
-  var callbacks = [];
+  var requests = [];
   chromeHidden.handleResponse = function(requestId, name,
                                          success, response, error) {
     try {
+      var request = requests[requestId];
       if (success) {
         delete chrome.extension.lastError;
       } else {
@@ -72,16 +75,41 @@ var chrome = chrome || {};
           "message": error
         };
       }
+      
+      if (request.callback) {
+        // Callbacks currently only support one callback argument.
+        var callbackArgs = response ? [JSON.parse(response)] : [];
 
-      if (callbacks[requestId]) {
+        // Validate callback in debug only -- and only when the
+        // caller has provided a callback. Implementations of api
+        // calls my not return data if they observe the caller
+        // has not provided a callback.
+        if (chromeHidden.validateCallbacks && !error) {
+          try {
+            if (!request.callbackSchema.parameters) {
+              throw "No callback schemas defined";
+            }
+
+            if (request.callbackSchema.parameters.length > 1) {
+              throw "Callbacks may only define one parameter";
+            }
+
+            chromeHidden.validate(callbackArgs,
+                request.callbackSchema.parameters);
+          } catch (exception) {
+            return "Callback validation error during " + name + " -- " +
+                   exception;
+          }
+        }
+
         if (response) {
-          callbacks[requestId](JSON.parse(response));
+          request.callback(callbackArgs[0]);
         } else {
-          callbacks[requestId]();
+          request.callback();
         }
       }
     } finally {
-      delete callbacks[requestId];
+      delete requests[requestId];
       delete chrome.extension.lastError;
     }
   };
@@ -89,15 +117,16 @@ var chrome = chrome || {};
   function prepareRequest(args, argSchemas) {
     var request = {};
     var argCount = args.length;
-    
+ 
     // Look for callback param.
     if (argSchemas.length > 0 &&
         args.length == argSchemas.length &&
         argSchemas[argSchemas.length - 1].type == "function") {
       request.callback = args[argSchemas.length - 1];
+      request.callbackSchema = argSchemas[argSchemas.length - 1];
       --argCount;
     }
-    
+
     // Calls with one argument expect singular argument. Calls with multiple
     // expect a list.
     if (argCount == 1) {
@@ -121,12 +150,9 @@ var chrome = chrome || {};
       request.args = null;
     var sargs = JSON.stringify(request.args);
     var requestId = GetNextRequestId();
-    var hasCallback = false;
-    if (request.callback) {
-      hasCallback = true;
-      callbacks[requestId] = request.callback;
-    }
-    return StartRequest(functionName, sargs, requestId, hasCallback);
+    requests[requestId] = request;
+    return StartRequest(functionName, sargs, requestId,
+                        request.callback ? true : false);
   }
   
   // Using forEach for convenience, and to bind |module|s & |apiDefs|s via
@@ -179,7 +205,14 @@ var chrome = chrome || {};
     forEach(apiDefinitions, function(apiDef) {
       chrome[apiDef.namespace] = chrome[apiDef.namespace] || {};
       var module = chrome[apiDef.namespace];
-      
+
+      // Add types to global validationTypes
+      if (apiDef.types) {
+        forEach(apiDef.types, function(t) {
+          chromeHidden.validationTypes.push(t);
+        });
+      }
+
       // Setup Functions.
       if (apiDef.functions) {
         forEach(apiDef.functions, function(functionDef) {
@@ -194,7 +227,7 @@ var chrome = chrome || {};
           apiFunctions[apiFunction.name] = apiFunction;
           
           module[functionDef.name] = bind(apiFunction, function() {
-            validate(arguments, this.definition.parameters);
+            chromeHidden.validate(arguments, this.definition.parameters);
       
             if (this.handleRequest)
               return this.handleRequest.apply(this, arguments);
@@ -214,7 +247,8 @@ var chrome = chrome || {};
             return;
 
           var eventName = apiDef.namespace + "." + eventDef.name;
-          module[eventDef.name] = new chrome.Event(eventName);
+          module[eventDef.name] = new chrome.Event(eventName,
+              eventDef.parameters);
         });
       }
     });

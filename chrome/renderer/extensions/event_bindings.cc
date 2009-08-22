@@ -287,6 +287,17 @@ void EventBindings::CallFunction(const std::string& function_name,
        it != GetContexts().end(); ++it) {
     if (render_view && render_view != (*it)->render_view)
       continue;
-    CallFunctionInContext((*it)->context, function_name, argc, argv);
+    v8::Handle<v8::Value> retval = CallFunctionInContext((*it)->context,
+        function_name, argc, argv);
+    // In debug, the js will validate the event parameters and return a 
+    // string if a validation error has occured.
+    // TODO(rafaelw): Consider only doing this check if function_name ==
+    // "Event.dispatchJSON".
+#ifdef _DEBUG
+    if (!retval.IsEmpty() && !retval->IsUndefined()) {
+      std::string error = *v8::String::AsciiValue(retval);
+      DCHECK(false) << error;
+    }
+#endif
   }
 }

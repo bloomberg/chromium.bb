@@ -1,9 +1,9 @@
 HOWDIE!!!
 
 <script type="text/javascript">
-  function getLastFocusedCallback(num) {
-    chrome.tabs.remove(num);
+  function getSelectedCallback(tab) {
+    chrome.tabs.remove(tab.id);
   }
 
-  chrome.windows.getLastFocused(getLastFocusedCallback);
+  chrome.tabs.getSelected(undefined, getSelectedCallback);
 </script>
