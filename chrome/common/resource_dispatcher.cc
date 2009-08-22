@@ -528,12 +528,6 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
     q.pop_front();
     DispatchMessage(*m);
     delete m;
-    // If this request is deferred in the context of the above message, then we
-    // should honor the same and stop dispatching further messages.
-    if (request_info.is_deferred) {
-      request_info.deferred_message_queue.swap(q);
-      return;
-    }
   }
 }
 
