@@ -75,9 +75,9 @@ class ShuntedHttpBridge : public HttpBridge {
  private:
   void CallOnURLFetchComplete() {
     ASSERT_TRUE(MessageLoop::current() == test_->io_thread_loop());
-    // We return one cookie and a dummy content response.
+    // We return no cookies and a dummy content response.
     ResponseCookies cookies;
-    cookies.push_back("cookie1");
+
     std::string response_content = "success!";
     OnURLFetchComplete(NULL, GURL("www.google.com"), URLRequestStatus(),
                        200, cookies, response_content);
@@ -100,13 +100,8 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
   EXPECT_TRUE(success);
   EXPECT_EQ(200, response_code);
   EXPECT_EQ(0, os_error);
-  EXPECT_EQ(1, http_bridge->GetResponseCookieCount());
-  // TODO(timsteele): This is a valid test condition, it's just temporarily
-  // broken so that HttpBridge satisfies the ServerConnectionManager.
-#if FIXED_SYNC_BACKEND_COOKIE_PARSING
-  EXPECT_EQ(std::string("cookie1"),
-            std::string(http_bridge->GetResponseCookieAt(0)));
-#endif
+  EXPECT_EQ(0, http_bridge->GetResponseCookieCount());
+
   EXPECT_EQ(8, http_bridge->GetResponseContentLength());
   EXPECT_EQ(std::string("success!"),
             std::string(http_bridge->GetResponseContent()));
@@ -138,7 +133,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
 }
 
 // Full round-trip test of the HttpBridge, using custom UA string and
-// multiple request cookies.
+// multiple request cookies. Cookies should not come back.
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   scoped_refptr<HTTPTestServer> server = HTTPTestServer::CreateServer(kDocRoot,
                                                                       NULL);
@@ -162,14 +157,45 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   EXPECT_EQ(0, os_error);
   EXPECT_EQ(0, http_bridge->GetResponseCookieCount());
   std::string response = http_bridge->GetResponseContent();
-// TODO(timsteele): This is a valid test condition, it's just temporarily
-// broken so that HttpBridge satisfies the ServerConnectionManager; the format
-// seems to be surprising the TestServer, because it isn't echoing the headers
-// properly.
-#if FIXED_SYNCER_BACKEND_COOKIE_PARSING
-  EXPECT_NE(std::string::npos, response.find("Cookie: foo=bar; baz=boo"));
-  EXPECT_NE(std::string::npos, response.find("User-Agent: bob"));
-#endif
+
+  EXPECT_EQ(std::string::npos, response.find("Cookie:"));
+  // TODO(chron): Renable this check and figure out why headers
+  // aren't echoing right.
+  // This is currently broken in header parsing from the echo
+  // server for some reason.
+  // EXPECT_NE(std::string::npos, response.find("User-Agent: bob"));
+  EXPECT_NE(std::string::npos, response.find(test_payload.c_str()));
+}
+
+// TODO(chron): Renable this check and figure out why headers
+// aren't echoing right.
+// Test over the wire whether our extra request headers come back.
+// Use default UA string and a test payload.
+TEST_F(HttpBridgeTest, DISABLED_TestExtraRequestHeaders) {
+  scoped_refptr<HTTPTestServer> server = HTTPTestServer::CreateServer(kDocRoot,
+                                                                      NULL);
+  ASSERT_TRUE(NULL != server.get());
+  scoped_refptr<HttpBridge> http_bridge(BuildBridge());
+
+  GURL echo_header = server->TestServerPage("echoall");
+
+  http_bridge->SetURL(echo_header.spec().c_str(), echo_header.IntPort());
+  http_bridge->SetExtraRequestHeaders("test:fnord");
+
+  std::string test_payload = "###TEST PAYLOAD###";
+  http_bridge->SetPostPayload("text/html", test_payload.length() + 1,
+                              test_payload.c_str());
+
+  int os_error = 0;
+  int response_code = 0;
+  bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(200, response_code);
+  EXPECT_EQ(0, os_error);
+  EXPECT_EQ(0, http_bridge->GetResponseCookieCount());
+  std::string response = http_bridge->GetResponseContent();
+
+  EXPECT_NE(std::string::npos, response.find("fnord"));
   EXPECT_NE(std::string::npos, response.find(test_payload.c_str()));
 }
 

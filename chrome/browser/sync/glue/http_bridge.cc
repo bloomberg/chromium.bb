@@ -107,6 +107,12 @@ void HttpBridge::SetUserAgent(const char* user_agent) {
   context_for_request_->set_user_agent(user_agent);
 }
 
+void HttpBridge::SetExtraRequestHeaders(const char * headers) {
+  DCHECK(extra_headers_.empty())
+      << "HttpBridge::SetExtraRequestHeaders called twice.";
+  extra_headers_.assign(headers);
+}
+
 void HttpBridge::SetURL(const char* url, int port) {
   DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   DCHECK(!request_completed_);
@@ -177,6 +183,7 @@ void HttpBridge::MakeAsynchronousPost() {
   url_poster_ = new URLFetcher(url_for_request_, URLFetcher::POST, this);
   url_poster_->set_request_context(context_for_request_);
   url_poster_->set_upload_data(content_type_, request_content_);
+  url_poster_->set_extra_request_headers(extra_headers_);
 
   if (use_io_loop_for_testing_)
     url_poster_->set_io_loop(io_loop_);

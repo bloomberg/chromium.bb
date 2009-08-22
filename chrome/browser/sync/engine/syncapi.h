@@ -620,6 +620,9 @@ class HttpPostProviderInterface {
   // may be used.
   virtual void SetUserAgent(const char* user_agent) = 0;
 
+  // Add additional headers to the request.
+  virtual void SetExtraRequestHeaders(const char * headers) = 0;
+
   // Set the URL to POST to.
   virtual void SetURL(const char* url, int port) = 0;
 

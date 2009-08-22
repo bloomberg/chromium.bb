@@ -62,6 +62,10 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
           URLRequestContext::GetUserAgent(url) : user_agent_;
     }
 
+    virtual bool AllowSendingCookies(const URLRequest* request) const {
+      return false;  // Never send cookies.
+    }
+
    private:
     std::string user_agent_;
 
@@ -73,6 +77,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
   // sync_api::HttpPostProvider implementation.
   virtual void SetUserAgent(const char* user_agent);
+  virtual void SetExtraRequestHeaders(const char* headers);
   virtual void SetURL(const char* url, int port);
   virtual void SetPostPayload(const char* content_type, int content_length,
                               const char* content);
@@ -130,6 +135,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // POST payload information.
   std::string content_type_;
   std::string request_content_;
+  std::string extra_headers_;
 
   // Cached response data.
   bool request_completed_;
