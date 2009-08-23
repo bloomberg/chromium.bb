@@ -139,12 +139,12 @@ cmd_copy = ln -f $< $@ || cp -af $< $@
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
 quiet_cmd_link = LINK $@
-cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
+cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group
 
 # Shared-object link (for generating .so).
 # TODO: perhaps this can share with the LINK command above?
 quiet_cmd_solink = SOLINK $@
-cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
+cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group
 """
 r"""
 # Define an escape_quotes function to escape single quotes.
