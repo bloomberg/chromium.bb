@@ -108,3 +108,7 @@ PREFIX : webcore::rendertextcontrol::calcprefwidths___webcore::renderbox::minpre
 
 # 19813
 PREFIX : npobjectgetproperty___npobjectgetnamedproperty___webcore::v8custom::v8htmlpluginelementnamedpropertygetter
+
+# 20063
+PREFIX :
+npapi::plugininstance::npp_newstream___npapi::pluginstream::open___npapi::pluginstreamurl::didreceiveresponse___webplugindelegatestub::ondidreceiveresponse___ipc::messagewithtuple<tuple1<pluginmsg_didreceiveresponseparams> >::dispatch<webplugindelegatestub,void (__thiscall webplugindelegatestub::*)(pluginmsg_didreceiveresponseparams const &)>
