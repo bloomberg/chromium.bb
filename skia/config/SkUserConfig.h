@@ -80,7 +80,7 @@
 // Force SK_DEBUG even in release, so we get SkASSERTs.
 // TODO(senorblanco):  Remove this after a few reliability runs.
 #define SK_DEBUG
-//#define SK_RELEASE
+#undef SK_RELEASE
 
 
 /*  If, in debugging mode, Skia needs to stop (presumably to invoke a debugger)
