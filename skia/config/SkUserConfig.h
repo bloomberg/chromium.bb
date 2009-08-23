@@ -76,7 +76,10 @@
     based on the presence or absence of NDEBUG, but that decision can be changed
     here.
  */
-//#define SK_DEBUG
+
+// Force SK_DEBUG even in release, so we get SkASSERTs.
+// TODO(senorblanco):  Remove this after a few reliability runs.
+#define SK_DEBUG
 //#define SK_RELEASE
 
 
