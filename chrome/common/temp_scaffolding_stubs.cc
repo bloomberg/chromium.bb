@@ -102,8 +102,6 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
   NOTIMPLEMENTED();
 }
 
-#endif  // defined(OS_MACOSX)
-
 void AutomationProvider::ActivateWindow(int handle) { NOTIMPLEMENTED(); }
 
 void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
@@ -132,6 +130,8 @@ void AutomationProvider::GetBookmarkBarVisibility(int handle, bool* visible,
   *animating = false;
   NOTIMPLEMENTED();
 }
+
+#endif  // defined(OS_MACOSX)
 
 //--------------------------------------------------------------------------
 

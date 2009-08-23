@@ -61,3 +61,32 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
     bounds->set_origin(gfx::Point(x, y));
   }
 }
+
+void AutomationProvider::ActivateWindow(int handle) { NOTIMPLEMENTED(); }
+
+void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::GetBrowserForWindow(int window_handle,
+                                             bool* success,
+                                             int* browser_handle) {
+  *success = false;
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::PrintAsync(int tab_handle) {
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::SetInitialFocus(const IPC::Message& message,
+                                         int handle, bool reverse) {
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::GetBookmarkBarVisibility(int handle, bool* visible,
+                                                  bool* animating) {
+  *visible = false;
+  *animating = false;
+  NOTIMPLEMENTED();
+}
