@@ -17,6 +17,7 @@
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/css_colors.h"
 #include "chrome/common/extensions/update_manifest.h"
+#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/filter_policy.h"
 #include "chrome/common/modal_dialog_event.h"
 #include "chrome/common/page_transition_types.h"
@@ -2100,6 +2101,25 @@ struct ParamTraits<UpdateManifest::Result> {
     l->append(L", ");
     LogParam(p.crx_url, l);
     l->append(L")");
+  }
+};
+
+// Traits for URLPattern.
+template <>
+struct ParamTraits<URLPattern> {
+  typedef URLPattern param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.GetAsString());
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    std::string spec;
+    if (!ReadParam(m, iter, &spec))
+      return false;
+
+    return p->Parse(spec);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    LogParam(p.GetAsString(), l);
   }
 };
 

@@ -196,10 +196,15 @@ void RenderThread::OnPageActionsUpdated(
   ExtensionProcessBindings::SetPageActions(extension_id, page_actions);
 }
 
-void RenderThread::OnExtensionSetPermissions(
+void RenderThread::OnExtensionSetAPIPermissions(
     const std::string& extension_id,
     const std::vector<std::string>& permissions) {
-  ExtensionProcessBindings::SetPermissions(extension_id, permissions);
+  ExtensionProcessBindings::SetAPIPermissions(extension_id, permissions);
+}
+
+void RenderThread::OnExtensionSetHostPermissions(
+    const GURL& extension_url, const std::vector<URLPattern>& permissions) {
+  ExtensionProcessBindings::SetHostPermissions(extension_url, permissions);
 }
 
 void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
@@ -233,8 +238,10 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_UpdatePageActions,
                         OnPageActionsUpdated)
-    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetPermissions,
-                        OnExtensionSetPermissions)
+    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetAPIPermissions,
+                        OnExtensionSetAPIPermissions)
+    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetHostPermissions,
+                        OnExtensionSetHostPermissions)
   IPC_END_MESSAGE_MAP()
 }
 

@@ -1567,10 +1567,7 @@ void RenderView::WindowObjectCleared(WebFrame* frame) {
 }
 
 void RenderView::DocumentElementAvailable(WebFrame* frame) {
-  // TODO(mpcomplete): remove this before Chrome extensions ship.
-  // HACK.  This is a temporary workaround to allow cross-origin XHR for Chrome
-  // extensions.  It grants full access to every origin, when we really want
-  // to be able to restrict them more specifically.
+  // TODO(aa): Remove this before dev release.
   GURL url = frame->url();
   if (url.SchemeIs(chrome::kExtensionScheme))
     frame->grantUniversalAccess();

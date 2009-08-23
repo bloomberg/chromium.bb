@@ -13,6 +13,9 @@
 
 #include "v8/include/v8.h"
 
+class GURL;
+class URLPattern;
+
 class ExtensionProcessBindings {
  public:
   static void SetFunctionNames(const std::vector<std::string>& names);
@@ -27,9 +30,13 @@ class ExtensionProcessBindings {
   static void SetPageActions(const std::string& extension_id,
                              const std::vector<std::string>& page_actions);
 
-  // Sets the permissions for a particular extension.
-  static void SetPermissions(const std::string& extension_id,
-                             const std::vector<std::string>& permissions);
+  // Sets the API permissions for a particular extension.
+  static void SetAPIPermissions(const std::string& extension_id,
+                                const std::vector<std::string>& permissions);
+
+  // Sets the host permissions for a particular extension.
+  static void SetHostPermissions(const GURL& extension_url,
+                                const std::vector<URLPattern>& permissions);
 
   // Check if the extension in the currently running context has permission to
   // access the given extension function. Must be called with a valid V8

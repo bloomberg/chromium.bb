@@ -224,8 +224,10 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   // Update the extension permissions. Doing this each time we create an EFD
   // ensures that new processes are informed of permissions for newly installed
   // extensions.
-  render_view_host->Send(new ViewMsg_Extension_SetPermissions(
+  render_view_host->Send(new ViewMsg_Extension_SetAPIPermissions(
       extension->id(), extension->api_permissions()));
+  render_view_host->Send(new ViewMsg_Extension_SetHostPermissions(
+      extension->url(), extension->host_permissions()));
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {

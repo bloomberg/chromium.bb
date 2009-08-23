@@ -22,12 +22,13 @@ class DBMessageFilter;
 class DevToolsAgentFilter;
 class FilePath;
 class ListValue;
-
 class RenderDnsMaster;
 class RendererHistogram;
 class RendererWebKitClientImpl;
 class SkBitmap;
 class UserScriptSlave;
+class URLPattern;
+
 struct ModalDialogEvent;
 struct RendererPreferences;
 struct WebPreferences;
@@ -130,8 +131,10 @@ class RenderThread : public RenderThreadBase,
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
   void OnPageActionsUpdated(const std::string& extension_id,
                             const std::vector<std::string>& page_actions);
-  void OnExtensionSetPermissions(const std::string& extension_id,
-                                 const std::vector<std::string>& permissions);
+  void OnExtensionSetAPIPermissions(const std::string& extension_id,
+                                    const std::vector<std::string>& permissions);
+  void OnExtensionSetHostPermissions(const GURL& extension_url,
+                                     const std::vector<URLPattern>& permissions);
   void OnSetNextPageID(int32 next_page_id);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
   void OnCreateNewView(gfx::NativeViewId parent_hwnd,

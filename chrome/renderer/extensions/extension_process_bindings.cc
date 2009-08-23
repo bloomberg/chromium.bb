@@ -6,6 +6,7 @@
 
 #include "base/singleton.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
@@ -16,6 +17,8 @@
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
 #include "webkit/api/public/WebFrame.h"
+#include "webkit/api/public/WebURL.h"
+#include "webkit/api/public/WebKit.h"
 
 using bindings_utils::GetStringResource;
 using bindings_utils::ContextInfo;
@@ -326,16 +329,29 @@ void ExtensionProcessBindings::SetPageActions(
 }
 
 // static
-void ExtensionProcessBindings::SetPermissions(
+void ExtensionProcessBindings::SetAPIPermissions(
     const std::string& extension_id,
     const std::vector<std::string>& permissions) {
   PermissionsMap& permissions_map = *GetPermissionsMap(extension_id);
 
-  // Default all permissions to false, then enable the ones in the vector.
+  // Default all the API permissions to off. We will reset them below.
   for (size_t i = 0; i < Extension::kNumPermissions; ++i)
     permissions_map[Extension::kPermissionNames[i]] = false;
   for (size_t i = 0; i < permissions.size(); ++i)
     permissions_map[permissions[i]] = true;
+}
+
+// static
+void ExtensionProcessBindings::SetHostPermissions(
+    const GURL& extension_url,
+    const std::vector<URLPattern>& permissions) {
+  for (size_t i = 0; i < permissions.size(); ++i) {
+    WebKit::whiteListAccessFromOrigin(
+        extension_url,
+        WebKit::WebString::fromUTF8(permissions[i].scheme()),
+        WebKit::WebString::fromUTF8(permissions[i].host()),
+        permissions[i].match_subdomains());
+  }
 }
 
 // Given a name like "tabs.onConnect", return the permission name required

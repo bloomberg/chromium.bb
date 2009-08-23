@@ -84,7 +84,7 @@ void RenderViewTest::SetUp() {
   std::vector<std::string> permissions(
       Extension::kPermissionNames,
       Extension::kPermissionNames + Extension::kNumPermissions);
-  ExtensionProcessBindings::SetPermissions("", permissions);
+  ExtensionProcessBindings::SetAPIPermissions("", permissions);
 
   mock_process_.reset(new MockProcess());
 
