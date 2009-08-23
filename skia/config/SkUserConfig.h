@@ -76,11 +76,8 @@
     based on the presence or absence of NDEBUG, but that decision can be changed
     here.
  */
-
-// Force SK_DEBUG even in release, so we get SkASSERTs.
-// TODO(senorblanco):  Remove this after a few reliability runs.
-#define SK_DEBUG
-#undef SK_RELEASE
+//#define SK_DEBUG
+//#define SK_RELEASE
 
 
 /*  If, in debugging mode, Skia needs to stop (presumably to invoke a debugger)
