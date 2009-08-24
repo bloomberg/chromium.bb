@@ -109,10 +109,10 @@ devtools.InspectorControllerImpl.prototype.toggleNodeSearch = function() {
 devtools.InspectorControllerImpl.prototype.localizedStringsURL = function() {
   // l10n is turned off in test mode because delayed loading of strings
   // causes test failures.
-  if (false) {
+  if (!window.___interactiveUiTestsMode) {
     var locale = DevToolsHost.getApplicationLocale();
     locale = locale.replace('_', '-');
-    return 'l10n/localizedStrings_' + locale + '.js';
+    return 'l10n/inspectorStrings_' + locale + '.js';
   } else {
     return undefined;
   }
