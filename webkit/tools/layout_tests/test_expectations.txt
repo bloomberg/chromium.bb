@@ -440,9 +440,11 @@ BUG8941 MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL TIM
 BUG1124513 LINUX WIN : LayoutTests/fast/forms/input-text-maxlength.html = FAIL	
 BUG1124513 LINUX WIN : LayoutTests/fast/forms/input-text-paste-maxlength.html = FAIL	
 
-// This is a real bug, but not one we're fixing for Beta.
-BUG628529 LINUX : LayoutTests/fast/text/stroking-decorations.html = FAIL
-BUG628529 LINUX WIN : LayoutTests/fast/text/stroking.html = FAIL
+// Complex text runs don't show up with text stroking.
+BUG20130 LINUX WIN : LayoutTests/fast/text/stroking-decorations.html = FAIL
+BUG20130 LINUX WIN : LayoutTests/fast/text/stroking.html = FAIL
+BUG20130 LINUX WIN : LayoutTests/fast/text/stroking-decorations.html = FAIL
+
 
 // Incrorect results, in incorrect international font metrics.
 // Fixing these overrides does not help us to Beta, deffering
@@ -2425,7 +2427,6 @@ BUG15837 : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-null
 // WebKit 45473:45487
 BUG15873 WIN LINUX : LayoutTests/fast/box-shadow/transform-fringing.html = FAIL
 BUG15873 WIN LINUX : LayoutTests/fast/transforms/shadows.html = FAIL
-BUG15873 WIN : LayoutTests/fast/text/stroking-decorations.html = FAIL
 
 // WebKit 45495:45535
 BUG15921 SKIP : LayoutTests/media/controls-strict.html = FAIL
