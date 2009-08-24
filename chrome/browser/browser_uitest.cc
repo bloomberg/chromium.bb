@@ -212,31 +212,27 @@ class ShowModalDialogTest : public UITest {
   }
 };
 
-// So flaky, http://crbug.com/17806. Do *not* re-enable without a real fix.
-// Increasing timeouts is not a fix.
-TEST_F(ShowModalDialogTest, DISABLED_BasicTest) {
-  // Test that a modal dialog is shown.
+TEST_F(ShowModalDialogTest, BasicTest) {
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("showmodaldialog.html");
+
+  // This navigation should show a modal dialog that will be immediately
+  // closed, but the fact that it was shown should be recorded.
   NavigateToURL(net::FilePathToFileURL(test_file));
 
-  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(
-      2, action_max_timeout_ms()));
+  // At this point the modal dialog should not be showing.
+  int window_count = 0;
+  EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  EXPECT_EQ(1, window_count);
 
-  scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(1);
+  // Verify that we set a mark on successful dialog show.
+  scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
+  ASSERT_TRUE(browser.get());
   scoped_refptr<TabProxy> tab = browser->GetActiveTab();
   ASSERT_TRUE(tab.get());
-
   std::wstring title;
   ASSERT_TRUE(tab->GetTabTitle(&title));
-  ASSERT_EQ(title, L"ModalDialogTitle");
-
-  // Test that window.close() works.  Since we don't have a way of executing a
-  // JS function on the page through TabProxy, reload it and use an unload
-  // handler that closes the page.
-  ASSERT_EQ(tab->Reload(), AUTOMATION_MSG_NAVIGATION_SUCCESS);
-  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(
-      1, action_max_timeout_ms()));
+  ASSERT_EQ(L"SUCCESS", title);
 }
 #endif
 
