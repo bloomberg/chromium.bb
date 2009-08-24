@@ -160,8 +160,10 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
     font_description.setComputedSize(12.0);
     Font font(font_description, 0, 0);
     font.update(text_field->document()->styleSelector()->fontSelector());
+    // The direction of text in popup menu is set the same as the direction of
+    // the input element: text_field.
     style_.reset(new PopupMenuStyle(Color::black, Color::white, font, true,
-        Length(WebCore::Fixed), LTR));
+        Length(WebCore::Fixed), text_field->renderer()->style()->direction()));
   }
 
   virtual ~AutocompletePopupMenuClient() {
@@ -309,6 +311,11 @@ static const WebCore::PopupContainerSettings kAutocompletePopupSettings = {
   false,  // setTextOnIndexChange
   false,  // acceptOnAbandon
   true,   // loopSelectionNavigation
+  true,   // restrictWidthOfListBox. Same as other browser (Fx, IE, and safari)
+  // For autocomplete, we use the direction of the input field as the direction
+  // of the popup items. The main reason is to keep the display of items in
+  // drop-down the same as the items in the input field.
+  WebCore::PopupContainerSettings::DOMElementDirection,
 };
 
 // WebView ----------------------------------------------------------------
