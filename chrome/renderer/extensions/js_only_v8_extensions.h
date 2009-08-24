@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_JS_ONLY_V8_EXTENSIONS_H_
-#define CHROME_RENDERER_JS_ONLY_V8_EXTENSIONS_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_JS_ONLY_V8_EXTENSIONS_H_
+#define CHROME_RENDERER_EXTENSIONS_JS_ONLY_V8_EXTENSIONS_H_
 
 #include "v8/include/v8.h"
 
