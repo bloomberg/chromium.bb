@@ -11,7 +11,7 @@ layer at (0,0) size 785x2481
           RenderText {#text} at (0,37) size 475x36
             text run at (0,37) width 475: "Web Browser: Web View (HTML)"
       RenderBlock {P} at (0,95) size 769x27
-        RenderInline {FONT} at (0,0) size 353x26 [color=#FF0000]
+        RenderInline {FONT} at (0,0) size 353x27 [color=#FF0000]
           RenderInline {B} at (0,0) size 353x26
             RenderText {#text} at (0,0) size 353x26
               text run at (0,0) width 353: "Table: <TH> & <TD> ROWSPAN"

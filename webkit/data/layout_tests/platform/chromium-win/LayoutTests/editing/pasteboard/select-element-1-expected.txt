@@ -29,7 +29,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 244: "This tests copy/paste of select elements. "
           text run at (244,0) width 207: "All the options should be included."
       RenderBlock {DIV} at (0,36) size 784x16
-        RenderInline {FONT} at (0,0) size 0x16
+        RenderInline {FONT} at (0,0) size 0x18
           RenderInline {SPAN} at (0,0) size 0x16 [bgcolor=#FFFFFF]
             RenderBR {BR} at (0,0) size 0x16
       RenderBlock {DIV} at (0,52) size 784x24

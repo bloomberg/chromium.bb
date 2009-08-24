@@ -435,11 +435,11 @@ BUG8941 MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL TIM
 // This class of test fails because of size differences in text runs.
 // Mostly this is because of international text rendering differences.
 
-// The max length doesn't appear to be applied correctly (or the test needs	
-// changing), and furthermore, the over- and under-lines aren't placed	
-// properly over the "x".	
-BUG1124513 LINUX WIN : LayoutTests/fast/forms/input-text-maxlength.html = FAIL	
-BUG1124513 LINUX WIN : LayoutTests/fast/forms/input-text-paste-maxlength.html = FAIL	
+// The max length doesn't appear to be applied correctly (or the test needs
+// changing), and furthermore, the over- and under-lines aren't placed
+// properly over the "x".
+BUG1124513 LINUX WIN : LayoutTests/fast/forms/input-text-maxlength.html = FAIL
+BUG1124513 LINUX WIN : LayoutTests/fast/forms/input-text-paste-maxlength.html = FAIL
 
 // Complex text runs don't show up with text stroking.
 BUG20130 LINUX WIN : LayoutTests/fast/text/stroking-decorations.html = FAIL
@@ -1542,7 +1542,7 @@ BUG700464 LINUX : LayoutTests/fast/css/hsla-color.html = FAIL
 BUG10388 LINUX : LayoutTests/fast/layers/layer-visibility-sublayer.html = FAIL PASS
 
 // Implement layoutTestController.display() and
-// layoutTestController.testRepaint(). The only reason they are not marked as 
+// layoutTestController.testRepaint(). The only reason they are not marked as
 // failures for Mac is because Mac doesn't yet run pixel tests where the
 // regression becomes visible.
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/table-cell-collapsed-border.html = FAIL
@@ -1920,16 +1920,16 @@ BUG10464 WIN LINUX : LayoutTests/transitions/interrupt-zero-duration.html = FAIL
 // New tests, need Chromium baseline.
 BUG10465 LINUX : LayoutTests/fast/borders/border-image-border-radius.html = FAIL
 BUG10465 LINUX : LayoutTests/fast/clip/overflow-border-radius-clip.html = FAIL
-  
+
 // Needs rebaseline. See WebKit 41948
 BUG10468 MAC WIN LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL CRASH
-  
+
 // New test, needs baseline. See WebKit 41978 (brettw)
 BUG10469 WIN LINUX : LayoutTests/fast/text/complex-text-opacity.html = FAIL
-  
+
 // Needs rebaseline. See WebKit 41980
 BUG10470 WIN LINUX : LayoutTests/fast/transforms/transforms-with-zoom.html = FAIL
-  
+
 // Merge WebKit: 41944:41999, Linux failures.
 BUG10471 LINUX : LayoutTests/fast/events/tabindex-focus-blur-all.html = FAIL
 BUG10471 LINUX : LayoutTests/fast/forms/focus2.html = FAIL
@@ -2163,7 +2163,7 @@ BUG11122 LINUX : LayoutTests/fast/forms/caret-rtl.html = FAIL
 // New tests from WebKit Merge 42609:42671
 BUG4363 MAC LINUX : LayoutTests/fast/layers/video-layer.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/forms/input-text-scroll-left-on-blur.html = FAIL
-BUG10760 LINUX : LayoutTests/fast/inline/25277-2.html = FAIL	
+BUG10760 LINUX : LayoutTests/fast/inline/25277-2.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/inline/25277.html = FAIL
 BUG10760 MAC : LayoutTests/svg/custom/marker-overflow-clip.svg = FAIL
 BUG10760 MAC LINUX : LayoutTests/svg/custom/marker-child-changes.svg = PASS FAIL
@@ -2764,94 +2764,21 @@ BUG19625 : LayoutTests/fast/eventsource/eventsource-constructor.html = FAIL
 BUG19635 : LayoutTests/fast/harness/use-page-cache.html = FAIL
 
 // WebKit roll r47417:47528
-BUG19766 WIN LINUX : LayoutTests/editing/deleting/delete-br-011.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/editing/deleting/delete-br-012.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/editing/execCommand/insertImage.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/editing/inserting/insert-3659587-fix.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/editing/pasteboard/4631972.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/editing/pasteboard/select-element-1.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/editing/pasteboard/styled-element-markup.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/fast/block/basic/quirk-percent-height-table-cell.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/block/positioning/auto-height-with-top-and-bottom.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/block/positioning/relative-overflow-block.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/block/positioning/replaced-inside-fixed-top-bottom.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/body-propagation/background-color/002-xhtml.xhtml = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/body-propagation/background-color/002.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/body-propagation/background-image/002-xhtml.xhtml = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/body-propagation/background-image/002.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/body-propagation/overflow/001-xhtml.xhtml = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/body-propagation/overflow/001.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/body-propagation/overflow/005-declarative.xhtml = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/body-propagation/overflow/005-xhtml.xhtml = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/body-propagation/overflow/005.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/box-sizing/box-sizing.html = FAIL
-BUG19766 WIN : LayoutTests/fast/css/acid2-pixel.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/dom/plugin-attributes-enumeration.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/dynamic/genContentDestroyChildren.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/dynamic/window-resize-scrollbars-test.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/encoding/utf-16-big-endian.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/encoding/utf-16-little-endian.html = FAIL
-BUG19766 : LayoutTests/fast/forms/datalist-nonoption-child.html = FAIL
-BUG19766 : LayoutTests/fast/forms/datalist.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/forms/form-element-geometry.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/images/image-in-map.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/inline-block/003.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/inline/inline-text-quirk-bpm.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/invalid/012.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/layers/normal-flow-hit-test.html = FAIL
 BUG19766 WIN : LayoutTests/fast/layers/video-layer.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/multicol/negativeColumnWidth.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/multicol/zeroColumnCount.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/overflow/006.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/reflections/reflection-direction.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/reflections/reflection-masks-opacity.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/reflections/reflection-masks.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/reflections/reflection-nesting.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/reflections/reflection-overflow-hidden.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/reflections/transparent-reflected-sublayers.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/transforms/transforms-with-opacity.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/media/audio-controls-rendering.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/media/video-controls-visible-audio-only.html = FAIL
 BUG19766 LINUX : LayoutTests/media/video-empty-source.html = FAIL
 BUG19766 WIN : LayoutTests/svg/batik/text/textPosition.svg = FAIL
 BUG19766 WIN LINUX : LayoutTests/svg/batik/text/xmlSpace.svg = FAIL
-BUG19766 WIN LINUX : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
-BUG19766 WIN LINUX : LayoutTests/svg/custom/getscreenctm-in-mixed-content.xhtml = FAIL
-BUG19766 WIN : LayoutTests/svg/transforms/animated-path-inside-transformed-html.xhtml = FAIL
-BUG19766 WIN : LayoutTests/svg/transforms/text-with-pattern-inside-transformed-html.xhtml = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/adforce_imgis_com.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug10565.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug10633.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug113424.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug1188.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug126742.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug1318.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug196870.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug22513.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug26553.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug3309-1.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug4427.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug4527.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug5538.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug78162.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug8381.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug86708.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/core/bloomberg.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/other/ms.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/other/wa_table_thtd_rowspan.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla/other/wa_table_tr_align.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/bugs/bug23847.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/bugs/bug72393.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/bugs/bug89315.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-quirks.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/table_overflow_caption_bottom.html = FAIL
 BUG19766 WIN : LayoutTests/media/video-no-audio.html = TIMEOUT
 BUG19766 : LayoutTests/storage/open-database-while-transaction-in-progress.html = TIMEOUT
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
+// We don't support <datalist> right now?  Ask tkent about these
+BUG19766 : LayoutTests/fast/forms/datalist-nonoption-child.html = FAIL
+BUG19766 : LayoutTests/fast/forms/datalist.html = FAIL
+
 
 // Fails due to textInputController.setInputMethod not implemented for Mac.
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
@@ -2870,7 +2797,7 @@ BUG19904 WIN : LayoutTests/media/progress-event-at-least-one.html = FAIL TIMEOUT
 // These became very flakey after r24022. Not sure if because of that change though.
 BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT
 
-// WebKit 47630:47646. These need rebaseline on Win and Linux. 
+// WebKit 47630:47646. These need rebaseline on Win and Linux.
 BUG_DIMICH WIN LINUX : LayoutTests/editing/execCommand/5190926.html = FAIL
 BUG_DIMICH WIN LINUX : LayoutTests/editing/pasteboard/5075944.html = FAIL
 BUG_DIMICH WIN LINUX : LayoutTests/editing/style/font-family-with-space.html = FAIL

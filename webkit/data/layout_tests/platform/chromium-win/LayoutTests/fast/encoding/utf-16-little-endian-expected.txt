@@ -4,9 +4,9 @@ layer at (0,0) size 785x1146
   RenderBlock {HTML} at (0,0) size 785x1146
     RenderBody {BODY} at (8,8) size 769x1125 [bgcolor=#EEEEEE]
       RenderBlock (anonymous) at (0,0) size 769x22
-        RenderInline {SPAN} at (0,0) size 190x13
+        RenderInline {SPAN} at (0,0) size 190x16
           RenderText {#text} at (0,0) size 0x0
-          RenderInline {SPAN} at (0,0) size 190x13
+          RenderInline {SPAN} at (0,0) size 190x16
             RenderText {#text} at (0,0) size 0x0
             RenderTable {TABLE} at (0,0) size 190x22
               RenderTableSection {TBODY} at (0,0) size 190x22
@@ -59,8 +59,8 @@ layer at (0,0) size 785x1146
       RenderBlock (anonymous) at (0,168) size 769x2
         RenderBlock {HR} at (0,0) size 769x2 [border: (1px inset #000000)]
       RenderBlock (anonymous) at (0,176) size 769x41
-        RenderInline {SPAN} at (0,0) size 126x39
-          RenderInline {SPAN} at (0,0) size 126x39
+        RenderInline {SPAN} at (0,0) size 126x42
+          RenderInline {SPAN} at (0,0) size 126x42
             RenderText {#text} at (0,0) size 0x0
             RenderInline {SPAN} at (0,0) size 126x19
               RenderText {#text} at (0,0) size 0x0
@@ -465,8 +465,8 @@ layer at (23,102) size 583x39
       text run at (70,52) width 102: "DEBI STANGEL, "
       text run at (172,52) width 116: "119 GLEN COURT, "
       text run at (288,52) width 134: "DANVILLE CA Z/94526"
-layer at (23,184) size 20x13
-  RenderInline (relative positioned) {SPAN} at (0,0) size 20x13
+layer at (23,184) size 20x16
+  RenderInline (relative positioned) {SPAN} at (0,0) size 20x16
     RenderText {#text} at (0,0) size 0x0
     RenderImage {IMG} at (0,21) size 20x20
     RenderText {#text} at (0,0) size 0x0

@@ -159,7 +159,7 @@ layer at (0,0) size 785x1216
               RenderText {#text} at (2,2) size 44x22
                 text run at (2,2) width 44: "TD L"
       RenderBlock {DIV} at (0,1152) size 769x31
-        RenderInline {A} at (0,0) size 88x12 [color=#FFFF00]
+        RenderInline {A} at (0,0) size 88x16 [color=#FFFF00]
           RenderImage {IMG} at (0,0) size 88x31
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {ADDRESS} at (0,1183) size 769x17
