@@ -668,6 +668,17 @@ BUG13907 WIN : LayoutTests/media/video-src-source.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/controls-styling.html = FAIL
 
+// XSS Auditor is not yet fully functional.
+BUG16237 : LayoutTests/http/tests/security/xssAuditor/script-tag-null-char.html = FAIL
+BUG16237 : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-null-char.html = FAIL
+BUG16237 : LayoutTests/http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event-null-char.html = FAIL
+BUG16237 : LayoutTests/http/tests/security/xssAuditor/base-href-null-char.html = FAIL
+BUG16237 : LayoutTests/http/tests/security/xssAuditor/embed-tag-null-char.html = FAIL
+BUG16237 : LayoutTests/http/tests/security/xssAuditor/link-onclick-null-char.html = FAIL
+BUG16237 : LayoutTests/http/tests/security/xssAuditor/object-embed-tag-null-char.html = FAIL
+BUG16237 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-null-char.html = FAIL
+BUG16237 : LayoutTests/http/tests/security/xssAuditor/javascript-link-null-char.html = FAIL
+
 // Function arguments object is copied for each access.
 BUG941049 : LayoutTests/fast/js/kde/function_arguments.html = FAIL
 
@@ -2418,10 +2429,6 @@ BUG10384 MAC : LayoutTests/fast/events/frame-tab-focus.html = CRASH FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/tabbing-input-iframe.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/overflow/scrollRevealButton.html = FAIL
 
-// WebKit 45460:45473 and r46250 (these are all related)
-BUG15837 : LayoutTests/http/tests/security/xssAuditor/script-tag-null-char.html = FAIL
-BUG15837 : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-null-char.html = FAIL
-
 // WebKit 45473:45487
 BUG15873 WIN LINUX : LayoutTests/fast/box-shadow/transform-fringing.html = FAIL
 BUG15873 WIN LINUX : LayoutTests/fast/transforms/shadows.html = FAIL
@@ -2438,12 +2445,6 @@ BUG11613 MAC : LayoutTests/http/tests/security/cross-frame-access-call.html = FA
 BUG16162 : LayoutTests/fast/loader/subframe-navigate-during-main-frame-load.html = FAIL
 
 // WebKit merge 45635:45640
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/base-href-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/embed-tag-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/link-onclick-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/object-embed-tag-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-null-char.html = FAIL
 
 // WebKit merge 45659:45664
 BUG16355 LINUX : LayoutTests/fast/forms/slider-delete-while-dragging-thumb.html = FAIL
@@ -2485,7 +2486,6 @@ BUG16690 SKIP MAC : LayoutTests/fast/text/international/khmer-selection.html = F
 
 // WebKit merge 42738:45840
 // New tests, need baseline.
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-null-char.html = FAIL
 BUG16240 WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
 BUG16240 MAC : LayoutTests/http/tests/cache/subresource-expiration.html = PASS TIMEOUT
 
