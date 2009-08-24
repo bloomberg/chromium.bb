@@ -156,24 +156,6 @@
    fun:ActivateTSMDocument
 }
 {
-   bug_18540
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:_CFRuntimeCreateInstance
-   fun:__CFArrayInit
-   fun:CFArrayCreate
-   fun:-[__NSPlaceholderArray initWithObjects:count:]
-   fun:-[NSArray initWithObjects:]
-   fun:-[RenderWidgetHostViewCocoa validAttributesForMarkedText]
-   fun:-[NSTSMInputContext initWithClient:]
-   fun:+[NSInputContext inputContextWithClient:]
-   fun:-[NSView inputContext]
-   fun:+[NSInputContext currentInputContext]
-   fun:+[NSInputContext updateInputContexts]
-   fun:-[NSApplication updateWindows]
-   fun:_handleWindowsNeedUpdateNote
-}
-{
    # Looks like an Apple bug; has no visual impact.
    unitialized_rect_allocated_on_stack_when_reparenting_window_content_views
    Memcheck:Cond

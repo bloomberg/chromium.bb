@@ -49,7 +49,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : render_widget_host_(widget),
       about_to_validate_and_paint_(false),
-      im_attributes_(NULL),
+      im_attributes_(nil),
       im_composing_(false),
       is_loading_(false),
       is_hidden_(false),
@@ -61,6 +61,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
+  [im_attributes_ release];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
