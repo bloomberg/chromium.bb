@@ -26,7 +26,7 @@ const int kInternalTopBottomPadding = 1;
 const int kInternalLeftRightPadding = 2;
 
 // The radius of the edges of our bubble.
-const int kCornerSize = 4;
+const int kCornerSize = 3;
 
 // Milliseconds before we hide the status bubble widget when you mouseout.
 const int kHideDelay = 250;
