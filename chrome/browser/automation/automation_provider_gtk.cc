@@ -75,6 +75,7 @@ void AutomationProvider::GetBrowserForWindow(int window_handle,
   *success = false;
   *browser_handle = 0;
 
+#if !defined(TOOLKIT_VIEWS)
   GtkWindow* window = window_tracker_->GetResource(window_handle);
   if (!window)
     return;
@@ -89,6 +90,7 @@ void AutomationProvider::GetBrowserForWindow(int window_handle,
     *browser_handle = browser_tracker_->Add(browser);
     *success = true;
   }
+#endif  // !defined(TOOLKIT_VIEWS)
 }
 
 void AutomationProvider::PrintAsync(int tab_handle) {
