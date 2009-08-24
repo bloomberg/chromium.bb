@@ -752,6 +752,12 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                            this, &toolbar_origin);
   toolbar_bounds.set_origin(toolbar_origin);
 
+  SkColor theme_toolbar_color =
+      tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  canvas->FillRectInt(theme_toolbar_color,
+      toolbar_bounds.x(), toolbar_bounds.y() + 2,
+      toolbar_bounds.width(), toolbar_bounds.height() - 2);
+
   int strip_height = browser_view_->GetTabStripHeight();
   SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
@@ -784,11 +790,6 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       tp->GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
   canvas->TileImageInt(*toolbar_center, 0, 0, toolbar_bounds.x(),
       toolbar_bounds.y(), toolbar_bounds.width(), split_point);
-  int bottom_center_height =
-      std::min(toolbar_center->height(), toolbar_bounds.height()) - split_point;
-  canvas->TileImageInt(*toolbar_center, 0,
-      toolbar_center->height() - bottom_center_height, toolbar_bounds.x(),
-      bottom_y, toolbar_bounds.width(), bottom_center_height);
 
   SkBitmap* toolbar_right = tp->GetBitmapNamed(IDR_CONTENT_TOP_RIGHT_CORNER);
   canvas->DrawBitmapInt(*toolbar_right, 0, 0, toolbar_right->width(),
