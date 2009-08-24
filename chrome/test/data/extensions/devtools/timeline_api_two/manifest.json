@@ -1,0 +1,6 @@
+{
+  "name": "DevTools test (two)",
+  "version": "0.1",
+  "description": "",
+  "background_page": "background_two.html"
+}

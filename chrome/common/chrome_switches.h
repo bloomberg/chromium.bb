@@ -95,6 +95,7 @@ extern const wchar_t kAllowAllActiveX[];
 
 extern const wchar_t kDisableDevTools[];
 extern const wchar_t kAlwaysEnableDevTools[];
+extern const wchar_t kEnableExtensionTimelineApi[];
 
 extern const wchar_t kTabCountToLoadOnSessionRestore[];
 

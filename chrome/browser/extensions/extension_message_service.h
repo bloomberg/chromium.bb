@@ -13,6 +13,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "ipc/ipc_message.h"
 
 class MessageLoop;
@@ -156,6 +157,8 @@ class ExtensionMessageService
   NotificationRegistrar registrar_;
 
   MessageChannelMap channels_;
+
+  scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
 
   // A map between an event name and a set of process id's that are listening
   // to that event.

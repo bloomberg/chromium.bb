@@ -28,6 +28,7 @@ class BrowserThemeProvider;
 class ChromeURLRequestContext;
 class DownloadManager;
 class Extension;
+class ExtensionDevToolsManager;
 class ExtensionProcessManager;
 class ExtensionMessageService;
 class ExtensionsService;
@@ -128,6 +129,10 @@ class Profile {
   // profile.  The UserScriptMaster is lazily created the first time
   // that this method is called.
   virtual UserScriptMaster* GetUserScriptMaster() = 0;
+
+  // Retrieves a pointer to the ExtensionDevToolsManager associated with this
+  // profile.  The instance is created at startup.
+  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() = 0;
 
   // Retrieves a pointer to the ExtensionProcessManager associated with this
   // profile.  The instance is created at startup.
@@ -345,6 +350,7 @@ class ProfileImpl : public Profile,
   virtual SSLHostState* GetSSLHostState();
   virtual net::ForceTLSState* GetForceTLSState();
   virtual ExtensionsService* GetExtensionsService();
+  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager();
   virtual ExtensionProcessManager* GetExtensionProcessManager();
   virtual ExtensionMessageService* GetExtensionMessageService();
   virtual HistoryService* GetHistoryService(ServiceAccessType sat);
@@ -427,6 +433,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
   scoped_refptr<ExtensionsService> extensions_service_;
   scoped_refptr<UserScriptMaster> user_script_master_;
+  scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<SSLHostState> ssl_host_state_;

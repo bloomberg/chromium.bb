@@ -279,6 +279,10 @@ const wchar_t kDisableDevTools[]               = L"disable-dev-tools";
 // Allows us to use our dev tools to debug browser windows itself.
 const wchar_t kAlwaysEnableDevTools[]          = L"always-enable-dev-tools";
 
+// Enable experimental timeline API.
+const wchar_t kEnableExtensionTimelineApi[]    =
+    L"enable-extension-timeline-api";
+
 // Used to set the value of SessionRestore::num_tabs_to_load_. See
 // session_restore.h for details.
 const wchar_t kTabCountToLoadOnSessionRestore[] =

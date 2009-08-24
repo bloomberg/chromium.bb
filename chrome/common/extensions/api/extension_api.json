@@ -865,6 +865,29 @@
     "events": []
   },
   {
+    "namespace": "devtools",
+    "types": [
+    ],
+    "functions": [
+      {
+        "name": "getTabEvents",
+        "type": "function",
+        "description": "EXPERIMENTAL support for timeline API",
+        "nodocs": "true",
+        "parameters": [
+          {
+            "name": "tab_id",
+            "type": "integer"
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "DevTools tab events object"
+        }
+      }
+    ]
+  },
+  {
     "namespace": "test",
     "types": [],
     "functions": [

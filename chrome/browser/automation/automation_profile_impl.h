@@ -54,6 +54,9 @@ class AutomationProfileImpl : public Profile {
   virtual UserScriptMaster* GetUserScriptMaster() {
     return original_profile_->GetUserScriptMaster();
   }
+  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() {
+    return original_profile_->GetExtensionDevToolsManager();
+  }
   virtual ExtensionProcessManager* GetExtensionProcessManager() {
     return original_profile_->GetExtensionProcessManager();
   }

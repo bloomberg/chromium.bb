@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -218,6 +219,10 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual UserScriptMaster* GetUserScriptMaster() {
     return profile_->GetUserScriptMaster();
+  }
+
+  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() {
+    return NULL;
   }
 
   virtual ExtensionProcessManager* GetExtensionProcessManager() {
@@ -494,6 +499,7 @@ class OffTheRecordProfileImpl : public Profile,
 ProfileImpl::ProfileImpl(const FilePath& path)
     : path_(path),
       visited_link_event_listener_(new VisitedLinkEventListener()),
+      extension_devtools_manager_(NULL),
       request_context_(NULL),
       media_request_context_(NULL),
       extensions_request_context_(NULL),
@@ -511,6 +517,11 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   create_session_service_timer_.Start(
       TimeDelta::FromMilliseconds(kCreateSessionServiceDelayMS), this,
       &ProfileImpl::EnsureSessionServiceCreated);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionTimelineApi)) {
+    extension_devtools_manager_ = new ExtensionDevToolsManager(this);
+  }
 
   extension_process_manager_.reset(new ExtensionProcessManager(this));
   extension_message_service_ = new ExtensionMessageService(this);
@@ -742,6 +753,10 @@ ExtensionsService* ProfileImpl::GetExtensionsService() {
 
 UserScriptMaster* ProfileImpl::GetUserScriptMaster() {
   return user_script_master_.get();
+}
+
+ExtensionDevToolsManager* ProfileImpl::GetExtensionDevToolsManager() {
+  return extension_devtools_manager_.get();
 }
 
 ExtensionProcessManager* ProfileImpl::GetExtensionProcessManager() {

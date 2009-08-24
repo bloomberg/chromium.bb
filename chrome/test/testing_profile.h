@@ -83,6 +83,9 @@ class TestingProfile : public Profile {
   virtual UserScriptMaster* GetUserScriptMaster() {
     return NULL;
   }
+  virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() {
+    return NULL;
+  }
   virtual ExtensionProcessManager* GetExtensionProcessManager() {
     return NULL;
   }

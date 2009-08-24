@@ -281,6 +281,18 @@ var chrome = chrome || {};
       return GetExtensionViews(windowId, "TAB");
     }
 
+    apiFunctions["devtools.getTabEvents"].handleRequest = function(tabId) {
+      var tabIdProxy = {};
+      forEach(["onPageEvent", "onTabUrlChange", "onTabClose"],
+              function(name) {
+        // Event disambiguation is handled by name munging.  See
+        // chrome/browser/extensions/extension_devtools_events.h for the C++
+        // equivalent of this logic.
+        tabIdProxy[name] = new chrome.Event("devtools." + tabId + "." + name);
+      });
+      return tabIdProxy;
+    }
+
     setupPageActionEvents(extensionId);
   });
- })();
+})();

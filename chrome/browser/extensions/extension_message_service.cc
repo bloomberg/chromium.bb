@@ -105,7 +105,10 @@ const char ExtensionMessageService::kDispatchEvent[] =
     "Event.dispatchJSON";
 
 ExtensionMessageService::ExtensionMessageService(Profile* profile)
-    : ui_loop_(MessageLoop::current()), profile_(profile), next_port_id_(0) {
+    : ui_loop_(MessageLoop::current()),
+      profile_(profile),
+      extension_devtools_manager_(NULL),
+      next_port_id_(0) {
   DCHECK_EQ(ui_loop_->type(), MessageLoop::TYPE_UI);
 
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
@@ -114,6 +117,8 @@ ExtensionMessageService::ExtensionMessageService(Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_DELETED,
                  NotificationService::AllSources());
+
+  extension_devtools_manager_ = profile_->GetExtensionDevToolsManager();
 }
 
 ExtensionMessageService::~ExtensionMessageService() {
@@ -136,6 +141,11 @@ void ExtensionMessageService::AddEventListener(const std::string& event_name,
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
   DCHECK_EQ(listeners_[event_name].count(render_process_id), 0u) << event_name;
   listeners_[event_name].insert(render_process_id);
+
+  if (extension_devtools_manager_.get()) {
+    extension_devtools_manager_->AddEventListener(event_name,
+                                                  render_process_id);
+  }
 }
 
 void ExtensionMessageService::RemoveEventListener(const std::string& event_name,
@@ -149,6 +159,11 @@ void ExtensionMessageService::RemoveEventListener(const std::string& event_name,
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
   DCHECK_EQ(listeners_[event_name].count(render_process_id), 1u) << event_name;
   listeners_[event_name].erase(render_process_id);
+
+  if (extension_devtools_manager_.get()) {
+    extension_devtools_manager_->RemoveEventListener(event_name,
+                                                     render_process_id);
+  }
 }
 
 void ExtensionMessageService::AllocatePortIdPair(int* port1, int* port2) {
@@ -345,6 +360,7 @@ void ExtensionMessageService::CloseChannelImpl(
   channels_.erase(channel_iter);
 }
 
+
 void ExtensionMessageService::PostMessageFromRenderer(
     int source_port_id, const std::string& message) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
@@ -394,13 +410,12 @@ void ExtensionMessageService::Observe(NotificationType type,
       RenderProcessHost* renderer = Source<RenderProcessHost>(source).ptr();
       OnSenderClosed(renderer);
 
-      // Remove this renderer from our listener maps.
+      // Remove all event listeners associated with this renderer
       for (ListenerMap::iterator it = listeners_.begin();
            it != listeners_.end(); ) {
         ListenerMap::iterator current = it++;
-        current->second.erase(renderer->pid());
-        if (current->second.empty())
-          listeners_.erase(current);
+        if (current->second.count(renderer->pid()) != 0)
+          RemoveEventListener(current->first, renderer->pid());
       }
       break;
     }

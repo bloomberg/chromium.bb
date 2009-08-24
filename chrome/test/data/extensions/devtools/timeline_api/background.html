@@ -1,0 +1,67 @@
+<script>
+
+var receivedEvents = [];
+var devtoolsTabEvents = undefined;
+
+function tabUrlChangeListener() {
+  receivedEvents.push("onTabUrlChange");
+}
+
+function pageEventListener() {
+  receivedEvents.push("onPageEvent");
+}
+
+function tabCloseListener() {
+  receivedEvents.push("onTabClose");
+}
+
+function setListenersOnTab(tabId) {
+  try {
+    devtoolsTabEvents = chrome.devtools.getTabEvents(tabId);
+    devtoolsTabEvents.onPageEvent.addListener(pageEventListener);
+    devtoolsTabEvents.onTabUrlChange.addListener(tabUrlChangeListener);
+    devtoolsTabEvents.onTabClose.addListener(tabCloseListener);
+    window.domAutomationController.send(true);
+  } catch(e) {
+    window.domAutomationController.send(false);
+  }
+}
+
+function testReceiveTabUrlChangeEvent() {
+  if (receivedEvents.length == 1) {
+    var eventName = receivedEvents.pop();
+    window.domAutomationController.send(eventName === "onTabUrlChange");
+  } else {
+    receivedEvents = [];
+    window.domAutomationController.send(false);
+  }
+}
+
+function testReceivePageEvent() {
+  if (receivedEvents.length == 1) {
+    var eventName = receivedEvents.pop();
+    window.domAutomationController.send(eventName === "onPageEvent");
+  } else {
+    receivedEvents = [];
+    window.domAutomationController.send(false);
+  }
+}
+
+function testReceiveTabCloseEvent() {
+  if (receivedEvents.length == 1) {
+    var eventName = receivedEvents.pop();
+    window.domAutomationController.send(eventName === "onTabClose");
+  } else {
+    receivedEvents = [];
+    window.domAutomationController.send(false);
+  }
+}
+
+function unregisterListeners() {
+  devtoolsTabEvents.onPageEvent.removeListener(pageEventListener);
+  devtoolsTabEvents.onTabUrlChange.removeListener(tabUrlChangeListener);
+  devtoolsTabEvents.onTabClose.removeListener(tabCloseListener);
+  window.domAutomationController.send(true);
+}
+
+</script>

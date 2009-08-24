@@ -1,0 +1,32 @@
+<script>
+
+var devtoolsTabEvents = undefined;
+
+function tabUrlChangeListener() {
+  receivedEvents.push("onTabUrlChange");
+}
+
+function pageEventListener() {
+  receivedEvents.push("onPageEvent");
+}
+
+function tabCloseListener() {
+  receivedEvents.push("onTabClose");
+}
+
+function registerListenersForTab(tabId) {
+  devtoolsTabEvents = chrome.devtools.getTabEvents(tabId);
+  devtoolsTabEvents.onPageEvent.addListener(pageEventListener);
+  devtoolsTabEvents.onTabUrlChange.addListener(tabUrlChangeListener);
+  devtoolsTabEvents.onTabClose.addListener(tabCloseListener);
+  window.domAutomationController.send(true);
+}
+
+function unregisterListeners() {
+  devtoolsTabEvents.onPageEvent.removeListener(pageEventListener);
+  devtoolsTabEvents.onTabUrlChange.removeListener(tabUrlChangeListener);
+  devtoolsTabEvents.onTabClose.removeListener(tabCloseListener);
+  window.domAutomationController.send(true);
+}
+
+</script>
