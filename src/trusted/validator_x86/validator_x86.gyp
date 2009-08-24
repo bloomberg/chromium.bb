@@ -119,6 +119,24 @@
         },
       ],
     },
+    { 'target_name': 'ncvalidate_sfi',
+      'type': 'static_library',
+      'include_dirs': [
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
+      # we depend on ncvalidate build to generate the headers
+      'dependencies': ['ncvalidate' ],
+      'sources': [ 'ncvalidate_iter.c',
+                   'nc_opcode_histogram.c',
+                   'nc_cpu_checks.c',
+                   'nc_illegal.c',
+                   'nc_protect_base.c',
+                   'nc_store_protect.c',
+                   'ncvalidate_utils.c',
+                   'nc_jumps.c',
+                   'ncval_driver.c'
+       ]
+    },
     {
       'target_name': 'ncdis_util',
       'type': 'static_library',
