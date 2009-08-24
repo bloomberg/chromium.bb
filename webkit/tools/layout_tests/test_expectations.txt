@@ -87,6 +87,7 @@ WONTFIX SKIP : LayoutTests/svg/custom/getPresentationAttribute.svg = PASS
 // with WML support, so skip its tests.
 WONTFIX SKIP : LayoutTests/wml = FAIL
 WONTFIX SKIP : LayoutTests/http/tests/wml = FAIL
+WONTFIX SKIP : LayoutTests/fast/wml = FAIL
 
 // These tests are based on the JSC JavaScript profiler. The V8 JavaScript
 // profiler is in development and will use a different approach than JSC and
@@ -2761,12 +2762,6 @@ BUG19625 : LayoutTests/fast/eventsource/eventsource-constructor.html = FAIL
 
 // New test added, doesn't yet pass for Chrome
 BUG19635 : LayoutTests/fast/harness/use-page-cache.html = FAIL
-
-// Code was checked into webkit without expectations in 47329, added in 47437.
-// Remove this once we roll deps that far
-BUG_JPARENT SKIP : LayoutTests/fast/wml/html-fieldset-crash.html = FAIL
-
-// Merge 47383:47417
 
 // WebKit roll r47417:47528
 BUG19766 WIN LINUX : LayoutTests/editing/deleting/delete-br-011.html = FAIL
