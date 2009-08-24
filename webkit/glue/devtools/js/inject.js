@@ -119,3 +119,26 @@ Function.prototype.bind = function(thisObject)
     var args = Array.prototype.slice.call(arguments, 1);
     return function() { return func.apply(thisObject, args.concat(Array.prototype.slice.call(arguments, 0))) };
 }
+
+String.prototype.escapeCharacters = function(chars)
+{
+    var foundChar = false;
+    for (var i = 0; i < chars.length; ++i) {
+        if (this.indexOf(chars.charAt(i)) !== -1) {
+            foundChar = true;
+            break;
+        }
+    }
+
+    if (!foundChar)
+        return this;
+
+    var result = "";
+    for (var i = 0; i < this.length; ++i) {
+        if (chars.indexOf(this.charAt(i)) !== -1)
+            result += "\\";
+        result += this.charAt(i);
+    }
+
+    return result;
+}
