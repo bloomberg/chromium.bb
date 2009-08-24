@@ -890,6 +890,8 @@ nacl_extra_sdk_env = pre_base_env.Clone(
                '-DNACL_BLOCK_SHIFT=5',
                '-fdiagnostics-show-option',
                '-pedantic',
+               ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
+               ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
                ],
 
     CPPPATH = ['$SOURCE_ROOT'],
