@@ -122,6 +122,10 @@ const int kCompleteAnimationDuration = 2.5;
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  if ([completionAnimation_ isAnimating])
+    [completionAnimation_ stopAnimation];
+  if ([hideStatusAnimation_ isAnimating])
+    [hideStatusAnimation_ stopAnimation];
   [secondaryTitle_ release];
   [secondaryFont_ release];
   [super dealloc];
@@ -145,6 +149,12 @@ const int kCompleteAnimationDuration = 2.5;
 
   switch (downloadModel->download()->state()) {
     case DownloadItem::COMPLETE:
+      // Small downloads may start in a complete state due to asynchronous
+      // notifications. In this case, we'll get a second complete notification
+      // via the observers, so we ignore it and avoid creating a second complete
+      // animation.
+      if (completionAnimation_.get())
+        break;
       completionAnimation_.reset([[DownloadItemCellAnimation alloc]
           initWithDownloadItemCell:self
                           duration:kCompleteAnimationDuration
