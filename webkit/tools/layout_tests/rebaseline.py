@@ -478,7 +478,8 @@ class Rebaseliner(object):
 
     # Get the diff between old and new baselines and save to the html directory.
     if baseline_filename.upper().endswith('.TXT'):
-      output = RunShell(['svn', 'diff', baseline_fullpath])
+      output = RunShell(['svn', 'diff', '--diff-cmd', 'diff',
+                         baseline_fullpath])
       if output:
         diff_file = GetResultFileFullpath(self._options.html_directory,
                                           baseline_filename,
