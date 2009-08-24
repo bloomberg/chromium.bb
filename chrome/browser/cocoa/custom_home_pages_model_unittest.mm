@@ -126,6 +126,10 @@ TEST_F(CustomHomePagesModelTest, KVO) {
   [model_ removeObserver:kvo_helper forKeyPath:@"customHomePages"];
 }
 
+@interface NSObject()
+- (void)setURL:(NSString*)url;
+@end
+
 // Test that when individual items are changed that they broadcast a message.
 // Crashy, see http://crbug.com/17452.
 TEST_F(CustomHomePagesModelTest, DISABLED_ModelChangedNotification) {
@@ -140,7 +144,7 @@ TEST_F(CustomHomePagesModelTest, DISABLED_ModelChangedNotification) {
   std::vector<GURL> urls;
   urls.push_back(GURL("http://www.google.com"));
   [model_ setURLs:urls];
-  id entry = [model_ objectInCustomHomePagesAtIndex:0];
+  NSObject* entry = [model_ objectInCustomHomePagesAtIndex:0];
   [entry setURL:@"http://www.foo.bar"];
   EXPECT_TRUE(kvo_helper.get()->sawNotification_);
   [[NSNotificationCenter defaultCenter] removeObserver:kvo_helper];

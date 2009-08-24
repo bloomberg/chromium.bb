@@ -54,7 +54,8 @@ TEST_F(BookmarkEditorControllerTest, YesNodeShowTree) {
 
   EXPECT_NE((NSWindow*)nil, [controller window]);  // Forces a nib load
   EXPECT_TRUE([@"ooh title" isEqual:[controller displayName]]);
-  EXPECT_TRUE([[NSString stringWithCString:url_name]
+  EXPECT_TRUE([[NSString stringWithCString:url_name
+                                  encoding:NSUTF8StringEncoding]
                 isEqual:[controller displayURL]]);
 }
 
