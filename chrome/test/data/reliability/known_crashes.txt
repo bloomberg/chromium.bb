@@ -84,9 +84,6 @@ PREFIX : wtf::hashtable<webcore::string,webcore::string,wtf::identityextractor<w
 # 8033
 SUBSTRING : windowdragresponsetask::run___messageloop::runtask___messageloop::dowork
 
-# 17569
-SUBSTRING : masksuperblitter::~masksuperblitter
-
 # 18700
 SUBSTRING : std::deque<bool,std::allocator<bool> >::_tidy___messageloop::reloadworkqueue
 SUBSTRING : std::deque<treenodeiterator<bookmarknode const >::position<bookmarknode const >,std::allocator<treenodeiterator<bookmarknode const >::position<bookmarknode const > > >::_tidy___messageloop::reloadworkqueue
