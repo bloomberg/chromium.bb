@@ -31,8 +31,7 @@ class ExtensionBookmarks {
     const BookmarkNode* parent = node->GetParent();
     if (parent) {
       dict->SetString(keys::kParentIdKey, Int64ToString(parent->id()));
-      dict->SetString(keys::kIndexKey,
-                      Int64ToString(parent->IndexOfChild(node)));
+      dict->SetInteger(keys::kIndexKey, parent->IndexOfChild(node));
     }
 
     if (!node->is_folder()) {
