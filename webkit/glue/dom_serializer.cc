@@ -446,7 +446,7 @@ void DomSerializer::EndTagToString(const WebCore::Element* element,
       if (html_element->endTagRequirement() == WebCore::TagStatusRequired) {
         // We need to write end tag when it is required.
         result += "</";
-        result += html_element->nodeName();
+        result += element->nodeName();
         result += ">";
       }
     } else {
