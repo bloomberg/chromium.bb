@@ -155,7 +155,7 @@ class InputApi(object):
       # No extension at all
       r"(^|.*[\\\/])[^.]+$",
       # Other
-      r".*\.java", r".*\.mk", r".*\.am",
+      r".*\.java", r".*\.mk", r".*\.am", r".*\.txt",
   )
 
   # Path regexp that should be excluded from being considered containing source
