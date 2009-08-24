@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/js_only_v8_extensions.h"
+#include "chrome/renderer/js_only_v8_extensions.h"
 
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "grit/renderer_resources.h"
@@ -14,8 +14,8 @@ using bindings_utils::GetStringResource;
 const char* BaseJsV8Extension::kName = "chrome/base";
 v8::Extension* BaseJsV8Extension::Get() {
   static v8::Extension* extension =
-      new bindings_utils::ExtensionBase(
-          kName, GetStringResource<IDR_DEVTOOLS_BASE_JS>(), 0, NULL);
+      new v8::Extension(kName, GetStringResource<IDR_DEVTOOLS_BASE_JS>(),
+                        0, NULL);
   return extension;
 }
 
@@ -23,7 +23,7 @@ v8::Extension* BaseJsV8Extension::Get() {
 const char* JsonSchemaJsV8Extension::kName = "chrome/jsonschema";
 v8::Extension* JsonSchemaJsV8Extension::Get() {
   static v8::Extension* extension =
-      new bindings_utils::ExtensionBase(
-          kName, GetStringResource<IDR_JSON_SCHEMA_JS>(), 0, NULL);
+      new v8::Extension(kName, GetStringResource<IDR_JSON_SCHEMA_JS>(),
+                        0, NULL);
   return extension;
 }
