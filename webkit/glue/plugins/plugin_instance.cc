@@ -417,7 +417,7 @@ void PluginInstance::OnPluginThreadAsyncCall(void (*func)(void *),
     // But for now, just continue.
   }
 #else
-  NOTIMPLEMENTED();
+  func(userData);
 #endif
 }
 
