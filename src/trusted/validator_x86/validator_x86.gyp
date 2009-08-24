@@ -50,7 +50,11 @@
     {
       'target_name': 'ncdecode_tablegen',
       'type': 'executable',
-      'sources': ['ncdecode_tablegen.c'],
+      'sources': ['ncdecode_tablegen.c',
+                  'ncdecode_onebyte.c',
+                  'ncdecode_OF.c',
+                  'ncdecode_DC.c'
+      ],
       'dependencies': ['ncopcode_utils' ],
       'conditions': [
         ['OS=="win"', {

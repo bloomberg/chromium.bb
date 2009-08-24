@@ -116,6 +116,7 @@ static const char* const g_OperandKindName[OperandKindEnumSize] = {
   "Ov_Operand",
   "Oo_Operand",
   "S_Operand",
+  "St_Operand",
   "RegUnknown",
   "RegAL",
   "RegBL",
@@ -199,6 +200,14 @@ static const char* const g_OperandKindName[OperandKindEnumSize] = {
   "RegREAX",
   "RegREIP",
   "RegREBP",
+  "RegST0",
+  "RegST1",
+  "RegST2",
+  "RegST3",
+  "RegST4",
+  "RegST5",
+  "RegST6",
+  "RegST7",
   "RegGP7",
   "OpcodeBaseMinus0",
   "OpcodeBaseMinus1",
@@ -258,6 +267,7 @@ static const char* const g_InstMnemonicName[InstMnemonicEnumSize] = {
   "Daa",
   "Das",
   "Dec",
+  "Fadd",
   "Imul",
   "Hlt",
   "Inc",
@@ -323,7 +333,15 @@ static const char* const g_OpcodePrefixName[OpcodePrefixEnumSize] = {
   "Prefix660F38",
   "PrefixF20F38",
   "Prefix0F3A",
-  "Prefix660F3A"
+  "Prefix660F3A",
+  "PrefixD8",
+  "PrefixD9",
+  "PrefixDA",
+  "PrefixDB",
+  "PrefixDC",
+  "PrefixDD",
+  "PrefixDE",
+  "PrefixDF"
 };
 
 const char* OpcodePrefixName(OpcodePrefix prefix) {

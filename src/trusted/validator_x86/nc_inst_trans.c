@@ -540,6 +540,19 @@ static ExprNode* AppendOpcodeBaseRegister(
                             GetRexBRegister(state, reg_index));
 }
 
+/* Get the ST register defined from the difference of the opcode, and
+ * its opcode base.
+ */
+static ExprNode* AppendStOpcodeBaseRegister(NcInstState* state) {
+  /* Note: Difference held as first operand (by convention). */
+  int reg_index;
+  assert(state->opcode->num_operands > 1);
+  reg_index = state->opcode->operands[0].kind - OpcodeBaseMinus0;
+  assert(reg_index >= 0 && reg_index < 8);
+  DEBUG(printf("Translate opcode base register %d\n", reg_index));
+  return AppendRegister(RegST0 + reg_index, &state->nodes);
+}
+
 /* Model the extraction of a displacement value and the associated flags. */
 typedef struct {
   uint64_t value;
@@ -991,6 +1004,8 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Ov_Operand:
     case Oo_Operand:
       return AppendMemoryOffsetImmediate(state);
+    case St_Operand:
+      return AppendStOpcodeBaseRegister(state);
     case RegUnknown:
     case RegAL:
     case RegBL:
@@ -1070,6 +1085,14 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case RegR13:
     case RegR14:
     case RegR15:
+    case RegST0:
+    case RegST1:
+    case RegST2:
+    case RegST3:
+    case RegST4:
+    case RegST5:
+    case RegST6:
+    case RegST7:
       return AppendRegister(operand->kind, &state->nodes);
     case RegRESP:
       return AppendRegister(state->address_size == 64 ? RegRSP : RegESP,

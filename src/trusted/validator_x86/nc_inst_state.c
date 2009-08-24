@@ -268,23 +268,44 @@ static void ConsumeOpcodeBytes(NcInstState* state,
   if (state->length >= state->length_limit) return;
 
   desc->opcode_byte = state->mpc[state->length++];
-  if (desc->opcode_byte == 0x0F) {
-    if (state->length >= state->length_limit) return;
-    desc->opcode_byte = state->mpc[state->length++];
-    switch (desc->opcode_byte) {
-    case 0x38:
-      Consume0F38XXOpcodeBytes(state, desc);
+  switch (desc->opcode_byte) {
+    case 0x0F:
+      if (state->length >= state->length_limit) return;
+      desc->opcode_byte = state->mpc[state->length++];
+      switch (desc->opcode_byte) {
+        case 0x38:
+          Consume0F38XXOpcodeBytes(state, desc);
+          break;
+        case 0x3a:
+          Consume0F3AXXOpcodeBytes(state, desc);
+          break;
+        default:
+          Consume0FXXOpcodeBytes(state, desc);
+          break;
+      }
       break;
-    case 0x3a:
-      Consume0F3AXXOpcodeBytes(state, desc);
+    case 0xD8:
+    case 0xD9:
+    case 0xDA:
+    case 0xDB:
+    case 0xDC:
+    case 0xDD:
+    case 0xDE:
+    case 0xDF:
+      if (state->length >= state->length_limit) {
+        desc->matched_prefix = OpcodePrefixEnumSize;
+        return;
+      }
+      desc->matched_prefix = PrefixD8 +
+          (((int) desc->opcode_byte) - ((int) 0xD8));
+      desc->opcode_byte = state->mpc[state->length++];
       break;
     default:
-      Consume0FXXOpcodeBytes(state, desc);
+      desc->matched_prefix = NoPrefix;
       break;
-    }
-  } else {
-    desc->matched_prefix = NoPrefix;
   }
+  DEBUG(printf("matched prefix = %d = %s\n", (int) desc->matched_prefix,
+               OpcodePrefixName(desc->matched_prefix)));
 }
 
 /* Compute the operand and address sizes for the instruction. Then, verify

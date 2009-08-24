@@ -54,6 +54,7 @@ typedef enum {
   InstDaa,
   InstDas,
   InstDec,
+  InstFadd,
   InstHlt,
   InstImul,
   InstInc,
@@ -121,6 +122,14 @@ typedef enum {
   PrefixF20F38,
   Prefix0F3A,
   Prefix660F3A,
+  PrefixD8,
+  PrefixD9,
+  PrefixDA,
+  PrefixDB,
+  PrefixDC,
+  PrefixDD,
+  PrefixDE,
+  PrefixDF,
   /* Special marker denoting OpcodePrefix size. */
   OpcodePrefixEnumSize
 } OpcodePrefix;
@@ -464,6 +473,9 @@ typedef enum {
    */
   S_Operand,
 
+  /* A Floating point ST register enocoded in opcode byte. */
+  St_Operand,
+
   /* Note: The instruction decoder may count on the fact that the list
    * of register values are contiguous, in the order specified.
    */
@@ -576,6 +588,16 @@ typedef enum {
   RegREIP,
   /* Use EBP or RBP, based on 32/64 bit model. */
   RegREBP,
+
+  /* Floating point stack registers. */
+  RegST0,
+  RegST1,
+  RegST2,
+  RegST3,
+  RegST4,
+  RegST5,
+  RegST6,
+  RegST7,
 
   /* One of the eight general purpose registers, less the stack pointer, based
    * on operand size.
