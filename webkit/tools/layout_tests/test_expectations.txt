@@ -679,6 +679,13 @@ BUG16237 : LayoutTests/http/tests/security/xssAuditor/object-embed-tag-null-char
 BUG16237 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-null-char.html = FAIL
 BUG16237 : LayoutTests/http/tests/security/xssAuditor/javascript-link-null-char.html = FAIL
 
+// Requires the test shell to support eventSender.beginDragWithFiles().
+BUG19884 SKIP : LayoutTests/fast/forms/get-file-upload.html = TIMEOUT
+BUG19884 SKIP : LayoutTests/fast/events/drag-to-navigate.html = TIMEOUT FAIL
+BUG19884 : LayoutTests/fast/events/prevent-drag-to-navigate.html = TIMEOUT
+BUG19884 : LayoutTests/editing/pasteboard/file-input-files-access.html = FAIL
+BUG19884 SKIP : LayoutTests/http/tests/security/clipboard/clipboard-file-access.html = FAIL
+
 // Function arguments object is copied for each access.
 BUG941049 : LayoutTests/fast/js/kde/function_arguments.html = FAIL
 
@@ -2340,7 +2347,6 @@ BUG12310 SKIP : LayoutTests/fast/wcss/marquee-style.xhtml = FAIL
 BUG12340 WIN : LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = PASS FAIL
 BUG12341 WIN LINUX : LayoutTests/editing/selection/4975120.html = PASS FAIL
 BUG12354 : LayoutTests/plugins/netscape-invoke-browserfuncs.html = FAIL
-BUG12355 : LayoutTests/editing/pasteboard/file-input-files-access.html = FAIL
 BUG12361 : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 
 // webkit 44010+44027 introducted new tests
@@ -2394,16 +2400,13 @@ BUG15132 WIN : LayoutTests/media/event-attributes.html = FAIL
 BUG15125 MAC SKIP : chrome/fast/text/fake-italic.html = FAIL
 
 // WebKit 45017:45086
-BUG15217 : LayoutTests/fast/events/drag-to-navigate.html = TIMEOUT FAIL
 BUG15217 : LayoutTests/fast/js/dictionary-no-cache.html = FAIL
-BUG15217 : LayoutTests/fast/events/prevent-drag-to-navigate.html = TIMEOUT
 BUG15217 MAC : LayoutTests/fast/js/switch-behaviour.html = FAIL
 
 // WebKit 45086:45111
 BUG15270 : LayoutTests/fast/js/excessive-comma-usage.html = FAIL
 
 // WebKit 45134:45176
-BUG15403 SKIP : LayoutTests/http/tests/security/clipboard/clipboard-file-access.html = FAIL
 
 // WebKit 45203:45247
 BUG15460 : LayoutTests/media/video-controls-rendering.html = FAIL
@@ -2641,9 +2644,6 @@ BUG16850 DEBUG WIN : LayoutTests/fast/css/rem-dynamic-scaling.html = PASS CRASH
 
 // Failures from WebKit merge 45936:45958
 BUG18676 LINUX MAC : LayoutTests/fast/js/instanceof-operator.html = CRASH FAIL
-
-// Requires the test shell to support eventSender.beginDragWithFiles().
-BUG19884 : LayoutTests/fast/forms/get-file-upload.html = TIMEOUT
 
 // New test from WebKit merge 46050:46087
 BUG17170 : LayoutTests/fast/dom/prototype-inheritance.html = FAIL
