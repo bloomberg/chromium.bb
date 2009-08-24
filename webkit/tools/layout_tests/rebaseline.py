@@ -478,7 +478,25 @@ class Rebaseliner(object):
 
     # Get the diff between old and new baselines and save to the html directory.
     if baseline_filename.upper().endswith('.TXT'):
-      output = RunShell(['svn', 'diff', '--diff-cmd', 'diff',
+      # If the user specified a custom diff command in their svn config file,
+      # then it'll be used when we do svn diff, which we don't want to happen
+      # since we want the unified diff.  Using --diff-cmd=diff doesn't always
+      # work, since they can have another diff executable in their path that
+      # gives different line endings.  So we use a bogus temp directory as the
+      # config directory, which gets around these problems.
+      if sys.platform.startswith("win"):
+        parent_dir = tempfile.gettempdir()
+      else:
+        parent_dir = sys.path[0]  # tempdir is not secure.
+      bogus_dir = os.path.join(parent_dir, "temp_svn_config")
+      logging.debug('  Html: temp config dir: "%s".', bogus_dir)
+      if not os.path.exists(bogus_dir):
+        os.mkdir(bogus_dir)
+        delete_bogus_dir = True
+      else:
+        delete_bogus_dir = False
+
+      output = RunShell(["svn", "diff", "--config-dir", bogus_dir,
                          baseline_fullpath])
       if output:
         diff_file = GetResultFileFullpath(self._options.html_directory,
@@ -491,6 +509,9 @@ class Rebaseliner(object):
         logging.info('  Html: created baseline diff file: "%s".',
                      diff_file)
 
+      if delete_bogus_dir:
+        shutil.rmtree(bogus_dir, True)
+        logging.debug('  Html: removed temp config dir: "%s".', bogus_dir)
 
 class HtmlGenerator(object):
   """Class to generate rebaselining result comparison html."""
