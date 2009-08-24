@@ -5,13 +5,14 @@
 import logging
 import os
 import re
-import sys
 
 from layout_package import path_utils
 from layout_package import test_failures
 
-sys.path.append(path_utils.PathFromBase('third_party'))
-import simplejson
+class ResultAndTime:
+  """A holder for a single result and runtime for a test."""
+  time = 0
+  result = "N"
 
 class JSONResultsGenerator:
 
@@ -22,11 +23,9 @@ class JSONResultsGenerator:
   JSON_SUFFIX = ");"
   WEBKIT_PATH = "WebKit"
   LAYOUT_TESTS_PATH = "layout_tests"
-  PASS_RESULT = "P"
-  NO_DATA_RESULT = "N"
 
   def __init__(self, failures, individual_test_timings, builder_name,
-      build_number, results_file_path, all_tests):
+      build_number, results_file_path):
     """
     failures: Map of test name to list of failures.
     individual_test_times: Map of test name to a tuple containing the
@@ -34,16 +33,12 @@ class JSONResultsGenerator:
     builder_name: The name of the builder the tests are being run on.
     build_number: The build number for this run.
     results_file_path: Absolute path to the results json file.
-    all_tests: List of all the tests that were run.
     """
     # Make sure all test paths are relative to the layout test root directory.
     self._failures = {}
     for test in failures:
       test_path = self._GetPathRelativeToLayoutTestRoot(test)
       self._failures[test_path] = failures[test]
-
-    self._all_tests = [self._GetPathRelativeToLayoutTestRoot(test)
-        for test in all_tests]
 
     self._test_timings = {}
     for test_tuple in individual_test_timings:
@@ -81,12 +76,12 @@ class JSONResultsGenerator:
     """Gets the results for the results.json file."""
     failures_for_json = {}
     for test in self._failures:
-      failures_for_json[test] = ResultAndTime(test, self._all_tests)
+      failures_for_json[test] = ResultAndTime()
       failures_for_json[test].result = self._GetResultsCharForFailure(test)
 
     for test in self._test_timings:
       if not test in failures_for_json:
-        failures_for_json[test] = ResultAndTime(test, self._all_tests)
+        failures_for_json[test] = ResultAndTime()
       # Floor for now to get time in seconds.
       # TODO(ojan): As we make tests faster, reduce to tenth of a second
       # granularity.
@@ -99,7 +94,7 @@ class JSONResultsGenerator:
       # Strip the prefix and suffix so we can get the actual JSON object.
       old_results = old_results[
           len(self.JSON_PREFIX) : len(old_results) - len(self.JSON_SUFFIX)]
-      results_json = simplejson.loads(old_results)
+      results_json = eval(old_results)
 
       if self._builder_name not in results_json:
         logging.error("Builder name (%s) is not in the results.json file." %
@@ -121,7 +116,7 @@ class JSONResultsGenerator:
       if test in failures_for_json:
         result_and_time = failures_for_json[test]
       else:
-        result_and_time = ResultAndTime(test, self._all_tests)
+        result_and_time = ResultAndTime()
 
       if test not in tests:
         tests[test] = self._CreateResultsAndTimesJSON()
@@ -135,9 +130,11 @@ class JSONResultsGenerator:
     results_json[self._builder_name]["buildNumbers"].insert(0,
         self._build_number)
 
-    # Specify separators in order to get compact encoding.
-    results_str = simplejson.dumps(results_json, separators=(',', ':'))
-    return self.JSON_PREFIX + results_str + self.JSON_SUFFIX
+    # Generate the JSON and strip whitespace to keep filesize down.
+    # TODO(ojan): Generate the JSON using a JSON library should someone ever
+    # add a non-primitive type to results_json.
+    results_str = self.JSON_PREFIX + repr(results_json) + self.JSON_SUFFIX
+    return re.sub(r'\s+', '', results_str)
 
   def _CreateResultsAndTimesJSON(self):
     results_and_times = {}
@@ -196,7 +193,7 @@ class JSONResultsGenerator:
       times = times[:self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG]
     elif num_results < self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG:
       num_to_pad = self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG - num_results
-      results = results + num_to_pad * self.NO_DATA_RESULT
+      results = results + num_to_pad * 'N'
       times.extend(num_to_pad * [0])
 
     test["results"] = results
@@ -206,10 +203,8 @@ class JSONResultsGenerator:
     # times that take less than a second, remove it from the results to reduce
     # noise and filesize.
     if (max(times) >= self.MIN_TIME and num_results and
-        (results == self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG *
-             self.PASS_RESULT or
-         results == self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG *
-             self.NO_DATA_RESULT)):
+        (results == self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG * 'P' or
+         results == self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG * 'N')):
       del tests[test_path]
 
     # Remove tests that don't exist anymore.
@@ -217,13 +212,3 @@ class JSONResultsGenerator:
     full_path = os.path.normpath(full_path)
     if not os.path.exists(full_path):
       del tests[test_path]
-
-class ResultAndTime:
-  """A holder for a single result and runtime for a test."""
-  def __init__(self, test, all_tests):
-    self.time = 0
-    # If the test was run, then we don't want to default the result to nodata.
-    if test in all_tests:
-      self.result = JSONResultsGenerator.PASS_RESULT
-    else:
-      self.result = JSONResultsGenerator.NO_DATA_RESULT
