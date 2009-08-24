@@ -368,14 +368,6 @@ bool ForceAntiAliasingOff(LPDIRECT3D9* d3d) {
   return false;
 }
 
-namespace {
-// Returns whether to Force the Software Renderer by checking for the existence
-// of the environmen variable O3D_FORCE_SOFTWARE_RENDERER.
-bool IsForceSoftwareRendererEnabled() {
-  return getenv("O3D_FORCE_SOFTWARE_RENDERER") != NULL;
-}
-}
-
 // Helper function that gets the D3D Interface, checks the available
 // multisampling modes and selects the most advanced one available to create
 // a D3D Device with a back buffer containing depth and stencil buffers that
@@ -394,7 +386,7 @@ Renderer::InitStatus InitializeD3D9Context(
   // Check registry to see if the developer has opted to force the software
   // renderer.
   Renderer::InitStatus status_hardware;
-  if (IsForceSoftwareRendererEnabled()) {
+  if (Renderer::IsForceSoftwareRenderer()) {
     // Simulate GPU not up to spec.
     status_hardware = Renderer::GPU_NOT_UP_TO_SPEC;
   } else {

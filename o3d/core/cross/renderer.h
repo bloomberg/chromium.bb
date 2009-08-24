@@ -147,6 +147,10 @@ class Renderer {
   // Creates a 'default' renderer, choosing the correct implementation type.
   static Renderer* CreateDefaultRenderer(ServiceLocator* service_locator);
 
+  // Gets whether or not the renderer should attempt to use the software 
+  // renderer.
+  static bool IsForceSoftwareRenderer();
+
   // Initialises the renderer for use, claiming hardware resources.
   InitStatus Init(const DisplayWindow& display, bool off_screen);
 

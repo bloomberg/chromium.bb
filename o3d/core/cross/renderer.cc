@@ -93,6 +93,12 @@ bool IsSupportedTextureFormat(Texture::Format format,
 
 }  // anonymous namespace
 
+// Returns whether to Force the Software Renderer by checking for the existence
+// of the environment variable O3D_FORCE_SOFTWARE_RENDERER.
+bool Renderer::IsForceSoftwareRenderer() {
+  return getenv("O3D_FORCE_SOFTWARE_RENDERER") != NULL;
+}
+
 Renderer::Renderer(ServiceLocator* service_locator)
     : clear_client_(true),
       need_to_render_(true),

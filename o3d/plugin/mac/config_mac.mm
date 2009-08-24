@@ -41,6 +41,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "core/cross/renderer.h"
 #include "plugin/cross/config.h"
 #include "plugin/cross/plugin_metrics.h"
 #include "plugin_mac.h"
@@ -186,7 +187,7 @@ bool UseSoftwareRenderer() {
     is_initialized = true;
   }
 
-  return use_software_renderer;
+  return use_software_renderer || Renderer::IsForceSoftwareRenderer();
 }
 
 static bool GetVideoCardMetrics(CGDirectDisplayID displayID) {

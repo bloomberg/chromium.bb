@@ -116,6 +116,28 @@ class ClientInfo {
 
   %[
     Whether or not O3D is using the software renderer.
+
+    For testing purposes you can force O3D to use the software renderer
+    by setting the environment variable O3D_FORCE_SOFTWARE_RENDERER to
+    anything. 
+
+    \code
+    set O3D_FORCE_SOFTWARE_RENDERER=foo
+    \endcode
+    or
+    \code
+    export O3D_FORCE_SOFTWARE_RENDERER=foo
+    \endcode
+
+    You can set it at a system level if you want to set it for all
+    browser instances or set it from a command line and start your 
+    browser from that same command line if you want to effect just
+    that instance of the browser. 
+
+    Note that many browers require special command line options to
+    run in a separate process, otherwise they default to finding
+    the browser process already running and using that. For example
+    firefox requires the option -no-remote.
   %]
   [getter] bool software_renderer;
 
