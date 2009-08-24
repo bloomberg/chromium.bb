@@ -156,22 +156,15 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   EXPECT_EQ(200, response_code);
   EXPECT_EQ(0, os_error);
   EXPECT_EQ(0, http_bridge->GetResponseCookieCount());
-  std::string response = http_bridge->GetResponseContent();
+  std::string response(http_bridge->GetResponseContent(),
+                       http_bridge->GetResponseContentLength());
 
   EXPECT_EQ(std::string::npos, response.find("Cookie:"));
-  // TODO(chron): Renable this check and figure out why headers
-  // aren't echoing right.
-  // This is currently broken in header parsing from the echo
-  // server for some reason.
-  // EXPECT_NE(std::string::npos, response.find("User-Agent: bob"));
+  EXPECT_NE(std::string::npos, response.find("User-Agent: bob"));
   EXPECT_NE(std::string::npos, response.find(test_payload.c_str()));
 }
 
-// TODO(chron): Renable this check and figure out why headers
-// aren't echoing right.
-// Test over the wire whether our extra request headers come back.
-// Use default UA string and a test payload.
-TEST_F(HttpBridgeTest, DISABLED_TestExtraRequestHeaders) {
+TEST_F(HttpBridgeTest, TestExtraRequestHeaders) {
   scoped_refptr<HTTPTestServer> server = HTTPTestServer::CreateServer(kDocRoot,
                                                                       NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -193,7 +186,8 @@ TEST_F(HttpBridgeTest, DISABLED_TestExtraRequestHeaders) {
   EXPECT_EQ(200, response_code);
   EXPECT_EQ(0, os_error);
   EXPECT_EQ(0, http_bridge->GetResponseCookieCount());
-  std::string response = http_bridge->GetResponseContent();
+  std::string response(http_bridge->GetResponseContent(),
+                       http_bridge->GetResponseContentLength());
 
   EXPECT_NE(std::string::npos, response.find("fnord"));
   EXPECT_NE(std::string::npos, response.find(test_payload.c_str()));

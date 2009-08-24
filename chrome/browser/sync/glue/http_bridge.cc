@@ -200,7 +200,7 @@ int HttpBridge::GetResponseContentLength() const {
 const char* HttpBridge::GetResponseContent() const {
   DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   DCHECK(request_completed_);
-  return response_content_.c_str();
+  return response_content_.data();
 }
 
 int HttpBridge::GetResponseCookieCount() const {
