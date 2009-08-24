@@ -14,24 +14,6 @@
 
 namespace {
 
-void RecordRoundTripLatency(base::TimeDelta latency) {
-  static ThreadSafeHistogram histogram("Audio.IPC_RoundTripLatency",
-                                       1, 1000, 100);
-  histogram.AddTime(latency);
-}
-
-void RecordReceiveLatency(base::TimeDelta latency) {
-  static ThreadSafeHistogram histogram("Audio.IPC_Browser_ReceiveLatency",
-                                       1, 500, 100);
-  histogram.AddTime(latency);
-}
-
-void RecordProcessTime(base::TimeDelta latency) {
-  static ThreadSafeHistogram histogram("Audio.IPC_Browser_ProcessTime",
-                                       1, 100, 100);
-  histogram.AddTime(latency);
-}
-
 // This constant governs the hardware audio buffer size, this value should be
 // choosen carefully and is platform specific.
 const int kSamplesPerHardwarePacket = 8192;
@@ -71,7 +53,7 @@ AudioRendererHost::IPCAudioSource::IPCAudioSource(
       state_(kCreated),
       push_source_(hardware_packet_size),
       outstanding_request_(false),
-      last_copied_bytes_(0) {
+      pending_bytes_(0) {
 }
 
 AudioRendererHost::IPCAudioSource::~IPCAudioSource() {
@@ -229,11 +211,13 @@ void AudioRendererHost::IPCAudioSource::GetVolume() {
 
 size_t AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
                                                      void* dest,
-                                                     size_t max_size) {
-  size_t size = push_source_.OnMoreData(stream, dest, max_size);
+                                                     size_t max_size,
+                                                     int pending_bytes) {
+  size_t size = push_source_.OnMoreData(stream, dest, max_size, pending_bytes);
   {
     AutoLock auto_lock(lock_);
-    last_copied_bytes_ = size;
+    pending_bytes_ = pending_bytes + size;
+    last_callback_time_ = base::Time::Now();
     SubmitPacketRequest(&auto_lock);
   }
   return size;
@@ -257,11 +241,6 @@ void AudioRendererHost::IPCAudioSource::NotifyPacketReady(
   {
     AutoLock auto_lock(lock_);
     outstanding_request_ = false;
-#ifdef IPC_MESSAGE_LOG_ENABLED
-    if (IPC::Logging::current() && IPC::Logging::current()->Enabled()) {
-      RecordRoundTripLatency(base::Time::Now() - outstanding_request_time_);
-    }
-#endif
     // If reported size is greater than capacity of the shared memory, we have
     // an error.
     if (decoded_packet_size <= decoded_packet_size_) {
@@ -295,24 +274,17 @@ void AudioRendererHost::IPCAudioSource::SubmitPacketRequest_Locked() {
       (push_source_.UnProcessedBytes() + decoded_packet_size_ <=
        buffer_capacity_)) {
     outstanding_request_ = true;
-    outstanding_request_time_ = base::Time::Now();
 
     // This variable keeps track of the total amount of bytes buffered for
     // the associated AudioOutputStream. This value should consist of bytes
     // buffered in AudioOutputStream and those kept inside |push_source_|.
-    // TODO(hclam): since we have no information about the amount of buffered
-    // bytes in the hardware buffer in AudioOutputStream, we make our best
-    // guess by using the amount of the last copy. This should be a good guess
-    // for Windows since it does double buffering but we shold change this
-    // when AudioOutputStream has the API to query remaining buffer.
-    size_t buffered_bytes = last_copied_bytes_ +
-                            push_source_.UnProcessedBytes();
+    size_t buffered_bytes = pending_bytes_ + push_source_.UnProcessedBytes();
     host_->Send(
         new ViewMsg_RequestAudioPacket(
             route_id_,
             stream_id_,
             buffered_bytes,
-            outstanding_request_time_.ToInternalValue()));
+            last_callback_time_.ToInternalValue()));
   }
 }
 
@@ -496,14 +468,6 @@ void AudioRendererHost::OnNotifyPacketReady(const IPC::Message& msg,
   } else {
     SendErrorMessage(msg.routing_id(), stream_id);
   }
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  if (IPC::Logging::current() && IPC::Logging::current()->Enabled()) {
-    RecordReceiveLatency(base::Time::FromInternalValue(msg.received_time()) -
-                         base::Time::FromInternalValue(msg.sent_time()));
-    RecordProcessTime(base::Time::Now() -
-                      base::Time::FromInternalValue(msg.received_time()));
-  }
-#endif
 }
 
 void AudioRendererHost::OnInitialized() {

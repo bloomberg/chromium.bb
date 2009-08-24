@@ -203,8 +203,8 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
     void NotifyPacketReady(size_t packet_size);
 
     // AudioSourceCallback methods.
-    virtual size_t OnMoreData(AudioOutputStream* stream,
-                              void* dest, size_t max_size);
+    virtual size_t OnMoreData(AudioOutputStream* stream, void* dest,
+                              size_t max_size, int pending_bytes);
     virtual void OnClose(AudioOutputStream* stream);
     virtual void OnError(AudioOutputStream* stream, int code);
 
@@ -249,10 +249,10 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
 
     // Flag that indicates there is an outstanding request.
     bool outstanding_request_;
-    base::Time outstanding_request_time_;
 
     // Number of bytes copied in the last OnMoreData call.
-    size_t last_copied_bytes_;
+    int pending_bytes_;
+    base::Time last_callback_time_;
 
     // Protects:
     // - |outstanding_requests_|

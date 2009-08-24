@@ -53,8 +53,10 @@ class AudioOutputStream {
     // buffer size is usually what is specified in Open(). The source
     // will return the number of bytes it filled. The expected structure of
     // |dest| is platform and format specific.
-    virtual size_t OnMoreData(AudioOutputStream* stream,
-                              void* dest, size_t max_size) = 0;
+    // |pending_bytes| is the number of bytes will be played before the
+    // requested data is played.
+    virtual size_t OnMoreData(AudioOutputStream* stream, void* dest,
+                              size_t max_size, int pending_bytes) = 0;
 
     // The stream is done with this callback. After this call the audio source
     // can go away or be destroyed.
