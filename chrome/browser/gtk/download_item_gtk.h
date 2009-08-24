@@ -81,6 +81,9 @@ class DownloadItemGtk : public DownloadItem::Observer,
   void UpdateStatusLabel(GtkWidget* status_label,
                          const std::string& status_text);
 
+  // Sets the components of the danger warning.
+  void UpdateDangerWarning();
+
   static void InitNineBoxes();
 
   // Draws everything in GTK rendering mode.
@@ -181,6 +184,8 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // The dangerous download dialog. This will be null for safe downloads.
   GtkWidget* dangerous_prompt_;
+  GtkWidget* dangerous_image_;
+  GtkWidget* dangerous_label_;
 
   // An hbox for holding components of the dangerous download dialog.
   GtkWidget* dangerous_hbox_;

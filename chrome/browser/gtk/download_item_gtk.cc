@@ -186,6 +186,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
       download_model_(download_model),
       bounding_widget_(parent_shelf->GetRightBoundingWidget()),
       dangerous_prompt_(NULL),
+      dangerous_label_(NULL),
       icon_(NULL),
       creation_time_(base::Time::Now()) {
   LoadIcon();
@@ -288,33 +289,15 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
                      FALSE, FALSE, 0);
 
     // Create the warning icon.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    GdkPixbuf* download_pixbuf = rb.GetPixbufNamed(IDR_WARNING);
-    GtkWidget* dangerous_image = gtk_image_new_from_pixbuf(download_pixbuf);
-    gtk_box_pack_start(GTK_BOX(dangerous_hbox_), dangerous_image,
+    dangerous_image_ = gtk_image_new();
+    gtk_box_pack_start(GTK_BOX(dangerous_hbox_), dangerous_image_,
                        FALSE, FALSE, 0);
 
-    std::wstring elided_filename = gfx::ElideFilename(
-        get_download()->original_name(),
-        gfx::Font(), kTextWidth);
-    std::string dangerous_warning =
-        l10n_util::GetStringFUTF8(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-        WideToUTF16(elided_filename));
-    gchar* label_markup =
-        g_markup_printf_escaped(kLabelColorMarkup, kFilenameColor,
-                                dangerous_warning.c_str());
-    GtkWidget* dangerous_label = gtk_label_new(NULL);
-    // Until we switch to vector graphics, force the font size.
-    // 13.4px == 10pt @ 96dpi
-    gtk_util::ForceFontSizePixels(dangerous_label, 13.4);
-    gtk_label_set_markup(GTK_LABEL(dangerous_label), label_markup);
-    gtk_label_set_line_wrap(GTK_LABEL(dangerous_label), TRUE);
+    dangerous_label_ = gtk_label_new(NULL);
     // We pass TRUE, TRUE so that the label will condense to less than its
     // request when the animation is going on.
-    gtk_box_pack_start(GTK_BOX(dangerous_hbox_), dangerous_label,
+    gtk_box_pack_start(GTK_BOX(dangerous_hbox_), dangerous_label_,
                        TRUE, TRUE, 0);
-    gtk_widget_set_size_request(dangerous_label, kDangerousTextWidth, -1);
-    g_free(label_markup);
 
     // Create the ok button.
     GtkWidget* dangerous_accept = gtk_button_new_with_label(
@@ -343,13 +326,6 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     g_signal_connect(dangerous_prompt_, "expose-event",
                      G_CALLBACK(OnDangerousPromptExpose), this);
     gtk_widget_show_all(dangerous_prompt_);
-
-    // The width will depend on the text.
-    GtkRequisition req;
-    gtk_widget_size_request(dangerous_hbox_, &req);
-    dangerous_hbox_full_width_ = req.width;
-    gtk_widget_size_request(dangerous_label, &req);
-    dangerous_hbox_start_width_ = dangerous_hbox_full_width_ - req.width;
   }
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -475,6 +451,7 @@ void DownloadItemGtk::Observe(NotificationType type,
 
     UpdateNameLabel();
     UpdateStatusLabel(status_label_, status_text_);
+    UpdateDangerWarning();
   }
 }
 
@@ -555,6 +532,51 @@ void DownloadItemGtk::UpdateStatusLabel(GtkWidget* status_label,
       gtk_label_set_markup(GTK_LABEL(status_label), label_markup);
       g_free(label_markup);
     }
+  }
+}
+
+void DownloadItemGtk::UpdateDangerWarning() {
+  if (dangerous_prompt_) {
+    std::wstring elided_filename = gfx::ElideFilename(
+        get_download()->original_name(),
+        gfx::Font(), kTextWidth);
+    std::string dangerous_warning =
+        l10n_util::GetStringFUTF8(IDS_PROMPT_DANGEROUS_DOWNLOAD,
+                                  WideToUTF16(elided_filename));
+
+    if (theme_provider_->UseGtkTheme()) {
+      gtk_image_set_from_stock(GTK_IMAGE(dangerous_image_),
+          GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_SMALL_TOOLBAR);
+
+      gtk_label_set_label(GTK_LABEL(dangerous_label_),
+                          dangerous_warning.c_str());
+      gtk_widget_set_size_request(dangerous_label_, -1, -1);
+    } else {
+      // Set the warning icon.
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      GdkPixbuf* download_pixbuf = rb.GetPixbufNamed(IDR_WARNING);
+      gtk_image_set_from_pixbuf(GTK_IMAGE(dangerous_image_), download_pixbuf);
+
+      gchar* label_markup =
+          g_markup_printf_escaped(kLabelColorMarkup, kFilenameColor,
+                                  dangerous_warning.c_str());
+      gtk_label_set_markup(GTK_LABEL(dangerous_label_), label_markup);
+      g_free(label_markup);
+    }
+
+    // Until we switch to vector graphics, force the font size.
+    // 13.4px == 10pt @ 96dpi
+    gtk_util::ForceFontSizePixels(dangerous_label_, 13.4);
+    gtk_label_set_line_wrap(GTK_LABEL(dangerous_label_), TRUE);
+    gtk_widget_set_size_request(dangerous_label_, kDangerousTextWidth, -1);
+
+    // The width will depend on the text. We must do this each time we possibly
+    // change the label above.
+    GtkRequisition req;
+    gtk_widget_size_request(dangerous_hbox_, &req);
+    dangerous_hbox_full_width_ = req.width;
+    gtk_widget_size_request(dangerous_label_, &req);
+    dangerous_hbox_start_width_ = dangerous_hbox_full_width_ - req.width;
   }
 }
 
