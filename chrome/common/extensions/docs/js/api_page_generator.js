@@ -227,9 +227,13 @@ function selectCurrentPageOnLeftNav() {
   evalXPathFromId(".//li/a", "leftNav").select(function(node) {
     if (pageBase == finalPathPart(node.href)) {
       var parent = node.parentNode;
-      parent.className = "leftNavSelected";
+      if (node.firstChild.nodeName == 'DIV') {
+        node.firstChild.className = "leftNavSelected";
+      } else {
+        parent.className = "leftNavSelected";
+      }
       parent.removeChild(node);
-      parent.appendChild(node.firstChild);
+      parent.insertBefore(node.firstChild, parent.firstChild);
       return true;
     }  
   });

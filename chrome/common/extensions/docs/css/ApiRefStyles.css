@@ -173,6 +173,12 @@ img {
   background-color: rgb(229, 236, 249);
 }
 
+div.leftNavSelected {
+  padding-top: 1px;
+  padding-bottom: 1px;
+  margin-left: -12px;
+  padding-left: 12px;
+}
 #mainColumn {
   border-left:3px solid #E5ECF9;
   padding-left:24px;

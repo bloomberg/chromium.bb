@@ -467,7 +467,7 @@
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
             "type": "object",
-            "name": "changedProps",
+            "name": "changeInfo",
             "properties": {
               "status": {"type": "string"},
               "url": {"type": "string", "optional": true}
@@ -483,7 +483,7 @@
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
             "type": "object",
-            "name": "MoveInfo",
+            "name": "moveInfo",
             "properties": {
               "windowId": {"type": "integer", "minimum": 0},
               "fromIndex": {"type": "integer", "minimum": 0},
@@ -499,7 +499,7 @@
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
-            "type": "object", "name": "SelectInfo",
+            "type": "object", "name": "selectInfo",
             "properties": {
               "windowId": {"type": "integer", "minimum": 0}
             }
@@ -514,7 +514,7 @@
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
             "type": "object",
-            "name": "AttachInfo",
+            "name": "attachInfo",
             "properties": {
               "newWindowId": {"type": "integer", "minimum": 0},
               "newPosition": {"type": "integer", "minimum": 0}
@@ -530,7 +530,7 @@
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
             "type": "object",
-            "name": "DetachInfo",
+            "name": "detachInfo",
             "properties": {
               "oldWindowId": {"type": "integer", "minimum": 0},
               "oldPosition": {"type": "integer", "minimum": 0}
