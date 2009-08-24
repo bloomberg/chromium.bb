@@ -32,9 +32,15 @@ test.run_built_executable('prog1',
                           stdout="Hello from prog1.c\n")
 
 if sys.platform in ('darwin',):
-  chdir = 'reloc/src/subdir'
+  chdir = 'reloc/src/subdir2'
 test.run_built_executable('prog2',
                           chdir=chdir,
                           stdout="Hello from prog2.c\n")
+
+if sys.platform in ('darwin',):
+  chdir = 'reloc/src/subdir3'
+test.run_built_executable('prog3',
+                          chdir=chdir,
+                          stdout="Hello from prog3.c\n")
 
 test.pass_test()

@@ -4,10 +4,10 @@
   ],
   'targets': [
     {
-      'target_name': 'prog3',
+      'target_name': 'deeper',
       'type': 'executable',
       'sources': [
-        'prog3.c',
+        'deeper.c',
       ],
     },
   ],

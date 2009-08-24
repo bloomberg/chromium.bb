@@ -1,16 +1,16 @@
 {
   'includes': [
-    'symroot.gypi',
+    '../symroot.gypi',
   ],
   'targets': [
     {
-      'target_name': 'prog1',
+      'target_name': 'prog2',
       'type': 'executable',
       'dependencies': [
-        'subdir2/prog2.gyp:prog2',
+        '../subdir3/prog3.gyp:prog3',
       ],
       'sources': [
-        'prog1.c',
+        'prog2.c',
       ],
     },
   ],

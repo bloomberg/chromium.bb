@@ -4,10 +4,10 @@
   ],
   'targets': [
     {
-      'target_name': 'prog2',
+      'target_name': 'prog3',
       'type': 'executable',
       'sources': [
-        'prog2.c',
+        'prog3.c',
       ],
     },
   ],

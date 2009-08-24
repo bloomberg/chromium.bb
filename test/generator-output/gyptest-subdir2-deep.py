@@ -14,21 +14,21 @@ test = TestGyp.TestGyp()
 
 test.writable(test.workpath('src'), False)
 
-test.writable(test.workpath('src/subdir/subdir2/build'), True)
+test.writable(test.workpath('src/subdir2/deeper/build'), True)
 
-test.run_gyp('prog3.gyp',
+test.run_gyp('deeper.gyp',
              '-Dset_symroot=1',
              '--generator-output=' + test.workpath('gypfiles'),
-             chdir='src/subdir/subdir2')
+             chdir='src/subdir2/deeper')
 
-test.build_all('prog3.gyp', chdir='gypfiles')
+test.build_all('deeper.gyp', chdir='gypfiles')
 
 chdir = 'gypfiles'
 
 if sys.platform in ('darwin',):
-  chdir = 'src/subdir/subdir2'
-test.run_built_executable('prog3',
+  chdir = 'src/subdir2/deeper'
+test.run_built_executable('deeper',
                           chdir=chdir,
-                          stdout="Hello from prog3.c\n")
+                          stdout="Hello from deeper.c\n")
 
 test.pass_test()
