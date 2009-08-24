@@ -255,11 +255,6 @@ RemoteDebuggerCommandExecutorStub.prototype.sendResponse_ = function(response) {
  */
 DevToolsHostStub = function() {
   this.isStub = true;
-  window.domAutomationController = {
-    send: function(text) {
-        debugPrint(text);
-    }
-  };
 };
 
 
@@ -294,7 +289,6 @@ function addDummyResource() {
 
 DevToolsHostStub.prototype.loaded = function() {
   addDummyResource();
-  uiTests.runAllTests();
 };
 
 

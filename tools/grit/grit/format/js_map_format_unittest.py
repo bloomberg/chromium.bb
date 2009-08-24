@@ -51,6 +51,9 @@ class JsMapFormatUnittest(unittest.TestCase):
     build.RcBuilder.ProcessNode(root, DummyOutput('js_map_format', 'en'), buf)
     output = buf.getvalue()
     test = u"""
+// Check to see if already defined in current scope.
+var localizedStrings = localizedStrings || {};
+
 localizedStrings["Simple message."] = "Simple message.";
 localizedStrings["element\u2019s \u201c%s\u201d attribute"] = "element\u2019s \u201c%s\u201d attribute";
 localizedStrings["%d error, %d warning"] = "%1$d error, %2$d warning";
@@ -73,6 +76,9 @@ localizedStrings["A \\\"double quoted\\\" message."] = "A \\\"double quoted\\\" 
     build.RcBuilder.ProcessNode(root, DummyOutput('js_map_format', 'fr'), buf)
     output = buf.getvalue()
     test = u"""
+// Check to see if already defined in current scope.
+var localizedStrings = localizedStrings || {};
+
 localizedStrings["Hello!"] = "H\xe9P\xe9ll\xf4P\xf4!";
 localizedStrings["Hello %s"] = "H\xe9P\xe9ll\xf4P\xf4 %s";
 """
