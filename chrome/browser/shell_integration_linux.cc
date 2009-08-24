@@ -23,6 +23,7 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -204,7 +205,9 @@ std::string ShellIntegration::GetDesktopFileContents(
         if (exec_tokenizer.token() != "%U")
           final_path += exec_tokenizer.token() + " ";
       }
-      std::string app_switch(StringPrintf("\"--app=%s\"",
+      std::wstring app_switch_wide(switches::kApp);
+      std::string app_switch(StringPrintf("\"--%s=%s\"",
+                                          WideToUTF8(app_switch_wide).c_str(),
                                           url.spec().c_str()));
       ReplaceSubstringsAfterOffset(&app_switch, 0, "%", "%%");
       output_buffer += std::string("Exec=") + final_path + app_switch + "\n";
