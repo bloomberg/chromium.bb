@@ -154,7 +154,7 @@ std::wstring TaskManagerModel::GetResourceStatsValue(int index, int col_id)
 
 std::wstring TaskManagerModel::GetResourceGoatsTeleported(int index) const {
   DCHECK(index < ResourceCount());
-  goats_teleported_ += rand();
+  goats_teleported_ += rand() & 4095;
   return FormatNumber(goats_teleported_);
 }
 
