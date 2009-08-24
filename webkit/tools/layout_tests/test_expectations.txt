@@ -1554,6 +1554,7 @@ BUG8630 WIN LINUX : LayoutTests/fast/repaint/float-overflow-right.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/float-overflow.html = FAIL
 BUG8630 WIN : LayoutTests/fast/repaint/transform-absolute-in-positioned-container.html = FAIL
 BUG8630 WIN : LayoutTests/fast/repaint/overflow-scroll-delete.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/search-field-cancel.html = FAIL
 
 
 // Linux pixeltest failure: Failing to rotate the form control
