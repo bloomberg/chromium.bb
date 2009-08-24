@@ -1276,9 +1276,7 @@ BUG10353 WIN LINUX : LayoutTests/fast/forms/listbox-deselect-scroll.html = FAIL
 BUG10353 WIN LINUX : LayoutTests/fast/forms/listbox-selection-2.html = FAIL
 BUG10353 WIN LINUX : LayoutTests/fast/forms/select-item-background-clip.html = FAIL
 BUG10353 WIN LINUX : LayoutTests/fast/forms/textarea-rows-cols.html = FAIL
-// Linux pixeltest failure: We, with Windows, are failing to repaint correctly
-BUG10353 WIN LINUX : LayoutTests/fast/repaint/overflow-outline-repaint.html = FAIL
-BUG10353 WIN : LayoutTests/fast/repaint/overflow-scroll-delete.html = FAIL
+
 // Form control scrollbars seem to be drawn incorrectly.
 BUG10353 LINUX : LayoutTests/fast/replaced/width100percent-textarea.html = FAIL
 BUG10353 LINUX : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
@@ -1320,22 +1318,15 @@ BUG10359 MAC : LayoutTests/fast/css/getComputedStyle/computed-style-without-rend
 
 // MERGE 38625:38653: New tests
 BUG10360 MAC : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10360 WIN LINUX : LayoutTests/fast/repaint/change-transform.html = FAIL
+
 
 // MERGE 38653:38729: New tests
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10361 WIN LINUX : LayoutTests/fast/repaint/outline-child-repaint.html = FAIL
+
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10361 : LayoutTests/http/tests/misc/single-character-pi-stylesheet.xhtml = FAIL
 
 // Windows is missing the green box.
 BUG8729 WIN : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
-
-// This is a repaint test. When it passes, the pixel results will show a white
-// background for only the last couple of lines, instead of the whole
-// paragraph.  New test in merge 42324:42364.
-BUG9962 WIN LINUX : LayoutTests/fast/repaint/text-append-dirty-lines.html = FAIL
 
 // -----------------------------------------------------------------
 // MAC PORT TESTS
@@ -1517,10 +1508,6 @@ BUG10384 MAC : LayoutTests/fast/dom/Window/window-open-self-from-other-frame.htm
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10385 : LayoutTests/fast/dom/dom-constructors.html = FAIL
 
-// WebKit Merge 39050:39100 failures:
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10386 WIN LINUX : LayoutTests/fast/repaint/transform-repaint-descendants.html = FAIL
-
 // WebKit Merge 39100:39141 new tests:
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10387 SKIP : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-image-not-loaded-svg.svg = FAIL
@@ -1534,17 +1521,40 @@ BUG700464 LINUX : LayoutTests/fast/css/hsla-color.html = FAIL
 // Linux pixeltest failure: flaky?  Appears without red locally.
 BUG10388 LINUX : LayoutTests/fast/layers/layer-visibility-sublayer.html = FAIL PASS
 
-// Repaint tests, so the expected output should look like the
-// Mac where everything is dark gray.
-// We should fix these, but they're new tests. Don't need to block next release
-BUG10389 WIN LINUX : LayoutTests/fast/repaint/table-cell-collapsed-border.html = FAIL
-BUG10389 WIN LINUX : LayoutTests/fast/repaint/transform-absolute-child.html = FAIL
-BUG10389 WIN LINUX : LayoutTests/fast/canvas/canvas-as-image-incremental-repaint.html = FAIL
-BUG10389 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
-BUG10389 WIN LINUX : LayoutTests/fast/repaint/create-layer-repaint.html = FAIL
-BUG10389 WIN LINUX : LayoutTests/fast/repaint/reflection-redraw.html = FAIL
-BUG10389 WIN LINUX : LayoutTests/fast/repaint/opacity-change-on-overflow-float.html = FAIL
+// Implement layoutTestController.display() and
+// layoutTestController.testRepaint(). The only reason they are not marked as 
+// failures for Mac is because Mac doesn't yet run pixel tests where the
+// regression becomes visible.
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/table-cell-collapsed-border.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/transform-absolute-child.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-as-image-incremental-repaint.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/create-layer-repaint.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/reflection-redraw.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/opacity-change-on-overflow-float.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/background-misaligned.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/dynamic-table-vertical-alignment-change.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/inline-color-change.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/transform-disable-layoutstate.html = FAIL
+BUG8630 LINUX : LayoutTests/fast/repaint/transform-absolute-in-positioned-container.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/transform-replaced-shadows.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = FAIL PASS
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/reflection-repaint-test.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/transform-layout-repaint.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/overflow-outline-repaint.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/change-transform.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/outline-child-repaint.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/text-append-dirty-lines.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/transform-repaint-descendants.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/background-generated.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/box-shadow-h.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/box-shadow-v.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/float-overflow-right.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/float-overflow.html = FAIL
+BUG8630 WIN : LayoutTests/fast/repaint/transform-absolute-in-positioned-container.html = FAIL
+BUG8630 WIN : LayoutTests/fast/repaint/overflow-scroll-delete.html = FAIL
+
 
 // Linux pixeltest failure: Failing to rotate the form control
 BUG10390 LINUX : LayoutTests/fast/transforms/transformed-focused-text-input.html = FAIL
@@ -1598,10 +1608,7 @@ BUG10398 SKIP : LayoutTests/fast/events/pointer-events.html = FAIL
 
 // Merge 39744:39829 - new tests
 // New test. We should fix it, but it doesn't need to block the current release
-BUG10399 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
 BUG10399 MAC : LayoutTests/fast/encoding/char-encoding-mac.html = FAIL
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10399 WIN LINUX : LayoutTests/fast/repaint/transform-disable-layoutstate.html = FAIL
 
 // Merge 39830:39880 - new tests
 // New test. We should fix it, but it doesn't need to block the current release
@@ -1644,10 +1651,7 @@ BUG10411 : LayoutTests/svg/custom/gradient-stop-style-change.svg = FAIL PASS
 BUG10412 WIN LINUX : LayoutTests/fast/table/vertical-align-baseline.html = FAIL
 
 // Merge 40165:40297 -- regressions
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10413 WIN LINUX : LayoutTests/fast/repaint/dynamic-table-vertical-alignment-change.html = FAIL
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10413 WIN LINUX : LayoutTests/fast/repaint/inline-color-change.html = FAIL
+
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10413 : LayoutTests/http/tests/misc/SVGFont-delayed-load.html = FAIL
 // Expectations for this test changed upstream. We should fix this test, but
@@ -1760,7 +1764,6 @@ BUG10433 : LayoutTests/fast/dom/Window/webkitConvertPoint.html = FAIL
 // Regressions from merge 41217:41268
 // Other failures
 BUG10434 LINUX : LayoutTests/css1/text_properties/vertical_align.html = FAIL
-BUG10434 LINUX : LayoutTests/fast/repaint/transform-absolute-in-positioned-container.html = FAIL
 // SVG Mask-related tests. Most likely result of http://trac.webkit.org/changeset/41266.
 BUG10434 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
 
@@ -1800,9 +1803,6 @@ BUG10443 WIN : LayoutTests/transitions/transition-end-event-create.html = FAIL P
 BUG10443 WIN : LayoutTests/transitions/transition-end-event-window.html = FAIL PASS
 BUG10443 WIN : LayoutTests/transitions/transition-end-event-attributes.html = FAIL PASS
 BUG9071 WIN LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
-
-// http://code.google.com/p/chromium/issues/detail?id=8733
-BUG10444 WIN LINUX : LayoutTests/fast/repaint/transform-replaced-shadows.html = FAIL
 
 // Added 3/11/09
 BUG10445 LINUX : LayoutTests/fast/compact/001.html = CRASH PASS
@@ -1875,7 +1875,6 @@ BUG10458 MAC LINUX : LayoutTests/fast/dom/java-applet-calls.html = FAIL
 BUG10458 LINUX : LayoutTests/fast/forms/textarea-width.html = FAIL
 BUG10458 LINUX : LayoutTests/fast/parser/comment-in-textarea.html = FAIL
 
-BUG10461 WIN LINUX : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = FAIL PASS
 BUG10461 WIN LINUX : LayoutTests/editing/selection/move-by-line-002.html = FAIL PASS
 BUG10461 MAC : LayoutTests/fast/css/rgb-float.html = FAIL PASS
 BUG10461 MAC : LayoutTests/fast/forms/003.html = FAIL PASS
@@ -1929,7 +1928,6 @@ BUG10473 LINUX : LayoutTests/fast/forms/placeholder-set-value.html = FAIL
 BUG10473 LINUX : LayoutTests/fast/forms/search-display-none-cancel-button.html = FAIL
 BUG10473 LINUX : LayoutTests/fast/forms/search-placeholder-value-changed.html = FAIL
 BUG10473 LINUX : LayoutTests/fast/forms/searchfield-heights.html = FAIL
-BUG10473 LINUX : LayoutTests/fast/repaint/search-field-cancel.html = FAIL
 BUG10473 LINUX : LayoutTests/fast/replaced/width100percent-searchfield.html = FAIL
 
 // Changed in http://trac.webkit.org/changeset/42082
@@ -1951,8 +1949,6 @@ BUG10476 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html
 BUG10476 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post-sync.html = FAIL PASS
 
 // Merge WebKit 42133:42199 regressions
-BUG10477 WIN LINUX : LayoutTests/fast/repaint/reflection-repaint-test.html = FAIL
-BUG10477 WIN LINUX : LayoutTests/fast/repaint/transform-layout-repaint.html = FAIL
 BUG10477 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
 BUG18686 : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL CRASH
 BUG10477 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
@@ -2375,7 +2371,6 @@ BUG14885 : LayoutTests/fast/js/JSON-parse.html = FAIL
 
 // WebKit 44928:44943
 BUG14946 : LayoutTests/fast/js/date-toisostring.html = FAIL
-BUG14951 WIN LINUX : LayoutTests/fast/repaint/background-generated.html = FAIL
 
 // WebKit 44969:45017
 BUG15132 WIN LINUX : LayoutTests/editing/execCommand/5482023.html = FAIL
@@ -2821,11 +2816,6 @@ BUG19766 WIN LINUX : LayoutTests/fast/reflections/reflection-masks.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/fast/reflections/reflection-nesting.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/fast/reflections/reflection-overflow-hidden.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/fast/reflections/transparent-reflected-sublayers.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/repaint/box-shadow-h.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/repaint/box-shadow-v.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/repaint/float-overflow-right.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/fast/repaint/float-overflow.html = FAIL
-BUG19766 WIN : LayoutTests/fast/repaint/transform-absolute-in-positioned-container.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/fast/transforms/transforms-with-opacity.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/media/audio-controls-rendering.html = FAIL
 BUG19766 WIN LINUX : LayoutTests/media/video-controls-visible-audio-only.html = FAIL
