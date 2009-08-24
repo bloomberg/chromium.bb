@@ -24,10 +24,10 @@ void SetEmptyDragIcon(GtkWidget* widget) {
 }
 
 // Returns the width of the title for the current font, in pixels.
-int GetTitleWidth(std::wstring title) {
+int GetTitleWidth(gfx::Font* font, std::wstring title) {
+  DCHECK(font);
   if (!title.empty()) {
-    gfx::Font font;
-    return font.GetStringWidth(title);
+    return font->GetStringWidth(title);
   }
   return 0;
 }
@@ -290,7 +290,7 @@ void TabGtk::UpdateData(TabContents* contents, bool loading_only) {
   TabRendererGtk::UpdateData(contents, loading_only);
   // Cache the title width so we don't recalculate it every time the tab is
   // resized.
-  title_width_ = GetTitleWidth(GetTitle());
+  title_width_ = GetTitleWidth(title_font(), GetTitle());
   UpdateTooltipState();
 }
 

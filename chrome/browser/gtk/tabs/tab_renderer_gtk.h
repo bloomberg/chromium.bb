@@ -157,6 +157,8 @@ class TabRendererGtk : public AnimationDelegate {
   static void SetSelectedTitleColor(SkColor color);
   static void SetUnselectedTitleColor(SkColor color);
 
+  static gfx::Font* title_font() { return title_font_; }
+
   // Returns the bounds of the Tab.
   int x() const { return bounds_.x(); }
   int y() const { return bounds_.y(); }

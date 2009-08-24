@@ -196,6 +196,7 @@ void Canvas::DrawStringInt(const std::wstring& text,
   pango_layout_set_width(layout, w * PANGO_SCALE);
   pango_layout_set_height(layout, h * PANGO_SCALE);
 
+  cairo_save(cr);
   cairo_set_source_rgb(cr,
                        SkColorGetR(color) / 255.0,
                        SkColorGetG(color) / 255.0,
@@ -217,7 +218,13 @@ void Canvas::DrawStringInt(const std::wstring& text,
   }
 
   cairo_move_to(cr, x, y);
+  cairo_rectangle(cr, x, y, x + w, y + h);
+  // We use cairo_clip_preserve so that we can reset the clip region with
+  // cairo_restore; otherwise, any further drawing operations on this context
+  // will be clipped to this region.
+  cairo_clip_preserve(cr);
   pango_cairo_show_layout(cr, layout);
+  cairo_restore(cr);
 
   g_object_unref(layout);
   // NOTE: beginPlatformPaint returned its surface, we shouldn't destroy it.
