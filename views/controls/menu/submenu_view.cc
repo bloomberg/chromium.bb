@@ -10,8 +10,9 @@
 #include "views/widget/root_view.h"
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
-#include "views/widget/widget_win.h"
+#include "views/controls/menu/menu_host_win.h"
+#elif defined(OS_LINUX)
+#include "views/controls/menu/menu_host_gtk.h"
 #endif
 
 // Height of the drop indicator. This should be an even number.
@@ -21,236 +22,6 @@ static const int kDropIndicatorHeight = 2;
 static const SkColor kDropIndicatorColor = SK_ColorBLACK;
 
 namespace views {
-
-// MenuHostRootView ----------------------------------------------------------
-
-// MenuHostRootView is the RootView of the window showing the menu.
-// SubmenuView's scroll view is added as a child of MenuHostRootView.
-// MenuHostRootView forwards relevant events to the MenuController.
-//
-// As all the menu items are owned by the root menu item, care must be taken
-// such that when MenuHostRootView is deleted it doesn't delete the menu items.
-class MenuHostRootView : public RootView {
- public:
-  explicit MenuHostRootView(Widget* widget,
-                            SubmenuView* submenu)
-      : RootView(widget),
-        submenu_(submenu),
-        forward_drag_to_menu_controller_(true),
-        suspend_events_(false) {
-#ifdef DEBUG_MENU
-  DLOG(INFO) << " new MenuHostRootView " << this;
-#endif
-  }
-
-  virtual bool OnMousePressed(const MouseEvent& event) {
-    if (suspend_events_)
-      return true;
-
-    forward_drag_to_menu_controller_ =
-        ((event.x() < 0 || event.y() < 0 || event.x() >= width() ||
-          event.y() >= height()) ||
-         !RootView::OnMousePressed(event));
-    if (forward_drag_to_menu_controller_)
-      GetMenuController()->OnMousePressed(submenu_, event);
-    return true;
-  }
-
-  virtual bool OnMouseDragged(const MouseEvent& event) {
-    if (suspend_events_)
-      return true;
-
-    if (forward_drag_to_menu_controller_) {
-#ifdef DEBUG_MENU
-      DLOG(INFO) << " MenuHostRootView::OnMouseDragged source=" << submenu_;
-#endif
-      GetMenuController()->OnMouseDragged(submenu_, event);
-      return true;
-    }
-    return RootView::OnMouseDragged(event);
-  }
-
-  virtual void OnMouseReleased(const MouseEvent& event, bool canceled) {
-    if (suspend_events_)
-      return;
-
-    RootView::OnMouseReleased(event, canceled);
-    if (forward_drag_to_menu_controller_) {
-      forward_drag_to_menu_controller_ = false;
-      if (canceled) {
-        GetMenuController()->Cancel(true);
-      } else {
-        GetMenuController()->OnMouseReleased(submenu_, event);
-      }
-    }
-  }
-
-  virtual void OnMouseMoved(const MouseEvent& event) {
-    if (suspend_events_)
-      return;
-
-    RootView::OnMouseMoved(event);
-    GetMenuController()->OnMouseMoved(submenu_, event);
-  }
-
-  virtual void ProcessOnMouseExited() {
-    if (suspend_events_)
-      return;
-
-    RootView::ProcessOnMouseExited();
-  }
-
-  virtual bool ProcessMouseWheelEvent(const MouseWheelEvent& e) {
-    // RootView::ProcessMouseWheelEvent forwards to the focused view. We don't
-    // have a focused view, so we need to override this then forward to
-    // the menu.
-    return submenu_->OnMouseWheel(e);
-  }
-
-  void SuspendEvents() {
-    suspend_events_ = true;
-  }
-
- private:
-  MenuController* GetMenuController() {
-    return submenu_->GetMenuItem()->GetMenuController();
-  }
-
-  // The SubmenuView we contain.
-  SubmenuView* submenu_;
-
-  // Whether mouse dragged/released should be forwarded to the MenuController.
-  bool forward_drag_to_menu_controller_;
-
-  // Whether events are suspended. If true, no events are forwarded to the
-  // MenuController.
-  bool suspend_events_;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuHostRootView);
-};
-
-// MenuHost ------------------------------------------------------------------
-
-// MenuHost is the window responsible for showing a single menu.
-//
-// Similar to MenuHostRootView, care must be taken such that when MenuHost is
-// deleted, it doesn't delete the menu items. MenuHost is closed via a
-// DelayedClosed, which avoids timing issues with deleting the window while
-// capture or events are directed at it.
-
-class MenuHost : public WidgetWin {
- public:
-  explicit MenuHost(SubmenuView* submenu)
-      : closed_(false),
-        submenu_(submenu),
-        owns_capture_(false) {
-    set_window_style(WS_POPUP);
-    set_initial_class_style(
-        (win_util::GetWinVersion() < win_util::WINVERSION_XP) ?
-        0 : CS_DROPSHADOW);
-    is_mouse_down_ =
-        ((GetKeyState(VK_LBUTTON) & 0x80) ||
-         (GetKeyState(VK_RBUTTON) & 0x80) ||
-         (GetKeyState(VK_MBUTTON) & 0x80) ||
-         (GetKeyState(VK_XBUTTON1) & 0x80) ||
-         (GetKeyState(VK_XBUTTON2) & 0x80));
-    // Mouse clicks shouldn't give us focus.
-    set_window_ex_style(WS_EX_TOPMOST | WS_EX_NOACTIVATE);
-  }
-
-  void Init(HWND parent,
-            const gfx::Rect& bounds,
-            View* contents_view,
-            bool do_capture) {
-    WidgetWin::Init(parent, bounds);
-    SetContentsView(contents_view);
-    // We don't want to take focus away from the hosting window.
-    ShowWindow(SW_SHOWNA);
-    owns_capture_ = do_capture;
-    if (do_capture) {
-      SetCapture();
-      has_capture_ = true;
-#ifdef DEBUG_MENU
-      DLOG(INFO) << "Doing capture";
-#endif
-    }
-  }
-
-  virtual void Hide() {
-    if (closed_) {
-      // We're already closed, nothing to do.
-      // This is invoked twice if the first time just hid us, and the second
-      // time deleted Closed (deleted) us.
-      return;
-    }
-    // The menus are freed separately, and possibly before the window is closed,
-    // remove them so that View doesn't try to access deleted objects.
-    static_cast<MenuHostRootView*>(GetRootView())->SuspendEvents();
-    GetRootView()->RemoveAllChildViews(false);
-    closed_ = true;
-    ReleaseCapture();
-    WidgetWin::Hide();
-  }
-
-  virtual void HideWindow() {
-    // Make sure we release capture before hiding.
-    ReleaseCapture();
-    WidgetWin::Hide();
-  }
-
-  virtual void OnCaptureChanged(HWND hwnd) {
-    WidgetWin::OnCaptureChanged(hwnd);
-    owns_capture_ = false;
-#ifdef DEBUG_MENU
-    DLOG(INFO) << "Capture changed";
-#endif
-  }
-
-  void ReleaseCapture() {
-    if (owns_capture_) {
-#ifdef DEBUG_MENU
-      DLOG(INFO) << "released capture";
-#endif
-      owns_capture_ = false;
-      ::ReleaseCapture();
-    }
-  }
-
- protected:
-  // Overriden to create MenuHostRootView.
-  virtual RootView* CreateRootView() {
-    return new MenuHostRootView(this, submenu_);
-  }
-
-  virtual void OnCancelMode() {
-    if (!closed_) {
-#ifdef DEBUG_MENU
-      DLOG(INFO) << "OnCanceMode, closing menu";
-#endif
-      submenu_->GetMenuItem()->GetMenuController()->Cancel(true);
-    }
-  }
-
-  // Overriden to return false, we do NOT want to release capture on mouse
-  // release.
-  virtual bool ReleaseCaptureOnMouseReleased() {
-    return false;
-  }
-
- private:
-  // If true, we've been closed.
-  bool closed_;
-
-  // If true, we own the capture and need to release it.
-  bool owns_capture_;
-
-  // The view we contain.
-  SubmenuView* submenu_;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuHost);
-};
-
-// SubmenuView ---------------------------------------------------------------
 
 // static
 const int SubmenuView::kSubmenuBorderSize = 3;
@@ -394,7 +165,11 @@ bool SubmenuView::OnMouseWheel(const MouseWheelEvent& e) {
 
   // If the first item isn't entirely visible, make it visible, otherwise make
   // the next/previous one entirely visible.
+#if defined(OS_WIN)
   int delta = abs(e.GetOffset() / WHEEL_DELTA);
+#elif defined(OS_LINUX)
+  int delta = abs(e.GetOffset());
+#endif
   bool scroll_up = (e.GetOffset() > 0);
   while (delta-- > 0) {
     int scroll_amount = 0;
@@ -430,11 +205,11 @@ bool SubmenuView::IsShowing() {
   return host_ && host_->IsVisible();
 }
 
-void SubmenuView::ShowAt(HWND parent,
+void SubmenuView::ShowAt(gfx::NativeView parent,
                          const gfx::Rect& bounds,
                          bool do_capture) {
   if (host_) {
-    host_->ShowWindow(SW_SHOWNA);
+    host_->Show();
     return;
   }
 

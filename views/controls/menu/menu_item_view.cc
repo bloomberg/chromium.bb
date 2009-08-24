@@ -4,214 +4,17 @@
 
 #include "views/controls/menu/menu_item_view.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <uxtheme.h>
-#include <Vssym32.h>
-#endif
-
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "grit/app_strings.h"
+#include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_controller.h"
+#include "views/controls/menu/menu_separator.h"
 #include "views/controls/menu/submenu_view.h"
-
-#if defined(OS_WIN)
-#include "app/l10n_util_win.h"
-#include "base/gfx/native_theme.h"
-#include "base/win_util.h"
-#endif
-
-// Margins between the top of the item and the label.
-static const int kItemTopMargin = 3;
-
-// Margins between the bottom of the item and the label.
-static const int kItemBottomMargin = 4;
-
-// Margins used if the menu doesn't have icons.
-static const int kItemNoIconTopMargin = 1;
-static const int kItemNoIconBottomMargin = 3;
-
-// Margins between the left of the item and the icon.
-static const int kItemLeftMargin = 4;
-
-// Padding between the label and submenu arrow.
-static const int kLabelToArrowPadding = 10;
-
-// Padding between the arrow and the edge.
-static const int kArrowToEdgePadding = 5;
-
-// Padding between the icon and label.
-static const int kIconToLabelPadding = 8;
-
-// Padding between the gutter and label.
-static const int kGutterToLabel = 5;
-
-// Size of the check. This comes from the OS.
-static int check_width;
-static int check_height;
-
-// Size of the submenu arrow. This comes from the OS.
-static int arrow_width;
-static int arrow_height;
-
-// Width of the gutter. Only used if render_gutter is true.
-static int gutter_width;
-
-// Margins between the right of the item and the label.
-static int item_right_margin;
-
-// X-coordinate of where the label starts.
-static int label_start;
-
-// Height of the separator.
-static int separator_height;
-
-// Whether or not the gutter should be rendered. The gutter is specific to
-// Vista.
-static bool render_gutter = false;
-
-// Preferred height of menu items. Reset every time a menu is run.
-static int pref_menu_h;
-
-// Are mnemonics shown? This is updated before the menus are shown.
-static bool show_mnemonics;
-
-using gfx::NativeTheme;
 
 namespace views {
 
 namespace {
-
-// Returns the font menus are to use.
-gfx::Font GetMenuFont() {
-#if defined(OS_WIN)
-  NONCLIENTMETRICS metrics;
-  win_util::GetNonClientMetrics(&metrics);
-
-  l10n_util::AdjustUIFont(&(metrics.lfMenuFont));
-  HFONT font = CreateFontIndirect(&metrics.lfMenuFont);
-  DLOG_ASSERT(font);
-  return gfx::Font::CreateFont(font);
-#else
-  return gfx::Font();
-#endif
-}
-
-// Calculates all sizes that we can from the OS.
-//
-// This is invoked prior to Running a menu.
-void UpdateMenuPartSizes(bool has_icons) {
-#if defined(OS_WIN)
-  HDC dc = GetDC(NULL);
-  RECT bounds = { 0, 0, 200, 200 };
-  SIZE check_size;
-  if (NativeTheme::instance()->GetThemePartSize(
-          NativeTheme::MENU, dc, MENU_POPUPCHECK, MC_CHECKMARKNORMAL, &bounds,
-          TS_TRUE, &check_size) == S_OK) {
-    check_width = check_size.cx;
-    check_height = check_size.cy;
-  } else {
-    check_width = GetSystemMetrics(SM_CXMENUCHECK);
-    check_height = GetSystemMetrics(SM_CYMENUCHECK);
-  }
-
-  SIZE arrow_size;
-  if (NativeTheme::instance()->GetThemePartSize(
-          NativeTheme::MENU, dc, MENU_POPUPSUBMENU, MSM_NORMAL, &bounds,
-          TS_TRUE, &arrow_size) == S_OK) {
-    arrow_width = arrow_size.cx;
-    arrow_height = arrow_size.cy;
-  } else {
-    // Sadly I didn't see a specify metrics for this.
-    arrow_width = GetSystemMetrics(SM_CXMENUCHECK);
-    arrow_height = GetSystemMetrics(SM_CYMENUCHECK);
-  }
-
-  SIZE gutter_size;
-  if (NativeTheme::instance()->GetThemePartSize(
-          NativeTheme::MENU, dc, MENU_POPUPGUTTER, MSM_NORMAL, &bounds,
-          TS_TRUE, &gutter_size) == S_OK) {
-    gutter_width = gutter_size.cx;
-    render_gutter = true;
-  } else {
-    gutter_width = 0;
-    render_gutter = false;
-  }
-
-  SIZE separator_size;
-  if (NativeTheme::instance()->GetThemePartSize(
-          NativeTheme::MENU, dc, MENU_POPUPSEPARATOR, MSM_NORMAL, &bounds,
-          TS_TRUE, &separator_size) == S_OK) {
-    separator_height = separator_size.cy;
-  } else {
-    separator_height = GetSystemMetrics(SM_CYMENU) / 2;
-  }
-
-  item_right_margin = kLabelToArrowPadding + arrow_width + kArrowToEdgePadding;
-
-  if (has_icons) {
-    label_start = kItemLeftMargin + check_width + kIconToLabelPadding;
-  } else {
-    // If there are no icons don't pad by the icon to label padding. This
-    // makes us look close to system menus.
-    label_start = kItemLeftMargin + check_width;
-  }
-  if (render_gutter)
-    label_start += gutter_width + kGutterToLabel;
-
-  ReleaseDC(NULL, dc);
-
-  MenuItemView menu_item(NULL);
-  menu_item.SetTitle(L"blah");  // Text doesn't matter here.
-  pref_menu_h = menu_item.GetPreferredSize().height();
-#endif
-}
-
-// Convenience for scrolling the view such that the origin is visible.
-static void ScrollToVisible(View* view) {
-  view->ScrollRectToVisible(0, 0, view->width(), view->height());
-}
-
-// MenuSeparator ---------------------------------------------------------------
-
-// Renders a separator.
-
-class MenuSeparator : public View {
- public:
-  MenuSeparator() {
-  }
-
-  void Paint(gfx::Canvas* canvas) {
-    // The gutter is rendered before the background.
-    int start_x = 0;
-    int start_y = height() / 3;
-    HDC dc = canvas->beginPlatformPaint();
-    if (render_gutter) {
-      // If render_gutter is true, we're on Vista and need to render the
-      // gutter, then indent the separator from the gutter.
-      RECT gutter_bounds = { label_start - kGutterToLabel - gutter_width, 0, 0,
-                              height() };
-      gutter_bounds.right = gutter_bounds.left + gutter_width;
-      NativeTheme::instance()->PaintMenuGutter(dc, MENU_POPUPGUTTER, MPI_NORMAL,
-                                               &gutter_bounds);
-      start_x = gutter_bounds.left + gutter_width;
-      start_y = 0;
-    }
-    RECT separator_bounds = { start_x, start_y, width(), height() };
-    NativeTheme::instance()->PaintMenuSeparator(dc, MENU_POPUPSEPARATOR,
-                                                MPI_NORMAL, &separator_bounds);
-    canvas->endPlatformPaint();
-  }
-
-  gfx::Size GetPreferredSize() {
-    return gfx::Size(10,  // Just in case we're the only item in a menu.
-                     separator_height);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MenuSeparator);
-};
 
 // EmptyMenuMenuItem ---------------------------------------------------------
 
@@ -247,6 +50,17 @@ const int MenuItemView::kEmptyMenuItemViewID =
 // static
 bool MenuItemView::allow_task_nesting_during_run_ = false;
 
+// static
+int MenuItemView::label_start_;
+
+// Margins between the right of the item and the label.
+// static
+int MenuItemView::item_right_margin_;
+
+// Preferred height of menu items. Reset every time a menu is run.
+// static
+int MenuItemView::pref_menu_height_;
+
 MenuItemView::MenuItemView(MenuDelegate* delegate) {
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes supplies a
   // NULL delegate.
@@ -270,12 +84,7 @@ MenuItemView::~MenuItemView() {
   delete submenu_;
 }
 
-// static
-int MenuItemView::pref_menu_height() {
-  return pref_menu_h;
-}
-
-void MenuItemView::RunMenuAt(HWND parent,
+void MenuItemView::RunMenuAt(gfx::NativeView parent,
                              const gfx::Rect& bounds,
                              AnchorPosition anchor,
                              bool has_mnemonics) {
@@ -327,7 +136,7 @@ void MenuItemView::RunMenuAt(HWND parent,
     delegate_->ExecuteCommand(result->GetCommand(), mouse_event_flags);
 }
 
-void MenuItemView::RunMenuForDropAt(HWND parent,
+void MenuItemView::RunMenuForDropAt(gfx::NativeView parent,
                                     const gfx::Rect& bounds,
                                     AnchorPosition anchor) {
   PrepareForRun(false);
@@ -381,9 +190,9 @@ void MenuItemView::Paint(gfx::Canvas* canvas) {
 }
 
 gfx::Size MenuItemView::GetPreferredSize() {
-  gfx::Font& font = GetRootMenuItem()->font_;
+  const gfx::Font& font = MenuConfig::instance().font;
   return gfx::Size(
-      font.GetStringWidth(title_) + label_start + item_right_margin,
+      font.GetStringWidth(title_) + label_start_ + item_right_margin_,
       font.height() + GetBottomMargin() + GetTopMargin());
 }
 
@@ -428,6 +237,32 @@ MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            MenuItemView::Type type) {
   Init(parent, command, type, NULL);
+}
+
+// Calculates all sizes that we can from the OS.
+//
+// This is invoked prior to Running a menu.
+void MenuItemView::UpdateMenuPartSizes(bool has_icons) {
+  MenuConfig::Reset();
+  const MenuConfig& config = MenuConfig::instance();
+
+  item_right_margin_ = config.label_to_arrow_padding + config.arrow_width +
+      config.arrow_to_edge_padding;
+
+  if (has_icons) {
+    label_start_ = config.item_left_margin + config.check_width +
+                   config.icon_to_label_padding;
+  } else {
+    // If there are no icons don't pad by the icon to label padding. This
+    // makes us look close to system menus.
+    label_start_ = config.item_left_margin + config.check_width;
+  }
+  if (config.render_gutter)
+    label_start_ += config.gutter_width + config.gutter_to_label;
+
+  MenuItemView menu_item(NULL);
+  menu_item.SetTitle(L"blah");  // Text doesn't matter here.
+  pref_menu_height_ = menu_item.GetPreferredSize().height();
 }
 
 void MenuItemView::Init(MenuItemView* parent,
@@ -528,13 +363,6 @@ void MenuItemView::PrepareForRun(bool has_mnemonics) {
     // things may shift around.
     UpdateMenuPartSizes(has_icons_);
   }
-
-  font_ = GetMenuFont();
-
-  BOOL show_cues;
-  show_mnemonics =
-      (SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &show_cues, 0) &&
-       show_cues == TRUE);
 }
 
 int MenuItemView::GetDrawStringFlags() {
@@ -545,7 +373,7 @@ int MenuItemView::GetDrawStringFlags() {
     flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
 
   if (has_mnemonics_) {
-    if (show_mnemonics)
+    if (MenuConfig::instance().show_mnemonics)
       flags |= gfx::Canvas::SHOW_PREFIX;
     else
       flags |= gfx::Canvas::HIDE_PREFIX;
@@ -587,122 +415,6 @@ void MenuItemView::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
   rect->set_x(MirroredLeftPointForRect(*rect));
 }
 
-void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
-  bool render_selection =
-      (!for_drag && IsSelected() &&
-       parent_menu_item_->GetSubmenu()->GetShowSelection(this));
-  int state = render_selection ? MPI_HOT :
-                                 (IsEnabled() ? MPI_NORMAL : MPI_DISABLED);
-  HDC dc = canvas->beginPlatformPaint();
-
-  // The gutter is rendered before the background.
-  if (render_gutter && !for_drag) {
-    gfx::Rect gutter_bounds(label_start - kGutterToLabel - gutter_width, 0,
-                            gutter_width, height());
-    AdjustBoundsForRTLUI(&gutter_bounds);
-    RECT gutter_rect = gutter_bounds.ToRECT();
-    NativeTheme::instance()->PaintMenuGutter(dc, MENU_POPUPGUTTER, MPI_NORMAL,
-                                             &gutter_rect);
-  }
-
-  // Render the background.
-  if (!for_drag) {
-    gfx::Rect item_bounds(0, 0, width(), height());
-    AdjustBoundsForRTLUI(&item_bounds);
-    RECT item_rect = item_bounds.ToRECT();
-    NativeTheme::instance()->PaintMenuItemBackground(
-        NativeTheme::MENU, dc, MENU_POPUPITEM, state, render_selection,
-        &item_rect);
-  }
-
-  int icon_x = kItemLeftMargin;
-  int top_margin = GetTopMargin();
-  int bottom_margin = GetBottomMargin();
-  int icon_y = top_margin + (height() - kItemTopMargin -
-                             bottom_margin - check_height) / 2;
-  int icon_height = check_height;
-  int icon_width = check_width;
-
-  if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {
-    // Draw the check background.
-    gfx::Rect check_bg_bounds(0, 0, icon_x + icon_width, height());
-    const int bg_state = IsEnabled() ? MCB_NORMAL : MCB_DISABLED;
-    AdjustBoundsForRTLUI(&check_bg_bounds);
-    RECT check_bg_rect = check_bg_bounds.ToRECT();
-    NativeTheme::instance()->PaintMenuCheckBackground(
-        NativeTheme::MENU, dc, MENU_POPUPCHECKBACKGROUND, bg_state,
-        &check_bg_rect);
-
-    // And the check.
-    gfx::Rect check_bounds(icon_x, icon_y, icon_width, icon_height);
-    const int check_state = IsEnabled() ? MC_CHECKMARKNORMAL :
-                                          MC_CHECKMARKDISABLED;
-    AdjustBoundsForRTLUI(&check_bounds);
-    RECT check_rect = check_bounds.ToRECT();
-    NativeTheme::instance()->PaintMenuCheck(
-        NativeTheme::MENU, dc, MENU_POPUPCHECK, check_state, &check_rect,
-        render_selection);
-  }
-
-  // Render the foreground.
-  // Menu color is specific to Vista, fallback to classic colors if can't
-  // get color.
-  int default_sys_color = render_selection ? COLOR_HIGHLIGHTTEXT :
-      (IsEnabled() ? COLOR_MENUTEXT : COLOR_GRAYTEXT);
-  SkColor fg_color = NativeTheme::instance()->GetThemeColorWithDefault(
-      NativeTheme::MENU, MENU_POPUPITEM, state, TMT_TEXTCOLOR,
-      default_sys_color);
-  int width = this->width() - item_right_margin - label_start;
-  gfx::Font& font = GetRootMenuItem()->font_;
-  gfx::Rect text_bounds(label_start, top_margin, width, font.height());
-  text_bounds.set_x(MirroredLeftPointForRect(text_bounds));
-  if (for_drag) {
-    // With different themes, it's difficult to tell what the correct foreground
-    // and background colors are for the text to draw the correct halo. Instead,
-    // just draw black on white, which will look good in most cases.
-    canvas->DrawStringWithHalo(GetTitle(), font, 0x00000000, 0xFFFFFFFF,
-                               text_bounds.x(), text_bounds.y(),
-                               text_bounds.width(), text_bounds.height(),
-                               GetRootMenuItem()->GetDrawStringFlags());
-  } else {
-    canvas->DrawStringInt(GetTitle(), font, fg_color,
-                          text_bounds.x(), text_bounds.y(), text_bounds.width(),
-                          text_bounds.height(),
-                          GetRootMenuItem()->GetDrawStringFlags());
-  }
-
-  if (icon_.width() > 0) {
-    gfx::Rect icon_bounds(kItemLeftMargin,
-                          top_margin + (height() - top_margin -
-                          bottom_margin - icon_.height()) / 2,
-                          icon_.width(),
-                          icon_.height());
-    icon_bounds.set_x(MirroredLeftPointForRect(icon_bounds));
-    canvas->DrawBitmapInt(icon_, icon_bounds.x(), icon_bounds.y());
-  }
-
-  if (HasSubmenu()) {
-    int state_id = IsEnabled() ? MSM_NORMAL : MSM_DISABLED;
-    gfx::Rect arrow_bounds(this->width() - item_right_margin + kLabelToArrowPadding,
-                           0, arrow_width, height());
-    AdjustBoundsForRTLUI(&arrow_bounds);
-
-    // If our sub menus open from right to left (which is the case when the
-    // locale is RTL) then we should make sure the menu arrow points to the
-    // right direction.
-    NativeTheme::MenuArrowDirection arrow_direction;
-    if (UILayoutIsRightToLeft())
-      arrow_direction = NativeTheme::LEFT_POINTING_ARROW;
-    else
-      arrow_direction = NativeTheme::RIGHT_POINTING_ARROW;
-
-    RECT arrow_rect = arrow_bounds.ToRECT();
-    NativeTheme::instance()->PaintMenuArrow(
-        NativeTheme::MENU, dc, MENU_POPUPSUBMENU, state_id, &arrow_rect,
-        arrow_direction, render_selection);
-  }
-  canvas->endPlatformPaint();
-}
 
 void MenuItemView::DestroyAllMenuHosts() {
   if (!HasSubmenu())
@@ -717,13 +429,16 @@ void MenuItemView::DestroyAllMenuHosts() {
 
 int MenuItemView::GetTopMargin() {
   MenuItemView* root = GetRootMenuItem();
-  return root && root->has_icons_ ? kItemTopMargin : kItemNoIconTopMargin;
+  return root && root->has_icons_
+      ? MenuConfig::instance().item_top_margin :
+        MenuConfig::instance().item_no_icon_top_margin;
 }
 
 int MenuItemView::GetBottomMargin() {
   MenuItemView* root = GetRootMenuItem();
-  return root && root->has_icons_ ?
-      kItemBottomMargin : kItemNoIconBottomMargin;
+  return root && root->has_icons_
+      ? MenuConfig::instance().item_bottom_margin :
+        MenuConfig::instance().item_no_icon_bottom_margin;
 }
 
 }  // namespace views

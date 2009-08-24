@@ -12,17 +12,23 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
-#include "base/gfx/native_theme.h"
 #include "views/border.h"
+#include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
 
+#if defined(OS_WIN)
+#include "base/gfx/native_theme.h"
+#endif
+
+#if defined(OS_WIN)
 using gfx::NativeTheme;
+#endif
 
 // Height of the scroll arrow.
 // This goes up to 4 with large fonts, but this is close enough for now.
-static const int kScrollArrowHeight = 3;
+static const int scroll_arrow_height = 3;
 
 namespace views {
 
@@ -44,7 +50,8 @@ class MenuScrollButton : public View {
   }
 
   virtual gfx::Size GetPreferredSize() {
-    return gfx::Size(kScrollArrowHeight * 2 - 1, pref_height_);
+    return gfx::Size(MenuConfig::instance().scroll_arrow_height * 2 - 1,
+                     pref_height_);
   }
 
   virtual bool CanDrop(const OSExchangeData& data) {
@@ -72,6 +79,8 @@ class MenuScrollButton : public View {
   }
 
   virtual void Paint(gfx::Canvas* canvas) {
+#if defined(OS_WIN)
+    const MenuConfig& config = MenuConfig::instance();
     HDC dc = canvas->beginPlatformPaint();
 
     // The background.
@@ -82,17 +91,20 @@ class MenuScrollButton : public View {
 
     // Then the arrow.
     int x = width() / 2;
-    int y = (height() - kScrollArrowHeight) / 2;
+    int y = (height() - config.scroll_arrow_height) / 2;
     int delta_y = 1;
     if (!is_up_) {
       delta_y = -1;
-      y += kScrollArrowHeight;
+      y += config.scroll_arrow_height;
     }
     SkColor arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
-    for (int i = 0; i < kScrollArrowHeight; ++i, --x, y += delta_y)
+    for (int i = 0; i < config.scroll_arrow_height; ++i, --x, y += delta_y)
       canvas->FillRectInt(arrow_color, x, y, (i * 2) + 1, 1);
 
     canvas->endPlatformPaint();
+#else
+    NOTIMPLEMENTED();
+#endif
   }
 
  private:
@@ -166,11 +178,15 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view) {
 }
 
 void MenuScrollViewContainer::Paint(gfx::Canvas* canvas) {
+#if defined(OS_WIN)
   HDC dc = canvas->beginPlatformPaint();
   RECT bounds = {0, 0, width(), height()};
   NativeTheme::instance()->PaintMenuBackground(
       NativeTheme::MENU, dc, MENU_POPUPBACKGROUND, 0, &bounds);
   canvas->endPlatformPaint();
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 void MenuScrollViewContainer::Layout() {

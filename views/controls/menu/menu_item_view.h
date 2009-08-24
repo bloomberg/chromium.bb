@@ -5,7 +5,6 @@
 #ifndef VIEWS_CONTROLS_MENU_MENU_ITEM_VIEW_H_
 #define VIEWS_CONTROLS_MENU_MENU_ITEM_VIEW_H_
 
-#include "app/gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"
 
@@ -73,7 +72,10 @@ class MenuItemView : public View {
 
   // Returns the preferred height of menu items. This is only valid when the
   // menu is about to be shown.
-  static int pref_menu_height();
+  static int pref_menu_height() { return pref_menu_height_; }
+
+  // X-coordinate of where the label starts.
+  static int label_start() { return label_start_; }
 
   // Run methods. See description above class for details. Both Run methods take
   // a rectangle, which is used to position the menu. |has_mnemonics| indicates
@@ -159,9 +161,6 @@ class MenuItemView : public View {
   // Returns the parent menu item.
   MenuItemView* GetParentMenuItem() const { return parent_menu_item_; }
 
-  // Sets the font.
-  void SetFont(const gfx::Font& font) { font_ = font; }
-
   // Sets the title
   void SetTitle(const std::wstring& title) {
     title_ = title;
@@ -222,6 +221,11 @@ class MenuItemView : public View {
   MenuItemView(MenuItemView* parent, int command, Type type);
 
  private:
+  // Calculates all sizes that we can from the OS.
+  //
+  // This is invoked prior to Running a menu.
+  static void UpdateMenuPartSizes(bool has_icons);
+
   // Called by the two constructors to initialize this menu item.
   void Init(MenuItemView* parent,
             int command,
@@ -300,9 +304,6 @@ class MenuItemView : public View {
   // Submenu, created via CreateSubmenu.
   SubmenuView* submenu_;
 
-  // Font.
-  gfx::Font font_;
-
   // Title.
   std::wstring title_;
 
@@ -313,6 +314,15 @@ class MenuItemView : public View {
   bool has_mnemonics_;
 
   bool has_icons_;
+
+  // X-coordinate of where the label starts.
+  static int label_start_;
+
+  // Margins between the right of the item and the label.
+  static int item_right_margin_;
+
+  // Preferred height of menu items. Reset every time a menu is run.
+  static int pref_menu_height_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuItemView);
 };

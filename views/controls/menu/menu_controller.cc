@@ -7,7 +7,6 @@
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
-#include "base/base_drag_source.h"
 #include "base/time.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
@@ -17,6 +16,7 @@
 
 #if defined(OS_WIN)
 #include "app/os_exchange_data_provider_win.h"
+#include "base/base_drag_source.h"
 #endif
 
 using base::Time;
@@ -144,7 +144,7 @@ static int instance_count = 0;
 static int nested_depth = 0;
 #endif
 
-MenuItemView* MenuController::Run(HWND parent,
+MenuItemView* MenuController::Run(gfx::NativeView parent,
                                   MenuItemView* root,
                                   const gfx::Rect& bounds,
                                   MenuItemView::AnchorPosition position,
@@ -179,8 +179,10 @@ MenuItemView* MenuController::Run(HWND parent,
   pending_state_.anchor = position;
   owner_ = parent;
 
+  // TODO: push this into Screen.
   // Calculate the bounds of the monitor we'll show menus on. Do this once to
   // avoid repeated system queries for the info.
+#if defined(OS_WIN)
   POINT initial_loc = { bounds.x(), bounds.y() };
   HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
   if (monitor) {
@@ -190,6 +192,9 @@ MenuItemView* MenuController::Run(HWND parent,
     // Menus appear over the taskbar.
     pending_state_.monitor_bounds = gfx::Rect(mi.rcMonitor);
   }
+#else
+  NOTIMPLEMENTED();
+#endif
 
   // Set the selection, which opens the initial menu.
   SetSelection(root, true, true);
@@ -338,7 +343,13 @@ void MenuController::OnMousePressed(SubmenuView* source,
     // We're going to close and we own the mouse capture. We need to repost the
     // mouse down, otherwise the window the user clicked on won't get the
     // event.
+#if defined(OS_WIN)
     RepostEvent(source, event);
+#else
+    // Do we really need the repost logic for linux? I tend to think not but I
+    // need to verify that
+    NOTIMPLEMENTED();
+#endif
 
     // And close.
     Cancel(true);
@@ -398,13 +409,17 @@ void MenuController::OnMouseDragged(SubmenuView* source,
                                            item->height(), press_loc.x(),
                                            press_loc.y(), &data);
 
-      scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
-      int drag_ops = item->GetDelegate()->GetDragOperations(item);
-      DWORD effects;
       StopScrolling();
+#if defined(OS_WIN)
+      int drag_ops = item->GetDelegate()->GetDragOperations(item);
+      scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
+      DWORD effects;
       DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
                  DragDropTypes::DragOperationToDropEffect(drag_ops),
                  &effects);
+#else
+      NOTIMPLEMENTED();
+#endif
       if (GetActiveInstance() == this) {
         if (showing_) {
           // We're still showing, close all menus.
@@ -637,6 +652,7 @@ void MenuController::SetActiveInstance(MenuController* controller) {
   active_instance_ = controller;
 }
 
+#if defined(OS_WIN)
 bool MenuController::Dispatch(const MSG& msg) {
   DCHECK(blocking_run_);
 
@@ -759,6 +775,16 @@ bool MenuController::OnChar(const MSG& msg) {
 
   return !SelectByChar(static_cast<wchar_t>(msg.wParam));
 }
+#else
+bool MenuController::Dispatch(GdkEvent* event) {
+  gtk_main_do_event(event);
+  if (exit_all_)
+    return false;
+
+  NOTIMPLEMENTED();
+  return !exit_all_;
+}
+#endif
 
 MenuController::MenuController(bool blocking)
     : blocking_run_(blocking),
@@ -766,12 +792,12 @@ MenuController::MenuController(bool blocking)
       exit_all_(false),
       did_capture_(false),
       result_(NULL),
+      result_mouse_event_flags_(0),
       drop_target_(NULL),
       owner_(NULL),
       possible_drag_(false),
       valid_drop_coordinates_(false),
-      showing_submenu_(false),
-      result_mouse_event_flags_(0) {
+      showing_submenu_(false) {
 #ifdef DEBUG_MENU
   instance_count++;
   DLOG(INFO) << "created MC, count=" << instance_count;
@@ -1222,14 +1248,6 @@ void MenuController::CloseSubmenu() {
   }
 }
 
-bool MenuController::IsMenuWindow(MenuItemView* item, HWND window) {
-  if (!item)
-    return false;
-  return ((item->HasSubmenu() && item->GetSubmenu()->IsShowing() &&
-           item->GetSubmenu()->GetWidget()->GetNativeView() == window) ||
-           IsMenuWindow(item->GetParentMenuItem(), window));
-}
-
 bool MenuController::SelectByChar(wchar_t character) {
   wchar_t char_array[1] = { character };
   wchar_t key = l10n_util::ToLower(char_array)[0];
@@ -1290,6 +1308,7 @@ bool MenuController::SelectByChar(wchar_t character) {
   return false;
 }
 
+#if defined(OS_WIN)
 void MenuController::RepostEvent(SubmenuView* source,
                                  const MouseEvent& event) {
   gfx::Point screen_loc(event.location());
@@ -1352,6 +1371,7 @@ void MenuController::RepostEvent(SubmenuView* source,
     }
   }
 }
+#endif
 
 void MenuController::SetDropMenuItem(
     MenuItemView* new_target,

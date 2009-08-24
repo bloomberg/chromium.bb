@@ -31,12 +31,7 @@ class View;
 // MenuController is used internally by the various menu classes to manage
 // showing, selecting and drag/drop for menus. All relevant events are
 // forwarded to the MenuController from SubmenuView and MenuHost.
-class MenuController
-#if defined(OS_WIN)
-    : public MessageLoopForUI::Dispatcher {
-#else
-    {
-#endif
+class MenuController : public MessageLoopForUI::Dispatcher {
  public:
   friend class MenuHostRootView;
   friend class MenuItemView;
@@ -168,6 +163,8 @@ class MenuController
   // pressed, or a matching mnemonic was found) the message loop returns.
   bool OnKeyDown(const MSG& msg);
   bool OnChar(const MSG& msg);
+#else
+  virtual bool Dispatch(GdkEvent* event);
 #endif
 
   // Creates a MenuController. If blocking is true, Run blocks the caller
@@ -270,17 +267,15 @@ class MenuController
   // If possible, closes the submenu.
   void CloseSubmenu();
 
-  // Returns true if window is the window used to show item, or any of
-  // items ancestors.
-  bool IsMenuWindow(MenuItemView* item, gfx::NativeWindow window);
-
   // Selects by mnemonic, and if that doesn't work tries the first character of
   // the title. Returns true if a match was selected and the menu should exit.
   bool SelectByChar(wchar_t key);
 
+#if defined(OS_WIN)
   // If there is a window at the location of the event, a new mouse event is
   // generated and posted to it.
   void RepostEvent(SubmenuView* source, const MouseEvent& event);
+#endif
 
   // Sets the drop target to new_item.
   void SetDropMenuItem(MenuItemView* new_item,
@@ -348,7 +343,7 @@ class MenuController
   MenuDelegate::DropPosition drop_position_;
 
   // Owner of child windows.
-  gfx::NativeWindow owner_;
+  gfx::NativeView owner_;
 
   // Indicates a possible drag operation.
   bool possible_drag_;

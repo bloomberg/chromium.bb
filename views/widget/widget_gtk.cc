@@ -624,6 +624,18 @@ void WidgetGtk::OnDestroy() {
     delete this;
 }
 
+void WidgetGtk::DoGrab() {
+  has_capture_ = true;
+  gtk_grab_add(window_contents_);
+}
+
+void WidgetGtk::ReleaseGrab() {
+  if (has_capture_) {
+    has_capture_ = false;
+    gtk_grab_remove(window_contents_);
+  }
+}
+
 // static
 WindowGtk* WidgetGtk::GetWindowForNative(GtkWidget* widget) {
   gpointer user_data = g_object_get_data(G_OBJECT(widget), "chrome-window");
@@ -675,10 +687,8 @@ bool WidgetGtk::ProcessMousePressed(GdkEventButton* event) {
                            GetFlagsForEventButton(*event));
   if (root_view_->OnMousePressed(mouse_pressed)) {
     is_mouse_down_ = true;
-    if (!has_capture_) {
-      has_capture_ = true;
-      gtk_grab_add(window_contents_);
-    }
+    if (!has_capture_)
+      DoGrab();
     return true;
   }
 
@@ -692,10 +702,8 @@ void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
   // Release the capture first, that way we don't get confused if
   // OnMouseReleased blocks.
 
-  if (has_capture_ && ReleaseCaptureOnMouseReleased()) {
-    has_capture_ = false;
-    gtk_grab_remove(window_contents_);
-  }
+  if (has_capture_ && ReleaseCaptureOnMouseReleased())
+    ReleaseGrab();
   is_mouse_down_ = false;
   root_view_->OnMouseReleased(mouse_up, false);
 }
