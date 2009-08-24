@@ -1,0 +1,133 @@
+<div id="pageData-title" class="pageData">Tutorial: Debugging</div>
+
+<p>
+[PENDING: intro goes here.
+This tutorial starts where
+<a href="getstarted.html">Getting Started</a> ends.
+Point to files needed.]
+</p>
+
+<p>
+You can use the browser's built-in developer tools
+to view your extension's code,
+display debugging output,
+and debug your extension.
+</p>
+<ol>
+  <li>
+    <p> Edit <code>my_toolstrip.html</code>, so that it has the following code: </p>
+<pre><span class="newCode">&lt;script&gt;
+function helloWorld() {
+  var hwFile = 'hello_world.html';
+  console.log(&quot;in helloWorld()&quot;);
+  window.open(hwFile);
+}
+&lt;/script&gt;</span>
+
+&lt;div class=&quot;toolstrip-button&quot; onclick=&quot;<span class="newCode">helloWorld();</span>&quot;&gt;
+&lt;span&gt;Hello, World!&lt;/span&gt;
+&lt;/div&gt;</pre>
+    <p> The relocated code still has the same effect,
+    but now it has some debugging output,
+    thanks to the call to <code>console.log()</code>.</p>
+  </li>
+  <li>
+  Restart the browser, so that it loads your new version of the extension.
+
+<!--
+This might be confusing.
+Maybe we should instead cover location.reload() later,
+after we've shown the console.
+  <div class="note">
+  <b>Tip:</b>
+  If you don't want to restart your browser,
+  you can get an updated version of the extension
+  by opening a new window.
+  The new window will contain the updated extension;
+  old windows will contain the old version.
+  </div>
+-->
+  </li>
+  <li>
+  Right-click the <strong>Hello, World!</strong> button
+  (at the bottom left)
+  to bring up the Developer Tools window
+  for this instance of your toolstrip.
+  The window should look something like this:
+  <p>
+     <img src="images/devtools-1.gif" alt="" />  </p>
+<!--
+Possibly we should recommend starting the Dev Tools
+using chrome://extensions, rather than right-click.
+However, that adds some stuff (such as id)
+that might be confusing.
+-->
+
+  </li>
+  <li>
+  Click the <strong>Scripts</strong> button.
+  If necessary, choose <strong>my_toolstrip.html</strong>
+  from the list of scripts.
+  The result should be something like this:
+  <p>
+  <img src="images/devtools-2.gif" alt="" />  </p>
+  </li>
+  <li>
+  Set a debugging breakpoint at the <code>window.open()</code> statement
+  by clicking <strong>5</strong> in the left column:
+  <p>
+  <img src="images/devtools-3.gif" alt="" />  </p>
+  </li>
+  <li>
+  Click the Console button
+  (second from left, at the bottom of the Developer Tools window)
+  so that you can see both the code and the console.
+  <p>
+  <img src="images/devtools-4.gif" alt="" /></p>
+  </li>
+  <li>
+  Back in the main browser window,
+  click the <strong>Hello, World!</strong> button,
+  so that the extension begins executing.
+  You should see the output of <code>console.log()</code>
+  along with the line number,
+  and execution should stop just before
+  the call to <code>window.open()</code>.
+  <p>
+  <img src="images/devtools-5.gif" alt="" />
+  </p>
+
+  <p>
+  The Call Stack area at the right of the tools window shows that
+  the <code>helloWorld()</code> method was called by an anonymous function
+  that was called by <code>onclick</code>.
+  Anywhere in the Call Stack or console that you see a file and line number
+  (for example, &quot;my_toolstrip.html:4&quot;),
+  you can click that text to see the relevant line of code.  </p>
+  </li>
+  <li>
+  In the upper right part of the tools window,
+  scroll down (if necessary) until you can see the local scope variables.
+  This section shows the current values of all variables in the current scope.
+  For example, you can see that <code>hwFile</code> is a local variable
+  that has the value &quot;hello_world.html&quot;.
+  <p>
+  <img src="images/devtools-6.gif" alt="" />  </p>
+  </li>
+  <li>
+  Click the buttons at the upper right of the window
+  to resume execution or to step through the code.
+  Once the call to <code>window.open()</code> returns,
+  the main browser window should open a new tab
+  that displays the contents of <code>hello_world.html</code>.</li>
+</ol>
+<p>
+You now know how to load and debug an extension!</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>
+[PENDING: Summarize what we did,
+what it means,
+and where to find more information.
+Suggest where to go next.]</p>
