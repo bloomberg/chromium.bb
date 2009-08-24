@@ -349,6 +349,17 @@ be available for now. -->
       <message name="IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT" desc="More compact text to show in the default browser query infobar.">
         Chromium isn't your default browser.
       </message>
+      <if expr="os == 'darwin'">
+        <message name="IDS_SHORT_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
+          Chromium
+        </message>
+        <message name="IDS_HELPER_NAME" desc="The helper application's name.  Should contain the Chrome application name (IDS_PRODUCT_NAME). Example: Google Chrome Helper.">
+          Chromium Helper
+        </message>
+        <message name="IDS_SHORT_HELPER_NAME" desc="The helper application's short name, used for the Mac's application menu, activity monitor, etc. Example: Chrome Helper, not Google Chrome Helper.">
+          Chromium Helper
+        </message>
+      </if>
     </messages>
   </release>
 </grit>

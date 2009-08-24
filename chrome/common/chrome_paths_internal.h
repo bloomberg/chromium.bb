@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-class FilePath;
+#include "base/file_path.h"
 
 namespace chrome {
 
@@ -28,6 +28,13 @@ bool GetUserDownloadsDirectory(FilePath* result);
 
 // The path to the user's desktop.
 bool GetUserDesktop(FilePath* result);
+
+#if defined(OS_MACOSX)
+// Retrieves the browser bundle path.  It is only valid to call this from a
+// helper process, as it makes assumptions about the location of the enclosing
+// bundle on disk.
+FilePath GetBrowserBundlePath();
+#endif  // defined(OS_MACOSX)
 
 }  // namespace chrome
 

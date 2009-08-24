@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# TODO: Remove this script and the action that invokes it after 09/01/09
+
+# The helper's Resources directory used to be a link, but now that we need
+# real resources, we have this script deletes the link as a stop gap for the
+# build bots and developers' builds.
+
+set -e
+
+RESOURCES_PATH="${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Contents/Resources"
+
+if [ -L "${RESOURCES_PATH}" ] ; then
+  rm -f "${RESOURCES_PATH}"
+fi

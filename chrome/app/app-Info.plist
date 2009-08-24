@@ -3,27 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>UTExportedTypeDeclarations</key>
-	<array>
-		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>org.chromium.extension</string>
-			<key>UTTypeDescription</key>
-			<string>Chromium Extra</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>crx</string>
-				</array>
-			</dict>
-		</dict>
-	</array>
+	<string>en-US</string>
+	<key>CFBundleDisplayName</key>
+	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -134,12 +116,12 @@
 			<string>Viewer</string>
 		</dict>
 		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>org.chromium.extension</string>
 			</array>
-			<key>CFBundleTypeRole</key>
-			<string>Viewer</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -188,11 +170,33 @@
 	<string>0.1</string>
 	<key>LSFileQuarantineEnabled</key>
 	<true/>
+	<key>LSHasLocalizedDisplayName</key>
+	<string>1</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Chromium Extra</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.chromium.extension</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>crx</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

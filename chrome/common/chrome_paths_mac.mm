@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/base_paths.h"
-#import "base/file_path.h"
 #import "base/logging.h"
 #import "base/path_service.h"
 
@@ -70,6 +69,32 @@ bool GetUserDesktop(FilePath* result) {
     success = true;
   }
   return success;
+}
+
+FilePath GetBrowserBundlePath() {
+  NSBundle* running_app_bundle = [NSBundle mainBundle];
+  NSString* running_app_bundle_path = [running_app_bundle bundlePath];
+  DCHECK(running_app_bundle_path) << "failed to get the main bundle path";
+
+  // Are we the helper or the browser (main bundle)?
+  if (![[[running_app_bundle infoDictionary]
+           objectForKey:@"LSUIElement"] boolValue]) {
+    // We aren't a LSUIElement, so this must be the browser, return it's path.
+    return FilePath([running_app_bundle_path fileSystemRepresentation]);
+  }
+
+  // Helper lives at ...app/Contents/Resources/...Helper.app
+  NSArray* components = [running_app_bundle_path pathComponents];
+  DCHECK_GE([components count], static_cast<NSUInteger>(4))
+      << "too few path components for this bundle to be within another bundle";
+  components =
+      [components subarrayWithRange:NSMakeRange(0, [components count] - 3)];
+
+  NSString* browser_path = [NSString pathWithComponents:components];
+  DCHECK([[browser_path pathExtension] isEqualToString:@"app"])
+      << "we weren't within another app?";
+
+  return FilePath([browser_path fileSystemRepresentation]);
 }
 
 }  // namespace chrome

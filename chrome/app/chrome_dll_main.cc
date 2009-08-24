@@ -49,6 +49,8 @@
 #include "base/win_util.h"
 #endif
 #if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/app/breakpad_mac.h"
 #endif
 #if defined(OS_LINUX)
@@ -335,6 +337,17 @@ int ChromeMain(int argc, const char** argv) {
 #endif
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  std::wstring process_type =
+      parsed_command_line.GetSwitchValue(switches::kProcessType);
+
+#if defined(OS_MACOSX)
+  // If process_type is not empty, this is the helper.  Set the main app bundle
+  // so code can fetch Mac resources.
+  if (!process_type.empty()) {
+    FilePath main_path(chrome::GetBrowserBundlePath());
+    mac_util::SetOverrideAppBundlePath(main_path);
+  }
+#endif  // OS_MACOSX
 
 #if defined(OS_WIN)
   // Must do this before any other usage of command line!
@@ -373,8 +386,6 @@ int ChromeMain(int argc, const char** argv) {
 #endif  // OS_POSIX
 
   int browser_pid;
-  std::wstring process_type =
-    parsed_command_line.GetSwitchValue(switches::kProcessType);
   if (process_type.empty()) {
     browser_pid = base::GetCurrentProcId();
   } else {

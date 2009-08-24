@@ -10,6 +10,7 @@
 #import "base/basictypes.h"
 #include "base/command_line.h"
 #import "base/logging.h"
+#include "base/mac_util.h"
 #import "base/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
@@ -44,7 +45,7 @@ void InitCrashReporter() {
   // may not have access to the disk or to the same data as the browser
   // process, so the browser passes the consent preference to them on the
   // command line.
-  NSBundle* main_bundle = [NSBundle mainBundle];
+  NSBundle* main_bundle = mac_util::MainAppBundle();
   NSDictionary* info_dictionary = [main_bundle infoDictionary];
   bool is_browser = [[info_dictionary objectForKey:@"LSUIElement"]
                                    isEqualToString:@"1"] ? false : true;

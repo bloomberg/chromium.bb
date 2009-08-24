@@ -3,7 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
+	<string>en-US</string>
+	<key>CFBundleDisplayName</key>
+	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key>
@@ -20,6 +22,8 @@
 	<string>0.1</string>
 	<key>LSFileQuarantineEnabled</key>
 	<true/>
+	<key>LSHasLocalizedDisplayName</key>
+	<string>1</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
 	<key>LSUIElement</key>

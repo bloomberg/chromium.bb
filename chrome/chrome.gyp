@@ -3144,6 +3144,7 @@
             # chrome/app/app-Info.plist has:
             #   CFBundleIdentifier of CHROMIUM_BUNDLE_ID
             #   CFBundleName of CHROMIUM_SHORT_NAME
+            #   CFBundleSignature of CHROMIUM_CREATOR
             # Xcode then replaces these values with the branded values we set
             # as settings on the target.
             'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
@@ -3155,6 +3156,7 @@
           ],
           'dependencies': [
             'helper_app',
+            'infoplist_strings_tool',
             # Bring in pdfsqueeze and run it on all pdfs
             '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
           ],
@@ -3170,6 +3172,51 @@
               ],
               'action': ['<(PRODUCT_DIR)/pdfsqueeze', '<(RULE_INPUT_PATH)', '<@(_outputs)'],
               'message': 'Running pdfsqueeze on <(RULE_INPUT_PATH)',
+            },
+          ],
+          'actions': [
+            {
+              # Generate the InfoPlist.strings file
+              'action_name': 'Generating InfoPlist.strings files',
+              'variables': {
+                'tool_path': '<(PRODUCT_DIR)/infoplist_strings_tool',
+                'version_file_path': 'VERSION',
+                # Unique dir to write to so the [lang].lproj/InfoPlist.strings
+                # for the main app and the helper app don't name collide.
+                'output_path': '<(INTERMEDIATE_DIR)/app_infoplist_strings',
+              },
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'variables': {
+                     'branding_name': 'google_chrome_strings',
+                  },
+                }, { # else branding!="Chrome"
+                  'variables': {
+                     'branding_name': 'chromium_strings',
+                  },
+                }],
+              ],
+              'inputs': [
+                '<(tool_path)',
+                '<(version_file_path)',
+                # TODO: remove this helper when we have loops in GYP
+                '>!@(tools/build/apply_locales.py \'<(grit_out_dir)/<(branding_name)_ZZLOCALE.pak\' <(locales))',
+              ],
+              'outputs': [
+                # TODO: remove this helper when we have loops in GYP
+                '>!@(tools/build/apply_locales.py \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
+              ],
+              'action': [
+                '<(tool_path)',
+                '-b', '<(branding_name)',
+                '-v', '<(version_file_path)',
+                '-g', '<(grit_out_dir)',
+                '-o', '<(output_path)',
+                '-t', 'main',
+                '<@(locales)',
+              ],
+              'message': 'Generating the language InfoPlist.strings files',
+              'process_outputs_as_mac_bundle_resources': 1,
             },
           ],
           'copies': [
@@ -4692,6 +4739,7 @@
           'dependencies': [
             'chrome_dll',
             'interpose_dependency_shim',
+            'infoplist_strings_tool',
           ],
           'sources': [
             # chrome_exe_main.mm's main() is the entry point for the "chrome"
@@ -4729,6 +4777,58 @@
               ],
             },
           ],
+          'actions': [
+            {
+              # TODO: remove this action and the script it runs after 09/01/09
+              'action_name': 'Remove old resources symlink',
+              'inputs': [],
+              'outputs': [],
+              'action': [ 'app/nuke_mac_resources_link' ],
+            },
+            {
+              # Generate the InfoPlist.strings file
+              'action_name': 'Generating InfoPlist.strings files',
+              'variables': {
+                'tool_path': '<(PRODUCT_DIR)/infoplist_strings_tool',
+                'version_file_path': 'VERSION',
+                # Unique dir to write to so the [lang].lproj/InfoPlist.strings
+                # for the main app and the helper app don't name collide.
+                'output_path': '<(INTERMEDIATE_DIR)/helper_infoplist_strings',
+              },
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'variables': {
+                     'branding_name': 'google_chrome_strings',
+                  },
+                }, { # else branding!="Chrome"
+                  'variables': {
+                     'branding_name': 'chromium_strings',
+                  },
+                }],
+              ],
+              'inputs': [
+                '<(tool_path)',
+                '<(version_file_path)',
+                # TODO: remove this helper when we have loops in GYP
+                '>!@(tools/build/apply_locales.py \'<(grit_out_dir)/<(branding_name)_ZZLOCALE.pak\' <(locales))',
+              ],
+              'outputs': [
+                # TODO: remove this helper when we have loops in GYP
+                '>!@(tools/build/apply_locales.py \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
+              ],
+              'action': [
+                '<(tool_path)',
+                '-b', '<(branding_name)',
+                '-v', '<(version_file_path)',
+                '-g', '<(grit_out_dir)',
+                '-o', '<(output_path)',
+                '-t', 'helper',
+                '<@(locales)',
+              ],
+              'message': 'Generating the language InfoPlist.strings files',
+              'process_outputs_as_mac_bundle_resources': 1,
+            },
+          ],
           'postbuilds': [
             {
               'postbuild_name': 'Make Symbolic Links',
@@ -4747,6 +4847,10 @@
                          '-k0',
                          '-s0',
                          '<(branding)'],
+            },
+            {
+              'postbuild_name': 'Tweak Mac lproj folders',
+              'action': ['app/tweak_mac_lproj_folders'],
             },
           ],
           'conditions': [
@@ -4831,7 +4935,21 @@
             'DYLIB_INSTALL_NAME_BASE': '@executable_path',
           },
         },
-      ]
+        {
+          'target_name': 'infoplist_strings_tool',
+          'type': 'executable',
+          'dependencies': [
+            'chrome_strings',
+            '../base/base.gyp:base',
+          ],
+          'include_dirs': [
+            '<(grit_out_dir)',
+          ],
+          'sources': [
+            'tools/mac_helpers/infoplist_strings_util.mm',
+          ],
+        },
+      ],  # targets
     }, { # else: OS != "mac"
       'targets': [
         {
@@ -5139,7 +5257,7 @@
             }],
           ],
         },
-      ]
+      ],
     }],
     ['OS=="win"',
       { 'targets': [
