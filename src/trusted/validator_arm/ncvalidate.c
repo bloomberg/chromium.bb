@@ -22,8 +22,3 @@ void NCValidateFreeState(struct NCValidatorState **vstate) {
   /* BUG(petr): not implemented */
 }
 
-int modify_ldt(int func, void* ptr, uint32_t bytecount) {
-  /* BUG(petr): not implemented */
-  return 0;
-}
-

@@ -90,11 +90,6 @@
         '../../shared/srpc/srpc.gyp:nonnacl_srpc',
       ],
       'conditions': [
-        # TODO(petr):
-        # * introduce build_arch, build_subarch, target_subarch in the same way
-        #   as BUILD_ARCH and TARGET_ARCH in scons (see SConstruct fror details).
-        # * rename ia32 to x86_32, ia64 to x86_64 as in scons
-        # * introduce buildplatform, targetplatform, platform flags in gyp
         ['target_arch == "x86"', {
           'dependencies': [
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86',
