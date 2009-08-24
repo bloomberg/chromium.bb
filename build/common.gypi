@@ -521,7 +521,7 @@
           ],
           'action':
             # TODO(gregoryd): find a way to pass all other 'defines' that exist for the target.
-            ['cl /DNACL_BLOCK_SHIFT=5 /DNACL_WINDOWS=1 /E /I', '<(DEPTH)', '<(RULE_INPUT_PATH)', '|', '<@(_inputs)', '-defsym', '@feat.00=1', '-o', '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
+            ['cl /DNACL_BLOCK_SHIFT=5 /DNACL_BUILD_ARCH=x86 /DNACL_BUILD_SUBARCH=32 /DNACL_WINDOWS=1 /E /I', '<(DEPTH)', '<(RULE_INPUT_PATH)', '|', '<@(_inputs)', '-defsym', '@feat.00=1', '-o', '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
           'message': 'Building assembly file <(RULE_INPUT_PATH)',
           'process_outputs_as_sources': 1,
         },],

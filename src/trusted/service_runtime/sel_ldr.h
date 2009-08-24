@@ -53,6 +53,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H__ 1
 
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/elf.h"
 
@@ -532,19 +533,26 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
-/* TODO(petr): get rid of NACL_ARM */
-#if NACL_ARM
+#if NACL_BUILD_ARCH == x86
+static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
+  return addr & ~(uintptr_t)((1 << nap->align_boundary) - 1);
+}
+#elif NACL_BUILD_ARCH == arm
 static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
   UNREFERENCED_PARAMETER(nap);
 
-  /* BUG: not implemented */
+  /*
+   * This function is used for sandboxing a user return address before calling
+   * into springboard.
+   *
+   * On ARM, we sandbox the user return address in springboard code, so there is
+   * no need to do it here.
+   */
 
   return addr;
 }
 #else
-static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
-  return addr & ~(uintptr_t)((1 << nap->align_boundary) - 1);
-}
+#error Unknown platform!
 #endif
 
 EXTERN_C_END

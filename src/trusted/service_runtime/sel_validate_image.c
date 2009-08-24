@@ -35,6 +35,10 @@
 
 #include <string.h>
 
+/* TODO: this header can be removed as soon as "NACL_BUILD_ARCH == arm" is
+ * removed */
+#include "native_client/src/include/nacl_base.h"
+
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate.h"
@@ -51,7 +55,7 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   size_t                  regionsize;
   NaClErrorCode           rcode = LOAD_BAD_FILE;
 
-#if NACL_ARM
+#if NACL_BUILD_ARCH == arm
   /*
    * BUG(petr): not implemented
    * temporary disable validation to test sel_ldr

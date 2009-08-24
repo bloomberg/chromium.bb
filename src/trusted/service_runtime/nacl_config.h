@@ -35,6 +35,8 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_
 
+#include "native_client/src/include/nacl_base.h"
+
 /*
  * this value must be consistent with NaCl compiler flags
  * -falign-functions -falign-labels -and nacl-align.
@@ -110,27 +112,29 @@
 # define IDENTIFIER(n)  n
 #endif
 
-/*
- * TODO(petr): replace NACL_ARM with NACL_BUILD_ARCH
- * #if NACL_BUILD_ARCH == arm
- * #elif NACL_BUILD_ARCH == x86
- *  #if NACL_BUILD_SUBARCH == 32
- *  #else
- *  #endif
- * #endif
- */
-#ifdef NACL_ARM
+#if NACL_BUILD_ARCH == x86
+
+#if NACL_BUILD_SUBARCH == 32
+#define NACL_USERRET_FIX  0x8
+#elif NACL_BUILD_SUBARCH == 64
+#define NACL_USERRET_FIX  0xc
+#else /* NACL_BUILD_SUBARCH */
+#error Unknown platform!
+#endif /* NACL_BUILD_SUBARCH */
+
+#elif NACL_BUILD_ARCH == arm
+
 #define NACL_HALT         mov pc, #0
 #define NACL_CF_MASK      0xF000000F /* assumes 16-byte bundles */
 #define NACL_USERRET_FIX  0x4
+
+#else /* NACL_BUILD_ARCH */
+
+#error Unknown platform!
+
+#endif /* NACL_BUILD_ARCH */
+
 #define NACL_SYSARGS_FIX  NACL_USERRET_FIX + 0x4
-#elif NACL_BUILD_SUBARCH == 32
-#define NACL_USERRET_FIX  0x8
-#define NACL_SYSARGS_FIX  NACL_USERRET_FIX + 0x4
-#elif NACL_BUILD_SUBARCH == 64
-#define NACL_USERRET_FIX  0xc
-#define NACL_SYSARGS_FIX  NACL_USERRET_FIX + 0x4
-#endif
 
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_ */
 

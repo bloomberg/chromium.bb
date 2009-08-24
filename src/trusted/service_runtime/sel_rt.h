@@ -32,10 +32,14 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_SEL_RT_H__
 #define NATIVE_CLIENT_SERVICE_RUNTIME_SEL_RT_H__ 1
 
-#if NACL_ARM
+#include "native_client/src/include/nacl_base.h"
+
+#if NACL_BUILD_ARCH == x86
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
+#elif NACL_BUILD_ARCH == arm
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
 #else
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
+#error Unknown platform!
 #endif
 
 struct NaClApp; /* fwd */

@@ -38,10 +38,14 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_SEL_LDR_ARCH_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_SEL_LDR_ARCH_H_
 
-#if NACL_ARM
+#include "native_client/src/include/nacl_base.h"
+
+#if NACL_BUILD_ARCH == x86
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
+#elif NACL_BUILD_ARCH == arm
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
 #else
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
+#error Unknown platform!
 #endif
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_SEL_LDR_ARCH_H_ */

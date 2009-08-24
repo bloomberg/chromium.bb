@@ -52,4 +52,7 @@
 # define EXTERN_C_END
 #endif
 
+#define x86  0
+#define arm  1
+
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_NACL_BASE_H_ */
