@@ -732,7 +732,7 @@
    Memcheck:Leak
    fun:malloc
    fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF9HashTableIPN7WebCore13QualifiedName17QualifiedNameImplES4_NS_17IdentityExtractorIS4_EENS1_17QualifiedNameHashENS_10HashTraitsIS4_EES9_E18addPassingHashCodeINS1_23QualifiedNameComponentsESC_NS_24HashSetTranslatorAdapterIS4_S9_SC_NS1_25QNameComponentsTranslatorEEEEESt4pairINS_17HashTableIteratorIS4_S4_S6_S7_S9_S9_EEbERKT_RKT0_
+   ...
    fun:_ZN3WTF7HashSetIPN7WebCore13QualifiedName17QualifiedNameImplENS1_17QualifiedNameHashENS_10HashTraitsIS4_EEE3addINS1_23QualifiedNameComponentsENS1_25QNameComponentsTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS4_S4_NS_17IdentityExtractorIS4_EES5_S7_S7_EES4_EEbERKT_
    fun:_ZN7WebCore13QualifiedNameC1ERKNS_12AtomicStringES3_S3_
    fun:_ZN7WebCore9HTMLNames4initEv
@@ -1071,4 +1071,26 @@
    fun:_ZN19SafeBrowsingService14OnIOInitializeEP11MessageLoopRKSsS3_
    fun:_ZN14RunnableMethodI19SafeBrowsingServiceMS0_FvP11MessageLoopRKSsS4_E6Tuple3IS2_SsSsEE3RunEv
 }
-
+{
+   bug_20111
+   Memcheck:Leak
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.1
+   fun:_ZN42_GLOBAL__N__ZN14PlatformThread9CurrentIdEv12CreateThreadEjbPN14PlatformThread8DelegateEPm
+   fun:_ZN14PlatformThread6CreateEjPNS_8DelegateEPm
+   fun:_ZN4base6Thread16StartWithOptionsERKNS0_7OptionsE
+   fun:_ZN18BrowserProcessImpl14CreateIOThreadEv
+}
+{
+   bug_20113
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN7WebCore16StorageNamespace23sessionStorageNamespaceEv
+   fun:_ZN7WebCore4Page14sessionStorageEb
+   fun:_ZNK7WebCore9DOMWindow14sessionStorageEv
+   fun:_ZN7WebCore17DOMWindowInternal24sessionStorageAttrGetterEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
+   fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
+}
