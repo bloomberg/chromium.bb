@@ -6,6 +6,7 @@
 
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
+#include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/common/gtk_util.h"
 
@@ -72,7 +73,22 @@ void AutomationProvider::GetBrowserForWindow(int window_handle,
                                              bool* success,
                                              int* browser_handle) {
   *success = false;
-  NOTIMPLEMENTED();
+  *browser_handle = 0;
+
+  GtkWindow* window = window_tracker_->GetResource(window_handle);
+  if (!window)
+    return;
+
+  BrowserWindowGtk* browser_window =
+      BrowserWindowGtk::GetBrowserWindowForNativeWindow(window);
+  if (!browser_window)
+    return;
+
+  Browser* browser = browser_window->browser();
+  if (browser) {
+    *browser_handle = browser_tracker_->Add(browser);
+    *success = true;
+  }
 }
 
 void AutomationProvider::PrintAsync(int tab_handle) {
