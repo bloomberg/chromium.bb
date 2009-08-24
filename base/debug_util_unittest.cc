@@ -19,17 +19,13 @@ TEST(StackTrace, OutputToStream) {
 
   size_t frames_found = 0;
   trace.Addresses(&frames_found);
-  if (frames_found == 0) {
-    LOG(ERROR) << "No stack frames found.  Skipping rest of test.";
-    return;
-  }
+  ASSERT_GE(frames_found, 5u) <<
+      "No stack frames found.  Skipping rest of test.";
 
   // Check if the output has symbol initialization warning.  If it does, fail.
-  if (backtrace_message.find("Dumping unresolved backtrace") != 
-      std::string::npos) {
-    LOG(ERROR) << "Unable to resolve symbols.  Skipping rest of test.";
-    return;
-  }
+  ASSERT_EQ(backtrace_message.find("Dumping unresolved backtrace"),
+            std::string::npos) <<
+      "Unable to resolve symbols.  Skipping rest of test.";
 
 #if 0
 //TODO(ajwong): Disabling checking of symbol resolution since it depends
@@ -39,7 +35,7 @@ TEST(StackTrace, OutputToStream) {
 
   // Symbol resolution via the backtrace_symbol funciton does not work well
   // in OsX.
-  // See this thread: 
+  // See this thread:
   //
   //    http://lists.apple.com/archives/darwin-dev/2009/Mar/msg00111.html
   //

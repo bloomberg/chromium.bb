@@ -92,56 +92,9 @@ class SymbolContext {
       Singleton<SymbolContext, LeakySingletonTraits<SymbolContext> >::get();
   }
 
-  // Initializes the symbols for the process if it hasn't been done yet.
-  // Subsequent calls will not reinitialize the symbol, but instead return
-  // the error code from the first call.
-  bool Init() {
-    AutoLock lock(lock_);
-    if (!initialized_) {
-      process_ = GetCurrentProcess();
-
-      // Defer symbol load until they're needed, use undecorated names, and
-      // get line numbers.
-      SymSetOptions(SYMOPT_DEFERRED_LOADS |
-                    SYMOPT_UNDNAME |
-                    SYMOPT_LOAD_LINES);
-      if (SymInitialize(process_, NULL, TRUE)) {
-        init_error_ = ERROR_SUCCESS;
-      } else {
-        init_error_ = GetLastError();
-      }
-    }
-
-    initialized_ = true;
-    return init_error_ == ERROR_SUCCESS;
-  }
-
-  // Returns the error code of a failed initialization.  This should only be
-  // called if Init() has been called.  We do not LOG(FATAL) here because
-  // this code is called might be triggered by a LOG(FATAL) itself.  Instead,
-  // we log an ERROR, and return ERROR_INVALID_DATA.
-  DWORD init_error() {
-    if (!initialized_) {
-      LOG(ERROR) << "Calling GetInitError() before Init() was called.  "
-                 << "Returning ERROR_INVALID_DATA.";
-      return ERROR_INVALID_DATA;
-    }
-
+  // Returns the error code of a failed initialization.
+  DWORD init_error() const {
     return init_error_;
-  }
-
-  // Returns the process this was initialized for.  This should only be
-  // called if Init() has been called.  We LOG(ERROR) in this situation.
-  // LOG(FATAL) is not used because this code is might be triggered
-  // by a LOG(FATAL) itself.
-  HANDLE process() {
-    if (!initialized_) {
-      LOG(ERROR) << "Calling process() before Init() was called. "
-                 << "Returning NULL.";
-      return NULL;
-    }
-
-    return process_;
   }
 
   // For the given trace, attempts to resolve the symbols, and output a trace
@@ -172,14 +125,14 @@ class SymbolContext {
       PSYMBOL_INFO symbol = reinterpret_cast<PSYMBOL_INFO>(&buffer[0]);
       symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
       symbol->MaxNameLen = kMaxNameLength;
-      BOOL has_symbol = SymFromAddr(process(), frame,
+      BOOL has_symbol = SymFromAddr(GetCurrentProcess(), frame,
                                     &sym_displacement, symbol);
 
       // Attempt to retrieve line number information.
       DWORD line_displacement = 0;
       IMAGEHLP_LINE64 line = {};
       line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
-      BOOL has_line = SymGetLineFromAddr64(process(), frame,
+      BOOL has_line = SymGetLineFromAddr64(GetCurrentProcess(), frame,
                                            &line_displacement, &line);
 
       // Output the backtrace line.
@@ -198,18 +151,26 @@ class SymbolContext {
     }
   }
 
-  SymbolContext()
-    : initialized_(false),
-      process_(NULL),
-      init_error_(ERROR_SUCCESS) {
+ private:
+  friend struct DefaultSingletonTraits<SymbolContext>;
+
+  SymbolContext() : init_error_(ERROR_SUCCESS) {
+    // Initializes the symbols for the process.
+    // Defer symbol load until they're needed, use undecorated names, and
+    // get line numbers.
+    SymSetOptions(SYMOPT_DEFERRED_LOADS |
+                  SYMOPT_UNDNAME |
+                  SYMOPT_LOAD_LINES);
+    if (SymInitialize(GetCurrentProcess(), NULL, TRUE)) {
+      init_error_ = ERROR_SUCCESS;
+    } else {
+      __debugbreak();
+      init_error_ = GetLastError();
+    }
   }
 
- private:
-  Lock lock_;
-  bool initialized_;
-  HANDLE process_;
   DWORD init_error_;
-
+  Lock lock_;
   DISALLOW_COPY_AND_ASSIGN(SymbolContext);
 };
 
@@ -276,9 +237,8 @@ void StackTrace::PrintBacktrace() {
 
 void StackTrace::OutputToStream(std::ostream* os) {
   SymbolContext* context = SymbolContext::Get();
-
-  if (context->Init() != ERROR_SUCCESS) {
-    DWORD error = context->init_error();
+  DWORD error = context->init_error();
+  if (error != ERROR_SUCCESS) {
     (*os) << "Error initializing symbols (" << error
           << ").  Dumping unresolved backtrace:\n";
     for (size_t i = 0; (i < trace_.size()) && os->good(); ++i) {
