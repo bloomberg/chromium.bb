@@ -41,7 +41,6 @@ class TestSuite {
     CommandLine::Init(argc, argv);
     testing::InitGoogleTest(&argc, argv);
 #if defined(OS_LINUX)
-    g_thread_init(NULL);
     gtk_init_check(&argc, &argv);
 #endif
     // Don't add additional code to this constructor.  Instead add it to
