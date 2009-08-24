@@ -1,8 +1,9 @@
 {
   "name": "RSS Subscription Extension",
   "description": "Adds one-click subscription to your toolbar",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "permissions": [
+    "tabs",
     "http://*/*"
   ],
   "background_page": "background.html",
