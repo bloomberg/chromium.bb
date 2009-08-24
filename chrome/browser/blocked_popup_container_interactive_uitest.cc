@@ -87,6 +87,12 @@ TEST_F(BlockedPopupContainerInteractiveTest, TestOpenAndResizeTo) {
   EXPECT_EQ(320, rect.height());
 #endif
 
+#if defined(OS_LINUX)
+  // It seems we have to wait a little bit for the widgets to spin up before
+  // we can start clicking on them.
+  PlatformThread::Sleep(500);
+#endif
+
   SimulateClickInCenterOf(popup_window);
 
   // No idea how to wait here other then sleeping. This timeout used to be
@@ -224,6 +230,12 @@ TEST_F(BlockedPopupContainerInteractiveTest, ShowAlertFromNormalPopup) {
   ASSERT_TRUE(popup_window.get());
   scoped_refptr<TabProxy> popup_tab(popup_browser->GetTab(0));
   ASSERT_TRUE(popup_tab.get());
+
+#if defined(OS_LINUX)
+  // It seems we have to wait a little bit for the widgets to spin up before
+  // we can start clicking on them.
+  PlatformThread::Sleep(500);
+#endif
 
   SimulateClickInCenterOf(popup_window);
 
