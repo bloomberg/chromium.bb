@@ -585,11 +585,7 @@ class TestRunner:
     # dashboard.
     expectations_file = open(os.path.join(self._options.results_directory,
         "expectations.json"), "w")
-    # TODO(ojan): Generate JSON using a JSON library instead of relying on
-    # GetExpectationsForAllPlatforms returning an object that only uses
-    # primitive types.
-    expectations_json = repr(
-        self._expectations.GetExpectationsForAllPlatforms())
+    expectations_json = self._expectations.GetExpectationsJsonForAllPlatforms()
     expectations_file.write(("ADD_EXPECTATIONS(" + expectations_json + ");"))
     expectations_file.close()
 
@@ -598,7 +594,8 @@ class TestRunner:
     builder_name = self._options.builder_name # "WebKitBuilder"
     build_number = self._options.build_number # "12346"
     json_generator = json_results_generator.JSONResultsGenerator(failures,
-        individual_test_timings, builder_name, build_number, results_file_path)
+        individual_test_timings, builder_name, build_number,
+        results_file_path, self._test_files_list)
     results_json = json_generator.GetJSON()
 
     results_file = open(results_file_path, "w")
@@ -1175,10 +1172,10 @@ if '__main__' == __name__:
                            help=("Run a the tests in batches (n), after every "
                                  "n tests, the test shell is relaunched."))
   option_parser.add_option("", "--builder-name",
-                           default=None,
+                           default="DUMMY_BUILDER_NAME",
                            help="The name of the builder running this script.")
   option_parser.add_option("", "--build-number",
-                           default=None,
+                           default="DUMMY_BUILD_NUMBER",
                            help=("The build number of the builder running"
                                  "this script."))
   option_parser.add_option("", "--find-baselines", action="store_true",

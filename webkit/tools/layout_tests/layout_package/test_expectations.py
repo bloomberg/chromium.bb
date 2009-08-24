@@ -14,6 +14,8 @@ import time
 import path_utils
 import compare_failures
 
+sys.path.append(path_utils.PathFromBase('third_party'))
+import simplejson
 
 # Test expectation and modifier constants.
 (PASS, FAIL, TIMEOUT, CRASH, SKIP, WONTFIX, DEFER, SLOW, REBASELINE, NONE) = \
@@ -36,8 +38,8 @@ class TestExpectations:
   # TODO(ojan): Replace the Get* calls here with the more sane API exposed
   # by TestExpectationsFile below. Maybe merge the two classes entirely?
 
-  def GetExpectationsForAllPlatforms(self):
-    return self._expected_failures.GetExpectationsForAllPlatforms()
+  def GetExpectationsJsonForAllPlatforms(self):
+    return self._expected_failures.GetExpectationsJsonForAllPlatforms()
 
   def GetFixable(self):
     return self._expected_failures.GetTestSet(NONE)
@@ -154,9 +156,14 @@ class ModifiersAndExpectations:
     self.modifiers = modifiers
     self.expectations = expectations
 
-  def __repr__(self):
-    return ("{modifiers:'" + self.modifiers + "', expectations:'" +
-        self.expectations + "'}")
+class ExpectationsJsonEncoder(simplejson.JSONEncoder):
+  """JSON encoder that can handle ModifiersAndExpectations objects.
+  """
+  def default(self, obj):
+    if isinstance(obj, ModifiersAndExpectations):
+      return {"modifiers": obj.modifiers, "expectations": obj.expectations}
+    else:
+      return JSONEncoder.default(self, obj)
 
 class TestExpectationsFile:
   """Test expectation files consist of lines with specifications of what
@@ -280,8 +287,10 @@ class TestExpectationsFile:
   def GetExpectations(self, test):
     return self._test_to_expectations[test]
 
-  def GetExpectationsForAllPlatforms(self):
-    return self._all_expectations
+  def GetExpectationsJsonForAllPlatforms(self):
+    # Specify separators in order to get compact encoding.
+    return ExpectationsJsonEncoder(separators=(',', ':')).encode(
+        self._all_expectations)
 
   def Contains(self, test):
     return test in self._test_to_expectations
