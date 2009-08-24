@@ -545,7 +545,9 @@ int ChromeMain(int argc, const char** argv) {
         *CommandLine::ForCurrentProcess();
       MainFunctionParams main_params(parsed_command_line, sandbox_wrapper,
                                      &autorelease_pool);
-      RendererMain(main_params);
+      rv = RendererMain(main_params);
+    } else {
+      rv = 0;
     }
 #else
     NOTIMPLEMENTED();
