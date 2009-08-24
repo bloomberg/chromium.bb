@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef O3D_GPU_PLUGIN_NP_OBJECT_BASE_H_
-#define O3D_GPU_PLUGIN_NP_OBJECT_BASE_H_
+#ifndef O3D_GPU_PLUGIN_NP_UTILS_BASE_NP_OBJECT_H_
+#define O3D_GPU_PLUGIN_NP_UTILS_BASE_NP_OBJECT_H_
 
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -18,9 +18,6 @@ class BaseNPObject : public NPObject {
   // Returns the NPClass for the concrete BaseNPObject subclass T.
   template <typename T>
   static const NPClass* GetNPClass();
-
-  explicit BaseNPObject(NPP npp);
-  virtual ~BaseNPObject();
 
   NPP npp() const {
     return npp_;
@@ -54,6 +51,12 @@ class BaseNPObject : public NPObject {
   virtual bool Construct(const NPVariant* args,
                          uint32_t num_args,
                          NPVariant* result);
+
+ protected:
+
+  explicit BaseNPObject(NPP npp);
+  virtual ~BaseNPObject();
+
  private:
   // This template version of the NPClass allocate function creates a subclass
   // of BaseNPObject.
@@ -130,4 +133,4 @@ const NPClass* BaseNPObject::GetNPClass() {
 }  // namespace gpu_plugin
 }  // namespace o3d
 
-#endif  // O3D_GPU_PLUGIN_NP_OBJECT_BASE_H_
+#endif  // O3D_GPU_PLUGIN_NP_UTILS_BASE_NP_OBJECT_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "o3d/gpu_plugin/base_np_object.h"
+#include "o3d/gpu_plugin/np_utils/base_np_object.h"
 
 namespace o3d {
 namespace gpu_plugin {
