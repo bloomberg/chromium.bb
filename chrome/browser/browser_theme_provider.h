@@ -211,7 +211,8 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   void GenerateFrameColors();
 
   // Generate any frame images that weren't specified. The resulting images
-  // will be stored in our cache.
+  // will be stored in our cache and written to disk.  If images have already
+  // been generated and cached, load them from disk.
   void GenerateFrameImages();
 
   // Generate any tab images that weren't specified. The resulting images
@@ -231,6 +232,9 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // otherwise modified, or an application default.
   virtual SkBitmap* LoadThemeBitmap(int id);
 
+  // Save the modified bitmap at image_cache_[id].
+  virtual void SaveThemeBitmap(const std::string resource_name, int id);
+
   Profile* profile() { return profile_; }
 
  private:
@@ -239,6 +243,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   typedef std::map<const std::string, skia::HSL> TintMap;
   typedef std::map<const std::string, int> DisplayPropertyMap;
   typedef std::map<const int, std::vector<unsigned char> > RawDataMap;
+  typedef std::map<const int, std::string> ResourceNameMap;
 
   // Returns the string key for the given tint |id| TINT_* enum value.
   const std::string GetTintKey(int id);
@@ -300,6 +305,9 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // from ClearCaches().
   void FreePlatformCaches();
 
+  // Encode image at image_cache_[id] as PNG and write to disk.
+  void WriteImagesToDisk();
+
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   // Loads an image and flips it horizontally if |rtl_enabled| is true.
   GdkPixbuf* GetPixbufImpl(int id, bool rtl_enabled);
@@ -320,6 +328,11 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   NSColorMap nscolor_cache_;
 #endif
 
+  // We save here the images to be written to disk, along with the file paths
+  // where they are to be written.
+  typedef std::map<FilePath, SkBitmap*> ImageSaveCache;
+  ImageSaveCache image_save_cache_;
+
   ResourceBundle& rb_;
   Profile* profile_;
 
@@ -328,6 +341,15 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   TintMap tints_;
   RawDataMap raw_data_;
   DisplayPropertyMap display_properties_;
+
+  // Reverse of theme_resources_map, so we can cache images properly.
+  ResourceNameMap resource_names_;
+
+  // If true, process all images; if false, just load from disk.
+  bool process_images_;
+
+  // Where we will store our generated images.
+  FilePath image_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserThemeProvider);
 };

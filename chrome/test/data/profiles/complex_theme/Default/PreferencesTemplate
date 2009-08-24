@@ -18,9 +18,6 @@
          "colors": {
             "bookmark_text": [ 0, 0, 0 ],
             "frame": [ 57, 137, 194 ],
-            "frame_inactive": [ 155, 196, 224 ],
-            "frame_incognito": [ 68, 90, 106 ],
-            "frame_incognito_inactive": [ 118, 156, 183 ],
             "ntp_background": [ 57, 137, 194 ],
             "ntp_link": [ 0, 0, 0 ],
             "ntp_section": [ 131, 138, 146, 0.8 ],
@@ -34,9 +31,15 @@
          "id": "mblmlcbknbnfebdfjnolmcapmdofhmme",
          "images": {
             "theme_button_background": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/agxjaHJvbWV0aGVtZXNyDAsSBEZpbGUYwsgCDA",
-            "theme_frame": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/agxjaHJvbWV0aGVtZXNyDAsSBEZpbGUYw8gCDA",
+            "theme_frame": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/theme_frame",
+            "theme_frame_inactive": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/theme_frame_inactive",
+            "theme_frame_incognito": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/theme_frame_incognito",
+            "theme_frame_incognito_inactive": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/theme_frame_incognito_inactive",
+            "theme_frame_overlay": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/theme_frame_overlay",
+            "theme_frame_overlay_inactive": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/theme_frame_overlay_inactive",
             "theme_ntp_background": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/agxjaHJvbWV0aGVtZXNyDAsSBEZpbGUYj9gCDA",
-            "theme_tab_background": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/agxjaHJvbWV0aGVtZXNyDAsSBEZpbGUY_c8CDA",
+            "theme_tab_background": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/theme_tab_background",
+            "theme_tab_background_incognito": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/theme_tab_background_incognito",
             "theme_toolbar": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/agxjaHJvbWV0aGVtZXNyDAsSBEZpbGUYnMgCDA",
             "theme_window_control_background": "$1/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/agxjaHJvbWV0aGVtZXNyDAsSBEZpbGUYjNgCDA"
          },

@@ -4,7 +4,9 @@
 
 #include "chrome/browser/browser_theme_provider.h"
 
+#include "base/file_util.h"
 #include "base/gfx/png_decoder.h"
+#include "base/gfx/png_encoder.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
@@ -12,6 +14,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/theme_resources_util.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -185,6 +188,35 @@ static std::map<const int, bool> themeable_images_;
 // A map of frame image IDs to the tints for those ids.
 static std::map<const int, int> frame_tints_;
 
+void BrowserThemeProvider::WriteImagesToDisk() {
+  // TODO(mirandac): move this to a different thread.
+  BrowserThemeProvider::ImageSaveCache::iterator iter;
+  for (iter = image_save_cache_.begin(); iter != image_save_cache_.end();
+       iter++) {
+    FilePath image_path = (*iter).first;
+    if ((*iter).second != NULL) {
+      SkBitmap* bitmap = (*iter).second;
+
+      std::vector<unsigned char> image_data;
+      if (!PNGEncoder::EncodeBGRASkBitmap(*bitmap, false, &image_data)) {
+        NOTREACHED() << "Image file could not be encoded.";
+        return;
+      }
+
+      const char* image_data_ptr =
+          reinterpret_cast<const char*>(&image_data[0]);
+      if (!file_util::WriteFile(image_path,
+                                image_data_ptr, image_data.size())) {
+        NOTREACHED() << "Image file could not be written to disk.";
+        return;
+      }
+    } else {
+      NOTREACHED();
+      return;
+    }
+  }
+}
+
 BrowserThemeProvider::BrowserThemeProvider()
     : rb_(ResourceBundle::GetSharedInstance()) {
   static bool initialized = false;
@@ -202,6 +234,15 @@ BrowserThemeProvider::BrowserThemeProvider()
     frame_tints_[IDR_THEME_FRAME_INCOGNITO] = TINT_FRAME_INCOGNITO;
     frame_tints_[IDR_THEME_FRAME_INCOGNITO_INACTIVE] =
         TINT_FRAME_INCOGNITO_INACTIVE;
+
+    resource_names_[IDR_THEME_FRAME] = "theme_frame";
+    resource_names_[IDR_THEME_FRAME_INACTIVE] = "theme_frame_inactive";
+    resource_names_[IDR_THEME_FRAME_OVERLAY] = "theme_frame_overlay";
+    resource_names_[IDR_THEME_FRAME_OVERLAY_INACTIVE] =
+        "theme_frame_overlay_inactive";
+    resource_names_[IDR_THEME_FRAME_INCOGNITO] = "theme_frame_incognito";
+    resource_names_[IDR_THEME_FRAME_INCOGNITO_INACTIVE] =
+        "theme_frame_incognito_inactive";
   }
 }
 
@@ -212,6 +253,12 @@ BrowserThemeProvider::~BrowserThemeProvider() {
 void BrowserThemeProvider::Init(Profile* profile) {
   DCHECK(CalledOnValidThread());
   profile_ = profile;
+
+  image_dir_ = profile_->GetPath().AppendASCII(
+      WideToASCII(chrome::kThemeImagesDirname));
+  if (!file_util::PathExists(image_dir_))
+    file_util::CreateDirectory(image_dir_);
+
   LoadThemePrefs();
 }
 
@@ -233,11 +280,6 @@ SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) {
 
   // Try to load the image from the extension.
   result.reset(LoadThemeBitmap(id));
-
-  // If the extension doesn't provide the requested image, but has provided
-  // a custom frame, then we may be able to generate the image required.
-  if (!result.get())
-    result.reset(GenerateBitmap(id));
 
   // If we still don't have an image, load it from resourcebundle.
   if (!result.get())
@@ -450,9 +492,13 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   SaveDisplayPropertyData();
   SaveThemeID(extension->id());
 
+  // Process all images when we first set theme.
+  process_images_ = true;
+
   GenerateFrameColors();
   GenerateFrameImages();
   GenerateTabImages();
+  WriteImagesToDisk();
 
   NotifyThemeChanged();
   UserMetrics::RecordAction(L"Themes_Installed", profile_);
@@ -529,6 +575,30 @@ SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) {
   }
 }
 
+void BrowserThemeProvider::SaveThemeBitmap(
+    const std::string resource_name, int id) {
+  DCHECK(CalledOnValidThread());
+  if (!image_cache_[id]) {
+    NOTREACHED();
+    return;
+  }
+
+#if defined(OS_WIN)
+  FilePath image_path = image_dir_.Append(FilePath(UTF8ToWide(resource_name)));
+#elif defined(OS_POSIX)
+  FilePath image_path = image_dir_.Append(FilePath(resource_name));
+#endif
+
+  DictionaryValue* pref_images =
+      profile_->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeImages);
+    // TODO(mirandac): remove ToWStringHack from this class.
+    pref_images->SetString(UTF8ToWide(resource_name),
+                           WideToUTF8(image_path.ToWStringHack()));
+  image_save_cache_[image_path] = image_cache_[id];
+}
+
+
+
 const std::string BrowserThemeProvider::GetTintKey(int id) {
   switch (id) {
     case TINT_FRAME:
@@ -599,6 +669,7 @@ void BrowserThemeProvider::SetImageData(DictionaryValue* images_value,
         if (!images_path.empty()) {
           images_[id] = WideToUTF8(images_path.AppendASCII(val)
               .ToWStringHack());
+          resource_names_[id] = WideToASCII(*iter);
         } else {
           images_[id] = val;
         }
@@ -813,35 +884,57 @@ void BrowserThemeProvider::GenerateFrameImages() {
     // the default provided frame. If that's not provided, skip this whole
     // thing and just use the default images.
     int base_id;
-    if (id == IDR_THEME_FRAME_INCOGNITO_INACTIVE)
-      base_id = (HasCustomImage(IDR_THEME_FRAME_INCOGNITO)) ?
-          IDR_THEME_FRAME_INCOGNITO :
-          IDR_THEME_FRAME;
-    else if (id == IDR_THEME_FRAME_OVERLAY_INACTIVE)
-      base_id = IDR_THEME_FRAME_OVERLAY;
-    else if (id == IDR_THEME_FRAME_INACTIVE)
-      base_id = IDR_THEME_FRAME;
-    else if (id == IDR_THEME_FRAME_INCOGNITO &&
-             !HasCustomImage(IDR_THEME_FRAME_INCOGNITO))
-      base_id = IDR_THEME_FRAME;
-    else
-      base_id = id;
+    std::string resource_name;
 
-    if (HasCustomImage(id)) {
+    // If we've already processed the images for this theme, they're all
+    // waiting on disk -- just load them in.
+    if (!process_images_) {
       frame.reset(LoadThemeBitmap(id));
-    } else if (base_id != id && HasCustomImage(base_id)) {
-      frame.reset(LoadThemeBitmap(base_id));
+      if (frame.get())
+        image_cache_[id] = new SkBitmap(*frame.get());
     } else {
-      // If the theme doesn't specify an image, then apply the tint to
-      // the default frame. Note that the default theme provides default
-      // bitmaps for all frame types, so this isn't strictly necessary
-      // in the case where no tint is provided either.
-      frame.reset(new SkBitmap(*rb_.GetBitmapNamed(IDR_THEME_FRAME)));
-    }
+      if (id == IDR_THEME_FRAME_INCOGNITO_INACTIVE) {
+        resource_name = "theme_frame_incognito_inactive";
+        base_id = HasCustomImage(IDR_THEME_FRAME_INCOGNITO) ?
+            IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+      } else if (id == IDR_THEME_FRAME_OVERLAY_INACTIVE) {
+        base_id = IDR_THEME_FRAME_OVERLAY;
+        resource_name = "theme_frame_overlay_inactive";
+      } else if (id == IDR_THEME_FRAME_INACTIVE) {
+        base_id = IDR_THEME_FRAME;
+        resource_name = "theme_frame_inactive";
+      } else if (id == IDR_THEME_FRAME_INCOGNITO &&
+                 !HasCustomImage(IDR_THEME_FRAME_INCOGNITO)) {
+        base_id = IDR_THEME_FRAME;
+        resource_name = "theme_frame_incognito";
+      } else {
+        base_id = id;
+        resource_name = resource_names_[id];
+      }
 
-    if (frame.get()) {
-      SkBitmap* tinted = new SkBitmap(TintBitmap(*frame, iter->second));
-      image_cache_[id] = tinted;
+      if (HasCustomImage(id)) {
+        frame.reset(LoadThemeBitmap(id));
+      } else if (base_id != id && HasCustomImage(base_id)) {
+        frame.reset(LoadThemeBitmap(base_id));
+      } else if (base_id == IDR_THEME_FRAME_OVERLAY &&
+                 HasCustomImage(IDR_THEME_FRAME)) {
+        // If there is no theme overlay, don't tint the default frame,
+        // because it will overwrite the custom frame image when we cache and
+        // reload from disk.
+        frame.reset(NULL);
+      } else {
+        // If the theme doesn't specify an image, then apply the tint to
+        // the default frame. Note that the default theme provides default
+        // bitmaps for all frame types, so this isn't strictly necessary
+        // in the case where no tint is provided either.
+        frame.reset(new SkBitmap(*rb_.GetBitmapNamed(IDR_THEME_FRAME)));
+      }
+
+      if (frame.get()) {
+        SkBitmap* tinted = new SkBitmap(TintBitmap(*frame, iter->second));
+        image_cache_[id] = tinted;
+        SaveThemeBitmap(resource_name, id);
+      }
     }
     ++iter;
   }
@@ -876,32 +969,46 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
     // tab against. As themes don't use the glass frame, we don't have to
     // worry about compositing them together, as our default theme provides
     // the necessary bitmaps.
-    int base_id = (id == IDR_THEME_TAB_BACKGROUND) ?
-        IDR_THEME_FRAME : IDR_THEME_FRAME_INCOGNITO;
-
-    std::map<int, SkBitmap*>::iterator it = image_cache_.find(base_id);
-    if (it != image_cache_.end()) {
-      SkBitmap* frame = it->second;
-      int blur_amount = (HasCustomImage(id)) ? 1 : 2;
-      SkBitmap blurred =
-          skia::ImageOperations::CreateBlurredBitmap(*frame, blur_amount);
-      SkBitmap* bg_tab = new SkBitmap(TintBitmap(blurred, TINT_BACKGROUND_TAB));
-
-      // If they've provided a custom image, overlay it.
-      if (HasCustomImage(id)) {
-        SkBitmap* overlay = LoadThemeBitmap(id);
-        if (overlay) {
-          SkCanvas canvas(*bg_tab);
-          for (int x = 0; x < bg_tab->width(); x += overlay->width())
-            canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
-        }
+    if (!process_images_) {
+      scoped_ptr<SkBitmap> frame;
+      frame.reset(LoadThemeBitmap(id));
+      if (frame.get())
+        image_cache_[id] = new SkBitmap(*frame.get());
+    } else {
+      int base_id;
+      std::string resource_name;
+      if (id == IDR_THEME_TAB_BACKGROUND) {
+        base_id = IDR_THEME_FRAME;
+        resource_name = "theme_tab_background";
+      } else {
+        base_id = IDR_THEME_FRAME_INCOGNITO;
+        resource_name = "theme_tab_background_incognito";
       }
+      std::map<int, SkBitmap*>::iterator it = image_cache_.find(base_id);
+      if (it != image_cache_.end()) {
+        SkBitmap* frame = it->second;
+        int blur_amount = HasCustomImage(id) ? 1 : 2;
+        SkBitmap blurred =
+          skia::ImageOperations::CreateBlurredBitmap(*frame, blur_amount);
+        SkBitmap* bg_tab = new SkBitmap(TintBitmap(blurred,
+                                                   TINT_BACKGROUND_TAB));
 
-      image_cache_[id] = bg_tab;
-      return bg_tab;
+        // If they've provided a custom image, overlay it.
+        if (HasCustomImage(id)) {
+          SkBitmap* overlay = LoadThemeBitmap(id);
+          if (overlay) {
+            SkCanvas canvas(*bg_tab);
+            for (int x = 0; x < bg_tab->width(); x += overlay->width())
+              canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
+          }
+        }
+
+        image_cache_[id] = bg_tab;
+        SaveThemeBitmap(resource_name, id);
+        return bg_tab;
+      }
     }
   }
-
   return NULL;
 }
 
@@ -1009,6 +1116,9 @@ void BrowserThemeProvider::NotifyThemeChanged() {
 }
 
 void BrowserThemeProvider::LoadThemePrefs() {
+  // Images were already processed when theme was set.
+  process_images_ = false;
+
   PrefService* prefs = profile_->GetPrefs();
 
   // TODO(glen): Figure out if any custom prefs were loaded, and if so
@@ -1038,6 +1148,11 @@ void BrowserThemeProvider::ClearCaches() {
     delete i->second;
   }
   image_cache_.clear();
+
+  // The SkBitmaps in the image_save_cache_ are a subset of those stored in
+  // the image_cache_, and have therefore all been deleted in the lines above.
+  // TODO(mirandac): make memory management clearer here.
+  image_save_cache_.clear();
 }
 
 #if defined(TOOLKIT_VIEWS)
