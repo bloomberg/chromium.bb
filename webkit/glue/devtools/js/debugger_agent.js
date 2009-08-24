@@ -44,11 +44,10 @@ devtools.DebuggerAgent = function() {
   this.requestNumberToBreakpointInfo_ = null;
 
   /**
-   * Information on current stack top frame.
-   * See JavaScriptCallFrame.idl.
-   * @type {?devtools.CallFrame}
+   * Information on current stack frames.
+   * @type {Array.<devtools.CallFrame>}
    */
-  this.currentCallFrame_ = null;
+  this.callFrames_ = [];
 
   /**
    * Whether to stop in the debugger on the exceptions.
@@ -137,7 +136,7 @@ devtools.DebuggerAgent.prototype.reset = function() {
   this.contextId_ = null;
   this.parsedScripts_ = {};
   this.requestNumberToBreakpointInfo_ = {};
-  this.currentCallFrame_ = null;
+  this.callFrames_ = [];
   this.requestSeqToCallback_ = {};
 
   // Profiler isn't reset because it contains no data that is
@@ -429,15 +428,6 @@ devtools.DebuggerAgent.prototype.setPauseOnExceptions = function(value) {
 
 
 /**
- * Current stack top frame.
- * @return {devtools.CallFrame}
- */
-devtools.DebuggerAgent.prototype.getCurrentCallFrame = function() {
-  return this.currentCallFrame_;
-};
-
-
-/**
  * Sends 'evaluate' request to the debugger.
  * @param {Object} arguments Request arguments map.
  * @param {function(devtools.DebuggerMessage)} callback Callback to be called
@@ -462,31 +452,24 @@ devtools.DebuggerAgent.prototype.requestEvaluate = function(
  */
 devtools.DebuggerAgent.prototype.resolveChildren = function(object, callback,
                                                             noIntrinsic) {
-  if ('ref' in object) {
+  if ('handle' in object) {
+    var result = [];
+    devtools.DebuggerAgent.formatObjectProperties_(object, result,
+                                                   noIntrinsic);
+    callback(result);
+  } else {
     this.requestLookup_([object.ref], function(msg) {
-      var result = {};
+      var result = [];
       if (msg.isSuccess()) {
         var handleToObject = msg.getBody();
         var resolved = handleToObject[object.ref];
         devtools.DebuggerAgent.formatObjectProperties_(resolved, result,
                                                        noIntrinsic);
+        callback(result);
       } else {
-        result.error = WebInspector.UIString(
-            'Failed to resolve children: %s', msg.getMessage());
+        callback([]);
       }
-      object.resolvedValue = result;
-      callback(object);
     });
-
-    return;
-  } else {
-    if (!object.resolvedValue) {
-      var message = WebInspector.UIString(
-          'Corrupted object: %s', JSON.stringify(object));
-      object.resolvedValue = {};
-      object.resolvedValue.error = message;
-    }
-    callback(object);
   }
 };
 
@@ -494,14 +477,10 @@ devtools.DebuggerAgent.prototype.resolveChildren = function(object, callback,
 /**
  * Sends 'scope' request for the scope object to resolve its variables.
  * @param {Object} scope Scope to be resolved.
- * @param {function(Object)} callback Callback to be called
- *     when all scope variables are resolved.
+ * @param {function(Array.<WebInspector.ObjectPropertyProxy>)} callback
+ *     Callback to be called when all scope variables are resolved.
  */
 devtools.DebuggerAgent.prototype.resolveScope = function(scope, callback) {
-  if (scope.resolvedValue) {
-    callback(scope);
-    return;
-  }
   var cmd = new devtools.DebugCommand('scope', {
     'frameNumber': scope.frameNumber,
     'number': scope.index,
@@ -509,17 +488,13 @@ devtools.DebuggerAgent.prototype.resolveScope = function(scope, callback) {
   });
   devtools.DebuggerAgent.sendCommand_(cmd);
   this.requestSeqToCallback_[cmd.getSequenceNumber()] = function(msg) {
-    var result = {};
+      var result = [];
     if (msg.isSuccess()) {
       var scopeObjectJson = msg.getBody().object;
       devtools.DebuggerAgent.formatObjectProperties_(scopeObjectJson, result,
                                                      true /* no intrinsic */);
-    } else {
-      result.error = WebInspector.UIString(
-          'Failed to resolve scope variables: %s', msg.getMessage());
     }
-    scope.resolvedValue = result;
-    callback(scope);
+    callback(result);
   };
 };
 
@@ -724,10 +699,6 @@ devtools.DebuggerAgent.prototype.handleBreakEvent_ = function(msg) {
   var body = msg.getBody();
 
   var line = devtools.DebuggerAgent.v8ToWwebkitLineNumber_(body.sourceLine);
-  this.currentCallFrame_ = new devtools.CallFrame();
-  this.currentCallFrame_.sourceID = body.script.id;
-  this.currentCallFrame_.line = line;
-  this.currentCallFrame_.script = body.script;
   this.requestBacktrace_();
 };
 
@@ -742,20 +713,7 @@ devtools.DebuggerAgent.prototype.handleExceptionEvent_ = function(msg) {
   var body = msg.getBody();
   if (this.pauseOnExceptions_) {
     var body = msg.getBody();
-
-    var sourceId = -1;
-    // The exception may happen in native code in which case there is no script.
-    if (body.script) {
-      sourceId = body.script.id;
-    }
-
     var line = devtools.DebuggerAgent.v8ToWwebkitLineNumber_(body.sourceLine);
-
-    this.currentCallFrame_ = new devtools.CallFrame();
-    this.currentCallFrame_.sourceID = sourceId;
-    this.currentCallFrame_.line = line;
-    this.currentCallFrame_.script = body.script;
-
     this.createExceptionMessage_(body.script.name, line, body.exception.text);
     this.requestBacktrace_();
   } else {
@@ -949,27 +907,32 @@ devtools.DebuggerAgent.prototype.handleClearBreakpointResponse_ = function(
  * @param {devtools.DebuggerMessage} msg
  */
 devtools.DebuggerAgent.prototype.handleBacktraceResponse_ = function(msg) {
-  if (!this.currentCallFrame_) {
-    return;
-  }
-
-  var script = this.currentCallFrame_.script;
-
-  var callerFrame = null;
-  var f = null;
   var frames = msg.getBody().frames;
-  for (var i = frames.length - 1; i>=0; i--) {
-    var nextFrame = frames[i];
-    var f = this.formatCallFrame_(nextFrame, msg);
-    f.caller = callerFrame;
-    callerFrame = f;
+  this.callFrames_ = [];
+  for (var i = 0; i <  frames.length; ++i) {
+    this.callFrames_.push(this.formatCallFrame_(frames[i]));
   }
-
-  this.currentCallFrame_ = f;
-
   WebInspector.pausedScript();
   this.showPendingExceptionMessage_();
   DevToolsHost.activateWindow();
+};
+
+
+/**
+ * Returns current suspended stack.
+ */
+devtools.DebuggerAgent.prototype.getCallFrames = function(callback) {
+  return this.callFrames_;
+};
+
+
+/**
+ * Evaluates code on given callframe.
+ */
+devtools.DebuggerAgent.prototype.evaluateInCallFrame = function(
+    callFrameId, code, callback) {
+  var callFrame = this.callFrames_[callFrameId];
+  callFrame.evaluate_(code, callback);
 };
 
 
@@ -991,19 +954,16 @@ devtools.DebuggerAgent.prototype.invokeCallbackForResponse_ = function(msg) {
 };
 
 
-devtools.DebuggerAgent.prototype.evaluateInCallFrame_ = function(expression) {
-};
-
-
 /**
  * @param {Object} stackFrame Frame json object from 'backtrace' response.
- * @param {devtools.DebuggerMessage} msg Parsed 'backtrace' response.
  * @return {!devtools.CallFrame} Object containing information related to the
  *     call frame in the format expected by ScriptsPanel and its panes.
  */
-devtools.DebuggerAgent.prototype.formatCallFrame_ = function(stackFrame, msg) {
+devtools.DebuggerAgent.prototype.formatCallFrame_ = function(stackFrame) {
   var func = stackFrame.func;
   var sourceId = func.scriptId;
+
+  // Add service script if it does not exist.
   var existingScript = this.parsedScripts_[sourceId];
   if (!existingScript) {
     this.parsedScripts_[sourceId] = new devtools.ScriptInfo(
@@ -1011,101 +971,84 @@ devtools.DebuggerAgent.prototype.formatCallFrame_ = function(stackFrame, msg) {
         true /* unresolved */);
     WebInspector.parsedScriptSource(sourceId, null, null, 0);
   }
+
   var funcName = func.name || func.inferredName || '(anonymous function)';
-
-  var arguments = {};
-
-  // Add arguments.
-  devtools.DebuggerAgent.argumentsArrayToMap_(stackFrame.arguments, arguments);
-
-  var thisObject = devtools.DebuggerAgent.formatObjectReference_(
-      stackFrame.receiver);
-
-  // Add basic scope chain info. Scope variables will be resolved lazily.
-  var scopeChain = [];
-  var scopes = stackFrame.scopes;
-  for (var i = 0; i < scopes.length; i++) {
-    var scope = scopes[i];
-    scopeChain.push({
-      'type': scope.type,
-      'frameNumber': stackFrame.index,
-      'index': scope.index
-    });
-  }
-
   var line = devtools.DebuggerAgent.v8ToWwebkitLineNumber_(stackFrame.line);
-  var result = new devtools.CallFrame();
-  result.sourceID = sourceId;
-  result.line = line;
-  result.type = 'function';
-  result.functionName = funcName;
-  result.scopeChain = scopeChain;
-  result.thisObject = thisObject;
-  result.frameNumber = stackFrame.index;
-  result.arguments = arguments;
-  return result;
+
+  // Add basic scope chain info with scope variables.
+  var scopeChain = [];
+  var ScopeType = devtools.DebuggerAgent.ScopeType;
+  for (var i = 0; i < stackFrame.scopes.length; i++) {
+    var scope = stackFrame.scopes[i];
+    scope.frameNumber = stackFrame.index;
+    var scopeObjectProxy = new WebInspector.ObjectProxy(scope, [], 0, '', true);
+    scopeObjectProxy.isScope = true;
+    scopeObjectProxy.properties = {};  // TODO(pfeldman): Fix autocomplete.
+    switch(scope.type) {
+      case ScopeType.Global:
+        scopeObjectProxy.isDocument = true;
+        break;
+      case ScopeType.Local:
+        scopeObjectProxy.isLocal = true;
+        scopeObjectProxy.thisObject =
+            devtools.DebuggerAgent.formatObjectProxy_(stackFrame.receiver);
+        break;
+      case ScopeType.With:
+        scopeObjectProxy.isWithBlock = true;
+        break;
+      case ScopeType.Closure:
+        scopeObjectProxy.isClosure = true;
+        break;
+    }
+    scopeChain.push(scopeObjectProxy);
+  }
+  return new devtools.CallFrame(stackFrame.index, 'function', funcName,
+      sourceId, line, scopeChain);
 };
 
 
 /**
  * Collects properties for an object from the debugger response.
  * @param {Object} object An object from the debugger protocol response.
- * @param {Object} result A map to put the properties in.
+ * @param {Array.<WebInspector.ObjectPropertyProxy>} result An array to put the
+ *     properties into.
  * @param {boolean} noIntrinsic Whether intrinsic properties should be
  *     included.
  */
 devtools.DebuggerAgent.formatObjectProperties_ = function(object, result,
                                                           noIntrinsic) {
-  devtools.DebuggerAgent.propertiesToMap_(object.properties, result);
+  devtools.DebuggerAgent.propertiesToProxies_(object.properties, result);
   if (noIntrinsic) {
     return;
   }
-  result.protoObject = devtools.DebuggerAgent.formatObjectReference_(
-      object.protoObject);
-  result.prototypeObject = devtools.DebuggerAgent.formatObjectReference_(
-      object.prototypeObject);
-  result.constructorFunction = devtools.DebuggerAgent.formatObjectReference_(
-      object.constructorFunction);
+
+  result.push(new WebInspector.ObjectPropertyProxy('__proto__',
+      devtools.DebuggerAgent.formatObjectProxy_(object.protoObject)));
+  result.push(new WebInspector.ObjectPropertyProxy('prototype',
+      devtools.DebuggerAgent.formatObjectProxy_(object.prototypeObject)));
+  result.push(new WebInspector.ObjectPropertyProxy('constructor',
+      devtools.DebuggerAgent.formatObjectProxy_(object.constructorFunction)));
 };
 
 
 /**
- * For each property in 'properties' puts its name and user-friendly value into
- * 'map'.
+ * For each property in 'properties' creates its proxy representative.
  * @param {Array.<Object>} properties Receiver properties or locals array from
  *     'backtrace' response.
- * @param {Object} map Result holder.
+ * @param {Array.<WebInspector.ObjectPropertyProxy>} Results holder.
  */
-devtools.DebuggerAgent.propertiesToMap_ = function(properties, map) {
-  for (var j = 0; j < properties.length; j++) {
-    var nextValue = properties[j];
-    // Skip unnamed properties. They may appear e.g. when number of actual
-    // parameters is greater the that of formal. In that case the superfluous
-    // parameters will be present in the arguments list as elements without
-    // names.
-    if (goog.isDef(nextValue.name)) {
-      map[nextValue.name] =
-          devtools.DebuggerAgent.formatObjectReference_(nextValue.value);
+devtools.DebuggerAgent.propertiesToProxies_ = function(properties, result) {
+  var map = {};
+  for (var i = 0; i < properties.length; ++i) {
+    var property = properties[i];
+    var name = String(property.name);
+    if (name in map) {
+      continue;
     }
-  }
-};
-
-
-/**
- * Puts arguments from the protocol arguments array to the map assigning names
- * to the anonymous arguments.
- * @param {Array.<Object>} array Arguments array from 'backtrace' response.
- * @param {Object} map Result holder.
- */
-devtools.DebuggerAgent.argumentsArrayToMap_ = function(array, map) {
-  for (var j = 0; j < array.length; j++) {
-    var nextValue = array[j];
-    // Skip unnamed properties. They may appear e.g. when number of actual
-    // parameters is greater the that of formal. In that case the superfluous
-    // parameters will be present in the arguments list as elements without
-    // names.
-    var name = nextValue.name ? nextValue.name : '<arg #' + j + '>';
-    map[name] = devtools.DebuggerAgent.formatObjectReference_(nextValue.value);
+    map[name] = true;
+    var value = devtools.DebuggerAgent.formatObjectProxy_(property.value);
+    var propertyProxy = new WebInspector.ObjectPropertyProxy(name, value);
+    result.push(propertyProxy);
   }
 };
 
@@ -1114,29 +1057,32 @@ devtools.DebuggerAgent.argumentsArrayToMap_ = function(array, map) {
  * @param {Object} v An object reference from the debugger response.
  * @return {*} The value representation expected by ScriptsPanel.
  */
-devtools.DebuggerAgent.formatObjectReference_ = function(v) {
+devtools.DebuggerAgent.formatObjectProxy_ = function(v) {
+  var description;
+  var hasChildren = false;
   if (v.type == 'object') {
-    return v;
+    description = v.className;
+    hasChildren = true;
   } else if (v.type == 'function') {
-    var f = function() {};
-    f.ref = v.ref;
     if (v.source) {
-      f.toString = function() { return v.source; };
+      description = v.source;
+    } else {
+      description = 'function ' + v.name + '()';
     }
-    return f;
+    hasChildren = true;
   } else if (goog.isDef(v.value)) {
-    return v.value;
+    description = v.value;
   } else if (v.type == 'undefined') {
-    return 'undefined';
+    description = 'undefined';
   } else if (v.type == 'null') {
-    return 'null';
-  } else if (v.name) {
-    return v.name;
-  } else if (v.className) {
-    return v.className;
+    description = 'null';
   } else {
-    return '<unresolved ref: ' + v.ref + ', type: ' + v.type + '>';
+    description = '<unresolved ref: ' + v.ref + ', type: ' + v.type + '>';
   }
+  var proxy = new WebInspector.ObjectProxy(v, [], 0, description, hasChildren);
+  proxy.type = v.type;
+  proxy.isV8Ref = true;
+  return proxy;
 };
 
 
@@ -1300,92 +1246,52 @@ devtools.BreakpointInfo.prototype.isRemoved = function() {
 
 /**
  * Call stack frame data.
+ * @param {string} id CallFrame id.
+ * @param {string} type CallFrame type.
+ * @param {string} functionName CallFrame type.
+ * @param {string} sourceID Source id.
+ * @param {number} line Source line.
+ * @param {Array.<Object>} scopeChain Array of scoped objects.
  * @construnctor
  */
-devtools.CallFrame = function() {
-  this.sourceID = null;
-  this.line = null;
-  this.type = 'function';
-  this.functionName = null;
-  this.caller = null;
-  this.scopeChain = [];
-  this.thisObject = {};
-  this.frameNumber = null;
+devtools.CallFrame = function(id, type, functionName, sourceID, line,
+    scopeChain) {
+  this.id = id;
+  this.type = type;
+  this.functionName = functionName;
+  this.sourceID = sourceID;
+  this.line = line;
+  this.scopeChain = scopeChain;
 };
 
 
 /**
  * This method issues asynchronous evaluate request, reports result to the
  * callback.
- * @param {devtools.CallFrame} callFrame Call frame to evaluate in.
  * @param {string} expression An expression to be evaluated in the context of
  *     this call frame.
  * @param {function(Object):undefined} callback Callback to report result to.
  */
-devtools.CallFrame.doEvalInCallFrame =
-    function(callFrame, expression, callback) {
+devtools.CallFrame.prototype.evaluate_ = function(expression, callback) {
   devtools.tools.getDebuggerAgent().requestEvaluate({
-        'expression': expression,
-        'frame': callFrame.frameNumber,
-        'global': false,
-        'disable_break': false
-      },
-      function(response) {
-        if (response.isSuccess()) {
-          callback(devtools.DebuggerAgent.formatObjectReference_(
-              response.getBody()), false /* exception */);
-        } else {
-          callback(response.getMessage(), true /* exception */);
-        }
-      });
+      'expression': expression,
+      'frame': this.id,
+      'global': false,
+      'disable_break': false,
+      'compactFormat': true
+    },
+    function(response) {
+      var result = {};
+      if (response.isSuccess()) {
+        result.value = devtools.DebuggerAgent.formatObjectProxy_(
+            response.getBody());
+      } else {
+        result.value = response.getMessage();
+        result.isException = true;
+      }
+      callback(result);
+    });
 };
-
-
-/**
- * Returns variables visible on a given callframe.
- * @param {devtools.CallFrame} callFrame Call frame to get variables for.
- * @param {function(Object):undefined} callback Callback to report result to.
- */
-devtools.CallFrame.getVariablesInScopeAsync = function(callFrame, callback) {
-  var result = {};
-  var scopeChain = callFrame.scopeChain;
-  var resolvedScopeCount = 0;
-  for (var i = 0; i < scopeChain.length; ++i) {
-    devtools.tools.getDebuggerAgent().resolveScope(scopeChain[i],
-        function(scopeObject) {
-          for (var property in scopeObject.resolvedValue) {
-            result[property] = true;
-          }
-          if (++resolvedScopeCount == scopeChain.length) {
-            callback(result);
-          }
-        });
-  }
-};
-
-
-/**
- * 'Static' expanded properties container shared among callframes.
- */
-devtools.CallFrame.expandedProperties_ = {};
-
-
-/**
- * Overrides _expandedProperties accessor for auto-expand.
- */
-devtools.CallFrame.prototype.__defineGetter__('_expandedProperties',
-    function() {
-  return devtools.CallFrame.expandedProperties_;
-});
-
-
-/**
- * Overrides _expandedProperties accessor for auto-expand.
- */
-devtools.CallFrame.prototype.__defineSetter__('_expandedProperties',
-    function(newValue) {
-  devtools.CallFrame.expandedProperties_ = newValue;
-});
 
 
 /**

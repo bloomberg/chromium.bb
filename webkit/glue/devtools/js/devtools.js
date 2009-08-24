@@ -57,8 +57,8 @@ devtools.ToolsAgent.prototype.reset = function() {
 /**
  * @param {string} script Script exression to be evaluated in the context of the
  *     inspected page.
- * @param {function(Object|string, boolean):undefined} opt_callback Function to call
- *     with the result.
+ * @param {function(Object|string, boolean):undefined} opt_callback Function to
+ *     call with the result.
  */
 devtools.ToolsAgent.prototype.evaluateJavaScript = function(script,
     opt_callback) {
@@ -198,6 +198,7 @@ function devToolsHandleLoaded() {
   DevToolsHost.loaded();
 };
 
+
 // l10n is turned off in tests mode because delayed loading of strings
 // causes test failures.
 if (!window.___interactiveUiTestsMode) {
@@ -208,10 +209,6 @@ if (!window.___interactiveUiTestsMode) {
 }
 
 })();
-
-
-var webkitUpdateChildren =
-    WebInspector.ElementsTreeElement.prototype.updateChildren;
 
 
 /**
@@ -269,201 +266,6 @@ WebInspector.UnresolvedPropertyValue = function(type, className) {
 
 
 /**
- * Replace WebKit method with our own implementation to use our call stack
- * representation. Original method uses Object.prototype.toString.call to
- * learn if scope object is a JSActivation which doesn't work in Chrome.
- */
-WebInspector.ScopeChainSidebarPane.prototype.update = function(callFrame) {
-  this.bodyElement.removeChildren();
-
-  this.sections = [];
-  this.callFrame = callFrame;
-
-  if (!callFrame) {
-      var infoElement = document.createElement('div');
-      infoElement.className = 'info';
-      infoElement.textContent = WebInspector.UIString('Not Paused');
-      this.bodyElement.appendChild(infoElement);
-      return;
-  }
-
-  var scopeChain = callFrame.scopeChain;
-  var ScopeType = devtools.DebuggerAgent.ScopeType;
-  for (var i = 0; i < scopeChain.length; ++i) {
-    var scopeObject = scopeChain[i];
-    var thisObject = null;
-    var title;
-    switch(scopeObject.type) {
-      case ScopeType.Global:
-        title = WebInspector.UIString('Global');
-        break;
-      case ScopeType.Local:
-        title = WebInspector.UIString('Local');
-        thisObject = callFrame.thisObject;
-        break;
-      case ScopeType.With:
-        title = WebInspector.UIString('With Block');
-        break;
-      case ScopeType.Closure:
-        title = WebInspector.UIString('Closure');
-        break;
-      default:
-        title = WebInspector.UIString('<Unknown scope type>');
-    }
-
-    var section = new WebInspector.ScopeChainPropertiesSection(
-        scopeObject, title, thisObject);
-    section.editInSelectedCallFrameWhenPaused = true;
-    section.pane = this;
-
-    // Only first scope is expanded by default(if it's not a global one).
-    section.expanded = (i == 0) && (scopeObject.type != ScopeType.Global);
-
-    this.sections.push(section);
-    this.bodyElement.appendChild(section.element);
-  }
-};
-
-
-/**
- * Our basic implementation of ObjectPropertiesSection for debugger object
- * represented in console.
- * @constructor
- */
-WebInspector.ConsoleObjectPropertiesSection = function(object, title,
-    extraProperties) {
-  WebInspector.ObjectPropertiesSection.call(this, object, title,
-      null /* subtitle */, null /* emptyPlaceholder */,
-      true /* ignoreHasOwnProperty */, null /* extraProperties */,
-      WebInspector.DebuggedObjectTreeElement);
-};
-goog.inherits(WebInspector.ConsoleObjectPropertiesSection,
-    WebInspector.ObjectPropertiesSection);
-
-
-/**
- * @override
- */
-WebInspector.ConsoleObjectPropertiesSection.prototype.onpopulate = function() {
-  devtools.tools.getDebuggerAgent().resolveChildren(
-      this.object,
-      goog.bind(this.didResolveChildren_, this));
-};
-
-
-/**
- * @param {Object} object
- */
-WebInspector.ConsoleObjectPropertiesSection.prototype.didResolveChildren_ =
-    function(object) {
-  WebInspector.DebuggedObjectTreeElement.addResolvedChildren(
-      object,
-      this.propertiesTreeOutline,
-      this.treeElementConstructor);
-};
-
-
-/**
- * Our implementation of ObjectPropertiesSection for scope variables.
- * @constructor
- */
-WebInspector.ScopeChainPropertiesSection = function(object, title, thisObject) {
-  WebInspector.ObjectPropertiesSection.call(this, object, title,
-      null /* subtitle */, null /* emptyPlaceholder */,
-      true /* ignoreHasOwnProperty */, null /* extraProperties */,
-      WebInspector.DebuggedObjectTreeElement);
-  this.thisObject_ = thisObject;
-};
-goog.inherits(WebInspector.ScopeChainPropertiesSection,
-    WebInspector.ObjectPropertiesSection);
-
-
-/**
- * @override
- */
-WebInspector.ScopeChainPropertiesSection.prototype.onpopulate = function() {
-  devtools.tools.getDebuggerAgent().resolveScope(
-      this.object,
-      goog.bind(this.didResolveChildren_, this));
-};
-
-/**
- * @param {Object} object
- */
-WebInspector.ScopeChainPropertiesSection.prototype.didResolveChildren_ =
-    function(object) {
-  // Add this to the properties list if it's specified.
-  if (this.thisObject_) {
-    object.resolvedValue['this'] = this.thisObject_;
-  }
-  WebInspector.DebuggedObjectTreeElement.addResolvedChildren(
-      object,
-      this.propertiesTreeOutline,
-      this.treeElementConstructor);
-};
-
-
-/**
- * Custom implementation of TreeElement that asynchronously resolves children
- * using the debugger agent.
- * @constructor
- */
-WebInspector.DebuggedObjectTreeElement = function(property) {
-  WebInspector.ScopeVariableTreeElement.call(this, property);
-}
-WebInspector.DebuggedObjectTreeElement.inherits(
-    WebInspector.ScopeVariableTreeElement);
-
-
-/**
- * @override
- */
-WebInspector.DebuggedObjectTreeElement.prototype.onpopulate =
-    function() {
-  var obj = this.property.value.objectId;
-  devtools.tools.getDebuggerAgent().resolveChildren(obj,
-      goog.bind(this.didResolveChildren_, this), false /* no intrinsic */ );
-};
-
-
-/**
- * Callback function used with the resolveChildren.
- */
-WebInspector.DebuggedObjectTreeElement.prototype.didResolveChildren_ =
-    function(object) {
-  this.removeChildren();
-  WebInspector.DebuggedObjectTreeElement.addResolvedChildren(
-      object,
-      this,
-      this.treeOutline.section.treeElementConstructor);
-};
-
-
-/**
- * Utility function used to populate children list of tree element representing
- * debugged object with values resolved through the debugger agent.
- * @param {Object} resolvedObject Object whose properties have been resolved.
- * @param {Element} treeElementContainer Container fot the HTML elements
- *     representing the resolved properties.
- * @param {function(object, string):Element} treeElementConstructor
- */
-WebInspector.DebuggedObjectTreeElement.addResolvedChildren = function(
-    resolvedObject, treeElementContainer, treeElementConstructor) {
-  var object = resolvedObject.resolvedValue;
-  var names = Object.sortedProperties(object);
-  for (var i = 0; i < names.length; i++) {
-    var childObject = object[names[i]];
-    var property = {};
-    property.name = names[i];
-    property.value = new WebInspector.ObjectProxy(childObject, [], 0,
-        Object.describe(childObject, true),
-        typeof childObject == 'object' && Object.hasProperties(childObject));
-    treeElementContainer.appendChild(new treeElementConstructor(property));
-  }
-};
-
-
-/**
  * This function overrides standard searchableViews getters to perform search
  * only in the current view (other views are loaded asynchronously, no way to
  * search them yet).
@@ -492,17 +294,6 @@ WebInspector.ResourcesPanel.prototype.__defineGetter__(
 WebInspector.ScriptsPanel.prototype.__defineGetter__(
     'searchableViews',
     WebInspector.searchableViews_);
-
-
-WebInspector.ScriptsPanel.prototype.doEvalInCallFrame =
-    function(callFrame, expression, callback) {
-  if (!expression) {
-    // Empty expression should eval to scope roots for completions to work.
-    devtools.CallFrame.getVariablesInScopeAsync(callFrame, callback);
-    return;
-  }
-  devtools.CallFrame.doEvalInCallFrame(callFrame, expression, callback);
-};
 
 
 (function() {
@@ -577,23 +368,6 @@ WebInspector.ScriptsPanel.prototype.doEvalInCallFrame =
 })();
 
 
-// There is no clear way of rendering class name for scope variables yet.
-(function OverrideObjectDescribe() {
-  var oldDescribe = Object.describe;
-  Object.describe = function(obj, abbreviated) {
-    if (obj instanceof WebInspector.UnresolvedPropertyValue) {
-      return obj.className;
-    }
-
-    var result = oldDescribe.call(Object, obj, abbreviated);
-    if (result == 'Object' && obj.className) {
-      return obj.className;
-    }
-    return result;
-  };
-})();
-
-
 // Highlight extension content scripts in the scripts list.
 (function () {
   var original = WebInspector.ScriptsPanel.prototype._addScriptToFilesMenu;
@@ -607,28 +381,6 @@ WebInspector.ScriptsPanel.prototype.doEvalInCallFrame =
     }
     return result;
   };
-})();
-
-
-(function() {
-var oldFormatObject = WebInspector.ConsoleView.prototype._formatobject;
-WebInspector.ConsoleView.prototype._formatobject = function(object, elem) {
-  var section;
-  if (object.handle && object.className) {
-    object.ref = object.handle;
-    var className = object.className;
-    section = new WebInspector.ConsoleObjectPropertiesSection(object,
-        className);
-    section.pane = {
-      callFrame: {
-        _expandedProperties : { className : '' }
-      }
-    };
-    elem.appendChild(section.element);
-  } else {
-    return oldFormatObject.apply(this, arguments);
-  }
-};
 })();
 
 

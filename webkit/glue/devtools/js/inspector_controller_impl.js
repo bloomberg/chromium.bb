@@ -34,7 +34,6 @@ devtools.InspectorControllerImpl = function() {
   this.installInjectedScriptDelegate_('addStyleSelector');
   this.installInjectedScriptDelegate_('setStyleProperty');
   this.installInjectedScriptDelegate_('getPrototypes');
-  this.installInjectedScriptDelegate_('getProperties');
   this.installInjectedScriptDelegate_('setPropertyValue');
   this.installInjectedScriptDelegate_('evaluate');
   this.installInjectedScriptDelegate_('addInspectedNode');
@@ -106,13 +105,15 @@ devtools.InspectorControllerImpl.prototype.toggleNodeSearch = function() {
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorControllerImpl.prototype.localizedStringsURL = function() {
+devtools.InspectorControllerImpl.prototype.localizedStringsURL =
+    function(opt_prefix) {
   // l10n is turned off in test mode because delayed loading of strings
   // causes test failures.
-  if (!window.___interactiveUiTestsMode) {
+  if (!window.___interactiveUiTestsMode && !DevToolsHost.isStub) {
     var locale = DevToolsHost.getApplicationLocale();
     locale = locale.replace('_', '-');
-    return 'l10n/inspectorStrings_' + locale + '.js';
+    var prefix = opt_prefix || 'inspectorStrings';
+    return 'l10n/' + prefix + '_' + locale + '.js';
   } else {
     return undefined;
   }
@@ -154,11 +155,6 @@ devtools.InspectorControllerImpl.prototype.inspectedWindow = function() {
  */
 devtools.InspectorControllerImpl.prototype.debuggerEnabled = function() {
   return true;
-};
-
-
-devtools.InspectorControllerImpl.prototype.currentCallFrame = function() {
-  return devtools.tools.getDebuggerAgent().getCurrentCallFrame();
 };
 
 
@@ -234,6 +230,42 @@ devtools.InspectorControllerImpl.prototype.startProfiling = function() {
 devtools.InspectorControllerImpl.prototype.stopProfiling = function() {
   devtools.tools.getDebuggerAgent().stopProfiling(
       devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_CPU);
+};
+
+
+/**
+ * @override
+ */
+devtools.InspectorControllerImpl.prototype.getCallFrames = function(callback) {
+  callback(devtools.tools.getDebuggerAgent().getCallFrames());
+};
+
+
+/**
+ * @override
+ */
+devtools.InspectorControllerImpl.prototype.evaluateInCallFrame =
+    function(callFrameId, code, callback) {
+  devtools.tools.getDebuggerAgent().evaluateInCallFrame(callFrameId, code,
+                                                        callback);
+};
+
+
+/**
+ * @override
+ */
+devtools.InspectorControllerImpl.prototype.getProperties = function(
+    objectProxy, ignoreHasOwnProperty, callback) {
+  if (objectProxy.isScope) {
+    devtools.tools.getDebuggerAgent().resolveScope(objectProxy.objectId,
+        callback);
+  } else if (objectProxy.isV8Ref) {
+    devtools.tools.getDebuggerAgent().resolveChildren(objectProxy.objectId,
+        callback, true);
+  } else {
+    this.callInjectedScript_('getProperties', objectProxy,
+        ignoreHasOwnProperty, callback);
+  }
 };
 
 
