@@ -528,6 +528,18 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
     q.pop_front();
     DispatchMessage(*m);
     delete m;
+    // If this request is deferred in the context of the above message, then
+    // we should honor the same and stop dispatching further messages.
+    // We need to find the request again in the list as it may have completed
+    // by now and the request_info instance above may be invalid.
+    PendingRequestList::iterator index = pending_requests_.find(request_id);
+    if (index != pending_requests_.end()) {
+      PendingRequestInfo& pending_request = index->second;
+      if (pending_request.is_deferred) {
+        pending_request.deferred_message_queue.swap(q);
+        return;
+      }
+    }
   }
 }
 

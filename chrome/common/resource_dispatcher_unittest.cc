@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/message_loop.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/filter_policy.h"
@@ -142,6 +143,14 @@ class ResourceDispatcherTest : public testing::Test,
     dispatcher_.reset();
   }
 
+  ResourceLoaderBridge* CreateBridge() {
+    ResourceLoaderBridge* bridge = dispatcher_->CreateBridge(
+        "GET", GURL(test_page_url), GURL(test_page_url), GURL(), "null",
+        "null", std::string(), 0, 0, ResourceType::SUB_RESOURCE, 0,
+        appcache::kNoHostId, MSG_ROUTING_CONTROL);
+    return bridge;
+  }
+
   std::vector<IPC::Message> message_queue_;
   static scoped_ptr<ResourceDispatcher> dispatcher_;
 };
@@ -152,12 +161,7 @@ scoped_ptr<ResourceDispatcher> ResourceDispatcherTest::dispatcher_;
 // Does a simple request and tests that the correct data is received.
 TEST_F(ResourceDispatcherTest, RoundTrip) {
   TestRequestCallback callback;
-  ResourceLoaderBridge* bridge =
-    dispatcher_->CreateBridge("GET", GURL(test_page_url), GURL(test_page_url),
-                              GURL(), "null", "null", std::string(), 0, 0,
-                              ResourceType::SUB_RESOURCE, 0,
-                              appcache::kNoHostId,
-                              MSG_ROUTING_CONTROL);
+  ResourceLoaderBridge* bridge = CreateBridge();
 
   bridge->Start(&callback);
 
@@ -188,3 +192,113 @@ TEST_F(ResourceDispatcherTest, Cookies) {
 TEST_F(ResourceDispatcherTest, SerializedPostData) {
   // FIXME
 }
+
+// This class provides functionality to validate whether the ResourceDispatcher
+// object honors the deferred loading contract correctly, i.e. if deferred
+// loading is enabled it should queue up any responses received. If deferred
+// loading is enabled/disabled in the context of a dispatched message, other
+// queued messages should not be dispatched until deferred load is turned off.
+class DeferredResourceLoadingTest : public ResourceDispatcherTest,
+                                    public ResourceLoaderBridge::Peer {
+ public:
+  DeferredResourceLoadingTest()
+      : defer_loading_(false) {
+  }
+
+  virtual bool Send(IPC::Message* msg) {
+    delete msg;
+    return true;
+  }
+
+  void InitMessages() {
+    set_defer_loading(true);
+
+    ResourceResponseHead response_head;
+    response_head.status.set_status(URLRequestStatus::SUCCESS);
+
+    IPC::Message* response_message =
+        new ViewMsg_Resource_ReceivedResponse(0, 0, response_head);
+
+    dispatcher_->OnMessageReceived(*response_message);
+
+    delete response_message;
+
+    response_message =
+        new ViewMsg_Resource_DataReceived(0, 0, shared_handle_.handle(), 100);
+
+    dispatcher_->OnMessageReceived(*response_message);
+
+    delete response_message;
+
+    set_defer_loading(false);
+  }
+
+  // ResourceLoaderBridge::Peer methods.
+  virtual void OnReceivedResponse(
+      const ResourceLoaderBridge::ResponseInfo& info,
+      bool content_filtered) {
+    EXPECT_EQ(defer_loading_, false);
+    set_defer_loading(true);
+  }
+
+  virtual bool OnReceivedRedirect(
+      const GURL& new_url,
+      const ResourceLoaderBridge::ResponseInfo& info) {
+    return true;
+  }
+
+  virtual void OnReceivedData(const char* data, int len) {
+    EXPECT_EQ(defer_loading_, false);
+    set_defer_loading(false);
+  }
+
+  virtual void OnUploadProgress(uint64 position, uint64 size) {
+  }
+
+  virtual void OnCompletedRequest(const URLRequestStatus& status,
+                                  const std::string& security_info) {
+  }
+
+  virtual std::string GetURLForDebugging() {
+    return std::string();
+  }
+
+ protected:
+  virtual void SetUp() {
+    EXPECT_EQ(true, shared_handle_.Create(L"DeferredResourceLoaderTest", false,
+                                          false, 100));
+    ResourceDispatcherTest::SetUp();
+  }
+
+  virtual void TearDown() {
+    shared_handle_.Close();
+    ResourceDispatcherTest::TearDown();
+  }
+
+ private:
+  void set_defer_loading(bool defer) {
+    defer_loading_ = defer;
+    dispatcher_->SetDefersLoading(0, defer);
+  }
+
+  bool defer_loading() const {
+    return defer_loading_;
+  }
+
+  bool defer_loading_;
+  base::SharedMemory shared_handle_;
+};
+
+TEST_F(DeferredResourceLoadingTest, DeferredLoadTest) {
+  MessageLoop message_loop(MessageLoop::TYPE_IO);
+
+  ResourceLoaderBridge* bridge = CreateBridge();
+
+  bridge->Start(this);
+  InitMessages();
+
+  // Dispatch deferred messages.
+  message_loop.RunAllPending();
+  delete bridge;
+}
+
