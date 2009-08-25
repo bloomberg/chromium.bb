@@ -68,6 +68,10 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   static void OnResponse(GtkDialog* dialog, gint response_id,
                          TaskManagerGtk* task_manager);
 
+  // realize signal handler to set the page column's initial size.
+  static void OnTreeViewRealize(GtkTreeView* treeview,
+                                TaskManagerGtk* task_manager);
+
   // changed signal handler that is sent when the treeview selection changes.
   static void OnSelectionChanged(GtkTreeSelection* selection,
                                  TaskManagerGtk* task_manager);

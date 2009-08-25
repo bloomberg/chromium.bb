@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -130,6 +131,8 @@ void TreeViewInsertColumnWithPixbuf(GtkWidget* treeview, int resid) {
   gtk_tree_view_column_pack_start(column, text_renderer, TRUE);
   gtk_tree_view_column_add_attribute(column, text_renderer, "text", colid);
   gtk_tree_view_column_set_resizable(column, TRUE);
+  // This is temporary: we'll turn expanding off after getting the size.
+  gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 }
 
@@ -153,14 +156,15 @@ void TreeViewInsertColumn(GtkWidget* treeview, int resid) {
                                l10n_util::GetStringUTF8(resid).c_str());
 }
 
-// Get the row number corresponding to |path|.
-gint GetRowNumForPath(GtkTreePath* path) {
-  gint* indices = gtk_tree_path_get_indices(path);
-  if (!indices) {
-    NOTREACHED();
-    return -1;
-  }
-  return indices[0];
+// Set the current width of the column without forcing a minimum width as
+// gtk_tree_view_column_set_fixed_width() would. This would basically be
+// gtk_tree_view_column_set_width() except that there is no such function.
+void TreeViewColumnSetWidth(GtkTreeViewColumn* column, gint width) {
+  column->width = width;
+  column->resized_width = width;
+  column->use_resized_width = TRUE;
+  // Needed for use_resized_width to be effective.
+  gtk_widget_queue_resize(column->tree_view);
 }
 
 }  // namespace
@@ -392,6 +396,10 @@ void TaskManagerGtk::Init() {
 }
 
 void TaskManagerGtk::SetInitialDialogSize() {
+  // Hook up to the realize event so we can size the page column to the
+  // size of the leftover space after packing the other columns.
+  g_signal_connect(G_OBJECT(treeview_), "realize",
+                   G_CALLBACK(OnTreeViewRealize), this);
   // If we previously saved the dialog's bounds, use them.
   if (g_browser_process->local_state()) {
     const DictionaryValue* placement_pref =
@@ -532,7 +540,8 @@ void TaskManagerGtk::KillSelectedProcesses() {
   GtkTreeModel* model;
   GList* paths = gtk_tree_selection_get_selected_rows(selection, &model);
   for (GList* item = paths; item; item = item->next) {
-    int row = GetRowNumForPath(reinterpret_cast<GtkTreePath*>(item->data));
+    int row = gtk_tree::GetRowNumForPath(
+        reinterpret_cast<GtkTreePath*>(item->data));
     task_manager_->KillProcess(row);
   }
   g_list_free(paths);
@@ -553,7 +562,8 @@ void TaskManagerGtk::ActivateFocusedTab() {
   GtkTreeModel* model;
   GList* selected = gtk_tree_selection_get_selected_rows(selection, &model);
   if (selected) {
-    int row = GetRowNumForPath(reinterpret_cast<GtkTreePath*>(selected->data));
+    int row = gtk_tree::GetRowNumForPath(
+        reinterpret_cast<GtkTreePath*>(selected->data));
     task_manager_->ActivateProcess(row);
   }
 }
@@ -607,6 +617,20 @@ void TaskManagerGtk::OnResponse(GtkDialog* dialog, gint response_id,
 }
 
 // static
+void TaskManagerGtk::OnTreeViewRealize(GtkTreeView* treeview,
+                                       TaskManagerGtk* task_manager) {
+  GtkTreeViewColumn* column = gtk_tree_view_get_column(
+      GTK_TREE_VIEW(task_manager->treeview_),
+      TreeViewColumnIndexFromID(kTaskManagerPage));
+  gint width = gtk_tree_view_column_get_width(column);
+  // Turn expanding back off to make resizing columns behave sanely.
+  gtk_tree_view_column_set_expand(column, FALSE);
+  // Subtract 1 to work around some sort of fencepost error in GTK: without
+  // it, a horizontal scroll bar with one pixel of wiggle room will appear.
+  TreeViewColumnSetWidth(column, width - 1);
+}
+
+// static
 void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection,
                                         TaskManagerGtk* task_manager) {
   bool selection_contains_browser_process = false;
@@ -614,7 +638,8 @@ void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection,
   GtkTreeModel* model;
   GList* paths = gtk_tree_selection_get_selected_rows(selection, &model);
   for (GList* item = paths; item; item = item->next) {
-    int row = GetRowNumForPath(reinterpret_cast<GtkTreePath*>(item->data));
+    int row = gtk_tree::GetRowNumForPath(
+        reinterpret_cast<GtkTreePath*>(item->data));
     if (task_manager->task_manager_->IsBrowserProcess(row)) {
       selection_contains_browser_process = true;
       break;
