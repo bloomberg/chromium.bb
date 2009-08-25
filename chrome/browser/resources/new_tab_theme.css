@@ -63,5 +63,6 @@ body {
 
 #attribution {
   display : $$5;
+  color: $9;
   text-align:right;
 }
