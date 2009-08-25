@@ -68,6 +68,8 @@ class MockDispatchedNPObject : public DispatchedNPObject {
 class NPObjectDispatcherTest : public testing::Test {
  protected:
   virtual void SetUp() {
+    InitializeNPNTestStub();
+    
     object_ = new StrictMock<MockDispatchedNPObject>;
 
     for (int i = 0; i != arraysize(args_); ++i) {
@@ -78,6 +80,7 @@ class NPObjectDispatcherTest : public testing::Test {
 
   virtual void TearDown() {
     delete object_;
+    ShutdownNPNTestStub();
   }
 
   NPVariant args_[3];
@@ -325,7 +328,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeStringReturn) {
             std::string(str.UTF8Characters, str.UTF8Length));
 
   // Callee is responsible for releasing string.
-  NPN_ReleaseVariantValue(&result_);
+  gpu_plugin::NPN_ReleaseVariantValue(&result_);
 }
 
 TEST_F(NPObjectDispatcherTest, CanInvokeObjectReturnWithObject) {

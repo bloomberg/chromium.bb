@@ -7,15 +7,19 @@
 #include <set>
 #include <string>
 
+#include "o3d/gpu_plugin/np_utils/npn_funcs.h"
 #include "o3d/gpu_plugin/np_utils/npn_test_stub.h"
+#include "webkit/glue/plugins/nphostapi.h"
 
 // Simple implementation of subset of the NPN functions for testing.
 
-namespace {
-  std::set<std::string> names;
-}
+namespace o3d {
+namespace gpu_plugin {
 
-NPIdentifier NPN_GetStringIdentifier(const NPUTF8* name) {
+namespace {
+std::set<std::string> names;
+
+NPIdentifier GetStringIdentifier(const NPUTF8* name) {
   std::set<std::string>::iterator it = names.find(name);
   if (it == names.end()) {
     it = names.insert(name).first;
@@ -23,42 +27,97 @@ NPIdentifier NPN_GetStringIdentifier(const NPUTF8* name) {
   return const_cast<NPUTF8*>((*it).c_str());
 }
 
-void* NPN_MemAlloc(size_t size) {
+void* MemAlloc(size_t size) {
   return malloc(size);
 }
 
-void NPN_MemFree(void* p) {
+void MemFree(void* p) {
   free(p);
 }
 
-NPObject* NPN_CreateObject(NPP npp, NPClass* cl) {
+NPObject* CreateObject(NPP npp, NPClass* cl) {
   NPObject* object = cl->allocate(npp, cl);
   object->referenceCount = 1;
   object->_class = cl;
   return object;
 }
 
-NPObject* NPN_RetainObject(NPObject* object) {
+NPObject* RetainObject(NPObject* object) {
   ++object->referenceCount;
   return object;
 }
 
-void NPN_ReleaseObject(NPObject* object) {
+void ReleaseObject(NPObject* object) {
   --object->referenceCount;
   if (object->referenceCount == 0) {
     object->_class->deallocate(object);
   }
 }
 
-void NPN_ReleaseVariantValue(NPVariant* variant) {
+void ReleaseVariantValue(NPVariant* variant) {
   if (NPVARIANT_IS_STRING(*variant)) {
     NPN_MemFree(const_cast<NPUTF8*>(variant->value.stringValue.UTF8Characters));
   } else if (NPVARIANT_IS_OBJECT(*variant)) {
-    NPN_ReleaseObject(NPVARIANT_TO_OBJECT(*variant));
+    gpu_plugin::NPN_ReleaseObject(NPVARIANT_TO_OBJECT(*variant));
   }
 }
 
-bool NPN_Invoke(NPP npp, NPObject* object, NPIdentifier name,
-                const NPVariant* args, uint32_t num_args, NPVariant* result) {
+bool Invoke(NPP npp, NPObject* object, NPIdentifier name,
+            const NPVariant* args, uint32_t num_args, NPVariant* result) {
   return object->_class->invoke(object, name, args, num_args, result);
 }
+}  // namespace anonymous
+
+void InitializeNPNTestStub() {
+  static NPNetscapeFuncs funcs = {
+    sizeof(NPNetscapeFuncs),
+    NP_VERSION_MINOR,
+    NULL,  // geturl
+    NULL,  // posturl
+    NULL,  // requestread
+    NULL,  // newstream
+    NULL,  // write
+    NULL,  // destroystream
+    NULL,  // status
+    NULL,  // uagent
+    MemAlloc,
+    MemFree,
+    NULL,  // memflush
+    NULL,  // reloadplugins
+    NULL,  // getJavaEnv
+    NULL,  // getJavaPeer
+    NULL,  // geturlnotify
+    NULL,  // posturlnotify
+    NULL,  // getvalue
+    NULL,  // setvalue
+    NULL,  // invalidaterect
+    NULL,  // invalidateregion
+    NULL,  // forceredraw
+    GetStringIdentifier,
+    NULL,  // getstringidentifiers
+    NULL,  // getintidentifier
+    NULL,  // identifierisstring
+    NULL,  // utf8fromidentifier
+    NULL,  // intfromidentifier
+    CreateObject,
+    RetainObject,
+    ReleaseObject,
+    Invoke,
+    NULL,  // invokeDefault
+    NULL,  // evaluate
+    NULL,  // getproperty
+    NULL,  // setproperty
+    NULL,  // removeproperty
+    NULL,  // hasproperty
+    NULL,  // hasmethod
+    ReleaseVariantValue,
+  };
+  SetBrowserFuncs(&funcs);
+}
+
+void ShutdownNPNTestStub() {
+  SetBrowserFuncs(NULL);
+}
+
+}  // namespace gpu_plugin
+}  // namespace o3d

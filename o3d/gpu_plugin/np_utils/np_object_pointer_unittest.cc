@@ -4,6 +4,7 @@
 
 #include "o3d/gpu_plugin/np_utils/base_np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
+#include "o3d/gpu_plugin/np_utils/npn_test_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,6 +17,8 @@ namespace gpu_plugin {
 class NPObjectPointerTest : public testing::Test {
  protected:
   virtual void SetUp() {
+    InitializeNPNTestStub();
+
     np_class_ = const_cast<NPClass*>(
         BaseNPObject::GetNPClass<StrictMock<MockBaseNPObject> >());
 
@@ -23,14 +26,16 @@ class NPObjectPointerTest : public testing::Test {
     ASSERT_EQ(0, MockBaseNPObject::count());
 
     raw_pointer_ = static_cast<MockBaseNPObject*>(
-      NPN_CreateObject(NULL, np_class_));
+      gpu_plugin::NPN_CreateObject(NULL, np_class_));
   }
 
   virtual void TearDown() {
-    NPN_ReleaseObject(raw_pointer_);
+    gpu_plugin::NPN_ReleaseObject(raw_pointer_);
 
     // Make sure no MockBaseNPObject leaked an object.
     ASSERT_EQ(0, MockBaseNPObject::count());
+
+    ShutdownNPNTestStub();
   }
 
   NPClass* np_class_;
@@ -105,7 +110,7 @@ TEST_F(NPObjectPointerTest, ArrowOperatorCanBeUsedToAccessNPObjectMembers) {
 }
 
 TEST_F(NPObjectPointerTest, PointerCanBeConstructedFromReturnedNPObject) {
-  NPN_RetainObject(raw_pointer_);
+  gpu_plugin::NPN_RetainObject(raw_pointer_);
   EXPECT_EQ(2, raw_pointer_->referenceCount);
   {
     NPObjectPointer<MockBaseNPObject> p(

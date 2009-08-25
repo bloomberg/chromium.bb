@@ -6,12 +6,18 @@
 #define O3D_GPU_PLUGIN_GPU_PLUGIN_H_
 
 #include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 typedef struct _NPPluginFuncs NPPluginFuncs;
 typedef struct _NPNetscapeFuncs NPNetscapeFuncs;
 
 namespace o3d {
 namespace gpu_plugin {
+
+class PluginObjectFactory;
+
+// Replaces the plugin object factory and returns the previous one.
+PluginObjectFactory* SetPluginObjectFactory(PluginObjectFactory* factory);
 
 // Declarations of NPAPI plugin entry points.
 

@@ -4,6 +4,7 @@
 
 #include "o3d/gpu_plugin/np_utils/base_np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_variant_utils.h"
+#include "o3d/gpu_plugin/np_utils/npn_test_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,6 +23,8 @@ namespace gpu_plugin {
 class NPVariantUtilsTest : public testing::Test {
  protected:
   virtual void SetUp() {
+    InitializeNPNTestStub();
+
     np_class_ = const_cast<NPClass*>(
         BaseNPObject::GetNPClass<StrictMock<MockBaseNPObject> >());
 
@@ -32,6 +35,8 @@ class NPVariantUtilsTest : public testing::Test {
   virtual void TearDown() {
     // Make sure no MockBaseNPObject leaked an object.
     ASSERT_EQ(0, MockBaseNPObject::count());
+
+    ShutdownNPNTestStub();
   }
 
   NPP_t npp_;
@@ -107,7 +112,7 @@ TEST_F(NPVariantUtilsTest, TestStringNPVariantToValue) {
 }
 
 TEST_F(NPVariantUtilsTest, TestObjectNPVariantToValue) {
-  NPObject* object = NPN_CreateObject(NULL, np_class_);
+  NPObject* object = gpu_plugin::NPN_CreateObject(NULL, np_class_);
   NPObject* v;
 
   OBJECT_TO_NPVARIANT(object, variant_);
@@ -117,7 +122,7 @@ TEST_F(NPVariantUtilsTest, TestObjectNPVariantToValue) {
   BOOLEAN_TO_NPVARIANT(false, variant_);
   EXPECT_FALSE(NPVariantToValue(&v, variant_));
 
-  NPN_ReleaseObject(object);
+  gpu_plugin::NPN_ReleaseObject(object);
 }
 
 TEST_F(NPVariantUtilsTest, TestNullNPVariantToValue) {
@@ -168,14 +173,14 @@ TEST_F(NPVariantUtilsTest, TestStringValueToNPVariant) {
 }
 
 TEST_F(NPVariantUtilsTest, TestObjectValueToNPVariant) {
-  NPObject* object = NPN_CreateObject(NULL, np_class_);
+  NPObject* object = gpu_plugin::NPN_CreateObject(NULL, np_class_);
 
   ValueToNPVariant(object, &variant_);
   EXPECT_TRUE(NPVARIANT_IS_OBJECT(variant_));
   EXPECT_EQ(object, NPVARIANT_TO_OBJECT(variant_));
 
-  NPN_ReleaseVariantValue(&variant_);
-  NPN_ReleaseObject(object);
+  gpu_plugin::NPN_ReleaseVariantValue(&variant_);
+  gpu_plugin::NPN_ReleaseObject(object);
 }
 
 TEST_F(NPVariantUtilsTest, TestNullValueToNPVariant) {
@@ -214,7 +219,7 @@ Matcher<const NPVariant&> VariantMatches(const T& value) {
 TEST_F(NPVariantUtilsTest, CanInvokeVoidMethodWithNativeTypes) {
   NPIdentifier name = NPN_GetStringIdentifier("foo");
   MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
-      NPN_CreateObject(NULL, np_class_));
+      gpu_plugin::NPN_CreateObject(NULL, np_class_));
 
   VOID_TO_NPVARIANT(variant_);
 
@@ -224,13 +229,13 @@ TEST_F(NPVariantUtilsTest, CanInvokeVoidMethodWithNativeTypes) {
 
   EXPECT_TRUE(NPInvokeVoid(NULL, object, name, 7));
 
-  NPN_ReleaseObject(object);
+  gpu_plugin::NPN_ReleaseObject(object);
 }
 
 TEST_F(NPVariantUtilsTest, InvokeVoidMethodCanFail) {
   NPIdentifier name = NPN_GetStringIdentifier("foo");
   MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
-      NPN_CreateObject(NULL, np_class_));
+      gpu_plugin::NPN_CreateObject(NULL, np_class_));
 
   VOID_TO_NPVARIANT(variant_);
 
@@ -240,13 +245,13 @@ TEST_F(NPVariantUtilsTest, InvokeVoidMethodCanFail) {
 
   EXPECT_FALSE(NPInvokeVoid(NULL, object, name, 7));
 
-  NPN_ReleaseObject(object);
+  gpu_plugin::NPN_ReleaseObject(object);
 }
 
 TEST_F(NPVariantUtilsTest, CanInvokeNonVoidMethodWithNativeTypes) {
   NPIdentifier name = NPN_GetStringIdentifier("foo");
   MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
-      NPN_CreateObject(NULL, np_class_));
+      gpu_plugin::NPN_CreateObject(NULL, np_class_));
 
   DOUBLE_TO_NPVARIANT(1.5, variant_);
 
@@ -258,13 +263,13 @@ TEST_F(NPVariantUtilsTest, CanInvokeNonVoidMethodWithNativeTypes) {
   EXPECT_TRUE(NPInvoke(NULL, object, name, 7, &r));
   EXPECT_EQ(1.5, r);
 
-  NPN_ReleaseObject(object);
+  gpu_plugin::NPN_ReleaseObject(object);
 }
 
 TEST_F(NPVariantUtilsTest, InvokeNonVoidMethodCanFail) {
   NPIdentifier name = NPN_GetStringIdentifier("foo");
   MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
-      NPN_CreateObject(NULL, np_class_));
+      gpu_plugin::NPN_CreateObject(NULL, np_class_));
 
   DOUBLE_TO_NPVARIANT(1.5, variant_);
 
@@ -275,13 +280,13 @@ TEST_F(NPVariantUtilsTest, InvokeNonVoidMethodCanFail) {
   double r;
   EXPECT_FALSE(NPInvoke(NULL, object, name, 7, &r));
 
-  NPN_ReleaseObject(object);
+  gpu_plugin::NPN_ReleaseObject(object);
 }
 
 TEST_F(NPVariantUtilsTest, InvokeNonVoidMethodFailsIfResultIsIncompatible) {
   NPIdentifier name = NPN_GetStringIdentifier("foo");
   MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
-      NPN_CreateObject(NULL, np_class_));
+      gpu_plugin::NPN_CreateObject(NULL, np_class_));
 
   DOUBLE_TO_NPVARIANT(1.5, variant_);
 
@@ -292,7 +297,7 @@ TEST_F(NPVariantUtilsTest, InvokeNonVoidMethodFailsIfResultIsIncompatible) {
   int r;
   EXPECT_FALSE(NPInvoke(NULL, object, name, 7, &r));
 
-  NPN_ReleaseObject(object);
+  gpu_plugin::NPN_ReleaseObject(object);
 }
 
 }  // namespace gpu_plugin

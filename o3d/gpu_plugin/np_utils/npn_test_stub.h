@@ -8,16 +8,14 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
-// Simple implementation of subset of the NPN functions for testing.
+namespace o3d {
+namespace gpu_plugin {
 
-NPIdentifier NPN_GetStringIdentifier(const NPUTF8* name);
-void* NPN_MemAlloc(size_t size);
-void NPN_MemFree(void* p);
-NPObject* NPN_CreateObject(NPP npp, NPClass* cl);
-NPObject* NPN_RetainObject(NPObject* object);
-void NPN_ReleaseObject(NPObject* object);
-void NPN_ReleaseVariantValue(NPVariant* variant);
-bool NPN_Invoke(NPP npp, NPObject* object, NPIdentifier name,
-                const NPVariant* args, uint32_t num_args, NPVariant* result);
+// Simple implementation of subset of the NPN functions for testing.
+void InitializeNPNTestStub();
+void ShutdownNPNTestStub();
+
+}  // namespace gpu_plugin
+}  // namespace o3d
 
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NPN_TEST_STUB_H_

@@ -5,6 +5,7 @@
 #ifndef O3D_GPU_PLUGIN_NP_UTILS_NP_OBJECT_POINTER_H_
 #define O3D_GPU_PLUGIN_NP_UTILS_NP_OBJECT_POINTER_H_
 
+#include "o3d/gpu_plugin/np_utils/npn_funcs.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
@@ -19,29 +20,29 @@ class NPObjectPointer {
 
   NPObjectPointer(const NPObjectPointer& rhs) : object_(rhs.object_) {
     if (object_) {
-      NPN_RetainObject(object_);
+      gpu_plugin::NPN_RetainObject(object_);
     }
   }
 
   explicit NPObjectPointer(NPObjectType* p) : object_(p) {
     if (object_) {
-      NPN_RetainObject(object_);
+      gpu_plugin::NPN_RetainObject(object_);
     }
   }
 
   ~NPObjectPointer() {
     if (object_) {
-      NPN_ReleaseObject(object_);
+      gpu_plugin::NPN_ReleaseObject(object_);
     }
   }
 
   NPObjectPointer& operator=(const NPObjectPointer& rhs) {
     if (object_) {
-      NPN_ReleaseObject(object_);
+      gpu_plugin::NPN_ReleaseObject(object_);
     }
     object_ = rhs.object_;
     if (object_) {
-      NPN_RetainObject(object_);
+      gpu_plugin::NPN_RetainObject(object_);
     }
     return *this;
   }
@@ -51,7 +52,7 @@ class NPObjectPointer {
   static NPObjectPointer FromReturned(NPObjectType* p) {
     NPObjectPointer pointer(p);
     if (p) {
-      NPN_ReleaseObject(p);
+      gpu_plugin::NPN_ReleaseObject(p);
     }
     return pointer;
   }

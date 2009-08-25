@@ -97,7 +97,7 @@ void ValueToNPVariant(const std::string& value, NPVariant* variant) {
 
 void ValueToNPVariant(NPObject* value, NPVariant* variant) {
   if (value) {
-    NPN_RetainObject(value);
+    gpu_plugin::NPN_RetainObject(value);
     OBJECT_TO_NPVARIANT(value, *variant);
   } else {
     NULL_TO_NPVARIANT(*variant);

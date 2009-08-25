@@ -20,6 +20,12 @@
       'sources': [
         'gpu_plugin.cc',
         'gpu_plugin.h',
+        'gpu_plugin_object.cc',
+        'gpu_plugin_object.h',
+        'gpu_plugin_object_win.cc',
+        'plugin_object_factory.cc',
+        'plugin_object.h',
+        'plugin_object_factory.h',
         'np_utils/base_np_object.cc',
         'np_utils/base_np_object.h',
         'np_utils/dispatched_np_object.cc',
@@ -29,6 +35,8 @@
         'np_utils/np_object_pointer.h',
         'np_utils/np_variant_utils.cc',
         'np_utils/np_variant_utils.h',
+        'np_utils/npn_funcs.cc',
+        'np_utils/npn_funcs.h',
       ],
     },
 
@@ -49,6 +57,10 @@
       ],
       'sources': [
         'gpu_plugin_unittest.cc',
+        'gpu_plugin_object_unittest.cc',
+        'plugin_object_factory_mock.h',
+        'plugin_object_factory_unittest.cc',
+        'plugin_object_mock.h',
         'np_utils/base_np_object_mock.cc',
         'np_utils/base_np_object_mock.h',
         'np_utils/base_np_object_unittest.cc',

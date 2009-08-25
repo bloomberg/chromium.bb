@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "o3d/gpu_plugin/np_utils/npn_funcs.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
@@ -51,7 +52,7 @@ class SmartNPVariant {
   }
 
   void Release() {
-    NPN_ReleaseVariantValue(&variant_);
+    gpu_plugin::NPN_ReleaseVariantValue(&variant_);
     VOID_TO_NPVARIANT(variant_);
   }
 
@@ -73,8 +74,8 @@ class SmartNPVariant {
 
 inline bool NPInvokeVoid(NPP npp, NPObject* object, NPIdentifier name) {
   SmartNPVariant result;
-  return NPN_Invoke(npp, object, name, NULL, 0,
-                    &result.GetVariant());
+  return gpu_plugin::NPN_Invoke(npp, object, name, NULL, 0,
+                                &result.GetVariant());
 }
 
 template<typename R>
@@ -94,8 +95,8 @@ bool NPInvokeVoid(NPP npp, NPObject* object, NPIdentifier name,
   SmartNPVariant args[1];
   args[0].SetValue(p0);
   SmartNPVariant result;
-  return NPN_Invoke(npp, object, name, &args[0].GetVariant(), 1,
-                    &result.GetVariant());
+  return gpu_plugin::NPN_Invoke(npp, object, name, &args[0].GetVariant(), 1,
+                                &result.GetVariant());
 }
 
 template<typename R, typename P0>
@@ -104,8 +105,8 @@ bool NPInvoke(NPP npp, NPObject* object, NPIdentifier name,
   SmartNPVariant args[1];
   args[0].SetValue(p0);
   SmartNPVariant result;
-  if (NPN_Invoke(npp, object, name, &args[0].GetVariant(), 1,
-                 &result.GetVariant())) {
+  if (gpu_plugin::NPN_Invoke(npp, object, name, &args[0].GetVariant(), 1,
+                             &result.GetVariant())) {
     return result.GetValue(r);
   }
   return false;
@@ -118,8 +119,8 @@ bool NPInvokeVoid(NPP npp, NPObject* object, NPIdentifier name,
   args[0].SetValue(p0);
   args[1].SetValue(p1);
   SmartNPVariant result;
-  return NPN_Invoke(npp, object, name, &args[0].GetVariant(), 2,
-                    &result.GetVariant());
+  return gpu_plugin::NPN_Invoke(npp, object, name, &args[0].GetVariant(), 2,
+                                &result.GetVariant());
 }
 
 template<typename R, typename P0, typename P1>
@@ -129,8 +130,8 @@ bool NPInvoke(NPP npp, NPObject* object, NPIdentifier name,
   args[0].SetValue(p0);
   args[1].SetValue(p1);
   SmartNPVariant result;
-  if (NPN_Invoke(npp, object, name, &args[0].GetVariant(), 2,
-                 &result.GetVariant())) {
+  if (gpu_plugin::NPN_Invoke(npp, object, name, &args[0].GetVariant(), 2,
+                             &result.GetVariant())) {
     return result.GetValue(r);
   }
   return false;
