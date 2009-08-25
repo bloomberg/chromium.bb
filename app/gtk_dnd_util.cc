@@ -29,7 +29,7 @@ GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
 
     case TEXT_PLAIN:
       static GdkAtom text_atom = gdk_atom_intern(
-          const_cast<char*>("text/plain"), false);
+          const_cast<char*>("text/plain;charset=utf-8"), false);
       return text_atom;
 
     case TEXT_URI_LIST:
