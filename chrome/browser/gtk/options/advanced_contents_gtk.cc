@@ -436,10 +436,8 @@ void NetworkSection::StartProxyConfigUtil(const ProxyConfigCommand& command) {
   for (size_t i = 1; command.argv[i]; i++)
     argv.push_back(command.argv[i]);
   base::file_handle_mapping_vector no_files;
-  base::environment_vector env;
   base::ProcessHandle handle;
-  env.push_back(std::make_pair("GTK_PATH", getenv("CHROMIUM_SAVED_GTK_PATH")));
-  if (!base::LaunchApp(argv, env, no_files, false, &handle)) {
+  if (!base::LaunchApp(argv, no_files, false, &handle)) {
     LOG(ERROR) << "StartProxyConfigUtil failed to start " << command.binary;
     BrowserList::GetLastActive()->
         OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),

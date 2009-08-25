@@ -385,9 +385,6 @@
           # Add these files to the build output so the build archives will be
           # "hermetic" for packaging. This is only for branding="Chrome" since
           # we only create packages for official builds.
-          'variables': {
-            'lib32_dir': '<!(if uname -m | egrep -q "x86_64"; then echo lib32; else echo lib; fi)',
-          },
           'copies': [
             # Copy tools for generating packages from the build archive.
             {
@@ -430,34 +427,6 @@
                 'linux/internal/common/updater',
                 'linux/internal/common/wrapper',
               ]
-            },
-            # System libs needed for 64-bit package building.
-            {
-              'destination': '<(PRODUCT_DIR)/installer/lib32/',
-              'files': [
-                '/usr/<(lib32_dir)/libnspr4.so',
-                '/usr/<(lib32_dir)/libnspr4.so.0d',
-                '/usr/<(lib32_dir)/libnss3.so',
-                '/usr/<(lib32_dir)/libnss3.so.1d',
-                '/usr/<(lib32_dir)/libnssutil3.so',
-                '/usr/<(lib32_dir)/libnssutil3.so.1d',
-                '/usr/<(lib32_dir)/libplc4.so',
-                '/usr/<(lib32_dir)/libplc4.so.0d',
-                '/usr/<(lib32_dir)/libplds4.so',
-                '/usr/<(lib32_dir)/libplds4.so.0d',
-                '/usr/<(lib32_dir)/libsmime3.so',
-                '/usr/<(lib32_dir)/libsmime3.so.1d',
-                '/usr/<(lib32_dir)/libsqlite3.so.0',
-                '/usr/<(lib32_dir)/libsqlite3.so.0.8.6',
-                '/usr/<(lib32_dir)/libssl3.so',
-                '/usr/<(lib32_dir)/libssl3.so.1d',
-                '/usr/<(lib32_dir)/nss/libfreebl3.chk',
-                '/usr/<(lib32_dir)/nss/libfreebl3.so',
-                '/usr/<(lib32_dir)/nss/libnssckbi.so',
-                '/usr/<(lib32_dir)/nss/libnssdbm3.so',
-                '/usr/<(lib32_dir)/nss/libsoftokn3.chk',
-                '/usr/<(lib32_dir)/nss/libsoftokn3.so',
-              ],
             },
             # Additional theme resources needed for package building.
             {
@@ -516,6 +485,18 @@
               '<(PRODUCT_DIR)/locales/en-US.pak',
               '<(PRODUCT_DIR)/themes/default.pak',
             ],
+            # TODO(mmoss) The ffmpeg libs are currently 32-bit only. Once we
+            # have 64-bit, this will need to copy the correct versions to the
+            # build output.
+            'conditions': [
+              ['target_arch=="x64"', {
+                'input_files!': [
+                  '<(PRODUCT_DIR)/libavcodec.so.52',
+                  '<(PRODUCT_DIR)/libavformat.so.52',
+                  '<(PRODUCT_DIR)/libavutil.so.50',
+                ],
+              }],
+            ],
           },
           'actions': [
             {
@@ -525,33 +506,56 @@
                 '<(PRODUCT_DIR)/installer/debian/build.sh',
                 '<@(input_files)',
               ],
-              'outputs': [
-                '<(PRODUCT_DIR)/google-chrome-unstable_<(version)-r<(revision)_i386.deb',
-                '<(PRODUCT_DIR)/google-chrome-unstable_<(version)-r<(revision)_amd64.deb',
-                # TODO(mmoss) Add other outputs once we start building other channels.
+              'conditions': [
+                ['target_arch=="ia32"', {
+                  'outputs': [
+                    '<(PRODUCT_DIR)/google-chrome-unstable_<(version)-r<(revision)_i386.deb',
+                    # TODO(mmoss) Add other outputs once we start building
+                    # other channels.
+                  ],
+                }],
+                ['target_arch=="x64"', {
+                  'outputs': [
+                    '<(PRODUCT_DIR)/google-chrome-unstable_<(version)-r<(revision)_amd64.deb',
+                    # TODO(mmoss) Add other outputs once we start building
+                    # other channels.
+                  ],
+                }],
               ],
               'action': [
-                'bash', '<(PRODUCT_DIR)/installer/debian/build.sh', '-o'
-                '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)', '-c', 'dev',
+                'bash', '<(PRODUCT_DIR)/installer/debian/build.sh',
+                '-o' '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)',
+                '-a', '<(target_arch)', '-c', 'dev',
               ],
             },
-            {
-              'action_name': 'rpm_packages',
-              'process_outputs_as_sources': 1,
-              'inputs': [
-                '<(PRODUCT_DIR)/installer/rpm/build.sh',
-                '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
-                '<@(input_files)',
+          ],
+          'conditions': [
+            ['target_arch=="ia32"', {
+              'actions': [
+                {
+                  'action_name': 'rpm_packages',
+                  'process_outputs_as_sources': 1,
+                  'inputs': [
+                    '<(PRODUCT_DIR)/installer/rpm/build.sh',
+                    '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
+                    '<@(input_files)',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/google-chrome-unstable-<(version)-<(revision).i386.rpm',
+                    # TODO(mmoss) Add other outputs once we start building
+                    # other channels.
+                  ],
+                  'action': [
+                    'bash', '<(PRODUCT_DIR)/installer/rpm/build.sh',
+                    '-o' '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)',
+                    '-a', '<(target_arch)', '-c', 'dev',
+                  ],
+                }
               ],
-              'outputs': [
-                '<(PRODUCT_DIR)/google-chrome-unstable-<(version)-<(revision).i386.rpm',
-                # TODO(mmoss) Add other outputs once we start building other channels.
-              ],
-              'action': [
-                'bash', '<(PRODUCT_DIR)/installer/rpm/build.sh', '-o'
-                '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)', '-c', 'dev',
-              ],
-            },
+            }],
+            ['target_arch=="x64"', {
+              # TODO(mmoss) 64-bit RPMs not ready yet.
+            }],
           ],
         },
       ],

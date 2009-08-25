@@ -19,7 +19,6 @@ void XDGOpen(const FilePath& path) {
   argv.push_back(path.value());
 
   base::environment_vector env;
-  env.push_back(std::make_pair("GTK_PATH", getenv("CHROMIUM_SAVED_GTK_PATH")));
   // xdg-open can fall back on mailcap which eventually might plumb through
   // to a command that needs a terminal.  Set the environment variable telling
   // it that we definitely don't have a terminal available and that it should
