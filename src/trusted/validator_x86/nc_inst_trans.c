@@ -448,11 +448,9 @@ static RegKind ExtractOperandRegKind(NcInstState* state,
 }
 
 /* Given an address of the corresponding opcode instruction of the
- * given state, return what kind of register should be used, based
- * on the operand size.
+ * given state, return what kind of register should be used.
  */
-static RegKind ExtractAddressRegKind(NcInstState* state,
-                                     Operand* operand) {
+static RegKind ExtractAddressRegKind(NcInstState* state) {
   if (state->address_size == 16) {
     return RegSize16;
   } else if (state->address_size == 64) {
@@ -790,7 +788,7 @@ static OperandKind GetSibBase(NcInstState* state) {
         FatalError("SIB value", state);
     }
   } else {
-    RegKind kind = NACL_TARGET_SUBARCH == 64 ? RegSize64 : RegSize32;
+    RegKind kind = ExtractAddressRegKind(state);
     base_reg = LookupRegister(kind, GetRexBRegister(state, base));
   }
   return base_reg;
@@ -809,7 +807,7 @@ static uint8_t sib_scale[4] = { 1, 2, 4, 8 };
 static ExprNode* AppendSib(NcInstState* state) {
   int index = sib_index(state->sib);
   int scale = 1;
-  RegKind kind = NACL_TARGET_SUBARCH == 64 ? RegSize64 : RegSize32;
+  RegKind kind = ExtractAddressRegKind(state);
   OperandKind base_reg;
   OperandKind index_reg = RegUnknown;
   Displacement displacement;
@@ -860,7 +858,7 @@ static ExprNode* AppendMod00EffectiveAddress(
       InitializeDisplacement(0, ExprFlag(ExprSize8), &displacement);
       return AppendMemoryOffset(state,
                                 LookupRegister(
-                                    ExtractAddressRegKind(state, operand),
+                                    ExtractAddressRegKind(state),
                                     GetGenRmRegister(state)),
                                 RegUnknown,
                                 1,
@@ -887,7 +885,7 @@ static ExprNode* AppendMod01EffectiveAddress(
     ExtractDisplacement(state, &displacement, ExprFlag(ExprSignedHex));
     return AppendMemoryOffset(state,
                               LookupRegister(
-                                  ExtractAddressRegKind(state, operand),
+                                  ExtractAddressRegKind(state),
                                   GetGenRmRegister(state)),
                               RegUnknown,
                               1,
@@ -909,7 +907,7 @@ static ExprNode* AppendMod10EffectiveAddress(
   } else {
     Displacement displacement;
     OperandKind base =
-        LookupRegister(ExtractAddressRegKind(state, operand),
+        LookupRegister(ExtractAddressRegKind(state),
                        GetGenRmRegister(state));
     ExtractDisplacement(state, &displacement, ExprFlag(ExprSignedHex));
     return AppendMemoryOffset(state, base, RegUnknown, 1, &displacement);
