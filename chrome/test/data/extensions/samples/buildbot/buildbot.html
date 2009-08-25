@@ -1,7 +1,7 @@
 <script>
 var botRoot = "http://build.chromium.org/buildbot/waterfall";
 var statusURL = "http://chromium-status.appspot.com/current";
-var waterfallURL = botRoot + "/console_json?json=1";
+var waterfallURL = botRoot + "/bot_status.json?json=1";
 var botList;
 var checkinResults;
 
@@ -74,7 +74,7 @@ function displayBots() {
 function requestStatus() {
   requestURL(statusURL, updateStatus);
   requestURL(waterfallURL, updateBots);
-  setTimeout(requestStatus, 90000);
+  setTimeout(requestStatus, 120000);
 }
 
 function requestURL(url, callback) {

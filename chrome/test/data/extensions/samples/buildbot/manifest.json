@@ -1,7 +1,8 @@
 {
   "name": "Chromium Buildbot Monitor",
-  "version": "0.3",
+  "version": "0.4",
   "description": "Displays the status of the Chromium buildbot in the extension toolstrip. On hover, expands to give more detail about each bot.",
+  "icons": { "128": "icon.png" },
   "toolstrips": [
     "buildbot.html"
   ]
