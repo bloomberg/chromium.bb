@@ -42,7 +42,7 @@ o3djs.require('o3djs.error');
 o3djs.require('o3djs.texture');
 
 /**
- * A Module for handling events related to o3d and various browsers.
+ * A Module for deserializing a scene created by the sample o3dConverter.
  * @namespace
  */
 o3djs.serialization = o3djs.serialization || {};
