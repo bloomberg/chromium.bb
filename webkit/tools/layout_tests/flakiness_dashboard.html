@@ -3,6 +3,9 @@
 
 <head>
   <title>Webkit Layout Test History</title>
+  <script>
+    var pageLoadStartTime = Date.now();
+  </script>
   <style>
     .test-link {
       white-space: normal;
@@ -31,24 +34,20 @@
     .link {
       color: blue;
       text-decoration: underline;
+      white-space: nowrap;
+      display: inline-block;
     }
-    .header-container,
-    .header-container *,
     .table-header-content,
     .table-header-content * {
       display: -webkit-box;
     }
     .table-header-content * {
       -webkit-box-flex: 1;
+      cursor: pointer;
     }
-    .header-container * {
-      -webkit-box-flex: 0;
-    }
-    .header-title {
-      -webkit-box-flex: 1;
-      -webkit-box-pack: center;
-      font-weight: bold;
+    .legend * {
       white-space: nowrap;
+      display: inline-block;
     }
     .results {
       cursor: pointer;
@@ -76,16 +75,16 @@
       background-color: #fffc6c;
     }
     .I {
-      background-color: yellow;
+      background-color: #96f;
     }
     .S {
-      background-color: red;
+      background-color: #c6c;
     }
     .F {
       background-color: #e98080;
     }
     .O {
-      background-color: blue;
+      background-color: #69f;
     }
     .separator {
       border: 1px solid lightgray;
@@ -121,20 +120,30 @@
    */
 
   // Default to layout_tests.
-  var testType = window.location.search.substring(1) || 'layout_test_results';
+  var testType = 'layout_test_results';
+  var params = window.location.search.substring(1).split('&');
+  for (var i = 0; i < params.length; i++) {
+    var thisParam = params[i].split('=');
+    if (thisParam[0] == 'testtype') {
+      testType = thisParam[1];
+      break;
+    }
+  }
 
   // Map of builderName (the name shown in the waterfall)
   // to builderPath (the path used in the builder's URL)
   // TODO(ojan): Make this switch based off of the testType.
-  var builders = { 
+  var builders = {
     'Webkit': 'webkit-rel',
     'Webkit (dbg)(1)': 'webkit-dbg-1',
     'Webkit (dbg)(2)': 'webkit-dbg-2',
     'Webkit (dbg)(3)': 'webkit-dbg-3',
-    'Webkit Linux': 'webkit-rel-linux',
-    'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
-    'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',    
-    'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
+    // TODO(ojan): Comment out linux builders until we have permissions on the
+    // JSON files set correctly.
+    // 'Webkit Linux': 'webkit-rel-linux',
+    // 'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
+    // 'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',
+    // 'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
     'Webkit Mac10.5': 'webkit-rel-mac5',
     'Webkit Mac10.5 (dbg)(1)': 'webkit-dbg-mac5-1',
     'Webkit Mac10.5 (dbg)(2)': 'webkit-dbg-mac5-2',
@@ -205,7 +214,8 @@
     'F': 'TEXT FAIL',
     'S': 'SIMPLIFIED',
     'I': 'IMAGE',
-    'O': 'OTHER'
+    'O': 'OTHER',
+    'N': 'NO DATA'
   };
   var TABLE_HEADERS = ['test', 'modifiers', 'expectations',
       'unexpected results', 'slowest run',
@@ -214,8 +224,7 @@
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
 
   // GLOBALS
-  var currentState = {builder: null, sortFailures: 'test', sortPasses: 'test',
-      sortFailuresOrder: FORWARD, sortPassesOrder: FORWARD};
+  var currentState = {builder: null, sortOrder: FORWARD, sortColumn: 'test'};
   var perBuilderPlatformAndBuildType = {};
   var oldLocation;
   var perBuilderFailures = {};
@@ -286,13 +295,29 @@
         (!hasAnyPlatform || hasThisPlatform);
   }
 
+  /**
+   * Returns the expectation string for the given single character result.
+   * This string should match the expectations that are put into
+   * test_expectations.py.
+   *
+   * For example, if we start explicitly listing IMAGE result failures,
+   * this function should start returning 'IMAGE'.
+   */
+  function getExpectationsFileStringForResult(result) {
+    // For the purposes of comparing against the expecations of a test,
+    // consider image/simplified diff failures as just failures since
+    // the test_expectations file doesn't treat them specially.
+    if (result == 'F' || result == 'S' || result == 'I') {
+      return 'FAIL';
+    }
+    return EXPECTATIONS_MAP[result];
+  }
+
   function processTestRunsForBuilder(builderName) {
     if (perBuilderFailures[builderName])
       return;
 
     var failures = [];
-    var passes = [];
-
     var allTests = resultsByBuilder[builderName].tests;
 
     var expectationsMap = {};
@@ -370,8 +395,8 @@
         if (results[i] != results[i + 1])
           resultsForTest.flips++;
 
-        var expectation = EXPECTATIONS_MAP[results[i]];
-        if (hasExpectations(resultsForTest.expectations, results[i])) {
+        var expectation = getExpectationsFileStringForResult(results[i]);
+        if (!hasExpectations(resultsForTest.expectations, expectation)) {
           unexpectedExpectations[expectation] = true;
           resultsForTest.meetsExpectations = false;
         }
@@ -401,21 +426,14 @@
     perBuilderFailures[currentState.builder] = failures;
   }
 
-  function hasExpectations(expectations, result) {
-    // For the purposes of comparing against the expecations of a test,
-    // consider image/simplified diff failures as just failures since
-    // the test_expectations file doesn't treat them specially.
-    if (result == 'S' || result == 'I')
-      result = 'F'
-
-    var thisExpectation = EXPECTATIONS_MAP[result];
-    if (!thisExpectation)
+  function hasExpectations(expectations, resultName) {
+    if (resultName == 'NO DATA')
       return true;
 
     if (!expectations)
       return false;
 
-    return expectations.indexOf(thisExpectation) != -1;
+    return expectations.indexOf(resultName) != -1;
   }
 
   function didTestPassAllRuns(builderName, testPath) {
@@ -499,34 +517,31 @@
   function getHTMLForPageHeader() {
     var html = '<div class=header-container>';
 
-    html += '<span class=builders>';
+    html += '<div class=builders>';
     for (var builder in builders) {
       var className = builder == currentState.builder ? 'current-builder' : '';
-      html += '<a href="#" class="' + (className || '') + '" link"' +
-          ' onclick=\'setState("builder", "' + builder +
-          '");return false;\'>' + builder + '</a>';
+      html += '<span class="' + (className || '') +
+          ' link" onclick=\'setState("builder", "' + builder + '")\'>' +
+          builder + '</span>';
     }
-    html += '</span>';
+    html += '</div>';
 
-    html += '<span class=header-title></span>';
-
-    html += '<span class=legend>';
+    html += '<div class=legend>';
     for (var expectation in EXPECTATIONS_MAP) {
       html += '<span class=' + expectation + '>' +
           EXPECTATIONS_MAP[expectation] + '</span>';
     }
-    html += '<span class=N>NO DATA</span>'
     html += '<span class=expectation-mismatch>WRONG EXPECTATIONS</span>'
-    html += '</span>';
-
     html += '</div>';
+
+    html += '<center><b>All columns are sortable</b></center></div>';
     return html;
   }
 
   function setFullPageHTML() {
     var html = getHTMLForPageHeader();
     html += getHTMLForTestTable(perBuilderFailures[currentState.builder],
-       'failures', currentState.sortFailures, currentState.sortFailuresOrder);
+       'failures', currentState.sortColumn, currentState.sortOrder);
     document.body.innerHTML = html;
   }
 
@@ -568,9 +583,8 @@
       target = target.parentNode;
     }
 
-    var sort = target.id == 'passes' ? 'sortPasses' : 'sortFailures';
-
-    var orderKey = sort + 'Order';
+    var sort = 'sortColumn';
+    var orderKey = 'sortOrder';
     if (sortValue == currentState[sort] && currentState[orderKey] == FORWARD)
       order = BACKWARD;
     else
@@ -602,7 +616,7 @@
     var hash = window.location.hash;
     var builderName;
     if (hash) {
-      hashParts = hash.slice(1).split('&');
+      var hashParts = hash.slice(1).split('&');
       for (var i = 0; i < hashParts.length; i++) {
         var itemParts = hashParts[i].split('=');
         // TODO: Validate itemParts[0]
@@ -629,18 +643,24 @@
     currentState[key] = value;
     window.location.replace(window.location.pathname + '#' +
         'builder=' + currentState.builder + '&' +
-        'sortFailures=' + currentState.sortFailures + '&' +
-        'sortFailuresOrder=' + currentState.sortFailuresOrder + '&' +
-        'sortPasses=' + currentState.sortPasses + '&' +
-        'sortPassesOrder=' + currentState.sortPassesOrder);
+        'sortColumn=' + currentState.sortColumn + '&' +
+        'sortOrder=' + currentState.sortOrder);
   }
 
   window.onload = function() {
+    var loadTime = Date.now() - pageLoadStartTime
     // Poll for hash changes.
     // TODO: Use hashchange event when it is supported.
     setInterval(function() {
-      if (oldLocation != window.location)
+      if (oldLocation != window.location) {
+        var generatePageTime = Date.now();
         generatePage();
+        generatePageTime = Date.now() - generatePageTime;
+        var div = document.createElement('div');
+        div.innerHTML = "Time to load JS: " + loadTime +
+            "<br>Time to generate page: " + generatePageTime;
+        document.body.appendChild(div);
+      }
     }, 100);
   }
   </script>
