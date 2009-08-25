@@ -45,11 +45,15 @@ IDENTIFIER(NaClSwitch):
    * r0 -- address of thread context (struct NaClThreadContext)
    */
 
-  /* TODO(petr): clear registers r0,r1,r3, lr, CPSR (status register keeps
-   * flags) and SPSR (saved program status register) which holds CPSR before the
-   * exception occurs. This might be necessary to avoid information leak.
-   * (see bsy)
+  /* clear registers r2,r3, lr, flag and status fields in CPSR (status
+   * register). This might be necessary to avoid information leaks, the rest
+   * register are overwritten by the following code and the code in springboard.
    */
+  mov r2, #0
+  mov r3, #0
+  mov lr, #0
+  msr cpsr_fs, #0
+
   ldmia r0!, {r4, r5, r6, r7, r8, r9, r10, fp, sp}
   add r0, #4 /* skip prog_ctr in struct NaClThreadContext */
   ldmia r0, {r0, r1, pc}
