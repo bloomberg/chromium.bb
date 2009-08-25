@@ -19,7 +19,7 @@ std::string MakeFontName(std::wstring family_name, int pixel_size) {
   // TODO(mattm): We can pass in the size in pixels (px), and the font button
   // actually honors it, but when you open the selector it interprets it as
   // points.  See crbug.com/17857
-  SStringPrintf(&fontname, "%s %dpx", WideToUTF8(family_name).c_str(),
+  SStringPrintf(&fontname, "%s, %dpx", WideToUTF8(family_name).c_str(),
                 pixel_size);
   return fontname;
 }
