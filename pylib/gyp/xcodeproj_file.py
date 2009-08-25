@@ -1444,6 +1444,8 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'pm':        'text.script.perl',
         'png':       'image.png',
         'py':        'text.script.python',
+        'r':         'sourcecode.rez',
+        'rez':       'sourcecode.rez',
         's':         'sourcecode.asm',
         'strings':   'text.plist.strings',
         'ttf':       'file',
