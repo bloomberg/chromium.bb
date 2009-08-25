@@ -637,6 +637,10 @@ BUG11246 : LayoutTests/fast/dom/Geolocation = FAIL
 BUG19625 SKIP : LayoutTests/fast/eventsource = TIMEOUT
 BUG19625 SKIP : LayoutTests/http/tests/eventsource = TIMEOUT
 
+// Implement HTML5 datalist element.
+BUG20226 : LayoutTests/fast/forms/datalist-nonoption-child.html = FAIL
+BUG20226 : LayoutTests/fast/forms/datalist.html = FAIL
+
 // Fails due to storage APIs not implemented.  Might be worth re-baselining
 // temporarily so the rest of the conditions are still tested.
 BUG1124568 : LayoutTests/fast/dom/Window/window-function-name-getter-precedence.html = FAIL
@@ -2775,10 +2779,6 @@ BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
 BUG19766 WIN : LayoutTests/media/video-no-audio.html = TIMEOUT
 BUG19766 : LayoutTests/storage/open-database-while-transaction-in-progress.html = TIMEOUT
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
-// We don't support <datalist> right now?  Ask tkent about these
-BUG19766 : LayoutTests/fast/forms/datalist-nonoption-child.html = FAIL
-BUG19766 : LayoutTests/fast/forms/datalist.html = FAIL
-
 
 // Fails due to textInputController.setInputMethod not implemented for Mac.
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
