@@ -113,9 +113,3 @@ npapi::plugininstance::npp_newstream___npapi::pluginstream::open___npapi::plugin
 # 20200
 PREFIX : `anonymous namespace'::purecall___realloc___wtf::fastrealloc___webcore::htmltokenizer::enlargescriptbuffer___webcore::htmltokenizer::parsecomment___webcore::htmltokenizer::parsetag
 PREFIX : `anonymous namespace'::invalidparameter___realloc___wtf::fastrealloc___webcore::htmltokenizer::enlargescriptbuffer___webcore::htmltokenizer::parsecomment___webcore::htmltokenizer::parsetag
-
-# Bugs to-be-filed; read-only issuetracker / ncarter 25-AUG-09 13:30 PDT
-# http://build.chromium.org/buildbot/waterfall/builders/Chromium%20Reliability/builds/5057/steps/reliability:%20partial%20result%20of%20current%20build/logs/stdio
-PREFIX : _adj_fdiv_r
-# http://build.chromium.org/buildbot/waterfall/builders/Chromium%20Reliability/builds/5056/steps/reliability:%20partial%20result%20of%20current%20build/logs/stdio
-PREFIX : base::messagepumpforio::schedulework___webcore::accessibilityrenderobject::nextsibling
