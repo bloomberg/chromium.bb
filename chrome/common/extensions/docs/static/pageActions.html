@@ -4,24 +4,46 @@
 <p>Page actions are a simple way to represent actions that can be taken on a page ("Email this page", "Share with Facebook", etc).</p>
 
 <h2>User interface</h2>
-<p>Page actions are displayed in the right side of the Omnibox. New actions get added to the left of the star:</p>
+<p>Page actions are displayed as icons on the right side of the OmniBox.</p>
 
 <img src="images/pageaction-omnibar-icons.png">
 
-<p>A maximum of 8 (?) actions can appear at the top level, any additional ones overflow into a drop-down menu:</p>
-
 <h2>Manifest</h2>
 
-<p>Developers can include page actions in the manifest using the following syntax:</p>
+<p>Developers can declare page actions in the manifest using the following syntax:</p>
 
 <pre>"page_actions": [
     {
-      "id": "myaction",  // chosen by developer, and should be unique within their extension
-      "name": "Do action",
+      "id": "myaction",     // Chosen by the developer. Should be unique within their extension.
+      "name": "Do action",  // The page action name, also used as tooltip (unless overridden).
       "icons": ["favicon.png", "favicon2.png"]
     }
   ]</pre>
 
-<p>Supported icon image formats include for example png, bmp, ico, jpg, gif. If an image larger than 16x16 is specified, it will be resized to fit.</p>
-</p>
+<p>Supported icon image formats include for example: png, bmp, ico, jpg, gif. If an image larger than 16x16 is specified, it will be resized to fit. For optimal performance, consider using an image that does not have to be resized to fit.</p>
+
+<h2>Events</h2>
+
+<p>Each page action displays an icon in the OmniBox. Whenever the user clicks the icon an event is sent to the extension, signifying that the user wants to apply an action to the current page. To receive notifications about the event, the extension must register a listener.</p>
+
+<p>Page action events are created dynamically using the id of the page action declared in the manifest. For example, a page action with id 'foo' will setup an event called chrome.pageActions["foo"]. An extension would then register listeners like so:</p>
+
+<pre>chrome.pageActions["foo"].addListener(function(object reply) {
+  console.log(reply.pageActionId);  // Display the id of the page action.
+  console.log(reply.data.tabId);    // Display the id of the tab for which the page action event applies.
+  console.log(reply.data.tabUrl);   // Display the URL of the page for which the page action event applies.
+});</pre>
+
+<p style="margin-left:25px;"><strong>Parameters</strong></p>
+
+<p style="margin-left:25px;"><i>reply ( object )</i><br>
+&nbsp;&nbsp;&nbsp;An object containing the information about the event. Contains the following properties:</p>
+<p style="margin-left:50px;"><i>pageActionId ( string )</i><br>
+&nbsp;&nbsp;&nbsp;The id of the page action that triggered the event.</p>
+<p style="margin-left:50px;"><i>data ( object )</i><br>
+&nbsp;&nbsp;&nbsp;An object specifying what tab and which page the event applies to. Contains the following properties:</p>
+<p style="margin-left:75px;"><i>tabId ( string )</i><br>
+&nbsp;&nbsp;&nbsp;The id of the tab that was active when the event was triggered.</p>
+<p style="margin-left:75px;"><i>tabUrl ( string )</i><br>
+&nbsp;&nbsp;&nbsp;The url of the page for which the page action applies to.</p>
 <!-- END AUTHORED CONTENT -->
