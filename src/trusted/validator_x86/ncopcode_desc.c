@@ -272,6 +272,7 @@ static const char* const g_InstMnemonicName[InstMnemonicEnumSize] = {
   "Fdiv",
   "Fdivr",
   "Fmul",
+  "Frstor",
   "Fsub",
   "Fsubr",
   "Hlt",

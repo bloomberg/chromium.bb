@@ -897,6 +897,13 @@ void DefineOneByteOpcodes() {
 
   DefineD8ModRmOpcodes();
 
+  DefineOpcode(0xDD,
+               NACLi_X87,
+               InstFlag(OpcodeInModRm),
+               InstFrstor);
+  DefineOperand(Opcode0 + 4, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpAddress));
+
   /* ISE reviewers suggested making loopne, loope, loop, jcxz illegal */
   DefineJump8Opcode(0xE0, InstJcxz);
 

@@ -60,6 +60,7 @@ typedef enum {
   InstFdiv,
   InstFdivr,
   InstFmul,
+  InstFrstor,
   InstFsub,
   InstFsubr,
   InstHlt,
