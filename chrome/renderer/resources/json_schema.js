@@ -36,14 +36,12 @@
 // - made additionalProperties default to false
 //==============================================================================
 
-(function() {
-native function GetChromeHidden();
-var chromeHidden = GetChromeHidden();
+var chrome = chrome || {};
 
 /**
  * Validates an instance against a schema and accumulates errors. Usage:
  *
- * var validator = new chromeHidden.JSONSchemaValidator();
+ * var validator = new chrome.JSONSchemaValidator();
  * validator.validate(inst, schema);
  * if (validator.errors.length == 0)
  *   console.log("Valid!");
@@ -55,12 +53,12 @@ var chromeHidden = GetChromeHidden();
  * the key that had the problem, and the "message" property contains a sentence
  * describing the error.
  */
-chromeHidden.JSONSchemaValidator = function() {
+chrome.JSONSchemaValidator = function() {
   this.errors = [];
   this.types = [];
 };
 
-chromeHidden.JSONSchemaValidator.messages = {
+chrome.JSONSchemaValidator.messages = {
   invalidEnum: "Value must be one of: [*].",
   propertyRequired: "Property is required.",
   unexpectedProperty: "Unexpected property.",
@@ -84,7 +82,7 @@ chromeHidden.JSONSchemaValidator.messages = {
  * Builds an error message. Key is the property in the |errors| object, and
  * |opt_replacements| is an array of values to replace "*" characters with.
  */
-chromeHidden.JSONSchemaValidator.formatError = function(key, opt_replacements) {
+chrome.JSONSchemaValidator.formatError = function(key, opt_replacements) {
   var message = this.messages[key];
   if (opt_replacements) {
     for (var i = 0; i < opt_replacements.length; i++) {
@@ -99,7 +97,7 @@ chromeHidden.JSONSchemaValidator.formatError = function(key, opt_replacements) {
  * don't explicitly disallow 'function', because we want to allow functions in
  * the input values.
  */
-chromeHidden.JSONSchemaValidator.getType = function(value) {
+chrome.JSONSchemaValidator.getType = function(value) {
   var s = typeof value;
 
   if (s == "object") {
@@ -123,7 +121,7 @@ chromeHidden.JSONSchemaValidator.getType = function(value) {
  * with "$ref": <typeId>. Each type must be a valid schema and define an
  * "id" property.
  */
-chromeHidden.JSONSchemaValidator.prototype.addTypes = function(typeOrTypeList) {
+chrome.JSONSchemaValidator.prototype.addTypes = function(typeOrTypeList) {
   function addType(validator, type) {
     if(!type.id)
       throw "Attempt to addType with missing 'id' property";
@@ -144,8 +142,8 @@ chromeHidden.JSONSchemaValidator.prototype.addTypes = function(typeOrTypeList) {
  * value and will be validated recursively. When this method returns, the
  * |errors| property will contain a list of errors, if any.
  */
-chromeHidden.JSONSchemaValidator.prototype.validate = function(
-    instance, schema, opt_path) {
+chrome.JSONSchemaValidator.prototype.validate = function(instance, schema,
+                                                         opt_path) {
   var path = opt_path || "";
 
   if (!schema) {
@@ -212,8 +210,9 @@ chromeHidden.JSONSchemaValidator.prototype.validate = function(
  * Validates an instance against a choices schema. The instance must match at
  * least one of the provided choices.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateChoices = function(
-    instance, schema, path) {
+chrome.JSONSchemaValidator.prototype.validateChoices = function(instance,
+                                                                schema,
+                                                                path) {
   var originalErrors = this.errors;
 
   for (var i = 0; i < schema.choices.length; i++) {
@@ -234,8 +233,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateChoices = function(
  * |errors| property, and returns a boolean indicating whether the instance
  * validates.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateEnum = function(
-    instance, schema, path) {
+chrome.JSONSchemaValidator.prototype.validateEnum = function(instance, schema,
+                                                             path) {
   for (var i = 0; i < schema.enum.length; i++) {
     if (instance === schema.enum[i])
       return true;
@@ -249,8 +248,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateEnum = function(
  * Validates an instance against an object schema and populates the errors
  * property.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
-    instance, schema, path) {
+chrome.JSONSchemaValidator.prototype.validateObject = function(instance,
+                                                               schema, path) {
   for (var prop in schema.properties) {
     var propPath = path ? path + "." + prop : prop;
     if (schema.properties[prop] == undefined) {
@@ -282,9 +281,9 @@ chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
  * Validates an instance against an array schema and populates the errors
  * property.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateArray = function(
-    instance, schema, path) {
-  var typeOfItems = chromeHidden.JSONSchemaValidator.getType(schema.items);
+chrome.JSONSchemaValidator.prototype.validateArray = function(instance,
+                                                              schema, path) {
+  var typeOfItems = chrome.JSONSchemaValidator.getType(schema.items);
 
   if (typeOfItems == 'object') {
     if (schema.minItems && instance.length < schema.minItems) {
@@ -329,8 +328,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateArray = function(
 /**
  * Validates a string and populates the errors property.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateString = function(
-    instance, schema, path) {
+chrome.JSONSchemaValidator.prototype.validateString = function(instance,
+                                                               schema, path) {
   if (schema.minLength && instance.length < schema.minLength)
     this.addError(path, "stringMinLength", [schema.minLength]);
 
@@ -345,8 +344,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateString = function(
  * Validates a number and populates the errors property. The instance is
  * assumed to be a number.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateNumber = function(
-    instance, schema, path) {
+chrome.JSONSchemaValidator.prototype.validateNumber = function(instance,
+                                                               schema, path) {
   if (schema.minimum && instance < schema.minimum)
     this.addError(path, "numberMinValue", [schema.minimum]);
 
@@ -361,9 +360,9 @@ chromeHidden.JSONSchemaValidator.prototype.validateNumber = function(
  * Validates the primitive type of an instance and populates the errors
  * property. Returns true if the instance validates, false otherwise.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateType = function(
-    instance, schema, path) {
-  var actualType = chromeHidden.JSONSchemaValidator.getType(instance);
+chrome.JSONSchemaValidator.prototype.validateType = function(instance, schema,
+                                                             path) {
+  var actualType = chrome.JSONSchemaValidator.getType(instance);
   if (schema.type != actualType && !(schema.type == "number" &&
       actualType == "integer")) {
     this.addError(path, "invalidType", [schema.type, actualType]);
@@ -378,12 +377,10 @@ chromeHidden.JSONSchemaValidator.prototype.validateType = function(
  * |replacements| is an array of values to replace '*' characters in the
  * message.
  */
-chromeHidden.JSONSchemaValidator.prototype.addError = function(
-    path, key, replacements) {
+chrome.JSONSchemaValidator.prototype.addError = function(path, key,
+                                                         replacements) {
   this.errors.push({
     path: path,
-    message: chromeHidden.JSONSchemaValidator.formatError(key, replacements)
+    message: chrome.JSONSchemaValidator.formatError(key, replacements)
   });
 };
-
-})();

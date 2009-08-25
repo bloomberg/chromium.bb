@@ -33,7 +33,7 @@ var chrome = chrome || {};
 
     for (var i = 0; i < schemas.length; i++) {
       if (i in args && args[i] !== null && args[i] !== undefined) {
-        var validator = new chromeHidden.JSONSchemaValidator();
+        var validator = new chrome.JSONSchemaValidator();
         validator.addTypes(chromeHidden.validationTypes);
         validator.validate(args[i], schemas[i]);
         if (validator.errors.length == 0)
