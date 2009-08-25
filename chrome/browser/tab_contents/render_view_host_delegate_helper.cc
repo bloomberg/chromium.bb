@@ -179,12 +179,10 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.application_cache_enabled =
         command_line.HasSwitch(switches::kEnableApplicationCache);
 
-    // NOTE: We imply local storage enabledness for extensions because the
-    // extensions team is beta testing local storage and we like to live on the
-    // edge.
     web_prefs.local_storage_enabled =
-      command_line.HasSwitch(switches::kEnableLocalStorage) ||
-      command_line.HasSwitch(switches::kEnableExtensions);
+      command_line.HasSwitch(switches::kEnableLocalStorage);
+    web_prefs.databases_enabled =
+      command_line.HasSwitch(switches::kEnableDatabases);
     web_prefs.session_storage_enabled =
       command_line.HasSwitch(switches::kEnableSessionStorage);
   }
