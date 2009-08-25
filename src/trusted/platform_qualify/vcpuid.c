@@ -61,7 +61,7 @@ const int kMagicConst_CRC32  = 0xb906c3ea;
 static int asm_HasCPUID() {
 /* TODO(bradchen): split into Windows, etc. files */
   volatile int before, after, result;
-#if (NACL_BUILD_ARCH == x86 && NACL_BUILD_SUBARC == 64)
+#if NACL_BUILD_SUBARCH == 64
   return 1;
 #endif
 #if (NACL_LINUX || NACL_OSX)

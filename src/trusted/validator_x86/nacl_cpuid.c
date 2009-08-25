@@ -224,7 +224,7 @@ static const char NSC_CPUID0[kVendorIDLength]     = "Geode by NSC";
 
 static int asm_HasCPUID() {
   volatile int before, after, result;
-#if (NACL_BUILD_ARCH == x86 && NACL_BUILD_SUBARC == 64)
+#if NACL_BUILD_SUBARCH == 64
   return 1;
 #endif
 /* TODO(bradchen): split into separate Windows, etc., files */
@@ -256,10 +256,9 @@ static int asm_HasCPUID() {
   return result;
 }
 
-static void asm_CPUID(uint32_t op, volatile uint32_t reg[4])
-{
+static void asm_CPUID(uint32_t op, volatile uint32_t reg[4]) {
 #if (NACL_LINUX || NACL_OSX)
-#ifdef __x86_64__
+#if NACL_BUILD_SUBARCH == 64
  __asm__ volatile("push %%rbx       \n\t" /* save %ebx */
 #else
  __asm__ volatile("pushl %%ebx      \n\t"
@@ -267,7 +266,7 @@ static void asm_CPUID(uint32_t op, volatile uint32_t reg[4])
                    "cpuid            \n\t"
                    "movl %%ebx, %1   \n\t"
                    /* save what cpuid just put in %ebx */
-#ifdef __x86_64__
+#if NACL_BUILD_SUBARCH == 64
                    "pop %%rbx        \n\t"
 #else
                    "popl %%ebx       \n\t" /* restore the old %ebx */
