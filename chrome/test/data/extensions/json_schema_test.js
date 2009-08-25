@@ -8,7 +8,7 @@ function assert(truth) {
 }
 
 function assertValid(type, instance, schema, types) {
-  var validator = new chrome.JSONSchemaValidator();
+  var validator = new chromeHidden.JSONSchemaValidator();
   if (types)
     validator.addTypes(types);
   validator["validate" + type](instance, schema, "");
@@ -20,7 +20,7 @@ function assertValid(type, instance, schema, types) {
 }
 
 function assertNotValid(type, instance, schema, errors, types) {
-  var validator = new chrome.JSONSchemaValidator();
+  var validator = new chromeHidden.JSONSchemaValidator();
   if (types)
     validator.addTypes(types);
   validator["validate" + type](instance, schema, "");
@@ -38,7 +38,7 @@ function assertNotValid(type, instance, schema, errors, types) {
 }
 
 function formatError(key, replacements) {
-  return chrome.JSONSchemaValidator.formatError(key, replacements);
+  return chromeHidden.JSONSchemaValidator.formatError(key, replacements);
 }
 
 function testFormatError() {
