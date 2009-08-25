@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/cocoa/constrained_window_mac.h"
+#include "chrome/browser/login_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -30,7 +31,8 @@ using webkit_glue::PasswordForm;
 // have been called.
 class LoginHandlerMac : public LoginHandler,
                         public base::RefCountedThreadSafe<LoginHandlerMac>,
-                        public ConstrainedWindowMacDelegateCustomSheet {
+                        public ConstrainedWindowMacDelegateCustomSheet,
+                        public LoginModelObserver {
  public:
   LoginHandlerMac(URLRequest* request, MessageLoop* ui_loop)
       : handled_auth_(false),
@@ -38,7 +40,9 @@ class LoginHandlerMac : public LoginHandler,
         ui_loop_(ui_loop),
         request_(request),
         request_loop_(MessageLoop::current()),
-        password_manager_(NULL) {
+        password_manager_(NULL),
+        sheet_controller_(nil),
+        login_model_(NULL) {
     // This constructor is called on the I/O thread, so we cannot load the nib
     // here. BuildViewForPasswordManager() will be invoked on the UI thread
     // later, so wait with loading the nib until then.
@@ -53,6 +57,21 @@ class LoginHandlerMac : public LoginHandler,
   }
 
   virtual ~LoginHandlerMac() {
+    if (login_model_)
+      login_model_->SetObserver(NULL);
+  }
+
+  void SetModel(LoginModel* model) {
+    login_model_ = model;
+    if (login_model_)
+      login_model_->SetObserver(this);
+  }
+
+  // LoginModelObserver implementation.
+  virtual void OnAutofillDataAvailable(const std::wstring& username,
+                                       const std::wstring& password) {
+    [sheet_controller_ autofillLogin:base::SysWideToNSString(username)
+                            password:base::SysWideToNSString(password)];
   }
 
   // LoginHandler:
@@ -61,10 +80,12 @@ class LoginHandlerMac : public LoginHandler,
     DCHECK(MessageLoop::current() == ui_loop_);
 
     // Load nib here instead of in constructor.
-    LoginHandlerSheet* sheetController = [[[LoginHandlerSheet alloc]
+    sheet_controller_ = [[[LoginHandlerSheet alloc]
         initWithLoginHandler:this] autorelease];
-    init([sheetController window], sheetController,
+    init([sheet_controller_ window], sheet_controller_,
           @selector(sheetDidEnd:returnCode:contextInfo:));
+
+    SetModel(manager);
 
     // Scary thread safety note: This can potentially be called *after* SetAuth
     // or CancelAuth (say, if the request was cancelled before the UI thread got
@@ -265,6 +286,13 @@ class LoginHandlerMac : public LoginHandler,
   int render_process_host_id_;
   int tab_contents_id_;
 
+  // The Cocoa controller of the GUI.
+  LoginHandlerSheet* sheet_controller_;
+
+  // If not null, points to a model we need to notify of our own destruction
+  // so it doesn't try and access this when its too late.
+  LoginModel* login_model_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerMac);
 };
 
@@ -303,6 +331,14 @@ LoginHandler* LoginHandler::Create(URLRequest* request, MessageLoop* ui_loop) {
         contextInfo:(void *)contextInfo {
   [sheet orderOut:self];
   // Also called when user navigates to another page while the sheet is open.
+}
+
+- (void)autofillLogin:(NSString*)login password:(NSString*)password {
+  if ([[nameField_ stringValue] length] == 0) {
+    [nameField_ setStringValue:login];
+    [passwordField_ setStringValue:password];
+    [nameField_ selectText:self];
+  }
 }
 
 @end

@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
+#include "chrome/browser/login_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -30,7 +31,8 @@ using webkit_glue::PasswordForm;
 // have been called.
 class LoginHandlerGtk : public LoginHandler,
                         public base::RefCountedThreadSafe<LoginHandlerGtk>,
-                        public ConstrainedWindowGtkDelegate {
+                        public ConstrainedWindowGtkDelegate,
+                        public LoginModelObserver {
  public:
   LoginHandlerGtk(URLRequest* request, MessageLoop* ui_loop)
       : handled_auth_(false),
@@ -38,7 +40,8 @@ class LoginHandlerGtk : public LoginHandler,
         ui_loop_(ui_loop),
         request_(request),
         request_loop_(MessageLoop::current()),
-        password_manager_(NULL) {
+        password_manager_(NULL),
+        login_model_(NULL) {
     DCHECK(request_) << "LoginHandlerGtk constructed with NULL request";
 
     AddRef();  // matched by ReleaseLater.
@@ -50,7 +53,29 @@ class LoginHandlerGtk : public LoginHandler,
   }
 
   virtual ~LoginHandlerGtk() {
+    if (login_model_)
+      login_model_->SetObserver(NULL);
     root_.Destroy();
+  }
+
+  void SetModel(LoginModel* model) {
+    login_model_ = model;
+    if (login_model_)
+      login_model_->SetObserver(this);
+  }
+
+  // LoginModelObserver implementation.
+  virtual void OnAutofillDataAvailable(const std::wstring& username,
+                                       const std::wstring& password) {
+    // NOTE: Would be nice to use gtk_entry_get_text_length, but it is fairly
+    // new and not always in our GTK version.
+    if (strlen(gtk_entry_get_text(GTK_ENTRY(username_entry_))) == 0) {
+      gtk_entry_set_text(GTK_ENTRY(username_entry_),
+                         WideToUTF8(username).c_str());
+      gtk_entry_set_text(GTK_ENTRY(password_entry_),
+                         WideToUTF8(password).c_str());
+      gtk_editable_select_region(GTK_EDITABLE(username_entry_), 0, -1);
+    }
   }
 
   // LoginHandler:
@@ -91,6 +116,8 @@ class LoginHandlerGtk : public LoginHandler,
     GtkWidget* cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
     g_signal_connect(cancel, "clicked", G_CALLBACK(OnCancelClicked), this);
     gtk_box_pack_end(GTK_BOX(hbox), cancel, FALSE, FALSE, 0);
+
+    SetModel(manager);
 
     // Scary thread safety note: This can potentially be called *after* SetAuth
     // or CancelAuth (say, if the request was cancelled before the UI thread got
@@ -305,6 +332,10 @@ class LoginHandlerGtk : public LoginHandler,
   // GtkEntry widgets that the user types into.
   GtkWidget* username_entry_;
   GtkWidget* password_entry_;
+
+  // If not null, points to a model we need to notify of our own destruction
+  // so it doesn't try and access this when its too late.
+  LoginModel* login_model_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerGtk);
 };

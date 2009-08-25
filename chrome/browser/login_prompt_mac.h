@@ -22,7 +22,8 @@ class LoginHandlerMac;
 - (IBAction)cancelPressed:(id)sender;
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(int)returnCode
-        contextInfo:(void *)contextInfo;
+        contextInfo:(void*)contextInfo;
+- (void)autofillLogin:(NSString*)login password:(NSString*)password;
 @end
 
 #endif  // CHROME_BROWSER_LOGIN_PROMPT_MAC_H_
