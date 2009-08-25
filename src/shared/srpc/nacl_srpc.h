@@ -285,18 +285,26 @@ typedef struct NaClSrpcArg NaClSrpcArg;
 typedef struct NaClSrpcChannel *NaClSrpcChannelPtr;
 
 /**
+ * Methods used to implement SRPC services have this type signature.
+ */
+typedef NaClSrpcError (*NaClSrpcMethod)(NaClSrpcChannelPtr channel,
+                                        NaClSrpcArg* args[],
+                                        NaClSrpcArg* rets[]);
+
+/**
  * Binaries that implement SRPC methods (servers) describe their services
  * using these structures.  These are converted into NaClSrpcDescs by the
  * server constructor.  They are also used when service discovery is done.
  */
 struct NaClSrpcHandlerDesc {
-  char const *entry_fmt;  /**< a string containing
-                               "name:input_types:output_types" */
-  int (*handler)(NaClSrpcChannelPtr channel,
-                 NaClSrpcArg        **in_args,
-                 NaClSrpcArg        **out_args);  /**< function pointer
-                                                       used to process calls
-                                                       to the named method */
+  /**
+   * a string containing "name:input_types:output_types"
+   */
+  char const *entry_fmt;
+  /**
+   * function pointer used to process calls to the named method
+   */
+  NaClSrpcMethod handler;
 };
 #ifndef __cplusplus
 /**
@@ -312,11 +320,10 @@ struct NaClSrpcDesc {
   char const  *rpc_name;  /**< string containing the method name*/
   char const  *in_args;  /**< string containing the method input types */
   char const  *out_args;  /**< string containing the method output types */
-  int (*handler)(NaClSrpcChannelPtr channel,
-                 NaClSrpcArg        **in_args,
-                 NaClSrpcArg        **out_args);  /**< function pointer
-                                                       used to process calls
-                                                       to the named method */
+  /**
+   * function pointer used to process calls to the named method
+   */
+  NaClSrpcMethod handler;
 };
 #ifndef __cplusplus
 /**
@@ -332,14 +339,14 @@ struct NaClSrpcImcBuffer {
   struct NaClImcMsgIoVec    iovec[1];  /**< IMC message descriptor */
 #ifdef __native_client__
   struct NaClImcMsgHdr      header;  /**< IMC message header */
-  unsigned char             bytes[IMC_USER_BYTES_MAX];  /**< character array
-                                                             containing the
-                                                             data to be sent
-                                                             or received */
-  NaClSrpcImcDescType       descs[IMC_USER_DESC_MAX];  /**< array of
-                                                            descriptors to
-                                                            be sent or
-                                                            received */
+  /**
+   * character array containing the data to be sent or received
+   */
+  unsigned char             bytes[IMC_USER_BYTES_MAX];
+  /**
+   * array of descriptors to be sent or received
+   */
+  NaClSrpcImcDescType       descs[IMC_USER_DESC_MAX];
 #else
   struct NaClImcTypedMsgHdr header;
   unsigned char             bytes[NACL_ABI_IMC_USER_BYTES_MAX];
@@ -546,12 +553,15 @@ int NaClSrpcGetRpcNum(const NaClSrpcChannel *channel, char const *name);
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 /*
  * Not documented: in Native Client code the default RPC descriptors are
- * recorded in a special section, ".nacl_rpc_methods".
+ * recorded in a special section, ".nacl_rpc_methods".  The use of a special
+ * section allows declaring RPC handlers in multiple files by having the linker
+ * concatenate the respective chunks of this section.  The default RPC
+ * processing loop refers to this section to build its tables.
  * The handler array begins at __kNaclSrpcHandlers.
  */
 extern const struct NaClSrpcHandlerDesc
-  __attribute__ ((section (".nacl_rpc_methods")))
-  __attribute__ ((aligned (8)))
+  __attribute__((section(".nacl_rpc_methods")))
+  __attribute__((aligned(8)))
   __kNaClSrpcHandlers[];
 /*
  * Not documented: in NativeClient code the default RPC descriptors are
@@ -559,8 +569,8 @@ extern const struct NaClSrpcHandlerDesc
  * The handler array ends at __kNaclSrpcHandlerEnd.
  */
 extern const struct NaClSrpcHandlerDesc
-  __attribute__ ((section (".nacl_rpc_methods")))
-  __attribute__ ((aligned (8)))
+  __attribute__((section(".nacl_rpc_methods")))
+  __attribute__((aligned(8)))
   __kNaClSrpcHandlerEnd;
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
@@ -573,8 +583,8 @@ extern const struct NaClSrpcHandlerDesc
  */
 #define NACL_SRPC_METHOD(entry_format, method_handler) \
 struct NaClSrpcHandlerDesc \
-  __attribute__ ((section (".nacl_rpc_methods"))) \
-  __attribute__ ((aligned (8))) \
+  __attribute__((section(".nacl_rpc_methods"))) \
+  __attribute__((aligned(8))) \
   NaClSrpcMethod##method_handler = \
   { entry_format, method_handler }
 
@@ -690,6 +700,45 @@ void srpc_init();
  */
 #define NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD  0xfffffffd
 
+
+/**
+ * Generic message structure.
+ */
+struct NaClSrpcRpc {
+  uint64_t         request_id;
+  uint8_t          is_request;
+  uint32_t         rpc_number;
+  NaClSrpcError    app_error;
+};
+#ifndef __cplusplus
+/**
+ *  A typedef for struct NaClSrpcRpc for use in C.
+ */
+typedef struct NaClSrpcRpc  NaClSrpcRpc;
+#endif  /* __cplusplus */
+
+/**
+ * Receive a message from a channel, either a request or a response.
+ */
+extern int NaClSrpcReceiveMessage(NaClSrpcChannel* channel,
+                                  NaClSrpcRpc* rpc,
+                                  NaClSrpcArg* args[],
+                                  NaClSrpcArg* rets[]);
+
+/**
+ * Send an RPC request on the given channel.
+ */
+extern NaClSrpcError NaClSrpcSendRequest(NaClSrpcChannel* channel,
+                                         NaClSrpcRpc* rpc,
+                                         NaClSrpcArg* args[],
+                                         NaClSrpcArg* rets[]);
+
+/**
+ * Send an RPC response on the given channel.
+ */
+extern NaClSrpcError NaClSrpcSendResponse(NaClSrpcChannel* channel,
+                                          NaClSrpcRpc* rpc,
+                                          NaClSrpcArg* rets[]);
 EXTERN_C_END
 
 /**

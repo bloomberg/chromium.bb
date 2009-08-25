@@ -54,9 +54,9 @@ static int    shm_desc = -1;
  * The routine to set up the shared memory region to be used by all the calls.
  */
 
-int SetupSharedMemory(NaClSrpcChannel *channel,
-                      NaClSrpcArg **in_args,
-                      NaClSrpcArg **out_args) {
+NaClSrpcError SetupSharedMemory(NaClSrpcChannel *channel,
+                                NaClSrpcArg **in_args,
+                                NaClSrpcArg **out_args) {
   struct stat st;
   shm_desc = in_args[0]->u.hval;
 
@@ -80,9 +80,9 @@ int SetupSharedMemory(NaClSrpcChannel *channel,
 
 NACL_SRPC_METHOD("setup:h:", SetupSharedMemory);
 
-int ShutdownSharedMemory(NaClSrpcChannel *channel,
-                         NaClSrpcArg **in_args,
-                         NaClSrpcArg **out_args) {
+NaClSrpcError ShutdownSharedMemory(NaClSrpcChannel *channel,
+                                   NaClSrpcArg **in_args,
+                                   NaClSrpcArg **out_args) {
   /* Unmap the memory region. */
   if (munmap((void*) shm_addr, shm_length)) {
     return NACL_SRPC_RESULT_APP_ERROR;
@@ -160,9 +160,9 @@ static inline int mandel(char* rgb,
 }
 
 
-int MandelTiled(NaClSrpcChannel *channel,
-                NaClSrpcArg** in_args,
-                NaClSrpcArg** out_args) {
+NaClSrpcError MandelTiled(NaClSrpcChannel *channel,
+                          NaClSrpcArg** in_args,
+                          NaClSrpcArg** out_args) {
   double xlow = in_args[0]->u.dval;
   double ylow = in_args[1]->u.dval;
   double points_per_tile = in_args[2]->u.dval;

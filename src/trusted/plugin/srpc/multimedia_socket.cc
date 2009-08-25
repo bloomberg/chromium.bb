@@ -139,10 +139,10 @@ void MultimediaSocket::UpcallThreadExiting() {
   NaClXMutexUnlock(&mu_);
 }
 
-static int handleUpcall(NaClSrpcChannel* channel,
-                        NaClSrpcArg** ins,
-                        NaClSrpcArg** outs) {
-  int ret;
+static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
+                                  NaClSrpcArg** ins,
+                                  NaClSrpcArg** outs) {
+  NaClSrpcError ret;
   ret = NACL_SRPC_RESULT_BREAK;
   if (channel) {
     nacl::VideoScopedGlobalLock video_lock;

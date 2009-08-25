@@ -50,9 +50,9 @@ struct ServiceDesc {
 /*
  * The started SRPC server exports this service_discovery method.
  */
-static int ServiceDiscovery(NaClSrpcChannel* channel,
-                            NaClSrpcArg** in_args,
-                            NaClSrpcArg** out_args) {
+static NaClSrpcError ServiceDiscovery(NaClSrpcChannel* channel,
+                                      NaClSrpcArg** in_args,
+                                      NaClSrpcArg** out_args) {
   if (out_args[0]->u.caval.count >= channel->service_string_length) {
     strncpy(out_args[0]->u.caval.carr,
             channel->service_string,

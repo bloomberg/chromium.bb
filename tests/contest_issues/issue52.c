@@ -40,9 +40,9 @@
 /*
  *  Return a simple integer.
  */
-int FortyTwo(NaClSrpcChannel *channel,
-             NaClSrpcArg **in_args,
-             NaClSrpcArg **out_args) {
+NaClSrpcError FortyTwo(NaClSrpcChannel *channel,
+                       NaClSrpcArg **in_args,
+                       NaClSrpcArg **out_args) {
   out_args[0]->u.ival = 42;
   return NACL_SRPC_RESULT_OK;
 }
@@ -55,9 +55,9 @@ NACL_SRPC_METHOD("fortytwo::i", FortyTwo);
 /*
  *  Return a clever string.
  */
-int HelloWorld(NaClSrpcChannel *channel,
-               NaClSrpcArg **in_args,
-               NaClSrpcArg **out_args) {
+NaClSrpcError HelloWorld(NaClSrpcChannel *channel,
+                         NaClSrpcArg **in_args,
+                         NaClSrpcArg **out_args) {
   /*
    * Strdup must be used because the SRPC layer frees the string passed to it.
    */
@@ -68,4 +68,8 @@ int HelloWorld(NaClSrpcChannel *channel,
 /*
  * Export the method as taking no arguments and returning one integer.
  */
-NACL_SRPC_METHOD("helloworld::ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss", HelloWorld);
+NACL_SRPC_METHOD("helloworld::sssssssssssssssssssssssssssssssssssssssss"
+                 "sssssssssssssssssssssssssssssssssssssssssssssssssssss"
+                 "sssssssssssssssssssssssssssssssssssssssssssssssssssss"
+                 "sssssssssssssssssssssssssssssssssssssssssssssssssssss",
+                 HelloWorld);

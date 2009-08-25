@@ -50,9 +50,9 @@ static int worker_upcall_desc = -1;
 /*
  * The method to store the upcall handle.
  */
-int SetUpcallDesc(NaClSrpcChannel *channel,
-                  NaClSrpcArg **in_args,
-                  NaClSrpcArg **out_args) {
+NaClSrpcError SetUpcallDesc(NaClSrpcChannel *channel,
+                            NaClSrpcArg **in_args,
+                            NaClSrpcArg **out_args) {
   worker_upcall_desc = in_args[0]->u.hval;
   if (worker_upcall_desc < 0) {
     return NACL_SRPC_RESULT_APP_ERROR;
@@ -128,9 +128,9 @@ static inline int mandel(char* rgb,
 }
 
 
-int MandelWorker(NaClSrpcChannel *channel,
-                 NaClSrpcArg** in_args,
-                 NaClSrpcArg** out_args) {
+NaClSrpcError MandelWorker(NaClSrpcChannel *channel,
+                           NaClSrpcArg** in_args,
+                           NaClSrpcArg** out_args) {
   char* argstr = in_args[0]->u.sval;
   int xlow;
   int ylow;

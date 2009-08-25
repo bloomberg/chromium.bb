@@ -40,86 +40,64 @@
 /*
  *  First, tests for scalar argument passing and return.
  */
-int BoolMethod(NaClSrpcChannel *channel,
-               NaClSrpcArg **in_args,
-               NaClSrpcArg **out_args);
-int DoubleMethod(NaClSrpcChannel *channel,
-                 NaClSrpcArg **in_args,
-                 NaClSrpcArg **out_args);
-int IntMethod(NaClSrpcChannel *channel,
-              NaClSrpcArg **in_args,
-              NaClSrpcArg **out_args);
-int StringMethod(NaClSrpcChannel *channel,
-                 NaClSrpcArg **in_args,
-                 NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("bool:b:b", BoolMethod);
-NACL_SRPC_METHOD("double:d:d", DoubleMethod);
-NACL_SRPC_METHOD("int:i:i", IntMethod);
-NACL_SRPC_METHOD("string:s:i", StringMethod);
 
 /*
  *  The test for bool inverts the input and returns it.
  */
-int BoolMethod(NaClSrpcChannel *channel,
-               NaClSrpcArg **in_args,
-               NaClSrpcArg **out_args) {
+NaClSrpcError BoolMethod(NaClSrpcChannel *channel,
+                         NaClSrpcArg **in_args,
+                         NaClSrpcArg **out_args) {
   out_args[0]->u.bval = !in_args[0]->u.bval;
   return NACL_SRPC_RESULT_OK;
 }
 
+NACL_SRPC_METHOD("bool:b:b", BoolMethod);
+
 /*
  *  The test for double negates the input and returns it.
  */
-int DoubleMethod(NaClSrpcChannel *channel,
-                 NaClSrpcArg **in_args,
-                 NaClSrpcArg **out_args) {
+NaClSrpcError DoubleMethod(NaClSrpcChannel *channel,
+                           NaClSrpcArg **in_args,
+                           NaClSrpcArg **out_args) {
   out_args[0]->u.dval = -in_args[0]->u.dval;
   return NACL_SRPC_RESULT_OK;
 }
 
+NACL_SRPC_METHOD("double:d:d", DoubleMethod);
+
 /*
  *  The test for int negates the input and returns it.
  */
-int IntMethod(NaClSrpcChannel *channel,
-              NaClSrpcArg **in_args,
-              NaClSrpcArg **out_args) {
+NaClSrpcError IntMethod(NaClSrpcChannel *channel,
+                        NaClSrpcArg **in_args,
+                        NaClSrpcArg **out_args) {
   out_args[0]->u.ival = -in_args[0]->u.ival;
   return NACL_SRPC_RESULT_OK;
 }
 
+NACL_SRPC_METHOD("int:i:i", IntMethod);
+
 /*
  *  The test for string returns the length of the string.
  */
-int StringMethod(NaClSrpcChannel *channel,
-                 NaClSrpcArg **in_args,
-                 NaClSrpcArg **out_args) {
+NaClSrpcError StringMethod(NaClSrpcChannel *channel,
+                           NaClSrpcArg **in_args,
+                           NaClSrpcArg **out_args) {
   out_args[0]->u.ival = strlen(in_args[0]->u.sval);
   return NACL_SRPC_RESULT_OK;
 }
+
+NACL_SRPC_METHOD("string:s:i", StringMethod);
 
 /*
  *  Second, tests for array argument passing and return.
  *  All the array methods reverse their input arrays and return them.
  *  If the counts don't match, return an error.
  */
-int CharArrayMethod(NaClSrpcChannel *channel,
-                    NaClSrpcArg **in_args,
-                    NaClSrpcArg **out_args);
-int DoubleArrayMethod(NaClSrpcChannel *channel,
-                      NaClSrpcArg **in_args,
-                      NaClSrpcArg **out_args);
-int IntArrayMethod(NaClSrpcChannel *channel,
-                   NaClSrpcArg **in_args,
-                   NaClSrpcArg **out_args);
 
-NACL_SRPC_METHOD("char_array:C:C", CharArrayMethod);
-NACL_SRPC_METHOD("double_array:D:D", DoubleArrayMethod);
-NACL_SRPC_METHOD("int_array:I:I", IntArrayMethod);
-
-int CharArrayMethod(NaClSrpcChannel *channel,
-                    NaClSrpcArg **in_args,
-                    NaClSrpcArg **out_args) {
+NaClSrpcError CharArrayMethod(NaClSrpcChannel *channel,
+                              NaClSrpcArg **in_args,
+                              NaClSrpcArg **out_args) {
   int i, length;
   if (out_args[0]->u.caval.count != in_args[0]->u.caval.count) {
     printf("Mismatch: %d %d\n", (int) in_args[0]->u.caval.count,
@@ -133,9 +111,11 @@ int CharArrayMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-int DoubleArrayMethod(NaClSrpcChannel *channel,
-                      NaClSrpcArg **in_args,
-                      NaClSrpcArg **out_args) {
+NACL_SRPC_METHOD("char_array:C:C", CharArrayMethod);
+
+NaClSrpcError DoubleArrayMethod(NaClSrpcChannel *channel,
+                                NaClSrpcArg **in_args,
+                                NaClSrpcArg **out_args) {
   int i, length;
   if (out_args[0]->u.daval.count != in_args[0]->u.daval.count) {
     return NACL_SRPC_RESULT_APP_ERROR;
@@ -147,9 +127,11 @@ int DoubleArrayMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-int IntArrayMethod(NaClSrpcChannel *channel,
-                   NaClSrpcArg **in_args,
-                   NaClSrpcArg **out_args) {
+NACL_SRPC_METHOD("double_array:D:D", DoubleArrayMethod);
+
+NaClSrpcError IntArrayMethod(NaClSrpcChannel *channel,
+                             NaClSrpcArg **in_args,
+                             NaClSrpcArg **out_args) {
   int i, length;
   if (out_args[0]->u.iaval.count != in_args[0]->u.iaval.count) {
     return NACL_SRPC_RESULT_APP_ERROR;
@@ -161,34 +143,25 @@ int IntArrayMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
+NACL_SRPC_METHOD("int_array:I:I", IntArrayMethod);
+
 /*
  * Finally, a null RPC to test throughput and latency.
  */
-int NullMethod(NaClSrpcChannel *channel,
-               NaClSrpcArg **in_args,
-               NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("null_method::", NullMethod);
-
-int NullMethod(NaClSrpcChannel *channel,
-               NaClSrpcArg **in_args,
-               NaClSrpcArg **out_args) {
+NaClSrpcError NullMethod(NaClSrpcChannel *channel,
+                         NaClSrpcArg **in_args,
+                         NaClSrpcArg **out_args) {
   return NACL_SRPC_RESULT_OK;
 }
+
+NACL_SRPC_METHOD("null_method::", NullMethod);
 
 /*
  * Experimental: a method to return a string.
  */
-
-int ReturnStringMethod(NaClSrpcChannel *channel,
-                       NaClSrpcArg **in_args,
-                       NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("stringret_method:i:s", ReturnStringMethod);
-
-int ReturnStringMethod(NaClSrpcChannel *channel,
-                       NaClSrpcArg **in_args,
-                       NaClSrpcArg **out_args) {
+NaClSrpcError ReturnStringMethod(NaClSrpcChannel *channel,
+                                 NaClSrpcArg **in_args,
+                                 NaClSrpcArg **out_args) {
   static char string[] = "Ich weiss nicht, was soll es bedeuten"
                          "Dass ich so traurig bin,"
                          "Ein Maerchen aus uralten Zeiten,"
@@ -209,19 +182,17 @@ int ReturnStringMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
+NACL_SRPC_METHOD("stringret_method:i:s", ReturnStringMethod);
+
 /*
  * Experimental: a method to return a file handle.
  */
 
-int ReturnHandleMethod(NaClSrpcChannel *channel,
-                       NaClSrpcArg **in_args,
-                       NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("outh_method::h", ReturnHandleMethod);
-
-int ReturnHandleMethod(NaClSrpcChannel *channel,
-                       NaClSrpcArg **in_args,
-                       NaClSrpcArg **out_args) {
+NaClSrpcError ReturnHandleMethod(NaClSrpcChannel *channel,
+                                 NaClSrpcArg **in_args,
+                                 NaClSrpcArg **out_args) {
   out_args[0]->u.hval = 2; /* stderr */
   return NACL_SRPC_RESULT_OK;
 }
+
+NACL_SRPC_METHOD("outh_method::h", ReturnHandleMethod);

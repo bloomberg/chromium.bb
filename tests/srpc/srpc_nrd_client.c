@@ -52,16 +52,10 @@
 /* It is returned to the JavaScript bridge through the report method. */
 static int errors_seen = 0;
 
-/* SockAddrClient implements the NativeClient client portion described above. */
-int SockAddrClient(NaClSrpcChannel *old_channel,
-                   NaClSrpcArg **in_args,
-                   NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("sock_addr_client:h:i", SockAddrClient);
-
-int SockAddrClient(NaClSrpcChannel *old_channel,
-                   NaClSrpcArg **in_args,
-                   NaClSrpcArg **out_args) {
+/* SockAddrClient implements the NativeClient client portion above. */
+NaClSrpcError SockAddrClient(NaClSrpcChannel *old_channel,
+                             NaClSrpcArg **in_args,
+                             NaClSrpcArg **out_args) {
   NaClSrpcChannel channel;
   static char buf[1024];
   int connected_socket;
@@ -120,16 +114,13 @@ int SockAddrClient(NaClSrpcChannel *old_channel,
   return NACL_SRPC_RESULT_OK;
 }
 
+NACL_SRPC_METHOD("sock_addr_client:h:i", SockAddrClient);
+
+
 /* SharedMemoryClient creates and returns a shared memory region. */
-int SharedMemoryClient(NaClSrpcChannel *channel,
-                       NaClSrpcArg **in_args,
-                       NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("shared_memory_client:i:hsi", SharedMemoryClient);
-
-int SharedMemoryClient(NaClSrpcChannel *channel,
-                       NaClSrpcArg **in_args,
-                       NaClSrpcArg **out_args) {
+NaClSrpcError SharedMemoryClient(NaClSrpcChannel *channel,
+                                 NaClSrpcArg **in_args,
+                                 NaClSrpcArg **out_args) {
   int desc;
   char* test_string = "salvete, omnes";
   size_t size = in_args[0]->u.ival;
@@ -158,3 +149,5 @@ int SharedMemoryClient(NaClSrpcChannel *channel,
   out_args[2]->u.ival = errors_seen;
   return NACL_SRPC_RESULT_OK;
 }
+
+NACL_SRPC_METHOD("shared_memory_client:i:hsi", SharedMemoryClient);

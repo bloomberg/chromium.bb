@@ -39,20 +39,15 @@
 
 #include <nacl/nacl_srpc.h>
 
-int FibonacciArray(NaClSrpcChannel *, NaClSrpcArg **, NaClSrpcArg **);
-
-NACL_SRPC_METHOD("fib:ii:I", FibonacciArray);
-
 /*
  * FibonacciArray is an rpc method that computes the vitally important
  * fibonacci recurrence.  The two input arguments are the first two
  * values of the sequence.  The size of the output array determines how many
  * elements of the sequence to compute, which are returned in the output array.
  */
-int FibonacciArray(NaClSrpcChannel *channel,
-                   NaClSrpcArg **in_args,
-                   NaClSrpcArg **out_args)
-{
+NaClSrpcError FibonacciArray(NaClSrpcChannel *channel,
+                             NaClSrpcArg **in_args,
+                             NaClSrpcArg **out_args) {
   int v0 = in_args[0]->u.ival;
   int v1 = in_args[1]->u.ival;
   int v2;
@@ -70,3 +65,5 @@ int FibonacciArray(NaClSrpcChannel *channel,
   }
   return NACL_SRPC_RESULT_OK;
 }
+
+NACL_SRPC_METHOD("fib:ii:I", FibonacciArray);

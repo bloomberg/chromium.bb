@@ -45,9 +45,8 @@
 #include <pthread.h>
 #include <nacl/nacl_srpc.h>
 
-/* TODO: eliminate local includes */
-#include "nacl_av.h"
-#include "nacl_av_priv.h"
+#include "native_client/src/untrusted/av/nacl_av.h"
+#include "native_client/src/untrusted/av/nacl_av_priv.h"
 
 extern int __nacl_multimedia_init(int subsystems);
 extern int __nacl_multimedia_shutdown();
@@ -148,9 +147,9 @@ static void mark_multimedia_init_done() {
  * nacl_multimedia_bridge() is initialized at discovery.
  * It is a once-only event between plugin and native client.
  */
-int nacl_multimedia_bridge(NaClSrpcChannel *channel,
-                           NaClSrpcArg **in_args,
-                           NaClSrpcArg **out_args) {
+NaClSrpcError nacl_multimedia_bridge(NaClSrpcChannel *channel,
+                                     NaClSrpcArg **in_args,
+                                     NaClSrpcArg **out_args) {
   struct stat st;
 
   nacl_multimedia.channel = (NaClSrpcChannel*) malloc(sizeof(NaClSrpcChannel));

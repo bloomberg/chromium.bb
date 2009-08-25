@@ -269,9 +269,9 @@ static void InterpolateColors() {
  * The routine to set up the display arrays to be used by all the calls.
  */
 
-int SetupGlobals(NaClSrpcChannel *channel,
-                 NaClSrpcArg **in_args,
-                 NaClSrpcArg **out_args) {
+NaClSrpcError SetupGlobals(NaClSrpcChannel *channel,
+                           NaClSrpcArg **in_args,
+                           NaClSrpcArg **out_args) {
   struct work_item p;
   p.kind = WORK_SETUP;
   p.u.setup_canvas_width = in_args[0]->u.dval;
@@ -288,9 +288,9 @@ void do_SetupGlobals(struct work_item *p) {
 
 NACL_SRPC_METHOD("setup:d:", SetupGlobals);
 
-int ShutdownSharedMemory(NaClSrpcChannel *channel,
-                         NaClSrpcArg **in_args,
-                         NaClSrpcArg **out_args) {
+NaClSrpcError ShutdownSharedMemory(NaClSrpcChannel *channel,
+                                   NaClSrpcArg **in_args,
+                                   NaClSrpcArg **out_args) {
   struct work_item p;
   p.kind = WORK_SHUTDOWN;
   work_put(&p);
@@ -467,9 +467,9 @@ static void MoveLR(int offset) {
 /*
  * Select the region of the X-Y plane to be viewed and compute.
  */
-int SetRegion(NaClSrpcChannel *channel,
-              NaClSrpcArg **in_args,
-              NaClSrpcArg **out_args) {
+NaClSrpcError SetRegion(NaClSrpcChannel *channel,
+                        NaClSrpcArg **in_args,
+                        NaClSrpcArg **out_args) {
   struct work_item p;
   p.kind = WORK_SET_REGION;
   p.u.set_region.new_x_left   = in_args[0]->u.dval;
@@ -560,9 +560,9 @@ NACL_SRPC_METHOD("set_region:dddd:", SetRegion);
 /*
  * Display the pixmap, using the color palette with a possible shift.
  */
-int MandelDisplay(NaClSrpcChannel *channel,
-                  NaClSrpcArg** in_args,
-                  NaClSrpcArg** out_args) {
+NaClSrpcError MandelDisplay(NaClSrpcChannel *channel,
+                            NaClSrpcArg** in_args,
+                            NaClSrpcArg** out_args) {
   struct work_item p;
   p.kind = WORK_DISPLAY;
   work_put(&p);
@@ -595,9 +595,9 @@ NACL_SRPC_METHOD("display::", MandelDisplay);
  * ShiftColors can set it to the default value (0) by passing zero
  * or simply bump it by one when anything else is passed.
  */
-int ShiftColors(NaClSrpcChannel *channel,
-                NaClSrpcArg** in_args,
-                NaClSrpcArg** out_args) {
+NaClSrpcError ShiftColors(NaClSrpcChannel *channel,
+                          NaClSrpcArg** in_args,
+                          NaClSrpcArg** out_args) {
   struct work_item p;
   p.kind = WORK_SHIFT_COLOR; p.u.shift_color = in_args[0]->u.ival;
   work_put(&p);

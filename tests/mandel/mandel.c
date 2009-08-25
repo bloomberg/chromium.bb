@@ -37,17 +37,13 @@
 
 #include <nacl/nacl_srpc.h>
 
-int Mandel(NaClSrpcChannel *, NaClSrpcArg **, NaClSrpcArg **);
-
-NACL_SRPC_METHOD("mandel:dddd:iii", Mandel);
-
 /*
  * Sample application-specific RPC code.
  */
 
-int Mandel(NaClSrpcChannel *channel,
-           NaClSrpcArg **in_args,
-           NaClSrpcArg **out_args) {
+NaClSrpcError Mandel(NaClSrpcChannel *channel,
+                     NaClSrpcArg **in_args,
+                     NaClSrpcArg **out_args) {
   double i = in_args[0]->u.dval;
   double j = in_args[1]->u.dval;
   double xsteps = in_args[2]->u.dval;
@@ -107,3 +103,5 @@ int Mandel(NaClSrpcChannel *channel,
   out_args[2]->u.ival = b;
   return NACL_SRPC_RESULT_OK;
 }
+
+NACL_SRPC_METHOD("mandel:dddd:iii", Mandel);

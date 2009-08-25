@@ -43,9 +43,9 @@ int worker_upcall_desc = -1;
 /*
  *  Send a string to a native web worker
  */
-int SetUpcallDesc(NaClSrpcChannel *channel,
-                  NaClSrpcArg **in_args,
-                  NaClSrpcArg **out_args) {
+NaClSrpcError SetUpcallDesc(NaClSrpcChannel *channel,
+                            NaClSrpcArg **in_args,
+                            NaClSrpcArg **out_args) {
   worker_upcall_desc = in_args[0]->u.hval;
   return NACL_SRPC_RESULT_OK;
 }
@@ -60,9 +60,9 @@ NACL_SRPC_METHOD("setUpcallDesc:h:", SetUpcallDesc);
  */
 static char* message_string;
 
-int PostMessage(NaClSrpcChannel *channel,
-                NaClSrpcArg **in_args,
-                NaClSrpcArg **out_args) {
+NaClSrpcError PostMessage(NaClSrpcChannel *channel,
+                          NaClSrpcArg **in_args,
+                          NaClSrpcArg **out_args) {
   /*
    * Strdup must be used because the SRPC layer frees the string passed to it.
    */

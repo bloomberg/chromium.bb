@@ -758,9 +758,10 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
           rv);
 }
 
-static int NaClSecureChannelShutdownRpc(struct NaClSrpcChannel  *chan,
-                                        struct NaClSrpcArg      **in_args,
-                                        struct NaClSrpcArg      **out_args) {
+static NaClSrpcError NaClSecureChannelShutdownRpc(
+    struct NaClSrpcChannel  *chan,
+    struct NaClSrpcArg      **in_args,
+    struct NaClSrpcArg      **out_args) {
   NaClLog(LOG_INFO, "NaClSecureChannelShutdownRpc (hard_shutdown), exiting\n");
   _exit(0);
 }
@@ -770,9 +771,9 @@ static int NaClSecureChannelShutdownRpc(struct NaClSrpcChannel  *chan,
  * and not as a file. The only argument is a handle to a shared memory buffer
  * that contains the nexe.
  */
-static int NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
-                             struct NaClSrpcArg      **in_args,
-                             struct NaClSrpcArg      **out_args) {
+static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
+                                       struct NaClSrpcArg      **in_args,
+                                       struct NaClSrpcArg      **out_args) {
   struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
   NaClSrpcImcDescType nexe_binary = in_args[0]->u.hval;
   struct GioMemoryFile gf;
@@ -832,9 +833,10 @@ static int NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   return NACL_SRPC_RESULT_OK;
 }
 
-static int NaClSecureChannelSetOriginRpc(struct NaClSrpcChannel   *chan,
-                                         struct NaClSrpcArg       **in_args,
-                                         struct NaClSrpcArg       **out_args) {
+static NaClSrpcError NaClSecureChannelSetOriginRpc(
+    struct NaClSrpcChannel   *chan,
+    struct NaClSrpcArg       **in_args,
+    struct NaClSrpcArg       **out_args) {
   struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
 
   free(nap->origin);
@@ -843,9 +845,10 @@ static int NaClSecureChannelSetOriginRpc(struct NaClSrpcChannel   *chan,
   return NACL_SRPC_RESULT_OK;
 }
 
-static int NaClSecureChannelStartModuleRpc(struct NaClSrpcChannel *chan,
-                                           struct NaClSrpcArg     **in_args,
-                                           struct NaClSrpcArg     **out_args) {
+static NaClSrpcError NaClSecureChannelStartModuleRpc(
+    struct NaClSrpcChannel *chan,
+    struct NaClSrpcArg     **in_args,
+    struct NaClSrpcArg     **out_args) {
   /*
    * let module start if module is okay; otherwise report error (e.g.,
    * ABI version mismatch).
@@ -866,9 +869,9 @@ static int NaClSecureChannelStartModuleRpc(struct NaClSrpcChannel *chan,
   return NACL_SRPC_RESULT_OK;
 }
 
-static int NaClSecureChannelLog(struct NaClSrpcChannel  *chan,
-                                struct NaClSrpcArg      **in_args,
-                                struct NaClSrpcArg      **out_args) {
+static NaClSrpcError NaClSecureChannelLog(struct NaClSrpcChannel  *chan,
+                                          struct NaClSrpcArg      **in_args,
+                                          struct NaClSrpcArg      **out_args) {
   int severity = in_args[0]->u.ival;
   char *msg = in_args[1]->u.sval;
 
@@ -898,9 +901,7 @@ void WINAPI NaClSecureChannelThread(void *state) {
     { "log:is:", NaClSecureChannelLog, },
     { "load_module:h:", NaClLoadModuleRpc, },
     /* add additional calls here.  upcall set up?  start module signal? */
-    { (char const *) NULL, (int (*)(struct NaClSrpcChannel *,
-                                    struct NaClSrpcArg **,
-                                    struct NaClSrpcArg **)) 0, },
+    { (char const *) NULL, (NaClSrpcMethod) 0, },
   };
 
   NaClLog(LOG_INFO, "NaClSecureChannelThread started\n");

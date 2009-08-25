@@ -394,9 +394,9 @@ struct NativeWorkerListenerData {
  * This SRPC method is used to handle postMessage invocations from the
  * worker (native) code.
  */
-static int postMessageFromNativeWorker(NaClSrpcChannel *channel,
-                                       NaClSrpcArg **ins,
-                                       NaClSrpcArg **outs) {
+static NaClSrpcError postMessageFromNativeWorker(NaClSrpcChannel *channel,
+                                                 NaClSrpcArg **ins,
+                                                 NaClSrpcArg **outs) {
   const char* str = ins[0]->u.sval;
   struct NativeWorkerListenerData *data;
   NativeWorkerPostMessageFunc func;

@@ -38,7 +38,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef __native_client__
+#ifdef __native_client__
+#include <inttypes.h>
+#include <nacl/nacl_inttypes.h>
+#else
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #endif  /* __native_client__ */
@@ -78,14 +81,13 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
                               uint32_t rpc_number,
                               NaClSrpcArg* args[],
                               NaClSrpcArg* rets[]) {
-  uint64_t        message_id;
-  uint8_t         is_request;
-  NaClSrpcError   retval;
-  NaClSrpcError   app_error;
-  const char*     arg_types;
-  const char*     ret_types;
-  double          this_start_usec = 0.0;
-  double          this_method_usec;
+  NaClSrpcRpc      rpc;
+  NaClSrpcError    retval;
+  int              ret;
+  const char*      arg_types;
+  const char*      ret_types;
+  double           this_start_usec = 0.0;
+  double           this_method_usec;
 
   dprintf(("CLIENT: channel %p, rpc number %d\n", (void*) channel,
            (unsigned) rpc_number));
@@ -97,7 +99,6 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   if (channel->timing_enabled) {
     this_start_usec = __NaClSrpcGetUsec();
   }
-
 
   if (GetRpcTypes(channel, rpc_number, &arg_types, &ret_types)) {
     /* Check input parameters for type conformance */
@@ -116,67 +117,31 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
    * First we send the request.
    * This requires sending args and the types and array sizes from rets.
    */
-  dprintf(("CLIENT: sending RPC request\n"));
-  __NaClSrpcImcWriteRequestHeader(channel,
-                                  channel->next_message_id++,
-                                  rpc_number);
-  dprintf(("CLIENT:     sent header: request %u\n", (unsigned) rpc_number));
-  retval = __NaClSrpcArgsPut(channel, 1, args);
+  rpc.rpc_number = rpc_number;
+  rpc.request_id = channel->next_message_id;
+  retval = NaClSrpcSendRequest(channel, &rpc, args, rets);
   if (NACL_SRPC_RESULT_OK != retval) {
-    dprintf(("    CLIENT: input arguments send failed: %d\n", retval));
+    dprintf(("SRPC: rpc request send failed\n"));
     return retval;
   }
-  dprintf(("CLIENT:     sent arguments\n"));
-  retval = __NaClSrpcArgsPut(channel, 0, rets);
-  if (NACL_SRPC_RESULT_OK != retval) {
-    dprintf(("CLIENT:     return descriptor send failed: %d\n", retval));
-    return retval;
-  }
-  __NaClSrpcImcFlush(channel);
-  dprintf(("CLIENT: sent RPC request\n"));
 
   /*
-   * Then we wait for the response
+   * Then we wait for the response.
    * This requires reading an error code reported by the rpc service itself.
    * If that error code is ok, then we get the return value vector.
    */
-  retval = __NaClSrpcImcReadHeader(channel, &message_id, &is_request);
-  dprintf(("CLIENT: receive RPC\n"));
-  if (1 != retval) {
-    dprintf(("CLIENT:     RPC header read failed: %d\n", retval));
+  ret = NaClSrpcReceiveMessage(channel, &rpc, args, rets);
+  if (1 != ret) {
+    dprintf(("SRPC: response receive failed\n"));
+    return NACL_SRPC_RESULT_INTERNAL;
+  }
+  if (0 != rpc.is_request) {
+    dprintf(("SRPC: rpc is not response: %d\n", rpc.is_request));
     /* Clear the rest of the buffer contents to ensure alignment */
     __NaClSrpcImcMarkReadBufferEmpty(channel);
     return NACL_SRPC_RESULT_INTERNAL;
   }
-  if (1 == is_request) {
-    dprintf(("CLIENT:     RPC header read is not response: %d\n", retval));
-    /* Clear the rest of the buffer contents to ensure alignment */
-    __NaClSrpcImcMarkReadBufferEmpty(channel);
-    return NACL_SRPC_RESULT_INTERNAL;
-  }
-  retval = __NaClSrpcImcReadResponseHeader(channel, &app_error);
-  if (1 != retval) {
-    dprintf(("CLIENT:     RPC response header read failed: %d\n", retval));
-    /* Clear the rest of the buffer contents to ensure alignment */
-    __NaClSrpcImcMarkReadBufferEmpty(channel);
-    return NACL_SRPC_RESULT_INTERNAL;
-  }
-  if (NACL_SRPC_RESULT_OK != app_error) {
-    dprintf(("CLIENT:     rpc method returned failure: %d\n", app_error));
-    /* Clear the rest of the buffer contents to ensure alignment */
-    __NaClSrpcImcMarkReadBufferEmpty(channel);
-    return app_error;
-  }
-  dprintf(("CLIENT:     received return code\n"));
-  retval = __NaClSrpcArgsGet(channel, 0, 1, rets, ret_types);
-  if (NACL_SRPC_RESULT_OK != retval) {
-    dprintf(("CLIENT:     return arguments receive failed: %d, %s\n", retval,
-             NaClSrpcErrorString(retval)));
-    /* Clear the rest of the buffer contents to ensure alignment */
-    __NaClSrpcImcMarkReadBufferEmpty(channel);
-    return retval;
-  }
-  dprintf(("CLIENT: received RPC response\n"));
+  dprintf(("SRPC: received response\n"));
 
   /*
    * If we are timing, collect the current time, compute the delta from
@@ -187,7 +152,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
     channel->send_usec += this_method_usec;
   }
 
-  return NACL_SRPC_RESULT_OK;
+  return rpc.app_error;
 }
 
 /*
@@ -439,8 +404,7 @@ abort0:
 
 NaClSrpcError NaClSrpcInvoke(NaClSrpcChannel  *channel,
                              uint32_t         rpc_num,
-                             ...)
-{
+                             ...) {
   va_list       in_va;
   va_list       out_va;
   NaClSrpcError rv;
@@ -458,8 +422,7 @@ NaClSrpcError NaClSrpcInvoke(NaClSrpcChannel  *channel,
 
 NaClSrpcError NaClSrpcInvokeByName(NaClSrpcChannel  *channel,
                                    const char       *rpc_name,
-                                   ...)
-{
+                                   ...) {
   int                 rpc_num;
   va_list             in_va;
   va_list             out_va;

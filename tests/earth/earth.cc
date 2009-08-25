@@ -143,7 +143,7 @@ struct Texture {
 // compile our texture straight in to avoid runtime filesystem
 Texture g_earth = {
   kEarthTextureWidth, kEarthTextureHeight, {
-#include "earth_image.inc"
+#include "native_client/tests/earth/earth_image.inc"
   }
 };
 
@@ -893,9 +893,9 @@ void ParseCmdLineArgs(int argc, char **argv) {
 sem_t GlobalDemoSemaphore;
 
 #if !defined(STANDALONE)
-int NaclModuleStartDemo(NaClSrpcChannel *channel,
-                        NaClSrpcArg** in_args,
-                        NaClSrpcArg** out_args) {
+NaClSrpcError NaclModuleStartDemo(NaClSrpcChannel *channel,
+                                  NaClSrpcArg** in_args,
+                                  NaClSrpcArg** out_args) {
   DebugPrintf("Start called with %d\n", in_args[0]->u.ival);
   g_num_frames = in_args[0]->u.ival;
   sem_post(&GlobalDemoSemaphore);
@@ -904,9 +904,9 @@ int NaclModuleStartDemo(NaClSrpcChannel *channel,
 
 NACL_SRPC_METHOD("start_demo:i:", NaclModuleStartDemo);
 
-int NaclModuleFrameChecksum(NaClSrpcChannel *channel,
-                        NaClSrpcArg** in_args,
-                        NaClSrpcArg** out_args) {
+NaClSrpcError NaclModuleFrameChecksum(NaClSrpcChannel *channel,
+                                      NaClSrpcArg** in_args,
+                                      NaClSrpcArg** out_args) {
   DebugPrintf("checksum called: %d\n", g_frame_checksum);
   out_args[0]->u.ival = g_frame_checksum;
   return NACL_SRPC_RESULT_OK;
@@ -939,4 +939,3 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-

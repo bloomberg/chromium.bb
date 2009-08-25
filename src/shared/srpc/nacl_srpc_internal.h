@@ -49,22 +49,23 @@
 EXTERN_C_BEGIN
 
 #ifdef __native_client__
-#  include <sys/nacl_imc_api.h>
-#  include <sys/nacl_syscalls.h>
+#include <sys/nacl_imc_api.h>
+#include <sys/nacl_syscalls.h>
 typedef int SRPC_IMC_DESC_TYPE;
-#  define SRPC_DESC_MAX    IMC_USER_DESC_MAX
-#  define SIDE "NC: "
+#define SRPC_DESC_MAX    IMC_USER_DESC_MAX
+#define SIDE "NC: "
 #else
-#  include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
-#  include "native_client/src/trusted/desc/nacl_desc_imc.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc.h"
 typedef struct NaClDesc* SRPC_IMC_DESC_TYPE;
-#  define SIDE "HOST: "
-#  define SRPC_DESC_MAX    NACL_ABI_IMC_USER_DESC_MAX
+#define SIDE "HOST: "
+#define SRPC_DESC_MAX    NACL_ABI_IMC_USER_DESC_MAX
 #endif
 
 /*
  * SRPC_DEBUG enables trace output printing.
  */
+#define SRPC_DEBUG 1
 #ifdef SRPC_DEBUG
 #define dprintf(args) do { printf args;  fflush(stdout); } while (0)
 #else
@@ -146,24 +147,15 @@ extern int __NaClSrpcImcRead(void* buffer,
                              size_t elt_size,
                              size_t n_elt,
                              NaClSrpcChannel* channel);
-extern int __NaClSrpcImcReadHeader(NaClSrpcChannel* channel,
-                                   uint64_t* message_id,
-                                   uint8_t* is_request);
-extern int __NaClSrpcImcReadRequestHeader(NaClSrpcChannel* channel,
-                                          unsigned int* rpc_number);
-extern int __NaClSrpcImcReadResponseHeader(NaClSrpcChannel* channel,
-                                           NaClSrpcError* app_error);
+extern int __NaClSrpcImcReadRpc(NaClSrpcChannel* channel,
+                                NaClSrpcRpc* header);
 
 extern int __NaClSrpcImcWrite(const void* buffer,
                               size_t elt_size,
                               size_t n_elt,
                               NaClSrpcChannel* channel);
-extern void __NaClSrpcImcWriteRequestHeader(NaClSrpcChannel* channel,
-                                            uint64_t message_id,
-                                            unsigned int rpc_number);
-extern void __NaClSrpcImcWriteResponseHeader(NaClSrpcChannel* channel,
-                                             uint64_t message_id,
-                                             NaClSrpcError app_error);
+extern void __NaClSrpcImcWriteRpc(NaClSrpcChannel* channel,
+                                  NaClSrpcRpc* rpc);
 
 extern int __NaClSrpcImcFlush(NaClSrpcChannel* channel);
 

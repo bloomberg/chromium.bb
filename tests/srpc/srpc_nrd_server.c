@@ -66,15 +66,9 @@ int errors_seen = 0;
 void* ServerThread(void* desc);
 
 /* StartServer creates a new SRPC server thread each time it is invoked. */
-int StartServer(NaClSrpcChannel *channel,
-                NaClSrpcArg **in_args,
-                NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("start_server::h", StartServer);
-
-int StartServer(NaClSrpcChannel *channel,
-                NaClSrpcArg **in_args,
-                NaClSrpcArg **out_args) {
+NaClSrpcError StartServer(NaClSrpcChannel *channel,
+                          NaClSrpcArg **in_args,
+                          NaClSrpcArg **out_args) {
   int            pair[2];
   pthread_t      server;
   int            rv;
@@ -104,10 +98,12 @@ int StartServer(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
+NACL_SRPC_METHOD("start_server::h", StartServer);
+
 /* GetMsg simply returns a string in a character array. */
-static int GetMsg(NaClSrpcChannel *channel,
-                  NaClSrpcArg **in_args,
-                  NaClSrpcArg **out_args) {
+static NaClSrpcError GetMsg(NaClSrpcChannel *channel,
+                            NaClSrpcArg **in_args,
+                            NaClSrpcArg **out_args) {
   static char message[] = "Quidquid id est, timeo Danaos et dona ferentes";
 
   printf("ServerThread: GetMsg\n");
@@ -125,9 +121,9 @@ static int GetMsg(NaClSrpcChannel *channel,
 }
 
 /* Shutdown simply returns a string in a character array. */
-static int Shutdown(NaClSrpcChannel *channel,
-                    NaClSrpcArg **in_args,
-                    NaClSrpcArg **out_args) {
+static NaClSrpcError Shutdown(NaClSrpcChannel *channel,
+                              NaClSrpcArg **in_args,
+                              NaClSrpcArg **out_args) {
   printf("ServerThread: Shutdown\n");
 
   return NACL_SRPC_RESULT_BREAK;
@@ -177,15 +173,9 @@ void* ServerThread(void* desc) {
  * TestSharedMemory tests the passing of shared memory regions.
  * It expects to receive a handle and a string.
  */
-int TestSharedMemory(NaClSrpcChannel *channel,
-                     NaClSrpcArg **in_args,
-                     NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("test_shared_memory:hs:i", TestSharedMemory);
-
-int TestSharedMemory(NaClSrpcChannel *channel,
-                     NaClSrpcArg **in_args,
-                     NaClSrpcArg **out_args) {
+NaClSrpcError TestSharedMemory(NaClSrpcChannel *channel,
+                               NaClSrpcArg **in_args,
+                               NaClSrpcArg **out_args) {
   int desc = in_args[0]->u.hval;
   char* compare_string = in_args[1]->u.sval;
   char* map_addr;
@@ -236,16 +226,14 @@ int TestSharedMemory(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
+NACL_SRPC_METHOD("test_shared_memory:hs:i", TestSharedMemory);
+
 /* Report reports the number of errors seen during the tests. */
-int Report(NaClSrpcChannel *channel,
-           NaClSrpcArg **in_args,
-           NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("report::i", Report);
-
-int Report(NaClSrpcChannel *channel,
-           NaClSrpcArg **in_args,
-           NaClSrpcArg **out_args) {
+NaClSrpcError Report(NaClSrpcChannel *channel,
+                     NaClSrpcArg **in_args,
+                     NaClSrpcArg **out_args) {
   out_args[0]->u.ival = errors_seen;
   return NACL_SRPC_RESULT_OK;
 }
+
+NACL_SRPC_METHOD("report::i", Report);

@@ -35,15 +35,9 @@
 #include <nacl/nacl_srpc.h>
 #include <sys/stat.h>
 
-int Cat(NaClSrpcChannel *channel,
-        NaClSrpcArg **in_args,
-        NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("cat:h:C", Cat);
-
-int Cat(NaClSrpcChannel *channel,
-        NaClSrpcArg **in_args,
-        NaClSrpcArg **out_args) {
+NaClSrpcError Cat(NaClSrpcChannel *channel,
+                  NaClSrpcArg **in_args,
+                  NaClSrpcArg **out_args) {
   int         fd;
   struct stat stb;
   FILE        *iob;
@@ -54,7 +48,9 @@ int Cat(NaClSrpcChannel *channel,
   fd = in_args[0]->u.hval;
   printf("CatFile: Got fd %d\n", fd);
   if (-1 != fstat(fd, &stb)) {
-#define P(fmt, field) do { printf(#field " = " fmt "\n", (int) stb.field); } while (0)
+#define P(fmt, field) \
+    do { printf(#field " = " fmt "\n", (int) stb.field); } while (0)
+
     P("0x%04x", st_mode);
     P("0x%x", st_nlink);
     P("0x%x", st_size);
@@ -80,3 +76,5 @@ int Cat(NaClSrpcChannel *channel,
   printf("out param: %.*s\n", nchar, out_args[0]->u.caval.carr);
   return NACL_SRPC_RESULT_OK;
 }
+
+NACL_SRPC_METHOD("cat:h:C", Cat);

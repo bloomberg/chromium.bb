@@ -42,15 +42,9 @@
 /*
  * GetShmHandle creates and returns a shared memory region.
  */
-int GetShmHandle(NaClSrpcChannel *channel,
-                 NaClSrpcArg **in_args,
-                 NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("get_shm_handle:i:h", GetShmHandle);
-
-int GetShmHandle(NaClSrpcChannel *channel,
-                 NaClSrpcArg **in_args,
-                 NaClSrpcArg **out_args) {
+NaClSrpcError GetShmHandle(NaClSrpcChannel *channel,
+                           NaClSrpcArg **in_args,
+                           NaClSrpcArg **out_args) {
   int desc;
   size_t size = in_args[0]->u.ival;
   /* Start up banner, clear errors. */
@@ -72,19 +66,18 @@ int GetShmHandle(NaClSrpcChannel *channel,
   out_args[0]->u.hval = desc;
   return NACL_SRPC_RESULT_OK;
 }
+
+NACL_SRPC_METHOD("get_shm_handle:i:h", GetShmHandle);
+
 /*
  * GetInvalidHandle creates and returns a shared memory region.
  */
-int GetInvalidHandle(NaClSrpcChannel *channel,
-                     NaClSrpcArg **in_args,
-                     NaClSrpcArg **out_args);
-
-NACL_SRPC_METHOD("get_invalid_handle::h", GetInvalidHandle);
-
-int GetInvalidHandle(NaClSrpcChannel *channel,
-                     NaClSrpcArg **in_args,
-                     NaClSrpcArg **out_args) {
+NaClSrpcError GetInvalidHandle(NaClSrpcChannel *channel,
+                               NaClSrpcArg **in_args,
+                               NaClSrpcArg **out_args) {
   /* Return an invalid shm descriptor. */
   out_args[0]->u.ival = -1;
   return NACL_SRPC_RESULT_OK;
 }
+
+NACL_SRPC_METHOD("get_invalid_handle::h", GetInvalidHandle);

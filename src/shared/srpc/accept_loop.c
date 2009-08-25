@@ -31,8 +31,8 @@
 
 #include <stdlib.h>
 #include <unistd.h>
-#include "nacl_srpc.h"
-#include "nacl_srpc_internal.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 #include <sys/nacl_syscalls.h>
 
 #define BOUND_SOCKET  3
@@ -75,9 +75,9 @@ static void mark_shutdown_done() {
  * user code will have to use onexit or atexit to do cleanup, which is
  * suboptimal in a multithreaded environment.
  */
-static int srpc_shutdown_request(NaClSrpcChannel* channel,
-                                 NaClSrpcArg **in_args,
-                                 NaClSrpcArg **out_arg) {
+static NaClSrpcError srpc_shutdown_request(NaClSrpcChannel* channel,
+                                           NaClSrpcArg **in_args,
+                                           NaClSrpcArg **out_arg) {
   struct worker_state *state =
       (struct worker_state *) channel->server_instance_data;
 
@@ -128,6 +128,7 @@ static void *srpc_default_acceptor(void *arg) {
     struct worker_state *state = malloc(sizeof *state);
     pthread_t           worker_tid;
 
+    printf("Accepting a connection\n");
     if (NULL == state) {
       /*
        * shed load; the client can come back later when we have more
