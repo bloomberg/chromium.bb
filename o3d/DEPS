@@ -4,7 +4,7 @@ vars = {
   "nixysa_rev": "29",
   "o3d_code_rev": "124",
   "skia_rev": "279",
-  "gyp_rev": "553",
+  "gyp_rev": "606",
   "gtest_rev": "267",
   "gflags_rev": "30",
   "breakpad_rev": "346",
@@ -97,6 +97,9 @@ deps = {
 
   "o3d/third_party/gmock/files":
     "http://googlemock.googlecode.com/svn/tags/release-1.0.0",
+
+  "tools/gyp":
+    "http://gyp.googlecode.com/svn/trunk@" + Var("gyp_rev"),
 }
 
 deps_os = {
