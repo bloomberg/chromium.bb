@@ -37,20 +37,20 @@ namespace {
 };
 
 TEST_F(CreateDirWorkItemTest, CreatePath) {
-  std::wstring parent_dir(test_dir_.ToWStringHack());
-  file_util::AppendToPath(&parent_dir, L"a");
-  CreateDirectory(parent_dir.c_str(), NULL);
+  FilePath parent_dir(test_dir_);
+  parent_dir = parent_dir.AppendASCII("a");
+  CreateDirectory(parent_dir.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(parent_dir));
 
-  std::wstring top_dir_to_create(parent_dir);
-  file_util::AppendToPath(&top_dir_to_create, L"b");
+  FilePath top_dir_to_create(parent_dir);
+  top_dir_to_create = top_dir_to_create.AppendASCII("b");
 
-  std::wstring dir_to_create(top_dir_to_create);
-  file_util::AppendToPath(&dir_to_create, L"c");
-  file_util::AppendToPath(&dir_to_create, L"d");
+  FilePath dir_to_create(top_dir_to_create);
+  dir_to_create = dir_to_create.AppendASCII("c");
+  dir_to_create = dir_to_create.AppendASCII("d");
 
   scoped_ptr<CreateDirWorkItem> work_item(
-      WorkItem::CreateCreateDirWorkItem(dir_to_create));
+      WorkItem::CreateCreateDirWorkItem(dir_to_create.ToWStringHack()));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -64,13 +64,13 @@ TEST_F(CreateDirWorkItemTest, CreatePath) {
 }
 
 TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
-  std::wstring dir_to_create(test_dir_.ToWStringHack());
-  file_util::AppendToPath(&dir_to_create, L"aa");
-  CreateDirectory(dir_to_create.c_str(), NULL);
+  FilePath dir_to_create(test_dir_);
+  dir_to_create = dir_to_create.AppendASCII("aa");
+  CreateDirectory(dir_to_create.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_to_create));
 
   scoped_ptr<CreateDirWorkItem> work_item(
-      WorkItem::CreateCreateDirWorkItem(dir_to_create));
+      WorkItem::CreateCreateDirWorkItem(dir_to_create.ToWStringHack()));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -84,26 +84,26 @@ TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
 }
 
 TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
-  std::wstring dir_to_create_1(test_dir_.ToWStringHack());
-  file_util::AppendToPath(&dir_to_create_1, L"aaa");
+  FilePath dir_to_create_1(test_dir_);
+  dir_to_create_1 = dir_to_create_1.AppendASCII("aaa");
 
-  std::wstring dir_to_create_2(dir_to_create_1);
-  file_util::AppendToPath(&dir_to_create_2, L"bbb");
+  FilePath dir_to_create_2(dir_to_create_1);
+  dir_to_create_2 = dir_to_create_2.AppendASCII("bbb");
 
-  std::wstring dir_to_create_3(dir_to_create_2);
-  file_util::AppendToPath(&dir_to_create_3, L"ccc");
+  FilePath dir_to_create_3(dir_to_create_2);
+  dir_to_create_3 = dir_to_create_3.AppendASCII("ccc");
 
   scoped_ptr<CreateDirWorkItem> work_item(
-      WorkItem::CreateCreateDirWorkItem(dir_to_create_3));
+      WorkItem::CreateCreateDirWorkItem(dir_to_create_3.ToWStringHack()));
 
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(dir_to_create_3));
 
   // Create another directory under dir_to_create_2
-  std::wstring dir_to_create_4(dir_to_create_2);
-  file_util::AppendToPath(&dir_to_create_4, L"ddd");
-  CreateDirectory(dir_to_create_4.c_str(), NULL);
+  FilePath dir_to_create_4(dir_to_create_2);
+  dir_to_create_4 = dir_to_create_4.AppendASCII("ddd");
+  CreateDirectory(dir_to_create_4.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_to_create_4));
 
   work_item->Rollback();
@@ -117,23 +117,23 @@ TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
 }
 
 TEST_F(CreateDirWorkItemTest, RollbackWithMissingDir) {
-  std::wstring dir_to_create_1(test_dir_.ToWStringHack());
-  file_util::AppendToPath(&dir_to_create_1, L"aaaa");
+  FilePath dir_to_create_1(test_dir_);
+  dir_to_create_1 = dir_to_create_1.AppendASCII("aaaa");
 
-  std::wstring dir_to_create_2(dir_to_create_1);
-  file_util::AppendToPath(&dir_to_create_2, L"bbbb");
+  FilePath dir_to_create_2(dir_to_create_1);
+  dir_to_create_2 = dir_to_create_2.AppendASCII("bbbb");
 
-  std::wstring dir_to_create_3(dir_to_create_2);
-  file_util::AppendToPath(&dir_to_create_3, L"cccc");
+  FilePath dir_to_create_3(dir_to_create_2);
+  dir_to_create_3 = dir_to_create_3.AppendASCII("cccc");
 
   scoped_ptr<CreateDirWorkItem> work_item(
-      WorkItem::CreateCreateDirWorkItem(dir_to_create_3));
+      WorkItem::CreateCreateDirWorkItem(dir_to_create_3.ToWStringHack()));
 
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(dir_to_create_3));
 
-  RemoveDirectory(dir_to_create_3.c_str());
+  RemoveDirectory(dir_to_create_3.value().c_str());
   ASSERT_FALSE(file_util::PathExists(dir_to_create_3));
 
   work_item->Rollback();

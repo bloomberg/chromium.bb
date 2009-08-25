@@ -35,135 +35,149 @@ namespace {
 TEST_F(CreateRegKeyWorkItemTest, CreateKey) {
   RegKey key;
 
-  std::wstring parent_key(test_root);
-  file_util::AppendToPath(&parent_key, L"a");
-  ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ));
+  FilePath parent_key(test_root);
+  parent_key = parent_key.AppendASCII("a");
+  ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, parent_key.value().c_str(),
+                         KEY_READ));
 
-  std::wstring top_key_to_create(parent_key);
-  file_util::AppendToPath(&top_key_to_create, L"b");
+  FilePath top_key_to_create(parent_key);
+  top_key_to_create = top_key_to_create.AppendASCII("b");
 
-  std::wstring key_to_create(top_key_to_create);
-  file_util::AppendToPath(&key_to_create, L"c");
-  file_util::AppendToPath(&key_to_create, L"d");
+  FilePath key_to_create(top_key_to_create);
+  key_to_create = key_to_create.AppendASCII("c");
+  key_to_create = key_to_create.AppendASCII("d");
 
   scoped_ptr<CreateRegKeyWorkItem> work_item(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create));
+      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
+          key_to_create.ToWStringHack()));
 
   EXPECT_TRUE(work_item->Do());
 
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.value().c_str(),
+                       KEY_READ));
 
   work_item->Rollback();
 
   // Rollback should delete all the keys up to top_key_to_create.
-  EXPECT_FALSE(key.Open(HKEY_CURRENT_USER, top_key_to_create.c_str(),
+  EXPECT_FALSE(key.Open(HKEY_CURRENT_USER, top_key_to_create.value().c_str(),
                         KEY_READ));
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ));
+  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, parent_key.value().c_str(),
+                       KEY_READ));
 }
 
 TEST_F(CreateRegKeyWorkItemTest, CreateExistingKey) {
   RegKey key;
 
-  std::wstring key_to_create(test_root);
-  file_util::AppendToPath(&key_to_create, L"aa");
-  ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  FilePath key_to_create(test_root);
+  key_to_create = key_to_create.AppendASCII("aa");
+  ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, key_to_create.value().c_str(),
+                         KEY_READ));
 
   scoped_ptr<CreateRegKeyWorkItem> work_item(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create));
+      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
+          key_to_create.ToWStringHack()));
 
   EXPECT_TRUE(work_item->Do());
 
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.value().c_str(),
+                       KEY_READ));
 
   work_item->Rollback();
 
   // Rollback should not remove the key since it exists before
   // the CreateRegKeyWorkItem is called.
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.value().c_str(),
+                       KEY_READ));
 }
 
 TEST_F(CreateRegKeyWorkItemTest, CreateSharedKey) {
   RegKey key;
-  std::wstring key_to_create_1(test_root);
-  file_util::AppendToPath(&key_to_create_1, L"aaa");
+  FilePath key_to_create_1(test_root);
+  key_to_create_1 = key_to_create_1.AppendASCII("aaa");
 
-  std::wstring key_to_create_2(key_to_create_1);
-  file_util::AppendToPath(&key_to_create_2, L"bbb");
+  FilePath key_to_create_2(key_to_create_1);
+  key_to_create_2 = key_to_create_2.AppendASCII("bbb");
 
-  std::wstring key_to_create_3(key_to_create_2);
-  file_util::AppendToPath(&key_to_create_3, L"ccc");
+  FilePath key_to_create_3(key_to_create_2);
+  key_to_create_3 = key_to_create_3.AppendASCII("ccc");
 
   scoped_ptr<CreateRegKeyWorkItem> work_item(
       WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
-                                           key_to_create_3));
+                                           key_to_create_3.ToWStringHack()));
 
   EXPECT_TRUE(work_item->Do());
 
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create_3.c_str(), KEY_READ));
+  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create_3.value().c_str(),
+                       KEY_READ));
 
   // Create another key under key_to_create_2
-  std::wstring key_to_create_4(key_to_create_2);
-  file_util::AppendToPath(&key_to_create_4, L"ddd");
-  ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, key_to_create_4.c_str(),
+  FilePath key_to_create_4(key_to_create_2);
+  key_to_create_4 = key_to_create_4.AppendASCII("ddd");
+  ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, key_to_create_4.value().c_str(),
                          KEY_READ));
 
   work_item->Rollback();
 
   // Rollback should delete key_to_create_3.
-  EXPECT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create_3.c_str(), KEY_READ));
+  EXPECT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create_3.value().c_str(),
+                        KEY_READ));
 
   // Rollback should not delete key_to_create_2 as it is shared.
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create_2.c_str(), KEY_READ));
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create_4.c_str(), KEY_READ));
+  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create_2.value().c_str(),
+                       KEY_READ));
+  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create_4.value().c_str(),
+                       KEY_READ));
 }
 
 TEST_F(CreateRegKeyWorkItemTest, RollbackWithMissingKey) {
   RegKey key;
-  std::wstring key_to_create_1(test_root);
-  file_util::AppendToPath(&key_to_create_1, L"aaaa");
+  FilePath key_to_create_1(test_root);
+  key_to_create_1 = key_to_create_1.AppendASCII("aaaa");
 
-  std::wstring key_to_create_2(key_to_create_1);
-  file_util::AppendToPath(&key_to_create_2, L"bbbb");
+  FilePath key_to_create_2(key_to_create_1);
+  key_to_create_2 = key_to_create_2.AppendASCII("bbbb");
 
-  std::wstring key_to_create_3(key_to_create_2);
-  file_util::AppendToPath(&key_to_create_3, L"cccc");
+  FilePath key_to_create_3(key_to_create_2);
+  key_to_create_3 = key_to_create_3.AppendASCII("cccc");
 
   scoped_ptr<CreateRegKeyWorkItem> work_item(
       WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
-                                           key_to_create_3));
+                                           key_to_create_3.ToWStringHack()));
 
   EXPECT_TRUE(work_item->Do());
 
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create_3.c_str(), KEY_READ));
+  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create_3.value().c_str(),
+                       KEY_READ));
   key.Close();
 
   // now delete key_to_create_3
-  ASSERT_TRUE(RegDeleteKey(HKEY_CURRENT_USER, key_to_create_3.c_str()) ==
-              ERROR_SUCCESS);
-  ASSERT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create_3.c_str(),
+  ASSERT_TRUE(RegDeleteKey(HKEY_CURRENT_USER,
+                           key_to_create_3.value().c_str()) == ERROR_SUCCESS);
+  ASSERT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create_3.value().c_str(),
                         KEY_READ));
 
   work_item->Rollback();
 
   // key_to_create_3 has already been deleted, Rollback should delete
   // the rest.
-  ASSERT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create_1.c_str(),
+  ASSERT_FALSE(key.Open(HKEY_CURRENT_USER, key_to_create_1.value().c_str(),
                         KEY_READ));
 }
 
 TEST_F(CreateRegKeyWorkItemTest, RollbackWithSetValue) {
   RegKey key;
 
-  std::wstring key_to_create(test_root);
-  file_util::AppendToPath(&key_to_create, L"aaaaa");
+  FilePath key_to_create(test_root);
+  key_to_create = key_to_create.AppendASCII("aaaaa");
 
   scoped_ptr<CreateRegKeyWorkItem> work_item(
-      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create));
+      WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER,
+                                           key_to_create.ToWStringHack()));
 
   EXPECT_TRUE(work_item->Do());
 
   // Write a value under the key we just created.
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(),
+  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.value().c_str(),
                        KEY_READ | KEY_SET_VALUE));
   EXPECT_TRUE(key.WriteValue(L"name", L"value"));
   key.Close();
@@ -171,5 +185,6 @@ TEST_F(CreateRegKeyWorkItemTest, RollbackWithSetValue) {
   work_item->Rollback();
 
   // Rollback should not remove the key.
-  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
+  EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, key_to_create.value().c_str(),
+                       KEY_READ));
 }

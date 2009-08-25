@@ -60,34 +60,35 @@ namespace {
 // Delete a tree without key path. Everything should be deleted.
 TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   // Create tree to be deleted
-  std::wstring dir_name_delete(test_dir_.ToWStringHack());
-  file_util::AppendToPath(&dir_name_delete, L"to_be_delete");
-  CreateDirectory(dir_name_delete.c_str(), NULL);
+  FilePath dir_name_delete(test_dir_);
+  dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
+  CreateDirectory(dir_name_delete.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
 
-  std::wstring dir_name_delete_1(dir_name_delete);
-  file_util::AppendToPath(&dir_name_delete_1, L"1");
-  CreateDirectory(dir_name_delete_1.c_str(), NULL);
+  FilePath dir_name_delete_1(dir_name_delete);
+  dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
+  CreateDirectory(dir_name_delete_1.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
 
-  std::wstring dir_name_delete_2(dir_name_delete);
-  file_util::AppendToPath(&dir_name_delete_2, L"2");
-  CreateDirectory(dir_name_delete_2.c_str(), NULL);
+  FilePath dir_name_delete_2(dir_name_delete);
+  dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
+  CreateDirectory(dir_name_delete_2.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
 
-  std::wstring file_name_delete_1(dir_name_delete_1);
-  file_util::AppendToPath(&file_name_delete_1, L"File_1.txt");
-  CreateTextFile(file_name_delete_1, text_content_1);
+  FilePath file_name_delete_1(dir_name_delete_1);
+  file_name_delete_1 = file_name_delete_1.AppendASCII("File_1.txt");
+  CreateTextFile(file_name_delete_1.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_1));
 
-  std::wstring file_name_delete_2(dir_name_delete_2);
-  file_util::AppendToPath(&file_name_delete_2, L"File_2.txt");
-  CreateTextFile(file_name_delete_2, text_content_1);
+  FilePath file_name_delete_2(dir_name_delete_2);
+  file_name_delete_2 = file_name_delete_2.AppendASCII("File_2.txt");
+  CreateTextFile(file_name_delete_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
   // test Do()
   scoped_ptr<DeleteTreeWorkItem> work_item(
-      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, std::wstring()));
+      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete.ToWStringHack(),
+                                         std::wstring()));
   EXPECT_TRUE(work_item->Do());
 
   // everything should be gone
@@ -107,34 +108,35 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
 // Rollback should bring back everything
 TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   // Create tree to be deleted
-  std::wstring dir_name_delete(test_dir_.ToWStringHack());
-  file_util::AppendToPath(&dir_name_delete, L"to_be_delete");
-  CreateDirectory(dir_name_delete.c_str(), NULL);
+  FilePath dir_name_delete(test_dir_);
+  dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
+  CreateDirectory(dir_name_delete.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
 
-  std::wstring dir_name_delete_1(dir_name_delete);
-  file_util::AppendToPath(&dir_name_delete_1, L"1");
-  CreateDirectory(dir_name_delete_1.c_str(), NULL);
+  FilePath dir_name_delete_1(dir_name_delete);
+  dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
+  CreateDirectory(dir_name_delete_1.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
 
-  std::wstring dir_name_delete_2(dir_name_delete);
-  file_util::AppendToPath(&dir_name_delete_2, L"2");
-  CreateDirectory(dir_name_delete_2.c_str(), NULL);
+  FilePath dir_name_delete_2(dir_name_delete);
+  dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
+  CreateDirectory(dir_name_delete_2.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
 
-  std::wstring file_name_delete_1(dir_name_delete_1);
-  file_util::AppendToPath(&file_name_delete_1, L"File_1.txt");
-  CreateTextFile(file_name_delete_1, text_content_1);
+  FilePath file_name_delete_1(dir_name_delete_1);
+  file_name_delete_1 = file_name_delete_1.AppendASCII("File_1.txt");
+  CreateTextFile(file_name_delete_1.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_1));
 
-  std::wstring file_name_delete_2(dir_name_delete_2);
-  file_util::AppendToPath(&file_name_delete_2, L"File_2.txt");
-  CreateTextFile(file_name_delete_2, text_content_1);
+  FilePath file_name_delete_2(dir_name_delete_2);
+  file_name_delete_2 = file_name_delete_2.AppendASCII("File_2.txt");
+  CreateTextFile(file_name_delete_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
   // test Do()
   scoped_ptr<DeleteTreeWorkItem> work_item(
-      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, file_name_delete_1));
+      WorkItem::CreateDeleteTreeWorkItem(dir_name_delete.ToWStringHack(),
+                                         file_name_delete_1.ToWStringHack()));
   EXPECT_TRUE(work_item->Do());
 
   // everything should be gone
@@ -152,56 +154,58 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
 // Delete a tree with key_path in use. Everything should still be there.
 TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
   // Create tree to be deleted
-  std::wstring dir_name_delete(test_dir_.ToWStringHack());
-  file_util::AppendToPath(&dir_name_delete, L"to_be_delete");
-  CreateDirectory(dir_name_delete.c_str(), NULL);
+  FilePath dir_name_delete(test_dir_);
+  dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
+  CreateDirectory(dir_name_delete.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
 
-  std::wstring dir_name_delete_1(dir_name_delete);
-  file_util::AppendToPath(&dir_name_delete_1, L"1");
-  CreateDirectory(dir_name_delete_1.c_str(), NULL);
+  FilePath dir_name_delete_1(dir_name_delete);
+  dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
+  CreateDirectory(dir_name_delete_1.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
 
-  std::wstring dir_name_delete_2(dir_name_delete);
-  file_util::AppendToPath(&dir_name_delete_2, L"2");
-  CreateDirectory(dir_name_delete_2.c_str(), NULL);
+  FilePath dir_name_delete_2(dir_name_delete);
+  dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
+  CreateDirectory(dir_name_delete_2.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
 
-  std::wstring file_name_delete_1(dir_name_delete_1);
-  file_util::AppendToPath(&file_name_delete_1, L"File_1.txt");
-  CreateTextFile(file_name_delete_1, text_content_1);
+  FilePath file_name_delete_1(dir_name_delete_1);
+  file_name_delete_1 = file_name_delete_1.AppendASCII("File_1.txt");
+  CreateTextFile(file_name_delete_1.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_1));
 
-  std::wstring file_name_delete_2(dir_name_delete_2);
-  file_util::AppendToPath(&file_name_delete_2, L"File_2.txt");
-  CreateTextFile(file_name_delete_2, text_content_1);
+  FilePath file_name_delete_2(dir_name_delete_2);
+  file_name_delete_2 = file_name_delete_2.AppendASCII("File_2.txt");
+  CreateTextFile(file_name_delete_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
   // Create a key path file.
-  std::wstring key_path(dir_name_delete);
-  file_util::AppendToPath(&key_path, L"key_file.exe");
+  FilePath key_path(dir_name_delete);
+  key_path = key_path.AppendASCII("key_file.exe");
 
   wchar_t exe_full_path_str[MAX_PATH];
   ::GetModuleFileNameW(NULL, exe_full_path_str, MAX_PATH);
-  std::wstring exe_full_path(exe_full_path_str);
+  FilePath exe_full_path(exe_full_path_str);
 
   file_util::CopyFile(exe_full_path, key_path);
   ASSERT_TRUE(file_util::PathExists(key_path));
 
-  LOG(INFO) << "copy ourself from " << exe_full_path << " to " << key_path;
+  LOG(INFO) << "copy ourself from "
+            << exe_full_path.value() << " to " << key_path.value();
 
   // Run the key path file to keep it in use.
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
   ASSERT_TRUE(
-      ::CreateProcessW(NULL, const_cast<wchar_t*>(key_path.c_str()),
+      ::CreateProcessW(NULL, const_cast<wchar_t*>(key_path.value().c_str()),
                        NULL, NULL, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED,
                        NULL, NULL, &si, &pi));
 
   // test Do().
   {
     scoped_ptr<DeleteTreeWorkItem> work_item(
-        WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, key_path));
+        WorkItem::CreateDeleteTreeWorkItem(dir_name_delete.ToWStringHack(),
+                                           key_path.ToWStringHack()));
 
     // delete should fail as file in use.
     EXPECT_FALSE(work_item->Do());

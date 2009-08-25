@@ -59,53 +59,53 @@ namespace {
 // should be deleted.
 TEST_F(SetupHelperTest, Delete) {
   // Create a Chrome dir
-  std::wstring chrome_dir(test_dir_.ToWStringHack());
-  file_util::AppendToPath(&chrome_dir, L"chrome");
-  CreateDirectory(chrome_dir.c_str(), NULL);
+  FilePath chrome_dir(test_dir_);
+  chrome_dir = chrome_dir.AppendASCII("chrome");
+  CreateDirectory(chrome_dir.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
 
-  std::wstring chrome_dir_1(chrome_dir);
-  file_util::AppendToPath(&chrome_dir_1, L"1.0.1.0");
-  CreateDirectory(chrome_dir_1.c_str(), NULL);
+  FilePath chrome_dir_1(chrome_dir);
+  chrome_dir_1 = chrome_dir_1.AppendASCII("1.0.1.0");
+  CreateDirectory(chrome_dir_1.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_1));
 
-  std::wstring chrome_dir_2(chrome_dir);
-  file_util::AppendToPath(&chrome_dir_2, L"1.0.2.0");
-  CreateDirectory(chrome_dir_2.c_str(), NULL);
+  FilePath chrome_dir_2(chrome_dir);
+  chrome_dir_2 = chrome_dir_2.AppendASCII("1.0.2.0");
+  CreateDirectory(chrome_dir_2.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_2));
 
-  std::wstring chrome_dir_3(chrome_dir);
-  file_util::AppendToPath(&chrome_dir_3, L"1.0.3.0");
-  CreateDirectory(chrome_dir_3.c_str(), NULL);
+  FilePath chrome_dir_3(chrome_dir);
+  chrome_dir_3 = chrome_dir_3.AppendASCII("1.0.3.0");
+  CreateDirectory(chrome_dir_3.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_3));
 
-  std::wstring chrome_dir_4(chrome_dir);
-  file_util::AppendToPath(&chrome_dir_4, L"1.0.4.0");
-  CreateDirectory(chrome_dir_4.c_str(), NULL);
+  FilePath chrome_dir_4(chrome_dir);
+  chrome_dir_4 = chrome_dir_4.AppendASCII("1.0.4.0");
+  CreateDirectory(chrome_dir_4.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_4));
 
-  std::wstring chrome_dll_1(chrome_dir_1);
-  file_util::AppendToPath(&chrome_dll_1, L"chrome.dll");
-  CreateTextFile(chrome_dll_1, text_content_1);
+  FilePath chrome_dll_1(chrome_dir_1);
+  chrome_dll_1 = chrome_dll_1.AppendASCII("chrome.dll");
+  CreateTextFile(chrome_dll_1.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_1));
 
-  std::wstring chrome_dll_2(chrome_dir_2);
-  file_util::AppendToPath(&chrome_dll_2, L"chrome.dll");
-  CreateTextFile(chrome_dll_2, text_content_1);
+  FilePath chrome_dll_2(chrome_dir_2);
+  chrome_dll_2 = chrome_dll_2.AppendASCII("chrome.dll");
+  CreateTextFile(chrome_dll_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_2));
 
-  std::wstring chrome_dll_3(chrome_dir_3);
-  file_util::AppendToPath(&chrome_dll_3, L"chrome.dll");
-  CreateTextFile(chrome_dll_3, text_content_1);
+  FilePath chrome_dll_3(chrome_dir_3);
+  chrome_dll_3 = chrome_dll_3.AppendASCII("chrome.dll");
+  CreateTextFile(chrome_dll_3.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_3));
 
-  std::wstring chrome_dll_4(chrome_dir_4);
-  file_util::AppendToPath(&chrome_dll_4, L"chrome.dll");
-  CreateTextFile(chrome_dll_4, text_content_1);
+  FilePath chrome_dll_4(chrome_dir_4);
+  chrome_dll_4 = chrome_dll_4.AppendASCII("chrome.dll");
+  CreateTextFile(chrome_dll_4.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
 
   std::wstring latest_version(L"1.0.4.0");
-  installer::RemoveOldVersionDirs(chrome_dir, latest_version);
+  installer::RemoveOldVersionDirs(chrome_dir.value(), latest_version);
 
   // old versions should be gone
   EXPECT_FALSE(file_util::PathExists(chrome_dir_1));
@@ -118,67 +118,67 @@ TEST_F(SetupHelperTest, Delete) {
 // Delete older version directories, keeping the one in used intact.
 TEST_F(SetupHelperTest, DeleteInUsed) {
   // Create a Chrome dir
-  std::wstring chrome_dir(test_dir_.ToWStringHack());
-  file_util::AppendToPath(&chrome_dir, L"chrome");
-  CreateDirectory(chrome_dir.c_str(), NULL);
+  FilePath chrome_dir(test_dir_);
+  chrome_dir = chrome_dir.AppendASCII("chrome");
+  CreateDirectory(chrome_dir.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
 
-  std::wstring chrome_dir_1(chrome_dir);
-  file_util::AppendToPath(&chrome_dir_1, L"1.0.1.0");
-  CreateDirectory(chrome_dir_1.c_str(), NULL);
+  FilePath chrome_dir_1(chrome_dir);
+  chrome_dir_1 = chrome_dir_1.AppendASCII("1.0.1.0");
+  CreateDirectory(chrome_dir_1.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_1));
 
-  std::wstring chrome_dir_2(chrome_dir);
-  file_util::AppendToPath(&chrome_dir_2, L"1.0.2.0");
-  CreateDirectory(chrome_dir_2.c_str(), NULL);
+  FilePath chrome_dir_2(chrome_dir);
+  chrome_dir_2 = chrome_dir_2.AppendASCII("1.0.2.0");
+  CreateDirectory(chrome_dir_2.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_2));
 
-  std::wstring chrome_dir_3(chrome_dir);
-  file_util::AppendToPath(&chrome_dir_3, L"1.0.3.0");
-  CreateDirectory(chrome_dir_3.c_str(), NULL);
+  FilePath chrome_dir_3(chrome_dir);
+  chrome_dir_3 = chrome_dir_3.AppendASCII("1.0.3.0");
+  CreateDirectory(chrome_dir_3.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_3));
 
-  std::wstring chrome_dir_4(chrome_dir);
-  file_util::AppendToPath(&chrome_dir_4, L"1.0.4.0");
-  CreateDirectory(chrome_dir_4.c_str(), NULL);
+  FilePath chrome_dir_4(chrome_dir);
+  chrome_dir_4 = chrome_dir_4.AppendASCII("1.0.4.0");
+  CreateDirectory(chrome_dir_4.value().c_str(), NULL);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_4));
 
-  std::wstring chrome_dll_1(chrome_dir_1);
-  file_util::AppendToPath(&chrome_dll_1, L"chrome.dll");
-  CreateTextFile(chrome_dll_1, text_content_1);
+  FilePath chrome_dll_1(chrome_dir_1);
+  chrome_dll_1 = chrome_dll_1.AppendASCII("chrome.dll");
+  CreateTextFile(chrome_dll_1.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_1));
 
-  std::wstring chrome_dll_2(chrome_dir_2);
-  file_util::AppendToPath(&chrome_dll_2, L"chrome.dll");
-  CreateTextFile(chrome_dll_2, text_content_1);
+  FilePath chrome_dll_2(chrome_dir_2);
+  chrome_dll_2 = chrome_dll_2.AppendASCII("chrome.dll");
+  CreateTextFile(chrome_dll_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_2));
 
   // Open the file to make it in use.
   std::ofstream file;
-  file.open(chrome_dll_2.c_str());
+  file.open(chrome_dll_2.value().c_str());
 
-  std::wstring chrome_othera_2(chrome_dir_2);
-  file_util::AppendToPath(&chrome_othera_2, L"othera.dll");
-  CreateTextFile(chrome_othera_2, text_content_2);
+  FilePath chrome_othera_2(chrome_dir_2);
+  chrome_othera_2 = chrome_othera_2.AppendASCII("othera.dll");
+  CreateTextFile(chrome_othera_2.value(), text_content_2);
   ASSERT_TRUE(file_util::PathExists(chrome_othera_2));
 
-  std::wstring chrome_otherb_2(chrome_dir_2);
-  file_util::AppendToPath(&chrome_otherb_2, L"otherb.dll");
-  CreateTextFile(chrome_otherb_2, text_content_2);
+  FilePath chrome_otherb_2(chrome_dir_2);
+  chrome_otherb_2 = chrome_otherb_2.AppendASCII("otherb.dll");
+  CreateTextFile(chrome_otherb_2.value(), text_content_2);
   ASSERT_TRUE(file_util::PathExists(chrome_otherb_2));
 
-  std::wstring chrome_dll_3(chrome_dir_3);
-  file_util::AppendToPath(&chrome_dll_3, L"chrome.dll");
-  CreateTextFile(chrome_dll_3, text_content_1);
+  FilePath chrome_dll_3(chrome_dir_3);
+  chrome_dll_3 = chrome_dll_3.AppendASCII("chrome.dll");
+  CreateTextFile(chrome_dll_3.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_3));
 
-  std::wstring chrome_dll_4(chrome_dir_4);
-  file_util::AppendToPath(&chrome_dll_4, L"chrome.dll");
-  CreateTextFile(chrome_dll_4, text_content_1);
+  FilePath chrome_dll_4(chrome_dir_4);
+  chrome_dll_4 = chrome_dll_4.AppendASCII("chrome.dll");
+  CreateTextFile(chrome_dll_4.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
 
   std::wstring latest_version(L"1.0.4.0");
-  installer::RemoveOldVersionDirs(chrome_dir, latest_version);
+  installer::RemoveOldVersionDirs(chrome_dir.value(), latest_version);
 
   // old versions not in used should be gone
   EXPECT_FALSE(file_util::PathExists(chrome_dir_1));
