@@ -205,6 +205,11 @@ void GtkThemeProvider::OnStyleSet(GtkWidget* widget,
 }
 
 void GtkThemeProvider::LoadGtkValues() {
+  // Before we start setting images and values, we have to clear out old, stale
+  // values. (If we don't do this, we'll regress startup time in the case where
+  // someone installs a heavyweight theme, then goes back to GTK.)
+  profile()->GetPrefs()->ClearPref(prefs::kCurrentThemeImages);
+
   GtkStyle* window_style = gtk_rc_get_style(fake_window_);
   GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
 
@@ -300,8 +305,10 @@ void GtkThemeProvider::LoadGtkValues() {
   SetThemeTintFromGtk(kTintFrameIncognitoInactive, &inactive_frame_color,
                       kExactColor);
 
+  force_process_images();
   GenerateFrameColors();
   GenerateFrameImages();
+  GenerateTabImages();
 }
 
 void GtkThemeProvider::SetThemeColorFromGtk(const char* id, GdkColor* color) {

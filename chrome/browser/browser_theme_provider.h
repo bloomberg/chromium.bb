@@ -237,6 +237,10 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
 
   Profile* profile() { return profile_; }
 
+  // Subclasses may need us to not use the on-disk image cache. The GTK
+  // interface needs to generate some images itself.
+  void force_process_images() { process_images_ = true; }
+
  private:
   typedef std::map<const int, std::string> ImageMap;
   typedef std::map<const std::string, SkColor> ColorMap;
