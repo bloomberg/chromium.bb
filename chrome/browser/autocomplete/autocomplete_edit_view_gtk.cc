@@ -659,11 +659,17 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
 
 gboolean AutocompleteEditViewGtk::HandleKeyRelease(GtkWidget* widget,
                                                    GdkEventKey* event) {
+  // Omnibox2 can switch its contents while pressing a control key. To switch
+  // the contents of omnibox2, we notify the AutocompleteEditModel class when
+  // the control-key state is changed.
   if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) {
-    // Omnibox2 can switch its contents while pressing a control key. To switch
-    // the contents of omnibox2, we notify the AutocompleteEditModel class when
-    // the control-key state is changed.
-    model_->OnControlKeyChanged(false);
+    // Round trip to query the control state after the release.  This allows
+    // you to release one control key while still holding another control key.
+    GdkDisplay* display = gdk_drawable_get_display(event->window);
+    GdkModifierType mod;
+    gdk_display_get_pointer(display, NULL, NULL, NULL, &mod);
+    if (!(mod & GDK_CONTROL_MASK))
+      model_->OnControlKeyChanged(false);
   }
 
   // Even though we handled the press ourselves, let GtkTextView handle the
