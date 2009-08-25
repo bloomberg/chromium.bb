@@ -148,6 +148,9 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
   subst2.push_back(SkColorToRGBAString(color_section_border));  // $$2
   subst2.push_back(SkColorToRGBAString(color_section_text));  // $$3
   subst2.push_back(SkColorToRGBAString(color_section_link));  // $$4
+  subst2.push_back(
+      UTF8ToUTF16(tp->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
+          "block" : "none"));  // $$5
 
   // Get our template.
   static const StringPiece new_tab_theme_css(

@@ -265,12 +265,6 @@ void BrowserThemeProvider::Init(Profile* profile) {
 SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) {
   DCHECK(CalledOnValidThread());
 
-  // Check to see whether we should substitute some images.
-  int ntp_alternate;
-  GetDisplayProperty(NTP_LOGO_ALTERNATE, &ntp_alternate);
-  if (id == IDR_PRODUCT_LOGO && ntp_alternate != 0)
-    id = IDR_PRODUCT_LOGO_WHITE;
-
   // Check to see if we already have the Skia image in the cache.
   ImageCache::const_iterator found = image_cache_.find(id);
   if (found != image_cache_.end())
@@ -459,6 +453,12 @@ bool BrowserThemeProvider::HasCustomImage(int id) {
 
 bool BrowserThemeProvider::GetRawData(int id,
                                       std::vector<unsigned char>* raw_data) {
+  // Check to see whether we should substitute some images.
+  int ntp_alternate;
+  GetDisplayProperty(NTP_LOGO_ALTERNATE, &ntp_alternate);
+  if (id == IDR_PRODUCT_LOGO && ntp_alternate != 0)
+    id = IDR_PRODUCT_LOGO_WHITE;
+
   if (raw_data_.find(id) != raw_data_.end()) {
     *raw_data = raw_data_[id];
     return true;

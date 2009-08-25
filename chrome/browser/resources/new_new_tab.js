@@ -801,9 +801,8 @@ function themeChanged() {
 }
 
 function updateAttribution() {
-  // TODO(arv): Implement
-  //$('attribution-img').src = 'chrome://theme/theme_ntp_attribution?' +
-  //    Date.now();
+  $('attribution-img').src = 'chrome://theme/theme_ntp_attribution?' +
+      Date.now();
 }
 
 function bookmarkBarAttached() {

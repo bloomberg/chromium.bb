@@ -60,3 +60,8 @@ body {
   color: $$4; /* COLOR_NTP_SECTION_LINK */
   text-decoration:underline;
 }
+
+#attribution {
+  display : $$5;
+  text-align:right;
+}
