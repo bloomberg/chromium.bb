@@ -47,21 +47,24 @@ start:
      mov r10, 0x10000
 
      add r10, r10, (32 * 13)
-     nop
-     nop
-     blx  r10
+     add lr, pc, 4
+     bic r10, 0xf000000f
+     bx  r10
 
 # exit(0)
      mov r0, 0
      mov r10, 0x10000
      add r10, r10, (32 * 30)
-     blx  r10
+     nop
 
-     bkpt
+     mov lr, 0
+     bic r10, 0xf000000f
+     bx  r10
+
 .string_address:
      .long   .string
 
-# TODO: move this into data section
+     .data
 .string:
      .asciz  "hello world\n"
 

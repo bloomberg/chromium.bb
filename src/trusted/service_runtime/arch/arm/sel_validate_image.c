@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,15 +33,11 @@
  * Invoke validator for NaCl secure ELF loader (NaCl SEL).
  */
 
-#include <string.h>
-
-/* TODO: this header can be removed as soon as "NACL_BUILD_ARCH == arm" is
- * removed */
-#include "native_client/src/include/nacl_base.h"
+//#include <string.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate.h"
+#include "native_client/src/trusted/validator_arm/ncvalidate.h"
 
 static int g_ignore_validator_result = 0;
 void NaClIgnoreValidatorResult() {
@@ -55,14 +51,6 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   size_t                  regionsize;
   NaClErrorCode           rcode = LOAD_BAD_FILE;
 
-#if NACL_BUILD_ARCH == arm
-  /*
-   * BUG(petr): not implemented
-   * temporary disable validation to test sel_ldr
-   */
-  return LOAD_OK;
-#endif
-
   memp = nap->mem_start + NACL_TRAMPOLINE_END;
   regionsize = nap->text_region_bytes;
 
@@ -71,10 +59,11 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
     return LOAD_NO_MEMORY;
   }
 
-  vstate = NCValidateInit(memp, endp, nap->align_boundary);
-  if (vstate == NULL) return LOAD_BAD_FILE;
-  NCValidateSegment((uint8_t *)memp, memp, regionsize, vstate);
-  if (NCValidateFinish(vstate) == 0) {
+  NCValidateInit();
+
+  NCValidateSegment((uint8_t *)memp, memp, regionsize);
+
+  if (NCValidateFinish() == 0) {
     rcode = LOAD_OK;
   } else {
     if (g_ignore_validator_result) {
@@ -89,6 +78,7 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
       rcode = LOAD_VALIDATION_FAILED;
     }
   }
-  NCValidateFreeState(&vstate);
+
   return rcode;
 }
+

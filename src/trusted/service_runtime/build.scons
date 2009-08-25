@@ -57,6 +57,13 @@ env.Prepend(
     ],
 )
 
+# ARM validator (libncvalidate.a) requres support of utils
+if env['BUILD_ARCHITECTURE'] == 'arm':
+  env.Append(
+    LIBS = ['arm_inst',
+            'utils',]
+  )
+
 
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
@@ -149,7 +156,6 @@ ldr_inputs = [
     'sel_mem.c',
     'sel_util.c',
     'sel_util-inl.c',
-    'sel_validate_image.c',
     'web_worker_stub.c',
 ]
 
@@ -162,6 +168,7 @@ if env['BUILD_ARCHITECTURE'] == 'x86':
       'arch/x86/nacl_tls.c',
       'arch/x86/sel_ldr_x86.c',
       'arch/x86/sel_addrspace_x86.c',
+      'arch/x86/sel_validate_image.c',
       ]
   if env['BUILD_SUBARCH'] == '32':
     ldr_inputs += [
@@ -183,6 +190,7 @@ elif env['BUILD_ARCHITECTURE'] == 'arm':
     'arch/arm/nacl_tls.c',
     'arch/arm/sel_ldr_arm.c',
     'arch/arm/sel_addrspace_arm.c',
+    'arch/arm/sel_validate_image.c',
     'arch/arm/nacl_switch.S',
     'arch/arm/nacl_syscall.S',
     'arch/arm/springboard.S',

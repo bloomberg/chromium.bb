@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2008, Google Inc.
+# Copyright 2009, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,10 +28,157 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 import os
-import sys
 Import('env')
 
-env.ComponentLibrary('ncvalidate', ['ncvalidate.c'])
+# Currently, this is only defined for arm, so only compile if arm.
+if env['TARGET_ARCHITECTURE'] != 'arm':
+  Return()
 
+if env.Bit('linux'):
+  # NOTE: we cannot use TARGET_ROOT here because we want to share this file
+  #       between different scons invocations
+  gen_dec='${DESTINATION_ROOT}/gen/native_client/src/trusted/validator_arm/ncdecode_instruction.c'
+
+  env.ComponentLibrary('arm_inst',
+                       ['arm_insts.c',
+                        'arm_insts_rt.c'])
+
+  env.ComponentLibrary('ncvalidate',
+                       ['arm_validate.cc',
+                        'branch_patterns.cc',
+                        gen_dec,
+                        'ncdecode.cc',
+                        'ncvalidate.cc',
+                        'nop_patterns.cc',
+                        'register_set_use.c',
+                        'stack_adjust_patterns.cc',
+                        'validator_patterns.cc'])
+
+  env.ComponentLibrary('seg_parser',
+                       ['segment_parser.cc',
+                        'string_split.cc'])
+
+  categorize = env.ComponentProgram('arm-categorize',
+                                    ['arm_branches.c',
+                                     'arm_categorize_main.cc',
+                                     'arm_categorize_memman.cc',
+                                     'arm_categorize.c',
+                                     'arm_compress.cc',
+                                     'arm_coprocessor.c',
+                                     'arm_data_ops.c',
+                                     'arm_exceptions.c',
+                                     'arm_extended_ops.c',
+                                     'arm_inst_modeling.c',
+                                     'arm_load_stores.c',
+                                     'arm_misc_ops.c',
+                                     'arm_mulops.c',
+                                     'arm_parallel.c',
+                                     'arm_swap_insts.c',
+                                     'decoder_generator.cc',
+                                     ],
+                                    EXTRA_LIBS=['arm_inst',
+                                                # TODO: move to top level
+                                                'utils',
+                                                '$OPTIONAL_COVERAGE_LIBS'])
+
+
+  # NOTE: When we are generating binaries for ARM on an x86 system (the norm)
+  #       we cannot run them easily, in particular we cannot run the header file
+  #       generator. As a workaround we require the user to run scons first
+  #       generating and running X86 binaries
+  if env['BUILD_ARCHITECTURE'] == 'arm':
+    print '*' * 70
+    print '*' * 70
+    print '**'
+    print '**', env.subst("${DESTINATION_ROOT}")
+    print '**', 'please make sure you have run the equivalent of'
+    print '**', './scons targetplatform=arm ' + env.subst(gen_dec)
+    print '**'
+    print '*' * 70
+    print '*' * 70
+  else:
+    # CODE GENERATION
+    env.Command(gen_dec,
+                categorize,
+                ['echo CODE GENERATION: ${TARGET.abspath}',
+                 '${SOURCE.abspath} --generate_parser=${TARGET.abspath}'
+                 ])
+
+  arm_dis = env.ComponentProgram('arm-ncdis',
+                                 ['ncdis.cc'],
+                                 LIBS=['nchelper',
+                                       'ncvalidate',
+                                       'arm_inst',
+                                       'utils',
+                                       'seg_parser',
+                                       # from ncv/
+                                       # TODO: move to top level
+                                       '$OPTIONAL_COVERAGE_LIBS'])
+
+  arm_val = env.ComponentProgram('arm-ncval',
+                                 ['ncval.cc'],
+                                 EXTRA_LIBS=['nchelper',
+                                             'ncvalidate',
+                                             'arm_inst',
+                                             'utils',
+                                             'seg_parser',
+                                             # from ncv/
+                                             # TODO: move to top level
+                                             '$OPTIONAL_COVERAGE_LIBS'])
+
+  ncdis_input_golden = env.File('ncdis_test.input')
+
+  node = env.CommandTestAgainstGoldenOutput(
+      'arm_ncdis_test.out',
+      [env.File('arm-ncdis'), '--self_document', '--commands=-'],
+      stdin=ncdis_input_golden,
+      stdout_golden=ncdis_input_golden)
+
+  env.AddNodeToTestSuite(node, ['small_tests'], 'arm_ncdis_test')
+
+  # ======================================================================
+  # Unit tests for validator patterns.
+
+  # Directory where test files are located.
+  testdata_base_dir = 'testdata/'
+
+  # Subdirectory map.
+  test_subdir_to_status = {
+      'good' : '0',
+      'bad' : '2'
+      }
+
+  # Generates base names (i.e. minus path and .val suffix) of
+  # all test data input files.
+  def _FilterOutTestFileBaseGen(files):
+    for f in files:
+      yield os.path.basename(f.path).replace('.val', "")
+
+  for subdir in test_subdir_to_status:
+    testdata_dir = testdata_base_dir + subdir + "/"
+    status = test_subdir_to_status[subdir]
+
+    golden_val_files = Glob(testdata_dir + '*.val')
+
+    for vtest in _FilterOutTestFileBaseGen(golden_val_files):
+      test_prefix = 'arm_ncval_test_' + vtest
+      dis_test_name = test_prefix + "_dis"
+      node_dis = env.CommandTestAgainstGoldenOutput(
+          dis_test_name + ".out",
+          [arm_dis[0], '--decode_segment=-'],
+          stdin = env.File(testdata_dir + vtest + ".hex"),
+          stdout_golden = env.File(testdata_dir + vtest + ".dis"))
+
+      env.AddNodeToTestSuite(node_dis, ['small_tests'], dis_test_name)
+
+      val_test_name = test_prefix + "_val"
+      node_val = env.CommandTestAgainstGoldenOutput(
+          val_test_name + ".out",
+          [arm_val[0], '--decode_segment=-', '--set_executable_name=false'],
+          stdin = env.File(testdata_dir + vtest + ".hex"),
+          exit_status = status,
+          stdout_golden = env.File(testdata_dir + vtest + ".val"),
+          stderr_golden = env.File(testdata_dir + vtest + ".valerr"))
+
+      env.AddNodeToTestSuite(node_val, ['small_tests'], val_test_name)

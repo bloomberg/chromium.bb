@@ -1,0 +1,422 @@
+# Sample test for name_cond and cond_name forms.
+--decode_instruction=0x011                            #       0:	00000011 	(eq)	and	r0, r0, r1, lsl r0
+--name_cond --decode_instruction=0x011                #       0:	00000011 	andeq	r0, r0, r1, lsl r0
+
+# Test condition codes.
+--decode_instruction=0x02a1200f                       #       0:	02a1200f 	(eq)	adc	r2, r1, #15
+--decode_instruction=0x12a1200f                       #       0:	12a1200f 	(ne)	adc	r2, r1, #15
+--decode_instruction=0x22a1200f                       #       0:	22a1200f 	(cs)	adc	r2, r1, #15
+--decode_instruction=0x32a1200f                       #       0:	32a1200f 	(cc)	adc	r2, r1, #15
+--decode_instruction=0x42a1200f                       #       0:	42a1200f 	(mi)	adc	r2, r1, #15
+--decode_instruction=0x52a1200f                       #       0:	52a1200f 	(pl)	adc	r2, r1, #15
+--decode_instruction=0x62a1200f                       #       0:	62a1200f 	(vs)	adc	r2, r1, #15
+--decode_instruction=0x72a1200f                       #       0:	72a1200f 	(vc)	adc	r2, r1, #15
+--decode_instruction=0x82a1200f                       #       0:	82a1200f 	(hi)	adc	r2, r1, #15
+--decode_instruction=0x92a1200f                       #       0:	92a1200f 	(ls)	adc	r2, r1, #15
+--decode_instruction=0xa2a1200f                       #       0:	a2a1200f 	(ge)	adc	r2, r1, #15
+--decode_instruction=0xb2a1200f                       #       0:	b2a1200f 	(lt)	adc	r2, r1, #15
+--decode_instruction=0xc2a1200f                       #       0:	c2a1200f 	(gt)	adc	r2, r1, #15
+--decode_instruction=0xd2a1200f                       #       0:	d2a1200f 	(le)	adc	r2, r1, #15
+--decode_instruction=0xe2a1200f                       #       0:	e2a1200f 		adc	r2, r1, #15
+--decode_instruction=0xf2a1200f                       #       0:	f2a1200f 		???
+
+# Test forms of ADC
+--decode_instruction=0xe2a1200f                       #       0:	e2a1200f 		adc	r2, r1, #15
+--decode_instruction=0x02a1200f                       #       0:	02a1200f 	(eq)	adc	r2, r1, #15
+--name_cond --decode_instruction=0x02a1200f           #       0:	02a1200f 	adceq	r2, r1, #15
+--decode_instruction=0xe2b1200f                       #       0:	e2b1200f 		adcs	r2, r1, #15
+--decode_instruction=0xe0a12003                       #       0:	e0a12003 		adc	r2, r1, r3
+--decode_instruction=0xe0a12203                       #       0:	e0a12203 		adc	r2, r1, r3, lsl #4
+--decode_instruction=0xe0a12413                       #       0:	e0a12413 		adc	r2, r1, r3, lsl r4
+--decode_instruction=0xe0a12223                       #       0:	e0a12223 		adc	r2, r1, r3, lsr #4
+--decode_instruction=0xe0a12433                       #       0:	e0a12433 		adc	r2, r1, r3, lsr r4
+--decode_instruction=0xe0a12243                       #       0:	e0a12243 		adc	r2, r1, r3, asr #4
+--decode_instruction=0xe0a12453                       #       0:	e0a12453 		adc	r2, r1, r3, asr r4
+--decode_instruction=0xe0a12263                       #       0:	e0a12263 		adc	r2, r1, r3, ror #4
+--decode_instruction=0xe0a12473                       #       0:	e0a12473 		adc	r2, r1, r3, ror r4
+--decode_instruction=0xe0a12063                       #       0:	e0a12063 		adc	r2, r1, r3, rrx
+
+# Test forms of ADD
+--decode_instruction=0xe281200f                       #       0:	e281200f 		add	r2, r1, #15
+--decode_instruction=0x0281200f                       #       0:	0281200f 	(eq)	add	r2, r1, #15
+--name_cond --decode_instruction=0x0281200f           #       0:	0281200f 	addeq	r2, r1, #15
+--decode_instruction=0xe291200f                       #       0:	e291200f 		adds	r2, r1, #15
+--decode_instruction=0xe0812003                       #       0:	e0812003 		add	r2, r1, r3
+--decode_instruction=0xe0812203                       #       0:	e0812203 		add	r2, r1, r3, lsl #4
+--decode_instruction=0xe0812413                       #       0:	e0812413 		add	r2, r1, r3, lsl r4
+--decode_instruction=0xe0812223                       #       0:	e0812223 		add	r2, r1, r3, lsr #4
+--decode_instruction=0xe0812433                       #       0:	e0812433 		add	r2, r1, r3, lsr r4
+--decode_instruction=0xe0812243                       #       0:	e0812243 		add	r2, r1, r3, asr #4
+--decode_instruction=0xe0812453                       #       0:	e0812453 		add	r2, r1, r3, asr r4
+--decode_instruction=0xe0812263                       #       0:	e0812263 		add	r2, r1, r3, ror #4
+--decode_instruction=0xe0812473                       #       0:	e0812473 		add	r2, r1, r3, ror r4
+--decode_instruction=0xe0812063                       #       0:	e0812063 		add	r2, r1, r3, rrx
+
+# Test forms of AND
+--decode_instruction=0xe201200f                       #       0:	e201200f 		and	r2, r1, #15
+--decode_instruction=0x0201200f                       #       0:	0201200f 	(eq)	and	r2, r1, #15
+--name_cond --decode_instruction=0x0201200f           #       0:	0201200f 	andeq	r2, r1, #15
+--decode_instruction=0xe211200f                       #       0:	e211200f 		ands	r2, r1, #15
+--decode_instruction=0xe0012003                       #       0:	e0012003 		and	r2, r1, r3
+--decode_instruction=0xe0012203                       #       0:	e0012203 		and	r2, r1, r3, lsl #4
+--decode_instruction=0xe0012413                       #       0:	e0012413 		and	r2, r1, r3, lsl r4
+--decode_instruction=0xe0012223                       #       0:	e0012223 		and	r2, r1, r3, lsr #4
+--decode_instruction=0xe0012433                       #       0:	e0012433 		and	r2, r1, r3, lsr r4
+--decode_instruction=0xe0012243                       #       0:	e0012243 		and	r2, r1, r3, asr #4
+--decode_instruction=0xe0012453                       #       0:	e0012453 		and	r2, r1, r3, asr r4
+--decode_instruction=0xe0012263                       #       0:	e0012263 		and	r2, r1, r3, ror #4
+--decode_instruction=0xe0012473                       #       0:	e0012473 		and	r2, r1, r3, ror r4
+--decode_instruction=0xe0012063                       #       0:	e0012063 		and	r2, r1, r3, rrx
+
+# Test forms of B
+--decode_pc=0x0 --decode_instruction=0xea123456       #       0:	ea123456 		b	48d160
+--decode_pc=0x8 --decode_instruction=0xea123456       #       8:	ea123456 		b	48d168
+
+# Test forms of BL
+--decode_pc=0x0 --decode_instruction=0xeb123456       #       0:	eb123456 		bl	48d160
+--decode_pc=0x8 --decode_instruction=0xeb123456       #       8:	eb123456 		bl	48d168
+
+# Test forms for BIC
+--decode_instruction=0xe3C1200f                       #       0:	e3c1200f 		bic	r2, r1, #15
+--decode_instruction=0x03c1200f                       #       0:	03c1200f 	(eq)	bic	r2, r1, #15
+--name_cond --decode_instruction=0x03c1200f           #       0:	03c1200f 	biceq	r2, r1, #15
+--decode_instruction=0xe3d1200f                       #       0:	e3d1200f 		bics	r2, r1, #15
+--decode_instruction=0xe1c12003                       #       0:	e1c12003 		bic	r2, r1, r3
+--decode_instruction=0xe1c12203                       #       0:	e1c12203 		bic	r2, r1, r3, lsl #4
+--decode_instruction=0xe1c12413                       #       0:	e1c12413 		bic	r2, r1, r3, lsl r4
+--decode_instruction=0xe1c12223                       #       0:	e1c12223 		bic	r2, r1, r3, lsr #4
+--decode_instruction=0xe1c12433                       #       0:	e1c12433 		bic	r2, r1, r3, lsr r4
+--decode_instruction=0xe1c12243                       #       0:	e1c12243 		bic	r2, r1, r3, asr #4
+--decode_instruction=0xe1c12453                       #       0:	e1c12453 		bic	r2, r1, r3, asr r4
+--decode_instruction=0xe1c12263                       #       0:	e1c12263 		bic	r2, r1, r3, ror #4
+--decode_instruction=0xe1c12473                       #       0:	e1c12473 		bic	r2, r1, r3, ror r4
+--decode_instruction=0xe1c12063                       #       0:	e1c12063 		bic	r2, r1, r3, rrx
+
+# Test forms for BKPT
+--decode_instruction=0xe1200572                       #       0:	e1200572 		bkpt	82
+
+# Test forms for BLX
+--decode_instruction=0xfa000004                       #       0:	fa000004 		blx	18
+--decode_instruction=0xfb000004                       #       0:	fb000004 		blx	1a
+--decode_pc=0x8 --decode_instruction=0xfa000004       #       8:	fa000004 		blx	20
+--decode_instruction=0xe12fff35                       #       0:	e12fff35 		blx	r5
+--decode_instruction=0x012fff35                       #       0:	012fff35 	(eq)	blx	r5
+--name_cond --decode_instruction=0x012fff35           #       0:	012fff35 	blxeq	r5
+
+# Test forms for BX
+--decode_instruction=0xe12fff15                       #       0:	e12fff15 		bx	r5
+--decode_instruction=0x012fff15                       #       0:	012fff15 	(eq)	bx	r5
+--name_cond --decode_instruction=0x012fff15           #       0:	012fff15 	bxeq	r5
+
+# Test forms for BXJ
+--decode_instruction=0xe12fff25                       #       0:	e12fff25 		bxj	r5
+--decode_instruction=0x012fff25                       #       0:	012fff25 	(eq)	bxj	r5
+--name_cond --decode_instruction=0x012fff25           #       0:	012fff25 	bxjeq	r5
+
+# Test forms for CDP
+--decode_instruction=0xee512386                       #       0:	ee512386 		cdp	3, 5, cr2, cr1, cr6, 4
+--decode_instruction=0x0e512386                       #       0:	0e512386 	(eq)	cdp	3, 5, cr2, cr1, cr6, 4
+--name_cond --decode_instruction=0x0e512386           #       0:	0e512386 	cdpeq	3, 5, cr2, cr1, cr6, 4
+--decode_instruction=0xfe512386                       #       0:	fe512386 		cdp2	3, 5, cr2, cr1, cr6, 4
+
+# Test forms for CLZ
+--decode_instruction=0xe16f3f14                       #       0:	e16f3f14 		clz	r3, r4
+--decode_instruction=0x016f3f14                       #       0:	016f3f14 	(eq)	clz	r3, r4
+--name_cond --decode_instruction=0x016f3f14           #       0:	016f3f14 	clzeq	r3, r4
+
+# Test forms for CMN
+--decode_instruction=0xe371000f                       #       0:	e371000f 		cmn	r1, #15
+--decode_instruction=0x0371000f                       #       0:	0371000f 	(eq)	cmn	r1, #15
+--name_cond --decode_instruction=0x0371000f           #       0:	0371000f 	cmneq	r1, #15
+--decode_instruction=0xe371000f                       #       0:	e371000f 		cmn	r1, #15
+--decode_instruction=0xe1710003	                      #       0:	e1710003 		cmn	r1, r3
+--decode_instruction=0xe1710203                       #       0:	e1710203 		cmn	r1, r3, lsl #4
+--decode_instruction=0xe1710413                       #       0:	e1710413 		cmn	r1, r3, lsl r4
+--decode_instruction=0xe1710223                       #       0:	e1710223 		cmn	r1, r3, lsr #4
+--decode_instruction=0xe1710433                       #       0:	e1710433 		cmn	r1, r3, lsr r4
+--decode_instruction=0xe1710243                       #       0:	e1710243 		cmn	r1, r3, asr #4
+--decode_instruction=0xe1710453                       #       0:	e1710453 		cmn	r1, r3, asr r4
+--decode_instruction=0xe1710263                       #       0:	e1710263 		cmn	r1, r3, ror #4
+--decode_instruction=0xe1710473                       #       0:	e1710473 		cmn	r1, r3, ror r4
+--decode_instruction=0xe1710063                       #       0:	e1710063 		cmn	r1, r3, rrx
+
+# Test forms for CMP
+--decode_instruction=0xe351000f                       #       0:	e351000f 		cmp	r1, #15
+--decode_instruction=0x0351000f                       #       0:	0351000f 	(eq)	cmp	r1, #15
+--name_cond --decode_instruction=0x0351000f           #       0:	0351000f 	cmpeq	r1, #15
+--decode_instruction=0xe351000f                       #       0:	e351000f 		cmp	r1, #15
+--decode_instruction=0xe1510003	                      #       0:	e1510003 		cmp	r1, r3
+--decode_instruction=0xe1510203                       #       0:	e1510203 		cmp	r1, r3, lsl #4
+--decode_instruction=0xe1510413                       #       0:	e1510413 		cmp	r1, r3, lsl r4
+--decode_instruction=0xe1510223                       #       0:	e1510223 		cmp	r1, r3, lsr #4
+--decode_instruction=0xe1510433                       #       0:	e1510433 		cmp	r1, r3, lsr r4
+--decode_instruction=0xe1510243                       #       0:	e1510243 		cmp	r1, r3, asr #4
+--decode_instruction=0xe1510453                       #       0:	e1510453 		cmp	r1, r3, asr r4
+--decode_instruction=0xe1510263                       #       0:	e1510263 		cmp	r1, r3, ror #4
+--decode_instruction=0xe1510473                       #       0:	e1510473 		cmp	r1, r3, ror r4
+--decode_instruction=0xe1510063                       #       0:	e1510063 		cmp	r1, r3, rrx
+
+# Test forms for CPS  ; TODO -- fix so we recognize
+--decode_instruction=0xf1080000                       #       0:	f1080000 		???
+
+# Test forms for CPY (alias for mv).
+--decode_instruction=0xe1a01002                       #       0:	e1a01002 		mov	r1, r2
+--decode_instruction=0x01a01002                       #       0:	01a01002 	(eq)	mov	r1, r2
+--name_cond --decode_instruction=0x01a01002           #       0:	01a01002 	moveq	r1, r2
+
+# Test forms for EOR
+--decode_instruction=0xe221200f                       #       0:	e221200f 		eor	r2, r1, #15
+--decode_instruction=0x0221200f                       #       0:	0221200f 	(eq)	eor	r2, r1, #15
+--name_cond --decode_instruction=0x0221200f           #       0:	0221200f 	eoreq	r2, r1, #15
+--decode_instruction=0xe231200f                       #       0:	e231200f 		eors	r2, r1, #15
+--decode_instruction=0xe0212003                       #       0:	e0212003 		eor	r2, r1, r3
+--decode_instruction=0xe0212203                       #       0:	e0212203 		eor	r2, r1, r3, lsl #4
+--decode_instruction=0xe0212413                       #       0:	e0212413 		eor	r2, r1, r3, lsl r4
+--decode_instruction=0xe0212223                       #       0:	e0212223 		eor	r2, r1, r3, lsr #4
+--decode_instruction=0xe0212433                       #       0:	e0212433 		eor	r2, r1, r3, lsr r4
+--decode_instruction=0xe0212243                       #       0:	e0212243 		eor	r2, r1, r3, asr #4
+--decode_instruction=0xe0212453                       #       0:	e0212453 		eor	r2, r1, r3, asr r4
+--decode_instruction=0xe0212263                       #       0:	e0212263 		eor	r2, r1, r3, ror #4
+--decode_instruction=0xe0212473                       #       0:	e0212473 		eor	r2, r1, r3, ror r4
+--decode_instruction=0xe0212063                       #       0:	e0212063 		eor	r2, r1, r3, rrx
+
+# Test firns for LDC
+--decode_instruction=0xed112345                       #       0:	ed112345 		ldc	p3, cr2, [r1, #-69*4]
+--decode_instruction=0x0d112345                       #       0:	0d112345 	(eq)	ldc	p3, cr2, [r1, #-69*4]
+--name_cond --decode_instruction=0x0d112345           #       0:	0d112345 	ldceq	p3, cr2, [r1, #-69*4]
+--decode_instruction=0xfd112345                       #       0:	fd112345 		ldc2	p3, cr2, [r1, #-69*4]
+--decode_instruction=0xed512345                       #       0:	ed512345 		ldcl	p3, cr2, [r1, #-69*4]
+--decode_instruction=0x0d512345                       #       0:	0d512345 	(eq)	ldcl	p3, cr2, [r1, #-69*4]
+--name_cond --decode_instruction=0x0d512345           #       0:	0d512345 	ldceql	p3, cr2, [r1, #-69*4]
+--decode_instruction=0xfd512345                       #       0:	fd512345 		ldc2l	p3, cr2, [r1, #-69*4]
+--decode_instruction=0xed912345                       #       0:	ed912345 		ldc	p3, cr2, [r1, #69*4]
+
+--decode_instruction=0xed312345                       #       0:	ed312345 		ldc	p3, cr2, [r1, #-69*4]!
+--decode_instruction=0x0d312345                       #       0:	0d312345 	(eq)	ldc	p3, cr2, [r1, #-69*4]!
+--name_cond --decode_instruction=0x0d312345           #       0:	0d312345 	ldceq	p3, cr2, [r1, #-69*4]!
+--decode_instruction=0xfd312345                       #       0:	fd312345 		ldc2	p3, cr2, [r1, #-69*4]!
+--decode_instruction=0xed712345                       #       0:	ed712345 		ldcl	p3, cr2, [r1, #-69*4]!
+--decode_instruction=0x0d712345                       #       0:	0d712345 	(eq)	ldcl	p3, cr2, [r1, #-69*4]!
+--name_cond --decode_instruction=0x0d712345           #       0:	0d712345 	ldceql	p3, cr2, [r1, #-69*4]!
+--decode_instruction=0xfd712345                       #       0:	fd712345 		ldc2l	p3, cr2, [r1, #-69*4]!
+--decode_instruction=0xedb12345                       #       0:	edb12345 		ldc	p3, cr2, [r1, #69*4]!
+
+--decode_instruction=0xec312345                       #       0:	ec312345 		ldc	p3, cr2, [r1], #-69*4
+--decode_instruction=0x0c312345                       #       0:	0c312345 	(eq)	ldc	p3, cr2, [r1], #-69*4
+--name_cond --decode_instruction=0x0c312345           #       0:	0c312345 	ldceq	p3, cr2, [r1], #-69*4
+--decode_instruction=0xfc312345                       #       0:	fc312345 		ldc2	p3, cr2, [r1], #-69*4
+--decode_instruction=0xec712345                       #       0:	ec712345 		ldcl	p3, cr2, [r1], #-69*4
+--decode_instruction=0x0c712345                       #       0:	0c712345 	(eq)	ldcl	p3, cr2, [r1], #-69*4
+--name_cond --decode_instruction=0x0c712345           #       0:	0c712345 	ldceql	p3, cr2, [r1], #-69*4
+--decode_instruction=0xfc712345                       #       0:	fc712345 		ldc2l	p3, cr2, [r1], #-69*4
+--decode_instruction=0xecb12345                       #       0:	ecb12345 		ldc	p3, cr2, [r1], #69*4
+#note: the unindexed form requires U bit (23) for LDC  to always be 1
+--decode_instruction=0xec912345                       #       0:	ec912345 		ldc	p3, cr2, [r1], {69}
+--decode_instruction=0x0c912345                       #       0:	0c912345 	(eq)	ldc	p3, cr2, [r1], {69}
+--name_cond --decode_instruction=0x0c912345           #       0:	0c912345 	ldceq	p3, cr2, [r1], {69}
+--decode_instruction=0xfc912345                       #       0:	fc912345 		ldc2	p3, cr2, [r1], {69}
+--decode_instruction=0xecd12345                       #       0:	ecd12345 		ldcl	p3, cr2, [r1], {69}
+--decode_instruction=0x0cd12345                       #       0:	0cd12345 	(eq)	ldcl	p3, cr2, [r1], {69}
+--name_cond --decode_instruction=0x0cd12345           #       0:	0cd12345 	ldceql	p3, cr2, [r1], {69}
+--decode_instruction=0xfcd12345                       #       0:	fcd12345 		ldc2l	p3, cr2, [r1], {69}
+--decode_instruction=0xec912345                       #       0:	ec912345 		ldc	p3, cr2, [r1], {69}
+
+# Test forms for LDM (1)
+--decode_instruction=0xe8932468                       #       0:	e8932468 		ldmia	r3, {r3, r5, r6, sl, sp}
+--decode_instruction=0x08932468                       #       0:	08932468 	(eq)	ldmia	r3, {r3, r5, r6, sl, sp}
+--name_cond --decode_instruction=0x08932468           #       0:	08932468 	ldmeqia	r3, {r3, r5, r6, sl, sp}
+# TODO -- fix so we recognize
+--decode_instruction=0xe8b32468                       #       0:	e8b32468 		???
+--decode_instruction=0xe8132468                       #       0:	e8132468 		ldmda	r3, {r3, r5, r6, sl, sp}
+--decode_instruction=0x08132468                       #       0:	08132468 	(eq)	ldmda	r3, {r3, r5, r6, sl, sp}
+--name_cond --decode_instruction=0x08132468           #       0:	08132468 	ldmeqda	r3, {r3, r5, r6, sl, sp}
+# TODO -- fix so we recognize
+--decode_instruction=0xe8332468                       #       0:	e8332468 		???
+--decode_instruction=0xe9932468                       #       0:	e9932468 		ldmib	r3, {r3, r5, r6, sl, sp}
+--decode_instruction=0x09932468                       #       0:	09932468 	(eq)	ldmib	r3, {r3, r5, r6, sl, sp}
+--name_cond --decode_instruction=0x09932468           #       0:	09932468 	ldmeqib	r3, {r3, r5, r6, sl, sp}
+# TODO -- fix so we recognize
+--decode_instruction=0xe9b32468                       #       0:	e9b32468 		???
+--decode_instruction=0xe9132468                       #       0:	e9132468 		ldmdb	r3, {r3, r5, r6, sl, sp}
+--decode_instruction=0x09132468                       #       0:	09132468 	(eq)	ldmdb	r3, {r3, r5, r6, sl, sp}
+--name_cond --decode_instruction=0x09132468           #       0:	09132468 	ldmeqdb	r3, {r3, r5, r6, sl, sp}
+# TODO -- fix so we recognize
+--decode_instruction=0xe9332468                       #       0:	e9332468 		???
+
+# Test forms for LDM (2)
+--decode_instruction=0xe8d32468                       #       0:	e8d32468 		ldmia	r3, {r3, r5, r6, sl, sp}^
+--decode_instruction=0x08d32468                       #       0:	08d32468 	(eq)	ldmia	r3, {r3, r5, r6, sl, sp}^
+--name_cond --decode_instruction=0x08d32468           #       0:	08d32468 	ldmeqia	r3, {r3, r5, r6, sl, sp}^
+--decode_instruction=0x9d32468                        #       0:	09d32468 	(eq)	ldmib	r3, {r3, r5, r6, sl, sp}^
+--decode_instruction=0x09d32468                       #       0:	09d32468 	(eq)	ldmib	r3, {r3, r5, r6, sl, sp}^
+--name_cond --decode_instruction=0x09d32468           #       0:	09d32468 	ldmeqib	r3, {r3, r5, r6, sl, sp}^
+--decode_instruction=0x8532468                        #       0:	08532468 	(eq)	ldmda	r3, {r3, r5, r6, sl, sp}^
+--decode_instruction=0x08532468                       #       0:	08532468 	(eq)	ldmda	r3, {r3, r5, r6, sl, sp}^
+--name_cond --decode_instruction=0x08532468           #       0:	08532468 	ldmeqda	r3, {r3, r5, r6, sl, sp}^
+--decode_instruction=0x9532468                        #       0:	09532468 	(eq)	ldmdb	r3, {r3, r5, r6, sl, sp}^
+--decode_instruction=0x09532468                       #       0:	09532468 	(eq)	ldmdb	r3, {r3, r5, r6, sl, sp}^
+--name_cond --decode_instruction=0x09532468           #       0:	09532468 	ldmeqdb	r3, {r3, r5, r6, sl, sp}^
+
+# Test forms for LDM (3)
+--decode_instruction=0xe8d2c468                       #       0:	e8d2c468 		ldmia	r2, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0x08d2c468                       #       0:	08d2c468 	(eq)	ldmia	r2, {r3, r5, r6, sl, lr, pc}^
+--name_cond --decode_instruction=0x08d2c468           #       0:	08d2c468 	ldmeqia	r2, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0xe8f2c468                       #       0:	e8f2c468 		ldmia	r2!, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0xe9d2c468                       #       0:	e9d2c468 		ldmib	r2, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0x09d2c468                       #       0:	09d2c468 	(eq)	ldmib	r2, {r3, r5, r6, sl, lr, pc}^
+--name_cond --decode_instruction=0x09d2c468           #       0:	09d2c468 	ldmeqib	r2, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0xe9f2c468                       #       0:	e9f2c468 		ldmib	r2!, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0xe852c468                       #       0:	e852c468 		ldmda	r2, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0x0852c468                       #       0:	0852c468 	(eq)	ldmda	r2, {r3, r5, r6, sl, lr, pc}^
+--name_cond --decode_instruction=0x0852c468           #       0:	0852c468 	ldmeqda	r2, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0xe872c468                       #       0:	e872c468 		ldmda	r2!, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0xe952c468                       #       0:	e952c468 		ldmdb	r2, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0x0952c468                       #       0:	0952c468 	(eq)	ldmdb	r2, {r3, r5, r6, sl, lr, pc}^
+--name_cond --decode_instruction=0x0952c468           #       0:	0952c468 	ldmeqdb	r2, {r3, r5, r6, sl, lr, pc}^
+--decode_instruction=0xe972c468                       #       0:	e972c468 		ldmdb	r2!, {r3, r5, r6, sl, lr, pc}^
+
+# Test forms of LDR
+--decode_instruction=0xe5912013                       #       0:	e5912013 		ldr	r2, [r1, #19]
+--decode_instruction=0x05912013                       #       0:	05912013 	(eq)	ldr	r2, [r1, #19]
+--name_cond --decode_instruction=0x05912013           #       0:	05912013 	ldreq	r2, [r1, #19]
+--decode_instruction=0xe5112013                       #       0:	e5112013 		ldr	r2, [r1, #-19]
+--decode_instruction=0xe7912003                       #       0:	e7912003 		ldr	r2, [r1, r3]
+--decode_instruction=0xe7112003                       #       0:	e7112003 		ldr	r2, [r1, -r3]
+--decode_instruction=0xe7912f84                       #       0:	e7912f84 		ldr	r2, [r1, r4, lsl #31]
+--decode_instruction=0xe7112f84                       #       0:	e7112f84 		ldr	r2, [r1, -r4, lsl #31]
+--decode_instruction=0xe7112004                       #       0:	e7112004 		ldr	r2, [r1, -r4]
+--decode_instruction=0xe7112084                       #       0:	e7112084 		ldr	r2, [r1, -r4, lsl #1]
+--decode_instruction=0xe7912fa4                       #       0:	e7912fa4 		ldr	r2, [r1, r4, lsr #31]
+--decode_instruction=0xe7112fa4                       #       0:	e7112fa4 		ldr	r2, [r1, -r4, lsr #31]
+--decode_instruction=0xe7912024                       #       0:	e7912024 		ldr	r2, [r1, r4, lsr #32]
+--decode_instruction=0xe79120a4                       #       0:	e79120a4 		ldr	r2, [r1, r4, lsr #1]
+--decode_instruction=0xe7912fc4                       #       0:	e7912fc4 		ldr	r2, [r1, r4, asr #31]
+--decode_instruction=0xe7112fc4                       #       0:	e7112fc4 		ldr	r2, [r1, -r4, asr #31]
+--decode_instruction=0xe7912044                       #       0:	e7912044 		ldr	r2, [r1, r4, asr #32]
+--decode_instruction=0xe79120c4                       #       0:	e79120c4 		ldr	r2, [r1, r4, asr #1]
+--decode_instruction=0xe7912fe4                       #       0:	e7912fe4 		ldr	r2, [r1, r4, ror #31]
+--decode_instruction=0xe7112fe4                       #       0:	e7112fe4 		ldr	r2, [r1, -r4, ror #31]
+--decode_instruction=0xe7912fe4                       #       0:	e7912fe4 		ldr	r2, [r1, r4, ror #31]
+--decode_instruction=0xe7112fe4                       #       0:	e7112fe4 		ldr	r2, [r1, -r4, ror #31]
+--decode_instruction=0xe71120e4                       #       0:	e71120e4 		ldr	r2, [r1, -r4, ror #1]
+--decode_instruction=0xe7912064                       #       0:	e7912064 		ldr	r2, [r1, r4, rrx]
+--decode_instruction=0xe7112064                       #       0:	e7112064 		ldr	r2, [r1, -r4, rrx]
+--decode_instruction=0xe5b12123                       #       0:	e5b12123 		ldr	r2, [r1, #291]!
+--decode_instruction=0xe5312123                       #       0:	e5312123 		ldr	r2, [r1, #-291]!
+--decode_instruction=0xe7b12003                       #       0:	e7b12003 		ldr	r2, [r1, r3]!
+--decode_instruction=0xe7312003                       #       0:	e7312003 		ldr	r2, [r1, -r3]!
+--decode_instruction=0xe7b12f84                       #       0:	e7b12f84 		ldr	r2, [r1, r4, lsl #31]!
+--decode_instruction=0xe7312f84                       #       0:	e7312f84 		ldr	r2, [r1, -r4, lsl #31]!
+--decode_instruction=0xe7312004                       #       0:	e7312004 		ldr	r2, [r1, -r4]!
+--decode_instruction=0xe7312084                       #       0:	e7312084 		ldr	r2, [r1, -r4, lsl #1]!
+--decode_instruction=0xe7b12fa4                       #       0:	e7b12fa4 		ldr	r2, [r1, r4, lsr #31]!
+--decode_instruction=0xe7312fa4                       #       0:	e7312fa4 		ldr	r2, [r1, -r4, lsr #31]!
+--decode_instruction=0xe7b12024                       #       0:	e7b12024 		ldr	r2, [r1, r4, lsr #32]!
+--decode_instruction=0xe7b120a4                       #       0:	e7b120a4 		ldr	r2, [r1, r4, lsr #1]!
+--decode_instruction=0xe7b12fc4                       #       0:	e7b12fc4 		ldr	r2, [r1, r4, asr #31]!
+--decode_instruction=0xe7312fc4                       #       0:	e7312fc4 		ldr	r2, [r1, -r4, asr #31]!
+--decode_instruction=0xe7b12044                       #       0:	e7b12044 		ldr	r2, [r1, r4, asr #32]!
+--decode_instruction=0xe7b120c4                       #       0:	e7b120c4 		ldr	r2, [r1, r4, asr #1]!
+--decode_instruction=0xe7b12fe4                       #       0:	e7b12fe4 		ldr	r2, [r1, r4, ror #31]!
+--decode_instruction=0xe7312fe4                       #       0:	e7312fe4 		ldr	r2, [r1, -r4, ror #31]!
+--decode_instruction=0xe7b12fe4                       #       0:	e7b12fe4 		ldr	r2, [r1, r4, ror #31]!
+--decode_instruction=0xe7312fe4                       #       0:	e7312fe4 		ldr	r2, [r1, -r4, ror #31]!
+--decode_instruction=0xe73120e4                       #       0:	e73120e4 		ldr	r2, [r1, -r4, ror #1]!
+--decode_instruction=0xe7b12064                       #       0:	e7b12064 		ldr	r2, [r1, r4, rrx]!
+--decode_instruction=0xe7312064                       #       0:	e7312064 		ldr	r2, [r1, -r4, rrx]!
+--decode_instruction=0xe4912123                       #       0:	e4912123 		ldr	r2, [r1], #291
+--decode_instruction=0xe4112123                       #       0:	e4112123 		ldr	r2, [r1], #-291
+--decode_instruction=0xe6912003                       #       0:	e6912003 		ldr	r2, [r1], r3
+--decode_instruction=0xe6112003                       #       0:	e6112003 		ldr	r2, [r1], -r3
+--decode_instruction=0xe6912f84                       #       0:	e6912f84 		ldr	r2, [r1], r4, lsl #31
+--decode_instruction=0xe6112f84                       #       0:	e6112f84 		ldr	r2, [r1], -r4, lsl #31
+--decode_instruction=0xe6112004                       #       0:	e6112004 		ldr	r2, [r1], -r4
+--decode_instruction=0xe6112084                       #       0:	e6112084 		ldr	r2, [r1], -r4, lsl #1
+--decode_instruction=0xe6912fa4                       #       0:	e6912fa4 		ldr	r2, [r1], r4, lsr #31
+--decode_instruction=0xe6112fa4                       #       0:	e6112fa4 		ldr	r2, [r1], -r4, lsr #31
+--decode_instruction=0xe6912024                       #       0:	e6912024 		ldr	r2, [r1], r4, lsr #32
+--decode_instruction=0xe69120a4                       #       0:	e69120a4 		ldr	r2, [r1], r4, lsr #1
+--decode_instruction=0xe6912fc4                       #       0:	e6912fc4 		ldr	r2, [r1], r4, asr #31
+--decode_instruction=0xe6112fc4                       #       0:	e6112fc4 		ldr	r2, [r1], -r4, asr #31
+--decode_instruction=0xe6912044                       #       0:	e6912044 		ldr	r2, [r1], r4, asr #32
+--decode_instruction=0xe69120c4                       #       0:	e69120c4 		ldr	r2, [r1], r4, asr #1
+--decode_instruction=0xe6912fe4                       #       0:	e6912fe4 		ldr	r2, [r1], r4, ror #31
+--decode_instruction=0xe6112fe4                       #       0:	e6112fe4 		ldr	r2, [r1], -r4, ror #31
+--decode_instruction=0xe6912fe4                       #       0:	e6912fe4 		ldr	r2, [r1], r4, ror #31
+--decode_instruction=0xe6112fe4                       #       0:	e6112fe4 		ldr	r2, [r1], -r4, ror #31
+--decode_instruction=0xe61120e4                       #       0:	e61120e4 		ldr	r2, [r1], -r4, ror #1
+--decode_instruction=0xe6912064                       #       0:	e6912064 		ldr	r2, [r1], r4, rrx
+--decode_instruction=0xe6112064                       #       0:	e6112064 		ldr	r2, [r1], -r4, rrx
+
+# Test forms of LDRB
+--decode_instruction=0xe5d12013                       #       0:	e5d12013 		ldrb	r2, [r1, #19]
+--decode_instruction=0x05d12013                       #       0:	05d12013 	(eq)	ldrb	r2, [r1, #19]
+--name_cond --decode_instruction=0x05d12013           #       0:	05d12013 	ldreqb	r2, [r1, #19]
+--decode_instruction=0xe5512013                       #       0:	e5512013 		ldrb	r2, [r1, #-19]
+--decode_instruction=0xe7d12003                       #       0:	e7d12003 		ldrb	r2, [r1, r3]
+--decode_instruction=0xe7512003                       #       0:	e7512003 		ldrb	r2, [r1, -r3]
+--decode_instruction=0xe7d12f84                       #       0:	e7d12f84 		ldrb	r2, [r1, r4, lsl #31]
+--decode_instruction=0xe7512f84                       #       0:	e7512f84 		ldrb	r2, [r1, -r4, lsl #31]
+--decode_instruction=0xe7512004                       #       0:	e7512004 		ldrb	r2, [r1, -r4]
+--decode_instruction=0xe7512084                       #       0:	e7512084 		ldrb	r2, [r1, -r4, lsl #1]
+--decode_instruction=0xe7d12fa4                       #       0:	e7d12fa4 		ldrb	r2, [r1, r4, lsr #31]
+--decode_instruction=0xe7512fa4                       #       0:	e7512fa4 		ldrb	r2, [r1, -r4, lsr #31]
+--decode_instruction=0xe7d12024                       #       0:	e7d12024 		ldrb	r2, [r1, r4, lsr #32]
+--decode_instruction=0xe7d120a4                       #       0:	e7d120a4 		ldrb	r2, [r1, r4, lsr #1]
+--decode_instruction=0xe7d12fc4                       #       0:	e7d12fc4 		ldrb	r2, [r1, r4, asr #31]
+--decode_instruction=0xe7512fc4                       #       0:	e7512fc4 		ldrb	r2, [r1, -r4, asr #31]
+--decode_instruction=0xe7d12044                       #       0:	e7d12044 		ldrb	r2, [r1, r4, asr #32]
+--decode_instruction=0xe7d120c4                       #       0:	e7d120c4 		ldrb	r2, [r1, r4, asr #1]
+--decode_instruction=0xe7d12fe4                       #       0:	e7d12fe4 		ldrb	r2, [r1, r4, ror #31]
+--decode_instruction=0xe7512fe4                       #       0:	e7512fe4 		ldrb	r2, [r1, -r4, ror #31]
+--decode_instruction=0xe7d12fe4                       #       0:	e7d12fe4 		ldrb	r2, [r1, r4, ror #31]
+--decode_instruction=0xe7512fe4                       #       0:	e7512fe4 		ldrb	r2, [r1, -r4, ror #31]
+--decode_instruction=0xe75120e4                       #       0:	e75120e4 		ldrb	r2, [r1, -r4, ror #1]
+--decode_instruction=0xe7d12064                       #       0:	e7d12064 		ldrb	r2, [r1, r4, rrx]
+--decode_instruction=0xe7512064                       #       0:	e7512064 		ldrb	r2, [r1, -r4, rrx]
+--decode_instruction=0xe5f12123                       #       0:	e5f12123 		ldrb	r2, [r1, #291]!
+--decode_instruction=0xe5712123                       #       0:	e5712123 		ldrb	r2, [r1, #-291]!
+--decode_instruction=0xe7d12003                       #       0:	e7d12003 		ldrb	r2, [r1, r3]
+--decode_instruction=0xe7712003                       #       0:	e7712003 		ldrb	r2, [r1, -r3]!
+--decode_instruction=0xe7d12f84                       #       0:	e7d12f84 		ldrb	r2, [r1, r4, lsl #31]
+--decode_instruction=0xe7712f84                       #       0:	e7712f84 		ldrb	r2, [r1, -r4, lsl #31]!
+--decode_instruction=0xe7712004                       #       0:	e7712004 		ldrb	r2, [r1, -r4]!
+--decode_instruction=0xe7712084                       #       0:	e7712084 		ldrb	r2, [r1, -r4, lsl #1]!
+--decode_instruction=0xe7f12fa4                       #       0:	e7f12fa4 		ldrb	r2, [r1, r4, lsr #31]!
+--decode_instruction=0xe7712fa4                       #       0:	e7712fa4 		ldrb	r2, [r1, -r4, lsr #31]!
+--decode_instruction=0xe7f12024                       #       0:	e7f12024 		ldrb	r2, [r1, r4, lsr #32]!
+--decode_instruction=0xe7f120a4                       #       0:	e7f120a4 		ldrb	r2, [r1, r4, lsr #1]!
+--decode_instruction=0xe7f12fc4                       #       0:	e7f12fc4 		ldrb	r2, [r1, r4, asr #31]!
+--decode_instruction=0xe7712fc4                       #       0:	e7712fc4 		ldrb	r2, [r1, -r4, asr #31]!
+--decode_instruction=0xe7f12044                       #       0:	e7f12044 		ldrb	r2, [r1, r4, asr #32]!
+--decode_instruction=0xe7f120c4                       #       0:	e7f120c4 		ldrb	r2, [r1, r4, asr #1]!
+--decode_instruction=0xe7f12fe4                       #       0:	e7f12fe4 		ldrb	r2, [r1, r4, ror #31]!
+--decode_instruction=0xe7712fe4                       #       0:	e7712fe4 		ldrb	r2, [r1, -r4, ror #31]!
+--decode_instruction=0xe7f12fe4                       #       0:	e7f12fe4 		ldrb	r2, [r1, r4, ror #31]!
+--decode_instruction=0xe7712fe4                       #       0:	e7712fe4 		ldrb	r2, [r1, -r4, ror #31]!
+--decode_instruction=0xe77120e4                       #       0:	e77120e4 		ldrb	r2, [r1, -r4, ror #1]!
+--decode_instruction=0xe7f12064                       #       0:	e7f12064 		ldrb	r2, [r1, r4, rrx]!
+--decode_instruction=0xe7712064                       #       0:	e7712064 		ldrb	r2, [r1, -r4, rrx]!
+--decode_instruction=0xe4d12123                       #       0:	e4d12123 		ldrb	r2, [r1], #291
+--decode_instruction=0xe4512123                       #       0:	e4512123 		ldrb	r2, [r1], #-291
+--decode_instruction=0xe6d12003                       #       0:	e6d12003 		ldrb	r2, [r1], r3
+--decode_instruction=0xe6512003                       #       0:	e6512003 		ldrb	r2, [r1], -r3
+--decode_instruction=0xe6d12f84                       #       0:	e6d12f84 		ldrb	r2, [r1], r4, lsl #31
+--decode_instruction=0xe6512f84                       #       0:	e6512f84 		ldrb	r2, [r1], -r4, lsl #31
+--decode_instruction=0xe6512004                       #       0:	e6512004 		ldrb	r2, [r1], -r4
+--decode_instruction=0xe6512084                       #       0:	e6512084 		ldrb	r2, [r1], -r4, lsl #1
+--decode_instruction=0xe6d12fa4                       #       0:	e6d12fa4 		ldrb	r2, [r1], r4, lsr #31
+--decode_instruction=0xe6512fa4                       #       0:	e6512fa4 		ldrb	r2, [r1], -r4, lsr #31
+--decode_instruction=0xe6d12024                       #       0:	e6d12024 		ldrb	r2, [r1], r4, lsr #32
+--decode_instruction=0xe6d120a4                       #       0:	e6d120a4 		ldrb	r2, [r1], r4, lsr #1
+--decode_instruction=0xe6d12fc4                       #       0:	e6d12fc4 		ldrb	r2, [r1], r4, asr #31
+--decode_instruction=0xe6512fc4                       #       0:	e6512fc4 		ldrb	r2, [r1], -r4, asr #31
+--decode_instruction=0xe6d12044                       #       0:	e6d12044 		ldrb	r2, [r1], r4, asr #32
+--decode_instruction=0xe6d120c4                       #       0:	e6d120c4 		ldrb	r2, [r1], r4, asr #1
+--decode_instruction=0xe6d12fe4                       #       0:	e6d12fe4 		ldrb	r2, [r1], r4, ror #31
+--decode_instruction=0xe6512fe4                       #       0:	e6512fe4 		ldrb	r2, [r1], -r4, ror #31
+--decode_instruction=0xe6d12fe4                       #       0:	e6d12fe4 		ldrb	r2, [r1], r4, ror #31
+--decode_instruction=0xe6512fe4                       #       0:	e6512fe4 		ldrb	r2, [r1], -r4, ror #31
+--decode_instruction=0xe65120e4                       #       0:	e65120e4 		ldrb	r2, [r1], -r4, ror #1
+--decode_instruction=0xe6d12064                       #       0:	e6d12064 		ldrb	r2, [r1], r4, rrx
+--decode_instruction=0xe6512064                       #       0:	e6512064 		ldrb	r2, [r1], -r4, rrx

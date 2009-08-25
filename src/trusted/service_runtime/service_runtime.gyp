@@ -77,7 +77,6 @@
         'sel_mem.c',
         'sel_util.c',
         'sel_util-inl.c',
-        'sel_validate_image.c',
         'web_worker_stub.c',
       ],
       'sources!': [
@@ -114,6 +113,7 @@
             'arch/arm/nacl_tls.c',
             'arch/arm/sel_ldr.c',
             'arch/arm/sel_addrspace_arm.c',
+            'arch/arm/sel_validate_image.c',
             'arch/arm/nacl_switch.S',
             'arch/arm/nacl_syscall.S',
             'arch/arm/springboard.S',

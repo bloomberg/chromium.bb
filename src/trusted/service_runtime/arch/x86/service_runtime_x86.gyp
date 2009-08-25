@@ -43,6 +43,7 @@
         'nacl_tls.c',
         'sel_ldr_x86.c',
         'sel_addrspace_x86.c',
+        'sel_validate_image.c',
       ],
       'dependencies': [
         '../../service_runtime.gyp:tramp_gen',

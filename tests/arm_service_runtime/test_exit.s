@@ -45,5 +45,9 @@ start:
 # find trampoline, exit is slot 30
      mov r10, 0x10000
      add r10, r10, (32 * 30)
-     blx  r10
-     bkpt
+     nop
+
+     mov lr, 0
+     bic r10, 0xf000000f
+     bx  r10
+     

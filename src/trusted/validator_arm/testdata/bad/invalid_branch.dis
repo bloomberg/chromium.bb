@@ -1,0 +1,2 @@
+       0:	e1c12263 		bic	r2, r1, r3, ror #4
+       4:	e12fff15 		bx	r5
