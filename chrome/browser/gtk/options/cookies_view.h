@@ -39,7 +39,6 @@ class CookiesView : public gtk_tree::ModelAdapter::Delegate {
  private:
   // Column ids for |list_store_|.
   enum {
-    COL_ICON,
     COL_SITE,
     COL_COOKIE_NAME,
     COL_COUNT,

@@ -15,7 +15,6 @@
 #include "chrome/browser/cookies_table_model.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 
@@ -25,7 +24,7 @@ const int kDialogDefaultHeight = 550;
 const int kSiteColumnInitialSize = 300;
 
 // Delay after entering filter text before filtering occurs.
-const int kSearchFilterDelayMs = 500;
+const int kSearchFilterDelayMs = 100;
 
 // Response ids for our custom buttons.
 enum {
@@ -86,20 +85,22 @@ void CookiesView::Init() {
       NULL);
   gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
 
-  remove_button_ = gtk_dialog_add_button(
-      GTK_DIALOG(dialog_),
+  remove_button_ = gtk_util::AddButtonToDialog(
+      dialog_,
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
         l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_LABEL)).c_str(),
+      GTK_STOCK_REMOVE,
       RESPONSE_REMOVE);
   gtk_button_box_set_child_secondary(
       GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area),
       remove_button_,
       TRUE);
 
-  remove_all_button_ = gtk_dialog_add_button(
-      GTK_DIALOG(dialog_),
+  remove_all_button_ = gtk_util::AddButtonToDialog(
+      dialog_,
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_ALL_LABEL)).c_str(),
+      GTK_STOCK_CLEAR,
       RESPONSE_REMOVE_ALL);
   gtk_button_box_set_child_secondary(
       GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area),
@@ -157,7 +158,6 @@ void CookiesView::Init() {
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), scroll_window, TRUE, TRUE, 0);
 
   list_store_ = gtk_list_store_new(COL_COUNT,
-                                   GDK_TYPE_PIXBUF,
                                    G_TYPE_STRING,
                                    G_TYPE_STRING);
   list_sort_ = gtk_tree_model_sort_new_with_model(GTK_TREE_MODEL(list_store_));
@@ -173,10 +173,6 @@ void CookiesView::Init() {
   gtk_container_add(GTK_CONTAINER(scroll_window), tree_);
 
   GtkTreeViewColumn* site_column = gtk_tree_view_column_new();
-  GtkCellRenderer* pixbuf_renderer = gtk_cell_renderer_pixbuf_new();
-  gtk_tree_view_column_pack_start(site_column, pixbuf_renderer, FALSE);
-  gtk_tree_view_column_add_attribute(site_column, pixbuf_renderer, "pixbuf",
-                                     COL_ICON);
   GtkCellRenderer* site_renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(site_column, site_renderer, TRUE);
   gtk_tree_view_column_add_attribute(site_column, site_renderer, "text",
@@ -370,18 +366,14 @@ void CookiesView::OnAnyModelUpdate() {
 }
 
 void CookiesView::SetColumnValues(int row, GtkTreeIter* iter) {
-  SkBitmap bitmap = cookies_table_model_->GetIcon(row);
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
   std::wstring site = cookies_table_model_->GetText(
       row, IDS_COOKIES_DOMAIN_COLUMN_HEADER);
   std::wstring name = cookies_table_model_->GetText(
       row, IDS_COOKIES_NAME_COLUMN_HEADER);
   gtk_list_store_set(list_store_, iter,
-                     COL_ICON, pixbuf,
                      COL_SITE, WideToUTF8(site).c_str(),
                      COL_COOKIE_NAME, WideToUTF8(name).c_str(),
                      -1);
-  g_object_unref(pixbuf);
 }
 
 // Compare the value of the given column at the given rows.
