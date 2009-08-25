@@ -629,6 +629,9 @@ BUG4359 SKIP : LayoutTests/storage/transaction-callback-exception-crash.html = P
 BUG4359 SKIP : LayoutTests/storage/transaction-error-callback.html = PASS
 BUG4359 SKIP : LayoutTests/fast/js/exceptions-thrown-in-callbacks.html = PASS
 
+// Implement HTML5 Geolocation API.
+BUG11246 : LayoutTests/fast/dom/Geolocation = FAIL
+
 // Fails due to storage APIs not implemented.  Might be worth re-baselining
 // temporarily so the rest of the conditions are still tested.
 BUG1124568 : LayoutTests/fast/dom/Window/window-function-name-getter-precedence.html = FAIL
@@ -2727,13 +2730,11 @@ BUG19028 MAC : LayoutTests/fast/dom/Window/window-open-parent-no-parent.html = P
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
 
 BUG_LEVIN : LayoutTests/fast/dom/Window/window-property-shadowing.html = FAIL
-BUG_LEVIN : LayoutTests/fast/dom/Geolocation/enabled.html = FAIL
 BUG_LEVIN : LayoutTests/storage/multiple-transactions-on-different-handles.html = TIMEOUT
 BUG_LEVIN WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
 
 // Fallout from webkit 47189:47265
 BUG_LEVIN : LayoutTests/fast/loader/onhashchange-attribute-listeners.html = TIMEOUT
-BUG_LEVIN : LayoutTests/fast/dom/Geolocation/argument-types.html = FAIL
 BUG_LEVIN WIN LINUX : LayoutTests/css2.1/t1503-c522-font-family-00-b.html = FAIL
 //BUG_LEVIN WIN LINUX : LayoutTests/fast/reflections/reflection-overflow-scroll.html = FAIL
 BUG_LEVIN WIN LINUX : LayoutTests/fast/text/monospace-width-cache.html = FAIL
