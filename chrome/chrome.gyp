@@ -3046,8 +3046,6 @@
             '<@(chromium_dependencies)',
             # Needed for chrome_dll_main.cc #include of gtk/gtk.h
             '../build/linux/system.gyp:gtk',
-            # Needed for chrome_dll_main.cc use of g_thread_init
-            '../build/linux/system.gyp:gthread',
           ],
           'sources': [
             'app/chrome_dll_main.cc',
