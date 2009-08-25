@@ -73,9 +73,12 @@ class JSONResultsGenerator:
 
     if index is -1:
       # Already a relative path.
-      return test
+      relativePath = test
+    else:
+      relativePath = test[index + 1:]
 
-    return test[index + 1:]
+    # Make sure all paths are unix-style.
+    return relativePath.replace('\\', '/')
 
   def GetJSON(self):
     """Gets the results for the results.json file."""

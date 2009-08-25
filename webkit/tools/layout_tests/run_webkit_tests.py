@@ -581,6 +581,7 @@ class TestRunner:
     return len(regressions)
 
   def _WriteJSONFiles(self, failures, individual_test_timings):
+    logging.debug("Writing JSON files in %s." % self._options.results_directory)
     # Write a json file of the test_expectations.txt file for the layout tests
     # dashboard.
     expectations_file = open(os.path.join(self._options.results_directory,
@@ -601,6 +602,8 @@ class TestRunner:
     results_file = open(results_file_path, "w")
     results_file.write(results_json)
     results_file.close()
+
+    logging.debug("Finished writing JSON files.")
 
   def _PrintTimingStatistics(self, directory_test_timings,
       individual_test_timings, failures):

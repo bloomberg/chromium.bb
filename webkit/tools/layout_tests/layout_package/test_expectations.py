@@ -478,6 +478,8 @@ class TestExpectationsFile:
     return False
 
   def _AddToAllExpectations(self, test, options, expectations):
+    # Make all paths unix-style so the dashboard doesn't need to.
+    test = test.replace('\\', '/')
     if not test in self._all_expectations:
       self._all_expectations[test] = []
     self._all_expectations[test].append(
