@@ -8,6 +8,8 @@ import tempfile
 import traceback
 import urllib
 import sys
+import re
+import trychange
 
 
 def Backquote(cmd):
@@ -93,52 +95,22 @@ def GetMungedDiff(branch):
   return munged_diff
 
 
+def ValidEmail(email):
+  return re.match(r"^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email)
+
+
 def GetEmail():
-  # TODO: check for errors here?
-  return Backquote(['git', 'config', 'user.email'])
+  email = Backquote(['git', 'config', 'user.email'])
+  runmsg = "Try: git config user.email <EMAIL>"
+  assert ValidEmail(email), "Email '%s' is not valid.  %s" % (email, runmsg)
+  return email
 
 
 def TryChange(args):
-  """Put a patch on the try server using SVN."""
+  """Put a patch on the try server."""
   root_dir = Backquote(['git', 'rev-parse', '--show-cdup'])
-  script_path = os.path.dirname(sys.argv[0])
-  sys.path.append(script_path)
-  try:
-    import trychange
-  except ImportError, e:
-    print "Error trying to import trychange from", script_path
-    print "git-try expects to live at depot_tools/git-try"
-    raise e
   trychange.checkout_root = os.path.abspath(root_dir)
   trychange.TryChange(args, None, False)
-
-
-def WriteTryDiffHTTP(config, patch_name, diff, options):
-  """Put a patch on the try server."""
-  params = {
-      'user': getpass.getuser(),
-      'name': patch_name,
-      'patch': diff
-  }
-
-  if GetRietveldPatchsetNumber():
-    params['issue'] = GetRietveldIssueNumber()
-    params['patchset'] = GetRietveldPatchsetNumber()
-
-  if options.bot:
-    params['bot'] = options.bot
-
-  if options.clobber:
-    params['clobber'] = 'true'
-
-  url = 'http://%s:%s/send_try_patch' % (config['try_server_http_host'],
-                                         config['try_server_http_port'])
-  connection = urllib.urlopen(url, urllib.urlencode(params))
-  response = connection.read()
-  if (response != 'OK'):
-    print "Error posting to", url
-    print response
-    assert False
 
 
 if __name__ == '__main__':
@@ -161,44 +133,53 @@ if __name__ == '__main__':
   patch_name = GetPatchName()
   diff = GetMungedDiff(branch)
 
-  # Send directly to try server if we can parse the config, otherwise
+  # Write the diff out to a temporary file
+  diff_file = tempfile.NamedTemporaryFile()
+  diff_file.write(diff)
+  diff_file.flush()
+
+  email = GetEmail()
+  user = email.partition('@')[0]
+  args = [
+      '-u', user,
+      '-e', email,
+      '-n', patch_name,
+      '--diff', diff_file.name,
+  ]
+
+  # Send to try server via HTTP if we can parse the config, otherwise
   # upload via SVN.
   config = GetTryServerConfig()
   if config is not None:
-    print "Sending %s using HTTP..." % patch_name
-    WriteTryDiffHTTP(config=config, patch_name=patch_name, diff=diff,
-                     options=options)
+    sendmsg = "Sending %s using HTTP..." % patch_name
+    args.extend(['--use_http'])
+    if config['try_server_http_host'] is not None:
+      args.extend(['--host', config['try_server_http_host']])
+    if config['try_server_http_port'] is not None:
+      args.extend(['--port', config['try_server_http_port']])
+
   else:
     print "Could not get server config -- if you're within Google, "
     print "do you have have src-internal checked out?"
-    print "Sending %s using SVN..." % patch_name
+    sendmsg = "Sending %s using SVN..." % patch_name
+    args.extend([
+        '--use_svn', '--svn_repo',
+        'svn://svn.chromium.org/chrome-try/try',
+    ])
 
-    # Write the diff out to a temporary file
-    diff_file = tempfile.NamedTemporaryFile()
-    diff_file.write(diff)
-    diff_file.flush()
+  if options.bot:
+    args.extend(['--bot', options.bot])
+  if options.clobber:
+    args.append('--clobber')
+  if options.revision:
+    args.extend(['-r', options.revision])
+  else:
+    args.extend(['-r', GetRevision()])
+  if GetRietveldPatchsetNumber():
+    args.extend([
+        '--issue', GetRietveldIssueNumber(),
+        '--patchset', GetRietveldPatchsetNumber(),
+    ])
 
-    email = GetEmail()
-    user = email.partition('@')[0]
-    args = [
-        '--use_svn',
-        '--svn_repo', 'svn://svn.chromium.org/chrome-try/try',
-        '-u', user,
-        '-e', email,
-        '-n', patch_name,
-        '--diff', diff_file.name,
-    ]
-    if options.bot:
-      args.extend(['--bot', options.bot])
-    if options.clobber:
-      args.append('--clobber')
-    if options.revision:
-      args.extend(['-r', options.revision])
-    else:
-      args.extend(['-r', GetRevision()])
-    if GetRietveldPatchsetNumber():
-      args.extend([
-          '--issue', GetRietveldIssueNumber(),
-          '--patchset', GetRietveldPatchsetNumber(),
-      ])
-    TryChange(args=args)
+  print sendmsg
+  TryChange(args=args)
