@@ -632,6 +632,11 @@ BUG4359 SKIP : LayoutTests/fast/js/exceptions-thrown-in-callbacks.html = PASS
 // Implement HTML5 Geolocation API.
 BUG11246 : LayoutTests/fast/dom/Geolocation = FAIL
 
+// Implement HTML5 EventSource API. Skipping, because most of these time out and
+// slow down the test run.
+BUG19625 SKIP : LayoutTests/fast/eventsource = TIMEOUT
+BUG19625 SKIP : LayoutTests/http/tests/eventsource = TIMEOUT
+
 // Fails due to storage APIs not implemented.  Might be worth re-baselining
 // temporarily so the rest of the conditions are still tested.
 BUG1124568 : LayoutTests/fast/dom/Window/window-function-name-getter-precedence.html = FAIL
@@ -2754,12 +2759,6 @@ BUG19655 : LayoutTests/fast/dom/Window/HTMLBodyElement-window-eventListener-attr
 BUG19655 : LayoutTests/fast/dom/Window/HTMLFrameSetElement-window-eventListener-attributes.html = FAIL
 BUG_JPARENT LINUX MAC: LayoutTests/fast/history/back-forward-is-asynchronous.html = TIMEOUT
 BUG_JPARENT LINUX DEBUG : LayoutTests/fast/multicol/columns-shorthand-parsing.html = CRASH
-BUG19625 : LayoutTests/fast/eventsource/eventsource-attribute-listeners.html = TIMEOUT
-BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/eventsource-bad-mime-type.html = TIMEOUT
-BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/eventsource-parse-event-stream.html = TIMEOUT
-BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/eventsource-reconnect.html = TIMEOUT
-BUG19625 WIN LINUX : LayoutTests/http/tests/eventsource/eventsource-status-code-states.html = TIMEOUT
-BUG19625 : LayoutTests/fast/eventsource/eventsource-constructor.html = FAIL
 
 // New test added, doesn't yet pass for Chrome
 BUG19635 : LayoutTests/fast/harness/use-page-cache.html = FAIL
