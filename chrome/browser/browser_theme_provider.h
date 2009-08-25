@@ -207,6 +207,9 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // Sets an individual tint value.
   void SetTint(const char* id, const skia::HSL& tint);
 
+  // Get the specified tint - |id| is one of the TINT_* enum values.
+  skia::HSL GetTint(int id);
+
   // Generate any frame colors that weren't specified.
   void GenerateFrameColors();
 
@@ -260,9 +263,6 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
 
   // Returns the default color for the given color |id| COLOR_* enum value.
   SkColor GetDefaultColor(int id);
-
-  // Get the specified tint - |id| is one of the TINT_* enum values.
-  skia::HSL GetTint(int id);
 
   // Tint |bitmap| with the tint specified by |hsl_id|
   SkBitmap TintBitmap(const SkBitmap& bitmap, int hsl_id);
