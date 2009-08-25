@@ -542,19 +542,17 @@ void WebMediaPlayerImpl::OnPipelineError() {
 void WebMediaPlayerImpl::SetNetworkState(
     WebKit::WebMediaPlayer::NetworkState state) {
   DCHECK(MessageLoop::current() == main_loop_);
-  if (network_state_ != state) {
-    network_state_ = state;
-    GetClient()->networkStateChanged();
-  }
+  // Always notify to ensure client has the latest value.
+  network_state_ = state;
+  GetClient()->networkStateChanged();
 }
 
 void WebMediaPlayerImpl::SetReadyState(
     WebKit::WebMediaPlayer::ReadyState state) {
   DCHECK(MessageLoop::current() == main_loop_);
-  if (ready_state_ != state) {
-    ready_state_ = state;
-    GetClient()->readyStateChanged();
-  }
+  // Always notify to ensure client has the latest value.
+  ready_state_ = state;
+  GetClient()->readyStateChanged();
 }
 
 void WebMediaPlayerImpl::Destroy() {
