@@ -28,6 +28,31 @@ class scoped_sqlite3_stmt_ptr;
 class SQLStatement;
 
 //------------------------------------------------------------------------------
+// Interface to be implemented by objects that can handle exceptional sqlite
+// conditions. This way client code can focus on handling normal condtions.
+//------------------------------------------------------------------------------
+class SQLErrorHandler {
+ public:
+  virtual ~SQLErrorHandler() {}
+  // Handle a sqlite error. |error| is the return code an of sqlite operation
+  // which is considered an error. This handler is free to try repair, notify
+  // someone or even break into the debugger depending on the situation.
+  virtual int HandleError(int error, sqlite3* db) = 0;
+  // Returns the last value of |error| passed to HandleError.
+  virtual int GetLastError() const = 0;
+};
+
+//------------------------------------------------------------------------------
+// The factory interface is used to create the different error handling
+// strategies for debug, release and for diagnostic mode.
+//------------------------------------------------------------------------------
+class SQLErrorHandlerFactory {
+ public:
+  virtual ~SQLErrorHandlerFactory() {}
+  virtual SQLErrorHandler* Make() = 0;
+};
+
+//------------------------------------------------------------------------------
 // A wrapper for sqlite transactions that rollsback when the wrapper
 // goes out of scope if the caller has not already called Commit or Rollback.
 // Note: the constructor does NOT Begin a transaction.
