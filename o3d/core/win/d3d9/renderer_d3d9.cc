@@ -1040,7 +1040,6 @@ void RendererD3D9::Clear(const Float4 &color,
                              color[3]),
          depth,
          stencil));
-  set_need_to_render(false);
 }
 
 void RendererD3D9::SetViewportInPixels(int left,
@@ -1367,45 +1366,23 @@ bool RendererD3D9::SetFullscreen(bool fullscreen,
 }
 
 // Resets the rendering stats and
-bool RendererD3D9::StartRendering() {
-  ++render_frame_count_;
-  transforms_culled_ = 0;
-  transforms_processed_ = 0;
-  draw_elements_culled_ = 0;
-  draw_elements_processed_ = 0;
-  draw_elements_rendered_ = 0;
-  primitives_rendered_ = 0;
-
+bool RendererD3D9::PlatformSpecificStartRendering() {
   // Determine whether the device is lost, resetting if possible.
   TestLostDevice();
 
-  // Only perform ops with the device if we have it.
-  if (have_device_) {
-    // Clear the client if we need to.
-    if (clear_client_) {
-      clear_client_ = false;
-      Clear(Float4(0.5f, 0.5f, 0.5f, 1.0f), true, 1.0f, true, 0, true);
-    }
-    return true;
-  } else {
-    // Return false if we have lost the device.
-    return false;
-  }
+  return have_device_;
 }
 
-// prepares DX9 for rendering the frame. Returns true on success.
-bool RendererD3D9::BeginDraw() {
+// prepares DX9 for rendering PART of the frame. Returns true on success.
+bool RendererD3D9::PlatformSpecificBeginDraw() {
   // Only perform ops with the device if we have it.
   if (have_device_) {
-    set_need_to_render(true);
     if (!HR(d3d_device_->GetRenderTarget(0, &back_buffer_surface_)))
       return false;
     if (!HR(d3d_device_->GetDepthStencilSurface(&back_buffer_depth_surface_)))
       return false;
     if (!HR(d3d_device_->BeginScene()))
       return false;
-    // Reset the viewport.
-    SetViewport(Float4(0.0f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
     return true;
   } else {
     back_buffer_surface_ = NULL;
@@ -1416,6 +1393,8 @@ bool RendererD3D9::BeginDraw() {
   }
 }
 
+// TODO(gman): Why is this code in here? Shouldn't this use O3D to render this
+//    instead of D3D?
 void RendererD3D9::ShowFullscreenMessage(float elapsed_time,
     float display_duration) {
   RECT rect;
@@ -1473,9 +1452,22 @@ void RendererD3D9::ShowFullscreenMessage(float elapsed_time,
   d3d_device_->SetRenderState(D3DRS_ZENABLE, z_enable);
 }
 
-// Notifies DX9 that rendering of the frame is complete and swaps the buffers.
-void RendererD3D9::EndDraw() {
+// NOTE: End draw can be called multiple times per frame. If want something
+// to happen only once per frame it belongs in FinishRendering.
+void RendererD3D9::PlatformSpecificEndDraw() {
   if (have_device_) {
+    HR(d3d_device_->EndScene());
+
+    // Release the back-buffer references.
+    back_buffer_surface_ = NULL;
+    back_buffer_depth_surface_ = NULL;
+  }
+}
+
+void RendererD3D9::PlatformSpecificFinishRendering() {
+  if (have_device_) {
+    // No need to call Present(...) if we are rendering to an off-screen
+    // target.
     if (showing_fullscreen_message_) {
       // Message should display for 3 seconds after transition to fullscreen.
       float elapsed_time =
@@ -1484,24 +1476,15 @@ void RendererD3D9::EndDraw() {
       if (elapsed_time > display_duration) {
         showing_fullscreen_message_ = false;
       } else {
-        ShowFullscreenMessage(elapsed_time, display_duration);
+        if (BeginDraw()) {
+          ShowFullscreenMessage(elapsed_time, display_duration);
+          EndDraw();
+        }
       }
     }
-    HR(d3d_device_->EndScene());
-
-    set_need_to_render(false);
-
-    // Release the back-buffer references.
-    back_buffer_surface_ = NULL;
-    back_buffer_depth_surface_ = NULL;
-  }
-}
-
-void RendererD3D9::FinishRendering() {
-  // No need to call Present(...) if we are rendering to an off-screen
-  // target.
-  if (have_device_ && !off_screen_surface_ && !need_to_render()) {
-    d3d_device_->Present(NULL, NULL, NULL, NULL);
+    if (!off_screen_surface_) {
+      d3d_device_->Present(NULL, NULL, NULL, NULL);
+    }
   }
 }
 
@@ -1511,7 +1494,7 @@ void RendererD3D9::RenderElement(Element* element,
                                  Material* material,
                                  ParamObject* override,
                                  ParamCache* param_cache) {
-  ++draw_elements_rendered_;
+  IncrementDrawElementsRendered();
   // If this a new state then reset the old state.
   State *current_state = material ? material->state() : NULL;
   PushRenderStates(current_state);
@@ -1627,7 +1610,7 @@ RenderDepthStencilSurface::Ref RendererD3D9::CreateDepthStencilSurface(
                                         depth_constructor));
 }
 
-Bitmap::Ref RendererD3D9::TakeScreenshot() {
+Bitmap::Ref RendererD3D9::PlatformSpecificTakeScreenshot() {
   Bitmap::Ref empty;
   LPDIRECT3DDEVICE9 device = d3d_device();
   CComPtr<IDirect3DSurface9> system_surface;

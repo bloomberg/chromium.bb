@@ -133,8 +133,6 @@ class Texture : public ParamObject {
     format_ = format;
   }
 
-  static void RegisterSurface(RenderSurface* surface, Pack* pack);
-
  private:
   // The number of mipmap levels contained in this texture.
   ParamInteger::Ref levels_param_;

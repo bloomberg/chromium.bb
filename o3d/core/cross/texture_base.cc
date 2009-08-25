@@ -58,12 +58,6 @@ Texture::Texture(ServiceLocator* service_locator,
   levels_param_->set_read_only_value(levels);
 }
 
-void Texture::RegisterSurface(RenderSurface* surface, Pack* pack) {
-  DCHECK(surface);
-  DCHECK(pack);
-  return pack->RegisterObject(surface);
-}
-
 ObjectBase::Ref ParamTexture::Create(ServiceLocator* service_locator) {
   return ObjectBase::Ref(new ParamTexture(service_locator, false, false));
 }

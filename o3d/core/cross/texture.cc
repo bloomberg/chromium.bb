@@ -60,7 +60,8 @@ Texture2D::Texture2D(ServiceLocator* service_locator,
                      int levels,
                      bool enable_render_surfaces)
     : Texture(service_locator, format, levels, enable_render_surfaces),
-      locked_levels_(0) {
+      locked_levels_(0),
+      surface_map_(levels) {
   RegisterReadOnlyParamRef(kWidthParamName, &width_param_);
   RegisterReadOnlyParamRef(kHeightParamName, &height_param_);
   width_param_->set_read_only_value(width);
@@ -306,6 +307,18 @@ ObjectBase::Ref Texture2D::Create(ServiceLocator* service_locator) {
   return ObjectBase::Ref();
 }
 
+RenderSurface::Ref Texture2D::GetRenderSurface(int mip_level) {
+  if (mip_level < 0 || mip_level >= levels()) {
+    O3D_ERROR(service_locator()) << "mip level out of range";
+    return RenderSurface::Ref(NULL);
+  }
+  if (surface_map_[mip_level].IsNull()) {
+    surface_map_[mip_level] = RenderSurface::Ref(
+        PlatformSpecificGetRenderSurface(mip_level));
+  }
+  return surface_map_[mip_level];
+}
+
 Texture2D::LockHelper::LockHelper(Texture2D* texture, int level)
     : texture_(texture),
       level_(level),
@@ -338,6 +351,7 @@ TextureCUBE::TextureCUBE(ServiceLocator* service_locator,
     : Texture(service_locator, format, levels, enable_render_surfaces) {
   for (unsigned int i = 0; i < 6; ++i) {
     locked_levels_[i] = 0;
+    surface_maps_[i].resize(levels);
   }
   RegisterReadOnlyParamRef(kEdgeLengthParamName, &edge_length_param_);
   edge_length_param_->set_read_only_value(edge_length);
@@ -372,6 +386,18 @@ TextureCUBE::~TextureCUBE() {
 
 ObjectBase::Ref TextureCUBE::Create(ServiceLocator* service_locator) {
   return ObjectBase::Ref();
+}
+
+RenderSurface::Ref TextureCUBE::GetRenderSurface(CubeFace face, int mip_level) {
+  if (mip_level < 0 || mip_level >= levels()) {
+    O3D_ERROR(service_locator()) << "mip level out of range";
+    return RenderSurface::Ref(NULL);
+  }
+  if (surface_maps_[face][mip_level].IsNull()) {
+    surface_maps_[face][mip_level] = RenderSurface::Ref(
+        PlatformSpecificGetRenderSurface(face, mip_level));
+  }
+  return surface_maps_[face][mip_level];
 }
 
 void TextureCUBE::DrawImage(const Bitmap& src_img, int src_mip,

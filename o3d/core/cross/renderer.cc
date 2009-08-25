@@ -100,10 +100,13 @@ bool Renderer::IsForceSoftwareRenderer() {
 }
 
 Renderer::Renderer(ServiceLocator* service_locator)
-    : clear_client_(true),
-      need_to_render_(true),
-      current_render_surface_(NULL),
+    : current_render_surface_(NULL),
       current_depth_surface_(NULL),
+      service_locator_(service_locator),
+      service_(service_locator, this),
+      features_(service_locator),
+      viewport_(0.0f, 0.0f, 1.0f, 1.0f),
+      depth_range_(0.0f, 1.0f),
       render_frame_count_(0),
       transforms_processed_(0),
       transforms_culled_(0),
@@ -111,11 +114,10 @@ Renderer::Renderer(ServiceLocator* service_locator)
       draw_elements_culled_(0),
       draw_elements_rendered_(0),
       primitives_rendered_(0),
-      viewport_(0.0f, 0.0f, 1.0f, 1.0f),
-      depth_range_(0.0f, 1.0f),
-      service_locator_(service_locator),
-      service_(service_locator, this),
-      features_(service_locator),
+      clear_client_(true),
+      need_to_render_(true),
+      rendering_(false),
+      drawing_(false),
       width_(0),
       height_(0),
       render_width_(0),
@@ -244,6 +246,58 @@ void Renderer::SetClientSize(int width, int height) {
   clear_client_ = true;
 }
 
+bool Renderer::StartRendering() {
+  ++render_frame_count_;
+  rendering_ = true;
+  transforms_culled_ = 0;
+  transforms_processed_ = 0;
+  draw_elements_culled_ = 0;
+  draw_elements_processed_ = 0;
+  draw_elements_rendered_ = 0;
+  primitives_rendered_ = 0;
+
+  bool result = PlatformSpecificStartRendering();
+  if (result) {
+    set_need_to_render(true);
+    // Clear the client if we need to.
+    if (clear_client_) {
+      clear_client_ = false;
+      Clear(Float4(0.5f, 0.5f, 0.5f, 1.0f), true, 1.0f, true, 0, true);
+    }
+  }
+  return result;
+}
+
+bool Renderer::BeginDraw() {
+  DCHECK(rendering_);
+  bool result = PlatformSpecificBeginDraw();
+  if (result) {
+    drawing_ = true;
+    // Reset the viewport.
+    SetViewport(Float4(0.0f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
+  }
+  return result;
+}
+
+void Renderer::EndDraw() {
+  PlatformSpecificEndDraw();
+  drawing_ = false;
+}
+
+void Renderer::FinishRendering() {
+  PlatformSpecificFinishRendering();
+  set_need_to_render(false);
+  rendering_ = false;
+}
+
+Bitmap::Ref Renderer::TakeScreenshot() {
+  if (rendering_) {
+    O3D_ERROR(service_locator())
+       << "Can not take a screenshot while rendering";
+    return Bitmap::Ref(NULL);
+  }
+  return PlatformSpecificTakeScreenshot();
+}
 
 void Renderer::GetViewport(Float4* viewport, Float2* depth_range) {
   DCHECK(viewport);

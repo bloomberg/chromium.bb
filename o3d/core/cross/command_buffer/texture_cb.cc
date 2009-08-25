@@ -353,7 +353,8 @@ bool Texture2DCB::Unlock(int level) {
   return true;
 }
 
-RenderSurface::Ref Texture2DCB::GetRenderSurface(int mip_level, Pack *pack) {
+RenderSurface::Ref Texture2DCB::PlatformSpecificGetRenderSurface(
+    int mip_level) {
   DCHECK_LT(mip_level, levels());
   // TODO: Provide an implementation for render surface extraction.
   return RenderSurface::Ref(NULL);
@@ -522,9 +523,9 @@ bool TextureCUBECB::Unlock(CubeFace face, int level) {
   return false;
 }
 
-RenderSurface::Ref TextureCUBECB::GetRenderSurface(TextureCUBE::CubeFace face,
-                                                   int mip_level,
-                                                   Pack *pack) {
+RenderSurface::Ref TextureCUBECB::PlatformSpecificGetRenderSurface(
+    TextureCUBE::CubeFace face,
+    int mip_level) {
   DCHECK_LT(mip_level, levels());
   // TODO: Provide an implementation for render surface extraction.
   return RenderSurface::Ref(NULL);

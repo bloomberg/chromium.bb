@@ -74,19 +74,6 @@ class RendererD3D9 : public Renderer {
   // Released all hardware resources.
   virtual void Destroy();
 
-  // This method should be called before any draw calls take place in a
-  // frame. It clears the back buffer, stencil and depth buffers.
-  virtual bool BeginDraw();
-
-  // Finalizes the drawing of the frame.
-  virtual void EndDraw();
-
-  // Does any pre-rendering preparation
-  virtual bool StartRendering();
-
-  // Presents the results of the draw calls for this frame.
-  virtual void FinishRendering();
-
   // Attempts to reset the back buffer to its new dimensions.
   virtual void Resize(int width, int height);
 
@@ -156,9 +143,6 @@ class RendererD3D9 : public Renderer {
       int width,
       int height);
 
-  // Overridden from Renderer.
-  virtual Bitmap::Ref TakeScreenshot();
-
   inline LPDIRECT3DDEVICE9 d3d_device() const { return d3d_device_; }
   inline LPDIRECT3D9 d3d() const { return d3d_; }
 
@@ -173,6 +157,21 @@ class RendererD3D9 : public Renderer {
   // Keep the constructor protected so only factory methods can create
   // renderers.
   explicit RendererD3D9(ServiceLocator* service_locator);
+
+  // Overridden from Renderer.
+  virtual bool PlatformSpecificBeginDraw();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificEndDraw();
+
+  // Overridden from Renderer.
+  virtual bool PlatformSpecificStartRendering();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificFinishRendering();
+
+  // Overridden from Renderer.
+  virtual Bitmap::Ref PlatformSpecificTakeScreenshot();
 
   // Overridden from Renderer.
   virtual ParamCache* CreatePlatformSpecificParamCache();

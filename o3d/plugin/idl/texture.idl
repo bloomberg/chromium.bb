@@ -141,10 +141,19 @@ namespace o3d {
     Returns a RenderSurface object associated with a mip_level of a texture.
 
     \param mip_level The mip-level of the surface to be returned.
-    \param pack The pack in which the surface will reside.
     \return The RenderSurface object.
   %]
-  RenderSurface? GetRenderSurface(int mip_level, Pack pack);
+  RenderSurface? GetRenderSurface(int mip_level);
+
+  %[
+    Returns a RenderSurface object associated with a mip_level of a texture.
+
+    \param mip_level The mip-level of the surface to be returned.
+    \param pack This parameter is no longer used. The surface exists as long as
+        the texture it came from exists.
+    \return The RenderSurface object.
+  %]
+  [userglue] RenderSurface? GetRenderSurface(int mip_level, Pack pack);
 
   // TODO: Add Get, GetRect.
   %[
@@ -235,6 +244,11 @@ namespace o3d {
     void userglue_method_SetFromBitmap(o3d::Texture2D* self,
                                        o3d::Bitmap* bitmap) {
       self->SetFromBitmap(*bitmap);
+    }
+    o3d::RenderSurface* userglue_method_GetRenderSurface(o3d::Texture2D* self,
+                                                         int mip_level,
+                                                         o3d::Pack* pack) {
+      return self->GetRenderSurface(mip_level);
     }
   %}
 
@@ -354,9 +368,21 @@ namespace o3d {
 
     \param face The cube face from which to extract the surface.
     \param mip_level The mip-level of the surface to be returned.
-    \param pack The pack in which the surface will reside.
     \return The RenderSurface object.
   %]
+  RenderSurface? GetRenderSurface(CubeFace face, int mip_level);
+
+  %[
+    Returns a RenderSurface object associated with a given cube face and
+    mip_level of a texture.
+
+    \param face The cube face from which to extract the surface.
+    \param mip_level The mip-level of the surface to be returned.
+    \param pack This parameter is no longer used. The surface exists as long as
+        the texture it came from exists.
+    \return The RenderSurface object.
+  %]
+  [userglue]
   RenderSurface? GetRenderSurface(CubeFace face, int mip_level, Pack pack);
 
   %[
@@ -514,6 +540,13 @@ namespace o3d {
                       dest_face, dest_mip,
                       dest_x, dest_y,
                       dest_width, dest_height);
+    }
+    o3d::RenderSurface* userglue_method_GetRenderSurface(
+        o3d::TextureCUBE* self,
+        o3d::TextureCUBE::CubeFace face,
+        int mip_level,
+        o3d::Pack* pack) {
+      return self->GetRenderSurface(face, mip_level);
     }
   %}
 };  // TextureCUBE

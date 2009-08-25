@@ -73,21 +73,21 @@ void RendererStub::Destroy(void) {
   DCHECK(false);
 }
 
-bool RendererStub::BeginDraw(void) {
+bool RendererStub::PlatformSpecificBeginDraw(void) {
   DCHECK(false);
   return true;
 }
 
-void RendererStub::EndDraw(void) {
+void RendererStub::PlatformSpecificEndDraw(void) {
   DCHECK(false);
 }
 
-bool RendererStub::StartRendering(void) {
+bool RendererStub::PlatformSpecificStartRendering(void) {
   DCHECK(false);
   return true;
 }
 
-void RendererStub::FinishRendering(void) {
+void RendererStub::PlatformSpecificFinishRendering(void) {
   DCHECK(false);
 }
 
@@ -178,7 +178,7 @@ StreamBank::Ref RendererStub::CreateStreamBank() {
   return StreamBank::Ref(new StreamBankStub(service_locator()));
 }
 
-Bitmap::Ref RendererStub::TakeScreenshot() {
+Bitmap::Ref RendererStub::PlatformSpecificTakeScreenshot() {
   return Bitmap::Ref();
 }
 

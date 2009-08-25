@@ -54,10 +54,6 @@ class RendererStub : public Renderer {
   virtual void InitCommon();
   virtual void UninitCommon();
   virtual void Destroy();
-  virtual bool BeginDraw();
-  virtual void EndDraw();
-  virtual bool StartRendering();
-  virtual void FinishRendering();
   virtual void Resize(int width, int height);
   virtual void Clear(const Float4 &color,
                      bool color_flag,
@@ -79,7 +75,6 @@ class RendererStub : public Renderer {
   virtual RenderDepthStencilSurface::Ref CreateDepthStencilSurface(int width,
                                                                    int height);
   virtual StreamBank::Ref CreateStreamBank();
-  virtual Bitmap::Ref TakeScreenshot();
   ParamCache *CreatePlatformSpecificParamCache();
   virtual void SetViewportInPixels(int left,
                                    int top,
@@ -93,6 +88,21 @@ class RendererStub : public Renderer {
 
  protected:
   explicit RendererStub(ServiceLocator* service_locator);
+
+  // Overridden from Renderer.
+  virtual bool PlatformSpecificBeginDraw();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificEndDraw();
+
+  // Overridden from Renderer.
+  virtual bool PlatformSpecificStartRendering();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificFinishRendering();
+
+  // Overridden from Renderer.
+  virtual Bitmap::Ref PlatformSpecificTakeScreenshot();
 
   // Overridden from Renderer.
   virtual void SetBackBufferPlatformSpecific();

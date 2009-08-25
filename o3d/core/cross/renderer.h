@@ -171,16 +171,31 @@ class Renderer {
   virtual void Destroy() = 0;
 
   // Prepares the rendering device for subsequent draw calls.
-  virtual bool BeginDraw() = 0;
+  // This is called during a RenderTree and can be called mutliple times
+  // during a single frame.
+  // NOTE: See StartRendering!
+  bool BeginDraw();
 
-  // Notifies the renderer that the draw calls for this frame are completed.
-  virtual void EndDraw() = 0;
+  // This is called during a RenderTree and can be called mutliple times during
+  // a single frame. It gives the renderer a chance to flush state before
+  // returning to JavaScript if JavaScript is calling RenderTree directly.
+  // NOTE: See StartRendering!
+  void EndDraw();
 
-  // Does any pre-rendering preparation
-  virtual bool StartRendering() = 0;
+  // Does any pre-rendering preparation.
+  // The order of operations is
+  //   StartRendering()
+  //     BeginDraw();
+  //     EndDraw()
+  //     BeginDraw();
+  //     EndDraw()
+  //     BeginDraw();
+  //     EndDraw()
+  //   FinishRendering();  // <- Presents the results.
+  bool StartRendering();
 
   // Presents the results of the draw calls for this frame.
-  virtual void FinishRendering() = 0;
+  void FinishRendering();
 
   // Returns whether a render is required.
   bool need_to_render() const {
@@ -358,12 +373,25 @@ class Renderer {
       int height) = 0;
 
   // Returns the screen as a Bitmap. Will return a null reference on error.
-  virtual Bitmap::Ref TakeScreenshot() = 0;
+  Bitmap::Ref TakeScreenshot();
 
   ServiceLocator* service_locator() const { return service_locator_; }
 
   // Returns the type of Param needed for a particular state.
   const ObjectBase::Class* GetStateParamType(const String& state_name) const;
+
+  // Whether we are currently rendering (between StartRendering /
+  // FinishRendering calls).
+  // NOTE: See StartRendering!
+  bool rendering() const {
+    return rendering_;
+  }
+
+  // Whether we are currently drawing (between BeginDraw / EndDraw calls).
+  // NOTE: See StartRendering!
+  bool drawing() const {
+    return drawing_;
+  }
 
   // Get the client area's width.
   int width() const {
@@ -434,6 +462,10 @@ class Renderer {
 
   void IncrementDrawElementsCulled() {
     ++draw_elements_culled_;
+  }
+
+  void IncrementDrawElementsRendered() {
+    ++draw_elements_rendered_;
   }
 
   void AddPrimitivesRendered(int amount_to_add) {
@@ -542,6 +574,20 @@ class Renderer {
       int levels,
       bool enable_render_surfaces) = 0;
 
+  // The platform specific part of BeginDraw.
+  virtual bool PlatformSpecificBeginDraw() = 0;
+
+  // The platform specific part of EndDraw.
+  virtual void PlatformSpecificEndDraw() = 0;
+
+  // The platform specific part of StartRendering.
+  virtual bool PlatformSpecificStartRendering() = 0;
+
+  // The platform specific part of EndRendering.
+  virtual void PlatformSpecificFinishRendering() = 0;
+
+  virtual Bitmap::Ref PlatformSpecificTakeScreenshot() = 0;
+
   // Sets the viewport. This is the platform specific version.
   virtual void SetViewportInPixels(int left,
                                    int top,
@@ -553,24 +599,9 @@ class Renderer {
   // Sets the client's size. Derived classes must call this on Init and Resize.
   void SetClientSize(int width, int height);
 
-  // Whether we need to clear the entire client area next render.
-  bool clear_client_;
-
-  // Whether a render is required.
-  bool need_to_render_;
-
   // The current render surfaces. NULL = no surface.
   RenderSurface* current_render_surface_;
   RenderDepthStencilSurface* current_depth_surface_;
-
-  int render_frame_count_;  // count of times we've rendered frame.
-  int transforms_processed_;  // count of transforms processed this frame.
-  int transforms_culled_;  // count of transforms culled this frame.
-  int draw_elements_processed_;  // count of draw elements processed this frame.
-  int draw_elements_culled_;  // count of draw elements culled this frame.
-  int draw_elements_rendered_;  // count of draw elements culled this frame.
-  int primitives_rendered_;  // count of primitives (tris, lines)
-                             // rendered this frame.
 
   Sampler::Ref error_sampler_;  // sampler used when one is missing.
   Texture::Ref error_texture_;  // texture used when one is missing.
@@ -591,12 +622,6 @@ class Renderer {
   // State object holding the default state settings.
   State::Ref default_state_;
 
-  // Current viewport setting.
-  Float4 viewport_;
-
-  // Current depth range.
-  Float2 depth_range_;
-
   // Lost Resources Callbacks.
   LostResourcesCallbackManager lost_resources_callback_manager_;
 
@@ -616,6 +641,34 @@ class Renderer {
   ServiceLocator* service_locator_;
   ServiceImplementation<Renderer> service_;
   ServiceDependency<Features> features_;
+
+  // Current viewport setting.
+  Float4 viewport_;
+
+  // Current depth range.
+  Float2 depth_range_;
+
+  int render_frame_count_;  // count of times we've rendered frame.
+  int transforms_processed_;  // count of transforms processed this frame.
+  int transforms_culled_;  // count of transforms culled this frame.
+  int draw_elements_processed_;  // count of draw elements processed this frame.
+  int draw_elements_culled_;  // count of draw elements culled this frame.
+  int draw_elements_rendered_;  // count of draw elements culled this frame.
+  int primitives_rendered_;  // count of primitives (tris, lines)
+                             // rendered this frame.
+
+  // Whether we need to clear the entire client area next render.
+  bool clear_client_;
+
+  // Whether a render is required.
+  bool need_to_render_;
+
+  // Whether we are currently rendering (between StartRendering /
+  // FinishRendering calls)
+  bool rendering_;
+
+  // Whether or not we are drawing (between BeingDraw/EndDraw calls)
+  bool drawing_;
 
   int width_;  // width of the client area in pixels
   int height_;  // height of the client area in pixels

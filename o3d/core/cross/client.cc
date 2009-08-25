@@ -79,7 +79,6 @@ Client::Client(ServiceLocator* service_locator)
       profiler_(service_locator),
       renderer_(service_locator),
       evaluation_counter_(service_locator),
-      rendering_(false),
       render_tree_called_(false),
       render_mode_(RENDERMODE_CONTINUOUS),
       event_manager_(),
@@ -225,7 +224,6 @@ void Client::ClearLostResourcesCallback() {
 
 void Client::RenderClient(bool send_callback) {
   ElapsedTimeTimer timer;
-  rendering_ = true;
   render_tree_called_ = false;
   total_time_to_render_ = 0.0f;
 
@@ -247,17 +245,18 @@ void Client::RenderClient(bool send_callback) {
       if (!rendergraph_root || rendergraph_root->children().empty()) {
           renderer_->Clear(Float4(0.4f, 0.3f, 0.3f, 1.0f),
                            true, 1.0, true, 0, true);
+          renderer_->set_need_to_render(false);
       } else if (rendergraph_root) {
         RenderTree(rendergraph_root);
       }
     }
 
+    renderer_->FinishRendering();
+
     // Call post render callback.
     profiler_->ProfileStart("Post-render callback");
     post_render_callback_manager_.Run(render_event_);
     profiler_->ProfileStop("Post-render callback");
-
-    renderer_->FinishRendering();
 
     // Update Render stats.
     render_event_.set_elapsed_time(
@@ -295,17 +294,24 @@ void Client::RenderClient(bool send_callback) {
     metric_render_prims_rendered.AddSample(render_event_.primitives_rendered());
 #endif  // OS_WIN
   }
-
-  rendering_ = false;
 }
 
 
 // Executes draw calls for all visible shapes in a subtree
 void Client::RenderTree(RenderNode *tree_root) {
-  render_tree_called_ = true;
-
   if (!renderer_.IsAvailable())
     return;
+
+  if (!renderer_->rendering()) {
+    // Render tree can not be called if we are not rendering because all calls
+    // to RenderTree must happen inside renderer->StartRendering() /
+    // renderer->FinishRendering() calls.
+    O3D_ERROR(service_locator_)
+        << "RenderTree must not be called outside of rendering.";
+    return;
+  }
+
+  render_tree_called_ = true;
 
   // Only render the shapes if BeginDraw() succeeds
   profiler_->ProfileStart("RenderTree");
@@ -406,13 +412,19 @@ String Client::ToDataURL() {
   if (!renderer_.IsAvailable()) {
     O3D_ERROR(service_locator_) << "No Render Device Available";
     return dataurl::kEmptyDataURL;
+  }
+
+  if (renderer_->rendering()) {
+    O3D_ERROR(service_locator_)
+       << "Can not take a screenshot while rendering";
+    return dataurl::kEmptyDataURL;
+  }
+
+  Bitmap::Ref bitmap(renderer_->TakeScreenshot());
+  if (bitmap.IsNull()) {
+    return dataurl::kEmptyDataURL;
   } else {
-    Bitmap::Ref bitmap(renderer_->TakeScreenshot());
-    if (bitmap.IsNull()) {
-      return dataurl::kEmptyDataURL;
-    } else {
-      return bitmap->ToDataURL();
-    }
+    return bitmap->ToDataURL();
   }
 }
 

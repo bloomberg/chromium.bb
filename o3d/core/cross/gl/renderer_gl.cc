@@ -1159,7 +1159,6 @@ void RendererGL::Clear(const Float4 &color,
             (depth_flag   ? GL_DEPTH_BUFFER_BIT   : 0) |
             (stencil_flag ? GL_STENCIL_BUFFER_BIT : 0));
   CHECK_GL_ERROR();
-  set_need_to_render(false);
 }
 
 // Updates the helper constant used for the D3D -> GL remapping.
@@ -1229,22 +1228,9 @@ bool RendererGL::SetFullscreen(bool fullscreen,
   return true;
 }
 
-bool RendererGL::StartRendering() {
+bool RendererGL::PlatformSpecificStartRendering() {
   DLOG_FIRST_N(INFO, 10) << "RendererGL StartRendering";
   MakeCurrentLazy();
-  ++render_frame_count_;
-  transforms_culled_ = 0;
-  transforms_processed_ = 0;
-  draw_elements_culled_ = 0;
-  draw_elements_processed_ = 0;
-  draw_elements_rendered_ = 0;
-  primitives_rendered_ = 0;
-
-  // Clear the client if we need to.
-  if (clear_client_) {
-    clear_client_ = false;
-    Clear(Float4(0.5f, 0.5f, 0.5f, 1.0f), true, 1.0f, true, 0, true);
-  }
 
   // Currently always returns true.
   // Should be modified if current behavior changes.
@@ -1255,14 +1241,10 @@ bool RendererGL::StartRendering() {
 // Clears the color, depth and stncil buffers and prepares GL for rendering
 // the frame.
 // Returns true on success.
-bool RendererGL::BeginDraw() {
+bool RendererGL::PlatformSpecificBeginDraw() {
   DLOG_FIRST_N(INFO, 10) << "RendererGL BeginDraw";
-  set_need_to_render(true);
 
   MakeCurrentLazy();
-
-  // Reset the viewport.
-  SetViewport(Float4(0.0f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
 
   // Currently always returns true.
   // Should be modified if current behavior changes.
@@ -1278,7 +1260,7 @@ void RendererGL::RenderElement(Element* element,
                                ParamCache* param_cache) {
   DCHECK(IsCurrent());
   DLOG_FIRST_N(INFO, 10) << "RendererGL RenderElement";
-  ++draw_elements_rendered_;
+  IncrementDrawElementsRendered();
   State *current_state = material ? material->state() : NULL;
   PushRenderStates(current_state);
   SetChangedStates();
@@ -1318,18 +1300,14 @@ void RendererGL::SetBackBufferPlatformSpecific() {
 }
 
 // Executes a post rendering step
-void RendererGL::EndDraw() {
+void RendererGL::PlatformSpecificEndDraw() {
   DLOG_FIRST_N(INFO, 10) << "RendererGL EndDraw";
   DCHECK(IsCurrent());
   SetChangedStates();
-  set_need_to_render(false);
 }
 
 // Swaps the buffers.
-void RendererGL::FinishRendering() {
-  if (need_to_render())
-    return;
-
+void RendererGL::PlatformSpecificFinishRendering() {
   DLOG_FIRST_N(INFO, 10) << "RendererGL Present";
   DCHECK(IsCurrent());
   SetChangedStates();
@@ -1532,15 +1510,11 @@ RenderDepthStencilSurface::Ref RendererGL::CreateDepthStencilSurface(
                                       height));
 }
 
-Bitmap::Ref RendererGL::TakeScreenshot() {;
+Bitmap::Ref RendererGL::PlatformSpecificTakeScreenshot() {
   MakeCurrentLazy();
   Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
   bitmap->Allocate(Texture::ARGB8, width(), height(), 1, Bitmap::IMAGE);
 
-  // Note: glReadPixels captures the alpha component of the frame buffer as well
-  // as the color components, the browser usually ignores the alpha channel when
-  // drawing to the screen, so unless the alpha is 1, the png image generated
-  // might exhibit suprise translucency.
   ::glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE,
                  bitmap->image_data());
   return bitmap;

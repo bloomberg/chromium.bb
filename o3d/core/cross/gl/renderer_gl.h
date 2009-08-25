@@ -65,20 +65,6 @@ class RendererGL : public Renderer {
   // Released all hardware resources.
   virtual void Destroy();
 
-  // This method should be called before any draw calls take place in a
-  // frame. It clears the back buffer, stencil and depth buffers.
-  // Returns true on success.
-  virtual bool BeginDraw();
-
-  // Finalizes the drawing of the frame.
-  virtual void EndDraw();
-
-  // Does any pre-rendering preparation
-  virtual bool StartRendering();
-
-  // Presents the results of the draw calls for this frame.
-  virtual void FinishRendering();
-
   // Turns fullscreen display on or off.
   // Parameters:
   //  fullscreen: true for fullscreen, false for in-browser display
@@ -145,9 +131,6 @@ class RendererGL : public Renderer {
       int height);
 
   // Overridden from Renderer.
-  virtual Bitmap::Ref TakeScreenshot();
-
-  // Overridden from Renderer.
   virtual const int* GetRGBAUByteNSwizzleTable();
 
   // Makes this renderer active on the current thread if it is not active
@@ -183,6 +166,21 @@ class RendererGL : public Renderer {
   // Keep the constructor protected so only factory methods can create
   // renderers.
   explicit RendererGL(ServiceLocator* service_locator);
+
+  // Overridden from Renderer.
+  virtual bool PlatformSpecificBeginDraw();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificEndDraw();
+
+  // Overridden from Renderer.
+  virtual bool PlatformSpecificStartRendering();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificFinishRendering();
+
+  // Overridden from Renderer.
+  virtual Bitmap::Ref PlatformSpecificTakeScreenshot();
 
   // Overridden from Renderer.
   virtual ParamCache* CreatePlatformSpecificParamCache();

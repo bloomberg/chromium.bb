@@ -70,16 +70,6 @@ class Texture2DStub : public Texture2D {
                        int src_pitch) {
   }
 
-  // Returns a RenderSurface object associated with a mip_level of a texture.
-  // Parameters:
-  //  mip_level: [in] The mip-level of the surface to be returned.
-  //  pack: [in] The pack in which the surface will reside.
-  // Returns:
-  //  Reference to the RenderSurface object.
-  virtual RenderSurface::Ref GetRenderSurface(int mip_level, Pack *pack) {
-    return RenderSurface::Ref(NULL);
-  }
-
   // Returns the implementation-specific texture handle for this texture.
   void* GetTextureHandle() const {
     return NULL;
@@ -98,6 +88,11 @@ class Texture2DStub : public Texture2D {
 
   // Unlocks this texture and returns it to Stub control.
   virtual bool Unlock(int level) { return true; }
+
+  // Overridden from Texture2D
+  virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(int mip_level) {
+    return RenderSurface::Ref(NULL);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Texture2DStub);
@@ -131,20 +126,6 @@ class TextureCUBEStub : public TextureCUBE {
                        int src_pitch) {
   };
 
-  // Returns a RenderSurface object associated with a given cube face and
-  // mip_level of a texture.
-  // Parameters:
-  //  face: [in] The cube face from which to extract the surface.
-  //  mip_level: [in] The mip-level of the surface to be returned.
-  //  pack: [in] The pack in which the surface will reside.
-  // Returns:
-  //  Reference to the RenderSurface object.
-  virtual RenderSurface::Ref GetRenderSurface(CubeFace face,
-                                              int level,
-                                              Pack* pack) {
-    return RenderSurface::Ref(NULL);
-  }
-
   // Returns the implementation-specific texture handle for this texture.
   void* GetTextureHandle() const {
     return NULL;
@@ -164,6 +145,12 @@ class TextureCUBEStub : public TextureCUBE {
 
   // Unlocks the image buffer of a given face and mipmap level.
   virtual bool Unlock(CubeFace face, int level) { return true; }
+
+  // Overridden from TextureCUBE
+  virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(CubeFace face,
+                                                              int mip_level) {
+    return RenderSurface::Ref(NULL);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextureCUBEStub);

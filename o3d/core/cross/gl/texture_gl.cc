@@ -527,9 +527,9 @@ bool Texture2DGL::Unlock(int level) {
   return true;
 }
 
-RenderSurface::Ref Texture2DGL::GetRenderSurface(int mip_level, Pack *pack) {
+RenderSurface::Ref Texture2DGL::PlatformSpecificGetRenderSurface(
+    int mip_level) {
   DCHECK_LT(mip_level, levels());
-  DCHECK(pack);
   if (!render_surfaces_enabled()) {
     O3D_ERROR(service_locator())
         << "Attempting to get RenderSurface from non-render-surface-enabled"
@@ -544,19 +544,13 @@ RenderSurface::Ref Texture2DGL::GetRenderSurface(int mip_level, Pack *pack) {
     return RenderSurface::Ref(NULL);
   }
 
-  RenderSurface::Ref render_surface(new RenderSurfaceGL(
+  return RenderSurface::Ref(new RenderSurfaceGL(
       service_locator(),
       width()>> mip_level,
       height() >> mip_level,
       0,
       mip_level,
       this));
-
-  if (!render_surface.IsNull()) {
-    RegisterSurface(render_surface.Get(), pack);
-  }
-
-  return render_surface;
 }
 
 const Texture::RGBASwizzleIndices& Texture2DGL::GetABGR32FSwizzleIndices() {
@@ -693,11 +687,10 @@ void TextureCUBEGL::UpdateBackedMipLevel(unsigned int level,
                           resize_to_pot_);
 }
 
-RenderSurface::Ref TextureCUBEGL::GetRenderSurface(TextureCUBE::CubeFace face,
-                                                   int mip_level,
-                                                   Pack *pack) {
+RenderSurface::Ref TextureCUBEGL::PlatformSpecificGetRenderSurface(
+    TextureCUBE::CubeFace face,
+    int mip_level) {
   DCHECK_LT(mip_level, levels());
-  DCHECK(pack);
   if (!render_surfaces_enabled()) {
     O3D_ERROR(service_locator())
         << "Attempting to get RenderSurface from non-render-surface-enabled"
@@ -712,19 +705,13 @@ RenderSurface::Ref TextureCUBEGL::GetRenderSurface(TextureCUBE::CubeFace face,
     return RenderSurface::Ref(NULL);
   }
 
-  RenderSurface::Ref render_surface(new RenderSurfaceGL(
+  return RenderSurface::Ref(new RenderSurfaceGL(
       service_locator(),
       edge_length() >> mip_level,
       edge_length() >> mip_level,
       kCubemapFaceList[face],
       mip_level,
       this));
-
-  if (!render_surface.IsNull()) {
-    RegisterSurface(render_surface.Get(), pack);
-  }
-
-  return render_surface;
 }
 
 void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,

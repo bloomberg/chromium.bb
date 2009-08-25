@@ -96,14 +96,6 @@ class Texture2DGL : public Texture2D {
   // Gets the GL texture handle.
   GLuint gl_texture() const { return gl_texture_; }
 
-  // Returns a RenderSurface object associated with a mip_level of a texture.
-  // Parameters:
-  //  mip_level: [in] The mip-level of the surface to be returned.
-  //  pack: [in] The pack in which the surface will reside.
-  // Returns:
-  //  Reference to the RenderSurface object.
-  virtual RenderSurface::Ref GetRenderSurface(int mip_level, Pack *pack);
-
   // Gets a RGBASwizzleIndices that contains a mapping from
   // RGBA to the internal format used by the rendering API.
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
@@ -114,6 +106,9 @@ class Texture2DGL : public Texture2D {
 
   // Overridden from Texture2D
   virtual bool Unlock(int level);
+
+  // Overridden from Texture2D
+  virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(int mip_level);
 
  private:
   // Initializes the Texture2DGL from a preexisting OpenGL texture handle
@@ -190,18 +185,6 @@ class TextureCUBEGL : public TextureCUBE {
   // Gets the GL texture handle.
   GLuint gl_texture() const { return gl_texture_; }
 
-  // Returns a RenderSurface object associated with a given cube face and
-  // mip_level of a texture.
-  // Parameters:
-  //  face: [in] The cube face from which to extract the surface.
-  //  mip_level: [in] The mip-level of the surface to be returned.
-  //  pack: [in] The pack in which the surface will reside.
-  // Returns:
-  //  Reference to the RenderSurface object.
-  virtual RenderSurface::Ref GetRenderSurface(CubeFace face,
-                                              int level,
-                                              Pack* pack);
-
   // Gets a RGBASwizzleIndices that contains a mapping from
   // RGBA to the internal format used by the rendering API.
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
@@ -213,6 +196,9 @@ class TextureCUBEGL : public TextureCUBE {
   // Overridden from TextureCUBE
   virtual bool Unlock(CubeFace face, int level);
 
+  // Overridden from TextureCUBE.
+  virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(CubeFace face,
+                                                              int level);
  private:
   // Creates a texture from a pre-existing GL texture object.
   TextureCUBEGL(ServiceLocator* service_locator,

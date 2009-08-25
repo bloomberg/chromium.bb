@@ -79,9 +79,6 @@ class RendererCB : public Renderer {
   // Destroy() should be called before Init() is called again.
   virtual void Destroy();
 
-  // Prepares the rendering device for subsequent draw calls.
-  virtual bool BeginDraw();
-
   // Clears the current buffers.
   virtual void Clear(const Float4 &color,
                      bool color_flag,
@@ -89,15 +86,6 @@ class RendererCB : public Renderer {
                      bool depth_flag,
                      int stencil,
                      bool stencil_flag);
-
-  // Notifies the renderer that the draw calls for this frame are completed.
-  virtual void EndDraw();
-
-  // Does any pre-rendering preparation
-  virtual bool StartRendering();
-
-  // Presents the results of the draw calls for this frame.
-  virtual void FinishRendering();
 
   // Renders this Element using the parameters from override first, followed by
   // the draw_element, followed by params on this Primitive and material.
@@ -140,9 +128,6 @@ class RendererCB : public Renderer {
       int height) {
     return RenderDepthStencilSurface::Ref();
   }
-
-  // Overridden from Renderer.
-  virtual Bitmap::Ref TakeScreenshot();
 
   // Gets the allocator for vertex buffer IDs.
   IdAllocator &vertex_buffer_ids() { return vertex_buffer_ids_; }
@@ -191,6 +176,21 @@ class RendererCB : public Renderer {
   // Protected so that callers are forced to call the factory method.
   RendererCB(ServiceLocator* service_locator, unsigned int command_buffer_size,
              unsigned int transfer_memory_size);
+
+  // Overridden from Renderer.
+  virtual bool PlatformSpecificBeginDraw();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificEndDraw();
+
+  // Overridden from Renderer.
+  virtual bool PlatformSpecificStartRendering();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificFinishRendering();
+
+  // Overridden from Renderer.
+  virtual Bitmap::Ref PlatformSpecificTakeScreenshot();
 
   // Creates a platform specific ParamCache.
   virtual ParamCache* CreatePlatformSpecificParamCache();

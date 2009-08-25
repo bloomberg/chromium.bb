@@ -80,14 +80,6 @@ class Texture2DD3D9 : public Texture2D {
   // Returns the implementation-specific texture handle for this texture.
   virtual void* GetTextureHandle() const { return d3d_texture_; }
 
-  // Returns a RenderSurface object associated with a mip_level of a texture.
-  // Parameters:
-  //  mip_level: [in] The mip-level of the surface to be returned.
-  //  pack: [in] The pack in which the surface will reside.
-  // Returns:
-  //  Reference to the RenderSurface object.
-  virtual RenderSurface::Ref GetRenderSurface(int mip_level, Pack* pack);
-
   // Handler for lost device. This invalidates the texture for a device reset.
   bool OnLostDevice();
 
@@ -104,6 +96,9 @@ class Texture2DD3D9 : public Texture2D {
 
   // Overridden from Texture2D
   virtual bool Unlock(int level);
+
+  // Overridden from Texture2D
+  virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(int mip_level);
 
  private:
   // Initializes the Texture2DD3D9 from a DX9 texture.
@@ -163,18 +158,6 @@ class TextureCUBED3D9 : public TextureCUBE {
   // Returns the implementation-specific texture handle for this texture.
   virtual void* GetTextureHandle() const { return d3d_cube_texture_; }
 
-  // Returns a RenderSurface object associated with a given cube face and
-  // mip_level of a texture.
-  // Parameters:
-  //  face: [in] The cube face from which to extract the surface.
-  //  mip_level: [in] The mip-level of the surface to be returned.
-  //  pack: [in] The pack in which the surface will reside.
-  // Returns:
-  //  Reference to the RenderSurface object.
-  virtual RenderSurface::Ref GetRenderSurface(CubeFace face,
-                                              int level,
-                                              Pack* pack);
-
   // Handler for lost device. This invalidates the texture for a device reset.
   bool OnLostDevice();
 
@@ -191,6 +174,10 @@ class TextureCUBED3D9 : public TextureCUBE {
 
   // Overridden from TextureCUBE
   bool Unlock(CubeFace face, int level);
+
+  // Overridden from TextureCUBE.
+  virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(CubeFace face,
+                                                              int level);
 
  private:
   TextureCUBED3D9(ServiceLocator* service_locator,

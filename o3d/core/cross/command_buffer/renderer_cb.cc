@@ -172,16 +172,7 @@ void RendererCB::Resize(int width, int height) {
   SetClientSize(width, height);
 }
 
-// Adds the BEGIN_FRAME command to the command buffer.
-bool RendererCB::BeginDraw() {
-  ++render_frame_count_;
-  DCHECK(helper_);
-  helper_->AddCommand(command_buffer::BEGIN_FRAME, 0 , NULL);
-  // Clear the client if we need to.
-  if (clear_client_) {
-    clear_client_ = false;
-    Clear(Float4(0.5f, 0.5f, 0.5f, 1.0f), true, 1.0f, true, 0, true);
-  }
+bool RendererCB::PlatformSpecificBeginDraw() {
   return true;
 }
 
@@ -207,29 +198,24 @@ void RendererCB::Clear(const Float4 &color,
   helper_->AddCommand(command_buffer::CLEAR, 7, args);
 }
 
+void RendererCB::PlatformSpecificEndDraw() {
+}
+
+// Adds the BEGIN_FRAME command to the command buffer.
+bool RendererCB::PlatformSpecificStartRendering() {
+  // Any device issues are handled in the command buffer backend
+  DCHECK(helper_);
+  helper_->AddCommand(command_buffer::BEGIN_FRAME, 0 , NULL);
+  return true;
+}
+
 // Adds the END_FRAME command to the command buffer, and flushes the commands.
-void RendererCB::EndDraw() {
+void RendererCB::PlatformSpecificFinishRendering() {
+  // Any device issues are handled in the command buffer backend
   ApplyDirtyStates();
   helper_->AddCommand(command_buffer::END_FRAME, 0 , NULL);
   helper_->WaitForToken(frame_token_);
   frame_token_ = helper_->InsertToken();
-}
-
-bool RendererCB::StartRendering() {
-  ++render_frame_count_;
-  transforms_culled_ = 0;
-  transforms_processed_ = 0;
-  draw_elements_culled_ = 0;
-  draw_elements_processed_ = 0;
-  draw_elements_rendered_ = 0;
-  primitives_rendered_ = 0;
-
-  // Any device issues are handled in the command buffer backend
-  return true;
-}
-
-void RendererCB::FinishRendering() {
-  // Any device issues are handled in the command buffer backend
 }
 
 void RendererCB::RenderElement(Element* element,
@@ -237,7 +223,7 @@ void RendererCB::RenderElement(Element* element,
                                Material* material,
                                ParamObject* override,
                                ParamCache* param_cache) {
-  ++draw_elements_rendered_;
+  IncrementDrawElementsRendered();
   State *current_state = material ? material->state() : NULL;
   PushRenderStates(current_state);
   ApplyDirtyStates();
@@ -340,7 +326,7 @@ void RendererCB::SetViewportInPixels(int left,
   helper_->AddCommand(command_buffer::SET_VIEWPORT, 6, args);
 }
 
-Bitmap::Ref RendererCB::TakeScreenshot() {
+Bitmap::Ref RendererCB::PlatformSpecificTakeScreenshot() {
   return Bitmap::Ref();
 }
 

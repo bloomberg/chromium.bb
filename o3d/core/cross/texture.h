@@ -122,10 +122,9 @@ class Texture2D : public Texture {
   // Returns a RenderSurface object associated with a mip_level of a texture.
   // Parameters:
   //  mip_level: [in] The mip-level of the surface to be returned.
-  //  pack: [in] The pack in which the surface will reside.
   // Returns:
   //  Reference to the RenderSurface object.
-  virtual RenderSurface::Ref GetRenderSurface(int mip_level, Pack* pack) = 0;
+  RenderSurface::Ref GetRenderSurface(int mip_level);
 
   // Copy pixels from source bitmap to certain mip level.
   // Scales if the width and height of source and dest do not match.
@@ -197,6 +196,10 @@ class Texture2D : public Texture {
   //  true if the operation succeeds
   virtual bool Unlock(int level) = 0;
 
+  // The platform specific part of GetRenderSurface.
+  virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(
+      int mip_level) = 0;
+
   // Returns true if the mip-map level has been locked.
   bool IsLocked(unsigned int level) {
     DCHECK_LT(static_cast<int>(level), levels());
@@ -209,6 +212,10 @@ class Texture2D : public Texture {
  private:
   friend class IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
+
+  typedef std::vector<RenderSurface::Ref> MipToRenderSurfaceMap;
+
+  MipToRenderSurfaceMap surface_map_;
 
   // The width of the texture, in texels.
   ParamInteger::Ref width_param_;
@@ -308,12 +315,9 @@ class TextureCUBE : public Texture {
   // Parameters:
   //  face: [in] The cube face from which to extract the surface.
   //  mip_level: [in] The mip-level of the surface to be returned.
-  //  pack: [in] The pack in which the surface will reside.
   // Returns:
   //  Reference to the RenderSurface object.
-  virtual RenderSurface::Ref GetRenderSurface(CubeFace face,
-                                              int level,
-                                              Pack* pack) = 0;
+  RenderSurface::Ref GetRenderSurface(CubeFace face, int level);
 
   // Copy pixels from source bitmap to certain mip level.
   // Scales if the width and height of source and dest do not match.
@@ -390,6 +394,10 @@ class TextureCUBE : public Texture {
   //  true if the operation succeeds
   virtual bool Unlock(CubeFace face, int level) = 0;
 
+  // The platform specific part of GetRenderSurface.
+  virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(
+      CubeFace face, int level) = 0;
+
   // Returns true if the mip-map level has been locked.
   bool IsLocked(unsigned int level, CubeFace face) {
     DCHECK_LT(static_cast<int>(level), levels());
@@ -403,6 +411,10 @@ class TextureCUBE : public Texture {
  private:
   friend class IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
+
+  typedef std::vector<RenderSurface::Ref> MipToRenderSurfaceMap;
+
+  MipToRenderSurfaceMap surface_maps_[NUMBER_OF_FACES];
 
   // The length of each edge of the cube, in texels.
   ParamInteger::Ref edge_length_param_;

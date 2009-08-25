@@ -445,9 +445,6 @@ class Client {
   ServiceDependency<Renderer> renderer_;
   ServiceDependency<EvaluationCounter> evaluation_counter_;
 
-  // Currently rendering.
-  bool rendering_;
-
   // RenderTree was called.
   bool render_tree_called_;
 
