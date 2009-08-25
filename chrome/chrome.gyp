@@ -39,6 +39,7 @@
       'browser/crash_recovery_browsertest.cc',
       'browser/download/save_page_browsertest.cc',
       'browser/errorpage_browsertest.cc',
+      'browser/gtk/view_id_util_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
     ],
     'browser_tests_sources_win_specific': [
@@ -3980,7 +3981,6 @@
         'browser/gtk/options/cookies_view_unittest.cc',
         'browser/gtk/options/languages_page_gtk_unittest.cc',
         'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
-        'browser/gtk/view_id_util_unittest.cc',
         'browser/history/expire_history_backend_unittest.cc',
         'browser/history/history_backend_unittest.cc',
         'browser/history/history_querying_unittest.cc',
