@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/atomicops.h"
 #include "base/lock.h"
 #include "base/platform_thread.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -40,7 +41,7 @@ class AutomationResourceMessageFilter
   virtual ~AutomationResourceMessageFilter();
 
   int NewRequestId() {
-    return unique_request_id_++;
+    return base::subtle::Barrier_AtomicIncrement(&unique_request_id_, 1);
   }
 
   // IPC::ChannelProxy::MessageFilter methods:
@@ -53,10 +54,10 @@ class AutomationResourceMessageFilter
   virtual bool Send(IPC::Message* message);
 
   // Add request to the list of outstanding requests.
-  bool RegisterRequest(URLRequestAutomationJob* job);
+  virtual bool RegisterRequest(URLRequestAutomationJob* job);
 
   // Remove request from the list of outstanding requests.
-  void UnRegisterRequest(URLRequestAutomationJob* job);
+  virtual void UnRegisterRequest(URLRequestAutomationJob* job);
 
   // Can be called from the UI thread.
   static bool RegisterRenderView(int renderer_pid, int renderer_id,
@@ -98,8 +99,8 @@ class AutomationResourceMessageFilter
   IPC::Channel* channel_;
   static MessageLoop* io_loop_;
 
-  // A unique request id per automation channel.
-  int unique_request_id_;
+  // A unique request id per process.
+  static int unique_request_id_;
 
   // Map of outstanding requests.
   RequestMap request_map_;

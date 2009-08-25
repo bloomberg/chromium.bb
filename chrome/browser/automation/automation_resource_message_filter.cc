@@ -20,9 +20,10 @@
 MessageLoop* AutomationResourceMessageFilter::io_loop_ = NULL;
 AutomationResourceMessageFilter::RenderViewMap
     AutomationResourceMessageFilter::filtered_render_views_;
+int AutomationResourceMessageFilter::unique_request_id_ = 1;
 
 AutomationResourceMessageFilter::AutomationResourceMessageFilter()
-    : channel_(NULL), unique_request_id_(1) {
+    : channel_(NULL) {
   URLRequestAutomationJob::InitializeInterceptor();
 }
 
