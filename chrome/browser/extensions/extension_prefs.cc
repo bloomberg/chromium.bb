@@ -389,6 +389,18 @@ void ExtensionPrefs::MigrateToPrefs(Extension* extension) {
                       extension->manifest_value()->DeepCopy());
 }
 
+FilePath ExtensionPrefs::GetExtensionPath(const std::string& extension_id) {
+  const DictionaryValue* dict = prefs_->GetDictionary(kExtensionsPref);
+  if (!dict || dict->GetSize() == 0)
+    return FilePath();
+
+  std::wstring path;
+  if (!dict->GetString(ASCIIToWide(extension_id) + L"." + kPrefPath, &path))
+    return FilePath();
+
+  return install_directory_.Append(FilePath::FromWStringHack(path));
+}
+
 bool ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
                                          const std::wstring& key,
                                          Value* data_value) {

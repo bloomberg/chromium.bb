@@ -168,11 +168,13 @@ void ExtensionsService::UpdateExtension(const std::string& id,
 }
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
-  Extension* extension = GetExtensionById(extension_id);
-  FilePath extension_path = extension->path();
+  // Unload the extension if it's loaded.
+  if (GetExtensionById(extension_id))
+    UnloadExtension(extension_id);
 
-  UnloadExtension(extension_id);
-  LoadExtension(extension_path);
+  // At this point we have to reconstruct the path from prefs, because
+  // we have no information about this extension in memory.
+  LoadExtension(extension_prefs_->GetExtensionPath(extension_id));
 }
 
 void ExtensionsService::UninstallExtension(const std::string& extension_id,
@@ -530,7 +532,6 @@ void ExtensionsService::OnExternalExtensionFound(const std::string& id,
                       this,
                       NULL);  // no client (silent install)
 }
-
 
 // ExtensionsServicesBackend
 

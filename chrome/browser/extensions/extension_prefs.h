@@ -56,6 +56,9 @@ class ExtensionPrefs {
   // Ensure old extensions have fully up-to-date prefs values.
   void MigrateToPrefs(Extension* extension);
 
+  // Returns extension path based on extension ID, or empty FilePath on error.
+  FilePath GetExtensionPath(const std::string& extension_id);
+
   // Returns base extensions install directory.
   const FilePath& install_directory() const { return install_directory_; }
 
