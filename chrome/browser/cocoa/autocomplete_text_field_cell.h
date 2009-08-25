@@ -56,6 +56,9 @@
 - (void)setSearchHintString:(NSString*)aString;
 - (void)clearKeywordAndHint;
 
+// Return the portion of the cell to use for text display.
+- (NSRect)textFrameForFrame:(NSRect)cellFrame;
+
 @end
 
 // Internal methods here exposed for unit testing.
@@ -63,8 +66,5 @@
 
 @property(readonly) NSAttributedString* keywordString;
 @property(readonly) NSAttributedString* hintString;
-
-// Return the portion of the cell to use for text display.
-- (NSRect)textFrameForFrame:(NSRect)cellFrame;
 
 @end

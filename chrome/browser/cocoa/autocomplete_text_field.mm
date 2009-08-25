@@ -75,29 +75,80 @@
   }
 }
 
-// Clicks in the frame outside the field editor will attempt to make
-// us first-responder, which will select-all.  So decline
-// first-responder when the field editor is active.
-- (BOOL)acceptsFirstResponder {
-  if ([self currentEditor]) {
-    return NO;
-  }
-  return [super acceptsFirstResponder];
-}
-
 // Reroute events for the decoration area to the field editor.  This
 // will cause the cursor to be moved as close to the edge where the
 // event was seen as possible.
 //
-// TODO(shess) Check this in light of the -acceptsFirstResponder
-// change.  It may no longer be needed.
+// The reason for this code's existence is subtle.  NSTextField
+// implements text selection and editing in terms of a "field editor".
+// This is an NSTextView which is installed as a subview of the
+// control when the field becomes first responder.  When the field
+// editor is installed, it will get -mouseDown: events and handle
+// them, rather than the text field - EXCEPT for the event which
+// caused the change in first responder, or events which fall in the
+// decorations outside the field editor's area.  In that case, the
+// default NSTextField code will setup the field editor all over
+// again, which has the side effect of doing "select all" on the text.
+// This effect can be observed with a normal NSTextField if you click
+// in the narrow border area, and is only really a problem because in
+// our case the focus ring surrounds decorations which look clickable.
+//
+// When the user first clicks on the field, after installing the field
+// editor the default NSTextField code detects if the hit is in the
+// field editor area, and if so sets the selection to {0,0} to clear
+// the selection before forwarding the event to the field editor for
+// processing (it will set the cursor position).  This also starts the
+// click-drag selection machinery.
+//
+// This code does the same thing for cases where the click was in the
+// decoration area.  This allows the user to click-drag starting from
+// a decoration area and get the expected selection behaviour,
+// likewise for multiple clicks in those areas.
 - (void)mouseDown:(NSEvent *)theEvent {
-  NSText* editor = [self currentEditor];
-  if (editor) {
-    [editor mouseDown:theEvent];
-  } else {
+  const NSPoint locationInWindow = [theEvent locationInWindow];
+  const NSPoint location = [self convertPoint:locationInWindow fromView:nil];
+
+  const NSRect textFrame = [[self cell] textFrameForFrame:[self bounds]];
+
+  // A version of the textFrame which extends across the field's
+  // entire width.
+  const NSRect bounds([self bounds]);
+  const NSRect fullFrame(NSMakeRect(bounds.origin.x, textFrame.origin.y,
+                                    bounds.size.width, textFrame.size.height));
+
+  // If the mouse is in the editing area, or above or below where the
+  // editing area would be if we didn't add decorations, forward to
+  // NSTextField -mouseDown: because it does the right thing.  The
+  // above/below test is needed because NSTextView treats mouse events
+  // above/below as select-to-end-in-that-direction, which makes
+  // things janky.
+  if (NSMouseInRect(location, textFrame, [self isFlipped]) ||
+      !NSMouseInRect(location, fullFrame, [self isFlipped])) {
     [super mouseDown:theEvent];
+    return;
   }
+
+  NSText* editor = [self currentEditor];
+
+  // We should only be here if we accepted first-responder status and
+  // have a field editor.  If one of these fires, it means some
+  // assumptions are being broken.
+  DCHECK(editor != nil);
+  DCHECK([editor isDescendantOf:self]);
+
+  // -becomeFirstResponder does a select-all, which we don't want
+  // because it can lead to a dragged-text situation.  Clear the
+  // selection (any valid empty selection will do).
+  [editor setSelectedRange:NSMakeRange(0, 0)];
+
+  // If the event is to the right of the editing area, scroll the
+  // field editor to the end of the content so that the selection
+  // doesn't initiate from somewhere in the middle of the text.
+  if (location.x > NSMaxX(textFrame)) {
+    [editor scrollRangeToVisible:NSMakeRange([[self stringValue] length], 0)];
+  }
+
+  [editor mouseDown:theEvent];
 }
 
 @end
