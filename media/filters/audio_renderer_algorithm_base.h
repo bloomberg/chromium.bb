@@ -74,6 +74,9 @@ class AudioRendererAlgorithmBase {
   // Returns true if we have enough data
   virtual bool IsQueueFull();
 
+  // Returns the number of bytes left in |queue_|.
+  virtual size_t QueueSize();
+
  protected:
   // Advances |queue_|'s internal pointer by |bytes|.
   void AdvanceInputPosition(size_t bytes);
@@ -81,9 +84,6 @@ class AudioRendererAlgorithmBase {
   // Tries to copy |bytes| bytes from |queue_| to |dest|. Returns the number of
   // bytes successfully copied.
   size_t CopyFromInput(uint8* dest, size_t bytes);
-
-  // Returns the number of bytes left in |queue_|.
-  virtual size_t QueueSize();
 
   // Number of audio channels.
   virtual int channels();

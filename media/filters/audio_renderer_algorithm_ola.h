@@ -15,6 +15,7 @@
 #define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_OLA_H_
 
 #include "media/filters/audio_renderer_algorithm_base.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace media {
 
@@ -29,6 +30,11 @@ class AudioRendererAlgorithmOLA : public AudioRendererAlgorithmBase {
   virtual void set_playback_rate(float new_rate);
 
  private:
+  FRIEND_TEST(AudioRendererAlgorithmOLATest, FillBuffer_NormalRate);
+  FRIEND_TEST(AudioRendererAlgorithmOLATest, FillBuffer_DoubleRate);
+  FRIEND_TEST(AudioRendererAlgorithmOLATest, FillBuffer_HalfRate);
+  FRIEND_TEST(AudioRendererAlgorithmOLATest, FillBuffer_QuarterRate);
+
   // Aligns |value| to a channel and sample boundary.
   void AlignToSampleBoundary(size_t* value);
 
@@ -40,7 +46,7 @@ class AudioRendererAlgorithmOLA : public AudioRendererAlgorithmBase {
   void Crossfade(int samples, const Type* src, Type* dest);
 
   // Members for ease of calculation in FillBuffer(). These members are based
-  // on |playback_rate_|, but are stored seperately so they don't have to be
+  // on |playback_rate_|, but are stored separately so they don't have to be
   // recalculated on every call to FillBuffer().
   size_t input_step_;
   size_t output_step_;

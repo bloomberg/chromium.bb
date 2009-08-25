@@ -17,7 +17,7 @@ const double kDefaultCrossfadeLength = 0.008;
 
 // Default mute ranges for fast/slow audio. These rates would sound better
 // under a frequency domain algorithm.
-const float kMinRate = 0.75f;
+const float kMinRate = 0.5f;
 const float kMaxRate = 4.0f;
 
 AudioRendererAlgorithmOLA::AudioRendererAlgorithmOLA()
@@ -47,27 +47,57 @@ size_t AudioRendererAlgorithmOLA::FillBuffer(uint8* dest, size_t length) {
     return dest_written;
   }
 
-  // Mute when out of acceptable quality range. Note: This may not play at the
-  // speed requested as we can only consume as much data as we have, and audio
-  // timestamps drive the pipeline clock.
-  if (playback_rate() < kMinRate || playback_rate() > kMaxRate) {
-    size_t consume = static_cast<size_t>(length * playback_rate());
-    size_t safe_to_consume = std::min(QueueSize(), consume);
-    memset(dest, 0, length);
-    AlignToSampleBoundary(&safe_to_consume);
-    AdvanceInputPosition(safe_to_consume);
-    return length;
-  }
-
   // For other playback rates, OLA with crossfade!
-  while (length >= output_step_ + crossfade_size_) {
-    // If we don't have enough data to completely finish this loop, quit.
-    if (QueueSize() < window_size_)
+  while (true) {
+    // Mute when out of acceptable quality range or when we don't have enough
+    // data to completely finish this loop.
+    //
+    // Note: This may not play at the speed requested as we can only consume as
+    // much data as we have, and audio timestamps drive the pipeline clock.
+    //
+    // Furthermore, we won't end up scaling the very last bit of audio, but
+    // we're talking about <8ms of audio data.
+    if (playback_rate() < kMinRate || playback_rate() > kMaxRate ||
+        QueueSize() < window_size_) {
+      // Calculate the ideal input/output steps based on the size of the
+      // destination buffer.
+      size_t input_step = static_cast<size_t>(ceil(
+          static_cast<float>(length * playback_rate())));
+      size_t output_step = length;
+
+      // If the ideal size is too big, recalculate based on how much is left in
+      // the queue.
+      if (input_step > QueueSize()) {
+        input_step = QueueSize();
+        output_step = static_cast<size_t>(ceil(
+            static_cast<float>(input_step / playback_rate())));
+      }
+
+      // Stay aligned and sanity check before writing out zeros.
+      AlignToSampleBoundary(&input_step);
+      AlignToSampleBoundary(&output_step);
+      DCHECK_LE(output_step, length);
+      if (output_step > length) {
+        LOG(ERROR) << "OLA: output_step (" << output_step << ") calculated to "
+                   << "be larger than destination length (" << length << ")";
+        output_step = length;
+      }
+
+      memset(dest, 0, output_step);
+      AdvanceInputPosition(input_step);
+      dest_written += output_step;
       break;
+    }
+
+    // Break if we don't have enough room left in our buffer to do a full
+    // OLA iteration.
+    if (length < (output_step_ + crossfade_size_)) {
+      break;
+    }
 
     // Copy bulk of data to output (including some to crossfade to the next
     // copy), then add to our running sum of written data and subtract from
-    // our tally of remaing requested.
+    // our tally of remaining requested.
     size_t copied = CopyFromInput(dest, output_step_ + crossfade_size_);
     dest_written += copied;
     length -= copied;
@@ -120,7 +150,7 @@ void AudioRendererAlgorithmOLA::set_playback_rate(float new_rate) {
                                      * channels()
                                      * kDefaultWindowLength);
 
-  // Adjusting step sizes to accomodate requested playback rate.
+  // Adjusting step sizes to accommodate requested playback rate.
   if (playback_rate() > 1.0f) {
     input_step_ = window_size_;
     output_step_ = static_cast<size_t>(ceil(
@@ -139,6 +169,10 @@ void AudioRendererAlgorithmOLA::set_playback_rate(float new_rate) {
                                         * channels()
                                         * kDefaultCrossfadeLength);
   AlignToSampleBoundary(&crossfade_size_);
+  if (crossfade_size_ > std::min(input_step_, output_step_)) {
+    crossfade_size_ = 0;
+    return;
+  }
 
   // To keep true to playback rate, modify the steps.
   input_step_ -= crossfade_size_;

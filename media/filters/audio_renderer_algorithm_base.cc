@@ -82,6 +82,10 @@ bool AudioRendererAlgorithmBase::IsQueueFull() {
   return (queue_.SizeInBytes() >= kDefaultMinQueueSizeInBytes);
 }
 
+size_t AudioRendererAlgorithmBase::QueueSize() {
+  return queue_.SizeInBytes();
+}
+
 void AudioRendererAlgorithmBase::AdvanceInputPosition(size_t bytes) {
   queue_.Consume(bytes);
 
@@ -91,10 +95,6 @@ void AudioRendererAlgorithmBase::AdvanceInputPosition(size_t bytes) {
 
 size_t AudioRendererAlgorithmBase::CopyFromInput(uint8* dest, size_t bytes) {
   return queue_.Copy(dest, bytes);
-}
-
-size_t AudioRendererAlgorithmBase::QueueSize() {
-  return queue_.SizeInBytes();
 }
 
 int AudioRendererAlgorithmBase::channels() {
