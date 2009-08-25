@@ -125,6 +125,12 @@ class JSONResultsGenerator:
     all_failing_tests = set(self._failures.iterkeys())
     all_failing_tests.update(tests.iterkeys())
 
+    build_numbers = results_json[self._builder_name]["buildNumbers"]
+    build_numbers.insert(0, self._build_number)
+    build_numbers = build_numbers[:self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG]
+    results_json[self._builder_name]["buildNumbers"] = build_numbers
+    num_build_numbers = len(build_numbers)
+
     for test in all_failing_tests:
       if test in failures_for_json:
         result_and_time = failures_for_json[test]
@@ -138,10 +144,7 @@ class JSONResultsGenerator:
       thisTest["results"] = result_and_time.result + thisTest["results"]
       thisTest["times"].insert(0, result_and_time.time)
 
-      self._NormalizeResultsJSON(thisTest, test, tests)
-
-    results_json[self._builder_name]["buildNumbers"].insert(0,
-        self._build_number)
+      self._NormalizeResultsJSON(thisTest, test, tests, num_build_numbers)
 
     # Specify separators in order to get compact encoding.
     results_str = simplejson.dumps(results_json, separators=(',', ':'))
@@ -178,7 +181,7 @@ class JSONResultsGenerator:
     else:
       return "O"
 
-  def _NormalizeResultsJSON(self, test, test_path, tests):
+  def _NormalizeResultsJSON(self, test, test_path, tests, num_build_numbers):
     """ Prune tests where all runs pass or tests that no longer exist and
     truncate all results to maxNumberOfBuilds and pad results that don't
     have encough runs for maxNumberOfBuilds.
@@ -187,6 +190,7 @@ class JSONResultsGenerator:
       test: ResultsAndTimes object for this test.
       test_path: Path to the test.
       tests: The JSON object with all the test results for this builder.
+      num_build_numbers: The number to truncate/pad results to.
     """
     results = test["results"]
     num_results = len(results)
@@ -199,11 +203,11 @@ class JSONResultsGenerator:
       num_results = 0
 
     # Truncate or right-pad so there are exactly maxNumberOfBuilds results.
-    if num_results > self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG:
-      results = results[:self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG]
-      times = times[:self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG]
-    elif num_results < self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG:
-      num_to_pad = self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG - num_results
+    if num_results > num_build_numbers:
+      results = results[:num_build_numbers]
+      times = times[:num_build_numbers]
+    elif num_results < num_build_numbers:
+      num_to_pad = num_build_numbers - num_results
       results = results + num_to_pad * self.NO_DATA_RESULT
       times.extend(num_to_pad * [0])
 
@@ -214,10 +218,8 @@ class JSONResultsGenerator:
     # times that take less than a second, remove it from the results to reduce
     # noise and filesize.
     if (max(times) >= self.MIN_TIME and num_results and
-        (results == self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG *
-             self.PASS_RESULT or
-         results == self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG *
-             self.NO_DATA_RESULT)):
+        (results == num_build_numbers * self.PASS_RESULT or
+         results == num_build_numbers * self.NO_DATA_RESULT)):
       del tests[test_path]
 
     # Remove tests that don't exist anymore.
