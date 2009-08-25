@@ -31,9 +31,7 @@ WebInspector.HeapProfilerPanel = function() {
     this.snapshotViews.id = "heap-snapshot-views";
     this.element.appendChild(this.snapshotViews);
 
-    this.snapshotButton = document.createElement("button");
-    this.snapshotButton.title = WebInspector.UIString("Take heap snapshot.");
-    this.snapshotButton.className = "heap-snapshot-status-bar-item status-bar-item";
+    this.snapshotButton = new WebInspector.StatusBarButton(WebInspector.UIString("Take heap snapshot."), "heap-snapshot-status-bar-item");
     this.snapshotButton.addEventListener("click", this._snapshotClicked.bind(this), false);
 
     this.snapshotViewStatusBarItemsContainer = document.createElement("div");
@@ -50,7 +48,7 @@ WebInspector.HeapProfilerPanel.prototype = {
     },
 
     get statusBarItems() {
-        return [this.snapshotButton, this.snapshotViewStatusBarItemsContainer];
+        return [this.snapshotButton.element, this.snapshotViewStatusBarItemsContainer];
     },
 
     show: function() {

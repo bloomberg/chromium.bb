@@ -40,12 +40,8 @@ body.attached #toolbar {
     margin-left: -1px;
 }
 
-.heap-snapshot-status-bar-item {
-    background-image: url(Images/focusButtons.png) !important;
-}
-
-.heap-snapshot-status-bar-item:active {
-    background-position: 32px 0;
+.heap-snapshot-status-bar-item .glyph {
+    -webkit-mask-image: url(Images/focusButtonGlyph.png);
 }
 
 .heap-snapshot-sidebar-tree-item .icon {
