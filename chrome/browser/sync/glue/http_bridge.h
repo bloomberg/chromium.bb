@@ -63,7 +63,9 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     }
 
     virtual bool AllowSendingCookies(const URLRequest* request) const {
-      return false;  // Never send cookies.
+      // TODO(chron):  http://crbug.com/20182. Change this to return false once
+      // all clients use Authenticate: header auth mode.
+      return true;
     }
 
    private:
@@ -83,6 +85,11 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
                               const char* content);
   virtual void AddCookieForRequest(const char* cookie);
   virtual bool MakeSynchronousPost(int* os_error_code, int* response_code);
+
+  // WARNING: these response content methods are used to extract plain old data
+  // and not null terminated strings, so you should make sure you have read
+  // GetResponseContentLength() characters when using GetResponseContent. e.g
+  // string r(b->GetResponseContent(), b->GetResponseContentLength()).
   virtual int GetResponseContentLength() const;
   virtual const char* GetResponseContent() const;
   virtual int GetResponseCookieCount() const;
