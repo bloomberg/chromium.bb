@@ -1,7 +1,8 @@
 {
   "name": "Mappy",
-  "version": "0.3",
+  "version": "0.4",
   "description": "Finds addresses in the web page you're on and pops up a map window.",
+  "icons": { "128": "icon.png" },
   "toolstrips": [
     "mappy_toolstrip.html"
   ],
