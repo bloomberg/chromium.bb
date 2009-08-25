@@ -36,9 +36,6 @@
     {
       'target_name': 'nonnacl_util_chrome',
       'type': 'static_library',
-      'defines': [
-        'CHROME_BUILD',
-      ],
       'include_dirs': [
         '../../../../third_party/skia/include/config',
         '../../../../third_party/skia/include/core',

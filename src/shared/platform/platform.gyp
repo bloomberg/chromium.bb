@@ -114,7 +114,7 @@
       'target_name': 'platform',
       'type': 'static_library',
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" and nacl_standalone==1', {
           'link_settings': {
             'libraries': [
               '-lssl',
@@ -129,18 +129,7 @@
         '<@(platform_sources)',
       ],
     },
-    {
-      'target_name': 'platform_chrome',
-      'type': 'static_library',
-      'defines': [
-        'CHROME_BUILD',
-      ],
-      'sources': [
-        '<@(common_sources)',
-        '<@(platform_sources)',
-      ],
-    },
-  ]
+  ],
 }
 
 # TODO:

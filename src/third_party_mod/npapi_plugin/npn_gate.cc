@@ -64,7 +64,7 @@ void NPN_Version(int* plugin_major, int* plugin_minor, int* netscape_major, int*
   *netscape_minor = LOBYTE(NPNFuncs.version);
 }
 
-#if !defined(CHROME_BUILD)
+#if defined(NACL_STANDALONE)
 
 NPError NPN_GetURLNotify(NPP instance, const char *url, const char *target, void* notifyData)
 {
@@ -349,7 +349,7 @@ void NPN_SetException(NPObject* obj, const NPUTF8 *message)
   NPNFuncs.setexception(obj, message);
 }
 
-#if !defined(CHROME_BUILD)
+#if defined(NACL_STANDALONE)
 #if 1 <= NP_VERSION_MAJOR || 19 <= NP_VERSION_MINOR
 
 void NPN_PluginThreadAsyncCall(NPP npp, void (*func)(void *), void *userData)

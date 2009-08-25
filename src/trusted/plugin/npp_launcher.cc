@@ -134,7 +134,7 @@ NPError NPP_New(NPMIMEType plugin_type,
   if (instance->pdata == NULL) {
     return NPERR_OUT_OF_MEMORY_ERROR;
   }
-#ifdef CHROME_BUILD
+#ifndef NACL_STANDALONE
   // NaCl is a windowless plugin
   NPN_SetValue(instance, NPPVpluginWindowBool, false);
 #endif

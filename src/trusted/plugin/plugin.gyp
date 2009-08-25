@@ -153,12 +153,9 @@
       # static library for linking with Chrome
       'target_name': 'npGoogleNaClPluginChrome',
       'type': 'static_library',
-      'defines': [
-        'CHROME_BUILD',
-      ],
       'dependencies': [
         '../nonnacl_util/nonnacl_util_chrome.gyp:nonnacl_util_chrome',
-        '../../shared/platform/platform.gyp:platform_chrome',
+        '../../shared/platform/platform.gyp:platform',
       ],
       'sources': [
         '<@(common_sources)',

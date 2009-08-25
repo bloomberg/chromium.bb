@@ -82,12 +82,20 @@
     'linux2%': 0,
 
     'chrome_personalization%': 0,
+
+    # By default we assume that we are building as part of Chrome
+    'nacl_standalone%': 0,
   },
   'target_defaults': {
     'include_dirs': [
       '../..',
     ],
     'conditions': [
+      ['nacl_standalone==1', {
+        'defines': [
+          'NACL_STANDALONE=1',
+        ]
+      }],
       ['target_arch=="x86" and target_sub_arch=="32"', {
         'defines': [
           'NACL_TARGET_SUBARCH=32',

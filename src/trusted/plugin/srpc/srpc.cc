@@ -242,12 +242,12 @@ NPError SRPC_Plugin::NewStream(NPMIMEType type,
   dprintf(("SRPC_Plugin::NewStream(%p, %s, %p, %d)\n",
            static_cast<void *>(this), type, static_cast<void *>(stream),
            seekable));
-#ifdef CHROME_BUILD
+#ifdef NACL_STANDALONE
+  *stype = NP_ASFILEONLY;
+#else
   // When running as a built-in plugin in Chrome we cannot access the
   // file system, therefore we use normal streams to get the data.
   *stype = NP_NORMAL;
-#else
-  *stype = NP_ASFILEONLY;
 #endif
   return NPERR_NO_ERROR;
 }

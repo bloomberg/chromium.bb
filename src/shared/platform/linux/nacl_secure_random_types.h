@@ -46,10 +46,10 @@
  * library dependency?
  */
 #ifndef USE_CRYPTO
-#if defined(CHROME_BUILD)
-# define USE_CRYPTO 0
-#else
+#ifdef NACL_STANDALONE
 # define USE_CRYPTO 1
+#else
+# define USE_CRYPTO 0
 #endif
 #endif
 

@@ -403,6 +403,12 @@ if pre_base_env.Bit('chrome'):
   )
   # To build for Chrome sdl=none must be used
   ARGUMENTS['sdl'] = 'none'
+else:
+  pre_base_env.Append(
+    CPPDEFINES = [
+        ['NACL_STANDALONE', 1],
+    ],
+  )
 
 # ----------------------------------------------------------
 base_env = pre_base_env.Clone()
