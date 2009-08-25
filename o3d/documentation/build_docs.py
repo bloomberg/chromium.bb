@@ -229,7 +229,7 @@ def BuildO3DDocsFromJavaScript(js_files, ezt_output_dir, html_output_dir):
 
 
 def BuildO3DJSDocs(js_files, ezt_output_dir, html_output_dir, exports_file):
-  RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, 'js_0_1_', 'o3djs',
+  RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, 'js_1_0_', 'o3djs',
                   'jsdocs', '..', exports_file)
 
 
