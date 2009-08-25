@@ -62,6 +62,7 @@ SetRootUser() {
 SetupO3d() {
   # Create npapi plugin directories, copy and symlink libs.
   O3D_DIR="/opt/google/o3d"
+  LIB_DIR=$O3D_DIR/lib
 
   PLUGIN_DIRS="/usr/lib/firefox/plugins
                /usr/lib/iceape/plugins
@@ -78,12 +79,12 @@ SetupO3d() {
   LIB3D="libnpo3dautoplugin.so"
 
   echo -n "Creating plugin directories..."
-  mkdir -p $PLUGIN_DIRS $O3D_DIR
+  mkdir -p $PLUGIN_DIRS $O3D_DIR $LIB_DIR
   echo "ok"
 
   echo -n "Installing files to $O3D_DIR..."
   install --mode=644 ${LIB3D} $O3D_DIR
-  install --mode=644 ${LIBS} $O3D_DIR
+  install --mode=644 ${LIBS} $LIB_DIR
   echo "ok"
 
   echo -n "Creating symlinks to plugin..."
@@ -92,30 +93,8 @@ SetupO3d() {
   done
   echo "ok"
 
-  # If 32bit arch, use /usr/lib. If 64bit, use /usr/lib32
-  if [ "$ARCH" = "32bit" ]; then
-    LIBDIR="/usr/lib"
-  elif [ "$ARCH" = "64bit" ]; then
-    LIBDIR="/usr/lib32"
-    NP_WRAP="yes"
-  else
-    echo "$ARCH not recognized"
-    exit 1
-  fi
-
-  echo -n "Creating symlinks to libs..."
-  mkdir -p $LIBDIR
-  for lib in $LIBS; do
-    if [ -e "${LIBDIR}/${lib}" ]; then
-      echo "$lib already exists, not replacing."
-    else
-      ln -s ${O3D_DIR}/${lib} ${LIBDIR}/
-    fi
-  done
-  echo "ok"
-
   # 64bit only: Check for nspluginwrapper, wrap libnpo3dautoplugin.so if found.
-  if [ "$NP_WRAP" = "yes" ]; then
+  if [ "$ARCH" = "64bit" ]; then
     echo -n "Attempting to wrap $LIB3D via nspluginwrapper..."
     NSPW=$(which nspluginwrapper)
     if [ -z "$NSPW" ]; then

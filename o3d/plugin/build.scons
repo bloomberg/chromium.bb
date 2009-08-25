@@ -245,6 +245,10 @@ if env.Bit('linux'):
     'linux/main_linux.cc',
     'linux/config.cc',
   ]
+  # This sets the rpath property on the generated shared object, which specifies
+  # additional paths that the run-time linker/loader will search for its
+  # dependent shared libraries. We install libGLEW, libCg, and libCgGL to here.
+  env.Append(RPATH=['/opt/google/o3d/lib'])
 
 
 # SCons doesn't really know about MacOSX bundles, so we need to override a

@@ -5,3 +5,6 @@
 export LD_LIBRARY_PATH=$(shell echo $$LD_LIBRARY_PATH:$$PWD)
 
 include /usr/share/cdbs/1/rules/debhelper.mk
+
+# Workaround for Debian bug #364436
+DEB_DH_MAKESHLIBS_ARGS=-n
