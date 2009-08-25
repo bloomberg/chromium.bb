@@ -531,10 +531,8 @@
       html += '<span class=' + expectation + '>' +
           EXPECTATIONS_MAP[expectation] + '</span>';
     }
-    html += '<span class=expectation-mismatch>WRONG EXPECTATIONS</span>'
-    html += '</div>';
-
-    html += '<center><b>All columns are sortable</b></center></div>';
+    html += '<span class=expectation-mismatch>WRONG EXPECTATIONS</span>' +
+        '</div><center><b>All columns are sortable</b></center></div>';
     return html;
   }
 
