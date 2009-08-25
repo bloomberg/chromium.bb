@@ -146,7 +146,8 @@ std::wstring ChildProcessHost::GetChildPath() {
 // static
 void ChildProcessHost::SetCrashReporterCommandLine(CommandLine* command_line) {
 #if defined(OS_POSIX)
-  if (GoogleUpdateSettings::GetCollectStatsConsent()) {
+  const bool unattended = (getenv("CHROME_HEADLESS") != NULL);
+  if (unattended || GoogleUpdateSettings::GetCollectStatsConsent()) {
 #if defined(OS_LINUX)
     command_line->AppendSwitchWithValue(switches::kEnableCrashReporter,
                                         ASCIIToWide(google_update::linux_guid +
