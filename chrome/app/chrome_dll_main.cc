@@ -554,6 +554,7 @@ int ChromeMain(int argc, const char** argv) {
 #endif
   } else if (process_type.empty()) {
 #if defined(OS_LINUX)
+    g_thread_init(NULL);
     // Glib type system initialization. Needed at least for gconf,
     // used in net/proxy/proxy_config_service_linux.cc. Most likely
     // this is superfluous as gtk_init() ought to do this. It's
