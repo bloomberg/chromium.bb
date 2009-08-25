@@ -65,6 +65,7 @@ class WebAccessibility {
   // conversion to its own roles (see e.g. BrowserAccessibility::get_accRole and
   // BrowserAccessibility::MSAARole).
   enum Role {
+    ROLE_APPLICATION,
     ROLE_CELL,
     ROLE_CHECKBUTTON,
     ROLE_CLIENT,
@@ -86,11 +87,14 @@ class WebAccessibility {
     ROLE_RADIOBUTTON,
     ROLE_ROW,
     ROLE_ROWHEADER,
+    ROLE_SEPARATOR,
     ROLE_SLIDER,
     ROLE_STATICTEXT,
+    ROLE_STATUSBAR,
     ROLE_TABLE,
     ROLE_TEXT,
-    ROLE_TOOLBAR
+    ROLE_TOOLBAR,
+    ROLE_TOOLTIP
   };
 
   // This defines an enumeration (in alphabetical order) of the supported

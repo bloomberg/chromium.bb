@@ -365,6 +365,8 @@ String GlueAccessibilityObject::description() const {
 // WebAccessibility role (except for default role). Static function.
 static WebAccessibility::Role SupportedRole(WebCore::AccessibilityRole role) {
   switch (role) {
+    case WebCore::LandmarkApplicationRole:
+      return WebAccessibility::ROLE_APPLICATION;
     case WebCore::CellRole:
       return WebAccessibility::ROLE_CELL;
     case WebCore::CheckBoxRole:
@@ -378,6 +380,8 @@ static WebAccessibility::Role SupportedRole(WebCore::AccessibilityRole role) {
     case WebCore::ImageMapRole:
     case WebCore::ImageRole:
       return WebAccessibility::ROLE_GRAPHIC;
+    case WebCore::DocumentRegionRole:
+    case WebCore::RadioGroupRole:
     case WebCore::GroupRole:
       return WebAccessibility::ROLE_GROUPING;
     case WebCore::LinkRole:
@@ -408,10 +412,14 @@ static WebAccessibility::Role SupportedRole(WebCore::AccessibilityRole role) {
       return WebAccessibility::ROLE_ROW;
     case WebCore::RowHeaderRole:
       return WebAccessibility::ROLE_ROWHEADER;
+    case WebCore::SplitterRole:
+      return WebAccessibility::ROLE_SEPARATOR;
     case WebCore::SliderRole:
       return WebAccessibility::ROLE_SLIDER;
     case WebCore::StaticTextRole:
       return WebAccessibility::ROLE_STATICTEXT;
+    case WebCore::ApplicationStatusRole:
+      return WebAccessibility::ROLE_STATUSBAR;
     case WebCore::TableRole:
       return WebAccessibility::ROLE_TABLE;
     case WebCore::ListMarkerRole:
@@ -420,6 +428,9 @@ static WebAccessibility::Role SupportedRole(WebCore::AccessibilityRole role) {
       return WebAccessibility::ROLE_TEXT;
     case WebCore::ToolbarRole:
       return WebAccessibility::ROLE_TOOLBAR;
+    case WebCore::UserInterfaceTooltipRole:
+      return WebAccessibility::ROLE_TOOLTIP;
+    case WebCore::DocumentRole:
     case WebCore::UnknownRole:
     default:
         // This is the default role.

@@ -559,6 +559,8 @@ const WebAccessibility::OutParams& BrowserAccessibility::response() {
 
 long BrowserAccessibility::MSAARole(long browser_accessibility_role) {
   switch (browser_accessibility_role) {
+    case WebAccessibility::ROLE_APPLICATION:
+      return ROLE_SYSTEM_APPLICATION;
     case WebAccessibility::ROLE_CELL:
       return ROLE_SYSTEM_CELL;
     case WebAccessibility::ROLE_CHECKBUTTON:
@@ -598,16 +600,22 @@ long BrowserAccessibility::MSAARole(long browser_accessibility_role) {
       return ROLE_SYSTEM_ROW;
     case WebAccessibility::ROLE_ROWHEADER:
       return ROLE_SYSTEM_ROWHEADER;
+    case WebAccessibility::ROLE_SEPARATOR:
+      return ROLE_SYSTEM_SEPARATOR;
     case WebAccessibility::ROLE_SLIDER:
       return ROLE_SYSTEM_SLIDER;
     case WebAccessibility::ROLE_STATICTEXT:
       return ROLE_SYSTEM_STATICTEXT;
+    case WebAccessibility::ROLE_STATUSBAR:
+      return ROLE_SYSTEM_STATUSBAR;
     case WebAccessibility::ROLE_TABLE:
       return ROLE_SYSTEM_TABLE;
     case WebAccessibility::ROLE_TEXT:
       return ROLE_SYSTEM_TEXT;
     case WebAccessibility::ROLE_TOOLBAR:
       return ROLE_SYSTEM_TOOLBAR;
+    case WebAccessibility::ROLE_TOOLTIP:
+      return ROLE_SYSTEM_TOOLTIP;
     case WebAccessibility::ROLE_CLIENT:
     default:
       // This is the default role for MSAA.
