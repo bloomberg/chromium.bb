@@ -5,6 +5,8 @@
 #ifndef PRINTING_NATIVE_METAFILE_H_
 #define PRINTING_NATIVE_METAFILE_H_
 
+#include "build/build_config.h"
+
 // Define a metafile format for the current platform.  We use this platform
 // independent define so we can define interfaces in platform agnostic manner.
 // It is still an outstanding design issue whether we create classes on all
@@ -30,9 +32,13 @@ class NativeMetafile {};
 
 #elif defined(OS_LINUX)
 
-// TODO(port): Printing using PostScript?
-// The mock class is here so we can compile.
-class NativeMetafile {};
+#include "printing/pdf_ps_metafile_linux.h"
+
+namespace printing {
+
+typedef PdfPsMetafile NativeMetafile;
+
+}  // namespace printing
 
 #endif
 

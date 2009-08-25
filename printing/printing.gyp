@@ -40,6 +40,8 @@
         'page_range.h',
         'page_setup.cc',
         'page_setup.h',
+        'pdf_ps_metafile_linux.h',
+        'pdf_ps_metafile_linux.cc',
         'print_settings.cc',
         'print_settings.h',
         'printed_document.cc',
@@ -90,6 +92,7 @@
         'page_overlays_unittest.cc',
         'page_range_unittest.cc',
         'page_setup_unittest.cc',
+        'pdf_ps_metafile_linux_unittest.cc',
         'printing_context_win_unittest.cc',
         'run_all_unittests.cc',
         'units_unittest.cc',
@@ -109,6 +112,14 @@
           ]
         }, {  # else: OS=="win"
           'sources/': [['exclude', '_posix_unittest\\.cc$']]
+        }],
+        ['OS=="linux"', {
+          'dependencies': [
+            '../base/base.gyp:base_gfx',
+         ],
+         'sources/': [
+            ['include', 'pdf_ps_metafile_linux_unittest.cc'],
+          ]
         }],
       ],
     },
