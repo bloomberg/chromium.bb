@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 
@@ -23,6 +24,24 @@ class UrlFetchTest : public UITest {
     std::string cookie_value;
     std::string javascript_variable;
   };
+
+  void SetUp() {
+    const CommandLine *cmdLine = CommandLine::ForCurrentProcess();
+    if (cmdLine->HasSwitch(L"reference_build")) {
+      FilePath dir;
+      PathService::Get(chrome::DIR_TEST_TOOLS, &dir);
+      dir = dir.AppendASCII("reference_build");
+#if defined(OS_WIN)
+      dir = dir.AppendASCII("chrome");
+#elif defined(OS_LINUX)
+      dir = dir.AppendASCII("chrome_linux");
+#elif defined(OS_MACOSX)
+      dir = dir.AppendASCII("chrome_mac");
+#endif
+      browser_directory_ = dir;
+    }
+    UITest::SetUp();
+  }
 
   void RunTest(const GURL& url, const char *waitCookieName,
                const char *waitCookieValue, const wchar_t *varToFetch,
@@ -84,6 +103,9 @@ bool writeValueToFile(std::string value, std::wstring filePath) {
 // --jsvar_output=<filepath>
 //   Write the value of the variable named by '--jsvar' to a file at the given
 //   path.
+//
+// --reference_build
+//   Use the reference build of chrome for the test.
 TEST_F(UrlFetchTest, UrlFetch) {
   const CommandLine *cmdLine = CommandLine::ForCurrentProcess();
 
