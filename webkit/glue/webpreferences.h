@@ -45,7 +45,6 @@ struct WebPreferences {
   bool remote_fonts_enabled;
   bool xss_auditor_enabled;
   bool local_storage_enabled;
-  bool databases_enabled;
   bool session_storage_enabled;
   bool application_cache_enabled;
 
@@ -86,7 +85,6 @@ struct WebPreferences {
         remote_fonts_enabled(false),
         xss_auditor_enabled(false),
         local_storage_enabled(false),
-        databases_enabled(false),
         session_storage_enabled(false),
         application_cache_enabled(false),
         user_style_sheet_enabled(false) {

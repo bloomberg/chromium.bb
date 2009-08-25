@@ -208,20 +208,10 @@ bool RenderViewHost::CreateRenderView() {
   modal_dialog_event.event = modal_dialog_event_handle;
 #endif
 
-  // Force local storage to be enabled for extensions. This is so that we can
-  // enable extensions by default before databases, if necessary.
-  // TODO(aa): This should be removed when local storage and databases are
-  // enabled by default (bugs 4359 and 4360).
-  WebPreferences webkit_prefs = delegate_->GetWebkitPrefs();
-  if (delegate_->GetURL().SchemeIs(chrome::kExtensionScheme)) {
-    webkit_prefs.local_storage_enabled = true;
-    webkit_prefs.databases_enabled = true;
-  }
-
   Send(new ViewMsg_New(GetNativeViewId(),
                        modal_dialog_event,
                        delegate_->GetRendererPrefs(),
-                       webkit_prefs,
+                       delegate_->GetWebkitPrefs(),
                        routing_id()));
 
   // Set the alternate error page, which is profile specific, in the renderer.
