@@ -109,3 +109,7 @@ PREFIX : npobjectgetproperty___npobjectgetnamedproperty___webcore::v8custom::v8h
 # 20063
 PREFIX :
 npapi::plugininstance::npp_newstream___npapi::pluginstream::open___npapi::pluginstreamurl::didreceiveresponse___webplugindelegatestub::ondidreceiveresponse___ipc::messagewithtuple<tuple1<pluginmsg_didreceiveresponseparams> >::dispatch<webplugindelegatestub,void (__thiscall webplugindelegatestub::*)(pluginmsg_didreceiveresponseparams const &)>
+
+# 20200
+PREFIX : `anonymous namespace'::purecall___realloc___wtf::fastrealloc___webcore::htmltokenizer::enlargescriptbuffer___webcore::htmltokenizer::parsecomment___webcore::htmltokenizer::parsetag
+PREFIX : `anonymous namespace'::invalidparameter___realloc___wtf::fastrealloc___webcore::htmltokenizer::enlargescriptbuffer___webcore::htmltokenizer::parsecomment___webcore::htmltokenizer::parsetag
