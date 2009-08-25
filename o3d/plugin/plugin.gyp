@@ -75,6 +75,9 @@
         ],
         ['OS == "mac"',
           {
+            'mac_bundle': 1,
+            'product_extension': 'plugin',
+            'product_name': 'O3D',
             'dependencies': [
               '../../breakpad/breakpad.gyp:breakpad',
             ],
@@ -95,6 +98,8 @@
             ],
             'link_settings': {
               'libraries': [
+                '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
+                '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
                 '$(SDKROOT)/System/Library/Frameworks/AGL.framework',
                 '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
                 '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
@@ -105,6 +110,28 @@
                 '../../third_party/glew/files/lib/libGLEW.a',
               ],
             },
+            'postbuilds': [
+              {
+                'variables': {
+                  # Define install_name in a variable ending in _path
+                  # so that gyp understands it's a path and performs proper
+                  # relativization during dict merging.
+                  'install_name_path': 'mac/plugin_fix_install_names.sh',
+                },
+                'postbuild_name': 'Fix Framework Paths',
+                'action': ['<(install_name_path)'],
+              },
+              {
+                'variables': {
+                  # Define copy_frameworks in a variable ending in _path
+                  # so that gyp understands it's a path and performs proper
+                  # relativization during dict merging.
+                  'copy_frameworks_path': 'mac/plugin_copy_frameworks.sh',
+                },
+                'postbuild_name': 'Copy Frameworks',
+                'action': ['<(copy_frameworks_path)'],
+              },
+            ],
           },
         ],
         ['OS == "win"',
@@ -158,7 +185,16 @@
       },
       {
         'variables': {
-          'o3d_main_lib_type': 'shared_library',
+          'conditions': [
+            ['OS == "mac"',
+              {
+                'o3d_main_lib_type': 'loadable_module',
+              },
+              {
+                'o3d_main_lib_type': 'dynamic_library',
+              },
+            ],
+          ],
         },
       },
     ],
