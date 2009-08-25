@@ -65,6 +65,10 @@ const int kCompleteAnimationDurationMs = 2500;
 // TODO(estade): get rid of the fudge factor. http://crbug.com/18692
 const int kBodyWidth = kTextWidth + 50 + download_util::kSmallProgressIconSize;
 
+// The font size of the text, and that size rounded down to the nearest integer
+// for the size of the arrow in GTK theme mode.
+const double kTextSize = 13.4;  // 13.4px == 10pt @ 96dpi
+
 }  // namespace
 
 // DownloadShelfContextMenuGtk -------------------------------------------------
@@ -219,8 +223,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   gtk_misc_set_alignment(GTK_MISC(name_label_), 0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(status_label_), 0, 0.5);
   // Until we switch to vector graphics, force the font size.
-  gtk_util::ForceFontSizePixels(name_label_, 13.4);  // 13.4px == 10pt @ 96dpi
-  gtk_util::ForceFontSizePixels(status_label_, 13.4);  // 13.4px == 10pt @ 96dpi
+  gtk_util::ForceFontSizePixels(name_label_, kTextSize);
+  gtk_util::ForceFontSizePixels(status_label_, kTextSize);
 
   // Stack the labels on top of one another.
   GtkWidget* text_stack = gtk_vbox_new(FALSE, 0);
@@ -436,6 +440,9 @@ void DownloadItemGtk::Observe(NotificationType type,
     if (theme_provider_->UseGtkTheme()) {
       if (!arrow_) {
         arrow_ = gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+        gtk_widget_set_size_request(arrow_,
+                                    static_cast<int>(kTextSize),
+                                    static_cast<int>(kTextSize));
         gtk_container_add(GTK_CONTAINER(menu_button_), arrow_);
       }
 
@@ -566,8 +573,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
     }
 
     // Until we switch to vector graphics, force the font size.
-    // 13.4px == 10pt @ 96dpi
-    gtk_util::ForceFontSizePixels(dangerous_label_, 13.4);
+    gtk_util::ForceFontSizePixels(dangerous_label_, kTextSize);
     gtk_label_set_line_wrap(GTK_LABEL(dangerous_label_), TRUE);
     gtk_widget_set_size_request(dangerous_label_, kDangerousTextWidth, -1);
 
