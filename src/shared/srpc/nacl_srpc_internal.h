@@ -65,7 +65,6 @@ typedef struct NaClDesc* SRPC_IMC_DESC_TYPE;
 /*
  * SRPC_DEBUG enables trace output printing.
  */
-#define SRPC_DEBUG 1
 #ifdef SRPC_DEBUG
 #define dprintf(args) do { printf args;  fflush(stdout); } while (0)
 #else
