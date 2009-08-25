@@ -2828,3 +2828,6 @@ BUG_JIANLI WIN LINUX SKIP : LayoutTests/fast/forms/textarea-placeholder-set-valu
 
 // WebKit 47646:47719.
 BUG_JIANLI MAC : LayoutTests/fast/forms/button-state-restore.html = CRASH
+
+// WebKit 47719:47732. New test. Time out on all 3 platforms.
+BUG_JIANLI : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
