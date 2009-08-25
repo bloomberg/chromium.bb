@@ -619,31 +619,12 @@ void RenderWidgetHostViewGtk::ReceivedSelectionText(GtkClipboard* clipboard,
                                                 UTF8ToUTF16(text)));
 }
 
-gfx::PluginWindowHandle RenderWidgetHostViewGtk::CreatePluginContainer(
-    base::ProcessId plugin_process_id) {
-  gfx::PluginWindowHandle handle =
-      plugin_container_manager_.CreatePluginContainer();
-  plugin_pid_map_.insert(std::make_pair(plugin_process_id, handle));
-  return handle;
+void RenderWidgetHostViewGtk::CreatePluginContainer(
+    gfx::PluginWindowHandle id) {
+  plugin_container_manager_.CreatePluginContainer(id);
 }
 
 void RenderWidgetHostViewGtk::DestroyPluginContainer(
-    gfx::PluginWindowHandle container) {
-  plugin_container_manager_.DestroyPluginContainer(container);
-
-  for (PluginPidMap::iterator i = plugin_pid_map_.begin();
-       i != plugin_pid_map_.end(); ++i) {
-    if (i->second == container) {
-      plugin_pid_map_.erase(i);
-      break;
-    }
-  }
-}
-
-void RenderWidgetHostViewGtk::PluginProcessCrashed(base::ProcessId pid) {
-  for (PluginPidMap::iterator i = plugin_pid_map_.find(pid);
-       i != plugin_pid_map_.end() && i->first == pid; ++i) {
-    plugin_container_manager_.DestroyPluginContainer(i->second);
-  }
-  plugin_pid_map_.erase(pid);
+    gfx::PluginWindowHandle id) {
+  plugin_container_manager_.DestroyPluginContainer(id);
 }

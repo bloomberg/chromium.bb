@@ -3305,7 +3305,18 @@ void RenderView::DidMovePlugin(const WebPluginGeometry& move) {
   SchedulePluginMove(move);
 }
 
+void RenderView::CreatedPluginWindow(gfx::PluginWindowHandle window) {
+#if defined(OS_LINUX)
+  RenderThread::current()->Send(new ViewHostMsg_CreatePluginContainer(
+      routing_id(), window));
+#endif
+}
+
 void RenderView::WillDestroyPluginWindow(gfx::PluginWindowHandle window) {
+#if defined(OS_LINUX)
+  RenderThread::current()->Send(new ViewHostMsg_DestroyPluginContainer(
+      routing_id(), window));
+#endif
   CleanupWindowInPluginMoves(window);
 }
 

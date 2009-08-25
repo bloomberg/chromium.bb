@@ -25,7 +25,8 @@ struct NPObject;
 // Describes the new location for a plugin window.
 struct WebPluginGeometry {
   // On Windows, this is the plugin window in the plugin process.
-  // On X11, this is the browser process's hosting window (the GtkSocket).
+  // On X11, this is the XID of the plugin-side GtkPlug containing the
+  // GtkSocket hosting the actual plugin window.
   gfx::PluginWindowHandle window;
   gfx::Rect window_rect;
   // Clip rect (include) and cutouts (excludes), relative to
@@ -50,13 +51,6 @@ class WebPlugin {
  public:
   WebPlugin() { }
   virtual ~WebPlugin() { }
-
-#if defined(OS_LINUX)
-  // Called by the plugin delegate to request a container for a new
-  // windowed plugin.  This handle will later get destroyed with
-  // WillDestroyWindow.
-  virtual gfx::PluginWindowHandle CreatePluginContainer() = 0;
-#endif
 
   // Called by the plugin delegate to let the WebPlugin know if the plugin is
   // windowed (i.e. handle is not NULL) or windowless (handle is NULL).  This

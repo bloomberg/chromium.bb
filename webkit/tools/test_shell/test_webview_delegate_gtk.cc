@@ -108,12 +108,12 @@ WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
   return WebPluginDelegateImpl::Create(info.path, mtype, plugin_parent);
 }
 
-gfx::PluginWindowHandle TestWebViewDelegate::CreatePluginContainer() {
-  return shell_->webViewHost()->CreatePluginContainer();
+void TestWebViewDelegate::CreatedPluginWindow(gfx::PluginWindowHandle id) {
+  shell_->webViewHost()->CreatePluginContainer(id);
 }
 
-void TestWebViewDelegate::WillDestroyPluginWindow(unsigned long id) {
-  shell_->webViewHost()->OnPluginWindowDestroyed(id);
+void TestWebViewDelegate::WillDestroyPluginWindow(gfx::PluginWindowHandle id) {
+  shell_->webViewHost()->DestroyPluginContainer(id);
 }
 
 void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {

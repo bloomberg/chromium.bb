@@ -187,6 +187,9 @@ WebPluginDelegateProxy::~WebPluginDelegateProxy() {
 }
 
 void WebPluginDelegateProxy::PluginDestroyed() {
+  if (window_) {
+    WillDestroyWindow();
+  }
   plugin_ = NULL;
 
   if (npobject_) {
@@ -358,12 +361,6 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
 
   IPC_BEGIN_MESSAGE_MAP(WebPluginDelegateProxy, msg)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindow, OnSetWindow)
-#if defined(OS_LINUX)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_CreatePluginContainer,
-                        OnCreatePluginContainer)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_DestroyPluginContainer,
-                        OnDestroyPluginContainer)
-#endif
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindowlessPumpEvent,
                         OnSetWindowlessPumpEvent)
@@ -399,7 +396,7 @@ void WebPluginDelegateProxy::OnChannelError() {
     if (window_) {
       // The actual WebPluginDelegate never got a chance to tell the WebPlugin
       // its window was going away. Do it on its behalf.
-      plugin_->WillDestroyWindow(window_);
+      WillDestroyWindow();
     }
     plugin_->Invalidate();
   }
@@ -757,22 +754,14 @@ void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
     plugin_->SetWindow(window);
 }
 
-#if defined(OS_LINUX)
-void WebPluginDelegateProxy::OnCreatePluginContainer(
-    gfx::PluginWindowHandle* container) {
-  RenderThread::current()->Send(new ViewHostMsg_CreatePluginContainer(
-      render_view_->routing_id(), GetProcessId(), container));
+void WebPluginDelegateProxy::WillDestroyWindow() {
+  DCHECK(window_);
+  plugin_->WillDestroyWindow(window_);
+  window_ = NULL;
 }
-
-void WebPluginDelegateProxy::OnDestroyPluginContainer(
-    gfx::PluginWindowHandle container) {
-  RenderThread::current()->Send(new ViewHostMsg_DestroyPluginContainer(
-      render_view_->routing_id(), container));
-}
-#endif
 
 #if defined(OS_WIN)
-  void WebPluginDelegateProxy::OnSetWindowlessPumpEvent(
+void WebPluginDelegateProxy::OnSetWindowlessPumpEvent(
       HANDLE modal_loop_pump_messages_event) {
   DCHECK(modal_loop_pump_messages_event_ == NULL);
 

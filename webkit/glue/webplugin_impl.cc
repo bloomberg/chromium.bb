@@ -396,19 +396,17 @@ void WebPluginImpl::didFailLoading(const WebURLError& error) {
 WebPluginImpl::~WebPluginImpl() {
 }
 
-#if defined(OS_LINUX)
-gfx::PluginWindowHandle WebPluginImpl::CreatePluginContainer() {
-  WebViewDelegate* view_delegate = GetWebViewDelegate();
-  if (!view_delegate)
-    return 0;
-  return view_delegate->CreatePluginContainer();
-}
-#endif
 
 void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
   if (window) {
     DCHECK(!windowless_);  // Make sure not called twice.
     window_ = window;
+    WebViewDelegate* view_delegate = GetWebViewDelegate();
+    if (view_delegate) {
+      // Tell the view delegate that the plugin window was created, so that it
+      // can create necessary container widgets.
+      view_delegate->CreatedPluginWindow(window);
+    }
   } else {
     DCHECK(!window_);  // Make sure not called twice.
     windowless_ = true;

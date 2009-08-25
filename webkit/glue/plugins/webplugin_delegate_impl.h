@@ -196,6 +196,13 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   GdkPixmap* pixmap_;
   double first_event_time_;
 
+  // On Linux some plugins assume that the GtkSocket container is in the same
+  // process. So we create a GtkPlug to plug into the browser's container, and
+  // a GtkSocket to hold the plugin. We then send the GtkPlug to the browser
+  // process.
+  GtkWidget* plug_;
+  GtkWidget* socket_;
+
   // Ensure pixmap_ exists and is at least width by height pixels.
   void EnsurePixmapAtLeastSize(int width, int height);
 #endif

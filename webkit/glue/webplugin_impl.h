@@ -100,9 +100,6 @@ class WebPluginImpl : public WebPlugin,
   virtual void didFailLoading(const WebKit::WebURLError& error);
 
   // WebPlugin implementation:
-#if defined(OS_LINUX)
-  gfx::PluginWindowHandle CreatePluginContainer();
-#endif
   void SetWindow(gfx::PluginWindowHandle window);
   void WillDestroyWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)

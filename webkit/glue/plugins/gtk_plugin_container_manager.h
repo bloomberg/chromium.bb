@@ -21,28 +21,31 @@ class GtkPluginContainerManager {
   // Sets the widget that will host the plugin containers. Must be a GtkFixed.
   void set_host_widget(GtkWidget *widget) { host_widget_ = widget; }
 
-  // Creates a new plugin container, returning its XID.
-  gfx::PluginWindowHandle CreatePluginContainer();
+  // Creates a new plugin container, for a given plugin XID.
+  GtkWidget* CreatePluginContainer(gfx::PluginWindowHandle id);
 
-  // Destroys a plugin container, given its XID.
-  void DestroyPluginContainer(gfx::PluginWindowHandle container);
+  // Destroys a plugin container, given the plugin XID.
+  void DestroyPluginContainer(gfx::PluginWindowHandle id);
 
   // Takes an update from WebKit about a plugin's position and side and moves
   // the plugin accordingly.
   void MovePluginContainer(const WebPluginGeometry& move);
 
  private:
-  // Maps a plugin container XID to the corresponding widget.
+  // Maps a plugin XID to the corresponding container widget.
   GtkWidget* MapIDToWidget(gfx::PluginWindowHandle id);
 
-  // Callback for when the plugin container loses its XID, so that it can be
-  // removed from plugin_window_to_widget_map_.
-  static void UnrealizeCallback(GtkWidget *widget, void *user_data);
+  // Maps a container widget to the corresponding plugin XID.
+  gfx::PluginWindowHandle MapWidgetToID(GtkWidget* widget);
+
+  // Callback for when the plugin container gets realized, at which point it
+  // plugs the plugin XID.
+  static void RealizeCallback(GtkWidget *widget, void *user_data);
 
   // Parent of the plugin containers.
   GtkWidget* host_widget_;
 
-  // A map that associates plugin containers to their XID.
+  // A map that associates plugin containers to the plugin XID.
   typedef std::map<gfx::PluginWindowHandle, GtkWidget*> PluginWindowToWidgetMap;
   PluginWindowToWidgetMap plugin_window_to_widget_map_;
 };

@@ -782,15 +782,12 @@ void RenderWidgetHost::OnMsgImeUpdateStatus(int control,
 
 #if defined(OS_LINUX)
 
-void RenderWidgetHost::OnMsgCreatePluginContainer(
-    base::ProcessId pid,
-    gfx::PluginWindowHandle* container) {
-  *container = view_->CreatePluginContainer(pid);
+void RenderWidgetHost::OnMsgCreatePluginContainer(gfx::PluginWindowHandle id) {
+  view_->CreatePluginContainer(id);
 }
 
-void RenderWidgetHost::OnMsgDestroyPluginContainer(
-    gfx::PluginWindowHandle container) {
-  view_->DestroyPluginContainer(container);
+void RenderWidgetHost::OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id) {
+  view_->DestroyPluginContainer(id);
 }
 
 #elif defined(OS_MACOSX)

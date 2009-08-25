@@ -108,10 +108,6 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   // Message handlers for messages that proxy WebPlugin methods, which
   // we translate into calls to the real WebPlugin.
   void OnSetWindow(gfx::PluginWindowHandle window);
-#if defined(OS_LINUX)
-  void OnCreatePluginContainer(gfx::PluginWindowHandle* container);
-  void OnDestroyPluginContainer(gfx::PluginWindowHandle container);
-#endif
 #if defined(OS_WIN)
   void OnSetWindowlessPumpEvent(HANDLE modal_loop_pump_messages_event);
 #endif
@@ -162,6 +158,11 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   // Creates a shared memory section and canvas.
   bool CreateBitmap(scoped_ptr<TransportDIB>* memory,
                     scoped_ptr<skia::PlatformCanvas>* canvas);
+
+  // Called for cleanup during plugin destruction. Normally right before the
+  // plugin window gets destroyed, or when the plugin has crashed (at which
+  // point the window has already been destroyed).
+  void WillDestroyWindow();
 
   RenderView* render_view_;
   WebPlugin* plugin_;

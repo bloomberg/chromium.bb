@@ -238,15 +238,6 @@ IPC_BEGIN_MESSAGES(PluginHost)
   IPC_SYNC_MESSAGE_ROUTED1_0(PluginHostMsg_SetWindow,
                              gfx::PluginWindowHandle /* window */)
 
-#if defined(OS_LINUX)
-  // Asks the renderer to create a plugin container (GtkSocket).
-  IPC_SYNC_MESSAGE_ROUTED0_1(PluginHostMsg_CreatePluginContainer,
-                             gfx::PluginWindowHandle /* container */)
-  // Asks the renderer to destroy a plugin container (GtkSocket).
-  IPC_SYNC_MESSAGE_ROUTED1_0(PluginHostMsg_DestroyPluginContainer,
-                             gfx::PluginWindowHandle /* container */)
-#endif
-
 #if defined(OS_WIN)
   // The modal_loop_pump_messages_event parameter is an event handle which is
   // passed in for windowless plugins and is used to indicate if messages

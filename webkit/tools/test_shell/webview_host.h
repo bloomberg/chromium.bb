@@ -32,12 +32,11 @@ class WebViewHost : public WebWidgetHost {
   WebView* webview() const;
 
 #if defined(OS_LINUX)
-  // Create a new plugin parent container, returning its X window id for
-  // embedders to use.
-  GdkNativeWindow CreatePluginContainer();
+  // Create a new plugin parent container for a given plugin XID.
+  void CreatePluginContainer(gfx::PluginWindowHandle id);
 
-  // Called when a plugin has been destroyed.  Lets us clean up our side.
-  void OnPluginWindowDestroyed(GdkNativeWindow id);
+  // Destroy the plugin parent container when a plugin has been destroyed.
+  void DestroyPluginContainer(gfx::PluginWindowHandle id);
 
   GtkPluginContainerManager* plugin_container_manager() {
     return &plugin_container_manager_;

@@ -11,54 +11,44 @@
 #include "webkit/glue/plugins/gtk_plugin_container.h"
 #include "webkit/glue/webplugin.h"
 
-// Helper function that always returns true. Used to prevent Gtk from
-// destroying our socket when the plug goes away: we manage it ourselves.
-static gboolean AlwaysTrue(void* unused) {
-  return TRUE;
-}
-
-gfx::PluginWindowHandle GtkPluginContainerManager::CreatePluginContainer() {
+GtkWidget* GtkPluginContainerManager::CreatePluginContainer(
+    gfx::PluginWindowHandle id) {
   DCHECK(host_widget_);
-  // If the current view hasn't been attached to a top-level window (e.g. it is
-  // loaded in a background tab), it can't be realized without asserting in
-  // Gtk, so we can't get the XID for the socket. Instead, don't create one.
-  // We'll never see the plugin but it's better than crashing.
-  // TODO(piman@google.com): figure out how to add the background tab to the
-  // widget hierarchy, so that it can be realized. It doesn't have to be
-  // visible.
-  if (!gtk_widget_get_ancestor(host_widget_, GTK_TYPE_WINDOW)) {
-    NOTIMPLEMENTED() << "Can't create plugins in background tabs.";
-    return 0;
-  }
+  GtkWidget *widget = gtk_plugin_container_new();
+  plugin_window_to_widget_map_.insert(std::make_pair(id, widget));
 
-  GtkWidget* plugin_container = gtk_plugin_container_new();
-  g_signal_connect(G_OBJECT(plugin_container), "plug-removed",
-                   G_CALLBACK(AlwaysTrue), NULL);
-  // Add a connection to the "unrealize" signal so that if the parent widget
-  // gets destroyed before the DestroyPluginContainer gets called, bad things
-  // don't happen.
-  g_signal_connect(G_OBJECT(plugin_container), "unrealize",
-                   G_CALLBACK(UnrealizeCallback), this);
-  gtk_container_add(GTK_CONTAINER(host_widget_), plugin_container);
-  gtk_widget_show(plugin_container);
-  gtk_widget_realize(plugin_container);
+  // The Realize callback is responsible for adding the plug into the socket.
+  // The reason is 2-fold:
+  // - the plug can't be added until the socket is realized, but this may not
+  // happen until the socket is attached to a top-level window, which isn't the
+  // case for background tabs.
+  // - when dragging tabs, the socket gets unrealized, which breaks the XEMBED
+  // connection. We need to make it again when the tab is reattached, and the
+  // socket gets realized again.
+  //
+  // Note, the RealizeCallback relies on the plugin_window_to_widget_map_ to
+  // have the mapping.
+  g_signal_connect(G_OBJECT(widget), "realize",
+                   G_CALLBACK(RealizeCallback), this);
 
-  gfx::PluginWindowHandle id = gtk_socket_get_id(GTK_SOCKET(plugin_container));
+  // Don't destroy the widget when the plug is removed.
+  g_signal_connect(G_OBJECT(widget), "plug-removed",
+                   G_CALLBACK(gtk_true), NULL);
 
-  plugin_window_to_widget_map_.insert(std::make_pair(id, plugin_container));
+  gtk_container_add(GTK_CONTAINER(host_widget_), widget);
+  gtk_widget_show(widget);
 
-  return id;
+  return widget;
 }
 
 void GtkPluginContainerManager::DestroyPluginContainer(
-    gfx::PluginWindowHandle container) {
-  GtkWidget* plugin_container = MapIDToWidget(container);
-  if (!plugin_container)
-    return;
+    gfx::PluginWindowHandle id) {
+  DCHECK(host_widget_);
+  GtkWidget* widget = MapIDToWidget(id);
+  if (widget)
+    gtk_widget_destroy(widget);
 
-  // This will call the UnrealizeCallback that will remove plugin_container
-  // from the map.
-  gtk_widget_destroy(plugin_container);
+  plugin_window_to_widget_map_.erase(id);
 }
 
 void GtkPluginContainerManager::MovePluginContainer(
@@ -117,7 +107,8 @@ void GtkPluginContainerManager::MovePluginContainer(
                                 move.window_rect.height());
 }
 
-GtkWidget* GtkPluginContainerManager::MapIDToWidget(gfx::PluginWindowHandle id) {
+GtkWidget* GtkPluginContainerManager::MapIDToWidget(
+    gfx::PluginWindowHandle id) {
   PluginWindowToWidgetMap::const_iterator i =
       plugin_window_to_widget_map_.find(id);
   if (i != plugin_window_to_widget_map_.end())
@@ -128,12 +119,26 @@ GtkWidget* GtkPluginContainerManager::MapIDToWidget(gfx::PluginWindowHandle id) 
   return NULL;
 }
 
-void GtkPluginContainerManager::UnrealizeCallback(GtkWidget* widget,
-                                                  void* user_data) {
-  // This is the last chance to get the XID for the widget. Remove it from the
-  // map here.
+gfx::PluginWindowHandle GtkPluginContainerManager::MapWidgetToID(
+     GtkWidget* widget) {
+  for (PluginWindowToWidgetMap::const_iterator i =
+          plugin_window_to_widget_map_.begin();
+       i != plugin_window_to_widget_map_.end(); ++i) {
+    if (i->second == widget)
+      return i->first;
+  }
+
+  LOG(ERROR) << "Request for id for unknown widget";
+  return 0;
+}
+
+// static
+void GtkPluginContainerManager::RealizeCallback(GtkWidget* widget,
+                                                void* user_data) {
   GtkPluginContainerManager* plugin_container_manager =
       static_cast<GtkPluginContainerManager*>(user_data);
-  gfx::PluginWindowHandle id = gtk_socket_get_id(GTK_SOCKET(widget));
-  plugin_container_manager->plugin_window_to_widget_map_.erase(id);
+
+  gfx::PluginWindowHandle id = plugin_container_manager->MapWidgetToID(widget);
+  if (id)
+    gtk_socket_add_id(GTK_SOCKET(widget), id);
 }

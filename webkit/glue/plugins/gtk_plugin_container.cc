@@ -35,7 +35,7 @@ class GtkPluginContainer : public GtkSocket {
         NULL, NULL,
         static_cast<GClassInitFunc>(&ClassInit),
         NULL, NULL,
-        sizeof(GtkSocket),  // We are identical to a GtkSocket.
+        sizeof(GtkPluginContainer),
         0, &InstanceInit,
       };
       type = g_type_register_static(GTK_TYPE_SOCKET,

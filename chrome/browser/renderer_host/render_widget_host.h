@@ -399,9 +399,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // having to bring in render_messages.h in a header file.
   void OnMsgImeUpdateStatus(int control, const gfx::Rect& caret_rect);
 #if defined(OS_LINUX)
-  void OnMsgCreatePluginContainer(base::ProcessId pid,
-                                  gfx::PluginWindowHandle* container);
-  void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle container);
+  void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
+  void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);
 #elif defined(OS_MACOSX)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
   void OnMsgGetScreenInfo(gfx::NativeViewId view,

@@ -328,6 +328,7 @@ class RenderView : public RenderWidget,
   virtual bool WasOpenedByUserGesture() const;
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj);
   virtual void DidMovePlugin(const WebPluginGeometry& move);
+  virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle);
   virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle);
   virtual void SpellCheck(const std::wstring& word, int* misspell_location,
                           int* misspell_length);

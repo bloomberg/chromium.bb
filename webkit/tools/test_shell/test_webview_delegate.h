@@ -77,8 +77,8 @@ class TestWebViewDelegate : public WebViewDelegate {
       const std::string& clsid,
       std::string* actual_mime_type);
 #if defined(OS_LINUX)
-  virtual gfx::PluginWindowHandle CreatePluginContainer();
-  virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle);
+  virtual void CreatedPluginWindow(gfx::PluginWindowHandle id);
+  virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle id);
 #endif
   virtual WebKit::WebMediaPlayer* CreateWebMediaPlayer(
       WebKit::WebMediaPlayerClient* client);

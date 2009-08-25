@@ -68,6 +68,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       instance_(instance),
       pixmap_(NULL),
       first_event_time_(-1.0),
+      plug_(NULL),
+      socket_(NULL),
       parent_(containing_view),
       quirks_(0) {
   memset(&window_, 0, sizeof(window_));
@@ -134,8 +136,10 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
     if (!WindowedCreatePlugin())
       return false;
   }
+  gfx::PluginWindowHandle handle =
+      windowless_ ? 0 : gtk_plug_get_id(GTK_PLUG(plug_));
+  plugin->SetWindow(handle);
 
-  plugin->SetWindow(windowed_handle_);
   plugin_url_ = url.spec();
 
   return true;
@@ -258,6 +262,7 @@ void WebPluginDelegateImpl::WindowedUpdateGeometry(
 
 bool WebPluginDelegateImpl::WindowedCreatePlugin() {
   DCHECK(!windowed_handle_);
+  DCHECK(!plug_);
 
   bool xembed;
   NPError err = instance_->NPP_GetValue(NPPVpluginNeedsXEmbed, &xembed);
@@ -267,11 +272,22 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
     return false;
   }
 
-  // Xembed plugins need a window created for them browser-side.
-  // Do that now.
-  windowed_handle_ = plugin_->CreatePluginContainer();
-  if (!windowed_handle_)
-    return false;
+  // Passing 0 as the socket XID creates a plug without plugging it in a socket
+  // yet, so that it can be latter added with gtk_socket_add_id().
+  plug_ = gtk_plug_new(0);
+  gtk_widget_show(plug_);
+  socket_ = gtk_socket_new();
+  gtk_widget_show(socket_);
+  gtk_container_add(GTK_CONTAINER(plug_), socket_);
+  gtk_widget_show_all(plug_);
+
+  // Prevent the plug from being destroyed if the browser kills the container
+  // window.
+  g_signal_connect(plug_, "delete-event", G_CALLBACK(gtk_true), NULL);
+  // Prevent the socket from being destroyed when the plugin removes itself.
+  g_signal_connect(socket_, "plug_removed", G_CALLBACK(gtk_true), NULL);
+
+  windowed_handle_ = gtk_socket_get_id(GTK_SOCKET(socket_));
 
   window_.window = reinterpret_cast<void*>(windowed_handle_);
 
@@ -288,9 +304,12 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
 }
 
 void WebPluginDelegateImpl::WindowedDestroyWindow() {
-  if (windowed_handle_) {
-    plugin_->WillDestroyWindow(windowed_handle_);
+  if (plug_) {
+    plugin_->WillDestroyWindow(gtk_plug_get_id(GTK_PLUG(plug_)));
 
+    gtk_widget_destroy(plug_);
+    plug_ = NULL;
+    socket_ = NULL;
     windowed_handle_ = 0;
   }
 }

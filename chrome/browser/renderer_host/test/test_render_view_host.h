@@ -83,10 +83,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 #endif
 
 #if defined(OS_LINUX)
-  virtual gfx::PluginWindowHandle CreatePluginContainer(base::ProcessId) {
-    return 0;
-  }
-  virtual void DestroyPluginContainer(gfx::PluginWindowHandle container) { }
+  virtual void CreatePluginContainer(gfx::PluginWindowHandle id) { }
+  virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) { }
 #endif
 
   bool is_showing() const { return is_showing_; }

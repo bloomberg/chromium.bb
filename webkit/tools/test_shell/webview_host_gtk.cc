@@ -35,10 +35,10 @@ WebView* WebViewHost::webview() const {
   return static_cast<WebView*>(webwidget_);
 }
 
-GdkNativeWindow WebViewHost::CreatePluginContainer() {
-  return plugin_container_manager_.CreatePluginContainer();
+void WebViewHost::CreatePluginContainer(gfx::PluginWindowHandle id) {
+  plugin_container_manager_.CreatePluginContainer(id);
 }
 
-void WebViewHost::OnPluginWindowDestroyed(GdkNativeWindow id) {
+void WebViewHost::DestroyPluginContainer(gfx::PluginWindowHandle id) {
   plugin_container_manager_.DestroyPluginContainer(id);
 }

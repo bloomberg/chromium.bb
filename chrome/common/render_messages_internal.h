@@ -1023,16 +1023,16 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
 #if defined(OS_LINUX)
   // A renderer sends this when it needs a browser-side widget for
-  // hosting a windowed plugin.  The PID is the PID of the *plugin*
-  // process, which is used to associate the browser-side container with
-  // the lifetime of the plugin process.
-  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CreatePluginContainer,
-                             base::ProcessId /* pid */,
-                             gfx::PluginWindowHandle /* container */)
+  // hosting a windowed plugin. id is the XID of the plugin window, for which
+  // the container is created.
+  IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_CreatePluginContainer,
+                             gfx::PluginWindowHandle /* id */)
 
   // Destroy a plugin container previously created using CreatePluginContainer.
+  // id is the XID of the plugin window corresponding to the container that is
+  // to be destroyed.
   IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_DestroyPluginContainer,
-                             gfx::PluginWindowHandle /* container */)
+                             gfx::PluginWindowHandle /* id */)
 #endif
 
   // Clipboard IPC messages
