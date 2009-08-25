@@ -394,6 +394,7 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
       InstallUtil::WriteInstallerResult(system_install, status,
                                         IDS_SETUP_PATCH_FAILED_BASE, NULL);
     }
+    file_util::Delete(temp_path, true);
     return true;
   } else if (cmd_line.HasSwitch(installer_util::switches::kShowEula)) {
     // Check if we need to show the EULA. If it is passed as a command line
