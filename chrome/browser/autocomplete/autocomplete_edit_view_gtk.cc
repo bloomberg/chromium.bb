@@ -777,6 +777,16 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkMenu* menu) {
                    G_CALLBACK(HandleEditSearchEnginesThunk), this);
   gtk_widget_show(search_engine_menuitem);
 
+  // We need to update the paste and go controller before we know what text
+  // to show. We could do this all asynchronously, but it would be elaborate
+  // because we'd have to account for multiple menus showing, getting called
+  // back after shutdown, and similar issues.
+  GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+  gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
+  std::wstring text_wstr = UTF8ToWide(text);
+  g_free(text);
+  bool can_paste_and_go = model_->CanPasteAndGo(text_wstr);
+
   // Paste and Go menu item.
   GtkWidget* paste_go_menuitem = gtk_menu_item_new_with_mnemonic(
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
@@ -785,6 +795,7 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkMenu* menu) {
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), paste_go_menuitem);
   g_signal_connect(paste_go_menuitem, "activate",
                    G_CALLBACK(HandlePasteAndGoThunk), this);
+  gtk_widget_set_sensitive(paste_go_menuitem, can_paste_and_go);
   gtk_widget_show(paste_go_menuitem);
 }
 
@@ -793,15 +804,7 @@ void AutocompleteEditViewGtk::HandleEditSearchEngines() {
 }
 
 void AutocompleteEditViewGtk::HandlePasteAndGo() {
-  GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-  gtk_clipboard_request_text(x_clipboard, HandlePasteAndGoReceivedTextThunk,
-                             this);
-}
-
-void AutocompleteEditViewGtk::HandlePasteAndGoReceivedText(
-    const std::wstring& text) {
-  if (model_->CanPasteAndGo(text))
-    model_->PasteAndGo();
+  model_->PasteAndGo();
 }
 
 void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,

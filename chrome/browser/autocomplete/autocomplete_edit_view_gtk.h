@@ -216,17 +216,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
   void HandlePasteAndGo();
 
-  static void HandlePasteAndGoReceivedTextThunk(GtkClipboard* clipboard,
-                                                const gchar* text,
-                                                gpointer self) {
-    // If there is nothing to paste (|text| is NULL), do nothing.
-    if (!text)
-      return;
-    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
-        HandlePasteAndGoReceivedText(UTF8ToWide(text));
-  }
-  void HandlePasteAndGoReceivedText(const std::wstring& text);
-
   static void HandleMarkSetThunk(GtkTextBuffer* buffer,
                                  GtkTextIter* location,
                                  GtkTextMark* mark,
