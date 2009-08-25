@@ -216,8 +216,8 @@
     }],
     [ 'OS=="linux"', {
       'conditions': [
-        # Tools needed for archiving build symbols.
-        ['branding=="Chrome" or linux_breakpad==1', {
+        # Tools needed for archiving official build symbols.
+        ['branding=="Chrome"', {
           'targets': [
             {
               'target_name': 'symupload',
