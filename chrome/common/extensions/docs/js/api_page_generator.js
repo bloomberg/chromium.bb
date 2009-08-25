@@ -167,7 +167,7 @@ function renderTemplate() {
     if (mod.namespace == pageBase) {
       // This page is an api page. Setup types and apiDefinition.
       module = mod;
-      apiModuleTitle = "chrome." + module.namespace + " API Reference";  
+      apiModuleTitle = "chrome." + module.namespace;  
       pageData.apiDefinition = module;
     }
     

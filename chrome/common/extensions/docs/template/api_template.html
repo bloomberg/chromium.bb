@@ -138,15 +138,16 @@
 
         <!-- API PAGE -->
         <div class="apiPage" jsselect="apiDefinition">
+        <h2 jscontent="getModuleName() + ' API reference'">chrome.apiname API reference</h2>
           
           <!-- PROPERTIES -->
           <div jsdisplay="$this.properties" class="apiGroup">
             <a name="#properties"></a>
-            <h2 id="properties">Properties</h2>
+            <h3 id="properties">Properties</h3>
 
             <div jsselect="getPropertyListFromObject($this)">
               <a jsvalues=".name:'property-' + name"></a>
-              <h3 jscontent="name">getLastError</h3>
+              <h4 jscontent="name">getLastError</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
                 <span jscontent="getModuleName() + '.'">chrome.extension</span><span jscontent="$this.name">lastError</span>
@@ -160,12 +161,12 @@
           <!-- METHODS -->
           <div jsdisplay="functions && functions.length > 0" class="apiGroup" id="methods">
             <a name="#methods"></a>
-            <h2>Methods</h2>
+            <h3>Methods</h3>
 
             <!-- iterates over all functions -->
             <div class="apiItem" jsselect="functions">
               <a jsvalues=".name:'method-' + name"></a> <!-- method-anchor -->
-              <h3 jscontent="name">method name</h3>
+              <h4 jscontent="name">method name</h4>
 
               <div class="summary"><span jsdisplay="returns" jscontent="getTypeName(returns)">void</span>
                   <!-- Note: intentionally longer 80 columns -->
@@ -270,12 +271,12 @@
           <!-- EVENTS -->
           <div jsdisplay="events && events.length > 0" class="apiGroup">
             <a name="#events"></a>
-            <h2 id="events">Events</h2>
+            <h3 id="events">Events</h3>
 
             <!-- iterates over all events -->
             <div jsselect="events" class="apiItem">
               <a jsvalues=".name:'event-' + name"></a>
-              <h3 jscontent="name">event name</h3>
+              <h4 jscontent="name">event name</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
@@ -306,12 +307,12 @@
           <!-- TYPES -->
           <div jsdisplay="types && types.length > 0" class="apiGroup">
             <a name="#types"></a>
-            <h2 id="types">Types</h2>
+            <h3 id="types">Types</h3>
 
             <!-- iterates over all types -->
             <div jsselect="types" class="apiItem">
               <a jsvalues=".name:'type-' + id"></a>
-              <h3 jscontent="id">type name</h3>
+              <h4 jscontent="id">type name</h4>
                 
               <div transclude="valueTemplate">
               </div>
