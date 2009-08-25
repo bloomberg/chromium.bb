@@ -32,7 +32,6 @@
 
 // This file contains the definition of DrawList.
 
-#include "core/cross/precompile.h"
 #include "core/cross/draw_list.h"
 #include "core/cross/transformation_context.h"
 #include "core/cross/draw_list_manager.h"

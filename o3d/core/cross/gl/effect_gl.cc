@@ -41,7 +41,6 @@
 #pragma warning(disable : 4311)
 #endif
 
-#include "core/cross/precompile.h"
 #include "Cg/cgGL.h"
 #include <sstream>
 #include "base/cross/std_functional.h"

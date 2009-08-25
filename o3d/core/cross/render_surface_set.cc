@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "core/cross/render_surface_set.h"
 
 #include "core/cross/error.h"

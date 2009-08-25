@@ -32,7 +32,6 @@
 
 // This file contains the implementation for the CanvasPaint class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/canvas_paint.h"
 #include "core/cross/canvas_utils.h"
 #include "core/cross/client.h"

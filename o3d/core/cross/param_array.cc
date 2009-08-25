@@ -32,7 +32,6 @@
 
 // This file contains the implementation of class ParamArray.
 
-#include "core/cross/precompile.h"
 #include "core/cross/param_array.h"
 #include "core/cross/error.h"
 #include "core/cross/iclass_manager.h"

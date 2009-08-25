@@ -32,7 +32,6 @@
 
 // This file implements class ClassManager.
 
-#include "core/cross/precompile.h"
 #include "core/cross/bitmap.h"
 #include "core/cross/bounding_box.h"
 #include "core/cross/buffer.h"

@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "base/logging.h"
 #include "core/cross/service_locator.h"
 

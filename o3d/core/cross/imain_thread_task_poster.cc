@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "core/cross/imain_thread_task_poster.h"
 
 namespace o3d {

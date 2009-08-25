@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "core/cross/object_manager.h"
 #include "core/cross/named_object.h"
 #include "core/cross/pack.h"

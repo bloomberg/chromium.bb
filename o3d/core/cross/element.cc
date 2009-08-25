@@ -32,7 +32,6 @@
 
 // This file contains the definition of Element.
 
-#include "core/cross/precompile.h"
 #include "core/cross/element.h"
 #include "core/cross/error.h"
 #include "core/cross/pack.h"

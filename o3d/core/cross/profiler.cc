@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "core/cross/profiler.h"
 
 namespace o3d {

@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "statsreport/metrics.h"
 
 namespace o3d {

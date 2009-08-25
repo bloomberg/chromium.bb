@@ -40,7 +40,6 @@
 // linked to all Shapes containing parameters of the same name, by
 // Node::GenerateRenderTreeGroup().
 
-#include "core/cross/precompile.h"
 #include "core/cross/draw_context.h"
 
 namespace o3d {

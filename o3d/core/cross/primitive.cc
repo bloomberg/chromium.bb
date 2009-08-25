@@ -32,7 +32,6 @@
 
 // This file contains the definition of Primitive.
 
-#include "core/cross/precompile.h"
 #include "core/cross/primitive.h"
 #include "core/cross/renderer.h"
 #include "core/cross/error.h"

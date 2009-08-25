@@ -32,7 +32,6 @@
 
 // This file contains the definition of the NamedObject class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/named_object.h"
 
 namespace o3d {

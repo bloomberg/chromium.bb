@@ -34,7 +34,6 @@
 // creates and returns platform specific implementation for the abstract
 // Renderer class.
 
-#include "core/cross/precompile.h"
 
 #include "core/cross/renderer.h"
 

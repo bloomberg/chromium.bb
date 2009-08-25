@@ -32,7 +32,6 @@
 
 // This file contains the definition of class Matrix4AxisRotation.
 
-#include "core/cross/precompile.h"
 #include "core/cross/matrix4_axis_rotation.h"
 
 namespace o3d {

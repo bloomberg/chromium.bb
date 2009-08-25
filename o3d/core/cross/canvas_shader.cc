@@ -32,7 +32,6 @@
 
 // This file contains the implementation for the CanvasShader class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/canvas_shader.h"
 #include "base/scoped_ptr.h"
 #include "core/cross/canvas_utils.h"

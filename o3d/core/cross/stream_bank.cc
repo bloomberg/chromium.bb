@@ -32,7 +32,6 @@
 
 // This file contains the definition of StreamBank.
 
-#include "core/cross/precompile.h"
 #include "core/cross/stream_bank.h"
 #include "core/cross/renderer.h"
 #include "core/cross/error.h"

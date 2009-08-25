@@ -32,7 +32,6 @@
 
 // This file contains the implementation for the Client class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/client.h"
 #include "core/cross/draw_context.h"
 #include "core/cross/effect.h"

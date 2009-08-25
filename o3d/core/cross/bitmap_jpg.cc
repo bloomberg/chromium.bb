@@ -32,9 +32,6 @@
 
 // This file contains the image codec operations for JPEG files.
 
-// precompiled header must appear before anything else.
-#include "core/cross/precompile.h"
-
 #include <csetjmp>
 #include "core/cross/bitmap.h"
 #include "utils/cross/file_path_utils.h"

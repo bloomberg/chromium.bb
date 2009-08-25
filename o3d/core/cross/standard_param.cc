@@ -32,7 +32,6 @@
 
 // This file contains declarations for StandardParamMatrix4.
 
-#include "core/cross/precompile.h"
 #include "core/cross/transformation_context.h"
 #include "core/cross/standard_param.h"
 #include "core/cross/transform.h"

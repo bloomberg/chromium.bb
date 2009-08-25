@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "core/cross/stream.h"
 #include "core/cross/types.h"
 #include "core/cross/gl/utils_gl.h"

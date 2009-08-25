@@ -32,7 +32,6 @@
 
 // This file contains the implementation of Function.
 
-#include "core/cross/precompile.h"
 #include "core/cross/function.h"
 
 namespace o3d {

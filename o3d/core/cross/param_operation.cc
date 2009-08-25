@@ -32,7 +32,6 @@
 
 // This file contains the implementation of various Parameter Operations.
 
-#include "core/cross/precompile.h"
 #include "core/cross/param_operation.h"
 
 namespace o3d {

@@ -32,7 +32,6 @@
 
 // This file contains the implementation of the Sampler class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/param.h"
 #include "core/cross/renderer.h"
 #include "core/cross/sampler.h"

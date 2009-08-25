@@ -32,7 +32,6 @@
 
 // This file contains the definition of DrawElement.
 
-#include "core/cross/precompile.h"
 #include "core/cross/draw_element.h"
 #include "core/cross/renderer.h"
 #include "core/cross/error.h"

@@ -32,7 +32,6 @@
 
 // This file contains the definition for class RayIntersectionInfo.
 
-#include "core/cross/precompile.h"
 #include "core/cross/ray_intersection_info.h"
 
 namespace o3d {

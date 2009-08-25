@@ -32,7 +32,6 @@
 
 // This file contains the definition of the Effect class.
 
-#include "core/cross/precompile.h"
 #include <cctype>
 #include <algorithm>
 #include "core/cross/effect.h"

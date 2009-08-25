@@ -34,7 +34,6 @@
 // the communication of external code (clients) with O3D (server) via the
 // NativeClient IMC library.
 
-#include "core/cross/precompile.h"
 #if defined(OS_MACOSX) | defined(OS_LINUX)
 #include <sys/types.h>
 #include <unistd.h>

@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "core/cross/counter_manager.h"
 #include "core/cross/counter.h"
 

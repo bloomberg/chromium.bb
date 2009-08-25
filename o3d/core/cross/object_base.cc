@@ -32,7 +32,6 @@
 
 // This file contains the definition of the ObjectBase class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/object_base.h"
 #include "core/cross/service_locator.h"
 #include "core/cross/object_manager.h"

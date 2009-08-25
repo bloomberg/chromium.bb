@@ -32,7 +32,6 @@
 
 // This file contains the implementation of Event.
 
-#include "core/cross/precompile.h"
 #include "core/cross/event.h"
 
 namespace o3d {

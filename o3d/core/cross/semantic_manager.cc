@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "core/cross/semantic_manager.h"
 #include "core/cross/standard_param.h"
 

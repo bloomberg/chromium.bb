@@ -32,7 +32,6 @@
 
 // This file contains the definition of the Stream class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/stream.h"
 #include "core/cross/buffer.h"
 

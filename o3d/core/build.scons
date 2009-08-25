@@ -128,7 +128,12 @@ platform_inputs = []
 
 # Add a precompiled header declaration to the Windows environment.
 if env['TARGET_PLATFORM'] == 'WINDOWS':
-  env.Append(CCFLAGS='/Ylcore')
+  env.Append(
+      CCFLAGS = [
+          '/Ylcore',
+          '/FIcore/cross/precompile.h'
+      ],
+  )
   pch, pch_obj = env.PCH('cross/precompile.cc')
   env['PCH'] = pch
   env['PCHSTOP'] = 'core/cross/precompile.h'

@@ -32,7 +32,6 @@
 
 // This file contains the definition of the Texture2D and TextureCUBE classes.
 
-#include "core/cross/precompile.h"
 #include <cmath>
 #include "core/cross/texture.h"
 #include "core/cross/bitmap.h"

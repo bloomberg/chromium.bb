@@ -32,7 +32,6 @@
 
 // This file contains the ClientInfoManager implementation
 
-#include "core/cross/precompile.h"
 #include "core/cross/client_info.h"
 #include <vector>
 #include "base/string_util.h"

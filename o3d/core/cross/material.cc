@@ -32,7 +32,6 @@
 
 // This file contains the definition of Material.
 
-#include "core/cross/precompile.h"
 #include "core/cross/material.h"
 
 namespace o3d {

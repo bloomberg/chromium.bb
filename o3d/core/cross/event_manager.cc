@@ -32,9 +32,6 @@
 
 // This file contains the implementation for the EventManager class.
 
-// The precompiled header must appear before anything else.
-#include "core/cross/precompile.h"
-
 #include "core/cross/event_manager.h"
 
 #include "core/cross/client.h"

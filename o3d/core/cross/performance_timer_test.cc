@@ -32,7 +32,6 @@
 
 // This file contains unit tests for the performance timer.
 
-#include "core/cross/precompile.h"
 
 #include "core/cross/performance_timer.h"
 #include "tests/common/win/testing_common.h"

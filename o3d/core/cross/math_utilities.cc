@@ -33,7 +33,6 @@
 // The file contains defintions of various math related functions.
 
 #include <math.h>
-#include "core/cross/precompile.h"
 #include "core/cross/math_utilities.h"
 
 static const float kEpsilon = 0.00001f;

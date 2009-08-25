@@ -32,7 +32,6 @@
 
 // This file contains the definition of VertexSource.
 
-#include "core/cross/precompile.h"
 #include "core/cross/vertex_source.h"
 
 namespace o3d {

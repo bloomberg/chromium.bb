@@ -32,7 +32,6 @@
 
 // This file contains the definitions of Counter related classes
 
-#include "core/cross/precompile.h"
 #include "core/cross/counter.h"
 #include "core/cross/counter_manager.h"
 

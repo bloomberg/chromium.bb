@@ -32,7 +32,6 @@
 
 // This file contains the definition of the DrawElementGL class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/gl/draw_element_gl.h"
 
 namespace o3d {

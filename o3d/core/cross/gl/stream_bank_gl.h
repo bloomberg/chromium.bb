@@ -36,7 +36,6 @@
 #define O3D_CORE_CROSS_GL_STREAM_BANK_GL_H_
 
 #include <map>
-#include "core/cross/precompile.h"
 #include "core/cross/stream_bank.h"
 #include "core/cross/gl/param_cache_gl.h"
 

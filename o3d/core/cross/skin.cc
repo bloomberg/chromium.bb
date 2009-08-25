@@ -32,7 +32,6 @@
 
 // This file contains the implementation of class Skin.
 
-#include "core/cross/precompile.h"
 #include "core/cross/skin.h"
 #include "core/cross/error.h"
 #include "core/cross/pointer_utils.h"

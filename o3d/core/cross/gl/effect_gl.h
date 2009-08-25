@@ -45,7 +45,6 @@
 #include <utility>
 #include <vector>
 #include <map>
-#include "core/cross/precompile.h"
 #include "core/cross/effect.h"
 #include "core/cross/gl/utils_gl.h"
 

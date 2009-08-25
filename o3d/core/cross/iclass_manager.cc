@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "core/cross/iclass_manager.h"
 
 namespace o3d {

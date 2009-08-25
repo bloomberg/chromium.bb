@@ -30,9 +30,6 @@
  */
 
 
-// The precompiled header must appear before anything else.
-#include "core/cross/precompile.h"
-
 #include "core/cross/install_check.h"
 
 namespace o3d {

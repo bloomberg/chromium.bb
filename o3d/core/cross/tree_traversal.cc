@@ -32,7 +32,6 @@
 
 // This file contains the definition of TreeTraveral.
 
-#include "core/cross/precompile.h"
 #include "core/cross/tree_traversal.h"
 #include "core/cross/shape.h"
 #include "core/cross/draw_list.h"

@@ -32,7 +32,6 @@
 
 // This file contains the StateSet render node implementation
 
-#include "core/cross/precompile.h"
 #include "core/cross/state_set.h"
 #include "core/cross/renderer.h"
 

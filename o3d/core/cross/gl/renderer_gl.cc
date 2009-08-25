@@ -34,7 +34,6 @@
 // implements the abstract Renderer API using OpenGL and the Cg
 // Runtime.
 
-#include "core/cross/precompile.h"
 
 #include "core/cross/gl/renderer_gl.h"
 

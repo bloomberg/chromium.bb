@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "tests/common/win/testing_common.h"
 #include "core/cross/client.h"
 #include "core/cross/client_info.h"

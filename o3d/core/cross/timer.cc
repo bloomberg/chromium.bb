@@ -37,7 +37,6 @@
 #include <sys/time.h>
 #include <time.h>
 #endif
-#include "core/cross/precompile.h"
 #include "core/cross/timer.h"
 
 namespace o3d {

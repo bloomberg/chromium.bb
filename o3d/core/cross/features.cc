@@ -32,7 +32,6 @@
 
 // This file contains the Features implementation
 
-#include "core/cross/precompile.h"
 #include "core/cross/features.h"
 #include <vector>
 #include "base/string_util.h"

@@ -32,7 +32,6 @@
 
 // This file contains the definition of the FileRequest class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/file_request.h"
 
 namespace o3d {

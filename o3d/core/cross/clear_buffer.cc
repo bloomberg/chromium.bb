@@ -32,7 +32,6 @@
 
 // This file contains the ClearBuffer render node implementation
 
-#include "core/cross/precompile.h"
 #include "core/cross/clear_buffer.h"
 #include "core/cross/renderer.h"
 

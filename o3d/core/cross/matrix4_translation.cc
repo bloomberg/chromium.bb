@@ -32,7 +32,6 @@
 
 // This file contains the definition of class Matrix4Translation.
 
-#include "core/cross/precompile.h"
 #include "core/cross/matrix4_translation.h"
 
 namespace o3d {

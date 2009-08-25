@@ -36,7 +36,6 @@
 #define O3D_CORE_CROSS_GL_TEXTURE_GL_H_
 
 // Precompiled header comes before everything else.
-#include "core/cross/precompile.h"
 
 // Disable compiler warning for openGL calls that require a void* to
 // be cast to a GLuint

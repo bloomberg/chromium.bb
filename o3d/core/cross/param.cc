@@ -34,7 +34,6 @@
 // it for each type of data (ParamFloat, ParamFloat2, ParamFloat3,
 // ParamMatrix, ParamBoolean, ParamString, ParamInteger, ParamTexture).
 
-#include "core/cross/precompile.h"
 #include "core/cross/param.h"
 #include "core/cross/param_object.h"
 #include "core/cross/error.h"

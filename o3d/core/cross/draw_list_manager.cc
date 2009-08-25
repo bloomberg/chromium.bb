@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/precompile.h"
 #include "core/cross/draw_list_manager.h"
 #include "core/cross/draw_list.h"
 

@@ -33,7 +33,6 @@
 // This file contains definitions for ParamObject, the base class for all
 // objects that can have Params.
 
-#include "core/cross/precompile.h"
 #include "core/cross/param_object.h"
 #include "base/cross/std_functional.h"
 #include "core/cross/draw_context.h"

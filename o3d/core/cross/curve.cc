@@ -33,7 +33,6 @@
 // This file contains the implementation of Curve.
 // This code is heavily influenced by code from FCollada.
 
-#include "core/cross/precompile.h"
 #include "core/cross/curve.h"
 #include "core/cross/error.h"
 #include "import/cross/memory_stream.h"

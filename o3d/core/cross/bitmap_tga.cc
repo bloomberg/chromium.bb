@@ -33,9 +33,6 @@
 // This file contains the image file codec operations for OpenGL texture
 // loading.
 
-// precompiled header must appear before anything else.
-#include "core/cross/precompile.h"
-
 #include <stdio.h>
 #include "core/cross/bitmap.h"
 #include "utils/cross/file_path_utils.h"

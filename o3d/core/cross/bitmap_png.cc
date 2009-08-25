@@ -32,9 +32,6 @@
 
 // This file contains the image codec operations for PNG files.
 
-// precompiled header must appear before anything else.
-#include "core/cross/precompile.h"
-
 #include <fstream>
 #include "core/cross/bitmap.h"
 #include "core/cross/error.h"

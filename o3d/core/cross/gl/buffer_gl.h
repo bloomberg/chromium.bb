@@ -36,7 +36,6 @@
 #ifndef O3D_CORE_CROSS_GL_BUFFER_GL_H_
 #define O3D_CORE_CROSS_GL_BUFFER_GL_H_
 
-#include "core/cross/precompile.h"
 #include "core/cross/buffer.h"
 
 namespace o3d {

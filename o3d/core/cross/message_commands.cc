@@ -31,7 +31,6 @@
 
 // This file contains string descriptions of various IMC messages for O3D.
 
-#include "core/cross/precompile.h"
 #include "core/cross/message_commands.h"
 
 namespace o3d {

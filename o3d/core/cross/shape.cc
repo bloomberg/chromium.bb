@@ -32,7 +32,6 @@
 
 // This file contains the definition of the Shape class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/shape.h"
 #include "core/cross/param_object.h"
 #include "core/cross/render_node.h"

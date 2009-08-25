@@ -32,7 +32,6 @@
 
 // This file contains the Viewport render node implementation
 
-#include "core/cross/precompile.h"
 #include "core/cross/viewport.h"
 #include "core/cross/renderer.h"
 

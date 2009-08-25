@@ -32,7 +32,6 @@
 
 // This file contains the definition of class Matrix4Scale.
 
-#include "core/cross/precompile.h"
 #include "core/cross/matrix4_scale.h"
 
 namespace o3d {

@@ -32,7 +32,6 @@
 
 // This file contains the definition of the ParamCacheGL class.
 
-#include "core/cross/precompile.h"
 #include "core/cross/error.h"
 #include "core/cross/param_array.h"
 #include "core/cross/renderer.h"

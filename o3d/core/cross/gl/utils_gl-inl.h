@@ -33,7 +33,6 @@
 #ifndef O3D_CORE_CROSS_GL_UTILS_GL_INL_H_
 #define O3D_CORE_CROSS_GL_UTILS_GL_INL_H_
 
-#include "core/cross/precompile.h"
 #include "core/cross/types.h"
 
 namespace o3d {

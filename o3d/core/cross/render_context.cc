@@ -32,7 +32,6 @@
 
 // This file contains implementation of RenderContext.
 
-#include "core/cross/precompile.h"
 #include "core/cross/render_context.h"
 
 namespace o3d {

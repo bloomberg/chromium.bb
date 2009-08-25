@@ -33,7 +33,6 @@
 // This file contains the definition of FakeVertexSource. It is only used in
 // unit testing and should not be compiled in with the plugin.
 
-#include "core/cross/precompile.h"
 #include "core/cross/fake_vertex_source.h"
 #include "core/cross/pointer_utils.h"
 #include "core/cross/buffer.h"

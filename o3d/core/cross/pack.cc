@@ -33,7 +33,6 @@
 // Pack file.
 
 #include "base/file_path.h"
-#include "core/cross/precompile.h"
 #include "core/cross/pack.h"
 #include "core/cross/bitmap.h"
 #include "core/cross/draw_context.h"

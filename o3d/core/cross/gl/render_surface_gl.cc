@@ -33,7 +33,6 @@
 // This file contains the implementation of RenderSurfaceGL and
 // RenderDepthStencilSurfaceGL.
 
-#include "core/cross/precompile.h"
 #include "core/cross/gl/render_surface_gl.h"
 #include "core/cross/gl/utils_gl-inl.h"
 

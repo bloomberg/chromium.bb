@@ -32,7 +32,6 @@
 
 // This file contains the definition of DrawPass.
 
-#include "core/cross/precompile.h"
 #include "core/cross/draw_pass.h"
 #include "core/cross/draw_list.h"
 #include "core/cross/transformation_context.h"

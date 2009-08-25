@@ -34,7 +34,6 @@
 
 #include <algorithm>
 
-#include "core/cross/precompile.h"
 #include "core/cross/stream.h"
 #include "core/cross/error.h"
 #include "core/cross/gl/buffer_gl.h"

@@ -34,9 +34,6 @@
 // loading. Trying to keep this class as independent from the OpenGL API in
 // case they need retargeting later on.
 
-// The precompiled header must appear before anything else.
-#include "core/cross/precompile.h"
-
 #include "core/cross/bitmap.h"
 #include <cstring>
 #include <cmath>
