@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/perf/mem_usage.h"
+
 #include <windows.h>
 #include <psapi.h>
 
-#include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/chrome_process_util.h"
-#include "chrome/test/perf/mem_usage.h"
 
 bool GetMemoryInfo(uint32 process_id,
-                   size_t *peak_virtual_size,
-                   size_t *current_virtual_size,
-                   size_t *peak_working_set_size,
-                   size_t *current_working_set_size) {
+                   size_t* peak_virtual_size,
+                   size_t* current_virtual_size,
+                   size_t* peak_working_set_size,
+                   size_t* current_working_set_size) {
   if (!peak_virtual_size || !current_virtual_size)
     return false;
 

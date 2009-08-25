@@ -3532,7 +3532,9 @@
         'test/chrome_process_util_win.cc',
         'test/in_process_browser_test.cc',
         'test/in_process_browser_test.h',
-        'test/perf/mem_usage.cc',
+        'test/perf/mem_usage_linux.cc',
+        'test/perf/mem_usage_mac.cc',
+        'test/perf/mem_usage_win.cc',
         'test/perf/mem_usage.h',
         'test/testing_profile.cc',
         'test/testing_profile.h',
@@ -3548,11 +3550,6 @@
         ['OS=="win"', {
           'include_dirs': [
             'third_party/wtl/include',
-          ],
-        }, { # OS != "win"
-          'sources!': [
-            'test/perf/mem_usage.cc',
-            'test/perf/mem_usage.h',
           ],
         }],
       ],

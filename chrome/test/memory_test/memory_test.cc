@@ -18,9 +18,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/chrome_process_util.h"
 #include "chrome/test/ui/ui_test.h"
-#if defined(OS_WIN)
 #include "chrome/test/perf/mem_usage.h"
-#endif
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
@@ -214,9 +212,7 @@ class MemoryTest : public UITest {
     // Record the initial CommitCharge.  This is a system-wide measurement,
     // so if other applications are running, they can create variance in this
     // test.
-#if defined(OS_WIN)
     size_t start_size = GetSystemCommitCharge();
-#endif
 
     // Cycle through the URLs.
     scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
@@ -259,14 +255,9 @@ class MemoryTest : public UITest {
       // To make these tests more reliable, slowing them down a bit.
       PlatformThread::Sleep(100);
     }
-#if defined(OS_WIN)
-    size_t stop_size = GetSystemCommitCharge();
 
+    size_t stop_size = GetSystemCommitCharge();
     PrintResults(test_name, stop_size - start_size);
-#else
-    NOTIMPLEMENTED() << "need to map SystemCommitCharge";
-    PrintResults(test_name, 0);
-#endif
   }
 
   void PrintResults(const char* test_name, size_t commit_size) {
@@ -330,8 +321,9 @@ class MemoryTest : public UITest {
     printf("\n");
 
     FilePath data_dir(user_data_dir());
+    int browser_process_pid = 0;
 #if defined(OS_WIN)
-    int browser_process_pid = ChromeBrowserProcessId(data_dir);
+    browser_process_pid = ChromeBrowserProcessId(data_dir);
 #endif
     ChromeProcessList chrome_processes(GetRunningChromeProcesses(data_dir));
 
@@ -342,7 +334,6 @@ class MemoryTest : public UITest {
     size_t num_chrome_processes = 0;
     ChromeProcessList::const_iterator it;
     for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
-#if defined(OS_WIN)
       size_t peak_virtual_size;
       size_t current_virtual_size;
       size_t peak_working_set_size;
@@ -357,11 +348,6 @@ class MemoryTest : public UITest {
         working_set_size += current_working_set_size;
         num_chrome_processes++;
       }
-#else
-      // TODO(port)
-      NOTIMPLEMENTED()
-        << "need to port GetMemoryInfo or map it to the existing primitives";
-#endif
     }
 
     std::string trace_name(test_name);
