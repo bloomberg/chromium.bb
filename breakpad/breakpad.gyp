@@ -112,7 +112,18 @@
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
             ],
-          }
+          },
+          'configurations': {
+            'Release': {
+              'xcode_settings': {
+                # dump_syms crashes when built at -O1, -O2, and -O3.  It does
+                # not crash at -Os.  To play it safe, dump_syms is always built
+                # at -O0 until this can be sorted out.
+                # TODO(mark): Sort it out.
+                'GCC_OPTIMIZATION_LEVEL': '0',  # -O0
+               },
+             },
+          },
         },
         {
           'target_name': 'symupload',
