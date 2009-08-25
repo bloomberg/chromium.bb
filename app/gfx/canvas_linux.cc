@@ -231,6 +231,11 @@ void Canvas::DrawStringInt(const std::wstring& text,
 }
 
 void Canvas::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
+  if (!pixbuf) {
+    NOTREACHED();
+    return;
+  }
+
   cairo_t* cr = beginPlatformPaint();
   gdk_cairo_set_source_pixbuf(cr, pixbuf, x, y);
   cairo_paint(cr);
