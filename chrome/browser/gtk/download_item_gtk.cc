@@ -372,6 +372,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       return;
     case DownloadItem::CANCELLED:
       StopDownloadProgress();
+      gtk_widget_queue_draw(progress_area_.get());
       break;
     case DownloadItem::COMPLETE:
       StopDownloadProgress();
@@ -777,7 +778,8 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
           download_item->complete_animation_->GetCurrentValue(),
           download_util::SMALL);
     }
-  } else {
+  } else if (download_item->get_download()->state() !=
+             DownloadItem::CANCELLED) {
     download_util::PaintDownloadProgress(&canvas,
         widget->allocation.x, widget->allocation.y,
         download_item->progress_angle_,
