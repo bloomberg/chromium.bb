@@ -188,10 +188,6 @@ std::string InstructionLine(const NcDecodedInstruction* inst) {
 // code_segment - Pointer to the code segment to use.
 static void DetectDataBlocksAndApplyPatterns(
     CodeSegment* code_segment) {
-  // The following three variables are for tracking progress,
-  // since this code is somewhat slow.
-  int counter1 = 0;
-  int counter2 = 0;
   NcDecodeState state(*code_segment);
   bool is_data_block = false;
 
@@ -208,7 +204,6 @@ static void DetectDataBlocksAndApplyPatterns(
     }
 
     if (!is_data_block) {
-
       // Check if instruction is allowed.
       if (FLAGS_report_disallowed &&
           !state.CurrentInstruction().matched_inst->arm_safe) {
@@ -335,16 +330,10 @@ static void CheckBranchInstructions(const NcDecodeState &state) {
 
 // Validate control flow for the given code segment.
 static void ValidateControlFlow(CodeSegment* code_segment) {
-
-  // The following three variables are for tracking progress,
-  // since this code is somewhat slow.
-  int counter1 = 0;
-  int counter2 = 0;
   NcDecodeState state(*code_segment);
 
   bool is_data_block = false;
   for (state.GotoStartPc(); state.HasValidPc(); state.NextInstruction()) {
-
     if (state.CurrentPc() == GetCodeBlockEntry(state.CurrentPc())) {
       // Mark if data block.
       is_data_block = false;
