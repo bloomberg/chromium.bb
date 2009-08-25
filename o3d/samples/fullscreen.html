@@ -98,7 +98,7 @@ function createBannerSurfaceAndClickableRegion(clientHeight, viewInfo) {
   // Create a 2d plane for images. createPlane makes an XZ plane by default
   // so we pass in matrix to rotate it to an XY plane. We could do
   // all our manipulations in XZ but most people seem to like XY for 2D.
-  g_planeShape = o3djs.primitives.createPlane(
+  var planeShape = o3djs.primitives.createPlane(
       g_pack,
       material,
       1,
@@ -123,7 +123,7 @@ function createBannerSurfaceAndClickableRegion(clientHeight, viewInfo) {
       paramSampler.value = sampler;
 
       g_bannerTexture = sampler.texture = texture;
-      g_orthoRoot.addShape(g_planeShape);
+      g_orthoRoot.addShape(planeShape);
 
       // Convert to a top-left-corner-based coordinate system from the
       // center-based default.
