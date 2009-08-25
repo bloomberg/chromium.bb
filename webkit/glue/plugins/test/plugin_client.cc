@@ -155,7 +155,8 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
   // TODO(port): plugin_windowed_test.*.
   } else if (test_name == "hidden_plugin" ||
              test_name == "create_instance_in_paint" ||
-             test_name == "alert_in_window_message") {
+             test_name == "alert_in_window_message" ||
+             test_name == "src_plugin_for_outgoing_sync_call") {
     new_test = new NPAPIClient::WindowedPluginTest(instance,
         NPAPIClient::PluginClient::HostFunctions());
 #endif

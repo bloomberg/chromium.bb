@@ -298,3 +298,13 @@ TEST_F(NPAPIVisiblePluginTester, MultipleInstancesSyncCalls) {
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
+TEST_F(NPAPIVisiblePluginTester, EnsurePluginsPumpInSyncCalls) {
+  if (UITest::in_process_renderer())
+    return;
+
+  GURL url = GetTestUrl(L"npapi",
+                        L"ensure_plugins_pump_messages_in_sync_calls.html");
+  NavigateToURL(url);
+  WaitForFinish("src_plugin_for_outgoing_sync_call", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess, kShortWaitTimeout);
+}

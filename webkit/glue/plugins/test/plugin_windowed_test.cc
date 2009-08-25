@@ -33,7 +33,8 @@ NPError WindowedPluginTest::SetWindow(NPWindow* pNPWindow) {
   }
 
   if ((test_name() == "create_instance_in_paint" && test_id() == "1") ||
-      test_name() == "alert_in_window_message") {
+       test_name() == "alert_in_window_message" ||
+       test_name() == "src_plugin_for_outgoing_sync_call") {
     static ATOM window_class = 0;
     if (!window_class) {
       WNDCLASSEX wcex;
@@ -96,6 +97,12 @@ LRESULT CALLBACK WindowedPluginTest::WindowProc(
       // and verify that we don't hang the browser.
       CallJSFunction(this_ptr, "CallAlert");
       CallJSFunction(this_ptr, "CallAlert");
+    } else if (this_ptr->test_name() == "src_plugin_for_outgoing_sync_call" &&
+               message == WM_PAINT) {
+      this_ptr->done_ = true;
+      SetFocus(window);
+      CallJSFunction(this_ptr, "SetFocusToPlugin2");
+      this_ptr->SignalTestCompleted();
     }
   }
 
