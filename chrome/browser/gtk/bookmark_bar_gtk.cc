@@ -48,6 +48,13 @@ const int kInstructionsPadding = 6;
 // Color of the instructional text.
 const GdkColor kInstructionsColor = GDK_COLOR_RGB(128, 128, 142);
 
+// Middle color of the separator gradient.
+const double kSeparatorColor[] =
+    { 194.0 / 255.0, 205.0 / 255.0, 212.0 / 212.0 };
+// Top color of the separator gradient.
+const double kTopBorderColor[] =
+    { 222.0 / 255.0, 234.0 / 255.0, 248.0 / 255.0 };
+
 // The targets accepted by the toolbar and folder buttons for DnD.
 const int kDestTargetList[] = { GtkDndUtil::CHROME_BOOKMARK_ITEM,
                                 GtkDndUtil::CHROME_NAMED_URL,
@@ -188,8 +195,11 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(bookmark_toolbar_.get(), "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
 
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), gtk_vseparator_new(),
+  GtkWidget* vseparator = gtk_vseparator_new();
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), vseparator,
                      FALSE, FALSE, 0);
+  g_signal_connect(vseparator, "expose-event",
+                   G_CALLBACK(OnSeparatorExpose), this);
 
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.
@@ -827,4 +837,52 @@ gboolean BookmarkBarGtk::OnHBoxExpose(GtkWidget* widget,
   cairo_destroy(cr);
 
   return FALSE;  // Propagate expose to children.
+}
+
+// static
+gboolean BookmarkBarGtk::OnSeparatorExpose(GtkWidget* widget,
+                                           GdkEventExpose* event,
+                                           BookmarkBarGtk* bar) {
+  if (bar->theme_provider_->UseGtkTheme())
+    return FALSE;
+
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  cairo_rectangle(cr, event->area.x, event->area.y,
+                      event->area.width, event->area.height);
+  cairo_clip(cr);
+
+  GdkColor bottom_color =
+      bar->theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  double bottom_color_rgb[] = {
+      static_cast<double>(bottom_color.red / 257) / 255.0,
+      static_cast<double>(bottom_color.green / 257) / 255.0,
+      static_cast<double>(bottom_color.blue / 257) / 255.0, };
+
+  cairo_pattern_t* pattern =
+      cairo_pattern_create_linear(widget->allocation.x, widget->allocation.y,
+                                  widget->allocation.x,
+                                  widget->allocation.y +
+                                  widget->allocation.height);
+  cairo_pattern_add_color_stop_rgb(
+      pattern, 0.0,
+      kTopBorderColor[0], kTopBorderColor[1], kTopBorderColor[2]);
+  cairo_pattern_add_color_stop_rgb(
+      pattern, 0.5,
+      kSeparatorColor[0], kSeparatorColor[1], kSeparatorColor[2]);
+  cairo_pattern_add_color_stop_rgb(
+      pattern, 1.0,
+      bottom_color_rgb[0], bottom_color_rgb[1], bottom_color_rgb[2]);
+  cairo_set_source(cr, pattern);
+
+  double start_x = 0.5 + widget->allocation.x;
+  cairo_new_path(cr);
+  cairo_set_line_width(cr, 1.0);
+  cairo_move_to(cr, start_x, widget->allocation.y);
+  cairo_line_to(cr, start_x,
+                    widget->allocation.y + widget->allocation.height);
+  cairo_stroke(cr);
+  cairo_destroy(cr);
+  cairo_pattern_destroy(pattern);
+
+  return TRUE;
 }

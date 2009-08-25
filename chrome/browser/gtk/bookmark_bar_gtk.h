@@ -189,6 +189,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   static gboolean OnHBoxExpose(GtkWidget* widget, GdkEventExpose* event,
                                BookmarkBarGtk* window);
 
+  // GtkVSeparator callbacks.
+  static gboolean OnSeparatorExpose(GtkWidget* widget, GdkEventExpose* event,
+                                    BookmarkBarGtk* window);
 
   Profile* profile_;
 
