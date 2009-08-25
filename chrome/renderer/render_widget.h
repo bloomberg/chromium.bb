@@ -151,11 +151,6 @@ class RenderWidget : public IPC::Channel::Listener,
   // browser side has updated the screen for a newly painted region.
   virtual void DidPaint() {}
 
-  // Sets the "hidden" state of this widget.  All accesses to is_hidden_ should
-  // use this method so that we can properly inform the RenderThread of our
-  // state.
-  void SetHidden(bool hidden);
-
   // True if a PaintRect_ACK message is pending.
   bool paint_reply_pending() const {
     return paint_reply_pending_;

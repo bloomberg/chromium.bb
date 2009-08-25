@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/shared_memory.h"
 #include "base/stats_table.h"
 #include "base/thread_local.h"
@@ -59,8 +58,6 @@ using WebKit::WebString;
 
 namespace {
 static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
-static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
-
 static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
     base::LINKER_INITIALIZED);
 
@@ -108,11 +105,8 @@ void RenderThread::Init() {
 #endif
 
   plugin_refresh_allowed_ = true;
-  cache_stats_task_pending_ = false;
-  widget_count_ = 0;
-  hidden_widget_count_ = 0;
-  idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
-  task_factory_.reset(new ScopedRunnableMethodFactory<RenderThread>(this));
+  cache_stats_factory_.reset(
+      new ScopedRunnableMethodFactory<RenderThread>(this));
 
   visited_link_slave_.reset(new VisitedLinkSlave());
   user_script_slave_.reset(new UserScriptSlave());
@@ -160,30 +154,6 @@ void RenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
 
 void RenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
   channel()->RemoveFilter(filter);
-}
-
-void RenderThread::WidgetHidden() {
-  DCHECK(hidden_widget_count_ <= widget_count_);
-  hidden_widget_count_++ ;
-  if (hidden_widget_count_ == widget_count_) {
-    // Reset the delay.
-    idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
-
-    // Schedule the IdleHandler to wakeup in a bit.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        task_factory_->NewRunnableMethod(&RenderThread::IdleHandler),
-        static_cast<int64>(floor(idle_notification_delay_in_s_)) * 1000);
-  }
-}
-
-void RenderThread::WidgetRestored() {
-  DCHECK(hidden_widget_count_ > 0);
-  hidden_widget_count_--;
-
-  // Note: we may have a timer pending to call the IdleHandler (see the
-  // WidgetHidden() code).  But we don't bother to cancel it as it is
-  // benign and won't do anything if the tab is un-hidden when it is
-  // called.
 }
 
 void RenderThread::Resolve(const char* name, size_t length) {
@@ -346,17 +316,15 @@ void RenderThread::InformHostOfCacheStats() {
   WebCache::UsageStats stats;
   WebCache::getUsageStats(&stats);
   Send(new ViewHostMsg_UpdatedCacheStats(stats));
-  cache_stats_task_pending_ = false;
 }
 
 void RenderThread::InformHostOfCacheStatsLater() {
   // Rate limit informing the host of our cache stats.
-  if (cache_stats_task_pending_)
+  if (!cache_stats_factory_->empty())
     return;
 
-  cache_stats_task_pending_ = true;
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      task_factory_->NewRunnableMethod(
+      cache_stats_factory_->NewRunnableMethod(
           &RenderThread::InformHostOfCacheStats),
       kCacheStatsDelayMS);
 }
@@ -453,31 +421,6 @@ void RenderThread::EnsureWebKitInitialized() {
   if (command_line.HasSwitch(switches::kEnableDatabases) ||
       command_line.HasSwitch(switches::kEnableExtensions)) {
     WebKit::enableDatabases();
-  }
-}
-
-void RenderThread::IdleHandler() {
-  // It is possible that the timer was set while the widgets were idle,
-  // but that they are no longer idle.  If so, just return.
-  if (hidden_widget_count_ < widget_count_)
-    return;
-
-  LOG(INFO) << "RenderThread calling v8 IdleNotification for " << this;
-
-  // When V8::IdleNotification returns true, it means that it has cleaned up
-  // as much as it can.  There is no point in continuing to call it.
-  if (!v8::V8::IdleNotification(false)) {
-    // Dampen the delay using the algorithm:
-    //    delay = delay + 1 / (delay + 2)
-    // Using floor(delay) has a dampening effect such as:
-    //    1s, 1, 1, 2, 2, 2, 2, 3, 3, ...
-    idle_notification_delay_in_s_ +=
-        1.0 / (idle_notification_delay_in_s_ + 2.0);
-
-    // Schedule the next timer.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        task_factory_->NewRunnableMethod(&RenderThread::IdleHandler),
-        static_cast<int64>(floor(idle_notification_delay_in_s_)) * 1000);
   }
 }
 

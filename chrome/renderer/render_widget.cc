@@ -180,10 +180,8 @@ void RenderWidget::OnClose() {
   closing_ = true;
 
   // Browser correspondence is no longer needed at this point.
-  if (routing_id_ != MSG_ROUTING_NONE) {
+  if (routing_id_ != MSG_ROUTING_NONE)
     render_thread_->RemoveRoute(routing_id_);
-    SetHidden(false);
-  }
 
   // If there is a Send call on the stack, then it could be dangerous to close
   // now.  Post a task that only gets invoked when there are no nested message
@@ -205,7 +203,7 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
   resizer_rect_ = resizer_rect;
 
   // TODO(darin): We should not need to reset this here.
-  SetHidden(false);
+  is_hidden_ = false;
   needs_repainting_on_restore_ = false;
 
   // We shouldn't be asked to resize to our current size.
@@ -234,7 +232,7 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
 
 void RenderWidget::OnWasHidden() {
   // Go into a mode where we stop generating paint and scrolling events.
-  SetHidden(true);
+  is_hidden_ = true;
 }
 
 void RenderWidget::OnWasRestored(bool needs_repainting) {
@@ -243,7 +241,7 @@ void RenderWidget::OnWasRestored(bool needs_repainting) {
     return;
 
   // See OnWasHidden
-  SetHidden(false);
+  is_hidden_ = false;
 
   if (!needs_repainting && !needs_repainting_on_restore_)
     return;
@@ -736,18 +734,6 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   if (!webwidget_)
     return;
   webwidget_->setTextDirection(direction);
-}
-
-void RenderWidget::SetHidden(bool hidden) {
-  if (is_hidden_ == hidden)
-    return;
-
-  // The status has changed.  Tell the RenderThread about it.
-  is_hidden_ = hidden;
-  if (is_hidden_)
-    render_thread_->WidgetHidden();
-  else
-    render_thread_->WidgetRestored();
 }
 
 void RenderWidget::SetBackground(const SkBitmap& background) {
