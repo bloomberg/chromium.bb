@@ -2831,3 +2831,8 @@ BUG_JIANLI MAC : LayoutTests/fast/forms/button-state-restore.html = CRASH
 
 // WebKit 47719:47732. New test. Time out on all 3 platforms.
 BUG_JIANLI : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
+
+// WebKit 47732:47748. New tests. Need investigation.
+BUG_JIANLI : LayoutTests/fast/events/keydown-function-keys.html = FAIL
+BUG_JIANLI WIN LINUX : LayoutTests/http/tests/security/javascriptURL/javascriptURL-in-new-iframe.html = CRASH
+BUG_JIANLI WIN : LayoutTests/media/video-controls-with-mutation-event-handler.html = CRASH
