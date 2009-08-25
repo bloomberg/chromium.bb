@@ -1,5 +1,9 @@
 #!/usr/bin/bash -x
-#
+
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # This build script is similar to the one found in webkit.
 # We've temporarily modified it to support conditional compiling of
 # the V8 DerivedSources.  When we build our DerivedSources, we build

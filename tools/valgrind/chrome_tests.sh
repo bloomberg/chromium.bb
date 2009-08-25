@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # Select the valgrind built by build-valgrind-for-chromium.sh by default,
 # but allow users to override this default without editing scripts and
 # without specifying a commandline option

@@ -1,5 +1,9 @@
 #!/usr/bin/bash -x
-#
+
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # In order to build KJS or V8 versions of Chrome, we need to create
 # a custom configuration header.  This script creates it.
 #

@@ -1,5 +1,9 @@
 #!/usr/bin/bash
 
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 XSRCROOT="$1"
 # Do a little dance to get the path into 8.3 form to make it safe for gnu make
 # http://bugzilla.opendarwin.org/show_bug.cgi?id=8173

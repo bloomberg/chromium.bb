@@ -1,4 +1,9 @@
 #!/bin/sh
+
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # Script to run all tests under tools/valgrind/chrome_tests.sh
 # in a loop looking for rare/flaky valgrind warnings, and
 # generate suppressions for them, to be later filed as bugs
