@@ -80,3 +80,28 @@ function assertNoLastError() {
     fail("lastError.message == " + chrome.extension.lastError.message);
   }
 }
+
+// Wrapper for generating test functions, that takes care of calling
+// assertNoLastError() and succeed() for you.
+function testFunction(func) {
+  return function() {
+    assertNoLastError();
+    try {
+      func.apply(null, arguments);
+    } catch (e) {
+      var stack = null;
+      if (typeof(e.stack) != "undefined") {
+        stack = e.stack.toString()
+      }
+      var msg = "Exception during execution of testFunction in " +
+                currentTest.name;
+      if (stack) {
+        msg += "\n" + stack;
+      } else {
+        msg += "\n(no stack available)";
+      }
+      fail(msg);
+    }
+    succeed();
+  };
+}

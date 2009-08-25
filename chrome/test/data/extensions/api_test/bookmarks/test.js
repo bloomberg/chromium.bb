@@ -52,55 +52,45 @@ function compareTrees(left, right) {
 
 var tests = [
   function getTree() {
-    chrome.bookmarks.getTree(function(results) {
-      assertNoLastError();
+    chrome.bookmarks.getTree(testFunction(function(results) {
       assertTrue(compareTrees(results, expected),
                  "getTree() result != expected");
       expected = results;
-      succeed();
-    });
+    }));
   },
-  
+
   function get() {
-    chrome.bookmarks.get("1", function(results) {
-      assertNoLastError();
+    chrome.bookmarks.get("1", testFunction(function(results) {
       assertTrue(compareNode(results[0], expected[0].children[0]));
-      succeed();
-    });
+    }));
   },
-  
+
   function getArray() {
-    chrome.bookmarks.get(["1", "2"], function(results) {
-      assertNoLastError();
+    chrome.bookmarks.get(["1", "2"], testFunction(function(results) {
       assertTrue(compareNode(results[0], expected[0].children[0]),
                  "get() result != expected");
       assertTrue(compareNode(results[1], expected[0].children[1]),
                  "get() result != expected");
-      succeed();
-    });
+    }));
   },
-  
+
   function getChildren() {
-    chrome.bookmarks.getChildren("0", function(results) {
-      assertNoLastError();
+    chrome.bookmarks.getChildren("0", testFunction(function(results) {
       assertTrue(compareNode(results[0], expected[0].children[0]),
                  "getChildren() result != expected");
       assertTrue(compareNode(results[1], expected[0].children[1]),
                  "getChildren() result != expected");
-      succeed();
-    });
+    }));
   },
-  
+
   function create() {
     var node = {parentId: "1", title:"google", url:"http://www.google.com/"};
-    chrome.bookmarks.create(node, function(results) {
-      assertNoLastError();
+    chrome.bookmarks.create(node, testFunction(function(results) {
       node.id = results.id;  // since we couldn't know this going in
       node.index = 0;
       assertTrue(compareNode(node, results),
                  "created node != source");
-      succeed();
-    });
+    }));
   },
 ];
 
