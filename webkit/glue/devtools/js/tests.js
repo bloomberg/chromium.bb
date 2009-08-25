@@ -340,7 +340,6 @@ TestSuite.prototype.testProfilerTab = function() {
  */
 TestSuite.prototype.testShowScriptsTab = function() {
   var parsedDebuggerTestPageHtml = false;
-  var parsedDebuggerTestJs = false;
 
   // Intercept parsedScriptSource calls to check that all expected scripts are
   // added to the debugger.
@@ -352,11 +351,6 @@ TestSuite.prototype.testShowScriptsTab = function() {
             test.fail('Unexpected parse event: ' + sourceURL);
           }
           parsedDebuggerTestPageHtml = true;
-        } else if (sourceURL.search(/debugger_test.js$/) != -1) {
-          if (parsedDebuggerTestJs) {
-            test.fail('Unexpected parse event: ' + sourceURL);
-          }
-          parsedDebuggerTestJs = true;
         } else {
           test.fail('Unexpected script URL: ' + sourceURL);
         }
@@ -365,7 +359,7 @@ TestSuite.prototype.testShowScriptsTab = function() {
           test.fail('No visible script view: ' + sourceURL);
         }
 
-        if (parsedDebuggerTestJs && parsedDebuggerTestPageHtml) {
+        if (parsedDebuggerTestPageHtml) {
            test.releaseControl();
         }
       }, true /* sticky */);

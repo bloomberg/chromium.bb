@@ -16,15 +16,6 @@
 #include "chrome/test/ui_test_utils.h"
 
 
-#if defined(OS_WIN)
-#define MAYBE_TestShowScriptsTab DISABLED_TestShowScriptsTab
-#define MAYBE_TestSetBreakpoint TestSetBreakpoint
-#elif defined(OS_LINUX)
-// http://crbug.com/19748
-#define MAYBE_TestShowScriptsTab DISABLED_TestShowScriptsTab
-#define MAYBE_TestSetBreakpoint DISABLED_TestSetBreakpoint
-#endif
-
 namespace {
 
 // Used to block until a dev tools client window's browser is closed.
@@ -55,6 +46,7 @@ const wchar_t kConsoleTestPage[] = L"files/devtools/console_test_page.html";
 const wchar_t kDebuggerTestPage[] = L"files/devtools/debugger_test_page.html";
 const wchar_t kEvalTestPage[] = L"files/devtools/eval_test_page.html";
 const wchar_t kJsPage[] = L"files/devtools/js_page.html";
+const wchar_t kResourceTestPage[] = L"files/devtools/resource_test_page.html";
 const wchar_t kSimplePage[] = L"files/devtools/simple_page.html";
 
 class DevToolsSanityTest : public InProcessBrowserTest {
@@ -149,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
 
 // Tests resource headers.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceHeaders) {
-  RunTest("testResourceHeaders", kDebuggerTestPage);
+  RunTest("testResourceHeaders", kResourceTestPage);
 }
 
 // Tests profiler panel.
@@ -159,13 +151,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
 
 // Tests scripts panel showing.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestShowScriptsTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
 // Tests set breakpoint.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestSetBreakpoint) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 
