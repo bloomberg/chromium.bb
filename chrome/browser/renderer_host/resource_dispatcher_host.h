@@ -37,6 +37,7 @@ class PluginService;
 class SafeBrowsingService;
 class SaveFileManager;
 class SSLClientAuthHandler;
+class UserScriptListener;
 class URLRequestContext;
 class WebKitThread;
 struct ViewHostMsg_Resource_Request;
@@ -536,6 +537,8 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // We own the save file manager.
   scoped_refptr<SaveFileManager> save_file_manager_;
+
+  scoped_refptr<UserScriptListener> user_script_listener_;
 
   scoped_refptr<SafeBrowsingService> safe_browsing_;
 

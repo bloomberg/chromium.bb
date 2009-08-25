@@ -585,7 +585,6 @@ void ExtensionsServiceBackend::LoadSingleExtension(
   ReportExtensionLoaded(extension);
 }
 
-
 void ExtensionsServiceBackend::ReportExtensionLoadError(
     const FilePath& extension_path, const std::string &error) {
   ::ReportExtensionLoadError(extension_path, error, alert_on_error_);

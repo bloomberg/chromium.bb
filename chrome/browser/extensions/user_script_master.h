@@ -28,7 +28,7 @@ class UserScriptMaster : public base::RefCounted<UserScriptMaster>,
   // script-reloading worker on as well as the path the scripts live in.
   // These are normally the file thread and a directory inside the profile.
   UserScriptMaster(MessageLoop* worker, const FilePath& script_dir);
-  ~UserScriptMaster();
+  virtual ~UserScriptMaster();
 
   // Add a watched directory. All scripts will be reloaded when any file in
   // this directory changes.
@@ -36,7 +36,7 @@ class UserScriptMaster : public base::RefCounted<UserScriptMaster>,
 
   // Kicks off a process on the file thread to reload scripts from disk
   // into a new chunk of shared memory and notify renderers.
-  void StartScan();
+  virtual void StartScan();
 
   // Gets the segment of shared memory for the scripts.
   base::SharedMemory* GetSharedMemory() const {
