@@ -1089,12 +1089,8 @@ void ToolbarView::CreateAppMenu() {
     app_menu_contents_->AddItem(IDC_SYNC_BOOKMARKS,
                                 l10n_util::GetString(IDS_SYNC_MENU_LABEL));
   }
-#endif
-  app_menu_contents_->AddItemWithStringId(IDC_CLEAR_BROWSING_DATA,
-                                          IDS_CLEAR_BROWSING_DATA);
-  app_menu_contents_->AddItemWithStringId(IDC_IMPORT_SETTINGS,
-                                          IDS_IMPORT_SETTINGS);
   app_menu_contents_->AddSeparator();
+#endif
   app_menu_contents_->AddItem(IDC_OPTIONS,
                               l10n_util::GetStringFUTF16(
                                   IDS_OPTIONS,
