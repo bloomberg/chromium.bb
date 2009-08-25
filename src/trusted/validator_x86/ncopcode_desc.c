@@ -67,7 +67,6 @@ static const char* const g_OpcodeFlagName[OpcodeFlagEnumSize] = {
   "AddressSize_o",
   "OperandSizeDefaultIs64",
   "OperandSizeForce64",
-  /* "OpcodeOF" */
 };
 
 const char* OpcodeFlagName(const OpcodeFlagEnum flag) {
@@ -268,8 +267,15 @@ static const char* const g_InstMnemonicName[InstMnemonicEnumSize] = {
   "Das",
   "Dec",
   "Fadd",
-  "Imul",
+  "Fcom",
+  "Fcomp",
+  "Fdiv",
+  "Fdivr",
+  "Fmul",
+  "Fsub",
+  "Fsubr",
   "Hlt",
+  "Imul",
   "Inc",
   "Jb",
   "Jbe",

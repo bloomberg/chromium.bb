@@ -393,6 +393,34 @@ static void DefineGroup2OpcodesInModRm() {
   }
 }
 
+static const InstMnemonic D8OpcodeName[] = {
+  InstFadd,
+  InstFmul,
+  InstFcom,
+  InstFcomp,
+  InstFsub,
+  InstFsubr,
+  InstFdiv,
+  InstFdivr
+};
+
+static const int kNumD8OpcodeNames =
+    sizeof(D8OpcodeName) / sizeof (InstMnemonic);
+
+static void DefineD8ModRmOpcodes() {
+  int i;
+  for (i = 0; i < kNumD8OpcodeNames; ++i) {
+    DefineOpcode(
+        0xD8,
+        NACLi_X87,
+        InstFlag(OpcodeInModRm) | InstFlag(OperandSize_v),
+        D8OpcodeName[i]);
+    DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
+    DefineOperand(RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+    DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpAddress));
+  }
+}
+
 void DefineOneByteOpcodes() {
   uint8_t i;
 
@@ -866,6 +894,8 @@ void DefineOneByteOpcodes() {
 
   /* Group 2 - 0xC0, 0xC1, 0xD0, 0XD1, 0xD2, 0xD3 */
   DefineGroup2OpcodesInModRm();
+
+  DefineD8ModRmOpcodes();
 
   /* ISE reviewers suggested making loopne, loope, loop, jcxz illegal */
   DefineJump8Opcode(0xE0, InstJcxz);

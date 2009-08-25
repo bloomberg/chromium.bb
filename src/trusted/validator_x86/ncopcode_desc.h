@@ -55,6 +55,13 @@ typedef enum {
   InstDas,
   InstDec,
   InstFadd,
+  InstFcom,
+  InstFcomp,
+  InstFdiv,
+  InstFdivr,
+  InstFmul,
+  InstFsub,
+  InstFsubr,
   InstHlt,
   InstImul,
   InstInc,
@@ -245,9 +252,6 @@ typedef enum {
 
   /* Operand size must be 64 in 64-bit mode. */
   OperandSizeForce64,
-
-  /* Must parse opcode prefix OF as part of instruction. */
-  /* OpcodeOF, */
 
   /* Special marker denoting the number of opcode flags. */
   OpcodeFlagEnumSize,

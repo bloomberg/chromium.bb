@@ -253,6 +253,27 @@ static void Consume0FXXOpcodeBytes(NcInstState* state,
   }
 }
 
+/* Consume one of the x87 instructions that begin with D8-Df, and
+ * match the most specific prefix pattern the opcode bytes can match.
+ */
+static void ConsumeX87OpcodeBytes(NcInstState* state,
+                                  OpcodePrefixDescriptor* desc) {
+  if (state->length < state->length_limit) {
+    uint8_t byte_two = state->mpc[state->length];
+    if (byte_two >= 0xC0) {
+      /* Is two byte opcode. */
+      desc->matched_prefix = PrefixD8 +
+          (((unsigned) desc->opcode_byte) - 0xD8);
+      desc->opcode_byte = byte_two;
+      state->length++;
+      return;
+    }
+  }
+
+  /* If reached, can only be single byte opcode, match as such. */
+  desc->matched_prefix = NoPrefix;
+}
+
 /* Consume the opcode bytes, and return the most specific prefix pattern
  * the opcode bytes can match (or OpcodePrefixEnumSize if no such pattern
  * exists).
@@ -292,13 +313,7 @@ static void ConsumeOpcodeBytes(NcInstState* state,
     case 0xDD:
     case 0xDE:
     case 0xDF:
-      if (state->length >= state->length_limit) {
-        desc->matched_prefix = OpcodePrefixEnumSize;
-        return;
-      }
-      desc->matched_prefix = PrefixD8 +
-          (((int) desc->opcode_byte) - ((int) 0xD8));
-      desc->opcode_byte = state->mpc[state->length++];
+      ConsumeX87OpcodeBytes(state, desc);
       break;
     default:
       desc->matched_prefix = NoPrefix;
