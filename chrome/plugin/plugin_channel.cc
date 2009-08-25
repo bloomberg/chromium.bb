@@ -73,25 +73,6 @@ bool PluginChannel::Send(IPC::Message* msg) {
     LOG(INFO) << "sending message @" << msg << " on channel @" << this
               << " with type " << msg->type();
   }
-
-  if (msg->is_sync()) {
-    IPC::SyncMessage* sync_msg = static_cast<IPC::SyncMessage*>(msg);
-    // Clear the existing pump messages event if any in the message. This
-    // is because we won't be relying on this event being set to decide whether
-    // to pump messages or not.
-    sync_msg->set_pump_messages_event(NULL);
-
-    // Signal that the channel should continue to pump messages while it waits
-    // for the sync call to complete. This is to ensure that the following
-    // scenario does not result in a deadlock.
-    // 1. Plugin1 issues a sync request to the renderer
-    // 2. The renderer then issues a sync request to plugin2.
-    // 3. Plugin2 then dispatches a native message to plugin1
-    // If we don't pump messages from Plugin1, then it would cause a deadlock
-    // as the three processes above are waiting for each other.
-    sync_msg->EnableMessagePumping();
-  }
-
   bool result = PluginChannelBase::Send(msg);
   in_send_--;
   return result;

@@ -72,8 +72,7 @@ static bool identifiersInitialized = false;
 #define ID_PROPERTY_LOG_DESTROY                 4
 #define ID_PROPERTY_RETURN_ERROR_FROM_NEWSTREAM 5
 #define ID_PROPERTY_TEST_OBJECT_COUNT           6
-#define ID_PROPERTY_RESET_FOCUS                 7
-#define NUM_PROPERTY_IDENTIFIERS                8
+#define NUM_PROPERTY_IDENTIFIERS                7
 
 static NPIdentifier pluginPropertyIdentifiers[NUM_PROPERTY_IDENTIFIERS];
 static const NPUTF8 *pluginPropertyIdentifierNames[NUM_PROPERTY_IDENTIFIERS] = {
@@ -84,7 +83,6 @@ static const NPUTF8 *pluginPropertyIdentifierNames[NUM_PROPERTY_IDENTIFIERS] = {
     "logDestroy",
     "returnErrorFromNewStream",
     "testObjectCount",
-    "resetFocus"
 };
 
 #define ID_TEST_CALLBACK_METHOD     0
@@ -213,13 +211,6 @@ static bool pluginSetProperty(NPObject* obj, NPIdentifier name, const NPVariant*
     } else if (name == pluginPropertyIdentifiers[ID_PROPERTY_RETURN_ERROR_FROM_NEWSTREAM]) {
         plugin->returnErrorFromNewStream = NPVARIANT_TO_BOOLEAN(*variant);
         return true;
-    } else if (name == pluginPropertyIdentifiers[ID_PROPERTY_RESET_FOCUS]) {
-#ifdef OS_WIN
-        if (NPVARIANT_TO_BOOLEAN(*variant)) {
-            SetFocus(NULL);
-        }
-        return true;
-#endif // OS_WIN
     }
 
     return false;
@@ -757,9 +748,9 @@ static bool pluginInvoke(NPObject* header, NPIdentifier name, const NPVariant* a
           return testCallbackAndGetValue(plugin, args, argCount, result);
     } else if (name == pluginMethodIdentifiers[ID_TEST_CONSTRUCT]) {
           return testConstruct(plugin, args, argCount, result);
-    } else if (name == pluginMethodIdentifiers[ID_DESTROY_NULL_STREAM])
+    } else if (name == pluginMethodIdentifiers[ID_DESTROY_NULL_STREAM]) 
           return destroyNullStream(plugin, args, argCount, result);
-
+    
     return false;
 }
 
