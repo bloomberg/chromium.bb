@@ -3022,7 +3022,10 @@
           'conditions': [
             # All Chrome builds have breakpad symbols, but only process the
             # symbols from official builds.
-            ['branding=="Chrome" and buildtype=="Official"', {
+            # TODO(mmoss) dump_syms segfaults on x64. Enable once dump_syms and
+            # crash server handle 64-bit symbols.
+            ['branding=="Chrome" and buildtype=="Official" and'
+                ' target_arch=="ia32"', {
               'actions': [
                 {
                   'action_name': 'dump_symbols',
