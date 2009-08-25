@@ -1365,7 +1365,16 @@ void BrowserWindowGtk::SetGeometryHints() {
     SetBounds(bounds);
   } else {
     // Ignore the position but obey the size.
-    gtk_window_resize(window_, bounds.width(), bounds.height());
+    GdkScreen* screen = gdk_screen_get_default();
+    if (bounds.width() == gdk_screen_get_width(screen) &&
+        bounds.height() == gdk_screen_get_height(screen)) {
+      // Work around a WM "feature" where if we set the window to the exact
+      // size of the monitor, the WM automatically puts us in full screen mode.
+      // Instead, adjust the height so we don't trigger this WM work around.
+      gtk_window_resize(window_, bounds.width(), bounds.height() - 1);
+    } else {
+      gtk_window_resize(window_, bounds.width(), bounds.height());
+    }
   }
 }
 
