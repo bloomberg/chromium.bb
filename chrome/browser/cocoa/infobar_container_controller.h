@@ -64,6 +64,11 @@ class TabStripModelObserverBridge;
 // call positionInfoBarsAndRedraw after calling this method.
 - (void)removeInfoBarsForDelegate:(InfoBarDelegate*)delegate;
 
+// Replaces all info bars for the delegate with a new info bar.
+// This simply calls removeInfoBarsForDelegate: and then addInfoBar:.
+- (void)replaceInfoBarsForDelegate:(InfoBarDelegate*)old_delegate
+                              with:(InfoBarDelegate*)new_delegate;
+
 // Positions the infobar views in the container view and notifies
 // |browser_controller_| that it needs to resize the container view.
 - (void)positionInfoBarsAndRedraw;
