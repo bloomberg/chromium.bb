@@ -47,6 +47,18 @@ void ConvertToHalf(const float* src, size_t count, uint16* dst) {
   }
 }
 
+bool CompareFloats(const float* src_1, const float* src_2, size_t num_floats) {
+  const float kEpsilon = 0.000001f;
+  for (; num_floats != 0; --num_floats) {
+    if (fabs(*src_1 - *src_2) > kEpsilon) {
+      return false;
+    }
+    ++src_1;
+    ++src_2;
+  }
+  return true;
+}
+
 }  // anonymous namespace.
 
 class ImageTest : public testing::Test {
@@ -452,7 +464,7 @@ TEST_F(ImageTest, LanczosScaleFloat) {
       0, 0, 1, 1,
       1);
   // Check the result.
-  EXPECT_EQ(0, memcmp(mip1, expected_mip1, sizeof(expected_mip1)));
+  EXPECT_TRUE(CompareFloats(mip1, expected_mip1, arraysize(expected_mip1)));
   EXPECT_EQ(0, memcmp(mip2, expected_mip2, sizeof(expected_mip2)));
   EXPECT_EQ(mip1[2], kSentinel);
   EXPECT_EQ(mip2[1], kSentinel);
