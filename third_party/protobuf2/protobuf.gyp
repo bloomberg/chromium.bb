@@ -6,6 +6,19 @@
   'includes': [
     '../../build/common.gypi',
   ],
+  'conditions': [
+    ['OS!="win"', {
+      'variables': {
+        'config_h_dir':
+          '.',  # crafted for gcc/linux.
+      },
+    }, {  # else, OS=="win"
+      'variables': {
+        'config_h_dir':
+          'src/vsprojects',  # crafted for msvc.
+      },
+    }]
+  ],
   'targets': [
     { 'target_name': 'protobuf',
       'type': '<(library)',
@@ -73,6 +86,7 @@
         'src/src/google/protobuf/io/zero_copy_stream_impl_lite.cc',
         'src/src/google/protobuf/compiler/importer.cc',
         'src/src/google/protobuf/compiler/parser.cc',
+        '<(config_h_dir)/config.h',
       ],
 
       'conditions': [
@@ -93,13 +107,13 @@
       ],
 
       'include_dirs': [
-        '.',
+        '<(config_h_dir)',
         'src/src',
       ],
 
       'direct_dependent_settings': {
         'include_dirs': [
-          '.',
+          '<(config_h_dir)',
           'src/src',
         ],
       },
@@ -162,7 +176,7 @@
       ],
 
       'include_dirs': [
-        '.',
+        '<(config_h_dir)',
         'src/src',
       ],
     },
