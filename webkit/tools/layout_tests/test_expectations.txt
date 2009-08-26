@@ -2515,6 +2515,7 @@ BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridDataSource-basic.htm
 
 // Disabling since try bots use Chromium FFmpeg DLLs, which means we can no
 // longer decode WebKit's test clips because they use H.264, AAC, etc.
+BUG16779 SKIP : LayoutTests/accessibility/media-element.html = TIMEOUT
 BUG16779 SKIP : LayoutTests/media/audio-constructor-autobuffer.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = TIMEOUT
 BUG16779 SKIP : LayoutTests/media/audio-delete-while-step-button-clicked.html = TIMEOUT
@@ -2831,3 +2832,7 @@ BUG20265 LINUX : LayoutTests/fast/forms/ValidityState-valueMissing-005.html = CR
 BUG20265 LINUX : LayoutTests/fast/forms/range-default-value.html = CRASH
 BUG20265 LINUX : LayoutTests/fast/forms/range-reset.html = CRASH
 BUG20265 LINUX : LayoutTests/platform/mac/accessibility/slider-supports-actions.html = CRASH
+
+// WebKit 47759:47770.
+BUG20292 : LayoutTests/fast/forms/input-list.html = FAIL
+BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
