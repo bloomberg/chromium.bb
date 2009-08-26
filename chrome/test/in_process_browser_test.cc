@@ -90,10 +90,8 @@ void InProcessBrowserTest::SetUp() {
   if (single_process_)
     command_line->AppendSwitch(switches::kSingleProcess);
 
-  // TODO(arv): Reenable once kEnableWebResources is changed back to
-  // kDisableWebResources
-  // http://crbug.com/17725
-  // command_line->AppendSwitch(switches::kEnableWebResources);
+  // Turn off tip loading for tests; see http://crbug.com/17725
+  command_line->AppendSwitch(switches::kDisableWebResources);
 
   command_line->AppendSwitchWithValue(switches::kUserDataDir,
                                       user_data_dir.ToWStringHack());

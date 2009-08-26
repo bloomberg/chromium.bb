@@ -497,7 +497,7 @@ const wchar_t kOldNewTabPage[] = L"old-new-tab-page";
 
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
-const wchar_t kEnableWebResources[] = L"enable-web-resources";
+const wchar_t kDisableWebResources[] = L"disable-web-resources";
 
 // Whether we should prevent the new tab page from showing the first run
 // notification.

@@ -367,8 +367,7 @@ void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
     command_line.AppendSwitchWithValue(switches::kHomePage,
                                        homepage_);
   // Don't try to fetch web resources during UI testing.
-  // Reenable once kEnableWebResources is changed back to kDisableWebResources
-  // command_line.AppendSwitch(switches::kEnableWebResources);
+  command_line.AppendSwitch(switches::kDisableWebResources);
 #if defined(OS_POSIX)
   const char* alternative_userdir = getenv("CHROME_UI_TESTS_USER_DATA_DIR");
 #else
