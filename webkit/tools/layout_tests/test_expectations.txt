@@ -575,7 +575,7 @@ BUG1204878 : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
 // Since we don't have Aqua-themed controls, don't ignore the
 // box-shadow properties of controls that request Aqua theming.  But since Aqua
 // controls are rare on the web, defer this fix.
-BUG1130795 WIN LINUX : LayoutTests/fast/forms/box-shadow-override.html = FAIL
+BUG1130795 BUG20265 WIN LINUX : LayoutTests/fast/forms/box-shadow-override.html = FAIL CRASH
 
 // These tests are not valid: the so-called expected results are not known to
 // be correct.
@@ -1126,7 +1126,7 @@ BUG11577 WIN LINUX : LayoutTests/editing/spelling/spelling-linebreak.html = FAIL
 // Need to implement window.accessibilityController for these to work.
 BUG10322 : LayoutTests/accessibility = FAIL
 BUG10322 : LayoutTests/accessibility/non-native-image-crash.html = PASS
-BUG10322 : LayoutTests/accessibility/input-slider.html = TIMEOUT
+BUG10322 : LayoutTests/accessibility/input-slider.html = TIMEOUT CRASH
 BUG10322 : LayoutTests/platform/mac/accessibility = FAIL
 BUG10322 : LayoutTests/platform/mac-snowleopard/accessibility = FAIL
 BUG10322 : LayoutTests/platform/win/accessibility = FAIL
@@ -1943,13 +1943,14 @@ BUG10469 WIN LINUX : LayoutTests/fast/text/complex-text-opacity.html = FAIL
 BUG10470 WIN LINUX : LayoutTests/fast/transforms/transforms-with-zoom.html = FAIL
 
 // Merge WebKit: 41944:41999, Linux failures.
-BUG10471 LINUX : LayoutTests/fast/events/tabindex-focus-blur-all.html = FAIL
-BUG10471 LINUX : LayoutTests/fast/forms/focus2.html = FAIL
-BUG10471 LINUX : LayoutTests/fast/forms/slider-mouse-events.html = FAIL
-BUG10471 LINUX : LayoutTests/fast/forms/slider-onchange-event.html = FAIL
-BUG10471 LINUX : LayoutTests/fast/forms/slider-padding.html = FAIL
-BUG10471 LINUX : LayoutTests/fast/forms/slider-thumb-shared-style.html = FAIL
-BUG10471 LINUX : LayoutTests/fast/forms/slider-transformed.html = FAIL
+// Merge WebKit:  47748:47759, Linux crashes.
+BUG10471 BUG20265 LINUX : LayoutTests/fast/events/tabindex-focus-blur-all.html = FAIL CRASH
+BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/focus2.html = FAIL CRASH
+BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/slider-mouse-events.html = FAIL CRASH
+BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/slider-onchange-event.html = FAIL CRASH
+BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/slider-padding.html = FAIL CRASH
+BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/slider-thumb-shared-style.html = FAIL CRASH
+BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/slider-transformed.html = FAIL CRASH
 
 // Mac flaky failures.
 BUG10472 MAC : LayoutTests/svg/css/glyph-orientation-rounding-test.xhtml = FAIL PASS
@@ -2462,8 +2463,9 @@ BUG16162 : LayoutTests/fast/loader/subframe-navigate-during-main-frame-load.html
 
 // WebKit merge 45635:45640
 
-// WebKit merge 45659:45664
-BUG16355 LINUX : LayoutTests/fast/forms/slider-delete-while-dragging-thumb.html = FAIL
+// WebKit merge 45659:45664, failure
+// WebKit merge 47748:47759, crash
+BUG16355 BUG20265 LINUX : LayoutTests/fast/forms/slider-delete-while-dragging-thumb.html = FAIL CRASH
 
 // Tests that rely on cross-process MessagePorts.  No point in running them in
 // test_shell, since we'd have to use a completely different implementation from
@@ -2668,8 +2670,11 @@ BUG17397 SKIP WIN : LayoutTests/media/audio-no-installed-engines.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/borders/borderRadiusDashed02.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/borders/borderRadiusDashed03.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/css/pseudo-cache-stale.html = FAIL
-BUG17398 LINUX : LayoutTests/fast/forms/input-appearance-height.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
+
+// Test failure from WebKit merge r46143:46194
+// Test crash from WebKit merge r47748:47759
+BUG17398 BUG20265 LINUX : LayoutTests/fast/forms/input-appearance-height.html = FAIL CRASH
 
 // Test failures from WebKit merge r46194:46229
 BUG17497 WIN : LayoutTests/media/video-play-pause-exception.html = PASS CRASH FAIL
@@ -2816,3 +2821,13 @@ BUG_JIANLI : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
 BUG_JIANLI : LayoutTests/fast/events/keydown-function-keys.html = FAIL
 BUG_JIANLI WIN LINUX : LayoutTests/http/tests/security/javascriptURL/javascriptURL-in-new-iframe.html = CRASH
 BUG_JIANLI WIN : LayoutTests/media/video-controls-with-mutation-event-handler.html = CRASH
+
+// WebKit 47748:47759. New test. Need rebaseline.
+BUG_JIANLI : LayoutTests/fast/dom/javascript-url-exception-isolation.html = FAIL
+
+// WebKit 47748:47759. Crash only on Linux. Need investigation.
+BUG20265 LINUX : LayoutTests/fast/css/pseudo-required-optional-005.html = CRASH
+BUG20265 LINUX : LayoutTests/fast/forms/ValidityState-valueMissing-005.html = CRASH
+BUG20265 LINUX : LayoutTests/fast/forms/range-default-value.html = CRASH
+BUG20265 LINUX : LayoutTests/fast/forms/range-reset.html = CRASH
+BUG20265 LINUX : LayoutTests/platform/mac/accessibility/slider-supports-actions.html = CRASH
