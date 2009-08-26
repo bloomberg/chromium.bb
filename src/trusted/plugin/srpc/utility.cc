@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,70 +29,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-/*
- * SRPC utility functions.
- */
-
-#ifndef __native_client__
-#include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/desc/nacl_desc_imc.h"
-#endif  /* __native_client__ */
-
-#if defined(__native_client__) || !NACL_WINDOWS
-#include <unistd.h>
-#include <sys/time.h>
-#else
-#include <time.h>
-#include <windows.h>
-#endif
-
-#include <stdarg.h>
 #include <stdlib.h>
-#include <string.h>
 
-#include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
+#include "native_client/src/trusted/plugin/srpc/utility.h"
 
-int gNaClSrpcDebugPrintEnabled = -1;
+namespace nacl_srpc {
+
+int gNaClPluginDebugPrintEnabled = -1;
 
 /*
- * Currently only looks for presence of NACL_SRPC_DEBUG and returns 0
- * if absent and 1 if present.  In the future we may include notions
+ * Currently only looks for presence of NACL_PLUGIN_DEBUG and returns
+ * 0 if absent and 1 if present.  In the future we may include notions
  * of verbosity level.
  */
-int __NaClSrpcDebugPrintCheckEnv() {
-  char *env = getenv("NACL_SRPC_DEBUG");
+int NaClPluginDebugPrintCheckEnv() {
+  char *env = getenv("NACL_PLUGIN_DEBUG");
   return (NULL != env);
 }
 
-#if !defined(__native_client__) && NACL_WINDOWS
-
-double __NaClSrpcGetUsec() {
-  /* TODO(sehr): need to add a Windows specific version of gettimeofday. */
-  /* TODO(sehr): one version of this code. */
-  unsigned __int64 timer = 0;
-  long sec;
-  long usec;
-  FILETIME filetime;
-  GetSystemTimeAsFileTime(&filetime);
-  timer |= filetime.dwHighDateTime;
-  timer <<= 32;
-  timer |= filetime.dwLowDateTime;
-  /* FILETIME has 100ns precision.  Convert to usec. */
-  timer /= 10;
-  sec = (long) (timer / 1000000UL);
-  usec = (long) (timer % 1000000UL);
-  return (double) sec * 1.0e6 + (double) usec;
-}
-
-#else
-
-double __NaClSrpcGetUsec() {
-  int retval;
-  struct timeval tv;
-  retval = gettimeofday(&tv, NULL);
-  return (double) tv.tv_sec * 1.0e6 + (double) tv.tv_usec;
-}
-
-#endif  /* NACL_WINDOWS */
+}  // namespace nacl_srpc

@@ -139,6 +139,7 @@ nacl_npplugin_inputs = [
     'srpc/browser_interface.cc',
     'srpc/portable_handle.cc',
     'srpc/desc_based_handle.cc',
+    'srpc/utility.cc',
     'srpc/video.cc',
     'srpc/closure.cc',
     'srpc/method_map.cc',

@@ -90,12 +90,20 @@ class ScopedCatchSignals {
 #endif  // _MSC_VER
 
 // Debugging print utility
+extern int gNaClPluginDebugPrintEnabled;
+extern int NaClPluginDebugPrintCheckEnv();
 #if SRPC_PLUGIN_DEBUG
-#  define dprintf(args) do { \
-    printf("%08"PRIx32":", NaClThreadId());    \
-    printf args; \
-    fflush(stdout); \
-   } while(0)
+#  define dprintf(args) do {                                          \
+    if (-1 == ::nacl_srpc::gNaClPluginDebugPrintEnabled) {            \
+      ::nacl_srpc::gNaClPluginDebugPrintEnabled =                     \
+          ::nacl_srpc::NaClPluginDebugPrintCheckEnv();                \
+    }                                                                 \
+    if (0 != ::nacl_srpc::gNaClPluginDebugPrintEnabled) {             \
+      printf("%08"PRIx32":", NaClThreadId());                         \
+      printf args;                                                    \
+      fflush(stdout);                                                 \
+    }                                                                 \
+  } while (0)
 #else
 #  define dprintf(args) do { if (0) { printf args; } } while (0)
 /* allows DCE but compiler can still do format string checks */
