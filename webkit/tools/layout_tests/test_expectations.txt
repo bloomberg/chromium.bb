@@ -1138,8 +1138,7 @@ BUG10322 WIN : LayoutTests/fast/borders/fieldsetBorderRadius.html = FAIL
 // This test isn't hanging, it just takes 12-13 seconds to run.
 BUG10322 SLOW : LayoutTests/http/tests/misc/acid3.html = FAIL
 
-// Expectations for this test changed upstream. We should fix this test, but
-// it doesn't need to block the current release
+// Has failed for Chromium since it was first checked in.
 BUG10323 : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-no-content-length-onProgress.html = FAIL
 
 // Times out because this uses dom storage which we don't implement.
