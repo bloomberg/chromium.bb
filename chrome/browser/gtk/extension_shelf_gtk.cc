@@ -4,15 +4,21 @@
 
 #include "chrome/browser/gtk/extension_shelf_gtk.h"
 
+#include "base/gfx/gtk_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/nine_box.h"
-#include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+
+// Background color of the shelf.
+static const GdkColor kBackgroundColor = GDK_COLOR_RGB(230, 237, 244);
+
+// Border color (the top pixel of the shelf).
+const GdkColor kBorderColor = GDK_COLOR_RGB(214, 214, 214);
 
 // Preferred height of the ExtensionShelfGtk.
 static const int kShelfHeight = 29;
@@ -145,14 +151,38 @@ void ExtensionShelfGtk::ShelfModelDeleting() {
   model_ = NULL;
 }
 
+void ExtensionShelfGtk::Observe(NotificationType type,
+                                const NotificationSource& source,
+                                const NotificationDetails& details) {
+  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+  if (theme_provider_->UseGtkTheme()) {
+    GdkColor color = theme_provider_->GetBorderColor();
+    gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &color);
+  } else {
+    gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &kBorderColor);
+  }
+}
+
 void ExtensionShelfGtk::Init(Profile* profile) {
+  top_border_ = gtk_event_box_new();
+  gtk_widget_set_size_request(GTK_WIDGET(top_border_), 0, 1);
+
+  // The event box provides a background for the shelf and is its top-level
+  // widget.
   event_box_.Own(gtk_event_box_new());
+  gtk_widget_modify_bg(event_box_.get(), GTK_STATE_NORMAL, &kBackgroundColor);
 
   shelf_hbox_ = gtk_hbox_new(FALSE, 0);
-  gtk_widget_set_app_paintable(shelf_hbox_, TRUE);
-  g_signal_connect(G_OBJECT(shelf_hbox_), "expose-event",
-                   G_CALLBACK(&OnHBoxExpose), this);
-  gtk_container_add(GTK_CONTAINER(event_box_.get()), shelf_hbox_);
+
+  GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), top_border_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), shelf_hbox_, FALSE, FALSE, 0);
+
+  gtk_container_add(GTK_CONTAINER(event_box_.get()), vbox);
+
+  theme_provider_->InitThemesFor(this);
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
 
   LoadFromModel();
   model_->AddObserver(this);
@@ -165,7 +195,7 @@ void ExtensionShelfGtk::AdjustHeight() {
     DCHECK(toolstrips_.empty());
     Hide();
   } else {
-    gtk_widget_set_size_request(event_box_.get(), -1, kShelfHeight);
+    gtk_widget_set_size_request(shelf_hbox_, -1, kShelfHeight);
     Show();
   }
 }
@@ -180,30 +210,4 @@ void ExtensionShelfGtk::LoadFromModel() {
 
 ExtensionShelfGtk::Toolstrip* ExtensionShelfGtk::ToolstripAtIndex(int index) {
   return static_cast<Toolstrip*>(model_->ToolstripAt(index).data);
-}
-
-// static
-gboolean ExtensionShelfGtk::OnHBoxExpose(GtkWidget* widget,
-                                         GdkEventExpose* event,
-                                         ExtensionShelfGtk* bar) {
-  // Paint the background theme image.
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  cairo_rectangle(cr, event->area.x, event->area.y,
-                  event->area.width, event->area.height);
-  cairo_clip(cr);
-  gfx::Point tabstrip_origin =
-      static_cast<BrowserWindowGtk*>(bar->browser_->window())->
-          tabstrip()->GetTabStripOriginForWidget(widget);
-  GdkPixbuf* background = bar->browser_->profile()->GetThemeProvider()->
-      GetPixbufNamed(IDR_THEME_TOOLBAR);
-  gdk_cairo_set_source_pixbuf(cr, background,
-                              tabstrip_origin.x(), tabstrip_origin.y());
-  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-  cairo_rectangle(cr, tabstrip_origin.x(), tabstrip_origin.y(),
-                      event->area.x + event->area.width - tabstrip_origin.x(),
-                      gdk_pixbuf_get_height(background));
-  cairo_fill(cr);
-  cairo_destroy(cr);
-
-  return FALSE;  // Propagate expose to children.
 }

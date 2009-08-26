@@ -11,6 +11,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_shelf_model.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class Browser;
@@ -20,7 +21,8 @@ class NineBox;
 class Profile;
 struct GtkThemeProvider;
 
-class ExtensionShelfGtk : public ExtensionShelfModelObserver {
+class ExtensionShelfGtk : public ExtensionShelfModelObserver,
+                          public NotificationObserver {
  public:
   ExtensionShelfGtk(Profile* profile, Browser* browser);
   virtual ~ExtensionShelfGtk();
@@ -44,6 +46,11 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver {
   virtual void ShelfModelReloaded();
   virtual void ShelfModelDeleting();
 
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   class Toolstrip;
 
@@ -63,6 +70,9 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver {
 
   Browser* browser_;
 
+  // Top level event box which draws the one pixel border.
+  GtkWidget* top_border_;
+
   // Contains |shelf_hbox_|. Event box exists to prevent leakage of
   // background color from the toplevel application window's GDK window.
   OwnedWidgetGtk event_box_;
@@ -77,6 +87,8 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver {
 
   // Set of toolstrip views which are really on the shelf.
   std::set<Toolstrip*> toolstrips_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionShelfGtk);
 };
