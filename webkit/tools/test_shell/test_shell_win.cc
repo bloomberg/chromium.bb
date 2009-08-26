@@ -705,8 +705,7 @@ StringPiece GetDataResource(int resource_id) {
     if (broken_image_data.empty()) {
       FilePath path = GetResourcesFilePath();
       path = path.AppendASCII("missingImage.gif");
-      bool success = file_util::ReadFileToString(path.ToWStringHack(),
-                                                 &broken_image_data);
+      bool success = file_util::ReadFileToString(path, &broken_image_data);
       if (!success) {
         LOG(FATAL) << "Failed reading: " << path.value();
       }
@@ -725,8 +724,7 @@ StringPiece GetDataResource(int resource_id) {
     if (resize_corner_data.empty()) {
       FilePath path = GetResourcesFilePath();
       path = path.AppendASCII("textAreaResizeCorner.png");
-      bool success = file_util::ReadFileToString(path.ToWStringHack(),
-                                                 &resize_corner_data);
+      bool success = file_util::ReadFileToString(path, &resize_corner_data);
       if (!success) {
         LOG(FATAL) << "Failed reading: " << path.value();
       }

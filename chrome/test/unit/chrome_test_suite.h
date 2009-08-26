@@ -93,8 +93,7 @@ class ChromeTestSuite : public TestSuite {
       user_data_dir = user_data_dir.AppendASCII("test_user_data");
     }
     if (!user_data_dir.empty())
-      PathService::Override(chrome::DIR_USER_DATA,
-                            user_data_dir.ToWStringHack());
+      PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 
 #if defined(OS_MACOSX)
     FilePath path;

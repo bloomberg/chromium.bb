@@ -13,12 +13,11 @@
 
 TEST(BlacklistTest, Generic) {
   // Get path relative to test data dir.
-  std::wstring input;
+  FilePath input;
   PathService::Get(chrome::DIR_TEST_DATA, &input);
-  file_util::AppendToPath(&input, L"blacklist_small.pbr");
+  input = input.AppendASCII("blacklist_small.pbr");
 
-  FilePath path = FilePath::FromWStringHack(input);
-  Blacklist blacklist(path);
+  Blacklist blacklist(input);
 
   // This test is a friend, so inspect the internal structures.
   EXPECT_EQ(5U, blacklist.blacklist_.size());

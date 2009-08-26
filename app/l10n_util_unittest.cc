@@ -106,7 +106,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   EXPECT_TRUE(file_util::CreateNewTempDirectory(
       FILE_PATH_LITERAL("l10n_util_test"),
       &new_locale_dir));
-  PathService::Override(app::DIR_LOCALES, new_locale_dir.ToWStringHack());
+  PathService::Override(app::DIR_LOCALES, new_locale_dir);
   // Make fake locale files.
   std::string filenames[] = {
     "en-US",
@@ -210,7 +210,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 #endif  // defined(OS_WIN)
 
   // Clean up.
-  PathService::Override(app::DIR_LOCALES, orig_locale_dir.ToWStringHack());
+  PathService::Override(app::DIR_LOCALES, orig_locale_dir);
   file_util::Delete(new_locale_dir, true);
   UErrorCode error_code = U_ZERO_ERROR;
   icu::Locale::setDefault(locale, error_code);

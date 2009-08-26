@@ -92,17 +92,17 @@ class SeleniumTest : public UITest {
     };
     *failed = kBogusFailures[base::RandInt(0, 2)];
 #else
-    std::wstring test_path;
+    FilePath test_path;
     PathService::Get(chrome::DIR_TEST_DATA, &test_path);
-    file_util::UpOneDirectory(&test_path);
-    file_util::UpOneDirectory(&test_path);
-    file_util::UpOneDirectory(&test_path);
-    file_util::AppendToPath(&test_path, L"data");
-    file_util::AppendToPath(&test_path, L"selenium_core");
-    file_util::AppendToPath(&test_path, L"core");
-    file_util::AppendToPath(&test_path, L"TestRunner.html");
+    test_path = test_path.DirName();
+    test_path = test_path.DirName();
+    test_path = test_path.DirName();
+    test_path = test_path.AppendASCII("data");
+    test_path = test_path.AppendASCII("selenium_core");
+    test_path = test_path.AppendASCII("core");
+    test_path = test_path.AppendASCII("TestRunner.html");
 
-    GURL test_url(net::FilePathToFileURL(FilePath::FromWStringHack(test_path)));
+    GURL test_url(net::FilePathToFileURL(test_path));
     scoped_refptr<TabProxy> tab(GetActiveTab());
     tab->NavigateToURL(test_url);
 
