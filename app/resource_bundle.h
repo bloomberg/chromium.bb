@@ -35,6 +35,14 @@ class SkBitmap;
 typedef uint32 SkColor;
 class StringPiece;
 
+#if defined(OS_MACOSX)
+#ifdef __OBJC__
+@class NSImage;
+#else
+class NSImage;
+#endif  // __OBJC__
+#endif  // defined(OS_MACOSX)
+
 // ResourceBundle is a central facility to load images and other resources,
 // such as theme graphics.
 // Every resource is loaded only once.
@@ -112,6 +120,9 @@ class ResourceBundle {
 
   // Loads and returns a cursor from the app module.
   HCURSOR LoadCursor(int cursor_id);
+#elif defined(OS_MACOSX)
+  // Wrapper for GetBitmapNamed. Converts the bitmap to an autoreleased NSImage.
+  NSImage* GetNSImageNamed(int resource_id);
 #elif defined(OS_LINUX)
   // Gets the GdkPixbuf with the specified resource_id, first by looking into
   // the theme data, than in the current module data if applicable.  Returns a

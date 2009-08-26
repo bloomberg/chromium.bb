@@ -644,6 +644,9 @@
           '../third_party/skia/include/effects',
           'ext',
         ],
+        'mac_framework_dirs': [
+          '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
+        ],
       },
     },
   ],

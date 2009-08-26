@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "skia/ext/skia_utils_mac.h"
 
 ResourceBundle::~ResourceBundle() {
   FreeImages();
@@ -115,4 +116,15 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   string16 msg(reinterpret_cast<const char16*>(data.data()),
                data.length() / 2);
   return msg;
+}
+
+NSImage* ResourceBundle::GetNSImageNamed(int resource_id) {
+  // Currently this doesn't make a cache holding these as NSImages because
+  // GetBitmapNamed has a cache, and we don't want to double cache.
+  SkBitmap* bitmap = GetBitmapNamed(resource_id);
+  if (!bitmap)
+    return nil;
+
+  NSImage* nsimage = gfx::SkBitmapToNSImage(*bitmap);
+  return nsimage;
 }
