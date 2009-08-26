@@ -2,6 +2,30 @@ This directory contains the chromium extensions documentation, and the mechanism
 by which they are generated.
 
 --------------------------------------------------------------------------------
+Contributing To The Extension Docs:
+
+[When making changes, open the relevant /<page>.html in chrome via the file:
+scheme. If you do, you can refresh to instantly see any changes you make].
+
+*I want to document methods, events or parameters in the api itself:
+=>Edit ../api/extension_api.json. Usually you can just add or edit the
+"description" property. This will appear automatically in the corresponding doc
+page at ./<page>.html (where <page> is the name of the apimodule ("tabs", etc..)
+that contains the change you are making.
+
+*I want to edit static content for an API reference module:
+=>Look in /static/<page>.html (for your module). If the file exists, edit it,
+check you changes by viewing /<page>.html. If the file doesn't exist, add it,
+and make a copy of /template/page_shell.html and copy it to /<page>.html.
+
+*I want to edit or add a purely static page:
+=>Follow the same steps for editing static content for an API page.
+
+IN ALL CASES. When you have finshed, run build/build.bat (on windows) or
+build/build.py (on mac/linux). This may generate new files or changes to the
+/*.html pages. Include any new or changed files in the changelist you create.
+
+--------------------------------------------------------------------------------
 Building
 
 Changes to the extension docs must be checked into source control. Any changes

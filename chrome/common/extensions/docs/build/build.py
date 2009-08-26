@@ -9,6 +9,7 @@ import os
 import os.path
 import shutil
 import sys
+import time
 
 from subprocess import Popen, PIPE
 from optparse import OptionParser
@@ -164,6 +165,13 @@ def main():
            "underlying files that resulting in their changing).")
     for f in modified_files:
       print f;
+
+  # Hack. Sleep here, otherwise windows doesn't properly close the debug.log
+  # and the os.remove will fail with a "Permission denied".
+  time.sleep(1);
+  debug_log = os.path.normpath(_build_dir + "/" + "debug.log");
+  if (os.path.isfile(debug_log)):
+    os.remove(debug_log)
 
   return 0;
 

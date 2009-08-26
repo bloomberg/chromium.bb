@@ -88,43 +88,48 @@
               </ol>
             </li>
             <div jsselect="apiDefinition">
-              <li jsdisplay="$this.properties">
-                <a href="#properties">Properties</a>    
+              <li>
+                <a href="#apiReference" jscontent="'API Reference: ' + getModuleName()">API Reference</a>
                 <ol>
-                  <li jsselect="getPropertyListFromObject($this)">
-                    <a jscontent="name"
-                       jsvalues=".href:'#property-' + name"
-                       href="#property-anchor">propertyName</a>
+                  <li jsdisplay="$this.properties">
+                    <a href="#properties">Properties</a>    
+                    <ol>
+                      <li jsselect="getPropertyListFromObject($this)">
+                        <a jscontent="name"
+                           jsvalues=".href:'#property-' + name"
+                           href="#property-anchor">propertyName</a>
+                      </li>
+                    </ol>
                   </li>
-                </ol>
-              </li>
-              <li jsdisplay="functions && functions.length > 0">
-                <a href="#methods">Methods</a>    
-                <ol>
-                  <li jsselect="functions">
-                    <a jscontent="name"
-                       jsvalues=".href:'#method-' + name"
-                       href="#method-anchor">methodName</a>
+                  <li jsdisplay="functions && functions.length > 0">
+                    <a href="#methods">Methods</a>    
+                    <ol>
+                      <li jsselect="functions">
+                        <a jscontent="name"
+                           jsvalues=".href:'#method-' + name"
+                           href="#method-anchor">methodName</a>
+                      </li>
+                    </ol>
                   </li>
-                </ol>
-              </li>
-              <li jsdisplay="events && events.length > 0">
-                <a href="#events">Events</a>
-                <ol>
-                  <li jsselect="events">
-                    <a jscontent="name"
-                       jsvalues=".href:'#event-' + name"
-                       href="#event-anchor">eventName</a>
+                  <li jsdisplay="events && events.length > 0">
+                    <a href="#events">Events</a>
+                    <ol>
+                      <li jsselect="events">
+                        <a jscontent="name"
+                           jsvalues=".href:'#event-' + name"
+                           href="#event-anchor">eventName</a>
+                      </li>
+                    </ol>
                   </li>
-                </ol>
-              </li>
-              <li jsdisplay="types && types.length > 0">
-                <a href="#types">Types</a>
-                <ol>
-                  <li jsselect="types">
-                    <a jscontent="id"
-                       jsvalues=".href:'#type-' + id"
-                       href="#id-anchor">id</a>
+                  <li jsdisplay="types && types.length > 0">
+                    <a href="#types">Types</a>
+                    <ol>
+                      <li jsselect="types">
+                        <a jscontent="id"
+                           jsvalues=".href:'#type-' + id"
+                           href="#id-anchor">id</a>
+                      </li>
+                    </ol>
                   </li>
                 </ol>
               </li>
@@ -138,11 +143,12 @@
 
         <!-- API PAGE -->
         <div class="apiPage" jsselect="apiDefinition">
+        <a name="apiReference"></a>
         <h2 jscontent="getModuleName() + ' API reference'">chrome.apiname API reference</h2>
           
           <!-- PROPERTIES -->
           <div jsdisplay="$this.properties" class="apiGroup">
-            <a name="#properties"></a>
+            <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
             <div jsselect="getPropertyListFromObject($this)">
@@ -160,7 +166,7 @@
           
           <!-- METHODS -->
           <div jsdisplay="functions && functions.length > 0" class="apiGroup" id="methods">
-            <a name="#methods"></a>
+            <a name="methods"></a>
             <h3>Methods</h3>
 
             <!-- iterates over all functions -->
@@ -270,7 +276,7 @@
 
           <!-- EVENTS -->
           <div jsdisplay="events && events.length > 0" class="apiGroup">
-            <a name="#events"></a>
+            <a name="events"></a>
             <h3 id="events">Events</h3>
 
             <!-- iterates over all events -->
@@ -306,7 +312,7 @@
           
           <!-- TYPES -->
           <div jsdisplay="types && types.length > 0" class="apiGroup">
-            <a name="#types"></a>
+            <a name="types"></a>
             <h3 id="types">Types</h3>
 
             <!-- iterates over all types -->
