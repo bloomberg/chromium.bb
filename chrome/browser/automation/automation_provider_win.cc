@@ -328,31 +328,6 @@ void AutomationProvider::GetTabHWND(int handle, HWND* tab_hwnd) {
   }
 }
 
-void AutomationProvider::GetBrowserForWindow(int window_handle,
-                                             bool* success,
-                                             int* browser_handle) {
-  *success = false;
-  *browser_handle = 0;
-
-  if (window_tracker_->ContainsHandle(window_handle)) {
-    HWND window = window_tracker_->GetResource(window_handle);
-    BrowserList::const_iterator iter = BrowserList::begin();
-    Browser* browser = NULL;
-    for (;iter != BrowserList::end(); ++iter) {
-      HWND hwnd = reinterpret_cast<HWND>((*iter)->window()->GetNativeHandle());
-      if (window == hwnd) {
-        browser = *iter;
-        break;
-      }
-    }
-    if (browser) {
-      // Add() returns the existing handle for the resource if any.
-      *browser_handle = browser_tracker_->Add(browser);
-      *success = true;
-    }
-  }
-}
-
 void AutomationProvider::CreateExternalTab(
     const IPC::ExternalTabSettings& settings,
     gfx::NativeWindow* tab_container_window, gfx::NativeWindow* tab_window,

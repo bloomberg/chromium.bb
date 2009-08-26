@@ -108,13 +108,6 @@ void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
   NOTIMPLEMENTED();
 }
 
-void AutomationProvider::GetBrowserForWindow(int window_handle,
-                                             bool* success,
-                                             int* browser_handle) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
 void AutomationProvider::PrintAsync(int tab_handle) {
   NOTIMPLEMENTED();
 }

@@ -69,30 +69,6 @@ void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
   NOTIMPLEMENTED();
 }
 
-void AutomationProvider::GetBrowserForWindow(int window_handle,
-                                             bool* success,
-                                             int* browser_handle) {
-  *success = false;
-  *browser_handle = 0;
-
-#if !defined(TOOLKIT_VIEWS)
-  GtkWindow* window = window_tracker_->GetResource(window_handle);
-  if (!window)
-    return;
-
-  BrowserWindowGtk* browser_window =
-      BrowserWindowGtk::GetBrowserWindowForNativeWindow(window);
-  if (!browser_window)
-    return;
-
-  Browser* browser = browser_window->browser();
-  if (browser) {
-    *browser_handle = browser_tracker_->Add(browser);
-    *success = true;
-  }
-#endif  // !defined(TOOLKIT_VIEWS)
-}
-
 void AutomationProvider::PrintAsync(int tab_handle) {
   NOTIMPLEMENTED();
 }
