@@ -1200,7 +1200,6 @@
         'browser/gtk/download_started_animation_gtk.cc',
         'browser/gtk/edit_search_engine_dialog.cc',
         'browser/gtk/edit_search_engine_dialog.h',
-        'browser/gtk/extension_install_prompt_gtk.cc',
         'browser/gtk/extension_shelf_gtk.cc',
         'browser/gtk/extension_shelf_gtk.h',
         'browser/gtk/extension_view_gtk.cc',

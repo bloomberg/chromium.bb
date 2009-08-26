@@ -46,7 +46,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
     return;
   }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN)
   ShowExtensionInstallPrompt(profile_, delegate, extension, install_icon);
 
 #elif defined(OS_MACOSX)
