@@ -75,12 +75,6 @@
           'XP_UNIX',
           'MOZ_X11',
         ],
-        'link_settings': {
-          'libraries': [
-            '-lXt',
-            '-lX11',
-          ],
-        },
       }],
       ['OS=="mac"', {
         'defines': [
@@ -108,12 +102,6 @@
           ],
         },
       }],
-      ['OS=="linux"', {
-        'common_libraries': [
-          '-lXt',
-          '-lX11',
-        ],
-      }],
     ],
   },
   'targets': [
@@ -136,16 +124,23 @@
             'nacl_plugin.rc',
           ],
           'msvs_settings': {
-          'VCCLCompilerTool': {
-            'ExceptionHandling': '2',  # /EHsc
+            'VCCLCompilerTool': {
+              'ExceptionHandling': '2',  # /EHsc
+            },
+            'VCLinkerTool': {
+              'AdditionalLibraryDirectories': [
+                 '$(OutDir)/lib',
+              ],
+            },
           },
-          'VCLinkerTool': {
-            'AdditionalLibraryDirectories': [
-              '$(OutDir)/lib',
+        }],
+        ['OS=="linux"', {
+          'link_settings': {
+            'libraries': [
+              '-lXt',
+              '-lX11',
             ],
-            #['<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Lib'],
           },
-        },
         }],
       ],
     },
