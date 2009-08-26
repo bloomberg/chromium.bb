@@ -115,6 +115,11 @@ class FindBarGtk : public FindBar,
   static gboolean OnExpose(GtkWidget* widget, GdkEventExpose* event,
                            FindBarGtk* bar);
 
+  // Expose that draws the text entry background in GTK mode.
+  static gboolean OnContentEventBoxExpose(GtkWidget* widget,
+                                          GdkEventExpose* event,
+                                          FindBarGtk* bar);
+
   // These are both used for focus management.
   static gboolean OnFocus(GtkWidget* text_entry, GtkDirectionType focus,
                           FindBarGtk* find_bar);
@@ -151,10 +156,13 @@ class FindBarGtk : public FindBar,
 
   // An event box and alignment that wrap the entry area and the count label.
   GtkWidget* content_event_box_;
+  GtkWidget* content_alignment_;
 
   // The border around the text entry area.
   GtkWidget* border_bin_;
+  GtkWidget* border_bin_alignment_;
   GtkWidget* border_bin_aa_;
+  GtkWidget* border_bin_aa_alignment_;
 
   // The next and previous match buttons.
   scoped_ptr<CustomDrawButton> find_previous_button_;

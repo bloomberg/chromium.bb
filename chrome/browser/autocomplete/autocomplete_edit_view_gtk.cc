@@ -508,14 +508,8 @@ void AutocompleteEditViewGtk::SetBaseColor() {
 
     // style may be unrealized at this point, so calculate the halfway point
     // between text[] and base[] manually instead of just using text_aa[].
-    GdkColor average_color;
-    average_color.pixel = 0;
-    average_color.red = (style->text[GTK_STATE_NORMAL].red +
-                         style->base[GTK_STATE_NORMAL].red) / 2;
-    average_color.green = (style->text[GTK_STATE_NORMAL].green +
-                           style->base[GTK_STATE_NORMAL].green) / 2;
-    average_color.blue = (style->text[GTK_STATE_NORMAL].blue +
-                          style->base[GTK_STATE_NORMAL].blue) / 2;
+    GdkColor average_color = gtk_util::AverageColors(
+        style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
 
     g_object_set(G_OBJECT(faded_text_tag_), "foreground-gdk",
                  &average_color, NULL);

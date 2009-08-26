@@ -155,6 +155,17 @@ gfx::Point ClientPoint(GtkWidget* widget);
 // shapes.
 GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr);
 
+// Draws a GTK text entry with the style parameters of GtkEntry
+// |offscreen_entry| onto |widget_to_draw_on| in the rectangle |rec|. Drawing
+// is only done in the clip rectangle |dirty_rec|.
+void DrawTextEntryBackground(GtkWidget* offscreen_entry,
+                             GtkWidget* widget_to_draw_on,
+                             GdkRectangle* dirty_rec,
+                             GdkRectangle* rec);
+
+// Returns the two colors averaged together.
+GdkColor AverageColors(GdkColor color_one, GdkColor color_two);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_

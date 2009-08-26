@@ -138,6 +138,26 @@ const NineBox* GetDialogBorder() {
   return dialog_border;
 }
 
+// Like gtk_util::CreateGtkBorderBin, but allows control over the alignment and
+// returns both the event box and the alignment so we can modify it during its
+// lifetime (i.e. during a theme change).
+void BuildBorder(GtkWidget* child,
+                 bool center,
+                 int padding_top, int padding_bottom, int padding_left,
+                 int padding_right,
+                 GtkWidget** ebox, GtkWidget** alignment) {
+  *ebox = gtk_event_box_new();
+  if (center)
+    *alignment = gtk_alignment_new(0.5, 0.5, 0.0, 0.0);
+  else
+    *alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(*alignment),
+                            padding_top, padding_bottom, padding_left,
+                            padding_right);
+  gtk_container_add(GTK_CONTAINER(*alignment), child);
+  gtk_container_add(GTK_CONTAINER(*ebox), *alignment);
+}
+
 }  // namespace
 
 FindBarGtk::FindBarGtk(Browser* browser)
@@ -242,6 +262,7 @@ void FindBarGtk::InitWidgets() {
   gtk_widget_set_size_request(content_hbox, kTextEntryWidth, -1);
 
   text_entry_ = gtk_entry_new();
+  gtk_entry_set_has_frame(GTK_ENTRY(text_entry_), FALSE);
 
   match_count_label_ = gtk_label_new(NULL);
   // This line adds padding on the sides so that the label has even padding on
@@ -262,16 +283,19 @@ void FindBarGtk::InitWidgets() {
                    FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(content_hbox), text_entry_, TRUE, TRUE, 0);
 
-  // This event box is necessary to color in the area above and below the
-  // match count label.
-  content_event_box_ = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(content_event_box_), content_hbox);
+  // This event box is necessary to color in the area above and below the match
+  // count label, and is where we draw the entry background onto in GTK mode.
+  BuildBorder(content_hbox, true, 0, 0, 0, 0,
+              &content_event_box_, &content_alignment_);
+  gtk_widget_set_app_paintable(content_event_box_, TRUE);
+  g_signal_connect(content_event_box_, "expose-event",
+                   G_CALLBACK(OnContentEventBoxExpose), this);
 
   // We fake anti-aliasing by having two borders.
-  border_bin_ = gtk_util::CreateGtkBorderBin(content_event_box_, NULL,
-                                             1, 1, 1, 0);
-  border_bin_aa_ = gtk_util::CreateGtkBorderBin(border_bin_, NULL,
-                                                1, 1, 1, 0);
+  BuildBorder(content_event_box_, false, 1, 1, 1, 0,
+              &border_bin_, &border_bin_alignment_);
+  BuildBorder(border_bin_, false, 1, 1, 1, 0,
+              &border_bin_aa_, &border_bin_aa_alignment_);
   gtk_util::CenterWidgetInHBox(hbox, border_bin_aa_, true, 0);
 
   theme_provider_->InitThemesFor(this);
@@ -448,21 +472,34 @@ void FindBarGtk::Observe(NotificationType type,
     GdkColor color = theme_provider_->GetBorderColor();
     gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &color);
 
-    gtk_entry_set_has_frame(GTK_ENTRY(text_entry_), TRUE);
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL, NULL);
 
     gtk_widget_set_size_request(content_event_box_, -1, -1);
     gtk_widget_modify_bg(content_event_box_, GTK_STATE_NORMAL, NULL);
 
+    // Replicate the normal GtkEntry behaviour by drawing the entry
+    // background. We set the fake alignment to be the frame thickness.
+    GtkStyle* style = gtk_rc_get_style(text_entry_);
+    gint xborder = style->xthickness;
+    gint yborder = style->ythickness;
+    gtk_alignment_set_padding(GTK_ALIGNMENT(content_alignment_),
+                              yborder, yborder, xborder, xborder);
+
     gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, NULL);
+
+    // We leave left padding on the left, even in GTK mode, as it's required
+    // for the left margin to be equivalent to the bottom margin.
+    gtk_alignment_set_padding(GTK_ALIGNMENT(border_bin_alignment_),
+                              0, 0, 1, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(border_bin_aa_alignment_),
+                              0, 0, 0, 0);
 
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 0.5);
   } else {
     gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &kFrameBorderColor);
 
-    gtk_entry_set_has_frame(GTK_ENTRY(text_entry_), FALSE);
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL,
                            &kEntryBackgroundColor);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL,
@@ -474,8 +511,16 @@ void FindBarGtk::Observe(NotificationType type,
     gtk_widget_modify_bg(content_event_box_, GTK_STATE_NORMAL,
                          &kEntryBackgroundColor);
 
+    gtk_alignment_set_padding(GTK_ALIGNMENT(content_alignment_),
+                              0.0, 0.0, 0.0, 0.0);
+
     gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, &kTextBorderColor);
     gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, &kTextBorderColorAA);
+
+    gtk_alignment_set_padding(GTK_ALIGNMENT(border_bin_alignment_),
+                              1, 1, 1, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(border_bin_aa_alignment_),
+                              1, 1, 1, 0);
 
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 1.0);
   }
@@ -511,12 +556,24 @@ void FindBarGtk::UpdateMatchLabelAppearance(bool failure) {
   match_label_failure_ = failure;
   bool use_gtk = theme_provider_->UseGtkTheme();
 
-  gtk_widget_modify_bg(match_count_event_box_, GTK_STATE_NORMAL,
-      failure ? &kFindFailureBackgroundColor :
-      (use_gtk ? NULL : &kEntryBackgroundColor));
-  gtk_widget_modify_fg(match_count_label_, GTK_STATE_NORMAL,
-      failure ? &kEntryTextColor :
-      (use_gtk ? NULL : &kFindSuccessTextColor));
+  if (use_gtk) {
+    GtkStyle* style = gtk_rc_get_style(text_entry_);
+    GdkColor normal_bg = style->base[GTK_STATE_NORMAL];
+    GdkColor normal_text = gtk_util::AverageColors(
+        style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
+
+    gtk_widget_modify_bg(match_count_event_box_, GTK_STATE_NORMAL,
+                         failure ? &kFindFailureBackgroundColor :
+                         &normal_bg);
+    gtk_widget_modify_fg(match_count_label_, GTK_STATE_NORMAL,
+                         failure ? &kEntryTextColor : &normal_text);
+  } else {
+    gtk_widget_modify_bg(match_count_event_box_, GTK_STATE_NORMAL,
+                         failure ? &kFindFailureBackgroundColor :
+                         &kEntryBackgroundColor);
+    gtk_widget_modify_fg(match_count_label_, GTK_STATE_NORMAL,
+                         failure ? &kEntryTextColor : &kFindSuccessTextColor);
+  }
 }
 
 void FindBarGtk::Reposition() {
@@ -614,6 +671,26 @@ void FindBarGtk::OnClicked(GtkWidget* button, FindBarGtk* find_bar) {
   } else {
     NOTREACHED();
   }
+}
+
+// static
+gboolean FindBarGtk::OnContentEventBoxExpose(GtkWidget* widget,
+                                             GdkEventExpose* event,
+                                             FindBarGtk* bar) {
+  if (bar->theme_provider_->UseGtkTheme()) {
+    // Draw the text entry background around where we input stuff.
+    GdkRectangle rec = {
+      widget->allocation.x,
+      widget->allocation.y,
+      widget->allocation.width,
+      widget->allocation.height
+    };
+
+    gtk_util::DrawTextEntryBackground(bar->text_entry_, widget,
+                                      &event->area, &rec);
+  }
+
+  return FALSE;
 }
 
 // static

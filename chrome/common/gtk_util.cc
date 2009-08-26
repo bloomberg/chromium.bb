@@ -417,4 +417,45 @@ GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {
   return point;
 }
 
+void DrawTextEntryBackground(GtkWidget* offscreen_entry,
+                             GtkWidget* widget_to_draw_on,
+                             GdkRectangle* dirty_rec,
+                             GdkRectangle* rec) {
+  GtkStyle* gtk_owned_style = gtk_rc_get_style(offscreen_entry);
+  // GTK owns the above and we're going to have to make our own copy of it
+  // that we can edit.
+  GtkStyle* our_style = gtk_style_copy(gtk_owned_style);
+  our_style = gtk_style_attach(our_style, widget_to_draw_on->window);
+
+  // TODO(erg): Draw the focus ring if appropriate...
+
+  // We're using GTK rendering; draw a GTK entry widget onto the background.
+  gtk_paint_shadow(our_style, widget_to_draw_on->window,
+                   GTK_STATE_NORMAL, GTK_SHADOW_IN, dirty_rec,
+                   widget_to_draw_on, "entry",
+                   rec->x, rec->y, rec->width, rec->height);
+
+  // Draw the interior background (not all themes draw the entry background
+  // above; this is a noop on themes that do).
+  gint xborder = our_style->xthickness;
+  gint yborder = our_style->ythickness;
+  gtk_paint_flat_box(our_style, widget_to_draw_on->window,
+                     GTK_STATE_NORMAL, GTK_SHADOW_NONE, dirty_rec,
+                     widget_to_draw_on, "entry_bg",
+                     rec->x + xborder, rec->y + yborder,
+                     rec->width - 2 * xborder,
+                     rec->height - 2 * yborder);
+
+  g_object_unref(our_style);
+}
+
+GdkColor AverageColors(GdkColor color_one, GdkColor color_two) {
+  GdkColor average_color;
+  average_color.pixel = 0;
+  average_color.red = (color_one.red + color_two.red) / 2;
+  average_color.green = (color_one.green + color_two.green) / 2;
+  average_color.blue = (color_one.blue + color_two.blue) / 2;
+  return average_color;
+}
+
 }  // namespace gtk_util

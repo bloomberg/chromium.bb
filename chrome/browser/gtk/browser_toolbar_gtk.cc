@@ -597,33 +597,9 @@ gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
          ToolbarModel::SECURE) ?
         &kSecureColor : NULL);
 
-    GtkStyle* gtk_owned_style =
-        gtk_rc_get_style(toolbar->offscreen_entry_.get());
-    // GTK owns the above and we're going to have to make our own copy of it
-    // that we can edit.
-    GtkStyle* our_style = gtk_style_copy(gtk_owned_style);
-    our_style = gtk_style_attach(our_style, location_hbox->window);
-
-    // TODO(erg): Draw the focus ring if appropriate...
-
-    // We're using GTK rendering; draw a GTK entry widget onto the background.
-    gtk_paint_shadow(our_style, location_hbox->window,
-                     GTK_STATE_NORMAL, GTK_SHADOW_IN, &rec,
-                     location_hbox, "entry",
-                     rec.x, rec.y, rec.width, rec.height);
-
-    // Draw the interior background (not all themes draw the entry background
-    // above; this is a noop on themes that do).
-    gint xborder = our_style->xthickness;
-    gint yborder = our_style->ythickness;
-    gtk_paint_flat_box(our_style, location_hbox->window,
-                       GTK_STATE_NORMAL, GTK_SHADOW_NONE, &rec,
-                       location_hbox, "entry_bg",
-                       rec.x + xborder, rec.y + yborder,
-                       rec.width - 2 * xborder,
-                       rec.height - 2 * yborder);
-
-    g_object_unref(our_style);
+    gtk_util::DrawTextEntryBackground(toolbar->offscreen_entry_.get(),
+                                      location_hbox, &e->area,
+                                      &rec);
   }
 
   return FALSE;
