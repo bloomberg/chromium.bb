@@ -726,6 +726,9 @@ class Firefox3Observer : public ProfileWriter,
         import_search_engines_(import_search_engines) {
   }
 
+  ~Firefox3Observer(){
+  }
+
   virtual void ImportItemStarted(ImportItem item) {}
   virtual void ImportItemEnded(ImportItem item) {}
   virtual void ImportStarted() {}
@@ -831,12 +834,12 @@ class Firefox3Observer : public ProfileWriter,
   std::wstring default_keyword_url_;
 };
 
-TEST_F(ImporterTest, DISABLED_Firefox30Importer) {
+TEST_F(ImporterTest, Firefox30Importer) {
   Firefox3Observer* observer = new Firefox3Observer();
   Firefox3xImporterTest(L"firefox3_profile", observer, observer, true);
 }
 
-TEST_F(ImporterTest, DISABLED_Firefox35Importer) {
+TEST_F(ImporterTest, Firefox35Importer) {
   bool import_search_engines = false;
   Firefox3Observer* observer = new Firefox3Observer(import_search_engines);
   Firefox3xImporterTest(L"firefox35_profile", observer, observer,
