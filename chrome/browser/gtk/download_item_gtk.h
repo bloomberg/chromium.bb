@@ -84,6 +84,9 @@ class DownloadItemGtk : public DownloadItem::Observer,
   // Sets the components of the danger warning.
   void UpdateDangerWarning();
 
+  // Remove ourselves from the parent download shelf. This will delete us.
+  void RemoveThis();
+
   static void InitNineBoxes();
 
   // Draws everything in GTK rendering mode.
@@ -210,6 +213,8 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // The time at which we were insantiated.
   base::Time creation_time_;
+
+  ScopedRunnableMethodFactory<DownloadItemGtk> method_factory_;
 
   // For canceling an in progress icon request.
   CancelableRequestConsumerT<int, 0> icon_consumer_;
