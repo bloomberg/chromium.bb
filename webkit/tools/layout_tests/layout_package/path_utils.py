@@ -35,9 +35,12 @@ def LayoutTestsDir(path=None):
   else:
     return PathFromBase('third_party', 'WebKit');
 
-def ChromiumBaselinePath(platform):
+def ChromiumBaselinePath(platform=None):
   """Returns the full path to the directory containing expected
-  baseline results from chromium ports."""
+  baseline results from chromium ports. If |platform| is None, the
+  currently executing platform is used."""
+  if platform is None:
+    platform = platform_utils.PlatformName()
   return PathFromBase('webkit', 'data', 'layout_tests', 'platform', platform)
 
 def WebKitBaselinePath(platform):
