@@ -112,6 +112,8 @@ class BrowserWindowGtk : public BrowserWindow,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
+  virtual void ShowPageMenu();
+  virtual void ShowAppMenu();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

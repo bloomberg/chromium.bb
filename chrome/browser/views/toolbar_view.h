@@ -105,6 +105,8 @@ class ToolbarView : public views::View,
   ToolbarStarToggle* star_button() const { return star_; }
   GoButton* go_button() const { return go_; }
   LocationBarView* location_bar() const { return location_bar_; }
+  views::MenuButton* page_menu() const { return page_menu_; }
+  views::MenuButton* app_menu() const { return app_menu_; }
 
   // Overridden from Menu::BaseControllerDelegate:
   virtual bool GetAcceleratorInfo(int id, views::Accelerator* accel);

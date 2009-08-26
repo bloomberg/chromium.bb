@@ -49,6 +49,8 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void UpdateToolbar(TabContents* contents,
                              bool should_restore_state) {}
   virtual void FocusToolbar() {}
+  virtual void ShowPageMenu() {}
+  virtual void ShowAppMenu() {}
   virtual bool IsBookmarkBarVisible() const { return false; }
   virtual gfx::Rect GetRootWindowResizerRect() const { return gfx::Rect(); }
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,

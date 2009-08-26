@@ -375,6 +375,8 @@ class Browser : public TabStripModelDelegate,
   void ToggleBookmarkBar();
 
   void OpenBookmarkManager();
+  void ShowAppMenu();
+  void ShowPageMenu();
   void ShowHistoryTab();
   void ShowDownloadsTab();
   void OpenClearBrowsingDataDialog();

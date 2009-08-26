@@ -229,6 +229,12 @@ class BrowserWindow {
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history) = 0;
 
+  // Shows the page menu (for accessibility).
+  virtual void ShowPageMenu() = 0;
+
+  // Shows the app menu (for accessibility).
+  virtual void ShowAppMenu() = 0;
+
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 

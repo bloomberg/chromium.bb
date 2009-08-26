@@ -277,6 +277,14 @@ void BrowserWindowCocoa::ShowPageInfo(Profile* profile,
   PageInfoWindowMac::ShowPageInfo(profile, url, ssl, show_history);
 }
 
+void BrowserWindowCocoa::ShowPageMenu() {
+  // No-op. Mac doesn't support showing the menus via alt keys.
+}
+
+void BrowserWindowCocoa::ShowAppMenu() {
+  // No-op. Mac doesn't support showing the menus via alt keys.
+}
+
 void BrowserWindowCocoa::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

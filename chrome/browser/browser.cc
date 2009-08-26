@@ -707,6 +707,8 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_PAGE_MENU, show_main_ui);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1151,6 +1153,16 @@ void Browser::OpenBookmarkManager() {
   window_->ShowBookmarkManager();
 }
 
+void Browser::ShowAppMenu() {
+  UserMetrics::RecordAction(L"ShowAppMenu", profile_);
+  window_->ShowAppMenu();
+}
+
+void Browser::ShowPageMenu() {
+  UserMetrics::RecordAction(L"ShowPageMenu", profile_);
+  window_->ShowPageMenu();
+}
+
 void Browser::ShowHistoryTab() {
   UserMetrics::RecordAction(L"ShowHistory", profile_);
   ShowSingleDOMUITab(GURL(chrome::kChromeUIHistoryURL));
@@ -1418,6 +1430,8 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();         break;
     case IDC_SHOW_HISTORY:          ShowHistoryTab();              break;
     case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();            break;
+    case IDC_SHOW_APP_MENU:         ShowAppMenu();                 break;
+    case IDC_SHOW_PAGE_MENU:        ShowPageMenu();                break;
 #ifdef CHROME_PERSONALIZATION
     case IDC_SYNC_BOOKMARKS:        OpenSyncMyBookmarksDialog();   break;
 #endif

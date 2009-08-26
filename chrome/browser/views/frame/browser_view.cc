@@ -970,6 +970,14 @@ void BrowserView::ShowPageInfo(Profile* profile,
                         show_history);
 }
 
+void BrowserView::ShowPageMenu() {
+  toolbar_->page_menu()->Activate();
+}
+
+void BrowserView::ShowAppMenu() {
+  toolbar_->app_menu()->Activate();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:
 

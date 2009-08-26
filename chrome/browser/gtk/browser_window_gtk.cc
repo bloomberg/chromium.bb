@@ -1040,6 +1040,12 @@ void BrowserWindowGtk::ShowPageInfo(Profile* profile,
   browser::ShowPageInfo(window_, profile, url, ssl, show_history);
 }
 
+void BrowserWindowGtk::ShowPageMenu() {
+}
+
+void BrowserWindowGtk::ShowAppMenu() {
+}
+
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   NOTIMPLEMENTED();
   browser_->InProgressDownloadResponse(false);

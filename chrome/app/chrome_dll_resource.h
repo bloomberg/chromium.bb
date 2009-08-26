@@ -173,6 +173,8 @@
 #define IDC_VIEW_PASSWORDS              40017
 #define IDC_ABOUT                       40018
 #define IDC_HELP_PAGE                   40019
+#define IDC_SHOW_APP_MENU               40020
+#define IDC_SHOW_PAGE_MENU              40021
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
