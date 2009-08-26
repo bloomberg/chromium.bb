@@ -145,18 +145,18 @@ std::wstring ChildProcessHost::GetChildPath() {
 
 // static
 void ChildProcessHost::SetCrashReporterCommandLine(CommandLine* command_line) {
-#if defined(OS_POSIX)
-  if (GoogleUpdateSettings::GetCollectStatsConsent()) {
-#if defined(OS_LINUX)
+#if defined(USE_LINUX_BREAKPAD)
+  const bool unattended = (getenv("CHROME_HEADLESS") != NULL);
+  if (unattended || GoogleUpdateSettings::GetCollectStatsConsent()) {
     command_line->AppendSwitchWithValue(switches::kEnableCrashReporter,
                                         ASCIIToWide(google_update::linux_guid +
                                                     "," +
                                                     base::GetLinuxDistro()));
-#else  // !OS_LINUX
-    command_line->AppendSwitch(switches::kEnableCrashReporter);
-#endif  // !OS_LINUX
   }
-#endif  // OS_POSIX
+#elif defined(OS_MACOSX)
+  if (GoogleUpdateSettings::GetCollectStatsConsent())
+    command_line->AppendSwitch(switches::kEnableCrashReporter);
+#endif  // OS_MACOSX
 }
 
 bool ChildProcessHost::CreateChannel() {

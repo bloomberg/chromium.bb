@@ -4727,20 +4727,6 @@
         },  # target chrome_dll
       ],  # targets
     }],  # OS=="mac" or OS=="win"
-    ['OS=="linux"', {
-      'conditions': [
-        # Only Chrome builds get breakpad since crash processing is internal.
-        ['branding=="Chrome"', {
-          'variables': {
-            'linux_breakpad%': 1,
-          },
-        }, {
-          'variables': {
-            'linux_breakpad%': 0,
-          },
-        }],
-      ],
-    }],
     ['OS=="mac"',
       { 'targets': [
         {

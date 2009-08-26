@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <stdlib.h>
 #include <sys/sendfile.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
@@ -18,6 +19,7 @@
 
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
+#include "base/file_path.h"
 #include "base/file_version_info_linux.h"
 #include "base/format_macros.h"
 #include "base/global_descriptors_posix.h"
@@ -34,6 +36,7 @@
 #include "breakpad/linux/linux_syscall_support.h"
 #include "breakpad/linux/memory.h"
 #include "chrome/common/chrome_descriptors.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
 
@@ -51,7 +54,7 @@ static void write_uint64_hex(char* output, uint64_t v) {
   }
 }
 
-pid_t UploadCrashDump(const BreakpadInfo& info) {
+pid_t HandleCrashDump(const BreakpadInfo& info) {
   // WARNING: this code runs in a compromised context. It may not call into
   // libc nor allocate memory normally.
 
@@ -95,29 +98,39 @@ pid_t UploadCrashDump(const BreakpadInfo& info) {
 
   static const char temp_file_template[] =
       "/tmp/chromium-upload-XXXXXXXXXXXXXXXX";
-  char buf[sizeof(temp_file_template)];
-  memcpy(buf, temp_file_template, sizeof(temp_file_template));
-
+  char temp_file[sizeof(temp_file_template)];
   int fd = -1;
-  for (unsigned i = 0; i < 10; ++i) {
-    uint64_t t;
-    read(ufd, &t, sizeof(t));
-    write_uint64_hex(buf + sizeof(buf) - (16 + 1), t);
+  if (info.upload) {
+    memcpy(temp_file, temp_file_template, sizeof(temp_file_template));
 
-    fd = sys_open(buf, O_WRONLY | O_CREAT | O_EXCL, 0600);
-    if (fd >= 0)
-      break;
+    for (unsigned i = 0; i < 10; ++i) {
+      uint64_t t;
+      read(ufd, &t, sizeof(t));
+      write_uint64_hex(temp_file + sizeof(temp_file) - (16 + 1), t);
+
+      fd = sys_open(temp_file, O_WRONLY | O_CREAT | O_EXCL, 0600);
+      if (fd >= 0)
+        break;
+    }
+
+    if (fd < 0) {
+      static const char msg[] = "Failed to create temporary file in /tmp: "
+          "cannot upload crash dump\n";
+      sys_write(2, msg, sizeof(msg) - 1);
+      sys_close(ufd);
+      return -1;
+    }
+  } else {
+    fd = sys_open(info.filename, O_WRONLY, 0600);
+    if (fd < 0) {
+      static const char msg[] = "Failed to save crash dump: failed to open\n";
+      sys_write(2, msg, sizeof(msg) - 1);
+      sys_close(ufd);
+      return -1;
+    }
   }
 
-  if (fd == -1) {
-    static const char msg[] = "Failed to create temporary file in /tmp: cannot "
-                              "upload crash dump\n";
-    sys_write(2, msg, sizeof(msg) - 1);
-    sys_close(ufd);
-    return -1;
-  }
-
-  // The MIME boundary is 28 hypens, followed by a 64-bit nonce and a NUL.
+  // The MIME boundary is 28 hyphens, followed by a 64-bit nonce and a NUL.
   char mime_boundary[28 + 16 + 1];
   my_memset(mime_boundary, '-', 28);
   uint64_t boundary_rand;
@@ -373,6 +386,9 @@ pid_t UploadCrashDump(const BreakpadInfo& info) {
 
   sys_close(fd);
 
+  if (!info.upload)
+    return 0;
+
   // The --header argument to wget looks like:
   //   --header=Content-Type: multipart/form-data; boundary=XYZ
   // where the boundary has two fewer leading '-' chars
@@ -389,9 +405,9 @@ pid_t UploadCrashDump(const BreakpadInfo& info) {
   //   --post-file=/tmp/...
   static const char post_file_msg[] = "--post-file=";
   char* const post_file = reinterpret_cast<char*>(allocator.Alloc(
-       sizeof(post_file_msg) - 1 + sizeof(buf)));
+       sizeof(post_file_msg) - 1 + sizeof(temp_file)));
   memcpy(post_file, post_file_msg, sizeof(post_file_msg) - 1);
-  memcpy(post_file + sizeof(post_file_msg) - 1, buf, sizeof(buf));
+  memcpy(post_file + sizeof(post_file_msg) - 1, temp_file, sizeof(temp_file));
 
   const pid_t child = sys_fork();
   if (!child) {
@@ -441,7 +457,7 @@ pid_t UploadCrashDump(const BreakpadInfo& info) {
         sys_write(2, "\n", 1);
       }
       sys_unlink(info.filename);
-      sys_unlink(buf);
+      sys_unlink(temp_file);
       sys__exit(0);
     }
 
@@ -458,7 +474,7 @@ pid_t UploadCrashDump(const BreakpadInfo& info) {
       NULL,
     };
 
-    execv("/usr/bin/wget", const_cast<char**>(args));
+    execv(kWgetBinary, const_cast<char**>(args));
     static const char msg[] = "Cannot upload crash dump: cannot exec "
                               "/usr/bin/wget\n";
     sys_write(2, msg, sizeof(msg) - 1);
@@ -483,8 +499,8 @@ extern std::string linux_distro;
 
 static bool CrashDone(const char* dump_path,
                       const char* minidump_id,
-                      void* context,
-                      bool succeeded) {
+                      const bool upload,
+                      const bool succeeded) {
   // WARNING: this code runs in a compromised context. It may not call into
   // libc nor allocate memory normally.
   if (!succeeded)
@@ -512,16 +528,39 @@ static bool CrashDone(const char* dump_path,
   info.guid_length = google_update::linux_guid.length();
   info.distro = base::linux_distro.data();
   info.distro_length = base::linux_distro.length();
-  UploadCrashDump(info);
+  info.upload = upload;
+  HandleCrashDump(info);
 
   return true;
 }
 
-void EnableCrashDumping() {
-  // We leak this object.
+// Wrapper script, do not add more code here.
+static bool CrashDoneNoUpload(const char* dump_path,
+                      const char* minidump_id,
+                      void* context,
+                      bool succeeded) {
+  return CrashDone(dump_path, minidump_id, false, succeeded);
+}
 
-  new google_breakpad::ExceptionHandler("/tmp", NULL, CrashDone, NULL,
-                                        true /* install handlers */);
+// Wrapper script, do not add more code here.
+static bool CrashDoneUpload(const char* dump_path,
+                      const char* minidump_id,
+                      void* context,
+                      bool succeeded) {
+  return CrashDone(dump_path, minidump_id, true, succeeded);
+}
+
+void EnableCrashDumping(const bool unattended) {
+  if (unattended) {
+    FilePath dumps_path("/tmp");
+    PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
+    new google_breakpad::ExceptionHandler(dumps_path.value().c_str(), NULL,
+                                          CrashDoneNoUpload, NULL,
+                                          true /* install handlers */);
+  } else {
+    new google_breakpad::ExceptionHandler("/tmp", NULL, CrashDoneUpload, NULL,
+                                          true /* install handlers */);
+  }
 }
 
 // This is defined in chrome/common/child_process_logging_linux.cc, it's the
@@ -601,11 +640,12 @@ void InitCrashReporter() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   const std::wstring process_type =
       parsed_command_line.GetSwitchValue(switches::kProcessType);
+  const bool unattended = (getenv("CHROME_HEADLESS") != NULL);
   if (process_type.empty()) {
-    if (!GoogleUpdateSettings::GetCollectStatsConsent())
+    if (!(unattended || GoogleUpdateSettings::GetCollectStatsConsent()))
       return;
     base::GetLinuxDistro();  // Initialize base::linux_distro if needed.
-    EnableCrashDumping();
+    EnableCrashDumping(unattended);
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kZygoteProcess) {
     // We might be chrooted in a zygote or renderer process so we cannot call
@@ -629,6 +669,7 @@ void InitCrashReporter() {
 
 // -----------------------------------------------------------------------------
 
+#if defined(GOOGLE_CHROME_BUILD)
 bool EnableCoreDumping(std::string* core_dump_directory) {
   // First we check that the core files will get dumped to the
   // current-directory in a file called 'core'. We could try to support other
@@ -729,9 +770,7 @@ static void UploadCoreFile(const pid_t child, std::string* core_filename) {
   header.SetString(L"chrome-version", FILE_VERSION);
   header.SetString(L"binary-size", StringPrintf("%" PRIu64, binary_size));
   header.SetString(L"user", getenv("USER"));
-#if defined(GOOGLE_CHROME_BUILD)
   header.SetBoolean(L"offical-build", true);
-#endif
 
   std::string json;
   JSONWriter::Write(&header, true /* pretty print */, &json);
@@ -787,3 +826,4 @@ void MonitorForCoreDumpsAndReport(const std::string& core_dump_directory,
 
   rmdir(core_dump_directory.c_str());
 }
+#endif

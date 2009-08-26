@@ -10,15 +10,18 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include <string>
 #include <vector>
 
 #include "base/eintr_wrapper.h"
+#include "base/file_path.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "breakpad/linux/exception_handler.h"
@@ -26,6 +29,7 @@
 #include "breakpad/linux/minidump_writer.h"
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/common/chrome_paths.h"
 
 // expected prefix of the target of the /proc/self/fd/%d link for a socket
 static const char kSocketLinkPrefix[] = "socket:[";
@@ -303,9 +307,16 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
+  bool upload = true;
+  FilePath dumps_path("/tmp");
+  if (getenv("CHROME_HEADLESS")) {
+    upload = false;
+    PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
+  }
   const uint64 rand = base::RandUint64();
   const std::string minidump_filename =
-      StringPrintf("/tmp/chromium-renderer-minidump-%016" PRIx64 ".dmp", rand);
+      StringPrintf("%s/chromium-renderer-minidump-%016" PRIx64 ".dmp",
+                   dumps_path.value().c_str(), rand);
   if (!google_breakpad::WriteMinidump(minidump_filename.c_str(),
                                       crashing_pid, crash_context,
                                       kCrashContextSize)) {
@@ -334,7 +345,8 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   info.guid_length = strlen(guid);
   info.distro = distro;
   info.distro_length = strlen(distro);
-  UploadCrashDump(info);
+  info.upload = upload;
+  HandleCrashDump(info);
 }
 
 void RenderCrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
