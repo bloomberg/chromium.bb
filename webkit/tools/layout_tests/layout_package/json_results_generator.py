@@ -106,6 +106,7 @@ class JSONResultsGenerator:
       try:
         results_json = simplejson.loads(old_results)
       except:
+        logging.error("Results file on disk was not valid JSON. Clobbering.")
         # The JSON file is not valid JSON. Just clobber the results.
         results_json = {}
 
@@ -214,12 +215,10 @@ class JSONResultsGenerator:
     test["results"] = results
     test["times"] = times
 
-    # If the test has all passes or all no-data (that wasn't just padded in) and
-    # times that take less than a second, remove it from the results to reduce
-    # noise and filesize.
-    if (max(times) >= self.MIN_TIME and num_results and
-        (results == num_build_numbers * self.PASS_RESULT or
-         results == num_build_numbers * self.NO_DATA_RESULT)):
+    # Remove all passes/no-data from the results to reduce noise and filesize.
+    if (results == num_build_numbers * self.NO_DATA_RESULT or
+        (max(times) <= self.MIN_TIME and num_results and
+         results == num_build_numbers * self.PASS_RESULT)):
       del tests[test_path]
 
     # Remove tests that don't exist anymore.
