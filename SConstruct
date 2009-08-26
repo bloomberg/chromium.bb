@@ -899,14 +899,11 @@ nacl_extra_sdk_env = pre_base_env.Clone(
 
     CPPPATH = ['$SOURCE_ROOT'],
     LINK = '$CXX',
-)
-
-nacl_extra_sdk_env.Append(
-  CPPDEFINES = [
-    ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
-    ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
-    ['NACL_BLOCK_SHIFT', '5' ],
-    ],
+    CPPDEFINES = [
+      ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
+      ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
+      ['NACL_BLOCK_SHIFT', '5' ],
+      ],
 )
 
 if nacl_extra_sdk_env.Bit('host_windows'):

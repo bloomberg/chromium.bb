@@ -47,7 +47,6 @@ env.Prepend(
         'nonnacl_srpc',
         'nrd_xfer',
         'nonnacl_util_c',
-        'ncvalidate',
         'google_nacl_imc_c',
         'container',
         'platform',
@@ -57,10 +56,15 @@ env.Prepend(
     ],
 )
 
-# ARM validator (libncvalidate.a) requres support of utils
-if env['BUILD_ARCHITECTURE'] == 'arm':
+if env['TARGET_ARCHITECTURE'] == 'x86':
   env.Append(
-    LIBS = ['arm_inst',
+      LIBS = ['ncvalidate',],
+  )
+
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  env.Append(
+    LIBS = ['ncvalidate_arm',
+            'arm_inst',
             'utils',]
   )
 

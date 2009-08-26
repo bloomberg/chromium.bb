@@ -44,7 +44,7 @@ if env.Bit('linux'):
                        ['arm_insts.c',
                         'arm_insts_rt.c'])
 
-  env.ComponentLibrary('ncvalidate',
+  env.ComponentLibrary('ncvalidate_arm',
                        ['arm_validate.cc',
                         'branch_patterns.cc',
                         gen_dec,
@@ -108,7 +108,7 @@ if env.Bit('linux'):
   arm_dis = env.ComponentProgram('arm-ncdis',
                                  ['ncdis.cc'],
                                  LIBS=['nchelper',
-                                       'ncvalidate',
+                                       'ncvalidate_arm',
                                        'arm_inst',
                                        'utils',
                                        'seg_parser',
@@ -119,7 +119,7 @@ if env.Bit('linux'):
   arm_val = env.ComponentProgram('arm-ncval',
                                  ['ncval.cc'],
                                  EXTRA_LIBS=['nchelper',
-                                             'ncvalidate',
+                                             'ncvalidate_arm',
                                              'arm_inst',
                                              'utils',
                                              'seg_parser',

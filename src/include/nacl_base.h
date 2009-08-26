@@ -52,6 +52,12 @@
 # define EXTERN_C_END
 #endif
 
+/*
+ * This is necessary to make "#if NACL_BUILD/TARGET_ARCH == x86" work.
+ * #if-directives can work only with numerical values but not with strings e.g.
+ * "x86"; therefore, we convert strings into integers. Whenever you use
+ * NACL_BUILD/TARGET_ARCH, you need to include this header.
+ */
 #define x86  0
 #define arm  1
 
