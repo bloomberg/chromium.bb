@@ -71,6 +71,7 @@ class ServiceRuntimeInterface {
   bool Start(const void* buffer, int32_t size);
   bool Kill();
   bool LogAtServiceRuntime(int severity, std::string msg);
+  ScriptableHandle<SocketAddress>* default_socket_address() const;
   ScriptableHandle<ConnectedSocket>* default_socket() const;
   ScriptableHandle<SocketAddress>* GetSocketAddress(Plugin* plugin,
                                                     NaClHandle channel);
@@ -80,6 +81,7 @@ class ServiceRuntimeInterface {
   bool InitCommunication(const void* buffer, int32_t size);
  private:
   PortablePluginInterface* plugin_interface_;
+  ScriptableHandle<SocketAddress>* default_socket_address_;
   ScriptableHandle<ConnectedSocket>* default_socket_;
   Plugin* plugin_;
   SrtSocket* runtime_channel_;

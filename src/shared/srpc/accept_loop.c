@@ -128,7 +128,6 @@ static void *srpc_default_acceptor(void *arg) {
     struct worker_state *state = malloc(sizeof *state);
     pthread_t           worker_tid;
 
-    printf("Accepting a connection\n");
     if (NULL == state) {
       /*
        * shed load; the client can come back later when we have more

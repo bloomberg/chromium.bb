@@ -62,6 +62,7 @@ ServiceRuntimeInterface::ServiceRuntimeInterface(
     PortablePluginInterface* plugin_interface,
     Plugin* plugin) :
     plugin_interface_(plugin_interface),
+    default_socket_address_(NULL),
     default_socket_(NULL),
     plugin_(plugin),
     runtime_channel_(NULL),
@@ -81,11 +82,10 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
            static_cast<void *>(this), static_cast<void *>(subprocess_),
            reinterpret_cast<unsigned>(reinterpret_cast<void *>(channel5))));
   // GetSocketAddress implicitly invokes Close(channel5).
-  ScriptableHandle<SocketAddress>* socket_address =
-      GetSocketAddress(plugin_, channel5);
+  default_socket_address_ = GetSocketAddress(plugin_, channel5);
   dprintf(("ServiceRuntimeInterface::Start: "
            "Got service channel descriptor %p\n",
-           static_cast<void *>(socket_address)));
+           static_cast<void *>(default_socket_address_)));
 
   ScriptableHandle<ConnectedSocket> *raw_channel;
   // The first connect on the socket address returns the service
@@ -95,7 +95,7 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
   // that can be used to forcibly shut down the sel_ldr.
   dprintf((" connecting for SrtSocket\n"));
   SocketAddress *real_socket_address =
-      static_cast<SocketAddress*>(socket_address->get_handle());
+      static_cast<SocketAddress*>(default_socket_address_->get_handle());
   raw_channel = real_socket_address->Connect(NULL);
   if (NULL == raw_channel) {
     dprintf(("ServiceRuntimeInterface::Start: "
@@ -344,6 +344,18 @@ ServiceRuntimeInterface::~ServiceRuntimeInterface() {
            " deleting subprocess_\n"));
   delete subprocess_;
   dprintf(("ServiceRuntimeInterface: shut down sel_ldr.\n"));
+}
+
+ScriptableHandle<SocketAddress>*
+    ServiceRuntimeInterface::default_socket_address() const {
+  dprintf(("ServiceRuntimeInterface::default_socket_address(%p) = %u\n",
+           static_cast<void *>(
+               const_cast<ServiceRuntimeInterface *>(this)),
+           reinterpret_cast<unsigned>(
+               const_cast<ScriptableHandle<SocketAddress>*>(
+                   default_socket_address_))));
+
+  return default_socket_address_;
 }
 
 ScriptableHandle<ConnectedSocket>*

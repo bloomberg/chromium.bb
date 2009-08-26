@@ -41,6 +41,7 @@ env.Publish('srpc_test.nexe', 'run', ['srpcperf.html',
                                       'srpc_plugin.html'])
 
 
+
 env.ComponentProgram('srpc_shm.nexe', 'srpc_shm.c',
                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.Publish('srpc_shm.nexe', 'run', [ 'srpc_shm.html' ])
@@ -49,7 +50,9 @@ env.Publish('srpc_shm.nexe', 'run', [ 'srpc_shm.html' ])
 
 env.ComponentProgram('srpc_nrd_server.nexe', 'srpc_nrd_server.c',
                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('srpc_nrd_server.nexe', 'run', ['examples.html', '_README.txt'])
+env.Publish('srpc_nrd_server.nexe', 'run', ['examples.html',
+                                            '_README.txt',
+                                            'srpc_sockaddr.html'])
 
 
 

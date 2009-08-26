@@ -49,6 +49,7 @@
 namespace nacl_srpc {
 
 // Incomplete classes for method declarations.
+class SocketAddress;
 class ConnectedSocket;
 class ServiceRuntimeInterface;
 class SharedMemory;
@@ -107,6 +108,7 @@ class Plugin : public PortableHandle {
   // Functions exported through MethodMap
   static bool UrlAsNaClDesc(void* obj, SrpcParams* params);
   static bool ShmFactory(void* obj, SrpcParams* params);
+  static bool DefaultSocketAddress(void *obj, SrpcParams *params);
   static bool SocketAddressFactory(void* obj, SrpcParams* params);
 
   static bool GetHeightProperty(void* obj, SrpcParams* params);
@@ -136,6 +138,7 @@ class Plugin : public PortableHandle {
 
  private:
   static int number_alive_counter;
+  ScriptableHandle<SocketAddress>* socket_address_;
   ScriptableHandle<ConnectedSocket>* socket_;
   ServiceRuntimeInterface* service_runtime_interface_;
   char* local_url_;

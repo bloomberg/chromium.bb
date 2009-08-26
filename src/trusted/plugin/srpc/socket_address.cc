@@ -87,7 +87,7 @@ bool SocketAddress::RpcToString(void* obj, SrpcParams *params) {
   return true;
 }
 
-SocketAddress::SocketAddress(){
+SocketAddress::SocketAddress() {
   dprintf(("SocketAddress::SocketAddress(%p, %d)\n",
            static_cast<void *>(this),
            ++number_alive_counter));

@@ -71,6 +71,8 @@ void Plugin::LoadMethods() {
   AddMethodToMap(ShmFactory, "__shmFactory", METHOD_CALL, "i", "h");
   AddMethodToMap(SocketAddressFactory,
       "__socketAddressFactory", METHOD_CALL, "s", "h");
+  AddMethodToMap(DefaultSocketAddress,
+      "__defaultSocketAddress", METHOD_CALL, "", "h");
   AddMethodToMap(GetHeightProperty, "height", PROPERTY_GET, "", "i");
   AddMethodToMap(SetHeightProperty, "height", PROPERTY_SET, "i", "");
   AddMethodToMap(GetWidthProperty, "width", PROPERTY_GET, "", "i");
@@ -140,6 +142,20 @@ bool Plugin::ShmFactory(void *obj, SrpcParams *params) {
   return true;
 }
 
+bool Plugin::DefaultSocketAddress(void *obj, SrpcParams *params) {
+  Plugin *plugin = reinterpret_cast<Plugin*>(obj);
+  if (NULL == plugin->socket_address_) {
+    params->SetExceptionInfo("no socket address");
+    return false;
+  }
+  plugin->socket_address_->AddRef();
+  // Plug the scriptable object into the return values.
+  params->Output(0)->tag = NACL_SRPC_ARG_TYPE_OBJECT;
+  params->Output(0)->u.oval =
+      static_cast<BrowserScriptableObject*>(plugin->socket_address_);
+  return true;
+}
+
 bool Plugin::SocketAddressFactory(void *obj, SrpcParams *params) {
   Plugin *plugin = reinterpret_cast<Plugin*>(obj);
   // Type check the input parameter.
@@ -148,32 +164,31 @@ bool Plugin::SocketAddressFactory(void *obj, SrpcParams *params) {
   }
   // Ensure it's a valid string short enough to be a socket address.
   char* str = params->Input(0)->u.sval;
-  if (NULL == str || NACL_PATH_MAX == strnlen(str, NACL_PATH_MAX)) {
+  if (NULL == str) {
+    return false;
+  }
+  size_t len = strnlen(str, NACL_PATH_MAX);
+  // strnlen ensures NACL_PATH_MAX >= len.  If NACL_PATH_MAX == len, then
+  // there is not enough room to hold the address.
+  if (NACL_PATH_MAX == len) {
     return false;
   }
   // Create a NaClSocketAddress from the string.
-  struct NaClSocketAddress* nsap =
-      reinterpret_cast<struct NaClSocketAddress*>(
-          malloc(sizeof(struct NaClSocketAddress)));
-  if (NULL == nsap) {
-    return false;
-  }
-  strncpy(nsap->path, str, strnlen(str, NACL_PATH_MAX));
+  struct NaClSocketAddress nsap;
+  // We need len + 1 to guarantee the zero byte is written.  This is safe,
+  // since NACL_PATH_MAX >= len + 1 from above.
+  strncpy(nsap.path, str, len + 1);
   // Create a NaClDescConnCap from the socket address.
   struct NaClDescConnCap* conn_cap =
       reinterpret_cast<struct NaClDescConnCap*>(
           malloc(sizeof(struct NaClDescConnCap)));
   if (NULL == conn_cap) {
-    free(nsap);
     return false;
   }
-  if (!NaClDescConnCapCtor(conn_cap, nsap)) {
-    free(nsap);
+  if (!NaClDescConnCapCtor(conn_cap, &nsap)) {
     free(conn_cap);
     return false;
   }
-  // The Ctor copies the NaClSocketAddress, so it's no longer needed.
-  free(nsap);
   // Create a scriptable object to return.
   DescHandleInitializer init_info(plugin->GetPortablePluginInterface(),
                                   reinterpret_cast<struct NaClDesc*>(conn_cap),
@@ -263,8 +278,10 @@ bool Plugin::SetSrcProperty(void *obj, SrpcParams *params) {
   Plugin *plugin = reinterpret_cast<Plugin*>(obj);
   if (NULL != plugin->service_runtime_interface_) {
     dprintf(("Plugin::SetProperty: unloading previous\n"));
-    // Plugin owns socket_, so when we change to a new socket we need to
-    // give up ownership of the old one.
+    // Plugin owns socket_address_ and socket_, so when we change to a new
+    // socket we need to give up ownership of the old one.
+    plugin->socket_address_->Unref();
+    plugin->socket_address_ = NULL;
     plugin->socket_->Unref();
     plugin->socket_ = NULL;
     plugin->service_runtime_interface_ = NULL;
@@ -336,6 +353,7 @@ bool Plugin::Init(struct PortableHandleInitializer* init_info) {
 
 Plugin::Plugin() :
     effp_(NULL),
+    socket_address_(NULL),
     socket_(NULL),
     service_runtime_interface_(NULL),
     local_url_(NULL),
@@ -379,6 +397,12 @@ Plugin::~Plugin() {
   }
 
 
+  // Free the socket address for this plugin, if any.
+  if (NULL != socket_address_) {
+    dprintf(("Plugin::~Plugin: unloading\n"));
+    // Deallocating a plugin releases ownership of the socket address.
+    socket_address_->Unref();
+  }
   // Free the connected socket for this plugin, if any.
   if (NULL != socket_) {
     dprintf(("Plugin::~Plugin: unloading\n"));
@@ -386,6 +410,7 @@ Plugin::~Plugin() {
     socket_->Unref();
   }
   // Clear the pointers to the connected socket and service runtime interface.
+  socket_address_ = NULL;
   socket_ = NULL;
   service_runtime_interface_ = NULL;
   dprintf(("Plugin::~Plugin(%p)\n", static_cast<void *>(this)));
@@ -467,6 +492,9 @@ bool Plugin::Load(const void* buffer, int32_t size) {
   }
 
   dprintf(("  Load: started sel_ldr\n"));
+  socket_address_ = service_runtime_interface_->default_socket_address();
+  dprintf(("  Load: established socket address %p\n",
+           static_cast<void *>(socket_address_)));
   socket_ = service_runtime_interface_->default_socket();
   dprintf(("  Load: established socket %p\n", static_cast<void *>(socket_)));
   // Plugin takes ownership of socket_ from service_runtime_interface_,
