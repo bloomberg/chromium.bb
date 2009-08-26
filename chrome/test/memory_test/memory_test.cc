@@ -321,10 +321,7 @@ class MemoryTest : public UITest {
     printf("\n");
 
     FilePath data_dir(user_data_dir());
-    int browser_process_pid = 0;
-#if defined(OS_WIN)
-    browser_process_pid = ChromeBrowserProcessId(data_dir);
-#endif
+    int browser_process_pid = ChromeBrowserProcessId(data_dir);
     ChromeProcessList chrome_processes(GetRunningChromeProcesses(data_dir));
 
     size_t browser_virtual_size = 0;
@@ -376,7 +373,7 @@ class MemoryTest : public UITest {
   // Output:
   //   On success, modifies user_data_dir_ to be a new profile directory
   //   and sets cleanup_temp_dir_on_exit_ to true.
-  bool SetupTempDirectory(const FilePath &src_dir) {
+  bool SetupTempDirectory(const FilePath& src_dir) {
     LOG(INFO) << "Setting up temp directory in " << src_dir.value();
     // We create a copy of the test dir and use it so that each
     // run of this test starts with the same data.  Running this
