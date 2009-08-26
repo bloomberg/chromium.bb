@@ -1,6 +1,138 @@
 <div id="pageData-title" class="pageData">Formats: Manifest Files</div>
+<div id="pageData-showTOC" class="pageData">true</div>
 
-<p class="comment">
-[PENDING: This page should go into detail about all the parts of manifest.json files. In cases where there's not too much to say about something (icons, cross-origin XHR), we can just document it inline. Otherwise (content scripts), we can link off to a separate page.]
+<p>
+Every extension has a
+<a href="http://www.json.org">JSON</a>-formatted manifest file,
+named <code>manifest.json</code>,
+that provides important information about the extension.
+</p>
+
+<h2 id="overview"> Field summary </h2>
+
+<p>
+The following code shows the supported manifest fields,
+with links to the page that discusses each field.
+The only fields that are required for every extension
+are <b>name</b> and <b>version</b>.
+</p>
+
+<pre>
+{
+  <b>"<a href="#name">name</a>"</b>: "<em>My Extension</em>",
+  <b>"<a href="http://dev.chromium.org/developers/design-documents/extensions/autoupdate">version</a>"</b>: "<em>versionString</em>",
+
+  "<a href="#description">description</a>": "<em>A plain text description</em>",
+  "<a href="#icons">icons</a>": { ... },
+  "<a href="http://dev.chromium.org/developers/design-documents/extensions/autoupdate">update_url</a>": "http://<em>path/to/updateInfo</em>.xml",
+
+  "<a href="background_pages.html">background_page</a>": "<em>aFile</em>.html", 
+  "<a href="content_scripts.html">content_scripts</a>": [...],
+  "<a href="pageActions.html">page_actions</a>": [...],
+  "<a href="#permissions">permissions</a>": [...],
+  "<a href="npapi.html">plugins</a>": [...],
+  "<a href="http://dev.chromium.org/developers/design-documents/themes">theme</a>": [...],
+  "<a href="toolstrip.html">toolstrips</a>": [...],
+}
+</pre>
+
+
+<h2>Field details</h2>
+
+<p>
+This section covers fields that aren't described in another page.
+For a complete list of fields,
+with links to where they're described in detail,
+see the <a href="#overview">Field summary</a>.
+</p>
+
+<h3 id="description">description</h3>
+
+<p>
+A plain text string
+(no HTML or other formatting)
+that describes the extension.
+The description should be suitable for both
+the browser's extension management UI
+and the extension gallery.
+</p>
+
+<h3 id="icon">icon</h3>
+
+<p>
+An icon that represents the extension.
+As a rule, you should use the <b>icons</b> field instead,
+so that you can specify icons in multiple sizes.
+Here's an example of using this field:
+</p>
+
+<pre>
+"icon": "icon.png",
+</pre>
+
+<h3 id="icons">icons</h3>
+
+<p>
+One or more icons that represent the extension.
+We recommend that you provide icons in four sizes &mdash;
+16x16, 32x32, 48x48, and 128x128 pixels.
+The icons can be in any format supported by WebKit,
+such as BMP, GIF, ICO, JPEG, or PNG.
+Here's an example of specifying all four icon sizes:
+</p>
+
+<pre>
+"icons": { "16": "icon16.png",
+           "32": "icon32.png",
+           "48": "icon48.png",
+          "128": "icon128.png" },
+</pre>
+
+
+<h3 id="name">name</h3>
+
+<p>
+A short, plain text string
+that identifies the extension.
+The name is used in the install dialog,
+extension management UI,
+and the extension gallery.
+</p>
+
+<h3 id="permissions">permissions</h3>
+
+<p>
+The capabilities the extension might use.
+A permission can be either one of a list of known strings
+(currently, either "tabs" or "bookmarks")
+or a match pattern,
+which gives access to one or more hosts.
+The idea is not to restrict what you can do,
+but to give advanced users an indication of what your extension
+will be able to do.
+Permissions might also help to limit damage
+if your extension is attacked.
+</p>
+
+<p>
+Here's an example of the permissions part of a manifest file:
+</p>
+
+<pre>
+"permissions": [
+  "tabs",
+  "bookmarks",
+  "http://www.blogger.com/",
+  "http://*.google.com/"
+],
+</pre>
+
+<p>
+For more information, see
+<a href="http://dev.chromium.org/developers/design-documents/extensions/match-patterns">Match patterns</a>.
+Note, however, that the match pattern in the <b>permissions</b> field
+specifies only the hosts &mdash;
+not the paths &mdash;
+to which the extension can make XMLHttpRequests.
 </p>
 
