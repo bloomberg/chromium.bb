@@ -235,25 +235,31 @@
         }],
       ],
     },
-    {
-      'target_name': 'libcmt',
-      'type': 'none',
-      'actions': [
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
         {
-          'action_name': 'libcmt',
-          'inputs': [
-            'prep_libc.sh',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/tcmalloc/libcmt.lib',
-          ],
-          'action': [
-            './prep_libc.sh',
-            '$(VCInstallDir)lib',
-            '<(SHARED_INTERMEDIATE_DIR)/tcmalloc',
+          'target_name': 'libcmt',
+          'type': 'none',
+          'actions': [
+            {
+              'action_name': 'libcmt',
+              'inputs': [
+                'prep_libc.sh',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/tcmalloc/libcmt.lib',
+              ],
+              'action': [
+                './prep_libc.sh',
+                '$(VCInstallDir)lib',
+                '<(SHARED_INTERMEDIATE_DIR)/tcmalloc',
+              ],
+            },
           ],
         },
       ],
-    },
+    }],
   ],
 }
