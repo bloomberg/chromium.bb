@@ -139,6 +139,13 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
     ++user_cancelled_scripted_print_count_;
     last_cancelled_script_print_ = base::Time::Now();
   }
+  // When |user_cancelled_print| is true, we treat it as success so that
+  // DidFinishPrinting() won't show any error alert.
+  // If |user_cancelled_print| is false and we reach here, there must be
+  // something wrong and hence is not success, DidFinishPrinting() should show
+  // an error alert.
+  // In both cases, we have to call DidFinishPrinting() here to release
+  // printing resources, since we do need them anymore.
   DidFinishPrinting(user_cancelled_print);
 }
 
