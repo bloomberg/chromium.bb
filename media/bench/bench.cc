@@ -255,7 +255,7 @@ int main(int argc, const char** argv) {
 
   // Print our results.
   std::cout.setf(std::ios::fixed);
-  std::cout.precision(3);
+  std::cout.precision(2);
   std::cout << std::endl;
   std::cout << "     Frames:" << std::setw(10) << frames
             << std::endl;
