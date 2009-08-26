@@ -150,8 +150,9 @@ TabRendererGtk::LoadingAnimation::LoadingAnimation(
       animation_frame_(0) {
 }
 
-void TabRendererGtk::LoadingAnimation::ValidateLoadingAnimation(
+bool TabRendererGtk::LoadingAnimation::ValidateLoadingAnimation(
     AnimationState animation_state) {
+  bool has_changed = false;
   if (animation_state_ != animation_state) {
     // The waiting animation is the reverse of the loading animation, but at a
     // different rate - the following reverses and scales the animation_frame_
@@ -163,6 +164,7 @@ void TabRendererGtk::LoadingAnimation::ValidateLoadingAnimation(
           (animation_frame_ / data_->waiting_to_loading_frame_count_ratio);
     }
     animation_state_ = animation_state;
+    has_changed = true;
   }
 
   if (animation_state_ != ANIMATION_NONE) {
@@ -170,9 +172,11 @@ void TabRendererGtk::LoadingAnimation::ValidateLoadingAnimation(
                        ((animation_state_ == ANIMATION_WAITING) ?
                          data_->waiting_animation_frame_count :
                          data_->loading_animation_frame_count);
+    has_changed = true;
   } else {
     animation_frame_ = 0;
   }
+  return has_changed;
 }
 
 void TabRendererGtk::LoadingAnimation::Observe(
@@ -325,8 +329,8 @@ void TabRendererGtk::SetVisible(bool visible) const {
   }
 }
 
-void TabRendererGtk::ValidateLoadingAnimation(AnimationState animation_state) {
-  loading_animation_.ValidateLoadingAnimation(animation_state);
+bool TabRendererGtk::ValidateLoadingAnimation(AnimationState animation_state) {
+  return loading_animation_.ValidateLoadingAnimation(animation_state);
 }
 
 // static
@@ -808,7 +812,7 @@ void TabRendererGtk::PaintLoadingAnimation(gfx::Canvas* canvas) {
       loading_animation_.loading_animation_frames();
   const int image_size = frames->height();
   const int image_offset = loading_animation_.animation_frame() * image_size;
-  const int dst_y = (height() - image_size) / 2;
+  const int dst_y = favicon_bounds_.y();
 
   // Just like with the Tab's title and favicon, the position for the page
   // loading animation also needs to be mirrored if the UI layout is RTL.

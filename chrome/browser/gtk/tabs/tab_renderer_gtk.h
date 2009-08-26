@@ -57,8 +57,9 @@ class TabRendererGtk : public AnimationDelegate {
     explicit LoadingAnimation(const LoadingAnimation::Data& data);
 
     // Advance the loading animation to the next frame, or hide the animation if
-    // the tab isn't loading.
-    void ValidateLoadingAnimation(AnimationState animation_state);
+    // the tab isn't loading. Returns |true| if the icon area needs to be
+    // repainted.
+    bool ValidateLoadingAnimation(AnimationState animation_state);
 
     AnimationState animation_state() const { return animation_state_; }
     int animation_frame() const { return animation_frame_; }
@@ -134,8 +135,9 @@ class TabRendererGtk : public AnimationDelegate {
   virtual void SetBounds(const gfx::Rect& bounds);
 
   // Advance the loading animation to the next frame, or hide the animation if
-  // the tab isn't loading.
-  void ValidateLoadingAnimation(AnimationState animation_state);
+  // the tab isn't loading.  Returns |true| if the icon area needs to be
+  // repainted.
+  bool ValidateLoadingAnimation(AnimationState animation_state);
 
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumUnselectedSize();
@@ -166,6 +168,8 @@ class TabRendererGtk : public AnimationDelegate {
   int height() const { return bounds_.height(); }
 
   gfx::Rect bounds() const { return bounds_; }
+
+  gfx::Rect favicon_bounds() const { return favicon_bounds_; }
 
   // Returns the non-mirrored (LTR) bounds of this tab.
   gfx::Rect GetNonMirroredBounds(GtkWidget* parent) const;

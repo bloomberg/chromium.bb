@@ -770,18 +770,26 @@ void TabStripGtk::UpdateLoadingAnimations() {
     if (current_tab->closing()) {
       --index;
     } else {
+      TabRendererGtk::AnimationState state;
       TabContents* contents = model_->GetTabContentsAt(index);
       if (!contents || !contents->is_loading()) {
-        current_tab->ValidateLoadingAnimation(TabGtk::ANIMATION_NONE);
+        state = TabGtk::ANIMATION_NONE;
       } else if (contents->waiting_for_response()) {
-        current_tab->ValidateLoadingAnimation(TabGtk::ANIMATION_WAITING);
+        state = TabGtk::ANIMATION_WAITING;
       } else {
-        current_tab->ValidateLoadingAnimation(TabGtk::ANIMATION_LOADING);
+        state = TabGtk::ANIMATION_LOADING;
+      }
+      if (current_tab->ValidateLoadingAnimation(state)) {
+        // Queue the tab's icon area to be repainted.
+        gfx::Rect favicon_bounds = current_tab->favicon_bounds();
+        gtk_widget_queue_draw_area(tabstrip_.get(),
+            favicon_bounds.x() + current_tab->x(),
+            favicon_bounds.y() + current_tab->y(),
+            favicon_bounds.width(),
+            favicon_bounds.height());
       }
     }
   }
-
-  gtk_widget_queue_draw(tabstrip_.get());
 }
 
 bool TabStripGtk::IsCompatibleWith(TabStripGtk* other) {
