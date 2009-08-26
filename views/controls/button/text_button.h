@@ -7,7 +7,6 @@
 
 #include "app/gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "views/border.h"
 #include "views/controls/button/custom_button.h"
 
@@ -102,11 +101,6 @@ class TextButton : public CustomButton {
   virtual gfx::Size GetPreferredSize();
   virtual gfx::Size GetMinimumSize();
   virtual void SetEnabled(bool enabled);
-
-  // Text colors.
-  static const SkColor kEnabledColor;
-  static const SkColor kHighlightColor;
-  static const SkColor kDisabledColor;
 
  protected:
   virtual bool OnMousePressed(const MouseEvent& e);

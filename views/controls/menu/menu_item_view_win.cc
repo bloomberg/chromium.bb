@@ -19,13 +19,6 @@ using gfx::NativeTheme;
 
 namespace views {
 
-gfx::Size MenuItemView::GetPreferredSize() {
-  const gfx::Font& font = MenuConfig::instance().font;
-  return gfx::Size(
-      font.GetStringWidth(title_) + label_start_ + item_right_margin_,
-      font.height() + GetBottomMargin() + GetTopMargin());
-}
-
 void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   const MenuConfig& config = MenuConfig::instance();
   bool render_selection =

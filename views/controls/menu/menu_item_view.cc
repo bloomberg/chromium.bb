@@ -53,9 +53,11 @@ bool MenuItemView::allow_task_nesting_during_run_ = false;
 // static
 int MenuItemView::label_start_;
 
+// Margins between the right of the item and the label.
 // static
 int MenuItemView::item_right_margin_;
 
+// Preferred height of menu items. Reset every time a menu is run.
 // static
 int MenuItemView::pref_menu_height_;
 
@@ -185,6 +187,13 @@ void MenuItemView::SetIcon(const SkBitmap& icon) {
 
 void MenuItemView::Paint(gfx::Canvas* canvas) {
   Paint(canvas, false);
+}
+
+gfx::Size MenuItemView::GetPreferredSize() {
+  const gfx::Font& font = MenuConfig::instance().font;
+  return gfx::Size(
+      font.GetStringWidth(title_) + label_start_ + item_right_margin_,
+      font.height() + GetBottomMargin() + GetTopMargin());
 }
 
 MenuController* MenuItemView::GetMenuController() {

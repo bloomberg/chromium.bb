@@ -17,8 +17,7 @@ namespace views {
 MenuHost::MenuHost(SubmenuView* submenu)
     : WidgetGtk(WidgetGtk::TYPE_POPUP),
       closed_(false),
-      submenu_(submenu),
-      did_pointer_grab_(false) {
+      submenu_(submenu) {
   // TODO(sky): make sure this is needed.
   GdkModifierType current_event_mod;
   if (gtk_get_current_event_state(&current_event_mod)) {
@@ -40,26 +39,7 @@ void MenuHost::Init(gfx::NativeView parent,
   // TODO(sky): see if there is some way to show without changing focus.
   Show();
   if (do_capture) {
-    // Release the current grab.
-    GtkWidget* current_grab_window = gtk_grab_get_current();
-    if (current_grab_window)
-      gtk_grab_remove(current_grab_window);
-
-    // Make sure all app mouse events are targetted at us only.
     DoGrab();
-
-    // And do a grab.
-    // NOTE: we do this to ensure we get mouse events from other apps, a grab
-    // done with gtk_grab_add doesn't get events from other apps.
-    GdkGrabStatus grab_status =
-        gdk_pointer_grab(window_contents()->window, FALSE,
-                         static_cast<GdkEventMask>(
-                             GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-                             GDK_POINTER_MOTION_MASK),
-                         NULL, NULL, GDK_CURRENT_TIME);
-    did_pointer_grab_ = (grab_status == GDK_GRAB_SUCCESS);
-    DCHECK(did_pointer_grab_);
-    // need keyboard grab.
 #ifdef DEBUG_MENU
     DLOG(INFO) << "Doing capture";
 #endif
@@ -81,8 +61,8 @@ void MenuHost::Hide() {
   // remove them so that View doesn't try to access deleted objects.
   static_cast<MenuHostRootView*>(GetRootView())->suspend_events();
   GetRootView()->RemoveAllChildViews(false);
-  ReleaseGrab();
   closed_ = true;
+  ReleaseGrab();
   WidgetGtk::Hide();
 }
 
@@ -100,30 +80,20 @@ RootView* MenuHost::CreateRootView() {
   return new MenuHostRootView(this, submenu_);
 }
 
-gboolean MenuHost::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
-  if (!closed_)
+void MenuHost::OnCancelMode() {
+  // TODO(sky): see if there is an equivalent to this.
+  if (!closed_) {
+#ifdef DEBUG_MENU
+    DLOG(INFO) << "OnCanceMode, closing menu";
+#endif
     submenu_->GetMenuItem()->GetMenuController()->Cancel(true);
-  return WidgetGtk::OnGrabBrokeEvent(widget, event);
-}
-
-void MenuHost::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
-  if (!closed_ && (widget != window_contents() || !was_grabbed))
-    submenu_->GetMenuItem()->GetMenuController()->Cancel(true);
-  WidgetGtk::OnGrabNotify(widget, was_grabbed);
+  }
 }
 
 // Overriden to return false, we do NOT want to release capture on mouse
 // release.
 bool MenuHost::ReleaseCaptureOnMouseReleased() {
   return false;
-}
-
-void MenuHost::ReleaseGrab() {
-  WidgetGtk::ReleaseGrab();
-  if (did_pointer_grab_) {
-    did_pointer_grab_ = false;
-    gdk_pointer_ungrab(GDK_CURRENT_TIME);
-  }
 }
 
 }  // namespace views
