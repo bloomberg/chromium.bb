@@ -16,8 +16,10 @@ namespace history {
 
 namespace {
 
-// Current version number.
-static const int kCurrentVersionNumber = 16;
+// Current version number. We write databases at the "current" version number,
+// but any previous version that can read the "compatible" one can make do with
+// or database without *too* many bad effects.
+static const int kCurrentVersionNumber = 17;
 static const int kCompatibleVersionNumber = 16;
 static const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
@@ -25,7 +27,8 @@ static const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
 HistoryDatabase::HistoryDatabase()
     : transaction_nesting_(0),
-      db_(NULL) {
+      db_(NULL),
+      needs_version_17_migration_(false) {
 }
 
 HistoryDatabase::~HistoryDatabase() {
@@ -235,6 +238,20 @@ InitStatus HistoryDatabase::EnsureCurrentVersion(
         std::min(cur_version, kCompatibleVersionNumber));
   }
 
+  if (cur_version == 16) {
+#if !defined(OS_WIN)
+    // In this version we bring the time format on Mac & Linux in sync with the
+    // Windows version so that profiles can be moved between computers.
+    MigrateTimeEpoch();
+#endif
+    // On all platforms we bump the version number, so on Windows this
+    // migration is a NOP. We keep the compatible version at 16 since things
+    // will basically still work, just history will be in the future if an
+    // old version reads it.
+    ++cur_version;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
   // When the version is too old, we just try to continue anyway, there should
   // not be a released product that makes a database too old for us to handle.
   LOG_IF(WARNING, cur_version < kCurrentVersionNumber) <<
@@ -242,5 +259,33 @@ InitStatus HistoryDatabase::EnsureCurrentVersion(
 
   return INIT_OK;
 }
+
+#if !defined(OS_WIN)
+void HistoryDatabase::MigrateTimeEpoch() {
+  // Update all the times in the URLs and visits table in the main database.
+  // For visits, clear the indexed flag since we'll delete the FTS databases in
+  // the next step.
+  sqlite3_exec(GetDB(),
+      "UPDATE urls "
+      "SET last_visit_time = last_visit_time + 11644473600000000 "
+      "WHERE id IN (SELECT id FROM urls WHERE last_visit_time > 0);",
+      NULL, NULL, NULL);
+  sqlite3_exec(GetDB(),
+      "UPDATE visits "
+      "SET visit_time = visit_time + 11644473600000000, is_indexed = 0 "
+      "WHERE id IN (SELECT id FROM visits WHERE visit_time > 0);",
+      NULL, NULL, NULL);
+  sqlite3_exec(GetDB(),
+      "UPDATE segment_usage "
+      "SET time_slot = time_slot + 11644473600000000 "
+      "WHERE id IN (SELECT id FROM segment_usage WHERE time_slot > 0);",
+      NULL, NULL, NULL);
+
+  // Erase all the full text index files. These will take a while to update and
+  // are less important, so we just blow them away. Same with the archived
+  // database.
+  needs_version_17_migration_ = true;
+}
+#endif
 
 }  // namespace history

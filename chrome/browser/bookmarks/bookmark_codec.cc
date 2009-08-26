@@ -200,6 +200,21 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
   std::wstring date_added_string;
   if (!value.GetString(kDateAddedKey, &date_added_string))
     date_added_string = Int64ToWString(Time::Now().ToInternalValue());
+  base::Time date_added = base::Time::FromInternalValue(
+      StringToInt64(WideToUTF16Hack(date_added_string)));
+#if !defined(OS_WIN)
+  // We changed the epoch for dates on Mac & Linux from 1970 to the Windows
+  // one of 1601. We assume any number we encounter from before 1970 is using
+  // the old format, so we need to add the delta to it.
+  //
+  // This code should be removed at some point:
+  // http://code.google.com/p/chromium/issues/detail?id=20264
+  if (date_added.ToInternalValue() <
+      base::Time::kWindowsEpochDeltaMicroseconds) {
+    date_added = base::Time::FromInternalValue(date_added.ToInternalValue() +
+        base::Time::kWindowsEpochDeltaMicroseconds);
+  }
+#endif
 
   std::wstring type_string;
   if (!value.GetString(kTypeKey, &type_string))
@@ -255,8 +270,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
   }
 
   node->SetTitle(title);
-  node->set_date_added(Time::FromInternalValue(
-      StringToInt64(WideToUTF16Hack(date_added_string))));
+  node->set_date_added(date_added);
   return true;
 }
 

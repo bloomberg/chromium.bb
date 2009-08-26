@@ -529,6 +529,13 @@ void HistoryBackend::InitImpl() {
     LOG(WARNING) << "Text database initialization failed, running without it.";
     text_database_.reset();
   }
+  if (db_->needs_version_17_migration()) {
+    // See needs_version_17_migration() decl for more. In this case, we want
+    // to erase all the text database files. This must be done after the text
+    // database manager has been initialized, since it knows about all the
+    // files it manages.
+    text_database_->DeleteAll();
+  }
 
   // Thumbnail database.
   thumbnail_db_.reset(new ThumbnailDatabase());
@@ -544,6 +551,12 @@ void HistoryBackend::InitImpl() {
   }
 
   // Archived database.
+  if (db_->needs_version_17_migration()) {
+    // See needs_version_17_migration() decl for more. In this case, we want
+    // to delete the archived database and need to do so before we try to
+    // open the file. We can ignore any error (maybe the file doesn't exist).
+    file_util::Delete(archived_name, false);
+  }
   archived_db_.reset(new ArchivedDatabase());
   if (!archived_db_->Init(archived_name)) {
     LOG(WARNING) << "Could not initialize the archived database.";

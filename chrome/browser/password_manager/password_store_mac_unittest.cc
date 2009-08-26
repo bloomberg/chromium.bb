@@ -232,9 +232,11 @@ TEST_F(PasswordStoreMacTest, TestKeychainToFormTranslation) {
     { PasswordForm::SCHEME_DIGEST, "https://some.domain.com/high_security",
       "https://some.domain.com/", L"digest_auth_user", L"digest", true,
       1998,  3, 30, 10,  0,  0 },
+    // This one gives us an invalid date, which we will treat as a "NULL" date
+    // which is 1601.
     { PasswordForm::SCHEME_OTHER, "http://a.server.com/",
       "http://a.server.com/", L"abc", L"123", false,
-      1970,  1,  1,  0,  0,  0 },
+      1601,  1,  1,  0,  0,  0 },
   };
 
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(expected); ++i) {

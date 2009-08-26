@@ -688,6 +688,17 @@ TEST(CookieMonsterTest, TestCookieDeletion) {
                            std::string(kValidCookieLine) +
                            "; expires=Mon, 18-Apr-1977 22:50:13 GMT"));
   EXPECT_EQ("", cm.GetCookies(url_google));
+
+  // Create a persistent cookie.
+  EXPECT_TRUE(cm.SetCookie(url_google,
+                           std::string(kValidCookieLine) +
+                           "; expires=Mon, 18-Apr-22 22:50:13 GMT"));
+  EXPECT_EQ("A=B", cm.GetCookies(url_google));
+  // Delete it via Expires, with a unix epoch of 0.
+  EXPECT_TRUE(cm.SetCookie(url_google,
+                           std::string(kValidCookieLine) +
+                           "; expires=Thu, 1-Jan-1970 00:00:00 GMT"));
+  EXPECT_EQ("", cm.GetCookies(url_google));
 }
 
 TEST(CookieMonsterTest, TestCookieDeleteAll) {

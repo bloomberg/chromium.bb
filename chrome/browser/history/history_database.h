@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
 
+#include "build/build_config.h"
 #include "chrome/browser/history/download_database.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/starred_url_database.h"
@@ -110,6 +111,17 @@ class HistoryDatabase : public DownloadDatabase,
   // unused space in the file. It can be VERY SLOW.
   void Vacuum();
 
+  // Returns true if the history backend should erase the full text search
+  // and archived history files as part of version 16 -> 17 migration. The
+  // time format changed in this revision, and these files would be much slower
+  // to migrate. Since the data is less important, they should be deleted.
+  //
+  // This flag will be valid after Init() is called. It will always be false
+  // when running on Windows.
+  bool needs_version_17_migration() const {
+    return needs_version_17_migration_;
+  }
+
   // Visit table functions ----------------------------------------------------
 
   // Update the segment id of a visit. Return true on success.
@@ -144,6 +156,12 @@ class HistoryDatabase : public DownloadDatabase,
   // may commit the transaction and start a new one if migration requires it.
   InitStatus EnsureCurrentVersion(const FilePath& tmp_bookmarks_path);
 
+#if !defined(OS_WIN)
+  // Converts the time epoch in the database from being 1970-based to being
+  // 1601-based which corresponds to the change in Time.internal_value_.
+  void MigrateTimeEpoch();
+#endif
+
   // ---------------------------------------------------------------------------
 
   // How many nested transactions are pending? When this gets to 0, we commit.
@@ -161,6 +179,9 @@ class HistoryDatabase : public DownloadDatabase,
 
   MetaTableHelper meta_table_;
   base::Time cached_early_expiration_threshold_;
+
+  // See the getter above.
+  bool needs_version_17_migration_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDatabase);
 };
