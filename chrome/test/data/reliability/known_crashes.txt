@@ -113,3 +113,6 @@ npapi::plugininstance::npp_newstream___npapi::pluginstream::open___npapi::plugin
 # 20200
 PREFIX : `anonymous namespace'::purecall___realloc___wtf::fastrealloc___webcore::htmltokenizer::enlargescriptbuffer___webcore::htmltokenizer::parsecomment___webcore::htmltokenizer::parsetag
 PREFIX : `anonymous namespace'::invalidparameter___realloc___wtf::fastrealloc___webcore::htmltokenizer::enlargescriptbuffer___webcore::htmltokenizer::parsecomment___webcore::htmltokenizer::parsetag
+
+# 20291
+PREFIX : webplugindelegateimpl::flashwindowlesswndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop___base::messagepumpwin::run
