@@ -546,10 +546,11 @@ static ExprNode* AppendOperandRegister(
     Operand* operand,
     int reg_index,
     ModRmRegisterKind modrm_reg_kind) {
-  RegKind reg_kind;
+  RegKind reg_kind = RegSize32;
   DEBUG(printf("modrm_reg_kind = %s\n",
                g_ModRmRegisterKindName[modrm_reg_kind]));
   switch (modrm_reg_kind) {
+    default:
     case ModRmGeneral:
       reg_kind = ExtractOperandRegKind(state, operand);
       break;
