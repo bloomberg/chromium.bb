@@ -5,11 +5,12 @@
 #ifndef PRINTING_PDF_PS_METAFILE_LINUX_H_
 #define PRINTING_PDF_PS_METAFILE_LINUX_H_
 
-#include <cairo.h>
-
 #include <string>
 
 #include "base/basictypes.h"
+
+typedef struct _cairo_surface cairo_surface_t;
+typedef struct _cairo cairo_t;
 
 class FilePath;
 
@@ -24,34 +25,41 @@ class PdfPsMetafile {
     PS,
   };
 
-  // The constructor we should use in the renderer process.
+  // In the renderer process, callers should also call Init(void) to see if the
+  // metafile can obtain all necessary rendering resources.
+  // In the browser process, callers should also call Init(const void*, size_t)
+  // to initialize the buffer |all_pages_| to use SaveTo().
   explicit PdfPsMetafile(const FileFormat& format);
-
-  // The constructor we should use in the browser process.
-  // |src_buffer| should point to the shared memory which stores PDF/PS
-  // contents generated in the renderer.
-  PdfPsMetafile(const FileFormat& format,
-                const void* src_buffer,
-                size_t src_buffer_size);
 
   ~PdfPsMetafile();
 
-  FileFormat GetFileFormat() { return format_; }
+  // Initializes to a fresh new metafile. Returns true on success.
+  // Note: Only call in the renderer to allocate rendering resources.
+  bool Init();
+
+  // Initializes a copy of metafile from PDF/PS stream data.
+  // Returns true on success.
+  // |src_buffer| should point to the shared memory which stores PDF/PS
+  // contents generated in the renderer.
+  // Note: Only call in the browser to initialize |all_pages_|.
+  bool Init(const void* src_buffer, size_t src_buffer_size);
+
+  FileFormat GetFileFormat() const { return format_; }
 
   // Prepares a new cairo surface/context for rendering a new page.
-  bool StartPage(double width, double height);  // The unit is pt (=1/72 in).
-
-  // Returns the Cairo context for rendering current page.
-  cairo_t* GetPageContext() const { return page_context_; }
+  // The unit is in point (=1/72 in).
+  // Returns NULL when failed.
+  cairo_t* StartPage(double width, double height);
 
   // Destroys the surface and the context used in rendering current page.
   // The results of current page will be appended into buffer |all_pages_|.
+  // Returns true on success
   // TODO(myhuang): I plan to also do page setup here (margins, the header
   // and the footer). At this moment, only pre-defined margins for US letter
   // paper are hard-coded here.
   // |shrink| decides the scaling factor to fit raw printing results into
   // printable area.
-  void FinishPage(float shrink);
+  bool FinishPage(float shrink);
 
   // Closes resulting PDF/PS file. No further rendering is allowed.
   void Close();
@@ -62,7 +70,8 @@ class PdfPsMetafile {
 
   // Copies PDF/PS contents stored in buffer |all_pages_| into |dst_buffer|.
   // This function should ONLY be called after PDF/PS file is closed.
-  void GetData(void* dst_buffer, size_t dst_buffer_size) const;
+  // Returns true only when success.
+  bool GetData(void* dst_buffer, size_t dst_buffer_size) const;
 
   // Saves PDF/PS contents stored in buffer |all_pages_| into |filename| on
   // the disk.
@@ -70,17 +79,8 @@ class PdfPsMetafile {
   bool SaveTo(const FilePath& filename) const;
 
  private:
-  // Callback function for Cairo to write PDF/PS stream.
-  // |dst_buffer| is actually a pointer of type `std::string*`.
-  static cairo_status_t WriteCairoStream(void* dst_buffer,
-                                         const unsigned char* src_data,
-                                         unsigned int src_data_length);
-
-  // Convenient function to test if |surface| is valid.
-  bool IsSurfaceValid(cairo_surface_t* surface) const;
-
-  // Convenient function to test if |context| is valid.
-  bool IsContextValid(cairo_t* context) const;
+  // Cleans up all resources.
+  void CleanUp();
 
   FileFormat format_;
 
@@ -104,4 +104,3 @@ class PdfPsMetafile {
 }  // namespace printing
 
 #endif  // PRINTING_PDF_PS_METAFILE_LINUX_H_
-
