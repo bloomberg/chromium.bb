@@ -849,7 +849,7 @@ void BrowserWindowGtk::UpdateTitleBar() {
   string16 title = browser_->GetWindowTitleForCurrentTab();
   gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
   if (ShouldShowWindowIcon())
-    titlebar_->UpdateTitle();
+    titlebar_->UpdateTitleAndIcon();
 
   // We need to update the bookmark bar state if we're navigating away from the
   // NTP and "always show bookmark bar" is not set.  On Windows,

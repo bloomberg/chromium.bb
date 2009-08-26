@@ -230,7 +230,7 @@ void BrowserTitlebar::Init() {
     registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                    NotificationService::AllSources());
     theme_provider_->InitThemesFor(this);
-    UpdateTitle();
+    UpdateTitleAndIcon();
   }
 
   // We put the min/max/restore/close buttons in a vbox so they are top aligned
@@ -301,13 +301,27 @@ void BrowserTitlebar::UpdateCustomFrame(bool use_custom_frame) {
   UpdateTitlebarAlignment();
 }
 
-void BrowserTitlebar::UpdateTitle() {
+void BrowserTitlebar::UpdateTitleAndIcon() {
   if (!app_mode_title_)
     return;
 
   // Get the page title and elide it to the available space.
   string16 title = browser_window_->browser()->GetWindowTitleForCurrentTab();
   gtk_label_set_text(GTK_LABEL(app_mode_title_), UTF16ToUTF8(title).c_str());
+
+  if (browser_window_->browser()->type() == Browser::TYPE_APP) {
+    // Update the system app icon.  We don't need to update the icon in the top
+    // left of the custom frame, that will get updated when the throbber is
+    // updated.
+    SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
+    if (icon.empty()) {
+      gtk_util::SetWindowIcon(window_);
+    } else {
+      GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
+      gtk_window_set_icon(window_, icon_pixbuf);
+      g_object_unref(icon_pixbuf);
+    }
+  }
 }
 
 void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {

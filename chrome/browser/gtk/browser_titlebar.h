@@ -40,8 +40,8 @@ class BrowserTitlebar : public MenuGtk::Delegate,
   // tall titlebar and the min/max/close buttons.
   void UpdateCustomFrame(bool use_custom_frame);
 
-  // Updates the title when in app or popup mode (no tabstrip).
-  void UpdateTitle();
+  // Updates the title and icon when in app or popup mode (no tabstrip).
+  void UpdateTitleAndIcon();
 
   // Called by the browser asking us to update the loading throbber.
   // |tab_contents| is the tab that is associated with the window throbber.
