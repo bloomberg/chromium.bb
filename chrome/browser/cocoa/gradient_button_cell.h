@@ -34,7 +34,7 @@ typedef NSInteger ButtonType;
   BOOL isMouseInside_;
   scoped_nsobject<NSTrackingArea> trackingArea_;
   BOOL shouldTheme_;
-
+  scoped_nsobject<NSGradient> gradient_;
   scoped_nsobject<NSImage> underlayImage_;
 }
 

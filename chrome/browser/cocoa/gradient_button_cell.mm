@@ -7,6 +7,7 @@
 #import "base/scoped_nsobject.h"
 
 @interface GradientButtonCell (Private)
+- (void)sharedInit;
 - (void)drawUnderlayImageWithFrame:(NSRect)cellFrame
                             inView:(NSView*)controlView;
 @end
@@ -17,7 +18,7 @@
 // For nib instantiations
 - (id)initWithCoder:(NSCoder*)decoder {
   if ((self = [super initWithCoder:decoder])) {
-    shouldTheme_ = YES;
+    [self sharedInit];
   }
   return self;
 }
@@ -25,9 +26,17 @@
 // For programmatic instantiations
 - (id)initTextCell:(NSString*)string {
   if ((self = [super initTextCell:string])) {
-    shouldTheme_ = YES;
+    [self sharedInit];
   }
   return self;
+}
+
+- (void)sharedInit {
+  shouldTheme_ = YES;
+  NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.666];
+  NSColor* endColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.333];
+  gradient_.reset([[NSGradient alloc]
+      initWithColorsAndLocations:startColor, 0.33, endColor, 1.0, nil]);
 }
 
 - (void)setShouldTheme:(BOOL)shouldTheme {
@@ -140,12 +149,7 @@
 
     [highlightPath stroke];
 
-    NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.666];
-    NSColor* endColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.333];
-    scoped_nsobject<NSBezierPath> gradient([[NSGradient alloc]
-        initWithColorsAndLocations:startColor, 0.33, endColor, 1.0, nil]);
-
-    [gradient drawInBezierPath:innerPath angle:90.0];
+    [gradient_ drawInBezierPath:innerPath angle:90.0];
 
     [NSGraphicsContext restoreGraphicsState];
   }

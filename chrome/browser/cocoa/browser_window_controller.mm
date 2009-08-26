@@ -1202,7 +1202,17 @@ willPositionSheet:(NSWindow*)sheet
 @implementation GTMTheme (BrowserThemeProviderInitialization)
 + (GTMTheme *)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
                              isOffTheRecord:(BOOL)isOffTheRecord {
-  GTMTheme *theme = [[[GTMTheme alloc] init] autorelease];
+  // First check if it's in the cache.
+  // TODO(pinkerton): This might be a good candidate for a singleton.
+  typedef std::pair<std::string, BOOL> ThemeKey;
+  static std::map<ThemeKey, GTMTheme*> cache;
+  ThemeKey key(provider->GetThemeID(), isOffTheRecord);
+  GTMTheme* theme = cache[key];
+  if (theme)
+    return theme;
+
+  theme = [[GTMTheme alloc] init];  // "Leak" it in the cache.
+  cache[key] = theme;
   if (isOffTheRecord) {
     NSColor* incognitoColor = [NSColor colorWithCalibratedRed:83/255.0
                                                         green:108.0/255.0
