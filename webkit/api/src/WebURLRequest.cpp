@@ -105,12 +105,12 @@ void WebURLRequest::setFirstPartyForCookies(const WebURL& firstPartyForCookies)
 
 bool WebURLRequest::allowCookies() const
 {
-    return m_private->m_resourceRequest->allowHTTPCookies();
+    return m_private->m_resourceRequest->allowCookies();
 }
 
 void WebURLRequest::setAllowCookies(bool allowCookies)
 {
-    m_private->m_resourceRequest->setAllowHTTPCookies(allowCookies);
+    m_private->m_resourceRequest->setAllowCookies(allowCookies);
 }
 
 bool WebURLRequest::allowStoredCredentials() const
