@@ -921,7 +921,6 @@ nacl_extra_sdk_env.Append(
       'src/shared/imc/nacl.scons',
       'src/shared/npruntime/nacl.scons',
       'src/shared/srpc/nacl.scons',
-      'src/untrusted/av/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       'src/untrusted/pthread/nacl.scons',
       'src/untrusted/stubs/nacl.scons',
@@ -929,6 +928,10 @@ nacl_extra_sdk_env.Append(
       ####  ALPHABETICALLY SORTED ####
    ],
 )
+
+if ARGUMENTS.get('sdl', 'hermetic') != 'none':
+  nacl_extra_sdk_env.Append(
+      BUILD_SCONSCRIPTS = ['src/untrusted/av/nacl.scons',])
 
 environment_list.append(nacl_extra_sdk_env)
 
