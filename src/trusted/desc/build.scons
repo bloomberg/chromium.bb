@@ -82,15 +82,20 @@ crt += env.Replicate('.', '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
 if env.get('TARGET_PLATFORM') == 'WINDOWS':
   env.Append(LIBS = [ 'ws2_32', 'advapi32' ])
 
+if env.get('BUILD_ARCHITECTURE') == 'x86':
+  ncvalidate = 'ncvalidate'
+
+if env.get('BUILD_ARCHITECTURE') == 'arm':
+  ncvalidate = 'ncvalidate_arm'
+
 nrd_tester = env.ComponentProgram('nrd_xfer_test', 'nrd_xfer_test.c',
                                   EXTRA_LIBS=['sel',
                                               'nrd_xfer',
                                               'nonnacl_srpc',
-                                              'ncvalidate',
+                                              ncvalidate,
                                               'google_nacl_imc_c',
                                               'platform',
                                               'gio'])
-
 # we cannot run shell scripts in the emulator
 if env.Bit('linux') and env.get('BUILD_ARCHITECTURE') == 'x86':
    node = env.CommandTestAgainstGoldenOutput(
