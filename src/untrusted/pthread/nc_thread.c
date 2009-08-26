@@ -51,7 +51,7 @@
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
-#if NACL_TARGET_ARCH == arm
+#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
 /* TODO(robertm): we should not included trusted stuff here - reorg headers */
 /* sel_ldr.h is  required for TRAMP_GET_TLS */
 #define NACL_NO_INLINE 1
@@ -118,7 +118,7 @@ int __nc_memory_block_counter[2];
 
 /* Internal functions */
 
-#if NACL_TARGET_ARCH == x86
+#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
 
 static inline nc_thread_descriptor_t *nc_get_tdb() {
   nc_thread_descriptor_t *tdb = NULL;
@@ -128,7 +128,7 @@ static inline nc_thread_descriptor_t *nc_get_tdb() {
   return tdb;
 }
 
-#elif NACL_TARGET_ARCH == arm
+#elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
 static INLINE nc_thread_descriptor_t *nc_get_tdb() {
   typedef nc_thread_descriptor_t *(*TRAMP_GET_TLS_TYPE)();
   /*
@@ -316,7 +316,7 @@ static void nc_release_tls_node(nc_thread_memory_block_t *tls_node) {
 }
 
 
-#if NACL_TARGET_ARCH == x86
+#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
 /* internal initialization spinlock */
 /* NOTE: this is a global function - protos in pthread_types.h */
 
@@ -339,7 +339,7 @@ void nc_spinlock_unlock(volatile int *lock) {
           "xchg (%%ecx), %%eax":"=r"(lock));
 }
 
-#elif NACL_TARGET_ARCH == arm
+#elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
 
 void nc_spinlock_lock(volatile int *lock) {
   uint32_t val;

@@ -53,12 +53,14 @@
 #endif
 
 /*
- * This is necessary to make "#if NACL_BUILD/TARGET_ARCH == x86" work.
+ * This is necessary to make "#if NACL_BUILD/TARGET_ARCH == NACL_x86" work.
  * #if-directives can work only with numerical values but not with strings e.g.
- * "x86"; therefore, we convert strings into integers. Whenever you use
+ * "NACL_x86"; therefore, we convert strings into integers. Whenever you use
  * NACL_BUILD/TARGET_ARCH, you need to include this header.
  */
-#define x86  0
-#define arm  1
+#define NACL_MERGE(x, y) x ## y
+#define NACL_ARCH(x) NACL_MERGE(NACL_, x)
+#define NACL_x86  0
+#define NACL_arm  1
 
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_NACL_BASE_H_ */

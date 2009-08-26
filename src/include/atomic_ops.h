@@ -44,9 +44,9 @@
 #include "native_client/src/include/osx/atomic_ops_osx.h"
 #elif NACL_LINUX
 
-#if NACL_BUILD_ARCH == x86
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 #include "native_client/src/include/linux/x86/atomic_ops.h"
-#elif NACL_BUILD_ARCH == arm
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 #include "native_client/src/include/linux/arm/atomic_ops.h"
 #else
 #error Unknown platform!

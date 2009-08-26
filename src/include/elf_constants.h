@@ -74,9 +74,9 @@ EXTERN_C_BEGIN
 #define EM_HIRESERVED   16
 #define EM_ARM          40  /* arm */
 
-#if NACL_BUILD_ARCH == x86
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 #define EM_EXPECTED_BY_NACL EM_386
-#elif NACL_BUILD_ARCH == arm
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 #define EM_EXPECTED_BY_NACL EM_ARM
 #else
 #error Unknown platform!
@@ -130,7 +130,7 @@ EXTERN_C_BEGIN
 #define PT_LOOS       0x60000000  /* Environment-specific low */
 #define PT_HIOS       0x6fffffff  /* Environment-specific high */
 #define PT_LOPROC     0x70000000  /* Processor-specific low */
-#if NACL_BUILD_ARCH == arm
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 #define PT_ARM_EXIDX  0x70000001  /* Exception unwind tables */
 #endif
 #define PT_HIPROC     0x7fffffff  /* Processor-specific high */

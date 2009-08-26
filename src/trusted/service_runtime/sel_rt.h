@@ -34,9 +34,9 @@
 
 #include "native_client/src/include/nacl_base.h"
 
-#if NACL_BUILD_ARCH == x86
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
-#elif NACL_BUILD_ARCH == arm
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
 #else
 #error Unknown platform!

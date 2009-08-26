@@ -112,7 +112,7 @@
 # define IDENTIFIER(n)  n
 #endif
 
-#if NACL_BUILD_ARCH == x86
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 #if NACL_BUILD_SUBARCH == 32
 #define NACL_USERRET_FIX  0x8
@@ -122,17 +122,17 @@
 #error Unknown platform!
 #endif /* NACL_BUILD_SUBARCH */
 
-#elif NACL_BUILD_ARCH == arm
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
 #define NACL_HALT         mov pc, #0
 #define NACL_CF_MASK      0xF000000F /* assumes 16-byte bundles */
 #define NACL_USERRET_FIX  0x4
 
-#else /* NACL_BUILD_ARCH */
+#else /* NACL_ARCH(NACL_BUILD_ARCH) */
 
 #error Unknown platform!
 
-#endif /* NACL_BUILD_ARCH */
+#endif /* NACL_ARCH(NACL_BUILD_ARCH) */
 
 #define NACL_SYSARGS_FIX  NACL_USERRET_FIX + 0x4
 

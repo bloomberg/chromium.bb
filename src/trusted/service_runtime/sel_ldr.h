@@ -533,11 +533,11 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
-#if NACL_BUILD_ARCH == x86
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
   return addr & ~(uintptr_t)((1 << nap->align_boundary) - 1);
 }
-#elif NACL_BUILD_ARCH == arm
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
   UNREFERENCED_PARAMETER(nap);
 
