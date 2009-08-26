@@ -10,17 +10,20 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -504,6 +507,13 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
 
 GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
   SkBitmap icon = model_->GetResourceIcon(row);
+  if (icon.pixelRef() ==
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_DEFAULT_FAVICON)->pixelRef()) {
+    return static_cast<GdkPixbuf*>(g_object_ref(
+        bookmark_utils::GetDefaultFavicon(true)));
+  }
+
   return gfx::GdkPixbufFromSkBitmap(&icon);
 }
 
