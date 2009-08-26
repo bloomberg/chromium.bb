@@ -55,6 +55,8 @@ class EffectHelper {
     String semantic;                   // The semantic of the param.
     effect_param::DataType data_type;  // The data type of a param.
     unsigned int data_size;            // The size of the data for a param.
+    int num_elements;                  // The number of array entries if the
+                                       // parameter is an array, 0 otherwise.
     unsigned int cmd_desc_size;        // The size of the effect_param::Desc
                                        // structure (counting strings) for a
                                        // param.

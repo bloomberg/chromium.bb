@@ -30,24 +30,15 @@
  */
 
 
-// This file includes all the necessary GL/Cg headers and implement some useful
+// This file includes all the necessary GL/Cg headers and implements some useful
 // utilities.
 
 #ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GL_UTILS_H_
 #define O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_GL_UTILS_H_
 
 #include <build/build_config.h>
+
 #define GL_GLEXT_PROTOTYPES
-#if defined(OS_WIN)
-#include <GL/gl.h>
-#elif defined(OS_MACOSX)
-#include <OpenGL/OpenGL.h>
-#include <AGL/agl.h>
-#elif defined(OS_LINUX)
-#include <GL/gl.h>
-#endif  // defined(PLATFORM)
-#include <Cg/cg.h>
-#include <Cg/cgGL.h>
 
 // Define this for extra GL error debugging (slower).
 // #define GL_ERROR_DEBUGGING

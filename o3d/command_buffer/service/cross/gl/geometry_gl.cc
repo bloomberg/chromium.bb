@@ -160,8 +160,12 @@ void VertexStructGL::SetInput(unsigned int input_index,
 
 namespace {
 
-inline const GLvoid *OffsetToPtr(GLintptr offset) {
-  return static_cast<char *>(NULL) + offset;
+inline ptrdiff_t OffsetToPtrDiff(unsigned int offset) {
+  return static_cast<ptrdiff_t>(offset);
+}
+
+inline void* OffsetToPtr(ptrdiff_t offset) {
+  return reinterpret_cast<void*>(offset);
 }
 
 }  // anonymous namespace
@@ -189,7 +193,8 @@ unsigned int VertexStructGL::SetStreams(GAPIGL *gapi) {
       DCHECK_NE(vertex_buffer->gl_buffer(), 0);
       glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->gl_buffer());
       glVertexAttribPointer(i, attrib.size, attrib.type, attrib.normalized,
-                            attrib.stride, OffsetToPtr(attrib.offset));
+                            attrib.stride,
+                            OffsetToPtr(attrib.offset));
       max_vertices = std::min(max_vertices,
                               vertex_buffer->size() / attrib.stride);
     }
@@ -295,7 +300,7 @@ void VertexStructGL::Compile() {
     ExtractSizeTypeNormalized(element.type, &attrib.size, &attrib.type,
                               &attrib.normalized);
     attrib.stride = element.stride;
-    attrib.offset = element.offset;
+    attrib.offset = OffsetToPtrDiff(element.offset);
   }
   dirty_ = false;
 }
@@ -347,7 +352,7 @@ BufferSyncInterface::ParseError GAPIGL::CreateIndexBuffer(ResourceID id,
 }
 
 BufferSyncInterface::ParseError GAPIGL::DestroyIndexBuffer(ResourceID id) {
-  return vertex_buffers_.Destroy(id) ?
+  return index_buffers_.Destroy(id) ?
       BufferSyncInterface::PARSE_NO_ERROR :
       BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
 }

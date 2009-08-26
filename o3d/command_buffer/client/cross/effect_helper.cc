@@ -111,6 +111,7 @@ bool EffectHelper::CreateEffectParameters(ResourceID effect_id,
       Desc *raw_desc = raw_descs + j;
       desc->data_type = raw_desc->data_type;
       desc->data_size = raw_desc->data_size;
+      desc->num_elements = raw_desc->num_elements;
       desc->cmd_desc_size = raw_desc->size;
     }
   }

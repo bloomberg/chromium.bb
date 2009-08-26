@@ -109,7 +109,7 @@ Renderer::InitStatus RendererCB::InitPlatformSpecific(
   // Creates a Win32CBServer based on the HWND, and creates the
   // command buffer helper, and initializes it. Also, create the
   // FencedAllocator for the transfer memory.
-  cb_server_ = new Win32CBServer(display_platform.hwnd());
+  cb_server_ = new Win32CBServer(display_platform.hwnd(), features());
   sync_interface_ = cb_server_->GetInterface();
 
   RECT windowRect;

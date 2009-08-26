@@ -71,7 +71,8 @@ enum Flags {
 namespace vertex_struct {
 // Semantics for input data.
 enum Semantic {
-  POSITION,
+  UNKNOWN_SEMANTIC = -1,
+  POSITION = 0,
   NORMAL,
   COLOR,
   TEX_COORD,
@@ -129,6 +130,8 @@ struct Desc {
                            // the terminating nul character. Will always be
                            // set even if the semantic doesn't fit into the
                            // buffer.
+  Uint32 num_elements;     // the number of entries if the parameter is an array
+                           // 0 otherwise.
   DataType data_type;      // the data type of the parameter.
   Uint32 data_size;        // the size of the parameter data, in bytes.
 };
@@ -136,6 +139,12 @@ struct Desc {
 
 namespace effect_stream {
 struct Desc {
+  Desc()
+    : semantic(vertex_struct::UNKNOWN_SEMANTIC),
+      semantic_index(0) {}
+  Desc(Uint32 semantic, Uint32 semantic_index)
+    : semantic(semantic),
+      semantic_index(semantic_index) {}
   Uint32 semantic;         // the semantic type
   Uint32 semantic_index;
 };

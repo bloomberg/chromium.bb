@@ -104,12 +104,15 @@ int WINAPI WinMain(HINSTANCE instance,
   if (!::RegisterClassEx(&wc))
     return false;
 
+  // Leaving this window onscreen leads to a redraw error which makes it
+  // a hassle to debug tests in an IDE, so we place the window somewhere that
+  // won't happen.
   g_window_handle = ::CreateWindowExW(NULL,
                                       wc.lpszClassName,
                                       L"",
                                       WS_OVERLAPPEDWINDOW,
-                                      CW_USEDEFAULT,
-                                      CW_USEDEFAULT,
+                                      -1000,
+                                      0,
                                       512,
                                       512,
                                       0,

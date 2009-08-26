@@ -441,6 +441,7 @@ bool EffectParamD3D9::GetDesc(unsigned int size, void *data) {
   desc->data_size = GetDataSize(data_type());
   desc->name_offset = 0;
   desc->name_size = name_size;
+  desc->num_elements = d3d_desc.Elements;
   desc->semantic_offset = 0;
   desc->semantic_size = semantic_size;
   unsigned int current_offset = sizeof(Desc);
@@ -625,7 +626,7 @@ BufferSyncInterface::ParseError GAPID3D9::GetParamDesc(
       BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
 }
 
-// Gets the stream count from the effect and store it in the memory buffer.
+// Gets the stream count from the effect and stores it in the memory buffer.
 BufferSyncInterface::ParseError GAPID3D9::GetStreamCount(
     ResourceID id,
     unsigned int size,

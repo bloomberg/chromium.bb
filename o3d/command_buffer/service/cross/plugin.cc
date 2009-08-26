@@ -155,7 +155,7 @@ NPError Plugin::SetWindow(NPWindow *window) {
 void Plugin::Create(nacl::HtpHandle handle) {
   if (gapi_.get()) return;
   handle_ = handle;
-#ifdef OS_WIN
+#ifdef CB_SERVICE_D3D9
   if (!hwnd_) return;
   GAPID3D9 *gapi_d3d = new GAPID3D9;
   gapi_d3d->set_hwnd(hwnd_);

@@ -33,7 +33,13 @@
 #include <windows.h>
 #include <Shellapi.h>
 #include "command_buffer/service/cross/big_test_helpers.h"
+
+#if defined(CB_SERVICE_D3D9)
 #include "command_buffer/service/win/d3d9/gapi_d3d9.h"
+#elif defined(CB_SERVICE_GL)
+#include "command_buffer/service/cross/gl/gapi_gl.h"
+#endif
+
 #include "core/cross/types.h"
 
 namespace o3d {
@@ -101,7 +107,12 @@ bool ProcessSystemMessages() {
 using o3d::String;
 using o3d::command_buffer::g_program_path;
 using o3d::command_buffer::g_gapi;
+
+#if defined(CB_SERVICE_D3D9)
 using o3d::command_buffer::GAPID3D9;
+#elif defined(CB_SERVICE_GL)
+using o3d::command_buffer::GAPIGL;
+#endif
 
 LRESULT CALLBACK WindowProc(HWND hWnd,
                             UINT msg,
@@ -133,9 +144,14 @@ int main(int argc, char *argv[]) {
                            300, GetDesktopWindow(), NULL, wc.hInstance, NULL);
   UpdateWindow(hWnd);
 
-  GAPID3D9 d3d9_gapi;
-  d3d9_gapi.set_hwnd(hWnd);
-  g_gapi = &d3d9_gapi;
+#if defined(CB_SERVICE_D3D9)
+  GAPID3D9 gapi;
+#elif defined(CB_SERVICE_GL)
+  GAPIGL gapi;
+#endif
+
+  gapi.set_hwnd(hWnd);
+  g_gapi = &gapi;
 
   wchar_t program_filename[512];
   GetModuleFileName(NULL, program_filename, sizeof(program_filename));

@@ -367,7 +367,7 @@ TEST_F(EffectTest, CreateUniformParameters) {
     } else {
       ASSERT_TRUE(param != NULL);
       if (expected_info.num_elements > 0) {
-        ASSERT_TRUE(param->IsA(ParamParamArray::GetApparentClass()));
+        EXPECT_TRUE(param->IsA(ParamParamArray::GetApparentClass()));
       } else {
         EXPECT_TRUE(param->IsA(expected_info.type));
       }

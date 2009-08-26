@@ -67,6 +67,12 @@ class GAPIGL : public GAPIInterface {
   //   true if successful.
   virtual bool Initialize();
 
+  // Initailizes Cg.
+  void InitCG();
+
+  // Helper function for Initailize that inits just glew.
+  bool InitGlew();
+
   // Destroys the graphics context.
   virtual void Destroy();
 
@@ -202,6 +208,17 @@ class GAPIGL : public GAPIInterface {
   virtual ParseError GetParamDesc(ResourceID id,
                                   unsigned int size,
                                   void *data);
+
+  // Implements the GetStreamCount function for GL.
+  virtual ParseError GetStreamCount(ResourceID id,
+                                    unsigned int size,
+                                    void *data);
+
+  // Implements the GetStreamDesc function for GL.
+  virtual ParseError GetStreamDesc(ResourceID id,
+                                   unsigned int index,
+                                   unsigned int size,
+                                   void *data);
 
   // Implements the CreateTexture2D function for GL.
   virtual ParseError CreateTexture2D(ResourceID id,
@@ -353,6 +370,9 @@ class GAPIGL : public GAPIInterface {
   SamplerGL *GetSampler(ResourceID id) {
     return samplers_.Get(id);
   }
+  void set_anti_aliased(bool anti_aliased) { anti_aliased_ = anti_aliased; }
+
+  bool anti_aliased() const { return anti_aliased_; }
 
   CGcontext cg_context() const { return cg_context_; }
 
@@ -361,18 +381,26 @@ class GAPIGL : public GAPIInterface {
   // and requires ValidateEffect() to be called before further draws occur.
   void DirtyEffect();
  private:
-  void InitCommon();
+  bool InitPlatformSpecific();
+  bool InitCommon();
   // Validates the current vertex struct to GL, setting the vertex attributes.
   bool ValidateStreams();
   // Validates the current effect to GL. This sets the vertex and fragment
   // programs, and updates parameters if needed.
   bool ValidateEffect();
 
-#ifdef OS_LINUX
+#if defined(OS_LINUX)
   XWindowWrapper *window_;
+#elif defined(OS_WIN)
+  // Handle to the GL device.
+  HWND hwnd_;
+  HDC device_context_;
+  HGLRC gl_context_;
 #endif
+
   CGcontext cg_context_;
 
+  bool anti_aliased_;
   ResourceID current_vertex_struct_;
   bool validate_streams_;
   unsigned int max_vertices_;

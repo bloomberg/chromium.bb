@@ -36,6 +36,7 @@
 #include <map>
 
 #include "base/cross/std_functional.h"
+#include "command_buffer/service/cross/gl/effect_gl.h"
 #include "command_buffer/service/cross/gl/gapi_gl.h"
 #include "command_buffer/service/cross/effect_utils.h"
 
@@ -82,6 +83,8 @@ static effect_param::DataType CgTypeToCBType(CGtype cg_type) {
     case CG_SAMPLER3D:
     case CG_SAMPLERCUBE:
       return effect_param::SAMPLER;
+    case CG_TEXTURE:
+      return effect_param::TEXTURE;
     default : {
       DLOG(INFO) << "Cannot convert CGtype "
                  << cgGetTypeString(cg_type)
@@ -96,10 +99,15 @@ EffectParamGL *EffectParamGL::Create(EffectGL *effect,
   DCHECK(effect);
   const EffectGL::LowLevelParam &low_level_param =
       effect->low_level_params_[index];
-  CGtype cg_type =
-      cgGetParameterType(EffectGL::GetEitherCgParameter(low_level_param));
+  CGparameter cg_param = EffectGL::GetEitherCgParameter(low_level_param);
+  CGtype cg_type = cgGetParameterType(cg_param);
+  if (cg_type == CG_ARRAY) {
+    cg_type = cgGetParameterType(cgGetArrayParameter(cg_param, 0));
+  }
   effect_param::DataType type = CgTypeToCBType(cg_type);
-  if (type == effect_param::UNKNOWN) return NULL;
+
+  if (type == effect_param::UNKNOWN)
+    return NULL;
   return new EffectParamGL(type, effect, index);
 }
 
@@ -116,6 +124,7 @@ bool EffectParamGL::GetDesc(unsigned int size, void *data) {
   CGparameter cg_param = EffectGL::GetEitherCgParameter(low_level_param);
   const char *name = low_level_param.name;
   const char* semantic = cgGetParameterSemantic(cg_param);
+  int num_elements = cgGetArraySize(cg_param, 0);
   unsigned int name_size =
       name ? static_cast<unsigned int>(strlen(name)) + 1 : 0;
   unsigned int semantic_size = semantic ?
@@ -130,6 +139,7 @@ bool EffectParamGL::GetDesc(unsigned int size, void *data) {
   desc->name_offset = 0;
   desc->name_size = name_size;
   desc->semantic_offset = 0;
+  desc->num_elements = num_elements;
   desc->semantic_size = semantic_size;
   unsigned int current_offset = sizeof(Desc);
   if (name && current_offset + name_size <= size) {
@@ -154,6 +164,12 @@ bool EffectParamGL::SetData(GAPIGL *gapi,
 
   EffectGL::LowLevelParam &low_level_param =
       effect_->low_level_params_[low_level_param_index_];
+
+  if (low_level_param.num_elements != 0) {
+    DLOG(ERROR) << "Attempt to set array parameter to value.";
+    return false;
+  }
+
   CGparameter vp_param = low_level_param.vp_param;
   CGparameter fp_param = low_level_param.fp_param;
   effect_param::DataType type = data_type();
@@ -202,7 +218,8 @@ bool EffectParamGL::SetData(GAPIGL *gapi,
       break;
     }
     case effect_param::SAMPLER: {
-      low_level_param.sampler_id = *static_cast<const ResourceID *>(data);
+      DCHECK_GE(low_level_param.sampler_ids.size(), 1);
+      low_level_param.sampler_ids[0] = *static_cast<const ResourceID *>(data);
       if (effect_ == gapi->current_effect()) {
         gapi->DirtyEffect();
       }
@@ -222,18 +239,18 @@ EffectGL::EffectGL(CGprogram vertex_program,
 }
 
 EffectGL::~EffectGL() {
-  for (ParamResourceList::iterator it = resource_params_.begin();
-       it != resource_params_.end(); ++it) {
+  for (ParamList::iterator it = params_.begin();
+       it != params_.end(); ++it) {
     (*it)->ResetEffect();
   }
 }
 
 void EffectGL::LinkParam(EffectParamGL *param) {
-  resource_params_.push_back(param);
+  params_.push_back(param);
 }
 
 void EffectGL::UnlinkParam(EffectParamGL *param) {
-  std::remove(resource_params_.begin(), resource_params_.end(), param);
+  std::remove(params_.begin(), params_.end(), param);
 }
 
 // Rewrites vertex program assembly code to match GL semantics for clipping.
@@ -406,11 +423,13 @@ int EffectGL::GetLowLevelParamIndexByName(const char *name) {
   return -1;
 }
 
-void EffectGL::AddLowLevelParams(CGparameter cg_param,
-                                 bool vp) {
-  // Loop over all *leaf* parameters, visiting only CGparameters that have
-  // had storage allocated to them.
-  for (; cg_param != NULL; cg_param = cgGetNextLeafParameter(cg_param)) {
+void EffectGL::AddLowLevelParams(CGprogram prog, CGenum name_space, bool vp) {
+  // Iterate through parameters and add them to the vector of low level
+  // parameters, visiting only CGparameters that have had storage allocated to
+  // them, and add the params to the low_level_params_ vector.
+  for (CGparameter cg_param = cgGetFirstParameter(prog, name_space);
+       cg_param != NULL;
+       cg_param = cgGetNextParameter(cg_param)) {
     CGenum variability = cgGetParameterVariability(cg_param);
     if (variability != CG_UNIFORM)
       continue;
@@ -421,20 +440,47 @@ void EffectGL::AddLowLevelParams(CGparameter cg_param,
     if (!name)
       continue;
 
+    CGtype cg_type = cgGetParameterType(cg_param);
+
+    int num_elements;
+    if (cg_type == CG_ARRAY) {
+      num_elements = cgGetArraySize(cg_param, 0);
+      // Substitute the first element's type for our type.	
+      cg_type = cgGetParameterType(cgGetArrayParameter(cg_param, 0));
+    } else {
+      num_elements = 0;
+    }
+
     int index = GetLowLevelParamIndexByName(name);
     if (index < 0) {
-      LowLevelParam param = {name, NULL, NULL, kInvalidResource};
+      LowLevelParam param;
+      param.name = name;
+      param.vp_param = NULL;
+      param.fp_param = NULL;
+      param.num_elements = num_elements;
+
       index = low_level_params_.size();
-      low_level_params_.push_back(param);
-      CGtype cg_type = cgGetParameterType(cg_param);
       if (cg_type == CG_SAMPLER ||
           cg_type == CG_SAMPLER1D ||
           cg_type == CG_SAMPLER2D ||
           cg_type == CG_SAMPLER3D ||
           cg_type == CG_SAMPLERCUBE) {
         sampler_params_.push_back(index);
+        if (num_elements == 0) {
+          param.sampler_ids.push_back(kInvalidResource);
+        } else {
+          param.sampler_ids.resize(num_elements);
+          std::vector<ResourceID>::iterator iter;
+          for (iter = param.sampler_ids.begin();
+               iter != param.sampler_ids.end();
+               ++iter) {
+            *iter = kInvalidResource;
+          }
+        }
       }
+      low_level_params_.push_back(param);
     }
+
     if (vp) {
       low_level_params_[index].vp_param = cg_param;
     } else {
@@ -443,29 +489,148 @@ void EffectGL::AddLowLevelParams(CGparameter cg_param,
   }
 }
 
+typedef std::pair<String, effect_stream::Desc> SemanticMapElement;
+typedef std::map<String, effect_stream::Desc> SemanticMap;
+
+// The map batween the semantics on vertex program varying parameters names
+// and vertex attribute indices under the VP_30 profile.
+SemanticMapElement semantic_map_array[] = {
+  SemanticMapElement("POSITION",
+      effect_stream::Desc(vertex_struct::POSITION, 0)),
+  SemanticMapElement("ATTR0",
+      effect_stream::Desc(vertex_struct::POSITION, 0)),
+  SemanticMapElement("BLENDWEIGHT",
+      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+  SemanticMapElement("ATTR1",
+      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+  SemanticMapElement("NORMAL",
+      effect_stream::Desc(vertex_struct::NORMAL, 0)),
+  SemanticMapElement("ATTR2",
+      effect_stream::Desc(vertex_struct::NORMAL, 0)),
+  SemanticMapElement("COLOR0",
+      effect_stream::Desc(vertex_struct::COLOR, 0)),
+  SemanticMapElement("DIFFUSE",
+      effect_stream::Desc(vertex_struct::COLOR, 0)),
+  SemanticMapElement("ATTR3",
+      effect_stream::Desc(vertex_struct::COLOR, 0)),
+  SemanticMapElement("COLOR1",
+      effect_stream::Desc(vertex_struct::COLOR, 1)),
+  SemanticMapElement("SPECULAR",
+      effect_stream::Desc(vertex_struct::COLOR, 1)),
+  SemanticMapElement("ATTR4",
+      effect_stream::Desc(vertex_struct::COLOR, 1)),
+  SemanticMapElement("TESSFACTOR",
+      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+  SemanticMapElement("FOGCOORD",
+      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+  SemanticMapElement("ATTR5",
+      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+  SemanticMapElement("PSIZE",
+      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+  SemanticMapElement("ATTR6",
+      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+  SemanticMapElement("BLENDINDICES",
+      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+  SemanticMapElement("ATTR7",
+      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+  SemanticMapElement("TEXCOORD0",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 0)),
+  SemanticMapElement("ATTR8",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 0)),
+  SemanticMapElement("TEXCOORD1",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 1)),
+  SemanticMapElement("ATTR9",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 1)),
+  SemanticMapElement("TEXCOORD2",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 2)),
+  SemanticMapElement("ATTR10",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 2)),
+  SemanticMapElement("TEXCOORD3",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 3)),
+  SemanticMapElement("ATTR11",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 3)),
+  SemanticMapElement("TEXCOORD4",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 4)),
+  SemanticMapElement("ATTR12",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 4)),
+  SemanticMapElement("TEXCOORD5",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 5)),
+  SemanticMapElement("ATTR13",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 5)),
+  SemanticMapElement("TEXCOORD6",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 6)),
+  SemanticMapElement("TANGENT",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 6)),
+  SemanticMapElement("ATTR14",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 7)),
+  SemanticMapElement("TEXCOORD7",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 7)),
+  SemanticMapElement("BINORMAL",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 8)),
+  SemanticMapElement("ATTR15",
+      effect_stream::Desc(vertex_struct::TEX_COORD, 8))
+};
+
+static SemanticMap semantic_map(semantic_map_array,
+                                semantic_map_array +
+                                    arraysize(semantic_map_array));
+
 void EffectGL::Initialize() {
-  AddLowLevelParams(cgGetFirstLeafParameter(vertex_program_, CG_PROGRAM), true);
-  AddLowLevelParams(cgGetFirstLeafParameter(vertex_program_, CG_GLOBAL), true);
-  AddLowLevelParams(cgGetFirstLeafParameter(fragment_program_, CG_PROGRAM),
-                    false);
-  AddLowLevelParams(cgGetFirstLeafParameter(fragment_program_, CG_GLOBAL),
-                    false);
+  AddLowLevelParams(vertex_program_, CG_PROGRAM, true);
+  AddLowLevelParams(vertex_program_, CG_GLOBAL, true);
+  AddLowLevelParams(fragment_program_, CG_PROGRAM, false);
+  AddLowLevelParams(fragment_program_, CG_GLOBAL, false);
+
+  AddStreams(vertex_program_, CG_PROGRAM);
+  AddStreams(vertex_program_, CG_GLOBAL);
+}
+
+// Loop over all leaf parameters, and find the ones that are bound to a
+// semantic.
+void EffectGL::AddStreams(CGprogram prog, CGenum name_space) {
+  for (CGparameter cg_param = cgGetFirstLeafParameter(prog, name_space);
+       cg_param != NULL;
+       cg_param = cgGetNextLeafParameter(cg_param)) {
+    CGenum variability = cgGetParameterVariability(cg_param);
+    if (variability != CG_VARYING)
+      continue;
+    CGenum direction = cgGetParameterDirection(cg_param);
+    if (direction != CG_IN)
+      continue;
+    const char* cg_semantic = cgGetParameterSemantic(cg_param);
+    if (cg_semantic == NULL)
+      continue;
+
+    SemanticMap::iterator iter = semantic_map.find(String(cg_semantic));
+    if (iter == semantic_map.end()) {
+      streams_.push_back(effect_stream::Desc(
+          vertex_struct::UNKNOWN_SEMANTIC, 0));
+    } else {
+      streams_.push_back(iter->second);
+    }
+  }
 }
 
 // Begins rendering with the effect, setting all the appropriate states.
 bool EffectGL::Begin(GAPIGL *gapi) {
   cgGLBindProgram(vertex_program_);
   cgGLBindProgram(fragment_program_);
+
   // sampler->ApplyStates will mess with the texture binding on unit 0, so we
   // do 2 passes.
   // First to set the sampler states on the texture
   for (unsigned int i = 0; i < sampler_params_.size(); ++i) {
     unsigned int param_index = sampler_params_[i];
-    ResourceID id = low_level_params_[param_index].sampler_id;
-    if (id != kInvalidResource) {
-      SamplerGL *sampler = gapi->GetSampler(id);
-      if (!sampler->ApplyStates(gapi)) {
-        return false;
+    std::vector<ResourceID> &ids = low_level_params_[param_index].sampler_ids;
+    for (std::vector<ResourceID>::iterator iter = ids.begin();
+         iter != ids.end();
+         ++iter) {
+      ResourceID id = *iter;
+      if (id != kInvalidResource) {
+        SamplerGL *sampler = gapi->GetSampler(id);
+        if (!sampler->ApplyStates(gapi)) {
+          return false;
+        }
       }
     }
   }
@@ -473,15 +638,24 @@ bool EffectGL::Begin(GAPIGL *gapi) {
   for (unsigned int i = 0; i < sampler_params_.size(); ++i) {
     unsigned int param_index = sampler_params_[i];
     const LowLevelParam &ll_param = low_level_params_[param_index];
-    ResourceID id = ll_param.sampler_id;
-    if (id != kInvalidResource) {
-      SamplerGL *sampler = gapi->GetSampler(id);
-      GLuint gl_texture = sampler->gl_texture();
-      cgGLSetTextureParameter(ll_param.fp_param, gl_texture);
-      cgGLEnableTextureParameter(ll_param.fp_param);
-    } else {
-      cgGLSetTextureParameter(ll_param.fp_param, 0);
-      cgGLDisableTextureParameter(ll_param.fp_param);
+    std::vector<ResourceID> &ids = low_level_params_[param_index].sampler_ids;
+    // TODO(petersont): Rewrite the following so it handles arrays of samplers
+    // instead of simply bailing.
+    if (cgGetParameterType(ll_param.fp_param) == CG_ARRAY)
+      return false;
+    for (std::vector<ResourceID>::iterator iter = ids.begin();
+         iter != ids.end();
+         ++iter) {
+      ResourceID id = *iter;
+      if (id != kInvalidResource) {
+        SamplerGL *sampler = gapi->GetSampler(id);
+        GLuint gl_texture = sampler->gl_texture();
+        cgGLSetTextureParameter(ll_param.fp_param, gl_texture);
+        cgGLEnableTextureParameter(ll_param.fp_param);
+      } else {
+        cgGLSetTextureParameter(ll_param.fp_param, 0);
+        cgGLDisableTextureParameter(ll_param.fp_param);
+      }
     }
   }
   return true;
@@ -496,11 +670,31 @@ unsigned int EffectGL::GetParamCount() const {
   return low_level_params_.size();
 }
 
+// Gets the number of input streams from the shader.
+unsigned int EffectGL::GetStreamCount() const {
+  return streams_.size();
+}
+
 // Gets a handle to the selected parameter, and wraps it into an
 // EffectParamGL if successful.
 EffectParamGL *EffectGL::CreateParam(unsigned int index) {
-  if (index < low_level_params_.size()) return NULL;
+  if (index >= GetParamCount())
+      return NULL;
   return EffectParamGL::Create(this, index);
+}
+
+// Provided enough room is available in the buffer, fills the Desc structure,
+// appending name and semantic if any.
+bool EffectGL::GetStreamDesc(unsigned int index,
+                             unsigned int size,
+                             void *data) {
+  using effect_stream::Desc;
+  if (size < sizeof(Desc) || index >= streams_.size())  // NOLINT
+    return false;
+
+  Desc *desc = static_cast<Desc *>(data);
+  *desc = streams_[index];
+  return true;
 }
 
 // Gets a handle to the selected parameter, and wraps it into an
@@ -508,7 +702,7 @@ EffectParamGL *EffectGL::CreateParam(unsigned int index) {
 EffectParamGL *EffectGL::CreateParamByName(const char *name) {
   int index = GetLowLevelParamIndexByName(name);
   if (index < 0) return NULL;
-  EffectParamGL::Create(this, index);
+  return EffectParamGL::Create(this, index);
 }
 
 BufferSyncInterface::ParseError GAPIGL::CreateEffect(ResourceID id,
@@ -605,6 +799,28 @@ BufferSyncInterface::ParseError GAPIGL::GetParamDesc(ResourceID id,
   EffectParamGL *param = effect_params_.Get(id);
   if (!param) return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   return param->GetDesc(size, data) ?
+      BufferSyncInterface::PARSE_NO_ERROR :
+      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+}
+
+BufferSyncInterface::ParseError GAPIGL::GetStreamCount(
+    ResourceID id,
+    unsigned int size,
+    void *data) {
+  EffectGL *effect = effects_.Get(id);
+  if (!effect || size < sizeof(Uint32))  // NOLINT
+    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+  *static_cast<Uint32 *>(data) = effect->GetStreamCount();
+  return BufferSyncInterface::PARSE_NO_ERROR;
+}
+
+BufferSyncInterface::ParseError GAPIGL::GetStreamDesc(ResourceID id,
+                                                      unsigned int index,
+                                                      unsigned int size,
+                                                      void *data) {
+  EffectGL *effect = effects_.Get(id);
+  if (!effect) return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+  return effect->GetStreamDesc(index, size, data) ?
       BufferSyncInterface::PARSE_NO_ERROR :
       BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
 }

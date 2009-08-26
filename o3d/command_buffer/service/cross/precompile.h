@@ -30,52 +30,33 @@
  */
 
 
-// This file declares the Win32CBServer class, helper class that runs a command
-// buffer server in a separate win32 thread.
+// This file contains includes for common headers used by command buffer server
+// files.  It is used for pre-compiled header support.
 
-#ifndef O3D_CORE_WIN_COMMAND_BUFFER_WIN32_CB_SERVER_H_
-#define O3D_CORE_WIN_COMMAND_BUFFER_WIN32_CB_SERVER_H_
+#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_PRECOMPILE_H__
+#define O3D_COMMAND_BUFFER_SERVICE_CROSS_PRECOMPILE_H__
 
-#include "core/cross/precompile.h"
-#include "core/cross/features.h"
-#include "command_buffer/common/cross/rpc_imc.h"
-#include "command_buffer/client/cross/buffer_sync_proxy.h"
-#if defined(CB_SERVICE_D3D9)
-#include "command_buffer/service/win/d3d9/gapi_d3d9.h"
-#elif defined(CB_SERVICE_GL)
-#include "command_buffer/service/cross/gl/gapi_gl.h"
+#include <build/build_config.h>
+
+#if defined(OS_WIN)
+#include <windows.h>
 #endif
 
-
-namespace o3d {
-
-// The current Renderer API assumes we connect directly to the window. This
-// class creates a command buffer server in a separate thread, and sets up the
-// communication socket.
-// This code will go away once we fix the API, and provide a separate mechanism
-// to connect to the service.
-class Win32CBServer {
- public:
-  explicit Win32CBServer(HWND window, Features* features);
-  ~Win32CBServer();
-
-  // Gets the (client-side) command buffer interface.
-  command_buffer::BufferSyncInterface *GetInterface() { return proxy_.get(); }
-
- private:
-  static DWORD WINAPI ThreadMain(LPVOID param);
-
 #if defined(CB_SERVICE_D3D9)
-  command_buffer::GAPID3D9 gapi_;
-#elif defined(CB_SERVICE_GL)
-  command_buffer::GAPIGL gapi_;
-#endif
-  nacl::HtpHandle socket_pair_[2];
-  scoped_ptr<command_buffer::IMCSender> imc_sender_;
-  scoped_ptr<command_buffer::BufferSyncProxy> proxy_;
-  HANDLE thread_;
-};
+#include <d3d9.h>
+#include <d3dx9.h>
+#endif // defined(CB_SERVICE_D3D9)
 
-}  // namespace o3d
+#if defined(CB_SERVICE_GL)
+#include <GL/glew.h>
+#include <GL/wglew.h>
+#include <Cg/cg.h>
+#include <Cg/cgGL.h>
+#endif // defined(CB_SERVICE_GL)
 
-#endif  // O3D_CORE_WIN_COMMAND_BUFFER_WIN32_CB_SERVER_H_
+#include <assert.h>
+#include <algorithm>
+#include <map>
+#include <vector>
+
+#endif  // O3D_CORE_CROSS_PRECOMPILE_H__

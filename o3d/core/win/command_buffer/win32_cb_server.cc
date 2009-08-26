@@ -46,12 +46,16 @@ using command_buffer::IMCMessageProcessor;
 using command_buffer::BufferSyncProxy;
 using command_buffer::CommandBufferEngine;
 
-Win32CBServer::Win32CBServer(HWND window)
+Win32CBServer::Win32CBServer(HWND window, Features* features)
     : gapi_(),
       proxy_(NULL),
       imc_sender_(NULL),
       thread_(NULL) {
   gapi_.set_hwnd(window);
+
+#if defined(CB_RENDERER_GL)
+  gapi_.set_anti_aliased(!features->not_anti_aliased());
+#endif
 
   nacl::Handle handles[2];
   nacl::SocketPair(handles);

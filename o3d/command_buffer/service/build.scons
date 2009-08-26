@@ -40,9 +40,25 @@ INPUTS = [
   'cross/texture_utils.cc',
 ]
 
+# Add a precompiled header declaration to the Windows environment.
+if env['TARGET_PLATFORM'] == 'WINDOWS':
+  env.Append(
+      CCFLAGS = [
+          '/Ylcommand_buffer',
+          '/FIcommand_buffer/service/cross/precompile.h',
+      ],
+  )
+  pch, pch_obj = env.PCH('cross/precompile.cc')
+  env['PCH'] = pch
+  env['PCHSTOP'] = 'command_buffer/service/cross/precompile.h'
+else:
+  pch_obj = 'cross/precompile.cc'
+  env.Append(CCFLAGS = [['-include',
+                         'command_buffer/service/cross/precompile.h']])
+
 # Build the big tests
 BIG_TEST_SERVER = [
-    'cross/big_test.cc',
+  'cross/big_test.cc',
 ]
 
 # Add some flags and libraries to the build environment for the unit tests
@@ -58,21 +74,35 @@ env.Append(
 )
 
 if env['TARGET_PLATFORM'] == 'WINDOWS':
-  env.Append(CCFLAGS = [],
-             LIBS = [# System libs.
-                     'd3d9',
-                     # TODO: remove link-time dependency on d3dx9, using
-                     # dynamic loading instead.
-                     'd3dx9',
-                     'dxerr',
-                     'shell32'],
-             LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
-  INPUTS += ['win/d3d9/effect_d3d9.cc',
-             'win/d3d9/gapi_d3d9.cc',
-             'win/d3d9/geometry_d3d9.cc',
-             'win/d3d9/sampler_d3d9.cc',
-             'win/d3d9/states_d3d9.cc',
-             'win/d3d9/texture_d3d9.cc']
+  if 'CB_SERVICE_D3D9' in env['CPPDEFINES']:
+    env.Append(CCFLAGS = [],
+               LIBS = [# System libs.
+                       'd3d9',
+                       # TODO: remove link-time dependency on d3dx9, using
+                       # dynamic loading instead.
+                       'd3dx9',
+                       'dxerr',
+                       'shell32'],
+               LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
+    INPUTS += ['win/d3d9/effect_d3d9.cc',
+               'win/d3d9/gapi_d3d9.cc',
+               'win/d3d9/geometry_d3d9.cc',
+               'win/d3d9/sampler_d3d9.cc',
+               'win/d3d9/states_d3d9.cc',
+               'win/d3d9/texture_d3d9.cc']
+  elif 'CB_SERVICE_GL' in env['CPPDEFINES']:
+    env.Append(CCFLAGS = [],
+               LIBS = ['OpenGL32', 'glew32', 'cg', 'cgGL'],
+               LIBPATH = ['$CG_DIR/lib', '$GLEW_DIR/lib'],
+               CPPPATH = ['$CG_DIR/include', '$GLEW_DIR/include'],
+               LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
+    INPUTS += ['cross/gl/effect_gl.cc',
+               'cross/gl/gapi_gl.cc',
+               'cross/gl/geometry_gl.cc',
+               'cross/gl/sampler_gl.cc',
+               'cross/gl/states_gl.cc',
+               'cross/gl/texture_gl.cc']
+
   BIG_TEST_SERVER += ['win/big_test_main.cc']
 elif env['TARGET_PLATFORM'] == 'LINUX':
   env.Append(LIBS = ['GL', 'GLEW', 'Cg', 'CgGL'],
@@ -91,8 +121,8 @@ o3dcmdbuf_lib = env.ComponentLibrary('o3dCmdBuf_service', INPUTS)
 
 # TODO: why can't these be ComponentTestProgram?
 
-# Create a target executable program called 'o3dCmdBuf_bigtest_server' from the list
-# of big test server files.
+# Create a target executable program called 'o3dCmdBuf_bigtest_server' from the
+# list of big test server files.
 big_test_server = env.Program('o3dCmdBuf_bigtest_server', BIG_TEST_SERVER)
 
 # Copy the resulting executable to the Artifacts directory.

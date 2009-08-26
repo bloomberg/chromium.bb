@@ -200,7 +200,7 @@ void EffectCB::GetParameterInfo(EffectParameterInfoArray *array) {
     }
     array->push_back(EffectParameterInfo(desc.name,
                                          param_class,
-                                         0,
+                                         desc.num_elements,
                                          desc.semantic,
                                          sem_class));
   }

@@ -35,7 +35,10 @@
 #ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_EFFECT_GL_H_
 #define O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_EFFECT_GL_H_
 
+#include <Cg/cg.h>
+#include <Cg/cgGL.h>
 #include <vector>
+
 #include "command_buffer/common/cross/gapi_interface.h"
 #include "command_buffer/service/cross/resource.h"
 #include "command_buffer/service/cross/gl/gl_utils.h"
@@ -95,8 +98,14 @@ class EffectGL : public Effect {
   // Gets the number of parameters in the effect.
   unsigned int GetParamCount() const;
 
+  // Gets the number of streams in the effect.
+  unsigned int GetStreamCount() const;
+
   // Creates an effect parameter with the specified index.
   EffectParamGL *CreateParam(unsigned int index);
+
+  // Gets the stream data with the specified index.
+  bool GetStreamDesc(unsigned int index, unsigned int size, void *data);
 
   // Creates an effect parameter of the specified name.
   EffectParamGL *CreateParamByName(const char *name);
@@ -106,10 +115,12 @@ class EffectGL : public Effect {
     const char *name;
     CGparameter vp_param;
     CGparameter fp_param;
-    ResourceID sampler_id;
+    int num_elements;
+    std::vector<ResourceID> sampler_ids;
   };
   typedef std::vector<LowLevelParam> LowLevelParamList;
-  typedef std::vector<EffectParamGL *> ParamResourceList;
+  typedef std::vector<EffectParamGL *> ParamList;
+  typedef std::vector<effect_stream::Desc> StreamList;
 
   static CGparameter GetEitherCgParameter(
       const LowLevelParam &low_level_param) {
@@ -118,7 +129,8 @@ class EffectGL : public Effect {
   }
 
   int GetLowLevelParamIndexByName(const char *name);
-  void AddLowLevelParams(CGparameter cg_param, bool vp);
+  void AddLowLevelParams(CGprogram prog, CGenum name_space, bool vp);
+  void AddStreams(CGprogram prog, CGenum name_space);
 
   // Creates the low level structures.
   void Initialize();
@@ -131,11 +143,13 @@ class EffectGL : public Effect {
 
   CGprogram vertex_program_;
   CGprogram fragment_program_;
-  // List of all the Param resources created.
-  ParamResourceList resource_params_;
+  // List of all the Params created.
+  ParamList params_;
+  StreamList streams_;
   // List of all the Cg parameters present in either the vertex program or the
   // fragment program.
   LowLevelParamList low_level_params_;
+
   // List of the indices of the low level params that are samplers.
   std::vector<unsigned int> sampler_params_;
   bool update_samplers_;
