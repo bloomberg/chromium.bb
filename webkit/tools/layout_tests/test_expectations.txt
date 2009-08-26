@@ -2811,7 +2811,7 @@ BUG20292 : LayoutTests/fast/forms/input-list.html = FAIL
 BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
 
 // WebKit 47770:47779
-BUG20319 : LayoutTests/fast/dom/Window/timer-resume-on-navigation-back.html = TIMEOUT
+BUG20319 : LayoutTests/fast/dom/Window/timer-resume-on-navigation-back.html = TIMEOUT FAIL
 
 // Fails after V8 rollup
 BUG20314 MAC : LayoutTests/fast/css/only-of-type-pseudo-class.html = FAIL
