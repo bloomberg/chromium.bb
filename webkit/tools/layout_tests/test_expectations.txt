@@ -2789,15 +2789,14 @@ BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-a
 BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
 
 // WebKit 47646:47719.
-BUG_JIANLI MAC : LayoutTests/fast/forms/button-state-restore.html = CRASH
+BUG20340 MAC : LayoutTests/fast/forms/button-state-restore.html = CRASH
 
 // WebKit 47719:47732. New test. Time out on all 3 platforms.
-BUG_JIANLI : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
+BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
 
-// WebKit 47732:47748. New tests. Need investigation.
-BUG_JIANLI : LayoutTests/fast/events/keydown-function-keys.html = FAIL
-BUG_JIANLI WIN LINUX : LayoutTests/http/tests/security/javascriptURL/javascriptURL-in-new-iframe.html = CRASH
-BUG_JIANLI WIN : LayoutTests/media/video-controls-with-mutation-event-handler.html = CRASH
+// WebKit 47732:47748.
+BUG20332 : LayoutTests/fast/events/keydown-function-keys.html = FAIL
+BUG20324 WIN LINUX : LayoutTests/http/tests/security/javascriptURL/javascriptURL-in-new-iframe.html = CRASH
 
 // WebKit 47748:47759. Crash only on Linux. Need investigation.
 BUG20265 LINUX : LayoutTests/fast/css/pseudo-required-optional-005.html = CRASH
