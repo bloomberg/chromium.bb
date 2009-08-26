@@ -98,7 +98,7 @@
                 '$(SDKROOT)/System/Library/Frameworks/GLUT.framework',
                 '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
                 '../../third_party/cg/files/mac/Cg.framework',
-                '../../third_party/glew/files/lib/libGLEW.a',
+                '../../third_party/glew/files/lib/libMacStaticGLEW.a',
               ],
             },
           },

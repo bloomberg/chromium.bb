@@ -81,6 +81,12 @@
             'dependencies': [
               '../../breakpad/breakpad.gyp:breakpad',
             ],
+            'xcode_settings': {
+             'INFOPLIST_FILE': '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
+            },
+            'mac_bundle_resources': [
+              'mac/Resources/English.lproj',
+            ],
             'sources': [
               'mac/config_mac.mm',
               'mac/main_mac.mm',
@@ -92,6 +98,7 @@
             ],
             'mac_framework_dirs': [
               '../../breakpad/src/client/mac/build/Release',
+              '<(cgdir)',
             ],
             'defines': [
               'XP_MACOSX=1',
@@ -107,7 +114,7 @@
                 '$(SDKROOT)/System/Library/Frameworks/QuickTime.framework',
                 '../../breakpad/src/client/mac/build/Release/Breakpad.framework',
                 '../../third_party/cg/files/mac/Cg.framework',
-                '../../third_party/glew/files/lib/libGLEW.a',
+                '../../third_party/glew/files/lib/libMacStaticGLEW.a',
               ],
             },
             'postbuilds': [
@@ -130,6 +137,22 @@
                 },
                 'postbuild_name': 'Copy Frameworks',
                 'action': ['<(copy_frameworks_path)'],
+              },
+              {
+                'postbuild_name': 'Process Resource File',
+                'action': ['python',
+                           'version_info.py',
+                           'mac/o3d_plugin.r',
+                           '${BUILT_PRODUCTS_DIR}/O3D.r',
+                           ],
+              },
+              {
+                'postbuild_name': 'Compile Resource File',
+                'action': ['/usr/bin/Rez',
+                           '-o',
+                           '${BUILT_PRODUCTS_DIR}/O3D.plugin/Contents/Resources/O3D.rsrc',
+                           '${BUILT_PRODUCTS_DIR}/O3D.r',
+                           ],
               },
             ],
           },

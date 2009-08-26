@@ -278,7 +278,10 @@
                 'mac',
               ],
             },
-          }
+           'xcode_settings': {
+             'GCC_PREFIX_HEADER': 'cross/precompile.h',
+           },
+         },
         ],
       ],
     },
@@ -291,6 +294,13 @@
       'sources': [
       ],
       'conditions': [
+        ['OS == "mac"',
+          {
+           'xcode_settings': {
+             'GCC_PREFIX_HEADER': 'cross/precompile.h',
+           },
+         },
+        ],
         ['renderer == "gl"',
           {
             'sources': [

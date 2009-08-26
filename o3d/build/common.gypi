@@ -67,11 +67,18 @@
             'MAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_4',
             'SK_BUILD_FOR_MAC',
           ],
+          'configurations': {
+            'Debug': {
+              'xcode_settings': {
+                'CFLAGS': ['-g',],
+              },
+            },
+          },
           'xcode_settings': {
-            'WARNING_CFLAGS': ['-Wno-deprecated-declarations'],
             'CFLAGS': ['-gstabs+',
                        '-fno-eliminate-unused-debug-symbols',
                        '-mmacosx-version-min=10.4'],
+            'WARNING_CFLAGS': ['-Wno-deprecated-declarations'],
             'WARNING_CXXFLAGS': ['-Wstrict-aliasing',
                                  '-Wno-deprecated',],
           },
