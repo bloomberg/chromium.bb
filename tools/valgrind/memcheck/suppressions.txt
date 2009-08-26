@@ -1094,3 +1094,15 @@
    fun:_ZN7WebCore17DOMWindowInternal24sessionStorageAttrGetterEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
    fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
 }
+{
+   bug_20320
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:handlers_find
+   fun:signal_handlers_foreach_matched_R
+   fun:g_signal_handlers_disconnect_matched
+   fun:gtk_accel_group_disconnect
+   fun:gtk_accel_group_disconnect_key
+}
