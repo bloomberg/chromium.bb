@@ -2828,3 +2828,6 @@ BUG20265 LINUX : LayoutTests/platform/mac/accessibility/slider-supports-actions.
 // WebKit 47759:47770.
 BUG20292 : LayoutTests/fast/forms/input-list.html = FAIL
 BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
+
+// Fails after V8 rollup
+BUG20314 MAC : LayoutTests/fast/css/only-of-type-pseudo-class.html = FAIL
