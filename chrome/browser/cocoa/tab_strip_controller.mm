@@ -47,7 +47,6 @@ static const float kUseFullAvailableWidth = -1.0;
 @end
 
 @interface TabStripController(Private)
-- (void)installTrackingArea;
 - (BOOL)useFullWidthForLayout;
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
@@ -83,7 +82,6 @@ static const float kUseFullAvailableWidth = -1.0;
     [newTabButton_ setAction:@selector(commandDispatch:)];
     [newTabButton_ setTag:IDC_NEW_TAB];
     targetFrames_.reset([[NSMutableDictionary alloc] init]);
-    [tabView_ setWantsLayer:YES];
     dragBlockingView_.reset([[TabStripControllerDragBlockingView alloc]
                               initWithFrame:NSZeroRect]);
     [self addSubviewToPermanentList:dragBlockingView_];
@@ -100,13 +98,23 @@ static const float kUseFullAvailableWidth = -1.0;
            selector:@selector(tabViewFrameChanged:)
                name:NSViewFrameDidChangeNotification
              object:tabView_];
+
+    trackingArea_.reset([[NSTrackingArea alloc]
+        initWithRect:NSZeroRect  // Ignored by NSTrackingInVisibleRect
+             options:NSTrackingMouseEnteredAndExited |
+                     NSTrackingMouseMoved |
+                     NSTrackingActiveAlways |
+                     NSTrackingInVisibleRect
+               owner:self
+            userInfo:nil]);
+    [tabView_ addTrackingArea:trackingArea_.get()];
   }
   return self;
 }
 
 - (void)dealloc {
-  if (closeTabTrackingArea_.get())
-    [tabView_ removeTrackingArea:closeTabTrackingArea_.get()];
+  if (trackingArea_.get())
+    [tabView_ removeTrackingArea:trackingArea_.get()];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
@@ -229,6 +237,9 @@ static const float kUseFullAvailableWidth = -1.0;
 // is the TabView that is potentially going away.
 - (void)closeTab:(id)sender {
   DCHECK([sender isKindOfClass:[NSView class]]);
+  if ([hoveredTab_ isEqual:sender]) {
+    hoveredTab_ = nil;
+  }
   int index = [self indexForTabView:sender];
   if (tabModel_->ContainsIndex(index)) {
     TabContents* contents = tabModel_->GetTabContentsAt(index);
@@ -240,7 +251,6 @@ static const float kUseFullAvailableWidth = -1.0;
       // TODO(pinkerton): re-visit when handling tab overflow.
       NSView* penultimateTab = [self viewAtIndex:[tabArray_ count] - 2];
       availableResizeWidth_ = NSMaxX([penultimateTab frame]);
-      [self installTrackingArea];
       tabModel_->CloseTabContentsAt(index);
     } else {
       // Use the standard window close if this is the last tab
@@ -335,7 +345,7 @@ static const float kUseFullAvailableWidth = -1.0;
   for (TabController* tab in tabArray_.get()) {
     BOOL isPlaceholder = [[tab view] isEqual:placeholderTab_];
     NSRect tabFrame = [[tab view] frame];
-    tabFrame.size.height = [[self class] defaultTabHeight];
+    tabFrame.size.height = [[self class] defaultTabHeight] + 1;
     tabFrame.origin.y = 0;
     tabFrame.origin.x = offset;
 
@@ -563,6 +573,10 @@ static const float kUseFullAvailableWidth = -1.0;
   NSView* tab = [self viewAtIndex:index];
   [tab removeFromSuperview];
 
+  if ([hoveredTab_ isEqual:tab]) {
+    hoveredTab_ = nil;
+  }
+
   NSValue *identifier = [NSValue valueWithPointer:tab];
   [targetFrames_ removeObjectForKey:identifier];
 
@@ -747,9 +761,9 @@ static const float kUseFullAvailableWidth = -1.0;
   tabModel_->InsertTabContentsAt(index, contents, true, false);
 }
 
-- (void)userChangedTheme {
+- (void)applyTheme {
   for (TabController* tab in tabArray_.get()) {
-    [[tab view] setNeedsDisplay:YES];
+    [tab applyTheme];
   }
 }
 
@@ -766,34 +780,38 @@ static const float kUseFullAvailableWidth = -1.0;
   return availableResizeWidth_ == kUseFullAvailableWidth;
 }
 
-// Call to install a tracking area that reports mouseEnter/Exit messages so
-// we can track when the mouse leaves the tab view after closing a tab with
-// the mouse. Don't install another tracking rect if one is already there.
-- (void)installTrackingArea {
-  if (closeTabTrackingArea_.get())
-    return;
-  // Note that we pass |NSTrackingInVisibleRect| so the rect is actually
-  // ignored.
-  closeTabTrackingArea_.reset([[NSTrackingArea alloc]
-      initWithRect:[tabView_ bounds]
-           options:NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways |
-                    NSTrackingInVisibleRect
-             owner:self
-          userInfo:nil]);
-  [tabView_ addTrackingArea:closeTabTrackingArea_.get()];
+- (void)mouseMoved:(NSEvent *)event {
+  // Use hit test to figure out what view we are hovering over.
+  TabView* targetView = (TabView*)[tabView_ hitTest:[event locationInWindow]];
+  if (![targetView isKindOfClass:[TabView class]]) {
+    if ([[targetView superview] isKindOfClass:[TabView class]]) {
+      targetView = (TabView*)[targetView superview];
+    } else {
+      targetView = nil;
+    }
+  }
+
+  if (hoveredTab_ != targetView) {
+    [hoveredTab_ mouseExited:nil];  // We don't pass event because moved events
+    [targetView mouseEntered:nil];  // don't have valid tracking areas
+    hoveredTab_ = targetView;
+  } else {
+    [hoveredTab_ mouseMoved:event];
+  }
 }
 
 - (void)mouseEntered:(NSEvent*)event {
-  // Do nothing.
+  [self mouseMoved:event];
 }
 
 // Called when the tracking area is in effect which means we're tracking to
 // see if the user leaves the tab strip with their mouse. When they do,
 // reset layout to use all available width.
 - (void)mouseExited:(NSEvent*)event {
-  [tabView_ removeTrackingArea:closeTabTrackingArea_.get()];
-  closeTabTrackingArea_.reset(nil);
   availableResizeWidth_ = kUseFullAvailableWidth;
+
+  [hoveredTab_ mouseExited:event];
+  hoveredTab_ = nil;
   [self layoutTabs];
 }
 

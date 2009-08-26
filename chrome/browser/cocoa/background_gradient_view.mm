@@ -5,7 +5,7 @@
 #include "chrome/browser/cocoa/background_gradient_view.h"
 
 #define kToolbarTopOffset 12
-#define kToolbarMaxHeight 128
+#define kToolbarMaxHeight 100
 
 @implementation BackgroundGradientView
 @synthesize showsDivider = showsDivider_;

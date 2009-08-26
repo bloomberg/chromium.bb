@@ -33,6 +33,11 @@ TEST_F(TabViewTest, AddRemove) {
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(TabViewTest, Display) {
+  [view_ setHoverAlpha:0.0];
+  [view_ display];
+  [view_ setHoverAlpha:0.5];
+  [view_ display];
+  [view_ setHoverAlpha:1.0];
   [view_ display];
 }
 

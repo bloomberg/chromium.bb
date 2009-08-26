@@ -333,8 +333,9 @@ const int kCompleteAnimationDuration = 2.5;
                       controlView:controlView
                         outerPath:buttonOuterPath
                         innerPath:buttonInnerPath
-            showHighlightGradient:[self isMouseOverButtonPart]
               showClickedGradient:[self isButtonPartPressed]
+            showHighlightGradient:[self isMouseOverButtonPart]
+                       hoverAlpha:0.0
                            active:active
                         cellFrame:cellFrame];
 
@@ -342,8 +343,9 @@ const int kCompleteAnimationDuration = 2.5;
                       controlView:controlView
                         outerPath:dropdownOuterPath
                         innerPath:dropdownInnerPath
-            showHighlightGradient:[self isMouseOverDropdownPart]
               showClickedGradient:[self isDropdownPartPressed]
+            showHighlightGradient:[self isMouseOverDropdownPart]
+                       hoverAlpha:0.0
                            active:active
                         cellFrame:cellFrame];
 

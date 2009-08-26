@@ -10,6 +10,16 @@
 #include "chrome/browser/cocoa/status_bubble_mac.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "third_party/GTM/AppKit/GTMTheme.h"
+
+@interface StatusBubbleMacTestWindowDelegate : NSObject <GTMThemeDelegate>;
+@end
+@implementation StatusBubbleMacTestWindowDelegate
+- (GTMTheme *)gtm_themeForWindow:(NSWindow *)window {
+  NSLog(@"gettheme");
+  return [[[GTMTheme alloc] init] autorelease];
+}
+@end
 
 class StatusBubbleMacTest : public testing::Test {
  public:
@@ -29,10 +39,23 @@ class StatusBubbleMacTest : public testing::Test {
   NSString* GetURLText() {
     return bubble_->url_text_;
   }
-
+  NSWindow* GetWindow() {
+    return bubble_->window_;
+  }
+  NSWindow* GetParent() {
+    return bubble_->parent_;
+  }
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_ptr<StatusBubbleMac> bubble_;
 };
+
+TEST_F(StatusBubbleMacTest, Theme) {
+  bubble_->SetStatus(L"Theme test");  // Creates the window
+  [GetParent() setDelegate:
+      [[[StatusBubbleMacTestWindowDelegate alloc] init] autorelease]];
+  EXPECT_TRUE([GetParent() gtm_theme] != nil);
+  EXPECT_TRUE([[GetWindow() contentView] gtm_theme] != nil);
+}
 
 TEST_F(StatusBubbleMacTest, SetStatus) {
   bubble_->SetStatus(L"");

@@ -62,6 +62,10 @@ class ToolbarView;
   // See comments in awakeFromNib for more info.
   scoped_nsobject<AutocompleteTextField> locationBarRetainer_;
 
+  // Tracking area for mouse enter/exit/moved in the toolbar.
+  scoped_nsobject<NSTrackingArea> trackingArea_;
+  NSButton* hoveredButton_;  // weak. Button under the mouse cursor.
+
   IBOutlet NSMenu* pageMenu_;
   IBOutlet NSMenu* wrenchMenu_;
 
