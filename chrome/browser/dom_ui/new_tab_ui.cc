@@ -1600,7 +1600,7 @@ bool NewTabUI::UseOldNewTabPage() {
 // static
 bool NewTabUI::WebResourcesEnabled() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kEnableWebResources);
+  return !command_line->HasSwitch(switches::kDisableWebResources);
 }
 
 // static
