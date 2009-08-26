@@ -227,14 +227,6 @@ static const OperandKind RegisterTable64[REGISTER_TABLE_SIZE] = {
   RegUnknown,
   RegUnknown,
   RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
-  RegUnknown,
   RegUnknown
 #endif
 };
@@ -252,6 +244,7 @@ static const OperandKind RegisterTableMmx[REGISTER_TABLE_SIZE] = {
   RegMMX5,
   RegMMX6,
   RegMMX7,
+#if NACL_TARGET_SUBARCH == 64
   /* Intentionally repeat values, since Rex.B/R has no effect. */
   RegMMX0,
   RegMMX1,
@@ -261,6 +254,7 @@ static const OperandKind RegisterTableMmx[REGISTER_TABLE_SIZE] = {
   RegMMX5,
   RegMMX6,
   RegMMX7
+#endif
 };
 
 /* Define the available Xmm registers, for the given subarchitecture.
@@ -276,6 +270,7 @@ static const OperandKind RegisterTableXmm[REGISTER_TABLE_SIZE] = {
   RegXMM5,
   RegXMM6,
   RegXMM7,
+#if NACL_TARGET_SUBARCH == 64
   RegXMM8,
   RegXMM9,
   RegXMM10,
@@ -284,6 +279,7 @@ static const OperandKind RegisterTableXmm[REGISTER_TABLE_SIZE] = {
   RegXMM13,
   RegXMM14,
   RegXMM15
+#endif
 };
 
 /* Define a type corresponding to the arrays RegisterTable8,
