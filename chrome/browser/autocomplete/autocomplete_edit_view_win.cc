@@ -1201,9 +1201,15 @@ void AutocompleteEditViewWin::OnCopy() {
     // copy, which will screw up our calculation of the desired_tld.
     GURL url;
     if (model_->GetURLForText(text, &url)) {
-      // We should write URL instead of text as text may contain non ASCII
-      // characters and the text may change when it is pasted.
-      scw.WriteText(UTF8ToWide(url.spec()));
+      // If the scheme is http or https and the user isn't editing,
+      // we should copy the true URL instead of the (unescaped) display
+      // string to avoid encoding and escaping issues when pasting this text
+      // elsewhere.
+      if ((url.SchemeIs("http") || url.SchemeIs("https")) &&
+          !model_->user_input_in_progress())
+        scw.WriteText(UTF8ToWide(url.spec()));
+      else
+        scw.WriteText(text);
       scw.WriteHyperlink(text, url.spec());
       return;
     }
