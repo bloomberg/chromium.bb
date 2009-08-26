@@ -369,9 +369,19 @@ if '__main__' == __name__:
   option_parser.add_option(
       '', '--sync-test-password', help='Password for the test account')
   options, args = option_parser.parse_args()
+  if not options.sync_test_password:
+    if os.path.exists('sync_password'):
+      fs = open('sync_password', 'r')
+      lines = fs.readlines()
+      if len(lines)==1:
+        options.sync_test_password = lines[0].strip()
+      else:
+        sys.stderr.write('sync_password file is not in required format.\n')
+    else:
+      sys.stderr.write(
+          'Missing required parameter- sync_test_password, please fix it.\n')
   if (not options.build_dir or not options.http_server_url or
-      not options.http_server_port or not options.sync_test_username or
-      not options.sync_test_password):
+      not options.http_server_port or not options.sync_test_username):
     sys.stderr.write('Missing required parameter, please fix it.\n')
     option_parser.print_help()
     sys.exit(1)
