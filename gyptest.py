@@ -131,6 +131,8 @@ def main(argv=None):
   parser = optparse.OptionParser(usage=usage)
   parser.add_option("-a", "--all", action="store_true",
             help="run all tests")
+  parser.add_option("-C", "--chdir", action="store", default=None,
+            help="chdir to the specified directory")
   parser.add_option("-f", "--format", action="store", default='',
             help="run tests with the specified formats")
   parser.add_option("-l", "--list", action="store_true",
@@ -139,9 +141,17 @@ def main(argv=None):
             help="no execute, just print the command line")
   parser.add_option("--passed", action="store_true",
             help="report passed tests")
+  parser.add_option("--path", action="append", default=[],
+            help="additional $PATH directory")
   parser.add_option("-q", "--quiet", action="store_true",
             help="quiet, don't print test command lines")
   opts, args = parser.parse_args(argv[1:])
+
+  if opts.chdir:
+    os.chdir(opts.chdir)
+
+  if opts.path:
+    os.environ['PATH'] += ':' + ':'.join(opts.path)
 
   if not args:
     if not opts.all:
