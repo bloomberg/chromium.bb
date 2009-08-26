@@ -111,7 +111,11 @@ class LoginDialogTask : public Task {
     } else {
       dialog_form.scheme = PasswordForm::SCHEME_OTHER;
     }
-    dialog_form.origin = origin_url;
+    if (auth_info_->is_proxy) {
+      dialog_form.origin = GURL(WideToASCII(auth_info_->host_and_port));
+    } else {
+      dialog_form.origin = origin_url;
+    }
     dialog_form.signon_realm = GetSignonRealm(dialog_form.origin, *auth_info_);
     password_manager_input->push_back(dialog_form);
     // Set the password form for the handler (by copy).
