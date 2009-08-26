@@ -549,7 +549,11 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
   // handleMouseReleaseEvent() earlier in this function
   if (event.button == WebMouseEvent::ButtonMiddle) {
     Frame* focused = GetFocusedWebCoreFrame();
-    if (focused) {
+    IntPoint click_point(last_mouse_down_point_.x, last_mouse_down_point_.y);
+    HitTestResult hit_test_result =
+      focused->eventHandler()->hitTestResultAtPoint(click_point, false, false,
+                                                    ShouldHitTestScrollbars);
+    if (!hit_test_result.scrollbar() && focused) {
       Editor* editor = focused->editor();
       if (editor && editor->canEdit())
         delegate_->PasteFromSelectionClipboard();
