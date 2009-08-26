@@ -370,6 +370,7 @@ main (int argc, char **argv)
     printf ("#define LEAF(o,l)   (LEAF0 + l * sizeof (FcCharLeaf) - (OFF0 + o * sizeof (intptr_t)))\n");
     printf ("#define fcLangCharSets (fcLangData.langCharSets)\n");
     printf ("#define fcLangCharSetIndices (fcLangData.langIndices)\n");
+    printf ("#define fcLangCharSetIndicesInv (fcLangData.langIndicesInv)\n");
     printf ("\n");
     
     printf ("static const struct {\n"
@@ -378,9 +379,10 @@ main (int argc, char **argv)
 	    "    intptr_t       leaf_offsets[%d];\n"
 	    "    FcChar16       numbers[%d];\n"
 	    "    FcChar%s       langIndices[%d];\n"
+	    "    FcChar%s       langIndicesInv[%d];\n"
 	    "} fcLangData = {\n",
 	    nsets, tl, tn, tn,
-	    nsets < 256 ? "8 " : "16", nsets);
+	    nsets < 256 ? "8 " : "16", nsets, nsets < 256 ? "8 " : "16", nsets);
 	
     /*
      * Dump sets
@@ -469,15 +471,27 @@ main (int argc, char **argv)
     }
     printf ("},\n");
 
+    /* langIndices */
     printf ("{\n");
     for (i = 0; sets[i]; i++)
     {
 	printf ("    %d, /* %s */\n", entries[i].id, names[i]);
     }
+    printf ("},\n");
+
+    /* langIndicesInv */
+    printf ("{\n");
+    {
+	static int		entries_inv[MAX_LANG];
+	for (i = 0; sets[i]; i++)
+	  entries_inv[entries[i].id] = i;
+	for (i = 0; sets[i]; i++)
+	    printf ("    %d, /* %s */\n", entries_inv[i], names[entries_inv[i]]);
+    }
     printf ("}\n");
-    
+
     printf ("};\n\n");
-    
+
     printf ("#define NUM_LANG_CHAR_SET	%d\n", i);
     num_lang_set_map = (i + 31) / 32;
     printf ("#define NUM_LANG_SET_MAP	%d\n", num_lang_set_map);

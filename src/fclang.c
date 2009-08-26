@@ -686,10 +686,10 @@ FcLangSetContains (const FcLangSet *lsa, const FcLangSet *lsb)
 		if (missing & (1 << j)) 
 		{
 		    if (!FcLangSetContainsLang (lsa,
-						fcLangCharSets[i*32 + j].lang))
+						fcLangCharSets[fcLangCharSetIndicesInv[i*32 + j]].lang))
 		    {
 			if (FcDebug() & FC_DBG_MATCHV)
-			    printf ("\tMissing bitmap %s\n", fcLangCharSets[i*32+j].lang);
+			    printf ("\tMissing bitmap %s\n", fcLangCharSets[fcLangCharSetIndicesInv[i*32+j]].lang);
 			return FcFalse;
 		    }
 		}
