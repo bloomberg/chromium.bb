@@ -140,6 +140,7 @@ if env['TARGET_PLATFORM'] == 'WINDOWS':
   platform_inputs += [pch_obj]
 else:
   platform_inputs += ['cross/precompile.cc']
+  env.Append(CCFLAGS = [['-include', 'core/cross/precompile.h']])
 
 # Based on the renderer requested, append the platform-specific source
 if 'RENDERER_D3D9' in env['CPPDEFINES'] :
