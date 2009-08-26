@@ -80,7 +80,7 @@ static const ModeledOpInfo kBranchOps[] = {
     ARM_BRANCH_WITH_LINK_AND_EXCHANGE_2,
     kArmUndefinedAccessModeName,
     ARM_BRANCH_RS,
-    FALSE,
+    TRUE,
     "%C\t%z",
     ARM_WORD_LENGTH,
     NULLName,

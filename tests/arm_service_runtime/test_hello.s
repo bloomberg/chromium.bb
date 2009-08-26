@@ -38,26 +38,27 @@
 _mainCRTStartup:
 _start:
 start:
-     .align 4
-
 # write(1, "hello world\n", 12)
+     .align 4
      mov r2, 12
      ldr r1, .string_address
      mov r0, 1
      mov r10, 0x10000
-
      add r10, r10, (32 * 13)
-     add lr, pc, 4
+
+     .align 4
+     nop
+     nop
      bic r10, 0xf000000f
-     bx  r10
+     blx  r10
 
 # exit(0)
+
      mov r0, 0
      mov r10, 0x10000
      add r10, r10, (32 * 30)
-     nop
 
-     mov lr, 0
+     .align 4
      bic r10, 0xf000000f
      bx  r10
 

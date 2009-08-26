@@ -39,15 +39,13 @@ _mainCRTStartup:
 _start:
 start:
 
+# arg is 42, trampoline exit slot is 30
      .align 4
-# arg is 42
      mov r0, 42
-# find trampoline, exit is slot 30
      mov r10, 0x10000
      add r10, r10, (32 * 30)
-     nop
 
-     mov lr, 0
+     .align 4
      bic r10, 0xf000000f
      bx  r10
-     
+
