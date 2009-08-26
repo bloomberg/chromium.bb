@@ -41,6 +41,7 @@
 #include "webkit/glue/webworker_impl.h"
 
 using WebKit::WebMessagePortChannel;
+using WebKit::WebMessagePortChannelArray;
 using WebKit::WebString;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
@@ -154,7 +155,7 @@ void WebWorkerClientImpl::terminateWorkerContext() {
 
 void WebWorkerClientImpl::postMessageToWorkerContext(
     const WebCore::String& message,
-    WTF::PassOwnPtr<WebCore::MessagePortChannel> channel) {
+    WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels) {
   // Worker.terminate() could be called from JS before the context is started.
   if (asked_to_terminate_)
     return;
@@ -164,18 +165,21 @@ void WebWorkerClientImpl::postMessageToWorkerContext(
   if (!WTF::isMainThread()) {
     WebWorkerImpl::DispatchTaskToMainThread(
         WebCore::createCallbackTask(
-            &PostMessageToWorkerContextTask, this, message, channel));
+            &PostMessageToWorkerContextTask, this, message, channels));
     return;
   }
 
-  WebMessagePortChannel* webchannel = NULL;
-  if (channel.get()) {
-    webchannel = channel->channel()->webChannelRelease();
+  WebMessagePortChannelArray webchannels(channels.get() ? channels->size() : 0);
+
+  for (size_t i = 0; i < webchannels.size(); ++i) {
+    WebMessagePortChannel* webchannel =
+        (*channels)[i]->channel()->webChannelRelease();
     webchannel->setClient(0);
+    webchannels[i] = webchannel;
   }
 
   webworker_->postMessageToWorkerContext(
-      webkit_glue::StringToWebString(message), webchannel);
+      webkit_glue::StringToWebString(message), webchannels);
 }
 
 bool WebWorkerClientImpl::hasPendingActivity() const {
@@ -197,25 +201,28 @@ void WebWorkerClientImpl::workerObjectDestroyed() {
 
 void WebWorkerClientImpl::postMessageToWorkerObject(
     const WebString& message,
-    WebMessagePortChannel* channel) {
+    const WebMessagePortChannelArray& channels) {
   WebCore::String message2 = webkit_glue::WebStringToString(message);
-  OwnPtr<WebCore::MessagePortChannel> channel2;
-  if (channel) {
-    RefPtr<WebCore::PlatformMessagePortChannel> platform_channel =
-        WebCore::PlatformMessagePortChannel::create(channel);
-    channel->setClient(platform_channel.get());
-    channel2 = WebCore::MessagePortChannel::create(platform_channel);
+  OwnPtr<WebCore::MessagePortChannelArray> channels2;
+  if (channels.size()) {
+    channels2 = new WebCore::MessagePortChannelArray(channels.size());
+    for (size_t i = 0; i < channels.size(); ++i) {
+      RefPtr<WebCore::PlatformMessagePortChannel> platform_channel =
+          WebCore::PlatformMessagePortChannel::create(channels[i]);
+      channels[i]->setClient(platform_channel.get());
+      (*channels2)[i] = WebCore::MessagePortChannel::create(platform_channel);
+    }
   }
 
   if (WTF::currentThread() != worker_thread_id_) {
     script_execution_context_->postTask(
         WebCore::createCallbackTask(&PostMessageToWorkerObjectTask, this,
-            message2, channel2.release()));
+            message2, channels2.release()));
     return;
   }
 
   PostMessageToWorkerObjectTask(
-      script_execution_context_.get(), this, message2, channel2.release());
+      script_execution_context_.get(), this, message2, channels2.release());
 }
 
 void WebWorkerClientImpl::postExceptionToWorkerObject(
@@ -313,15 +320,16 @@ void WebWorkerClientImpl::PostMessageToWorkerContextTask(
     WebCore::ScriptExecutionContext* context,
     WebWorkerClientImpl* this_ptr,
     const WebCore::String& message,
-    WTF::PassOwnPtr<WebCore::MessagePortChannel> channel) {
-  WebMessagePortChannel* webChannel = NULL;
-  if (channel.get()) {
-    webChannel = channel->channel()->webChannelRelease();
-    webChannel->setClient(0);
+    WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels) {
+  WebMessagePortChannelArray web_channels(channels.get() ? channels->size() : 0);
+
+  for (size_t i = 0; i < web_channels.size(); ++i) {
+    web_channels[i] = (*channels)[i]->channel()->webChannelRelease();
+    web_channels[i]->setClient(0);
   }
 
   this_ptr->webworker_->postMessageToWorkerContext(
-      webkit_glue::StringToWebString(message), webChannel);
+      webkit_glue::StringToWebString(message), web_channels);
 }
 
 void WebWorkerClientImpl::WorkerObjectDestroyedTask(
@@ -336,16 +344,12 @@ void WebWorkerClientImpl::PostMessageToWorkerObjectTask(
     WebCore::ScriptExecutionContext* context,
     WebWorkerClientImpl* this_ptr,
     const WebCore::String& message,
-    WTF::PassOwnPtr<WebCore::MessagePortChannel> channel) {
+    WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels) {
 
   if (this_ptr->worker_) {
-    WTF::RefPtr<WebCore::MessagePort> port;
-    if (channel) {
-      port = WebCore::MessagePort::create(*context);
-      port->entangle(channel.release());
-    }
-
-    this_ptr->worker_->dispatchMessage(message, port.release());
+    WTF::OwnPtr<WebCore::MessagePortArray> ports =
+        WebCore::MessagePort::entanglePorts(*context, channels.release());
+    this_ptr->worker_->dispatchMessage(message, ports.release());
   }
 }
 

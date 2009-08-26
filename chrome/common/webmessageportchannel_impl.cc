@@ -11,6 +11,7 @@
 #include "webkit/api/public/WebMessagePortChannelClient.h"
 
 using WebKit::WebMessagePortChannel;
+using WebKit::WebMessagePortChannelArray;
 using WebKit::WebMessagePortChannelClient;
 using WebKit::WebString;
 
@@ -33,6 +34,16 @@ WebMessagePortChannelImpl::WebMessagePortChannelImpl(
 }
 
 WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
+  // If we have any queued messages with attached ports, manually destroy them.
+  while (!message_queue_.empty()) {
+    const std::vector<WebMessagePortChannelImpl*>& channel_array =
+        message_queue_.front().ports;
+    for (size_t i = 0; i < channel_array.size(); i++) {
+      channel_array[i]->destroy();
+    }
+    message_queue_.pop();
+  }
+
   if (message_port_id_ != MSG_ROUTING_NONE)
     Send(new WorkerProcessHostMsg_DestroyMessagePort(message_port_id_));
 
@@ -65,39 +76,46 @@ void WebMessagePortChannelImpl::entangle(WebMessagePortChannel* channel) {
 
 void WebMessagePortChannelImpl::postMessage(
     const WebString& message,
-    WebMessagePortChannel* channel) {
+    WebMessagePortChannelArray* channels) {
   if (MessageLoop::current() != ChildThread::current()->message_loop()) {
     ChildThread::current()->message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(this, &WebMessagePortChannelImpl::postMessage,
-            message, channel));
+            message, channels));
     return;
   }
 
-  WebMessagePortChannelImpl* webchannel =
-      static_cast<WebMessagePortChannelImpl*>(channel);
-
-  int message_port_id = MSG_ROUTING_NONE;
-  if (webchannel) {
-    message_port_id = webchannel->message_port_id();
-    webchannel->QueueMessages();
-    DCHECK(message_port_id != MSG_ROUTING_NONE);
+  std::vector<int> message_port_ids(channels ? channels->size() : 0);
+  if (channels) {
+    for (size_t i = 0; i < channels->size(); ++i) {
+      WebMessagePortChannelImpl* webchannel =
+          static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
+      message_port_ids[i] = webchannel->message_port_id();
+      webchannel->QueueMessages();
+      DCHECK(message_port_ids[i] != MSG_ROUTING_NONE);
+    }
   }
 
   IPC::Message* msg = new WorkerProcessHostMsg_PostMessage(
-      message_port_id_, message, message_port_id);
-
+      message_port_id_, message, message_port_ids);
   Send(msg);
 }
 
 bool WebMessagePortChannelImpl::tryGetMessage(
     WebString* message,
-    WebMessagePortChannel** channel) {
+    WebMessagePortChannelArray& channels) {
   AutoLock auto_lock(lock_);
   if (message_queue_.empty())
     return false;
 
   *message = message_queue_.front().message;
-  *channel = message_queue_.front().port.release();
+  const std::vector<WebMessagePortChannelImpl*>& channel_array =
+      message_queue_.front().ports;
+  WebMessagePortChannelArray result_ports(channel_array.size());
+  for (size_t i = 0; i < channel_array.size(); i++) {
+    result_ports[i] = channel_array[i];
+  }
+
+  channels.swap(result_ports);
   message_queue_.pop();
   return true;
 }
@@ -162,16 +180,19 @@ void WebMessagePortChannelImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 }
 
-void WebMessagePortChannelImpl::OnMessage(const string16& message,
-                                          int sent_message_port_id,
-                                          int new_routing_id) {
+void WebMessagePortChannelImpl::OnMessage(
+    const string16& message,
+    const std::vector<int>& sent_message_port_ids,
+    const std::vector<int>& new_routing_ids) {
   AutoLock auto_lock(lock_);
   Message msg;
   msg.message = message;
-  msg.port = NULL;
-  if (sent_message_port_id != MSG_ROUTING_NONE) {
-    msg.port = new WebMessagePortChannelImpl(
-        new_routing_id, sent_message_port_id);
+  if (!sent_message_port_ids.empty()) {
+    msg.ports.resize(sent_message_port_ids.size());
+    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+      msg.ports[i] = new WebMessagePortChannelImpl(
+          new_routing_ids[i], sent_message_port_ids[i]);
+    }
   }
 
   bool was_empty = message_queue_.empty();
@@ -181,18 +202,20 @@ void WebMessagePortChannelImpl::OnMessage(const string16& message,
 }
 
 void WebMessagePortChannelImpl::OnMessagedQueued() {
-  std::vector<std::pair<string16, int> > queued_messages;
+  std::vector<QueuedMessage> queued_messages;
 
   {
     AutoLock auto_lock(lock_);
     queued_messages.reserve(message_queue_.size());
     while (!message_queue_.empty()) {
       string16 message = message_queue_.front().message;
-      int port = MSG_ROUTING_NONE;
-      if (message_queue_.front().port)
-        port = message_queue_.front().port->message_port_id();
-
-      queued_messages.push_back(std::make_pair(message, port));
+      const std::vector<WebMessagePortChannelImpl*>& channel_array =
+          message_queue_.front().ports;
+      std::vector<int> port_ids(channel_array.size());
+      for (size_t i = 0; i < channel_array.size(); ++i) {
+        port_ids[i] = channel_array[i]->message_port_id();
+      }
+      queued_messages.push_back(std::make_pair(message, port_ids));
       message_queue_.pop();
     }
   }

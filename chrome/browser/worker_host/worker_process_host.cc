@@ -5,6 +5,7 @@
 #include "chrome/browser/worker_host/worker_process_host.h"
 
 #include <set>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/debug_util.h"
@@ -232,21 +233,22 @@ void WorkerProcessHost::RelayMessage(
     // We want to send the receiver a routing id for the new channel, so
     // crack the message first.
     string16 msg;
-    int sent_message_port_id = MSG_ROUTING_NONE;
-    int new_routing_id = MSG_ROUTING_NONE;
+    std::vector<int> sent_message_port_ids;
+    std::vector<int> new_routing_ids;
     if (!WorkerMsg_PostMessage::Read(
-            &message, &msg, &sent_message_port_id, &new_routing_id)) {
+            &message, &msg, &sent_message_port_ids, &new_routing_ids)) {
       return;
     }
+    DCHECK(sent_message_port_ids.size() == new_routing_ids.size());
 
-    if (sent_message_port_id != MSG_ROUTING_NONE) {
-      new_routing_id = next_route_id->Run();
+    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+      new_routing_ids[i] = next_route_id->Run();
       MessagePortDispatcher::GetInstance()->UpdateMessagePort(
-          sent_message_port_id, sender, new_routing_id, next_route_id);
+          sent_message_port_ids[i], sender, new_routing_ids[i], next_route_id);
     }
 
     new_message = new WorkerMsg_PostMessage(
-        route_id, msg, sent_message_port_id, new_routing_id);
+        route_id, msg, sent_message_port_ids, new_routing_ids);
   } else {
     new_message = new IPC::Message(message);
     new_message->set_routing_id(route_id);

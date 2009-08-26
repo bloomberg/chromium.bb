@@ -35,7 +35,8 @@ class PostMessageTask : public Task {
   }
   ~PostMessageTask() { }
   void Run() {
-    client_->postMessageToWorkerObject(message_string_, NULL);
+    WebKit::WebMessagePortChannelArray empty_array;
+    client_->postMessageToWorkerObject(message_string_, empty_array);
   }
 
  private:
@@ -147,7 +148,8 @@ void NativeWebWorkerImpl::terminateWorkerContext() {
 }
 
 void NativeWebWorkerImpl::postMessageToWorkerContext(
-    const WebKit::WebString& message, WebKit::WebMessagePortChannel* channel) {
+    const WebKit::WebString& message,
+    const WebKit::WebMessagePortChannelArray& channel) {
   size_t len;
   char* bufp = WebStringToCharp(message, &len);
   // Send a message to NaCl object

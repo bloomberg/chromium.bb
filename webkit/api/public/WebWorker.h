@@ -31,10 +31,9 @@
 #ifndef WebWorker_h
 #define WebWorker_h
 
-#include "WebCommon.h"
+#include "WebMessagePortChannel.h"
 
 namespace WebKit {
-    class WebMessagePortChannel;
     class WebString;
     class WebURL;
     class WebWorkerClient;
@@ -50,8 +49,9 @@ namespace WebKit {
                                         const WebString& userAgent,
                                         const WebString& sourceCode) = 0;
         virtual void terminateWorkerContext() = 0;
-        virtual void postMessageToWorkerContext(const WebString&,
-                                                WebMessagePortChannel*) = 0;
+        virtual void postMessageToWorkerContext(
+            const WebString&,
+            const WebMessagePortChannelArray&) = 0;
         virtual void workerObjectDestroyed() = 0;
     };
 

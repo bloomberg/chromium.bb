@@ -31,7 +31,7 @@
 #ifndef WebVector_h
 #define WebVector_h
 
-#include <utility>
+#include <algorithm>
 
 #include "WebCommon.h"
 

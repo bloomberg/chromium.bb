@@ -6,6 +6,7 @@
 #define CHROME_COMMON_WEBMESSAGEPORTCHANNEL_IMPL_H_
 
 #include <queue>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/lock.h"
@@ -37,9 +38,9 @@ class WebMessagePortChannelImpl
   virtual void destroy();
   virtual void entangle(WebKit::WebMessagePortChannel* channel);
   virtual void postMessage(const WebKit::WebString& message,
-                           WebKit::WebMessagePortChannel* channel);
+                           WebKit::WebMessagePortChannelArray* channels);
   virtual bool tryGetMessage(WebKit::WebString* message,
-                             WebKit::WebMessagePortChannel** channel);
+                             WebKit::WebMessagePortChannelArray& channels);
 
   void Init();
   void Entangle(scoped_refptr<WebMessagePortChannelImpl> channel);
@@ -49,13 +50,13 @@ class WebMessagePortChannelImpl
   virtual void OnMessageReceived(const IPC::Message& message);
 
   void OnMessage(const string16& message,
-                 int sent_message_port_id,
-                 int new_routing_id);
+                 const std::vector<int>& sent_message_port_ids,
+                 const std::vector<int>& new_routing_ids);
   void OnMessagedQueued();
 
   struct Message {
     string16 message;
-    scoped_refptr<WebMessagePortChannelImpl> port;
+    std::vector<WebMessagePortChannelImpl*> ports;
   };
 
   typedef std::queue<Message> MessageQueue;

@@ -179,14 +179,17 @@ void PlatformMessagePortChannel::postMessageToRemote(PassOwnPtr<MessagePortChann
         return;
 
     WebString messageString = message->message();
-    OwnPtr<WebCore::MessagePortChannel> channel = message->channel();
-    WebMessagePortChannel* webChannel = NULL;
-    if (channel.get()) {
-        WebCore::PlatformMessagePortChannel* platformChannel = channel->channel();
-        webChannel = platformChannel->webChannelRelease();
-        webChannel->setClient(0);
+    OwnPtr<WebCore::MessagePortChannelArray> channels = message->channels();
+    WebMessagePortChannelArray* webChannels = NULL;
+    if (channels.get() && channels->size()) {
+        webChannels = new WebMessagePortChannelArray(channels->size());
+        for (size_t i = 0; i < channels->size(); ++i) {
+            WebCore::PlatformMessagePortChannel* platformChannel = (*channels)[i]->channel();
+            (*webChannels)[i] = platformChannel->webChannelRelease();
+            (*webChannels)[i]->setClient(0);
+        }
     }
-    m_webChannel->postMessage(messageString, webChannel);
+    m_webChannel->postMessage(messageString, webChannels);
 }
 
 bool PlatformMessagePortChannel::tryGetMessageFromRemote(OwnPtr<MessagePortChannel::EventData>& result)
@@ -195,16 +198,19 @@ bool PlatformMessagePortChannel::tryGetMessageFromRemote(OwnPtr<MessagePortChann
         return false;
 
     WebString message;
-    WebMessagePortChannel* webChannel = NULL;
-    bool rv = m_webChannel->tryGetMessage(&message, &webChannel);
+    WebMessagePortChannelArray webChannels;
+    bool rv = m_webChannel->tryGetMessage(&message, webChannels);
     if (rv) {
-        OwnPtr<MessagePortChannel> channel;
-        if (webChannel) {
-            RefPtr<PlatformMessagePortChannel> platformChannel = create(webChannel);
-            webChannel->setClient(platformChannel.get());
-            channel = MessagePortChannel::create(platformChannel);
+        OwnPtr<MessagePortChannelArray> channels;
+        if (webChannels.size()) {
+            channels = new MessagePortChannelArray(webChannels.size());
+            for (size_t i = 0; i < webChannels.size(); ++i) {
+                RefPtr<PlatformMessagePortChannel> platformChannel = create(webChannels[i]);
+                webChannels[i]->setClient(platformChannel.get());
+                (*channels)[i] = MessagePortChannel::create(platformChannel);
+            }
         }
-        result = MessagePortChannel::EventData::create(message, channel.release());
+        result = MessagePortChannel::EventData::create(message, channels.release());
     }
 
     return rv;

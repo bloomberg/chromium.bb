@@ -31,10 +31,9 @@
 #ifndef WebWorkerClient_h
 #define WebWorkerClient_h
 
-#include "WebCommon.h"
+#include "WebMessagePortChannel.h"
 
 namespace WebKit {
-    class WebMessagePortChannel;
     class WebString;
     class WebWorker;
 
@@ -43,8 +42,9 @@ namespace WebKit {
     // the Worker object, unless noted.
     class WebWorkerClient {
     public:
-        virtual void postMessageToWorkerObject(const WebString&,
-                                               WebMessagePortChannel*) = 0;
+        virtual void postMessageToWorkerObject(
+            const WebString&,
+            const WebMessagePortChannelArray&) = 0;
 
         virtual void postExceptionToWorkerObject(
             const WebString& errorString, int lineNumber,

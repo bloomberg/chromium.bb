@@ -9,12 +9,13 @@
 #define CHROME_COMMON_WORKER_MESSAGES_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "chrome/common/common_param_traits.h"
 #include "ipc/ipc_message_utils.h"
 
-typedef std::pair<string16, int> QueuedMessage;
+typedef std::pair<string16, std::vector<int> > QueuedMessage;
 
 // Parameters structure for WorkerHostMsg_PostConsoleMessageToWorkerObject,
 // which has too many data parameters to be reasonably put in a predefined

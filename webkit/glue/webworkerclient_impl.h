@@ -14,7 +14,6 @@
 #include <wtf/RefPtr.h>
 
 namespace WebCore {
-class MessagePortChannel;
 class ScriptExecutionContext;
 }
 namespace WebKit {
@@ -42,7 +41,7 @@ class WebWorkerClientImpl : public WebCore::WorkerContextProxy,
   virtual void terminateWorkerContext();
   virtual void postMessageToWorkerContext(
       const WebCore::String& message,
-      WTF::PassOwnPtr<WebCore::MessagePortChannel> channel);
+      WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels);
   virtual bool hasPendingActivity() const;
   virtual void workerObjectDestroyed();
 
@@ -50,7 +49,7 @@ class WebWorkerClientImpl : public WebCore::WorkerContextProxy,
   // These are called on the main WebKit thread.
   virtual void postMessageToWorkerObject(
       const WebKit::WebString& message,
-      WebKit::WebMessagePortChannel* channel);
+      const WebKit::WebMessagePortChannelArray& channels);
   virtual void postExceptionToWorkerObject(
       const WebKit::WebString& error_message,
       int line_number,
@@ -89,7 +88,7 @@ class WebWorkerClientImpl : public WebCore::WorkerContextProxy,
       WebCore::ScriptExecutionContext* context,
       WebWorkerClientImpl* this_ptr,
       const WebCore::String& message,
-      WTF::PassOwnPtr<WebCore::MessagePortChannel> channel);
+      WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels);
   static void WorkerObjectDestroyedTask(
       WebCore::ScriptExecutionContext* context,
       WebWorkerClientImpl* this_ptr);
@@ -101,7 +100,7 @@ class WebWorkerClientImpl : public WebCore::WorkerContextProxy,
       WebCore::ScriptExecutionContext* context,
       WebWorkerClientImpl* this_ptr,
       const WebCore::String& message,
-      WTF::PassOwnPtr<WebCore::MessagePortChannel> channel);
+      WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels);
   static void PostExceptionToWorkerObjectTask(
       WebCore::ScriptExecutionContext* context,
       WebWorkerClientImpl* this_ptr,

@@ -5,6 +5,8 @@
 #ifndef CHROME_WORKER_WEBWORKERCLIENT_PROXY_H_
 #define CHROME_WORKER_WEBWORKERCLIENT_PROXY_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
@@ -27,7 +29,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient,
   // WebWorkerClient implementation.
   virtual void postMessageToWorkerObject(
       const WebKit::WebString& message,
-      WebKit::WebMessagePortChannel* channel);
+      const WebKit::WebMessagePortChannelArray& channel);
   virtual void postExceptionToWorkerObject(
       const WebKit::WebString& error_message,
       int line_number,
@@ -49,14 +51,14 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient,
   virtual void OnMessageReceived(const IPC::Message& message);
 
  private:
-  ~WebWorkerClientProxy ();
+  ~WebWorkerClientProxy();
 
   bool Send(IPC::Message* message);
 
   void OnTerminateWorkerContext();
   void OnPostMessage(const string16& message,
-                     int sent_message_port_id,
-                     int new_routing_id);
+                     const std::vector<int>& sent_message_port_ids,
+                     const std::vector<int>& new_routing_ids);
 
   // The source url for this worker.
   GURL url_;

@@ -18,7 +18,7 @@
 
 class MessagePortDispatcher : public NotificationObserver {
  public:
-  typedef std::vector<std::pair<string16, int> > QueuedMessages;
+  typedef std::vector<std::pair<string16, std::vector<int> > > QueuedMessages;
 
   // Returns the MessagePortDispatcher singleton.
   static MessagePortDispatcher* GetInstance();
@@ -48,14 +48,14 @@ class MessagePortDispatcher : public NotificationObserver {
   void OnEntangle(int local_message_port_id, int remote_message_port_id);
   void OnPostMessage(int sender_message_port_id,
                      const string16& message,
-                     int sent_message_port_id);
+                     const std::vector<int>& sent_message_port_ids);
   void OnQueueMessages(int message_port_id);
   void OnSendQueuedMessages(int message_port_id,
                             const QueuedMessages& queued_messages);
 
   void PostMessageTo(int message_port_id,
                      const string16& message,
-                     int sent_message_port_id);
+                     const std::vector<int>& sent_message_port_ids);
 
   // NotificationObserver interface.
   void Observe(NotificationType type,

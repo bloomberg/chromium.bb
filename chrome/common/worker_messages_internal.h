@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <utility>
+#include <vector>
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
@@ -21,8 +22,8 @@ IPC_BEGIN_MESSAGES(WorkerProcess)
   // like common_messages_internal.h
   IPC_MESSAGE_ROUTED3(WorkerProcessMsg_Message,
                       string16 /* message */,
-                      int /* sent_message_port_id */,
-                      int /* new_routing_id */)
+                      std::vector<int> /* sent_message_port_ids */,
+                      std::vector<int> /* new_routing_ids */)
 
   // Tells the Message Port Channel object that there are no more in-flight
   // messages arriving.
@@ -55,7 +56,7 @@ IPC_BEGIN_MESSAGES(WorkerProcessHost)
   IPC_MESSAGE_CONTROL3(WorkerProcessHostMsg_PostMessage,
                        int /* sender_message_port_id */,
                        string16 /* message */,
-                       int /* sent_message_port_id */)
+                       std::vector<int> /* sent_message_port_ids */)
 
   // Causes messages sent to the remote port to be delivered to this local port.
   IPC_MESSAGE_CONTROL2(WorkerProcessHostMsg_Entangle,
@@ -90,8 +91,8 @@ IPC_BEGIN_MESSAGES(Worker)
 
   IPC_MESSAGE_ROUTED3(WorkerMsg_PostMessage,
                       string16  /* message */,
-                      int  /* sent_message_port_id */,
-                      int  /* new_routing_id */)
+                      std::vector<int>  /* sent_message_port_ids */,
+                      std::vector<int>  /* new_routing_ids */)
 
   IPC_MESSAGE_ROUTED0(WorkerMsg_WorkerObjectDestroyed)
 IPC_END_MESSAGES(Worker)

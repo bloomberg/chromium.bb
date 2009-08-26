@@ -117,9 +117,10 @@ void MessagePortDispatcher::OnEntangle(int local_message_port_id,
       local_message_port_id;
 }
 
-void MessagePortDispatcher::OnPostMessage(int sender_message_port_id,
-                                          const string16& message,
-                                          int sent_message_port_id) {
+void MessagePortDispatcher::OnPostMessage(
+    int sender_message_port_id,
+    const string16& message,
+    const std::vector<int>& sent_message_port_ids) {
   if (!message_ports_.count(sender_message_port_id)) {
     NOTREACHED();
     return;
@@ -135,47 +136,52 @@ void MessagePortDispatcher::OnPostMessage(int sender_message_port_id,
     return;
   }
 
-  PostMessageTo(entangled_message_port_id, message, sent_message_port_id);
+  PostMessageTo(entangled_message_port_id, message, sent_message_port_ids);
 }
 
-void MessagePortDispatcher::PostMessageTo(int message_port_id,
-                                          const string16& message,
-                                          int sent_message_port_id) {
-  if (!message_ports_.count(message_port_id) ||
-      (sent_message_port_id != MSG_ROUTING_NONE &&
-       !message_ports_.count(sent_message_port_id))) {
+void MessagePortDispatcher::PostMessageTo(
+    int message_port_id,
+    const string16& message,
+    const std::vector<int>& sent_message_port_ids) {
+  if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
+  }
+  for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+    if (!message_ports_.count(sent_message_port_ids[i])) {
+      NOTREACHED();
+      return;
+    }
   }
 
   MessagePort& entangled_port = message_ports_[message_port_id];
 
-  MessagePort* sent_port = NULL;
-  if (sent_message_port_id != MSG_ROUTING_NONE) {
-    sent_port = &message_ports_[sent_message_port_id];
-    sent_port->queue_messages = true;
+  std::vector<MessagePort*> sent_ports(sent_message_port_ids.size());
+  for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+    sent_ports[i] = &message_ports_[sent_message_port_ids[i]];
+    sent_ports[i]->queue_messages = true;
   }
 
   if (entangled_port.queue_messages) {
     entangled_port.queued_messages.push_back(
-        std::make_pair(message, sent_message_port_id));
+        std::make_pair(message, sent_message_port_ids));
   } else {
     // If a message port was sent around, the new location will need a routing
     // id.  Instead of having the created port send us a sync message to get it,
     // send along with the message.
-    int new_routing_id = MSG_ROUTING_NONE;
-    if (sent_message_port_id != MSG_ROUTING_NONE) {
-      new_routing_id = entangled_port.next_routing_id->Run();
-      sent_port->sender = entangled_port.sender;
+    std::vector<int> new_routing_ids(sent_message_port_ids.size());
+    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+      new_routing_ids[i] = entangled_port.next_routing_id->Run();
+      sent_ports[i]->sender = entangled_port.sender;
 
       // Update the entry for the sent port as it can be in a different process.
-      sent_port->route_id = new_routing_id;
+      sent_ports[i]->route_id = new_routing_ids[i];
     }
 
     // Now send the message to the entangled port.
     IPC::Message* ipc_msg = new WorkerProcessMsg_Message(
-        entangled_port.route_id, message, sent_message_port_id,
-        new_routing_id);
+        entangled_port.route_id, message, sent_message_port_ids,
+        new_routing_ids);
     entangled_port.sender->Send(ipc_msg);
   }
 }

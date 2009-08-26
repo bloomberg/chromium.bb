@@ -12,6 +12,7 @@
 #include "webkit/api/public/WebWorkerClient.h"
 
 using WebKit::WebMessagePortChannel;
+using WebKit::WebMessagePortChannelArray;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebWorkerClient;
@@ -75,18 +76,20 @@ void WebWorkerProxy::terminateWorkerContext() {
 }
 
 void WebWorkerProxy::postMessageToWorkerContext(
-    const WebString& message, WebMessagePortChannel* channel) {
-  int message_port_id = MSG_ROUTING_NONE;
-  if (channel) {
+    const WebString& message, const WebMessagePortChannelArray& channels) {
+  std::vector<int> message_port_ids(channels.size());
+  std::vector<int> routing_ids(channels.size());
+  for (size_t i = 0; i < channels.size(); ++i) {
     WebMessagePortChannelImpl* webchannel =
-        static_cast<WebMessagePortChannelImpl*>(channel);
-    message_port_id = webchannel->message_port_id();
+        static_cast<WebMessagePortChannelImpl*>(channels[i]);
+    message_port_ids[i] = webchannel->message_port_id();
     webchannel->QueueMessages();
-    DCHECK(message_port_id != MSG_ROUTING_NONE);
+    routing_ids[i] = MSG_ROUTING_NONE;
+    DCHECK(message_port_ids[i] != MSG_ROUTING_NONE);
   }
 
   Send(new WorkerMsg_PostMessage(
-      route_id_, message, message_port_id, MSG_ROUTING_NONE));
+      route_id_, message, message_port_ids, routing_ids));
 }
 
 void WebWorkerProxy::workerObjectDestroyed() {
@@ -147,16 +150,18 @@ void WebWorkerProxy::OnDedicatedWorkerCreated() {
   }
 }
 
-void WebWorkerProxy::OnPostMessage(const string16& message,
-                                   int sent_message_port_id,
-                                   int new_routing_id) {
-  WebMessagePortChannel* channel = NULL;
-  if (sent_message_port_id != MSG_ROUTING_NONE) {
-    channel = new WebMessagePortChannelImpl(
-        new_routing_id, sent_message_port_id);
+void WebWorkerProxy::OnPostMessage(
+    const string16& message,
+    const std::vector<int>& sent_message_port_ids,
+    const std::vector<int>& new_routing_ids) {
+  DCHECK(new_routing_ids.size() == sent_message_port_ids.size());
+  WebMessagePortChannelArray channels(sent_message_port_ids.size());
+  for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+    channels[i] = new WebMessagePortChannelImpl(
+        new_routing_ids[i], sent_message_port_ids[i]);
   }
 
-  client_->postMessageToWorkerObject(message, channel);
+  client_->postMessageToWorkerObject(message, channels);
 }
 
 void WebWorkerProxy::OnPostConsoleMessageToWorkerObject(

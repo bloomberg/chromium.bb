@@ -31,13 +31,13 @@ class TestWebWorker : public WebKit::WebWorker,
   virtual void terminateWorkerContext();
   virtual void postMessageToWorkerContext(
       const WebKit::WebString& message,
-      WebKit::WebMessagePortChannel* channel);
+      const WebKit::WebMessagePortChannelArray& channel);
   virtual void workerObjectDestroyed();
 
   // WebWorkerClient methods:
   virtual void postMessageToWorkerObject(
       const WebKit::WebString& message,
-      WebKit::WebMessagePortChannel* channel);
+      const WebKit::WebMessagePortChannelArray& channel);
   virtual void postExceptionToWorkerObject(
       const WebKit::WebString& error_message,
       int line_number,
