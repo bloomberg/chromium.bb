@@ -28,7 +28,25 @@ function devtools$$dispatch(functionName, json_args) {
   var params = JSON.parse(json_args);
   var result = devtools$$obj[functionName].apply(devtools$$obj, params);
   return JSON.stringify(result);
-};
+}
+
+
+/**
+ * Removes malicious functions from the objects so that the pure JSON.stringify
+ * was used.
+ */
+function sanitizeJson(obj) {
+  for (var name in obj) {
+    var property = obj[name];
+    var type = typeof property;
+    if (type === "function") {
+      obj[name] = null;
+    } else if (obj !== null && type === "object") {
+      sanitizeJson(property);
+    }
+  }
+  return obj;
+}
 
 
 /**
@@ -48,6 +66,7 @@ var dispatch = function(method, var_args) {
     // parameters.
     return;
   }
-  var call = JSON.stringify(args);
+
+  var call = JSON.stringify(sanitizeJson(args));
   DevToolsAgentHost.dispatch(call);
 };
