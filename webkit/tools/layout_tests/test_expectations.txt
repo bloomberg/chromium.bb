@@ -2817,3 +2817,7 @@ BUG20314 MAC : LayoutTests/fast/css/only-of-type-pseudo-class.html = FAIL
 
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
+
+// Webkit 47790:47797
+BUG20359 LINUX WIN : LayoutTests/fast/repaint/inline-overflow.html = FAIL
+BUG20356 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = TIMEOUT
