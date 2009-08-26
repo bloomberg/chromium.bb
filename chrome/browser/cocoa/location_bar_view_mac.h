@@ -41,7 +41,6 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void AcceptInputWithDisposition(WindowOpenDisposition disposition);
   virtual void FocusLocation();
   virtual void FocusSearch();
-  virtual void UpdateFeedIcon() { /* http://crbug.com/8832 */ }
   virtual void UpdatePageActions() { /* http://crbug.com/12281 */ }
   virtual void SaveStateToContents(TabContents* contents);
   virtual void Revert();

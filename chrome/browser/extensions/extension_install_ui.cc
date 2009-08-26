@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "base/file_util.h"
+#include "base/rand_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/theme_preview_infobar_delegate.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -53,16 +55,40 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
   // TODO(port): Implement nicer UI.
   // Using CoreFoundation to do this dialog is unimaginably lame but will do
   // until the UI is redone.
-  scoped_cftyperef<CFStringRef> product_name(
-      base::SysWideToCFStringRef(l10n_util::GetString(IDS_PRODUCT_NAME)));
+  scoped_cftyperef<CFStringRef> confirm_title(base::SysWideToCFStringRef(
+      l10n_util::GetString(IDS_EXTENSION_PROMPT_TITLE)));
+
+  // Build the confirmation prompt, including a heading, a random humorous
+  // warning, and a severe warning.
+  const string16& confirm_format(ASCIIToUTF16("$1\n\n$2\n\n$3"));
+  std::vector<string16> subst;
+  subst.push_back(l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_HEADING,
+      UTF8ToUTF16(extension->name())));
+  string16 warnings[] = {
+    l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_1),
+    l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_2),
+    l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_3)
+  };
+  subst.push_back(warnings[base::RandInt(0, arraysize(warnings) - 1)]);
+  subst.push_back(l10n_util::GetStringUTF16(
+      IDS_EXTENSION_PROMPT_WARNING_SEVERE));
+  scoped_cftyperef<CFStringRef> confirm_prompt(base::SysUTF16ToCFStringRef(
+      ReplaceStringPlaceholders(confirm_format, subst, NULL)));
+
+  scoped_cftyperef<CFStringRef> confirm_cancel(base::SysWideToCFStringRef(
+      l10n_util::GetString(IDS_EXTENSION_PROMPT_CANCEL_BUTTON)));
+
   CFOptionFlags response;
   if (kCFUserNotificationAlternateResponse == CFUserNotificationDisplayAlert(
-      0, kCFUserNotificationCautionAlertLevel, NULL, NULL, NULL,
-      product_name,
-      CFSTR("Are you sure you want to install this extension?\n\n"
-           "This is a temporary message and it will be removed when "
-           "extensions UI is finalized."),
-      NULL, CFSTR("Cancel"), NULL, &response)) {
+      0, kCFUserNotificationCautionAlertLevel,
+      NULL, // TODO(port): show the install_icon instead of a default.
+      NULL, NULL, // Sound URL, localization URL.
+      confirm_title,
+      confirm_prompt,
+      NULL, // Default button.
+      confirm_cancel,
+      NULL, // Other button.
+      &response)) {
     delegate->AbortInstall();
   } else {
     delegate->ContinueInstall();
