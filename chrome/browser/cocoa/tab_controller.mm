@@ -7,7 +7,6 @@
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
 #import "chrome/browser/cocoa/tab_view.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
 
 @interface TabController(Private)
 - (void)updateVisibility;
@@ -54,7 +53,7 @@
   selected_ = selected;
   [(TabView *)[self view] setState:selected];
   [self updateVisibility];
-  [self applyTheme];
+  [[self view] setNeedsDisplay:YES];
 }
 
 // Called when the tab's nib is done loading and all outlets are hooked up.
@@ -62,6 +61,9 @@
   // Ensure we don't show favicon if the tab is already too small to begin with.
   [self updateVisibility];
   [(id)iconView_ setImage:nsimage_cache::ImageNamed(@"nav.pdf")];
+  [[self view] addSubview:backgroundButton_
+               positioned:NSWindowBelow
+               relativeTo:nil];
   [self internalSetSelected:selected_];
 }
 
@@ -89,7 +91,7 @@
 }
 
 - (void)setTitle:(NSString *)title {
-  [[self view] setToolTip:title];
+  [backgroundButton_ setToolTip:title];
   [super setTitle:title];
 }
 
@@ -117,7 +119,7 @@
 }
 
 - (NSString *)toolTip {
-  return [[self view] toolTip];
+  return [backgroundButton_ toolTip];
 }
 
 // Return a rough approximation of the number of icons we could fit in the
@@ -166,20 +168,4 @@
   [self updateVisibility];
 }
 
-- (void)applyTheme {
-  GTMTheme* theme = [[self view] gtm_theme];
-  NSColor* color = nil;
-  if (!selected_) {
-    color = [theme textColorForStyle:GTMThemeStyleTabBarDeselected
-                               state:GTMThemeStateActiveWindow];
-  }
-  // Default to the selected text color unless told otherwise.
-  if (!color) {
-    color = [theme textColorForStyle:GTMThemeStyleToolBar
-                               state:GTMThemeStateActiveWindow];
-  }
-
-  [titleView_ setTextColor:color ? color : [NSColor textColor]];
-  [[self view] setNeedsDisplay:YES];
-}
 @end

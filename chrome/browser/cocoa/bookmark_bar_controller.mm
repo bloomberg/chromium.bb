@@ -45,7 +45,7 @@
 namespace {
 
 // Our height, when opened.
-const int kBookmarkBarHeight = 28;
+const int kBookmarkBarHeight = 30;
 
 // Magic numbers from Cole
 const CGFloat kDefaultBookmarkWidth = 150.0;

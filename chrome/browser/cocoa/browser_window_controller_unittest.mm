@@ -192,7 +192,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   [tabstrip setFrame:tabstripFrame];
 
   // Make sure each view is as tall as we expect.
-  ASSERT_EQ(36, NSHeight([toolbar frame]));
+  ASSERT_EQ(39, NSHeight([toolbar frame]));
   ASSERT_EQ(0, NSHeight([infobar frame]));
 
   // Force a layout and check each view's frame.
