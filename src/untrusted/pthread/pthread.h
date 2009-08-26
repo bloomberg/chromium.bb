@@ -45,6 +45,11 @@
 
 #include <sys/queue.h>
 #include <sys/types.h>
+/* NOTE: we assume the header file is the right one for the target */
+/* NOTE: For x86 we rely on the default 32 bit behavior of
+         src/include/linux/x86/atomic_ops.h */
+/* TODO(robertm): make this less of a hack */
+
 #include "atomic_ops.h"
 
 #ifdef __cplusplus
@@ -485,7 +490,7 @@ extern int pthread_detach(pthread_t th);
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_bless (void);
+extern int pthread_bless(void);
 
 /** @nqPosix
 * Indicates that the calling thread is to receive special consideration
@@ -501,7 +506,7 @@ extern int pthread_bless (void);
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_nice (const int nice);
+extern int pthread_nice(const int nice);
 
 /* Functions for handling thread attributes.  */
 
@@ -647,6 +652,15 @@ typedef struct {
 */
 extern int pthread_once(pthread_once_t *__once_control,
                         void (*__init_routine)(void));
+
+
+/*
+ * NOTE: this is only declared here to shut up
+ * some warning in the c++ system header files.
+ * We do not define this function anywhere.
+ */
+
+extern int pthread_cancel(pthread_t th);
 
 /**
 * @} End of PTHREAD group

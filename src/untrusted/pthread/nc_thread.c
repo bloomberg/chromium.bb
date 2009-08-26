@@ -52,7 +52,9 @@
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
 #if NACL_TARGET_ARCH == arm
-/* this is required for TRAMP_GET_TLS */
+/* TODO(robertm): we should not included trusted stuff here - reorg headers */
+/* sel_ldr.h is  required for TRAMP_GET_TLS */
+#define NACL_NO_INLINE 1
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #endif
@@ -117,6 +119,7 @@ int __nc_memory_block_counter[2];
 /* Internal functions */
 
 #if NACL_TARGET_ARCH == x86
+
 static inline nc_thread_descriptor_t *nc_get_tdb() {
   nc_thread_descriptor_t *tdb = NULL;
   __asm__ __volatile__ ("mov %%gs:0, %0"
@@ -124,9 +127,10 @@ static inline nc_thread_descriptor_t *nc_get_tdb() {
                       : );
   return tdb;
 }
+
 #elif NACL_TARGET_ARCH == arm
 static INLINE nc_thread_descriptor_t *nc_get_tdb() {
-  nc_thread_descriptor_t *tdb = NULL;
+  typedef nc_thread_descriptor_t *(*TRAMP_GET_TLS_TYPE)();
   /*
    * when we create a thread service runtime places the TDB address in R9
    * register or its TLS region. This is defined by USE_R9_AS_TLS_REG in service
@@ -140,13 +144,15 @@ static INLINE nc_thread_descriptor_t *nc_get_tdb() {
    */
 
   /* TODO: move this definition to a header file */
-#define TRAMP_GET_TLS (NACL_TRAMPOLINE_END - 2 * NACL_SYSCALL_BLOCK_SIZE)
-  nc_thread_descriptor_t *(*tramp_get_tls) () = TRAMP_GET_TLS;
+  TRAMP_GET_TLS_TYPE tramp_get_tls =
+    (TRAMP_GET_TLS_TYPE) (NACL_TRAMPOLINE_END - 2 * NACL_SYSCALL_BLOCK_SIZE);
+
   return tramp_get_tls();
 }
 #else
 #error "unknown platform"
 #endif
+
 
 static int nc_allocate_thread_id_mu(nc_basic_thread_data_t *basic_data) {
   /* assuming the global lock is locked */
@@ -309,13 +315,16 @@ static void nc_release_tls_node(nc_thread_memory_block_t *tls_node) {
   }
 }
 
+
 #if NACL_TARGET_ARCH == x86
 /* internal initialization spinlock */
+/* NOTE: this is a global function - protos in pthread_types.h */
+
 /*
  * TODO(gregoryd) - Make static. Use local labels to prevent redefinition errors
  * when the definition is moved to a header file.
  */
-inline __attribute__((gnu_inline)) void nc_spinlock_lock(int *lock) {
+void nc_spinlock_lock(volatile int *lock) {
   __asm__("mov %0, %%ecx \n\t"
           "mov 0x1, %%eax \n\t"
           "loop: xchg    (%%ecx), %%eax    \n\t"
@@ -323,8 +332,16 @@ inline __attribute__((gnu_inline)) void nc_spinlock_lock(int *lock) {
           "jnz     loop                 \n\t"
           :"=r"(lock): "0"(lock));
 }
+
+void nc_spinlock_unlock(volatile int *lock) {
+  __asm__("mov %0, %%ecx \n\t"
+          "mov 0, %%eax \n\t"
+          "xchg (%%ecx), %%eax":"=r"(lock));
+}
+
 #elif NACL_TARGET_ARCH == arm
-static INLINE void nc_spinlock_lock(int *lock) {
+
+void nc_spinlock_lock(volatile int *lock) {
   uint32_t val;
 
   do
@@ -334,22 +351,33 @@ static INLINE void nc_spinlock_lock(int *lock) {
       : "memory");
   while (val != 0);
 }
-#else
-#error "unknown platform"
-#endif
 
-#if NACL_TARGET_ARCH == x86
-inline __attribute__((gnu_inline)) void nc_spinlock_unlock(int *lock) {
-  __asm__("mov %0, %%ecx \n\t"
-          "mov 0, %%eax \n\t"
-          "xchg (%%ecx), %%eax":"=r"(lock));
-}
-#elif NACL_TARGET_ARCH == arm
-static INLINE void nc_spinlock_unlock(int *lock) {
+void nc_spinlock_unlock(volatile int *lock) {
   *lock = 0;
 }
+
 #else
+
 #error "unknown platform"
+
+#endif
+
+/* TODO(robertm): the assembly code above should be replace with this at some point */
+/*                on x86 this does not quite work yet and thread_test fails */
+#if 0
+/* TODO(robertm): switch from int -> Atomic32, this will require
+   touching a bunch of headers */
+
+void nc_spinlock_lock(volatile int *lock) {
+  int old_value;
+  do {
+    old_value = AtomicExchange(lock, 1);
+  } while(0 != old_value);
+}
+
+void nc_spinlock_unlock(volatile int *lock) {
+  AtomicExchange(lock, 0);
+}
 #endif
 
 
@@ -886,8 +914,6 @@ int __local_lock_try_acquire(_LOCK_T* lock);
 int __local_lock_try_acquire_recursive(_LOCK_T* lock);
 void __local_lock_release(_LOCK_T* lock);
 void __local_lock_release_recursive(_LOCK_T* lock);
-
-int printf();
 
 void __local_lock_init(_LOCK_T* lock) {
   if (lock != NULL) {

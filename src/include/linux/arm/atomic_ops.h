@@ -89,5 +89,4 @@ inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
   return res;
 }
 
-#endif  // NATIVE_CLIENT_SRC_INCLUDE_LINUX_ARM_ATOMIC_OPS_LINUX_ARM_H_
-
+#endif  /* NATIVE_CLIENT_SRC_INCLUDE_LINUX_ARM_ATOMIC_OPS_LINUX_ARM_H_ */

@@ -49,6 +49,8 @@ struct NaClCondVar {
   void* cv;
 };
 
+struct nacl_abi_timespec;
+
 typedef enum NaClSyncStatus {
   NACL_SYNC_OK,
   NACL_SYNC_INTERNAL_ERROR,

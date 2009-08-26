@@ -45,8 +45,8 @@
 extern "C" {
 #endif
 
-void nc_spinlock_lock(int *lock);
-void nc_spinlock_unlock(int *lock);
+void nc_spinlock_lock(volatile int *lock);
+void nc_spinlock_unlock(volatile int *lock);
 int  nc_pthread_condvar_ctor(pthread_cond_t * cond);
 
 typedef enum {

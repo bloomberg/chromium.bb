@@ -35,19 +35,25 @@
 
 #include <stdint.h>
 
+
+/* TODO: consider having Atomic32 for all archs and Atomic64 for 64bit */
+
 typedef intptr_t AtomicWord;
 typedef int32_t Atomic32;
 
-// There are a couple places we need to specialize opcodes to account for the
-// different AtomicWord sizes on x86_64 and 32-bit platforms.
-// This macro is undefined after its last use, below.
+/*
+ * There are a couple places we need to specialize opcodes to account for the
+ * different AtomicWord sizes on x86_64 and 32-bit platforms.
+ * This macro is undefined after its last use, below.
+ */
 #if defined(__x86_64__)
 #define ATOMICOPS_WORD_SUFFIX "q"
 #else
 #define ATOMICOPS_WORD_SUFFIX "l"
 #endif
 
-inline AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
+
+static inline AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
                                  AtomicWord old_value,
                                  AtomicWord new_value) {
   AtomicWord prev;
@@ -58,30 +64,35 @@ inline AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
   return prev;
 }
 
-inline AtomicWord AtomicExchange(volatile AtomicWord* ptr,
+
+static inline AtomicWord AtomicExchange(volatile AtomicWord* ptr,
                                  AtomicWord new_value) {
-  __asm__ __volatile__("xchg" ATOMICOPS_WORD_SUFFIX " %1,%0"  // The lock prefix
-                       : "=r" (new_value)                     // is implicit for
-                       : "m" (*ptr), "0" (new_value)          // xchg.
+  /* NOTE: The lock prefix is implicit for xchg. */
+  __asm__ __volatile__("xchg" ATOMICOPS_WORD_SUFFIX " %1,%0"
+                       : "=r" (new_value)
+                       : "m" (*ptr), "0" (new_value)
                        : "memory");
-  return new_value;  // Now it's the previous value.
+  return new_value;  /* Now it's the previous value. */
 }
 
-inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
+
+static inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
                                   AtomicWord increment) {
   AtomicWord temp = increment;
   __asm__ __volatile__("lock; xadd" ATOMICOPS_WORD_SUFFIX " %0,%1"
                        : "+r" (temp), "+m" (*ptr)
                        : : "memory");
-  // temp now contains the previous value of *ptr
+  /* temp now contains the previous value of *ptr */
   return temp + increment;
 }
 
 #undef ATOMICOPS_WORD_SUFFIX
 
 
-// On a 64-bit machine, Atomic32 and AtomicWord are different types,
-// so we need to copy the preceding methods for Atomic32.
+/*
+ * On a 64-bit machine, Atomic32 and AtomicWord are different types,
+ * so we need to copy the preceding methods for Atomic32.
+ */
 
 #if defined(__x86_64__)
 
@@ -98,11 +109,12 @@ inline Atomic32 CompareAndSwap(volatile Atomic32* ptr,
 
 inline Atomic32 AtomicExchange(volatile Atomic32* ptr,
                                Atomic32 new_value) {
-  __asm__ __volatile__("xchgl %1,%0"  // The lock prefix is implicit for xchg.
+  /* The lock prefix is implicit for xchg. */
+  __asm__ __volatile__("xchgl %1,%0"
                        : "=r" (new_value)
                        : "m" (*ptr), "0" (new_value)
                        : "memory");
-  return new_value;  // Now it's the previous value.
+  return new_value;  /* Now it's the previous value. */
 }
 
 inline Atomic32 AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment) {
@@ -110,7 +122,7 @@ inline Atomic32 AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment) {
   __asm__ __volatile__("lock; xaddl %0,%1"
                        : "+r" (temp), "+m" (*ptr)
                        : : "memory");
-  // temp now holds the old value of *ptr
+  /* temp now holds the old value of *ptr */
   return temp + increment;
 }
 
@@ -118,4 +130,4 @@ inline Atomic32 AtomicIncrement(volatile Atomic32* ptr, Atomic32 increment) {
 
 #undef ATOMICOPS_COMPILER_BARRIER
 
-#endif  // NATIVE_CLIENT_SRC_INCLUDE_LINUX_ATOMIC_OPS_LINUX_H_
+#endif  /* NATIVE_CLIENT_SRC_INCLUDE_LINUX_ATOMIC_OPS_LINUX_H_ */
