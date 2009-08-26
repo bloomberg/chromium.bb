@@ -2814,3 +2814,6 @@ BUG20319 : LayoutTests/fast/dom/Window/timer-resume-on-navigation-back.html = TI
 
 // Fails after V8 rollup
 BUG20314 MAC : LayoutTests/fast/css/only-of-type-pseudo-class.html = FAIL
+
+// WebKit 47777:47790 - getOwnPropertyDescriptor
+BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
