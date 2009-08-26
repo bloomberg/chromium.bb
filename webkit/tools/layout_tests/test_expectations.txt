@@ -2788,11 +2788,6 @@ BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-a
 // Temporary supression while we investigate.
 BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
 
-// WebKit 47630:47646. These need rebaseline on Win and Linux.
-BUG_DIMICH WIN LINUX : LayoutTests/editing/execCommand/5190926.html = FAIL
-BUG_DIMICH WIN LINUX : LayoutTests/editing/pasteboard/5075944.html = FAIL
-BUG_DIMICH WIN LINUX : LayoutTests/editing/style/font-family-with-space.html = FAIL
-
 // WebKit 47646:47719.
 BUG_JIANLI MAC : LayoutTests/fast/forms/button-state-restore.html = CRASH
 
