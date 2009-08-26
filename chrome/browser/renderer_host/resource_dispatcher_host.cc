@@ -21,7 +21,6 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_manager.h"
 #include "chrome/browser/download/save_file_manager.h"
-#include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
 #include "chrome/browser/login_prompt.h"
@@ -253,8 +252,6 @@ ResourceDispatcherHost::ResourceDispatcherHost(MessageLoop* io_loop)
       download_request_manager_(new DownloadRequestManager(io_loop, ui_loop_)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(ui_loop_, io_loop, this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(user_script_listener_(
-          new UserScriptListener(ui_loop_, io_loop, this))),
       safe_browsing_(new SafeBrowsingService),
       webkit_thread_(new WebKitThread),
       request_id_(-1),
@@ -285,8 +282,6 @@ ResourceDispatcherHost::~ResourceDispatcherHost() {
        iter != ids.end(); ++iter) {
     CancelBlockedRequestsForRoute(iter->first, iter->second);
   }
-
-  user_script_listener_->OnResourceDispatcherHostGone();
 }
 
 void ResourceDispatcherHost::Initialize() {
@@ -1250,11 +1245,6 @@ void ResourceDispatcherHost::BeginRequestInternal(URLRequest* request) {
     // The SSLManager has told us that we shouldn't start the request yet.  The
     // SSLManager will potentially change the request (potentially to indicate
     // its content should be filtered) and start it itself.
-    return;
-  }
-  if (!user_script_listener_->ShouldStartRequest(request)) {
-    // This request depends on some user scripts that haven't loaded yet.  The
-    // UserScriptListener will resume the request when they're ready.
     return;
   }
   request->Start();
