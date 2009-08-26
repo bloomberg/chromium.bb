@@ -662,12 +662,78 @@ BUG13907 WIN : LayoutTests/http/tests/media/remove-while-loading.html = FAIL
 BUG13907 WIN : LayoutTests/http/tests/media/video-play-stall-seek.html = FAIL
 BUG13907 WIN : LayoutTests/http/tests/media/video-play-stall.html = FAIL
 BUG13907 WIN : LayoutTests/http/tests/media/video-seekable-stall.html = FAIL
-// We don't support WAV.
-BUG13907 SKIP : LayoutTests/media/audio-constructor-src.html = FAIL
-BUG13907 SKIP : LayoutTests/media/audio-constructor.html = FAIL
-BUG13907 SKIP : LayoutTests/media/media-load-event.html = FAIL
+
+// Disabling since try bots use Chromium FFmpeg DLLs, which means we can no
+// longer decode WebKit's test clips because they use H.264, AAC, etc.
+BUG16779 SKIP : LayoutTests/accessibility/media-element.html = TIMEOUT
+BUG16779 SKIP : LayoutTests/media/audio-constructor-autobuffer.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = TIMEOUT
+BUG16779 SKIP : LayoutTests/media/audio-delete-while-step-button-clicked.html = TIMEOUT
+BUG16779 SKIP : LayoutTests/media/controls-after-reload.html = TIMEOUT
+BUG16779 SKIP : LayoutTests/media/controls-drag-timebar.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/controls-right-click-on-timebar.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/media-startTime.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/progress-event-total.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/progress-event.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/remove-from-document.html = FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-append-source.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-aspect-ratio.html = FAIL
+BUG16779 SKIP : LayoutTests/media/video-autoplay.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-buffered.html = FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-canvas-source.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-click-dblckick-standalone.html = PASS TIMEOUT CRASH
+BUG16779 SKIP : LayoutTests/media/video-controls-transformed.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-controls-zoomed.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-controls.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-currentTime-set.html = FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-currentTime-set2.html = PASS FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-currentTime.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-display-toggle.html = FAIL TIMEOUT CRASH
+BUG16779 SKIP : LayoutTests/media/video-dom-autobuffer.html = PASS FAIL
+BUG16779 SKIP : LayoutTests/media/video-dom-autoplay.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-dom-src.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-error-abort.html = FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-layer-crash.html = FAIL
+BUG16779 SKIP : LayoutTests/media/video-load-networkState.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-load-readyState.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-loop.html = FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-muted.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-no-autoplay.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-pause-empty-events.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-play-empty-events.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-played-collapse.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-played-ranges-1.html = FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-played-reset.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-seek-past-end-paused.html = PASS FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-seek-past-end-playing.html = PASS FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-seekable.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-seeking.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-size-intrinsic-scale.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-size.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-source-add-src.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-source-error.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-source-type-params.html = FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-source-type.html = PASS FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-src-change.html = FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-src-invalid-remove.html = FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-timeupdate-during-playback.html = FAIL CRASH TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-transformed.html = FAIL
+BUG16779 SKIP : LayoutTests/media/video-volume.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-zoom.html = FAIL
+BUG19779 SKIP : LayoutTests/media/video-no-audio.html = TIMEOUT
+BUG16779 SKIP : LayoutTests/media/audio-constructor-src.html = FAIL
+BUG16779 SKIP : LayoutTests/media/audio-constructor.html = FAIL
+BUG16779 SKIP : LayoutTests/media/media-load-event.html = FAIL
+BUG16779 SKIP : LayoutTests/media/audio-controls-rendering.html = FAIL
+BUG16779 SKIP : LayoutTests/media/video-controls-visible-audio-only.html = FAIL
+BUG16779 SKIP : LayoutTests/media/progress-event-at-least-one.html = FAIL TIMEOUT
+BUG16779 SKIP : LayoutTests/media/video-controls-rendering.html = FAIL
+BUG16779 SKIP : LayoutTests/media/video-zoom-controls.html = FAIL
 // We don't support MP2 audio so skip this test.
-BUG13907 SKIP : LayoutTests/media/audio-mpeg-supported.html = FAIL
+BUG16779 SKIP : LayoutTests/media/audio-mpeg-supported.html = FAIL
+// audio/3gpp mime type, does not play in Chromium yet.
+BUG16779 SKIP : LayoutTests/media/audio-data-url.html = FAIL
+
 // This test crashes in debug build not in release build.
 BUG13907 WIN : LayoutTests/media/video-can-play-type.html = FAIL
 // This test crashes in debug build.
@@ -680,6 +746,17 @@ BUG13907 WIN : LayoutTests/media/video-src-set.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src-source.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/controls-styling.html = FAIL
+BUG13907 SKIP : LayoutTests/media/controls-strict.html = FAIL
+BUG17397 SKIP WIN : LayoutTests/media/audio-no-installed-engines.html = FAIL
+
+BUG17497 WIN : LayoutTests/media/video-play-pause-exception.html = PASS CRASH FAIL
+
+// Very flakey after r24022. Not sure if because of that change though.
+BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT
+
+BUG13907 SKIP : LayoutTests/media/video-empty-source.html = TIMEOUT
+BUG13907 : LayoutTests/fast/layers/video-layer.html = FAIL
+BUG13907 WIN : LayoutTests/media/event-attributes.html = FAIL
 
 // XSS Auditor is not yet fully functional.
 BUG16237 : LayoutTests/http/tests/security/xssAuditor/script-tag-null-char.html = FAIL
@@ -2174,7 +2251,6 @@ BUG10530 : LayoutTests/fast/dom/Window/window-function-frame-getter-precedence.h
 BUG11122 LINUX : LayoutTests/fast/forms/caret-rtl.html = FAIL
 
 // New tests from WebKit Merge 42609:42671
-BUG4363 MAC LINUX : LayoutTests/fast/layers/video-layer.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/forms/input-text-scroll-left-on-blur.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/inline/25277-2.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/inline/25277.html = FAIL
@@ -2406,7 +2482,6 @@ BUG14885 : LayoutTests/fast/js/JSON-parse.html = FAIL
 BUG14946 : LayoutTests/fast/js/date-toisostring.html = FAIL
 
 // WebKit 44969:45017
-BUG15132 WIN : LayoutTests/media/event-attributes.html = FAIL
 
 // The Mac layout test buildbots haven't generated a package for 20 days so
 // the rebaselining tool isn't working for this  --agl
@@ -2421,12 +2496,6 @@ BUG15270 : LayoutTests/fast/js/excessive-comma-usage.html = FAIL
 
 // WebKit 45134:45176
 
-// WebKit 45203:45247
-BUG15460 : LayoutTests/media/video-controls-rendering.html = FAIL
-BUG15460 : LayoutTests/media/video-zoom-controls.html = FAIL
-// Already rebaselined for Linux and Windows, may just need rebaseline
-BUG15460 MAC : LayoutTests/media/audio-controls-rendering.html = FAIL
-BUG15460 MAC : LayoutTests/media/video-empty-source.html = FAIL
 
 // WebKit 45247:45270
 BUG15478 SKIP : LayoutTests/fast/frames/viewsource-on-image-file.html = FAIL
@@ -2450,8 +2519,6 @@ BUG11613 LINUX : LayoutTests/fast/overflow/scrollRevealButton.html = FAIL
 BUG15873 WIN LINUX : LayoutTests/fast/box-shadow/transform-fringing.html = FAIL
 BUG15873 WIN LINUX : LayoutTests/fast/transforms/shadows.html = FAIL
 
-// WebKit 45495:45535
-BUG15921 SKIP : LayoutTests/media/controls-strict.html = FAIL
 
 // Webkit 45555:45558
 // This was removed from test_expectations when it was passing after the Webkit merge 45495:45535.
@@ -2494,9 +2561,6 @@ BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
 BUG16675 MAC : LayoutTests/fast/loader/loadInProgress.html = FAIL
 BUG16675 MAC DEBUG : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = FAIL
 
-// New test, added in http://trac.webkit.org/changeset/45783
-// audio/3gpp mime type, does not play in Chromium yet.
-BUG13907 SKIP : LayoutTests/media/audio-data-url.html = FAIL
 
 // WebKit merge 42738:45840
 // New test, needs baseline.
@@ -2513,63 +2577,6 @@ BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom.html = F
 BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom-attributes.html = FAIL
 BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridDataSource-basic.html = FAIL
 
-// Disabling since try bots use Chromium FFmpeg DLLs, which means we can no
-// longer decode WebKit's test clips because they use H.264, AAC, etc.
-BUG16779 SKIP : LayoutTests/accessibility/media-element.html = TIMEOUT
-BUG16779 SKIP : LayoutTests/media/audio-constructor-autobuffer.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = TIMEOUT
-BUG16779 SKIP : LayoutTests/media/audio-delete-while-step-button-clicked.html = TIMEOUT
-BUG16779 SKIP : LayoutTests/media/controls-after-reload.html = TIMEOUT
-BUG16779 SKIP : LayoutTests/media/controls-drag-timebar.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/controls-right-click-on-timebar.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/media-startTime.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/progress-event-total.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/progress-event.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/remove-from-document.html = FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-append-source.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-aspect-ratio.html = FAIL
-BUG16779 SKIP : LayoutTests/media/video-autoplay.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-buffered.html = FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-canvas-source.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-click-dblckick-standalone.html = PASS TIMEOUT CRASH
-BUG16779 SKIP : LayoutTests/media/video-controls-transformed.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-controls-zoomed.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-controls.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-currentTime-set.html = FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-currentTime-set2.html = PASS FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-currentTime.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-display-toggle.html = FAIL TIMEOUT CRASH
-BUG16779 SKIP : LayoutTests/media/video-dom-autobuffer.html = PASS FAIL
-BUG16779 SKIP : LayoutTests/media/video-dom-autoplay.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-dom-src.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-error-abort.html = FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-layer-crash.html = FAIL
-BUG16779 SKIP : LayoutTests/media/video-load-networkState.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-load-readyState.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-loop.html = FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-muted.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-no-autoplay.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-pause-empty-events.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-play-empty-events.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-played-collapse.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-played-ranges-1.html = FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-played-reset.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-seek-past-end-paused.html = PASS FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-seek-past-end-playing.html = PASS FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-seekable.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-seeking.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-size-intrinsic-scale.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-size.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-source-add-src.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-source-error.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-source-type-params.html = FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-source-type.html = PASS FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-src-change.html = FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-src-invalid-remove.html = FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-timeupdate-during-playback.html = FAIL CRASH TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-transformed.html = FAIL
-BUG16779 SKIP : LayoutTests/media/video-volume.html = FAIL TIMEOUT
-BUG16779 SKIP : LayoutTests/media/video-zoom.html = FAIL
 
 // Failure since WebKit merge 45873:45916
 BUG16823 MAC : LayoutTests/editing/execCommand/4128080-2.html = FAIL
@@ -2667,7 +2674,6 @@ BUG17170 : LayoutTests/fast/dom/prototype-inheritance.html = FAIL
 BUG17255 LINUX WIN : LayoutTests/fast/box-shadow/spread.html = FAIL
 
 // Test failures from WebKit merge r46143:46194
-BUG17397 SKIP WIN : LayoutTests/media/audio-no-installed-engines.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/borders/borderRadiusDashed02.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/borders/borderRadiusDashed03.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/css/pseudo-cache-stale.html = FAIL
@@ -2678,7 +2684,6 @@ BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
 BUG17398 BUG20265 LINUX : LayoutTests/fast/forms/input-appearance-height.html = FAIL CRASH
 
 // Test failures from WebKit merge r46194:46229
-BUG17497 WIN : LayoutTests/media/video-play-pause-exception.html = PASS CRASH FAIL
 BUG17497 WIN DEBUG : LayoutTests/media/unsupported-rtsp.html = FAIL
 BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = FAIL
 
@@ -2758,8 +2763,6 @@ BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
 
 BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/002.xml = FAIL
-// Fail added with WebKit roll r47417:47528
-BUG19409 WIN : LayoutTests/media/video-empty-source.html = PASS TIMEOUT FAIL
 
 BUG19519 MAC DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
 
@@ -2774,14 +2777,9 @@ BUG19635 : LayoutTests/fast/harness/use-page-cache.html = FAIL
 
 // WebKit roll r47417:47528
 BUG19766 WIN LINUX : LayoutTests/fast/block/basic/quirk-percent-height-table-cell.html = FAIL
-BUG19766 WIN : LayoutTests/fast/layers/video-layer.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/media/audio-controls-rendering.html = FAIL
-BUG19766 WIN LINUX : LayoutTests/media/video-controls-visible-audio-only.html = FAIL
-BUG19766 LINUX : LayoutTests/media/video-empty-source.html = FAIL
 BUG19766 WIN : LayoutTests/svg/batik/text/textPosition.svg = FAIL
 BUG19766 WIN LINUX : LayoutTests/svg/batik/text/xmlSpace.svg = FAIL
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
-BUG19766 WIN : LayoutTests/media/video-no-audio.html = TIMEOUT
 BUG19766 : LayoutTests/storage/open-database-while-transaction-in-progress.html = TIMEOUT
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
 
@@ -2794,13 +2792,6 @@ BUG19888 WIN :  LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
 
 // Temporary supression while we investigate.
 BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
-
-// New test. WebKit change http://trac.webkit.org/changeset/47431
-// Does not work in Chromium yet (not supporting wav format)
-BUG19904 WIN : LayoutTests/media/progress-event-at-least-one.html = FAIL TIMEOUT
-
-// These became very flakey after r24022. Not sure if because of that change though.
-BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT
 
 // WebKit 47630:47646. These need rebaseline on Win and Linux.
 BUG_DIMICH WIN LINUX : LayoutTests/editing/execCommand/5190926.html = FAIL
