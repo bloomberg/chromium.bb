@@ -2602,6 +2602,8 @@
         'browser/debugger/devtools_remote_service.h',
         'browser/debugger/devtools_window.cc',
         'browser/debugger/devtools_window.h',
+        'browser/debugger/extension_ports_remote_service.cc',
+        'browser/debugger/extension_ports_remote_service.h',
         'browser/debugger/inspectable_tab_proxy.cc',
         'browser/debugger/inspectable_tab_proxy.h',
       ],

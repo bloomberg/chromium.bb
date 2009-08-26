@@ -240,9 +240,11 @@ void ExtensionMessageService::OpenChannelToExtensionOnUIThread(
   MessagePort receiver(
       profile_->GetExtensionProcessManager()->GetExtensionProcess(extension_id),
       MSG_ROUTING_CONTROL);
-  OpenChannelOnUIThreadImpl(source, source_process_id, source_routing_id,
-                            receiver, receiver_port_id, extension_id,
-                            channel_name);
+  TabContents* source_contents = tab_util::GetTabContentsByID(
+      source_process_id, source_routing_id);
+  OpenChannelOnUIThreadImpl(source, source_contents,
+                            receiver, receiver_port_id,
+                            extension_id, channel_name);
 }
 
 void ExtensionMessageService::OpenChannelToTabOnUIThread(
@@ -257,13 +259,15 @@ void ExtensionMessageService::OpenChannelToTabOnUIThread(
     receiver.sender = contents->render_view_host();
     receiver.routing_id = contents->render_view_host()->routing_id();
   }
-  OpenChannelOnUIThreadImpl(source, source_process_id, source_routing_id,
-                            receiver, receiver_port_id, extension_id,
-                            channel_name);
+  TabContents* source_contents = tab_util::GetTabContentsByID(
+      source_process_id, source_routing_id);
+  OpenChannelOnUIThreadImpl(source, source_contents,
+                            receiver, receiver_port_id,
+                            extension_id, channel_name);
 }
 
 bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
-    IPC::Message::Sender* source, int source_process_id, int source_routing_id,
+    IPC::Message::Sender* source, TabContents* source_contents,
     const MessagePort& receiver, int receiver_port_id,
     const std::string& extension_id, const std::string& channel_name) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
@@ -295,10 +299,9 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
 
   // Include info about the opener's tab (if it was a tab).
   std::string tab_json = "null";
-  TabContents* contents = tab_util::GetTabContentsByID(source_process_id,
-                                                       source_routing_id);
-  if (contents) {
-    DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(contents);
+  if (source_contents) {
+    DictionaryValue* tab_value =
+        ExtensionTabUtil::CreateTabValue(source_contents);
     JSONWriter::Write(tab_value, false, &tab_json);
   }
 
@@ -312,9 +315,9 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
   return true;
 }
 
-int ExtensionMessageService::OpenAutomationChannelToExtension(
-    int source_process_id, int routing_id, const std::string& extension_id,
-    const std::string& channel_name, IPC::Message::Sender* source) {
+int ExtensionMessageService::OpenSpecialChannelToExtension(
+    const std::string& extension_id, const std::string& channel_name,
+    IPC::Message::Sender* source) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
   DCHECK(profile_);
 
@@ -323,17 +326,34 @@ int ExtensionMessageService::OpenAutomationChannelToExtension(
   // Create a channel ID for both sides of the channel.
   AllocatePortIdPair(&port1_id, &port2_id);
 
-  // TODO(siggi): The source process- and routing ids are used to
-  //      describe the originating tab to the target extension.
-  //      This isn't really appropriate here, the originating tab
-  //      information should be supplied by the caller for
-  //      automation-initiated ports.
   MessagePort receiver(
-      profile_->GetExtensionProcessManager()->GetExtensionProcess(extension_id),
+      profile_->GetExtensionProcessManager()->
+      GetExtensionProcess(extension_id),
       MSG_ROUTING_CONTROL);
-  if (!OpenChannelOnUIThreadImpl(source, source_process_id, routing_id,
-                                 receiver, port2_id, extension_id,
-                                 channel_name))
+  if (!OpenChannelOnUIThreadImpl(
+      source, NULL, receiver, port2_id, extension_id, channel_name))
+    return -1;
+
+  return port1_id;
+}
+
+int ExtensionMessageService::OpenSpecialChannelToTab(
+    const std::string& extension_id, const std::string& channel_name,
+    TabContents* target_tab_contents, IPC::Message::Sender* source) {
+  DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
+  DCHECK(target_tab_contents);
+
+  int port1_id = -1;
+  int port2_id = -1;
+  // Create a channel ID for both sides of the channel.
+  AllocatePortIdPair(&port1_id, &port2_id);
+
+  MessagePort receiver(
+      target_tab_contents->render_view_host(),
+      target_tab_contents->render_view_host()->routing_id());
+  if (!OpenChannelOnUIThreadImpl(source, NULL,
+                                 receiver, port2_id,
+                                 extension_id, channel_name))
     return -1;
 
   return port1_id;

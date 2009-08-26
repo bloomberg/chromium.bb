@@ -7,6 +7,7 @@
 #include "chrome/browser/debugger/debugger_remote_service.h"
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/debugger/devtools_remote_service.h"
+#include "chrome/browser/debugger/extension_ports_remote_service.h"
 
 DebuggerWrapper::DebuggerWrapper(int port) {
   if (port > 0) {
@@ -17,6 +18,9 @@ DebuggerWrapper::DebuggerWrapper(int port) {
     proto_handler_->RegisterDestination(
         new DebuggerRemoteService(proto_handler_),
         DebuggerRemoteService::kToolName);
+    proto_handler_->RegisterDestination(
+        new ExtensionPortsRemoteService(proto_handler_),
+        ExtensionPortsRemoteService::kToolName);
     proto_handler_->Start();
   }
 }

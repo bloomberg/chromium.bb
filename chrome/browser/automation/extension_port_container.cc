@@ -65,11 +65,8 @@ bool ExtensionPortContainer::Connect(const std::string &extension_id,
                                      const std::string& channel_name) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
-  port_id_ = service_->OpenAutomationChannelToExtension(process_id,
-                                                        routing_id,
-                                                        extension_id,
-                                                        channel_name,
-                                                        this);
+  port_id_ = service_->OpenSpecialChannelToExtension(
+      extension_id, channel_name, this);
   if (port_id_ == -1) {
     // In this case a disconnect message has been dispatched.
     return false;

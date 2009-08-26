@@ -20,6 +20,7 @@ class MessageLoop;
 class Profile;
 class RenderProcessHost;
 class ResourceMessageFilter;
+class TabContents;
 class URLRequestContext;
 
 // This class manages message and event passing between renderer processes.
@@ -83,14 +84,27 @@ class ExtensionMessageService
   void DispatchEventToRenderers(
       const std::string& event_name, const std::string& event_args);
 
-  // Given an extension's ID, opens a channel between the given automation
-  // "port" and that extension.  Returns a channel ID to be used for posting
-  // messages between the processes, or -1 if the extension doesn't exist.
-  int OpenAutomationChannelToExtension(int source_process_id,
-                                       int routing_id,
-                                       const std::string& extension_id,
-                                       const std::string& channel_name,
-                                       IPC::Message::Sender* source);
+  // Given an extension ID, opens a channel between the given
+  // automation "port" or DevTools service and that extension. the
+  // channel will be open to the extension process hosting the
+  // background page and tool strip.
+  //
+  // Returns a port ID to be used for posting messages between the
+  // processes, or -1 if the extension doesn't exist.
+  int OpenSpecialChannelToExtension(
+      const std::string& extension_id, const std::string& channel_name,
+      IPC::Message::Sender* source);
+
+  // Given an extension ID, opens a channel between the given DevTools
+  // service and the content script for that extension running in the
+  // designated tab.
+  //
+  // Returns a port ID identifying the DevTools end of the channel, to
+  // be used for posting messages. May return -1 on failure, although
+  // the code doesn't detect whether the extension actually exists.
+  int OpenSpecialChannelToTab(
+      const std::string& extension_id, const std::string& channel_name,
+      TabContents* target_tab_contents, IPC::Message::Sender* source);
 
   // --- IO thread only:
 
@@ -138,11 +152,11 @@ class ExtensionMessageService
     int tab_id, const std::string& extension_id,
     const std::string& channel_name);
 
-  // Common between OpenChannelOnUIThread and OpenAutomationChannelToExtension.
+  // Common between OpenChannelOnUIThread and OpenSpecialChannelToExtension.
   bool OpenChannelOnUIThreadImpl(
-    IPC::Message::Sender* source, int source_process_id, int source_routing_id,
-    const MessagePort& receiver, int receiver_port_id,
-    const std::string& extension_id, const std::string& channel_name);
+      IPC::Message::Sender* source, TabContents* source_contents,
+      const MessagePort& receiver, int receiver_port_id,
+      const std::string& extension_id, const std::string& channel_name);
 
   // NotificationObserver interface.
   void Observe(NotificationType type,
