@@ -466,6 +466,14 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   void WaitForAppModalDialogToBeShown(IPC::Message* reply_message);
 
+  void GoBackBlockUntilNavigationsComplete(int handle,
+                                           int number_of_navigations,
+                                           IPC::Message* reply_message);
+
+  void GoForwardBlockUntilNavigationsComplete(int handle,
+                                              int number_of_navigations,
+                                              IPC::Message* reply_message);
+
   // Convert a tab handle into a TabContents. If |tab| is non-NULL a pointer
   // to the tab is also returned. Returns NULL in case of failure or if the tab
   // is not of the TabContents type.

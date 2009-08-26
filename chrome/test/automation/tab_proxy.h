@@ -120,9 +120,19 @@ class TabProxy : public AutomationResourceProxy {
   // hence blocks until the navigation completes.
   AutomationMsg_NavigationResponseValues GoBack();
 
+  // Equivalent to hitting the Back button. This is a synchronous call and
+  // hence blocks until the |number_of_navigations| navigations complete.
+  AutomationMsg_NavigationResponseValues GoBackBlockUntilNavigationsComplete(
+      int number_of_navigations);
+
   // Equivalent to hitting the Forward button. This is a synchronous call and
   // hence blocks until the navigation completes.
   AutomationMsg_NavigationResponseValues GoForward();
+
+  // Equivalent to hitting the Forward button. This is a synchronous call and
+  // hence blocks until the |number_of_navigations| navigations complete.
+  AutomationMsg_NavigationResponseValues GoForwardBlockUntilNavigationsComplete(
+      int number_of_navigations);
 
   // Equivalent to hitting the Reload button. This is a synchronous call and
   // hence blocks until the navigation completes.

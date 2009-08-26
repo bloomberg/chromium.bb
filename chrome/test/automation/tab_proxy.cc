@@ -160,22 +160,35 @@ bool TabProxy::NeedsAuth() const {
 }
 
 AutomationMsg_NavigationResponseValues TabProxy::GoBack() {
+  return GoBackBlockUntilNavigationsComplete(1);
+}
+
+AutomationMsg_NavigationResponseValues
+    TabProxy::GoBackBlockUntilNavigationsComplete(int number_of_navigations) {
   if (!is_valid())
     return AUTOMATION_MSG_NAVIGATION_ERROR;
 
   AutomationMsg_NavigationResponseValues navigate_response =
       AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_GoBack(0, handle_, &navigate_response));
+  sender_->Send(new AutomationMsg_GoBackBlockUntilNavigationsComplete(
+      0, handle_, number_of_navigations, &navigate_response));
   return navigate_response;
 }
 
 AutomationMsg_NavigationResponseValues TabProxy::GoForward() {
+  return GoForwardBlockUntilNavigationsComplete(1);
+}
+
+AutomationMsg_NavigationResponseValues
+    TabProxy::GoForwardBlockUntilNavigationsComplete(
+        int number_of_navigations) {
   if (!is_valid())
     return AUTOMATION_MSG_NAVIGATION_ERROR;
 
   AutomationMsg_NavigationResponseValues navigate_response =
       AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_GoForward(0, handle_, &navigate_response));
+  sender_->Send(new AutomationMsg_GoForwardBlockUntilNavigationsComplete(
+      0, handle_, number_of_navigations, &navigate_response));
   return navigate_response;
 }
 

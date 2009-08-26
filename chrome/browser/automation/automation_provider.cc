@@ -1164,6 +1164,12 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_WaitForAppModalDialogToBeShown,
         WaitForAppModalDialogToBeShown)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        AutomationMsg_GoBackBlockUntilNavigationsComplete,
+        GoBackBlockUntilNavigationsComplete)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        AutomationMsg_GoForwardBlockUntilNavigationsComplete,
+        GoForwardBlockUntilNavigationsComplete)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -2726,6 +2732,40 @@ void AutomationProvider::WaitForAppModalDialogToBeShown(
 
   // Set up an observer (it will delete itself).
   new AppModalDialogShownObserver(this, reply_message);
+}
+
+void AutomationProvider::GoBackBlockUntilNavigationsComplete(
+    int handle, int number_of_navigations, IPC::Message* reply_message) {
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    Browser* browser = FindAndActivateTab(tab);
+    if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
+      AddNavigationStatusListener(tab, reply_message, number_of_navigations);
+      browser->GoBack(CURRENT_TAB);
+      return;
+    }
+  }
+
+  AutomationMsg_GoBackBlockUntilNavigationsComplete::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
+  Send(reply_message);
+}
+
+void AutomationProvider::GoForwardBlockUntilNavigationsComplete(
+    int handle, int number_of_navigations, IPC::Message* reply_message) {
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    Browser* browser = FindAndActivateTab(tab);
+    if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
+      AddNavigationStatusListener(tab, reply_message, number_of_navigations);
+      browser->GoForward(CURRENT_TAB);
+      return;
+    }
+  }
+
+  AutomationMsg_GoForwardBlockUntilNavigationsComplete::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
+  Send(reply_message);
 }
 
 RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {

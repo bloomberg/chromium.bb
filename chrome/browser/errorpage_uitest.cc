@@ -33,13 +33,14 @@ class ErrorPageTest : public UITest {
 TEST_F(ErrorPageTest, DNSError_Basic) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
+  // The first navigation should fail, and the second one should be the error
+  // page.
   NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
 
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 }
 
-// Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
-TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack1) {
+TEST_F(ErrorPageTest, DNSError_GoBack1) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
@@ -53,8 +54,7 @@ TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack1) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-// Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
-TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2) {
+TEST_F(ErrorPageTest, DNSError_GoBack2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
@@ -64,15 +64,16 @@ TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2) {
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
 
-  GetActiveTab()->GoBack();
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  GetActiveTab()->GoBackBlockUntilNavigationsComplete(2);
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoBack();
 
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-// Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
-TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2AndForward) {
+TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
 
@@ -83,16 +84,19 @@ TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2AndForward) {
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
 
-  GetActiveTab()->GoBack();
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  GetActiveTab()->GoBackBlockUntilNavigationsComplete(2);
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoBack();
-  GetActiveTab()->GoForward();
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  GetActiveTab()->GoForwardBlockUntilNavigationsComplete(2);
 
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 }
 
-// Flaky, see http://crbug.com/19361 and http://crbug.com/19395.
-TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2Forward2) {
+TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
   // Test that a DNS error occuring in the main frame does not result in an
   // additional session history entry.
 
@@ -103,10 +107,14 @@ TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2Forward2) {
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
 
-  GetActiveTab()->GoBack();
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  GetActiveTab()->GoBackBlockUntilNavigationsComplete(2);
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoBack();
-  GetActiveTab()->GoForward();
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  GetActiveTab()->GoForwardBlockUntilNavigationsComplete(2);
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoForward();
 

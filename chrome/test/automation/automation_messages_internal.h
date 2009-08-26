@@ -82,6 +82,9 @@ IPC_BEGIN_MESSAGES(Automation)
   // the tab resource. The second parameter is the target url.  The return
   // value contains a status code which is nonnegative on success.
   // See AutomationMsg_NavigationResponseValues for the return value.
+  //
+  // Deprecated in favor of
+  // AutomationMsg_NavigateToURLBlockUntilNavigationsComplete.
   // TODO(phajdan.jr): Remove when the reference build gets updated.
   IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_NavigateToURL, int, GURL,
                              AutomationMsg_NavigationResponseValues)
@@ -95,19 +98,24 @@ IPC_BEGIN_MESSAGES(Automation)
 
   // This message notifies the AutomationProvider to navigate back in session
   // history in the tab with given handle. The first parameter is the handle
-  // to the tab resource.  The return value contains a status code which is
-  // nonnegative on success.
-  // see AutomationMsg_NavigationResponseValues for the navigation response
+  // to the tab resource.
+  // See AutomationMsg_NavigationResponseValues for the navigation response
   // values.
+  //
+  // Deprecated in favor of AutomationMsg_GoBackBlockUntilNavigationsComplete.
+  // TODO(phajdan.jr): Remove when the reference build gets updated.
   IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_GoBack, int,
                              AutomationMsg_NavigationResponseValues)
 
   // This message notifies the AutomationProvider to navigate forward in session
   // history in the tab with given handle. The first parameter is the handle
-  // to the tab resource.  The response contains a status code which is
-  // nonnegative on success.
-  // see AutomationMsg_NavigationResponseValues for the navigation response
+  // to the tab resource.
+  // See AutomationMsg_NavigationResponseValues for the navigation response
   // values.
+  //
+  // Deprecated in favor of
+  // AutomationMsg_GoForwardBlockUntilNavigationsComplete.
+  // TODO(phajdan.jr): Remove when the reference build gets updated.
   IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_GoForward, int,
                              AutomationMsg_NavigationResponseValues)
 
@@ -1039,5 +1047,25 @@ IPC_BEGIN_MESSAGES(Automation)
   // Response:
   //  - bool: whether the operation was successful
   IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_WaitForAppModalDialogToBeShown, bool)
+
+  // This message notifies the AutomationProvider to navigate back in session
+  // history in the tab with given handle. The first parameter is the handle
+  // to the tab resource. The second parameter is the number of navigations the
+  // provider will wait for.
+  // See AutomationMsg_NavigationResponseValues for the navigation response
+  // values.
+  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_GoBackBlockUntilNavigationsComplete,
+                             int, int,
+                             AutomationMsg_NavigationResponseValues)
+
+  // This message notifies the AutomationProvider to navigate forward in session
+  // history in the tab with given handle. The first parameter is the handle
+  // to the tab resource. The second parameter is the number of navigations
+  // the provider will wait for.
+  // See AutomationMsg_NavigationResponseValues for the navigation response
+  // values.
+  IPC_SYNC_MESSAGE_ROUTED2_1(
+      AutomationMsg_GoForwardBlockUntilNavigationsComplete, int, int,
+      AutomationMsg_NavigationResponseValues)
 
 IPC_END_MESSAGES(Automation)
