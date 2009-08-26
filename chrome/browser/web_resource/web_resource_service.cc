@@ -15,8 +15,8 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
-const wchar_t* WebResourceService::kWebResourceTitle = L"title";
-const wchar_t* WebResourceService::kWebResourceURL = L"url";
+const wchar_t* WebResourceService::kCurrentTipPrefName = L"current_tip";
+const wchar_t* WebResourceService::kTipCachePrefName = L"tips";
 
 class WebResourceService::WebResourceFetcher
     : public URLFetcher::Delegate {
@@ -130,7 +130,8 @@ class WebResourceService::UnpackerClient
         "Chrome crashed while trying to retrieve web resources.");
   }
 
-  virtual void OnUnpackWebResourceSucceeded(const ListValue& parsed_json) {
+  virtual void OnUnpackWebResourceSucceeded(
+      const DictionaryValue& parsed_json) {
     web_resource_service_->OnWebResourceUnpacked(parsed_json);
     Cleanup();
   }
@@ -167,9 +168,15 @@ class WebResourceService::UnpackerClient
   bool got_response_;
 };
 
-// TODO(mrc): make into a changeable preference.
+// TODO(mirandac): replace these servers tomorrow!
 const wchar_t* WebResourceService::kDefaultResourceServer =
-    L"http://www.google.com/labs/popgadget/world?view=json";
+#if defined(OS_MACOSX)
+  L"https://clients2.google.com/tools/service/npredir?r=chrometips_mac&hl=";
+#elif defined(OS_LINUX)
+  L"https://clients2.google.com/tools/service/npredir?r=chrometips_linux&hl=";
+#else
+  L"https://clients2.google.com/tools/service/npredir?r=chrometips_win&hl=";
+#endif
 
 const char* WebResourceService::kResourceDirectoryName =
     "Resources";
@@ -189,65 +196,57 @@ void WebResourceService::Init() {
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_ = new WebResourceFetcher(this);
   prefs_->RegisterStringPref(prefs::kNTPTipsCacheUpdate, L"0");
-  // TODO(mrc): make sure server name is valid.
-  web_resource_server_ = prefs_->HasPrefPath(prefs::kNTPTipsServer) ?
-      prefs_->GetString(prefs::kNTPTipsServer) :
-      kDefaultResourceServer;
+
+  // TODO(mirandac): allow for language change without wiping out prefs file.
+  if (prefs_->HasPrefPath(prefs::kNTPTipsServer)) {
+    web_resource_server_ = prefs_->GetString(prefs::kNTPTipsServer);
+  } else {
+    web_resource_server_ = kDefaultResourceServer;
+    web_resource_server_.append(
+      ASCIIToWide(g_browser_process->GetApplicationLocale()));
+  }
 }
 
 void WebResourceService::EndFetch() {
   in_fetch_ = false;
 }
 
-void WebResourceService::OnWebResourceUnpacked(const ListValue& parsed_json) {
+void WebResourceService::OnWebResourceUnpacked(
+  const DictionaryValue& parsed_json) {
   // Get dictionary of cached preferences.
   web_resource_cache_ =
       prefs_->GetMutableDictionary(prefs::kNTPTipsCache);
-  ListValue::const_iterator wr_iter = parsed_json.begin();
-  int wr_counter = 0;
 
-  // These values store the data for each new web resource item.
-  std::wstring result_snippet;
-  std::wstring result_url;
-  std::wstring result_source;
-  std::wstring result_title;
-  std::wstring result_title_type;
-  std::wstring result_thumbnail;
+  // The list of individual tips.
+  ListValue* tip_holder = new ListValue();
+  web_resource_cache_->Set(WebResourceService::kTipCachePrefName, tip_holder);
 
-  // Iterate through newly parsed preferences, replacing stale cache with
-  // new data.
-  // TODO(mrc): make this smarter, so it actually only replaces stale data,
-  // instead of overwriting the whole thing every time.
-  while (wr_iter != parsed_json.end() &&
-         wr_counter < kMaxResourceCacheSize) {
-    // Each item is stored in the form of a dictionary.
-    // See tips_handler.h for format (this will change until
-    // tip services are solidified!).
-    if (!(*wr_iter)->IsType(Value::TYPE_DICTIONARY))
-      continue;
-    DictionaryValue* wr_dict =
-        static_cast<DictionaryValue*>(*wr_iter);
+  DictionaryValue* topic_dict;
+  ListValue* answer_list;
+  std::wstring topic_id;
+  std::wstring inproduct;
+  int tip_counter = 0;
 
-    // Get next space for resource in prefs file.
-    Value* current_wr;
-    std::wstring wr_counter_str = IntToWString(wr_counter);
-    // Create space if it doesn't exist yet.
-    if (!web_resource_cache_->Get(wr_counter_str, &current_wr) ||
-      !current_wr->IsType(Value::TYPE_DICTIONARY)) {
-        current_wr = new DictionaryValue();
-        web_resource_cache_->Set(wr_counter_str, current_wr);
+  if (parsed_json.GetDictionary(L"topic", &topic_dict)) {
+    if (topic_dict->GetString(L"topic_id", &topic_id))
+      web_resource_cache_->SetString(L"topic_id", topic_id);
+    if (topic_dict->GetList(L"answers", &answer_list)) {
+      for (ListValue::const_iterator tip_iter = answer_list->begin();
+           tip_iter != answer_list->end(); ++tip_iter) {
+        if (!(*tip_iter)->IsType(Value::TYPE_DICTIONARY))
+          continue;
+        DictionaryValue* a_dic =
+            static_cast<DictionaryValue*>(*tip_iter);
+        if (a_dic->GetString(L"inproduct", &inproduct)) {
+          tip_holder->Append(Value::CreateStringValue(inproduct));
+        }
+        tip_counter++;
+      }
+      // If we have tips, set current tip to zero.
+      if (!inproduct.empty())
+        web_resource_cache_->SetInteger(
+          WebResourceService::kCurrentTipPrefName, 0);
     }
-    DictionaryValue* wr_cache_dict =
-      static_cast<DictionaryValue*>(current_wr);
-
-    // Update the resource cache.
-    if (wr_dict->GetString(kWebResourceURL, &result_url))
-      wr_cache_dict->SetString(kWebResourceURL, result_url);
-    if (wr_dict->GetString(kWebResourceTitle, &result_title))
-      wr_cache_dict->SetString(kWebResourceTitle, result_title);
-
-    wr_counter++;
-    wr_iter++;
   }
   EndFetch();
 }

@@ -682,6 +682,13 @@ html[dir='rtl'] #t4 {
   top: 183px;
 }
 
+/* tip line */
+#tip-line {
+  margin-top: 40px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
 /* small */
 
 @media (max-width: 920px) {

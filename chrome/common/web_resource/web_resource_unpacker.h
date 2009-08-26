@@ -17,7 +17,7 @@
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 
-class ListValue;
+class DictionaryValue;
 
 class WebResourceUnpacker {
  public:
@@ -35,7 +35,7 @@ class WebResourceUnpacker {
   const std::string& error_message() { return error_message_; }
 
   // Gets data which has been parsed by Run().
-  ListValue* parsed_json() {
+  DictionaryValue* parsed_json() {
     return parsed_json_.get();
   }
 
@@ -44,7 +44,7 @@ class WebResourceUnpacker {
   std::string resource_data_;
 
   // Holds the result of JSON parsing of resource_data_.
-  scoped_ptr<ListValue> parsed_json_;
+  scoped_ptr<DictionaryValue> parsed_json_;
 
   // Holds the last error message produced by Run().
   std::string error_message_;

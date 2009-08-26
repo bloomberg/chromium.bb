@@ -6,16 +6,6 @@
 // has been stored in the user's preferences file.  Used mainly
 // by the suggestions and tips area of the new tab page.
 
-// Current sketch of tip cache format, hardcoded for popgadget data in
-// basic text form:
-
-// "tip_cache": {
-//    "0": {
-//        "title": text giving title of item
-//        "url": link to item's page
-//    },
-//    [up to number of items in kMaxWebResourceCacheSize]
-
 #ifndef CHROME_BROWSER_DOM_UI_TIPS_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_TIPS_HANDLER_H_
 
@@ -49,7 +39,7 @@ class TipsHandler : public DOMMessageHandler {
   DOMUI* dom_ui_;
 
   // Filled with data from cache in preferences.
-  const DictionaryValue* tips_cache_;
+  DictionaryValue* tips_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(TipsHandler);
 };

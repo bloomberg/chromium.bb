@@ -25,11 +25,11 @@ bool WebResourceUnpacker::Run() {
       error_message_ = kInvalidDataTypeError;
       return false;
     }
-    if (!value->IsType(Value::TYPE_LIST)) {
+    if (!value->IsType(Value::TYPE_DICTIONARY)) {
       error_message_ = kUnexpectedJSONFormatError;
       return false;
     }
-    parsed_json_.reset(static_cast<ListValue*>(value.release()));
+    parsed_json_.reset(static_cast<DictionaryValue*>(value.release()));
     return true;
   }
   error_message_ = kInvalidDataTypeError;

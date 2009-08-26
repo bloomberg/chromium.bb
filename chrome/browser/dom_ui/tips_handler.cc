@@ -12,19 +12,10 @@
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
-namespace {
-
-  // TODO(mrc): l10n
-  // This title should only appear the very first time Chrome is run with
-  // web resources enabled; otherwise the cache should be populated.
-  static const wchar_t* kTipsTitleAtStartup =
-      L"Tips and recommendations to help you discover interesting websites.";
-}
-
 DOMMessageHandler* TipsHandler::Attach(DOMUI* dom_ui) {
   dom_ui_ = dom_ui;
   tips_cache_ = dom_ui_->GetProfile()->GetPrefs()->
-      GetDictionary(prefs::kNTPTipsCache);
+      GetMutableDictionary(prefs::kNTPTipsCache);
   return DOMMessageHandler::Attach(dom_ui);
 }
 
@@ -38,36 +29,26 @@ void TipsHandler::HandleGetTips(const Value* content) {
   ListValue list_value;
 
   // Holds the web resource data found in the preferences cache.
-  DictionaryValue* wr_dict;
+  ListValue* wr_list;
 
-  // These values hold the data for each web resource item.  As the web
-  // resource server solidifies, these may change.
-  std::wstring title;
-  std::wstring thumb;
-  std::wstring source;
-  std::wstring snipp;
-  std::wstring url;
+  // These values hold the data for each web resource item.
+  int current_tip_index;
+  std::string current_tip;
 
-  // This should only be true on the very first Chrome run; otherwise,
-  // the cache should be populated.
-  if (tips_cache_ == NULL || tips_cache_->GetSize() < 1) {
-    title = kTipsTitleAtStartup;
-    DictionaryValue* tip_dict = new DictionaryValue();
-    tip_dict->SetString(WebResourceService::kWebResourceTitle, title);
-    tip_dict->SetString(WebResourceService::kWebResourceURL, L"");
-    list_value.Append(tip_dict);
-  } else {
-    int tip_counter = 0;
-    while (tips_cache_->GetDictionary(IntToWString(tip_counter++), &wr_dict)) {
-      if (wr_dict &&
-          wr_dict->GetSize() > 0 &&
-          wr_dict->GetString(WebResourceService::kWebResourceTitle, &title) &&
-          wr_dict->GetString(WebResourceService::kWebResourceURL, &url) &&
-          IsValidURL(url)) {
+  if (tips_cache_ != NULL && tips_cache_->GetSize() >= 0) {
+    if (tips_cache_->GetInteger(
+        WebResourceService::kCurrentTipPrefName, &current_tip_index) &&
+        tips_cache_->GetList(
+        WebResourceService::kTipCachePrefName, &wr_list)) {
+      if (wr_list && wr_list->GetSize() > 0)
+      if (wr_list->GetSize() <= static_cast<size_t>(current_tip_index))
+        current_tip_index = 0;
+      if (wr_list->GetString(current_tip_index, &current_tip)) {
         DictionaryValue* tip_dict = new DictionaryValue();
-        tip_dict->SetString(WebResourceService::kWebResourceTitle, title);
-        tip_dict->SetString(WebResourceService::kWebResourceURL, url);
+        tip_dict->SetString(L"tip_html_text", current_tip);
         list_value.Append(tip_dict);
+        tips_cache_->SetInteger(WebResourceService::kCurrentTipPrefName,
+                                current_tip_index + 1);
       }
     }
   }

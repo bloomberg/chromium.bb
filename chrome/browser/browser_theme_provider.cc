@@ -116,7 +116,7 @@ const SkColor BrowserThemeProvider::kDefaultColorNTPSection =
 const SkColor BrowserThemeProvider::kDefaultColorNTPSectionText =
     SkColorSetRGB(0, 0, 0);
 const SkColor BrowserThemeProvider::kDefaultColorNTPSectionLink =
-    SkColorSetRGB(16, 50, 105);
+    SkColorSetRGB(0, 0, 204);
 const SkColor BrowserThemeProvider::kDefaultColorControlBackground = NULL;
 const SkColor BrowserThemeProvider::kDefaultColorButtonBackground = NULL;
 

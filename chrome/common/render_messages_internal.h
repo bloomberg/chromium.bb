@@ -1653,7 +1653,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Reply when the utility process is done unpacking and parsing JSON data
   // from a web resource.
   IPC_MESSAGE_CONTROL1(UtilityHostMsg_UnpackWebResource_Succeeded,
-                       ListValue /* json data */)
+                       DictionaryValue /* json data */)
 
   // Reply when the utility process has failed while unpacking and parsing a
   // web resource.  |error_message| is a user-readable explanation of what

@@ -28,16 +28,11 @@ class WebResourceService
   // the process that will parse the JSON, and then update the cache.
   void UpdateResourceCache(const std::string& json_data);
 
-  // Right now, these values correspond to data pulled from the popgadget
-  // JSON feed.  Once we have decided on the final format for the
-  // web resources servers, these will probably change.
-  static const wchar_t* kWebResourceTitle;
-  static const wchar_t* kWebResourceURL;
+  static const wchar_t* kTipDictionaryPrefName;
+  static const wchar_t* kCurrentTipPrefName;
+  static const wchar_t* kTipCachePrefName;
 
   // Default server from which to gather resources.
-  // For now, hard-coded to test JSON data hosted on chromium.org.
-  // Starting 6/22, poptart server will be ready to host data.
-  // Future: more servers and different kinds of data will be served.
   static const wchar_t* kDefaultResourceServer;
 
  private:
@@ -52,7 +47,7 @@ class WebResourceService
   void EndFetch();
 
   // Puts parsed json data in the right places, and writes to prefs file.
-  void OnWebResourceUnpacked(const ListValue& parsed_json);
+  void OnWebResourceUnpacked(const DictionaryValue& parsed_json);
 
   // We need to be able to load parsed resource data into preferences file,
   // and get proper install directory.
@@ -85,8 +80,8 @@ class WebResourceService
   // Delay on first fetch so we don't interfere with startup.
   static const int kStartResourceFetchDelay = 5000;
 
-  // Delay between calls to update the cache (4 hours).
-  static const int kCacheUpdateDelay = 4 * 60 * 60 * 1000;
+  // Delay between calls to update the cache (48 hours).
+  static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
 
   // Name of directory inside the profile where we will store resource-related
   // data (for now, thumbnail images).

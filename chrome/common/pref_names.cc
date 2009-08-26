@@ -561,7 +561,7 @@ const wchar_t kNTPTipsCache[] = L"ntp.tips_cache";
 const wchar_t kNTPTipsCacheUpdate[] = L"ntp.tips_cache_update";
 
 // Last server used to fill tips_cache.
-const wchar_t kNTPTipsServer[] = L"ntp.web_resource_server";
+const wchar_t kNTPTipsServer[] = L"ntp.tips_server";
 
 // Which sections should be visible on the new tab page
 // 1 - Show the most visited sites in a grid

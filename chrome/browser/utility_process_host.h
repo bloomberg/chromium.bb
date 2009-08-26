@@ -48,7 +48,7 @@ class UtilityProcessHost : public ChildProcessHost {
     // contains the parsed list of web resource items downloaded from the
     // web resource server.
     virtual void OnUnpackWebResourceSucceeded(
-        const ListValue& json_data) {}
+        const DictionaryValue& json_data) {}
 
     // Called when an error occurred while parsing the resource data.
     // |error_message| contains a description of the problem.
