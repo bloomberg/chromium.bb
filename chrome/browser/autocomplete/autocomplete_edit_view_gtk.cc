@@ -596,13 +596,15 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
                         event->keyval == GDK_ISO_Enter ||
                         event->keyval == GDK_KP_Enter);
 
-  std::wstring original_text;
+  gchar* original_text = NULL;
 
   // Enter key will have special behavior if it's not handled by IME.
   // We need save the original content of |text_buffer_| and restore it when
   // necessary, because GtkTextView might alter the content.
   if (enter_pressed) {
-    original_text = GetText();
+    GtkTextIter start, end;
+    gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+    original_text = gtk_text_buffer_get_text(text_buffer_, &start, &end, FALSE);
     // Reset |char_inserted_|, which may be set in the "insert-text" signal
     // handler, so that we'll know if an Enter key event was handled by IME.
     char_inserted_ = 0;
@@ -628,7 +630,13 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
   if (enter_pressed && (char_inserted_ == '\n' || char_inserted_ == '\r')) {
     bool alt_held = (event->state & GDK_MOD1_MASK);
     // Revert the original text in case the text has been changed.
-    SetUserText(original_text);
+    // Call gtk_text_buffer_{begin|end}_user_action() to make sure |model_| will
+    // be updated correctly.
+    // Note: SetUserText() does not work here, it'll reset the keyword state.
+    DCHECK(original_text);
+    gtk_text_buffer_begin_user_action(text_buffer_);
+    gtk_text_buffer_set_text(text_buffer_, original_text, -1);
+    gtk_text_buffer_end_user_action(text_buffer_);
     model_->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
     result = TRUE;
   } else if (!result && event->keyval == GDK_Escape &&
@@ -643,6 +651,9 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
     // the control-key state is changed.
     model_->OnControlKeyChanged(true);
   }
+
+  if (original_text)
+    g_free(original_text);
 
   // If the key event is not handled by |text_view_| or us, then we need to
   // propagate the key event up to parent widgets by returning FALSE.
