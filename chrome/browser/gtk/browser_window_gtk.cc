@@ -1823,9 +1823,15 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
 
   // Handle left, middle and right clicks.  In particular, we care about clicks
   // in the custom frame border and clicks in the titlebar.
+
+  // Make the button press coordinate relative to the browser window.
+  int win_x, win_y;
+  gdk_window_get_origin(GTK_WIDGET(browser->window_)->window, &win_x, &win_y);
+
   GdkWindowEdge edge;
-  bool has_hit_edge = browser->GetWindowEdge(static_cast<int>(event->x),
-      static_cast<int>(event->y), &edge);
+  gfx::Point point(event->x_root - win_x, event->y_root - win_y);
+  bool has_hit_edge = browser->GetWindowEdge(point.x(), point.y(), &edge);
+
   // Ignore clicks that are in/below the browser toolbar.
   GtkWidget* toolbar = browser->toolbar_->widget();
   if (!GTK_WIDGET_VISIBLE(toolbar)) {
