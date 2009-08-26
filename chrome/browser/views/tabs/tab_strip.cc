@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -227,7 +227,7 @@ class TabStrip::TabAnimation : public AnimationDelegate {
 
   const Type type_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(TabAnimation);
+  DISALLOW_COPY_AND_ASSIGN(TabAnimation);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -268,7 +268,7 @@ class TabStrip::InsertTabAnimation : public TabStrip::TabAnimation {
  private:
   int index_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(InsertTabAnimation);
+  DISALLOW_COPY_AND_ASSIGN(InsertTabAnimation);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -339,22 +339,18 @@ class TabStrip::RemoveTabAnimation : public TabStrip::TabAnimation {
     }
 
 #if defined(OS_WIN)
-    // NOTE: It is important that this fake WM_MOUSEMOVE not move the mouse
-    // anywhere, so we need to know the current mouse position.  Hence, we use
-    // GetCursorPos instead of GetMessagePos.
-    POINT pt;
-    GetCursorPos(&pt);
+    // Force the close button (that slides under the mouse) to highlight by
+    // saying the mouse just moved, but sending the same coordinates.
+    DWORD pos = GetMessagePos();
+    POINT cursor_point = {GET_X_LPARAM(pos), GET_Y_LPARAM(pos)};
     views::Widget* widget = tabstrip_->GetWidget();
-    RECT wr;
-    GetWindowRect(widget->GetNativeView(), &wr);
-    pt.x -= wr.left;
-    pt.y -= wr.top;
+    MapWindowPoints(NULL, widget->GetNativeView(), &cursor_point, 1);
 
     static_cast<views::WidgetWin*>(widget)->ResetLastMouseMoveFlag();
     // Return to message loop - otherwise we may disrupt some operation that's
     // in progress.
-    PostMessage(widget->GetNativeView(), WM_MOUSEMOVE, 0,
-                MAKELPARAM(pt.x, pt.y));
+    SendMessage(widget->GetNativeView(), WM_MOUSEMOVE, 0,
+                MAKELPARAM(cursor_point.x, cursor_point.y));
 #else
     NOTIMPLEMENTED();
 #endif
@@ -362,7 +358,7 @@ class TabStrip::RemoveTabAnimation : public TabStrip::TabAnimation {
 
   int index_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(RemoveTabAnimation);
+  DISALLOW_COPY_AND_ASSIGN(RemoveTabAnimation);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -416,7 +412,7 @@ class TabStrip::MoveTabAnimation : public TabStrip::TabAnimation {
   gfx::Rect start_tab_a_bounds_;
   gfx::Rect start_tab_b_bounds_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(MoveTabAnimation);
+  DISALLOW_COPY_AND_ASSIGN(MoveTabAnimation);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -471,7 +467,7 @@ class TabStrip::ResizeLayoutAnimation : public TabStrip::TabAnimation {
     }
   }
 
-  DISALLOW_EVIL_CONSTRUCTORS(ResizeLayoutAnimation);
+  DISALLOW_COPY_AND_ASSIGN(ResizeLayoutAnimation);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
