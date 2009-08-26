@@ -214,7 +214,7 @@
                 'o3d_main_lib_type': 'loadable_module',
               },
               {
-                'o3d_main_lib_type': 'dynamic_library',
+                'o3d_main_lib_type': 'static_library',
               },
             ],
           ],
