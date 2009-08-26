@@ -7,18 +7,21 @@
     var pageLoadStartTime = Date.now();
   </script>
   <style>
+    body {
+      font-family: arial;
+      font-size: 13px;
+    }
     .test-link {
       white-space: normal;
+    }
+    .test-link, .options-container {
+      padding: 0 2px;
     }
     .test-table {
       white-space: nowrap;
     }
     .test-table {
       width: 100%;
-    }
-    .test-table td {
-      font-size: 13px;
-      padding: 0 2px;
     }
     .test-table tr {
       border: 1px solid red;
@@ -36,6 +39,7 @@
       text-decoration: underline;
       white-space: nowrap;
       display: inline-block;
+      cursor: pointer;
     }
     .table-header-content,
     .table-header-content * {
@@ -44,6 +48,7 @@
     .table-header-content * {
       -webkit-box-flex: 1;
       cursor: pointer;
+      white-space: normal;
     }
     .legend * {
       white-space: nowrap;
@@ -51,6 +56,9 @@
     }
     .results {
       cursor: pointer;
+      padding: 0;
+      font-size: 10px;
+      text-align: center;
     }
     .legend * {
       padding: 0 3px;
@@ -95,10 +103,12 @@
       font-size: 10px;
     }
     .current-builder {
-      text-decoration: none;
-      color: black;
       font-weight: bold;
     }
+  </style>
+
+  <style id="wont-fix-style">
+    /* Will be popuplated with the display state for wontfix tests.*/
   </style>
 
   <script>
@@ -138,9 +148,8 @@
     'Webkit (dbg)(1)': 'webkit-dbg-1',
     'Webkit (dbg)(2)': 'webkit-dbg-2',
     'Webkit (dbg)(3)': 'webkit-dbg-3',
-    // TODO(ojan): Comment out linux builders until we have permissions on the
-    // JSON files set correctly.
-    // 'Webkit Linux': 'webkit-rel-linux',
+    'Webkit Linux': 'webkit-rel-linux',
+    // TODO(ojan): Comment out linux debug builders until they archive results.
     // 'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
     // 'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',
     // 'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
@@ -150,38 +159,15 @@
     'Webkit Mac10.5 (dbg)(3)': 'webkit-dbg-mac5-3'
   };
 
-  /* TODO
-  PYTHON
-  -have bots copy JSON files for build results + expectations to the right
-      places. Include the test type in the path so we can reuse this HTML for
-      other tests (e.g. UI tests)
-  -get the build_number and builder_name from the bot
-  -make file paths local
-
-  JS
-  -make getPathToBuilderResultsFile point to the actual bots
-  -UNEXPECTED RESULTS PRINTS WRONG THING
-   (e.g. undefined for "N" and SIMPLIFIED for "S")
-
-  JS - Nice-to-haves
-  -highlight expected results that never happen
-  -show range of build numbers that are included
-  -checkboxes to hide defer/wontfix tests
-  */
   var resultsByBuilder = {};
   var expectationsByTest = {};
   function ADD_RESULTS(builds) {
     for (var builderName in builds) {
-      // TODO(ojan): Remove this if statement once all the bots have been
-      // clobbered. For now, skip this dummy builder that got added to the
-      // results JSON.
-      if (builderName != "WebKitBuilder")
-        resultsByBuilder[builderName] = builds[builderName];
+      resultsByBuilder[builderName] = builds[builderName];
     }
   }
   var BUILDER_BASE = 'http://build.chromium.org/buildbot/';
   function getPathToBuilderResultsFile(builderName) {
-    // TODO(ojan): Make this match the actual path to the bots.
     return BUILDER_BASE + testType + '/' + builders[builderName] + '/';
   }
   for (var builderName in builders) {
@@ -218,7 +204,7 @@
     'N': 'NO DATA'
   };
   var TABLE_HEADERS = ['test', 'modifiers', 'expectations',
-      'unexpected results', 'slowest run',
+      'missing', 'extra', 'slowest run',
       'flakiness (numbers are runtimes in seconds)'];
   var PLATFORMS = {'MAC': 'MAC', 'LINUX': 'LINUX', 'WIN': 'WIN'};
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
@@ -238,10 +224,11 @@
       flips: 0,
       slowestTime: 0,
       meetsExpectations: true,
-      // Map of test results that don't match their expectations
-      unexpectedExpectations: {},
-      // Sorted string of unexpected expectations
-      unexpected: '',
+      isWontFix: false,
+      // Sorted string of missing expectations
+      missing: '',
+      // String of extra expectations (i.e. expectations that never occur).
+      extra: '',
       // HTML for expectations for this test for all platforms
       expectationsHTML: '',
       // HTML for modifiers for this test for all platforms
@@ -251,7 +238,7 @@
 
   function getMatchingElement(stringToMatch, elementsMap) {
     for (var element in elementsMap) {
-      if (stringToMatch.indexOf(elementsMap[element]) != -1)
+      if (stringContains(stringToMatch, elementsMap[element]))
         return element;
     }
   }
@@ -307,9 +294,12 @@
     // For the purposes of comparing against the expecations of a test,
     // consider image/simplified diff failures as just failures since
     // the test_expectations file doesn't treat them specially.
-    if (result == 'F' || result == 'S' || result == 'I') {
+    if (result == 'F' || result == 'S' || result == 'I')
       return 'FAIL';
-    }
+
+    if (result == 'N' || result == 'O')
+      return '';
+
     return EXPECTATIONS_MAP[result];
   }
 
@@ -339,7 +329,8 @@
         // any test.
         for (var test in allTests) {
           if (stringContains(test, path) &&
-              (!testPrefixes[test] || testPrefixes[test].indexOf(path) == -1)) {
+              (!testPrefixes[test] ||
+               !stringContains(testPrefixes[test], path))) {
             expectationsMap[test] = expectationsByTest[path];
             testPrefixes[test] = path;
           }
@@ -363,14 +354,14 @@
           if (hasPlatformAndBuildTypeForBuilder(builderName, modifiers)) {
             resultsForTest.expectations = expectations;
             resultsForTest.modifiers = modifiers;
+            resultsForTest.isWontFix = stringContains(modifiers, 'WONTFIX');
           } else {
-            // TODO: add classname to the ones that don't apply for this
-            // platform in getHTMLForOptionsList so they can be greyed out
             expectationsHTMLArray.push(
                 '<div class="option different-platform">' + expectations +
                 '</div>');
             modifiersHTMLArray.push(
-                '<div class="option different-platform">' + modifiers +
+                '<div class="option different-platform">' +
+                getHtmlForModifiers(modifiers) +
                 '</div>');
           }
         }
@@ -379,7 +370,7 @@
           expectationsHTMLArray.push('<div class="option">' +
               resultsForTest.expectations + '</div>');
           modifiersHTMLArray.push('<div class="option">' +
-              resultsForTest.modifiers + '</div>');
+              getHtmlForModifiers(resultsForTest.modifiers) + '</div>');
         }
 
         resultsForTest.expectationsHTML +=
@@ -391,29 +382,43 @@
       var results = resultsByBuilder[builderName].tests[test].results.split('');
 
       var unexpectedExpectations = [];
+      var resultsMap = {}
       for (var i = 0; i < results.length - 1; i++) {
         if (results[i] != results[i + 1])
           resultsForTest.flips++;
 
         var expectation = getExpectationsFileStringForResult(results[i]);
-        if (!hasExpectations(resultsForTest.expectations, expectation)) {
-          unexpectedExpectations[expectation] = true;
-          resultsForTest.meetsExpectations = false;
-        }
+        resultsMap[expectation] = true;
       }
+
+      var expectationsArray = resultsForTest.expectations ?
+          resultsForTest.expectations.split(' ') : [];
+      var extraExpectations = expectationsArray.filter(
+          function(element) {
+              return element && !resultsMap[element] &&
+                  !stringContains(element, 'BUG');
+          });
+
+      var missingExpectations = [];
+      for (var result in resultsMap) {
+        var hasExpectation = false;
+        for (var i = 0; i < expectationsArray.length; i++) {
+          if (result == expectationsArray[i])
+            hasExpectation = true;
+        }
+        if (!hasExpectation)
+          missingExpectations.push(result);
+      }
+
+      resultsForTest.meetsExpectations =
+          !missingExpectations.length && !extraExpectations.length;
+      resultsForTest.missing = missingExpectations.sort().join(' ');
+      resultsForTest.extra = extraExpectations.sort().join(' ');
 
       var times = resultsByBuilder[builderName].tests[test].times;
       resultsForTest.slowestTime = Math.max.apply(null, times)
 
       resultsForTest.html = getHtmlForIndividualTest(builderName, test);
-
-      var expectations = [];
-      for (var expectation in unexpectedExpectations) {
-        expectations.push(expectation);
-      }
-      if (expectations.length) {
-        resultsForTest.unexpected = expectations.join(' ');
-      }
 
       if (didTestPassAllRuns(builderName, test)) {
         resultsForTest.meetsExpectations =
@@ -433,7 +438,25 @@
     if (!expectations)
       return false;
 
-    return expectations.indexOf(resultName) != -1;
+    return stringContains(expectations, resultName);
+  }
+
+  var bugUrlPrefix = '<a href="http://';
+  var bugUrlPostfix = '/$1">BUG$1</a> ';
+  var internalBugReplaceValue = bugUrlPrefix + 'b' + bugUrlPostfix;
+  var externalBugReplaceValue = bugUrlPrefix + 'crbug.com' + bugUrlPostfix;
+
+  /**
+   * Returns the modifiers with BUG modifiers linking to the bug.
+   * Bugs with 4 or 5 digits are crbug.com bugs. Bugs with 6 or 7 digits
+   * are internal google bugs.
+   */
+  function getHtmlForModifiers(modifiers) {
+    modifiers = modifiers.replace(/BUG(\d{4})(\ |$)/, externalBugReplaceValue);
+    modifiers = modifiers.replace(/BUG(\d{5})(\ |$)/, externalBugReplaceValue);
+    modifiers = modifiers.replace(/BUG(\d{6})(\ |$)/, internalBugReplaceValue);
+    modifiers = modifiers.replace(/BUG(\d{7})(\ |$)/, internalBugReplaceValue);
+    return modifiers
   }
 
   function didTestPassAllRuns(builderName, testPath) {
@@ -455,10 +478,7 @@
     var buildNumbers = resultsByBuilder[builderName].buildNumbers;
     for (var i = 0; i < results.length; i++) {
       var buildNumber = buildNumbers[i];
-      // To avoid noise, only print times that are larger than 1 second.
-      // TODO: See if this is necessary. If it is, look into tweaking the
-      // threshold lower/higher.
-      var innerHTML = times[i] > 1 ? times[i] : '&nbsp;';
+      var innerHTML = times[i] > 0 ? times[i] : '&nbsp;';
       html += '<td title="Build:' + buildNumber + '" class="results ' +
           results[i] + '" onclick=\'loadBuilderPageForBuildNumber("' +
           builderName + '","' + buildNumber + '")\'>' + innerHTML + '</td>';
@@ -473,15 +493,23 @@
     sortTests(results, sort, order);
     for (var i = 0; i < results.length; i++) {
       var test = results[i];
-      html += '<tr class=' +
-        (test.meetsExpectations ? '' : 'expectation-mismatch') +
-        // TODO: If a test is a chrome/ or a pending/ test, point to
+
+      var classes = [];
+      if (test.meetsExpectations)
+        classes.push('expectation-mismatch');
+
+      if (test.isWontFix)
+        classes.push('wontfix');
+
+      html += '<tr class="' + classes.join(' ') +
+        // TODO(ojan): If a test is a chrome/ or a pending/ test, point to
         // src.chromium.org instead of trac.webkit.org.
-        '><td class=test-link><a href="' + TEST_URL_BASE_PATH + test.test +
+        '"><td class=test-link><a href="' + TEST_URL_BASE_PATH + test.test +
         '">' + test.test + '</a>' +
         '</td><td class=options-container>' + test.modifiersHTML +
         '</td><td class=options-container>' + test.expectationsHTML +
-        '</td><td>' + test.unexpected +
+        '</td><td>' + test.missing +
+        '</td><td>' + test.extra +
         '</td><td>' + (test.slowestTime ? test.slowestTime + 's' : '') +
         '</td>' +
         test.html +
@@ -519,9 +547,10 @@
 
     html += '<div class=builders>';
     for (var builder in builders) {
-      var className = builder == currentState.builder ? 'current-builder' : '';
-      html += '<span class="' + (className || '') +
-          ' link" onclick=\'setState("builder", "' + builder + '")\'>' +
+      var className = builder == currentState.builder ?
+          'current-builder' : 'link';
+      html += '<span class=' + className +
+          ' onclick=\'setState("builder", "' + builder + '")\'>' +
           builder + '</span>';
     }
     html += '</div>';
@@ -532,7 +561,10 @@
           EXPECTATIONS_MAP[expectation] + '</span>';
     }
     html += '<span class=expectation-mismatch>WRONG EXPECTATIONS</span>' +
-        '</div><center><b>All columns are sortable</b></center></div>';
+        '</div><b>All columns are sortable</b> | ' +
+        '<input type=checkbox id=wont-fix-input ' +
+        'onclick="updateWontFixDisplay()">' +
+        'Show WONTFIX tests.</div>';
     return html;
   }
 
@@ -612,17 +644,15 @@
     currentPlatformAndBuildType = null;
     oldLocation = window.location.toString();
     var hash = window.location.hash;
-    var builderName;
     if (hash) {
       var hashParts = hash.slice(1).split('&');
       for (var i = 0; i < hashParts.length; i++) {
         var itemParts = hashParts[i].split('=');
-        // TODO: Validate itemParts[0]
         currentState[itemParts[0]] = itemParts[1];
       }
     }
-    if (!(currentState.builder in resultsByBuilder)) {
-      for (builder in resultsByBuilder) {
+    if (!currentState.builder) {
+      for (var builder in builders) {
         currentState.builder = builder;
         break;
       }
@@ -635,14 +665,37 @@
     for (var i = 0; i < ths.length; i++) {
       ths[i].addEventListener('click', changeSort, false);
     }
+
+    document.getElementById('wont-fix-input').checked =
+        currentState.showWontFix == 'true';
+    updateWontFixDisplay();
   }
 
+  function updateWontFixDisplay() {
+    setState('showWontFix', document.getElementById('wont-fix-input').checked);
+    var wontFixStyle = currentState.showWontFix ? '' :
+        '.wontfix{display:none}';
+    var wontFixInput = document.getElementById('wont-fix-style');
+    if (stringContains(navigator.userAgent, 'WebKit')) {
+      wontFixInput.textContent = wontFixStyle;
+    } else {
+      wontFixInput.innerHTML = wontFixStyle;
+    }
+  }
+
+  var suppressPageReload = false;
+
   function setState(key, value) {
+    // We want to suppress regenerating the page if showWontFix is modified
+    // since we only need to modify a style element for that.
+    // We'll regenerate the page the next time state is modified.
+    suppressPageReload = key == 'showWontFix';
     currentState[key] = value;
     window.location.replace(window.location.pathname + '#' +
         'builder=' + currentState.builder + '&' +
         'sortColumn=' + currentState.sortColumn + '&' +
-        'sortOrder=' + currentState.sortOrder);
+        'sortOrder=' + currentState.sortOrder + '&' +
+        'showWontFix=' + currentState.showWontFix);
   }
 
   window.onload = function() {
@@ -650,7 +703,7 @@
     // Poll for hash changes.
     // TODO: Use hashchange event when it is supported.
     setInterval(function() {
-      if (oldLocation != window.location) {
+      if (!suppressPageReload && oldLocation != window.location) {
         var generatePageTime = Date.now();
         generatePage();
         generatePageTime = Date.now() - generatePageTime;
