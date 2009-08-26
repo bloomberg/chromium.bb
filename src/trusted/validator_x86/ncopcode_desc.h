@@ -93,6 +93,7 @@ typedef enum {
   InstPop,
   InstPopa,
   InstPopad,
+  InstPsignb,
   InstPush,
   InstPusha,
   InstPushad,
@@ -453,6 +454,12 @@ typedef enum {
    */
   Mpo_Operand,
 
+  /* Like E_Operand, but uses MMX registers instead. */
+  Mm_E_Operand,
+
+  /* Like G_Operand, but uses MMX registers instead. */
+  Mm_G_Operand,
+
   /* Note: The instruction decoder may count on the fact that the O_Operand
    * values are contiguous, in the order specified.
    */
@@ -603,6 +610,34 @@ typedef enum {
   RegST5,
   RegST6,
   RegST7,
+
+  /* MMX registers. */
+  RegMMX0,
+  RegMMX1,
+  RegMMX2,
+  RegMMX3,
+  RegMMX4,
+  RegMMX5,
+  RegMMX6,
+  RegMMX7,
+
+  /* XMM registers. */
+  RegXMM0,
+  RegXMM1,
+  RegXMM2,
+  RegXMM3,
+  RegXMM4,
+  RegXMM5,
+  RegXMM6,
+  RegXMM7,
+  RegXMM8,
+  RegXMM9,
+  RegXMM10,
+  RegXMM11,
+  RegXMM12,
+  RegXMM13,
+  RegXMM14,
+  RegXMM15,
 
   /* One of the eight general purpose registers, less the stack pointer, based
    * on operand size.

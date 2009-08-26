@@ -29,54 +29,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * API to generator routines for building x86 instruction set.
- */
-
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_TABLEGEN_H__
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_TABLEGEN_H__
-
-#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
-
-/* Possible run modes for instructions. */
-typedef enum {
-  X86_32,       /* Model x86-32 bit instructions. */
-  X86_64,       /* Model x86-64-bit instructions. */
-  /* Special end of list marker, denoting the number
-   * of run modes;
-   */
-  RunModeSize
-} RunMode;
-
-/* Change the current opcode prefix to the given value. */
-void DefineOpcodePrefix(OpcodePrefix prefix);
-
-/* Define the next opcode (instruction), initializing with
- * no operands.
- */
-void DefineOpcode(
-    const uint8_t opcode,
-    const NaClInstType insttype,
-    OpcodeFlags flags,
-    const InstMnemonic name);
 
 /*
- * Define the next operand of the current opcode to have the given kind
- * and flags.
+ * Defines three byte opcodes beginning with OF 38.
  */
-void DefineOperand(OperandKind kind, OperandFlags flags);
 
+#include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
-/* Defines one byte opcodes. */
-void DefineOneByteOpcodes();
+void Define0F38Opcodes() {
+  DefineOpcodePrefix(Prefix0F38);
 
-/* Defines two byte opcodes beginning with OF. */
-void Define0FOpcodes();
-
-/* Defines two byte opcodes beginning with DC. */
-void DefineDCOpcodes();
-
-/* Defines three byte opcodes beginning with 0F 38. */
-void Define0F38Opcodes();
-
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_TABLEGEN_H__ */
+  DefineOpcode(0x08,
+               NACLi_SSSE3,
+               InstFlag(OpcodeUsesModRm),
+               InstPsignb);
+  DefineOperand(Mm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Mm_E_Operand, OpFlag(OpUse));
+}

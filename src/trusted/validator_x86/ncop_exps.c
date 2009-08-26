@@ -267,6 +267,9 @@ static int PrintDisassembledMemOffset(FILE* file,
     }
     /* Recurse to handle print using format flags. */
     PrintDisassembledExp(file, vector, disp_index);
+  } else if (r1 == RegUnknown && r2 == RegUnknown) {
+    /* be sure to generate case: [0x0]. */
+    PrintDisassembledExp(file, vector, disp_index);
   }
   fprintf(file, "]");
   return disp_index + ExprNodeWidth(vector, disp_index);

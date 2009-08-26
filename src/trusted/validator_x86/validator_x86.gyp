@@ -53,7 +53,8 @@
       'sources': ['ncdecode_tablegen.c',
                   'ncdecode_onebyte.c',
                   'ncdecode_OF.c',
-                  'ncdecode_DC.c'
+                  'ncdecode_DC.c',
+                  'ncdecode_0F38.c'
       ],
       'dependencies': ['ncopcode_utils' ],
       'conditions': [

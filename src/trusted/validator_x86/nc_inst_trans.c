@@ -201,8 +201,8 @@ static const OperandKind RegisterTable32[REGISTER_TABLE_SIZE] = {
  * Note: The order is important, and is based on the indexing values used
  * in the ModRm and SIB bytes (and the REX prefix if appropriate).
  */
-#if NACL_TARGET_SUBARCH == 64
 static const OperandKind RegisterTable64[REGISTER_TABLE_SIZE] = {
+#if NACL_TARGET_SUBARCH == 64
   RegRAX,
   RegRCX,
   RegRDX,
@@ -219,8 +219,72 @@ static const OperandKind RegisterTable64[REGISTER_TABLE_SIZE] = {
   RegR13,
   RegR14,
   RegR15
-};
+#else
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown
 #endif
+};
+
+/* Define the available Mmx registers, for the given subarchitecture.
+ * Note: The order is important, and is based on the indexing values
+ * used in the ModRm and SIB bytes (and the REX prefix if appropriate).
+ */
+static const OperandKind RegisterTableMmx[REGISTER_TABLE_SIZE] = {
+  RegMMX0,
+  RegMMX1,
+  RegMMX2,
+  RegMMX3,
+  RegMMX4,
+  RegMMX5,
+  RegMMX6,
+  RegMMX7,
+  /* Intentionally repeat values, since Rex.B/R has no effect. */
+  RegMMX0,
+  RegMMX1,
+  RegMMX2,
+  RegMMX3,
+  RegMMX4,
+  RegMMX5,
+  RegMMX6,
+  RegMMX7
+};
+
+/* Define the available Xmm registers, for the given subarchitecture.
+ * Note: The order is important, and is based on the indexing values
+ * used in the ModRm and SIB bytes (and the REX prefix if appropriate).
+ */
+static const OperandKind RegisterTableXmm[REGISTER_TABLE_SIZE] = {
+  RegXMM0,
+  RegXMM1,
+  RegXMM2,
+  RegXMM3,
+  RegXMM4,
+  RegXMM5,
+  RegXMM6,
+  RegXMM7,
+  RegXMM8,
+  RegXMM9,
+  RegXMM10,
+  RegXMM11,
+  RegXMM12,
+  RegXMM13,
+  RegXMM14,
+  RegXMM15
+};
 
 /* Define a type corresponding to the arrays RegisterTable8,
  * RegisterTable16, RegisterTable32, and RegisterTable64.
@@ -277,10 +341,9 @@ static RegisterTableGroup* const RegisterTable[] = {
   &RegisterTable8,
   &RegisterTable16,
   &RegisterTable32,
-#if NACL_TARGET_SUBARCH == 64
-  &RegisterTable64
-#endif
-  /* TODO(karl) Add MMX registers etc. */
+  &RegisterTable64,
+  &RegisterTableMmx,
+  &RegisterTableXmm
 };
 
 
@@ -289,14 +352,31 @@ typedef enum {
   RegSize8,
   RegSize16,
   RegSize32,
-  RegSize64
+  RegSize64,
+  RegMMX,
+  RegXMM,
 } RegKind;
 
-static const char* const g_RegKindName[4] = {
+static const char* const g_RegKindName[] = {
   "RegSize8",
   "RegSize16",
   "RegSize32",
-  "RegSize64"
+  "RegSize64",
+  "RegMMX",
+  "RegXMM"
+};
+
+/* Define ModRm register categories. */
+typedef enum {
+  ModRmGeneral,
+  ModRmMmx,
+  ModRmXmm
+} ModRmRegisterKind;
+
+static const char* const g_ModRmRegisterKindName[] = {
+  "ModRmGeneral",
+  "ModRmMmx",
+  "ModRmXmm"
 };
 
 const char* RegKindName(RegKind kind) {
@@ -466,11 +546,27 @@ static RegKind ExtractAddressRegKind(NcInstState* state) {
  * Returns the appended register.
  */
 static ExprNode* AppendOperandRegister(
-    NcInstState* state, Operand* operand, int reg_index) {
-  DEBUG(printf("Translate register %d\n", reg_index));
-  return AppendRegisterKind(state,
-                            ExtractOperandRegKind(state, operand),
-                            reg_index);
+    NcInstState* state,
+    Operand* operand,
+    int reg_index,
+    ModRmRegisterKind modrm_reg_kind) {
+  RegKind reg_kind;
+  DEBUG(printf("modrm_reg_kind = %s\n",
+               g_ModRmRegisterKindName[modrm_reg_kind]));
+  switch (modrm_reg_kind) {
+    case ModRmGeneral:
+      reg_kind = ExtractOperandRegKind(state, operand);
+      break;
+    case ModRmMmx:
+      reg_kind = RegMMX;
+      break;
+    case ModRmXmm:
+      reg_kind = RegXMM;
+      break;
+  }
+  DEBUG(printf("Translate register %d, %s\n",
+               reg_index, g_RegKindName[reg_kind]));
+  return AppendRegisterKind(state, reg_kind, reg_index);
 }
 
 /* For the given instruction state, and the corresponding 3-bit specification
@@ -921,15 +1017,17 @@ static ExprNode* AppendMod10EffectiveAddress(
  * the root of the appended effective address.
  */
 static ExprNode* AppendMod11EffectiveAddress(
-    NcInstState* state, Operand* operand) {
-  DEBUG(printf("Translate modrm(%02x).mod == 11\n", state->modrm));
+    NcInstState* state, Operand* operand, ModRmRegisterKind modrm_reg_kind) {
+  DEBUG(printf("Translate modrm(%02x).mod == 11, %s\n",
+               state->modrm, g_ModRmRegisterKindName[modrm_reg_kind]));
   return AppendOperandRegister(state,
                                operand,
-                               GetGenRmRegister(state));
+                               GetGenRmRegister(state), modrm_reg_kind);
 }
 
 /* Compute the effect address using the Mod/Rm and SIB bytes. */
-static ExprNode* AppendEffectiveAddress(NcInstState* state, Operand* operand) {
+static ExprNode* AppendEffectiveAddress(
+    NcInstState* state, Operand* operand, ModRmRegisterKind modrm_reg_kind) {
   switch(modrm_mod(state->modrm)) {
     case 0:
       return AppendMod00EffectiveAddress(state, operand);
@@ -938,7 +1036,7 @@ static ExprNode* AppendEffectiveAddress(NcInstState* state, Operand* operand) {
     case 2:
       return AppendMod10EffectiveAddress(state, operand);
     case 3:
-      return AppendMod11EffectiveAddress(state, operand);
+      return AppendMod11EffectiveAddress(state, operand, modrm_reg_kind);
     default:
       break;
   }
@@ -966,7 +1064,8 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Mw_Operand:
     case Mv_Operand:
     case Mo_Operand: {
-        ExprNode* address = AppendEffectiveAddress(state, operand);
+        ExprNode* address =
+            AppendEffectiveAddress(state, operand, ModRmGeneral);
         /* Near operands are jump addresses. Mark them as such. */
         if (operand->flags & OpFlag(OperandNear)) {
           address->flags |= ExprFlag(ExprJumpTarget);
@@ -979,7 +1078,8 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Gw_Operand:
     case Gv_Operand:
     case Go_Operand:
-      return AppendOperandRegister(state, operand, GetGenRegRegister(state));
+      return AppendOperandRegister(state, operand, GetGenRegRegister(state),
+                                   ModRmGeneral);
     case G_OpcodeBase:
       return AppendOpcodeBaseRegister(state, operand);
     case I_Operand:
@@ -996,6 +1096,11 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
        * how to process the J operand (see Intel manual for call statement).
        */
       return AppendRelativeImmediate(state);
+    case Mm_G_Operand:
+      return AppendOperandRegister(state, operand, GetGenRegRegister(state),
+                                   ModRmMmx);
+    case Mm_E_Operand:
+      return AppendEffectiveAddress(state, operand, ModRmMmx);
     case O_Operand:
     case Ob_Operand:
     case Ow_Operand:
