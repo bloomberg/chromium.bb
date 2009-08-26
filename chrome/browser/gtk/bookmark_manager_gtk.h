@@ -69,6 +69,7 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
                             int index, void* params);
 
  private:
+  friend class BookmarkManagerTest;
   FRIEND_TEST(BookmarkManagerTest, Crash);
 
   explicit BookmarkManagerGtk(Profile* profile);
