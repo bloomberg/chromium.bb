@@ -2767,8 +2767,12 @@ BUG19655 : LayoutTests/fast/dom/Window/HTMLFrameSetElement-window-eventListener-
 BUG_JPARENT LINUX MAC: LayoutTests/fast/history/back-forward-is-asynchronous.html = TIMEOUT
 BUG_JPARENT LINUX DEBUG : LayoutTests/fast/multicol/columns-shorthand-parsing.html = CRASH
 
-// New test added, doesn't yet pass for Chrome
-BUG19635 : LayoutTests/fast/harness/use-page-cache.html = FAIL
+// Page Cache - based tests. Chromium disables page cache because the WebKit page cache keeps previously
+// loaded pages alive in memory to be able to quickly substitute them when user clicks History buttons.
+// Chromium wants those to be separate navigations made via browser process to be able to make decision
+// on which renderer process to use for each of them.
+WONTFIX SKIP BUG19635 : LayoutTests/fast/harness/use-page-cache.html = TIMEOUT FAIL
+WONTFIX SKIP BUG19635 : LayoutTests/fast/dom/Window/timer-resume-on-navigation-back.html = TIMEOUT FAIL
 
 // WebKit roll r47417:47528
 BUG19766 WIN LINUX : LayoutTests/fast/block/basic/quirk-percent-height-table-cell.html = FAIL
@@ -2805,9 +2809,6 @@ BUG20265 LINUX : LayoutTests/platform/mac/accessibility/slider-supports-actions.
 // WebKit 47759:47770.
 BUG20292 : LayoutTests/fast/forms/input-list.html = FAIL
 BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
-
-// WebKit 47770:47779
-BUG20319 : LayoutTests/fast/dom/Window/timer-resume-on-navigation-back.html = TIMEOUT FAIL
 
 // Fails after V8 rollup
 BUG20314 MAC : LayoutTests/fast/css/only-of-type-pseudo-class.html = FAIL
