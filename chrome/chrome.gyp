@@ -800,6 +800,8 @@
         'browser/chrome_plugin_host.h',
         'browser/chrome_thread.cc',
         'browser/chrome_thread.h',
+        'browser/chromeos/compact_navigation_bar.cc',
+        'browser/chromeos/compact_navigation_bar.h',
         'browser/chromeos/pipe_reader.cc',
         'browser/chromeos/pipe_reader.h',
         'browser/chromeos/external_cookie_handler.cc',
@@ -1845,8 +1847,6 @@
         'browser/views/chrome_views_delegate.h',
         'browser/views/clear_browsing_data.cc',
         'browser/views/clear_browsing_data.h',
-        'browser/views/compact_navigation_bar.cc',
-        'browser/views/compact_navigation_bar.h',
         'browser/views/constrained_window_win.cc',
         'browser/views/constrained_window_win.h',
         'browser/views/confirm_message_box_dialog.cc',
@@ -2087,11 +2087,8 @@
           ],
         }],
         ['chromeos==0', {
-          'sources!': [
-            'browser/chromeos/pipe_reader.cc',
-            'browser/chromeos/pipe_reader.h',
-            'browser/chromeos/external_cookie_handler.cc',
-            'browser/chromeos/external_cookie_handler.h',
+          'sources/': [
+            ['exclude', '^browser/chromeos'],
           ],
         }],
         ['OS=="linux"', {
@@ -4127,9 +4124,8 @@
       ],
       'conditions': [
         ['chromeos==0', {
-          'sources!': [
-            'browser/chromeos/pipe_reader_unittest.cc',
-            'browser/chromeos/external_cookie_handler_unittest.cc',
+          'sources/': [
+            ['exclude', '^browser/chromeos'],
           ],
         }],
         ['OS=="linux"', {

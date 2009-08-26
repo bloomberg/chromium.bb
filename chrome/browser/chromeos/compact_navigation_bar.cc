@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/compact_navigation_bar.h"
+#include "chrome/browser/chromeos/compact_navigation_bar.h"
 
 #include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
