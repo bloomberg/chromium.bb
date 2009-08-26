@@ -8,6 +8,7 @@
 #include "base/file_version_info.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
+#include "net/base/auth.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -60,7 +61,6 @@ string16 RawByteSequenceToFilename(const char* raw_filename,
 
 URLRequestNewFtpJob::URLRequestNewFtpJob(URLRequest* request)
     : URLRequestJob(request),
-      server_auth_state_(net::AUTH_STATE_DONT_NEED_AUTH),
       response_info_(NULL),
       dir_listing_buf_size_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -104,6 +104,48 @@ void URLRequestNewFtpJob::Kill() {
 net::LoadState URLRequestNewFtpJob::GetLoadState() const {
   return transaction_.get() ?
       transaction_->GetLoadState() : net::LOAD_STATE_IDLE;
+}
+
+bool URLRequestNewFtpJob::NeedsAuth() {
+  // Note that we only have to worry about cases where an actual FTP server
+  // requires auth (and not a proxy), because connecting to FTP via proxy
+  // effectively means the browser communicates via HTTP, and uses HTTP's
+  // Proxy-Authenticate protocol when proxy servers require auth.
+  return server_auth_ && server_auth_->state == net::AUTH_STATE_NEED_AUTH;
+}
+
+void URLRequestNewFtpJob::GetAuthChallengeInfo(
+    scoped_refptr<net::AuthChallengeInfo>* result) {
+  DCHECK((server_auth_ != NULL) &&
+         (server_auth_->state == net::AUTH_STATE_NEED_AUTH));
+  scoped_refptr<net::AuthChallengeInfo> auth_info = new net::AuthChallengeInfo;
+  auth_info->is_proxy = false;
+  auth_info->host_and_port = ASCIIToWide(
+      net::GetHostAndPort(request_->url()));
+  auth_info->scheme = L"";
+  auth_info->realm = L"";
+  result->swap(auth_info);
+}
+
+void URLRequestNewFtpJob::SetAuth(const std::wstring& username,
+                                  const std::wstring& password) {
+  DCHECK(NeedsAuth());
+  server_auth_->state = net::AUTH_STATE_HAVE_AUTH;
+  server_auth_->username = username;
+  server_auth_->password = password;
+
+  RestartTransactionWithAuth();
+}
+
+void URLRequestNewFtpJob::CancelAuth() {
+  DCHECK(NeedsAuth());
+  server_auth_->state = net::AUTH_STATE_CANCELED;
+
+  // Once the auth is cancelled, we proceed with the request as though
+  // there were no auth.  Schedule this for later so that we don't cause
+  // any recursing into the caller as a result of this call.
+  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &URLRequestNewFtpJob::OnStartCompleted, net::OK));
 }
 
 bool URLRequestNewFtpJob::ReadRawData(net::IOBuffer* buf,
@@ -250,6 +292,10 @@ void URLRequestNewFtpJob::OnStartCompleted(int result) {
   SetStatus(URLRequestStatus());
   if (result == net::OK) {
     NotifyHeadersComplete();
+  } else if (transaction_->GetResponseInfo()->needs_auth) {
+    server_auth_ = new net::AuthData();
+    server_auth_->state = net::AUTH_STATE_NEED_AUTH;
+    NotifyHeadersComplete();
   } else {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
@@ -271,6 +317,25 @@ void URLRequestNewFtpJob::OnReadCompleted(int result) {
     SetStatus(URLRequestStatus());
   }
   NotifyReadComplete(result);
+}
+
+void URLRequestNewFtpJob::RestartTransactionWithAuth() {
+  DCHECK(server_auth_ && server_auth_->state == net::AUTH_STATE_HAVE_AUTH);
+
+  response_info_ = NULL;
+
+  // No matter what, we want to report our status as IO pending since we will
+  // be notifying our consumer asynchronously via OnStartCompleted.
+  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+
+  int rv = transaction_->RestartWithAuth(server_auth_->username,
+                                         server_auth_->password,
+                                         &start_callback_);
+  if (rv == net::ERR_IO_PENDING)
+    return;
+
+  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &URLRequestNewFtpJob::OnStartCompleted, rv));
 }
 
 void URLRequestNewFtpJob::StartTransaction() {

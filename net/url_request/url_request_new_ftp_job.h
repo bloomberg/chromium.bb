@@ -31,6 +31,12 @@ class URLRequestNewFtpJob : public URLRequestJob {
   virtual void Start();
   virtual void Kill();
   virtual net::LoadState GetLoadState() const;
+  virtual bool NeedsAuth();
+  virtual void GetAuthChallengeInfo(
+      scoped_refptr<net::AuthChallengeInfo>* auth_info);
+  virtual void SetAuth(const std::wstring& username,
+                       const std::wstring& password);
+  virtual void CancelAuth();
 
   // TODO(ibrar):  Yet to give another look at this function.
   virtual uint64 GetUploadProgress() const { return 0; }
@@ -42,9 +48,9 @@ class URLRequestNewFtpJob : public URLRequestJob {
   void OnStartCompleted(int result);
   void OnReadCompleted(int result);
 
-  int ProcessFtpDir(net::IOBuffer *buf, int buf_size, int bytes_read);
+  void RestartTransactionWithAuth();
 
-  net::AuthState server_auth_state_;
+  int ProcessFtpDir(net::IOBuffer *buf, int buf_size, int bytes_read);
 
   net::FtpRequestInfo request_info_;
   scoped_ptr<net::FtpTransaction> transaction_;
@@ -59,6 +65,8 @@ class URLRequestNewFtpJob : public URLRequestJob {
   std::string directory_html_;
   bool read_in_progress_;
   std::string encoding_;
+
+  scoped_refptr<net::AuthData> server_auth_;
 
   // Keep a reference to the url request context to be sure it's not deleted
   // before us.
