@@ -228,15 +228,12 @@ struct timezone {
 
 # define __PRI64_PREFIX "I64"
 
-/* avoid conflicts with Chrome src/base/format_macros.h */
-#ifdef NACL_STANDALONE
 # define PRId64 __PRI64_PREFIX "d"
 # define PRIi64 __PRI64_PREFIX "i"
 # define PRIo64 __PRI64_PREFIX "o"
 # define PRIu64 __PRI64_PREFIX "u"
 # define PRIx64 __PRI64_PREFIX "x"
 # define PRIX64 __PRI64_PREFIX "X"
-#endif
 
 #endif
 

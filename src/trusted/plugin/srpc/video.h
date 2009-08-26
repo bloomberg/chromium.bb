@@ -29,12 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(HAVE_SDL)
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_VIDEO_H_
-#endif
-
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_VIDEO_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_VIDEO_H_
+
+#ifdef NACL_STANDALONE
 
 #if NACL_OSX
 #include <Carbon/Carbon.h>
@@ -47,6 +45,11 @@
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
 #endif  // NACL_LINUX && defined(MOZ_X11)
+
+#else //  NACL_STANDALONE
+// Don't include video support in Chrome build
+
+#endif //  NACL_STANDALONE
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"
@@ -137,6 +140,7 @@ class VideoMap {
   VideoMap(PortablePluginInterface *plugin_interface);
   ~VideoMap();
 
+#ifdef NACL_STANDALONE
 #if NACL_WINDOWS
   WNDPROC                  original_window_procedure_;
   static LRESULT CALLBACK  WindowProcedure(HWND hwnd,
@@ -150,6 +154,7 @@ class VideoMap {
                             XEvent* xevent,
                             Boolean* b);
 #endif  // NACL_LINUX && defined(MOZ_X11)
+#endif  // NACL_STANDALONE
 
  private:
   volatile int             event_state_button_;

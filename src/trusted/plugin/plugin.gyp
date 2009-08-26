@@ -52,7 +52,6 @@
       'srpc/browser_interface.cc',
       'srpc/portable_handle.cc',
       'srpc/desc_based_handle.cc',
-      'srpc/video.cc',
       'srpc/closure.cc',
       'srpc/method_map.cc',
       # generic URL-origin / same-domain handling
@@ -128,6 +127,7 @@
       ],
       'sources': [
         '<@(common_sources)',
+        'srpc/video.cc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -160,6 +160,7 @@
       'sources': [
         '<@(common_sources)',
         'nacl_entry_points.cc',
+        'srpc/video_chrome.cc',
       ],
       'conditions': [
         ['OS=="win"', {
