@@ -103,6 +103,26 @@ void WebURLRequest::setFirstPartyForCookies(const WebURL& firstPartyForCookies)
     m_private->m_resourceRequest->setFirstPartyForCookies(firstPartyForCookies);
 }
 
+bool WebURLRequest::allowCookies() const
+{
+    return m_private->m_resourceRequest->allowHTTPCookies();
+}
+
+void WebURLRequest::setAllowCookies(bool allowCookies)
+{
+    m_private->m_resourceRequest->setAllowHTTPCookies(allowCookies);
+}
+
+bool WebURLRequest::allowStoredCredentials() const
+{
+    return m_private->m_allowStoredCredentials;
+}
+
+void WebURLRequest::setAllowStoredCredentials(bool allowStoredCredentials)
+{
+    m_private->m_allowStoredCredentials = allowStoredCredentials;
+}
+
 WebURLRequest::CachePolicy WebURLRequest::cachePolicy() const
 {
     return static_cast<WebURLRequest::CachePolicy>(

@@ -62,6 +62,7 @@ public:
     void start();
     void cancel();
     void setDefersLoading(bool);
+    bool allowStoredCredentials() const;
 
     // WebURLLoaderClient methods:
     virtual void willSendRequest(WebURLLoader*, WebURLRequest&, const WebURLResponse&);
@@ -85,6 +86,7 @@ void ResourceHandleInternal::start()
     ASSERT(m_loader.get());
 
     WrappedResourceRequest wrappedRequest(m_request);
+    wrappedRequest.setAllowStoredCredentials(allowStoredCredentials());
     m_loader->loadAsynchronously(wrappedRequest, this);
 }
 
@@ -99,6 +101,11 @@ void ResourceHandleInternal::cancel()
 void ResourceHandleInternal::setDefersLoading(bool value)
 {
     m_loader->setDefersLoading(value);
+}
+
+bool ResourceHandleInternal::allowStoredCredentials() const
+{
+    return m_client && m_client->shouldUseCredentialStorage(m_owner);
 }
 
 void ResourceHandleInternal::willSendRequest(
@@ -237,7 +244,7 @@ bool ResourceHandle::supportsBufferedData()
 
 // static
 void ResourceHandle::loadResourceSynchronously(const ResourceRequest& request,
-                                               StoredCredentials unused,
+                                               StoredCredentials storedCredentials,
                                                ResourceError& error,
                                                ResourceResponse& response,
                                                Vector<char>& data,
@@ -247,6 +254,7 @@ void ResourceHandle::loadResourceSynchronously(const ResourceRequest& request,
     ASSERT(loader.get());
 
     WrappedResourceRequest requestIn(request);
+    requestIn.setAllowStoredCredentials(storedCredentials == AllowStoredCredentials);
     WrappedResourceResponse responseOut(response);
     WebURLError errorOut;
     WebData dataOut;

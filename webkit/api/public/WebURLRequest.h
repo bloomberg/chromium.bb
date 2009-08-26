@@ -88,6 +88,14 @@ namespace WebKit {
         WEBKIT_API WebURL firstPartyForCookies() const;
         WEBKIT_API void setFirstPartyForCookies(const WebURL&);
 
+        WEBKIT_API bool allowCookies() const;
+        WEBKIT_API void setAllowCookies(bool allowCookies);
+
+        // Controls whether user name, password, and cookies may be sent with the
+        // request. (If false, this overrides allowCookies.)
+        WEBKIT_API bool allowStoredCredentials() const;
+        WEBKIT_API void setAllowStoredCredentials(bool allowStoredCredentials);
+
         WEBKIT_API CachePolicy cachePolicy() const;
         WEBKIT_API void setCachePolicy(CachePolicy);
 

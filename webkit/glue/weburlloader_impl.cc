@@ -302,6 +302,15 @@ void WebURLLoaderImpl::Context::Start(
   if (request.reportUploadProgress())
     load_flags |= net::LOAD_ENABLE_UPLOAD_PROGRESS;
 
+  if (!request.allowCookies() || !request.allowStoredCredentials()) {
+    load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+  }
+
+  if (!request.allowStoredCredentials())
+    load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+
   // TODO(jcampan): in the non out-of-process plugin case the request does not
   // have a requestor_pid. Find a better place to set this.
   int requestor_pid = request.requestorProcessID();
