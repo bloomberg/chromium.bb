@@ -90,10 +90,6 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   ~DownloadShelfContextMenuGtk() {
   }
 
-  GtkWidget* widget() {
-    return menu_->widget();
-  }
-
   void Popup(GtkWidget* widget, GdkEvent* event) {
     // Create the menu if we have not created it yet or we created it for
     // an in-progress download that has since completed.
@@ -117,7 +113,7 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   }
 
   virtual void ExecuteCommand(int id) {
-    return ExecuteItemCommand(id);
+    ExecuteItemCommand(id);
   }
 
   virtual void StoppedShowing() {
@@ -196,8 +192,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
       dangerous_prompt_(NULL),
       dangerous_label_(NULL),
       icon_(NULL),
-      creation_time_(base::Time::Now()),
-      method_factory_(this) {
+      creation_time_(base::Time::Now()) {
   LoadIcon();
 
   body_.Own(gtk_button_new());
@@ -377,10 +372,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
 
   switch (download->state()) {
     case DownloadItem::REMOVING:
-      // Delete ourselves asychronously so that if we were deleted from the
-      // context menu, its ref holders have a chance to let go.
-      MessageLoop::current()->PostTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(&DownloadItemGtk::RemoveThis));
+      parent_shelf_->RemoveDownloadItem(this);  // This will delete us!
       return;
     case DownloadItem::CANCELLED:
       StopDownloadProgress();
@@ -417,10 +409,6 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
   }
 
   UpdateStatusLabel(status_label_, status_text_);
-}
-
-void DownloadItemGtk::RemoveThis() {
-  parent_shelf_->RemoveDownloadItem(this);
 }
 
 void DownloadItemGtk::AnimationProgressed(const Animation* animation) {
