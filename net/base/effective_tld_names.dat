@@ -39,7 +39,7 @@
 // 
 // ***** END LICENSE BLOCK *****
 
-// Chromium note: this based on Mozilla's revision 1.9 of this file:
+// Chromium note: this based on Mozilla's file:
 //  http://mxr.mozilla.org/mozilla/source/netwerk/dns/src/effective_tld_names.dat?raw=1
 
 // ac : http://en.wikipedia.org/wiki/.ac
@@ -685,7 +685,14 @@ za.com
 coop
 
 // cr : http://en.wikipedia.org/wiki/.cr
-*.cr
+cr
+ac.cr
+co.cr
+ed.cr
+fi.cr
+go.cr
+or.cr
+sa.cr
 
 // cu : http://en.wikipedia.org/wiki/.cu
 cu
