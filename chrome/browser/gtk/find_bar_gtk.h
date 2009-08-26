@@ -91,6 +91,9 @@ class FindBarGtk : public FindBar,
 
   void UpdateMatchLabelAppearance(bool failure);
 
+  // Repositions the dialog without worrying about overlapping search results.
+  void Reposition();
+
   // Callback when the entry text changes.
   static gboolean OnChanged(GtkWindow* window, FindBarGtk* find_bar);
 

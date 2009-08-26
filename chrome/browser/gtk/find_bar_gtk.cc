@@ -290,6 +290,7 @@ GtkWidget* FindBarGtk::slide_widget() {
 
 void FindBarGtk::Show() {
   slide_widget_->Open();
+  Reposition();
   if (container_->window)
     gdk_window_raise(container_->window);
 }
@@ -414,7 +415,7 @@ void FindBarGtk::SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) {
 }
 
 bool FindBarGtk::IsFindBarVisible() {
-  return GTK_WIDGET_VISIBLE(widget());
+  return GTK_WIDGET_VISIBLE(slide_widget());
 }
 
 void FindBarGtk::RestoreSavedFocus() {
@@ -518,6 +519,18 @@ void FindBarGtk::UpdateMatchLabelAppearance(bool failure) {
       (use_gtk ? NULL : &kFindSuccessTextColor));
 }
 
+void FindBarGtk::Reposition() {
+  if (!IsFindBarVisible())
+    return;
+
+  int xposition = GetDialogPosition(gfx::Rect()).x();
+  if (xposition == slide_widget()->allocation.x) {
+    return;
+  } else {
+    gtk_fixed_move(GTK_FIXED(widget()), slide_widget(), xposition, 0);
+  }
+}
+
 void FindBarGtk::StoreOutsideFocus() {
   // |text_entry_| is the only widget in the find bar that can be focused,
   // so it's the only one we have to check.
@@ -616,13 +629,7 @@ void FindBarGtk::OnFixedSizeAllocate(GtkWidget* fixed,
   gtk_widget_set_size_request(findbar->border_,
                               allocation->width, allocation->height);
 
-  // Reposition the dialog.
-  int xposition = findbar->GetDialogPosition(gfx::Rect()).x();
-  if (xposition == findbar->slide_widget()->allocation.x) {
-    return;
-  } else {
-    gtk_fixed_move(GTK_FIXED(fixed), findbar->slide_widget(), xposition, 0);
-  }
+  findbar->Reposition();
 }
 
 // Used to handle custom painting of |container_|.
