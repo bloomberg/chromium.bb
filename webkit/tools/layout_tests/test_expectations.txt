@@ -2793,11 +2793,6 @@ BUG_DIMICH WIN LINUX : LayoutTests/editing/execCommand/5190926.html = FAIL
 BUG_DIMICH WIN LINUX : LayoutTests/editing/pasteboard/5075944.html = FAIL
 BUG_DIMICH WIN LINUX : LayoutTests/editing/style/font-family-with-space.html = FAIL
 
-// WebKit 47646:47719. Need rebaseline on Win and Linux.
-BUG_JIANLI WIN LINUX : LayoutTests/fast/forms/textarea-placeholder-pseudo-style.html = FAIL
-BUG_JIANLI WIN LINUX : LayoutTests/fast/forms/textarea-placeholder-set-attribute.html = FAIL
-BUG_JIANLI WIN LINUX : LayoutTests/fast/forms/textarea-placeholder-set-value.html = FAIL
-
 // WebKit 47646:47719.
 BUG_JIANLI MAC : LayoutTests/fast/forms/button-state-restore.html = CRASH
 
@@ -2808,9 +2803,6 @@ BUG_JIANLI : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
 BUG_JIANLI : LayoutTests/fast/events/keydown-function-keys.html = FAIL
 BUG_JIANLI WIN LINUX : LayoutTests/http/tests/security/javascriptURL/javascriptURL-in-new-iframe.html = CRASH
 BUG_JIANLI WIN : LayoutTests/media/video-controls-with-mutation-event-handler.html = CRASH
-
-// WebKit 47748:47759. New test. Need rebaseline.
-BUG_JIANLI : LayoutTests/fast/dom/javascript-url-exception-isolation.html = FAIL
 
 // WebKit 47748:47759. Crash only on Linux. Need investigation.
 BUG20265 LINUX : LayoutTests/fast/css/pseudo-required-optional-005.html = CRASH
