@@ -1950,9 +1950,6 @@ BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAI
 BUG9161 MAC LINUX WIN : LayoutTests/fast/forms/basic-textareas.html = FAIL
 BUG9163 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-request-headers.html = FAIL
 BUG9163 MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-request-headers.html = FAIL TIMEOUT
-// Being fixed upstream for Windows/Linux by jparent.
-BUG9163 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-missing-file-exception.html = FAIL
-// Unknown what change caused these to fail.
 
 // Merge 41709:41733
 // Expectations changed upstream.
