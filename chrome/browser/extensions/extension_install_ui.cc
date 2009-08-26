@@ -46,7 +46,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
     return;
   }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_GTK)
   ShowExtensionInstallPrompt(profile_, delegate, extension, install_icon);
 
 #elif defined(OS_MACOSX)
