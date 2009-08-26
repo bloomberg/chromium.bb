@@ -514,7 +514,6 @@ void CustomFrameView::LayoutWindowControls() {
     pushed_part = IDR_CLOSE_SA_P;
   }
 
-  /*
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   close_button_->SetImage(CustomButton::BS_NORMAL,
@@ -523,7 +522,6 @@ void CustomFrameView::LayoutWindowControls() {
                           rb.GetBitmapNamed(hot_part));
   close_button_->SetImage(CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(pushed_part));
-  */
 }
 
 void CustomFrameView::LayoutTitleBar() {

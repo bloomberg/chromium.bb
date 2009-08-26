@@ -7,6 +7,7 @@
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
+#include "base/keyboard_codes.h"
 #include "base/time.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
@@ -345,10 +346,7 @@ void MenuController::OnMousePressed(SubmenuView* source,
     // event.
 #if defined(OS_WIN)
     RepostEvent(source, event);
-#else
-    // Do we really need the repost logic for linux? I tend to think not but I
-    // need to verify that
-    NOTIMPLEMENTED();
+    // NOTE: not reposting on linux seems fine.
 #endif
 
     // And close.
@@ -680,10 +678,10 @@ bool MenuController::Dispatch(const MSG& msg) {
     // NOTE: focus wasn't changed when the menu was shown. As such, don't
     // dispatch key events otherwise the focused window will get the events.
     case WM_KEYDOWN:
-      return OnKeyDown(msg);
+      return OnKeyDown(msg.wParam, msg);
 
     case WM_CHAR:
-      return OnChar(msg);
+      return !SelectByChar(static_cast<wchar_t>(msg.wParam));
 
     case WM_KEYUP:
       return true;
@@ -708,35 +706,65 @@ bool MenuController::Dispatch(const MSG& msg) {
   return !exit_all_;
 }
 
-bool MenuController::OnKeyDown(const MSG& msg) {
+#else
+bool MenuController::Dispatch(GdkEvent* event) {
+  gtk_main_do_event(event);
+
+  if (exit_all_)
+    return false;
+
+  switch (event->type) {
+    case GDK_KEY_PRESS: {
+      if (!OnKeyDown(event->key.keyval))
+        return false;
+      guint32 keycode = gdk_keyval_to_unicode(event->key.keyval);
+      if (keycode)
+        return !SelectByChar(keycode);
+      return true;
+    }
+
+    default:
+      break;
+  }
+
+  return !exit_all_;
+}
+#endif
+
+bool MenuController::OnKeyDown(int key_code
+#if defined(OS_WIN)
+                               , const MSG& msg
+#else
+#endif
+                               ) {
   DCHECK(blocking_run_);
 
-  switch (msg.wParam) {
-    case VK_UP:
+  switch (key_code) {
+    case base::VKEY_UP:
       IncrementSelection(-1);
       break;
 
-    case VK_DOWN:
+    case base::VKEY_DOWN:
       IncrementSelection(1);
       break;
 
     // Handling of VK_RIGHT and VK_LEFT is different depending on the UI
     // layout.
-    case VK_RIGHT:
+    case base::VKEY_RIGHT:
       if (l10n_util::TextDirection() == l10n_util::RIGHT_TO_LEFT)
         CloseSubmenu();
       else
         OpenSubmenuChangeSelectionIfCan();
       break;
 
-    case VK_LEFT:
+    case base::VKEY_LEFT:
       if (l10n_util::TextDirection() == l10n_util::RIGHT_TO_LEFT)
         OpenSubmenuChangeSelectionIfCan();
       else
         CloseSubmenu();
       break;
 
-    case VK_RETURN:
+    case base::VKEY_RETURN:
       if (pending_state_.item) {
         if (pending_state_.item->HasSubmenu()) {
           OpenSubmenuChangeSelectionIfCan();
@@ -747,7 +775,7 @@ bool MenuController::OnKeyDown(const MSG& msg) {
       }
       break;
 
-    case VK_ESCAPE:
+    case base::VKEY_ESCAPE:
       if (!state_.item->GetParentMenuItem() ||
           (!state_.item->GetParentMenuItem()->GetParentMenuItem() &&
            (!state_.item->HasSubmenu() ||
@@ -760,31 +788,19 @@ bool MenuController::OnKeyDown(const MSG& msg) {
       }
       break;
 
+#if defined(OS_WIN)
     case VK_APPS:
       break;
+#endif
 
     default:
+#if defined(OS_WIN)
       TranslateMessage(&msg);
+#endif
       break;
   }
   return true;
 }
-
-bool MenuController::OnChar(const MSG& msg) {
-  DCHECK(blocking_run_);
-
-  return !SelectByChar(static_cast<wchar_t>(msg.wParam));
-}
-#else
-bool MenuController::Dispatch(GdkEvent* event) {
-  gtk_main_do_event(event);
-  if (exit_all_)
-    return false;
-
-  NOTIMPLEMENTED();
-  return !exit_all_;
-}
-#endif
 
 MenuController::MenuController(bool blocking)
     : blocking_run_(blocking),

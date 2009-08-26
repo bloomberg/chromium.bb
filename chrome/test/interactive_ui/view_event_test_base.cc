@@ -4,7 +4,9 @@
 
 #include "chrome/test/interactive_ui/view_event_test_base.h"
 
+#if defined(OS_WIN)
 #include <ole2.h>
+#endif
 
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls.h"
@@ -50,9 +52,11 @@ ViewEventTestBase::ViewEventTestBase() : window_(NULL), content_view_(NULL) { }
 void ViewEventTestBase::Done() {
   MessageLoop::current()->Quit();
 
+#if defined(OS_WIN)
   // We need to post a message to tickle the Dispatcher getting called and
   // exiting out of the nested loop. Without this the quit never runs.
   PostMessage(window_->GetNativeWindow(), WM_USER, 0, 0);
+#endif
 
   // If we're in a nested message loop, as is the case with menus, we need
   // to quit twice. The second quit does that for us.
@@ -61,16 +65,24 @@ void ViewEventTestBase::Done() {
 }
 
 void ViewEventTestBase::SetUp() {
+#if defined(OS_WIN)
   OleInitialize(NULL);
+#endif
   window_ = views::Window::CreateChromeWindow(NULL, gfx::Rect(), this);
 }
 
 void ViewEventTestBase::TearDown() {
   if (window_) {
+#if defined(OS_WIN)
     DestroyWindow(window_->GetNativeWindow());
+#else
+    gtk_widget_destroy(GTK_WIDGET(window_->GetNativeWindow()));
+#endif
     window_ = NULL;
   }
+#if defined(OS_WIN)
   OleUninitialize();
+#endif
 }
 
 views::View* ViewEventTestBase::GetContentsView() {
@@ -89,7 +101,9 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
   window_->Show();
   // Make sure the window is the foreground window, otherwise none of the
   // mouse events are going to be targeted correctly.
+#if defined(OS_WIN)
   SetForegroundWindow(window_->GetNativeWindow());
+#endif
 
   // Flush any pending events to make sure we start with a clean slate.
   MessageLoop::current()->RunAllPending();

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -67,7 +68,7 @@ class TestingPageNavigator : public PageNavigator {
 class BookmarkBarViewEventTestBase : public ViewEventTestBase {
  public:
   BookmarkBarViewEventTestBase()
-      : ViewEventTestBase(), bb_view_(NULL), model_(NULL) {
+      : ViewEventTestBase(), model_(NULL), bb_view_(NULL) {
   }
 
   virtual void SetUp() {
@@ -746,7 +747,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a down event, which should select the first item.
     ui_controls::SendKeyPressNotifyWhenDone(
-        NULL, VK_DOWN, false, false, false,
+        NULL, base::VKEY_DOWN, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step3));
   }
 
@@ -759,7 +760,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a key down event, which should select the next item.
     ui_controls::SendKeyPressNotifyWhenDone(
-        NULL, VK_DOWN, false, false, false,
+        NULL, base::VKEY_DOWN, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step4));
   }
 
@@ -772,7 +773,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a right arrow to force the menu to open.
     ui_controls::SendKeyPressNotifyWhenDone(
-        NULL, VK_RIGHT, false, false, false,
+        NULL, base::VKEY_RIGHT, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step5));
   }
 
@@ -788,7 +789,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a left arrow to close the submenu.
     ui_controls::SendKeyPressNotifyWhenDone(
-        NULL, VK_LEFT, false, false, false,
+        NULL, base::VKEY_LEFT, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step6));
   }
 
@@ -803,7 +804,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send a down arrow to wrap back to f1a
     ui_controls::SendKeyPressNotifyWhenDone(
-        NULL, VK_DOWN, false, false, false,
+        NULL, base::VKEY_DOWN, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step7));
   }
 
@@ -816,7 +817,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
 
     // Send enter, which should select the item.
     ui_controls::SendKeyPressNotifyWhenDone(
-        NULL, VK_RETURN, false, false, false,
+        NULL, base::VKEY_RETURN, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest10::Step8));
   }
 
@@ -865,7 +866,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
   void Step3() {
     // Send escape so that the context menu hides.
     ui_controls::SendKeyPressNotifyWhenDone(
-        NULL, VK_ESCAPE, false, false, false,
+        NULL, base::VKEY_ESCAPE, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest11::Step4));
   }
 
@@ -952,7 +953,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
 
   void Step4() {
     // Press tab to give focus to the cancel button.
-    ui_controls::SendKeyPress(NULL, VK_TAB, false, false, false);
+    ui_controls::SendKeyPress(NULL, base::VKEY_TAB, false, false, false);
 
     // For some reason return isn't processed correctly unless we delay.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
@@ -962,7 +963,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   void Step5() {
     // And press enter so that the cancel button is selected.
     ui_controls::SendKeyPressNotifyWhenDone(
-        NULL, VK_RETURN, false, false, false,
+        NULL, base::VKEY_RETURN, false, false, false,
         CreateEventTask(this, &BookmarkBarViewTest12::Step6));
   }
 

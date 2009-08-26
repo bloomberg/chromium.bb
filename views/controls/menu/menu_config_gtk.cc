@@ -4,12 +4,23 @@
 
 #include "views/controls/menu/menu_config.h"
 
+#include "app/resource_bundle.h"
+#include "grit/app_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+
 namespace views {
 
 // static
 MenuConfig* MenuConfig::Create() {
   // TODO: decide what we want this to look like.
-  return new MenuConfig();
+  MenuConfig* config = new MenuConfig();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  config->font = rb.GetFont(ResourceBundle::BaseFont);
+  config->arrow_width = rb.GetBitmapNamed(IDR_MENU_ARROW)->width();
+  // Add 4 to force some padding between check and label.
+  config->check_width = rb.GetBitmapNamed(IDR_MENU_CHECK)->width() + 4;
+  config->check_height = rb.GetBitmapNamed(IDR_MENU_CHECK)->height();
+  return config;
 }
 
 }  // namespace views
