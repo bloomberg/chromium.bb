@@ -59,6 +59,20 @@ bool CompareFloats(const float* src_1, const float* src_2, size_t num_floats) {
   return true;
 }
 
+bool CompareHalfs(const uint16* src_1, const uint16* src_2, size_t num_floats) {
+  const float kEpsilon = 0.001f;
+  for (; num_floats != 0; --num_floats) {
+    float s1 = Vectormath::Aos::HalfToFloat(*src_1);
+    float s2 = Vectormath::Aos::HalfToFloat(*src_2);
+    if (fabs(s1 - s2) > kEpsilon) {
+      return false;
+    }
+    ++src_1;
+    ++src_2;
+  }
+  return true;
+}
+
 }  // anonymous namespace.
 
 class ImageTest : public testing::Test {
@@ -275,8 +289,8 @@ TEST_F(ImageTest, GenerateMipmapsPOTFloat) {
       mip2,
       image::ComputeMipPitch(kFormat, 2, kWidth));
   // Check the result.
-  EXPECT_EQ(0, memcmp(mip1, expected_mip1, sizeof(expected_mip1)));
-  EXPECT_EQ(0, memcmp(mip2, expected_mip2, sizeof(expected_mip2)));
+  EXPECT_TRUE(CompareFloats(mip1, expected_mip1, arraysize(expected_mip1)));
+  EXPECT_TRUE(CompareFloats(mip2, expected_mip2, arraysize(expected_mip2)));
   EXPECT_EQ(mip1[2], kSentinel);
   EXPECT_EQ(mip2[1], kSentinel);
 }
@@ -330,8 +344,8 @@ TEST_F(ImageTest, GenerateMipmapsPOTHalf) {
       mip2,
       image::ComputeMipPitch(kFormat, 2, kWidth));
   // Check the result.
-  EXPECT_EQ(0, memcmp(mip1, expected_mip1, sizeof(expected_mip1)));
-  EXPECT_EQ(0, memcmp(mip2, expected_mip2, sizeof(expected_mip2)));
+  EXPECT_TRUE(CompareHalfs(mip1, expected_mip1, arraysize(expected_mip1)));
+  EXPECT_TRUE(CompareHalfs(mip2, expected_mip2, arraysize(expected_mip2)));
   EXPECT_EQ(mip1[2 * 4], sentinel);
   EXPECT_EQ(mip2[1 * 4], sentinel);
 }
@@ -465,7 +479,7 @@ TEST_F(ImageTest, LanczosScaleFloat) {
       1);
   // Check the result.
   EXPECT_TRUE(CompareFloats(mip1, expected_mip1, arraysize(expected_mip1)));
-  EXPECT_EQ(0, memcmp(mip2, expected_mip2, sizeof(expected_mip2)));
+  EXPECT_TRUE(CompareFloats(mip2, expected_mip2, arraysize(expected_mip2)));
   EXPECT_EQ(mip1[2], kSentinel);
   EXPECT_EQ(mip2[1], kSentinel);
 }
@@ -513,8 +527,8 @@ TEST_F(ImageTest, LanczosScaleHalf) {
       0, 0, 1, 1,
       4);
   // Check the result.
-  EXPECT_EQ(0, memcmp(mip1, expected_mip1, sizeof(expected_mip1)));
-  EXPECT_EQ(0, memcmp(mip2, expected_mip2, sizeof(expected_mip2)));
+  EXPECT_TRUE(CompareHalfs(mip1, expected_mip1, arraysize(expected_mip1)));
+  EXPECT_TRUE(CompareHalfs(mip2, expected_mip2, arraysize(expected_mip2)));
   EXPECT_EQ(mip1[2 * 4], sentinel);
   EXPECT_EQ(mip2[1 * 4], sentinel);
 }
