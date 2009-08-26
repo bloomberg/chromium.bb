@@ -16,9 +16,11 @@
 #include "base/gfx/native_widget_types.h"
 #include "base/gfx/point.h"
 
+#if defined(TOOLKIT_VIEWS)
 namespace views {
 class View;
 }
+#endif
 
 class Task;
 
@@ -73,7 +75,7 @@ bool SendMouseClick(MouseButton type);
 // A combination of SendMouseMove to the middle of the view followed by
 // SendMouseEvents.
 void MoveMouseToCenterAndPress(
-#if defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS)
     views::View* view,
 #elif defined(OS_LINUX)
     GtkWidget* widget,

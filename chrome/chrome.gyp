@@ -4257,7 +4257,6 @@
             # Need to port browser_with_test_window_test.* first
             'browser/browser_commands_unittest.cc',
             'browser/browser_unittest.cc',
-            # Need to port browser/automation/ui_controls.h
             'browser/extensions/extension_process_manager_unittest.cc',
             'browser/importer/importer_unittest.cc',
             'browser/login_prompt_unittest.cc',

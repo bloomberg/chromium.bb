@@ -81,7 +81,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
   void ClickOnView(ViewID vid) {
     BrowserWindow* browser_window = browser()->window();
     ASSERT_TRUE(browser_window);
-#if defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS)
     views::View* view =
         reinterpret_cast<BrowserView*>(browser_window)->GetViewByID(vid);
 #elif defined(OS_LINUX)
