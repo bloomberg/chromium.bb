@@ -115,7 +115,7 @@ void WindowGtk::Show() {
 }
 
 void WindowGtk::HideWindow() {
-  NOTIMPLEMENTED();
+  Hide();
 }
 
 void WindowGtk::PushForceHidden() {

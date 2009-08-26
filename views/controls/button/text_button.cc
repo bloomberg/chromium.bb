@@ -21,9 +21,12 @@ static const int kIconTextPadding = 5;
 static const int kPreferredPaddingHorizontal = 6;
 static const int kPreferredPaddingVertical = 5;
 
-static const SkColor kEnabledColor = SkColorSetRGB(6, 45, 117);
-static const SkColor kHighlightColor = SkColorSetARGB(200, 255, 255, 255);
-static const SkColor kDisabledColor = SkColorSetRGB(161, 161, 146);
+// static
+const SkColor TextButton::kEnabledColor = SkColorSetRGB(6, 45, 117);
+// static
+const SkColor TextButton::kHighlightColor = SkColorSetARGB(200, 255, 255, 255);
+// static
+const SkColor TextButton::kDisabledColor = SkColorSetRGB(161, 161, 146);
 
 // How long the hover fade animation should last.
 static const int kHoverAnimationDurationMs = 170;

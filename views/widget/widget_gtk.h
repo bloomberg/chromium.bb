@@ -156,6 +156,9 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
 
   void set_mouse_down(bool mouse_down) { is_mouse_down_ = mouse_down; }
 
+  // Do we own the mouse grab?
+  bool has_capture() const { return has_capture_; }
+
   // Returns whether capture should be released on mouse release. The default
   // is true.
   virtual bool ReleaseCaptureOnMouseReleased() { return true; }
@@ -164,7 +167,7 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   void DoGrab();
 
   // Releases a grab done by this widget.
-  void ReleaseGrab();
+  virtual void ReleaseGrab();
 
   // Sets the WindowGtk in the userdata section of the widget.
   static void SetWindowForNative(GtkWidget* widget, WindowGtk* window);

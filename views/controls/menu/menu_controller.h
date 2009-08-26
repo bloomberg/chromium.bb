@@ -158,13 +158,17 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // if the message is such that the menu should be closed.
   virtual bool Dispatch(const MSG& msg);
 
-  // Key processing. The return value of these is returned from Dispatch.
-  // In other words, if these return false (which they do if escape was
-  // pressed, or a matching mnemonic was found) the message loop returns.
-  bool OnKeyDown(const MSG& msg);
-  bool OnChar(const MSG& msg);
 #else
   virtual bool Dispatch(GdkEvent* event);
+#endif
+
+  // Key processing. The return value of this is returned from Dispatch.
+  // In other words, if this returns false (which happens if escape was
+  // pressed, or a matching mnemonic was found) the message loop returns.
+#if defined(OS_WIN)
+  bool OnKeyDown(int key_code, const MSG& msg);
+#else
+  bool OnKeyDown(int key_code);
 #endif
 
   // Creates a MenuController. If blocking is true, Run blocks the caller

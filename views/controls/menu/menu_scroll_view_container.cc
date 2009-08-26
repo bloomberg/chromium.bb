@@ -185,7 +185,8 @@ void MenuScrollViewContainer::Paint(gfx::Canvas* canvas) {
       NativeTheme::MENU, dc, MENU_POPUPBACKGROUND, 0, &bounds);
   canvas->endPlatformPaint();
 #else
-  NOTIMPLEMENTED();
+  // This is the same as COLOR_TOOLBAR.
+  canvas->drawColor(SkColorSetRGB(210, 225, 246), SkXfermode::kSrc_Mode);
 #endif
 }
 

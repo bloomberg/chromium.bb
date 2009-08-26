@@ -30,11 +30,16 @@ class MenuHost : public WidgetGtk {
  protected:
   virtual RootView* CreateRootView();
 
-  virtual void OnCancelMode();
+  // If the grab breaks we cancel the menu.
+  virtual gboolean OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event);
+  virtual void OnGrabNotify(GtkWidget* widget, gboolean was_grabbed);
 
   // Overriden to return false, we do NOT want to release capture on mouse
   // release.
   virtual bool ReleaseCaptureOnMouseReleased();
+
+  // Overriden to also release pointer grab.
+  virtual void ReleaseGrab();
 
  private:
   // If true, we've been closed.
@@ -42,6 +47,9 @@ class MenuHost : public WidgetGtk {
 
   // The view we contain.
   SubmenuView* submenu_;
+
+  // Have we done a pointer grab?
+  bool did_pointer_grab_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHost);
 };
