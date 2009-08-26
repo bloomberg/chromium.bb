@@ -19,7 +19,6 @@
 #include "base/string_util.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebInputEvent.h"
-// #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/gtk_plugin_container.h"
@@ -29,32 +28,13 @@
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/webkit_glue.h"
-#if defined(OS_LINUX)
+
 #include "third_party/npapi/bindings/npapi_x11.h"
-#endif
 
 using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
-
-WebPluginDelegate* WebPluginDelegate::Create(
-    const FilePath& filename,
-    const std::string& mime_type,
-    gfx::PluginWindowHandle containing_view) {
-  scoped_refptr<NPAPI::PluginLib> plugin =
-      NPAPI::PluginLib::CreatePluginLib(filename);
-  if (plugin.get() == NULL)
-    return NULL;
-
-  NPError err = plugin->NP_Initialize();
-  if (err != NPERR_NO_ERROR)
-    return NULL;
-
-  scoped_refptr<NPAPI::PluginInstance> instance =
-      plugin->CreateInstance(mime_type);
-  return new WebPluginDelegateImpl(containing_view, instance.get());
-}
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
@@ -79,6 +59,13 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     quirks_ |= PLUGIN_QUIRK_WINDOWLESS_OFFSET_WINDOW_TO_DRAW
         | PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW;
   }
+
+  // TODO(evanm): I played with this for quite a while but couldn't
+  // figure out a way to make Flash not crash unless I didn't call
+  // NPP_SetWindow.
+  // However, after piman's grand refactor of windowed plugins, maybe
+  // this is no longer necessary.
+  quirks_ |= PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY;
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
@@ -99,85 +86,18 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
   }
 }
 
-void WebPluginDelegateImpl::PluginDestroyed() {
-  delete this;
-}
-
-bool WebPluginDelegateImpl::Initialize(const GURL& url,
-                                       char** argn,
-                                       char** argv,
-                                       int argc,
-                                       WebPlugin* plugin,
-                                       bool load_manually) {
-  plugin_ = plugin;
-
-  instance_->set_web_plugin(plugin);
-  NPAPI::PluginInstance* old_instance =
-      NPAPI::PluginInstance::SetInitializingInstance(instance_);
-
-  bool start_result = instance_->Start(url, argn, argv, argc, load_manually);
-
-  NPAPI::PluginInstance::SetInitializingInstance(old_instance);
-
-  if (!start_result)
-    return false;
-
-  windowless_ = instance_->windowless();
-  if (windowless_) {
-    // For windowless plugins we should set the containing window handle
-    // as the instance window handle. This is what Safari does. Not having
-    // a valid window handle causes subtle bugs with plugins which retreive
-    // the window handle and validate the same. The window handle can be
-    // retreived via NPN_GetValue of NPNVnetscapeWindow.
-    instance_->set_window_handle(parent_);
-    // CreateDummyWindowForActivation();
-    // handle_event_pump_messages_event_ = CreateEvent(NULL, TRUE, FALSE, NULL);
-  } else {
-    if (!WindowedCreatePlugin())
-      return false;
-  }
+void WebPluginDelegateImpl::PlatformInitialize(WebPlugin* plugin) {
   gfx::PluginWindowHandle handle =
       windowless_ ? 0 : gtk_plug_get_id(GTK_PLUG(plug_));
   plugin->SetWindow(handle);
-
-  plugin_url_ = url.spec();
-
-  return true;
 }
 
-void WebPluginDelegateImpl::DestroyInstance() {
-  if (instance_ && (instance_->npp()->ndata != NULL)) {
-    // Shutdown all streams before destroying so that
-    // no streams are left "in progress".  Need to do
-    // this before calling set_web_plugin(NULL) because the
-    // instance uses the helper to do the download.
-    instance_->CloseStreams();
-
-    // TODO(evanm): I played with this for quite a while but couldn't
-    // figure out a way to make Flash not crash unless I didn't call
-    // NPP_SetWindow.  Perhaps it just should be marked with the quirk
-    // that wraps the NPP_SetWindow call.
-    // window_.window = NULL;
-    // if (!(quirks_ & PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY)) {
-    //   instance_->NPP_SetWindow(&window_);
-    // }
-
-    instance_->NPP_Destroy();
-
-    instance_->set_web_plugin(NULL);
-
-    instance_ = 0;
-  }
+void WebPluginDelegateImpl::PlatformDestroyInstance() {
+  // Nothing to do here.
 }
 
-void WebPluginDelegateImpl::UpdateGeometry(
-    const gfx::Rect& window_rect,
-    const gfx::Rect& clip_rect) {
-  if (windowless_) {
-    WindowlessUpdateGeometry(window_rect, clip_rect);
-  } else {
-    WindowedUpdateGeometry(window_rect, clip_rect);
-  }
+void WebPluginDelegateImpl::PluginDestroyed() {
+  delete this;
 }
 
 void WebPluginDelegateImpl::Paint(cairo_t* context,
@@ -190,74 +110,8 @@ void WebPluginDelegateImpl::Print(cairo_t* context) {
   NOTIMPLEMENTED();
 }
 
-NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
-  return instance_->GetPluginScriptableObject();
-}
-
-void WebPluginDelegateImpl::DidFinishLoadWithReason(NPReason reason) {
-  instance()->DidFinishLoadWithReason(reason);
-}
-
-int WebPluginDelegateImpl::GetProcessId() {
-  // We are in process, so the plugin pid is this current process pid.
-  return base::GetCurrentProcId();
-}
-
-void WebPluginDelegateImpl::SendJavaScriptStream(const std::string& url,
-                                                 const std::wstring& result,
-                                                 bool success,
-                                                 bool notify_needed,
-                                                 intptr_t notify_data) {
-  instance()->SendJavaScriptStream(url, result, success, notify_needed,
-                                   notify_data);
-}
-
-void WebPluginDelegateImpl::DidReceiveManualResponse(
-    const GURL& url, const std::string& mime_type,
-    const std::string& headers, uint32 expected_length, uint32 last_modified) {
-  if (!windowless_) {
-    // Calling NPP_WriteReady before NPP_SetWindow causes movies to not load in
-    // Flash.  See http://b/issue?id=892174.
-    DCHECK(windowed_did_set_window_);
-  }
-
-  instance()->DidReceiveManualResponse(url, mime_type, headers,
-                                       expected_length, last_modified);
-}
-
-void WebPluginDelegateImpl::DidReceiveManualData(const char* buffer,
-                                                 int length) {
-  instance()->DidReceiveManualData(buffer, length);
-}
-
-void WebPluginDelegateImpl::DidFinishManualLoading() {
-  instance()->DidFinishManualLoading();
-}
-
-void WebPluginDelegateImpl::DidManualLoadFail() {
-  instance()->DidManualLoadFail();
-}
-
-FilePath WebPluginDelegateImpl::GetPluginPath() {
-  return instance()->plugin_lib()->plugin_info().path;
-}
-
 void WebPluginDelegateImpl::InstallMissingPlugin() {
-  /* XXX NPEvent evt;
-  evt.event = PluginInstallerImpl::kInstallMissingPluginMessage;
-  evt.lParam = 0;
-  evt.wParam = 0;
-  instance()->NPP_HandleEvent(&evt); */
-}
-
-void WebPluginDelegateImpl::WindowedUpdateGeometry(
-    const gfx::Rect& window_rect,
-    const gfx::Rect& clip_rect) {
-  if (WindowedReposition(window_rect, clip_rect) ||
-      !windowed_did_set_window_) {
-    // Let the plugin know that it has been moved
-    WindowedSetWindow();
-  }
+  NOTIMPLEMENTED();
 }
 
 bool WebPluginDelegateImpl::WindowedCreatePlugin() {
@@ -855,34 +709,3 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   return ret;
 }
 
-WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
-    int resource_id, const GURL& url, bool notify_needed,
-    intptr_t notify_data, intptr_t existing_stream) {
-  // Stream already exists. This typically happens for range requests
-  // initiated via NPN_RequestRead.
-  if (existing_stream) {
-    NPAPI::PluginStream* plugin_stream =
-        reinterpret_cast<NPAPI::PluginStream*>(existing_stream);
-
-    plugin_stream->CancelRequest();
-
-    return plugin_stream->AsResourceClient();
-  }
-
-  if (notify_needed) {
-    instance()->SetURLLoadData(url, notify_data);
-  }
-  std::string mime_type;
-  NPAPI::PluginStreamUrl *stream = instance()->CreateStream(
-      resource_id, url, mime_type, notify_needed,
-      reinterpret_cast<void*>(notify_data));
-  return stream;
-}
-
-void WebPluginDelegateImpl::URLRequestRouted(const std::string&url,
-                                             bool notify_needed,
-                                             intptr_t notify_data) {
-  if (notify_needed) {
-    instance()->SetURLLoadData(GURL(url.c_str()), notify_data);
-  }
-}

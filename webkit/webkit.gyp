@@ -1339,6 +1339,7 @@
         'glue/plugins/webplugin_delegate_impl.h',
         'glue/plugins/webplugin_delegate_impl_gtk.cc',
         'glue/plugins/webplugin_delegate_impl_mac.mm',
+        'glue/plugins/webplugin_delegate_impl_win.cc',
         'glue/alt_error_page_resource_fetcher.cc',
         'glue/alt_error_page_resource_fetcher.h',
         'glue/autofill_form.cc',
@@ -1492,22 +1493,20 @@
         }],
         ['OS!="mac"', {
           'sources/': [['exclude', '_mac\\.(cc|mm)$']]
+        }, { # else: OS=="mac"
+          'sources!': [
+            # TODO(port): Unfork webplugin_delegate_impl_mac and this file.
+            'glue/plugins/webplugin_delegate_impl.cc',
+          ],
         }],
         ['OS!="win"', {
           'sources/': [['exclude', '_win\\.cc$']],
           'sources!': [
-            # TODO(port): Mac uses webplugin_delegate_impl_mac.cc and GTK uses
-            # webplugin_delegate_impl_gtk.cc.  Seems like this should be
-            # renamed webplugin_delegate_impl_win.cc, then we could get rid
-            # of the explicit exclude.
-            'glue/plugins/webplugin_delegate_impl.cc',
-
             # These files are Windows-only now but may be ported to other
             # platforms.
             'glue/glue_accessibility_object.cc',
             'glue/glue_accessibility_object.h',
             'glue/plugins/mozilla_extensions.cc',
-            'glue/plugins/webplugin_delegate_impl.cc',
             'glue/webaccessibility.h',
             'glue/webaccessibilitymanager.h',
             'glue/webaccessibilitymanager_impl.cc',

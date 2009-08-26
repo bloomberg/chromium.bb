@@ -101,6 +101,13 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
                         NPAPI::PluginInstance *instance);
   ~WebPluginDelegateImpl();
 
+  // Called by Initialize(), used for platform-specific initialization
+  // code.
+  void PlatformInitialize(WebPlugin* plugin);
+
+  // Called by DestroyInstance(), used for platform-specific destruction.
+  void PlatformDestroyInstance();
+
 #if !defined(OS_MACOSX)
   //--------------------------
   // used for windowed plugins

@@ -101,24 +101,6 @@ class DrawableContextEnforcer {
 
 }  // namespace
 
-WebPluginDelegate* WebPluginDelegate::Create(
-    const FilePath& filename,
-    const std::string& mime_type,
-    gfx::PluginWindowHandle containing_view) {
-  scoped_refptr<NPAPI::PluginLib> plugin =
-      NPAPI::PluginLib::CreatePluginLib(filename);
-  if (plugin.get() == NULL)
-    return NULL;
-
-  NPError err = plugin->NP_Initialize();
-  if (err != NPERR_NO_ERROR)
-    return NULL;
-
-  scoped_refptr<NPAPI::PluginInstance> instance =
-      plugin->CreateInstance(mime_type);
-  return new WebPluginDelegateImpl(containing_view, instance.get());
-}
-
 bool WebPluginDelegateImpl::IsPluginDelegateWindow(HWND window) {
   // We use a buffer that is one char longer than we need to detect cases where
   // kNativeWindowClassName is a prefix of the given window's class name.  It
@@ -263,56 +245,13 @@ void WebPluginDelegateImpl::PluginDestroyed() {
   }
 }
 
-bool WebPluginDelegateImpl::Initialize(const GURL& url,
-                                       char** argn,
-                                       char** argv,
-                                       int argc,
-                                       WebPlugin* plugin,
-                                       bool load_manually) {
-  plugin_ = plugin;
-
-  instance_->set_web_plugin(plugin);
-  NPAPI::PluginInstance* old_instance =
-      NPAPI::PluginInstance::SetInitializingInstance(instance_);
-
-  if (quirks_ & PLUGIN_QUIRK_DONT_ALLOW_MULTIPLE_INSTANCES) {
-    NPAPI::PluginLib* plugin_lib = instance()->plugin_lib();
-    if (plugin_lib->instance_count() > 1) {
-      return false;
-    }
-  }
-
-  if (quirks_ & PLUGIN_QUIRK_DIE_AFTER_UNLOAD)
-    webkit_glue::SetForcefullyTerminatePluginProcess(true);
-
-  bool start_result = instance_->Start(url, argn, argv, argc, load_manually);
-
-  NPAPI::PluginInstance::SetInitializingInstance(old_instance);
-
-  if (!start_result)
-    return false;
-
-  windowless_ = instance_->windowless();
-  if (!windowless_) {
-    if (!WindowedCreatePlugin())
-      return false;
-  }
-
+void WebPluginDelegateImpl::PlatformInitialize(WebPlugin* plugin) {
   plugin->SetWindow(windowed_handle_);
   if (windowless_) {
-    // For windowless plugins we should set the containing window handle
-    // as the instance window handle. This is what Safari does. Not having
-    // a valid window handle causes subtle bugs with plugins which retreive
-    // the window handle and validate the same. The window handle can be
-    // retreived via NPN_GetValue of NPNVnetscapeWindow.
-    instance_->set_window_handle(parent_);
-#if defined(OS_WIN)
     CreateDummyWindowForActivation();
     handle_event_pump_messages_event_ = CreateEvent(NULL, TRUE, FALSE, NULL);
     plugin->SetWindowlessPumpEvent(handle_event_pump_messages_event_);
-#endif
   }
-  plugin_url_ = url.spec();
 
   // The windowless version of the Silverlight plugin calls the
   // WindowFromPoint API and passes the result of that to the
@@ -340,50 +279,20 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
         GetPluginPath().value().c_str(), "user32.dll", "SetCursor",
         WebPluginDelegateImpl::SetCursorPatch);
   }
-  return true;
 }
 
-void WebPluginDelegateImpl::DestroyInstance() {
-  if (instance_ && (instance_->npp()->ndata != NULL)) {
-    // Shutdown all streams before destroying so that
-    // no streams are left "in progress".  Need to do
-    // this before calling set_web_plugin(NULL) because the
-    // instance uses the helper to do the download.
-    instance_->CloseStreams();
+void WebPluginDelegateImpl::PlatformDestroyInstance() {
+  if (instance_->plugin_lib()) {
+    // Unpatch if this is the last plugin instance.
+    if (instance_->plugin_lib()->instance_count() == 1) {
+      if (g_iat_patch_set_cursor.Pointer()->is_patched()) {
+        g_iat_patch_set_cursor.Pointer()->Unpatch();
+      }
 
-    window_.window = NULL;
-    if (!(quirks_ & PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY)) {
-      instance_->NPP_SetWindow(&window_);
-    }
-
-    instance_->NPP_Destroy();
-
-    instance_->set_web_plugin(NULL);
-
-    if (instance_->plugin_lib()) {
-      // Unpatch if this is the last plugin instance.
-      if (instance_->plugin_lib()->instance_count() == 1) {
-        if (g_iat_patch_set_cursor.Pointer()->is_patched()) {
-          g_iat_patch_set_cursor.Pointer()->Unpatch();
-        }
-
-        if (g_iat_patch_track_popup_menu.Pointer()->is_patched()) {
-          g_iat_patch_track_popup_menu.Pointer()->Unpatch();
-        }
+      if (g_iat_patch_track_popup_menu.Pointer()->is_patched()) {
+        g_iat_patch_track_popup_menu.Pointer()->Unpatch();
       }
     }
-
-    instance_ = 0;
-  }
-}
-
-void WebPluginDelegateImpl::UpdateGeometry(
-    const gfx::Rect& window_rect,
-    const gfx::Rect& clip_rect) {
-  if (windowless_) {
-    WindowlessUpdateGeometry(window_rect, clip_rect);
-  } else {
-    WindowedUpdateGeometry(window_rect, clip_rect);
   }
 }
 
@@ -407,74 +316,12 @@ void WebPluginDelegateImpl::Print(HDC hdc) {
 #endif
 }
 
-NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
-  return instance_->GetPluginScriptableObject();
-}
-
-void WebPluginDelegateImpl::DidFinishLoadWithReason(NPReason reason) {
-  instance()->DidFinishLoadWithReason(reason);
-}
-
-int WebPluginDelegateImpl::GetProcessId() {
-  // We are in process, so the plugin pid is this current process pid.
-  return ::GetCurrentProcessId();
-}
-
-void WebPluginDelegateImpl::SendJavaScriptStream(const std::string& url,
-                                                 const std::wstring& result,
-                                                 bool success,
-                                                 bool notify_needed,
-                                                 intptr_t notify_data) {
-  instance()->SendJavaScriptStream(url, result, success, notify_needed,
-                                   notify_data);
-}
-
-void WebPluginDelegateImpl::DidReceiveManualResponse(
-    const GURL& url, const std::string& mime_type,
-    const std::string& headers, uint32 expected_length, uint32 last_modified) {
-  if (!windowless_) {
-    // Calling NPP_WriteReady before NPP_SetWindow causes movies to not load in
-    // Flash.  See http://b/issue?id=892174.
-    DCHECK(windowed_did_set_window_);
-  }
-
-  instance()->DidReceiveManualResponse(url, mime_type, headers,
-                                       expected_length, last_modified);
-}
-
-void WebPluginDelegateImpl::DidReceiveManualData(const char* buffer,
-                                                 int length) {
-  instance()->DidReceiveManualData(buffer, length);
-}
-
-void WebPluginDelegateImpl::DidFinishManualLoading() {
-  instance()->DidFinishManualLoading();
-}
-
-void WebPluginDelegateImpl::DidManualLoadFail() {
-  instance()->DidManualLoadFail();
-}
-
-FilePath WebPluginDelegateImpl::GetPluginPath() {
-  return instance()->plugin_lib()->plugin_info().path;
-}
-
 void WebPluginDelegateImpl::InstallMissingPlugin() {
   NPEvent evt;
   evt.event = PluginInstallerImpl::kInstallMissingPluginMessage;
   evt.lParam = 0;
   evt.wParam = 0;
   instance()->NPP_HandleEvent(&evt);
-}
-
-void WebPluginDelegateImpl::WindowedUpdateGeometry(
-    const gfx::Rect& window_rect,
-    const gfx::Rect& clip_rect) {
-  if (WindowedReposition(window_rect, clip_rect) ||
-      !windowed_did_set_window_) {
-    // Let the plugin know that it has been moved
-    WindowedSetWindow();
-  }
 }
 
 bool WebPluginDelegateImpl::WindowedCreatePlugin() {
@@ -1191,35 +1038,6 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   return ret;
 }
 
-WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
-    int resource_id, const GURL& url, bool notify_needed,
-    intptr_t notify_data, intptr_t existing_stream) {
-  // Stream already exists. This typically happens for range requests
-  // initiated via NPN_RequestRead.
-  if (existing_stream) {
-    NPAPI::PluginStream* plugin_stream =
-        reinterpret_cast<NPAPI::PluginStream*>(existing_stream);
-
-    return plugin_stream->AsResourceClient();
-  }
-
-  if (notify_needed) {
-    instance()->SetURLLoadData(url, notify_data);
-  }
-  std::string mime_type;
-  NPAPI::PluginStreamUrl *stream = instance()->CreateStream(
-      resource_id, url, mime_type, notify_needed,
-      reinterpret_cast<void*>(notify_data));
-  return stream;
-}
-
-void WebPluginDelegateImpl::URLRequestRouted(const std::string&url,
-                                             bool notify_needed,
-                                             intptr_t notify_data) {
-  if (notify_needed) {
-    instance()->SetURLLoadData(GURL(url.c_str()), notify_data);
-  }
-}
 
 void WebPluginDelegateImpl::OnModalLoopEntered() {
   DCHECK(handle_event_pump_messages_event_ != NULL);

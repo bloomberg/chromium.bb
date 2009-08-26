@@ -160,6 +160,13 @@ void WebPluginDelegateImpl::DestroyInstance() {
   }
 }
 
+void WebPluginDelegateImpl::PlatformInitialize(WebPlugin* plugin) {
+  // TODO(port): implement these after unforking.
+}
+void WebPluginDelegateImpl::PlatformDestroyInstance() {
+  // TODO(port): implement these after unforking.
+}
+
 void WebPluginDelegateImpl::UpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect) {
