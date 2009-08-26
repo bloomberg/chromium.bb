@@ -143,6 +143,15 @@ TEST_F(MessageCommandsTest, MessageUpdateTexture2DRect) {
   EXPECT_EQ(10, msg2.msg.pitch);
 }
 
+TEST_F(MessageCommandsTest, MessageRenderTest) {
+  EXPECT_EQ(static_cast<int>(imc::RENDER), 7);
+  EXPECT_EQ(0u, offsetof(MessageRender::Msg, message_id));
+  MessageRender msg;
+  EXPECT_EQ(imc::RENDER, msg.msg.message_id);
+  EXPECT_EQ(4u, sizeof msg.msg);
+}
+
+
 }  // namespace o3d
 
 

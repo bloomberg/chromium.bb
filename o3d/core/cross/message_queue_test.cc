@@ -39,6 +39,7 @@
 #include "core/cross/service_dependency.h"
 #include "core/cross/texture.h"
 #include "core/cross/types.h"
+#include "core/cross/renderer.h"
 #include "tests/common/win/testing_common.h"
 #include "base/condition_variable.h"
 #include "base/lock.h"
@@ -250,6 +251,9 @@ class TextureUpdateHelper {
   // Unregisters a previously-registered client-allocated shared
   // memory segment.
   bool UnregisterSharedMemory(int shared_memory_id);
+
+  // Tells the renderer to render.
+  bool Render();
 
  private:
   // Handle of the socket that's connected to o3d.
@@ -564,7 +568,25 @@ bool TextureUpdateHelper::UnregisterSharedMemory(int shared_memory_id) {
   return reply;
 }
 
+// Tells the renderer to render..
+bool TextureUpdateHelper::Render() {
+  MessageRender msg;
+  nacl::MessageHeader header;
+  nacl::IOVec vec;
 
+  vec.base = &msg.msg;
+  vec.length = sizeof(msg.msg);
+  header.iov = &vec;
+  header.iov_length = 1;
+  header.handles = NULL;
+  header.handle_count = 0;
+
+  // Send message.
+  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
+  EXPECT_EQ(static_cast<int>(vec.length), result);
+  // Read back the boolean reply from the O3D plugin
+  return true;
+}
 
 //----------------------------------------------------------------------
 // This is the main class containing all of the other ones. It knows
@@ -1119,6 +1141,77 @@ TEST_F(MessageQueueTest, ConcurrentSharedMemoryOperations) {
   Provider provider;
   RunTests(2, TimeDelta::FromSeconds(6), &provider);
   EXPECT_FALSE(CheckErrorExists());
+}
+
+namespace {
+
+// This helper class for Render test.
+class RenderTest : public PerThreadConnectedTest {
+ private:
+  int num_iterations_;
+
+ public:
+  explicit RenderTest(int num_iterations) {
+    num_iterations_ = num_iterations;
+  }
+
+  void Run(MessageQueue* queue,
+           nacl::Handle socket_handle) {
+    String socket_addr = queue->GetSocketAddress();
+    TextureUpdateHelper helper;
+    if (!helper.ConnectToO3D(socket_addr.c_str(),
+                             socket_handle)) {
+      FAIL_TEST("Failed to connect to O3D");
+    }
+
+    // Allocate a shared memory segment
+    size_t mem_size = nacl::kMapPageSize;
+    nacl::Handle shared_memory = nacl::CreateMemoryObject(mem_size);
+    if (shared_memory == nacl::kInvalidHandle) {
+      FAIL_TEST("Failed to allocate shared memory object");
+    }
+
+    for (int i = 0; i < num_iterations_; i++) {
+      bool result = helper.Render();
+      if (!result) {
+        FAIL_TEST("Failed to request a render");
+      }
+      // Because Render has no result we run a few more messages the do
+      // to make sure Render was processed.
+      int shared_mem_id =
+        helper.RegisterSharedMemory(shared_memory, mem_size);
+      if (shared_mem_id < 0) {
+        FAIL_TEST("Failed to register shared memory with server");
+      }
+      result = helper.UnregisterSharedMemory(shared_mem_id);
+      if (!result) {
+        FAIL_TEST("Failed to unregister shared memory from server");
+      }
+    }
+
+    Pass();
+  }
+};
+
+}  // anonymous namespace.
+
+// Tests requesting a render.
+TEST_F(MessageQueueTest, Render) {
+  class Provider : public TestProvider {
+   public:
+    virtual PerThreadConnectedTest* CreateTest() {
+      return new RenderTest(1);
+    }
+  };
+
+  Renderer* renderer(g_service_locator->GetService<Renderer>());
+  ASSERT_TRUE(renderer != NULL);
+  renderer->set_need_to_render(false);
+
+  Provider provider;
+  RunTests(1, TimeDelta::FromSeconds(1), &provider);
+  EXPECT_FALSE(CheckErrorExists());
+  EXPECT_TRUE(renderer->need_to_render());
 }
 
 }  // namespace o3d

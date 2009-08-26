@@ -60,6 +60,7 @@ O3D_PUSH_STRUCTURE_PACKING_1;
   OP(REGISTER_SHARED_MEMORY, MessageRegisterSharedMemory) \
   OP(UNREGISTER_SHARED_MEMORY, MessageUnregisterSharedMemory) \
   OP(UPDATE_TEXTURE2D_RECT, MessageUpdateTexture2DRect) \
+  OP(RENDER, MessageRender) \
 
 
 namespace imc {
@@ -319,6 +320,24 @@ struct MessageUpdateTexture2DRect {
 
   Msg msg;
 };
+
+// Tell O3D to render. This is generally used when O3D is in Render on demand
+// mode.
+struct MessageRender {
+  // Message Content.
+  struct Msg {
+    static const imc::MessageId kMessageId = imc::RENDER;
+
+    imc::MessageId message_id;
+  };
+
+  MessageRender() {
+    msg.message_id = Msg::kMessageId;
+  }
+
+  Msg msg;
+};
+
 
 O3D_POP_STRUCTURE_PACKING;
 

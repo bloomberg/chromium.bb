@@ -44,6 +44,7 @@
 #include "core/cross/texture.h"
 #include "core/cross/error.h"
 #include "core/cross/pointer_utils.h"
+#include "core/cross/renderer.h"
 
 #ifdef OS_WIN
 #include "core/cross/core_metrics.h"
@@ -791,5 +792,24 @@ bool MessageQueue::ProcessMessageUnregisterSharedMemory(
   return res;
 }
 
+// Processes a request to Render.
+bool MessageQueue::ProcessMessageRender(
+    ConnectedClient* client,
+    int message_length,
+    nacl::MessageHeader* header,
+    nacl::Handle* handles,
+    const MessageRender::Msg& message) {
+  if (header->iov_length != 1 ||
+      header->handle_count != 0) {
+    LOG(ERROR) << "Malformed message for RENDER";
+    return false;
+  }
+
+  Renderer* renderer(service_locator_->GetService<Renderer>());
+  if (renderer) {
+    renderer->set_need_to_render(true);
+  }
+  return true;
+}
 
 }  // namespace o3d
