@@ -66,14 +66,18 @@ class ImporterTest : public testing::Test {
     std::wstring search_engine_path = app_path_;
     file_util::AppendToPath(&search_engine_path, L"searchplugins");
     CreateDirectory(search_engine_path.c_str(), NULL);
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
-    file_util::AppendToPath(&data_path, L"firefox3_searchplugins");
-    if (!file_util::PathExists(data_path)) {
-      // TODO(maruel):  Create test data that we can open source!
-      LOG(ERROR) << L"Missing internal test data";
-      return;
+    if (import_search_plugins) {
+      ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
+      file_util::AppendToPath(&data_path, L"firefox3_searchplugins");
+      if (!file_util::PathExists(data_path)) {
+        // TODO(maruel):  Create search test data that we can open source!
+        delete observer;
+        LOG(ERROR) << L"Missing internal test data";
+        return;
+      }
+      ASSERT_TRUE(file_util::CopyDirectory(data_path,
+                                           search_engine_path, false));
     }
-    ASSERT_TRUE(file_util::CopyDirectory(data_path, search_engine_path, false));
 
     MessageLoop* loop = MessageLoop::current();
     ProfileInfo profile_info;
