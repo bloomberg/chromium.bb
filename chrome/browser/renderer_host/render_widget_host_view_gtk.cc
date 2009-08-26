@@ -85,9 +85,6 @@ class RenderWidgetHostViewGtkWidget {
     g_signal_connect_after(widget, "scroll-event",
                            G_CALLBACK(MouseScrollEvent), host_view);
 
-    // Create GtkIMContext wrapper object.
-    host_view->im_context_.reset(new GtkIMContextWrapper(host_view));
-
     return widget;
   }
 
@@ -300,6 +297,8 @@ RenderWidgetHostViewGtk::~RenderWidgetHostViewGtk() {
 
 void RenderWidgetHostViewGtk::InitAsChild() {
   view_.Own(RenderWidgetHostViewGtkWidget::CreateNewWidget(this));
+  // |im_context_| must be created after creating |view_| widget.
+  im_context_.reset(new GtkIMContextWrapper(this));
   plugin_container_manager_.set_host_widget(view_.get());
   gtk_widget_show(view_.get());
 }
@@ -310,6 +309,8 @@ void RenderWidgetHostViewGtk::InitAsPopup(
   parent_ = parent_host_view->GetNativeView();
   GtkWidget* popup = gtk_window_new(GTK_WINDOW_POPUP);
   view_.Own(RenderWidgetHostViewGtkWidget::CreateNewWidget(this));
+  // |im_context_| must be created after creating |view_| widget.
+  im_context_.reset(new GtkIMContextWrapper(this));
   plugin_container_manager_.set_host_widget(view_.get());
   gtk_container_add(GTK_CONTAINER(popup), view_.get());
 

@@ -17,6 +17,7 @@ class Rect;
 class RenderWidgetHostViewGtk;
 class NativeWebKeyboardEvent;
 typedef struct _GtkIMContext GtkIMContext;
+typedef struct _GtkWidget GtkWidget;
 
 // This class is a convenience wrapper for GtkIMContext.
 // It creates and manages two GtkIMContext instances, one is GtkIMMulticontext,
@@ -68,6 +69,14 @@ class GtkIMContextWrapper {
   // Real code of "preedit-end" signal handler.
   void HandlePreeditEnd();
 
+  // Real code of "realize" signal handler, used for setting im context's client
+  // window.
+  void HandleHostViewRealize(GtkWidget* widget);
+
+  // Real code of "unrealize" signal handler, used for unsetting im context's
+  // client window.
+  void HandleHostViewUnrealize();
+
   // Signal handlers of GtkIMContext object.
   static void HandleCommitThunk(GtkIMContext* context, gchar* text,
                                 GtkIMContextWrapper* self);
@@ -77,6 +86,12 @@ class GtkIMContextWrapper {
                                         GtkIMContextWrapper* self);
   static void HandlePreeditEndThunk(GtkIMContext* context,
                                     GtkIMContextWrapper* self);
+
+  // Signal handlers connecting to |host_view_|'s native view widget.
+  static void HandleHostViewRealizeThunk(GtkWidget* widget,
+                                         GtkIMContextWrapper* self);
+  static void HandleHostViewUnrealizeThunk(GtkWidget* widget,
+                                           GtkIMContextWrapper* self);
 
   // The parent object.
   RenderWidgetHostViewGtk* host_view_;

@@ -51,6 +51,17 @@ GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)
                    G_CALLBACK(HandlePreeditChangedThunk), this);
   g_signal_connect(context_simple_, "commit",
                    G_CALLBACK(HandleCommitThunk), this);
+
+  GtkWidget* widget = host_view->native_view();
+  DCHECK(widget);
+
+  g_signal_connect(widget, "realize",
+                   G_CALLBACK(HandleHostViewRealizeThunk), this);
+  g_signal_connect(widget, "unrealize",
+                   G_CALLBACK(HandleHostViewUnrealizeThunk), this);
+
+  // Set client window if the widget is already realized.
+  HandleHostViewRealize(widget);
 }
 
 GtkIMContextWrapper::~GtkIMContextWrapper() {
@@ -193,21 +204,10 @@ void GtkIMContextWrapper::OnFocusIn() {
   // GtkIMContext object correctly later when IME is enabled by WebKit.
   is_focused_ = true;
 
-  // We should call gtk_im_context_set_client_window() only when this window
-  // gain (or release) the window focus because an immodule may reset its
-  // internal status when processing this function.
-  gtk_im_context_set_client_window(context_,
-                                   host_view_->native_view()->window);
-
   // Notify the GtkIMContext object of this focus-in event only if IME is
   // enabled by WebKit.
   if (is_enabled_)
     gtk_im_context_focus_in(context_);
-
-  // Actually current GtkIMContextSimple implementation doesn't care about
-  // client window. This line is just for safe.
-  gtk_im_context_set_client_window(context_simple_,
-                                   host_view_->native_view()->window);
 
   // context_simple_ is always enabled.
   // Actually it doesn't care focus state at all.
@@ -234,13 +234,9 @@ void GtkIMContextWrapper::OnFocusOut() {
     gtk_im_context_focus_out(context_);
   }
 
-  // Detach this GtkIMContext object from this window.
-  gtk_im_context_set_client_window(context_, NULL);
-
   // To make sure it'll be in correct state when focused in again.
   gtk_im_context_reset(context_simple_);
   gtk_im_context_focus_out(context_simple_);
-  gtk_im_context_set_client_window(context_simple_, NULL);
 
   // Reset stored IME status.
   is_composing_text_ = false;
@@ -472,6 +468,21 @@ void GtkIMContextWrapper::HandlePreeditEnd() {
   // signal may be fired before "commit" signal.
 }
 
+void GtkIMContextWrapper::HandleHostViewRealize(GtkWidget* widget) {
+  // We should only set im context's client window once, because when setting
+  // client window.im context may destroy and recreate its internal states and
+  // objects.
+  if (widget->window) {
+    gtk_im_context_set_client_window(context_, widget->window);
+    gtk_im_context_set_client_window(context_simple_, widget->window);
+  }
+}
+
+void GtkIMContextWrapper::HandleHostViewUnrealize() {
+  gtk_im_context_set_client_window(context_, NULL);
+  gtk_im_context_set_client_window(context_simple_, NULL);
+}
+
 void GtkIMContextWrapper::HandleCommitThunk(
     GtkIMContext* context, gchar* text, GtkIMContextWrapper* self) {
   self->HandleCommit(UTF8ToUTF16(text));
@@ -494,4 +505,14 @@ void GtkIMContextWrapper::HandlePreeditChangedThunk(
 void GtkIMContextWrapper::HandlePreeditEndThunk(
     GtkIMContext* context, GtkIMContextWrapper* self) {
   self->HandlePreeditEnd();
+}
+
+void GtkIMContextWrapper::HandleHostViewRealizeThunk(
+    GtkWidget* widget, GtkIMContextWrapper* self) {
+  self->HandleHostViewRealize(widget);
+}
+
+void GtkIMContextWrapper::HandleHostViewUnrealizeThunk(
+    GtkWidget* widget, GtkIMContextWrapper* self) {
+  self->HandleHostViewUnrealize();
 }
