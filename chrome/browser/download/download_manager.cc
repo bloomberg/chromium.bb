@@ -1431,8 +1431,6 @@ void DownloadManager::GenerateSafeFilename(const std::string& mime_type,
       *file_name = file_name->Append(leaf_name);
     }
   }
-#elif defined(OS_POSIX)
-  NOTIMPLEMENTED();
 #endif
 }
 
