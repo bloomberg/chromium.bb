@@ -244,4 +244,22 @@ String contextMenuItemTagShowSpellingPanel(bool show) { return String(); }
 String mediaElementLiveBroadcastStateText() { return String(); }
 String mediaElementLoadingStateText() { return String(); }
 
+String localizedMediaControlElementString(const String& /*name*/)
+{
+    // FIXME: to be fixed.
+    return String();
+}
+
+String localizedMediaControlElementHelpText(const String& /*name*/)
+{
+    // FIXME: to be fixed.
+    return String();
+}
+
+String localizedMediaTimeDescription(float /*time*/)
+{
+    // FIXME: to be fixed.
+    return String();
+}
+
 } // namespace WebCore
