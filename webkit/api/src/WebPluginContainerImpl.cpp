@@ -68,14 +68,14 @@ void WebPluginContainerImpl::setFrameRect(const IntRect& frameRect)
 {
     Widget::setFrameRect(frameRect);
 
-    if (!parent() || !isVisible())
+    if (!parent())
         return;
 
     IntRect windowRect, clipRect;
     Vector<IntRect> cutOutRects;
     calculateGeometry(frameRect, windowRect, clipRect, cutOutRects);
 
-    m_webPlugin->updateGeometry(windowRect, clipRect, cutOutRects);
+    m_webPlugin->updateGeometry(windowRect, clipRect, cutOutRects, isVisible());
 }
 
 void WebPluginContainerImpl::paint(GraphicsContext* gc, const IntRect& damageRect)

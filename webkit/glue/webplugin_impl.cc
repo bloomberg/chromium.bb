@@ -285,7 +285,7 @@ void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& paint_rect) {
 
 void WebPluginImpl::updateGeometry(
     const WebRect& window_rect, const WebRect& clip_rect,
-    const WebVector<WebRect>& cutout_rects) {
+    const WebVector<WebRect>& cutout_rects, bool is_visible) {
   if (window_) {
     WebViewDelegate* view_delegate = GetWebViewDelegate();
     if (view_delegate) {
@@ -299,7 +299,7 @@ void WebPluginImpl::updateGeometry(
       for (size_t i = 0; i < cutout_rects.size(); ++i)
         move.cutout_rects.push_back(cutout_rects[i]);
       move.rects_valid = true;
-      move.visible = true;  // Assume visible or else we wouldn't be here.
+      move.visible = is_visible;
 
       view_delegate->DidMovePlugin(move);
     }

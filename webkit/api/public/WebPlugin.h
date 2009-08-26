@@ -54,7 +54,7 @@ namespace WebKit {
         // Coordinates are relative to the containing window.
         virtual void updateGeometry(
             const WebRect& frameRect, const WebRect& clipRect,
-            const WebVector<WebRect>& cutOutsRects) = 0;
+            const WebVector<WebRect>& cutOutsRects, bool isVisible) = 0;
 
         virtual void updateFocus(bool) = 0;
         virtual void updateVisibility(bool) = 0;

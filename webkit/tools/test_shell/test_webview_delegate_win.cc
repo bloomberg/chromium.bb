@@ -65,16 +65,22 @@ WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
 }
 
 void TestWebViewDelegate::DidMovePlugin(const WebPluginGeometry& move) {
-  HRGN hrgn = ::CreateRectRgn(move.clip_rect.x(),
-                              move.clip_rect.y(),
-                              move.clip_rect.right(),
-                              move.clip_rect.bottom());
-  gfx::SubtractRectanglesFromRegion(hrgn, move.cutout_rects);
-
-  // Note: System will own the hrgn after we call SetWindowRgn,
-  // so we don't need to call DeleteObject(hrgn)
-  ::SetWindowRgn(move.window, hrgn, FALSE);
   unsigned long flags = 0;
+
+  if (move.rects_valid) {
+    HRGN hrgn = ::CreateRectRgn(move.clip_rect.x(),
+                                move.clip_rect.y(),
+                                move.clip_rect.right(),
+                                move.clip_rect.bottom());
+    gfx::SubtractRectanglesFromRegion(hrgn, move.cutout_rects);
+
+    // Note: System will own the hrgn after we call SetWindowRgn,
+    // so we don't need to call DeleteObject(hrgn)
+    ::SetWindowRgn(move.window, hrgn, FALSE);
+  } else {
+    flags |= (SWP_NOSIZE | SWP_NOMOVE);
+  }
+
   if (move.visible)
     flags |= SWP_SHOWWINDOW;
   else

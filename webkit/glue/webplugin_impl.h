@@ -88,7 +88,7 @@ class WebPluginImpl : public WebPlugin,
       WebKit::WebCanvas* canvas, const WebKit::WebRect& paint_rect);
   virtual void updateGeometry(
       const WebKit::WebRect& frame_rect, const WebKit::WebRect& clip_rect,
-      const WebKit::WebVector<WebKit::WebRect>& cut_outs);
+      const WebKit::WebVector<WebKit::WebRect>& cut_outs, bool is_visible);
   virtual void updateFocus(bool focused);
   virtual void updateVisibility(bool visible);
   virtual bool acceptsInputEvents();

@@ -2788,9 +2788,6 @@ BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.html = FAIL
 
-BUG19888 LINUX WIN : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = FAIL
-BUG19888 WIN :  LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
-
 // Temporary supression while we investigate.
 BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
 
