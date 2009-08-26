@@ -354,14 +354,15 @@ bool ChromeMiniInstaller::CheckRegistryKeyOnUninstall(
 // Deletes Installer folder from Applications directory.
 void ChromeMiniInstaller::DeleteFolder(const wchar_t* folder_name) {
   std::wstring install_path = GetChromeInstallDirectoryLocation();
-  if (folder_name == L"version_folder") {
+  if (wcscmp(folder_name, L"version_folder") == 0) {
     std::wstring delete_path;
     delete_path = mini_installer_constants::kChromeAppDir;
     std::wstring build_number;
     GetChromeVersionFromRegistry(&build_number);
     delete_path = delete_path + build_number;
     file_util::AppendToPath(&install_path, delete_path);
-  } else if (folder_name == mini_installer_constants::kChromeAppDir) {
+  } else if (wcscmp(folder_name,
+                    mini_installer_constants::kChromeAppDir) == 0) {
     file_util::AppendToPath(&install_path, folder_name);
     file_util::TrimTrailingSeparator(&install_path);
   }
