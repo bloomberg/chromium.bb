@@ -75,6 +75,10 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // engines.)
   virtual SkBitmap* LoadThemeBitmap(int id);
 
+  // If use_gtk_ is true, completely ignores this call. Otherwise passes it to
+  // the superclass.
+  virtual void SaveThemeBitmap(const std::string resource_name, int id);
+
   // Handles signal from GTK that our theme has been changed.
   static void OnStyleSet(GtkWidget* widget,
                          GtkStyle* previous_style,

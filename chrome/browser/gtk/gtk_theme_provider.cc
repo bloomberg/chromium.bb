@@ -200,6 +200,17 @@ SkBitmap* GtkThemeProvider::LoadThemeBitmap(int id) {
   }
 }
 
+void GtkThemeProvider::SaveThemeBitmap(const std::string resource_name,
+                                       int id) {
+  if (!use_gtk_) {
+    // Prevent us from writing out our mostly unused resources in gtk theme
+    // mode. Simply preventing us from writing this data out in gtk mode isn't
+    // the best design, but this would probably be a very invasive change on
+    // all three platforms otherwise.
+    BrowserThemeProvider::SaveThemeBitmap(resource_name, id);
+  }
+}
+
 // static
 void GtkThemeProvider::OnStyleSet(GtkWidget* widget,
                                   GtkStyle* previous_style,
@@ -215,7 +226,9 @@ void GtkThemeProvider::LoadGtkValues() {
   // Before we start setting images and values, we have to clear out old, stale
   // values. (If we don't do this, we'll regress startup time in the case where
   // someone installs a heavyweight theme, then goes back to GTK.)
-  profile()->GetPrefs()->ClearPref(prefs::kCurrentThemeImages);
+  DictionaryValue* pref_images =
+      profile()->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeImages);
+  pref_images->Clear();
 
   GtkStyle* window_style = gtk_rc_get_style(fake_window_);
   GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
