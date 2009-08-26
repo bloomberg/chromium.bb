@@ -309,6 +309,50 @@ static void nc_release_tls_node(nc_thread_memory_block_t *tls_node) {
   }
 }
 
+#if NACL_TARGET_ARCH == x86
+/* internal initialization spinlock */
+/*
+ * TODO(gregoryd) - Make static. Use local labels to prevent redefinition errors
+ * when the definition is moved to a header file.
+ */
+inline __attribute__((gnu_inline)) void nc_spinlock_lock(int *lock) {
+  __asm__("mov %0, %%ecx \n\t"
+          "mov 0x1, %%eax \n\t"
+          "loop: xchg    (%%ecx), %%eax    \n\t"
+          "test    %%eax, %%eax         \n\t"
+          "jnz     loop                 \n\t"
+          :"=r"(lock): "0"(lock));
+}
+#elif NACL_TARGET_ARCH == arm
+static INLINE void nc_spinlock_lock(int *lock) {
+  uint32_t val;
+
+  do
+    asm volatile ("swp %0, %1, [%2]"
+      : "=r" (val)
+      : "0" (1), "r" (lock)
+      : "memory");
+  while (val != 0);
+}
+#else
+#error "unknown platform"
+#endif
+
+#if NACL_TARGET_ARCH == x86
+inline __attribute__((gnu_inline)) void nc_spinlock_unlock(int *lock) {
+  __asm__("mov %0, %%ecx \n\t"
+          "mov 0, %%eax \n\t"
+          "xchg (%%ecx), %%eax":"=r"(lock));
+}
+#elif NACL_TARGET_ARCH == arm
+static INLINE void nc_spinlock_unlock(int *lock) {
+  *lock = 0;
+}
+#else
+#error "unknown platform"
+#endif
+
+
 uint32_t __nacl_tdb_id_function(nc_hash_entry_t *entry) {
   nc_basic_thread_data_t *basic_data =
       HASH_ENTRY_TO_ENTRY_TYPE(entry, nc_basic_thread_data, hash_entry);
