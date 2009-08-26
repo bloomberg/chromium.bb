@@ -37,6 +37,7 @@ class TestGypBase(TestCommon.TestCommon):
   """
 
   build_tool = None
+  build_tool_list = []
 
   _exe = TestCommon.exe_suffix
   _obj = TestCommon.obj_suffix
@@ -109,13 +110,25 @@ class TestGypBase(TestCommon.TestCommon):
 
   def initialize_build_tool(self):
     """
-    Initializes the .build_tool attribute to the absolute path of
-    an actual executable on the user's $PATH.
+    Initializes the .build_tool attribute.
+
+    Searches the .build_tool_list for an executable name on the user's
+    $PATH.  The first tool on the list is used as-is if nothing is found
+    on the current $PATH.
     """
-    if self.build_tool and not os.path.isabs(self.build_tool):
-      build_tool = self.where_is(self.build_tool)
+    for build_tool in self.build_tool_list:
+      if not build_tool:
+        continue
+      if os.path.isabs(build_tool):
+        self.build_tool = build_tool
+        return
+      build_tool = self.where_is(build_tool)
       if build_tool:
         self.build_tool = build_tool
+        return
+
+    if self.build_tool_list:
+      self.build_tool = self.build_tool_list[0]
 
   def run_gyp(self, gyp_file, *args, **kw):
     """
@@ -194,7 +207,7 @@ class TestGypMake(TestGypBase):
   Subclass for testing the GYP Make generator.
   """
   format = 'make'
-  build_tool = 'make'
+  build_tool_list = ['make']
   def build_all(self, gyp_file, **kw):
     """
     Builds the Make 'all' target to build all targets for the Makefiles
@@ -238,7 +251,11 @@ class TestGypMSVS(TestGypBase):
   Subclass for testing the GYP Visual Studio generator.
   """
   format = 'msvs'
-  build_tool = 'devenv'
+
+  # Initial None element will indicate to our .initialize_build_tool()
+  # method below that 'devenv' was not found on %PATH%.
+  build_tool_list = [None, 'devenv']
+
   def build_all(self, gyp_file, **kw):
     """
     Runs devenv.exe with no target-specific options to get the "all"
@@ -268,17 +285,15 @@ class TestGypMSVS(TestGypBase):
     and %PATHEXT% for a devenv.{exe,bat,...} executable, and falling
     back to a hard-coded default (on the current drive) if necessary.
     """
-    build_tool = self.where_is(self.build_tool)
-    if build_tool:
-      self.build_tool = build_tool
-      return
-    # We didn't find 'devenv' on the path.  Just hard-code a default,
-    # and revisit this if it becomes important.
-    self.build_tool = os.path.join('\\Program Files',
-                                   'Microsoft Visual Studio 8',
-                                   'Common7',
-                                   'IDE',
-                                   'devenv.exe')
+    super(TestGypMSVS, self).initialize_build_tool()
+    if not self.build_tool:
+      # We didn't find 'devenv' on the path.  Just hard-code a default,
+      # and revisit this if it becomes important.
+      self.build_tool = os.path.join('\\Program Files',
+                                     'Microsoft Visual Studio 8',
+                                     'Common7',
+                                     'IDE',
+                                     'devenv.exe')
   def run_build(self, gyp_file, *args, **kw):
     """
     Runs a Visual Studio build using the configuration generated
@@ -304,7 +319,7 @@ class TestGypSCons(TestGypBase):
   Subclass for testing the GYP SCons generator.
   """
   format = 'scons'
-  build_tool = 'scons'
+  build_tool_list = ['scons', 'scons.py']
   def build_all(self, gyp_file, **kw):
     """
     Builds the scons 'all' target to build all targets for the
@@ -352,7 +367,7 @@ class TestGypXcode(TestGypBase):
   Subclass for testing the GYP Xcode generator.
   """
   format = 'xcode'
-  build_tool = 'xcodebuild'
+  build_tool_list = ['xcodebuild']
   def build_all(self, gyp_file, **kw):
     """
     Uses the xcodebuild -alltargets option to build all targets for the
