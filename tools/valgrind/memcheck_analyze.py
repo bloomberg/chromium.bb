@@ -31,10 +31,10 @@ def _GdbOutputToFileLine(output_line):
   else:
     return None
 
-def ResolveAddressesWithinABinary(binary_name, address_list):
+def ResolveAddressesWithinABinary(binary_name, load_address, address_list):
   ''' For each address, return a pair (file, line num) '''
   commands = tempfile.NamedTemporaryFile()
-  commands.write('file %s\n' % binary_name)
+  commands.write('add-symbol-file "%s" %s\n' % (binary_name, load_address))
   for addr in address_list:
     commands.write('info line *%s\n' % addr)
   commands.write('quit\n')
@@ -59,11 +59,18 @@ def ResolveAddressesWithinABinary(binary_name, address_list):
 class _AddressTable(object):
   ''' Object to do batched line number lookup. '''
   def __init__(self):
+    self._load_addresses = {}
     self._binaries = {}
     self._all_resolved = False
 
+  def AddBinaryAt(self, binary, load_address):
+    ''' Register a new shared library or executable. '''
+    self._load_addresses[binary] = load_address
+
   def Add(self, binary, address):
     ''' Register a lookup request. '''
+    if binary == '':
+      logging.warn('adding address %s in empty binary?' % address)
     if binary in self._binaries:
       self._binaries[binary].append(address)
     else:
@@ -74,8 +81,10 @@ class _AddressTable(object):
     ''' Carry out all lookup requests. '''
     self._translation = {}
     for binary in self._binaries.keys():
-      addr = ResolveAddressesWithinABinary(binary, self._binaries[binary])
-      self._translation[binary] = addr
+      if binary != '':
+        load_address = self._load_addresses[binary]
+        addr = ResolveAddressesWithinABinary(binary, load_address, self._binaries[binary])
+        self._translation[binary] = addr
     self._all_resolved = True
 
   def GetFileLine(self, binary, addr):
@@ -195,13 +204,20 @@ class ValgrindError:
     # Each frame looks like this:
     #  <frame>
     #    <ip>0x83751BC</ip>
-    #    <obj>/usr/local/google/bigdata/dkegel/chrome-build/src/out/Release/base_unittests</obj>
+    #    <obj>/data/dkegel/chrome-build/src/out/Release/base_unittests</obj>
     #    <fn>_ZN7testing8internal12TestInfoImpl7RunTestEPNS_8TestInfoE</fn>
     #    <dir>/data/dkegel/chrome-build/src/testing/gtest/src</dir>
     #    <file>gtest-internal-inl.h</file>
     #    <line>655</line>
     #  </frame>
-    # although the dir, file, and line elements are missing if there is no debug info.
+    # although the dir, file, and line elements are missing if there is
+    # no debug info.
+    #
+    # With our patch for https://bugs.kde.org/show_bug.cgi?id=205000 in,
+    # the file also includes records of the form
+    # <load_obj><obj>/usr/lib/libgcc_s.1.dylib</obj><ip>0x27000</ip></load_obj>
+    # giving the filename and load address of each binary that was mapped
+    # into the process.
 
     self._kind = getTextOf(error_node, "kind")
     self._backtraces = []
@@ -339,13 +355,7 @@ class MemcheckAnalyze:
         if origsize > newsize+1:
           logging.warn(str(origsize - newsize) + " bytes of junk were after </valgrindoutput> in %s!" % file)
         try:
-          raw_errors = parse(file).getElementsByTagName("error")
-          for raw_error in raw_errors:
-            # Ignore "possible" leaks for now by default.
-            if (show_all_leaks or
-                getTextOf(raw_error, "kind") != "Leak_PossiblyLost"):
-              error = ValgrindError(source_dir, raw_error)
-              self._errors.add(error)
+          parsed_file = parse(file);
         except ExpatError, e:
           self._parse_failed = True
           logging.warn("could not parse %s: %s" % (file, e))
@@ -364,6 +374,22 @@ class MemcheckAnalyze:
               logging.warn("> %s" % context_data)
           context_file.close()
           continue
+        if TheAddressTable != None:
+          load_objs = parsed_file.getElementsByTagName("load_obj")
+          for load_obj in load_objs:
+            global TheAddressTable
+            obj = getTextOf(load_obj, "obj")
+            ip = getTextOf(load_obj, "ip")
+            TheAddressTable.AddBinaryAt(obj, ip)
+
+        raw_errors = parsed_file.getElementsByTagName("error")
+        for raw_error in raw_errors:
+          # Ignore "possible" leaks for now by default.
+          if (show_all_leaks or
+              getTextOf(raw_error, "kind") != "Leak_PossiblyLost"):
+            error = ValgrindError(source_dir, raw_error)
+            self._errors.add(error)
+
     if len(badfiles) > 0:
       logging.warn("valgrind didn't finish writing %d files?!" % len(badfiles))
       for file in badfiles:

@@ -64,6 +64,10 @@ then
   # "Want --show-possible option so I can ignore the bazillion possible leaks..."
   patch -p0 < "${THISDIR}/possible.patch"
 
+  # Add feature bug https://bugs.kde.org/show_bug.cgi?id=205000
+  # "Need library load address in log files"
+  patch -p0 < "${THISDIR}/xml-loadadr.patch"
+
   if [ "${INSTALL_TSAN}" = "yes" ]
   then
     # Add ThreadSanitier to the installation.

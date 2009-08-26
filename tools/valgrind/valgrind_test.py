@@ -181,6 +181,18 @@ class ValgrindTool(object):
         shutil.copyfile(dsym_file, test_command)
         shutil.copymode(saved_test_command, test_command)
 
+        # Make sure the Chromium Framework symbols are available.
+        # See message from mmentovai on aug 5
+        build_dir = os.path.dirname(test_command)
+        symlink_source = '../../../Chromium Framework.framework.dSYM'
+        symlink_target = build_dir + '/Chromium.app/Contents/Frameworks/Chromium Framework.framework.dSYM'
+        try:
+          os.remove(symlink_target)
+        except IOError, (errno, strerror):
+          pass
+        logging.info('Trying ln -s "%s" "%s"' % (symlink_source, symlink_target))
+        os.symlink(symlink_source, symlink_target)
+
     if needs_dsymutil:
       if self._options.generate_dsym:
         # Remove the .dSYM bundle if it exists.
@@ -364,7 +376,7 @@ class Memcheck(ValgrindTool):
     filenames = glob.glob(self.TMP_DIR + "/memcheck.*")
 
     use_gdb = (sys.platform == 'darwin')
-    analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames, self._options.show_all_leaks, 
+    analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames, self._options.show_all_leaks,
                                                 use_gdb=use_gdb)
     return analyzer.Report()
 
