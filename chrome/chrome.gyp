@@ -5122,6 +5122,29 @@
               'dependencies': [
                 '../views/views.gyp:views',
               ],
+              'sources/': [
+                ['include', 'browser/views/bookmark_bar_view_test.cc'],
+                ['include', 'test/interactive_ui/view_event_test_base.cc'],
+                ['include', 'test/interactive_ui/view_event_test_base.h'],
+              ],
+              'sources': [
+                'app/chrome_dll.rc',
+                'test/data/resource.rc',
+
+                # TODO:  It would be nice to have these pulled in
+                # automatically from direct_dependent_settings in
+                # their various targets (net.gyp:net_resources, etc.),
+                # but that causes errors in other targets when
+                # resulting .res files get referenced multiple times.
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+
+                'tools/build/win/precompiled_wtl.h',
+                'tools/build/win/precompiled_wtl.cc',
+              ],
             }],
             ['OS=="mac"', {
               'sources!': [
