@@ -313,6 +313,7 @@ GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
                                                      G_TYPE_STRING);
   default_search_engine_combobox_ = gtk_combo_box_new_with_model(
       GTK_TREE_MODEL(default_search_engines_model_));
+  g_object_unref(default_search_engines_model_);
   g_signal_connect(G_OBJECT(default_search_engine_combobox_), "changed",
                    G_CALLBACK(OnDefaultSearchEngineChanged), this);
   gtk_container_add(GTK_CONTAINER(hbox), default_search_engine_combobox_);

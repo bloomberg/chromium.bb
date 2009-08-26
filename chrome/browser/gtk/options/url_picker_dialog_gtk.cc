@@ -110,6 +110,8 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(history_list_sort_),
                                   COL_DISPLAY_URL, CompareURL, this, NULL);
   history_tree_ = gtk_tree_view_new_with_model(history_list_sort_);
+  g_object_unref(history_list_store_);
+  g_object_unref(history_list_sort_);
   gtk_container_add(GTK_CONTAINER(scroll_window), history_tree_);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(history_tree_),
                                     TRUE);

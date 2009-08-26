@@ -156,6 +156,7 @@ void LanguagesPageGtk::Init() {
                                              G_TYPE_STRING);
   language_order_tree_ = gtk_tree_view_new_with_model(
       GTK_TREE_MODEL(language_order_store_));
+  g_object_unref(language_order_store_);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(language_order_tree_), FALSE);
   GtkTreeViewColumn* lang_column = gtk_tree_view_column_new_with_attributes(
       "",

@@ -111,6 +111,8 @@ void PasswordsPageGtk::InitPasswordTree() {
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(password_list_sort_),
                                   COL_USERNAME, CompareUsername, this, NULL);
   password_tree_ = gtk_tree_view_new_with_model(password_list_sort_);
+  g_object_unref(password_list_store_);
+  g_object_unref(password_list_sort_);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(password_tree_), TRUE);
 
   password_selection_ = gtk_tree_view_get_selection(

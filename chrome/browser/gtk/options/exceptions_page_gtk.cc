@@ -78,6 +78,8 @@ void ExceptionsPageGtk::InitExceptionTree() {
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(exception_list_sort_),
                                   COL_SITE, CompareSite, this, NULL);
   exception_tree_ = gtk_tree_view_new_with_model(exception_list_sort_);
+  g_object_unref(exception_list_store_);
+  g_object_unref(exception_list_sort_);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(exception_tree_), TRUE);
 
   exception_selection_ = gtk_tree_view_get_selection(

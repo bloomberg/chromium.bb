@@ -119,6 +119,7 @@ void KeywordEditorView::Init() {
                                    G_TYPE_INT,
                                    G_TYPE_BOOLEAN);
   tree_ = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_store_));
+  g_object_unref(list_store_);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree_), TRUE);
   gtk_tree_view_set_row_separator_func(GTK_TREE_VIEW(tree_),
                                        OnCheckRowIsSeparator,

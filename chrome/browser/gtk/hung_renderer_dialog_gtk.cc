@@ -128,6 +128,7 @@ void HungRendererDialogGtk::Init() {
   model_ = gtk_list_store_new(COL_COUNT, GDK_TYPE_PIXBUF, G_TYPE_STRING);
   GtkWidget* tree_view = gtk_tree_view_new_with_model(
       GTK_TREE_MODEL(model_));
+  g_object_unref(model_);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree_view), FALSE);
   GtkTreeViewColumn* column = gtk_tree_view_column_new();
   GtkCellRenderer* renderer = gtk_cell_renderer_pixbuf_new();

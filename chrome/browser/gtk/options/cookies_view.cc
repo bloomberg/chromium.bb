@@ -169,6 +169,8 @@ void CookiesView::Init() {
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(list_sort_),
                                        COL_SITE, GTK_SORT_ASCENDING);
   tree_ = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_sort_));
+  g_object_unref(list_store_);
+  g_object_unref(list_sort_);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree_), TRUE);
   gtk_container_add(GTK_CONTAINER(scroll_window), tree_);
 
