@@ -729,6 +729,7 @@ BUG16779 SKIP : LayoutTests/media/video-controls-visible-audio-only.html = FAIL
 BUG16779 SKIP : LayoutTests/media/progress-event-at-least-one.html = FAIL TIMEOUT
 BUG16779 SKIP : LayoutTests/media/video-controls-rendering.html = FAIL
 BUG16779 SKIP : LayoutTests/media/video-zoom-controls.html = FAIL
+BUG16779 SKIP : LayoutTests/media/video-error-does-not-exist.html = TIMEOUT
 // We don't support MP2 audio so skip this test.
 BUG16779 SKIP : LayoutTests/media/audio-mpeg-supported.html = FAIL
 // audio/3gpp mime type, does not play in Chromium yet.
