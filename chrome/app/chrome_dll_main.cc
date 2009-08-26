@@ -16,6 +16,7 @@
 #include <malloc.h>
 #include <new.h>
 #elif defined(OS_POSIX)
+#include <locale.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -327,6 +328,12 @@ int ChromeMain(int argc, const char** argv) {
   g_fds->Set(kCrashDumpSignal,
              kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
 #endif
+#endif
+
+#if defined(OS_POSIX)
+  // Set C library locale to make sure CommandLine can parse argument values
+  // in correct encoding.
+  setlocale(LC_ALL, "");
 #endif
 
   // Initialize the command line.
