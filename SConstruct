@@ -290,7 +290,7 @@ def CommandSelLdrTestNacl(env, name, command,
                           sel_ldr_flags=['-d'],
                           size='medium',
                           **extra):
-  if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '64':
+  if env['BUILD_SUBARCH'] == '64':
     return []
 
   # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
