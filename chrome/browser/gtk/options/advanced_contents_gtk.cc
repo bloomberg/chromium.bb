@@ -411,8 +411,10 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
 bool NetworkSection::SearchPATH(ProxyConfigCommand* commands, size_t ncommands,
                                 size_t* index) {
   const char* path = getenv("PATH");
+  if (!path)
+    return false;
   FilePath bin_path;
-  StringTokenizer tk(path, ":");
+  CStringTokenizer tk(path, path + strlen(path), ":");
   // Search $PATH looking for the commands in order.
   while (tk.GetNext()) {
     for (size_t i = 0; i < ncommands; i++) {

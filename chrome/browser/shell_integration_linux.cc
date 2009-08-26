@@ -54,7 +54,8 @@ bool GetDesktopShortcutTemplate(std::string* output) {
 
   const char* xdg_data_dirs = getenv("XDG_DATA_DIRS");
   if (xdg_data_dirs) {
-    StringTokenizer tokenizer(xdg_data_dirs, ":");
+    CStringTokenizer tokenizer(xdg_data_dirs,
+                               xdg_data_dirs + strlen(xdg_data_dirs), ":");
     while (tokenizer.GetNext()) {
       search_paths.push_back(tokenizer.token());
     }
