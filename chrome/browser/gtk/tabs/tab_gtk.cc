@@ -26,10 +26,10 @@ void SetEmptyDragIcon(GtkWidget* widget) {
 // Returns the width of the title for the current font, in pixels.
 int GetTitleWidth(gfx::Font* font, std::wstring title) {
   DCHECK(font);
-  if (!title.empty()) {
-    return font->GetStringWidth(title);
-  }
-  return 0;
+  if (title.empty())
+    return 0;
+
+  return font->GetStringWidth(title);
 }
 
 }  // namespace

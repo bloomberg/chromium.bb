@@ -217,12 +217,17 @@ void Canvas::DrawStringInt(const std::wstring& text,
     y = y + ((h - (height / PANGO_SCALE)) / 2);
   }
 
+  // cairo_rectangle creates a rectangle with a border of 1px inclusive.  The
+  // clipping region includes this border. cairo places the top-left corner of
+  // the rectangle at (x - 1, y - 1).  We need the top-left corner of the
+  // rectangle to be at (x + 1, y + 2) so that we fully cover the extent of the
+  // text.
+  const int kClipXOffset = 1;
+  const int kClipYOffset = 2;
+  cairo_rectangle(cr, x + kClipXOffset, y + kClipYOffset, w, h);
+  cairo_clip(cr);
+
   cairo_move_to(cr, x, y);
-  cairo_rectangle(cr, x, y, x + w, y + h);
-  // We use cairo_clip_preserve so that we can reset the clip region with
-  // cairo_restore; otherwise, any further drawing operations on this context
-  // will be clipped to this region.
-  cairo_clip_preserve(cr);
   pango_cairo_show_layout(cr, layout);
   cairo_restore(cr);
 
