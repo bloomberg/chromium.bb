@@ -38,6 +38,8 @@
       'browser/browser_init_browsertest.cc',
       'browser/crash_recovery_browsertest.cc',
       'browser/download/save_page_browsertest.cc',
+      'browser/gtk/bookmark_manager_browsertest.cc',
+      'browser/gtk/view_id_util_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
     ],
     'browser_tests_sources_win_specific': [
@@ -5256,11 +5258,6 @@
               ],
             }],
             ['OS=="mac"', {
-              # The test fetches resources which means Mac need the app bundle to
-              # exist on disk so it can pull from it.
-              'dependencies': [
-                'chrome',
-              ],
               'sources': [
                 'app/breakpad_mac_stubs.mm',
                 'app/keystone_glue.h',

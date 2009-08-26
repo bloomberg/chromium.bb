@@ -16,6 +16,7 @@
 #include "chrome/browser/gtk/bookmark_context_menu.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/gtk_tree.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BookmarkModel;
 class BookmarkTableModel;
@@ -68,11 +69,16 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
                             int index, void* params);
 
  private:
+  FRIEND_TEST(BookmarkManagerTest, Crash);
+
   explicit BookmarkManagerGtk(Profile* profile);
 
   void InitWidgets();
   GtkWidget* MakeLeftPane();
   GtkWidget* MakeRightPane();
+
+  // Get the currently showing bookmark manager. Only used in testing.
+  static BookmarkManagerGtk* GetCurrentManager();
 
   // Set |window_|'s initial size, using its previous size if that was saved.
   void SetInitialWindowSize();

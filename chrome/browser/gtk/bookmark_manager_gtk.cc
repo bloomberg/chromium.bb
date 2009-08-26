@@ -552,6 +552,11 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
   return scrolled;
 }
 
+// static
+BookmarkManagerGtk* BookmarkManagerGtk::GetCurrentManager() {
+  return manager;
+}
+
 void BookmarkManagerGtk::SetInitialWindowSize() {
   // If we previously saved the window's bounds, use them.
   if (g_browser_process->local_state()) {
