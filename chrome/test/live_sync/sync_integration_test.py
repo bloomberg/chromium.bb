@@ -285,8 +285,7 @@ def RunOneTest(test_exe_path, test_name, username, password):
         '--user-data-dir=' + user_dir,
         '--sync-user-for-test=' + username,
         '--sync-password-for-test=' + password,
-        '--sync-url=' + HTTP_SERVER_URL,
-        '--sync-port=' + sync_port]
+        '--sync-url=' + HTTP_SERVER_URL + ':' + sync_port]
     logging.info(
         '%s will run with command: %s'
         % (test_name, subprocess.list2cmdline(command)))
