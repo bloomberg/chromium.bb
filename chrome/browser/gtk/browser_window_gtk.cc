@@ -437,12 +437,20 @@ gboolean OnKeyPress(GtkWindow* window, GdkEventKey* event, Browser* browser) {
       return TRUE;
     }
 
-    return gtk_window_propagate_key_event(window, event);
+    // Propagate the key event to child widget first, so we don't override their
+    // accelerators.
+    if (!gtk_window_propagate_key_event(window, event)) {
+      if (!gtk_window_activate_key(window, event)) {
+        gtk_bindings_activate_event(GTK_OBJECT(window), event);
+      }
+    }
   } else {
     bool rv = gtk_window_propagate_key_event(window, event);
     DCHECK(rv);
-    return TRUE;
   }
+
+  // Prevents the default handler from handling this event.
+  return TRUE;
 }
 
 GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge) {
@@ -533,11 +541,21 @@ BrowserWindowGtk::~BrowserWindowGtk() {
   }
 }
 
-void BrowserWindowGtk::HandleAccelerator(guint keyval,
-                                         GdkModifierType modifier) {
-  if (!HandleCustomAccelerator(keyval, modifier, browser_.get())) {
-    // Pass the accelerator on to GTK.
-    gtk_accel_groups_activate(G_OBJECT(window_), keyval, modifier);
+void BrowserWindowGtk::HandleKeyboardEvent(GdkEventKey* event) {
+  // Handles a key event in following sequence:
+  // 1. Our special key accelerators, such as ctrl-tab, etc.
+  // 2. Gtk mnemonics and accelerators.
+  // 3. Gtk binding set.
+  // This sequence matches the default key press handler of GtkWindow.
+  //
+  // It's not necessary to care about the keyboard layout issue, as
+  // gtk_window_activate_key() and gtk_bindings_activate_event() take care of it
+  // automatically.
+  if (!HandleCustomAccelerator(event->keyval, GdkModifierType(event->state),
+                               browser_.get())) {
+    if (!gtk_window_activate_key(window_, event)) {
+      gtk_bindings_activate_event(GTK_OBJECT(window_), event);
+    }
   }
 }
 

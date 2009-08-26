@@ -55,8 +55,8 @@ class BrowserWindowGtk : public BrowserWindow,
 
   Browser* browser() const { return browser_.get(); }
 
-  // Process a keyboard input and try to find an accelerator for it.
-  void HandleAccelerator(guint keyval, GdkModifierType modifier);
+  // Process a keyboard event which was not handled by webkit.
+  void HandleKeyboardEvent(GdkEventKey* event);
 
   // Overridden from BrowserWindow
   virtual void Show();
