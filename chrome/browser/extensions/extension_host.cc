@@ -63,7 +63,8 @@ void ExtensionHost::CreateView(Browser* browser) {
   // hierarchy.
   view_->SetParentOwned(false);
 #elif defined(OS_LINUX)
-  view_.reset(new ExtensionViewGtk(this));
+  view_.reset(new ExtensionViewGtk(this, browser));
+  view_->Init();
 #else
   // TODO(port)
   NOTREACHED();
@@ -298,7 +299,7 @@ void ExtensionHost::HandleMouseLeave() {
 }
 
 Browser* ExtensionHost::GetBrowser() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   if (view_.get())
     return view_->browser();
 #endif

@@ -8,10 +8,15 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 
-ExtensionViewGtk::ExtensionViewGtk(ExtensionHost* extension_host)
+ExtensionViewGtk::ExtensionViewGtk(ExtensionHost* extension_host,
+                                   Browser* browser)
     : is_toolstrip_(true),
+      browser_(browser),
       extension_host_(extension_host),
       render_widget_host_view_(NULL) {
+}
+
+void ExtensionViewGtk::Init() {
   CreateWidgetHostView();
 }
 

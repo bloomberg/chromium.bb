@@ -8,15 +8,19 @@
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
 
+class Browser;
 class ExtensionHost;
 class RenderViewHost;
 class RenderWidgetHostViewGtk;
 
 class ExtensionViewGtk {
  public:
-  explicit ExtensionViewGtk(ExtensionHost* extension_host);
+  ExtensionViewGtk(ExtensionHost* extension_host, Browser* browser);
+
+  void Init();
 
   gfx::NativeView native_view();
+  Browser* browser() const { return browser_; }
 
   bool is_toolstrip() const { return is_toolstrip_; }
   void set_is_toolstrip(bool is_toolstrip) { is_toolstrip_ = is_toolstrip; }
@@ -32,6 +36,8 @@ class ExtensionViewGtk {
 
   // True if the contents are being displayed inside the extension shelf.
   bool is_toolstrip_;
+
+  Browser* browser_;
 
   ExtensionHost* extension_host_;
 
