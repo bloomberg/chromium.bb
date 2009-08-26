@@ -49,6 +49,10 @@ class RenderThreadBase {
 
   virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter) = 0;
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) = 0;
+
+  // Called by a RenderWidget when it is hidden or restored.
+  virtual void WidgetHidden() = 0;
+  virtual void WidgetRestored() = 0;
 };
 
 // The RenderThread class represents a background thread where RenderView
@@ -79,14 +83,19 @@ class RenderThread : public RenderThreadBase,
   }
 
   virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener) {
+    widget_count_++;
     return ChildThread::AddRoute(routing_id, listener);
   }
   virtual void RemoveRoute(int32 routing_id) {
+    widget_count_--;
     return ChildThread::RemoveRoute(routing_id);
   }
 
   virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
+
+  virtual void WidgetHidden();
+  virtual void WidgetRestored();
 
   VisitedLinkSlave* visited_link_slave() const {
     return visited_link_slave_.get();
@@ -163,8 +172,11 @@ class RenderThread : public RenderThreadBase,
   // We initialize WebKit as late as possible.
   void EnsureWebKitInitialized();
 
+  // A task we invoke periodically to assist with idle cleanup.
+  void IdleHandler();
+
   // These objects live solely on the render thread.
-  scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > cache_stats_factory_;
+  scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > task_factory_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<UserScriptSlave> user_script_slave_;
   scoped_ptr<RenderDnsMaster> dns_master_;
@@ -182,6 +194,18 @@ class RenderThread : public RenderThreadBase,
 
   // If true, then a GetPlugins call is allowed to rescan the disk.
   bool plugin_refresh_allowed_;
+
+  // Is there a pending task for doing CacheStats.
+  bool cache_stats_task_pending_;
+
+  // The count of RenderWidgets running through this thread.
+  int widget_count_;
+
+  // The count of hidden RenderWidgets running through this thread.
+  int hidden_widget_count_;
+
+  // The current value of the idle notification timer delay.
+  double idle_notification_delay_in_s_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };
