@@ -308,12 +308,11 @@ TransportDIB* RenderWidgetHelper::MapTransportDIB(TransportDIB::Id dib_id) {
 
 void RenderWidgetHelper::AllocTransportDIB(
     size_t size, TransportDIB::Handle* result) {
-  base::SharedMemory* shared_memory = new base::SharedMemory();
+  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->Create(L"", false /* read write */,
                              false /* do not open existing */, size)) {
     result->fd = -1;
     result->auto_close = false;
-    delete shared_memory;
     return;
   }
 
