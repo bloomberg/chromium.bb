@@ -113,6 +113,14 @@
 // We are the delegate of our own window so we know when we lose key.
 // When we lose key status we close, mirroring Windows behaivor.
 - (void)windowDidResignKey:(NSNotification*)notification {
+
+  // If we get here, we are done with this window and controller.  The
+  // call of close: may destroy us which destroys the window.  But the
+  // window is in the middle of processing resignKeyWindow.  We
+  // retain/autorelease the window to insure it lasts until the end of
+  // this event.
+  [[window_ retain] autorelease];
+
   if ([window_ isVisible])
     [self close:self];
 }
