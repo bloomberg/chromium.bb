@@ -667,9 +667,9 @@ Opcode* GetNextOpcodeCandidates(NcInstState* state,
 void DecodeInstruction(
     NcInstIter* iter,
     NcInstState* state) {
-  uint8_t opcode_length;
+  uint8_t opcode_length = 0;
   Opcode* cand_opcodes;
-  Bool is_nacl_legal;
+  Bool is_nacl_legal = FALSE;
   Bool found_match = FALSE;
   /* Start by consuming the prefix bytes, and getting the possible
    * candidate opcode (instruction) patterns that can match, based
