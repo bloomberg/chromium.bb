@@ -15,22 +15,31 @@ typedef struct _cairo cairo_t;
 TEST(PdfTest, Basic) {
   // Tests in-renderer constructor.
   printing::PdfPsMetafile pdf(printing::PdfPsMetafile::PDF);
-  EXPECT_TRUE(pdf.Init());
+  cairo_t* context = pdf.GetPageContext();
+  EXPECT_TRUE(context == NULL);
 
   // Renders page 1.
-  cairo_t* context = pdf.StartPage(72, 72);
+  EXPECT_TRUE(pdf.StartPage(72, 72));
+  context = pdf.GetPageContext();
   EXPECT_TRUE(context != NULL);
   // In theory, we should use Cairo to draw something on |context|.
-  EXPECT_TRUE(pdf.FinishPage(1.5));
+  pdf.FinishPage(1.5);
+  context = pdf.GetPageContext();
+  EXPECT_TRUE(context == NULL);
 
   // Renders page 2.
-  context = pdf.StartPage(64, 64);
+  EXPECT_TRUE(pdf.StartPage(64, 64));
+  context = pdf.GetPageContext();
   EXPECT_TRUE(context != NULL);
   // In theory, we should use Cairo to draw something on |context|.
-  EXPECT_TRUE(pdf.FinishPage(0.5));
+  pdf.FinishPage(0.5);
+  context = pdf.GetPageContext();
+  EXPECT_TRUE(context == NULL);
 
   // Closes the file.
   pdf.Close();
+  context = pdf.GetPageContext();
+  EXPECT_TRUE(context == NULL);
 
   // Checks data size.
   unsigned int size = pdf.GetDataSize();
@@ -41,8 +50,9 @@ TEST(PdfTest, Basic) {
   pdf.GetData(&buffer.front(), size);
 
   // Tests another constructor.
-  printing::PdfPsMetafile pdf2(printing::PdfPsMetafile::PDF);
-  EXPECT_TRUE(pdf2.Init(&buffer.front(), size));
+  printing::PdfPsMetafile pdf2(printing::PdfPsMetafile::PDF,
+                               &buffer.front(),
+                               size);
 
   // Tries to get the first 4 characters from pdf2.
   std::vector<char> buffer2(4, 0x00);
@@ -59,22 +69,31 @@ TEST(PdfTest, Basic) {
 TEST(PsTest, Basic) {
   // Tests in-renderer constructor.
   printing::PdfPsMetafile ps(printing::PdfPsMetafile::PS);
-  EXPECT_TRUE(ps.Init());
+  cairo_t* context = ps.GetPageContext();
+  EXPECT_TRUE(context == NULL);
 
   // Renders page 1.
-  cairo_t* context = ps.StartPage(72, 72);
+  EXPECT_TRUE(ps.StartPage(72, 72));
+  context = ps.GetPageContext();
   EXPECT_TRUE(context != NULL);
   // In theory, we should use Cairo to draw something on |context|.
-  EXPECT_TRUE(ps.FinishPage(1.5));
+  ps.FinishPage(1.5);
+  context = ps.GetPageContext();
+  EXPECT_TRUE(context == NULL);
 
   // Renders page 2.
-  context = ps.StartPage(64, 64);
+  EXPECT_TRUE(ps.StartPage(64, 64));
+  context = ps.GetPageContext();
   EXPECT_TRUE(context != NULL);
   // In theory, we should use Cairo to draw something on |context|.
-  EXPECT_TRUE(ps.FinishPage(0.5));
+  ps.FinishPage(0.5);
+  context = ps.GetPageContext();
+  EXPECT_TRUE(context == NULL);
 
   // Closes the file.
   ps.Close();
+  context = ps.GetPageContext();
+  EXPECT_TRUE(context == NULL);
 
   // Checks data size.
   unsigned int size = ps.GetDataSize();
@@ -85,8 +104,9 @@ TEST(PsTest, Basic) {
   ps.GetData(&buffer.front(), size);
 
   // Tests another constructor.
-  printing::PdfPsMetafile ps2(printing::PdfPsMetafile::PS);
-  EXPECT_TRUE(ps2.Init(&buffer.front(), size));
+  printing::PdfPsMetafile ps2(printing::PdfPsMetafile::PS,
+                              &buffer.front(),
+                              size);
 
   // Tries to get the first 4 characters from ps2.
   std::vector<char> buffer2(4, 0x00);

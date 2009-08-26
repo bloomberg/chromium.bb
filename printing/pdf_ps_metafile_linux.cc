@@ -6,57 +6,11 @@
 
 #include <stdio.h>
 
-#include <cairo.h>
 #include <cairo-pdf.h>
 #include <cairo-ps.h>
 
 #include "base/file_util.h"
 #include "base/logging.h"
-
-namespace {
-
-// Tests if |surface| is valid.
-bool IsSurfaceValid(cairo_surface_t* surface) {
-  return cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS;
-}
-
-// Tests if |context| is valid.
-bool IsContextValid(cairo_t* context) {
-  return cairo_status(context) == CAIRO_STATUS_SUCCESS;
-}
-
-// Destroys and resets |surface|.
-void CleanUpSurface(cairo_surface_t** surface) {
-  if (*surface) {
-    cairo_surface_destroy(*surface);
-    *surface = NULL;
-  }
-}
-
-// Destroys and resets |context|.
-void CleanUpContext(cairo_t** context) {
-  if (*context) {
-    cairo_destroy(*context);
-    *context = NULL;
-  }
-}
-
-// Callback function for Cairo to write PDF/PS stream.
-// |dst_buffer| is actually a pointer of type `std::string*`.
-cairo_status_t WriteCairoStream(void* dst_buffer,
-                                const unsigned char* src_data,
-                                unsigned int src_data_length) {
-  DCHECK(dst_buffer);
-  DCHECK(src_data);
-  DCHECK(src_data_length > 0);
-
-  std::string* buffer = reinterpret_cast<std::string*>(dst_buffer);
-  buffer->append(reinterpret_cast<const char*>(src_data), src_data_length);
-
-  return CAIRO_STATUS_SUCCESS;
-}
-
-}  // namespace
 
 namespace printing {
 
@@ -64,19 +18,6 @@ PdfPsMetafile::PdfPsMetafile(const FileFormat& format)
     : format_(format),
       surface_(NULL), context_(NULL),
       page_surface_(NULL), page_context_(NULL) {
-}
-
-PdfPsMetafile::~PdfPsMetafile() {
-  // Releases resources if we forgot to do so.
-  CleanUp();
-}
-
-bool PdfPsMetafile::Init() {
-  // We need to check at least these two members to ensure Init() has not been
-  // called before. Passing these two checks also implies that surface_,
-  // page_surface_, and page_context_ are NULL, and current_page_ is empty.
-  DCHECK(!context_);
-  DCHECK(all_pages_.empty());
 
   // Create an 1 by 1 Cairo surface for entire PDF/PS file.
   // The size for each page will be overwritten later in StartPage().
@@ -95,53 +36,51 @@ bool PdfPsMetafile::Init() {
 
     default:
       NOTREACHED();
-      return false;
+      return;
   }
 
   // Cairo always returns a valid pointer.
   // Hence, we have to check if it points to a "nil" object.
   if (!IsSurfaceValid(surface_)) {
     DLOG(ERROR) << "Cannot create Cairo surface for PdfPsMetafile!";
-    CleanUpSurface(&surface_);
-    return false;
+    cairo_surface_destroy(surface_);
+    return;
   }
 
   // Create a context.
   context_ = cairo_create(surface_);
   if (!IsContextValid(context_)) {
     DLOG(ERROR) << "Cannot create Cairo context for PdfPsMetafile!";
-    CleanUpContext(&context_);
-    CleanUpSurface(&surface_);
-    return false;
+    cairo_destroy(context_);
+    cairo_surface_destroy(surface_);
+    return;
   }
 
-  return true;
+  // Since |context_| will keep a reference of |surface_|, we can decreace
+  // surface's reference count by one safely.
+  cairo_surface_destroy(surface_);
 }
 
-bool PdfPsMetafile::Init(const void* src_buffer, size_t src_buffer_size) {
-  // We need to check at least these two members to ensure Init() has not been
-  // called before. Passing these two checks also implies that surface_,
-  // page_surface_, and page_context_ are NULL, and current_page_ is empty.
-  DCHECK(!context_);
-  DCHECK(all_pages_.empty());
-
-  if (src_buffer == NULL || src_buffer_size == 0) {
-    return false;
-  }
+PdfPsMetafile::PdfPsMetafile(const FileFormat& format,
+                             const void* src_buffer,
+                             size_t src_buffer_size)
+    : format_(format),
+      surface_(NULL), context_(NULL),
+      page_surface_(NULL), page_context_(NULL) {
 
   all_pages_ = std::string(reinterpret_cast<const char*>(src_buffer),
                            src_buffer_size);
-
-  return true;
 }
 
-cairo_t* PdfPsMetafile::StartPage(double width_in_points,
-                                  double height_in_points) {
+PdfPsMetafile::~PdfPsMetafile() {
+  // Releases resources if we forgot to do so.
+  Close();
+}
+
+bool PdfPsMetafile::StartPage(double width_in_points, double height_in_points) {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
-  // Passing this check implies page_surface_ is NULL, and current_page_ is
-  // empty.
-  DCHECK(!page_context_);
+  DCHECK(!page_surface_ && !page_context_);
   DCHECK_GT(width_in_points, 0.);
   DCHECK_GT(height_in_points, 0.);
 
@@ -167,35 +106,38 @@ cairo_t* PdfPsMetafile::StartPage(double width_in_points,
 
     default:
       NOTREACHED();
-      CleanUp();
-      return NULL;
+      return false;
   }
 
   // Cairo always returns a valid pointer.
   // Hence, we have to check if it points to a "nil" object.
   if (!IsSurfaceValid(page_surface_)) {
     DLOG(ERROR) << "Cannot create Cairo surface for PdfPsMetafile!";
-    CleanUp();
-    return NULL;
+    cairo_surface_destroy(page_surface_);
+    return false;
   }
 
   // Create a context.
   page_context_ = cairo_create(page_surface_);
   if (!IsContextValid(page_context_)) {
     DLOG(ERROR) << "Cannot create Cairo context for PdfPsMetafile!";
-    CleanUp();
-    return NULL;
+    cairo_destroy(page_context_);
+    cairo_surface_destroy(page_surface_);
+    return false;
   }
 
-  return page_context_;
+  // Since |page_context_| will keep a reference of |page_surface_|, we can
+  // decreace surface's reference count by one safely.
+  cairo_surface_destroy(page_surface_);
+
+  return true;
 }
 
-bool PdfPsMetafile::FinishPage(float shrink) {
+void PdfPsMetafile::FinishPage(float shrink) {
   DCHECK(IsSurfaceValid(surface_));
   DCHECK(IsContextValid(context_));
   DCHECK(IsSurfaceValid(page_surface_));
   DCHECK(IsContextValid(page_context_));
-  DCHECK(shrink > 0);
 
   // Flush all rendering for current page.
   cairo_surface_flush(page_surface_);
@@ -226,15 +168,7 @@ bool PdfPsMetafile::FinishPage(float shrink) {
 
     default:
       NOTREACHED();
-      CleanUp();
-      return false;
-  }
-
-  // Check if our surface is still valid after resizing.
-  if (!IsSurfaceValid(surface_)) {
-    DLOG(ERROR) << "Cannot resize Cairo surface for PdfPsMetafile!";
-    CleanUp();
-    return false;
+      return;
   }
 
   // Save context's states.
@@ -280,68 +214,44 @@ bool PdfPsMetafile::FinishPage(float shrink) {
   cairo_surface_flush(surface_);
 
   // Destroy resoreces for current page.
-  CleanUpContext(&page_context_);
+  cairo_destroy(page_context_);
+  page_context_ = NULL;
   page_surface_ = NULL;
   current_page_.clear();
 
   // Restore context's states.
   cairo_restore(context_);
-
-  return true;
 }
 
 void PdfPsMetafile::Close() {
-  DCHECK(IsSurfaceValid(surface_));
-  DCHECK(IsContextValid(context_));
-  // Passing this check implies page_surface_ is NULL, and current_page_ is
-  // empty.
-  DCHECK(!page_context_);
-
-  cairo_surface_finish(surface_);
-  DCHECK(!all_pages_.empty()); // Make sure we did get something.
-
-  CleanUpContext(&context_);
-  CleanUpSurface(&surface_);
+  if (surface_ != NULL && IsSurfaceValid(surface_)) {
+    cairo_surface_finish(surface_);
+    surface_ = NULL;
+  }
+  if (context_ != NULL && IsContextValid(context_)) {
+    cairo_destroy(context_);
+    context_ = NULL;
+  }
 }
 
 unsigned int PdfPsMetafile::GetDataSize() const {
-  // We need to check at least these two members to ensure that either Init()
-  // has been called to initialize |all_pages_|, or metafile has been closed.
-  // Passing these two checks also implies that surface_, page_surface_, and
-  // page_context_ are NULL, and current_page_ is empty.
-  DCHECK(!context_);
-  DCHECK(!all_pages_.empty());
+  DCHECK(!surface_ && !context_);
 
   return all_pages_.size();
 }
 
-bool PdfPsMetafile::GetData(void* dst_buffer, size_t dst_buffer_size) const {
+void PdfPsMetafile::GetData(void* dst_buffer, size_t dst_buffer_size) const {
+  DCHECK(!surface_ && !context_);
   DCHECK(dst_buffer);
-  DCHECK(dst_buffer_size > 0);
-  // We need to check at least these two members to ensure that either Init()
-  // has been called to initialize |all_pages_|, or metafile has been closed.
-  // Passing these two checks also implies that surface_, page_surface_, and
-  // page_context_ are NULL, and current_page_ is empty.
-  DCHECK(!context_);
-  DCHECK(!all_pages_.empty());
 
   size_t data_size = GetDataSize();
-  if (dst_buffer_size > data_size) {
-    return false;
-  }
-
+  if (data_size < dst_buffer_size)
+    dst_buffer_size = data_size;
   memcpy(dst_buffer, all_pages_.data(), dst_buffer_size);
-
-  return true;
 }
 
 bool PdfPsMetafile::SaveTo(const FilePath& filename) const {
-  // We need to check at least these two members to ensure that either Init()
-  // has been called to initialize |all_pages_|, or metafile has been closed.
-  // Passing these two checks also implies that surface_, page_surface_, and
-  // page_context_ are NULL, and current_page_ is empty.
-  DCHECK(!context_);
-  DCHECK(!all_pages_.empty());
+  DCHECK(!surface_ && !context_);
 
   const unsigned int data_size = GetDataSize();
   const unsigned int bytes_written =
@@ -354,13 +264,24 @@ bool PdfPsMetafile::SaveTo(const FilePath& filename) const {
   return true;
 }
 
-void PdfPsMetafile::CleanUp() {
-  CleanUpContext(&context_);
-  CleanUpSurface(&surface_);
-  CleanUpContext(&page_context_);
-  CleanUpSurface(&page_surface_);
-  current_page_.clear();
-  all_pages_.clear();
+cairo_status_t PdfPsMetafile::WriteCairoStream(void* dst_buffer,
+                                               const unsigned char* src_data,
+                                               unsigned int src_data_length) {
+  DCHECK(dst_buffer);
+  DCHECK(src_data);
+
+  std::string* buffer = reinterpret_cast<std::string* >(dst_buffer);
+  buffer->append(reinterpret_cast<const char*>(src_data), src_data_length);
+
+  return CAIRO_STATUS_SUCCESS;
+}
+
+bool PdfPsMetafile::IsSurfaceValid(cairo_surface_t* surface) const {
+  return cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS;
+}
+
+bool PdfPsMetafile::IsContextValid(cairo_t* context) const {
+  return cairo_status(context) == CAIRO_STATUS_SUCCESS;
 }
 
 }  // namespace printing
