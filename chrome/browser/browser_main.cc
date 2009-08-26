@@ -545,9 +545,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
                                              user_data_dir.ToWStringHack());
       base::LaunchApp(new_command_line, false, false, NULL);
     }
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
     return ResultCodes::NORMAL_EXIT;
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
   }
 
   PrefService* user_prefs = profile->GetPrefs();
