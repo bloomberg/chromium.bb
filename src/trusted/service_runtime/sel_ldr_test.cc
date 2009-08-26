@@ -37,10 +37,22 @@
 
 #include "gtest/gtest.h"
 
-namespace {
+class SelLdrTest : public testing::Test {
+ protected:
+  virtual void SetUp();
+  virtual void TearDown();
+};
+
+void SelLdrTest::SetUp() {
+  NaClLogModuleInit();
+}
+
+void SelLdrTest::TearDown() {
+  NaClLogModuleFini();
+}
 
 // set, get, setavail operations on the descriptor table
-TEST(SelLdrTest, DescTable) {
+TEST_F(SelLdrTest, DescTable) {
   struct NaClApp app;
   struct NaClHostDesc *host_desc;
   struct NaClDesc* io_desc;
@@ -90,7 +102,7 @@ TEST(SelLdrTest, DescTable) {
 }
 
 // create service socket
-TEST(SelLdrTest, CreateServiceSocket) {
+TEST_F(SelLdrTest, CreateServiceSocket) {
   struct NaClApp app;
   int ret_code;
 
@@ -113,7 +125,7 @@ TEST(SelLdrTest, CreateServiceSocket) {
 // add and remove operations on the threads table
 // Remove thread from an empty table is tested in a death test.
 // TODO(tuduce): specify the death test name when checking in.
-TEST(SelLdrTest, ThreadTableTest) {
+TEST_F(SelLdrTest, ThreadTableTest) {
   struct NaClApp app;
   struct NaClAppThread nat, *appt=&nat;
   int ret_code;
@@ -142,5 +154,4 @@ TEST(SelLdrTest, ThreadTableTest) {
 
   // calling the Dtor results into segfault
 //   NaClAppDtor(&app);
-}
 }

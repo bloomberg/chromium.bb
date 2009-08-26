@@ -31,11 +31,24 @@
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "gtest/gtest.h"
 
-namespace {
+class SelMemTest : public testing::Test {
+ protected:
+  virtual void SetUp();
+  virtual void TearDown();
+};
 
-TEST(SelMemTest, AddTest) {
+void SelMemTest::SetUp() {
+  NaClLogModuleInit();
+}
+
+void SelMemTest::TearDown() {
+  NaClLogModuleFini();
+}
+
+TEST_F(SelMemTest, AddTest) {
   struct NaClVmmap mem_map;
   int start_page_num = 32;
   int ret_code;
@@ -66,7 +79,7 @@ TEST(SelMemTest, AddTest) {
   NaClVmmapDtor(&mem_map);
 }
 
-TEST(SelMemTest, UpdateTest) {
+TEST_F(SelMemTest, UpdateTest) {
   struct NaClVmmap mem_map;
 
   EXPECT_EQ(1, NaClVmmapCtor(&mem_map));
@@ -133,7 +146,7 @@ TEST(SelMemTest, UpdateTest) {
   NaClVmmapDtor(&mem_map);
 }
 
-TEST(SelMemTest, FindPageTest) {
+TEST_F(SelMemTest, FindPageTest) {
   struct NaClVmmap mem_map;
   int ret_code;
 
@@ -172,7 +185,7 @@ TEST(SelMemTest, FindPageTest) {
   NaClVmmapDtor(&mem_map);
 }
 
-TEST(SelMemTest, FindSpaceTest) {
+TEST_F(SelMemTest, FindSpaceTest) {
   struct NaClVmmap mem_map;
   int ret_code;
 
@@ -220,5 +233,4 @@ TEST(SelMemTest, FindSpaceTest) {
   EXPECT_EQ(74, ret_code);
 
   NaClVmmapDtor(&mem_map);
-}
 }

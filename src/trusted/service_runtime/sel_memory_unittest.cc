@@ -44,7 +44,7 @@
 #include "gtest/gtest.h"
 
 class SelMemoryBasic : public testing::Test {
-protected:
+ protected:
   virtual void SetUp();
   virtual void TearDown();
   // TODO(gregoryd) - do we need a destructor here?
@@ -68,7 +68,7 @@ TEST_F(SelMemoryBasic, AllocationTests) {
 
   res = NaCl_page_alloc(&p, size);
   EXPECT_EQ(0, res);
-  EXPECT_NE((void*)NULL, p);
+  EXPECT_NE(static_cast<void *>(NULL), p);
 
   NaCl_page_free(p, size);
   p = NULL;
@@ -78,7 +78,7 @@ TEST_F(SelMemoryBasic, AllocationTests) {
 
   res = NaCl_page_alloc(&p, size);
   EXPECT_EQ(0, res);
-  EXPECT_NE((void*)NULL, p);
+  EXPECT_NE(static_cast<void *>(NULL), p);
 
   NaCl_page_free(p, size);
 }
@@ -93,7 +93,7 @@ TEST_F(SelMemoryBasic, mprotect) {
 
   res = NaCl_page_alloc(&p, size);
   EXPECT_EQ(0, res);
-  EXPECT_NE((void*)NULL, p);
+  EXPECT_NE(static_cast<void *>(NULL), p);
 
   // TODO(gregoryd) - since ASSERT_DEATH is not supported for client projects,
   // we cannot use gUnit to test the protection. We might want to add some
