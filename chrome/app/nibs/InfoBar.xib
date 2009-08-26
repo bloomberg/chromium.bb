@@ -42,7 +42,7 @@
 					<object class="NSTextField" id="293244832">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">258</int>
-						<string key="NSFrame">{{53, 7}, {198, 17}}</string>
+						<string key="NSFrame">{{36, 7}, {205, 17}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="963811960">
@@ -90,7 +90,7 @@
 								<string>NeXT TIFF v4.0 pasteboard type</string>
 							</object>
 						</object>
-						<string key="NSFrame">{{20, 1}, {28, 28}}</string>
+						<string key="NSFrame">{{3, 1}, {29, 29}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSImageCell" key="NSCell" id="905047690">
@@ -110,7 +110,7 @@
 					<object class="NSButton" id="861420161">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">297</int>
-						<string key="NSFrame">{{444, 8}, {16, 16}}</string>
+						<string key="NSFrame">{{454, 8}, {15, 15}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="1030694164">
@@ -138,17 +138,22 @@
 					<object class="NSButton" id="488415728">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">265</int>
-						<string key="NSFrame">{{346, -2}, {96, 32}}</string>
+						<string key="NSFrame">{{350, 6}, {96, 19}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="24619168">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents">Cancel</string>
-							<reference key="NSSupport" ref="3997082"/>
+							<object class="NSFont" key="NSSupport" id="751943183">
+								<string key="NSName">LucidaGrande</string>
+								<double key="NSSize">1.100000e+01</double>
+								<int key="NSfFlags">16</int>
+							</object>
 							<reference key="NSControlView" ref="488415728"/>
 							<int key="NSButtonFlags">-2038284033</int>
-							<int key="NSButtonFlags2">129</int>
+							<int key="NSButtonFlags2">164</int>
+							<reference key="NSAlternateImage" ref="751943183"/>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
 							<int key="NSPeriodicDelay">200</int>
@@ -158,17 +163,18 @@
 					<object class="NSButton" id="11488953">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">265</int>
-						<string key="NSFrame">{{250, -2}, {96, 32}}</string>
+						<string key="NSFrame">{{246, 6}, {96, 19}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="900516520">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents">OK</string>
-							<reference key="NSSupport" ref="3997082"/>
+							<reference key="NSSupport" ref="751943183"/>
 							<reference key="NSControlView" ref="11488953"/>
 							<int key="NSButtonFlags">-2038284033</int>
-							<int key="NSButtonFlags2">129</int>
+							<int key="NSButtonFlags2">164</int>
+							<reference key="NSAlternateImage" ref="751943183"/>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
 							<int key="NSPeriodicDelay">200</int>
@@ -176,7 +182,7 @@
 						</object>
 					</object>
 				</object>
-				<string key="NSFrameSize">{480, 30}</string>
+				<string key="NSFrameSize">{480, 31}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">InfoBarGradientView</string>
 			</object>
@@ -407,7 +413,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{379, 587}, {480, 30}}</string>
+					<string>{{75, 275}, {480, 31}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{357, 416}, {480, 272}}</string>
@@ -511,13 +517,20 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/status_bubble_mac.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/tab_strip_model_observer_bridge.h</string>
 					</object>
 				</object>
 			</object>
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
-		<string key="IBDocument.LastKnownRelativeProjectPath">../../../chrome.xcodeproj</string>
+		<string key="IBDocument.LastKnownRelativeProjectPath">../../chrome.xcodeproj</string>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 	</data>
 </archive>
