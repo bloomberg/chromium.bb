@@ -613,65 +613,103 @@ bool WebPluginDelegateProxy::BackgroundChanged(
     if (memcmp(hdc_row_start, canvas_row_start, row_byte_size) != 0)
       return true;
   }
-  return false;
-#elif defined(OS_MACOSX)
-  // Needs implementation; see http://crbug.com/18193
-  // Implementation note: |rect| is in content-area-relative coordinates,
-  // but we may be given a context that is a subset of the content area
-  // with a transform that makes the coordinates work out. We will likely
-  // need to do fixup work like that done in BlitContextToContext when we
-  // implement this.
-  return true;
+#else
+#if defined(OS_MACOSX)
+  // If there is a translation on the content area context, we need to account
+  // for it; the context may be a subset of the full content area with a
+  // transform that makes the coordinates work out.
+  CGAffineTransform transform = CGContextGetCTM(context);
+  bool flipped = fabs(transform.d + 1) < 0.0001;
+  CGFloat context_offset_x = -transform.tx;
+  CGFloat context_offset_y = flipped ? transform.ty -
+                                           CGBitmapContextGetHeight(context)
+                                     : -transform.ty;
+  gfx::Rect full_content_rect(context_offset_x, context_offset_y,
+                              CGBitmapContextGetWidth(context),
+                              CGBitmapContextGetHeight(context));
 #else
   cairo_surface_t* page_surface = cairo_get_target(context);
   DCHECK_EQ(cairo_surface_get_type(page_surface), CAIRO_SURFACE_TYPE_IMAGE);
   DCHECK_EQ(cairo_image_surface_get_format(page_surface), CAIRO_FORMAT_ARGB32);
 
-  const unsigned char* page_bytes = cairo_image_surface_get_data(page_surface);
-  int page_stride = cairo_image_surface_get_stride(page_surface);
-
   // Transform context coordinates into surface coordinates.
   double page_x_double = rect.x();
   double page_y_double = rect.y();
   cairo_user_to_device(context, &page_x_double, &page_y_double);
-  int page_x = page_x_double;
-  int page_y = page_y_double;
+  gfx::Rect full_content_rect(0, 0,
+                              cairo_image_surface_get_width(page_surface),
+                              cairo_image_surface_get_height(page_surface));
+#endif
+  // According to comments in the Windows code, the damage rect that we're given
+  // may project outside the image, so intersect their rects.
+  gfx::Rect content_rect = rect.Intersect(full_content_rect);
 
-  // Following comments from the Windows section, apparently the damage rect
-  // can be larger than the image surface.
-  int width = std::min(cairo_image_surface_get_width(page_surface),
-                       rect.width());
-  int height = std::min(cairo_image_surface_get_height(page_surface),
-                        rect.height());
+#if defined(OS_MACOSX)
+  const unsigned char* page_bytes = static_cast<const unsigned char*>(
+      CGBitmapContextGetData(context));
+  int page_stride = CGBitmapContextGetBytesPerRow(context);
+  int page_start_x = content_rect.x() - context_offset_x;
+  int page_start_y = content_rect.y() - context_offset_y;
+
+  CGContextRef bg_context =
+      background_store_canvas_->getTopPlatformDevice().GetBitmapContext();
+  DCHECK_EQ(CGBitmapContextGetBitsPerPixel(context),
+            CGBitmapContextGetBitsPerPixel(bg_context));
+  const unsigned char* bg_bytes = static_cast<const unsigned char*>(
+      CGBitmapContextGetData(bg_context));
+  int full_bg_width = CGBitmapContextGetWidth(bg_context);
+  int full_bg_height = CGBitmapContextGetHeight(bg_context);
+  int bg_stride = CGBitmapContextGetBytesPerRow(bg_context);
+  int bg_last_row = CGBitmapContextGetHeight(bg_context) - 1;
+
+  int bytes_per_pixel = CGBitmapContextGetBitsPerPixel(context) / 8;
+#else
+  const unsigned char* page_bytes = cairo_image_surface_get_data(page_surface);
+  int page_stride = cairo_image_surface_get_stride(page_surface);
+  int page_start_x = page_x_double;
+  int page_start_y = page_y_double;
 
   skia::PlatformDevice& device =
       background_store_canvas_->getTopPlatformDevice();
   cairo_surface_t* bg_surface = cairo_get_target(device.beginPlatformPaint());
   DCHECK_EQ(cairo_surface_get_type(bg_surface), CAIRO_SURFACE_TYPE_IMAGE);
   DCHECK_EQ(cairo_image_surface_get_format(bg_surface), CAIRO_FORMAT_ARGB32);
-
   const unsigned char* bg_bytes = cairo_image_surface_get_data(bg_surface);
+  int full_bg_width = cairo_image_surface_get_width(bg_surface);
+  int full_bg_height = cairo_image_surface_get_height(bg_surface);
   int bg_stride = cairo_image_surface_get_stride(bg_surface);
-  int bg_x = rect.x() - plugin_rect_.x();
-  int bg_y = rect.y() - plugin_rect_.y();
 
-  // rect is supposed to have been intersected with the plugin rect.
-  DCHECK_LE(width, cairo_image_surface_get_width(bg_surface));
-  DCHECK_LE(height, cairo_image_surface_get_height(bg_surface));
+  int bytes_per_pixel = 4;  // ARGB32 = 4 bytes per pixel.
+#endif
 
-  static const int kBPP = 4;  // ARGB32 = 4 bytes per pixel.
+  int damage_width = content_rect.width();
+  int damage_height = content_rect.height();
 
-  for (int y = 0; y < height; ++y) {
-    int page_offset = page_x * kBPP + page_stride * (page_y + y);
-    int bg_offset = bg_x * kBPP + bg_stride * (bg_y + y);
+  int bg_start_x = rect.x() - plugin_rect_.x();
+  int bg_start_y = rect.y() - plugin_rect_.y();
+  // The damage rect is supposed to have been intersected with the plugin rect;
+  // double-check, since if it hasn't we'll walk off the end of the buffer.
+  DCHECK_LE(bg_start_x + damage_width, full_bg_width);
+  DCHECK_LE(bg_start_y + damage_height, full_bg_height);
+
+  int bg_x_byte_offset = bg_start_x * bytes_per_pixel;
+  int page_x_byte_offset = page_start_x * bytes_per_pixel;
+  for (int row = 0; row < damage_height; ++row) {
+    int page_offset = page_stride * (page_start_y + row) + page_x_byte_offset;
+    int bg_y = bg_start_y + row;
+#if defined(OS_MACOSX)
+    // The background buffer is upside down relative to the content.
+    bg_y = bg_last_row - bg_y;
+#endif
+    int bg_offset = bg_stride * bg_y + bg_x_byte_offset;
     if (memcmp(page_bytes + page_offset,
                bg_bytes + bg_offset,
-               width * kBPP) != 0)
+               damage_width * bytes_per_pixel) != 0)
       return true;
   }
+#endif
 
   return false;
-#endif
 }
 
 void WebPluginDelegateProxy::Print(gfx::NativeDrawingContext context) {
