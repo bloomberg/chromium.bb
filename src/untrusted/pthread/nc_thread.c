@@ -42,12 +42,20 @@
 #include <sys/errno.h>
 #include <sys/unistd.h>
 
+#include "native_client/src/include/nacl_base.h"
+
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 #include "native_client/src/untrusted/pthread/nc_hash.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
+
+#if NACL_TARGET_ARCH == arm
+/* this is required for TRAMP_GET_TLS */
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+#endif
 
 
 #define FUN_TO_VOID_PTR(a) ((void*)((uintptr_t) a))
@@ -108,6 +116,7 @@ int __nc_memory_block_counter[2];
 
 /* Internal functions */
 
+#if NACL_TARGET_ARCH == x86
 static inline nc_thread_descriptor_t *nc_get_tdb() {
   nc_thread_descriptor_t *tdb = NULL;
   __asm__ __volatile__ ("mov %%gs:0, %0"
@@ -115,6 +124,29 @@ static inline nc_thread_descriptor_t *nc_get_tdb() {
                       : );
   return tdb;
 }
+#elif NACL_TARGET_ARCH == arm
+static INLINE nc_thread_descriptor_t *nc_get_tdb() {
+  nc_thread_descriptor_t *tdb = NULL;
+  /*
+   * when we create a thread service runtime places the TDB address in R9
+   * register or its TLS region. This is defined by USE_R9_AS_TLS_REG in service
+   * runtime.
+   */
+
+  /*
+   * service runtime provides a helper function for obtaining the TLB address.
+   * This function is placed in a trampoline region, a slot previous to
+   * springboard
+   */
+
+  /* TODO: move this definition to a header file */
+#define TRAMP_GET_TLS (NACL_TRAMPOLINE_END - 2 * NACL_SYSCALL_BLOCK_SIZE)
+  nc_thread_descriptor_t *(*tramp_get_tls) () = TRAMP_GET_TLS;
+  return tramp_get_tls();
+}
+#else
+#error "unknown platform"
+#endif
 
 static int nc_allocate_thread_id_mu(nc_basic_thread_data_t *basic_data) {
   /* assuming the global lock is locked */
@@ -275,26 +307,6 @@ static void nc_release_tls_node(nc_thread_memory_block_t *tls_node) {
     tls_node->is_used = 0;
     nc_free_memory_block_mu(TLS_AND_TDB_MEMORY, tls_node);
   }
-}
-
-/* internal initialization spinlock */
-/*
- * TODO(gregoryd) - Make static. Use local labels to prevent redefinition errors
- * when the definition is moved to a header file.
- */
-inline __attribute__((gnu_inline)) void nc_spinlock_lock(int *lock) {
-  __asm__("mov %0, %%ecx \n\t"
-          "mov 0x1, %%eax \n\t"
-          "loop: xchg    (%%ecx), %%eax    \n\t"
-          "test    %%eax, %%eax         \n\t"
-          "jnz     loop                 \n\t"
-          :"=r"(lock): "0"(lock));
-}
-
-inline __attribute__((gnu_inline)) void nc_spinlock_unlock(int *lock) {
-  __asm__("mov %0, %%ecx \n\t"
-          "mov 0, %%eax \n\t"
-          "xchg (%%ecx), %%eax":"=r"(lock));
 }
 
 uint32_t __nacl_tdb_id_function(nc_hash_entry_t *entry) {
