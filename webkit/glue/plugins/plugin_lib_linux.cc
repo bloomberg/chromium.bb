@@ -5,6 +5,7 @@
 #include "webkit/glue/plugins/plugin_lib.h"
 
 #include <dlfcn.h>
+#include <elf.h>
 
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -15,12 +16,55 @@
 #include "base/third_party/nspr/prcpucfg_linux.h"
 #include "third_party/mozilla/include/nsplugindefs.h"
 
+namespace {
+
+// Read the ELF header and return true if it is usable on
+// the current architecture (e.g. 32-bit ELF on 32-bit build).
+// Returns false on other errors as well.
+bool ELFMatchesCurrentArchitecture(const FilePath& filename) {
+  FILE* file = fopen(filename.value().c_str(), "rb");
+  if (!file)
+    return false;
+
+  char buffer[5];
+  if (fread(buffer, 5, 1, file) != 1) {
+    fclose(file);
+    return false;
+  }
+  fclose(file);
+
+  if (buffer[0] != ELFMAG0 ||
+      buffer[1] != ELFMAG1 ||
+      buffer[2] != ELFMAG2 ||
+      buffer[3] != ELFMAG3) {
+    // Not an ELF file, perhaps?
+    return false;
+  }
+
+  int elf_class = buffer[EI_CLASS];
+#if defined(ARCH_CPU_32_BITS)
+  if (elf_class == ELFCLASS32)
+    return true;
+#elif defined(ARCH_CPU_64_BITS)
+  if (elf_class == ELFCLASS64)
+    return true;
+#endif
+
+  return false;
+}
+
+
+}  // anonymous namespace
 namespace NPAPI {
 
 bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
                                   WebPluginInfo* info) {
   // The file to reference is:
   // http://mxr.mozilla.org/firefox/source/modules/plugin/base/src/nsPluginsDirUnix.cpp
+
+  // Skip files that aren't appropriate for our architecture.
+  if (!ELFMatchesCurrentArchitecture(filename))
+    return false;
 
   void* dl = base::LoadNativeLibrary(filename);
   if (!dl)
