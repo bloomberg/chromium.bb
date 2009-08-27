@@ -1263,9 +1263,7 @@
       'msvs_guid': 'C66B126D-0ECE-4CA2-B6DC-FA780AFBBF09',
       'dependencies': [
         '../net/net.gyp:net',
-        'devtools_strings',
         'inspector_resources',
-        'inspector_strings',
         'webcore',
         'webkit',
         'webkit_resources',

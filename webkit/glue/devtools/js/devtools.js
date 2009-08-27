@@ -153,26 +153,8 @@ var context = {};  // Used by WebCore's inspector routines.
 ///////////////////////////////////////////////////////////////////////////////
 // Here and below are overrides to existing WebInspector methods only.
 // TODO(pfeldman): Patch WebCore and upstream changes.
-(function () {
-
 var oldLoaded = WebInspector.loaded;
-
-function loadDevToolsStrings() {
-  var locale = DevToolsHost.getApplicationLocale();
-  locale = locale.replace('_', '-');
-
-  var devtoolsStringsScriptElement = document.createElement('script');
-  devtoolsStringsScriptElement.addEventListener(
-      "load",
-      devToolsHandleLoaded.bind(WebInspector),
-      false);
-  devtoolsStringsScriptElement.type = 'text/javascript';
-  devtoolsStringsScriptElement.src = 'l10n/devtoolsStrings_' + locale + '.js';
-  document.getElementsByTagName("head").item(0).appendChild(
-      devtoolsStringsScriptElement);
-};
-
-function devToolsHandleLoaded() {
+WebInspector.loaded = function() {
   devtools.tools = new devtools.ToolsAgent();
   devtools.tools.reset();
 
@@ -197,18 +179,6 @@ function devToolsHandleLoaded() {
 
   DevToolsHost.loaded();
 };
-
-
-// l10n is turned off in tests mode because delayed loading of strings
-// causes test failures.
-if (!window.___interactiveUiTestsMode) {
-  window.localizedStrings = {};
-  WebInspector.loaded = loadDevToolsStrings;
-} else {
-  WebInspector.loaded = devToolsHandleLoaded;
-}
-
-})();
 
 
 /**
@@ -351,6 +321,15 @@ WebInspector.ScriptsPanel.prototype.__defineGetter__(
     WebInspector.ProfilesPanel.prototype.show = oldShow;
   };
 })();
+
+
+/*
+ * @override	
+ * TODO(mnaganov): Restore l10n when it will be agreed that it is needed.	
+ */	
+WebInspector.UIString = function(string) {	
+  return String.vsprintf(string, Array.prototype.slice.call(arguments, 1));	
+};
 
 
 // There is no clear way of setting frame title yet. So sniffing main resource
