@@ -540,6 +540,11 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
                           gtk_widget_get_visual(view_.get())->depth);
 }
 
+void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
+  RenderWidgetHostView::SetBackground(background);
+  host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));
+}
+
 void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
   DCHECK(!about_to_validate_and_paint_);
 

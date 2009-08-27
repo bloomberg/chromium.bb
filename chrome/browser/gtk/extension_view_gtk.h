@@ -12,6 +12,7 @@ class Browser;
 class ExtensionHost;
 class RenderViewHost;
 class RenderWidgetHostViewGtk;
+class SkBitmap;
 
 class ExtensionViewGtk {
  public:
@@ -24,6 +25,8 @@ class ExtensionViewGtk {
 
   bool is_toolstrip() const { return is_toolstrip_; }
   void set_is_toolstrip(bool is_toolstrip) { is_toolstrip_ = is_toolstrip; }
+
+  void SetBackground(const SkBitmap& background);
 
   // Method for the ExtensionHost to notify us about the correct width for
   // extension contents.

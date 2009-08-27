@@ -37,6 +37,10 @@ class ExtensionShelfGtk::Toolstrip {
   void AddToolstripToBox(GtkWidget* box);
   void RemoveToolstripFromBox(GtkWidget* box);
 
+  void SetBackground(const SkBitmap& background) {
+    host_->view()->SetBackground(background);
+  }
+
  private:
   void Init();
 
@@ -93,7 +97,9 @@ void ExtensionShelfGtk::Hide() {
 
 void ExtensionShelfGtk::ToolstripInsertedAt(ExtensionHost* host,
                                             int index) {
+  InitBackground();
   Toolstrip* toolstrip = new Toolstrip(host);
+  toolstrip->SetBackground(*background_.get());
   toolstrip->AddToolstripToBox(shelf_hbox_);
   toolstrips_.insert(toolstrip);
   model_->SetToolstripDataAt(index, toolstrip);
@@ -186,6 +192,17 @@ void ExtensionShelfGtk::Init(Profile* profile) {
 
   LoadFromModel();
   model_->AddObserver(this);
+}
+
+void ExtensionShelfGtk::InitBackground() {
+  if (background_.get())
+    return;
+  background_.reset(new SkBitmap);
+  background_->setConfig(SkBitmap::kARGB_8888_Config, 3, 3);
+  background_->allocPixels();
+  background_->eraseRGB(kBackgroundColor.red >> 8,
+                        kBackgroundColor.green >> 8,
+                        kBackgroundColor.blue >> 8);
 }
 
 void ExtensionShelfGtk::AdjustHeight() {

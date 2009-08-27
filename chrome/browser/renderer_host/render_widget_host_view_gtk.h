@@ -64,6 +64,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual void PasteFromSelectionClipboard();
   virtual void ShowingContextMenu(bool showing);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
+  virtual void SetBackground(const SkBitmap& background);
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id);
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id);
 

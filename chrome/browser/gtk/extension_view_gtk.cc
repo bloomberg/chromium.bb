@@ -28,6 +28,10 @@ RenderViewHost* ExtensionViewGtk::render_view_host() const {
   return extension_host_->render_view_host();
 }
 
+void ExtensionViewGtk::SetBackground(const SkBitmap& background) {
+  render_widget_host_view_->SetBackground(background);
+}
+
 void ExtensionViewGtk::UpdatePreferredWidth(int pref_width) {
   gtk_widget_set_size_request(native_view(), pref_width, -1);
 }

@@ -57,6 +57,9 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   // Create the contents of the extension shelf.
   void Init(Profile* profile);
 
+  // Lazily initialize background bitmap. Can be called many times.
+  void InitBackground();
+
   // Determines what is our target height and sets it.
   void AdjustHeight();
 
@@ -79,6 +82,9 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
 
   // Used to position all children.
   GtkWidget* shelf_hbox_;
+
+  // Lazily-initialized background for toolstrips.
+  scoped_ptr<SkBitmap> background_;
 
   GtkThemeProvider* theme_provider_;
 
