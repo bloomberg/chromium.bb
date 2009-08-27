@@ -165,6 +165,8 @@
     for (var builderName in builds) {
       resultsByBuilder[builderName] = builds[builderName];
     }
+
+    generatePage();
   }
   var BUILDER_BASE = 'http://build.chromium.org/buildbot/';
   function getPathToBuilderResultsFile(builderName) {
@@ -181,9 +183,13 @@
   script.src = getPathToBuilderResultsFile(builderName) + 'expectations.json';
   document.getElementsByTagName('head')[0].appendChild(script);
 
+  var expectationsLoaded = false;
   function ADD_EXPECTATIONS(expectations) {
+    expectationsLoaded = true;
     for (var test in expectations)
       expectationsByTest[test] = expectations[test];
+
+    generatePage();
   }
 
   // CONSTANTS
@@ -420,11 +426,6 @@
 
       resultsForTest.html = getHtmlForIndividualTest(builderName, test);
 
-      if (didTestPassAllRuns(builderName, test)) {
-        resultsForTest.meetsExpectations =
-            expectations || expectations == 'PASS';
-      }
-
       failures.push(resultsForTest);
     }
 
@@ -495,7 +496,7 @@
       var test = results[i];
 
       var classes = [];
-      if (test.meetsExpectations)
+      if (!test.meetsExpectations)
         classes.push('expectation-mismatch');
 
       if (test.isWontFix)
@@ -561,7 +562,8 @@
           EXPECTATIONS_MAP[expectation] + '</span>';
     }
     html += '<span class=expectation-mismatch>WRONG EXPECTATIONS</span>' +
-        '</div><b>All columns are sortable</b> | ' +
+        '</div><b>All columns are sortable. | ' +
+        'Skipped tests are not listed.</b> | ' +
         '<input type=checkbox id=wont-fix-input ' +
         'onclick="updateWontFixDisplay()">' +
         'Show WONTFIX tests.</div>';
@@ -572,7 +574,14 @@
     var html = getHTMLForPageHeader();
     html += getHTMLForTestTable(perBuilderFailures[currentState.builder],
        'failures', currentState.sortColumn, currentState.sortOrder);
-    document.body.innerHTML = html;
+    var startTime = Date.now();
+    // InnerHTML to a div that's not in the document. This is
+    // ~300ms faster in Safari 4 and Chrome 4 on mac.
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    document.body.innerHTML = '';
+    document.body.appendChild(div);
+    logTime('Time to innerHTML', startTime);
   }
 
   function getAlphanumericCompare(column, reverse) {
@@ -641,6 +650,7 @@
   }
 
   function generatePage() {
+    var startTime = Date.now();
     currentPlatformAndBuildType = null;
     oldLocation = window.location.toString();
     var hash = window.location.hash;
@@ -648,7 +658,7 @@
       var hashParts = hash.slice(1).split('&');
       for (var i = 0; i < hashParts.length; i++) {
         var itemParts = hashParts[i].split('=');
-        currentState[itemParts[0]] = itemParts[1];
+        currentState[itemParts[0]] = decodeURIComponent(itemParts[1]);
       }
     }
     if (!currentState.builder) {
@@ -657,6 +667,11 @@
         break;
       }
     }
+
+    // Only continue if the JSON files for the text expectations and this
+    // this builder have loaded.
+    if (!expectationsLoaded || !resultsByBuilder[currentState.builder])
+      return;
 
     processTestRunsForBuilder(currentState.builder);
     setFullPageHTML();
@@ -669,6 +684,7 @@
     document.getElementById('wont-fix-input').checked =
         currentState.showWontFix == 'true';
     updateWontFixDisplay();
+    logTime('Time to generate page', startTime);
   }
 
   function updateWontFixDisplay() {
@@ -683,35 +699,30 @@
     }
   }
 
-  var suppressPageReload = false;
-
   function setState(key, value) {
-    // We want to suppress regenerating the page if showWontFix is modified
-    // since we only need to modify a style element for that.
-    // We'll regenerate the page the next time state is modified.
-    suppressPageReload = key == 'showWontFix';
     currentState[key] = value;
     window.location.replace(window.location.pathname + '#' +
         'builder=' + currentState.builder + '&' +
         'sortColumn=' + currentState.sortColumn + '&' +
         'sortOrder=' + currentState.sortOrder + '&' +
         'showWontFix=' + currentState.showWontFix);
+    // We don't need to regenerate the page if showWontFix is modified
+    // since we only need to modify a style element for that.
+    if (key != 'showWontFix')
+      generatePage();
+  }
+
+  function logTime(msg, startTime) {
+    console.log(msg + ': ' + (Date.now() - startTime));
   }
 
   window.onload = function() {
-    var loadTime = Date.now() - pageLoadStartTime
-    // Poll for hash changes.
-    // TODO: Use hashchange event when it is supported.
+    // This doesn't seem totally accurate as there is a race between
+    // onload firing and the last script tag being executed.
+    logTime('Time to load JS', pageLoadStartTime);
     setInterval(function() {
-      if (!suppressPageReload && oldLocation != window.location) {
-        var generatePageTime = Date.now();
+      if (oldLocation != window.location)
         generatePage();
-        generatePageTime = Date.now() - generatePageTime;
-        var div = document.createElement('div');
-        div.innerHTML = "Time to load JS: " + loadTime +
-            "<br>Time to generate page: " + generatePageTime;
-        document.body.appendChild(div);
-      }
     }, 100);
   }
   </script>
