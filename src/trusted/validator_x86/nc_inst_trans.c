@@ -351,6 +351,7 @@ typedef enum {
   RegSize64,
   RegMMX,
   RegXMM,
+  RegUndefined,   /* Always returns RegUnknown. */
 } RegKind;
 
 static const char* const g_RegKindName[] = {
@@ -359,20 +360,24 @@ static const char* const g_RegKindName[] = {
   "RegSize32",
   "RegSize64",
   "RegMMX",
-  "RegXMM"
+  "RegXMM",
+  "RegUndefined"
 };
 
 /* Define ModRm register categories. */
 typedef enum {
   ModRmGeneral,
   ModRmMmx,
-  ModRmXmm
+  ModRmXmm,
+  /* Don't allow top level registers in Effective address. */
+  ModRmNoTopLevelRegisters
 } ModRmRegisterKind;
 
 static const char* const g_ModRmRegisterKindName[] = {
   "ModRmGeneral",
   "ModRmMmx",
-  "ModRmXmm"
+  "ModRmXmm",
+  "ModRmNoTopLevelRegisters"
 };
 
 const char* RegKindName(RegKind kind) {
@@ -383,6 +388,8 @@ static OperandKind LookupRegister(RegKind kind, int reg_index) {
   DEBUG(printf("Lookup register %s:%d\n", RegKindName(kind), reg_index));
   if (32 == NACL_TARGET_SUBARCH && kind == RegSize64) {
     FatallyLost("Architecture doesn't define 64 bit registers");
+  } else if (RegUndefined == kind) {
+    return RegUnknown;
   }
   return (*(RegisterTable[kind]))[reg_index];
 }
@@ -560,6 +567,8 @@ static ExprNode* AppendOperandRegister(
     case ModRmXmm:
       reg_kind = RegXMM;
       break;
+    case ModRmNoTopLevelRegisters:
+      reg_kind = RegUndefined;
   }
   DEBUG(printf("Translate register %d, %s\n",
                reg_index, g_RegKindName[reg_kind]));
@@ -1093,10 +1102,12 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
        * how to process the J operand (see Intel manual for call statement).
        */
       return AppendRelativeImmediate(state);
-    case Mm_G_Operand:
+    case MemOffset_E_Operand:
+      return AppendEffectiveAddress(state, operand, ModRmNoTopLevelRegisters);
+    case Mmx_G_Operand:
       return AppendOperandRegister(state, operand, GetGenRegRegister(state),
                                    ModRmMmx);
-    case Mm_E_Operand:
+    case Mmx_E_Operand:
       return AppendEffectiveAddress(state, operand, ModRmMmx);
     case Xmm_G_Operand:
       return AppendOperandRegister(state, operand, GetGenRegRegister(state),

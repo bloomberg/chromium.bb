@@ -417,7 +417,7 @@ static void DefineD8ModRmOpcodes() {
         D8OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
     DefineOperand(RegST0, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
-    DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpAddress));
+    DefineOperand(MemOffset_E_Operand, OpFlag(OpUse));
   }
 }
 

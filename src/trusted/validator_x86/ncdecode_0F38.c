@@ -43,6 +43,6 @@ void Define0F38Opcodes() {
                NACLi_SSSE3,
                InstFlag(OpcodeUsesModRm),
                InstPsignb);
-  DefineOperand(Mm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
-  DefineOperand(Mm_E_Operand, OpFlag(OpUse));
+  DefineOperand(Mmx_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpUse));
 }

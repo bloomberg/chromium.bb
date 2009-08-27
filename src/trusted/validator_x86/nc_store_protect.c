@@ -119,6 +119,19 @@ void NcStoreValidator(NcValidatorState* state,
                                "Invalid displacement in memory store\n");
       }
       break;
+    } else if (ExprFlag(ExprSet) &&
+               (UndefinedExp == node->kind ||
+                (ExprRegister == node->kind &&
+                 (node->flags & ExprFlag(ExprSet)) &&
+                 RegUnknown == GetNodeRegister(node)))) {
+      /* This shouldn't happpen, but if it does, its because either:
+       * (1) We couldn't translate the expression, and hence complain; or
+       * (2) It is an X87 instruction with a register address, which we don't
+       *     allow (in case these instructions get generalized in the future).
+       */
+      NcValidatorInstMessage(
+          LOG_ERROR, state, inst,
+          "Store not understood, can't verify correctness.\n");
     }
   }
   DEBUG(printf("<- Validating store\n"));

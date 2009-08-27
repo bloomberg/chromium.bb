@@ -454,11 +454,16 @@ typedef enum {
    */
   Mpo_Operand,
 
+  /* Like E_Operand, but doesn't allow top-level registers
+   * (i.e. only memory offsets for effective address).
+   */
+  MemOffset_E_Operand,
+
   /* Like E_Operand, but uses MMX registers instead. */
-  Mm_E_Operand,
+  Mmx_E_Operand,
 
   /* Like G_Operand, but uses MMX registers instead. */
-  Mm_G_Operand,
+  Mmx_G_Operand,
 
   /* Like E_Operand, but uses XMM registers instead. */
   Xmm_E_Operand,
