@@ -208,16 +208,7 @@
       },
       {
         'variables': {
-          'conditions': [
-            ['OS == "mac"',
-              {
-                'o3d_main_lib_type': 'loadable_module',
-              },
-              {
-                'o3d_main_lib_type': 'static_library',
-              },
-            ],
-          ],
+          'o3d_main_lib_type': 'loadable_module',
         },
       },
     ],
