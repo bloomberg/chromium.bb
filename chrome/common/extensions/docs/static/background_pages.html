@@ -1,4 +1,5 @@
 <div id="pageData-title" class="pageData">Background Pages</div>
+<div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
 A common need for extensions is to have
@@ -16,7 +17,7 @@ The difference is that the background page exists
 for the lifetime of your extension,
 and only one instance of it at a time is active.</p>
 
-<h2>Details</h2>
+<h2 id="manifest">Manifest</h2>
 
 <p>
 Register your background page in the extension manifest, like this:
@@ -26,9 +27,11 @@ Register your background page in the extension manifest, like this:
   "name": "My First Extension",
   "version": "1.0",
   "description": "The first extension that I made.",
-  "background_page": "background.html",
+  <b>"background_page": "background.html",</b>
   "toolstrips": ["toolstrip.html"]
 }</pre>
+
+<h2>Details</h2>
 
 <p>
 Your toolstrip will likely contain

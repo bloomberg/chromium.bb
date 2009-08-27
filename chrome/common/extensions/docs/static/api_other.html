@@ -1,0 +1,56 @@
+<div id="pageData-title" class="pageData">Other APIs</div>
+
+<p>
+In addition to the
+<a href="api_index.html">chrome.* APIs</a>,
+extensions can use all the APIs
+that the browser provides
+to web pages and apps.
+If the browser doesn't support an API you want to use,
+you can bundle additional API libraries into your extension.
+</p>
+
+<p>Here's a sampling of the APIs that extensions can use:</p>
+
+<dl>
+<dt><strong> Standard JavaScript APIs </strong></dt>
+<dd> <span class="comment">[PENDING: define, explain; link to complete list]</span> 
+<!-- Use onclick in your toolbar div to add click behavior.
+E.g. window.open(someUrl). --></dd>
+<dt><strong> XMLHttpRequest </strong></dt>
+<dd>
+  Lets the extension request data from one or more servers.
+  The manifest specifies 
+  which domains the extension can send requests to.
+  <span class="comment">[PENDING: link to doc]</span></dd>
+<dt><strong> WebKit APIs </strong></dt>
+<dd>
+  Because Google Chrome is built upon WebKit,
+  your extensions can use WebKit APIs.
+  Especially useful are the experimental CSS features
+  such as filters, animations, and transformations.
+  Here's an example of using WebKit styles
+  to make the UI spin:
+  <pre>&lt;style>
+  div:hover {
+    -webkit-transform: rotate(360deg);
+    -webkit-transition: all sl ease-out;
+  }
+&lt;/style>
+</pre>
+  <p class="comment">[PENDING: link to complete list of webkit apis]</p>
+</dd>
+<dt><strong> V8 APIs</strong>, such as<strong> JSON </strong></dt>
+<dd> JSON is in V8, so you don't need to include a JSON library to use JSON functions. <span class="comment">[PENDING: what other APIs are in v8? link to complete list]</span></dd>
+<dt> <strong>HTML5</strong> <strong>APIs</strong>, such as <strong>localStorage</strong> and <strong>Web Workers</strong></dt>
+<dd> HTML5 is still being defined and implemented, but one crucial feature it will provide is local storage... <!--
+localStorage.setItem(&quot;foo&quot;, &quot;bar&quot;); ... localStorage.getItem(&quot;foo&quot;); --> <span class="comment">[PENDING: mention Web Workers, too. Other important API? link to complete list]</span></dd>
+<dt><strong>APIs in bundled libraries</strong></dt>
+<dd> If you want to use a library that the browser doesn't provide
+(for example, jQuery),
+you can bundle that library's JavaScript files with your extension.
+Bundled libraries work in extensions
+just as they would in any other web pages.
+</dd>
+</dl>
+

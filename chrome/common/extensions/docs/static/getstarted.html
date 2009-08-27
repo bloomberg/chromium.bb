@@ -1,4 +1,4 @@
-<div id="pageData-title" class="pageData">Tutorial: Getting Started</div>
+<div id="pageData-title" class="pageData">Tutorial: Getting Started (Hello, World!)</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
@@ -70,7 +70,7 @@ at the bottom of the Google Chrome window.
       <code>--load-extension</code> flag.
       For example, if your extension is at <code>c:\myext</code>,
       your shortcut might look something like this:
-<pre>chrome.exe <span class="newCode">--load-extension="c:\myext"</span></pre>
+<pre>chrome.exe <b>--load-extension="c:\myext"</b></pre>
       </li>
       <li>Exit Google Chrome.
       If you have a separate profile for testing,
@@ -138,7 +138,7 @@ You should see the UI for your extension at the bottom left of the browser, look
   </li>
   <li>
     <p> Edit <code>my_toolstrip.html</code>, so that it has the following code: </p>
-    <pre>&lt;div class=&quot;toolstrip-button&quot;<span class="newCode"> onclick=&quot;window.open('hello_world.html')&quot;</span>&gt;
+    <pre>&lt;div class=&quot;toolstrip-button&quot;<b> onclick=&quot;window.open('hello_world.html')&quot;</b>&gt;
   &lt;span&gt;Hello, World!&lt;/span&gt;
 &lt;/div&gt;</pre>
   </li>
@@ -157,11 +157,35 @@ following them exactly.
 Don't try loading an HTML file that isn't in the extension's folder &mdash;
 it won't work! </p>
 
-<h2 id="summary">Summary</h2>
+<h2 id="summary">Now what?</h2>
 
 <p>
 [PENDING: Summarize what we did,
 what it means,
 what else we would've done if this were a real extension (e.g. package it),
-and where to find more information.
-Suggest where to go next.]</p>
+and where to find more information.]</p>
+
+<ul>
+  <li>
+    Subscribe to
+    <a href="http://groups.google.com/group/chromium-extensions/subscribe">chromium-extensions</a>
+    to keep up to date with the latest news
+  </li>
+  <li>
+    Learn how to debug your extension by following the
+    <a href="tut_debugging.html">debugging tutorial</a>
+  </li>
+  <li>
+    Look at some
+    <a href="http://sites.google.com/a/chromium.org/dev/developers/design-documents/extensions/samples">sample extensions</a>
+  </li>
+  <li>
+    Learn more about
+    <a href="toolstrips.html">toolstrips</a>
+  </li>
+  <li>
+    <a href="packaging.html">Package</a>
+    your extension into a <code>.crx</code> file
+    so you can share it with your friends
+  </li>
+</ul>

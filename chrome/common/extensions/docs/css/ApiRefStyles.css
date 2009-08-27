@@ -42,7 +42,7 @@ div.summary div {
   margin-bottom: 0.5em;
 }
 
-pre .newCode {
+pre b {
   background-color: rgb(255, 255, 0);
 }
 
