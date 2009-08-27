@@ -184,15 +184,15 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
     last_fill_buffer_time = last_fill_buffer_time_;
     last_fill_buffer_time_ = base::TimeDelta();
 
-    // Do the fill.
-    dest_written = algorithm_->FillBuffer(dest, dest_len);
-
     // Check if we finally reached end of stream by emptying |algorithm_|.
-    if (recieved_end_of_stream_ && algorithm_->IsQueueEmpty()) {
-      if (!rendered_end_of_stream_) {
+    if (algorithm_->IsQueueEmpty()) {
+      if (recieved_end_of_stream_ && !rendered_end_of_stream_) {
         rendered_end_of_stream_ = true;
         host()->NotifyEnded();
       }
+    } else {
+      // Otherwise fill the buffer.
+      dest_written = algorithm_->FillBuffer(dest, dest_len);
     }
 
     // Get the current time.

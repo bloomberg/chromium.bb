@@ -218,14 +218,25 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   // We should have one less read request in the queue.
   EXPECT_EQ(kMaxQueueSize - 1, read_queue_.size());
 
-  // Flush the entire internal buffer, which should notify the host we've ended.
+  // Flush the entire internal buffer and verify NotifyEnded() isn't called
+  // right away.
+  EXPECT_CALL(*renderer_, CheckPoint(1));
   EXPECT_EQ(0u, bytes_buffered % kDataSize);
-  EXPECT_CALL(host_, NotifyEnded());
   while (bytes_buffered > 0) {
     EXPECT_EQ(kDataSize,
               renderer_->FillBuffer(buffer, kDataSize, base::TimeDelta()));
     bytes_buffered -= kDataSize;
   }
+
+  // Although we've emptied the buffer, we don't consider ourselves ended until
+  // we request another buffer.  This way we know the last of the audio has
+  // played.
+  EXPECT_FALSE(renderer_->HasEnded());
+  renderer_->CheckPoint(1);
+
+  // Do an additional read to trigger NotifyEnded().
+  EXPECT_CALL(host_, NotifyEnded());
+  EXPECT_EQ(0u, renderer_->FillBuffer(buffer, kDataSize, base::TimeDelta()));
 
   // We should now report ended.
   EXPECT_TRUE(renderer_->HasEnded());
