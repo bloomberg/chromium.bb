@@ -51,9 +51,8 @@ the original file is below.
 <title jscontent="title"></title>
 <style>
 body {
-  background-color: Window;
-  color: WindowText;
-  font: message-box;
+  font-family: sans-serif;
+  font-size: 0.8em;
 }
 
 div#outside {
@@ -63,23 +62,13 @@ div#outside {
  margin-right: 5%;
 }
 
-div#plugs {
+h1 {
   text-align: center;
-  font-size: xx-large;
-  font-weight: bold;
 }
 
-div#noplugs {
-  font-size: x-large;
-  font-weight: bold;
-}
-
-div.plugname {
+h2.plugname {
   margin-top: 2em;
   margin-bottom: 1em;
-  font-size: large;
-  text-align: left;
-  font-weight: bold;
 }
 
 dl {
@@ -87,9 +76,6 @@ dl {
 }
 
 table {
-  background-color: Window;
-  color: WindowText;
-  font: message-box;
   text-align: left;
   width: 100%;
   border: 1px solid ThreeDShadow;
@@ -146,9 +132,9 @@ th.enabled {
   var numPlugins = navigator.plugins.length;
 
   if (numPlugins > 0)
-    document.writeln('<div id="plugs" jscontent="headingPlugs"><\/div>');
+    document.writeln('<h1 id="plugs" jscontent="headingPlugs"><\/h1>');
   else
-    document.writeln('<div id="noplugs" jscontent="headingNoPlugs"><\/div>');
+    document.writeln('<h1 id="noplugs" jscontent="headingNoPlugs"><\/h1>');
 
   for (var i = 0; i < numPlugins; i++)
   {
@@ -156,9 +142,9 @@ th.enabled {
 
     if (plugin)
     {
-      document.write("<div class=\"plugname\">");
+      document.write("<h2 class=\"plugname\">");
       document.write(plugin.name);
-      document.writeln("<\/div>");
+      document.writeln("<\/h2>");
 
       document.writeln('<dl><dd><span jscontent="filename"><\/span> ');
       document.write(plugin.filename);
