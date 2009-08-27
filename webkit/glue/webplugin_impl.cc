@@ -1008,9 +1008,12 @@ void WebPluginImpl::SetDeferResourceLoading(int resource_id, bool defer) {
       // correctly.
       if (!defer && client_info.client &&
           client_info.pending_failure_notification) {
+        // The ClientInfo and the iterator can become invalid due to the call
+        // to DidFail below.
+        WebPluginResourceClient* resource_client = client_info.client;
         client_info.loader->cancel();
-        client_info.client->DidFail();
         clients_.erase(client_index++);
+        resource_client->DidFail();
       }
       break;
     }
