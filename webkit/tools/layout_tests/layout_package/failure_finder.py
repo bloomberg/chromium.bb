@@ -156,7 +156,7 @@ def GeneratePNGDiff(file1, file2, output_file):
         raise e
   if not result:
     print "The given PNG images were the same!"
-  return result and result != 1 and _compare_available
+  return _compare_available
 
 # TODO(gwilson): Change this to use the pretty print differs.
 def GenerateTextDiff(file1, file2, output_file):
@@ -258,6 +258,8 @@ class FailureFinder(object):
       print "Fetching failures from buildbot..."
 
     content = self._ScrapeBuilderOutput()
+    if not content:
+      return None
     matches = self._FindMatchesInBuilderOutput(content)
 
     if self.verbose:
@@ -295,7 +297,9 @@ class FailureFinder(object):
           print "Could not find builder on waterfall, trying fyi waterfall..."
         self.fyi_builder = True
         return self._ScrapeBuilderOutput()
-      print "Couldn't find that builder, or build did not compile."
+      print "I could not find that builder, or build did not compile."
+      print "Check that the builder name matches exactly (case sensitive),"
+      print "and wrap quotes around builder names that have spaces."
       return None
 
   def _FindMatchesInBuilderOutput(self, output):
