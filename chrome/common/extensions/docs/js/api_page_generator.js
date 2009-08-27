@@ -143,10 +143,12 @@ function fetchContent(url, onSuccess, onError) {
 
   try {
     xhr.onreadystatechange = function(){
-      if (xhr.readyState == 4 && xhr.status < 300) {
-        if (xhr.responseText) {
+      if (xhr.readyState == 4) {
+        if (xhr.status < 300 && xhr.responseText) {
           window.clearTimeout(abortTimerId);
           onSuccess(xhr.responseText);
+        } else {
+          handleError("Failure to fetch content");
         }
       }
     }
