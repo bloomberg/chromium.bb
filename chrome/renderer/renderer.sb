@@ -6,6 +6,9 @@
 (version 1)
 (deny default)
 
+; Allow sending signals to self - http://crbug.com/20370
+(allow %signal-self)
+
 ; Needed for full-page-zoomed controls - http://crbug.com/11325
 (allow sysctl-read)
 
