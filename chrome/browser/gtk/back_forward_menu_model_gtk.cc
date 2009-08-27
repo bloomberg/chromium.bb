@@ -4,8 +4,12 @@
 
 #include "chrome/browser/gtk/back_forward_menu_model_gtk.h"
 
+#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/gtk/back_forward_button_gtk.h"
+
+// Might want to vary this by locale.
+static const size_t kMaxChars = 50;
 
 BackForwardMenuModelGtk::BackForwardMenuModelGtk(Browser* browser,
                                                  ModelType model_type,
@@ -23,7 +27,11 @@ bool BackForwardMenuModelGtk::IsItemSeparator(int command_id) const {
 }
 
 std::string BackForwardMenuModelGtk::GetLabel(int command_id) const {
-  return UTF16ToUTF8(GetItemLabel(command_id));
+  std::wstring item_label_wstr = UTF16ToWideHack(GetItemLabel(command_id));
+  // This breaks on word boundaries. Ideally we would break on character
+  // boundaries.
+  item_label_wstr = l10n_util::TruncateString(item_label_wstr, kMaxChars);
+  return WideToUTF8(item_label_wstr);
 }
 
 bool BackForwardMenuModelGtk::HasIcon(int command_id) const {

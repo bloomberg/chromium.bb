@@ -19,6 +19,10 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
+// Limit the length of the tooltip text. This applies only to the text in the
+// omnibox (e.g. X in "Go to X");
+const size_t kMaxTooltipTextLength = 400;
+
 GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
     : location_bar_(location_bar),
       browser_(browser),
@@ -193,7 +197,8 @@ gboolean GoButtonGtk::OnQueryTooltip(GtkTooltip* tooltip) {
     std::wstring current_text_wstr(location_bar_->location_entry()->GetText());
     if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
       l10n_util::WrapStringWithLTRFormatting(&current_text_wstr);
-    string16 current_text = WideToUTF16Hack(current_text_wstr);
+    string16 current_text = WideToUTF16Hack(
+        l10n_util::TruncateString(current_text_wstr, kMaxTooltipTextLength));
 
     AutocompleteEditModel* edit_model =
         location_bar_->location_entry()->model();

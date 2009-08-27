@@ -27,6 +27,9 @@
 
 namespace {
 
+// TODO(estade): It might be a good idea to vary this by locale.
+const int kMaxChars = 50;
+
 void SetImageMenuItem(GtkWidget* menu_item, const SkBitmap& bitmap) {
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
@@ -150,8 +153,12 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
   for (int i = start_child_index; i < parent->GetChildCount(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
 
-    GtkWidget* menu_item = gtk_image_menu_item_new_with_label(
-        WideToUTF8(node->GetTitle()).c_str());
+    // This breaks on word boundaries. Ideally we would break on character
+    // boundaries.
+    std::wstring elided_name =
+        l10n_util::TruncateString(node->GetTitle(), kMaxChars);
+    GtkWidget* menu_item =
+        gtk_image_menu_item_new_with_label(WideToUTF8(elided_name).c_str());
     g_object_set_data(G_OBJECT(menu_item), "bookmark-node", AsVoid(node));
 
     if (node->is_url()) {

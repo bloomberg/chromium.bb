@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 
 #include "app/gtk_dnd_util.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
 #include "base/pickle.h"
@@ -28,6 +29,10 @@ const int kBitsInAByte = 8;
 
 // Maximum number of characters on a bookmark button.
 const size_t kMaxCharsOnAButton = 15;
+
+// Max size of each component of the button tooltips.
+const size_t kMaxTooltipTitleLength = 100;
+const size_t kMaxTooltipURLLength = 400;
 
 // Only used for the background of the drag widget.
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xe6, 0xed, 0xf4);
@@ -147,7 +152,7 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
 
   std::string tooltip = BuildTooltipFor(node);
   if (!tooltip.empty())
-    gtk_widget_set_tooltip_text(button, tooltip.c_str());
+    gtk_widget_set_tooltip_markup(button, tooltip.c_str());
 
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.
@@ -186,9 +191,29 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
 }
 
 std::string BuildTooltipFor(const BookmarkNode* node) {
-  // TODO(erg): Actually build the tooltip. For now, we punt and just return
-  // the URL.
-  return node->GetURL().possibly_invalid_spec();
+  const std::string& url = node->GetURL().possibly_invalid_spec();
+  const std::string& title = WideToUTF8(node->GetTitle());
+
+  std::string truncated_url = WideToUTF8(l10n_util::TruncateString(
+      UTF8ToWide(url), kMaxTooltipURLLength));
+  gchar* escaped_url_cstr = g_markup_escape_text(truncated_url.c_str(),
+                                                 truncated_url.size());
+  std::string escaped_url(escaped_url_cstr);
+  g_free(escaped_url_cstr);
+
+  std::string tooltip;
+  if (url == title) {
+    return escaped_url;
+  } else {
+    std::string truncated_title = WideToUTF8(l10n_util::TruncateString(
+      node->GetTitle(), kMaxTooltipTitleLength));
+    gchar* escaped_title_cstr = g_markup_escape_text(truncated_title.c_str(),
+                                                     truncated_title.size());
+    std::string escaped_title(escaped_title_cstr);
+    g_free(escaped_title_cstr);
+
+    return std::string("<b>") + escaped_title + "</b>\n" + escaped_url;
+  }
 }
 
 const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget) {
