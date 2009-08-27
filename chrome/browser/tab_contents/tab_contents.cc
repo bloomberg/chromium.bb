@@ -1280,8 +1280,15 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Get the favicon, either from history or request it from the net.
   fav_icon_helper_.FetchFavIcon(details.entry->url());
 
-  // Disable all page actions.
-  enabled_page_actions_.clear();
+  // Disable all page actions, unless this is an in-page navigation.
+  if (!enabled_page_actions_.empty()) {
+    url_canon::Replacements<char> replacements;
+    replacements.ClearRef();
+    if (params.url.ReplaceComponents(replacements) !=
+        params.referrer.ReplaceComponents(replacements)) {
+      enabled_page_actions_.clear();
+    }
+  }
 
   // Close constrained popups if necessary.
   MaybeCloseChildWindows(details.previous_url, details.entry->url());
