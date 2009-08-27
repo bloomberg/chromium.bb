@@ -1650,6 +1650,9 @@ BUG10388 LINUX : LayoutTests/fast/layers/layer-visibility-sublayer.html = FAIL P
 // failures for Mac is because Mac doesn't yet run pixel tests where the
 // regression becomes visible.
 BUG8630 WIN LINUX : LayoutTests/fast/repaint = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-as-image-incremental-repaint.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
 
 // Linux pixeltest failure: Failing to rotate the form control
 BUG10390 LINUX : LayoutTests/fast/transforms/transformed-focused-text-input.html = FAIL
