@@ -15,7 +15,9 @@ class WebDevToolsAgentDelegate {
 
   virtual void SendMessageToClient(const std::string& class_name,
                                    const std::string& method_name,
-                                   const std::string& raw_msg) = 0;
+                                   const std::string& param1,
+                                   const std::string& param2,
+                                   const std::string& param3) = 0;
 
   // Invalidates widget which leads to the repaint.
   virtual void ForceRepaint() = 0;

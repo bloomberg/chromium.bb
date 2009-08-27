@@ -15,7 +15,9 @@ class WebDevToolsClientDelegate {
 
   virtual void SendMessageToAgent(const std::string& class_name,
                                   const std::string& method_name,
-                                  const std::string& raw_msg) = 0;
+                                  const std::string& param1,
+                                  const std::string& param2,
+                                  const std::string& param3) = 0;
   virtual void SendDebuggerCommandToAgent(const std::string& command) = 0;
 
   virtual void ActivateWindow() = 0;

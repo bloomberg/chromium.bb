@@ -44,10 +44,13 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
 
 void DevToolsAgent::SendMessageToClient(const std::string& class_name,
                                         const std::string& method_name,
-                                        const std::string& raw_msg) {
+                                        const std::string& param1,
+                                        const std::string& param2,
+                                        const std::string& param3) {
   IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
       routing_id_,
-      DevToolsClientMsg_RpcMessage(class_name, method_name, raw_msg));
+      DevToolsClientMsg_RpcMessage(class_name, method_name, param1, param2,
+                                   param3));
   view_->Send(m);
 }
 
@@ -85,10 +88,13 @@ void DevToolsAgent::OnDetach() {
 
 void DevToolsAgent::OnRpcMessage(const std::string& class_name,
                                  const std::string& method_name,
-                                 const std::string& raw_msg) {
+                                 const std::string& param1,
+                                 const std::string& param2,
+                                 const std::string& param3) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->DispatchMessageFromClient(class_name, method_name, raw_msg);
+    web_agent->DispatchMessageFromClient(class_name, method_name, param1,
+                                         param2, param3);
   }
 }
 

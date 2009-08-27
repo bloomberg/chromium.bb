@@ -85,17 +85,19 @@ static const char kTabUrlChangeEventMessageName[] = "TabUrlChangeEventMessage";
 
 void ExtensionDevToolsBridge::OnRpcMessage(const std::string& class_name,
                                            const std::string& message_name,
-                                           const std::string& msg) {
+                                           const std::string& param1,
+                                           const std::string& param2,
+                                           const std::string& param3) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
   // TODO(jamesr): Update the filtering and message creation logic once
   // the TimelineAgent lands in WebKit.
   if (class_name == kTimelineAgentClassName) {
     if (message_name == kPageEventMessageName) {
-      std::string json = StringPrintf("[{\"record\": \"%s\"}]", msg.c_str());
+      std::string json = StringPrintf("[{\"record\": \"%s\"}]", param1.c_str());
       profile_->GetExtensionMessageService()->
           DispatchEventToRenderers(on_page_event_name_, json);
     } else if (message_name == kTabUrlChangeEventMessageName) {
-      std::string json = StringPrintf("[{\"record\": \"%s\"}]", msg.c_str());
+      std::string json = StringPrintf("[{\"record\": \"%s\"}]", param1.c_str());
       profile_->GetExtensionMessageService()->
           DispatchEventToRenderers(on_tab_url_change_event_name_, json);
     }

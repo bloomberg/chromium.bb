@@ -9,7 +9,7 @@
 
 // Tools agent provides API for enabling / disabling other agents as well as
 // API for auxiliary UI functions such as dom elements highlighting.
-#define TOOLS_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, METHOD4) \
+#define TOOLS_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
   /* Requests that utility js function is executed with the given args. */ \
   METHOD3(ExecuteUtilityFunction, int /* call_id */, \
       String /* function_name */, String /* json_args */) \
@@ -20,8 +20,7 @@
 
 DEFINE_RPC_CLASS(ToolsAgent, TOOLS_AGENT_STRUCT)
 
-#define TOOLS_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, \
-    METHOD4) \
+#define TOOLS_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
   /* Updates focused node on the client. */ \
   METHOD1(FrameNavigate, std::string /* url */) \
   \
@@ -34,8 +33,7 @@ DEFINE_RPC_CLASS(ToolsAgent, TOOLS_AGENT_STRUCT)
 
 DEFINE_RPC_CLASS(ToolsAgentDelegate, TOOLS_AGENT_DELEGATE_STRUCT)
 
-#define TOOLS_AGENT_NATIVE_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, \
-    METHOD4) \
+#define TOOLS_AGENT_NATIVE_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
   /* Response to the async call. */ \
   METHOD2(DidGetResourceContent, int /* call_id */, String /* content */) \
 

@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, TimelineApi) {
   TabContents* tab_contents = browser()->tabstrip_model()->GetTabContentsAt(0);
   ASSERT_TRUE(tab_contents);
   int tab_id = ExtensionTabUtil::GetTabId(tab_contents);
-  
+
   // Test setup.
   bool result = false;
   std::wstring register_listeners_js = StringPrintf(L"setListenersOnTab(%d)",
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, TimelineApi) {
 
   // Test onTabUrlChange event.
   DevToolsClientMsg_RpcMessage tabUrlChangeEventMessage(
-      "TimelineAgentClass", "TabUrlChangeEventMessage", "{}");
+      "TimelineAgentClass", "TabUrlChangeEventMessage", "", "", "");
   devtools_client_host->SendMessageToClient(tabUrlChangeEventMessage);
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(),
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, TimelineApi) {
   // Test onPageEvent event.
   result = false;
   DevToolsClientMsg_RpcMessage pageEventMessage(
-      "TimelineAgentClass", "PageEventMessage", "{}");
+      "TimelineAgentClass", "PageEventMessage", "", "", "");
   devtools_client_host->SendMessageToClient(pageEventMessage);
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testReceivePageEvent()", &result);
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   TabContents* tab_contents = browser()->tabstrip_model()->GetTabContentsAt(0);
   ASSERT_TRUE(tab_contents);
   int tab_id = ExtensionTabUtil::GetTabId(tab_contents);
-  
+
   // Test setup.
   bool result = false;
   std::wstring register_listeners_js = StringPrintf(L"setListenersOnTab(%d)",

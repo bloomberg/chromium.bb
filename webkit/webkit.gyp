@@ -1292,7 +1292,6 @@
         # This list contains all .h, .cc, and .mm files in glue except for
         # those in the test subdirectory and those with unittest in in their
         # names.
-        'glue/devtools/devtools_rpc.cc',
         'glue/devtools/devtools_rpc.h',
         'glue/devtools/devtools_rpc_js.h',
         'glue/devtools/bound_object.cc',

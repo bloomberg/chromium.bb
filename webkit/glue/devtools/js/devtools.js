@@ -16,9 +16,9 @@ goog.require('devtools.DebuggerAgent');
  * Dispatches raw message from the host.
  * @param {string} remoteName
  * @prama {string} methodName
- * @param {Object} msg Message to dispatch.
+ * @param {string} param1, param2, param3 Arguments to dispatch.
  */
-devtools.dispatch = function(remoteName, methodName, msg) {
+devtools$$dispatch = function(remoteName, methodName, param1, param2, param3) {
   remoteName = 'Remote' + remoteName.substring(0, remoteName.length - 8);
   var agent = window[remoteName];
   if (!agent) {
@@ -30,7 +30,7 @@ devtools.dispatch = function(remoteName, methodName, msg) {
     debugPrint('No method "' + remoteName + '.' + methodName + '" found.');
     return;
   }
-  method.apply(this, msg);
+  method.call(this, param1, param2, param3);
 };
 
 

@@ -56,13 +56,17 @@ class WebDevToolsAgentImpl
   virtual void OnNavigate();
   virtual void DispatchMessageFromClient(const std::string& class_name,
                                          const std::string& method_name,
-                                         const std::string& raw_msg);
+                                         const std::string& param1,
+                                         const std::string& param2,
+                                         const std::string& param3);
   virtual void InspectElement(int x, int y);
 
   // DevToolsRpc::Delegate implementation.
   void SendRpcMessage(const std::string& class_name,
                       const std::string& method_name,
-                      const std::string& raw_msg);
+                      const std::string& param1,
+                      const std::string& param2,
+                      const std::string& param3);
 
   // Methods called by the glue.
   void SetMainFrameDocumentReady(bool ready);

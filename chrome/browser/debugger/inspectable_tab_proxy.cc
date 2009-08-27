@@ -4,9 +4,7 @@
 
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
 
-#include "base/json_reader.h"
 #include "base/string_util.h"
-#include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/debugger/debugger_remote_service.h"
@@ -38,31 +36,19 @@ void DevToolsClientHostImpl::SendMessageToClient(
 
 void DevToolsClientHostImpl::OnRpcMessage(const std::string& class_name,
                                           const std::string& message_name,
-                                          const std::string& msg) {
+                                          const std::string& param1,
+                                          const std::string& param2,
+                                          const std::string& param3) {
   static const std::string kDebuggerAgentDelegate = "DebuggerAgentDelegate";
   static const std::string kToolsAgentDelegate = "ToolsAgentDelegate";
   static const std::string kDebuggerOutput = "DebuggerOutput";
   static const std::string kFrameNavigate = "FrameNavigate";
 
-  scoped_ptr<Value> message(JSONReader::Read(msg, false));
-  if (!message->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();  // The RPC protocol has changed :(
-    return;
-  }
-  ListValue* list_msg = static_cast<ListValue*>(message.get());
   if (class_name == kDebuggerAgentDelegate && message_name == kDebuggerOutput) {
-    std::string str;
-    if (!list_msg->GetString(0, &str))
-      return;
-    DebuggerOutput(str);
+    DebuggerOutput(param1);
   } else if (class_name == kToolsAgentDelegate &&
              message_name == kFrameNavigate) {
-    std::string url;
-    if (!list_msg->GetString(0, &url)) {
-      NOTREACHED();
-      return;
-    }
-    FrameNavigate(url);
+    FrameNavigate(param1);
   }
 }
 

@@ -22,7 +22,6 @@
 #include <wtf/OwnPtr.h>
 #undef LOG
 
-#include "base/values.h"
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLRequest.h"
@@ -191,11 +190,11 @@ void WebDevToolsAgentImpl::GetResourceContent(
 void WebDevToolsAgentImpl::DispatchMessageFromClient(
     const std::string& class_name,
     const std::string& method_name,
-    const std::string& raw_msg) {
-  OwnPtr<ListValue> message(
-      static_cast<ListValue*>(DevToolsRpc::ParseMessage(raw_msg)));
+    const std::string& param1,
+    const std::string& param2,
+    const std::string& param3) {
   if (ToolsAgentDispatch::Dispatch(
-      this, class_name, method_name, *message.get())) {
+      this, class_name, method_name, param1, param2, param3)) {
     return;
   }
 
@@ -206,7 +205,7 @@ void WebDevToolsAgentImpl::DispatchMessageFromClient(
   if (debugger_agent_impl_.get() &&
       DebuggerAgentDispatch::Dispatch(
           debugger_agent_impl_.get(), class_name, method_name,
-          *message.get())) {
+          param1, param2, param3)) {
     return;
   }
 }
@@ -223,8 +222,11 @@ void WebDevToolsAgentImpl::InspectElement(int x, int y) {
 void WebDevToolsAgentImpl::SendRpcMessage(
     const std::string& class_name,
     const std::string& method_name,
-    const std::string& raw_msg) {
-  delegate_->SendMessageToClient(class_name, method_name, raw_msg);
+    const std::string& param1,
+    const std::string& param2,
+    const std::string& param3) {
+  delegate_->SendMessageToClient(class_name, method_name, param1, param2,
+      param3);
 }
 
 void WebDevToolsAgentImpl::InitDevToolsAgentHost() {

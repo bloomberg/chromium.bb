@@ -9,11 +9,10 @@
 
 #include <string>
 
+// Do not remove this one although it is not used.
 #include <wtf/OwnPtr.h>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
-#include "base/values.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
@@ -28,28 +27,28 @@ struct RpcJsTypeTrait {
 
 template<>
 struct RpcJsTypeTrait<bool> {
-  static bool Pass(const CppVariant& var) {
-    return var.ToBoolean();
+  static std::string ToString(const CppVariant& var) {
+    return IntToString(var.ToBoolean() ? 1 : 0);
   }
 };
 
 template<>
 struct RpcJsTypeTrait<int> {
-  static int Pass(const CppVariant& var) {
-    return var.ToInt32();
+  static std::string ToString(const CppVariant& var) {
+    return IntToString(var.ToInt32());
   }
 };
 
 template<>
 struct RpcJsTypeTrait<String> {
-  static String Pass(const CppVariant& var) {
-    return webkit_glue::StdStringToString(var.ToString());
+  static std::string ToString(const CppVariant& var) {
+    return var.ToString();
   }
 };
 
 template<>
 struct RpcJsTypeTrait<std::string> {
-  static std::string Pass(const CppVariant& var) {
+  static std::string ToString(const CppVariant& var) {
     return var.ToString();
   }
 };
@@ -66,46 +65,33 @@ struct RpcJsTypeTrait<std::string> {
 #define TOOLS_RPC_JS_BIND_METHOD3(Method, T1, T2, T3) \
   BindMethod(#Method, &OCLASS::Js##Method);
 
-#define TOOLS_RPC_JS_BIND_METHOD4(Method, T1, T2, T3, T4) \
-  BindMethod(#Method, &OCLASS::Js##Method);
-
 #define TOOLS_RPC_JS_STUB_METHOD0(Method) \
   void Js##Method(const CppArgumentList& args, CppVariant* result) { \
-    InvokeAsync(class_name, #Method); \
+    this->delegate_->SendRpcMessage(class_name, #Method); \
     result->SetNull(); \
   }
 
 #define TOOLS_RPC_JS_STUB_METHOD1(Method, T1) \
   void Js##Method(const CppArgumentList& args, CppVariant* result) { \
-    T1 t1 = RpcJsTypeTrait<T1>::Pass(args[0]); \
-    InvokeAsync(class_name, #Method, &t1); \
+    this->delegate_->SendRpcMessage(class_name, #Method, \
+        RpcJsTypeTrait<T1>::ToString(args[0])); \
     result->SetNull(); \
   }
 
 #define TOOLS_RPC_JS_STUB_METHOD2(Method, T1, T2) \
   void Js##Method(const CppArgumentList& args, CppVariant* result) { \
-    T1 t1 = RpcJsTypeTrait<T1>::Pass(args[0]); \
-    T2 t2 = RpcJsTypeTrait<T2>::Pass(args[1]); \
-    InvokeAsync(class_name, #Method, &t1, &t2); \
+    this->delegate_->SendRpcMessage(class_name, #Method, \
+        RpcJsTypeTrait<T1>::ToString(args[0]), \
+        RpcJsTypeTrait<T2>::ToString(args[1])); \
     result->SetNull(); \
   }
 
 #define TOOLS_RPC_JS_STUB_METHOD3(Method, T1, T2, T3) \
   void Js##Method(const CppArgumentList& args, CppVariant* result) { \
-    T1 t1 = RpcJsTypeTrait<T1>::Pass(args[0]); \
-    T2 t2 = RpcJsTypeTrait<T2>::Pass(args[1]); \
-    T3 t3 = RpcJsTypeTrait<T3>::Pass(args[2]); \
-    InvokeAsync(class_name, #Method, &t1, &t2, &t3); \
-    result->SetNull(); \
-  }
-
-#define TOOLS_RPC_JS_STUB_METHOD4(Method, T1, T2, T3, T4) \
-  void Js##Method(const CppArgumentList& args, CppVariant* result) { \
-    T1 t1 = RpcJsTypeTrait<T1>::Pass(args[0]); \
-    T2 t2 = RpcJsTypeTrait<T2>::Pass(args[1]); \
-    T3 t3 = RpcJsTypeTrait<T3>::Pass(args[2]); \
-    T4 t4 = RpcJsTypeTrait<T4>::Pass(args[3]); \
-    InvokeAsync(class_name, #Method, &t1, &t2, &t3, &t4); \
+    this->delegate_->SendRpcMessage(class_name, #Method, \
+        RpcJsTypeTrait<T1>::ToString(args[0]), \
+        RpcJsTypeTrait<T2>::ToString(args[1]), \
+        RpcJsTypeTrait<T3>::ToString(args[2])); \
     result->SetNull(); \
   }
 
@@ -124,8 +110,7 @@ class Js##Class##BoundObj : public Class##Stub, \
         TOOLS_RPC_JS_BIND_METHOD0, \
         TOOLS_RPC_JS_BIND_METHOD1, \
         TOOLS_RPC_JS_BIND_METHOD2, \
-        TOOLS_RPC_JS_BIND_METHOD3, \
-        TOOLS_RPC_JS_BIND_METHOD4) \
+        TOOLS_RPC_JS_BIND_METHOD3) \
   } \
   virtual ~Js##Class##BoundObj() {} \
   typedef Js##Class##BoundObj OCLASS; \
@@ -133,8 +118,7 @@ class Js##Class##BoundObj : public Class##Stub, \
       TOOLS_RPC_JS_STUB_METHOD0, \
       TOOLS_RPC_JS_STUB_METHOD1, \
       TOOLS_RPC_JS_STUB_METHOD2, \
-      TOOLS_RPC_JS_STUB_METHOD3, \
-      TOOLS_RPC_JS_STUB_METHOD4) \
+      TOOLS_RPC_JS_STUB_METHOD3) \
  private: \
   DISALLOW_COPY_AND_ASSIGN(Js##Class##BoundObj); \
 };

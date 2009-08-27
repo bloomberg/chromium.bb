@@ -25,7 +25,9 @@ class WebDevToolsClient {
 
   virtual void DispatchMessageFromAgent(const std::string& class_name,
                                         const std::string& method_name,
-                                        const std::string& raw_msg) = 0;
+                                        const std::string& param1,
+                                        const std::string& param2,
+                                        const std::string& param3) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebDevToolsClient);

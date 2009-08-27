@@ -24,7 +24,6 @@
 #undef LOG
 
 #include "base/string_util.h"
-#include "base/values.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/glue/devtools/bound_object.h"
@@ -201,25 +200,30 @@ WebDevToolsClientImpl::~WebDevToolsClientImpl() {
 void WebDevToolsClientImpl::DispatchMessageFromAgent(
       const std::string& class_name,
       const std::string& method_name,
-      const std::string& raw_msg) {
+      const std::string& param1,
+      const std::string& param2,
+      const std::string& param3) {
   if (ToolsAgentNativeDelegateDispatch::Dispatch(
           tools_agent_native_delegate_impl_.get(),
           class_name,
           method_name,
-          raw_msg)) {
+          param1,
+          param2,
+          param3)) {
     return;
   }
 
-  std::string expr = StringPrintf(
-      "devtools.dispatch('%s','%s',%s)",
-      class_name.c_str(),
-      method_name.c_str(),
-      raw_msg.c_str());
+  Vector<std::string> v;
+  v.append(class_name);
+  v.append(method_name);
+  v.append(param1);
+  v.append(param2);
+  v.append(param3);
   if (!loaded_) {
-    pending_incoming_messages_.append(expr);
+    pending_incoming_messages_.append(v);
     return;
   }
-  ExecuteScript(expr);
+  ExecuteScript(v);
 }
 
 void WebDevToolsClientImpl::AddResourceSourceToFrame(int resource_id,
@@ -233,16 +237,32 @@ void WebDevToolsClientImpl::AddResourceSourceToFrame(int resource_id,
   tools_agent_native_delegate_impl_->RequestSent(resource_id, mime_type, frame);
 }
 
-void WebDevToolsClientImpl::ExecuteScript(const std::string& expr) {
-  web_view_impl_->GetMainFrame()->executeScript(
-      WebScriptSource(WebString::fromUTF8(expr)));
+void WebDevToolsClientImpl::ExecuteScript(const Vector<std::string>& v) {
+  WebFrameImpl* frame = web_view_impl_->main_frame();
+  v8::HandleScope scope;
+  v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
+  v8::Context::Scope context_scope(frame_context);
+  v8::Handle<v8::Value> dispatch_function =
+      frame_context->Global()->Get(v8::String::New("devtools$$dispatch"));
+  ASSERT(dispatch_function->IsFunction());
+  v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(dispatch_function);
+  v8::Handle<v8::Value> args[] = {
+    v8::String::New(v.at(0).c_str()),
+    v8::String::New(v.at(1).c_str()),
+    v8::String::New(v.at(2).c_str()),
+    v8::String::New(v.at(3).c_str()),
+    v8::String::New(v.at(4).c_str())
+  };
+  function->Call(frame_context->Global(), 5, args);
 }
-
 
 void WebDevToolsClientImpl::SendRpcMessage(const std::string& class_name,
                                            const std::string& method_name,
-                                           const std::string& raw_msg) {
-  delegate_->SendMessageToAgent(class_name, method_name, raw_msg);
+                                           const std::string& param1,
+                                           const std::string& param2,
+                                           const std::string& param3) {
+  delegate_->SendMessageToAgent(class_name, method_name, param1, param2,
+                                param3);
 }
 
 // static
@@ -313,7 +333,7 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsLoaded(
   SecurityOrigin* origin = page->mainFrame()->domWindow()->securityOrigin();
   origin->grantUniversalAccess();
 
-  for (Vector<std::string>::iterator it =
+  for (Vector<Vector<std::string> >::iterator it =
            client->pending_incoming_messages_.begin();
        it != client->pending_incoming_messages_.end();
        ++it) {

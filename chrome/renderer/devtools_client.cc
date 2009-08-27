@@ -45,8 +45,11 @@ bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
 
 void DevToolsClient::SendMessageToAgent(const std::string& class_name,
                                         const std::string& method_name,
-                                        const std::string& raw_msg) {
-  Send(DevToolsAgentMsg_RpcMessage(class_name, method_name, raw_msg));
+                                        const std::string& param1,
+                                        const std::string& param2,
+                                        const std::string& param3) {
+  Send(DevToolsAgentMsg_RpcMessage(class_name, method_name, param1, param2,
+                                   param3));
 }
 
 void DevToolsClient::SendDebuggerCommandToAgent(const std::string& command) {
@@ -81,6 +84,9 @@ void DevToolsClient::ToggleInspectElementMode(bool enabled) {
 
 void DevToolsClient::OnRpcMessage(const std::string& class_name,
                                   const std::string& method_name,
-                                  const std::string& raw_msg) {
-  web_tools_client_->DispatchMessageFromAgent(class_name, method_name, raw_msg);
+                                  const std::string& param1,
+                                  const std::string& param2,
+                                  const std::string& param3) {
+  web_tools_client_->DispatchMessageFromAgent(class_name, method_name, param1,
+      param2, param3);
 }

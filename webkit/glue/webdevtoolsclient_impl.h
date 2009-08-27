@@ -43,19 +43,23 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
   // DevToolsRpc::Delegate implementation.
   virtual void SendRpcMessage(const std::string& class_name,
                               const std::string& method_name,
-                              const std::string& raw_msg);
+                              const std::string& param1,
+                              const std::string& param2,
+                              const std::string& param3);
 
   // WebDevToolsClient implementation.
   virtual void DispatchMessageFromAgent(const std::string& class_name,
                                         const std::string& method_name,
-                                        const std::string& raw_msg);
+                                        const std::string& param1,
+                                        const std::string& param2,
+                                        const std::string& param3);
 
  private:
   void AddResourceSourceToFrame(int resource_id,
                                 String mime_type,
                                 WebCore::Node* frame);
 
-  void ExecuteScript(const std::string& expr);
+  void ExecuteScript(const Vector<std::string>& v);
   static v8::Handle<v8::Value> JsReset(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsAddSourceToFrame(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsAddResourceSourceToFrame(
@@ -79,7 +83,7 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
   OwnPtr<JsDebuggerAgentBoundObj> debugger_agent_obj_;
   OwnPtr<JsToolsAgentBoundObj> tools_agent_obj_;
   bool loaded_;
-  Vector<std::string> pending_incoming_messages_;
+  Vector<Vector<std::string> > pending_incoming_messages_;
   OwnPtr<BoundObject> dev_tools_host_;
   OwnPtr<ToolsAgentNativeDelegateImpl> tools_agent_native_delegate_impl_;
   DISALLOW_COPY_AND_ASSIGN(WebDevToolsClientImpl);

@@ -35,7 +35,9 @@ class DevToolsClient : public WebDevToolsClientDelegate {
   // WebDevToolsClient::Delegate implementation
   virtual void SendMessageToAgent(const std::string& class_name,
                                   const std::string& method_name,
-                                  const std::string& raw_msg);
+                                  const std::string& param1,
+                                  const std::string& param2,
+                                  const std::string& param3);
   virtual void SendDebuggerCommandToAgent(const std::string& command);
 
   virtual void ActivateWindow();
@@ -47,7 +49,9 @@ class DevToolsClient : public WebDevToolsClientDelegate {
  private:
   void OnRpcMessage(const std::string& class_name,
                     const std::string& method_name,
-                    const std::string& raw_msg);
+                    const std::string& param1,
+                    const std::string& param2,
+                    const std::string& param3);
 
   // Sends message to DevToolsAgent.
   void Send(const IPC::Message& tools_agent_message);

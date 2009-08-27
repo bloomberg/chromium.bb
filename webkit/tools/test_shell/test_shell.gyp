@@ -325,7 +325,6 @@
         '../../glue/context_menu_unittest.cc',
         '../../glue/cpp_bound_class_unittest.cc',
         '../../glue/cpp_variant_unittest.cc',
-        '../../glue/devtools/devtools_rpc_unittest.cc',
         '../../glue/dom_operations_unittest.cc',
         '../../glue/dom_serializer_unittest.cc',
         '../../glue/glue_serialize_unittest.cc',

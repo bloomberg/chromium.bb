@@ -34,7 +34,9 @@ class ExtensionDevToolsBridge : public DevToolsClientHost {
  private:
   void OnRpcMessage(const std::string& class_name,
                     const std::string& message_name,
-                    const std::string& msg);
+                    const std::string& param1,
+                    const std::string& param2,
+                    const std::string& param3);
 
   // ID of the tab we are monitoring.
   int tab_id_;

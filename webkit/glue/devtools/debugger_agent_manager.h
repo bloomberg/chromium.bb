@@ -8,6 +8,7 @@
 #include <wtf/HashMap.h>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "v8/include/v8-debug.h"
 #include "webkit/glue/webdevtoolsagent.h"
 
