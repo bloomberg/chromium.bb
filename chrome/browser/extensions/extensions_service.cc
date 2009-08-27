@@ -381,16 +381,16 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension) {
     Extension* old = GetExtensionByIdInternal(extension->id(), true, true);
     if (old) {
       if (extension->version()->CompareTo(*(old->version())) > 0) {
-        bool higher_permissions =
-            (extension->GetPermissionClass() > old->GetPermissionClass());
+        bool allow_silent_upgrade = Extension::AllowSilentUpgrade(
+            old, extension);
 
         // To upgrade an extension in place, unload the old one and
         // then load the new one.
         UnloadExtension(old->id());
         old = NULL;
 
-        if (higher_permissions) {
-          // Extension was upgraded to a high permission class. Disable it and
+        if (!allow_silent_upgrade) {
+          // Extension has changed permissions significantly. Disable it and
           // notify the user.
           extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
           NotificationService::current()->Notify(

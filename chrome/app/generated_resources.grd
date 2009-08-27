@@ -2096,7 +2096,7 @@ each locale. -->
         The newest version of the extension "<ph name="EXTENSION_NAME">$1<ex>Flashblock</ex></ph>" requires more permissions, so it has been disabled.
       </message>
       <message name="IDS_EXTENSION_DISABLED_INFOBAR_ENABLE_BUTTON" desc="Text displayed on the button to re-enable the disabled extension.">
-        Reenable
+        Re-enable
       </message>
 
       <!-- Extension install prompt -->
@@ -2106,6 +2106,33 @@ each locale. -->
       <message name="IDS_EXTENSION_PROMPT_HEADING" desc="First bold line in the content area of the extension installation prompt. Asks the user if they want to install a particular extension.">
         Install "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
+
+      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to browser APIs.">
+        This extension will have access to your browsing history.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_SINGLE_HOST" desc="Warning displayed in body of extension dialog when the extension requires access to a single host.">
+        This extension will have access to your private data on <ph name="HOST">$1<ex>maps.google.com</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_SINGLE_HOST_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to a single host and browser APIs.">
+        This extension will have access to your browsing history and private data on <ph name="HOST">$1<ex>maps.google.com</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_MULTIPLE_HOSTS" desc="Warning displayed in body of extension dialog when the extension requires access to multiple hosts, but not every host.">
+        This extension will have access to your private data on multiple websites.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_MULTIPLE_HOSTS_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to multiple hosts, but not every host, and browser APIs.">
+        This extension will have access to your browsing history and private data on multiple websites.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_ALL_HOSTS" desc="Warning displayed in body of extension dialog when the extension requires access to all hosts.">
+        This extension will have access to your private data on all websites.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_ALL_HOSTS_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to all hosts and browser APIs.">
+        This extension will have access to your browsing history and private data on all websites.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_FULL_ACCESS" desc="Warning displayed in body of extension dialog when the extension requires access the local machine.">
+        This extension will have full access to your computer and private data.
+      </message>
+
+      <!-- TODO(aa): Remove these old warning messages when all the platforms are switched to the new ones, above. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_1" desc="Humorous warning displayed in the extension install prompt that tells users that extensions have access to their computer and private data.">
         Extensions have access to your computer and private data. This means they could forward all your email to your spouse.
       </message>
@@ -2118,6 +2145,7 @@ each locale. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_SEVERE" desc="A bolded warning below the humorous warning that reiterates that users should only install extensions they trust">
         Only install extensions you trust.
       </message>
+
       <message name="IDS_EXTENSION_PROMPT_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt">
         Install
       </message>

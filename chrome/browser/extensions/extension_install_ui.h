@@ -9,6 +9,8 @@
 #include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 
+#include <string>
+
 class Extension;
 class ExtensionsService;
 class MessageLoop;
@@ -34,7 +36,8 @@ class ExtensionInstallUI {
   static void ShowExtensionInstallPrompt(Profile* profile,
                                          Delegate* delegate,
                                          Extension* extension,
-                                         SkBitmap* install_icon);
+                                         SkBitmap* install_icon,
+                                         const std::wstring& warning_text);
 
   ExtensionInstallUI(Profile* profile);
 

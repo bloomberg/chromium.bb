@@ -1,0 +1,10 @@
+{
+  "name": "allow silent update",
+  "version": "1.0",
+  "plugins": [
+    {"path": "foo.dll"}
+  ],
+  "permissions": [
+    "tabs"
+  ]
+}

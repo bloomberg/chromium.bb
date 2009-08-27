@@ -21,14 +21,6 @@ namespace errors = extension_manifest_errors;
 class ExtensionTest : public testing::Test {
 };
 
-static Value* ValueFromJSON(const std::string& json_string) {
-  std::string error;
-  JSONStringValueSerializer content_scripts(json_string);
-  Value* result = content_scripts.Deserialize(&error);
-  DCHECK(result) << error;
-  return result;
-}
-
 TEST(ExtensionTest, InitFromValueInvalid) {
 #if defined(OS_WIN)
   FilePath path(FILE_PATH_LITERAL("c:\\foo"));
@@ -485,74 +477,144 @@ TEST(ExtensionTest, MimeTypeSniffing) {
   EXPECT_EQ("application/octet-stream", result);
 }
 
-TEST(ExtensionTest, PermissionClass) {
-#if defined(OS_WIN)
-  FilePath path(FILE_PATH_LITERAL("C:\\foo"));
-#elif defined(OS_POSIX)
-  FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
-  Extension::ResetGeneratedIdCounter();
+static Extension* LoadManifest(const std::string& dir,
+                               const std::string& test_file) {
+  FilePath path;
+  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  path = path.AppendASCII("extensions")
+             .AppendASCII(dir)
+             .AppendASCII(test_file);
 
-  Extension extension(path);
+  JSONFileValueSerializer serializer(path);
+  scoped_ptr<Value> result(serializer.Deserialize(NULL));
+  if (!result.get())
+    return NULL;
+
   std::string error;
-  DictionaryValue bare_manifest;
-  scoped_ptr<DictionaryValue> manifest;
+  scoped_ptr<Extension> extension(new Extension);
+  extension->InitFromValue(*static_cast<DictionaryValue*>(result.get()),
+                           false, &error);
 
-  // Start with a minimalist extension.
-  bare_manifest.SetString(keys::kVersion, "1.0.0.0");
-  bare_manifest.SetString(keys::kName, "my extension");
-  EXPECT_TRUE(extension.InitFromValue(bare_manifest, false, &error));
-  EXPECT_EQ(Extension::PERMISSION_CLASS_LOW, extension.GetPermissionClass());
+  result.release();
+  return extension.release();
+}
 
-  // Toolstrips don't affect the permission class.
-  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
-  manifest->Set(keys::kToolstrips, ValueFromJSON(
-      "[\"toolstrip.html\", \"toolstrip2.html\"]"));
-  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
-  EXPECT_EQ(Extension::PERMISSION_CLASS_LOW, extension.GetPermissionClass());
+TEST(ExtensionTest, EffectiveHostPermissions) {
+  scoped_ptr<Extension> extension;
+  std::set<std::string> hosts;
 
-  // Requesting API permissions bumps you to medium.
-  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
-  manifest->Set(keys::kPermissions, ValueFromJSON(
-      "[\"tabs\", \"bookmarks\"]"));
-  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
-  EXPECT_EQ(Extension::PERMISSION_CLASS_MEDIUM, extension.GetPermissionClass());
+  extension.reset(LoadManifest("effective_host_permissions", "empty.json"));
+  EXPECT_EQ(0u, extension->GetEffectiveHostPermissions().size());
+  EXPECT_FALSE(extension->HasAccessToAllHosts());
 
-  // Adding a content script bumps you to high.
-  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
-  manifest->Set(keys::kContentScripts, ValueFromJSON(
-      "[{"
-      "  \"matches\": [\"http://*.google.com/*\"],"
-      "  \"js\": [\"script.js\"]"
-      "}]"));
-  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
-  EXPECT_EQ(Extension::PERMISSION_CLASS_HIGH, extension.GetPermissionClass());
+  extension.reset(LoadManifest("effective_host_permissions", "one_host.json"));
+  hosts = extension->GetEffectiveHostPermissions();
+  EXPECT_EQ(1u, hosts.size());
+  EXPECT_TRUE(hosts.find("www.google.com") != hosts.end());
+  EXPECT_FALSE(extension->HasAccessToAllHosts());
 
-  // ... or asking for a host permission.
-  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
-  manifest->Set(keys::kPermissions, ValueFromJSON(
-      "[\"tabs\", \"http://google.com/*\"]"));
-  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
-  EXPECT_EQ(Extension::PERMISSION_CLASS_HIGH, extension.GetPermissionClass());
+  extension.reset(LoadManifest("effective_host_permissions",
+                               "one_host_wildcard.json"));
+  hosts = extension->GetEffectiveHostPermissions();
+  EXPECT_EQ(1u, hosts.size());
+  EXPECT_TRUE(hosts.find("google.com") != hosts.end());
+  EXPECT_FALSE(extension->HasAccessToAllHosts());
 
-  // Using native code (NPAPI) is automatically the max class.
-  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
-  manifest->Set(keys::kPlugins, ValueFromJSON(
-      "[{\"path\": \"harddrive_exploder.dll\"}]"));
-  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
-  EXPECT_EQ(Extension::PERMISSION_CLASS_FULL, extension.GetPermissionClass());
+  extension.reset(LoadManifest("effective_host_permissions",
+                               "two_hosts.json"));
+  hosts = extension->GetEffectiveHostPermissions();
+  EXPECT_EQ(2u, hosts.size());
+  EXPECT_TRUE(hosts.find("www.google.com") != hosts.end());
+  EXPECT_TRUE(hosts.find("www.reddit.com") != hosts.end());
+  EXPECT_FALSE(extension->HasAccessToAllHosts());
 
-  // Using everything at once should obviously be the max class as well.
-  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
-  manifest->Set(keys::kPlugins, ValueFromJSON(
-      "[{\"path\": \"harddrive_exploder.dll\"}]"));
-  manifest->Set(keys::kPermissions, ValueFromJSON(
-      "[\"tabs\", \"http://google.com/*\"]"));
-  manifest->Set(keys::kContentScripts, ValueFromJSON(
-      "[{"
-      "  \"matches\": [\"http://*.google.com/*\"],"
-      "  \"js\": [\"script.js\"]"
-      "}]"));
-  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
-  EXPECT_EQ(Extension::PERMISSION_CLASS_FULL, extension.GetPermissionClass());
+  extension.reset(LoadManifest("effective_host_permissions",
+                               "duplicate_host.json"));
+  hosts = extension->GetEffectiveHostPermissions();
+  EXPECT_EQ(1u, hosts.size());
+  EXPECT_TRUE(hosts.find("google.com") != hosts.end());
+  EXPECT_FALSE(extension->HasAccessToAllHosts());
+
+  extension.reset(LoadManifest("effective_host_permissions",
+                               "https_not_considered.json"));
+  hosts = extension->GetEffectiveHostPermissions();
+  EXPECT_EQ(1u, hosts.size());
+  EXPECT_TRUE(hosts.find("google.com") != hosts.end());
+  EXPECT_FALSE(extension->HasAccessToAllHosts());
+
+  extension.reset(LoadManifest("effective_host_permissions",
+                               "two_content_scripts.json"));
+  hosts = extension->GetEffectiveHostPermissions();
+  EXPECT_EQ(3u, hosts.size());
+  EXPECT_TRUE(hosts.find("google.com") != hosts.end());
+  EXPECT_TRUE(hosts.find("www.reddit.com") != hosts.end());
+  EXPECT_TRUE(hosts.find("news.ycombinator.com") != hosts.end());
+  EXPECT_FALSE(extension->HasAccessToAllHosts());
+
+  extension.reset(LoadManifest("effective_host_permissions",
+                               "duplicate_content_script.json"));
+  hosts = extension->GetEffectiveHostPermissions();
+  EXPECT_EQ(2u, hosts.size());
+  EXPECT_TRUE(hosts.find("google.com") != hosts.end());
+  EXPECT_TRUE(hosts.find("www.reddit.com") != hosts.end());
+  EXPECT_FALSE(extension->HasAccessToAllHosts());
+
+  extension.reset(LoadManifest("effective_host_permissions",
+                               "all_hosts.json"));
+  hosts = extension->GetEffectiveHostPermissions();
+  EXPECT_EQ(1u, hosts.size());
+  EXPECT_TRUE(hosts.find("") != hosts.end());
+  EXPECT_TRUE(extension->HasAccessToAllHosts());
+
+  extension.reset(LoadManifest("effective_host_permissions",
+                               "all_hosts2.json"));
+  hosts = extension->GetEffectiveHostPermissions();
+  EXPECT_EQ(2u, hosts.size());
+  EXPECT_TRUE(hosts.find("") != hosts.end());
+  EXPECT_TRUE(hosts.find("www.google.com") != hosts.end());
+  EXPECT_TRUE(extension->HasAccessToAllHosts());
+
+  extension.reset(LoadManifest("effective_host_permissions",
+                               "all_hosts3.json"));
+  hosts = extension->GetEffectiveHostPermissions();
+  EXPECT_EQ(2u, hosts.size());
+  EXPECT_TRUE(hosts.find("") != hosts.end());
+  EXPECT_TRUE(hosts.find("www.google.com") != hosts.end());
+  EXPECT_TRUE(extension->HasAccessToAllHosts());
+}
+
+TEST(ExtensionTest, AllowSilentUpgrade) {
+  const struct {
+    const char* base_name;
+    bool expect_success;
+  } kTests[] = {
+    { "allhosts1", true },  // all -> all
+    { "allhosts2", true },  // all -> one
+    { "allhosts3", false },  // one -> all
+    { "hosts1", true },  // http://a,http://b -> http://a,http://b
+    { "hosts2", true },  // http://a,http://b -> https://a,http://*.b
+    { "hosts3", true },  // http://a,http://b -> http://a
+    { "hosts4", false },  // http://a -> http://a,http://b
+    { "permissions1", true},  // tabs -> tabs
+    { "permissions2", true},  // tabs -> tabs,bookmarks
+    { "permissions3", false},  // http://a -> http://a,tabs
+    { "permissions4", true},  // plugin -> plugin,tabs
+    { "plugin1", true},  // plugin -> plugin
+    { "plugin2", true},  // plugin -> none
+    { "plugin3", false}  // none -> plugin
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
+    scoped_ptr<Extension> old_extension(
+        LoadManifest("allow_silent_upgrade",
+                     std::string(kTests[i].base_name) + "_old.json"));
+    scoped_ptr<Extension> new_extension(
+        LoadManifest("allow_silent_upgrade",
+                     std::string(kTests[i].base_name) + "_new.json"));
+
+    EXPECT_EQ(kTests[i].expect_success,
+              Extension::AllowSilentUpgrade(old_extension.get(),
+                                            new_extension.get()))
+        << kTests[i].base_name;
+  }
 }

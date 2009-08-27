@@ -23,6 +23,8 @@
 // Represents a Chrome extension.
 class Extension {
  public:
+  typedef std::vector<URLPattern> HostPermissions;
+
   // What an extension was loaded from.
   enum Location {
     INVALID,
@@ -64,15 +66,6 @@ class Extension {
   // Each permission is a module that the extension is permitted to use.
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;
-
-  // A classification of how dangerous an extension can be, based on what it has
-  // access to.
-  enum PermissionClass {
-    PERMISSION_CLASS_LOW = 0,  // green
-    PERMISSION_CLASS_MEDIUM,  // yellow
-    PERMISSION_CLASS_HIGH,  // orange
-    PERMISSION_CLASS_FULL,  // red
-  };
 
   struct PrivacyBlacklistInfo {
     FilePath path;  // Path to the plain-text blacklist.
@@ -175,6 +168,11 @@ class Extension {
   static bool FormatPEMForFileOutput(const std::string input,
       std::string* output, bool is_public);
 
+  // Determine whether we should allow a silent upgrade from |old_extension| to
+  // |new_extension|. If not, the user will have to approve the upgrade.
+  static bool AllowSilentUpgrade(Extension* old_extension,
+                                 Extension* new_extension);
+
   // Initialize the extension from a parsed manifest.
   // If |require_id| is true, will return an error if the "id" key is missing
   // from the value.
@@ -201,12 +199,23 @@ class Extension {
   const std::vector<PluginInfo>& plugins() const { return plugins_; }
   const GURL& background_url() const { return background_url_; }
   const std::vector<ToolstripInfo>& toolstrips() const { return toolstrips_; }
-  const std::vector<URLPattern>& host_permissions() const {
+  const HostPermissions& host_permissions() const {
     return host_permissions_;
   }
   const std::vector<std::string>& api_permissions() const {
     return api_permissions_;
   }
+
+  // Returns the set of hosts that the extension effectively has access to. This
+  // is used in the permissions UI and is a combination of the hosts accessible
+  // through content scripts and the hosts accessible through XHR.
+  const std::set<std::string> GetEffectiveHostPermissions() const;
+
+  // Whether the extension has access to all hosts. This is true if there is
+  // a content script that matches all hosts, or if there is a host permission
+  // for all hosts.
+  bool HasAccessToAllHosts() const;
+
   const GURL& update_url() const { return update_url_; }
   const std::map<int, std::string>& icons() { return icons_; }
 
@@ -229,9 +238,6 @@ class Extension {
   // Returns a list of paths (relative to the extension dir) for images that
   // the browser might load (like themes and page action icons).
   std::set<FilePath> GetBrowserImages();
-
-  // Calculates and returns the permission class this extension is in.
-  PermissionClass GetPermissionClass();
 
   // Returns an absolute path to the given icon inside of the extension. Returns
   // an empty FilePath if the extension does not have that icon.
@@ -359,7 +365,7 @@ class Extension {
   std::vector<std::string> api_permissions_;
 
   // The sites this extension has permission to talk to (using XHR, etc).
-  std::vector<URLPattern> host_permissions_;
+  HostPermissions host_permissions_;
 
   // The paths to the icons the extension contains mapped by their width.
   std::map<int, std::string> icons_;

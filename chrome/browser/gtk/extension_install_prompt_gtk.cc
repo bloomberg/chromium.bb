@@ -126,10 +126,9 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
 
 }  // namespace
 
-void ExtensionInstallUI::ShowExtensionInstallPrompt(Profile* profile,
-                                                    Delegate* delegate,
-                                                    Extension* extension,
-                                                    SkBitmap* icon) {
+void ExtensionInstallUI::ShowExtensionInstallPrompt(
+    Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
+    const std::wstring& warning_text) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->ContinueInstall();

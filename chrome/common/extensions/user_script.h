@@ -19,6 +19,8 @@ class Pickle;
 // extension.
 class UserScript {
  public:
+  typedef std::vector<URLPattern> PatternList;
+
   // Locations that user scripts can be run inside the document.
   enum RunLocation {
     DOCUMENT_START,  // After the documentElemnet is created, but before
@@ -97,7 +99,7 @@ class UserScript {
 
   // The URLPatterns, if any, that determine which pages this script runs
   // against.
-  const std::vector<URLPattern>& url_patterns() const { return url_patterns_; }
+  const PatternList& url_patterns() const { return url_patterns_; }
   void add_url_pattern(const URLPattern& pattern) {
     url_patterns_.push_back(pattern);
   }
@@ -139,7 +141,7 @@ class UserScript {
 
   // URLPatterns that determine pages to inject the script into. These are
   // only used with scripts that are part of extensions.
-  std::vector<URLPattern> url_patterns_;
+  PatternList url_patterns_;
 
   // List of js scripts defined in content_scripts
   FileList js_scripts_;

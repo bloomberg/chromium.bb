@@ -26,6 +26,59 @@
 #include <CoreFoundation/CFUserNotification.h>
 #endif
 
+namespace {
+
+#if defined(OS_WIN) || defined(TOOLKIT_GTK)
+
+static std::wstring GetInstallWarning(Extension* extension) {
+  // If the extension has a plugin, it's easy: the plugin has the most severe
+  // warning.
+  if (!extension->plugins().empty())
+    return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_NEW_FULL_ACCESS);
+
+  // Otherwise, we go in descending order of severity: all hosts, several hosts,
+  // a single host, no hosts. For each of these, we also have a variation of the
+  // message for when api permissions are also requested.
+  if (extension->HasAccessToAllHosts()) {
+    if (extension->api_permissions().empty())
+      return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_NEW_ALL_HOSTS);
+    else
+      return l10n_util::GetString(
+          IDS_EXTENSION_PROMPT_WARNING_NEW_ALL_HOSTS_AND_BROWSER);
+  }
+
+  const std::set<std::string> hosts = extension->GetEffectiveHostPermissions();
+  if (hosts.size() > 1) {
+    if (extension->api_permissions().empty())
+      return l10n_util::GetString(
+          IDS_EXTENSION_PROMPT_WARNING_NEW_MULTIPLE_HOSTS);
+    else
+      return l10n_util::GetString(
+          IDS_EXTENSION_PROMPT_WARNING_NEW_MULTIPLE_HOSTS_AND_BROWSER);
+  }
+
+  if (hosts.size() == 1) {
+    if (extension->api_permissions().empty())
+      return l10n_util::GetStringF(
+          IDS_EXTENSION_PROMPT_WARNING_NEW_SINGLE_HOST,
+          UTF8ToWide(*hosts.begin()));
+    else
+      return l10n_util::GetStringF(
+          IDS_EXTENSION_PROMPT_WARNING_NEW_SINGLE_HOST_AND_BROWSER,
+          UTF8ToWide(*hosts.begin()));
+  }
+
+  DCHECK(hosts.size() == 0);
+  if (extension->api_permissions().empty())
+    return L"";
+  else
+    return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_NEW_BROWSER);
+}
+
+#endif
+
+}
+
 ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
     : profile_(profile), ui_loop_(MessageLoop::current()) {
 }
@@ -49,7 +102,8 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
   }
 
 #if defined(OS_WIN) || defined(TOOLKIT_GTK)
-  ShowExtensionInstallPrompt(profile_, delegate, extension, install_icon);
+  ShowExtensionInstallPrompt(profile_, delegate, extension, install_icon,
+                             GetInstallWarning(extension));
 
 #elif defined(OS_MACOSX)
   // TODO(port): Implement nicer UI.

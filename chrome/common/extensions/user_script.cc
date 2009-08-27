@@ -14,7 +14,7 @@ bool UserScript::MatchesUrl(const GURL& url) const {
       return true;
   }
 
-  for (std::vector<URLPattern>::const_iterator pattern = url_patterns_.begin();
+  for (PatternList::const_iterator pattern = url_patterns_.begin();
        pattern != url_patterns_.end(); ++pattern) {
     if (pattern->MatchesUrl(url))
       return true;
@@ -52,7 +52,7 @@ void UserScript::Pickle(::Pickle* pickle) const {
 
   // Write url patterns.
   pickle->WriteSize(url_patterns_.size());
-  for (std::vector<URLPattern>::const_iterator pattern = url_patterns_.begin();
+  for (PatternList::const_iterator pattern = url_patterns_.begin();
        pattern != url_patterns_.end(); ++pattern) {
     pickle->WriteString(pattern->GetAsString());
   }

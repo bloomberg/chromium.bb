@@ -526,6 +526,51 @@ bool Extension::FormatPEMForFileOutput(const std::string input,
   return true;
 }
 
+// static
+// TODO(aa): A problem with this code is that we silently allow upgrades to
+// extensions that require less permissions than the current version, but then
+// we don't silently allow them to go back. In order to fix this, we would need
+// to remember the max set of permissions we ever granted a single extension.
+bool Extension::AllowSilentUpgrade(Extension* old_extension,
+                                   Extension* new_extension) {
+  // If the old extension had native code access, we don't need to go any
+  // further. Things can't get any worse.
+  if (old_extension->plugins().size() > 0)
+    return true;
+
+  // Otherwise, if the new extension has a plugin, no silent upgrade.
+  if (new_extension->plugins().size() > 0)
+    return false;
+
+  // If we are increasing the set of hosts we have access to, no silent upgrade.
+  if (!old_extension->HasAccessToAllHosts()) {
+    if (new_extension->HasAccessToAllHosts())
+      return false;
+
+    std::set<std::string> old_hosts =
+        old_extension->GetEffectiveHostPermissions();
+    std::set<std::string> new_hosts =
+        new_extension->GetEffectiveHostPermissions();
+
+    std::set<std::string> difference;
+    std::set_difference(new_hosts.begin(), new_hosts.end(),
+                        old_hosts.begin(), old_hosts.end(),
+                        std::insert_iterator<std::set<std::string> >(
+                            difference, difference.end()));
+    if (difference.size() > 0)
+      return false;
+  }
+
+  // If we're going from not having api permissions to having them, no silent
+  // upgrade.
+  if (old_extension->api_permissions().size() == 0 &&
+      new_extension->api_permissions().size() > 0)
+    return false;
+
+  // Nothing much has changed. Allow the silent upgrade.
+  return true;
+}
+
 bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
                               std::string* error) {
   if (source.HasKey(keys::kPublicKey)) {
@@ -989,25 +1034,6 @@ std::set<FilePath> Extension::GetBrowserImages() {
   return image_paths;
 }
 
-Extension::PermissionClass Extension::GetPermissionClass() {
-  // Native code can do anything. Highest class.
-  if (!plugins_.empty())
-    return PERMISSION_CLASS_FULL;
-
-  // Access to other sites means the extension can steal cookies (login data)
-  // from those sites.
-  // TODO(mpcomplete): should we only classify for host access outside the
-  // extension's origin? how?
-  if (!host_permissions_.empty() || !content_scripts_.empty())
-    return PERMISSION_CLASS_HIGH;
-
-  // Extension can access history data, bookmarks, other personal info.
-  if (!api_permissions_.empty())
-    return PERMISSION_CLASS_MEDIUM;
-
-  return PERMISSION_CLASS_LOW;
-}
-
 bool Extension::GetBackgroundPageReady() {
   return background_page_ready_ || background_url().is_empty();
 }
@@ -1027,4 +1053,42 @@ FilePath Extension::GetIconPath(Icons icon) {
   if (iter == icons_.end())
     return FilePath();
   return GetResourcePath(iter->second);
+}
+
+const std::set<std::string> Extension::GetEffectiveHostPermissions() const {
+  std::set<std::string> effective_hosts;
+
+  for (HostPermissions::const_iterator host = host_permissions_.begin();
+       host != host_permissions_.end(); ++host)
+    effective_hosts.insert(host->host());
+
+  for (UserScriptList::const_iterator content_script = content_scripts_.begin();
+       content_script != content_scripts_.end(); ++content_script) {
+    UserScript::PatternList::const_iterator pattern =
+        content_script->url_patterns().begin();
+    for (; pattern != content_script->url_patterns().end(); ++pattern)
+      effective_hosts.insert(pattern->host());
+  }
+
+  return effective_hosts;
+}
+
+bool Extension::HasAccessToAllHosts() const {
+  for (HostPermissions::const_iterator host = host_permissions_.begin();
+       host != host_permissions_.end(); ++host) {
+    if (host->match_subdomains() && host->host().empty())
+      return true;
+  }
+
+  for (UserScriptList::const_iterator content_script = content_scripts_.begin();
+       content_script != content_scripts_.end(); ++content_script) {
+    UserScript::PatternList::const_iterator pattern =
+        content_script->url_patterns().begin();
+    for (; pattern != content_script->url_patterns().end(); ++pattern) {
+      if (pattern->match_subdomains() && pattern->host().empty())
+        return true;
+    }
+  }
+
+  return false;
 }
