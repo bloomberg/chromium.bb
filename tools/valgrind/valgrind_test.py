@@ -364,7 +364,7 @@ class Memcheck(ValgrindTool):
     filenames = glob.glob(self.TMP_DIR + "/memcheck.*")
 
     use_gdb = (sys.platform == 'darwin')
-    analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames, self._options.show_all_leaks, 
+    analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames, self._options.show_all_leaks,
                                                 use_gdb=use_gdb)
     return analyzer.Report()
 
