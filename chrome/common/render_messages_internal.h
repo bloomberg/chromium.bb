@@ -13,6 +13,7 @@
 
 #include "base/clipboard.h"
 #include "base/file_path.h"
+#include "base/nullable_string16.h"
 #include "base/platform_file.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/native_widget_types.h"
@@ -1597,20 +1598,16 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               unsigned /* length */)
 
   // Get a the ith key within a storage area.
-  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_DOMStorageKey,
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DOMStorageKey,
                               int64 /* storage_area_id */,
                               unsigned /* index */,
-                              string16 /* key */,
-                              bool /* key_is_null */)
+                              NullableString16 /* key */)
 
   // Get a value based on a key from a storage area.
-  // TODO(jorlow): Convert value + value_is_null over to a NullableString16
-  //               once http://crbug.com/17343 is completed.
-  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_DOMStorageGetItem,
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DOMStorageGetItem,
                               int64 /* storage_area_id */,
                               string16 /* key */,
-                              string16 /* value */,
-                              bool /* value_is_null */)
+                              NullableString16 /* value */)
 
   // Set a value that's associated with a key in a storage area.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_DOMStorageSetItem,

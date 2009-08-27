@@ -4,8 +4,8 @@
 
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 
+#include "base/nullable_string16.h"
 #include "base/stl_util-inl.h"
-#include "base/string16.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
@@ -263,9 +263,8 @@ void DOMStorageDispatcherHost::OnKey(int64 storage_area_id, unsigned index,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebStorageArea* storage_area = GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  WebString key = storage_area->key(index);
-  ViewHostMsg_DOMStorageKey::WriteReplyParams(reply_msg, (string16)key,
-                                              key.isNull());
+  const NullableString16& key = storage_area->key(index);
+  ViewHostMsg_DOMStorageKey::WriteReplyParams(reply_msg, key);
   Send(reply_msg);
 }
 
@@ -284,9 +283,8 @@ void DOMStorageDispatcherHost::OnGetItem(int64 storage_area_id,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebStorageArea* storage_area = GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  WebString value = storage_area->getItem(key);
-  ViewHostMsg_DOMStorageGetItem::WriteReplyParams(reply_msg, (string16)value,
-                                                  value.isNull());
+  const NullableString16& value = storage_area->getItem(key);
+  ViewHostMsg_DOMStorageGetItem::WriteReplyParams(reply_msg, value);
   Send(reply_msg);
 }
 

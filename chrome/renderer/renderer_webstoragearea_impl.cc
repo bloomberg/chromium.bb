@@ -8,9 +8,11 @@
 #include "chrome/renderer/render_thread.h"
 #include "webkit/api/public/WebString.h"
 
+using WebKit::WebString;
+
 RendererWebStorageAreaImpl::RendererWebStorageAreaImpl(
     int64 namespace_id,
-    const WebKit::WebString& origin)
+    const WebString& origin)
     : namespace_id_(namespace_id),
       origin_(origin),
       storage_area_id_(kUninitializedStorageAreaId),
@@ -45,22 +47,19 @@ unsigned RendererWebStorageAreaImpl::length() {
   return length;
 }
 
-WebKit::WebString RendererWebStorageAreaImpl::key(unsigned index) {
+WebString RendererWebStorageAreaImpl::key(unsigned index) {
   EnsureInitializedAndLocked();
   // Right now this is always sync.  We may want to optimize this by fetching
   // chunks of keys rather than single keys (and flushing the cache on every
   // mutation of the storage area) since this will most often be used to fetch
   // all the keys at once.
-  string16 key;
-  bool key_is_null;
+  NullableString16 key;
   RenderThread::current()->Send(
-      new ViewHostMsg_DOMStorageKey(storage_area_id_, index,
-                                    &key, &key_is_null));
-  return key_is_null ? WebKit::WebString() : WebKit::WebString(key);
+      new ViewHostMsg_DOMStorageKey(storage_area_id_, index, &key));
+  return key;
 }
 
-WebKit::WebString RendererWebStorageAreaImpl::getItem(
-    const WebKit::WebString& webkit_key) {
+WebString RendererWebStorageAreaImpl::getItem(const WebString& webkit_key) {
   EnsureInitializedAndLocked();
   string16 key = webkit_key;
 
@@ -69,23 +68,20 @@ WebKit::WebString RendererWebStorageAreaImpl::getItem(
   if (iterator != cached_items_.end())
     return iterator->second;
   if (cached_invalid_items_.find(key) != cached_invalid_items_.end())
-    return WebKit::WebString();  // Return a "null" string.
+    return WebString();  // Return a "null" string.
 
   // The item is not in the cache, so we must do a sync IPC.  Afterwards,
   // add it to the cache.
-  string16 raw_value;
-  bool value_is_null;
+  NullableString16 raw_value;
   RenderThread::current()->Send(
-      new ViewHostMsg_DOMStorageGetItem(storage_area_id_, key,
-                                        &raw_value, &value_is_null));
-  WebKit::WebString value = value_is_null ? WebKit::WebString()
-                                          : WebKit::WebString(raw_value);
+      new ViewHostMsg_DOMStorageGetItem(storage_area_id_, key, &raw_value));
+  WebString value = raw_value;  // Only do the conversion once.
   SetCache(key, value);
   return value;
 }
 
-void RendererWebStorageAreaImpl::setItem(const WebKit::WebString& key,
-                                         const WebKit::WebString& value,
+void RendererWebStorageAreaImpl::setItem(const WebString& key,
+                                         const WebString& value,
                                          bool& quota_exception) {
   EnsureInitializedAndLocked();
   quota_exception = !UpdateQuota(key, value);
@@ -96,13 +92,13 @@ void RendererWebStorageAreaImpl::setItem(const WebKit::WebString& key,
   SetCache(key, value);
 }
 
-void RendererWebStorageAreaImpl::removeItem(const WebKit::WebString& key) {
+void RendererWebStorageAreaImpl::removeItem(const WebString& key) {
   EnsureInitializedAndLocked();
-  bool update_succeeded = UpdateQuota(key, WebKit::WebString());
+  bool update_succeeded = UpdateQuota(key, WebString());
   DCHECK(update_succeeded);
   RenderThread::current()->Send(
       new ViewHostMsg_DOMStorageRemoveItem(storage_area_id_, key));
-  SetCache(key, WebKit::WebString());
+  SetCache(key, WebString());
 }
 
 void RendererWebStorageAreaImpl::clear() {
@@ -137,8 +133,8 @@ void RendererWebStorageAreaImpl::EnsureInitializedAndLocked() {
   }
 }
 
-bool RendererWebStorageAreaImpl::UpdateQuota(const WebKit::WebString& key,
-                                             const WebKit::WebString& value) {
+bool RendererWebStorageAreaImpl::UpdateQuota(const WebString& key,
+                                             const WebString& value) {
   // TODO(jorlow): Remove once the bytes_left_in_quota values we're getting
   //               are accurate.
   return true;
@@ -160,7 +156,7 @@ bool RendererWebStorageAreaImpl::UpdateQuota(const WebKit::WebString& key,
 }
 
 void RendererWebStorageAreaImpl::SetCache(const string16& key,
-                                          const WebKit::WebString& value) {
+                                          const WebString& value) {
   cached_items_.erase(key);
   cached_invalid_items_.erase(key);
 

@@ -11,6 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/format_macros.h"
+#include "base/nullable_string16.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -541,6 +542,32 @@ struct ParamTraits<std::pair<A, B> > {
     LogParam(p.first, l);
     l->append(L", ");
     LogParam(p.second, l);
+    l->append(L")");
+  }
+};
+
+template <>
+struct ParamTraits<NullableString16> {
+  typedef NullableString16 param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.string());
+    WriteParam(m, p.is_null());
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    string16 string;
+    if (!ReadParam(m, iter, &string))
+      return false;
+    bool is_null;
+    if (!ReadParam(m, iter, &is_null))
+      return false;
+    *r = NullableString16(string, is_null);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.string(), l);
+    l->append(L", ");
+    LogParam(p.is_null(), l);
     l->append(L")");
   }
 };

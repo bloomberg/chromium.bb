@@ -36,6 +36,7 @@
 #if WEBKIT_IMPLEMENTATION
 namespace WebCore { class String; class AtomicString; }
 #else
+#include <base/nullable_string16.h>
 #include <base/string16.h>
 #endif
 
@@ -106,6 +107,31 @@ namespace WebKit {
         {
             size_t len = length();
             return len ? string16(data(), len) : string16();
+        }
+
+        WebString(const NullableString16& s) : m_private(0)
+        {
+            if (s.is_null())
+                assign(0);
+            else
+                assign(s.string().data(), s.string().length());
+        }
+
+        WebString& operator=(const NullableString16& s)
+        {
+            if (s.is_null())
+                assign(0);
+            else
+                assign(s.string().data(), s.string().length());
+            return *this;
+        }
+
+        operator NullableString16() const
+        {
+            if (!m_private)
+                return NullableString16(string16(), true);
+            size_t len = length();
+            return NullableString16(len ? string16(data(), len) : string16(), false);
         }
 
         template <class UTF8String>
