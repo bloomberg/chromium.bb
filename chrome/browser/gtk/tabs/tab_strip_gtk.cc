@@ -1169,7 +1169,7 @@ int TabStripGtk::GetPinnedTabCount() const {
 }
 
 int TabStripGtk::GetAvailableWidthForTabs(TabGtk* last_tab) const {
-  return last_tab->x() + last_tab->width();
+  return last_tab->x() - bounds_.x() + last_tab->width();
 }
 
 int TabStripGtk::GetIndexOfTab(const TabGtk* tab) const {
