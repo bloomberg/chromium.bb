@@ -13,6 +13,9 @@ class Profile;
 // Options was never opened.
 enum OptionsPage {
   OPTIONS_PAGE_DEFAULT = -1,
+#if defined(OS_CHROMEOS)
+  OPTIONS_PAGE_SETTINGS,
+#endif
   OPTIONS_PAGE_GENERAL,
   OPTIONS_PAGE_CONTENT,
   OPTIONS_PAGE_ADVANCED,

@@ -4860,6 +4860,13 @@ each locale. -->
     <message translateable="false" name="IDS_GLEN" desc="Glen">
       Glen
     </message>
+
+    <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_OPTIONS_SETTINGS_TAB_LABEL" desc="Title of the settings tab inthe options dialog.">
+        Chrome OS
+      </message>
+    </if>
+
     </messages>
   </release>
 </grit>

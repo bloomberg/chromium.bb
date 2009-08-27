@@ -20,6 +20,10 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings_page_view.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsWindowGtk
 //
@@ -99,6 +103,14 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
                       gtk_util::kContentAreaSpacing);
 
   notebook_ = gtk_notebook_new();
+
+#if defined(OS_CHROMEOS)
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook_),
+      (new SettingsPageView(profile_))->WrapInGtkWidget(),
+      gtk_label_new(
+          l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_TAB_LABEL).c_str()));
+#endif
 
   gtk_notebook_append_page(
       GTK_NOTEBOOK(notebook_),
