@@ -5214,6 +5214,7 @@
             'browser',
             'chrome',
             'chrome_resources',
+            'chrome_strings',
             'debugger',
             'test_support_common',
             '../base/base.gyp:test_support_base',
