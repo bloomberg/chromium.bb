@@ -41,24 +41,22 @@ const TCHAR kRegistryJavaHome[] = _T("JavaHome");
 
 // The application path where we expect to find plugins.
 void GetAppDirectory(std::set<FilePath>* plugin_dirs) {
-  std::wstring app_path;
-  // TODO(avi): use PathService directly
+  FilePath app_path;
   if (!webkit_glue::GetApplicationDirectory(&app_path))
     return;
 
-  app_path.append(L"\\plugins");
-  plugin_dirs->insert(FilePath(app_path));
+  app_path = app_path.AppendASCII("plugins");
+  plugin_dirs->insert(app_path);
 }
 
 // The executable path where we expect to find plugins.
 void GetExeDirectory(std::set<FilePath>* plugin_dirs) {
-  std::wstring exe_path;
-  // TODO(avi): use PathService directly
+  FilePath exe_path;
   if (!webkit_glue::GetExeDirectory(&exe_path))
     return;
 
-  exe_path.append(L"\\plugins");
-  plugin_dirs->insert(FilePath(exe_path));
+  exe_path = exe_path.AppendASCII("plugins");
+  plugin_dirs->insert(exe_path);
 }
 
 // Gets the installed path for a registered app.

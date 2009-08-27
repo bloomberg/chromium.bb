@@ -621,12 +621,8 @@ void AppendToLog(const char* file, int line, const char* msg) {
   logging::LogMessage(file, line).stream() << msg;
 }
 
-bool GetApplicationDirectory(std::wstring *path) {
-  bool r;
-  FilePath fp;
-  r = PathService::Get(base::DIR_EXE, &fp);
-  *path = fp.ToWStringHack();
-  return r;
+bool GetApplicationDirectory(FilePath* path) {
+  return PathService::Get(base::DIR_EXE, path);
 }
 
 GURL GetInspectorURL() {
@@ -637,7 +633,7 @@ std::string GetUIResourceProtocol() {
   return "test-shell-resource";
 }
 
-bool GetExeDirectory(std::wstring *path) {
+bool GetExeDirectory(FilePath* path) {
   return GetApplicationDirectory(path);
 }
 

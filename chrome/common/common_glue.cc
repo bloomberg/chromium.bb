@@ -17,11 +17,11 @@
 
 namespace webkit_glue {
 
-bool GetExeDirectory(std::wstring *path) {
+bool GetExeDirectory(FilePath* path) {
   return PathService::Get(base::DIR_EXE, path);
 }
 
-bool GetApplicationDirectory(std::wstring *path) {
+bool GetApplicationDirectory(FilePath* path) {
   return PathService::Get(chrome::DIR_APP, path);
 }
 

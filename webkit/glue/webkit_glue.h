@@ -166,7 +166,7 @@ void ClipboardReadHTML(string16* markup, GURL* url);
 // GetExeDirectory(), depending on the embedder's implementation.
 // Path is an output parameter to receive the path.
 // Returns true if successful, false otherwise.
-bool GetApplicationDirectory(std::wstring* path);
+bool GetApplicationDirectory(FilePath* path);
 
 // Gets the URL where the inspector's HTML file resides. It must use the
 // protocol returned by GetUIResourceProtocol.
@@ -179,7 +179,7 @@ std::string GetUIResourceProtocol();
 // Gets the directory where the launching executable resides on disk.
 // Path is an output parameter to receive the path.
 // Returns true if successful, false otherwise.
-bool GetExeDirectory(std::wstring* path);
+bool GetExeDirectory(FilePath* path);
 
 // Embedders implement this function to return the list of plugins to Webkit.
 void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
