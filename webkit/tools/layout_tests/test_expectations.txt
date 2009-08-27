@@ -117,6 +117,13 @@ WONTFIX SKIP : LayoutTests/http/tests/workers = PASS TIMEOUT FAIL
 WONTFIX SKIP : LayoutTests/http/tests/xmlhttprequest/workers = PASS TIMEOUT FAIL
 WONTFIX SKIP : LayoutTests/http/tests/eventsource/workers = PASS TIMEOUT FAIL
 
+// Page Cache - based tests. Chromium disables page cache because the WebKit page cache keeps previously
+// loaded pages alive in memory to be able to quickly substitute them when user clicks History buttons.
+// Chromium wants those to be separate navigations made via browser process to be able to make decision
+// on which renderer process to use for each of them.
+WONTFIX SKIP BUG19635 : LayoutTests/fast/harness/use-page-cache.html = TIMEOUT FAIL
+WONTFIX SKIP BUG19635 : LayoutTests/fast/dom/Window/timer-resume-on-navigation-back.html = TIMEOUT FAIL
+
 // -----------------------------------------------------------------
 // FAILING TESTS
 // -----------------------------------------------------------------
@@ -2768,13 +2775,6 @@ BUG19655 : LayoutTests/fast/dom/Window/HTMLBodyElement-window-eventListener-attr
 BUG19655 : LayoutTests/fast/dom/Window/HTMLFrameSetElement-window-eventListener-attributes.html = FAIL
 BUG_JPARENT LINUX MAC: LayoutTests/fast/history/back-forward-is-asynchronous.html = TIMEOUT
 BUG_JPARENT LINUX DEBUG : LayoutTests/fast/multicol/columns-shorthand-parsing.html = CRASH
-
-// Page Cache - based tests. Chromium disables page cache because the WebKit page cache keeps previously
-// loaded pages alive in memory to be able to quickly substitute them when user clicks History buttons.
-// Chromium wants those to be separate navigations made via browser process to be able to make decision
-// on which renderer process to use for each of them.
-WONTFIX SKIP BUG19635 : LayoutTests/fast/harness/use-page-cache.html = TIMEOUT FAIL
-WONTFIX SKIP BUG19635 : LayoutTests/fast/dom/Window/timer-resume-on-navigation-back.html = TIMEOUT FAIL
 
 // WebKit roll r47417:47528
 BUG19766 WIN LINUX : LayoutTests/fast/block/basic/quirk-percent-height-table-cell.html = FAIL
