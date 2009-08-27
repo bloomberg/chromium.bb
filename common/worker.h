@@ -69,13 +69,15 @@ class WorkerThreadManager {
 #else
  public:
   void SetCounter(int v) { ; }
-  int DecCounter() { ; }
+  int DecCounter() { return 0; }
   void PostWork() { ; }
   void PostWorkAll() { ; }
   void WaitWork() { ; }
   void PostDone() { ; }
   void WaitDone() { ; }
-  bool CreateThreadPool(int num, void *(*entry)(void *data), void *data) { ; }
+  bool CreateThreadPool(int num, void *(*entry)(void *data), void *data) {
+    return false;
+  }
   void JoinAll() { ; }
   WorkerThreadManager() { ; }
   ~WorkerThreadManager() { ; }
