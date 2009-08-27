@@ -2783,5 +2783,9 @@ BUG_JORLOW : LayoutTests/fast/events/pageshow-pagehide-on-back-cached.html = TIM
 
 // WebKit 47827:47830
 BUG_JORLOW : LayoutTests/editing/pasteboard/files-during-page-drags.html = FAIL
-BUG_JORLOW : LayoutTests/tables/mozilla_expected_failures/bugs/bug85016.html = FAIL
 
+// Showed up after rolling from 47821 to 47830.
+BUG_JORLOW DEBUG WIN : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL
+
+// Flake that showed up around revision 24645
+BUG20430 : LayoutTests/svg/custom/pointer-events-path.svg = CRASH PASS
