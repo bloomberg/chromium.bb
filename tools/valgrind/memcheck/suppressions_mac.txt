@@ -196,6 +196,18 @@
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
+{
+   # NSObject pointers in a static std::map; we do technically leak them, but
+   # only on shutdown, so it's not worth fixing.
+   static_theme_cache
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:+[NSObject allocWithZone:]
+   fun:+[NSObject alloc]
+   fun:+[GTMTheme(BrowserThemeProviderInitialization) themeWithBrowserThemeProvider:isOffTheRecord:]
+}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 {
