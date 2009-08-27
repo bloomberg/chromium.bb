@@ -5098,6 +5098,8 @@
           'include_dirs': [
             '..',
           ],
+          # TODO(phajdan.jr): Only temporary, to make transition easier.
+          'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
           'sources': [
             'browser/browser_focus_uitest.cc',
             'browser/debugger/devtools_sanity_unittest.cc',
@@ -5223,6 +5225,7 @@
           'include_dirs': [
             '..',
           ],
+          'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
           'sources': [
             'test/browser/run_all_unittests.cc',
             'test/browser/browser_test_launcher_out_of_proc.cc',
@@ -5453,6 +5456,8 @@
               '..',
               '<(INTERMEDIATE_DIR)',
             ],
+            # TODO(phajdan.jr): Only temporary, to make transition easier.
+            'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
             'sources': [
               'tools/build/win/precompiled_wtl.cc',
               'tools/build/win/precompiled_wtl.h',
@@ -5544,6 +5549,7 @@
               },
             },
           },
+          'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
           'sources': [
             'test/browser/run_all_unittests.cc',
             'test/in_process_browser_test.cc',

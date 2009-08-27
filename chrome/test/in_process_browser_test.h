@@ -131,6 +131,11 @@ class InProcessBrowserTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(InProcessBrowserTest);
 };
 
+// We only want to use IN_PROC_BROWSER_TEST in binaries which will properly
+// isolate each test case. Otherwise hard-to-debug, possibly intermittent
+// crashes caused by carrying state in singletons are very likely.
+#if defined(ALLOW_IN_PROC_BROWSER_TEST)
+
 #define IN_PROC_BROWSER_TEST_(test_case_name, test_name, parent_class,\
                               parent_id)\
 class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class {\
@@ -159,5 +164,7 @@ void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
 #define IN_PROC_BROWSER_TEST_F(test_fixture, test_name)\
   IN_PROC_BROWSER_TEST_(test_fixture, test_name, test_fixture,\
                     ::testing::internal::GetTypeId<test_fixture>())
+
+#endif  // defined(ALLOW_IN_PROC_BROWSER_TEST)
 
 #endif  // CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
