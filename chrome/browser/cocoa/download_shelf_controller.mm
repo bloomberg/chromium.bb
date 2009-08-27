@@ -48,13 +48,17 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
     resizeDelegate_ = resizeDelegate;
     shelfHeight_ = [[self view] bounds].size.height;
 
-    // Reset the download shelf's frame to zero.  It will be properly positioned
-    // and sized the first time we try to set its height.
-    [[self view] setFrame:NSZeroRect];
+    // Reset the download shelf's frame height to zero.  It will be properly
+    // positioned and sized the first time we try to set its height. (Just
+    // setting the rect to NSZeroRect does not work: it confuses Cocoa's view
+    // layout logic. If the shelf's width is too small, cocoa makes the download
+    // item container view wider than the browser window).
+    NSRect frame = [[self view] frame];
+    frame.size.height = 0;
+    [[self view] setFrame:frame];
 
     downloadItemControllers_.reset([[NSMutableArray alloc] init]);
 
-    // This calls show:, so it needs to be last.
     bridge_.reset(new DownloadShelfMac(browser, self));
   }
   return self;
