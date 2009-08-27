@@ -352,18 +352,10 @@ bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
   return true;
 }
 
-#if defined(OS_WIN)
 GURL GetWelcomePageURL() {
-  std::wstring welcome_url = l10n_util::GetString(IDS_WELCOME_PAGE_URL);
+  std::string welcome_url = l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL);
   return GURL(welcome_url);
 }
-#else
-GURL GetWelcomePageURL() {
-  // TODO(port): implement welcome page.
-  NOTIMPLEMENTED();
-  return GURL();
-}
-#endif
 
 }  // namespace
 
