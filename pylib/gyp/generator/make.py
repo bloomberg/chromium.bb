@@ -139,12 +139,12 @@ cmd_copy = ln -f $< $@ || cp -af $< $@
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
 quiet_cmd_link = LINK $@
-cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group
+cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
 
 # Shared-object link (for generating .so).
 # TODO: perhaps this can share with the LINK command above?
 quiet_cmd_solink = SOLINK $@
-cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group
+cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
 """
 r"""
 # Define an escape_quotes function to escape single quotes.
@@ -614,8 +614,8 @@ class MakefileWriter:
         config = configs[configname]
         self.WriteList(config.get('ldflags'), 'LDFLAGS_%s' % configname)
       self.WriteList(spec.get('libraries'), 'LIBS')
-      self.WriteLn('%s: LDFLAGS := $(LDFLAGS_$(BUILDTYPE)) '
-                   '$(LIBS)' % self.output)
+      self.WriteLn('%s: LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' % self.output)
+      self.WriteLn('%s: LIBS := $(LIBS)' % self.output)
 
     if self.type == 'executable':
       self.WriteDoCmd([self.output], link_deps, 'link')
