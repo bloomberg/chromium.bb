@@ -299,9 +299,9 @@ TEST(GKURL, Decode) {
     EXPECT_STREQ(decode_cases[i].output, str.utf8().data());
   }
 
-  // Our decode should not decode %00
+  // Our decode should decode %00
   WebCore::String zero = WebCore::decodeURLEscapeSequences("%00");
-  EXPECT_STREQ("%00", zero.utf8().data());
+  EXPECT_STRNE("%00", zero.utf8().data());
 
   // Test the error behavior for invalid UTF-8 (we differ from WebKit here).
   WebCore::String invalid = WebCore::decodeURLEscapeSequences(
