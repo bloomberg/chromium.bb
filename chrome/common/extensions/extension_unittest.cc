@@ -495,7 +495,6 @@ static Extension* LoadManifest(const std::string& dir,
   extension->InitFromValue(*static_cast<DictionaryValue*>(result.get()),
                            false, &error);
 
-  result.release();
   return extension.release();
 }
 
