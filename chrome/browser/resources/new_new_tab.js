@@ -1568,7 +1568,7 @@ dnd.init();
 /**
  * Whitelist of tag names allowed in parseHtmlSubset.
  * @type {[string]}
- * /
+ */
 var allowedTags = ['A', 'B', 'STRONG'];
 
 /**
