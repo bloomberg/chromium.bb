@@ -3,3 +3,4 @@
 BookmarkEditorGtkTest.*
 CookiesViewTest.*
 LanguagesPageGtkTest.*
+KeywordEditorViewTest.*

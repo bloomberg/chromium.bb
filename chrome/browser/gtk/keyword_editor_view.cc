@@ -28,18 +28,6 @@ const int kDialogDefaultHeight = 450;
 const int kFirstGroupRowOffset = 2;
 const int kSecondGroupRowOffset = 5;
 
-// Column ids for |list_store_|.
-enum {
-  COL_FAVICON,
-  COL_TITLE,
-  COL_KEYWORD,
-  COL_IS_HEADER,
-  COL_IS_SEPARATOR,
-  COL_WEIGHT,
-  COL_WEIGHT_SET,
-  COL_COUNT,
-};
-
 KeywordEditorView* instance_ = NULL;
 
 }  // namespace
@@ -55,6 +43,7 @@ void KeywordEditorView::Show(Profile* profile) {
     gtk_window_present(GTK_WINDOW(instance_->dialog_));
   } else {
     instance_ = new KeywordEditorView(profile);
+    gtk_widget_show_all(instance_->dialog_);
   }
 }
 
@@ -195,8 +184,6 @@ void KeywordEditorView::Init() {
   table_model_->Reload();
 
   EnableControls();
-
-  gtk_widget_show_all(dialog_);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
@@ -411,7 +398,7 @@ gboolean KeywordEditorView::OnCheckRowIsSeparator(GtkTreeModel* model,
   return is_separator;
 }
 
-//static
+// static
 gboolean KeywordEditorView::OnSelectionFilter(GtkTreeSelection *selection,
                                               GtkTreeModel *model,
                                               GtkTreePath *path,

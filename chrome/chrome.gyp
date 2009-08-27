@@ -3990,6 +3990,7 @@
         'browser/google_update_settings_posix_unittest.cc',
         'browser/gtk/bookmark_editor_gtk_unittest.cc',
         'browser/gtk/go_button_gtk_unittest.cc',
+        'browser/gtk/keyword_editor_view_unittest.cc',
         'browser/gtk/options/cookies_view_unittest.cc',
         'browser/gtk/options/languages_page_gtk_unittest.cc',
         'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',

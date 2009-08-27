@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class KeywordEditorController;
 class Profile;
@@ -31,6 +32,18 @@ class KeywordEditorView : public TableModelObserver,
                                const std::wstring& keyword,
                                const std::wstring& url);
  private:
+  // Column ids for |list_store_|.
+  enum {
+    COL_FAVICON,
+    COL_TITLE,
+    COL_KEYWORD,
+    COL_IS_HEADER,
+    COL_IS_SEPARATOR,
+    COL_WEIGHT,
+    COL_WEIGHT_SET,
+    COL_COUNT,
+  };
+
   explicit KeywordEditorView(Profile* profile);
   void Init();
 
@@ -133,6 +146,13 @@ class KeywordEditorView : public TableModelObserver,
   // but we need the old value to know which row to remove from the
   // |list_store_|.
   int model_second_group_index_;
+
+  friend class KeywordEditorViewTest;
+  FRIEND_TEST(KeywordEditorViewTest, Empty);
+  FRIEND_TEST(KeywordEditorViewTest, Add);
+  FRIEND_TEST(KeywordEditorViewTest, MakeDefault);
+  FRIEND_TEST(KeywordEditorViewTest, Remove);
+  FRIEND_TEST(KeywordEditorViewTest, Edit);
 
   DISALLOW_COPY_AND_ASSIGN(KeywordEditorView);
 };
