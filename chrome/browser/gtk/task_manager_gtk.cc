@@ -351,7 +351,6 @@ void TaskManagerGtk::Init() {
 
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
-  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
 
   g_signal_connect(G_OBJECT(dialog_), "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(G_OBJECT(dialog_), "button-release-event",

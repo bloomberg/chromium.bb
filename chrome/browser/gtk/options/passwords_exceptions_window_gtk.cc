@@ -83,7 +83,6 @@ PasswordsExceptionsWindowGtk::PasswordsExceptionsWindowGtk(Profile* profile)
                               kPasswordsExceptionsWindowInitialHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
-  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
 
   notebook_ = gtk_notebook_new();
 

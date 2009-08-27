@@ -451,6 +451,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif  // !defined(OS_MACOSX)
 
+#if defined(OS_LINUX)
+  gtk_util::SetDefaultWindowIcon();
+#endif
+
 #if defined(OS_WIN)
   // This is experimental code. See first_run_win.cc for more info.
   if (parsed_command_line.HasSwitch(switches::kTryChromeAgain)) {

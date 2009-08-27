@@ -26,7 +26,6 @@ ProcessSingletonDialog::ProcessSingletonDialog(const std::string& message) {
                        l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
   gtk_dialog_add_button(GTK_DIALOG(dialog_), GTK_STOCK_QUIT,
                         GTK_RESPONSE_REJECT);
-  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
 
   g_signal_connect(G_OBJECT(dialog_), "response",
                    G_CALLBACK(OnResponse), this);

@@ -49,6 +49,15 @@ gboolean OnMouseButtonReleased(GtkWidget* widget, GdkEventButton* event,
   return TRUE;
 }
 
+// Ownership of |icon_list| is passed to the caller.
+GList* GetIconList() {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  GList* icon_list = NULL;
+  icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_ICON_32));
+  icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_LOGO_16));
+  return icon_list;
+}
+
 }  // namespace
 
 namespace event_utils {
@@ -310,11 +319,14 @@ bool WidgetContainsCursor(GtkWidget* widget) {
 }
 
 void SetWindowIcon(GtkWindow* window) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  GList* icon_list = NULL;
-  icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_ICON_32));
-  icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_LOGO_16));
+  GList* icon_list = GetIconList();
   gtk_window_set_icon_list(window, icon_list);
+  g_list_free(icon_list);
+}
+
+void SetDefaultWindowIcon() {
+  GList* icon_list = GetIconList();
+  gtk_window_set_default_icon_list(icon_list);
   g_list_free(icon_list);
 }
 

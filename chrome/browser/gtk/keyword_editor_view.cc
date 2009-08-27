@@ -92,7 +92,6 @@ void KeywordEditorView::Init() {
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
-  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
 
   gtk_window_set_default_size(GTK_WINDOW(dialog_), kDialogDefaultWidth,
                               kDialogDefaultHeight);

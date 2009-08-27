@@ -130,6 +130,9 @@ bool WidgetContainsCursor(GtkWidget* widget);
 // border or alt-tab list).
 void SetWindowIcon(GtkWindow* window);
 
+// Sets the default window icon for windows created in this app.
+void SetDefaultWindowIcon();
+
 // Adds an action button with the given text to the dialog. Only useful when you
 // want a stock icon but not the stock text to go with it. Returns the button.
 GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,

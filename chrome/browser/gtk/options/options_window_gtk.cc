@@ -97,7 +97,6 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
   gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
-  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
 
   notebook_ = gtk_notebook_new();
 

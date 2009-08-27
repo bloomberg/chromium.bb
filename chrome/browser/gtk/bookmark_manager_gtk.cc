@@ -308,7 +308,6 @@ BookmarkManagerGtk::BookmarkManagerGtk(Profile* profile)
       ignore_rightclicks_(false) {
   InitWidgets();
   ConnectAccelerators();
-  gtk_util::SetWindowIcon(GTK_WINDOW(window_));
 
   model_->AddObserver(this);
   if (model_->IsLoaded())
