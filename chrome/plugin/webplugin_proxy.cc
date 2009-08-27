@@ -129,7 +129,16 @@ void WebPluginProxy::Invalidate() {
 }
 
 void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
-  damaged_rect_ = damaged_rect_.Union(rect);
+#if defined(OS_MACOSX)
+  // Some plugins will send invalidates larger than their own rect when
+  // offscreen, so constrain invalidates to the plugin rect.
+  gfx::Rect plugin_rect = delegate_->GetRect();
+  plugin_rect.set_origin(gfx::Point(0, 0));
+  const gfx::Rect invalidate_rect(rect.Intersect(plugin_rect));
+#else
+  const gfx::Rect invalidate_rect(rect);
+#endif
+  damaged_rect_ = damaged_rect_.Union(invalidate_rect);
   // Ignore NPN_InvalidateRect calls with empty rects.  Also don't send an
   // invalidate if it's outside the clipping region, since if we did it won't
   // lead to a paint and we'll be stuck waiting forever for a DidPaint response.
@@ -139,7 +148,8 @@ void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
   // This is not true because scrolling (or window resize) could occur and be
   // handled by the renderer before it receives the InvalidateRect message,
   // changing the clip rect and then not painting.
-  if (rect.IsEmpty() || !delegate_->GetClipRect().Intersects(rect))
+  if (invalidate_rect.IsEmpty() ||
+      !delegate_->GetClipRect().Intersects(invalidate_rect))
     return;
 
   // Only send a single InvalidateRect message at a time.  From DidPaint we
