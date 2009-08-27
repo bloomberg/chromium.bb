@@ -81,12 +81,18 @@
     'sync': {
       'filepath': 'chrome/browser/sync/.*|chrome/browser/views/sync/.*|chrome/test/live_sync/.*',
     },
+    'layout_tests': {
+      'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/.*',
+    },
+    'tools': {
+      'filepath': 'tools/.*',
+    },
   },
 
   'WATCHLISTS': {
     'this_file': ['nirnimesh@chromium.org'],
     'valgrind': ['nirnimesh@chromium.org', 'dank@chromium.org', 'timurrrr@gmail.com', 'stuartmorgan@chromium.org', 'ramosian.glider@gmail.com'],
-    'mac': ['jrg@chromium.org'],
+    'mac': ['jrg@chromium.org', 'pam@chromium.org'],
     'base': ['brettw@chromium.org'],
     'views': ['ben@chromium.org'],
     'browser': ['ben@chromium.org'],
@@ -98,7 +104,7 @@
     'webkit': ['darin@chromium.org'],
     'plugin': ['darin@chromium.org', 'jam@chromium.org'],
     'worker': ['jam@chromium.org'],
-    'extension': ['erikkay@chromium.org'],
+    'extension': ['erikkay@chromium.org', 'pam@chromium.org'],
     'purify': ['erikkay@chromium.org'],
     'net': ['darin@chromium.org', 'willchan@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
@@ -110,5 +116,7 @@
     'linux-sandboxing': ['agl@chromium.org'],
     'sync': ['tim@chromium.org', 'nick@chromium.org',
              'idana@chromium.org'],
+    'layout_tests': ['pam@chromium.org'],
+    'tools': ['pam@chromium.org'],
   },
 }
