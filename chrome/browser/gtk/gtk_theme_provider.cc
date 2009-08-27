@@ -346,7 +346,6 @@ void GtkThemeProvider::LoadGtkValues() {
   force_process_images();
   GenerateFrameColors();
   GenerateFrameImages();
-  GenerateTabImages();
 }
 
 void GtkThemeProvider::SetThemeColorFromGtk(const char* id, GdkColor* color) {

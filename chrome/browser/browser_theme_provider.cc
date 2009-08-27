@@ -275,6 +275,11 @@ SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) {
   // Try to load the image from the extension.
   result.reset(LoadThemeBitmap(id));
 
+  // If the extension doesn't provide the requested image, but has provided
+  // a custom frame, then we may be able to generate the image required.
+  if (!result.get())
+    result.reset(GenerateBitmap(id));
+
   // If we still don't have an image, load it from resourcebundle.
   if (!result.get())
     result.reset(new SkBitmap(*rb_.GetBitmapNamed(id)));
