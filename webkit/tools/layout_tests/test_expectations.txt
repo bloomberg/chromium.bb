@@ -1673,7 +1673,7 @@ BUG8630 WIN LINUX : LayoutTests/fast/repaint/float-overflow.html = FAIL
 BUG8630 WIN : LayoutTests/fast/repaint/transform-absolute-in-positioned-container.html = FAIL
 BUG8630 WIN : LayoutTests/fast/repaint/overflow-scroll-delete.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/search-field-cancel.html = FAIL
-
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/inline-overflow.html = FAIL
 
 // Linux pixeltest failure: Failing to rotate the form control
 BUG10390 LINUX : LayoutTests/fast/transforms/transformed-focused-text-input.html = FAIL
@@ -2815,7 +2815,6 @@ BUG20314 MAC : LayoutTests/fast/css/only-of-type-pseudo-class.html = FAIL
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
 
 // Webkit 47790:47797
-BUG20359 LINUX WIN : LayoutTests/fast/repaint/inline-overflow.html = FAIL
 BUG20356 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = TIMEOUT
 
 // WebKit 47797:47804
@@ -2826,4 +2825,3 @@ BUG20377 LINUX WIN : LayoutTests/fast/repaint/rel-positioned-inline-with-overflo
 
 // WebKit 47810:47821
 BUG20399 : LayoutTests/fast/js/JSON-parse-reviver.html = FAIL
-
