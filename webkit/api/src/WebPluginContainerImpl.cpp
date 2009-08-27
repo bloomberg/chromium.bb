@@ -255,8 +255,10 @@ void WebPluginContainerImpl::loadFrameRequest(
         // FIXME: This is a bit of hack to allow us to observe completion of
         // our frame request.  It would be better to evolve FrameLoader to
         // support a completion callback instead.
-        WebDataSourceImpl::setNextPluginLoadObserver(
-            new WebPluginLoadObserver(this, request.url(), notifyData));
+        WebPluginLoadObserver* observer =
+            new WebPluginLoadObserver(this, request.url(), notifyData);
+        m_pluginLoadObservers.append(observer);
+        WebDataSourceImpl::setNextPluginLoadObserver(observer);
     }
 
     FrameLoadRequest frameRequest(request.toResourceRequest());
@@ -312,6 +314,8 @@ void WebPluginContainerImpl::willDestroyPluginLoadObserver(WebPluginLoadObserver
 
 WebPluginContainerImpl::~WebPluginContainerImpl()
 {
+    for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
+        m_pluginLoadObservers[i]->clearPluginContainer();
     m_webPlugin->destroy();
 }
 
