@@ -841,6 +841,9 @@ BUG8696 WIN LINUX : LayoutTests/fast/gradients/generated-gradients.html = FAIL
 BUG8696 WIN LINUX : LayoutTests/fast/gradients/simple-gradients.html = FAIL
 BUG8696 WIN LINUX : LayoutTests/fast/gradients/crash-on-zero-radius.html = FAIL
 
+BUG10385 : LayoutTests/fast/dom/dom-constructors.html = FAIL
+BUG10387 SKIP : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-image-not-loaded-svg.svg = FAIL
+
 
 // -----------------------------------------------------------------
 // SVG TESTS
@@ -1608,16 +1611,6 @@ BUG10384 MAC : LayoutTests/fast/dom/Window/window-open-self-from-other-frame.htm
 // END MAC PORT TESTS
 // -----------------------------------------------------------------
 
-// WebKit Merge 38850:38900 new tests
-
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10385 : LayoutTests/fast/dom/dom-constructors.html = FAIL
-
-// WebKit Merge 39100:39141 new tests:
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10387 SKIP : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-image-not-loaded-svg.svg = FAIL
-
-// Windows pixeltest failure: alpha=0.5 red does not come out blended.
 // Linux pixeltest failure: alpha=0.5 red (1,0,0) atop yellow (1,1,0) is
 // coming out with with a slightly-less-than-100% red channel. This test fails
 // because we enforce non-transparent color in Font::drawGlyphs.
@@ -1644,10 +1637,6 @@ BUG10391 LINUX : LayoutTests/fast/events/5056619.html = FAIL PASS
 // Failed with r6844 (dglazkov)
 BUG10392 MAC LINUX : LayoutTests/http/tests/navigation/error404-goback.html = TIMEOUT FAIL
 
-// Passes when run by itself.  Fails on the buildbot.
-// For Windows, see bug.
-BUG8291 LINUX WIN : LayoutTests/fast/css/beforeSelectorOnCodeElement.html = CRASH PASS
-
 // This test appears to pass on Linux, despite it referencing feed:// URLs which
 // we don't support.  Needs more investigation.
 // Expectations for this test changed upstream. We should fix this test, but
@@ -1668,11 +1657,8 @@ BUG5737 LINUX : LayoutTests/fast/box-sizing/percentage-height.html = FAIL
 BUG5737 LINUX : LayoutTests/fast/forms/001.html = FAIL
 BUG5737 LINUX : LayoutTests/fast/forms/input-first-letter.html = FAIL
 
-// These test the behavior of the (x) in type=search inputs.  We haven't
-// implemented this yet (should we on win/linux?).
-BUG5701 WIN LINUX : LayoutTests/fast/forms/search-cancel-button-style-sharing.html = FAIL
-BUG5701 WIN LINUX : LayoutTests/fast/forms/search-rtl.html = FAIL
-BUG5701 WIN LINUX : LayoutTests/fast/forms/search-transformed.html = FAIL
+// The (x) in type=search inputs appears to be slightly broken.  This test will also need a rebaseline.
+BUG20439 WIN LINUX : LayoutTests/fast/forms/search-transformed.html = FAIL
 
 // Merge 39369:39410: new test. Ran correctly and was baselined on Win32.
 BUG10396 MAC : LayoutTests/fast/reflections/reflection-overflow-hidden.html = FAIL PASS
@@ -1680,10 +1666,8 @@ BUG10396 MAC : LayoutTests/fast/reflections/reflection-overflow-hidden.html = FA
 // Linux's rotated text output looks terrible.
 BUG10397 LINUX : LayoutTests/fast/transforms/transformed-document-element.html = FAIL
 
-// Merge 39606:39660 - new tests
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10398 SKIP : LayoutTests/fast/events/pointer-events-2.html = FAIL
-BUG10398 SKIP : LayoutTests/fast/events/pointer-events.html = FAIL
+// Rebaseline
+BUG10398 : LayoutTests/fast/events/pointer-events-2.html = FAIL
 
 // Merge 39744:39829 - new tests
 // New test. We should fix it, but it doesn't need to block the current release
