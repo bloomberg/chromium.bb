@@ -583,7 +583,7 @@ o3djs.simple.SimpleObject.prototype.init = function(simpleInfo, transform) {
    * The Id for this SimpleInfo.
    * @type {number}
    */
-  this.id = simpleInfo.getId();
+  this.id = simpleInfo.getNextId();
 
   /**
    * The Transform that orients this object.
