@@ -1,3 +1,6 @@
+# buganizer 1178136
+ImporterTest.Firefox35Importer
+
 # issue 2468
 URLFetcherBadHTTPSTest.BadHTTPSTest
 SafeBrowsingProtocolParsingTest.TestSubChunk
