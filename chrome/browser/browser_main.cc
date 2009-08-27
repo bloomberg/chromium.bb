@@ -110,9 +110,11 @@
 #include "sandbox/src/sandbox.h"
 #endif  // defined(OS_WIN)
 
-#if defined(TOOLKIT_GTK)
+#if defined(OS_LINUX)
 #include "chrome/common/gtk_util.h"
-#elif defined(TOOLKIT_VIEWS)
+#endif
+
+#if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/chrome_views_delegate.h"
 #include "views/focus/accelerator_handler.h"
 #endif
