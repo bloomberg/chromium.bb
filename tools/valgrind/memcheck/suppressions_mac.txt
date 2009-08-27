@@ -487,6 +487,7 @@
    Memcheck:Free
    fun:_ZdlPv
    fun:_ZN7WebCore15CSSSelectorList19adoptSelectorVectorERN3WTF6VectorIPNS_11CSSSelectorELm0EEE
+   ...
    fun:_ZN7WebCore9CSSParser15createStyleRuleEPN3WTF6VectorIPNS_11CSSSelectorELm0EEE
    fun:_Z10cssyyparsePv
    fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
