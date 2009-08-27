@@ -399,6 +399,26 @@ Texture2DD3D9* Texture2DD3D9::Create(ServiceLocator* service_locator,
                                              height,
                                              resize_to_pot,
                                              enable_render_surfaces);
+
+  // Clear the texture.
+  // This is platform specific because some platforms, (command-buffers),
+  // will guarantee the textures are cleared so we don't have to.
+  {
+    size_t row_size = image::ComputeMipChainSize(mip_width, 1, format, 1);
+    scoped_array<uint8> zero(new uint8[row_size]);
+    memset(zero.get(), 0, row_size);
+    for (int level = 0; level < levels; ++level) {
+      if (enable_render_surfaces) {
+        texture->GetRenderSurface(level);
+      } else {
+        texture->SetRect(level, 0, 0, 
+                         image::ComputeMipDimension(level, mip_width),
+                         image::ComputeMipDimension(level, mip_height),
+                         zero.get(), 0);
+      }
+    }
+  }
+
   if (resize_to_pot) {
     texture->backing_bitmap_->Allocate(format, width, height, levels,
                                        Bitmap::IMAGE);
@@ -718,6 +738,27 @@ TextureCUBED3D9* TextureCUBED3D9::Create(ServiceLocator* service_locator,
                                                  levels,
                                                  resize_to_pot,
                                                  enable_render_surfaces);
+
+  // Clear the texture.
+  // This is platform specific because some platforms, (command-buffers), will
+  // guarantee the textures are cleared so we don't have to.
+  {
+    size_t row_size = image::ComputeMipChainSize(edge, 1, format, 1);
+    scoped_array<uint8> zero(new uint8[row_size]);
+    memset(zero.get(), 0, row_size);
+    for (int level = 0; level < levels; ++level) {
+      for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
+        if (enable_render_surfaces) {
+          texture->GetRenderSurface(static_cast<CubeFace>(face), level);
+        } else {
+          texture->SetRect(static_cast<CubeFace>(face),level , 0, 0, 
+                           image::ComputeMipDimension(level, edge),
+                           image::ComputeMipDimension(level, edge),
+                           zero.get(), 0);
+        }
+      }
+    }
+  }
   if (resize_to_pot) {
     for (int ii = 0; ii < static_cast<int>(NUMBER_OF_FACES); ++ii) {
       texture->backing_bitmaps_[ii]->Allocate(
