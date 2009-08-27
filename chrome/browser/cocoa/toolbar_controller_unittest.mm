@@ -195,34 +195,6 @@ TEST_F(ToolbarControllerTest, TogglePageWrench) {
   EXPECT_NE(NSWidth(originalLocationBarFrame), NSWidth([locationBar frame]));
 }
 
-TEST_F(ToolbarControllerTest, BookmarkBarResizes) {
-  NSView* bookmarkBarView = [[bar_ bookmarkBarController] view];
-  ASSERT_EQ(0, NSHeight([bookmarkBarView frame]));
-  [resizeDelegate_ setHeight:-1];
-
-  // Resize the bookmarkbar to 30px.  The toolbar should ask the delegate to
-  // resize to 64px.
-  [bar_ resizeView:bookmarkBarView newHeight:30];
-  EXPECT_EQ(64, [resizeDelegate_ height]);
-  EXPECT_EQ(30, NSHeight([bookmarkBarView frame]));
-
-  // Resize the bookmarkbar back to 0px.  Toolbar should be at 39px.
-  [bar_ resizeView:bookmarkBarView newHeight:0];
-  EXPECT_EQ(39, [resizeDelegate_ height]);
-  EXPECT_EQ(0, NSHeight([bookmarkBarView frame]));
-
-  // Resize the bookmarkbar to 5px.  Toolbar should stay at 39px.
-  [resizeDelegate_ setHeight:-1];
-  [bar_ resizeView:bookmarkBarView newHeight:5];
-  EXPECT_EQ(39, [resizeDelegate_ height]);
-  EXPECT_EQ(5, NSHeight([bookmarkBarView frame]));
-
-  // Resize the bookmarkbar to 6px.  Toolbar should grow to 40px.
-  [bar_ resizeView:bookmarkBarView newHeight:6];
-  EXPECT_EQ(40, [resizeDelegate_ height]);
-  EXPECT_EQ(6, NSHeight([bookmarkBarView frame]));
-}
-
 // Make sure, by default, the bookmark bar is the full width of the
 // toolbar.
 TEST_F(ToolbarControllerTest, BookmarkBarIsFullWidth) {

@@ -9,6 +9,10 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+@interface GradientButtonCell (HoverValueTesting)
+- (void)adjustHoverValue;
+@end
+
 namespace {
 
 class GradientButtonCellTest : public testing::Test {
@@ -36,7 +40,25 @@ TEST_F(GradientButtonCellTest, AddRemove) {
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(GradientButtonCellTest, Display) {
+  [[view_ cell] setHoverAlpha:0.0];
   [view_ display];
+  [[view_ cell] setHoverAlpha:0.5];
+  [view_ display];
+  [[view_ cell] setHoverAlpha:1.0];
+  [view_ display];
+}
+
+// Test drawing, mostly to ensure nothing leaks or crashes.
+TEST_F(GradientButtonCellTest, Hover) {
+  GradientButtonCell* cell = [view_ cell];
+  [cell setMouseInside:YES animate:NO];
+  EXPECT_EQ([[view_ cell] hoverAlpha], 1.0);
+
+  [cell setMouseInside:NO animate:YES];
+  CGFloat alpha1 = [cell hoverAlpha];
+  [cell adjustHoverValue];
+  CGFloat alpha2 = [cell hoverAlpha];
+  EXPECT_TRUE(alpha2 < alpha1);
 }
 
 // Tracking rects

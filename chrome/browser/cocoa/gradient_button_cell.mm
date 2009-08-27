@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/gradient_button_cell.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
-#import "base/scoped_nsobject.h"
+#import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 
 @interface GradientButtonCell (Private)
 - (void)sharedInit;
@@ -12,8 +13,48 @@
                             inView:(NSView*)controlView;
 @end
 
+static const NSTimeInterval kAnimationShowDuration = 0.2;
+static const NSTimeInterval kAnimationHideDuration = 0.4;
 
 @implementation GradientButtonCell
+@synthesize hoverAlpha = hoverAlpha_;
+
+- (void)adjustHoverValue {
+  NSTimeInterval thisUpdate = [NSDate timeIntervalSinceReferenceDate];
+
+  NSTimeInterval elapsed = thisUpdate - lastHoverUpdate_;
+
+  CGFloat opacity = [self hoverAlpha];
+  if (isMouseInside_) {
+    opacity += elapsed / kAnimationShowDuration;
+  } else {
+    opacity -= elapsed / kAnimationHideDuration;
+  }
+
+  if (!isMouseInside_ && opacity < 0) {
+    opacity = 0;
+  } else if (isMouseInside_ && opacity > 1) {
+    opacity = 1;
+  } else {
+    [self performSelector:_cmd withObject:nil afterDelay:0.02];
+  }
+  lastHoverUpdate_ = thisUpdate;
+  [self setHoverAlpha:opacity];
+
+  [[self controlView] setNeedsDisplay:YES];
+}
+
+- (void)setMouseInside:(BOOL)flag animate:(BOOL)animated {
+  isMouseInside_ = flag;
+  if (animated) {
+    lastHoverUpdate_ = [NSDate timeIntervalSinceReferenceDate];
+    [self adjustHoverValue];
+  } else {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    [self setHoverAlpha:flag ? 1.0 : 0.0];
+  }
+  [[self controlView] setNeedsDisplay:YES];
+}
 
 // For nib instantiations
 - (id)initWithCoder:(NSCoder*)decoder {
@@ -31,12 +72,33 @@
   return self;
 }
 
+- (NSGradient *)gradientForHoverAlpha:(CGFloat)hoverAlpha
+                             isThemed:(BOOL)themed {
+  CGFloat startAlpha = 0.6 + 0.3 * hoverAlpha;
+  CGFloat endAlpha = 0.333 * hoverAlpha;
+
+  if (themed) {
+    startAlpha = 0.2 + 0.35 * hoverAlpha;
+    endAlpha = 0.333 * hoverAlpha;
+  }
+
+  NSColor* startColor =
+      [NSColor colorWithCalibratedWhite:1.0
+                                  alpha:startAlpha];
+  NSColor* endColor =
+      [NSColor colorWithCalibratedWhite:1.0 - 0.15 * hoverAlpha
+                                  alpha:endAlpha];
+  NSGradient *gradient = [[NSGradient alloc] initWithColorsAndLocations:
+                          startColor, hoverAlpha * 0.33,
+                          endColor, 1.0, nil];
+
+  return [gradient autorelease];
+}
+
+
 - (void)sharedInit {
   shouldTheme_ = YES;
-  NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.666];
-  NSColor* endColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.333];
-  gradient_.reset([[NSGradient alloc]
-      initWithColorsAndLocations:startColor, 0.33, endColor, 1.0, nil]);
+  gradient_.reset([[self gradientForHoverAlpha:0.0 isThemed:NO] retain]);
 }
 
 - (void)setShouldTheme:(BOOL)shouldTheme {
@@ -59,13 +121,11 @@
 }
 
 - (void)mouseEntered:(NSEvent *)theEvent {
-  isMouseInside_ = YES;
-  [[self controlView] setNeedsDisplay:YES];
+  [self setMouseInside:YES animate:YES];
 }
 
 - (void)mouseExited:(NSEvent *)theEvent {
-  isMouseInside_ = NO;
-  [[self controlView] setNeedsDisplay:YES];
+  [self setMouseInside:NO animate:YES];
 }
 
 - (BOOL)isMouseInside {
@@ -102,13 +162,11 @@
                       controlView:(NSView*)controlView
                         outerPath:(NSBezierPath*)outerPath
                         innerPath:(NSBezierPath*)innerPath
-            showHighlightGradient:(BOOL)showHighlightGradient
               showClickedGradient:(BOOL)showClickedGradient
+            showHighlightGradient:(BOOL)showHighlightGradient
+                       hoverAlpha:(CGFloat)hoverAlpha
                            active:(BOOL)active
                         cellFrame:(NSRect)cellFrame {
-  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.25] set];
-  [outerPath stroke];
-
   NSImage* backgroundImage =
       [theme backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES];
 
@@ -129,45 +187,56 @@
     }
   }
 
-  if (!showClickedGradient && showHighlightGradient) {
+  BOOL isCustomTheme = backgroundImage != nil;
+
+  if (!showClickedGradient && [self isEnabled]) {
     [NSGraphicsContext saveGraphicsState];
     [innerPath addClip];
 
     // Draw the inner glow.
-    [innerPath setLineWidth:2];
-    [[NSColor colorWithCalibratedWhite:1.0 alpha:0.9] setStroke];
-    [innerPath stroke];
-
-    [[NSColor colorWithCalibratedWhite:1.0 alpha:0.9] setStroke];
-    [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2] setFill];
+    if (hoverAlpha > 0) {
+      [innerPath setLineWidth:2];
+      [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2 * hoverAlpha] setStroke];
+      [innerPath stroke];
+    }
 
     // Draw the top inner highlight.
     NSAffineTransform* highlightTransform = [NSAffineTransform transform];
     [highlightTransform translateXBy:1 yBy:1];
     scoped_nsobject<NSBezierPath> highlightPath([innerPath copy]);
     [highlightPath transformUsingAffineTransform:highlightTransform];
-
+    [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2] setStroke];
     [highlightPath stroke];
 
-    [gradient_ drawInBezierPath:innerPath angle:90.0];
+    NSGradient *gradient = nil;
+    if (hoverAlpha == 0 && !isCustomTheme) {
+      gradient = gradient_;
+    } else {
+      gradient = [self gradientForHoverAlpha:hoverAlpha isThemed:isCustomTheme];
+    }
+    [gradient drawInBezierPath:innerPath angle:90.0];
 
     [NSGraphicsContext restoreGraphicsState];
   }
 
+  // Draw the outer stroke
   NSColor* stroke = [theme strokeColorForStyle:GTMThemeStyleToolBarButton
                                          state:active];
+
+  if (showClickedGradient) {
+    stroke = [NSColor colorWithCalibratedWhite:0.0 alpha:0.3];
+  }
   [stroke setStroke];
 
   [innerPath setLineWidth:1];
   [innerPath stroke];
 }
 
-
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   // Constants from Cole.  Will kConstant them once the feedback loop
   // is complete.
   NSRect drawFrame = NSInsetRect(cellFrame, 1.5, 1.5);
-  NSRect innerFrame = NSInsetRect(cellFrame, 2, 2);
+  NSRect innerFrame = NSInsetRect(cellFrame, 2, 1);
   ButtonType type = [[(NSControl*)controlView cell] tag];
   switch (type) {
     case kMiddleButtonType:
@@ -212,8 +281,9 @@
                         controlView:controlView
                           outerPath:outerPath
                           innerPath:innerPath
-              showHighlightGradient:YES
                 showClickedGradient:pressed
+              showHighlightGradient:[self isHighlighted]
+                         hoverAlpha:[self hoverAlpha]
                              active:active
                           cellFrame:cellFrame];
   }
@@ -243,9 +313,14 @@
     CGContextRef context =
         (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
 
+    NSColor* color = [theme iconColorForStyle:GTMThemeStyleToolBarButton
+                                        state:YES];
+
     if (isTemplate) {
       scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-      [shadow setShadowColor:[NSColor whiteColor]];
+      NSColor *shadowColor = [color gtm_legibleTextColor];
+      shadowColor = [shadowColor colorWithAlphaComponent:0.25];
+      [shadow setShadowColor:shadowColor];
       [shadow setShadowOffset:NSMakeSize(0, -1.0)];
       [shadow setShadowBlurRadius:1.0];
       [shadow set];
@@ -256,14 +331,13 @@
     CGContextBeginTransparencyLayer(context, 0);
     NSRect imageRect = NSZeroRect;
     imageRect.size = [[self image] size];
+    NSRect drawRect = [self imageRectForBounds:cellFrame];
     [[self image] setFlipped:[controlView isFlipped]];
-    [[self image] drawInRect:[self imageRectForBounds:cellFrame]
+    [[self image] drawInRect:drawRect
                     fromRect:imageRect
                    operation:NSCompositeSourceOver
                     fraction:[self isEnabled] ? 1.0 : 0.5];
     if (isTemplate) {
-      NSColor* color = [theme iconColorForStyle:GTMThemeStyleToolBarButton
-                                          state:YES];
       if (color) {
         [color set];
         NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
