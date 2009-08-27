@@ -666,6 +666,8 @@ static void BuildOpcodeTables() {
   DefineDCOpcodes();
 
   Define0F38Opcodes();
+
+  Define660F38Opcodes();
 }
 
 /* Generate header information, based on the executable name in argv0,

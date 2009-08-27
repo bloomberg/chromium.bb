@@ -460,6 +460,12 @@ typedef enum {
   /* Like G_Operand, but uses MMX registers instead. */
   Mm_G_Operand,
 
+  /* Like E_Operand, but uses XMM registers instead. */
+  Xmm_E_Operand,
+
+  /* Like G_Operand, but uses XMM registers instead. */
+  Xmm_G_Operand,
+
   /* Note: The instruction decoder may count on the fact that the O_Operand
    * values are contiguous, in the order specified.
    */

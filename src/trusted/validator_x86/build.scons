@@ -96,7 +96,8 @@ ncdecode_tablegen = env_decode_table.ComponentProgram(
      'ncdecode_onebyte.c',
      'ncdecode_OF.c',
      'ncdecode_DC.c',
-     'ncdecode_0F38.c'
+     'ncdecode_0F38.c',
+     'ncdecode_660F38.c'
     ],
     EXTRA_LIBS=['ncopcode_utils'])
 

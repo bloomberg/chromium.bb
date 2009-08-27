@@ -111,6 +111,8 @@ static const char* const g_OperandKindName[OperandKindEnumSize] = {
   "Mpo_Operand",
   "Mm_E_Operand",
   "Mm_G_Operand",
+  "Xmm_E_Operand",
+  "Xmm_G_Operand",
   "O_Operand",
   "Ob_Operand",
   "Ow_Operand",

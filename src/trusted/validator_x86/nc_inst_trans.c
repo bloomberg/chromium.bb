@@ -1098,6 +1098,11 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
                                    ModRmMmx);
     case Mm_E_Operand:
       return AppendEffectiveAddress(state, operand, ModRmMmx);
+    case Xmm_G_Operand:
+      return AppendOperandRegister(state, operand, GetGenRegRegister(state),
+                                   ModRmXmm);
+    case Xmm_E_Operand:
+      return AppendEffectiveAddress(state, operand, ModRmXmm);
     case O_Operand:
     case Ob_Operand:
     case Ow_Operand:
