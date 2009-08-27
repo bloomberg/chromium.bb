@@ -406,16 +406,6 @@ BUG20404 : LayoutTests/editing/execCommand/copy-without-selection.html = FAIL
 // (rdar://5313536)
 BUG10270 WIN : LayoutTests/fast/dom/frame-loading-via-document-write.html = TIMEOUT FAIL
 
-// WebKit's CSS counters are somewhat broken, thus expected results are failures
-// Our high-precision timers make these tests flakey.
-// We could fork these tests, but we'll just unfork them as soon as
-// our high-precision timers are public.
-BUG877986 WIN LINUX : LayoutTests/css2.1/t1204-increment-00-c-o.html = FAIL
-BUG877986 WIN LINUX : LayoutTests/css2.1/t1204-increment-01-c-o.html = FAIL
-BUG877986 WIN LINUX : LayoutTests/css2.1/t1204-increment-02-c-o.html = FAIL
-BUG877986 WIN LINUX : LayoutTests/css2.1/t1204-reset-00-c-o.html = FAIL
-BUG877986 WIN LINUX : LayoutTests/css2.1/t1204-reset-01-c-o.html = FAIL
-
 // This are failing for different reasons under our new lighttpd configuration
 // TODO(deanm): Address all of these via lighttpd if possible, otherwise fork.
 // Maybe flaky and need to be forked?

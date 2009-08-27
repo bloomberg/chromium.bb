@@ -26,5 +26,5 @@ layer at (0,0) size 800x100
             RenderText at (36,0) size 6x19
               text run at (36,0) width 6: "-"
       RenderBlock {DIV} at (0,56) size 784x20
-        RenderText {#text} at (0,0) size 42x19
-          text run at (0,0) width 42: "1-2-3-"
+        RenderText {#text} at (0,0) size 66x19
+          text run at (0,0) width 66: "1-1.1-1.2-"
