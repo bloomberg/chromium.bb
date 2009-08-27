@@ -2,6 +2,8 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
+#include <math.h>
+
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
