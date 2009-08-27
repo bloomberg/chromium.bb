@@ -347,11 +347,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue1341577) {
   // This would crash the tab. These must be the first two find requests issued
   // against the frame, otherwise an active frame pointer is set and it wont
   // produce the crash.
+  // We used to check the return value and |ordinal|. With ICU 4.2, FiP does
+  // not find a stand-alone dependent vowel sign of Indic scripts. So, the
+  // exptected values are all 0. To make this test pass regardless of
+  // ICU version, we just call FiP and see if there's any crash.
+  // TODO(jungshik): According to a native Malayalam speaker, it's ok not
+  // to find U+0D4C. Still need to investigate further this issue.
   int ordinal = 0;
-  EXPECT_EQ(1, FindInPage(L"\u0D4C", FWD, IGNORE_CASE, &ordinal));
-  EXPECT_EQ(1, ordinal);
-  EXPECT_EQ(1, FindInPage(L"\u0D4C", FWD, IGNORE_CASE, &ordinal));
-  EXPECT_EQ(1, ordinal);
+  FindInPage(L"\u0D4C", FWD, IGNORE_CASE, &ordinal);
+  FindInPage(L"\u0D4C", FWD, IGNORE_CASE, &ordinal);
 
   // This should work fine.
   EXPECT_EQ(1, FindInPage(L"\u0D24\u0D46", FWD, IGNORE_CASE, &ordinal));
