@@ -742,7 +742,7 @@ BUG13907 WIN DEBUG : LayoutTests/media/video-document-types.html = FAIL CRASH
 BUG13907 WIN RELEASE : LayoutTests/media/video-document-types.html = PASS FAIL
 // This test is flaky.
 BUG13907 WIN : LayoutTests/media/video-source.html = PASS CRASH
-BUG13907 WIN : LayoutTests/media/video-src-remove.html = FAIL
+//BUG13907 WIN : LayoutTests/media/video-src-remove.html = FAIL
 BUG13907 WIN : LayoutTests/media/video-src-set.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src-source.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src.html = PASS CRASH
@@ -2819,3 +2819,10 @@ BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
 // Webkit 47790:47797
 BUG20359 LINUX WIN : LayoutTests/fast/repaint/inline-overflow.html = FAIL
 BUG20356 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = TIMEOUT
+
+// WebKit 47797:47804
+BUG20376 WIN : LayoutTests/media/audio-play-event.html = TIMEOUT
+// Was marked as flakey above (I commented it out).
+BUG20376 WIN : LayoutTests/media/video-src-remove.html = TIMEOUT FAIL
+BUG20377 LINUX WIN : LayoutTests/fast/repaint/rel-positioned-inline-with-overflow.html = FAIL
+
