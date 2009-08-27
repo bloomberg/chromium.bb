@@ -2824,3 +2824,6 @@ BUG20376 WIN : LayoutTests/media/audio-play-event.html = TIMEOUT
 BUG20376 WIN : LayoutTests/media/video-src-remove.html = TIMEOUT FAIL
 BUG20377 LINUX WIN : LayoutTests/fast/repaint/rel-positioned-inline-with-overflow.html = FAIL
 
+// WebKit 47810:47821
+BUG20399 : LayoutTests/fast/js/JSON-parse-reviver.html = FAIL
+
