@@ -241,6 +241,9 @@ void InProcessBrowserTest::ConfigureHostResolverProc(
   // TODO(phajdan.jr): remove, http://crbug.com/2635
   host_resolver_proc->AllowDirectLookup("*.google.com");
 
+  // TODO(phajdan.jr): remove, http://crbug.com/18365
+  host_resolver_proc->AllowDirectLookup("*.gstatic.com");
+
   // See http://en.wikipedia.org/wiki/Web_Proxy_Autodiscovery_Protocol
   // We don't want the test code to use it.
   host_resolver_proc->AddSimulatedFailure("wpad");

@@ -19,6 +19,15 @@ class ErrorPageTest : public UITest {
     }
     return false;
   }
+  bool WaitForTitleContaining(const std::string& title_substring) {
+    for (int i = 0; i < 100; ++i) {
+      std::wstring title = GetActiveTabTitle();
+      if (title.find(UTF8ToWide(title_substring)) != std::wstring::npos)
+        return true;
+      PlatformThread::Sleep(sleep_timeout_ms() / 10);
+    }
+    return false;
+  }
 };
 
 TEST_F(ErrorPageTest, DNSError_Basic) {
@@ -28,7 +37,7 @@ TEST_F(ErrorPageTest, DNSError_Basic) {
   // page.
   NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
 
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 }
 
 TEST_F(ErrorPageTest, DNSError_GoBack1) {
@@ -37,8 +46,8 @@ TEST_F(ErrorPageTest, DNSError_GoBack1) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  NavigateToURL(test_url);
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 
   GetActiveTab()->GoBack();
 
@@ -51,14 +60,14 @@ TEST_F(ErrorPageTest, DNSError_GoBack2) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  NavigateToURL(test_url);
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
 
   // The first navigation should fail, and the second one should be the error
   // page.
   GetActiveTab()->GoBackBlockUntilNavigationsComplete(2);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoBack();
 
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
@@ -71,20 +80,20 @@ TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  NavigateToURL(test_url);
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
 
   // The first navigation should fail, and the second one should be the error
   // page.
   GetActiveTab()->GoBackBlockUntilNavigationsComplete(2);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoBack();
   // The first navigation should fail, and the second one should be the error
   // page.
   GetActiveTab()->GoForwardBlockUntilNavigationsComplete(2);
 
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 }
 
 TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
@@ -94,19 +103,19 @@ TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
-  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  NavigateToURL(test_url);
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
 
   // The first navigation should fail, and the second one should be the error
   // page.
   GetActiveTab()->GoBackBlockUntilNavigationsComplete(2);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoBack();
   // The first navigation should fail, and the second one should be the error
   // page.
   GetActiveTab()->GoForwardBlockUntilNavigationsComplete(2);
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   GetActiveTab()->GoForward();
 
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
@@ -166,13 +175,13 @@ TEST_F(ErrorPageTest, Page404) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"page404.html"));
 
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining("page404.html"));
 }
 
 TEST_F(ErrorPageTest, Page404_GoBack) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"page404.html"));
-  EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
+  EXPECT_TRUE(WaitForTitleContaining("page404.html"));
 
   GetActiveTab()->GoBack();
 

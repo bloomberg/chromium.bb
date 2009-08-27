@@ -10,7 +10,6 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_request_failed_dns_job.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
-#include "chrome/browser/net/url_request_mock_link_doctor_job.h"
 #include "chrome/browser/net/url_request_slow_download_job.h"
 #include "chrome/browser/net/url_request_slow_http_job.h"
 #include "chrome/common/chrome_paths.h"
@@ -27,7 +26,6 @@ void SetUrlRequestMocksEnabled(bool enabled) {
     URLRequestFilter::GetInstance()->ClearHandlers();
 
     URLRequestFailedDnsJob::AddUrlHandler();
-    URLRequestMockLinkDoctorJob::AddUrlHandler();
     URLRequestSlowDownloadJob::AddUrlHandler();
 
     std::wstring root_http;
