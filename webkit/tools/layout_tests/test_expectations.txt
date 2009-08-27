@@ -2037,7 +2037,7 @@ BUG10476 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post-sync
 
 // Merge WebKit 42133:42199 regressions
 BUG10477 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
-BUG18686 : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL CRASH
+BUG18686 : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL
 BUG10477 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
 
 // Flaky since rev 13111.
