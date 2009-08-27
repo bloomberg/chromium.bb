@@ -330,6 +330,15 @@ bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
                 << ", " << dds_height << ").";
     return false;
   }
+
+  if (mip_count > image::ComputeMipMapCount(dds_width, dds_height)) {
+    DLOG(ERROR) << "Failed to load " << filename
+                << ": mip count " << mip_count
+                << "is inconsistent with image dimensions ("
+                <<  dds_width<< ", " << dds_height << ").";
+    return false;
+  }
+
   // Check for cube maps
   bool is_cubemap =
       (dd_surface_descriptor.ddsCaps.dwCaps2 & DDSCAPS2_CUBEMAP) != 0;
