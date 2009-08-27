@@ -111,7 +111,7 @@ void DownloadShelfView::Init() {
   Show();
 }
 
-void DownloadShelfView::AddDownloadView(View* view) {
+void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
   Show();
 
   DCHECK(view);
@@ -132,7 +132,7 @@ void DownloadShelfView::AddDownload(BaseDownloadItemModel* download_model) {
 
 void DownloadShelfView::RemoveDownloadView(View* view) {
   DCHECK(view);
-  std::vector<View*>::iterator i =
+  std::vector<DownloadItemView*>::iterator i =
     find(download_views_.begin(), download_views_.end(), view);
   DCHECK(i != download_views_.end());
   download_views_.erase(i);
@@ -187,8 +187,11 @@ void DownloadShelfView::AnimationProgressed(const Animation *animation) {
 }
 
 void DownloadShelfView::AnimationEnded(const Animation *animation) {
-  if (animation == shelf_animation_.get())
+  if (animation == shelf_animation_.get()) {
     parent_->SetDownloadShelfVisible(shelf_animation_->IsShowing());
+    if (!shelf_animation_->IsShowing())
+      Closed();
+  }
 }
 
 void DownloadShelfView::Layout() {
@@ -232,14 +235,14 @@ void DownloadShelfView::Layout() {
                            close_button_size.height());
   if (show_link_only) {
     // Let's hide all the items.
-    std::vector<View*>::reverse_iterator ri;
+    std::vector<DownloadItemView*>::reverse_iterator ri;
     for (ri = download_views_.rbegin(); ri != download_views_.rend(); ++ri)
       (*ri)->SetVisible(false);
     return;
   }
 
   next_x = kLeftPadding;
-  std::vector<View*>::reverse_iterator ri;
+  std::vector<DownloadItemView*>::reverse_iterator ri;
   for (ri = download_views_.rbegin(); ri != download_views_.rend(); ++ri) {
     gfx::Size view_size = (*ri)->GetPreferredSize();
 
@@ -323,4 +326,20 @@ void DownloadShelfView::Show() {
 void DownloadShelfView::Close() {
   parent_->SetDownloadShelfVisible(false);
   shelf_animation_->Hide();
+}
+
+void DownloadShelfView::Closed() {
+  // When the close animation is complete, remove all completed downloads.
+  size_t i = 0;
+  while (i < download_views_.size()) {
+    DownloadItem* download = download_views_[i]->get_download();
+    bool is_transfer_done = download->state() == DownloadItem::COMPLETE ||
+                            download->state() == DownloadItem::CANCELLED;
+    if (is_transfer_done &&
+        download->safety_state() != DownloadItem::DANGEROUS) {
+      RemoveDownloadView(download_views_[i]);
+    } else {
+      ++i;
+    }
+  }
 }

@@ -9,6 +9,7 @@
 
 class BaseDownloadItemModel;
 @class DownloadItemCell;
+class DownloadItem;
 class DownloadItemMac;
 class DownloadShelfContextMenuMac;
 @class DownloadShelfController;
@@ -67,6 +68,9 @@ class DownloadShelfContextMenuMac;
 
 // Returns the size this item wants to have.
 - (NSSize)preferredSize;
+
+// Returns the DownloadItem model object belonging to this item.
+- (DownloadItem*)download;
 
 // Handling of dangerous downloads
 - (void)clearDangerousMode;

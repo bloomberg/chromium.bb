@@ -77,6 +77,9 @@ class DownloadItemView : public views::ButtonListener,
   // IconManager::Client interface.
   void OnExtractIconComplete(IconManager::Handle handle, SkBitmap* icon_bitmap);
 
+  // Returns the DownloadItem model object belonging to this item.
+  DownloadItem* get_download() { return download_; }
+
  private:
   enum State {
     NORMAL = 0,

@@ -53,10 +53,11 @@ class DownloadItemGtk : public DownloadItem::Observer,
   // ownership of |icon_bitmap|.
   void OnLoadIconComplete(IconManager::Handle handle, SkBitmap* icon_bitmap);
 
+  // Returns the DownloadItem model object belonging to this item.
+  DownloadItem* get_download();
+
  private:
   friend class DownloadShelfContextMenuGtk;
-
-  DownloadItem* get_download();
 
   // Returns true IFF the download is dangerous and unconfirmed.
   bool IsDangerous();
@@ -203,6 +204,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // The file icon for the download. May be null.
   SkBitmap* icon_;
+
   // The last download file path for which we requested an icon.
   FilePath icon_filepath_;
 

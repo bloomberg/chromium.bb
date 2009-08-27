@@ -13,6 +13,7 @@
 #include "chrome/browser/cocoa/download_item_controller.h"
 #include "chrome/browser/cocoa/download_shelf_mac.h"
 #import "chrome/browser/cocoa/download_shelf_view.h"
+#include "chrome/browser/download/download_manager.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -34,6 +35,7 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 - (void)showDownloadShelf:(BOOL)enable;
 - (void)resizeDownloadLinkToFit;
 - (void)layoutItems:(BOOL)skipFirst;
+- (void)closed;
 @end
 
 
@@ -178,6 +180,10 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
     bridge_->Close();
   else
     [self showDownloadShelf:NO];
+
+  // TODO(port): When closing the shelf is animated, call this only after the
+  // animation has ended:
+  [self closed];
 }
 
 - (float)height {
@@ -252,6 +258,23 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   // laying out the items, so that the longer animation duration we set up above
   // is not overwritten.
   [self layoutItems:YES];
+}
+
+- (void)closed {
+  NSUInteger i = 0;
+  while (i < [downloadItemControllers_.get() count]) {
+    DownloadItemController* itemController = [downloadItemControllers_.get()
+        objectAtIndex:i];
+    bool isTransferDone =
+        [itemController download]->state() == DownloadItem::COMPLETE ||
+        [itemController download]->state() == DownloadItem::CANCELLED;
+    if (isTransferDone &&
+        [itemController download]->safety_state() != DownloadItem::DANGEROUS) {
+      [self remove:itemController];
+    } else {
+      ++i;
+    }
+  }
 }
 
 @end

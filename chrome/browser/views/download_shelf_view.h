@@ -20,12 +20,11 @@ class Browser;
 class BrowserView;
 
 class DownloadAnimation;
+class DownloadItemView;
 
 // DownloadShelfView is a view that contains individual views for each download,
 // as well as a close button and a link to show all downloads.
 //
-// To add a view representing a download to DownloadShelfView, invoke
-// AddDownloadView. AddDownloadView takes ownership of the passed in View.
 // DownloadShelfView does not hold an infinite number of download views, rather
 // it'll automatically remove views once a certain point is reached.
 class DownloadShelfView : public DownloadShelf,
@@ -73,7 +72,7 @@ class DownloadShelfView : public DownloadShelf,
   // Adds a View representing a download to this DownloadShelfView.
   // DownloadShelfView takes ownership of the View, and will delete it as
   // necessary.
-  void AddDownloadView(views::View* view);
+  void AddDownloadView(DownloadItemView* view);
 
   // Paints the border.
   void PaintBorder(gfx::Canvas* canvas);
@@ -87,6 +86,9 @@ class DownloadShelfView : public DownloadShelf,
   // Overridden from views::View.
   virtual void ThemeChanged();
 
+  // Called when the "close shelf" animation ended.
+  void Closed();
+
   // The browser for this shelf.
   Browser* browser_;
 
@@ -98,7 +100,7 @@ class DownloadShelfView : public DownloadShelf,
 
   // The download views. These are also child Views, and deleted when
   // the DownloadShelfView is deleted.
-  std::vector<View*> download_views_;
+  std::vector<DownloadItemView*> download_views_;
 
   // An image displayed on the right of the "Show all downloads..." link.
   views::ImageView* arrow_image_;

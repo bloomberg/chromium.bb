@@ -137,6 +137,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   return [dangerousDownloadView_ frame].size;
 }
 
+- (DownloadItem*)download {
+  return bridge_->download_model()->download();
+}
+
 - (void)clearDangerousMode {
   [self setState:kNormal];
 }

@@ -15,7 +15,6 @@
 #include "chrome/browser/gtk/download_item_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
@@ -120,7 +119,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   slide_widget_.reset(new SlideAnimatorGtk(shelf_.get(),
                                            SlideAnimatorGtk::UP,
                                            kShelfAnimationDurationMs,
-                                           false, true, NULL));
+                                           false, true, this));
 
   theme_provider_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -169,6 +168,22 @@ void DownloadShelfGtk::Close() {
 
   // TODO(estade): Remove. The status bubble should query its window instead.
   browser_->UpdateDownloadShelfVisibility(false);
+}
+
+void DownloadShelfGtk::Closed() {
+  // When the close animation is complete, remove all completed downloads.
+  size_t i = 0;
+  while (i < download_items_.size()) {
+    DownloadItem* download = download_items_[i]->get_download();
+    bool is_transfer_done = download->state() == DownloadItem::COMPLETE ||
+                            download->state() == DownloadItem::CANCELLED;
+    if (is_transfer_done &&
+        download->safety_state() != DownloadItem::DANGEROUS) {
+      RemoveDownloadItem(download_items_[i]);
+    } else {
+      ++i;
+    }
+  }
 }
 
 void DownloadShelfGtk::Observe(NotificationType type,
