@@ -186,9 +186,7 @@
   var expectationsLoaded = false;
   function ADD_EXPECTATIONS(expectations) {
     expectationsLoaded = true;
-    for (var test in expectations)
-      expectationsByTest[test] = expectations[test];
-
+    expectationsByTest = expectations;
     generatePage();
   }
 
@@ -261,7 +259,11 @@
     return false;
   }
 
-  function hasPlatformAndBuildTypeForBuilder(builderName, modifiers) {
+  /**
+   * Returns whether the given string of modifiers applies to the platform and
+   * build type of the given builder.
+   */
+  function hasPlatformAndBuildType(builderName, modifiers) {
     var currentPlatformAndBuildType;
     if (perBuilderPlatformAndBuildType[builderName]) {
       currentPlatformAndBuildType = perBuilderPlatformAndBuildType[builderName];
@@ -286,6 +288,18 @@
 
     return (!hasAnyBuildType || hasThisBuildType) &&
         (!hasAnyPlatform || hasThisPlatform);
+  }
+
+  /**
+   * Returns whether any of the modifiers in the array have the correct
+   * platform and build type for the given builder.
+   */
+  function anyModifierHasPlatformAndBuildType(builderName, modifiersArray) {
+    for (var i = 0; i < modifiersArray.length; i++) {
+      if (hasPlatformAndBuildType(builderName, modifiersArray[i].modifiers))
+        return true;
+    }
+    return false;
   }
 
   /**
@@ -317,18 +331,17 @@
     var allTests = resultsByBuilder[builderName].tests;
 
     var expectationsMap = {};
-    var testPrefixes = {};
-    var testsWithoutDirectExpectations = [];
     for (var test in allTests) {
       if (expectationsByTest[test])
         expectationsMap[test] = expectationsByTest[test];
-      else
-        testsWithoutDirectExpectations.push(test);
     }
+    var testPrefixes = {};
     for (var path in expectationsByTest) {
-      if (allTests[path]) {
+      var expectations = expectationsByTest[path];
+      if (allTests[path] &&
+          anyModifierHasPlatformAndBuildType(builderName, expectations)) {
         // Test path is an exact match (i.e. not a prefix match)
-        expectationsMap[path] = expectationsByTest[path];
+        expectationsMap[path] = expectations;
         testPrefixes[path] = path;
       } else {
         // Test path doesn't match a specific test, see if it prefix matches
@@ -336,8 +349,9 @@
         for (var test in allTests) {
           if (stringContains(test, path) &&
               (!testPrefixes[test] ||
-               !stringContains(testPrefixes[test], path))) {
-            expectationsMap[test] = expectationsByTest[path];
+               !stringContains(testPrefixes[test], path)) &&
+              anyModifierHasPlatformAndBuildType(builderName, expectations)) {
+            expectationsMap[test] = expectations;
             testPrefixes[test] = path;
           }
         }
@@ -357,7 +371,7 @@
         for (var i = 0; i < expectationsArray.length; i++) {
           var modifiers = expectationsArray[i].modifiers;
           var expectations = expectationsArray[i].expectations;
-          if (hasPlatformAndBuildTypeForBuilder(builderName, modifiers)) {
+          if (hasPlatformAndBuildType(builderName, modifiers)) {
             resultsForTest.expectations = expectations;
             resultsForTest.modifiers = modifiers;
             resultsForTest.isWontFix = stringContains(modifiers, 'WONTFIX');
@@ -562,11 +576,10 @@
           EXPECTATIONS_MAP[expectation] + '</span>';
     }
     html += '<span class=expectation-mismatch>WRONG EXPECTATIONS</span>' +
-        '</div><b>All columns are sortable. | ' +
-        'Skipped tests are not listed.</b> | ' +
-        '<input type=checkbox id=wont-fix-input ' +
-        'onclick="updateWontFixDisplay()">' +
-        'Show WONTFIX tests.</div>';
+        '</div><input type=checkbox id=wont-fix-input ' +
+        'onclick="updateWontFixDisplay()">Show WONTFIX tests.' +
+        '<b> | All columns are sortable. | Skipped tests are not listed. | ' +
+        'Flakiness reader order is newer --> older runs.</b></div>';
     return html;
   }
 
