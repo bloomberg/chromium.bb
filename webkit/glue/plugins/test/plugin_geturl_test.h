@@ -25,6 +25,8 @@ class PluginGetURLTest : public PluginTest {
   //
   // NPAPI functions
   //
+  virtual NPError New(uint16 mode, int16 argc, const char* argn[],
+                      const char* argv[], NPSavedData* saved);
   virtual NPError SetWindow(NPWindow* pNPWindow);
   virtual NPError NewStream(NPMIMEType type, NPStream* stream,
                             NPBool seekable, uint16* stype);
@@ -40,6 +42,10 @@ class PluginGetURLTest : public PluginTest {
   int tests_in_progress_;
   std::string self_url_;
   FILE* test_file_;
+  bool expect_404_response_;
+  // This flag is set to true in the context of the NPN_Evaluate call.
+  bool npn_evaluate_context_;
+  std::string page_not_found_url_;
 };
 
 } // namespace NPAPIClient

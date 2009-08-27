@@ -99,7 +99,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
   if (test_name == "arguments") {
     new_test = new NPAPIClient::PluginArgumentsTest(instance,
       NPAPIClient::PluginClient::HostFunctions());
-  } else if (test_name == "geturl") {
+  } else if (test_name == "geturl" || test_name == "geturl_404_response") {
     new_test = new NPAPIClient::PluginGetURLTest(instance,
       NPAPIClient::PluginClient::HostFunctions());
   } else if (test_name == "npobject_proxy") {

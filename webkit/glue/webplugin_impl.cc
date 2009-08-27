@@ -769,11 +769,9 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
       // The plugin instance could be in the process of deletion here.
       // Verify if the WebPluginResourceClient instance still exists before
       // use.
-      WebPluginResourceClient* resource_client = GetClientFromLoader(loader);
-      if (resource_client) {
-        loader->cancel();
-        resource_client->DidFail();
-        RemoveClient(loader);
+      ClientInfo* client_info = GetClientInfoFromLoader(loader);
+      if (client_info) {
+        client_info->pending_failure_notification = true;
       }
     }
   }
@@ -942,6 +940,7 @@ bool WebPluginImpl::InitiateHTTPRequest(int resource_id,
   info.request.setRequestorProcessID(delegate_->GetProcessId());
   info.request.setTargetType(WebURLRequest::TargetIsObject);
   info.request.setHTTPMethod(WebString::fromUTF8(method));
+  info.pending_failure_notification = false;
 
   if (range_info) {
     info.request.addHTTPHeaderField(WebString::fromUTF8("Range"),
@@ -1002,6 +1001,17 @@ void WebPluginImpl::SetDeferResourceLoading(int resource_id, bool defer) {
 
     if (client_info.id == resource_id) {
       client_info.loader->setDefersLoading(defer);
+
+      // If we determined that the request had failed via the HTTP headers
+      // in the response then we send out a failure notification to the
+      // plugin process, as certain plugins don't handle HTTP failure codes
+      // correctly.
+      if (!defer && client_info.client &&
+          client_info.pending_failure_notification) {
+        client_info.loader->cancel();
+        client_info.client->DidFail();
+        clients_.erase(client_index++);
+      }
       break;
     }
     client_index++;
@@ -1129,10 +1139,7 @@ void WebPluginImpl::TearDownPluginInstance(
     if (client_info.loader.get())
       client_info.loader->cancel();
 
-    WebPluginResourceClient* resource_client = client_info.client;
     client_index = clients_.erase(client_index);
-    if (resource_client)
-      resource_client->DidFail();
   }
 
   // This needs to be called now and not in the destructor since the

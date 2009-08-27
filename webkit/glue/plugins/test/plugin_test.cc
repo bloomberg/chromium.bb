@@ -13,6 +13,7 @@ PluginTest::PluginTest(NPP id, NPNetscapeFuncs *host_functions) {
   id_ = id;
   id_->pdata = this;
   host_functions_ = host_functions;
+  test_completed_ = false;
 }
 
 NPError PluginTest::New(uint16 mode, int16 argc, const char* argn[],
@@ -59,6 +60,7 @@ std::string URLEncode(const std::string &sIn) {
 }
 
 void PluginTest::SignalTestCompleted() {
+  test_completed_ = true;
   // To signal test completion, we expect a couple of
   // javascript functions to be defined in the webpage
   // which hosts this plugin:

@@ -238,6 +238,7 @@ class WebPluginImpl : public WebPlugin,
     int id;
     WebPluginResourceClient* client;
     WebKit::WebURLRequest request;
+    bool pending_failure_notification;
     linked_ptr<WebKit::WebURLLoader> loader;
   };
 

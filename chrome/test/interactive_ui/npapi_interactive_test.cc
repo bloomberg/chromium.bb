@@ -32,8 +32,10 @@
 //
 
 #include "base/file_util.h"
+#include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/npapi_test_helper.h"
 #include "net/base/net_util.h"
 
@@ -75,4 +77,23 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousMouseMove) {
                   kTestCompleteCookie, kTestCompleteSuccess,
                   kShortWaitTimeout);
   }
+}
+
+TEST_F(NPAPIVisiblePluginTester, GetURLRequest404Response) {
+  if (UITest::in_process_renderer())
+    return;
+
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(
+      L"npapi/plugin_url_request_404.html"));
+
+  NavigateToURL(url);
+
+  // Wait for the alert dialog and then close it.
+  automation()->WaitForAppModalDialog(action_max_timeout_ms());
+  scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
+  ASSERT_TRUE(window.get());
+  ASSERT_TRUE(window->SimulateOSKeyPress(VK_ESCAPE, 0));
+
+  WaitForFinish("geturl_404_response", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, kShortWaitTimeout);
 }
