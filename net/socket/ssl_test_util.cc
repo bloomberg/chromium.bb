@@ -24,6 +24,10 @@
 #include <pk11pub.h>
 #undef Lock
 #include "base/nss_init.h"
+#elif defined(OS_MACOSX)
+#include <Security/Security.h>
+#include "base/scoped_cftyperef.h"
+#include "net/base/x509_certificate.h"
 #endif
 
 #include "base/file_util.h"
@@ -81,9 +85,47 @@ static CERTCertificate* LoadTemporaryCert(const FilePath& filename) {
 }
 #endif
 
+#if defined(OS_MACOSX)
+static net::X509Certificate* LoadTemporaryCert(const FilePath& filename) {
+  std::string rawcert;
+  if (!file_util::ReadFileToString(filename.ToWStringHack(), &rawcert)) {
+    LOG(ERROR) << "Can't load certificate " << filename.ToWStringHack();
+    return NULL;
+  }
+
+  CFDataRef pem = CFDataCreate(kCFAllocatorDefault,
+                               reinterpret_cast<const UInt8*>(rawcert.data()),
+                               static_cast<CFIndex>(rawcert.size()));
+  if (!pem)
+    return NULL;
+  scoped_cftyperef<CFDataRef> scoped_pem(pem);
+
+  SecExternalFormat input_format = kSecFormatUnknown;
+  SecExternalItemType item_type = kSecItemTypeUnknown;
+  CFArrayRef cert_array = NULL;
+  if (SecKeychainItemImport(pem, NULL, &input_format, &item_type, 0, NULL, NULL,
+                            &cert_array))
+    return NULL;
+  scoped_cftyperef<CFArrayRef> scoped_cert_array(cert_array);
+
+  if (!CFArrayGetCount(cert_array))
+    return NULL;
+
+  SecCertificateRef cert_ref = static_cast<SecCertificateRef>(
+      const_cast<void*>(CFArrayGetValueAtIndex(cert_array, 0)));
+  CFRetain(cert_ref);
+  return net::X509Certificate::CreateFromHandle(cert_ref,
+      net::X509Certificate::SOURCE_FROM_NETWORK);
+}
+#endif
+
 }  // namespace
 
 namespace net {
+
+#if defined(OS_MACOSX)
+void SetMacTestCertificate(X509Certificate* cert);
+#endif
 
 // static
 const char TestServerLauncher::kHostName[] = "127.0.0.1";
@@ -317,6 +359,8 @@ TestServerLauncher::~TestServerLauncher() {
 #if defined(OS_LINUX)
   if (cert_)
     CERT_DestroyCertificate(reinterpret_cast<CERTCertificate*>(cert_));
+#elif defined(OS_MACOSX)
+  SetMacTestCertificate(NULL);
 #endif
   Stop();
 }
@@ -353,6 +397,12 @@ bool TestServerLauncher::LoadTestRootCert() {
           LoadTemporaryCert(GetRootCertPath()));
   DCHECK(cert_);
   return (cert_ != NULL);
+#elif defined(OS_MACOSX)
+  X509Certificate* cert = LoadTemporaryCert(GetRootCertPath());
+  if (!cert)
+    return false;
+  SetMacTestCertificate(cert);
+  return true;
 #else
   return true;
 #endif
