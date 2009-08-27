@@ -28,7 +28,10 @@ guint32 EventTimeNow() {
 
 class EventWaiter : public MessageLoopForUI::Observer {
  public:
-  EventWaiter(Task* task, GdkEventType type) : task_(task), type_(type) {
+  EventWaiter(Task* task, GdkEventType type, int count)
+      : task_(task),
+        type_(type),
+        count_(count) {
     MessageLoopForUI::current()->AddObserver(this);
   }
 
@@ -38,7 +41,7 @@ class EventWaiter : public MessageLoopForUI::Observer {
 
   // MessageLoop::Observer implementation:
   virtual void WillProcessEvent(GdkEvent* event) {
-    if (event->type == type_) {
+    if ((event->type == type_) && (--count_ == 0)) {
       // At the time we're invoked the event has not actually been processed.
       // Use PostTask to make sure the event has been processed before
       // notifying.
@@ -59,6 +62,8 @@ class EventWaiter : public MessageLoopForUI::Observer {
   // received.
   Task *task_;
   GdkEventType type_;
+  // The number of events of this type to wait for.
+  int count_;
 };
 
 class ClickTask : public Task {
@@ -82,46 +87,18 @@ class ClickTask : public Task {
   Task* followup_;
 };
 
-}  // namespace
 
-namespace ui_controls {
+bool SendKeyEvent(GdkWindow* window, bool press, guint key, guint state) {
+  GdkEvent* event = gdk_event_new(press ? GDK_KEY_PRESS : GDK_KEY_RELEASE);
 
-bool SendKeyPress(gfx::NativeWindow window,
-                  wchar_t key, bool control, bool shift, bool alt) {
-  // TODO(estade): send a release as well?
-  GdkEvent* event = gdk_event_new(GDK_KEY_PRESS);
-
-  event->key.type = GDK_KEY_PRESS;
-  GtkWidget* grab_widget = gtk_grab_get_current();
-  if (grab_widget) {
-    // If there is a grab, send all events to the grabbed widget.
-    event->key.window = grab_widget->window;
-  } else if (window) {
-    event->key.window = GTK_WIDGET(window)->window;
-  } else {
-    // No target was specified. Send the events to the focused window.
-    GList* windows = gtk_window_list_toplevels();
-    for (GList* element = windows; element; element = g_list_next(element)) {
-      GtkWindow* window = GTK_WINDOW(element->data);
-      if (gtk_window_is_active(window)) {
-        event->key.window = GTK_WIDGET(window)->window;
-        break;
-      }
-    }
-    g_list_free(windows);
-  }
-  DCHECK(event->key.window);
+  event->key.type = press ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
+  event->key.window = window;
   g_object_ref(event->key.window);
   event->key.send_event = false;
   event->key.time = EventTimeNow();
 
-  // TODO(estade): handle other state flags besides control, shift, alt?
-  // For example caps lock.
-  event->key.state = (control ? GDK_CONTROL_MASK : 0) |
-                     (shift ? GDK_SHIFT_MASK : 0) |
-                     (alt ? GDK_MOD1_MASK : 0);
+  event->key.state = state;
   event->key.keyval = key;
-  // TODO(estade): fill in the string?
 
   GdkKeymapKey* keys;
   gint n_keys;
@@ -139,11 +116,89 @@ bool SendKeyPress(gfx::NativeWindow window,
   return true;
 }
 
+}  // namespace
+
+namespace ui_controls {
+
+bool SendKeyPress(gfx::NativeWindow window,
+                  wchar_t key, bool control, bool shift, bool alt) {
+  GdkWindow* event_window = NULL;
+  GtkWidget* grab_widget = gtk_grab_get_current();
+  if (grab_widget) {
+    // If there is a grab, send all events to the grabbed widget.
+    event_window = grab_widget->window;
+  } else if (window) {
+    event_window = GTK_WIDGET(window)->window;
+  } else {
+    // No target was specified. Send the events to the active toplevel.
+    GList* windows = gtk_window_list_toplevels();
+    for (GList* element = windows; element; element = g_list_next(element)) {
+      GtkWindow* this_window = GTK_WINDOW(element->data);
+      if (gtk_window_is_active(this_window)) {
+        event_window = GTK_WIDGET(this_window)->window;
+        break;
+      }
+    }
+    g_list_free(windows);
+  }
+  if (!event_window) {
+    NOTREACHED() << "Window not specified and none is active";
+    return false;
+  }
+
+  bool rv = true;
+
+  if (control)
+    rv = rv && SendKeyEvent(event_window, true, GDK_Control_L, 0);
+
+  if (shift) {
+    rv = rv && SendKeyEvent(event_window, true, GDK_Shift_L,
+                            control ? GDK_CONTROL_MASK : 0);
+  }
+
+  if (alt) {
+    guint state = (control ? GDK_CONTROL_MASK : 0) |
+                  (shift ? GDK_SHIFT_MASK : 0);
+    rv = rv && SendKeyEvent(event_window, true, GDK_Alt_L, state);
+  }
+
+  // TODO(estade): handle other state flags besides control, shift, alt?
+  // For example caps lock.
+  guint state = (control ? GDK_CONTROL_MASK : 0) |
+                (shift ? GDK_SHIFT_MASK : 0) |
+                (alt ? GDK_MOD1_MASK : 0);
+  rv = rv && SendKeyEvent(event_window, true, key, state);
+  rv = rv && SendKeyEvent(event_window, false, key, state);
+
+  if (alt) {
+    guint state = (control ? GDK_CONTROL_MASK : 0) |
+                  (shift ? GDK_SHIFT_MASK : 0);
+    rv = rv && SendKeyEvent(event_window, false, GDK_Alt_L, state);
+  }
+
+  if (shift) {
+    rv = rv && SendKeyEvent(event_window, false, GDK_Shift_L,
+                            control ? GDK_CONTROL_MASK : 0);
+  }
+
+  if (control)
+    rv = rv && SendKeyEvent(event_window, false, GDK_Control_L, 0);
+
+  return rv;
+}
+
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,
                                 bool control, bool shift,
                                 bool alt, Task* task) {
+  int release_count = 1;
+  if (control)
+    release_count++;
+  if (shift)
+    release_count++;
+  if (alt)
+    release_count++;
   // This object will delete itself after running |task|.
-  new EventWaiter(task, GDK_KEY_PRESS);
+  new EventWaiter(task, GDK_KEY_RELEASE, release_count);
   return SendKeyPress(window, key, control, shift, alt);
 }
 
@@ -223,7 +278,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
     else
       wait_type = GDK_3BUTTON_PRESS;
   }
-  new EventWaiter(task, wait_type);
+  new EventWaiter(task, wait_type, 1);
   return rv;
 }
 
