@@ -827,6 +827,12 @@ BUG10278 LINUX : LayoutTests/fast/css/font-face-unicode-range.html = FAIL
 BUG10279 : LayoutTests/fast/dom/Window/window-property-shadowing-name.html = TIMEOUT FAIL
 BUG10279 : LayoutTests/fast/js/var-declarations-shadowing.html = FAIL
 
+// Implement full JSON support in V8
+BUG14885 : LayoutTests/fast/js/JSON-parse.html = FAIL
+BUG14885 : LayoutTests/fast/js/JSON-stringify.html = FAIL TIMEOUT
+BUG14885 : LayoutTests/fast/js/JSON-parse-reviver.html = FAIL
+BUG14885 : LayoutTests/fast/js/JSON-stringify-replacer.html = FAIL
+
 // User stylesheets not currently supported by chrome.
 // Webkit supports them by doing filesystem operations directly.
 // This is disallowed in a sandboxed renderer. The test fails in
@@ -2465,9 +2471,6 @@ BUG13174 WIN : LayoutTests/transitions/shorthand-border-transitions.html = PASS 
 // WebKit 44438:44544
 BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
 
-// New test added in WebKit 44550:
-BUG13767 : LayoutTests/fast/js/JSON-stringify.html = FAIL TIMEOUT
-
 BUG14207 WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
 
 // Newly added test http://trac.webkit.org/changeset/44816
@@ -2480,9 +2483,6 @@ BUG14767 LINUX : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html =
 
 BUG14832 : LayoutTests/editing/selection/user-drag-element-and-user-select-none.html = FAIL
 BUG14831 : LayoutTests/fast/events/event-trace.html = FAIL
-
-// WebKit 44922:44927
-BUG14885 : LayoutTests/fast/js/JSON-parse.html = FAIL
 
 // WebKit 44928:44943
 BUG14946 : LayoutTests/fast/js/date-toisostring.html = FAIL
@@ -2731,7 +2731,6 @@ BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-svgdom
 BUG18896 LINUX DEBUG : LayoutTests/svg/css/crash-css-generated-content.xhtml = FAIL
 
 // Test failures from WebKit merge 46894 to 46977
-BUG18939 : LayoutTests/fast/js/JSON-stringify-replacer.html = FAIL
 BUG18939 : LayoutTests/fast/js/function-declaration.html = FAIL
 BUG18939 : LayoutTests/fast/js/prototypes.html = FAIL
 BUG18939 MAC : LayoutTests/editing/execCommand/toggle-compound-styles.html = FAIL
@@ -2816,5 +2815,3 @@ BUG20376 WIN : LayoutTests/media/audio-play-event.html = TIMEOUT
 BUG20376 WIN : LayoutTests/media/video-src-remove.html = TIMEOUT FAIL
 BUG20377 LINUX WIN : LayoutTests/fast/repaint/rel-positioned-inline-with-overflow.html = FAIL
 
-// WebKit 47810:47821
-BUG20399 : LayoutTests/fast/js/JSON-parse-reviver.html = FAIL
