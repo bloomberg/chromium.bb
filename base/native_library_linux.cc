@@ -16,8 +16,14 @@ namespace base {
 NativeLibrary LoadNativeLibrary(const FilePath& library_path) {
   void* dl = dlopen(library_path.value().c_str(), RTLD_LAZY);
   if (!dl) {
-    LOG(ERROR) << "dlopen failed when trying to open " << library_path.value()
-               << ": " << dlerror();
+    std::string error_message = dlerror();
+    // Some obsolete plugins depend on libxul or libxpcom.
+    // Ignore the error messages when failing to load these.
+    if (error_message.find("libxul.so") == std::string::npos &&
+        error_message.find("libxpcom.so") == std::string::npos) {
+      LOG(ERROR) << "dlopen failed when trying to open " << library_path.value()
+                 << ": " << error_message;
+    }
   }
 
   return dl;
