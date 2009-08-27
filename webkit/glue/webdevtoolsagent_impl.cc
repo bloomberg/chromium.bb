@@ -90,23 +90,10 @@ void WebDevToolsAgentImpl::Attach() {
       new DebuggerAgentImpl(web_view_impl_,
                             debugger_agent_delegate_stub_.get(),
                             this));
-  Page* page = web_view_impl_->page();
-  debugger_agent_impl_->CreateUtilityContext(page->mainFrame(), &utility_context_);
-  InitDevToolsAgentHost();
-
+  ResetInspectorFrontendProxy();
   UnhideResourcesPanelIfNecessary();
-  v8::HandleScope scope;
-  v8::Context::Scope context_scope(utility_context_);
-
-  ScriptState* state = scriptStateFromPage(web_view_impl_->page());
-  v8::Handle<v8::Object> injected_script = v8::Local<v8::Object>::Cast(
-      utility_context_->Global()->Get(v8::String::New("InjectedScript")));
-  InspectorController* ic = web_view_impl_->page()->inspectorController();
-  ic->setFrontendProxyObject(
-      state,
-      ScriptObject(state, utility_context_->Global()),
-      ScriptObject(state, injected_script));
   // Allow controller to send messages to the frontend.
+  InspectorController* ic = web_view_impl_->page()->inspectorController();
   ic->setWindowVisible(true, false);
   attached_ = true;
 }
@@ -116,6 +103,7 @@ void WebDevToolsAgentImpl::Detach() {
   InspectorController* ic = web_view_impl_->page()->inspectorController();
   ic->setWindowVisible(false, false);
   DisposeUtilityContext();
+  inspector_frontend_script_state_.clear();
   devtools_agent_host_.set(NULL);
   debugger_agent_impl_.set(NULL);
   attached_ = false;
@@ -138,10 +126,7 @@ void WebDevToolsAgentImpl::DidCommitLoadForFrame(
       ds->unreachableURL() :
       request.url();
   if (webview->GetMainFrame() == frame) {
-    DisposeUtilityContext();
-    debugger_agent_impl_->CreateUtilityContext(webview->page()->mainFrame(),
-                                               &utility_context_);
-    InitDevToolsAgentHost();
+    ResetInspectorFrontendProxy();
     tools_agent_delegate_stub_->FrameNavigate(
         url.possibly_invalid_spec());
   }
@@ -244,6 +229,28 @@ void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
       v8::String::New("InspectorController"),
       V8DOMWrapper::convertToV8Object(V8ClassIndex::INSPECTORBACKEND,
                                       ic->inspectorBackend()));
+}
+
+void WebDevToolsAgentImpl::ResetInspectorFrontendProxy() {
+  DisposeUtilityContext();
+  debugger_agent_impl_->CreateUtilityContext(
+      web_view_impl_->page()->mainFrame(),
+      &utility_context_);
+  InitDevToolsAgentHost();
+
+  v8::HandleScope scope;
+  v8::Context::Scope context_scope(utility_context_);
+  inspector_frontend_script_state_.set(new ScriptState(
+      web_view_impl_->page()->mainFrame(),
+      utility_context_));
+  v8::Handle<v8::Object> injected_script = v8::Local<v8::Object>::Cast(
+      utility_context_->Global()->Get(v8::String::New("InjectedScript")));
+  ScriptState* state = inspector_frontend_script_state_.get();
+  InspectorController* ic = web_view_impl_->page()->inspectorController();
+  ic->setFrontendProxyObject(
+      state,
+      ScriptObject(state, utility_context_->Global()),
+      ScriptObject(state, injected_script));
 }
 
 // static

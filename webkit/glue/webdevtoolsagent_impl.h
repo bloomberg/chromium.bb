@@ -17,6 +17,7 @@
 namespace WebCore {
 class Document;
 class Node;
+class ScriptState;
 class String;
 }
 
@@ -86,6 +87,7 @@ class WebDevToolsAgentImpl
   void UnhideResourcesPanelIfNecessary();
 
   void InitDevToolsAgentHost();
+  void ResetInspectorFrontendProxy();
 
   int host_id_;
   WebDevToolsAgentDelegate* delegate_;
@@ -99,6 +101,7 @@ class WebDevToolsAgentImpl
   // for matching rules.
   v8::Persistent<v8::Context> utility_context_;
   OwnPtr<BoundObject> devtools_agent_host_;
+  OwnPtr<WebCore::ScriptState> inspector_frontend_script_state_;
   DISALLOW_COPY_AND_ASSIGN(WebDevToolsAgentImpl);
 };
 
