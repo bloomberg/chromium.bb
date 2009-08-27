@@ -37,7 +37,7 @@ TEST_F(ErrorPageTest, DNSError_GoBack1) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURL(test_url);
+  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 
   GetActiveTab()->GoBack();
@@ -51,7 +51,7 @@ TEST_F(ErrorPageTest, DNSError_GoBack2) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURL(test_url);
+  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
 
@@ -71,7 +71,7 @@ TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURL(test_url);
+  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
 
@@ -94,7 +94,7 @@ TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
-  NavigateToURL(test_url);
+  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
 
