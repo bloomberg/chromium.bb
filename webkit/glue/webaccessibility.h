@@ -77,6 +77,7 @@ class WebAccessibility {
     ROLE_LINK,
     ROLE_LIST,
     ROLE_LISTBOX,
+    ROLE_LISTITEM,
     ROLE_MENUBAR,
     ROLE_MENUITEM,
     ROLE_MENUPOPUP,

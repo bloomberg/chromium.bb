@@ -580,6 +580,8 @@ long BrowserAccessibility::MSAARole(long browser_accessibility_role) {
     case WebAccessibility::ROLE_LIST:
     case WebAccessibility::ROLE_LISTBOX:
       return ROLE_SYSTEM_LIST;
+    case WebAccessibility::ROLE_LISTITEM:
+      return ROLE_SYSTEM_LISTITEM;
     case WebAccessibility::ROLE_MENUBAR:
       return ROLE_SYSTEM_MENUBAR;
     case WebAccessibility::ROLE_MENUITEM:

@@ -391,6 +391,8 @@ static WebAccessibility::Role SupportedRole(WebCore::AccessibilityRole role) {
       return WebAccessibility::ROLE_LIST;
     case WebCore::ListBoxRole:
       return WebAccessibility::ROLE_LISTBOX;
+    case WebCore::ListBoxOptionRole:
+      return WebAccessibility::ROLE_LISTITEM;
     case WebCore::MenuBarRole:
       return WebAccessibility::ROLE_MENUBAR;
     case WebCore::MenuButtonRole:
