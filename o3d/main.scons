@@ -86,8 +86,10 @@ base_env.Append(
     DOCS_DIR = '$DESTINATION_ROOT/docs',
 
     CPPPATH = [
-        # The internal dir is first so that headers in internal can replace	
-        # those in external.	
+        # The internal dir is first so that headers in internal can replace
+
+        # those in external.
+
         '$INTERNAL_DIR',
         '$SCONSTRUCT_DIR/..',
         '$SCONSTRUCT_DIR',
@@ -667,7 +669,6 @@ mac_env.Append(CPPDEFINES = ['RENDERER_GL',
 
 def AddMacDebugSettings(env):
   env.Append(
-      BUILD_GROUPS = ['default', 'most'],
       CCFLAGS = ['-g'],
       CPPDEFINES = ['_DEBUG']
   )
@@ -753,6 +754,11 @@ mac_test_optimized_env = mac_optimized_env.Clone(
 )
 AddTestingFlags(mac_test_optimized_env)
 environment_list.append(mac_test_optimized_env)
+
+mac_debug_env.Append(
+  BUILD_GROUPS = ['default', 'most'],
+)
+
 
 # Linux ------------------------------------------------------------------
 
