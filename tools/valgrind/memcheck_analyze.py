@@ -81,7 +81,7 @@ class _AddressTable(object):
     ''' Carry out all lookup requests. '''
     self._translation = {}
     for binary in self._binaries.keys():
-      if binary != '':
+      if binary != '' and binary in self._load_addresses:
         load_address = self._load_addresses[binary]
         addr = ResolveAddressesWithinABinary(binary, load_address, self._binaries[binary])
         self._translation[binary] = addr
