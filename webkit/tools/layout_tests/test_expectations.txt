@@ -2723,7 +2723,7 @@ BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
 BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
-BUG19519 MAC DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
+BUG19519 WIN MAC DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
 
 // Fallout from webkit 47305:47383
 BUG19655 : LayoutTests/fast/dom/Window/HTMLBodyElement-window-eventListener-attributes.html = FAIL
@@ -2783,12 +2783,6 @@ BUG_JORLOW : LayoutTests/fast/events/pageshow-pagehide-on-back-cached.html = TIM
 
 // WebKit 47827:47830
 BUG_JORLOW : LayoutTests/editing/pasteboard/files-during-page-drags.html = FAIL
-
-// Showed up after rolling from 47821 to 47830.
-BUG_JORLOW DEBUG WIN : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL
-
-// Flake that showed up around revision 24645
-BUG20430 : LayoutTests/svg/custom/pointer-events-path.svg = CRASH PASS
 
 // This newly added test times out on Mac:
 BUG20438 MAC : chrome/plugins/get-url-with-iframe-target.html = TIMEOUT
