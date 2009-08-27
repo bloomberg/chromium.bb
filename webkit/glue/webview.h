@@ -108,7 +108,7 @@ class WebView : public WebKit::WebWidget {
   virtual void SetFocusedFrame(WebKit::WebFrame* frame) = 0;
 
   // Returns the frame with the given name, or NULL if not found.
-  virtual WebKit::WebFrame* GetFrameWithName(const std::wstring& name) = 0;
+  virtual WebKit::WebFrame* GetFrameWithName(const WebKit::WebString& name) = 0;
 
   // Returns the frame previous to the specified frame, by traversing the frame
   // tree, wrapping around if necessary.

@@ -58,7 +58,8 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   virtual void Paint(gfx::NativeDrawingContext context, const gfx::Rect& rect);
   virtual void Print(gfx::NativeDrawingContext context);
   virtual NPObject* GetPluginScriptableObject();
-  virtual void DidFinishLoadWithReason(NPReason reason);
+  virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
+                                       intptr_t notify_data);
   virtual void SetFocus();
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo* cursor);
@@ -71,8 +72,8 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
 
-  virtual void SendJavaScriptStream(const std::string& url,
-                                    const std::wstring& result,
+  virtual void SendJavaScriptStream(const GURL& url,
+                                    const std::string& result,
                                     bool success, bool notify_needed,
                                     intptr_t notify_data);
 
@@ -91,10 +92,6 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
                                                         bool notify_needed,
                                                         intptr_t notify_data,
                                                         intptr_t existing_stream);
-
-  // Notifies the delegate about a Get/Post URL request getting routed
-  virtual void URLRequestRouted(const std::string&url, bool notify_needed,
-                                intptr_t notify_data);
 
  protected:
   template<class WebPluginDelegateProxy> friend class DeleteTask;

@@ -306,8 +306,8 @@ bool WebPluginDelegateProxy::Send(IPC::Message* msg) {
   return channel_host_->Send(msg);
 }
 
-void WebPluginDelegateProxy::SendJavaScriptStream(const std::string& url,
-                                                  const std::wstring& result,
+void WebPluginDelegateProxy::SendJavaScriptStream(const GURL& url,
+                                                  const std::string& result,
                                                   bool success,
                                                   bool notify_needed,
                                                   intptr_t notify_data) {
@@ -756,8 +756,10 @@ NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
   return WebBindings::retainObject(npobject_);
 }
 
-void WebPluginDelegateProxy::DidFinishLoadWithReason(NPReason reason) {
-  Send(new PluginMsg_DidFinishLoadWithReason(instance_id_, reason));
+void WebPluginDelegateProxy::DidFinishLoadWithReason(
+    const GURL& url, NPReason reason, intptr_t notify_data) {
+  Send(new PluginMsg_DidFinishLoadWithReason(
+      instance_id_, url, reason, notify_data));
 }
 
 void WebPluginDelegateProxy::SetFocus() {
@@ -1054,13 +1056,6 @@ WebPluginResourceClient* WebPluginDelegateProxy::CreateResourceClient(
                                                        instance_id_);
   proxy->Initialize(resource_id, url, notify_needed, notify_data, npstream);
   return proxy;
-}
-
-void WebPluginDelegateProxy::URLRequestRouted(const std::string& url,
-                                               bool notify_needed,
-                                               intptr_t notify_data) {
-  Send(new PluginMsg_URLRequestRouted(instance_id_, url, notify_needed,
-                                      notify_data));
 }
 
 void WebPluginDelegateProxy::OnCancelDocumentLoad() {

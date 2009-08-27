@@ -1294,8 +1294,8 @@ void WebViewImpl::SetFocusedFrame(WebFrame* frame) {
   webcore_frame->page()->focusController()->setFocusedFrame(webcore_frame);
 }
 
-WebFrame* WebViewImpl::GetFrameWithName(const std::wstring& name) {
-  String name_str = webkit_glue::StdWStringToString(name);
+WebFrame* WebViewImpl::GetFrameWithName(const WebString& name) {
+  String name_str = webkit_glue::WebStringToString(name);
   Frame* frame = page_->mainFrame()->tree()->find(name_str);
   return frame ? WebFrameImpl::FromFrame(frame) : NULL;
 }

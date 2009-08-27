@@ -202,8 +202,10 @@ NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
   return instance_->GetPluginScriptableObject();
 }
 
-void WebPluginDelegateImpl::DidFinishLoadWithReason(NPReason reason) {
-  instance()->DidFinishLoadWithReason(reason);
+void WebPluginDelegateImpl::DidFinishLoadWithReason(
+    const GURL& url, NPReason reason, intptr_t notify_data) {
+  instance()->DidFinishLoadWithReason(
+      url, reason, reinterpret_cast<void*>(notify_data));
 }
 
 int WebPluginDelegateImpl::GetProcessId() {
@@ -211,8 +213,8 @@ int WebPluginDelegateImpl::GetProcessId() {
   return getpid();
 }
 
-void WebPluginDelegateImpl::SendJavaScriptStream(const std::string& url,
-                                                 const std::wstring& result,
+void WebPluginDelegateImpl::SendJavaScriptStream(const GURL& url,
+                                                 const std::string& result,
                                                  bool success,
                                                  bool notify_needed,
                                                  intptr_t notify_data) {
@@ -532,22 +534,11 @@ WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
     return plugin_stream->AsResourceClient();
   }
 
-  if (notify_needed) {
-    instance()->SetURLLoadData(url, notify_data);
-  }
   std::string mime_type;
   NPAPI::PluginStreamUrl *stream = instance()->CreateStream(
       resource_id, url, mime_type, notify_needed,
       reinterpret_cast<void*>(notify_data));
   return stream;
-}
-
-void WebPluginDelegateImpl::URLRequestRouted(const std::string&url,
-                                             bool notify_needed,
-                                             intptr_t notify_data) {
-  if (notify_needed) {
-    instance()->SetURLLoadData(GURL(url.c_str()), notify_data);
-  }
 }
 
 void WebPluginDelegateImpl::OnNullEvent() {

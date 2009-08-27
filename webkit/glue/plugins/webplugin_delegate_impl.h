@@ -58,11 +58,12 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo* cursor);
   virtual NPObject* GetPluginScriptableObject();
-  virtual void DidFinishLoadWithReason(NPReason reason);
+  virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
+                                       intptr_t notify_data);
   virtual int GetProcessId();
 
-  virtual void SendJavaScriptStream(const std::string& url,
-                                    const std::wstring& result,
+  virtual void SendJavaScriptStream(const GURL& url,
+                                    const std::string& result,
                                     bool success, bool notify_needed,
                                     intptr_t notify_data);
   virtual void DidReceiveManualResponse(const GURL& url,
@@ -81,8 +82,6 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
                                                         intptr_t notify_data,
                                                         intptr_t stream);
 
-  virtual void URLRequestRouted(const std::string&url, bool notify_needed,
-                                intptr_t notify_data);
   virtual bool IsWindowless() const { return windowless_ ; }
   virtual const gfx::Rect& GetRect() const { return window_rect_; }
   virtual const gfx::Rect& GetClipRect() const { return clip_rect_; }

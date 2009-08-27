@@ -159,8 +159,10 @@ IPC_BEGIN_MESSAGES(Plugin)
                              int /* route_id */,
                              intptr_t /* npobject_ptr */)
 
-  IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_DidFinishLoadWithReason,
-                             int /* reason */)
+  IPC_SYNC_MESSAGE_ROUTED3_0(PluginMsg_DidFinishLoadWithReason,
+                             GURL /* url */,
+                             int /* reason */,
+                             intptr_t /* notify_data */)
 
   // Updates the plugin location.  For windowless plugins, windowless_buffer
   // contains a buffer that the plugin draws into.  background_buffer is used
@@ -198,8 +200,8 @@ IPC_BEGIN_MESSAGES(Plugin)
                       int /* id */)
 
   IPC_MESSAGE_ROUTED5(PluginMsg_SendJavaScriptStream,
-                      std::string /* url */,
-                      std::wstring /* result */,
+                      GURL /* url */,
+                      std::string /* result */,
                       bool /* success */,
                       bool /* notify required */,
                       intptr_t /* notify data */)
@@ -219,11 +221,6 @@ IPC_BEGIN_MESSAGES(Plugin)
 
   IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_HandleURLRequestReply,
                              PluginMsg_URLRequestReply_Params)
-
-  IPC_SYNC_MESSAGE_ROUTED3_0(PluginMsg_URLRequestRouted,
-                             std::string /* url */,
-                             bool /* notify_needed */,
-                             intptr_t /* notify data */)
 IPC_END_MESSAGES(Plugin)
 
 

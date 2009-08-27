@@ -4,14 +4,16 @@
 
 #include "webkit/glue/plugins/plugin_string_stream.h"
 
+#include "googleurl/src/gurl.h"
+
 namespace NPAPI {
 
 PluginStringStream::PluginStringStream(
-    PluginInstance *instance,
-    const std::string &url,
+    PluginInstance* instance,
+    const GURL& url,
     bool notify_needed,
-    void *notify_data)
-    : PluginStream(instance, url.c_str(), notify_needed, notify_data) {
+    void* notify_data)
+    : PluginStream(instance, url.spec().c_str(), notify_needed, notify_data) {
 }
 
 PluginStringStream::~PluginStringStream() {

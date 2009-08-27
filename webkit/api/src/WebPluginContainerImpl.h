@@ -52,6 +52,7 @@ namespace WebCore {
 
 namespace WebKit {
     class WebPlugin;
+    class WebPluginLoadObserver;
 
     class WebPluginContainerImpl : public WebCore::Widget, public WebPluginContainer {
     public:
@@ -76,6 +77,8 @@ namespace WebKit {
         virtual void invalidate();
         virtual void invalidateRect(const WebRect&);
         virtual NPObject* scriptableObjectForElement();
+        virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed);
+        virtual void loadFrameRequest(const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData);
 
         // Resource load events for the plugin's source data:
         void didReceiveResponse(const WebCore::ResourceResponse&);
@@ -84,6 +87,11 @@ namespace WebKit {
         void didFailLoading(const WebCore::ResourceError&);
 
         NPObject* scriptableObject();
+
+        // This cannot be null.
+        WebPlugin* plugin() { return m_webPlugin; }
+
+        void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
 
     private:
         WebPluginContainerImpl(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
@@ -104,6 +112,7 @@ namespace WebKit {
 
         WebCore::HTMLPlugInElement* m_element;
         WebPlugin* m_webPlugin;
+        Vector<WebPluginLoadObserver*> m_pluginLoadObservers;
     };
 
 } // namespace WebKit

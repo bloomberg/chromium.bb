@@ -40,8 +40,6 @@ MSVC_PUSH_WARNING_LEVEL(0);
 MSVC_POP_WARNING();
 
 class ChromePrintContext;
-class WebDataSourceImpl;
-class WebPluginDelegate;
 class WebView;
 class WebViewImpl;
 
@@ -58,6 +56,10 @@ class Node;
 class Range;
 class SubstituteData;
 struct WindowFeatures;
+}
+
+namespace WebKit {
+class WebDataSourceImpl;
 }
 
 // Implementation of WebFrame, note that this is a reference counted object.
@@ -186,16 +188,6 @@ class WebFrameImpl : public WebKit::WebFrame,
 
   void CreateFrameView();
 
-  // The plugin delegate is used to get notifications when downloads complete.
-  // This is used by the NPAPI method getURLNotify.  plugin_delegate() may
-  // return NULL.  TODO(darin): how come there is only one per frame?!?
-  WebPluginDelegate* plugin_delegate() const {
-    return plugin_delegate_;
-  }
-  void set_plugin_delegate(WebPluginDelegate* plugin_delegate) {
-    plugin_delegate_ = plugin_delegate;
-  }
-
   WebCore::Frame* frame() const {
     return frame_;
   }
@@ -210,8 +202,8 @@ class WebFrameImpl : public WebKit::WebFrame,
 
   // Getters for the impls corresponding to Get(Provisional)DataSource. They
   // may return NULL if there is no corresponding data source.
-  WebDataSourceImpl* GetDataSourceImpl() const;
-  WebDataSourceImpl* GetProvisionalDataSourceImpl() const;
+  WebKit::WebDataSourceImpl* GetDataSourceImpl() const;
+  WebKit::WebDataSourceImpl* GetProvisionalDataSourceImpl() const;
 
   // Returns which frame has an active match. This function should only be
   // called on the main frame, as it is the only frame keeping track. Returned
@@ -269,10 +261,6 @@ class WebFrameImpl : public WebKit::WebFrame,
   // This is a weak pointer to our corresponding WebCore frame.  A reference to
   // ourselves is held while frame_ is valid.  See our Closing method.
   WebCore::Frame* frame_;
-
-  // Plugins sometimes need to be notified when loads are complete so we keep
-  // a pointer back to the appropriate plugin.
-  WebPluginDelegate* plugin_delegate_;
 
   // A way for the main frame to keep track of which frame has an active
   // match. Should be NULL for all other frames.

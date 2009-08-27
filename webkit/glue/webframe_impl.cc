@@ -154,11 +154,11 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebVector.h"
+#include "webkit/api/src/WebDataSourceImpl.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webdatasource_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webview_impl.h"
 
@@ -214,6 +214,7 @@ using WebKit::WebCanvas;
 using WebKit::WebConsoleMessage;
 using WebKit::WebData;
 using WebKit::WebDataSource;
+using WebKit::WebDataSourceImpl;
 using WebKit::WebFindOptions;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
@@ -360,7 +361,7 @@ class ChromePrintContext : public WebCore::PrintContext {
 };
 
 static WebDataSource* DataSourceForDocLoader(DocumentLoader* loader) {
-  return loader ? WebDataSourceImpl::FromLoader(loader) : NULL;
+  return loader ? WebDataSourceImpl::fromDocumentLoader(loader) : NULL;
 }
 
 // WebFrame -------------------------------------------------------------------
@@ -1454,7 +1455,6 @@ int WebFrameImpl::live_object_count_ = 0;
 WebFrameImpl::WebFrameImpl()
   : ALLOW_THIS_IN_INITIALIZER_LIST(frame_loader_client_(this)),
     ALLOW_THIS_IN_INITIALIZER_LIST(scope_matches_factory_(this)),
-    plugin_delegate_(NULL),
     active_match_frame_(NULL),
     active_match_index_(-1),
     locating_active_rect_(false),

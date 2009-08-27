@@ -58,7 +58,8 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   void OnDidFinishLoading(int id);
   void OnDidFail(int id);
 
-  void OnDidFinishLoadWithReason(int reason);
+  void OnDidFinishLoadWithReason(const GURL& url, int reason,
+                                 intptr_t notify_data);
   void OnSetFocus();
   void OnHandleInputEvent(const WebKit::WebInputEvent* event,
                           bool* handled, WebCursor* cursor);
@@ -73,8 +74,8 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                         const TransportDIB::Handle& windowless_buffer,
                         const TransportDIB::Handle& background_buffer);
   void OnGetPluginScriptableObject(int* route_id, intptr_t* npobject_ptr);
-  void OnSendJavaScriptStream(const std::string& url,
-                              const std::wstring& result,
+  void OnSendJavaScriptStream(const GURL& url,
+                              const std::string& result,
                               bool success, bool notify_needed,
                               intptr_t notify_data);
 
@@ -88,9 +89,6 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
 
   void OnHandleURLRequestReply(
       const PluginMsg_URLRequestReply_Params& params);
-
-  void OnURLRequestRouted(const std::string& url, bool notify_needed,
-                          intptr_t notify_data);
 
   void CreateSharedBuffer(size_t size,
                           base::SharedMemory* shared_buf,

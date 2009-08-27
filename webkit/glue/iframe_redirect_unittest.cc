@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/api/public/WebFrame.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebVector.h"
 #include "webkit/glue/webkit_glue.h"
@@ -20,6 +21,7 @@
 
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
+using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
 
@@ -38,7 +40,8 @@ TEST_F(IFrameRedirectTest, Test) {
   test_shell_->LoadURL(test_url.c_str());
   test_shell_->WaitTestFinished();
 
-  WebFrame* iframe = test_shell_->webView()->GetFrameWithName(L"ifr");
+  WebFrame* iframe =
+      test_shell_->webView()->GetFrameWithName(WebString::fromUTF8("ifr"));
   ASSERT_TRUE(iframe != NULL);
   WebDataSource* iframe_ds = iframe->dataSource();
   ASSERT_TRUE(iframe_ds != NULL);

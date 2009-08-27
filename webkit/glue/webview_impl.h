@@ -82,7 +82,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual WebKit::WebFrame* GetMainFrame();
   virtual WebKit::WebFrame* GetFocusedFrame();
   virtual void SetFocusedFrame(WebKit::WebFrame* frame);
-  virtual WebKit::WebFrame* GetFrameWithName(const std::wstring& name);
+  virtual WebKit::WebFrame* GetFrameWithName(const WebKit::WebString& name);
   virtual WebKit::WebFrame* GetPreviousFrameBefore(WebKit::WebFrame* frame, bool wrap);
   virtual WebKit::WebFrame* GetNextFrameAfter(WebKit::WebFrame* frame, bool wrap);
   virtual void ClearFocusedNode();

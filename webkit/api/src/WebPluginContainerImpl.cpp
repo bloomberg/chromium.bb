@@ -33,20 +33,25 @@
 
 #include "TemporaryGlue.h"
 #include "WebCursorInfo.h"
+#include "WebDataSourceImpl.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
 #include "WebPlugin.h"
 #include "WebRect.h"
 #include "WebURLError.h"
+#include "WebURLRequest.h"
 #include "WebVector.h"
 #include "WrappedResourceResponse.h"
 
 #include "EventNames.h"
 #include "FocusController.h"
+#include "FormState.h"
 #include "Frame.h"
+#include "FrameLoadRequest.h"
 #include "FrameView.h"
 #include "GraphicsContext.h"
 #include "HostWindow.h"
+#include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "HTMLPlugInElement.h"
 #include "KeyboardEvent.h"
@@ -219,6 +224,52 @@ NPObject* WebPluginContainerImpl::scriptableObjectForElement()
     return m_element->getNPObject();
 }
 
+WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popupsAllowed)
+{
+    Frame* frame = m_element->document()->frame();
+    if (!frame)
+        return WebString();
+
+    const KURL& kurl = url;
+    ASSERT(kurl.protocolIs("javascript"));
+
+    String script = decodeURLEscapeSequences(
+        kurl.string().substring(strlen("javascript:")));
+
+    ScriptValue result = frame->loader()->executeScript(script, popupsAllowed);
+
+    // Failure is reported as a null string.
+    String resultStr;
+    result.getString(resultStr);
+    return resultStr;
+}
+
+void WebPluginContainerImpl::loadFrameRequest(
+    const WebURLRequest& request, const WebString& target, bool notifyNeeded, void* notifyData)
+{
+    Frame* frame = m_element->document()->frame();
+    if (!frame)
+        return;  // FIXME: send a notification in this case?
+
+    if (notifyNeeded) {
+        // FIXME: This is a bit of hack to allow us to observe completion of
+        // our frame request.  It would be better to evolve FrameLoader to
+        // support a completion callback instead.
+        WebDataSourceImpl::setNextPluginLoadObserver(
+            new WebPluginLoadObserver(this, request.url(), notifyData));
+    }
+
+    FrameLoadRequest frameRequest(request.toResourceRequest());
+    frameRequest.setFrameName(target);
+
+    frame->loader()->loadFrameRequest(
+        frameRequest,
+        false,  // lock history
+        false,  // lock back forward list
+        0,      // event
+        0);     // form state
+}
+
 void WebPluginContainerImpl::didReceiveResponse(const ResourceResponse& response)
 {
     // Make sure that the plugin receives window geometry before data, or else
@@ -247,6 +298,14 @@ void WebPluginContainerImpl::didFailLoading(const ResourceError& error)
 NPObject* WebPluginContainerImpl::scriptableObject()
 {
     return m_webPlugin->scriptableObject();
+}
+
+void WebPluginContainerImpl::willDestroyPluginLoadObserver(WebPluginLoadObserver* observer)
+{
+    size_t pos = m_pluginLoadObservers.find(observer);
+    if (pos == notFound)
+        return;
+    m_pluginLoadObservers.remove(pos);
 }
 
 // Private methods -------------------------------------------------------------

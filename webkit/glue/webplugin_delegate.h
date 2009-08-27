@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/gfx/native_widget_types.h"
-#include "build/build_config.h"
+#include "base/string16.h"
 #include "third_party/npapi/bindings/npapi.h"
 
 struct NPObject;
@@ -96,14 +96,16 @@ class WebPluginDelegate {
 
   // Receives notification about a resource load that the plugin initiated
   // for a frame.
-  virtual void DidFinishLoadWithReason(NPReason reason) = 0;
+  virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
+                                       intptr_t notify_data) = 0;
 
   // Returns the process id of the process that is running the plugin.
   virtual int GetProcessId() = 0;
 
-  // The result of the script execution is returned via this function.
-  virtual void SendJavaScriptStream(const std::string& url,
-                                    const std::wstring& result,
+  // The result, UTF-8 encoded, of the script execution is returned via this
+  // function.
+  virtual void SendJavaScriptStream(const GURL& url,
+                                    const std::string& result,
                                     bool success, bool notify_needed,
                                     intptr_t notify_data) = 0;
 
@@ -135,10 +137,6 @@ class WebPluginDelegate {
                                                         bool notify_needed,
                                                         intptr_t notify_data,
                                                         intptr_t stream) = 0;
-
-  // Notifies the delegate about a Get/Post URL request getting routed.
-  virtual void URLRequestRouted(const std::string&url, bool notify_needed,
-                                intptr_t notify_data) = 0;
 
   virtual bool IsWindowless() const;
 

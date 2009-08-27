@@ -18,11 +18,7 @@ function runtest() {
     if (window.layoutTestController) {
         layoutTestController.dumpAsText();
         layoutTestController.waitUntilDone();
-        layoutTestController.setCanOpenWindows();
-        // The new window should close immediately after it opens and finishes
-        // loading.  The setTimeout allows NPP_URLNotify to run before the
-        // window is closed.
-        plg.getURLNotify("data:text/html,<body onload='setTimeout(function(){close()},0)'></body>", "_blank", "callback");
+        plg.getURLNotify("data:,hello world", "frame", "callback");
     } else {
         document.write("Cannot run interactively");
     }
@@ -30,7 +26,8 @@ function runtest() {
 </script>
 <body onload="runtest()">
 <embed id="plg" type="application/x-webkit-test-netscape"></embed>
-This tests that we won't crash when a plugin tries to open an URL in a new window when the application does not create the window. If this test is successful, the word SUCCESS should be seen below.
+This tests that the plugin properly receives NPP_URLNotify for subframe loads.
 <div id="result">FAILED</div>
+<iframe id="frame"></iframe>
 </body>
 </html>

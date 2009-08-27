@@ -135,11 +135,8 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
   // WebViewDelegate methods that we implement. This is for handling
   // callbacks during getURLNotify.
-  virtual void DidFinishLoadWithReason(NPReason reason);
-
-  // Helper method to set some persistent data for getURLNotify since
-  // resource fetches happen async.
-  void SetURLLoadData(const GURL& url, intptr_t notify_data);
+  virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
+                                       void* notify_data);
 
   // If true, send the Mozilla user agent instead of Chrome's to the plugin.
   bool use_mozilla_user_agent() { return use_mozilla_user_agent_; }
@@ -166,7 +163,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void NPP_Destroy();
   bool NPP_Print(NPPrint* platform_print);
 
-  void SendJavaScriptStream(const std::string& url, const std::wstring& result,
+  void SendJavaScriptStream(const GURL& url, const std::string& result,
                             bool success, bool notify_needed,
                             intptr_t notify_data);
 

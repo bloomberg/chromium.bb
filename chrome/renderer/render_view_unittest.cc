@@ -11,10 +11,12 @@
 #include "printing/image.h"
 #include "printing/native_metafile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURLError.h"
 
 using WebKit::WebCompositionCommand;
 using WebKit::WebFrame;
+using WebKit::WebString;
 using WebKit::WebTextDirection;
 using WebKit::WebURLError;
 
@@ -382,7 +384,8 @@ TEST_F(RenderViewTest, PrintWithIframe) {
 
   // Find the frame and set it as the focused one.  This should mean that that
   // the printout should only contain the contents of that frame.
-  WebFrame* sub1_frame = view_->webview()->GetFrameWithName(L"sub1");
+  WebFrame* sub1_frame =
+      view_->webview()->GetFrameWithName(WebString::fromUTF8("sub1"));
   ASSERT_TRUE(sub1_frame);
   view_->webview()->SetFocusedFrame(sub1_frame);
   ASSERT_NE(view_->webview()->GetFocusedFrame(),

@@ -41,7 +41,6 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
       transparent_(true),
       webplugin_(0),
       mime_type_(mime_type),
-      get_notify_data_(NULL),
       use_mozilla_user_agent_(false),
       message_loop_(MessageLoop::current()),
       load_manually_(false),
@@ -158,21 +157,10 @@ NPObject *PluginInstance::GetPluginScriptableObject() {
   return value;
 }
 
-void PluginInstance::SetURLLoadData(const GURL& url,
-                                    intptr_t notify_data) {
-  get_url_ = url;
-  get_notify_data_ = notify_data;
-}
-
 // WebPluginLoadDelegate methods
-void PluginInstance::DidFinishLoadWithReason(NPReason reason) {
-  if (!get_url_.is_empty()) {
-    NPP_URLNotify(get_url_.spec().c_str(), reason,
-        reinterpret_cast<void*>(get_notify_data_));
-  }
-
-  get_url_ = GURL();
-  get_notify_data_ = NULL;
+void PluginInstance::DidFinishLoadWithReason(const GURL& url, NPReason reason,
+                                             void* notify_data) {
+  NPP_URLNotify(url.spec().c_str(), reason, notify_data);
 }
 
 // NPAPI methods
@@ -340,8 +328,8 @@ bool PluginInstance::NPP_Print(NPPrint* platform_print) {
   return false;
 }
 
-void PluginInstance::SendJavaScriptStream(const std::string& url,
-                                          const std::wstring& result,
+void PluginInstance::SendJavaScriptStream(const GURL& url,
+                                          const std::string& result,
                                           bool success,
                                           bool notify_needed,
                                           intptr_t notify_data) {
@@ -350,12 +338,12 @@ void PluginInstance::SendJavaScriptStream(const std::string& url,
       new PluginStringStream(this, url, notify_needed,
                              reinterpret_cast<void*>(notify_data));
     AddStream(stream);
-    stream->SendToPlugin(WideToUTF8(result), "text/html");
+    stream->SendToPlugin(result, "text/html");
   } else {
     // NOTE: Sending an empty stream here will crash MacroMedia
     // Flash 9.  Just send the URL Notify.
     if (notify_needed) {
-      this->NPP_URLNotify(url.c_str(), NPRES_DONE,
+      this->NPP_URLNotify(url.spec().c_str(), NPRES_DONE,
                           reinterpret_cast<void*>(notify_data));
     }
   }

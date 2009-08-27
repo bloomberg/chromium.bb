@@ -38,12 +38,13 @@
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebVector.h"
+#include "webkit/api/src/WebDataSourceImpl.h"
 #include "webkit/api/src/WebPluginContainerImpl.h"
+#include "webkit/api/src/WebPluginLoadObserver.h"
 #include "webkit/api/src/WrappedResourceRequest.h"
 #include "webkit/api/src/WrappedResourceResponse.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/glue/webdatasource_impl.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webframeloaderclient_impl.h"
@@ -59,9 +60,11 @@ using base::Time;
 using base::TimeDelta;
 
 using WebKit::WebData;
+using WebKit::WebDataSourceImpl;
 using WebKit::WebNavigationType;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebPluginContainerImpl;
+using WebKit::WebPluginLoadObserver;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLError;
@@ -314,7 +317,7 @@ void WebFrameLoaderClient::dispatchDidFinishDocumentLoad() {
   DocumentLoader* documentLoader =
       webframe_->frame()->loader()->activeDocumentLoader();
   WebDataSourceImpl* data_source =
-      WebDataSourceImpl::FromLoader(documentLoader);
+      WebDataSourceImpl::fromDocumentLoader(documentLoader);
 
   // A frame may be reused.  This call ensures we don't hold on to our password
   // listeners and their associated HTMLInputElements.
@@ -452,13 +455,13 @@ void WebFrameLoaderClient::dispatchDidReceiveServerRedirectForProvisionalLoad() 
 
   // A provisional load should have started already, which should have put an
   // entry in our redirect chain.
-  DCHECK(ds->HasRedirectChain());
+  DCHECK(ds->hasRedirectChain());
 
   // The URL of the destination is on the provisional data source. We also need
   // to update the redirect chain to account for this addition (we do this
   // before the callback so the callback can look at the redirect chain to see
   // what happened).
-  ds->AppendRedirect(ds->request().url());
+  ds->appendRedirect(ds->request().url());
 
   // Dispatch callback
   WebViewImpl* webview = webframe_->GetWebViewImpl();
@@ -527,8 +530,8 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
   DCHECK(ds) << "DataSource NULL when navigating to reference fragment";
   if (ds) {
     GURL url = ds->request().url();
-    GURL chain_end = ds->GetEndOfRedirectChain();
-    ds->ClearRedirectChain();
+    GURL chain_end = ds->endOfRedirectChain();
+    ds->clearRedirectChain();
 
     // Figure out if this location change is because of a JS-initiated client
     // redirect (e.g onload/setTimeout document.location.href=).
@@ -546,7 +549,7 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
     if (was_client_redirect) {
       if (d)
         d->DidCompleteClientRedirect(webview, webframe_, chain_end);
-      ds->AppendRedirect(chain_end);
+      ds->appendRedirect(chain_end);
       // Make sure we clear the expected redirect since we just effectively
       // completed it.
       expected_client_redirect_src_ = GURL();
@@ -555,7 +558,7 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
 
     // Regardless of how we got here, we are navigating to a URL so we need to
     // add it to the redirect chain.
-    ds->AppendRedirect(url);
+    ds->appendRedirect(url);
   }
 
   bool is_new_navigation;
@@ -598,7 +601,7 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad() {
 
   // Since the provisional load just started, we should have not gotten
   // any redirects yet.
-  DCHECK(!ds->HasRedirectChain());
+  DCHECK(!ds->hasRedirectChain());
 
   WebViewImpl* webview = webframe_->GetWebViewImpl();
   WebViewDelegate* d = webview->delegate();
@@ -612,10 +615,10 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad() {
     // "javascript:". See bug: 1080873
     DCHECK(expected_client_redirect_dest_.SchemeIs("javascript") ||
            expected_client_redirect_dest_ == url);
-    ds->AppendRedirect(expected_client_redirect_src_);
+    ds->appendRedirect(expected_client_redirect_src_);
     completing_client_redirect = true;
   }
-  ds->AppendRedirect(url);
+  ds->appendRedirect(url);
 
   if (d) {
     // As the comment for DidCompleteClientRedirect in webview_delegate.h
@@ -658,23 +661,25 @@ void WebFrameLoaderClient::dispatchDidFailProvisionalLoad(
     const ResourceError& error) {
   // If a policy change occured, then we do not want to inform the plugin
   // delegate.  See bug 907789 for details.
+  // TODO(darin): This means the plugin won't receive NPP_URLNotify, which
+  // seems like it could result in a memory leak in the plugin!!
   if (error.domain() == kInternalErrorDomain &&
       error.errorCode() == ERR_POLICY_CHANGE) {
     webframe_->DidFail(cancelledError(error.failingURL()), true);
-  } else {
-    webframe_->DidFail(error, true);
-    WebPluginDelegate* plg_delegate = webframe_->plugin_delegate();
-    if (plg_delegate)
-      plg_delegate->DidFinishLoadWithReason(NPRES_NETWORK_ERR);
+    return;
   }
+
+  OwnPtr<WebPluginLoadObserver> plugin_load_observer = GetPluginLoadObserver();
+  webframe_->DidFail(error, true);
+  if (plugin_load_observer)
+    plugin_load_observer->didFailLoading(error);
 }
 
 void WebFrameLoaderClient::dispatchDidFailLoad(const ResourceError& error) {
+  OwnPtr<WebPluginLoadObserver> plugin_load_observer = GetPluginLoadObserver();
   webframe_->DidFail(error, false);
-
-  WebPluginDelegate* plg_delegate = webframe_->plugin_delegate();
-  if (plg_delegate)
-    plg_delegate->DidFinishLoadWithReason(NPRES_NETWORK_ERR);
+  if (plugin_load_observer)
+    plugin_load_observer->didFailLoading(error);
 
   // Don't clear the redirect chain, this will happen in the middle of client
   // redirects, and we need the context. The chain will be cleared when the
@@ -682,17 +687,14 @@ void WebFrameLoaderClient::dispatchDidFailLoad(const ResourceError& error) {
 }
 
 void WebFrameLoaderClient::dispatchDidFinishLoad() {
-  DocumentLoader* documentLoader =
-      webframe_->frame()->loader()->activeDocumentLoader();
-  WebDataSourceImpl* dataSource =
-      WebDataSourceImpl::FromLoader(documentLoader);
+  OwnPtr<WebPluginLoadObserver> plugin_load_observer = GetPluginLoadObserver();
+
   WebViewImpl* webview = webframe_->GetWebViewImpl();
   WebViewDelegate* d = webview->delegate();
   if (d)
     d->DidFinishLoadForFrame(webview, webframe_);
-  WebPluginDelegate* plg_delegate = webframe_->plugin_delegate();
-  if (plg_delegate)
-    plg_delegate->DidFinishLoadWithReason(NPRES_DONE);
+  if (plugin_load_observer)
+    plugin_load_observer->didFinishLoading();
 
   // Don't clear the redirect chain, this will happen in the middle of client
   // redirects, and we need the context. The chain will be cleared when the
@@ -846,10 +848,10 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
         HandleBackForwardNavigation(url);
         navigation_policy = WebKit::WebNavigationPolicyIgnore;
       } else {
-        bool is_redirect = ds->HasRedirectChain();
+        bool is_redirect = ds->hasRedirectChain();
 
         WebNavigationType webnav_type =
-            WebDataSourceImpl::NavigationTypeToWebNavigationType(action.type());
+            WebDataSourceImpl::toWebNavigationType(action.type());
 
         navigation_policy = d->PolicyForNavigationAction(
             wv, webframe_, ds->request(), webnav_type, navigation_policy,
@@ -1131,10 +1133,11 @@ void WebFrameLoaderClient::provisionalLoadStarted() {
 }
 
 void WebFrameLoaderClient::didFinishLoad() {
-  WebPluginDelegate* plg_delegate = webframe_->plugin_delegate();
-  if (plg_delegate)
-    plg_delegate->DidFinishLoadWithReason(NPRES_DONE);
+  OwnPtr<WebPluginLoadObserver> plugin_load_observer = GetPluginLoadObserver();
+  if (plugin_load_observer)
+    plugin_load_observer->didFinishLoading();
 }
+
 void WebFrameLoaderClient::prepareForDataSourceReplacement() {
   // FIXME
 }
@@ -1142,7 +1145,7 @@ void WebFrameLoaderClient::prepareForDataSourceReplacement() {
 PassRefPtr<DocumentLoader> WebFrameLoaderClient::createDocumentLoader(
     const ResourceRequest& request,
     const SubstituteData& data) {
-  RefPtr<WebDataSourceImpl> ds = WebDataSourceImpl::Create(request, data);
+  RefPtr<WebDataSourceImpl> ds = WebDataSourceImpl::create(request, data);
   WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
   if (d)
     d->DidCreateDataSource(webframe_, ds.get());
@@ -1431,4 +1434,10 @@ void WebFrameLoaderClient::HandleBackForwardNavigation(const GURL& url) {
   WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
   if (d)
     d->NavigateBackForwardSoon(offset);
+}
+
+PassOwnPtr<WebPluginLoadObserver> WebFrameLoaderClient::GetPluginLoadObserver() {
+  WebDataSourceImpl* ds = WebDataSourceImpl::fromDocumentLoader(
+      webframe_->frame()->loader()->activeDocumentLoader());
+  return ds->releasePluginLoadObserver();
 }

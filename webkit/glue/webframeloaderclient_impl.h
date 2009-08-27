@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H_
 
 #include "FrameLoaderClient.h"
+#include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 
 #include "googleurl/src/gurl.h"
@@ -16,6 +17,7 @@ class WebFrameImpl;
 
 namespace WebKit {
 class WebPluginContainerImpl;
+class WebPluginLoadObserver;
 }
 
 class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
@@ -186,8 +188,8 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
       const WTF::Vector<WebCore::String>& paramNames,
       const WTF::Vector<WebCore::String>& paramValues);
 
-  virtual WebCore::ObjectContentType objectContentType(const WebCore::KURL& url,
-                                              const WebCore::String& mimeType);
+  virtual WebCore::ObjectContentType objectContentType(
+      const WebCore::KURL& url, const WebCore::String& mimeType);
   virtual WebCore::String overrideMediaType() const;
 
   virtual void didPerformFirstNavigation() const;
@@ -209,6 +211,8 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
 
   // Called when a dummy back-forward navigation is intercepted.
   void HandleBackForwardNavigation(const GURL&);
+
+  PassOwnPtr<WebKit::WebPluginLoadObserver> GetPluginLoadObserver();
 
   // The WebFrame that owns this object and manages its lifetime. Therefore,
   // the web frame object is guaranteed to exist.

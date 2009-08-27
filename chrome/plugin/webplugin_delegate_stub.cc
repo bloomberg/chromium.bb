@@ -107,7 +107,6 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_InstallMissingPlugin, OnInstallMissingPlugin)
     IPC_MESSAGE_HANDLER(PluginMsg_HandleURLRequestReply,
                         OnHandleURLRequestReply)
-    IPC_MESSAGE_HANDLER(PluginMsg_URLRequestRouted, OnURLRequestRouted)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 
@@ -214,8 +213,9 @@ void WebPluginDelegateStub::OnDidFail(int id) {
   client->DidFail();
 }
 
-void WebPluginDelegateStub::OnDidFinishLoadWithReason(int reason) {
-  delegate_->DidFinishLoadWithReason(reason);
+void WebPluginDelegateStub::OnDidFinishLoadWithReason(
+    const GURL& url, int reason, intptr_t notify_data) {
+  delegate_->DidFinishLoadWithReason(url, reason, notify_data);
 }
 
 void WebPluginDelegateStub::OnSetFocus() {
@@ -299,8 +299,8 @@ void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id,
   WebBindings::releaseObject(object);
 }
 
-void WebPluginDelegateStub::OnSendJavaScriptStream(const std::string& url,
-                                                   const std::wstring& result,
+void WebPluginDelegateStub::OnSendJavaScriptStream(const GURL& url,
+                                                   const std::string& result,
                                                    bool success,
                                                    bool notify_needed,
                                                    intptr_t notify_data) {
@@ -373,10 +373,4 @@ void WebPluginDelegateStub::OnHandleURLRequestReply(
                                       params.notify_data,
                                       params.stream);
   webplugin_->OnResourceCreated(params.resource_id, resource_client);
-}
-
-void WebPluginDelegateStub::OnURLRequestRouted(const std::string& url,
-                                               bool notify_needed,
-                                               intptr_t notify_data) {
-  delegate_->URLRequestRouted(url, notify_needed, notify_data);
 }

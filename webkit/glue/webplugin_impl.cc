@@ -24,6 +24,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
+#include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebHTTPBody.h"
@@ -51,8 +52,11 @@
 #include "googleurl/src/gurl.h"
 
 using WebKit::WebCanvas;
+using WebKit::WebConsoleMessage;
 using WebKit::WebCursorInfo;
 using WebKit::WebData;
+using WebKit::WebDataSource;
+using WebKit::WebFrame;
 using WebKit::WebHTTPBody;
 using WebKit::WebHTTPHeaderVisitor;
 using WebKit::WebInputEvent;
@@ -62,6 +66,7 @@ using WebKit::WebPluginContainer;
 using WebKit::WebPluginContainerImpl;
 using WebKit::WebRect;
 using WebKit::WebString;
+using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLLoader;
 using WebKit::WebURLLoaderClient;
@@ -391,6 +396,23 @@ void WebPluginImpl::didFailLoading(const WebURLError& error) {
     delegate_->DidManualLoadFail();
 }
 
+void WebPluginImpl::didFinishLoadingFrameRequest(
+    const WebURL& url, void* notify_data) {
+  if (delegate_) {
+    delegate_->DidFinishLoadWithReason(
+        url, NPRES_DONE, reinterpret_cast<intptr_t>(notify_data));
+  }
+}
+
+void WebPluginImpl::didFailLoadingFrameRequest(
+    const WebURL& url, void* notify_data, const WebURLError& error) {
+  // TODO(darin): Map net::ERR_ABORTED to NPRES_USER_BREAK?
+  if (delegate_) {
+    delegate_->DidFinishLoadWithReason(
+        url, NPRES_NETWORK_ERR, reinterpret_cast<intptr_t>(notify_data));
+  }
+}
+
 // -----------------------------------------------------------------------------
 
 WebPluginImpl::~WebPluginImpl() {
@@ -429,45 +451,6 @@ GURL WebPluginImpl::CompleteURL(const char* url) {
   }
   // TODO(darin): Is conversion from UTF8 correct here?
   return webframe_->completeURL(WebString::fromUTF8(url));
-}
-
-bool WebPluginImpl::ExecuteScript(const std::string& url,
-                                  const std::wstring& script,
-                                  bool notify_needed,
-                                  intptr_t notify_data,
-                                  bool popups_allowed) {
-  // This could happen if the WebPluginContainer was already deleted.
-  if (!frame())
-    return false;
-
-  // Pending resource fetches should also not trigger a callback.
-  webframe_->set_plugin_delegate(NULL);
-
-  WebCore::String script_str(webkit_glue::StdWStringToString(script));
-
-  // Note: the call to executeScript might result in the frame being
-  // deleted, so add an extra reference to it in this scope.
-  // For KJS, keeping a pointer to the JSBridge is enough, but for V8
-  // we also need to addref the frame.
-  WTF::RefPtr<WebCore::Frame> cur_frame(frame());
-
-  WebCore::ScriptValue result =
-      frame()->loader()->executeScript(script_str, popups_allowed);
-  WebCore::String script_result;
-  std::wstring wresult;
-  bool succ = false;
-  if (result.getString(script_result)) {
-    succ = true;
-    wresult = webkit_glue::StringToStdWString(script_result);
-  }
-
-  // delegate_ could be NULL because executeScript caused the container to be
-  // deleted.
-  if (delegate_)
-    delegate_->SendJavaScriptStream(url, wresult, succ, notify_needed,
-                                    notify_data);
-
-  return succ;
 }
 
 void WebPluginImpl::CancelResource(int id) {
@@ -519,25 +502,31 @@ RoutingStatus WebPluginImpl::RouteToFrame(const char *method,
                                           bool is_javascript_url,
                                           const char* target, unsigned int len,
                                           const char* buf, bool is_file_data,
-                                          bool notify, const char* url,
-                                          GURL* unused) {
+                                          bool notify_needed,
+                                          intptr_t notify_data,
+                                          const char* url, GURL* unused) {
   // If there is no target, there is nothing to do
   if (!target)
     return NOT_ROUTED;
 
   // This could happen if the WebPluginContainer was already deleted.
-  if (!frame())
+  if (!webframe_)
     return NOT_ROUTED;
 
+  WebString target_str = WebString::fromUTF8(target);
+
   // Take special action for JavaScript URLs
-  WebCore::String str_target = target;
   if (is_javascript_url) {
-    WebCore::Frame *frameTarget = frame()->tree()->find(str_target);
+    WebFrame* target_frame = webframe_->view()->GetFrameWithName(target_str);
     // For security reasons, do not allow JavaScript on frames
     // other than this frame.
-    if (frameTarget != frame()) {
-      // FIXME - might be good to log this into a security
-      //         log somewhere.
+    if (target_frame != webframe_) {
+      // TODO(darin): Localize this message.
+      const char kMessage[] =
+          "Ignoring cross-frame javascript URL load requested by plugin.";
+      webframe_->addMessageToConsole(
+          WebConsoleMessage(WebConsoleMessage::LevelError,
+                            WebString::fromUTF8(kMessage)));
       return ROUTED;
     }
 
@@ -574,33 +563,8 @@ RoutingStatus WebPluginImpl::RouteToFrame(const char *method,
     }
   }
 
-  // TODO(darin): Eliminate these WebCore dependencies.
-
-  WebCore::FrameLoadRequest load_request(
-      *webkit_glue::WebURLRequestToResourceRequest(&request));
-  load_request.setFrameName(str_target);
-  WebCore::FrameLoader *loader = frame()->loader();
-  // we actually don't know whether usergesture is true or false,
-  // passing true since all we can do is assume it is okay.
-  loader->loadFrameRequest(
-      load_request,
-      false,  // lock history
-      false,  // lock back forward list
-      0,      // event
-      0);     // form state
-
-  // loadFrameRequest() can cause the frame to go away.
-  if (webframe_) {
-    WebPluginDelegate* last_plugin = webframe_->plugin_delegate();
-    if (last_plugin) {
-      last_plugin->DidFinishLoadWithReason(NPRES_USER_BREAK);
-      webframe_->set_plugin_delegate(NULL);
-    }
-
-    if (notify)
-      webframe_->set_plugin_delegate(delegate_);
-  }
-
+  container_->loadFrameRequest(request, target_str, notify_needed,
+                               reinterpret_cast<void*>(notify_data));
   return ROUTED;
 }
 
@@ -874,27 +838,21 @@ void WebPluginImpl::HandleURLRequestInternal(
   // to the plugin's frame.
   GURL complete_url;
   int routing_status = RouteToFrame(method, is_javascript_url, target, len,
-                                    buf, is_file_data, notify, url,
-                                    &complete_url);
-  if (routing_status == ROUTED) {
-    // The delegate could have gone away because of this call.
-    if (delegate_)
-      delegate_->URLRequestRouted(url, notify, notify_data);
+                                    buf, is_file_data, notify, notify_data,
+                                    url, &complete_url);
+  if (routing_status == ROUTED)
     return;
-  }
 
   if (is_javascript_url) {
-    std::string original_url = url;
+    GURL gurl(url);
+    WebString result = container_->executeScriptURL(gurl, popups_allowed);
 
-    // Convert the javascript: URL to javascript by unescaping. WebCore uses
-    // decode_string for this, so we do, too.
-    std::string escaped_script = original_url.substr(strlen("javascript:"));
-    WebCore::String script = WebCore::decodeURLEscapeSequences(
-        WebCore::String(escaped_script.data(),
-                                  static_cast<int>(escaped_script.length())));
-
-    ExecuteScript(original_url, webkit_glue::StringToStdWString(script), notify,
-                  notify_data, popups_allowed);
+    // delegate_ could be NULL because executeScript caused the container to
+    // be deleted.
+    if (delegate_) {
+      delegate_->SendJavaScriptStream(
+          gurl, result.utf8(), !result.isNull(), notify, notify_data);
+    }
   } else {
     GURL complete_url = CompleteURL(url);
 
@@ -1147,7 +1105,6 @@ void WebPluginImpl::TearDownPluginInstance(
 
   // This needs to be called now and not in the destructor since the
   // webframe_ might not be valid anymore.
-  webframe_->set_plugin_delegate(NULL);
   webframe_ = NULL;
   method_factory_.RevokeAll();
 }

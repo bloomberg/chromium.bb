@@ -519,8 +519,10 @@ void TestShell::LoadURL(const wchar_t* url) {
 bool TestShell::Navigate(const TestNavigationEntry& entry, bool reload) {
   // Get the right target frame for the entry.
   WebFrame* frame = webView()->GetMainFrame();
-  if (!entry.GetTargetFrame().empty())
-      frame = webView()->GetFrameWithName(entry.GetTargetFrame());
+  if (!entry.GetTargetFrame().empty()) {
+      frame = webView()->GetFrameWithName(
+          WideToUTF16Hack(entry.GetTargetFrame()));
+  }
   // TODO(mpcomplete): should we clear the target frame, or should
   // back/forward navigations maintain the target frame?
 

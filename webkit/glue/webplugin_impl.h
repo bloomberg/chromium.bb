@@ -98,6 +98,11 @@ class WebPluginImpl : public WebPlugin,
   virtual void didReceiveData(const char* data, int data_length);
   virtual void didFinishLoading();
   virtual void didFailLoading(const WebKit::WebURLError& error);
+  virtual void didFinishLoadingFrameRequest(
+      const WebKit::WebURL& url, void* notify_data);
+  virtual void didFailLoadingFrameRequest(
+      const WebKit::WebURL& url, void* notify_data,
+      const WebKit::WebURLError& error);
 
   // WebPlugin implementation:
   void SetWindow(gfx::PluginWindowHandle window);
@@ -112,17 +117,19 @@ class WebPluginImpl : public WebPlugin,
   // Executes the script passed in. The notify_needed and notify_data arguments
   // are passed in by the plugin process. These indicate whether the plugin
   // expects a notification on script execution. We pass them back to the
-  // plugin as is. This avoids having to track the notification arguments
-  // in the plugin process.
+  // plugin as is. This avoids having to track the notification arguments in
+  // the plugin process.
   bool ExecuteScript(const std::string& url, const std::wstring& script,
-                     bool notify_needed, intptr_t notify_data, bool popups_allowed);
+                     bool notify_needed, intptr_t notify_data,
+                     bool popups_allowed);
 
-  // Given a download request, check if we need to route the output
-  // to a frame.  Returns ROUTED if the load is done and routed to
-  // a frame, NOT_ROUTED or corresponding error codes otherwise.
-  RoutingStatus RouteToFrame(const char *method, bool is_javascript_url,
+  // Given a download request, check if we need to route the output to a frame.
+  // Returns ROUTED if the load is done and routed to a frame, NOT_ROUTED or
+  // corresponding error codes otherwise.
+  RoutingStatus RouteToFrame(const char* method, bool is_javascript_url,
                              const char* target, unsigned int len,
-                             const char* buf, bool is_file_data, bool notify,
+                             const char* buf, bool is_file_data,
+                             bool notify_needed, intptr_t notify_data,
                              const char* url, GURL* completeURL);
 
   // Cancels a pending request.

@@ -708,4 +708,3 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
 
   return ret;
 }
-

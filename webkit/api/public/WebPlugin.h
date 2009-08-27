@@ -36,7 +36,10 @@
 struct NPObject;
 
 namespace WebKit {
+    class WebDataSource;
+    class WebFrame;
     class WebInputEvent;
+    class WebURL;
     class WebURLResponse;
     struct WebCursorInfo;
     struct WebRect;
@@ -66,6 +69,12 @@ namespace WebKit {
         virtual void didReceiveData(const char* data, int dataLength) = 0;
         virtual void didFinishLoading() = 0;
         virtual void didFailLoading(const WebURLError&) = 0;
+
+        // Called in response to WebPluginContainer::loadFrameRequest
+        virtual void didFinishLoadingFrameRequest(
+            const WebURL&, void* notifyData) = 0;
+        virtual void didFailLoadingFrameRequest(
+            const WebURL&, void* notifyData, const WebURLError&) = 0;
 
     protected:
         ~WebPlugin() { }

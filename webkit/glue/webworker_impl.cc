@@ -27,8 +27,8 @@
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebWorkerClient.h"
 #include "webkit/api/src/PlatformMessagePortChannel.h"
+#include "webkit/api/src/WebDataSourceImpl.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webdatasource_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
@@ -72,7 +72,8 @@ class WorkerWebViewDelegate : public WebViewDelegate {
   // Tell the loader to load the data into the 'shadow page' synchronously,
   // so we can grab the resulting Document right after load.
   virtual void DidCreateDataSource(WebFrame* frame, WebKit::WebDataSource* ds) {
-    static_cast<WebDataSourceImpl*>(ds)->setDeferMainResourceDataLoad(false);
+    static_cast<WebKit::WebDataSourceImpl*>(ds)->
+        setDeferMainResourceDataLoad(false);
   }
 
   // Lazy allocate and leak this instance.

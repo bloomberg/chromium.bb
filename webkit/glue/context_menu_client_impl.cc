@@ -28,14 +28,15 @@ MSVC_POP_WARNING();
 #include "base/string_util.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLResponse.h"
+#include "webkit/api/src/WebDataSourceImpl.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webdatasource_impl.h"
 #include "webkit/glue/webview_impl.h"
 
 #include "base/word_iterator.h"
 
 using WebKit::WebDataSource;
+using WebKit::WebDataSourceImpl;
 
 namespace {
 
@@ -135,7 +136,7 @@ static ContextNodeType GetTypeAndURLFromFrame(
   if (frame) {
     WebCore::DocumentLoader* dl = frame->loader()->documentLoader();
     if (dl) {
-      WebDataSource* ds = WebDataSourceImpl::FromLoader(dl);
+      WebDataSource* ds = WebDataSourceImpl::fromDocumentLoader(dl);
       if (ds) {
         node_type = page_node_type;
         *url = ds->hasUnreachableURL() ? ds->unreachableURL()
@@ -260,7 +261,7 @@ WebCore::PlatformMenuDescription
 
   // Now retrieve the security info.
   WebCore::DocumentLoader* dl = selected_frame->loader()->documentLoader();
-  WebDataSource* ds = WebDataSourceImpl::FromLoader(dl);
+  WebDataSource* ds = WebDataSourceImpl::fromDocumentLoader(dl);
   if (ds)
     security_info = ds->response().securityInfo();
 

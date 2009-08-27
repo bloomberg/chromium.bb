@@ -28,42 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPluginContainer_h
-#define WebPluginContainer_h
+#ifndef WebPluginLoadObserver_h
+#define WebPluginLoadObserver_h
 
-struct NPObject;
+#include "../public/WebURL.h"
 
 namespace WebKit {
-    class WebString;
-    class WebURL;
-    class WebURLRequest;
-    struct WebRect;
+    class WebPluginContainerImpl;
+    struct WebURLError;
 
-    class WebPluginContainer {
+    class WebPluginLoadObserver {
     public:
-        virtual void invalidate() = 0;
-        virtual void invalidateRect(const WebRect&) = 0;
+        WebPluginLoadObserver(WebPluginContainerImpl* pluginContainer,
+                              const WebURL& notifyURL, void* notifyData)
+            : m_pluginContainer(pluginContainer)
+            , m_notifyURL(notifyURL)
+            , m_notifyData(notifyData)
+        {
+        }
 
-        // Returns the scriptable object associated with the DOM element
-        // containing the plugin.
-        virtual NPObject* scriptableObjectForElement() = 0;
+        ~WebPluginLoadObserver();
 
-        // Executes a "javascript:" URL on behalf of the plugin in the context
-        // of the frame containing the plugin.  Returns the result of script
-        // execution, if any.
-        virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed) = 0;
+        const WebURL& url() const { return m_notifyURL; }
 
-        // Loads an URL in the specified frame (or the frame containing this
-        // plugin if target is empty).  If notifyNeeded is true, then upon
-        // completion, WebPlugin::didFinishLoadingFrameRequest is called if the
-        // load was successful or WebPlugin::didFailLoadingFrameRequest is
-        // called if the load failed.  The given notifyData is passed along to
-        // the callback.
-        virtual void loadFrameRequest(
-            const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData) = 0;
+        void clearPluginContainer() { m_pluginContainer = 0; }
+        void didFinishLoading();
+        void didFailLoading(const WebURLError&);
 
-    protected:
-        ~WebPluginContainer() { }
+    private:
+        WebPluginContainerImpl* m_pluginContainer;
+        WebURL m_notifyURL;
+        void* m_notifyData;
     };
 
 } // namespace WebKit
