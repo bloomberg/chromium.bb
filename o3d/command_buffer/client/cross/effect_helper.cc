@@ -88,7 +88,8 @@ bool EffectHelper::CreateEffectParameters(ResourceID effect_id,
   // Read param descriptions in batches. We use as much shared memory as
   // possible so that we only call Finish as little as possible.
   unsigned int max_param_per_batch =
-      std::min(param_count, max_buffer_size / sizeof(Desc));  // NOLINT
+      std::min(static_cast<unsigned>(param_count),
+      static_cast<unsigned>(max_buffer_size / sizeof(Desc)));  // NOLINT
   Desc *raw_descs = shm_allocator_->AllocTyped<Desc>(max_param_per_batch);
   DCHECK(raw_descs);
   for (unsigned int i = 0; i < param_count; i += max_param_per_batch) {
@@ -125,7 +126,8 @@ bool EffectHelper::GetParamStrings(EffectParamDesc *desc) {
   DCHECK_NE(desc->id, kInvalidResource);
   // desc may not have come directly from CreateEffectParameters, so it may be
   // less than the minimum required size.
-  unsigned int size = std::max(desc->cmd_desc_size, sizeof(Desc));  // NOLINT
+  unsigned int size = std::max(static_cast<unsigned>(desc->cmd_desc_size),
+      static_cast<unsigned>(sizeof(Desc)));  // NOLINT
   Desc *raw_desc = static_cast<Desc *>(shm_allocator_->Alloc(size));
   if (!raw_desc) {
     // Not enough memory to get the param desc.
@@ -242,7 +244,8 @@ bool EffectHelper::GetEffectStreams(ResourceID effect_id,
   // Read stream descriptions in batches. We use as much shared memory as
   // possible so that we only call Finish as little as possible.
   unsigned int max_stream_per_batch =
-      std::min(stream_count, max_buffer_size / sizeof(Desc));  // NOLINT
+      std::min(static_cast<unsigned>(stream_count),
+      static_cast<unsigned>(max_buffer_size / sizeof(Desc)));  // NOLINT
   Desc *raw_descs = shm_allocator_->AllocTyped<Desc>(max_stream_per_batch);
   DCHECK(raw_descs);
   for (unsigned int i = 0; i < stream_count; i += max_stream_per_batch) {
