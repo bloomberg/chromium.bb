@@ -1,15 +1,389 @@
+<div id="pageData-title" class="pageData">Overview</div>
+<div id="pageData-showTOC" class="pageData">true</div>
+
 <p>
-This page should perhaps be renamed from "overview" to "concepts". In any case, what I'd like to cover here is the conceptual underpinning of extensions, such as:
+Please read this page;
+it has vital information about the extension architecture.
+If you get bored or restless,
+take a break!
+We suggest bouncing between this page
+and tutorials
+such as <a href="getstarted.html">Getting Started</a>
+and <a href="tut_debugging.html">Debugging</a>.
+</p>
+
+
+<h2 id="what">The basics</h2>
+
+<p>
+An extension is a zipped bundle of files &mdash;
+HTML, CSS, JavaScript, images, and anything else you need &mdash;
+that adds functionality to the Google Chrome browser.
+Because an extension is just a special kind of web page,
+it can use all the APIs
+that the browser provides
+to web pages and apps,
+from XMLHttpRequest to JSON to localStorage.
+</p>
+
+<p>
+Extensions can add UI to Google Chrome,
+in the form of
+<a href="toolstrip.html">toolstrips</a> (toolbar additions)
+and <a href="pageActions.html">page actions</a>
+(clickable badges in the address bar).
+Extensions can also interact programmatically
+with browser features such as 
+<a href="bookmarks.html">bookmarks</a>
+and <a href="tabs.html">tabs</a>.
+</p>
+
+<p>
+To find a complete list of extension features,
+with implementation details
+for each one,
+see the <a href="devguide.html">Developer's Guide</a>.
+</p>
+
+
+<h2 id="files">Files</h2>
+<p>
+Each extension has the following files:
+<!-- PENDING: This could use a picture -->
+</p>
 
 <ul>
-  <li>Zip file of web pages
-  <li>All resources accessible with a URL scheme
-  <li>How IDs are generated
-  <li>The manifest
-  <li>The background page, how extensions are typically structured
-  <li>Process model
-  <li>Content scripts (lightweight, link off to other page for details)
-  <li>Asynchronous APIs
-  <li>Extension IDs, how they are generated
-  <li>How packaging works at a high level (lightweight, link off to other page for details)
+  <li>A <b>manifest file</b></li>
+  <li>One or more <b>HTML files</b> (unless the extension is a theme)</li>
+  <li><em>Optional:</em> One or more <b>JavaScript files</b></li>
+  <li><em>Optional:</em> Any other files your extension needs &mdash; for example, image files</li>
 </ul>
+
+<p>
+While you're working on your extension,
+you put all these files into a single folder.
+When you distribute your extension,
+the contents of the folder are packaged into a special zipfile
+that has a <code>.crx</code> suffix,
+as described in <a href="packaging.html">Packaging</a>.
+</p>
+
+
+<h3>Referring to files</h3>
+
+<p>
+You can put any file you like into an extension,
+but how do you use it?
+Usually,
+you can refer to the file using a relative URL,
+just as you would in an ordinary HTML page.
+Here's an example of referring to
+a file named <code>myimage.png</code>
+that's in a subdirectory named <code>images</code>.
+</p>
+
+<pre>
+&lt;img <b>src="images/myimage.png"</b> style="width:auto; height:auto">
+</pre>
+
+<p>
+As you might notice while you use the Google Chrome debugger,
+every file in an extension is also accessible by an absolute URL like this:
+</p>
+
+<blockquote>
+<b>chrome-extension://</b><em>&lt;extensionID></em><b>/</b><em>&lt;pathToFile></em>
+</blockquote>
+
+<p>
+In that URL, the <em>&lt;extensionID></em> is a unique identifier
+that the extension system generates for each extension.
+You can see the IDs for all your loaded extensions
+by going to the URL <b>chrome://extensions/</b>.
+The <em>&lt;pathToFile></em> is the location of the file
+under the extension's top directory;
+it's the same as the relative URL.
+</p>
+
+<p class="comment">
+[QUESTION TO REVIEWERS: Is this section too big/detailed?
+It seems a little weird to mention absolute URLs with mentioning getURL
+and when you'd need it.
+What's the motivation for covering absolute URLs?
+Is the debugger the place you're most likely to see them?]
+</p>
+
+<p>
+For example, assume your extension has
+the ID <b>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</b>
+and the files shown in the following figure:
+</p>
+
+<pre>
+<span class="comment">[PENDING: convert this into a figure]</span>
+toolstrip.html
+styles.css
+images:
+  myimage.png
+  ...
+other:
+  more.html
+  morestyles.css
+  ...
+</pre>
+
+<p>
+Here's a table that shows the relative and absolute URLs of these files.
+Keep in mind that the relative URL is the same no matter where you're using it &mdash;
+the relative URL of <code>myimage.png</code> is
+<b>images/myimage.png</b>,
+no matter whether it's being used by
+<code>toolstrip.html</code> or <code>other/more.html</code>.
+</p>
+
+<table>
+<tr>
+  <th> File </th>
+  <th> Relative URL </th>
+  <th> Absolute URL </th>
+</tr>
+<tr>
+  <td> toolstrip.html </td>
+  <td> toolstrip.html </td>
+  <td> chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/toolstrip.html </td>
+</tr>
+<tr>
+  <td> styles.css </td>
+  <td> styles.css </td>
+  <td> chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/styles.css </td>
+</tr>
+<tr>
+  <td> myimage.png </td>
+  <td> images/myimage.png </td>
+  <td> chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/images/myimage.png </td>
+</tr>
+<tr>
+  <td> more.html </td>
+  <td> other/more.html </td>
+  <td> chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/other/more.html </td>
+</tr>
+<tr>
+  <td> morestyles.css </td>
+  <td> other/morestyles.css </td>
+  <td> chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/other/morestyles.css </td>
+</tr>
+</table>
+
+<p class="comment">
+[PENDING: Mention/reflect/link to
+<a href="http://dev.chromium.org/developers/design-documents/extensions/i18n">internationalization</a>]
+</p>
+
+
+<h3>The manifest file</h3>
+
+<p>
+The manifest file, called <code>manifest.json</code>,
+gives information about the extension,
+such as the most important files
+and the capabilities that the extension might use.
+Here's a typical manifest file for a toolstrip
+that uses information from google.com:
+</p>
+
+<pre>
+{
+  "name": "My Extension",
+  "version": "2.1",
+  "description": "Gets information from Google.",
+  "update_url": "http://example.com/mytestextension/updates.xml",
+  "permissions": ["http://*.google.com/", "https://*.google.com/"],
+  "toolstrips": ["my_toolstrip.html"]
+}</pre>
+
+<p>
+For details, see
+<a href="manifest.html">Manifest Files</a>.
+</p>
+
+<h2 id="arch">Architecture</h2>
+
+<p>
+The following pictures shows the web pages associated with a typical extension
+(in this case, a simple toolstrip).
+The first figure shows what an extension might look like
+when there's a single browser window.
+</p>
+
+<p class="comment"> [PENDING: image goes here] </p>
+
+<p>
+The next figure shows that all the code in the extension's main HTML file
+is duplicated each time you create a new window.
+In other words, each window has its own widgets for the extension,
+which means each window adds another web page for that extension.
+</p>
+
+<p class="comment"> [PENDING: image goes here] </p>
+
+<p>
+To more easily coordinate all these web pages and to avoid duplication,
+you should design your extension
+so that most of the code &mdash;
+especially the state of the extension &mdash;
+is in a <em>background page</em>,
+as shown in the following figure.
+</p>
+
+<p class="comment">
+[PENDING: image goes here.]
+</p>
+
+
+<h3 id="background">The background page</h3>
+<p>
+Any non-trivial extension can (and probably should)
+have a background page.
+The background page is an invisible page
+where you put the main logic of the extension.
+The extension's other pages should have
+only the code that's necessary
+to show the state of the extension
+and to get input from the user.</p>
+
+<p>
+An extension's background page exists
+before any of the extension's other pages exist.
+It continues to exist as long as the browser is running
+and the extension is installed,
+even if other pages and windows go away.
+</p>
+
+<p>
+Your extension's UI &mdash;
+its toolstrips, page actions, and so on &mdash;
+should be dumb views.
+When the view needs some state,
+it should request it from the background page.
+When the background page notices some state change,
+it should update all the views.
+</p>
+
+<p>
+For more information, see
+<a href="background_pages.html">Background Pages</a>.
+</p>
+
+<h3 id="contentScripts">Content scripts</h3>
+
+<p>
+If you want your extension to interact with web pages,
+you need a content script.
+Content scripts are JavaScript files that run in the context of web pages.
+By using the standard Document Object Model (DOM),
+they can read details of the web pages the browser visits,
+and they can make changes to the pages.
+</p>
+
+<p class="comment">
+[PENDING: add an architectural figure here,
+showing the extension's pages, a web page, and the content script
+interacting with the web page. explain the figure.]
+</p>
+
+<p>
+For more information,
+see <a href="content_scripts.html">Content Scripts</a>.
+</p>
+
+
+<h2>Communication </h2>
+
+<p>
+Two kinds of communication happen within an extension:
+</p>
+
+<ul>
+  <li>
+    Communication <b>between pages</b> in the extension.
+    <br />
+    For example, sometimes the background page
+    needs to update all the UI pages
+    to reflect a change in the extension's state.
+  </li>
+  <li>
+    Communication <b>between content scripts and the extension</b>.
+    <br />
+    For example,
+    <span class="comment">[PENDING: example goes here]</span>.
+    See <a href="content_scripts.html">Content Scripts</a>
+    for information about this type of communication.
+  </li>
+</ul>
+
+<p>
+Here are some keys to communication between an extension's pages:
+</p>
+
+<ul>
+  <li>
+    All the extension's pages execute in same process,
+    on the same thread.
+  </li>
+  <li>
+    Extension pages can use
+    <a href="extension.html"><code>chrome.extension</code></a>
+    methods such as
+    <code>getViews()</code>,
+    <code>getBackgroundPage()</code>,
+    and <code>getToolstrips()</code>
+    to get access to the extension's pages.
+  </li>
+  <li>
+    Once you have references to an extension's pages,
+    you can manipulate the DOM for each page.
+  </li>
+  <li>
+    You can also make direct function calls to the pages,
+    as shown in the following example.
+  </li>
+</ul>
+
+<p>
+Here's an example of 
+communication between toolstrips and the background page.
+</p>
+
+<pre>
+//In background_page.html:
+function updateUI(checked) {
+  var toolstrips = chrome.extension.getToolstrips();
+  for (var i in toolstrips) {
+    if (toolstrips[i].enableCheckbox)
+      toolstrips[i].enableCheckbox(checked);
+  }
+}
+
+//In toolstrip.html:
+function enableCheckbox(checked) {
+  var cb = document.getElementById('checkbox');
+  cb.checked = checked;
+}
+</pre>
+
+<p>
+A good summary of communication mechanisms is at
+<a href="http://www.chromeplugins.org/google/plugins-development/communication-7883.html">http://www.chromeplugins.org/google/plugins-development/communication-7883.html</a>.
+</p>
+
+
+<h2> Summary </h2>
+
+<p>
+[
+PENDING: wrap it up. suggest where to go next. Probably:
+<a href="getstarted.html">Getting Started</a>,
+<a href="tut_debugging.html">Debugging</a>,
+<a href="devguide.html">Developer's Guide</a>.
+]
+</p>

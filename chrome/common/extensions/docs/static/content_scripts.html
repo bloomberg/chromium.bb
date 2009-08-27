@@ -11,7 +11,7 @@
   <li>Find and process <a href="http://microformats.org/">microformat</a> data in the DOM
 </ul>
 
-<h2 id="registration">Registration</h2>
+<h2 id="registration">Manifest</h2>
 
 <p>Content scripts are registered in an extension's <a href="manifest.html">manifest.json</a> file, like so:
 
@@ -41,7 +41,9 @@
   <tr>
     <td>matches</td>
     <td>array of strings</td>
-    <td>Required. Controls the pages this content script will be injected into. See <a href="#match_patterns">Match Patterns</a> for more details on the syntax of these strins.</td>
+    <td>Required. Controls the pages this content script will be injected into.
+    See <a href="http://dev.chromium.org/developers/design-documents/extensions/match-patterns">Match patterns</a>
+    for more details on the syntax of these strings.</td>
   </tr>
   <tr>
     <td>js</td>
@@ -60,9 +62,6 @@
   </tr>
 </table>
 
-<h2 id="match_patterns">Match patterns</h2>
-
-<p class="comment">TODO</p>
 
 <h2 id="execution_environment">Execution environment</h2>
 
@@ -137,3 +136,20 @@ document.getElementById('myCustomEventDiv').addEventListener('myCustomEvent', fu
 });</pre>
 
 <p>In the above example, example.html (which is not a part of the extension) creates a custom event and then can decide to fire the event by setting the event data to a known location in the DOM and then dispatching the custom event. The content script listens for the name of the custom event on the known element and handles the event by inspecting the data of the element, and turning around to post the message to the extension process. In this way the page establishes a line of communication to the extension. The reverse is possible through similar means.</p>
+
+<h2 id="extensionFiles">Referring to extension files</h2>
+
+<p>
+Get the URL of an extension's file using
+<code>chrome.extension.getURL()</code>.
+You can use the result
+just like you would any other URL,
+as the following code shows.
+</p>
+
+
+<pre>
+<em>//Code for displaying &lt;extensionDir>/images/myimage.png:</em>
+var imgURL = <b>chrome.extension.getURL("images/myimage.png")</b>;
+document.getElementById("someImage").src = imgURL;
+</pre>
