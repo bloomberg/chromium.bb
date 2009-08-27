@@ -152,10 +152,7 @@ static int bo_map(struct radeon_bo *bo, int write)
     int r;
     void *ptr;
 
-    if (bo_gem->map_count++ != 0) {
-        return 0;
-    }
-    if (bo_gem->priv_ptr) {
+    if (bo_gem->map_count++ != 0 || bo_gem->priv_ptr) {
 	goto wait;
     }
 
