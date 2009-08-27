@@ -268,7 +268,13 @@ void LocationBarViewGtk::Update(const TabContents* contents) {
   SetInfoText();
   location_entry_->Update(contents);
   // The security level (background color) could have changed, etc.
-  gtk_widget_queue_draw(hbox_.get());
+  if (theme_provider_->UseGtkTheme()) {
+    // In GTK mode, we need our parent to redraw, as it draws the text entry
+    // border.
+    gtk_widget_queue_draw(widget()->parent);
+  } else {
+    gtk_widget_queue_draw(widget());
+  }
 }
 
 void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
