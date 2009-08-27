@@ -240,6 +240,12 @@
         'cflags': [
            '<(werror)',  # See note above about the werror variable.
            '-pthread',
+          '-fno-exceptions',
+          '-Wall',
+        ],
+        'cflags_cc': [
+          '-fno-rtti',
+          '-fno-threadsafe-statics',
         ],
         'ldflags': [
           '-pthread',
@@ -348,8 +354,12 @@
             ],
           },
           'Release': {
+            'variables': {
+              'release_optimize%': '2',
+              'release_extra_cflags%': '',
+            },
             'cflags': [
-              '-O2',
+              '-O<(release_optimize)',
               # Don't emit the GCC version ident directives, they just end up
               # in the .comment section taking up binary size.
               '-fno-ident',
@@ -357,6 +367,7 @@
               # can be removed at link time with --gc-sections.
               '-fdata-sections',
               '-ffunction-sections',
+              '<(release_extra_cflags)',
             ],
           },
         },
@@ -539,6 +550,7 @@
           'WIN32',
           '_WINDOWS',
           '_HAS_EXCEPTIONS=0',
+          'NOMINMAX',
           '_CRT_RAND_S',
           'CERT_CHAIN_PARA_HAS_EXTRA_FIELDS',
           'WIN32_LEAN_AND_MEAN',
@@ -552,7 +564,7 @@
           'NACL_OSX=0',
           'NACL_WINDOWS=1',
         ],
-        'include_dirs': [
+        'msvs_system_include_dirs': [
           '<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Include',
           '$(VSInstallDir)/VC/atlmfc/include',
         ],
