@@ -413,8 +413,6 @@ void BookmarkManagerGtk::InitWidgets() {
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), paned_, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(window_), vbox);
-
-  ResetOrganizeMenu(true);
 }
 
 void BookmarkManagerGtk::ConnectAccelerators() {
