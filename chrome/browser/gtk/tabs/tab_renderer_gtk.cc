@@ -35,6 +35,7 @@ const int kFavIconTitleSpacing = 4;
 const int kTitleCloseButtonSpacing = 5;
 const int kStandardTitleWidth = 175;
 const int kDropShadowOffset = 2;
+const int kInactiveTabBackgroundOffsetY = 20;
 // Preferred width of pinned tabs.
 const int kPinnedTabWidth = 56;
 // When a non-pinned tab is pinned the width of the tab animates. If the width
@@ -331,6 +332,46 @@ void TabRendererGtk::SetVisible(bool visible) const {
 
 bool TabRendererGtk::ValidateLoadingAnimation(AnimationState animation_state) {
   return loading_animation_.ValidateLoadingAnimation(animation_state);
+}
+
+void TabRendererGtk::PaintFavIconArea(GdkEventExpose* event) {
+  DCHECK(ShouldShowIcon());
+
+  // The paint area is the favicon bounds, but we're painting into the gdk
+  // window belonging to the tabstrip.  So the coordinates are relative to the
+  // top left of the tab strip.
+  event->area.x = x() + favicon_bounds_.x();
+  event->area.y = y() + favicon_bounds_.y();
+  event->area.width = favicon_bounds_.width();
+  event->area.height = favicon_bounds_.height();
+  gfx::CanvasPaint canvas(event, false);
+
+  // The actual paint methods expect 0, 0 to be the tab top left (see
+  // PaintTab).
+  canvas.TranslateInt(x(), y());
+
+  // Paint the background behind the favicon.
+  int theme_id;
+  int offset_y = 0;
+  if (IsSelected()) {
+    theme_id = IDR_THEME_TOOLBAR;
+  } else {
+    if (!data_.off_the_record) {
+      theme_id = IDR_THEME_TAB_BACKGROUND;
+    } else {
+      theme_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
+    }
+    if (!theme_provider_->HasCustomImage(theme_id))
+      offset_y = kInactiveTabBackgroundOffsetY;
+  }
+  SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(theme_id);
+  canvas.TileImageInt(*tab_bg,
+      x() + favicon_bounds_.x(), offset_y + favicon_bounds_.y(),
+      favicon_bounds_.x(), favicon_bounds_.y(),
+      favicon_bounds_.width(), favicon_bounds_.height());
+
+  // Now paint the icon.
+  PaintIcon(&canvas);
 }
 
 // static
@@ -752,7 +793,8 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
   // image is a composited foreground + frame image.
-  int offset_y = theme_provider_->HasCustomImage(tab_id) ? 0 : 20;
+  int offset_y = theme_provider_->HasCustomImage(tab_id) ?
+      0 : kInactiveTabBackgroundOffsetY;
 
   // Draw left edge.
   SkBitmap* theme_l = GetMaskedBitmap(tab_alpha_.image_l, tab_bg, offset_x,

@@ -71,6 +71,26 @@ gfx::Rect GetInitialWidgetBounds(GtkWidget* widget) {
   return gfx::Rect(0, 0, request.width, request.height);
 }
 
+// Sort rectangles based on their x position.  We don't care about y position
+// so we don't bother breaking ties.
+int CompareGdkRectangles(const void* p1, const void* p2) {
+  int p1_x = static_cast<const GdkRectangle*>(p1)->x;
+  int p2_x = static_cast<const GdkRectangle*>(p2)->x;
+  if (p1_x < p2_x)
+    return -1;
+  else if (p1_x == p2_x)
+    return 0;
+  return 1;
+}
+
+bool GdkRectMatchesTabFavIconBounds(const GdkRectangle& gdk_rect, TabGtk* tab) {
+  gfx::Rect favicon_bounds = tab->favicon_bounds();
+  return gdk_rect.x == favicon_bounds.x() + tab->x() &&
+      gdk_rect.y == favicon_bounds.y() + tab->y() &&
+      gdk_rect.width == favicon_bounds.width() &&
+      gdk_rect.height == favicon_bounds.height();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -994,7 +1014,6 @@ void TabStripGtk::TabChangedAt(TabContents* contents, int index,
   TabGtk* tab = GetTabAt(index);
   tab->UpdateData(contents, loading_only);
   tab->UpdateFromModel();
-  gtk_widget_queue_draw(tabstrip_.get());
 }
 
 void TabStripGtk::TabPinnedStateChanged(TabContents* contents, int index) {
@@ -1760,6 +1779,20 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event,
   if (gdk_region_empty(event->region))
     return TRUE;
 
+  // If we're only repainting favicons, optimize the paint path and only draw
+  // the favicons.
+  GdkRectangle* rects;
+  gint num_rects;
+  gdk_region_get_rectangles(event->region, &rects, &num_rects);
+  qsort(rects, num_rects, sizeof(GdkRectangle), CompareGdkRectangles);
+  std::vector<int> tabs_to_repaint;
+  if (tabstrip->CanPaintOnlyFavIcons(rects, num_rects, &tabs_to_repaint)) {
+    tabstrip->PaintOnlyFavIcons(event, tabs_to_repaint);
+    g_free(rects);
+    return TRUE;
+  }
+  g_free(rects);
+
   // TODO(jhawkins): Ideally we'd like to only draw what's needed in the damage
   // rect, but the tab widgets overlap each other, and painting on one widget
   // will cause an expose-event to be sent to the widgets underneath.  The
@@ -1945,6 +1978,31 @@ void TabStripGtk::SetTabBounds(TabGtk* tab, const gfx::Rect& bounds) {
   tab->SetBounds(bds);
   gtk_fixed_move(GTK_FIXED(tabstrip_.get()), tab->widget(),
                  bds.x(), bds.y());
+}
+
+bool TabStripGtk::CanPaintOnlyFavIcons(const GdkRectangle* rects,
+    int num_rects, std::vector<int>* tabs_to_paint) {
+  // |rects| are sorted so we just need to scan from left to right and compare
+  // it to the tab favicon positions from left to right.
+  int t = 0;
+  for (int r = 0; r < num_rects; ++r) {
+    while (t < GetTabCount()) {
+      TabGtk* tab = GetTabAt(t);
+      if (GdkRectMatchesTabFavIconBounds(rects[r], tab)) {
+        tabs_to_paint->push_back(t);
+        ++t;
+        break;
+      }
+      ++t;
+    }
+  }
+  return static_cast<int>(tabs_to_paint->size()) == num_rects;
+}
+
+void TabStripGtk::PaintOnlyFavIcons(GdkEventExpose* event,
+                                    const std::vector<int>& tabs_to_paint) {
+  for (size_t i = 0; i < tabs_to_paint.size(); ++i)
+    GetTabAt(tabs_to_paint[i])->PaintFavIconArea(event);
 }
 
 CustomDrawButton* TabStripGtk::MakeNewTabButton() {

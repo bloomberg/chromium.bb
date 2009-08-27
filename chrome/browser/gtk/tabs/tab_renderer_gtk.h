@@ -139,6 +139,9 @@ class TabRendererGtk : public AnimationDelegate {
   // repainted.
   bool ValidateLoadingAnimation(AnimationState animation_state);
 
+  // Repaint only the area of the tab that contains the favicon.
+  void PaintFavIconArea(GdkEventExpose* event);
+
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumUnselectedSize();
   // Returns the minimum possible size of a selected Tab. Selected tabs must
