@@ -250,8 +250,8 @@ IPC_BEGIN_MESSAGES(PluginHost)
   IPC_MESSAGE_ROUTED1(PluginHostMsg_URLRequest,
                       PluginHostMsg_URLRequest_Params)
 
-  IPC_SYNC_MESSAGE_ROUTED1_0(PluginHostMsg_CancelResource,
-                             int /* id */)
+  IPC_MESSAGE_ROUTED1(PluginHostMsg_CancelResource,
+                      int /* id */)
 
   IPC_MESSAGE_ROUTED1(PluginHostMsg_InvalidateRect,
                       gfx::Rect /* rect */)
