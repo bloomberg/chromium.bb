@@ -938,4 +938,8 @@ const int kDisabledIndex = 1;
                     object:self];
 }
 
+- (void)controlTextDidEndEditing:(NSNotification*)notification {
+  [customPagesSource_ validateURLs];
+}
+
 @end

@@ -57,7 +57,6 @@ NSString* const kHomepageEntryChangedNotification =
 // Get/set the urls the model currently contains as a group. These will weed
 // out any URLs that are empty and not add them to the model. As a result,
 // the next time they're persisted to the prefs backend, they'll disappear.
-
 - (std::vector<GURL>)URLs {
   std::vector<GURL> urls;
   for (CustomHomePageEntry* entry in entries_.get()) {
@@ -85,6 +84,16 @@ NSString* const kHomepageEntryChangedNotification =
   [self didChangeValueForKey:@"customHomePages"];
 }
 
+- (void)validateURLs {
+  [self setURLs:[self URLs]];
+}
+
+- (void)setURLStringEmptyAt:(NSUInteger)index {
+  // This replaces the data at |index| with an empty (invalid) URL string.
+  CustomHomePageEntry* entry = [entries_ objectAtIndex:index];
+  [entry setURL:[NSString stringWithString:@""]];
+}
+
 @end
 
 //---------------------------------------------------------------------------
@@ -92,6 +101,10 @@ NSString* const kHomepageEntryChangedNotification =
 @implementation CustomHomePageEntry
 
 - (void)setURL:(NSString*)url {
+  // |url| can be nil if the user cleared the text from the edit field.
+  if (!url)
+    url = [NSString stringWithString:@""];
+
   // Make sure the url is valid before setting it by fixing it up.
   std::string urlToFix(base::SysNSStringToUTF8(url));
   urlToFix = URLFixerUpper::FixupURL(urlToFix, "");

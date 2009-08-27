@@ -35,11 +35,24 @@ class Profile;
 - (std::vector<GURL>)URLs;
 - (void)setURLs:(const std::vector<GURL>&)urls;
 
+// Validates the set of URLs stored in the model. The user may have input bad
+// data. This function removes invalid entries from the model, which will result
+// in anyone observing being updated.
+- (void)validateURLs;
+
 // For binding |customHomePages| to a mutable array controller.
 - (NSUInteger)countOfCustomHomePages;
 - (id)objectInCustomHomePagesAtIndex:(NSUInteger)index;
 - (void)insertObject:(id)object inCustomHomePagesAtIndex:(NSUInteger)index;
 - (void)removeObjectFromCustomHomePagesAtIndex:(NSUInteger)index;
+@end
+
+@interface CustomHomePagesModel(InternalOrTestingAPI)
+
+// Clears the URL string at the specified index. This constitutes bad data. The
+// validator should scrub the entry from the list the next time it is run.
+- (void) setURLStringEmptyAt:(NSUInteger)index;
+
 @end
 
 // A notification that fires when the URL of one of the entries changes.

@@ -8,6 +8,7 @@
 #import "chrome/browser/cocoa/preferences_window_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/custom_home_pages_model.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -67,6 +68,27 @@ TEST_F(PrefsControllerTest, ShowAndClose) {
   EXPECT_TRUE(observer.get()->gotNotification_);
   [[NSNotificationCenter defaultCenter] removeObserver:observer.get()];
 #endif
+}
+
+TEST_F(PrefsControllerTest, ValidateCustomHomePagesTable) {
+  // First, insert two valid URLs into the CustomHomePagesModel.
+  GURL url1("http://www.google.com/");
+  GURL url2("http://maps.google.com/");
+  std::vector<GURL> urls;
+  urls.push_back(url1);
+  urls.push_back(url2);
+  [[pref_controller_ customPagesSource] setURLs:urls];
+  EXPECT_EQ(2U, [[pref_controller_ customPagesSource] countOfCustomHomePages]);
+
+  // Now insert a bad (empty) URL into the model.
+  [[pref_controller_ customPagesSource] setURLStringEmptyAt:1];
+
+  // Send a notification to simulate the end of editing on a cell in the table
+  // which should trigger validation.
+  [pref_controller_ controlTextDidEndEditing:[NSNotification
+      notificationWithName:NSControlTextDidEndEditingNotification
+                    object:nil]];
+  EXPECT_EQ(1U, [[pref_controller_ customPagesSource] countOfCustomHomePages]);
 }
 
 }  // namespace
