@@ -768,17 +768,6 @@ BUG13907 SKIP : LayoutTests/media/video-empty-source.html = TIMEOUT
 BUG13907 : LayoutTests/fast/layers/video-layer.html = FAIL
 BUG13907 WIN : LayoutTests/media/event-attributes.html = FAIL
 
-// XSS Auditor is not yet fully functional.
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/script-tag-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/base-href-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/embed-tag-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/link-onclick-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/object-embed-tag-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/javascript-link-null-char.html = FAIL
-
 // Requires the test shell to support eventSender.beginDragWithFiles().
 BUG19884 SKIP : LayoutTests/fast/forms/get-file-upload.html = TIMEOUT
 BUG19884 SKIP : LayoutTests/fast/events/drag-to-navigate.html = TIMEOUT FAIL
