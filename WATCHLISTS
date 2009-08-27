@@ -87,6 +87,12 @@
     'tools': {
       'filepath': 'tools/.*',
     },
+    'tests': {
+      'filepath': 'unittest|browsertest|uitest',
+    },
+    'automation': {
+      'filepath': 'chrome/browser/automation/.*|chrome/test/automation/.*',
+    },
   },
 
   'WATCHLISTS': {
@@ -118,5 +124,7 @@
              'idana@chromium.org'],
     'layout_tests': ['pam@chromium.org'],
     'tools': ['pam@chromium.org'],
+    'tests': ['phajdan.jr@chromium.org'],
+    'automation': ['phajdan.jr@chromium.org'],
   },
 }
