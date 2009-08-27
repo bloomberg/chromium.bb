@@ -2792,3 +2792,7 @@ BUG_JORLOW : LayoutTests/fast/events/pageshow-pagehide-on-back-uncached.html = F
 BUG_JORLOW : LayoutTests/fast/events/pageshow-pagehide.html = FAIL
 BUG_JORLOW : LayoutTests/fast/events/pageshow-pagehide-on-back-cached.html = TIMEOUT
 
+// WebKit 47827:47830
+BUG_JORLOW : LayoutTests/editing/pasteboard/files-during-page-drags.html = FAIL
+BUG_JORLOW : LayoutTests/tables/mozilla_expected_failures/bugs/bug85016.html = FAIL
+
