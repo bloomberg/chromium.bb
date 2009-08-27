@@ -640,6 +640,8 @@ BUG19625 SKIP : LayoutTests/http/tests/eventsource = TIMEOUT
 // Implement HTML5 datalist element.
 BUG20226 : LayoutTests/fast/forms/datalist-nonoption-child.html = FAIL
 BUG20226 : LayoutTests/fast/forms/datalist.html = FAIL
+BUG20292 : LayoutTests/fast/forms/input-list.html = FAIL
+BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
 
 // Fails due to storage APIs not implemented.  Might be worth re-baselining
 // temporarily so the rest of the conditions are still tested.
@@ -2805,10 +2807,6 @@ BUG20265 LINUX : LayoutTests/fast/forms/ValidityState-valueMissing-005.html = CR
 BUG20265 LINUX : LayoutTests/fast/forms/range-default-value.html = CRASH
 BUG20265 LINUX : LayoutTests/fast/forms/range-reset.html = CRASH
 BUG20265 LINUX : LayoutTests/platform/mac/accessibility/slider-supports-actions.html = CRASH
-
-// WebKit 47759:47770.
-BUG20292 : LayoutTests/fast/forms/input-list.html = FAIL
-BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
 
 // Fails after V8 rollup
 BUG20314 MAC : LayoutTests/fast/css/only-of-type-pseudo-class.html = FAIL
