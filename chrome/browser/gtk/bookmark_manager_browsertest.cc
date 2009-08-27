@@ -18,16 +18,16 @@ class BookmarkManagerTest : public InProcessBrowserTest,
   void Init() {
     model_ = browser()->profile()->GetBookmarkModel();
 
-    BookmarkManagerGtk::Show(browser()->profile());
-    manager_ = BookmarkManagerGtk::GetCurrentManager();
-    ASSERT_TRUE(manager_);
-
     if (!model_->IsLoaded()) {
       model_->AddObserver(this);
       ui_test_utils::RunMessageLoop();
       model_->RemoveObserver(this);
     }
     ASSERT_TRUE(model_->IsLoaded());
+
+    BookmarkManagerGtk::Show(browser()->profile());
+    manager_ = BookmarkManagerGtk::GetCurrentManager();
+    ASSERT_TRUE(manager_);
   }
 
   void CleanUp() {
