@@ -2331,7 +2331,6 @@ WONTFIX SKIP : LayoutTests/webarchive/adopt-attribute-styled-node-webarchive.htm
 WONTFIX SKIP : LayoutTests/webarchive/adopt-inline-styled-node-webarchive.html = FAIL
 
 // Regressions from WebKit Merge 42932:42994
-BUG11239 : LayoutTests/fast/dom/Window/setTimeout-string-argument.html = FAIL
 BUG11239 MAC : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL PASS
 
 // Regressions from WebKit Merge 42932:42994 due to text metric changes.
@@ -2703,11 +2702,6 @@ BUG17635 MAC : LayoutTests/fast/css/only-child-pseudo-class.html = PASS FAIL
 BUG18116 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
 BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 
-// This happened when I enabled DOM Storage.  Adam asked me to just exclude and
-// file a bug.
-BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-properties.html = FAIL
-BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-prototypes.html = FAIL
-
 // Flaky.  Timing?
 BUG18584 : LayoutTests/animations/change-one-anim.html = FAIL PASS
 BUG18584 LINUX WIN : LayoutTests/animations/play-state.html = FAIL PASS
@@ -2777,7 +2771,6 @@ BUG_JPARENT LINUX MAC: LayoutTests/fast/history/back-forward-is-asynchronous.htm
 BUG_JPARENT LINUX DEBUG : LayoutTests/fast/multicol/columns-shorthand-parsing.html = CRASH
 
 // WebKit roll r47417:47528
-BUG19766 WIN LINUX : LayoutTests/fast/block/basic/quirk-percent-height-table-cell.html = FAIL
 BUG19766 WIN : LayoutTests/svg/batik/text/textPosition.svg = FAIL
 BUG19766 WIN LINUX : LayoutTests/svg/batik/text/xmlSpace.svg = FAIL
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
