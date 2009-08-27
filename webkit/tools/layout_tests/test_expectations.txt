@@ -1649,37 +1649,7 @@ BUG10388 LINUX : LayoutTests/fast/layers/layer-visibility-sublayer.html = FAIL P
 // layoutTestController.testRepaint(). The only reason they are not marked as
 // failures for Mac is because Mac doesn't yet run pixel tests where the
 // regression becomes visible.
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/table-cell-collapsed-border.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/transform-absolute-child.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-as-image-incremental-repaint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/create-layer-repaint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/reflection-redraw.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/opacity-change-on-overflow-float.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/background-misaligned.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/dynamic-table-vertical-alignment-change.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/inline-color-change.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/transform-disable-layoutstate.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/transform-absolute-in-positioned-container.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/transform-replaced-shadows.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = FAIL PASS
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/reflection-repaint-test.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/transform-layout-repaint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/overflow-outline-repaint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/change-transform.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/outline-child-repaint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/text-append-dirty-lines.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/transform-repaint-descendants.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/background-generated.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/box-shadow-h.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/box-shadow-v.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/float-overflow-right.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/float-overflow.html = FAIL
-BUG8630 WIN : LayoutTests/fast/repaint/transform-absolute-in-positioned-container.html = FAIL
-BUG8630 WIN : LayoutTests/fast/repaint/overflow-scroll-delete.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/search-field-cancel.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/inline-overflow.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint = FAIL
 
 // Linux pixeltest failure: Failing to rotate the form control
 BUG10390 LINUX : LayoutTests/fast/transforms/transformed-focused-text-input.html = FAIL
@@ -2813,5 +2783,4 @@ BUG20356 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-s
 BUG20376 WIN : LayoutTests/media/audio-play-event.html = TIMEOUT
 // Was marked as flakey above (I commented it out).
 BUG20376 WIN : LayoutTests/media/video-src-remove.html = TIMEOUT FAIL
-BUG20377 LINUX WIN : LayoutTests/fast/repaint/rel-positioned-inline-with-overflow.html = FAIL
 
