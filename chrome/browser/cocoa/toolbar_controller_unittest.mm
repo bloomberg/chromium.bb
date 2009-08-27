@@ -256,5 +256,26 @@ TEST_F(ToolbarControllerTest, StarButtonInWindowCoordinates) {
   EXPECT_TRUE(NSContainsRect(all, star));
 }
 
+TEST_F(ToolbarControllerTest, AutocompletePopupPosition) {
+  NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
+
+  // The window frame (in window base coordinates).
+  NSRect all = [[[bar_ view] window] frame];
+  // The frame of the location bar in window base coordinates.
+  NSRect locationFrame =
+      [locationBar convertRect:[locationBar bounds] toView:nil];
+  // The frame of the popup in window base coordinates.
+  gfx::Rect popupFrame = [bar_ autocompletePopupPosition];
+
+  // Make sure the popup starts to the left of and ends to the right of the
+  // location bar.
+  EXPECT_LT(popupFrame.x(), NSMinX(locationFrame));
+  EXPECT_GT(popupFrame.right(), NSMaxX(locationFrame));
+
+  // Make sure the popup frame is positioned at the bottom of the location bar.
+  EXPECT_EQ(popupFrame.bottom(), NSMinY(locationFrame));
+}
+
+
 
 }  // namespace

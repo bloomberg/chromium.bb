@@ -6,6 +6,7 @@
 
 #include "app/gfx/text_elider.h"
 #include "base/sys_string_conversions.h"
+#include "base/gfx/rect.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
@@ -236,10 +237,12 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 AutocompletePopupViewMac::AutocompletePopupViewMac(
     AutocompleteEditViewMac* edit_view,
     AutocompleteEditModel* edit_model,
+    AutocompletePopupPositioner* positioner,
     Profile* profile,
     NSTextField* field)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
+      positioner_(positioner),
       field_(field),
       matrix_target_([[AutocompleteMatrixTarget alloc] initWithPopupView:this]),
       popup_(nil) {
@@ -316,20 +319,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   CreatePopupIfNeeded();
 
   // Layout the popup and size it to land underneath the field.
-  // TODO(shess) Consider refactoring to remove this depenency,
-  // because the popup doesn't need any of the field-like aspects of
-  // field_.  The edit view could expose helper methods for attaching
-  // the window to the field.
-
-  // Locate |field_| on the screen, and pad the left and right sides
-  // by the height to make it wide enough to include the star and go
-  // buttons.
-  // TODO(shess): This assumes that those buttons will be square.
-  // Better to plumb through so that this code can get the rect from
-  // the toolbar controller?
-  NSRect r = [field_ convertRect:[field_ bounds] toView:nil];
-  r.origin.x -= r.size.height;
-  r.size.width += 2 * r.size.height;
+  NSRect r = NSRectFromCGRect(positioner_->GetPopupBounds().ToCGRect());
   r.origin = [[field_ window] convertBaseToScreen:r.origin];
   DCHECK_GT(r.size.width, 0.0);
 

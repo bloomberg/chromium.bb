@@ -29,6 +29,8 @@ class Profile;
 // bounds for the autocomplete popup view.
 class AutocompletePopupPositioner {
  public:
+  virtual ~AutocompletePopupPositioner() { }
+
   // Returns the bounds at which the popup should be shown, in screen
   // coordinates. The height is ignored, since the popup is sized to its
   // contents automatically.

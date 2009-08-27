@@ -46,11 +46,12 @@ std::wstring GetKeywordName(Profile* profile, const std::wstring& keyword) {
 }  // namespace
 
 LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
+                                       AutocompletePopupPositioner* positioner,
                                        CommandUpdater* command_updater,
                                        ToolbarModel* toolbar_model,
                                        Profile* profile)
-  : edit_view_(new AutocompleteEditViewMac(this, toolbar_model, profile,
-                                           command_updater, field)),
+    : edit_view_(new AutocompleteEditViewMac(this, positioner, toolbar_model,
+                                             profile, command_updater, field)),
       command_updater_(command_updater),
       field_(field),
       disposition_(CURRENT_TAB),

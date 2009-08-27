@@ -19,6 +19,7 @@
 class AutocompleteEditController;
 @class AutocompleteEditHelper;
 class AutocompleteEditModel;
+class AutocompletePopupPositioner;
 class AutocompletePopupViewMac;
 @class AutocompleteTextField;
 class Clipboard;
@@ -32,6 +33,7 @@ class ToolbarModel;
 class AutocompleteEditViewMac : public AutocompleteEditView {
  public:
   AutocompleteEditViewMac(AutocompleteEditController* controller,
+                          AutocompletePopupPositioner* positioner,
                           ToolbarModel* toolbar_model,
                           Profile* profile,
                           CommandUpdater* command_updater,

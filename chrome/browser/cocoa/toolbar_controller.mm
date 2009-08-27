@@ -6,7 +6,9 @@
 
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
@@ -35,6 +37,26 @@ static const float kBookmarkBarOverlap = 5.0;
 - (void)prefChanged:(std::wstring*)prefName;
 @end
 
+namespace {
+
+// A C++ class used to correctly position the autocomplete popup.
+class AutocompletePopupPositionerMac : public AutocompletePopupPositioner {
+ public:
+  AutocompletePopupPositionerMac(ToolbarController* controller)
+      : controller_(controller) { }
+  virtual ~AutocompletePopupPositionerMac() { }
+
+  // Overridden from AutocompletePopupPositioner.
+  virtual gfx::Rect GetPopupBounds() const {
+    return [controller_ autocompletePopupPosition];
+  }
+
+ private:
+  ToolbarController* controller_;  // weak, owns us
+};
+
+}  // namespace
+
 namespace ToolbarControllerInternal {
 
 // A C++ class registered for changes in preferences. Bridges the
@@ -54,7 +76,7 @@ class PrefObserverBridge : public NotificationObserver {
   ToolbarController* controller_;  // weak, owns us
 };
 
-}  // namespace
+}  // namespace ToolbarControllerInternal
 
 @implementation ToolbarController
 
@@ -99,8 +121,11 @@ class PrefObserverBridge : public NotificationObserver {
 // bar and button state.
 - (void)awakeFromNib {
   [self initCommandStatus:commands_];
-  locationBarView_.reset(new LocationBarViewMac(locationBar_, commands_,
-                                                toolbarModel_, profile_));
+  popupPositioner_.reset(new AutocompletePopupPositionerMac(self));
+  locationBarView_.reset(new LocationBarViewMac(locationBar_,
+                                                popupPositioner_.get(),
+                                                commands_, toolbarModel_,
+                                                profile_));
   [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
 
   // Register pref observers for the optional home and page/options buttons
@@ -378,5 +403,16 @@ class PrefObserverBridge : public NotificationObserver {
                                                 fromView:starButton_];
 }
 
+- (gfx::Rect)autocompletePopupPosition {
+  // The popup should span from the left edge of the star button to the right
+  // edge of the go button.  The returned height is ignored.
+  NSRect locationFrame = [locationBar_ frame];
+  int minX = NSMinX([starButton_ frame]);
+  int maxX = NSMaxX([goButton_ frame]);
+  DCHECK(minX < NSMinX(locationFrame));
+  DCHECK(maxX > NSMaxX(locationFrame));
 
+  NSRect r = NSMakeRect(minX, NSMinY(locationFrame), maxX - minX, 0);
+  return gfx::Rect(NSRectToCGRect([[self view] convertRect:r toView:nil]));
+}
 @end

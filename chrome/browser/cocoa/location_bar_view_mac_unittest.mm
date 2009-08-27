@@ -23,7 +23,7 @@ class LocationBarViewMacTest : public testing::Test {
  public:
   LocationBarViewMacTest()
       : field_([[NSTextField alloc] init]),
-        locationBarView_(new LocationBarViewMac(field_, NULL, NULL)) {
+        locationBarView_(new LocationBarViewMac(field_, NULL, NULL, NULL)) {
   }
 
   scoped_nsobject<NSTextField> field_;

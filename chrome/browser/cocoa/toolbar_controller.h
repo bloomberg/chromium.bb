@@ -15,6 +15,7 @@
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/common/pref_member.h"
 
+class AutocompletePopupPositioner;
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;
 @class DelayedMenuButton;
@@ -54,6 +55,8 @@ class ToolbarView;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
+  // Used to positioner the omnibox popup view.
+  scoped_ptr<AutocompletePopupPositioner> popupPositioner_;
   BooleanPrefMember showHomeButton_;
   BooleanPrefMember showPageOptionButtons_;
   BOOL hasToolbar_;  // if NO, we only have the location bar.
@@ -140,6 +143,7 @@ class ToolbarView;
 - (NSArray*)toolbarViews;
 - (void)showOptionalHomeButton;
 - (void)showOptionalPageWrenchButtons;
+- (gfx::Rect)autocompletePopupPosition;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TOOLBAR_CONTROLLER_H_

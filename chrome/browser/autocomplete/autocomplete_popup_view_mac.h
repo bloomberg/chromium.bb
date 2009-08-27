@@ -33,6 +33,7 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
  public:
   AutocompletePopupViewMac(AutocompleteEditViewMac* edit_view,
                            AutocompleteEditModel* edit_model,
+                           AutocompletePopupPositioner* positioner,
                            Profile* profile,
                            NSTextField* field);
   virtual ~AutocompletePopupViewMac();
@@ -95,7 +96,7 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
 
   scoped_ptr<AutocompletePopupModel> model_;
   AutocompleteEditViewMac* edit_view_;
-
+  AutocompletePopupPositioner* positioner_;  // owned by toolbar controller
   NSTextField* field_;  // owned by tab controller
 
   scoped_nsobject<AutocompleteMatrixTarget> matrix_target_;
