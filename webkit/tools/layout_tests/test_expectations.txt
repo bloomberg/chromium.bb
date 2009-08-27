@@ -397,8 +397,9 @@ WONTFIX SKIP : LayoutTests/transforms/3d = FAIL
 
 // Copying with no selection is sometimes supposed to work
 // Also skipped by Apple on Windows (rdar://problem/5015941)
-BUG1124548 : LayoutTests/editing/execCommand/copy-without-selection.html = FAIL
+BUG20404 : LayoutTests/editing/execCommand/copy-without-selection.html = FAIL
 
+// This is a faulty test and need to change so it works on Windows.
 // onload race condition due to poorly designed test.
 // Works fine when run stand-alone.  Not needed for Beta.
 // Also skipped by Apple on Windows, due to intermittent failure
