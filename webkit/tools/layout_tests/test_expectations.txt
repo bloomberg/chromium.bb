@@ -2787,3 +2787,8 @@ BUG20376 WIN : LayoutTests/media/audio-play-event.html = TIMEOUT
 // Was marked as flakey above (I commented it out).
 BUG20376 WIN : LayoutTests/media/video-src-remove.html = TIMEOUT FAIL
 
+// WebKit 47821:47827
+BUG_JORLOW : LayoutTests/fast/events/pageshow-pagehide-on-back-uncached.html = FAIL
+BUG_JORLOW : LayoutTests/fast/events/pageshow-pagehide.html = FAIL
+BUG_JORLOW : LayoutTests/fast/events/pageshow-pagehide-on-back-cached.html = TIMEOUT
+
