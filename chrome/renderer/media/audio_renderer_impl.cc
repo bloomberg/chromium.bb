@@ -291,6 +291,13 @@ void AudioRendererImpl::OnNotifyPacketReady() {
       }
     }
 
+    // Finally we need to adjust the delay according to playback rate.
+    if (GetPlaybackRate() != 1.0f) {
+      request_delay = base::TimeDelta::FromMicroseconds(
+          static_cast<int64>(ceil(request_delay.InMicroseconds() *
+                                  GetPlaybackRate())));
+    }
+
     size_t filled = FillBuffer(static_cast<uint8*>(shared_memory_->memory()),
                                shared_memory_size_,
                                request_delay);
