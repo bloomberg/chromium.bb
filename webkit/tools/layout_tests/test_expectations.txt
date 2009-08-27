@@ -2789,3 +2789,6 @@ BUG_JORLOW DEBUG WIN : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAI
 
 // Flake that showed up around revision 24645
 BUG20430 : LayoutTests/svg/custom/pointer-events-path.svg = CRASH PASS
+
+// This newly added test times out on Mac:
+BUG20438 MAC : chrome/plugins/get-url-with-iframe-target.html = TIMEOUT
