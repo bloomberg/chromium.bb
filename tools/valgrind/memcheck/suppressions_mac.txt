@@ -504,3 +504,20 @@
    fun:_Z10cssyyparsePv
    fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
 }
+{
+   # Leak of a CFMutableArray of certs in X509Certificate::Verify.
+   bug_20459
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFArrayInit
+   fun:CFArrayCreateMutableCopy
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
+   fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
+   fun:-[TaskOperation main]
+   fun:-[NSOperation start]
+   fun:__runop
+   fun:_pthread_wqthread
+   fun:start_wqthread
+}
