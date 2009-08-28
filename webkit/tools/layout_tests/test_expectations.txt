@@ -1415,8 +1415,6 @@ BUG10354 MAC : LayoutTests/plugins/netscape-construct.html = FAIL
 BUG10355 WIN LINUX : LayoutTests/http/tests/security/originHeader/origin-header-for-empty.html = TIMEOUT FAIL PASS
 BUG10355 MAC RELEASE : LayoutTests/http/tests/security/originHeader/origin-header-for-empty.html = TIMEOUT FAIL PASS
 
-BUG10356 MAC : LayoutTests/http/tests/security/originHeader/origin-header-for-https.html = TIMEOUT FAIL
-
 // MERGE 38389:38450
 // WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=20342
 // Fails upstream, deferring for now.
@@ -1478,8 +1476,6 @@ BUG10367 MAC : LayoutTests/fast/events/attempt-scroll-with-no-scrollbars.html = 
 BUG10368 MAC LINUX : LayoutTests/http/tests/navigation/lockedhistory-iframe.html = FAIL PASS
 
 // selection
-BUG10369 MAC : LayoutTests/fast/forms/listbox-onchange.html = FAIL
-BUG10369 MAC : LayoutTests/fast/forms/listbox-selection.html = FAIL
 BUG10369 MAC : LayoutTests/editing/selection/5109817.html = FAIL
 BUG10369 LINUX : LayoutTests/editing/selection/5354455-2.html = FAIL
 
@@ -1778,10 +1774,6 @@ BUG10430 LINUX : LayoutTests/fast/text/atsui-spacing-features.html = FAIL
 BUG10430 LINUX : LayoutTests/svg/W3C-SVG-1.1/text-intro-05-t.svg = FAIL
 BUG10430 LINUX : LayoutTests/svg/text/text-fonts-01-t.svg = FAIL
 BUG10430 LINUX : LayoutTests/svg/text/text-intro-05-t.svg = FAIL
-
-// Always fails for mac, new failure with merge for eseidel
-BUG5248 MAC : LayoutTests/http/tests/security/cross-frame-access-protocol-explicit-domain.html = FAIL
-BUG5248 MAC : LayoutTests/http/tests/security/cross-frame-access-protocol.html = FAIL
 
 // New tests from merge 41181:41217
 BUG10431 LINUX WIN : LayoutTests/fast/dom/getBoundingClientRect-getClientRects-relative-to-viewport.html = FAIL PASS
@@ -2636,9 +2628,9 @@ BUG18802 WIN : LayoutTests/http/tests/misc/referrer.html = TIMEOUT PASS
 BUG18896 WIN DEBUG : LayoutTests/fast/backgrounds/svg-as-background-5.html = FAIL
 BUG18896 WIN LINUX DEBUG : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
 BUG18896 WIN DEBUG : LayoutTests/svg/carto.net/window.svg = FAIL
-BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = FAIL
+BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = PASS FAIL
 BUG18896 MAC WIN DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = PASS CRASH
-BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-svgdom-clipPathUnits-prop.html = FAIL
+BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-svgdom-clipPathUnits-prop.html = PASS FAIL
 BUG18896 LINUX DEBUG : LayoutTests/svg/css/crash-css-generated-content.xhtml = FAIL
 
 // Test failures from WebKit merge 46894 to 46977
@@ -2675,8 +2667,6 @@ BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/002.xml = FAIL
 BUG19519 WIN MAC DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
 
 // Fallout from webkit 47305:47383
-BUG_JPARENT LINUX MAC: LayoutTests/fast/history/back-forward-is-asynchronous.html = TIMEOUT
-BUG_JPARENT LINUX DEBUG : LayoutTests/fast/multicol/columns-shorthand-parsing.html = CRASH
 
 // WebKit roll r47417:47528
 BUG19766 WIN : LayoutTests/svg/batik/text/textPosition.svg = FAIL
@@ -2688,12 +2678,6 @@ BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
 // Fails due to textInputController.setInputMethod not implemented for Mac.
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-and-newline.html = FAIL
-
-// Temporary supression while we investigate.
-BUG19842 MAC : LayoutTests/fast/forms/input-type-change2.html = CRASH
-
-// WebKit 47646:47719.
-BUG20340 MAC : LayoutTests/fast/forms/button-state-restore.html = CRASH
 
 // WebKit 47719:47732. New test. Time out on all 3 platforms.
 BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
@@ -2707,9 +2691,6 @@ BUG20265 LINUX : LayoutTests/fast/forms/ValidityState-valueMissing-005.html = CR
 BUG20265 LINUX : LayoutTests/fast/forms/range-default-value.html = CRASH
 BUG20265 LINUX : LayoutTests/fast/forms/range-reset.html = CRASH
 BUG20265 LINUX : LayoutTests/platform/mac/accessibility/slider-supports-actions.html = CRASH
-
-// Fails after V8 rollup
-BUG20314 MAC : LayoutTests/fast/css/only-of-type-pseudo-class.html = FAIL
 
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
