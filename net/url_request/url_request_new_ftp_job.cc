@@ -14,6 +14,7 @@
 #include "net/base/net_util.h"
 #include "net/ftp/ftp_directory_parser.h"
 #include "net/ftp/ftp_response_info.h"
+#include "net/ftp/ftp_server_type_histograms.h"
 #include "net/ftp/ftp_transaction_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -243,8 +244,9 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
 
   int64 file_size;
   std::istringstream iss(std::string(buf->data(), bytes_read));
+  struct net::ListState state;
+  memset(&state, 0, sizeof(state));
   while (getline(iss, line)) {
-    struct net::ListState state;
     struct net::ListResult result;
     std::replace(line.begin(), line.end(), '\r', '\0');
     net::LineType line_type = ParseFTPLine(line.c_str(), &state, &result);
@@ -270,6 +272,7 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
         break;
     }
   }
+  LogFtpServerType(state);
   directory_html_.append(file_entry);
   size_t bytes_to_copy = std::min(static_cast<size_t>(buf_size),
                                   directory_html_.length());
@@ -278,6 +281,38 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
     directory_html_.erase(0, bytes_to_copy);
   }
   return bytes_to_copy;
+}
+
+void URLRequestNewFtpJob::LogFtpServerType(const net::ListState& list_state) {
+  switch (list_state.lstyle) {
+    case 'E':
+      net::UpdateFtpServerTypeHistograms(net::SERVER_EPLF);
+      break;
+    case 'V':
+      net::UpdateFtpServerTypeHistograms(net::SERVER_VMS);
+      break;
+    case 'C':
+      net::UpdateFtpServerTypeHistograms(net::SERVER_CMS);
+      break;
+    case 'W':
+      net::UpdateFtpServerTypeHistograms(net::SERVER_DOS);
+      break;
+    case 'O':
+      net::UpdateFtpServerTypeHistograms(net::SERVER_OS2);
+      break;
+    case 'U':
+      net::UpdateFtpServerTypeHistograms(net::SERVER_LSL);
+      break;
+    case 'w':
+      net::UpdateFtpServerTypeHistograms(net::SERVER_W16);
+      break;
+    case 'D':
+      net::UpdateFtpServerTypeHistograms(net::SERVER_DLS);
+      break;
+    default:
+      net::UpdateFtpServerTypeHistograms(net::SERVER_UNKNOWN);
+      break;
+  }
 }
 
 void URLRequestNewFtpJob::OnStartCompleted(int result) {
