@@ -1,0 +1,62 @@
+<HTML>
+<HEAD>
+<TITLE>Drawing Demo</TITLE>
+
+<script type="text/javascript">
+
+var nacl_elt;
+
+// Before scripting the loaded module, ensure the Native Client module is loaded.
+var startupTimeout;
+
+var PostLoadInit = function() {
+  if (nacl_elt.__moduleReady == 1) {
+    clearTimeout(startupTimeout);
+    nacl_elt.focus();
+  } else {
+    if (nacl_elt.__moduleReady == undefined) {
+      alert('The Native Client plugin was unable to load');
+      return;
+    }
+    startupTimeout = setTimeout(PostLoadInit, 100);
+  }
+}
+
+// Init is called when the document has completed loading.  It downloads the
+// NativeClient modules.
+var Init = function() {
+  // service_url contains the location of the NativeClient module to be
+  // loaded as a service.
+  nacl_elt = document.getElementById('embed1');
+  PostLoadInit();
+}
+
+
+</script>
+
+</HEAD>
+<BODY id="bodyId" onload="Init();" >
+
+<h1>Drawing Demo using Anti-Grain Geometry</h1>
+ <p>
+  You should see below many circles drawn with a scrolling color spectrum, and
+  a semi-translucent triangle rendered in the foreground.  This demo will run
+  for a few thousand frames and then stop.  Please reload the page to restart
+  the animation.
+ </p>
+ <p>
+  This demo uses an open source library called Anti-Grain Geometry, which
+  provides high quality anti-aliased rendering.  Please see
+  <a href="http://www.antigrain.com/">http://www.antigrain.com/</a>
+  for more information about Anti-Grain Geometry.
+ </p>
+<embed id="embed1" src="drawing.nexe" type="application/x-nacl-srpc" width=512 height=512>
+<br>
+
+<script>
+var embed1 = document.getElementById('embed1');
+</script>
+
+
+</BODY>
+</HTML>

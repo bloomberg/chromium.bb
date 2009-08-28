@@ -1,0 +1,21 @@
+diff -Naur agg-2.5/Makefile.in.NativeClient agg-2.5_nacl/Makefile.in.NativeClient
+--- agg-2.5/Makefile.in.NativeClient	1969-12-31 16:00:00.000000000 -0800
++++ agg-2.5_nacl/Makefile.in.NativeClient	2009-08-26 10:48:42.804514000 -0700
+@@ -0,0 +1,8 @@
++AGGLIBS= -lagg
++AGGCXXFLAGS = -O3 -mfpmath=sse -msse -fomit-frame-pointer
++CXX = $(NACL_BIN_PATH)/nacl-g++
++C = $(NACL_BIN_PATH)/nacl-gcc
++LIB = $(NACL_BIN_PATH)/nacl-ar cr
++
++.PHONY : clean
++
+diff -Naur agg-2.5/src/Makefile agg-2.5_nacl/src/Makefile
+--- agg-2.5/src/Makefile	2006-10-08 21:07:22.000000000 -0700
++++ agg-2.5_nacl/src/Makefile	2009-08-26 10:48:42.810525000 -0700
+@@ -1,4 +1,4 @@
+-include ../Makefile.in.$(shell uname)
++include ../Makefile.in.NativeClient
+
+ CXXFLAGS= $(AGGCXXFLAGS) -I../include -L./
+
