@@ -116,6 +116,12 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   // if so.  Returns true if the tab should be eaten.
   bool OnTabPressed();
 
+  // Called when the user hits backspace in |field_|.  Checks whether
+  // keyword search is being terminated.  Returns true if the
+  // backspace should be intercepted (not forwarded on to the standard
+  // machinery).
+  bool OnBackspacePressed();
+
   void AcceptInput(WindowOpenDisposition disposition, bool for_drop);
 
   // Helper for LocationBarViewMac.  Selects all in |field_|.

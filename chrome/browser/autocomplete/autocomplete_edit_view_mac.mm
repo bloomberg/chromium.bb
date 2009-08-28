@@ -630,6 +630,25 @@ bool AutocompleteEditViewMac::OnTabPressed() {
   return false;
 }
 
+bool AutocompleteEditViewMac::OnBackspacePressed() {
+  // Don't intercept if not in keyword search mode.
+  if (model_->is_keyword_hint() || model_->keyword().empty()) {
+    return false;
+  }
+
+  // Don't intercept if there is a selection, or the cursor isn't at
+  // the leftmost position.
+  const NSRange selection = GetSelectedRange();
+  if (selection.length > 0 || selection.location > 0) {
+    return false;
+  }
+
+  // We're showing a keyword and the user pressed backspace at the
+  // beginning of the text.  Delete the selected keyword.
+  model_->ClearKeyword(GetText());
+  return true;
+}
+
 bool AutocompleteEditViewMac::IsPopupOpen() const {
   return popup_view_->IsOpen();
 }
@@ -755,6 +774,12 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
         event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
     edit_view_->AcceptInput(disposition, false);
     return YES;
+  }
+
+  if (cmd == @selector(deleteBackward:)) {
+    if (edit_view_->OnBackspacePressed()) {
+      return YES;
+    }
   }
 
   // Capture the state before the operation changes the content.
