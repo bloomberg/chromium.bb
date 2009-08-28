@@ -63,7 +63,7 @@ class ChildProcess {
   // The singleton instance for this process.
   static ChildProcess* child_process_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ChildProcess);
+  DISALLOW_COPY_AND_ASSIGN(ChildProcess);
 };
 
 #endif  // CHROME_COMMON_CHILD_PROCESS_H__

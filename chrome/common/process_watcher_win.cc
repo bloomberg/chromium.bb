@@ -72,7 +72,7 @@ class TimerExpiredTask : public Task, public base::ObjectWatcher::Delegate {
 
   base::ObjectWatcher watcher_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(TimerExpiredTask);
+  DISALLOW_COPY_AND_ASSIGN(TimerExpiredTask);
 };
 
 }  // namespace

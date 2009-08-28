@@ -145,7 +145,7 @@ class HistogramSynchronizer : public
   // from the UI thread (for UMA uploads), or for about:histograms.
   static HistogramSynchronizer* histogram_synchronizer_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(HistogramSynchronizer);
+  DISALLOW_COPY_AND_ASSIGN(HistogramSynchronizer);
 };
 
 #endif  // CHROME_COMMON_HISTOGRAM_SYNCHRONIZER_H_

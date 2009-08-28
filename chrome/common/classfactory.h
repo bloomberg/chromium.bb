@@ -5,8 +5,8 @@
 // ClassFactory<class>
 // is a simple class factory object for the parameterized class.
 //
-#ifndef _CLASSFACTORY_H_
-#define _CLASSFACTORY_H_
+#ifndef CHROME_COMMON_CLASSFACTORY_H_
+#define CHROME_COMMON_CLASSFACTORY_H_
 
 #include <unknwn.h>
 
@@ -15,16 +15,16 @@
 // maintains a static count on the number of these objects in existence.
 // It remains for subclasses to implement CreateInstance.
 class GenericClassFactory : public IClassFactory {
-public:
+ public:
   GenericClassFactory();
   ~GenericClassFactory();
 
-  //IUnknown methods
+  // IUnknown methods
   STDMETHOD(QueryInterface)(REFIID iid, LPVOID* ppvObject);
   STDMETHOD_(ULONG, AddRef)();
   STDMETHOD_(ULONG, Release)();
 
-  //IClassFactory methods
+  // IClassFactory methods
   STDMETHOD(CreateInstance)(LPUNKNOWN pUnkOuter, REFIID riid,
                             LPVOID* ppvObject) = 0;
   STDMETHOD(LockServer)(BOOL fLock);
@@ -32,19 +32,18 @@ public:
   // generally handy for DllUnloadNow -- count of existing descendant objects
   static LONG GetObjectCount() { return object_count_; }
 
-protected:
-  LONG reference_count_; // mind the reference counting for this object
-  static LONG object_count_; // count of all these objects
+ protected:
+  LONG reference_count_;      // mind the reference counting for this object
+  static LONG object_count_;  // count of all these objects
 };
 
 
 // OneClassFactory<T>
 // Knows how to be a factory for T's
 template <class T>
-class OneClassFactory : public GenericClassFactory
-{
-public:
-  //IClassFactory methods
+class OneClassFactory : public GenericClassFactory {
+ public:
+  // IClassFactory methods
   STDMETHOD(CreateInstance)(LPUNKNOWN pUnkOuter, REFIID riid, void** ppvObject);
 };
 
@@ -54,11 +53,11 @@ STDMETHODIMP OneClassFactory<T>::CreateInstance(LPUNKNOWN pUnkOuter,
                                                 REFIID riid, void** result) {
   *result = NULL;
 
-  if(pUnkOuter != NULL)
+  if (pUnkOuter != NULL)
     return CLASS_E_NOAGGREGATION;
 
   T* const obj = new T();
-  if(!obj)
+  if (!obj)
     return E_OUTOFMEMORY;
 
   obj->AddRef();
@@ -68,4 +67,4 @@ STDMETHODIMP OneClassFactory<T>::CreateInstance(LPUNKNOWN pUnkOuter,
   return hr;
 }
 
-#endif
+#endif  // CHROME_COMMON_CLASSFACTORY_H_

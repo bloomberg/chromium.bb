@@ -171,7 +171,7 @@ class MRUCacheBase {
 
   DeletorType deletor_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(MRUCacheBase);
+  DISALLOW_COPY_AND_ASSIGN(MRUCacheBase);
 };
 
 // MRUCache --------------------------------------------------------------------

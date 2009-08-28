@@ -131,7 +131,7 @@ class VisitedLinkCommon {
   uint8 salt_[LINK_SALT_LENGTH];
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(VisitedLinkCommon);
+  DISALLOW_COPY_AND_ASSIGN(VisitedLinkCommon);
 };
 
 #endif // WIN_COMMON_VISITEDLINK_COMMON_H__

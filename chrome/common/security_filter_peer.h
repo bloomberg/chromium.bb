@@ -51,14 +51,14 @@ class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
   virtual std::string GetURLForDebugging();
 
  protected:
-   SecurityFilterPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-                      webkit_glue::ResourceLoaderBridge::Peer* peer);
+  SecurityFilterPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
+                     webkit_glue::ResourceLoaderBridge::Peer* peer);
 
-   webkit_glue::ResourceLoaderBridge::Peer* original_peer_;
-   webkit_glue::ResourceLoaderBridge* resource_loader_bridge_;
+  webkit_glue::ResourceLoaderBridge::Peer* original_peer_;
+  webkit_glue::ResourceLoaderBridge* resource_loader_bridge_;
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(SecurityFilterPeer);
+  DISALLOW_COPY_AND_ASSIGN(SecurityFilterPeer);
 };
 
 // The BufferedPeer reads all the data of the request into an internal buffer.
@@ -90,12 +90,13 @@ class BufferedPeer : public SecurityFilterPeer {
 
  private:
   std::string mime_type_;
-  DISALLOW_EVIL_CONSTRUCTORS(BufferedPeer);
+
+  DISALLOW_COPY_AND_ASSIGN(BufferedPeer);
 };
 
 // The ReplaceContentPeer cancels the request and serves the provided data as
 // content instead.
-// TODO (jcampan): we do not as of now cancel the request, as we do not have
+// TODO(jcampan): we do not as of now cancel the request, as we do not have
 // access to the resource_loader_bridge in the SecurityFilterPeer factory
 // method.  For now the resource is still being fetched, but ignored, as once
 // we have provided the replacement content, the associated pending request
@@ -116,11 +117,13 @@ class ReplaceContentPeer : public SecurityFilterPeer {
   void OnReceivedData(const char* data, int len);
   void OnCompletedRequest(const URLRequestStatus& status,
                           const std::string& security_info);
+
  private:
-   webkit_glue::ResourceLoaderBridge::ResponseInfo response_info_;
-   std::string mime_type_;
-   std::string data_;
-   DISALLOW_EVIL_CONSTRUCTORS(ReplaceContentPeer);
+  webkit_glue::ResourceLoaderBridge::ResponseInfo response_info_;
+  std::string mime_type_;
+  std::string data_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReplaceContentPeer);
 };
 
 // This class filters insecure image by replacing them with a transparent and
@@ -132,10 +135,10 @@ class ImageFilterPeer : public BufferedPeer {
   virtual ~ImageFilterPeer();
 
  protected:
-   virtual bool DataReady();
+  virtual bool DataReady();
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(ImageFilterPeer);
+  DISALLOW_COPY_AND_ASSIGN(ImageFilterPeer);
 };
 
 #endif  // CHROME_COMMON_SECURITY_FILTER_PEER_H__

@@ -87,7 +87,7 @@ class SqliteStatementCache {
   typedef std::map<FuncID, SQLStatement*> StatementMap;
   StatementMap statements_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(SqliteStatementCache);
+  DISALLOW_COPY_AND_ASSIGN(SqliteStatementCache);
 };
 
 // Automatically creates or retrieves a statement from the given cache, and
@@ -117,7 +117,7 @@ class SqliteCompiledStatement {
   // by this class, it is owned by the statement cache object.
   SQLStatement* statement_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(SqliteCompiledStatement);
+  DISALLOW_COPY_AND_ASSIGN(SqliteCompiledStatement);
 };
 
 // Creates a compiled statement that has a unique name based on the file and

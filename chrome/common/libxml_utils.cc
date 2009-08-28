@@ -29,8 +29,8 @@ XmlReader::~XmlReader() {
     xmlFreeTextReader(reader_);
 }
 
-/* static */ void XmlReader::GenericErrorCallback(void* context,
-                                                  const char* msg, ...) {
+// static
+void XmlReader::GenericErrorCallback(void* context, const char* msg, ...) {
   va_list args;
   va_start(args, msg);
 
@@ -39,9 +39,8 @@ XmlReader::~XmlReader() {
 }
 
 bool XmlReader::Load(const std::string& input) {
-  const int kParseOptions =
-      XML_PARSE_RECOVER |  // recover on errors
-      XML_PARSE_NONET;     // forbid network access
+  const int kParseOptions = XML_PARSE_RECOVER |  // recover on errors
+                            XML_PARSE_NONET;     // forbid network access
   // TODO(evanm): Verify it's OK to pass NULL for the URL and encoding.
   // The libxml code allows for these, but it's unclear what effect is has.
   reader_ = xmlReaderForMemory(input.data(), static_cast<int>(input.size()),
@@ -51,9 +50,8 @@ bool XmlReader::Load(const std::string& input) {
 
 bool XmlReader::LoadFile(const std::string& file_path) {
 
-  const int kParseOptions =
-      XML_PARSE_RECOVER |  // recover on errors
-      XML_PARSE_NONET;     // forbid network access
+  const int kParseOptions = XML_PARSE_RECOVER |  // recover on errors
+                            XML_PARSE_NONET;     // forbid network access
   reader_ = xmlReaderForFile(file_path.c_str(), NULL, kParseOptions);
   return reader_ != NULL;
 }

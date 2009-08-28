@@ -54,7 +54,7 @@ class MessageRouter : public IPC::Channel::Listener,
   // A list of all listeners with assigned routing IDs.
   IDMap<IPC::Channel::Listener> routes_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(MessageRouter);
+  DISALLOW_COPY_AND_ASSIGN(MessageRouter);
 };
 
 #endif  // CHROME_COMMON_MESSAGE_ROUTER_H__

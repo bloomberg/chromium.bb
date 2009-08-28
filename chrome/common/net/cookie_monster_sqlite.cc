@@ -94,7 +94,7 @@ class SQLitePersistentCookieStore::Backend
   PendingOperationsList::size_type num_pending_;
   Lock pending_lock_;  // Guard pending_ and num_pending_
 
-  DISALLOW_EVIL_CONSTRUCTORS(Backend);
+  DISALLOW_COPY_AND_ASSIGN(Backend);
 };
 
 void SQLitePersistentCookieStore::Backend::AddCookie(

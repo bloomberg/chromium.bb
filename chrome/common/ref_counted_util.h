@@ -20,7 +20,7 @@ class RefCountedVector :
 
   std::vector<T> data;
 
-  DISALLOW_EVIL_CONSTRUCTORS(RefCountedVector<T>);
+  DISALLOW_COPY_AND_ASSIGN(RefCountedVector<T>);
 };
 
 // RefCountedThreadSafeBytes represent a ref-counted blob of bytes.

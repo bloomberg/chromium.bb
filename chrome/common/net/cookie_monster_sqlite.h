@@ -47,7 +47,7 @@ class SQLitePersistentCookieStore
 
   MetaTableHelper meta_table_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(SQLitePersistentCookieStore);
+  DISALLOW_COPY_AND_ASSIGN(SQLitePersistentCookieStore);
 };
 
 #endif  // CHROME_COMMON_NET_COOKIE_MONSTER_SQLITE_H__

@@ -179,7 +179,7 @@ class TimeFormatter {
     static icu::PluralFormat* createFallbackFormat(
         const icu::PluralRules& rules, int index, FormatType format_type);
 
-    DISALLOW_EVIL_CONSTRUCTORS(TimeFormatter);
+    DISALLOW_COPY_AND_ASSIGN(TimeFormatter);
 };
 
 void TimeFormatter::BuildFormats(

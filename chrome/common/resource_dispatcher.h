@@ -136,7 +136,7 @@ class ResourceDispatcher {
 
   ScopedRunnableMethodFactory<ResourceDispatcher> method_factory_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ResourceDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };
 
 #endif  // CHROME_COMMON_RESOURCE_DISPATCHER_H__
