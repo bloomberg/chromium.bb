@@ -11,8 +11,6 @@
 MetadataParserJpegFactory::MetadataParserJpegFactory()
     : MetadataParserFactory(){}
 
-MetadataParserJpegFactory::~MetadataParserJpegFactory() {}
-
 bool MetadataParserJpegFactory::CanParse(const FilePath& path,
                                          char* bytes,
                                          int bytes_size) {

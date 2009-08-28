@@ -13,7 +13,6 @@
 class MetadataPropertyIterator {
  public:
   MetadataPropertyIterator() {}
-  virtual ~MetadataPropertyIterator() {}
 
   // Gets the next Property in the iterator.  Returns false if at the end
   // of the list.
@@ -30,7 +29,6 @@ class MetadataPropertyIterator {
 class MetadataParser {
  public:
   MetadataParser(const FilePath& path) {}
-  virtual ~MetadataParser() {}
 
   static const char* kPropertyType;
   static const char* kPropertyFilesize;

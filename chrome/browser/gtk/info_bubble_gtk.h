@@ -34,9 +34,6 @@ class InfoBubbleGtkDelegate {
 
   // NOTE: The Views interface has CloseOnEscape, except I can't find a place
   // where it ever returns false, so we always allow you to close via escape.
-
- protected:
-  ~InfoBubbleGtkDelegate() {}
 };
 
 class InfoBubbleGtk : public NotificationObserver {

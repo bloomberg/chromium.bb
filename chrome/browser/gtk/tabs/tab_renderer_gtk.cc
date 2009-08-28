@@ -236,9 +236,7 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
       fav_icon_hiding_offset_(0),
       should_display_crashed_favicon_(false),
       loading_animation_(theme_provider),
-      // Zero is not a valid SkColor.  It'll be replaced by the
-      // theme tab_text_color.
-      close_button_color_(0u) {
+      close_button_color_(NULL) {
   InitResources();
 
   data_.pinned = false;
@@ -592,7 +590,7 @@ void TabRendererGtk::Layout() {
     if (theme_provider_) {
       SkColor tab_text_color =
         theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT);
-      if (close_button_color_ == 0u || tab_text_color != close_button_color_) {
+      if (!close_button_color_ || tab_text_color != close_button_color_) {
         close_button_color_ = tab_text_color;
         ResourceBundle& rb = ResourceBundle::GetSharedInstance();
         close_button_->SetBackground(close_button_color_,

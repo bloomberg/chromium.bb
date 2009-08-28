@@ -225,7 +225,7 @@ class Class {\
   Class() { \
     class_name = #Class; \
   } \
-  virtual ~Class() {} \
+  ~Class() {} \
   \
   STRUCT( \
       TOOLS_RPC_API_METHOD0, \

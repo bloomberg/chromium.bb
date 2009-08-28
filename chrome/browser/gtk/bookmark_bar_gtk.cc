@@ -399,8 +399,8 @@ void BookmarkBarGtk::AnimationProgressed(const Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
   gtk_widget_set_size_request(event_box_.get(), -1,
-                              static_cast<gint>(animation->GetCurrentValue() *
-                                                kBookmarkBarHeight));
+                              animation->GetCurrentValue() *
+                              kBookmarkBarHeight);
 }
 
 void BookmarkBarGtk::AnimationEnded(const Animation* animation) {

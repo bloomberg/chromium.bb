@@ -523,7 +523,7 @@ void UITest::QuitBrowser() {
 
   // Don't forget to close the handle
   base::CloseProcessHandle(process_);
-  process_ = 0;
+  process_ = NULL;
 }
 
 void UITest::AssertAppNotRunning(const std::wstring& error_message) {

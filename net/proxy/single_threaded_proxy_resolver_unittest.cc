@@ -34,8 +34,8 @@ class MockProxyResolver : public ProxyResolver {
 
     CheckIsOnWorkerThread();
 
-    EXPECT_TRUE(NULL == callback);
-    EXPECT_TRUE(NULL == request);
+    EXPECT_EQ(NULL, callback);
+    EXPECT_EQ(NULL, request);
 
     results->UseNamedProxy(query_url.host());
 

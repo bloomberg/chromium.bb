@@ -1183,9 +1183,7 @@ gboolean BookmarkManagerGtk::OnRightTreeViewButtonPress(
 
   GtkTreePath* path;
   gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(tree_view),
-                                static_cast<gint>(event->x),
-                                static_cast<gint>(event->y), &path,
-                                NULL, NULL, NULL);
+                                event->x, event->y, &path, NULL, NULL, NULL);
 
   if (path == NULL)
     return TRUE;
@@ -1209,10 +1207,10 @@ gboolean BookmarkManagerGtk::OnRightTreeViewMotion(
     return FALSE;
 
   if (gtk_drag_check_threshold(tree_view,
-                               static_cast<gint>(bm->mousedown_event_.x),
-                               static_cast<gint>(bm->mousedown_event_.y),
-                               static_cast<gint>(event->x),
-                               static_cast<gint>(event->y))) {
+                               bm->mousedown_event_.x,
+                               bm->mousedown_event_.y,
+                               event->x,
+                               event->y)) {
     bm->delaying_mousedown_ = false;
     GtkTargetList* targets = GtkDndUtil::GetTargetListFromCodeMask(
         GtkDndUtil::CHROME_BOOKMARK_ITEM |

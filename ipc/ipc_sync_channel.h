@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_IPC_SYNC_SENDER_H_
-#define IPC_IPC_SYNC_SENDER_H_
+#ifndef IPC_IPC_SYNC_SENDER_H__
+#define IPC_IPC_SYNC_SENDER_H__
 
 #include <string>
 #include <deque>
@@ -154,9 +154,9 @@ class SyncChannel : public ChannelProxy,
   base::WaitableEventWatcher send_done_watcher_;
   base::WaitableEventWatcher dispatch_watcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncChannel);
+  DISALLOW_EVIL_CONSTRUCTORS(SyncChannel);
 };
 
 }  // namespace IPC
 
-#endif  // IPC_IPC_SYNC_SENDER_H_
+#endif  // IPC_IPC_SYNC_SENDER_H__

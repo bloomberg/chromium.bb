@@ -107,8 +107,8 @@ bool SlideAnimatorGtk::IsClosing() {
 }
 
 void SlideAnimatorGtk::AnimationProgressed(const Animation* animation) {
-  int showing_height = static_cast<int>(child_->allocation.height *
-                                        animation_->GetCurrentValue());
+  int showing_height = child_->allocation.height *
+                       animation_->GetCurrentValue();
   if (direction_ == DOWN) {
     gtk_fixed_move(GTK_FIXED(widget_.get()), child_, 0,
                    showing_height - child_->allocation.height);

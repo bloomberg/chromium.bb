@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@ TEST(PropertyBagTest, AddQueryRemove) {
   PropertyAccessor<int> adaptor;
 
   // Should be no match initially.
-  EXPECT_TRUE(NULL == adaptor.GetProperty(&bag));
+  EXPECT_EQ(NULL, adaptor.GetProperty(&bag));
 
   // Add the value and make sure we get it back.
   const int kFirstValue = 1;
@@ -26,7 +26,7 @@ TEST(PropertyBagTest, AddQueryRemove) {
 
   // Remove the value and make sure it's gone.
   adaptor.DeleteProperty(&bag);
-  EXPECT_TRUE(NULL == adaptor.GetProperty(&bag));
+  EXPECT_EQ(NULL, adaptor.GetProperty(&bag));
 }
 
 TEST(PropertyBagTest, Copy) {
@@ -57,6 +57,6 @@ TEST(PropertyBagTest, Copy) {
 
   // Clear it out, neither property should be left.
   copy = PropertyBag();
-  EXPECT_TRUE(NULL == adaptor1.GetProperty(&copy));
-  EXPECT_TRUE(NULL == adaptor2.GetProperty(&copy));
+  EXPECT_EQ(NULL, adaptor1.GetProperty(&copy));
+  EXPECT_EQ(NULL, adaptor2.GetProperty(&copy));
 }

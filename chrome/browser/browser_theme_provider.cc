@@ -117,8 +117,8 @@ const SkColor BrowserThemeProvider::kDefaultColorNTPSectionText =
     SkColorSetRGB(0, 0, 0);
 const SkColor BrowserThemeProvider::kDefaultColorNTPSectionLink =
     SkColorSetRGB(0, 0, 204);
-const SkColor BrowserThemeProvider::kDefaultColorControlBackground = 0u;
-const SkColor BrowserThemeProvider::kDefaultColorButtonBackground = 0u;
+const SkColor BrowserThemeProvider::kDefaultColorControlBackground = NULL;
+const SkColor BrowserThemeProvider::kDefaultColorButtonBackground = NULL;
 
 // Default tints.
 const skia::HSL BrowserThemeProvider::kDefaultTintButtons = { -1, -1, -1 };

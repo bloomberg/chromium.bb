@@ -73,9 +73,6 @@ class TabGtk : public TabRendererGtk,
 
     // Returns the theme provider for icons and colors.
     virtual ThemeProvider* GetThemeProvider() = 0;
-
-   protected:
-    ~TabDelegate() {}
   };
 
   explicit TabGtk(TabDelegate* delegate);

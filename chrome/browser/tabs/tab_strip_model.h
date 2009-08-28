@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,21 +47,21 @@ class TabStripModelObserver {
   // (selected).
   virtual void TabInsertedAt(TabContents* contents,
                              int index,
-                             bool foreground) {}
+                             bool foreground) { }
 
   // The specified TabContents at |index| is being closed (and eventually
   // destroyed).
-  virtual void TabClosingAt(TabContents* contents, int index) {}
+  virtual void TabClosingAt(TabContents* contents, int index) { }
 
   // The specified TabContents at |index| is being detached, perhaps to be
   // inserted in another TabStripModel. The implementer should take whatever
   // action is necessary to deal with the TabContents no longer being present.
-  virtual void TabDetachedAt(TabContents* contents, int index) {}
+  virtual void TabDetachedAt(TabContents* contents, int index) { }
 
   // The selected TabContents is about to change from |old_contents| at |index|.
   // This gives observers a chance to prepare for an impending switch before it
   // happens.
-  virtual void TabDeselectedAt(TabContents* contents, int index) {}
+  virtual void TabDeselectedAt(TabContents* contents, int index) { }
 
   // The selected TabContents changed from |old_contents| to |new_contents| at
   // |index|. |user_gesture| specifies whether or not this was done by a user
@@ -70,14 +70,14 @@ class TabStripModelObserver {
   virtual void TabSelectedAt(TabContents* old_contents,
                              TabContents* new_contents,
                              int index,
-                             bool user_gesture) {}
+                             bool user_gesture) { }
 
   // The specified TabContents at |from_index| was moved to |to_index|. If
   // the pinned state of the tab is changing |pinned_state_changed| is true.
   virtual void TabMoved(TabContents* contents,
                         int from_index,
                         int to_index,
-                        bool pinned_state_changed) {}
+                        bool pinned_state_changed) { }
 
   // The specified TabContents at |index| changed in some way. |contents| may
   // be an entirely different object and the old value is no longer available
@@ -92,21 +92,18 @@ class TabStripModelObserver {
   // without updating the title (which may be an ugly URL if the real title
   // hasn't come in yet).
   virtual void TabChangedAt(TabContents* contents, int index,
-                            bool loading_only) {}
+                            bool loading_only) { }
 
   // Invoked when the pinned state of a tab changes.
   // NOTE: this is only invoked if the tab doesn't move as a result of its
   // pinned state changing. If the tab moves as a result, the observer is
   // notified by way of the TabMoved method with |pinned_state_changed| true.
-  virtual void TabPinnedStateChanged(TabContents* contents, int index) {}
+  virtual void TabPinnedStateChanged(TabContents* contents, int index) { }
 
   // The TabStripModel now no longer has any "significant" (user created or
   // user manipulated) tabs. The implementer may use this as a trigger to try
   // and close the window containing the TabStripModel, for example...
-  virtual void TabStripEmpty() {}
-
- protected:
-  ~TabStripModelObserver() {}
+  virtual void TabStripEmpty() { }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,9 +199,6 @@ class TabStripModelDelegate {
 
   // Returns whether some contents can be closed.
   virtual bool CanCloseContentsAt(int index) = 0;
-
- protected:
-  ~TabStripModelDelegate() {}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -44,9 +44,6 @@ class SimpleMenuModel : public Menu2Model {
 
     // Performs the action associated with the specified command id.
     virtual void ExecuteCommand(int command_id) = 0;
-
-   protected:
-    ~Delegate() {}
   };
 
   // The Delegate can be NULL, though if it is items can't be checked or

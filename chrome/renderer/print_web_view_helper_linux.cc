@@ -26,15 +26,15 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   //   Top = 0.25 in.
   //   Bottom = 0.56 in.
   const int kDPI = 72;
-  const int kWidth = static_cast<int>((8.5-0.25-0.25) * kDPI);
-  const int kHeight = static_cast<int>((11-0.25-0.56) * kDPI);
+  const int kWidth = (8.5-0.25-0.25) * kDPI;
+  const int kHeight = (11-0.25-0.56) * kDPI;
   ViewMsg_Print_Params default_settings;
   default_settings.printable_size = gfx::Size(kWidth, kHeight);
   default_settings.dpi = kDPI;
   default_settings.min_shrink = 1.25;
   default_settings.max_shrink = 2.0;
   default_settings.desired_dpi = kDPI;
-  default_settings.document_cookie = 0;
+  default_settings.document_cookie = NULL;
   default_settings.selection_only = false;
 
   // Calculate the estimated page count.

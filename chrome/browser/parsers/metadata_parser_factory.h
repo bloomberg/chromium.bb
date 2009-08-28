@@ -12,7 +12,6 @@
 class MetadataParserFactory {
  public:
   MetadataParserFactory() {}
-  virtual ~MetadataParserFactory() {}
 
   // Used to check to see if the parser can parse the given file. This
   // should not do any additional reading of the file.

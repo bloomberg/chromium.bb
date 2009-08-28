@@ -44,8 +44,6 @@ class BrowserTestRunner {
 class BrowserTestRunnerFactory {
  public:
   virtual BrowserTestRunner* CreateBrowserTestRunner() const = 0;
- protected:
-  ~BrowserTestRunnerFactory() {}
 };
 
 }  // namespace

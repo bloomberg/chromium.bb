@@ -293,7 +293,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   DictionaryValue input;
 
   // First try with an empty dictionary. We should get nothing back.
-  ASSERT_TRUE(NULL == extension.LoadPageActionHelper(&input, 0, &error_msg));
+  ASSERT_EQ(NULL, extension.LoadPageActionHelper(&input, 0, &error_msg));
   ASSERT_STRNE("", error_msg.c_str());
   error_msg = "";
 

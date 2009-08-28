@@ -244,7 +244,6 @@ class BrowserWindow {
  protected:
   friend class BrowserList;
   friend class BrowserView;
-  ~BrowserWindow() {}
   virtual void DestroyBrowser() = 0;
 };
 

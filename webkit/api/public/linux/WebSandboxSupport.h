@@ -49,9 +49,6 @@ namespace WebKit {
         // Returns a string with the font family on an empty string if the
         // request cannot be satisfied.
         virtual WebString getFontFamilyForCharacters(const WebUChar* characters, size_t numCharacters) = 0;
-
-    protected:
-        ~WebSandboxSupport() { }
     };
 
 } // namespace WebKit

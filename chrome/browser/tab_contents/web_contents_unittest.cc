@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ static void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
 // Subclass the TestingProfile so that it can return certain services we need.
 class TabContentsTestingProfile : public TestingProfile {
  public:
-  TabContentsTestingProfile() : TestingProfile() {}
+  TabContentsTestingProfile() : TestingProfile() { }
 
   virtual PrefService* GetPrefs() {
     if (!prefs_.get()) {
@@ -70,8 +70,6 @@ class TestInterstitialPage : public InterstitialPage {
    public:
     virtual void TestInterstitialPageDeleted(
         TestInterstitialPage* interstitial) = 0;
-   protected:
-    ~Delegate() {}
   };
 
   // IMPORTANT NOTE: if you pass stack allocated values for |state| and

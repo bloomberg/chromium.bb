@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H_
-#define CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H_
+#ifndef CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__
+#define CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__
 
 #include <map>
 #include <vector>
@@ -240,7 +240,7 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
           arg2_(arg2) {
     }
 
-    virtual ~GenericRequest2() {}
+    virtual ~GenericRequest2() { }
 
     T GetArgument1() {
       return arg1_;
@@ -539,9 +539,6 @@ class WebDataServiceConsumer {
   // not be opened. The result object is destroyed after this call.
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result) = 0;
-
- protected:
-  ~WebDataServiceConsumer() {}
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H_
+#endif  // CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__

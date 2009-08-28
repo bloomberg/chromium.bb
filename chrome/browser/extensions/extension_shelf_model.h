@@ -158,9 +158,6 @@ class ExtensionShelfModelObserver {
 
   // The model is being destroyed.
   virtual void ShelfModelDeleting() {}
-
- protected:
-  ~ExtensionShelfModelObserver() {}
 };
 
 

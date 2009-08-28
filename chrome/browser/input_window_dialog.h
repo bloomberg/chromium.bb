@@ -15,7 +15,7 @@ class InputWindowDialog {
  public:
   class Delegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~Delegate() { }
 
     // Checks whether |text| is a valid input string.
     virtual bool IsValid(const std::wstring& text) = 0;
@@ -42,8 +42,7 @@ class InputWindowDialog {
   virtual void Close() = 0;
 
  protected:
-  InputWindowDialog() {}
-  ~InputWindowDialog() {}
+  InputWindowDialog() { }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputWindowDialog);

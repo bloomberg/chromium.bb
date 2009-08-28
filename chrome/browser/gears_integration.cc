@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -254,7 +254,7 @@ void GearsCreateShortcut(
       new CreateShortcutCommand(name_utf8, orig_name_utf8, url.spec(),
                                 description_utf8,
                                 app_info.icons, fallback_icon, callback);
-  CPHandleCommand(GEARSPLUGINCOMMAND_CREATE_SHORTCUT, command, 0u);
+  CPHandleCommand(GEARSPLUGINCOMMAND_CREATE_SHORTCUT, command, NULL);
 }
 
 // This class holds and manages the data passed to the
@@ -311,5 +311,5 @@ void RunnableMethodTraits<QueryShortcutsCommand>::ReleaseCallee(
 void GearsQueryShortcuts(GearsQueryShortcutsCallback* callback) {
   CPHandleCommand(GEARSPLUGINCOMMAND_GET_SHORTCUT_LIST,
       new QueryShortcutsCommand(callback),
-      0u);
+      NULL);
 }

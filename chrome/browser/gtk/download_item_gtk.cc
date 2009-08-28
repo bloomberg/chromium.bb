@@ -428,9 +428,9 @@ void DownloadItemGtk::AnimationProgressed(const Animation* animation) {
     gtk_widget_queue_draw(progress_area_.get());
   } else {
     if (IsDangerous()) {
-      int progress = static_cast<int>((dangerous_hbox_full_width_ -
-                                       dangerous_hbox_start_width_) *
-                                      new_item_animation_->GetCurrentValue());
+      int progress = (dangerous_hbox_full_width_ -
+                     dangerous_hbox_start_width_) *
+                     new_item_animation_->GetCurrentValue();
       int showing_width = dangerous_hbox_start_width_ + progress;
       gtk_widget_set_size_request(dangerous_hbox_, showing_width, -1);
     } else {

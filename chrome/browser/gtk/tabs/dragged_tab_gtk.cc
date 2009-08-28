@@ -263,9 +263,8 @@ void DraggedTabGtk::SetContainerShapeMask(GdkPixbuf* pixbuf) {
     // border).
     cairo_identity_matrix(cairo_context);
     cairo_set_source_rgba(cairo_context, 1.0f, 1.0f, 1.0f, 1.0f);
-    int tab_height = static_cast<int>(kScalingFactor *
-                                      gdk_pixbuf_get_height(pixbuf) -
-                                      kDragFrameBorderSize);
+    int tab_height = kScalingFactor * gdk_pixbuf_get_height(pixbuf) -
+                     kDragFrameBorderSize;
     cairo_rectangle(cairo_context,
                     0, tab_height,
                     size.width(), size.height() - tab_height);
@@ -296,10 +295,8 @@ gboolean DraggedTabGtk::OnExposeEvent(GtkWidget* widget,
   }
 
   // Only used when not attached.
-  int tab_height = static_cast<int>(kScalingFactor *
-                                    gdk_pixbuf_get_height(pixbuf));
-  int tab_width = static_cast<int>(kScalingFactor *
-                                   gdk_pixbuf_get_width(pixbuf));
+  int tab_height = kScalingFactor * gdk_pixbuf_get_height(pixbuf);
+  int tab_width = kScalingFactor * gdk_pixbuf_get_width(pixbuf);
 
   // Draw the render area.
   if (dragged_tab->backing_store_ && !dragged_tab->attached_) {

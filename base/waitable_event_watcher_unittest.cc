@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ void RunTest_BasicSignal(MessageLoop::Type message_loop_type) {
   WaitableEvent event(true, false);
 
   WaitableEventWatcher watcher;
-  EXPECT_TRUE(NULL == watcher.GetWatchedEvent());
+  EXPECT_EQ(NULL, watcher.GetWatchedEvent());
 
   QuitDelegate delegate;
   watcher.StartWatching(&event, &delegate);
@@ -48,7 +48,7 @@ void RunTest_BasicSignal(MessageLoop::Type message_loop_type) {
 
   MessageLoop::current()->Run();
 
-  EXPECT_TRUE(NULL == watcher.GetWatchedEvent());
+  EXPECT_EQ(NULL, watcher.GetWatchedEvent());
 }
 
 void RunTest_BasicCancel(MessageLoop::Type message_loop_type) {

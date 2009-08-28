@@ -31,8 +31,6 @@ class ExtensionFunctionDispatcher {
    public:
     virtual Browser* GetBrowser() = 0;
     virtual ExtensionHost* GetExtensionHost() { return NULL; }
-   protected:
-    ~Delegate() {}
   };
 
   // The peer object allows us to notify ExtensionFunctions when we are
