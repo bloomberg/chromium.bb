@@ -2762,3 +2762,7 @@ BUG_JORLOW : LayoutTests/editing/pasteboard/files-during-page-drags.html = FAIL
 // This newly added test times out on Mac:
 BUG20438 MAC : chrome/plugins/get-url-with-iframe-target.html = TIMEOUT
 BUG20438 MAC : chrome/plugins/get-url-with-iframe-target-no-crash.html = TIMEOUT
+
+// WebKit 47837:47846
+BUG_JORLOW WIN : LayoutTests/fast/backgrounds/animated-gif-as-background.html = CRASH
+BUG_JORLOW : LayoutTests/fast/canvas/change-context.html = CRASH
