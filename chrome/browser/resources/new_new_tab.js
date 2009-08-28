@@ -1336,6 +1336,10 @@ document.addEventListener('DOMContentLoaded', bind(logEvent, global,
 document.addEventListener('DOMContentLoaded',
                           callGetSyncMessageIfSyncIsPresent);
 
+// This link allows user to make new tab page as homepage from the new tab
+// page itself (without going to Options dialog box).
+document.addEventListener('DOMContentLoaded', showSetAsHomepageLink);
+
 /**
  * The sync code is not yet built by default on all platforms so we have to
  * make sure we don't send the initial sync message to the backend unless the
@@ -1344,6 +1348,32 @@ document.addEventListener('DOMContentLoaded',
 function callGetSyncMessageIfSyncIsPresent() {
   if (document.documentElement.getAttribute("syncispresent") == "true") {
     chrome.send('GetSyncMessage');
+  }
+}
+
+function setAsHomePageLinkClicked() {
+  chrome.send('SetHomepageLinkClicked');
+}
+
+function showSetAsHomepageLink() {
+  var setAsHomepageElement = $('set-as-homepage');
+  var style = setAsHomepageElement.style;
+  if (document.documentElement.getAttribute("showsetashomepage") != "true") {
+    // Hide the section (if new tab page is already homepage).
+    style.opacity = style.height = 0;
+    return;
+  }
+
+  style.height = '';
+  style.opacity = 1;
+  var spanElement = setAsHomepageElement.firstElementChild;
+  var linkElement = spanElement.firstElementChild;
+  if (!linkElement) {
+    linkElement = document.createElement('a');
+    linkElement.href = '';
+    linkElement.textContent = localStrings.getString('makethishomepage');
+    linkElement.addEventListener('click', setAsHomePageLinkClicked);
+    spanElement.appendChild(linkElement);
   }
 }
 

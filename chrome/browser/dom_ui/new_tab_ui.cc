@@ -340,6 +340,8 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_NEW_TAB_FIRST_RUN_NOTIFICATION));
   localized_strings.SetString(L"closefirstrunnotification",
       l10n_util::GetString(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
+  localized_strings.SetString(L"makethishomepage",
+      l10n_util::GetString(IDS_NEW_TAB_MAKE_THIS_HOMEPAGE));
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
@@ -347,6 +349,9 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
     localized_strings.SetString(L"syncispresent", "true");
   else
     localized_strings.SetString(L"syncispresent", "false");
+
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
+    localized_strings.SetString(L"showsetashomepage", "true");
 
   SetFontAndTextDirection(&localized_strings);
 
@@ -1481,6 +1486,46 @@ void MetricsHandler::HandleMetrics(const Value* content) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// NewTabPageSetHomepageHandler
+
+// Sets the new tab page as homepage when user clicks on "make this my homepage"
+// link.
+class NewTabPageSetHomepageHandler : public DOMMessageHandler {
+ public:
+  NewTabPageSetHomepageHandler() {}
+  virtual ~NewTabPageSetHomepageHandler() {}
+
+  // DOMMessageHandler implementation.
+  virtual void RegisterMessages();
+
+  // Callback for "SetHomepageLinkClicked".
+  void HandleSetHomepageLinkClicked(const Value* value);
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(NewTabPageSetHomepageHandler);
+};
+
+void NewTabPageSetHomepageHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback("SetHomepageLinkClicked", NewCallback(
+      this, &NewTabPageSetHomepageHandler::HandleSetHomepageLinkClicked));
+}
+
+void NewTabPageSetHomepageHandler::HandleSetHomepageLinkClicked(
+    const Value* value) {
+  dom_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage,
+                                                true);
+  // TODO(rahulk): Show some kind of notification that new tab page has been
+  // set as homepage. This tip only shows up for a brief moment and disappears
+  // when new tab page gets refreshed.
+  ListValue list_value;
+  DictionaryValue* tip_dict = new DictionaryValue();
+  tip_dict->SetString(L"tip_html_text", L"Welcome to your home page!");
+  list_value.Append(tip_dict);
+  dom_ui_->CallJavascriptFunction(L"tips", list_value);
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1542,6 +1587,8 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
     }
 #endif
+
+    AddMessageHandler((new NewTabPageSetHomepageHandler())->Attach(this));
 
     // In testing mode there may not be an I/O thread.
     if (g_browser_process->io_thread()) {

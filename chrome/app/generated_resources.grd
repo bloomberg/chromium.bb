@@ -4068,6 +4068,10 @@ each locale. -->
                desc="Previous link">
         previous
       </message>
+      <message name="IDS_NEW_TAB_MAKE_THIS_HOMEPAGE"
+               desc="Text for link that sets new tab page as home page">
+        Make this my home page
+      </message>
 
       <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">

@@ -512,6 +512,29 @@ html[dir='rtl'] .item {
   margin: 0 10px;
 }
 
+/* TODO(rahulk): The following two classes control the looks of Make this my
+homepage link and need to be refined. */
+#set-as-homepage {
+  -webkit-transition: height .15s, opacity .15s;
+  padding: 5px 0;
+  margin: 10px 0;
+  white-space: nowrap;
+  opacity: 0;
+  overflow-x: hidden;
+  text-align: center;
+}
+
+#set-as-homepage > * {
+  display: inline-block;
+  max-width: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 100%;
+  margin: 0 10px;
+  text-align: center;
+}
+
 #view-toolbar {
   -webkit-user-select: none;
   text-align: right;
