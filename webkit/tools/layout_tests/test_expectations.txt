@@ -2764,5 +2764,5 @@ BUG20438 MAC : chrome/plugins/get-url-with-iframe-target.html = TIMEOUT
 BUG20438 MAC : chrome/plugins/get-url-with-iframe-target-no-crash.html = TIMEOUT
 
 // WebKit 47837:47846
-BUG_JORLOW WIN : LayoutTests/fast/backgrounds/animated-gif-as-background.html = CRASH
+BUG_JORLOW LINUX : LayoutTests/fast/backgrounds/animated-gif-as-background.html = CRASH
 BUG_JORLOW : LayoutTests/fast/canvas/change-context.html = CRASH
