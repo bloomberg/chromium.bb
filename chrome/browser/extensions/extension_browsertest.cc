@@ -149,22 +149,20 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
   // Wait for all the extension hosts that exist to finish loading.
   // NOTE: This assumes that the extension host list is not changing while
   // this method is running.
+
+  NotificationRegistrar registrar;
+  registrar.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+                NotificationService::AllSources());
+
   ExtensionProcessManager* manager =
         browser()->profile()->GetExtensionProcessManager();
   base::Time start_time = base::Time::Now();
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      new MessageLoop::QuitTask, kTimeoutMs);
   for (ExtensionProcessManager::const_iterator iter = manager->begin();
      iter != manager->end(); ++iter) {
-    while (!(*iter)->did_stop_loading()) {
-      if ((base::Time::Now() - start_time).InMilliseconds() > kTimeoutMs) {
-        std::cout << "Extension host did not load for URL: "
-                  << (*iter)->GetURL().spec();
-        return false;
-      }
-
-      MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          new MessageLoop::QuitTask, 200);
+    if (!(*iter)->did_stop_loading())
       ui_test_utils::RunMessageLoop();
-    }
   }
 
   return true;
@@ -181,6 +179,11 @@ void ExtensionBrowserTest::Observe(NotificationType type,
 
     case NotificationType::EXTENSION_UPDATE_DISABLED:
       std::cout << "Got EXTENSION_UPDATE_DISABLED notification.\n";
+      MessageLoopForUI::current()->Quit();
+      break;
+
+    case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
+      std::cout << "Got EXTENSION_HOST_DID_STOP_LOADING notification.\n";
       MessageLoopForUI::current()->Quit();
       break;
 

@@ -698,7 +698,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
 
 // -----------------------------------------------------------------------------
 
-bool WillHandleBrowserAboutURL(GURL* url) {
+bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   // We only handle about: schemes.
   if (!url->SchemeIs(chrome::kAboutScheme))
     return false;

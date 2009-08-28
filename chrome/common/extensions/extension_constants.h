@@ -8,6 +8,7 @@
 // Keys used in JSON representation of extensions.
 namespace extension_manifest_keys {
   extern const wchar_t* kBackground;
+  extern const wchar_t* kChromeURLOverrides;
   extern const wchar_t* kContentScripts;
   extern const wchar_t* kCss;
   extern const wchar_t* kDefaultLocale;
@@ -51,6 +52,7 @@ namespace extension_manifest_values {
 
 // Error messages returned from Extension::InitFromValue().
 namespace extension_manifest_errors {
+  extern const char* kInvalidChromeURLOverrides;
   extern const char* kInvalidContentScript;
   extern const char* kInvalidContentScriptsList;
   extern const char* kInvalidCss;

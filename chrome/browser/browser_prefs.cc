@@ -12,6 +12,7 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -75,6 +76,7 @@ void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
   AutofillManager::RegisterUserPrefs(user_prefs);
   TabContents::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
+  ExtensionDOMUI::RegisterUserPrefs(user_prefs);
   NewTabUI::RegisterUserPrefs(user_prefs);
   BlockedPopupContainer::RegisterUserPrefs(user_prefs);
   DevToolsManager::RegisterUserPrefs(user_prefs);

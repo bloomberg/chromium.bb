@@ -174,7 +174,13 @@ void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
   }
 #endif
 
-  did_stop_loading_ = true;
+  if (!did_stop_loading_) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
+        Source<Profile>(profile_),
+        Details<ExtensionHost>(this));
+    did_stop_loading_ = true;
+  }
 }
 
 void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
@@ -303,8 +309,18 @@ Browser* ExtensionHost::GetBrowser() {
   if (view_.get())
     return view_->browser();
 #endif
-  Browser* browser = BrowserList::GetLastActiveWithProfile(
-      render_view_host()->process()->profile());
+  Profile* profile = render_view_host()->process()->profile();
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+
+  // It's possible for a browser to exist, but to have never been active.
+  // This can happen if you launch the browser on a machine without an active
+  // desktop (a headless buildbot) or if you quickly give another app focus
+  // at launch time.  This is easy to do with browser_tests.
+  if (!browser)
+    browser = BrowserList::FindBrowserWithProfile(profile);
+
+  // TODO(erikkay): can this still return NULL?  Is Rafael's comment still
+  // valid here?
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
   // a toolstrip or background_page onload chrome.tabs api call can make it
   // into here before the browser is sufficiently initialized to return here.

@@ -358,7 +358,7 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
   // will actually be loaded. This real URL won't be shown to the user, just
   // used internally.
   GURL loaded_url(url);
-  BrowserURLHandler::RewriteURLIfNecessary(&loaded_url);
+  BrowserURLHandler::RewriteURLIfNecessary(&loaded_url, profile_);
 
   NavigationEntry* entry = new NavigationEntry(NULL, -1, loaded_url, referrer,
                                                string16(), transition);

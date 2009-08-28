@@ -47,6 +47,7 @@
       'browser/extensions/extension_browsertest.cc',
       'browser/extensions/extension_browsertest.h',
       'browser/extensions/extension_browsertests_misc.cc',
+      'browser/extensions/extension_override_apitest.cc',
       'browser/extensions/extension_startup_unittest.cc',
     ],
     'browser_tests_sources_win_specific': [
@@ -71,6 +72,7 @@
       'browser/extensions/extension_browsertest.cc',
       'browser/extensions/extension_browsertest.h',
       'browser/extensions/extension_browsertests_misc.cc',
+      'browser/extensions/extension_override_apitest.cc',
       'browser/extensions/extension_startup_unittest.cc',
     ],
     # TODO(jcampan): move these vars to views.gyp.

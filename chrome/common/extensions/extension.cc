@@ -998,6 +998,37 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     set_default_locale(default_locale);
   }
 
+  // Chrome URL overrides (optional)
+  if (source.HasKey(keys::kChromeURLOverrides)) {
+    DictionaryValue* overrides;
+    if (!source.GetDictionary(keys::kChromeURLOverrides, &overrides)) {
+      *error = errors::kInvalidChromeURLOverrides;
+      return false;
+    }
+    // Validate that the overrides are all strings
+    DictionaryValue::key_iterator iter = overrides->begin_keys();
+    while (iter != overrides->end_keys()) {
+      // For now, only allow the new tab page.  Others will work when we remove
+      // this check, but let's keep it simple for now.
+      // TODO(erikkay) enable other pages as well
+      if (WideToUTF8(*iter) != chrome::kChromeUINewTabHost) {
+        *error = errors::kInvalidChromeURLOverrides;
+        return false;
+      }
+      std::string val;
+      if (!overrides->GetString(*iter, &val)) {
+        *error = errors::kInvalidChromeURLOverrides;
+        return false;
+      }
+      // Replace the entry with a fully qualified chrome-extension:// URL.
+      GURL url = GetResourceURL(val);
+      overrides->SetString(*iter, url.spec());
+      ++iter;
+    }
+    chrome_url_overrides_.reset(
+        static_cast<DictionaryValue*>(overrides->DeepCopy()));
+  }
+
   return true;
 }
 

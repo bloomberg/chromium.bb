@@ -14,34 +14,48 @@ static const int kTimeoutMs = 60 * 1000;  // 1 minute
 
 // Load an extension and wait for it to notify of PASSED or FAILED.
 bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
-  bool result;
-  completed_ = false;
   {
     NotificationRegistrar registrar;
     registrar.Add(this, NotificationType::EXTENSION_TEST_PASSED,
                   NotificationService::AllSources());
     registrar.Add(this, NotificationType::EXTENSION_TEST_FAILED,
                   NotificationService::AllSources());
-    result = LoadExtension(test_data_dir_.AppendASCII(extension_name));
 
-    // If the test runs quickly, we may get the notification while waiting
-    // for the Load to finish.
-    if (completed_) {
-      result = passed_;
-    } else {
-      result = WaitForPassFail();
+    if (!LoadExtension(test_data_dir_.AppendASCII(extension_name))) {
+      message_ = "Failed to load extension.";
+      return false;
     }
   }
-  return result;
+
+  // TODO(erikkay) perhaps we shouldn't do this implicitly.
+  return WaitForPassFail();
 }
 
 bool ExtensionApiTest::WaitForPassFail() {
-  completed_ = false;
-  passed_ = false;
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
-  ui_test_utils::RunMessageLoop();
-  return passed_;
+  NotificationRegistrar registrar;
+  registrar.Add(this, NotificationType::EXTENSION_TEST_PASSED,
+                NotificationService::AllSources());
+  registrar.Add(this, NotificationType::EXTENSION_TEST_FAILED,
+                NotificationService::AllSources());
+
+  // Depending on the tests, multiple results can come in from a single call
+  // to RunMessageLoop(), so we maintain a queue of results and just pull them
+  // off as the test calls this, going to the run loop only when the queue is
+  // empty.
+  if (!results_.size()) {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
+    ui_test_utils::RunMessageLoop();
+  }
+  if (results_.size()) {
+    bool ret = results_.front();
+    results_.pop_front();
+    message_ = messages_.front();
+    messages_.pop_front();
+    return ret;
+  }
+  message_ = "No response from message loop.";
+  return false;
 }
 
 void ExtensionApiTest::SetUpCommandLine(CommandLine* command_line) {
@@ -55,16 +69,15 @@ void ExtensionApiTest::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::EXTENSION_TEST_PASSED:
       std::cout << "Got EXTENSION_TEST_PASSED notification.\n";
-      completed_ = true;
-      passed_ = true;
+      results_.push_back(true);
+      messages_.push_back("");
       MessageLoopForUI::current()->Quit();
       break;
 
     case NotificationType::EXTENSION_TEST_FAILED:
       std::cout << "Got EXTENSION_TEST_FAILED notification.\n";
-      completed_ = true;
-      passed_ = false;
-      message_ = *(Details<std::string>(details).ptr());
+      results_.push_back(false);
+      messages_.push_back(*(Details<std::string>(details).ptr()));
       MessageLoopForUI::current()->Quit();
       break;
 

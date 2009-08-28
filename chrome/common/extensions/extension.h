@@ -262,6 +262,11 @@ class Extension {
     default_locale_ = default_locale;
   }
 
+  // Chrome URL overrides (see ExtensionOverrideUI).
+  DictionaryValue* GetChromeURLOverrides() const {
+    return chrome_url_overrides_.get();
+  }
+
   // Runtime data:
   // Put dynamic data about the state of a running extension below.
 
@@ -381,6 +386,10 @@ class Extension {
 
   // Default locale, used for fallback.
   std::string default_locale_;
+
+  // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
+  // which override the handling of those URLs.
+  scoped_ptr<DictionaryValue> chrome_url_overrides_;
 
   // Runtime data:
 

@@ -15,6 +15,7 @@
 #include <vector>
 
 class GURL;
+class Profile;
 
 // BrowserURLHandler manages the list of all special URLs and manages
 // dispatching the URL handling to registered handlers.
@@ -26,11 +27,11 @@ class BrowserURLHandler {
   // - optionally set |dispatcher| to the necessary DOMMessageDispatcher
   // - return true.
   // If the URL is not handled by a handler, it should return false.
-  typedef bool (*URLHandler)(GURL* url);
+  typedef bool (*URLHandler)(GURL* url, Profile* profile);
 
   // HandleBrowserURL gives all registered URLHandlers a shot at processing
   // the given URL, and modifies it in place.
-  static void RewriteURLIfNecessary(GURL* url);
+  static void RewriteURLIfNecessary(GURL* url, Profile* profile);
 
   // We initialize the list of url_handlers_ lazily the first time MaybeHandle
   // is called.

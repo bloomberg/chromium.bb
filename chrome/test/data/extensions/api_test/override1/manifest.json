@@ -1,0 +1,12 @@
+{
+  "name": "Override Test 1",
+  "version": "0.1",
+  "description": "Test chrome:// overrides",
+  "background_page": "background.html",
+  "permissions": [ 
+    "tabs"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  }
+}

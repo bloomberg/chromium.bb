@@ -9,6 +9,10 @@
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 
+class ListValue;
+class PrefService;
+class TabContents;
+
 // This class implements DOMUI for extensions and allows extensions to put UI in
 // the main tab contents area.
 class ExtensionDOMUI 
@@ -16,6 +20,7 @@ class ExtensionDOMUI
       public ExtensionFunctionDispatcher::Delegate {
  public:
   explicit ExtensionDOMUI(TabContents* tab_contents);
+
   ExtensionFunctionDispatcher* extension_function_dispatcher() const {
     return extension_function_dispatcher_.get();
   }
@@ -31,7 +36,36 @@ class ExtensionDOMUI
   // ExtensionFunctionDispatcher::Delegate
   virtual Browser* GetBrowser();
 
+  // BrowserURLHandler
+  static bool HandleChromeURLOverride(GURL* url, Profile* profile);
+
+  // Register and unregister a dictionary of one or more overrides.
+  // Page names are the keys, and chrome-extension: URLs are the values.
+  // (e.g. { "newtab": "chrome-extension://<id>/my_new_tab.html" }
+  static void RegisterChromeURLOverrides(Profile* profile,
+                                         const DictionaryValue* overrides);
+  static void UnregisterChromeURLOverrides(Profile* profile,
+                                           const DictionaryValue* overrides);
+  static void UnregisterChromeURLOverride(const std::string& page,
+                                          Profile* profile,
+                                          Value* override);
+
+  // Called from BrowserPrefs
+  static void RegisterUserPrefs(PrefService* prefs);
+
  private:
+  // Unregister the specified override, and if it's the currently active one,
+  // ensure that something takes its place.
+  static void UnregisterAndReplaceOverride(const std::string& page,
+                                           Profile* profile,
+                                           ListValue* list,
+                                           Value* override);
+
+  // When the RenderViewHost changes (RenderViewCreated and RenderViewReused),
+  // we need to reset the ExtensionFunctionDispatcher so it's talking to the
+  // right one, as well as being linked to the correct URL.
+  void ResetExtensionFunctionDispatcher(RenderViewHost* render_view_host);
+
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
 };
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
@@ -195,6 +196,9 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
       install_directory_));
   }
 
+  ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
+      extension->GetChromeURLOverrides());
+
   UnloadExtension(extension_id);
 }
 
@@ -212,6 +216,9 @@ void ExtensionsService::EnableExtension(const std::string& extension_id) {
                                            disabled_extensions_.end(),
                                            extension);
   disabled_extensions_.erase(iter);
+
+  ExtensionDOMUI::RegisterChromeURLOverrides(profile_,
+      extension->GetChromeURLOverrides());
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_LOADED,
@@ -313,6 +320,9 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
 
   // Callers should not send us nonexistant extensions.
   CHECK(extension.get());
+
+  ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
+      extension->GetChromeURLOverrides());
 
   ExtensionList::iterator iter = std::find(disabled_extensions_.begin(),
                                            disabled_extensions_.end(),
@@ -426,6 +436,9 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
               NotificationType::THEME_INSTALLED,
               Source<ExtensionsService>(this),
               Details<Extension>(extension));
+        } else {
+          ExtensionDOMUI::RegisterChromeURLOverrides(profile_,
+              extension->GetChromeURLOverrides());
         }
         break;
       case Extension::DISABLED:

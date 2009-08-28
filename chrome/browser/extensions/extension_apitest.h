@@ -33,13 +33,11 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   void Observe(NotificationType type, const NotificationSource& source,
                const NotificationDetails& details);
 
-  // Did the extension side of the unit test complete?
-  bool completed_;
-
-  // Did the extension side of the unit test pass?
-  bool passed_;
+  // A sequential list of pass/fail notifications from the test extension(s).
+  std::deque<bool> results_;
 
   // If it failed, what was the error message?
+  std::deque<std::string> messages_;
   std::string message_;
 };
 

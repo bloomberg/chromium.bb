@@ -7,11 +7,13 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
+#include "chrome/browser/extensions/extension_dom_ui.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
 // Handles rewriting view-source URLs for what we'll actually load.
-static bool HandleViewSource(GURL* url) {
+static bool HandleViewSource(GURL* url, Profile* profile) {
   if (url->SchemeIs(chrome::kViewSourceScheme)) {
     // Load the inner URL instead.
     *url = GURL(url->path());
@@ -21,7 +23,7 @@ static bool HandleViewSource(GURL* url) {
 }
 
 // Handles URLs for DOM UI. These URLs need no rewriting.
-static bool HandleDOMUI(GURL* url) {
+static bool HandleDOMUI(GURL* url, Profile* profile) {
   if (!DOMUIFactory::UseDOMUIForURL(*url))
     return false;
   return true;
@@ -35,17 +37,18 @@ void BrowserURLHandler::InitURLHandlers() {
     return;
 
   // Add the default URL handlers.
+  url_handlers_.push_back(&ExtensionDOMUI::HandleChromeURLOverride);
   url_handlers_.push_back(&WillHandleBrowserAboutURL);  // about:
   url_handlers_.push_back(&HandleDOMUI);                // chrome: & friends.
   url_handlers_.push_back(&HandleViewSource);           // view-source:
 }
 
 // static
-void BrowserURLHandler::RewriteURLIfNecessary(GURL* url) {
+void BrowserURLHandler::RewriteURLIfNecessary(GURL* url, Profile* profile) {
   if (url_handlers_.empty())
     InitURLHandlers();
   for (size_t i = 0; i < url_handlers_.size(); ++i) {
-    if ((*url_handlers_[i])(url))
+    if ((*url_handlers_[i])(url, profile))
       return;
   }
 }
