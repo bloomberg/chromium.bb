@@ -629,8 +629,7 @@ void TabRendererGtk::Layout() {
     } else {
       title_width = std::max(local_bounds.width() - title_left, 0);
     }
-    title_bounds_.SetRect(title_left, title_top, title_width,
-                          title_font_height_);
+    title_bounds_.SetRect(title_left, title_top, title_width, content_height);
   }
 
   favicon_bounds_.set_x(
