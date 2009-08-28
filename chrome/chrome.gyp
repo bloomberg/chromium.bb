@@ -838,6 +838,8 @@
         'browser/cocoa/back_forward_menu_controller.mm',
         'browser/cocoa/background_gradient_view.h',
         'browser/cocoa/background_gradient_view.mm',
+        'browser/cocoa/background_tile_view.h',
+        'browser/cocoa/background_tile_view.mm',
         'browser/cocoa/base_view.h',
         'browser/cocoa/base_view.mm',
         'browser/cocoa/browser_window_factory.mm',
@@ -950,6 +952,8 @@
         'browser/cocoa/preferences_window_controller.mm',
         'browser/cocoa/rwhvm_editcommand_helper.h',
         'browser/cocoa/rwhvm_editcommand_helper.mm',
+        'browser/cocoa/restart_browser.h',
+        'browser/cocoa/restart_browser.mm',
         'browser/cocoa/sad_tab_view.h',
         'browser/cocoa/sad_tab_view.mm',
         'browser/cocoa/search_engine_list_model.h',
@@ -2227,7 +2231,8 @@
                 'xib_localizer_tool_path':
                     '<(DEPTH)/build/mac/generate_localizer',
                 'xib_files_to_scan': [
-                  # The xib that need localization
+                  # The xibs that need localization
+                  'app/nibs/About.xib',
                   'app/nibs/BookmarkBar.xib',
                   'app/nibs/BookmarkBubble.xib',
                   'app/nibs/BookmarkEditor.xib',
@@ -3922,6 +3927,7 @@
         'browser/cocoa/autocomplete_text_field_unittest.mm',
         'browser/cocoa/base_view_unittest.mm',
         'browser/cocoa/background_gradient_view_unittest.mm',
+        'browser/cocoa/background_tile_view_unittest.mm',
         'browser/cocoa/blocked_popup_container_controller_unittest.mm',
         'browser/cocoa/bookmark_bar_bridge_unittest.mm',
         'browser/cocoa/bookmark_bar_controller_unittest.mm',

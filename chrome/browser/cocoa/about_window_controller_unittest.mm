@@ -46,17 +46,16 @@ TEST_F(AboutWindowControllerTest, TestButton) {
 
 // Doesn't confirm correctness, but does confirm something happens.
 TEST_F(AboutWindowControllerTest, TestCallbacks) {
-  NSString *upToDate = [[about_window_controller_ upToDateTextField]
+  NSString *lastText = [[about_window_controller_ updateText]
                          stringValue];
   [about_window_controller_ upToDateCheckCompleted:NO latestVersion:@"foo"];
-  ASSERT_FALSE([upToDate isEqual:[[about_window_controller_ upToDateTextField]
+  ASSERT_FALSE([lastText isEqual:[[about_window_controller_ updateText]
                                    stringValue]]);
 
-  NSString *completed = [[about_window_controller_ updateCompletedTextField]
-                          stringValue];
+  lastText = [[about_window_controller_ updateText] stringValue];
   [about_window_controller_ updateCompleted:NO installs:0];
-  ASSERT_FALSE([completed isEqual:[[about_window_controller_
-                                     updateCompletedTextField] stringValue]]);
+  ASSERT_FALSE([lastText isEqual:[[about_window_controller_
+                                   updateText] stringValue]]);
 }
 
 }  // namespace

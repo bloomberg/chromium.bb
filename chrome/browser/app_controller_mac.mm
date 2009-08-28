@@ -628,10 +628,6 @@
 }
 
 - (IBAction)orderFrontStandardAboutPanel:(id)sender {
-#if !defined(GOOGLE_CHROME_BUILD)
-  // If not branded behave like a generic Cocoa app.
-  [NSApp orderFrontStandardAboutPanel:sender];
-#else
   // Otherwise bring up our special dialog (e.g. with an auto-update button).
   if (!aboutController_) {
     aboutController_.reset([[AboutWindowController alloc]
@@ -656,7 +652,6 @@
   if (![[aboutController_ window] isVisible])
     [[aboutController_ window] center];
   [aboutController_ showWindow:self];
-#endif
 }
 
 @end

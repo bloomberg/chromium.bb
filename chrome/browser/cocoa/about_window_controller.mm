@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
+#include "app/resource_bundle.h"
 #include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
@@ -10,15 +11,170 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/app/keystone_glue.h"
 #import "chrome/browser/cocoa/about_window_controller.h"
+#import "chrome/browser/cocoa/background_tile_view.h"
+#include "chrome/browser/cocoa/restart_browser.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "grit/locale_settings.h"
+#include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 NSString* const kUserClosedAboutNotification =
   @"kUserClosedAboutNotification";
 
 @interface AboutWindowController (Private)
 - (KeystoneGlue*)defaultKeystoneGlue;
+- (void)startProgressMessageID:(uint32_t)messageID;
+- (void)startProgressMessage:(NSString*)message;
+- (void)stopProgressMessage:(NSString*)message imageID:(uint32_t)imageID;
 @end
 
+namespace {
+
+// Keystone doesn't give us error numbers on some results, so we just make
+// our own for reporting in the UI.
+const int kUpdateInstallFailed = 128;
+const int kUpdateInstallFailedToStart = 129;
+
+void AttributedStringAppendString(NSMutableAttributedString* attr_str,
+                                  NSString* str) {
+  // You might think doing [[attr_str mutableString] appendString:str] would
+  // work, but it causes any trailing style to get extened, meaning as we
+  // append links, they grow to include the new text, not what we want.
+  NSAttributedString* new_attr_str =
+      [[[NSAttributedString alloc] initWithString:str] autorelease];
+  [attr_str appendAttributedString:new_attr_str];
+}
+
+void AttributedStringAppendHyperlink(NSMutableAttributedString* attr_str,
+                                     NSString* text, NSString* url_str) {
+
+  // Figure out the range of the text we're adding and add the text.
+  NSRange range = NSMakeRange([attr_str length], [text length]);
+  AttributedStringAppendString(attr_str, text);
+
+  // Add the link
+  [attr_str addAttribute:NSLinkAttributeName value:url_str range:range];
+
+  // Blue and underlined
+  [attr_str addAttribute:NSForegroundColorAttributeName
+                   value:[NSColor blueColor]
+                   range:range];
+  [attr_str addAttribute:NSUnderlineStyleAttributeName
+                   value:[NSNumber numberWithInt:NSSingleUnderlineStyle]
+                   range:range];
+}
+
+NSAttributedString* BuildLegalTextBlock() {
+  // Windows builds this up in a very complex way, we're just trying to model
+  // it the best we can to get all the information in (they actually do it
+  // but created Labels and Links that they carefully place to make it appear
+  // to be a paragraph of text).
+  // src/chrome/browser/views/about_chrome_view.cc AboutChromeView::Init()
+
+  NSMutableAttributedString* legal_block =
+      [[[NSMutableAttributedString alloc] init] autorelease];
+  [legal_block beginEditing];
+
+  NSString* copyright = l10n_util::GetNSString(IDS_ABOUT_VERSION_COPYRIGHT);
+  AttributedStringAppendString(legal_block, copyright);
+
+  // These are the markers directly in IDS_ABOUT_VERSION_LICENSE
+  NSString* kBeginLinkChr = @"BEGIN_LINK_CHR";
+  NSString* kBeginLinkOss = @"BEGIN_LINK_OSS";
+  NSString* kEndLinkChr = @"END_LINK_CHR";
+  NSString* kEndLinkOss = @"END_LINK_OSS";
+  // The CHR link should go to here
+  NSString* kChromiumProject = l10n_util::GetNSString(IDS_CHROMIUM_PROJECT_URL);
+  // The OSS link should go to here
+  NSString* kAcknowledgements = @"about:credits";
+
+  // Now fetch the license string and deal with the markers
+
+  NSString* license = l10n_util::GetNSString(IDS_ABOUT_VERSION_LICENSE);
+
+  NSRange begin_chr = [license rangeOfString:kBeginLinkChr];
+  NSRange begin_oss = [license rangeOfString:kBeginLinkOss];
+  NSRange end_chr = [license rangeOfString:kEndLinkChr];
+  NSRange end_oss = [license rangeOfString:kEndLinkOss];
+  DCHECK(begin_chr.location != NSNotFound);
+  DCHECK(begin_oss.location != NSNotFound);
+  DCHECK(end_chr.location != NSNotFound);
+  DCHECK(end_oss.location != NSNotFound);
+
+  // We don't know which link will come first, so we have to deal with things
+  // like this:
+  //   [text][begin][text][end][text][start][text][end][text]
+
+  bool chromium_link_first = begin_chr.location < begin_oss.location;
+
+  NSRange* begin1 = &begin_chr;
+  NSRange* begin2 = &begin_oss;
+  NSRange* end1 = &end_chr;
+  NSRange* end2 = &end_oss;
+  NSString* link1 = kChromiumProject;
+  NSString* link2 = kAcknowledgements;
+  if (!chromium_link_first) {
+    // OSS came first, switch!
+    begin2 = &begin_chr;
+    begin1 = &begin_oss;
+    end2 = &end_chr;
+    end1 = &end_oss;
+    link2 = kChromiumProject;
+    link1 = kAcknowledgements;
+  }
+
+  NSString *sub_str;
+
+  AttributedStringAppendString(legal_block, @"\n");
+  sub_str = [license substringWithRange:NSMakeRange(0, begin1->location)];
+  AttributedStringAppendString(legal_block, sub_str);
+  sub_str = [license substringWithRange:NSMakeRange(NSMaxRange(*begin1),
+                                                    end1->location -
+                                                      NSMaxRange(*begin1))];
+  AttributedStringAppendHyperlink(legal_block, sub_str, link1);
+  sub_str = [license substringWithRange:NSMakeRange(NSMaxRange(*end1),
+                                                    begin2->location -
+                                                      NSMaxRange(*end1))];
+  AttributedStringAppendString(legal_block, sub_str);
+  sub_str = [license substringWithRange:NSMakeRange(NSMaxRange(*begin2),
+                                                    end2->location -
+                                                      NSMaxRange(*begin2))];
+  AttributedStringAppendHyperlink(legal_block, sub_str, link2);
+  sub_str = [license substringWithRange:NSMakeRange(NSMaxRange(*end2),
+                                                    [license length] -
+                                                      NSMaxRange(*end2))];
+  AttributedStringAppendString(legal_block, sub_str);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // Terms of service is only valid for Google Chrome
+
+  // The url within terms should point here:
+  NSString* kTOS = @"about:terms";
+  // Following Window. There is one marker in the string for where the terms
+  // link goes, but the text of the link comes from a second string resources.
+  std::vector<size_t> url_offsets;
+  std::wstring w_about_terms = l10n_util::GetStringF(IDS_ABOUT_TERMS_OF_SERVICE,
+                                                     std::wstring(),
+                                                     std::wstring(),
+                                                     &url_offsets);
+  DCHECK_EQ(url_offsets.size(), 1U);
+  NSString* about_terms = base::SysWideToNSString(w_about_terms);
+  NSString* terms_link_text = l10n_util::GetNSString(IDS_TERMS_OF_SERVICE);
+
+  AttributedStringAppendString(legal_block, @"\n");
+  sub_str = [about_terms substringToIndex:url_offsets[0]];
+  AttributedStringAppendString(legal_block, sub_str);
+  AttributedStringAppendHyperlink(legal_block, terms_link_text, kTOS);
+  sub_str = [about_terms substringFromIndex:url_offsets[0]];
+  AttributedStringAppendString(legal_block, sub_str);
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+  [legal_block endEditing];
+  return legal_block;
+}
+
+}  // namespace
 
 @implementation AboutWindowController
 
@@ -33,45 +189,133 @@ NSString* const kUserClosedAboutNotification =
   // Set our current version.
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-  NSString* version = base::SysWideToNSString(version_info->file_version());
-  [version_ setStringValue:version];
+  std::wstring version(version_info->product_version());
+#if !defined(GOOGLE_CHROME_BUILD)
+  // Yes, Windows does this raw since it is only in Chromium builds
+  // src/chrome/browser/views/about_chrome_view.cc AboutChromeView::Init()
+  version += L" (";
+  version += version_info->last_change();
+  version += L")";
+#endif
+  NSString* nsversion = base::SysWideToNSString(version);
+  [version_ setStringValue:nsversion];
 
-  // Localize the update now button.
-  NSString* updateNow = base::SysWideToNSString(
-      l10n_util::GetString(IDS_ABOUT_CHROME_UPDATE_CHECK));
-  [updateNowButton_ setStringValue:updateNow];
+  // Put the two images into the ui
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* backgroundImage = rb.GetNSImageNamed(IDR_ABOUT_BACKGROUND_COLOR);
+  DCHECK(backgroundImage);
+  [backgroundView_ setTileImage:backgroundImage];
+  NSImage* logoImage = rb.GetNSImageNamed(IDR_ABOUT_BACKGROUND);
+  DCHECK(logoImage);
+  [logoView_ setImage:logoImage];
 
-  // TODO(jrg): localize the rest of the elements:
-  // - "Google Chrome" string at top
-  // - copyright string at bottom
+  // Put the legal text into
+  [legalBlock_ setAttributedStringValue:BuildLegalTextBlock()];
 
-  // Initiate an update check.
-  if ([[self defaultKeystoneGlue] checkForUpdate:self])
-     [spinner_ startAnimation:self];
+  KeystoneGlue* keystone = [self defaultKeystoneGlue];
+  CGFloat updateShift = 0.0;
+  if (keystone) {
+    // Initiate an update check.
+    if ([keystone checkForUpdate:self]) {
+      [self startProgressMessageID:IDS_UPGRADE_CHECK_STARTED];
+    }
+  } else {
+    // Hide all the update UI
+    [updateBlock_ setHidden:YES];
+    // Figure out the amount we're removing by taking about the update block
+    // (and it's spacing).
+    updateShift = NSMinY([legalBlock_ frame]) - NSMinY([updateBlock_ frame]);
+  }
+
+  // Adjust the sizes/locations.
+
+  CGFloat legalShift =
+      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:legalBlock_];
+
+  NSRect rect = [legalBlock_ frame];
+  rect.origin.y -= updateShift;
+  [legalBlock_ setFrame:rect];
+
+  rect = [backgroundView_ frame];
+  rect.origin.y = rect.origin.y - updateShift + legalShift;
+  [backgroundView_ setFrame:rect];
+
+  NSWindow* window = [self window];
+  [[window contentView] setAutoresizesSubviews:NO];
+  rect = [window frame];
+  rect.size.height = rect.size.height - updateShift + legalShift;
+  [window setFrame:rect display:NO];
+  [[window contentView] setAutoresizesSubviews:YES];
 }
 
 - (KeystoneGlue*)defaultKeystoneGlue {
   return [KeystoneGlue defaultKeystoneGlue];
 }
 
+- (void)startProgressMessageID:(uint32_t)messageID {
+  NSString* message = l10n_util::GetNSStringWithFixup(messageID);
+  [self startProgressMessage:message];
+}
+
+- (void)startProgressMessage:(NSString*)message {
+  [updateStatusIndicator_ setHidden:YES];
+  [spinner_ setHidden:NO];
+  [spinner_ startAnimation:self];
+
+  [updateText_ setStringValue:message];
+}
+
+- (void)stopProgressMessage:(NSString*)message imageID:(uint32_t)imageID {
+  [spinner_ stopAnimation:self];
+  [spinner_ setHidden:YES];
+  if (imageID) {
+    [updateStatusIndicator_ setHidden:NO];
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    NSImage* statusImage = rb.GetNSImageNamed(imageID);
+    DCHECK(statusImage);
+    [updateStatusIndicator_ setImage:statusImage];
+  }
+
+  [updateText_ setStringValue:message];
+}
+
 // Callback from KeystoneGlue; implementation of KeystoneGlueCallbacks protocol.
 // Warning: latest version may be nil if not set in server config.
 - (void)upToDateCheckCompleted:(BOOL)updatesAvailable
                  latestVersion:(NSString*)latestVersion {
-  [spinner_ stopAnimation:self];
-
-  // If an update is available, be sure to enable the "update now" button.
-  NSString* display = @"No updates are available.";
+  uint32_t imageID;
+  NSString* message;
   if (updatesAvailable) {
+    newVersionAvailable_.reset([latestVersion copy]);
+
+    // Window UI doesn't put the version number in the string.
+    imageID = IDR_UPDATE_AVAILABLE;
+    message =
+        l10n_util::GetNSStringF(IDS_UPGRADE_AVAILABLE,
+                                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
     [updateNowButton_ setEnabled:YES];
-    // TODO(jrg): IDS_UPGRADE_AVAILABLE seems close but there is no facility
-    // for specifying a verision in the update string.  Do we care?
-    display = latestVersion ?
-        [NSString stringWithFormat:@"Version %@ is available for update.",
-                   latestVersion] :
-        @"A new version is available.";
+  } else {
+    // NOTE: This is can be a lie, Keystone does not provide us with an error if
+    // it was not able to reach the server.  So we can't completely map to the
+    // Windows UI.
+
+    // Keystone does not provide the version number when we are up to date so to
+    // maintain the UI, we just go fetch our version and call it good.
+    scoped_ptr<FileVersionInfo> version_info(
+        FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+    std::wstring version(version_info->product_version());
+
+    // TODO: We really should check to see if what is on disk is newer then what
+    // is running and report it as such.  (Windows has some messages that can
+    // help with this.)  http://crbug.com/13165
+
+    imageID = IDR_UPDATE_UPTODATE;
+    message =
+        l10n_util::GetNSStringF(IDS_UPGRADE_ALREADY_UP_TO_DATE,
+                                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+                                WideToUTF16(version));
   }
-  [upToDate_ setStringValue:display];
+  [self stopProgressMessage:message imageID:imageID];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -90,32 +334,51 @@ NSString* const kUserClosedAboutNotification =
 
 // Callback from KeystoneGlue; implementation of KeystoneGlueCallbacks protocol.
 - (void)updateCompleted:(BOOL)successful installs:(int)installs {
-  [spinner_ stopAnimation:self];
-  // TODO(jrg): localize.  No current string really says this.
-  NSString* display = ((successful && installs) ?
-                       @"Update completed!  Please restart Chrome." :
-                       @"Self update failed.");
-  [updateCompleted_ setStringValue:display];
+  uint32_t imageID;
+  NSString* message;
+  if (successful && installs) {
+    imageID = IDR_UPDATE_UPTODATE;
+    if ([newVersionAvailable_.get() length]) {
+      message =
+          l10n_util::GetNSStringF(IDS_UPGRADE_SUCCESSFUL,
+                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+                                  base::SysNSStringToUTF16(
+                                                  newVersionAvailable_.get()));
+    } else {
+      message =
+          l10n_util::GetNSStringF(IDS_UPGRADE_SUCCESSFUL_NOVERSION,
+                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+    }
 
-  // Allow a second chance.
-  if (!(successful && installs))
+    // Tell the user to restart their browser.
+    restart_browser::RequestRestart(nil);
+
+  } else {
+    imageID = IDR_UPDATE_FAIL;
+    message =
+        l10n_util::GetNSStringF(IDS_UPGRADE_ERROR,
+                                IntToString16(kUpdateInstallFailed));
+
+    // Allow a second chance.
     [updateNowButton_ setEnabled:YES];
+  }
+
+  [self stopProgressMessage:message imageID:imageID];
 }
 
 - (IBAction)updateNow:(id)sender {
   updateTriggered_ = YES;
+
   // Don't let someone click "Update Now" twice!
   [updateNowButton_ setEnabled:NO];
-  [spinner_ startAnimation:self];
   if ([[self defaultKeystoneGlue] startUpdate:self]) {
     // Clear any previous error message from the throbber area.
-    [updateCompleted_ setStringValue:@""];
-    [spinner_ startAnimation:self];
+    [self startProgressMessageID:IDS_UPGRADE_STARTED];
   } else {
-    // TODO(jrg): localize.
-    // IDS_UPGRADE_ERROR doesn't work here; we don't have an error number, and
-    // "server not available" is too specific.
-    [updateCompleted_ setStringValue:@"Failed to start updates."];
+    NSString* message =
+        l10n_util::GetNSStringF(IDS_UPGRADE_ERROR,
+                                IntToString16(kUpdateInstallFailedToStart));
+    [self stopProgressMessage:message imageID:IDR_UPDATE_FAIL];
   }
 }
 
@@ -123,12 +386,8 @@ NSString* const kUserClosedAboutNotification =
   return updateNowButton_;
 }
 
-- (NSTextField*)upToDateTextField {
-  return upToDate_;
-}
-
-- (NSTextField*)updateCompletedTextField {
-  return updateCompleted_;
+- (NSTextField*)updateText {
+  return updateText_;
 }
 
 @end

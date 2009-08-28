@@ -4867,6 +4867,13 @@ each locale. -->
       </message>
     </if>
 
+    <!-- Extra Mac UI Strings -->
+    <if expr="os == 'darwin'">
+      <message name="IDS_PLEASE_RESTART_BROWSER" desc="Title of the alert when Chrome needs to be restart for a change/update to take effect.">
+        Please Restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+      </message>
+    </if>
+
     </messages>
   </release>
 </grit>

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COCOA_ABOUT_WINDOW_CONTROLLER_MAC_H_
-#define CHROME_BROWSER_COCOA_ABOUT_WINDOW_CONTROLLER_MAC_H_
+#ifndef CHROME_BROWSER_COCOA_ABOUT_WINDOW_CONTROLLER_H_
+#define CHROME_BROWSER_COCOA_ABOUT_WINDOW_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
+#include "base/scoped_nsobject.h"
 #import "chrome/app/keystone_glue.h"
 
-@class AppController;
+@class BackgroundTileView;
 
 // A window controller that handles the branded (Chrome.app) about
 // window.  The branded about window has a few features beyond the
@@ -18,12 +19,19 @@
 @interface AboutWindowController : NSWindowController<KeystoneGlueCallbacks> {
  @private
   IBOutlet NSTextField* version_;
-  IBOutlet NSTextField* upToDate_;
-  IBOutlet NSTextField* updateCompleted_;
+  IBOutlet BackgroundTileView* backgroundView_;
+  IBOutlet NSImageView* logoView_;
+  IBOutlet NSTextField* legalBlock_;
+  IBOutlet NSView* updateBlock_;  // Holds everything related to updates
   IBOutlet NSProgressIndicator* spinner_;
+  IBOutlet NSImageView* updateStatusIndicator_;
+  IBOutlet NSTextField* updateText_;
   IBOutlet NSButton* updateNowButton_;
 
   BOOL updateTriggered_;  // Has an update ever been triggered?
+
+  // The version we got told about by Keystone
+  scoped_nsobject<NSString> newVersionAvailable_;
 }
 
 // Trigger an update right now, as initiated by a button.
@@ -34,12 +42,11 @@
 
 @interface AboutWindowController (JustForTesting)
 - (NSButton*)updateButton;
-- (NSTextField*)upToDateTextField;
-- (NSTextField*)updateCompletedTextField;
+- (NSTextField*)updateText;
 @end
 
 
 // NSNotification sent when the about window is closed.
 extern NSString* const kUserClosedAboutNotification;
 
-#endif
+#endif  // CHROME_BROWSER_COCOA_ABOUT_WINDOW_CONTROLLER_H_
