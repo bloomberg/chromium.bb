@@ -500,7 +500,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        last_click_time_(0),
        maximize_after_show_(false),
        accel_group_(NULL) {
-  use_custom_frame_.Init(prefs::kUseCustomChromeFrame,
+  use_custom_frame_pref_.Init(prefs::kUseCustomChromeFrame,
       browser_->profile()->GetPrefs(), this);
 
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
@@ -597,7 +597,7 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
 
   cairo_destroy(cr);
 
-  if (window->use_custom_frame_.GetValue() && !window->IsMaximized()) {
+  if (window->UseCustomFrame() && !window->IsMaximized()) {
     static NineBox custom_frame_border(
         IDR_WINDOW_TOP_LEFT_CORNER,
         IDR_WINDOW_TOP_CENTER,
@@ -637,7 +637,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   cairo_fill(cr);
 
   // Only draw the rest of the shadow if the user has the custom frame enabled.
-  if (!window->use_custom_frame_.GetValue())
+  if (!window->UseCustomFrame())
     return;
 
   // The top left corner has a width of 3 pixels. On Windows, the last column
@@ -1099,8 +1099,7 @@ void BrowserWindowGtk::Observe(NotificationType type,
       const GtkWindow* info_bubble_toplevel =
           InfoBubbleGtk::GetToplevelForInfoBubble(active_window);
       bool is_active = (GTK_WIDGET(window_)->window == active_window ||
-                       (window_ == info_bubble_toplevel &&
-                        use_custom_frame_.GetValue()));
+                       (window_ == info_bubble_toplevel && UseCustomFrame()));
       bool changed = (is_active != is_active_);
 
       if (is_active && changed) {
@@ -1665,7 +1664,7 @@ void BrowserWindowGtk::OnSizeChanged(int width, int height) {
 }
 
 void BrowserWindowGtk::UpdateWindowShape(int width, int height) {
-  if (use_custom_frame_.GetValue() && !IsFullscreen() && !IsMaximized()) {
+  if (UseCustomFrame() && !IsFullscreen() && !IsMaximized()) {
     // Make the top corners rounded.  We set a mask that includes most of the
     // window except for a few pixels in the top two corners.
     GdkRectangle top_rect = { 3, 0, width - 6, 1 };
@@ -1680,7 +1679,7 @@ void BrowserWindowGtk::UpdateWindowShape(int width, int height) {
         kFrameBorderThickness, kFrameBorderThickness, kFrameBorderThickness);
   } else {
     // XFCE disables the system decorations if there's an xshape set.
-    if (use_custom_frame_.GetValue()) {
+    if (UseCustomFrame()) {
       // Disable rounded corners.  Simply passing in a NULL region doesn't
       // seem to work on KWin, so manually set the shape to the whole window.
       GdkRectangle rect = { 0, 0, width, height };
@@ -1709,9 +1708,8 @@ void BrowserWindowGtk::ConnectAccelerators() {
 }
 
 void BrowserWindowGtk::UpdateCustomFrame() {
-  bool enable = use_custom_frame_.GetValue() && !IsFullscreen();
-  gtk_window_set_decorated(window_, !use_custom_frame_.GetValue());
-  titlebar_->UpdateCustomFrame(enable);
+  gtk_window_set_decorated(window_, !UseCustomFrame());
+  titlebar_->UpdateCustomFrame(UseCustomFrame() && !IsFullscreen());
   UpdateWindowShape(bounds_.width(), bounds_.height());
 }
 
@@ -1767,8 +1765,7 @@ gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
   // This method is used to update the mouse cursor when over the edge of the
   // custom frame.  If the custom frame is off or we're over some other widget,
   // do nothing.
-  if (!browser->use_custom_frame_.GetValue() ||
-      event->window != widget->window) {
+  if (!browser->UseCustomFrame() || event->window != widget->window) {
     // Reset the cursor.
     if (browser->frame_cursor_) {
       gdk_cursor_unref(browser->frame_cursor_);
@@ -2001,7 +1998,7 @@ bool BrowserWindowGtk::IsExtensionShelfSupported() {
 }
 
 bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
-  if (!use_custom_frame_.GetValue())
+  if (!UseCustomFrame())
     return false;
 
   if (IsMaximized() || IsFullscreen())
@@ -2053,6 +2050,12 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
     return true;
   }
   NOTREACHED();
+}
+
+bool BrowserWindowGtk::UseCustomFrame() {
+  // We don't use the custom frame for app mode windows.
+  return use_custom_frame_pref_.GetValue() &&
+      (browser_->type() != Browser::TYPE_APP);
 }
 
 // static

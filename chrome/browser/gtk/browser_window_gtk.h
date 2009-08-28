@@ -290,6 +290,9 @@ class BrowserWindowGtk : public BrowserWindow,
   // it should and sets |edge|.
   bool GetWindowEdge(int x, int y, GdkWindowEdge* edge);
 
+  // Returns |true| if we should use the custom frame.
+  bool UseCustomFrame();
+
   // Determine whether we use should default to native decorations or the custom
   // frame based on the currently-running window manager.
   static bool GetCustomFramePrefDefault();
@@ -340,9 +343,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // The timer used to update frames for the Loading Animation.
   base::RepeatingTimer<BrowserWindowGtk> loading_animation_timer_;
 
-  // Whether we're showing the custom chrome frame or the window manager
-  // decorations.
-  BooleanPrefMember use_custom_frame_;
+  // Whether the custom chrome frame pref is set.  Normally you want to use
+  // UseCustomFrame() above to determine whether to use the custom frame or
+  // not.
+  BooleanPrefMember use_custom_frame_pref_;
 
 #if defined(OS_CHROMEOS)
   // True if a drag is active. See description above setter for details.
