@@ -132,7 +132,7 @@ TEST_F(RenderSurfaceTest, CreateRenderSurfaceFromTextureCUBE) {
   ASSERT_TRUE(NULL != texture);
 
   RenderSurface::Ref render_surface = texture->GetRenderSurface(
-      TextureCUBE::CubeFace::FACE_POSITIVE_X, 0);
+      TextureCUBE::FACE_POSITIVE_X, 0);
   ASSERT_TRUE(NULL != render_surface);
   ASSERT_TRUE(NULL != render_surface->texture());
   ASSERT_EQ(render_surface->width(), 16);
