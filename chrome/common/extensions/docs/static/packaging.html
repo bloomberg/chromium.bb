@@ -22,8 +22,8 @@ for inclusion in the gallery.]
 
 <p>To package an extension:</p>
 <ol>
-<li>Close all your Chrome windows</li>
-<li>Execute Chrome, using the <code>--pack-extension</code> option
+<li>Close all your Google Chrome windows</li>
+<li>Execute Google Chrome, using the <code>--pack-extension</code> option
 to specify the path to the extension's folder:
 <pre>chrome.exe --pack-extension=<em>ext-folder-path</em></pre>
 </li>
@@ -56,7 +56,7 @@ the <code>.crx</code> and <code>.pem</code> files:</p>
 <img src="images/create-package.png" />
 
 
-<h3>Finding the path to Chrome</h3>
+<h3>Finding the path to Google Chrome</h3>
 
 <p>
 If <code>chrome.exe</code> isn't already in your path,
@@ -82,8 +82,8 @@ and select <b>Open File Location</b>.
 <p>To create an updated version of your extension:</p>
 <ol>
 <li>Increase the version number in <code>manifest.json</code>.</li>
-<li>Close all your Chrome windows.</li>
-<li>Execute Chrome, using the <code>--pack-extension</code>
+<li>Close all your Google Chrome windows.</li>
+<li>Execute Google Chrome, using the <code>--pack-extension</code>
 and <code>--pack-extension-key</code> options.
 The value of the key option should be the path to
 the already generated <code>.pem</code> file for this extension.
@@ -98,6 +98,9 @@ the already generated <code>.pem</code> file for this extension.
 
 <h2>Tips and tricks</h2>
 
-<ul>
-<li>In build 3.0.195 and later, you can use the <code>--no-message-box</code> command line flag to suppress the dialog. This is useful if you're packing extensions in non-interactive scripts.</li>
-</ul>
+<p>
+You can use the <code>--no-message-box</code> command-line flag
+to suppress the dialog.
+This is useful if
+you're packing extensions in non-interactive scripts.
+</p>
