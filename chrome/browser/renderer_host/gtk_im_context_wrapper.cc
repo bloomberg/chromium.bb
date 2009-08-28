@@ -287,6 +287,7 @@ void GtkIMContextWrapper::ProcessFilteredKeyPressEvent(
     // Backspace key event, the browser may go back to previous page.
     if (wke->os_event) {
       wke->os_event->keyval = GDK_VoidSymbol;
+      wke->os_event->hardware_keycode = 0;
       wke->os_event->state = 0;
     }
   }
