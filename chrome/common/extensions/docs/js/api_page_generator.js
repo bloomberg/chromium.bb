@@ -135,10 +135,12 @@ function fetchContent(url, onSuccess, onError) {
 
   function handleError(error) {
     window.clearTimeout(abortTimerId);
-    if (onError)
+    if (onError) {
       onError(error);
-    else
-      console.error("XHR Failed fetching: " + localUrl + "..." + error);
+      // Some cases result in multiple error handings. Only fire the callback
+      // once.
+      onError = undefined;
+    }
   }
 
   try {
