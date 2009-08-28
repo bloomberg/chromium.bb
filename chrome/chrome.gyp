@@ -709,6 +709,8 @@
         'browser/automation/automation_provider_list_generic.cc',
         'browser/automation/automation_provider_list_mac.mm',
         'browser/automation/automation_provider_list.h',
+        'browser/automation/automation_provider_observers.cc',
+        'browser/automation/automation_provider_observers.h',
         'browser/automation/automation_resource_message_filter.cc',
         'browser/automation/automation_resource_message_filter.h',
         'browser/automation/automation_resource_tracker.cc',

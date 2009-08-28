@@ -27,6 +27,8 @@ const std::wstring kPrematureEnd = L"files/find_in_page/premature_end.html";
 const std::wstring kMoveIfOver = L"files/find_in_page/move_if_obscuring.html";
 const std::wstring kBitstackCrash = L"files/find_in_page/crash_14491.html";
 
+namespace {
+
 class FindInPageNotificationObserver : public NotificationObserver {
  public:
   explicit FindInPageNotificationObserver(TabContents* parent_tab)
@@ -75,6 +77,8 @@ class FindInPageNotificationObserver : public NotificationObserver {
   // to monitor when the search completes.
   int current_find_request_id_;
 };
+
+}  // namespace
 
 typedef enum { BACK = 0, FWD = 1 } FindInPageDirection;
 typedef enum { IGNORE_CASE = 0, CASE_SENSITIVE = 1 } FindInPageCase;
