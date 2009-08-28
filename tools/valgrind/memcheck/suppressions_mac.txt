@@ -193,6 +193,25 @@
    fun:_ZNK8Security12UnixPlusPlus17StaticForkMonitorclEv
    fun:_ZN12ocspdGlobals10serverPortEv
 }
+{
+   # Invalid read
+   bug_20508a
+   Memcheck:Addr4
+   ...
+   fun:ripc_DrawGlyphs
+   fun:draw_glyphs
+   fun:CGContextShowGlyphsWithAdvances
+}
+{
+   # Invalid read
+   bug_20508b
+   Memcheck:Addr4
+   fun:_eATSFontGetGlyphIDsForGlyphNames
+   fun:ATSFontGetGlyphIDsForGlyphNames
+   fun:ats_font_get_glyphs_for_glyph_names
+   fun:get_glyphs_for_glyph_names
+}
+
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
@@ -500,9 +519,7 @@
    fun:_ZdlPv
    fun:_ZN7WebCore15CSSSelectorList19adoptSelectorVectorERN3WTF6VectorIPNS_11CSSSelectorELm0EEE
    ...
-   fun:_ZN7WebCore9CSSParser15createStyleRuleEPN3WTF6VectorIPNS_11CSSSelectorELm0EEE
    fun:_Z10cssyyparsePv
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
 }
 {
    # Leak of a CFMutableArray of certs in X509Certificate::Verify.
@@ -520,4 +537,19 @@
    fun:__runop
    fun:_pthread_wqthread
    fun:start_wqthread
+}
+{
+   bug_20504
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:+[NSObject allocWithZone:]
+   fun:-[NSCustomObject nibInstantiate]
+   fun:-[NSIBObjectData instantiateObject:]
+   fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
+   fun:loadNib
+   fun:+[NSBundle(NSNibLoading) _loadNibFile:nameTable:withZone:ownerBundle:]
+   fun:+[NSBundle(NSNibLoading) loadNibFile:externalNameTable:withZone:]
+   fun:+[NSBundle(NSNibLoading) loadNibNamed:owner:]
+   fun:_ZN8Platform29WillInitializeMainMessageLoopERK18MainFunctionParams
 }

@@ -846,8 +846,6 @@
    fun:_ZN11webkit_glue20ResourceLoaderBridge6CreateERKSsRK4GURLS5_S5_S2_S2_S2_iiN12ResourceType4TypeEii
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context5StartERKN6WebKit13WebURLRequestEPNS_20ResourceLoaderBridge16SyncLoadResponseE
    fun:_ZN11webkit_glue16WebURLLoaderImpl18loadAsynchronouslyERKN6WebKit13WebURLRequestEPNS1_18WebURLLoaderClientE
-   fun:_ZN11webkit_glue15ResourceFetcher5StartEP8WebFrame
-   fun:_ZN11webkit_glue15ResourceFetcherC1ERK4GURLP8WebFrameP14CallbackRunnerI6Tuple2IRKN6WebKit14WebURLResponseERKSsEE
 }
 {
    bug_17185
@@ -869,6 +867,16 @@
    fun:_ZN20MockWebClipboardImpl10writeImageERKN6WebKit8WebImageERKNS0_6WebURLERKNS0_9WebStringE
    fun:_ZN7WebCore14ChromiumBridge19clipboardWriteImageEPK15NativeImageSkiaRKNS_4KURLERKNS_6StringE
    fun:_ZN7WebCore10Pasteboard10writeImageEPNS_4NodeERKNS_4KURLERKNS_6StringE
+}
+{
+   bug_17291
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocE*
+   fun:_ZN7WebCore19V8EventListenerList3addEPNS_15V8EventListenerE
+   fun:_ZN7WebCore19V8EventListenerList19findOrCreateWrapperINS_15V8EventListenerEEEN3WTF10PassRefPtrIS2_EEPNS_5FrameEN2v85LocalINS8_5ValueEEEb
+   fun:_ZN7WebCore8V8Custom37v8DOMWindowEventHandlerAccessorSetterEN2v85LocalINS1_6StringEEENS2_INS1_5ValueEEERKNS1_12AccessorInfoE
+   fun:_ZN2v88internal8JSObject23SetPropertyWithCallbackEPNS0_6ObjectEPNS0_6StringES3_PS1_
 }
 {
    # also bug 17979.  It's a nest of leaks.
