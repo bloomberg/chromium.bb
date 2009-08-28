@@ -159,10 +159,12 @@ class Texture: public Resource {
   Texture(texture::Type type,
           unsigned int levels,
           texture::Format format,
+          bool enable_render_surfaces,
           unsigned int flags)
       : type_(type),
         levels_(levels),
         format_(format),
+        render_surfaces_enabled_(enable_render_surfaces),
         flags_(flags) {}
   virtual ~Texture() {}
 
@@ -172,15 +174,35 @@ class Texture: public Resource {
   unsigned int flags() const { return flags_; }
   // Returns the texture format.
   texture::Format format() const { return format_; }
+  // Returns whether the texture supports render surfaces
+  bool render_surfaces_enabled() const { return render_surfaces_enabled_; }
   // Returns the number of mipmap levels in the texture.
   unsigned int levels() const { return levels_; }
  private:
   texture::Type type_;
   unsigned int levels_;
   texture::Format format_;
+  bool render_surfaces_enabled_;
   unsigned int flags_;
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
+
+// RenderSurface class, representing a render surface/target
+class RenderSurface: public Resource {
+ public:
+  RenderSurface() {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderSurface);
+};
+
+// RenderSurface class, representing a render surface/target
+class RenderDepthStencilSurface: public Resource {
+ public:
+  RenderDepthStencilSurface() {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurface);
+};
+
 
 // Texture class, representing a sampler resource.
 class Sampler: public Resource {

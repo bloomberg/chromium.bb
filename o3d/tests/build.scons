@@ -222,6 +222,7 @@ tests = [
     'core/cross/primitive_test.cc',
     'core/cross/ray_intersection_info_test.cc',
     'core/cross/render_node_test.cc',
+    'core/cross/render_surface_test.cc',
     'core/cross/renderer_test.cc',
     'core/cross/service_locator_test.cc',
     'core/cross/shape_test.cc',

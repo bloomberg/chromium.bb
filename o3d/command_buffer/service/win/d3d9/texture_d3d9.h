@@ -35,6 +35,7 @@
 
 // This file contains the definition of the D3D9 versions of texture-related
 // resource classes.
+#include <atlbase.h>
 
 #include "command_buffer/common/cross/gapi_interface.h"
 #include "command_buffer/service/win/d3d9/d3d9_utils.h"
@@ -53,8 +54,9 @@ class TextureD3D9 : public Texture {
   TextureD3D9(texture::Type type,
               unsigned int levels,
               texture::Format format,
+              bool enable_render_surfaces,
               unsigned int flags)
-      : Texture(type, levels, format, flags) {}
+      : Texture(type, levels, format, enable_render_surfaces, flags) {}
   // Gets the D3D base texture.
   virtual IDirect3DBaseTexture9 *d3d_base_texture() const = 0;
   // Sets data into a texture resource.
@@ -75,6 +77,14 @@ class TextureD3D9 : public Texture {
                        unsigned int slice_pitch,
                        unsigned int size,
                        void *data) = 0;
+  // Creates the render surface, returning false if unable to.
+  virtual bool CreateRenderSurface(int width,
+                                   int height,
+                                   int mip_level,
+                                   int side,
+                                   IDirect3DSurface9** direct3d_surface) = 0;
+  static D3DFORMAT D3DFormat(texture::Format format);
+  static D3DCUBEMAP_FACES D3DFace(texture::Face face);
  private:
   DISALLOW_COPY_AND_ASSIGN(TextureD3D9);
 };
@@ -88,8 +98,10 @@ class Texture2DD3D9 : public TextureD3D9 {
                 unsigned int width,
                 unsigned int height,
                 IDirect3DTexture9 *texture,
-                IDirect3DTexture9 *shadow)
-      : TextureD3D9(texture::TEXTURE_2D, levels, format, flags),
+                IDirect3DTexture9 *shadow,
+                bool enable_render_surfaces)
+      : TextureD3D9(texture::TEXTURE_2D, levels, format,
+                    enable_render_surfaces, flags),
         width_(width),
         height_(height),
         d3d_texture_(texture),
@@ -102,7 +114,8 @@ class Texture2DD3D9 : public TextureD3D9 {
                                unsigned int height,
                                unsigned int levels,
                                texture::Format format,
-                               unsigned int flags);
+                               unsigned int flags,
+                               bool enable_render_surfaces);
   // Sets data into a 2D texture resource.
   virtual bool SetData(GAPID3D9 *gapi,
                        const Volume& volume,
@@ -121,6 +134,12 @@ class Texture2DD3D9 : public TextureD3D9 {
                        unsigned int slice_pitch,
                        unsigned int size,
                        void *data);
+  // Create a render surface which matches this texture type.
+  virtual bool CreateRenderSurface(int width,
+                                   int height,
+                                   int mip_level,
+                                   int side,
+                                   IDirect3DSurface9** direct3d_surface);
   // Gets the D3D base texture.
   virtual IDirect3DBaseTexture9 *d3d_base_texture() const {
     return d3d_texture_;
@@ -128,7 +147,7 @@ class Texture2DD3D9 : public TextureD3D9 {
  private:
   unsigned int width_;
   unsigned int height_;
-  IDirect3DTexture9 *d3d_texture_;
+  CComPtr<IDirect3DTexture9> d3d_texture_;
   IDirect3DTexture9 *d3d_shadow_;
   DISALLOW_COPY_AND_ASSIGN(Texture2DD3D9);
 };
@@ -143,8 +162,10 @@ class Texture3DD3D9 : public TextureD3D9 {
                 unsigned int height,
                 unsigned int depth,
                 IDirect3DVolumeTexture9 *texture,
-                IDirect3DVolumeTexture9 *shadow)
-      : TextureD3D9(texture::TEXTURE_2D, levels, format, flags),
+                IDirect3DVolumeTexture9 *shadow,
+                bool enable_render_surfaces)
+      : TextureD3D9(texture::TEXTURE_2D, levels, format,
+                    enable_render_surfaces, flags),
         width_(width),
         height_(height),
         depth_(depth),
@@ -158,7 +179,8 @@ class Texture3DD3D9 : public TextureD3D9 {
                                unsigned int depth,
                                unsigned int levels,
                                texture::Format format,
-                               unsigned int flags);
+                               unsigned int flags,
+                               bool enable_render_surfaces);
   // Sets data into a 3D texture resource.
   virtual bool SetData(GAPID3D9 *gapi,
                        const Volume& volume,
@@ -177,6 +199,12 @@ class Texture3DD3D9 : public TextureD3D9 {
                        unsigned int slice_pitch,
                        unsigned int size,
                        void *data);
+  // Create a render surface which matches this texture type.
+  virtual bool CreateRenderSurface(int width,
+                                   int height,
+                                   int mip_level,
+                                   int side,
+                                   IDirect3DSurface9** direct3d_surface);
   // Gets the D3D base texture.
   virtual IDirect3DBaseTexture9 *d3d_base_texture() const {
     return d3d_texture_;
@@ -185,7 +213,7 @@ class Texture3DD3D9 : public TextureD3D9 {
   unsigned int width_;
   unsigned int height_;
   unsigned int depth_;
-  IDirect3DVolumeTexture9 *d3d_texture_;
+  CComPtr<IDirect3DVolumeTexture9> d3d_texture_;
   IDirect3DVolumeTexture9 *d3d_shadow_;
   DISALLOW_COPY_AND_ASSIGN(Texture3DD3D9);
 };
@@ -198,8 +226,10 @@ class TextureCubeD3D9 : public TextureD3D9 {
                   unsigned int flags,
                   unsigned int side,
                   IDirect3DCubeTexture9 *texture,
-                  IDirect3DCubeTexture9 *shadow)
-      : TextureD3D9(texture::TEXTURE_CUBE, levels, format, flags),
+                  IDirect3DCubeTexture9 *shadow,
+                  bool enable_render_surfaces)
+      : TextureD3D9(texture::TEXTURE_CUBE, levels, format,
+                    enable_render_surfaces, flags),
         side_(side),
         d3d_texture_(texture),
         d3d_shadow_(shadow) {}
@@ -209,7 +239,8 @@ class TextureCubeD3D9 : public TextureD3D9 {
                                  unsigned int side,
                                  unsigned int levels,
                                  texture::Format format,
-                                 unsigned int flags);
+                                 unsigned int flags,
+                                 bool enable_render_surfaces);
   // Sets data into a cube map texture resource.
   virtual bool SetData(GAPID3D9 *gapi,
                        const Volume& volume,
@@ -228,13 +259,19 @@ class TextureCubeD3D9 : public TextureD3D9 {
                        unsigned int slice_pitch,
                        unsigned int size,
                        void *data);
+  // Create a render surface which matches this texture type.
+  virtual bool CreateRenderSurface(int width,
+                                   int height,
+                                   int mip_level,
+                                   int side,
+                                   IDirect3DSurface9** direct3d_surface);
   // Gets the D3D base texture.
   virtual IDirect3DBaseTexture9 *d3d_base_texture() const {
     return d3d_texture_;
   }
  private:
   unsigned int side_;
-  IDirect3DCubeTexture9 *d3d_texture_;
+  CComPtr<IDirect3DCubeTexture9> d3d_texture_;
   IDirect3DCubeTexture9 *d3d_shadow_;
   DISALLOW_COPY_AND_ASSIGN(TextureCubeD3D9);
 };

@@ -42,6 +42,7 @@
 #include "command_buffer/service/win/d3d9/effect_d3d9.h"
 #include "command_buffer/service/win/d3d9/texture_d3d9.h"
 #include "command_buffer/service/win/d3d9/sampler_d3d9.h"
+#include "command_buffer/service/win/d3d9/render_surface_d3d9.h"
 
 namespace o3d {
 namespace command_buffer {
@@ -212,7 +213,8 @@ class GAPID3D9 : public GAPIInterface {
                                      unsigned int height,
                                      unsigned int levels,
                                      texture::Format format,
-                                     unsigned int flags);
+                                     unsigned int flags,
+                                     bool enable_render_surfaces);
 
   // Implements the CreateTexture3D function for D3D9.
   virtual ParseError CreateTexture3D(ResourceID id,
@@ -221,14 +223,16 @@ class GAPID3D9 : public GAPIInterface {
                                      unsigned int depth,
                                      unsigned int levels,
                                      texture::Format format,
-                                     unsigned int flags);
+                                     unsigned int flags,
+                                     bool enable_render_surfaces);
 
   // Implements the CreateTextureCube function for D3D9.
   virtual ParseError CreateTextureCube(ResourceID id,
                                        unsigned int side,
                                        unsigned int levels,
                                        texture::Format format,
-                                       unsigned int flags);
+                                       unsigned int flags,
+                                       bool enable_render_surfaces);
 
   // Implements the SetTextureData function for D3D9.
   virtual ParseError SetTextureData(ResourceID id,
@@ -342,6 +346,32 @@ class GAPID3D9 : public GAPIInterface {
   // Implements the SetBlendingColor function for D3D9.
   virtual void SetBlendingColor(const RGBA &color);
 
+  // Implements the CreateRenderSurface function for D3D9.
+  virtual ParseError CreateRenderSurface(ResourceID id,
+                                         unsigned int width,
+                                         unsigned int height,
+                                         unsigned int mip_level,
+                                         unsigned int side,
+                                         ResourceID texture_id);
+
+  // Implements the DestroyRenderSurface function for D3D9.
+  virtual ParseError DestroyRenderSurface(ResourceID id);
+
+  // Implements the CreateDepthSurface function for D3D9.
+  virtual ParseError CreateDepthSurface(ResourceID id,
+                                        unsigned int width,
+                                        unsigned int height);
+
+  // Implements teh DestroyDepthSurface function for D3D9.
+  virtual ParseError DestroyDepthSurface(ResourceID id);
+
+  // Implements the SetRenderSurface function for D3D9.
+  virtual ParseError SetRenderSurface(ResourceID render_surface_id,
+                                      ResourceID depth_stencil_id);
+
+  // Implements the SetBackSurfaces function for D3D9.
+  virtual void SetBackSurfaces();
+
   // Gets the D3D9 device.
   IDirect3DDevice9 *d3d_device() const { return d3d_device_; }
 
@@ -379,6 +409,10 @@ class GAPID3D9 : public GAPIInterface {
   ResourceID current_effect_id_;
   bool validate_effect_;
   EffectD3D9 *current_effect_;
+  IDirect3DSurface9* back_buffer_surface_;
+  IDirect3DSurface9* back_buffer_depth_surface_;
+  ResourceID current_surface_id_;
+  ResourceID current_depth_surface_id_;
 
   ResourceMap<VertexBufferD3D9> vertex_buffers_;
   ResourceMap<IndexBufferD3D9> index_buffers_;
@@ -387,9 +421,12 @@ class GAPID3D9 : public GAPIInterface {
   ResourceMap<EffectParamD3D9> effect_params_;
   ResourceMap<TextureD3D9> textures_;
   ResourceMap<SamplerD3D9> samplers_;
+  ResourceMap<RenderSurfaceD3D9> render_surfaces_;
+  ResourceMap<RenderDepthStencilSurfaceD3D9> depth_surfaces_;
 };
 
 }  // namespace command_buffer
 }  // namespace o3d
 
 #endif  // O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_GAPI_D3D9_H__
+

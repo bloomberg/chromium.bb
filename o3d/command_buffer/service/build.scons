@@ -87,6 +87,7 @@ if env['TARGET_PLATFORM'] == 'WINDOWS':
     INPUTS += ['win/d3d9/effect_d3d9.cc',
                'win/d3d9/gapi_d3d9.cc',
                'win/d3d9/geometry_d3d9.cc',
+               'win/d3d9/render_surface_d3d9.cc',
                'win/d3d9/sampler_d3d9.cc',
                'win/d3d9/states_d3d9.cc',
                'win/d3d9/texture_d3d9.cc']
@@ -102,7 +103,6 @@ if env['TARGET_PLATFORM'] == 'WINDOWS':
                'cross/gl/sampler_gl.cc',
                'cross/gl/states_gl.cc',
                'cross/gl/texture_gl.cc']
-
   BIG_TEST_SERVER += ['win/big_test_main.cc']
 elif env['TARGET_PLATFORM'] == 'LINUX':
   env.Append(LIBS = ['GL', 'GLEW', 'Cg', 'CgGL'],

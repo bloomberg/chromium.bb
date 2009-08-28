@@ -49,7 +49,11 @@ GAPID3D9::GAPID3D9()
       current_effect_(NULL),
       vertex_buffers_(),
       index_buffers_(),
-      vertex_structs_() {}
+      vertex_structs_(),
+      back_buffer_surface_(NULL),
+      back_buffer_depth_surface_(NULL),
+      current_surface_id_(kInvalidResource),
+      current_depth_surface_id_(kInvalidResource) {}
 
 GAPID3D9::~GAPID3D9() {}
 
@@ -143,6 +147,8 @@ void GAPID3D9::Destroy() {
   effect_params_.DestroyAllResources();
   textures_.DestroyAllResources();
   samplers_.DestroyAllResources();
+  render_surfaces_.DestroyAllResources();
+  depth_surfaces_.DestroyAllResources();
   if (d3d_device_) {
     d3d_device_->Release();
     d3d_device_ = NULL;
@@ -155,6 +161,8 @@ void GAPID3D9::Destroy() {
 
 // Begins the frame.
 void GAPID3D9::BeginFrame() {
+  HR(d3d_device_->GetRenderTarget(0, &back_buffer_surface_));
+  HR(d3d_device_->GetDepthStencilSurface(&back_buffer_depth_surface_));
   HR(d3d_device_->BeginScene());
 }
 
@@ -163,6 +171,10 @@ void GAPID3D9::EndFrame() {
   DirtyEffect();
   HR(d3d_device_->EndScene());
   HR(d3d_device_->Present(NULL, NULL, NULL, NULL));
+
+  // Release the back-buffer references.
+  back_buffer_surface_ = NULL;
+  back_buffer_depth_surface_ = NULL;
 }
 
 // Clears the selected buffers.

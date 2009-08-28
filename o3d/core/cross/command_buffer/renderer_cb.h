@@ -101,12 +101,10 @@ class RendererCB : public Renderer {
   // Creates and returns a platform specific Sampler object.
   virtual Sampler::Ref CreateSampler();
 
-  // TODO: Fill this in
+  // Creates and returns a platform specific RenderDepthStencilSurface object.
   virtual RenderDepthStencilSurface::Ref CreateDepthStencilSurface(
       int width,
-      int height) {
-    return RenderDepthStencilSurface::Ref();
-  }
+      int height);
 
   // Gets the allocator for vertex buffer IDs.
   IdAllocator &vertex_buffer_ids() { return vertex_buffer_ids_; }
@@ -128,6 +126,12 @@ class RendererCB : public Renderer {
 
   // Gets the allocator for sampler IDs.
   IdAllocator &sampler_ids() { return sampler_ids_; }
+
+  // Gets the allocator for render surfaces IDs.
+  IdAllocator &render_surface_ids() { return render_surface_ids_; }
+
+  // Gets the allocator for depth stencil surfaces IDs.
+  IdAllocator &depth_surface_ids() { return depth_surface_ids_; }
 
   // Gets the command buffer helper.
   command_buffer::CommandBufferHelper *helper() const { return helper_; }
@@ -237,6 +241,8 @@ class RendererCB : public Renderer {
   IdAllocator effect_param_ids_;
   IdAllocator texture_ids_;
   IdAllocator sampler_ids_;
+  IdAllocator render_surface_ids_;
+  IdAllocator depth_surface_ids_;
   unsigned int frame_token_;
 
   class StateManager;

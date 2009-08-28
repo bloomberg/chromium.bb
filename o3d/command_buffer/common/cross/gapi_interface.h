@@ -518,6 +518,7 @@ class GAPIInterface {
   //     maximum.
   //   format: the format of the texels in the texture.
   //   flags: the texture flags, as a combination of texture::Flags.
+  //   enable_render_surfaces: bool for whether to enable render surfaces
   // Returns:
   //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
   //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
@@ -526,7 +527,8 @@ class GAPIInterface {
                                      unsigned int height,
                                      unsigned int levels,
                                      texture::Format format,
-                                     unsigned int flags) = 0;
+                                     unsigned int flags,
+                                     bool enable_render_surfaces) = 0;
 
   // Creates a 3D texture resource.
   // Parameters:
@@ -538,6 +540,7 @@ class GAPIInterface {
   //     maximum.
   //   format: the format of the pixels in the texture.
   //   flags: the texture flags, as a combination of texture::Flags.
+  //   enable_render_surfaces: bool for whether to enable render surfaces
   // Returns:
   //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
   //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
@@ -547,7 +550,8 @@ class GAPIInterface {
                                      unsigned int depth,
                                      unsigned int levels,
                                      texture::Format format,
-                                     unsigned int flags) = 0;
+                                     unsigned int flags,
+                                     bool enable_render_surfaces) = 0;
 
   // Creates a cube map texture resource.
   // Parameters:
@@ -557,6 +561,7 @@ class GAPIInterface {
   //     maximum.
   //   format: the format of the pixels in the texture.
   //   flags: the texture flags, as a combination of texture::Flags.
+  //   enable_render_surfaces: bool for whether to enable render surfaces
   // Returns:
   //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
   //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
@@ -564,7 +569,8 @@ class GAPIInterface {
                                        unsigned int side,
                                        unsigned int levels,
                                        texture::Format format,
-                                       unsigned int flags) = 0;
+                                       unsigned int flags,
+                                       bool enable_render_surfaces) = 0;
 
   // Sets texel data into a texture resource. This is a common function for
   // each of the texture types, but some restrictions exist based on the
@@ -846,6 +852,67 @@ class GAPIInterface {
 
   // Sets the blending color.
   virtual void SetBlendingColor(const RGBA &color) = 0;
+
+  // Creates a render surface resource.
+  // Parameters:
+  //   id: the resource ID of the render surface.
+  //   width: the texture width. Must be positive.
+  //   height: the texture height. Must be positive.
+  //   texture_id: the resource id of the texture.
+  // Returns:
+  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
+  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  virtual ParseError CreateRenderSurface(ResourceID id,
+                                         unsigned int width,
+                                         unsigned int height,
+                                         unsigned int mip_level,
+                                         unsigned int side,
+                                         ResourceID texture_id) = 0;
+
+  // Destroys a render surface resource.
+  // Parameters:
+  //   id: the resource ID of the render surface.
+  // Returns:
+  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid render
+  //     surface
+  //   resource ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  virtual ParseError DestroyRenderSurface(ResourceID id) = 0;
+
+  // Creates a depth stencil surface resource.
+  // Parameters:
+  //   id: the resource ID of the depth stencil surface.
+  //   width: the texture width. Must be positive.
+  //   height: the texture height. Must be positive.
+  // Returns:
+  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
+  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  virtual ParseError CreateDepthSurface(ResourceID id,
+                                        unsigned int width,
+                                        unsigned int height) = 0;
+
+  // Destroys a depth stencil surface resource.
+  // Parameters:
+  //   id: the resource ID of the depth stencil surface.
+  // Returns:
+  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid render
+  //     surface
+  //   resource ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  virtual ParseError DestroyDepthSurface(ResourceID id) = 0;
+
+  // Switches the render surface and depth stencil surface to those
+  // corresponding to the passed in IDs.
+  // Parameters:
+  //   render_surface_id: the resource ID of the render surface.
+  //   depth_stencil_id: the resource ID of the render depth stencil surface.
+  // Returns:
+  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
+  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  virtual ParseError SetRenderSurface(ResourceID render_surface_id,
+                                      ResourceID depth_stencil_id) = 0;
+
+  // Switch the render surface and depth stencil surface back to the main
+  // surfaces stored in the render
+  virtual void SetBackSurfaces() = 0;
 };
 
 }  // namespace command_buffer

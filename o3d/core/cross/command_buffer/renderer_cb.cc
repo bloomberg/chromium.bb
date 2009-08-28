@@ -42,6 +42,7 @@
 #include "core/cross/command_buffer/param_cache_cb.h"
 #include "core/cross/command_buffer/primitive_cb.h"
 #include "core/cross/command_buffer/renderer_cb.h"
+#include "core/cross/command_buffer/render_surface_cb.h"
 #include "core/cross/command_buffer/sampler_cb.h"
 #include "core/cross/command_buffer/states_cb.h"
 #include "core/cross/command_buffer/stream_bank_cb.h"
@@ -226,11 +227,18 @@ void RendererCB::PlatformSpecificPresent() {
 void RendererCB::SetRenderSurfacesPlatformSpecific(
     const RenderSurface* surface,
     const RenderDepthStencilSurface* surface_depth) {
-  // TODO: Provide an implementation for this routine.
+  const RenderSurfaceCB* surface_cb =
+      down_cast<const RenderSurfaceCB*>(surface);
+  const RenderDepthStencilSurfaceCB* surface_depth_cb =
+      down_cast<const RenderDepthStencilSurfaceCB*>(surface_depth);
+  command_buffer::CommandBufferEntry args[2];
+  args[0].value_uint32 = surface_cb->resource_id();
+  args[1].value_uint32 = surface_depth_cb->resource_id();
+  helper_->AddCommand(command_buffer::SET_RENDER_SURFACE, 2, args);
 }
 
 void RendererCB::SetBackBufferPlatformSpecific() {
-  // TODO: Provide an implementation for this routine.
+  helper_->AddCommand(command_buffer::SET_BACK_SURFACES, 0, NULL);
 }
 
 // Creates a StreamBank, returning a platform specific implementation class.
@@ -325,5 +333,16 @@ const int* RendererCB::GetRGBAUByteNSwizzleTable() {
 // we're implementing command buffers, we only ever return a CB renderer.
 Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
   return RendererCB::CreateDefault(service_locator);
+}
+
+// Creates and returns a platform specific RenderDepthStencilSurface object.
+RenderDepthStencilSurface::Ref RendererCB::CreateDepthStencilSurface(
+    int width,
+    int height) {
+  return RenderDepthStencilSurface::Ref(
+      new RenderDepthStencilSurfaceCB(service_locator(),
+                                      width,
+                                      height,
+                                      this));
 }
 }  // namespace o3d

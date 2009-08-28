@@ -566,6 +566,62 @@ BufferSyncInterface::ParseError GAPIDecoder::DoCommand(
       } else {
         return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
       }
+    case CREATE_RENDER_SURFACE:
+      if (arg_count == 4) {
+        namespace cmd = create_render_surface_cmd;
+        ResourceID id = args[0].value_uint32;
+        unsigned int width_height = args[1].value_uint32;
+        unsigned int width = cmd::Width::Get(width_height);
+        unsigned int height = cmd::Height::Get(width_height);
+        unsigned int levels_side = args[2].value_uint32;
+        unsigned int mip_level = cmd::Levels::Get(levels_side);
+        unsigned int side = cmd::Side::Get(levels_side);
+        ResourceID texture_id = args[3].value_uint32;
+        return gapi_->CreateRenderSurface(id, width, height, mip_level,
+                                          side, texture_id);
+      } else {
+        return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      }
+    case DESTROY_RENDER_SURFACE:
+      if (arg_count == 1) {
+        ResourceID id = args[0].value_uint32;
+        return gapi_->DestroyRenderSurface(id);
+      } else {
+        return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      }
+    case CREATE_DEPTH_SURFACE:
+      if (arg_count == 2) {
+        namespace cmd = create_render_surface_cmd;
+        ResourceID id = args[0].value_uint32;
+        unsigned int width_height = args[1].value_uint32;
+        unsigned int width = cmd::Width::Get(width_height);
+        unsigned int height = cmd::Height::Get(width_height);
+        return gapi_->CreateDepthSurface(id, width, height);
+      } else {
+        return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      }
+    case DESTROY_DEPTH_SURFACE:
+      if (arg_count == 1) {
+        ResourceID id = args[0].value_uint32;
+        return gapi_->DestroyDepthSurface(id);
+      } else {
+        return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      }
+    case SET_RENDER_SURFACE:
+      if (arg_count == 2) {
+        ResourceID render_surface_id = args[0].value_uint32;
+        ResourceID depth_stencil_id = args[1].value_uint32;
+        return gapi_->SetRenderSurface(render_surface_id, depth_stencil_id);
+      } else {
+        return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      }
+    case SET_BACK_SURFACES:
+      if (arg_count == 0) {
+        gapi_->SetBackSurfaces();
+        return  BufferSyncInterface::PARSE_NO_ERROR;
+      } else {
+        return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      }
     default:
       return BufferSyncInterface::PARSE_UNKNOWN_COMMAND;
   }
@@ -617,8 +673,10 @@ BufferSyncInterface::ParseError GAPIDecoder::DecodeCreateTexture2D(
         (unused != 0) || (format >= texture::NUM_FORMATS))
       return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
     if (levels == 0) levels = max_levels;
+    bool enable_render_surfaces = flags;
     return gapi_->CreateTexture2D(id, width, height, levels,
-                                  static_cast<texture::Format>(format), flags);
+                                  static_cast<texture::Format>(format), flags,
+                                  enable_render_surfaces);
   } else {
     return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   }
@@ -649,8 +707,10 @@ BufferSyncInterface::ParseError GAPIDecoder::DecodeCreateTexture3D(
         (format >= texture::NUM_FORMATS))
       return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
     if (levels == 0) levels = max_levels;
+    bool enable_render_surfaces = flags;
     return gapi_->CreateTexture3D(id, width, height, depth, levels,
-                                  static_cast<texture::Format>(format), flags);
+                                  static_cast<texture::Format>(format), flags,
+                                  enable_render_surfaces);
   } else {
     return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   }
@@ -676,9 +736,10 @@ BufferSyncInterface::ParseError GAPIDecoder::DecodeCreateTextureCube(
         (unused2 != 0) || (format >= texture::NUM_FORMATS))
       return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
     if (levels == 0) levels = max_levels;
+    bool enable_render_surfaces = flags;
     return gapi_->CreateTextureCube(id, side, levels,
                                     static_cast<texture::Format>(format),
-                                    flags);
+                                    flags, enable_render_surfaces);
   } else {
     return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   }

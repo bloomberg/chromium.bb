@@ -108,6 +108,16 @@ typedef BitField<8, 8> Format;
 typedef BitField<16, 16> Flags;
 }  // namespace create_texture_cube_cmd
 
+// Bitfields for the CREATE_RENDER_SURFACE command.
+namespace create_render_surface_cmd {
+// argument 1
+typedef BitField<0, 16> Width;
+typedef BitField<16, 16> Height;
+// argument 2 may refer to side or depth
+typedef BitField<0, 16> Levels;
+typedef BitField<16, 16> Side;
+}  // namespace create_render_surface_cmd
+
 // Bitfields for the SET_TEXTURE_DATA command.
 namespace set_texture_data_cmd {
 // argument 1
@@ -261,7 +271,7 @@ typedef BitField<31, 1> Enable;
 // GAPI commands.
 enum CommandId {
   NOOP,                              // No operation. Arbitrary argument size.
-  SET_TOKEN,                         // Sets token. 1 argument.
+  SET_TOKEN,                         // Sets token. 1 argument.          val 0
   BEGIN_FRAME,                       // BeginFrame. 0 argument.
   END_FRAME,                         // EndFrame. 0 argument.
   CLEAR,                             // Clear. 7 arguments.
@@ -269,8 +279,8 @@ enum CommandId {
   DESTROY_VERTEX_BUFFER,             // DestroyVertexBuffer. 1 argument.
   SET_VERTEX_BUFFER_DATA,            // SetVertexBufferData, 5 args
   SET_VERTEX_BUFFER_DATA_IMMEDIATE,  // SetVertexBufferData, 2 args + data
-  GET_VERTEX_BUFFER_DATA,            // GetVertexBufferData, 5 args
-  CREATE_INDEX_BUFFER,               // CreateIndexBuffer, 3 arguments.
+  GET_VERTEX_BUFFER_DATA,            // GetVertexBufferData, 5 args,
+  CREATE_INDEX_BUFFER,               // CreateIndexBuffer, 3 arguments.  val 10
   DESTROY_INDEX_BUFFER,              // DestroyIndexBuffer. 1 argument.
   SET_INDEX_BUFFER_DATA,             // SetIndexBufferData, 5 args
   SET_INDEX_BUFFER_DATA_IMMEDIATE,   // SetIndexBufferData, 2 args + data
@@ -279,8 +289,8 @@ enum CommandId {
   DESTROY_VERTEX_STRUCT,             // DestroyVertexStruct. 1 argument.
   SET_VERTEX_INPUT,                  // SetVertexInput, 5 args.
   SET_VERTEX_STRUCT,                 // SetVertexStruct, 1 arg.
-  DRAW,                              // Draw, 3 args.
-  DRAW_INDEXED,                      // DrawIndexed, 6 args.
+  DRAW,                              // Draw, 3 args. value
+  DRAW_INDEXED,                      // DrawIndexed, 6 args.             val 20
   CREATE_EFFECT,                     // CreateEffect, 4 args.
   CREATE_EFFECT_IMMEDIATE,           // CreateEffect, 2 args + data
   DESTROY_EFFECT,                    // DestroyEffect, 1 arg.
@@ -290,17 +300,17 @@ enum CommandId {
   CREATE_PARAM_BY_NAME,              // CreateParamByName, 5 args.
   CREATE_PARAM_BY_NAME_IMMEDIATE,    // CreateParamByName, 3 args + data
   DESTROY_PARAM,                     // DestroyParam, 1 arg
-  SET_PARAM_DATA,                    // SetParamData, 4 args
+  SET_PARAM_DATA,                    // SetParamData, 4 args             val 30
   SET_PARAM_DATA_IMMEDIATE,          // SetParamData, 2 args + data
   GET_PARAM_DESC,                    // GetParamDesc, 4 args
   GET_STREAM_COUNT,                  // GetStreamCount, 4 args.
   GET_STREAM_DESC,                   // GetStreamDesc, 5 args
   DESTROY_TEXTURE,                   // DestroyTexture, 1 arg
-  CREATE_TEXTURE_2D,                 // CreateTexture2D, 3 args
+  CREATE_TEXTURE_2D,                 // CreateTexture2D, 4 args
   CREATE_TEXTURE_3D,                 // CreateTexture3D, 4 args
   CREATE_TEXTURE_CUBE,               // CreateTextureCube, 3 args
   SET_TEXTURE_DATA,                  // SetTextureData, 10 args
-  SET_TEXTURE_DATA_IMMEDIATE,        // SetTextureData, 8 args + data
+  SET_TEXTURE_DATA_IMMEDIATE,        // SetTextureData, 8 args + data    val 40
   GET_TEXTURE_DATA,                  // GetTextureData, 10 args
   CREATE_SAMPLER,                    // CreateSampler, 1 arg
   DESTROY_SAMPLER,                   // DestroySampler, 1 arg
@@ -310,7 +320,7 @@ enum CommandId {
   SET_VIEWPORT,                      // SetViewport. 6 arguments.
   SET_SCISSOR,                       // SetScissor, 2 args
   SET_POINT_LINE_RASTER,             // SetPointLineRaster, 2 args
-  SET_POLYGON_RASTER,                // SetPolygonRaster, 1 args
+  SET_POLYGON_RASTER,                // SetPolygonRaster, 1 args         val 50
   SET_POLYGON_OFFSET,                // SetPolygonOffest, 2 args
   SET_ALPHA_TEST,                    // SetAlphaTest, 2 args
   SET_DEPTH_TEST,                    // SetDepthTest, 1 args
@@ -318,6 +328,12 @@ enum CommandId {
   SET_BLENDING,                      // SetBlending, 1 args
   SET_BLENDING_COLOR,                // SetBlendingColor, 4 args
   SET_COLOR_WRITE,                   // SetColorWrite, 1 args
+  CREATE_RENDER_SURFACE,             // CreateRenderSurface, 4 args.
+  DESTROY_RENDER_SURFACE,            // DestoryRenderSurface, 1 arg.
+  CREATE_DEPTH_SURFACE,              // CreateRenderSurface, 2 args.     val 60
+  DESTROY_DEPTH_SURFACE,             // DestoryRenderSurface, 1 arg.
+  SET_RENDER_SURFACE,                // SetRenderSurface, 2 args.
+  SET_BACK_SURFACES                  // SetBackSurfaces
 };
 
 }  // namespace command_buffer

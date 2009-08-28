@@ -35,13 +35,12 @@
 #ifndef O3D_CORE_CROSS_COMMAND_BUFFER_TEXTURE_CB_H_
 #define O3D_CORE_CROSS_COMMAND_BUFFER_TEXTURE_CB_H_
 
-// Precompiled header comes before everything else.
-#include "core/cross/precompile.h"
-
+#include <vector>
 #include "core/cross/bitmap.h"
 #include "core/cross/texture.h"
 #include "core/cross/types.h"
 #include "command_buffer/common/cross/resource.h"
+#include "core/cross/command_buffer/render_surface_cb.h"
 
 namespace o3d {
 

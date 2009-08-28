@@ -513,6 +513,11 @@ class Renderer {
   // current platform.
   virtual const int* GetRGBAUByteNSwizzleTable() = 0;
 
+  // Used only for unit testing purposes. Should not be used elsewhere.
+  void set_rendering(bool rendering) {
+    rendering_ = rendering;
+  }
+
  protected:
   typedef vector_map<String, StateHandler*> StateHandlerMap;
   typedef std::vector<ParamVector> ParamVectorArray;
