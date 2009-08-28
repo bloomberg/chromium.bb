@@ -1,5 +1,5 @@
 function claim() {
-  var views = chrome.self.getViews();
+  var views = chrome.extension.getViews();
   for (var i = 0; i < views.length; i++) {
     views[i].respond(document.getElementById("me").innerHTML);
   }

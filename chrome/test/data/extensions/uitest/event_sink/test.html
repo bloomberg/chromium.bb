@@ -9,7 +9,7 @@ HOLA!!! If you dont see the message DONE, then there is an error in the script.
   // Wait for the automation server to create a port so that we can communicate
   // back to it.
   var portToAutomation;
-  chrome.self.onConnect.addListener(function(port) {
+  chrome.extension.onConnect.addListener(function(port) {
     portToAutomation = port;
     portToAutomation.postMessage('ACK');
   });

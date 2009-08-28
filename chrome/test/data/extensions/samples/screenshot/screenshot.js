@@ -9,7 +9,7 @@ function takeScreenshot() {
       chrome.tabs.onUpdated.addListener(function(tabId, changedProps) {
         if (tabId == targetId &&
             changedProps.status == "complete") {
-          var views = chrome.self.getViews();
+          var views = chrome.extension.getViews();
           for (var i = 0; i < views.length; i++) {
             var view = views[i];
             if (view.location.href == viewTabUrl) {

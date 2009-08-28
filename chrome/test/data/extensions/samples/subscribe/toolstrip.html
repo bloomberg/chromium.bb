@@ -11,7 +11,7 @@
 
   button.onclick = handleClick;
 
-  chrome.self.onConnect.addListener(function(port) {
+  chrome.extension.onConnect.addListener(function(port) {
     port.onMessage.addListener(function(feedUrls) {
       // TODO(aa): When we have the ability to display drop downs, we should let
       // the user pick which feed to subscribe. Right now, we just pick the

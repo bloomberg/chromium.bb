@@ -8,7 +8,7 @@ chrome.windows.getCurrent(function(win) {
   windowId = win.id;
 });
 
-chrome.self.onConnect.addListener(function (port) {
+chrome.extension.onConnect.addListener(function (port) {
   if (port.tab.windowId != windowId)
     return;
   port.onMessage.addListener(function (msg, port) {

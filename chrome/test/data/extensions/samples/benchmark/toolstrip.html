@@ -172,7 +172,7 @@ function Benchmark() {
 
 var benchmarks = new Array();
 
-chrome.self.onConnect.addListener(function(port) {
+chrome.extension.onConnect.addListener(function(port) {
   port.onMessage.addListener(function(data) {
     if (data.message == "load") {
       var benchmark = benchmarks[data.url];

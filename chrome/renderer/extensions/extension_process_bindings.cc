@@ -250,11 +250,7 @@ class ExtensionImpl : public ExtensionBase {
     }
 
     if (!ExtensionProcessBindings::CurrentContextHasPermission(name)) {
-#if EXTENSION_TIME_TO_BREAK_API
       return ExtensionProcessBindings::ThrowPermissionDeniedException(name);
-#else
-      ExtensionProcessBindings::ThrowPermissionDeniedException(name);
-#endif
     }
 
     std::string json_args = *v8::String::Utf8Value(args[1]);
@@ -373,7 +369,7 @@ bool ExtensionProcessBindings::CurrentContextHasPermission(
   PermissionsMap::iterator it = permissions_map.find(permission_name);
 
   // We explicitly check if the permission entry is present and false, because
-  // some APIs do not have a required permission entry (ie, "chrome.self").
+  // some APIs do not have a required permission entry (ie, "chrome.extension").
   return (it == permissions_map.end() || it->second);
 }
 
@@ -387,28 +383,6 @@ v8::Handle<v8::Value>
   std::string permission_name = GetPermissionName(function_name);
   std::string error_msg = StringPrintf(kMessage, permission_name.c_str());
 
-#if EXTENSION_TIME_TO_BREAK_API
   return v8::ThrowException(v8::Exception::Error(
       v8::String::New(error_msg.c_str())));
-#else
-  // Call console.error for now.
-
-  v8::HandleScope scope;
-
-  v8::Local<v8::Value> console =
-      v8::Context::GetCurrent()->Global()->Get(v8::String::New("console"));
-  v8::Local<v8::Value> console_error;
-  if (!console.IsEmpty() && console->IsObject())
-    console_error = console->ToObject()->Get(v8::String::New("error"));
-  if (console_error.IsEmpty() || !console_error->IsFunction())
-    return v8::Undefined();
-
-  v8::Local<v8::Function> function =
-      v8::Local<v8::Function>::Cast(console_error);
-  v8::Local<v8::Value> argv[] = { v8::String::New(error_msg.c_str()) };
-  if (!function.IsEmpty())
-    function->Call(console->ToObject(), arraysize(argv), argv);
-
-  return v8::Undefined();
-#endif
 }

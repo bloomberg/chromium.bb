@@ -88,7 +88,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
 TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
   LoadHTML("<body></body>");
   ExecuteJavaScript(
-    "chrome.self.onConnect.addListener(function (port) {"
+    "chrome.extension.onConnect.addListener(function (port) {"
     "  port.test = 24;"
     "  port.onMessage.addListener(doOnMessage);"
     "  port.onDisconnect.addListener(doOnDisconnect);"
@@ -153,7 +153,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
 TEST_F(RenderViewTest, ExtensionMessagesDisconnect) {
   LoadHTML("<body></body>");
   ExecuteJavaScript(
-    "chrome.self.onConnect.addListener(function (port) {"
+    "chrome.extension.onConnect.addListener(function (port) {"
     "  port.onMessage.addListener(function(msg, p) {"
     "    if (msg.disconnect) port.disconnect();"
     "  });"
@@ -161,7 +161,7 @@ TEST_F(RenderViewTest, ExtensionMessagesDisconnect) {
     "var iframe1 = document.createElement('iframe');"
     "var iframe2 = document.createElement('iframe');"
     "var src = 'javascript:"
-    "   chrome.self.onConnect.addListener(function(port) {"
+    "   chrome.extension.onConnect.addListener(function(port) {"
     "     port.postMessage(\"onconnect\");"
     "     port.onMessage.addListener(function(p) { alert(\"NOTREACHED\"); });"
     "     port.disconnect();"

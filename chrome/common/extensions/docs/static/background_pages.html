@@ -39,7 +39,7 @@ only the necessary code to display the toolstrip UI,
 with all your extension logic contained in the background page.
 You can communicate between your various pages using direct script calls,
 similar to how frames can communicate.
-The chrome.self.getViews() function
+The chrome.extension.getViews() function
 returns a list of window objects
 for every active page belonging to your extension.
 </p>
@@ -48,7 +48,7 @@ for every active page belonging to your extension.
 
 <pre>background_page.html (snippet):
   function updateUI(checked) {
-    var views = chrome.self.getViews();
+    var views = chrome.extension.getViews();
     for (var i in views) {
       if (views[i].enableCheckbox)
         views[i].enableCheckbox(checked);

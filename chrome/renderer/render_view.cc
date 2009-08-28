@@ -1567,16 +1567,12 @@ void RenderView::WindowObjectCleared(WebFrame* frame) {
 }
 
 void RenderView::DocumentElementAvailable(WebFrame* frame) {
-  // TODO(aa): Remove this before dev release.
-  GURL url = frame->url();
-  if (url.SchemeIs(chrome::kExtensionScheme))
-    frame->grantUniversalAccess();
-
   if (RenderThread::current())  // Will be NULL during unit tests.
     RenderThread::current()->user_script_slave()->InjectScripts(
         frame, UserScript::DOCUMENT_START);
 
   // Notify the browser about non-blank documents loading in the top frame.
+  GURL url = frame->url();
   if (url.is_valid() && url.spec() != "about:blank") {
     if (frame == webview()->GetMainFrame())
       Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));

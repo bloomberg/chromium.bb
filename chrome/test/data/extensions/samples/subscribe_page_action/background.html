@@ -11,7 +11,7 @@
   // example what feedUrl was detected in the tab).
   var feedData = {};
 
-  chrome.self.onConnect.addListener(function(port) {
+  chrome.extension.onConnect.addListener(function(port) {
     // This will get called from the content script using PostMessage.
     // |feedUrls| is a list of URL feeds found on the page. We only need 1 to
     // enable the PageAction icon in the Omnibox.
