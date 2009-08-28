@@ -2679,8 +2679,6 @@ BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/002.xml = FAIL
 BUG19519 WIN MAC DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
 
 // Fallout from webkit 47305:47383
-BUG19655 : LayoutTests/fast/dom/Window/HTMLBodyElement-window-eventListener-attributes.html = FAIL
-BUG19655 : LayoutTests/fast/dom/Window/HTMLFrameSetElement-window-eventListener-attributes.html = FAIL
 BUG_JPARENT LINUX MAC: LayoutTests/fast/history/back-forward-is-asynchronous.html = TIMEOUT
 BUG_JPARENT LINUX DEBUG : LayoutTests/fast/multicol/columns-shorthand-parsing.html = CRASH
 
