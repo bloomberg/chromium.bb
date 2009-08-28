@@ -2727,7 +2727,6 @@ BUG20340 MAC : LayoutTests/fast/forms/button-state-restore.html = CRASH
 BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
 
 // WebKit 47732:47748.
-BUG20332 : LayoutTests/fast/events/keydown-function-keys.html = FAIL
 BUG20324 WIN LINUX : LayoutTests/http/tests/security/javascriptURL/javascriptURL-in-new-iframe.html = CRASH
 
 // WebKit 47748:47759. Crash only on Linux. Need investigation.

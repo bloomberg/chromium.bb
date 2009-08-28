@@ -375,7 +375,7 @@ void EventSendingController::keyDown(
 
     // Convert \n -> VK_RETURN.  Some layout tests use \n to mean "Enter", when
     // Windows uses \r for "Enter".
-    int code;
+    int code = 0;
     bool needs_shift_key_modifier = false;
     if (L"\n" == code_str) {
       generate_char = true;
@@ -399,10 +399,24 @@ void EventSendingController::keyDown(
     } else if (L"end" == code_str) {
       code = WebCore::VKEY_END;
     } else {
-      DCHECK(code_str.length() == 1);
-      code = code_str[0];
-      needs_shift_key_modifier = NeedsShiftModifier(code);
-      generate_char = true;
+      // Compare the input string with the function-key names defined by the
+      // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
+      // name, set its key code.
+      for (int i = 1; i <= 24; ++i) {
+        std::wstring function_key_name;
+        function_key_name += L"F";
+        function_key_name += IntToWString(i);
+        if (function_key_name == code_str) {
+          code = WebCore::VKEY_F1 + (i - 1);
+          break;
+        }
+      }
+      if (!code) {
+        DCHECK(code_str.length() == 1);
+        code = code_str[0];
+        needs_shift_key_modifier = NeedsShiftModifier(code);
+        generate_char = true;
+      }
     }
 
     // For one generated keyboard event, we need to generate a keyDown/keyUp
