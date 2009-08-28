@@ -312,6 +312,9 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // Encode image at image_cache_[id] as PNG and write to disk.
   void WriteImagesToDisk();
 
+  // Do we have a custom frame image or custom tints?
+  bool ShouldTintFrames();
+
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   // Loads an image and flips it horizontally if |rtl_enabled| is true.
   GdkPixbuf* GetPixbufImpl(int id, bool rtl_enabled);

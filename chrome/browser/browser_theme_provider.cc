@@ -501,9 +501,11 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   process_images_ = true;
 
   GenerateFrameColors();
-  GenerateFrameImages();
-  GenerateTabImages();
-  WriteImagesToDisk();
+  if (ShouldTintFrames()) {
+    GenerateFrameImages();
+    GenerateTabImages();
+    WriteImagesToDisk();
+  }
 
   NotifyThemeChanged();
   UserMetrics::RecordAction(L"Themes_Installed", profile_);
@@ -929,9 +931,7 @@ void BrowserThemeProvider::GenerateFrameImages() {
         frame.reset(NULL);
       } else {
         // If the theme doesn't specify an image, then apply the tint to
-        // the default frame. Note that the default theme provides default
-        // bitmaps for all frame types, so this isn't strictly necessary
-        // in the case where no tint is provided either.
+        // the default frame.
         frame.reset(new SkBitmap(*rb_.GetBitmapNamed(IDR_THEME_FRAME)));
       }
 
@@ -943,6 +943,15 @@ void BrowserThemeProvider::GenerateFrameImages() {
     }
     ++iter;
   }
+}
+
+bool BrowserThemeProvider::ShouldTintFrames() {
+  return (HasCustomImage(IDR_THEME_FRAME) ||
+    tints_.find(GetTintKey(TINT_BACKGROUND_TAB)) != tints_.end() ||
+    tints_.find(GetTintKey(TINT_FRAME)) != tints_.end() ||
+    tints_.find(GetTintKey(TINT_FRAME_INACTIVE)) != tints_.end() ||
+    tints_.find(GetTintKey(TINT_FRAME_INCOGNITO)) != tints_.end() ||
+    tints_.find(GetTintKey(TINT_FRAME_INCOGNITO_INACTIVE)) != tints_.end());
 }
 
 void BrowserThemeProvider::GenerateTabImages() {
