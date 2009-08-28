@@ -54,6 +54,7 @@ env.Replace(
     INTERNAL_DIR = '$SCONSTRUCT_DIR/../o3d-internal',
     JPEG_DIR = '$THIRD_PARTY/jpeg/src',
     JSDOCTOOLKIT_DIR = '$THIRD_PARTY/jsdoctoolkit/files',
+    MAC_BREAKPAD_PREBUILT_DIR = '$INTERNAL_DIR/GoogleBreakpad',
     LIBEVENT_DIR = '$THIRD_PARTY/libevent',
     # To run selenium tests you will need a tgz'ed copy of firefox.
     # Specify the path to it below.

@@ -347,6 +347,19 @@ if env.Bit('mac'):
               Touch('$ARTIFACTS_DIR/plugin_done')
               ])
 
+  # Upload crash symbols to crash server.
+  if int(ARGUMENTS.get('O3D_ENABLE_BREAKPAD', 0)):
+       env.Command('$ARTIFACTS_DIR/o3d.sym.breakpad',
+                   created_installer,
+                   ['echo "UPLOADING SYMBOLS TO go/crash"',
+                    ' '.join(['"$MAC_BREAKPAD_PREBUILT_DIR/dump_syms"',
+                              '"$ARTIFACTS_DIR/o3d"',
+                              '> $ARTIFACTS_DIR/o3d.sym.breakpad']),
+                    ' '.join(['"$MAC_BREAKPAD_PREBUILT_DIR/symupload"',
+                              '"$ARTIFACTS_DIR/o3d.sym.breakpad"',
+                              'http://crash-symbols:3842/upload'])
+                              ])
+
   env['MAC_INSTALLER_DIR'] = env['SCONSTRUCT_DIR'] + '/../o3d-internal/mac_installer'
   env['MAC_INSTALLER_PROJECT'] = 'o3d.packproj'
   # Default is to make the installer.
