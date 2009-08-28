@@ -71,12 +71,10 @@ void HistoryContentsProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  // Change input type and reset relevance counters, so matches will be marked
-  // up properly.
+  // Change input type so matches will be marked up properly.
   input_type_ = input.type();
   trim_http_ = !url_util::FindAndCompareScheme(WideToUTF8(input.text()),
                                                chrome::kHttpScheme, NULL);
-  star_title_count_ = star_contents_count_ = title_count_ = contents_count_ = 0;
 
   // Decide what to do about any previous query/results.
   if (!minimal_changes) {
@@ -150,11 +148,20 @@ void HistoryContentsProvider::QueryComplete(HistoryService::Handle handle,
 }
 
 void HistoryContentsProvider::ConvertResults() {
+  // Reset the relevance counters so that result relevance won't vary on
+  // subsequent passes of ConvertResults.
+  star_title_count_ = star_contents_count_ = title_count_ = contents_count_ = 0;
+
   // Make the result references and score the results.
   std::vector<MatchReference> result_refs;
   result_refs.reserve(results_.size());
-  for (size_t i = 0; i < results_.size(); i++) {
-    MatchReference ref(&results_[i], CalculateRelevance(results_[i]));
+
+  // Results are sorted in decreasing order so we run the loop backwards so that
+  // the relevance increment favors the higher ranked results.
+  for (std::vector<history::URLResult*>::const_reverse_iterator i =
+       results_.rbegin(); i != results_.rend(); ++i) {
+    history::URLResult* result = *i;
+    MatchReference ref(result, CalculateRelevance(*result));
     result_refs.push_back(ref);
   }
 
@@ -275,8 +282,7 @@ void HistoryContentsProvider::QueryBookmarks(const AutocompleteInput& input) {
   if (!bookmark_model)
     return;
 
-  DCHECK(results_.size() == 0);  // When we get here the results should be
-                                 // empty.
+  DCHECK(results_.empty());
 
   TimeTicks start_time = TimeTicks::Now();
   std::vector<bookmark_utils::TitleMatch> matches;

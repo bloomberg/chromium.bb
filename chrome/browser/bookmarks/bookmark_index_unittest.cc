@@ -5,10 +5,14 @@
 #include <string>
 #include <vector>
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/history/history_database.h"
+#include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/query_parser.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class BookmarkIndexTest : public testing::Test {
@@ -82,7 +86,6 @@ class BookmarkIndexTest : public testing::Test {
     }
   }
 
-
  protected:
   scoped_ptr<BookmarkModel> model_;
 
@@ -120,7 +123,6 @@ TEST_F(BookmarkIndexTest, Tests) {
 
     // Make sure quotes don't do a prefix match.
     { L"think",                     L"\"thi\"", L""},
-
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     std::vector<std::wstring> titles;
@@ -205,3 +207,84 @@ TEST_F(BookmarkIndexTest, EmptyMatchOnMultiwideLowercaseString) {
   EXPECT_TRUE(matches[0].node == n1);
   EXPECT_TRUE(matches[0].match_positions.empty());
 }
+
+TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
+  // This ensures MessageLoop::current() will exist, which is needed by
+  // TestingProfile::BlockUntilHistoryProcessesPendingRequests().
+  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+
+  TestingProfile profile;
+  profile.CreateHistoryService(true);
+  profile.BlockUntilHistoryProcessesPendingRequests();
+  profile.CreateBookmarkModel(true);
+  profile.BlockUntilBookmarkModelLoaded();
+
+  BookmarkModel* model = profile.GetBookmarkModel();
+
+  HistoryService* const history_service =
+      profile.GetHistoryService(Profile::EXPLICIT_ACCESS);
+
+  history::URLDatabase* url_db = history_service->in_memory_database();
+
+  struct TestData {
+    const GURL url;
+    const std::wstring title;
+    const int typed_count;
+  } data[] = {
+    { GURL("http://www.google.com/"),      L"Google",           100 },
+    { GURL("http://maps.google.com/"),     L"Google Maps",       40 },
+    { GURL("http://docs.google.com/"),     L"Google Docs",       50 },
+    { GURL("http://reader.google.com/"),   L"Google Reader",     80 },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
+    history::URLRow info(data[i].url);
+    info.set_title(data[i].title);
+    info.set_typed_count(data[i].typed_count);
+    // Populate the InMemoryDatabase....
+    url_db->AddURL(info);
+    // Populate the BookmarkIndex.
+    model->AddURL(model->other_node(), i, data[i].title, data[i].url);
+  }
+
+  // Check that the InMemoryDatabase stored the URLs properly.
+  history::URLRow result1;
+  url_db->GetRowForURL(data[0].url, &result1);
+  EXPECT_EQ(data[0].title, result1.title());
+
+  history::URLRow result2;
+  url_db->GetRowForURL(data[1].url, &result2);
+  EXPECT_EQ(data[1].title, result2.title());
+
+  history::URLRow result3;
+  url_db->GetRowForURL(data[2].url, &result3);
+  EXPECT_EQ(data[2].title, result3.title());
+
+  history::URLRow result4;
+  url_db->GetRowForURL(data[3].url, &result4);
+  EXPECT_EQ(data[3].title, result4.title());
+
+  // Populate match nodes.
+  std::vector<bookmark_utils::TitleMatch> matches;
+  model->GetBookmarksWithTitlesMatching(L"google", 4, &matches);
+
+  // The resulting order should be:
+  // 1. Google (google.com) 100
+  // 2. Google Reader (google.com/reader) 80
+  // 3. Google Docs (docs.google.com) 50
+  // 4. Google Maps (maps.google.com) 40
+  EXPECT_EQ(4, static_cast<int>(matches.size()));
+  EXPECT_EQ(data[0].url, matches[0].node->GetURL());
+  EXPECT_EQ(data[3].url, matches[1].node->GetURL());
+  EXPECT_EQ(data[2].url, matches[2].node->GetURL());
+  EXPECT_EQ(data[1].url, matches[3].node->GetURL());
+
+  matches.clear();
+  // Select top two matches.
+  model->GetBookmarksWithTitlesMatching(L"google", 2, &matches);
+
+  EXPECT_EQ(2, static_cast<int>(matches.size()));
+  EXPECT_EQ(data[0].url, matches[0].node->GetURL());
+  EXPECT_EQ(data[3].url, matches[1].node->GetURL());
+}
+

@@ -36,7 +36,7 @@ BookmarkNode::BookmarkNode(const GURL& url)
 }
 
 BookmarkNode::BookmarkNode(int64 id, const GURL& url)
-    : url_(url){
+    : url_(url) {
   Initialize(id);
 }
 
@@ -78,7 +78,7 @@ void BookmarkNode::Reset(const history::StarredEntry& entry) {
 namespace {
 
 // Comparator used when sorting bookmarks. Folders are sorted first, then
-  // bookmarks.
+// bookmarks.
 class SortComparator : public std::binary_function<const BookmarkNode*,
                                                    const BookmarkNode*,
                                                    bool> {
@@ -510,7 +510,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
     // RemoveNode adds an entry to changed_urls for each node of type URL. As we
     // allow duplicates we need to remove any entries that are still bookmarked.
     for (std::set<GURL>::iterator i = details.changed_urls.begin();
-         i != details.changed_urls.end(); ){
+         i != details.changed_urls.end(); ) {
       if (IsBookmarkedNoLock(*i)) {
         // When we erase the iterator pointing at the erasee is
         // invalidated, so using i++ here within the "erase" call is
@@ -727,5 +727,5 @@ BookmarkStorage::LoadDetails* BookmarkModel::CreateLoadDetails() {
   BookmarkNode* bb_node = CreateBookmarkNode();
   BookmarkNode* other_folder_node = CreateOtherBookmarksNode();
   return new BookmarkStorage::LoadDetails(
-      bb_node, other_folder_node, new BookmarkIndex(), next_node_id_);
+      bb_node, other_folder_node, new BookmarkIndex(profile()), next_node_id_);
 }

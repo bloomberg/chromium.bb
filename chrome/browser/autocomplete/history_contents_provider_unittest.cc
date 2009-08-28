@@ -101,10 +101,10 @@ TEST_F(HistoryContentsProviderTest, Body) {
   // The results should be the first two pages, in decreasing order.
   const ACMatches& m = matches();
   ASSERT_EQ(2U, m.size());
-  EXPECT_EQ(test_entries[1].url, m[0].destination_url.spec());
-  EXPECT_STREQ(test_entries[1].title, m[0].description.c_str());
-  EXPECT_EQ(test_entries[0].url, m[1].destination_url.spec());
-  EXPECT_STREQ(test_entries[0].title, m[1].description.c_str());
+  EXPECT_EQ(test_entries[0].url, m[0].destination_url.spec());
+  EXPECT_STREQ(test_entries[0].title, m[0].description.c_str());
+  EXPECT_EQ(test_entries[1].url, m[1].destination_url.spec());
+  EXPECT_STREQ(test_entries[1].title, m[1].description.c_str());
 }
 
 TEST_F(HistoryContentsProviderTest, Title) {
@@ -114,10 +114,10 @@ TEST_F(HistoryContentsProviderTest, Title) {
   // The results should be the first two pages.
   const ACMatches& m = matches();
   ASSERT_EQ(2U, m.size());
-  EXPECT_EQ(test_entries[1].url, m[0].destination_url.spec());
-  EXPECT_STREQ(test_entries[1].title, m[0].description.c_str());
-  EXPECT_EQ(test_entries[0].url, m[1].destination_url.spec());
-  EXPECT_STREQ(test_entries[0].title, m[1].description.c_str());
+  EXPECT_EQ(test_entries[0].url, m[0].destination_url.spec());
+  EXPECT_STREQ(test_entries[0].title, m[0].description.c_str());
+  EXPECT_EQ(test_entries[1].url, m[1].destination_url.spec());
+  EXPECT_STREQ(test_entries[1].title, m[1].description.c_str());
 }
 
 // The "minimal changes" flag should mean that we don't re-query the DB.

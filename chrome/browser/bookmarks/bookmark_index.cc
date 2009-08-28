@@ -10,7 +10,9 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/query_parser.h"
+#include "chrome/browser/profile.h"
 
 BookmarkIndex::NodeSet::const_iterator
     BookmarkIndex::Match::nodes_begin() const {
@@ -52,37 +54,71 @@ void BookmarkIndex::GetBookmarksWithTitlesMatching(
       return;
   }
 
+  NodeTypedCountPairs node_typed_counts;
+  SortMatches(matches, &node_typed_counts);
+
   // We use a QueryParser to fill in match positions for us. It's not the most
   // efficient way to go about this, but by the time we get here we know what
   // matches and so this shouldn't be performance critical.
   QueryParser parser;
   ScopedVector<QueryNode> query_nodes;
   parser.ParseQuery(query, &query_nodes.get());
-  for (size_t i = 0; i < matches.size() && results->size() < max_count; ++i) {
-    AddMatchToResults(matches[i], max_count, &parser, query_nodes.get(),
-                      results);
+
+  // The highest typed counts should be at the beginning of the results vector
+  // so that the best matches will always be included in the results. The loop
+  // that calculates result relevance in HistoryContentsProvider::ConvertResults
+  // will run backwards to assure higher relevance will be attributed to the
+  // best matches.
+  for (NodeTypedCountPairs::const_iterator i = node_typed_counts.begin();
+       i != node_typed_counts.end() && results->size() < max_count; ++i)
+    AddMatchToResults(i->first, &parser, query_nodes.get(), results);
+}
+
+void BookmarkIndex::SortMatches(const Matches& matches,
+                                NodeTypedCountPairs* node_typed_counts) const {
+  HistoryService* const history_service = profile_ ?
+      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) : NULL;
+
+  history::URLDatabase* url_db = history_service ?
+      history_service->in_memory_database() : NULL;
+
+  for (Matches::const_iterator i = matches.begin(); i != matches.end(); ++i)
+    ExtractBookmarkNodePairs(url_db, *i, node_typed_counts);
+
+  std::sort(node_typed_counts->begin(), node_typed_counts->end(),
+            &NodeTypedCountPairSortFunc);
+}
+
+void BookmarkIndex::ExtractBookmarkNodePairs(
+    history::URLDatabase* url_db,
+    const Match& match,
+    NodeTypedCountPairs* node_typed_counts) const {
+
+  for (NodeSet::const_iterator i = match.nodes_begin();
+       i != match.nodes_end(); ++i) {
+    history::URLRow url;
+    if (url_db)
+      url_db->GetRowForURL((*i)->GetURL(), &url);
+    NodeTypedCountPair pair(*i, url.typed_count());
+    node_typed_counts->push_back(pair);
   }
 }
 
 void BookmarkIndex::AddMatchToResults(
-    const Match& match,
-    size_t max_count,
+    const BookmarkNode* node,
     QueryParser* parser,
     const std::vector<QueryNode*>& query_nodes,
     std::vector<bookmark_utils::TitleMatch>* results) {
-  for (NodeSet::const_iterator i = match.nodes_begin();
-       i != match.nodes_end() && results->size() < max_count; ++i) {
-    bookmark_utils::TitleMatch title_match;
-    // Check that the result matches the query.  The previous search
-    // was a simple per-word search, while the more complex matching
-    // of QueryParser may filter it out.  For example, the query
-    // ["thi"] will match the bookmark titled [Thinking], but since
-    // ["thi"] is quoted we don't want to do a prefix match.
-    if (parser->DoesQueryMatch((*i)->GetTitle(), query_nodes,
-                               &(title_match.match_positions))) {
-      title_match.node = *i;
-      results->push_back(title_match);
-    }
+  bookmark_utils::TitleMatch title_match;
+  // Check that the result matches the query.  The previous search
+  // was a simple per-word search, while the more complex matching
+  // of QueryParser may filter it out.  For example, the query
+  // ["thi"] will match the bookmark titled [Thinking], but since
+  // ["thi"] is quoted we don't want to do a prefix match.
+  if (parser->DoesQueryMatch(node->GetTitle(), query_nodes,
+                             &(title_match.match_positions))) {
+    title_match.node = node;
+    results->push_back(title_match);
   }
 }
 

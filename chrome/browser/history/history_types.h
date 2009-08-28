@@ -365,6 +365,8 @@ class URLResult : public URLRow {
 // a given URL appears in those results.
 class QueryResults {
  public:
+  typedef std::vector<URLResult*> URLResultVector;
+
   QueryResults();
   ~QueryResults();
 
@@ -388,9 +390,19 @@ class QueryResults {
   bool reached_beginning() { return reached_beginning_; }
 
   size_t size() const { return results_.size(); }
+  bool empty() const { return results_.empty(); }
 
   URLResult& operator[](size_t i) { return *results_[i]; }
   const URLResult& operator[](size_t i) const { return *results_[i]; }
+
+  URLResultVector::const_iterator begin() const { return results_.begin(); }
+  URLResultVector::const_iterator end() const { return results_.end(); }
+  URLResultVector::const_reverse_iterator rbegin() const {
+    return results_.rbegin();
+  }
+  URLResultVector::const_reverse_iterator rend() const {
+    return results_.rend();
+  }
 
   // Returns a pointer to the beginning of an array of all matching indices
   // for entries with the given URL. The array will be |*num_matches| long.
@@ -423,8 +435,6 @@ class QueryResults {
   void DeleteRange(size_t begin, size_t end);
 
  private:
-  typedef std::vector<URLResult*> URLResultVector;
-
   // Maps the given URL to a list of indices into results_ which identify each
   // time an entry with that URL appears. Normally, each URL will have one or
   // very few indices after it, so we optimize this to use statically allocated
