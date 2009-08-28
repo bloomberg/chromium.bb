@@ -103,13 +103,15 @@ function tips(data) {
 }
 
 function createTip(data) {
-  var parsedTips;
-  try {
-    parsedTips = parseHtmlSubset(data[0].tip_html_text);
-  } catch (parseErr) {
-    console.log('Error parsing tips: ' + parseErr.message);
+  if (data.length) {
+    try {
+      return parseHtmlSubset(data[0].tip_html_text);
+    } catch (parseErr) {
+      console.error('Error parsing tips: ' + parseErr.message);
+    }
   }
-  return parsedTips;
+  // Return an empty DF in case of failure.
+  return document.createDocumentFragment();
 }
 
 function renderTip() {
@@ -195,23 +197,6 @@ function onShownSections(mask) {
 
 function saveShownSections() {
   chrome.send('setShownSections', [String(shownSections)]);
-}
-
-function processData(selector, data) {
-  var output = document.querySelector(selector);
-
-  // Wait until ready
-  if (typeof JsEvalContext !== 'function' || !output) {
-    logEvent('JsEvalContext is not yet available, ' + selector);
-    document.addEventListener('DOMContentLoaded', function() {
-      processData(selector, data);
-    });
-  } else {
-    var d0 = Date.now();
-    var input = new JsEvalContext(data);
-    jstProcess(input, output);
-    logEvent('processData: ' + selector + ', ' + (Date.now() - d0));
-  }
 }
 
 function getThumbnailClassName(data) {
@@ -1239,7 +1224,7 @@ WindowTooltip.prototype = {
                                      WindowTooltip.trackMouseMove_);
     clearTimeout(this.timer);
 
-    processData('#window-tooltip', tabs);
+    this.renderItems(tabs);
     var rect = linkEl.getBoundingClientRect();
     var bodyRect = document.body.getBoundingClientRect();
     var rtl = document.documentElement.dir == 'rtl';
@@ -1292,6 +1277,19 @@ WindowTooltip.prototype = {
     this.linkEl_ = null;
 
     this.tooltipEl.style.display  = 'none';
+  },
+  renderItems: function(tabs) {
+    var tooltip = this.tooltipEl;
+    tooltip.textContent = '';
+
+    tabs.forEach(function(tab) {
+      var span = document.createElement('span');
+      span.className = 'item';
+      span.style.backgroundImage = url('chrome://favicon/' + tab.url);
+      span.dir = tab.direction;
+      span.textContent = tab.title;
+      tooltip.appendChild(span);
+    });
   }
 };
 

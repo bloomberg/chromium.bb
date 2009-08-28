@@ -382,7 +382,6 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
   jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
   jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
   jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
-  jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(full_html.size());
