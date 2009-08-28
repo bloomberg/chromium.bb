@@ -1130,9 +1130,7 @@ void BrowserThemeProvider::NotifyThemeChanged() {
 }
 
 void BrowserThemeProvider::LoadThemePrefs() {
-  // Images were already processed when theme was set.
   process_images_ = false;
-
   PrefService* prefs = profile_->GetPrefs();
 
   // TODO(glen): Figure out if any custom prefs were loaded, and if so
@@ -1148,9 +1146,27 @@ void BrowserThemeProvider::LoadThemePrefs() {
     SetTintData(prefs->GetMutableDictionary(prefs::kCurrentThemeTints));
     SetDisplayPropertyData(
         prefs->GetMutableDictionary(prefs::kCurrentThemeDisplayProperties));
+
+    // If we're not loading the frame from the cached image dir, we are using
+    // an old preferences file, or the processed images were not saved
+    // correctly.  Force image reprocessing and caching.
+    if (images_.count(IDR_THEME_FRAME) > 0) {
+#if defined(OS_WIN)
+      FilePath cache_path = FilePath(UTF8ToWide(images_[IDR_THEME_FRAME]));
+#else
+      FilePath cache_path = FilePath(images_[IDR_THEME_FRAME]);
+#endif
+      process_images_ = !file_util::ContainsPath(image_dir_, cache_path);
+    }
+
     GenerateFrameColors();
     GenerateFrameImages();
     GenerateTabImages();
+    if (process_images_) {
+      WriteImagesToDisk();
+      UserMetrics::RecordAction(L"Migrated noncached to cached theme.",
+                                profile_);
+    }
     UserMetrics::RecordAction(L"Themes_loaded", profile_);
   }
 }
