@@ -7,7 +7,8 @@
 (deny default)
 
 ; Allow sending signals to self - http://crbug.com/20370
-(allow %signal-self)
+; ;10.5_ONLY is substitued for a blank string at runtime as needed.
+;10.5_ONLY (allow %signal-self)
 
 ; Needed for full-page-zoomed controls - http://crbug.com/11325
 (allow sysctl-read)

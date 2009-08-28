@@ -131,6 +131,20 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
       stringByReplacingOccurrencesOfString:@"USER_HOMEDIR"
                                 withString:NSHomeDirectory()];
 
+  // Enable 10.5 only sandbox syntax.
+  int32 major_version = 0;
+  int32 minor_version = 0;
+  int32 bugfix_version = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
+                                               &minor_version,
+                                               &bugfix_version);
+
+  if (major_version == 10 && minor_version == 5) {
+    sandbox_data = [sandbox_data
+        stringByReplacingOccurrencesOfString:@";10.5_ONLY"
+                                  withString:@""];
+  }
+
   char* error_buff = NULL;
   int error = sandbox_init([sandbox_data UTF8String], 0, &error_buff);
   bool success = (error == 0 && error_buff == NULL);
