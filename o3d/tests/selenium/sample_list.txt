@@ -125,7 +125,7 @@ large   GoogleIO-2009/step14ex            screenshot pdiff_threshold(200) timeou
 #    pdiff_threshold options have any meaning
 
 small   TestSampleErrorTextureSmall       pdiff_threshold(200)
-small   TestSampleHelloCube_TexturesSmall pdiff_threshold(350)
+small   TestSampleHelloCube_TexturesSmall pdiff_threshold(450)
 small   TestSampleRefreshPageLoad_Small
 medium  TestSampleCustomCamera            pdiff_threshold(200) pdiff_threshold_win(200)
 medium  TestSamplePicking
