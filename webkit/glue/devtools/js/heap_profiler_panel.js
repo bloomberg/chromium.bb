@@ -192,11 +192,7 @@ WebInspector.HeapSnapshotView = function(parent, snapshot)
     this.showCountDeltaAsPercent = true;
     this.showSizeDeltaAsPercent = true;
 
-    // TODO(mnaganov): Fix in WebKit: SummaryBar must not use global resourceCategories.
-    WebInspector.resourceCategories["code"] = {title: WebInspector.UIString("Code")};
-    WebInspector.resourceCategories["data"] = {title: WebInspector.UIString("Objects and Data")};
-
-    this.summaryBar = new WebInspector.SummaryBar(this.summaryColors, this.summaryOrder);
+    this.summaryBar = new WebInspector.SummaryBar(this.categories);
     this.summaryBar.element.id = "heap-snapshot-summary";
     this.summaryBar.calculator = new WebInspector.HeapSummaryCalculator(snapshot.used);
     this.element.appendChild(this.summaryBar.element);
@@ -234,9 +230,10 @@ WebInspector.HeapSnapshotView = function(parent, snapshot)
 
 WebInspector.HeapSnapshotView.prototype = {
 
-    summaryColors: {data: {r: 47, g: 102, b: 236}, code: {r: 255, g: 121, b: 0}, other: {r: 186, g: 186, b: 186}},
-
-    summaryOrder: ["code", "data", "other"],
+    get categories()
+    {
+        return {code: {title: WebInspector.UIString("Code"), color: {r: 255, g: 121, b: 0}}, data: {title: WebInspector.UIString("Objects and Data"), color: {r: 47, g: 102, b: 236}}, other: {title: WebInspector.UIString("Other"), color: {r: 186, g: 186, b: 186}}};
+    },
 
     get statusBarItems()
     {
