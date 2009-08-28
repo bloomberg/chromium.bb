@@ -66,6 +66,7 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
       ime_discard_composition_(false),
       ime_composition_start_(0),
       ime_composition_length_(0),
+      container_view_(new NativeViewHost),
       bg_color_(0) {
   if (!did_load_library_)
     did_load_library_ = !!LoadLibrary(L"riched20.dll");
@@ -96,16 +97,17 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
   CComPtr<IRichEditOle> ole_interface;
   ole_interface.Attach(GetOleInterface());
   text_object_model_ = ole_interface;
-
-  container_view_ = new NativeViewHost;
-  textfield_->AddChildView(container_view_);
-  container_view_->set_focus_view(textfield_);
-  container_view_->Attach(m_hWnd);
 }
 
 NativeTextfieldWin::~NativeTextfieldWin() {
   if (IsWindow())
     DestroyWindow();
+}
+
+void NativeTextfieldWin::AttachHack() {
+  // See the code in textfield.cc that calls this for why this is here.
+  container_view_->set_focus_view(textfield_);
+  container_view_->Attach(m_hWnd);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

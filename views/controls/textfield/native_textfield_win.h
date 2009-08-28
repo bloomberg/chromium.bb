@@ -36,6 +36,9 @@ class NativeTextfieldWin
   explicit NativeTextfieldWin(Textfield* parent);
   ~NativeTextfieldWin();
 
+  // See the code in textfield.cc that calls this for why this is here.
+  void AttachHack();
+
   // Overridden from NativeTextfieldWrapper:
   virtual std::wstring GetText() const;
   virtual void UpdateText();

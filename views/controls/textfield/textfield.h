@@ -183,6 +183,10 @@ class Textfield : public View {
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   virtual std::string GetClassName() const;
 
+  // Creates a new native wrapper properly initialized and returns it. Ownership
+  // is passed to the caller.
+  NativeTextfieldWrapper* CreateWrapper();
+
   // The object that actually implements the native text field.
   NativeTextfieldWrapper* native_wrapper_;
 

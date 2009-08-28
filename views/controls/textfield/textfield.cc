@@ -12,6 +12,12 @@
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/widget/widget.h"
 
+#if defined(OS_WIN)
+// TODO(beng): this should be removed when the OS_WIN hack from
+// ViewHierarchyChanged is removed.
+#include "views/controls/textfield/native_textfield_win.h"
+#endif
+
 namespace views {
 
 // static
@@ -49,8 +55,6 @@ Textfield::Textfield(StyleFlags style)
 }
 
 Textfield::~Textfield() {
-  if (native_wrapper_)
-    delete native_wrapper_;
 }
 
 void Textfield::SetController(Controller* controller) {
@@ -242,25 +246,40 @@ void Textfield::Focus() {
 void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (is_add && !native_wrapper_ && GetWidget() && !initialized_) {
     initialized_ = true;
-    native_wrapper_ = NativeTextfieldWrapper::CreateWrapper(this);
-    //AddChildView(native_wrapper_->GetView());
-    // TODO(beng): Move this initialization to NativeTextfieldWin once it
-    //             subclasses NativeControlWin.
-    native_wrapper_->UpdateText();
-    native_wrapper_->UpdateBackgroundColor();
-    native_wrapper_->UpdateReadOnly();
-    native_wrapper_->UpdateFont();
-    native_wrapper_->UpdateEnabled();
-    native_wrapper_->UpdateBorder();
 
-    // We need to call Layout here because any previous calls to Layout
-    // will have short-circuited and we don't call AddChildView.
-    Layout();
+    // The native wrapper's lifetime will be managed by the view hierarchy after
+    // we call AddChildView.
+    native_wrapper_ = CreateWrapper();
+    AddChildView(native_wrapper_->GetView());
+
+#if defined(OS_WIN)
+    // TODO(beng): remove this once NativeTextfieldWin subclasses
+    // NativeControlWin. This is currently called to perform post-AddChildView
+    // initialization for the wrapper. The GTK version subclasses things
+    // correctly and doesn't need this.
+    //
+    // Remove the include for native_textfield_win.h above when you fix this.
+    static_cast<NativeTextfieldWin*>(native_wrapper_)->AttachHack();
+#endif
   }
 }
 
 std::string Textfield::GetClassName() const {
   return kViewClassName;
+}
+
+NativeTextfieldWrapper* Textfield::CreateWrapper() {
+  NativeTextfieldWrapper* native_wrapper =
+      NativeTextfieldWrapper::CreateWrapper(this);
+
+  native_wrapper->UpdateText();
+  native_wrapper->UpdateBackgroundColor();
+  native_wrapper->UpdateReadOnly();
+  native_wrapper->UpdateFont();
+  native_wrapper->UpdateEnabled();
+  native_wrapper->UpdateBorder();
+
+  return native_wrapper;
 }
 
 }  // namespace views
