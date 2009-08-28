@@ -30,9 +30,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line);
 
   // NotificationObserver
-  void ExtensionApiTest::Observe(NotificationType type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details);
+  void Observe(NotificationType type, const NotificationSource& source,
+               const NotificationDetails& details);
 
   // Did the extension side of the unit test complete?
   bool completed_;

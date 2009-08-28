@@ -41,19 +41,19 @@
       'browser/gtk/bookmark_manager_browsertest.cc',
       'browser/gtk/view_id_util_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
-    ],
-    'browser_tests_sources_win_specific': [
       'browser/extensions/extension_apitest.cc',
       'browser/extensions/extension_apitest.h',
       'browser/extensions/extension_bookmarks_apitest.cc',
-      'browser/extensions/extension_devtools_browsertest.cc',
-      'browser/extensions/extension_devtools_browsertest.h',
-      'browser/extensions/extension_devtools_browsertests.cc',
       'browser/extensions/extension_browsertest.cc',
       'browser/extensions/extension_browsertest.h',
       'browser/extensions/extension_browsertests_misc.cc',
-      'browser/extensions/extension_shelf_model_unittest.cc',
       'browser/extensions/extension_startup_unittest.cc',
+    ],
+    'browser_tests_sources_win_specific': [
+      'browser/extensions/extension_devtools_browsertest.cc',
+      'browser/extensions/extension_devtools_browsertest.h',
+      'browser/extensions/extension_devtools_browsertests.cc',
+      'browser/extensions/extension_shelf_model_unittest.cc',
       'browser/views/browser_views_accessibility_browsertest.cc',
       'browser/views/find_bar_win_browsertest.cc',
       # TODO(jam): http://crbug.com/15101 These tests fail on Linux and Mac.
@@ -63,6 +63,15 @@
       # TODO(jcampan): once the task manager works on Mac, move this test to the
       #                non win specific section.
       'browser/task_manager_browsertest.cc',
+    ],
+    'browser_tests_sources_exclude_on_mac': [
+      'browser/extensions/extension_apitest.cc',
+      'browser/extensions/extension_apitest.h',
+      'browser/extensions/extension_bookmarks_apitest.cc',
+      'browser/extensions/extension_browsertest.cc',
+      'browser/extensions/extension_browsertest.h',
+      'browser/extensions/extension_browsertests_misc.cc',
+      'browser/extensions/extension_startup_unittest.cc',
     ],
     # TODO(jcampan): move these vars to views.gyp.
     'views_unit_tests_sources': [
@@ -5257,6 +5266,9 @@
                 'app/keystone_glue.h',
                 'app/keystone_glue.m',
               ],
+	      'sources!': [
+	        '<@(browser_tests_sources_exclude_on_mac)',
+       	      ],
               # TODO(mark): We really want this for all non-static library targets,
               # but when we tried to pull it up to the common.gypi level, it broke
               # other things like the ui, startup, and page_cycler tests. *shrug*

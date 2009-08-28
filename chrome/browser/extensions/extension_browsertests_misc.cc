@@ -13,7 +13,12 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/extension_shelf_gtk.h"
+#else
 #include "chrome/browser/views/extensions/extension_shelf.h"
+#endif  // defined(TOOLKIT_GTK)
+
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
@@ -95,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {
       "test_gettabs.html");
   ui_test_utils::NavigateToURL(
       browser(),
-      GURL(gettabs_url.ToWStringHack()));
+      GURL(gettabs_url.value()));
 
   bool result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -117,6 +122,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {
   EXPECT_TRUE(result);
 }
 
+#if defined(OS_WIN)
 // Tests that the ExtensionShelf initializes properly, notices that
 // an extension loaded and has a view available, and then sets that up
 // properly.
@@ -139,6 +145,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Shelf) {
   EXPECT_EQ(shelf->GetChildViewCount(), 2);
   EXPECT_NE(shelf->GetPreferredSize().height(), 0);
 }
+#endif  // defined(OS_WIN)
 
 // Tests that installing and uninstalling extensions don't crash with an
 // incognito window open.
@@ -185,6 +192,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
   EXPECT_TRUE(result);
 }
 
+#if defined(OS_WIN)
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ASSERT_TRUE(LoadExtension(
@@ -211,6 +219,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(no_feed));
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 }
+#endif  //defined(OS_WIN)
 
 GURL GetFeedUrl(const std::string& feed_page) {
   FilePath test_dir;
