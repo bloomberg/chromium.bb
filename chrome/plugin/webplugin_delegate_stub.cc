@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,7 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
       command_line.GetSwitchValue(switches::kPluginPath));
 
 
-  gfx::PluginWindowHandle parent = NULL;
+  gfx::PluginWindowHandle parent = 0;
 #if defined(OS_WIN)
   parent = gfx::NativeViewFromId(params.containing_window);
 #elif defined(OS_LINUX)

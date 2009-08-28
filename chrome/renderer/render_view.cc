@@ -1884,7 +1884,7 @@ WebView* RenderView::CreateWebView(WebView* webview,
       (true, false);
 #endif
   RenderView* view = RenderView::Create(render_thread_,
-                                        NULL, waitable_event, routing_id_,
+                                        0, waitable_event, routing_id_,
                                         renderer_preferences_,
                                         webkit_preferences_,
                                         shared_popup_counter_, routing_id);

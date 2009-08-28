@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,8 +80,8 @@
 //     }
 //   };
 
-#ifndef CHROME_BROWSER_CANCELABLE_REQUEST_H__
-#define CHROME_BROWSER_CANCELABLE_REQUEST_H__
+#ifndef CHROME_BROWSER_CANCELABLE_REQUEST_H_
+#define CHROME_BROWSER_CANCELABLE_REQUEST_H_
 
 #include <map>
 #include <vector>
@@ -274,7 +274,7 @@ class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
   typedef std::map<PendingRequest, T> PendingRequestList;
 
   virtual T get_initial_t() const {
-    return NULL;
+    return 0;
   }
 
   virtual void OnRequestAdded(CancelableRequestProvider* provider,
@@ -543,4 +543,4 @@ class CancelableRequest1 : public CancelableRequest<CB> {
   Type value;
 };
 
-#endif  // CHROME_BROWSER_CANCELABLE_REQUEST_H__
+#endif  // CHROME_BROWSER_CANCELABLE_REQUEST_H_

@@ -225,7 +225,7 @@ TEST(ResolveProxyMsgHelperTest, CancelPendingRequests) {
 
   EXPECT_EQ(0u, resolver->pending_requests().size());
 
-  EXPECT_EQ(NULL, delegate.pending_result());
+  EXPECT_TRUE(NULL == delegate.pending_result());
 
   // It should also be the case that msg1, msg2, msg3 were deleted by the
   // cancellation. (Else will show up as a leak in Purify/Valgrind).

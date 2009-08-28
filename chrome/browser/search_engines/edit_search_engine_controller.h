@@ -23,6 +23,8 @@ class EditSearchEngineControllerDelegate {
                                const std::wstring& title,
                                const std::wstring& keyword,
                                const std::wstring& url) = 0;
+ protected:
+  ~EditSearchEngineControllerDelegate() {}
 };
 
 // EditSearchEngineController provides the core platform independent logic

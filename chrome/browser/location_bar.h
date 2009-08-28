@@ -64,12 +64,17 @@ class LocationBar {
 
   // Returns a pointer to the testing interface.
   virtual LocationBarTesting* GetLocationBarForTesting() = 0;
+
+ protected:
+  ~LocationBar() {}
 };
 
 class LocationBarTesting {
  public:
   // Returns the number of visible page actions in the Omnibox.
   virtual int PageActionVisibleCount() = 0;
+ protected:
+  ~LocationBarTesting() {}
 };
 
 #endif  // CHROME_BROWSER_LOCATION_BAR_H_

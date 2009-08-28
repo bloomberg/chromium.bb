@@ -940,7 +940,7 @@ void AutomationProvider::OnRedirectQueryComplete(
   IPC::ParamTraits<std::vector<GURL> >::Write(reply_message_, redirects_gurl);
 
   Send(reply_message_);
-  redirect_query_ = NULL;
+  redirect_query_ = 0;
   reply_message_ = NULL;
 }
 

@@ -64,9 +64,9 @@ namespace printing {
 
 class PrintViewManager : public RenderViewHostDelegate::Printing {
  public:
-  PrintViewManager(TabContents&) { }
+  PrintViewManager(TabContents&) {}
   void Stop() { NOTIMPLEMENTED(); }
-  void Destroy() { }
+  void Destroy() {}
   bool OnRenderViewGone(RenderViewHost*) {
     NOTIMPLEMENTED();
     return true;  // Assume for now that all renderer crashes are important.
@@ -115,7 +115,7 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
 
 class PrintJobManager {
  public:
-  void OnQuit() { }
+  void OnQuit() {}
   void PopPrinterQuery(int document_cookie, scoped_refptr<PrinterQuery>* job) {
     NOTIMPLEMENTED();
   }
@@ -150,8 +150,9 @@ class DockInfo {
 
 class RepostFormWarningDialog {
  public:
-  static void RunRepostFormWarningDialog(NavigationController*) { }
-  virtual ~RepostFormWarningDialog() { }
+  static void RunRepostFormWarningDialog(NavigationController*) {}
+ protected:
+  ~RepostFormWarningDialog() {}
 };
 
 class BaseDragSource {

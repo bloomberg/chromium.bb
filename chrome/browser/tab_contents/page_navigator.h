@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,8 @@ class PageNavigator {
   virtual void OpenURL(const GURL& url, const GURL& referrer,
                        WindowOpenDisposition disposition,
                        PageTransition::Type transition) = 0;
+ protected:
+  ~PageNavigator() {}
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_PAGE_NAVIGATOR_H_

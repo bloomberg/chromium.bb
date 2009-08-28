@@ -28,6 +28,9 @@ class SlideAnimatorGtk : public AnimationDelegate {
    public:
     // Called when a call to Close() finishes animating.
     virtual void Closed() = 0;
+
+   protected:
+    ~Delegate() {}
   };
 
   enum Direction {

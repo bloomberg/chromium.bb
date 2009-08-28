@@ -23,6 +23,8 @@ class PageInfoModel {
   class PageInfoModelObserver {
     public:
      virtual void ModelChanged() = 0;
+    protected:
+     ~PageInfoModelObserver() {}
   };
 
   // Because the UI on the Mac is statically laid-out, this enum provides the

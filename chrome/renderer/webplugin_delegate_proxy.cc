@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ class ResourceClientProxy : public WebPluginResourceClient {
  public:
   ResourceClientProxy(PluginChannelHost* channel, int instance_id)
     : channel_(channel), instance_id_(instance_id), resource_id_(0),
-      notify_needed_(false), notify_data_(NULL),
+      notify_needed_(false), notify_data_(0),
       multibyte_response_expected_(false) {
   }
 
@@ -172,7 +172,7 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(const std::string& mime_type,
     : render_view_(render_view),
       plugin_(NULL),
       windowless_(false),
-      window_(NULL),
+      window_(0),
       mime_type_(mime_type),
       clsid_(clsid),
       npobject_(NULL),
@@ -666,8 +666,8 @@ bool WebPluginDelegateProxy::BackgroundChanged(
 #else
   const unsigned char* page_bytes = cairo_image_surface_get_data(page_surface);
   int page_stride = cairo_image_surface_get_stride(page_surface);
-  int page_start_x = page_x_double;
-  int page_start_y = page_y_double;
+  int page_start_x = static_cast<int>(page_x_double);
+  int page_start_y = static_cast<int>(page_y_double);
 
   skia::PlatformDevice& device =
       background_store_canvas_->getTopPlatformDevice();
@@ -797,7 +797,7 @@ void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
 void WebPluginDelegateProxy::WillDestroyWindow() {
   DCHECK(window_);
   plugin_->WillDestroyWindow(window_);
-  window_ = NULL;
+  window_ = 0;
 }
 
 #if defined(OS_WIN)

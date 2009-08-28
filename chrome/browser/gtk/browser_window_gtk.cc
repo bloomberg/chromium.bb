@@ -603,7 +603,7 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
         IDR_WINDOW_TOP_CENTER,
         IDR_WINDOW_TOP_RIGHT_CORNER,
         IDR_WINDOW_LEFT_SIDE,
-        NULL,
+        0,
         IDR_WINDOW_RIGHT_SIDE,
         IDR_WINDOW_BOTTOM_LEFT_CORNER,
         IDR_WINDOW_BOTTOM_CENTER,
@@ -1825,7 +1825,8 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
   gdk_window_get_origin(GTK_WIDGET(browser->window_)->window, &win_x, &win_y);
 
   GdkWindowEdge edge;
-  gfx::Point point(event->x_root - win_x, event->y_root - win_y);
+  gfx::Point point(static_cast<int>(event->x_root - win_x),
+                   static_cast<int>( event->y_root - win_y));
   bool has_hit_edge = browser->GetWindowEdge(point.x(), point.y(), &edge);
 
   // Ignore clicks that are in/below the browser toolbar.
@@ -1844,7 +1845,8 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
       guint32 last_click_time = browser->last_click_time_;
       gfx::Point last_click_position = browser->last_click_position_;
       browser->last_click_time_ = event->time;
-      browser->last_click_position_ = gfx::Point(event->x, event->y);
+      browser->last_click_position_ = gfx::Point(static_cast<int>(event->x),
+                                                 static_cast<int>(event->y));
 
       if (has_hit_titlebar) {
         // We want to start a move when the user single clicks, but not start a
@@ -1864,19 +1866,23 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
             NULL);
 
         guint32 click_time = event->time - last_click_time;
-        int click_move_x = event->x - last_click_position.x();
-        int click_move_y = event->y - last_click_position.y();
+        int click_move_x = static_cast<int>(event->x - last_click_position.x());
+        int click_move_y = static_cast<int>(event->y - last_click_position.y());
 
         if (click_time > static_cast<guint32>(double_click_time) ||
             click_move_x > double_click_distance ||
             click_move_y > double_click_distance) {
           gtk_window_begin_move_drag(browser->window_, event->button,
-                                     event->x_root, event->y_root, event->time);
+                                     static_cast<gint>(event->x_root),
+                                     static_cast<gint>(event->y_root),
+                                     event->time);
           return TRUE;
         }
       } else if (has_hit_edge) {
         gtk_window_begin_resize_drag(browser->window_, edge, event->button,
-                                     event->x_root, event->y_root, event->time);
+                                     static_cast<gint>(event->x_root),
+                                     static_cast<gint>(event->y_root),
+                                     event->time);
         return TRUE;
       }
     } else if (GDK_2BUTTON_PRESS == event->type) {

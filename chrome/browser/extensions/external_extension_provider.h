@@ -27,6 +27,8 @@ class ExternalExtensionProvider {
                                            const Version* version,
                                            const FilePath& path,
                                            Extension::Location location) = 0;
+   protected:
+     ~Visitor() {}
   };
 
   virtual ~ExternalExtensionProvider() {}

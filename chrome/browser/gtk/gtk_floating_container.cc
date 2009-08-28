@@ -115,7 +115,7 @@ static void gtk_floating_container_class_init(
                    G_OBJECT_CLASS_TYPE(object_class),
                    static_cast<GSignalFlags>(G_SIGNAL_RUN_FIRST |
                                              G_SIGNAL_ACTION),
-                   NULL,
+                   0u,
                    NULL, NULL,
                    gtk_marshal_VOID__BOXED,
                    G_TYPE_NONE, 1,

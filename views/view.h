@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,9 @@ class ContextMenuController {
                                int x,
                                int y,
                                bool is_mouse_gesture) = 0;
+
+ protected:
+  ~ContextMenuController() {}
 };
 
 // DragController is responsible for writing drag data for a view, as well as
@@ -85,6 +88,9 @@ class DragController {
   // Returns the supported drag operations (see DragDropTypes for possible
   // values). A drag is only started if this returns a non-zero value.
   virtual int GetDragOperations(View* sender, int x, int y) = 0;
+
+ protected:
+  ~DragController() {}
 };
 
 

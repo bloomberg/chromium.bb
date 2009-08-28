@@ -59,6 +59,9 @@ class RenderViewHostManager
     // is none.
     virtual NavigationEntry*
         GetLastCommittedNavigationEntryForRenderManager() = 0;
+
+   protected:
+    ~Delegate() {}
   };
 
   // Both delegate pointers must be non-NULL and are not owned by this class.

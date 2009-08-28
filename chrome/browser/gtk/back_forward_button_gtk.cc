@@ -110,7 +110,7 @@ gboolean BackForwardButtonGtk::OnButtonPress(GtkWidget* widget,
   if (event->button != 1)
     return FALSE;
 
-  button->y_position_of_last_press_ = event->y;
+  button->y_position_of_last_press_ = static_cast<int>(event->y);
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       button->show_menu_factory_.NewRunnableMethod(
           &BackForwardButtonGtk::ShowBackForwardMenu),

@@ -15,6 +15,8 @@ class ViewIDUtil {
   class Delegate {
    public:
     virtual GtkWidget* GetWidgetForViewID(ViewID id) = 0;
+   protected:
+    ~Delegate() {}
   };
 
   static void SetID(GtkWidget* widget, ViewID id);

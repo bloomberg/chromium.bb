@@ -112,7 +112,9 @@ void TabContentsDragSource::DidProcessEvent(GdkEvent* event) {
 
   if (tab_contents()->render_view_host()) {
     tab_contents()->render_view_host()->DragSourceMovedTo(
-        client.x(), client.y(), event_motion->x_root, event_motion->y_root);
+        client.x(), client.y(),
+        static_cast<int>(event_motion->x_root),
+        static_cast<int>(event_motion->y_root));
   }
 }
 

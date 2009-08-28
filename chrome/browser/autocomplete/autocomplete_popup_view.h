@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,17 +29,17 @@ class Profile;
 // bounds for the autocomplete popup view.
 class AutocompletePopupPositioner {
  public:
-  virtual ~AutocompletePopupPositioner() { }
-
   // Returns the bounds at which the popup should be shown, in screen
   // coordinates. The height is ignored, since the popup is sized to its
   // contents automatically.
   virtual gfx::Rect GetPopupBounds() const = 0;
+ protected:
+  ~AutocompletePopupPositioner() {}
 };
 
 class AutocompletePopupView {
  public:
-  virtual ~AutocompletePopupView() { }
+  virtual ~AutocompletePopupView() {}
 
   // Returns true if the popup is currently open.
   virtual bool IsOpen() const = 0;

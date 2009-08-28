@@ -15,6 +15,9 @@ class MetadataParserJpegFactory : public MetadataParserFactory {
   virtual bool CanParse(const FilePath& path, char* bytes, int bytes_size);
   virtual MetadataParser* CreateParser(const FilePath& path);
 
+ protected:
+  ~MetadataParserJpegFactory();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MetadataParserJpegFactory);
 };

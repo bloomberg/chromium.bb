@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -735,7 +735,7 @@ void ResourceMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   // Loads default settings. This is asynchronous, only the IPC message sender
   // will hang until the settings are retrieved.
   printer_query->GetSettings(printing::PrinterQuery::DEFAULTS,
-                             NULL,
+                             0,
                              0,
                              false,
                              task);

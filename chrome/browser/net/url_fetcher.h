@@ -75,6 +75,8 @@ class URLFetcher {
                                     int response_code,
                                     const ResponseCookies& cookies,
                                     const std::string& data) = 0;
+   protected:
+    ~Delegate() {}
   };
 
   // URLFetcher::Create uses the currently registered Factory to create the
@@ -85,6 +87,8 @@ class URLFetcher {
                                          const GURL& url,
                                          RequestType request_type,
                                          Delegate* d) = 0;
+   protected:
+    ~Factory() {}
   };
 
   // |url| is the URL to send the request to.

@@ -136,6 +136,9 @@ class RenderViewHostDelegate {
 
     // The content's intrinsic width (prefWidth) changed.
     virtual void UpdatePreferredWidth(int pref_width) = 0;
+
+   protected:
+    ~View() {}
   };
 
   // RendererManagerment -------------------------------------------------------
@@ -161,6 +164,9 @@ class RenderViewHostDelegate {
     // Called the ResourceDispatcherHost's associate CrossSiteRequestHandler
     // when a cross-site navigation has been canceled.
     virtual void OnCrossSiteNavigationCanceled() = 0;
+
+   protected:
+    ~RendererManagement() {}
   };
 
   // BrowserIntegration --------------------------------------------------------
@@ -207,6 +213,9 @@ class RenderViewHostDelegate {
     virtual void OnDidGetApplicationInfo(
         int32 page_id,
         const webkit_glue::WebApplicationInfo& app_info) = 0;
+
+   protected:
+    ~BrowserIntegration() {}
   };
 
   // Resource ------------------------------------------------------------------
@@ -263,6 +272,9 @@ class RenderViewHostDelegate {
 
     // Notification that a document has been loaded in a frame.
     virtual void DocumentLoadedInFrame() = 0;
+
+   protected:
+    ~Resource() {}
   };
 
   // Save ----------------------------------------------------------------------
@@ -288,6 +300,9 @@ class RenderViewHostDelegate {
     virtual void OnReceivedSerializedHtmlData(const GURL& frame_url,
                                               const std::string& data,
                                               int32 status) = 0;
+
+   protected:
+    ~Save() {}
   };
 
   // Printing ------------------------------------------------------------------
@@ -303,6 +318,9 @@ class RenderViewHostDelegate {
     // EMF memory mapped data.
     virtual void DidPrintPage(
         const ViewHostMsg_DidPrintPage_Params& params) = 0;
+
+   protected:
+    ~Printing() {}
   };
 
   // FavIcon -------------------------------------------------------------------
@@ -326,6 +344,9 @@ class RenderViewHostDelegate {
     virtual void UpdateFavIconURL(RenderViewHost* render_view_host,
                                   int32 page_id,
                                   const GURL& icon_url) = 0;
+
+   protected:
+    ~FavIcon() {}
   };
 
   // AutoFill ------------------------------------------------------------------
@@ -352,6 +373,9 @@ class RenderViewHostDelegate {
     // autofill suggestion from the database.
     virtual void RemoveAutofillEntry(const std::wstring& field_name,
                                      const std::wstring& value) = 0;
+
+   protected:
+    ~Autofill() {}
   };
 
   // ---------------------------------------------------------------------------
@@ -397,7 +421,7 @@ class RenderViewHostDelegate {
 
   // The RenderView is going to be deleted. This is called when each
   // RenderView is going to be destroyed
-  virtual void RenderViewDeleted(RenderViewHost* render_view_host) { }
+  virtual void RenderViewDeleted(RenderViewHost* render_view_host) {}
 
   // The RenderView was navigated to a different page.
   virtual void DidNavigate(RenderViewHost* render_view_host,
@@ -542,6 +566,9 @@ class RenderViewHostDelegate {
 
   // The RenderView has inserted one css file into page.
   virtual void DidInsertCSS() {}
+
+ protected:
+  ~RenderViewHostDelegate() {}
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_

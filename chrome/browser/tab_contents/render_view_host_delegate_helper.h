@@ -28,6 +28,7 @@ class TabContents;
 class RenderViewHostDelegateViewHelper {
  public:
   RenderViewHostDelegateViewHelper() {}
+  virtual ~RenderViewHostDelegateViewHelper() {}
 
   virtual void CreateNewWindow(int route_id,
                                base::WaitableEvent* modal_dialog_event,

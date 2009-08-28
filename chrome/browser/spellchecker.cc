@@ -547,7 +547,7 @@ void SpellChecker::GetAutoCorrectionWord(const std::wstring& word,
   const wchar_t* word_char = word.c_str();
   for (int i = 0; i <= kMaxAutoCorrectWordSize; i++) {
     if (i >= word_length)
-      misspelled_word[i] = NULL;
+      misspelled_word[i] = 0;
     else
       misspelled_word[i] = word_char[i];
   }

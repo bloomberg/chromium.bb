@@ -29,7 +29,7 @@ DownloadRequestDialogDelegateGtk::DownloadRequestDialogDelegateGtk(
     : DownloadRequestDialogDelegate(host),
       responded_(false) {
   // Create dialog.
-  root_.Own(gtk_vbox_new(NULL, gtk_util::kContentAreaBorder));
+  root_.Own(gtk_vbox_new(false, gtk_util::kContentAreaBorder));
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_MULTI_DOWNLOAD_WARNING).c_str());
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);

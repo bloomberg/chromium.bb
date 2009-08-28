@@ -43,6 +43,9 @@ class ModelAdapter : public TableModelObserver {
     // after clearing the list store.  Can be overriden by the delegate if it
     // needs to do extra initialization before the list store is populated.
     virtual void OnModelChanged() {}
+
+   protected:
+    ~Delegate() {}
   };
 
   // |table_model| may be NULL.

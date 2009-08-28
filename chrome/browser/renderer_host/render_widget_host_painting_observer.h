@@ -19,6 +19,9 @@ class RenderWidgetHostPaintingObserver {
 
   // Indicates that the RenderWidgetHost just updated the backing store.
   virtual void WidgetDidUpdateBackingStore(RenderWidgetHost* widget) = 0;
+
+ protected:
+  ~RenderWidgetHostPaintingObserver() {}
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_PAINTING_OBSERVER_H_

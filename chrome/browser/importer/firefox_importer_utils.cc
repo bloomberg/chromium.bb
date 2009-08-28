@@ -21,8 +21,8 @@ namespace {
 // the search URL when importing search engines.
 class FirefoxURLParameterFilter : public TemplateURLParser::ParameterFilter {
  public:
-  FirefoxURLParameterFilter() { }
-  ~FirefoxURLParameterFilter() { }
+  FirefoxURLParameterFilter() {}
+  virtual ~FirefoxURLParameterFilter() {}
 
   // TemplateURLParser::ParameterFilter method.
   virtual bool KeepParameter(const std::string& key,

@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TEMPLATE_URL_PARSER_H__
-#define CHROME_BROWSER_TEMPLATE_URL_PARSER_H__
+#ifndef CHROME_BROWSER_TEMPLATE_URL_PARSER_H_
+#define CHROME_BROWSER_TEMPLATE_URL_PARSER_H_
 
 #include <string>
 
@@ -21,6 +21,8 @@ class TemplateURLParser {
     // methods returns false, the parameter is not included.
     virtual bool KeepParameter(const std::string& key,
                                const std::string& value) = 0;
+   protected:
+    ~ParameterFilter() {}
   };
   // Decodes the chunk of data representing a TemplateURL. If data does
   // not describe a valid TemplateURL false is returned. Additionally, if the
@@ -44,4 +46,4 @@ class TemplateURLParser {
   DISALLOW_EVIL_CONSTRUCTORS(TemplateURLParser);
 };
 
-#endif // CHROME_BROWSER_TEMPLATE_URL_PARSER_H__
+#endif // CHROME_BROWSER_TEMPLATE_URL_PARSER_H_

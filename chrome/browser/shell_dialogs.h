@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,9 @@ class BaseShellDialog {
   // Notifies the dialog box that the listener has been destroyed and it should
   // no longer be sent notifications.
   virtual void ListenerDestroyed() = 0;
+
+ protected:
+  ~BaseShellDialog() {}
 };
 
 // Shows a dialog box for selecting a file or a folder.
@@ -64,6 +67,9 @@ class SelectFileDialog
     // the  user canceling or closing the selection dialog box, for example).
     // |params| is contextual passed to SelectFile.
     virtual void FileSelectionCanceled(void* params) {};
+
+   protected:
+    ~Listener() {};
   };
 
   // Creates a dialog box helper. This object is ref-counted, but the returned
@@ -140,6 +146,8 @@ class SelectFontDialog
     // canceling or closing the selection dialog box, for example). |params| is
     // contextual passed to SelectFile.
     virtual void FontSelectionCanceled(void* params) {};
+   protected:
+    ~Listener() {};
   };
 
   // Creates a dialog box helper. This object is ref-counted, but the returned

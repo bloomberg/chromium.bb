@@ -17,8 +17,11 @@ class HttpListenSocket : public ListenSocket,
 public:
   class Delegate {
    public:
-    virtual void OnRequest(HttpListenSocket* connection, 
+    virtual void OnRequest(HttpListenSocket* connection,
                            HttpServerRequestInfo* info) = 0;
+
+   protected:
+    ~Delegate() {}
   };
 
   static HttpListenSocket* Listen(const std::string& ip, int port,

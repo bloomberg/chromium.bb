@@ -78,7 +78,7 @@ class PossibleURLModel : public TableModel {
   TableModelObserver* observer_;
 
   // Our consumer for favicon requests.
-  CancelableRequestConsumerT<size_t, NULL> consumer_;
+  CancelableRequestConsumerT<size_t, 0> consumer_;
 
   // The results we're showing.
   std::vector<Result> results_;

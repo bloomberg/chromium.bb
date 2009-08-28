@@ -364,7 +364,7 @@ void AutocompletePopupViewGtk::AcceptLine(size_t line,
 gboolean AutocompletePopupViewGtk::HandleMotion(GtkWidget* widget,
                                                 GdkEventMotion* event) {
   // TODO(deanm): Windows has a bunch of complicated logic here.
-  size_t line = LineFromY(event->y);
+  size_t line = LineFromY(static_cast<int>(event->y));
   // There is both a hovered and selected line, hovered just means your mouse
   // is over it, but selected is what's showing in the location edit.
   model_->SetHoveredLine(line);
@@ -377,7 +377,7 @@ gboolean AutocompletePopupViewGtk::HandleMotion(GtkWidget* widget,
 gboolean AutocompletePopupViewGtk::HandleButtonPress(GtkWidget* widget,
                                                      GdkEventButton* event) {
   // Very similar to HandleMotion.
-  size_t line = LineFromY(event->y);
+  size_t line = LineFromY(static_cast<int>(event->y));
   model_->SetHoveredLine(line);
   if (event->button == 1)
     model_->SetSelectedLine(line, false);
@@ -386,7 +386,7 @@ gboolean AutocompletePopupViewGtk::HandleButtonPress(GtkWidget* widget,
 
 gboolean AutocompletePopupViewGtk::HandleButtonRelease(GtkWidget* widget,
                                                        GdkEventButton* event) {
-  size_t line = LineFromY(event->y);
+  size_t line = LineFromY(static_cast<int>(event->y));
   switch (event->button) {
     case 1:  // Left click.
       AcceptLine(line, CURRENT_TAB);
@@ -465,7 +465,7 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
     bool has_description = !match.description.empty();
     int text_width = window_rect.width() - (kIconAreaWidth + kRightPadding);
     int allocated_content_width = has_description ?
-        text_width * kContentWidthPercentage : text_width;
+        static_cast<int>(text_width * kContentWidthPercentage) : text_width;
     pango_layout_set_width(layout_, allocated_content_width * PANGO_SCALE);
 
     // Note: We force to URL to LTR for all text directions.

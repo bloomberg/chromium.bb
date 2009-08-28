@@ -116,7 +116,7 @@ void SetDialogShape(GtkWidget* widget) {
       IDR_FIND_DLG_LEFT_BACKGROUND,
       IDR_FIND_DLG_MIDDLE_BACKGROUND,
       IDR_FIND_DLG_RIGHT_BACKGROUND,
-      NULL, NULL, NULL, NULL, NULL, NULL);
+      0, 0, 0, 0, 0, 0);
     dialog_shape->ChangeWhiteToTransparent();
   }
 
@@ -132,7 +132,7 @@ const NineBox* GetDialogBorder() {
       IDR_FIND_DIALOG_LEFT,
       IDR_FIND_DIALOG_MIDDLE,
       IDR_FIND_DIALOG_RIGHT,
-      NULL, NULL, NULL, NULL, NULL, NULL);
+      0, 0, 0, 0, 0, 0);
   }
 
   return dialog_border;
@@ -512,7 +512,7 @@ void FindBarGtk::Observe(NotificationType type,
                          &kEntryBackgroundColor);
 
     gtk_alignment_set_padding(GTK_ALIGNMENT(content_alignment_),
-                              0.0, 0.0, 0.0, 0.0);
+                              0, 0, 0, 0);
 
     gtk_widget_modify_bg(border_bin_, GTK_STATE_NORMAL, &kTextBorderColor);
     gtk_widget_modify_bg(border_bin_aa_, GTK_STATE_NORMAL, &kTextBorderColorAA);
