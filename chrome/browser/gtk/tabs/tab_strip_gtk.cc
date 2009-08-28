@@ -773,7 +773,6 @@ void TabStripGtk::Layout() {
   }
 
   LayoutNewTabButton(static_cast<double>(tab_right), current_unselected_width_);
-  gtk_widget_queue_draw(tabstrip_.get());
 }
 
 void TabStripGtk::SchedulePaint() {
@@ -981,11 +980,8 @@ void TabStripGtk::TabSelectedAt(TabContents* old_contents,
     // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
     // a different size to the selected ones.
     bool tiny_tabs = current_unselected_width_ != current_selected_width_;
-    if (!IsAnimating() && (!resize_layout_scheduled_ || tiny_tabs)) {
+    if (!IsAnimating() && (!resize_layout_scheduled_ || tiny_tabs))
       Layout();
-    } else {
-      gtk_widget_queue_draw(tabstrip_.get());
-    }
   }
 }
 
@@ -1697,7 +1693,6 @@ void TabStripGtk::AnimationLayout(double unselected_width) {
     tab_x = end_of_tab + GetTabHOffset(i + 1);
   }
   LayoutNewTabButton(tab_x, unselected_width);
-  gtk_widget_queue_draw(tabstrip_.get());
 }
 
 void TabStripGtk::StartInsertTabAnimation(int index) {
