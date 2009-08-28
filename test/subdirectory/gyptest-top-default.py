@@ -18,17 +18,17 @@ import TestGyp
 
 test = TestGyp.TestGyp()
 
-test.run_gyp('prog1.gyp')
+test.run_gyp('prog1.gyp', chdir='src')
 
-test.build_default('prog1.gyp')
+test.build_default('prog1.gyp', chdir='src')
 
-test.run_built_executable('prog1', stdout="Hello from prog1.c\n")
+test.run_built_executable('prog1', stdout="Hello from prog1.c\n", chdir='src')
 
 import sys
 if sys.platform in ('darwin',):
-  chdir = 'subdir'
+  chdir = 'src/subdir'
 else:
-  chdir = None
+  chdir = 'src'
 test.run_built_executable('prog2',
                           chdir=chdir,
                           stdout="Hello from prog2.c\n")

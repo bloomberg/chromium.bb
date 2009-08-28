@@ -10,14 +10,14 @@ import TestGyp
 
 test = TestGyp.TestGyp()
 
-test.run_gyp('prog1.gyp')
+test.run_gyp('prog1.gyp', chdir='src')
 
-test.build_default('prog2.gyp', chdir='subdir')
+test.build_default('prog2.gyp', chdir='src/subdir')
 
-test.must_not_exist('prog1'+test._exe)
+test.must_not_exist('src/prog1'+test._exe)
 
 test.run_built_executable('prog2',
-                          chdir='subdir',
+                          chdir='src/subdir',
                           stdout="Hello from prog2.c\n")
 
 test.pass_test()
