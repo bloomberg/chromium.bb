@@ -42,8 +42,7 @@ static const float kDefaultInspectorHeight = 640;
 static const float kDefaultInspectorWidth = 480;
 
 WebInspectorClient::WebInspectorClient(WebViewImpl* webView)
-  : inspected_web_view_(webView)
-  , inspector_web_view_(0) {
+  : inspected_web_view_(webView) {
   ASSERT(inspected_web_view_);
 }
 
@@ -55,90 +54,27 @@ void WebInspectorClient::inspectorDestroyed() {
 }
 
 Page* WebInspectorClient::createPage() {
-  if (inspected_web_view_->GetWebDevToolsAgentImpl())
-    return NULL;
-
-  WebCore::Page* page;
-
-  if (inspector_web_view_ != NULL) {
-    page = inspector_web_view_->page();
-    ASSERT(page != NULL);
-    if (page != NULL)
-      return page;
-  }
-
-  WebViewDelegate* delegate = inspected_web_view_->GetDelegate();
-  if (!delegate)
-    return NULL;
-  inspector_web_view_ = static_cast<WebViewImpl*>(
-      delegate->CreateWebView(inspected_web_view_, true, GURL()));
-  if (!inspector_web_view_)
-    return NULL;
-
-  inspector_web_view_->main_frame()->loadRequest(
-      WebURLRequest(webkit_glue::GetInspectorURL()));
-
-  page = inspector_web_view_->page();
-
-  page->chrome()->setToolbarsVisible(false);
-  page->chrome()->setStatusbarVisible(false);
-  page->chrome()->setScrollbarsVisible(false);
-  page->chrome()->setMenubarVisible(false);
-  page->chrome()->setResizable(true);
-
-  // Don't allow inspection of inspector.
-  page->settings()->setDeveloperExtrasEnabled(false);
-  page->settings()->setPrivateBrowsingEnabled(true);
-  page->settings()->setPluginsEnabled(false);
-  page->settings()->setJavaEnabled(false);
-
-  FloatRect windowRect = page->chrome()->windowRect();
-  FloatSize pageSize = page->chrome()->pageRect().size();
-  windowRect.setX(kDefaultInspectorXPos);
-  windowRect.setY(kDefaultInspectorYPos);
-  windowRect.setWidth(kDefaultInspectorHeight);
-  windowRect.setHeight(kDefaultInspectorWidth);
-  page->chrome()->setWindowRect(windowRect);
-
-  page->chrome()->show();
-
-  return page;
+  // This method should never be called in Chrome as inspector front-end lives
+  // in a separate process.
+  NOTREACHED();
+  return NULL;
 }
 
 void WebInspectorClient::showWindow() {
-  if (inspected_web_view_->GetWebDevToolsAgentImpl())
-    return;
-
-  InspectorController* inspector = inspected_web_view_->page()->inspectorController();
+  DCHECK(inspected_web_view_->GetWebDevToolsAgentImpl());
+  InspectorController* inspector =
+      inspected_web_view_->page()->inspectorController();
   inspector->setWindowVisible(true);
-
-  // Notify the webview delegate of how many resources we're inspecting.
-  WebViewDelegate* d = inspected_web_view_->delegate();
-  DCHECK(d);
 }
 
 void WebInspectorClient::closeWindow() {
-  if (inspected_web_view_->GetWebDevToolsAgentImpl())
-    return;
-
-  inspector_web_view_ = NULL;
-
-  hideHighlight();
-
+  DCHECK(inspected_web_view_->GetWebDevToolsAgentImpl());
   if (inspected_web_view_->page())
     inspected_web_view_->page()->inspectorController()->setWindowVisible(false);
 }
 
 bool WebInspectorClient::windowVisible() {
-  if (inspected_web_view_->GetWebDevToolsAgentImpl())
-    return false;
-
-  if (inspector_web_view_ != NULL) {
-    Page* page = inspector_web_view_->page();
-    ASSERT(page != NULL);
-    if (page != NULL)
-      return true;
-  }
+  DCHECK(inspected_web_view_->GetWebDevToolsAgentImpl());
   return false;
 }
 

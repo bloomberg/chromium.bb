@@ -60,9 +60,6 @@ private:
   typedef HashMap<WebCore::String, WebCore::InspectorController::Setting>
       SettingsMap;
   OwnPtr<SettingsMap> settings_;
-
-  // The WebView of the Inspector popup window
-  WebViewImpl* inspector_web_view_;
 };
 
 #endif // WEBKIT_GLUE_INSPECTOR_CLIENT_IMPL_H__
