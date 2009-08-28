@@ -387,6 +387,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   EXPECT_TRUE(result);
 }
 
+#if defined(OS_WIN)  // TODO(port) - enable. This is probably not working
+                     // on linux because of race issues with startup.
 // Tests that message passing between extensions and content scripts works.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   ASSERT_TRUE(LoadExtension(
@@ -440,6 +442,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
       host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
   EXPECT_TRUE(result);
 }
+#endif  // defined(OS_WIN)
 
 // TODO(mpcomplete): reenable after figuring it out.
 #if 0
