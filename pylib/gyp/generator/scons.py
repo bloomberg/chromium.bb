@@ -3,8 +3,7 @@
 
 import gyp
 import gyp.common
-# TODO(sgk):  create a separate "project module" for SCons?
-#import gyp.SCons as SCons
+import gyp.SCons as SCons
 import os.path
 import pprint
 import re
@@ -40,59 +39,6 @@ def WriteList(fp, list, prefix='',
   fp.write(preamble or '')
   fp.write((separator or ' ').join([prefix + l for l in list]))
   fp.write(postamble or '')
-
-
-def full_product_name(spec, prefix='', suffix=''):
-  name = spec.get('product_name') or spec['target_name']
-  name = prefix + name + suffix
-  product_dir = spec.get('product_dir')
-  if product_dir:
-    name = os.path.join(product_dir, name)
-  return name
-
-
-def _SCons_writer(fp, spec, builder, pre=''):
-  fp.write('\n' + pre)
-  fp.write('_outputs = %s\n' % builder)
-  fp.write('target_files.extend(_outputs)\n')
-
-def _SCons_null_writer(fp, spec):
-  fp.write('\n')
-  fp.write('target_files.extend(input_files)\n')
-
-def _SCons_program_writer(fp, spec):
-  # On Linux, an executable name like 'chrome' could be either the
-  # on-disk executable or the Alias that represents the 'chrome' target.
-  # Disambiguate that the program we're building is, in fact, the
-  # on-disk target, so other dependent targets can't get confused.
-  name = full_product_name(spec)
-  pre = '_program = env.File(\'${PROGPREFIX}%s${PROGSUFFIX}\')\n' % name
-  builder = 'env.GypProgram(_program, input_files)'
-  return _SCons_writer(fp, spec, builder, pre)
-
-def _SCons_static_library_writer(fp, spec):
-  name = full_product_name(spec)
-  builder = 'env.GypStaticLibrary(\'%s\', input_files)' % name
-  return _SCons_writer(fp, spec, builder)
-
-def _SCons_shared_library_writer(fp, spec):
-  name = full_product_name(spec)
-  builder = 'env.GypSharedLibrary(\'%s\', input_files)' % name
-  return _SCons_writer(fp, spec, builder)
-
-def _SCons_loadable_module_writer(fp, spec):
-  name = full_product_name(spec)
-  builder = 'env.GypLoadableModule(\'%s\', input_files)' % name
-  return _SCons_writer(fp, spec, builder)
-
-SConsTypeWriter = {
-  None : _SCons_null_writer,
-  'none' : _SCons_null_writer,
-  'executable' : _SCons_program_writer,
-  'static_library' : _SCons_static_library_writer,
-  'shared_library' : _SCons_shared_library_writer,
-  'loadable_module' : _SCons_loadable_module_writer,
-}
 
 _alias_template = """
 if GetOption('verbose'):
@@ -271,6 +217,8 @@ def GenerateSConscript(output_filename, spec, build_file):
     --  Return the {name} Alias to the calling SConstruct file
         so it can be added to the list of default targets.
   """
+  scons_target = SCons.Target(spec)
+
   gyp_dir = os.path.dirname(output_filename)
   if not gyp_dir:
       gyp_dir = '.'
@@ -423,7 +371,7 @@ def GenerateSConscript(output_filename, spec, build_file):
       fp.write('  input_files.Replace(%s_file, _outputs)\n' % name)
     fp.write('prerequisites.extend(_outputs)\n')
 
-  SConsTypeWriter[spec.get('type')](fp, spec)
+  scons_target.write_target(fp)
 
   copies = spec.get('copies', [])
   if copies:
@@ -1002,8 +950,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   for qualified_target in target_list:
     spec = target_dicts[qualified_target]
-
-    if spec['type'] == 'settings':
+    scons_target = SCons.Target(spec)
+    if scons_target.is_ignored:
       continue
 
     # TODO:  assumes the default_configuration of the first target
@@ -1034,8 +982,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
       if td['type'] == 'loadable_module':
         prereqs = spec.get('scons_prerequisites', [])
         # TODO:  parameterize with <(SHARED_LIBRARY_*) variables?
-        name = full_product_name(td, '${SHLIBPREFIX}', '${SHLIBSUFFIX}')
-        prereqs.append(name)
+        td_target = SCons.Target(td)
+        td_target.target_prefix = '${SHLIBPREFIX}'
+        td_target.target_suffix = '${SHLIBSUFFIX}'
+        prereqs.append(td_target.full_product_name())
         spec['scons_prerequisites'] = prereqs
 
     GenerateSConscript(output_file, spec, build_file)
@@ -1053,7 +1003,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     all_targets = gyp.common.AllTargets(target_list, target_dicts, build_file)
     sconscript_files = {}
     for t in all_targets:
-      if target_dicts[t]['type'] == 'settings':
+      scons_target = SCons.Target(target_dicts[t])
+      if scons_target.is_ignored:
         continue
       bf, target = gyp.common.BuildFileAndTarget('', t)[:2]
       target_filename = TargetFilename(target, bf, options.suffix)
