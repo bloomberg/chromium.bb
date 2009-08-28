@@ -49,9 +49,6 @@
 #include "native_client/src/trusted/validator_arm/ncdecode.h"
 #include "native_client/src/trusted/validator_arm/nop_patterns.h"
 
-// True iff stack adjustment patterns should be applied.
-static Bool FLAGS_stack_adjustments = TRUE;
-
 /*
  * Flag defining an input file to use to generate a code segment
  * to decode. "-' denotes standard input should be used to
@@ -81,8 +78,6 @@ static int GrokFlags(int argc, const char *argv[]) {
                      &FLAGS_report_disallowed) ||
         GrokIntFlag("--code_block_size", argv[i],
                     &FLAGS_code_block_size) ||
-        GrokBoolFlag("--stack_adjustments", argv[i],
-                     &FLAGS_stack_adjustments) ||
         GrokBoolFlag("--set_executable_name", argv[i],
                      &FLAGS_set_executable_name) ||
         GrokBoolFlag("--count_pattern_usage", argv[i],
@@ -127,10 +122,7 @@ int main(int argc, const char *argv[]) {
   const char *loadname = GrokArgv(GrokFlags(argc, argv), argv);
 
   InstallBranchPatterns();
-
-  if (FLAGS_stack_adjustments) {
-    InstallStackAdjustPatterns();
-  }
+  InstallStackAdjustPatterns();
 
   if (FLAGS_count_pattern_usage) {
     InstallInstructionCounterPatterns();

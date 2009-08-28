@@ -1,0 +1,4 @@
+# Load to SP without masking in the next instruction.
+# The non-masking instruction is safe, but should be somewhere else.
+e590d042  # ldral r13, [r0, #0x42]
+e0800000  # add r0, r0, r0

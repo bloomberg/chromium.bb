@@ -36,15 +36,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include "native_client/src/trusted/validator_arm/generated_decoder.h"
 #include "native_client/src/trusted/validator_arm/ncdecode.h"
 #include "native_client/src/trusted/validator_arm/arm_insts_rt.h"
 #include "native_client/src/shared/utils/formatting.h"
-
-EXTERN_C_BEGIN
-#ifndef USE_DEFAULT_PARSER
-extern void DecodeNcDecodedInstruction(NcDecodedInstruction* inst);
-#endif
-EXTERN_C_END
 
 #define DEBUGGING 0
 #include "native_client/src/trusted/validator_arm/debugging.h"
@@ -239,6 +234,11 @@ bool NcDecodeState::CurrentInstructionIs(ArmInstType type) const {
 
 bool NcDecodeState::CurrentInstructionIs(ArmInstKind kind) const {
   return _current_instruction.matched_inst->inst_kind == kind;
+}
+
+bool NcDecodeState::ConditionMatches(const NcDecodeState &other) const {
+  return _current_instruction.values.cond
+      == other._current_instruction.values.cond;
 }
 
 const CodeSegment &NcDecodeState::Segment() const {

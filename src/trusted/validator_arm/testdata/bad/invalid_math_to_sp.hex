@@ -1,0 +1,4 @@
+# Writing SP using data processing op, without a following mask.
+# The non-masking instruction is safe, but should be somewhere else.
+e081d003  # addal r13, r1, r3
+e0800000  # addal r0, r0, r0

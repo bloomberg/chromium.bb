@@ -158,6 +158,11 @@ class NcDecodeState {
    */
   bool CurrentInstructionIs(ArmInstKind) const;
 
+  /**
+   * Verifies that the condition fields of this object and 'state' match.
+   */
+  bool ConditionMatches(const NcDecodeState &) const;
+
  private:
   void DecodeInstruction();
   void ConsumeInstruction();

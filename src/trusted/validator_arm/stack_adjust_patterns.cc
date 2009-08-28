@@ -63,22 +63,35 @@ bool ValidatorStackAdjustPattern::MayBeUnsafe(const NcDecodeState &state) {
       !GetBit(RegisterSetIncremented(&inst), SP_INDEX);
 }
 
-bool ValidatorStackAdjustPattern::IsSafe(const NcDecodeState &adj_state) {
+/**
+ * Checks whether the instruction pointed to in the given state matches the
+ * form of an in-place SP mask:
+ *    bic<cc> r13, r13, #0x80000000
+ */
+static bool isInPlaceStackMask(const NcDecodeState &state) {
+  const NcDecodedInstruction& inst = state.CurrentInstruction();
+  const InstValues& values = inst.values;
+  uint32_t mask = ImmediateRotateRight(values.immediate, values.shift * 2);
+
+  return state.CurrentInstructionIs(ARM_BIC) &&
+      state.CurrentInstructionIs(ARM_DP_I) &&
+      SP_INDEX == inst.values.arg1 &&
+      inst.values.arg1 == inst.values.arg2 &&
+      mask == kSpClearBitMask;
+}
+
+bool ValidatorStackAdjustPattern::IsSafe(const NcDecodeState &state) {
+  // If this instruction is the mask sequence itself, it's always safe.
+  if (isInPlaceStackMask(state)) {
+    return true;
+  }
+
   // Only safe if the second instruction in the sequence is
   // a bit clear on the expected range of (data) addresses.
-  NcDecodeState state(adj_state);
-  state.NextInstruction();
+  NcDecodeState next(state);
+  next.NextInstruction();
 
-  const NcDecodedInstruction& inst = state.CurrentInstruction();
-  if (state.CurrentInstructionIs(ARM_BIC) &&
-      SP_INDEX == inst.values.arg1 &&
-      inst.values.arg1 == inst.values.arg2) {
-    const InstValues& values = inst.values;
-    uint32_t target =
-        ImmediateRotateRight(values.immediate, values.shift * 2);
-    return target == kSpClearBitMask;
-  }
-  return false;
+  return isInPlaceStackMask(next) && state.ConditionMatches(next);
 }
 
 void ValidatorStackAdjustPattern::ReportUnsafeError(

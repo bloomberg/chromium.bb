@@ -1,0 +1,4 @@
+
+validate: error: Unsafe use of stack adjustment instruction (not followed by BIC on 80000000):
+	       0:	e081d003 		add	sp, r1, r3
+
