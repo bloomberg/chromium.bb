@@ -246,11 +246,6 @@ void BrowserWindowCocoa::ShowNewProfileDialog() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::ShowRepostFormWarningDialog(
-    TabContents* tab_contents) {
-  NOTIMPLEMENTED();
-}
-
 // We allow closing the window here since the real quit decision on Mac is made
 // in [AppController quit:].
 void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads() {

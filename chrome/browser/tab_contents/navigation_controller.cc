@@ -16,8 +16,8 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/browser/tab_contents/repost_form_warning.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -28,6 +28,11 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/tab_contents/repost_form_warning.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#endif
 
 namespace {
 
@@ -168,7 +173,7 @@ void NavigationController::Reload(bool check_for_repost) {
     // they really want to do this. If they do, the dialog will call us back
     // with check_for_repost = false.
     tab_contents_->Activate();
-    tab_contents_->delegate()->ShowRepostFormWarningDialog(tab_contents_);
+    RunRepostFormWarningDialog(this);
   } else {
     // Base the navigation on where we are now...
     int current_index = GetCurrentEntryIndex();

@@ -71,7 +71,6 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void ShowPasswordManager();
   virtual void ShowSelectProfileDialog();
   virtual void ShowNewProfileDialog();
-  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
   virtual void ConfirmBrowserCloseWithPendingDownloads();
   virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window);
