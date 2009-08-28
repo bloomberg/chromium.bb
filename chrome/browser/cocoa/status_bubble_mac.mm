@@ -9,8 +9,6 @@
 #include "base/sys_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
-#import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
 
 namespace {
 
@@ -51,12 +49,10 @@ enum BubbleStyle {
  @private
   NSString* content_;
   BubbleStyle style_;
-  NSWindow* parent_;
 }
 
 - (void)setContent:(NSString*)content;
 - (void)setStyle:(BubbleStyle)style;
-- (void)setParent:(NSWindow*)parent;
 - (NSFont*)font;
 @end
 
@@ -224,8 +220,6 @@ void StatusBubbleMac::Create() {
 
   StatusBubbleViewCocoa* view =
       [[[StatusBubbleViewCocoa alloc] initWithFrame:NSZeroRect] autorelease];
-  [view setParent:parent_];
-
   [window_ setContentView:view];
 
   [parent_ addChildWindow:window_ ordered:NSWindowAbove];
@@ -269,16 +263,6 @@ void StatusBubbleMac::FadeOut() {
   [self setNeedsDisplay:YES];
 }
 
-- (void)setParent:(NSWindow*)parent {
-  [parent_ autorelease];
-  parent_ = [parent retain];
-  [self setNeedsDisplay:YES];
-}
-
-- (GTMTheme*)gtm_theme {
-  return [parent_ gtm_theme];
-}
-
 - (NSFont*)font {
   return [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 }
@@ -316,24 +300,13 @@ void StatusBubbleMac::FadeOut() {
   // Background / Edge
 
   NSRect bounds = [self bounds];
-  bounds = NSInsetRect(bounds, 0.5, 0.5);
   NSBezierPath *border = [NSBezierPath gtm_bezierPathWithRoundRect:bounds
                                                topLeftCornerRadius:tl_radius
                                               topRightCornerRadius:tr_radius
                                             bottomLeftCornerRadius:bl_radius
                                            bottomRightCornerRadius:br_radius];
 
-  NSColor* color =
-      [[self gtm_theme] backgroundColorForStyle:GTMThemeStyleToolBar
-                                          state:GTMThemeStateActiveWindow];
-
-  // workaround for default theme
-  // TODO(alcor) next GTM update return nil for background color if not set;
-  if ([color isEqual:[NSColor colorWithCalibratedWhite:0.5 alpha:1.0]])
-    color = nil;
-  if (!color)
-    color = [NSColor colorWithCalibratedWhite:0.9 alpha:1.0];
-  [color set];
+  [[NSColor colorWithDeviceWhite:kWindowFill alpha:1.0f] set];
   [border fill];
 
   border = [NSBezierPath gtm_bezierPathWithRoundRect:bounds
@@ -346,11 +319,11 @@ void StatusBubbleMac::FadeOut() {
   [border stroke];
 
   // Text
-  NSColor* textColor = [color gtm_legibleTextColor];
+
   NSFont* textFont = [self font];
   NSShadow* textShadow = [[[NSShadow alloc] init] autorelease];
-  [textShadow setShadowBlurRadius:0.0f];
-  [textShadow setShadowColor:[textColor gtm_legibleTextColor]];
+  [textShadow setShadowBlurRadius:1.5f];
+  [textShadow setShadowColor:[NSColor whiteColor]];
   [textShadow setShadowOffset:NSMakeSize(0.0f, -1.0f)];
 
   NSDictionary* textDict = [NSDictionary dictionaryWithObjectsAndKeys:

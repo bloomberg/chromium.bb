@@ -13,13 +13,9 @@ static const CGFloat kInsetMultiplier = 2.0/3.0;
 static const CGFloat kControlPoint1Multiplier = 1.0/3.0;
 static const CGFloat kControlPoint2Multiplier = 3.0/8.0;
 
-static const NSTimeInterval kAnimationShowDuration = 0.2;
-static const NSTimeInterval kAnimationHideDuration = 0.4;
-
 @implementation TabView
 
 @synthesize state = state_;
-@synthesize hoverAlpha = hoverAlpha_;
 
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
@@ -38,18 +34,18 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   // to the |closeButton_| view, but we'll handle the message ourself.
   // The mouseover is always enabled, because the close button works
   // regardless of key/main/active status.
-  closeTrackingArea_.reset(
+  trackingArea_.reset(
       [[NSTrackingArea alloc] initWithRect:[closeButton_ bounds]
                                    options:NSTrackingMouseEnteredAndExited |
                                            NSTrackingActiveAlways
                                      owner:self
                                   userInfo:nil]);
-  [closeButton_ addTrackingArea:closeTrackingArea_.get()];
+  [closeButton_ addTrackingArea:trackingArea_.get()];
 }
 
 - (void)dealloc {
   // [self gtm_unregisterForThemeNotifications];
-  [closeButton_ removeTrackingArea:closeTrackingArea_.get()];
+  [closeButton_ removeTrackingArea:trackingArea_.get()];
   [super dealloc];
 }
 
@@ -60,57 +56,16 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   return YES;
 }
 
-- (void)adjustHoverValue {
-  NSTimeInterval thisUpdate = [NSDate timeIntervalSinceReferenceDate];
-
-  NSTimeInterval elapsed = thisUpdate - lastHoverUpdate_;
-
-  CGFloat opacity = [self hoverAlpha];
-  if (isMouseInside_) {
-    opacity += elapsed / kAnimationShowDuration;
-  } else {
-    opacity -= elapsed / kAnimationHideDuration;
-  }
-
-  if (!isMouseInside_ && opacity < 0) {
-    opacity = 0;
-  } else if (isMouseInside_ && opacity > 1) {
-    opacity = 1;
-  } else {
-    [self performSelector:_cmd withObject:nil afterDelay:0.02];
-  }
-  lastHoverUpdate_ = thisUpdate;
-  [self setHoverAlpha:opacity];
-
-  [self setNeedsDisplay:YES];
-}
-
 - (void)mouseEntered:(NSEvent *)theEvent {
-  if ([theEvent trackingArea] == closeTrackingArea_) {
-    [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar_h.pdf")];
-  } else {
-    lastHoverUpdate_ = [NSDate timeIntervalSinceReferenceDate];
-    isMouseInside_ = YES;
-    [self adjustHoverValue];
-    [self setNeedsDisplay:YES];
-  }
-}
-
-- (void)mouseMoved:(NSEvent *)theEvent {
-  hoverPoint_ = [self convertPoint:[theEvent locationInWindow]
-                          fromView:nil];
-  [self setNeedsDisplay:YES];
+  // We only set up one tracking area, so we know any mouseEntered:
+  // messages are for close button mouseovers.
+  [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar_h.pdf")];
 }
 
 - (void)mouseExited:(NSEvent *)theEvent {
-  if ([theEvent trackingArea] == closeTrackingArea_) {
-    [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar.pdf")];
-  } else {
-    lastHoverUpdate_ = [NSDate timeIntervalSinceReferenceDate];
-    isMouseInside_ = NO;
-    [self adjustHoverValue];
-    [self setNeedsDisplay:YES];
-  }
+  // We only set up one tracking area, so we know any mouseExited:
+  // messages are for close button mouseovers.
+  [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar.pdf")];
 }
 
 // Determines which view a click in our frame actually hit. It's either this
@@ -276,6 +231,7 @@ static const double kDragStartDistance = 3.0;
     NSRect windowFrame = [[target window] frame];
     if (NSPointInRect(thisPoint, windowFrame)) {
       NSRect tabStripFrame = [[target tabStripView] frame];
+      tabStripFrame = [[target tabStripView] convertRectToBase:tabStripFrame];
       tabStripFrame.origin = [[target window]
                               convertBaseToScreen:tabStripFrame.origin];
       if (NSPointInRect(thisPoint, tabStripFrame)) {
@@ -470,11 +426,11 @@ static const double kDragStartDistance = 3.0;
   // Inset by 0.5 in order to draw on pixels rather than on borders (which would
   // cause blurry pixels). Decrease height by 1 in order to move away from the
   // edge for the dark shadow.
-  rect = NSInsetRect(rect, -0.5, -0.5);
+  rect = NSInsetRect(rect, 0.5, -0.5);
   rect.origin.y -= 1;
 
-  NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect) + 2);
-  NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect) + 2);
+  NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect));
+  NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect));
   NSPoint topRight =
       NSMakePoint(NSMaxX(rect) - kInsetMultiplier * NSHeight(rect),
                   NSMaxY(rect));
@@ -488,7 +444,7 @@ static const double kDragStartDistance = 3.0;
   // Outset many of these values by 1 to cause the fill to bleed outside the
   // clip area.
   NSBezierPath *path = [NSBezierPath bezierPath];
-  [path moveToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y - 2)];
+  [path moveToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y + 1)];
   [path lineToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y)];
   [path lineToPoint:bottomLeft];
   [path curveToPoint:topLeft
@@ -503,7 +459,30 @@ static const double kDragStartDistance = 3.0;
        controlPoint2:NSMakePoint(bottomRight.x - baseControlPointOutset,
                                  bottomRight.y)];
   [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y)];
-  [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y - 2)];
+  [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y + 1)];
+
+  if (selected) {
+    // Stroke with a translucent black.
+    [[NSColor colorWithCalibratedWhite:0.0 alpha:active ? 0.5 : 0.3] set];
+    [[NSGraphicsContext currentContext] saveGraphicsState];
+    scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+    [shadow setShadowOffset:NSMakeSize(2, -1)];
+    [shadow setShadowBlurRadius:2.0];
+    [path fill];
+    [[NSGraphicsContext currentContext] restoreGraphicsState];
+  } else {
+    // Stroke with a translucent black.
+    [[NSBezierPath bezierPathWithRect:NSOffsetRect([self bounds], 0, 1)]
+        addClip];
+
+    [[NSColor colorWithCalibratedWhite:0.0 alpha:active ? 0.3 : 0.1] set];
+  }
+
+  [[NSGraphicsContext currentContext] saveGraphicsState];
+  [[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
+  [path setLineWidth:selected ? 2.0 : 1.0];
+  [path stroke];
+  [[NSGraphicsContext currentContext] restoreGraphicsState];
 
   GTMTheme *theme = [self gtm_theme];
 
@@ -512,102 +491,34 @@ static const double kDragStartDistance = 3.0;
         [theme backgroundPatternColorForStyle:GTMThemeStyleWindow
                                         state:GTMThemeStateActiveWindow];
     if (windowColor) {
-      [windowColor set];
-
-      [[NSGraphicsContext currentContext] setPatternPhase:[self patternPhase]];
-    } else {
       NSPoint phase = [self patternPhase];
-      phase.y += 1;
+      [windowColor set];
       [[NSGraphicsContext currentContext] setPatternPhase:phase];
-      [[NSColor windowBackgroundColor] set];
-    }
-
-    [path fill];
-
-    NSColor *tabColor =
-        [theme backgroundPatternColorForStyle:GTMThemeStyleTabBarDeselected
-                                        state:GTMThemeStateActiveWindow];
-    if (tabColor) {
-      [tabColor set];
-      [[NSGraphicsContext currentContext] setPatternPhase:[self patternPhase]];
     } else {
-      [[NSColor colorWithCalibratedWhite:1.0 alpha:0.3] set];
+      [[NSColor colorWithCalibratedWhite:0.6 alpha:1.0] set];
     }
     [path fill];
-
   }
 
+  // Draw the background.
   [[NSGraphicsContext currentContext] saveGraphicsState];
+  CGContextRef context =
+      (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
+  CGContextBeginTransparencyLayer(context, 0);
+  if (!selected)
+    CGContextSetAlpha(context, 0.5);
   [path addClip];
+  [super drawRect:rect];
 
-  if (selected || hoverAlpha_ > 0) {
-    // Draw the background.
-    CGFloat backgroundAlpha = hoverAlpha_ * 0.5;
-    [[NSGraphicsContext currentContext] saveGraphicsState];
-    CGContextRef context =
-        (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
-    CGContextBeginTransparencyLayer(context, 0);
-    if (!selected)
-      CGContextSetAlpha(context, backgroundAlpha);
-    [path addClip];
-    [super drawRect:rect];
-
-    // Draw a mouse hover gradient for the default themes
-    if (!selected) {
-      if (![theme backgroundImageForStyle:GTMThemeStyleTabBarDeselected
-                                    state:GTMThemeStateActiveWindow]) {
-        scoped_nsobject<NSGradient> glow([NSGradient alloc]);
-        [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
-                                                                alpha:1.0 *
-                                                                    hoverAlpha_]
-                        endingColor:[NSColor colorWithCalibratedWhite:1.0
-                                                                alpha:0.0]];
-
-        NSPoint point = hoverPoint_;
-        point.y = NSHeight(rect);
-        [glow drawFromCenter:point
-                      radius:0
-                    toCenter:point
-                      radius:NSWidth(rect)/3
-                     options:NSGradientDrawsBeforeStartingLocation];
-
-        [glow drawInBezierPath:path relativeCenterPosition:hoverPoint_];
-      }
-    }
-
-    CGContextEndTransparencyLayer(context);
-    [[NSGraphicsContext currentContext] restoreGraphicsState];
-  }
-
-  // Draw the top inner highlight.
-  NSAffineTransform* highlightTransform = [NSAffineTransform transform];
-  [highlightTransform translateXBy:1 yBy:-1];
-  scoped_nsobject<NSBezierPath> highlightPath([path copy]);
-  [highlightPath transformUsingAffineTransform:highlightTransform];
-  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2 + 0.3 * hoverAlpha_]
-      setStroke];
-  [highlightPath stroke];
-
-  [[NSGraphicsContext currentContext] restoreGraphicsState];
-
-  // Draw the top stroke.
-  [[NSGraphicsContext currentContext] saveGraphicsState];
-  if (selected) {
-    [[NSColor colorWithDeviceWhite:0.0 alpha:active ? 0.3 : 0.15] set];
-  } else {
-    [[NSColor colorWithDeviceWhite:0.0 alpha:active ? 0.2 : 0.15] set];
-    [[NSBezierPath bezierPathWithRect:NSOffsetRect(rect, 0, 2.5)] addClip];
-  }
-  [path setLineWidth:1.0];
-  [path stroke];
+  CGContextEndTransparencyLayer(context);
   [[NSGraphicsContext currentContext] restoreGraphicsState];
 
   // Draw the bottom border.
   if (!selected) {
     [path addClip];
     NSRect borderRect, contentRect;
-    NSDivideRect(rect, &borderRect, &contentRect, 2.5, NSMinYEdge);
-    [[NSColor colorWithDeviceWhite:0.0 alpha:active ? 0.3 : 0.15] set];
+    NSDivideRect(rect, &borderRect, &contentRect, 1, NSMinYEdge);
+    [[NSColor colorWithCalibratedWhite:0.0 alpha:0.4] set];
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   }
   [[NSGraphicsContext currentContext] restoreGraphicsState];

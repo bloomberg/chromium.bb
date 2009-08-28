@@ -72,9 +72,11 @@ class ToolbarModel;
   // width should be used, this will have a value of |kUseFullAvailableWidth|.
   float availableResizeWidth_;
   // A tracking area that's the size of the tab strip used to be notified
-  // when the mouse moves in the tab strip
-  scoped_nsobject<NSTrackingArea> trackingArea_;
-  TabView* hoveredTab_;  // weak. Tab that the mouse is hovering over
+  // when the mouse leaves the tab strip. It's installed when the user clicks
+  // the close box of a tab and is removed when they move the mouse outside
+  // of the strip. When they do, we resize the tabs to use all available
+  // space.
+  scoped_nsobject<NSTrackingArea> closeTabTrackingArea_;
 
   // Array of subviews which are permanent (and which should never be removed),
   // such as the new-tab button, but *not* the tabs themselves.
@@ -127,8 +129,8 @@ class ToolbarModel;
 // Force the tabs to rearrange themselves to reflect the current model.
 - (void)layoutTabs;
 
-// The user changed the theme, or theme state changed.
-- (void)applyTheme;
+// The user changed the theme.
+- (void)userChangedTheme;
 
 // Default height for tabs.
 + (CGFloat)defaultTabHeight;

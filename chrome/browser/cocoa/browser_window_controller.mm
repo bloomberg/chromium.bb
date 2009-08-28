@@ -96,7 +96,6 @@ willPositionSheet:(NSWindow*)sheet
 
 // Repositions the windows subviews.
 - (void)layoutSubviews;
-
 @end
 
 
@@ -928,6 +927,8 @@ willPositionSheet:(NSWindow*)sheet
 - (void)userChangedTheme {
   [self setTheme];
   [self applyTheme];
+
+  [tabStripController_ userChangedTheme];
 }
 
 - (GTMTheme *)gtm_themeForWindow:(NSWindow*)window {
@@ -1132,7 +1133,6 @@ willPositionSheet:(NSWindow*)sheet
       [theme_ backgroundPatternColorForStyle:GTMThemeStyleWindow
                                        state:[[self window] isMainWindow]];
   [[self window] setBackgroundColor:color];
-  [tabStripController_ applyTheme];
 }
 
 // Private method to layout browser window subviews.  Positions the toolbar and
@@ -1229,45 +1229,36 @@ willPositionSheet:(NSWindow*)sheet
   [theme setValue:frameImage
      forAttribute:@"backgroundImage"
             style:GTMThemeStyleWindow
-            state:GTMThemeStateActiveWindow];
+            state:YES];
 
-  NSColor* tabTextColor =
-      provider->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT);
+  NSColor* tabTextColor = [NSColor blackColor];
   [theme setValue:tabTextColor
      forAttribute:@"textColor"
             style:GTMThemeStyleToolBar
-            state:GTMThemeStateActiveWindow];
+            state:YES];
 
-  NSColor* tabInactiveTextColor =
-      provider->GetNSColor(BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT);
+  NSColor* tabInactiveTextColor = [NSColor grayColor];
   [theme setValue:tabInactiveTextColor
      forAttribute:@"textColor"
-            style:GTMThemeStyleTabBarDeselected
-            state:GTMThemeStateActiveWindow];
+            style:GTMThemeStyleToolBar
+            state:NO];
 
-  NSColor* bookmarkBarTextColor =
-      provider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+  NSColor* bookmarkBarTextColor = [NSColor blackColor];
   [theme setValue:bookmarkBarTextColor
      forAttribute:@"textColor"
             style:GTMThemeStyleBookmarksBarButton
-            state:GTMThemeStateActiveWindow];
+            state:YES];
 
   [theme setValue:frameInactiveImage
      forAttribute:@"backgroundImage"
             style:GTMThemeStyleWindow
-            state:0];
+            state:NO];
 
   NSImage* toolbarImage = provider->GetNSImageNamed(IDR_THEME_TOOLBAR);
   [theme setValue:toolbarImage
      forAttribute:@"backgroundImage"
             style:GTMThemeStyleToolBar
-            state:GTMThemeStateActiveWindow];
-  NSImage* toolbarBackgroundImage =
-      provider->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND);
-  [theme setValue:toolbarBackgroundImage
-     forAttribute:@"backgroundImage"
-            style:GTMThemeStyleTabBarDeselected
-            state:GTMThemeStateActiveWindow];
+            state:YES];
 
   NSImage* toolbarButtonImage =
       provider->GetNSImageNamed(IDR_THEME_BUTTON_BACKGROUND);
@@ -1275,7 +1266,7 @@ willPositionSheet:(NSWindow*)sheet
     [theme setValue:toolbarButtonImage
      forAttribute:@"backgroundImage"
             style:GTMThemeStyleToolBarButton
-            state:GTMThemeStateActiveWindow];
+            state:YES];
   } else {
     NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.0];
     NSColor* endColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.3];
@@ -1286,12 +1277,12 @@ willPositionSheet:(NSWindow*)sheet
     [theme setValue:gradient
        forAttribute:@"gradient"
               style:GTMThemeStyleToolBarButton
-              state:GTMThemeStateActiveWindow];
+              state:YES];
 
     [theme setValue:gradient
        forAttribute:@"gradient"
               style:GTMThemeStyleToolBarButton
-              state:GTMThemeStateActiveWindow];
+              state:NO];
   }
 
   NSColor* toolbarButtonIconColor =
@@ -1299,20 +1290,13 @@ willPositionSheet:(NSWindow*)sheet
   [theme setValue:toolbarButtonIconColor
      forAttribute:@"iconColor"
             style:GTMThemeStyleToolBarButton
-            state:GTMThemeStateActiveWindow];
+            state:YES];
 
   NSColor* toolbarButtonBorderColor = toolbarButtonIconColor;
   [theme setValue:toolbarButtonBorderColor
      forAttribute:@"borderColor"
             style:GTMThemeStyleToolBar
-            state:GTMThemeStateActiveWindow];
-
-  NSColor* toolbarBackgroundColor =
-      provider->GetNSColor(BrowserThemeProvider::COLOR_TOOLBAR);
-  [theme setValue:toolbarBackgroundColor
-     forAttribute:@"backgroundColor"
-            style:GTMThemeStyleToolBar
-            state:GTMThemeStateActiveWindow];
+            state:YES];
 
   return theme;
 }

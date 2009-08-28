@@ -27,10 +27,10 @@
 static NSString* const kStarredImageName = @"starred.pdf";
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
-static const float kBaseToolbarHeight = 36.0;
+static const float kBaseToolbarHeight = 39.0;
 
 // Overlap (in pixels) between the toolbar and the bookmark bar.
-static const float kBookmarkBarOverlap = 7.0;
+static const float kBookmarkBarOverlap = 5.0;
 
 @interface ToolbarController(Private)
 - (void)initCommandStatus:(CommandUpdater*)commands;
@@ -113,8 +113,6 @@ class PrefObserverBridge : public NotificationObserver {
   // the "parent" view continues to work.
   hasToolbar_ = YES;
 
-  if (trackingArea_.get())
-    [[self view] removeTrackingArea:trackingArea_.get()];
   [super dealloc];
 }
 
@@ -177,35 +175,6 @@ class PrefObserverBridge : public NotificationObserver {
   // the retain count of the location bar; use of the scoped object
   // helps us remember to release it.
   locationBarRetainer_.reset([locationBar_ retain]);
-  trackingArea_.reset(
-      [[NSTrackingArea alloc] initWithRect:NSZeroRect // Ignored
-                                   options:NSTrackingMouseMoved |
-                                           NSTrackingInVisibleRect |
-                                           NSTrackingMouseEnteredAndExited |
-                                           NSTrackingActiveAlways
-                                     owner:self
-                                  userInfo:nil]);
-  [[self view] addTrackingArea:trackingArea_.get()];
-}
-
-- (void)mouseExited:(NSEvent*)theEvent {
-  [[hoveredButton_ cell] setMouseInside:NO animate:YES];
-  hoveredButton_ = nil;
-}
-
-- (void)mouseMoved:(NSEvent *)theEvent {
-  NSButton *targetView = (NSButton *)[[self view]
-                                      hitTest:[theEvent locationInWindow]];
-  if (![targetView isKindOfClass:[NSButton class]]) targetView = nil;
-  if (hoveredButton_ != targetView) {
-    [[hoveredButton_ cell] setMouseInside:NO animate:YES];
-    [[targetView cell] setMouseInside:YES animate:YES];
-    hoveredButton_ = targetView;
-  }
-}
-
-- (void)mouseEntered:(NSEvent*)event {
-  [self mouseMoved:event];
 }
 
 - (void)resizeView:(NSView*)view newHeight:(float)height {

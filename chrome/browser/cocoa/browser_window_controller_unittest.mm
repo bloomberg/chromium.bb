@@ -179,6 +179,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   NSView* contentView = [[tabstrip window] contentView];
   NSView* toolbar = [controller_ toolbarView];
   NSView* infobar = [controller_ infoBarContainerView];
+  NSView* contentArea = [controller_ tabContentArea];
 
   // We need to muck with the views a bit to put us in a consistent state before
   // we start resizing.  In particular, we need to move the tab strip to be
@@ -191,13 +192,8 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   [tabstrip setFrame:tabstripFrame];
 
   // Make sure each view is as tall as we expect.
-  ASSERT_EQ(36, NSHeight([toolbar frame]));
+  ASSERT_EQ(39, NSHeight([toolbar frame]));
   ASSERT_EQ(0, NSHeight([infobar frame]));
-
-
-  // TODO(rohitrao):rewrite and reenable
-#if 0
-  NSView* contentArea = [controller_ tabContentArea];
 
   // Force a layout and check each view's frame.
   // contentView should be at 0,0 800x600
@@ -259,7 +255,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 30, 800, 531)));
   EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 561, 800, 0)));
   EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 561, 800, 39)));
-#endif
 }
 
 TEST_F(BrowserWindowControllerTest, TestTopLeftForBubble) {

@@ -24,7 +24,7 @@
   IBOutlet NSButton* closeButton_;
 
   // Tracking area for close button mouseover images.
-  scoped_nsobject<NSTrackingArea> closeTrackingArea_;
+  scoped_nsobject<NSTrackingArea> trackingArea_;
 
   // All following variables are valid for the duration of a drag.
   // These are released on mouseUp:
@@ -32,10 +32,6 @@
   BOOL tabWasDragged_;  // Has the tab been dragged?
   BOOL draggingWithinTabStrip_;  // Did drag stay in the current tab strip?
   BOOL chromeIsVisible_;
-  BOOL isMouseInside_;  // Is the mouse hovering over?
-  CGFloat hoverAlpha_;  // How strong the mouse hover state is.
-  NSTimeInterval lastHoverUpdate_;  // Time the hover value was last updated.
-  NSPoint hoverPoint_;  // Current location of hover in view coords.
 
   NSTimeInterval tearTime_;  // Time since tear happened
   NSPoint tearOrigin_;  // Origin of the tear rect
@@ -55,7 +51,6 @@
   NSCellStateValue state_;
 }
 @property(assign) NSCellStateValue state;
-@property(assign, nonatomic)CGFloat hoverAlpha;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TAB_VIEW_H_
