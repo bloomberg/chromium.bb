@@ -56,20 +56,20 @@ typedef NPObject BrowserScriptableObject;
 
 class ScriptableHandleBase: public NPObject {
  public:
-   ScriptableHandleBase() {
-     if (NULL == valid_handles) {
-       valid_handles = new(std::nothrow) std::set<const ScriptableHandleBase*>;
-     }
-     if (NULL == valid_handles) {
-       // There's no clean way to handle errors in a constructor.
-       // TODO(sehr): move to invoking an insert method in factories.
-       abort();
-     }
-     valid_handles->insert(this);
-     dprintf(("ScriptableHandle::ScriptableHandle(%p, count %"PRIuS")\n",
-              static_cast<void*>(this),
-              valid_handles->count(this)));
-   }
+  ScriptableHandleBase() {
+    if (NULL == valid_handles) {
+      valid_handles = new(std::nothrow) std::set<const ScriptableHandleBase*>;
+    }
+    if (NULL == valid_handles) {
+      // There's no clean way to handle errors in a constructor.
+      // TODO(sehr): move to invoking an insert method in factories.
+      abort();
+    }
+    valid_handles->insert(this);
+    dprintf(("ScriptableHandle::ScriptableHandle(%p, count %"PRIuS")\n",
+             static_cast<void*>(this),
+             valid_handles->count(this)));
+  }
   virtual PortableHandle* get_handle() = 0;
   virtual ~ScriptableHandleBase() {
     valid_handles->erase(this);
@@ -92,7 +92,7 @@ class ScriptableHandleBase: public NPObject {
   }
 
  private:
-   static std::set<const ScriptableHandleBase*>* valid_handles;
+  static std::set<const ScriptableHandleBase*>* valid_handles;
 };
 
 // ScriptableHandle is the struct used to represent handles that are opaque to
@@ -130,7 +130,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     }
     return scriptable_handle;
   }
-   // Get the contained objects.
+  // Get the contained objects.
   virtual PortableHandle* get_handle() {
     return static_cast<PortableHandle*>(handle_);
   }
@@ -162,7 +162,9 @@ class ScriptableHandle: public ScriptableHandleBase {
 
       dprintf(("ScriptableHandle::Invoke(%p, %s, %d)\n",
                static_cast<void*>(obj),
-               PortablePluginInterface::IdentToString((int)name), arg_count));
+               PortablePluginInterface::IdentToString(
+                   reinterpret_cast<int>(name)),
+               arg_count));
 
       return unknown_handle->GenericInvoke(name,
                                            METHOD_CALL,
@@ -177,11 +179,13 @@ class ScriptableHandle: public ScriptableHandleBase {
       static_cast<ScriptableHandle<HandleType>*>(obj);
     dprintf(("ScriptableHandle::HasProperty(%p, %s)\n",
              static_cast<void*>(obj),
-             PortablePluginInterface::IdentToString((int)name)));
+             PortablePluginInterface::IdentToString(
+                 reinterpret_cast<int>(name))));
 
     // If the property is supported,
     // the interface should include both set and get methods.
-    return unknown_handle->handle_->HasMethod((int)name, PROPERTY_GET);
+    return unknown_handle->handle_->HasMethod(reinterpret_cast<int>(name),
+                                              PROPERTY_GET);
   }
 
   static bool GetProperty(NPObject* obj,
@@ -192,7 +196,8 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     dprintf(("ScriptableHandle::GetProperty(%p, %s)\n",
              static_cast<void*>(obj),
-             PortablePluginInterface::IdentToString((int)name)));
+             PortablePluginInterface::IdentToString(
+                 reinterpret_cast<int>(name))));
 
     return unknown_handle->GenericInvoke(name,
                                          PROPERTY_GET,
@@ -209,7 +214,8 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     dprintf(("ScriptableHandle::SetProperty(%p, %s, %p)\n",
              static_cast<void*>(obj),
-             PortablePluginInterface::IdentToString((int)name),
+             PortablePluginInterface::IdentToString(
+                 reinterpret_cast<int>(name)),
              static_cast<void*>(const_cast<NPVariant*>(variant))));
 
     return unknown_handle->GenericInvoke(name,
@@ -250,8 +256,8 @@ class ScriptableHandle: public ScriptableHandleBase {
     // so we shut down here what we can and prevent attempts to shut down
     // other linked structures in Deallocate.
 
-    //delete(unknown_handle->handle_);
-    //unknown_handle->handle_ = NULL;
+    // delete(unknown_handle->handle_);
+    // unknown_handle->handle_ = NULL;
   }
 
   static int number_alive() { return HandleType::number_alive(); }
@@ -265,8 +271,10 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     dprintf(("ScriptableHandle::HasMethod(%p, %s)\n",
              static_cast<void*>(obj),
-             PortablePluginInterface::IdentToString((int)name)));
-    return unknown_handle->handle_->HasMethod((int)name, METHOD_CALL);
+             PortablePluginInterface::IdentToString(
+                 reinterpret_cast<int>(name))));
+    return unknown_handle->handle_->HasMethod(reinterpret_cast<int>(name),
+                                              METHOD_CALL);
   }
 
   bool GenericInvoke(NPIdentifier name,
@@ -275,13 +283,15 @@ class ScriptableHandle: public ScriptableHandleBase {
                      uint32_t arg_count,
                      NPVariant* result) {
     SrpcParams params;
-    const char* str_name = PortablePluginInterface::IdentToString((int)name);
+    const char* str_name =
+        PortablePluginInterface::IdentToString(reinterpret_cast<int>(name));
     dprintf(("ScriptableHandle::GenericInvoke: calling %s\n", str_name));
 
     if (NULL != result) {
       NULL_TO_NPVARIANT(*result);
     }
-    if (!handle_->InitParams((int)name, call_type, &params)) {
+    if (!handle_->InitParams(reinterpret_cast<int>(name), call_type, &params)) {
+      dprintf(("ScriptableHandle::GenericInvoke: InitParams failed\n"));
       return false;
     }
 
@@ -316,7 +326,7 @@ class ScriptableHandle: public ScriptableHandleBase {
       }
     }
 
-    if (!handle_->Invoke((int)name, call_type, &params)) {
+    if (!handle_->Invoke(reinterpret_cast<int>(name), call_type, &params)) {
       // failure
       if (params.HasExceptionInfo()) {
         NPN_SetException(this, params.GetExceptionInfo());
@@ -359,7 +369,7 @@ class ScriptableHandle: public ScriptableHandleBase {
           }
           break;
         case NACL_SRPC_ARG_TYPE_HANDLE:
-          {
+          /* SCOPE */ {
             NPObject* obj;
             if (!NPVariantToScalar(&args[i], &obj)) {
               dprintf(("Handle was not an NPObject (or derived type)\n"));
@@ -368,7 +378,8 @@ class ScriptableHandle: public ScriptableHandleBase {
             // All our handles derive from ScriptableHandleBase
             ScriptableHandleBase* scriptable_base =
                 static_cast<ScriptableHandleBase*>(obj);
-            // This function is called only when we are dealing with a DescBasedHandle
+            // This function is called only when we are dealing with a
+            // DescBasedHandle
             DescBasedHandle* desc_handle =
                 static_cast<DescBasedHandle*>(scriptable_base->get_handle());
 
@@ -392,7 +403,7 @@ class ScriptableHandle: public ScriptableHandleBase {
           break;
 
         case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-          {
+          /* SCOPE */ {
             if (!NPVariantToArray(&args[i],
                                   plugin_interface_->GetPluginIdentifier(),
                                   &inputs[i]->u.caval.count,
@@ -403,7 +414,7 @@ class ScriptableHandle: public ScriptableHandleBase {
           break;
 
         case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-          {
+          /* SCOPE */ {
             if (!NPVariantToArray(&args[i],
                                   plugin_interface_->GetPluginIdentifier(),
                                   &inputs[i]->u.daval.count,
@@ -414,7 +425,7 @@ class ScriptableHandle: public ScriptableHandleBase {
           break;
 
         case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-          {
+          /* SCOPE */ {
             if (!NPVariantToArray(&args[i],
                                   plugin_interface_->GetPluginIdentifier(),
                                   &inputs[i]->u.iaval.count,
@@ -498,7 +509,7 @@ class ScriptableHandle: public ScriptableHandleBase {
 
     for (uint32_t i = 0; i < length; ++i) {
       if (length > 1) {
-        //allocate a new NPVariant that will then be added to retarray
+        // allocate a new NPVariant that will then be added to retarray
         // TODO(gregoryd) - use browser allocation (and release) api
         retvalue = new(std::nothrow) NPVariant;
         if (NULL == retvalue) {
@@ -510,7 +521,7 @@ class ScriptableHandle: public ScriptableHandleBase {
         ScalarToNPVariant(outs[i]->u.bval, retvalue);
         break;
       case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-        {
+        /* SCOPE */ {
           // TODO(gregoryd): implement and use ArrayToNPVariant equivalent
           uint32_t sublength = outs[i]->u.caval.count;
           RetArray subarray(plugin_interface_->GetPluginIdentifier());
@@ -527,7 +538,7 @@ class ScriptableHandle: public ScriptableHandleBase {
         ScalarToNPVariant(static_cast<double>(outs[i]->u.dval), retvalue);
         break;
       case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-        {
+        /* SCOPE */ {
           uint32_t sublength = outs[i]->u.daval.count;
           RetArray subarray(plugin_interface_->GetPluginIdentifier());
 
@@ -540,7 +551,7 @@ class ScriptableHandle: public ScriptableHandleBase {
         }
         break;
       case NACL_SRPC_ARG_TYPE_HANDLE:
-        {
+        /* SCOPE */ {
           struct NaClDesc* desc = outs[i]->u.hval;
           Plugin* plugin = handle_->GetPlugin();
 
@@ -564,7 +575,7 @@ class ScriptableHandle: public ScriptableHandleBase {
         }
         break;
       case NACL_SRPC_ARG_TYPE_OBJECT:
-        {
+        /* SCOPE */ {
           ScalarToNPVariant(
               reinterpret_cast<BrowserScriptableObject*>(outs[i]->u.oval),
               retvalue);
@@ -574,7 +585,7 @@ class ScriptableHandle: public ScriptableHandleBase {
         ScalarToNPVariant(outs[i]->u.ival, retvalue);
         break;
       case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-        {
+        /* SCOPE */ {
           uint32_t sublength = outs[i]->u.iaval.count;
           RetArray subarray(plugin_interface_->GetPluginIdentifier());
 
@@ -587,7 +598,7 @@ class ScriptableHandle: public ScriptableHandleBase {
         }
         break;
       case NACL_SRPC_ARG_TYPE_STRING:
-        {
+        /* SCOPE */ {
           size_t len = strlen(outs[i]->u.sval) + 1;
           char* tmpstr= reinterpret_cast<char*>(NPN_MemAlloc(len));
           strncpy(tmpstr, outs[i]->u.sval, len);

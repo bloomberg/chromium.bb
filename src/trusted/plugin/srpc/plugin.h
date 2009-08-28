@@ -109,6 +109,7 @@ class Plugin : public PortableHandle {
   static bool UrlAsNaClDesc(void* obj, SrpcParams* params);
   static bool ShmFactory(void* obj, SrpcParams* params);
   static bool DefaultSocketAddress(void *obj, SrpcParams *params);
+  static bool NullPluginMethod(void *obj, SrpcParams *params);
   static bool SocketAddressFactory(void* obj, SrpcParams* params);
 
   static bool GetHeightProperty(void* obj, SrpcParams* params);

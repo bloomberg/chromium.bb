@@ -73,6 +73,7 @@ void Plugin::LoadMethods() {
       "__socketAddressFactory", METHOD_CALL, "s", "h");
   AddMethodToMap(DefaultSocketAddress,
       "__defaultSocketAddress", METHOD_CALL, "", "h");
+  AddMethodToMap(NullPluginMethod, "__nullPluginMethod", METHOD_CALL, "s", "i");
   AddMethodToMap(GetHeightProperty, "height", PROPERTY_GET, "", "i");
   AddMethodToMap(SetHeightProperty, "height", PROPERTY_SET, "i", "");
   AddMethodToMap(GetWidthProperty, "width", PROPERTY_GET, "", "i");
@@ -153,6 +154,14 @@ bool Plugin::DefaultSocketAddress(void *obj, SrpcParams *params) {
   params->Output(0)->tag = NACL_SRPC_ARG_TYPE_OBJECT;
   params->Output(0)->u.oval =
       static_cast<BrowserScriptableObject*>(plugin->socket_address_);
+  return true;
+}
+
+// A method to test the cost of invoking a method in a plugin without
+// making an RPC to the service runtime.  Used for performance evaluation.
+bool Plugin::NullPluginMethod(void *obj, SrpcParams *params) {
+  params->Output(0)->tag = NACL_SRPC_ARG_TYPE_INT;
+  params->Output(0)->u.ival = 0;
   return true;
 }
 
@@ -351,8 +360,8 @@ bool Plugin::Init(struct PortableHandleInitializer* init_info) {
 }
 
 
-Plugin::Plugin() :
-    effp_(NULL),
+Plugin::Plugin()
+  : effp_(NULL),
     socket_address_(NULL),
     socket_(NULL),
     service_runtime_interface_(NULL),

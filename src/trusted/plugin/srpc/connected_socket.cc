@@ -59,6 +59,7 @@ bool ConnectedSocket::InvokeEx(int method_id,
                                SrpcParams *params) {
   // All ConnectedSocket does for dynamic calls
   // is forward it to the SrpcClient object
+  dprintf(("ConnectedSocket::InvokeEx()\n"));
   if (srpc_client_)
     return srpc_client_->Invoke(method_id, params);
   return PortableHandle::InvokeEx(method_id, call_type, params);
@@ -94,13 +95,13 @@ NaClSrpcArg* ConnectedSocket::GetSignatureObject() {
 
 
 bool ConnectedSocket::SignaturesGetProperty(void *obj, SrpcParams *params) {
-  //TODO(gregoryd): is this still required?
+  // TODO(gregoryd): is this still required?
   return true;
 }
 
 void ConnectedSocket::LoadMethods() {
   // ConnectedSocket exports the signature property
-  // TODO - keep the following comment for documentation
+  // TODO(sehr) - keep the following comment for documentation
   // - see previous version of this file
   // Safari apparently wants us to return false here.  This means programmers
   // will have to use a JavaScript function object to wrap NativeClient
@@ -109,7 +110,6 @@ void ConnectedSocket::LoadMethods() {
   PortableHandle::AddMethodToMap(SignaturesGetProperty,
                                  "__signatures",
                                  PROPERTY_GET, "", "");
-
 }
 
 
@@ -165,8 +165,8 @@ bool ConnectedSocket::Init(
   return true;
 }
 
-ConnectedSocket::ConnectedSocket() :
-    signatures_(NULL),
+ConnectedSocket::ConnectedSocket()
+  : signatures_(NULL),
     service_runtime_info_(NULL),
     srpc_client_(NULL) {
   dprintf(("ConnectedSocket::ConnectedSocket(%p, %d)\n",

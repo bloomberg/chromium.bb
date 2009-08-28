@@ -47,8 +47,8 @@ namespace nacl_srpc {
 
 int SrpcClient::number_alive_counter = 0;
 
-SrpcClient::SrpcClient() :
-    portable_plugin_(NULL) {
+SrpcClient::SrpcClient()
+    : portable_plugin_(NULL) {
   dprintf(("SrpcClient::SrpcClient(%p, %d)\n",
            static_cast<void *>(this), ++number_alive_counter));
 }
@@ -106,7 +106,6 @@ void SrpcClient::GetMethods() {
     }
     // Install in the map only if successfully read.
     methods_[ident] = method_info;
-
   }
 }
 
@@ -134,9 +133,6 @@ bool SrpcClient::HasMethod(int method_id) {
   dprintf(("SrpcClient::HasMethod(%p, %s)\n",
            static_cast<void *>(this),
            PortablePluginInterface::IdentToString(method_id)));
-  if (PortablePluginInterface::kNullNpapiMethodIdent == method_id) {
-    return true;
-  }
   return NULL != methods_[method_id];
 }
 
@@ -160,14 +156,6 @@ bool SrpcClient::Invoke(int method_id,
            static_cast<void *>(this),
            PortablePluginInterface::IdentToString(method_id),
            static_cast<void *>(params)));
-
-  // Support to measure the cost of invoking an NPAPI method.
-  if (PortablePluginInterface::kNullNpapiMethodIdent == method_id) {
-    dprintf(("SrpcClient::Invoke: null method\n"));
-    params->Output(0)->tag = NACL_SRPC_ARG_TYPE_INT;
-    params->Output(0)->u.ival = 0;
-    return true;
-  }
 
   // Ensure Invoke was called with an identifier that had a binding.
   if (NULL == methods_[method_id]) {
