@@ -46,7 +46,12 @@
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview_delegate.h"
 
+#if defined(OS_WIN)
+#include "base/platform_file.h"
+#endif
+
 #if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif
 
@@ -385,6 +390,15 @@ struct ViewMsg_PrintPages_Params {
 
   // If empty, this means a request to render all the printed pages.
   std::vector<int> pages;
+};
+
+struct ViewMsg_DatabaseOpenFileResponse_Params {
+#if defined(OS_WIN)
+  base::PlatformFile file_handle;     // DB file handle
+#elif defined(OS_POSIX)
+  base::FileDescriptor file_handle;   // DB file handle
+  base::FileDescriptor dir_handle;    // DB directory handle
+#endif
 };
 
 // Parameters to describe a rendered page.
@@ -1849,6 +1863,33 @@ struct ParamTraits<ViewMsg_AudioStreamState> {
       break;
     }
     LogParam(state, l);
+  }
+};
+
+template <>
+struct ParamTraits<ViewMsg_DatabaseOpenFileResponse_Params> {
+  typedef ViewMsg_DatabaseOpenFileResponse_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.file_handle);
+#if defined(OS_POSIX)
+    WriteParam(m, p.dir_handle);
+#endif
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->file_handle)
+#if defined(OS_POSIX)
+        && ReadParam(m, iter, &p->dir_handle)
+#endif
+      ;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.file_handle, l);
+#if defined(OS_POSIX)
+    l->append(L", ");
+    LogParam(p.dir_handle, l);
+#endif
+    l->append(L")");
   }
 };
 

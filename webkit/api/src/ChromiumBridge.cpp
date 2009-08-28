@@ -222,14 +222,14 @@ String ChromiumBridge::getFontFamilyForCharacters(const UChar* characters, size_
 // HTML5 DB -------------------------------------------------------------------
 
 #if ENABLE(DATABASE)
-PlatformFileHandle ChromiumBridge::databaseOpenFile(const String& fileName, int desiredFlags)
+PlatformFileHandle ChromiumBridge::databaseOpenFile(const String& fileName, int desiredFlags, PlatformFileHandle* dirHandle)
 {
-    return webKitClient()->databaseOpenFile(WebString(fileName), desiredFlags);
+  return webKitClient()->databaseOpenFile(WebString(fileName), desiredFlags, dirHandle);
 }
 
-bool ChromiumBridge::databaseDeleteFile(const String& fileName)
+int ChromiumBridge::databaseDeleteFile(const String& fileName, bool syncDir)
 {
-    return webKitClient()->databaseDeleteFile(WebString(fileName));
+    return webKitClient()->databaseDeleteFile(WebString(fileName), syncDir);
 }
 
 long ChromiumBridge::databaseGetFileAttributes(const String& fileName)

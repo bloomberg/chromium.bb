@@ -75,9 +75,9 @@ bool DBMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DBMessageFilter, message)
     IPC_MESSAGE_HANDLER(ViewMsg_DatabaseOpenFileResponse,
-                        OnResponse<base::PlatformFile>)
+                        OnResponse<ViewMsg_DatabaseOpenFileResponse_Params>)
     IPC_MESSAGE_HANDLER(ViewMsg_DatabaseDeleteFileResponse,
-                        OnResponse<bool>)
+                        OnResponse<int>)
     IPC_MESSAGE_HANDLER(ViewMsg_DatabaseGetFileAttributesResponse,
                         OnResponse<uint32>)
     IPC_MESSAGE_HANDLER(ViewMsg_DatabaseGetFileSizeResponse,

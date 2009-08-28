@@ -41,8 +41,10 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual void suddenTerminationChanged(bool enabled) { }
 
   virtual base::PlatformFile databaseOpenFile(
-      const WebKit::WebString& file_name, int desired_flags);
-  virtual bool databaseDeleteFile(const WebKit::WebString& file_name);
+      const WebKit::WebString& file_name, int desired_flags,
+      base::PlatformFile* dir_handle);
+  virtual int databaseDeleteFile(const WebKit::WebString& file_name,
+      bool sync_dir);
   virtual long databaseGetFileAttributes(const WebKit::WebString& file_name);
   virtual long long databaseGetFileSize(const WebKit::WebString& file_name);
 

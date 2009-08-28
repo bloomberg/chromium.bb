@@ -4,6 +4,12 @@
 
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 
+#if defined(USE_SYSTEM_SQLITE)
+#include <sqlite3.h>
+#else
+#include "third_party/sqlite/preprocessed/sqlite3.h"
+#endif
+
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
@@ -25,6 +31,10 @@
 
 #if defined(OS_LINUX)
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
+#endif
+
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
 #endif
 
 using WebKit::WebApplicationCacheHost;
@@ -226,24 +236,48 @@ WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
 //------------------------------------------------------------------------------
 
 base::PlatformFile RendererWebKitClientImpl::databaseOpenFile(
-  const WebString& file_name, int desired_flags) {
+  const WebString& file_name, int desired_flags,
+  base::PlatformFile* dir_handle) {
   DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
   int message_id = db_message_filter->GetUniqueID();
-  return db_message_filter->SendAndWait(
-    new ViewHostMsg_DatabaseOpenFile(
-      FilePath(webkit_glue::WebStringToFilePathString(file_name)),
-      desired_flags, message_id),
-    message_id, base::kInvalidPlatformFileValue);
+
+  ViewMsg_DatabaseOpenFileResponse_Params default_response =
+#if defined(OS_WIN)
+    { base::kInvalidPlatformFileValue };
+#elif defined(OS_POSIX)
+    { base::FileDescriptor(base::kInvalidPlatformFileValue, true),
+      base::FileDescriptor(base::kInvalidPlatformFileValue, true) };
+#endif
+
+  ViewMsg_DatabaseOpenFileResponse_Params result =
+    db_message_filter->SendAndWait(
+      new ViewHostMsg_DatabaseOpenFile(
+        FilePath(webkit_glue::WebStringToFilePathString(file_name)),
+        desired_flags, message_id),
+      message_id, default_response);
+
+#if defined(OS_WIN)
+  if (dir_handle) {
+    *dir_handle = base::kInvalidPlatformFileValue;
+  }
+  return result.file_handle;
+#elif defined(OS_POSIX)
+  if (dir_handle) {
+    *dir_handle = result.dir_handle.fd;
+  }
+  return result.file_handle.fd;
+#endif
 }
 
-bool RendererWebKitClientImpl::databaseDeleteFile(const WebString& file_name) {
+int RendererWebKitClientImpl::databaseDeleteFile(
+  const WebString& file_name, bool sync_dir) {
   DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
   int message_id = db_message_filter->GetUniqueID();
   return db_message_filter->SendAndWait(
     new ViewHostMsg_DatabaseDeleteFile(
-      FilePath(webkit_glue::WebStringToFilePathString(file_name)),
+      FilePath(webkit_glue::WebStringToFilePathString(file_name)), sync_dir,
       message_id),
-    message_id, false);
+    message_id, SQLITE_IOERR_DELETE);
 }
 
 long RendererWebKitClientImpl::databaseGetFileAttributes(

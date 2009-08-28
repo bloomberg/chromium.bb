@@ -2081,6 +2081,13 @@ static int unixDeviceCharacteristics(sqlite3_file *id){
 }
 
 /*
+** Initializes a unixFile structure with zeros.
+*/
+void initUnixFile(sqlite3_file* file) {
+  memset(file, 0, sizeof(unixFile));
+}
+
+/*
 ** Initialize the contents of the unixFile structure pointed to by pId.
 **
 ** When locking extensions are enabled, the filepath and locking style 
@@ -2088,7 +2095,7 @@ static int unixDeviceCharacteristics(sqlite3_file *id){
 ** The locking-style specific lockingContext data structure is created 
 ** and assigned here also.
 */
-static int fillInUnixFile(
+int fillInUnixFile(
   sqlite3_vfs *pVfs,      /* Pointer to vfs object */
   int h,                  /* Open file descriptor of file being opened */
   int dirfd,              /* Directory file descriptor */

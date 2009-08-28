@@ -238,13 +238,16 @@ void WebKitClientImpl::callOnMainThread(void (*func)()) {
 }
 
 base::PlatformFile WebKitClientImpl::databaseOpenFile(
-    const WebKit::WebString& file_name, int desired_flags) {
+    const WebKit::WebString& file_name, int desired_flags,
+    base::PlatformFile* dir_handle) {
+  if (dir_handle)
+    *dir_handle = base::kInvalidPlatformFileValue;
   return base::kInvalidPlatformFileValue;
 }
 
-bool WebKitClientImpl::databaseDeleteFile(
-    const WebKit::WebString& file_name) {
-  return false;
+int WebKitClientImpl::databaseDeleteFile(
+    const WebKit::WebString& file_name, bool sync_dir) {
+  return -1;
 }
 
 long WebKitClientImpl::databaseGetFileAttributes(

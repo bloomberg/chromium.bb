@@ -122,11 +122,12 @@ namespace WebKit {
         typedef int FileType;
 #endif
 
-        // Opens a database file
-        virtual FileType databaseOpenFile(const WebString& fileName, int desiredFlags) = 0;
+        // Opens a database file; dirHandle should be NULL if the caller does not need
+        // a handle to the directory containing this file
+        virtual FileType databaseOpenFile(const WebString& fileName, int desiredFlags, FileType* dirHandle) = 0;
 
         // Deletes a database file and returns the error code
-        virtual bool databaseDeleteFile(const WebString& fileName) = 0;
+        virtual int databaseDeleteFile(const WebString& fileName, bool syncDir) = 0;
 
         // Returns the attributes of the given database file
         virtual long databaseGetFileAttributes(const WebString& fileName) = 0;

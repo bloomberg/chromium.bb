@@ -31,6 +31,10 @@
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin.h"
 
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
+#endif
+
 // TODO(mpcomplete): rename ViewMsg and ViewHostMsg to something that makes
 // more sense with our current design.
 
@@ -660,12 +664,12 @@ IPC_BEGIN_MESSAGES(View)
   // Returns a file handle
   IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseOpenFileResponse,
                        int32 /* the ID of the message we're replying to */,
-                       base::PlatformFile /* the HANDLE/fd of the DB file */)
+                       ViewMsg_DatabaseOpenFileResponse_Params)
 
-  // Returns the error code returned by a call to DeleteFile()
+  // Returns a SQLite error code
   IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseDeleteFileResponse,
                        int32 /* the ID of the message we're replying to */,
-                       bool /* whether or not the DB file was deleted */)
+                       int /* SQLite error code */)
 
   // Returns the attributes of a file
   IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseGetFileAttributesResponse,
@@ -1679,8 +1683,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int32 /* a unique message ID */)
 
   // Asks the browser process to delete a DB file
-  IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseDeleteFile,
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_DatabaseDeleteFile,
                        FilePath /* the name of the file */,
+                       bool /* whether or not to sync the directory */,
                        int32 /* a unique message ID */)
 
   // Asks the browser process to return the attributes of a DB file

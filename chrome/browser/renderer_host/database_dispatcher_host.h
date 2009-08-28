@@ -28,7 +28,7 @@ class DatabaseDispatcherHost {
   void OnDatabaseOpenFile(const FilePath& file_name,
     int desired_flags, int32 message_id);
   // Processes the request to delete the given DB file.
-  void OnDatabaseDeleteFile(const FilePath& file_name,
+  void OnDatabaseDeleteFile(const FilePath& file_name, const bool& sync_dir,
     int32 message_id);
   // Processes the request to return the attributes of the given DB file.
   void OnDatabaseGetFileAttributes(const FilePath& file_name,
