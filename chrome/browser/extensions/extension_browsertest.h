@@ -22,11 +22,22 @@ class ExtensionBrowserTest
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line);
   bool LoadExtension(const FilePath& path);
+
   // |expected_change| indicates how many extensions should be installed (or
   // disabled, if negative).
   // 1 means you expect a new install, 0 means you expect an upgrade, -1 means
   // you expect a failed upgrade.
-  bool InstallExtension(const FilePath& path, int expected_change);
+  bool InstallExtension(const FilePath& path, int expected_change) {
+    return InstallOrUpdateExtension("", path, expected_change);
+  }
+
+  // Same as above but calls ExtensionsService::UpdateExtension instead of
+  // InstallExtension().
+  bool UpdateExtension(const std::string& id, const FilePath& path,
+                       int expected_change) {
+    return InstallOrUpdateExtension(id, path, expected_change);
+  }
+
   void UninstallExtension(const std::string& extension_id);
 
   // Wait for the number of visible page actions to change to |count|.
@@ -42,6 +53,9 @@ class ExtensionBrowserTest
   FilePath test_data_dir_;
 
  private:
+  bool InstallOrUpdateExtension(const std::string& id, const FilePath& path,
+                                int expected_change);
+
   bool WaitForExtensionHostsToLoad();
 };
 

@@ -582,25 +582,25 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
   EXPECT_TRUE(extension->HasAccessToAllHosts());
 }
 
-TEST(ExtensionTest, AllowSilentUpgrade) {
+TEST(ExtensionTest, IsPrivilegeIncrease) {
   const struct {
     const char* base_name;
     bool expect_success;
   } kTests[] = {
-    { "allhosts1", true },  // all -> all
-    { "allhosts2", true },  // all -> one
-    { "allhosts3", false },  // one -> all
-    { "hosts1", true },  // http://a,http://b -> http://a,http://b
-    { "hosts2", true },  // http://a,http://b -> https://a,http://*.b
-    { "hosts3", true },  // http://a,http://b -> http://a
-    { "hosts4", false },  // http://a -> http://a,http://b
-    { "permissions1", true},  // tabs -> tabs
-    { "permissions2", true},  // tabs -> tabs,bookmarks
-    { "permissions3", false},  // http://a -> http://a,tabs
-    { "permissions4", true},  // plugin -> plugin,tabs
-    { "plugin1", true},  // plugin -> plugin
-    { "plugin2", true},  // plugin -> none
-    { "plugin3", false}  // none -> plugin
+    { "allhosts1", false },  // all -> all
+    { "allhosts2", false },  // all -> one
+    { "allhosts3", true },  // one -> all
+    { "hosts1", false },  // http://a,http://b -> http://a,http://b
+    { "hosts2", false },  // http://a,http://b -> https://a,http://*.b
+    { "hosts3", false },  // http://a,http://b -> http://a
+    { "hosts4", true },  // http://a -> http://a,http://b
+    { "permissions1", false },  // tabs -> tabs
+    { "permissions2", false },  // tabs -> tabs,bookmarks
+    { "permissions3", true },  // http://a -> http://a,tabs
+    { "permissions4", false },  // plugin -> plugin,tabs
+    { "plugin1", false },  // plugin -> plugin
+    { "plugin2", false },  // plugin -> none
+    { "plugin3", true }  // none -> plugin
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
@@ -612,8 +612,8 @@ TEST(ExtensionTest, AllowSilentUpgrade) {
                      std::string(kTests[i].base_name) + "_new.json"));
 
     EXPECT_EQ(kTests[i].expect_success,
-              Extension::AllowSilentUpgrade(old_extension.get(),
-                                            new_extension.get()))
+              Extension::IsPrivilegeIncrease(old_extension.get(),
+                                             new_extension.get()))
         << kTests[i].base_name;
   }
 }

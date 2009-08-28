@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UninstallDisabled) {
   // Install and upgrade, so that we have a disabled extension.
   ASSERT_TRUE(InstallExtension(
       test_data_dir_.AppendASCII("permissions-low-v1.crx"), 1));
-  ASSERT_TRUE(InstallExtension(
+  ASSERT_TRUE(UpdateExtension("pgdpcfcocojkjfbgpiianjngphoopgmo",
       test_data_dir_.AppendASCII("permissions-high-v2.crx"), -1));
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();

@@ -531,21 +531,22 @@ bool Extension::FormatPEMForFileOutput(const std::string input,
 // extensions that require less permissions than the current version, but then
 // we don't silently allow them to go back. In order to fix this, we would need
 // to remember the max set of permissions we ever granted a single extension.
-bool Extension::AllowSilentUpgrade(Extension* old_extension,
-                                   Extension* new_extension) {
+bool Extension::IsPrivilegeIncrease(Extension* old_extension,
+                                    Extension* new_extension) {
   // If the old extension had native code access, we don't need to go any
   // further. Things can't get any worse.
   if (old_extension->plugins().size() > 0)
-    return true;
-
-  // Otherwise, if the new extension has a plugin, no silent upgrade.
-  if (new_extension->plugins().size() > 0)
     return false;
 
-  // If we are increasing the set of hosts we have access to, no silent upgrade.
+  // Otherwise, if the new extension has a plugin, it's a privilege increase.
+  if (new_extension->plugins().size() > 0)
+    return true;
+
+  // If we are increasing the set of hosts we have access to, it's a privilege
+  // increase.
   if (!old_extension->HasAccessToAllHosts()) {
     if (new_extension->HasAccessToAllHosts())
-      return false;
+      return true;
 
     std::set<std::string> old_hosts =
         old_extension->GetEffectiveHostPermissions();
@@ -558,17 +559,17 @@ bool Extension::AllowSilentUpgrade(Extension* old_extension,
                         std::insert_iterator<std::set<std::string> >(
                             difference, difference.end()));
     if (difference.size() > 0)
-      return false;
+      return true;
   }
 
-  // If we're going from not having api permissions to having them, no silent
-  // upgrade.
+  // If we're going from not having api permissions to having them, it's a
+  // privilege increase.
   if (old_extension->api_permissions().size() == 0 &&
       new_extension->api_permissions().size() > 0)
-    return false;
+    return true;
 
-  // Nothing much has changed. Allow the silent upgrade.
-  return true;
+  // Nothing much has changed.
+  return false;
 }
 
 bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,

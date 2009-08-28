@@ -59,6 +59,7 @@ class CrxInstaller :
                     Extension::Location install_source,
                     const std::string& expected_id,
                     bool delete_crx,
+                    bool allow_privilege_increase,
                     MessageLoop* file_loop,
                     ExtensionsService* frontend,
                     ExtensionInstallUI* client);
@@ -78,6 +79,7 @@ class CrxInstaller :
                Extension::Location install_source,
                const std::string& expected_id,
                bool delete_crx,
+               bool allow_privilege_increase,
                MessageLoop* file_loop,
                ExtensionsService* frontend,
                ExtensionInstallUI* client);
@@ -127,6 +129,10 @@ class CrxInstaller :
 
   // Whether we're supposed to delete the source crx file on destruction.
   bool delete_crx_;
+
+  // Whether privileges should be allowed to silently increaes from any
+  // previously installed version of the extension.
+  bool allow_privilege_increase_;
 
   // The message loop to use for file IO.
   MessageLoop* file_loop_;

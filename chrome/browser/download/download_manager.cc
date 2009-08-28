@@ -1255,6 +1255,7 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
                         Extension::INTERNAL,
                         "",  // no expected id
                         true,  // please delete crx on completion
+                        true,  // privilege increase allowed
                         g_browser_process->file_thread()->message_loop(),
                         service,
                         new ExtensionInstallUI(profile_));

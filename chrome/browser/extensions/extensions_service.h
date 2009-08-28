@@ -170,10 +170,12 @@ class ExtensionsService
   void OnLoadedInstalledExtensions();
 
   // Called by the backend when an extension has been loaded.
-  void OnExtensionLoaded(Extension* extension);
+  void OnExtensionLoaded(Extension* extension,
+                         bool allow_privilege_increase);
 
   // Called by the backend when an extension has been installed.
-  void OnExtensionInstalled(Extension* extension);
+  void OnExtensionInstalled(Extension* extension,
+                            bool allow_privilege_increase);
 
   // Called by the backend when an attempt was made to reinstall the same
   // version of an existing extension.

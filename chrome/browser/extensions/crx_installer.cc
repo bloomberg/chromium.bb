@@ -29,13 +29,15 @@ void CrxInstaller::Start(const FilePath& crx_path,
                          Extension::Location install_source,
                          const std::string& expected_id,
                          bool delete_crx,
+                         bool allow_privilege_increase,
                          MessageLoop* file_loop,
                          ExtensionsService* frontend,
                          ExtensionInstallUI* client) {
   // Note: We don't keep a reference because this object manages its own
   // lifetime.
   new CrxInstaller(crx_path, install_directory, install_source, expected_id,
-                   delete_crx, file_loop, frontend, client);
+                   delete_crx, allow_privilege_increase, file_loop, frontend,
+                   client);
 }
 
 CrxInstaller::CrxInstaller(const FilePath& crx_path,
@@ -43,6 +45,7 @@ CrxInstaller::CrxInstaller(const FilePath& crx_path,
                            Extension::Location install_source,
                            const std::string& expected_id,
                            bool delete_crx,
+                           bool allow_privilege_increase,
                            MessageLoop* file_loop,
                            ExtensionsService* frontend,
                            ExtensionInstallUI* client)
@@ -51,6 +54,7 @@ CrxInstaller::CrxInstaller(const FilePath& crx_path,
       install_source_(install_source),
       expected_id_(expected_id),
       delete_crx_(delete_crx),
+      allow_privilege_increase_(allow_privilege_increase),
       file_loop_(file_loop),
       ui_loop_(MessageLoop::current()),
       frontend_(frontend),
@@ -289,7 +293,8 @@ void CrxInstaller::ReportSuccessFromUIThread() {
 
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
-  frontend_->OnExtensionInstalled(extension_.release());
+  frontend_->OnExtensionInstalled(extension_.release(),
+                                  allow_privilege_increase_);
 
   // We're done. We don't post any more tasks to ourselves so we are deleted
   // soon.

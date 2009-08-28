@@ -146,6 +146,7 @@ void ExtensionsService::InstallExtension(const FilePath& extension_path) {
   CrxInstaller::Start(extension_path, install_directory_, Extension::INTERNAL,
                       "",   // no expected id
                       false,  // don't delete crx when complete
+                      true,  // allow privilege increase
                       backend_loop_,
                       this,
                       NULL);  // no client (silent install)
@@ -162,6 +163,7 @@ void ExtensionsService::UpdateExtension(const std::string& id,
   CrxInstaller::Start(extension_path, install_directory_, Extension::INTERNAL,
                       id,
                       true,  // delete crx when complete
+                      false,  // do not allow upgrade of privileges
                       backend_loop_,
                       this,
                       NULL);  // no client (silent install)
@@ -256,7 +258,7 @@ void ExtensionsService::LoadInstalledExtension(
   }
 
   extension->set_location(location);
-  OnExtensionLoaded(extension);
+  OnExtensionLoaded(extension, true);
 
   if (location == Extension::EXTERNAL_PREF ||
       location == Extension::EXTERNAL_REGISTRY) {
@@ -370,7 +372,8 @@ void ExtensionsService::OnLoadedInstalledExtensions() {
       NotificationService::NoDetails());
 }
 
-void ExtensionsService::OnExtensionLoaded(Extension* extension) {
+void ExtensionsService::OnExtensionLoaded(Extension* extension,
+                                          bool allow_privilege_increase) {
   // Ensure extension is deleted unless we transfer ownership.
   scoped_ptr<Extension> scoped_extension(extension);
 
@@ -381,8 +384,9 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension) {
     Extension* old = GetExtensionByIdInternal(extension->id(), true, true);
     if (old) {
       if (extension->version()->CompareTo(*(old->version())) > 0) {
-        bool allow_silent_upgrade = Extension::AllowSilentUpgrade(
-            old, extension);
+        bool allow_silent_upgrade =
+            allow_privilege_increase || !Extension::IsPrivilegeIncrease(
+                old, extension);
 
         // To upgrade an extension in place, unload the old one and
         // then load the new one.
@@ -433,7 +437,8 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension) {
   }
 }
 
-void ExtensionsService::OnExtensionInstalled(Extension* extension) {
+void ExtensionsService::OnExtensionInstalled(Extension* extension,
+                                             bool allow_privilege_increase) {
   extension_prefs_->OnExtensionInstalled(extension);
 
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
@@ -451,7 +456,7 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension) {
   }
 
   // Also load the extension.
-  OnExtensionLoaded(extension);
+  OnExtensionLoaded(extension, allow_privilege_increase);
 }
 
 void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
@@ -528,6 +533,7 @@ void ExtensionsService::OnExternalExtensionFound(const std::string& id,
 
   CrxInstaller::Start(path, install_directory_, location, id,
                       false,  // don't delete crx when complete
+                      true,  // allow privilege increase
                       backend_loop_,
                       this,
                       NULL);  // no client (silent install)
@@ -592,7 +598,7 @@ void ExtensionsServiceBackend::ReportExtensionLoadError(
 
 void ExtensionsServiceBackend::ReportExtensionLoaded(Extension* extension) {
   frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      frontend_, &ExtensionsService::OnExtensionLoaded, extension));
+      frontend_, &ExtensionsService::OnExtensionLoaded, extension, true));
 }
 
 bool ExtensionsServiceBackend::LookupExternalExtension(

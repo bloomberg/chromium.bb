@@ -168,10 +168,10 @@ class Extension {
   static bool FormatPEMForFileOutput(const std::string input,
       std::string* output, bool is_public);
 
-  // Determine whether we should allow a silent upgrade from |old_extension| to
-  // |new_extension|. If not, the user will have to approve the upgrade.
-  static bool AllowSilentUpgrade(Extension* old_extension,
-                                 Extension* new_extension);
+  // Determine whether |new_extension| has increased privileges compared to
+  // |old_extension|.
+  static bool IsPrivilegeIncrease(Extension* old_extension,
+                                  Extension* new_extension);
 
   // Initialize the extension from a parsed manifest.
   // If |require_id| is true, will return an error if the "id" key is missing

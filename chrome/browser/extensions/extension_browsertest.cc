@@ -64,8 +64,8 @@ bool ExtensionBrowserTest::LoadExtension(const FilePath& path) {
   return WaitForExtensionHostsToLoad();
 }
 
-bool ExtensionBrowserTest::InstallExtension(const FilePath& path,
-                                            int expected_change) {
+bool ExtensionBrowserTest::InstallOrUpdateExtension(
+    const std::string& id, const FilePath& path, int expected_change) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->set_show_extensions_prompts(false);
   size_t num_before = service->extensions()->size();
@@ -76,7 +76,19 @@ bool ExtensionBrowserTest::InstallExtension(const FilePath& path,
                   NotificationService::AllSources());
     registrar.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
                   NotificationService::AllSources());
-    service->InstallExtension(path);
+
+    if (!id.empty()) {
+      // We need to copy this to a temporary location because Update() will
+      // delete it.
+      FilePath temp_dir;
+      PathService::Get(base::DIR_TEMP, &temp_dir);
+      FilePath copy = temp_dir.Append(path.BaseName());
+      file_util::CopyFile(path, copy);
+      service->UpdateExtension(id, copy);
+    } else {
+      service->InstallExtension(path);
+    }
+
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
     ui_test_utils::RunMessageLoop();
