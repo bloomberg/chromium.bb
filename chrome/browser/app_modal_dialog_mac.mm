@@ -6,9 +6,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "app/message_box_flags.h"
 #include "base/sys_string_conversions.h"
+#include "grit/app_strings.h"
 #include "grit/generated_resources.h"
 
 // Helper object that receives the notification that the dialog/sheet is
@@ -78,9 +79,8 @@ void AppModalDialog::CreateAndShowDialog() {
   // Determine the names of the dialog buttons based on the flags. "Default"
   // is the OK button. "Other" is the cancel button. We don't use the
   // "Alternate" button in NSRunAlertPanel.
-  // TODO(pinkerton): Need to find the right localized strings for these.
-  NSString* default_button = NSLocalizedString(@"OK", nil);
-  NSString* other_button = NSLocalizedString(@"Cancel", nil);
+  NSString* default_button = l10n_util::GetNSStringWithFixup(IDS_APP_OK);
+  NSString* other_button = l10n_util::GetNSStringWithFixup(IDS_APP_CANCEL);
   bool text_field = false;
   bool one_button = false;
   switch (dialog_flags_) {
@@ -89,12 +89,10 @@ void AppModalDialog::CreateAndShowDialog() {
       break;
     case MessageBoxFlags::kIsJavascriptConfirm:
       if (is_before_unload_dialog_) {
-        std::string button_text = l10n_util::GetStringUTF8(
+        default_button = l10n_util::GetNSStringWithFixup(
             IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
-        default_button = base::SysUTF8ToNSString(button_text);
-        button_text = l10n_util::GetStringUTF8(
+        other_button = l10n_util::GetNSStringWithFixup(
             IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
-        other_button = base::SysUTF8ToNSString(button_text);
       }
       break;
     case MessageBoxFlags::kIsJavascriptPrompt:
