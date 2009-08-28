@@ -314,6 +314,22 @@ drm_intel_setup_reloc_list(drm_intel_bo *bo)
     return 0;
 }
 
+static int
+drm_intel_gem_bo_busy(drm_intel_bo *bo)
+{
+    drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
+    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+    struct drm_i915_gem_busy busy;
+    int ret;
+
+    memset(&busy, 0, sizeof(busy));
+    busy.handle = bo_gem->gem_handle;
+
+    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
+
+    return (ret == 0 && busy.busy);
+}
+
 static drm_intel_bo *
 drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
 				unsigned long size, unsigned int alignment,
@@ -344,8 +360,6 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
     pthread_mutex_lock(&bufmgr_gem->lock);
     /* Get a buffer out of the cache if available */
     if (bucket != NULL && bucket->num_entries > 0) {
-	struct drm_i915_gem_busy busy;
-
 	if (for_render) {
 	    /* Allocate new render-target BOs from the tail (MRU)
 	     * of the list, as it will likely be hot in the GPU cache
@@ -364,13 +378,8 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
 	     */
 	    bo_gem = DRMLISTENTRY(drm_intel_bo_gem, bucket->head.next, head);
 
-	    memset(&busy, 0, sizeof(busy));
-	    busy.handle = bo_gem->gem_handle;
-
-	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
-	    alloc_from_cache = (ret == 0 && busy.busy == 0);
-
-	    if (alloc_from_cache) {
+	    if (!drm_intel_gem_bo_busy(&bo_gem->bo)) {
+		alloc_from_cache = 1;
 		DRMLISTDEL(&bo_gem->head);
 		bucket->num_entries--;
 	    }
@@ -1491,6 +1500,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->bufmgr.bo_set_tiling = drm_intel_gem_bo_set_tiling;
     bufmgr_gem->bufmgr.bo_flink = drm_intel_gem_bo_flink;
     bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec;
+    bufmgr_gem->bufmgr.bo_busy = drm_intel_gem_bo_busy;
     bufmgr_gem->bufmgr.destroy = drm_intel_bufmgr_gem_destroy;
     bufmgr_gem->bufmgr.debug = 0;
     bufmgr_gem->bufmgr.check_aperture_space = drm_intel_gem_check_aperture_space;

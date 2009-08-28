@@ -220,6 +220,13 @@ int drm_intel_bo_disable_reuse(drm_intel_bo *bo)
 	return 0;
 }
 
+int drm_intel_bo_busy(drm_intel_bo *bo)
+{
+	if (bo->bufmgr->bo_busy)
+		return bo->bufmgr->bo_busy(bo);
+	return 0;
+}
+
 int
 drm_intel_get_pipe_from_crtc_id (drm_intel_bufmgr *bufmgr, int crtc_id)
 {

@@ -177,6 +177,12 @@ struct _drm_intel_bufmgr {
      */
     int (*bo_flink)(drm_intel_bo *bo, uint32_t *name);
 
+    /**
+     * Returns 1 if mapping the buffer for write could cause the process
+     * to block, due to the object being active in the GPU.
+     */
+    int (*bo_busy)(drm_intel_bo *bo);
+
     int (*check_aperture_space)(drm_intel_bo **bo_array, int count);
 
     /**
@@ -200,7 +206,7 @@ struct _drm_intel_bufmgr {
      * \param crtc_id the crtc identifier
      */
     int (*get_pipe_from_crtc_id)(drm_intel_bufmgr *bufmgr, int crtc_id);
-    
+
     int debug; /**< Enables verbose debugging printouts */
 };
 

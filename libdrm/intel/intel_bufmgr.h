@@ -107,6 +107,7 @@ int drm_intel_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
 int drm_intel_bo_get_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
 			uint32_t *swizzle_mode);
 int drm_intel_bo_flink(drm_intel_bo *bo, uint32_t *name);
+int drm_intel_bo_busy(drm_intel_bo *bo);
 
 int drm_intel_bo_disable_reuse(drm_intel_bo *bo);
 
