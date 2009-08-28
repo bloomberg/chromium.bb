@@ -159,4 +159,10 @@ rm -f ./*.nexe
 make clean nacl
 make release nacl
 Firefox http://localhost:5103/tests/photo/photo.html
+# Anti-Grain Geometry demo
+cd ../drawing
+make download nacl
+make clean nacl
+make release nacl run
+Firefox http://localhost:5103/tests/drawing/drawing.html
 

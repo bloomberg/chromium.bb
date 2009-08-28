@@ -46,6 +46,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 #include <xmmintrin.h>
 
@@ -596,7 +598,7 @@ Darkroom::~Darkroom() {
 
 // SRPC function OpenPhoto
 // invoked via Javascript, called from SRPC service thread.
-int OpenPhoto(NaClSrpcChannel *channel,
+NaClSrpcError OpenPhoto(NaClSrpcChannel *channel,
               NaClSrpcArg** in_args,
               NaClSrpcArg** out_args) {
   char* filename = in_args[0]->u.sval;
@@ -607,7 +609,7 @@ int OpenPhoto(NaClSrpcChannel *channel,
 
 // SRPC function UpdateSaturation
 // invoked via Javascript, called from SRPC service thread.
-int UpdateSaturation(NaClSrpcChannel *channel,
+NaClSrpcError UpdateSaturation(NaClSrpcChannel *channel,
                      NaClSrpcArg** in_args,
                      NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -619,7 +621,7 @@ int UpdateSaturation(NaClSrpcChannel *channel,
 
 // SRPC function UpdateContrast
 // invoked via Javascript, called from SRPC service thread.
-int UpdateContrast(NaClSrpcChannel *channel,
+NaClSrpcError UpdateContrast(NaClSrpcChannel *channel,
                    NaClSrpcArg** in_args,
                    NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -631,7 +633,7 @@ int UpdateContrast(NaClSrpcChannel *channel,
 
 // SRPC function UpdateBrightness
 // invoked via Javascript, called from SRPC service thread.
-int UpdateBrightness(NaClSrpcChannel *channel,
+NaClSrpcError UpdateBrightness(NaClSrpcChannel *channel,
                      NaClSrpcArg** in_args,
                      NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -643,7 +645,7 @@ int UpdateBrightness(NaClSrpcChannel *channel,
 
 // SRPC function UpdateTemperature
 // invoked via Javascript, called from SRPC service thread.
-int UpdateTemperature(NaClSrpcChannel *channel,
+NaClSrpcError UpdateTemperature(NaClSrpcChannel *channel,
                       NaClSrpcArg** in_args,
                       NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -655,7 +657,7 @@ int UpdateTemperature(NaClSrpcChannel *channel,
 
 // SRPC function UpdateBlackPoint
 // invoked via Javascript, called from SRPC service thread.
-int UpdateBlackPoint(NaClSrpcChannel *channel,
+NaClSrpcError UpdateBlackPoint(NaClSrpcChannel *channel,
                     NaClSrpcArg** in_args,
                     NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -667,7 +669,7 @@ int UpdateBlackPoint(NaClSrpcChannel *channel,
 
 // SRPC function UpdateFill
 // invoked via Javascript, called from SRPC service thread.
-int UpdateFill(NaClSrpcChannel *channel,
+NaClSrpcError UpdateFill(NaClSrpcChannel *channel,
                NaClSrpcArg** in_args,
                NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -679,7 +681,7 @@ int UpdateFill(NaClSrpcChannel *channel,
 
 // SRPC function UpdateShadowsHue
 // invoked via Javascript, called from SRPC service thread.
-int UpdateShadowsHue(NaClSrpcChannel *channel,
+NaClSrpcError UpdateShadowsHue(NaClSrpcChannel *channel,
                      NaClSrpcArg** in_args,
                      NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -691,7 +693,7 @@ int UpdateShadowsHue(NaClSrpcChannel *channel,
 
 // SRPC function UpdateShdowsSaturation
 // invoked via Javascript, called from SRPC service thread.
-int UpdateShadowsSaturation(NaClSrpcChannel *channel,
+NaClSrpcError UpdateShadowsSaturation(NaClSrpcChannel *channel,
                             NaClSrpcArg** in_args,
                             NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -703,7 +705,7 @@ int UpdateShadowsSaturation(NaClSrpcChannel *channel,
 
 // SRPC function UpdateHighlightsHue
 // invoked via Javascript, called from SRPC service thread.
-int UpdateHighlightsHue(NaClSrpcChannel *channel,
+NaClSrpcError UpdateHighlightsHue(NaClSrpcChannel *channel,
                         NaClSrpcArg** in_args,
                         NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -715,7 +717,7 @@ int UpdateHighlightsHue(NaClSrpcChannel *channel,
 
 // SRPC function UpdateHighlightsSaturation
 // invoked via Javascript, called from SRPC service thread.
-int UpdateHighlightsSaturation(NaClSrpcChannel *channel,
+NaClSrpcError UpdateHighlightsSaturation(NaClSrpcChannel *channel,
                                NaClSrpcArg** in_args,
                                NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -727,7 +729,7 @@ int UpdateHighlightsSaturation(NaClSrpcChannel *channel,
 
 // SRPC UpdateSplitPoint
 // invoked via Javascript, called from SRPC service thread.
-int UpdateSplitPoint(NaClSrpcChannel *channel,
+NaClSrpcError UpdateSplitPoint(NaClSrpcChannel *channel,
                      NaClSrpcArg** in_args,
                      NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -739,7 +741,7 @@ int UpdateSplitPoint(NaClSrpcChannel *channel,
 
 // SRPC UpdateAngle
 // invoked via Javascript, called from SRPC service thread.
-int UpdateAngle(NaClSrpcChannel *channel,
+NaClSrpcError UpdateAngle(NaClSrpcChannel *channel,
                      NaClSrpcArg** in_args,
                      NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;
@@ -751,7 +753,7 @@ int UpdateAngle(NaClSrpcChannel *channel,
 
 // SRPC UpdateFineAngle
 // invoked via Javascript, called from SRPC service thread.
-int UpdateFineAngle(NaClSrpcChannel *channel,
+NaClSrpcError UpdateFineAngle(NaClSrpcChannel *channel,
                      NaClSrpcArg** in_args,
                      NaClSrpcArg** out_args) {
   int slider = in_args[0]->u.ival;

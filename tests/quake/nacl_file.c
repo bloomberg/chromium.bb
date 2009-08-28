@@ -68,12 +68,12 @@ static int nacl_file_done = 0;
 static int nacl_file_embedded = -1;
 
 #define NACL_SRPC_HANDLER(signature, name) \
-  int name( \
+  NaClSrpcError name( \
       NaClSrpcChannel* channel, \
       NaClSrpcArg **in_args, \
       NaClSrpcArg **out_args); \
   NACL_SRPC_METHOD(signature, name); \
-  int name( \
+  NaClSrpcError name( \
       NaClSrpcChannel* channel, \
       NaClSrpcArg **in_args, \
       NaClSrpcArg **out_args)
