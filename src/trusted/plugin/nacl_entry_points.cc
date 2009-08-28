@@ -32,6 +32,30 @@
 #include "native_client/src/third_party/npapi/files/include/npapi.h"
 #include "native_client/src/third_party/npapi/files/include/npupp.h"
 
+// This code inside the ifdef is copied from
+// native_client/src/third_party_mod/npapi_plugin/np_entry.cc
+// This is required as some function declarations are missing for Mac OSX
+// in native_client/src/third_party/npapi/files/include/npupp.h that is included
+// above.
+#ifdef XP_MACOSX
+
+extern "C" {
+  // Safari under OS X requires the following three entry points to be exported.
+  NP_EXPORT(NPError) OSCALL NP_Initialize(NPNetscapeFuncs* pFuncs
+#ifdef XP_UNIX
+                                          , NPPluginFuncs* pluginFuncs
+#endif  // XP_UNIX
+    );
+  NP_EXPORT(NPError) OSCALL NP_GetEntryPoints(NPPluginFuncs* pFuncs);
+  NP_EXPORT(NPError) OSCALL NP_Shutdown(void);
+  // Firefox 2 requires main() to be defined.
+  NP_EXPORT(int) main(NPNetscapeFuncs* nsTable,
+                      NPPluginFuncs* pluginFuncs,
+                      NPP_ShutdownUPP* unloadUpp);
+}
+
+#endif  // XP_MACOSX
+
 NPError OSCALL NaCl_NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
 #if NACL_WINDOWS || NACL_OSX
   return NP_GetEntryPoints(pFuncs);
