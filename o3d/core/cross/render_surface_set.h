@@ -98,8 +98,8 @@ class RenderSurfaceSet : public RenderNode {
   friend class IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  RenderSurface* old_render_surface_;
-  RenderDepthStencilSurface* old_depth_stencil_surface_;
+  const RenderSurface* old_render_surface_;
+  const RenderDepthStencilSurface* old_depth_stencil_surface_;
 
   ParamRenderSurface::Ref render_surface_param_;
   ParamRenderDepthStencilSurface::Ref render_depth_stencil_surface_param_;

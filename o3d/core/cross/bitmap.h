@@ -44,7 +44,7 @@
 #include <vector>
 #include "base/cross/bits.h"
 #include "core/cross/types.h"
-#include "core/cross/texture.h"
+#include "core/cross/texture_base.h"
 #include "core/cross/image_utils.h"
 
 class FilePath;

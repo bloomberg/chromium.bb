@@ -78,6 +78,7 @@ class TestRenderSurface : public RenderSurface {
   explicit TestRenderSurface(ServiceLocator* service_locator)
       : RenderSurface(service_locator, 1, 1, NULL) {}
   void* GetSurfaceHandle() const { return NULL; }
+  Bitmap::Ref PlatformSpecificGetBitmap() const { return Bitmap::Ref(); }
 };
 
 // TestSampler derives from o3d::Sampler and provides a public

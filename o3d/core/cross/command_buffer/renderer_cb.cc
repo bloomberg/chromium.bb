@@ -177,13 +177,12 @@ bool RendererCB::PlatformSpecificBeginDraw() {
 }
 
 // Adds the CLEAR command to the command buffer.
-void RendererCB::Clear(const Float4 &color,
-                       bool color_flag,
-                       float depth,
-                       bool depth_flag,
-                       int stencil,
-                       bool stencil_flag) {
-  ApplyDirtyStates();
+void RendererCB::PlatformSpecificClear(const Float4 &color,
+                                       bool color_flag,
+                                       float depth,
+                                       bool depth_flag,
+                                       int stencil,
+                                       bool stencil_flag) {
   uint32 buffers = (color_flag ? GAPIInterface::COLOR : 0) |
       (depth_flag ? GAPIInterface::DEPTH : 0) |
       (stencil_flag ? GAPIInterface::STENCIL : 0);
@@ -212,30 +211,21 @@ bool RendererCB::PlatformSpecificStartRendering() {
 // Adds the END_FRAME command to the command buffer, and flushes the commands.
 void RendererCB::PlatformSpecificFinishRendering() {
   // Any device issues are handled in the command buffer backend
-  ApplyDirtyStates();
   helper_->AddCommand(command_buffer::END_FRAME, 0 , NULL);
   helper_->WaitForToken(frame_token_);
   frame_token_ = helper_->InsertToken();
 }
 
-void RendererCB::RenderElement(Element* element,
-                               DrawElement* draw_element,
-                               Material* material,
-                               ParamObject* override,
-                               ParamCache* param_cache) {
-  IncrementDrawElementsRendered();
-  State *current_state = material ? material->state() : NULL;
-  PushRenderStates(current_state);
-  ApplyDirtyStates();
-  element->Render(this, draw_element, material, override, param_cache);
-  PopRenderStates();
+void RendererCB::PlatformSpecificPresent() {
+  // TODO(gman): The END_FRAME command needs to be split into END_FRAME
+  //     and PRESENT.
 }
 
 // Assign the surface arguments to the renderer, and update the stack
 // of pushed surfaces.
 void RendererCB::SetRenderSurfacesPlatformSpecific(
-    RenderSurface* surface,
-    RenderDepthStencilSurface* surface_depth) {
+    const RenderSurface* surface,
+    const RenderDepthStencilSurface* surface_depth) {
   // TODO: Provide an implementation for this routine.
 }
 
@@ -324,10 +314,6 @@ void RendererCB::SetViewportInPixels(int left,
   args[4].value_float = min_z;
   args[5].value_float = max_z;
   helper_->AddCommand(command_buffer::SET_VIEWPORT, 6, args);
-}
-
-Bitmap::Ref RendererCB::PlatformSpecificTakeScreenshot() {
-  return Bitmap::Ref();
 }
 
 const int* RendererCB::GetRGBAUByteNSwizzleTable() {

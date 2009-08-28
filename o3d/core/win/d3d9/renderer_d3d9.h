@@ -100,21 +100,6 @@ class RendererD3D9 : public Renderer {
   // Returns true on success, false on error.
   virtual bool GetDisplayMode(int id, DisplayMode *mode);
 
-  // clears the current buffers
-  virtual void Clear(const Float4 &color,
-                     bool color_flag,
-                     float depth,
-                     bool depth_flag,
-                     int stencil,
-                     bool stencil_flag);
-
-  // Draws a Element.
-  virtual void RenderElement(Element* element,
-                             DrawElement* draw_element,
-                             Material* material,
-                             ParamObject* override,
-                             ParamCache* param_cache);
-
   // Creates a StreamBank, returning a platform specific implementation class.
   virtual StreamBank::Ref CreateStreamBank();
 
@@ -171,7 +156,15 @@ class RendererD3D9 : public Renderer {
   virtual void PlatformSpecificFinishRendering();
 
   // Overridden from Renderer.
-  virtual Bitmap::Ref PlatformSpecificTakeScreenshot();
+  virtual void PlatformSpecificPresent();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificClear(const Float4 &color,
+                                     bool color_flag,
+                                     float depth,
+                                     bool depth_flag,
+                                     int stencil,
+                                     bool stencil_flag);
 
   // Overridden from Renderer.
   virtual ParamCache* CreatePlatformSpecificParamCache();
@@ -181,8 +174,8 @@ class RendererD3D9 : public Renderer {
 
   // Overridden from Renderer.
   virtual void SetRenderSurfacesPlatformSpecific(
-      RenderSurface* surface,
-      RenderDepthStencilSurface* depth_surface);
+      const RenderSurface* surface,
+      const RenderDepthStencilSurface* depth_surface);
 
   // Sets the viewport. This is the platform specific version.
   void SetViewportInPixels(int left,
@@ -206,6 +199,9 @@ class RendererD3D9 : public Renderer {
       Texture::Format format,
       int levels,
       bool enable_render_surfaces);
+
+  // Overridden from Renderer.
+  virtual void ApplyDirtyStates();
 
  private:
   ServiceDependency<ObjectManager> object_manager_;

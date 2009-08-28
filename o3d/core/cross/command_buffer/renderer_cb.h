@@ -79,27 +79,6 @@ class RendererCB : public Renderer {
   // Destroy() should be called before Init() is called again.
   virtual void Destroy();
 
-  // Clears the current buffers.
-  virtual void Clear(const Float4 &color,
-                     bool color_flag,
-                     float depth,
-                     bool depth_flag,
-                     int stencil,
-                     bool stencil_flag);
-
-  // Renders this Element using the parameters from override first, followed by
-  // the draw_element, followed by params on this Primitive and material.
-  // Parameters:
-  //   element: Element to draw
-  //   draw_element: DrawElement to override params with.
-  //   material: Material to render with.
-  //   override: Override to render with.
-  virtual void RenderElement(Element* element,
-                             DrawElement* draw_element,
-                             Material* material,
-                             ParamObject* override,
-                             ParamCache* param_cache);
-
   // Creates a StreamBank, returning a platform specific implementation class.
   virtual StreamBank::Ref CreateStreamBank();
 
@@ -190,7 +169,15 @@ class RendererCB : public Renderer {
   virtual void PlatformSpecificFinishRendering();
 
   // Overridden from Renderer.
-  virtual Bitmap::Ref PlatformSpecificTakeScreenshot();
+  virtual void PlatformSpecificPresent();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificClear(const Float4 &color,
+                                     bool color_flag,
+                                     float depth,
+                                     bool depth_flag,
+                                     int stencil,
+                                     bool stencil_flag);
 
   // Creates a platform specific ParamCache.
   virtual ParamCache* CreatePlatformSpecificParamCache();
@@ -208,8 +195,8 @@ class RendererCB : public Renderer {
 
   // Overridden from Renderer.
   virtual void SetRenderSurfacesPlatformSpecific(
-      RenderSurface* surface,
-      RenderDepthStencilSurface* depth_surface);
+      const RenderSurface* surface,
+      const RenderDepthStencilSurface* depth_surface);
 
   // Overridden from Renderer.
   virtual Texture2D::Ref CreatePlatformSpecificTexture2D(
@@ -226,10 +213,10 @@ class RendererCB : public Renderer {
       int levels,
       bool enable_render_surfaces);
 
- private:
-  // Applies states that have been modified (marked dirty).
-  void ApplyDirtyStates();
+  // Overridden from Renderer.
+  virtual void ApplyDirtyStates();
 
+ private:
   // Performs cross-platform initialization.
   void InitCommon(unsigned int width, unsigned int height);
 

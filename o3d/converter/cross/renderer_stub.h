@@ -55,17 +55,6 @@ class RendererStub : public Renderer {
   virtual void UninitCommon();
   virtual void Destroy();
   virtual void Resize(int width, int height);
-  virtual void Clear(const Float4 &color,
-                     bool color_flag,
-                     float depth,
-                     bool depth_flag,
-                     int stencil,
-                     bool stencil_flag);
-  virtual void RenderElement(Element* element,
-                             DrawElement* draw_element,
-                             Material* material,
-                             ParamObject* override,
-                             ParamCache* param_cache);
   virtual Primitive::Ref CreatePrimitive();
   virtual DrawElement::Ref CreateDrawElement();
   virtual VertexBuffer::Ref CreateVertexBuffer();
@@ -102,15 +91,26 @@ class RendererStub : public Renderer {
   virtual void PlatformSpecificFinishRendering();
 
   // Overridden from Renderer.
-  virtual Bitmap::Ref PlatformSpecificTakeScreenshot();
+  virtual void PlatformSpecificPresent();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificClear(const Float4 &color,
+                                     bool color_flag,
+                                     float depth,
+                                     bool depth_flag,
+                                     int stencil,
+                                     bool stencil_flag);
 
   // Overridden from Renderer.
   virtual void SetBackBufferPlatformSpecific();
 
   // Overridden from Renderer.
+  virtual void ApplyDirtyStates();
+
+  // Overridden from Renderer.
   virtual void SetRenderSurfacesPlatformSpecific(
-      RenderSurface* surface,
-      RenderDepthStencilSurface* depth_surface);
+      const RenderSurface* surface,
+      const RenderDepthStencilSurface* depth_surface);
 
   // Overridden from Renderer.
   virtual Texture2D::Ref CreatePlatformSpecificTexture2D(

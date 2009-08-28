@@ -70,6 +70,11 @@ class RenderSurfaceGL : public RenderSurface {
   int mip_level() const {
     return mip_level_;
   }
+
+ protected:
+  // The platform specific part of GetBitmap.
+  virtual Bitmap::Ref PlatformSpecificGetBitmap() const;
+
  private:
   GLenum cube_face_;
   int mip_level_;

@@ -221,7 +221,7 @@ void Client::ClearLostResourcesCallback() {
   }
 }
 
-void Client::RenderClient(bool send_callback) {
+void Client::RenderClientInner(bool present, bool send_callback) {
   ElapsedTimeTimer timer;
   render_tree_called_ = false;
   total_time_to_render_ = 0.0f;
@@ -244,13 +244,18 @@ void Client::RenderClient(bool send_callback) {
       if (!rendergraph_root || rendergraph_root->children().empty()) {
           renderer_->Clear(Float4(0.4f, 0.3f, 0.3f, 1.0f),
                            true, 1.0, true, 0, true);
-          renderer_->set_need_to_render(false);
       } else if (rendergraph_root) {
         RenderTree(rendergraph_root);
       }
     }
 
     renderer_->FinishRendering();
+    if (present) {
+      renderer_->Present();
+      // This has to be called before the POST render callback because
+      // the post render callback may call Client::Render.
+      renderer_->set_need_to_render(false);
+    }
 
     // Call post render callback.
     profiler_->ProfileStart("Post-render callback");
@@ -295,6 +300,12 @@ void Client::RenderClient(bool send_callback) {
   }
 }
 
+void Client::RenderClient(bool send_callback) {
+  if (!renderer_.IsAvailable())
+    return;
+
+  RenderClientInner(true, send_callback);
+}
 
 // Executes draw calls for all visible shapes in a subtree
 void Client::RenderTree(RenderNode *tree_root) {
@@ -407,6 +418,57 @@ void Client::InvalidateAllParameters() {
   evaluation_counter_->InvalidateAllParameters();
 }
 
+String Client::GetScreenshotAsDataURL()  {
+  // To take a screenshot we create a render target and render into it
+  // then get a bitmap from that.
+  int pot_width =
+      static_cast<int>(image::ComputePOTSize(renderer_->render_width()));
+  int pot_height =
+      static_cast<int>(image::ComputePOTSize(renderer_->render_height()));
+  if (pot_width == 0 || pot_height == 0) {
+    return dataurl::kEmptyDataURL;
+  }
+  Texture2D::Ref texture = renderer_->CreateTexture2D(
+      pot_width,
+      pot_height,
+      Texture::ARGB8,
+      1,
+      true);
+  if (texture.IsNull()) {
+    return dataurl::kEmptyDataURL;
+  }
+  RenderSurface::Ref surface(texture->GetRenderSurface(0));
+  if (surface.IsNull()) {
+    return dataurl::kEmptyDataURL;
+  }
+  RenderDepthStencilSurface::Ref depth(renderer_->CreateDepthStencilSurface(
+      pot_width,
+      pot_height));
+  if (depth.IsNull()) {
+    return dataurl::kEmptyDataURL;
+  }
+  surface->SetClipSize(renderer_->render_width(), renderer_->render_height());
+  depth->SetClipSize(renderer_->render_width(), renderer_->render_height());
+
+  const RenderSurface* old_render_surface_;
+  const RenderDepthStencilSurface* old_depth_surface_;
+
+  renderer_->GetRenderSurfaces(&old_render_surface_, &old_depth_surface_);
+  renderer_->SetRenderSurfaces(surface, depth);
+
+  RenderClientInner(false, true);
+
+  renderer_->SetRenderSurfaces(old_render_surface_, old_depth_surface_);
+
+  Bitmap::Ref bitmap(surface->GetBitmap());
+  if (bitmap.IsNull()) {
+    return dataurl::kEmptyDataURL;
+  } else {
+    bitmap->FlipVertically();
+    return bitmap->ToDataURL();
+  }
+}
+
 String Client::ToDataURL() {
   if (!renderer_.IsAvailable()) {
     O3D_ERROR(service_locator_) << "No Render Device Available";
@@ -419,12 +481,14 @@ String Client::ToDataURL() {
     return dataurl::kEmptyDataURL;
   }
 
-  Bitmap::Ref bitmap(renderer_->TakeScreenshot());
-  if (bitmap.IsNull()) {
+  if (!renderer_->StartRendering()) {
     return dataurl::kEmptyDataURL;
-  } else {
-    return bitmap->ToDataURL();
   }
+
+  String data_url(GetScreenshotAsDataURL());
+  renderer_->FinishRendering();
+
+  return data_url;
 }
 
 String Client::GetMessageQueueAddress() const {

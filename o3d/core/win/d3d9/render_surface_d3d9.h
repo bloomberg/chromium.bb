@@ -78,6 +78,10 @@ class RenderSurfaceD3D9 : public RenderSurface {
   //     the user supply an RGBA color.
   void Clear();
 
+ protected:
+  // The platform specific part of GetBitmap.
+  virtual Bitmap::Ref PlatformSpecificGetBitmap() const;
+
  private:
   CComPtr<IDirect3DSurface9> direct3d_surface_;
   scoped_ptr<SurfaceConstructor> surface_constructor_;

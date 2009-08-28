@@ -95,25 +95,22 @@ void RendererStub::Resize(int, int) {
   DCHECK(false);
 }
 
-void RendererStub::Clear(const Float4 &, bool, float, bool, int, bool) {
-  DCHECK(false);
-}
-
-void RendererStub::RenderElement(Element *,
-                                 DrawElement *,
-                                 Material *,
-                                 ParamObject *,
-                                 ParamCache *) {
+void RendererStub::PlatformSpecificClear(
+  const Float4 &, bool, float, bool, int, bool) {
   DCHECK(false);
 }
 
 void RendererStub::SetRenderSurfacesPlatformSpecific(
-    RenderSurface* surface,
-    RenderDepthStencilSurface* surface_depth) {
+    const RenderSurface* surface,
+    const RenderDepthStencilSurface* surface_depth) {
   DCHECK(false);
 }
 
 void RendererStub::SetBackBufferPlatformSpecific() {
+  DCHECK(false);
+}
+
+void RendererStub::ApplyDirtyStates() {
   DCHECK(false);
 }
 
@@ -178,16 +175,15 @@ StreamBank::Ref RendererStub::CreateStreamBank() {
   return StreamBank::Ref(new StreamBankStub(service_locator()));
 }
 
-Bitmap::Ref RendererStub::PlatformSpecificTakeScreenshot() {
-  return Bitmap::Ref();
-}
-
 ParamCache *RendererStub::CreatePlatformSpecificParamCache(void) {
   return new ParamCacheStub;
 }
 
 void RendererStub::SetViewportInPixels(int, int, int, int, float, float) {
   DCHECK(false);
+}
+
+void RendererStub::PlatformSpecificPresent(void) {
 }
 
 const int* RendererStub::GetRGBAUByteNSwizzleTable() {

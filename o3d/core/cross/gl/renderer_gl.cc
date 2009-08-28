@@ -174,8 +174,8 @@ GLenum ConvertStencilOp(State::StencilOperation stencil_func) {
 // Returns true upon success.
 // Note:  This routine assumes that a frambuffer object is presently bound
 // to the context.
-bool InstallFramebufferObjects(RenderSurface* surface,
-                               RenderDepthStencilSurface* surface_depth) {
+bool InstallFramebufferObjects(const RenderSurface* surface,
+                               const RenderDepthStencilSurface* surface_depth) {
 #ifdef _DEBUG
   GLint bound_framebuffer;
   ::glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &bound_framebuffer);
@@ -199,7 +199,8 @@ bool InstallFramebufferObjects(RenderSurface* surface,
                                  0);
 
   if (surface) {
-    RenderSurfaceGL *gl_surface = down_cast<RenderSurfaceGL*>(surface);
+    const RenderSurfaceGL *gl_surface =
+        down_cast<const RenderSurfaceGL*>(surface);
     Texture *texture = gl_surface->texture();
     if (texture->IsA(Texture2D::GetApparentClass())) {
       ::glFramebufferTexture2DEXT(
@@ -220,8 +221,8 @@ bool InstallFramebufferObjects(RenderSurface* surface,
 
   if (surface_depth) {
     // Bind both the depth and stencil attachments.
-    RenderDepthStencilSurfaceGL* gl_surface =
-        down_cast<RenderDepthStencilSurfaceGL*>(surface_depth);
+    const RenderDepthStencilSurfaceGL* gl_surface =
+        down_cast<const RenderDepthStencilSurfaceGL*>(surface_depth);
     ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
                                    GL_DEPTH_ATTACHMENT_EXT,
                                    GL_RENDERBUFFER_EXT,
@@ -1142,14 +1143,13 @@ bool RendererGL::MakeCurrent() {
 #endif
 }
 
-void RendererGL::Clear(const Float4 &color,
-                       bool color_flag,
-                       float depth,
-                       bool depth_flag,
-                       int stencil,
-                       bool stencil_flag) {
+void RendererGL::PlatformSpecificClear(const Float4 &color,
+                                       bool color_flag,
+                                       float depth,
+                                       bool depth_flag,
+                                       int stencil,
+                                       bool stencil_flag) {
   MakeCurrentLazy();
-  SetChangedStates();
   ::glClearColor(color[0], color[1], color[2], color[3]);
   ::glClearDepth(depth);
   ::glClearStencil(stencil);
@@ -1251,28 +1251,11 @@ bool RendererGL::PlatformSpecificBeginDraw() {
   return true;
 }
 
-// Asks the primitive to draw itself.
-void RendererGL::RenderElement(Element* element,
-                               DrawElement* draw_element,
-                               Material* material,
-                               ParamObject* override,
-                               ParamCache* param_cache) {
-  DCHECK(IsCurrent());
-  DLOG_FIRST_N(INFO, 10) << "RendererGL RenderElement";
-  IncrementDrawElementsRendered();
-  State *current_state = material ? material->state() : NULL;
-  PushRenderStates(current_state);
-  SetChangedStates();
-  element->Render(this, draw_element, material, override, param_cache);
-  PopRenderStates();
-  CHECK_GL_ERROR();
-}
-
 // Assign the surface arguments to the renderer, and update the stack
 // of pushed surfaces.
 void RendererGL::SetRenderSurfacesPlatformSpecific(
-    RenderSurface* surface,
-    RenderDepthStencilSurface* surface_depth) {
+    const RenderSurface* surface,
+    const RenderDepthStencilSurface* surface_depth) {
   // TODO:  This routine re-uses a single global framebuffer object for
   // all RenderSurface rendering.  Because of the validation checks performed
   // at attachment-change time, it may be more performant to create a pool
@@ -1302,16 +1285,19 @@ void RendererGL::SetBackBufferPlatformSpecific() {
 void RendererGL::PlatformSpecificEndDraw() {
   DLOG_FIRST_N(INFO, 10) << "RendererGL EndDraw";
   DCHECK(IsCurrent());
-  SetChangedStates();
 }
 
 // Swaps the buffers.
 void RendererGL::PlatformSpecificFinishRendering() {
-  DLOG_FIRST_N(INFO, 10) << "RendererGL Present";
+  DLOG_FIRST_N(INFO, 10) << "RendererGL FinishRendering";
   DCHECK(IsCurrent());
-  SetChangedStates();
   ::glFlush();
   CHECK_GL_ERROR();
+}
+
+void RendererGL::PlatformSpecificPresent() {
+  DLOG_FIRST_N(INFO, 10) << "RendererGL Present";
+  DCHECK(IsCurrent());
 #ifdef OS_WIN
   ::SwapBuffers(device_context_);
 #endif
@@ -1376,7 +1362,8 @@ void RendererGL::SetStencilStates(GLenum face,
   CHECK_GL_ERROR();
 }
 
-void RendererGL::SetChangedStates() {
+void RendererGL::ApplyDirtyStates() {
+  MakeCurrentLazy();
   DCHECK(IsCurrent());
   // Set blend settings.
   if (alpha_blend_settings_changed_) {
@@ -1507,16 +1494,6 @@ RenderDepthStencilSurface::Ref RendererGL::CreateDepthStencilSurface(
       new RenderDepthStencilSurfaceGL(service_locator(),
                                       width,
                                       height));
-}
-
-Bitmap::Ref RendererGL::PlatformSpecificTakeScreenshot() {
-  MakeCurrentLazy();
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->Allocate(Texture::ARGB8, width(), height(), 1, Bitmap::IMAGE);
-
-  ::glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE,
-                 bitmap->image_data());
-  return bitmap;
 }
 
 const int* RendererGL::GetRGBAUByteNSwizzleTable() {

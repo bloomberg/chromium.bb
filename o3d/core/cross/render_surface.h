@@ -38,6 +38,7 @@
 #include "core/cross/param.h"
 #include "core/cross/param_object.h"
 #include "core/cross/texture_base.h"
+#include "core/cross/bitmap.h"
 
 namespace o3d {
 
@@ -67,12 +68,39 @@ class RenderSurfaceBase : public ParamObject {
     return height_param_->value();
   }
 
+  // Set the clip size, the area of the render target that is actually
+  // rendered to.
+  // NOTE: This function is not meant to be called by anything except the
+  //    o3d Client. It is used for rendering screenshots and for windowless
+  //    mode.
+  void SetClipSize(int clip_width, int clip_height) {
+    DCHECK_LE(clip_width, width());
+    DCHECK_LE(clip_height, height());
+    clip_width_ = clip_width;
+    clip_height_ = clip_height;
+  }
+
+  // Returns the used width of the render target. Used for setting the viewport.
+  int clip_width() const {
+    return clip_width_;
+  }
+
+  // Returns the used height of the render target. Used for setting the
+  // viewport.
+  int clip_height() const {
+    return clip_height_;
+  }
+
  private:
   // The width of the surface, in pixels.
   ParamInteger::Ref width_param_;
 
   // The height of the surface, in pixels.
   ParamInteger::Ref height_param_;
+
+  // The part of the render target that is actually used.
+  int clip_width_;
+  int clip_height_;
 
   O3D_DECL_CLASS(RenderSurfaceBase, ParamObject);
   DISALLOW_COPY_AND_ASSIGN(RenderSurfaceBase);
@@ -105,6 +133,14 @@ class RenderSurface : public RenderSurfaceBase {
   WeakPointerType GetWeakPointer() const {
     return weak_pointer_manager_.GetWeakPointer();
   }
+
+  // Gets a copy of the contents of the render surface as a Bitmap.
+  // Only gets the clip_width/clip_height area.
+  Bitmap::Ref GetBitmap() const;
+
+ protected:
+  // The platform specific part of GetBitmap.
+  virtual Bitmap::Ref PlatformSpecificGetBitmap() const = 0;
 
  private:
   // Texture parameter of the texture in which this render surface is contained.

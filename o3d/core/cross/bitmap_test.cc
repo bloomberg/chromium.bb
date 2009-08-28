@@ -32,6 +32,7 @@
 
 #include "core/cross/client.h"
 #include "core/cross/bitmap.h"
+#include "core/cross/texture.h"
 #include "tests/common/win/testing_common.h"
 #include "base/file_path.h"
 #include "utils/cross/file_path_utils.h"

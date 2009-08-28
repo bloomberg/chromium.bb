@@ -430,6 +430,11 @@ class Client {
   };
 
  private:
+  // Renders the client.
+  void RenderClientInner(bool present, bool send_callback);
+
+  // Gets a screenshot.
+  String GetScreenshotAsDataURL();
 
   // MessageQueue that allows external code to communicate with the Client.
   scoped_ptr<MessageQueue> message_queue_;

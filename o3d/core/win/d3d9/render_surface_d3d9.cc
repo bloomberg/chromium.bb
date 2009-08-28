@@ -34,6 +34,7 @@
 #include "core/win/d3d9/render_surface_d3d9.h"
 #include "core/win/d3d9/utils_d3d9.h"
 #include "core/win/d3d9/renderer_d3d9.h"
+#include "core/cross/error.h"
 
 namespace o3d {
 
@@ -72,6 +73,59 @@ void RenderSurfaceD3D9::Clear() {
     renderer->d3d_device()->ColorFill(
         direct3d_surface_, NULL, D3DCOLOR_RGBA(0, 0, 0, 0));
   }
+}
+
+Bitmap::Ref RenderSurfaceD3D9::PlatformSpecificGetBitmap() const {
+  Bitmap::Ref empty;
+
+  if (!direct3d_surface_) {
+    return empty;
+  }
+
+  RendererD3D9* renderer =
+      down_cast<RendererD3D9*>(service_locator()->GetService<Renderer>());
+  LPDIRECT3DDEVICE9 device = renderer->d3d_device();
+  CComPtr<IDirect3DSurface9> system_surface;
+
+  D3DSURFACE_DESC surface_description;
+  if (!HR(direct3d_surface_->GetDesc(&surface_description))) {
+    return empty;
+  }
+
+  if (!HR(device->CreateOffscreenPlainSurface(surface_description.Width,
+                                              surface_description.Height,
+                                              surface_description.Format,
+                                              D3DPOOL_SYSTEMMEM,
+                                              &system_surface,
+                                              NULL))) {
+    return empty;
+  }
+
+  if (!HR(device->GetRenderTargetData(direct3d_surface_, system_surface)))
+    return empty;
+
+  RECT rect = { 0, 0, clip_width(), clip_height() };
+  D3DLOCKED_RECT out_rect = {0};
+  if (!HR(system_surface->LockRect(&out_rect, &rect, D3DLOCK_READONLY))) {
+    O3D_ERROR(service_locator()) << "Failed to Lock Surface (D3D9)";
+    return empty;
+  }
+
+  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
+  bitmap->Allocate(Texture::ARGB8,
+                   clip_width(),
+                   clip_height(),
+                   1,
+                   Bitmap::IMAGE);
+  bitmap->SetRect(0, 0, 0,
+                  clip_width(),
+                  clip_height(),
+                  out_rect.pBits,
+                  out_rect.Pitch);
+
+  system_surface->UnlockRect();
+
+  return bitmap;
 }
 
 RenderDepthStencilSurfaceD3D9::RenderDepthStencilSurfaceD3D9(

@@ -113,6 +113,7 @@ Renderer::Renderer(ServiceLocator* service_locator)
       draw_elements_culled_(0),
       draw_elements_rendered_(0),
       primitives_rendered_(0),
+      start_depth_(0),
       clear_client_(true),
       need_to_render_(true),
       rendering_(false),
@@ -246,22 +247,27 @@ void Renderer::SetClientSize(int width, int height) {
 }
 
 bool Renderer::StartRendering() {
-  ++render_frame_count_;
-  rendering_ = true;
-  transforms_culled_ = 0;
-  transforms_processed_ = 0;
-  draw_elements_culled_ = 0;
-  draw_elements_processed_ = 0;
-  draw_elements_rendered_ = 0;
-  primitives_rendered_ = 0;
+  DCHECK_GE(start_depth_, 0);
+  ++start_depth_;
+  bool result = true;
+  if (start_depth_ == 1) {
+    ++render_frame_count_;
+    rendering_ = true;
+    transforms_culled_ = 0;
+    transforms_processed_ = 0;
+    draw_elements_culled_ = 0;
+    draw_elements_processed_ = 0;
+    draw_elements_rendered_ = 0;
+    primitives_rendered_ = 0;
 
-  bool result = PlatformSpecificStartRendering();
-  if (result) {
-    set_need_to_render(true);
-    // Clear the client if we need to.
-    if (clear_client_) {
-      clear_client_ = false;
-      Clear(Float4(0.5f, 0.5f, 0.5f, 1.0f), true, 1.0f, true, 0, true);
+    result = PlatformSpecificStartRendering();
+    if (result) {
+      set_need_to_render(true);
+      // Clear the client if we need to.
+      if (clear_client_) {
+        clear_client_ = false;
+        Clear(Float4(0.5f, 0.5f, 0.5f, 1.0f), true, 1.0f, true, 0, true);
+      }
     }
   }
   return result;
@@ -269,6 +275,7 @@ bool Renderer::StartRendering() {
 
 bool Renderer::BeginDraw() {
   DCHECK(rendering_);
+  DCHECK(!drawing_);
   bool result = PlatformSpecificBeginDraw();
   if (result) {
     drawing_ = true;
@@ -279,23 +286,40 @@ bool Renderer::BeginDraw() {
 }
 
 void Renderer::EndDraw() {
+  DCHECK(rendering_);
+  DCHECK(drawing_);
+  ApplyDirtyStates();
   PlatformSpecificEndDraw();
   drawing_ = false;
 }
 
 void Renderer::FinishRendering() {
-  PlatformSpecificFinishRendering();
-  set_need_to_render(false);
-  rendering_ = false;
+  DCHECK(rendering_);
+  DCHECK(!drawing_);
+  DCHECK_GT(start_depth_, 0);
+  --start_depth_;
+  if (start_depth_ == 0) {
+    ApplyDirtyStates();
+    PlatformSpecificFinishRendering();
+    rendering_ = false;
+  }
 }
 
-Bitmap::Ref Renderer::TakeScreenshot() {
-  if (rendering_) {
-    O3D_ERROR(service_locator())
-       << "Can not take a screenshot while rendering";
-    return Bitmap::Ref(NULL);
-  }
-  return PlatformSpecificTakeScreenshot();
+void Renderer::Present() {
+  DCHECK(!rendering_);
+  DCHECK(!drawing_);
+  PlatformSpecificPresent();
+}
+
+void Renderer::Clear(const Float4 &color,
+                     bool color_flag,
+                     float depth,
+                     bool depth_flag,
+                     int stencil,
+                     bool stencil_flag) {
+  ApplyDirtyStates();
+  PlatformSpecificClear(
+      color, color_flag, depth, depth_flag, stencil, stencil_flag);
 }
 
 void Renderer::GetViewport(Float4* viewport, Float2* depth_range) {
@@ -312,7 +336,6 @@ void Renderer::SetViewport(const Float4& rectangle, const Float2& depth_range) {
   int height = render_height();
   float float_width = static_cast<float>(width);
   float float_height = static_cast<float>(height);
-
 
   int viewport_left = static_cast<int>(float_width * rectangle[0] + 0.5f);
   int viewport_top = static_cast<int>(float_height * rectangle[1] + 0.5f);
@@ -619,6 +642,19 @@ const Renderer::StateHandler* Renderer::GetStateHandler(Param* param) const {
   return NULL;
 }
 
+void Renderer::RenderElement(Element* element,
+                             DrawElement* draw_element,
+                             Material* material,
+                             ParamObject* override,
+                             ParamCache* param_cache) {
+  IncrementDrawElementsRendered();
+  State *current_state = material ? material->state() : NULL;
+  PushRenderStates(current_state);
+  ApplyDirtyStates();
+  element->Render(this, draw_element, material, override, param_cache);
+  PopRenderStates();
+}
+
 // Pushes rendering states.
 void Renderer::PushRenderStates(State *state) {
   DCHECK(!state_stack_.empty());
@@ -669,18 +705,20 @@ void Renderer::PopRenderStates() {
   state_stack_.pop_back();
 }
 
-void Renderer::SetRenderSurfaces(RenderSurface* surface,
-                                 RenderDepthStencilSurface* depth_surface) {
+void Renderer::SetRenderSurfaces(
+    const RenderSurface* surface,
+    const RenderDepthStencilSurface* depth_surface) {
+  DCHECK(rendering_);
   if (surface != NULL || depth_surface != NULL) {
     SetRenderSurfacesPlatformSpecific(surface, depth_surface);
     current_render_surface_ = surface;
     current_depth_surface_ = depth_surface;
     if (surface) {
-      render_width_ = surface->width();
-      render_height_ = surface->height();
+      render_width_ = surface->clip_width();
+      render_height_ = surface->clip_height();
     } else {
-      render_width_ = depth_surface->width();
-      render_height_ = depth_surface->height();
+      render_width_ = depth_surface->clip_width();
+      render_height_ = depth_surface->clip_height();
     }
   } else {
     SetBackBufferPlatformSpecific();
@@ -693,8 +731,9 @@ void Renderer::SetRenderSurfaces(RenderSurface* surface,
   SetViewport(viewport_, depth_range_);
 }
 
-void Renderer::GetRenderSurfaces(RenderSurface** surface,
-                                 RenderDepthStencilSurface** depth_surface) {
+void Renderer::GetRenderSurfaces(
+    const RenderSurface** surface,
+    const RenderDepthStencilSurface** depth_surface) {
   DCHECK(surface);
   DCHECK(depth_surface);
   *surface = current_render_surface_;

@@ -50,7 +50,9 @@ const char* RenderSurface::kTextureParamName =
 RenderSurfaceBase::RenderSurfaceBase(ServiceLocator* service_locator,
                                      int width,
                                      int height)
-    : ParamObject(service_locator) {
+    : ParamObject(service_locator),
+      clip_width_(width),
+      clip_height_(height) {
   RegisterReadOnlyParamRef(kWidthParamName, &width_param_);
   RegisterReadOnlyParamRef(kHeightParamName, &height_param_);
 
@@ -67,6 +69,10 @@ RenderSurface::RenderSurface(ServiceLocator* service_locator,
   RegisterReadOnlyParamRef(kTextureParamName, &texture_param_);
 
   texture_param_->set_read_only_value(texture);
+}
+
+Bitmap::Ref RenderSurface::GetBitmap() const {
+  return PlatformSpecificGetBitmap();
 }
 
 RenderDepthStencilSurface::RenderDepthStencilSurface(

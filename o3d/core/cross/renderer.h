@@ -147,7 +147,7 @@ class Renderer {
   // Creates a 'default' renderer, choosing the correct implementation type.
   static Renderer* CreateDefaultRenderer(ServiceLocator* service_locator);
 
-  // Gets whether or not the renderer should attempt to use the software 
+  // Gets whether or not the renderer should attempt to use the software
   // renderer.
   static bool IsForceSoftwareRenderer();
 
@@ -196,6 +196,9 @@ class Renderer {
 
   // Presents the results of the draw calls for this frame.
   void FinishRendering();
+
+  // Copy the contents of the backbuffer to the window.
+  void Present();
 
   // Returns whether a render is required.
   bool need_to_render() const {
@@ -261,12 +264,12 @@ class Renderer {
   void SetViewport(const Float4& rectangle, const Float2& depth_range);
 
   // Clears the current buffers.
-  virtual void Clear(const Float4 &color,
-                     bool color_flag,
-                     float depth,
-                     bool depth_flag,
-                     int stencil,
-                     bool stencil_flag) = 0;
+  void Clear(const Float4 &color,
+             bool color_flag,
+             float depth,
+             bool depth_flag,
+             int stencil,
+             bool stencil_flag);
 
   // Renders this Element using the parameters from override first, followed by
   // the draw_element, followed by params on this Primitive and material.
@@ -275,11 +278,11 @@ class Renderer {
   //   draw_element: DrawElement to override params with.
   //   material: Material to render with.
   //   override: Override to render with.
-  virtual void RenderElement(Element* element,
-                             DrawElement* draw_element,
-                             Material* material,
-                             ParamObject* override,
-                             ParamCache* param_cache) = 0;
+  void RenderElement(Element* element,
+                     DrawElement* draw_element,
+                     Material* material,
+                     ParamObject* override,
+                     ParamCache* param_cache);
 
   // Pushes rendering states.
   void PushRenderStates(State *state);
@@ -293,8 +296,8 @@ class Renderer {
   //   surface: RenderSurface to bind to the color buffer.
   //   depth_surface: RenderDepthStencilSurface to bind to the depth/stencil
   //       buffer.
-  void SetRenderSurfaces(RenderSurface* surface,
-                         RenderDepthStencilSurface* depth_surface);
+  void SetRenderSurfaces(const RenderSurface* surface,
+                         const RenderDepthStencilSurface* depth_surface);
 
   // Gets the current render surfaces.
   // Parameters:
@@ -302,8 +305,8 @@ class Renderer {
   //       buffer.
   //   depth_surface: pointer to variable to hold RenderDepthStencilSurface to
   //       bind to the depth/stencil buffer.
-  void GetRenderSurfaces(RenderSurface** surface,
-                         RenderDepthStencilSurface** depth_surface);
+  void GetRenderSurfaces(const RenderSurface** surface,
+                         const RenderDepthStencilSurface** depth_surface);
 
   // Creates a StreamBank, returning a platform specific implementation class.
   virtual StreamBank::Ref CreateStreamBank() = 0;
@@ -371,9 +374,6 @@ class Renderer {
   virtual RenderDepthStencilSurface::Ref CreateDepthStencilSurface(
       int width,
       int height) = 0;
-
-  // Returns the screen as a Bitmap. Will return a null reference on error.
-  Bitmap::Ref TakeScreenshot();
 
   ServiceLocator* service_locator() const { return service_locator_; }
 
@@ -496,7 +496,6 @@ class Renderer {
   // renderer, then it is not safe to bind the texture.
   bool SafeToBindTexture(Texture* texture) const;
 
-
   // When rendering only part of the view because of scrolling or the window
   // being smaller than the client size, etc, this lets us adjust the origin of
   // the top left of the drawing within our area, effectively allowing us to
@@ -553,8 +552,8 @@ class Renderer {
 
   // Sets the render surfaces on a specific platform.
   virtual void SetRenderSurfacesPlatformSpecific(
-      RenderSurface* surface,
-      RenderDepthStencilSurface* depth_surface) = 0;
+      const RenderSurface* surface,
+      const RenderDepthStencilSurface* depth_surface) = 0;
 
   // Creates a platform specific ParamCache.
   virtual ParamCache* CreatePlatformSpecificParamCache() = 0;
@@ -586,7 +585,19 @@ class Renderer {
   // The platform specific part of EndRendering.
   virtual void PlatformSpecificFinishRendering() = 0;
 
-  virtual Bitmap::Ref PlatformSpecificTakeScreenshot() = 0;
+  // The platform specific part of Present.
+  virtual void PlatformSpecificPresent() = 0;
+
+  // The platform specific part of Clear.
+  virtual void PlatformSpecificClear(const Float4 &color,
+                                     bool color_flag,
+                                     float depth,
+                                     bool depth_flag,
+                                     int stencil,
+                                     bool stencil_flag) = 0;
+
+  // Applies states that have been modified (marked dirty).
+  virtual void ApplyDirtyStates() = 0;
 
   // Sets the viewport. This is the platform specific version.
   virtual void SetViewportInPixels(int left,
@@ -600,8 +611,8 @@ class Renderer {
   void SetClientSize(int width, int height);
 
   // The current render surfaces. NULL = no surface.
-  RenderSurface* current_render_surface_;
-  RenderDepthStencilSurface* current_depth_surface_;
+  const RenderSurface* current_render_surface_;
+  const RenderDepthStencilSurface* current_depth_surface_;
 
   Sampler::Ref error_sampler_;  // sampler used when one is missing.
   Texture::Ref error_texture_;  // texture used when one is missing.
@@ -656,6 +667,9 @@ class Renderer {
   int draw_elements_rendered_;  // count of draw elements culled this frame.
   int primitives_rendered_;  // count of primitives (tris, lines)
                              // rendered this frame.
+
+  // The depth of times we've called StartRendering/FinishRenderering.
+  int start_depth_;
 
   // Whether we need to clear the entire client area next render.
   bool clear_client_;

@@ -1011,12 +1011,12 @@ void RendererD3D9::Destroy() {
   d3d_ = NULL;
 }
 
-void RendererD3D9::Clear(const Float4 &color,
-                         bool color_flag,
-                         float depth,
-                         bool depth_flag,
-                         int stencil,
-                         bool stencil_flag) {
+void RendererD3D9::PlatformSpecificClear(const Float4 &color,
+                                         bool color_flag,
+                                         float depth,
+                                         bool depth_flag,
+                                         int stencil,
+                                         bool stencil_flag) {
   // is this safe to call inside BeginScene/EndScene?
   CComPtr<IDirect3DSurface9> current_surface;
   if (!HR(d3d_device()->GetRenderTarget(0, &current_surface)))
@@ -1370,27 +1370,76 @@ bool RendererD3D9::PlatformSpecificStartRendering() {
   // Determine whether the device is lost, resetting if possible.
   TestLostDevice();
 
-  return have_device_;
+  bool result = have_device_;
+  if (result) {
+    bool got_render_target =
+        HR(d3d_device_->GetRenderTarget(0, &back_buffer_surface_));
+    bool got_depth_surface =
+        HR(d3d_device_->GetDepthStencilSurface(&back_buffer_depth_surface_));
+    result = got_render_target && got_depth_surface;
+  }
+
+  if (!result) {
+    back_buffer_surface_ = NULL;
+    back_buffer_depth_surface_ = NULL;
+  }
+
+  return result;
 }
 
 // prepares DX9 for rendering PART of the frame. Returns true on success.
 bool RendererD3D9::PlatformSpecificBeginDraw() {
   // Only perform ops with the device if we have it.
   if (have_device_) {
-    if (!HR(d3d_device_->GetRenderTarget(0, &back_buffer_surface_)))
-      return false;
-    if (!HR(d3d_device_->GetDepthStencilSurface(&back_buffer_depth_surface_)))
-      return false;
-    if (!HR(d3d_device_->BeginScene()))
-      return false;
-    return true;
+    return HR(d3d_device_->BeginScene());
   } else {
-    back_buffer_surface_ = NULL;
-    back_buffer_depth_surface_ = NULL;
-
     // Return false if we have lost the device.
     return false;
   }
+}
+
+// NOTE: End draw can be called multiple times per frame. If want something
+// to happen only once per frame it belongs in FinishRendering.
+void RendererD3D9::PlatformSpecificEndDraw() {
+  if (have_device_) {
+    HR(d3d_device_->EndScene());
+  }
+}
+
+void RendererD3D9::PlatformSpecificFinishRendering() {
+  if (have_device_) {
+    // Release the back-buffer references.
+    back_buffer_surface_ = NULL;
+    back_buffer_depth_surface_ = NULL;
+
+    if (showing_fullscreen_message_) {
+      // Message should display for 3 seconds after transition to fullscreen.
+      float elapsed_time =
+          fullscreen_message_timer_.GetElapsedTimeWithoutClearing();
+      const float display_duration = 3.5f;
+      if (elapsed_time > display_duration) {
+        showing_fullscreen_message_ = false;
+      } else {
+        if (BeginDraw()) {
+          ShowFullscreenMessage(elapsed_time, display_duration);
+          EndDraw();
+        }
+      }
+    }
+  }
+}
+
+void RendererD3D9::PlatformSpecificPresent() {
+  if (have_device_) {
+    // No need to call Present(...) if we are rendering to an off-screen
+    // target.
+    if (!off_screen_surface_) {
+      d3d_device_->Present(NULL, NULL, NULL, NULL);
+    }
+  }
+}
+
+void RendererD3D9::ApplyDirtyStates() {
 }
 
 // TODO(gman): Why is this code in here? Shouldn't this use O3D to render this
@@ -1452,63 +1501,13 @@ void RendererD3D9::ShowFullscreenMessage(float elapsed_time,
   d3d_device_->SetRenderState(D3DRS_ZENABLE, z_enable);
 }
 
-// NOTE: End draw can be called multiple times per frame. If want something
-// to happen only once per frame it belongs in FinishRendering.
-void RendererD3D9::PlatformSpecificEndDraw() {
-  if (have_device_) {
-    HR(d3d_device_->EndScene());
-
-    // Release the back-buffer references.
-    back_buffer_surface_ = NULL;
-    back_buffer_depth_surface_ = NULL;
-  }
-}
-
-void RendererD3D9::PlatformSpecificFinishRendering() {
-  if (have_device_) {
-    // No need to call Present(...) if we are rendering to an off-screen
-    // target.
-    if (showing_fullscreen_message_) {
-      // Message should display for 3 seconds after transition to fullscreen.
-      float elapsed_time =
-          fullscreen_message_timer_.GetElapsedTimeWithoutClearing();
-      const float display_duration = 3.5f;
-      if (elapsed_time > display_duration) {
-        showing_fullscreen_message_ = false;
-      } else {
-        if (BeginDraw()) {
-          ShowFullscreenMessage(elapsed_time, display_duration);
-          EndDraw();
-        }
-      }
-    }
-    if (!off_screen_surface_) {
-      d3d_device_->Present(NULL, NULL, NULL, NULL);
-    }
-  }
-}
-
-// Asks the primitive to draw itself.
-void RendererD3D9::RenderElement(Element* element,
-                                 DrawElement* draw_element,
-                                 Material* material,
-                                 ParamObject* override,
-                                 ParamCache* param_cache) {
-  IncrementDrawElementsRendered();
-  // If this a new state then reset the old state.
-  State *current_state = material ? material->state() : NULL;
-  PushRenderStates(current_state);
-  element->Render(this, draw_element, material, override, param_cache);
-  PopRenderStates();
-}
-
 void RendererD3D9::SetRenderSurfacesPlatformSpecific(
-    RenderSurface* surface,
-    RenderDepthStencilSurface* surface_depth) {
-  RenderSurfaceD3D9 *d3d_render_surface =
-      down_cast<RenderSurfaceD3D9*>(surface);
-  RenderDepthStencilSurfaceD3D9 *d3d_render_depth_surface =
-      down_cast<RenderDepthStencilSurfaceD3D9*>(surface_depth);
+    const RenderSurface* surface,
+    const RenderDepthStencilSurface* surface_depth) {
+  const RenderSurfaceD3D9 *d3d_render_surface =
+      down_cast<const RenderSurfaceD3D9*>(surface);
+  const RenderDepthStencilSurfaceD3D9 *d3d_render_depth_surface =
+      down_cast<const RenderDepthStencilSurfaceD3D9*>(surface_depth);
 
   IDirect3DSurface9 *d3d_surface =
       d3d_render_surface ? d3d_render_surface->GetSurfaceHandle() : NULL;
@@ -1608,77 +1607,6 @@ RenderDepthStencilSurface::Ref RendererD3D9::CreateDepthStencilSurface(
                                         width,
                                         height,
                                         depth_constructor));
-}
-
-Bitmap::Ref RendererD3D9::PlatformSpecificTakeScreenshot() {
-  Bitmap::Ref empty;
-  LPDIRECT3DDEVICE9 device = d3d_device();
-  CComPtr<IDirect3DSurface9> system_surface;
-  CComPtr<IDirect3DSurface9> current_surface;
-
-  if (!HR(device->GetRenderTarget(0, &current_surface)))
-    return empty;
-
-  D3DSURFACE_DESC surface_description;
-  if (!HR(current_surface->GetDesc(&surface_description)))
-    return empty;
-
-  // Construct an intermediate surface with multi-sampling disabled.
-  // This surface is required because GetRenderTargetData(...) will fail
-  // for multi-sampled targets.  One must first down-sample to a
-  // non-multi-sample buffer, and then copy from that intermediate buffer
-  // to a main memory surface.
-  CComPtr<IDirect3DSurface9> intermediate_target;
-  if (!HR(device->CreateRenderTarget(surface_description.Width,
-                                     surface_description.Height,
-                                     surface_description.Format,
-                                     D3DMULTISAMPLE_NONE,
-                                     0,
-                                     FALSE,
-                                     &intermediate_target,
-                                     NULL))) {
-    return empty;
-  }
-
-  if (!HR(device->StretchRect(current_surface,
-                              NULL,
-                              intermediate_target,
-                              NULL,
-                              D3DTEXF_NONE))) {
-    return empty;
-  }
-
-  if (!HR(device->CreateOffscreenPlainSurface(surface_description.Width,
-                                              surface_description.Height,
-                                              surface_description.Format,
-                                              D3DPOOL_SYSTEMMEM,
-                                              &system_surface,
-                                              NULL))) {
-    return empty;
-  }
-
-  if (!HR(device->GetRenderTargetData(intermediate_target, system_surface)))
-    return empty;
-
-  D3DLOCKED_RECT out_rect = {0};
-  if (!HR(system_surface->LockRect(&out_rect, NULL, D3DLOCK_READONLY))) {
-    O3D_ERROR(service_locator()) << "Failed to Lock Surface (D3D9)";
-    return empty;
-  }
-
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->Allocate(Texture::ARGB8,
-                   surface_description.Width,
-                   surface_description.Height,
-                   1,
-                   Bitmap::IMAGE);
-  bitmap->SetRect(0, 0, 0,
-                  surface_description.Width,
-                  surface_description.Height,
-                  out_rect.pBits,
-                  out_rect.Pitch);
-  bitmap->FlipVertically();
-  return bitmap;
 }
 
 const int* RendererD3D9::GetRGBAUByteNSwizzleTable() {

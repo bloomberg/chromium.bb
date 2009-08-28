@@ -84,24 +84,6 @@ class RendererGL : public Renderer {
   // Resizes the viewport in OpenGL.
   virtual void Resize(int width, int height);
 
-  // clears the current buffers
-  virtual void Clear(const Float4 &color,
-                     bool color_flag,
-                     float depth,
-                     bool depth_flag,
-                     int stencil,
-                     bool stencil_flag);
-
-  // Draws a Element.
-  // Parameters:
-  //   element: Element to draw draw_element: DrawElement to override
-  //   params with.
-  virtual void RenderElement(Element* element,
-                             DrawElement* draw_element,
-                             Material* material,
-                             ParamObject* override,
-                             ParamCache* param_cache);
-
   // Creates a StreamBank, returning a platform specific implementation class.
   virtual StreamBank::Ref CreateStreamBank();
 
@@ -180,7 +162,15 @@ class RendererGL : public Renderer {
   virtual void PlatformSpecificFinishRendering();
 
   // Overridden from Renderer.
-  virtual Bitmap::Ref PlatformSpecificTakeScreenshot();
+  virtual void PlatformSpecificPresent();
+
+  // Overridden from Renderer.
+  virtual void PlatformSpecificClear(const Float4 &color,
+                                     bool color_flag,
+                                     float depth,
+                                     bool depth_flag,
+                                     int stencil,
+                                     bool stencil_flag);
 
   // Overridden from Renderer.
   virtual ParamCache* CreatePlatformSpecificParamCache();
@@ -198,8 +188,8 @@ class RendererGL : public Renderer {
 
   // Overridden from Renderer.
   virtual void SetRenderSurfacesPlatformSpecific(
-      RenderSurface* surface,
-      RenderDepthStencilSurface* depth_surface);
+      const RenderSurface* surface,
+      const RenderDepthStencilSurface* depth_surface);
 
   // Overridden from Renderer.
   virtual Texture2D::Ref CreatePlatformSpecificTexture2D(
@@ -215,6 +205,9 @@ class RendererGL : public Renderer {
       Texture::Format format,
       int levels,
       bool enable_render_surfaces);
+
+  // Overridden from Renderer.
+  virtual void ApplyDirtyStates();
 
  private:
   // Platform-independent GL initialization
@@ -264,9 +257,6 @@ class RendererGL : public Renderer {
   CGcontext cg_context_;
   CGprofile cg_vertex_profile_;
   CGprofile cg_fragment_profile_;
-
-  // Sets the states that need muliple arguments in GL.
-  void SetChangedStates();
 
   friend class AlphaReferenceHandler;
   bool alpha_function_ref_changed_;
