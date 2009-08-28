@@ -83,7 +83,7 @@ medium  canvas-fonts                      screenshot pdiff_threshold(200) pdiff_
 medium  canvas-texturedraw
 medium  checkers                          screenshot pdiff_threshold(200)
 medium  convolution                       screenshot pdiff_threshold(200)
-medium  culling                           screenshot pdiff_threshold(200) downsample(1)
+medium  culling                           screenshot pdiff_threshold(450) downsample(1)
 medium  debugging                         screenshot pdiff_threshold(200) pdiff_threshold_mac(3000)
 medium  displayfps
 small   generate-texture                  screenshot pdiff_threshold(200) except(*iexplore)
