@@ -1302,6 +1302,8 @@
         'browser/gtk/page_info_window_gtk.cc',
         'browser/gtk/process_singleton_dialog.cc',
         'browser/gtk/process_singleton_dialog.h',
+        'browser/gtk/rounded_window.cc',
+        'browser/gtk/rounded_window.h',
         'browser/gtk/sad_tab_gtk.cc',
         'browser/gtk/sad_tab_gtk.h',
         'browser/gtk/slide_animator_gtk.cc',

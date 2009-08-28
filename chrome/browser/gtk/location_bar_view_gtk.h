@@ -131,7 +131,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // Area on the left shown when in tab to search mode.
   GtkWidget* tab_to_search_;
-  GtkWidget* tab_to_search_border_;
   GtkWidget* tab_to_search_box_;
   GtkWidget* tab_to_search_label_;
 

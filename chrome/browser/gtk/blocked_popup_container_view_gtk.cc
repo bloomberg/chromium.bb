@@ -10,6 +10,7 @@
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
@@ -31,48 +32,6 @@ const double kBackgroundColorBottom[] = { 219.0 / 255, 235.0 / 255, 1.0 };
 
 // Rounded corner radius (in pixels).
 const int kCornerSize = 4;
-
-enum FrameType {
-  FRAME_MASK,
-  FRAME_STROKE,
-};
-
-std::vector<GdkPoint> MakeFramePolygonPoints(int width,
-                                             int height,
-                                             FrameType type) {
-  using gtk_util::MakeBidiGdkPoint;
-  std::vector<GdkPoint> points;
-
-  bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
-  // If we have a stroke, we have to offset some of our points by 1 pixel.
-  // We have to inset by 1 pixel when we draw horizontal lines that are on the
-  // bottom or when we draw vertical lines that are closer to the end (end is
-  // right for ltr).
-  int y_off = (type == FRAME_MASK) ? 0 : -1;
-  // We use this one for LTR.
-  int x_off_l = ltr ? y_off : 0;
-  // We use this one for RTL.
-  int x_off_r = !ltr ? -y_off : 0;
-
-  // Bottom left corner.
-  points.push_back(MakeBidiGdkPoint(0, height + y_off, width, ltr));
-
-  // Top left (rounded) corner.
-  points.push_back(MakeBidiGdkPoint(x_off_r, kCornerSize - 1, width, ltr));
-  points.push_back(MakeBidiGdkPoint(kCornerSize + x_off_r - 1, 0, width, ltr));
-
-  // Top right (rounded) corner.
-  points.push_back(MakeBidiGdkPoint(
-      width - kCornerSize + 1 + x_off_l, 0, width, ltr));
-  points.push_back(MakeBidiGdkPoint(
-      width + x_off_l, kCornerSize - 1, width, ltr));
-
-  // Bottom right corner.
-  points.push_back(MakeBidiGdkPoint(
-      width + x_off_l, height + y_off, width, ltr));
-
-  return points;
-}
 
 }  // namespace
 
@@ -150,10 +109,13 @@ void BlockedPopupContainerViewGtk::Observe(NotificationType type,
   GtkWidget* label = gtk_bin_get_child(GTK_BIN(menu_button_));
   if (theme_provider_->UseGtkTheme()) {
     gtk_util::SetLabelColor(label, NULL);
+    GdkColor color = theme_provider_->GetBorderColor();
+    gtk_util::SetRoundedWindowBorderColor(container_.get(), color);
   } else {
     GdkColor color = theme_provider_->GetGdkColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
     gtk_util::SetLabelColor(label, &color);
+    gtk_util::SetRoundedWindowBorderColor(container_.get(), kBorderColor);
   }
 }
 
@@ -189,9 +151,7 @@ BlockedPopupContainerViewGtk::BlockedPopupContainerViewGtk(
     BlockedPopupContainer* container)
     : model_(container),
       theme_provider_(GtkThemeProvider::GetFrom(container->profile())),
-      close_button_(CustomDrawButton::CloseButton(theme_provider_)),
-      notification_width_(-1),
-      notification_height_(-1) {
+      close_button_(CustomDrawButton::CloseButton(theme_provider_)) {
   Init();
 
   registrar_.Add(this,
@@ -214,10 +174,14 @@ void BlockedPopupContainerViewGtk::Init() {
 
   container_.Own(gtk_util::CreateGtkBorderBin(hbox, NULL,
       kSmallPadding, kSmallPadding, kSmallPadding, kSmallPadding));
-  // Manually paint the event box.
-  gtk_widget_set_app_paintable(container_.get(), TRUE);
+  // Connect an expose signal that draws the background. Most connect before
+  // the ActAsRoundedWindow one.
   g_signal_connect(container_.get(), "expose-event",
-                   G_CALLBACK(OnContainerExpose), this);
+                   G_CALLBACK(OnRoundedExposeCallback), this);
+  gtk_util::ActAsRoundedWindow(
+      container_.get(), kBorderColor, kCornerSize,
+      gtk_util::ROUNDED_TOP_LEFT | gtk_util::ROUNDED_TOP_RIGHT,
+      gtk_util::BORDER_LEFT | gtk_util::BORDER_TOP | gtk_util::BORDER_RIGHT);
 
   ContainingView()->AttachBlockedPopupView(this);
 }
@@ -258,30 +222,13 @@ void BlockedPopupContainerViewGtk::OnCloseButtonClicked(
   container->model_->CloseAll();
 }
 
-gboolean BlockedPopupContainerViewGtk::OnContainerExpose(
+gboolean BlockedPopupContainerViewGtk::OnRoundedExposeCallback(
     GtkWidget* widget, GdkEventExpose* event,
     BlockedPopupContainerViewGtk* container) {
-  int width = widget->allocation.width;
-  int height = widget->allocation.height;
-
-  // Update our window shape if we need to.
-  if (container->notification_width_ != widget->allocation.width ||
-      container->notification_height_ != widget->allocation.height) {
-    // We need to update the shape of the status bubble whenever our GDK
-    // window changes shape.
-    std::vector<GdkPoint> mask_points = MakeFramePolygonPoints(
-        widget->allocation.width, widget->allocation.height, FRAME_MASK);
-    GdkRegion* mask_region = gdk_region_polygon(&mask_points[0],
-                                                mask_points.size(),
-                                                GDK_EVEN_ODD_RULE);
-    gdk_window_shape_combine_region(widget->window, mask_region, 0, 0);
-    gdk_region_destroy(mask_region);
-
-    container->notification_width_ = widget->allocation.width;
-    container->notification_height_ = widget->allocation.height;
-  }
-
   if (!container->theme_provider_->UseGtkTheme()) {
+    int width = widget->allocation.width;
+    int height = widget->allocation.height;
+
     // Clip to our damage rect.
     cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event->window));
     cairo_rectangle(cr, event->area.x, event->area.y,
@@ -309,20 +256,5 @@ gboolean BlockedPopupContainerViewGtk::OnContainerExpose(
     cairo_destroy(cr);
   }
 
-  GdkDrawable* drawable = GDK_DRAWABLE(event->window);
-  GdkGC* gc = gdk_gc_new(drawable);
-  if (container->theme_provider_->UseGtkTheme()) {
-    GdkColor color = container->theme_provider_->GetBorderColor();
-    gdk_gc_set_rgb_fg_color(gc, &color);
-  } else {
-    gdk_gc_set_rgb_fg_color(gc, &kBorderColor);
-  }
-
-  // Stroke the frame border.
-  std::vector<GdkPoint> points = MakeFramePolygonPoints(
-      widget->allocation.width, widget->allocation.height, FRAME_STROKE);
-  gdk_draw_lines(drawable, gc, &points[0], points.size());
-
-  g_object_unref(gc);
-  return FALSE;  // Allow subwidgets to paint.
+  return FALSE;
 }

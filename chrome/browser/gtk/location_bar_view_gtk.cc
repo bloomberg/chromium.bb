@@ -19,6 +19,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/gtk/first_run_bubble.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -74,6 +75,9 @@ const GdkColor kEvTextColor = GDK_COLOR_RGB(0x00, 0x96, 0x14);  // Green.
 const GdkColor kKeywordBackgroundColor = GDK_COLOR_RGB(0xf0, 0xf4, 0xfa);
 const GdkColor kKeywordBorderColor = GDK_COLOR_RGB(0xcb, 0xde, 0xf7);
 
+// Size of the rounding of the "Search site for:" box.
+const int kCornerSize = 3;
+
 // Returns the short name for a keyword.
 std::wstring GetKeywordName(Profile* profile,
                             const std::wstring& keyword) {
@@ -104,7 +108,6 @@ LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
       info_label_align_(NULL),
       info_label_(NULL),
       tab_to_search_(NULL),
-      tab_to_search_border_(NULL),
       tab_to_search_box_(NULL),
       tab_to_search_label_(NULL),
       tab_to_search_hint_(NULL),
@@ -174,9 +177,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // keyword text with a border, background color, and padding around the text.
   tab_to_search_box_ = gtk_util::CreateGtkBorderBin(
       tab_to_search_label_, NULL, 1, 1, 2, 2);
-  tab_to_search_border_ = gtk_util::CreateGtkBorderBin(
-      tab_to_search_box_, NULL, 1, 1, 1, 1);
-  gtk_container_add(GTK_CONTAINER(tab_to_search_), tab_to_search_border_);
+  gtk_util::ActAsRoundedWindow(tab_to_search_box_, kBorderColor, kCornerSize,
+                               gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
+  gtk_container_add(GTK_CONTAINER(tab_to_search_), tab_to_search_box_);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), tab_to_search_, FALSE, FALSE, 0);
 
   GtkWidget* align = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -418,8 +421,7 @@ void LocationBarViewGtk::Observe(NotificationType type,
 
     GdkColor border_color = theme_provider_->GetGdkColor(
         BrowserThemeProvider::COLOR_FRAME);
-    gtk_widget_modify_bg(tab_to_search_border_, GTK_STATE_NORMAL,
-                         &border_color);
+    gtk_util::SetRoundedWindowBorderColor(tab_to_search_box_, border_color);
 
     gtk_util::SetLabelColor(tab_to_search_label_, NULL);
     gtk_util::SetLabelColor(tab_to_search_hint_leading_label_, NULL);
@@ -427,8 +429,8 @@ void LocationBarViewGtk::Observe(NotificationType type,
   } else {
     gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL,
                          &kKeywordBackgroundColor);
-    gtk_widget_modify_bg(tab_to_search_border_, GTK_STATE_NORMAL,
-                         &kKeywordBorderColor);
+    gtk_util::SetRoundedWindowBorderColor(tab_to_search_box_,
+                                          kKeywordBorderColor);
 
     gtk_util::SetLabelColor(tab_to_search_label_, &gfx::kGdkBlack);
     gtk_util::SetLabelColor(tab_to_search_hint_leading_label_,
