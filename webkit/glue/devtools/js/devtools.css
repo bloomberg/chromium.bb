@@ -72,6 +72,28 @@ body.attached #toolbar {
     position: absolute;
     left: 0;
     right: 0;
-    top: 93px;
+    top: 0;
+    bottom: 93px;
+}
+
+#heap-snapshot-summary {
+    position: absolute;
+    padding-top: 20px;
     bottom: 0;
+    left: 0;
+    right: 0;
+    height: 93px;
+    margin-left: -1px;
+    border-left: 1px solid rgb(102, 102, 102);
+    background-color: rgb(101, 111, 130);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0.5)), to(rgba(0, 0, 0, 0)));
+    background-repeat: repeat-x;
+    background-position: top;
+    text-align: center;
+    text-shadow: black 0 1px 1px;
+    white-space: nowrap;
+    color: white;
+    -webkit-background-size: 1px 6px;
+    -webkit-background-origin: padding;
+    -webkit-background-clip: padding;
 }
