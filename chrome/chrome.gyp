@@ -48,13 +48,13 @@
       'browser/extensions/extension_browsertest.h',
       'browser/extensions/extension_browsertests_misc.cc',
       'browser/extensions/extension_override_apitest.cc',
-      'browser/extensions/extension_startup_unittest.cc',
     ],
     'browser_tests_sources_win_specific': [
       'browser/extensions/extension_devtools_browsertest.cc',
       'browser/extensions/extension_devtools_browsertest.h',
       'browser/extensions/extension_devtools_browsertests.cc',
       'browser/extensions/extension_shelf_model_unittest.cc',
+      'browser/extensions/extension_startup_unittest.cc',
       'browser/views/browser_views_accessibility_browsertest.cc',
       'browser/views/find_bar_win_browsertest.cc',
       # TODO(jam): http://crbug.com/15101 These tests fail on Linux and Mac.
@@ -73,7 +73,6 @@
       'browser/extensions/extension_browsertest.h',
       'browser/extensions/extension_browsertests_misc.cc',
       'browser/extensions/extension_override_apitest.cc',
-      'browser/extensions/extension_startup_unittest.cc',
     ],
     # TODO(jcampan): move these vars to views.gyp.
     'views_unit_tests_sources': [
