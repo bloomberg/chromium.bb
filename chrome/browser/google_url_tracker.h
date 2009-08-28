@@ -56,6 +56,8 @@ class GoogleURLTracker : public URLFetcher::Delegate,
 
   static void RegisterPrefs(PrefService* prefs);
 
+  static const char kDefaultGoogleHomepage[];
+
  private:
   FRIEND_TEST(GoogleURLTrackerTest, CheckAndConvertURL);
 
@@ -87,8 +89,6 @@ class GoogleURLTracker : public URLFetcher::Delegate,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-
-  static const char kDefaultGoogleHomepage[];
 
   NotificationRegistrar registrar_;
   GURL google_url_;

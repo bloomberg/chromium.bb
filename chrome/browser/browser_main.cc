@@ -639,20 +639,23 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Note that this be done _after_ the PrefService is initialized and all
   // preferences are registered, since some of the code that the importer
   // touches reads preferences.
-  if (is_first_run && !first_run_ui_bypass) {
-    if (!OpenFirstRunDialog(profile, homepage_defined, &process_singleton)) {
-      // The user cancelled the first run dialog box, we should exit Chrome.
-      return ResultCodes::NORMAL_EXIT;
-    }
+  if (is_first_run) {
+    if (!first_run_ui_bypass) {
+      if (!OpenFirstRunDialog(profile, homepage_defined, &process_singleton)) {
+        // The user cancelled the first run dialog box, we should exit Chrome.
+        return ResultCodes::NORMAL_EXIT;
+      }
 #if defined(OS_POSIX)
-    // On Windows, the download is tagged with enable/disable stats so there
-    // is no need for this code.
+      // On Windows, the download is tagged with enable/disable stats so there
+      // is no need for this code.
 
-    // If stats reporting was turned on by the first run dialog then toggle
-    // the pref.
-    if (GoogleUpdateSettings::GetCollectStatsConsent())
-      local_state->SetBoolean(prefs::kMetricsReportingEnabled, true);
+      // If stats reporting was turned on by the first run dialog then toggle
+      // the pref.
+      if (GoogleUpdateSettings::GetCollectStatsConsent())
+        local_state->SetBoolean(prefs::kMetricsReportingEnabled, true);
 #endif  // OS_POSIX
+    }
+    Browser::SetNewHomePagePrefs(user_prefs);
   }
 
   // Sets things up so that if we crash from this point on, a dialog will
