@@ -102,7 +102,8 @@ static net::ProxyService* CreateProxyService(URLRequestContext* context,
       proxy_config.get(),
       use_v8,
       context,
-      g_browser_process->io_thread()->message_loop());
+      g_browser_process->io_thread()->message_loop(),
+      g_browser_process->file_thread()->message_loop());
 }
 
 // static

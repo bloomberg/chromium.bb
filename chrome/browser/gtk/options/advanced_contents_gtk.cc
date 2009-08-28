@@ -43,8 +43,8 @@ namespace {
 const char* kOldGNOMEProxyConfigCommand[] = {"gnome-network-preferences", NULL};
 const char* kGNOMEProxyConfigCommand[] = {"gnome-network-properties", NULL};
 // KDE3 and KDE4 are only slightly different, but incompatible. Go figure.
-// const char* kKDE3ProxyConfigCommand[] = {"kcmshell", "proxy", NULL};
-// const char* kKDE4ProxyConfigCommand[] = {"kcmshell4", "proxy", NULL};
+const char* kKDE3ProxyConfigCommand[] = {"kcmshell", "proxy", NULL};
+const char* kKDE4ProxyConfigCommand[] = {"kcmshell4", "proxy", NULL};
 
 // The pixel width we wrap labels at.
 // TODO(evanm): make the labels wrap at the appropriate width.
@@ -382,13 +382,13 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
     }
 
     case base::DESKTOP_ENVIRONMENT_KDE3:
-    //  command.argv = kKDE3ProxyConfigCommand;
-    //  found_command = SearchPATH(&command, 1, NULL);
+      command.argv = kKDE3ProxyConfigCommand;
+      found_command = SearchPATH(&command, 1, NULL);
       break;
 
     case base::DESKTOP_ENVIRONMENT_KDE4:
-    //  command.argv = kKDE4ProxyConfigCommand;
-    //  found_command = SearchPATH(&command, 1, NULL);
+      command.argv = kKDE4ProxyConfigCommand;
+      found_command = SearchPATH(&command, 1, NULL);
       break;
 
     case base::DESKTOP_ENVIRONMENT_OTHER:
