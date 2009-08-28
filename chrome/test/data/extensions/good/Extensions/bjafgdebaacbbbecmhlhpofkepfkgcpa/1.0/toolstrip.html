@@ -5,7 +5,7 @@ window.onload = function() {
     port.onMessage.addListener(function(msg) {
       console.log('got message');
       if (msg.testPostMessageFromTab) {
-        port.postMessage({success: true});
+        port.postMessage({success: true, portName: port.name});
         console.log('sent success');
       }
       // Ignore other messages since they are from us.
@@ -21,6 +21,21 @@ function testPostMessage() {
     port.postMessage({testPostMessage: true});
     port.onMessage.addListener(function(msg) {
       window.domAutomationController.send(msg.success);
+      port.disconnect();
+    });
+  });
+}
+
+// Tests that port name is sent & received correctly.
+function testPortName() {
+  chrome.tabs.getSelected(null, function(tab) {
+    var portName = "lemonjello";
+    var port = chrome.tabs.connect(tab.id, {name: portName});
+    console.log('naming port ' + portName);
+    port.postMessage({testPortName: true});
+    port.onMessage.addListener(function(msg) {
+      console.log('got name ' + msg.portName);
+      window.domAutomationController.send(msg.portName == portName);
       port.disconnect();
     });
   });

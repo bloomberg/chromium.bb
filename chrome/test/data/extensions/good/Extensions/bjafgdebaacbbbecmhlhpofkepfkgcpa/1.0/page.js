@@ -18,6 +18,8 @@ win.onload = function() {
         port.disconnect();
       } else if (msg.testDisconnectOnClose) {
         win.location = "about:blank";
+      } else if (msg.testPortName) {
+        port.postMessage({portName:port.name});
       }
       // Ignore other messages since they are from us.
     });
@@ -27,10 +29,11 @@ win.onload = function() {
 // Tests that postMessage to the extension and its response works.
 function testPostMessageFromTab(origPort) {
   console.log('testPostMessageFromTab');
-  var port = chrome.extension.connect();
+  var portName = "peter";
+  var port = chrome.extension.connect({name: portName});
   port.postMessage({testPostMessageFromTab: true});
   port.onMessage.addListener(function(msg) {
-    origPort.postMessage({success: msg.success});
+    origPort.postMessage({success: (msg.success && (msg.portName == portName))});
     console.log('sent ' + msg.success);
     port.disconnect();
   });

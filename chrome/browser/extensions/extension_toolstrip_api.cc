@@ -7,6 +7,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_shelf_model.h"
+#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 
 namespace extension_toolstrip_api_functions {
 const char kExpandFunction[] = "toolstrip.expand";
@@ -25,6 +26,8 @@ const char kBadHeightError[] = "Bad height.";
 const int kMinHeight = 50;
 const int kMaxHeight = 1000;
 };  // namespace
+
+namespace keys = extension_tabs_module_constants;
 
 bool ToolstripFunction::RunImpl() {
   ExtensionHost* host = dispatcher()->GetExtensionHost();
@@ -58,30 +61,28 @@ bool ToolstripExpandFunction::RunImpl() {
     return false;
   }
 
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = static_cast<const ListValue*>(args_);
-  EXTENSION_FUNCTION_VALIDATE(args->GetSize() <= 2);
+  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
+  const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
 
   int height;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(0, &height));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kHeightKey,
+                                               &height));
   EXTENSION_FUNCTION_VALIDATE(height >= 0);
   if (height < kMinHeight || height > kMaxHeight) {
     error_ = kBadHeightError;
     return false;
   }
 
+
   GURL url;
-  if (args->GetSize() == 2) {
-    Value* url_val;
-    EXTENSION_FUNCTION_VALIDATE(args->Get(1, &url_val));
-    if (url_val->GetType() != Value::TYPE_NULL) {
-      std::string url_str;
-      EXTENSION_FUNCTION_VALIDATE(url_val->GetAsString(&url_str));
-      url = GURL(url_str);
-      if (!url.is_valid() && !url.is_empty()) {
-        error_ = kInvalidURLError;
-        return false;
-      }
+  if (args->HasKey(keys::kUrlKey)) {
+    std::string url_string;
+    EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
+                                                &url_string));
+    url = GURL(url_string);
+    if (!url.is_valid() && !url.is_empty()) {
+      error_ = kInvalidURLError;
+      return false;
     }
   }
 
@@ -100,12 +101,18 @@ bool ToolstripCollapseFunction::RunImpl() {
 
   GURL url;
   if (args_->GetType() != Value::TYPE_NULL) {
-    std::string url_str;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&url_str));
-    url = GURL(url_str);
-    if (!url.is_valid() && !url.is_empty()) {
-      error_ = kInvalidURLError;
-      return false;
+    EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
+    const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+
+    if (args->HasKey(keys::kUrlKey)) {
+      std::string url_string;
+      EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
+                                                  &url_string));
+      url = GURL(url_string);
+      if (!url.is_valid() && !url.is_empty()) {
+        error_ = kInvalidURLError;
+        return false;
+      }
     }
   }
 

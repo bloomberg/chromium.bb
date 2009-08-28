@@ -13,6 +13,7 @@
 
 class Browser;
 class DictionaryValue;
+class ListValue;
 class TabContents;
 class TabStripModel;
 
@@ -30,10 +31,13 @@ class ExtensionTabUtil {
   static TabStatus GetTabStatus(const TabContents* tab_contents);
   static std::string GetTabStatusText(TabStatus status);
   static int GetWindowIdOfTab(const TabContents* tab_contents);
+  static ListValue* CreateTabList(const Browser* browser);
   static DictionaryValue* CreateTabValue(const TabContents* tab_contents);
   static DictionaryValue* CreateTabValue(const TabContents* tab_contents,
                                          TabStripModel* tab_strip,
                                          int tab_index);
+  static DictionaryValue* CreateWindowValue(const Browser* browser,
+                                            bool populate_tabs);
 
   // Any out parameter (|browser|, |tab_strip|, |contents|, & |tab_index|) may
   // be NULL and will not be set within the function.

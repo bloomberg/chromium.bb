@@ -34,7 +34,7 @@ var testMoveBookmarks2 = function(event) {
     return;
   }
   console.log("testMoveBookmarks2");
-  chrome.bookmarks.getChildren(0, function(root_children) {
+  chrome.bookmarks.getChildren('0', function(root_children) {
     var bookmark_bar = root_children[0];  // bookmarks bar is always first
     chrome.bookmarks.getChildren(bookmark_bar.id, function(bar_children) {
       var folder_search = [];
@@ -74,7 +74,7 @@ var testMoveBookmarks2 = function(event) {
 };
 
 var dumpBookmarks = function(event) {
-  window.open("bookmark_view.html");
+  chrome.tabs.create({url:"bookmark_view.html"});
 };
 </script>
 <body>

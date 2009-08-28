@@ -15,7 +15,7 @@ HOLA!!! If you dont see the message DONE, then there is an error in the script.
   });
 
   // Window events.
-  chrome.windows.onCreated.addListener(function(windowId) {
+  chrome.windows.onCreated.addListener(function(createInfo) {
     portToAutomation.postMessage(chrome.windows.onCreated.eventName_);
   });
   chrome.windows.onRemoved.addListener(function(windowId) {
@@ -49,8 +49,8 @@ HOLA!!! If you dont see the message DONE, then there is an error in the script.
   });
 
   // Bookmark events.
-  chrome.bookmarks.onAdded.addListener(function(info) {
-    portToAutomation.postMessage(chrome.bookmarks.onAdded.eventName_);
+  chrome.bookmarks.onCreated.addListener(function(info) {
+    portToAutomation.postMessage(chrome.bookmarks.onCreated.eventName_);
   });
   chrome.bookmarks.onRemoved.addListener(function(info) {
     portToAutomation.postMessage(chrome.bookmarks.onRemoved.eventName_);
@@ -62,7 +62,7 @@ HOLA!!! If you dont see the message DONE, then there is an error in the script.
     portToAutomation.postMessage(chrome.bookmarks.onMoved.eventName_);
   });
   chrome.bookmarks.onChildrenReordered.addListener(function(bookmarkId,
-      children) {
+      reorderInfo) {
     portToAutomation.postMessage(
         chrome.bookmarks.onChildrenReordered.eventName_);
   });

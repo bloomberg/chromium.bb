@@ -157,18 +157,21 @@ TEST_F(ExtensionAPIClientTest, GetLastFocusedWindow) {
 }
 
 TEST_F(ExtensionAPIClientTest, GetAllWindows) {
-  ExpectJsFail("chrome.windows.getAll(true, function(){}, 20);",
+  ExpectJsFail("chrome.windows.getAll({populate: true}, function(){}, 20);",
                "Uncaught Error: Too many arguments.");
 
   ExpectJsFail("chrome.windows.getAll(1, function(){});",
                "Uncaught Error: Invalid value for argument 0. "
-               "Expected 'boolean' but got 'integer'.");
+               "Expected 'object' but got 'integer'.");
 
-  ExpectJsPass("chrome.windows.getAll(true, function(){})",
-               "windows.getAll", "true");
+  ExpectJsPass("chrome.windows.getAll({populate:true}, function(){})",
+               "windows.getAll", "{\"populate\":true}");
 
   ExpectJsPass("chrome.windows.getAll(null, function(){})",
                "windows.getAll", "null");
+
+  ExpectJsPass("chrome.windows.getAll({}, function(){})",
+               "windows.getAll", "{}");
 
   ExpectJsPass("chrome.windows.getAll(undefined, function(){})",
                "windows.getAll", "null");
@@ -535,42 +538,53 @@ TEST_F(ExtensionAPIClientTest, EnablePageAction) {
 }
 
 TEST_F(ExtensionAPIClientTest, ExpandToolstrip) {
-  ExpectJsPass("chrome.toolstrip.expand(100, 'http://foo/')",
+  ExpectJsPass("chrome.toolstrip.expand({height:100, url:'http://foo/'})",
                "toolstrip.expand",
-               "[100,\"http://foo/\"]");
-  ExpectJsPass("chrome.toolstrip.expand(100, null)",
+               "{\"height\":100,\"url\":\"http://foo/\"}");
+  ExpectJsPass("chrome.toolstrip.expand({height:100}, null)",
                "toolstrip.expand",
-               "[100,null]");
-  ExpectJsPass("chrome.toolstrip.expand(100, 'http://foo/', function(){})",
+               "{\"height\":100}");
+  ExpectJsPass("chrome.toolstrip.expand({height:100,url:'http://foo/'}, "
+                   "function(){})",
                "toolstrip.expand",
-               "[100,\"http://foo/\"]");
+               "{\"height\":100,\"url\":\"http://foo/\"}");
 
-  ExpectJsFail("chrome.toolstrip.expand('100', 'http://foo/')",
+
+  ExpectJsFail("chrome.toolstrip.expand()",
+               "Uncaught Error: Parameter 0 is required.");
+  ExpectJsFail("chrome.toolstrip.expand(1)",
                "Uncaught Error: Invalid value for argument 0. "
+               "Expected 'object' but got 'integer'.");
+  ExpectJsFail("chrome.toolstrip.expand({height:'100', url:'http://foo/'})",
+               "Uncaught Error: Invalid value for argument 0. "
+                   "Property 'height': "
                "Expected 'integer' but got 'string'.");
-  ExpectJsFail("chrome.toolstrip.expand(100, 100)",
-               "Uncaught Error: Invalid value for argument 1. "
+  ExpectJsFail("chrome.toolstrip.expand({height:100,url:100})",
+               "Uncaught Error: Invalid value for argument 0. Property 'url': "
                "Expected 'string' but got 'integer'.");
-  ExpectJsFail("chrome.toolstrip.expand(100, 'http://foo/', 32)",
-               "Uncaught Error: Invalid value for argument 2. "
+  ExpectJsFail("chrome.toolstrip.expand({height:100,'url':'http://foo/'}, 32)",
+               "Uncaught Error: Invalid value for argument 1. "
                "Expected 'function' but got 'integer'.");
 }
 
 TEST_F(ExtensionAPIClientTest, CollapseToolstrip) {
-  ExpectJsPass("chrome.toolstrip.collapse('http://foo/')",
+  ExpectJsPass("chrome.toolstrip.collapse({url:'http://foo/'})",
                "toolstrip.collapse",
-               "\"http://foo/\"");
+               "{\"url\":\"http://foo/\"}");
   ExpectJsPass("chrome.toolstrip.collapse(null)",
                "toolstrip.collapse",
                "null");
-  ExpectJsPass("chrome.toolstrip.collapse('http://foo/', function(){})",
+  ExpectJsPass("chrome.toolstrip.collapse({url:'http://foo/'}, function(){})",
                "toolstrip.collapse",
-               "\"http://foo/\"");
+               "{\"url\":\"http://foo/\"}");
 
+  ExpectJsFail("chrome.toolstrip.collapse(1)",
+               "Uncaught Error: Invalid value for argument 0. "
+               "Expected 'object' but got 'integer'.");
   ExpectJsFail("chrome.toolstrip.collapse(100)",
                "Uncaught Error: Invalid value for argument 0. "
-               "Expected 'string' but got 'integer'.");
-  ExpectJsFail("chrome.toolstrip.collapse('http://foo/', 32)",
+               "Expected 'object' but got 'integer'.");
+  ExpectJsFail("chrome.toolstrip.collapse({url:'http://foo/'}, 32)",
                "Uncaught Error: Invalid value for argument 1. "
                "Expected 'function' but got 'integer'.");
 }

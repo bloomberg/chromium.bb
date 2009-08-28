@@ -119,9 +119,19 @@ void ExtensionBrowserEventRouter::OnBrowserAdded(const Browser* browser) {
   // Start listening to TabStripModel events for this browser.
   browser->tabstrip_model()->AddObserver(this);
 
-  DispatchSimpleBrowserEvent(browser->profile(),
-                             ExtensionTabUtil::GetWindowId(browser),
-                             events::kOnWindowCreated);
+  ListValue args;
+  // TODO(rafaelw): This would ideally be returning a full Window object
+  // via ExtensionTabUtil::CreateWindowValue(), but the browser->window()
+  // isn't ready at the time we get the OnBrowserAdded event.
+  DictionaryValue* window_dictionary = new DictionaryValue();
+  window_dictionary->SetInteger(extension_tabs_module_constants::kIdKey,
+      ExtensionTabUtil::GetWindowId(browser));
+  args.Append(window_dictionary);
+
+  std::string json_args;
+  JSONWriter::Write(&args, false, &json_args);
+
+  DispatchEvent(browser->profile(), events::kOnWindowCreated, json_args);
 }
 
 void ExtensionBrowserEventRouter::OnBrowserRemoving(const Browser* browser) {
@@ -337,15 +347,14 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
     int tab_id,
     const std::string& url) {
   ListValue args;
-  DictionaryValue* object_args = new DictionaryValue();
-  object_args->Set(tab_keys::kPageActionIdKey,
-                   Value::CreateStringValue(page_action_id));
+
+  args.Append(Value::CreateStringValue(page_action_id));
+
   DictionaryValue* data = new DictionaryValue();
   data->Set(tab_keys::kTabIdKey, Value::CreateIntegerValue(tab_id));
   data->Set(tab_keys::kTabUrlKey, Value::CreateStringValue(url));
-  object_args->Set(tab_keys::kDataKey, data);
 
-  args.Append(object_args);
+  args.Append(data);
 
   std::string json_args;
   JSONWriter::Write(&args, false, &json_args);

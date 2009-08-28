@@ -43,8 +43,8 @@ var logEvent = function(name, id, data) {
   console.log("got event: " + name);
 }
 
-chrome.bookmarks.onAdded.addListener(function(id, data) {
-  logEvent("onBookmarkAdded", id, data);
+chrome.bookmarks.onCreated.addListener(function(id, data) {
+  logEvent("onBookmarkCreated", id, data);
 });
 
 chrome.bookmarks.onRemoved.addListener(function(id, data) {
@@ -71,9 +71,7 @@ var toggleBookmark = function(event) {
   var id_str = node.id;
   if (id_str < prefix.length)
     return;
-  var id = parseInt(id_str.substring(prefix.length));
-  if (id == NaN)
-    return;
+  var id = id_str.substring(prefix.length);
   console.log("toggle: " + id);
   //console.dir(event);
   if (node.childNodes.length > 1) {
@@ -136,7 +134,7 @@ var testGetTree = function(results) {
 var loadBookmarks = function() {
   var container = document.getElementById('container');
   var rootElement = document.createElement("div");
-  var rootId = 0;
+  var rootId = '0';
   rootElement.id = prefix + rootId;
   // root element is empty / invisible, just an id to be looked up
   container.appendChild(rootElement);

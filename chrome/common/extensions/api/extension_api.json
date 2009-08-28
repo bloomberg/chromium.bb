@@ -31,9 +31,11 @@
         "description": "Attempts to connect to other listeners within the extension (listeners may be toolstrips or the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Extensions may connect to content scripts embedded in tabs via <a href='broken'><var>chrome.tabs.connectToTab</var></a>.",
         "parameters": [
           {
-            "name": "name",
-            "type": "string",
-            "description": "Will be passed into onConnect for extension processes that are listening for the connection event.",
+            "type": "object",
+            "name": "connectInfo",
+            "properties": {
+              "name": { "type": "string", "optional": true, "description": "Will be passed into onConnect for extension processes that are listening for the connection event." }
+            },
             "optional": true
           }
         ],
@@ -170,9 +172,17 @@
       {
         "name": "getAll",
         "type": "function",
-        "description": "Get all windows. If <var>populate</var> is true, each window object will have a <var>tabs</var> property that contains a list of the Tab objects for that window.",
+        "description": "Get all windows.",
         "parameters": [
-          {"type": "boolean", "name": "populate", "optional": true},
+          {
+            "type": "object",
+            "name": "getInfo",
+            "optional": true,
+            "description": "",
+            "properties": {
+              "populate": {"type": "boolean", "optional": true, "description": "If true, each window object will have a <var>tabs</var> property that contains a list of the Tab objects for that window." }
+            }
+          },
           {
             "type": "function",
             "name": "callback",
@@ -257,7 +267,13 @@
         "type": "function",
         "description": "",
         "parameters": [
-          {"type": "integer", "name": "windowId", "minimum": 0}
+          {
+            "type": "object",
+            "name": "createInfo",
+            "properties": {
+              "id": {"type": "integer", "minimum": 0}
+            }
+          }
         ]
       },
       {
@@ -318,7 +334,14 @@
         "description": "",
         "parameters": [
           {"type": "integer", "name": "tabId", "optional": true, "minimum": 0},
-          {"type": "string", "name": "name", "optional": true}
+          {
+            "type": "object",
+            "name": "connectInfo",
+            "properties": {
+              "name": { "type": "string", "optional": true, "description": "Will be passed into onConnect for content scripts that are listening for the connection event." }
+            },
+            "optional": true
+          }
         ],
         "returns": {
           "$ref": "Port"
@@ -765,7 +788,7 @@
     ],
     "events": [
       {
-        "name": "onAdded",
+        "name": "onCreated",
         "type": "function",
         "description": "",
         "parameters": [
@@ -832,9 +855,11 @@
         "parameters": [
           {"type": "string", "name": "id"},
           {
-            "type": "array",
-            "name": "childIds",
-            "items": { "type": "string" }
+            "type": "object",
+            "name": "reorderInfo",
+            "properties": {
+              "childIds": { "type": "array", "items": { "type": "string" } }
+            }
           }
         ]
       }
@@ -849,8 +874,14 @@
         "type": "function",
         "description": "",
         "parameters": [
-          {"type": "integer", "name": "height", "minimum": 0},
-          {"type": "string", "name": "url", "optional": true},
+          {
+            "type": "object",
+            "name": "expandInfo",
+            "properties": {
+              "height": { "type": "integer", "minimum": 0, "description": "The vertical pixel height required of the toolstrip area." },
+              "url": { "type": "string", "optional": true, "description": "If present, the toolstrip mole will change it's content to the provided url. Otherwise, the current page will just be expanded in size." }
+            }
+          },
           {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       },
@@ -859,7 +890,14 @@
         "type": "function",
         "description": "",
         "parameters": [
-          {"type": "string", "name": "url", "optional": true},
+          {
+            "type": "object",
+            "name": "collapseInfo",
+            "optional": true,
+            "properties": {
+              "url": { "type": "string", "optional": true, "description": "If present, the toolstrip mole will change it's content to the provided url. Otherwise, the current page will just be collapsed in size." }
+            }
+          },
           {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       }

@@ -42,7 +42,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   LoadHTML("<body></body>");
   ExecuteJavaScript(
     "var e = new chrome.Extension('foobar');"
-    "var port = e.connect('testName');"
+    "var port = e.connect({name:'testName'});"
     "port.onMessage.addListener(doOnMessage);"
     "port.postMessage({message: 'content ready'});"
     "function doOnMessage(msg, port) {"

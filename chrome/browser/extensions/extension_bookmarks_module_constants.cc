@@ -14,6 +14,7 @@ const wchar_t kOldParentIdKey[] = L"oldParentId";
 const wchar_t kUrlKey[] = L"url";
 const wchar_t kTitleKey[] = L"title";
 const wchar_t kChildrenKey[] = L"children";
+const wchar_t kChildIdsKey[] = L"childIds";
 const wchar_t kRecursiveKey[] = L"recursive";
 const wchar_t kDateAddedKey[] = L"dateAdded";
 const wchar_t kDateGroupModifiedKey[] = L"dateGroupModified";
@@ -27,7 +28,7 @@ const char kInvalidIndexError[] = "Index out of bounds.";
 const char kInvalidUrlError[] = "Invalid URL.";
 const char kModifySpecialError[] = "Can't modify the root bookmark folders.";
 
-const char kOnBookmarkAdded[] = "bookmarks.onAdded";
+const char kOnBookmarkCreated[] = "bookmarks.onCreated";
 const char kOnBookmarkRemoved[] = "bookmarks.onRemoved";
 const char kOnBookmarkChanged[] = "bookmarks.onChanged";
 const char kOnBookmarkMoved[] = "bookmarks.onMoved";

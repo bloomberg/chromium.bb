@@ -203,7 +203,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
 
   std::string json_args;
   JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(model->profile(), keys::kOnBookmarkAdded, json_args);
+  DispatchEvent(model->profile(), keys::kOnBookmarkCreated, json_args);
 }
 
 void ExtensionBookmarkEventRouter::BookmarkNodeRemoved(
@@ -258,7 +258,9 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChildrenReordered(
     Value* child_id = new StringValue(Int64ToString(child->id()));
     children->Append(child_id);
   }
-  args.Append(children);
+  DictionaryValue* reorder_info = new DictionaryValue();
+  reorder_info->Set(keys::kChildIdsKey, children);
+  args.Append(reorder_info);
 
   std::string json_args;
   JSONWriter::Write(&args, false, &json_args);

@@ -10,7 +10,6 @@
 namespace extension_tabs_module_constants {
 
 // Keys used in serializing tab data & events.
-extern const wchar_t kDataKey[];
 extern const wchar_t kFavIconUrlKey[];
 extern const wchar_t kFocusedKey[];
 extern const wchar_t kFromIndexKey[];
@@ -22,7 +21,7 @@ extern const wchar_t kNewPositionKey[];
 extern const wchar_t kNewWindowIdKey[];
 extern const wchar_t kOldPositionKey[];
 extern const wchar_t kOldWindowIdKey[];
-extern const wchar_t kPageActionIdKey[];
+extern const wchar_t kPopulateKey[];
 extern const wchar_t kSelectedKey[];
 extern const wchar_t kStatusKey[];
 extern const wchar_t kTabIdKey[];

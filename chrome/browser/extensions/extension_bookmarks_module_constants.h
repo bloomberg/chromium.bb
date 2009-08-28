@@ -18,6 +18,7 @@ extern const wchar_t kOldParentIdKey[];
 extern const wchar_t kUrlKey[];
 extern const wchar_t kTitleKey[];
 extern const wchar_t kChildrenKey[];
+extern const wchar_t kChildIdsKey[];
 extern const wchar_t kRecursiveKey[];
 extern const wchar_t kDateAddedKey[];
 extern const wchar_t kDateGroupModifiedKey[];
@@ -32,7 +33,7 @@ extern const char kInvalidUrlError[];
 extern const char kModifySpecialError[];
 
 // Events.
-extern const char kOnBookmarkAdded[];
+extern const char kOnBookmarkCreated[];
 extern const char kOnBookmarkRemoved[];
 extern const char kOnBookmarkChanged[];
 extern const char kOnBookmarkMoved[];

@@ -248,7 +248,8 @@ class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
       std::string tab_json;
       JSONWriter::Write(&tab_dict, false, &tab_json);
 
-      EXPECT_TRUE(response_dict.SetString(keys::kAutomationResponseKey, tab_json));
+      EXPECT_TRUE(response_dict.SetString(keys::kAutomationResponseKey,
+          tab_json));
 
       std::string response_json;
       JSONWriter::Write(&response_dict, false, &response_json);
@@ -335,40 +336,41 @@ class BrowserEventAutomationProxy : public MultiMessageAutomationProxy {
 
 const char* BrowserEventAutomationProxy::events_[] = {
   // Window events.
-  "[\"windows.onCreated\", \"[42]\"]",
-  
+  "[\"windows.onCreated\", \"[{'id':42}]\"]",
+
   "[\"windows.onRemoved\", \"[42]\"]",
-  
+
   "[\"windows.onFocusChanged\", \"[42]\"]",
-  
+
   // Tab events.
   "[\"tabs.onCreated\", \"[{'id\':42,'index':1,'windowId':1,"
       "'selected':true,'url':'http://www.google.com'}]\"]",
-  
+
   "[\"tabs.onUpdated\", \"[42, {'status': 'complete',"
       "'url':'http://www.google.com'}]\"]",
-  
+
   "[\"tabs.onMoved\", \"[42, {'windowId':1,'fromIndex':1,'toIndex':2}]\"]",
-  
+
   "[\"tabs.onSelectionChanged\", \"[42, {'windowId':1}]\"]",
-  
+
   "[\"tabs.onAttached\", \"[42, {'newWindowId':1,'newPosition':1}]\"]",
-  
+
   "[\"tabs.onDetached\", \"[43, {'oldWindowId':1,'oldPosition':1}]\"]",
-  
+
   "[\"tabs.onRemoved\", \"[43]\"]",
 
   // Bookmark events.
-  "[\"bookmarks.onAdded\", \"['42', {'id':'42','title':'foo',}]\"]",
-  
+  "[\"bookmarks.onCreated\", \"['42', {'id':'42','title':'foo',}]\"]",
+
   "[\"bookmarks.onRemoved\", \"['42', {'parentId':'2','index':1}]\"]",
-  
+
   "[\"bookmarks.onChanged\", \"['42', {'title':'foo'}]\"]",
-  
+
   "[\"bookmarks.onMoved\", \"['42', {'parentId':'2','index':1,"
       "'oldParentId':'3','oldIndex':2}]\"]",
-  
-  "[\"bookmarks.onChildrenReordered\", \"['32', ['1', '2', '3']]\"]"
+
+  "[\"bookmarks.onChildrenReordered\", \"['32', "
+      "{'childIds':['1', '2', '3']}]\"]"
 };
 
 void BrowserEventAutomationProxy::HandleMessageFromChrome() {

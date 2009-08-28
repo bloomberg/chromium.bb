@@ -30,8 +30,6 @@
 namespace keys = extension_tabs_module_constants;
 
 // Forward declare static helper functions defined below.
-static DictionaryValue* CreateWindowValue(Browser* browser, bool populate_tabs);
-static ListValue* CreateTabList(Browser* browser);
 
 // |error_message| can optionally be passed in a will be set with an appropriate
 // message if the window cannot be found by id.
@@ -97,6 +95,17 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   return ExtensionTabUtil::CreateTabValue(contents, NULL, -1);
 }
 
+ListValue* ExtensionTabUtil::CreateTabList(const Browser* browser) {
+  ListValue* tab_list = new ListValue();
+  TabStripModel* tab_strip = browser->tabstrip_model();
+  for (int i = 0; i < tab_strip->count(); ++i) {
+    tab_list->Append(ExtensionTabUtil::CreateTabValue(
+        tab_strip->GetTabContentsAt(i), tab_strip, i));
+  }
+
+  return tab_list;
+}
+
 DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const TabContents* contents, TabStripModel* tab_strip, int tab_index) {
   TabStatus status = GetTabStatus(contents);
@@ -119,6 +128,33 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
       if (entry->favicon().is_valid())
         result->SetString(keys::kFavIconUrlKey, entry->favicon().url().spec());
     }
+  }
+
+  return result;
+}
+
+// if |populate| is true, each window gets a list property |tabs| which contains
+// fully populated tab objects.
+DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
+                                                     bool populate_tabs) {
+  DictionaryValue* result = new DictionaryValue();
+  result->SetInteger(keys::kIdKey, ExtensionTabUtil::GetWindowId(
+      browser));
+  bool focused = false;
+  if (browser->window())
+    focused = browser->window()->IsActive();
+
+  result->SetBoolean(keys::kFocusedKey, focused);
+  gfx::Rect bounds = browser->window()->GetRestoredBounds();
+
+  // TODO(rafaelw): zIndex ?
+  result->SetInteger(keys::kLeftKey, bounds.x());
+  result->SetInteger(keys::kTopKey, bounds.y());
+  result->SetInteger(keys::kWidthKey, bounds.width());
+  result->SetInteger(keys::kHeightKey, bounds.height());
+
+  if (populate_tabs) {
+    result->Set(keys::kTabsKey, ExtensionTabUtil::CreateTabList(browser));
   }
 
   return result;
@@ -166,7 +202,7 @@ bool GetWindowFunction::RunImpl() {
   if (!browser)
     return false;
 
-  result_.reset(CreateWindowValue(browser, false));
+  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
   return true;
 }
 
@@ -176,7 +212,7 @@ bool GetCurrentWindowFunction::RunImpl() {
     error_ = keys::kNoCurrentWindowError;
     return false;
   }
-  result_.reset(CreateWindowValue(browser, false));
+  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
   return true;
 }
 
@@ -186,14 +222,19 @@ bool GetLastFocusedWindowFunction::RunImpl() {
     error_ = keys::kNoLastFocusedWindowError;
     return false;
   }
-  result_.reset(CreateWindowValue(browser, false));
+  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
   return true;
 }
 
 bool GetAllWindowsFunction::RunImpl() {
   bool populate_tabs = false;
   if (!args_->IsType(Value::TYPE_NULL)) {
-    EXTENSION_FUNCTION_VALIDATE(args_->GetAsBoolean(&populate_tabs));
+    EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
+    const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+    if (args->HasKey(keys::kPopulateKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kPopulateKey,
+          &populate_tabs));
+    }
   }
 
   result_.reset(new ListValue());
@@ -202,7 +243,7 @@ bool GetAllWindowsFunction::RunImpl() {
       // Only examine browsers in the current profile.
       if ((*browser)->profile() == profile()) {
         static_cast<ListValue*>(result_.get())->
-          Append(CreateWindowValue(*browser, populate_tabs));
+          Append(ExtensionTabUtil::CreateWindowValue(*browser, populate_tabs));
       }
   }
 
@@ -280,7 +321,7 @@ bool CreateWindowFunction::RunImpl() {
 
   // TODO(rafaelw): support |focused|, |zIndex|
 
-  result_.reset(CreateWindowValue(new_window, false));
+  result_.reset(ExtensionTabUtil::CreateWindowValue(new_window, false));
 
   return true;
 }
@@ -330,7 +371,7 @@ bool UpdateWindowFunction::RunImpl() {
 
   browser->window()->SetBounds(bounds);
   // TODO(rafaelw): Support |focused|.
-  result_.reset(CreateWindowValue(browser, false));
+  result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
 
   return true;
 }
@@ -392,7 +433,7 @@ bool GetAllTabsInWindowFunction::RunImpl() {
   if (!browser)
     return false;
 
-  result_.reset(CreateTabList(browser));
+  result_.reset(ExtensionTabUtil::CreateTabList(browser));
 
   return true;
 }
@@ -767,41 +808,6 @@ void DetectTabLanguageFunction::Observe(NotificationType type,
 }
 
 // static helpers
-
-// if |populate| is true, each window gets a list property |tabs| which contains
-// fully populated tab objects.
-static DictionaryValue* CreateWindowValue(Browser* browser,
-                                          bool populate_tabs) {
-  DictionaryValue* result = new DictionaryValue();
-  result->SetInteger(keys::kIdKey, ExtensionTabUtil::GetWindowId(
-      browser));
-  result->SetBoolean(keys::kFocusedKey,
-      browser->window()->IsActive());
-  gfx::Rect bounds = browser->window()->GetRestoredBounds();
-
-  // TODO(rafaelw): zIndex ?
-  result->SetInteger(keys::kLeftKey, bounds.x());
-  result->SetInteger(keys::kTopKey, bounds.y());
-  result->SetInteger(keys::kWidthKey, bounds.width());
-  result->SetInteger(keys::kHeightKey, bounds.height());
-
-  if (populate_tabs) {
-    result->Set(keys::kTabsKey, CreateTabList(browser));
-  }
-
-  return result;
-}
-
-static ListValue* CreateTabList(Browser* browser) {
-  ListValue* tab_list = new ListValue();
-  TabStripModel* tab_strip = browser->tabstrip_model();
-  for (int i = 0; i < tab_strip->count(); ++i) {
-    tab_list->Append(ExtensionTabUtil::CreateTabValue(
-        tab_strip->GetTabContentsAt(i), tab_strip, i));
-  }
-
-  return tab_list;
-}
 
 static Browser* GetBrowserInProfileWithId(Profile* profile,
                                           const int window_id,

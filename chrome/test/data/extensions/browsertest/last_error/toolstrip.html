@@ -18,7 +18,7 @@ function testLastError() {
   var maxTabId = 0;
 
   // Find the highest tab id
-  chrome.windows.getAll(true, function(windows) {
+  chrome.windows.getAll({populate:true}, function(windows) {
     // Make sure lastError is still not set. (this call have should succeeded).
     if (chrome.tabs.lastError)
       fail();

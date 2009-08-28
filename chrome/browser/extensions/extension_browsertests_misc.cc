@@ -424,6 +424,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
       host->render_view_host(), L"", L"testPostMessage()", &result);
   EXPECT_TRUE(result);
 
+  // Test port naming
+  result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      host->render_view_host(), L"", L"testPortName()", &result);
+  EXPECT_TRUE(result);
+
   // Test tab->extension messaging.
   result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(

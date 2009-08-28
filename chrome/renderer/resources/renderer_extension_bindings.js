@@ -16,7 +16,7 @@
 
 var chrome = chrome || {};
 (function () {
-  native function OpenChannelToExtension(id);
+  native function OpenChannelToExtension(id, name);
   native function CloseChannel(portId);
   native function PortAddRef(portId);
   native function PortRelease(portId);
@@ -115,11 +115,15 @@ var chrome = chrome || {};
 
   // Opens a message channel to the extension.  Returns a Port for
   // message passing.
-  chrome.Extension.prototype.connect = function(opt_name) {
-    var portId = OpenChannelToExtension(this.id_, opt_name || "");
+  chrome.Extension.prototype.connect = function(connectInfo) {
+    var name = "";
+    if (connectInfo) {
+      name = connectInfo.name || name;
+    }
+    var portId = OpenChannelToExtension(this.id_, name);
     if (portId == -1)
       throw new Error("No such extension: '" + this.id_ + "'");
-    return chromeHidden.Port.createPort(portId, opt_name);
+    return chromeHidden.Port.createPort(portId, name);
   };
 
   // Returns a resource URL that can be used to fetch a resource from this

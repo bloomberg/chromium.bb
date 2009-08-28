@@ -6,7 +6,6 @@
 
 namespace extension_tabs_module_constants {
 
-const wchar_t kDataKey[] = L"data";
 const wchar_t kFavIconUrlKey[] = L"favIconUrl";
 const wchar_t kFocusedKey[] = L"focused";
 const wchar_t kFromIndexKey[] = L"fromIndex";
@@ -18,7 +17,7 @@ const wchar_t kNewPositionKey[] = L"newPosition";
 const wchar_t kNewWindowIdKey[] = L"newWindowId";
 const wchar_t kOldPositionKey[] = L"oldPosition";
 const wchar_t kOldWindowIdKey[] = L"oldWindowId";
-const wchar_t kPageActionIdKey[] = L"pageActionId";
+const wchar_t kPopulateKey[] = L"populate";
 const wchar_t kSelectedKey[] = L"selected";
 const wchar_t kStatusKey[] = L"status";
 const wchar_t kTabIdKey[] = L"tabId";
@@ -40,7 +39,7 @@ const char kWindowNotFoundError[] = "No window with id: *.";
 const char kTabNotFoundError[] = "No tab with id: *.";
 const char kNoSelectedTabError[] = "No selected tab";
 const char kInvalidUrlError[] = "Invalid url: \"*\".";
-const char kInternalVisibleTabCaptureError[] = 
+const char kInternalVisibleTabCaptureError[] =
     "Internal error while trying to capture visible region of the current tab";
 const char kNotImplementedError[] = "This call is not yet implemented";
 

@@ -33,9 +33,10 @@
   });
 
   // Chrome will call into us when the user clicks on the icon in the OmniBox.
-  chrome.pageActions["RssPageAction"].addListener(function(reply) {
+  chrome.pageActions["RssPageAction"].addListener(function(pageActionId,
+      pageActionInfo) {
     chrome.windows.getCurrent(function(window) {
-      chrome.tabs.get(reply.data.tabId, function(tab) {
+      chrome.tabs.get(pageActionInfo.tabId, function(tab) {
         // We need to know if we are the active window, because the tab may
         // have moved to another window and we don't want to execute this
         // action multiple times.
@@ -43,7 +44,7 @@
           // Create a new tab showing the subscription page with the right
           // feed URL.
           chrome.tabs.create({url: "subscribe.html?" +
-                                       feedData[reply.data.tabId].feedUrl,
+                                       feedData[pageActionInfo.tabId].feedUrl,
                              windowId: window.windowId});
         }
       });
