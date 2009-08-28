@@ -112,10 +112,11 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   // Called when the user attempts to paste into |field_|.
   void OnPaste();
 
-  void AcceptInput(WindowOpenDisposition disposition, bool for_drop);
+  // Checks if a keyword search is possible and forwards to |model_|
+  // if so.  Returns true if the tab should be eaten.
+  bool OnTabPressed();
 
-  // Forwards to |model_| when user hits Tab.
-  void AcceptKeyword();
+  void AcceptInput(WindowOpenDisposition disposition, bool for_drop);
 
   // Helper for LocationBarViewMac.  Selects all in |field_|.
   void FocusLocation();

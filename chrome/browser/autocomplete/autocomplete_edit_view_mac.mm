@@ -622,6 +622,14 @@ void AutocompleteEditViewMac::OnPaste() {
   OnAfterPossibleChange();
 }
 
+bool AutocompleteEditViewMac::OnTabPressed() {
+  if (model_->is_keyword_hint() && !model_->keyword().empty()) {
+    model_->AcceptKeyword();
+    return true;
+  }
+  return false;
+}
+
 bool AutocompleteEditViewMac::IsPopupOpen() const {
   return popup_view_->IsOpen();
 }
@@ -633,10 +641,6 @@ void AutocompleteEditViewMac::OnControlKeyChanged(bool pressed) {
 void AutocompleteEditViewMac::AcceptInput(
     WindowOpenDisposition disposition, bool for_drop) {
   model_->AcceptInput(disposition, for_drop);
-}
-
-void AutocompleteEditViewMac::AcceptKeyword() {
-  model_->AcceptKeyword();
 }
 
 void AutocompleteEditViewMac::FocusLocation() {
@@ -725,8 +729,9 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
   }
 
   if (cmd == @selector(insertTab:)) {
-    edit_view_->AcceptKeyword();
-    return YES;
+    if (edit_view_->OnTabPressed()) {
+      return YES;
+    }
   }
 
   // |-noop:| is sent when the user presses Cmd+Return. Override the no-op
