@@ -274,6 +274,10 @@ void WebPopupMenuImpl::scrollRectIntoView(
   // that implements its own scrolling.
 }
 
+void WebPopupMenuImpl::scrollbarsModeDidChange() const {
+  // Nothing to be done since we have no concept of different scrollbar modes.
+}
+
 //-----------------------------------------------------------------------------
 // WebCore::FramelessScrollViewClient
 

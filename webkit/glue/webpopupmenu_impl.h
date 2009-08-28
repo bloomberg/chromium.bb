@@ -91,6 +91,7 @@ class WebPopupMenuImpl : public WebKit::WebPopupMenu,
   virtual PlatformWidget platformWindow() const;
   virtual void scrollRectIntoView(const WebCore::IntRect&,
                                   const WebCore::ScrollView*) const;
+  virtual void scrollbarsModeDidChange() const;
 
   // WebCore::FramelessScrollViewClient methods:
   virtual void popupClosed(WebCore::FramelessScrollView* popup_view);
