@@ -7,6 +7,7 @@
 #include <map>
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/rand_util.h"
 #include "chrome/browser/browser_list.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
+#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -102,6 +104,11 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
   }
 
 #if defined(OS_WIN) || defined(TOOLKIT_GTK)
+  if (!install_icon) {
+    install_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_DEFAULT_EXTENSION_ICON_128);
+  }
+
   ShowExtensionInstallPrompt(profile_, delegate, extension, install_icon,
                              GetInstallWarning(extension));
 

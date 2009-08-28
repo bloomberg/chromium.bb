@@ -32,12 +32,10 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   InstallDialogContent(ExtensionInstallUI::Delegate* delegate,
       Extension* extension, SkBitmap* icon, const std::wstring& warning_text)
           : delegate_(delegate), icon_(NULL) {
-    if (icon) {
-      icon_ = new views::ImageView();
-      icon_->SetImageSize(gfx::Size(kIconSize, kIconSize));
-      icon_->SetImage(*icon);
-      AddChildView(icon_);
-    }
+    icon_ = new views::ImageView();
+    icon_->SetImageSize(gfx::Size(kIconSize, kIconSize));
+    icon_->SetImage(*icon);
+    AddChildView(icon_);
 
     heading_ = new views::Label(
         l10n_util::GetStringF(IDS_EXTENSION_PROMPT_HEADING,
@@ -93,11 +91,8 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   // View
   virtual gfx::Size GetPreferredSize() {
     int width = kRightColumnWidth + kPanelHorizMargin + kPanelHorizMargin;
-
-    if (icon_) {
-      width += kIconSize;
-      width += kPanelHorizMargin;
-    }
+    width += kIconSize;
+    width += kPanelHorizMargin;
 
     int height = kPanelVertMargin * 2;
     height += heading_->GetHeightForWidth(kRightColumnWidth);
@@ -105,18 +100,16 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     height += warning_->GetHeightForWidth(kRightColumnWidth);
     height += kPanelVertMargin;
 
-    return gfx::Size(width, std::max(height, kIconSize));
+    return gfx::Size(width, std::max(height, kIconSize + kPanelVertMargin * 2));
   }
 
   virtual void Layout() {
     int x = kPanelHorizMargin;
     int y = kPanelVertMargin;
 
-    if (icon_) {
-      icon_->SetBounds(x, y, kIconSize, kIconSize);
-      x += kIconSize;
-      x += kPanelHorizMargin;
-    }
+    icon_->SetBounds(x, y, kIconSize, kIconSize);
+    x += kIconSize;
+    x += kPanelHorizMargin;
 
     heading_->SizeToFit(kRightColumnWidth);
     heading_->SetX(x);
