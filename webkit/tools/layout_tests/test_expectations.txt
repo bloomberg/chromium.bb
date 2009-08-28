@@ -2462,8 +2462,6 @@ WONTFIX SKIP : chrome/fast/dom/messageport-gc.html = FAIL
 
 // WebKit merge 45685:45738
 BUG16652 : LayoutTests/fast/replaced/embed-display-none.html = PASS CRASH
-BUG16675 MAC : LayoutTests/fast/images/favicon-as-image.html = PASS CRASH
-BUG16675 MAC : LayoutTests/fast/images/pdf-as-background.html = PASS CRASH
 
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
