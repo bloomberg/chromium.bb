@@ -541,3 +541,18 @@
    fun:+[NSBundle(NSNibLoading) loadNibNamed:owner:]
    fun:_ZN8Platform29WillInitializeMainMessageLoopERK18MainFunctionParams
 }
+{
+   bug_20541
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:CFRunLoopSourceCreate
+   fun:CFMachPortCreateRunLoopSource
+   ...
+   fun:SecKeychainAddCallback
+   ...
+   fun:SecTrustSettingsEvaluateCert
+   ...
+   fun:SecTrustEvaluate
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+}
