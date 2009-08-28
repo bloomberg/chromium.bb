@@ -406,9 +406,13 @@ BUG20404 : LayoutTests/editing/execCommand/copy-without-selection.html = FAIL
 // (rdar://5313536)
 BUG10270 WIN : LayoutTests/fast/dom/frame-loading-via-document-write.html = TIMEOUT FAIL
 
+// -----------------------------------------------------------------
+// LIGHTTPD
+// -----------------------------------------------------------------
 // This are failing for different reasons under our new lighttpd configuration
 // TODO(deanm): Address all of these via lighttpd if possible, otherwise fork.
 // Maybe flaky and need to be forked?
+
 // Difference in caching headers
 BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/cache-override.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods
@@ -434,37 +438,30 @@ BUG8941 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = FA
 // This class of test fails because of size differences in text runs.
 // Mostly this is because of international text rendering differences.
 
-// The max length doesn't appear to be applied correctly (or the test needs
-// changing), and furthermore, the over- and under-lines aren't placed
-// properly over the "x".
-BUG1124513 LINUX WIN : LayoutTests/fast/forms/input-text-maxlength.html = FAIL
-BUG1124513 LINUX WIN : LayoutTests/fast/forms/input-text-paste-maxlength.html = FAIL
+// The complex charater composition is not working correctly in these tests.
+BUG20509 LINUX WIN : LayoutTests/fast/forms/input-text-maxlength.html = FAIL
+BUG20509 LINUX WIN : LayoutTests/fast/forms/input-text-paste-maxlength.html = FAIL
 
 // COMBINING GRAVE ACCENT appears higher than E WITH GRAVE.
 BUG20130 LINUX : LayoutTests/fast/text/stroking-decorations.html = FAIL
 BUG20130 LINUX : LayoutTests/fast/text/stroking.html = FAIL
 
 // Incrorect results, in incorrect international font metrics.
-// Fixing these overrides does not help us to Beta, deffering
-BUG1124522 LINUX WIN : LayoutTests/fast/text/atsui-multiple-renderers.html = FAIL
-BUG1124522 LINUX WIN : LayoutTests/fast/text/atsui-pointtooffset-calls-cg.html = FAIL
+BUG20521 LINUX WIN : LayoutTests/fast/text/atsui-multiple-renderers.html = FAIL
+BUG20521 LINUX WIN : LayoutTests/fast/text/atsui-pointtooffset-calls-cg.html = FAIL
+BUG20521 LINUX WIN : LayoutTests/fast/text/atsui-rtl-override-selection.html = FAIL
 
 // This test checks that we hack around a bug in helvetica.  We fail to.
-BUG1143382 LINUX WIN : LayoutTests/fast/text/wide-zero-width-space.html = FAIL
-
-// Font-size differences in international text cause the wrong character
-// to be under the (x,y) click location used by the test.  See bug
-// on faking international font sizes like we do for Latin fonts.
-BUG850411 LINUX WIN : LayoutTests/fast/text/atsui-rtl-override-selection.html = FAIL
+BUG20519 LINUX WIN : LayoutTests/fast/text/wide-zero-width-space.html = FAIL
 
 // More missing international text overides, not needed for Beta.
 // Capitalization results match Safari, even if "not fully correct"
-BUG1124542 LINUX WIN : LayoutTests/fast/text/capitalize-boundaries.html = FAIL
+BUG20547 LINUX WIN : LayoutTests/fast/text/capitalize-boundaries.html = FAIL
 
 // Different button line-heights, our behavior looks wrong.
-BUG1145887 LINUX WIN : LayoutTests/fast/forms/control-restrict-line-height.html = FAIL
-BUG1145887 LINUX WIN : LayoutTests/fast/replaced/table-percent-height.html = FAIL
-BUG1145887 LINUX WIN : LayoutTests/fast/replaced/table-percent-height-text-controls.html = FAIL
+BUG20551 LINUX WIN : LayoutTests/fast/forms/control-restrict-line-height.html = FAIL
+BUG20551 LINUX WIN : LayoutTests/fast/replaced/table-percent-height.html = FAIL
+BUG20551 LINUX WIN : LayoutTests/fast/replaced/table-percent-height-text-controls.html = FAIL
 
 
 // -----------------------------------------------------------------
