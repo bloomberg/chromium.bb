@@ -55,9 +55,7 @@ body {
   color: $$3; /* COLOR_NTP_SECTION_TEXT */
 }
 #recently-closed span,
-#recently-closed a,
-#recently-closed a:link,
-#tip-line a {
+#recently-closed a {
   color: $$4; /* COLOR_NTP_SECTION_LINK */
   text-decoration:underline;
 }
@@ -69,5 +67,10 @@ body {
 }
 
 #tip-line {
-  color: $$8;
+  color: $8; /* COLOR_NTP_TEXT */
+}
+
+#tip-line a {
+  color: $9; /* COLOR_NTP_LINK */
+  text-decoration: underline;
 }
