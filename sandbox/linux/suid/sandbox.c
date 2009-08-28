@@ -4,6 +4,7 @@
 
 // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
 
+#define _GNU_SOURCE
 #include <asm/unistd.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -20,17 +21,12 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdbool.h>
 
-#include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
+#include "suid_unsafe_environment_variables.h"
 
 #if !defined(CLONE_NEWPID)
 #define CLONE_NEWPID 0x20000000
-#endif
-
-#if !defined(LINUX_SANDBOX_CHROME_PATH) && \
-    !defined(CHROME_DEVEL_SANDBOX)
-#error LINUX_SANDBOX_CHROME_PATH must be defined to be the location of the \
-       Chrome binary, or CHROME_DEVEL_SANDBOX must be defined
 #endif
 
 #if defined(LINUX_SANDBOX_CHROME_PATH)
@@ -64,6 +60,46 @@ static int CloneChrootHelperProcess() {
     return -1;
   }
 
+  // We create a temp directory for our chroot. Nobody should ever write into
+  // it, so it's root:root mode 000.
+  char kTempDirectoryTemplate[] = "/tmp/chrome-sandbox-chroot-XXXXXX";
+  const char* temp_dir = mkdtemp(kTempDirectoryTemplate);
+  if (!temp_dir) {
+    perror("Failed to create temp directory for chroot");
+    return -1;
+  }
+
+  const int chroot_dir_fd = open(temp_dir, O_DIRECTORY | O_RDONLY);
+  if (chroot_dir_fd < 0) {
+    rmdir(temp_dir);
+    perror("Failed to open chroot temp directory");
+    return -1;
+  }
+
+  if (rmdir(temp_dir)) {
+    perror("rmdir");
+    return -1;
+  }
+
+  char proc_self_fd_str[128];
+  int printed = snprintf(proc_self_fd_str, sizeof(proc_self_fd_str),
+                         "/proc/self/fd/%d", chroot_dir_fd);
+  if (printed < 0 || printed >= sizeof(proc_self_fd_str)) {
+    fprintf(stderr, "Error in snprintf");
+    return -1;
+  }
+
+  if (fchown(chroot_dir_fd, 0 /* root */, 0 /* root */)) {
+    perror("fchown");
+    return -1;
+  }
+
+  if (fchmod(chroot_dir_fd, 0000 /* no-access */)) {
+    perror("fchmod");
+    return -1;
+  }
+
+
   const pid_t pid = syscall(
       __NR_clone, CLONE_FS | SIGCHLD, 0, 0, 0);
 
@@ -75,25 +111,9 @@ static int CloneChrootHelperProcess() {
   }
 
   if (pid == 0) {
-    // We create a temp directory for our chroot. Nobody should ever write into
-    // it, so it's root:root mode 000.
-    char kTempDirectoryTemplate[] = "/tmp/chrome-sandbox-chroot-XXXXXX";
-    const char* temp_dir = mkdtemp(kTempDirectoryTemplate);
-    if (!temp_dir)
-      FatalError("Failed to create temp directory for chroot");
-
-    const int chroot_dir_fd = open(temp_dir, O_DIRECTORY | O_RDONLY);
-    if (chroot_dir_fd < 0) {
-      rmdir(temp_dir);
-      FatalError("Failed to open chroot temp directory");
-    }
-
-    rmdir(temp_dir);
-    fchown(chroot_dir_fd, 0 /* root */, 0 /* root */);
-
     // We share our files structure with an untrusted process. As a security in
     // depth measure, we make sure that we can't open anything by mistake.
-    // TODO: drop CAP_SYS_RESOURCE
+    // TODO: drop CAP_SYS_RESOURCE / use SECURE_NOROOT
 
     const struct rlimit nofile = {0, 0};
     if (setrlimit(RLIMIT_NOFILE, &nofile))
@@ -102,6 +122,7 @@ static int CloneChrootHelperProcess() {
     if (close(sv[1]))
       FatalError("close");
 
+    // wait for message
     char msg;
     ssize_t bytes;
     do {
@@ -113,23 +134,19 @@ static int CloneChrootHelperProcess() {
     if (bytes != 1)
       FatalError("read");
 
+    // do chrooting
     if (msg != kMsgChrootMe)
       FatalError("Unknown message from sandboxed process");
 
     if (fchdir(chroot_dir_fd))
       FatalError("Cannot chdir into chroot temp directory");
-    fchmod(chroot_dir_fd, 0000 /* no-access */);
 
     struct stat st;
     if (fstat(chroot_dir_fd, &st))
       FatalError("stat");
 
-    if (st.st_uid || st.st_gid || st.st_mode & S_IWOTH)
+    if (st.st_uid || st.st_gid || st.st_mode & 0777)
       FatalError("Bad permissions on chroot temp directory");
-
-    char proc_self_fd_str[128];
-    snprintf(proc_self_fd_str, sizeof(proc_self_fd_str), "/proc/self/fd/%d",
-             chroot_dir_fd);
 
     if (chroot(proc_self_fd_str))
       FatalError("Cannot chroot into temp directory");
@@ -146,6 +163,13 @@ static int CloneChrootHelperProcess() {
       FatalError("Writing reply");
 
     _exit(0);
+  }
+
+  if (close(chroot_dir_fd)) {
+    close(sv[0]);
+    close(sv[1]);
+    perror("close(chroot_dir_fd)");
+    return false;
   }
 
   if (close(sv[0])) {
@@ -166,7 +190,11 @@ static bool SpawnChrootHelper() {
   // In the parent process, we install an environment variable containing the
   // number of the file descriptor.
   char desc_str[64];
-  snprintf(desc_str, sizeof(desc_str), "%d", chroot_signal_fd);
+  int printed = snprintf(desc_str, sizeof(desc_str), "%d", chroot_signal_fd);
+  if (printed < 0 || printed >= sizeof(desc_str)) {
+    fprintf(stderr, "Failed to snprintf\n");
+    return false;
+  }
 
   if (setenv(kSandboxDescriptorEnvironmentVarName, desc_str, 1)) {
     perror("setenv");
@@ -234,13 +262,16 @@ static bool DropRoot() {
 }
 
 static bool SetupChildEnvironment() {
+
+  unsigned i;
+
   // ld.so may have cleared several environment variables because we are SUID.
   // However, the child process might need them so zygote_host_linux.cc saves a
   // copy in SANDBOX_$x. This is safe because we have dropped root by this
   // point, so we can only exec a binary with the permissions of the user who
   // ran us in the first place.
 
-  for (unsigned i = 0; kSUIDUnsafeEnvironmentVariables[i]; ++i) {
+  for (i = 0; kSUIDUnsafeEnvironmentVariables[i]; ++i) {
     const char* const envvar = kSUIDUnsafeEnvironmentVariables[i];
     char* const saved_envvar = SandboxSavedEnvironmentVariable(envvar);
     if (!saved_envvar)
@@ -259,61 +290,10 @@ static bool SetupChildEnvironment() {
 }
 
 int main(int argc, char **argv) {
-  if (argc == 1) {
+  if (argc <= 1) {
     fprintf(stderr, "Usage: %s <renderer process> <args...>\n", argv[0]);
     return 1;
   }
-
-#if defined(CHROME_DEVEL_SANDBOX)
-  // On development machines, we need the sandbox to be able to run development
-  // builds of Chrome. Thus, we remove the condition that the path to the
-  // binary has to be fixed. However, we still worry about running arbitary
-  // executables like this so we require that the owner of the binary be the
-  // same as the real UID.
-  const int binary_fd = open(argv[1], O_RDONLY);
-  if (binary_fd < 0) {
-    fprintf(stderr, "Failed to open %s: %s\n", argv[1], strerror(errno));
-    return 1;
-  }
-
-  struct stat st;
-  if (fstat(binary_fd, &st)) {
-    fprintf(stderr, "Failed to stat %s: %s\n", argv[1], strerror(errno));
-    return 1;
-  }
-
-  if (fcntl(binary_fd, F_SETFD, O_CLOEXEC)) {
-    fprintf(stderr, "Failed to set close-on-exec flag: %s", strerror(errno));
-    return 1;
-  }
-
-  uid_t ruid, euid, suid;
-  getresuid(&ruid, &euid, &suid);
-
-  if (st.st_uid != ruid) {
-    fprintf(stderr, "The development sandbox is refusing to run %s because it "
-                    "isn't owned by the current user (%d)\n", argv[1], ruid);
-    return 1;
-  }
-
-  if ((S_ISUID | S_ISGID) & st.st_mode) {
-    fprintf(stderr, "The development sandbox is refusing to run %s because it "
-                    "is SUID or SGID\n", argv[1]);
-    return 1;
-  }
-
-  char proc_fd_buffer[128];
-  snprintf(proc_fd_buffer, sizeof(proc_fd_buffer), "/proc/self/fd/%d", binary_fd);
-  argv[1] = proc_fd_buffer;
-#else
-  // In the release sandbox, we'll only execute a specific path.
-  if (strcmp(argv[1], kChromeBinary)) {
-    fprintf(stderr, "This wrapper can only run %s!\n", kChromeBinary);
-    fprintf(stderr, "If you are developing Chrome, you should read:\n"
-        "http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment\n");
-    return 1;
-  }
-#endif
 
   if (!MoveToNewPIDNamespace())
     return 1;

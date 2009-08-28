@@ -23,7 +23,7 @@
             'LINUX_SANDBOX_CHROME_PATH="<(linux_sandbox_chrome_path)"',
           ],
           'sources': [
-            'linux/suid/sandbox.cc',
+            'linux/suid/sandbox.c',
           ],
           'include_dirs': [
             '..',
