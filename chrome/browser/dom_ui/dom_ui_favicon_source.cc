@@ -16,36 +16,38 @@ DOMUIFavIconSource::DOMUIFavIconSource(Profile* profile)
 
 void DOMUIFavIconSource::StartDataRequest(const std::string& path,
                                           int request_id) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (hs) {
-    HistoryService::Handle handle;
+  FaviconService* favicon_service =
+      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  if (favicon_service) {
+    FaviconService::Handle handle;
     if (path.size() > 8 && path.substr(0, 8) == "iconurl/") {
-      handle = hs->GetFavIcon(
+      handle = favicon_service->GetFavicon(
           GURL(path.substr(8)),
           &cancelable_consumer_,
           NewCallback(this, &DOMUIFavIconSource::OnFavIconDataAvailable));
     } else {
-      handle = hs->GetFavIconForURL(
+      handle = favicon_service->GetFaviconForURL(
           GURL(path),
           &cancelable_consumer_,
           NewCallback(this, &DOMUIFavIconSource::OnFavIconDataAvailable));
     }
     // Attach the ChromeURLDataManager request ID to the history request.
-    cancelable_consumer_.SetClientData(hs, handle, request_id);
+    cancelable_consumer_.SetClientData(favicon_service, handle, request_id);
   } else {
     SendResponse(request_id, NULL);
   }
 }
 
 void DOMUIFavIconSource::OnFavIconDataAvailable(
-    HistoryService::Handle request_handle,
+    FaviconService::Handle request_handle,
     bool know_favicon,
     scoped_refptr<RefCountedBytes> data,
     bool expired,
     GURL icon_url) {
-  HistoryService* hs =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  int request_id = cancelable_consumer_.GetClientData(hs, request_handle);
+  FaviconService* favicon_service =
+      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  int request_id = cancelable_consumer_.GetClientData(favicon_service,
+                                                      request_handle);
 
   if (know_favicon && data.get() && !data->data.empty()) {
     // Forward the data along to the networking system.

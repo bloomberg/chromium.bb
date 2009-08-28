@@ -380,37 +380,38 @@ HistoryService::Handle HistoryService::GetPageThumbnail(
                   new history::GetPageThumbnailRequest(callback), page_url);
 }
 
-HistoryService::Handle HistoryService::GetFavIcon(
-    const GURL& icon_url,
-    CancelableRequestConsumerBase* consumer,
-    FavIconDataCallback* callback) {
-  // We always do image requests at lower-than-UI priority even though they
-  // appear in the UI, since they can take a long time and the user can use the
-  // program without them.
-  return Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavIcon, consumer,
-                  new history::GetFavIconRequest(callback), icon_url);
+void HistoryService::GetFavicon(FaviconService::GetFaviconRequest* request,
+                                const GURL& icon_url) {
+  ScheduleTask(PRIORITY_NORMAL,
+      NewRunnableMethod(history_backend_.get(),
+          &HistoryBackend::GetFavIcon,
+          scoped_refptr<FaviconService::GetFaviconRequest>(request),
+          icon_url));
 }
 
-HistoryService::Handle HistoryService::UpdateFavIconMappingAndFetch(
+void HistoryService::UpdateFaviconMappingAndFetch(
+    FaviconService::GetFaviconRequest* request,
     const GURL& page_url,
-    const GURL& icon_url,
-    CancelableRequestConsumerBase* consumer,
-    FavIconDataCallback* callback) {
-  return Schedule(PRIORITY_NORMAL,
-                  &HistoryBackend::UpdateFavIconMappingAndFetch, consumer,
-                  new history::GetFavIconRequest(callback), page_url, icon_url);
+    const GURL& icon_url) {
+  ScheduleTask(PRIORITY_NORMAL,
+      NewRunnableMethod(history_backend_.get(),
+          &HistoryBackend::UpdateFavIconMappingAndFetch,
+          scoped_refptr<FaviconService::GetFaviconRequest>(request),
+          page_url,
+          icon_url));
 }
 
-HistoryService::Handle HistoryService::GetFavIconForURL(
-    const GURL& page_url,
-    CancelableRequestConsumerBase* consumer,
-    FavIconDataCallback* callback) {
-  return Schedule(PRIORITY_UI, &HistoryBackend::GetFavIconForURL,
-                  consumer, new history::GetFavIconRequest(callback),
-                  page_url);
+void HistoryService::GetFaviconForURL(
+    FaviconService::GetFaviconRequest* request,
+    const GURL& page_url) {
+  ScheduleTask(PRIORITY_UI,
+      NewRunnableMethod(history_backend_.get(),
+          &HistoryBackend::GetFavIconForURL,
+          scoped_refptr<FaviconService::GetFaviconRequest>(request),
+          page_url));
 }
 
-void HistoryService::SetFavIcon(const GURL& page_url,
+void HistoryService::SetFavicon(const GURL& page_url,
                                 const GURL& icon_url,
                                 const std::vector<unsigned char>& image_data) {
   if (!CanAddURL(page_url))
@@ -421,7 +422,7 @@ void HistoryService::SetFavIcon(const GURL& page_url,
       scoped_refptr<RefCountedBytes>(new RefCountedBytes(image_data)));
 }
 
-void HistoryService::SetFavIconOutOfDateForPage(const GURL& page_url) {
+void HistoryService::SetFaviconOutOfDateForPage(const GURL& page_url) {
   ScheduleAndForget(PRIORITY_NORMAL,
                     &HistoryBackend::SetFavIconOutOfDateForPage, page_url);
 }

@@ -18,6 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 #if defined(OS_WIN)
 // TODO(port): re-enable when download_util is ported
@@ -135,4 +136,10 @@ DownloadsUI::DownloadsUI(TabContents* contents) : DOMUI(contents) {
       NewRunnableMethod(&chrome_url_data_manager,
           &ChromeURLDataManager::AddDataSource,
           html_source));
+}
+
+// static
+bool DownloadsUI::GetFaviconResourceBytes(std::vector<unsigned char>* bytes) {
+  return ResourceBundle::GetSharedInstance().
+      LoadImageResourceBytes(IDR_DOWNLOADS_FAVICON, bytes);
 }

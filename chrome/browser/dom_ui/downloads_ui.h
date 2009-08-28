@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_DOM_UI_DOWNLOADS_UI_H_
 #define CHROME_BROWSER_DOM_UI_DOWNLOADS_UI_H_
 
+#include <vector>
+
 #include "chrome/browser/dom_ui/dom_ui.h"
 
 class DownloadsUI : public DOMUI {
  public:
   explicit DownloadsUI(TabContents* contents);
+
+  static bool GetFaviconResourceBytes(std::vector<unsigned char>* bytes);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsUI);

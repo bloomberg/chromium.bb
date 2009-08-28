@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cancelable_request.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/common/ref_counted_util.h"
 #include "googleurl/src/gurl.h"
@@ -23,7 +23,8 @@ class TabContents;
 
 // FavIconHelper is used to fetch the favicon for TabContents.
 //
-// FetchFavIcon requests the favicon from the history database. At this point
+// FetchFavIcon requests the favicon from the favicon service which in turn
+// requests the favicon from the history database. At this point
 // we only know the URL of the page, and not necessarily the url of the
 // favicon. To ensure we handle reloading stale favicons as well as
 // reloading a favicon on page reload we always request the favicon from
@@ -113,10 +114,10 @@ class FavIconHelper : public RenderViewHostDelegate::FavIcon {
 
   Profile* profile();
 
-  HistoryService* GetHistoryService();
+  FaviconService* GetFaviconService();
 
   // See description above class for details.
-  void OnFavIconDataForInitialURL(HistoryService::Handle handle,
+  void OnFavIconDataForInitialURL(FaviconService::Handle handle,
                                   bool know_favicon,
                                   scoped_refptr<RefCountedBytes> data,
                                   bool expired,
@@ -128,7 +129,7 @@ class FavIconHelper : public RenderViewHostDelegate::FavIcon {
   void DownloadFavIconOrAskHistory(NavigationEntry* entry);
 
   // See description above class for details.
-  void OnFavIconData(HistoryService::Handle handle,
+  void OnFavIconData(FaviconService::Handle handle,
                      bool know_favicon,
                      scoped_refptr<RefCountedBytes> data,
                      bool expired,

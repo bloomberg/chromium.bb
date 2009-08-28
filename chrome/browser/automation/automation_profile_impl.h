@@ -69,6 +69,9 @@ class AutomationProfileImpl : public Profile {
   virtual net::ForceTLSState* GetForceTLSState() {
     return original_profile_->GetForceTLSState();
   }
+  virtual FaviconService* GetFaviconService(ServiceAccessType access) {
+    return original_profile_->GetFaviconService(access);
+  }
   virtual HistoryService* GetHistoryService(ServiceAccessType access) {
     return original_profile_->GetHistoryService(access);
   }

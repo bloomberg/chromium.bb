@@ -8,7 +8,7 @@
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
 #include "base/gfx/png_decoder.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -70,10 +70,10 @@ class ModelEntry {
 
   void LoadFavIcon() {
     load_state_ = LOADED;
-    HistoryService* hs =
-        model_->template_url_model()->profile()->GetHistoryService(
+    FaviconService* favicon_service =
+        model_->template_url_model()->profile()->GetFaviconService(
             Profile::EXPLICIT_ACCESS);
-    if (!hs)
+    if (!favicon_service)
       return;
     GURL fav_icon_url = template_url().GetFavIconURL();
     if (!fav_icon_url.is_valid()) {
@@ -87,13 +87,13 @@ class ModelEntry {
         return;
     }
     load_state_ = LOADING;
-    hs->GetFavIcon(fav_icon_url,
+    favicon_service->GetFavicon(fav_icon_url,
                    &request_consumer_,
                    NewCallback(this, &ModelEntry::OnFavIconDataAvailable));
   }
 
   void OnFavIconDataAvailable(
-      HistoryService::Handle handle,
+      FaviconService::Handle handle,
       bool know_favicon,
       scoped_refptr<RefCountedBytes> data,
       bool expired,

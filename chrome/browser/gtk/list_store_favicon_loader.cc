@@ -26,10 +26,10 @@ ListStoreFavIconLoader::~ListStoreFavIconLoader() {
 
 void ListStoreFavIconLoader::LoadFaviconForRow(const GURL& url,
                                                GtkTreeIter* iter) {
-  HistoryService* history =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (history) {
-    HistoryService::Handle handle = history->GetFavIconForURL(
+  FaviconService* favicon_service =
+      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  if (favicon_service) {
+    FaviconService::Handle handle = favicon_service->GetFaviconForURL(
         url, consumer_,
         NewCallback(this, &ListStoreFavIconLoader::OnGotFavIcon));
     gtk_list_store_set(list_store_, iter,

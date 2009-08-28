@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DOM_UI_HISTORY_UI_H_
 #define CHROME_BROWSER_DOM_UI_HISTORY_UI_H_
 
+#include <vector>
+
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
@@ -92,6 +94,8 @@ class HistoryUI : public DOMUI {
 
   // Return the URL for a given search term.
   static const GURL GetHistoryURLWithSearchText(const std::wstring& text);
+
+  static bool GetFaviconResourceBytes(std::vector<unsigned char>* bytes);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryUI);

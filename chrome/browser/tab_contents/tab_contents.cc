@@ -22,6 +22,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_manager.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/gears_integration.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/hung_renderer_dialog.h"
@@ -704,10 +705,10 @@ bool TabContents::NavigateToPendingEntry(bool reload) {
   GetPasswordManager()->ClearProvisionalSave();
 
   if (reload && !profile()->IsOffTheRecord()) {
-    HistoryService* history =
-        profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
-    if (history)
-      history->SetFavIconOutOfDateForPage(entry.url());
+    FaviconService* favicon_service =
+        profile()->GetFaviconService(Profile::IMPLICIT_ACCESS);
+    if (favicon_service)
+      favicon_service->SetFaviconOutOfDateForPage(entry.url());
   }
 
   return true;

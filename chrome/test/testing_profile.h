@@ -11,6 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -96,6 +97,9 @@ class TestingProfile : public Profile {
     return NULL;
   }
   virtual net::ForceTLSState* GetForceTLSState() {
+    return NULL;
+  }
+  virtual FaviconService* GetFaviconService(ServiceAccessType access) {
     return NULL;
   }
   virtual HistoryService* GetHistoryService(ServiceAccessType access) {

@@ -32,6 +32,7 @@ class ExtensionDevToolsManager;
 class ExtensionProcessManager;
 class ExtensionMessageService;
 class ExtensionsService;
+class FaviconService;
 class HistoryService;
 class NavigationController;
 class PasswordStore;
@@ -151,6 +152,19 @@ class Profile {
   // The ForceTLSState is lazily created the first time that this method is
   // called.
   virtual net::ForceTLSState* GetForceTLSState() = 0;
+
+  // Retrieves a pointer to the FaviconService associated with this
+  // profile.  The FaviconService is lazily created the first time
+  // that this method is called.
+  //
+  // Although FaviconService is refcounted, this will not addref, and callers
+  // do not need to do any reference counting as long as they keep the pointer
+  // only for the local scope (which they should do anyway since the browser
+  // process may decide to shut down).
+  //
+  // |access| defines what the caller plans to do with the service. See
+  // the ServiceAccessType definition above.
+  virtual FaviconService* GetFaviconService(ServiceAccessType access) = 0;
 
   // Retrieves a pointer to the HistoryService associated with this
   // profile.  The HistoryService is lazily created the first time
@@ -353,6 +367,7 @@ class ProfileImpl : public Profile,
   virtual ExtensionDevToolsManager* GetExtensionDevToolsManager();
   virtual ExtensionProcessManager* GetExtensionProcessManager();
   virtual ExtensionMessageService* GetExtensionMessageService();
+  virtual FaviconService* GetFaviconService(ServiceAccessType sat);
   virtual HistoryService* GetHistoryService(ServiceAccessType sat);
   virtual WebDataService* GetWebDataService(ServiceAccessType sat);
   virtual PasswordStore* GetPasswordStore(ServiceAccessType sat);
@@ -461,12 +476,14 @@ class ProfileImpl : public Profile,
 
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;
+  scoped_refptr<FaviconService> favicon_service_;
   scoped_refptr<WebDataService> web_data_service_;
   scoped_refptr<PasswordStore> password_store_;
   scoped_refptr<SessionService> session_service_;
   scoped_refptr<BrowserThemeProvider> theme_provider_;
   scoped_refptr<WebKitContext> webkit_context_;
   bool history_service_created_;
+  bool favicon_service_created_;
   bool created_web_data_service_;
   bool created_password_store_;
   bool created_download_manager_;

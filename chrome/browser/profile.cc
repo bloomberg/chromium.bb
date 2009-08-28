@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -251,6 +252,15 @@ class OffTheRecordProfileImpl : public Profile,
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) {
     if (sat == EXPLICIT_ACCESS) {
       return profile_->GetHistoryService(sat);
+    } else {
+      NOTREACHED() << "This profile is OffTheRecord";
+      return NULL;
+    }
+  }
+
+  virtual FaviconService* GetFaviconService(ServiceAccessType sat) {
+    if (sat == EXPLICIT_ACCESS) {
+      return profile_->GetFaviconService(sat);
     } else {
       NOTREACHED() << "This profile is OffTheRecord";
       return NULL;
@@ -505,6 +515,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       extensions_request_context_(NULL),
       blacklist_(NULL),
       history_service_created_(false),
+      favicon_service_created_(false),
       created_web_data_service_(false),
       created_password_store_(false),
       created_download_manager_(false),
@@ -702,6 +713,10 @@ ProfileImpl::~ProfileImpl() {
   history_service_ = NULL;
   bookmark_bar_model_.reset();
 
+  // FaviconService depends on HistoryServce so make sure we delete
+  // HistoryService first.
+  favicon_service_ = NULL;
+
   extension_message_service_->ProfileDestroyed();
 
   if (extensions_service_)
@@ -859,6 +874,15 @@ URLRequestContext* ProfileImpl::GetRequestContextForMedia() {
   }
 
   return media_request_context_;
+}
+
+FaviconService* ProfileImpl::GetFaviconService(ServiceAccessType sat) {
+  if (!favicon_service_created_) {
+    favicon_service_created_ = true;
+    scoped_refptr<FaviconService> service(new FaviconService(this));
+    favicon_service_.swap(service);
+  }
+  return favicon_service_.get();
 }
 
 URLRequestContext* ProfileImpl::GetRequestContextForExtensions() {

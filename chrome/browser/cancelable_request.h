@@ -494,6 +494,15 @@ class CancelableRequest : public CancelableRequestBase {
     }
   }
 
+  // Like |ForwardResult| but this never does a synchronous callback.
+  void ForwardResultAsync(const TupleType& param) {
+    DCHECK(callback_.get());
+    if (!canceled()) {
+      callback_thread_->PostTask(FROM_HERE, NewRunnableMethod(this,
+          &CancelableRequest<CB>::ExecuteCallback, param));
+    }
+  }
+
  private:
   // Executes the callback and notifies the provider and the consumer that this
   // request has been completed. This must be called on the callback_thread_.

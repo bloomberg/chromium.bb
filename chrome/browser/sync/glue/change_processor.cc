@@ -9,6 +9,7 @@
 #include "base/gfx/png_encoder.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -516,11 +517,13 @@ bool ChangeProcessor::SetBookmarkFavicon(
 
   HistoryService* history =
       profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  FaviconService* favicon_service =
+      profile->GetFaviconService(Profile::EXPLICIT_ACCESS);
 
   history->AddPage(bookmark_node->GetURL());
-  history->SetFavIcon(bookmark_node->GetURL(),
-                      fake_icon_url,
-                      icon_bytes_vector);
+  favicon_service->SetFavicon(bookmark_node->GetURL(),
+                              fake_icon_url,
+                              icon_bytes_vector);
 
   return true;
 }

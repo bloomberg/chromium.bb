@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DOM_UI_DOM_UI_FACTORY_H_
 #define CHROME_BROWSER_DOM_UI_DOM_UI_FACTORY_H_
 
+#include <vector>
+
 class DOMUI;
 class GURL;
 class TabContents;
@@ -24,6 +26,11 @@ class DOMUIFactory {
   // is not a DOM UI URL, then it will return NULL. When non-NULL, ownership of
   // the returned pointer is passed to the caller.
   static DOMUI* CreateDOMUIForURL(TabContents* tab_contents, const GURL& url);
+
+  // Gets the data for the favicon for a DOMUI page. Returns false if the DOMUI
+  // does not have a favicon.
+  static bool GetFaviconResourceBytes(const GURL& page_url,
+                                      std::vector<unsigned char>* bytes);
 
  private:
   // Class is for scoping only.

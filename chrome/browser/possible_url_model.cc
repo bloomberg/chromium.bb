@@ -9,6 +9,7 @@
 #include "app/table_model_observer.h"
 #include "base/gfx/png_decoder.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "grit/app_resources.h"
@@ -137,14 +138,14 @@ SkBitmap PossibleURLModel::GetIcon(int row) {
     if (!i->second.isNull())
       return i->second;
   } else if (profile_) {
-    HistoryService* hs =
-        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (hs) {
+    FaviconService* favicon_service =
+        profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+    if (favicon_service) {
       CancelableRequestProvider::Handle h =
-          hs->GetFavIconForURL(
+          favicon_service->GetFaviconForURL(
               result.url, &consumer_,
               NewCallback(this, &PossibleURLModel::OnFavIconAvailable));
-      consumer_.SetClientData(hs, h, result.index);
+      consumer_.SetClientData(favicon_service, h, result.index);
       // Add an entry to the map so that we don't attempt to request the
       // favicon again.
       fav_icon_map_[result.index] = SkBitmap();

@@ -1153,6 +1153,8 @@
         'browser/global_keyboard_shortcuts_mac.mm',
         'browser/fav_icon_helper.cc',
         'browser/fav_icon_helper.h',
+        'browser/favicon_service.cc',
+        'browser/favicon_service.h',
         'browser/find_bar.h',
         'browser/find_bar_controller.cc',
         'browser/find_bar_controller.h',

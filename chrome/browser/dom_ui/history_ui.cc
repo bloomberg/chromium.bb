@@ -29,6 +29,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 
 // Maximum number of search results to return in a given search. We should
 // eventually remove this.
@@ -376,4 +377,10 @@ HistoryUI::HistoryUI(TabContents* contents) : DOMUI(contents) {
 const GURL HistoryUI::GetHistoryURLWithSearchText(const std::wstring& text) {
   return GURL(std::string(chrome::kChromeUIHistoryURL) + "#q=" +
               EscapeQueryParamValue(WideToUTF8(text)));
+}
+
+// static
+bool HistoryUI::GetFaviconResourceBytes(std::vector<unsigned char>* bytes) {
+  return ResourceBundle::GetSharedInstance().
+      LoadImageResourceBytes(IDR_HISTORY_FAVICON, bytes);
 }

@@ -17,6 +17,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox3_importer.h"
@@ -165,7 +166,7 @@ void ProfileWriter::AddBookmarkEntry(
 
 void ProfileWriter::AddFavicons(
     const std::vector<history::ImportedFavIconUsage>& favicons) {
-  profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->
+  profile_->GetFaviconService(Profile::EXPLICIT_ACCESS)->
       SetImportedFavicons(favicons);
 }
 

@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/favicon_service.h"
 
 class GURL;
 class Profile;
@@ -33,7 +33,7 @@ class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
   }
 
   // Called when favicon data is available from the history backend.
-  void OnFavIconDataAvailable(HistoryService::Handle request_handle,
+  void OnFavIconDataAvailable(FaviconService::Handle request_handle,
                               bool know_favicon,
                               scoped_refptr<RefCountedBytes> data,
                               bool expired,

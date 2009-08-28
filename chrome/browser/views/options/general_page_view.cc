@@ -13,6 +13,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
@@ -92,7 +93,7 @@ class CustomHomePagesTableModel : public TableModel {
     SkBitmap icon;
 
     // If non-zero, indicates we're loading the favicon for the page.
-    HistoryService::Handle fav_icon_handle;
+    FaviconService::Handle fav_icon_handle;
   };
 
   static void InitClass();
@@ -102,7 +103,7 @@ class CustomHomePagesTableModel : public TableModel {
 
   // Callback from history service. Updates the icon of the Entry whose
   // fav_icon_handle matches handle and notifies the observer of the change.
-  void OnGotFavIcon(HistoryService::Handle handle,
+  void OnGotFavIcon(FaviconService::Handle handle,
                     bool know_fav_icon,
                     scoped_refptr<RefCountedBytes> image_data,
                     bool is_expired,
@@ -110,7 +111,7 @@ class CustomHomePagesTableModel : public TableModel {
 
   // Returns the entry whose fav_icon_handle matches handle and sets entry_index
   // to the index of the entry.
-  Entry* GetEntryByLoadHandle(HistoryService::Handle handle, int* entry_index);
+  Entry* GetEntryByLoadHandle(FaviconService::Handle handle, int* entry_index);
 
   // Set of entries we're showing.
   std::vector<Entry> entries_;
@@ -164,10 +165,10 @@ void CustomHomePagesTableModel::Remove(int index) {
   if (entry->fav_icon_handle) {
     // Pending load request, cancel it now so we don't deref a bogus pointer
     // when we get loaded notification.
-    HistoryService* history =
-        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (history)
-      history->CancelRequest(entry->fav_icon_handle);
+    FaviconService* favicon_service =
+        profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+    if (favicon_service)
+      favicon_service->CancelRequest(entry->fav_icon_handle);
   }
   entries_.erase(entries_.begin() + static_cast<size_t>(index));
   if (observer_)
@@ -216,17 +217,17 @@ void CustomHomePagesTableModel::InitClass() {
 }
 
 void CustomHomePagesTableModel::LoadFavIcon(Entry* entry) {
-  HistoryService* history =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (!history)
+  FaviconService* favicon_service =
+      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  if (!favicon_service)
     return;
-  entry->fav_icon_handle = history->GetFavIconForURL(
+  entry->fav_icon_handle = favicon_service->GetFaviconForURL(
       entry->url, &fav_icon_consumer_,
       NewCallback(this, &CustomHomePagesTableModel::OnGotFavIcon));
 }
 
 void CustomHomePagesTableModel::OnGotFavIcon(
-    HistoryService::Handle handle,
+    FaviconService::Handle handle,
     bool know_fav_icon,
     scoped_refptr<RefCountedBytes> image_data,
     bool is_expired,
@@ -253,7 +254,7 @@ void CustomHomePagesTableModel::OnGotFavIcon(
 
 CustomHomePagesTableModel::Entry*
     CustomHomePagesTableModel::GetEntryByLoadHandle(
-    HistoryService::Handle handle,
+    FaviconService::Handle handle,
     int* index) {
   for (size_t i = 0; i < entries_.size(); ++i) {
     if (entries_[i].fav_icon_handle == handle) {

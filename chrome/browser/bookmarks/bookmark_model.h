@@ -19,6 +19,7 @@
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/notification_registrar.h"
@@ -367,14 +368,14 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // Notification that a favicon has finished loading. If we can decode the
   // favicon, FaviconLoaded is invoked.
   void OnFavIconDataAvailable(
-      HistoryService::Handle handle,
+      FaviconService::Handle handle,
       bool know_favicon,
       scoped_refptr<RefCountedBytes> data,
       bool expired,
       GURL icon_url);
 
   // Invoked from the node to load the favicon. Requests the favicon from the
-  // history service.
+  // favicon service.
   void LoadFavIcon(BookmarkNode* node);
 
   // If we're waiting on a favicon for node, the load request is canceled.

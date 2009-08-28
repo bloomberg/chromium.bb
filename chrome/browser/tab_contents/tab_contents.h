@@ -1087,7 +1087,7 @@ class TabContents : public PageNavigator,
   bool notify_disconnection_;
 
   // Maps from handle to page_id.
-  typedef std::map<HistoryService::Handle, int32> HistoryRequestMap;
+  typedef std::map<FaviconService::Handle, int32> HistoryRequestMap;
   HistoryRequestMap history_requests_;
 
 #if defined(OS_WIN)

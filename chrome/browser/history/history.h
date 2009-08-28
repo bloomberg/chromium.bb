@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -340,66 +341,6 @@ class HistoryService : public CancelableRequestProvider,
                           CancelableRequestConsumerBase* consumer,
                           ThumbnailDataCallback* callback);
 
-  // Favicon -------------------------------------------------------------------
-
-  // Callback for GetFavIcon. If we have previously inquired about the favicon
-  // for this URL, |know_favicon| will be true, and the rest of the fields will
-  // be valid (otherwise they will be ignored).
-  //
-  // On |know_favicon| == true, |data| will either contain the PNG encoded
-  // favicon data, or it will be NULL to indicate that the site does not have
-  // a favicon (in other words, we know the site doesn't have a favicon, as
-  // opposed to not knowing anything). |expired| will be set to true if we
-  // refreshed the favicon "too long" ago and should be updated if the page
-  // is visited again.
-  typedef Callback5<Handle,                          // handle
-                    bool,                            // know_favicon
-                    scoped_refptr<RefCountedBytes>,  // data
-                    bool,                            // expired
-                    GURL>::Type                      // url of the favicon
-      FavIconDataCallback;
-
-  // Requests the favicon. FavIconConsumer is notified
-  // when the bits have been fetched. The consumer is NOT deleted by the
-  // HistoryService, and must be valid until the request is serviced.
-  Handle GetFavIcon(const GURL& icon_url,
-                    CancelableRequestConsumerBase* consumer,
-                    FavIconDataCallback* callback);
-
-  // Fetches the favicon at icon_url, sending the results to the given callback.
-  // If the favicon has previously been set via SetFavIcon(), then the favicon
-  // url for page_url and all redirects is set to icon_url. If the favicon has
-  // not been set, the database is not updated.
-  Handle UpdateFavIconMappingAndFetch(const GURL& page_url,
-                                      const GURL& icon_url,
-                                      CancelableRequestConsumerBase* consumer,
-                                      FavIconDataCallback* callback);
-
-  // Requests a favicon for a web page URL. FavIconConsumer is notified
-  // when the bits have been fetched. The consumer is NOT deleted by the
-  // HistoryService, and must be valid until the request is serviced.
-  //
-  // Note: this version is intended to be used to retrieve the favicon of a
-  // page that has been browsed in the past. |expired| in the callback is
-  // always false.
-  Handle GetFavIconForURL(const GURL& page_url,
-                          CancelableRequestConsumerBase* consumer,
-                          FavIconDataCallback* callback);
-
-  // Sets the favicon for a page.
-  void SetFavIcon(const GURL& page_url,
-                  const GURL& icon_url,
-                  const std::vector<unsigned char>& image_data);
-
-  // Marks the favicon for the page as being out of date.
-  void SetFavIconOutOfDateForPage(const GURL& page_url);
-
-  // Allows the importer to set many favicons for many pages at once. The pages
-  // must exist, any favicon sets for unknown pages will be discarded. Existing
-  // favicons will not be overwritten.
-  void SetImportedFavicons(
-      const std::vector<history::ImportedFavIconUsage>& favicon_usage);
-
   // Database management operations --------------------------------------------
 
   // Delete all the information related to a single url.
@@ -571,6 +512,7 @@ class HistoryService : public CancelableRequestProvider,
  private:
   class BackendDelegate;
   friend class BackendDelegate;
+  friend class FaviconService;
   friend class history::HistoryBackend;
   friend class history::HistoryQueryTest;
   friend class HistoryOperation;
@@ -618,6 +560,43 @@ class HistoryService : public CancelableRequestProvider,
   // Returns true if this looks like the type of URL we want to add to the
   // history. We filter out some URLs such as JavaScript.
   bool CanAddURL(const GURL& url) const;
+
+  // FavIcon -------------------------------------------------------------------
+
+  // These favicon methods are exposed to the FaviconService. Instead of calling
+  // these methods directly you should call the respective method on the
+  // FaviconService.
+
+  // Used by the FaviconService to get a favicon from the history backend.
+  void GetFavicon(FaviconService::GetFaviconRequest* request,
+                  const GURL& icon_url);
+
+  // Used by the FaviconService to update the favicon mappings on the history
+  // backend.
+  void UpdateFaviconMappingAndFetch(FaviconService::GetFaviconRequest* request,
+                                    const GURL& page_url,
+                                    const GURL& icon_url);
+
+  // Used by the FaviconService to get a favicon from the history backend.
+  void GetFaviconForURL(FaviconService::GetFaviconRequest* request,
+                        const GURL& page_url);
+
+  // Used by the FaviconService to mark the favicon for the page as being out
+  // of date.
+  void SetFaviconOutOfDateForPage(const GURL& page_url);
+
+  // Used by the FaviconService for importing many favicons for many pages at
+  // once. The pages must exist, any favicon sets for unknown pages will be
+  // discarded. Existing favicons will not be overwritten.
+  void SetImportedFavicons(
+      const std::vector<history::ImportedFavIconUsage>& favicon_usage);
+
+  // Used by the FaviconService to set the favicon for a page on the history
+  // backend.
+  void SetFavicon(const GURL& page_url,
+                  const GURL& icon_url,
+                  const std::vector<unsigned char>& image_data);
+
 
   // Sets the in-memory URL database. This is called by the backend once the
   // database is loaded to make it available.

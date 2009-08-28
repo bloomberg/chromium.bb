@@ -632,7 +632,7 @@ BookmarkNode* BookmarkModel::CreateRootNodeFromStarredEntry(
 }
 
 void BookmarkModel::OnFavIconDataAvailable(
-    HistoryService::Handle handle,
+    FaviconService::Handle handle,
     bool know_favicon,
     scoped_refptr<RefCountedBytes> data,
     bool expired,
@@ -640,7 +640,7 @@ void BookmarkModel::OnFavIconDataAvailable(
   SkBitmap fav_icon;
   BookmarkNode* node =
       load_consumer_.GetClientData(
-          profile_->GetHistoryService(Profile::EXPLICIT_ACCESS), handle);
+          profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
   DCHECK(node);
   node->set_favicon_load_handle(0);
   if (know_favicon && data.get() &&
@@ -655,24 +655,23 @@ void BookmarkModel::LoadFavIcon(BookmarkNode* node) {
     return;
 
   DCHECK(node->GetURL().is_valid());
-  HistoryService* history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (!history_service)
+  FaviconService* favicon_service =
+      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  if (!favicon_service)
     return;
-
-  HistoryService::Handle handle = history_service->GetFavIconForURL(
+  FaviconService::Handle handle = favicon_service->GetFaviconForURL(
       node->GetURL(), &load_consumer_,
       NewCallback(this, &BookmarkModel::OnFavIconDataAvailable));
-  load_consumer_.SetClientData(history_service, handle, node);
+  load_consumer_.SetClientData(favicon_service, handle, node);
   node->set_favicon_load_handle(handle);
 }
 
 void BookmarkModel::CancelPendingFavIconLoadRequests(BookmarkNode* node) {
   if (node->favicon_load_handle()) {
-    HistoryService* history =
-        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (history)
-      history->CancelRequest(node->favicon_load_handle());
+    FaviconService* favicon_service =
+        profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+    if (favicon_service)
+      favicon_service->CancelRequest(node->favicon_load_handle());
     node->set_favicon_load_handle(0);
   }
 }

@@ -23,6 +23,7 @@
 #include "base/thread.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/profile.h"
@@ -636,12 +637,12 @@ bool JumpList::StartLoadingFavIcon() {
   if (icon_urls_.empty())
     return false;
 
-  // Ask HistoryService if it has a fav icon of a URL.
-  // When HistoryService has one, it will call OnFavIconDataAvailable().
+  // Ask FaviconService if it has a fav icon of a URL.
+  // When FaviocnService has one, it will call OnFavIconDataAvailable().
   GURL url(icon_urls_.front().first);
-  HistoryService* history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  HistoryService::Handle handle = history_service->GetFavIconForURL(
+  FaviconService* favicon_service =
+      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  FaviconService::Handle handle = favicon_service->GetFaviconForURL(
       url, &fav_icon_consumer_,
       NewCallback(this, &JumpList::OnFavIconDataAvailable));
   return true;
@@ -705,7 +706,7 @@ void JumpList::OnSegmentUsageAvailable(
 }
 
 void JumpList::OnFavIconDataAvailable(
-    HistoryService::Handle handle,
+    FaviconService::Handle handle,
     bool know_favicon,
     scoped_refptr<RefCountedBytes> data,
     bool expired,
