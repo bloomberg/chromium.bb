@@ -36,7 +36,7 @@ class SyncChannel : public ChannelProxy,
               Channel::Listener* listener, MessageFilter* filter,
               MessageLoop* ipc_message_loop, bool create_pipe_now,
               base::WaitableEvent* shutdown_event);
-  ~SyncChannel();
+  virtual ~SyncChannel();
 
   virtual bool Send(Message* message);
   virtual bool SendWithTimeout(Message* message, int timeout_ms);

@@ -93,7 +93,7 @@ class ChannelProxy : public Message::Sender {
                Channel::Listener* listener, MessageFilter* filter,
                MessageLoop* ipc_thread_loop);
 
-  ~ChannelProxy() {
+  virtual ~ChannelProxy() {
     Close();
   }
 
