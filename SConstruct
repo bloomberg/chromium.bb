@@ -507,6 +507,8 @@ Common tasks:
 
 * build libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_update
 * purge libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_clean
+* rebuild sdk:              scons --extra_sdk_clean extra_sdk_update_header \
+                                        install_libpthread  extra_sdk_update
 
 * dump system info    scons --mode=nacl,opt-linux dummy
 Options:
@@ -790,8 +792,6 @@ nacl_env = pre_base_env.Clone(
 
     # always optimize binaries
     CCFLAGS = ['-O2',
-               '-mfpmath=sse',
-               '-msse',
                '-fomit-frame-pointer',
                '-Wall',
                '-fdiagnostics-show-option',
@@ -807,42 +807,55 @@ nacl_env = pre_base_env.Clone(
 # limit the majority of test to x86 for now
 if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
   nacl_env.Append(
+      CCFLAGS = ['-mfpmath=sse',
+                 '-msse',
+                 ],
+      )
+
+  nacl_env.Append(
       BUILD_SCONSCRIPTS = [
           ####  ALPHABETICALLY SORTED ####
-          'common/console/nacl.scons',
-
           'tests/app_lib/nacl.scons',
           'tests/autoloader/nacl.scons',
           'tests/contest_issues/nacl.scons',
-          'tests/earth/nacl.scons',
           'tests/fib/nacl.scons',
           'tests/file/nacl.scons',
           'tests/hello_world/nacl.scons',
           'tests/imc_shm_mmap/nacl.scons',
-          'tests/life/nacl.scons',
           'tests/mandel/nacl.scons',
-          'tests/mandel_nav/nacl.scons',
-          'tests/many/nacl.scons',
           'tests/mmap/nacl.scons',
           'tests/native_worker/nacl.scons',
           'tests/noop/nacl.scons',
           'tests/nrd_xfer/nacl.scons',
           'tests/null/nacl.scons',
           'tests/nullptr/nacl.scons',
-          'tests/selenium_dummy/nacl.scons',
           'tests/srpc/nacl.scons',
           'tests/srpc_hw/nacl.scons',
           'tests/syscalls/nacl.scons',
           'tests/threads/nacl.scons',
-          'tests/tone/nacl.scons',
           'tests/vim/nacl.scons',
-          'tests/voronoi/nacl.scons',
           'tests/pthread_bless/nacl.scons',
 
           'tools/tests/nacl.scons',
           ####  ALPHABETICALLY SORTED ####
           ],
       )
+
+  if ARGUMENTS.get('sdl', 'hermetic') != 'none':
+    nacl_env.Append(
+        BUILD_SCONSCRIPTS = [
+            ####  ALPHABETICALLY SORTED ####
+            'common/console/nacl.scons',
+
+            'tests/earth/nacl.scons',
+            'tests/life/nacl.scons',
+            'tests/mandel_nav/nacl.scons',
+            'tests/many/nacl.scons',
+            'tests/selenium_dummy/nacl.scons',
+            'tests/tone/nacl.scons',
+            'tests/voronoi/nacl.scons',
+            ])
+
 
 if nacl_env['BUILD_ARCHITECTURE'] == 'arm':
   nacl_env.Append(
