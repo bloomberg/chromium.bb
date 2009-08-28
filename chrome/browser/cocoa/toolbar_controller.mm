@@ -412,7 +412,9 @@ class PrefObserverBridge : public NotificationObserver {
   DCHECK(minX < NSMinX(locationFrame));
   DCHECK(maxX > NSMaxX(locationFrame));
 
-  NSRect r = NSMakeRect(minX, NSMinY(locationFrame), maxX - minX, 0);
+  // TODO(shess): The + 1.0 is because the field's visual boundary
+  // differs from its on-screen boundary.
+  NSRect r = NSMakeRect(minX, NSMinY(locationFrame) + 1.0, maxX - minX, 0);
   return gfx::Rect(NSRectToCGRect([[self view] convertRect:r toView:nil]));
 }
 @end

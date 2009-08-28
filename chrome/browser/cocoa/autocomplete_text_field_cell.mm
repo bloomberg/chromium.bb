@@ -161,6 +161,8 @@ const NSInteger kBaselineOffset = 4;
   [[NSColor colorWithCalibratedWhite:1.0 alpha:0.25] set];
   NSFrameRectWithWidthUsingOperation(cellFrame,  1, NSCompositeSourceOver);
 
+  // TODO(shess): This inset is also reflected in ToolbarController
+  // -autocompletePopupPosition.
   NSRect frame = NSInsetRect(cellFrame, 0, 1);
   [[self backgroundColor] setFill];
   NSRect innerFrame = NSInsetRect(frame, 1, 1);

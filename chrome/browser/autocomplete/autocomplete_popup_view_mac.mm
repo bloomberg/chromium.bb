@@ -25,7 +25,10 @@ const int kCellHeightAdjust = 7.0;
 
 // How to round off the popup's corners.  Goal is to match star and go
 // buttons.
-const CGFloat kPopupRoundingRadius = 4.0;
+const CGFloat kPopupRoundingRadius = 3.5;
+
+// Gap between the field and the popup.
+const CGFloat kPopupFieldGap = 2.0;
 
 // How much space to leave for the left and right margins.
 const CGFloat kLeftRightMargin = 8.0;
@@ -356,7 +359,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
 
   // Make the window just as big.
   r.size.height = [matrix frame].size.height;
-  r.origin.y -= r.size.height + 2;
+  r.origin.y -= r.size.height + kPopupFieldGap;
 
   // Update the selection.
   PaintUpdatesNow();

@@ -272,8 +272,9 @@ TEST_F(ToolbarControllerTest, AutocompletePopupPosition) {
   EXPECT_LT(popupFrame.x(), NSMinX(locationFrame));
   EXPECT_GT(popupFrame.right(), NSMaxX(locationFrame));
 
-  // Make sure the popup frame is positioned at the bottom of the location bar.
-  EXPECT_EQ(popupFrame.bottom(), NSMinY(locationFrame));
+  // Make sure the popup frame is positioned above the bottom of the
+  // location bar.
+  EXPECT_GE(popupFrame.bottom(), NSMinY(locationFrame));
 }
 
 
