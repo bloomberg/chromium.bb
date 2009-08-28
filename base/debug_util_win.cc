@@ -164,8 +164,13 @@ class SymbolContext {
     if (SymInitialize(GetCurrentProcess(), NULL, TRUE)) {
       init_error_ = ERROR_SUCCESS;
     } else {
-      __debugbreak();
       init_error_ = GetLastError();
+      // TODO(awong): Handle error: SymInitialize can fail with
+      // ERROR_INVALID_PARAMETER.
+      // When it fails, we should not call debugbreak since it kills the current
+      // process (prevents future tests from running or kills the browser
+      // process).
+      DLOG(ERROR) << "SymInitialize failed: " << init_error_;
     }
   }
 
