@@ -501,6 +501,9 @@ void ChromeClientImpl::contentsSizeChanged(WebCore::Frame* frame, const
   }
 }
 
+void ChromeClientImpl::scrollbarsModeDidChange() const {
+}
+
 void ChromeClientImpl::mouseDidMoveOverElement(
     const WebCore::HitTestResult& result, unsigned modifierFlags) {
   // Find out if the mouse is over a link, and if so, let our UI know... somehow

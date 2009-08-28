@@ -115,6 +115,7 @@ class ChromeClientImpl : public WebCore::ChromeClientChromium {
                                    const WebCore::IntSize&) const;
   virtual void scrollRectIntoView(const WebCore::IntRect&, const WebCore::ScrollView*) const { }
 
+  virtual void scrollbarsModeDidChange() const;
   virtual void mouseDidMoveOverElement(const WebCore::HitTestResult& result,
                                        unsigned modifierFlags);
 
