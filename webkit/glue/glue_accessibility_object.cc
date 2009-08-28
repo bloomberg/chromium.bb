@@ -375,6 +375,7 @@ static WebAccessibility::Role SupportedRole(WebCore::AccessibilityRole role) {
       return WebAccessibility::ROLE_COLUMN;
     case WebCore::ColumnHeaderRole:
       return WebAccessibility::ROLE_COLUMNHEADER;
+    case WebCore::DocumentArticleRole:
     case WebCore::WebAreaRole:
       return WebAccessibility::ROLE_DOCUMENT;
     case WebCore::ImageMapRole:
