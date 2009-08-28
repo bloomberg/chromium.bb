@@ -653,6 +653,10 @@ bool AutocompleteEditViewMac::IsPopupOpen() const {
   return popup_view_->IsOpen();
 }
 
+void AutocompleteEditViewMac::TryDeletingCurrentItem() {
+  popup_view_->GetModel()->TryDeletingCurrentItem();
+}
+
 void AutocompleteEditViewMac::OnControlKeyChanged(bool pressed) {
   model_->OnControlKeyChanged(pressed);
 }
@@ -779,6 +783,16 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
   if (cmd == @selector(deleteBackward:)) {
     if (edit_view_->OnBackspacePressed()) {
       return YES;
+    }
+  }
+
+  if (cmd == @selector(deleteForward:)) {
+    const NSUInteger modifiers = [[NSApp currentEvent] modifierFlags];
+    if ((modifiers & NSShiftKeyMask) != 0) {
+      if (edit_view_->IsPopupOpen()) {
+        edit_view_->TryDeletingCurrentItem();
+        return YES;
+      }
     }
   }
 

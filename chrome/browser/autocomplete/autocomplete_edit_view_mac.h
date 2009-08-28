@@ -122,6 +122,10 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   // machinery).
   bool OnBackspacePressed();
 
+  // Forward to same method in |popup_view_| model.  Used when
+  // Shift-Delete is pressed, to delete items from the popup.
+  void TryDeletingCurrentItem();
+
   void AcceptInput(WindowOpenDisposition disposition, bool for_drop);
 
   // Helper for LocationBarViewMac.  Selects all in |field_|.
