@@ -46,7 +46,9 @@ TEST_F(ErrorPageTest, DNSError_GoBack1) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURL(test_url);
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
 
   GetActiveTab()->GoBack();
@@ -60,7 +62,9 @@ TEST_F(ErrorPageTest, DNSError_GoBack2) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURL(test_url);
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
 
@@ -80,7 +84,9 @@ TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURL(test_url);
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
 
@@ -103,7 +109,9 @@ TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
   GURL test_url(URLRequestFailedDnsJob::kTestUrl);
 
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title3.html"));
-  NavigateToURL(test_url);
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleContaining(test_url.host()));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
 
@@ -165,22 +173,22 @@ TEST_F(ErrorPageTest, IFrame404) {
   EXPECT_TRUE(WaitForTitleMatching(L"SUCCESS"));
 }
 
-#if defined(OS_LINUX)
-// TODO(phajdan.jr): This test is flaky on Linux, http://crbug.com/19361
-#define Page404 DISABLED_Page404
-#define Page404_GoBack DISABLED_Page404_GoBack
-#endif
-
 TEST_F(ErrorPageTest, Page404) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"page404.html"));
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  NavigateToURLBlockUntilNavigationsComplete(
+      URLRequestMockHTTPJob::GetMockUrl(L"page404.html"), 2);
 
   EXPECT_TRUE(WaitForTitleContaining("page404.html"));
 }
 
 TEST_F(ErrorPageTest, Page404_GoBack) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
-  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"page404.html"));
+  // The first navigation should fail, and the second one should be the error
+  // page.
+  NavigateToURLBlockUntilNavigationsComplete(
+      URLRequestMockHTTPJob::GetMockUrl(L"page404.html"), 2);
   EXPECT_TRUE(WaitForTitleContaining("page404.html"));
 
   GetActiveTab()->GoBack();
