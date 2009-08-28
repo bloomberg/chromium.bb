@@ -2012,7 +2012,10 @@ BUG10476 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post-sync
 
 // Merge WebKit 42133:42199 regressions
 BUG10477 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
-BUG18686 : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL
+// All platforms fail because Chrome allows XHR to local directories and Safari doesn't.
+// Mac also has unimplemented test shell features.
+BUG20450 LINUX WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL
+BUG20458 MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL
 BUG10477 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
 
 // Flaky since rev 13111.
