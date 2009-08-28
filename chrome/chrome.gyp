@@ -2361,6 +2361,8 @@
                 ['include', '^browser/views/autocomplete/autocomplete_popup_gtk.h'],
                 ['include', '^browser/views/bookmark_bar_view.cc'],
                 ['include', '^browser/views/bookmark_bar_view.h'],
+                ['include', '^browser/views/bookmark_bubble_view.cc'],
+                ['include', '^browser/views/bookmark_bubble_view.h'],
                 ['include', '^browser/views/bookmark_context_menu.cc'],
                 ['include', '^browser/views/bookmark_context_menu.h'],
                 ['include', '^browser/views/bookmark_menu_button.cc'],

@@ -38,6 +38,8 @@ class NativeTextfieldGtk : public NativeControlGtk,
   virtual void NativeControlCreated(GtkWidget* widget);
 
  private:
+  Textfield* textfield_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldGtk);
 };
 

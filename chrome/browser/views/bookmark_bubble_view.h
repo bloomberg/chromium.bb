@@ -57,6 +57,8 @@ class BookmarkBubbleView : public views::View,
   // Override to close on return.
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+
  private:
   // Model for the combobox showing the list of folders to choose from. The
   // list always contains the bookmark bar, other node and parent. The list

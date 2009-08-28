@@ -32,24 +32,6 @@ void ShowImporterView(views::Widget* parent,
   NOTIMPLEMENTED();
 }
 
-void ShowBookmarkBubbleView(views::Window* parent,
-                            const gfx::Rect& bounds,
-                            InfoBubbleDelegate* delegate,
-                            Profile* profile,
-                            const GURL& url,
-                            bool newly_bookmarked) {
-  NOTIMPLEMENTED();
-}
-
-void HideBookmarkBubbleView() {
-  NOTIMPLEMENTED();
-}
-
-bool IsBookmarkBubbleViewShowing() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void ShowBookmarkManagerView(Profile* profile) {
   NOTIMPLEMENTED();
 }

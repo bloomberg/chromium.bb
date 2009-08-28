@@ -129,29 +129,29 @@ void InfoBubble::Init(views::Window* parent,
       0 : CS_DROPSHADOW);
 #endif
   content_view_ = CreateContentView(content);
-  gfx::Rect bounds =
-      content_view_->CalculateWindowBoundsAndAjust(position_relative_to);
 
 #if defined(OS_WIN)
-  WidgetWin::Init(parent->GetNativeWindow(), bounds);
+  WidgetWin::Init(parent->GetNativeWindow(), gfx::Rect());
 #else
-  WidgetGtk::Init(GTK_WIDGET(parent->GetNativeWindow()), bounds);
+  WidgetGtk::Init(GTK_WIDGET(parent->GetNativeWindow()), gfx::Rect());
 #endif
+
   SetContentsView(content_view_);
   // The preferred size may differ when parented. Ask for the bounds again
   // and if they differ reset the bounds.
   gfx::Rect parented_bounds =
       content_view_->CalculateWindowBoundsAndAjust(position_relative_to);
 
-  if (bounds != parented_bounds) {
+  // TODO(beng): This should be done in a cleaner and cross-platform way.
 #if defined(OS_WIN)
-    SetWindowPos(NULL, parented_bounds.x(), parented_bounds.y(),
-                 parented_bounds.width(), parented_bounds.height(),
-                 SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOZORDER);
-    // Invoke ChangeSize, otherwise layered window isn't updated correctly.
-    ChangeSize(0, CSize(parented_bounds.width(), parented_bounds.height()));
+  SetWindowPos(NULL, parented_bounds.x(), parented_bounds.y(),
+               parented_bounds.width(), parented_bounds.height(),
+               SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOZORDER);
+  // Invoke ChangeSize, otherwise layered window isn't updated correctly.
+  ChangeSize(0, CSize(parented_bounds.width(), parented_bounds.height()));
+#else
+  SetBounds(parented_bounds);
 #endif
-  }
 
 #if defined(OS_WIN)
   // Register the Escape accelerator for closing.
@@ -213,6 +213,7 @@ void InfoBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
 }
 
 void InfoBubble::OnSize(UINT param, const CSize& size) {
+  // See OnSizeAllocate for the Linux version.
   gfx::Path path;
   content_view_->GetMask(gfx::Size(size.cx, size.cy), &path);
   SetWindowRgn(path.CreateHRGN(), TRUE);
@@ -239,16 +240,26 @@ void InfoBubble::Close(bool closed_by_escape) {
 #endif
 }
 
+#if defined(OS_LINUX)
+void InfoBubble::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
+  gfx::Path path;
+  content_view_->GetMask(gfx::Size(allocation->width, allocation->height),
+                         &path);
+  SetShape(path);
+  WidgetGtk::OnSizeAllocate(widget, allocation);
+}
+#endif
+
 // ContentView ----------------------------------------------------------------
 
 InfoBubble::ContentView::ContentView(views::View* content, InfoBubble* host)
-    : host_(host) {
+    : content_(content),
+      host_(host) {
   if (UILayoutIsRightToLeft()) {
     arrow_edge_ = TOP_RIGHT;
   } else {
     arrow_edge_ = TOP_LEFT;
   }
-  AddChildView(content);
 }
 
 gfx::Rect InfoBubble::ContentView::CalculateWindowBoundsAndAjust(
@@ -437,6 +448,13 @@ void InfoBubble::ContentView::Paint(gfx::Canvas* canvas) {
                           1);
     }
   }
+}
+
+void InfoBubble::ContentView::ViewHierarchyChanged(bool is_add,
+                                                   View* parent,
+                                                   View* child) {
+  if (is_add && child == this)
+    AddChildView(content_);
 }
 
 gfx::Rect InfoBubble::ContentView::CalculateWindowBounds(

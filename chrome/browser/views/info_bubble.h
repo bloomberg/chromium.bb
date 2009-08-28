@@ -147,11 +147,14 @@ class InfoBubble : public views::WidgetGtk, public AnimationDelegate {
     // view. If this returns false the arrow is positioned along the right edge.
     bool IsLeft() { return (arrow_edge_ & 1) == 0; }
 
-   private:
+    virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
+   private:
     // Returns the bounds for the window containing us based on the current
     // arrow edge.
     gfx::Rect CalculateWindowBounds(const gfx::Rect& position_relative_to);
+
+    views::View* content_;
 
     // Edge to draw the arrow at.
     ArrowEdge arrow_edge_;
@@ -169,6 +172,11 @@ class InfoBubble : public views::WidgetGtk, public AnimationDelegate {
   // Closes the window notifying the delegate. |closed_by_escape| is true if
   // the close is the result of pressing escape.
   void Close(bool closed_by_escape);
+
+#if defined(OS_LINUX)
+  // Overridden from WidgetGtk.
+  virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
+#endif
 
   // The delegate notified when the InfoBubble is closed.
   InfoBubbleDelegate* delegate_;

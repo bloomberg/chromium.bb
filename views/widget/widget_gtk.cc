@@ -720,7 +720,7 @@ void WidgetGtk::OnWindowPaint(GtkWidget* widget, GdkEventExpose* event) {
   // view here as that is done by OnPaint.
   DCHECK(transparent_);
   int width, height;
-  gtk_window_get_size (GTK_WINDOW (widget), &width, &height);
+  gtk_window_get_size(GTK_WINDOW (widget), &width, &height);
   cairo_t* cr = gdk_cairo_create(widget->window);
   cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
   cairo_set_source_rgba(cr, 0, 0, 0, 0);

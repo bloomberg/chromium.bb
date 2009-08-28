@@ -7,6 +7,7 @@
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/keyboard_codes.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -20,6 +21,7 @@
 #include "views/standard_layout.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/focus/focus_manager.h"
 
 using views::Combobox;
 using views::ColumnSet;
@@ -111,7 +113,7 @@ int BookmarkBubbleView::RecentlyUsedFoldersModel::GetItemCount() {
 
 std::wstring BookmarkBubbleView::RecentlyUsedFoldersModel::GetItemAt(
     int index) {
-  if (index == nodes_.size())
+  if (index == static_cast<int>(nodes_.size()))
     return l10n_util::GetString(IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
   return nodes_[index]->GetTitle();
 }
@@ -182,7 +184,7 @@ void BookmarkBubbleView::DidChangeBounds(const gfx::Rect& previous,
 void BookmarkBubbleView::BubbleShown() {
   DCHECK(GetWidget());
   GetFocusManager()->RegisterAccelerator(
-      views::Accelerator(VK_RETURN, false, false, false), this);
+      views::Accelerator(base::VKEY_RETURN, false, false, false), this);
 
   title_tf_->RequestFocus();
   title_tf_->SelectAll();
@@ -190,13 +192,19 @@ void BookmarkBubbleView::BubbleShown() {
 
 bool BookmarkBubbleView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
-  if (accelerator.GetKeyCode() != VK_RETURN)
+  if (accelerator.GetKeyCode() != base::VKEY_RETURN)
     return false;
   if (edit_button_->HasFocus())
     ButtonPressed(edit_button_);
   else
     ButtonPressed(close_button_);
   return true;
+}
+
+void BookmarkBubbleView::ViewHierarchyChanged(bool is_add, View* parent,
+                                              View* child) {
+  if (is_add && child == this)
+    Init();
 }
 
 BookmarkBubbleView::BookmarkBubbleView(InfoBubbleDelegate* delegate,
@@ -212,7 +220,6 @@ BookmarkBubbleView::BookmarkBubbleView(InfoBubbleDelegate* delegate,
           profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url)),
       remove_bookmark_(false),
       apply_edits_(true) {
-  Init();
 }
 
 void BookmarkBubbleView::Init() {
@@ -378,6 +385,7 @@ void BookmarkBubbleView::ShowEditor() {
   // Commit any edits now.
   ApplyEdits();
 
+#if defined(OS_WIN)
   // Parent the editor to our root ancestor (not the root we're in, as that
   // is the info bubble and will close shortly).
   HWND parent = GetAncestor(GetWidget()->GetNativeView(), GA_ROOTOWNER);
@@ -390,6 +398,10 @@ void BookmarkBubbleView::ShowEditor() {
   // status changes. That way, when the editor closes, activation is properly
   // restored to the browser.
   ShowWindow(GetWidget()->GetNativeView(), SW_HIDE);
+#else
+  NOTIMPLEMENTED();  // TODO(brettw) find the parent.
+  gfx::NativeView parent = NULL;
+#endif
 
   // Even though we just hid the window, we need to invoke Close to schedule
   // the delete and all that.

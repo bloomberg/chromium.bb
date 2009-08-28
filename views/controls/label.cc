@@ -101,8 +101,9 @@ int Label::ComputeMultiLineFlags() {
   return flags;
 }
 
-void Label::CalculateDrawStringParams(
-    std::wstring* paint_text, gfx::Rect* text_bounds, int* flags) {
+void Label::CalculateDrawStringParams(std::wstring* paint_text,
+                                      gfx::Rect* text_bounds,
+                                      int* flags) {
   DCHECK(paint_text && text_bounds && flags);
 
   if (url_set_) {
