@@ -116,3 +116,7 @@ PREFIX : `anonymous namespace'::invalidparameter___realloc___wtf::fastrealloc___
 
 # 20291
 PREFIX : webplugindelegateimpl::flashwindowlesswndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop___base::messagepumpwin::run
+
+# 20494
+# likely to be related with flash. The top few frames are all in NPSWF.
+REGEX : npapi::plugininstance::npp_newstream___[^_]*___ipc::syncchannel::sendwithtimeout
