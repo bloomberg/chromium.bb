@@ -10,6 +10,9 @@
 #include "base/message_loop.h"
 #include "views/widget/widget.h"
 
+class OSExchangeData;
+class OSExchangeDataProviderGtk;
+
 namespace gfx {
 class Rect;
 }
@@ -72,6 +75,9 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   // |widget_|.
   GtkWidget* window_contents() const { return window_contents_; }
 
+  // Starts a drag on this widget. This blocks until the drag is done.
+  void DoDrag(const OSExchangeData& data, int operation);
+
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
   virtual void SetContentsView(View* view);
@@ -114,6 +120,10 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
  protected:
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
   virtual void OnPaint(GtkWidget* widget, GdkEventExpose* event);
+  virtual void OnDragDataGet(GdkDragContext* context,
+                             GtkSelectionData* data,
+                             guint info,
+                             guint time);
   virtual void OnDragDataReceived(GdkDragContext* context,
                                   gint x,
                                   gint y,
@@ -124,6 +134,9 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
                               gint x,
                               gint y,
                               guint time);
+  virtual void OnDragEnd(GdkDragContext* context);
+  virtual gboolean OnDragFailed(GdkDragContext* context,
+                                GtkDragResult result);
   virtual void OnDragLeave(GdkDragContext* context,
                            guint time);
   virtual gboolean OnDragMotion(GdkDragContext* context,
@@ -201,6 +214,12 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   static gboolean CallWindowPaint(GtkWidget* widget,
                                   GdkEventExpose* event,
                                   WidgetGtk* widget_gtk);
+  static void CallDragDataGet(GtkWidget* widget,
+                              GdkDragContext* context,
+                              GtkSelectionData* data,
+                              guint info,
+                              guint time,
+                              WidgetGtk* host);
   static void CallDragDataReceived(GtkWidget* widget,
                                    GdkDragContext* context,
                                    gint x,
@@ -215,6 +234,13 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
                                gint y,
                                guint time,
                                WidgetGtk* host);
+  static void CallDragEnd(GtkWidget* widget,
+                          GdkDragContext* context,
+                          WidgetGtk* host);
+  static gboolean CallDragFailed(GtkWidget* widget,
+                                 GdkDragContext* context,
+                                 GtkDragResult result,
+                                 WidgetGtk* host);
   static void CallDragLeave(GtkWidget* widget,
                             GdkDragContext* context,
                             guint time,
@@ -318,6 +344,10 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   bool ignore_drag_leave_;
 
   unsigned char opacity_;
+
+  // This is non-null during the life of DoDrag and contains the actual data
+  // for the drag.
+  const OSExchangeDataProviderGtk* drag_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };

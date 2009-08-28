@@ -6,6 +6,8 @@
 
 #include "app/drag_drop_types.h"
 #include "app/gfx/canvas_paint.h"
+#include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "base/base_drag_source.h"
 #include "base/logging.h"
 
@@ -33,16 +35,17 @@ void RootView::OnPaint(HWND hwnd) {
 
 void RootView::StartDragForViewFromMouseEvent(
     View* view,
-    IDataObject* data,
+    const OSExchangeData& data,
     int operation) {
+  // NOTE: view may be null.
   drag_view_ = view;
   scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
   DWORD effects;
-  DoDragDrop(data, drag_source,
+  DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
              DragDropTypes::DragOperationToDropEffect(operation), &effects);
   // If the view is removed during the drag operation, drag_view_ is set to
   // NULL.
-  if (drag_view_ == view) {
+  if (view && drag_view_ == view) {
     View* drag_view = drag_view_;
     drag_view_ = NULL;
     drag_view->OnDragDone();

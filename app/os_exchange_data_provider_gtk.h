@@ -44,6 +44,15 @@ class OSExchangeDataProviderGtk : public OSExchangeData::Provider {
   bool HasDataForAllFormats(int formats,
                             const std::set<GdkAtom>& custom_formats) const;
 
+  // Returns the set of formats available as a GtkTargetList. It is up to the
+  // caller to free (gtk_target_list_unref) the returned list.
+  GtkTargetList* GetTargetList() const;
+
+  // Writes the data to |selection|. |format| is any combination of
+  // OSExchangeData::Formats.
+  void WriteFormatToSelection(int format,
+                              GtkSelectionData* selection) const;
+
   // Provider methods.
   virtual void SetString(const std::wstring& data);
   virtual void SetURL(const GURL& url, const std::wstring& title);
@@ -80,7 +89,6 @@ class OSExchangeDataProviderGtk : public OSExchangeData::Provider {
   // Actual formats that have been set. See comment above |known_formats_|
   // for details.
   int formats_;
-  std::set<GdkAtom> custom_formats_;
 
   // String contents.
   string16 string_;

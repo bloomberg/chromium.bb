@@ -30,9 +30,7 @@ class MenuHost : public WidgetGtk {
  protected:
   virtual RootView* CreateRootView();
 
-  // If the grab breaks we cancel the menu.
   virtual gboolean OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event);
-  virtual void OnGrabNotify(GtkWidget* widget, gboolean was_grabbed);
 
   // Overriden to return false, we do NOT want to release capture on mouse
   // release.

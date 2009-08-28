@@ -166,6 +166,14 @@ class RootView : public View,
   void OnPaint(GdkEventExpose* event);
 #endif
 
+  // Starts a drag operation for the specified view. This blocks until done.
+  // If the view has not been deleted during the drag, OnDragDone is invoked
+  // on the view.
+  // NOTE: |view| may be null.
+  void StartDragForViewFromMouseEvent(View* view,
+                                      const OSExchangeData& data,
+                                      int operation);
+
   // Accessibility accessors/mutators, overridden from View.
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual bool GetAccessibleName(std::wstring* name);
@@ -241,15 +249,6 @@ class RootView : public View,
 
   // Updates the last_mouse_* fields from e.
   void SetMouseLocationAndFlags(const MouseEvent& e);
-
-#if defined(OS_WIN)
-  // Starts a drag operation for the specified view. This blocks until done.
-  // If the view has not been deleted during the drag, OnDragDone is invoked
-  // on the view.
-  void StartDragForViewFromMouseEvent(View* view,
-                                      IDataObject* data,
-                                      int operation);
-#endif
 
   // If a view is dragging, this returns it. Otherwise returns NULL.
   View* GetDragView();

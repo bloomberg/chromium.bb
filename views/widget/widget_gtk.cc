@@ -4,8 +4,12 @@
 
 #include "views/widget/widget_gtk.h"
 
+#include "app/drag_drop_types.h"
 #include "app/gfx/path.h"
+#include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_gtk.h"
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/root_view.h"
@@ -102,7 +106,8 @@ WidgetGtk::WidgetGtk(Type type)
       delete_on_destroy_(true),
       transparent_(false),
       ignore_drag_leave_(false),
-      opacity_(255) {
+      opacity_(255),
+      drag_data_(NULL) {
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -161,6 +166,27 @@ void WidgetGtk::PositionChild(GtkWidget* child, int x, int y, int w, int h) {
   gtk_widget_size_allocate(child, &alloc);
   gtk_widget_set_size_request(child, w, h);
   gtk_fixed_move(GTK_FIXED(window_contents_), child, x, y);
+}
+
+void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
+  const OSExchangeDataProviderGtk& data_provider =
+      static_cast<const OSExchangeDataProviderGtk&>(data.provider());
+  GtkTargetList* targets = data_provider.GetTargetList();
+  GdkEvent* current_event = gtk_get_current_event();
+  DCHECK(current_event);
+  gtk_drag_begin(window_contents_, targets,
+                 static_cast<GdkDragAction>(
+                     DragDropTypes::DragOperationToGdkDragAction(operation)),
+                 1, current_event);
+  gdk_event_free(current_event);
+  gtk_target_list_unref(targets);
+
+  drag_data_ = &data_provider;
+
+  // Block the caller until drag is done by running a nested message loop.
+  MessageLoopForUI::current()->Run(NULL);
+
+  drag_data_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,6 +282,12 @@ void WidgetGtk::Init(GtkWidget* parent,
                    G_CALLBACK(CallDragDrop), this);
   g_signal_connect(G_OBJECT(window_contents_), "drag_leave",
                    G_CALLBACK(CallDragLeave), this);
+  g_signal_connect(G_OBJECT(window_contents_), "drag_data_get",
+                   G_CALLBACK(CallDragDataGet), this);
+  g_signal_connect(G_OBJECT(window_contents_), "drag_end",
+                   G_CALLBACK(CallDragEnd), this);
+  g_signal_connect(G_OBJECT(window_contents_), "drag_failed",
+                   G_CALLBACK(CallDragFailed), this);
 
   tooltip_manager_.reset(new TooltipManagerGtk(this));
 
@@ -546,6 +578,17 @@ void WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   root_view_->OnPaint(event);
 }
 
+void WidgetGtk::OnDragDataGet(GdkDragContext* context,
+                              GtkSelectionData* data,
+                              guint info,
+                              guint time) {
+  if (!drag_data_) {
+    NOTREACHED();
+    return;
+  }
+  drag_data_->WriteFormatToSelection(info, data);
+}
+
 void WidgetGtk::OnDragDataReceived(GdkDragContext* context,
                                    gint x,
                                    gint y,
@@ -563,6 +606,22 @@ gboolean WidgetGtk::OnDragDrop(GdkDragContext* context,
   if (drop_target_.get()) {
     return drop_target_->OnDragDrop(context, x, y, time);
   }
+  return FALSE;
+}
+
+void WidgetGtk::OnDragEnd(GdkDragContext* context) {
+  if (!drag_data_) {
+    // This indicates we didn't start a drag operation, and should never
+    // happen.
+    NOTREACHED();
+    return;
+  }
+  // Quit the nested message loop we spawned in DoDrag.
+  MessageLoop::current()->Quit();
+}
+
+gboolean WidgetGtk::OnDragFailed(GdkDragContext* context,
+                                 GtkDragResult result) {
   return FALSE;
 }
 
@@ -705,7 +764,9 @@ void WidgetGtk::ProcessMouseReleased(GdkEventButton* event) {
   if (has_capture_ && ReleaseCaptureOnMouseReleased())
     ReleaseGrab();
   is_mouse_down_ = false;
-  root_view_->OnMouseReleased(mouse_up, false);
+  // GTK generates a mouse release at the end of dnd. We need to ignore it.
+  if (!drag_data_)
+    root_view_->OnMouseReleased(mouse_up, false);
 }
 
 // static
@@ -761,6 +822,16 @@ gboolean WidgetGtk::CallWindowPaint(GtkWidget* widget,
 }
 
 // static
+void WidgetGtk::CallDragDataGet(GtkWidget* widget,
+                                GdkDragContext* context,
+                                GtkSelectionData* data,
+                                guint info,
+                                guint time,
+                                WidgetGtk* host) {
+  host->OnDragDataGet(context, data, info, time);
+}
+
+// static
 void WidgetGtk::CallDragDataReceived(GtkWidget* widget,
                                      GdkDragContext* context,
                                      gint x,
@@ -780,6 +851,21 @@ gboolean WidgetGtk::CallDragDrop(GtkWidget* widget,
                                  guint time,
                                  WidgetGtk* host) {
   return host->OnDragDrop(context, x, y, time);
+}
+
+// static
+void WidgetGtk::CallDragEnd(GtkWidget* widget,
+                            GdkDragContext* context,
+                            WidgetGtk* host) {
+  host->OnDragEnd(context);
+}
+
+// static
+gboolean WidgetGtk::CallDragFailed(GtkWidget* widget,
+                                   GdkDragContext* context,
+                                   GtkDragResult result,
+                                   WidgetGtk* host) {
+  return host->OnDragFailed(context, result);
 }
 
 // static

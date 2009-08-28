@@ -10,10 +10,6 @@
 
 namespace views {
 
-void View::DoDrag(const MouseEvent& e, int press_x, int press_y) {
-  NOTIMPLEMENTED();
-}
-
 ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {
   NOTIMPLEMENTED();
   return NULL;

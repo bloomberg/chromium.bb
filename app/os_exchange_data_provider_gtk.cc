@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "app/gtk_dnd_util.h"
 #include "base/string_util.h"
 
 OSExchangeDataProviderGtk::OSExchangeDataProviderGtk(
@@ -29,9 +30,99 @@ bool OSExchangeDataProviderGtk::HasDataForAllFormats(
     const std::set<GdkAtom>& custom_formats) const {
   if ((formats_ & formats) != formats)
     return false;
-  return std::includes(custom_formats_.begin(),
-                       custom_formats_.end(),
-                       custom_formats.begin(), custom_formats.end());
+  for (std::set<GdkAtom>::iterator i = custom_formats.begin();
+       i != custom_formats.end(); ++i) {
+    if (pickle_data_.find(*i) == pickle_data_.end())
+      return false;
+  }
+  return true;
+}
+
+GtkTargetList* OSExchangeDataProviderGtk::GetTargetList() const {
+  GtkTargetList* targets = gtk_target_list_new(NULL, 0);
+
+  if ((formats_ & OSExchangeData::STRING) != 0)
+    gtk_target_list_add_text_targets(targets, OSExchangeData::STRING);
+
+  if ((formats_ & OSExchangeData::URL) != 0) {
+    gtk_target_list_add_uri_targets(targets, OSExchangeData::URL);
+    gtk_target_list_add(
+        targets,
+        GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
+        0,
+        OSExchangeData::URL);
+  }
+
+  if ((formats_ & OSExchangeData::FILE_CONTENTS) != 0)
+    NOTIMPLEMENTED();
+
+  if ((formats_ & OSExchangeData::FILE_NAME) != 0)
+    NOTIMPLEMENTED();
+
+  if ((formats_ & OSExchangeData::HTML) != 0)
+    NOTIMPLEMENTED();
+
+
+  for (PickleData::const_iterator i = pickle_data_.begin();
+       i != pickle_data_.end(); ++i) {
+    gtk_target_list_add(targets, i->first, 0, OSExchangeData::PICKLED_DATA);
+  }
+
+  return targets;
+}
+
+void OSExchangeDataProviderGtk::WriteFormatToSelection(
+    int format,
+    GtkSelectionData* selection) const {
+  if ((format & OSExchangeData::STRING) != 0) {
+    gtk_selection_data_set_text(
+        selection,
+        reinterpret_cast<const gchar*>(string_.c_str()),
+        -1);
+  }
+
+  if ((format & OSExchangeData::URL) != 0) {
+    // TODO: this should be pulled out of TabContentsDragSource into a common
+    // place.
+    Pickle pickle;
+    pickle.WriteString(UTF16ToUTF8(title_));
+    pickle.WriteString(url_.spec());
+    gtk_selection_data_set(
+        selection,
+        GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
+        8,
+        reinterpret_cast<const guchar*>(pickle.data()),
+        pickle.size());
+
+    gchar* uri_array[2];
+    uri_array[0] = strdup(url_.spec().c_str());
+    uri_array[1] = NULL;
+    gtk_selection_data_set_uris(selection, uri_array);
+    free(uri_array[0]);
+  }
+
+  if ((format & OSExchangeData::FILE_CONTENTS) != 0)
+    NOTIMPLEMENTED();
+
+  if ((format & OSExchangeData::FILE_NAME) != 0)
+    NOTIMPLEMENTED();
+
+  if ((format & OSExchangeData::HTML) != 0)
+    NOTIMPLEMENTED();
+
+
+  if ((format & OSExchangeData::PICKLED_DATA) != 0) {
+    for (PickleData::const_iterator i = pickle_data_.begin();
+         i != pickle_data_.end(); ++i) {
+      const Pickle& data = i->second;
+      gtk_selection_data_set(
+          selection,
+          i->first,
+          8,
+          reinterpret_cast<const guchar*>(data.data()),
+          data.size());
+    }
+  }
 }
 
 void OSExchangeDataProviderGtk::SetString(const std::wstring& data) {
@@ -154,7 +245,7 @@ bool OSExchangeDataProviderGtk::HasHtml() const {
 
 bool OSExchangeDataProviderGtk::HasCustomFormat(GdkAtom format) const {
   return known_custom_formats_.find(format) != known_custom_formats_.end() ||
-         custom_formats_.find(format) != custom_formats_.end();
+         pickle_data_.find(format) != pickle_data_.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

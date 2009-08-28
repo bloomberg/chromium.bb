@@ -101,15 +101,10 @@ RootView* MenuHost::CreateRootView() {
 }
 
 gboolean MenuHost::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
-  if (!closed_)
-    submenu_->GetMenuItem()->GetMenuController()->Cancel(true);
+  // Grab breaking only happens when drag and drop starts. So, we don't try
+  // and ungrab or cancel the menu.
+  did_pointer_grab_ = false;
   return WidgetGtk::OnGrabBrokeEvent(widget, event);
-}
-
-void MenuHost::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
-  if (!closed_ && (widget != window_contents() || !was_grabbed))
-    submenu_->GetMenuItem()->GetMenuController()->Cancel(true);
-  WidgetGtk::OnGrabNotify(widget, was_grabbed);
 }
 
 // Overriden to return false, we do NOT want to release capture on mouse

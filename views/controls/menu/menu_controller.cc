@@ -13,12 +13,8 @@
 #include "views/controls/menu/submenu_view.h"
 #include "views/drag_utils.h"
 #include "views/view_constants.h"
+#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-
-#if defined(OS_WIN)
-#include "app/os_exchange_data_provider_win.h"
-#include "base/base_drag_source.h"
-#endif
 
 using base::Time;
 using base::TimeDelta;
@@ -406,18 +402,10 @@ void MenuController::OnMouseDragged(SubmenuView* source,
       drag_utils::SetDragImageOnDataObject(canvas, item->width(),
                                            item->height(), press_loc.x(),
                                            press_loc.y(), &data);
-
       StopScrolling();
-#if defined(OS_WIN)
       int drag_ops = item->GetDelegate()->GetDragOperations(item);
-      scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
-      DWORD effects;
-      DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
-                 DragDropTypes::DragOperationToDropEffect(drag_ops),
-                 &effects);
-#else
-      NOTIMPLEMENTED();
-#endif
+      item->GetRootView()->StartDragForViewFromMouseEvent(
+          NULL, data, drag_ops);
       if (GetActiveInstance() == this) {
         if (showing_) {
           // We're still showing, close all menus.
