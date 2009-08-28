@@ -10,6 +10,15 @@ pieces of SCons files for the different types of GYP targets.
 import os
 
 
+def WriteList(fp, list, prefix='',
+                        separator=',\n    ',
+                        preamble=None,
+                        postamble=None):
+  fp.write(preamble or '')
+  fp.write((separator or ' ').join([prefix + l for l in list]))
+  fp.write(postamble or '')
+
+
 class TargetBase(object):
   """
   Base class for a SCons representation of a GYP target.
@@ -33,6 +42,19 @@ class TargetBase(object):
     if product_dir:
       name = os.path.join(product_dir, name)
     return name
+
+  def write_input_files(self, fp):
+    """
+    Writes the definition of the input files (sources).
+    """
+    sources = self.spec.get('sources')
+    if not sources:
+      fp.write('\ninput_files = []\n')
+      return
+    preamble = '\ninput_files = GypFileList([\n    '
+    postamble = ',\n])\n'
+    WriteList(fp, map(repr, sources), preamble=preamble, postamble=postamble)
+
   def builder_call(self):
     """
     Returns the actual SCons builder call to build this target.

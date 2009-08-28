@@ -9,6 +9,10 @@ import pprint
 import re
 
 
+# TODO:  remove when we delete the last WriteList() call in this module
+WriteList = SCons.WriteList
+
+
 generator_default_variables = {
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '',
@@ -31,14 +35,6 @@ header = """\
 # This file is generated; do not edit.
 """
 
-
-def WriteList(fp, list, prefix='',
-                        separator=',\n    ',
-                        preamble=None,
-                        postamble=None):
-  fp.write(preamble or '')
-  fp.write((separator or ' ').join([prefix + l for l in list]))
-  fp.write(postamble or '')
 
 _alias_template = """
 if GetOption('verbose'):
@@ -318,12 +314,7 @@ def GenerateSConscript(output_filename, spec, build_file):
     fp.write('  )\n')
 
   #
-  sources = spec.get('sources')
-  if sources:
-    pre = '\ninput_files = GypFileList([\n    '
-    WriteList(fp, map(repr, sources), preamble=pre, postamble=',\n])\n')
-  else:
-    fp.write('\ninput_files = []\n')
+  scons_target.write_input_files(fp)
 
   fp.write('\n')
   fp.write('target_files = []\n')
