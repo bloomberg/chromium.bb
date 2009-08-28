@@ -39,8 +39,7 @@ Hooks
   allow custom actions to be performed based on files that have changed in the
   working copy as a result of a "sync"/"update" or "revert" operation.  This
   could be prevented by using --nohooks (hooks run by default). Hooks can also
-  be run based on what files have been modified in the working copy
-  with the "runhooks" operation.  If any of these operation are run with
+  be forced to run with the "runhooks" operation.  If "sync" is run with
   --force, all known hooks will run regardless of the state of the working
   copy.
 
@@ -67,7 +66,7 @@ Hooks
 """
 
 __author__ = "darinf@gmail.com (Darin Fisher)"
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 import errno
 import optparse
@@ -223,13 +222,11 @@ Valid options:
 """,
     "runhooks":
     """Runs hooks for files that have been modified in the local working copy,
-according to 'svn status'.
+according to 'svn status'. Implies --force.
 
 usage: runhooks [options]
 
 Valid options:
-  --force             : runs all known hooks, regardless of the working
-                        copy status
   --verbose           : output additional diagnostics
 """,
     "revinfo":
@@ -1699,6 +1696,7 @@ def DoRunHooks(options, args):
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
     print(client.ConfigContent())
+  options.force = True
   return client.RunOnDeps('runhooks', args)
 
 
