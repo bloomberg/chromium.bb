@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Overrides) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Overrides) {
   ASSERT_TRUE(RunExtensionTest("override1")) << message_;  // new tab
   EXPECT_EQ(results_.size(), 0U);
 
