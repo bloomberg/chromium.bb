@@ -112,9 +112,12 @@ NSString *const kDefaultServerType = @"google";
 @implementation NSTextField (ResizabilityExtentions)
 - (float)breakpad_adjustHeightToFit {
   NSRect oldFrame = [self frame];
+  // Starting with the 10.5 SDK, height won't grow, so make it huge to start.
+  NSRect presizeFrame = oldFrame;
+  presizeFrame.size.height = MAXFLOAT;
   // sizeToFit will blow out the width rather than making the field taller, so
   // we do it manually.
-  NSSize newSize = [[self cell] cellSizeForBounds:oldFrame];
+  NSSize newSize = [[self cell] cellSizeForBounds:presizeFrame];
   NSRect newFrame = NSMakeRect(oldFrame.origin.x, oldFrame.origin.y,
                                NSWidth(oldFrame), newSize.height);
   [self setFrame:newFrame];
