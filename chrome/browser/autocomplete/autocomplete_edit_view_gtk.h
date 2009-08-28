@@ -272,6 +272,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
   void HandleCopyClipboard();
 
+  static void HandlePasteClipboardThunk(GtkTextView* text_view, gpointer self) {
+    reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandlePasteClipboard();
+  }
+  void HandlePasteClipboard();
+
   // Actual implementation of SelectAll(), but also provides control over
   // whether the PRIMARY selection is set to the selected text (in SelectAll(),
   // it isn't, but we want set the selection when the user clicks in the entry).
@@ -389,6 +394,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // It's only used in the key press handler to detect a Tab key press event
   // during sync dispatch of "move-focus" signal.
   bool tab_was_pressed_;
+
+  // Indicates that user requested to paste clipboard.
+  // The actual paste clipboard action might be performed later if the
+  // clipboard is not empty.
+  bool paste_clipboard_requested_;
 
   // If a character is inserted, store it in this variable so that it can
   // be used later in "key-press-event" signal handler to determine if a Tab or

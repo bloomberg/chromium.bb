@@ -79,7 +79,7 @@ class AutocompleteEditView {
   // rather than '?'.
   virtual void SetForcedQuery() = 0;
 
-  // Returns true if all text is selected.
+  // Returns true if all text is selected or there is no text at all.
   virtual bool IsSelectAll() = 0;
 
   // Selects all the text in the edit.  Use this in place of SetSelAll() to

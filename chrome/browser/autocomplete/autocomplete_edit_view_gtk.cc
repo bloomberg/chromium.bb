@@ -104,7 +104,8 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
 #if !defined(TOOLKIT_VIEWS)
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
 #endif
-      tab_was_pressed_(false) {
+      tab_was_pressed_(false),
+      paste_clipboard_requested_(false) {
   model_->set_popup_model(popup_view_->GetModel());
 }
 
@@ -211,6 +212,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleBackSpaceThunk), this);
   g_signal_connect(text_view_, "copy-clipboard",
                    G_CALLBACK(&HandleCopyClipboardThunk), this);
+  g_signal_connect(text_view_, "paste-clipboard",
+                   G_CALLBACK(&HandlePasteClipboardThunk), this);
 
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
@@ -360,12 +363,12 @@ void AutocompleteEditViewGtk::SetForcedQuery() {
 
 bool AutocompleteEditViewGtk::IsSelectAll() {
   GtkTextIter sel_start, sel_end;
-  if (!gtk_text_buffer_get_selection_bounds(text_buffer_, &sel_start, &sel_end))
-    return false;
+  gtk_text_buffer_get_selection_bounds(text_buffer_, &sel_start, &sel_end);
 
   GtkTextIter start, end;
   gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
 
+  // Returns true if the |text_buffer_| is empty.
   return gtk_text_iter_equal(&start, &sel_start) &&
       gtk_text_iter_equal(&end, &sel_end);
 }
@@ -393,7 +396,7 @@ void AutocompleteEditViewGtk::UpdatePopup() {
   // Don't inline autocomplete when the caret/selection isn't at the end of
   // the text.
   CharRange sel = GetSelection();
-  model_->StartAutocomplete(sel.cp_max < GetTextLength());
+  model_->StartAutocomplete(std::max(sel.cp_max, sel.cp_min) < GetTextLength());
 }
 
 void AutocompleteEditViewGtk::ClosePopup() {
@@ -443,6 +446,15 @@ void AutocompleteEditViewGtk::OnRevertTemporaryText() {
 }
 
 void AutocompleteEditViewGtk::OnBeforePossibleChange() {
+  // If this change is caused by a paste clipboard action and all text is
+  // selected, then call model_->on_paste_replacing_all() to prevent inline
+  // autocomplete.
+  if (paste_clipboard_requested_) {
+    paste_clipboard_requested_ = false;
+    if (IsSelectAll())
+      model_->on_paste_replacing_all();
+  }
+
   // Record our state.
   text_before_change_ = GetText();
   sel_before_change_ = GetSelection();
@@ -612,6 +624,10 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
                        event->keyval == GDK_KP_Tab) &&
                       !(event->state & GDK_CONTROL_MASK));
 
+  // Reset |paste_clipboard_requested_| to make sure we won't misinterpret this
+  // key input action as a paste action.
+  paste_clipboard_requested_ = false;
+
   // Call the default handler, so that IME can work as normal.
   // New line characters will be filtered out by our "insert-text"
   // signal handler attached to |text_buffer_| object.
@@ -684,6 +700,10 @@ gboolean AutocompleteEditViewGtk::HandleKeyRelease(GtkWidget* widget,
 }
 
 gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GdkEventButton* event) {
+  // We don't need to care about double and triple clicks.
+  if (event->type != GDK_BUTTON_PRESS)
+    return FALSE;
+
   if (event->button == 1) {
     // When the first button is pressed, track some stuff that will help us
     // determine whether we should select all of the text when the button is
@@ -691,6 +711,11 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GdkEventButton* event) {
     button_1_pressed_ = true;
     text_view_focused_before_button_press_ = GTK_WIDGET_HAS_FOCUS(text_view_);
     text_selected_during_click_ = false;
+  } else if (event->button == 2) {
+    // GtkTextView pastes PRIMARY selection with middle click.
+    // We can't call model_->on_paste_replacing_all() here, because the actual
+    // paste clipboard action may not be performed if the clipboard is empty.
+    paste_clipboard_requested_ = true;
   }
   return FALSE;
 }
@@ -725,7 +750,9 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
 }
 
 gboolean AutocompleteEditViewGtk::HandleViewFocusIn() {
-  model_->OnSetFocus(false);
+  GdkModifierType modifiers;
+  gdk_window_get_pointer(text_view_->window, NULL, NULL, &modifiers);
+  model_->OnSetFocus((modifiers & GDK_CONTROL_MASK) != 0);
   // TODO(deanm): Some keyword hit business, etc here.
 
   return FALSE;  // Continue propagation.
@@ -868,6 +895,10 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
 void AutocompleteEditViewGtk::HandleDragDataReceived(
     GdkDragContext* context, gint x, gint y,
     GtkSelectionData* selection_data, guint target_type, guint time) {
+  // Reset |paste_clipboard_requested_| to make sure we won't misinterpret this
+  // drop action as a paste action.
+  paste_clipboard_requested_ = false;
+
   // Don't try to PasteAndGo on drops originating from this omnibox. However, do
   // allow default behavior for such drags.
   if (context->source_window == text_view_->window)
@@ -989,6 +1020,12 @@ void AutocompleteEditViewGtk::HandleCopyClipboard() {
   // We can't just call SavePrimarySelection(); that makes the text view lose
   // the selection and unhighlight its text.
   gtk_text_buffer_copy_clipboard(text_buffer_, clipboard);
+}
+
+void AutocompleteEditViewGtk::HandlePasteClipboard() {
+  // We can't call model_->on_paste_replacing_all() here, because the actual
+  // paste clipboard action may not be performed if the clipboard is empty.
+  paste_clipboard_requested_ = true;
 }
 
 void AutocompleteEditViewGtk::SelectAllInternal(bool reversed,
