@@ -51,6 +51,9 @@ class BlockedPopupContainerViewWin : public BlockedPopupContainerView,
   // Returns the number of blocked popups from the model
   size_t GetBlockedPopupCount() const;
 
+  // Returns the number of blocked notices from the model
+  size_t GetBlockedNoticeCount() const;
+
   // Returns the model that owns us.
   BlockedPopupContainer* GetModel() const { return container_model_; }
 

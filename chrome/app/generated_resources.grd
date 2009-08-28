@@ -4424,8 +4424,14 @@ each locale. -->
       <message name="IDS_POPUP_TITLE_FORMAT" desc="Order of URL - Title on the popup">
         <ph name="URL">$1</ph> - <ph name="WINDOW_TITLE">$2</ph>
       </message>
+      <message name="IDS_NOTICE_TITLE_FORMAT" desc="Order of URL - Reason">
+        <ph name="URL">$1</ph> - <ph name="REASON">$2</ph>
+      </message>
       <message name="IDS_POPUP_HOST_FORMAT" desc="Checkable menu item to always allow popups from a particular hostname">
         Always show pop-ups from <ph name="URL">$1</ph>
+      </message>
+      <message name="IDS_BLOCKED_NOTICE_COUNT" desc="Message shown in the corner of the content window when there are blocked items.">
+        Blocked Items: <ph name="COUNT">$1<ex>2</ex></ph>
       </message>
 
       <!-- Multiple download warning-->

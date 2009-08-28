@@ -27,6 +27,11 @@ namespace {
 // The minimal border around the edge of the notification.
 const int kSmallPadding = 2;
 
+// The offset needed for blocked notices not to clash with anything else.
+// Basically 2 separators (one between popups and hosts, one between hosts
+// and notices).
+const int kNoticeMenuOffset = 2;
+
 // The background color of the blocked popup notification.
 const SkColor kBackgroundColorTop = SkColorSetRGB(255, 242, 183);
 const SkColor kBackgroundColorBottom = SkColorSetRGB(250, 230, 145);
@@ -126,9 +131,10 @@ BlockedPopupContainerInternalView::BlockedPopupContainerInternalView(
       l10n_util::GetStringF(IDS_POPUPS_BLOCKED_COUNT,
                             IntToWString(kWidestNumber)),
       NULL, true);
-  // Now set the text to the other possible display string so that the button
-  // will update its max text width (in case this string is longer).
+  // Now set the text to the other possible display strings so that the button
+  // will update its max text width (in case one of these string is longer).
   popup_count_label_->SetText(l10n_util::GetString(IDS_POPUPS_UNBLOCKED));
+  popup_count_label_->SetText(l10n_util::GetString(IDS_BLOCKED_NOTICE_COUNT));
   popup_count_label_->set_alignment(views::TextButton::ALIGN_CENTER);
   AddChildView(popup_count_label_);
 
@@ -151,11 +157,21 @@ BlockedPopupContainerInternalView::~BlockedPopupContainerInternalView() {
 }
 
 void BlockedPopupContainerInternalView::UpdateLabel() {
-  size_t blocked_popups = container_->GetBlockedPopupCount();
-  popup_count_label_->SetText((blocked_popups > 0) ?
-      l10n_util::GetStringF(IDS_POPUPS_BLOCKED_COUNT,
-                            UintToWString(blocked_popups)) :
-      l10n_util::GetString(IDS_POPUPS_UNBLOCKED));
+  size_t blocked_items =
+      container_->GetBlockedPopupCount() + container_->GetBlockedNoticeCount();
+
+  std::wstring label;
+  if (blocked_items == 0) {
+    label = l10n_util::GetString(IDS_POPUPS_UNBLOCKED);
+  } else if (container_->GetBlockedNoticeCount() == 0) {
+    label = l10n_util::GetStringF(IDS_POPUPS_BLOCKED_COUNT,
+                                  UintToWString(blocked_items));
+  } else {
+    label = l10n_util::GetStringF(IDS_BLOCKED_NOTICE_COUNT,
+                                  UintToWString(blocked_items));
+  }
+  popup_count_label_->SetText(label);
+
   Layout();
   SchedulePaint();
 }
@@ -241,6 +257,22 @@ void BlockedPopupContainerInternalView::ButtonPressed(views::Button* sender) {
           views::Menu::NORMAL);
     }
 
+    size_t notice_count = container_->GetBlockedNoticeCount();
+    if (notice_count)
+      launch_menu_->AppendSeparator();
+
+    for (size_t i = 0; i < notice_count; ++i) {
+      std::string host;
+      string16 reason;
+      container_->GetModel()->GetHostAndReasonForNotice(i, &host, &reason);
+      launch_menu_->AppendMenuItem(
+          BlockedPopupContainer::kImpossibleNumberOfPopups +
+              hosts.size() + i + kNoticeMenuOffset + 1,
+          l10n_util::GetStringF(IDS_NOTICE_TITLE_FORMAT,
+                                ASCIIToWide(host), reason),
+          views::Menu::NORMAL);
+    }
+
     CPoint cursor_position;
     ::GetCursorPos(&cursor_position);
     launch_menu_->RunMenuAt(cursor_position.x, cursor_position.y);
@@ -262,7 +294,10 @@ bool BlockedPopupContainerInternalView::IsItemChecked(int id) const {
 void BlockedPopupContainerInternalView::ExecuteCommand(int id) {
   DCHECK_GT(id, 0);
   size_t id_size_t = static_cast<size_t>(id);
-  if (id_size_t > BlockedPopupContainer::kImpossibleNumberOfPopups) {
+  if (id_size_t > BlockedPopupContainer::kImpossibleNumberOfPopups +
+    container_->GetModel()->GetPopupHostCount() + kNoticeMenuOffset) {
+    // Nothing to do for now for notices.
+  } else if (id_size_t > BlockedPopupContainer::kImpossibleNumberOfPopups) {
     // Decrement id since all index based commands have 1 added to them. (See
     // ButtonPressed() for detail).
     container_->GetModel()->ToggleWhitelistingForHost(
@@ -305,6 +340,10 @@ std::vector<std::wstring> BlockedPopupContainerViewWin::GetHosts() const {
 
 size_t BlockedPopupContainerViewWin::GetBlockedPopupCount() const {
   return container_model_->GetBlockedPopupCount();
+}
+
+size_t BlockedPopupContainerViewWin::GetBlockedNoticeCount() const {
+  return container_model_->GetBlockedNoticeCount();
 }
 
 // Overridden from AnimationDelegate:

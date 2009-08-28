@@ -107,11 +107,38 @@ void BlockedPopupContainer::LaunchPopupAtIndex(size_t index) {
 
 void BlockedPopupContainer::AddBlockedNotice(const GURL& url,
                                              const string16& reason) {
-  // TODO(idanan): Implement this. See header for description.
+  // Nothing to show after we have been dismissed.
+  if (has_been_dismissed_)
+    return;
+
+  // Don't notify for hosts which are already shown. Too much noise otherwise.
+  // TODO(idanan): Figure out what to do for multiple reasons of blocking the
+  // same host.
+  if (notice_hosts_.find(url.host()) != notice_hosts_.end())
+    return;
+
+  notice_hosts_.insert(url.host());
+  blocked_notices_.push_back(BlockedNotice(url, reason));
+
+  UpdateView();
+  view_->ShowView();
+  owner_->PopupNotificationVisibilityChanged(true);
+}
+
+void BlockedPopupContainer::GetHostAndReasonForNotice(
+    size_t index, std::string* host, string16* reason) const {
+  DCHECK(host);
+  DCHECK(reason);
+  *host = blocked_notices_[index].url_.host();
+  *reason = blocked_notices_[index].reason_;
 }
 
 size_t BlockedPopupContainer::GetBlockedPopupCount() const {
   return blocked_popups_.size();
+}
+
+size_t BlockedPopupContainer::GetBlockedNoticeCount() const {
+  return blocked_notices_.size();
 }
 
 bool BlockedPopupContainer::IsHostWhitelisted(size_t index) const {
@@ -372,7 +399,8 @@ BlockedPopupContainer::BlockedPopupContainer(TabContents* owner,
 }
 
 void BlockedPopupContainer::UpdateView() {
-  if (blocked_popups_.empty() && unblocked_popups_.empty())
+  if (blocked_popups_.empty() && unblocked_popups_.empty() &&
+      blocked_notices_.empty())
     HideSelf();
   else
     view_->UpdateLabel();
