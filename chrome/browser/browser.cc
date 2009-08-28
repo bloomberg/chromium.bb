@@ -2059,6 +2059,10 @@ void Browser::ShowPageInfo(Profile* profile,
   window()->ShowPageInfo(profile, url, ssl, show_history);
 }
 
+void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
+  window()->ShowRepostFormWarningDialog(tab_contents);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SelectFileDialog::Listener implementation:
 

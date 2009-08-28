@@ -527,6 +527,7 @@ class Browser : public TabStripModelDelegate,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
+  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);

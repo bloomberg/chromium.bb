@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_REPOST_FORM_WARNING_VIEW_H_
 #define CHROME_BROWSER_VIEWS_REPOST_FORM_WARNING_VIEW_H_
 
+#include "base/gfx/native_widget_types.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/window/dialog_delegate.h"
 
@@ -17,8 +18,9 @@ class Window;
 class RepostFormWarningView : public views::DialogDelegate,
                               public NotificationObserver {
  public:
-  // Use RunRepostFormWarningDialog (declared in repost_form_warning.h) to use.
-  RepostFormWarningView(NavigationController* navigation_controller);
+  // Use BrowserWindow::ShowRepostFormWarningDialog to use.
+  RepostFormWarningView(gfx::NativeWindow parent_window,
+                        NavigationController* navigation_controller);
   virtual ~RepostFormWarningView();
 
   // views::DialogDelegate Methods:

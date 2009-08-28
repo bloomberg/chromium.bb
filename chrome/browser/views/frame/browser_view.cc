@@ -35,6 +35,7 @@
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/fullscreen_exit_bubble.h"
 #include "chrome/browser/views/infobars/infobar_container.h"
+#include "chrome/browser/views/repost_form_warning_view.h"
 #include "chrome/browser/views/status_bubble_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/views/tabs/browser_tab_strip.h"
@@ -927,6 +928,10 @@ void BrowserView::ShowSelectProfileDialog() {
 
 void BrowserView::ShowNewProfileDialog() {
   browser::ShowNewProfileDialog();
+}
+
+void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
+  new RepostFormWarningView(GetNativeHandle(), &tab_contents->controller());
 }
 
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
