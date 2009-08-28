@@ -10,18 +10,22 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "googleurl/src/gurl.h"
@@ -43,6 +47,33 @@ const char* GetDesktopName() {
   }
   return name;
 #endif
+}
+
+// Helper to launch xdg scripts. We don't want them to ask any questions on the
+// terminal etc.
+bool LaunchXdgUtility(const std::vector<std::string>& argv) {
+  // xdg-settings internally runs xdg-mime, which uses mv to move newly-created
+  // files on top of originals after making changes to them. In the event that
+  // the original files are owned by another user (e.g. root, which can happen
+  // if they are updated within sudo), mv will prompt the user to confirm if
+  // standard input is a terminal (otherwise it just does it). So make sure it's
+  // not, to avoid locking everything up waiting for mv.
+  int devnull = open("/dev/null", O_RDONLY);
+  if (devnull < 0)
+    return false;
+  base::file_handle_mapping_vector no_stdin;
+  no_stdin.push_back(std::make_pair(devnull, STDIN_FILENO));
+
+  base::ProcessHandle handle;
+  if (!base::LaunchApp(argv, no_stdin, false, &handle)) {
+    close(devnull);
+    return false;
+  }
+  close(devnull);
+
+  int success_code;
+  base::WaitForExitCode(handle, &success_code);
+  return success_code == EXIT_SUCCESS;
 }
 
 bool GetDesktopShortcutTemplate(std::string* output) {
@@ -74,38 +105,61 @@ bool GetDesktopShortcutTemplate(std::string* output) {
 
 class CreateDesktopShortcutTask : public Task {
  public:
-  CreateDesktopShortcutTask(const GURL& url, const string16& title)
-      : url_(url),
-        title_(title) {
+  CreateDesktopShortcutTask(const ShellIntegration::ShortcutInfo& shortcut_info)
+      : shortcut_info_(shortcut_info) {
   }
 
   virtual void Run() {
     // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
-    FilePath desktop_path;
-    if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
-      return;
-    desktop_path =
-        desktop_path.Append(ShellIntegration::GetDesktopShortcutFilename(url_));
-
-    if (file_util::PathExists(desktop_path))
-      return;
-
     std::string template_contents;
     if (!GetDesktopShortcutTemplate(&template_contents))
       return;
 
     std::string contents = ShellIntegration::GetDesktopFileContents(
-        template_contents, url_, title_);
-    int bytes_written = file_util::WriteFile(desktop_path, contents.data(),
+        template_contents, shortcut_info_.url, shortcut_info_.title);
+
+    ScopedTempDir temp_dir;
+    if (!temp_dir.CreateUniqueTempDir())
+      return;
+
+    FilePath shortcut_filename =
+        ShellIntegration::GetDesktopShortcutFilename(shortcut_info_.url);
+
+    FilePath temp_file_path = temp_dir.path().Append(shortcut_filename);
+
+    int bytes_written = file_util::WriteFile(temp_file_path, contents.data(),
                                              contents.length());
-    if (bytes_written != static_cast<int>(contents.length())) {
-      file_util::Delete(desktop_path, false);
+
+    if (bytes_written != static_cast<int>(contents.length()))
+        return;
+
+    if (shortcut_info_.create_on_desktop) {
+      FilePath desktop_path;
+      if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
+        return;
+      desktop_path = desktop_path.Append(shortcut_filename);
+
+      if (!file_util::PathExists(desktop_path))
+        file_util::CopyFile(temp_file_path, desktop_path);
+    }
+
+    if (shortcut_info_.create_in_applications_menu) {
+      std::vector<std::string> argv;
+      argv.push_back("xdg-desktop-menu");
+      argv.push_back("install");
+
+      // Always install in user mode, even if someone runs the browser as root
+      // (people do that).
+      argv.push_back("--mode");
+      argv.push_back("user");
+
+      argv.push_back(temp_file_path.value());
+      LaunchXdgUtility(argv);
     }
   }
 
  private:
-  const GURL url_;  // URL of the web application.
-  const string16 title_;  // Title displayed to the user.
+  const ShellIntegration::ShortcutInfo shortcut_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateDesktopShortcutTask);
 };
@@ -123,29 +177,7 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   argv.push_back("set");
   argv.push_back("default-web-browser");
   argv.push_back(GetDesktopName());
-
-  // xdg-settings internally runs xdg-mime, which uses mv to move newly-created
-  // files on top of originals after making changes to them. In the event that
-  // the original files are owned by another user (e.g. root, which can happen
-  // if they are updated within sudo), mv will prompt the user to confirm if
-  // standard input is a terminal (otherwise it just does it). So make sure it's
-  // not, to avoid locking everything up waiting for mv.
-  int devnull = open("/dev/null", O_RDONLY);
-  if (devnull < 0)
-    return false;
-  base::file_handle_mapping_vector no_stdin;
-  no_stdin.push_back(std::make_pair(devnull, STDIN_FILENO));
-
-  base::ProcessHandle handle;
-  if (!base::LaunchApp(argv, no_stdin, false, &handle)) {
-    close(devnull);
-    return false;
-  }
-  close(devnull);
-
-  int success_code;
-  base::WaitForExitCode(handle, &success_code);
-  return success_code == EXIT_SUCCESS;
+  return LaunchXdgUtility(argv);
 }
 
 bool ShellIntegration::IsDefaultBrowser() {
@@ -181,7 +213,9 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
 }
 
 FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
-  std::wstring filename = UTF8ToWide(url.spec()) + L".desktop";
+  // Use a prefix, because xdg-desktop-menu requires it.
+  std::wstring filename = std::wstring(chrome::kBrowserProcessExecutableName) +
+      L"-" + UTF8ToWide(url.spec()) + L".desktop";
   file_util::ReplaceIllegalCharacters(&filename, '_');
 
   // Return BaseName to be absolutely sure we're not vulnerable to a directory
@@ -231,8 +265,8 @@ std::string ShellIntegration::GetDesktopFileContents(
   return output_buffer;
 }
 
-void ShellIntegration::CreateDesktopShortcut(const GURL& url,
-                                             const string16& title) {
+void ShellIntegration::CreateDesktopShortcut(
+    const ShortcutInfo& shortcut_info) {
   g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
-      new CreateDesktopShortcutTask(url, title));
+      new CreateDesktopShortcutTask(shortcut_info));
 }

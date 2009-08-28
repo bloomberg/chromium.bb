@@ -33,6 +33,7 @@ class CreateApplicationShortcutsDialogGtk {
 
   // UI elements.
   GtkWidget* desktop_checkbox_;
+  GtkWidget* menu_checkbox_;
 
   // Target URL of the shortcut.
   GURL url_;

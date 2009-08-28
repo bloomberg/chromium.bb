@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
+#include "googleurl/src/gurl.h"
 
 class FilePath;
-class GURL;
 class MessageLoop;
 
 class ShellIntegration {
@@ -42,10 +42,18 @@ class ShellIntegration {
       const std::string& template_contents, const GURL& url,
       const string16& title);
 
-  // Creates a desktop shortcut for |url| with |title|. It is not guaranteed
-  // to exist immediately after returning from this function, because actual
-  // file operation is done on the file thread.
-  static void CreateDesktopShortcut(const GURL& url, const string16& title);
+  struct ShortcutInfo {
+    GURL url;
+    string16 title;
+
+    bool create_on_desktop;
+    bool create_in_applications_menu;
+  };
+
+  // Creates a desktop shortcut. It is not guaranteed to exist immediately after
+  // returning from this function, because actual file operation is done on the
+  // file thread.
+  static void CreateDesktopShortcut(const ShortcutInfo& shortcut_info);
 #endif  // defined(OS_LINUX)
 
   // The current default browser UI state

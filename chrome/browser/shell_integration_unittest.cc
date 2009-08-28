@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/string_util.h"
+#include "chrome/common/chrome_constants.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,9 +28,11 @@ TEST(ShellIntegrationTest, GetDesktopShortcutFilename) {
     { FPL("http___.._.desktop"), "http://../../../../" },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
-    EXPECT_EQ(test_cases[i].path, ShellIntegration::GetDesktopShortcutFilename(
-        GURL(test_cases[i].url)).value()) << " while testing " <<
-        test_cases[i].url;
+    EXPECT_EQ(WideToASCII(chrome::kBrowserProcessExecutableName) + "-" +
+              test_cases[i].path,
+              ShellIntegration::GetDesktopShortcutFilename(
+                  GURL(test_cases[i].url)).value()) <<
+        " while testing " << test_cases[i].url;
   }
 }
 

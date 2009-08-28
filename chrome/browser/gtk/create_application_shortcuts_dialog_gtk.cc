@@ -50,6 +50,12 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
   gtk_box_pack_start(GTK_BOX(vbox), desktop_checkbox_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(desktop_checkbox_), true);
 
+  // Menu checkbox.
+  menu_checkbox_ = gtk_check_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_MENU_CHKBOX).c_str());
+  gtk_box_pack_start(GTK_BOX(vbox), menu_checkbox_, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(menu_checkbox_), false);
+
   g_signal_connect(dialog, "response",
                    G_CALLBACK(HandleOnResponseDialog), this);
   gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
@@ -59,8 +65,14 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
 void CreateApplicationShortcutsDialogGtk::OnDialogResponse(GtkWidget* widget,
                                                            int response) {
   if (response == GTK_RESPONSE_ACCEPT) {
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(desktop_checkbox_)))
-      ShellIntegration::CreateDesktopShortcut(url_, title_);
+    ShellIntegration::ShortcutInfo shortcut_info;
+    shortcut_info.url = url_;
+    shortcut_info.title = title_;
+    shortcut_info.create_on_desktop =
+        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(desktop_checkbox_));
+    shortcut_info.create_in_applications_menu =
+        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(menu_checkbox_));
+    ShellIntegration::CreateDesktopShortcut(shortcut_info);
   }
 
   delete this;
