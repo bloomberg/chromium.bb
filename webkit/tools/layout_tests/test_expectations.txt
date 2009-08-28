@@ -844,6 +844,13 @@ BUG8696 WIN LINUX : LayoutTests/fast/gradients/crash-on-zero-radius.html = FAIL
 BUG10385 : LayoutTests/fast/dom/dom-constructors.html = FAIL
 BUG10387 SKIP : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-image-not-loaded-svg.svg = FAIL
 
+BUG10412 WIN LINUX : LayoutTests/fast/table/vertical-align-baseline.html = FAIL
+BUG20505 : LayoutTests/http/tests/misc/SVGFont-delayed-load.html = FAIL
+BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
+
+BUG10401 : LayoutTests/plugins/npruntime.html = TIMEOUT FAIL
+BUG6735 : LayoutTests/plugins/netscape-throw-exception.html = FAIL
+
 
 // -----------------------------------------------------------------
 // SVG TESTS
@@ -890,11 +897,12 @@ BUG10288 WIN LINUX : LayoutTests/svg/batik/text/verticalText.svg = FAIL
 
 BUG10289 WIN LINUX : LayoutTests/svg/batik/masking/maskRegions.svg = FAIL
 
-
 // Bug in Skia, see https://bugs.webkit.org/show_bug.cgi?id=24534 .
 BUG10291 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-06-b.svg = FAIL
 BUG10291 WIN LINUX : LayoutTests/svg/batik/paints/patternRegionA.svg = FAIL
 BUG10291 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-pattern-01-b.svg = FAIL
+
+BUG10415 WIN LINUX : LayoutTests/svg/custom/pattern-with-transformation.svg = FAIL
 
 // -----------------------------------------------------------------
 // End SVG Regressions
@@ -1666,20 +1674,9 @@ BUG10396 MAC : LayoutTests/fast/reflections/reflection-overflow-hidden.html = FA
 // Linux's rotated text output looks terrible.
 BUG10397 LINUX : LayoutTests/fast/transforms/transformed-document-element.html = FAIL
 
-// Rebaseline
-BUG10398 : LayoutTests/fast/events/pointer-events-2.html = FAIL
-
 // Merge 39744:39829 - new tests
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10399 MAC : LayoutTests/fast/encoding/char-encoding-mac.html = FAIL
-
-// Merge 39830:39880 - new tests
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10401 : LayoutTests/plugins/npruntime.html = TIMEOUT FAIL
-
-// Merge 39894:39913 - new test.
-// New test. We should fix it, but it doesn't need to block the current release
-BUG6735 : LayoutTests/plugins/netscape-throw-exception.html = FAIL
 
 // Merge 39744:39913? - regressions
 BUG10403 LINUX : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = TIMEOUT PASS
@@ -1694,11 +1691,6 @@ BUG10405 WIN : LayoutTests/svg/custom/struct-use-09-b.svg = FAIL
 // Passes locally but Text diff fails on the buildbots
 BUG10406 LINUX : LayoutTests/svg/custom/path-getTotalLength.svg = FAIL PASS
 
-// Merge 40059:40086 -- regressions
-// Expectations for this test changed upstream. We should fix this test, but
-// it doesn't need to block the current release
-BUG10407 : LayoutTests/transitions/hang-with-bad-transition-list.html = TIMEOUT FAIL PASS
-
 // Popup-menu doesn't draw in layout tests
 BUG10408 MAC : LayoutTests/fast/forms/menulist-no-overflow.html = FAIL
 
@@ -1708,23 +1700,6 @@ BUG10409 MAC LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = FAIL
 
 // intermittent failures on the buildbot
 BUG10411 : LayoutTests/svg/custom/gradient-stop-style-change.svg = FAIL PASS
-
-// The 7th column should not be top aligned.
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10412 WIN LINUX : LayoutTests/fast/table/vertical-align-baseline.html = FAIL
-
-// Merge 40165:40297 -- regressions
-
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10413 : LayoutTests/http/tests/misc/SVGFont-delayed-load.html = FAIL
-// Expectations for this test changed upstream. We should fix this test, but
-// it doesn't need to block the current release
-BUG10413 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
-
-
-// Merge 40364:40409 -- new test
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10415 WIN LINUX : LayoutTests/svg/custom/pattern-with-transformation.svg = FAIL
 
 // Merge 40364:40409 -- fails after http://trac.webkit.org/changeset/40379
 // ASSERTs in Debug after this change: http://trac.webkit.org/changeset/40372
