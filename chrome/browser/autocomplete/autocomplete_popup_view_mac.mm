@@ -43,6 +43,9 @@ const float kShrinkAnimationDuration = 0.1;
 // contents.
 const float kMaxMatchContentsWidth = 0.7;
 
+// NSEvent -buttonNumber for middle mouse button.
+const static NSInteger kMiddleButtonNumber(2);
+
 // Background colors for different states of the popup elements.
 NSColor* BackgroundColor() {
   return [NSColor controlBackgroundColor];
@@ -213,7 +216,16 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 // highlighting the cell the mouse is over.
 
 @interface AutocompleteMatrix : NSMatrix {
+  SEL middleClickAction_;
 }
+
+// Action to be called when the middle mouse button is released.
+- (void)setMiddleClickAction:(SEL)anAction;
+
+// Return the currently highlighted row.  Returns -1 if no row is
+// highlighted.
+- (NSInteger)highlightedRow;
+
 @end
 
 // Thin Obj-C bridge class between the target of the popup window's
@@ -230,7 +242,10 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 - initWithPopupView:(AutocompletePopupViewMac*)view;
 
 // Tell popup model via popup_view_ about the selected row.
-- (void)select:sender;
+- (void)select:(id)sender;
+
+// Call |popup_view_| OnMiddleClick().
+- (void)middleSelect:(id)sender;
 
 // Resize the popup when the field's window resizes.
 - (void)windowDidResize:(NSNotification*)notification;
@@ -288,6 +303,7 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
         [[[AutocompleteMatrix alloc] initWithFrame:NSZeroRect] autorelease];
     [matrix setTarget:matrix_target_];
     [matrix setAction:@selector(select:)];
+    [matrix setMiddleClickAction:@selector(middleSelect:)];
     [popup_ setContentView:matrix];
 
     // We need the popup to follow window resize.
@@ -408,6 +424,24 @@ void AutocompletePopupViewMac::AcceptInput() {
         event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
     edit_view_->AcceptInput(disposition, false);
   }
+}
+
+void AutocompletePopupViewMac::OnMiddleClick() {
+  const NSInteger row = [[popup_ contentView] highlightedRow];
+  if (row == -1) {
+    return;
+  }
+
+  // OpenURL() may close the popup, which will clear the result set
+  // and, by extension, |match| and its contents.  So copy the
+  // relevant strings out to make sure they stay alive until the call
+  // completes.
+  const AutocompleteMatch& match = model_->result().match_at(row);
+  const GURL url(match.destination_url);
+  std::wstring keyword;
+  const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
+  edit_view_->OpenURL(url, NEW_BACKGROUND_TAB, match.transition, GURL(), row,
+                      is_keyword_hint ? std::wstring() : keyword);
 }
 
 @implementation AutocompleteButtonCell
@@ -552,6 +586,51 @@ void AutocompletePopupViewMac::AcceptInput() {
   [self highlightRowAt:-1];
 }
 
+// The tracking area events aren't forwarded during a drag, so handle
+// highlighting manually for middle-click and middle-drag.
+- (void)otherMouseDown:(NSEvent*)theEvent {
+  if ([theEvent buttonNumber] == kMiddleButtonNumber) {
+    [self highlightRowUnder:theEvent];
+  }
+  [super otherMouseDown:theEvent];
+}
+- (void)otherMouseDragged:(NSEvent*)theEvent {
+  if ([theEvent buttonNumber] == kMiddleButtonNumber) {
+    [self highlightRowUnder:theEvent];
+  }
+  [super otherMouseDragged:theEvent];
+}
+
+- (void)otherMouseUp:(NSEvent*)theEvent {
+  // Only intercept middle button.
+  if ([theEvent buttonNumber] != kMiddleButtonNumber) {
+    [super otherMouseUp:theEvent];
+    return;
+  }
+
+  // -otherMouseDragged: should always have been called at this
+  // location, but make sure the user is getting the right feedback.
+  [self highlightRowUnder:theEvent];
+
+  // This does the right thing if target is nil.
+  [NSApp sendAction:middleClickAction_ to:[self target] from:self];
+}
+
+- (NSInteger)highlightedRow {
+  NSArray* cells = [self cells];
+  const NSUInteger count = [cells count];
+  for(NSUInteger i = 0; i < count; ++i) {
+    if ([[cells objectAtIndex:i] isHighlighted]) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+- (void)setMiddleClickAction:(SEL)anAction {
+  middleClickAction_ = anAction;
+}
+
 // This handles drawing the decorations of the rounded popup window,
 // calling on NSMatrix to draw the actual contents.
 - (void)drawRect:(NSRect)rect {
@@ -594,9 +673,14 @@ void AutocompletePopupViewMac::AcceptInput() {
   return self;
 }
 
-- (void)select:sender {
+- (void)select:(id)sender {
   DCHECK(popup_view_);
   popup_view_->AcceptInput();
+}
+
+- (void)middleSelect:(id)sender {
+  DCHECK(popup_view_);
+  popup_view_->OnMiddleClick();
 }
 
 - (void)windowDidResize:(NSNotification*)notification {

@@ -75,6 +75,10 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   // helper object.
   void AcceptInput();
 
+  // Called when the user middle-clicks an item.  Opens the hovered
+  // item in a background tab.
+  void OnMiddleClick();
+
   // Return the text to show for the match, based on the match's
   // contents and description.  Result will be in |font|, with the
   // boldfaced version used for matches.
