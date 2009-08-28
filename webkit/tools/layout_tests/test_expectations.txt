@@ -848,6 +848,12 @@ BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 BUG10401 : LayoutTests/plugins/npruntime.html = TIMEOUT FAIL
 BUG6735 : LayoutTests/plugins/netscape-throw-exception.html = FAIL
 
+BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL
+BUG10433 : LayoutTests/fast/dom/Window/webkitConvertPoint.html = FAIL
+
+BUG9071 WIN LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
+BUG10436 WIN LINUX : LayoutTests/fast/block/float/nested-clearance.html = FAIL
+
 
 // -----------------------------------------------------------------
 // SVG TESTS
@@ -1694,10 +1700,8 @@ BUG10409 MAC LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = FAIL
 // intermittent failures on the buildbot
 BUG10411 : LayoutTests/svg/custom/gradient-stop-style-change.svg = FAIL PASS
 
-// Merge 40364:40409 -- fails after http://trac.webkit.org/changeset/40379
-// ASSERTs in Debug after this change: http://trac.webkit.org/changeset/40372
-// Likely will be fixed with subsequent merge.
-BUG10416 SKIP : LayoutTests/fast/dynamic/insert-before-table-part-in-continuation.html = CRASH
+// Rebaseline
+BUG10416 : LayoutTests/fast/dynamic/insert-before-table-part-in-continuation.html = FAIL
 
 // New tests added in http://trac.webkit.org/changeset/40424
 // Renders the width of "600" off by 3.  Looks OK but could still be a bug
@@ -1778,16 +1782,6 @@ BUG10430 LINUX : LayoutTests/svg/text/text-intro-05-t.svg = FAIL
 // New tests from merge 41181:41217
 BUG10431 LINUX WIN : LayoutTests/fast/dom/getBoundingClientRect-getClientRects-relative-to-viewport.html = FAIL PASS
 
-// Regressions from merge 41181:41217
-// Upstream regression. https://bugs.webkit.org/show_bug.cgi?id=24248
-// Defer until fixed upstream.
-BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL
-
-// Regressions from merge 41217:41268
-// New tests
-// There are some failures, investigate whether they are due to platform/coord differences.
-BUG10433 : LayoutTests/fast/dom/Window/webkitConvertPoint.html = FAIL
-
 // Regressions from merge 41217:41268
 // Other failures
 BUG10434 LINUX : LayoutTests/css1/text_properties/vertical_align.html = FAIL
@@ -1803,10 +1797,6 @@ BUG10435 MAC : LayoutTests/editing/pasteboard/copy-standalone-image.html = FAIL
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
 BUG10435 MAC : LayoutTests/animations/animation-controller-drt-api.html = TIMEOUT PASS
 BUG10435 DEBUG MAC WIN : LayoutTests/editing/selection/move-by-line-001.html = FAIL PASS
-
-// New with the 41420:41447 merge, but rebaselining is not the right answer.
-// See https://bugs.webkit.org/show_bug.cgi?id=24467 for details.
-BUG10436 WIN LINUX : LayoutTests/fast/block/float/nested-clearance.html = FAIL
 
 // New tests added in the 41420:41447 merge that fail (just needs a new baseline):
 BUG10437 LINUX : LayoutTests/fast/css-generated-content/hit-test-generated-content.html = FAIL
@@ -1824,16 +1814,6 @@ BUG10441 : LayoutTests/transitions/transition-end-event-transform.html = FAIL PA
 // Timing out starting 03/10/09
 BUG10442 MAC : LayoutTests/fast/dom/navigator-detached-no-crash.html = TIMEOUT PASS FAIL
 
-// Added 3/10/09.
-BUG10443 WIN : LayoutTests/transitions/transition-end-event-multiple-01.html = FAIL PASS
-BUG10443 WIN : LayoutTests/transitions/transition-end-event-create.html = FAIL PASS
-BUG10443 WIN : LayoutTests/transitions/transition-end-event-window.html = FAIL PASS
-BUG10443 WIN : LayoutTests/transitions/transition-end-event-attributes.html = FAIL PASS
-BUG9071 WIN LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
-
-// Added 3/11/09
-BUG10445 LINUX : LayoutTests/fast/compact/001.html = CRASH PASS
-
 // The text extends outside the selection on linux (was happening before the
 // merge).
 BUG10446 LINUX : LayoutTests/editing/execCommand/selectAll.html = FAIL
@@ -1845,19 +1825,10 @@ BUG10675 MAC : chrome/fast/forms/basic-textareas.html = FAIL
 // Started failing 3/12/09. Unclear which CL caused it though.
 BUG10448 MAC : LayoutTests/fast/overflow/image-selection-highlight.html = FAIL
 
-// Started failing after merge 41559:41588
-BUG10449 MAC : LayoutTests/fast/dom/HTMLElement/innerHTML-selection-crash.html = CRASH PASS
-
 // Newly added tests with merge 41588:41613.
 // They pass on windows given a new baseline and likely only need to be given
 // platform specific baselines for Linux and Mac.
 BUG10450 LINUX : LayoutTests/fast/css/percent-top-value-with-relative-position.html = FAIL
-
-// Added 3/12/09
-BUG10452 MAC : LayoutTests/fast/events/popup-blocking-click-in-iframe.html = CRASH PASS
-BUG10452 MAC : LayoutTests/fast/html/body-offset-properties.html = CRASH PASS
-BUG10452 DEBUG WIN : LayoutTests/fast/dom/HTMLElement/innerHTML-selection-crash.html = CRASH PASS
-
 
 // Newly added test from 41613:41660 -- relies on ScriptCallStack::state() -- dglazkov should fix.
 BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAIL
@@ -1874,8 +1845,6 @@ BUG10453 WIN LINUX : LayoutTests/http/tests/misc/url-in-utf16be.html = CRASH TIM
 
 // Tests that fail in debug mode on linux
 BUG10454 DEBUG LINUX : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH
-
-BUG10456 LINUX : LayoutTests/fast/canvas/zero-size-fill-rect.html = CRASH PASS
 
 // This test hits a stack-overflow exception earlier in debug mode than in
 // release mode on Windows.
