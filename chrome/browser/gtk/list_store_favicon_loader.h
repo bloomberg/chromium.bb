@@ -7,7 +7,7 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/favicon_service.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
@@ -33,11 +33,11 @@ class ListStoreFavIconLoader {
  private:
   // Find a row from the GetFavIconForURL handle.  Returns true if the row was
   // found.
-  bool GetRowByFavIconHandle(HistoryService::Handle handle,
+  bool GetRowByFavIconHandle(FaviconService::Handle handle,
                              GtkTreeIter* result_iter);
 
-  // Callback from HistoryService:::GetFavIconForURL
-  void OnGotFavIcon(HistoryService::Handle handle, bool know_fav_icon,
+  // Callback from FaviconService:::GetFavIconForURL
+  void OnGotFavIcon(FaviconService::Handle handle, bool know_fav_icon,
                     scoped_refptr<RefCountedBytes> image_data, bool is_expired,
                     GURL icon_url);
 
@@ -48,10 +48,10 @@ class ListStoreFavIconLoader {
   gint favicon_col_;
 
   // The index of the G_TYPE_INT column used internally to track the
-  // HistoryService::Handle of each favicon request.
+  // FaviconService::Handle of each favicon request.
   gint favicon_handle_col_;
 
-  // The profile from which we will get the HistoryService.
+  // The profile from which we will get the FaviconService.
   Profile* profile_;
 
   // Used in loading favicons.

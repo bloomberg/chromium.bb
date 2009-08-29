@@ -163,15 +163,15 @@ int PossibleURLModel::CompareValues(int row1, int row2, int column_id) {
 }
 
 void PossibleURLModel::OnFavIconAvailable(
-    HistoryService::Handle h,
+    FaviconService::Handle h,
     bool fav_icon_available,
     scoped_refptr<RefCountedBytes> data,
     bool expired,
     GURL icon_url) {
   if (profile_) {
-    HistoryService* hs =
-        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    size_t index = consumer_.GetClientData(hs, h);
+    FaviconService* favicon_service =
+        profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+    size_t index = consumer_.GetClientData(favicon_service, h);
     if (fav_icon_available) {
       // The decoder will leave our bitmap empty on error.
       PNGDecoder::Decode(&data->data, &(fav_icon_map_[index]));

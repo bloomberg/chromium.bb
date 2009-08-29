@@ -47,7 +47,7 @@ class PossibleURLModel : public TableModel {
 
   virtual int CompareValues(int row1, int row2, int column_id);
 
-  virtual void OnFavIconAvailable(HistoryService::Handle h,
+  virtual void OnFavIconAvailable(FaviconService::Handle h,
                                   bool fav_icon_available,
                                   scoped_refptr<RefCountedBytes> data,
                                   bool expired,

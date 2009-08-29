@@ -40,7 +40,7 @@ void ListStoreFavIconLoader::LoadFaviconForRow(const GURL& url,
 }
 
 bool ListStoreFavIconLoader::GetRowByFavIconHandle(
-    HistoryService::Handle handle, GtkTreeIter* result_iter) {
+    FaviconService::Handle handle, GtkTreeIter* result_iter) {
   GtkTreeIter iter;
   gboolean valid = gtk_tree_model_get_iter_first(
       GTK_TREE_MODEL(list_store_), &iter);
@@ -60,7 +60,7 @@ bool ListStoreFavIconLoader::GetRowByFavIconHandle(
 }
 
 void ListStoreFavIconLoader::OnGotFavIcon(
-    HistoryService::Handle handle, bool know_fav_icon,
+    FaviconService::Handle handle, bool know_fav_icon,
     scoped_refptr<RefCountedBytes> image_data, bool is_expired, GURL icon_url) {
   GtkTreeIter iter;
   if (!GetRowByFavIconHandle(handle, &iter))
