@@ -39,8 +39,6 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   // This enables it for extension hosts.
   ExtensionHost::EnableDOMAutomation();
 
-  command_line->AppendSwitch(switches::kEnableExtensions);
-
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII("extensions");
 }

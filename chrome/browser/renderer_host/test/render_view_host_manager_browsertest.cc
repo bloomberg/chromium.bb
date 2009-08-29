@@ -23,9 +23,6 @@ class RenderViewHostManagerTest : public InProcessBrowserTest {
   RenderViewHostManagerTest() {
     EnableDOMAutomation();
   }
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnableExtensions);
-  }
 };
 
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional

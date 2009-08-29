@@ -45,8 +45,6 @@ class ExtensionStartupTestBase
     extensions_dir_ = profile_dir.AppendASCII("Extensions");
 
     if (enable_extensions_) {
-      command_line->AppendSwitch(switches::kEnableExtensions);
-
       FilePath src_dir;
       PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
       src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
@@ -55,6 +53,8 @@ class ExtensionStartupTestBase
                           preferences_file_);
       file_util::CopyDirectory(src_dir.AppendASCII("Extensions"),
                                profile_dir, true);  // recursive
+    } else {
+      command_line->AppendSwitch(switches::kDisableExtensions);
     }
 
     if (enable_user_scripts_) {

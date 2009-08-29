@@ -1534,8 +1534,18 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   FilePath install_dir = profile.GetPath()
       .AppendASCII(ExtensionsService::kInstallDirectoryName);
 
-  // By default, we are disabled.
+  // By default, we are enabled.
   command_line.reset(new CommandLine(L""));
+  service = new ExtensionsService(&profile, command_line.get(),
+      profile.GetPrefs(), install_dir, &loop, &loop, false);
+  EXPECT_TRUE(service->extensions_enabled());
+  service->Init();
+  loop.RunAllPending();
+  EXPECT_TRUE(recorder.ready());
+
+  // If either the command line or pref is set, we are disabled.
+  recorder.set_ready(false);
+  command_line->AppendSwitch(switches::kDisableExtensions);
   service = new ExtensionsService(&profile, command_line.get(),
       profile.GetPrefs(), install_dir, &loop, &loop, false);
   EXPECT_FALSE(service->extensions_enabled());
@@ -1543,21 +1553,11 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   loop.RunAllPending();
   EXPECT_TRUE(recorder.ready());
 
-  // If either the command line or pref is set, we are enabled.
   recorder.set_ready(false);
-  command_line->AppendSwitch(switches::kEnableExtensions);
+  profile.GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   service = new ExtensionsService(&profile, command_line.get(),
       profile.GetPrefs(), install_dir, &loop, &loop, false);
-  EXPECT_TRUE(service->extensions_enabled());
-  service->Init();
-  loop.RunAllPending();
-  EXPECT_TRUE(recorder.ready());
-
-  recorder.set_ready(false);
-  profile.GetPrefs()->SetBoolean(prefs::kEnableExtensions, true);
-  service = new ExtensionsService(&profile, command_line.get(),
-      profile.GetPrefs(), install_dir, &loop, &loop, false);
-  EXPECT_TRUE(service->extensions_enabled());
+  EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
   EXPECT_TRUE(recorder.ready());
@@ -1566,7 +1566,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   command_line.reset(new CommandLine(L""));
   service = new ExtensionsService(&profile, command_line.get(),
       profile.GetPrefs(), install_dir, &loop, &loop, false);
-  EXPECT_TRUE(service->extensions_enabled());
+  EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
   EXPECT_TRUE(recorder.ready());

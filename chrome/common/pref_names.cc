@@ -534,7 +534,7 @@ const wchar_t kNumFoldersInOtherBookmarkFolder[] =
 const wchar_t kNumKeywords[] = L"user_experience_metrics.num_keywords";
 
 // Whether Extensions or User Scripts are enabled.
-const wchar_t kEnableExtensions[] = L"extensions.enabled";
+const wchar_t kDisableExtensions[] = L"extensions.disabled";
 const wchar_t kEnableUserScripts[] = L"extensions.user_scripts_enabled";
 
 // Time of the last, and next scheduled, extensions auto-update checks.

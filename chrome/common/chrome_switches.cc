@@ -395,8 +395,8 @@ const wchar_t kSdchFilter[]                    = L"enable-sdch";
 // Enable user script support.
 const wchar_t kEnableUserScripts[]             = L"enable-user-scripts";
 
-// Enable extensions.
-const wchar_t kEnableExtensions[]              = L"enable-extensions";
+// Disable extensions.
+const wchar_t kDisableExtensions[]             = L"disable-extensions";
 
 // Frequency in seconds for Extensions auto-update.
 const wchar_t kExtensionsUpdateFrequency[] = L"extensions-update-frequency";
