@@ -12,6 +12,7 @@ include_rules = [
   "+webkit/glue",
   "+webkit/glue/plugins",
   "+v8/include",
+  "+third_party/sqlite/preprocessed",
 
   # FIXME - refactor code and remove these dependencies
   "+chrome/browser/net",
