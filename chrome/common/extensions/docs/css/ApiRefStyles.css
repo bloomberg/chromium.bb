@@ -191,6 +191,8 @@ div.leftNavSelected {
 
 #pageFooter {
   margin-top:5em;
+  text-align:center;
+  color: rgb(125, 125, 125);
 }
 
 #mainColumn table {
