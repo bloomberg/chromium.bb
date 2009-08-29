@@ -873,9 +873,7 @@
    Memcheck:Leak
    fun:malloc
    fun:_ZN3WTF10fastMallocE*
-   fun:_ZN7WebCore19V8EventListenerList3addEPNS_15V8EventListenerE
-   fun:_ZN7WebCore19V8EventListenerList19findOrCreateWrapperINS_15V8EventListenerEEEN3WTF10PassRefPtrIS2_EEPNS_5FrameEN2v85LocalINS8_5ValueEEEb
-   fun:_ZN7WebCore8V8Custom37v8DOMWindowEventHandlerAccessorSetterEN2v85LocalINS1_6StringEEENS2_INS1_5ValueEEERKNS1_12AccessorInfoE
+   ...
    fun:_ZN2v88internal8JSObject23SetPropertyWithCallbackEPNS0_6ObjectEPNS0_6StringES3_PS1_
 }
 {
@@ -896,9 +894,7 @@
    fun:_Znw*
    fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
    fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
-   fun:_ZN11webkit_glue15ResourceFetcher5StartEP8WebFrame
-   fun:_ZN11webkit_glue15ResourceFetcherC1ERK4GURLP8WebFrameP14CallbackRunnerI6Tuple2IRKN6WebKit14WebURLResponseERKSsEE
-   fun:_ZN11webkit_glue20ImageResourceFetcherC1ERK4GURLP8WebFrameiiP14CallbackRunnerI6Tuple2IPS0_RK8SkBitmapEE
+   ...
    fun:_ZN11WebViewImpl13DownloadImageEiRK4GURLi
    fun:_ZN10RenderView17OnDownloadFavIconEiRK4GURLi
 }
@@ -996,9 +992,6 @@
    bug_19191
    Memcheck:Leak
    ...
-   fun:_ZN3WTF9HashTableIPN7WebCore10StringImplES3_NS_17IdentityExtractorIS3_EENS1_10StringHashENS_10HashTraitsIS3_EES8_E18addPassingHashCodeIPKcSC_NS_24HashSetTranslatorAdapterIS3_S8_SC_NS1_17CStringTranslatorEEEEESt4pairINS_17HashTableIteratorIS3_S3_S5_S6_S8_S8_EEbERKT_RKT0_
-   fun:_ZN3WTF7HashSetIPN7WebCore10StringImplENS1_10StringHashENS_10HashTraitsIS3_EEE3addIPKcNS1_17CStringTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS3_S3_NS_17IdentityExtractorIS3_EES4_S6_S6_EES3_EEbERKT_
-   fun:_ZN7WebCore12AtomicString3addEPKc
    fun:_ZN7WebCore10XLinkNames4initEv
 }
 {
@@ -1112,4 +1105,52 @@
    fun:g_signal_handlers_disconnect_matched
    fun:gtk_accel_group_disconnect
    fun:gtk_accel_group_disconnect_key
+}
+{
+   bug_20580
+   Memcheck:Addr1
+   fun:syncJournal
+   fun:sqlite3PagerCommitPhaseOne
+   fun:sqlite3BtreeCommitPhaseOne
+   fun:vdbeCommit
+   fun:sqlite3VdbeHalt
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN7history16ArchivedDatabase17CommitTransactionEv
+}
+{
+   bug_20581
+   Memcheck:Leak
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:pagerAllocatePage
+   fun:sqlite3PagerAcquire2
+   fun:pagerAcquire
+   fun:sqlite3PagerAcquire
+   fun:sqlite3BtreeGetPage
+   fun:allocateBtreePage
+   fun:btreeCreateTable
+   fun:sqlite3BtreeCreateTable
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN7history11URLDatabase14CreateURLTableEb
+}
+{
+   bug_20616
+   Memcheck:Leak
+   ...
+   fun:_ZN19SafeBrowsingService11GetDatabaseEv
+   fun:_ZN19SafeBrowsingService14OnDBInitializeEv
+}
+{
+   bug_20617
+   Memcheck:Leak
+   ...
+   fun:_ZN18AutomationProvider30WaitForAppModalDialogToBeShownEPN3IPC7MessageE
 }

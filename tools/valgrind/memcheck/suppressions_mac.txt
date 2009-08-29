@@ -556,3 +556,11 @@
    fun:SecTrustEvaluate
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
 }
+{
+   bug_20582
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
+   fun:_ZN16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
+}
