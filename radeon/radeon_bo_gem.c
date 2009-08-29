@@ -39,6 +39,7 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include "xf86drm.h"
+#include "xf86atomic.h"
 #include "drm.h"
 #include "radeon_drm.h"
 #include "radeon_bo.h"
@@ -49,6 +50,7 @@ struct radeon_bo_gem {
     struct radeon_bo_int base;
     uint32_t            name;
     int                 map_count;
+    atomic_t            reloc_in_cs;
     void *priv_ptr;
 };
 
@@ -80,6 +82,7 @@ static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
     bo->base.domains = domains;
     bo->base.flags = flags;
     bo->base.ptr = NULL;
+    atomic_set(&bo->reloc_in_cs, 0);
     bo->map_count = 0;
     if (handle) {
         struct drm_gem_open open_arg;
@@ -307,6 +310,12 @@ uint32_t radeon_gem_name_bo(struct radeon_bo *bo)
 {
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
     return bo_gem->name;
+}
+
+void *radeon_gem_get_reloc_in_cs(struct radeon_bo *bo)
+{
+    struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
+    return &bo_gem->reloc_in_cs;
 }
 
 int radeon_gem_get_kernel_name(struct radeon_bo *bo, uint32_t *name)

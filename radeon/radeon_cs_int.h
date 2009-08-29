@@ -28,6 +28,7 @@ struct radeon_cs_int {
     int                         bo_count;
     void                        (*space_flush_fn)(void *);
     void                        *space_flush_data;
+    uint32_t                    id;
 };
 
 /* cs functions */

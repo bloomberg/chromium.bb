@@ -85,7 +85,7 @@ extern int radeon_cs_write_reloc(struct radeon_cs *cs,
                                  uint32_t read_domain,
                                  uint32_t write_domain,
                                  uint32_t flags);
-
+extern uint32_t radeon_cs_get_id(struct radeon_cs *cs);
 /*
  * add a persistent BO to the list
  * a persistent BO is one that will be referenced across flushes,

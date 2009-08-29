@@ -88,3 +88,9 @@ void radeon_cs_space_set_flush(struct radeon_cs *cs, void (*fn)(void *), void *d
     csi->space_flush_fn = fn;
     csi->space_flush_data = data;
 }
+
+uint32_t radeon_cs_get_id(struct radeon_cs *cs)
+{
+    struct radeon_cs_int *csi = (struct radeon_cs_int *)cs;
+    return csi->id;
+}

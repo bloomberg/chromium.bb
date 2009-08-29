@@ -50,6 +50,8 @@ typedef struct {
 # define atomic_set(x, val) ((x)->atomic = (val))
 # define atomic_inc(x) ((void) __sync_fetch_and_add (&(x)->atomic, 1))
 # define atomic_dec_and_test(x) (__sync_fetch_and_add (&(x)->atomic, -1) == 1)
+# define atomic_add(x, v) ((void) __sync_add_and_fetch(&(x)->atomic, (v)))
+# define atomic_dec(x, v) ((void) __sync_sub_and_fetch(&(x)->atomic, (v)))
 # define atomic_cmpxchg(x, oldv, newv) __sync_val_compare_and_swap (&(x)->atomic, oldv, newv)
 
 #endif
@@ -66,6 +68,8 @@ typedef struct {
 # define atomic_read(x) AO_load_full(&(x)->atomic)
 # define atomic_set(x, val) AO_store_full(&(x)->atomic, (val))
 # define atomic_inc(x) ((void) AO_fetch_and_add1_full(&(x)->atomic))
+# define atomic_add(x, v) ((void) AO_fetch_and_add_full(&(x)->atomic, (v)))
+# define atomic_dec(x, v) ((void) AO_fetch_and_add_full(&(x)->atomic, -(v)))
 # define atomic_dec_and_test(x) (AO_fetch_and_sub1_full(&(x)->atomic) == 1)
 # define atomic_cmpxchg(x, oldv, newv) AO_compare_and_swap_full(&(x)->atomic, oldv, newv)
 
@@ -82,6 +86,8 @@ typedef struct { uint_t atomic; } atomic_t;
 # define atomic_set(x, val) ((x)->atomic = (uint_t)(val))
 # define atomic_inc(x) (atomic_inc_uint (&(x)->atomic))
 # define atomic_dec_and_test(x) (atomic_dec_uint_nv(&(x)->atomic) == 1)
+# define atomic_add(x, v) (atomic_add_uint(&(x)->atomic, (v)))
+# define atomic_dec(x, v) (atomic_dec_uint(&(x)->atomic, (v)))
 # define atomic_cmpxchg(x, oldv, newv) atomic_cas_uint (&(x)->atomic, oldv, newv)
 
 #endif

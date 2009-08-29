@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include "radeon_cs.h"
@@ -41,6 +42,7 @@
 #include "radeon_bo_gem.h"
 #include "drm.h"
 #include "xf86drm.h"
+#include "xf86atomic.h"
 #include "radeon_drm.h"
 
 struct radeon_cs_manager_gem {
@@ -68,6 +70,50 @@ struct cs_gem {
     struct radeon_bo_int        **relocs_bo;
 };
 
+static pthread_mutex_t id_mutex = PTHREAD_MUTEX_INITIALIZER;
+static uint32_t cs_id_source = 0;
+
+/**
+ * result is undefined if called with ~0
+ */
+static uint32_t get_first_zero(const uint32_t n)
+{
+    /* __builtin_ctz returns number of trailing zeros. */
+    return 1 << __builtin_ctz(~n);
+}
+
+/**
+ * Returns a free id for cs.
+ * If there is no free id we return zero
+ **/
+static uint32_t generate_id(void)
+{
+    uint32_t r = 0;
+    pthread_mutex_lock( &id_mutex );
+    /* check for free ids */
+    if (cs_id_source != ~r) {
+        /* find first zero bit */
+        r = get_first_zero(cs_id_source);
+
+        /* set id as reserved */
+        cs_id_source |= r;
+    }
+    pthread_mutex_unlock( &id_mutex );
+    return r;
+}
+
+/**
+ * Free the id for later reuse
+ **/
+static void free_id(uint32_t id)
+{
+    pthread_mutex_lock( &id_mutex );
+
+    cs_id_source &= ~id;
+
+    pthread_mutex_unlock( &id_mutex );
+}
+
 static struct radeon_cs_int *cs_gem_create(struct radeon_cs_manager *csm,
                                        uint32_t ndw)
 {
@@ -90,6 +136,7 @@ static struct radeon_cs_int *cs_gem_create(struct radeon_cs_manager *csm,
     }
     csg->base.relocs_total_size = 0;
     csg->base.crelocs = 0;
+    csg->base.id = generate_id();
     csg->nrelocs = 4096 / (4 * 4) ;
     csg->relocs_bo = (struct radeon_bo_int**)calloc(1,
                                                 csg->nrelocs*sizeof(void*));
@@ -141,38 +188,45 @@ static int cs_gem_write_reloc(struct radeon_cs_int *cs,
     if (write_domain == RADEON_GEM_DOMAIN_CPU) {
         return -EINVAL;
     }
-    /* check if bo is already referenced */
-    for(i = 0; i < cs->crelocs; i++) {
-        idx = i * RELOC_SIZE;
-        reloc = (struct cs_reloc_gem*)&csg->relocs[idx];
-        if (reloc->handle == bo->handle) {
-            /* Check domains must be in read or write. As we check already
-             * checked that in argument one of the read or write domain was
-             * set we only need to check that if previous reloc as the read
-             * domain set then the read_domain should also be set for this
-             * new relocation.
-             */
-            /* the DDX expects to read and write from same pixmap */
-            if (write_domain && (reloc->read_domain & write_domain)) {
-                reloc->read_domain = 0;
-                reloc->write_domain = write_domain;
-            } else if (read_domain & reloc->write_domain) {
-                reloc->read_domain = 0;
-            } else {
-                if (write_domain != reloc->write_domain)
-                    return -EINVAL;
-                if (read_domain != reloc->read_domain)
-                    return -EINVAL;
-            }
+    /* use bit field hash function to determine
+       if this bo is for sure not in this cs.*/
+    if ((atomic_read((atomic_t *)radeon_gem_get_reloc_in_cs(bo)) & cs->id)) {
+        /* check if bo is already referenced.
+	 * Scanning from end to begin reduces cycles with mesa because
+	 * it often relocates same shared dma bo again. */
+        for(i = cs->crelocs; i != 0;) {
+            --i;
+            idx = i * RELOC_SIZE;
+            reloc = (struct cs_reloc_gem*)&csg->relocs[idx];
+            if (reloc->handle == bo->handle) {
+                /* Check domains must be in read or write. As we check already
+                 * checked that in argument one of the read or write domain was
+                 * set we only need to check that if previous reloc as the read
+                 * domain set then the read_domain should also be set for this
+                 * new relocation.
+                 */
+                /* the DDX expects to read and write from same pixmap */
+                if (write_domain && (reloc->read_domain & write_domain)) {
+                    reloc->read_domain = 0;
+                    reloc->write_domain = write_domain;
+                } else if (read_domain & reloc->write_domain) {
+                    reloc->read_domain = 0;
+                } else {
+                    if (write_domain != reloc->write_domain)
+                        return -EINVAL;
+                    if (read_domain != reloc->read_domain)
+                        return -EINVAL;
+                }
 
-            reloc->read_domain |= read_domain;
-            reloc->write_domain |= write_domain;
-            /* update flags */
-            reloc->flags |= (flags & reloc->flags);
-            /* write relocation packet */
-            radeon_cs_write_dword((struct radeon_cs *)cs, 0xc0001000);
-            radeon_cs_write_dword((struct radeon_cs *)cs, idx);
-            return 0;
+                reloc->read_domain |= read_domain;
+                reloc->write_domain |= write_domain;
+                /* update flags */
+                reloc->flags |= (flags & reloc->flags);
+                /* write relocation packet */
+                radeon_cs_write_dword((struct radeon_cs *)cs, 0xc0001000);
+                radeon_cs_write_dword((struct radeon_cs *)cs, idx);
+                return 0;
+            }
         }
     }
     /* new relocation */
@@ -203,6 +257,8 @@ static int cs_gem_write_reloc(struct radeon_cs_int *cs,
     reloc->flags = flags;
     csg->chunks[1].length_dw += RELOC_SIZE;
     radeon_bo_ref(bo);
+    /* bo might be referenced from another context so have to use atomic opertions */
+    atomic_add((atomic_t *)radeon_gem_get_reloc_in_cs(bo), cs->id);
     cs->relocs_total_size += boi->size;
     radeon_cs_write_dword((struct radeon_cs *)cs, 0xc0001000);
     radeon_cs_write_dword((struct radeon_cs *)cs, idx);
@@ -288,6 +344,8 @@ static int cs_gem_emit(struct radeon_cs_int *cs)
                             &csg->cs, sizeof(struct drm_radeon_cs));
     for (i = 0; i < csg->base.crelocs; i++) {
         csg->relocs_bo[i]->space_accounted = 0;
+        /* bo might be referenced from another context so have to use atomic opertions */
+        atomic_dec((atomic_t *)radeon_gem_get_reloc_in_cs((struct radeon_bo*)csg->relocs_bo[i]), cs->id);
         radeon_bo_unref((struct radeon_bo *)csg->relocs_bo[i]);
         csg->relocs_bo[i] = NULL;
     }
@@ -302,6 +360,7 @@ static int cs_gem_destroy(struct radeon_cs_int *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
 
+    free_id(cs->id);
     free(csg->relocs_bo);
     free(cs->relocs);
     free(cs->packets);
@@ -317,6 +376,8 @@ static int cs_gem_erase(struct radeon_cs_int *cs)
     if (csg->relocs_bo) {
         for (i = 0; i < csg->base.crelocs; i++) {
             if (csg->relocs_bo[i]) {
+                /* bo might be referenced from another context so have to use atomic opertions */
+                atomic_dec((atomic_t *)radeon_gem_get_reloc_in_cs((struct radeon_bo*)csg->relocs_bo[i]), cs->id);
                 radeon_bo_unref((struct radeon_bo *)csg->relocs_bo[i]);
                 csg->relocs_bo[i] = NULL;
             }
