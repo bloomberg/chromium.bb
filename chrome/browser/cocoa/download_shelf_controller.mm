@@ -71,10 +71,13 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
       [[NSParagraphStyle defaultParagraphStyle] mutableCopy]);
   [paragraphStyle.get() setAlignment:NSRightTextAlignment];
 
+  NSFont* font = [NSFont systemFontOfSize:
+      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
   NSDictionary* linkAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
       @"", NSLinkAttributeName,
       [NSCursor pointingHandCursor], NSCursorAttributeName,
       paragraphStyle.get(), NSParagraphStyleAttributeName,
+      font, NSFontAttributeName,
       nil];
   NSString* text =
       base::SysWideToNSString(l10n_util::GetString(IDS_SHOW_ALL_DOWNLOADS));
