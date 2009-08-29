@@ -49,14 +49,6 @@ def GetPatchName():
   return GetBranchName() + '-' + short_sha
 
 
-def GetRevision():
-  """Get the latest Subversion revision number."""
-  for line in Backquote(['git', 'svn', 'info']).split('\n'):
-    if line.startswith('Revision:'):
-      return line[len('Revision:'):].strip()
-  raise "Couldn't figure out latest revision"
-
-
 def GetRietveldIssueNumber():
   return Backquote(['git', 'config',
                     'branch.%s.rietveldissue' % GetBranchName()])
@@ -173,8 +165,6 @@ if __name__ == '__main__':
     args.append('--clobber')
   if options.revision:
     args.extend(['-r', options.revision])
-  else:
-    args.extend(['-r', GetRevision()])
   if GetRietveldPatchsetNumber():
     args.extend([
         '--issue', GetRietveldIssueNumber(),
