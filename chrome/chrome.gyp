@@ -3831,6 +3831,11 @@
             'Debug': {
               'msvs_precompiled_header': 'tools/build/win/precompiled_wtl.h',
               'msvs_precompiled_source': 'tools/build/win/precompiled_wtl.cc',
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
             },
           },
         }, { # else: OS != "win"
