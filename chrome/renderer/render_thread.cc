@@ -447,13 +447,6 @@ void RenderThread::EnsureWebKitInitialized() {
 
   if (RenderProcess::current()->initialized_media_library())
     WebKit::enableMediaPlayer();
-
-  // Note: We are forcing --enable-databases to on with --enable-extensions so
-  // that extension developers can test databases.
-  if (command_line.HasSwitch(switches::kEnableDatabases) ||
-      command_line.HasSwitch(switches::kEnableExtensions)) {
-    WebKit::enableDatabases();
-  }
 }
 
 void RenderThread::IdleHandler() {

@@ -55,6 +55,7 @@
       'browser/extensions/extension_devtools_browsertests.cc',
       'browser/extensions/extension_shelf_model_unittest.cc',
       'browser/extensions/extension_startup_unittest.cc',
+      'browser/extensions/extension_storage_apitest.cc',
       'browser/views/browser_views_accessibility_browsertest.cc',
       'browser/views/find_bar_win_browsertest.cc',
       # TODO(jam): http://crbug.com/15101 These tests fail on Linux and Mac.

@@ -48,6 +48,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDownloadableBinaryFontsEnabled(remote_fonts_enabled);
   settings->setXSSAuditorEnabled(xss_auditor_enabled);
   settings->setLocalStorageEnabled(local_storage_enabled);
+  settings->setDatabasesEnabled(WebKit::databasesEnabled() || databases_enabled);
   settings->setSessionStorageEnabled(session_storage_enabled);
   settings->setOfflineWebApplicationCacheEnabled(application_cache_enabled);
 
@@ -62,8 +63,6 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Turn this on to cause WebCore to paint the resize corner for us.
   settings->setShouldPaintCustomScrollbars(true);
-
-  settings->setDatabasesEnabled(WebKit::databasesEnabled());
 
   // Mitigate attacks from local HTML files by not granting file:// URLs
   // universal access.
