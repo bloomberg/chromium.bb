@@ -567,11 +567,11 @@ void DomOperationNotificationObserver::Observe(
     Details<DomOperationNotificationDetails> dom_op_details(details);
 
     IPC::Message* reply_message = automation_->reply_message_release();
-    DCHECK(reply_message != NULL);
-
-    AutomationMsg_DomOperation::WriteReplyParams(reply_message,
-                                                 dom_op_details->json());
-    automation_->Send(reply_message);
+    if (reply_message) {
+      AutomationMsg_DomOperation::WriteReplyParams(reply_message,
+                                                   dom_op_details->json());
+      automation_->Send(reply_message);
+    }
   }
 }
 
