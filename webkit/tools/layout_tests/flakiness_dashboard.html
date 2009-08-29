@@ -11,6 +11,10 @@
       font-family: arial;
       font-size: 13px;
     }
+    h2 {
+      font-size: 16px;
+      margin-bottom: .25em;
+    }
     .test-link {
       white-space: normal;
     }
@@ -62,12 +66,13 @@
     }
     .legend * {
       padding: 0 3px;
+      margin: 3px 0;
     }
     .builders * {
       margin: 0 5px;
     }
-    .test-table .expectation-mismatch,
-    .expectation-mismatch {
+    .test-table .wrong-expectations,
+    .wrong-expectations {
       background-color: #afdaff;
     }
     .P {
@@ -104,6 +109,14 @@
     }
     .current-builder {
       font-weight: bold;
+    }
+    #passing-tests {
+      -webkit-column-count: 3;
+      -webkit-column-gap: 25px;
+      -webkit-column-rule: 1px dashed black;
+      -moz-column-count: 3;
+      -moz-column-gap: 25px;
+      -moz-column-rule: 1px dashed black;
     }
   </style>
 
@@ -217,7 +230,9 @@
   var perBuilderPlatformAndBuildType = {};
   var oldLocation;
   var perBuilderFailures = {};
-  var allTestsCache;
+  // Map of builder to arrays of tests that are listed in the expectations file
+  // but have for that builder.
+  var perBuilderWithExpectationsButNoFailures = {};
 
   function createResultsObjectForTest(test) {
     return {
@@ -263,24 +278,11 @@
    * build type of the given builder.
    */
   function hasPlatformAndBuildType(builderName, modifiers) {
-    var currentPlatformAndBuildType;
-    if (perBuilderPlatformAndBuildType[builderName]) {
-      currentPlatformAndBuildType = perBuilderPlatformAndBuildType[builderName];
-    } else {
-      // If the build name does not contain a platform
-      // or build type, assume Windows Release.
-      var currentBuildUppercase = builderName.toUpperCase();
-      var platform = getMatchingElement(currentBuildUppercase, PLATFORMS) ||
-          'WIN';
-      var buildType = getMatchingElement(currentBuildUppercase, BUILD_TYPES) ||
-          'RELEASE';
-      currentPlatformAndBuildType = {platform: platform, buildType: buildType};
-    }
-
+    var platformAndBuildType = getPlatFormAndBuildType(builderName);
     var hasThisPlatform = stringContains(modifiers,
-        currentPlatformAndBuildType.platform);
+        platformAndBuildType.platform);
     var hasThisBuildType = stringContains(modifiers,
-        currentPlatformAndBuildType.buildType);
+        platformAndBuildType.buildType);
 
     var hasAnyPlatform = anyKeyInString(PLATFORMS, modifiers);
     var hasAnyBuildType = anyKeyInString(BUILD_TYPES, modifiers);
@@ -289,16 +291,31 @@
         (!hasAnyPlatform || hasThisPlatform);
   }
 
+  function getPlatFormAndBuildType(builderName) {
+    if (!perBuilderPlatformAndBuildType[builderName]) {
+      // If the build name does not contain a platform
+      // or build type, assume Windows Release.
+      var currentBuildUppercase = builderName.toUpperCase();
+      var platform = getMatchingElement(currentBuildUppercase, PLATFORMS) ||
+          'WIN';
+      var buildType = getMatchingElement(currentBuildUppercase, BUILD_TYPES) ||
+          'RELEASE';
+      perBuilderPlatformAndBuildType[builderName] = {platform: platform,
+          buildType: buildType};
+    }
+    return perBuilderPlatformAndBuildType[builderName];
+  }
+
   /**
    * Returns whether any of the modifiers in the array have the correct
    * platform and build type for the given builder.
    */
-  function anyModifierHasPlatformAndBuildType(builderName, modifiersArray) {
+  function getModifierThatHasPlatformAndBuildType(builderName, modifiersArray) {
     for (var i = 0; i < modifiersArray.length; i++) {
       if (hasPlatformAndBuildType(builderName, modifiersArray[i].modifiers))
-        return true;
+        return modifiersArray[i];
     }
-    return false;
+    return null;
   }
 
   /**
@@ -322,42 +339,136 @@
     return EXPECTATIONS_MAP[result];
   }
 
+  // Map of all tests to true values. This is just so we can have the list of
+  // all tests across all the builders.
+  var allTests;
+
+  /**
+   * Returns a map of all tests to true values. This is just so we can have the
+   * list of all tests across all the builders.
+   */
+  function getAllTests() {
+    if (!allTests) {
+      allTests = {};
+      for (var builder in builders) {
+        addTestsForBuilder(builder, allTests);
+      }
+    }
+    return allTests;
+  }
+
+  /**
+   * Adds all the tests for the given builder to the testMapToPopulate.
+   */
+  function addTestsForBuilder(builder, testMapToPopulate) {
+    var tests = resultsByBuilder[builder].tests;
+    for (var test in tests) {
+      testMapToPopulate[test] = true;
+    }
+  }
+
+  // Map of all tests to true values by platform and build type.
+  // e.g. allTestsByPlatformAndBuildType['WIN']['DEBUG'] will have the union
+  // of all tests run on the win-debug builders.
+  var allTestsByPlatformAndBuildType = {};
+  for (var platform in PLATFORMS) {
+    allTestsByPlatformAndBuildType[platform] = {};
+  }
+
+  /**
+   * Map of all tests to true values by platform and build type.
+   * e.g. allTestsByPlatformAndBuildType['WIN']['DEBUG'] will have the union
+   * of all tests run on the win-debug builders.
+   */
+  function getAllTestsWithSamePlatformAndBuildType(builder) {
+    var buildInfo = getPlatFormAndBuildType(builder);
+    var platform = buildInfo.platform;
+    var buildType = buildInfo.buildType;
+
+    if (!allTestsByPlatformAndBuildType[platform][buildType]) {
+      var tests = {};
+      for (var thisBuilder in builders) {
+        var thisBuilderBuildInfo = getPlatFormAndBuildType(thisBuilder);
+        if (thisBuilderBuildInfo.buildType == buildType &&
+            thisBuilderBuildInfo.platform == platform) {
+          addTestsForBuilder(thisBuilder, tests);
+        }
+      }
+      allTestsByPlatformAndBuildType[platform][buildType] = tests;
+    }
+
+    return allTestsByPlatformAndBuildType[platform][buildType];
+  }
+
+  /**
+   * Adds the given test and path to the appropriate objects depending on
+   * whether the modifiers match the builders platform and buildType.
+   */
+  function addTestAndExpectations(test, prefixPath, builder, expectationsMap,
+      expectations, testPrefixes) {
+    var modifiersForBuilder =
+        getModifierThatHasPlatformAndBuildType(builder, expectations);
+    if (modifiersForBuilder) {
+      if (getAllTestsWithSamePlatformAndBuildType(builder)[test]) {
+        expectationsMap[test] = expectations;
+        testPrefixes[test] = prefixPath;
+      } else if (!stringContains(modifiersForBuilder.modifiers, 'SKIP') &&
+          !modifiersForBuilder.expectations.match(/^\s*PASS\s*$/)) {
+        // Don't include skip tests here as they'll look the same as a test
+        // that passes on all builders.
+        // Also don't include tests that are only expected to pass, e.g.
+        // SLOW : foo/bar/baz.html = PASS
+        // TODO(ojan): Should we also exclude WONTFIX tests here?
+        perBuilderWithExpectationsButNoFailures[builder].push(test);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Naive check that path points to a directory.
+   */
+  function isDirectory(path) {
+    return !stringContains(path, '.')
+  }
+
   function processTestRunsForBuilder(builderName) {
     if (perBuilderFailures[builderName])
       return;
 
     var failures = [];
-    var allTests = resultsByBuilder[builderName].tests;
+    var allTests = getAllTests();
 
     var expectationsMap = {};
     for (var test in allTests) {
       if (expectationsByTest[test])
         expectationsMap[test] = expectationsByTest[test];
     }
+
     var testPrefixes = {};
+    perBuilderWithExpectationsButNoFailures[builderName] = [];
     for (var path in expectationsByTest) {
       var expectations = expectationsByTest[path];
-      if (allTests[path] &&
-          anyModifierHasPlatformAndBuildType(builderName, expectations)) {
-        // Test path is an exact match (i.e. not a prefix match)
-        expectationsMap[path] = expectations;
-        testPrefixes[path] = path;
-      } else {
+      if (!isDirectory(path) &&
+          !addTestAndExpectations(path, path, builderName, expectationsMap,
+              expectations, testPrefixes)) {
         // Test path doesn't match a specific test, see if it prefix matches
         // any test.
         for (var test in allTests) {
           if (stringContains(test, path) &&
               (!testPrefixes[test] ||
-               !stringContains(testPrefixes[test], path)) &&
-              anyModifierHasPlatformAndBuildType(builderName, expectations)) {
-            expectationsMap[test] = expectations;
-            testPrefixes[test] = path;
+               !stringContains(testPrefixes[test], path))) {
+            addTestAndExpectations(test, path, builderName, expectationsMap,
+                expectations, testPrefixes);
           }
         }
       }
     }
+    perBuilderWithExpectationsButNoFailures[builderName].sort();
 
-    for (var test in allTests) {
+    var allTestsForThisBuilder = resultsByBuilder[builderName].tests;
+    for (var test in allTestsForThisBuilder) {
       var resultsForTest = createResultsObjectForTest(test);
 
       if (expectationsMap[test] && expectationsMap[test].length) {
@@ -442,7 +553,7 @@
       failures.push(resultsForTest);
     }
 
-    perBuilderFailures[currentState.builder] = failures;
+    perBuilderFailures[builderName] = failures;
   }
 
   function hasExpectations(expectations, resultName) {
@@ -501,7 +612,13 @@
   }
 
   function getHTMLForTestTable(results, id, sort, order) {
-    var html = '<table id=' + id + ' class=test-table>' +
+    var html = '<div class=legend>';
+    for (var expectation in EXPECTATIONS_MAP) {
+      html += '<span class=' + expectation + '>' +
+          EXPECTATIONS_MAP[expectation] + '</span>';
+    }
+    html += '<span class=wrong-expectations>WRONG EXPECTATIONS</span></div>' +
+        '<table id=' + id + ' class=test-table>' +
         getTableHeaders(sort, order) + '<tbody>';
 
     sortTests(results, sort, order);
@@ -510,7 +627,7 @@
 
       var classes = [];
       if (!test.meetsExpectations)
-        classes.push('expectation-mismatch');
+        classes.push('wrong-expectations');
 
       if (test.isWontFix)
         classes.push('wontfix');
@@ -530,8 +647,7 @@
         '</tr>';
     }
 
-    html += "</tbody></table>"
-    return html;
+    return html + "</tbody></table>"
   }
 
   function getTableHeaders(sort, order) {
@@ -556,10 +672,20 @@
     return html;
   }
 
-  function getHTMLForPageHeader() {
-    var html = '<div class=header-container>';
+  function getHTMLForTestsWithExpectationsButNoFailures(builder) {
+    var tests = perBuilderWithExpectationsButNoFailures[builder];
+    if (!tests.length)
+      return '';
 
-    html += '<div class=builders>';
+    var buildInfo = getPlatFormAndBuildType(builder);
+    return '<h2>Have expectations for ' + buildInfo.platform + '-' +
+          buildInfo.buildType + ' but have not failed in last 100 ' +
+          'runs.</h2><div id="passing-tests"><div>' +
+          tests.join('</div><div>') + '</div></div>';
+  }
+
+  function getHTMLForNavBar() {
+    var html = '<div class=builders>';
     for (var builder in builders) {
       var className = builder == currentState.builder ?
           'current-builder' : 'link';
@@ -567,25 +693,18 @@
           ' onclick=\'setState("builder", "' + builder + '")\'>' +
           builder + '</span>';
     }
-    html += '</div>';
-
-    html += '<div class=legend>';
-    for (var expectation in EXPECTATIONS_MAP) {
-      html += '<span class=' + expectation + '>' +
-          EXPECTATIONS_MAP[expectation] + '</span>';
-    }
-    html += '<span class=expectation-mismatch>WRONG EXPECTATIONS</span>' +
-        '</div><input type=checkbox id=wont-fix-input ' +
-        'onclick="updateWontFixDisplay()">Show WONTFIX tests.' +
-        '<b> | All columns are sortable. | Skipped tests are not listed. | ' +
-        'Flakiness reader order is newer --> older runs.</b></div>';
-    return html;
+    return html + '</div>';
   }
 
   function setFullPageHTML() {
-    var html = getHTMLForPageHeader();
-    html += getHTMLForTestTable(perBuilderFailures[currentState.builder],
-       'failures', currentState.sortColumn, currentState.sortOrder);
+    var html = getHTMLForNavBar() +
+        getHTMLForTestsWithExpectationsButNoFailures(currentState.builder) +
+        '<h2>Failing tests</h2><input type=checkbox id=wont-fix-input ' +
+        'onclick="updateWontFixDisplay()">Show WONTFIX tests.' +
+        '<b> | All columns are sortable. | Skipped tests are not listed. | ' +
+        'Flakiness reader order is newer --> older runs.</b>' +
+        getHTMLForTestTable(perBuilderFailures[currentState.builder],
+            'failures', currentState.sortColumn, currentState.sortOrder);
     var startTime = Date.now();
     // InnerHTML to a div that's not in the document. This is
     // ~300ms faster in Safari 4 and Chrome 4 on mac.
@@ -680,10 +799,14 @@
       }
     }
 
-    // Only continue if the JSON files for the text expectations and this
-    // this builder have loaded.
-    if (!expectationsLoaded || !resultsByBuilder[currentState.builder])
+    // Only continue if all the JSON files have loaded.
+    if (!expectationsLoaded)
       return;
+
+    for (var build in builders) {
+      if (!resultsByBuilder[build])
+        return;
+    }
 
     processTestRunsForBuilder(currentState.builder);
     setFullPageHTML();
