@@ -347,6 +347,7 @@ void Texture2DGL::UpdateBackedMipLevel(unsigned int level) {
   DCHECK_EQ(backing_bitmap_->height(), static_cast<unsigned int>(height()));
   DCHECK_EQ(backing_bitmap_->format(), format());
   DCHECK(HasLevel(level));
+  renderer_->MakeCurrentLazy();
   glBindTexture(GL_TEXTURE_2D, gl_texture_);
   UpdateGLImageFromBitmap(GL_TEXTURE_2D, level, TextureCUBE::FACE_POSITIVE_X,
                           *backing_bitmap_.Get(), resize_to_pot_);
@@ -412,6 +413,7 @@ void Texture2DGL::SetRect(int level,
         level, dst_left, dst_top, src_width, src_height, src_data, src_pitch);
     UpdateBackedMipLevel(level);
   } else {
+    renderer_->MakeCurrentLazy();
     glBindTexture(GL_TEXTURE_2D, gl_texture_);
     GLenum gl_internal_format = 0;
     GLenum gl_data_type = 0;
@@ -680,6 +682,7 @@ void TextureCUBEGL::UpdateBackedMipLevel(unsigned int level,
   DCHECK_EQ(backing_bitmap->height(), static_cast<unsigned int>(edge_length()));
   DCHECK_EQ(backing_bitmap->format(), format());
   DCHECK(HasLevel(level, face));
+  renderer_->MakeCurrentLazy();
   glBindTexture(GL_TEXTURE_2D, gl_texture_);
   UpdateGLImageFromBitmap(kCubemapFaceList[face], level, face,
                           *backing_bitmap,
@@ -766,6 +769,7 @@ void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
     UpdateBackedMipLevel(level, face);
   } else {
     // TODO(gman): Should this bind be using a FACE id?
+    renderer_->MakeCurrentLazy();
     glBindTexture(GL_TEXTURE_2D, gl_texture_);
     GLenum gl_internal_format = 0;
     GLenum gl_data_type = 0;
