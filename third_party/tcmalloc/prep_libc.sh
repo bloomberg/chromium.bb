@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 # This script takes libcmt.lib for VS2005 and removes the allocation related 
 # functions from it.
 #
@@ -29,6 +29,7 @@ OBJFILES="malloc.obj free.obj realloc.obj new.obj delete.obj new2.obj delete2.ob
 
 for FILE in $OBJFILES
 do
-  LIB /IGNORE:4006,4014,4221 /REMOVE:${LIBCMTSRCPATHVS2005}${FILE} $OUTCMT
-  LIB /IGNORE:4006,4014,4221 /REMOVE:${LIBCMTSRCPATHVS2008}${FILE} $OUTCMT
+  echo ${FILE}
+  LIB /NOLOGO /IGNORE:4006,4014,4221 /REMOVE:${LIBCMTSRCPATHVS2005}${FILE} $OUTCMT
+  LIB /NOLOGO /IGNORE:4006,4014,4221 /REMOVE:${LIBCMTSRCPATHVS2008}${FILE} $OUTCMT
 done
