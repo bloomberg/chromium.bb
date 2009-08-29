@@ -146,6 +146,8 @@ TCPClientSocketPool::TCPClientSocketPool(
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory)
     : base_(max_sockets, max_sockets_per_group,
+            base::TimeDelta::FromSeconds(kUnusedIdleSocketTimeout),
+            base::TimeDelta::FromSeconds(kUsedIdleSocketTimeout),
             new TCPConnectJobFactory(client_socket_factory, host_resolver)) {}
 
 TCPClientSocketPool::~TCPClientSocketPool() {}
