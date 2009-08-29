@@ -28,7 +28,7 @@ class DataPack;
 #if defined(OS_LINUX)
 typedef struct _GdkPixbuf GdkPixbuf;
 #endif
-namespace gfx{
+namespace gfx {
 class Font;
 }
 class SkBitmap;
@@ -226,4 +226,4 @@ class ResourceBundle {
   DISALLOW_EVIL_CONSTRUCTORS(ResourceBundle);
 };
 
-#endif // APP_RESOURCE_BUNDLE_H_
+#endif  // APP_RESOURCE_BUNDLE_H_

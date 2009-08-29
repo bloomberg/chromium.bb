@@ -64,6 +64,6 @@ class Insets {
   int right_;
 };
 
-} // namespace
+}  // namespace
 
-#endif // APP_GFX_INSETS_H_
+#endif  // APP_GFX_INSETS_H_

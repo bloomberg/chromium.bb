@@ -14,7 +14,7 @@ namespace color_utils {
 // Represents set of CIE XYZ tristimulus values.
 struct CIE_XYZ {
   double X;
-  double Y; // luminance
+  double Y;  // luminance
   double Z;
 };
 
@@ -58,6 +58,6 @@ SkColor SetColorAlpha(SkColor c, SkAlpha alpha);
 // Gets a Windows system color as a SkColor
 SkColor GetSysSkColor(int which);
 
-} // namespace color_utils
+}  // namespace color_utils
 
-#endif  // #ifndef APP_GFX_COLOR_UTILS_H_
+#endif  // APP_GFX_COLOR_UTILS_H_

@@ -30,4 +30,4 @@ void calc_favicon_target_size(int* width, int* height) {
   }
 }
 
-#endif // APP_GFX_FAVICON_SIZE_H_
+#endif  // APP_GFX_FAVICON_SIZE_H_

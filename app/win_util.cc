@@ -243,14 +243,14 @@ std::wstring FormatFilterForExtensions(
   const std::wstring all_ext = L"*.*";
   const std::wstring all_desc = l10n_util::GetString(IDS_APP_SAVEAS_ALL_FILES);
 
-  DCHECK(file_ext.size()>=ext_desc.size());
+  DCHECK(file_ext.size() >= ext_desc.size());
 
   std::wstring result;
 
-  for (size_t i=0; i<file_ext.size(); ++i) {
+  for (size_t i = 0; i < file_ext.size(); ++i) {
     std::wstring ext = file_ext[i];
     std::wstring desc;
-    if (i<ext_desc.size())
+    if (i < ext_desc.size())
       desc = ext_desc[i];
 
     if (ext.empty()) {

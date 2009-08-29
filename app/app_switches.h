@@ -13,4 +13,4 @@ extern const wchar_t kLang[];
 
 }  // namespace switches
 
-#endif  // #ifndef APP_APP_SWITCHES_H_
+#endif  // APP_APP_SWITCHES_H_

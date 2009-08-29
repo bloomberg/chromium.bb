@@ -214,4 +214,4 @@ class Canvas : public skia::PlatformCanvas {
 
 }  // namespace gfx;
 
-#endif  // #ifndef APP_GFX_CANVAS_H_
+#endif  // APP_GFX_CANVAS_H_

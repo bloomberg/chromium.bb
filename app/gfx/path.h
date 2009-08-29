@@ -38,4 +38,4 @@ class Path : public SkPath {
 
 }
 
-#endif  // #ifndef APP_GFX_PATH_H_
+#endif  // APP_GFX_PATH_H_
