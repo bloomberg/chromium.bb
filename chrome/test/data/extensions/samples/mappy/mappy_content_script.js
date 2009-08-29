@@ -14,7 +14,7 @@ chrome.extension.onConnect.addListener(function(port) {
 
 var findAddress = function(port) {
   var found;
-  var re = /(\d+ [':.,\s\w]*,\s*[A-Za-z]+\s*\d{5}(-\d{4})?)/m;
+  var re = /(\d+\s+[':.,\s\w]*,\s*[A-Za-z]+\s*\d{5}(-\d{4})?)/m;
   var node = document.body;
   var done = false;
   while (!done) {
