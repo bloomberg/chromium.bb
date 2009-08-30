@@ -982,6 +982,10 @@ void TabStripGtk::TabSelectedAt(TabContents* old_contents,
     bool tiny_tabs = current_unselected_width_ != current_selected_width_;
     if (!IsAnimating() && (!resize_layout_scheduled_ || tiny_tabs))
       Layout();
+
+    int old_index = model_->GetIndexOfTabContents(old_contents);
+    if (old_index >= 0)
+      GetTabAt(old_index)->SchedulePaint();
   }
 }
 
