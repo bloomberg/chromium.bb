@@ -693,7 +693,8 @@
 {
    bug_16326
    Memcheck:Leak
-   fun:_Znwj
+   fun:_Znw*
+   ...
    fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
    fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
    fun:_ZN7WebCore22ResourceHandleInternal5startEv
@@ -1123,16 +1124,7 @@
 {
    bug_20581
    Memcheck:Leak
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   fun:pagerAllocatePage
-   fun:sqlite3PagerAcquire2
-   fun:pagerAcquire
-   fun:sqlite3PagerAcquire
-   fun:sqlite3BtreeGetPage
-   fun:allocateBtreePage
+   ...
    fun:btreeCreateTable
    fun:sqlite3BtreeCreateTable
    fun:sqlite3VdbeExec
@@ -1153,4 +1145,18 @@
    Memcheck:Leak
    ...
    fun:_ZN18AutomationProvider30WaitForAppModalDialogToBeShownEPN3IPC7MessageE
+}
+{
+   bug_20641a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z17NewRunnableMethodI19SafeBrowsingServiceMS0_FvP11MessageLoopRKSsS4_ES2_SsSsEP14CancelableTaskPT_T0_RKT1_RKT2_RKT3_
+   fun:_ZN19SafeBrowsingService5StartEv
+   fun:_ZN19SafeBrowsingService10InitializeEP11MessageLoop
+}
+{
+   bug_20641b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN19SafeBrowsingService14OnIOInitializeEP11MessageLoopRKSsS3_
 }

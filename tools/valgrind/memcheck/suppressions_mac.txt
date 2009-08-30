@@ -211,6 +211,15 @@
    fun:ats_font_get_glyphs_for_glyph_names
    fun:get_glyphs_for_glyph_names
 }
+{
+   # Write of unaddressible bytes
+   # http://www.sqlite.org/cvstrac/tktview?tn=694
+   bug_11282a
+   Memcheck:Param
+   fun:write$UNIX2003
+   fun:unixWrite
+   fun:sqlite3OsWrite
+}
 
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
