@@ -69,6 +69,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual BrowserWindowTesting* GetBrowserWindowTesting();
   virtual StatusBubble* GetStatusBubble();
   virtual void SelectedTabToolbarSizeChanged(bool is_animating);
+  virtual void SelectedTabExtensionShelfSizeChanged();
   virtual void UpdateTitleBar();
   virtual void UpdateDevTools();
   virtual void FocusDevTools();
@@ -89,6 +90,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile);
   virtual void ToggleBookmarkBar();
+  virtual void ToggleExtensionShelf();
   virtual void ShowAboutChromeDialog();
   virtual void ShowTaskManager();
   virtual void ShowBookmarkManager();

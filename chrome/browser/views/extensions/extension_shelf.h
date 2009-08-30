@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_SHELF_H_
 
 #include "app/gfx/canvas.h"
+#include "app/slide_animation.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_shelf_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -21,13 +22,21 @@ namespace views {
 // A shelf that contains Extension toolstrips.
 class ExtensionShelf : public views::View,
                        public ExtensionContainer,
-                       public ExtensionShelfModelObserver {
+                       public ExtensionShelfModelObserver,
+                       public AnimationDelegate,
+                       public NotificationObserver {
  public:
   explicit ExtensionShelf(Browser* browser);
   virtual ~ExtensionShelf();
 
   // Get the current model.
   ExtensionShelfModel* model() { return model_; }
+
+  // Returns whether the extension shelf is detached from the Chrome frame.
+  bool IsDetachedStyle();
+
+  // Toggles a preference for whether to always show the extension shelf.
+  static void ToggleWhenExtensionShelfVisible(Profile* profile);
 
   // View
   virtual void Paint(gfx::Canvas* canvas);
@@ -54,6 +63,15 @@ class ExtensionShelf : public views::View,
   virtual void ExtensionShelfEmpty();
   virtual void ShelfModelReloaded();
   virtual void ShelfModelDeleting();
+
+  // AnimationDelegate
+  virtual void AnimationProgressed(const Animation* animation);
+  virtual void AnimationEnded(const Animation* animation);
+
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  protected:
   // View
@@ -90,14 +108,29 @@ class ExtensionShelf : public views::View,
   // Loads initial state from |model_|.
   void LoadFromModel();
 
+  // Returns whether the extension shelf always shown (checks pref value).
+  bool IsAlwaysShown();
+
+  // Returns whether the extension shelf is being displayed over the new tab
+  // page.
+  bool OnNewTabPage();
+
+  NotificationRegistrar registrar_;
+
   // Background bitmap to draw under extension views.
   SkBitmap background_;
+
+  // The browser this extension shelf belongs to.
+  Browser* browser_;
 
   // The model representing the toolstrips on the shelf.
   ExtensionShelfModel* model_;
 
   // Storage of strings needed for accessibility.
   std::wstring accessible_name_;
+
+  // Animation controlling showing and hiding of the shelf.
+  scoped_ptr<SlideAnimation> size_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionShelf);
 };

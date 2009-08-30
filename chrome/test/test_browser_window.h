@@ -32,6 +32,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual BrowserWindowTesting* GetBrowserWindowTesting() { return NULL; }
   virtual StatusBubble* GetStatusBubble() { return NULL; }
   virtual void SelectedTabToolbarSizeChanged(bool is_animating) {}
+  virtual void SelectedTabExtensionShelfSizeChanged() {}
   virtual void UpdateTitleBar() {}
   virtual void UpdateDevTools() {}
   virtual void FocusDevTools() {}
@@ -56,6 +57,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) {}
   virtual void ToggleBookmarkBar() {}
+  virtual void ToggleExtensionShelf() {}
   virtual void ShowAboutChromeDialog() {}
   virtual void ShowTaskManager() {}
   virtual void ShowBookmarkManager() {}

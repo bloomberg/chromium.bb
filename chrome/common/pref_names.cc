@@ -537,6 +537,9 @@ const wchar_t kNumKeywords[] = L"user_experience_metrics.num_keywords";
 const wchar_t kDisableExtensions[] = L"extensions.disabled";
 const wchar_t kEnableUserScripts[] = L"extensions.user_scripts_enabled";
 
+// Boolean which specifies whether the Extension Shelf is visible on all tabs.
+const wchar_t kShowExtensionShelf[] = L"extensions.shelf.show_on_all_tabs";
+
 // Time of the last, and next scheduled, extensions auto-update checks.
 const wchar_t kLastExtensionsUpdateCheck[] =
     L"extensions.autoupdate.last_check";

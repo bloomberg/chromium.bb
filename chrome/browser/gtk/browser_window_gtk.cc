@@ -839,6 +839,10 @@ void BrowserWindowGtk::SelectedTabToolbarSizeChanged(bool is_animating) {
   // http://code.google.com/p/chromium/issues/detail?id=12291
 }
 
+void BrowserWindowGtk::SelectedTabExtensionShelfSizeChanged() {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowGtk::UpdateTitleBar() {
 #if defined(OS_CHROMEOS)
   if (panel_controller_)
@@ -966,6 +970,10 @@ void BrowserWindowGtk::ConfirmAddSearchProvider(const TemplateURL* template_url,
 
 void BrowserWindowGtk::ToggleBookmarkBar() {
   bookmark_utils::ToggleWhenVisible(browser_->profile());
+}
+
+void BrowserWindowGtk::ToggleExtensionShelf() {
+  NOTIMPLEMENTED();
 }
 
 void BrowserWindowGtk::ShowAboutChromeDialog() {

@@ -273,6 +273,10 @@ class Browser : public TabStripModelDelegate,
   // part of an animation.
   void ToolbarSizeChanged(bool is_animating);
 
+  // Notification that the extension shelf has changed size (as a result of
+  // becoming detached or attached).
+  void ExtensionShelfSizeChanged();
+
   // Replaces the state of the currently selected tab with the session
   // history restored from the SessionRestore system.
   void ReplaceRestoredTab(
@@ -373,6 +377,7 @@ class Browser : public TabStripModelDelegate,
   void OpenBugReportDialog();
 
   void ToggleBookmarkBar();
+  void ToggleExtensionShelf();
 
   void OpenBookmarkManager();
   void ShowAppMenu();

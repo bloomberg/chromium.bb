@@ -424,6 +424,9 @@ class TabContents : public PageNavigator,
   // Returns whether the bookmark bar should be visible.
   virtual bool IsBookmarkBarAlwaysVisible();
 
+  // Returns whether the extension shelf should be visible.
+  virtual bool IsExtensionShelfAlwaysVisible();
+
   // Notifies the delegate that a download started.
   void OnStartDownload(DownloadItem* download);
 

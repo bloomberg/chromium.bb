@@ -208,6 +208,7 @@ class BrowserView : public BrowserWindow,
   virtual BrowserWindowTesting* GetBrowserWindowTesting();
   virtual StatusBubble* GetStatusBubble();
   virtual void SelectedTabToolbarSizeChanged(bool is_animating);
+  virtual void SelectedTabExtensionShelfSizeChanged();
   virtual void UpdateTitleBar();
   virtual void UpdateDevTools();
   virtual void FocusDevTools();
@@ -229,6 +230,7 @@ class BrowserView : public BrowserWindow,
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                       Profile* profile);
   virtual void ToggleBookmarkBar();
+  virtual void ToggleExtensionShelf();
   virtual void ShowAboutChromeDialog();
   virtual void ShowTaskManager();
   virtual void ShowBookmarkManager();
@@ -344,13 +346,15 @@ class BrowserView : public BrowserWindow,
   // Layout the TabContents container, between the coordinates |top| and
   // |bottom|.
   void LayoutTabContents(int top, int bottom);
+  int LayoutExtensionAndDownloadShelves();
+  // Layout the Extension Shelf, returns the coordinate of the top of the
+  // control, for laying out the previous control.
+  int LayoutExtensionShelf(int bottom);
   // Layout the Download Shelf, returns the coordinate of the top of the
   // control, for laying out the previous control.
   int LayoutDownloadShelf(int bottom);
   // Layout the Status Bubble.
   void LayoutStatusBubble(int top);
-  // Layout the Extension Shelf
-  int LayoutExtensionShelf();
 
   // Prepare to show the Bookmark Bar for the specified TabContents. Returns
   // true if the Bookmark Bar can be shown (i.e. it's supported for this

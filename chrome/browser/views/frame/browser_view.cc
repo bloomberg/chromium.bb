@@ -655,6 +655,10 @@ void BrowserView::SelectedTabToolbarSizeChanged(bool is_animating) {
   }
 }
 
+void BrowserView::SelectedTabExtensionShelfSizeChanged() {
+  Layout();
+}
+
 void BrowserView::UpdateTitleBar() {
   frame_->GetWindow()->UpdateWindowTitle();
   if (ShouldShowWindowIcon())
@@ -847,6 +851,10 @@ void BrowserView::ConfirmAddSearchProvider(const TemplateURL* template_url,
 
 void BrowserView::ToggleBookmarkBar() {
   bookmark_utils::ToggleWhenVisible(browser_->profile());
+}
+
+void BrowserView::ToggleExtensionShelf() {
+  ExtensionShelf::ToggleWhenExtensionShelfVisible(browser_->profile());
 }
 
 void BrowserView::ShowAboutChromeDialog() {
@@ -1398,8 +1406,7 @@ void BrowserView::Layout() {
   int top = LayoutTabStrip();
   top = LayoutToolbar(top);
   top = LayoutBookmarkAndInfoBars(top);
-  int bottom = LayoutExtensionShelf();
-  bottom = LayoutDownloadShelf(bottom);
+  int bottom = LayoutExtensionAndDownloadShelves();
   LayoutTabContents(top, bottom);
   // This must be done _after_ we lay out the TabContents since this code calls
   // back into us to find the bounding box the find bar must be laid out within,
@@ -1611,6 +1618,22 @@ void BrowserView::LayoutTabContents(int top, int bottom) {
   contents_split_->SetBounds(0, top, width(), bottom - top);
 }
 
+int BrowserView::LayoutExtensionAndDownloadShelves() {
+  // If we're showing the Bookmark bar in detached style, then we need to show
+  // any Info bar _above_ the Bookmark bar, since the Bookmark bar is styled
+  // to look like it's part of the page.
+  int bottom = height();
+  if (extension_shelf_) {
+    if (extension_shelf_->IsDetachedStyle()) {
+      bottom = LayoutDownloadShelf(bottom);
+      return LayoutExtensionShelf(bottom);
+    }
+    // Otherwise, Extension shelf first, Download shelf second.
+    bottom = LayoutExtensionShelf(bottom);
+  }
+  return LayoutDownloadShelf(bottom);
+}
+
 int BrowserView::LayoutDownloadShelf(int bottom) {
   // Re-layout the shelf either if it is visible or if it's close animation
   // is currently running.
@@ -1639,8 +1662,7 @@ void BrowserView::LayoutStatusBubble(int top) {
   status_bubble_->SetBounds(origin.x(), origin.y(), width() / 3, height);
 }
 
-int BrowserView::LayoutExtensionShelf() {
-  int bottom = height();
+int BrowserView::LayoutExtensionShelf(int bottom) {
   if (extension_shelf_) {
     bool visible = browser_->SupportsWindowFeature(
         Browser::FEATURE_EXTENSIONSHELF);

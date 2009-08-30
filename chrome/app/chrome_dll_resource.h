@@ -175,6 +175,7 @@
 #define IDC_HELP_PAGE                   40019
 #define IDC_SHOW_APP_MENU               40020
 #define IDC_SHOW_PAGE_MENU              40021
+#define IDC_SHOW_EXTENSION_SHELF        40022
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

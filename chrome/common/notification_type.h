@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -385,6 +385,11 @@ class NotificationType {
     // be shown changes. The source is the profile, and the details are
     // NoDetails.
     BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+
+    // This is sent when the user's preference (for when the extension shelf
+    // should be shown) changes. The source is the profile, and the details are
+    // NoDetails.
+    EXTENSION_SHELF_VISIBILITY_PREF_CHANGED,
 
     // Used to monitor web cache usage by notifying whenever the
     // CacheManagerHost observes new UsageStats. The source will be the

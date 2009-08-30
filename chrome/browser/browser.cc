@@ -1149,6 +1149,11 @@ void Browser::ToggleBookmarkBar() {
   window_->ToggleBookmarkBar();
 }
 
+void Browser::ToggleExtensionShelf() {
+  UserMetrics::RecordAction(L"ToggleExtensionShelf", profile_);
+  window_->ToggleExtensionShelf();
+}
+
 void Browser::OpenBookmarkManager() {
   UserMetrics::RecordAction(L"ShowBookmarkManager", profile_);
   window_->ShowBookmarkManager();
@@ -1278,6 +1283,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod, 0);
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser, true);
   prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint, true);
+  prefs->RegisterBooleanPref(prefs::kShowExtensionShelf, true);
 }
 
 // static
@@ -1435,6 +1441,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_REPORT_BUG:            OpenBugReportDialog();         break;
 
     case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();           break;
+    case IDC_SHOW_EXTENSION_SHELF:  ToggleExtensionShelf();        break;
 
     case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();         break;
     case IDC_SHOW_HISTORY:          ShowHistoryTab();              break;
@@ -1910,6 +1917,10 @@ void Browser::ToolbarSizeChanged(TabContents* source, bool is_animating) {
   }
 }
 
+void Browser::ExtensionShelfSizeChanged() {
+  window_->SelectedTabExtensionShelfSizeChanged();
+}
+
 void Browser::URLStarredChanged(TabContents* source, bool starred) {
   if (source == GetSelectedTabContents())
     window_->SetStarredState(starred);
@@ -2241,6 +2252,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SELECT_PROFILE, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_EXTENSION_SHELF, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
 #if defined(OS_CHROMEOS)

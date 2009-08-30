@@ -75,6 +75,9 @@ class BrowserWindow {
   //             BrowserView.
   virtual void SelectedTabToolbarSizeChanged(bool is_animating) = 0;
 
+  // Notification for the Extension Shelf changing its size.
+  virtual void SelectedTabExtensionShelfSizeChanged() = 0;
+
   // Inform the frame that the selected tab favicon or title has changed. Some
   // frames may need to refresh their title bar.
   virtual void UpdateTitleBar() = 0;
@@ -146,6 +149,9 @@ class BrowserWindow {
 
   // Shows or hides the bookmark bar depending on its current visibility.
   virtual void ToggleBookmarkBar() = 0;
+
+  // Shows or hides the extension shelf depending on its current visibility.
+  virtual void ToggleExtensionShelf() = 0;
 
   // Shows the About Chrome dialog box.
   virtual void ShowAboutChromeDialog() = 0;

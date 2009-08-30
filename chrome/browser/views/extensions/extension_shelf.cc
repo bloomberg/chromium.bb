@@ -12,13 +12,16 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/extensions/extension_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 #include "skia/ext/skia_utils.h"
 #include "views/controls/label.h"
 #include "views/screen.h"
@@ -41,6 +44,23 @@ static const int kToolstripDividerWidth = 2;
 // Preferred height of the ExtensionShelf.
 static const int kShelfHeight = 29;
 
+// Preferred height of the Extension shelf when only shown on the new tab page.
+const int kNewtabShelfHeight = 57;
+
+// How inset the extension shelf is when displayed on the new tab page. This is
+// in addition to the margins above.
+static const int kNewtabHorizontalPadding = 8;
+static const int kNewtabVerticalPadding = 12;
+
+// We need an extra margin to the left of all the toolstrips in detached mode,
+// so that the first toolstrip doesn't look so squished against the rounded
+// corners of the extension shelf.
+static const int kNewtabExtraHorMargin = 2;
+static const int kNewtabExtraVerMargin = 2;
+
+// How round the 'new tab' style extension shelf is.
+static const int kNewtabBarRoundness = 5;
+
 // Height of the toolstrip within the shelf.
 static const int kToolstripHeight = kShelfHeight - (kTopMargin + kBottomMargin);
 
@@ -49,12 +69,12 @@ static const SkColor kBackgroundColor = SkColorSetRGB(230, 237, 244);
 static const SkColor kBorderColor = SkColorSetRGB(201, 212, 225);
 static const SkColor kDividerHighlightColor = SkColorSetRGB(247, 250, 253);
 
-// Text colors for the handle
+// Text colors for the handle.
 static const SkColor kHandleTextColor = SkColorSetRGB(6, 45, 117);
 static const SkColor kHandleTextHighlightColor =
     SkColorSetARGB(200, 255, 255, 255);
 
-// Handle padding
+// Handle padding.
 static const int kHandlePadding = 4;
 
 // TODO(erikkay) convert back to a gradient when Glen figures out the
@@ -540,10 +560,20 @@ void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
 ////////////////////////////////////////////////////////////////////////////////
 
 ExtensionShelf::ExtensionShelf(Browser* browser)
-    : model_(browser->extension_shelf_model()) {
+    : model_(browser->extension_shelf_model()),
+      browser_(browser) {
   model_->AddObserver(this);
   LoadFromModel();
   EnableCanvasFlippingForRTLUI(true);
+  registrar_.Add(this,
+                 NotificationType::EXTENSION_SHELF_VISIBILITY_PREF_CHANGED,
+                 NotificationService::AllSources());
+
+  size_animation_.reset(new SlideAnimation(this));
+  if (IsAlwaysShown())
+    size_animation_->Reset(1);
+  else
+    size_animation_->Reset(0);
 }
 
 ExtensionShelf::~ExtensionShelf() {
@@ -558,41 +588,134 @@ ExtensionShelf::~ExtensionShelf() {
 }
 
 void ExtensionShelf::Paint(gfx::Canvas* canvas) {
+  if (IsDetachedStyle()) {
+    // Draw the background to match the new tab page.
+    ThemeProvider* tp = GetThemeProvider();
+    canvas->FillRectInt(
+        tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND),
+        0, 0, width(), height());
+
+    // As 'hidden' according to the animation is the full in-tab state,
+    // we invert the value - when current_state is at '0', we expect the
+    // shelf to be docked.
+    double current_state = 1 - size_animation_->GetCurrentValue();
+
+    // The 0.5 is to correct for Skia's "draw on pixel boundaries"ness.
+    double h_padding = static_cast<double>
+        (kNewtabHorizontalPadding) * current_state;
+    double v_padding = static_cast<double>
+        (kNewtabVerticalPadding) * current_state;
+    SkRect rect;
+    rect.set(SkDoubleToScalar(h_padding - 0.5),
+             SkDoubleToScalar(v_padding - 0.5),
+             SkDoubleToScalar(width() - h_padding - 0.5),
+             SkDoubleToScalar(height() - v_padding - 0.5));
+
+    double roundness = static_cast<double>
+        (kNewtabBarRoundness) * current_state;
+
+    // Draw the background behind the toolstrips.
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setColor(kBackgroundColor);
+
+    canvas->drawRoundRect(rect,
+                          SkDoubleToScalar(roundness),
+                          SkDoubleToScalar(roundness), paint);
+
+    SkRect background_rect = {
+        SkIntToScalar(h_padding),
+        SkIntToScalar(v_padding + 2),
+        SkIntToScalar(h_padding + 1),
+        SkIntToScalar(v_padding + kToolstripHeight - 3)};
+    InitBackground(canvas, background_rect);
+
+    // Draw the border around the toolstrips in the extension shelf.
+    SkPaint border_paint;
+    border_paint.setColor(
+        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER));
+    border_paint.setStyle(SkPaint::kStroke_Style);
+    border_paint.setAlpha(96);
+    border_paint.setAntiAlias(true);
+    canvas->drawRoundRect(rect,
+        SkDoubleToScalar(roundness),
+        SkDoubleToScalar(roundness), border_paint);
+  } else {
 #if 0
-  // TODO(erikkay) re-enable this when Glen has the gradient values worked out.
-  SkPaint paint;
-  paint.setShader(skia::CreateGradientShader(0,
-                                             height(),
-                                             kTopGradientColor,
-                                             kBackgroundColor))->safeUnref();
-  canvas->FillRectInt(0, 0, width(), height(), paint);
+    // TODO(erikkay) Re-enable when Glen has the gradient values worked out.
+    SkPaint paint;
+    paint.setShader(skia::CreateGradientShader(0,
+                                               height(),
+                                               kTopGradientColor,
+                                               kBackgroundColor))->safeUnref();
+    canvas->FillRectInt(0, 0, width(), height(), paint);
 #else
-  canvas->FillRectInt(kBackgroundColor, 0, 0, width(), height());
+    canvas->FillRectInt(kBackgroundColor, 0, 0, width(), height());
 #endif
 
-  canvas->FillRectInt(kBorderColor, 0, 0, width(), 1);
-  canvas->FillRectInt(kBorderColor, 0, height() - 1, width(), 1);
+    SkRect background_rect = {
+        SkIntToScalar(0),
+        SkIntToScalar(0),
+        SkIntToScalar(1),
+        SkIntToScalar(height())
+    };
+    InitBackground(canvas, background_rect);
 
+    // Draw border around shelf in attached mode. If we are in detached mode
+    // we've already drawn the borders.
+    canvas->FillRectInt(kBorderColor, 0, 0, width(), 1);
+    canvas->FillRectInt(kBorderColor, 0, height() - 1, width(), 1);
+  }
+
+  // Draw vertical dividers between Toolstrip items in the Extension shelf.
   int count = GetChildViewCount();
   for (int i = 0; i < count; ++i) {
     int right = GetChildViewAt(i)->bounds().right() + kToolstripPadding;
-    int h = height() - 2;
-    canvas->FillRectInt(kBorderColor, right, 1, 1, h);
-    canvas->FillRectInt(kDividerHighlightColor, right + 1, 1, 1, h);
+    int y = IsDetachedStyle() ? kNewtabVerticalPadding : 1;
+    int h = IsDetachedStyle() ? height() - (2 * kNewtabVerticalPadding) - 1:
+                                height() - 2;
+    canvas->FillRectInt(kBorderColor, right, y, 1, h);
+    canvas->FillRectInt(kDividerHighlightColor, right + 1, y, 1, h);
   }
+}
 
-  SkRect background_rect = {
-      SkIntToScalar(0),
-      SkIntToScalar(1),
-      SkIntToScalar(1),
-      SkIntToScalar(height() - 2)};
-  InitBackground(canvas, background_rect);
+// static
+void ExtensionShelf::ToggleWhenExtensionShelfVisible(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+  const bool always_show = !prefs->GetBoolean(prefs::kShowExtensionShelf);
+
+  // The user changed when the Extension Shelf is shown, update the
+  // preferences.
+  prefs->SetBoolean(prefs::kShowExtensionShelf, always_show);
+  prefs->ScheduleSavePersistentPrefs();
+
+  // And notify the notification service.
+  Source<Profile> source(profile);
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_SHELF_VISIBILITY_PREF_CHANGED,
+      source,
+      NotificationService::NoDetails());
 }
 
 gfx::Size ExtensionShelf::GetPreferredSize() {
-  if (model_->count())
-    return gfx::Size(0, kShelfHeight);
-  return gfx::Size(0, 0);
+  if (!model_->count())
+    return gfx::Size(0, 0);
+
+  gfx::Size prefsize;
+  if (OnNewTabPage()) {
+    prefsize.set_height(kShelfHeight + static_cast<int>(static_cast<double>
+                            (kNewtabShelfHeight - kShelfHeight) *
+                            (1 - size_animation_->GetCurrentValue())));
+  } else {
+    prefsize.set_height(static_cast<int>(static_cast<double>(kShelfHeight) *
+                            size_animation_->GetCurrentValue()));
+  }
+
+  // Width doesn't matter, we're always given a width based on the browser
+  // size.
+  prefsize.set_width(1);
+
+  return prefsize;
 }
 
 void ExtensionShelf::ChildPreferredSizeChanged(View* child) {
@@ -610,8 +733,20 @@ void ExtensionShelf::Layout() {
 
   int x = kLeftMargin;
   int y = kTopMargin;
-  int content_height = height() - kTopMargin - kBottomMargin;
+  int content_height = kShelfHeight - kTopMargin - kBottomMargin;
   int max_x = width() - kRightMargin;
+
+  int max_x_before = max_x;
+
+  if (OnNewTabPage()) {
+    double current_state = 1 - size_animation_->GetCurrentValue();
+    x += static_cast<int>(static_cast<double>
+        (kNewtabHorizontalPadding + kNewtabExtraHorMargin) * current_state);
+    y += static_cast<int>(static_cast<double>
+        (kNewtabVerticalPadding + kNewtabExtraVerMargin) * current_state);
+    max_x -= static_cast<int>(static_cast<double>
+        (kNewtabHorizontalPadding) * current_state);
+  }
 
   int count = model_->count();
   for (int i = 0; i < count; ++i) {
@@ -728,6 +863,35 @@ void ExtensionShelf::ShelfModelDeleting() {
   model_ = NULL;
 }
 
+void ExtensionShelf::AnimationProgressed(const Animation* animation) {
+  if (browser_)
+    browser_->ExtensionShelfSizeChanged();
+}
+
+void ExtensionShelf::AnimationEnded(const Animation* animation) {
+  if (browser_)
+    browser_->ExtensionShelfSizeChanged();
+
+  SchedulePaint();
+}
+
+void ExtensionShelf::Observe(NotificationType type,
+                             const NotificationSource& source,
+                             const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::EXTENSION_SHELF_VISIBILITY_PREF_CHANGED: {
+      if (IsAlwaysShown())
+        size_animation_->Show();
+      else
+        size_animation_->Hide();
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
 void ExtensionShelf::OnExtensionMouseEvent(ExtensionView* view) {
   Toolstrip *toolstrip = ToolstripForView(view);
   if (toolstrip)
@@ -840,4 +1004,18 @@ void ExtensionShelf::LoadFromModel() {
   int count = model_->count();
   for (int i = 0; i < count; ++i)
     ToolstripInsertedAt(model_->ToolstripAt(i).host, i);
+}
+
+bool ExtensionShelf::IsDetachedStyle() {
+  return OnNewTabPage() && (size_animation_->GetCurrentValue() != 1);
+}
+
+bool ExtensionShelf::IsAlwaysShown() {
+  Profile* profile = browser_->profile();
+  return profile->GetPrefs()->GetBoolean(prefs::kShowExtensionShelf);
+}
+
+bool ExtensionShelf::OnNewTabPage() {
+  return (browser_ && browser_->GetSelectedTabContents() &&
+      browser_->GetSelectedTabContents()->IsExtensionShelfAlwaysVisible());
 }
