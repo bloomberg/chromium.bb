@@ -560,8 +560,8 @@ void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
 ////////////////////////////////////////////////////////////////////////////////
 
 ExtensionShelf::ExtensionShelf(Browser* browser)
-    : model_(browser->extension_shelf_model()),
-      browser_(browser) {
+    : browser_(browser),
+      model_(browser->extension_shelf_model()) {
   model_->AddObserver(this);
   LoadFromModel();
   EnableCanvasFlippingForRTLUI(true);
@@ -735,8 +735,6 @@ void ExtensionShelf::Layout() {
   int y = kTopMargin;
   int content_height = kShelfHeight - kTopMargin - kBottomMargin;
   int max_x = width() - kRightMargin;
-
-  int max_x_before = max_x;
 
   if (OnNewTabPage()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
