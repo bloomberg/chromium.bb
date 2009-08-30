@@ -2506,9 +2506,7 @@ BUG18794 WIN MAC : LayoutTests/http/tests/mime/standard-mode-does-not-load-style
 BUG18802 WIN : LayoutTests/http/tests/misc/referrer.html = TIMEOUT PASS
 
 // Test failures caused by re-enabling skia asserts.
-BUG18896 WIN DEBUG : LayoutTests/fast/backgrounds/svg-as-background-5.html = FAIL
 BUG18896 WIN LINUX DEBUG : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
-BUG18896 WIN DEBUG : LayoutTests/svg/carto.net/window.svg = FAIL
 BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = PASS FAIL
 BUG18896 MAC WIN DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = PASS CRASH
 BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-svgdom-clipPathUnits-prop.html = PASS FAIL
