@@ -185,6 +185,13 @@ var extensionDataFormat = {
  * @param {Object} extensionsData Detailed info about installed extensions
  */
 function showExtensionsData(extensionsData) {
+  // Sort by extension name (case-insensitive)
+  extensionsData.extensions.sort(function(a, b) {
+    a = a.name.toLowerCase();
+    b = b.name.toLowerCase();
+    return a < b ? -1 : (a > b ? 1 : 0);
+  });
+
   // This is the javascript code that processes the template:
   var input = new JsEvalContext(extensionsData);
   var output = document.getElementById('extensionTemplate');
@@ -249,17 +256,13 @@ function handleEnableExtension(node) {
 function handleUninstallExtension(node) {
   // Tell the C++ ExtensionDOMHandler to uninstall an extension.
   chrome.send('uninstall', [node.extensionId]);
+}
 
-  // Find the div above us with class 'extension' and remove it.
-  while (node) {
-    if (node.className == 'extension') {
-      node.parentNode.removeChild(node);
-      return;
-    }
-    node = node.parentNode;
-  }
-
-  throw new Error("Couldn't find containing extension element.");
+/**
+ * Handles the "Load extension..." button being pressed.
+ */
+function loadExtension() {
+  chrome.send('load', []);
 }
 </script>
 </head>
@@ -322,18 +325,15 @@ function handleUninstallExtension(node) {
             </div>
 
           </td>
-          <!--
           <td style="min-width:30px"></td>
           <td style="min-width:30px"></td>
           <td valign="top">
             <h2>Tools</h2>
 
             <div class="sidebar-content">
-              <button>Load Extension...</button><br>
-              <button>Pack Extension...</button>
+              <button onclick="loadExtension()">Load Extension from Directory...</button>
             </div>
           </td>
-          -->
         </tr>
       </table>
 

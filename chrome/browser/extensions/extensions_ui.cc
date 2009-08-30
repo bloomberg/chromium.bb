@@ -16,11 +16,14 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
 
@@ -65,10 +68,9 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-ExtensionsDOMHandler::ExtensionsDOMHandler(
-    ExtensionsService* extension_service)
+ExtensionsDOMHandler::ExtensionsDOMHandler(ExtensionsService* extension_service)
     : extensions_service_(extension_service) {
- }
+}
 
 void ExtensionsDOMHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("requestExtensionsData",
@@ -81,6 +83,8 @@ void ExtensionsDOMHandler::RegisterMessages() {
       NewCallback(this, &ExtensionsDOMHandler::HandleEnableMessage));
   dom_ui_->RegisterMessageCallback("uninstall",
       NewCallback(this, &ExtensionsDOMHandler::HandleUninstallMessage));
+  dom_ui_->RegisterMessageCallback("load",
+      NewCallback(this, &ExtensionsDOMHandler::HandleLoadMessage));
 }
 
 void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
@@ -109,6 +113,16 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
   results.Set(L"extensions", extensions_list);
 
   dom_ui_->CallJavascriptFunction(L"returnExtensionsData", results);
+
+  // Register for notifications that we need to reload the page.
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+      NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+      NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
+      NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
+      NotificationService::AllSources());
 }
 
 void ExtensionsDOMHandler::HandleInspectMessage(const Value* value) {
@@ -158,6 +172,37 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
   std::string extension_id;
   CHECK(list->GetString(0, &extension_id));
   extensions_service_->UninstallExtension(extension_id, false);
+}
+
+void ExtensionsDOMHandler::HandleLoadMessage(const Value* value) {
+  load_extension_dialog_ = SelectFileDialog::Create(this);
+  load_extension_dialog_->SelectFile(
+      SelectFileDialog::SELECT_FOLDER,
+      l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY),
+      FilePath(), NULL, 0, FILE_PATH_LITERAL(""),
+      NULL, NULL);
+}
+
+void ExtensionsDOMHandler::FileSelected(const FilePath& path, int index,
+                                        void* params) {
+  extensions_service_->LoadExtension(path);
+}
+
+void ExtensionsDOMHandler::Observe(NotificationType type,
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::EXTENSION_LOADED:
+    case NotificationType::EXTENSION_UNLOADED:
+    case NotificationType::EXTENSION_UPDATE_DISABLED:
+    case NotificationType::EXTENSION_UNLOADED_DISABLED:
+      if (dom_ui_->tab_contents())
+        dom_ui_->tab_contents()->controller().Reload(false);
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 static void CreateScriptFileDetailValue(

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- This file contains definitions of resources that will be translated for
-each locale. -->
+each locale. aa1 -->
 
 <grit base_dir="." latest_public_release="0" current_release="1"
       source_lang_id="en" enc_check="möl">
@@ -2133,6 +2133,11 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_FULL_ACCESS" desc="Warning displayed in body of extension dialog when the extension requires access the local machine.">
         This extension will have full access to your computer and private data.
+      </message>
+      
+      <!-- chrome://extensions page -->
+      <message name="IDS_EXTENSION_LOAD_FROM_DIRECTORY" desc="Title of directory browse dialog when user wants to load an extension from a directory.">
+        Select the extension directory.
       </message>
 
       <!-- TODO(aa): Remove these old warning messages when all the platforms are switched to the new ones, above. -->

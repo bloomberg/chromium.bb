@@ -10,6 +10,9 @@
 
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/shell_dialogs.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;
@@ -46,7 +49,10 @@ class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for Javascript messages related to the "extensions" view.
-class ExtensionsDOMHandler : public DOMMessageHandler {
+class ExtensionsDOMHandler
+    : public DOMMessageHandler,
+      public NotificationObserver,
+      public SelectFileDialog::Listener {
  public:
   explicit ExtensionsDOMHandler(ExtensionsService* extension_service);
   virtual ~ExtensionsDOMHandler();
@@ -81,12 +87,36 @@ class ExtensionsDOMHandler : public DOMMessageHandler {
   // Callback for "uninstall" message.
   void HandleUninstallMessage(const Value* value);
 
+  // Callback for "load" message.
+  void HandleLoadMessage(const Value* value);
+
+  // SelectFileDialog::Listener
+  virtual void FileSelected(const FilePath& path,
+                            int index, void* params);
+  virtual void MultiFilesSelected(
+    const std::vector<FilePath>& files, void* params) {
+    NOTREACHED();
+  };
+  virtual void FileSelectionCanceled(void* params) {};
+
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Helper that lists the current active html pages for an extension.
   std::vector<ExtensionPage> GetActivePagesForExtension(
       const std::string& extension_id);
 
   // Our model.
   scoped_refptr<ExtensionsService> extensions_service_;
+
+  // Used to pick the directory when loading an extension.
+  scoped_refptr<SelectFileDialog> load_extension_dialog_;
+
+  // We monitor changes to the extension system so that we can reload when
+  // necessary.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsDOMHandler);
 };
