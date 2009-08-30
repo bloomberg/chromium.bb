@@ -211,15 +211,6 @@
    fun:ats_font_get_glyphs_for_glyph_names
    fun:get_glyphs_for_glyph_names
 }
-{
-   # Write of unaddressible bytes
-   # http://www.sqlite.org/cvstrac/tktview?tn=694
-   bug_11282a
-   Memcheck:Param
-   fun:write$UNIX2003
-   fun:unixWrite
-   fun:sqlite3OsWrite
-}
 
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
@@ -572,4 +563,35 @@
    fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
    fun:_ZN16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
+}
+{
+   # Strange...
+   bug_20653a
+   Memcheck:Param
+   write(buf)
+   fun:write$UNIX2003
+   fun:unixWrite
+   fun:sqlite3OsWrite
+   fun:pager_write_pagelist
+   fun:sqlite3PagerCommitPhaseOne
+}
+{
+   # Strange...
+   bug_20653b
+   Memcheck:Addr4
+   fun:sqlite3MemSize
+   fun:sqlite3MallocSize
+   fun:sqlite3PageFree
+   fun:pager_truncate_cache
+   fun:pager_truncate
+   fun:pager_playback
+   fun:sqlite3PagerRollback
+   fun:sqlite3BtreeRollback
+   fun:sqlite3RollbackAll
+   fun:sqlite3VdbeHalt
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN14SQLTransaction10EndCommandEPKc
 }
