@@ -2,7 +2,111 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title i18n-content="title"></title>
+<title i18n-content="title">About extensions</title>
+<style>
+body {
+  font-size: 84%;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 0.75em;
+  margin: 0;
+  min-width: 45em;
+}
+
+a {
+  color: black;
+}
+
+div#header {
+  padding: 0.75em 1em;
+  padding-top: 0.6em;
+  padding-left: 0;
+  margin-bottom: 0.75em;
+  position: relative;
+  overflow: hidden;
+  background: #5296de;
+  -webkit-background-size: 100%;
+  border: 1px solid #3a75bd;
+  -webkit-border-radius: 6px;
+  color: white;
+}
+div#header h1 {
+  padding-left: 37px;
+  margin: 0;
+  display: inline;
+  background: url('gear.png') 12px 60% no-repeat;
+  color: white;
+}
+
+h1 {
+  font-size: 110%;
+  font-weight: bold;
+  color: #4a8ee6;
+  padding: 0;
+  margin: 0;
+}
+
+div#outside {
+  margin-left:2px;
+}
+
+div.content {
+  font-size:84%;
+}
+
+.sidebar-content {
+  font-size:84%;
+  white-space:nowrap;
+  margin-top:-5px;
+  margin-right:30px;
+}
+
+h2 {
+  font-size: 110%;
+  letter-spacing: -1px;
+  font-weight: normal;
+  color: #3a75bd;
+  margin-bottom:2em;
+}
+
+.extension-details {
+  margin:1em 25px 4em;
+  line-height:1.5em;
+}
+
+.extension-name-row {
+  border-top:1px solid #b5c7de;
+  background:#eff7ff;
+  padding:3px 25px;
+}
+
+.extension-name {
+  font-weight:bold;
+}
+
+.extension-version {
+  margin-left: 1ex;
+}
+
+.extension-description {
+  margin:0.5em 0;
+}
+
+.extension-views {
+  margin:0 0 0.75em;
+  margin-left:2ex;
+  padding:0;
+  list-style-type:none;
+}
+
+.extension-actions {
+  margin-top:0.5em;
+}
+
+button {
+  font-size:100%;
+}
+
+</style>
 <script>
 /**
  * This variable structure is here to document the structure that the template
@@ -12,7 +116,7 @@ var extensionDataFormat = {
   "extensions": [
     {
       "id": "0000000000000000000000000000000000000000",
-      "name": "Extension Name",
+      "name": "Google Chrome",
       "description": "Extension long format description",
       "version": "1.0.231",
       "enabled": "true",
@@ -47,7 +151,7 @@ var extensionDataFormat = {
     },
     {
       "id": "0000000000000000000000000000000000000001",
-      "name": "Extension Name",
+      "name": "RSS Subscriber",
       "description": "Extension long format description",
       "version": "1.0.231",
       "enabled": "true",
@@ -158,184 +262,81 @@ function handleUninstallExtension(node) {
   throw new Error("Couldn't find containing extension element.");
 }
 </script>
-<style>
-body {
-  background-color: Window;
-  color: WindowText;
-  font: message-box;
-}
-
-div#outside {
- margin-left: 5%;
- margin-right: 5%;
- text-align: justify;
- width: 90%;
-}
-
-div#installed-extensions {
-  font-size: xx-large;
-  font-weight: bold;
-  text-align: center;
-}
-
-div.extension-name {
-  font-size: large;
-  font-weight: bold;
-  margin-top: 2em;
-  text-align: left;
-}
-
-div.extension-actions {
-  margin: 1em;
-}
-
-dl {
-  margin: 0px 0px 3px 0px;
-}
-
-table {
-  background-color: Window;
-  border: 1px solid ThreeDShadow;
-  border-spacing: 0px;
-  color: WindowText;
-  font: message-box;
-  margin-bottom: 20px;
-  text-align: left;
-  width: 100%;
-}
-
-th {
-  background-color: Highlight;
-  color: HighlightText;
-  text-align: center;
-}
-
-th + th,
-td + td {
-  border-left: 1px dotted ThreeDShadow;
-}
-
-td {
-  border-top: 1px dotted ThreeDShadow;
-  text-align: left;
-}
-
-th, td {
-  padding: 3px;
-}
-
-th.type, th.suff {
-  width: 20%;
-}
-
-th.desc {
-  width: 50%;
-}
-
-#error-box {
-  background-color:#D8D8D8;
-  margin-top: 8px;
-  padding: 8px;
-  width: 100%;
-}
-#error-log {
-  color: #B00000;
-  font-weight: bold;
-}
-.error {
-  font-style:italic;
-}
-</style>
 </head>
 <body onload="requestExtensionsData();">
   <div id="body-container" style="display:none;">
+
+    <div id="header"><h1>About extensions</h1></div>
+
     <div id="outside">
-      <div id="installed-extensions">Installed Extensions</div>
-      <div id="extensionTemplate">
 
-        <div class="extension-name" jsdisplay="extensions.length === 0">
-            No Extensions Installed</div>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="100%" valign="top" align="left">
 
-        <div jsdisplay="extensions.length > 0">
-          <div class="extension" jsselect="extensions">
-            <div class="extension-name">
-              <span jscontent="name">Extension Name</span>
-              <span jsdisplay="!enabled">(Disabled)</span>
+            <h2>Installed Extensions</h2>
+            <div class="content">
+
+              <div id="extensionTemplate">
+
+                <div class="extension-name" jsdisplay="extensions.length === 0">
+                    No Extensions Installed</div>
+
+                <div jsdisplay="extensions.length > 0">
+                  <div class="extension" jsselect="extensions">
+                    <div class="extension-name-row">
+                      <span class="extension-name" jscontent="name">Extension Name</span>
+                      <span class="extension-version" jscontent="version">x.x.x.x</span>
+                      <span jsdisplay="!enabled">(Disabled)</span>
+                    </div>
+                    <div class="extension-details">
+                      <div class="extension-id">ID: <span jscontent="id"></div>
+                      <div class="extension-description" jscontent="description"></div>
+                      Active Views:
+                      <ul class="extension-views">
+                        <li jsselect="views"><span jscontent="path"></span> -
+                          <a jsvalues=".extensionView:$this" href="#"
+                            onclick="sendInspectMessage(this.extensionView); return false;"
+                              >Inspect</a>
+                      </ul>
+                      <div class="extension-actions">
+                        <button
+                          jsvalues=".extensionId:id"
+                          jsdisplay="!enabled"
+                          onclick="handleEnableExtension(this)"
+                          >Enable</button>
+                        <button
+                          jsvalues=".extensionId:id"
+                          jsdisplay="enabled"
+                          onclick="handleReloadExtension(this)"
+                          >Reload</button>
+                        <button
+                          jsvalues=".extensionId:id"
+                          onclick="handleUninstallExtension(this)"
+                          >Uninstall</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="extension-actions">
-              <button
-                jsvalues=".extensionId:id"
-                jsdisplay="!enabled"
-                onclick="handleEnableExtension(this)"
-                >Enable</button>
-              <button
-                jsvalues=".extensionId:id"
-                jsdisplay="enabled"
-                onclick="handleReloadExtension(this)"
-                >Reload</button>
-              <button
-                jsvalues=".extensionId:id"
-                onclick="handleUninstallExtension(this)"
-                >Uninstall</button>
+
+          </td>
+          <!--
+          <td style="min-width:30px"></td>
+          <td style="min-width:30px"></td>
+          <td valign="top">
+            <h2>Tools</h2>
+
+            <div class="sidebar-content">
+              <button>Load Extension...</button><br>
+              <button>Pack Extension...</button>
             </div>
-            <dl>
-              <dd>Id: <span jscontent="id">0000000000000000000000000000000000000000</span></dd>
-              <dd>
-                <span jscontent="description">Extension Description</span>
-              </dd>
-              <dd>Version: <span jscontent="version">x.x.x.x</span></dd>
-            </dl>
+          </td>
+          -->
+        </tr>
+      </table>
 
-            <table jsselect="content_scripts">
-              <thead>
-                <tr><th colspan="2">Content Script</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>URL Match Patterns</td>
-                  <td>
-                    <span jsselect="matches"
-                        jscontent="(($index > 0) ? ', ' : '') + $this">
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>CSS Files</td>
-                  <td>
-                    <span jsselect="css"
-                        jscontent="(($index > 0) ? ', ' : '') + $this">
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>JavaScript Files</td>
-                  <td>
-                    <span jsselect="js"
-                        jscontent="(($index > 0) ? ', ' : '') + $this">
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <table>
-              <thead>
-                <tr><th colspan="2">Active Views</th></tr>
-              </thead>
-              <tbody>
-                <tr jsselect="views">
-                  <td width="100%"><span jscontent="path"></span></td>
-                  <td width="1" align="right"><button
-                    jsvalues=".extensionView:$this"
-                    onclick="sendInspectMessage(this.extensionView);"
-                  >Inspect</button></td>
-                  <!-- TODO(aa): Debug link -->
-                 </tr>
-               </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+    </div> <!-- /outside -->
   </body>
 </html>
