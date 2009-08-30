@@ -2538,9 +2538,6 @@ BUG_LEVIN WIN LINUX : LayoutTests/fast/text/monospace-width-cache.html = FAIL
 // Fallout from webkit 47265:47277
 BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
 
-BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/001.xml = FAIL
-BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/002.xml = FAIL
-
 BUG19519 WIN MAC DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
 
 // Fallout from webkit 47305:47383
