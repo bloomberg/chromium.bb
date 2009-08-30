@@ -236,6 +236,7 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
       fav_icon_hiding_offset_(0),
       should_display_crashed_favicon_(false),
       loading_animation_(theme_provider),
+      background_offset_x_(0),
       close_button_color_(NULL) {
   InitResources();
 
