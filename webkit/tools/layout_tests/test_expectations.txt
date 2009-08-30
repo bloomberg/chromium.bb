@@ -2510,7 +2510,6 @@ BUG18896 WIN LINUX DEBUG : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
 BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = PASS FAIL
 BUG18896 MAC WIN DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = PASS CRASH
 BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-svgdom-clipPathUnits-prop.html = PASS FAIL
-BUG18896 LINUX DEBUG : LayoutTests/svg/css/crash-css-generated-content.xhtml = FAIL
 
 // Test failures from WebKit merge 46894 to 46977
 BUG18939 : LayoutTests/fast/js/function-declaration.html = FAIL
