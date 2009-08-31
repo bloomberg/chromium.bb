@@ -492,9 +492,10 @@ BUG972450 : LayoutTests/fast/repaint/bugzilla-6473.html = PASS FAIL
 // Tests deferred until we provide support for a particular feature.
 // -----------------------------------------------------------------
 
-// These tests rely on the keygen tag, which we haven't wired up.
-BUG802185 : LayoutTests/fast/html/keygen.html = FAIL
-BUG820185 : LayoutTests/fast/invalid/residual-style.html = FAIL
+// These tests rely on the keygen tag, we need to implement
+// WebCore::signedPublicKeyAndChallengeString to support them.
+BUG20566 : LayoutTests/fast/html/keygen.html = FAIL
+BUG20566 : LayoutTests/fast/invalid/residual-style.html = FAIL
 
 // Tests that clicking the "x" box in a search field clears it; we don't
 // currently have such a box except on Mac (where it's part of the native
