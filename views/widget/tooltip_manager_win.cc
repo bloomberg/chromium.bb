@@ -345,12 +345,12 @@ void TooltipManagerWin::UpdateTooltip(int x, int y) {
     gfx::Point view_point(x, y);
     View::ConvertPointToView(root_view, last_tooltip_view_, &view_point);
     std::wstring new_tooltip_text;
-    if (last_tooltip_view_->GetTooltipText(view_point.x(), view_point.y(),
-                                           &new_tooltip_text) &&
-        new_tooltip_text != tooltip_text_) {
+    bool has_tooltip_text = last_tooltip_view_->GetTooltipText(
+        view_point.x(), view_point.y(), &new_tooltip_text);
+    if (!has_tooltip_text || (new_tooltip_text != tooltip_text_)) {
       // The text has changed, hide the popup.
       SendMessage(tooltip_hwnd_, TTM_POP, 0, 0);
-      if (!new_tooltip_text.empty() && tooltip_showing_) {
+      if (has_tooltip_text && !new_tooltip_text.empty() && tooltip_showing_) {
         // New text is valid, show the popup.
         SendMessage(tooltip_hwnd_, TTM_POPUP, 0, 0);
       }
