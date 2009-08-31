@@ -1095,6 +1095,7 @@ void WebViewImpl::setFocus(bool enable) {
       if (editor && editor->hasComposition())
         editor->confirmComposition();
       ime_accept_events_ = false;
+      page_->focusController()->setFocusedFrame(NULL);
     }
   }
 }
