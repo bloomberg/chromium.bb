@@ -912,7 +912,7 @@ devtools.DebuggerAgent.prototype.handleBacktraceResponse_ = function(msg) {
   for (var i = 0; i <  frames.length; ++i) {
     this.callFrames_.push(this.formatCallFrame_(frames[i]));
   }
-  WebInspector.pausedScript();
+  WebInspector.pausedScript(this.callFrames_);
   this.showPendingExceptionMessage_();
   DevToolsHost.activateWindow();
 };
