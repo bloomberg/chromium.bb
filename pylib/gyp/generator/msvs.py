@@ -150,8 +150,9 @@ def _PrepareActionRaw(config, cmd, cygwin_shell, has_input_path):
     direct_cmd = [i.replace('"', '\\"') for i in direct_cmd]
     #direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
     direct_cmd = ' '.join(direct_cmd)
+    # TODO(quote):  regularize quoting path names throughout the module
     cmd = (
-      '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
+      '"$(ProjectDir)%(cygwin_dir)s\\setup_env.bat" && '
       'set CYGWIN=nontsec&& ')
     if direct_cmd.find('NUMBER_OF_PROCESSORS') >= 0:
       cmd += 'set /a NUMBER_OF_PROCESSORS_PLUS_1=%%NUMBER_OF_PROCESSORS%%+1&& '
@@ -167,10 +168,13 @@ def _PrepareActionRaw(config, cmd, cygwin_shell, has_input_path):
                  'cmd': direct_cmd}
     return cmd
   else:
-    # Support a mode for using cmd directly.
-    direct_cmd = cmd
-    # Convert any paths to native form (first element is used directly).
-    direct_cmd = [direct_cmd[0]] + [_FixPath(i) for i in direct_cmd[1:]]
+    if config.get('msvs_quote_cmd', True):
+      # Support a mode for using cmd directly.
+      # Convert any paths to native form (first element is used directly).
+      # TODO(quote):  regularize quoting path names throughout the module
+      direct_cmd = [cmd[0]] + ['"%s"' % _FixPath(i) for i in cmd[1:]]
+    else:
+      direct_cmd = cmd
     # Collapse into a single command.
     return ' '.join(direct_cmd)
 
@@ -324,7 +328,8 @@ def _GenerateNativeRules(p, rules, output_dir,
                                   description=r.get('message', rule_name),
                                   extensions=[rule_ext],
                                   additional_dependencies=inputs,
-                                  outputs=outputs, cmd=cmd)
+                                  outputs=outputs,
+                                  cmd=cmd)
   # Write out rules file.
   rules_file.Write()
 

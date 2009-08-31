@@ -877,7 +877,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
             makefile.write('%s%s \\\n' % (bol, concrete_output))
 
             concrete_output_dir = posixpath.dirname(concrete_output)
-            if not concrete_output_dir in concrete_output_dirs:
+            if (concrete_output_dir and
+                concrete_output_dir not in concrete_output_dirs):
               concrete_output_dirs.append(concrete_output_dir)
 
           makefile.write('    : \\\n')

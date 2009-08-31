@@ -177,7 +177,7 @@ def GenerateConfig(fp, config, indent=''):
                   postamble=postamble)
 
 
-def GenerateSConscript(output_filename, spec, build_file):
+def GenerateSConscript(output_filename, spec, build_file, build_file_data):
   """
   Generates a SConscript file for a specific target.
 
@@ -239,6 +239,12 @@ def GenerateSConscript(output_filename, spec, build_file):
   if not gyp_dir:
       gyp_dir = '.'
   gyp_dir = os.path.abspath(gyp_dir)
+
+  output_dir = os.path.dirname(output_filename)
+  src_dir = build_file_data['_DEPTH']
+  src_dir_rel = gyp.common.RelativePath(src_dir, output_dir)
+  subdir = gyp.common.RelativePath(os.path.dirname(build_file), src_dir)
+
   component_name = os.path.splitext(os.path.basename(build_file))[0]
   target_name = spec['target_name']
 
@@ -343,7 +349,7 @@ def GenerateSConscript(output_filename, spec, build_file):
 
   actions = spec.get('actions', [])
   for action in actions:
-    a = ['cd', gyp_dir, '&&'] + action['action']
+    a = ['cd', '$SRC_DIR/'+subdir, '&&'] + action['action']
     message = action.get('message')
     if message:
       message = repr(message)
@@ -366,7 +372,7 @@ def GenerateSConscript(output_filename, spec, build_file):
   rules = spec.get('rules', [])
   for rule in rules:
     name = rule['rule_name']
-    a = ['cd', gyp_dir, '&&'] + rule['action']
+    a = ['cd', '$SRC_DIR/'+subdir, '&&'] + rule['action']
     message = rule.get('message')
     if message:
         message = repr(message)
@@ -1028,7 +1034,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         prereqs.append(td_target.full_product_name())
         spec['scons_prerequisites'] = prereqs
 
-    GenerateSConscript(output_file, spec, build_file)
+    GenerateSConscript(output_file, spec, build_file, data[build_file])
 
   if not default_configuration:
     default_configuration = 'Default'
