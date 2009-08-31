@@ -551,20 +551,22 @@ int16_t VideoMap::HandleEvent(void *param) {
   if ((event->what != 0) && (event->what != updateEvt))
     dprintf(("an event happened %d\n", event->what));
   switch (event->what) {
-    case (osEvt + 16): // NPAPI getFocusEvent:
+    case (osEvt + 16): { // NPAPI getFocusEvent:
       nacl_event.type = NACL_EVENT_ACTIVE;
       nacl_event.active.state = kSet;
       EventQueuePut(&nacl_event);
       dprintf(("Focus gained\n"));
       break;
-    case (osEvt + 17): // NPAPI loseFocusEvent:
+    }
+    case (osEvt + 17): { // NPAPI loseFocusEvent:
       nacl_event.type = NACL_EVENT_ACTIVE;
       nacl_event.active.state = kClear;
       EventQueuePut(&nacl_event);
       dprintf(("Focus lost\n"));
       break;
+    }
     case keyUp:
-    case keyDown:
+    case keyDown: {
       int scancode = (event->message & keyCodeMask) >> 8;
       int nsym = MacKeyToNaCl(scancode);
       if (keyDown == event->what) {
@@ -584,7 +586,8 @@ int16_t VideoMap::HandleEvent(void *param) {
       dprintf(("A key press (scan: %d sym: %d state: %d)\n",
           scancode, nsym, nacl_event.key.state));
       break;
-    case mouseDown:
+    }
+    case mouseDown: {
       dprintf(("A mouse down happened\n"));
       button = 1;
       if (event->modifiers & rightMouseButtonMod) {
@@ -598,7 +601,8 @@ int16_t VideoMap::HandleEvent(void *param) {
       SetButton(button, kSet);
       EventQueuePut(&nacl_event);
       break;
-    case mouseUp:
+    }
+    case mouseUp: {
       dprintf(("A mouse up happened\n"));
       button = 1;
       if (event->modifiers & rightMouseButtonMod) {
@@ -612,7 +616,8 @@ int16_t VideoMap::HandleEvent(void *param) {
       SetButton(button, kClear);
       EventQueuePut(&nacl_event);
       break;
-    case nullEvent:
+    }
+    case nullEvent: {
       // Null events are set up by the browser to occur every ~16ms.
       // We use this to redraw whenever an upcall has requested one.
       if (request_redraw_ && (NULL != window_)) {
@@ -621,12 +626,15 @@ int16_t VideoMap::HandleEvent(void *param) {
         Invalidate();
       }
       break;
-    case updateEvt:
+    }
+    case updateEvt: {
       Redraw();
       break;
-    default:
+    }
+    default: {
       // we didn't handle this event...
       return 0;
+    }
   }
   return 1;
 }
@@ -1232,7 +1240,8 @@ nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>*
       nacl_srpc::SharedMemoryInitializer init_info(
         static_cast<PortablePluginInterface*>(plugin_interface_),
         video_handle_,
-        static_cast<nacl_srpc::Plugin*>(plugin_interface_->plugin()->get_handle()));
+        static_cast<nacl_srpc::Plugin*>(
+            plugin_interface_->plugin()->get_handle()));
 
       video_shared_memory_ =
           nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>::

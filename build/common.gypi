@@ -453,7 +453,7 @@
         'mac_bundle': 0,
         'xcode_settings': {
           'ALWAYS_SEARCH_USER_PATHS': 'NO',
-          'GCC_C_LANGUAGE_STANDARD': 'c99',
+          'GCC_C_LANGUAGE_STANDARD': 'gnu99',
           'GCC_CW_ASM_SYNTAX': 'NO',
           'GCC_DYNAMIC_NO_PIC': 'NO',
           'GCC_ENABLE_PASCAL_STRINGS': 'NO',
@@ -513,7 +513,7 @@
                       # Define strip_from_xcode in a variable ending in _path
                       # so that gyp understands it's a path and performs proper
                       # relativization during dict merging.
-                      'strip_from_xcode_path': 'mac/strip_from_xcode',
+                      'strip_from_xcode_path': '../../build/mac/strip_from_xcode',
                     },
                     'postbuild_name': 'Strip If Needed',
                     'action': ['<(strip_from_xcode_path)'],
