@@ -923,7 +923,7 @@
    Memcheck:Leak
    ...
    fun:_ZN7WebCore10StringImplnwEj
-   fun:_ZN3WTF9HashTableIPN7WebCore10StringImplES3_NS_17IdentityExtractorIS3_EENS1_10StringHashENS_10HashTraitsIS3_EES8_E18addPassingHashCodeIPKcSC_NS_24HashSetTranslatorAdapterIS3_S8_SC_NS1_17CStringTranslatorEEEEESt4pairINS_17HashTableIteratorIS3_S3_S5_S6_S8_S8_EEbERKT_RKT0_
+   ...
    fun:_ZN3WTF7HashSetIPN7WebCore10StringImplENS1_10StringHashENS_10HashTraitsIS3_EEE3addIPKcNS1_17CStringTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS3_S3_NS_17IdentityExtractorIS3_EES4_S6_S6_EES3_EEbERKT_
    fun:_ZN7WebCore12AtomicString3addEPKc
    fun:_ZN7WebCore12AtomicStringC1EPKc
@@ -1100,10 +1100,7 @@
    Memcheck:Leak
    fun:malloc
    fun:g_malloc
-   fun:g_slice_alloc
-   fun:handlers_find
-   fun:signal_handlers_foreach_matched_R
-   fun:g_signal_handlers_disconnect_matched
+   ...
    fun:gtk_accel_group_disconnect
    fun:gtk_accel_group_disconnect_key
 }
@@ -1143,7 +1140,6 @@
    fun:sqlite3Step
    fun:sqlite3_step
    fun:sqlite3_exec
-   fun:_ZN7history11URLDatabase14CreateURLTableEb
 }
 {
    bug_20616
@@ -1174,6 +1170,7 @@
 }
 {
    bug_20659
+   Memcheck:Leak
    fun:_Znw*
    fun:_ZN15tracked_objects10ThreadData12FindLifetimeERKNS_8LocationE
    fun:_ZN15tracked_objects7Tracked13SetBirthPlaceERKNS_8LocationE
