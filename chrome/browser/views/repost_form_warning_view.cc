@@ -9,19 +9,27 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"
 
-// Implementation of function declared in
-// browser/tab_contents/repost_form_warning.h
-void RunRepostFormWarningDialog(NavigationController* navigation_controller) {
-  RepostFormWarningView* dialog =
-      new RepostFormWarningView(navigation_controller);
+namespace browser {
+
+// Declared in browser_dialogs.h so others don't have to depend on our header.
+void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
+                                 TabContents* tab_contents) {
+  new RepostFormWarningView(parent_window, &tab_contents->controller());
 }
 
+}  // namespace browser
+
+//////////////////////////////////////////////////////////////////////////////
+// RepostFormWarningView, constructor & destructor:
+
 RepostFormWarningView::RepostFormWarningView(
+    gfx::NativeWindow parent_window,
     NavigationController* navigation_controller)
       : navigation_controller_(navigation_controller),
         message_box_view_(NULL) {
@@ -29,19 +37,12 @@ RepostFormWarningView::RepostFormWarningView(
       MessageBoxFlags::kIsConfirmMessageBox,
       l10n_util::GetString(IDS_HTTP_POST_WARNING),
       L"");
-  // TODO(beng): fix this - this dialog box should be shown by a method on the
-  //             Browser.
-  HWND root_hwnd = NULL;
-  if (BrowserList::GetLastActive()) {
-    root_hwnd = reinterpret_cast<HWND>(BrowserList::GetLastActive()->
-        window()->GetNativeHandle());
-  }
-  views::Window::CreateChromeWindow(root_hwnd, gfx::Rect(), this)->Show();
+  views::Window::CreateChromeWindow(parent_window, gfx::Rect(), this)->Show();
 
   registrar_.Add(this, NotificationType::LOAD_START,
-                 NotificationService::AllSources());
+                 Source<NavigationController>(navigation_controller_));
   registrar_.Add(this, NotificationType::TAB_CLOSING,
-                 NotificationService::AllSources());
+                 Source<NavigationController>(navigation_controller_));
 }
 
 RepostFormWarningView::~RepostFormWarningView() {
@@ -95,8 +96,9 @@ void RepostFormWarningView::Observe(NotificationType type,
   // a navigation controller anymore.
   if (window() && navigation_controller_ &&
       (type == NotificationType::LOAD_START ||
-       type == NotificationType::TAB_CLOSING) &&
-      Source<NavigationController>(source).ptr() == navigation_controller_) {
+       type == NotificationType::TAB_CLOSING)) {
+    DCHECK_EQ(Source<NavigationController>(source).ptr(),
+              navigation_controller_);
     navigation_controller_ = NULL;
     window()->Close();
   }

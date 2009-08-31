@@ -97,6 +97,10 @@ void EditSearchEngine(gfx::NativeWindow parent,
                       EditSearchEngineControllerDelegate* delegate,
                       Profile* profile);
 
+// Shows the repost form confirmation dialog box.
+void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
+                                 TabContents* tab_contents);
+
 }  // namespace browser
 
 #endif  // CHROME_BROWSER_VIEWS_BROWSER_DIALOGS_H_

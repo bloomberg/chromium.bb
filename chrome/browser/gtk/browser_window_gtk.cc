@@ -52,6 +52,7 @@
 #include "chrome/browser/gtk/infobar_container_gtk.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
 #include "chrome/browser/gtk/nine_box.h"
+#include "chrome/browser/gtk/repost_form_warning_gtk.h"
 #include "chrome/browser/gtk/status_bubble_gtk.h"
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
@@ -1030,6 +1031,11 @@ void BrowserWindowGtk::ShowSelectProfileDialog() {
 
 void BrowserWindowGtk::ShowNewProfileDialog() {
   NOTIMPLEMENTED();
+}
+
+void BrowserWindowGtk::ShowRepostFormWarningDialog(
+    TabContents* tab_contents) {
+  new RepostFormWarningGtk(GetNativeHandle(), &tab_contents->controller());
 }
 
 void BrowserWindowGtk::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,

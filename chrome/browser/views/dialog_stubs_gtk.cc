@@ -74,6 +74,11 @@ void EditSearchEngine(gfx::NativeWindow parent,
   NOTIMPLEMENTED();
 }
 
+void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
+                                 TabContents* tab_contents) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace browser
 
 void ShowOptionsWindow(OptionsPage page,

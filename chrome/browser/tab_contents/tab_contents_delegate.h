@@ -221,6 +221,9 @@ class TabContentsDelegate {
     return false;
   }
 
+  // Shows the repost form confirmation dialog box.
+  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) {}
+
  protected:
   ~TabContentsDelegate() {}
 

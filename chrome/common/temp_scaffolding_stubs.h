@@ -148,12 +148,6 @@ class DockInfo {
 //---------------------------------------------------------------------------
 // These stubs are for TabContents
 
-class RepostFormWarningDialog {
- public:
-  static void RunRepostFormWarningDialog(NavigationController*) { }
-  virtual ~RepostFormWarningDialog() { }
-};
-
 class BaseDragSource {
 };
 

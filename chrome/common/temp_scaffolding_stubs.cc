@@ -210,13 +210,6 @@ bool RLZTracker::RecordProductEvent(Product product, AccessPoint point,
 
 //--------------------------------------------------------------------------
 
-void RunRepostFormWarningDialog(NavigationController*) {
-  // http://code.google.com/p/chromium/issues/detail?id=19761
-  NOTIMPLEMENTED();
-}
-
-//--------------------------------------------------------------------------
-
 MemoryDetails::MemoryDetails() {
   NOTIMPLEMENTED();
 }

@@ -193,6 +193,9 @@ class BrowserWindow {
   // Shows the New Profile dialog box.
   virtual void ShowNewProfileDialog() = 0;
 
+  // Shows the repost form confirmation dialog box.
+  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) = 0;
+
   // Shows the confirmation dialog box warning that the browser is closing with
   // in-progress downloads.
   // This method should call Browser::InProgressDownloadResponse once the user

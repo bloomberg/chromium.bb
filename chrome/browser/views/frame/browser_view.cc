@@ -937,6 +937,10 @@ void BrowserView::ShowNewProfileDialog() {
   browser::ShowNewProfileDialog();
 }
 
+void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
+  browser::ShowRepostFormWarningDialog(GetNativeHandle(), tab_contents);
+}
+
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
   DownloadInProgressConfirmDialogDelegate* delegate =
       new DownloadInProgressConfirmDialogDelegate(browser_.get());
