@@ -184,9 +184,6 @@ AutocompleteEditViewMac::~AutocompleteEditViewMac() {
   // Disconnect field_ from edit_helper_ so that we don't get calls
   // after destruction.
   [field_ setDelegate:nil];
-
-  // Disconnect notifications so they don't signal a dead object.
-  [[NSNotificationCenter defaultCenter] removeObserver:edit_helper_];
 }
 
 void AutocompleteEditViewMac::SaveStateToTab(TabContents* tab) {
@@ -719,6 +716,11 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
     edit_view_ = view;
   }
   return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
 }
 
 - (BOOL)control:(NSControl*)control

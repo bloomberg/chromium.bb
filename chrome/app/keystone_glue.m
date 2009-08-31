@@ -73,6 +73,7 @@ NSString *KSRegistrationRemoveExistingTag = @"";
   [version_ release];
   [channel_ release];
   [registration_ release];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 

@@ -673,6 +673,11 @@ void AutocompletePopupViewMac::OnMiddleClick() {
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
 - (void)select:(id)sender {
   DCHECK(popup_view_);
   popup_view_->AcceptInput();
