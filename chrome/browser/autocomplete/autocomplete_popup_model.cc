@@ -150,7 +150,6 @@ GURL AutocompletePopupModel::URLsForCurrentSelection(
     PageTransition::Type* transition,
     bool* is_history_what_you_typed_match,
     GURL* alternate_nav_url) const {
-  CHECK(IsOpen());
   const AutocompleteResult* result;
   AutocompleteResult::const_iterator match;
   if (!controller_->done()) {
@@ -164,6 +163,7 @@ GURL AutocompletePopupModel::URLsForCurrentSelection(
     // stopped.  So the default match must be the desired selection.
     match = result->default_match();
   } else {
+    CHECK(IsOpen());
     // The query isn't running, so the standard result set can't possibly be out
     // of date.
     //
