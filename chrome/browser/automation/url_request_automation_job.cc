@@ -359,11 +359,21 @@ void URLRequestAutomationJob::StartAsync() {
                                   kFilteredHeaderStrings,
                                   arraysize(kFilteredHeaderStrings)));
 
+  // Ensure that we do not send username and password fields in the referrer.
+  GURL referrer(request_->GetSanitizedReferrer());
+#ifndef NDEBUG
+  // The referrer header should be suppressed if the preceding URL was
+  // a secure one and the new one is not.
+  if (referrer.SchemeIsSecure() && !request_->url().SchemeIsSecure()) {
+    DCHECK(referrer.spec().empty());
+  }
+#endif
+
   // Ask automation to start this request.
   IPC::AutomationURLRequest automation_request = {
     request_->url().spec(),
     request_->method(),
-    request_->referrer(),
+    referrer.spec(),
     new_request_headers,
     request_->get_upload()
   };
