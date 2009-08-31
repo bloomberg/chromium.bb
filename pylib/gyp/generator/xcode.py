@@ -30,6 +30,9 @@ _shared_intermediate_var = 'SHARED_INTERMEDIATE_DIR'
 generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
   'EXECUTABLE_SUFFIX': '',
+  'LIBRARY_PREFIX': '',
+  'STATIC_LIB_SUFFIX': '.a',
+  'SHARED_LIB_SUFFIX': '.dylib',
   # INTERMEDIATE_DIR is a place for targets to build up intermediate products.
   # It is specific to each build environment.  It is only guaranteed to exist
   # and be constant within the context of a project, corresponding to a single
@@ -182,30 +185,59 @@ class XcodeProject(object):
       if target_name.lower() == 'all':
         has_custom_all = True;
 
-      # If this is a test target, add its test runner target.
-      if target.get('test', 0):
-        # Make a target to run the test.  It should have one dependency, the
-        # test executable target.
+      # If this target has a 'run_as' attribute, or is a test, add its
+      # target to the targets, and (if it's a test) add it the to the
+      # test targets.
+      if target.get('run_as') or target.get('test'):
+        # Make a target to run something.  It should have one
+        # dependency, the parent xcode target.
         run_target = gyp.xcodeproj_file.PBXAggregateTarget({
-              'name':        'Run "' + target_name + '"',
+              'name':        'Run ' + target_name,
               'productName': xcode_target.GetProperty('productName'),
             },
             parent=self.project)
         run_target.AddDependency(xcode_target)
 
-        # The test runner target has a build phase that executes the test.
+        # The test runner target has a build phase that executes the
+        # test, if this has the 'test' attribute.  If the 'run_as' tag
+        # doesn't exist (meaning that this must be a test), then we
+        # define a default test command line.
         # TODO(tvl): chromium specific
-        script = 'exec "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}" ' + \
-                 '--gtest_print_time\nexit 1\n'
+        command = target.get('run_as', {
+          'action': ['${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}',
+                     '--gtest_print_time']
+          })
+
+        script = ''
+        if command.get('working_directory'):
+          script = 'cd "%s"\n' % \
+                   gyp.xcodeproj_file.ConvertVariablesToShellSyntax(
+                       command.get('working_directory'))
+
+        if command.get('environment'):
+          script = script + "\n".join(
+            ['export %s="%s"' %
+             (key, gyp.xcodeproj_file.ConvertVariablesToShellSyntax(val))
+             for (key, val) in command.get('environment').iteritems()]) + "\n"
+
+        # If we were unable to exec for some reason, we want to exit
+        # with an error, and fixup variable references to be shell
+        # syntax instead of xcode syntax.
+        script = script + 'exec %s\nexit 1\n' % \
+                 gyp.xcodeproj_file.ConvertVariablesToShellSyntax(
+                     gyp.common.EncodePOSIXShellList(command.get('action')))
+
         ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
               'shellScript':      script,
               'showEnvVarsInLog': 0,
             })
         run_target.AppendProperty('buildPhases', ssbp)
 
-        # Add the test runner target to the project file.
+        # Add the run target to the project file.
         targets.append(run_target)
-        test_targets.append(xcode_target)
+        if target.get('test'):
+          test_targets.append(xcode_target)
+
 
     # Make sure that the list of targets being replaced is the same length as
     # the one replacing it, but allow for the added test runner targets.
@@ -293,7 +325,7 @@ class XcodeProject(object):
     # and generate a second target that will run the tests found under the
     # marked target.
     for bf_tgt in self.build_file_dict['targets']:
-      if bf_tgt.get('xcode_create_dependents_test_runner', 0):
+      if bf_tgt.get('xcode_create_dependents_test_runner'):
         tgt_name = bf_tgt['target_name']
         qualified_target = gyp.common.QualifiedTarget(self.gyp_path,
                                                       tgt_name)
@@ -306,7 +338,7 @@ class XcodeProject(object):
             pbxcip = pbxtd.GetProperty('targetProxy')
             dependency_xct = pbxcip.GetProperty('remoteGlobalIDString')
             target_dict = xcode_target_to_target_dict[dependency_xct]
-            if target_dict and target_dict.get('test', 0):
+            if target_dict and target_dict.get('test'):
               all_tests.append(dependency_xct)
 
           # We have to directly depend on all tests and then directly run
@@ -575,7 +607,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     type = spec['type']
     if type != 'none':
       type_bundle_key = type
-      if spec.get('mac_bundle', 0):
+      if spec.get('mac_bundle'):
         type_bundle_key += '+bundle'
       xctarget_type = gyp.xcodeproj_file.PBXNativeTarget
       target_properties['productType'] = _types[type_bundle_key]
@@ -596,9 +628,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # but the mach-o type is explictly set in the settings.  So before we do
     # anything else, for this one case, we stuff in that one setting.  This
     # would allow the other data in the spec to change it if need be.
-    if type == 'loadable_module' and not spec.get('mac_bundle', 0):
+    if type == 'loadable_module' and not spec.get('mac_bundle'):
       xccl.SetBuildSetting('MACH_O_TYPE', 'mh_bundle')
-    
+
     prebuild_index = 0
 
     # Add custom shell script phases for "actions" sections.
@@ -619,8 +651,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
       # Convert Xcode-type variable references to sh-compatible environment
       # variable references.
-      message_sh = re.sub('\$\((.*?)\)', '${\\1}', message)
-      action_string_sh = re.sub('\$\((.*?)\)', '${\\1}', action_string)
+      message_sh = gyp.xcodeproj_file.ConvertVariablesToShellSyntax(message)
+      action_string_sh = gyp.xcodeproj_file.ConvertVariablesToShellSyntax(
+        action_string)
 
       script = ''
       # Include the optional message
@@ -654,7 +687,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     # tgt_mac_bundle_resources holds the list of bundle resources so
     # the rule processing can check against it.
-    if spec.get('mac_bundle', 0):
+    if spec.get('mac_bundle'):
       tgt_mac_bundle_resources = spec.get('mac_bundle_resources', [])
     else:
       tgt_mac_bundle_resources = []
@@ -923,7 +956,7 @@ exit 1
         pbxp.AddOrGetFileInRootGroup(source)
 
     # Add "mac_bundle_resources" if it's a bundle of any type.
-    if spec.get('mac_bundle', 0):
+    if spec.get('mac_bundle'):
       for resource in tgt_mac_bundle_resources:
         (resource_root, resource_extension) = posixpath.splitext(resource)
         if resource_extension[1:] not in rules_by_ext:

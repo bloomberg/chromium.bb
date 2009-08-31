@@ -193,6 +193,8 @@ def SourceTreeAndPathFromPath(input_path):
 
   return (source_tree, output_path)
 
+def ConvertVariablesToShellSyntax(input_string):
+  return re.sub('\$\((.*?)\)', '${\\1}', input_string)
 
 class XCObject(object):
   """The abstract base of all class types used in Xcode project files.
@@ -449,8 +451,9 @@ class XCObject(object):
       if descendant.id in ids:
         other = ids[descendant.id]
         raise KeyError, \
-              'Duplicate ID %s, objects %r and %r' % \
-              (descendant.id, descendant, other)
+              'Duplicate ID %s, objects "%s" and "%s" in "%s"' % \
+              (descendant.id, str(descendant._properties),
+               str(other._properties), self._properties['rootObject'].Name())
       ids[descendant.id] = descendant
 
   def Children(self):

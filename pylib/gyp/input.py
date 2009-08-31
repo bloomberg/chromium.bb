@@ -58,6 +58,7 @@ base_non_configuration_keys = [
   'product_extension',
   'product_name',
   'rules',
+  'run_as',
   'sources',
   'suppress_wildcard',
   'target_name',
@@ -115,7 +116,7 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
   if os.path.exists(build_file_path):
     build_file_contents = open(build_file_path).read()
   else:
-    raise Exception("%s not found" % build_file_path)
+    raise Exception("%s not found (cwd: %s)" % (build_file_path, os.getcwd()))
 
   build_file_data = None
   try:
@@ -1191,6 +1192,8 @@ def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
         if not dependency in target_dict['dependencies']:
           target_dict['dependencies'].append(dependency)
 
+# Initialize this here to speed up MakePathRelative.
+exception_re = re.compile(r'''["']?[-/$<>]''')
 
 def MakePathRelative(to_file, fro_file, item):
   # If item is a relative path, it's relative to the build file dict that it's
@@ -1198,16 +1201,18 @@ def MakePathRelative(to_file, fro_file, item):
   # it's going into.
   # Exception: any |item| that begins with these special characters is
   # returned without modification.
-  #   /  Used when a path is already absolute (shortcut optimization;
-  #      such paths would be returned as absolute anyway)
-  #   $  Used for build environment variables
-  #   -  Used for some build environment flags (such as -lapr-1 in a
-  #      "libraries" section)
-  #   <  Used for our own variable and command expansions (see ExpandVariables)
-  #   >  Used for our own variable and command expansions (see ExpandVariables)
-  # Not using startswith here, because its not present before py2.5.
-  if to_file == fro_file or \
-     (len(item) > 0 and item[0] in ('/', '$', '-', '<', '>')):
+  #   /   Used when a path is already absolute (shortcut optimization;
+  #       such paths would be returned as absolute anyway)
+  #   $   Used for build environment variables
+  #   -   Used for some build environment flags (such as -lapr-1 in a
+  #       "libraries" section)
+  #   <   Used for our own variable and command expansions (see ExpandVariables)
+  #   >   Used for our own variable and command expansions (see ExpandVariables)
+  #
+  #   "/' Used when a value is quoted.  If these are present, then we
+  #       check the second character instead.
+  #
+  if to_file == fro_file or exception_re.match(item):
     return item
   else:
     # TODO(dglazkov) The backslash/forward-slash replacement at the end is a
@@ -1650,6 +1655,34 @@ def ValidateRulesInTarget(target, target_dict, extra_sources_for_rules):
     if len(rule_sources) > 0:
       rule['rule_sources'] = rule_sources
 
+def ValidateRunAsInTarget(target, target_dict, build_file):
+  target_name = target_dict.get('target_name')
+  run_as = target_dict.get('run_as')
+  if not run_as:
+    return
+  if not isinstance(run_as, dict):
+    raise Exception("The 'run_as' in target %s from file %s should be a "
+                    "dictionary." %
+                    (target_name, build_file))
+  action = run_as.get('action')
+  if not action:
+    raise Exception("The 'run_as' in target %s from file %s must have an "
+                    "'action' section." %
+                    (target_name, build_file))
+  if not isinstance(action, list):
+    raise Exception("The 'action' for 'run_as' in target %s from file %s "
+                    "must be a list." %
+                    (target_name, build_file))
+  working_directory = run_as.get('working_directory')
+  if working_directory and not isinstance(working_directory, str):
+    raise Exception("The 'working_directory' for 'run_as' in target %s "
+                    "in file %s should be a string." %
+                    (target_name, build_file))
+  environment = run_as.get('environment')
+  if environment and not isinstance(environment, dict):
+    raise Exception("The 'environment' for 'run_as' in target %s "
+                    "in file %s should be a dictionary." %
+                    (target_name, build_file))
 
 def Load(build_files, variables, includes, depth, generator_input_info):
   # Set up path_sections and non_configuration_keys with the default data plus
@@ -1741,6 +1774,11 @@ def Load(build_files, variables, includes, depth, generator_input_info):
   for target in flat_list:
     target_dict = targets[target]
     ValidateRulesInTarget(target, target_dict, extra_sources_for_rules)
+
+  # Validate run_as sections in targets.
+  for target in flat_list:
+    build_file = gyp.common.BuildFileAndTarget('', target)[0]
+    ValidateRunAsInTarget(target, targets[target], build_file)
 
   # TODO(mark): Return |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept

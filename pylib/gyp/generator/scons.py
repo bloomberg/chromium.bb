@@ -16,8 +16,11 @@ WriteList = SCons.WriteList
 generator_default_variables = {
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '',
-    'INTERMEDIATE_DIR': '$INTERMEDIATE_DIR',
-    'SHARED_INTERMEDIATE_DIR': '$SHARED_INTERMEDIATE_DIR',
+    'LIBRARY_PREFIX': '${LIBPREFIX}',
+    'STATIC_LIB_SUFFIX': '${LIBSUFFIX}',
+    'SHARED_LIB_SUFFIX': '${SHLIBSUFFIX}',
+    'INTERMEDIATE_DIR': '${INTERMEDIATE_DIR}',
+    'SHARED_INTERMEDIATE_DIR': '${SHARED_INTERMEDIATE_DIR}',
     'OS': 'linux',
     'PRODUCT_DIR': '$TOP_BUILDDIR',
     'RULE_INPUT_ROOT': '${SOURCE.filebase}',
@@ -47,6 +50,21 @@ _outputs = env.Alias(
   _action
 )
 env.AlwaysBuild(_outputs)
+"""
+
+_run_as_template = """
+if GetOption('verbose'):
+  _action = Action([%(action)s])
+else:
+  _action = Action([%(action)s], %(message)s)
+"""
+
+_run_as_template_suffix = """
+_run_as_target = env.Alias('run_%(target_name)s', target_files, _action)
+env.Requires(_run_as_target, [
+    Alias('%(target_name)s'),
+])
+env.AlwaysBuild(_run_as_target)
 """
 
 _command_template = """
@@ -102,7 +120,9 @@ env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action, emitter=%(name)s_e
 %(name)s_files = [f for f in input_files if str(f).endswith('.%(extension)s')]
 _outputs = []
 for %(name)s_file in %(name)s_files:
-  _outputs.append(env.%(name)s(%(name)s_file))
+  _generated = env.%(name)s(%(name)s_file)
+  env.Precious(_generated)
+  _outputs.append(_generated)
 """
 
 _spawn_hack = """
@@ -359,7 +379,7 @@ def GenerateSConscript(output_filename, spec, build_file):
                  'message' : message,
              })
     if rule.get('process_outputs_as_sources'):
-      fp.write('  input_files.Replace(%s_file, _outputs)\n' % name)
+      fp.write('  input_files.Replace(%s_file, _generated)\n' % name)
     fp.write('prerequisites.extend(_outputs)\n')
 
   scons_target.write_target(fp)
@@ -384,7 +404,9 @@ def GenerateSConscript(output_filename, spec, build_file):
         e, "Required 'files' key missing for 'copies' in %s." % build_file)
       raise
     if not files:
-      continue
+      raise Exception(
+        "Required 'files' key is empty or missing for 'copies' in %s." %
+        build_file)
     if not destdir:
       raise Exception(
         "Required 'destination' key is empty for 'copies' in %s." % build_file)
@@ -398,6 +420,27 @@ def GenerateSConscript(output_filename, spec, build_file):
       fp.write(fmt % (repr(dest), repr(f)))
       fp.write('target_files.extend(_outputs)\n')
 
+  if spec.get('run_as') or spec.get('test'):
+    run_as = spec.get('run_as', {
+        'action' : ['$TARGET_NAME', '--gtest_print_time'],
+        })
+    action = run_as.get('action', [])
+    working_directory = run_as.get('working_directory')
+    if not working_directory:
+      working_directory = gyp_dir
+    else:
+      if not os.path.isabs(working_directory):
+        working_directory = os.path.normpath(os.path.join(gyp_dir,
+                                                          working_directory))
+    if run_as.get('environment'):
+      for (key, val) in run_as.get('environment').iteritems():
+        action = ['%s="%s"' % (key, val)] + action
+    action = ['cd', '"%s"' % working_directory, '&&'] + action
+    fp.write(_run_as_template % {
+      'action' : pprint.pformat(action),
+      'message' : run_as.get('message', ''),
+    })
+
   fmt = "\ngyp_target = env.Alias('%s', target_files)\n"
   fp.write(fmt % target_name)
   dependencies = spec.get('scons_dependencies', [])
@@ -405,6 +448,12 @@ def GenerateSConscript(output_filename, spec, build_file):
     WriteList(fp, dependencies, preamble='env.Requires(gyp_target, [\n    ',
                                 postamble='\n])\n')
   fp.write('env.Requires(gyp_target, prerequisites)\n')
+
+  if spec.get('run_as', 0) or spec.get('test', 0):
+    fp.write(_run_as_template_suffix % {
+      'target_name': target_name,
+    })
+
   fp.write('Return("gyp_target")\n')
 
   fp.close()

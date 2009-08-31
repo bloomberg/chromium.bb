@@ -1,15 +1,16 @@
 #!/usr/bin/python
 
-
 import os
 import re
 import subprocess
 import sys
-import gyp.common
+
 import gyp.MSVSNew as MSVSNew
-import gyp.MSVSToolFile as MSVSToolFile
 import gyp.MSVSProject as MSVSProject
+import gyp.MSVSToolFile as MSVSToolFile
+import gyp.MSVSUserFile as MSVSUserFile
 import gyp.MSVSVersion as MSVSVersion
+import gyp.common
 
 
 # Regular expression for validating Visual Studio GUIDs.  If the GUID
@@ -26,6 +27,9 @@ VALID_MSVS_GUID_CHARS = re.compile('^[A-F0-9\-]+$')
 generator_default_variables = {
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '.exe',
+    'LIBRARY_PREFIX': '',
+    'STATIC_LIB_SUFFIX': '.lib',
+    'SHARED_LIB_SUFFIX': '.dll',
     'INTERMEDIATE_DIR': '$(IntDir)',
     'SHARED_INTERMEDIATE_DIR': '$(OutDir)/obj/global_intermediate',
     'OS': 'win',
@@ -36,6 +40,7 @@ generator_default_variables = {
     'RULE_INPUT_PATH': '$(InputPath)',
     'CONFIGURATION_NAME': '$(ConfigurationName)',
 }
+
 
 # The msvs specific sections that hold paths
 generator_additional_path_sections = [
@@ -127,10 +132,10 @@ def _ConfigFullName(config_name, config_data):
                    config_data.get('configuration_platform', 'Win32')])
 
 
-def _PrepareActionRaw(c, cmd, cygwin_shell, has_input_path):
+def _PrepareActionRaw(config, cmd, cygwin_shell, has_input_path):
   if cygwin_shell:
     # Find path to cygwin.
-    cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
+    cygwin_dir = _FixPath(config.get('msvs_cygwin_dirs', ['.'])[0])
     # Prepare command.
     direct_cmd = cmd
     direct_cmd = [i.replace('$(IntDir)',
@@ -169,21 +174,21 @@ def _PrepareActionRaw(c, cmd, cygwin_shell, has_input_path):
     # Collapse into a single command.
     return ' '.join(direct_cmd)
 
-def _PrepareAction(c, r, has_input_path):
+def _PrepareAction(config, rule, has_input_path):
   # Find path to cygwin.
-  cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
+  cygwin_dir = _FixPath(config.get('msvs_cygwin_dirs', ['.'])[0])
 
   # Currently this weird argument munging is used to duplicate the way a
   # python script would need to be run as part of the chrome tree.
   # Eventually we should add some sort of rule_default option to set this
   # per project. For now the behavior chrome needs is the default.
-  mcs = r.get('msvs_cygwin_shell')
+  mcs = rule.get('msvs_cygwin_shell')
   if mcs is None:
-    mcs = c.get('msvs_cygwin_shell', 1)
+    mcs = config.get('msvs_cygwin_shell', 1)
   if int(mcs):
-    return _PrepareActionRaw(c, r['action'], True, has_input_path)
+    return _PrepareActionRaw(config, rule['action'], True, has_input_path)
   else:
-    return _PrepareActionRaw(c, r['action'], False, has_input_path)
+    return _PrepareActionRaw(config, rule['action'], False, has_input_path)
 
 
 def _PickPrimaryInput(inputs):
@@ -195,6 +200,20 @@ def _PickPrimaryInput(inputs):
   else:
     return inputs[0]
 
+def _SetRunAs(user_file, config_name, c_data, command,
+              environment={}, working_directory=""):
+  """Add a run_as rule to the user file.
+
+  Arguments:
+    user_file: The MSVSUserFile to add the command to.
+    config_name: The name of the configuration to add it to
+    c_data: The dict of the configuration to add it to
+    command: The path to the command to execute.
+    args: An array of arguments to the command. (optional)
+    working_directory: Directory to run the command in. (optional)
+  """
+  user_file.AddDebugSettings(_ConfigFullName(config_name, c_data),
+                             command, environment, working_directory)
 
 def _AddCustomBuildTool(p, config_name, c_data,
                         inputs, outputs, description, cmd):
@@ -480,18 +499,39 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   p = MSVSProject.Writer(vcproj_filename, version=version)
   p.Create(spec['target_name'], guid=guid)
 
+  # Create the user file.
+  # TODO(gspencer): Switch the os.environ calls to be
+  # win32api.GetDomainName() and win32api.GetUserName() once the
+  # python version in depot_tools has been updated to work on Vista
+  # 64-bit.
+  vcuser_filename = '.'.join([vcproj_filename,
+                              os.environ.get('USERDOMAIN'),
+                              os.environ.get('USERNAME'),
+                              'user'])
+  user_file = MSVSUserFile.Writer(vcuser_filename, version=version)
+  user_file.Create(spec['target_name'])
+
   # Get directory project file is in.
   gyp_dir = os.path.split(vcproj_filename)[0]
 
   # Pick target configuration type.
-  config_type = {
-      'executable': '1',  # .exe
-      'shared_library': '2',  # .dll
-      'loadable_module': '2',  # .dll
-      'static_library': '4',  # .lib
-      'none': '10',  # Utility type
-      'dummy_executable': '1',  # .exe
-      }[spec['type']]
+  try:
+    config_type = {
+        'executable': '1',  # .exe
+        'shared_library': '2',  # .dll
+        'loadable_module': '2',  # .dll
+        'static_library': '4',  # .lib
+        'none': '10',  # Utility type
+        'dummy_executable': '1',  # .exe
+        }[spec['type']]
+  except KeyError, e:
+    if spec.get('type'):
+      raise Exception('Target type %s is not a valid target type for '
+                      'target %s in %s.' %
+                      (spec['type'], spec['target_name'], build_file))
+    else:
+      raise Exception('Missing type field for target %s in %s.' %
+                      (spec['target_name'], build_file))
 
   for config_name, c in spec['configurations'].iteritems():
     # Process each configuration.
@@ -769,6 +809,20 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
                           description=a.get('message', a['action_name']),
                           cmd=cmd)
 
+  # Add run_as and test targets.
+  has_run_as = False
+  if spec.get('run_as') or spec.get('test'):
+    has_run_as = True
+    run_as = spec.get('run_as', {
+      'action' : ['$(TargetPath)', '--gtest_print_time'],
+      })
+    working_directory = run_as.get('working_directory', '.')
+    action = run_as.get('action', [])
+    environment = run_as.get('environment', [])
+    for config_name, c_data in spec['configurations'].iteritems():
+      _SetRunAs(user_file, config_name, c_data,
+                action, environment, working_directory)
+
   # Add copies.
   for cpy in spec.get('copies', []):
     for config_name, c_data in spec['configurations'].iteritems():
@@ -783,6 +837,10 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
 
   # Write it out.
   p.Write()
+
+  # Write out the user file, but only if we need to.
+  if has_run_as:
+    user_file.Write()
 
   # Return the guid so we can refer to it elsewhere.
   return p.guid
