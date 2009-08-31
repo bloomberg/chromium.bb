@@ -16,12 +16,9 @@
 #include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 
 namespace {
-
-// Initial size for dialog.
-const int kDialogDefaultWidth = 450;
-const int kDialogDefaultHeight = 450;
 
 // How many rows should be added to an index into the |table_model_| to get the
 // corresponding row in |list_store_|
@@ -82,8 +79,6 @@ void KeywordEditorView::Init() {
       GTK_RESPONSE_CLOSE,
       NULL);
 
-  gtk_window_set_default_size(GTK_WINDOW(dialog_), kDialogDefaultWidth,
-                              kDialogDefaultHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
 
@@ -184,6 +179,16 @@ void KeywordEditorView::Init() {
   table_model_->Reload();
 
   EnableControls();
+
+  // Set the size of the dialog.
+  gtk_widget_realize(dialog_);
+  int width = 1, height = 1;
+  gtk_util::GetWidgetSizeFromResources(
+      dialog_,
+      IDS_SEARCHENGINES_DIALOG_WIDTH_CHARS,
+      IDS_SEARCHENGINES_DIALOG_HEIGHT_LINES,
+      &width, &height);
+  gtk_window_set_default_size(GTK_WINDOW(dialog_), width, height);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
