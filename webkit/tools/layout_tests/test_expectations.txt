@@ -1636,9 +1636,6 @@ BUG10409 MAC LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = FAIL
 // intermittent failures on the buildbot
 BUG10411 : LayoutTests/svg/custom/gradient-stop-style-change.svg = FAIL PASS
 
-// Rebaseline
-BUG10416 WIN LINUX : LayoutTests/fast/dynamic/insert-before-table-part-in-continuation.html = FAIL
-
 // New tests added in http://trac.webkit.org/changeset/40424
 // Renders the width of "600" off by 3.  Looks OK but could still be a bug
 // that we shouldn't rebaseline.
@@ -1807,24 +1804,12 @@ BUG10463 WIN LINUX : LayoutTests/editing/selection/hit-test-anonymous.html = FAI
 BUG10463 WIN LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL CRASH
 
-// Adding more failures after the last merge:
-BUG10464 WIN : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = CRASH PASS
-BUG10464 WIN : LayoutTests/http/tests/xmlhttprequest/null-auth.php = CRASH TIMEOUT PASS
-BUG10464 WIN : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = CRASH FAIL PASS
-BUG10464 WIN LINUX : LayoutTests/transitions/interrupt-zero-duration.html = FAIL PASS
-
 // New tests, need Chromium baseline.
 BUG10465 LINUX : LayoutTests/fast/borders/border-image-border-radius.html = FAIL
 BUG10465 LINUX : LayoutTests/fast/clip/overflow-border-radius-clip.html = FAIL
 
 // Needs rebaseline. See WebKit 41948
-BUG10468 MAC WIN LINUX : LayoutTests/fast/replaced/border-radius-clip.html = FAIL CRASH
-
-// New test, needs baseline. See WebKit 41978 (brettw)
-BUG10469 WIN LINUX : LayoutTests/fast/text/complex-text-opacity.html = FAIL
-
-// Needs rebaseline. See WebKit 41980
-BUG10470 WIN LINUX : LayoutTests/fast/transforms/transforms-with-zoom.html = FAIL
+BUG10468 MAC : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
 // Merge WebKit: 41944:41999, Linux failures.
 // Merge WebKit:  47748:47759, Linux crashes.
@@ -1849,11 +1834,9 @@ BUG10473 LINUX : LayoutTests/fast/forms/searchfield-heights.html = FAIL
 BUG10473 LINUX : LayoutTests/fast/replaced/width100percent-searchfield.html = FAIL
 
 // Changed in http://trac.webkit.org/changeset/42082
-// This is deferred because it involves a scenario (submitting a form to
-// about:blank) that is unlikely to occur on real web pages.  That only
-// explains why this test sometimes times-out.
-BUG9704 : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.html = TIMEOUT CRASH
-BUG9704 : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = TIMEOUT CRASH
+BUG9704 : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.html = TIMEOUT
+BUG9704 : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = TIMEOUT
+BUG10477 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
 
 // Merge WebKit: 42026:42115 new tests
 BUG10475 WIN LINUX : LayoutTests/fast/block/positioning/negative-rel-position.html = FAIL
@@ -1872,8 +1855,6 @@ BUG10477 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
 // Mac also has unimplemented test shell features.
 BUG20450 LINUX WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL
 BUG20458 MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL
-BUG10477 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
-
 // Flaky since rev 13111.
 BUG10478 MAC : LayoutTests/fast/events/standalone-image-drag-to-editable.html = FAIL PASS
 
