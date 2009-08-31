@@ -37,10 +37,10 @@ using WebKit::WebUChar;
 class SandboxIPCProcess  {
  public:
   // lifeline_fd: this is the read end of a pipe which the browser process
-  //   holds the other end of. If the browser process dies, it's descriptors are
+  //   holds the other end of. If the browser process dies, its descriptors are
   //   closed and we will noticed an EOF on the pipe. That's our signal to exit.
-  // browser_socket: the 'browser's end of the sandbox IPC socketpair. From the
-  //   point of view of the renderer's, it's talking to the browser but this
+  // browser_socket: the browser's end of the sandbox IPC socketpair. From the
+  //   point of view of the renderer, it's talking to the browser but this
   //   object actually services the requests.
   SandboxIPCProcess(int lifeline_fd, int browser_socket)
       : lifeline_fd_(lifeline_fd),
