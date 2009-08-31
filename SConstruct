@@ -1130,10 +1130,17 @@ def DumpCompilerVersion(cc, env):
     env.Execute(env.Action('${CC} -print-libgcc-file-name'))
   elif cc.startswith('cl'):
     import subprocess
-    p = subprocess.Popen(env.subst('${CC} /V'),
-                         bufsize=1000*1000,
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
+    try:
+      p = subprocess.Popen(env.subst('${CC} /V'),
+                           bufsize=1000*1000,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
+    except WindowsError:
+      print 'ERROR: Visual Studio tools are not in your path.'
+      print '       Please run vcvars32.bat'
+      print '       Typically located in:'
+      print '          c:\\Program Files\\Microsoft Visual Studio 8\\VC\\Bin'
+      sys.exit(1)
     stderr = p.stderr.read()
     stdout = p.stdout.read()
     retcode = p.wait()
