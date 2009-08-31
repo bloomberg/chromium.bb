@@ -93,6 +93,7 @@ UITest::UITest()
       wait_for_initial_loads_(true),
       dom_automation_enabled_(false),
       process_(0),  // NULL on Windows, 0 PID on POSIX.
+      process_id_(-1),
       show_window_(false),
       clear_profile_(true),
       include_testing_id_(true),
@@ -224,8 +225,14 @@ void UITest::CloseBrowserAndServer() {
   QuitBrowser();
   CleanupAppProcesses();
 
-  // Shut down IPC testing interface.
-  server_.reset();
+  // Suppress spammy failures that seem to be occurring when running
+  // the UI tests in single-process mode.
+  // TODO(jhughes): figure out why this is necessary at all, and fix it
+  if (!in_process_renderer_)
+    AssertAppNotRunning(StringPrintf(
+        L"Unable to quit all browser processes. Original PID %d", process_id_));
+
+  server_.reset();  // Shut down IPC testing interface.
 }
 
 static CommandLine* CreatePythonCommandLine() {
@@ -340,6 +347,7 @@ void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
 
   ASSERT_TRUE(LaunchBrowserHelper(arguments, use_existing_browser_, false,
                                   &process_));
+  process_id_ = base::GetProcId(process_);
 }
 
 bool UITest::LaunchAnotherBrowserBlockUntilClosed(const CommandLine& cmdline) {
@@ -396,17 +404,23 @@ void UITest::QuitBrowser() {
 }
 
 void UITest::AssertAppNotRunning(const std::wstring& error_message) {
-  ASSERT_EQ(0, GetBrowserProcessCount()) << error_message;
+  std::wstring final_error_message(error_message);
+
+  int process_count = GetBrowserProcessCount();
+  if (process_count > 0) {
+    ChromeProcessList processes = GetRunningChromeProcesses(user_data_dir());
+    final_error_message += L" Leftover PIDs: [";
+    for (ChromeProcessList::const_iterator it = processes.begin();
+         it != processes.end(); ++it) {
+      final_error_message += StringPrintf(L" %d", *it);
+    }
+    final_error_message += L" ]";
+  }
+  ASSERT_EQ(0, process_count) << final_error_message;
 }
 
 void UITest::CleanupAppProcesses() {
   TerminateAllChromeProcesses(user_data_dir());
-
-  // Suppress spammy failures that seem to be occurring when running
-  // the UI tests in single-process mode.
-  // TODO(jhughes): figure out why this is necessary at all, and fix it
-  if (!in_process_renderer_)
-    AssertAppNotRunning(L"Unable to quit all browser processes.");
 }
 
 scoped_refptr<TabProxy> UITest::GetActiveTab(int window_index) {

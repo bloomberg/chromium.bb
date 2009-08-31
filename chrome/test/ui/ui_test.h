@@ -505,6 +505,7 @@ class UITest : public testing::Test {
                                         // test run the dom automation case.
   std::wstring template_user_data_;     // See set_template_user_data().
   base::ProcessHandle process_;         // Handle to the first Chrome process.
+  base::ProcessId process_id_;          // PID of |process_| (for debugging).
   FilePath user_data_dir_;              // User data directory used for the test
   static bool in_process_renderer_;     // true if we're in single process mode
   bool show_window_;                    // Determines if the window is shown or
