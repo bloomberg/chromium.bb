@@ -6,7 +6,10 @@ var botList;
 var checkinResults;
 
 function updateStatus(text) {
-  var results = (new RegExp('"Notice".*>(.*)<', 'g')).exec(text);
+  // Page outputs a line like this:
+  // <div class="Notice">Tree is open (issue -> person) </div> 
+  // Although what's in the <div> is arbitrary and typed by a person.
+  var results = (new RegExp('"Notice"[^>]*>(.*)<', 'g')).exec(text);
   if (!results || results.index < 0) {
     throw new Error("couldn't find status div in " + text);
   }
