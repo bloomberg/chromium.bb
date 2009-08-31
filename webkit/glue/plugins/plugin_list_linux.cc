@@ -24,7 +24,17 @@ bool CompareTime(const FileAndTime& a, const FileAndTime& b) {
   return a.second > b.second;
 }
 
+// Some plugins are shells around other plugins; we prefer to use the
+// real plugin directly, if it's available.  This function returns
+// true if we should prefer other plugins over this one.  We'll still
+// use a "undesirable" plugin if no other option is available.
+bool IsUndesirablePlugin(const WebPluginInfo& info) {
+  std::string filename = info.path.BaseName().value();
+  return (filename.find("npcxoffice") != std::string::npos || // Crossover
+          filename.find("npwrapper") != std::string::npos);   // nspluginwrapper
 }
+
+}  // anonymous namespace
 
 namespace NPAPI {
 
@@ -114,10 +124,22 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
   }
 }
 
+
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
-  // TODO(evanm): blacklist nspluginwrapper here?
-  // TODO(evanm): prefer the newest version of flash here?
+  if (IsUndesirablePlugin(info)) {
+    // See if we have a better version of this plugin.
+    for (size_t i = 0; i < plugins->size(); ++i) {
+      if (plugins->at(i).name == info.name &&
+          !IsUndesirablePlugin(plugins->at(i))) {
+        // Skip the current undesirable one so we can use the better one
+        // we just found.
+        return false;
+      }
+    }
+  }
+
+  // TODO(evanm): prefer the newest version of flash, etc. here?
 
   return true;
 }
