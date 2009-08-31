@@ -1,5 +1,9 @@
 This library was downloaded from http://code.google.com/p/pyftpdlib/
 
+Chromium-specific changes are in chromium.patch file. Currently it removes the
+delay after invalid login (which helps protect against brute-force attacks),
+which is slowing down some tests.
+
 For licensing information please LICENSE file
 
 Python FTP server library provides an high-level portable interface to easily

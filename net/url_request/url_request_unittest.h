@@ -263,11 +263,27 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
   }
 
   GURL TestServerPage(const std::string& path) {
-    return GURL(base_address_ + path);
+    // TODO(phajdan.jr): Check for problems with IPv6.
+    return GURL(scheme_ + "://" + host_name_ + ":" + port_str_ + "/" + path);
   }
 
+  GURL TestServerPage(const std::string& path,
+                      const std::string& user,
+                      const std::string& password) {
+    // TODO(phajdan.jr): Check for problems with IPv6.
+
+    if (password.empty())
+      return GURL(scheme_ + "://" + user + "@" +
+                  host_name_ + ":" + port_str_ + "/" + path);
+
+    return GURL(scheme_ + "://" + user + ":" + password +
+                "@" + host_name_ + ":" + port_str_ + "/" + path);
+  }
+
+  // Deprecated in favor of TestServerPage.
+  // TODO(phajdan.jr): Remove TestServerPageW.
   GURL TestServerPageW(const std::wstring& path) {
-    return GURL(base_address_ + WideToUTF8(path));
+    return TestServerPage(WideToUTF8(path));
   }
 
   virtual bool MakeGETRequest(const std::string& page_name) = 0;
@@ -282,41 +298,19 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
              const FilePath& document_root,
              const FilePath& cert_path,
              const std::wstring& file_root_url) {
-    std::string blank;
-    return Start(protocol, host_name, port, document_root, cert_path,
-                 file_root_url, blank, blank);
-  }
-
-  bool Start(net::TestServerLauncher::Protocol protocol,
-             const std::string& host_name, int port,
-             const FilePath& document_root,
-             const FilePath& cert_path,
-             const std::wstring& file_root_url,
-             const std::string& url_user,
-             const std::string& url_password) {
     if (!launcher_.Start(protocol,
         host_name, port, document_root, cert_path, file_root_url))
       return false;
 
-    std::string scheme;
     if (protocol == net::TestServerLauncher::ProtoFTP)
-      scheme = "ftp";
+      scheme_ = "ftp";
     else
-      scheme = "http";
+      scheme_ = "http";
     if (!cert_path.empty())
-      scheme.push_back('s');
+      scheme_.push_back('s');
 
-    std::string port_str = IntToString(port);
-    if (url_user.empty()) {
-      base_address_ = scheme + "://" + host_name + ":" + port_str + "/";
-    } else {
-      if (url_password.empty())
-        base_address_ = scheme + "://" + url_user + "@" +
-            host_name + ":" + port_str + "/";
-      else
-        base_address_ = scheme + "://" + url_user + ":" + url_password +
-            "@" + host_name + ":" + port_str + "/";
-    }
+    host_name_ = host_name;
+    port_str_ = IntToString(port);
     return true;
   }
 
@@ -344,7 +338,9 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
   };
 
   net::TestServerLauncher launcher_;
-  std::string base_address_;
+  std::string scheme_;
+  std::string host_name_;
+  std::string port_str_;
 };
 
 
@@ -419,7 +415,7 @@ class HTTPTestServer : public BaseTestServer {
                               const std::wstring& file_root_url) {
     return server->Start(net::TestServerLauncher::ProtoHTTP, kDefaultHostName,
                          kHTTPDefaultPort, document_root, cert_path,
-                         file_root_url, "", "");
+                         file_root_url);
   }
 
   // A subclass may wish to send the request in a different manner
@@ -577,27 +573,18 @@ class FTPTestServer : public BaseTestServer {
 
   static scoped_refptr<FTPTestServer> CreateServer(
       const std::wstring& document_root) {
-    std::string blank;
-    return CreateServer(document_root, blank, blank);
-  }
-
-  static scoped_refptr<FTPTestServer> CreateServer(
-      const std::wstring& document_root,
-      const std::string& url_user,
-      const std::string& url_password) {
     scoped_refptr<FTPTestServer> test_server = new FTPTestServer();
     FilePath docroot = FilePath::FromWStringHack(document_root);
     FilePath no_cert;
     if (!test_server->Start(net::TestServerLauncher::ProtoFTP,
-        kDefaultHostName, kFTPDefaultPort, docroot, no_cert, std::wstring(),
-        url_user, url_password)) {
+        kDefaultHostName, kFTPDefaultPort, docroot, no_cert, std::wstring())) {
       return NULL;
     }
     return test_server;
   }
 
   virtual bool MakeGETRequest(const std::string& page_name) {
-    const GURL& url = TestServerPage(base_address_, page_name);
+    const GURL& url = TestServerPage(page_name);
     TestDelegate d;
     URLRequest request(url, &d);
     request.set_context(new TestURLRequestContext());

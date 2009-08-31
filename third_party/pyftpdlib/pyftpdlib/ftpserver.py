@@ -2546,17 +2546,15 @@ class FTPHandler(asynchat.async_chat):
                 self.fs.root = self.authorizer.get_home_dir(self.username)
                 self.log("User %s logged in." %self.username)
             else:
-                CallLater(5, auth_failed)
+                auth_failed()
                 self.username = ""
-                self.sleeping = True
         # wrong username
         else:
             if self.username.lower() == 'anonymous':
-                CallLater(5, auth_failed, "Anonymous access not allowed.")
+                auth_failed("Anonymous access not allowed.")
             else:
-                CallLater(5, auth_failed)
+                auth_failed()
             self.username = ""
-            self.sleeping = True
 
     def ftp_REIN(self, line):
         """Reinitialize user's current session."""
