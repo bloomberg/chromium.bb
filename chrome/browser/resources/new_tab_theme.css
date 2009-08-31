@@ -21,6 +21,7 @@ body {
 }
 .thumbnail-container,
 .list > .thumbnail-container > .title,
+.list > .thumbnail-container > .title > div,
 .list .title > div,
 .thumbnail-container > .title {
   color: $9;
