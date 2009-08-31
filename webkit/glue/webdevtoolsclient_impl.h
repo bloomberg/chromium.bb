@@ -12,7 +12,6 @@
 #include <wtf/RefPtr.h>
 
 #include "v8.h"
-#include "webkit/glue/cpp_bound_class.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
 #include "webkit/glue/webdevtoolsclient.h"
 
@@ -31,7 +30,6 @@ class WebDevToolsClientDelegate;
 class WebViewImpl;
 
 class WebDevToolsClientImpl : public WebDevToolsClient,
-                              public CppBoundClass,
                               public DevToolsRpc::Delegate {
  public:
   WebDevToolsClientImpl(
@@ -75,11 +73,13 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
       const v8::Arguments& args);
   static v8::Handle<v8::Value> JsGetApplicationLocale(
       const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsDebuggerCommand(
+      const v8::Arguments& args);
 
   WebViewImpl* web_view_impl_;
   WebDevToolsClientDelegate* delegate_;
   String application_locale_;
-  OwnPtr<CppBoundClass> debugger_command_executor_obj_;
+  OwnPtr<BoundObject> debugger_command_executor_obj_;
   OwnPtr<JsDebuggerAgentBoundObj> debugger_agent_obj_;
   OwnPtr<JsToolsAgentBoundObj> tools_agent_obj_;
   bool loaded_;

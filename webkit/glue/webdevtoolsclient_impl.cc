@@ -95,35 +95,6 @@ class ToolsAgentNativeDelegateImpl : public ToolsAgentNativeDelegate {
   DISALLOW_COPY_AND_ASSIGN(ToolsAgentNativeDelegateImpl);
 };
 
-namespace {
-
-class RemoteDebuggerCommandExecutor : public CppBoundClass {
- public:
-  RemoteDebuggerCommandExecutor(
-      WebDevToolsClientDelegate* delegate,
-      WebFrame* frame,
-      const std::wstring& classname)
-      : delegate_(delegate) {
-    BindToJavascript(frame, classname);
-    BindMethod("DebuggerCommand",
-                &RemoteDebuggerCommandExecutor::DebuggerCommand);
-  }
-  virtual ~RemoteDebuggerCommandExecutor() {}
-
-  // The DebuggerCommand() function provided to Javascript.
-  void DebuggerCommand(const CppArgumentList& args, CppVariant* result) {
-    std::string command = args[0].ToString();
-    result->SetNull();
-    delegate_->SendDebuggerCommandToAgent(command);
-  }
-
- private:
-  WebDevToolsClientDelegate* delegate_;
-  DISALLOW_COPY_AND_ASSIGN(RemoteDebuggerCommandExecutor);
-};
-
-} //  namespace
-
 // static
 WebDevToolsClient* WebDevToolsClient::Create(
     WebView* view,
@@ -143,17 +114,22 @@ WebDevToolsClientImpl::WebDevToolsClientImpl(
       application_locale_(application_locale.c_str()),
       loaded_(false) {
   WebFrameImpl* frame = web_view_impl_->main_frame();
-
-  // Debugger commands should be sent using special method.
-  debugger_command_executor_obj_.set(new RemoteDebuggerCommandExecutor(
-      delegate, frame, L"RemoteDebuggerCommandExecutor"));
-  debugger_agent_obj_.set(new JsDebuggerAgentBoundObj(
-      this, frame, L"RemoteDebuggerAgent"));
-  tools_agent_obj_.set(
-      new JsToolsAgentBoundObj(this, frame, L"RemoteToolsAgent"));
-
   v8::HandleScope scope;
   v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
+
+  debugger_agent_obj_.set(new JsDebuggerAgentBoundObj(
+      this, frame_context, "RemoteDebuggerAgent"));
+  tools_agent_obj_.set(
+      new JsToolsAgentBoundObj(this, frame_context, "RemoteToolsAgent"));
+
+  // Debugger commands should be sent using special method.
+  debugger_command_executor_obj_.set(
+      new BoundObject(frame_context, this, "RemoteDebuggerCommandExecutor"));
+  debugger_command_executor_obj_->AddProtoFunction(
+      "DebuggerCommand",
+      WebDevToolsClientImpl::JsDebuggerCommand);
+  debugger_command_executor_obj_->Build();
+
   dev_tools_host_.set(new BoundObject(frame_context, this, "DevToolsHost"));
   dev_tools_host_->AddProtoFunction(
       "reset",
@@ -407,4 +383,15 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsGetApplicationLocale(
   WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
       v8::External::Cast(*args.Data())->Value());
   return v8String(client->application_locale_);
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsClientImpl::JsDebuggerCommand(
+    const v8::Arguments& args) {
+  WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
+      v8::External::Cast(*args.Data())->Value());
+  String command = WebCore::toWebCoreStringWithNullCheck(args[0]);
+  std::string std_command = webkit_glue::StringToStdString(command);
+  client->delegate_->SendDebuggerCommandToAgent(std_command);
+  return v8::Undefined();
 }
