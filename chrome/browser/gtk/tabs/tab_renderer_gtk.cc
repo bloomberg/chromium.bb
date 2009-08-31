@@ -371,6 +371,26 @@ void TabRendererGtk::PaintFavIconArea(GdkEventExpose* event) {
       favicon_bounds_.x(), favicon_bounds_.y(),
       favicon_bounds_.width(), favicon_bounds_.height());
 
+  // Draw our hover state.
+  if (!IsSelected()) {
+    Animation* animation = hover_animation_.get();
+    if (animation->GetCurrentValue() > 0) {
+      SkRect bounds;
+      bounds.set(favicon_bounds_.x(), favicon_bounds_.y(),
+          favicon_bounds_.right(), favicon_bounds_.bottom());
+      canvas.saveLayerAlpha(&bounds,
+          static_cast<int>(animation->GetCurrentValue() * kHoverOpacity * 0xff),
+              SkCanvas::kARGB_ClipLayer_SaveFlag);
+      canvas.drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
+      SkBitmap* active_bg = theme_provider_->GetBitmapNamed(IDR_THEME_TOOLBAR);
+      canvas.TileImageInt(*active_bg,
+          x() + favicon_bounds_.x(), favicon_bounds_.y(),
+          favicon_bounds_.x(), favicon_bounds_.y(),
+          favicon_bounds_.width(), favicon_bounds_.height());
+      canvas.restore();
+    }
+  }
+
   // Now paint the icon.
   PaintIcon(&canvas);
 }
