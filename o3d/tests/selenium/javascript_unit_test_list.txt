@@ -96,4 +96,4 @@ small   effect-import-test
 medium  TestStressDrawShapes   except(*googlechrome)
 medium  TestStressMultiWindow  except(*googlechrome)
 
-large   TestStressCullingZSort pdiff_threshold(200)
+large   TestStressCullingZSort pdiff_threshold(450)
