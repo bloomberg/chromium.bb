@@ -22,7 +22,7 @@ class NativeComboboxGtk : public NativeControlGtk,
   virtual void UpdateEnabled();
   virtual int GetSelectedItem() const;
   virtual bool IsDropdownOpen() const;
-  virtual gfx::Size GetPreferredSize() const;
+  virtual gfx::Size GetPreferredSize();
   virtual View* GetView();
   virtual void SetFocus();
   virtual gfx::NativeView GetTestingHandle() const;
@@ -33,8 +33,16 @@ class NativeComboboxGtk : public NativeControlGtk,
   virtual void NativeControlCreated(GtkWidget* widget);
 
  private:
+  static void CallChanged(GtkWidget* widget, NativeComboboxGtk* combo);
+
+  void SelectionChanged();
+
   // The combobox we are bound to.
   Combobox* combobox_;
+
+  // The preferred size from the last size_request. See
+  // NativeButtonGtk::preferred_size_ for more detail why we need this.
+  gfx::Size preferred_size_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeComboboxGtk);
 };

@@ -22,7 +22,7 @@ class NativeComboboxWin : public NativeControlWin,
   virtual void UpdateEnabled();
   virtual int GetSelectedItem() const;
   virtual bool IsDropdownOpen() const;
-  virtual gfx::Size GetPreferredSize() const;
+  virtual gfx::Size GetPreferredSize();
   virtual View* GetView();
   virtual void SetFocus();
   virtual gfx::NativeView GetTestingHandle() const;

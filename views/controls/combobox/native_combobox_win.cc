@@ -98,7 +98,7 @@ bool NativeComboboxWin::IsDropdownOpen() const {
   return SendMessage(native_view(), CB_GETDROPPEDSTATE, 0, 0) != 0;
 }
 
-gfx::Size NativeComboboxWin::GetPreferredSize() const {
+gfx::Size NativeComboboxWin::GetPreferredSize() {
   COMBOBOXINFO cbi = { 0 };
   cbi.cbSize = sizeof(cbi);
   // Note: Don't use CB_GETCOMBOBOXINFO since that crashes on WOW64 systems

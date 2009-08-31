@@ -34,7 +34,7 @@ class NativeComboboxWrapper {
   virtual bool IsDropdownOpen() const = 0;
 
   // Returns the preferred size of the combobox.
-  virtual gfx::Size GetPreferredSize() const = 0;
+  virtual gfx::Size GetPreferredSize() = 0;
 
   // Retrieves the views::View that hosts the native control.
   virtual View* GetView() = 0;
