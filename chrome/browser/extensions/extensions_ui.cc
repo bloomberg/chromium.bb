@@ -206,6 +206,7 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     case NotificationType::EXTENSION_UNLOADED_DISABLED:
       if (dom_ui_->tab_contents())
         dom_ui_->tab_contents()->controller().Reload(false);
+      registrar_.RemoveAll();
       break;
 
     default:

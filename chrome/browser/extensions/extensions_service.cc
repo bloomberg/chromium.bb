@@ -171,13 +171,23 @@ void ExtensionsService::UpdateExtension(const std::string& id,
 }
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
-  // Unload the extension if it's loaded.
-  if (GetExtensionById(extension_id))
-    UnloadExtension(extension_id);
+  FilePath path;
+  Extension* current_extension = GetExtensionById(extension_id);
 
-  // At this point we have to reconstruct the path from prefs, because
-  // we have no information about this extension in memory.
-  LoadExtension(extension_prefs_->GetExtensionPath(extension_id));
+  // Unload the extension if it's loaded. It might not be loaded if it crashed.
+  if (current_extension) {
+    path = current_extension->path();
+    UnloadExtension(extension_id);
+  }
+
+  if (path.empty()) {
+    // At this point we have to reconstruct the path from prefs, because
+    // we have no information about this extension in memory.
+    path = extension_prefs_->GetExtensionPath(extension_id);
+  }
+
+  if (!path.empty())
+    LoadExtension(path);
 }
 
 void ExtensionsService::UninstallExtension(const std::string& extension_id,
