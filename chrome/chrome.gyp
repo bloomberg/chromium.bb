@@ -1893,6 +1893,7 @@
         'browser/views/event_utils.cc',
         'browser/views/event_utils.h',
         'browser/views/extensions/extension_install_prompt.cc',
+        'browser/views/extensions/extension_pack_dialog.cc',
         'browser/views/extensions/extension_shelf.cc',
         'browser/views/extensions/extension_shelf.h',
         'browser/views/extensions/extension_view.cc',

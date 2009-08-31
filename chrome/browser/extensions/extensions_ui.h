@@ -72,6 +72,12 @@ class ExtensionsDOMHandler
       const FilePath& extension_path);
 
  private:
+#if defined(OS_WIN)
+  // The implementation of this method is platform-specific and defined
+  // elsewhere.
+  static void ShowPackDialog();
+#endif
+
   // Callback for "requestExtensionsData" message.
   void HandleRequestExtensionsData(const Value* value);
 
@@ -89,6 +95,9 @@ class ExtensionsDOMHandler
 
   // Callback for "load" message.
   void HandleLoadMessage(const Value* value);
+
+  // Callback for "pack" message.
+  void HandlePackMessage(const Value* value);
 
   // SelectFileDialog::Listener
   virtual void FileSelected(const FilePath& path,

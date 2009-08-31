@@ -44,8 +44,8 @@ bool ExtensionCreator::InitializeInput(
   if (private_key_path.value().empty() &&
       !private_key_output_path.value().empty() &&
       file_util::PathExists(private_key_output_path)) {
-      error_message_ = "Private key exists next to input directory. Try using "
-          "--pack-extension-key";
+      error_message_ = "A private key for specified extension already exists. "
+                       "Reuse that key or delete it first.";
       return false;
   }
 

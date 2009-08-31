@@ -2139,6 +2139,58 @@ each locale. aa1 -->
       <message name="IDS_EXTENSION_LOAD_FROM_DIRECTORY" desc="Title of directory browse dialog when user wants to load an extension from a directory.">
         Select the extension directory.
       </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_TITLE" desc="Title of pack extension dialog">
+        Pack Extension
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_HEADING" desc="The heading of the pack extension dialog.">
+        Select the root directory of the extension to pack. To update an extension, also select the private key file to reuse.
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_ROOT_DIRECTORY_LABEL" desc="Label in the pack extension dialog for the control that lets the user select the extension to pack.">
+        Extension root directory:
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_PRIVATE_KEY_LABEL" desc="Label in the pack extension dialog for the control that lets the user select the private key to use to pack the extension. The label should indicate that the input is not required to be filled in.">
+        Private key file (optional):
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_BROWSE" desc="Text on buttons in the pack extension dialog that open up file browsing UI to pick the extension to pack.">
+        Browse...
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_SELECT_ROOT" desc="Heading in file browse dialog instructing user to select an extension to pack.">
+        Select extension root directory.
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_SELECT_KEY" desc="Heading in file browse dialog instructing user to select a private key.">
+        Select private key file.
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_KEY_FILE_TYPE_DESCRIPTION" desc="Displayed in the file browse dialog. Associates the file extension 'pem' is for Private Keys.">
+        Private key
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_ERROR_ROOT_REQUIRED" desc="Error message in pack extension dialog when the user does not specify a root directory.">
+        Extension root directory is required.
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_ERROR_ROOT_INVALID" desc="Error message in pack extension dialog when the user speciifes an invalid root directory.">
+        Extension root directory is invalid.
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_ERROR_KEY_INVALID" desc="Error message in pack extension dialog when the user speciifes an invalid key file.">
+        Private key file is invalid.
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_SUCCESS_TITLE" desc="Message shown on titlebar of window after successful packing of a new extension.">
+        Extension Packaging Success
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_NEW" desc="Message shown on successful packing of a new extension.">
+        Created the following files:
+        
+Extension: <ph name="EXTENSION_FILE">$1<ex>c:\users\aa\myextension.crx</ex></ph>
+Key File: <ph name="KEY_FILE">$2<ex>c:\users\aa\myextension.pem</ex></ph>
+
+Keep your key file in a safe place. You will need it to create new versions of your extension.
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_UPDATE" desc="Message shown on successful packing of an updated extension.">
+        Created the extension:
+
+<ph name="EXTENSION_FILE">$1<ex>c:\users\aa\myextension.crx</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PACK_DIALOG_FAILURE_TITLE" desc="Message shown on titlebar of window after unsucessful packing of an extension.">
+        Extension Packaging Failure
+      </message>
 
       <!-- TODO(aa): Remove these old warning messages when all the platforms are switched to the new ones, above. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_1" desc="Humorous warning displayed in the extension install prompt that tells users that extensions have access to their computer and private data.">

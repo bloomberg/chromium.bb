@@ -85,6 +85,8 @@ void ExtensionsDOMHandler::RegisterMessages() {
       NewCallback(this, &ExtensionsDOMHandler::HandleUninstallMessage));
   dom_ui_->RegisterMessageCallback("load",
       NewCallback(this, &ExtensionsDOMHandler::HandleLoadMessage));
+  dom_ui_->RegisterMessageCallback("pack",
+      NewCallback(this, &ExtensionsDOMHandler::HandlePackMessage));
 }
 
 void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
@@ -181,6 +183,12 @@ void ExtensionsDOMHandler::HandleLoadMessage(const Value* value) {
       l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY),
       FilePath(), NULL, 0, FILE_PATH_LITERAL(""),
       NULL, NULL);
+}
+
+void ExtensionsDOMHandler::HandlePackMessage(const Value* value) {
+#if defined(OS_WIN)
+  ShowPackDialog();
+#endif
 }
 
 void ExtensionsDOMHandler::FileSelected(const FilePath& path, int index,
