@@ -51,6 +51,7 @@
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -1970,7 +1971,8 @@ cleanup:
 
 int NaClCommonSysThread_Nice(struct NaClAppThread *natp,
                              const int nice) {
-  return 0;
+  /* Note: implementation of nacl_thread_nice is OS dependent. */
+  return nacl_thread_nice(nice);
 }
 
 #if defined(HAVE_SDL)

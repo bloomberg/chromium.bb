@@ -30,33 +30,14 @@
  */
 
 /*
- * Gather ye all module initializations and finalizations here.
+ * Constants for nacl_thread_nice system call and friends.
  */
-#include "native_client/src/trusted/desc/nrd_all_modules.h"
-#include "native_client/src/trusted/service_runtime/nacl_audio_video.h"
-#include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
-#include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
-#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 
+#ifndef SERVICE_RUNTIME_INCLUDE_SYS_NACL_NICE_H__
+#define SERVICE_RUNTIME_INCLUDE_SYS_NACL_NICE_H__
 
-void  NaClAllModulesInit(void) {
-  NaClNrdAllModulesInit();
-  NaClGlobalModuleInit();  /* various global variables */
-  NaClTlsInit();
-#if defined(HAVE_SDL)
-  NaClMultimediaModuleInit();
-#endif
-  NaClSyscallTableInit();
-  NaClThreadNiceInit();
-}
+#define NICE_REALTIME   -5
+#define NICE_NORMAL     0
+#define NICE_BACKGROUND 5
 
-
-void NaClAllModulesFini(void) {
-#if defined(HAVE_SDL)
-  NaClMultimediaModuleFini();
-#endif
-  NaClTlsFini();
-  NaClGlobalModuleFini();
-  NaClNrdAllModulesFini();
-}
+#endif  /* SERVICE_RUNTIME_INCLUDE_SYS_NACL_NICE_H__ */

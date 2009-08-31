@@ -124,6 +124,7 @@
         ['OS=="linux"', {
           'sources': [
             'linux/sel_memory.c',
+            'linux/nacl_thread_nice.c',
           ],
           'conditions': [
             ['target_arch=="x86"', {
@@ -133,7 +134,7 @@
               ],
             }],
             ['target_arch=="arm"', {
-              'soruces': [
+              'sources': [
                 'linux/arm/sel_segments.c',
               ],
             }],
@@ -144,6 +145,7 @@
             'osx/nacl_ldt.c',
             'linux/sel_memory.c',
             'linux/x86/sel_segments.c',
+            'osx/nacl_thread_nice.c',
           ],
         }],
         ['OS=="win"', {
@@ -151,6 +153,7 @@
             'win/nacl_ldt.c',
             'win/sel_memory.c',
             'win/sel_segments.c',
+            'win/nacl_thread_nice.c',
           ],
         }],
       ],

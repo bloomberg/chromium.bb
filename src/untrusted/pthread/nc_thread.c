@@ -771,12 +771,8 @@ ret:
   return retval;
 }
 
-int pthread_nice(const int nice) {
+int nacl_thread_nice(const int nice) {
   return NACL_SYSCALL(thread_nice)(nice);
-}
-
-int pthread_bless () {
-  return pthread_nice(NICE_REALTIME);
 }
 
 pthread_t pthread_self() {

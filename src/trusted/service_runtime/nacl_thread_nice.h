@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2009, Google Inc.
  * All rights reserved.
@@ -28,35 +29,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_THREAD_NICE_H__
+#define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_THREAD_NICE_H__ 1
 
-/*
- * Gather ye all module initializations and finalizations here.
- */
-#include "native_client/src/trusted/desc/nrd_all_modules.h"
-#include "native_client/src/trusted/service_runtime/nacl_audio_video.h"
-#include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
-#include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
-#include "native_client/src/trusted/service_runtime/nacl_tls.h"
+void NaClThreadNiceInit();
 
+int nacl_thread_nice(int nacl_nice);
 
-void  NaClAllModulesInit(void) {
-  NaClNrdAllModulesInit();
-  NaClGlobalModuleInit();  /* various global variables */
-  NaClTlsInit();
-#if defined(HAVE_SDL)
-  NaClMultimediaModuleInit();
-#endif
-  NaClSyscallTableInit();
-  NaClThreadNiceInit();
-}
-
-
-void NaClAllModulesFini(void) {
-#if defined(HAVE_SDL)
-  NaClMultimediaModuleFini();
-#endif
-  NaClTlsFini();
-  NaClGlobalModuleFini();
-  NaClNrdAllModulesFini();
-}
+#endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_THREAD_NICE_H__ */

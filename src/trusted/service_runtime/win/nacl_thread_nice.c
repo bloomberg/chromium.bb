@@ -28,35 +28,44 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 /*
- * Gather ye all module initializations and finalizations here.
+ * Windows thread priority support.
  */
-#include "native_client/src/trusted/desc/nrd_all_modules.h"
-#include "native_client/src/trusted/service_runtime/nacl_audio_video.h"
-#include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
-#include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
-#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 
+#include <windows.h>
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_nice.h"
 
-void  NaClAllModulesInit(void) {
-  NaClNrdAllModulesInit();
-  NaClGlobalModuleInit();  /* various global variables */
-  NaClTlsInit();
-#if defined(HAVE_SDL)
-  NaClMultimediaModuleInit();
-#endif
-  NaClSyscallTableInit();
-  NaClThreadNiceInit();
-}
+void NaClThreadNiceInit() { }
 
+int nacl_thread_nice(int nacl_nice) {
+  BOOL rc;
+  HANDLE mThreadHandle = GetCurrentThread();
 
-void NaClAllModulesFini(void) {
-#if defined(HAVE_SDL)
-  NaClMultimediaModuleFini();
-#endif
-  NaClTlsFini();
-  NaClGlobalModuleFini();
-  NaClNrdAllModulesFini();
+  switch (nacl_nice) {
+    case NICE_REALTIME:
+      /* It appears as though you can lock up a machine if you use
+       * THREAD_PRIORITY_TIME_CRITICAL or THREAD_PRIORITY_ABOVE_NORMAL.
+       * So Windows does not get real-time threads for now.
+       */
+      rc = SetThreadPriority(mThreadHandle, THREAD_PRIORITY_NORMAL);
+                             /* THREAD_PRIORITY_ABOVE_NORMAL); */
+                             /* THREAD_PRIORITY_TIME_CRITICAL); */
+      break;
+    case NICE_NORMAL:
+      rc = SetThreadPriority(mThreadHandle, THREAD_PRIORITY_NORMAL);
+      break;
+    case NICE_BACKGROUND:
+      rc = SetThreadPriority(mThreadHandle, THREAD_PRIORITY_BELOW_NORMAL);
+      break;
+    default:
+      NaClLog(LOG_WARNING, "nacl_thread_nice() failed (bad nice value).\n");
+      return -1;
+      break;
+  }
+  if (!rc) {
+    NaClLog(LOG_WARNING, "nacl_thread_nice() failed.\n");
+    return -1;
+  }
+  return 0;
 }

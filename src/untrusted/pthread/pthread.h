@@ -397,7 +397,8 @@ typedef struct {
 /** Detached thread type; for use with pthread_attr_setdetachstate(). */
 #define PTHREAD_CREATE_DETACHED 0
 
-/** Values for nice argument to pthread_nice() **/
+/** Values for nice argument to nacl_thread_nice() **/
+/* TODO(bradchen): move these to service_runtime/include */
 #define NICE_REALTIME   -5
 #define NICE_NORMAL     0
 #define NICE_BACKGROUND 5
@@ -483,17 +484,6 @@ extern int pthread_detach(pthread_t th);
 
 /** @nqPosix
 * Indicates that the calling thread is to receive special consideration
-* by the scheduler as appropriate for an audio processing thread. The
-* implementation of this subroutine is platform-specific.
-*
-* @linkPthread
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_bless(void);
-
-/** @nqPosix
-* Indicates that the calling thread is to receive special consideration
 * by the scheduler as indicated by parameter nice. Suggested values are
 * NICE_REALTIME, NICE_NORMAL, NICE_BACKGROUND, defined above. The
 * implementation of this subroutine is platform-specific. Implementations
@@ -506,10 +496,9 @@ extern int pthread_bless(void);
 *
 * @return 0 on success, non-zero error code otherwise.
 */
-extern int pthread_nice(const int nice);
+extern int nacl_thread_nice(const int nice);
 
 /* Functions for handling thread attributes.  */
-
 /** @nqPosix
 * Initializes thread attributes structure attr with default attributes
 * (detachstate is PTHREAD_CREATE_JOINABLE).

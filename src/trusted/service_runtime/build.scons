@@ -207,16 +207,19 @@ if env.Bit('windows'):
     'win/nacl_ldt.c',
     'win/sel_memory.c',
     'win/sel_segments.c',
+    'win/nacl_thread_nice.c',
   ]
 elif env.Bit('mac'):
   ldr_inputs += [
     'osx/nacl_ldt.c',
     'linux/sel_memory.c',
     'linux/x86/sel_segments.c',
+    'osx/nacl_thread_nice.c',
   ]
 elif env.Bit('linux'):
   ldr_inputs += [
     'linux/sel_memory.c',
+    'linux/nacl_thread_nice.c',
   ]
   if env['BUILD_ARCHITECTURE'] == 'x86':
     ldr_inputs += [

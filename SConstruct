@@ -850,7 +850,7 @@ if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
           'tests/syscalls/nacl.scons',
           'tests/threads/nacl.scons',
           'tests/vim/nacl.scons',
-          'tests/pthread_bless/nacl.scons',
+          'tests/nthread_nice/nacl.scons',
 
           'tools/tests/nacl.scons',
           ####  ALPHABETICALLY SORTED ####
