@@ -145,8 +145,12 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
 #if defined(OS_WIN)
   parent = gfx::NativeViewFromId(params.containing_window);
 #elif defined(OS_LINUX)
-  PluginThread::current()->Send(new PluginProcessHostMsg_MapNativeViewId(
-      params.containing_window, &parent));
+  // This code is disabled, See issue 17110.
+  // The problem is that the XID can change at arbitrary times (e.g. when the
+  // tab is detached then reattached), so we need to be able to track these
+  // changes, and let the PluginInstance know.
+  // PluginThread::current()->Send(new PluginProcessHostMsg_MapNativeViewId(
+  //    params.containing_window, &parent));
 #endif
   delegate_ = WebPluginDelegate::Create(path, mime_type_, parent);
 
