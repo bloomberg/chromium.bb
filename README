@@ -1,11 +1,26 @@
                               Fontconfig
              Font configuration and customization library
-                             Version 2.7.1
-                              2009-07-27
+                             Version 2.7.2
+                              2009-08-31
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.7.2
+
+Behdad Esfahbod (6):
+      Improve charset printing
+      [ja.orth] Comment out FULLWIDTH YEN SIGN (#22942)
+      Bug 22037 - No Fonts installed on a default install on Windows Server 2003
+      Bug 23419 - "contains" expression seems not working on the fontconfig rule
+      Revert "Fix FcNameUnparseLangSet()" and redo it
+      Bump libtool version for release
+
+Tor Lillqvist (3):
+      Fix MinGW compilation
+      Fix heap corruption on Windows in FcEndElement()
+      Use multi-byte codepage aware string function on Windows
 
 2.7.1
 
