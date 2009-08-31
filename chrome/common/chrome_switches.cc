@@ -598,4 +598,8 @@ const wchar_t kCookiePipe[] = L"cookie-pipe";
 // Enable experimental support for cached byte-ranges.
 const wchar_t kEnableByteRangeSupport[] = L"enable-byte-range-support";
 
+// Explicitly allow additional ports using a comma separated list of port
+// numbers.
+const wchar_t kExplicitlyAllowedPorts[] = L"explicitly-allowed-ports";
+
 }  // namespace switches

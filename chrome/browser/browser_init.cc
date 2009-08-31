@@ -57,6 +57,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "net/url_request/url_request_http_job.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
@@ -817,6 +818,12 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     // If the chrome process was already running, install the extension without
     // popping up another browser window.
     silent_launch = !process_startup;
+  }
+
+  if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
+    std::wstring allowed_ports =
+        command_line.GetSwitchValue(switches::kExplicitlyAllowedPorts);
+    URLRequestHttpJob::SetExplicitlyAllowedPorts(allowed_ports);
   }
 
   // If we don't want to launch a new browser window or tab (in the case

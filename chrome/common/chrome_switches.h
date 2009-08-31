@@ -242,6 +242,8 @@ extern const wchar_t kCookiePipe[];
 
 extern const wchar_t kEnableByteRangeSupport[];
 
+extern const wchar_t kExplicitlyAllowedPorts[];
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_
