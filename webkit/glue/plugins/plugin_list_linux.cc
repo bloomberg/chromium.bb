@@ -4,10 +4,18 @@
 
 #include "webkit/glue/plugins/plugin_list.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 
 namespace {
+
+// Return true if we're in debug-plugin-loading mode.
+bool DebugPluginLoading() {
+  static const wchar_t kDebugPluginLoading[] = L"debug-plugin-loading";
+  return CommandLine::ForCurrentProcess()->HasSwitch(kDebugPluginLoading);
+}
 
 // We build up a list of files and mtimes so we can sort them.
 typedef std::pair<FilePath, base::Time> FileAndTime;
@@ -94,7 +102,10 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
     // its path to find dependent data files.
     // file_util::AbsolutePath calls through to realpath(), which resolves
     // symlinks.
+    FilePath orig_path = path;
     file_util::AbsolutePath(&path);
+    if (DebugPluginLoading())
+      LOG(INFO) << "Resolved " << orig_path.value() << " -> " << path.value();
 
     // Get mtime.
     file_util::FileInfo info;
@@ -109,8 +120,11 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
         break;
       }
     }
-    if (skip)
+    if (skip) {
+      if (DebugPluginLoading())
+        LOG(INFO) << "Skipping duplicate instance of " << path.value();
       continue;
+    }
 
     files.push_back(std::make_pair(path, info.last_modified));
   }
@@ -127,19 +141,33 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
 
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
+  if (DebugPluginLoading()) {
+    LOG(INFO) << "Considering " << info.path.value()
+              << " (" << info.name << ")";
+  }
   if (IsUndesirablePlugin(info)) {
+    if (DebugPluginLoading())
+      LOG(INFO) << info.path.value() << " is undesirable.";
+
     // See if we have a better version of this plugin.
     for (size_t i = 0; i < plugins->size(); ++i) {
       if (plugins->at(i).name == info.name &&
           !IsUndesirablePlugin(plugins->at(i))) {
         // Skip the current undesirable one so we can use the better one
         // we just found.
+        if (DebugPluginLoading()) {
+          LOG(INFO) << "Skipping " << info.path.value() << ", preferring "
+                    << plugins->at(i).path.value();
+        }
         return false;
       }
     }
   }
 
   // TODO(evanm): prefer the newest version of flash, etc. here?
+
+  if (DebugPluginLoading())
+    LOG(INFO) << "Using " << info.path.value();
 
   return true;
 }
