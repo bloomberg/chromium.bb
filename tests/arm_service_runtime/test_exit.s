@@ -30,7 +30,7 @@
 # Simple test: just calls exit(42)
     .syntax unified
 
-    .text
+    .section .init
     .globl _mainCRTStartup
     .globl _start
     .globl start

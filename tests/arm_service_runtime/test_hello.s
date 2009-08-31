@@ -30,7 +30,7 @@
 # Simple test: calls write(0,"hello world\n", 12) followed by exit(0)
     .syntax unified
 
-    .text
+    .section .init
     .globl _mainCRTStartup
     .globl _start
     .globl start
