@@ -48,6 +48,35 @@ generator_additional_path_sections = [
   'msvs_props',
 ]
 
+cached_username = None
+cached_domain = None
+
+# TODO(gspencer): Switch the os.environ calls to be
+# win32api.GetDomainName() and win32api.GetUserName() once the
+# python version in depot_tools has been updated to work on Vista
+# 64-bit.
+def _GetDomainAndUserName():
+  global cached_username
+  global cached_domain
+  if not cached_domain or not cached_username:
+    domain = os.environ.get('USERDOMAIN')
+    username = os.environ.get('USERNAME')
+    if not domain or not username:
+      call = subprocess.Popen(['net', 'config', 'Workstation'],
+                                stdout=subprocess.PIPE)
+      config = call.communicate()[0]
+      username_re = re.compile('^User name\s+(\S+)', re.MULTILINE)
+      username_match = username_re.search(config)
+      if username_match:
+        username = username_match.group(1)
+      domain_re = re.compile('^Logon domain\s+(\S+)', re.MULTILINE)
+      domain_match = domain_re.search(config)
+      if domain_match:
+        domain = domain_match.group(1)
+    cached_domain = domain
+    cached_username = username
+  return (cached_domain, cached_username)
+
 fixpath_prefix = None
 
 def _FixPath(path):
@@ -505,14 +534,8 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   p.Create(spec['target_name'], guid=guid)
 
   # Create the user file.
-  # TODO(gspencer): Switch the os.environ calls to be
-  # win32api.GetDomainName() and win32api.GetUserName() once the
-  # python version in depot_tools has been updated to work on Vista
-  # 64-bit.
-  vcuser_filename = '.'.join([vcproj_filename,
-                              os.environ.get('USERDOMAIN'),
-                              os.environ.get('USERNAME'),
-                              'user'])
+  (domain, username) = _GetDomainAndUserName()
+  vcuser_filename = '.'.join([vcproj_filename, domain, username, 'user'])
   user_file = MSVSUserFile.Writer(vcuser_filename, version=version)
   user_file.Create(spec['target_name'])
 
