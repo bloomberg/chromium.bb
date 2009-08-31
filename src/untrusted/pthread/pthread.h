@@ -397,12 +397,6 @@ typedef struct {
 /** Detached thread type; for use with pthread_attr_setdetachstate(). */
 #define PTHREAD_CREATE_DETACHED 0
 
-/** Values for nice argument to nacl_thread_nice() **/
-/* TODO(bradchen): move these to service_runtime/include */
-#define NICE_REALTIME   -5
-#define NICE_NORMAL     0
-#define NICE_BACKGROUND 5
-
 /* Thread functions  */
 
 /** @nqPosix

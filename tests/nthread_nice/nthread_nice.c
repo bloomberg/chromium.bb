@@ -60,10 +60,6 @@
 #include <pthread.h>
 #include <stdio.h>
 
-/* TODO(bradchen) rename pthread_nice to nthread_nice once the   */
-/* SDK build is settled.                                         */
-#define nacl_thread_nice pthread_nice
-
 static int gDone = 0;
 static int kMaxIterations = 10;
 struct thread_closure {
