@@ -38,7 +38,7 @@
 typedef intptr_t AtomicWord;
 typedef int32_t Atomic32;
 
-inline AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
+static inline AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
                                  AtomicWord old_value,
                                  AtomicWord new_value) {
   uint32_t old, tmp;
@@ -57,7 +57,7 @@ inline AtomicWord CompareAndSwap(volatile AtomicWord* ptr,
   return old;
 }
 
-inline AtomicWord AtomicExchange(volatile AtomicWord* ptr,
+static inline AtomicWord AtomicExchange(volatile AtomicWord* ptr,
                                  AtomicWord new_value) {
   uint32_t tmp, old;
 
@@ -73,7 +73,7 @@ inline AtomicWord AtomicExchange(volatile AtomicWord* ptr,
   return old;
 }
 
-inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
+static inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
                                   AtomicWord increment) {
   uint32_t tmp, res;
 
