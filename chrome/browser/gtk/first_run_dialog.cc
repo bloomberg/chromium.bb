@@ -169,4 +169,5 @@ void FirstRunDialog::FirstRunDone() {
 
   gtk_widget_destroy(dialog_);
   MessageLoop::current()->Quit();
+  delete this;
 }
