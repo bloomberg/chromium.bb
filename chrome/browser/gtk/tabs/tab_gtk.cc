@@ -58,7 +58,7 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
         { MENU_NORMAL, TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB,
             0, NULL, GDK_t, GDK_CONTROL_MASK | GDK_SHIFT_MASK, true },
         { MENU_SEPARATOR },
-        { MENU_NORMAL, TabStripModel::CommandTogglePinned,
+        { MENU_CHECKBOX, TabStripModel::CommandTogglePinned,
             IDS_TAB_CXMENU_PIN_TAB },
         { MENU_END },
     };
