@@ -1798,6 +1798,7 @@ BUG10465 LINUX : LayoutTests/fast/clip/overflow-border-radius-clip.html = FAIL
 
 // Needs rebaseline. See WebKit 41948
 BUG10468 MAC : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
+BUG10468 WIN DEBUG : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
 // Merge WebKit: 41944:41999, Linux failures.
 // Merge WebKit:  47748:47759, Linux crashes.
