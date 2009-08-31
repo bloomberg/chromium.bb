@@ -184,7 +184,7 @@ void Canvas::DrawBitmap(Texture2D* texture2d,
       bitmap.getPixels());
 
   for (int yy = 0; yy < height; ++yy) {
-    memcpy(bitmap_data + yy * width,
+    memcpy(bitmap_data + yy * width * 4,
            texture_data + yy * lock_helper.pitch(),
            width * 4);
   }
