@@ -14,9 +14,6 @@
 #include "views/standard_layout.h"
 #include "views/window/window.h"
 
-using views::ColumnSet;
-using views::GridLayout;
-
 // Default size of the dialog window.
 static const int kDefaultWindowWidth = 320;
 static const int kDefaultWindowHeight = 100;
