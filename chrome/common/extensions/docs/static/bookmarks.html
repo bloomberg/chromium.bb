@@ -2,18 +2,21 @@
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-Use the <code>chrome.bookmarks</code> API to create, organize, and otherwise manipulate bookmarks.
+Use the <code>chrome.bookmarks</code> API to create, organize,
+and otherwise manipulate bookmarks.
 </p>
 
 <h2 id="description">Description</h2>
 
-<p>
-[PENDING: intro goes here...]
+<p class="comment">
+[PENDING: This section needs to be reviewed and updated.]
 </p>
 
 <p>
-<em>Bookmark objects</em> are an important part of the <code>chrome.bookmarks</code> API.
-Each bookmark object represents either a URL or a group of bookmarks, as you can see in the following figure.
+<a href="#type-BookmarkTreeNode">BookmarkTreeNode</a> objects
+are an important part of the <code>chrome.bookmarks</code> API.
+Each bookmark tree node represents
+either a URL or a group of bookmarks, as you can see in the following figure.
 </p>
 
 <img
@@ -21,18 +24,27 @@ Each bookmark object represents either a URL or a group of bookmarks, as you can
   width="415"
   height="123"
   src="images/bookmarks.png"></a>
+<br />
+<span class="comment">
+[PENDING: this figure needs to be updated]
+</span>
 
 
 <h3 id="overview-properties">Properties</h3>
 
-<p>Objects that represent bookmarks can have the following properties:
+<p>
+Objects that represent bookmarks can have the following properties:
 </p>
 
 <dl>
 <dt> <code>id</code> </dt>
 <dd> An integer ID that's unique for each bookmark.
      Don't save this ID in persistent storage;
-     the ID for a particular bookmark might change the next time the browser is started.
+     the ID for a particular bookmark might change
+     the next time the browser is started.
+     <span class="comment">
+     [PENDING: these might be persistent now]
+     </span>
      </dd>
 
 <dt> <code>title</code> </dt>
@@ -54,6 +66,8 @@ Each bookmark object represents either a URL or a group of bookmarks, as you can
      <em>(omitted for groups)</em>
      </dt>
 <dd> The URL of the page that the bookmark points to. </dd>
+
+<dt> ... </dt>
 </dl>
 
 <h3 id="overview-examples">Examples</h3>
@@ -113,13 +127,15 @@ Here's how those bookmarks might be represented with bookmark objects:</p>
 <p>
 Here's some code you could use to create that hierarchy:</p>
 
-<pre class="example">
-...code goes here...
+<pre class="example comment">
+[PENDING: ...code goes here...]
 </pre>
 
 
+<!-- PENDING: we could have links to source code and sample extensions. E.g.:
 <div class="exampleLink">
 <a href="http://www.google.com/url?q=http%3A%2F%2Fexample.com&amp;sa=D&amp;sntz=1&amp;usg=AFrqEzd0oeJ1qGwYPoKuq1dTesEchMDLIQ">Full source code</a> |
 <a href="http://www.google.com/url?q=http%3A%2F%2Fexample.com&amp;sa=D&amp;sntz=1&amp;usg=AFrqEzd0oeJ1qGwYPoKuq1dTesEchMDLIQ">Install extension</a>
-</div> <!-- END exampleLink -->
+</div>
+-->
 <!-- END AUTHORED CONTENT -->
