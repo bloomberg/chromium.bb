@@ -757,6 +757,12 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
     }
   }
 
+  // TODO(shess): Option-tab, would normally insert a literal tab
+  // character.  Consider combining with -insertTab:
+  if (cmd == @selector(insertTabIgnoringFieldEditor:)) {
+    return YES;
+  }
+
   // |-noop:| is sent when the user presses Cmd+Return. Override the no-op
   // behavior with the proper WindowOpenDisposition.
   NSEvent* event = [NSApp currentEvent];
@@ -765,6 +771,12 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
     WindowOpenDisposition disposition =
         event_utils::WindowOpenDispositionFromNSEvent(event);
     edit_view_->AcceptInput(disposition, false);
+    return YES;
+  }
+
+  // TODO(shess): Option-return, would normally insert a literal
+  // newline.  Consider combining with -insertNewline:.
+  if (cmd == @selector(insertNewlineIgnoringFieldEditor:)) {
     return YES;
   }
 
