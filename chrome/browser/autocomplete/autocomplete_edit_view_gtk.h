@@ -362,10 +362,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // it, we pass this string to SavePrimarySelection()).
   std::string selected_text_;
 
-  // Has the current value of |selected_text_| been saved as the PRIMARY
-  // selection?
-  bool selection_saved_;
-
   // ID of the signal handler for "mark-set" on |text_buffer_|.
   gulong mark_set_handler_id_;
 

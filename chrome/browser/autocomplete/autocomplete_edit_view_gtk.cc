@@ -96,7 +96,6 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       command_updater_(command_updater),
       popup_window_mode_(popup_window_mode),
       scheme_security_level_(ToolbarModel::NORMAL),
-      selection_saved_(false),
       mark_set_handler_id_(0),
       button_1_pressed_(false),
       text_selected_during_click_(false),
@@ -242,9 +241,8 @@ void AutocompleteEditViewGtk::SaveStateToTab(TabContents* tab) {
 
   // If any text has been selected, register it as the PRIMARY selection so it
   // can still be pasted via middle-click after the text view is cleared.
-  if (!selected_text_.empty() && !selection_saved_) {
+  if (!selected_text_.empty()) {
     SavePrimarySelection(selected_text_);
-    selection_saved_ = true;
   }
 }
 
@@ -266,7 +264,6 @@ void AutocompleteEditViewGtk::Update(const TabContents* contents) {
 
   if (contents) {
     selected_text_.clear();
-    selection_saved_ = false;
     RevertAll();
     const AutocompleteEditState* state =
         GetStateAccessor()->GetProperty(contents->property_bag());
@@ -856,21 +853,14 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
     return;
   }
 
-  // Is no text selected in the GtkTextView?
-  bool no_text_selected = false;
-
   // Get the currently-selected text, if there is any.
+  std::string new_selected_text;
   GtkTextIter start, end;
-  if (!gtk_text_buffer_get_selection_bounds(text_buffer_, &start, &end)) {
-    no_text_selected = true;
-  } else {
+  if (gtk_text_buffer_get_selection_bounds(text_buffer_, &start, &end)) {
     gchar* text = gtk_text_iter_get_text(&start, &end);
     size_t text_len = strlen(text);
-    if (!text_len) {
-      no_text_selected = true;
-    } else {
-      selected_text_ = std::string(text, text_len);
-      selection_saved_ = false;
+    if (text_len) {
+      new_selected_text = std::string(text, text_len);
     }
     g_free(text);
   }
@@ -878,16 +868,27 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
   // If the user just selected some text with the mouse (or at least while the
   // mouse button was down), make sure that we won't blow their selection away
   // later by selecting all of the text when the button is released.
-  if (button_1_pressed_ && !no_text_selected) {
+  if (button_1_pressed_ && !new_selected_text.empty()) {
     text_selected_during_click_ = true;
   }
 
-  // If we have some previously-selected text but it's no longer highlighted
-  // and we haven't saved it as the selection yet, we save it now.
-  if (!selected_text_.empty() && no_text_selected && !selection_saved_) {
-    SavePrimarySelection(selected_text_);
-    selection_saved_ = true;
+  // If we had some text selected earlier but it's no longer highlighted, we
+  // might need to save it now...
+  if (!selected_text_.empty() && new_selected_text.empty()) {
+    // ... but only if we currently own the selection.  We want to manually
+    // update the selection when the text is unhighlighted because the user
+    // clicked in a blank area of the text view, but not when it's unhighlighted
+    // because another client or widget took the selection.  (This handler gets
+    // called before the default handler, so as long as nobody else took the
+    // selection, the text buffer still owns it even if GTK is about to take it
+    // away in the default handler.)
+    GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+    if (gtk_clipboard_get_owner(clipboard) == G_OBJECT(text_buffer_)) {
+      SavePrimarySelection(selected_text_);
+    }
   }
+
+  selected_text_ = new_selected_text;
 }
 
 // Just use the default behavior for DnD, except if the drop can be a PasteAndGo
