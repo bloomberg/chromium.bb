@@ -30,14 +30,15 @@
 
 Import('env')
 
-######################################################################
-# Smoke Test
-######################################################################
 env.ComponentProgram('hello_world.nexe', 'hello_world.c')
 
-node = env.CommandSelLdrTestNacl('hello_world_test.out',
-                                 command=[env.File('hello_world.nexe')],
-                                 stdout_golden=env.File('hello_world.stdout'),
-                                 )
+# NOTE: this is a temporary measure until we have sfi/validator for arm
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  node = env.CommandSelLdrTestNacl(
+      'hello_world_test.out',
+      #sel_ldr_flags=['-I', '-d'],               # NOTE: extra flags for arm
+      command=[env.File('hello_world.nexe')],
+      stdout_golden=env.File('hello_world.stdout'),
+    )
 
-env.AddNodeToTestSuite(node, ['small_tests'])
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_world_test')

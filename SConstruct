@@ -363,7 +363,7 @@ def CommandTestAgainstGoldenOutput(env, name, command, size='small',
     script_flags.append('--' + e)
     script_flags.append(extra[e])
 
-  if permit_emultation and 'EMULATOR' in env:
+  if permit_emultation and env.get('EMULATOR', ''):
     command = ['${EMULATOR}'] + command
 
 
@@ -698,6 +698,7 @@ mac_env.Append(
 (mac_debug_env, mac_optimized_env) = GenerateOptimizationLevels(mac_env)
 
 # ----------------------------------------------------------
+EMULATOR = None
 
 linux_env = unix_like_env.Clone(
     BUILD_TYPE = '${OPTIMIZATION_LEVEL}-linux',
@@ -753,10 +754,13 @@ if linux_env['BUILD_ARCHITECTURE'] == 'x86':
         LINKFLAGS = ['-m64', '-L/usr/lib64'],
         )
 elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
+  # NOTE: this hack allows us to propagate the emulator to the untrusted env
+  # TODO(robertm): clean this up
+  EMULATOR = os.getenv('ARM_EMU', '')
   linux_env.Replace(CC=os.getenv('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
                     CXX=os.getenv('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
                     LD=os.getenv('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
-                    EMULATOR=os.getenv('ARM_EMU', 'NO-ARM-EMU-SPECIFIED'),
+                    EMULATOR=EMULATOR,
                     ASFLAGS=[],
                     LIBPATH=['${LIB_DIR}',
                              os.getenv('ARM_LIB_DIR', '').split()],
@@ -880,6 +884,7 @@ if nacl_env['BUILD_ARCHITECTURE'] == 'arm':
       # NOTE: order is important
       LIBS = ['srpc', 'c', 'nacl'],
       LINKFLAGS_LAST = ['-lc', '-lgcc', '${NACL_SDK_LIB}/crtn.o',],
+      EMULATOR  = EMULATOR,
       )
 
   nacl_env.Append(

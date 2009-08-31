@@ -1,6 +1,6 @@
 # Copyright 2008, Google Inc.
 # All rights reserved.
-#
+# n6h4
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
@@ -30,14 +30,43 @@
 
 Import('env')
 
-######################################################################
-# Smoke Test
-######################################################################
 env.ComponentProgram('noop.nexe', 'noop.c')
 
-node = env.CommandSelLdrTestNacl('noop_test.out',
-                                 command=[env.File('noop.nexe')],
-                                 stdout_golden=env.File('noop.stdout'),
-                                 )
+# NOTE: this is a temporary measure until we have sfi/validator for arm
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  node = env.CommandSelLdrTestNacl(
+      'noop_test.out',
+      sel_ldr_flags=['-I', '-d'],       # NOTE: extra flags for arm
+      command=[env.File('noop.nexe')],
+      stdout_golden=env.File('noop.stdout'),
+      )
+else:
+  node = env.CommandSelLdrTestNacl(
+      'noop_test.out',
+      command=[env.File('noop.nexe')],
+      stdout_golden=env.File('noop.stdout'),
+      )
 
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_noop_test')
+
+
+env.ComponentProgram('noop2.nexe', 'noop2.c')
+
+# NOTE: this is a temporary measure until we have sfi/validator for arm
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  node = env.CommandSelLdrTestNacl(
+      'noop2_test.out',
+      sel_ldr_flags=['-I', '-d'],       # NOTE: extra flags for arm
+      command=[env.File('noop2.nexe')],
+      stdout_golden=env.File('noop.stdout'),
+      exit_status='2',
+      )
+else:
+  node = env.CommandSelLdrTestNacl(
+      'noop2_test.out',
+      command=[env.File('noop2.nexe')],
+      stdout_golden=env.File('noop.stdout'),
+      exit_status='2',
+      )
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_noop2_test')

@@ -30,9 +30,6 @@
 
 Import('env')
 
-# TODO: copy emulator settings from trusted env to the this untrusted env
-env.Append(EMULATOR=env['TRUSTED_ENV']['EMULATOR'])
-
 env.Replace(LINKFLAGS_FIRST = [],
             LIBS = [],
             LINKFLAGS_LAST = [],)
