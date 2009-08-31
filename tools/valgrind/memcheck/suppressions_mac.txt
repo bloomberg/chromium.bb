@@ -358,20 +358,6 @@
   fun:-[NSColor initWithCoder:]
 }
 {
-   # 1 in 5 runs on mac?
-   bug_17888
-   Memcheck:Leak
-   fun:_Znwm
-   fun:_ZN3IPC7ChannelC2ERKSsNS0_4ModeEPNS0_8ListenerE
-   fun:_ZN3IPC7ChannelC1ERKSsNS0_4ModeEPNS0_8ListenerE
-   fun:_ZN3IPC12ChannelProxy7Context13CreateChannelERKSsRKNS_7Channel4ModeE
-   fun:_ZN3IPC12ChannelProxy4InitERKSsNS_7Channel4ModeEP11MessageLoopb
-   fun:_ZN3IPC12ChannelProxyC2ERKSsNS_7Channel4ModeEP11MessageLoopPNS0_7ContextEb
-   fun:_ZN3IPC11SyncChannelC2ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
-   fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
-   fun:_ZN11ChildThread4InitEv
-}
-{
    # Nasty invalid write.  Should we even suppress this?
    bug_18189
    Memcheck:Addr8
