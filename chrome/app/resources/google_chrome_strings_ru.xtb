@@ -14,7 +14,7 @@
 <translation id="4728575227883772061">Установка не удалась из-за неизвестной ошибки. Закройте все окна Google Chrome и повторите попытку снова.</translation>
 <translation id="4149882025268051530">Программе установки не удалось выполнить извлечение файлов из архива. Загрузите Google Chrome снова.</translation>
 <translation id="4343226815564935778">Похоже, что каталог для установки Google Chrome сейчас используется. Перезагрузите компьютер и повторите попытку.</translation>
-<translation id="4506896920521131223">© 2006–2009 Google Inc. Все права защищены.</translation>
+<translation id="4506896920521131223">© Google Inc., 2006–2009. Все права защищены.</translation>
 <translation id="6817660909204164466">Помочь улучшить Google Chrome, автоматически отправляя в Google статистику использования и отчеты о сбоях</translation>
 <translation id="8227755444512189073">Браузеру Google Chrome требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME"/>. Запрошенная ссылка: <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> для Google Chrome</translation>
@@ -38,6 +38,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
 <translation id="2044287590254833138">Панель инструментов Google Chrome</translation>
+<translation id="1473088902761932034">С возвращением! Однако Google Chrome не является браузером по умолчанию.</translation>
 <translation id="6481075104394517441">Вы попытались открыть &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако представленный сервером сертификат пока недействителен. Информация о том, можно ли доверять этому сертификату, недоступна. Google Chrome не может гарантировать, что вы соединились с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не злоумышленником. Убедитесь, что на вашем компьютере установлено правильное время и часовой пояс. Если это не так, устраните неточности и обновите эту страницу. Если на компьютере установлено правильное время и часовой пояс, продолжать далее не рекомендуется.</translation>
 <translation id="8862326446509486874">У вас нет прав, необходимых для установки на системном уровне. Запустите программу установки еще раз в качестве администратора.</translation>
 <translation id="2874156562296220396">Google Chrome создан на основе <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> и другого <ph name="BEGIN_LINK_OSS"/>программного обеспечения с открытым исходным кодом<ph name="END_LINK_OSS"/>.</translation>
@@ -57,6 +58,7 @@
 <translation id="2769762047821873045">Google Chrome не является браузером по умолчанию.</translation>
 <translation id="7825851276765848807">Не удалось выполнить установку из-за неизвестной ошибки. Загрузите Google Chrome еще раз.</translation>
 <translation id="3335672657969596251">Google Chrome не поддерживает <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">При сбросе параметров Google Chrome будут отменены любые внесенные изменения и восстановлены настройки по умолчанию. Продолжить?</translation>
 <translation id="3636771339108070045">На этом компьютере уже установлена самая поздняя версия браузера Google Chrome. Если программа не работает, удалите браузер Google Chrome и загрузите его снова.</translation>
 <translation id="3396666154568987767">Google Chrome для профиля &quot;<ph name="PROFILE_NAME"/>&quot;</translation>
 <translation id="3290853340290073363">Свернуть Google Chrome</translation>

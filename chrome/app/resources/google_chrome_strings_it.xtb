@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="8000275528373650868">Google Chrome richiede Windows Vista o Windows XP con SP2 o versioni successive.</translation>
-<translation id="6676384891291319759">Accedi a Internet</translation>
+<translation id="6676384891291319759">Accesso a Internet</translation>
 <translation id="698670068493841342">Google Chrome è già installato per questo utente. Se il software non funziona, disinstalla Google Chrome e scaricalo nuovamente.</translation>
 <translation id="7400722733683201933">Informazioni su Google Chrome</translation>
 <translation id="7101265395643981223">Avvia Google Chrome</translation>
@@ -38,8 +38,9 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Eliminare anche i tuoi dati di navigazione?</translation>
 <translation id="2044287590254833138">Barra degli strumenti di Google Chrome</translation>
+<translation id="1473088902761932034">Evviva, sei tornato! Ma Google Chrome non è il tuo browser predefinito.</translation>
 <translation id="6481075104394517441">Hai tentato di accedere a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il certificato presentato dal server non è valido. Non sono disponibili informazioni che stabiliscano se il certificato è affidabile. Google Chrome non è in grado di garantire che tu stia comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e non con un hacker. Assicurati che l'orologio e il fuso orario siano impostati correttamente sul tuo computer. Qualora non lo fossero, prova a correggere le impostazioni e aggiorna la pagina. Se le impostazioni sono corrette, non procedere oltre.</translation>
-<translation id="8862326446509486874">Non disponi di diritti sufficienti per l'installazione a livello di sistema. Prova a eseguire nuovamente il programma di installazione come Amministratore.</translation>
+<translation id="8862326446509486874">Non disponi dei diritti appropriati per l'installazione a livello di sistema. Prova a eseguire nuovamente il programma di installazione come Amministratore.</translation>
 <translation id="2874156562296220396">Google Chrome è reso possibile dal progetto open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> e da altri <ph name="BEGIN_LINK_OSS"/>software open source<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome è pronto a completare l'installazione.</translation>
 <translation id="7100330187273168372">Chrome non è in grado di leggere e scrivere nella directory dei dati:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
@@ -57,6 +58,7 @@
 <translation id="2769762047821873045">Google Chrome non è il tuo browser predefinito.</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
 <translation id="3335672657969596251"><ph name="OS_NAME"/> non è supportato da Google Chrome.</translation>
+<translation id="473183893665420670">Quando reimposti le opzioni di Google Chrome, tutte le modifiche apportate verranno ignorate e verranno ripristinate le impostazioni predefinite. Reimpostare le opzioni di Chrome?</translation>
 <translation id="3636771339108070045">In questo computer è già installata una versione più recente di Google Chrome. Se il software non funziona, disinstalla Google Chrome e scaricalo nuovamente.</translation>
 <translation id="3396666154568987767">Google Chrome per <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Nascondi Google Chrome</translation>

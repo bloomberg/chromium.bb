@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="8000275528373650868">Google Chrome requires Windows Vista or Windows XP with SP2 or higher.</translation>
+<translation id="6676384891291319759">Access the Internet</translation>
 <translation id="698670068493841342">Google Chrome has already been installed for this user. If the software is not working, please uninstall Google Chrome and download it again.</translation>
 <translation id="7400722733683201933">About Google Chrome</translation>
 <translation id="7101265395643981223">Start Google Chrome</translation>
@@ -13,6 +14,7 @@
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="4149882025268051530">The installer failed to uncompress archive. Please download Google Chrome again.</translation>
 <translation id="4343226815564935778">Google Chrome installation directory seems to be in use. Please reboot your computer and try again.</translation>
+<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. All Rights Reserved.</translation>
 <translation id="6817660909204164466">Help to make Google Chrome better by sending usage statistics and crash reports to Google automatically</translation>
 <translation id="8227755444512189073">Google Chrome needs to launch an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -36,23 +38,29 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
+<translation id="1473088902761932034">Hooray, you're back! But Google Chrome isn't your default browser.</translation>
 <translation id="6481075104394517441">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Google Chrome cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. You should ensure that your clock and time zone are set correctly on your computer. If they are not, you should correct any issues and refresh this page. If they are correct, you should not proceed.</translation>
+<translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
 <translation id="2874156562296220396">Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source project and other <ph name="BEGIN_LINK_OSS"/>open source software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome is ready to complete your installation.</translation>
 <translation id="7100330187273168372">Google Chrome cannot read and write to its data directory:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
 <translation id="4127951844153999091">In this case, the address listed in the certificate does not match the address of the website that your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one that you are attempting to visit, even though that certificate is not valid for all of those websites. Google Chrome can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, but cannot verify that it is the same site as &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; which you intended to reach. If you proceed, Chrome will not check for any further name mismatches. In general, it is best not to proceed past this point.</translation>
+<translation id="2712549016134575851">A conflict with another installed application has been detected.</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
 <translation id="8236873504073475138">Google Chrome does not support Windows 2000. Some features may not work.</translation>
 <translation id="5046764976540625289">Exit Chrome</translation>
+<translation id="8865765905101981392">Internet Browser</translation>
 <translation id="582763753075639530">Please close all Chrome windows and restart Chrome for this change to take effect.</translation>
 <translation id="6525535905286676482">Quit Google Chrome</translation>
 <translation id="8776515774046280928">Google Chrome is already installed and available to all users of this computer. If you want to install Google Chrome at user level, you must first uninstall the system-level version installed by an administrator.</translation>
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
 <translation id="3335672657969596251">Google Chrome does not support <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">When you reset Google Chrome options, any changes that you've made will revert to the default settings. Do you want to reset Chrome options?</translation>
 <translation id="3636771339108070045">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and download it again.</translation>
+<translation id="3396666154568987767">Google Chrome for <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Hide Google Chrome</translation>
 <translation id="1964682833763362793">Please close all Chrome windows and try again.</translation>
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>

@@ -14,7 +14,7 @@
 <translation id="4728575227883772061">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je Google Chrome právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="4149882025268051530">Instalačnímu programu se nepodařilo rozbalit archiv. Stáhněte prosím Google Chrome ještě jednou.</translation>
 <translation id="4343226815564935778">Instalační adresář aplikace Google Chrome je zřejmě používán. Restartujte počítač a zkuste to znovu.</translation>
-<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. Všechna práva vyhrazena.</translation>
+<translation id="4506896920521131223">Copyright © 2006 – 2009 Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="6817660909204164466">Pomozte aplikaci Google Chrome zlepšovat tím, že budete společnosti Google automaticky zasílat statistiky využití a zprávy o selhání aplikace.</translation>
 <translation id="8227755444512189073">Aplikace Chrome potřebuje spustit externí aplikaci pro práci s odkazy <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> prohlížeče Google Chrome</translation>
@@ -47,7 +47,7 @@
 <translation id="2290095356545025170">Opravdu chcete odinstalovat Google Chrome?</translation>
 <translation id="5941830788786076944">Nastavit Google Chrome jako výchozí prohlížeč</translation>
 <translation id="4127951844153999091">V tomto případě adresa uvedená v certifikátu neodpovídá adrese webových stránek, na které se váš prohlížeč pokoušel přejít. Jedním z možných důvodů je, že vaše komunikace zachycuje útočník, který předkládá certifikát pro jiné webové stránky, a způsobuje tak neshodu. Dalším možným důvodem je, že server je nastaven tak, aby překládal stejný certifikát pro více různých webů, včetně toho, který se pokoušíte navštívit, byť takový certifikát není pro všechny takové weby platný. Aplikace Google Chrome může potvrdit, že jste se dostali na server &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ale nemůže potvrdit, že se jedná o stránku &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, které jste chtěli dosáhnout. Pokud budete pokračovat, nebude aplikace Chrome žádné další neshody jmen kontrolovat. Obecně by bylo nejlepší nepostupovat dále za tento bod.</translation>
-<translation id="2712549016134575851">Byl detekován konflikt s jinou nainstalovanou aplikací.</translation>
+<translation id="2712549016134575851">Byl zjištěn konflikt s jinou nainstalovanou aplikací.</translation>
 <translation id="7161904924553537242">Vítejte v aplikaci Google Chrome</translation>
 <translation id="8236873504073475138">Aplikace Chrome nepodporuje systém Windows 2000. Některé funkce nemusejí fungovat.</translation>
 <translation id="5046764976540625289">Ukončit aplikaci Chrome</translation>
@@ -58,6 +58,7 @@
 <translation id="2769762047821873045">Google Chrome není vaším výchozím prohlížečem.</translation>
 <translation id="7825851276765848807">Instalace se z neznámého důvodu nezdařila. Stáhněte prosím aplikaci Google Chrome znovu.</translation>
 <translation id="3335672657969596251">Aplikace Chrome nepodporuje systém <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Pokud možnosti Google Chrome resetujete, všechny provedené změny budou zrušeny a obnoví se výchozí nastavení. Chcete možnosti Chrome resetovat?</translation>
 <translation id="3636771339108070045">Na tomto počítači je již nainstalována novější verze prohlížeče Google Chrome. Jestliže software nefunguje, odinstalujte prosím Google Chrome a znovu jej stáhněte.</translation>
 <translation id="3396666154568987767">Google Chrome pro profil <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Skrýt aplikaci Google Chrome</translation>

@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="8000275528373650868">Google Chrome krever Windows Vista eller Windows XP med SP2 eller nyere.</translation>
-<translation id="6676384891291319759">Til internett</translation>
+<translation id="6676384891291319759">Gå til Internett</translation>
 <translation id="698670068493841342">Google Chrome er allerede installert for denne brukeren. Hvis programvaren ikke fungerer, må du avinstallere Google Chrome og laste det ned på nytt.</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7101265395643981223">Start Google Chrome</translation>
@@ -58,6 +58,7 @@
 <translation id="2769762047821873045">Google Chrome er ikke din standardnettleser.</translation>
 <translation id="7825851276765848807">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Google Chrome på nytt.</translation>
 <translation id="3335672657969596251">Google Chrome støtter ikke <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Når du tilbakestiller Google Chrome-alternativene, endres eventuelle endringer du har gjort, tilbake til standardinnstillingene. Vil du tilbakestille Chrome-alternativene?</translation>
 <translation id="3636771339108070045">Denne datamaskinen har allerede en nyere versjon av Google Chrome. Hvis programvaren ikke fungerer, må du avinstallere Google Chrome og laste det ned på nytt.</translation>
 <translation id="3396666154568987767">Google Chrome for <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Skjul Google Chrome</translation>

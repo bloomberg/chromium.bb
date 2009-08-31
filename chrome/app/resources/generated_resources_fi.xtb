@@ -12,6 +12,7 @@
 <translation id="4610656722473172270">Google-työkalupalkki</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;Tee uudelleen</translation>
+<translation id="5895138241574237353">Käynnistä uudelleen</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">Uusi ikku&amp;na</translation>
@@ -31,13 +32,16 @@
 <translation id="2193841602817119749">Osoitteessa &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; olevan sivuston on ilmoitettu olevan tietojenkalastelusivusto. Tietojenkalastelusivustot tekeytyvät usein luotettaviksi laitoksiksi kuten pankeiksi, ja huijaavat käyttäjiä paljastamaan henkilökohtaisia tai taloudellisia tietoja.</translation>
 <translation id="8178665534778830238">Sisältö:</translation>
 <translation id="1379170046778889619">Turvallisuustiedot</translation>
+<translation id="4771019161370731727">Uusimmat toiminnot</translation>
 <translation id="1818606096021558659">Sivu</translation>
 <translation id="7982789257301363584">Verkko</translation>
 <translation id="4108206167095122329">Poista k&amp;aikki</translation>
 <translation id="7481475534986701730">Hiljattain käydyt sivustot</translation>
 <translation id="4565377596337484307">Piilota salasana</translation>
+<translation id="5008715825902408241">Piilota pikkukuvat</translation>
 <translation id="762917759028004464">Tällä hetkellä oletusselain on <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> sekuntia jäljellä</translation>
+<translation id="7740287852186792672">Hakutulokset</translation>
 <translation id="6391832066170725637">Tiedostoa tai hakemistoa ei löytynyt.</translation>
 <translation id="8256087479641463867">Muokkaa omia asetuksia</translation>
 <translation id="7931071620596053769">Seuraava(t) sivu(t) ei(vät) vastaa enää. Voit odottaa vastausta tai sulkea ne.</translation>
@@ -51,10 +55,12 @@
 <translation id="5463275305984126951">Sijainnin <ph name="LOCATION"/> hakemisto</translation>
 <translation id="5154917547274118687">Muisti</translation>
 <translation id="1735662153177951739">Tätä sivua ei noudeta kokonaan suojatun yhteyden kautta. Osa sisällöstä noudetaan suojaamattomien yhteyksien kautta.</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/>-haku</translation>
 <translation id="873849583815421063">Lopetetaan...</translation>
 <translation id="5819484510464120153">Luo sovellusten &amp;pikakuvakkeita...</translation>
 <translation id="1748246833559136615">Lopeta</translation>
 <translation id="8927064607636892008">Tämän verkkosivun näytön yhteydessä tapahtui virhe. Jatka painamalla Lataa uudelleen tai siirry toiselle sivulle.</translation>
+<translation id="3593566984437245095">Uutta Chromessa</translation>
 <translation id="5667293444945855280">Haittaohjelma</translation>
 <translation id="5613020302032141669">Nuoli vas.</translation>
 <translation id="3433489605821183222">Palvelimen varmenteessa on virheitä</translation>
@@ -67,6 +73,7 @@
 <translation id="314605055819837597">Käyttäjätiedot</translation>
 <translation id="8534801226027872331">Tässä tapauksessa selaimellesi esitetyssä varmenteessa on virheitä, eikä sitä voi jäsentää. Tämä saattaa tarkoittaa sitä, ettemme ymmärrä varmenteen identiteettitietoja tai muita varmenteessa yhteyden suojaamiseksi käytettyjä tietoja. Älä jatka tästä eteenpäin.</translation>
 <translation id="4422347585044846479">Muokkaa tämän sivun kirjanmerkkiä</translation>
+<translation id="7367545749698325833">Voit tuoda kirjanmerkkisi ja asetuksesi muista selaimista tai tyhjentää selailutiedot tästä tietokoneesta.</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
 <translation id="2994458892329442723">Aktivoi laajennukset</translation>
@@ -75,6 +82,7 @@
 <translation id="8703575177326907206">Yhteyttäsi verkkotunnukseen <ph name="DOMAIN"/> ei ole salattu.</translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="2518917559152314023">&amp;Lisää...</translation>
+<translation id="8217250408786235522">&amp;Normaali (1,0 x)</translation>
 <translation id="4510290974676570902">MIME-tyyppi</translation>
 <translation id="5565725983873655007">Kun suojatulla (SSL) sivulla on sekalaista sisältöä:</translation>
 <translation id="4419098590196511435">Jotain puuttuu</translation>
@@ -89,6 +97,8 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> sekuntia</translation>
 <translation id="5098629044894065541">heprea</translation>
 <translation id="7751559664766943798">Näytä kirjanmerkkipalkki aina</translation>
+<translation id="8584280235376696778">Avaa vide&amp;o uudessa välilehdessä</translation>
+<translation id="6827094223626760756">esikatselu</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> tuntia jäljellä</translation>
 <translation id="1720675772864601791">Salli suojaamattomat kuvat</translation>
 <translation id="2167276631610992935">JavaScript</translation>
@@ -97,6 +107,7 @@
 <translation id="8806796506533854282">Kirjoita uuden profiilin nimi</translation>
 <translation id="2551763528995812091">Salasanat ja poikkeukset</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="1110535155349301542">poista</translation>
 <translation id="8571852575982769756">Laajennuksia ei asennettu</translation>
 <translation id="7925285046818567682">Odotetaan palvelinta osoitteessa <ph name="HOST_NAME"/>...</translation>
 <translation id="3280237271814976245">Tallenna &amp;nimellä...</translation>
@@ -113,6 +124,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="3873963583678942942">(Nimetön)</translation>
 <translation id="8725178340343806893">Suosikit/Kirjanmerkit</translation>
+<translation id="5177526793333269655">Pikkukuvanäkymä</translation>
 <translation id="8926389886865778422">Älä kysy uudestaan</translation>
 <translation id="3605499851022050619">Selausturvan diagnostiikkasivu</translation>
 <translation id="4307992518367153382">Perustiedot</translation>
@@ -120,6 +132,7 @@
 <translation id="4813345808229079766">Yhteys</translation>
 <translation id="411666854932687641">Yksityinen muisti</translation>
 <translation id="119944043368869598">Tyhjennä kaikki</translation>
+<translation id="1652965563555864525">&amp;Äänetön</translation>
 <translation id="4200983522494130825">Uusi &amp;välilehti</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> / <ph name="TOTAL_MATCHCOUNT"/></translation>
 <translation id="2303544859777878640">Kielet:</translation>
@@ -145,6 +158,7 @@
 <translation id="6686490380836145850">Sulje välilehdet oikealle</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> tuntia</translation>
 <translation id="3990502903496589789">Oikea reuna</translation>
+<translation id="2790948358747073186">Vielä lisää</translation>
 <translation id="5303890401939113396">JavaScript-viankorjaus - Keskeytys</translation>
 <translation id="2423578206845792524">T&amp;allenna kuva nimellä...</translation>
 <translation id="1095038624419434542">Ohjelmaresurssia ladattaessa esiintyi ongelma. Yritä asentaa uudelleen.</translation>
@@ -154,8 +168,11 @@
 <translation id="2011110593081822050">Verkkotyökalu: <ph name="WORKER_NAME"/></translation>
 <translation id="350069200438440499">Tiedostonimi:</translation>
 <translation id="8494979374722910010">Yritys muodostaa yhteys palvelimeen epäonnistui.</translation>
+<translation id="3400618317772401692">Lisää lempilähteesi, ja saat uutisotsikkoja, blogitekstejä ja RSS- ja Atom-syötteitä suoraan tähän laatikkoon. <ph name="BEGIN_LINK"/>Lisätietoja<ph name="END_LINK"/></translation>
+<translation id="5764483294734785780">T&amp;allenna äänitiedosto nimellä...</translation>
 <translation id="8507996248087185956"><ph name="NUMBER_DEFAULT"/> minuuttia</translation>
 <translation id="5296476177639202243">Yksikään kirjanmerkki ei vastaa kyselyä <ph name="SEARCH_TEXT"/>.</translation>
+<translation id="4495419450179050807">Älä näytä tällä sivulla</translation>
 <translation id="939736085109172342">Uusi kansio</translation>
 <translation id="2009541932026160416">Poista pikkukuva napsauttamalla <ph name="CROSS_IMAGE"/></translation>
 <translation id="5641560969478423183">Palvelimen varmenne ei vastaa URL-osoitetta</translation>
@@ -180,11 +197,13 @@
 <translation id="3122464029669770682">Keskusyksikkö</translation>
 <translation id="1684861821302948641">Lopeta sivut</translation>
 <translation id="5965640700983474726">Kirjoita haku</translation>
+<translation id="40334469106837974">Muuta sivun asettelua</translation>
 <translation id="2142570832281562688">Kirjoita profiilin nimi</translation>
 <translation id="5904714272463161824">Il&amp;moita virheestä tai viallisesta verkkosivustosta...</translation>
 <translation id="1608306110678187802">Tulo&amp;sta kehys...</translation>
 <translation id="4948468046837535074">Avaa seuraavat sivut:</translation>
 <translation id="6978121630131642226">Hakukoneet</translation>
+<translation id="855081842937141170">Kiinnitä välilehti</translation>
 <translation id="7012108905414904806">Tämä sivu sisältää kuitenkin muita resursseja, jotka eivät ole turvallisia. Muut voivat tarkastella näitä resursseja siirtovaiheessa, ja hyökkääjä voi muokata niitä sivun ulkoasun tai toiminnan muuttamiseksi.</translation>
 <translation id="4515911410595374805">Joidenkin tällä sivulla olevien osien alkuperää ei ole vahvistettu, eikä niitä näytetä.</translation>
 <translation id="1195447618553298278">Tuntematon virhe.</translation>
@@ -209,9 +228,11 @@
 <translation id="5605623530403479164">Muut hakukoneet</translation>
 <translation id="5710435578057952990">Tämän sivuston identiteettiä ei ole vahvistettu.</translation>
 <translation id="5287240709317226393">Näytä evästeet</translation>
+<translation id="8486154204771389705">Säilytä tällä sivulla</translation>
 <translation id="333371639341676808">Estä tätä sivua luomasta muita viestejä.</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> on päivitetty (<ph name="VERSION"/>)</translation>
 <translation id="7791543448312431591">Lisää</translation>
+<translation id="6178664161104547336">Valitse varmenne</translation>
 <translation id="772440777491435074">Varmenteen tiedot...</translation>
 <translation id="2869459179306435079">Tuo asetuksia sijainnista:</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
@@ -224,6 +245,7 @@
 <translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="5782620817391526544">Kirjanmerkkipalkki</translation>
 <translation id="3493653833301553455">Lomakkeiden automaattinen täyttö:</translation>
+<translation id="3895288786311724904">lisätty</translation>
 <translation id="644038709730536388">Lisätietoja siitä, kuinka suojautua haittaohjelmilta verkossa.</translation>
 <translation id="4172706149171596436">Muuta välityspalvelimen asetuksia</translation>
 <translation id="5650551054760837876">Hakutuloksia ei löytynyt.</translation>
@@ -232,19 +254,23 @@
 <translation id="2742457360514408037">Estetyt ponnahdusikkunat: <ph name="COUNT"/></translation>
 <translation id="4874539263382920044">Otsikossa on oltava vähintään yksi merkki</translation>
 <translation id="3549657413697417275">Haku omasta historiasta</translation>
+<translation id="7344633671344536647">Selailutiedot:</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="7905536804357499080">Käytä nykyistä</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="3087734570205094154">Alaosa</translation>
 <translation id="1871540228654219948">Osoitteessa &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; oleva verkkosivusto sisältää osia sivustoista, jotka näyttävät pitävän yllä haittaohjelmia eli ohjelmia, jotka voivat vahingoittaa tietokonettasi tai toimia muuten ilman suostumustasi. Pelkkä käynti sivustossa, joka sisältää haittaohjelmia, voi tartuttaa tietokoneesi.</translation>
 <translation id="8899388739470541164">vietnam</translation>
+<translation id="6631671511957507878">Näytä koko historia</translation>
 <translation id="4089663545127310568">Poista tallennetut salasanat</translation>
 <translation id="6500444002471948304">Lisää kansio...</translation>
 <translation id="2794293857160098038">Oletushakuasetukset</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minuuttia jäljellä</translation>
 <translation id="5496587651328244253">Järjestä</translation>
+<translation id="2074760228690987725">&amp;Nopea (1,25 x)</translation>
 <translation id="2592884116796016067">Osa tästä sivusta (HTML WebWorker) on lopettanut toimintansa, joten sivu ei välttämättä toimi oikein.</translation>
 <translation id="5568069709869097550">Ei voi kirjautua sisään</translation>
+<translation id="8585326996912141705">Nope&amp;ampi (1,5 x)</translation>
 <translation id="4181898366589410653">Palvelimen varmenteesta ei löytynyt kumoamisjärjestelmää.</translation>
 <translation id="6364916375976753737">Vieritä vasemmalle</translation>
 <translation id="1665770420914915777">Käytä Uusi välilehti-sivua</translation>
@@ -254,6 +280,7 @@
 <translation id="9087164549070846958">Jos kuitenkin työskentelet organisaatiossa, joka luo omat varmenteensa, ja yrität muodostaa yhteyden organisaation sisäiseen sivustoon tällaista varmennetta käyttämällä, saatat pystyä ratkaisemaan tämän ongelman turvallisesti. Voit tuoda organisaation juurivarmenteen &quot;juurivarmenteena&quot;, jolloin organisaatiosi myöntämät tai vahvistamat varmenteet ovat luotettavia, etkä saa tätä virhettä seuraavalla kerralla yrittäessäsi muodostaa yhteyttä sisäiseen sivustoon. Ota yhteyttä organisaation tukihenkilöstöön, kun tarvitset apua uuden juurivarmenteen lisäämisessä Windowsiin.</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> minuuttia sitten</translation>
 <translation id="7977590112176369853">&lt;anna hakulauseke&gt;</translation>
+<translation id="994771890067000105">Lisätoimintoesittely</translation>
 <translation id="5155632014218747366">Saat lisätietoa tähän sivustoon liittyvistä ongelmista käymällä Googlen sivulla <ph name="DIAGNOSTIC_PAGE"/> toimialueelle <ph name="DOMAIN"/></translation>
 <translation id="1120026268649657149">Avainsanan on oltava tyhjä tai yksilöivä</translation>
 <translation id="5317780077021120954">Tallenna</translation>
@@ -262,12 +289,14 @@
 <translation id="2870560284913253234">Sivusto</translation>
 <translation id="4164507027399414915">Palauta kaikki poistetut pikkukuvat</translation>
 <translation id="7543025879977230179"><ph name="PRODUCT_NAME"/>-asetukset</translation>
+<translation id="4271692636717022386">Näytä vielä lisää</translation>
 <translation id="2648845569394238430">Haku:</translation>
 <translation id="2175607476662778685">Pikakäynnistysvalikko</translation>
 <translation id="6434309073475700221">Hylkää</translation>
 <translation id="1425127764082410430"><ph name="SEARCH_ENGINE"/>-&amp;haku termillä: '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="877010697526426622">Osoitteessa &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; oleva sivu saattaa olla väliaikaisesti pois käytöstä tai se voi olla siirretty pysyvästi uuteen osoitteeseen.</translation>
 <translation id="4378551569595875038">Yhdistetään...</translation>
+<translation id="3513979718339724672">Näytä pikkukuvat</translation>
 <translation id="7300965843904003671">Näytä aina ponnahdusikkunat osoitteesta <ph name="URL"/></translation>
 <translation id="8211437954284917092">Etsi kirjanmerkkejä kirjoittamalla kysely yllä olevaan tekstikenttään.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> tiedostoa</translation>
@@ -284,8 +313,10 @@
 <translation id="4439241094464540230">&lt;Uusi profiili&gt;...</translation>
 <translation id="1813414402673211292">Poista selaustiedot</translation>
 <translation id="2356762928523809690">Päivityspalvelin ei ole käytettävissä (virhe: <ph name="ERROR_NUMBER"/>)</translation>
+<translation id="6356865038429301391">Teemaesittely</translation>
 <translation id="5436510242972373446">Haku sivustosta <ph name="SITE_NAME"/>:</translation>
 <translation id="8730621377337864115">Valmis</translation>
+<translation id="6267166720438879315">Valitse varmenne, jolla todennat itsesi kohteelle <ph name="HOST_NAME"/></translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minuuttia</translation>
 <translation id="8210608804940886430">Sivu alas</translation>
 <translation id="5015344424288992913">Jäsennetään välityspalvelinta...</translation>
@@ -293,12 +324,14 @@
 <translation id="3675321783533846350">Määritä välityspalvelin verkkoon yhdistämistä varten.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> päivää</translation>
 <translation id="8453184121293348016">Kumoamisjärjestelmää ei löytynyt</translation>
+<translation id="1199429765931693651">Piilota luettelo</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> tuntia jäljellä</translation>
 <translation id="3283719377675052581">tuntematon</translation>
 <translation id="374530189620960299">Sivuston suojausvarmenne ei ole luotettava!</translation>
 <translation id="5048040498971143039">Hakutulokset kyselylle '<ph name="SEARCH_STRING"/>'</translation>
 <translation id="5453632173748266363">kyrillinen</translation>
 <translation id="8415351664471761088">Odota, että lataus valmistuu</translation>
+<translation id="1545775234664667895">Asennettin teema <ph name="THEME_NAME"/></translation>
 <translation id="5329858601952122676">&amp;Poista</translation>
 <translation id="6100736666660498114">Käynnistysvalikko</translation>
 <translation id="1120098871254928930">Salli koko sisällön lataaminen</translation>
@@ -314,6 +347,7 @@
 <translation id="1823768272150895732">Kirjasin</translation>
 <translation id="4475552974751346499">Haku latauksista</translation>
 <translation id="1111153019813902504">Uusimmat kirjanmerkit</translation>
+<translation id="7497564420220535101">Tallenna kuvakaappau&amp;s...</translation>
 <translation id="3786934874263773074">&amp;Haku sivulta</translation>
 <translation id="6295228342562451544">Kun muodostat yhteyden suojattuun sivustoon, sivustoa ylläpitävä palvelin esittää selaimellesi varmenteen joka vahvistaa sen identiteetin. Varmenne sisältää identiteettitietoja, kuten sivuston osoitteen. Tiedot vahvistaa ulkopuolinen taho, johon tietokoneesi luottaa. Tarkistuksessa varmistetaan, että varmenteen osoite vastaa sivuston osoitetta. Tämä takaa, että olet yhteydessä haluamaasi sivustoon etkä esimerkiksi verkossasi olevaan hyökkääjään.</translation>
 <translation id="5502500733115278303">Tuotu Firefoxista</translation>
@@ -326,6 +360,7 @@
 <translation id="1521442365706402292">Hallinnoi varmenteita</translation>
 <translation id="7887998671651498201">Seuraava laajennus ei vastaa: <ph name="PLUGIN_NAME"/>Haluatko pysäyttää sen?</translation>
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> sekuntia</translation>
+<translation id="3345886924813989455">Yhtään tuettua selainta ei löytynyt</translation>
 <translation id="3712897371525859903">Tallenna sivu &amp;nimellä...</translation>
 <translation id="3433151241941574321">Lisää sivu</translation>
 <translation id="7910768399700579500">&amp;Uusi kansio</translation>
@@ -334,6 +369,7 @@
 <translation id="8942948210663084792">Poista tiedot:</translation>
 <translation id="6710213216561001401">Edellinen</translation>
 <translation id="583281660410589416">Tuntematon</translation>
+<translation id="7635303043999550515">Verkkosivu osoitteessa &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; aiheutti liian monta uudelleenohjausta. Ongelma saattaa korjaantua, jos tyhjennät tämän sivuston evästeet tai sallit kolmannen osapuolen evästeet. Jos ongelma ei korjaannu, se saattaa johtua palvelimen määrityksistä eikä tietokoneestasi.</translation>
 <translation id="5528368756083817449">Kirjanmerkkien hallinta</translation>
 <translation id="7275974018215686543"><ph name="NUMBER_MANY"/> secs ago</translation>
 <translation id="1560991001553749272">Kirjanmerkki lisätty!</translation>
@@ -351,11 +387,16 @@
 <translation id="1383876407941801731">Haku</translation>
 <translation id="8398877366907290961">Jatka silti</translation>
 <translation id="290414493736480793">Vahvistukset</translation>
+<translation id="6261915643960475695">Yritystoiminta</translation>
 <translation id="6449085810994685586">&amp;Tarkista oikeinkirjoitus tässä kentässä</translation>
+<translation id="8789544147407756448">Seuraavassa laajennuksessa on virheitä: <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> minuuttia jäljellä</translation>
+<translation id="5966654788342289517">Henkilökohtainen sisältö</translation>
+<translation id="2576802705154232609">Verkkoleikkeet</translation>
 <translation id="8664389313780386848">&amp;Näytä sivun lähdekoodi</translation>
 <translation id="3089982169226026948">Valitse profiili</translation>
 <translation id="57646104491463491">Muokkauspäivämäärä</translation>
+<translation id="6402372417119601621">Antamaasi syötettä ei voi ladata.</translation>
 <translation id="3867260226944967367">Verkkosivua ei löytynyt.</translation>
 <translation id="6507969014813375884">yksinkertaistettu kiina</translation>
 <translation id="1767991048059195456">Lähetä raportti</translation>
@@ -364,8 +405,10 @@
 <translation id="1110155001042129815">Odota</translation>
 <translation id="7071586181848220801">Tuntematon laajennus</translation>
 <translation id="8235325155053717782">Virhe <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
+<translation id="5933965621105104639">Suositukset</translation>
 <translation id="1084824384139382525">Kopioi linkin osoit&amp;e</translation>
 <translation id="5042992464904238023">Verkkosisältö</translation>
+<translation id="1261967938516962772">Piilota vielä lisää</translation>
 <translation id="1181037720776840403">Poista</translation>
 <translation id="59174027418879706">Aktivoitu</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
@@ -375,12 +418,16 @@
 <translation id="965674096648379287">Tämä sivu vaatii aiemmin antamiasi tietoja, jotta se näkyy oikein. Voit lähettää nämä tiedot uudelleen, mutta silloin toistat kaikki sivun aiemmin suorittamat toiminnot. Lähetä tiedot uudelleen ja näytä sivu painamalla Lataa uudelleen.</translation>
 <translation id="43742617823094120">Tällöin myöntäjä on kumonnut selaimellesi esitetyn varmenteen. Yleensä tämä tarkoittaa, että varmenteen eheys on vaarantunut, eikä varmenne ole luotettava. Älä missään tapauksessa jatka tästä eteenpäin.</translation>
 <translation id="2065985942032347596">Käyttöoikeustarkistus pakollinen</translation>
+<translation id="1894212533919304402">Pikkukuvaa <ph name="THUMBNAIL_TITLE"/> ei näytetä enää.</translation>
 <translation id="1175364870820465910">Tulo&amp;sta...</translation>
 <translation id="3866249974567520381">Kuvaus</translation>
 <translation id="6549689063733911810">Uusimmat</translation>
 <translation id="5552632479093547648">Tietojenkalastelu- ja haittaohjelma havaittu!</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> päivää sitten</translation>
+<translation id="5087864757604726239">takaisin</translation>
 <translation id="9118804773997839291">Alla on luettelo kaikista sivun uhkaavista osista. Saat lisätietoja tiettyyn osaan liittyvistä uhkista napsauttamalla Diagnostiikka-linkkiä.</translation>
+<translation id="3664021239099029884">Näytä kaikki lataukset</translation>
+<translation id="2207746515960750386"><ph name="MINUTE"/> minuutti/minuuttia sitten</translation>
 <translation id="7754704193130578113">Kysy, minne kukin tiedosto tallennetaan ennen lataamista</translation>
 <translation id="2497284189126895209">Kaikki tiedostot</translation>
 <translation id="5360606537916580043">Viimeinen päivä</translation>
@@ -395,17 +442,23 @@
 <translation id="6281636957902664775">Siirry osoitteeseen <ph name="URL"/></translation>
 <translation id="630065524203833229">Poist&amp;u</translation>
 <translation id="2649204054376361687"><ph name="CITY"/>, <ph name="COUNTRY"/></translation>
+<translation id="5738216285593517904">Näytä suositukset</translation>
 <translation id="5264618369089706215">Haut</translation>
 <translation id="1168020859489941584">Avautuu ajassa <ph name="TIME_REMAINING"/>...</translation>
 <translation id="7814458197256864873">K&amp;opioi</translation>
 <translation id="4692623383562244444">Hakukoneet</translation>
+<translation id="2233040275795129413">Elämäntapa</translation>
 <translation id="2526590354069164005">Työpöytä</translation>
 <translation id="4890284164788142455">Thai</translation>
 <translation id="3889424535448813030">Nuoli oik.</translation>
 <translation id="5435666907653217300">Muu ongelma</translation>
+<translation id="1264974993859112054">Urheilu</translation>
+<translation id="3066577394310386876">Hida&amp;s (0,5 x)</translation>
+<translation id="5167270755190684957">Google Chromen teemagalleria</translation>
 <translation id="8382913212082956454">Kopioi s&amp;ähköpostiosoite</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> sekunti sitten</translation>
 <translation id="6419902127459849040">keskieurooppalainen</translation>
+<translation id="5298219193514155779">Teeman loi</translation>
 <translation id="1714078437629572290">Avaa etusivu</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> sekuntia jäljellä</translation>
 <translation id="2454247629720664989">Avainsana</translation>
@@ -425,6 +478,7 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Oletus)</translation>
 <translation id="111844081046043029">Haluatko varmasti poistua tältä sivulta?</translation>
 <translation id="4497415007571823067">Yritit päästä verkkotunnukseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta tavoitit palvelimen, joka yksilöi itsensä verkkotunnukseksi &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Tämä voi johtua palvelimen virhemäärityksestä tai jostain vakavammasta. Verkossasi oleva hyökkääjä voi yrittää saada sinut siirtymään verkkotunnuksen &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; väärään (ja mahdollisesti haitalliseen) versioon. Sinun ei tule jatkaa.</translation>
+<translation id="957864810768974481">&amp;Koko näyttö</translation>
 <translation id="3202578601642193415">Uusin</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> tuntia</translation>
 <translation id="8739589585766515812">Poista päivän selaustiedot</translation>
@@ -432,6 +486,9 @@
 <translation id="3340262871848042885">Palvelimen varmenne on vanhentunut</translation>
 <translation id="8978540966440585844">S&amp;elaa...</translation>
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> tuntia</translation>
+<translation id="3678156199662914018">Laajennus: <ph name="EXTENSION_NAME"/></translation>
+<translation id="5104499318017527547">Hupi</translation>
+<translation id="6740650473366653433">Valitse teemaksi GTK+</translation>
 <translation id="3577682619813191010">Kopioi tied&amp;osto</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minuuttia jäljellä</translation>
 <translation id="2192505247865591433">Lähettäjä:</translation>
@@ -449,17 +506,22 @@
 <translation id="872451400847464257">Muokkaa hakukonetta</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minuuttia</translation>
 <translation id="8717266507183354698">Katso kaikki sivut historiassa, jotka sisältävät termit <ph name="SEARCH_TERMS"/></translation>
+<translation id="2922560965807694149">piilota</translation>
 <translation id="5645845270586517071">Turvallisuusvirhe</translation>
 <translation id="8695758493354644945">Katso <ph name="NUM_MATCHES"/> viimeisintä sivua historiassa, jotka sisältävät termit <ph name="SEARCH_TERMS"/></translation>
 <translation id="8186012393692847636">Käytä ehdotuspalvelua hakujen täydentämiseen ja URL-osoitteiden kirjoittamiseen osoitepalkkiin</translation>
 <translation id="4711094779914110278">turkki</translation>
+<translation id="7227751526271321205">Älä tallenna lomakkeiden tekstiä</translation>
 <translation id="4002066346123236978">Otsikko</translation>
+<translation id="1974178770588939828">Näytä luettelo</translation>
 <translation id="9015241028623917394">Hallinnoi nykyistä sivua</translation>
 <translation id="7861215335140947162">&amp;Lataukset</translation>
+<translation id="5821668936183240062">seuraava</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> / <ph name="TOTAL_SIZE"/></translation>
 <translation id="6644512095122093795">Tarjoa salasanojen tallentamista</translation>
 <translation id="5384051050210890146">Valitse luotettavia SSL-varmenteita.</translation>
 <translation id="6865323153634004209">Muokkaa näitä asetuksia</translation>
+<translation id="7487067081878637334">Tekniikka</translation>
 <translation id="154603084978752493">Lisää &amp;hakukone...</translation>
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="3254409185687681395">Luo kirjanmerkki tälle sivulle</translation>
@@ -474,6 +536,7 @@
 <translation id="5433207235435438329">Oikoluvun kieli:</translation>
 <translation id="3183922693828471536">Vieritä tähän</translation>
 <translation id="2527167509808613699">Mikä tahansa yhteys</translation>
+<translation id="3491001008184346538">poistettu</translation>
 <translation id="1234466194727942574">Välilehtirivi</translation>
 <translation id="4035758313003622889">&amp;Tehtävänhallinta</translation>
 <translation id="558442360746014982">Alla on alkuperäinen virheviesti</translation>
@@ -481,6 +544,8 @@
 <translation id="4552416320897244156">Sivu alas</translation>
 <translation id="8986267729801483565">Latausten tallennuspaikka:</translation>
 <translation id="8318945219881683434">Kumoamisen tarkistus epäonnistui.</translation>
+<translation id="5086103144359029476">Teemaesittelyt</translation>
+<translation id="994289308992179865">Toista &amp;jatkuvasti</translation>
 <translation id="3191701650141760424">Poistu asennuksesta</translation>
 <translation id="3745810751851099214">Lähetä:</translation>
 <translation id="8877448029301136595">[emohakemisto]</translation>
@@ -490,12 +555,16 @@
 <translation id="602251597322198729">Sivusto yrittää ladata useita tiedostoja. Sallitaanko?</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> tuntia</translation>
 <translation id="6691936601825168937">Lähetä e&amp;delleen</translation>
+<translation id="6273480802234137933">Gears:</translation>
 <translation id="7736284018483078792">Vaihda oikolukusanakirjan kieli.</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="4756388243121344051">&amp;Historia</translation>
+<translation id="3789841737615482174">Asenna</translation>
 <translation id="4789872672210757069">Tietoja &amp;<ph name="PRODUCT_NAME"/>sta</translation>
+<translation id="4056561919922437609"><ph name="TAB_COUNT"/> välilehteä</translation>
 <translation id="4373894838514502496"><ph name="NUMBER_FEW"/> mins ago</translation>
+<translation id="2533050964672183510">edellinen</translation>
 <translation id="1017280919048282932">&amp;Lisää sanakirjaan</translation>
 <translation id="1829244130665387512">Haku sivulta</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> päivää</translation>
@@ -516,6 +585,7 @@
 <translation id="4588090240171750605">Vieritä oikealle</translation>
 <translation id="8940262601983387853">Evästeen nimi</translation>
 <translation id="8053959338015477773">Joidenkin tällä sivulla olevien osien näyttäminen edellyttää lisälaajennusta.</translation>
+<translation id="5825982513659277632"><ph name="HOUR"/> tunti/tuntia sitten</translation>
 <translation id="7414887922320653780"><ph name="NUMBER_ONE"/> tuntia jäljellä</translation>
 <translation id="399179161741278232">Tuotu</translation>
 <translation id="3927932062596804919">Estä</translation>
@@ -536,31 +606,43 @@
 <translation id="4195643157523330669">Avaa uudessa välilehdessä</translation>
 <translation id="4178055285485194276">Käynnistettäessä:</translation>
 <translation id="1154228249304313899">Avaa tämä sivu:</translation>
+<translation id="9074348188580488499">Haluatko varmasti poistaa kaikki salasanat?</translation>
 <translation id="3627588569887975815">Avaa linkki näk&amp;ymättömyysikkunassa</translation>
 <translation id="5578327870501192725">Yhteytesi verkkotunnukseen <ph name="DOMAIN"/> salataan <ph name="BIT_COUNT"/>-tavuisella salauksella.</translation>
 <translation id="7079333361293827276">Palvelimen varmenne ei ole luotettava</translation>
 <translation id="8331626408530291785">Vieritä ylös</translation>
 <translation id="1526560967942511387">Nimetön asiakirja</translation>
 <translation id="5538307496474303926">Poistetaan...</translation>
+<translation id="1285631718404404702">Näytä uusimmat toiminnot</translation>
 <translation id="6783679543387074885">Ilmoita virheestä tai viallisesta verkkosivustosta</translation>
 <translation id="3413103074007669042">Tämä sivu sisältää suojaamatonta sisältöä.</translation>
+<translation id="4887833561977827087">Näytettäviä kohteita ei vielä ole.
+<ph name="BEGIN_LINK"/>Muokkaa<ph name="END_LINK"/> verkkoleikkeitäsi ja lisää lähteitä.</translation>
 <translation id="5285267187067365830">Asenna laajennus...</translation>
 <translation id="8015746205953933323">Verkkosivu ei ole käytettävissä.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Koodaus</translation>
 <translation id="7895330511272068835">Tietoja laajennuksista</translation>
 <translation id="9012607008263791152">Ymmärrän, että tällä sivulla käyminen voi vahingoittaa tietokonettani.</translation>
+<translation id="5793220536715630615">K&amp;opioi videon URL-osoite</translation>
 <translation id="6004539838376062211">&amp;Oikoluvun asetukset</translation>
+<translation id="2915134691870672002">Piilota suositukset</translation>
 <translation id="7887334752153342268">Kahdenna</translation>
+<translation id="4980691186726139495">Älä säilytä tällä sivulla</translation>
 <translation id="703748601351783580">Avaa kaikki kirjanmerkit uudessa ikkunassa</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="8502249598105294518">Muokkaa ja hallinnoi <ph name="PRODUCT_NAME"/>a</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> tuntia sitten</translation>
 <translation id="815598010540052116">Vieritä alas</translation>
+<translation id="7180865173735832675">Muokkaa</translation>
+<translation id="1430594899542257414">Vinkkejä ja vihjeitä</translation>
 <translation id="2115926821277323019">On oltava kelvollinen URL-osoite</translation>
 <translation id="7397054681783221164">Tyhjennä seuraavat kohteet:</translation>
 <translation id="4891251785049117953">Poista tallennetut lomaketiedot</translation>
+<translation id="1531836666020185856">Esittelyt</translation>
+<translation id="777885533320815847">Kaksinkertainen n&amp;opeus (2,0 x)</translation>
 <translation id="7554791636758816595">Uusi välilehti</translation>
+<translation id="6231471673669497681">Toistonno&amp;peus</translation>
 <translation id="4400697530699263877">Paranna sivun lataustehokkuutta käyttämällä DNS-esitäyttöä</translation>
 <translation id="1086613338090581534">Varmenteen myöntäjä vastaa sellaisen varmenteen &quot;kumoamisluettelon&quot; ylläpidosta, joka ei ole vanhentunut. Jos varmenne vaarantuu, myöntäjä voi kumota sen lisäämällä sen kumoamisluetteloon. Silloin selaimesi ei enää luota kyseiseen varmenteeseen. Kumoamistilaa ei tarvitse ylläpitää vanhentuneiden varmenteiden osalta. Vaikka varmenne on ollut voimassa sivustossa, jossa käyt, sen osalta ei voida enää määrittää, onko se vaarantunut ja sen jälkeen kumottu, vai onko se edelleen turvallinen. Näin ollen ei voida tietää, oletko yhteydessä sallittuun sivustoon vai vaarantuiko varmenne ja olet yhteydessä hyökkääjään, jolla on se nyt hallussaan. Älä jatka tästä eteenpäin.</translation>
 <translation id="3157931365184549694">Palauta</translation>
@@ -580,6 +662,7 @@
 <translation id="641480858134062906"><ph name="URL"/>-lataus epäonnistui</translation>
 <translation id="3693415264595406141">Salasana:</translation>
 <translation id="74568296546932365">Säilytä <ph name="PAGE_TITLE"/> oletushakukoneena</translation>
+<translation id="9092040507273639934">Poista pikkukuva</translation>
 <translation id="6181769708911894002">Varoitus: Tällä sivulla käyminen voi vahingoittaa tietokonettasi!</translation>
 <translation id="8299269255470343364">japani</translation>
 <translation id="5204993535447683655">&lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;Lataa&lt;/a&gt; tämä verkkosivu uudelleen myöhemmin.</translation>
@@ -591,6 +674,7 @@
 <translation id="9040508646567685134">Tällä sivulla suoritettava komentosarja toimii hyvin hitaasti. Haluatko nähdä, suoritetaanko komentosarja loppuun vai luovutatko?</translation>
 <translation id="3065140616557457172">Kirjoita haku tai URL-osoite suoraa siirtymistä varten. Kaikki käy.</translation>
 <translation id="5986279928654338866"><ph name="DOMAIN"/>-palvelin vaatii käyttäjänimen ja salasanan.</translation>
+<translation id="521467793286158632">Poista kaikki salasanat</translation>
 <translation id="7056713340842386352">Käydyimmät [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="5765780083710877561">Kuvaus:</translation>
 <translation id="7221869452894271364">Lataa tämä sivu uudelleen</translation>
@@ -603,9 +687,11 @@
 <translation id="3527085408025491307">Kansio</translation>
 <translation id="3169621169201401257">Lisätietoja näitä osia koskevista ongelmista on Googlen <ph name="DIAGNOSTIC_PAGE"/> -vianmäärityssivulla verkkotunnuksen <ph name="DOMAIN"/> osalta.</translation>
 <translation id="2559292239863842334">Hakukentät, joita käytät useimmin muissa sivustoissa, näkyvät tässä.</translation>
+<translation id="7385854874724088939">Ongelmia tulostuksessa. Tarkista tulostimesi ja yritä uudelleen.</translation>
 <translation id="770015031906360009">kreikka</translation>
 <translation id="4474796446011988286">Seuraavat evästeet on tallennettu tietokoneellesi:</translation>
 <translation id="884923133447025588">Kumoamisjärjestelmää ei löytynyt.</translation>
+<translation id="7240072072812590475">Muuta Gears-asetuksia</translation>
 <translation id="7671130400130574146">Käytä järjestelmän otsikkoriviä ja reunoja</translation>
 <translation id="9170848237812810038">K&amp;umoa</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>K</translation>
@@ -675,10 +761,12 @@
 <translation id="7009102566764819240">Alla on luettelo kaikista sivun uhkaavista osista. Saat lisätietoja tiettyyn resurssiin liittyvästä haittaohjelmasta napsauttamalla Diagnostiikka-linkkiä. Jos tiedät, että joku tietty resurssi on ilmoitettu tietojenkalastelusivustoksi virheellisesti, napsauta Ilmoita virheestä -linkkiä.</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> sekuntia jäljellä</translation>
 <translation id="1485146213770915382">Lisää <ph name="SEARCH_TERMS_LITERAL"/> siihen URL-osoitteeseen, jossa hakutermien pitäisi näkyä.</translation>
+<translation id="4839303808932127586">Tallenna &amp;video nimellä...</translation>
 <translation id="5626134646977739690">Nimi:</translation>
 <translation id="7125953501962311360">Oletusselain:</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK"/>Lisätietoja<ph name="END_LINK"/> ongelmasta.</translation>
 <translation id="7774607445702416100">Internet Explorer</translation>
+<translation id="8156020606310233796">Luettelonäkymä</translation>
 <translation id="146000042969587795">Kehys estettiin, koska se sisältää suojaamatonta sisältöä.</translation>
 <translation id="8112223930265703044">Kaikki</translation>
 <translation id="1983108933174595844">Lähetä kuvakaappaus nykyisestä sivusta</translation>
@@ -687,6 +775,9 @@
 <translation id="486595306984036763">Avaa tietojenkalasteluraportti</translation>
 <translation id="1568162916422682473">Seuraavassa laajennuksessa on virheitä: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
+<translation id="7335974883498105858">Lisätoimintoesittelyt</translation>
+<translation id="1248790313843954917">Yksikään syöte ei vastaa hakukyselyäsi.</translation>
+<translation id="5963026469094486319">Hanki teemoja</translation>
 <translation id="2441719842399509963">Palauta oletukset</translation>
 <translation id="170407012880898501">Tallenna kenttien teksti, niin lomakkeiden täyttäminen on helpompaa</translation>
 <translation id="8116972784401310538">&amp;Kirjanmerkkien hallinta</translation>
@@ -698,8 +789,11 @@
 <translation id="1232569758102978740">Nimetön</translation>
 <translation id="9149866541089851383">Muokkaa...</translation>
 <translation id="7000311294523403548">Nimetön verkkosivu</translation>
+<translation id="4390382296735319084">Vinkkejä ja ehdotuksia</translation>
 <translation id="7649070708921625228">Ohje</translation>
+<translation id="6119719873954126908">Tässä laatikossa esitetään selailua helpottavia vinkkejä ja ehdotuksia.</translation>
 <translation id="7442246004212327644">&amp;Poista</translation>
+<translation id="281133045296806353">Nykyisessä selainistunnossa avattiin uusi ikkuna.</translation>
 <translation id="9002707937526687073">Tulo&amp;sta...</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="7727721885715384408">Muuta nimeä...</translation>
@@ -709,6 +803,8 @@
 <translation id="6389701355360299052">Verkkosivu, vain HTML</translation>
 <translation id="5271549068863921519">Tallenna salasana</translation>
 <translation id="2987775926667433828">perinteinen kiina</translation>
+<translation id="3954582159466790312">Palauta &amp;äänet</translation>
+<translation id="3936390757709632190">Avaa äänitied&amp;osto uudessa välilehdessä</translation>
 <translation id="6227291405321948850">Nimetön verkkokuva</translation>
 <translation id="1684248949164455892">Tällöin ulkopuolinen, johon tietokoneesi luottaa, ei ole vahvistanut varmennetta. Kuka tahansa voi luoda varmenteen ja väittää sen kuuluvan mihin tahansa valitsemaansa sivustoon, minkä vuoksi luotettavan ulkopuolisen on vahvistettava se. Ilman vahvistusta varmenteen identiteettitiedot ovat merkityksettömiä. Siksi ei ole mahdollista vahvistaa, oletko yhteydessä verkkotunnukseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; vai hyökkääjään, joka on luonut oman varmenteen, jonka väittää olevan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Sinun ei tule jatkaa tästä eteenpäin.</translation>
 <translation id="8045462269890919536">romania</translation>
@@ -717,6 +813,7 @@
 <translation id="3478477629095836699">Evästeasetukset:</translation>
 <translation id="2108475813351458355">Suojattu yhteys verkkotunnukseen <ph name="DOMAIN"/></translation>
 <translation id="942671148946453043">Olet avannut incognito-ikkunan. Sivut, jotka avaat tässä ikkunassa, eivät näy historiassa.</translation>
+<translation id="3503975005768721305">Lisää uusi verkkoleike</translation>
 <translation id="6996505290426962909">&amp;Tuo kirjanmerkit ja asetukset...</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>
@@ -729,6 +826,7 @@
 <translation id="3761000923495507277">Työkalupalkin Näytä etusivu -painike</translation>
 <translation id="8709969075297564489">Tarkista, onko palvelimen varmenne kumottu</translation>
 <translation id="8698171900303917290">Onko sinulla asennukseen liittyviä ongelmia?</translation>
+<translation id="4861833787540810454">&amp;Toista</translation>
 <translation id="2552545117464357659">Uudempi</translation>
 <translation id="5869522115854928033">Tallennetut salasanat</translation>
 <translation id="1709220265083931213">Tarkat säädöt</translation>
@@ -740,6 +838,7 @@
 <translation id="3943582379552582368">&amp;Edellinen</translation>
 <translation id="7607002721634913082">Keskeytetty</translation>
 <translation id="480990236307250886">Avaa oma etusivu</translation>
+<translation id="6709133671862442373">Uutiset</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> tuntia jäljellä</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> hours ago</translation>
 <translation id="5040262127954254034">Tietosuoja</translation>
@@ -754,12 +853,14 @@
 <translation id="4880827082731008257">Haku historiasta</translation>
 <translation id="4197700912384709145"><ph name="NUMBER_ZERO"/> sekuntia</translation>
 <translation id="8609465669617005112">Siirrä ylös</translation>
+<translation id="6013450154691450739">Piilota uusimmat toiminnot</translation>
 <translation id="1702534956030472451">länsimainen</translation>
 <translation id="9141716082071217089">Ei voi tarkistaa, onko palvelimen varmenne kumottu.</translation>
 <translation id="4304224509867189079">Kirjaudu sisään</translation>
 <translation id="4492190037599258964">Hakutulokset kyselylle <ph name="SEARCH_STRING"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Kehittäjän koontiversio</translation>
+<translation id="6790650291892352751">Hae aiheella tai URL-osoitteella:</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="4268574628540273656">URL-osoite:</translation>
 <translation id="7481312909269577407">Seuraava</translation>
@@ -770,11 +871,14 @@
 <translation id="7669151579173473971">Uusi &amp;profiili-ikkuna</translation>
 <translation id="5822838715583768518">Käynnistä sovellus</translation>
 <translation id="6756161853376828318">Tee <ph name="PRODUCT_NAME"/>sta oletusselain</translation>
+<translation id="2640524951934795733">Mitähän tähän laitettaisiin?</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;Asetukset</translation>
 <translation id="6264485186158353794">Takaisin suojaukseen</translation>
 <translation id="3807747707162121253">&amp;Peruuta</translation>
+<translation id="2850243184678184884">esim. jääkiekko, BBC, http://engadget.com/rss.xml</translation>
 <translation id="6422698515595625913">Käynnissä on <ph name="DOWNLOAD_COUNT"/> latausta. Jos suljet Google Chromen nyt, lataukset peruutetaan.</translation>
+<translation id="77999321721642562">Alla olevalla alueella näytetään myöhemmin kahdeksan eniten käyttämääsi sivustoa.</translation>
 <translation id="7447718177945067973">Palvelinta ei löytynyt.</translation>
 <translation id="715468010956678290">Avaa kehys näk&amp;ymättömyysikkunassa</translation>
 <translation id="7755167023778553803">Tämä sivu sisältää kuitenkin resursseja muista sivustoista, joiden identiteettiä ei voi vahvistaa.</translation>
@@ -811,14 +915,19 @@
 <translation id="6314919950468685344">Kiinteäleveyksinen kirjasin:</translation>
 <translation id="5233231016133573565">Prosessin tunnus</translation>
 <translation id="5941711191222866238">Pienennä</translation>
+<translation id="253434972992662860">&amp;Tauko</translation>
+<translation id="3812064265539952796">Huomaa: useat näistä syötteistä eivät tule Googlelta, joten Google ei vastaa niiden sisällöstä.</translation>
 <translation id="7167486101654761064">&amp;Avaa aina tämäntyyppiset tiedostot</translation>
+<translation id="3030701886340141944">Haluatko seurata useita sivustoja keskitetysti? Kokeile <ph name="BEGIN_LINK"/>Google-syötteenlukijaa<ph name="END_LINK"/></translation>
 <translation id="6053401458108962351">&amp;Poista selaustiedot...</translation>
 <translation id="2339641773402824483">Tarkistetaan päivityksiä...</translation>
+<translation id="8600200086690278232">Verkkoleike-esittelyt</translation>
 <translation id="2766006623206032690">&amp;Liitä ja poistu</translation>
 <translation id="9071050381089585305">Komentosarja ei vastaa</translation>
 <translation id="969892804517981540">Virallinen koontiversio</translation>
 <translation id="724208122063442954">Olet valinnut tiettyjen tiedostotyyppien avaamisen automaattisesti latauksen jälkeen. Voit poistaa nämä asetukset, niin että ladattuja tiedostoja ei avata automaattisesti.</translation>
 <translation id="4477534650265381513">Nopeuta käyttöä sijoittamalla kirjanmerkit tähän kirjanmerkkipalkkiin.</translation>
+<translation id="8080048886850452639">K&amp;opioi äänitiedoston URL-osoite</translation>
 <translation id="8328145009876646418">Vasen reuna</translation>
 <translation id="406259880812417922">(Avainsana: <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">JavaScript-viankorjaus - Käytössä</translation>

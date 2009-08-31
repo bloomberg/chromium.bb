@@ -38,8 +38,9 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
 <translation id="2044287590254833138">Barra d'eines de Google Chrome</translation>
+<translation id="1473088902761932034">Que bé que hàgiu tornat. Cal que tingueu en compte, però, que Google Chrome no és el vostre navegador predeterminat.</translation>
 <translation id="6481075104394517441">Heu intentat accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat que encara no és vàlid. No hi ha informació disponible que indiqui si es pot confiar en el certificat o no. Google Chrome no pot garantir amb fiabilitat que us esteu comunicant amb &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; i no amb un atacant. Hauríeu d'assegurar-vos que el rellotge i el fus horari estan configurats correctament al vostre equip. Si no ho estan, hauríeu de corregir els problemes i actualitzar aquesta pàgina. Si són correctes, no hauríeu de continuar.</translation>
-<translation id="8862326446509486874">No tens els permisos adequats per instal·lar aplicacions al sistema. Prova d'executar l'instal·lador de nou com a Administrador.</translation>
+<translation id="8862326446509486874">No disposeu dels drets necessaris per instal·lar aplicacions al sistema. Proveu de tornar a executar l'instal·lador com a administrador.</translation>
 <translation id="2874156562296220396">Google Chrome ha estat possible gràcies al projecte de codi obert <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> i altres <ph name="BEGIN_LINK_OSS"/>programes de codi obert<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome està a punt per dur a terme la instal·lació.</translation>
 <translation id="7100330187273168372">Google Chrome no pot llegir ni escriure al seu directori de dades:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
@@ -57,6 +58,7 @@
 <translation id="2769762047821873045">Google Chrome no és el navegador predeterminat.</translation>
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome no és compatible amb <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">En restablir les opcions de Google Chrome, els canvis que hàgiu fet es revertiran a la configuració predeterminada. Voleu restablir les opcions de Google Chrome?</translation>
 <translation id="3636771339108070045">Aquest equip ja disposa d'una versió més recent de Google Chrome. Si el programari no funciona, desinstal·la Google Chrome i baixa'l de nou.</translation>
 <translation id="3396666154568987767">Google Chrome per a <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Oculta Google Chrome</translation>

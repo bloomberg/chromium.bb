@@ -38,6 +38,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Eliminar também os seus dados de navegação?</translation>
 <translation id="2044287590254833138">Barra de ferramentas do Google Chrome</translation>
+<translation id="1473088902761932034">Viva, está de volta! Mas o Google Chrome não é o seu browser predefinido.</translation>
 <translation id="6481075104394517441">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Não há informações disponíveis que indiquem se esse certificado pode ser considerado fidedigno. O Google Chrome não pode garantir com segurança que está a comunicar com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um utilizador mal intencionado. Deverá certificar-se de que o seu relógio e fuso horário estão correctamente definidos no seu computador. Se não estiverem, deverá corrigir quaisquer problemas existentes e actualizar esta página. Se estiverem correctos, não deverá prosseguir.</translation>
 <translation id="8862326446509486874">Não tem os direitos adequados para uma instalação ao nível do sistema. Tente executar o programa de instalação novamente como Administrador.</translation>
 <translation id="2874156562296220396">O Google Chrome foi concretizado graças ao projecto open source (código fonte aberto) <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>, assim como a outro <ph name="BEGIN_LINK_OSS"/>software open source<ph name="END_LINK_OSS"/>.</translation>
@@ -50,13 +51,14 @@
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="8236873504073475138">O Google Chrome não suporta o Windows 2000. Alguns recursos poderão não funcionar.</translation>
 <translation id="5046764976540625289">Sair do Chrome</translation>
-<translation id="8865765905101981392">Navegador de Internet</translation>
+<translation id="8865765905101981392">Browser da Internet</translation>
 <translation id="582763753075639530">Feche todas as janelas do Chrome e reinicie o Chrome para que esta alteração entre em vigor.</translation>
 <translation id="6525535905286676482">Sair do Google Chrome</translation>
 <translation id="8776515774046280928">O Google Chrome já está instalado e disponível para todos os utilizadores deste computador. Se pretender instalar o Google Chrome ao nível do utilizador, desinstale primeiro a versão ao nível do sistema instalada pelo administrador.</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu browser predefinido.</translation>
 <translation id="7825851276765848807">Ocorreu uma falha na instalação devido a um erro não especificado. Transfira novamente o Google Chrome.</translation>
 <translation id="3335672657969596251">O Google Chrome não suporta o <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Ao repor as opções do Google Chrome, perderá·todas·as·alterações·que·tenha·efectuado·e·serão·repostos·os·valores·predefinidos. Deseja repor as opções do Chrome?</translation>
 <translation id="3636771339108070045">Este computador já tem uma versão mais recente do Google Chrome. Se o software não estiver a funcionar, desinstale o Google Chrome e transfira-o de novo.</translation>
 <translation id="3396666154568987767">Google Chrome para <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Ocultar o Google Chrome</translation>

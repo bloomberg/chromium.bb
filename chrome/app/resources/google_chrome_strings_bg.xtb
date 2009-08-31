@@ -14,7 +14,7 @@
 <translation id="4728575227883772061">Инсталирането не бе успешно поради неизвестна грешка. Ако Google Chrome понастоящем работи, моля, затворете го и опитайте отново.</translation>
 <translation id="4149882025268051530">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="4343226815564935778">Изглежда, че директорията за инсталиране на Google Chrome се използва. Моля, рестартирайте компютъра си и опитайте отново.</translation>
-<translation id="4506896920521131223">Авторски права © 2006-2009 Google Inc. Всички права запазени.</translation>
+<translation id="4506896920521131223">Авторски права © 2006–2009 Google Inc. Всички права запазени.</translation>
 <translation id="6817660909204164466">Помогнете за усъвършенстването на Google Chrome чрез автоматично изпращане до Google на статистически данни за употребата и отчети за грешки.</translation>
 <translation id="8227755444512189073">Google Chrome трябва да стартира външно приложение, за да обработва връзки от тип <ph name="SCHEME"/>. Поисканата връзка е <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> на Google Chrome</translation>
@@ -59,6 +59,7 @@
 <translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="7825851276765848807">Инсталацията не бе успешна поради неизвестна грешка. Моля, изтеглете отново Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome не поддържа <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Когато възстановите опциите на Google Chrome, всички направени от вас промени ще бъдат заменени с настройките по подразбиране. Искате ли да възстановите опциите на Google Chrome?</translation>
 <translation id="3636771339108070045">На този компютър вече има по-нова версия на Google Chrome. Ако софтуерът не работи, моля, деинсталирайте Google Chrome и го изтеглете отново.</translation>
 <translation id="3396666154568987767">Google Chrome за <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Скриване на Google Chrome</translation>

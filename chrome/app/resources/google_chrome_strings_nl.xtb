@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="8000275528373650868">Voor Google Chrome is Windows Vista of Windows XP met SP2 of hoger vereist.</translation>
-<translation id="6676384891291319759">Toegang tot internet</translation>
+<translation id="6676384891291319759">Verbinding maken met internet</translation>
 <translation id="698670068493841342">Google Chrome is al geïnstalleerd voor deze gebruiker. Als de software niet werkt, verwijdert u Google Chrome en downloadt u het programma opnieuw.</translation>
 <translation id="7400722733683201933">Over Google Chrome</translation>
 <translation id="7101265395643981223">Start Google Chrome</translation>
@@ -38,6 +38,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
+<translation id="1473088902761932034">Welkom terug! Maar Google Chrome is op dit moment niet uw standaardbrowser.</translation>
 <translation id="6481075104394517441">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat geretourneerd dat nog niet geldig is. Er is nog geen informatie beschikbaar over de betrouwbaarheid van dit certificaat. Chrome kan niet met zekerheid garanderen dat u met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; communiceert, en niet met een hacker. U moet ervoor zorgen dat uw klok en tijdzone correct zijn ingesteld op uw computer. Zo niet, dan moet u dit aanpassen en deze pagina vernieuwen. Als ze correct zijn, moet u niet verder gaan.</translation>
 <translation id="8862326446509486874">U heeft geen rechten om op systeemniveau te installeren. Meld u aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
 <translation id="2874156562296220396">Google Chrome wordt mogelijk gemaakt door het open-source project <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> en andere <ph name="BEGIN_LINK_OSS"/>open-source software<ph name="END_LINK_OSS"/>.</translation>
@@ -57,6 +58,7 @@
 <translation id="2769762047821873045">Google Chrome is niet uw standaardbrowser.</translation>
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>
 <translation id="3335672657969596251">Google Chrome ondersteunt <ph name="OS_NAME"/> niet.</translation>
+<translation id="473183893665420670">Wanneer u de opties van Google Chrome opnieuw instelt, worden de door u aangebrachte wijzigingen teruggezet naar de standaardinstellingen. Wilt u de opties van Google Chrome opnieuw instellen?</translation>
 <translation id="3636771339108070045">Er staat al een nieuwere versie van Google Chrome op deze computer. Als de software niet werkt, verwijdert u Google Chrome en downloadt u het programma opnieuw.</translation>
 <translation id="3396666154568987767">Google Chrome voor <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Google Chrome verbergen</translation>

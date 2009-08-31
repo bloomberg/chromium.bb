@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="8000275528373650868">Το Google Chrome απαιτεί λειτουργικό σύστημα Windows Vista ή Windows XP με SP2 ή μεταγενέστερη έκδοση.</translation>
-<translation id="6676384891291319759">Πρόσβαση στο Internet</translation>
+<translation id="6676384891291319759">Πρόσβαση στο Διαδίκτυο</translation>
 <translation id="698670068493841342">Το Google Chrome έχει ήδη εγκατασταθεί για αυτόν το χρήστη. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Google Chrome και κάντε λήψη ξανά.</translation>
 <translation id="7400722733683201933">Πληροφορίες για το Google Chrome</translation>
 <translation id="7101265395643981223">Έναρξη του Google Chrome</translation>
@@ -38,8 +38,9 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Να γίνει διαγραφή και των δεδομένων περιήγησης;</translation>
 <translation id="2044287590254833138">Γραμμή εργαλείων του Google Chrome</translation>
+<translation id="1473088902761932034">Επιστρέψατε! Όμως, το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησής σας.</translation>
 <translation id="6481075104394517441">Επιχειρήσατε να μεταβείτε στον τομέα &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, αλλά ο διακομιστής παρουσίασε ένα πιστοποιητικό που δεν είναι ακόμη έγκυρο. Δεν υπάρχουν διαθέσιμες πληροφορίες για να μάθετε αν αυτό το πιστοποιητικό είναι αξιόπιστο. Το Google Chrome δεν μπορεί να εγγυηθεί ότι επικοινωνείτε με τον τομέα &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; και όχι με κάποιον εισβολέα. Πρέπει να βεβαιωθείτε ότι έχετε ρυθμίσει σωστά το ρολόι και τη ζώνη ώρας στον υπολογιστή σας. Αν δεν τα έχετε ρυθμίσει σωστά, πρέπει να διορθώσετε τυχόν προβλήματα και να ανανεώσετε αυτή τη σελίδα. Αν οι ρυθμίσεις είναι σωστές, δεν πρέπει να προχωρήσετε.</translation>
-<translation id="8862326446509486874">Δεν έχετε τα απαραίτητα δικαιώματα για εγκατάσταση επιπέδου συστήματος. Δοκιμάστε να εκτελέσετε ξανά το πρόγραμμα εγκατάστασης ως Διαχειριστής.</translation>
+<translation id="8862326446509486874">Δεν έχετε τα απαραίτητα δικαιώματα για εγκατάσταση σε επίπεδο συστήματος. Δοκιμάστε να εκτελέσετε ξανά το πρόγραμμα εγκατάστασης ως Διαχειριστής.</translation>
 <translation id="2874156562296220396">Το Google Chrome υλοποιήθηκε με τη βοήθεια του έργου ανοικτού κώδικα <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> και άλλου <ph name="BEGIN_LINK_OSS"/>λογισμικού ανοικτού κώδικα<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Το Google Chrome είναι έτοιμο για την ολοκλήρωση της εγκατάστασης.</translation>
 <translation id="7100330187273168372">Το Google Chrome δεν έχει τη δυνατότητα ανάγνωσης και εγγραφής στον κατάλογο δεδομένων του:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
@@ -50,13 +51,14 @@
 <translation id="7161904924553537242">Καλώς ήρθατε στο Google Chrome</translation>
 <translation id="8236873504073475138">Το Google Chrome δεν υποστηρίζει τα Windows 2000. Ορισμένες δυνατότητες ενδέχεται να μην λειτουργούν.</translation>
 <translation id="5046764976540625289">Έξοδος από το Chrome</translation>
-<translation id="8865765905101981392">Internet Browser</translation>
+<translation id="8865765905101981392">Πρόγραμμα περιήγησης Διαδικτύου</translation>
 <translation id="582763753075639530">Κλείστε όλα τα παράθυρα του Chrome και επανεκκινήστε το Chrome για να τεθεί σε ισχύ αυτή η αλλαγή.</translation>
 <translation id="6525535905286676482">Κλείσιμο του Google Chrome</translation>
 <translation id="8776515774046280928">Το Google Chrome έχει ήδη εγκατασταθεί και είναι διαθέσιμο σε όλους τους χρήστες αυτού του υπολογιστή. Αν θέλετε να εγκαταστήσετε το Google Chrome σε επίπεδο χρήστη, πρέπει να απεγκαταστήσετε πρώτα την έκδοση που εγκαταστάθηκε σε επίπεδο συστήματος από το διαχειριστή.</translation>
 <translation id="2769762047821873045">Το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>
 <translation id="7825851276765848807">Η εγκατάσταση απέτυχε λόγω μη καθορισμένου σφάλματος. Κάντε λήψη του Google Chrome ξανά.</translation>
 <translation id="3335672657969596251">Το Google Chrome δεν υποστηρίζει το <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Όταν πραγματοποιείτε επαναφορά των ρυθμίσεων του Google Chrome, θα γίνει αναίρεση τυχόν αλλαγών που έχετε κάνει στις προεπιλεγμένες ρυθμίσεις. Θέλετε να κάνετε επαναφορά των επιλογών του Chrome;</translation>
 <translation id="3636771339108070045">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Google Chrome και κάντε λήψη ξανά.</translation>
 <translation id="3396666154568987767">Google Chrome για <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Απόκρυψη του Google Chrome</translation>

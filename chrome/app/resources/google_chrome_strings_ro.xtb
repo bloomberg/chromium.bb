@@ -38,6 +38,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Ştergeţi şi datele de navigare?</translation>
 <translation id="2044287590254833138">Bara de instrumente Google Chrome</translation>
+<translation id="1473088902761932034">Suuuper, v-aţi întors! Dar Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="6481075104394517441">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a prezentat un certificat care încă nu este valabil. Nu sunt disponibile informaţii care să indice dacă acel certificat prezintă garanţie. Google Chrome nu vă poate garanta în mod sigur că dvs. comunicaţi cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; şi nu cu un atacator. Ar trebui să vă asiguraţi că ora şi fusul orar sunt setate corect pe computerul dvs. Dacă nu sunt, trebuie să corectaţi orice erori şi să actualizaţi această pagină. Dacă sunt corecte, nu trebuie să mergeţi mai departe.</translation>
 <translation id="8862326446509486874">Nu aveţi drepturile adecvate pentru instalarea la nivel de sistem. Încercaţi să rulaţi din nou programul de instalare ca Administrator.</translation>
 <translation id="2874156562296220396">Google Chrome există ca urmare a proiectului open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> şi a altor <ph name="BEGIN_LINK_OSS"/>produse software open source<ph name="END_LINK_OSS"/>.</translation>
@@ -50,13 +51,14 @@
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
 <translation id="8236873504073475138">Google Chrome nu acceptă Windows 2000. Este posibil ca unele funcţii să nu funcţioneze.</translation>
 <translation id="5046764976540625289">Ieşiţi din Chrome</translation>
-<translation id="8865765905101981392">Internet Browser</translation>
+<translation id="8865765905101981392">Browser de Internet</translation>
 <translation id="582763753075639530">Închideţi toate ferestrele Chrome şi reporniţi Chrome pentru ca această modificare să aibă efect.</translation>
 <translation id="6525535905286676482">Părăsiţi Google Chrome</translation>
 <translation id="8776515774046280928">Google Chrome este deja instalat şi disponibil tuturor utilizatorilor de pe acest computer. Dacă doriţi să instalaţi Google Chrome la nivel de utilizator, trebuie să dezinstalaţi mai întâi versiunea disponibilă la nivel de sistem instalată de un administrator.</translation>
 <translation id="2769762047821873045">Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="7825851276765848807">Instalarea nu a reuşit din cauza unei erori neprecizate. Descărcaţi Google Chrome din nou.</translation>
 <translation id="3335672657969596251">Google Chrome nu acceptă <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Când resetaţi opţiunile pentru Google Chrome, toate modificările efectuate vor fi anulate, revenind la setările prestabilite. Doriţi să resetaţi opţiunile Chrome?</translation>
 <translation id="3636771339108070045">Acest computer are deja o versiune mai recentă de Google Chrome. Dacă programul nu funcţionează, vă rugăm să dezinstalaţi Google Chrome şi să-l descărcaţi din nou.</translation>
 <translation id="3396666154568987767">Google Chrome pentru <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Ascundeţi Google Chrome</translation>

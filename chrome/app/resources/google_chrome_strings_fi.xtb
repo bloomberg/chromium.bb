@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="8000275528373650868">Google Chrome edellyttää, että käyttöjärjestelmä on Windows Vista tai Windows XP (SP2 tai uudempi).</translation>
-<translation id="6676384891291319759">Yhdistä Internettiin</translation>
+<translation id="6676384891291319759">Käytä internetiä</translation>
 <translation id="698670068493841342">Google Chrome on jo asennettu tällä käyttäjälle. Jos ohjelma ei toimi, poista Google Chromen asennus ja lataa se uudelleen.</translation>
 <translation id="7400722733683201933">Tietoja Google Chromesta</translation>
 <translation id="7101265395643981223">Käynnistä Google Chrome</translation>
@@ -58,6 +58,7 @@
 <translation id="2769762047821873045">Google Chrome ei ole oletusselain.</translation>
 <translation id="7825851276765848807">Asennus epäonnistui tuntemattoman virheen vuoksi. Lataa Google Chrome uudelleen.</translation>
 <translation id="3335672657969596251">Google Chrome ei tue <ph name="OS_NAME"/>-käyttöjärjestelmää</translation>
+<translation id="473183893665420670">Kun tyhjennät Google Chromen asetukset, kaikki tekemäsi muutokset palautetaan oletusasetuksiksi. Haluatko tyhjentää Google Chromen asetukset?</translation>
 <translation id="3636771339108070045">Tietokoneessa on jo uudempi Google Chromen versio. Jos ohjelma ei toimi, poista Google Chromen asennus ja lataa se uudelleen.</translation>
 <translation id="3396666154568987767">Google Chromen <ph name="PROFILE_NAME"/>-profiili</translation>
 <translation id="3290853340290073363">Piilota Google Chrome</translation>

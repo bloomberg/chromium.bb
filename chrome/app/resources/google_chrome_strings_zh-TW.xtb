@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="8000275528373650868">「Google 瀏覽器」需要 Windows Vista，或者 Windows XP SP2 或更新版本。</translation>
-<translation id="6676384891291319759">使用網際網路</translation>
+<translation id="6676384891291319759">連線到網際網路</translation>
 <translation id="698670068493841342">已安裝「Google 瀏覽器」供此使用者使用。如果軟體無法順利運作，請移除「Google 瀏覽器」，然後重新下載一次。</translation>
 <translation id="7400722733683201933">關於 Google 瀏覽器</translation>
 <translation id="7101265395643981223">開啟 Google 瀏覽器</translation>
@@ -40,7 +40,7 @@
 <translation id="2044287590254833138">Google 瀏覽器工具列</translation>
 <translation id="1473088902761932034">您回來真是太好了！但是 Google 還不是您的預設瀏覽器。</translation>
 <translation id="6481075104394517441">您嘗試到達 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器所提供的憑證尚未生效。沒有任何資訊顯示憑證是否可靠。Google 瀏覽器無法確切保證您聯絡的對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而非攻擊者。您必須確保您的電腦已正確設定時間和時區。如果設定不正確，請修改設定，然後重新整理本網頁。如果設定正確，您必須就此停住。</translation>
-<translation id="8862326446509486874">您沒有在系統層級進行安裝的權限。請嘗試以管理員身份執行安裝檔。</translation>
+<translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
 <translation id="2874156562296220396">「Google 瀏覽器」的開發仰賴 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 開放原始碼計畫與其他<ph name="BEGIN_LINK_OSS"/>開放原始碼軟體<ph name="END_LINK_OSS"/>的協助才得以完成。</translation>
 <translation id="6921913858457830952">Google 瀏覽器已準備好完成您的安裝。</translation>
 <translation id="7100330187273168372">Google 瀏覽器無法讀取或寫入資料目錄:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
@@ -58,8 +58,9 @@
 <translation id="2769762047821873045">「Google 瀏覽器」並非您的預設瀏覽器。</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載「Google 瀏覽器」。</translation>
 <translation id="3335672657969596251">Google 瀏覽器不支援 <ph name="OS_NAME"/>。</translation>
+<translation id="473183893665420670">重設「Google 瀏覽器」選項時，先前的變更將返回預設設定。確定要重設「Google 瀏覽器」選項嗎？</translation>
 <translation id="3636771339108070045">此電腦已有更新的「Google 瀏覽器」版本可供使用，如果軟體無法順利運作，請移除「Google 瀏覽器」，然後重新下載一次。</translation>
-<translation id="3396666154568987767">適用於 <ph name="PROFILE_NAME"/> 的 Google 瀏覽器</translation>
+<translation id="3396666154568987767"><ph name="PROFILE_NAME"/>的 Google 瀏覽器快捷</translation>
 <translation id="3290853340290073363">隱藏 Google 瀏覽器</translation>
 <translation id="1964682833763362793">請關閉所有 Google 瀏覽器視窗然後再試一次。</translation>
 <translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載「Google 瀏覽器」。</translation>

@@ -38,6 +38,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Slet også dine browsingdata?</translation>
 <translation id="2044287590254833138">Google Chrome-værktøjslinje</translation>
+<translation id="1473088902761932034">Hurra, du er tilbage! Men Google Chrome er ikke din standardbrowser.</translation>
 <translation id="6481075104394517441">Du forsøgte at kontakte &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men det certifikat, denne server viste, er ikke gyldigt. Der er ingen tilgængelige oplysninger, som indikerer, at certifikatet er troværdigt. Chrome har ikke mulighed for at garantere, at du kommunikerer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; og ikke med en ondsindet part. Kontroller, at klokkeslæt og tidszone på din computer er korrekt indstillet. Er det ikke tilfældet, skal du rette eventuelle problemer og opdatere denne side. Er de korrekt indstillet, bør du ikke fortsætte.</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettigheder til en installation på systemniveau. Prøv at køre installationsprogrammet igen som administrator.</translation>
 <translation id="2874156562296220396">Google Chrome er blevet en realitet på grund af <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source-projektet og anden <ph name="BEGIN_LINK_OSS"/>open source-software<ph name="END_LINK_OSS"/>.</translation>
@@ -57,6 +58,7 @@
 <translation id="2769762047821873045">Google Chrome er ikke din standardbrowser.</translation>
 <translation id="7825851276765848807">Installationen mislykkedes på grund af en uspecificeret fejl. Download Google Chrome igen.</translation>
 <translation id="3335672657969596251">Google Chrome understøtter ikke <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Når du nulstiller valgmulighederne i Chrome, bliver alle ændringer, du har foretaget, erstattet med standardindstillingerne. Ønsker du at nulstille valgmulighederne for Chrome?</translation>
 <translation id="3636771339108070045">Denne computer har allerede en nyere version af Google Chrome. Hvis programmet ikke virker, skal du afinstallere Google Chrome og downloade det igen.</translation>
 <translation id="3396666154568987767">Google Chrome til <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Skjul Google Chrome</translation>

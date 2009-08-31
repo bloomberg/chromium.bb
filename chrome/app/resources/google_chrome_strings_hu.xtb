@@ -38,6 +38,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="2044287590254833138">Google Chrome Eszköztár</translation>
+<translation id="1473088902761932034">Hurrá, újra itt! Viszont nem a Google Chrome az alapértelmezett böngészője.</translation>
 <translation id="6481075104394517441">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; domaint, de a szerver tanúsítványa még nem érvényes. Nincs elérhető információ annak jelzésére, hogy a tanúsítvány lejárta óta használható-e a domain. A Google Chrome nem tudja garantálni, hogy akivel kommunikál ténylegesen &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; és nem pedig egy támadó. Bizonyosodjon meg róla, hogy az óra és az időzóna megfelelően lett beállítva számítógépén. Ha nincsenek meg ezek a beállítások, akkor ki kell javítani a pontatlan adatokat, majd frissíteni kell az oldalt. Ha az adatok helyesek, nem kell további lépéseket tennie.</translation>
 <translation id="8862326446509486874">Nincsenek meg a megfelelő jogai a rendszerszintű telepítéshez. Indítsa újra a telepítőt rendszergazdaként.</translation>
 <translation id="2874156562296220396">A Google Chrome a <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> nyílt forráskódú projektnek és további <ph name="BEGIN_LINK_OSS"/>nyílt forráskódú szoftvereknek<ph name="END_LINK_OSS"/> köszönhetően jött létre.</translation>
@@ -50,15 +51,16 @@
 <translation id="7161904924553537242">Üdvözli Önt a Google Chrome!</translation>
 <translation id="8236873504073475138">A Google Chrome nem támogatja a Windows 2000-t. Lehetséges, hogy néhány funkció nem működik.</translation>
 <translation id="5046764976540625289">Kilépés a Chrome alkalmazásból</translation>
-<translation id="8865765905101981392">Böngésző</translation>
+<translation id="8865765905101981392">Internetböngésző</translation>
 <translation id="582763753075639530">Ahhoz, hogy a módosítás hatályba lépjen, kérjük, zárjon be minden Chrome ablakot, és indítsa újra a Chrome alkalmazást.</translation>
 <translation id="6525535905286676482">Kilépés a Google Chrome-ból</translation>
 <translation id="8776515774046280928">A Google Chrome szoftver már telepítve van, és elérhető a számítógép minden felhasználója számára. Ha felhasználói szinten szeretné telepíteni a Google Chrome böngészőt, először el kell távolíttatnia a rendszerszintű verziót a rendszergazdájával.</translation>
 <translation id="2769762047821873045">Nem a Google Chrome az alapértelmezett böngésző.</translation>
 <translation id="7825851276765848807">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Google Chrome-ot.</translation>
 <translation id="3335672657969596251">A Google Chrome nem támogatja ezt az operációs rendszert: <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Amikor alaphelyzetbe állítja a Google Chrome opcióit, a rendszer visszaállítja az eredeti beállításokat. Vissza szeretné állítani a Chrome beállításait?</translation>
 <translation id="3636771339108070045">A számítógépen már megtalálható a Google Chrome újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el, majd töltse le újra a Google Chrome alkalmazást.</translation>
-<translation id="3396666154568987767">Google Chrome – <ph name="PROFILE_NAME"/> profil</translation>
+<translation id="3396666154568987767">Google Chrome profil: <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">A Google Chrome elrejtése</translation>
 <translation id="1964682833763362793">Zárjon be minden Chrome ablakot, és próbálkozzon újra.</translation>
 <translation id="1001534784610492198">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>

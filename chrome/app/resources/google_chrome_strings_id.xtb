@@ -40,7 +40,7 @@
 <translation id="2044287590254833138">Toolbar Google Chrome</translation>
 <translation id="1473088902761932034">Hore! Anda sudah balik :) Sayangnya Google Chrome bukan peramban bawaan Anda.</translation>
 <translation id="6481075104394517441">Anda berupaya membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server memberikan sertifikat yang belum valid. Tidak ada informasi yang tersedia untuk menunjukkan bahwa sertifikat dapat dipercaya. Google Chrome tidak dapat menjamin secara pasti bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan pengganggu. Anda harus memastikan bahwa jam dan zona waktu ditetapkan dengan benar di komputer. Jika belum, Anda harus mengatasi masalah dan me-refresh halaman ini. Jika sudah benar, Anda tidak boleh melanjutkan.</translation>
-<translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk penginstalan tingkat sistem. Coba jalankan kembali penginstal sebagai Administrator.</translation>
+<translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk penginstalan tingkat sistem. Coba jalankan lagi penginstal saat masuk sebagai Administrator.</translation>
 <translation id="2874156562296220396">Google Chrome hadir berkat proyek sumber terbuka<ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> dan <ph name="BEGIN_LINK_OSS"/>perangkat lunak sumber terbuka <ph name="END_LINK_OSS"/> lainnya.</translation>
 <translation id="6921913858457830952">Google Chrome siap menyelesaikan penginstalan.</translation>
 <translation id="7100330187273168372">Google Chrome tidak dapat membaca dan menulis ke direktori data:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
@@ -51,13 +51,14 @@
 <translation id="7161904924553537242">Selamat Datang di Google Chrome</translation>
 <translation id="8236873504073475138">Google Chrome tidak mendukung Windows 2000. Beberapa fitur mungkin tidak berfungsi.</translation>
 <translation id="5046764976540625289">Keluar dari Chrome</translation>
-<translation id="8865765905101981392">Penjelajah Internet</translation>
+<translation id="8865765905101981392">Peramban Internet</translation>
 <translation id="582763753075639530">Tutup semua jendela Chrome dan mulai ulang Chrome agar perubahan diterapkan.</translation>
 <translation id="6525535905286676482">Keluar Google Chrome</translation>
 <translation id="8776515774046280928">Google Chrome telah terinstal dan tersedia bagi seluruh pengguna komputer ini. Jika Anda ingin menginstal Google Chrome pada tingkat pengguna, Anda harus terlebih dulu menghapus penginstalan versi tingkat sistem yang diinstal oleh administrator.</translation>
 <translation id="2769762047821873045">Google Chrome bukan peramban bawaan.</translation>
 <translation id="7825851276765848807">Instalasi gagal karena galat yang tidak ditentukan. Silakan unduh Google Chrome lagi.</translation>
 <translation id="3335672657969596251">Google Chrome tidak mendukung <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Saat Anda menyetel ulang Opsi Google Chrome, perubahan apa pun yang Anda lakukan akan dikembalikan ke setelan bawaan. Apakah Anda ingin menyetel ulang opsi Chrome?</translation>
 <translation id="3636771339108070045">Komputer ini telah menginstal versi Google Chrome yang lebih baru. Jika perangkat lunak tidak berfungsi, hapus penginstalan Google Chrome, kemudian unduh kembali.</translation>
 <translation id="3396666154568987767">Google Chrome untuk <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Sembunyikan Google Chrome</translation>

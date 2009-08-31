@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="8000275528373650868">Google Chrome está disponible para Windows Vista o Windows XP con SP2 o superior.</translation>
-<translation id="6676384891291319759">Acceso a Internet</translation>
+<translation id="6676384891291319759">Accede a Internet.</translation>
 <translation id="698670068493841342">Google Chrome ya se ha instalado para este usuario. Si el software no funciona, desinstala Google Chrome y vuelve a descargarlo.</translation>
 <translation id="7400722733683201933">Acerca de Google Chrome</translation>
 <translation id="7101265395643981223">Iniciar Google Chrome</translation>
@@ -58,6 +58,7 @@
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="7825851276765848807">La instalación no se ha podido realizar a causa de un error no especificado. Vuelve a descargar Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome no es compatible con <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Si restableces las opciones de Google Chrome, se desharán los cambios que hayas realizado y se restablecerá la configuración predeterminada. ¿Estás seguro de que quieres restablecer las opciones de Google Chrome?</translation>
 <translation id="3636771339108070045">Este equipo ya tiene instalada una versión más reciente de Google Chrome. Si el software no funciona, desinstala Google Chrome y vuelve a descargarlo.</translation>
 <translation id="3396666154568987767">Google Chrome para <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Ocultar Google Chrome</translation>

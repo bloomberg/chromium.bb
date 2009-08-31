@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="8000275528373650868">O Google Chrome requer o Windows Vista ou o Windows XP com SP2 ou superior.</translation>
-<translation id="6676384891291319759">Acessar à Web</translation>
+<translation id="6676384891291319759">Acessar a internet</translation>
 <translation id="698670068493841342">O Google Chrome já foi instalado para este usuário. Se o software não estiver funcionando, desinstale o Google Chrome e baixe-o novamente.</translation>
 <translation id="7400722733683201933">Sobre o Google Chrome</translation>
 <translation id="7101265395643981223">Iniciar o Google Chrome</translation>
@@ -52,13 +52,14 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="8236873504073475138">O Google Chrome não é compatível com o Windows 2000. Alguns recursos talvez não funcionem.</translation>
 <translation id="5046764976540625289">Sair do Chrome</translation>
-<translation id="8865765905101981392">Navegador Web</translation>
+<translation id="8865765905101981392">Navegador da internet</translation>
 <translation id="582763753075639530">Feche todas as janelas do Chrome e reinicie o Chrome para que essa alteração entre em vigor.</translation>
 <translation id="6525535905286676482">Sair do Google Chrome</translation>
 <translation id="8776515774046280928">O Google Chrome já está instalado e disponível para todos os usuários deste computador. Se você desejar instalar o Google Chrome para um usuário específico, primeiro desinstale a versão para sistema instalada pelo administrador.</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador padrão.</translation>
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
 <translation id="3335672657969596251">O Google Chrome não é compatível com o <ph name="OS_NAME"/>.</translation>
+<translation id="473183893665420670">Ao redefinir as opções do Google Chrome, todas as alterações feitas serão revertidas para as configurações padrão. Deseja redefinir as opções do Chrome?</translation>
 <translation id="3636771339108070045">Este computador já tem uma versão mais recente do Google Chrome. Se o software não estiver funcionando, desinstale o Google Chrome e baixe-o novamente.</translation>
 <translation id="3396666154568987767">Google Chrome para <ph name="PROFILE_NAME"/></translation>
 <translation id="3290853340290073363">Ocultar o Google Chrome</translation>
