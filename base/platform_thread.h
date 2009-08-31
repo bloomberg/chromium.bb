@@ -22,12 +22,12 @@ typedef void* PlatformThreadHandle;  // HANDLE
 #elif defined(OS_POSIX)
 #include <pthread.h>
 typedef pthread_t PlatformThreadHandle;
-#if defined(OS_LINUX)
-#include <unistd.h>
-typedef pid_t PlatformThreadId;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include <mach/mach.h>
 typedef mach_port_t PlatformThreadId;
+#else  // OS_POSIX && !OS_MACOSX
+#include <unistd.h>
+typedef pid_t PlatformThreadId;
 #endif
 #endif
 

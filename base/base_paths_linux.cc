@@ -15,15 +15,21 @@
 
 namespace base {
 
+#if defined(OS_LINUX)
+const char kSelfExe[] = "/proc/self/exe";
+#elif defined(OS_FREEBSD)
+const char kSelfExe[] = "/proc/curproc/file";
+#endif
+
 bool PathProviderLinux(int key, FilePath* result) {
   FilePath path;
   switch (key) {
     case base::FILE_EXE:
-    case base::FILE_MODULE: { // TODO(evanm): is this correct?
+    case base::FILE_MODULE: {  // TODO(evanm): is this correct?
       char bin_dir[PATH_MAX + 1];
-      int bin_dir_size = readlink("/proc/self/exe", bin_dir, PATH_MAX);
+      int bin_dir_size = readlink(kSelfExe, bin_dir, PATH_MAX);
       if (bin_dir_size < 0 || bin_dir_size > PATH_MAX) {
-        NOTREACHED() << "Unable to resolve /proc/self/exe.";
+        NOTREACHED() << "Unable to resolve " << kSelfExe << ".";
         return false;
       }
       bin_dir[bin_dir_size] = 0;
