@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "base/time.h"  // TEMPORARY
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
@@ -53,6 +54,9 @@ AutocompleteEditModel::AutocompleteEditModel(
     // we'll set this before each call to the controller.
     paste_and_go_controller = new AutocompleteController(NULL);
   }
+
+  temporary_timer_.Start(base::TimeDelta::FromMilliseconds(10), this,
+                         &AutocompleteEditModel::TemporaryTimerFired);
 }
 
 AutocompleteEditModel::~AutocompleteEditModel() {
@@ -384,7 +388,7 @@ void AutocompleteEditModel::OnUpOrDownKeyPressed(int count) {
   // NOTE: This purposefully don't trigger any code that resets paste_state_.
 
   if (!popup_->IsOpen()) {
-    if (popup_->autocomplete_controller()->done()) {
+    if (!query_in_progress()) {
       // The popup is neither open nor working on a query already.  So, start an
       // autocomplete query for the current text.  This also sets
       // user_input_in_progress_ to true, which we want: if the user has started
@@ -551,7 +555,7 @@ GURL AutocompleteEditModel::GetURLForCurrentText(
     PageTransition::Type* transition,
     bool* is_history_what_you_typed_match,
     GURL* alternate_nav_url) {
-  return (popup_->IsOpen() || !popup_->autocomplete_controller()->done()) ?
+  return (popup_->IsOpen() || query_in_progress()) ?
       popup_->URLsForCurrentSelection(transition,
                                       is_history_what_you_typed_match,
                                       alternate_nav_url) :
@@ -559,4 +563,8 @@ GURL AutocompleteEditModel::GetURLForCurrentText(
                                   GetDesiredTLD(), transition,
                                   is_history_what_you_typed_match,
                                   alternate_nav_url);
+}
+
+void AutocompleteEditModel::TemporaryTimerFired() {
+  GetURLForCurrentText(NULL, NULL, NULL);
 }
