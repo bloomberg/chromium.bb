@@ -83,6 +83,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
 #endif
 }
 
+#if defined(OS_WIN)  // TODO(port) -- enable
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {
   FilePath extension_test_data_dir = test_data_dir_.AppendASCII("good").
       AppendASCII("Extensions").AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj").
@@ -121,8 +122,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {
       host->render_view_host(), L"", L"testgetTabContentsesAPI()", &result);
   EXPECT_TRUE(result);
 }
+#endif  // defined(OS_WIN)
 
-#if defined(OS_WIN)
+#if defined(OS_WIN)  // TODO(port) -- enable
 // Tests that the ExtensionShelf initializes properly, notices that
 // an extension loaded and has a view available, and then sets that up
 // properly.
@@ -219,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(no_feed));
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 }
-#endif  //defined(OS_WIN)
+#endif  // defined(OS_WIN)
 
 GURL GetFeedUrl(const std::string& feed_page) {
   FilePath test_dir;
@@ -328,6 +330,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeed) {
   EXPECT_STREQ("Not a valid feed", error.c_str());
 }
 
+#if defined(OS_WIN)  // TODO(port) - enable.
 // Tests that message passing between extensions and tabs works.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
   ASSERT_TRUE(LoadExtension(
@@ -369,6 +372,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
       host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
   EXPECT_TRUE(result);
 }
+#endif  // defined(OS_WIN)
 
 // Tests that an error raised during an async function still fires
 // the callback, but sets chrome.extension.lastError.
@@ -387,8 +391,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   EXPECT_TRUE(result);
 }
 
-#if defined(OS_WIN)  // TODO(port) - enable. This is probably not working
-                     // on linux because of race issues with startup.
+#if defined(OS_WIN)  // TODO(port) - enable.
 // Tests that message passing between extensions and content scripts works.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   ASSERT_TRUE(LoadExtension(
