@@ -89,7 +89,7 @@ int URLRequestAutomationJob::instance_count_ = 0;
 URLRequestAutomationJob::URLRequestAutomationJob(
     URLRequest* request, int tab, AutomationResourceMessageFilter* filter)
     : URLRequestJob(request), id_(0), tab_(tab), message_filter_(filter),
-      pending_buf_size_(0) {
+      pending_buf_size_(0), redirect_status_(0) {
   DLOG(INFO) << "URLRequestAutomationJob create. Count: " << ++instance_count_;
   if (message_filter_) {
     id_ = message_filter_->NewRequestId();
@@ -187,13 +187,19 @@ int URLRequestAutomationJob::GetResponseCode() const {
 
 bool URLRequestAutomationJob::IsRedirectResponse(
     GURL* location, int* http_status_code) {
-  static const int kHttpRedirectResponseCode = 301;
+  static const int kDefaultHttpRedirectResponseCode = 301;
 
   if (!redirect_url_.empty()) {
-    *http_status_code = kHttpRedirectResponseCode;
+    DLOG_IF(ERROR, redirect_status_ == 0) << "Missing redirect status?";
+    *http_status_code = redirect_status_ ? redirect_status_ :
+                                           kDefaultHttpRedirectResponseCode;
     *location = GURL(redirect_url_);
     return true;
+  } else {
+    DCHECK(redirect_status_ == 0)
+        << "Unexpectedly have redirect status but no URL";
   }
+
   return false;
 }
 
@@ -232,6 +238,9 @@ void URLRequestAutomationJob::OnRequestStarted(
   mime_type_ = response.mime_type;
 
   redirect_url_ = response.redirect_url;
+  redirect_status_ = response.redirect_status;
+  DCHECK(redirect_status_ == 0 || redirect_status_ == 200 ||
+         (redirect_status_ >= 300 && redirect_status_ < 400));
 
   GURL url_for_cookies =
       GURL(redirect_url_.empty() ? request_->url().spec().c_str() :

@@ -274,9 +274,10 @@ struct AutomationURLResponse {
   base::Time last_modified;
   std::string persistent_cookies;
   std::string redirect_url;
+  int redirect_status;
 };
 
-// Traits for AutomationURLRequest structure to pack/unpack.
+// Traits for AutomationURLResponse structure to pack/unpack.
 template <>
 struct ParamTraits<AutomationURLResponse> {
   typedef AutomationURLResponse param_type;
@@ -287,6 +288,7 @@ struct ParamTraits<AutomationURLResponse> {
     WriteParam(m, p.last_modified);
     WriteParam(m, p.persistent_cookies);
     WriteParam(m, p.redirect_url);
+    WriteParam(m, p.redirect_status);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->mime_type) &&
@@ -294,7 +296,8 @@ struct ParamTraits<AutomationURLResponse> {
            ReadParam(m, iter, &p->content_length) &&
            ReadParam(m, iter, &p->last_modified) &&
            ReadParam(m, iter, &p->persistent_cookies) &&
-           ReadParam(m, iter, &p->redirect_url);
+           ReadParam(m, iter, &p->redirect_url) &&
+           ReadParam(m, iter, &p->redirect_status);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -309,6 +312,8 @@ struct ParamTraits<AutomationURLResponse> {
     LogParam(p.persistent_cookies, l);
     l->append(L", ");
     LogParam(p.redirect_url, l);
+    l->append(L", ");
+    LogParam(p.redirect_status, l);
     l->append(L")");
   }
 };
