@@ -34,6 +34,8 @@ typedef NSInteger ButtonType;
   BOOL isMouseInside_;
   scoped_nsobject<NSTrackingArea> trackingArea_;
   BOOL shouldTheme_;
+  CGFloat hoverAlpha_;  // 0-1. Controls the alpha during mouse hover
+  NSTimeInterval lastHoverUpdate_;
   scoped_nsobject<NSGradient> gradient_;
   scoped_nsobject<NSImage> underlayImage_;
 }
@@ -45,8 +47,9 @@ typedef NSInteger ButtonType;
                       controlView:(NSView*)controlView
                         outerPath:(NSBezierPath*)outerPath
                         innerPath:(NSBezierPath*)innerPath
-            showHighlightGradient:(BOOL)showHighlightGradient
               showClickedGradient:(BOOL)showClickedGradient
+            showHighlightGradient:(BOOL)showHighlightGradient
+                       hoverAlpha:(CGFloat)hoverAlpha
                            active:(BOOL)active
                         cellFrame:(NSRect)cellFrame;
 
@@ -54,6 +57,11 @@ typedef NSInteger ButtonType;
 - (NSImage*)underlayImage;
 - (void)setUnderlayImage:(NSImage*)image;
 
+// Let the view know when the mouse moves in and out. A timer will update
+// the current hoverAlpha_ based on these events.
+- (void)setMouseInside:(BOOL)flag animate:(BOOL)animate;
+
+@property(assign, nonatomic)CGFloat hoverAlpha;
 @end
 
 @interface GradientButtonCell(TestingAPI)

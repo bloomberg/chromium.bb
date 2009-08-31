@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/tab_cell.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
+
 
 @implementation TabCell
 
@@ -18,7 +20,7 @@
 
 - (NSBackgroundStyle)interiorBackgroundStyle {
   return [[[self controlView] gtm_theme]
-          interiorBackgroundStyleForStyle:GTMThemeStyleTabBarSelected
+          interiorBackgroundStyleForStyle:GTMThemeStyleToolBar
           state:GTMThemeStateActiveWindow];
 }
 
@@ -35,6 +37,34 @@
   frame.size.width -= kCloseBoxXOffset + kIconXOffset;
   [self drawInteriorWithFrame:frame
                        inView:controlView];
+}
+
+- (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
+  GTMTheme* theme = [[self controlView] gtm_theme];
+  NSColor* textColor = [theme textColorForStyle:GTMThemeStyleToolBar
+                                          state:[self isHighlighted]];
+
+  scoped_nsobject<NSShadow> textShadow([[NSShadow alloc] init]);
+  [textShadow setShadowBlurRadius:0.0f];
+  [textShadow setShadowColor:[textColor gtm_legibleTextColor]];
+  [textShadow setShadowOffset:NSMakeSize(0.0f, -1.0f)];
+
+  NSDictionary* attributes =
+      [NSDictionary dictionaryWithObjectsAndKeys:
+        [self font], NSFontAttributeName,
+        textColor, NSForegroundColorAttributeName,
+        textShadow.get(), NSShadowAttributeName,
+       nil];
+
+ [[self title] drawInRect:[self titleRectForBounds:cellFrame]
+           withAttributes:attributes];
+
+  NSRect imageBounds = NSZeroRect;
+  imageBounds.size = [[self image] size];
+  [[self image] drawInRect:[self imageRectForBounds:cellFrame]
+                  fromRect:imageBounds
+                 operation:NSCompositeSourceOver
+                  fraction:1.0];
 }
 
 - (void)highlight:(BOOL)flag

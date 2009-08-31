@@ -35,8 +35,8 @@ enum TabLoadingState {
 
 @interface TabController : NSViewController {
  @private
-  IBOutlet NSButton* backgroundButton_;
   IBOutlet NSView* iconView_;
+  IBOutlet NSTextField* titleView_;
   IBOutlet NSMenu* contextMenu_;
   IBOutlet NSButton* closeButton_;
 
@@ -74,6 +74,8 @@ enum TabLoadingState {
 - (void)setIconView:(NSView*)iconView;
 - (NSView*)iconView;
 
+// (Re)apply the current theme.
+- (void)applyTheme;
 @end
 
 @interface TabController(TestingAPI)
