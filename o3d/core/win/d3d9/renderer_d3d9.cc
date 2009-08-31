@@ -1330,14 +1330,22 @@ bool RendererD3D9::SetFullscreen(bool fullscreen,
           static_cast<const DisplayWindowWindows&>(display);
       HWND window = platform_display.hwnd();
       int refresh_rate = 0;
+      bool windowed = true;
       if (fullscreen) {
-        // Look up the refresh rate.
-        DisplayMode mode;
-        if (!GetDisplayMode(mode_id, &mode)) {
-          LOG(ERROR) << "Failed to GetDisplayMode";
-          return false;
+        // If fullscreen is requested but the mode is set to
+        // DISPLAY_MODE_DEFAULT then create a non-full-screen window at the
+        // current display resolution.  If any other mode is chosen then the
+        // windows will change mode and create a true full-screen window.
+        if (mode_id != DISPLAY_MODE_DEFAULT) {
+          // Look up the refresh rate.
+          DisplayMode mode;
+          if (!GetDisplayMode(mode_id, &mode)) {
+            LOG(ERROR) << "Failed to GetDisplayMode";
+            return false;
+          }
+          refresh_rate = mode.refresh_rate();
+          windowed = false;
         }
-        refresh_rate = mode.refresh_rate();
         showing_fullscreen_message_ = true;
         fullscreen_message_timer_.GetElapsedTimeAndReset();  // Reset the timer.
       } else {
@@ -1345,7 +1353,7 @@ bool RendererD3D9::SetFullscreen(bool fullscreen,
       }
       d3d_present_parameters_.FullScreen_RefreshRateInHz = refresh_rate;
       d3d_present_parameters_.hDeviceWindow = window;
-      d3d_present_parameters_.Windowed = !fullscreen;
+      d3d_present_parameters_.Windowed = windowed;
 
       // Check if the window size is zero. Some drivers will fail because of
       // that so we'll force a small size in that case.
