@@ -95,17 +95,21 @@ class TabGtk : public TabRendererGtk,
   virtual void UpdateData(TabContents* contents, bool loading_only);
   virtual void SetBounds(const gfx::Rect& bounds);
 
+ private:
+  class ContextMenuController;
+  friend class ContextMenuController;
+
+  // MessageLoop::Observer implementation:
+  virtual void WillProcessEvent(GdkEvent* event);
+  virtual void DidProcessEvent(GdkEvent* event);
+
   // button-press-event handler that handles mouse clicks.
-  static gboolean OnMousePress(GtkWidget* widget, GdkEventButton* event,
-                               TabGtk* tab);
+  static gboolean OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event,
+                                     TabGtk* tab);
 
   // button-release-event handler that handles mouse click releases.
-  static gboolean OnMouseRelease(GtkWidget* widget, GdkEventButton* event,
-                                 TabGtk* tab);
-
-  // drag-begin handler that signals when a drag action begins.
-  static void OnDragBegin(GtkWidget* widget, GdkDragContext* context,
-                          TabGtk* tab);
+  static gboolean OnButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event,
+                                       TabGtk* tab);
 
   // drag-end handler that signals when a drag action ends.
   static void OnDragEnd(GtkWidget* widget, GdkDragContext* context,
@@ -114,15 +118,6 @@ class TabGtk : public TabRendererGtk,
   // drag-failed handler that is emitted when the drag fails.
   static gboolean OnDragFailed(GtkWidget* widget, GdkDragContext* context,
                                GtkDragResult result, TabGtk* tab);
-
- protected:
-  // MessageLoop::Observer implementation:
-  virtual void WillProcessEvent(GdkEvent* event);
-  virtual void DidProcessEvent(GdkEvent* event);
-
- private:
-  class ContextMenuController;
-  friend class ContextMenuController;
 
   // Shows the context menu.
   void ShowContextMenu();
@@ -133,6 +128,16 @@ class TabGtk : public TabRendererGtk,
   // Sets whether the tooltip should be shown or not, depending on the size of
   // the tab.
   void UpdateTooltipState();
+
+  // Creates the drag widget used to track a drag operation.
+  void CreateDragWidget();
+
+  // Destroys the drag widget.
+  void DestroyDragWidget();
+
+  // Starts the dragging operation.  |drag_offset| is the offset inside the tab
+  // bounds where the grab occurred.
+  void StartDragging(gfx::Point drag_offset);
 
   // An instance of a delegate object that can perform various actions based on
   // user gestures.
@@ -152,12 +157,20 @@ class TabGtk : public TabRendererGtk,
   // DCHECK.
   GtkWidget* event_box_;
 
-  // True if this tab is being dragged.
-  bool dragging_;
+  // A copy of the last button press event, used to initiate a drag.
+  GdkEvent* last_mouse_down_;
+
+  // A GtkInivisible used to track the drag event.  GtkInvisibles are of the
+  // type GInitiallyUnowned, but the widget initialization code sinks the
+  // reference, so we can't used an OwnedWidgetGtk here.
+  GtkWidget* drag_widget_;
 
   // The cached width of the title in pixels, updated whenever the title
   // changes.
   int title_width_;
+
+  // Used to destroy the drag widget after a return to the message loop.
+  ScopedRunnableMethodFactory<TabGtk> destroy_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGtk);
 };

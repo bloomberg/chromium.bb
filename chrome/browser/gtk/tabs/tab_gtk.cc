@@ -118,35 +118,25 @@ TabGtk::TabGtk(TabDelegate* delegate)
     : TabRendererGtk(delegate->GetThemeProvider()),
       delegate_(delegate),
       closing_(false),
-      dragging_(false),
-      title_width_(0) {
+      last_mouse_down_(NULL),
+      drag_widget_(NULL),
+      title_width_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)) {
   event_box_ = gtk_event_box_new();
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
-  gtk_drag_source_set(event_box_, GDK_BUTTON1_MASK,
-                      NULL, 0, GDK_ACTION_MOVE);
-  GtkDndUtil::SetSourceTargetListFromCodeMask(event_box_,
-                                              GtkDndUtil::CHROME_TAB);
   g_signal_connect(G_OBJECT(event_box_), "button-press-event",
-                   G_CALLBACK(OnMousePress), this);
+                   G_CALLBACK(OnButtonPressEvent), this);
   g_signal_connect(G_OBJECT(event_box_), "button-release-event",
-                   G_CALLBACK(OnMouseRelease), this);
+                   G_CALLBACK(OnButtonReleaseEvent), this);
   g_signal_connect(G_OBJECT(event_box_), "enter-notify-event",
                    G_CALLBACK(OnEnterNotifyEvent), this);
   g_signal_connect(G_OBJECT(event_box_), "leave-notify-event",
                    G_CALLBACK(OnLeaveNotifyEvent), this);
-  g_signal_connect_after(G_OBJECT(event_box_), "drag-begin",
-                           G_CALLBACK(OnDragBegin), this);
-  g_signal_connect_after(G_OBJECT(event_box_), "drag-end",
-                         G_CALLBACK(OnDragEnd), this);
-  g_signal_connect_after(G_OBJECT(event_box_), "drag-failed",
-                           G_CALLBACK(OnDragFailed), this);
   gtk_widget_add_events(event_box_,
         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
         GDK_LEAVE_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_container_add(GTK_CONTAINER(event_box_), TabRendererGtk::widget());
   gtk_widget_show_all(event_box_);
-
-  SetEmptyDragIcon(event_box_);
 }
 
 TabGtk::~TabGtk() {
@@ -160,9 +150,11 @@ TabGtk::~TabGtk() {
 }
 
 // static
-gboolean TabGtk::OnMousePress(GtkWidget* widget, GdkEventButton* event,
-                              TabGtk* tab) {
-  if (event->button == 1) {
+gboolean TabGtk::OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event,
+                                    TabGtk* tab) {
+  // Every button press ensures either a button-release-event or a drag-fail
+  // signal for |widget|.
+  if (event->button == 1 && event->type == GDK_BUTTON_PRESS) {
     // Store whether or not we were selected just now... we only want to be
     // able to drag foreground tabs, so we don't start dragging the tab if
     // it was in the background.
@@ -170,6 +162,12 @@ gboolean TabGtk::OnMousePress(GtkWidget* widget, GdkEventButton* event,
     if (just_selected) {
       tab->delegate_->SelectTab(tab);
     }
+
+    // Hook into the message loop to handle dragging.
+    MessageLoopForUI::current()->AddObserver(tab);
+
+    // Store the button press event, used to initiate a drag.
+    tab->last_mouse_down_ = gdk_event_copy(reinterpret_cast<GdkEvent*>(event));
   } else if (event->button == 3) {
     tab->ShowContextMenu();
   }
@@ -178,8 +176,17 @@ gboolean TabGtk::OnMousePress(GtkWidget* widget, GdkEventButton* event,
 }
 
 // static
-gboolean TabGtk::OnMouseRelease(GtkWidget* widget, GdkEventButton* event,
-                                TabGtk* tab) {
+gboolean TabGtk::OnButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event,
+                                      TabGtk* tab) {
+  if (event->button == 1) {
+    MessageLoopForUI::current()->RemoveObserver(tab);
+
+    if (tab->last_mouse_down_) {
+      gdk_event_free(tab->last_mouse_down_);
+      tab->last_mouse_down_ = NULL;
+    }
+  }
+
   // Middle mouse up means close the tab, but only if the mouse is over it
   // (like a button).
   if (event->button == 2 &&
@@ -193,29 +200,19 @@ gboolean TabGtk::OnMouseRelease(GtkWidget* widget, GdkEventButton* event,
 }
 
 // static
-void TabGtk::OnDragBegin(GtkWidget* widget, GdkDragContext* context,
-                         TabGtk* tab) {
-  MessageLoopForUI::current()->AddObserver(tab);
-
-  int x, y;
-  gdk_window_get_pointer(tab->event_box_->window, &x, &y, NULL);
-
-  // Make the mouse coordinate relative to the tab.
-  x -= tab->bounds().x();
-  y -= tab->bounds().y();
-
-  tab->dragging_ = true;
-  tab->delegate_->MaybeStartDrag(tab, gfx::Point(x, y));
-}
-
-// static
 void TabGtk::OnDragEnd(GtkWidget* widget, GdkDragContext* context,
                        TabGtk* tab) {
-  // Release our grab on the pointer.
-  gdk_pointer_ungrab(GDK_CURRENT_TIME);
-  gtk_grab_remove(tab->widget());
+  // We must let gtk clean up after we handle the drag operation, otherwise
+  // there will be outstanding references to the drag widget when we try to
+  // destroy it.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      tab->destroy_factory_.NewRunnableMethod(&TabGtk::DestroyDragWidget));
 
-  tab->dragging_ = false;
+  if (tab->last_mouse_down_) {
+    gdk_event_free(tab->last_mouse_down_);
+    tab->last_mouse_down_ = NULL;
+  }
+
   // Notify the drag helper that we're done with any potential drag operations.
   // Clean up the drag helper, which is re-created on the next mouse press.
   tab->delegate_->EndDrag(false);
@@ -242,25 +239,21 @@ void TabGtk::WillProcessEvent(GdkEvent* event) {
 }
 
 void TabGtk::DidProcessEvent(GdkEvent* event) {
-  switch (event->type) {
-    case GDK_MOTION_NOTIFY:
-      delegate_->ContinueDrag(NULL);
-      break;
-    case GDK_GRAB_BROKEN:
-      // If the user drags the mouse away from the dragged tab before the widget
-      // is created, gtk loses the grab used for the drag and we're stuck in a
-      // limbo where the drag is still active, but we don't get any
-      // motion-notify-event signals.  Adding the grab back doesn't keep the
-      // drag alive, but it does get us out of this bind by finishing the drag.
-      if (delegate_->IsTabDetached(this)) {
-        gdk_pointer_grab(widget()->window, FALSE, GDK_POINTER_MOTION_HINT_MASK,
-                         NULL, NULL, GDK_CURRENT_TIME);
-        gtk_grab_add(widget());
-      }
-      break;
-    default:
-      break;
+  if (event->type != GDK_MOTION_NOTIFY)
+    return;
+
+  if (drag_widget_) {
+    delegate_->ContinueDrag(NULL);
+    return;
   }
+
+  GdkEventMotion* motion = reinterpret_cast<GdkEventMotion*>(event);
+  GdkEventButton* button = reinterpret_cast<GdkEventButton*>(last_mouse_down_);
+  bool dragging = gtk_drag_check_threshold(widget(),
+                                           button->x, button->y,
+                                           motion->x, motion->y);
+  if (dragging)
+    StartDragging(gfx::Point(button->x, button->y));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -321,4 +314,30 @@ void TabGtk::UpdateTooltipState() {
   } else {
     gtk_widget_set_has_tooltip(widget(), FALSE);
   }
+}
+
+void TabGtk::CreateDragWidget() {
+  drag_widget_ = gtk_invisible_new();
+  g_signal_connect(drag_widget_, "drag-failed",
+                   G_CALLBACK(OnDragFailed), this);
+  g_signal_connect(drag_widget_, "drag-end", G_CALLBACK(OnDragEnd), this);
+}
+
+void TabGtk::DestroyDragWidget() {
+  if (drag_widget_) {
+    gtk_widget_destroy(drag_widget_);
+    drag_widget_ = NULL;
+  }
+}
+
+void TabGtk::StartDragging(gfx::Point drag_offset) {
+  CreateDragWidget();
+
+  GtkTargetList* list = GtkDndUtil::GetTargetListFromCodeMask(
+      GtkDndUtil::CHROME_TAB);
+  gtk_drag_begin(drag_widget_, list, GDK_ACTION_COPY,
+                 1,  // Drags are always initiated by the left button.
+                 last_mouse_down_);
+
+  delegate_->MaybeStartDrag(this, drag_offset);
 }
