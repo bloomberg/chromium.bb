@@ -34,8 +34,8 @@ class InfoBarContainerGtk : public NotificationObserver {
   void RemoveDelegate(InfoBarDelegate* delegate);
 
   // Returns the total pixel height of all infobars in this container that
-  // are currently closing.
-  int TotalHeightOfClosingBars() const;
+  // are currently animating.
+  int TotalHeightOfAnimatingBars() const;
 
  private:
   // Overridden from NotificationObserver:

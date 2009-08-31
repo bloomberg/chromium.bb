@@ -50,12 +50,12 @@ void ClosingForDelegate(GtkWidget* infobar_widget, gpointer info_bar_delegate) {
 }
 
 // Get the height of the widget and add it to |userdata|, but only if it is in
-// the process of closing.
-void SumClosingBarHeight(GtkWidget* widget, gpointer userdata) {
+// the process of animating.
+void SumAnimatingBarHeight(GtkWidget* widget, gpointer userdata) {
   int* height_sum = static_cast<int*>(userdata);
   InfoBar* infobar = reinterpret_cast<InfoBar*>(
       g_object_get_data(G_OBJECT(widget), "info-bar"));
-  if (infobar->IsClosing())
+  if (infobar->IsAnimating())
     *height_sum += widget->allocation.height;
 }
 
@@ -99,9 +99,9 @@ void InfoBarContainerGtk::RemoveDelegate(InfoBarDelegate* delegate) {
   tab_contents_->RemoveInfoBar(delegate);
 }
 
-int InfoBarContainerGtk::TotalHeightOfClosingBars() const {
+int InfoBarContainerGtk::TotalHeightOfAnimatingBars() const {
   int sum = 0;
-  gtk_container_foreach(GTK_CONTAINER(widget()), SumClosingBarHeight, &sum);
+  gtk_container_foreach(GTK_CONTAINER(widget()), SumAnimatingBarHeight, &sum);
   return sum;
 }
 

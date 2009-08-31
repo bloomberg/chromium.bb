@@ -252,8 +252,8 @@ int BookmarkBarGtk::GetHeight() {
   return event_box_->allocation.height;
 }
 
-bool BookmarkBarGtk::IsClosing() {
-  return slide_animation_->IsClosing();
+bool BookmarkBarGtk::IsAnimating() {
+  return slide_animation_->IsAnimating();
 }
 
 bool BookmarkBarGtk::OnNewTabPage() {

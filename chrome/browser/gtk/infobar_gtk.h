@@ -43,8 +43,8 @@ class InfoBar : public SlideAnimatorGtk::Delegate {
   // is called.
   void Close();
 
-  // Returns true if the infobar is showing the close animation.
-  bool IsClosing();
+  // Returns true if the infobar is showing the its open or close animation.
+  bool IsAnimating();
 
   // SlideAnimatorGtk::Delegate implementation.
   virtual void Closed();

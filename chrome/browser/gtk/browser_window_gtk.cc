@@ -1045,12 +1045,11 @@ void BrowserWindowGtk::UserChangedTheme() {
 }
 
 int BrowserWindowGtk::GetExtraRenderViewHeight() const {
-  int sum = infobar_container_->TotalHeightOfClosingBars();
-  if (bookmark_bar_->IsClosing())
+  int sum = infobar_container_->TotalHeightOfAnimatingBars();
+  if (bookmark_bar_->IsAnimating())
     sum += bookmark_bar_->GetHeight();
-  if (download_shelf_.get() && download_shelf_->IsClosing()) {
+  if (download_shelf_.get() && download_shelf_->IsClosing())
     sum += download_shelf_->GetHeight();
-  }
   return sum;
 }
 

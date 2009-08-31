@@ -74,6 +74,10 @@ class SlideAnimatorGtk : public AnimationDelegate {
   // Returns whether the widget is currently showing the close animation.
   bool IsClosing();
 
+  // Returns whether the widget is currently showing the open or close
+  // animation.
+  bool IsAnimating();
+
   // AnimationDelegate implementation.
   void AnimationProgressed(const Animation* animation);
   void AnimationEnded(const Animation* animation);

@@ -106,6 +106,10 @@ bool SlideAnimatorGtk::IsClosing() {
   return animation_->IsClosing();
 }
 
+bool SlideAnimatorGtk::IsAnimating() {
+  return animation_->IsAnimating();
+}
+
 void SlideAnimatorGtk::AnimationProgressed(const Animation* animation) {
   int showing_height = child_->allocation.height *
                        animation_->GetCurrentValue();

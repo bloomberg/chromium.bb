@@ -69,8 +69,8 @@ class BookmarkBarGtk : public AnimationDelegate,
   // Get the current height of the bookmark bar.
   int GetHeight();
 
-  // Returns true if the bookmark bar is showing the close animation.
-  bool IsClosing();
+  // Returns true if the bookmark bar is showing an animation.
+  bool IsAnimating();
 
   // Returns true if the bookmarks bar preference is set to 'always show'.
   bool IsAlwaysShown();
