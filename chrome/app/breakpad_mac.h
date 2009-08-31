@@ -15,8 +15,8 @@ void InitCrashReporter();
 // CommandLine::Init has been called.
 void InitCrashProcessInfo();
 
-// Is Breakpad disabled?
-bool IsCrashReporterDisabled();
+// Is Breakpad enabled?
+bool IsCrashReporterEnabled();
 
 // Call on clean process shutdown.
 void DestructCrashReporter();

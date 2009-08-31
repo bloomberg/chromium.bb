@@ -24,6 +24,9 @@ bool FSRefFromPath(const std::string& path, FSRef* ref);
 // Returns true if the application is running from a bundle
 bool AmIBundled();
 
+// Returns true if this process is marked as a "Background only process".
+bool IsBackgroundOnlyProcess();
+
 // Returns the main bundle or the override, used for code that needs
 // to fetch resources from bundles, but work within a unittest where we
 // aren't a bundle.

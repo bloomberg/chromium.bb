@@ -433,12 +433,34 @@ int ChromeMain(int argc, const char** argv) {
   // dylib is even loaded, to catch potential early crashes.
   InitCrashReporter();
 
-  // If Breakpad is not present, turn off OS crash dumps to avoid having
-  // to wait eons for Apple's Crash Reporter to generate dumps for builds
-  // where debugging symbols are present.
-  if (IsCrashReporterDisabled())
-    DebugUtil::DisableOSCrashDumps();
-  else
+#if defined(NDEBUG)
+  bool is_debug_build = false;
+#else
+  bool is_debug_build = true;
+#endif
+
+  // Details on when we enable Apple's Crash reporter.
+  //
+  // Motivation:
+  //    In debug mode it takes Apple's crash reporter eons to generate a crash
+  // dump.
+  //
+  // What we do:
+  // * We only pass crashes for foreground processes to Apple's Crash reporter.
+  //    At the time of this writing, that means just the Browser process.
+  // * If Breakpad is enabled, it will pass browser crashes to Crash Reporter
+  //    itself.
+  // * If Breakpad is disabled, we only turn on Crash Reporter for the
+  //    Browser process in release mode.
+  if (!parsed_command_line.HasSwitch(switches::kDisableBreakpad)) {
+    bool disable_apple_crash_reporter = is_debug_build
+                                        || mac_util::IsBackgroundOnlyProcess();
+    if (!IsCrashReporterEnabled() && disable_apple_crash_reporter) {
+      DebugUtil::DisableOSCrashDumps();
+    }
+  }
+
+  if (IsCrashReporterEnabled())
     InitCrashProcessInfo();
 #endif  // OS_MACOSX
 

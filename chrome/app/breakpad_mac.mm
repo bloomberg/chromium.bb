@@ -24,8 +24,8 @@ BreakpadRef gBreakpadRef = NULL;
 
 }  // namespace
 
-bool IsCrashReporterDisabled() {
-  return gBreakpadRef == NULL;
+bool IsCrashReporterEnabled() {
+  return gBreakpadRef != NULL;
 }
 
 void DestructCrashReporter() {
@@ -47,12 +47,15 @@ void InitCrashReporter() {
   // command line.
   NSBundle* main_bundle = mac_util::MainAppBundle();
   NSDictionary* info_dictionary = [main_bundle infoDictionary];
-  bool is_browser = [[info_dictionary objectForKey:@"LSUIElement"]
-                                   isEqualToString:@"1"] ? false : true;
+  bool is_browser = !mac_util::IsBackgroundOnlyProcess();
   bool enable_breakpad =
       is_browser ? GoogleUpdateSettings::GetCollectStatsConsent() :
                    CommandLine::ForCurrentProcess()->
                        HasSwitch(switches::kEnableCrashReporter);
+
+  if (parsed_command_line.HasSwitch(switches::kDisableBreakpad)) {
+    enable_breakpad = false;
+  }
 
   if (!enable_breakpad) {
     LOG(WARNING) << "Breakpad disabled";

@@ -43,6 +43,13 @@ bool AmIBundled() {
   return info.nodeFlags & kFSNodeIsDirectoryMask;
 }
 
+bool IsBackgroundOnlyProcess() {
+  NSBundle* main_bundle = MainAppBundle();
+  NSDictionary* info_dictionary = [main_bundle infoDictionary];
+  return [[info_dictionary objectForKey:@"LSUIElement"]
+                                   isEqualToString:@"1"] ? true : false;
+}
+
 // No threading worries since NSBundle isn't thread safe.
 static NSBundle* g_override_app_bundle = nil;
 

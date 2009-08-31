@@ -7,8 +7,8 @@
 // Stubbed out versions of breakpad integration functions so we can compile
 // without linking in Breakpad.
 
-bool IsCrashReporterDisabled() {
-  return true;
+bool IsCrashReporterEnabled() {
+  return false;
 }
 
 void InitCrashProcessInfo() {

@@ -154,7 +154,7 @@ bool FirstRunController::DoFirstRun(Profile* profile,
   // but display a confirmation dialog before sending a crash report so we
   // respect a user's privacy while still getting any crashes that might happen
   // before this point.  Then remove the need for that dialog here.
-  DCHECK(IsCrashReporterDisabled());
+  DCHECK(!IsCrashReporterEnabled());
 
   //------------------ Start Temporary Code ---------------------
   // Migrate old first run format.
