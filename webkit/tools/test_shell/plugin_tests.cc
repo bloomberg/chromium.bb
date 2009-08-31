@@ -30,6 +30,8 @@ using WebKit::WebString;
 #define TEST_PLUGIN_NAME "libnpapi_test_plugin.so"
 #endif
 
+// Ignore these until 64-bit plugin build is fixed. http://crbug.com/18337
+#if !defined(ARCH_CPU_64_BITS)
 // Provides functionality for creating plugin tests.
 class PluginTest : public TestShellTest {
  public:
@@ -204,3 +206,4 @@ TEST_F(PluginTest, PluginVisibilty) {
   ASSERT_TRUE(IsWindowVisible(plugin_hwnd));
 }
 #endif
+#endif //!ARCH_CPU_64_BITS

@@ -235,7 +235,7 @@ void CheckSuccessfulRequest(const std::vector<IPC::Message>& messages,
   ASSERT_TRUE(IPC::ReadParam(&messages[1], &iter, &request_id));
   base::SharedMemoryHandle shm_handle;
   ASSERT_TRUE(IPC::ReadParam(&messages[1], &iter, &shm_handle));
-  size_t data_len;
+  uint32 data_len;
   ASSERT_TRUE(IPC::ReadParam(&messages[1], &iter, &data_len));
 
   ASSERT_EQ(reference_data.size(), data_len);
