@@ -9,7 +9,7 @@
     tx.executeSql("create table note (body text)", []);
     tx.executeSql("insert into note values ('hotdog')", []);
   }, function(error) {
-    fail(error.message);
+    chrome.test.fail(error.message);
   });
 
   // Open a tab. This doesn't really prove we're writing to disk, but it is

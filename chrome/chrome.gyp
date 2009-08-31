@@ -2765,6 +2765,7 @@
         'renderer/net/render_dns_queue.cc',
         'renderer/net/render_dns_queue.h',
         'renderer/resources/event_bindings.js',
+        'renderer/resources/extension_apitest.js',
         'renderer/resources/extension_process_bindings.js',
         'renderer/resources/greasemonkey_api.js',
         'renderer/resources/json_schema.js',

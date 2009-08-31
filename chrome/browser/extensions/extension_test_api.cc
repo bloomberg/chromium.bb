@@ -6,8 +6,8 @@
 #include "chrome/common/notification_service.h"
 
 namespace extension_test_api_functions {
-const char kPassFunction[] = "test.pass";
-const char kFailFunction[] = "test.fail";
+const char kPassFunction[] = "test.notifyPass";
+const char kFailFunction[] = "test.notifyFail";
 };  // namespace extension_test_api_functions
 
 bool ExtensionTestPassFunction::RunImpl() {

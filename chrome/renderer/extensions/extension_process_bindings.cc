@@ -46,6 +46,7 @@ const char* kExtensionDeps[] = {
   EventBindings::kName,
   JsonSchemaJsV8Extension::kName,
   RendererExtensionBindings::kName,
+  ExtensionApiTestV8Extension::kName,
 };
 
 struct SingletonData {

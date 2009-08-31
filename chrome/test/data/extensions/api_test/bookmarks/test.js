@@ -50,48 +50,48 @@ function compareTrees(left, right) {
   return true;
 }
 
-var tests = [
+chrome.test.runTests([
   function getTree() {
-    chrome.bookmarks.getTree(testFunction(function(results) {
-      assertTrue(compareTrees(results, expected),
+    chrome.bookmarks.getTree(chrome.test.testFunction(function(results) {
+      chrome.test.assertTrue(compareTrees(results, expected),
                  "getTree() result != expected");
       expected = results;
     }));
   },
 
   function get() {
-    chrome.bookmarks.get("1", testFunction(function(results) {
-      assertTrue(compareNode(results[0], expected[0].children[0]));
+    chrome.bookmarks.get("1", chrome.test.testFunction(function(results) {
+      chrome.test.assertTrue(compareNode(results[0], expected[0].children[0]));
     }));
   },
 
   function getArray() {
-    chrome.bookmarks.get(["1", "2"], testFunction(function(results) {
-      assertTrue(compareNode(results[0], expected[0].children[0]),
+    chrome.bookmarks.get(["1", "2"], 
+                         chrome.test.testFunction(function(results) {
+      chrome.test.assertTrue(compareNode(results[0], expected[0].children[0]),
                  "get() result != expected");
-      assertTrue(compareNode(results[1], expected[0].children[1]),
+      chrome.test.assertTrue(compareNode(results[1], expected[0].children[1]),
                  "get() result != expected");
     }));
   },
 
   function getChildren() {
-    chrome.bookmarks.getChildren("0", testFunction(function(results) {
-      assertTrue(compareNode(results[0], expected[0].children[0]),
+    chrome.bookmarks.getChildren("0",
+                                 chrome.test.testFunction(function(results) {
+      chrome.test.assertTrue(compareNode(results[0], expected[0].children[0]),
                  "getChildren() result != expected");
-      assertTrue(compareNode(results[1], expected[0].children[1]),
+      chrome.test.assertTrue(compareNode(results[1], expected[0].children[1]),
                  "getChildren() result != expected");
     }));
   },
 
   function create() {
     var node = {parentId: "1", title:"google", url:"http://www.google.com/"};
-    chrome.bookmarks.create(node, testFunction(function(results) {
+    chrome.bookmarks.create(node, chrome.test.testFunction(function(results) {
       node.id = results.id;  // since we couldn't know this going in
       node.index = 0;
-      assertTrue(compareNode(node, results),
+      chrome.test.assertTrue(compareNode(node, results),
                  "created node != source");
     }));
   },
-];
-
-runNextTest();
+]);

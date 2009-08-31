@@ -1,11 +1,8 @@
-var tests = [
+chrome.test.runTests([
   function newtab() {
     chrome.tabs.create({"url": "chrome://newtab/"}, 
-                       testFunction(function(response) {
-      console.log("AFTER");
+                       chrome.test.testFunction(function(response) {
     }));
   }
-];
-
-runNextTest();
+]);
 

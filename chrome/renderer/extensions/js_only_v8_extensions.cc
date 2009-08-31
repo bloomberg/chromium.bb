@@ -27,3 +27,12 @@ v8::Extension* JsonSchemaJsV8Extension::Get() {
           kName, GetStringResource<IDR_JSON_SCHEMA_JS>(), 0, NULL);
   return extension;
 }
+
+// ExtensionApiTestV8Extension
+const char* ExtensionApiTestV8Extension::kName = "chrome/extensionapitest";
+v8::Extension* ExtensionApiTestV8Extension::Get() {
+  static v8::Extension* extension =
+      new bindings_utils::ExtensionBase(
+          kName, GetStringResource<IDR_EXTENSION_APITEST_JS>(), 0, NULL);
+  return extension;
+}

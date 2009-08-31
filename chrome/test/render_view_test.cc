@@ -72,6 +72,7 @@ void RenderViewTest::SetUp() {
   WebKit::registerExtension(BaseJsV8Extension::Get());
   WebKit::registerExtension(JsonSchemaJsV8Extension::Get());
   WebKit::registerExtension(EventBindings::Get());
+  WebKit::registerExtension(ExtensionApiTestV8Extension::Get());
   WebKit::registerExtension(ExtensionProcessBindings::Get());
   WebKit::registerExtension(RendererExtensionBindings::Get());
   EventBindings::SetRenderThread(&render_thread_);

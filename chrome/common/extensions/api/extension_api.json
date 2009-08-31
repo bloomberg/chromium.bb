@@ -932,7 +932,7 @@
     "types": [],
     "functions": [
       {
-        "name": "fail",
+        "name": "notifyFail",
         "type": "function",
         "description": "Notify the browser process that test code running in the extension failed.  This is only used for internal unit testing.",
         "parameters": [
@@ -940,10 +940,12 @@
         ]
       },
       {
-        "name": "pass",
+        "name": "notifyPass",
         "type": "function",
         "description": "Notify the browser process that test code running in the extension passed.  This is only used for internal unit testing.",
-        "parameters": []
+        "parameters": [
+          {"type": "string", "name": "message", "optional": true}
+        ]
       }
     ],
     "events": []

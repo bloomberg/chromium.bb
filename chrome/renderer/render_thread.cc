@@ -433,6 +433,10 @@ void RenderThread::EnsureWebKitInitialized() {
   WebKit::registerExtension(RendererExtensionBindings::Get(),
                             EXTENSION_GROUP_CONTENT_SCRIPTS);
   WebKit::registerExtension(RendererExtensionBindings::Get(), kExtensionScheme);
+  WebKit::registerExtension(ExtensionApiTestV8Extension::Get(),
+                            kExtensionScheme);
+  WebKit::registerExtension(ExtensionApiTestV8Extension::Get(),
+                            EXTENSION_GROUP_CONTENT_SCRIPTS);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 

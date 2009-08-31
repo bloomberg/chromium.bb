@@ -1,17 +1,18 @@
-<script src="api_test.js"></script>
 <script>
+chrome.test.runTests([function tab() {
   // Check that the localstorage stuff we stored is still there.
-  expectTrue(localStorage.foo == "bar");
+  chrome.test.assertTrue(localStorage.foo == "bar");
 
   // Check that the database stuff we stored is still there.
   var db = window.openDatabase("mydb2", "1.0", "database test", 2048);
   db.transaction(function(tx) {
     tx.executeSql("select body from note", [], function(tx, results) {
-      expectTrue(results.rows.length == 1);
-      expectTrue(results.rows.item(0).body == "hotdog");
-      allTestsSucceeded();
+      chrome.test.assertTrue(results.rows.length == 1);
+      chrome.test.assertTrue(results.rows.item(0).body == "hotdog");
+      chrome.test.succeed();
     });
   }, function(error) {
-    fail(error.message);
+    chrome.test.fail(error.message);
   });
+}]);
 </script>
