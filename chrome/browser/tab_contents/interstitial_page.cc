@@ -120,7 +120,7 @@ InterstitialPage::InterstitialPage(TabContents* tab,
       enabled_(true),
       action_taken_(false),
       render_view_host_(NULL),
-      original_rvh_process_id_(tab->render_view_host()->process()->pid()),
+      original_child_id_(tab->render_view_host()->process()->id()),
       original_rvh_id_(tab->render_view_host()->routing_id()),
       should_revert_tab_title_(false),
       resource_dispatcher_host_notified_(false),
@@ -263,7 +263,7 @@ void InterstitialPage::Observe(NotificationType type,
         // The RenderViewHost is being destroyed (as part of the tab being
         // closed), make sure we clear the blocked requests.
         RenderViewHost* rvh = Source<RenderViewHost>(source).ptr();
-        DCHECK(rvh->process()->pid() == original_rvh_process_id_ &&
+        DCHECK(rvh->process()->id() == original_child_id_ &&
                rvh->routing_id() == original_rvh_id_);
         TakeActionOnResourceDispatcher(CANCEL);
       }
@@ -490,11 +490,11 @@ void InterstitialPage::TakeActionOnResourceDispatcher(
   // NOTIFY_RENDER_WIDGET_HOST_DESTROYED.
   // Also we need to test there is an IO thread, as when unit-tests we don't
   // have one.
-  RenderViewHost* rvh = RenderViewHost::FromID(original_rvh_process_id_,
+  RenderViewHost* rvh = RenderViewHost::FromID(original_child_id_,
                                                original_rvh_id_);
   if (rvh && g_browser_process->io_thread()) {
     g_browser_process->io_thread()->message_loop()->PostTask(
-        FROM_HERE, new ResourceRequestTask(original_rvh_process_id_,
+        FROM_HERE, new ResourceRequestTask(original_child_id_,
                                            original_rvh_id_,
                                            action));
   }

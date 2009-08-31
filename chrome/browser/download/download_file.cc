@@ -60,7 +60,7 @@ DownloadFile::DownloadFile(const DownloadCreateInfo* info)
       source_url_(info->url),
       referrer_url_(info->referrer_url),
       id_(info->download_id),
-      render_process_id_(info->render_process_id),
+      child_id_(info->child_id),
       render_view_id_(info->render_view_id),
       request_id_(info->request_id),
       bytes_so_far_(0),
@@ -244,7 +244,7 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
     // on the UI thread is the safe way to do that.
     ui_loop_->PostTask(FROM_HERE,
         NewRunnableFunction(&DownloadManager::CancelDownloadRequest,
-                            info->render_process_id,
+                            info->child_id,
                             info->request_id));
     delete info;
     delete download;
@@ -370,12 +370,10 @@ void DownloadFileManager::UpdateInProgressDownloads() {
 //              there will be no 'render_process_id' or 'render_view_id'.
 void DownloadFileManager::OnStartDownload(DownloadCreateInfo* info) {
   DCHECK(MessageLoop::current() == ui_loop_);
-  DownloadManager* manager =
-      DownloadManagerFromRenderIds(info->render_process_id,
-                                   info->render_view_id);
+  DownloadManager* manager = DownloadManagerFromRenderIds(info->child_id,
+                                                          info->render_view_id);
   if (!manager) {
-    DownloadManager::CancelDownloadRequest(info->render_process_id,
-                                           info->request_id);
+    DownloadManager::CancelDownloadRequest(info->child_id, info->request_id);
     delete info;
     return;
   }
@@ -585,7 +583,7 @@ void DownloadFileManager::OnFinalDownloadName(int id,
     } else {
       ui_loop_->PostTask(FROM_HERE,
           NewRunnableFunction(&DownloadManager::CancelDownloadRequest,
-                              download->render_process_id(),
+                              download->child_id(),
                               download->request_id()));
     }
   }

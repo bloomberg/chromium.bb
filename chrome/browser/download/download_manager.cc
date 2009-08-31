@@ -652,8 +652,8 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
     if (!select_file_dialog_.get())
       select_file_dialog_ = SelectFileDialog::Create(this);
 
-    TabContents* contents = tab_util::GetTabContentsByID(
-        info->render_process_id, info->render_view_id);
+    TabContents* contents = tab_util::GetTabContentsByID(info->child_id,
+                                                         info->render_view_id);
     SelectFileDialog::FileTypeInfo file_type_info;
     file_type_info.extensions.resize(1);
     file_type_info.extensions[0].push_back(info->suggested_path.Extension());
@@ -690,7 +690,7 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
                                 info->original_name,
                                 info->start_time,
                                 info->total_bytes,
-                                info->render_process_id,
+                                info->child_id,
                                 info->request_id,
                                 info->is_dangerous);
     download->set_manager(this);
@@ -1110,7 +1110,7 @@ void DownloadManager::DownloadUrl(const GURL& url,
   request_context_->set_referrer_charset(referrer_charset);
   file_manager_->DownloadUrl(url,
                              referrer,
-                             tab_contents->process()->pid(),
+                             tab_contents->process()->id(),
                              tab_contents->render_view_host()->routing_id(),
                              request_context_.get());
 }
@@ -1385,7 +1385,7 @@ void DownloadManager::FileSelectionCanceled(void* params) {
   // download that's already in progress to the temporary location.
   DownloadCreateInfo* info = reinterpret_cast<DownloadCreateInfo*>(params);
   DownloadCancelledInternal(info->download_id,
-                            info->render_process_id,
+                            info->child_id,
                             info->request_id);
 }
 
@@ -1508,8 +1508,8 @@ void DownloadManager::ShowDownloadInBrowser(const DownloadCreateInfo& info,
   // The 'contents' may no longer exist if the user closed the tab before we get
   // this start completion event. If it does, tell the origin TabContents to
   // display its download shelf.
-  TabContents* contents =
-      tab_util::GetTabContentsByID(info.render_process_id, info.render_view_id);
+  TabContents* contents = tab_util::GetTabContentsByID(info.child_id,
+                                                       info.render_view_id);
 
   // If the contents no longer exists, we start the download in the last active
   // browser. This is not ideal but better than fully hiding the download from

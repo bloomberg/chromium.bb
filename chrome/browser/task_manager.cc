@@ -13,6 +13,7 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/task_manager_resource_providers.h"
@@ -611,8 +612,8 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
   TaskManager::Resource* resource = NULL;
   for (ResourceProviderList::iterator iter = providers_.begin();
        iter != providers_.end(); ++iter) {
-    resource = (*iter)->GetResource(param.origin_pid,
-                                    param.render_process_host_id,
+    resource = (*iter)->GetResource(param.origin_child_id,
+                                    param.render_process_host_child_id,
                                     param.routing_id);
     if (resource)
       break;
@@ -658,18 +659,20 @@ void TaskManagerModel::OnJobRedirect(URLRequestJob* job,
 }
 
 void TaskManagerModel::OnBytesRead(URLRequestJob* job, int byte_count) {
-  int render_process_host_id = -1, routing_id = -1;
+  int render_process_host_child_id = -1, routing_id = -1;
   ResourceDispatcherHost::RenderViewForRequest(job->request(),
-                                               &render_process_host_id,
+                                               &render_process_host_child_id,
                                                &routing_id);
   // This happens in the IO thread, post it to the UI thread.
+  int origin_child_id =
+      chrome_browser_net::GetOriginProcessUniqueIDForRequest(job->request());
   ui_loop_->PostTask(FROM_HERE,
                      NewRunnableMethod(
-                        this,
-                        &TaskManagerModel::BytesRead,
-                        BytesReadParam(job->request()->origin_pid(),
-                                       render_process_host_id, routing_id,
-                                       byte_count)));
+                         this,
+                         &TaskManagerModel::BytesRead,
+                         BytesReadParam(origin_child_id,
+                                        render_process_host_child_id,
+                                        routing_id, byte_count)));
 }
 
 bool TaskManagerModel::GetProcessMetricsForRows(

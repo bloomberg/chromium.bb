@@ -65,7 +65,7 @@ class ChildNotificationTask : public Task {
 
 ChildProcessHost::ChildProcessHost(
     ProcessType type, ResourceDispatcherHost* resource_dispatcher_host)
-    : Receiver(type),
+    : Receiver(type, -1),
       ALLOW_THIS_IN_INITIALIZER_LIST(listener_(this)),
       resource_dispatcher_host_(resource_dispatcher_host),
       opening_channel_(false) {
@@ -76,7 +76,7 @@ ChildProcessHost::ChildProcessHost(
 ChildProcessHost::~ChildProcessHost() {
   Singleton<ChildProcessList>::get()->remove(this);
 
-  resource_dispatcher_host_->CancelRequestsForProcess(GetProcessId());
+  resource_dispatcher_host_->CancelRequestsForProcess(id());
 
   if (handle())
     ProcessWatcher::EnsureProcessTerminated(handle());

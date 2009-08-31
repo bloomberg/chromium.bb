@@ -291,12 +291,12 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
 
     scoped_refptr<DownloadThrottlingResourceHandler> download_handler =
         new DownloadThrottlingResourceHandler(host_,
-                                           request_,
-                                           request_->url(),
-                                           info->process_id,
-                                           info->route_id,
-                                           request_id,
-                                           in_complete);
+                                             request_,
+                                             request_->url(),
+                                             info->child_id,
+                                             info->route_id,
+                                             request_id,
+                                             in_complete);
     if (bytes_read_) {
       // a Read has already occurred and we need to copy the data into the
       // EventHandler.
@@ -329,7 +329,7 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
   // We don't want to keep buffering as our buffer will fill up.
   ResourceDispatcherHost::ExtraRequestInfo* info =
       ResourceDispatcherHost::ExtraInfoForRequest(request_);
-  host_->PauseRequest(info->process_id, info->request_id, true);
+  host_->PauseRequest(info->child_id, info->request_id, true);
 
   // Schedule plugin loading on the file thread.
   // Note: it's possible that the only reference to this object is the task.  If
@@ -429,9 +429,9 @@ void BufferedResourceHandler::OnPluginsLoaded() {
   if (request_) {
     ResourceDispatcherHost::ExtraRequestInfo* info =
         ResourceDispatcherHost::ExtraInfoForRequest(request_);
-    host_->PauseRequest(info->process_id, info->request_id, false);
+    host_->PauseRequest(info->child_id, info->request_id, false);
     if (!CompleteResponseStarted(info->request_id, false))
-      host_->CancelRequest(info->process_id, info->request_id, false);
+      host_->CancelRequest(info->child_id, info->request_id, false);
   }
   Release();
 }

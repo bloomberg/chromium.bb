@@ -203,7 +203,7 @@ bool ExtensionPortContainer::InterceptMessageFromExternalHost(
     scoped_ptr<ExtensionPortContainer> port(
         new ExtensionPortContainer(automation, tab_handle));
 
-    int process_id = view_host->process()->pid();
+    int process_id = view_host->process()->id();
     if (port->Connect(extension_id, process_id, routing_id, connection_id,
                       channel_name)) {
       // We have a successful connection.

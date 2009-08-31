@@ -507,11 +507,8 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
  public:
   explicit VisitRelayingRenderProcessHost(Profile* profile)
       : BrowserRenderProcessHost(profile) {
-    static int prev_id = 0;
-    SetProcessID(++prev_id);
   }
   virtual ~VisitRelayingRenderProcessHost() {
-    RemoveFromList();
   }
 
   virtual bool Init() { return true; }

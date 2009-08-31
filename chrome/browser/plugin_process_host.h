@@ -108,7 +108,7 @@ class PluginProcessHost : public ChildProcessHost,
 
 #if defined(OS_WIN)
   void OnPluginWindowDestroyed(HWND window, HWND parent);
-  void OnDownloadUrl(const std::string& url, int source_pid,
+  void OnDownloadUrl(const std::string& url, int source_child_unique_id,
                      gfx::NativeWindow caller_window);
 #endif
 

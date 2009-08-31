@@ -99,8 +99,8 @@ class ProcessClosedObserver : public NotificationObserver {
                    NotificationService::AllSources());
   }
 
-  void RunUntilClose(int child_pid) {
-    child_pid_ = child_pid;
+  void RunUntilClose(int child_id) {
+    child_id_ = child_id;
     observed_ = false;
     message_loop_->Run();
     DCHECK(observed_);
@@ -112,7 +112,7 @@ class ProcessClosedObserver : public NotificationObserver {
                        const NotificationDetails& details) {
     DCHECK(type == NotificationType::CHILD_PROCESS_HOST_DISCONNECTED);
     ChildProcessInfo* info = Details<ChildProcessInfo>(details).ptr();
-    if (info->GetProcessId() == child_pid_) {
+    if (info->id() == child_id_) {
       observed_ = true;
       message_loop_->Quit();
     }
@@ -120,7 +120,7 @@ class ProcessClosedObserver : public NotificationObserver {
 
   MessageLoop* message_loop_;
   NotificationRegistrar registrar_;
-  int child_pid_;
+  int child_id_;
   bool observed_;
 };
 
@@ -146,7 +146,7 @@ TEST_F(UtilityProcessHostTest, ExtensionUnpacker) {
   ProcessClosedObserver observer(&message_loop_);
   process_host->StartExtensionUnpacker(
       temp_extension_dir.AppendASCII("theme.crx"));
-  observer.RunUntilClose(process_host->GetProcessId());
+  observer.RunUntilClose(process_host->id());
   EXPECT_TRUE(client->success());
 
   // Clean up the temp dir.

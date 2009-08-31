@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,8 +67,8 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
         const ViewHostMsg_Resource_Request& request_data) = 0;
 
    protected:
-    explicit Receiver(ChildProcessInfo::ProcessType type)
-        : ChildProcessInfo(type) {}
+    explicit Receiver(ChildProcessInfo::ProcessType type, int child_id)
+        : ChildProcessInfo(type, child_id) {}
     virtual ~Receiver() {}
   };
 
@@ -78,7 +78,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
    public:
     ExtraRequestInfo(ResourceHandler* handler,
                      ChildProcessInfo::ProcessType process_type,
-                     int process_id,
+                     int child_id,
                      int route_id,
                      int request_id,
                      std::string frame_origin,
@@ -90,7 +90,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
           login_handler(NULL),
           ssl_client_auth_handler(NULL),
           process_type(process_type),
-          process_id(process_id),
+          child_id(child_id),
           route_id(route_id),
           request_id(request_id),
           pending_data_count(0),
@@ -126,7 +126,10 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
     ChildProcessInfo::ProcessType process_type;
 
-    int process_id;
+    // The child process unique ID of the requestor. This duplicates the value
+    // stored on the request by SetChildProcessUniqueIDForRequest in
+    // url_request_tracking.
+    int child_id;
 
     int route_id;
 
@@ -203,19 +206,20 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // Uniquely identifies a URLRequest.
   struct GlobalRequestID {
-    GlobalRequestID() : process_id(-1), request_id(-1) {
+    GlobalRequestID() : child_id(-1), request_id(-1) {
     }
-    GlobalRequestID(int process_id, int request_id)
-        : process_id(process_id), request_id(request_id) {
+    GlobalRequestID(int child_id, int request_id)
+        : child_id(child_id),
+          request_id(request_id) {
     }
 
-    int process_id;
+    int child_id;
     int request_id;
 
     bool operator<(const GlobalRequestID& other) const {
-      if (process_id == other.process_id)
+      if (child_id == other.child_id)
         return request_id < other.request_id;
-      return process_id < other.process_id;
+      return child_id < other.child_id;
     }
   };
 
@@ -238,7 +242,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // request from the renderer or another child process).
   void BeginDownload(const GURL& url,
                      const GURL& referrer,
-                     int process_id,
+                     int process_unique_id,
                      int route_id,
                      URLRequestContext* request_context);
 
@@ -246,27 +250,27 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // request from the renderer or another child process).
   void BeginSaveFile(const GURL& url,
                      const GURL& referrer,
-                     int process_id,
+                     int process_unique_id,
                      int route_id,
                      URLRequestContext* request_context);
 
   // Cancels the given request if it still exists. We ignore cancels from the
   // renderer in the event of a download.
-  void CancelRequest(int process_id,
+  void CancelRequest(int process_unique_id,
                      int request_id,
                      bool from_renderer);
 
   // Follows a deferred redirect for the given request.
-  void FollowDeferredRedirect(int process_id,
+  void FollowDeferredRedirect(int process_unique_id,
                               int request_id);
 
   // Returns true if it's ok to send the data. If there are already too many
   // data messages pending, it pauses the request and returns false. In this
   // case the caller should not send the data.
-  bool WillSendData(int process_id, int request_id);
+  bool WillSendData(int process_unique_id, int request_id);
 
   // Pauses or resumes network activity for a particular request.
-  void PauseRequest(int process_id, int request_id, bool pause);
+  void PauseRequest(int process_unique_id, int request_id, bool pause);
 
   // Returns the number of pending requests. This is designed for the unittests
   int pending_requests() const {
@@ -274,8 +278,8 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   }
 
   // Intended for unit-tests only. Returns the memory cost of all the
-  // outstanding requests (pending and blocked) for |process_id|.
-  int GetOutstandingRequestsMemoryCost(int process_id) const;
+  // outstanding requests (pending and blocked) for |process_unique_id|.
+  int GetOutstandingRequestsMemoryCost(int process_unique_id) const;
 
   // Intended for unit-tests only. Overrides the outstanding requests bound.
   void set_max_outstanding_requests_cost_per_process(int limit) {
@@ -312,11 +316,11 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   void OnClosePageACK(const ViewMsg_ClosePage_Params& params);
 
   // Force cancels any pending requests for the given process.
-  void CancelRequestsForProcess(int process_id);
+  void CancelRequestsForProcess(int process_unique_id);
 
   // Force cancels any pending requests for the given route id.  This method
   // acts like CancelRequestsForProcess when route_id is -1.
-  void CancelRequestsForRoute(int process_id, int route_id);
+  void CancelRequestsForRoute(int process_unique_id, int route_id);
 
   // URLRequest::Delegate
   virtual void OnReceivedRedirect(URLRequest* request,
@@ -359,26 +363,26 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   URLRequest* GetURLRequest(GlobalRequestID request_id) const;
 
   // Notifies our observers that a request has been cancelled.
-  void NotifyResponseCompleted(URLRequest* request, int process_id);
+  void NotifyResponseCompleted(URLRequest* request, int process_unique_id);
 
-  void RemovePendingRequest(int process_id, int request_id);
+  void RemovePendingRequest(int process_unique_id, int request_id);
 
   // Causes all new requests for the route identified by
-  // |process_id| and |route_id| to be blocked (not being
+  // |process_unique_id| and |route_id| to be blocked (not being
   // started) until ResumeBlockedRequestsForRoute or
   // CancelBlockedRequestsForRoute is called.
-  void BlockRequestsForRoute(int process_id, int route_id);
+  void BlockRequestsForRoute(int process_unique_id, int route_id);
 
   // Resumes any blocked request for the specified route id.
-  void ResumeBlockedRequestsForRoute(int process_id, int route_id);
+  void ResumeBlockedRequestsForRoute(int process_unique_id, int route_id);
 
   // Cancels any blocked request for the specified route id.
-  void CancelBlockedRequestsForRoute(int process_id, int route_id);
+  void CancelBlockedRequestsForRoute(int process_unique_id, int route_id);
 
   // Decrements the pending_data_count for the request and resumes
   // the request if it was paused due to too many pending data
   // messages sent.
-  void DataReceivedACK(int process_id, int request_id);
+  void DataReceivedACK(int process_unique_id, int request_id);
 
   // Needed for the sync IPC message dispatcher macros.
   bool Send(IPC::Message* message) {
@@ -438,7 +442,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // Cancels the given request if it still exists. We ignore cancels from the
   // renderer in the event of a download. If |allow_delete| is true and no IO
   // is pending, the request is removed and deleted.
-  void CancelRequest(int process_id,
+  void CancelRequest(int process_unique_id,
                      int request_id,
                      bool from_renderer,
                      bool allow_delete);
@@ -446,14 +450,14 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // Helper function for regular and download requests.
   void BeginRequestInternal(URLRequest* request);
 
-  // Updates the "cost" of outstanding requests for |process_id|.
+  // Updates the "cost" of outstanding requests for |process_unique_id|.
   // The "cost" approximates how many bytes are consumed by all the in-memory
   // data structures supporting this request (URLRequest object,
   // HttpNetworkTransaction, etc...).
   // The value of |cost| is added to the running total, and the resulting
   // sum is returned.
   int IncrementOutstandingRequestsMemoryCost(int cost,
-                                             int process_id);
+                                             int process_unique_id);
 
   // Estimate how much heap space |request| will consume to run.
   static int CalculateApproximateMemoryCost(URLRequest* request);
@@ -473,17 +477,17 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   void RemovePendingRequest(const PendingRequestList::iterator& iter);
 
   // Notify our observers that we started receiving a response for a request.
-  void NotifyResponseStarted(URLRequest* request, int process_id);
+  void NotifyResponseStarted(URLRequest* request, int process_unique_id);
 
   // Notify our observers that a request has been redirected.
   void NotifyReceivedRedirect(URLRequest* request,
-                              int process_id,
+                              int process_unique_id,
                               const GURL& new_url);
 
   // Tries to handle the url with an external protocol. If the request is
   // handled, the function returns true. False otherwise.
   bool HandleExternalProtocol(int request_id,
-                              int process_id,
+                              int process_unique_id,
                               int route_id,
                               const GURL& url,
                               ResourceType::Type resource_type,
@@ -494,7 +498,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   void MaybeUpdateUploadProgress(ExtraRequestInfo *info, URLRequest *request);
 
   // Resumes or cancels (if |cancel_requests| is true) any blocked requests.
-  void ProcessBlockedRequestsForRoute(int process_id,
+  void ProcessBlockedRequestsForRoute(int process_unique_id,
                                       int route_id,
                                       bool cancel_requests);
 
@@ -568,7 +572,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   typedef std::map<ProcessRouteIDs, BlockedRequestsList*> BlockedRequestMap;
   BlockedRequestMap blocked_requests_map_;
 
-  // Maps the process_ids to the approximate number of bytes
+  // Maps the process_unique_ids to the approximate number of bytes
   // being used to service its resource requests. No entry implies 0 cost.
   typedef std::map<int, int> OutstandingRequestsMemoryCostMap;
   OutstandingRequestsMemoryCostMap outstanding_requests_memory_cost_map_;

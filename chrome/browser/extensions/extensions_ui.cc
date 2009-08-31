@@ -317,7 +317,7 @@ std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
     RenderViewHost* view = (*iter)->render_view_host();
     if ((*iter)->extension_id() == extension_id && view) {
       result.push_back(ExtensionPage((*iter)->url(),
-                                     view->process()->pid(),
+                                     view->process()->id(),
                                      view->routing_id()));
     }
   }

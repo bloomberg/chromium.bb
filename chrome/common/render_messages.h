@@ -315,8 +315,10 @@ struct ViewHostMsg_Resource_Request {
   // URLRequest load flags (0 by default).
   int load_flags;
 
-  // Process ID of process that originated this request.
-  int origin_pid;
+  // Unique ID of process that originated this request. For normal renderer
+  // requests, this will be the ID of the renderer. For plugin requests routed
+  // through the renderer, this will be the plugin's ID.
+  int origin_child_id;
 
   // What this resource load is for (main frame, sub-frame, sub-resource,
   // object).
@@ -1277,7 +1279,7 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
     WriteParam(m, p.main_frame_origin);
     WriteParam(m, p.headers);
     WriteParam(m, p.load_flags);
-    WriteParam(m, p.origin_pid);
+    WriteParam(m, p.origin_child_id);
     WriteParam(m, p.resource_type);
     WriteParam(m, p.request_context);
     WriteParam(m, p.appcache_host_id);
@@ -1293,7 +1295,7 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
       ReadParam(m, iter, &r->main_frame_origin) &&
       ReadParam(m, iter, &r->headers) &&
       ReadParam(m, iter, &r->load_flags) &&
-      ReadParam(m, iter, &r->origin_pid) &&
+      ReadParam(m, iter, &r->origin_child_id) &&
       ReadParam(m, iter, &r->resource_type) &&
       ReadParam(m, iter, &r->request_context) &&
       ReadParam(m, iter, &r->appcache_host_id) &&
@@ -1313,7 +1315,7 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
     l->append(L", ");
     LogParam(p.load_flags, l);
     l->append(L", ");
-    LogParam(p.origin_pid, l);
+    LogParam(p.origin_child_id, l);
     l->append(L", ");
     LogParam(p.resource_type, l);
     l->append(L", ");

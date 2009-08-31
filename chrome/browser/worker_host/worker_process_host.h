@@ -19,11 +19,11 @@ class WorkerProcessHost : public ChildProcessHost {
   // between the renderer and worker processes.
   struct WorkerInstance {
     GURL url;
-    int renderer_process_id;
+    int renderer_id;
     int render_view_route_id;
     int worker_route_id;
     IPC::Message::Sender* sender;
-    int sender_pid;
+    int sender_id;
     int sender_route_id;
   };
 

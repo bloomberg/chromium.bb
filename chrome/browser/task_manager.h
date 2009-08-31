@@ -222,15 +222,23 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
 
   // This struct is used to exchange information between the io and ui threads.
   struct BytesReadParam {
-    BytesReadParam(int origin_pid, int render_process_host_id,
-                   int routing_id, int byte_count)
-        : origin_pid(origin_pid),
-          render_process_host_id(render_process_host_id),
+    BytesReadParam(int origin_child_id,
+                   int render_process_host_child_id,
+                   int routing_id,
+                   int byte_count)
+        : origin_child_id(origin_child_id),
+          render_process_host_child_id(render_process_host_child_id),
           routing_id(routing_id),
-          byte_count(byte_count) { }
+          byte_count(byte_count) {}
 
-    int origin_pid;
-    int render_process_host_id;
+    // This is the child ID of the originator of the request. It will often be
+    // the same as the render_process_host_child_id, but will be different when
+    // another sub-process like a plugin is routing requests through a renderer.
+    int origin_child_id;
+
+    // The child ID of the RenderProcessHist this request was routed through.
+    int render_process_host_child_id;
+
     int routing_id;
     int byte_count;
   };

@@ -214,18 +214,10 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
 
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
                  NotificationService::AllSources());
-
-  if (run_renderer_in_process()) {
-    // We need a "renderer pid", but we don't have one when there's no renderer
-    // process.  So pick a value that won't clash with other child process pids.
-    // Linux has PID_MAX_LIMIT which is 2^22.  Windows always uses pids that are
-    // divisible by 4.  So...
-    static int next_pid = 4 * 1024 * 1024;
-    next_pid += 3;
-    SetProcessID(next_pid);
-  }
-
   visited_link_updater_.reset(new VisitedLinkUpdater());
+
+  WebCacheManager::GetInstance()->Add(id());
+  ChildProcessSecurityPolicy::GetInstance()->Add(id());
 
   // Note: When we create the BrowserRenderProcessHost, it's technically
   //       backgrounded, because it has no visible listeners.  But the process
@@ -234,10 +226,8 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
 }
 
 BrowserRenderProcessHost::~BrowserRenderProcessHost() {
-  if (pid() >= 0) {
-    WebCacheManager::GetInstance()->Remove(pid());
-    ChildProcessSecurityPolicy::GetInstance()->Remove(pid());
-  }
+  WebCacheManager::GetInstance()->Remove(id());
+  ChildProcessSecurityPolicy::GetInstance()->Remove(id());
 
   // We may have some unsent messages at this point, but that's OK.
   channel_.reset();
@@ -274,6 +264,7 @@ bool BrowserRenderProcessHost::Init() {
 
   scoped_refptr<ResourceMessageFilter> resource_message_filter =
       new ResourceMessageFilter(g_browser_process->resource_dispatcher_host(),
+                                id(),
                                 audio_renderer_host_.get(),
                                 PluginService::GetInstance(),
                                 g_browser_process->print_job_manager(),
@@ -463,12 +454,9 @@ bool BrowserRenderProcessHost::Init() {
       return false;
     }
     process_.set_handle(process);
-    SetProcessID(process_.pid());
   }
 
-  resource_message_filter->Init(pid());
-  WebCacheManager::GetInstance()->Add(pid());
-  ChildProcessSecurityPolicy::GetInstance()->Add(pid());
+  resource_message_filter->Init();
 
   // Now that the process is created, set its backgrounding accordingly.
   SetBackgrounded(backgrounded_);
@@ -855,8 +843,7 @@ void BrowserRenderProcessHost::OnChannelError() {
   if (child_exited)
     process_.Close();
 
-  WebCacheManager::GetInstance()->Remove(pid());
-  ChildProcessSecurityPolicy::GetInstance()->Remove(pid());
+  WebCacheManager::GetInstance()->Remove(id());
 
   channel_.reset();
 
@@ -874,8 +861,8 @@ void BrowserRenderProcessHost::OnChannelError() {
 }
 
 void BrowserRenderProcessHost::OnPageContents(const GURL& url,
-                                       int32 page_id,
-                                       const std::wstring& contents) {
+                                              int32 page_id,
+                                              const std::wstring& contents) {
   Profile* p = profile();
   if (!p || p->IsOffTheRecord())
     return;
@@ -887,7 +874,7 @@ void BrowserRenderProcessHost::OnPageContents(const GURL& url,
 
 void BrowserRenderProcessHost::OnUpdatedCacheStats(
     const WebCache::UsageStats& stats) {
-  WebCacheManager::GetInstance()->ObserveStats(pid(), stats);
+  WebCacheManager::GetInstance()->ObserveStats(id(), stats);
 }
 
 void BrowserRenderProcessHost::SuddenTerminationChanged(bool enabled) {
@@ -961,16 +948,16 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
 void BrowserRenderProcessHost::OnExtensionAddListener(
     const std::string& event_name) {
   if (profile()->GetExtensionMessageService()) {
-    profile()->GetExtensionMessageService()->AddEventListener(event_name,
-                                                              pid());
+    profile()->GetExtensionMessageService()->AddEventListener(
+        event_name, id());
   }
 }
 
 void BrowserRenderProcessHost::OnExtensionRemoveListener(
     const std::string& event_name) {
   if (profile()->GetExtensionMessageService()) {
-    profile()->GetExtensionMessageService()->RemoveEventListener(event_name,
-                                                                 pid());
+    profile()->GetExtensionMessageService()->RemoveEventListener(
+        event_name, id());
   }
 }
 

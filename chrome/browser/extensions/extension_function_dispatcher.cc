@@ -219,7 +219,7 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   // Notify the ExtensionProcessManager that the view was created.
   ExtensionProcessManager* epm = profile()->GetExtensionProcessManager();
   epm->RegisterExtensionProcess(extension_id(),
-                                render_view_host->process()->pid());
+                                render_view_host->process()->id());
 
   // Update the extension permissions. Doing this each time we create an EFD
   // ensures that new processes are informed of permissions for newly installed
@@ -264,7 +264,7 @@ void ExtensionFunctionDispatcher::SendResponse(ExtensionFunction* function,
 
 void ExtensionFunctionDispatcher::HandleBadMessage(ExtensionFunction* api) {
   LOG(ERROR) << "bad extension message " <<
-                api->name() << 
+                api->name() <<
                 " : terminating renderer.";
   if (RenderProcessHost::run_renderer_in_process()) {
     // In single process mode it is better if we don't suicide but just crash.

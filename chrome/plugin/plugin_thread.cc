@@ -98,11 +98,10 @@ void PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 }
 
-void PluginThread::OnCreateChannel(
-    int process_id,
-    bool off_the_record) {
+void PluginThread::OnCreateChannel(int renderer_id,
+                                   bool off_the_record) {
   scoped_refptr<PluginChannel> channel = PluginChannel::GetPluginChannel(
-      process_id, ChildProcess::current()->io_message_loop());
+      renderer_id, ChildProcess::current()->io_message_loop());
   IPC::ChannelHandle channel_handle;
   if (channel.get()) {
     channel_handle.name = channel->channel_name();

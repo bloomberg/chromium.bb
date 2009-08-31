@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
+#include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/renderer_host/resource_request_details.h"
 #include "chrome/browser/ssl/ssl_cert_error_handler.h"
 #include "chrome/browser/ssl/ssl_mixed_content_handler.h"
@@ -109,7 +110,7 @@ bool SSLManager::ShouldStartRequest(ResourceDispatcherHost* rdh,
                                                    info->resource_type,
                                                    info->frame_origin,
                                                    info->main_frame_origin,
-                                                   info->process_id,
+                                                   info->child_id,
                                                    ui_loop),
                         &SSLMixedContentHandler::Dispatch));
   return false;
@@ -241,7 +242,7 @@ void SSLManager::DidStartResourceResponse(ResourceRequestDetails* details) {
       details->frame_origin(),
       details->main_frame_origin(),
       details->filter_policy(),
-      details->origin_pid(),
+      details->origin_child_id(),
       details->ssl_cert_id(),
       details->ssl_cert_status());
 

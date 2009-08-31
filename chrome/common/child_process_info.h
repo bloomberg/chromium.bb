@@ -21,6 +21,11 @@ class ChildProcessInfo {
     UNKNOWN_PROCESS,
   };
 
+  ChildProcessInfo(const ChildProcessInfo& original);
+  virtual ~ChildProcessInfo();
+
+  ChildProcessInfo& operator=(const ChildProcessInfo& original);
+
   // Returns the type of the process.
   ProcessType type() const { return type_; }
 
@@ -31,13 +36,11 @@ class ChildProcessInfo {
   // Getter to the process handle.
   base::ProcessHandle handle() const { return process_.handle(); }
 
-  virtual int GetProcessId() const {
-    if (pid_ != -1)
-      return pid_;
+  // The unique identifier for this child process. This identifier is NOT a
+  // process ID, and will be unique for all types of child process for
+  // one run of the browser.
+  int id() const { return id_; }
 
-    pid_ = process_.pid();
-    return pid_;
-  }
   void SetProcessBackgrounded() const { process_.SetProcessBackgrounded(true); }
   void ReduceWorkingSet() const { process_.ReduceWorkingSet(); }
 
@@ -48,25 +51,6 @@ class ChildProcessInfo {
   // Returns a localized title for the child process.  For example, a plugin
   // process would be "Plug-in: Flash" when name is "Flash".
   std::wstring GetLocalizedTitle() const;
-
-  ChildProcessInfo(const ChildProcessInfo& original) {
-    type_ = original.type_;
-    name_ = original.name_;
-    process_ = original.process_;
-    pid_ = original.pid_;
-  }
-
-  ChildProcessInfo& operator=(const ChildProcessInfo& original) {
-    if (&original != this) {
-      type_ = original.type_;
-      name_ = original.name_;
-      process_ = original.process_;
-      pid_ = original.pid_;
-    }
-    return *this;
-  }
-
-  virtual ~ChildProcessInfo();
 
   // We define the < operator so that the ChildProcessInfo can be used as a key
   // in a std::map.
@@ -84,21 +68,30 @@ class ChildProcessInfo {
   // The "instance" pointer value is baked into the channel id.
   static std::string GenerateRandomChannelID(void* instance);
 
+  // Returns a unique ID to identify a child process. On construction, this
+  // function will be used to generate the id_, but it is also used to generate
+  // IDs for the RenderProcessHost, which doesn't inherit from us, and whose IDs
+  // must be unique for all child processes.
+  //
+  // This function is threadsafe since RenderProcessHost is on the UI thread,
+  // but normally this will be used on the IO thread.
+  static int GenerateChildProcessUniqueId();
+
  protected:
+  // Derived objects need to use this constructor so we know what type we are.
+  // If the caller has already generated a unique ID for this child process,
+  // it should pass it as the second argument. Otherwise, -1 should be passed
+  // and a unique ID will be automatically generated.
+  ChildProcessInfo(ProcessType type, int id);
+
   void set_type(ProcessType type) { type_ = type; }
   void set_name(const std::wstring& name) { name_ = name; }
-  void set_handle(base::ProcessHandle handle) {
-    process_.set_handle(handle);
-    pid_ = -1;
-  }
-
-  // Derived objects need to use this constructor so we know what type we are.
-  ChildProcessInfo(ProcessType type);
+  void set_handle(base::ProcessHandle handle) { process_.set_handle(handle); }
 
  private:
   ProcessType type_;
   std::wstring name_;
-  mutable int pid_;  // Cache of the process id.
+  int id_;
 
   // The handle to the process.
   mutable base::Process process_;

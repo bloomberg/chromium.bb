@@ -70,6 +70,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   //        ResourceMessageFilter is 'given' ownership of the spellchecker
   //        object and must clean it up on exit.
   ResourceMessageFilter(ResourceDispatcherHost* resource_dispatcher_host,
+                        int child_id,
                         AudioRendererHost* audio_renderer_host,
                         PluginService* plugin_service,
                         printing::PrintJobManager* print_job_manager,
@@ -78,7 +79,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                         SpellChecker* spellchecker);
   virtual ~ResourceMessageFilter();
 
-  void Init(int render_process_id);
+  void Init();
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel);
@@ -92,7 +93,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   virtual URLRequestContext* GetRequestContext(
       uint32 request_id,
       const ViewHostMsg_Resource_Request& request_data);
-  virtual int GetProcessId() const { return render_process_id_; }
 
   SpellChecker* spellchecker() { return spellchecker_.get(); }
   ResourceDispatcherHost* resource_dispatcher_host() {
@@ -273,7 +273,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // used by the ResourceDispatcherHost to look up the TabContents that
   // originated URLRequest.  Since the RenderProcessHost can be destroyed
   // before this object, we only hold an ID for lookup.
-  int render_process_id_;
+  int child_id_;
 
   // Our spellchecker object.
   scoped_refptr<SpellChecker> spellchecker_;

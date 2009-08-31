@@ -135,18 +135,18 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
 
 ResourceMessageFilter::ResourceMessageFilter(
     ResourceDispatcherHost* resource_dispatcher_host,
+    int child_id,
     AudioRendererHost* audio_renderer_host,
     PluginService* plugin_service,
     printing::PrintJobManager* print_job_manager,
     Profile* profile,
     RenderWidgetHelper* render_widget_helper,
     SpellChecker* spellchecker)
-    : Receiver(RENDER_PROCESS),
+    : Receiver(RENDER_PROCESS, child_id),
       channel_(NULL),
       resource_dispatcher_host_(resource_dispatcher_host),
       plugin_service_(plugin_service),
       print_job_manager_(print_job_manager),
-      render_process_id_(-1),
       spellchecker_(spellchecker),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)),
       request_context_(profile->GetRequestContext()),
@@ -191,9 +191,8 @@ ResourceMessageFilter::~ResourceMessageFilter() {
     base::CloseProcessHandle(handle());
 }
 
-void ResourceMessageFilter::Init(int render_process_id) {
-  render_process_id_ = render_process_id;
-  render_widget_helper_->Init(render_process_id, resource_dispatcher_host_);
+void ResourceMessageFilter::Init() {
+  render_widget_helper_->Init(id(), resource_dispatcher_host_);
   appcache_dispatcher_host_->Initialize(this);
 }
 
@@ -217,16 +216,9 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   }
   set_handle(peer_handle);
 
-  // Set the process ID if Init hasn't been called yet.  This doesn't work in
-  // single-process mode since peer_pid won't be the special fake PID we use
-  // for RenderProcessHost in that mode, so we just have to hope that Init
-  // is called first in that case.
-  if (render_process_id_ == -1)
-    render_process_id_ = peer_pid;
-
   // Hook AudioRendererHost to this object after channel is connected so it can
   // this object for sending messages.
-  audio_renderer_host_->IPCChannelConnected(render_process_id_, handle(), this);
+  audio_renderer_host_->IPCChannelConnected(id(), handle(), this);
 
   WorkerService::GetInstance()->Initialize(
       resource_dispatcher_host_, ui_loop());
@@ -245,7 +237,7 @@ void ResourceMessageFilter::OnChannelClosing() {
 
   // Unhook us from all pending network requests so they don't get sent to a
   // deleted object.
-  resource_dispatcher_host_->CancelRequestsForProcess(render_process_id_);
+  resource_dispatcher_host_->CancelRequestsForProcess(id());
 
   // Unhook AudioRendererHost.
   audio_renderer_host_->IPCChannelClosing();
@@ -389,7 +381,7 @@ void ResourceMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
   // Create a new ViewHostMsg_ContextMenu message.
   const ViewHostMsg_ContextMenu context_menu_message(msg.routing_id(), params);
   ui_loop()->PostTask(FROM_HERE, new ContextMenuMessageDispatcher(
-      render_process_id_, context_menu_message));
+      id(), context_menu_message));
 }
 
 // Called on the IPC thread:
@@ -574,17 +566,15 @@ void ResourceMessageFilter::OnCreateDedicatedWorker(const GURL& url,
                                                     int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
   WorkerService::GetInstance()->CreateDedicatedWorker(
-      url, render_process_id_, render_view_route_id, this, render_process_id_,
-      *route_id);
+      url, id(), render_view_route_id, this, id(), *route_id);
 }
 
 void ResourceMessageFilter::OnCancelCreateDedicatedWorker(int route_id) {
-  WorkerService::GetInstance()->CancelCreateDedicatedWorker(
-      render_process_id_, route_id);
+  WorkerService::GetInstance()->CancelCreateDedicatedWorker(id(), route_id);
 }
 
 void ResourceMessageFilter::OnForwardToWorker(const IPC::Message& message) {
-  WorkerService::GetInstance()->ForwardMessage(message, render_process_id_);
+  WorkerService::GetInstance()->ForwardMessage(message, id());
 }
 
 void ResourceMessageFilter::OnDownloadUrl(const IPC::Message& message,
@@ -592,7 +582,7 @@ void ResourceMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                           const GURL& referrer) {
   resource_dispatcher_host_->BeginDownload(url,
                                            referrer,
-                                           render_process_id_,
+                                           id(),
                                            message.routing_id(),
                                            request_context_);
 }
@@ -972,8 +962,7 @@ void ResourceMessageFilter::OnGetFileSize(const FilePath& path,
 
   // Get file size only when the child process has been granted permission to
   // upload the file.
-  if (ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(
-      render_process_id_, path)) {
+  if (ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
     FileSystemAccessor::RequestFileSize(
         path,
         reply_msg,

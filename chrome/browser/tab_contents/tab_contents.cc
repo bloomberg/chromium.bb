@@ -607,7 +607,6 @@ void TabContents::NotifyNavigationStateChanged(unsigned changed_flags) {
 
 void TabContents::DidBecomeSelected() {
   controller_.SetActive(true);
-
   if (render_widget_host_view()) {
     render_widget_host_view()->DidBecomeSelected();
 #if defined(OS_MACOSX)
@@ -615,10 +614,7 @@ void TabContents::DidBecomeSelected() {
 #endif
   }
 
-  // If pid() is -1, that means the RenderProcessHost still hasn't been
-  // initialized.  It'll register with CacheManagerHost when it is.
-  if (process()->pid() != -1)
-    WebCacheManager::GetInstance()->ObserveActivity(process()->pid());
+  WebCacheManager::GetInstance()->ObserveActivity(process()->id());
 }
 
 void TabContents::WasHidden() {
@@ -1713,7 +1709,7 @@ void TabContents::DidLoadResourceFromMemoryCache(
                                       &cert_id, &cert_status,
                                       &security_bits);
   LoadFromMemoryCacheDetails details(url, frame_origin, main_frame_origin,
-                                     process()->pid(), cert_id, cert_status);
+                                     process()->id(), cert_id, cert_status);
 
   NotificationService::current()->Notify(
       NotificationType::LOAD_FROM_MEMORY_CACHE,
@@ -1939,8 +1935,8 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
     UpdateHistoryForNavigation(GetURL(), details, params);
   }
 
-    if (!did_navigate)
-      return;  // No navigation happened.
+  if (!did_navigate)
+    return;  // No navigation happened.
 
   // DO NOT ADD MORE STUFF TO THIS FUNCTION! Your component should either listen
   // for the appropriate notification (best) or you can add it to

@@ -175,7 +175,7 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry) {
   // possibly have mixed content.  See bug http://crbug.com/12423.
   if (site_instance &&
       backend_->DidMarkHostAsBroken(entry->url().host(),
-                                    site_instance->GetProcess()->pid()))
+                                    site_instance->GetProcess()->id()))
     entry->ssl().set_has_mixed_content();
 }
 
@@ -299,7 +299,8 @@ void SSLPolicy::ShowErrorPage(SSLCertErrorHandler* handler) {
 
   TabContents* tab  = handler->GetTabContents();
   int cert_id = CertStore::GetSharedInstance()->StoreCert(
-      handler->ssl_info().cert, tab->render_view_host()->process()->pid());
+      handler->ssl_info().cert,
+      tab->render_view_host()->process()->id());
   std::string security_info =
       SSLManager::SerializeSecurityInfo(cert_id,
                                         handler->ssl_info().cert_status,
@@ -350,18 +351,18 @@ void SSLPolicy::UpdateStateForMixedContent(SSLRequestInfo* info) {
   if (info->resource_type() != ResourceType::MAIN_FRAME ||
       info->resource_type() != ResourceType::SUB_FRAME) {
     // The frame's origin now contains mixed content and therefore is broken.
-    MarkOriginAsBroken(info->frame_origin(), info->pid());
+    MarkOriginAsBroken(info->frame_origin(), info->child_id());
   }
 
   if (info->resource_type() != ResourceType::MAIN_FRAME) {
     // The main frame now contains a frame with mixed content.  Therefore, we
     // mark the main frame's origin as broken too.
-    MarkOriginAsBroken(info->main_frame_origin(), info->pid());
+    MarkOriginAsBroken(info->main_frame_origin(), info->child_id());
   }
 }
 
 void SSLPolicy::UpdateStateForUnsafeContent(SSLRequestInfo* info) {
   // This request as a broken cert, which means its host is broken.
-  backend_->MarkHostAsBroken(info->url().host(), info->pid());
+  backend_->MarkHostAsBroken(info->url().host(), info->child_id());
   UpdateStateForMixedContent(info);
 }

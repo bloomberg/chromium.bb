@@ -8,12 +8,9 @@ MockRenderProcessHost::MockRenderProcessHost(Profile* profile)
     : RenderProcessHost(profile),
       transport_dib_(NULL),
       bad_msg_count_(0) {
-  static int prev_pid = 0;
-  SetProcessID(++prev_pid);
 }
 
 MockRenderProcessHost::~MockRenderProcessHost() {
-  RemoveFromList();
   delete transport_dib_;
 }
 

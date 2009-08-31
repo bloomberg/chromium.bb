@@ -403,9 +403,8 @@ void WebPluginDelegateProxy::OnChannelError() {
   render_view_->PluginCrashed(GetProcessId(), plugin_path_);
 }
 
-void WebPluginDelegateProxy::UpdateGeometry(
-                const gfx::Rect& window_rect,
-                const gfx::Rect& clip_rect) {
+void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
+                                            const gfx::Rect& clip_rect) {
   plugin_rect_ = window_rect;
 
   bool bitmaps_changed = false;

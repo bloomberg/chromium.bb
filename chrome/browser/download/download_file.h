@@ -103,7 +103,7 @@ class DownloadFile {
   int64 bytes_so_far() const { return bytes_so_far_; }
   int id() const { return id_; }
   FilePath full_path() const { return full_path_; }
-  int render_process_id() const { return render_process_id_; }
+  int child_id() const { return child_id_; }
   int render_view_id() const { return render_view_id_; }
   int request_id() const { return request_id_; }
   bool path_renamed() const { return path_renamed_; }
@@ -131,7 +131,7 @@ class DownloadFile {
   int id_;
 
   // IDs for looking up the tab we are associated with.
-  int render_process_id_;
+  int child_id_;
   int render_view_id_;
 
   // Handle for informing the ResourceDispatcherHost of a UI based cancel.

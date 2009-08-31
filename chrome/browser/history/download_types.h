@@ -34,7 +34,7 @@ struct DownloadCreateInfo {
         total_bytes(total_bytes),
         state(state),
         download_id(download_id),
-        render_process_id(-1),
+        child_id(-1),
         render_view_id(-1),
         request_id(-1),
         db_handle(0),
@@ -57,7 +57,7 @@ struct DownloadCreateInfo {
   int64 total_bytes;
   int32 state;
   int32 download_id;
-  int render_process_id;
+  int child_id;
   int render_view_id;
   int request_id;
   int64 db_handle;

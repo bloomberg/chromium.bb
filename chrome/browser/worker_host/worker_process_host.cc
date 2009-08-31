@@ -40,13 +40,13 @@
 // Notifies RenderViewHost that one or more worker objects crashed.
 class WorkerCrashTask : public Task {
  public:
-  WorkerCrashTask(int render_process_id, int render_view_id)
-      : render_process_id_(render_process_id),
+  WorkerCrashTask(int render_process_unique_id, int render_view_id)
+      : render_process_unique_id_(render_process_unique_id),
         render_view_id_(render_view_id) { }
 
   void Run() {
     RenderViewHost* host =
-        RenderViewHost::FromID(render_process_id_, render_view_id_);
+        RenderViewHost::FromID(render_process_unique_id_, render_view_id_);
     if (host) {
       RenderViewHostDelegate::BrowserIntegration* integration_delegate =
           host->delegate()->GetBrowserIntegrationDelegate();
@@ -56,7 +56,7 @@ class WorkerCrashTask : public Task {
   }
 
  private:
-  int render_process_id_;
+  int render_process_unique_id_;
   int render_view_id_;
 };
 
@@ -79,10 +79,10 @@ WorkerProcessHost::~WorkerProcessHost() {
   MessageLoop* ui_loop = WorkerService::GetInstance()->ui_loop();
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     ui_loop->PostTask(FROM_HERE, new WorkerCrashTask(
-        i->renderer_process_id, i->render_view_route_id));
+        i->renderer_id, i->render_view_route_id));
   }
 
-  ChildProcessSecurityPolicy::GetInstance()->Remove(GetProcessId());
+  ChildProcessSecurityPolicy::GetInstance()->Remove(id());
 }
 
 bool WorkerProcessHost::Init() {
@@ -128,14 +128,14 @@ bool WorkerProcessHost::Init() {
     return false;
   SetHandle(process);
 
-  ChildProcessSecurityPolicy::GetInstance()->Add(GetProcessId());
+  ChildProcessSecurityPolicy::GetInstance()->Add(id());
 
   return true;
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
   ChildProcessSecurityPolicy::GetInstance()->GrantRequestURL(
-      GetProcessId(), instance.url);
+      id(), instance.url);
 
   instances_.push_back(instance);
   Send(new WorkerProcessMsg_CreateWorker(
@@ -149,7 +149,7 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
 bool WorkerProcessHost::FilterMessage(const IPC::Message& message,
                                       int sender_pid) {
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
-    if (i->sender_pid == sender_pid &&
+    if (i->sender_id == sender_pid &&
         i->sender_route_id == message.routing_id()) {
       RelayMessage(
           message, this, i->worker_route_id, next_route_id_callback_.get());
@@ -299,15 +299,14 @@ void WorkerProcessHost::OnCreateDedicatedWorker(const GURL& url,
   DCHECK(instances_.size() == 1);  // Only called when one process per worker.
   *route_id = WorkerService::GetInstance()->next_worker_route_id();
   WorkerService::GetInstance()->CreateDedicatedWorker(
-      url, instances_.front().renderer_process_id,
-      instances_.front().render_view_route_id, this, GetProcessId(), *route_id);
+      url, instances_.front().renderer_id,
+      instances_.front().render_view_route_id, this, id(), *route_id);
 }
 
 void WorkerProcessHost::OnCancelCreateDedicatedWorker(int route_id) {
-  WorkerService::GetInstance()->CancelCreateDedicatedWorker(
-      GetProcessId(), route_id);
+  WorkerService::GetInstance()->CancelCreateDedicatedWorker(id(), route_id);
 }
 
 void WorkerProcessHost::OnForwardToWorker(const IPC::Message& message) {
-  WorkerService::GetInstance()->ForwardMessage(message, GetProcessId());
+  WorkerService::GetInstance()->ForwardMessage(message, id());
 }

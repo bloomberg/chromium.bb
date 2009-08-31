@@ -12,6 +12,7 @@
 #include "base/gfx/gdi_util.h"
 #include "base/gfx/rect.h"
 #include "base/histogram.h"
+#include "base/process_util.h"
 #include "base/thread.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_accessibility_manager.h"
@@ -171,7 +172,7 @@ class NotifyPluginProcessHostTask : public Task {
     for (ChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
          !iter.Done(); ++iter) {
       PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
-      if (plugin->GetProcessId() == plugin_process_id) {
+      if (base::GetProcId(plugin->handle()) == plugin_process_id) {
         plugin->AddWindow(parent_);
         return;
       }
@@ -1216,12 +1217,11 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
     if (!browser_accessibility_root_) {
       // Create a new instance of IAccessible. Root id is 1000, to avoid
       // conflicts with the ids used by MSAA.
-      BrowserAccessibilityManager::GetInstance()->
-          CreateAccessibilityInstance(IID_IAccessible, 1000,
-                                      render_widget_host_->routing_id(),
-                                      render_widget_host_->process()->pid(),
-                                      m_hWnd, reinterpret_cast<void **>
-                                          (&browser_accessibility_root_));
+      BrowserAccessibilityManager::GetInstance()->CreateAccessibilityInstance(
+          IID_IAccessible, 1000,
+          render_widget_host_->routing_id(),
+          render_widget_host_->process()->id(),
+          m_hWnd, reinterpret_cast<void **>(&browser_accessibility_root_));
 
       if (!browser_accessibility_root_) {
         // No valid root found, return with failure.

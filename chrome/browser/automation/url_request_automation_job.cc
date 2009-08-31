@@ -69,7 +69,7 @@ URLRequestJob* AutomationRequestInterceptor::MaybeIntercept(
     if (request_info) {
       AutomationResourceMessageFilter::AutomationDetails details;
       if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
-              request_info->process_id, request_info->route_id, &details)) {
+              request_info->child_id, request_info->route_id, &details)) {
         URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
             details.tab_handle, details.filter);
         return job;

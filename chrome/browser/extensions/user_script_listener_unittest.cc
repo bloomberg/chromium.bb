@@ -65,7 +65,7 @@ class ResourceDispatcherHostTester :
     public base::RefCountedThreadSafe<ResourceDispatcherHostTester> {
  public:
   ResourceDispatcherHostTester(MessageLoop* io_loop)
-      : Receiver(ChildProcessInfo::RENDER_PROCESS),
+      : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
         host_(io_loop),
         ui_loop_(MessageLoop::current()),
         io_loop_(io_loop) {
@@ -136,7 +136,7 @@ class ResourceDispatcherHostTester :
     // init the rest to default values to prevent getting UMR.
     request.frame_origin = "null";
     request.main_frame_origin = "null";
-    request.origin_pid = 0;
+    request.origin_child_id = 0;
     request.request_context = 0;
     request.appcache_host_id = appcache::kNoHostId;
     return request;

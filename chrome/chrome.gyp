@@ -1510,6 +1510,8 @@
         'browser/net/url_request_slow_download_job.h',
         'browser/net/url_request_slow_http_job.cc',
         'browser/net/url_request_slow_http_job.h',
+        'browser/net/url_request_tracking.cc',
+        'browser/net/url_request_tracking.h',
         'browser/omnibox_search_hint.cc',
         'browser/omnibox_search_hint.h',
         'browser/options_page_base.cc',

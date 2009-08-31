@@ -48,10 +48,10 @@ WorkerService::~WorkerService() {
 }
 
 bool WorkerService::CreateDedicatedWorker(const GURL &url,
-                                          int renderer_process_id,
+                                          int renderer_id,
                                           int render_view_route_id,
                                           IPC::Message::Sender* sender,
-                                          int sender_pid,
+                                          int sender_id,
                                           int sender_route_id) {
   // Generate a unique route id for the browser-worker communication that's
   // unique among all worker processes.  That way when the worker process sends
@@ -59,11 +59,11 @@ bool WorkerService::CreateDedicatedWorker(const GURL &url,
   // it to.
   WorkerProcessHost::WorkerInstance instance;
   instance.url = url;
-  instance.renderer_process_id = renderer_process_id;
+  instance.renderer_id = renderer_id;
   instance.render_view_route_id = render_view_route_id;
   instance.worker_route_id = next_worker_route_id();
   instance.sender = sender;
-  instance.sender_pid = sender_pid;
+  instance.sender_id = sender_id;
   instance.sender_route_id = sender_route_id;
 
   WorkerProcessHost* worker = NULL;
@@ -92,11 +92,12 @@ bool WorkerService::CreateDedicatedWorker(const GURL &url,
   return true;
 }
 
-void WorkerService::CancelCreateDedicatedWorker(int sender_pid,
+void WorkerService::CancelCreateDedicatedWorker(int sender_id,
                                                 int sender_route_id) {
   for (WorkerProcessHost::Instances::iterator i = queued_workers_.begin();
        i != queued_workers_.end(); ++i) {
-     if (i->sender_pid == sender_pid && i->sender_route_id == sender_route_id) {
+     if (i->sender_id == sender_id &&
+         i->sender_route_id == sender_route_id) {
        queued_workers_.erase(i);
        return;
      }
@@ -111,12 +112,12 @@ void WorkerService::CancelCreateDedicatedWorker(int sender_pid,
     for (WorkerProcessHost::Instances::const_iterator instance =
              worker->instances().begin();
          instance != worker->instances().end(); ++instance) {
-      if (instance->sender_pid == sender_pid &&
+      if (instance->sender_id == sender_id &&
           instance->sender_route_id == sender_route_id) {
         // Fake a worker destroyed message so that WorkerProcessHost cleans up
         // properly.
         WorkerHostMsg_WorkerContextDestroyed msg(sender_route_id);
-        ForwardMessage(msg, sender_pid);
+        ForwardMessage(msg, sender_id);
         return;
       }
     }
@@ -198,7 +199,7 @@ bool WorkerService::CanCreateWorkerProcess(
       total_workers++;
       if (total_workers >= kMaxWorkersWhenSeparate)
         return false;
-      if (cur_instance->renderer_process_id == instance.renderer_process_id &&
+      if (cur_instance->renderer_id == instance.renderer_id &&
           cur_instance->render_view_route_id == instance.render_view_route_id) {
         workers_per_tab++;
         if (workers_per_tab >= kMaxWorkersPerTabWhenSeparate)

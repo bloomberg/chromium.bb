@@ -32,7 +32,7 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
 
   ResourceDispatcherHost::ExtraRequestInfo* info =
       ResourceDispatcherHost::ExtraInfoForRequest(request);
-  request_id_.process_id = info->process_id;
+  request_id_.child_id = info->child_id;
   request_id_.request_id = info->request_id;
 
   if (!ResourceDispatcherHost::RenderViewForRequest(request,

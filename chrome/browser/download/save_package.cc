@@ -132,7 +132,7 @@ SavePackage::SavePackage(TabContents* web_content,
       save_type_(save_type),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(web_content->process()->pid()) {
+      tab_id_(web_content->process()->id()) {
   DCHECK(web_content);
   const GURL& current_page_url = tab_contents_->GetURL();
   DCHECK(current_page_url.is_valid());
@@ -154,7 +154,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
       disk_error_occurred_(false),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents->process()->pid()) {
+      tab_id_(tab_contents->process()->id()) {
   const GURL& current_page_url = tab_contents_->GetURL();
   DCHECK(current_page_url.is_valid());
   page_url_ = current_page_url;
@@ -577,7 +577,7 @@ void SavePackage::CheckFinish() {
                         &SaveFileManager::RenameAllFiles,
                         final_names,
                         dir,
-                        tab_contents_->process()->pid(),
+                        tab_contents_->process()->id(),
                         tab_contents_->render_view_host()->routing_id()));
 }
 
@@ -720,7 +720,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
     save_item->Start();
     file_manager_->SaveURL(save_item->url(),
                            save_item->referrer(),
-                           tab_contents_->process()->pid(),
+                           tab_contents_->process()->id(),
                            tab_contents_->render_view_host()->routing_id(),
                            save_item->save_source(),
                            save_item->full_path(),

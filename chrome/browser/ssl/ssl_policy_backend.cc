@@ -127,8 +127,8 @@ void SSLPolicyBackend::AddMessageToConsole(
       string16(), message, level);
 }
 
-void SSLPolicyBackend::MarkHostAsBroken(const std::string& host, int pid) {
-  ssl_host_state_->MarkHostAsBroken(host, pid);
+void SSLPolicyBackend::MarkHostAsBroken(const std::string& host, int id) {
+  ssl_host_state_->MarkHostAsBroken(host, id);
   DispatchSSLInternalStateChanged();
 }
 

@@ -29,18 +29,18 @@ class WorkerService : public NotificationObserver {
 
   // Creates a dedicated worker.  Returns true on success.
   bool CreateDedicatedWorker(const GURL &url,
-                             int renderer_process_id,
+                             int renderer_pid,
                              int render_view_route_id,
                              IPC::Message::Sender* sender,
-                             int sender_pid,
+                             int sender_id,
                              int sender_route_id);
 
   // Cancel creation of a dedicated worker that hasn't started yet.
-  void CancelCreateDedicatedWorker(int sender_pid, int sender_route_id);
+  void CancelCreateDedicatedWorker(int sender_id, int sender_route_id);
 
   // Called by the worker creator when a message arrives that should be
   // forwarded to the worker process.
-  void ForwardMessage(const IPC::Message& message, int sender_pid);
+  void ForwardMessage(const IPC::Message& message, int sender_id);
 
   MessageLoop* ui_loop() { return ui_loop_; }
 

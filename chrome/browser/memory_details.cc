@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
+#include "base/process_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -37,10 +38,9 @@ static ProcessData g_process_template[MemoryDetails::MAX_BROWSERS];
 // expensive parts of this operation over on the file thread.
 //
 
-MemoryDetails::MemoryDetails()
-  : ui_loop_(NULL) {
+MemoryDetails::MemoryDetails() : ui_loop_(NULL) {
   static const std::wstring google_browser_name =
-    l10n_util::GetString(IDS_PRODUCT_NAME);
+      l10n_util::GetString(IDS_PRODUCT_NAME);
   ProcessData g_process_template[MemoryDetails::MAX_BROWSERS] = {
     { google_browser_name.c_str(), L"chrome.exe", },
     { L"IE", L"iexplore.exe", },
@@ -78,7 +78,7 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   // Collect the list of child processes.
   for (ChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
     ProcessMemoryInformation info;
-    info.pid = iter->GetProcessId();
+    info.pid = base::GetProcId(iter->handle());
     if (!info.pid)
       continue;
 

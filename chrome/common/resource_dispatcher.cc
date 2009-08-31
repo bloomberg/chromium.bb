@@ -106,7 +106,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     const std::string& main_frame_origin,
     const std::string& headers,
     int load_flags,
-    int origin_pid,
+    int origin_child_id,
     ResourceType::Type resource_type,
     uint32 request_context,
     int appcache_host_id,
@@ -124,7 +124,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.main_frame_origin = main_frame_origin;
   request_.headers = headers;
   request_.load_flags = load_flags;
-  request_.origin_pid = origin_pid;
+  request_.origin_child_id = origin_child_id;
   request_.resource_type = resource_type;
   request_.request_context = request_context;
   request_.appcache_host_id = appcache_host_id;

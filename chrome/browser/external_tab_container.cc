@@ -429,8 +429,8 @@ void ExternalTabContainer::Observe(NotificationType type,
         RenderViewHost* rvh = Details<RenderViewHost>(details).ptr();
         if (rvh) {
           AutomationResourceMessageFilter::RegisterRenderView(
-              rvh->process()->pid(), rvh->routing_id(), tab_handle_,
-              automation_resource_message_filter_);
+              rvh->process()->id(), rvh->routing_id(),
+              tab_handle_, automation_resource_message_filter_);
         }
       }
       break;
@@ -440,7 +440,7 @@ void ExternalTabContainer::Observe(NotificationType type,
         RenderViewHost* rvh = Details<RenderViewHost>(details).ptr();
         if (rvh) {
           AutomationResourceMessageFilter::UnRegisterRenderView(
-              rvh->process()->pid(), rvh->routing_id());
+              rvh->process()->id(), rvh->routing_id());
         }
       }
       break;

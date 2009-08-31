@@ -137,7 +137,7 @@ RenderViewHost::~RenderViewHost() {
 
   // Be sure to clean up any leftover state from cross-site requests.
   Singleton<CrossSiteRequestManager>()->SetHasPendingCrossSiteRequest(
-      process()->pid(), routing_id(), false);
+      process()->id(), routing_id(), false);
 }
 
 void RenderViewHost::Observe(NotificationType type,
@@ -176,12 +176,12 @@ bool RenderViewHost::CreateRenderView() {
 
   if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_)) {
     ChildProcessSecurityPolicy::GetInstance()->GrantDOMUIBindings(
-        process()->pid());
+        process()->id());
   }
 
   if (BindingsPolicy::is_extension_enabled(enabled_bindings_)) {
     ChildProcessSecurityPolicy::GetInstance()->GrantExtensionBindings(
-        process()->pid());
+        process()->id());
   }
 
   renderer_initialized_ = true;
@@ -252,7 +252,7 @@ void RenderViewHost::SyncRendererPrefs() {
 
 void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
   ChildProcessSecurityPolicy::GetInstance()->GrantRequestURL(
-      process()->pid(), params.url);
+      process()->id(), params.url);
 
   ViewMsg_Navigate* nav_message = new ViewMsg_Navigate(routing_id(), params);
 
@@ -354,7 +354,7 @@ void RenderViewHost::ClosePage(bool for_cross_site_transition,
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
   ViewMsg_ClosePage_Params params;
-  params.closing_process_id = process()->pid();
+  params.closing_process_id = process()->id();
   params.closing_route_id = routing_id();
   params.for_cross_site_transition = for_cross_site_transition;
   params.new_render_process_host_id = new_render_process_host_id;
@@ -380,7 +380,7 @@ void RenderViewHost::ClosePageIgnoringUnloadEvents() {
 void RenderViewHost::SetHasPendingCrossSiteRequest(bool has_pending_request,
                                                    int request_id) {
   Singleton<CrossSiteRequestManager>()->SetHasPendingCrossSiteRequest(
-      process()->pid(), routing_id(), has_pending_request);
+      process()->id(), routing_id(), has_pending_request);
   pending_request_id_ = request_id;
 }
 
@@ -464,12 +464,13 @@ void RenderViewHost::DragTargetDragEnter(
   // Grant the renderer the ability to load the drop_data.
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
-  policy->GrantRequestURL(process()->pid(), drop_data.url);
+  policy->GrantRequestURL(process()->id(), drop_data.url);
   for (std::vector<string16>::const_iterator iter(drop_data.filenames.begin());
        iter != drop_data.filenames.end(); ++iter) {
     FilePath path = FilePath::FromWStringHack(UTF16ToWideHack(*iter));
-    policy->GrantRequestURL(process()->pid(), net::FilePathToFileURL(path));
-    policy->GrantUploadFile(process()->pid(), path);
+    policy->GrantRequestURL(process()->id(),
+                            net::FilePathToFileURL(path));
+    policy->GrantUploadFile(process()->id(), path);
   }
   Send(new ViewMsg_DragTargetDragEnter(routing_id(), drop_data, client_pt,
                                        screen_pt));
@@ -680,8 +681,8 @@ void RenderViewHost::InstallMissingPlugin() {
 }
 
 void RenderViewHost::FileSelected(const FilePath& path) {
-  ChildProcessSecurityPolicy::GetInstance()->GrantUploadFile(process()->pid(),
-                                                         path);
+  ChildProcessSecurityPolicy::GetInstance()->GrantUploadFile(
+      process()->id(), path);
   std::vector<FilePath> files;
   files.push_back(path);
   Send(new ViewMsg_RunFileChooserResponse(routing_id(), files));
@@ -692,7 +693,7 @@ void RenderViewHost::MultiFilesSelected(
   for (std::vector<FilePath>::const_iterator file = files.begin();
        file != files.end(); ++file) {
     ChildProcessSecurityPolicy::GetInstance()->GrantUploadFile(
-      process()->pid(), *file);
+        process()->id(), *file);
   }
   Send(new ViewMsg_RunFileChooserResponse(routing_id(), files));
 }
@@ -935,7 +936,7 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
       Read(&msg, &iter, &validated_params))
     return;
 
-  const int renderer_id = process()->pid();
+  const int renderer_id = process()->id();
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
   // Without this check, an evil renderer can trick the browser into creating
@@ -1047,7 +1048,7 @@ void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(bool is_main_frame,
                                                           const GURL& url) {
   GURL validated_url(url);
   FilterURL(ChildProcessSecurityPolicy::GetInstance(),
-            process()->pid(), &validated_url);
+            process()->id(), &validated_url);
 
   RenderViewHostDelegate::Resource* resource_delegate =
       delegate_->GetResourceDelegate();
@@ -1064,7 +1065,7 @@ void RenderViewHost::OnMsgDidFailProvisionalLoadWithError(
     bool showing_repost_interstitial) {
   GURL validated_url(url);
   FilterURL(ChildProcessSecurityPolicy::GetInstance(),
-            process()->pid(), &validated_url);
+            process()->id(), &validated_url);
 
   RenderViewHostDelegate::Resource* resource_delegate =
       delegate_->GetResourceDelegate();
@@ -1139,7 +1140,7 @@ void RenderViewHost::OnMsgContextMenu(const ContextMenuParams& params) {
   // Validate the URLs in |params|.  If the renderer can't request the URLs
   // directly, don't show them in the context menu.
   ContextMenuParams validated_params(params);
-  const int renderer_id = process()->pid();
+  int renderer_id = process()->id();
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
 
@@ -1158,7 +1159,7 @@ void RenderViewHost::OnMsgOpenURL(const GURL& url,
                                   WindowOpenDisposition disposition) {
   GURL validated_url(url);
   FilterURL(ChildProcessSecurityPolicy::GetInstance(),
-            process()->pid(), &validated_url);
+            process()->id(), &validated_url);
 
   delegate_->RequestOpenURL(validated_url, referrer, disposition);
 }
@@ -1184,7 +1185,7 @@ void RenderViewHost::OnMsgDomOperationResponse(
 void RenderViewHost::OnMsgDOMUISend(
     const std::string& message, const std::string& content) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
-          HasDOMUIBindings(process()->pid())) {
+          HasDOMUIBindings(process()->id())) {
     NOTREACHED() << "Blocked unauthorized use of DOMUIBindings.";
     return;
   }
@@ -1607,7 +1608,7 @@ void RenderViewHost::OnExtensionRequest(const std::string& name,
                                         int request_id,
                                         bool has_callback) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
-          HasExtensionBindings(process()->pid())) {
+          HasExtensionBindings(process()->id())) {
     NOTREACHED() << "Blocked unauthorized use of extension bindings.";
     return;
   }
@@ -1632,8 +1633,8 @@ void RenderViewHost::OnExtensionPostMessage(
 
 void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {
 #if defined(OS_WIN)
-  BrowserAccessibilityManager::GetInstance()->
-      ChangeAccessibilityFocus(acc_obj_id, process()->pid(), routing_id());
+  BrowserAccessibilityManager::GetInstance()->ChangeAccessibilityFocus(
+      acc_obj_id, process()->id(), routing_id());
 #else
   // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
 #endif

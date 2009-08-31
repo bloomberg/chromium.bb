@@ -18,6 +18,9 @@ class NotificationType;
 
 // Plugins/workers and other child processes that live on the IO thread should
 // derive from this class.
+//
+// [Browser]RenderProcessHost is the main exception that doesn't derive from
+// this class. That project lives on the UI thread.
 class ChildProcessHost : public ResourceDispatcherHost::Receiver,
                          public IPC::Channel::Listener {
  public:

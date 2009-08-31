@@ -146,11 +146,12 @@ bool RenderViewHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
     // handler later finishes, this call will be ignored because the state in
     // CrossSiteResourceHandler will already be cleaned up.)
     ViewMsg_ClosePage_Params params;
-    params.closing_process_id = render_view_host_->process()->pid();
+    params.closing_process_id =
+        render_view_host_->process()->id();
     params.closing_route_id = render_view_host_->routing_id();
     params.for_cross_site_transition = true;
     params.new_render_process_host_id =
-        pending_render_view_host_->process()->pid();
+        pending_render_view_host_->process()->id();
     params.new_request_id = pending_request_id;
     current_host()->process()->CrossSiteClosePageACK(params);
   }

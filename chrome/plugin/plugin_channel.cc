@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,11 +27,11 @@ class PluginReleaseTask : public Task {
 // How long we wait before releasing the plugin process.
 static const int kPluginReleaseTimeMS = 10000;
 
-PluginChannel* PluginChannel::GetPluginChannel(
-    int process_id, MessageLoop* ipc_message_loop) {
-  // map renderer's process id to a (single) channel to that process
+PluginChannel* PluginChannel::GetPluginChannel(int renderer_id,
+                                               MessageLoop* ipc_message_loop) {
+  // Map renderer ID to a (single) channel to that process.
   std::string channel_name = StringPrintf(
-      "%d.r%d", base::GetCurrentProcId(), process_id);
+      "%d.r%d", base::GetCurrentProcId(), renderer_id);
 
   return static_cast<PluginChannel*>(PluginChannelBase::GetChannel(
       channel_name,

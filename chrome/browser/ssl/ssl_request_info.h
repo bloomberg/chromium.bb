@@ -21,7 +21,7 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
                  const std::string& frame_origin,
                  const std::string& main_frame_origin,
                  FilterPolicy::Type filter_policy,
-                 int pid,
+                 int child_id,
                  int ssl_cert_id,
                  int ssl_cert_status)
       : url_(url),
@@ -29,7 +29,7 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
         frame_origin_(frame_origin),
         main_frame_origin_(main_frame_origin),
         filter_policy_(filter_policy),
-        pid_(pid),
+        child_id_(child_id),
         ssl_cert_id_(ssl_cert_id),
         ssl_cert_status_(ssl_cert_status) {
   }
@@ -39,7 +39,7 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
   const std::string& frame_origin() const { return frame_origin_; }
   const std::string& main_frame_origin() const { return main_frame_origin_; }
   FilterPolicy::Type filter_policy() const { return filter_policy_; }
-  int pid() const { return pid_; }
+  int child_id() const { return child_id_; }
   int ssl_cert_id() const { return ssl_cert_id_; }
   int ssl_cert_status() const { return ssl_cert_status_; }
 
@@ -49,7 +49,7 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
   std::string frame_origin_;
   std::string main_frame_origin_;
   FilterPolicy::Type filter_policy_;
-  int pid_;
+  int child_id_;
   int ssl_cert_id_;
   int ssl_cert_status_;
 

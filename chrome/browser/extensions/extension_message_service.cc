@@ -202,15 +202,16 @@ int ExtensionMessageService::OpenChannelToExtension(
   ui_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this,
           &ExtensionMessageService::OpenChannelToExtensionOnUIThread,
-          source->GetProcessId(), routing_id, port2_id, extension_id,
-          channel_name));
+          source->id(), routing_id, port2_id, extension_id, channel_name));
 
   return port1_id;
 }
 
-int ExtensionMessageService::OpenChannelToTab(
-    int routing_id, int tab_id, const std::string& extension_id,
-    const std::string& channel_name, ResourceMessageFilter* source) {
+int ExtensionMessageService::OpenChannelToTab(int routing_id,
+                                              int tab_id,
+                                              const std::string& extension_id,
+                                              const std::string& channel_name,
+                                              ResourceMessageFilter* source) {
   DCHECK_EQ(MessageLoop::current(),
             ChromeThread::GetMessageLoop(ChromeThread::IO));
 
@@ -224,7 +225,7 @@ int ExtensionMessageService::OpenChannelToTab(
   ui_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this,
           &ExtensionMessageService::OpenChannelToTabOnUIThread,
-          source->GetProcessId(), routing_id, port2_id, tab_id, extension_id,
+          source->id(), routing_id, port2_id, tab_id, extension_id,
           channel_name));
 
   return port1_id;
@@ -434,8 +435,8 @@ void ExtensionMessageService::Observe(NotificationType type,
       for (ListenerMap::iterator it = listeners_.begin();
            it != listeners_.end(); ) {
         ListenerMap::iterator current = it++;
-        if (current->second.count(renderer->pid()) != 0)
-          RemoveEventListener(current->first, renderer->pid());
+        if (current->second.count(renderer->id()) != 0)
+          RemoveEventListener(current->first, renderer->id());
       }
       break;
     }

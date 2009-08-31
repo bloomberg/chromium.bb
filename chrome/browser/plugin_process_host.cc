@@ -31,6 +31,7 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
@@ -114,19 +115,20 @@ class PluginDownloadUrlHelper : public URLRequest::Delegate {
   gfx::NativeWindow download_file_caller_window_;
 
   std::string download_url_;
-  int download_source_pid_;
+  int download_source_child_unique_id_;
 
   DISALLOW_EVIL_CONSTRUCTORS(PluginDownloadUrlHelper);
 };
 
 PluginDownloadUrlHelper::PluginDownloadUrlHelper(
     const std::string& download_url,
-    int source_pid, gfx::NativeWindow caller_window)
+    int source_child_unique_id,
+    gfx::NativeWindow caller_window)
     : download_file_request_(NULL),
       download_file_buffer_(new net::IOBuffer(kDownloadFileBufferSize)),
       download_file_caller_window_(caller_window),
       download_url_(download_url),
-      download_source_pid_(source_pid) {
+      download_source_child_unique_id_(source_child_unique_id) {
   DCHECK(::IsWindow(caller_window));
   memset(download_file_buffer_->data(), 0, kDownloadFileBufferSize);
   download_file_.reset(new net::FileStream());
@@ -140,8 +142,9 @@ PluginDownloadUrlHelper::~PluginDownloadUrlHelper() {
 }
 
 void PluginDownloadUrlHelper::InitiateDownload() {
-  download_file_request_= new URLRequest(GURL(download_url_), this);
-  download_file_request_->set_origin_pid(download_source_pid_);
+  download_file_request_ = new URLRequest(GURL(download_url_), this);
+  chrome_browser_net::SetOriginProcessUniqueIDForRequest(
+      download_source_child_unique_id_, download_file_request_);
   download_file_request_->set_context(Profile::GetDefaultRequestContext());
   download_file_request_->Start();
 }
@@ -592,7 +595,7 @@ void PluginProcessHost::RequestPluginChannel(
   // a deadlock can occur if the plugin creation request from the renderer is
   // a result of a sync message by the plugin process.
   PluginProcessMsg_CreateChannel* msg = new PluginProcessMsg_CreateChannel(
-      renderer_message_filter->GetProcessId(),
+      renderer_message_filter->id(),
       renderer_message_filter->off_the_record());
   msg->set_unblock(true);
   if (Send(msg)) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,6 @@ class ResourceRequestDetails {
         referrer_(request->referrer()),
         has_upload_(request->has_upload()),
         load_flags_(request->load_flags()),
-        origin_pid_(request->origin_pid()),
         status_(request->status()),
         ssl_cert_id_(cert_id),
         ssl_cert_status_(request->ssl_info().cert_status) {
@@ -39,9 +38,10 @@ class ResourceRequestDetails {
     frame_origin_ = info->frame_origin;
     main_frame_origin_ = info->main_frame_origin;
     filter_policy_ = info->filter_policy;
+    origin_child_id_ = info->child_id;
   }
 
-  virtual ~ResourceRequestDetails() { }
+  virtual ~ResourceRequestDetails() {}
 
   const GURL& url() const { return url_; }
   const GURL& original_url() const { return original_url_; }
@@ -51,7 +51,7 @@ class ResourceRequestDetails {
   const std::string& main_frame_origin() const { return main_frame_origin_; }
   bool has_upload() const { return has_upload_; }
   int load_flags() const { return load_flags_; }
-  int origin_pid() const { return origin_pid_; }
+  int origin_child_id() const { return origin_child_id_; }
   const URLRequestStatus& status() const { return status_; }
   int ssl_cert_id() const { return ssl_cert_id_; }
   int ssl_cert_status() const { return ssl_cert_status_; }
@@ -67,7 +67,7 @@ class ResourceRequestDetails {
   std::string main_frame_origin_;
   bool has_upload_;
   int load_flags_;
-  int origin_pid_;
+  int origin_child_id_;
   URLRequestStatus status_;
   int ssl_cert_id_;
   int ssl_cert_status_;
@@ -84,7 +84,7 @@ class ResourceRedirectDetails : public ResourceRequestDetails {
                           int cert_id,
                           const GURL& new_url)
       : ResourceRequestDetails(request, cert_id),
-        new_url_(new_url) { }
+        new_url_(new_url) {}
 
   // The URL to which we are being redirected.
   const GURL& new_url() const { return new_url_; }

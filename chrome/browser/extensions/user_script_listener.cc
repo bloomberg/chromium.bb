@@ -66,7 +66,7 @@ bool UserScriptListener::ShouldStartRequest(URLRequest* request) {
 
   // Queue this request up.
   delayed_request_ids_.push_front(ResourceDispatcherHost::GlobalRequestID(
-      info->process_id, info->request_id));
+      info->child_id, info->request_id));
   return false;
 }
 

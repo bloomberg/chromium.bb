@@ -62,18 +62,18 @@ AudioRendererHost::IPCAudioSource::~IPCAudioSource() {
 
 // static
 AudioRendererHost::IPCAudioSource*
-    AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
-        AudioRendererHost* host,
-        int process_id,
-        int route_id,
-        int stream_id,
-        base::ProcessHandle process_handle,
-        AudioManager::Format format,
-        int channels,
-        int sample_rate,
-        char bits_per_sample,
-        size_t decoded_packet_size,
-        size_t buffer_capacity) {
+AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
+    AudioRendererHost* host,
+    int process_id,
+    int route_id,
+    int stream_id,
+    base::ProcessHandle process_handle,
+    AudioManager::Format format,
+    int channels,
+    int sample_rate,
+    char bits_per_sample,
+    size_t decoded_packet_size,
+    size_t buffer_capacity) {
   // Perform come preliminary checks on the parameters.
   // Make sure the renderer didn't ask for too much memory.
   if (buffer_capacity > kMaxBufferCapacity ||

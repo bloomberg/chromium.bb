@@ -7,6 +7,7 @@
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/child_process_security_policy.h"
+#include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
 
@@ -55,19 +56,14 @@ size_t GetMaxRendererProcessCount() {
 // associated with the given profile.
 static bool IsSuitableHost(RenderProcessHost* host, Profile* profile,
                            RenderProcessHost::Type type) {
-  // If the host doesn't have a PID yet, we don't know what it will be used
-  // for, so just say it's unsuitable to be safe.
-  if (host->pid() == -1)
-    return false;
-
   if (host->profile() != profile)
     return false;
 
   RenderProcessHost::Type host_type = RenderProcessHost::TYPE_NORMAL;
-  if (ChildProcessSecurityPolicy::GetInstance()->HasDOMUIBindings(host->pid()))
+  if (ChildProcessSecurityPolicy::GetInstance()->HasDOMUIBindings(host->id()))
     host_type = RenderProcessHost::TYPE_DOMUI;
   if (ChildProcessSecurityPolicy::GetInstance()->
-        HasExtensionBindings(host->pid()))
+        HasExtensionBindings(host->id()))
     host_type = RenderProcessHost::TYPE_EXTENSION;
 
   return host_type == type;
@@ -82,14 +78,16 @@ bool RenderProcessHost::run_renderer_in_process_ = false;
 
 RenderProcessHost::RenderProcessHost(Profile* profile)
     : max_page_id_(-1),
-      pid_(-1),
+      id_(ChildProcessInfo::GenerateChildProcessUniqueId()),
       profile_(profile),
       sudden_termination_allowed_(true),
       ignore_input_events_(false) {
+  all_hosts.AddWithID(this, id());
   all_hosts.set_check_on_null_data(true);
 }
 
 RenderProcessHost::~RenderProcessHost() {
+  all_hosts.Remove(id());
 }
 
 void RenderProcessHost::Attach(IPC::Channel::Listener* listener,
@@ -109,8 +107,6 @@ void RenderProcessHost::Release(int listener_id) {
     NotificationService::current()->Notify(
         NotificationType::RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
-    if (pid_ >= 0)
-      all_hosts.Remove(pid_);
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 }
@@ -172,19 +168,4 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(Profile* profile,
   }
 
   return NULL;
-}
-
-void RenderProcessHost::SetProcessID(int pid) {
-  if (pid_ != -1) {
-    // This object is being reused after a renderer crash.  Remove the old pid.
-    all_hosts.Remove(pid_);
-  }
-
-  pid_ = pid;
-  all_hosts.AddWithID(this, pid);
-}
-
-void RenderProcessHost::RemoveFromList() {
-  if (all_hosts.Lookup(pid_))
-    all_hosts.Remove(pid_);
 }

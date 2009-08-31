@@ -185,7 +185,7 @@ void ExtensionProcessManager::Observe(NotificationType type,
     case NotificationType::RENDERER_PROCESS_TERMINATED:
     case NotificationType::RENDERER_PROCESS_CLOSED: {
       RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
-      UnregisterExtensionProcess(host->pid());
+      UnregisterExtensionProcess(host->id());
       break;
     }
 

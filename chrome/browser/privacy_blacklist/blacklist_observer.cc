@@ -24,7 +24,7 @@ class BlockedContentNotice : public Task {
                        const ResourceDispatcherHost::ExtraRequestInfo* info)
       : gurl_(gurl),
         match_(match),
-        process_id_(info->process_id),
+        child_id_(info->child_id),
         route_id_(info->route_id) {
     if (match_->attributes() & Blacklist::kDontStoreCookies) {
       // No cookies stored.
@@ -39,7 +39,7 @@ class BlockedContentNotice : public Task {
   }
 
   virtual void Run() {
-    RenderViewHost* view = RenderViewHost::FromID(process_id_, route_id_);
+    RenderViewHost* view = RenderViewHost::FromID(child_id_, route_id_);
     if (!view)
       return;  // The view may be gone by the time we get here.
 
@@ -49,7 +49,7 @@ class BlockedContentNotice : public Task {
  private:
   const GURL gurl_;
   const Blacklist::Match* match_;
-  const int process_id_;
+  const int child_id_;
   const int route_id_;
 
   string16 reason_;
