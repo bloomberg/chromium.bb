@@ -29,11 +29,20 @@ BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
   // window, so extract a CGContext corresponding to that window that we can
   // pass to CGLayerCreateWithContext.
   NSWindow* containing_window = [widget->view()->GetNativeView() window];
-  if (!containing_window) // possible in unit tests
-      return;
-  CGContextRef context = static_cast<CGContextRef>([[containing_window graphicsContext] graphicsPort]);
-  CGLayerRef layer = CGLayerCreateWithContext(context, size.ToCGSize(), NULL);
-  cg_layer_.reset(layer);
+  if (!containing_window) {
+    // If we are not in a containing window yet, create a CGBitmapContext
+    // to use as a stand-in for the layer.
+    scoped_cftyperef<CGColorSpaceRef>
+        color_space(CGColorSpaceCreateDeviceRGB());
+    cg_bitmap_.reset(CGBitmapContextCreate(NULL, size.width(), size.height(),
+        8, size.width() * 8, color_space,
+        kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
+  } else {
+    CGContextRef context = static_cast<CGContextRef>(
+        [[containing_window graphicsContext] graphicsPort]);
+    CGLayerRef layer = CGLayerCreateWithContext(context, size.ToCGSize(), NULL);
+    cg_layer_.reset(layer);
+  }
 }
 
 BackingStore::~BackingStore() {
@@ -48,24 +57,51 @@ size_t BackingStore::MemorySize() {
 void BackingStore::PaintRect(base::ProcessHandle process,
                              TransportDIB* bitmap,
                              const gfx::Rect& bitmap_rect) {
-  if (!cg_layer()) return;
-
   scoped_cftyperef<CGColorSpaceRef> color_space(CGColorSpaceCreateDeviceRGB());
   scoped_cftyperef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(NULL, bitmap->memory(),
-          bitmap_rect.width() * bitmap_rect.height() * 4, NULL));
-  scoped_cftyperef<CGImageRef> image(CGImageCreate(bitmap_rect.width(),
-      bitmap_rect.height(), 8, 32, 4 * bitmap_rect.width(), color_space,
-      kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host, data_provider,
-      NULL, false, kCGRenderingIntentDefault));
+      bitmap_rect.width() * bitmap_rect.height() * 4, NULL));
+  scoped_cftyperef<CGImageRef> image(
+      CGImageCreate(bitmap_rect.width(), bitmap_rect.height(), 8, 32,
+          4 * bitmap_rect.width(), color_space,
+          kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
+          data_provider, NULL, false, kCGRenderingIntentDefault));
 
-  // The CGLayer's origin is in the lower left, but flipping the CTM would
-  // cause the image to get drawn upside down.  So we move the rectangle
-  // to the right position before drawing the image.
-  CGContextRef layer = CGLayerGetContext(cg_layer());
-  gfx::Rect paint_rect = bitmap_rect;
-  paint_rect.set_y(size_.height() - bitmap_rect.bottom());
-  CGContextDrawImage(layer, paint_rect.ToCGRect(), image);
+  if (!cg_layer()) {
+    // we don't have a CGLayer yet, so see if we can create one.
+    NSWindow* containing_window =
+        [render_widget_host()->view()->GetNativeView() window];
+    if (containing_window) {
+      CGContextRef context = static_cast<CGContextRef>(
+          [[containing_window graphicsContext] graphicsPort]);
+      CGLayerRef layer =
+          CGLayerCreateWithContext(context, size().ToCGSize(), NULL);
+      cg_layer_.reset(layer);
+      // now that we have a layer, copy the cached image into it
+      scoped_cftyperef<CGImageRef> bitmap_image(
+          CGBitmapContextCreateImage(cg_bitmap_));
+      CGContextDrawImage(CGLayerGetContext(layer),
+                         CGRectMake(0, 0, size().width(), size().height()),
+                         bitmap_image);
+      // Discard the cache bitmap, since we no longer need it.
+      cg_bitmap_.reset(NULL);
+    }
+  }
+
+  if (cg_layer()) {
+    // The CGLayer's origin is in the lower left, but flipping the CTM would
+    // cause the image to get drawn upside down.  So we move the rectangle
+    // to the right position before drawing the image.
+    CGContextRef layer = CGLayerGetContext(cg_layer());
+    gfx::Rect paint_rect = bitmap_rect;
+    paint_rect.set_y(size_.height() - bitmap_rect.bottom());
+    CGContextDrawImage(layer, paint_rect.ToCGRect(), image);
+  } else {
+    // The layer hasn't been created yet, so draw into the cache bitmap.
+    gfx::Rect paint_rect = bitmap_rect;
+    paint_rect.set_y(size_.height() - bitmap_rect.bottom());
+    CGContextDrawImage(cg_bitmap_, paint_rect.ToCGRect(), image);
+  }
 }
 
 // Scroll the contents of our CGLayer
@@ -93,21 +129,47 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
 
   if ((dx && abs(dx) < layer_size.width) ||
       (dy && abs(dy) < layer_size.height)) {
-    //
-    scoped_cftyperef<CGLayerRef> new_layer(CGLayerCreateWithContext(
-        CGLayerGetContext(cg_layer()), layer_size, NULL));
-    CGContextRef layer = CGLayerGetContext(new_layer);
-    CGContextDrawLayerAtPoint(layer, CGPointMake(0, 0), cg_layer());
-    CGContextSaveGState(layer);
-    CGContextClipToRect(layer, CGRectMake(clip_rect.x(),
-                                          size_.height() - clip_rect.bottom(),
-                                          clip_rect.width(),
-                                          clip_rect.height()));
-    CGContextDrawLayerAtPoint(layer, CGPointMake(dx, -dy), cg_layer());
-    CGContextRestoreGState(layer);
-    cg_layer_.swap(new_layer);
+    if (cg_layer()) {
+      CGContextRef context = CGLayerGetContext(cg_layer());
+      scoped_cftyperef<CGLayerRef> new_layer(
+          CGLayerCreateWithContext(context, layer_size, NULL));
+      CGContextRef layer = CGLayerGetContext(new_layer);
+      CGContextDrawLayerAtPoint(layer, CGPointMake(0, 0), cg_layer());
+      CGContextSaveGState(layer);
+      CGContextClipToRect(layer, CGRectMake(clip_rect.x(),
+                                            size_.height() - clip_rect.bottom(),
+                                            clip_rect.width(),
+                                            clip_rect.height()));
+      CGContextDrawLayerAtPoint(layer, CGPointMake(dx, -dy), cg_layer());
+      CGContextRestoreGState(layer);
+      cg_layer_.swap(new_layer);
+    } else {
+      // We don't have a layer, so scroll the contents of the CGBitmapContext.
+      scoped_cftyperef<CGColorSpaceRef>
+          color_space(CGColorSpaceCreateDeviceRGB());
+      scoped_cftyperef<CGContextRef> new_bitmap(
+          CGBitmapContextCreate(NULL, size_.width(), size_.height(), 8,
+              size_.width() * 8, color_space,
+              kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
+      scoped_cftyperef<CGImageRef> bitmap_image(
+          CGBitmapContextCreateImage(cg_bitmap_));
+      CGContextDrawImage(new_bitmap,
+                         CGRectMake(0, 0, size_.width(), size_.height()),
+                         bitmap_image);
+      CGContextSaveGState(new_bitmap);
+      CGContextClipToRect(new_bitmap,
+                          CGRectMake(clip_rect.x(),
+                                     size_.height() - clip_rect.bottom(),
+                                     clip_rect.width(),
+                                     clip_rect.height()));
+      CGContextDrawImage(new_bitmap,
+                         CGRectMake(dx, -dy, size_.width(), size_.height()),
+                         bitmap_image);
+      CGContextRestoreGState(new_bitmap);
+      cg_bitmap_.swap(new_bitmap);
+    }
   }
-  // Now paint the new bitmap data into the CGLayer
+  // Now paint the new bitmap data
   PaintRect(process, bitmap, bitmap_rect);
   return;
 }

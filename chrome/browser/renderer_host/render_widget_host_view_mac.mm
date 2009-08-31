@@ -549,7 +549,7 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
   renderWidgetHostView_->about_to_validate_and_paint_ = false;
   dirtyRect = renderWidgetHostView_->invalid_rect_;
 
-  if (backing_store && backing_store->cg_layer()) {
+  if (backing_store) {
     NSRect view_bounds = [self bounds];
     gfx::Rect damaged_rect([self NSRectToRect:dirtyRect]);
 
@@ -559,12 +559,24 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
 
     gfx::Rect paint_rect = bitmap_rect.Intersect(damaged_rect);
     if (!paint_rect.IsEmpty()) {
-      CGContextRef context = static_cast<CGContextRef>(
-          [[NSGraphicsContext currentContext] graphicsPort]);
+      // if we have a CGLayer, draw that into the window
+      if (backing_store->cg_layer()) {
+        CGContextRef context = static_cast<CGContextRef>(
+            [[NSGraphicsContext currentContext] graphicsPort]);
 
-      // TODO: add clipping to dirtyRect if it improves drawing performance.
-      CGContextDrawLayerAtPoint(context, CGPointMake(0.0, 0.0),
-                                backing_store->cg_layer());
+        // TODO: add clipping to dirtyRect if it improves drawing performance.
+        CGContextDrawLayerAtPoint(context, CGPointMake(0.0, 0.0),
+                                  backing_store->cg_layer());
+      } else {
+        // if we haven't created a layer yet, draw the cached bitmap into
+        // the window.  The CGLayer will be created the next time the renderer
+        // paints.
+        CGContextRef context = static_cast<CGContextRef>(
+            [[NSGraphicsContext currentContext] graphicsPort]);
+        scoped_cftyperef<CGImageRef> image(
+            CGBitmapContextCreateImage(backing_store->cg_bitmap()));
+        CGContextDrawImage(context, bitmap_rect.ToCGRect(), image);
+      }
     }
 
     // Fill the remaining portion of the damaged_rect with white
