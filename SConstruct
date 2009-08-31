@@ -809,7 +809,19 @@ if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
   nacl_env.Append(
       CCFLAGS = ['-mfpmath=sse',
                  '-msse',
-                 ],
+# NOTE: The flags below would make explicit it completely explciit
+#       which include directories the nacl tool chains is using.
+#       They have been verified to work.
+#                 '-nostdinc',
+#                 '-isystem',
+#                 '${NACL_SDK_INCLUDE}/../../lib/gcc/nacl/4.2.2/include',
+#                 '-isystem',
+#                 '${NACL_SDK_INCLUDE}',
+#                 '-isystem',
+#                 '${NACL_SDK_INCLUDE}/c++/4.2.2',
+#                 '-isystem',
+#                 '${NACL_SDK_INCLUDE}/c++/4.2.2/nacl',
+                 ]
       )
 
   nacl_env.Append(
@@ -856,11 +868,31 @@ if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
             'tests/voronoi/nacl.scons',
             ])
 
-
 if nacl_env['BUILD_ARCHITECTURE'] == 'arm':
+  # NOTE: we change the linker command line to make it possible to
+  #       sneak in startup and cleanup code
+  linkcom = (nacl_env['LINKCOM'].replace('$LINK ', '$LINK $LINKFLAGS_FIRST ') +
+              ' $LINKFLAGS_LAST')
+  nacl_env['LINKCOM'] = linkcom
+
+  nacl_env.Prepend(
+      LINKFLAGS_FIRST = ['${NACL_SDK_LIB}/crt1.o','${NACL_SDK_LIB}/crti.o',],
+      # NOTE: order is important
+      LIBS = ['srpc', 'c', 'nacl'],
+      LINKFLAGS_LAST = ['-lc', '-lgcc', '${NACL_SDK_LIB}/crtn.o',],
+      )
+
   nacl_env.Append(
       BUILD_SCONSCRIPTS = [
-          'tests/arm_service_runtime/nacl.scons',
+#      NOTE: The commented out case are earmarked to be tried next
+#      'tests/threads/nacl.scons',
+#      'tests/syscalls/nacl.scons',
+#      'tests/nullptr/nacl.scons',
+      'tests/hello_world/nacl.scons',
+      'tests/fib/nacl.scons',
+      'tests/noop/nacl.scons',
+#      'tests/null/nacl.scons',
+      'tests/arm_service_runtime/nacl.scons',
       ])
 
 environment_list.append(nacl_env)
@@ -1088,7 +1120,9 @@ MAYBE_RELEVANT_CONFIG = ['BUILD_OS',
 
 def DumpCompilerVersion(cc, env):
   if 'gcc' in cc:
-    env.Execute(env.Action('${CC} --v'))
+    env.Execute(env.Action('${CC} --v -c'))
+    env.Execute(env.Action('${CC} -print-search-dirs'))
+    env.Execute(env.Action('${CC} -print-libgcc-file-name'))
   elif cc.startswith('cl'):
     import subprocess
     p = subprocess.Popen(env.subst('${CC} /V'),

@@ -33,6 +33,10 @@ Import('env')
 # TODO: copy emulator settings from trusted env to the this untrusted env
 env.Append(EMULATOR=env['TRUSTED_ENV']['EMULATOR'])
 
+env.Replace(LINKFLAGS_FIRST = [],
+            LIBS = [],
+            LINKFLAGS_LAST = [],)
+
 # NOTE: we do not what anything to be linked with this, hence '-nostdlib'
 env.ComponentProgram('test_exit.nexe',
                      'test_exit.s',
