@@ -100,13 +100,19 @@ int CrossMain(int argc, char**argv) {
         << "    tri-linear filtering.\n"
         << "--keep-materials\n"
         << "    Stops the converter from changing materials to <constant> if\n"
-        << "    they are used by a mesh that has no normals.\n";
+        << "    they are used by a mesh that has no normals.\n"
+        << "--no-binary\n"
+        << "    Use JSON for buffers, skins, curves instead of binary\n"
+        << "--json-only\n"
+        << "    Don't make a gzipped tar file, just JSON.\n";
     return EXIT_FAILURE;
   }
 
   o3d::converter::Options options;
   options.condition = !command_line->HasSwitch(L"no-condition");
   options.pretty_print = command_line->HasSwitch(L"pretty-print");
+  options.binary = !command_line->HasSwitch(L"no-binary");
+  options.json_only = !command_line->HasSwitch(L"json-only");
   if (command_line->HasSwitch(L"base-path")) {
     options.base_path = o3d::WideToFilePath(
         command_line->GetSwitchValue(L"base-path"));

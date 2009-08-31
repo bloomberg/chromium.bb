@@ -83,6 +83,12 @@ struct Options {
   // Tells the converter not to change materials to constant if they are used by
   // a mesh that has no normals.
   bool keep_materials;
+
+  // Use binary formats for buffers, skin, curve.
+  bool binary;
+
+  // Don't make a gzipped tar file. Just make json.
+  bool json_only;
 };
 
 // Converts the given file for use in O3D.  This is done by

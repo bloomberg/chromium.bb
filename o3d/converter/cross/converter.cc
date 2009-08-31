@@ -226,11 +226,11 @@ bool Convert(const FilePath& in_filename,
   FileOutputStreamProcessor stream_processor(out_file);
   TarGzGenerator archive_generator(&stream_processor);
 
-  archive_generator.AddFile(ArchiveRequest::O3D_MARKER,
-                            ArchiveRequest::O3D_MARKER_CONTENT_LENGTH);
+  archive_generator.AddFile(ArchiveRequest::kO3DMarker,
+                            ArchiveRequest::kO3DMarkerContentLength);
   archive_generator.AddFileBytes(
-      reinterpret_cast<const uint8*>(ArchiveRequest::O3D_MARKER_CONTENT),
-      ArchiveRequest::O3D_MARKER_CONTENT_LENGTH);
+      reinterpret_cast<const uint8*>(ArchiveRequest::kO3DMarkerContent),
+      ArchiveRequest::kO3DMarkerContentLength);
 
   // Serialize the created O3D scene graph to JSON.
   StringWriter out_writer(StringWriter::LF);
