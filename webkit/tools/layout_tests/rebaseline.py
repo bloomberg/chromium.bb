@@ -256,10 +256,19 @@ class Rebaseliner(object):
     """
 
     platform_name = self._options.buildbot_platform_dir_basename
-    if self._platform == 'mac':
-      platform_name += '-mac5'
-    elif self._platform == 'linux':
-      platform_name += '-linux'
+    if self._options.webkit_canary:
+      if self._platform == 'mac':
+        platform_name += '-mac-webkit-org'
+      elif self._platform == 'linux':
+        platform_name += '-linux-webkit-org'
+      else:
+        platform_name += '-webkit-org'
+    else:
+      if self._platform == 'mac':
+        platform_name += '-mac5'
+      elif self._platform == 'linux':
+        platform_name += '-linux'
+
     logging.debug('Buildbot platform dir name: "%s"', platform_name)
 
     url_base = '%s/%s/' % (self._options.archive_url, platform_name)
@@ -740,6 +749,12 @@ def main():
                            default='webkit-rel',
                            help=('Base name of buildbot platform directory '
                                  'that stores the layout test results.'))
+
+  option_parser.add_option('-w', '--webkit_canary',
+                           action='store_true',
+                           default=False,
+                           help=('If True, pull baselines from webkit.org '
+                                 'canary bot.'))
 
   option_parser.add_option('-b', '--backup',
                            action='store_true',
