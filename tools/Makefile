@@ -276,6 +276,7 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 		CFLAGS="-m32 -march=i486 -msse2 -mfpmath=sse" \
 	    ../newlib-$(NEWLIB_VERSION)/configure \
 			  --enable-newlib-io-long-long \
+			  --enable-newlib-io-c99-formats \
 	      --prefix=$(SDKROOT) \
 	      --target=$(CROSSARCH)
 	PATH=$(BUILDPATH) \
