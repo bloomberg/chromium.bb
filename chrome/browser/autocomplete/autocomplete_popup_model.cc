@@ -150,7 +150,6 @@ GURL AutocompletePopupModel::URLsForCurrentSelection(
     PageTransition::Type* transition,
     bool* is_history_what_you_typed_match,
     GURL* alternate_nav_url) const {
-  CHECK(IsOpen());
   const AutocompleteResult* result;
   AutocompleteResult::const_iterator match;
   if (!controller_->done()) {
@@ -171,9 +170,8 @@ GURL AutocompletePopupModel::URLsForCurrentSelection(
     // controller_->latest_result() here too, since the controller keeps that
     // up-to-date.  However we generally try to avoid referring to that.
     result = &controller_->result();
-    // If there are no results, the popup should be closed (so we should have
-    // failed the CHECK above), and URLsForDefaultMatch() should have been
-    // called instead.
+    // If there are no results, the popup is closed, so URLsForDefaultMatch()
+    // should have been called instead.
     CHECK(!result->empty());
     CHECK(selected_line_ < result->size());
     match = result->begin() + selected_line_;
@@ -195,32 +193,28 @@ GURL AutocompletePopupModel::URLsForDefaultMatch(
     GURL* alternate_nav_url) {
   // We had better not already be doing anything, or this call will blow it
   // away.
-  CHECK(!IsOpen());
-  CHECK(controller_->done());
+  DCHECK(!IsOpen());
+  DCHECK(controller_->done());
 
   // Run the new query and get only the synchronously available matches.
   inside_synchronous_query_ = true;  // Tell Observe() not to notify the edit or
                                      // update our appearance.
   controller_->Start(text, desired_tld, true, false, true);
   inside_synchronous_query_ = false;
-  CHECK(controller_->done());
-
+  DCHECK(controller_->done());
   const AutocompleteResult& result = controller_->result();
-  GURL destination_url;
-  if (!result.empty()) {
-    // Get the URLs for the default match.
-    const AutocompleteResult::const_iterator match = result.default_match();
-    if (transition)
-      *transition = match->transition;
-    if (is_history_what_you_typed_match)
-      *is_history_what_you_typed_match = match->is_history_what_you_typed_match;
-    if (alternate_nav_url)
-      *alternate_nav_url = result.alternate_nav_url();
-    destination_url = match->destination_url;
-  }
+  if (result.empty())
+    return GURL();
 
-  controller_->Stop(true);  // Keeps our state consistent.
-  return destination_url;
+  // Get the URLs for the default match.
+  const AutocompleteResult::const_iterator match = result.default_match();
+  if (transition)
+    *transition = match->transition;
+  if (is_history_what_you_typed_match)
+    *is_history_what_you_typed_match = match->is_history_what_you_typed_match;
+  if (alternate_nav_url)
+    *alternate_nav_url = result.alternate_nav_url();
+  return match->destination_url;
 }
 
 bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
@@ -259,6 +253,17 @@ AutocompleteLog* AutocompletePopupModel::GetAutocompleteLog() {
 }
 
 void AutocompletePopupModel::Move(int count) {
+  // TODO(pkasting): Temporary hack.  If the query is running while the popup is
+  // open, we might be showing the results of the previous query still.  Force
+  // the popup to display the latest results so the popup and the controller
+  // aren't out of sync.  The better fix here is to roll the controller back to
+  // be in sync with what the popup is showing.
+  if (IsOpen() && !controller_->done()) {
+    Observe(NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
+            Source<AutocompleteController>(controller_.get()),
+            Details<const AutocompleteResult>(&controller_->result()));
+  }
+
   const AutocompleteResult& result = controller_->result();
   if (result.empty())
     return;
