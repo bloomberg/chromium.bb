@@ -118,11 +118,19 @@ else:
   %(name)s_action = Action([%(action)s], %(message)s)
 env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action, emitter=%(name)s_emitter)
 %(name)s_files = [f for f in input_files if str(f).endswith('.%(extension)s')]
+
 _outputs = []
-for %(name)s_file in %(name)s_files:
-  _generated = env.%(name)s(%(name)s_file)
-  env.Precious(_generated)
-  _outputs.append(_generated)
+_processed_input_files = []
+for infile in input_files:
+  if str(infile).endswith('.%(extension)s'):
+    _generated = env.%(name)s(infile)
+    env.Precious(_generated)
+    _outputs.append(_generated)
+    %(process_outputs_as_sources_line)s
+  else:
+    _processed_input_files.append(infile)
+prerequisites.extend(_outputs)
+input_files = _processed_input_files
 """
 
 _spawn_hack = """
@@ -376,6 +384,10 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     message = rule.get('message')
     if message:
         message = repr(message)
+    if rule.get('process_outputs_as_sources'):
+      poas_line = '_processed_input_files.extend(_generated)'
+    else:
+      poas_line = '_processed_input_files.append(infile)'
     fp.write(_rule_template % {
                  'inputs' : pprint.pformat(rule.get('inputs', [])),
                  'outputs' : pprint.pformat(rule.get('outputs', [])),
@@ -383,10 +395,8 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
                  'extension' : rule['extension'],
                  'name' : name,
                  'message' : message,
+                 'process_outputs_as_sources_line' : poas_line,
              })
-    if rule.get('process_outputs_as_sources'):
-      fp.write('  input_files.Replace(%s_file, _generated)\n' % name)
-    fp.write('prerequisites.extend(_outputs)\n')
 
   scons_target.write_target(fp)
 
