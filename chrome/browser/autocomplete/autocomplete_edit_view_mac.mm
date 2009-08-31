@@ -570,10 +570,8 @@ void AutocompleteEditViewMac::OnWillBeginEditing() {
   // We should only arrive here when the field is focussed.
   DCHECK([field_ currentEditor]);
 
-  // TODO(shess): Detect control-key situation.  Since this code is
-  // called on first edit, not on receipt of focus, it may be that we
-  // cannot correctly handle this without refactoring.
-  const bool controlDown = false;
+  NSEvent* theEvent = [NSApp currentEvent];
+  const bool controlDown = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
   model_->OnSetFocus(controlDown);
 
   // Capture the current state.
@@ -861,7 +859,7 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
 // the popup to reflect this.  See autocomplete_edit.cc
 // OnControlKeyChanged() and OnAfterPossibleChange().
 - (void)control:(NSControl*)control flagsChanged:(NSEvent*)theEvent {
-  BOOL controlFlag = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
+  bool controlFlag = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
   edit_view_->OnControlKeyChanged(controlFlag);
 }
 
