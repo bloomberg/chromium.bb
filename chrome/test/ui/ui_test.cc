@@ -304,70 +304,6 @@ void UITest::StopHttpServer() {
 }
 
 void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
-  FilePath command = browser_directory_;
-  command = command.Append(FilePath::FromWStringHack(
-      chrome::kBrowserProcessExecutablePath));
-  CommandLine command_line(command.ToWStringHack());
-
-  // Add any explicit command line flags passed to the process.
-  std::wstring extra_chrome_flags =
-      CommandLine::ForCurrentProcess()->GetSwitchValue(kExtraChromeFlagsSwitch);
-  if (!extra_chrome_flags.empty()) {
-    command_line.AppendLooseValue(extra_chrome_flags);
-  }
-
-  // No first-run dialogs, please.
-  command_line.AppendSwitch(switches::kNoFirstRun);
-
-  // No default browser check, it would create an info-bar (if we are not the
-  // default browser) that could conflicts with some tests expectations.
-  command_line.AppendSwitch(switches::kNoDefaultBrowserCheck);
-
-  // We need cookies on file:// for things like the page cycler.
-  if (enable_file_cookies_)
-    command_line.AppendSwitch(switches::kEnableFileCookies);
-
-  if (dom_automation_enabled_)
-    command_line.AppendSwitch(switches::kDomAutomationController);
-
-  if (include_testing_id_) {
-    if (use_existing_browser_) {
-      // TODO(erikkay): The new switch depends on a browser instance already
-      // running, it won't open a new browser window if it's not.  We could fix
-      // this by passing an url (e.g. about:blank) on the command line, but
-      // I decided to keep using the old switch in the existing use case to
-      // minimize changes in behavior.
-      command_line.AppendSwitchWithValue(switches::kAutomationClientChannelID,
-                                         ASCIIToWide(server_->channel_id()));
-    } else {
-      command_line.AppendSwitchWithValue(switches::kTestingChannelID,
-                                         ASCIIToWide(server_->channel_id()));
-    }
-  }
-
-  if (!show_error_dialogs_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(kEnableErrorDialogs)) {
-    command_line.AppendSwitch(switches::kNoErrorDialogs);
-  }
-  if (in_process_renderer_)
-    command_line.AppendSwitch(switches::kSingleProcess);
-  if (no_sandbox_)
-    command_line.AppendSwitch(switches::kNoSandbox);
-  if (full_memory_dump_)
-    command_line.AppendSwitch(switches::kFullMemoryCrashReport);
-  if (safe_plugins_)
-    command_line.AppendSwitch(switches::kSafePlugins);
-  if (enable_dcheck_)
-    command_line.AppendSwitch(switches::kEnableDCHECK);
-  if (silent_dump_on_dcheck_)
-    command_line.AppendSwitch(switches::kSilentDumpOnDCHECK);
-  if (disable_breakpad_)
-    command_line.AppendSwitch(switches::kDisableBreakpad);
-  if (!homepage_.empty())
-    command_line.AppendSwitchWithValue(switches::kHomePage,
-                                       homepage_);
-  // Don't try to fetch web resources during UI testing.
-  command_line.AppendSwitch(switches::kDisableWebResources);
 #if defined(OS_POSIX)
   const char* alternative_userdir = getenv("CHROME_UI_TESTS_USER_DATA_DIR");
 #else
@@ -379,35 +315,6 @@ void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
   } else {
     PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_);
   }
-
-  if (!user_data_dir_.empty())
-    command_line.AppendSwitchWithValue(switches::kUserDataDir,
-                                       user_data_dir_.ToWStringHack());
-  if (!js_flags_.empty())
-    command_line.AppendSwitchWithValue(switches::kJavaScriptFlags,
-                                       js_flags_);
-  if (!log_level_.empty())
-    command_line.AppendSwitchWithValue(switches::kLoggingLevel, log_level_);
-
-  command_line.AppendSwitch(switches::kMetricsRecordingOnly);
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnableErrorDialogs))
-    command_line.AppendSwitch(switches::kEnableLogging);
-
-  if (dump_histograms_on_exit_)
-    command_line.AppendSwitch(switches::kDumpHistogramsOnExit);
-
-#ifdef WAIT_FOR_DEBUGGER_ON_OPEN
-  command_line.AppendSwitch(switches::kDebugOnStart);
-#endif
-
-  if (!ui_test_name_.empty())
-    command_line.AppendSwitchWithValue(switches::kTestName,
-                                       ui_test_name_);
-
-  DebugFlags::ProcessDebugFlags(
-      &command_line, ChildProcessInfo::UNKNOWN_PROCESS, false);
-  command_line.AppendArguments(arguments, false);
 
   // Clear user data directory to make sure test environment is consistent
   // We balk on really short (absolute) user_data_dir directory names, because
@@ -431,50 +338,12 @@ void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
     }
   }
 
-  browser_launch_time_ = TimeTicks::Now();
+  ASSERT_TRUE(LaunchBrowserHelper(arguments, use_existing_browser_, false,
+                                  &process_));
+}
 
-#if defined(OS_WIN)
-  bool started = base::LaunchApp(command_line,
-                                 false,  // Don't wait for process object
-                                         // (doesn't work for us)
-                                 !show_window_,
-                                 &process_);
-#elif defined(OS_POSIX)
-  // Sometimes one needs to run the browser under a special environment
-  // (e.g. valgrind) without also running the test harness (e.g. python)
-  // under the special environment.  Provide a way to wrap the browser
-  // commandline with a special prefix to invoke the special environment.
-  const char* browser_wrapper = getenv("BROWSER_WRAPPER");
-  if (browser_wrapper) {
-    command_line.PrependWrapper(ASCIIToWide(browser_wrapper));
-    LOG(INFO) << "BROWSER_WRAPPER was set, prefixing command_line with "
-              << browser_wrapper;
-  }
-
-  bool started = base::LaunchApp(command_line.argv(),
-                                 server_->fds_to_map(),
-                                 false,  // Don't wait.
-                                 &process_);
-#endif
-  ASSERT_TRUE(started);
-
-#if defined(OS_WIN)
-  if (use_existing_browser_) {
-    DWORD pid = 0;
-    HWND hwnd = FindWindowEx(HWND_MESSAGE, NULL, chrome::kMessageWindowClass,
-                             user_data_dir_.value().c_str());
-    GetWindowThreadProcessId(hwnd, &pid);
-    // This mode doesn't work if we wound up launching a new browser ourselves.
-    ASSERT_NE(pid, base::GetProcId(process_));
-    CloseHandle(process_);
-    process_ = OpenProcess(SYNCHRONIZE, false, pid);
-  }
-#else
-  // TODO(port): above code is very Windows-specific; we need to
-  // figure out and abstract out how we'll handle finding any existing
-  // running process, etc. on other platforms.
-  NOTIMPLEMENTED();
-#endif
+bool UITest::LaunchAnotherBrowserBlockUntilClosed(const CommandLine& cmdline) {
+  return LaunchBrowserHelper(cmdline, false, true, NULL);
 }
 
 void UITest::QuitBrowser() {
@@ -1085,3 +954,149 @@ void UITest::WaitForGeneratedFileAndCheck(const FilePath& generated_file,
     EXPECT_TRUE(file_util::DieFileDie(generated_file, false));
 }
 
+bool UITest::LaunchBrowserHelper(const CommandLine& arguments,
+                                 bool use_existing_browser,
+                                 bool wait,
+                                 base::ProcessHandle* process) {
+  FilePath command = browser_directory_;
+  command = command.Append(FilePath::FromWStringHack(
+      chrome::kBrowserProcessExecutablePath));
+  CommandLine command_line(command.ToWStringHack());
+
+  // Add any explicit command line flags passed to the process.
+  std::wstring extra_chrome_flags =
+      CommandLine::ForCurrentProcess()->GetSwitchValue(kExtraChromeFlagsSwitch);
+  if (!extra_chrome_flags.empty()) {
+    command_line.AppendLooseValue(extra_chrome_flags);
+  }
+
+  // No first-run dialogs, please.
+  command_line.AppendSwitch(switches::kNoFirstRun);
+
+  // No default browser check, it would create an info-bar (if we are not the
+  // default browser) that could conflicts with some tests expectations.
+  command_line.AppendSwitch(switches::kNoDefaultBrowserCheck);
+
+  // We need cookies on file:// for things like the page cycler.
+  if (enable_file_cookies_)
+    command_line.AppendSwitch(switches::kEnableFileCookies);
+
+  if (dom_automation_enabled_)
+    command_line.AppendSwitch(switches::kDomAutomationController);
+
+  if (include_testing_id_) {
+    if (use_existing_browser) {
+      // TODO(erikkay): The new switch depends on a browser instance already
+      // running, it won't open a new browser window if it's not.  We could fix
+      // this by passing an url (e.g. about:blank) on the command line, but
+      // I decided to keep using the old switch in the existing use case to
+      // minimize changes in behavior.
+      command_line.AppendSwitchWithValue(switches::kAutomationClientChannelID,
+                                         ASCIIToWide(server_->channel_id()));
+    } else {
+      command_line.AppendSwitchWithValue(switches::kTestingChannelID,
+                                         ASCIIToWide(server_->channel_id()));
+    }
+  }
+
+  if (!show_error_dialogs_ &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(kEnableErrorDialogs)) {
+    command_line.AppendSwitch(switches::kNoErrorDialogs);
+  }
+  if (in_process_renderer_)
+    command_line.AppendSwitch(switches::kSingleProcess);
+  if (no_sandbox_)
+    command_line.AppendSwitch(switches::kNoSandbox);
+  if (full_memory_dump_)
+    command_line.AppendSwitch(switches::kFullMemoryCrashReport);
+  if (safe_plugins_)
+    command_line.AppendSwitch(switches::kSafePlugins);
+  if (enable_dcheck_)
+    command_line.AppendSwitch(switches::kEnableDCHECK);
+  if (silent_dump_on_dcheck_)
+    command_line.AppendSwitch(switches::kSilentDumpOnDCHECK);
+  if (disable_breakpad_)
+    command_line.AppendSwitch(switches::kDisableBreakpad);
+  if (!homepage_.empty())
+    command_line.AppendSwitchWithValue(switches::kHomePage,
+                                       homepage_);
+  // Don't try to fetch web resources during UI testing.
+  command_line.AppendSwitch(switches::kDisableWebResources);
+
+  if (!user_data_dir_.empty())
+    command_line.AppendSwitchWithValue(switches::kUserDataDir,
+                                       user_data_dir_.ToWStringHack());
+  if (!js_flags_.empty())
+    command_line.AppendSwitchWithValue(switches::kJavaScriptFlags,
+                                       js_flags_);
+  if (!log_level_.empty())
+    command_line.AppendSwitchWithValue(switches::kLoggingLevel, log_level_);
+
+  command_line.AppendSwitch(switches::kMetricsRecordingOnly);
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnableErrorDialogs))
+    command_line.AppendSwitch(switches::kEnableLogging);
+
+  if (dump_histograms_on_exit_)
+    command_line.AppendSwitch(switches::kDumpHistogramsOnExit);
+
+#ifdef WAIT_FOR_DEBUGGER_ON_OPEN
+  command_line.AppendSwitch(switches::kDebugOnStart);
+#endif
+
+  if (!ui_test_name_.empty())
+    command_line.AppendSwitchWithValue(switches::kTestName,
+                                       ui_test_name_);
+
+  DebugFlags::ProcessDebugFlags(
+      &command_line, ChildProcessInfo::UNKNOWN_PROCESS, false);
+  command_line.AppendArguments(arguments, false);
+
+  // TODO(phajdan.jr): Only run it for "main" browser launch.
+  browser_launch_time_ = TimeTicks::Now();
+
+#if defined(OS_WIN)
+  bool started = base::LaunchApp(command_line,
+                                 wait,
+                                 !show_window_,
+                                 process);
+#elif defined(OS_POSIX)
+  // Sometimes one needs to run the browser under a special environment
+  // (e.g. valgrind) without also running the test harness (e.g. python)
+  // under the special environment.  Provide a way to wrap the browser
+  // commandline with a special prefix to invoke the special environment.
+  const char* browser_wrapper = getenv("BROWSER_WRAPPER");
+  if (browser_wrapper) {
+    command_line.PrependWrapper(ASCIIToWide(browser_wrapper));
+    LOG(INFO) << "BROWSER_WRAPPER was set, prefixing command_line with "
+              << browser_wrapper;
+  }
+
+  bool started = base::LaunchApp(command_line.argv(),
+                                 server_->fds_to_map(),
+                                 wait,
+                                 process);
+#endif
+  if (!started)
+    return false;
+
+  if (use_existing_browser) {
+#if defined(OS_WIN)
+    DWORD pid = 0;
+    HWND hwnd = FindWindowEx(HWND_MESSAGE, NULL, chrome::kMessageWindowClass,
+                             user_data_dir_.value().c_str());
+    GetWindowThreadProcessId(hwnd, &pid);
+    // This mode doesn't work if we wound up launching a new browser ourselves.
+    EXPECT_NE(pid, base::GetProcId(*process));
+    CloseHandle(*process);
+    *process = OpenProcess(SYNCHRONIZE, false, pid);
+#else
+  // TODO(port): above code is very Windows-specific; we need to
+  // figure out and abstract out how we'll handle finding any existing
+  // running process, etc. on other platforms.
+  NOTIMPLEMENTED();
+#endif
+  }
+
+  return true;
+}

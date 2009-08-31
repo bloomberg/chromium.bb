@@ -44,7 +44,7 @@ TEST_F(ChromeMainTest, SecondLaunch) {
   include_testing_id_ = false;
   use_existing_browser_ = true;
 
-  LaunchBrowser(CommandLine(L""), false);
+  ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(CommandLine(L"")));
 
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2, action_timeout_ms()));
 }
@@ -58,7 +58,7 @@ TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
   CommandLine command_line(L"");
   command_line.AppendLooseValue(test_file.ToWStringHack());
 
-  LaunchBrowser(command_line, false);
+  ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(command_line));
 
   ASSERT_TRUE(automation()->WaitForURLDisplayed(
       net::FilePathToFileURL(test_file), action_timeout_ms()));

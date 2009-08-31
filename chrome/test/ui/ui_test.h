@@ -74,7 +74,13 @@ class UITest : public testing::Test {
   void CloseBrowserAndServer();
 
   // Launches the browser with the given command line.
+  // TODO(phajdan.jr): Make LaunchBrowser private. Tests should use
+  // LaunchAnotherBrowserBlockUntilClosed.
   void LaunchBrowser(const CommandLine& cmdline, bool clear_profile);
+
+  // Launches an another browser process and waits for it to finish. Returns
+  // true on success.
+  bool LaunchAnotherBrowserBlockUntilClosed(const CommandLine& cmdline);
 
   // Exits out browser instance.
   void QuitBrowser();
@@ -270,7 +276,7 @@ class UITest : public testing::Test {
   // own the handle returned.
   base::ProcessHandle process() { return process_; }
 
-  // Wait for |generated_file| to be ready and then compare it with 
+  // Wait for |generated_file| to be ready and then compare it with
   // |original_file| to see if they're identical or not if |compare_file| is
   // true. If |need_equal| is true, they need to be identical. Otherwise,
   // they should be different. This function will delete the generated file if
@@ -515,6 +521,11 @@ class UITest : public testing::Test {
                                         // complex theme?
 
  private:
+  bool LaunchBrowserHelper(const CommandLine& arguments,
+                           bool use_existing_browser,
+                           bool wait,
+                           base::ProcessHandle* process);
+
   base::Time test_start_time_;          // Time the test was started
                                         // (so we can check for new crash dumps)
   static bool no_sandbox_;
