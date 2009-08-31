@@ -70,15 +70,15 @@ class ArchiveRequest : public ObjectBase, public ArchiveCallbackClient {
   // can not be used to open arbitrary .tgz files but only those files someone
   // has specifically prepared for O3D. This file will not be passed to
   // the onfileavailable callback.
-  static const char* O3D_MARKER;
+  static const char* const kO3DMarker;
 
-  // The contents of the O3D_MARKER file. Arguably the content should not matter
+  // The contents of the O3D marker file. Arguably the content should not matter
   // but for the sake of completeness we define the content so there is no
   // ambiguity.
-  static const char* O3D_MARKER_CONTENT;
+  static const char* const kO3DMarkerContent;
 
   // The size of the O3D_MARKER_CONTENT.
-  static const size_t O3D_MARKER_CONTENT_LENGTH;
+  static const size_t kO3DMarkerContentLength;
 
  public:
   typedef SmartPointer<ArchiveRequest> Ref;

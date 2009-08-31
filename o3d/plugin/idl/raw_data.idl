@@ -38,8 +38,8 @@ namespace o3d {
   \code
   var request =  g_pack.createArchiveRequest();
 
-  request.onfileavailable = function() {
-    var texture = g_pack.createTextureFromRawData(request.data, true);
+  request.onfileavailable = function(rawData) {
+    var texture = g_pack.createTextureFromRawData(rawData, true);
     ...
   };
 

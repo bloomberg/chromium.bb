@@ -53,19 +53,19 @@ callback void ArchiveFileAvailableCallback(RawData rawData);
   request.onreadystatechange = myReadyStateChangeCallback;
   request.send();
 
-  function myFileAvailableCallback() {
-    dump("uri: " + request.data.uri + "\n");
-    dump("content: " + request.data.stringValue + "\n");
+  function myFileAvailableCallback(rawData) {
+    dump("uri: " + rawData.uri + "\n");
+    dump("content: " + rawData.stringValue + "\n");
 
-    // You can pass a RawData to various creation functions. Note: request.data
-    // is only valid during an onfileavailable callback.
+    // You can pass a RawData to various creation functions. Note: rawData
+    // is only valid until you remove the request.
     // Examples:
-    if (request.data.uri == 'mytexture.jpg')
-      pack.createTexture2d(request.data, makeMips);
-    if (request.data.uri == 'myvertices.bin')
-      vertexBuffer.set(request.data);
-    if (request.data.uri == 'myAudio.mp3')
-      audioSystem.createSound(request.data);
+    if (rawData.uri == 'mytexture.jpg')
+      pack.createTexture2d(rawData, makeMips);
+    if (rawData.uri == 'myvertices.bin')
+      vertexBuffer.set(rawData);
+    if (rawData.uri == 'myAudio.mp3')
+      audioSystem.createSound(rawData);
   }
 
   function myReadyStateChangeCallback() {
@@ -109,6 +109,7 @@ callback void ArchiveFileAvailableCallback(RawData rawData);
     Note: This value is only valid inside the onfileavailable callback.
     Note: This property is deprecated. It is now an argument of the
         onfileavailable callback.
+    @deprecated
   %]
   [getter] RawData? data;
 

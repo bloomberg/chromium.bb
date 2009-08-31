@@ -95,7 +95,11 @@ thisClass = data;
         <td class="type">
         <if test="method.type.length">{+linkifyTypeSpec(makeName('[Method Summary]', thisClass.alias, method.name), method.type)+}&nbsp;</if>
         </td>
-        <td><a class="el" href="#{+method.name+}">{+method.name+}</a>{+makeSignature(method.params)+}</td>
+        <td><a class="el" href="#{+method.name+}">{+method.name+}</a>{+makeSignature(method.params)+}
+          <if test="isDeprecated(method)">
+            <span class="deprecated">[[]**DEPRECATED**]</span>
+          </if>
+        </td>
         <td>{+linkifySingleType(makeName('[Method Summary inherit]'), getParentName(method))+}</td>
         </tr>
     </if>
@@ -115,7 +119,11 @@ thisClass = data;
     <if test="property.isStatic||!property.memberOf">&lt;Global&gt;&nbsp;</if>
     {+linkifyTypeSpec(makeName('[Property Summary]', thisClass.alias, property.name), getPropertyType(property))+}
     </td>
-    <td><a class="el" href="#{+property.name+}">{+property.name+}</a></td>
+    <td><a class="el" href="#{+property.name+}">{+property.name+}</a>
+          <if test="isDeprecated(property)">
+            <span class="deprecated">[[]**DEPRECATED**]</span>
+          </if>
+    </td>
     <td>{+linkifySingleType(makeName('[Prop Summary inherit]'), getParentName(property))+}</td>
     </tr>
   </for>
@@ -299,7 +307,8 @@ thisClass = data;
       <dd>
       <table border="0" cellspacing="2" cellpadding="0">
         <for each="param" in="member.params">
-          <tr><td valign="top"></td><td valign="top"><em>{+param.name+}</em></td><td>{+sanitizeForEZT(param.desc)+}</td></tr>
+          <tr><td valign="top"></td><td valign="top"><em>{+param.name+}</em></td><td>
+          {+sanitizeForEZT(param.desc)+}</td></tr>
         </for>
       </table>
       </dd>
@@ -342,6 +351,9 @@ thisClass = data;
       <table class="memname">
         <tr>
           <td class="memname">{+linkifyTypeSpec(makeName('[Property Detail]', thisClass.alias, property.name), getPropertyType(property))+} {+getDocName(data, property)+}
+          <if test="isDeprecated(property)">
+            <span class="deprecated">[[]**DEPRECATED**]</span>
+          </if>
         {+ (property.memberOf == thisClass.alias) ? "" : ("[[]inherited from <a class=\"el\" href=\"" + getLinkToClassByAlias(property.memberOf) + "\">" + property.memberOf + "</a>]") +}
         </td>
         </tr>

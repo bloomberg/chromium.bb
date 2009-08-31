@@ -50,9 +50,9 @@ O3D_DEFN_CLASS(ArchiveRequest, ObjectBase);
 // NOTE: The file starts with "aaaaaaaa" in the hope that most tar.gz creation
 // utilties can easily sort with this being the file first in the .tgz
 // Otherwise you'll have to manually force it to be the first file.
-const char* ArchiveRequest::O3D_MARKER = "aaaaaaaa.o3d";
-const char* ArchiveRequest::O3D_MARKER_CONTENT = "o3d";
-const size_t ArchiveRequest::O3D_MARKER_CONTENT_LENGTH = 3;
+const char* const ArchiveRequest::kO3DMarker = "aaaaaaaa.o3d";
+const char* const ArchiveRequest::kO3DMarkerContent = "o3d";
+const size_t ArchiveRequest::kO3DMarkerContentLength = 3;
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ArchiveRequest::ArchiveRequest(ServiceLocator* service_locator,
@@ -196,34 +196,37 @@ bool ArchiveRequest::ReceiveFileData(MemoryReadStream *input_stream,
 
     if (!is_metadata && onfileavailable()) {
       // keep track of the "current" data object which the callback will use
-      raw_data_ = RawData::Create(service_locator(),
-                                  current_filename_,
-                                  temp_buffer_,
-                                  file_memory_stream_.GetTotalStreamLength() );
+      RawData::Ref raw_data = RawData::Create(
+          service_locator(),
+          current_filename_,
+          temp_buffer_,
+          file_memory_stream_.GetTotalStreamLength() );
 
       // keeps them all around until the ArchiveRequest goes away
-      raw_data_list_.push_back(raw_data_);
+      raw_data_list_.push_back(raw_data);
 
-      // If it's the first file is must be the O3D_MARKER or else it's an error.
+      // If it's the first file is must be the kO3DMarker or else it's an error.
       if (raw_data_list_.size() == 1) {
-        if (raw_data_->uri().compare(O3D_MARKER) != 0 ||
-            raw_data_->StringValue().compare(O3D_MARKER_CONTENT) != 0) {
+        if (raw_data->uri().compare(kO3DMarker) != 0 ||
+            raw_data->StringValue().compare(kO3DMarkerContent) != 0) {
           set_error(String("Archive '")  + uri_ +
                     String("' is not intended for O3D. Missing '") +
-                    O3D_MARKER + String("' as first file in archive."));
+                    kO3DMarker + String("' as first file in archive."));
           return false;
         }
       } else {
-        onfileavailable()->Run(raw_data_);
+        raw_data_ = raw_data;
+        onfileavailable()->Run(raw_data);
+        raw_data_.Reset();
       }
 
       // If data hasn't been discarded (inside callback) then writes out to
       // temp file so we can get the data back at a later time
-      raw_data_.Get()->Flush();
+      raw_data.Get()->Flush();
 
       // Remove the reference to the raw_data so we don't have undefined
       // behavior after the callback.
-      raw_data_.Reset();
+      raw_data.Reset();
     }
   }
   return true;
