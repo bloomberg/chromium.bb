@@ -781,14 +781,14 @@ void AutocompleteController::DelayTimerFired() {
 }
 
 void AutocompleteController::CommitResult() {
-  if (!updated_latest_result_) {
-    // Don't send update notifications when nothing's actually changed.
-    if (done_) {
-      update_delay_timer_.Stop();
-      delay_interval_has_passed_ = false;
-    }
-    return;
+  if (done_) {
+    update_delay_timer_.Stop();
+    delay_interval_has_passed_ = false;
   }
+
+  // Don't send update notifications when nothing's actually changed.
+  if (!updated_latest_result_)
+    return;
 
   updated_latest_result_ = false;
   delay_interval_has_passed_ = false;

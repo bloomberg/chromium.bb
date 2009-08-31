@@ -763,7 +763,7 @@ class AutocompleteController : public ACProviderListener {
   // This next is temporary and should go away when
   // AutocompletePopup::URLsForCurrentSelection() moves to the controller.
   const AutocompleteResult& latest_result() const { return latest_result_; }
-  const bool done() const { return done_; }
+  const bool done() const { return done_ && !update_delay_timer_.IsRunning(); }
 
   // From AutocompleteProvider::Listener
   virtual void OnProviderUpdate(bool updated_matches);
