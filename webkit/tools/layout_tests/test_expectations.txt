@@ -1182,7 +1182,6 @@ BUG8402 MAC : LayoutTests/fast/forms/drag-out-of-textarea.html = FAIL PASS
 BUG8407 : LayoutTests/fast/loader/main-document-url-for-non-http-loads.html = FAIL
 
 // These tests are flaky as of 2009/06/09. Need to investigate.
-BUG13692 WIN : LayoutTests/dom/html/level2/html/HTMLParamElement03.html = CRASH PASS
 BUG13692 WIN : LayoutTests/svg/custom/polyline-hittest.svg = CRASH PASS
 BUG13692 WIN : LayoutTests/tables/mozilla/marvin/tables_bgcolor_green.html = CRASH PASS
 
@@ -1515,18 +1514,11 @@ BUG10378 MAC : LayoutTests/fast/images/object-image.html = FAIL CRASH
 // so the text doesn't match.
 BUG10379 MAC : LayoutTests/svg/hixie/perf/007.xml = FAIL PASS
 
-// To be figured out, probably timing due to the dual status
-BUG10380 MAC : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
-
 BUG10381 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-03-t.svg = FAIL PASS
-
-// This next one seems to be timing related (passes some times)
-BUG10381 DEBUG MAC : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 
 // These may be similar timing issue as above.
 BUG10382 MAC : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 BUG10382 MAC : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
-BUG10382 MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 
 // Most of the http tests seem to be flaky on the mac.
 // Don't mark these as FAIL since we want to know if tests start failing.
@@ -1541,7 +1533,6 @@ BUG10672 MAC : chrome/http = PASS CRASH TIMEOUT
 // green so new mac regressions are caught much quicker.
 // (there are a few others marked w/ multiple status like this in other parts of
 // the file, but they were left there as the comments in those areas are valid.)
-BUG10384 MAC : LayoutTests/animations/animation-end-event-destroy-renderer.html = TIMEOUT PASS
 BUG10384 MAC : LayoutTests/fast/images/animated-background-image-crash.html = TIMEOUT PASS
 BUG10674 MAC : chrome/http/tests/misc/set-window-opener-to-null.html = PASS TIMEOUT FAIL
 BUG10384 MAC : LayoutTests/fast/dom/Window/new-window-opener.html = CRASH TIMEOUT FAIL
@@ -1645,7 +1636,7 @@ BUG10417 LINUX : LayoutTests/svg/text/text-fonts-02-t.svg = FAIL
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10418 : LayoutTests/transitions/zero-duration-with-non-zero-delay-end.html = FAIL PASS
 BUG10418 SLOW MAC : LayoutTests/fast/events/click-count.html = FAIL PASS
-BUG10418 : LayoutTests/animations/change-keyframes.html = FAIL PASS
+BUG10418 WIN LINUX : LayoutTests/animations/change-keyframes.html = FAIL PASS
 
 // TODO(dsh): These started to fail after r9202.
 BUG10419 LINUX : LayoutTests/svg/W3C-SVG-1.1/text-path-01-b.svg = FAIL
@@ -1715,8 +1706,6 @@ BUG10435 LINUX : LayoutTests/svg/carto.net/scrollbar.svg = TIMEOUT PASS
 BUG10435 MAC : LayoutTests/editing/pasteboard/copy-standalone-image.html = FAIL
 // See above comment about this test on linux/win.
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
-BUG10435 MAC : LayoutTests/animations/animation-controller-drt-api.html = TIMEOUT PASS
-BUG10435 DEBUG MAC WIN : LayoutTests/editing/selection/move-by-line-001.html = FAIL PASS
 
 // New tests added in the 41420:41447 merge that fail (just needs a new baseline):
 BUG10437 LINUX : LayoutTests/fast/css-generated-content/hit-test-generated-content.html = FAIL
@@ -1789,7 +1778,6 @@ BUG10458 MAC LINUX : LayoutTests/fast/dom/java-applet-calls.html = FAIL
 BUG10458 LINUX : LayoutTests/fast/forms/textarea-width.html = FAIL
 BUG10458 LINUX : LayoutTests/fast/parser/comment-in-textarea.html = FAIL
 
-BUG10461 WIN LINUX : LayoutTests/editing/selection/move-by-line-002.html = FAIL PASS
 BUG10461 MAC : LayoutTests/fast/css/rgb-float.html = FAIL PASS
 BUG10461 MAC : LayoutTests/fast/forms/003.html = FAIL PASS
 BUG10461 MAC : LayoutTests/fast/forms/menulist-no-renderer-onmousedown.html = FAIL PASS
@@ -1885,22 +1873,14 @@ BUG10479 RELEASE MAC : LayoutTests/fast/dom/Window/window-object-cross-frame-cal
 BUG10479 MAC : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG10479 MAC : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
-// Broken by r13217.
-BUG10480 LINUX : LayoutTests/editing/selection/move-by-line-001.html = FAIL PASS
-
-BUG9798 : LayoutTests/editing/execCommand/15381.html = FAIL PASS
 BUG9798 : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
 BUG9798 : LayoutTests/http/tests/misc/css-reject-any-type-in-strict-mode.html = TIMEOUT PASS
 BUG9798 : LayoutTests/http/tests/misc/image-blocked-src-change.html = FAIL PASS
 BUG9798 : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
 BUG9798 : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
-BUG9798 DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
-BUG9798 DEBUG : LayoutTests/editing/selection/4776665.html = FAIL PASS
+BUG9798 WIN DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
 BUG9798 : chrome/fast/dom/extensions/interval.html = CRASH FAIL PASS
-BUG9798 LINUX : LayoutTests/animations/animation-iteration-event-destroy-renderer.html = TIMEOUT PASS
-BUG9798 LINUX : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/fast/backgrounds/001.html = FAIL PASS CRASH
 BUG9798 LINUX : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/fast/dom/delete-contents.html = FAIL PASS
@@ -1936,10 +1916,8 @@ BUG9798 LINUX : LayoutTests/transitions/transition-timing-function.html = FAIL P
 BUG9798 LINUX : chrome/http/tests/misc/set-window-opener-to-null.html = FAIL PASS
 BUG9798 LINUX : pending/fast/repaint/bugzilla-6473.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/repeated-firing-background-color.html = FAIL PASS TIMEOUT
-BUG9798 LINUX MAC : LayoutTests/editing/pasteboard/drag-drop-dead-frame.html = FAIL PASS
 BUG9798 LINUX RELEASE : LayoutTests/svg/carto.net/colourpicker.svg = FAIL PASS
 BUG9798 LINUX WIN : LayoutTests/http/tests/navigation/metaredirect-subframeload.html = TIMEOUT PASS
-BUG9798 MAC : LayoutTests/dom/html/level2/html/HTMLSelectElement15.html = FAIL PASS
 BUG9798 MAC : LayoutTests/fast/dom/onerror-img.html = FAIL PASS
 BUG9798 MAC : LayoutTests/fast/images/load-img-with-empty-src.html = FAIL PASS
 BUG9798 MAC : LayoutTests/http/tests/security/cross-frame-access-name-getter.html = FAIL PASS
@@ -1995,7 +1973,6 @@ BUG9798 WIN : LayoutTests/svg/hixie/error/009.xml = CRASH PASS
 BUG9798 WIN : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/xsl/xslt-fragment-in-empty-doc.html = CRASH PASS
 BUG9798 WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg = CRASH PASS
-BUG9798 WIN RELEASE : LayoutTests/editing/selection/move-by-line-001.html = FAIL PASS
 BUG9798 WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = TIMEOUT PASS
 
 BUG9797 LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/filters-gauss-01-b.svg = CRASH PASS
@@ -2004,7 +1981,7 @@ BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/tabgroup.svg = CRASH PASS
 BUG9797 : LayoutTests/fast/body-propagation/overflow/004.html = FAIL PASS
 BUG9797 MAC DEBUG : LayoutTests/tables/mozilla/bugs/bug137388-2.html = FAIL PASS
 BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
-BUG9797 : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
+BUG9797 WIN LINUX : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9797 WIN DEBUG : LayoutTests/fast/encoding/namespace-tolerance.html = CRASH PASS
 BUG9797 WIN DEBUG : LayoutTests/fast/loader/file-URL-with-port-number.html = FAIL PASS
 BUG9797 WIN DEBUG : LayoutTests/http/tests/navigation/lockedhistory-iframe.html = FAIL PASS
@@ -2172,13 +2149,11 @@ BUG11796 LINUX : LayoutTests/fast/forms/search-styled.html = FAIL
 
 // Flaky Mac tests
 BUG11810 MAC : LayoutTests/http/tests/navigation/post-goback-same-url.html = TIMEOUT PASS
-BUG11810 MAC : LayoutTests/editing/selection/extend-selection.html = TIMEOUT PASS
 
 // Flaky Linux tests
 BUG11832 LINUX : LayoutTests/svg/custom/circular-marker-reference-4.svg = FAIL PASS
 BUG11832 LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = FAIL PASS
 BUG11832 LINUX : LayoutTests/fast/css/transition-color-unspecified.html = FAIL PASS
-BUG11832 LINUX : LayoutTests/editing/selection/extend-selection.html = TIMEOUT PASS
 BUG11832 LINUX : LayoutTests/http/tests/xmlhttprequest/request-encoding.html = TIMEOUT PASS
 BUG11832 LINUX : LayoutTests/http/tests/xmlhttprequest/uri-resolution-opera-open-005.html = CRASH PASS
 BUG11832 LINUX : LayoutTests/http/tests/xmlhttprequest/uri-resolution-opera-open-010.html = CRASH PASS
@@ -2216,7 +2191,7 @@ BUG12310 SKIP : LayoutTests/fast/wcss/marquee-style.xhtml = FAIL
 
 // Details for all of these are in the bugs.
 BUG12340 WIN : LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = PASS FAIL
-BUG12341 WIN LINUX : LayoutTests/editing/selection/4975120.html = PASS FAIL
+BUG12341 DEBUG WIN : LayoutTests/editing/selection/4975120.html = PASS FAIL
 BUG12354 : LayoutTests/plugins/netscape-invoke-browserfuncs.html = FAIL
 BUG12361 : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 
@@ -2248,7 +2223,9 @@ BUG14673 : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.h
 // Need investigation: test shell crashers.
 BUG14752 LINUX : LayoutTests/http/tests/cache/subresource-expiration.html = CRASH PASS
 BUG14751 LINUX DEBUG: LayoutTests/css2.1/atrule_longest_match.html = CRASH PASS
-BUG14767 LINUX : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html = CRASH PASS
+
+// No longer crashes, but occasionally is slow
+BUG14767 SLOW LINUX RELEASE : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html = PASS
 
 BUG14832 : LayoutTests/editing/selection/user-drag-element-and-user-select-none.html = FAIL
 BUG14831 : LayoutTests/fast/events/event-trace.html = FAIL
@@ -2281,9 +2258,6 @@ BUG15490 LINUX : LayoutTests/editing/deleting/25322-1.html = PASS CRASH
 
 // Flaky for a while on DEBUG; also related to BUG17974
 BUG15267 WIN LINUX : LayoutTests/transitions/cancel-transition.html = PASS FAIL
-
-// Started crashing without a clear reason.
-BUG15425 WIN : LayoutTests/dom/html/level2/html/HTMLElement142.html = PASS CRASH
 
 // WebKit 45431:45444
 BUG10384 MAC : LayoutTests/fast/events/frame-tab-focus.html = CRASH FAIL
@@ -2471,7 +2445,7 @@ BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 
 // Flaky.  Timing?
 BUG18584 : LayoutTests/animations/change-one-anim.html = FAIL PASS
-BUG18584 LINUX WIN : LayoutTests/animations/play-state.html = FAIL PASS
+BUG18584 DEBUG LINUX WIN : LayoutTests/animations/play-state.html = FAIL PASS
 BUG18584 : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
 
 // Flaky crashes
