@@ -325,12 +325,13 @@ class EffectParamArraySamplerHandlerGL : public EffectParamHandlerGL {
         for (int i = 0; i < size; ++i) {
           Param* untyped_element = param->GetUntypedParam(i);
           if (untyped_element->IsA(ParamSampler::GetApparentClass())) {
+            CGparameter cg_element = cgGetArrayParameter(cg_param, i);
             ParamSampler* element = down_cast<ParamSampler*>(untyped_element);
             SamplerGL* sampler_gl = down_cast<SamplerGL*>(element->value());
             if (!sampler_gl) {
               sampler_gl = down_cast<SamplerGL*>(renderer->error_sampler());
             }
-            sampler_gl->ResetTexture(cg_param);
+            sampler_gl->ResetTexture(cg_element);
           }
         }
       }
