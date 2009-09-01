@@ -45,6 +45,7 @@ fi
 
 # Clean checkout our untar
 rm -rf "valgrind-${VALGRIND_SVN_REV}"
+mkdir -p "valgrind-${VALGRIND_SVN_REV}"
 
 if test "x${USE_TARBALL}" != "xyes"
 then
@@ -80,7 +81,15 @@ then
   fi
 
   sh autogen.sh
+
+  # MacOSX before Snow Leopoard needs newer gdb to be able to handle -O1 chrome
+  # Kludgily download and unpack the sources in a subdirectory.
+  if test `uname` = Darwin || test "x${MAKE_TARBALL}" = "xyes"
+  then
+    curl http://www.opensource.apple.com/tarballs/gdb/gdb-1344.tar.gz | tar -xzf -
+  fi
   cd ..
+
 fi
 
 if test "x${MAKE_TARBALL}" = "xyes"
@@ -143,4 +152,19 @@ then
   else
      sudo make install
   fi
+
+  case `uname` in
+  Darwin)
+    cd gdb-1344/src
+    ./configure --prefix="${PREFIX}"
+    make -j4
+    if test -w "${parent_of_prefix}"
+    then
+       make install
+    else
+       sudo make install
+    fi
+    ;;
+  esac
+  cd ..
 fi
