@@ -313,6 +313,7 @@ def _SendChangeSVN(options):
     # Don't use  '--non-interactive', since we want it to prompt for
     # crendentials if necessary.
     RunCommand(['svn', 'checkout', '--depth', 'empty',
+                '--username', options.email,
                 options.svn_repo, temp_dir])
     # TODO(maruel): Use a subdirectory per user?
     current_time = str(datetime.datetime.now()).replace(':', '.')
@@ -322,7 +323,7 @@ def _SendChangeSVN(options):
     full_url = options.svn_repo + '/' + file_name
     file_found = False
     try:
-      RunCommand(['svn', 'ls', '--non-interactive', full_url])
+      RunCommand(['svn', 'ls', full_url])
       file_found = True
     except NoTryServerAccess:
       pass
@@ -330,7 +331,7 @@ def _SendChangeSVN(options):
       # The file already exists in the repo. Note that commiting a file is a
       # no-op if the file's content (the diff) is not modified. This is why the
       # file name contains the date and time.
-      RunCommand(['svn', 'update', '--non-interactive', full_path])
+      RunCommand(['svn', 'update', full_path])
       file = open(full_path, 'wb')
       file.write(options.diff)
       file.close()
@@ -339,10 +340,10 @@ def _SendChangeSVN(options):
       file = open(full_path, 'wb')
       file.write(options.diff)
       file.close()
-      RunCommand(["svn", "add", '--non-interactive', full_path])
+      RunCommand(["svn", "add", full_path])
     temp_file.write(description)
     temp_file.flush()
-    RunCommand(["svn", "commit", '--non-interactive', full_path, '--file',
+    RunCommand(["svn", "commit", full_path, '--file',
                 temp_file_name])
   finally:
     temp_file.close()
