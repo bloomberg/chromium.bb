@@ -126,7 +126,7 @@ def DiffStringsIgnoringWhiteSpace(a, b):
   a = a.splitlines()
   b = b.splitlines()
   # NOTE: the whitespace stuff seems to be broken in python
-  cruncher = difflib.SequenceMatcher(lambda x: x in ' \\t', a, b)
+  cruncher = difflib.SequenceMatcher(lambda x: x in ' \t\r', a, b)
 
   for group in cruncher.get_grouped_opcodes():
     eq = True
@@ -145,10 +145,10 @@ def DiffStringsIgnoringWhiteSpace(a, b):
         continue
       if tag == 'replace' or tag == 'delete':
         for line in a[i1:i2]:
-          yield '-[' + line + ']'
+          yield '-[' + repr(line) + ']'
       if tag == 'replace' or tag == 'insert':
         for line in b[j1:j2]:
-          yield '+[' + line + ']'
+          yield '+[' + repr(line) + ']'
 
 
 def RegexpFilterLines(regexp, lines):
