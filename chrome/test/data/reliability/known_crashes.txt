@@ -123,3 +123,6 @@ REGEX : npapi::plugininstance::npp_newstream___[^_]*___ipc::syncchannel::sendwit
 
 # 20793
 PREFIX : webpluginproxy::setwindowlessbuffer___child_process_logging::setactiveurl
+
+# 20825
+PREFIX : v8::internal::compiler::compile___v8::script::new___v8::script::compile___webcore::v8proxy::compilescript
