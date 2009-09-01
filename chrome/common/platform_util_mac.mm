@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/cocoa/tab_window_controller.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 
 namespace platform_util {
@@ -26,6 +27,13 @@ void OpenItem(const FilePath& full_path) {
   DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
   [[NSWorkspace sharedWorkspace] openFile:path_string];
+}
+
+void OpenExternal(const GURL& url) {
+  DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
+  NSString* url_string = base::SysUTF8ToNSString(url.spec());
+  NSURL* ns_url = [NSURL URLWithString:url_string];
+  [[NSWorkspace sharedWorkspace] openURL:ns_url];
 }
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {

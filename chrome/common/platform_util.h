@@ -9,6 +9,7 @@
 #include "base/string16.h"
 
 class FilePath;
+class GURL;
 
 namespace platform_util {
 
@@ -17,6 +18,10 @@ void ShowItemInFolder(const FilePath& full_path);
 
 // Open the given file in the desktop's default manner.
 void OpenItem(const FilePath& full_path);
+
+// Open the given external protocol URL in the desktop's default manner.
+// (For example, mailto: URLs in the default mail user agent.)
+void OpenExternal(const GURL& url);
 
 // Get the top level window for the native view. This can return NULL.
 gfx::NativeWindow GetTopLevel(gfx::NativeView view);

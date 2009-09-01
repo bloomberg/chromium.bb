@@ -10,13 +10,14 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "chrome/common/process_watcher.h"
+#include "googleurl/src/gurl.h"
 
 namespace {
 
-void XDGOpen(const FilePath& path) {
+void XDGOpen(const std::string& path) {
   std::vector<std::string> argv;
   argv.push_back("xdg-open");
-  argv.push_back(path.value());
+  argv.push_back(path);
 
   base::environment_vector env;
   // xdg-open can fall back on mailcap which eventually might plumb through
@@ -43,11 +44,15 @@ void ShowItemInFolder(const FilePath& full_path) {
   if (!file_util::DirectoryExists(dir))
     return;
 
-  XDGOpen(dir);
+  XDGOpen(dir.value());
 }
 
 void OpenItem(const FilePath& full_path) {
-  XDGOpen(full_path);
+  XDGOpen(full_path.value());
+}
+
+void OpenExternal(const GURL& url) {
+  XDGOpen(url.spec());
 }
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {

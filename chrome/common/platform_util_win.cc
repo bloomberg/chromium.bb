@@ -16,7 +16,9 @@
 #include "base/file_util.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/logging.h"
+#include "base/registry.h"
 #include "base/string_util.h"
+#include "googleurl/src/gurl.h"
 
 namespace platform_util {
 
@@ -84,6 +86,50 @@ void ShowItemInFolder(const FilePath& full_path) {
 
 void OpenItem(const FilePath& full_path) {
   win_util::OpenItemViaShell(full_path);
+}
+
+void OpenExternal(const GURL& url) {
+  // Quote the input scheme to be sure that the command does not have
+  // parameters unexpected by the external program. This url should already
+  // have been escaped.
+  std::string escaped_url = url.spec();
+  escaped_url.insert(0, "\"");
+  escaped_url += "\"";
+
+  // According to Mozilla in uriloader/exthandler/win/nsOSHelperAppService.cpp:
+  // "Some versions of windows (Win2k before SP3, Win XP before SP1) crash in
+  // ShellExecute on long URLs (bug 161357 on bugzilla.mozilla.org). IE 5 and 6
+  // support URLS of 2083 chars in length, 2K is safe."
+  const size_t kMaxUrlLength = 2048;
+  if (escaped_url.length() > kMaxUrlLength) {
+    NOTREACHED();
+    return;
+  }
+
+  RegKey key;
+  std::wstring registry_path = ASCIIToWide(url.scheme()) +
+                               L"\\shell\\open\\command";
+  key.Open(HKEY_CLASSES_ROOT, registry_path.c_str());
+  if (key.Valid()) {
+    DWORD size = 0;
+    key.ReadValue(NULL, NULL, &size);
+    if (size <= 2) {
+      // ShellExecute crashes the process when the command is empty.
+      // We check for "2" because it always returns the trailing NULL.
+      // TODO(nsylvain): we should also add a dialog to warn on errors. See
+      // bug 1136923.
+      return;
+    }
+  }
+
+  if (reinterpret_cast<ULONG_PTR>(ShellExecuteA(NULL, "open",
+                                                escaped_url.c_str(), NULL, NULL,
+                                                SW_SHOWNORMAL)) <= 32) {
+    // We fail to execute the call. We could display a message to the user.
+    // TODO(nsylvain): we should also add a dialog to warn on errors. See
+    // bug 1136923.
+    return;
+  }
 }
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {

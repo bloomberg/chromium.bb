@@ -6,11 +6,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <shellapi.h>
-#endif
-
 #include <set>
 
 #include "base/logging.h"
@@ -19,18 +14,14 @@
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "chrome/common/platform_util.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
 #if defined(OS_WIN)
-#include "base/registry.h"
 #include "chrome/browser/views/external_protocol_dialog.h"
-#elif defined(OS_MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
-#include "base/scoped_cftyperef.h"
-#include "base/sys_string_conversions.h"
 #endif
 
 // static
@@ -117,7 +108,6 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
 void ExternalProtocolHandler::LaunchUrl(const GURL& url,
                                         int render_process_host_id,
                                         int tab_contents_id) {
-#if !defined(OS_LINUX)
   // Escape the input scheme to be sure that the command does not
   // have parameters unexpected by the external program.
   std::string escaped_url_string = EscapeExternalHandlerValue(url.spec());
@@ -145,90 +135,35 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
   }
 #else
   // For now, allow only whitelisted protocols to fire.
-  // TODO(port): implement dialog for Mac
+  // TODO(port): implement dialog for Mac/Linux.
+  // See http://code.google.com/p/chromium/issues/detail?id=20731
+  // and http://code.google.com/p/chromium/issues/detail?id=15546.
   if (block_state == UNKNOWN)
     return;
 #endif
 
-  // Put this work on the file thread since ShellExecute may block for a
-  // significant amount of time.
+  // Otherwise the protocol is white-listed, so go ahead and launch.
+#if defined(OS_MACOSX)
+  // This must run on the main thread on OS X.
+  LaunchUrlWithoutSecurityCheck(escaped_url);
+#else
+  // Otherwise put this work on the file thread. On Windows ShellExecute may
+  // block for a significant amount of time, and it shouldn't hurt on Linux.
   MessageLoop* loop = g_browser_process->file_thread()->message_loop();
   if (loop == NULL) {
     return;
   }
 
-  // Otherwise the protocol is white-listed, so go ahead and launch.
   loop->PostTask(FROM_HERE,
       NewRunnableFunction(
           &ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck,
           escaped_url));
-#else
-  // TODO(port): Implement launching external handler.
-  NOTIMPLEMENTED();
 #endif
 }
 
 // static
 void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(const GURL& url) {
-#if defined(OS_WIN)
-  // Quote the input scheme to be sure that the command does not have
-  // parameters unexpected by the external program. This url should already
-  // have been escaped.
-  std::string escaped_url = url.spec();
-  escaped_url.insert(0, "\"");
-  escaped_url += "\"";
-
-  // According to Mozilla in uriloader/exthandler/win/nsOSHelperAppService.cpp:
-  // "Some versions of windows (Win2k before SP3, Win XP before SP1) crash in
-  // ShellExecute on long URLs (bug 161357 on bugzilla.mozilla.org). IE 5 and 6
-  // support URLS of 2083 chars in length, 2K is safe."
-  const size_t kMaxUrlLength = 2048;
-  if (escaped_url.length() > kMaxUrlLength) {
-    NOTREACHED();
-    return;
-  }
-
-  RegKey key;
-  std::wstring registry_path = ASCIIToWide(url.scheme()) +
-                               L"\\shell\\open\\command";
-  key.Open(HKEY_CLASSES_ROOT, registry_path.c_str());
-  if (key.Valid()) {
-    DWORD size = 0;
-    key.ReadValue(NULL, NULL, &size);
-    if (size <= 2) {
-      // ShellExecute crashes the process when the command is empty.
-      // We check for "2" because it always returns the trailing NULL.
-      // TODO(nsylvain): we should also add a dialog to warn on errors. See
-      // bug 1136923.
-      return;
-    }
-  }
-
-  if (reinterpret_cast<ULONG_PTR>(ShellExecuteA(NULL, "open",
-                                                escaped_url.c_str(), NULL, NULL,
-                                                SW_SHOWNORMAL)) <= 32) {
-    // We fail to execute the call. We could display a message to the user.
-    // TODO(nsylvain): we should also add a dialog to warn on errors. See
-    // bug 1136923.
-    return;
-  }
-#elif defined(OS_MACOSX)
-  scoped_cftyperef<CFStringRef> string_ref(
-      base::SysUTF8ToCFStringRef(url.spec()));
-  if (!string_ref)
-    return;
-
-  scoped_cftyperef<CFURLRef> url_ref(CFURLCreateWithString(kCFAllocatorDefault,
-                                                           string_ref,
-                                                           NULL));
-  if (!url_ref)
-    return;
-
-  LSOpenCFURLRef(url_ref, NULL);
-#elif defined(OS_LINUX)
-  // TODO(port): Implement launching external handler.
-  NOTIMPLEMENTED();
-#endif
+  platform_util::OpenExternal(url);
 }
 
 // static
