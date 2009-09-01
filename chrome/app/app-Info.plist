@@ -166,8 +166,6 @@
 			</array>
 		</dict>
 	</array>
-	<key>CFBundleVersion</key>
-	<string>0.1</string>
 	<key>LSFileQuarantineEnabled</key>
 	<true/>
 	<key>LSHasLocalizedDisplayName</key>

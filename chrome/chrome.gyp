@@ -4696,6 +4696,8 @@
               'mac_bundle': 1,
               'xcode_settings': {
                 'DYLIB_INSTALL_NAME_BASE': '@executable_path/../Frameworks',
+                'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
+                'INFOPLIST_FILE': 'app/framework-Info.plist',
               },
               'sources': [
                 'app/chrome_dll_main.cc',
@@ -4704,10 +4706,18 @@
                 'app/keystone_glue.h',
                 'app/keystone_glue.m',
               ],
+              # TODO(mark): Come up with a fancier way to do this.  It should
+              # only be necessary to list framework-Info.plist once, not the
+              # three times it is listed here.
+              'mac_bundle_resources': [
+                'app/framework-Info.plist',
+              ],
+              'mac_bundle_resources!': [
+                'app/framework-Info.plist',
+              ],
               'dependencies': [
                 '../build/util/support/support.gyp:*',
               ],
-
               # For now, don't put any resources into the framework.  Exclude
               # them all and push them into the bundle resources of the sole
               # app bundle, the only dependent of this target.
@@ -4748,6 +4758,21 @@
                   'renderer/renderer.sb',
                 ],
               },
+              'postbuilds': [
+                {
+                  # Modify the Info.plist as needed.  The script explains why
+                  # this is needed.  This is also done in the chrome target.
+                  # The framework does not need the breakpad, keystone, or
+                  # subversion keys as those are only needed on the main
+                  # or helper app.
+                  'postbuild_name': 'Tweak Info.plist',
+                  'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
+                             '-b0',
+                             '-k0',
+                             '-s0',
+                             '<(branding)'],
+                },
+              ],
 
               'conditions': [
                 ['mac_breakpad==1', {
@@ -4799,8 +4824,8 @@
             'app/helper-Info.plist',
           ],
           # TODO(mark): Come up with a fancier way to do this.  It should only
-          # be necessary to list app-Info.plist once, not the three times it is
-          # listed here.
+          # be necessary to list helper-Info.plist once, not the three times it
+          # is listed here.
           'mac_bundle_resources!': [
             'app/helper-Info.plist',
           ],

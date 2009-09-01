@@ -4,27 +4,15 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en-US</string>
-	<key>CFBundleDisplayName</key>
-	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key>
-	<string>${CHROMIUM_BUNDLE_ID}.helper</string>
+	<string>${CHROMIUM_BUNDLE_ID}.framework</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>${CHROMIUM_SHORT_NAME} Helper</string>
 	<key>CFBundlePackageType</key>
-	<string>APPL</string>
+	<string>FMWK</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-	<key>LSFileQuarantineEnabled</key>
-	<true/>
-	<key>LSHasLocalizedDisplayName</key>
-	<string>1</string>
-	<key>LSMinimumSystemVersion</key>
-	<string>10.5.0</string>
-	<key>LSUIElement</key>
-	<string>1</string>
 </dict>
 </plist>
