@@ -15,6 +15,9 @@
       font-size: 16px;
       margin-bottom: .25em;
     }
+    form {
+      margin: 3px 0;
+    }
     .test-link {
       white-space: normal;
     }
@@ -38,11 +41,9 @@
       -webkit-user-select: none;
       -moz-user-select: none;
     }
-    .link {
+    .link, .sortable .header-text {
       color: blue;
       text-decoration: underline;
-      white-space: nowrap;
-      display: inline-block;
       cursor: pointer;
     }
     .table-header-content,
@@ -70,6 +71,10 @@
     }
     .builders * {
       margin: 0 5px;
+    }
+    .builders .link {
+      display: inline-block;
+      white-space: nowrap;
     }
     .test-table .wrong-expectations,
     .wrong-expectations {
@@ -117,6 +122,10 @@
       -moz-column-count: 3;
       -moz-column-gap: 25px;
       -moz-column-rule: 1px dashed black;
+    }
+    .not-found {
+      color: red;
+      font-size: large;
     }
   </style>
 
@@ -172,6 +181,8 @@
   };
 
   var resultsByBuilder = {};
+  // Maps test path to an array of {builder, testResults} objects.
+  var testToResultsMap = {};
   var expectationsByTest = {};
   function ADD_RESULTS(builds) {
     for (var builderName in builds) {
@@ -219,13 +230,15 @@
     'O': 'OTHER',
     'N': 'NO DATA'
   };
-  var TABLE_HEADERS = ['test', 'modifiers', 'expectations',
-      'missing', 'extra', 'slowest run',
-      'flakiness (numbers are runtimes in seconds)'];
   var PLATFORMS = {'MAC': 'MAC', 'LINUX': 'LINUX', 'WIN': 'WIN'};
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
 
   // GLOBALS
+  // The DUMMYVALUE gets shifted off the array in the first call to
+  // generatePage.
+  var tableHeaders = ['DUMMYVALUE', 'modifiers', 'expectations',
+      'missing', 'extra', 'slowest run',
+      'flakiness (numbers are runtimes in seconds)'];
   var currentState = {builder: null, sortOrder: FORWARD, sortColumn: 'test'};
   var perBuilderPlatformAndBuildType = {};
   var oldLocation;
@@ -548,9 +561,14 @@
       var times = resultsByBuilder[builderName].tests[test].times;
       resultsForTest.slowestTime = Math.max.apply(null, times)
 
-      resultsForTest.html = getHtmlForIndividualTest(builderName, test);
+      resultsForTest.html = getHtmlForTestResults(builderName, test);
 
       failures.push(resultsForTest);
+
+      if (!testToResultsMap[test])
+        testToResultsMap[test] = [];
+      testToResultsMap[test].push(
+          {builder: builderName, results: resultsForTest});
     }
 
     perBuilderFailures[builderName] = failures;
@@ -595,7 +613,7 @@
     window.open(BUILDERS_BASE_PATH + builderName + '/builds/' + buildNumber);
   }
 
-  function getHtmlForIndividualTest(builderName, testPath) {
+  function getHtmlForTestResults(builderName, testPath) {
     var html = '';
     var test = resultsByBuilder[builderName].tests[testPath];
     var results = test.results.split('');
@@ -611,67 +629,6 @@
     return html;
   }
 
-  function getHTMLForTestTable(results, id, sort, order) {
-    var html = '<div class=legend>';
-    for (var expectation in EXPECTATIONS_MAP) {
-      html += '<span class=' + expectation + '>' +
-          EXPECTATIONS_MAP[expectation] + '</span>';
-    }
-    html += '<span class=wrong-expectations>WRONG EXPECTATIONS</span></div>' +
-        '<table id=' + id + ' class=test-table>' +
-        getTableHeaders(sort, order) + '<tbody>';
-
-    sortTests(results, sort, order);
-    for (var i = 0; i < results.length; i++) {
-      var test = results[i];
-
-      var classes = [];
-      if (!test.meetsExpectations)
-        classes.push('wrong-expectations');
-
-      if (test.isWontFix)
-        classes.push('wontfix');
-
-      html += '<tr class="' + classes.join(' ') +
-        // TODO(ojan): If a test is a chrome/ or a pending/ test, point to
-        // src.chromium.org instead of trac.webkit.org.
-        '"><td class=test-link><a href="' + TEST_URL_BASE_PATH + test.test +
-        '">' + test.test + '</a>' +
-        '</td><td class=options-container>' + test.modifiersHTML +
-        '</td><td class=options-container>' + test.expectationsHTML +
-        '</td><td>' + test.missing +
-        '</td><td>' + test.extra +
-        '</td><td>' + (test.slowestTime ? test.slowestTime + 's' : '') +
-        '</td>' +
-        test.html +
-        '</tr>';
-    }
-
-    return html + "</tbody></table>"
-  }
-
-  function getTableHeaders(sort, order) {
-    var html = '<thead><tr>';
-    for (var i = 0; i < TABLE_HEADERS.length; i++) {
-      // Use the first word of the header title as the sortkey
-      var thisSortValue = TABLE_HEADERS[i].split(' ')[0];
-      var arrowHTML = thisSortValue == sort ?
-          '<span class=' + order + '>' +
-          (order == FORWARD ? '&uarr;' : '&darr;' ) + '</span>' :
-          '';
-      html += '<th sortValue=' + thisSortValue +
-          // Extend last th through all the rest of the columns.
-          (i == TABLE_HEADERS.length - 1 ? ' colspan=10000' : '') +
-          // Extra span here is so flex boxing actually centers.
-          // There's probably a better way to do this with CSS only though.
-          '><div class=table-header-content><span></span>' + arrowHTML +
-          '<span class=link>' + TABLE_HEADERS[i] + '</span>' +
-          arrowHTML + '</div></th>';
-    }
-    html += '</tr></thead>';
-    return html;
-  }
-
   function getHTMLForTestsWithExpectationsButNoFailures(builder) {
     var tests = perBuilderWithExpectationsButNoFailures[builder];
     if (!tests.length)
@@ -679,32 +636,69 @@
 
     var buildInfo = getPlatFormAndBuildType(builder);
     return '<h2>Have expectations for ' + buildInfo.platform + '-' +
-          buildInfo.buildType + ' but have not failed in last 100 ' +
-          'runs.</h2><div id="passing-tests"><div>' +
+          buildInfo.buildType + ' but have not failed in last ' +
+          resultsByBuilder[builderName].buildNumbers.length +
+          ' runs.</h2><div id="passing-tests"><div>' +
           tests.join('</div><div>') + '</div></div>';
   }
 
-  function getHTMLForNavBar() {
-    var html = '<div class=builders>';
-    for (var builder in builders) {
-      var className = builder == currentState.builder ?
-          'current-builder' : 'link';
-      html += '<span class=' + className +
-          ' onclick=\'setState("builder", "' + builder + '")\'>' +
-          builder + '</span>';
-    }
-    return html + '</div>';
+  function getHTMLForSingleTestRow(test, opt_builder) {
+    var classes = [];
+    if (!test.meetsExpectations)
+      classes.push('expectation-mismatch');
+
+    if (test.isWontFix)
+      classes.push('wontfix');
+
+    // If opt_builder is provided, we're just viewing a single test
+    // with results for many builders.
+    var testCellHTML = opt_builder ? opt_builder :
+      '<span class="link" onclick="setState(\'tests\', \'' + test.test +
+      '\');return false;">' + test.test + '</span>';
+
+    return '<tr class="' + classes.join(' ') +
+      // TODO(ojan): If a test is a chrome/ or a pending/ test, point to
+      // src.chromium.org instead of trac.webkit.org.
+      '"><td class=test-link>' + testCellHTML +
+      '</td><td class=options-container>' + test.modifiersHTML +
+      '</td><td class=options-container>' + test.expectationsHTML +
+      '</td><td>' + test.missing +
+      '</td><td>' + test.extra +
+      '</td><td>' + (test.slowestTime ? test.slowestTime + 's' : '') +
+      '</td>' +
+      test.html +
+      '</tr>';
   }
 
-  function setFullPageHTML() {
-    var html = getHTMLForNavBar() +
-        getHTMLForTestsWithExpectationsButNoFailures(currentState.builder) +
-        '<h2>Failing tests</h2><input type=checkbox id=wont-fix-input ' +
-        'onclick="updateWontFixDisplay()">Show WONTFIX tests.' +
-        '<b> | All columns are sortable. | Skipped tests are not listed. | ' +
-        'Flakiness reader order is newer --> older runs.</b>' +
-        getHTMLForTestTable(perBuilderFailures[currentState.builder],
-            'failures', currentState.sortColumn, currentState.sortOrder);
+  function getHTMLForTestTable(rowsHTML) {
+    var html = '<div class=legend>';
+    for (var expectation in EXPECTATIONS_MAP) {
+      html += '<span class=' + expectation + '>' +
+          EXPECTATIONS_MAP[expectation] + '</span>';
+    }
+    html += '<span class=wrong-expectations>WRONG EXPECTATIONS</span>' +
+        '</div><table class=test-table><thead><tr>';
+    for (var i = 0; i < tableHeaders.length; i++) {
+      // Use the first word of the header title as the sortkey
+      var thisSortValue = tableHeaders[i].split(' ')[0];
+      var arrowHTML = thisSortValue == currentState.sortColumn ?
+          '<span class=' + currentState.sortOrder + '>' +
+          (currentState.sortOrder == FORWARD ? '&uarr;' : '&darr;' ) +
+          '</span>' :
+          '';
+      html += '<th sortValue=' + thisSortValue +
+          // Extend last th through all the rest of the columns.
+          (i == tableHeaders.length - 1 ? ' colspan=10000' : '') +
+          // Extra span here is so flex boxing actually centers.
+          // There's probably a better way to do this with CSS only though.
+          '><div class=table-header-content><span></span>' + arrowHTML +
+          '<span class=header-text>' + tableHeaders[i] + '</span>' +
+          arrowHTML + '</div></th>';
+    }
+    return html + '</tr></thead><tbody>' + rowsHTML + '</tbody></table>';
+  }
+
+  function setFullPageHTML(html) {
     var startTime = Date.now();
     // InnerHTML to a div that's not in the document. This is
     // ~300ms faster in Safari 4 and Chrome 4 on mac.
@@ -787,15 +781,12 @@
     var hash = window.location.hash;
     if (hash) {
       var hashParts = hash.slice(1).split('&');
+      var urlHasTests = false;
       for (var i = 0; i < hashParts.length; i++) {
         var itemParts = hashParts[i].split('=');
         currentState[itemParts[0]] = decodeURIComponent(itemParts[1]);
-      }
-    }
-    if (!currentState.builder) {
-      for (var builder in builders) {
-        currentState.builder = builder;
-        break;
+        if (itemParts[0] == 'tests')
+          urlHasTests = true;
       }
     }
 
@@ -808,18 +799,100 @@
         return;
     }
 
-    processTestRunsForBuilder(currentState.builder);
-    setFullPageHTML();
+    tableHeaders.shift();
+    if (urlHasTests) {
+      tableHeaders.unshift('builder');
+
+      generatePageForIndividualTests(currentState.tests.split(','));
+    } else {
+      tableHeaders.unshift('test');
+
+      if (!currentState.builder) {
+        for (var builder in builders) {
+          currentState.builder = builder;
+          break;
+        }
+      }
+      generatePageForBuilder(currentState.builder);
+    }
+    logTime('Time to generate page', startTime);
+  }
+
+  function generatePageForIndividualTests(tests) {
+    // TODO: Add link to trac from individual test page
+    // TODO: Make links on builder pages to tests be to the individual test page
+    for (var builder in builders)
+      processTestRunsForBuilder(builder);
+
+    var html = getHTMLForNavBar() +
+      '<b>IF A BUILDER IS NOT LISTED THAT MEANS THE ' +
+      'BUILDER DOES NOT RUN THAT TEST OR ALL RUNS OF THE TEST PASSED.</b>';
+
+    for (var i = 0; i < tests.length; i++) {
+      html += '<h2>' + tests[i] + '</h2>';
+
+      var testResults = testToResultsMap[tests[i]];
+      if (testResults && testResults.length) {
+        var tableRowsHTML = '';
+        for (var j = 0; j < testResults.length; j++) {
+          tableRowsHTML += getHTMLForSingleTestRow(testResults[j].results,
+              testResults[j].builder);
+        }
+        html += getHTMLForTestTable(tableRowsHTML);
+      } else {
+        html +='<div class="not-found">Test not found. Either it does not ' +
+            'exist or it passes on all platforms.</div>';
+      }
+    }
+    setFullPageHTML(html);
+
+    document.getElementById('tests-input').value = currentState.tests;
+  }
+
+  function getHTMLForNavBar(opt_builderName) {
+    var html = '<div class=builders>';
+    for (var builder in builders) {
+      var className = builder == opt_builderName ? 'current-builder' : 'link';
+      html += '<span class=' + className +
+          ' onclick=\'setState("builder", "' + builder + '")\'>' +
+          builder + '</span>';
+    }
+    return html + '</div>' +
+        '<form onsubmit="setState(\'tests\', tests.value);return false;">' +
+        'Show tests on all platforms (slow): <input name=tests ' +
+        'placeholder="LayoutTests/foo/bar.html,LayoutTests/foo/baz.html" ' +
+        'id=tests-input style="width:60%"></form>';
+  }
+
+  function generatePageForBuilder(builderName) {
+    processTestRunsForBuilder(builderName);
+
+    var tableRowsHTML = '';
+    var results = perBuilderFailures[builderName];
+    sortTests(results, currentState.sortColumn, currentState.sortOrder);
+    for (var i = 0; i < results.length; i++) {
+      tableRowsHTML += getHTMLForSingleTestRow(results[i]);
+    }
+
+    var html = getHTMLForNavBar(builderName) +
+        getHTMLForTestsWithExpectationsButNoFailures(builderName) +
+        '<h2>Failing tests</h2><input type=checkbox id=wont-fix-input ' +
+        'onclick="updateWontFixDisplay()">Show WONTFIX tests.' +
+        '<b> | All columns are sortable. | Skipped tests are not listed. | ' +
+        'Flakiness reader order is newer --> older runs.</b>' +
+        getHTMLForTestTable(tableRowsHTML);
+
+    setFullPageHTML(html);
 
     var ths = document.getElementsByTagName('th');
     for (var i = 0; i < ths.length; i++) {
       ths[i].addEventListener('click', changeSort, false);
+      ths[i].className = "sortable";
     }
 
     document.getElementById('wont-fix-input').checked =
         currentState.showWontFix == 'true';
     updateWontFixDisplay();
-    logTime('Time to generate page', startTime);
   }
 
   function updateWontFixDisplay() {
@@ -836,11 +909,27 @@
 
   function setState(key, value) {
     currentState[key] = value;
-    window.location.replace(window.location.pathname + '#' +
-        'builder=' + currentState.builder + '&' +
+
+    if (key == 'tests') {
+      currentState.builder = null;
+      currentState.sortColumn = null;
+      currentState.sortOrder = null;
+      currentState.showWontFix = null;
+    } else {
+      currentState.tests = null;
+    }
+
+    var newLocation = window.location.pathname + '#';
+    if (currentState.tests) {
+      newLocation += 'tests=' + currentState.tests;
+    } else {
+      newLocation += 'builder=' + currentState.builder + '&' +
         'sortColumn=' + currentState.sortColumn + '&' +
         'sortOrder=' + currentState.sortOrder + '&' +
-        'showWontFix=' + currentState.showWontFix);
+        'showWontFix=' + currentState.showWontFix;
+    }
+
+    window.location.replace(newLocation);
     // We don't need to regenerate the page if showWontFix is modified
     // since we only need to modify a style element for that.
     if (key != 'showWontFix')
