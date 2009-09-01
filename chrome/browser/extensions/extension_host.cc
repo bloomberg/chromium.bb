@@ -232,7 +232,7 @@ void ExtensionHost::CreateNewWindow(int route_id,
                                     base::WaitableEvent* modal_dialog_event) {
   delegate_view_helper_.CreateNewWindow(
       route_id, modal_dialog_event, render_view_host()->process()->profile(),
-      site_instance());
+      site_instance(), DOMUIFactory::GetDOMUIType(url_));
 }
 
 void ExtensionHost::CreateNewWidget(int route_id, bool activatable) {

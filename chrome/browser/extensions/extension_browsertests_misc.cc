@@ -501,3 +501,57 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UninstallDisabled) {
   EXPECT_EQ(0u, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
 }
+
+// Tests that an extension page can call window.open to an extension URL and
+// the new window has extension privileges.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/test.html"));
+
+  bool result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"testWindowOpen('newtab.html')", &result);
+  ASSERT_TRUE(result);
+
+  // Now the current tab should be the new tab.
+  ui_test_utils::WaitForNavigation(
+      &browser()->GetSelectedTabContents()->controller());
+  ASSERT_EQ(browser()->GetSelectedTabContents()->GetURL().path(),
+            "/newtab.html");
+
+  result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"testExtensionApi()", &result);
+  EXPECT_TRUE(result);
+}
+
+// Tests that if an extension page calls window.open to an invalid extension
+// URL, the browser doesn't crash.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/test.html"));
+
+  bool result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"testWindowOpen('chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaac/newtab.html')", &result);
+  ASSERT_TRUE(result);
+
+  // Now the current tab should be the new tab.
+  ui_test_utils::WaitForNavigation(
+      &browser()->GetSelectedTabContents()->controller());
+  ASSERT_EQ(browser()->GetSelectedTabContents()->GetURL().path(),
+            "/newtab.html");
+
+  // If we got to this point, we didn't crash, so we're good.
+}
