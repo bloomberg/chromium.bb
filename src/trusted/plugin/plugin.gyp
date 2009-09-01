@@ -84,6 +84,11 @@
           'NO_X11',
           'USE_SYSTEM_CONSOLE',
         ],
+        'link_settings': {
+          'libraries': [
+            '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+          ],
+        },
       }],
       ['OS=="win"', {
         'defines': [

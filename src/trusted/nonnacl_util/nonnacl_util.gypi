@@ -53,6 +53,11 @@
           'linux/sel_ldr_launcher_linux.cc',
           'osx/get_plugin_dirname.mm',
         ],
+        'link_settings': {
+          'libraries': [
+            '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+          ],
+        },
       }],
       ['OS=="win"', {
         'defines': [

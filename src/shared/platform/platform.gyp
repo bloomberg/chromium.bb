@@ -123,6 +123,14 @@
             ],
           },
         }],
+        ['OS=="mac" and nacl_standalone==1', {
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/usr/lib/libcrypto.dylib',
+              '$(SDKROOT)/usr/lib/libssl.dylib',
+            ],
+          },
+        }],
       ],
       'sources': [
         '<@(common_sources)',
