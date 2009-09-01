@@ -698,8 +698,6 @@
    fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
    fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
    fun:_ZN7WebCore22ResourceHandleInternal5startEv
-   ...
-   fun:_ZN7WebCore11FrameLoader4loadEPNS_14DocumentLoaderE
 }
 {
    bug_16577
@@ -721,32 +719,7 @@
    # Webkit leak in WebCore::HTMLNames::init() ?
    bug_16579
    Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN3WTF9HashTableIPN7WebCore13QualifiedName17QualifiedNameImplES4_NS_17IdentityExtractorIS4_EENS1_17QualifiedNameHashENS_10HashTraitsIS4_EES9_E18addPassingHashCodeINS1_23QualifiedNameComponentsESC_NS_24HashSetTranslatorAdapterIS4_S9_SC_NS1_25QNameComponentsTranslatorEEEEESt4pairINS_17HashTableIteratorIS4_S4_S6_S7_S9_S9_EEbERKT_RKT0_
-   fun:_ZN3WTF7HashSetIPN7WebCore13QualifiedName17QualifiedNameImplENS1_17QualifiedNameHashENS_10HashTraitsIS4_EEE3addINS1_23QualifiedNameComponentsENS1_25QNameComponentsTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS4_S4_NS_17IdentityExtractorIS4_EES5_S7_S7_EES4_EEbERKT_
-   fun:_ZN7WebCore13QualifiedNameC1ERKNS_12AtomicStringES3_S3_
-   fun:_ZN7WebCore9HTMLNames4initEv
-}
-{
-   # Same as above, but with malloc instead of new
-   bug_16579c
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
    ...
-   fun:_ZN3WTF7HashSetIPN7WebCore13QualifiedName17QualifiedNameImplENS1_17QualifiedNameHashENS_10HashTraitsIS4_EEE3addINS1_23QualifiedNameComponentsENS1_25QNameComponentsTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS4_S4_NS_17IdentityExtractorIS4_EES5_S7_S7_EES4_EEbERKT_
-   fun:_ZN7WebCore13QualifiedNameC1ERKNS_12AtomicStringES3_S3_
-   fun:_ZN7WebCore9HTMLNames4initEv
-}
-{
-   # Another leak in WebCore::HTMLNames::init() ?
-   bug_16579b
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   ...
-   fun:_ZN7WebCore12AtomicString3addEPKc
-   fun:_ZN7WebCore12AtomicStringC1EPKc
    fun:_ZN7WebCore9HTMLNames4initEv
 }
 {
@@ -910,34 +883,10 @@
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelOpenedEv
 }
 {
-   bug_17795
-   Memcheck:Leak
-   ...
-   fun:_ZN3WTF9HashTableIPN7WebCore13QualifiedName17QualifiedNameImplES4_NS_17IdentityExtractorIS4_EENS1_17QualifiedNameHashENS_10HashTraitsIS4_EES9_E18addPassingHashCodeINS1_23QualifiedNameComponentsESC_NS_24HashSetTranslatorAdapterIS4_S9_SC_NS1_25QNameComponentsTranslatorEEEEESt4pairINS_17HashTableIteratorIS4_S4_S6_S7_S9_S9_EEbERKT_RKT0_
-   fun:_ZN3WTF7HashSetIPN7WebCore13QualifiedName17QualifiedNameImplENS1_17QualifiedNameHashENS_10HashTraitsIS4_EEE3addINS1_23QualifiedNameComponentsENS1_25QNameComponentsTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS4_S4_NS_17IdentityExtractorIS4_EES5_S7_S7_EES4_EEbERKT_
-   fun:_ZN7WebCore13QualifiedNameC1ERKNS_12AtomicStringES3_S3_
-   fun:_ZN7WebCore8SVGNames4initEv
-}
-{
-   bug_17996
-   Memcheck:Leak
-   ...
-   fun:_ZN7WebCore10StringImplnwEj
-   ...
-   fun:_ZN3WTF7HashSetIPN7WebCore10StringImplENS1_10StringHashENS_10HashTraitsIS3_EEE3addIPKcNS1_17CStringTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS3_S3_NS_17IdentityExtractorIS3_EES4_S6_S6_EES3_EEbERKT_
-   fun:_ZN7WebCore12AtomicString3addEPKc
-   fun:_ZN7WebCore12AtomicStringC1EPKc
-   fun:_ZN7WebCore8SVGNames4initEv
-}
-{
+   # Also bug_17795
    bug_17966
    Memcheck:Leak
    ...
-   fun:_ZN7WebCore10StringImplC1EPKcjj
-   ...
-   fun:_ZN3WTF7HashSetIPN7WebCore10StringImplENS1_10StringHashENS_10HashTraitsIS3_EEE3addIPKcNS1_17CStringTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS3_S3_NS_17IdentityExtractorIS3_EES4_S6_S6_EES3_EEbERKT_
-   fun:_ZN7WebCore12AtomicString3addEPKc
-   fun:_ZN7WebCore12AtomicStringC1EPKc
    fun:_ZN7WebCore8SVGNames4initEv
 }
 {
@@ -1180,4 +1129,15 @@
    fun:_ZN4base9BaseTimerI27SafeBrowsingProtocolManagerLb0EE5StartENS_9TimeDeltaEPS1_MS1_FvvE
    fun:_ZN27SafeBrowsingProtocolManager18ScheduleNextUpdateEb
    fun:_ZN27SafeBrowsingProtocolManager10InitializeEv
+}
+{
+   bug_20778
+   Memcheck:Cond
+   fun:_ZN7WebCore10XSSAuditor23CachingURLCanonicalizer15canonicalizeURLERKNS_6StringERKNS_12TextEncodingEb
+}
+{
+   bug_20805
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7history14HistoryBackend12AddPageVisitERK4GURLN4base4TimeExj
 }

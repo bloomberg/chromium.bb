@@ -579,5 +579,4 @@
    fun:sqlite3Step
    fun:sqlite3_step
    fun:sqlite3_exec
-   fun:_ZN14SQLTransaction10EndCommandEPKc
 }
