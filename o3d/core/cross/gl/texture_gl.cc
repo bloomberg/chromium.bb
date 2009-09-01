@@ -347,7 +347,6 @@ void Texture2DGL::UpdateBackedMipLevel(unsigned int level) {
   DCHECK_EQ(backing_bitmap_->width(), static_cast<unsigned int>(width()));
   DCHECK_EQ(backing_bitmap_->height(), static_cast<unsigned int>(height()));
   DCHECK_EQ(backing_bitmap_->format(), format());
-  DCHECK(HasLevel(level));
   renderer_->MakeCurrentLazy();
   glBindTexture(GL_TEXTURE_2D, gl_texture_);
   UpdateGLImageFromBitmap(GL_TEXTURE_2D, level, TextureCUBE::FACE_POSITIVE_X,
@@ -498,7 +497,6 @@ bool Texture2DGL::PlatformSpecificUnlock(int level) {
   DCHECK_GE(level, 0);
   DCHECK_LT(level, levels());
   if (LockedMode(level) != kReadOnly) {
-    DCHECK(HasLevel(level));
     renderer_->MakeCurrentLazy();
     UpdateBackedMipLevel(level);
   }
@@ -665,7 +663,6 @@ void TextureCUBEGL::UpdateBackedMipLevel(unsigned int level,
   DCHECK_EQ(backing_bitmap->width(), static_cast<unsigned int>(edge_length()));
   DCHECK_EQ(backing_bitmap->height(), static_cast<unsigned int>(edge_length()));
   DCHECK_EQ(backing_bitmap->format(), format());
-  DCHECK(HasLevel(face, level));
   renderer_->MakeCurrentLazy();
   glBindTexture(GL_TEXTURE_2D, gl_texture_);
   UpdateGLImageFromBitmap(kCubemapFaceList[face], level, face,
@@ -844,7 +841,6 @@ bool TextureCUBEGL::PlatformSpecificUnlock(CubeFace face, int level) {
   DCHECK_GE(level, 0);
   DCHECK_LT(level, levels());
   if (LockedMode(face, level) != kReadOnly) {
-    DCHECK(HasLevel(face, level));
     renderer_->MakeCurrentLazy();
     UpdateBackedMipLevel(level, face);
   }

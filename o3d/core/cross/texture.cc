@@ -173,7 +173,7 @@ void Texture2D::DrawImage(const Bitmap& src_img,
     return;
   }
 
-  LockHelper helper(this, dst_mip, kWriteOnly);
+  LockHelper helper(this, dst_mip, kReadWrite);
   uint8* mip_data = helper.GetDataAs<uint8>();
   if (!mip_data) {
     return;
@@ -240,7 +240,7 @@ void Texture2D::DrawImage(const Canvas& src_img,
     return;
   }
 
-  LockHelper helper(this, dst_mip, kWriteOnly);
+  LockHelper helper(this, dst_mip, kReadWrite);
   uint8* mip_data = helper.GetDataAs<uint8>();
   if (!mip_data) {
     return;
@@ -551,7 +551,7 @@ void TextureCUBE::DrawImage(const Bitmap& src_img, int src_mip,
             src_pitch);
   }
 
-  LockHelper helper(this, dest_face, dest_mip, kWriteOnly);
+  LockHelper helper(this, dest_face, dest_mip, kReadWrite);
   uint8* mip_data = helper.GetDataAs<uint8>();
   if (!mip_data) {
     return;
@@ -619,7 +619,7 @@ void TextureCUBE::DrawImage(const Canvas& src_img,
     return;
   }
 
-  LockHelper helper(this, dest_face, dest_mip, kWriteOnly);
+  LockHelper helper(this, dest_face, dest_mip, kReadWrite);
   uint8* mip_data = helper.GetDataAs<uint8>();
   if (!mip_data) {
     return;

@@ -423,7 +423,6 @@ bool Texture2DCB::PlatformSpecificUnlock(int level) {
   DCHECK_EQ(backing_bitmap_->format(), format());
   DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
   if (LockedMode(level) != kReadOnly) {
-    DCHECK(HasLevel(level));
     UpdateResourceFromBitmap(renderer_, resource_id_, level,
                              TextureCUBE::FACE_POSITIVE_X,
                              *backing_bitmap_.Get());
@@ -656,7 +655,6 @@ bool TextureCUBECB::PlatformSpecificUnlock(CubeFace face, int level) {
   DCHECK_GT(backing_bitmap->num_mipmaps(), level);
 
   if (LockedMode(face, level) != kReadOnly) {
-    DCHECK(HasLevel(face, level));
     UpdateResourceFromBitmap(renderer_, resource_id_, level, face,
                              *backing_bitmap);
   }
