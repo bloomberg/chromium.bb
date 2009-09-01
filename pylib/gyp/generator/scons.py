@@ -712,6 +712,8 @@ def add_gyp_methods(env):
 
   env.AddMethod(FilterOut)
 
+  env.AddMethod(compilable)
+
 
 base_env = Environment(
     tools = %(scons_tools)s,

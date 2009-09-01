@@ -85,11 +85,42 @@ class SettingsTarget(TargetBase):
   is_ignored = True
 
 
-class ProgramTarget(TargetBase):
+compilable_sources_template = """
+_result = []
+for infile in input_files:
+  if env.compilable(infile):
+    infile = env.%(name)s(infile)[0]
+  _result.append(infile)
+input_files = _result
+"""
+
+class CompilableSourcesTargetBase(TargetBase):
+  """
+  An abstract base class for targets that compile their source files.
+                                 
+  We explicitly transform compilable files into object files,
+  even though SCons could infer that for us, because we want
+  to control where the object file ends up.  (The implicit rules
+  in SCons always put the object file next to the source file.)
+  """
+  intermediate_builder_name = None
+  def write_target(self, fp, pre=''):
+    if self.intermediate_builder_name is None:
+      raise NotImplementedError
+    variables = {
+        'name': self.intermediate_builder_name
+    }
+    fp.write(compilable_sources_template % variables)
+    super(CompilableSourcesTargetBase, self).write_target(fp)
+    
+
+
+class ProgramTarget(CompilableSourcesTargetBase):
   """
   A GYP target type of 'executable'.
   """
   builder_name = 'GypProgram'
+  intermediate_builder_name = 'StaticObject'
   target_prefix = '${PROGPREFIX}'
   target_suffix = '${PROGSUFFIX}'
 
@@ -102,31 +133,34 @@ class ProgramTarget(TargetBase):
     return 'env.GypProgram(_program, input_files)'
 
 
-class StaticLibraryTarget(TargetBase):
+class StaticLibraryTarget(CompilableSourcesTargetBase):
   """
   A GYP target type of 'static_library'.
   """
   builder_name = 'GypStaticLibrary'
+  intermediate_builder_name = 'StaticObject'
   # TODO:  enable these
   #target_prefix = '${LIBPREFIX}'
   #target_suffix = '${LIBSUFFIX}'
 
 
-class SharedLibraryTarget(TargetBase):
+class SharedLibraryTarget(CompilableSourcesTargetBase):
   """
   A GYP target type of 'shared_library'.
   """
   builder_name = 'GypSharedLibrary'
+  intermediate_builder_name = 'SharedObject'
   # TODO:  enable these
   #target_prefix = '${SHLIBPREFIX}'
   #target_suffix = '${SHLIBSUFFIX}'
 
 
-class LoadableModuleTarget(TargetBase):
+class LoadableModuleTarget(CompilableSourcesTargetBase):
   """
   A GYP target type of 'loadable_module'.
   """
   builder_name = 'GypLoadableModule'
+  intermediate_builder_name = 'SharedObject'
   # TODO:  enable these
   #target_prefix = '${SHLIBPREFIX}'
   #target_suffix = '${SHLIBSUFFIX}'
