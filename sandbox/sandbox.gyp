@@ -12,16 +12,6 @@
         {
           'target_name': 'chrome_sandbox',
           'type': 'executable',
-          'conditions': [
-            ['linux_suid_sandbox_restrictions=="User"',
-              {
-                'defines': [ 'CHROME_DEVEL_SANDBOX' ],
-              },
-            ],
-          ],
-          'defines': [
-            'LINUX_SANDBOX_CHROME_PATH="<(linux_sandbox_chrome_path)"',
-          ],
           'sources': [
             'linux/suid/sandbox.c',
           ],

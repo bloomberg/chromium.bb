@@ -29,10 +29,6 @@
 #define CLONE_NEWPID 0x20000000
 #endif
 
-#if defined(LINUX_SANDBOX_CHROME_PATH)
-static const char kChromeBinary[] = LINUX_SANDBOX_CHROME_PATH;
-#endif
-
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
 
 // These are the magic byte values which the sandboxed process uses to request
