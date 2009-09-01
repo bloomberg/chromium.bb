@@ -2467,3 +2467,7 @@ BUG20748 MAC : LayoutTests/http/tests/plugins/interrupted-get-url.html = TIMEOUT
 
 BUG_OJAN WIN LINUX : LayoutTests/fast/css/remove-shorthand.html = FAIL
 BUG_OJAN WIN LINUX : LayoutTests/fast/inspector/style.html = FAIL
+
+// Flaky crashes
+BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-style-filter.html = PASS CRASH
+BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS CRASH
