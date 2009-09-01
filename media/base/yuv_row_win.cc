@@ -4,11 +4,7 @@
 
 #include "media/base/yuv_row.h"
 
-// Enable bilinear filtering by turning on the following macro.
-//  #define MEDIA_BILINEAR_FILTER 1
-
-namespace media {
-
+extern "C" {
 #define RGBY(i) { \
   static_cast<int16>(1.164 * 64 * (i - 16) + 0.5), \
   static_cast<int16>(1.164 * 64 * (i - 16) + 0.5), \
@@ -32,8 +28,7 @@ namespace media {
 
 #define MMX_ALIGNED(var) __declspec(align(16)) var
 
-extern "C" {
-MMX_ALIGNED(int16 coefficients_RGB_Y[256][4]) = {
+MMX_ALIGNED(int16 kCoefficientsRgbY[256][4]) = {
   RGBY(0x00), RGBY(0x01), RGBY(0x02), RGBY(0x03),
   RGBY(0x04), RGBY(0x05), RGBY(0x06), RGBY(0x07),
   RGBY(0x08), RGBY(0x09), RGBY(0x0A), RGBY(0x0B),
@@ -100,7 +95,7 @@ MMX_ALIGNED(int16 coefficients_RGB_Y[256][4]) = {
   RGBY(0xFC), RGBY(0xFD), RGBY(0xFE), RGBY(0xFF),
 };
 
-MMX_ALIGNED(int16 coefficients_RGB_U[256][4]) = {
+MMX_ALIGNED(int16 kCoefficientsRgbU[256][4]) = {
   RGBU(0x00), RGBU(0x01), RGBU(0x02), RGBU(0x03),
   RGBU(0x04), RGBU(0x05), RGBU(0x06), RGBU(0x07),
   RGBU(0x08), RGBU(0x09), RGBU(0x0A), RGBU(0x0B),
@@ -167,7 +162,7 @@ MMX_ALIGNED(int16 coefficients_RGB_U[256][4]) = {
   RGBU(0xFC), RGBU(0xFD), RGBU(0xFE), RGBU(0xFF),
 };
 
-MMX_ALIGNED(int16 coefficients_RGB_V[256][4]) = {
+MMX_ALIGNED(int16 kCoefficientsRgbV[256][4]) = {
   RGBV(0x00), RGBV(0x01), RGBV(0x02), RGBV(0x03),
   RGBV(0x04), RGBV(0x05), RGBV(0x06), RGBV(0x07),
   RGBV(0x08), RGBV(0x09), RGBV(0x0A), RGBV(0x0B),
@@ -233,7 +228,6 @@ MMX_ALIGNED(int16 coefficients_RGB_V[256][4]) = {
   RGBV(0xF8), RGBV(0xF9), RGBV(0xFA), RGBV(0xFB),
   RGBV(0xFC), RGBV(0xFD), RGBV(0xFE), RGBV(0xFF),
 };
-}  // extern "C"
 
 #undef RGBHY
 #undef RGBY
@@ -258,20 +252,20 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
     mov       esi, [esp + 32 + 12]  // V
     mov       ebp, [esp + 32 + 16]  // rgb
     mov       ecx, [esp + 32 + 20]  // width
-    jmp       wend
+    jmp       convertend
 
- wloop :
+ convertloop :
     movzx     eax, byte ptr [edi]
     add       edi, 1
     movzx     ebx, byte ptr [esi]
     add       esi, 1
-    movq      mm0, [coefficients_RGB_U + 8 * eax]
+    movq      mm0, [kCoefficientsRgbU + 8 * eax]
     movzx     eax, byte ptr [edx]
-    paddsw    mm0, [coefficients_RGB_V + 8 * ebx]
+    paddsw    mm0, [kCoefficientsRgbV + 8 * ebx]
     movzx     ebx, byte ptr [edx + 1]
-    movq      mm1, [coefficients_RGB_Y + 8 * eax]
+    movq      mm1, [kCoefficientsRgbY + 8 * eax]
     add       edx, 2
-    movq      mm2, [coefficients_RGB_Y + 8 * ebx]
+    movq      mm2, [kCoefficientsRgbY + 8 * ebx]
     paddsw    mm1, mm0
     paddsw    mm2, mm0
     psraw     mm1, 6
@@ -279,24 +273,24 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
     packuswb  mm1, mm2
     movntq    [ebp], mm1
     add       ebp, 8
- wend :
+ convertend :
     sub       ecx, 2
-    jns       wloop
+    jns       convertloop
 
     and       ecx, 1  // odd number of pixels?
-    jz        wdone
+    jz        convertdone
 
     movzx     eax, byte ptr [edi]
-    movq      mm0, [coefficients_RGB_U + 8 * eax]
+    movq      mm0, [kCoefficientsRgbU + 8 * eax]
     movzx     eax, byte ptr [esi]
-    paddsw    mm0, [coefficients_RGB_V + 8 * eax]
+    paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     movzx     eax, byte ptr [edx]
-    movq      mm1, [coefficients_RGB_Y + 8 * eax]
+    movq      mm1, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
     psraw     mm1, 6
     packuswb  mm1, mm1
     movd      [ebp], mm1
- wdone :
+ convertdone :
 
     popad
     ret
@@ -323,16 +317,16 @@ void ConvertYUVToRGB32Row(const uint8* y_buf,
  wloop :
     movzx     eax, byte ptr [edi]
     add       edi, ebx
-    movq      mm0, [coefficients_RGB_U + 8 * eax]
+    movq      mm0, [kCoefficientsRgbU + 8 * eax]
     movzx     eax, byte ptr [esi]
     add       esi, ebx
-    paddsw    mm0, [coefficients_RGB_V + 8 * eax]
+    paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     movzx     eax, byte ptr [edx]
     add       edx, ebx
-    movq      mm1, [coefficients_RGB_Y + 8 * eax]
+    movq      mm1, [kCoefficientsRgbY + 8 * eax]
     movzx     eax, byte ptr [edx]
     add       edx, ebx
-    movq      mm2, [coefficients_RGB_Y + 8 * eax]
+    movq      mm2, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
     paddsw    mm2, mm0
     psraw     mm1, 6
@@ -348,11 +342,11 @@ void ConvertYUVToRGB32Row(const uint8* y_buf,
     jz        wdone
 
     movzx     eax, byte ptr [edi]
-    movq      mm0, [coefficients_RGB_U + 8 * eax]
+    movq      mm0, [kCoefficientsRgbU + 8 * eax]
     movzx     eax, byte ptr [esi]
-    paddsw    mm0, [coefficients_RGB_V + 8 * eax]
+    paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     movzx     eax, byte ptr [edx]
-    movq      mm1, [coefficients_RGB_Y + 8 * eax]
+    movq      mm1, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
     psraw     mm1, 6
     packuswb  mm1, mm1
@@ -385,17 +379,17 @@ void RotateConvertYUVToRGB32Row(const uint8* y_buf,
     movzx     eax, byte ptr [edi]
     mov       ebx, [esp + 32 + 28]  // uvstep
     add       edi, ebx
-    movq      mm0, [coefficients_RGB_U + 8 * eax]
+    movq      mm0, [kCoefficientsRgbU + 8 * eax]
     movzx     eax, byte ptr [esi]
     add       esi, ebx
-    paddsw    mm0, [coefficients_RGB_V + 8 * eax]
+    paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     movzx     eax, byte ptr [edx]
     mov       ebx, [esp + 32 + 24]  // ystep
     add       edx, ebx
-    movq      mm1, [coefficients_RGB_Y + 8 * eax]
+    movq      mm1, [kCoefficientsRgbY + 8 * eax]
     movzx     eax, byte ptr [edx]
     add       edx, ebx
-    movq      mm2, [coefficients_RGB_Y + 8 * eax]
+    movq      mm2, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
     paddsw    mm2, mm0
     psraw     mm1, 6
@@ -411,11 +405,11 @@ void RotateConvertYUVToRGB32Row(const uint8* y_buf,
     jz        wdone
 
     movzx     eax, byte ptr [edi]
-    movq      mm0, [coefficients_RGB_U + 8 * eax]
+    movq      mm0, [kCoefficientsRgbU + 8 * eax]
     movzx     eax, byte ptr [esi]
-    paddsw    mm0, [coefficients_RGB_V + 8 * eax]
+    paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     movzx     eax, byte ptr [edx]
-    movq      mm1, [coefficients_RGB_Y + 8 * eax]
+    movq      mm1, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
     psraw     mm1, 6
     packuswb  mm1, mm1
@@ -447,10 +441,10 @@ void DoubleYUVToRGB32Row(const uint8* y_buf,
     add       edi, 1
     movzx     ebx, byte ptr [esi]
     add       esi, 1
-    movq      mm0, [coefficients_RGB_U + 8 * eax]
+    movq      mm0, [kCoefficientsRgbU + 8 * eax]
     movzx     eax, byte ptr [edx]
-    paddsw    mm0, [coefficients_RGB_V + 8 * ebx]
-    movq      mm1, [coefficients_RGB_Y + 8 * eax]
+    paddsw    mm0, [kCoefficientsRgbV + 8 * ebx]
+    movq      mm1, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
     psraw     mm1, 6
     packuswb  mm1, mm1
@@ -459,7 +453,7 @@ void DoubleYUVToRGB32Row(const uint8* y_buf,
 
     movzx     ebx, byte ptr [edx + 1]
     add       edx, 2
-    paddsw    mm0, [coefficients_RGB_Y + 8 * ebx]
+    paddsw    mm0, [kCoefficientsRgbY + 8 * ebx]
     psraw     mm0, 6
     packuswb  mm0, mm0
     punpckldq mm0, mm0
@@ -473,11 +467,11 @@ void DoubleYUVToRGB32Row(const uint8* y_buf,
     jz        wdone
 
     movzx     eax, byte ptr [edi]
-    movq      mm0, [coefficients_RGB_U + 8 * eax]
+    movq      mm0, [kCoefficientsRgbU + 8 * eax]
     movzx     eax, byte ptr [esi]
-    paddsw    mm0, [coefficients_RGB_V + 8 * eax]
+    paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     movzx     eax, byte ptr [edx]
-    movq      mm1, [coefficients_RGB_Y + 8 * eax]
+    movq      mm1, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
     psraw     mm1, 6
     packuswb  mm1, mm1
@@ -514,27 +508,27 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
     mov       ebp, [esp + 32 + 16]  // rgb
     mov       ecx, [esp + 32 + 20]  // width
     xor       ebx, ebx              // x
-    jmp       wend
+    jmp       scaleend
 
- wloop :
+ scaleloop :
     mov       eax, ebx
     sar       eax, 5
     movzx     eax, byte ptr [edi + eax]
-    movq      mm0, [coefficients_RGB_U + 8 * eax]
+    movq      mm0, [kCoefficientsRgbU + 8 * eax]
     mov       eax, ebx
     sar       eax, 5
     movzx     eax, byte ptr [esi + eax]
-    paddsw    mm0, [coefficients_RGB_V + 8 * eax]
+    paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     mov       eax, ebx
     add       ebx, [esp + 32 + 24]  // x += dx
     sar       eax, 4
     movzx     eax, byte ptr [edx + eax]
-    movq      mm1, [coefficients_RGB_Y + 8 * eax]
+    movq      mm1, [kCoefficientsRgbY + 8 * eax]
     mov       eax, ebx
     add       ebx, [esp + 32 + 24]  // x += dx
     sar       eax, 4
     movzx     eax, byte ptr [edx + eax]
-    movq      mm2, [coefficients_RGB_Y + 8 * eax]
+    movq      mm2, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
     paddsw    mm2, mm0
     psraw     mm1, 6
@@ -542,29 +536,29 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
     packuswb  mm1, mm2
     movntq    [ebp], mm1
     add       ebp, 8
- wend :
+ scaleend :
     sub       ecx, 2
-    jns       wloop
+    jns       scaleloop
 
     and       ecx, 1  // odd number of pixels?
-    jz        wdone
+    jz        scaledone
 
     mov       eax, ebx
     sar       eax, 5
     movzx     eax, byte ptr [edi + eax]
-    movq      mm0, [coefficients_RGB_U + 8 * eax]
+    movq      mm0, [kCoefficientsRgbU + 8 * eax]
     mov       eax, ebx
     sar       eax, 5
     movzx     eax, byte ptr [esi + eax]
-    paddsw    mm0, [coefficients_RGB_V + 8 * eax]
+    paddsw    mm0, [kCoefficientsRgbV + 8 * eax]
     mov       eax, ebx
     sar       eax, 4
     movzx     eax, byte ptr [edx + eax]
-    movq      mm1, [coefficients_RGB_Y + 8 * eax]
+    movq      mm1, [kCoefficientsRgbY + 8 * eax]
     mov       eax, ebx
     sar       eax, 4
     movzx     eax, byte ptr [edx + eax]
-    movq      mm2, [coefficients_RGB_Y + 8 * eax]
+    movq      mm2, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
     paddsw    mm2, mm0
     psraw     mm1, 6
@@ -572,12 +566,10 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
     packuswb  mm1, mm2
     movd      [ebp], mm1
 
- wdone :
-
+ scaledone :
     popad
     ret
   }
 }
-
-}  // namespace media
+}  // extern "C"
 

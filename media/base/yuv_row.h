@@ -5,13 +5,14 @@
 // yuv_row internal functions to handle YUV conversion and scaling to RGB.
 // These functions are used from both yuv_convert.cc and yuv_scale.cc.
 
+// TODO(fbarchard): Write function that can handle rotation and scaling.
+
 #ifndef MEDIA_BASE_YUV_ROW_H_
 #define MEDIA_BASE_YUV_ROW_H_
 
 #include "base/basictypes.h"
 
-namespace media {
-
+extern "C" {
 // Can only do 1x.
 // This is the second fastest of the scalers.
 void FastConvertYUVToRGB32Row(const uint8* y_buf,
@@ -59,10 +60,12 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
                         uint8* rgb_buf,
                         int width,
                         int scaled_dx);
+}  // extern "C"
 
-// MMX for Windows; C++ for other platforms.
-#ifndef USE_MMX
+#if !defined(USE_MMX)
 #if defined(_MSC_VER)
+#define USE_MMX 1
+#elif defined(OS_LINUX) && !defined(ARCH_CPU_X86_64)
 #define USE_MMX 1
 #else
 #define USE_MMX 0
@@ -78,8 +81,6 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
 #else
 #define EMMS()
 #endif
-
-}  // namespace media
 
 #endif  // MEDIA_BASE_YUV_ROW_H_
 
