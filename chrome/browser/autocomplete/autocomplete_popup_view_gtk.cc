@@ -24,6 +24,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/common/notification_service.h"
 #include "grit/theme_resources.h"
 
@@ -61,6 +62,9 @@ const int kRightPadding = 3;
 // content to push the description off.  Limit the content to a percentage of
 // the total width.
 const float kContentWidthPercentage = 0.7;
+
+// Radius of the rounded corners.
+const int kCornerSize = 3;
 
 // UTF-8 Left-to-right embedding.
 const char* kLRE = "\xe2\x80\xaa";
@@ -285,6 +289,12 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
                    G_CALLBACK(&HandleButtonReleaseThunk), this);
   g_signal_connect(window_, "expose-event",
                    G_CALLBACK(&HandleExposeThunk), this);
+
+  // Make the popup have rounded corners. (Must be called after we hook up
+  // AutocompletePopupViewGtk's expose-event handler.)
+  gtk_util::ActAsRoundedWindow(
+      window_, kBorderColor, kCornerSize,
+      gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
 }
 
 AutocompletePopupViewGtk::~AutocompletePopupViewGtk() {
@@ -414,22 +424,10 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
   // This means we won't draw the border, but, yeah, whatever.
   // TODO(deanm): Make the code more robust and remove this check.
   if (window_rect.width() < (kIconAreaWidth * 3))
-    return TRUE;
+    return FALSE;
 
   GdkDrawable* drawable = GDK_DRAWABLE(event->window);
   GdkGC* gc = gdk_gc_new(drawable);
-
-  // kBorderColor is unallocated, so use the GdkRGB routine.
-  gdk_gc_set_rgb_fg_color(gc, &kBorderColor);
-
-  // This assert is kinda ugly, but it would be more currently unneeded work
-  // to support painting a border that isn't 1 pixel thick.  There is no point
-  // in writing that code now, and explode if that day ever comes.
-  COMPILE_ASSERT(kBorderThickness == 1, border_1px_implied);
-  // Draw the 1px border around the entire window.
-  gdk_draw_rectangle(drawable, gc, FALSE,
-                     0, 0,
-                     window_rect.width() - 1, window_rect.height() - 1);
 
   pango_layout_set_height(layout_, kHeightPerResult * PANGO_SCALE);
 
@@ -506,7 +504,7 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
 
   g_object_unref(gc);
 
-  return TRUE;
+  return FALSE;
 }
 
 // static
