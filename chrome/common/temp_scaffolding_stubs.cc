@@ -210,6 +210,7 @@ bool RLZTracker::RecordProductEvent(Product product, AccessPoint point,
 
 //--------------------------------------------------------------------------
 
+#if defined(OS_MACOSX)
 MemoryDetails::MemoryDetails() {
   NOTIMPLEMENTED();
 }
@@ -218,6 +219,7 @@ void MemoryDetails::StartFetch() {
   NOTIMPLEMENTED();
   OnDetailsAvailable();
 }
+#endif
 
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 // This should prompt the user if she wants to allow more than one concurrent

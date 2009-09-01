@@ -121,6 +121,7 @@ ZygoteHost::ZygoteHost() {
   base::LaunchApp(cmd_line.argv(), fds_to_map, false, &process);
   CHECK(process != -1) << "Failed to launch zygote process";
 
+  pid_ = process;
   close(fds[1]);
   control_fd_ = fds[0];
 }

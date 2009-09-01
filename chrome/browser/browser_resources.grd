@@ -13,7 +13,15 @@ without changes to the corresponding grd file. aa3 -->
     <includes>
       <include name="IDR_ABOUT_PLUGINS_HTML" file="resources\about_plugins.html" type="BINDATA" />
       <include name="IDR_ABOUT_VERSION_HTML" file="resources\about_version.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory.html" flattenhtml="true" type="BINDATA" />
+
+      <if expr="os == 'linux2'">
+        <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_linux.html" flattenhtml="true" type="BINDATA" />
+      </if>
+
+      <if expr="os != 'linux2'">
+        <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory.html" flattenhtml="true" type="BINDATA" />
+      </if>
+
       <include name="IDR_ABOUT_STATS_HTML" file="resources\about_stats.html" type="BINDATA" />
       <include name="IDR_SSL_ROAD_BLOCK_HTML" file="security\resources\ssl_roadblock.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SSL_ERROR_HTML" file="security\resources\ssl_error.html" flattenhtml="true" type="BINDATA" />

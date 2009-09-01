@@ -17,8 +17,11 @@ class MessageLoop;
 // have multiple processes (of course!).  Even IE has multiple
 // processes these days.
 struct ProcessMemoryInformation {
-  ProcessMemoryInformation() {
-    memset(this, 0, sizeof(ProcessMemoryInformation));
+  ProcessMemoryInformation()
+      : pid(0),
+        num_processes(0),
+        is_diagnostics(false),
+        type(ChildProcessInfo::UNKNOWN_PROCESS) {
   }
 
   // The process id.
@@ -46,8 +49,8 @@ typedef std::vector<ProcessMemoryInformation> ProcessMemoryInformationList;
 
 // Browser Process Information.
 struct ProcessData {
-  const wchar_t* name;
-  const wchar_t* process_name;
+  std::wstring name;
+  std::wstring process_name;
   ProcessMemoryInformationList processes;
 };
 
@@ -71,26 +74,13 @@ struct ProcessData {
 //    }
 class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
  public:
-  // Known browsers which we collect details for.
-  enum {
-    CHROME_BROWSER = 0,
-    IE_BROWSER,
-    FIREFOX_BROWSER,
-    OPERA_BROWSER,
-    SAFARI_BROWSER,
-    IE_64BIT_BROWSER,
-    KONQUEROR_BROWSER,
-    MAX_BROWSERS
-  } BrowserProcess;
-
   // Constructor.
   MemoryDetails();
   virtual ~MemoryDetails() {}
 
-  // Access to the process detail information.  This is an array
-  // of MAX_BROWSER ProcessData structures.  This data is only available
+  // Access to the process detail information.  This data is only available
   // after OnDetailsAvailable() has been called.
-  ProcessData* processes() { return process_data_; }
+  const std::vector<ProcessData>& processes() { return process_data_; }
 
   // Initiate updating the current memory details.  These are fetched
   // asynchronously because data must be collected from multiple threads.
@@ -123,7 +113,10 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   // the global histograms for tracking memory usage.
   void UpdateHistograms();
 
-  ProcessData process_data_[MAX_BROWSERS];
+  // Returns a pointer to the ProcessData structure for Chrome.
+  ProcessData* ChromeBrowser();
+
+  std::vector<ProcessData> process_data_;
   MessageLoop* ui_loop_;
 
   DISALLOW_EVIL_CONSTRUCTORS(MemoryDetails);

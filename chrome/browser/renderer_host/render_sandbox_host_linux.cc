@@ -295,8 +295,8 @@ RenderSandboxHostLinux::RenderSandboxHostLinux() {
   const int child_lifeline_fd = pipefds[0];
   childs_lifeline_fd_ = pipefds[1];
 
-  const pid_t child = fork();
-  if (child == 0) {
+  pid_ = fork();
+  if (pid_ == 0) {
     SandboxIPCProcess handler(child_lifeline_fd, browser_socket);
     handler.Run();
     _exit(0);

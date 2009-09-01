@@ -620,17 +620,17 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   ListValue* browsers = new ListValue();
   root.Set(L"browsers", browsers);
 
-  ProcessData* browser_processes = processes();
+  const std::vector<ProcessData>& browser_processes = processes();
 
   // Aggregate per-process data into browser summary data.
   std::wstring log_string;
-  for (int index = 0; index < MemoryDetails::MAX_BROWSERS; index++) {
+  for (size_t index = 0; index < browser_processes.size(); index++) {
     if (browser_processes[index].processes.size() == 0)
       continue;
 
     // Sum the information for the processes within this browser.
     ProcessMemoryInformation aggregate;
-    ProcessMemoryInformationList::iterator iterator;
+    ProcessMemoryInformationList::const_iterator iterator;
     iterator = browser_processes[index].processes.begin();
     aggregate.pid = iterator->pid;
     aggregate.version = iterator->version;

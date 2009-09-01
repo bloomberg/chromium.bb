@@ -268,15 +268,13 @@ table.list .noResults td {
 
 table.list#memoryDetails tr:not([class*='firstRow']) > *:nth-child(2),
 table.list#memoryDetails tr:not([class*='firstRow']) > *:nth-child(5),
-table.list#memoryDetails tr.firstRow th:nth-child(2),
-table.list#memoryDetails tr.firstRow th:nth-child(3) {
+table.list#memoryDetails tr.firstRow th:nth-child(2) {
   border-right: 1px solid #b5c6de;
 }
 
 table.list#browserComparison tr:not([class*='firstRow']) > *:nth-child(1),
 table.list#browserComparison tr:not([class*='firstRow']) > *:nth-child(4),
-table.list#browserComparison tr.firstRow th:nth-child(1),
-table.list#browserComparison tr.firstRow th:nth-child(2) {
+table.list#browserComparison tr.firstRow th:nth-child(1) {
   border-right: 1px solid #b5c6de;
 }
 table.list#browserComparison .name {
@@ -426,14 +424,11 @@ function enableHelpTooltips() {
           <col class='name' />
           <col class='number' />
           <col class='number' />
-          <col class='number' />
-          <col class='number' />
-          <col class='number' />
         </colgroup>
         <tr class='firstRow doNotFilter'>
           <th>
           </th>
-          <th colspan='3'>
+          <th colspan='2'>
             Memory
             <div class='help'>
               <div>
@@ -446,38 +441,14 @@ function enableHelpTooltips() {
                   This is the best indicator of browser memory resource usage.
                 </p>
                 <p>
-                  <strong>Shared:</strong>
-                  Resident memory size that is currently shared with 2 or more processes.
-                  Note: For browsers using multiple processes, if we simply added the shared memory
-                  of each individual process, this value would be inflated. Therefore, this value
-                  is computed as an approximate value for shared memory in each of the browser's
-                  processes. Note also that shared memory varies depending on what other processes
-                  are running on the system, and may be difficult to measure reproducibly.
+                  <strong>Proportional:</strong>
+                  Accounts for each page of memory as a fraction based on the number of
+                  processes that have it mapped. Thus, for each page of memory mapped by two
+                  processes, this sum will count half of the bytes towards each.
+                  Therefore, this number is greater than the private count.
                 </p>
-                <p>
-                  <strong>Total:</strong>
-                  The sum of the private + shared resident memory sizes.
-                </p>
-              </div>
-            </div>
-          </th>
-          <th colspan='2'>
-            Virtual memory
-            <div class='help'>
-              <div>
-                <p>
-                  <strong>Virtual memory</strong>
-                </p>
-                <p>
-                  <strong>Private:</strong>
-                  The resident and paged bytes committed for use by only this process.
-                </p>
-                <p>
-                  <strong>Mapped:</strong>
-                  Total bytes allocated by this process that are mapped into the
-                  view of a section, backed by either system pagefile or file system. This
-                  is primarily memory-mapped files.
-                </p>
+
+                <p><i>(Note that the memory for this tab is not included in the browser totals)</i></p>
               </div>
             </div>
           </th>
@@ -489,18 +460,8 @@ function enableHelpTooltips() {
           <th class='name'>
             Private
           </th>
-          </th>
           <th class='number'>
-            Shared
-          </th>
-          <th class='number'>
-            Total
-          </th>
-          <th class='number'>
-            Private
-          </th>
-          <th class='number'>
-            Mapped
+            Proportional
           </th>
         </tr>
         <tr jsselect="browsers">
@@ -510,19 +471,10 @@ function enableHelpTooltips() {
             </div>
           </td>
           <td class='number'>
-            <span class='th' jscontent="formatNumber(ws_priv + ws_shareable - ws_shared)"></span><span class='k'>k</span>
+            <span class='th' jscontent="formatNumber(ws_priv)"></span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jscontent="formatNumber(ws_shared / processes)"></span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <span class='th' jscontent="formatNumber(ws_priv + ws_shareable - ws_shared + (ws_shared / processes))"></span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <span class='th' jscontent="formatNumber(comm_priv)"></span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <span class='th' jscontent="formatNumber(comm_map)"></span><span class='k'>k</span>
+            <span class='th' jscontent="formatNumber(ws_shared)"></span><span class='k'>k</span>
           </td>
         </tr>
       </table>
@@ -550,22 +502,15 @@ function enableHelpTooltips() {
           <col class='name' />
           <col class='number' />
           <col class='number' />
-          <col class='number' />
-          <col class='number' />
-          <col class='number' />
         </colgroup>
         <tr class='firstRow doNotFilter'>
           <th>
           </th>
           <th>
           </th>
-          <th colspan='3'>
+          <th colspan='2'>
             Memory
           </th>
-          <th colspan='2'>
-            Virtual memory
-          </th>
-
         </tr>
         <tr class='secondRow doNotFilter'>
           <th class='pid'>
@@ -578,16 +523,7 @@ function enableHelpTooltips() {
             Private
           </th>
           <th class='number'>
-            Shared
-          </th>
-          <th class='number'>
-            Total
-          </th>
-          <th class='number'>
-            Private
-          </th>
-          <th class='number'>
-            Mapped
+            Proportional
           </th>
         </tr>
 
@@ -601,19 +537,10 @@ function enableHelpTooltips() {
             </div>
           </td>
           <td class='number'>
-            <span class='th' jseval="addToSum('tot_ws_priv', $this.ws_priv + $this.ws_shareable - $this.ws_shared)" jscontent="ws_priv + ws_shareable - ws_shared"></span><span class='k'>k</span>
+            <span class='th' jseval="addToSum('tot_ws_priv', $this.ws_priv)" jscontent="formatNumber(ws_priv)"></span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jscontent="ws_shared"></span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <span class='th' jseval="addToSum('tot_ws_tot', $this.ws_priv + $this.ws_shareable)" jscontent="ws_priv + ws_shareable"></span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <span class='th' jseval="addToSum('tot_comm_priv', $this.comm_priv)" jscontent="comm_priv"></span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <span class='th' jseval="addToSum('tot_comm_map', $this.comm_map)" jscontent="comm_map"></span><span class='k'>k</span>
+            <span class='th' jscontent="formatNumber(ws_shared)"></span><span class='k'>k</span>
           </td>
         </tr>
         <tr jsselect="child_data">
@@ -627,19 +554,10 @@ function enableHelpTooltips() {
             </div>
           </td>
           <td class='number'>
-            <span class='th' jseval="addToSum('tot_ws_priv', $this.ws_priv + $this.ws_shareable - $this.ws_shared)" jscontent="ws_priv + ws_shareable - ws_shared"></span><span class='k'>k</span>
+            <span class='th' jseval="addToSum('tot_ws_priv', $this.ws_priv)" jscontent="formatNumber(ws_priv)"></span><span class='k'>k</span>
           </td>
           <td class='number'>
-            <span class='th' jscontent="ws_shared"></span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <span class='th' jseval="addToSum('tot_ws_tot', $this.ws_priv + $this.ws_shareable)" jscontent="ws_priv + ws_shareable"></span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <span class='th' jseval="addToSum('tot_comm_priv', $this.comm_priv)" jscontent="comm_priv"></span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <span class='th' jseval="addToSum('tot_comm_map', $this.comm_map)" jscontent="comm_map"></span><span class='k'>k</span>
+            <span class='th' jscontent="formatNumber(ws_shared)"></span><span class='k'>k</span>
           </td>
         </tr>
         <tr class='total doNotFilter'>
@@ -652,27 +570,6 @@ function enableHelpTooltips() {
             <span class='th' id="tot_ws_priv">0</span><span class='k'>k</span>
           </td>
           <td class='number'>
-          </td>
-          <td class='number'>
-            <span class='th' id="tot_ws_tot">0</span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <span class='th' id="tot_comm_priv">0</span><span class='k'>k</span>
-          </td>
-          <td class='number'>
-            <div class='help'>
-              <div>
-                <p>
-                  This is an approximation. Conceptually, this is the total
-                  amount of in-memory pages for the entire logical Chromium
-                  application, without double counting shared pages (e.g.
-                  mapped
-                  DLLs, SharedMemory bitmaps, etc.) across the browser and
-                  renderers.
-                </p>
-              </div>
-            </div>
-            <span class='th' id="tot_comm_map">0</span><span class='k'>k</span>
           </td>
         </tr>
 

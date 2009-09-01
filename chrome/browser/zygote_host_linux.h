@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include <unistd.h>
+
 #include "base/global_descriptors_posix.h"
 #include "base/process.h"
 
@@ -39,12 +41,15 @@ class ZygoteHost {
     kCmdDidProcessCrash = 2,  // Check if child process crashed.
   };
 
+  pid_t pid() const { return pid_; }
+
  private:
   friend struct DefaultSingletonTraits<ZygoteHost>;
   ZygoteHost();
   void LaunchZygoteProcess();
 
   int control_fd_;  // the socket to the zygote
+  pid_t pid_;
 };
 
 #endif  // CHROME_BROWSER_ZYGOTE_HOST_LINUX_H_

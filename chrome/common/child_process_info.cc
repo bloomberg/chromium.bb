@@ -48,6 +48,10 @@ std::wstring ChildProcessInfo::GetTypeNameInEnglish(
       return L"Web Worker";
     case UTILITY_PROCESS:
       return L"Utility";
+    case ZYGOTE_PROCESS:
+      return L"Zygote";
+    case SANDBOX_HELPER_PROCESS:
+      return L"Sandbox helper";
     case UNKNOWN_PROCESS:
       default:
       DCHECK(false) << "Unknown child process type!";
