@@ -26,6 +26,9 @@
 #include "base/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include <CoreFoundation/CFUserNotification.h>
+#elif defined(TOOLKIT_GTK)
+#include "chrome/browser/extensions/gtk_theme_preview_infobar_delegate.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
 
 namespace {
@@ -82,7 +85,11 @@ static std::wstring GetInstallWarning(Extension* extension) {
 }
 
 ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
-    : profile_(profile), ui_loop_(MessageLoop::current()) {
+    : profile_(profile), ui_loop_(MessageLoop::current())
+#if defined(TOOLKIT_GTK)
+    ,previous_use_gtk_theme_(false)
+#endif
+{
 }
 
 void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
@@ -98,6 +105,13 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
     Extension* previous_theme = profile_->GetTheme();
     if (previous_theme)
       previous_theme_id_ = previous_theme->id();
+
+#if defined(TOOLKIT_GTK)
+    // On linux, we also need to take the user's system settings into account
+    // to undo theme installation.
+    previous_use_gtk_theme_ =
+        GtkThemeProvider::GetFrom(profile_)->UseGtkTheme();
+#endif
 
     delegate->ContinueInstall();
     return;
@@ -215,8 +229,15 @@ void ExtensionInstallUI::ShowThemeInfoBar(Extension* new_theme) {
   }
 
   // Then either replace that old one or add a new one.
-  InfoBarDelegate* new_delegate = new ThemePreviewInfobarDelegate(tab_contents,
-      new_theme->name(), previous_theme_id_);
+  InfoBarDelegate* new_delegate =
+#if defined(TOOLKIT_GTK)
+      new GtkThemePreviewInfobarDelegate(
+          tab_contents,
+          new_theme->name(), previous_theme_id_, previous_use_gtk_theme_);
+#else
+      new ThemePreviewInfobarDelegate(tab_contents,
+                                      new_theme->name(), previous_theme_id_);
+#endif
 
   if (old_delegate)
     tab_contents->ReplaceInfoBar(old_delegate, new_delegate);

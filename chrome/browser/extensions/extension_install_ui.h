@@ -65,6 +65,11 @@ class ExtensionInstallUI {
   Profile* profile_;
   MessageLoop* ui_loop_;
   std::string previous_theme_id_;  // Used to undo theme installation.
+
+#if defined(TOOLKIT_GTK)
+  // Also needed to undo theme installation in the linux UI.
+  bool previous_use_gtk_theme_;
+#endif
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_

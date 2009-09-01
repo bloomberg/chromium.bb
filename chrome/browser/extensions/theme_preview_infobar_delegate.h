@@ -29,6 +29,9 @@ class ThemePreviewInfobarDelegate : public ConfirmInfoBarDelegate {
       ConfirmInfoBarDelegate::InfoBarButton button) const;
   virtual bool Cancel();
 
+ protected:
+  Profile* profile() { return profile_; }
+
  private:
   Profile* profile_;
   std::string name_;  // name of theme to install

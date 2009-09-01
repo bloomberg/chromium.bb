@@ -1141,6 +1141,8 @@
         'browser/extensions/external_registry_extension_provider_win.h',
         'browser/extensions/external_pref_extension_provider.cc',
         'browser/extensions/external_pref_extension_provider.h',
+        'browser/extensions/gtk_theme_preview_infobar_delegate.cc',
+        'browser/extensions/gtk_theme_preview_infobar_delegate.h',
         'browser/extensions/pack_extension_job.cc',
         'browser/extensions/pack_extension_job.h',
         'browser/extensions/sandboxed_extension_unpacker.cc',
