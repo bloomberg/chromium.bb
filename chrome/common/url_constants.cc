@@ -21,12 +21,14 @@ const char kMailToScheme[] = "mailto";
 const char kPrintScheme[] = "print";
 const char kUserScriptScheme[] = "chrome-user-script";
 const char kViewCacheScheme[] = "view-cache";
+const char kViewNetInternalScheme[] = "view-net-internal";
 const char kViewSourceScheme[] = "view-source";
 
 const char kStandardSchemeSeparator[] = "://";
 
 const char kAboutBlankURL[] = "about:blank";
 const char kAboutCacheURL[] = "about:cache";
+const char kAboutNetInternalURL[] = "about:net-internal";
 const char kAboutCrashURL[] = "about:crash";
 const char kAboutHangURL[] = "about:hang";
 const char kAboutMemoryURL[] = "about:memory";

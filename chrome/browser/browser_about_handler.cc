@@ -65,7 +65,6 @@ using base::TimeDelta;
 namespace {
 
 // The paths used for the about pages.
-const char kCachePath[] = "cache";
 const char kDnsPath[] = "dns";
 const char kHistogramsPath[] = "histograms";
 const char kObjectsPath[] = "objects";
@@ -780,6 +779,19 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutCacheURL)) {
     // Create an mapping from about:cache to the view-cache: internal URL.
     *url = GURL(std::string(chrome::kViewCacheScheme) + ":");
+    return true;
+  }
+
+  // Handle rewriting net-internal URLs. This allows us to load
+  // about:net-internal.
+  if (StartsWithASCII(url->spec(), chrome::kAboutNetInternalURL, true)) {
+    // Create a mapping from about:net-internal to the view-net-internal:
+    // internal URL.
+    std::string path;
+    size_t split = url->spec().find('/');
+    if (split != std::string::npos)
+      path = url->spec().substr(split + 1);
+    *url = GURL(std::string(chrome::kViewNetInternalScheme) + ":" + path);
     return true;
   }
 
