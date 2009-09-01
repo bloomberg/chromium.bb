@@ -33,6 +33,7 @@ class SimpleResourceLoaderBridge {
                         const std::string& cookie);
   static std::string GetCookies(const GURL& url,
                                 const GURL& first_party_for_cookies);
+  static bool EnsureIOThread();
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_RESOURCE_LOADER_BRIDGE_H__

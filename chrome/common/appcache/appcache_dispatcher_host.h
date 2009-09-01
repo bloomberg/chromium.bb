@@ -6,9 +6,13 @@
 #define CHROME_COMMON_APPCACHE_APPCACHE_DISPATCHER_HOST_H_
 
 #include <vector>
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "chrome/common/appcache/appcache_frontend_proxy.h"
 #include "ipc/ipc_message.h"
 #include "webkit/appcache/appcache_backend_impl.h"
+
+class ChromeAppCacheService;
 
 // Handles appcache related messages sent to the main browser process from
 // its child processes. There is a distinct host for each child process.
@@ -16,8 +20,12 @@
 // an instance and delegates calls to it.
 class AppCacheDispatcherHost {
  public:
-  void Initialize(IPC::Message::Sender* sender);
+  explicit AppCacheDispatcherHost(ChromeAppCacheService* appcache_service);
+
+  void Initialize(IPC::Message::Sender* sender, int process_id);
   bool OnMessageReceived(const IPC::Message& msg, bool* msg_is_ok);
+
+  int process_id() const { return backend_impl_.process_id(); }
 
   // Note: needed to satisfy ipc message dispatching macros.
   bool Send(IPC::Message* msg) {
@@ -37,8 +45,18 @@ class AppCacheDispatcherHost {
   void OnStartUpdate(int host_id, IPC::Message* reply_msg);
   void OnSwapCache(int host_id, IPC::Message* reply_msg);
 
+  void GetStatusCallback(appcache::Status status, void* param);
+  void StartUpdateCallback(bool result, void* param);
+  void SwapCacheCallback(bool result, void* param);
+
   AppCacheFrontendProxy frontend_proxy_;
   appcache::AppCacheBackendImpl backend_impl_;
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
+  scoped_ptr<appcache::GetStatusCallback> get_status_callback_;
+  scoped_ptr<appcache::StartUpdateCallback> start_update_callback_;
+  scoped_ptr<appcache::SwapCacheCallback> swap_cache_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppCacheDispatcherHost);
 };
 
 #endif  // CHROME_COMMON_APPCACHE_APPCACHE_DISPATCHER_HOST_H_

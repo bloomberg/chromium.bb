@@ -54,6 +54,7 @@
 #include "net/base/ssl_cert_request_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "webkit/appcache/appcache_interceptor.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
 // TODO(port): Move these includes to the above section when porting is done.
@@ -239,9 +240,11 @@ void PopulateResourceResponse(URLRequest* request,
   request->GetCharset(&response->response_head.charset);
   response->response_head.filter_policy = filter_policy;
   response->response_head.content_length = request->GetExpectedContentSize();
-  response->response_head.appcache_id = appcache::kNoCacheId;
-  response->response_head.appcache_manifest_url = GURL();
   request->GetMimeType(&response->response_head.mime_type);
+  appcache::AppCacheInterceptor::GetExtraResponseInfo(
+      request,
+      &response->response_head.appcache_id,
+      &response->response_head.appcache_manifest_url);
 }
 
 }  // namespace
@@ -294,6 +297,9 @@ void ResourceDispatcherHost::Initialize() {
   DCHECK(MessageLoop::current() == ui_loop_);
   download_file_manager_->Initialize();
   safe_browsing_->Initialize(io_loop_);
+  io_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableFunction(&appcache::AppCacheInterceptor::EnsureRegistered));
 }
 
 void ResourceDispatcherHost::Shutdown() {
@@ -581,6 +587,11 @@ void ResourceDispatcherHost::BeginRequest(
   SetExtraInfoForRequest(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(
       request_data.origin_child_id, request);
+
+  // Have the appcache associate its extra info with the request.
+  appcache::AppCacheInterceptor::SetExtraRequestInfo(
+      request, context ? context->appcache_service() : NULL, child_id,
+      request_data.appcache_host_id, request_data.resource_type);
 
   BeginRequestInternal(request);
 }

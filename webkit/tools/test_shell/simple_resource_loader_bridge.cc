@@ -48,6 +48,7 @@
 #include "net/url_request/url_request.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/test_shell_request_context.h"
 
 using webkit_glue::ResourceLoaderBridge;
@@ -71,6 +72,10 @@ class IOThread : public base::Thread {
     Stop();
   }
 
+  virtual void Init() {
+    SimpleAppCacheSystem::InitializeOnIOThread();
+  }
+
   virtual void CleanUp() {
     if (request_context) {
       request_context->Release();
@@ -78,19 +83,6 @@ class IOThread : public base::Thread {
     }
   }
 };
-
-bool EnsureIOThread() {
-  if (io_thread)
-    return true;
-
-  if (!request_context)
-    SimpleResourceLoaderBridge::Init(NULL);
-
-  io_thread = new IOThread();
-  base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
-  return io_thread->StartWithOptions(options);
-}
 
 //-----------------------------------------------------------------------------
 
@@ -101,6 +93,7 @@ struct RequestParams {
   GURL referrer;
   std::string headers;
   int load_flags;
+  ResourceType::Type request_type;
   int appcache_host_id;
   scoped_refptr<net::UploadData> upload;
 };
@@ -214,6 +207,9 @@ class RequestProxy : public URLRequest::Delegate,
     request_->set_load_flags(params->load_flags);
     request_->set_upload(params->upload.get());
     request_->set_context(request_context);
+    SimpleAppCacheSystem::SetExtraRequestInfo(
+        request_.get(), params->appcache_host_id, params->request_type);
+
     request_->Start();
 
     if (request_->has_upload() &&
@@ -376,11 +372,13 @@ class RequestProxy : public URLRequest::Delegate,
     info->request_time = request->request_time();
     info->response_time = request->response_time();
     info->headers = request->response_headers();
-    info->appcache_id = appcache::kNoCacheId;
-    // TODO(michaeln): info->appcache_manifest_url = GURL();
     request->GetMimeType(&info->mime_type);
     request->GetCharset(&info->charset);
     info->content_length = request->GetExpectedContentSize();
+    SimpleAppCacheSystem::GetExtraResponseInfo(
+        request,
+        &info->appcache_id,
+        &info->appcache_manifest_url);
   }
 
   scoped_ptr<URLRequest> request_;
@@ -469,6 +467,7 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
                            const GURL& referrer,
                            const std::string& headers,
                            int load_flags,
+                           ResourceType::Type request_type,
                            int appcache_host_id)
       : params_(new RequestParams),
         proxy_(NULL) {
@@ -478,6 +477,7 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
     params_->referrer = referrer;
     params_->headers = headers;
     params_->load_flags = load_flags;
+    params_->request_type = request_type;
     params_->appcache_host_id = appcache_host_id;
   }
 
@@ -517,7 +517,7 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
   virtual bool Start(Peer* peer) {
     DCHECK(!proxy_);
 
-    if (!EnsureIOThread())
+    if (!SimpleResourceLoaderBridge::EnsureIOThread())
       return false;
 
     proxy_ = new RequestProxy();
@@ -540,7 +540,7 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
   virtual void SyncLoad(SyncLoadResponse* response) {
     DCHECK(!proxy_);
 
-    if (!EnsureIOThread())
+    if (!SimpleResourceLoaderBridge::EnsureIOThread())
       return;
 
     // this may change as the result of a redirect
@@ -616,7 +616,7 @@ ResourceLoaderBridge* ResourceLoaderBridge::Create(
     int routing_id) {
   return new ResourceLoaderBridgeImpl(method, url, first_party_for_cookies,
                                       referrer, headers, load_flags,
-                                      appcache_host_id);
+                                      request_type, appcache_host_id);
 }
 
 // Issue the proxy resolve request on the io thread, and wait
@@ -695,4 +695,17 @@ std::string SimpleResourceLoaderBridge::GetCookies(
       getter.get(), &CookieGetter::Get, url));
 
   return getter->GetResult();
+}
+
+bool SimpleResourceLoaderBridge::EnsureIOThread() {
+  if (io_thread)
+    return true;
+
+  if (!request_context)
+    SimpleResourceLoaderBridge::Init(NULL);
+
+  io_thread = new IOThread();
+  base::Thread::Options options;
+  options.message_loop_type = MessageLoop::TYPE_IO;
+  return io_thread->StartWithOptions(options);
 }

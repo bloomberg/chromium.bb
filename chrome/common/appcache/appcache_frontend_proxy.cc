@@ -20,4 +20,3 @@ void AppCacheFrontendProxy::OnEventRaised(const std::vector<int>& host_ids,
                                           appcache::EventID event_id) {
   sender_->Send(new AppCacheMsg_EventRaised(host_ids, event_id));
 }
-

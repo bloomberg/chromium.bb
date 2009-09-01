@@ -156,7 +156,8 @@ ResourceMessageFilter::ResourceMessageFilter(
       profile_(profile),
       render_widget_helper_(render_widget_helper),
       audio_renderer_host_(audio_renderer_host),
-      appcache_dispatcher_host_(new AppCacheDispatcherHost),
+      appcache_dispatcher_host_(
+          new AppCacheDispatcherHost(profile->GetAppCacheService())),
       ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext(),
               resource_dispatcher_host->webkit_thread()))),
@@ -193,7 +194,7 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 
 void ResourceMessageFilter::Init() {
   render_widget_helper_->Init(id(), resource_dispatcher_host_);
-  appcache_dispatcher_host_->Initialize(this);
+  appcache_dispatcher_host_->Initialize(this, id());
 }
 
 // Called on the IPC thread:

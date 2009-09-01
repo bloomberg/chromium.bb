@@ -45,6 +45,9 @@ class AutomationProfileImpl : public Profile {
   virtual Profile* GetOriginalProfile() {
     return original_profile_->GetOriginalProfile();
   }
+  virtual ChromeAppCacheService* GetAppCacheService() {
+    return original_profile_->GetAppCacheService();
+  }
   virtual VisitedLinkMaster* GetVisitedLinkMaster() {
     return original_profile_->GetVisitedLinkMaster();
   }

@@ -423,6 +423,7 @@
         'common/appcache/appcache_dispatcher_host.h',
         'common/appcache/appcache_frontend_proxy.cc',
         'common/appcache/appcache_frontend_proxy.h',
+        'common/appcache/chrome_appcache_service.h',
         'common/automation_constants.cc',
         'common/automation_constants.h',
         'common/bindings_policy.h',

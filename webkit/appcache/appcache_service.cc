@@ -17,14 +17,21 @@ AppCacheService::~AppCacheService() {
   DCHECK(groups_.empty());
 }
 
-void AppCacheService::RegisterBackendImpl(
-    AppCacheBackendImpl* backend_impl) {
-  backends_.insert(backend_impl);
+void AppCacheService::Initialize(const FilePath& cache_directory) {
+  // An empty cache directory indicates chrome incognito.
+  cache_directory_ = cache_directory;
 }
 
-void AppCacheService::UnregisterBackendImpl(
+void AppCacheService::RegisterBackend(
     AppCacheBackendImpl* backend_impl) {
-  backends_.erase(backend_impl);
+  DCHECK(backends_.find(backend_impl->process_id()) == backends_.end());
+  backends_.insert(
+      BackendMap::value_type(backend_impl->process_id(), backend_impl));
+}
+
+void AppCacheService::UnregisterBackend(
+    AppCacheBackendImpl* backend_impl) {
+  backends_.erase(backend_impl->process_id());
 }
 
 void AppCacheService::AddCache(AppCache* cache) {

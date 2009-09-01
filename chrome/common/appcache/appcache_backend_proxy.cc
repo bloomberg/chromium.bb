@@ -34,20 +34,19 @@ void AppCacheBackendProxy::MarkAsForeignEntry(
 }
 
 appcache::Status AppCacheBackendProxy::GetStatus(int host_id) {
-  appcache::Status status;
+  appcache::Status status = appcache::UNCACHED;
   sender_->Send(new AppCacheMsg_GetStatus(host_id, &status));
   return status;
 }
 
 bool AppCacheBackendProxy::StartUpdate(int host_id) {
-  bool result;
+  bool result = false;
   sender_->Send(new AppCacheMsg_StartUpdate(host_id, &result));
   return result;
 }
 
 bool AppCacheBackendProxy::SwapCache(int host_id) {
-  bool result;
+  bool result = false;
   sender_->Send(new AppCacheMsg_SwapCache(host_id, &result));
   return result;
 }
-

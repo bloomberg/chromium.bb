@@ -354,6 +354,8 @@ ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
   }
 
   ssl_config_service_ = profile->GetSSLConfigService();
+
+  appcache_service_ = profile->GetAppCacheService();
 }
 
 ChromeURLRequestContext::ChromeURLRequestContext(
@@ -378,6 +380,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   blacklist_ = other->blacklist_;
   is_media_ = other->is_media_;
   is_off_the_record_ = other->is_off_the_record_;
+  appcache_service_ = other->appcache_service_;
 }
 
 // NotificationObserver implementation.

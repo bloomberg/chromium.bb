@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+#include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/net/cookie_monster_sqlite.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_service.h"
@@ -65,6 +66,12 @@ class ChromeURLRequestContext : public URLRequestContext,
     return user_script_dir_path_;
   }
 
+  // Gets the appcache service to be used for requests in this context.
+  // May be NULL if requests for this context aren't subject to appcaching.
+  ChromeAppCacheService* appcache_service() const {
+    return appcache_service_.get();
+  }
+
   virtual const std::string& GetUserAgent(const GURL& url) const;
 
   virtual bool InterceptCookie(const URLRequest* request, std::string* cookie);
@@ -117,6 +124,8 @@ class ChromeURLRequestContext : public URLRequestContext,
 
   // Path to the directory user scripts are stored in.
   FilePath user_script_dir_path_;
+
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
 
   scoped_ptr<SQLitePersistentCookieStore> cookie_db_;
   PrefService* prefs_;

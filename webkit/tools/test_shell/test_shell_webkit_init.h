@@ -7,6 +7,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "media/base/media.h"
@@ -42,7 +43,6 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     WebKit::enableV8SingleThreadMode();
     WebKit::registerExtension(extensions_v8::GearsExtension::Get());
     WebKit::registerExtension(extensions_v8::IntervalExtension::Get());
-    appcache_system_.Initialize();
 
     // Load libraries for media and enable the media player.
     FilePath module_path;
@@ -50,6 +50,12 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
         media::InitializeMediaLibrary(module_path)) {
       WebKit::enableMediaPlayer();
     }
+
+    // Construct and initialize an appcache system for this scope.
+    // A new empty temp directory is created to house any cached
+    // content during the run. Upon exit that directory is deleted.
+    if (appcache_dir_.CreateUniqueTempDir())
+      SimpleAppCacheSystem::InitializeOnUIThread(appcache_dir_.path());
   }
 
   ~TestShellWebKitInit() {
@@ -149,14 +155,14 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
         WebKit::WebApplicationCacheHostClient* client) {
-    return new appcache::WebApplicationCacheHostImpl(
-                            client, appcache_system_.backend());
+    return SimpleAppCacheSystem::CreateApplicationCacheHost(client);
   }
 
  private:
   webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebClipboardImpl real_clipboard_;
+  ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
 };
 

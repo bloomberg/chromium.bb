@@ -75,6 +75,9 @@ class TestingProfile : public Profile {
   virtual Profile* GetOriginalProfile() {
     return this;
   }
+  virtual ChromeAppCacheService* GetAppCacheService() {
+    return NULL;
+  }
   virtual VisitedLinkMaster* GetVisitedLinkMaster() {
     return NULL;
   }
@@ -130,11 +133,9 @@ class TestingProfile : public Profile {
   virtual TemplateURLFetcher* GetTemplateURLFetcher() {
     return NULL;
   }
-
   virtual ThumbnailStore* GetThumbnailStore() {
     return NULL;
   }
-
   virtual DownloadManager* GetDownloadManager() {
     return NULL;
   }

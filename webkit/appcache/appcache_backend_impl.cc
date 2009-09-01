@@ -4,29 +4,34 @@
 
 #include "webkit/appcache/appcache_backend_impl.h"
 
-#include "base/logging.h"
+#include "webkit/appcache/appcache_host.h"
+#include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 
 namespace appcache {
 
 AppCacheBackendImpl::~AppCacheBackendImpl() {
-  // TODO(michaeln): if (service_) service_->UnregisterFrontend(frontend_);
+  if (service_)
+    service_->UnregisterBackend(this);
 }
 
 void AppCacheBackendImpl::Initialize(AppCacheService* service,
-                                     AppCacheFrontend* frontend) {
-  DCHECK(!service_ && !frontend_ && frontend);  // DCHECK(service)
+                                     AppCacheFrontend* frontend,
+                                     int process_id) {
+  DCHECK(!service_ && !frontend_ && frontend && service);
   service_ = service;
   frontend_ = frontend;
-  // TODO(michaeln): service_->RegisterFrontend(frontend_);
+  process_id_ = process_id;
+  service_->RegisterBackend(this);
 }
 
-void AppCacheBackendImpl::RegisterHost(int host_id) {
-  // TODO(michaeln): plumb to service
+void AppCacheBackendImpl::RegisterHost(int id) {
+  DCHECK(hosts_.find(id) == hosts_.end());
+  hosts_.insert(HostMap::value_type(id, AppCacheHost(id, frontend_)));
 }
 
-void AppCacheBackendImpl::UnregisterHost(int host_id) {
-  // TODO(michaeln): plumb to service
+void AppCacheBackendImpl::UnregisterHost(int id) {
+  hosts_.erase(id);
 }
 
 void AppCacheBackendImpl::SelectCache(
@@ -34,7 +39,7 @@ void AppCacheBackendImpl::SelectCache(
     const GURL& document_url,
     const int64 cache_document_was_loaded_from,
     const GURL& manifest_url) {
-  // TODO(michaeln): plumb to service
+  // TODO(michaeln): write me
   frontend_->OnCacheSelected(host_id, kNoCacheId, UNCACHED);
 }
 
@@ -42,22 +47,25 @@ void AppCacheBackendImpl::MarkAsForeignEntry(
     int host_id,
     const GURL& document_url,
     int64 cache_document_was_loaded_from) {
-  // TODO(michaeln): plumb to service
+  // TODO(michaeln): write me
 }
 
-Status AppCacheBackendImpl::GetStatus(int host_id) {
-  // TODO(michaeln): plumb to service
-  return UNCACHED;
+void AppCacheBackendImpl::GetStatusWithCallback(
+    int host_id, GetStatusCallback* callback, void* callback_param) {
+  // TODO(michaeln): write me
+  callback->Run(UNCACHED, callback_param);
 }
 
-bool AppCacheBackendImpl::StartUpdate(int host_id) {
-  // TODO(michaeln): plumb to service
-  return false;
+void AppCacheBackendImpl::StartUpdateWithCallback(
+    int host_id, StartUpdateCallback* callback, void* callback_param) {
+  // TODO(michaeln): write me
+  callback->Run(false, callback_param);
 }
 
-bool AppCacheBackendImpl::SwapCache(int host_id) {
-  // TODO(michaeln): plumb to service
-  return false;
+void AppCacheBackendImpl::SwapCacheWithCallback(
+    int host_id, SwapCacheCallback* callback, void* callback_param) {
+  // TODO(michaeln): write me
+  callback->Run(false, callback_param);
 }
 
 }  // namespace appcache

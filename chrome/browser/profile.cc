@@ -39,6 +39,7 @@
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/browser/visitedlink_event_listener.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -115,6 +116,16 @@ static void CleanupRequestContext(ChromeURLRequestContext* context) {
   }
 }
 
+static void CleanupAppCacheService(ChromeAppCacheService* service) {
+  if (service) {
+    MessageLoop* io_thread = ChromeThread::GetMessageLoop(ChromeThread::IO);
+    if (io_thread)
+      io_thread->ReleaseSoon(FROM_HERE, service);
+    else
+      service->Release();
+  }
+}
+
 // static
 void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSearchSuggestEnabled, true);
@@ -187,6 +198,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ~OffTheRecordProfileImpl() {
     CleanupRequestContext(request_context_);
     CleanupRequestContext(extensions_request_context_);
+    CleanupAppCacheService(appcache_service_.release());
   }
 
   virtual FilePath GetPath() { return profile_->GetPath(); }
@@ -206,6 +218,14 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual Profile* GetOriginalProfile() {
     return profile_;
+  }
+
+  virtual ChromeAppCacheService* GetAppCacheService() {
+    if (!appcache_service_.get()) {
+      appcache_service_ = new ChromeAppCacheService();
+      appcache_service_->InitializeOnUIThread(GetPath(), true);
+    }
+    return appcache_service_.get();
   }
 
   virtual VisitedLinkMaster* GetVisitedLinkMaster() {
@@ -484,6 +504,9 @@ class OffTheRecordProfileImpl : public Profile,
 
   ChromeURLRequestContext* extensions_request_context_;
 
+  // Use a seperate appcache service for OTR.
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
+
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
 
@@ -700,6 +723,7 @@ ProfileImpl::~ProfileImpl() {
   CleanupRequestContext(request_context_);
   CleanupRequestContext(media_request_context_);
   CleanupRequestContext(extensions_request_context_);
+  CleanupAppCacheService(appcache_service_.release());
 
   // When the request contexts are gone, the blacklist wont be needed anymore.
   delete blacklist_;
@@ -747,6 +771,14 @@ void ProfileImpl::DestroyOffTheRecordProfile() {
 
 Profile* ProfileImpl::GetOriginalProfile() {
   return this;
+}
+
+ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
+  if (!appcache_service_.get()) {
+    appcache_service_ = new ChromeAppCacheService();
+    appcache_service_->InitializeOnUIThread(GetPath(), false);
+  }
+  return appcache_service_.get();
 }
 
 VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {

@@ -43,6 +43,7 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
 
 WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {
   backend_->UnregisterHost(host_id_);
+  all_hosts.Remove(host_id_);
 }
 
 void WebApplicationCacheHostImpl::OnCacheSelected(int64 selected_cache_id,

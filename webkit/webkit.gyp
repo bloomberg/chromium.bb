@@ -1258,6 +1258,8 @@
         'appcache/appcache_group.h',
         'appcache/appcache_host.cc',
         'appcache/appcache_host.h',
+        'appcache/appcache_interceptor.cc',
+        'appcache/appcache_interceptor.h',
         'appcache/appcache_interfaces.cc',
         'appcache/appcache_interfaces.h',
         'appcache/appcache_service.cc',

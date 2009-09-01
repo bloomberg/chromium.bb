@@ -25,6 +25,7 @@ class SSLConfigService;
 class Blacklist;
 class BookmarkModel;
 class BrowserThemeProvider;
+class ChromeAppCacheService;
 class ChromeURLRequestContext;
 class DownloadManager;
 class Extension;
@@ -116,6 +117,11 @@ class Profile {
   // Return the original "recording" profile. This method returns this if the
   // profile is not off the record.
   virtual Profile* GetOriginalProfile() = 0;
+
+  // Retrieves a pointer to the AppCacheService for this profile.
+  // Chrome request contexts associated with this profile also have
+  // a reference to this instance.
+  virtual ChromeAppCacheService* GetAppCacheService() = 0;
 
   // Retrieves a pointer to the VisitedLinkMaster associated with this
   // profile.  The VisitedLinkMaster is lazily created the first time
@@ -359,6 +365,7 @@ class ProfileImpl : public Profile,
   virtual Profile* GetOffTheRecordProfile();
   virtual void DestroyOffTheRecordProfile();
   virtual Profile* GetOriginalProfile();
+  virtual ChromeAppCacheService* GetAppCacheService();
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
   virtual UserScriptMaster* GetUserScriptMaster();
   virtual SSLHostState* GetSSLHostState();
@@ -444,6 +451,7 @@ class ProfileImpl : public Profile,
 
   FilePath path_;
   FilePath base_cache_path_;
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_ptr<VisitedLinkEventListener> visited_link_event_listener_;
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
   scoped_refptr<ExtensionsService> extensions_service_;

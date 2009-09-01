@@ -5,21 +5,117 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_APPCACHE_SYSTEM_H_
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_APPCACHE_SYSTEM_H_
 
+#include "base/file_path.h"
+#include "base/message_loop.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_frontend_impl.h"
+#include "webkit/appcache/appcache_service.h"
+#include "webkit/glue/resource_type.h"
 
-class SimpleAppCacheSystem {
+namespace WebKit {
+class WebApplicationCacheHost;
+class WebApplicationCacheHostClient;
+}
+class SimpleBackendProxy;
+class SimpleFrontendProxy;
+class URLRequest;
+
+// A class that composes the constituent parts of an appcache system
+// together for use in a single process with two relavant threads,
+// a UI thread on which webkit runs and an IO thread on which URLRequests
+// are handled. This class conspires with SimpleResourceLoaderBridge to
+// retrieve resources from the appcache.
+class SimpleAppCacheSystem : public MessageLoop::DestructionObserver {
  public:
-  void Initialize() {
-    backend_impl_.Initialize(NULL, &frontend_impl_);
+  // Should be instanced somewhere in main(). If not instanced, the public
+  // static methods are all safe no-ops.
+  SimpleAppCacheSystem();
+  virtual ~SimpleAppCacheSystem();
+
+  // One-time main UI thread initialization.
+  static void InitializeOnUIThread(const FilePath& cache_directory) {
+    if (instance_)
+      instance_->InitOnUIThread(cache_directory);
   }
 
-  appcache::AppCacheBackend* backend() { return &backend_impl_; }
-  appcache::AppCacheFrontend* frontend() { return &frontend_impl_; }
+  // Called by SimpleResourceLoaderBridge's IOThread class.
+  // Per IO thread initialization. Only one IO thread can exist
+  // at a time, but after IO thread termination a new one can be
+  // started on which this method should be called. The instance
+  // is assumed to outlive the IO thread.
+  static void InitializeOnIOThread() {
+    if (instance_)
+      instance_->InitOnIOThread();
+  }
+
+  // Called by TestShellWebKitInit to manufacture a 'host' for webcore.
+  static WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
+      WebKit::WebApplicationCacheHostClient* client) {
+    return instance_ ? instance_->CreateCacheHostForWebKit(client) : NULL;
+  }
+
+  // Called by SimpleResourceLoaderBridge to hook into resource loads.
+  static void SetExtraRequestInfo(URLRequest* request,
+                                  int host_id,
+                                  ResourceType::Type resource_type) {
+    if (instance_)
+      instance_->SetExtraRequestBits(request, host_id, resource_type);
+  }
+
+  // Called by SimpleResourceLoaderBridge extract extra response bits.
+  static void GetExtraResponseInfo(URLRequest* request,
+                            int64* cache_id,
+                            GURL* manifest_url) {
+    if (instance_)
+      instance_->GetExtraResponseBits(request, cache_id, manifest_url);
+  }
 
  private:
-  appcache::AppCacheBackendImpl backend_impl_;
+  friend class SimpleBackendProxy;
+  friend class SimpleFrontendProxy;
+
+  // A low-tech singleton.
+  static SimpleAppCacheSystem* instance_;
+
+  // Instance methods called by our static public methods
+  void InitOnUIThread(const FilePath& cache_directory);
+  void InitOnIOThread();
+  WebKit::WebApplicationCacheHost* CreateCacheHostForWebKit(
+      WebKit::WebApplicationCacheHostClient* client);
+  void SetExtraRequestBits(URLRequest* request,
+                           int host_id,
+                           ResourceType::Type resource_type);
+  void GetExtraResponseBits(URLRequest* request,
+                            int64* cache_id,
+                            GURL* manifest_url);
+
+  // Helpers
+  MessageLoop* io_message_loop() { return io_message_loop_; }
+  MessageLoop* ui_message_loop() { return ui_message_loop_; }
+  bool is_io_thread() { return MessageLoop::current() == io_message_loop_; }
+  bool is_ui_thread() { return MessageLoop::current() == ui_message_loop_; }
+  bool is_initialized() {
+    return io_message_loop_ && is_initailized_on_ui_thread();
+  }
+  bool is_initailized_on_ui_thread() {
+    return ui_message_loop_ && !cache_directory_.empty();
+  }
+
+  // IOThread DestructionObserver
+  virtual void WillDestroyCurrentMessageLoop();
+
+  FilePath cache_directory_;
+  MessageLoop* io_message_loop_;
+  MessageLoop* ui_message_loop_;
+  scoped_refptr<SimpleBackendProxy> backend_proxy_;
+  scoped_refptr<SimpleFrontendProxy> frontend_proxy_;
   appcache::AppCacheFrontendImpl frontend_impl_;
+
+  // Created and used only on the IO thread, these do
+  // not survive IO thread termination. If a new IO thread
+  // is started new instances will be created.
+  appcache::AppCacheBackendImpl* backend_impl_;
+  appcache::AppCacheService* service_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_APPCACHE_SYSTEM_H_

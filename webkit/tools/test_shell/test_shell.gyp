@@ -63,6 +63,7 @@
         'mock_webclipboard_impl.cc',
         'mock_webclipboard_impl.h',
         'resource.h',
+        'simple_appcache_system.cc',
         'simple_appcache_system.h',
         'simple_clipboard_impl.cc',
         'simple_resource_loader_bridge.cc',

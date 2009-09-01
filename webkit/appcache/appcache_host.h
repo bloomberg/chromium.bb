@@ -24,6 +24,10 @@ class AppCacheHost {
     selected_cache_ = cache;
   }
 
+  bool is_selection_pending() {
+    return false;  // TODO(michaeln)
+  }
+
  private:
   // identifies the corresponding appcache host in the child process
   int host_id_;
