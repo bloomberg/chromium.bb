@@ -1,0 +1,4 @@
+# An indirect branch through a properly masked register, but with the wrong
+# condition.
+03c552FF  # biceq r5, r5, #0xF000000F
+e12fff15  # bx r5

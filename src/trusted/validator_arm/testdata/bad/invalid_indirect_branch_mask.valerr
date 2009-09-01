@@ -1,0 +1,4 @@
+
+validate: error: Unsafe use of indirect branch instruction:
+	       4:	e12fff15 		bx	r5
+

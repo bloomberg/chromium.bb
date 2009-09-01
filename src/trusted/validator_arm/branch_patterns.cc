@@ -68,7 +68,7 @@ bool SafeIndirectBranchPattern::IsSafe(const NcDecodeState &state) {
   uint32_t rhs =
       ImmediateRotateRight(mask.values.immediate, mask.values.shift * 2);
 
-  if (branch.values.cond == branch.values.cond
+  if (branch.values.cond == mask.values.cond
       && branch.values.arg4 == mask.values.arg2
       && kControlFlowMask == rhs) {
     // Note: we don't care whether the BIC sets flags.  If it does, we may
