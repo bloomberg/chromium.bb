@@ -2452,3 +2452,6 @@ BUG_OJAN WIN LINUX : LayoutTests/fast/inspector/style.html = FAIL
 // Flaky crashes
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-style-filter.html = PASS CRASH
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS CRASH
+
+// Suddenly flakey. Cause unknown.
+BUG_DGLAZKOV LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
