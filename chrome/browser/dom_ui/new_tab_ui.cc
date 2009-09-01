@@ -864,7 +864,7 @@ std::vector<MostVisitedPage> MostVisitedHandler::GetPrePopulatedPages() {
   std::vector<MostVisitedPage> pages;
 
   MostVisitedPage welcome_page = {
-      l10n_util::GetString(IDS_FIRSTRUN_DLG_TITLE),
+      l10n_util::GetString(IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE),
       GURL(WideToUTF8(l10n_util::GetString(IDS_CHROME_WELCOME_URL))),
       GURL("chrome://theme/newtab_chrome_welcome_page_thumbnail"),
       GURL("chrome://theme/newtab_chrome_welcome_page_favicon")};

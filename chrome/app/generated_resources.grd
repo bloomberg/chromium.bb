@@ -3948,10 +3948,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
          desc="Action text for link that closes the first run notification.">
         Close
       </message>
-      <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
-         desc="Title for the hard coded thumbnail that represents the Google Chrome Welcome page. This is used on the NTP when there aren't enough thumbnails to show.">
-        Google Chrome
-      </message>
       <!-- TODO: Should this be something none Chrome for Chromium? -->
       <message name="IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE"
          desc="Title for the hard coded thumbnail that represents the Google Chrome Themes Gallery page. This is used on the NTP when there aren't enough thumbnails to show.">
