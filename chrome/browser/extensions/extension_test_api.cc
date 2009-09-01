@@ -8,6 +8,7 @@
 namespace extension_test_api_functions {
 const char kPassFunction[] = "test.notifyPass";
 const char kFailFunction[] = "test.notifyFail";
+const char kLogFunction[] = "test.log";
 };  // namespace extension_test_api_functions
 
 bool ExtensionTestPassFunction::RunImpl() {
@@ -25,5 +26,13 @@ bool ExtensionTestFailFunction::RunImpl() {
       NotificationType::EXTENSION_TEST_FAILED,
       Source<Profile>(dispatcher()->profile()),
       Details<std::string>(&message));
+  return true;
+}
+
+bool ExtensionTestLogFunction::RunImpl() {
+  std::string message;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&message));
+  printf("%s\n", message.c_str());
+  LOG(INFO) << message;
   return true;
 }

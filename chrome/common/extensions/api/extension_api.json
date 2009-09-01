@@ -946,6 +946,14 @@
         "parameters": [
           {"type": "string", "name": "message", "optional": true}
         ]
+      },
+      {
+        "name": "log",
+        "type": "function",
+        "description": "Logs a message during internal unit testing.",
+        "parameters": [
+          {"type": "string", "name": "message"}
+        ]
       }
     ],
     "events": []

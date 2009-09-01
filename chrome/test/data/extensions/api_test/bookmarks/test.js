@@ -10,6 +10,8 @@ var expected = [
   }
 ];
 
+var testCallback = chrome.test.testCallback;
+
 function compareNode(left, right) {
   //console.log(JSON.stringify(left));
   //console.log(JSON.stringify(right));
@@ -52,7 +54,7 @@ function compareTrees(left, right) {
 
 chrome.test.runTests([
   function getTree() {
-    chrome.bookmarks.getTree(chrome.test.testFunction(function(results) {
+    chrome.bookmarks.getTree(testCallback(true, function(results) {
       chrome.test.assertTrue(compareTrees(results, expected),
                  "getTree() result != expected");
       expected = results;
@@ -60,14 +62,13 @@ chrome.test.runTests([
   },
 
   function get() {
-    chrome.bookmarks.get("1", chrome.test.testFunction(function(results) {
+    chrome.bookmarks.get("1", testCallback(true, function(results) {
       chrome.test.assertTrue(compareNode(results[0], expected[0].children[0]));
     }));
   },
 
   function getArray() {
-    chrome.bookmarks.get(["1", "2"], 
-                         chrome.test.testFunction(function(results) {
+    chrome.bookmarks.get(["1", "2"], testCallback(true, function(results) {
       chrome.test.assertTrue(compareNode(results[0], expected[0].children[0]),
                  "get() result != expected");
       chrome.test.assertTrue(compareNode(results[1], expected[0].children[1]),
@@ -76,8 +77,7 @@ chrome.test.runTests([
   },
 
   function getChildren() {
-    chrome.bookmarks.getChildren("0",
-                                 chrome.test.testFunction(function(results) {
+    chrome.bookmarks.getChildren("0", testCallback(true, function(results) {
       chrome.test.assertTrue(compareNode(results[0], expected[0].children[0]),
                  "getChildren() result != expected");
       chrome.test.assertTrue(compareNode(results[1], expected[0].children[1]),
@@ -87,7 +87,7 @@ chrome.test.runTests([
 
   function create() {
     var node = {parentId: "1", title:"google", url:"http://www.google.com/"};
-    chrome.bookmarks.create(node, chrome.test.testFunction(function(results) {
+    chrome.bookmarks.create(node, testCallback(true, function(results) {
       node.id = results.id;  // since we couldn't know this going in
       node.index = 0;
       chrome.test.assertTrue(compareNode(node, results),

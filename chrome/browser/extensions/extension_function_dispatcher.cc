@@ -147,6 +147,8 @@ void FactoryRegistry::ResetFunctions() {
       &NewExtensionFunction<ExtensionTestPassFunction>;
   factories_[test::kFailFunction] =
       &NewExtensionFunction<ExtensionTestFailFunction>;
+  factories_[test::kLogFunction] =
+      &NewExtensionFunction<ExtensionTestLogFunction>;
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

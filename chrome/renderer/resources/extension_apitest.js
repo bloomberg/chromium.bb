@@ -4,7 +4,7 @@
 var chrome = chrome || {};
 (function() {
   chrome.test = chrome.test || {};
-  
+
   chrome.test.tests = chrome.test.tests || [];
 
   var completed = false;
@@ -20,6 +20,7 @@ var chrome = chrome || {};
 
   chrome.test.fail = function(message) {
     if (completed) throw "completed";
+    chrome.test.log("(  FAILED  ) " + currentTest.name);
 
     var stack;
     try {
@@ -37,7 +38,7 @@ var chrome = chrome || {};
     console.log("[FAIL] " + currentTest.name + ": " + message);
     chrome.test.notifyFail(message);
     complete();
-  }
+  };
 
   function allTestsSucceeded() {
     console.log("All tests succeeded");
@@ -54,19 +55,23 @@ var chrome = chrome || {};
       return;
     }
     try {
+      chrome.test.log("( RUN      ) " + currentTest.name);
       currentTest.call();
     } catch (e) {
-      message = e.stack;
+      var message = e.stack;
       console.log("[FAIL] " + currentTest.name + ": " + message);
       chrome.test.notifyFail(message);
       complete();
     }
-  }
+  };
 
   chrome.test.succeed = function() {
     console.log("[SUCCESS] " + currentTest.name);
-    chrome.test.runNextTest();
-  }
+    chrome.test.log("(  SUCCESS )");
+    // Use setTimeout here to allow previous test contexts to be
+    // eligible for garbage collection.
+    setTimeout(chrome.test.runNextTest, 0);
+  };
 
   chrome.test.assertTrue = function(test, message) {
     if (test !== true) {
@@ -79,28 +84,42 @@ var chrome = chrome || {};
       }
       chrome.test.fail(message);
     }
-  }
+  };
+
+  chrome.test.assertEq = function(expected, actual) {
+    if (expected != actual) {
+      chrome.test.fail("API Test Error in " + currentTest.name +
+                       "\nActual: " + actual + "\nExpected: " + expected);
+    }
+    if (typeof(expected) != typeof(actual)) {
+      chrome.test.fail("API Test Error in " + currentTest.name +
+                       " (type mismatch)\nActual Type: " + typeof(actual) +
+                       "\nExpected Type:" + typeof(expected));
+    }
+  };
 
   chrome.test.assertNoLastError = function() {
     if (chrome.extension.lastError != undefined) {
       chrome.test.fail("lastError.message == " +
                        chrome.extension.lastError.message);
     }
-  }
+  };
 
   // Wrapper for generating test functions, that takes care of calling
-  // assertNoLastError() and succeed() for you.
-  chrome.test.testFunction = function(func) {
+  // assertNoLastError() and (optionally) succeed() for you.
+  chrome.test.testCallback = function(succeedWhenDone, func) {
     return function() {
       chrome.test.assertNoLastError();
       try {
-        func.apply(null, arguments);
+        if (func) {
+          func.apply(null, arguments);
+        }
       } catch (e) {
         var stack = null;
         if (typeof(e.stack) != "undefined") {
-          stack = e.stack.toString()
+          stack = e.stack.toString();
         }
-        var msg = "Exception during execution of testFunction in " +
+        var msg = "Exception during execution of testCallback in " +
                   currentTest.name;
         if (stack) {
           msg += "\n" + stack;
@@ -109,12 +128,15 @@ var chrome = chrome || {};
         }
         chrome.test.fail(msg);
       }
-      chrome.test.succeed();
+      if (succeedWhenDone) {
+        chrome.test.succeed();
+      }
     };
-  }
-  
+  };
+
   chrome.test.runTests = function(tests) {
     chrome.test.tests = tests;
     chrome.test.runNextTest();
-  }
+  };
+
 })();

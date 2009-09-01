@@ -11,6 +11,7 @@
 namespace extension_test_api_functions {
   extern const char kPassFunction[];
   extern const char kFailFunction[];
+  extern const char kLogFunction[];
 };  // namespace extension_test_api_functions
 
 class ExtensionTestPassFunction : public SyncExtensionFunction {
@@ -21,4 +22,9 @@ class ExtensionTestFailFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
 };
 
+class ExtensionTestLogFunction : public SyncExtensionFunction {
+  virtual bool RunImpl();
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_
+
