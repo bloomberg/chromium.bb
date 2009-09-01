@@ -22,19 +22,38 @@ for inclusion in the gallery.]
 
 <p>To package an extension:</p>
 <ol>
-<li>Close all your Google Chrome windows</li>
-<li>Execute Google Chrome, using the <code>--pack-extension</code> option
-to specify the path to the extension's folder:
-<pre>chrome.exe --pack-extension=<em>ext-folder-path</em></pre>
-</li>
+  <li>
+    Bring up the Extensions page
+    by going to this URL:
+    <blockquote>
+    <b>chrome://extensions</b>
+    </blockquote>
+  </li>
+
+  <li>
+    Click the <b>Pack extension</b> button.
+    A dialog appears.
+  </li>
+
+  <li>
+    In the <b>Extension root directory</b> field,
+    specify the path to the extension's folder &mdash;
+    for example, <code>c:\myext</code>.
+    (Ignore the other field;
+    you don't specify a private key file
+    the first time you package a particular extension.)
+  </li>
+
+  <li>
+    Click <b>OK</b>.
+    The packager creates two files:
+    a <code>.crx</code> file,
+    which is the actual extension that can be installed,
+    and a <code>.pem</code> file,
+    which contains the private key.
+  </li>
 </ol>
 
-<p>The packager creates two files:
-a <code>.crx</code> file,
-which is the actual extension that can be installed,
-and a <code>.pem</code> file,
-which contains the private key.
-</p>
 
 <p>
 <b>Do not lose the private key!</b>
@@ -53,54 +72,63 @@ that tells you where to find
 the <code>.crx</code> and <code>.pem</code> files:</p>
 </p>
 
-<img src="images/create-package.png" />
-
-
-<h3>Finding the path to Google Chrome</h3>
-
-<p>
-If <code>chrome.exe</code> isn't already in your path,
-you need to specify the complete path to it.
-Here's how:
-</p>
-
-<ul>
-<li>
-In Windows XP, right-click your Google Chrome shortcut,
-choose <b>Properties > Shortcut</b>,
-and then choose <b>Find Target</b>.
-</li>
-<li>
-In Vista, right-click your Google Chrome shortcut
-and select <b>Open File Location</b>.
-</li>
-</ul>
+<img src="images/package-success.gif"
+  width="554" height="208" />
 
 
 <h2 id="update">Updating a package</h2>
 
 <p>To create an updated version of your extension:</p>
 <ol>
-<li>Increase the version number in <code>manifest.json</code>.</li>
-<li>Close all your Google Chrome windows.</li>
-<li>Execute Google Chrome, using the <code>--pack-extension</code>
-and <code>--pack-extension-key</code> options.
-The value of the key option should be the path to
-the already generated <code>.pem</code> file for this extension.
+  <li>
+    Increase the version number in <code>manifest.json</code>.
+  </li>
 
-<pre>chrome.exe --pack-extension=<em>ext-folder-path</em> --pack-extension-key=<em>ext-key-path</em></pre>
-</li>
+  <li>
+    Bring up the Extensions page
+    by going to this URL: <b>chrome://extensions</b>
+  </li>
+
+  <li>
+    In the <b>Extension root directory</b> field,
+    specify the path to the extension's folder &mdash;
+    for example, <code>c:\myext</code>.
+  </li>
+
+  <li>
+    In the <b>Private key file</b> field,
+    specify the location of the
+    already generated <code>.pem</code> file for this extension &mdash;
+    for example, <code>c:\myext.pem</code>.
+  </li>
+
+  <li>
+    Click <b>OK</b>.
+  </li>
 </ol>
 
 <p>If the updated extension is successfully packaged, you'll see a dialog like this:</p>
 
-<img src="images/package-success.png">
+<img src="images/update-success.gif"
+  width="298" height="160" />
 
-<h2>Tips and tricks</h2>
+<h2>Packaging at the command line</h2>
 
 <p>
-You can use the <code>--no-message-box</code> command-line flag
-to suppress the dialog.
-This is useful if
-you're packing extensions in non-interactive scripts.
+Another way to package extensions
+is by invoking <code>chrome.exe</code> at the command line.
+Use the <code>--pack-extension</code> flag
+to specify the location of the extension's folder.
+Use <code>--pack-extension-key</code>
+to specify the location of the extension's private key file.
+For example:
+</p>
+
+<pre>
+chrome.exe --pack-extension=<em>ext-folder-path</em> --pack-extension-key=<em>ext-key-path</em>
+</pre>
+
+<p>
+To suppress the dialog,
+add <code>--no-message-box</code> to the command.
 </p>

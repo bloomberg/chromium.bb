@@ -61,39 +61,47 @@ at the bottom of the Google Chrome window.
   &lt;span&gt;Hello, World!&lt;/span&gt;
 &lt;/div&gt;</pre>
   </li>
-  <li> Load the extension:
+  <li> Load the extension.
     <ol type="a">
       <li>
-      Change the shortcut that you use to start the browser
-      (or create a new one)
-      so that it has the 
-      <code>--load-extension</code> flag.
-      For example, if your extension is at <code>c:\myext</code>,
-      your shortcut might look something like this:
-<pre>chrome.exe <b>--load-extension="c:\myext"</b></pre>
+      Bring up the Extensions page
+      by going to this URL:
+      <blockquote>
+      <b>chrome://extensions</b>
+      </blockquote>
       </li>
-      <li>Exit Google Chrome.
-      If you have a separate profile for testing,
-      you only need to exit the browser instances that use the testing profile. </li>
-      <li>Double-click the shortcut to start the browser.</li>
-    </ol>
-    <p>
-    <b>Note:</b>
-    To run already-packaged extensions
-    the browser must be started with the
-    <code>--enable-extensions</code> or <code>--load-extension</code> flag.
-    An exception:
-    themes run in the Dev channel version of Google Chrome,
-    no flags required.
-    For details on changing shortcut properties, see
-    <a href="http://dev.chromium.org/developers/creating-and-using-profiles">Creating
-    and Using Profiles</a>.
-</p>
-  </li>
-</ol>
+
+      <li>
+      Click the <b>Load unpacked extension</b> button.
+      A file dialog appears.
+      </li>
+
+      <li>
+      In the file dialog,
+      navigate to your extension's directory
+      (<code>c:\myext</code>, for example)
+      and click the <b>OK</b> button.
+      </li>
+    </ol> </li>
+  </ol>
 
 <p>
-You should see the UI for your extension at the bottom left of the browser, looking something like this:
+If your extension is valid,
+information about it
+appears in the <b>Installed extensions</b> part
+of the Extensions page,
+as the following screenshot shows.
+</p>
+
+<p>
+<a href="images/load_after.gif"><img
+  src="images/load_after-small.gif"
+  width="327" height="196" /></a>
+</p>
+
+<p>
+You should see the UI for your extension at the bottom left of the browser,
+looking something like this:
 </p>
 
 <table class="imagelayout">
@@ -122,9 +130,11 @@ You should see the UI for your extension at the bottom left of the browser, look
   just like the buttons in the bookmark bar.
   After a while, a tooltip comes up, identifying the extension.
   </p>
-  <p> [PENDING: troubleshooting info should go here.
+  <p class="comment">
+  [PENDING: troubleshooting info should go here.
   what are symptoms of common typos, including misnamed files?
-  what are the symptoms if you don't have the dev channel?] </p>
+  what are the symptoms if you don't have the dev channel?]
+  </p>
 
 <h2 id="code">Add code to the extension</h2>
 <p> In this step, you'll make your extension <em>do</em> something besides just look good. </p>
@@ -159,7 +169,7 @@ it won't work! </p>
 
 <h2 id="summary">Now what?</h2>
 
-<p>
+<p class="comment">
 [PENDING: Summarize what we did,
 what it means,
 what else we would've done if this were a real extension (e.g. package it),
