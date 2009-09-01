@@ -524,6 +524,7 @@ class PinnedTabAnimation : public TabStripGtk::TabAnimation {
       start_pinned_count--;
     else
       start_pinned_count++;
+    tabstrip_->GetTabAt(index)->set_animating_pinned_change(true);
     GenerateStartAndEndWidths(tab_count, tab_count, start_pinned_count,
                               end_pinned_count);
   }
@@ -588,6 +589,7 @@ class PinAndMoveAnimation : public TabStripGtk::TabAnimation {
     GenerateStartAndEndWidths(tab_count, tab_count, start_pinned_count,
                               end_pinned_count);
     target_bounds_ = tabstrip->GetIdealBounds(to_index);
+    tab_->set_animating_pinned_change(true);
   }
 
   // Overridden from AnimationDelegate:
@@ -767,6 +769,7 @@ void TabStripGtk::Layout() {
   for (int i = 0; i < tab_count; ++i) {
     const gfx::Rect& bounds = tab_data_.at(i).ideal_bounds;
     TabGtk* tab = GetTabAt(i);
+    tab->set_animating_pinned_change(false);
     SetTabBounds(tab, bounds);
     tab_right = bounds.right();
     tab_right += GetTabHOffset(i + 1);
@@ -1769,6 +1772,11 @@ bool TabStripGtk::CanUpdateDisplay() {
 void TabStripGtk::FinishAnimation(TabStripGtk::TabAnimation* animation,
                                   bool layout) {
   active_animation_.reset(NULL);
+
+  // Reset the animation state of each tab.
+  for (int i = 0, count = GetTabCount(); i < count; ++i)
+    GetTabAt(i)->set_animating_pinned_change(false);
+
   if (layout)
     Layout();
 }

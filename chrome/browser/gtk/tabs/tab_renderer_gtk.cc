@@ -37,7 +37,7 @@ const int kStandardTitleWidth = 175;
 const int kDropShadowOffset = 2;
 const int kInactiveTabBackgroundOffsetY = 20;
 // Preferred width of pinned tabs.
-const int kPinnedTabWidth = 56;
+const int kPinnedTabWidth = 64;
 // When a non-pinned tab is pinned the width of the tab animates. If the width
 // of a pinned tab is >= kPinnedTabRendererAsTabWidth then the tab is rendered
 // as a normal tab. This is done to avoid having the title immediately
@@ -241,6 +241,7 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
   InitResources();
 
   data_.pinned = false;
+  data_.animating_pinned_change = false;
 
   tab_.Own(gtk_fixed_new());
   gtk_widget_set_app_paintable(tab_.get(), TRUE);
@@ -311,6 +312,10 @@ void TabRendererGtk::set_pinned(bool pinned) {
 
 bool TabRendererGtk::is_pinned() const {
   return data_.pinned;
+}
+
+void TabRendererGtk::set_animating_pinned_change(bool value) {
+  data_.animating_pinned_change = value;
 }
 
 bool TabRendererGtk::IsSelected() const {
@@ -591,8 +596,19 @@ void TabRendererGtk::Layout() {
     int favicon_top = kTopPadding + (content_height - kFavIconSize) / 2;
     favicon_bounds_.SetRect(local_bounds.x(), favicon_top,
                             kFavIconSize, kFavIconSize);
-    if (is_pinned() && bounds_.width() < kPinnedTabRendererAsTabWidth)
-      favicon_bounds_.set_x((bounds_.width() - kFavIconSize) / 2);
+    if ((is_pinned() || data_.animating_pinned_change) &&
+        bounds_.width() < kPinnedTabRendererAsTabWidth) {
+      int pin_delta = kPinnedTabRendererAsTabWidth - kPinnedTabWidth;
+      int ideal_delta = bounds_.width() - kPinnedTabWidth;
+      if (ideal_delta < pin_delta) {
+        int ideal_x = (kPinnedTabWidth - kFavIconSize) / 2;
+        int x = favicon_bounds_.x() + static_cast<int>(
+            (1 - static_cast<float>(ideal_delta) /
+             static_cast<float>(pin_delta)) *
+            (ideal_x - favicon_bounds_.x()));
+        favicon_bounds_.set_x(x);
+      }
+    }
   } else {
     favicon_bounds_.SetRect(local_bounds.x(), local_bounds.y(), 0, 0);
   }

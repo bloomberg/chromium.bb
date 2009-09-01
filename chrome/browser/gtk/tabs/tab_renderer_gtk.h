@@ -106,6 +106,9 @@ class TabRendererGtk : public AnimationDelegate {
   void set_pinned(bool pinned);
   bool is_pinned() const;
 
+  // Are we in the process of animating a pinned state change on this tab?
+  void set_animating_pinned_change(bool value);
+
   // Updates the display to reflect the contents of this TabRenderer's model.
   void UpdateFromModel();
 
@@ -223,6 +226,7 @@ class TabRendererGtk : public AnimationDelegate {
     bool off_the_record;
     bool show_icon;
     bool pinned;
+    bool animating_pinned_change;
   };
 
   // TODO(jhawkins): Move into TabResources class.
