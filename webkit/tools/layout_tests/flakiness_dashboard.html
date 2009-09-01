@@ -464,17 +464,18 @@
     for (var path in expectationsByTest) {
       var expectations = expectationsByTest[path];
       if (!isDirectory(path) &&
-          !addTestAndExpectations(path, path, builderName, expectationsMap,
+          addTestAndExpectations(path, path, builderName, expectationsMap,
               expectations, testPrefixes)) {
-        // Test path doesn't match a specific test, see if it prefix matches
-        // any test.
-        for (var test in allTests) {
-          if (stringContains(test, path) &&
-              (!testPrefixes[test] ||
-               !stringContains(testPrefixes[test], path))) {
-            addTestAndExpectations(test, path, builderName, expectationsMap,
-                expectations, testPrefixes);
-          }
+        continue;
+      }
+      // Test path doesn't match a specific test, see if it prefix matches
+      // any test.
+      for (var test in allTests) {
+        if (stringContains(test, path) &&
+            (!testPrefixes[test] ||
+             !stringContains(testPrefixes[test], path))) {
+          addTestAndExpectations(test, path, builderName, expectationsMap,
+              expectations, testPrefixes);
         }
       }
     }
@@ -645,7 +646,7 @@
   function getHTMLForSingleTestRow(test, opt_builder) {
     var classes = [];
     if (!test.meetsExpectations)
-      classes.push('expectation-mismatch');
+      classes.push('wrong-expectations');
 
     if (test.isWontFix)
       classes.push('wontfix');
@@ -815,7 +816,7 @@
       }
       generatePageForBuilder(currentState.builder);
     }
-    logTime('Time to generate page', startTime);
+    logTime('Time to generate page (includes innerHTML)', startTime);
   }
 
   function generatePageForIndividualTests(tests) {
