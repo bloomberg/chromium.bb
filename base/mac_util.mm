@@ -46,8 +46,7 @@ bool AmIBundled() {
 bool IsBackgroundOnlyProcess() {
   NSBundle* main_bundle = MainAppBundle();
   NSDictionary* info_dictionary = [main_bundle infoDictionary];
-  return [[info_dictionary objectForKey:@"LSUIElement"]
-                                   isEqualToString:@"1"] ? true : false;
+  return [[info_dictionary objectForKey:@"LSUIElement"] boolValue] != NO;
 }
 
 // No threading worries since NSBundle isn't thread safe.

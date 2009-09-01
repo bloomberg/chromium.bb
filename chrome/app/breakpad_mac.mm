@@ -53,7 +53,7 @@ void InitCrashReporter() {
                    CommandLine::ForCurrentProcess()->
                        HasSwitch(switches::kEnableCrashReporter);
 
-  if (parsed_command_line.HasSwitch(switches::kDisableBreakpad)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableBreakpad)) {
     enable_breakpad = false;
   }
 
