@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
+#include "views/focus/focus_manager.h"
 
 namespace views {
 
@@ -63,6 +64,23 @@ void NativeControlGtk::NativeControlCreated(GtkWidget* native_control) {
 
   // Update the newly created GtkWdigetwith any resident enabled state.
   gtk_widget_set_sensitive(native_view(), IsEnabled());
+
+  // Listen for focus change event to update the FocusManager focused view.
+  g_signal_connect(G_OBJECT(native_control), "focus-in-event",
+                   G_CALLBACK(CallFocusIn), this);
+}
+
+// static
+void NativeControlGtk::CallFocusIn(GtkWidget* widget,
+                                   GdkEventFocus* event,
+                                   NativeControlGtk* control) {
+  FocusManager* focus_manager =
+      FocusManager::GetFocusManagerForNativeView(widget);
+  if (!focus_manager) {
+    NOTREACHED();
+    return;
+  }
+  focus_manager->SetFocusedView(control->focus_view());
 }
 
 }  // namespace views

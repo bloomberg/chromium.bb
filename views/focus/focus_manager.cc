@@ -224,31 +224,32 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
 }
 
 void FocusManager::SetFocusedView(View* view) {
-  if (focused_view_ != view) {
-    View* prev_focused_view = focused_view_;
-    if (focused_view_)
-      focused_view_->WillLoseFocus();
+  if (focused_view_ == view)
+    return;
 
-    if (view)
-      view->WillGainFocus();
+  View* prev_focused_view = focused_view_;
+  if (focused_view_)
+    focused_view_->WillLoseFocus();
 
-    // Notified listeners that the focus changed.
-    FocusChangeListenerList::const_iterator iter;
-    for (iter = focus_change_listeners_.begin();
-         iter != focus_change_listeners_.end(); ++iter) {
-      (*iter)->FocusWillChange(prev_focused_view, view);
-    }
+  if (view)
+    view->WillGainFocus();
 
-    focused_view_ = view;
+  // Notified listeners that the focus changed.
+  FocusChangeListenerList::const_iterator iter;
+  for (iter = focus_change_listeners_.begin();
+       iter != focus_change_listeners_.end(); ++iter) {
+    (*iter)->FocusWillChange(prev_focused_view, view);
+  }
 
-    if (prev_focused_view)
-      prev_focused_view->SchedulePaint();  // Remove focus artifacts.
+  focused_view_ = view;
 
-    if (view) {
-      view->SchedulePaint();
-      view->Focus();
-      view->DidGainFocus();
-    }
+  if (prev_focused_view)
+    prev_focused_view->SchedulePaint();  // Remove focus artifacts.
+
+  if (view) {
+    view->SchedulePaint();
+    view->Focus();
+    view->DidGainFocus();
   }
 }
 

@@ -510,19 +510,12 @@ void RootView::ProcessMouseDragCanceled() {
 
 void RootView::FocusView(View* view) {
   if (view != GetFocusedView()) {
-#if defined(OS_WIN)
     FocusManager* focus_manager = GetFocusManager();
     DCHECK(focus_manager) << "No Focus Manager for Window " <<
         (GetWidget() ? GetWidget()->GetNativeView() : 0);
     if (!focus_manager)
       return;
-
-    View* prev_focused_view = focus_manager->GetFocusedView();
     focus_manager->SetFocusedView(view);
-#else
-    // TODO(port): Port the focus manager and this goes away.
-    NOTIMPLEMENTED();
-#endif
   }
 }
 

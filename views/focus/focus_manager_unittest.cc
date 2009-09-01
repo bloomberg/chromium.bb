@@ -25,12 +25,10 @@
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/native/native_view_host.h"
-#if defined(OS_WIN)
+#include "views/controls/textfield/textfield.h"
 #include "views/controls/scroll_view.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
-#include "views/controls/textfield/textfield.h"
-#endif
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
@@ -45,10 +43,10 @@
 
 namespace views {
 
-#if defined(OS_WIN)
 static const int kWindowWidth = 600;
 static const int kWindowHeight = 500;
 
+#if defined(OS_WIN)
 static int count = 1;
 
 static const int kTopCheckBoxID = count++;  // 1
@@ -72,37 +70,36 @@ static const int kCauliflowerButtonID = count++;
 
 static const int kInnerContainerID = count++;
 static const int kScrollViewID = count++;
-static const int kScrollContentViewID = count++;  // 20
-static const int kRosettaLinkID = count++;
+static const int kRosettaLinkID = count++;  // 20
 static const int kStupeurEtTremblementLinkID = count++;
 static const int kDinerGameLinkID = count++;
 static const int kRidiculeLinkID = count++;
-static const int kClosetLinkID = count++;  // 25
-static const int kVisitingLinkID = count++;
+static const int kClosetLinkID = count++;
+static const int kVisitingLinkID = count++;  // 25
 static const int kAmelieLinkID = count++;
 static const int kJoyeuxNoelLinkID = count++;
 static const int kCampingLinkID = count++;
-static const int kBriceDeNiceLinkID = count++;  // 30
-static const int kTaxiLinkID = count++;
+static const int kBriceDeNiceLinkID = count++;
+static const int kTaxiLinkID = count++;  // 30
 static const int kAsterixLinkID = count++;
 
 static const int kOKButtonID = count++;
 static const int kCancelButtonID = count++;
-static const int kHelpButtonID = count++;  // 35
+static const int kHelpButtonID = count++;
 
-static const int kStyleContainerID = count++;
+static const int kStyleContainerID = count++;  // 35
 static const int kBoldCheckBoxID = count++;
 static const int kItalicCheckBoxID = count++;
 static const int kUnderlinedCheckBoxID = count++;
-static const int kStyleHelpLinkID = count++;  // 40
-static const int kStyleTextEditID = count++;
+static const int kStyleHelpLinkID = count++;
+static const int kStyleTextEditID = count++;  // 40
 
 static const int kSearchContainerID = count++;
 static const int kSearchTextfieldID = count++;
 static const int kSearchButtonID = count++;
-static const int kHelpLinkID = count++;  // 45
+static const int kHelpLinkID = count++;
 
-static const int kThumbnailContainerID = count++;
+static const int kThumbnailContainerID = count++;  // 45
 static const int kThumbnailStarID = count++;
 static const int kThumbnailSuperStarID = count++;
 #endif
@@ -153,7 +150,8 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
 #if defined(OS_WIN)
   ::SendMessage(native_view, WM_SETFOCUS, NULL, NULL);
 #else
-  NOTIMPLEMENTED();
+    gtk_widget_grab_focus(native_view);
+    message_loop()->RunAllPending();
 #endif
   }
 
@@ -177,14 +175,18 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
 #if defined(OS_WIN)
     ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_ACTIVE, NULL);
 #else
-  NOTIMPLEMENTED();
+    gboolean result;
+    g_signal_emit_by_name(G_OBJECT(window_->GetNativeWindow()),
+                          "focus_in_event", 0, &result);
 #endif
   }
   void SimulateDeactivateWindow() {
 #if defined(OS_WIN)
     ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_INACTIVE, NULL);
 #else
-  NOTIMPLEMENTED();
+    gboolean result;
+    g_signal_emit_by_name(G_OBJECT(window_->GetNativeWindow()),
+                          "focus_out_event", 0, & result);
 #endif
   }
 
@@ -234,11 +236,16 @@ class BorderView : public NativeViewHost {
 #if defined(OS_WIN)
         WidgetWin* widget_win = new WidgetWin();
         widget_win->Init(parent->GetRootView()->GetWidget()->GetNativeView(),
-                         gfx::Rect(0, 0, 100, 100));
+                         gfx::Rect(0, 0, 0, 0));
         widget_win->SetFocusTraversableParentView(this);
         widget_ = widget_win;
 #else
-        widget_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
+        WidgetGtk* widget_gtk = new WidgetGtk(WidgetGtk::TYPE_CHILD);
+        // TODO(jcampan): implement WidgetGtk::SetFocusTraversableParentView()
+        // widget_gtk->SetFocusTraversableParentView(this);
+        widget_ = widget_gtk;
+        widget_->Init(parent->GetRootView()->GetWidget()->GetNativeView(),
+                      gfx::Rect(0, 0, 0, 0));
 #endif
         widget_->SetContentsView(child_);
       }
@@ -266,6 +273,7 @@ class DummyComboboxModel : public ComboboxModel {
   }
 };
 
+#if defined(OS_WIN)
 class FocusTraversalTest : public FocusManagerTest {
  public:
   ~FocusTraversalTest();
@@ -472,7 +480,7 @@ void FocusTraversalTest::InitContentView() {
   DCHECK(arraysize(kTitles) == arraysize(kIDs));
 
   y = 5;
-  for (int i = 0; i < arraysize(kTitles); ++i) {
+  for (size_t i = 0; i < arraysize(kTitles); ++i) {
     Link* link = new Link(kTitles[i]);
     link->SetHorizontalAlignment(Label::ALIGN_LEFT);
     link->SetID(kIDs[i]);
@@ -579,6 +587,7 @@ void FocusTraversalTest::InitContentView() {
   content_view_->AddChildView(contents);
   contents->SetBounds(250, y, 200, 50);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // The tests
@@ -637,7 +646,7 @@ TEST_F(FocusManagerTest, ViewFocusCallbacks) {
   content_view_->AddChildView(view2);
 
   view1->RequestFocus();
-  ASSERT_EQ(2, event_list.size());
+  ASSERT_EQ(2, static_cast<int>(event_list.size()));
   EXPECT_EQ(WILL_GAIN_FOCUS, event_list[0].type);
   EXPECT_EQ(kView1ID, event_list[0].view_id);
   EXPECT_EQ(DID_GAIN_FOCUS, event_list[1].type);
@@ -645,7 +654,7 @@ TEST_F(FocusManagerTest, ViewFocusCallbacks) {
 
   event_list.clear();
   view2->RequestFocus();
-  ASSERT_EQ(3, event_list.size());
+  ASSERT_EQ(3, static_cast<int>(event_list.size()));
   EXPECT_EQ(WILL_LOSE_FOCUS, event_list[0].type);
   EXPECT_EQ(kView1ID, event_list[0].view_id);
   EXPECT_EQ(WILL_GAIN_FOCUS, event_list[1].type);
@@ -655,7 +664,7 @@ TEST_F(FocusManagerTest, ViewFocusCallbacks) {
 
   event_list.clear();
   GetFocusManager()->ClearFocus();
-  ASSERT_EQ(1, event_list.size());
+  ASSERT_EQ(1, static_cast<int>(event_list.size()));
   EXPECT_EQ(WILL_LOSE_FOCUS, event_list[0].type);
   EXPECT_EQ(kView2ID, event_list[0].view_id);
 }
@@ -687,17 +696,17 @@ TEST_F(FocusManagerTest, FocusChangeListener) {
   AddFocusChangeListener(&listener);
 
   view1->RequestFocus();
-  ASSERT_EQ(1, listener.focus_changes().size());
+  ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
   EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(NULL, view1));
   listener.ClearFocusChanges();
 
   view2->RequestFocus();
-  ASSERT_EQ(1, listener.focus_changes().size());
+  ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
   EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(view1, view2));
   listener.ClearFocusChanges();
 
   GetFocusManager()->ClearFocus();
-  ASSERT_EQ(1, listener.focus_changes().size());
+  ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
   EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(view2, NULL));
 }
 
@@ -729,6 +738,7 @@ class TestRadioButton : public RadioButton {
   }
 };
 
+#if defined(OS_WIN)
 class TestTextfield : public Textfield {
  public:
   TestTextfield() { }
@@ -758,25 +768,30 @@ class TestTabbedPane : public TabbedPane {
     return native_tabbed_pane_->GetTestingHandle();
   }
 };
+#endif
 
 // Tests that NativeControls do set the focus View appropriately on the
 // FocusManager.
 TEST_F(FocusManagerTest, FocusNativeControls) {
   TestNativeButton* button = new TestNativeButton(L"Press me");
   TestCheckbox* checkbox = new TestCheckbox(L"Checkbox");
+#if defined(OS_WIN)
   TestRadioButton* radio_button = new TestRadioButton(L"RadioButton");
   TestTextfield* textfield = new TestTextfield();
   TestCombobox* combobox = new TestCombobox();
   TestTabbedPane* tabbed_pane = new TestTabbedPane();
   TestNativeButton* tab_button = new TestNativeButton(L"tab button");
+#endif
 
   content_view_->AddChildView(button);
   content_view_->AddChildView(checkbox);
+#if defined(OS_WIN)
   content_view_->AddChildView(radio_button);
   content_view_->AddChildView(textfield);
   content_view_->AddChildView(combobox);
   content_view_->AddChildView(tabbed_pane);
   tabbed_pane->AddTab(L"Awesome tab", tab_button);
+#endif
 
   // Simulate the native view getting the native focus (such as by user click).
   FocusNativeView(button->TestGetNativeControlView());
@@ -785,6 +800,7 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
   FocusNativeView(checkbox->TestGetNativeControlView());
   EXPECT_EQ(checkbox, GetFocusManager()->GetFocusedView());
 
+#if defined(OS_WIN)
   FocusNativeView(radio_button->TestGetNativeControlView());
   EXPECT_EQ(radio_button, GetFocusManager()->GetFocusedView());
 
@@ -799,6 +815,7 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
 
   FocusNativeView(tab_button->TestGetNativeControlView());
   EXPECT_EQ(tab_button, GetFocusManager()->GetFocusedView());
+#endif
 }
 
 // Test that when activating/deactivating the top window, the focus is stored/
@@ -809,17 +826,21 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   view->SetFocusable(true);
 
   content_view_->AddChildView(button);
+  button->SetBounds(10, 10, 200, 30);
   content_view_->AddChildView(view);
+  message_loop()->RunAllPending();
 
   TestFocusChangeListener listener;
   AddFocusChangeListener(&listener);
 
   view->RequestFocus();
+  message_loop()->RunAllPending();
+  //  MessageLoopForUI::current()->Run(new AcceleratorHandler());
 
   // Deacivate the window, it should store its focus.
   SimulateDeactivateWindow();
   EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
-  ASSERT_EQ(2, listener.focus_changes().size());
+  ASSERT_EQ(2, static_cast<int>(listener.focus_changes().size()));
   EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(NULL, view));
   EXPECT_TRUE(listener.focus_changes()[1] == ViewPair(view, NULL));
   listener.ClearFocusChanges();
@@ -827,7 +848,7 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   // Reactivate, focus should come-back to the previously focused view.
   SimulateActivateWindow();
   EXPECT_EQ(view, GetFocusManager()->GetFocusedView());
-  ASSERT_EQ(1, listener.focus_changes().size());
+  ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
   EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(NULL, view));
   listener.ClearFocusChanges();
 
@@ -835,14 +856,14 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   button->RequestFocus();
   SimulateDeactivateWindow();
   EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
-  ASSERT_EQ(2, listener.focus_changes().size());
+  ASSERT_EQ(2, static_cast<int>(listener.focus_changes().size()));
   EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(view, button));
   EXPECT_TRUE(listener.focus_changes()[1] == ViewPair(button, NULL));
   listener.ClearFocusChanges();
 
   SimulateActivateWindow();
   EXPECT_EQ(button, GetFocusManager()->GetFocusedView());
-  ASSERT_EQ(1, listener.focus_changes().size());
+  ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
   EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(NULL, button));
   listener.ClearFocusChanges();
 
@@ -856,12 +877,13 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_ACTIVE, NULL);
 
   EXPECT_EQ(view, GetFocusManager()->GetFocusedView());
-  ASSERT_EQ(2, listener.focus_changes().size());
+  ASSERT_EQ(2, static_cast<int>(listener.focus_changes().size()));
   EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(button, NULL));
   EXPECT_TRUE(listener.focus_changes()[1] == ViewPair(NULL, view));
   */
 }
 
+#if defined(OS_WIN)
 TEST_F(FocusManagerTest, ContainsView) {
   View* view = new View();
   scoped_ptr<View> detached_view(new View());
@@ -904,7 +926,7 @@ TEST_F(FocusTraversalTest, NormalTraversal) {
   // loops OK).
   GetFocusManager()->SetFocusedView(NULL);
   for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < arraysize(kTraversalIDs); j++) {
+    for (size_t j = 0; j < arraysize(kTraversalIDs); j++) {
       GetFocusManager()->AdvanceFocus(false);
       View* focused_view = GetFocusManager()->GetFocusedView();
       EXPECT_TRUE(focused_view != NULL);
@@ -943,7 +965,7 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
       kThumbnailSuperStarID };
 
   // Let's disable some views.
-  for (int i = 0; i < arraysize(kDisabledIDs); i++) {
+  for (size_t i = 0; i < arraysize(kDisabledIDs); i++) {
     View* v = FindViewByID(kDisabledIDs[i]);
     ASSERT_TRUE(v != NULL);
     if (v)
@@ -958,7 +980,7 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   // Let's do one traversal (several times, to make sure it loops ok).
   GetFocusManager()->SetFocusedView(NULL);
   for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < arraysize(kTraversalIDs); j++) {
+    for (size_t j = 0; j < arraysize(kTraversalIDs); j++) {
       GetFocusManager()->AdvanceFocus(false);
       focused_view = GetFocusManager()->GetFocusedView();
       EXPECT_TRUE(focused_view != NULL);
@@ -979,6 +1001,7 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
     }
   }
 }
+#endif
 
 // Counts accelerator calls.
 class TestAcceleratorTarget : public AcceleratorTarget {

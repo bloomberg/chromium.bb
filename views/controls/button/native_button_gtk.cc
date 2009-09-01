@@ -142,4 +142,11 @@ NativeButtonWrapper* NativeButtonWrapper::CreateCheckboxWrapper(
   return new NativeCheckboxGtk(checkbox);
 }
 
+// static
+NativeButtonWrapper* NativeButtonWrapper::CreateRadioButtonWrapper(
+    RadioButton* radio_button) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 }  // namespace views

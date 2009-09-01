@@ -570,6 +570,24 @@ gboolean WidgetGtk::OnButtonRelease(GtkWidget* widget, GdkEventButton* event) {
   return true;
 }
 
+gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
+  if (type_ == TYPE_CHILD)
+    return false;
+
+  // The top-level window got focus, restore the last focused view.
+  focus_manager_->RestoreFocusedView();
+  return false;
+}
+
+gboolean WidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
+  if (type_ == TYPE_CHILD)
+    return false;
+
+  // The top-level window lost focus, store the focused view.
+  focus_manager_->StoreFocusedView();
+  return false;
+}
+
 void WidgetGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   root_view_->OnPaint(event);
 }

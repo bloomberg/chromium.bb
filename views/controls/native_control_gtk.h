@@ -5,6 +5,8 @@
 #ifndef VIEWS_CONTROLS_NATIVE_CONTROL_GTK_H_
 #define VIEWS_CONTROLS_NATIVE_CONTROL_GTK_H_
 
+#include <gtk/gtk.h>
+
 #include "views/controls/native/native_view_host.h"
 
 namespace views {
@@ -34,6 +36,10 @@ class NativeControlGtk : public NativeViewHost {
   virtual void NativeControlCreated(GtkWidget* widget);
 
  private:
+  static void CallFocusIn(GtkWidget* widget,
+                          GdkEventFocus* event,
+                          NativeControlGtk* button);
+
   DISALLOW_COPY_AND_ASSIGN(NativeControlGtk);
 };
 

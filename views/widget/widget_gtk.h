@@ -110,6 +110,9 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   virtual void WillProcessEvent(GdkEvent* event);
   virtual void DidProcessEvent(GdkEvent* event);
 
+  // Retrieves the WidgetGtk associated with |widget|.
+  static WidgetGtk* GetViewForNative(GtkWidget* widget);
+
   // Retrieves the WindowGtk associated with |widget|.
   static WindowGtk* GetWindowForNative(GtkWidget* widget);
 
@@ -148,12 +151,8 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   virtual gboolean OnMotionNotify(GtkWidget* widget, GdkEventMotion* event);
   virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);
   virtual gboolean OnButtonRelease(GtkWidget* widget, GdkEventButton* event);
-  virtual gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
-    return false;
-  }
-  virtual gboolean OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
-    return false;
-  }
+  virtual gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* event);
+  virtual gboolean OnFocusOut(GtkWidget* widget, GdkEventFocus* event);
   virtual gboolean OnKeyPress(GtkWidget* widget, GdkEventKey* event);
   virtual gboolean OnKeyRelease(GtkWidget* widget, GdkEventKey* event);
   virtual gboolean OnScroll(GtkWidget* widget, GdkEventScroll* event) {
@@ -200,8 +199,7 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   bool ProcessMousePressed(GdkEventButton* event);
   void ProcessMouseReleased(GdkEventButton* event);
 
-  // Sets and retrieves the WidgetGtk in the userdata section of the widget.
-  static WidgetGtk* GetViewForNative(GtkWidget* widget);
+  // Sets the WidgetGtk in the userdata section of the widget.
   static void SetViewForNative(GtkWidget* widget, WidgetGtk* view);
 
   static RootView* GetRootViewForWidget(GtkWidget* widget);

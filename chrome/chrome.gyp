@@ -4222,7 +4222,8 @@
              ['exclude', 'browser/gtk/bookmark_editor_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/go_button_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/tabs/tab_renderer_gtk_unittest\\.cc$'],
-             ['exclude', 'browser/gtk/options/cookies_view_unittest\\.cc$'],
+	     ['exclude', 'browser/gtk/options/cookies_view_unittest\\.cc$'],
+	     ['exclude', 'browser/gtk/options/languages_page_gtk_unittest\\.cc$'],
           ],
         }],
         ['OS=="mac"', {

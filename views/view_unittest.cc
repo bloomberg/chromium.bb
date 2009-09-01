@@ -1185,3 +1185,49 @@ TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
   SimularePressingEnterAndCheckDefaultButton(CANCEL);
 }
 #endif
+
+#if defined(OS_LINUX)
+class TestViewWithControls : public View {
+ public:
+ TestViewWithControls() {
+   button_ = new NativeButton(NULL, L"Button");
+   checkbox_ = new Checkbox(L"My checkbox");
+   text_field_ = new Textfield();
+   AddChildView(button_);
+   button_->SetBounds(0, 0, 100, 30);
+   AddChildView(checkbox_);
+   checkbox_->SetBounds(0, 100, 100, 30);
+   AddChildView(text_field_);
+   text_field_->SetBounds(0, 200, 100, 30);
+   text_field_->SetBackgroundColor(SK_ColorYELLOW);
+   text_field_->SetFont(gfx::Font::CreateFont(L"Arial", 30));
+ }
+
+  Button* button_;
+  Checkbox* checkbox_;
+  Textfield* text_field_;
+};
+
+class SimpleWindowDelegate : public WindowDelegate {
+ public:
+  SimpleWindowDelegate(View* contents) : contents_(contents) { }
+
+  virtual void DeleteDelegate() { delete this; }
+
+  virtual View* GetContentsView() { return contents_; }
+
+ private:
+  View* contents_;
+};
+
+TEST_F(ViewTest, DISABLED_Stupid) {
+  TestViewWithControls* view_with_controls = new TestViewWithControls();
+  views::Window* window =
+      views::Window::CreateChromeWindow(
+          NULL, gfx::Rect(200, 200, 500, 500),
+          new SimpleWindowDelegate(view_with_controls));
+  window->Show();
+  AcceleratorHandler accelerator_handler;
+  MessageLoopForUI::current()->Run(&accelerator_handler);
+}
+#endif
