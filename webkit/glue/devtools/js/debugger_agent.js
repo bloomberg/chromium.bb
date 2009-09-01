@@ -919,14 +919,6 @@ devtools.DebuggerAgent.prototype.handleBacktraceResponse_ = function(msg) {
 
 
 /**
- * Returns current suspended stack.
- */
-devtools.DebuggerAgent.prototype.getCallFrames = function(callback) {
-  return this.callFrames_;
-};
-
-
-/**
  * Evaluates code on given callframe.
  */
 devtools.DebuggerAgent.prototype.evaluateInCallFrame = function(

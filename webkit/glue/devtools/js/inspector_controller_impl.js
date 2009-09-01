@@ -40,6 +40,7 @@ devtools.InspectorControllerImpl = function() {
   this.installInjectedScriptDelegate_('pushNodeToFrontend');
   this.installInjectedScriptDelegate_('performSearch');
   this.installInjectedScriptDelegate_('searchCanceled');
+  this.installInjectedScriptDelegate_('openInInspectedWindow');
 };
 goog.inherits(devtools.InspectorControllerImpl,
     devtools.InspectorController);
@@ -229,14 +230,6 @@ devtools.InspectorControllerImpl.prototype.startProfiling = function() {
 devtools.InspectorControllerImpl.prototype.stopProfiling = function() {
   devtools.tools.getDebuggerAgent().stopProfiling(
       devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_CPU);
-};
-
-
-/**
- * @override
- */
-devtools.InspectorControllerImpl.prototype.getCallFrames = function(callback) {
-  callback(devtools.tools.getDebuggerAgent().getCallFrames());
 };
 
 

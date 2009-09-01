@@ -101,7 +101,8 @@ void WebDevToolsAgentImpl::Attach() {
 void WebDevToolsAgentImpl::Detach() {
   // Prevent controller from sending messages to the frontend.
   InspectorController* ic = web_view_impl_->page()->inspectorController();
-  ic->setWindowVisible(false, false);
+  ic->hideHighlight();
+  ic->close();
   DisposeUtilityContext();
   inspector_frontend_script_state_.clear();
   devtools_agent_host_.set(NULL);
