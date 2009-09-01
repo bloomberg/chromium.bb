@@ -51,8 +51,8 @@ class TargetBase(object):
     if not sources:
       fp.write('\ninput_files = []\n')
       return
-    preamble = '\ninput_files = GypFileList([\n    '
-    postamble = ',\n])\n'
+    preamble = '\ninput_files = [\n    '
+    postamble = ',\n]\n'
     WriteList(fp, map(repr, sources), preamble=preamble, postamble=postamble)
 
   def builder_call(self):
