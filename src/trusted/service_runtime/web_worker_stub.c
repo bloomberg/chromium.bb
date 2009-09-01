@@ -318,8 +318,12 @@ int NaClPostMessageToNativeWebWorker(char *buffer,
  */
 int NaClCreateUpcallChannel(struct NaClDesc* desc[2]) {
   NaClHandle nh[2];
-  struct NaClDescImcDesc *nacl_desc;   /* The module's end of the pair */
-  struct NaClDescImcDesc *chrome_desc; /* The browser's end of the pair */
+
+  struct NaClDescXferableDataDesc *nacl_desc;
+  /* The module's end of the pair */
+
+  struct NaClDescXferableDataDesc *chrome_desc;
+  /* The browser's end of the pair */
 
   /*
    * Initialize the descriptors to invalid.
@@ -337,11 +341,11 @@ int NaClCreateUpcallChannel(struct NaClDesc* desc[2]) {
   /*
    * Create an IMC descriptor for the NaCl module's end of the socket pair.
    */
-  nacl_desc = (struct NaClDescImcDesc *)(malloc(sizeof *nacl_desc));
+  nacl_desc = (struct NaClDescXferableDataDesc *) malloc(sizeof *nacl_desc);
   if (NULL == nacl_desc) {
     return 0;
   }
-  if (!NaClDescImcDescCtor(nacl_desc, nh[0])) {
+  if (!NaClDescXferableDataDescCtor(nacl_desc, nh[0])) {
     free(nacl_desc);
     return 0;
   }
@@ -349,15 +353,13 @@ int NaClCreateUpcallChannel(struct NaClDesc* desc[2]) {
   /*
    * Create an IMC descriptor for the browser worker's end of the socket pair.
    */
-  chrome_desc = (struct NaClDescImcDesc *)(malloc(sizeof *chrome_desc));
+  chrome_desc = (struct NaClDescXferableDataDesc *) malloc(sizeof *chrome_desc);
   if (NULL == chrome_desc) {
-    NaClDescImcDescDtor((struct NaClDesc*) nacl_desc);
-    free(nacl_desc);
+    NaClDescUnref((struct NaClDesc*) nacl_desc);
     return 0;
   }
-  if (!NaClDescImcDescCtor(chrome_desc, nh[1])) {
-    NaClDescImcDescDtor((struct NaClDesc*) nacl_desc);
-    free(nacl_desc);
+  if (!NaClDescXferableDataDescCtor(chrome_desc, nh[1])) {
+    NaClDescUnref((struct NaClDesc*) nacl_desc);
     free(chrome_desc);
     return 0;
   }
@@ -375,8 +377,8 @@ int NaClCreateUpcallChannel(struct NaClDesc* desc[2]) {
  * Destroys the upcall channel.
  */
 void NaClDestroyUpcallChannel(struct NaClDesc* desc[2]) {
-  NaClDescImcDescDtor(desc[0]);
-  NaClDescImcDescDtor(desc[1]);
+  NaClDescUnref(desc[0]);
+  NaClDescUnref(desc[1]);
 }
 
 /*

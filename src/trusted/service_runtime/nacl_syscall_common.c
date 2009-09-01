@@ -1802,10 +1802,10 @@ cleanup:
 }
 
 int32_t NaClCommonDescSocketPair(struct NaClDesc      **pair) {
-  int32_t                 retval = -NACL_ABI_EIO;
-  struct NaClDescImcDesc  *d0;
-  struct NaClDescImcDesc  *d1;
-  NaClHandle              sock_pair[2];
+  int32_t                         retval = -NACL_ABI_EIO;
+  struct NaClDescXferableDataDesc *d0;
+  struct NaClDescXferableDataDesc *d1;
+  NaClHandle                      sock_pair[2];
 
   /*
    * mark resources to enable easy cleanup
@@ -1815,26 +1815,34 @@ int32_t NaClCommonDescSocketPair(struct NaClDesc      **pair) {
   sock_pair[0] = NACL_INVALID_HANDLE;
   sock_pair[1] = NACL_INVALID_HANDLE;
 
-  if (NULL == (d0 = malloc(sizeof *d0))) {
-    retval = -NACL_ABI_ENOMEM;
-    goto cleanup;
-  }
-  if (NULL == (d1 = malloc(sizeof *d1))) {
-    retval = -NACL_ABI_ENOMEM;
-    goto cleanup;
-  }
   if (0 != NaClSocketPair(sock_pair)) {
     NaClLog(1,
             "NaClCommonSysImc_Socket_Pair: IMC socket pair creation failed\n");
     retval = -NACL_ABI_ENFILE;
     goto cleanup;
   }
-  if (!NaClDescImcDescCtor(d0, sock_pair[0])) {
+  if (NULL == (d0 = malloc(sizeof *d0))) {
+    retval = -NACL_ABI_ENOMEM;
+    goto cleanup;
+  }
+  if (NULL == (d1 = malloc(sizeof *d1))) {
+    free((void *) d0);
+    d0 = NULL;
+    retval = -NACL_ABI_ENOMEM;
+    goto cleanup;
+  }
+  if (!NaClDescXferableDataDescCtor(d0, sock_pair[0])) {
+    free((void *) d0);
+    d0 = NULL;
+    free((void *) d1);
+    d1 = NULL;
     retval = -NACL_ABI_ENFILE;
     goto cleanup;
   }
   sock_pair[0] = NACL_INVALID_HANDLE;  /* ctor took ownership */
-  if (!NaClDescImcDescCtor(d1, sock_pair[1])) {
+  if (!NaClDescXferableDataDescCtor(d1, sock_pair[1])) {
+    free((void *) d1);
+    d1 = NULL;
     retval = -NACL_ABI_ENFILE;
     goto cleanup;
   }
@@ -1849,11 +1857,15 @@ int32_t NaClCommonDescSocketPair(struct NaClDesc      **pair) {
   retval = 0;
 
  cleanup:
+  /*
+   * pre: d0 and d1 must either be NULL or point to fully constructed
+   * NaClDesc objects
+   */
   if (NULL != d0) {
-    NaClDescImcDescDtor((struct NaClDesc *) d0);
+    NaClDescUnref((struct NaClDesc *) d0);
   }
   if (NULL != d1) {
-    NaClDescImcDescDtor((struct NaClDesc *) d1);
+    NaClDescUnref((struct NaClDesc *) d1);
   }
   if (NACL_INVALID_HANDLE != sock_pair[0]) {
     NaClClose(sock_pair[0]);

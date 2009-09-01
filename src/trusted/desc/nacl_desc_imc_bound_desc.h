@@ -63,13 +63,6 @@ void NaClDescImcBoundDescDtor(struct NaClDesc *vself);
 int NaClDescImcBoundDescClose(struct NaClDesc         *vself,
                               struct NaClDescEffector *effp);
 
-int NaClDescImcBoundDescExternalizeSize(struct NaClDesc *vself,
-                                        size_t          *nbytes,
-                                        size_t          *nhandles);
-
-int NaClDescImcBoundDescExternalize(struct NaClDesc          *vself,
-                                    struct NaClDescXferState *xfer);
-
 int NaClDescImcBoundDescAcceptConn(struct NaClDesc          *vself,
                                    struct NaClDescEffector  *effp);
 

@@ -49,37 +49,45 @@ EXTERN_C_BEGIN
 
 struct NaClDesc;
 struct NaClDescEffector;
+struct NaClDescImcConnectedDesc;
 struct NaClDescImcDesc;
+struct NaClDescXferableDataDesc;
 struct NaClDescXferState;
 struct NaClHostDesc;
 struct NaClMessageHeader;
 struct nacl_abi_timespec;
 struct nacl_abi_stat;
 
+int NaClDescImcConnectedDescCtor(struct NaClDescImcConnectedDesc  *self,
+                                 NaClHandle                       h);
+
 int NaClDescImcDescCtor(struct NaClDescImcDesc  *self,
                         NaClHandle              d);
 
-void NaClDescImcDescDtor(struct NaClDesc *vself);
+int NaClDescXferableDataDescCtor(struct NaClDescXferableDataDesc  *self,
+                                 NaClHandle                       h);
 
-int NaClDescImcDescClose(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp);
+void NaClDescImcConnectedDescDtor(struct NaClDesc *vself);
 
-int NaClDescImcDescExternalizeSize(struct NaClDesc  *vself,
-                                   size_t           *nbytes,
-                                   size_t           *nhandles);
+int NaClDescImcConnectedDescClose(struct NaClDesc          *vself,
+                                  struct NaClDescEffector  *effp);
 
-int NaClDescImcDescExternalize(struct NaClDesc          *vself,
-                               struct NaClDescXferState *xfer);
+int NaClDescImcConnectedDescExternalizeSize(struct NaClDesc  *vself,
+                                            size_t           *nbytes,
+                                            size_t           *nhandles);
 
-int NaClDescImcDescSendMsg(struct NaClDesc          *vself,
-                           struct NaClDescEffector  *effp,
-                           struct NaClMessageHeader *dgram,
-                           int                      flags);
+int NaClDescImcConnectedDescExternalize(struct NaClDesc          *vself,
+                                        struct NaClDescXferState *xfer);
 
-int NaClDescImcDescRecvMsg(struct NaClDesc          *vself,
-                           struct NaClDescEffector  *effp,
-                           struct NaClMessageHeader *dgram,
-                           int                      flags);
+int NaClDescImcConnectedDescSendMsg(struct NaClDesc          *vself,
+                                    struct NaClDescEffector  *effp,
+                                    struct NaClMessageHeader *dgram,
+                                    int                      flags);
+
+int NaClDescImcConnectedDescRecvMsg(struct NaClDesc          *vself,
+                                    struct NaClDescEffector  *effp,
+                                    struct NaClMessageHeader *dgram,
+                                    int                      flags);
 
 EXTERN_C_END
 

@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <limits.h>
 
 #define NON_THREAD_SAFE_DETAIL_CHECK  1
 /*
@@ -60,7 +61,9 @@ static struct NaClMutex log_mu;
 static int              tag_output = 0;
 static int              abort_on_unlock = 0;
 
-static int              verbosity = 0;
+#define NACL_VERBOSITY_UNSET INT_MAX
+
+static int              verbosity = NACL_VERBOSITY_UNSET;
 static struct Gio       *log_stream = NULL;
 static struct GioFile   log_file_stream;
 static int              timestamp_enabled = 1;
@@ -108,6 +111,9 @@ void  NaClLogSetVerbosity(int verb) {
 
 void  NaClLogIncrVerbosity(void) {
   NaClLogLock();
+  if (NACL_VERBOSITY_UNSET == verbosity) {
+    verbosity = 0;
+  }
   ++verbosity;
   NaClLogUnlock();
 }
@@ -116,6 +122,9 @@ int NaClLogGetVerbosity(void) {
   int v;
 
   NaClLogLock();
+  if (NACL_VERBOSITY_UNSET == verbosity) {
+    verbosity = 0;
+  }
   v = verbosity;
   NaClLogUnlock();
 
@@ -188,6 +197,19 @@ void  NaClLogV_mu(int         detail_level,
   struct Gio  *s;
 
   s = NaClLogGetGio_mu();
+
+  if (NACL_VERBOSITY_UNSET == verbosity) {
+    char *env_verbosity = getenv("NACLVERBOSITY");
+    if (NULL != env_verbosity) {
+      int v = strtol(env_verbosity, (char **) NULL, 0);
+      if (v < 0) {
+        v = 0;
+      }
+      verbosity = v;
+    } else {
+      verbosity = 0;
+    }
+  }
 
   if (detail_level <= verbosity) {
     NaClLogOutputTag_mu(s);

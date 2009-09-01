@@ -132,10 +132,13 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
   NaClDescIoInternalize,
   NaClDescConnCapInternalize,
   NaClDescImcBoundDescInternalize,
-  NaClDescImcDescInternalize,
+  NaClDescInternalizeNotImplemented,  /* connected abstract base class */
   NaClDescImcShmInternalize,
   NaClDescMutexInternalize,
   NaClDescCondVarInternalize,
+  NaClDescInternalizeNotImplemented,  /* semaphore */
+  NaClDescXferableDataDescInternalize,
+  NaClDescInternalizeNotImplemented,  /* imc socket */
 };
 
 char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
@@ -151,6 +154,8 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
     MAP(NACL_DESC_MUTEX);
     MAP(NACL_DESC_CONDVAR);
     MAP(NACL_DESC_SEMAPHORE);
+    MAP(NACL_DESC_TRANSFERABLE_DATA_SOCKET);
+    MAP(NACL_DESC_IMC_SOCKET);
   }
   return "BAD TYPE TAG";
 }
@@ -392,6 +397,13 @@ int NaClDescGetValueNotImplemented(struct NaClDesc          *vself,
           "GetValue method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
   return -NACL_ABI_EINVAL;
+}
+
+int NaClDescInternalizeNotImplemented(struct NaClDesc **baseptr,
+                                      struct NaClDescXferState *xfer) {
+  NaClLog(LOG_ERROR,
+          "Attempted transfer of non-transferable descriptor\n");
+  return -NACL_ABI_EIO;
 }
 
 int NaClDescMapDescriptor(struct NaClDesc *desc,

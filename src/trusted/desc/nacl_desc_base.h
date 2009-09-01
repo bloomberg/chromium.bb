@@ -99,7 +99,9 @@ enum NaClDescTypeTag {
   NACL_DESC_SHM,
   NACL_DESC_MUTEX,
   NACL_DESC_CONDVAR,
-  NACL_DESC_SEMAPHORE
+  NACL_DESC_SEMAPHORE,
+  NACL_DESC_TRANSFERABLE_DATA_SOCKET,
+  NACL_DESC_IMC_SOCKET
   /*
    * Add new NaCDesc subclasses here.
    *
@@ -107,7 +109,7 @@ enum NaClDescTypeTag {
    * also be updated to add new internalization functions.
    */
 };
-#define NACL_DESC_TYPE_MAX      (NACL_DESC_SEMAPHORE+1)
+#define NACL_DESC_TYPE_MAX      (NACL_DESC_IMC_SOCKET + 1)
 #define NACL_DESC_TYPE_END_TAG  (0xff)
 
 struct NaClInternalRealHeader {
@@ -129,7 +131,7 @@ struct NaClInternalHeader {
   /* total size is a multiple of 16 bytes */
 };
 
-#define NACL_HANDLE_TRANSFER_PROTOCOL 0xd3c0de00
+#define NACL_HANDLE_TRANSFER_PROTOCOL 0xd3c0de01
 /* incr from here */
 
 /*
@@ -156,6 +158,8 @@ struct NaClInternalHeader {
 extern int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(
     struct NaClDesc **,
     struct NaClDescXferState *);
+
+extern char const *NaClDescTypeString(enum NaClDescTypeTag type_tag);
 
 /*
  * The virtual function table for NaClDesc and its subclasses.
@@ -398,18 +402,38 @@ extern int NaClDescImcBoundDescInternalize(struct NaClDesc          **baseptr,
                                            struct NaClDescXferState *xfer)
 NACL_WUR;
 
+extern struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl;
 extern struct NaClDescVtbl const kNaClDescImcDescVtbl;
+extern struct NaClDescVtbl const kNaClDescXferableDataDescVtbl;
 
 /*
- * IMC connected sockets.
+ * IMC connected sockets.  Abstractly, the base class for
+ * NaClDescImcDesc and NaClDescXferableDataDesc are identical, with a
+ * protected ctor that permits NaClDescImcDescCtor and
+ * NaClDescXferableDataDescCtor to set the xferable flag which sets
+ * the base class to the appropriate subclass behavior.
  */
-struct NaClDescImcDesc {
+struct NaClDescImcConnectedDesc {
   struct NaClDesc           base;
   NaClHandle                h;
 };
 
-extern int NaClDescImcDescInternalize(struct NaClDesc           **baseptr,
-                                      struct NaClDescXferState  *xfer) NACL_WUR;
+struct NaClDescImcDesc {
+  struct NaClDescImcConnectedDesc base;
+  /*
+   * race prevention.
+   */
+  struct NaClMutex          sendmsg_mu;
+  struct NaClMutex          recvmsg_mu;
+};
+
+struct NaClDescXferableDataDesc {
+  struct NaClDescImcConnectedDesc base;
+};
+
+extern int NaClDescXferableDataDescInternalize(struct NaClDesc **baseptr,
+                                               struct NaClDescXferState *xfer)
+NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescImcShmVtbl;
 
@@ -551,6 +575,10 @@ int NaClDescSemWaitNotImplemented(struct NaClDesc         *vself,
                                   struct NaClDescEffector *effp);
 int NaClDescGetValueNotImplemented(struct NaClDesc          *vself,
                                    struct NaClDescEffector  *effp);
+
+
+int NaClDescInternalizeNotImplemented(struct NaClDesc **baseptr,
+                                      struct NaClDescXferState *xfer);
 
 int NaClDescMapDescriptor(struct NaClDesc *desc,
                           struct NaClDescEffector *effector,

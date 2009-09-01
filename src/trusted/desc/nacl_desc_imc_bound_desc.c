@@ -80,25 +80,6 @@ int NaClDescImcBoundDescClose(struct NaClDesc         *vself,
   return 0;
 }
 
-int NaClDescImcBoundDescExternalizeSize(struct NaClDesc *vself,
-                                        size_t          *nbytes,
-                                        size_t          *nhandles) {
-  *nbytes = 0;
-  *nhandles = 1;
-
-  return 0;
-}
-
-int NaClDescImcBoundDescExternalize(struct NaClDesc           *vself,
-                                    struct NaClDescXferState  *xfer) {
-  struct NaClDescImcBoundDesc *self;
-
-  self = (struct NaClDescImcBoundDesc *) vself;
-  *xfer->next_handle++ = self->h;
-
-  return 0;
-}
-
 int NaClDescImcBoundDescAcceptConn(struct NaClDesc          *vself,
                                    struct NaClDescEffector  *effp) {
   /*
@@ -161,7 +142,7 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc          *vself,
   retval = (*effp->vtbl->ReturnCreatedDesc)(effp, (struct NaClDesc *) peer);
 
   if (retval < 0) {
-    (*peer->base.vtbl->Dtor)((struct NaClDesc *) peer);
+    (*peer->base.base.vtbl->Dtor)((struct NaClDesc *) peer);
   }
 
 cleanup:
@@ -188,8 +169,8 @@ struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   NaClDescImcBoundDescClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_BOUND_SOCKET,
-  NaClDescImcBoundDescExternalizeSize,
-  NaClDescImcBoundDescExternalize,
+  NaClDescExternalizeSizeNotImplemented,
+  NaClDescExternalizeNotImplemented,
   NaClDescLockNotImplemented,
   NaClDescTryLockNotImplemented,
   NaClDescUnlockNotImplemented,

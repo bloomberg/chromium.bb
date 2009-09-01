@@ -286,16 +286,17 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin *plugin) {
            "MultimediaSocket upcall thread %x (%d)",
            tid,
            tid);
-  service_runtime_->LogAtServiceRuntime(-1, buf);
+  service_runtime_->LogAtServiceRuntime(4, buf);
 
   // The arguments to nacl_multimedia_bridge are an object for the video
   // shared memory and a connected socket to send the plugin's up calls to.
-  struct NaClDescImcDesc *sr_desc =
-      reinterpret_cast<struct NaClDescImcDesc *>(malloc(sizeof *sr_desc));
+  struct NaClDescXferableDataDesc *sr_desc =
+      reinterpret_cast<struct NaClDescXferableDataDesc *>(malloc(sizeof
+                                                                 *sr_desc));
   if (NULL == sr_desc) {
     return false;
   }
-  if (!NaClDescImcDescCtor(sr_desc, nh[1])) {
+  if (!NaClDescXferableDataDescCtor(sr_desc, nh[1])) {
     free(sr_desc);
     return false;
   }

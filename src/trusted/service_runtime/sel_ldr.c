@@ -762,7 +762,7 @@ static NaClSrpcError NaClSecureChannelShutdownRpc(
     struct NaClSrpcChannel  *chan,
     struct NaClSrpcArg      **in_args,
     struct NaClSrpcArg      **out_args) {
-  NaClLog(LOG_INFO, "NaClSecureChannelShutdownRpc (hard_shutdown), exiting\n");
+  NaClLog(4, "NaClSecureChannelShutdownRpc (hard_shutdown), exiting\n");
   _exit(0);
 }
 
@@ -841,7 +841,7 @@ static NaClSrpcError NaClSecureChannelSetOriginRpc(
 
   free(nap->origin);
   nap->origin = strdup(in_args[0]->u.sval);
-  NaClLog(LOG_INFO, "NaClSecureChannelSetOriginRpc: origin %s\n", nap->origin);
+  NaClLog(4, "NaClSecureChannelSetOriginRpc: origin %s\n", nap->origin);
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -856,7 +856,7 @@ static NaClSrpcError NaClSecureChannelStartModuleRpc(
   struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
   NaClErrorCode   status;
 
-  NaClLog(LOG_INFO, "NaClSecureChannelStartModuleRpc started\n");
+  NaClLog(4, "NaClSecureChannelStartModuleRpc started\n");
   NaClXMutexLock(&nap->mu);
   while (LOAD_STATUS_UNKNOWN == (status = nap->module_load_status)) {
     NaClCondVarWait(&nap->cv, &nap->mu);
@@ -865,7 +865,7 @@ static NaClSrpcError NaClSecureChannelStartModuleRpc(
   NaClXCondVarBroadcast(&nap->cv);
   NaClXMutexUnlock(&nap->mu);
   out_args[0]->u.ival = status;
-  NaClLog(LOG_INFO, "NaClSecureChannelStartModuleRpc finished\n");
+  NaClLog(4, "NaClSecureChannelStartModuleRpc finished\n");
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -875,20 +875,20 @@ static NaClSrpcError NaClSecureChannelLog(struct NaClSrpcChannel  *chan,
   int severity = in_args[0]->u.ival;
   char *msg = in_args[1]->u.sval;
 
-  NaClLog(LOG_INFO, "NaClSecureChannelLog started\n");
+  NaClLog(5, "NaClSecureChannelLog started\n");
   NaClLog(severity, "%s\n", msg);
-  NaClLog(LOG_INFO, "NaClSecureChannelLog finished\n");
+  NaClLog(5, "NaClSecureChannelLog finished\n");
   return NACL_SRPC_RESULT_OK;
 }
 
 void NaClWaitForModuleStartStatusCall(struct NaClApp *nap) {
-  NaClLog(LOG_INFO, "NaClWaitForModuleStartStatusCall started\n");
+  NaClLog(4, "NaClWaitForModuleStartStatusCall started\n");
   NaClXMutexLock(&nap->mu);
   while (!nap->module_may_start) {
     NaClXCondVarWait(&nap->cv, &nap->mu);
   }
   NaClXMutexUnlock(&nap->mu);
-  NaClLog(LOG_INFO, "NaClWaitForModuleStartStatusCall finished\n");
+  NaClLog(4, "NaClWaitForModuleStartStatusCall finished\n");
 }
 
 void WINAPI NaClSecureChannelThread(void *state) {
@@ -904,12 +904,12 @@ void WINAPI NaClSecureChannelThread(void *state) {
     { (char const *) NULL, (NaClSrpcMethod) 0, },
   };
 
-  NaClLog(LOG_INFO, "NaClSecureChannelThread started\n");
+  NaClLog(4, "NaClSecureChannelThread started\n");
 
   (void) NaClSrpcServerLoopImcDesc(nap->secure_channel,
                                    secure_handlers,
                                    nap);
-  NaClLog(LOG_INFO, "NaClSecureChannelThread: channel closed, exiting.\n");
+  NaClLog(4, "NaClSecureChannelThread: channel closed, exiting.\n");
   _exit(0);
 }
 
@@ -917,7 +917,7 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
   struct NaClNrdXferEffector  nnxep;
   int                         status;
 
-  NaClLog(LOG_INFO, "Waiting for secure command channel connect\n");
+  NaClLog(4, "Waiting for secure command channel connect\n");
   (void) NaClNrdXferEffectorCtor(&nnxep, nap->service_port);
   /*
    * this block until the plugin connects
@@ -939,7 +939,7 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
                  NaClSecureChannelThread,
                  nap,
                  NACL_KERN_STACK_SIZE);
-  NaClLog(LOG_INFO, "NaClSecureCommandChannel: thread spawned, continuing\n");
+  NaClLog(4, "NaClSecureCommandChannel: thread spawned, continuing\n");
 }
 
 void NaClDumpServiceAddressTo(struct NaClApp  *nap,

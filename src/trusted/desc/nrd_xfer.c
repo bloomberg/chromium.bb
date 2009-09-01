@@ -80,7 +80,7 @@ int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
                                 const struct NaClImcTypedMsgHdr *nitmhp,
                                 int                              flags) {
   int                       supported_flags;
-  int                       retval;
+  int                       retval = -NACL_ABI_EINVAL;
   struct NaClMessageHeader  kern_msg_hdr;  /* xlated interface */
   size_t                    i;
   /*
@@ -122,6 +122,18 @@ int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
             "WARNING: NaClImcSendTypedMessage: unknown IMC flag used: 0x%x\n",
             flags);
     flags &= supported_flags;
+  }
+
+  /*
+   * use (ahem) RTTI -- or a virtual function that's been partially
+   * evaluated/memoized -- to short circuit the error check, so that
+   * cleanups are easier (rather than letting it fail at the
+   * ExternalizeSize virtual function call).
+   */
+  if (0 != nitmhp->ndesc_length
+      && NACL_DESC_IMC_SOCKET != channel->vtbl->typeTag) {
+    NaClLog(4, "not an IMC socket and trying to send descriptors!\n");
+    return -NACL_ABI_EINVAL;
   }
 
   if (nitmhp->iov_length > NACL_ABI_IMC_IOVEC_MAX) {
@@ -231,7 +243,11 @@ int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
        * Externalize should expose the object as NaClHandles that must
        * be sent, but no ownership is transferred.  The NaClHandle
        * objects cannot be deallocated until after the actual SendMsg
-       * completes, so multithreaded code beware!
+       * completes, so multithreaded code beware!  By using
+       * NaClDescRef and NaClDescUnref properly, there shouldn't be
+       * any problems, since all entries in the ndescv should have had
+       * their refcount incremented, and the NaClHandles will not be
+       * closed until the NaClDesc objects' refcount goes to zero.
        */
       retval = (*kern_desc[i]->vtbl->Externalize)(kern_desc[i],
                                                   &xfer_state);
@@ -371,18 +387,34 @@ int32_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
     goto cleanup;
   }
 
-  for (i = 0; i < sizeof kern_handle/sizeof kern_handle[0]; ++i) {
-    kern_handle[i] = NACL_INVALID_HANDLE;
-  }
-
   recv_iov.base = (void *) recv_buf;
   recv_iov.length = NACL_ABI_IMC_BYTES_MAX;
 
   recv_hdr.iov = &recv_iov;
   recv_hdr.iov_length = 1;
 
-  recv_hdr.handles = kern_handle;
-  recv_hdr.handle_count = sizeof kern_handle / sizeof kern_handle[0];
+  for (i = 0; i < sizeof kern_handle/sizeof kern_handle[0]; ++i) {
+    kern_handle[i] = NACL_INVALID_HANDLE;
+  }
+
+  if (NACL_DESC_IMC_SOCKET == channel->vtbl->typeTag) {
+    /*
+     * Channel can transfer access rights.
+     */
+
+    recv_hdr.handles = kern_handle;
+    recv_hdr.handle_count = sizeof kern_handle / sizeof kern_handle[0];
+    NaClLog(4, "Connected socket, may transfer descriptors\n");
+  } else {
+    /*
+     * Channel cannot transfer access rights.  The syscall would fail
+     * if recv_iov.length is non-zero.
+     */
+
+    recv_hdr.handles = (NaClHandle *) NULL;
+    recv_hdr.handle_count = 0;
+    NaClLog(4, "Transferable Data Only socket\n");
+  }
 
   recv_hdr.flags = 0;  /* just to make it obvious; IMC will clear it for us */
 
@@ -520,11 +552,24 @@ int32_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
       retval = -NACL_ABI_EIO;
       goto cleanup;
     }
+    if ((int (*)(struct NaClDesc **, struct NaClDescXferState *)) NULL ==
+        NaClDescInternalize[type_tag]) {
+      NaClLog(LOG_FATAL,
+              "No internalization function for type %d\n",
+              type_tag);
+      /* fatal, but in case we change it later */
+      retval = -NACL_ABI_EIO;
+      goto cleanup;
+    }
     xfer_status = (*NaClDescInternalize[type_tag])(&new_desc[i], &xfer);
     /* constructs new_desc, transferring ownership of any handles consumed */
 
     if (xfer_status != 0) {
-      NaClLog(4, ("non-zero xfer_status %d\n"), xfer_status);
+      NaClLog(0,
+              "non-zero xfer_status %d, desc type tag %s (%d)\n",
+              xfer_status,
+              NaClDescTypeString(type_tag),
+              type_tag);
       retval = xfer_status;
       goto cleanup;
     }

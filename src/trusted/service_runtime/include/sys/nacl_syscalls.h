@@ -253,7 +253,9 @@ extern int imc_accept(int desc);
  *  descriptor.
  *  @param desc The file descriptor of an IMC socket address.
  *  @return On success, imc_connect returns a non-negative file descriptor for
- *  the connected socket.  On failure, it returns -1 and sets errno
+ *  the connected socket.  On failure, it returns -1 and sets errno.
+ *  The returned descriptor may be used to transfer data and descriptors
+ *  but is itself not transferable.
  *  appropriately.
  */
 extern int imc_connect(int desc);
@@ -266,6 +268,8 @@ extern int imc_connect(int desc);
  *  @param flags TBD
  *  @return On success, imc_sendmsg returns a non-negative number of bytes sent
  *  to the socket.  On failure, it returns -1 and sets errno appropriately.
+ *  The returned descriptor may be used to transfer data and descriptors
+ *  but is itself not transferable.
  */
 extern int imc_sendmsg(int desc, struct NaClImcMsgHdr const *nmhp, int flags);
 /**
@@ -291,10 +295,15 @@ extern int imc_mem_obj_create(size_t nbytes);
 /**
  *  @nacl
  *  Creates an IMC socket pair, returning a pair of file descriptors.
+ *  These descriptors are data-only, i.e., they may be used with
+ *  imc_sendmsg and imc_recvmsg, but only if the descriptor count
+ *  (desc_length) is zero.
  *  @param pair An array of two file descriptors for the two ends of the
  *  socket.
  *  @return On success imc_socketpair returns zero.  On failure, it returns -1
  *  and sets errno appropriately.
+ *  The returned descriptor may only be used to transfer data
+ *  and is itself transferable.
  */
 extern int imc_socketpair(int pair[2]);
 #ifdef __cplusplus

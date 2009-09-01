@@ -37,7 +37,8 @@
 #define NATIVE_CLIENT_SERVICE_RUNTIME_INCLUDE_BITS_STAT_H_
 
 #define NACL_ABI_S_IFMT       0170000
-#define NACL_ABI_S_IFSOCK     0140000  /* unix-domain socket*/
+#define NACL_ABI_S_IFSOCK     0140000  /* data-and-descriptor socket*/
+#define NACL_ABI_S_IFDSOCK    0130000  /* data-only, transferable socket*/
 #define NACL_ABI_S_IFLNK      0120000  /* symbolic link */
 #define NACL_ABI_S_IFSOCKADDR 0110000  /* socket address */
 #define NACL_ABI_S_IFREG      0100000  /* regular file */
