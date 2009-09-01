@@ -75,7 +75,7 @@ class TopMostFinder : public BaseWindowFinder {
       return true;
     }
 
-    if (x11_util::IsWindowVisible(window)) {
+    if (!x11_util::IsWindowVisible(window)) {
       // The window isn't visible, keep iterating.
       return false;
     }
