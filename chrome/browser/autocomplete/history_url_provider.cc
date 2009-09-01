@@ -64,6 +64,8 @@ void HistoryURLProvider::Stop() {
 }
 
 void HistoryURLProvider::DeleteMatch(const AutocompleteMatch& match) {
+  DCHECK(done_);
+
   // Delete the match from the history DB.
   HistoryService* history_service =
       profile_ ? profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) :
@@ -94,15 +96,6 @@ void HistoryURLProvider::DeleteMatch(const AutocompleteMatch& match) {
   }
   DCHECK(found) << "Asked to delete a URL that isn't in our set of matches";
   listener_->OnProviderUpdate(true);
-
-  // Cancel any current pass 2 and rerun it, so we get correct history data.
-  if (!done_) {
-    // Copy params_->input to avoid a race condition where params_ gets deleted
-    // out from under us on the other thread after we set params_->cancel here.
-    AutocompleteInput input(params_->input);
-    params_->cancel = true;
-    RunAutocompletePasses(input, false);
-  }
 }
 
 // Called on the history thread.

@@ -105,7 +105,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
 #endif
       tab_was_pressed_(false),
       paste_clipboard_requested_(false) {
-  model_->set_popup_model(popup_view_->GetModel());
+  model_->SetPopupModel(popup_view_->GetModel());
 }
 
 AutocompleteEditViewGtk::~AutocompleteEditViewGtk() {

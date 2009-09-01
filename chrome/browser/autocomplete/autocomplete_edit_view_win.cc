@@ -426,7 +426,7 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
       drop_highlight_position_(-1),
       background_color_(0),
       scheme_security_level_(ToolbarModel::NORMAL) {
-  model_->set_popup_model(popup_view_->GetModel());
+  model_->SetPopupModel(popup_view_->GetModel());
 
   saved_selection_for_focus_change_.cpMin = -1;
 

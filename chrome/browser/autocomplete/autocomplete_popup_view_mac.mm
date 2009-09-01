@@ -267,7 +267,7 @@ AutocompletePopupViewMac::AutocompletePopupViewMac(
   DCHECK(edit_view);
   DCHECK(edit_model);
   DCHECK(profile);
-  edit_model->set_popup_model(model_.get());
+  edit_model->SetPopupModel(model_.get());
 }
 
 AutocompletePopupViewMac::~AutocompletePopupViewMac() {

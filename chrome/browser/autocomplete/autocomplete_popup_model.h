@@ -94,25 +94,6 @@ class AutocompletePopupModel : public NotificationObserver {
       bool* is_history_what_you_typed_match,
       GURL* alternate_nav_url) const;
 
-  // This is sort of a hybrid between StartAutocomplete() and
-  // URLForCurrentSelection().  When the popup isn't open and the user hits
-  // enter, we want to get the default match for the user's input immediately,
-  // and not open the popup, continue running autocomplete, etc.  Therefore,
-  // this does a query for only the synchronously available matches for the
-  // provided input parameters, sets |transition|,
-  // |is_history_what_you_typed_match|, and |alternate_nav_url| (if applicable)
-  // based on the default match, and returns its url. |transition|,
-  // |is_history_what_you_typed_match| and/or |alternate_nav_url| may be null,
-  // in which case they are not updated.
-  //
-  // If there are no matches for |text|, leaves the outparams unset and returns
-  // the empty string.
-  GURL URLsForDefaultMatch(const std::wstring& text,
-                           const std::wstring& desired_tld,
-                           PageTransition::Type* transition,
-                           bool* is_history_what_you_typed_match,
-                           GURL* alternate_nav_url);
-
   // Gets the selected keyword or keyword hint for the given match.  Returns
   // true if |keyword| represents a keyword hint, or false if |keyword|
   // represents a selected keyword.  (|keyword| will always be set [though
@@ -167,10 +148,6 @@ class AutocompletePopupModel : public NotificationObserver {
 
   // The match the user has manually chosen, if any.
   AutocompleteResult::Selection manually_selected_match_;
-
-  // A hack for URLsForDefaultMatch() that makes the code in Observe() do
-  // nothing.
-  bool inside_synchronous_query_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupModel);
 };

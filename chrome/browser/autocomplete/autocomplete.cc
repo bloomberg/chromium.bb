@@ -646,6 +646,8 @@ AutocompleteController::~AutocompleteController() {
 void AutocompleteController::SetProfile(Profile* profile) {
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
     (*i)->SetProfile(profile);
+  input_.Clear();  // Ensure we don't try to do a "minimal_changes" query on a
+                   // different profile.
 }
 
 void AutocompleteController::Start(const std::wstring& text,
@@ -710,19 +712,26 @@ void AutocompleteController::Stop(bool clear_result) {
   updated_latest_result_ = false;
   delay_interval_has_passed_ = false;
   done_ = true;
-  if (clear_result)
+  if (clear_result) {
     result_.Reset();
+    NotificationService::current()->Notify(
+        NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
+        Source<AutocompleteController>(this),
+        Details<const AutocompleteResult>(&result_));
+    // NOTE: We don't notify AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED since
+    // we're trying to only clear the popup, not touch the edit... this is all
+    // a mess and should be cleaned up :(
+  }
   latest_result_.CopyFrom(result_);
 }
 
 void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
-  match.provider->DeleteMatch(match);  // This will synchronously call back to
+  match.provider->DeleteMatch(match);  // This may synchronously call back to
                                        // OnProviderUpdate().
-
-  // Notify observers of this change immediately, so the UI feels responsive to
-  // the user's action.
-  CommitResult();
+  CommitResult();  // Ensure any new result gets committed immediately.  If it
+                   // was committed already or hasn't been modified, this is
+                   // harmless.
 }
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
@@ -759,7 +768,7 @@ void AutocompleteController::UpdateLatestResult(bool is_synchronous_pass) {
     }
 
     NotificationService::current()->Notify(
-        NotificationType::AUTOCOMPLETE_CONTROLLER_SYNCHRONOUS_MATCHES_AVAILABLE,
+        NotificationType::AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED,
         Source<AutocompleteController>(this),
         Details<const AutocompleteResult>(&latest_result_));
   }
@@ -776,7 +785,6 @@ void AutocompleteController::UpdateLatestResult(bool is_synchronous_pass) {
 
 void AutocompleteController::DelayTimerFired() {
   delay_interval_has_passed_ = true;
-  update_delay_timer_.Reset();
   CommitResult();
 }
 
@@ -796,6 +804,13 @@ void AutocompleteController::CommitResult() {
   result_.CopyFrom(latest_result_);
   NotificationService::current()->Notify(
       NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
+      Source<AutocompleteController>(this),
+      Details<const AutocompleteResult>(&result_));
+  // This notification must be sent after the other so the popup has time to
+  // update its state before the edit calls into it.
+  // TODO(pkasting): Eliminate this ordering requirement.
+  NotificationService::current()->Notify(
+      NotificationType::AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED,
       Source<AutocompleteController>(this),
       Details<const AutocompleteResult>(&result_));
   if (!done_)

@@ -7,12 +7,14 @@
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
-#include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"
 #include "third_party/icu38/public/common/unicode/ubidi.h"
+
+///////////////////////////////////////////////////////////////////////////////
+// AutocompletePopupModel
 
 AutocompletePopupModel::AutocompletePopupModel(
     AutocompletePopupView* popup_view,
@@ -23,16 +25,9 @@ AutocompletePopupModel::AutocompletePopupModel(
       controller_(new AutocompleteController(profile)),
       profile_(profile),
       hovered_line_(kNoMatch),
-      selected_line_(kNoMatch),
-      inside_synchronous_query_(false) {
-  registrar_.Add(
-      this,
-      NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
-      Source<AutocompleteController>(controller_.get()));
-  registrar_.Add(
-      this,
-      NotificationType::AUTOCOMPLETE_CONTROLLER_SYNCHRONOUS_MATCHES_AVAILABLE,
-      Source<AutocompleteController>(controller_.get()));
+      selected_line_(kNoMatch) {
+  registrar_.Add(this, NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
+                 Source<AutocompleteController>(controller_.get()));
 }
 
 AutocompletePopupModel::~AutocompletePopupModel() {
@@ -61,9 +56,6 @@ void AutocompletePopupModel::StartAutocomplete(
 
 void AutocompletePopupModel::StopAutocomplete() {
   controller_->Stop(true);
-  SetHoveredLine(kNoMatch);
-  selected_line_ = kNoMatch;
-  view_->UpdatePopupAppearance();
 }
 
 bool AutocompletePopupModel::IsOpen() const {
@@ -117,6 +109,8 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
     return;  // Nothing else to do.
 
   // Update the edit with the new data for this match.
+  // TODO(pkasting): If |selected_line_| moves to the controller, this can be
+  // eliminated and just become a call to the observer on the edit.
   std::wstring keyword;
   const bool is_keyword_hint = GetKeywordForMatch(match, &keyword);
   edit_model_->OnPopupDataChanged(
@@ -187,42 +181,6 @@ GURL AutocompletePopupModel::URLsForCurrentSelection(
   return match->destination_url;
 }
 
-GURL AutocompletePopupModel::URLsForDefaultMatch(
-    const std::wstring& text,
-    const std::wstring& desired_tld,
-    PageTransition::Type* transition,
-    bool* is_history_what_you_typed_match,
-    GURL* alternate_nav_url) {
-  // We had better not already be doing anything, or this call will blow it
-  // away.
-  CHECK(!IsOpen());
-  CHECK(controller_->done());
-
-  // Run the new query and get only the synchronously available matches.
-  inside_synchronous_query_ = true;  // Tell Observe() not to notify the edit or
-                                     // update our appearance.
-  controller_->Start(text, desired_tld, true, false, true);
-  inside_synchronous_query_ = false;
-  CHECK(controller_->done());
-
-  const AutocompleteResult& result = controller_->result();
-  GURL destination_url;
-  if (!result.empty()) {
-    // Get the URLs for the default match.
-    const AutocompleteResult::const_iterator match = result.default_match();
-    if (transition)
-      *transition = match->transition;
-    if (is_history_what_you_typed_match)
-      *is_history_what_you_typed_match = match->is_history_what_you_typed_match;
-    if (alternate_nav_url)
-      *alternate_nav_url = result.alternate_nav_url();
-    destination_url = match->destination_url;
-  }
-
-  controller_->Stop(true);  // Keeps our state consistent.
-  return destination_url;
-}
-
 bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
                                                 std::wstring* keyword) const {
   // Assume we have no keyword until we find otherwise.
@@ -279,11 +237,15 @@ void AutocompletePopupModel::TryDeletingCurrentItem() {
   // yet visible" one.
   if (selected_line_ == kNoMatch)
     return;
+
+  // Cancel the query so the matches don't change on the user.
+  controller_->Stop(false);
+
   const AutocompleteMatch& match =
       controller_->result().match_at(selected_line_);
   if (match.deletable) {
     const size_t selected_line = selected_line_;
-    controller_->DeleteMatch(match);  // This will synchronously notify us that
+    controller_->DeleteMatch(match);  // This may synchronously notify us that
                                       // the results have changed.
     const AutocompleteResult& result = controller_->result();
     if (!result.empty()) {
@@ -299,60 +261,20 @@ void AutocompletePopupModel::TryDeletingCurrentItem() {
 void AutocompletePopupModel::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (inside_synchronous_query_)
-    return;
+  DCHECK_EQ(NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
+            type.value);
 
   const AutocompleteResult* result =
       Details<const AutocompleteResult>(details).ptr();
-  switch (type.value) {
-    case NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED: {
-      selected_line_ = (result->default_match() == result->end()) ?
-          kNoMatch : (result->default_match() - result->begin());
-      // There had better not be a nonempty result set with no default match.
-      CHECK((selected_line_ != kNoMatch) || result->empty());
-      // If we're going to trim the window size to no longer include the hovered
-      // line, turn hover off.  Practically, this shouldn't happen, but it
-      // doesn't hurt to be defensive.
-      if ((hovered_line_ != kNoMatch) && (result->size() <= hovered_line_))
-        SetHoveredLine(kNoMatch);
+  selected_line_ = (result->default_match() == result->end()) ?
+      kNoMatch : (result->default_match() - result->begin());
+  // There had better not be a nonempty result set with no default match.
+  CHECK((selected_line_ != kNoMatch) || result->empty());
+  // If we're going to trim the window size to no longer include the hovered
+  // line, turn hover off.  Practically, this shouldn't happen, but it
+  // doesn't hurt to be defensive.
+  if ((hovered_line_ != kNoMatch) && (result->size() <= hovered_line_))
+    SetHoveredLine(kNoMatch);
 
-      view_->UpdatePopupAppearance();
-    }
-    // FALL THROUGH
-
-    case NotificationType::
-             AUTOCOMPLETE_CONTROLLER_SYNCHRONOUS_MATCHES_AVAILABLE: {
-      // Update the edit with the possibly new data for this match.
-      // NOTE: This must be done after the code above, so that our internal
-      // state will be consistent when the edit calls back to
-      // URLsForCurrentSelection().
-      std::wstring inline_autocomplete_text;
-      std::wstring keyword;
-      bool is_keyword_hint = false;
-      AutocompleteMatch::Type type = AutocompleteMatch::SEARCH_WHAT_YOU_TYPED;
-      const AutocompleteResult::const_iterator match(result->default_match());
-      if (match != result->end()) {
-        if ((match->inline_autocomplete_offset != std::wstring::npos) &&
-            (match->inline_autocomplete_offset <
-                match->fill_into_edit.length())) {
-          inline_autocomplete_text =
-              match->fill_into_edit.substr(match->inline_autocomplete_offset);
-        }
-        // Warm up DNS Prefetch Cache.
-        chrome_browser_net::DnsPrefetchUrl(match->destination_url);
-        // We could prefetch the alternate nav URL, if any, but because there
-        // can be many of these as a user types an initial series of characters,
-        // the OS DNS cache could suffer eviction problems for minimal gain.
-
-        is_keyword_hint = GetKeywordForMatch(*match, &keyword);
-        type = match->type;
-      }
-      edit_model_->OnPopupDataChanged(inline_autocomplete_text, false, keyword,
-          is_keyword_hint, type);
-      return;
-    }
-
-    default:
-      NOTREACHED();
-  }
+  view_->UpdatePopupAppearance();
 }

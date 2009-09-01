@@ -518,7 +518,8 @@ class AutocompleteProvider
 
   // Called to delete a match and the backing data that produced it.  This
   // match should not appear again in this or future queries.  This can only be
-  // called for matches the provider marks as deletable.
+  // called for matches the provider marks as deletable.  This should only be
+  // called when no query is running.
   // NOTE: Remember to call OnProviderUpdate() if matches_ is updated.
   virtual void DeleteMatch(const AutocompleteMatch& match) {}
 
@@ -749,12 +750,11 @@ class AutocompleteController : public ACProviderListener {
   // fired, they will be discarded.
   //
   // If |clear_result| is true, the controller will also erase the result set.
-  // TODO(pkasting): This is temporary.  Instead, we should keep a separate
-  // result set that tracks the displayed matches.
   void Stop(bool clear_result);
 
   // Asks the relevant provider to delete |match|, and ensures observers are
-  // notified of resulting changes immediately.
+  // notified of resulting changes immediately.  This should only be called when
+  // no query is running.
   void DeleteMatch(const AutocompleteMatch& match);
 
   // Getters
