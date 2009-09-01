@@ -116,7 +116,9 @@ class RenderWidget : public IPC::Channel::Listener,
   // must ensure that the given rect fits within the bounds of the WebWidget.
   void PaintRect(const gfx::Rect& rect, skia::PlatformCanvas* canvas);
 
+  void CallDoDeferredPaint();
   void DoDeferredPaint();
+  void CallDoDeferredScroll();
   void DoDeferredScroll();
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const WebKit::WebRect& pos);
@@ -307,6 +309,8 @@ class RenderWidget : public IPC::Channel::Listener,
   WebKit::WebRect pending_window_rect_;
 
   scoped_ptr<ViewHostMsg_ShowPopup_Params> popup_params_;
+
+  scoped_ptr<IPC::Message> pending_input_event_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

@@ -271,7 +271,7 @@ void RenderWidget::OnPaintRectAck() {
   DidPaint();
 
   // Continue painting if necessary...
-  DoDeferredPaint();
+  CallDoDeferredPaint();
 }
 
 void RenderWidget::OnRequestMoveAck() {
@@ -288,7 +288,16 @@ void RenderWidget::OnScrollRectAck() {
   }
 
   // Continue scrolling if necessary...
+  CallDoDeferredScroll();
+}
+
+void RenderWidget::CallDoDeferredScroll() {
   DoDeferredScroll();
+
+  if (pending_input_event_ack_.get()) {
+    Send(pending_input_event_ack_.get());
+    pending_input_event_ack_.release();
+  }
 }
 
 void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
@@ -312,7 +321,15 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   response->WriteInt(input_event->type);
   response->WriteBool(processed);
 
-  Send(response);
+  if (input_event->type == WebInputEvent::MouseMove &&
+      (!paint_rect_.IsEmpty() || !scroll_rect_.IsEmpty())) {
+    // We want to rate limit the input events in this case, so we'll wait for
+    // painting to finish before ACKing this message.
+    pending_input_event_ack_.reset(response);
+  } else {
+    Send(response);
+  }
+
   handling_input_event_ = false;
 }
 
@@ -363,6 +380,15 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
 
   // Flush to underlying bitmap.  TODO(darin): is this needed?
   canvas->getTopPlatformDevice().accessBitmap(false);
+}
+
+void RenderWidget::CallDoDeferredPaint() {
+  DoDeferredPaint();
+
+  if (pending_input_event_ack_.get()) {
+    Send(pending_input_event_ack_.get());
+    pending_input_event_ack_.release();
+  }
 }
 
 void RenderWidget::DoDeferredPaint() {
@@ -533,7 +559,7 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
   // 2) Allows us to collect more damage rects before painting to help coalesce
   //    the work that we will need to do.
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &RenderWidget::DoDeferredPaint));
+      this, &RenderWidget::CallDoDeferredPaint));
 }
 
 void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
@@ -576,7 +602,7 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
 
   // Perform scrolling asynchronously since we need to call WebView::Paint
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &RenderWidget::DoDeferredScroll));
+      this, &RenderWidget::CallDoDeferredScroll));
 }
 
 void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {
