@@ -68,7 +68,6 @@ void WebInspectorClient::showWindow() {
 }
 
 void WebInspectorClient::closeWindow() {
-  DCHECK(inspected_web_view_->GetWebDevToolsAgentImpl());
   if (inspected_web_view_->page())
     inspected_web_view_->page()->inspectorController()->setWindowVisible(false);
 }
