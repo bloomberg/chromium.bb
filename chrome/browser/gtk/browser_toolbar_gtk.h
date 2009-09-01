@@ -46,9 +46,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Set the various widgets' ViewIDs.
   void SetViewIDs();
 
-  // Adds this GTK toolbar into a sizing box.
-  void AddToolbarToBox(GtkWidget* box);
-
   void Show();
   void Hide();
 
@@ -119,8 +116,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   void ChangeActiveMenu(GtkWidget* active_menu, guint timestamp);
 
   // Gtk callback for the "expose-event" signal.
-  static gboolean OnToolbarExpose(GtkWidget* widget, GdkEventExpose* e,
-                                  BrowserToolbarGtk* toolbar);
+  // The alignment contains the toolbar.
+  static gboolean OnAlignmentExpose(GtkWidget* widget, GdkEventExpose* e,
+                                    BrowserToolbarGtk* toolbar);
   static gboolean OnLocationHboxExpose(GtkWidget* omnibox_hbox,
                                        GdkEventExpose* e,
                                        BrowserToolbarGtk* toolbar);

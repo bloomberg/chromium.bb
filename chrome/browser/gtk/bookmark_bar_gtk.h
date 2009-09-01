@@ -54,9 +54,6 @@ class BookmarkBarGtk : public AnimationDelegate,
   // Create the contents of the bookmark bar.
   void Init(Profile* profile);
 
-  // Adds this GTK toolbar into a sizing box.
-  void AddBookmarkbarToBox(GtkWidget* box);
-
   // Whether the current page is the New Tag Page (which requires different
   // rendering).
   bool OnNewTabPage();
@@ -185,9 +182,9 @@ class BookmarkBarGtk : public AnimationDelegate,
                              guint target_type, guint time,
                              BookmarkBarGtk* bar);
 
-  // GtkHBox callbacks.
-  static gboolean OnHBoxExpose(GtkWidget* widget, GdkEventExpose* event,
-                               BookmarkBarGtk* window);
+  // GtkEventBox callbacks.
+  static gboolean OnEventBoxExpose(GtkWidget* widget, GdkEventExpose* event,
+                                   BookmarkBarGtk* window);
 
   // GtkVSeparator callbacks.
   static gboolean OnSeparatorExpose(GtkWidget* widget, GdkEventExpose* event,

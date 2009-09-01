@@ -283,10 +283,10 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // Helper functions that query |browser_| concerning support for UI features
   // in this window. (For example, a popup window might not support a tabstrip).
-  bool IsTabStripSupported();
-  bool IsToolbarSupported();
-  bool IsBookmarkBarSupported();
-  bool IsExtensionShelfSupported();
+  bool IsTabStripSupported() const;
+  bool IsToolbarSupported() const;
+  bool IsBookmarkBarSupported() const;
+  bool IsExtensionShelfSupported() const;
 
   // Checks to see if the mouse pointer at |x|, |y| is over the border of the
   // custom frame (a spot that should trigger a window resize). Returns true if
@@ -316,7 +316,8 @@ class BrowserWindowGtk : public BrowserWindow,
   // The object that manages all of the widgets in the toolbar.
   scoped_ptr<BrowserToolbarGtk> toolbar_;
 
-  // The object that manages the bookmark bar.
+  // The object that manages the bookmark bar. This will be NULL if the
+  // bookmark bar is not supported.
   scoped_ptr<BookmarkBarGtk> bookmark_bar_;
 
   // The object that manages the extension shelf.

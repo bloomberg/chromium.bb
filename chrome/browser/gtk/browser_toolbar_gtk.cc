@@ -45,11 +45,14 @@
 
 namespace {
 
-// Height of the toolbar in pixels.
-const int kToolbarHeight = 37;
+// Height of the toolbar in pixels (not counting padding).
+const int kToolbarHeight = 29;
+
+// Padding within the toolbar above the buttons and location bar.
+const int kTopPadding = 4;
 
 // Height of the toolbar in pixels when we only show the location bar.
-const int kToolbarHeightLocationBarOnly = kToolbarHeight - 10;
+const int kToolbarHeightLocationBarOnly = kToolbarHeight - 2;
 
 // Interior spacing between toolbar widgets.
 const int kToolbarWidgetSpacing = 4;
@@ -147,16 +150,18 @@ void BrowserToolbarGtk::Init(Profile* profile,
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
 
   toolbar_ = gtk_hbox_new(FALSE, kToolbarWidgetSpacing);
-  gtk_container_add(GTK_CONTAINER(event_box_), toolbar_);
-  gtk_container_set_border_width(GTK_CONTAINER(toolbar_),
-      ShouldOnlyShowLocation() ? 0 : 4);
+  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+      ShouldOnlyShowLocation() ? 0 : kTopPadding, 0, 0, 0);
+  g_signal_connect(alignment, "expose-event",
+                   G_CALLBACK(&OnAlignmentExpose), this);
+  gtk_container_add(GTK_CONTAINER(event_box_), alignment);
+  gtk_container_add(GTK_CONTAINER(alignment), toolbar_);
   // Force the height of the toolbar so we get the right amount of padding
   // above and below the location bar. -1 for width means "let GTK do its
   // normal sizing".
   gtk_widget_set_size_request(toolbar_, -1, ShouldOnlyShowLocation() ?
       kToolbarHeightLocationBarOnly : kToolbarHeight);
-  g_signal_connect(toolbar_, "expose-event",
-                   G_CALLBACK(&OnToolbarExpose), this);
 
   // A GtkAccelGroup is not InitiallyUnowned, meaning we get a real reference
   // count starting at one.  We don't want the lifetime to be managed by the
@@ -259,6 +264,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);
+    gtk_widget_show(alignment);
     gtk_widget_show(toolbar_);
     gtk_widget_show_all(location_hbox);
     gtk_widget_hide(star_->widget());
@@ -287,10 +293,6 @@ void BrowserToolbarGtk::SetViewIDs() {
   ViewIDUtil::SetID(go_->widget(), VIEW_ID_GO_BUTTON);
   ViewIDUtil::SetID(page_menu_button_.get(), VIEW_ID_PAGE_MENU);
   ViewIDUtil::SetID(app_menu_button_.get(), VIEW_ID_APP_MENU);
-}
-
-void BrowserToolbarGtk::AddToolbarToBox(GtkWidget* box) {
-  gtk_box_pack_start(GTK_BOX(box), event_box_, FALSE, FALSE, 0);
 }
 
 void BrowserToolbarGtk::Show() {
@@ -528,9 +530,9 @@ void BrowserToolbarGtk::ChangeActiveMenu(GtkWidget* active_menu,
 }
 
 // static
-gboolean BrowserToolbarGtk::OnToolbarExpose(GtkWidget* widget,
-                                            GdkEventExpose* e,
-                                            BrowserToolbarGtk* toolbar) {
+gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
+                                              GdkEventExpose* e,
+                                              BrowserToolbarGtk* toolbar) {
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   cairo_rectangle(cr, e->area.x, e->area.y, e->area.width, e->area.height);
   cairo_clip(cr);

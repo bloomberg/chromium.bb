@@ -1051,7 +1051,7 @@ void BrowserWindowGtk::UserChangedTheme() {
 
 int BrowserWindowGtk::GetExtraRenderViewHeight() const {
   int sum = infobar_container_->TotalHeightOfAnimatingBars();
-  if (bookmark_bar_->IsAnimating())
+  if (IsBookmarkBarSupported() && bookmark_bar_->IsAnimating())
     sum += bookmark_bar_->GetHeight();
   if (download_shelf_.get() && download_shelf_->IsClosing())
     sum += download_shelf_->GetHeight();
@@ -1194,8 +1194,7 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
 
   bool show_bar = false;
 
-  if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)
-      && contents) {
+  if (IsBookmarkBarSupported() && contents) {
     bookmark_bar_->SetProfile(contents->profile());
     bookmark_bar_->SetPageNavigator(contents);
     show_bar = true;
@@ -1278,7 +1277,8 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
       UpdateCustomFrame();
       toolbar_->Hide();
       tabstrip_->Hide();
-      bookmark_bar_->Hide(false);
+      if (IsBookmarkBarSupported())
+        bookmark_bar_->Hide(false);
       if (extension_shelf_.get())
         extension_shelf_->Hide();
     } else {
@@ -1512,16 +1512,21 @@ void BrowserWindowGtk::InitWidgets() {
 
   toolbar_.reset(new BrowserToolbarGtk(browser_.get(), this));
   toolbar_->Init(browser_->profile(), window_);
-  toolbar_->AddToolbarToBox(content_vbox_);
+  gtk_box_pack_start(GTK_BOX(content_vbox_), toolbar_->widget(),
+                     FALSE, FALSE, 0);
 #if defined(OS_CHROMEOS)
   if (browser_->type() == Browser::TYPE_NORMAL && has_compact_nav_bar) {
     gtk_widget_hide(toolbar_->widget());
   }
 #endif
 
-  bookmark_bar_.reset(new BookmarkBarGtk(browser_->profile(), browser_.get(),
-                                         this));
-  bookmark_bar_->AddBookmarkbarToBox(content_vbox_);
+  if (IsBookmarkBarSupported()) {
+    bookmark_bar_.reset(new BookmarkBarGtk(browser_->profile(), browser_.get(),
+                                           this));
+    gtk_box_pack_start(GTK_BOX(content_vbox_), bookmark_bar_->widget(),
+                       FALSE, FALSE, 0);
+    gtk_widget_show(bookmark_bar_->widget());
+  }
 
   if (IsExtensionShelfSupported()) {
     extension_shelf_.reset(new ExtensionShelfGtk(browser()->profile(),
@@ -1985,27 +1990,26 @@ void BrowserWindowGtk::HideUnsupportedWindowFeatures() {
   if (!IsToolbarSupported())
     toolbar_->Hide();
 
-  if (!IsBookmarkBarSupported())
-    bookmark_bar_->Hide(false);
-
   if (!IsExtensionShelfSupported() && extension_shelf_.get())
     extension_shelf_->Hide();
+
+  // If the bookmark bar is unsupported, then we never create it.
 }
 
-bool BrowserWindowGtk::IsTabStripSupported() {
+bool BrowserWindowGtk::IsTabStripSupported() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
 }
 
-bool BrowserWindowGtk::IsToolbarSupported() {
+bool BrowserWindowGtk::IsToolbarSupported() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
-bool BrowserWindowGtk::IsBookmarkBarSupported() {
+bool BrowserWindowGtk::IsBookmarkBarSupported() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
 }
 
-bool BrowserWindowGtk::IsExtensionShelfSupported() {
+bool BrowserWindowGtk::IsExtensionShelfSupported() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF);
 }
 

@@ -39,8 +39,12 @@
 
 namespace {
 
-// The height of the bar.
+// The showing height of the bar.
 const int kBookmarkBarHeight = 29;
+
+// The height of the bar when it is "hidden". It is never completely hidden
+// because even when it is closed it forms the bottom few pixels of the toolbar.
+const int kBookmarkBarMinimumHeight = 4;
 
 // Left-padding for the instructional text.
 const int kInstructionsPadding = 6;
@@ -172,9 +176,9 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(instructions_, "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
 
-  gtk_widget_set_app_paintable(bookmark_hbox_, TRUE);
-  g_signal_connect(G_OBJECT(bookmark_hbox_), "expose-event",
-                   G_CALLBACK(&OnHBoxExpose), this);
+  gtk_widget_set_app_paintable(widget(), TRUE);
+  g_signal_connect(G_OBJECT(widget()), "expose-event",
+                   G_CALLBACK(&OnEventBoxExpose), this);
 
   bookmark_toolbar_.Own(gtk_toolbar_new());
   SetToolBarStyle();
@@ -208,19 +212,15 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_bookmarks_button_,
                      FALSE, FALSE, 0);
 
-  gtk_widget_set_size_request(event_box_.get(), -1, 0);
+  gtk_widget_set_size_request(event_box_.get(), -1, kBookmarkBarMinimumHeight);
 
   slide_animation_.reset(new SlideAnimation(this));
 
   ViewIDUtil::SetID(widget(), VIEW_ID_BOOKMARK_BAR);
 }
 
-void BookmarkBarGtk::AddBookmarkbarToBox(GtkWidget* box) {
-  gtk_box_pack_start(GTK_BOX(box), widget(), FALSE, FALSE, 0);
-}
-
 void BookmarkBarGtk::Show(bool animate) {
-  gtk_widget_show_all(widget());
+  gtk_widget_show_all(bookmark_hbox_);
   if (animate) {
     slide_animation_->Show();
   } else {
@@ -242,7 +242,7 @@ void BookmarkBarGtk::Hide(bool animate) {
   if (slide_animation_->IsShowing() && animate) {
     slide_animation_->Hide();
   } else {
-    gtk_widget_hide(widget());
+    gtk_widget_hide(bookmark_hbox_);
     slide_animation_->Reset(0);
     AnimationProgressed(slide_animation_.get());
   }
@@ -398,16 +398,17 @@ bool BookmarkBarGtk::IsAlwaysShown() {
 void BookmarkBarGtk::AnimationProgressed(const Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
-  gtk_widget_set_size_request(event_box_.get(), -1,
-                              animation->GetCurrentValue() *
-                              kBookmarkBarHeight);
+  gint height = animation->GetCurrentValue() *
+      (kBookmarkBarHeight - kBookmarkBarMinimumHeight) +
+      kBookmarkBarMinimumHeight;
+  gtk_widget_set_size_request(event_box_.get(), -1, height);
 }
 
 void BookmarkBarGtk::AnimationEnded(const Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
   if (!slide_animation_->IsShowing())
-    gtk_widget_hide(widget());
+    gtk_widget_hide(bookmark_hbox_);
 }
 
 void BookmarkBarGtk::Observe(NotificationType type,
@@ -810,9 +811,9 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
 }
 
 // static
-gboolean BookmarkBarGtk::OnHBoxExpose(GtkWidget* widget,
-                                      GdkEventExpose* event,
-                                      BookmarkBarGtk* bar) {
+gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
+                                          GdkEventExpose* event,
+                                          BookmarkBarGtk* bar) {
   // Paint the background theme image.
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   cairo_rectangle(cr, event->area.x, event->area.y,
