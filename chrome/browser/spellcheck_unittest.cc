@@ -606,11 +606,11 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     {L"wate", false, 0, 0, L"water"},
     {L"wate", false, 0, 0, L"waste"},
     {L"wate", false, 0, 0, L"sate"},
-    {L"wate", false, 0, 0, L"rate"},
+    {L"wate", false, 0, 0, L"ate"},
     {L"jum", false, 0, 0, L"jump"},
-    {L"jum", false, 0, 0, L"rum"},
+    {L"jum", false, 0, 0, L"hum"},
     {L"jum", false, 0, 0, L"sum"},
-    {L"jum", false, 0, 0, L"tum"},
+    {L"jum", false, 0, 0, L"um"},
 #endif //!OS_MACOSX
     // TODO (Sidchat): add many more examples.
   };

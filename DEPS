@@ -28,8 +28,8 @@ deps = {
     "/trunk/deps/third_party/icu38@24923",
 
   "src/third_party/hunspell":
-    "/trunk/deps/third_party/hunspell@23803",
-  
+   "/trunk/deps/third_party/hunspell128@24986",
+ 
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@219",
 
