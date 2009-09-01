@@ -39,8 +39,7 @@ using WebKit::WebMouseEvent;
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
     NPAPI::PluginInstance *instance)
-    :
-      windowed_handle_(0),
+    : windowed_handle_(0),
       windowed_did_set_window_(false),
       windowless_(false),
       plugin_(NULL),
@@ -117,7 +116,9 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
   DCHECK(!windowed_handle_);
   DCHECK(!plug_);
 
-  bool xembed;
+  // NPP_GetValue() will write 4 bytes of data to this variable.  Don't use a
+  // single byte bool, use an int instead.
+  int xembed;
   NPError err = instance_->NPP_GetValue(NPPVpluginNeedsXEmbed, &xembed);
   DCHECK(err == NPERR_NO_ERROR);
   if (!xembed) {
