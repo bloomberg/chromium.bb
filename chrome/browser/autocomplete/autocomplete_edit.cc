@@ -55,17 +55,8 @@ AutocompleteEditModel::AutocompleteEditModel(
 }
 
 AutocompleteEditModel::~AutocompleteEditModel() {
-  if (--synchronous_controller_refcount == 0) {
+  if (--synchronous_controller_refcount == 0)
     delete synchronous_controller;
-  } else {
-    // This isn't really necessary, but it ensures safety if someday any
-    // provider does some kind of cleanup on the old profile when it gets a
-    // SetProfile() call.  The current profile could be deleted after we return,
-    // so if we don't do this, the providers will be referencing a deleted
-    // object, and if they accessed it on the next SetProfile() call, bad things
-    // would happen.
-    synchronous_controller->SetProfile(NULL);
-  }
 }
 
 void AutocompleteEditModel::SetPopupModel(AutocompletePopupModel* popup_model) {

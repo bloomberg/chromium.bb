@@ -480,6 +480,8 @@ class AutocompleteProvider
   virtual ~AutocompleteProvider();
 
   // Invoked when the profile changes.
+  // NOTE: Do not access any previous Profile* at this point as it may have
+  // already been deleted.
   void SetProfile(Profile* profile);
 
   // Called to start an autocomplete query.  The provider is responsible for
