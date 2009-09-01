@@ -44,6 +44,14 @@ class ToolbarStarToggleGtk : public NotificationObserver {
   static gboolean OnExpose(GtkWidget* widget, GdkEventExpose* e,
                            ToolbarStarToggleGtk* obj);
 
+  // Callback to get the data associated with a drag.
+  static void OnDragDataGet(GtkWidget* widget,
+                            GdkDragContext* drag_context,
+                            GtkSelectionData* data,
+                            guint info,
+                            guint time,
+                            ToolbarStarToggleGtk* star);
+
   // Used to listen for theme change notifications.
   NotificationRegistrar registrar_;
 

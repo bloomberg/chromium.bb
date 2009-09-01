@@ -496,8 +496,6 @@ GtkWidget* BrowserToolbarGtk::BuildToolbarMenuButton(
 }
 
 void BrowserToolbarGtk::SetUpDragForHomeButton() {
-  // TODO(estade): we should use a custom drag-drop handler so that we can
-  // prefer URIs over plain text when both are available.
   gtk_drag_dest_set(home_->widget(), GTK_DEST_DEFAULT_ALL,
                     NULL, 0, GDK_ACTION_COPY);
   static const int targets[] = { GtkDndUtil::TEXT_PLAIN,

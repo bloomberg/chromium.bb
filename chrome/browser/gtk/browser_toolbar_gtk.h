@@ -57,6 +57,11 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
     return event_box_;
   }
 
+  // Getter for associated browser object.
+  Browser* browser() {
+    return browser_;
+  }
+
   virtual LocationBar* GetLocationBar() const;
 
   GoButtonGtk* GetGoButton() { return go_.get(); }

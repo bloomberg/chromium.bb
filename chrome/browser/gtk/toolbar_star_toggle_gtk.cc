@@ -4,13 +4,16 @@
 
 #include "chrome/browser/gtk/toolbar_star_toggle_gtk.h"
 
+#include "app/gtk_dnd_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/rect.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/bookmark_bubble_gtk.h"
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "grit/theme_resources.h"
 
@@ -29,9 +32,17 @@ ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)
   // We effectively double-buffer by virtue of having only one image...
   gtk_widget_set_double_buffered(widget_.get(), FALSE);
 
-  g_signal_connect(G_OBJECT(widget_.get()), "expose-event",
+  g_signal_connect(widget(), "expose-event",
                    G_CALLBACK(OnExpose), this);
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
+
+  gtk_drag_source_set(widget(), GDK_BUTTON1_MASK,
+                      NULL, 0, GDK_ACTION_COPY);
+  GtkDndUtil::SetSourceTargetListFromCodeMask(widget(),
+                                              GtkDndUtil::TEXT_PLAIN |
+                                              GtkDndUtil::TEXT_URI_LIST |
+                                              GtkDndUtil::CHROME_NAMED_URL);
+  g_signal_connect(widget(), "drag-data-get", G_CALLBACK(OnDragDataGet), this);
 
   theme_provider_->InitThemesFor(this);
   registrar_.Add(this,
@@ -88,6 +99,17 @@ gboolean ToolbarStarToggleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
       return button->unstarred_.OnExpose(widget, e);
     }
   }
+}
+
+// static
+void ToolbarStarToggleGtk::OnDragDataGet(GtkWidget* widget,
+    GdkDragContext* drag_context, GtkSelectionData* data, guint info,
+    guint time, ToolbarStarToggleGtk* star) {
+  const TabContents* tab = star->host_->browser()->tabstrip_model()->
+      GetSelectedTabContents();
+  if (!tab)
+    return;
+  GtkDndUtil::WriteURLWithName(data, tab->GetURL(), tab->GetTitle(), info);
 }
 
 void ToolbarStarToggleGtk::UpdateGTKButton() {

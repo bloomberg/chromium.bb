@@ -129,15 +129,6 @@ void TabContentsDragSource::OnDragDataGet(
       break;
     }
 
-    case GtkDndUtil::TEXT_URI_LIST: {
-      gchar* uri_array[2];
-      uri_array[0] = strdup(drop_data_->url.spec().c_str());
-      uri_array[1] = NULL;
-      gtk_selection_data_set_uris(selection_data, uri_array);
-      free(uri_array[0]);
-      break;
-    }
-
     case GtkDndUtil::TEXT_HTML: {
       // TODO(estade): change relative links to be absolute using
       // |html_base_url|.
@@ -151,16 +142,10 @@ void TabContentsDragSource::OnDragDataGet(
       break;
     }
 
+    case GtkDndUtil::TEXT_URI_LIST:
     case GtkDndUtil::CHROME_NAMED_URL: {
-      Pickle pickle;
-      pickle.WriteString(UTF16ToUTF8(drop_data_->url_title));
-      pickle.WriteString(drop_data_->url.spec());
-      gtk_selection_data_set(
-          selection_data,
-          GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
-          bits_per_byte,
-          reinterpret_cast<const guchar*>(pickle.data()),
-          pickle.size());
+      GtkDndUtil::WriteURLWithName(selection_data, drop_data_->url,
+                                   drop_data_->url_title, target_type);
       break;
     }
 

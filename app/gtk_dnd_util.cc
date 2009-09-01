@@ -9,6 +9,8 @@
 #include "base/pickle.h"
 #include "googleurl/src/gurl.h"
 
+static const int kBitsPerByte = 8;
+
 // static
 GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
   switch (target) {
@@ -112,6 +114,44 @@ void GtkDndUtil::AddTargetToList(GtkTargetList* targets, int target_code) {
 }
 
 // static
+void GtkDndUtil::WriteURLWithName(GtkSelectionData* selection_data,
+                                  const GURL& url,
+                                  const string16& title,
+                                  int type) {
+  switch (type) {
+    case TEXT_PLAIN: {
+      gtk_selection_data_set_text(selection_data, url.spec().c_str(),
+                                  url.spec().length());
+      break;
+    }
+    case TEXT_URI_LIST: {
+      gchar* uri_array[2];
+      uri_array[0] = strdup(url.spec().c_str());
+      uri_array[1] = NULL;
+      gtk_selection_data_set_uris(selection_data, uri_array);
+      free(uri_array[0]);
+      break;
+    }
+    case CHROME_NAMED_URL: {
+      Pickle pickle;
+      pickle.WriteString(UTF16ToUTF8(title));
+      pickle.WriteString(url.spec());
+      gtk_selection_data_set(
+          selection_data,
+          GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
+          kBitsPerByte,
+          reinterpret_cast<const guchar*>(pickle.data()),
+          pickle.size());
+      break;
+    }
+    default: {
+      NOTREACHED();
+      break;
+    }
+  }
+}
+
+// static
 bool GtkDndUtil::ExtractNamedURL(GtkSelectionData* selection_data,
                                  GURL* url,
                                  string16* title) {
@@ -133,7 +173,7 @@ bool GtkDndUtil::ExtractNamedURL(GtkSelectionData* selection_data,
   return true;
 }
 
-// static void
+// static
 bool GtkDndUtil::ExtractURIList(GtkSelectionData* selection_data,
                                 std::vector<GURL>* urls) {
   gchar** uris = gtk_selection_data_get_uris(selection_data);
