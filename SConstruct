@@ -843,6 +843,7 @@ if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
           'tests/native_worker/nacl.scons',
           'tests/noop/nacl.scons',
           'tests/nrd_xfer/nacl.scons',
+          # 'tests/nthread_nice/nacl.scons',
           'tests/null/nacl.scons',
           'tests/nullptr/nacl.scons',
           'tests/srpc/nacl.scons',
@@ -850,8 +851,6 @@ if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
           'tests/syscalls/nacl.scons',
           'tests/threads/nacl.scons',
           'tests/vim/nacl.scons',
-          'tests/nthread_nice/nacl.scons',
-
           'tools/tests/nacl.scons',
           ####  ALPHABETICALLY SORTED ####
           ],
