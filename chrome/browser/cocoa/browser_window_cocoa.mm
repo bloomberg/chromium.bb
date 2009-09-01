@@ -113,7 +113,7 @@ void BrowserWindowCocoa::FocusDevTools() {
 }
 
 void BrowserWindowCocoa::UpdateLoadingAnimations(bool should_animate) {
-  [controller_ updateLoadingAnimations:should_animate ? YES : NO];
+  // Do nothing on Mac.
 }
 
 void BrowserWindowCocoa::SetStarredState(bool is_starred) {

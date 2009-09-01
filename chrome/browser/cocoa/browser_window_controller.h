@@ -105,9 +105,6 @@ class TabStripModelObserverBridge;
 // Called to tell the selected tab to update its loading state.
 - (void)setIsLoading:(BOOL)isLoading;
 
-// Called to start/stop the loading animations.
-- (void)updateLoadingAnimations:(BOOL)animate;
-
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar;
 
