@@ -37,17 +37,52 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 // view.
 static const float kUseFullAvailableWidth = -1.0;
 
-// A simple view class that prevents the windowserver from dragging the
-// area behind tabs. Sometimes core animation confuses it.
-@interface TabStripControllerDragBlockingView : NSView
+// A simple view class that prevents the Window Server from dragging the area
+// behind tabs. Sometimes core animation confuses it. Unfortunately, it can also
+// falsely pick up clicks during rapid tab closure, so we have to account for
+// that.
+@interface TabStripControllerDragBlockingView : NSView {
+  TabStripController* controller_;  // weak; owns us
+}
+
+- (id)initWithFrame:(NSRect)frameRect
+         controller:(TabStripController*)controller;
 @end
 @implementation TabStripControllerDragBlockingView
 - (BOOL)mouseDownCanMoveWindow {return NO;}
 - (void)drawRect:(NSRect)rect {}
+
+- (id)initWithFrame:(NSRect)frameRect
+         controller:(TabStripController*)controller {
+  if ((self = [super initWithFrame:frameRect]))
+    controller_ = controller;
+  return self;
+}
+
+// In "rapid tab closure" mode (i.e., the user is clicking close tab buttons in
+// rapid succession), the animations confuse Cocoa's hit testing (which appears
+// to use cached results, among other tricks), so this view can somehow end up
+// getting a mouse down event. Thus we do an explicit hit test during rapid tab
+// closure, and if we find that we got a mouse down we shouldn't have, we send
+// it off to the appropriate view.
+- (void)mouseDown:(NSEvent*)event {
+  if ([controller_ inRapidClosureMode]) {
+    NSView* superview = [self superview];
+    NSPoint hitLocation =
+        [[superview superview] convertPoint:[event locationInWindow]
+                                   fromView:nil];
+    NSView* hitView = [superview hitTest:hitLocation];
+    if (hitView != self) {
+      [hitView mouseDown:event];
+      return;
+    }
+  }
+  [super mouseDown:event];
+}
 @end
 
 @interface TabStripController(Private)
-- (BOOL)useFullWidthForLayout;
+- (void)installTrackingArea;
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
@@ -82,8 +117,9 @@ static const float kUseFullAvailableWidth = -1.0;
     [newTabButton_ setAction:@selector(commandDispatch:)];
     [newTabButton_ setTag:IDC_NEW_TAB];
     targetFrames_.reset([[NSMutableDictionary alloc] init]);
-    dragBlockingView_.reset([[TabStripControllerDragBlockingView alloc]
-                              initWithFrame:NSZeroRect]);
+    dragBlockingView_.reset(
+        [[TabStripControllerDragBlockingView alloc] initWithFrame:NSZeroRect
+                                                       controller:self]);
     [self addSubviewToPermanentList:dragBlockingView_];
     newTabTargetFrame_ = NSMakeRect(0, 0, 0, 0);
     availableResizeWidth_ = kUseFullAvailableWidth;
@@ -321,11 +357,11 @@ static const float kUseFullAvailableWidth = -1.0;
   // may not be able to use the entire width if the user is quickly closing
   // tabs.
   float availableWidth = 0;
-  if ([self useFullWidthForLayout]) {
+  if ([self inRapidClosureMode]) {
+    availableWidth = availableResizeWidth_;
+  } else {
     availableWidth = NSWidth([tabView_ frame]);
     availableWidth -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
-  } else {
-    availableWidth = availableResizeWidth_;
   }
   availableWidth -= kIndentLeavingSpaceForControls;
 
@@ -418,11 +454,11 @@ static const float kUseFullAvailableWidth = -1.0;
     [newTabButton_ setHidden:YES];
   } else {
     NSRect newTabNewFrame = [newTabButton_ frame];
-    if ([self useFullWidthForLayout])
+    if ([self inRapidClosureMode])
+      newTabNewFrame.origin = NSMakePoint(offset + kNewTabButtonOffset, 0);
+    else
       newTabNewFrame.origin =
           NSMakePoint(MIN(availableWidth, offset + kNewTabButtonOffset), 0);
-    else
-      newTabNewFrame.origin = NSMakePoint(offset + kNewTabButtonOffset, 0);
     newTabNewFrame.origin.x = MAX(newTabNewFrame.origin.x,
                                   NSMaxX(placeholderFrame_));
     if (i > 0 && [newTabButton_ isHidden]) {
@@ -776,8 +812,8 @@ static const float kUseFullAvailableWidth = -1.0;
   [self layoutTabsWithAnimation:NO regenerateSubviews:NO];
 }
 
-- (BOOL)useFullWidthForLayout {
-  return availableResizeWidth_ == kUseFullAvailableWidth;
+- (BOOL)inRapidClosureMode {
+  return availableResizeWidth_ != kUseFullAvailableWidth;
 }
 
 - (void)mouseMoved:(NSEvent *)event {

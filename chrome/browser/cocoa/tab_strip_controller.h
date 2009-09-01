@@ -130,6 +130,11 @@ class ToolbarModel;
 // The user changed the theme, or theme state changed.
 - (void)applyTheme;
 
+// Are we in rapid (tab) closure mode? I.e., is a full layout deferred (while
+// the user closes tabs)? Needed to overcome missing clicks during rapid tab
+// closure.
+- (BOOL)inRapidClosureMode;
+
 // Default height for tabs.
 + (CGFloat)defaultTabHeight;
 

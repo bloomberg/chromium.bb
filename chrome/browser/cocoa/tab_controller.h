@@ -76,6 +76,12 @@ enum TabLoadingState {
 
 // (Re)apply the current theme.
 - (void)applyTheme;
+
+// Called by the tabs to determine whether we are in rapid (tab) closure mode.
+// In this mode, we handle clicks slightly differently due to animation.
+// Ideally, tabs would know about their own animation and wouldn't need this.
+- (BOOL)inRapidClosureMode;
+
 @end
 
 @interface TabController(TestingAPI)

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/cocoa/tab_view.h"
+
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/cocoa/tab_controller.h"
-#include "chrome/browser/cocoa/tab_view.h"
 #include "chrome/browser/cocoa/tab_window_controller.h"
-
 
 // Constants for inset and control points for tab shape.
 static const CGFloat kInsetMultiplier = 2.0/3.0;
@@ -150,9 +150,27 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
 static const CGFloat kTearDistance = 36.0;
 static const NSTimeInterval kTearDuration = 0.333;
-static const double kDragStartDistance = 3.0;
+
+// This is used to judge whether the mouse has moved during rapid closure; if it
+// has moved less than the threshold, we want to close the tab.
+static const CGFloat kRapidCloseDist = 2.5;
 
 - (void)mouseDown:(NSEvent *)theEvent {
+  NSPoint downLocation = [theEvent locationInWindow];
+
+  // During the tab closure animation (in particular, during rapid tab closure),
+  // we may get incorrectly hit with a mouse down. If it should have gone to the
+  // close button, we send it there -- it should then track the mouse, so we
+  // don't have to worry about mouse ups.
+  if ([controller_ inRapidClosureMode]) {
+    NSPoint hitLocation = [[self superview] convertPoint:downLocation
+                                                fromView:nil];
+    if ([self hitTest:hitLocation] == closeButton_) {
+      [closeButton_ mouseDown:theEvent];
+      return;
+    }
+  }
+
   // Fire the action to select the tab.
   if ([[controller_ target] respondsToSelector:[controller_ action]])
     [[controller_ target] performSelector:[controller_ action]
@@ -198,6 +216,24 @@ static const double kDragStartDistance = 3.0;
     if (type == NSLeftMouseDragged) {
       [self mouseDragged:theEvent];
     } else { // Mouse Up
+      NSPoint upLocation = [theEvent locationInWindow];
+      CGFloat dx = upLocation.x - downLocation.x;
+      CGFloat dy = upLocation.y - downLocation.y;
+
+      // During rapid tab closure (mashing tab close buttons), we may get hit
+      // with a mouse down. As long as the mouse up is over the close button,
+      // and the mouse hasn't moved too much, we close the tab.
+      if ((dx*dx + dy*dy) <= kRapidCloseDist*kRapidCloseDist &&
+          [controller_ inRapidClosureMode]) {
+        NSPoint hitLocation =
+            [[self superview] convertPoint:[theEvent locationInWindow]
+                                  fromView:nil];
+        if ([self hitTest:hitLocation] == closeButton_) {
+          [controller_ closeTab:self];
+          break;
+        }
+      }
+
       [self mouseUp:theEvent];
       break;
     }

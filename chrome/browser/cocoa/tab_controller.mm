@@ -182,4 +182,14 @@
   [titleView_ setTextColor:color ? color : [NSColor textColor]];
   [[self view] setNeedsDisplay:YES];
 }
+
+// Called by the tabs to determine whether we are in rapid (tab) closure mode.
+- (BOOL)inRapidClosureMode {
+  if ([[self target] respondsToSelector:@selector(inRapidClosureMode)]) {
+    return [[self target] performSelector:@selector(inRapidClosureMode)] ?
+        YES : NO;
+  }
+  return NO;
+}
+
 @end
