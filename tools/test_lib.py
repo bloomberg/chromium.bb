@@ -60,7 +60,10 @@ def RunTest(cmd):
 def RunTestWithInputOutput(cmd, input_data):
   """Run a test where we also care about stdin/stdout/stderr.
 
-  NOTE: this cannot handle arbitrarily long output (up to 1M)
+  NOTE: this function may have problems with arbitrarily
+        large input or output, especially on windows
+  NOTE: input_data can be either a string or or a file like object,
+        file like objects may be better for large input/output
   """
   assert type(cmd) == list
   stdout = ''
@@ -81,14 +84,24 @@ def RunTestWithInputOutput(cmd, input_data):
       no_pipe = lambda : signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     else:
       no_pipe = None
-    p = subprocess.Popen(cmd,
-                         bufsize=1000*1000,
-                         stdin=subprocess.PIPE,
-                         stderr=subprocess.PIPE,
-                         stdout=subprocess.PIPE,
-                         preexec_fn = no_pipe)
-    p.stdin.write(input_data)
-    p.stdin.close()
+
+    if type(input_data) == str:
+      p = subprocess.Popen(cmd,
+                           bufsize=1000*1000,
+                           stdin=subprocess.PIPE,
+                           stderr=subprocess.PIPE,
+                           stdout=subprocess.PIPE,
+                           preexec_fn = no_pipe)
+      p.stdin.write(input_data)
+      p.stdin.close()
+    else:
+      # input_data is a file like object
+      p = subprocess.Popen(cmd,
+                           bufsize=1000*1000,
+                           stdin=input_data,
+                           stderr=subprocess.PIPE,
+                           stdout=subprocess.PIPE,
+                           preexec_fn = no_pipe)
     stdout = p.stdout.read()
     stderr = p.stderr.read()
     retcode = p.wait()

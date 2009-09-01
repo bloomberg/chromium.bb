@@ -172,10 +172,12 @@ def main(argv):
 
   stdin_data = ''
   if GlobalSettings['stdin']:
-    stdin_data = open(GlobalSettings['stdin']).read()
+    stdin_data = open(GlobalSettings['stdin'])
 
   start_time = time.time()
   Banner('running %s' % str(command))
+  # print the command in copy-and-pastable fashion
+  print " ".join(command)
   _, exit_status, failed, stdout, stderr = test_lib.RunTestWithInputOutput(
       command, stdin_data)
   total_time = time.time() - start_time
