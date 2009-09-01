@@ -13,10 +13,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class ToolbarControllerTest : public testing::Test {
+class ToolbarControllerTest : public PlatformTest {
  public:
 
   // Indexes that match the ordering returned by the private ToolbarController

@@ -10,6 +10,7 @@
 #include "chrome/browser/cocoa/status_bubble_mac.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 @interface StatusBubbleMacTestWindowDelegate : NSObject <GTMThemeDelegate>;
@@ -21,7 +22,7 @@
 }
 @end
 
-class StatusBubbleMacTest : public testing::Test {
+class StatusBubbleMacTest : public PlatformTest {
  public:
   StatusBubbleMacTest() {
     NSWindow* window = cocoa_helper_.window();

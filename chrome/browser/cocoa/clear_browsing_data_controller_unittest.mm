@@ -13,10 +13,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class ClearBrowsingDataControllerTest : public testing::Test {
+class ClearBrowsingDataControllerTest : public PlatformTest {
  public:
   ClearBrowsingDataControllerTest() {
     // Set up some interesting prefs:

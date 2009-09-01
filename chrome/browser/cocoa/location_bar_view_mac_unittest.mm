@@ -11,6 +11,7 @@
 #include "chrome/browser/cocoa/location_bar_view_mac.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 // TODO(shess): Figure out how to unittest this.  The code below was
 // testing the hacked-up behavior so you didn't have to be pedantic
@@ -19,7 +20,7 @@
 // http://code.google.com/p/chromium/issues/detail?id=9977
 
 #if 0
-class LocationBarViewMacTest : public testing::Test {
+class LocationBarViewMacTest : public PlatformTest {
  public:
   LocationBarViewMacTest()
       : field_([[NSTextField alloc] init]),
@@ -58,7 +59,7 @@ TEST_F(LocationBarViewMacTest, GetInputString) {
 
 namespace {
 
-class LocationBarViewMacTest : public testing::Test {
+class LocationBarViewMacTest : public PlatformTest {
  public:
   LocationBarViewMacTest() {
     // Make sure this is wide enough to play games with the cell

@@ -6,7 +6,7 @@
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/download_shelf_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
+#include "testing/platform_test.h"
 
 // A fake implementation of DownloadShelfController. It implements only the
 // methods that DownloadShelfMac call during the tests in this file. We get this
@@ -45,7 +45,7 @@
 
 namespace {
 
-class DownloadShelfMacTest : public testing::Test {
+class DownloadShelfMacTest : public PlatformTest {
 
   virtual void SetUp() {
     shelf_controller_.reset([[FakeDownloadShelfController alloc] init]);

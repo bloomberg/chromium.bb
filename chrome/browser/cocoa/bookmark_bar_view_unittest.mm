@@ -6,10 +6,11 @@
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class BookmarkBarViewTest : public testing::Test {
+class BookmarkBarViewTest : public PlatformTest {
  public:
   CocoaTestHelper cocoa_helper_;
   scoped_nsobject<BookmarkBarView> view_;

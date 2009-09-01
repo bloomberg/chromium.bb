@@ -6,10 +6,11 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/toolbar_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class ToolbarViewTest : public testing::Test {
+class ToolbarViewTest : public PlatformTest {
  public:
   CocoaTestHelper cocoa_helper_;
   scoped_nsobject<ToolbarView> view_;

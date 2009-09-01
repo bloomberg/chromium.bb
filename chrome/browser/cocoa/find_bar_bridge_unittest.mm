@@ -6,10 +6,11 @@
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/find_bar_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class FindBarBridgeTest : public testing::Test {
+class FindBarBridgeTest : public PlatformTest {
  protected:
   CocoaTestHelper helper_;
 };

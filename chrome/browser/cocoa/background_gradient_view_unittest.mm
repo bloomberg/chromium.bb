@@ -8,10 +8,11 @@
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class BackgroundGradientViewTest : public testing::Test {
+class BackgroundGradientViewTest : public PlatformTest {
  public:
   BackgroundGradientViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 30);

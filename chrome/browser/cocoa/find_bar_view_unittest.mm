@@ -8,10 +8,11 @@
 #import "chrome/browser/cocoa/find_bar_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class FindBarViewTest : public testing::Test {
+class FindBarViewTest : public PlatformTest {
  public:
   FindBarViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 30);

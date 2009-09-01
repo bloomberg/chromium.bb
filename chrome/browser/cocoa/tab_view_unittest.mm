@@ -8,10 +8,11 @@
 #import "chrome/browser/cocoa/tab_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class TabViewTest : public testing::Test {
+class TabViewTest : public PlatformTest {
  public:
   TabViewTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);

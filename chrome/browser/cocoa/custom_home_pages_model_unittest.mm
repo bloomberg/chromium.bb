@@ -6,6 +6,7 @@
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/custom_home_pages_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 // A helper for KVO and NSNotifications. Makes a note that it's been called
 // back.
@@ -28,7 +29,7 @@
 }
 @end
 
-class CustomHomePagesModelTest : public testing::Test {
+class CustomHomePagesModelTest : public PlatformTest {
  public:
   CustomHomePagesModelTest() {
     model_.reset([[CustomHomePagesModel alloc]

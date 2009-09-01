@@ -6,10 +6,11 @@
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class BookmarkButtonCellTest : public testing::Test {
+class BookmarkButtonCellTest : public PlatformTest {
  public:
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<NSButton> view_;

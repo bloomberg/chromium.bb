@@ -9,6 +9,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 // A helper for NSNotifications. Makes a note that it's been called back.
 @interface SearchEngineListHelper : NSObject {
@@ -23,7 +24,7 @@
 }
 @end
 
-class SearchEngineListModelTest : public testing::Test {
+class SearchEngineListModelTest : public PlatformTest {
  public:
   SearchEngineListModelTest() {
     // Build a fake set of template urls.

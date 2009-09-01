@@ -12,6 +12,7 @@
 #include "chrome/browser/cocoa/test_event_utils.h"
 #import "chrome/browser/cocoa/view_resizer_pong.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 // Pretend BookmarkURLOpener delegate to keep track of requests
 @interface BookmarkURLOpenerPong : NSObject<BookmarkURLOpener> {
@@ -80,7 +81,7 @@ namespace {
 static const int kContentAreaHeight = 500;
 static const int kInfoBarViewHeight = 30;
 
-class BookmarkBarControllerTest : public testing::Test {
+class BookmarkBarControllerTest : public PlatformTest {
  public:
   BookmarkBarControllerTest() {
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);

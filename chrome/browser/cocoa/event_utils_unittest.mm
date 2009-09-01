@@ -8,6 +8,7 @@
 #include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/cocoa/test_event_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 // We provide a donor class with a specially modified |modifierFlags|
 // implementation that we swap with NSEvent's. This is because we can't create a
@@ -20,7 +21,7 @@
 
 namespace {
 
-class EventUtilsTest : public testing::Test {
+class EventUtilsTest : public PlatformTest {
  private:
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
 };

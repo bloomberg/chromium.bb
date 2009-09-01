@@ -6,8 +6,9 @@
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/bookmark_bubble_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
-class BookmarkBubbleWindowTest : public testing::Test {
+class BookmarkBubbleWindowTest : public PlatformTest {
  public:
   CocoaTestHelper cocoa_helper_;
 };

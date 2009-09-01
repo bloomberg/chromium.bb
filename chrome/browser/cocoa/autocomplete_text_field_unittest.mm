@@ -10,6 +10,7 @@
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 @interface AutocompleteTextFieldTestDelegate : NSObject {
   BOOL textShouldPaste_;
@@ -33,7 +34,7 @@
 
 namespace {
 
-class AutocompleteTextFieldTest : public testing::Test {
+class AutocompleteTextFieldTest : public PlatformTest {
  public:
   AutocompleteTextFieldTest() {
     // Make sure this is wide enough to play games with the cell

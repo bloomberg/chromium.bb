@@ -8,10 +8,11 @@
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class AutocompleteTextFieldCellTest : public testing::Test {
+class AutocompleteTextFieldCellTest : public PlatformTest {
  public:
   AutocompleteTextFieldCellTest() {
     // Make sure this is wide enough to play games with the cell

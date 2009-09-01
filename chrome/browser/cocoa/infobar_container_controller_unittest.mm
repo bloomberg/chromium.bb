@@ -12,10 +12,11 @@
 #include "chrome/browser/cocoa/infobar_test_helper.h"
 #import "chrome/browser/cocoa/view_resizer_pong.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class InfoBarContainerControllerTest : public testing::Test {
+class InfoBarContainerControllerTest : public PlatformTest {
   virtual void SetUp() {
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     TabStripModel* model = browser_helper_.browser()->tabstrip_model();

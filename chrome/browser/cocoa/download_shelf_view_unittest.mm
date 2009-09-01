@@ -6,10 +6,11 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/download_shelf_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class DownloadShelfViewTest : public testing::Test {
+class DownloadShelfViewTest : public PlatformTest {
  public:
   CocoaTestHelper cocoa_helper_;
   scoped_nsobject<DownloadShelfView> view_;

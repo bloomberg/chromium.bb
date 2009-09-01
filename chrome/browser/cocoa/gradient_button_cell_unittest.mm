@@ -8,6 +8,7 @@
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 @interface GradientButtonCell (HoverValueTesting)
 - (void)adjustHoverValue;
@@ -15,7 +16,7 @@
 
 namespace {
 
-class GradientButtonCellTest : public testing::Test {
+class GradientButtonCellTest : public PlatformTest {
  public:
   GradientButtonCellTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);

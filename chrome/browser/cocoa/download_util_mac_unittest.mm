@@ -10,10 +10,11 @@
 #import "chrome/browser/cocoa/download_util_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class DownloadUtilTest : public testing::Test {
+class DownloadUtilTest : public PlatformTest {
  public:
   CocoaTestHelper cocoa_helper_;
 };

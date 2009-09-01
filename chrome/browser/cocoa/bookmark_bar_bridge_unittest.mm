@@ -7,6 +7,7 @@
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 // TODO(jrg): add OCMock to Chromium to save some typing.
 
@@ -90,7 +91,7 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
 @end
 
 
-class BookmarkBarBridgeTest : public testing::Test {
+class BookmarkBarBridgeTest : public PlatformTest {
  public:
   CocoaTestHelper cocoa_helper_;
   BrowserTestHelper browser_test_helper_;

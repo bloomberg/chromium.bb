@@ -8,6 +8,7 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/command_observer_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 // Implements the callback interface. Records the last command id and
 // enabled state it has received so it can be queried by the tests to see
@@ -36,7 +37,7 @@
 
 namespace {
 
-class CommandObserverBridgeTest : public testing::Test {
+class CommandObserverBridgeTest : public PlatformTest {
  public:
   CommandObserverBridgeTest()
       : updater_(new CommandUpdater(NULL)),

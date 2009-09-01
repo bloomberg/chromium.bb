@@ -8,10 +8,11 @@
 #import "chrome/browser/cocoa/base_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class BaseViewTest : public testing::Test {
+class BaseViewTest : public PlatformTest {
  public:
   BaseViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 100);

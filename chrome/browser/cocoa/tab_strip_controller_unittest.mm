@@ -9,6 +9,7 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
@@ -57,7 +58,7 @@ class TestTabStripDelegate : public TabStripModelDelegate {
   virtual bool CanCloseContentsAt(int index) { return true; }
 };
 
-class TabStripControllerTest : public testing::Test {
+class TabStripControllerTest : public PlatformTest {
  public:
   TabStripControllerTest() {
     NSView* parent = cocoa_helper_.contentView();

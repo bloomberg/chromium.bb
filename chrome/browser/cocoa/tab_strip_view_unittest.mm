@@ -8,10 +8,11 @@
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class TabStripViewTest : public testing::Test {
+class TabStripViewTest : public PlatformTest {
  public:
   TabStripViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 30);

@@ -10,10 +10,11 @@
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/common/mac_app_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class NSImageCacheTest : public testing::Test {
+class NSImageCacheTest : public PlatformTest {
  public:
   NSImageCacheTest() {
     // Look in the Chromium app bundle for resources.
