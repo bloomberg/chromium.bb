@@ -153,10 +153,12 @@ std::string Checkbox::GetClassName() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Checkbox, NativeButton overrides:
 
-void Checkbox::CreateWrapper() {
-  native_wrapper_ = NativeButtonWrapper::CreateCheckboxWrapper(this);
-  native_wrapper_->UpdateLabel();
-  native_wrapper_->UpdateChecked();
+NativeButtonWrapper* Checkbox::CreateWrapper() {
+  NativeButtonWrapper* native_wrapper =
+      NativeButtonWrapper::CreateCheckboxWrapper(this);
+  native_wrapper->UpdateLabel();
+  native_wrapper->UpdateChecked();
+  return native_wrapper;
 }
 
 void Checkbox::InitBorder() {

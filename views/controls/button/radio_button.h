@@ -30,7 +30,7 @@ class RadioButton : public Checkbox {
   virtual std::string GetClassName() const;
 
   // Overridden from NativeButton:
-  virtual void CreateWrapper();
+  virtual NativeButtonWrapper* CreateWrapper();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RadioButton);

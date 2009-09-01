@@ -57,8 +57,8 @@ class Checkbox : public NativeButton {
  protected:
   virtual std::string GetClassName() const;
 
-  // Overridden from NativeButton2:
-  virtual void CreateWrapper();
+  // Overridden from NativeButton:
+  virtual NativeButtonWrapper* CreateWrapper();
   virtual void InitBorder();
 
   // Returns true if the event (in Checkbox coordinates) is within the bounds of

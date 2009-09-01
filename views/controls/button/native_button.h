@@ -63,9 +63,12 @@ class NativeButton : public Button {
   virtual std::string GetClassName() const;
   virtual bool AcceleratorPressed(const Accelerator& accelerator);
 
-  // Create the button wrapper. Can be overridden by subclass to create a
-  // wrapper of a particular type. See NativeButtonWrapper interface for types.
-  virtual void CreateWrapper();
+  // Create the button wrapper and returns it. Ownership of the returned
+  // value is passed to the caller.
+  //
+  // This can be overridden by subclass to create a wrapper of a particular
+  // type. See NativeButtonWrapper interface for types.
+  virtual NativeButtonWrapper* CreateWrapper();
 
   // Sets a border to the button. Override to set a different border or to not
   // set one (the default is 0,8,0,8 for push buttons).

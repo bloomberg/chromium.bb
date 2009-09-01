@@ -149,7 +149,9 @@ void NativeButton::SetEnabled(bool flag) {
 void NativeButton::ViewHierarchyChanged(bool is_add, View* parent,
                                          View* child) {
   if (is_add && !native_wrapper_ && GetWidget()) {
-    CreateWrapper();
+    // The native wrapper's lifetime will be managed by the view hierarchy after
+    // we call AddChildView.
+    native_wrapper_ = CreateWrapper();
     AddChildView(native_wrapper_->GetView());
   }
 }
@@ -178,10 +180,12 @@ void NativeButton::Focus() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeButton, protected:
 
-void NativeButton::CreateWrapper() {
-  native_wrapper_ = NativeButtonWrapper::CreateNativeButtonWrapper(this);
-  native_wrapper_->UpdateLabel();
-  native_wrapper_->UpdateEnabled();
+NativeButtonWrapper* NativeButton::CreateWrapper() {
+  NativeButtonWrapper* native_wrapper =
+      NativeButtonWrapper::CreateNativeButtonWrapper(this);
+  native_wrapper->UpdateLabel();
+  native_wrapper->UpdateEnabled();
+  return native_wrapper;
 }
 
 void NativeButton::InitBorder() {

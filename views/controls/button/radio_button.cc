@@ -98,10 +98,12 @@ std::string RadioButton::GetClassName() const {
 ////////////////////////////////////////////////////////////////////////////////
 // RadioButton, NativeButton overrides:
 
-void RadioButton::CreateWrapper() {
-  native_wrapper_ = NativeButtonWrapper::CreateRadioButtonWrapper(this);
-  native_wrapper_->UpdateLabel();
-  native_wrapper_->UpdateChecked();
+NativeButtonWrapper* RadioButton::CreateWrapper() {
+  NativeButtonWrapper* native_wrapper =
+      NativeButtonWrapper::CreateRadioButtonWrapper(this);
+  native_wrapper->UpdateLabel();
+  native_wrapper->UpdateChecked();
+  return native_wrapper;
 }
 
 }  // namespace views
