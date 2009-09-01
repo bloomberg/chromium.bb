@@ -49,6 +49,13 @@
 #include <time.h>
 #include <string.h>
 
+/* To turn on debugging of instruction decoding, change value of
+ * DEBUGGING to 1.
+ */
+#define DEBUGGING 0
+
+#include "native_client/src/shared/utils/debugging.h"
+
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 #include "native_client/src/include/portability.h"
 
@@ -412,7 +419,15 @@ static void DefineOperandInternal(
 void DefineOperand(
     OperandKind kind,
     OperandFlags flags) {
+  int i;
   int index = current_opcode->num_operands;
+  DEBUG(printf("  %s:", OperandKindName(kind));
+        for (i = 0; i < OperandFlagEnumSize; ++i) {
+          if (flags & OpFlag(i)) {
+            printf(" %s", OperandFlagName(i));
+          }
+        }
+        printf("\n"));
   DefineOperandInternal(kind, flags);
   ApplySanityChecksToOperand(index);
 }
@@ -575,6 +590,24 @@ void DefineOpcode(
    * need to specify the prefix to use.
    */
   int i;
+  DEBUG(printf("Define %s %"PRIx8": %s(%d)",
+               OpcodePrefixName(current_opcode_prefix),
+               opcode, InstMnemonicName(name), name);
+        for (i = 0; i < OpcodeFlagEnumSize; ++i) {
+          if (flags & InstFlag(i)) {
+            printf(" %s", OpcodeFlagName(i));
+          }
+        }
+        printf("\n"));
+
+  if (InstMnemonicEnumSize <= name) {
+    fatal("Badly defined mnemonic name");
+  }
+
+  if (kNaClInstTypeRange <= insttype) {
+    fatal("Badly defined inst type");
+  }
+
   /* Create opcode and initialize */
   current_opcode = (Opcode*) malloc(sizeof(Opcode));
   if (NULL == current_opcode) {
@@ -665,9 +698,7 @@ static void BuildOpcodeTables() {
 
   DefineDCOpcodes();
 
-  Define0F38Opcodes();
-
-  Define660F38Opcodes();
+  DefineSseOpcodes();
 }
 
 /* Generate header information, based on the executable name in argv0,

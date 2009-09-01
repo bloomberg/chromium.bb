@@ -76,10 +76,7 @@ void Define0FOpcodes();
 /* Defines two byte opcodes beginning with DC. */
 void DefineDCOpcodes();
 
-/* Defines three byte opcodes beginning with 0F 38. */
-void Define0F38Opcodes();
-
-/* Defines three byte opcodes beginning with 66 OF 38 (66 is a prefix byte). */
-void Define660F38Opcodes();
+/* Defines SSE instructions (i.e. instructions using MMX and XMM registers). */
+void DefineSseOpcodes();
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_TABLEGEN_H__ */

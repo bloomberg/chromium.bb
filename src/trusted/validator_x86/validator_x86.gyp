@@ -54,8 +54,7 @@
                   'ncdecode_onebyte.c',
                   'ncdecode_OF.c',
                   'ncdecode_DC.c',
-                  'ncdecode_0F38.c',
-                  'ncdecode_660F38.c'
+                  'ncdecode_sse.c'
       ],
       'dependencies': ['ncopcode_utils' ],
       'conditions': [

@@ -477,7 +477,7 @@ static void ProcessCommandLine(int argc, const char* argv[]) {
     Info("processing %s", filename);
     ncf = nc_loadfile_depending(filename, !FLAGS_not_nc);
     if (ncf == NULL) {
-      Fatal("nc_loadfile(%s): %s\n", strerror(errno));
+      Fatal("nc_loadfile(%s): %s\n", filename, strerror(errno));
     }
 
     AnalyzeCodeSegments(ncf, filename);

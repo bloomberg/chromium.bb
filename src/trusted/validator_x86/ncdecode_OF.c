@@ -55,6 +55,10 @@ static void DefineJmp0FPair(uint8_t opcode, InstMnemonic name) {
 void Define0FOpcodes() {
   DefineOpcodePrefix(Prefix0F);
 
+  /* Note: The SSE instructions that begin with 0F are not defined here. Look
+   * at ncdecode_sse.c for the definitions of SSE instruction.
+   */
+
   /* TODO(karl) Should we verify the contents of the nop matches table 4.1
    * in Intel manual? (i.e. only allow valid forms of modrm data and
    * displacements).
