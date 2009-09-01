@@ -80,7 +80,6 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
   }
 
   if (pixmap_) {
-    g_object_unref(gdk_drawable_get_colormap(pixmap_));
     g_object_unref(pixmap_);
     pixmap_ = NULL;
   }
@@ -250,7 +249,6 @@ void WebPluginDelegateImpl::EnsurePixmapAtLeastSize(int width, int height) {
       return;  // We are already the appropriate size.
 
     // Otherwise, we need to recreate ourselves.
-    g_object_unref(gdk_drawable_get_colormap(pixmap_));
     g_object_unref(pixmap_);
     pixmap_ = NULL;
   }
@@ -263,6 +261,8 @@ void WebPluginDelegateImpl::EnsurePixmapAtLeastSize(int width, int height) {
   GdkColormap* colormap = gdk_colormap_new(gdk_visual_get_system(),
                                            FALSE);
   gdk_drawable_set_colormap(GDK_DRAWABLE(pixmap_), colormap);
+  // The GdkDrawable now owns the GdkColormap.
+  g_object_unref(colormap);
 }
 
 #ifdef DEBUG_RECTANGLES
@@ -479,11 +479,9 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   NPSetWindowCallbackStruct* extra =
       static_cast<NPSetWindowCallbackStruct*>(window_.ws_info);
   extra->display = GDK_DISPLAY();
-  GdkVisual* visual = gdk_visual_get_system();
-  extra->visual = GDK_VISUAL_XVISUAL(visual);
-  extra->depth = visual->depth;
-  GdkColormap* colormap = gdk_colormap_new(gdk_visual_get_system(), FALSE);
-  extra->colormap = GDK_COLORMAP_XCOLORMAP(colormap);
+  extra->visual = DefaultVisual(GDK_DISPLAY(), 0);
+  extra->depth = DefaultDepth(GDK_DISPLAY(), 0);
+  extra->colormap = DefaultColormap(GDK_DISPLAY(), 0);
 
   if (!force_set_window)
     windowless_needs_set_window_ = false;
