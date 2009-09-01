@@ -332,6 +332,10 @@ void TaskManagerGtk::Init() {
       kTaskManagerResponseKill,
       NULL);
 
+  // Allow browser windows to go in front of the task manager dialog in
+  // metacity.
+  gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
+
   // The response button should not be sensitive when the dialog is first opened
   // because the selecetion is initially empty.
   gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),

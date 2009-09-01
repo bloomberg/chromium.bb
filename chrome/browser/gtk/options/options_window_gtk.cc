@@ -99,6 +99,8 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
       GTK_RESPONSE_CLOSE,
       NULL);
   gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
+  // Allow browser windows to go in front of the options dialog in metacity.
+  gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
 
