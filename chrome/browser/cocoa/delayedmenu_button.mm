@@ -10,7 +10,7 @@
 
 @interface DelayedMenuButton (Private)
 
-- (void)resetToDefaults;
+- (void)setupCell;
 - (void)menuAction:(id)sender;
 
 @end  // @interface DelayedMenuButton (Private)
@@ -25,19 +25,19 @@
 
 - (id)init {
   if ((self = [super init]))
-    [self resetToDefaults];
+    [self setupCell];
   return self;
 }
 
 - (id)initWithCoder:(NSCoder*)decoder {
   if ((self = [super initWithCoder:decoder]))
-    [self resetToDefaults];
+    [self setupCell];
   return self;
 }
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect]))
-    [self resetToDefaults];
+    [self setupCell];
   return self;
 }
 
@@ -47,7 +47,12 @@
 }
 
 - (void)awakeFromNib {
-  [self resetToDefaults];
+  [self setupCell];
+}
+
+- (void)setCell:(NSCell*)cell {
+  [super setCell:cell];
+  [self setupCell];
 }
 
 // Accessors and mutators:
@@ -68,19 +73,20 @@
 
 @implementation DelayedMenuButton (Private)
 
-- (void)resetToDefaults {
-  id cell = [self cell];
-  DCHECK([cell isKindOfClass:[ClickHoldButtonCell class]]);
-  [self setEnabled:NO];                 // Make the controller put in a menu and
+// Set up the button's cell if we've reached a point where it's been set.
+- (void)setupCell {
+  ClickHoldButtonCell* cell = [self cell];
+  if (cell) {
+    DCHECK([cell isKindOfClass:[ClickHoldButtonCell class]]);
+    [self setEnabled:NO];               // Make the controller put in a menu and
                                         // enable it explicitly. This also takes
                                         // care of |[cell setEnableClickHold:]|.
-  [cell setClickHoldTimeout:0.25];      // Random guess at Cocoa-ish value.
-  [cell setTrackOnlyInRect:NO];
-  [cell setActivateOnDrag:YES];
-  [cell setClickHoldAction:@selector(menuAction:)];
-  [cell setClickHoldTarget:self];
+    [cell setClickHoldAction:@selector(menuAction:)];
+    [cell setClickHoldTarget:self];
+  }
 }
 
+// Display the menu.
 - (void)menuAction:(id)sender {
   // We shouldn't get here unless the menu is enabled.
   DCHECK(menuEnabled_);
@@ -96,11 +102,11 @@
     return;
   }
 
-  // FIXME(viettrungluu@gmail.com): We have some fudge factors below to make
-  // things line up (approximately). I wish I knew how to get rid of them. (Note
-  // that our view is flipped, and that frame should be in our coordinates.)
-  // The y/height is very odd, since it doesn't seem to respond to changes the
-  // way that it should. I don't understand it.
+  // FIXME(viettrungluu): We have some fudge factors below to make things line
+  // up (approximately). I wish I knew how to get rid of them. (Note that our
+  // view is flipped, and that frame should be in our coordinates.) The y/height
+  // is very odd, since it doesn't seem to respond to changes the way that it
+  // should. I don't understand it.
   NSRect frame = [self convertRect:[self frame]
                           fromView:[self superview]];
   frame.origin.x -= 2.0;

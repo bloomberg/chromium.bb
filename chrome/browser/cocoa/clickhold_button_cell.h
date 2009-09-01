@@ -10,10 +10,9 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 
-// A button cell that implements "click hold" behavior after a specified
-// delay. If -setClickHoldTimeout: is never called, this behaves like a normal
-// button.
-
+// A button cell that implements "click hold" behavior after a specified delay
+// or after dragging. If click-hold is never enabled (e.g., if
+// |-setEnableClickHold:| is never called), this behaves like a normal button.
 @interface ClickHoldButtonCell : GradientButtonCell {
  @private
   BOOL enableClickHold_;
@@ -24,16 +23,18 @@
   BOOL activateOnDrag_;
 }
 
-// Enable click-hold?
+// Enable click-hold? Default: NO.
 @property(assign, nonatomic) BOOL enableClickHold;
 
-// Timeout is in seconds (at least 0.01, at most 3600).
+// Timeout is in seconds (at least 0.01, at most 3600). Default: 0.25 (a guess
+// at a Cocoa-ish value).
 @property(assign, nonatomic) NSTimeInterval clickHoldTimeout;
 
-// Track only in the frame rectangle?
+// Track only in the frame rectangle? Default: NO.
 @property(assign, nonatomic) BOOL trackOnlyInRect;
 
-// Activate (click-hold) immediately on drag?
+// Activate (click-hold) immediately on a sufficiently-large drag (if not,
+// always wait for timeout)? Default: YES.
 @property(assign, nonatomic) BOOL activateOnDrag;
 
 // Defines what to do when click-held (as per usual action/target).

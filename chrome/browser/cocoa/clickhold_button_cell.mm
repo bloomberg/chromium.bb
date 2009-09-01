@@ -13,6 +13,12 @@ static const NSTimeInterval kMaxTimeout = 3600.0;
 // Drag distance threshold to activate click-hold; should be >= 0.
 static const CGFloat kDragDistThreshold = 2.5;
 
+// See |-resetToDefaults| (and header file) for other default values.
+
+@interface ClickHoldButtonCell (Private)
+- (void)resetToDefaults;
+@end  // @interface ClickHoldButtonCell (Private)
+
 @implementation ClickHoldButtonCell
 
 // Overrides:
@@ -21,22 +27,44 @@ static const CGFloat kDragDistThreshold = 2.5;
   return NO;
 }
 
+- (id)init {
+  if ((self = [super init]))
+    [self resetToDefaults];
+  return self;
+}
+
+- (id)initWithCoder:(NSCoder*)decoder {
+  if ((self = [super initWithCoder:decoder]))
+    [self resetToDefaults];
+  return self;
+}
+
+- (id)initImageCell:(NSImage*)image {
+  if ((self = [super initImageCell:image]))
+    [self resetToDefaults];
+  return self;
+}
+
+- (id)initTextCell:(NSString*)string {
+  if ((self = [super initTextCell:string]))
+    [self resetToDefaults];
+  return self;
+}
+
 - (BOOL)startTrackingAt:(NSPoint)startPoint
                  inView:(NSView*)controlView {
-  return enableClickHold_ ?
-      YES :
-      [super startTrackingAt:startPoint
-                      inView:controlView];
+  return enableClickHold_ ? YES :
+                            [super startTrackingAt:startPoint
+                                            inView:controlView];
 }
 
 - (BOOL)continueTracking:(NSPoint)lastPoint
                       at:(NSPoint)currentPoint
                   inView:(NSView*)controlView {
-  return enableClickHold_ ?
-      YES :
-      [super continueTracking:lastPoint
-                           at:currentPoint
-                       inView:controlView];
+  return enableClickHold_ ? YES :
+                            [super continueTracking:lastPoint
+                                                 at:currentPoint
+                                             inView:controlView];
 }
 
 - (BOOL)trackMouse:(NSEvent*)originalEvent
@@ -145,3 +173,18 @@ static const CGFloat kDragDistThreshold = 2.5;
 @synthesize clickHoldAction = clickHoldAction_;
 
 @end  // @implementation ClickHoldButtonCell
+
+@implementation ClickHoldButtonCell (Private)
+
+// Resets various members to defaults indicated in the header file. (Those
+// without indicated defaults are *not* touched.) Please keep the values below
+// in sync with the header file, and please be aware of side-effects on code
+// which relies on the "published" defaults.
+- (void)resetToDefaults {
+  [self setEnableClickHold:NO];
+  [self setClickHoldTimeout:0.25];
+  [self setTrackOnlyInRect:NO];
+  [self setActivateOnDrag:YES];
+}
+
+@end  // @implementation ClickHoldButtonCell (Private)
