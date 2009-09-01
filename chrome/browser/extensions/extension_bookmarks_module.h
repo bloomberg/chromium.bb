@@ -108,7 +108,7 @@ class MoveBookmarkFunction : public BookmarksFunction {
   virtual bool RunImpl();
 };
 
-class SetBookmarkTitleFunction : public BookmarksFunction {
+class UpdateBookmarkFunction : public BookmarksFunction {
   virtual bool RunImpl();
 };
 

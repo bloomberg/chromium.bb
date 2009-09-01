@@ -42,6 +42,6 @@ const char kRemoveBookmarkFunction[] = "bookmarks.remove";
 const char kRemoveBookmarkTreeFunction[] = "bookmarks.removeTree";
 const char kCreateBookmarkFunction[] = "bookmarks.create";
 const char kMoveBookmarkFunction[] = "bookmarks.move";
-const char kSetBookmarkTitleFunction[] = "bookmarks.update";
+const char kUpdateBookmarkFunction[] = "bookmarks.update";
 
 }  // namespace extension_bookmarks_module_constants

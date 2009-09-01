@@ -133,8 +133,8 @@ void FactoryRegistry::ResetFunctions() {
       &NewExtensionFunction<CreateBookmarkFunction>;
   factories_[bookmarks::kMoveBookmarkFunction] =
       &NewExtensionFunction<MoveBookmarkFunction>;
-  factories_[bookmarks::kSetBookmarkTitleFunction] =
-      &NewExtensionFunction<SetBookmarkTitleFunction>;
+  factories_[bookmarks::kUpdateBookmarkFunction] =
+      &NewExtensionFunction<UpdateBookmarkFunction>;
 
   // Toolstrips.
   factories_[toolstrip::kExpandFunction] =

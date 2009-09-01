@@ -48,7 +48,7 @@ extern const char kRemoveBookmarkFunction[];
 extern const char kRemoveBookmarkTreeFunction[];
 extern const char kCreateBookmarkFunction[];
 extern const char kMoveBookmarkFunction[];
-extern const char kSetBookmarkTitleFunction[];
+extern const char kUpdateBookmarkFunction[];
 
 };  // namespace extension_bookmarks_module_constants
 

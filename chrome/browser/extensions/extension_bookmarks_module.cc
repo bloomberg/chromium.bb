@@ -60,7 +60,8 @@ class ExtensionBookmarks {
         DictionaryValue* dict = GetNodeDictionary(child, true);
         children->Append(dict);
       }
-      dict->Set(keys::kChildrenKey, children);
+      if (node->is_folder())
+        dict->Set(keys::kChildrenKey, children);
     }
     return dict;
   }
@@ -515,22 +516,27 @@ bool MoveBookmarkFunction::RunImpl() {
   }
 
   model->Move(node, parent, index);
+
+  DictionaryValue* ret = ExtensionBookmarks::GetNodeDictionary(node, false);
+  result_.reset(ret);
+
   return true;
 }
 
-bool SetBookmarkTitleFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  DictionaryValue* json = static_cast<DictionaryValue*>(args_);
-
-  std::wstring title;
-  json->GetString(keys::kTitleKey, &title);  // Optional (empty is clear).
-
-  BookmarkModel* model = profile()->GetBookmarkModel();
-  int64 id = 0;
+bool UpdateBookmarkFunction::RunImpl() {
+  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
+  const ListValue* args = static_cast<const ListValue*>(args_);
+  int64 id;
   std::string id_string;
-  EXTENSION_FUNCTION_VALIDATE(json->GetString(keys::kIdKey, &id_string));
+  EXTENSION_FUNCTION_VALIDATE(args->GetString(0, &id_string));
   if (!GetBookmarkIdAsInt64(id_string, &id))
     return false;
+  DictionaryValue* updates;
+  EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &updates));
+  std::wstring title;
+  updates->GetString(keys::kTitleKey, &title);  // Optional (empty is clear).
+
+  BookmarkModel* model = profile()->GetBookmarkModel();
   const BookmarkNode* node = model->GetNodeByID(id);
   if (!node) {
     error_ = keys::kNoNodeError;
@@ -543,5 +549,9 @@ bool SetBookmarkTitleFunction::RunImpl() {
     return false;
   }
   model->SetTitle(node, title);
+
+  DictionaryValue* ret = ExtensionBookmarks::GetNodeDictionary(node, false);
+  result_.reset(ret);
+
   return true;
 }
