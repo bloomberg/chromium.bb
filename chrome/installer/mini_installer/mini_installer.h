@@ -42,13 +42,14 @@ const wchar_t kUninstallRegistryValueName[] = L"UninstallString";
 
 // Paths for the above registry keys
 #if defined(GOOGLE_CHROME_BUILD)
-const wchar_t kApRegistryKey[] = L"Software\\Google\\Update\\ClientState\\"
-                                 L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
+// The concatenation of this plus the Google Update GUID is the app registry
+// key.
+const wchar_t kApRegistryKeyBase[] = L"Software\\Google\\Update\\ClientState\\";
 const wchar_t kUninstallRegistryKey[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Google Chrome";
 const wchar_t kCleanupRegistryKey[] = L"Software\\Google";
 #else
-const wchar_t kApRegistryKey[] = L"Software\\Chromium";
+const wchar_t kApRegistryKeyBase[] = L"Software\\Chromium";
 const wchar_t kUninstallRegistryKey[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Chromium";
 const wchar_t kCleanupRegistryKey[] = L"Software\\Chromium";

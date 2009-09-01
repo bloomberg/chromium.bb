@@ -35,6 +35,9 @@
 #include "chrome/installer/mini_installer/mini_installer.h"
 #include "chrome/installer/mini_installer/pe_resource.h"
 
+// Generated header that includes the Google Update id.
+#include "appid.h"
+
 // Required linker symbol. See remarks above.
 extern "C" unsigned int __sse2_available = 0;
 
@@ -148,7 +151,14 @@ bool ReadValueFromRegistry(HKEY root_key, const wchar_t *sub_key,
 // flag is cleared by setup.exe at the end of install.
 void SetFullInstallerFlag(HKEY root_key) {
   HKEY key;
-  if (::RegOpenKeyEx(root_key, kApRegistryKey, NULL,
+  wchar_t ap_registry_key[128];
+  if (!SafeStrCopy(ap_registry_key, _countof(ap_registry_key),
+                   kApRegistryKeyBase) ||
+      !SafeStrCat(ap_registry_key, _countof(ap_registry_key),
+                  google_update::kChromeGuid)) {
+    return;
+  }
+  if (::RegOpenKeyEx(root_key, ap_registry_key, NULL,
                      KEY_READ | KEY_SET_VALUE, &key) != ERROR_SUCCESS)
     return;
 
@@ -238,7 +248,7 @@ BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
 
   PEResource resource(name, type, module);
   if ((!resource.IsValid()) ||
-      (resource.Size() < 1 ) ||
+      (resource.Size() < 1) ||
       (resource.Size() > kMaxResourceSize)) {
     return FALSE;
   }
@@ -251,7 +261,7 @@ BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
 
   if (StrStartsWith(name, kChromePrefix)) {
     if (!SafeStrCopy(ctx->chrome_resource_path,
-                     ctx->chrome_resource_path_size, full_path)) 
+                     ctx->chrome_resource_path_size, full_path))
       return FALSE;
   } else if (StrStartsWith(name, kSetupPrefix)) {
     if (!SafeStrCopy(ctx->setup_resource_path,
@@ -401,7 +411,7 @@ void AppendCommandLineFlags(wchar_t* buffer, int size) {
     // Current executable name not in the command line so just append
     // the whole command line.
     cmd_to_append = cmd_line;
-  } else if (args_num > 1 ) {
+  } else if (args_num > 1) {
     wchar_t* tmp = StrStr(cmd_line, exe_name);
     tmp = StrStr(tmp, L" ");
     cmd_to_append = tmp;

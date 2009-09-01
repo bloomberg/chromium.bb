@@ -16,6 +16,7 @@
           'type': '<(library)',
           'msvs_guid': 'EFBB1436-A63F-4CD8-9E99-B89226E782EC',
           'dependencies': [
+            '../../app/app.gyp:app_id',
             'installer_util_strings',
             '../chrome.gyp:common',
             '../chrome.gyp:chrome_resources',

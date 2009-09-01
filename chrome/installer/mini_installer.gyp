@@ -18,6 +18,7 @@
           'type': 'executable',
           'msvs_guid': '24A5AC7C-280B-4899-9153-6BA570A081E7',
           'dependencies': [
+            '../../app/app.gyp:app_id',
             '../chrome.gyp:chrome',
             '../chrome.gyp:chrome_dll',
             '../chrome.gyp:default_extensions',
@@ -28,6 +29,7 @@
             '../..',
             '<(PRODUCT_DIR)',
             '<(INTERMEDIATE_DIR)',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome',
           ],
           'sources': [
             'mini_installer/chrome.release',

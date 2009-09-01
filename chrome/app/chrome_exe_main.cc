@@ -19,6 +19,9 @@
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/dep.h"
 
+// Generataed header containing the Google Update appid.
+#include "appid.h"
+
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
                       wchar_t* command_line, int) {
   base::EnableTerminationOnHeapCorruption();
@@ -50,9 +53,8 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 #if defined(GOOGLE_CHROME_BUILD)
   google_update::GoogleUpdateClient client;
 
-  // TODO(erikkay): Get guid from build macros rather than hardcoding.
   // TODO(erikkay): verify client.Init() return value for official builds
-  client.Init(L"{8A69D345-D564-463c-AFF1-A69D9E530F96}", dll_name);
+  client.Init(google_update::kChromeGuid, dll_name);
   dll_full_path = client.GetDLLFullPath();
   versionned_path = client.GetDLLPath();
 #else
