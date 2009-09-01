@@ -118,7 +118,7 @@ void WebMediaPlayerClientImpl::load(const String& url)
         m_mediaPlayer->mediaPlayerClient())->document()->frame();
     m_webMediaPlayer.set(TemporaryGlue::createWebMediaPlayer(this, frame));
     if (m_webMediaPlayer.get())
-        m_webMediaPlayer->load(KURL(url));
+        m_webMediaPlayer->load(KURL(ParsedURLString, url));
 }
 
 void WebMediaPlayerClientImpl::cancelLoad()

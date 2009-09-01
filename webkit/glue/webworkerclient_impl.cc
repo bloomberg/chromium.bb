@@ -305,7 +305,8 @@ void WebWorkerClientImpl::StartWorkerContextTask(
     const WebCore::String& user_agent,
     const WebCore::String& source_code) {
   this_ptr->webworker_->startWorkerContext(
-      webkit_glue::KURLToWebURL(WebCore::KURL(script_url)),
+      webkit_glue::KURLToWebURL(
+          WebCore::KURL(WebCore::ParsedURLString, script_url)),
       webkit_glue::StringToWebString(user_agent),
       webkit_glue::StringToWebString(source_code));
 }

@@ -104,7 +104,8 @@ void GetSavableResourceLinkForElement(WebCore::Element* element,
   // Insert referrer for above new resource link.
   if (current_doc->frame()) {
     GURL u(webkit_glue::KURLToGURL(
-        WebCore::KURL(current_doc->frame()->loader()->outgoingReferrer())));
+        WebCore::KURL(WebCore::ParsedURLString,
+                      current_doc->frame()->loader()->outgoingReferrer())));
     result->referrers_list->push_back(u);
   } else {
     // Insert blank referrer.

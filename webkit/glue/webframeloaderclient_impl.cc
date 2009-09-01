@@ -239,9 +239,9 @@ void WebFrameLoaderClient::dispatchWillSendRequest(
   // FrameLoader::loadEmptyDocumentSynchronously() creates an empty document
   // with no URL.  We don't like that, so we'll rename it to about:blank.
   if (request.url().isEmpty())
-    request.setURL(KURL("about:blank"));
+    request.setURL(KURL(ParsedURLString, "about:blank"));
   if (request.firstPartyForCookies().isEmpty())
-    request.setFirstPartyForCookies(KURL("about:blank"));
+    request.setFirstPartyForCookies(KURL(ParsedURLString, "about:blank"));
 
   // Give the delegate a crack at the request.
   WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();

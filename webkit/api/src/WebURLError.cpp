@@ -51,7 +51,7 @@ WebURLError& WebURLError::operator=(const ResourceError& error)
     else {
         domain = error.domain();
         reason = error.errorCode();
-        unreachableURL = KURL(error.failingURL());
+        unreachableURL = KURL(ParsedURLString, error.failingURL());
     }
     return *this;
 }

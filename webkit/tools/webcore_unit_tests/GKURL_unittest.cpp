@@ -92,7 +92,7 @@ TEST(GKURL, SameGetters) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     // UTF-8
-    WebCore::KURL gurl(cases[i].url);
+    WebCore::KURL gurl(WebCore::ParsedURLString, cases[i].url);
 
     EXPECT_EQ(cases[i].protocol, gurl.protocol());
     EXPECT_EQ(cases[i].host, gurl.host());
@@ -109,7 +109,7 @@ TEST(GKURL, SameGetters) {
     WebCore::String utf16(
         reinterpret_cast<const ::UChar*>(wstr.c_str()),
         static_cast<int>(wstr.length()));
-    gurl = WebCore::KURL(utf16);
+    gurl = WebCore::KURL(WebCore::ParsedURLString, utf16);
 
     EXPECT_EQ(cases[i].protocol, gurl.protocol());
     EXPECT_EQ(cases[i].host, gurl.host());
@@ -145,7 +145,7 @@ TEST(GKURL, DifferentGetters) {
   };
 
   for (size_t i = 0; i < arraysize(cases); i++) {
-    WebCore::KURL gurl(cases[i].url);
+    WebCore::KURL gurl(WebCore::ParsedURLString, cases[i].url);
 
     EXPECT_EQ(cases[i].protocol, gurl.protocol());
     EXPECT_EQ(cases[i].host, gurl.host());
@@ -168,7 +168,7 @@ TEST(GKURL, DifferentGetters) {
 // get the correct string object out.
 TEST(GKURL, UTF8) {
   const char ascii_url[] = "http://foo/bar#baz";
-  WebCore::KURL ascii_gurl(ascii_url);
+  WebCore::KURL ascii_gurl(WebCore::ParsedURLString, ascii_url);
   EXPECT_TRUE(ascii_gurl.string() == WebCore::String(ascii_url));
 
   // When the result is ASCII, we should get an ASCII String. Some
@@ -180,11 +180,11 @@ TEST(GKURL, UTF8) {
 
   // Reproduce code path in FrameLoader.cpp -- equalIgnoringCase implicitly
   // expects gkurl.protocol() to have been created as ascii.
-  WebCore::KURL mailto("mailto:foo@foo.com");
+  WebCore::KURL mailto(WebCore::ParsedURLString, "mailto:foo@foo.com");
   EXPECT_TRUE(WebCore::equalIgnoringCase(mailto.protocol(), "mailto"));
 
   const char utf8_url[] = "http://foo/bar#\xe4\xbd\xa0\xe5\xa5\xbd";
-  WebCore::KURL utf8_gurl(utf8_url);
+  WebCore::KURL utf8_gurl(WebCore::ParsedURLString, utf8_url);
 
   EXPECT_TRUE(utf8_gurl.string() ==
               webkit_glue::StdWStringToString(UTF8ToWide(utf8_url)));
@@ -245,7 +245,7 @@ TEST(GKURL, Setters) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
-    WebCore::KURL gurl(cases[i].url);
+    WebCore::KURL gurl(WebCore::ParsedURLString, cases[i].url);
 
     gurl.setProtocol(cases[i].protocol);
     EXPECT_STREQ(cases[i].expected_protocol, gurl.string().utf8().data());
@@ -400,7 +400,7 @@ TEST(GKURL, ReplaceInvalid) {
 
 TEST(GKURL, Path) {
   const char initial[] = "http://www.google.com/path/foo";
-  WebCore::KURL gurl(initial);
+  WebCore::KURL gurl(WebCore::ParsedURLString, initial);
 
   // Clear by setting a NULL string.
   WebCore::String null_string;
@@ -413,7 +413,7 @@ TEST(GKURL, Path) {
 // a littler differently than some of the other components.
 TEST(GKURL, Query) {
   const char initial[] = "http://www.google.com/search?q=awesome";
-  WebCore::KURL gurl(initial);
+  WebCore::KURL gurl(WebCore::ParsedURLString, initial);
 
   // Clear by setting a NULL string.
   WebCore::String null_string;
@@ -422,7 +422,7 @@ TEST(GKURL, Query) {
   EXPECT_STREQ("http://www.google.com/search", gurl.string().utf8().data());
 
   // Clear by setting an empty string.
-  gurl = WebCore::KURL(initial);
+  gurl = WebCore::KURL(WebCore::ParsedURLString, initial);
   WebCore::String empty_string("");
   EXPECT_FALSE(empty_string.isNull());
   gurl.setQuery(empty_string);
@@ -442,10 +442,10 @@ TEST(GKURL, Query) {
 }
 
 TEST(GKURL, Ref) {
-  WebCore::KURL gurl("http://foo/bar#baz");
+  WebCore::KURL gurl(WebCore::ParsedURLString, "http://foo/bar#baz");
 
   // Basic ref setting.
-  WebCore::KURL cur("http://foo/bar");
+  WebCore::KURL cur(WebCore::ParsedURLString, "http://foo/bar");
   cur.setFragmentIdentifier("asdf");
   EXPECT_STREQ("http://foo/bar#asdf", cur.string().utf8().data());
   cur = gurl;
@@ -453,7 +453,7 @@ TEST(GKURL, Ref) {
   EXPECT_STREQ("http://foo/bar#asdf", cur.string().utf8().data());
 
   // Setting a ref to the empty string will set it to "#".
-  cur = WebCore::KURL("http://foo/bar");
+  cur = WebCore::KURL(WebCore::ParsedURLString, "http://foo/bar");
   cur.setFragmentIdentifier("");
   EXPECT_STREQ("http://foo/bar#", cur.string().utf8().data());
   cur = gurl;
@@ -461,7 +461,7 @@ TEST(GKURL, Ref) {
   EXPECT_STREQ("http://foo/bar#", cur.string().utf8().data());
 
   // Setting the ref to the null string will clear it altogether.
-  cur = WebCore::KURL("http://foo/bar");
+  cur = WebCore::KURL(WebCore::ParsedURLString, "http://foo/bar");
   cur.setFragmentIdentifier(WebCore::String());
   EXPECT_STREQ("http://foo/bar", cur.string().utf8().data());
   cur = gurl;
@@ -503,14 +503,15 @@ TEST(GKURL, Empty) {
   // WebKit's one will set the string to "something.gif" and we'll set it to an
   // empty string. I think either is OK, so we just check our behavior.
 #if USE(GOOGLEURL)
-  WebCore::KURL gurl3(WebCore::KURL("data:foo"), "something.gif");
+  WebCore::KURL gurl3(WebCore::KURL(WebCore::ParsedURLString, "data:foo"),
+                      "something.gif");
   EXPECT_TRUE(gurl3.isEmpty());
   EXPECT_FALSE(gurl3.isValid());
 #endif
 
   // Test for weird isNull string input,
   // see: http://bugs.webkit.org/show_bug.cgi?id=16487
-  WebCore::KURL gurl4(gurl.string());
+  WebCore::KURL gurl4(WebCore::ParsedURLString, gurl.string());
   EXPECT_TRUE(gurl4.isEmpty());
   EXPECT_FALSE(gurl4.isValid());
   EXPECT_TRUE(gurl4.string().isNull());
@@ -525,14 +526,14 @@ TEST(GKURL, Empty) {
   EXPECT_FALSE(gurl5.string().isNull());
 
   // Empty string as input
-  WebCore::KURL gurl6("");
+  WebCore::KURL gurl6(WebCore::ParsedURLString, "");
   EXPECT_TRUE(gurl6.isEmpty());
   EXPECT_FALSE(gurl6.isValid());
   EXPECT_FALSE(gurl6.string().isNull());
   EXPECT_TRUE(gurl6.string().isEmpty());
 
   // Non-empty but invalid C string as input.
-  WebCore::KURL gurl7("foo.js");
+  WebCore::KURL gurl7(WebCore::ParsedURLString, "foo.js");
   // WebKit will actually say this URL has the string "foo.js" but is invalid.
   // We don't do that.
   // EXPECT_EQ(kurl7.isEmpty(), gurl7.isEmpty());
@@ -542,14 +543,14 @@ TEST(GKURL, Empty) {
 
 TEST(GKURL, UserPass) {
   const char* src = "http://user:pass@google.com/";
-  WebCore::KURL gurl(src);
+  WebCore::KURL gurl(WebCore::ParsedURLString, src);
 
   // Clear just the username.
   gurl.setUser("");
   EXPECT_EQ("http://:pass@google.com/", gurl.string());
 
   // Clear just the password.
-  gurl = WebCore::KURL(src);
+  gurl = WebCore::KURL(WebCore::ParsedURLString, src);
   gurl.setPass("");
   EXPECT_EQ("http://user@google.com/", gurl.string());
 
@@ -560,7 +561,7 @@ TEST(GKURL, UserPass) {
 
 TEST(GKURL, Offsets) {
   const char* src1 = "http://user:pass@google.com/foo/bar.html?baz=query#ref";
-  WebCore::KURL gurl1(src1);
+  WebCore::KURL gurl1(WebCore::ParsedURLString, src1);
 
   EXPECT_EQ(17u, gurl1.hostStart());
   EXPECT_EQ(27u, gurl1.hostEnd());
@@ -569,7 +570,7 @@ TEST(GKURL, Offsets) {
   EXPECT_EQ(32u, gurl1.pathAfterLastSlash());
 
   const char* src2 = "http://google.com/foo/";
-  WebCore::KURL gurl2(src2);
+  WebCore::KURL gurl2(WebCore::ParsedURLString, src2);
 
   EXPECT_EQ(7u, gurl2.hostStart());
   EXPECT_EQ(17u, gurl2.hostEnd());
@@ -578,7 +579,7 @@ TEST(GKURL, Offsets) {
   EXPECT_EQ(22u, gurl2.pathAfterLastSlash());
 
   const char* src3 = "javascript:foobar";
-  WebCore::KURL gurl3(src3);
+  WebCore::KURL gurl3(WebCore::ParsedURLString, src3);
 
   EXPECT_EQ(11u, gurl3.hostStart());
   EXPECT_EQ(11u, gurl3.hostEnd());
@@ -589,7 +590,7 @@ TEST(GKURL, Offsets) {
 
 TEST(GKURL, DeepCopy) {
   const char url[] = "http://www.google.com/";
-  WebCore::KURL src(url);
+  WebCore::KURL src(WebCore::ParsedURLString, url);
   EXPECT_TRUE(src.string() == url);  // This really just initializes the cache.
   WebCore::KURL dest = src.copy();
   EXPECT_TRUE(dest.string() == url);  // This really just initializes the cache.

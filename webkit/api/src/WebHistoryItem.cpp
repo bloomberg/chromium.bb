@@ -73,7 +73,7 @@ WebString WebHistoryItem::urlString() const
 void WebHistoryItem::setURLString(const WebString& url)
 {
     ensureMutable();
-    m_private->setURLString(KURL(url).string());
+    m_private->setURLString(KURL(ParsedURLString, url).string());
 }
 
 WebString WebHistoryItem::originalURLString() const
