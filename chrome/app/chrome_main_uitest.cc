@@ -60,6 +60,5 @@ TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
 
   ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(command_line));
 
-  ASSERT_TRUE(automation()->WaitForURLDisplayed(
-      net::FilePathToFileURL(test_file), action_timeout_ms()));
+  ASSERT_TRUE(automation()->IsURLDisplayed(net::FilePathToFileURL(test_file)));
 }

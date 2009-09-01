@@ -311,37 +311,32 @@ bool AutomationProxy::WaitForAppModalDialog(int wait_timeout) {
   return wait_success && send_success;
 }
 
-bool AutomationProxy::WaitForURLDisplayed(GURL url, int wait_timeout) {
-  const TimeTicks start = TimeTicks::Now();
-  const TimeDelta timeout = TimeDelta::FromMilliseconds(wait_timeout);
-  while (TimeTicks::Now() - start < timeout) {
-    int window_count;
-    if (!GetBrowserWindowCount(&window_count))
-      return false;
+bool AutomationProxy::IsURLDisplayed(GURL url) {
+  int window_count;
+  if (!GetBrowserWindowCount(&window_count))
+    return false;
 
-    for (int i = 0; i < window_count; i++) {
-      scoped_refptr<BrowserProxy> window = GetBrowserWindow(i);
-      if (!window.get())
+  for (int i = 0; i < window_count; i++) {
+    scoped_refptr<BrowserProxy> window = GetBrowserWindow(i);
+    if (!window.get())
+      break;
+
+    int tab_count;
+    if (!window->GetTabCount(&tab_count))
+      continue;
+
+    for (int j = 0; j < tab_count; j++) {
+      scoped_refptr<TabProxy> tab = window->GetTab(j);
+      if (!tab.get())
         break;
 
-      int tab_count;
-      if (!window->GetTabCount(&tab_count))
+      GURL tab_url;
+      if (!tab->GetCurrentURL(&tab_url))
         continue;
 
-      for (int j = 0; j < tab_count; j++) {
-        scoped_refptr<TabProxy> tab = window->GetTab(j);
-        if (!tab.get())
-          break;
-
-        GURL tab_url;
-        if (!tab->GetCurrentURL(&tab_url))
-          continue;
-
-        if (tab_url == url)
-          return true;
-      }
+      if (tab_url == url)
+        return true;
     }
-    PlatformThread::Sleep(automation::kSleepTime);
   }
 
   return false;
