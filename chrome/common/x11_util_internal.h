@@ -12,6 +12,7 @@
 // when needed.
 
 extern "C" {
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XShm.h>
 #include <X11/extensions/Xrender.h>
@@ -28,4 +29,4 @@ namespace x11_util {
   XRenderPictFormat* GetRenderVisualFormat(Display* dpy, Visual* visual);
 };
 
-#endif  // CHROME_COMMON_X11_UTIL_H_
+#endif  // CHROME_COMMON_X11_UTIL_INTERNAL_H_

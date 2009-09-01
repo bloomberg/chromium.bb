@@ -251,9 +251,8 @@ bool IsScreenComposited() {
 }
 
 void EnumerateTopLevelWindows(x11_util::EnumerateWindowsDelegate* delegate) {
-  GdkScreen* screen = gdk_screen_get_default();
-  GList* stack = gdk_screen_get_window_stack(screen);
-  if (!stack) {
+  std::vector<XID> stack;
+  if (!x11_util::GetXWindowStack(&stack)) {
     // Window Manager doesn't support _NET_CLIENT_LIST_STACKING, so fall back
     // to old school enumeration of all X windows.  Some WMs parent 'top-level'
     // windows in unnamed actual top-level windows (ion WM), so extend the
@@ -263,18 +262,11 @@ void EnumerateTopLevelWindows(x11_util::EnumerateWindowsDelegate* delegate) {
     return;
   }
 
-  for (GList* iter = g_list_last(stack); iter; iter = iter->prev) {
-    GdkWindow* window = static_cast<GdkWindow*>(iter->data);
-    if (!gdk_window_is_visible(window))
-      continue;
-
-    XID xid = GDK_WINDOW_XID(window);
-    if (delegate->ShouldStopIterating(xid))
-      break;
+  std::vector<XID>::iterator iter;
+  for (iter = stack.begin(); iter != stack.end(); iter++) {
+    if (delegate->ShouldStopIterating(*iter))
+      return;
   }
-
-  g_list_foreach(stack, (GFunc)g_object_unref, NULL);
-  g_list_free(stack);
 }
 
 void SetButtonTriggersNavigation(GtkWidget* button) {

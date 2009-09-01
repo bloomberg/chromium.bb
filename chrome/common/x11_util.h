@@ -11,6 +11,9 @@
 // we use a void* for Visual*). The Xlib headers are highly polluting so we try
 // hard to limit their spread into the rest of the code.
 
+#include <string>
+#include <vector>
+
 #include "base/gfx/rect.h"
 #include "base/task.h"
 
@@ -79,6 +82,9 @@ class EnumerateWindowsDelegate {
 // Enumerates all windows in the current display.  Will recurse into child
 // windows up to a depth of |max_depth|.
 bool EnumerateAllWindows(EnumerateWindowsDelegate* delegate, int max_depth);
+
+// Returns a list of top-level windows in top-to-bottom stacking order.
+bool GetXWindowStack(std::vector<XID>* windows);
 
 // Return a handle to a server side pixmap. |shared_memory_key| is a SysV
 // IPC key. The shared memory region must contain 32-bit pixels.

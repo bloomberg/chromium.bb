@@ -8,8 +8,6 @@
 
 #include "chrome/common/x11_util.h"
 
-#include <string.h>
-
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
@@ -276,10 +274,11 @@ bool EnumerateChildren(EnumerateWindowsDelegate* delegate, XID window,
   // current level, so we need to recurse to the next level.  We use a second
   // loop because the recursion and call to XQueryTree are expensive and is only
   // needed for a small number of cases.
-  depth++;
-  for (iter = windows.rbegin(); iter != windows.rend(); iter++) {
-    if (EnumerateChildren(delegate, *iter, max_depth, depth))
-      return true;
+  if (++depth <= max_depth) {
+    for (iter = windows.rbegin(); iter != windows.rend(); iter++) {
+      if (EnumerateChildren(delegate, *iter, max_depth, depth))
+        return true;
+    }
   }
 
   return false;
@@ -288,6 +287,46 @@ bool EnumerateChildren(EnumerateWindowsDelegate* delegate, XID window,
 bool EnumerateAllWindows(EnumerateWindowsDelegate* delegate, int max_depth) {
   XID root = GetX11RootWindow();
   return EnumerateChildren(delegate, root, max_depth, 0);
+}
+
+bool GetXWindowStack(std::vector<XID>* windows) {
+  windows->clear();
+
+  static Atom atom = XInternAtom(GetXDisplay(),
+                                 "_NET_CLIENT_LIST_STACKING", False);
+
+  Atom type;
+  int format;
+  unsigned long count;
+  unsigned long bytes_after;
+  unsigned char *data = NULL;
+  if (XGetWindowProperty(GetXDisplay(),
+                         GetX11RootWindow(),
+                         atom,
+                         0,                // offset
+                         ~0L,              // length
+                         False,            // delete
+                         AnyPropertyType,  // requested type
+                         &type,
+                         &format,
+                         &count,
+                         &bytes_after,
+                         &data) != Success) {
+    return false;
+  }
+
+  bool result = false;
+  if (type == XA_WINDOW && format == 32 && data && count > 0) {
+    result = true;
+    XID* stack = reinterpret_cast<XID*>(data);
+    for (unsigned long i = 0; i < count; i++)
+      windows->insert(windows->begin(), stack[i]);
+  }
+
+  if (data)
+    XFree(data);
+
+  return result;
 }
 
 XRenderPictFormat* GetRenderVisualFormat(Display* dpy, Visual* visual) {
