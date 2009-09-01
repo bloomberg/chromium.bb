@@ -444,7 +444,6 @@ static void DefineModRmOpcodesForX87Inst() {
   int byte_group;
   int byte_idx;
   int i;
-
   for (byte_group = 0; byte_group < kFirstByteGroupsForX87Inst; ++byte_group)
     for (byte_idx = 0; byte_idx < kFirstByteGroupSizeForX87Inst; ++byte_idx)
       for (i = 0; i < kNumInstForX87Inst; ++i) {

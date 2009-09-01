@@ -181,6 +181,10 @@ typedef struct {
    * (or OpcodePrefixEnumSize if no such patterns exist).
    */
   OpcodePrefix matched_prefix;
+  /* The number of bytes to subtract from the instruction length,
+   * the next time GetNextOpcodeCandidates is called.
+   */
+  uint8_t next_length_adjustment;
 } OpcodePrefixDescriptor;
 
 /* Assuming we have matched the byte sequence OF 38, consume the corresponding
@@ -259,15 +263,11 @@ static void Consume0FXXOpcodeBytes(NcInstState* state,
 static void ConsumeX87OpcodeBytes(NcInstState* state,
                                   OpcodePrefixDescriptor* desc) {
   if (state->length < state->length_limit) {
-    uint8_t byte_two = state->mpc[state->length];
-    if (byte_two >= 0xC0) {
-      /* Is two byte opcode. */
-      desc->matched_prefix = PrefixD8 +
-          (((unsigned) desc->opcode_byte) - 0xD8);
-      desc->opcode_byte = byte_two;
-      state->length++;
-      return;
-    }
+    /* Can be two byte opcode. */
+    desc->matched_prefix = PrefixD8 +
+        (((unsigned) desc->opcode_byte) - 0xD8);
+    desc->opcode_byte = state->mpc[state->length++];
+    return;
   }
 
   /* If reached, can only be single byte opcode, match as such. */
@@ -284,6 +284,7 @@ static void ConsumeOpcodeBytes(NcInstState* state,
   /* Initialize descriptor to the fail state. */
   desc->opcode_byte = 0x0;
   desc->matched_prefix = OpcodePrefixEnumSize;
+  desc->next_length_adjustment = 0;
 
   /* Be sure that we don't exceed the segment length. */
   if (state->length >= state->length_limit) return;
@@ -319,7 +320,7 @@ static void ConsumeOpcodeBytes(NcInstState* state,
       desc->matched_prefix = NoPrefix;
       break;
   }
-  DEBUG(printf("matched prefix = %d = %s\n", (int) desc->matched_prefix,
+  DEBUG(printf("matched prefix = %s\n",
                OpcodePrefixName(desc->matched_prefix)));
 }
 
@@ -396,7 +397,8 @@ static Bool ConsumeAndCheckAddressSize(NcInstState* state) {
 /* Returns true if the instruction requires a ModRm bytes. */
 static Bool InstructionRequiresModRm(NcInstState* state) {
   return state->opcode->flags &
-      (InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeInModRm));
+      (InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeInModRm) |
+       InstFlag(ModRmLessThanC0ForX87Inst));
 }
 
 /* Consume the Mod/Rm byte of the instruction, if applicable.
@@ -408,12 +410,25 @@ static Bool ConsumeModRm(NcInstState* state) {
    * past the end of the code segment.
    */
   if (InstructionRequiresModRm(state)) {
+    uint8_t byte;
     /* Has modrm byte. */
     if (state->length >= state->length_limit) {
       DEBUG(printf("Can't read mod/rm, no more bytes!\n"));
       return FALSE;
     }
-    state->modrm = state->mpc[state->length++];
+    byte = state->mpc[state->length];
+    /* Note: 0xC0 is a limit added by floating point instructions,
+     * and is marked using the ModRmLessThanC0 flag. Check for
+     * this case, and quit if the condition is violated.
+     */
+    if ((state->opcode->flags & InstFlag(ModRmLessThanC0ForX87Inst)) &&
+        byte >= 0xC0) {
+      DEBUG(printf("Can't read x87 mod/rm value, %"PRIx8" not < 0xC0\n",
+                   byte));
+      return FALSE;
+    }
+    state->modrm = byte;
+    state->length++;
     state->num_disp_bytes = 0;
     state->first_disp_byte = 0;
     state->sib = 0;
@@ -635,10 +650,27 @@ static void ClearOpcodeState(NcInstState* state, uint8_t opcode_length,
  * try and match against the byte stream in the given state. Before returning,
  * this function automatically advances the opcode prefix descriptor to describe
  * the next list to use if the returned list doesn't provide any matches.
+ *
+ * Parameters:
+ *   state - The state of the instruction being decoded.
+ *   desc - The description of how the opcode bytes have been matched.
+ *      The value passed in is the currrent match, the value at exit is
+ *      the value to be used the next time this function is called (to
+ *      get the next set of possible instructions).
+ *   opcode_length - The length (in bytes) of the opcode for the returned
+ *       candidate opcodes.
  */
-Opcode* GetNextOpcodeCandidates(NcInstState* state,
-                                OpcodePrefixDescriptor* desc) {
-  Opcode* cand_opcodes = g_OpcodeTable[desc->matched_prefix][desc->opcode_byte];
+static Opcode* GetNextOpcodeCandidates(NcInstState* state,
+                                    OpcodePrefixDescriptor* desc,
+                                    uint8_t* opcode_length) {
+  Opcode* cand_opcodes;
+  if (desc->next_length_adjustment) {
+    (*opcode_length) += desc->next_length_adjustment;
+    desc->opcode_byte = state->mpc[*opcode_length - 1];
+  }
+  cand_opcodes = g_OpcodeTable[desc->matched_prefix][desc->opcode_byte];
+  DEBUG(printf("Lookup candidates using [%s][%x]\n",
+               OpcodePrefixName(desc->matched_prefix), desc->opcode_byte));
   switch (desc->matched_prefix) {
     case Prefix660F:
       desc->matched_prefix = Prefix0F;
@@ -649,7 +681,19 @@ Opcode* GetNextOpcodeCandidates(NcInstState* state,
     case Prefix660F3A:
       desc->matched_prefix = Prefix0F3A;
       break;
+    case PrefixD8:
+    case PrefixD9:
+    case PrefixDA:
+    case PrefixDB:
+    case PrefixDC:
+    case PrefixDD:
+    case PrefixDE:
+    case PrefixDF:
+      desc->matched_prefix = NoPrefix;
+      desc->next_length_adjustment = -1;
+      break;
     default:
+      /* No more simplier prefices, give up search after current lookup. */
       desc->matched_prefix = OpcodePrefixEnumSize;
       break;
   }
@@ -690,7 +734,8 @@ void DecodeInstruction(
       if (prefix_desc.matched_prefix == OpcodePrefixEnumSize) {
         continue_loop = FALSE;
       } else {
-        cand_opcodes = GetNextOpcodeCandidates(state, &prefix_desc);
+        cand_opcodes = GetNextOpcodeCandidates(state, &prefix_desc,
+                                               &opcode_length);
         while (cand_opcodes != NULL) {
           ClearOpcodeState(state, opcode_length, is_nacl_legal);
           state->opcode = cand_opcodes;
@@ -712,6 +757,9 @@ void DecodeInstruction(
             cand_opcodes = cand_opcodes->next_rule;
           }
         }
+        DEBUG(if (! found_match) {
+            printf("no more candidates for this prefix\n");
+          });
       }
     }
   }

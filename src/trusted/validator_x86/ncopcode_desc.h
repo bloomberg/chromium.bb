@@ -311,6 +311,9 @@ typedef enum {
    */
   OpcodeUsesModRm,
 
+  /* Defines that the ModRm byte must be a value less than C0. */
+  ModRmLessThanC0ForX87Inst,
+
   /* Defines the size of the immediate value that must follow the opcode.
    * Intel's notation is ib, iw, id, and io.
    */

@@ -39,12 +39,13 @@
 #include "native_client/src/shared/utils/types.h"
 
 /* Define the corresponding names of OpcodeFlag's. */
-static const char* const g_OpcodeFlagName[OpcodeFlagEnumSize] = {
+static const char* const g_OpcodeFlagName[OpcodeFlagEnumSize + 1] = {
   "OpcodeUsesRexW",
   "OpcodeHasRexR",
   "OpcodeHasNoRexR",
   "OpcodeInModRm",
   "OpcodeUsesModRm",
+  "ModRmLessThanC0ForX87Inst",
   "OpcodeHasImmed",
   "OpcodeHasImmed_b",
   "OpcodeHasImmed_w",
@@ -67,14 +68,15 @@ static const char* const g_OpcodeFlagName[OpcodeFlagEnumSize] = {
   "AddressSize_o",
   "OperandSizeDefaultIs64",
   "OperandSizeForce64",
+  "OpcodeFlagEnumSize"
 };
 
 const char* OpcodeFlagName(const OpcodeFlagEnum flag) {
-  return flag < OpcodeFlagEnumSize ? g_OpcodeFlagName[flag] : "OpcodeFlag???";
+  return flag <= OpcodeFlagEnumSize ? g_OpcodeFlagName[flag] : "OpcodeFlag???";
 }
 
 /* Define the corresponding names of OperandKind. */
-static const char* const g_OperandKindName[OperandKindEnumSize] = {
+static const char* const g_OperandKindName[OperandKindEnumSize + 1] = {
   "Unknown_Operand",
   "A_Operand",
   "Aw_Operand",
@@ -254,16 +256,17 @@ static const char* const g_OperandKindName[OperandKindEnumSize] = {
   "Opcode6",
   "Opcode7",
   "Const_1",
+  "OperandKindEnumSize"
 };
 
 const char* OperandKindName(const OperandKind kind) {
-  return kind < OperandKindEnumSize
+  return kind <= OperandKindEnumSize
       ? g_OperandKindName[kind]
       : "OperandKind???";
 }
 
 /* Define the corresponding names of OperandFlag. */
-static const char* const g_OperandFlagName[OperandFlagEnumSize] = {
+static const char* const g_OperandFlagName[OperandFlagEnumSize + 1] = {
   "OpUse",
   "OpSet",
   "OpAddress",
@@ -272,16 +275,17 @@ static const char* const g_OperandFlagName[OperandFlagEnumSize] = {
   "OperandNear",
   "OperandRelative",
   "OperandZeroExtends_v",
+  "OperandFlagEnumSize"
 };
 
 const char* OperandFlagName(const OperandFlagEnum flag) {
-  return flag < OperandFlagEnumSize
+  return flag <= OperandFlagEnumSize
       ? g_OperandFlagName[flag]
       : "OperandFlag???";
 }
 
 /* Define the corresponding names of InstMnemonic. */
-static const char* const g_InstMnemonicName[InstMnemonicEnumSize] = {
+static const char* const g_InstMnemonicName[InstMnemonicEnumSize + 1] = {
   "Undefined",
   "Aaa",
   "Aas",
@@ -477,16 +481,17 @@ static const char* const g_InstMnemonicName[InstMnemonicEnumSize] = {
   "Sub",
   "Test",
   "Xor",
+  "InstMnemonicEnumSize"
 };
 
 const char* InstMnemonicName(const InstMnemonic mnemonic) {
-  return mnemonic < InstMnemonicEnumSize
+  return mnemonic <= InstMnemonicEnumSize
       ? g_InstMnemonicName[mnemonic]
       : "InstMnemonic???";
 }
 
 /* Define the corresponding names of OpcodePrefix. */
-static const char* const g_OpcodePrefixName[OpcodePrefixEnumSize] = {
+static const char* const g_OpcodePrefixName[OpcodePrefixEnumSize + 1] = {
   "NoPrefix",
   "Prefix0F",
   "PrefixF20F",
@@ -506,10 +511,11 @@ static const char* const g_OpcodePrefixName[OpcodePrefixEnumSize] = {
   "PrefixDD",
   "PrefixDE",
   "PrefixDF"
+  "OpcodePrefixEnumSize"
 };
 
 const char* OpcodePrefixName(OpcodePrefix prefix) {
-  return prefix < OpcodePrefixEnumSize
+  return prefix <= OpcodePrefixEnumSize
       ? g_OpcodePrefixName[prefix]
       : "OpcodePrefix???";
 }
