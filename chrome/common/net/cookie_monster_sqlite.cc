@@ -271,8 +271,15 @@ SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
   }
 }
 
-// Version number of the database.
-static const int kCurrentVersionNumber = 3;
+// Version number of the database. In version 4, we migrated the time epoch.
+// If you open the DB with an older version on Mac or Linux, the times will
+// look wonky, but the file will likely be usable. On Windows version 3 and 4
+// are the same.
+//
+// Version 3 updated the database to include the last access time, so we can
+// expire them in decreasing order of use when we've reached the maximum
+// number of cookies.
+static const int kCurrentVersionNumber = 4;
 static const int kCompatibleVersionNumber = 3;
 
 namespace {
@@ -390,6 +397,43 @@ bool SQLitePersistentCookieStore::EnsureDatabaseVersion(sqlite3* db) {
     meta_table_.SetVersionNumber(cur_version);
     meta_table_.SetCompatibleVersionNumber(
         std::min(cur_version, kCompatibleVersionNumber));
+    transaction.Commit();
+  }
+
+  if (cur_version == 3) {
+    // The time epoch changed for Mac & Linux in this version to match Windows.
+    // This patch came after the main epoch change happened, so some
+    // developers have "good" times for cookies added by the more recent
+    // versions. So we have to be careful to only update times that are under
+    // the old system (which will appear to be from before 1970 in the new
+    // system). The magic number used below is 1970 in our time units.
+    SQLTransaction transaction(db);
+    transaction.Begin();
+#if !defined(OS_WIN)
+    sqlite3_exec(db,
+        "UPDATE cookies "
+        "SET creation_utc = creation_utc + 11644473600000000 "
+        "WHERE rowid IN "
+        "(SELECT rowid FROM cookies WHERE "
+          "creation_utc > 0 AND creation_utc < 11644473600000000)",
+        NULL, NULL, NULL);
+    sqlite3_exec(db,
+        "UPDATE cookies "
+        "SET expires_utc = expires_utc + 11644473600000000 "
+        "WHERE rowid IN "
+        "(SELECT rowid FROM cookies WHERE "
+          "expires_utc > 0 AND expires_utc < 11644473600000000)",
+        NULL, NULL, NULL);
+    sqlite3_exec(db,
+        "UPDATE cookies "
+        "SET last_access_utc = last_access_utc + 11644473600000000 "
+        "WHERE rowid IN "
+        "(SELECT rowid FROM cookies WHERE "
+          "last_access_utc > 0 AND last_access_utc < 11644473600000000)",
+        NULL, NULL, NULL);
+#endif
+    ++cur_version;
+    meta_table_.SetVersionNumber(cur_version);
     transaction.Commit();
   }
 
