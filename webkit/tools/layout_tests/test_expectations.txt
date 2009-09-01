@@ -2469,3 +2469,6 @@ BUG_JORLOW : LayoutTests/editing/pasteboard/files-during-page-drags.html = FAIL
 // This newly added test times out on Mac:
 BUG20438 MAC : chrome/plugins/get-url-with-iframe-target.html = TIMEOUT
 BUG20438 MAC : chrome/plugins/get-url-with-iframe-target-no-crash.html = TIMEOUT
+
+BUG_OJAN WIN LINUX : LayoutTests/fast/css/remove-shorthand.html = FAIL
+BUG_OJAN WIN LINUX : LayoutTests/fast/inspector/style.html = FAIL
