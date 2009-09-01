@@ -370,16 +370,20 @@ if '__main__' == __name__:
       '', '--sync-test-password', help='Password for the test account')
   options, args = option_parser.parse_args()
   if not options.sync_test_password:
-    if os.path.exists('sync_password'):
-      fs = open('sync_password', 'r')
+    password_file_path = os.path.join(
+        os.path.dirname(__file__),'sync_password')
+    if os.path.exists(password_file_path):
+      fs = open(password_file_path, 'r')
       lines = fs.readlines()
       if len(lines)==1:
         options.sync_test_password = lines[0].strip()
       else:
         sys.stderr.write('sync_password file is not in required format.\n')
+        sys.exit(1)
     else:
       sys.stderr.write(
           'Missing required parameter- sync_test_password, please fix it.\n')
+      sys.exit(1)
   if (not options.build_dir or not options.http_server_url or
       not options.http_server_port or not options.sync_test_username):
     sys.stderr.write('Missing required parameter, please fix it.\n')
