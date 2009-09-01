@@ -4926,12 +4926,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       Glen
     </message>
 
-    <if expr="pp_ifdef('chromeos')">
-      <message name="IDS_OPTIONS_SETTINGS_TAB_LABEL" desc="Title of the settings tab inthe options dialog.">
-        Chrome OS
-      </message>
-    </if>
-
     <!-- Extra Mac UI Strings -->
     <if expr="os == 'darwin'">
       <message name="IDS_PLEASE_RESTART_BROWSER" desc="Title of the alert when Chrome needs to be restart for a change/update to take effect.">

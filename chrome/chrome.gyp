@@ -819,6 +819,8 @@
         'browser/chrome_plugin_host.h',
         'browser/chrome_thread.cc',
         'browser/chrome_thread.h',
+        'browser/chromeos/chromeos_version_loader.cc',
+        'browser/chromeos/chromeos_version_loader.h',
         'browser/chromeos/compact_navigation_bar.cc',
         'browser/chromeos/compact_navigation_bar.h',
         'browser/chromeos/pipe_reader.cc',
@@ -3939,6 +3941,7 @@
         'browser/debugger/devtools_remote_listen_socket_unittest.h',
         'browser/child_process_security_policy_unittest.cc',
         'browser/chrome_thread_unittest.cc',
+        'browser/chromeos/chromeos_version_loader_unittest.cc',
         'browser/chromeos/pipe_reader_unittest.cc',
         'browser/chromeos/external_cookie_handler_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list

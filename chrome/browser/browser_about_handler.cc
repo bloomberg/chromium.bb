@@ -48,6 +48,8 @@
 #if defined(OS_WIN)
 #include "chrome/browser/views/about_ipc_dialog.h"
 #include "chrome/browser/views/about_network_dialog.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/chromeos_version_loader.h"
 #endif
 
 #ifdef CHROME_PERSONALIZATION
@@ -128,13 +130,42 @@ class AboutMemoryHandler : public MemoryDetails {
   void BindProcessMetrics(DictionaryValue* data,
                           ProcessMemoryInformation* info);
   void AppendProcess(ListValue* child_data, ProcessMemoryInformation* info);
-  void FinishAboutMemory();
 
-  AboutSource* source_;
+  scoped_refptr<AboutSource> source_;
   int request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutMemoryHandler);
 };
+
+#if defined(OS_CHROMEOS)
+// ChromeOSAboutVersionHandler is responsible for loading the Chrome OS
+// version.
+// ChromeOSAboutVersionHandler handles deleting itself once the version has
+// been obtained and AboutSource notified.
+class ChromeOSAboutVersionHandler {
+ public:
+  ChromeOSAboutVersionHandler(AboutSource* source, int request_id);
+
+  // Callback from ChromeOSVersionLoader giving the version.
+  void OnVersion(ChromeOSVersionLoader::Handle handle,
+                 std::string version);
+
+ private:
+  // Where the results are fed to.
+  scoped_refptr<AboutSource> source_;
+
+  // ID identifying the request.
+  int request_id_;
+
+  // Handles asynchronously loading the version.
+  ChromeOSVersionLoader loader_;
+
+  // Used to request the version.
+  CancelableRequestConsumer consumer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeOSAboutVersionHandler);
+};
+#endif
 
 // Individual about handlers ---------------------------------------------------
 
@@ -346,10 +377,8 @@ std::string AboutTerms() {
   return terms_html;
 }
 
-std::string AboutVersion() {
-  // Strings used in the JsTemplate file.
-  DictionaryValue localized_strings;
-  localized_strings.SetString(L"title",
+std::string AboutVersion(DictionaryValue* localized_strings) {
+  localized_strings->SetString(L"title",
       l10n_util::GetString(IDS_ABOUT_VERSION_TITLE));
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
@@ -368,33 +397,38 @@ std::string AboutVersion() {
   std::wstring js_engine = L"JavaScriptCore";
 #endif
 
-  localized_strings.SetString(L"name",
+  localized_strings->SetString(L"name",
       l10n_util::GetString(IDS_PRODUCT_NAME));
-  localized_strings.SetString(L"version", version_info->file_version());
-  localized_strings.SetString(L"js_engine", js_engine);
-  localized_strings.SetString(L"js_version", js_version);
-  localized_strings.SetString(L"webkit_version", webkit_version);
-  localized_strings.SetString(L"company",
+  localized_strings->SetString(L"version", version_info->file_version());
+  localized_strings->SetString(L"js_engine", js_engine);
+  localized_strings->SetString(L"js_version", js_version);
+  localized_strings->SetString(L"webkit_version", webkit_version);
+  localized_strings->SetString(L"company",
       l10n_util::GetString(IDS_ABOUT_VERSION_COMPANY_NAME));
-  localized_strings.SetString(L"copyright",
+  localized_strings->SetString(L"copyright",
       l10n_util::GetString(IDS_ABOUT_VERSION_COPYRIGHT));
-  localized_strings.SetString(L"cl", version_info->last_change());
+  localized_strings->SetString(L"cl", version_info->last_change());
   if (version_info->is_official_build()) {
-    localized_strings.SetString(L"official",
+    localized_strings->SetString(L"official",
       l10n_util::GetString(IDS_ABOUT_VERSION_OFFICIAL));
   } else {
-    localized_strings.SetString(L"official",
+    localized_strings->SetString(L"official",
       l10n_util::GetString(IDS_ABOUT_VERSION_UNOFFICIAL));
   }
-  localized_strings.SetString(L"useragent",
+  localized_strings->SetString(L"useragent",
       UTF8ToWide(webkit_glue::GetUserAgent(GURL())));
 
-  static const StringPiece version_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
+  static const std::string version_html(
+      ResourceBundle::GetSharedInstance().GetDataResource(
           IDR_ABOUT_VERSION_HTML));
 
-  return jstemplate_builder::GetI18nTemplateHtml(
-      version_html, &localized_strings);
+  std::string output = version_html;
+  jstemplate_builder::AppendJsonHtml(localized_strings, &output);
+  jstemplate_builder::AppendI18nTemplateSourceHtml(&output);
+  jstemplate_builder::AppendI18nTemplateProcessHtml(&output);
+  jstemplate_builder::AppendJsTemplateSourceHtml(&output);
+  jstemplate_builder::AppendJsTemplateProcessHtml("t", &output);
+  return output;
 }
 
 #ifdef CHROME_PERSONALIZATION
@@ -537,7 +571,13 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
   } else if (path == kStatsPath) {
     response = AboutStats();
   } else if (path == kVersionPath || path.empty()) {
-    response = AboutVersion();
+#if defined(OS_CHROMEOS)
+    new ChromeOSAboutVersionHandler(this, request_id);
+    return;
+#else
+    DictionaryValue value;
+    response = AboutVersion(&value);
+#endif
   } else if (path == kCreditsPath) {
     response = AboutCredits();
   } else if (path == kTermsPath) {
@@ -690,9 +730,36 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   std::string template_html = jstemplate_builder::GetTemplateHtml(
       memory_html, &root, "t" /* template root node id */);
 
-  AboutSource* src = static_cast<AboutSource*>(source_);
-  src->FinishDataRequest(template_html, request_id_);
+  source_->FinishDataRequest(template_html, request_id_);
 }
+
+#if defined(OS_CHROMEOS)
+// ChromeOSAboutVersionHandler  -----------------------------------------------
+
+ChromeOSAboutVersionHandler::ChromeOSAboutVersionHandler(AboutSource* source,
+                                                         int request_id)
+    : source_(source),
+      request_id_(request_id) {
+  loader_.GetVersion(&consumer_,
+      NewCallback(this, &ChromeOSAboutVersionHandler::OnVersion));
+}
+
+void ChromeOSAboutVersionHandler::OnVersion(
+    ChromeOSVersionLoader::Handle handle,
+    std::string version) {
+  DictionaryValue localized_strings;
+  localized_strings.SetString(L"os_name",
+                              l10n_util::GetString(IDS_PRODUCT_OS_NAME));
+  localized_strings.SetString(L"os_version", UTF8ToWide(version));
+  localized_strings.SetBoolean(L"is_chrome_os", true);
+  source_->FinishDataRequest(AboutVersion(&localized_strings), request_id_);
+
+  // CancelableRequestProvider isn't happy when it's deleted and servicing a
+  // task, so we delay the deletion.
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+#endif
 
 }  // namespace
 

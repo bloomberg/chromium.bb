@@ -218,6 +218,11 @@ MemoryDetails::MemoryDetails() {
 void MemoryDetails::StartFetch() {
   NOTIMPLEMENTED();
   OnDetailsAvailable();
+
+  // When we get the real implementation this can be removed. The Release that
+  // ends up deleting this object is done as the result of the PostTask in
+  // CollectProcessData.
+  Release();
 }
 #endif
 
