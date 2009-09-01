@@ -403,7 +403,7 @@ Chrome supports. -->
       </message>
       <if expr="os == 'darwin'">
         <message name="IDS_SHORT_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
-          Google Chrome
+          Chrome
         </message>
         <message name="IDS_HELPER_NAME" desc="The helper application's name.  Should contain the Chrome application name (IDS_PRODUCT_NAME). Example: Google Chrome Helper.">
           Google Chrome Helper
