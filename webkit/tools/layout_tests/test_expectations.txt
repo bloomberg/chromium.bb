@@ -1521,6 +1521,8 @@ BUG10384 MAC : LayoutTests/fast/forms/focus2.html = CRASH FAIL
 BUG10384 MAC : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = TIMEOUT FAIL PASS
 BUG10384 DEBUG MAC : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
 
+BUG10399 MAC : LayoutTests/fast/encoding/char-encoding-mac.html = FAIL
+
 // -----------------------------------------------------------------
 // END MAC PORT TESTS
 // -----------------------------------------------------------------
