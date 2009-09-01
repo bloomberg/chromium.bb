@@ -27,8 +27,9 @@
 #include <map>
 #include <string>
 
-#include <unistd.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "SkFontHost.h"
 #include "SkStream.h"
@@ -235,17 +236,28 @@ uint32_t SkFontHost::NextLogicalFont(SkFontID fontID) {
 
 class SkFileDescriptorStream : public SkStream {
   public:
-    SkFileDescriptorStream(int fd)
-        : fd_(fd) {
+    SkFileDescriptorStream(int fd) {
+        memory_ = NULL;
+        offset_ = 0;
+
+        struct stat st;
+        if (fstat(fd, &st))
+            return;
+
+        void* memory = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
+        if (memory == MAP_FAILED)
+            return;
+
+        memory_ = reinterpret_cast<uint8_t*>(memory);
+        length_ = st.st_size;
     }
 
     ~SkFileDescriptorStream() {
-        close(fd_);
+        munmap(const_cast<uint8_t*>(memory_), length_);
     }
 
     virtual bool rewind() {
-        if (lseek(fd_, 0, SEEK_SET) == -1)
-            return false;
+        offset_ = 0;
         return true;
     }
 
@@ -253,33 +265,34 @@ class SkFileDescriptorStream : public SkStream {
     virtual size_t read(void* buffer, size_t size) {
         if (!buffer && !size) {
             // This is request for the length of the stream.
-            struct stat st;
-            if (fstat(fd_, &st) == -1)
-                return 0;
-            return st.st_size;
+            return length_;
         }
 
         if (!buffer) {
             // This is a request to skip bytes.
-            const off_t current_position = lseek(fd_, 0, SEEK_CUR);
-            if (current_position == -1)
-                return 0;
-            const off_t new_position = lseek(fd_, size, SEEK_CUR);
-            if (new_position == -1)
-                return 0;
-            if (new_position < current_position) {
-                lseek(fd_, current_position, SEEK_SET);
-                return 0;
-            }
-            return new_position;
+            if (offset_ + size < offset_)
+                return offset_;
+            offset_ += size;
+            if (offset_ > length_)
+                offset_ = length_;
+            return offset_;
         }
 
-        // This is a request to read bytes.
-        return ::read(fd_, buffer, size);
+        size_t remaining = length_ - offset_;
+        if (size > remaining)
+            size = remaining;
+        memcpy(buffer, memory_ + offset_, size);
+        offset_ += size;
+        return size;
+    }
+
+    virtual const void* getMemoryBase() {
+        return memory_;
     }
 
   private:
-    const int fd_;
+    const uint8_t* memory_;
+    size_t offset_, length_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
