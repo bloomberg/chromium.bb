@@ -11,34 +11,44 @@ import TestGyp
 
 test = TestGyp.TestGyp()
 
+test.writable(test.workpath('src'), False)
+
 test.run_gyp('prog1.gyp',
              '-Dset_symroot=1',
              '--generator-output=' + test.workpath('gypfiles'),
              chdir='src')
 
+test.writable(test.workpath('src'), True)
+
 import os
-test.subdir('reloc')
-os.rename('src', 'reloc/src')
-os.rename('gypfiles', 'reloc/gypfiles')
+test.subdir('relocate')
+os.rename('src', 'relocate/src')
+os.rename('gypfiles', 'relocate/gypfiles')
 
-test.build_all('prog1.gyp', chdir='reloc/gypfiles')
+test.writable(test.workpath('relocate/src'), False)
 
-chdir = 'reloc/gypfiles'
+test.writable(test.workpath('relocate/src/build'), True)
+test.writable(test.workpath('relocate/src/subdir2/build'), True)
+test.writable(test.workpath('relocate/src/subdir3/build'), True)
+
+test.build_all('prog1.gyp', chdir='relocate/gypfiles')
+
+chdir = 'relocate/gypfiles'
 
 if sys.platform in ('darwin',):
-  chdir = 'reloc/src'
+  chdir = 'relocate/src'
 test.run_built_executable('prog1',
                           chdir=chdir,
                           stdout="Hello from prog1.c\n")
 
 if sys.platform in ('darwin',):
-  chdir = 'reloc/src/subdir2'
+  chdir = 'relocate/src/subdir2'
 test.run_built_executable('prog2',
                           chdir=chdir,
                           stdout="Hello from prog2.c\n")
 
 if sys.platform in ('darwin',):
-  chdir = 'reloc/src/subdir3'
+  chdir = 'relocate/src/subdir3'
 test.run_built_executable('prog3',
                           chdir=chdir,
                           stdout="Hello from prog3.c\n")

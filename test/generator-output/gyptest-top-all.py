@@ -14,15 +14,14 @@ test = TestGyp.TestGyp()
 
 test.writable(test.workpath('src'), False)
 
-test.writable(test.workpath('src/build'), True)
-test.writable(test.workpath('src/subdir2/build'), True)
-test.writable(test.workpath('src/subdir3/build'), True)
-
-
 test.run_gyp('prog1.gyp',
              '-Dset_symroot=1',
              '--generator-output=' + test.workpath('gypfiles'),
              chdir='src')
+
+test.writable(test.workpath('src/build'), True)
+test.writable(test.workpath('src/subdir2/build'), True)
+test.writable(test.workpath('src/subdir3/build'), True)
 
 test.build_all('prog1.gyp', chdir='gypfiles')
 
