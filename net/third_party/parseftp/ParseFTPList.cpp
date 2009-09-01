@@ -1,7 +1,3 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 // Version: MPL 1.1/GPL 2.0/LGPL 2.1
 //
 // The contents of this file are subject to the Mozilla Public License Version
@@ -39,7 +35,7 @@
 // Derived from:
 // mozilla/netwerk/streamconv/converters/ParseFTPList.cpp revision 1.10
 
-#include "net/ftp/ftp_directory_parser.h"
+#include "net/third_party/parseftp/ParseFTPList.h"
 
 #include "base/basictypes.h"
 #include "base/string_util.h"

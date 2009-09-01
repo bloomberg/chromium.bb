@@ -1,8 +1,5 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 // Version: MPL 1.1/GPL 2.0/LGPL 2.1
+//
 // The contents of this file are subject to the Mozilla Public License Version
 // 1.1 (the "License"); you may not use this file except in compliance with
 // the License. You may obtain a copy of the License at
@@ -38,8 +35,8 @@
 // mozilla/netwerk/streamconv/converters/ParseFTPList.h revision 1.3
 
 
-#ifndef NET_FTP_FTP_DIRECTORY_PARSER_H_
-#define NET_FTP_FTP_DIRECTORY_PARSER_H_
+#ifndef NET_THIRD_PARTY_PARSEFTP_FTP_DIRECTORY_PARSER_H_
+#define NET_THIRD_PARTY_PARSEFTP_FTP_DIRECTORY_PARSER_H_
 
 #include "base/time.h"
 
@@ -131,4 +128,4 @@ LineType ParseFTPLine(const char *line,
 
 }  // namespace net
 
-#endif  // NET_FTP_FTP_DIRECTORY_PARSER_H_
+#endif  // NET_THIRD_PARTY_PARSEFTP_FTP_DIRECTORY_PARSER_H_

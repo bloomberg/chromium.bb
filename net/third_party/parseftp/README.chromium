@@ -1,0 +1,8 @@
+This directory contains Mozilla FTP LIST response parsing routines.
+
+The original code location was mozilla/netwerk/streamconv/converters/ParseFTPList.{cpp,h}
+
+List of changes made to original code:
+  - style adjustment for Chromium
+  - wrapped the routines in net namespace
+  - changed PRExplodedTime to base::Time::Exploded
