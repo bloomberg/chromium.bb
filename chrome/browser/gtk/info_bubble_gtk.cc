@@ -154,6 +154,9 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
   rect_ = rect;
 
   window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  // Mark the info bubble as a utility window so it doesn't show up in the
+  // taskbar.
+  gtk_window_set_type_hint(GTK_WINDOW(window_), GDK_WINDOW_TYPE_HINT_UTILITY);
   gtk_window_set_transient_for(GTK_WINDOW(window_), transient_toplevel);
   gtk_window_set_decorated(GTK_WINDOW(window_), FALSE);
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
