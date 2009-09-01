@@ -211,6 +211,20 @@
    fun:ats_font_get_glyphs_for_glyph_names
    fun:get_glyphs_for_glyph_names
 }
+{
+   bug_20807
+   Memcheck:Addr4
+   fun:_ZNK12DynamicArray14getFirstNumberEv
+   fun:CCFindArraySegment
+   fun:CCArrayGetEntryPtr
+   fun:_ZNK29CLocalRefToSharedStorageEntry13GetLoadedDataEl
+   fun:_ZN17CIconStorageEntry7GetDataEl
+   fun:_ISGetIconDataPointer
+   fun:_Z20CheckIfDataAvailablemPv
+   fun:_ISGoThruImageStorages
+   fun:IsDataAvailableInImageRef
+   fun:IsDataAvailableInIconRef
+}
 
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
@@ -579,4 +593,23 @@
    fun:sqlite3Step
    fun:sqlite3_step
    fun:sqlite3_exec
+}
+{
+   bug_20808
+   Memcheck:Addr8
+   ...
+   fun:CGContextDrawLayerAtPoint
+   fun:-[RenderWidgetHostViewCocoa drawRect:]
+}
+{
+   bug_20814
+   Memcheck:Addr4
+   fun:_ZN10CLVContextC2EPKvm
+   fun:_Z26getAllCarbonLazyValues2000v
+   fun:CLVVisitValuesForKey
+   fun:INIT_ResourceManager
+   fun:CurResFile
+   fun:_ZN5NPAPI12_GLOBAL__N_124ScopedBundleResourceFileC1EP10__CFBundle
+   fun:_ZN5NPAPI12_GLOBAL__N_117ReadSTRPluginInfoERK8FilePathP10__CFBundleP13WebPluginInfo
+   fun:_ZN5NPAPI9PluginLib17ReadWebPluginInfoERK8FilePathP13WebPluginInfo
 }
