@@ -223,10 +223,6 @@ be available for now. -->
                desc="Displayed to explain the Most Visited concept when there aren't enough most visited items.">
         The "Most visited" area shows the websites that you use most often. After using Chromium for a while, you will see your most visited sites whenever you open a new tab. You can learn more about this and other features on the <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Getting Started page<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
-      <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
-               desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
-        Welcome to Chromium
-      </message>
       <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
         Chromium needs to launch an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
       </message>
