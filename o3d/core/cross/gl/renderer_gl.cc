@@ -1194,15 +1194,15 @@ void RendererGL::SetViewportInPixels(int left,
                                      float max_z) {
   MakeCurrentLazy();
   int vieport_top =
-      RenderSurfaceActive() ? top : render_height() - top - height;
+      RenderSurfaceActive() ? top : display_height() - top - height;
   ::glViewport(left, vieport_top, width, height);
   UpdateHelperConstant(width, height);
 
   // If it's the full client area turn off scissor test for speed.
   if (left == 0 &&
       top == 0 &&
-      width == render_width() &&
-      height == render_height()) {
+      width == display_width() &&
+      height == display_height()) {
     ::glDisable(GL_SCISSOR_TEST);
   } else {
     ::glScissor(left, vieport_top, width, height);

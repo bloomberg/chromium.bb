@@ -404,13 +404,13 @@ class Renderer {
   }
 
   // Get the width of the buffer to which the renderer is drawing.
-  int render_width() const {
-    return render_width_;
+  int display_width() const {
+    return display_width_;
   }
 
   // Get the height of the buffer to which the renderer is drawing.
-  int render_height() const {
-    return render_height_;
+  int display_height() const {
+    return display_height_;
   }
 
   // Whether or not the underlying API (D3D or OpenGL) supports
@@ -692,8 +692,8 @@ class Renderer {
   int width_;  // width of the client area in pixels
   int height_;  // height of the client area in pixels
 
-  int render_width_;  // width of the thing we are rendering to.
-  int render_height_;  // height of the thing we are rendering to.
+  int display_width_;  // width of the thing we are rendering to.
+  int display_height_;  // height of the thing we are rendering to.
 
   // X and Y offsets for destination rectangle.
   int dest_x_offset_;

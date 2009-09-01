@@ -422,9 +422,9 @@ String Client::GetScreenshotAsDataURL()  {
   // To take a screenshot we create a render target and render into it
   // then get a bitmap from that.
   int pot_width =
-      static_cast<int>(image::ComputePOTSize(renderer_->render_width()));
+      static_cast<int>(image::ComputePOTSize(renderer_->display_width()));
   int pot_height =
-      static_cast<int>(image::ComputePOTSize(renderer_->render_height()));
+      static_cast<int>(image::ComputePOTSize(renderer_->display_height()));
   if (pot_width == 0 || pot_height == 0) {
     return dataurl::kEmptyDataURL;
   }
@@ -447,8 +447,8 @@ String Client::GetScreenshotAsDataURL()  {
   if (depth.IsNull()) {
     return dataurl::kEmptyDataURL;
   }
-  surface->SetClipSize(renderer_->render_width(), renderer_->render_height());
-  depth->SetClipSize(renderer_->render_width(), renderer_->render_height());
+  surface->SetClipSize(renderer_->display_width(), renderer_->display_height());
+  depth->SetClipSize(renderer_->display_width(), renderer_->display_height());
 
   const RenderSurface* old_render_surface_;
   const RenderDepthStencilSurface* old_depth_surface_;

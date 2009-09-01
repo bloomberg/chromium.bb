@@ -120,8 +120,8 @@ Renderer::Renderer(ServiceLocator* service_locator)
       drawing_(false),
       width_(0),
       height_(0),
-      render_width_(0),
-      render_height_(0),
+      display_width_(0),
+      display_height_(0),
       dest_x_offset_(0),
       dest_y_offset_(0),
       supports_npot_(false) {
@@ -241,8 +241,8 @@ void Renderer::SetErrorTexture(Texture* texture) {
 void Renderer::SetClientSize(int width, int height) {
   width_ = width;
   height_ = height;
-  render_width_ = width;
-  render_height_ = height;
+  display_width_ = width;
+  display_height_ = height;
   clear_client_ = true;
 }
 
@@ -332,8 +332,8 @@ void Renderer::GetViewport(Float4* viewport, Float2* depth_range) {
 void Renderer::SetViewport(const Float4& rectangle, const Float2& depth_range) {
   viewport_ = rectangle;
   depth_range_ = depth_range;
-  int width = render_width();
-  int height = render_height();
+  int width = display_width();
+  int height = display_height();
   float float_width = static_cast<float>(width);
   float float_height = static_cast<float>(height);
 
@@ -714,18 +714,18 @@ void Renderer::SetRenderSurfaces(
     current_render_surface_ = surface;
     current_depth_surface_ = depth_surface;
     if (surface) {
-      render_width_ = surface->clip_width();
-      render_height_ = surface->clip_height();
+      display_width_ = surface->clip_width();
+      display_height_ = surface->clip_height();
     } else {
-      render_width_ = depth_surface->clip_width();
-      render_height_ = depth_surface->clip_height();
+      display_width_ = depth_surface->clip_width();
+      display_height_ = depth_surface->clip_height();
     }
   } else {
     SetBackBufferPlatformSpecific();
     current_render_surface_ = NULL;
     current_depth_surface_ = NULL;
-    render_width_ = width();
-    render_height_ = height();
+    display_width_ = width();
+    display_height_ = height();
   }
   // We must reset the viewport after each change in surfaces.
   SetViewport(viewport_, depth_range_);
