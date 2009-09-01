@@ -106,10 +106,11 @@ bool SetInternetZoneIdentifier(const FilePath& full_path) {
   DWORD written = 0;
   BOOL result = WriteFile(file, kIdentifier, arraysize(kIdentifier), &written,
                           NULL);
+  BOOL flush_result = FlushFileBuffers(file);
   CloseHandle(file);
 
-  if (!result || written != arraysize(kIdentifier)) {
-    DCHECK(FALSE);
+  if (!result || !flush_result || written != arraysize(kIdentifier)) {
+    NOTREACHED();
     return false;
   }
 
