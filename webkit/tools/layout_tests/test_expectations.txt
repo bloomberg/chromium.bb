@@ -1700,10 +1700,6 @@ BUG9161 MAC LINUX WIN : LayoutTests/fast/forms/basic-textareas.html = FAIL
 BUG9163 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-request-headers.html = FAIL
 BUG9163 MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-request-headers.html = FAIL TIMEOUT
 
-// Merge 41709:41733
-// Expectations changed upstream.
-BUG10453 WIN LINUX : LayoutTests/http/tests/misc/url-in-utf16be.html = CRASH TIMEOUT PASS
-
 // Tests that fail in debug mode on linux
 BUG10454 DEBUG LINUX : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH
 
@@ -1820,9 +1816,7 @@ BUG10479 MAC : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG10479 MAC : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
-BUG9798 : LayoutTests/http/tests/misc/css-reject-any-type-in-strict-mode.html = TIMEOUT PASS
-BUG9798 : LayoutTests/http/tests/misc/image-blocked-src-change.html = FAIL PASS
-BUG9798 : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
+BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
 BUG9798 : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
@@ -1867,24 +1861,8 @@ BUG9798 MAC : LayoutTests/transitions/transition-timing-function.html = FAIL PAS
 BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-charset-and-css-extension.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-charset.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-text-css-and-invalid-type.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/css-accept-any-type.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/empty-file-formdata.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/redirect.php = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/submit-get-in-utf16le.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/submit-get-in-utf32be.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/submit-get-in-utf32le.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/submit-get-in-utf7.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/submit-post-in-utf16be.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/submit-post-in-utf16le.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/submit-post-in-utf32be.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/submit-post-in-utf32le.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/submit-post-in-utf7.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/url-in-utf16le.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/url-in-utf32be.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/url-in-utf32le.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/url-in-utf7.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/misc/xhtml.php = TIMEOUT PASS
+BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/empty-file-formdata.html = TIMEOUT PASS
+BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/navigation/back-send-referrer.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/ssl/verify-ssl-enabled.php = TIMEOUT PASS FAIL
@@ -2361,7 +2339,6 @@ BUG18659 WIN : LayoutTests/http/tests/loading/redirect-methods.html = PASS TIMEO
 BUG18733 WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
 BUG18740 WIN : LayoutTests/http/tests/security/credentials-in-referer.html = PASS TIMEOUT
 BUG18794 WIN MAC : LayoutTests/http/tests/mime/standard-mode-does-not-load-stylesheet-with-text-plain.html = TIMEOUT PASS
-BUG18802 WIN : LayoutTests/http/tests/misc/referrer.html = TIMEOUT PASS
 
 // Test failures caused by re-enabling skia asserts.
 BUG18896 WIN LINUX DEBUG : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
@@ -2453,5 +2430,4 @@ BUG_OJAN WIN LINUX : LayoutTests/fast/inspector/style.html = FAIL
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-style-filter.html = PASS CRASH
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS CRASH
 
-// Suddenly flakey. Cause unknown.
-BUG_DGLAZKOV LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
+BUG10480 LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
