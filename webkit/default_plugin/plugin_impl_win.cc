@@ -27,6 +27,7 @@ PluginInstallerImpl::PluginInstallerImpl(int16 mode)
       mode_(mode),
       plugin_install_stream_(NULL),
       plugin_installer_state_(PluginInstallerStateUndefined),
+      install_dialog_(PluginInstallDialog::AddInstaller(this, plugin_name_)),
       enable_click_(false),
       icon_(NULL),
       bold_font_(NULL),
@@ -115,9 +116,11 @@ bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
 }
 
 void PluginInstallerImpl::Shutdown() {
-  if (install_dialog_.IsWindow()) {
-    install_dialog_.DestroyWindow();
+  if (install_dialog_) {
+    install_dialog_->RemoveInstaller(this);
+    install_dialog_ = NULL;
   }
+
   if (IsWindow(hwnd())) {
     DestroyWindow(hwnd());
   }
@@ -403,7 +406,7 @@ LRESULT PluginInstallerImpl::OnEraseBackGround(UINT message, WPARAM wparam,
 // currently use this code since code in WebKit should not depend on code in
 // Chrome. We can fix this by pulling (at least part of) the l10n_util
 // functionality up into the Base module.
-bool PluginInstallerImpl::IsRTLLayout() const {
+bool PluginInstallerImpl::IsRTLLayout() {
   const icu::Locale& locale = icu::Locale::getDefault();
   const char* lang = locale.getLanguage();
 
@@ -553,9 +556,7 @@ void PluginInstallerImpl::PaintUserActionInformation(HDC paint_dc,
 
 void PluginInstallerImpl::ShowInstallDialog() {
   enable_click_ = false;
-  install_dialog_.Initialize(this, plugin_name_);
-  install_dialog_.Create(hwnd(), NULL);
-  install_dialog_.ShowWindow(SW_SHOW);
+  install_dialog_->ShowInstallDialog();
 }
 
 LRESULT PluginInstallerImpl::OnLButtonDown(UINT message, WPARAM wparam,

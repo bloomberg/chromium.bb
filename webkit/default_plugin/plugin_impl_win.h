@@ -187,7 +187,7 @@ class PluginInstallerImpl : public base::WindowImpl {
 
   // Returns whether or not the UI layout is right-to-left (such as Hebrew or
   // Arabic).
-  bool IsRTLLayout() const;
+  static bool IsRTLLayout();
 
   // Parses the plugin instantiation arguments. This includes checking for
   // whether this is an activex install and reading the appropriate
@@ -348,7 +348,7 @@ class PluginInstallerImpl : public base::WindowImpl {
   // The current state of the plugin installer.
   PluginInstallerState plugin_installer_state_;
   // Used to display the UI for plugin installation.
-  PluginInstallDialog install_dialog_;
+  PluginInstallDialog* install_dialog_;
   // To enable auto refresh of the plugin window once the installation
   // is complete, we spawn the installation process in a job, and monitor
   // IO completion events on the job. When the active process count of the

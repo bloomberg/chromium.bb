@@ -8,6 +8,7 @@
 #include <atlbase.h>
 #include <atlwin.h>
 #include <string>
+#include <vector>
 
 #include "webkit/default_plugin/default_plugin_resources.h"
 
@@ -18,11 +19,6 @@ class PluginInstallerImpl;
 // where it would be downloaded from, etc.
 class PluginInstallDialog : public CDialogImpl<PluginInstallDialog> {
  public:
-  PluginInstallDialog()
-      : plugin_impl_(NULL) {
-  }
-  ~PluginInstallDialog() {}
-
   enum {IDD = IDD_DEFAULT_PLUGIN_INSTALL_DIALOG};
 
   BEGIN_MSG_MAP(PluginInstallDialog)
@@ -31,26 +27,33 @@ class PluginInstallDialog : public CDialogImpl<PluginInstallDialog> {
     COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
   END_MSG_MAP()
 
-  bool Initialize(PluginInstallerImpl* plugin_impl,
-                  const std::wstring& plugin_name);
+  // Creates or returns the existing object for the given plugin name.
+  // Call RemoveInstaller when done.
+  static PluginInstallDialog* AddInstaller(PluginInstallerImpl* plugin_impl,
+                                           const std::wstring& plugin_name);
+
+  // Lets this object know that the given installer object is going away.
+  void RemoveInstaller(PluginInstallerImpl* installer);
+
+  void ShowInstallDialog();
+
+ private:
+  PluginInstallDialog(const std::wstring& plugin_name);
+  ~PluginInstallDialog();
 
   // Implemented to ensure that we handle RTL layouts correctly.
   HWND Create(HWND parent_window, LPARAM init_param);
 
- protected:
   LRESULT OnInitDialog(UINT message, WPARAM wparam, LPARAM lparam,
                        BOOL& handled);
   LRESULT OnGetPlugin(WORD notify_code, WORD id, HWND wnd_ctl, BOOL &handled);
   LRESULT OnCancel(WORD notify_code, WORD id, HWND wnd_ctl, BOOL &handled);
 
-  // Determines whether the UI layout is right-to-left.
-  bool IsRTLLayout() const;
-
   // Wraps the string with Unicode directionality characters in order to make
   // sure BiDi text is rendered correctly when the UI layout is right-to-left.
   void AdjustTextDirectionality(std::wstring* text) const;
 
-  PluginInstallerImpl* plugin_impl_;
+  std::vector<PluginInstallerImpl*> installers_;
   std::wstring plugin_name_;
 };
 
