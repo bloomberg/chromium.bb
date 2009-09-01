@@ -1,5 +1,12 @@
-<!DOCTYPE html>
-<html i18n-values="dir:textdirection;firstview:firstview;bookmarkbarattached:bookmarkbarattached;hasattribution:hasattribution;anim:anim;syncispresent:syncispresent;showsetashomepage:showsetashomepage">
+.<!DOCTYPE html>
+<html i18n-values="
+  dir:textdirection;
+  firstview:firstview;
+  bookmarkbarattached:bookmarkbarattached;
+  hasattribution:hasattribution;
+  anim:anim;
+  syncispresent:syncispresent;
+  showsetashomepage:showsetashomepage">
 
 <meta charset="utf-8">
 <title i18n-content="title"></title>
@@ -220,22 +227,19 @@ document.write('<link id="themecss" rel="stylesheet" ' +
   </div>
 
   <div id="sync-status">
-    <h2>&nbsp;</h2>
-    <span>&nbsp;</span>
-    <span><a href="">&nbsp;</a></span>
+    <h2></h2>
+    <span></span>
   </div>
 
   <div id="set-as-homepage">
-    <span>
-    </span>
+    <button class="link" i18n-content="makethishomepage"></button>
   </div>
 
-  <div id="tip-line">
-  </div>
+  <div id="tip-line"></div>
 
   <div id="attribution" class="attribution">
-    <span i18n-content="attributionintro"></span><br />
-    <img id="attribution-img" />
+    <div i18n-content="attributionintro"></div>
+    <img id="attribution-img">
   </div>
 
 </div> <!-- main -->
@@ -245,5 +249,4 @@ document.write('<link id="themecss" rel="stylesheet" ' +
 </body>
 <script src="local_strings.js"></script>
 <script src="new_new_tab.js"></script>
-<script>updateAttribution();</script>
 </html>

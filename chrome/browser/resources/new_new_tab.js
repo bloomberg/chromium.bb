@@ -730,19 +730,15 @@ function syncMessageChanged(newMessage) {
 
   // Hide the section if the message is emtpy.
   if (!newMessage.syncsectionisvisible) {
-    style.opacity = style.height = 0;
     return;
   }
-  style.height = '';
-  style.opacity = 1;
+  style.display = 'block';
 
   // Set the sync section background color based on the state.
-  if (newMessage.msgtype == "error") {
-    style.backgroundColor = "tomato";
-  } else if (newMessage.msgtype == "presynced") {
-    style.backgroundColor = "greenyellow";
+  if (newMessage.msgtype == 'error') {
+    style.backgroundColor = 'tomato';
   } else {
-    style.backgroundColor = "#CAFF70";
+    style.backgroundColor = '';
   }
 
   // Set the text for the header and sync message.
@@ -751,30 +747,24 @@ function syncMessageChanged(newMessage) {
   var messageElement = titleElement.nextElementSibling;
   messageElement.textContent = newMessage.msg;
 
-  // Set up the link if we should show one or hide it otherwise.
-  var linkContainer = messageElement.nextElementSibling;
-  var containerStyle = linkContainer.style;
-  var linkElement = linkContainer.firstElementChild;
-  linkElement.removeEventListener('click', syncSectionLinkClicked);
+  // Remove what comes after the message
+  while (messageElement.nextSibling) {
+    syncStatusElement.removeChild(messageElement.nextSibling);
+  }
 
-  // TODO(idana): when we don't have an URL to set, using an href is not a good
-  // idea because the user will still be able to right click on the link and
-  // open the empty href in a new tab/window.
-  //
-  // See http://code.google.com/p/chromium/issues/detail?id=19538 for more info
-  // about how to fix this.
-  linkElement.href = '';
-  containerStyle.display = 'none';
   if (newMessage.linkisvisible) {
-    containerStyle.display = '';
-    linkElement.textContent = newMessage.linktext;
-    // We don't listen to click events if the backend specified a target URL
-    // for the link.
+    var el;
     if (newMessage.linkurlisset) {
-      linkElement.href = newMessage.linkurl;
+      // Use a link
+      el = document.createElement('a');
+      el.href = newMessage.linkurl;
     } else {
-      linkElement.addEventListener('click', syncSectionLinkClicked);
+      el = document.createElement('button');
+      el.className = 'link';
+      el.addEventListener('click', syncSectionLinkClicked);
     }
+    el.textContent = newMessage.linktext;
+    syncStatusElement.appendChild(el);
   }
 }
 
@@ -826,11 +816,11 @@ function updateAttribution() {
 }
 
 function bookmarkBarAttached() {
-  document.documentElement.setAttribute("bookmarkbarattached", "true");
+  document.documentElement.setAttribute('bookmarkbarattached', 'true');
 }
 
 function bookmarkBarDetached() {
-  document.documentElement.setAttribute("bookmarkbarattached", "false");
+  document.documentElement.setAttribute('bookmarkbarattached', 'false');
 }
 
 function viewLog() {
@@ -1356,35 +1346,27 @@ document.addEventListener('DOMContentLoaded', showSetAsHomepageLink);
  * backend told us that the sync code is present.
  */
 function callGetSyncMessageIfSyncIsPresent() {
-  if (document.documentElement.getAttribute("syncispresent") == "true") {
+  if (document.documentElement.getAttribute('syncispresent') == 'true') {
     chrome.send('GetSyncMessage');
   }
 }
 
-function setAsHomePageLinkClicked() {
+function setAsHomePageLinkClicked(e) {
   chrome.send('SetHomepageLinkClicked');
+  e.preventDefault();
 }
 
 function showSetAsHomepageLink() {
   var setAsHomepageElement = $('set-as-homepage');
   var style = setAsHomepageElement.style;
-  if (document.documentElement.getAttribute("showsetashomepage") != "true") {
+  if (document.documentElement.getAttribute('showsetashomepage') != 'true') {
     // Hide the section (if new tab page is already homepage).
-    style.opacity = style.height = 0;
     return;
   }
 
-  style.height = '';
-  style.opacity = 1;
-  var spanElement = setAsHomepageElement.firstElementChild;
-  var linkElement = spanElement.firstElementChild;
-  if (!linkElement) {
-    linkElement = document.createElement('a');
-    linkElement.href = '';
-    linkElement.textContent = localStrings.getString('makethishomepage');
-    linkElement.addEventListener('click', setAsHomePageLinkClicked);
-    spanElement.appendChild(linkElement);
-  }
+  style.display = 'block';
+  var buttonElement = setAsHomepageElement.firstElementChild;
+  buttonElement.addEventListener('click', setAsHomePageLinkClicked);
 }
 
 function hideAllMenus() {
@@ -1675,3 +1657,5 @@ function parseHtmlSubset(s) {
   });
   return df;
 }
+
+updateAttribution();
