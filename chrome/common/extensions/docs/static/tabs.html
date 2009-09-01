@@ -1,5 +1,22 @@
+<div id="pageData-title" class="pageData">Tabs</div>
+
 <!-- BEGIN AUTHORED CONTENT -->
-<p class="todo"> 
-[PENDING: API Module Overview Goes Here]
+<p id="classSummary">
+Use the <code>chrome.tabs</code> module
+to interact with the browser's tab system.
+You can use this module to
+create, modify, and rearrange tabs in the browser.
 </p>
+
+<h2 id="permissions">Permissions</h2>
+<p>You must declare the <var>tabs</var> permission in your extension's manifest to use the tabs API.</p>
+<p>Example:</p>
+<pre>{
+  "name": "My extension that uses tabs",
+  "version": "0.1",
+<b>  "permissions": [
+    "tabs"
+  ]</b>
+}</pre>
+
 <!-- END AUTHORED CONTENT -->

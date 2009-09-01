@@ -18,4 +18,11 @@ window.onload = function() {
 function postRender() {
   var elm = document.getElementById("hider");
   elm.parentNode.removeChild(elm);
+
+  // Since populating the page is done asynchronously, the DOM doesn't exist
+  // when the browser tries to resolve any #anchors in the URL. So we reset the
+  // URL once we're done, which forces the browser to scroll to the anchor as it
+  // normally would.
+  if (location.hash.length > 1)
+    location.href = location.href;
 }
