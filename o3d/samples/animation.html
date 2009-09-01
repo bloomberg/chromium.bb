@@ -49,7 +49,7 @@ Animation.
 <script type="text/javascript" id="o3dscript">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
 
@@ -201,43 +201,12 @@ function initStep2(clientElements) {
       [0, 0, 0],      // Target.
       [0, 1, 0]);     // Up.
 
-  var effect = g_pack.createObject('Effect');
-  effect.loadFromFXString(document.getElementById('shader').value);
-
-  // Create a Material for the effect.
-  var material = g_pack.createObject('Material');
-
-  // Apply our effect to this material.
-  material.effect = effect;
-
-  // Set the material's drawList for translucent objects.
-  material.drawList = g_viewInfo.zOrderedDrawList;
-
-  // Create the parameters the effect needs on the material.
-  effect.createUniformParameters(material);
-
-  // Set the light position
-  var light_pos_param = material.getParam('light_pos');
-  light_pos_param.value = [100, 75, 400];
-
-  // Set the phong components of the light source
-  var light_ambient_param = material.getParam('light_ambient');
-  var light_diffuse_param = material.getParam('light_diffuse');
-  var light_specular_param = material.getParam('light_specular');
-
-  light_ambient_param.value = [0.1, 0.1, 0.1, 1]; // Gray
-  light_diffuse_param.value = [1, 1, 1, 1]; // White
-  light_specular_param.value = [0.5, 0.5, 0.5, 1]; // White
-
-  // Set the shininess of the material (for specular lighting)
-  var shininess_param = material.getParam('shininess');
-  shininess_param.value = 5.0;
-
-  // Position of the camera.
-  // (should be the same as the 'eye' position given below)
-  var camera_pos_param = material.getParam('camera_pos');
-  // Camera is at (0, 0, 3).
-  camera_pos_param.value = [0, 0, 3];
+  // Create a basic material
+  var material = o3djs.material.createBasicMaterial(
+      g_pack,
+      g_viewInfo,
+      [1, 1, 1, 1],
+      true);
 
   var data = [ { paramName: 'translateY',
                  endOutput: 50,
@@ -272,7 +241,7 @@ function initStep2(clientElements) {
     transform.addShape(shape);
 
     // Change the color of each one
-    transform.createParam('colorMult', 'ParamFloat4').value = data[ii].color;
+    transform.createParam('diffuse', 'ParamFloat4').value = data[ii].color;
 
     switch (ii) {
       case 0:
@@ -291,7 +260,7 @@ function initStep2(clientElements) {
       case 3: {
         var paramOp = attach1FloatOfFloat4Animation(g_pack,
                                                     transform,
-                                                    'colorMult',
+                                                    'diffuse',
                                                     'input3',
                                                     0.5,
                                                     1);
@@ -315,97 +284,5 @@ Once the scene is setup no Javascript is running.
 <!-- Start of O3D plugin -->
 <div id="o3d" style="width: 800px; height: 600px"></div>
 <!-- End of O3D plugin -->
-<!-- Don't render the textarea -->
-<div style="display:none">
-<textarea id="shader" name="fx" cols="80" rows="20">
-// The 4x4 world view projection matrix.
-float4x4 worldViewProjection : WorldViewProjection;
-float4x4 worldInverseTranspose : WorldInverseTranspose;
-float4x4 world : World;
-
-// positions of the light and camera
-float3 light_pos;
-float3 camera_pos;
-
-// lighting components of the light source
-float4 light_ambient;
-float4 light_diffuse;
-float4 light_specular;
-
-//  shininess of the material. (for specular lighting)
-float shininess;
-
-float4 colorMult;
-
-// input parameters for our vertex shader
-struct a2v {
-  float4 pos : POSITION;
-  float3 normal : NORMAL;
-  float4 col : COLOR;
-};
-
-// input parameters for our pixel shader
-// also the output parameters for our vertex shader
-struct v2f {
-  float4 pos : POSITION;
-  float4 pos2 : TEXCOORD0;
-  float3 norm : TEXCOORD1;
-  float3 light : TEXCOORD2;
-  float4 col : COLOR;
-};
-
-/**
- * vsMain - our vertex shader
- *
- * @param IN.pos Position vector of vertex
- * @param IN.normal Normal of vertex
- * @param IN.col Color of vertex
- */
-v2f vsMain(a2v IN) {
-  /**
-   * We use the standard phong illumination equation here.
-   * We restrict (clamp) the dot products so that we
-   * don't get any negative values.
-   * All vectors are normalized for proper calculations.
-   *
-   * The output color is the summation of the
-   * ambient, diffuse, and specular contributions.
-   *
-   * Note that we have to transform each vertex and normal
-   * by the view projection matrix first.
-   */
-  v2f OUT;
-
-  OUT.pos = mul(IN.pos, worldViewProjection);
-  OUT.pos2 = OUT.pos;
-  OUT.norm = mul(float4(IN.normal, 0), worldInverseTranspose).xyz;
-  OUT.light = light_pos - mul(IN.pos, world).xyz;
-  OUT.col = IN.col;
-  return OUT;
-}
-/**
- * psMain - pixel shader
- *
- * @param IN.pos Position vector of vertex
- * @param IN.col Color of vertex
- */
-float4 psMain(v2f IN): COLOR {
-  float3 light = normalize(IN.light);
-  float3 normal = normalize(IN.norm);
-  float3 r = normalize(reflect(normal, light));
-  float3 v = normalize(IN.pos2.xyz);
-  float4 litR = lit(dot(normal, light), dot(r, v), shininess);
-  return float4(((light_ambient + light_diffuse * litR.y) * colorMult +
-  light_specular * litR.z).xyz, colorMult.w);
-}
-
-// Here we tell our effect file *which* functions are
-// our vertex and pixel shaders.
-
-// #o3d VertexShaderEntryPoint vsMain
-// #o3d PixelShaderEntryPoint psMain
-// #o3d MatrixLoadOrder RowMajor
-</textarea>
-</div>
 </body>
 </html>

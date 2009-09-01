@@ -54,7 +54,7 @@ o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 o3djs.require('o3djs.fps');
 
 // Events
@@ -112,19 +112,10 @@ function initStep2(clientElements) {
                                             g_client.renderGraphRoot);
 
   // Create a material.
-  var myMaterial = g_pack.createObject('Material');
-
-  // Set the material's drawList for opaque objects.
-  myMaterial.drawList = g_viewInfo.performanceDrawList;
-
-  // Create and load the effect.
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/vertex-color.shader');
-
-  // Apply our effect to this material and create the params the effect needs
-  // on the material.
-  myMaterial.effect = effect;
-  effect.createUniformParameters(myMaterial);
+  var myMaterial = o3djs.material.createMaterialFromFile(
+      g_pack,
+      'shaders/vertex-color.shader',
+      g_viewInfo.performanceDrawList);
 
   // Draw a cube using the effect we have loaded.
   var myShape = o3djs.primitives.createRainbowCube(g_pack,

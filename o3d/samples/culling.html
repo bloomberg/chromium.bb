@@ -55,7 +55,7 @@ o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 
 // global variables
 var g_timeMult = 1.0;
@@ -119,7 +119,7 @@ function createInstances(pack, shape) {
                   (x - UNITS_ACROSS_GROUP * 0.5) * UNIT_SPACING,
                   (y - UNITS_ACROSS_GROUP * 0.5) * UNIT_SPACING,
                   (z - UNITS_ACROSS_GROUP * 0.5) * UNIT_SPACING);
-              transform.createParam('colorMult', 'ParamFloat4').value = [
+              transform.createParam('diffuse', 'ParamFloat4').value = [
                   (g * UNITS_ACROSS_GROUP + x) * (1 / TOTAL_ACROSS),
                   (h * UNITS_ACROSS_GROUP + y) * (1 / TOTAL_ACROSS),
                   (i * UNITS_ACROSS_GROUP + z) * (1 / TOTAL_ACROSS),
@@ -207,29 +207,10 @@ function initStep2(clientElements) {
       10000);
 
   // Create and load the effect.
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/phong-with-colormult.shader');
-
-  // Create a Material for the effect.
-  var material = g_pack.createObject('Material');
-
-  // Apply our effect to this material.
-  material.effect = effect;
-
-  // Set the material's drawList for opaque objects.
-  material.drawList = g_viewInfo.performanceDrawList;
-
-  // Create the parameters the effect needs on the material.
-  effect.createUniformParameters(material);
-
-  // Set the material parameters.
-  material.getParam('lightWorldPos').value = [1000, 1000, 0];
-  material.getParam('lightIntensity').value = [1, 1, 1, 1];
-  material.getParam('ambientIntensity').value = [0.1, 0.1, 0.1, 1];
-  material.getParam('ambient').value = [1, 1, 1, 1];
-  material.getParam('diffuse').value = [1, 1, 1, 1];
-  material.getParam('specular').value = [0.5, 0.5, 0.5, 1];
-  material.getParam('shininess').value = 50;
+  var material = o3djs.material.createBasicMaterial(
+      g_pack,
+      g_viewInfo,
+      [1, 1, 1, 1]);
 
   // Create 2 spheres.
   var shape1 = o3djs.primitives.createSphere(

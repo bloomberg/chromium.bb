@@ -48,7 +48,7 @@ This sample demonstates usage of primitive functions and simple 3d animation tec
 <script type="text/javascript" id="o3dscript">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.rendergraph');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 o3djs.require('o3djs.primitives');
 o3djs.require('o3djs.arcball');
 o3djs.require('o3djs.picking');
@@ -164,7 +164,10 @@ function initGlobals(clientElements) {
     clearColor);
 
   // Create a material for the objects rendered.
-  g_material = createPhongMaterial([1, 1, 1, 1]);
+  g_material = o3djs.material.createBasicMaterial(
+      g_pack,
+      g_viewInfo,
+      [1, 1, 1, 1]);
 
   // Initialize checkers piece and square data.
   g_boardSize = 8;
@@ -237,36 +240,6 @@ function initContext() {
       g_eyeView,       // eye
       [0, 0, 0],       // target
       [0, 1, 0]);      // up
-}
-
-/**
- * Creates a phong material based on the given single color.
- * @param {!o3djs.math.Vector4} baseColor An array with 4 entries,
- * the R,G,B, and A components of a color.
- * @return {!o3d.Material} A phong material whose overall pigment
- * is baseColor.
- */
-function createPhongMaterial(baseColor) {
-  // Create a new, empty Material object.
-  var material = g_pack.createObject('Material');
-
-  var lightPosition = [1000, 2000, 3000];
-  o3djs.effect.attachStandardShader(
-      g_pack, material, lightPosition, 'phong');
-
-  material.drawList = g_viewInfo.performanceDrawList;
-
-  // Assign parameters to the phong material.
-  material.getParam('emissive').value = [0, 0, 0, 1];
-  material.getParam('ambient').value =
-     [.1 * baseColor[0], .1 * baseColor[1], .1 * baseColor[2], 1];
-  material.getParam('diffuse').value =
-     [.9 * baseColor[0], .9 * baseColor[1], .9 * baseColor[2], 1];
-  material.getParam('specular').value = [.5, .5, .5, 1];
-  material.getParam('shininess').value = 50;
-  material.getParam('lightColor').value = [1, 1, 1, 1];
-
-  return material;
 }
 
 /**

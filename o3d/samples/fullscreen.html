@@ -80,20 +80,11 @@ var g_o3dElement;
  * orthographic projection on which we'll be displaying the banner.
  */
 function createBannerSurfaceAndClickableRegion(clientHeight, viewInfo) {
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/texture-only.shader');
-
-  // Create a Material for the effect.
-  var material = g_pack.createObject('Material');
-
-  // Apply our effect to this material.
-  material.effect = effect;
-
-  // Create the params the effect needs on the material.
-  effect.createUniformParameters(material);
-
-  // Set the drawlist for z-ordering.
-  material.drawList = viewInfo.zOrderedDrawList;
+  // Create a material.
+  var material = o3djs.material.createMaterialFromFile(
+      g_pack,
+      'shaders/texture-only.shader',
+      viewInfo.zOrderedDrawList);
 
   // Create a 2d plane for images. createPlane makes an XZ plane by default
   // so we pass in matrix to rotate it to an XY plane. We could do

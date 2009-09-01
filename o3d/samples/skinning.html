@@ -50,7 +50,7 @@ Skinning.
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 o3djs.require('o3djs.primitives');
 
 // Events
@@ -58,6 +58,10 @@ o3djs.require('o3djs.primitives');
 // unload() when the page is unloaded.
 window.onload = init;
 window.onunload = unload;
+
+// constants
+var NUM_BONES = 11;
+var BONE_SPACING = 20;
 
 // global variables
 var g_o3d;
@@ -105,31 +109,11 @@ function initStep2(clientElements) {
       0.1,
       10000);
 
-  // Create and load the effect.
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/phong-with-colormult.shader');
-
-  // Create a Material for the effect.
-  var material = g_pack.createObject('Material');
-
-  // Apply our effect to this material.
-  material.effect = effect;
-
-  // Set the material's drawList
-  material.drawList = g_viewInfo.performanceDrawList;
-
-  // Create the params the effect needs on the material.
-  effect.createUniformParameters(material);
-
-  // Set the material parameters.
-  material.getParam('lightWorldPos').value = [1000, 1000, 0];
-  material.getParam('lightIntensity').value = [1, 1, 1, 1];
-  material.getParam('ambientIntensity').value = [0.1, 0.1, 0.1, 1];
-  material.getParam('ambient').value = [1, 1, 1, 1];
-  material.getParam('diffuse').value = [1, 0.2, 1, 1];
-  material.getParam('specular').value = [0.5, 0.5, 0.5, 1];
-  material.getParam('shininess').value = 50;
-  material.getParam('colorMult').value = [1, 1, 1, 1];
+  // Create a material.
+  var material = o3djs.material.createBasicMaterial(
+      g_pack,
+      g_viewInfo,
+      [1, 0.2, 1, 1]);
 
   // Create a cylinder.
   var vertexInfo = o3djs.primitives.createCylinderVertices(
@@ -153,15 +137,15 @@ function initStep2(clientElements) {
   skinEval.matrices = matrices;
   skinEval.skin = skin;
 
-  // Create 11 matrices on our ParamArray.
-  matrices.resize(11, 'o3d.ParamMatrix4');
+  // Create matrices on our ParamArray.
+  matrices.resize(NUM_BONES, 'o3d.ParamMatrix4');
 
   // Create 11 transforms for the bones and parent them into a chain.
-  for (var ii = 0; ii <= 10; ++ii) {
+  for (var ii = 0; ii < NUM_BONES; ++ii) {
     var transform = g_pack.createObject('Transform');
     g_transforms[ii] = transform;
     if (ii > 0) {
-      transform.translate(0, 20, 0);
+      transform.translate(0, BONE_SPACING, 0);
     }
     transform.parent = ii == 0 ? g_client.root : g_transforms[ii - 1];
     // Bind the world matrix of the transform to the corresponding matrix in the
@@ -188,14 +172,26 @@ function initStep2(clientElements) {
   var numVertices = positionStream.numElements();
   for (var ii = 0; ii < numVertices; ++ii) {
     // Choose the bones to influence the vertex based on its height.
-    var y = positionStream.getElementVector(ii)[1] / 20;
-    var influence = y % 1;
-    var bone = Math.floor(y);
-    var bone_2 = bone + 1;
-    if (bone_2 > 10) {
-      bone_2 = 10;
+    // boneArea will be a fractional value between 2 bones based on the Y
+    // position of the vertex. In other words, if the y Position of the vertex
+    // 63 and the bones are 20 units apart then boneArea will = 6.15 meaning
+    // it's between bones 6 and 7
+    var boneArea = positionStream.getElementVector(ii)[1] / BONE_SPACING;
+
+    // Pull out the fractional part of boneArea
+    var influence = boneArea % 1;
+
+    // Compute the bone indicies
+    var bone1 = Math.floor(boneArea);
+    var bone2 = bone1 + 1;
+    if (bone2 >= NUM_BONES) {
+      bone2 = NUM_BONES - 1;
     }
-    skin.setVertexInfluences(ii, [bone, 1 - influence, bone_2, influence]);
+
+    // Now make each vertex be influenced by these two bones. In the example
+    // above where boneArea was 6.15 we let bone1 influence the vertex by
+    // (1 - 0.15) or 0.85 and bone2 influence it by 0.15.
+    skin.setVertexInfluences(ii, [bone1, 1 - influence, bone2, influence]);
   }
 
   // Create a SourceBuffer for the Skin and set the vertices on it.
@@ -252,7 +248,7 @@ function onrender(renderEvent) {
   for (var ii = 1; ii < g_transforms.length; ++ii) {
     var transform = g_transforms[ii];
     transform.identity();
-    transform.translate(0, 20, 0);
+    transform.translate(0, BONE_SPACING, 0);
     transform.rotateX(rotation);
   }
 }

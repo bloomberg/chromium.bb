@@ -46,7 +46,7 @@ o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 
 // global variables
 var g_o3d;
@@ -117,20 +117,10 @@ function initStep2(clientElements) {
     one_channel_texture: {name: 'one-channel-texture.shader'}};
   for (var key in effectInfos) {
     var info = effectInfos[key];
-    var effect = g_pack.createObject('Effect');
-    o3djs.effect.loadEffect(effect, 'shaders/' + info.name);
-
-    // Create a Material for the effect.
-    var material = g_pack.createObject('Material');
-
-    // Set the material's drawList for transparent objects.
-    material.drawList = g_viewInfo.zOrderedDrawList;
-
-    // Apply the effect to this material.
-    material.effect = effect;
-
-    // Create the params that effect requires on the material.
-    effect.createUniformParameters(material);
+    var material = o3djs.material.createMaterialFromFile(
+        g_pack,
+        'shaders/' + info.name,
+        g_viewInfo.zOrderedDrawList);
 
     // Create a quad.
     var shape = o3djs.primitives.createPlane(g_pack,

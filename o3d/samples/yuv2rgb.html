@@ -48,7 +48,7 @@ o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 o3djs.require('o3djs.io');
 
 // Events
@@ -107,21 +107,11 @@ function initStep2(clientElements) {
       [0, 0, 0],
       [0, 0, -1]);
 
-  // Create and load the effect and the shader.
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/yuv2rgb.shader');
-
-  // Create a Material for the effect.
-  var myMaterial = g_pack.createObject('Material');
-
-  // Set the material's drawList
-  myMaterial.drawList = g_viewInfo.performanceDrawList;
-
-  // Apply our effect to this material.
-  myMaterial.effect = effect;
-
-  // Create the params the effect needs on the material.
-  effect.createUniformParameters(myMaterial);
+  // Create a material.
+  var myMaterial = o3djs.material.createMaterialFromFile(
+      g_pack,
+      'shaders/yuv2rgb.shader',
+      g_viewInfo.performanceDrawList);
 
   // Creates a quad using the effect that has a 1:1 aspect ratio.
   var myShape = o3djs.primitives.createPlane(g_pack,

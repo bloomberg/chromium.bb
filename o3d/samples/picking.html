@@ -294,12 +294,10 @@ function initStep2(clientElements) {
   g_debugLine.setColor([0,1,0,1]);
 
   // Create a material for highlighting.
-  g_highlightMaterial = g_pack.createObject('Material');
-  g_highlightMaterial.drawList = g_viewInfo.performanceDrawList;
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/solid-color.shader');
-  g_highlightMaterial.effect = effect;
-  effect.createUniformParameters(g_highlightMaterial);
+  g_highlightMaterial = o3djs.material.createConstantMaterial(
+      g_pack,
+      g_viewInfo,
+      [1, 1, 1, 1]);
   // Setup a state to bring the lines forward.
   var state = g_pack.createObject('State');
   state.getStateParam('PolygonOffset2').value = -1.0;

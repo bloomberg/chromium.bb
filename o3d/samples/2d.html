@@ -104,7 +104,7 @@ o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 o3djs.require('o3djs.loader');
 
 
@@ -163,16 +163,6 @@ var g_map = [
   [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ];
 var g_randSeed = 0;
-
-/**
- * Returns a deterministic pseudorandom number bewteen 0 and 1
- * @return {number} a random number between 0 and 1
- */
-function pseudoRandom() {
-  var range = Math.pow(2, 32);
-
-  return (g_randSeed = (134775813 * g_randSeed + 1) % range) / range;
-}
 
 /**
  * Creates the client area.
@@ -283,20 +273,11 @@ function initStep2(clientElements) {
   setScreenOriginToTopLeft();
   //setScreenOriginToCenter();
 
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/texture-colormult.shader');
-
-  // Create a Material for the effect.
-  var material = g_pack.createObject('Material');
-
-  // Apply the effect to this material.
-  material.effect = effect;
-
-  // Set the material's drawList for translucent things.
-  material.drawList = g_viewInfo.zOrderedDrawList;
-
-  // Create the parameters the effect needs on the material.
-  effect.createUniformParameters(material);
+  // Load an effect file and create an effect and material with it.
+  var material = o3djs.material.createMaterialFromFile(
+      g_pack,
+      'shaders/texture-colormult.shader',
+      g_viewInfo.zOrderedDrawList);
 
   // Set the material params which act as the default. We'll override these with
   // params on transforms.
@@ -350,7 +331,7 @@ function initStep3() {
     g_squares[ii] = new Image(g_textures[4], false);
     g_things[ii] = new Image(g_textures[ii % 3], false);
     g_pillars[ii] = new Image(g_textures[6], true);
-    g_pillarScale[ii] = pseudoRandom() * 1.5 + 0.5;
+    g_pillarScale[ii] = g_math.pseudoRandom() * 1.5 + 0.5;
   }
 
   for (var yy = 0; yy < g_tilesDown; ++yy) {

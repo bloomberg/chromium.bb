@@ -147,7 +147,7 @@ o3djs.texture.canMakeMipsAndScale = function(format) {
  *     would be 6 bitmaps.
  * @param {boolean} opt_generateMips Whether or not to generate mips. Note, mips
  *    can not be generated for DXT textures although they will be loaded if they
- *    exist in the RawData.
+ *    exist in the RawData. Default = true.
  * @return {!o3d.Texture} The created texture.
  */
 o3djs.texture.createTextureFromBitmaps = function(
@@ -167,7 +167,8 @@ o3djs.texture.createTextureFromBitmaps = function(
   var targetMips = mipMaps;
   var dstWidth = srcWidth;
   var dstHeight = srcHeight;
-  if (opt_generateMips && o3djs.texture.canMakeMipsAndScale(format) &&
+  if ((typeof opt_generateMips === 'undefined' || opt_generateMips) &&
+      o3djs.texture.canMakeMipsAndScale(format) &&
       mipMaps == 1 && maxMips > 1) {
     targetMips = maxMips;
   }

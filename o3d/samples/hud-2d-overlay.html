@@ -51,7 +51,7 @@ o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 o3djs.require('o3djs.loader');
 
 // Events
@@ -104,16 +104,6 @@ var g_iconBacks = [];
 var g_icons = [];
 var g_selectedIndex = 0;
 var g_randSeed = 0;
-
-/**
- * Returns a deterministic pseudorandom number bewteen 0 and 1
- * @return {number} a random number between 0 and 1
- */
-function pseudoRandom() {
-  var range = Math.pow(2, 32);
-
-  return (g_randSeed = (134775813 * g_randSeed + 1) % range) / range;
-}
 
 /**
  * Creates the client area.
@@ -191,17 +181,10 @@ function initStep2(clientElements) {
       5000);              // Far plane.
 
   for (var ii = 0; ii < g_materialUrls.length; ++ii) {
-    var effect = g_pack.createObject('Effect');
-    o3djs.effect.loadEffect(effect, g_materialUrls[ii]);
-
-    // Create a Material for the effect.
-    var material = g_pack.createObject('Material');
-
-    // Apply our effect to this material.
-    material.effect = effect;
-
-    // Create the params the effect needs on the material.
-    effect.createUniformParameters(material);
+    var material = o3djs.material.createMaterialFromFile(
+        g_pack,
+        g_materialUrls[ii],
+        g_viewInfo.performanceDrawList);
 
     // Set the default params. We'll override these with params on transforms.
     material.getParam('colorMult').value = [1, 1, 1, 1];
@@ -349,11 +332,11 @@ function createBuilding(x, z) {
   transform.addShape(g_cubeShape);
   transform.parent = g_3dRoot;
   transform.translate(x, 0, z);
-  transform.scale(1, pseudoRandom() * 3 + 1, 1);
+  transform.scale(1, g_math.pseudoRandom() * 3 + 1, 1);
   transform.createParam('colorMult', 'ParamFloat4').value = [
-    pseudoRandom() * 0.6 + 0.4,
-    pseudoRandom() * 0.6 + 0.4,
-    pseudoRandom() * 0.6 + 0.4,
+    g_math.pseudoRandom() * 0.6 + 0.4,
+    g_math.pseudoRandom() * 0.6 + 0.4,
+    g_math.pseudoRandom() * 0.6 + 0.4,
     1];
 }
 

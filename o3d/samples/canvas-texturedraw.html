@@ -49,8 +49,6 @@ O3D Canvas
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.io');
 o3djs.require('o3djs.math');
-o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
 o3djs.require('o3djs.canvas');
 o3djs.require('o3djs.rendergraph');
 
@@ -74,8 +72,6 @@ var g_canvasWidth = 700;
 var g_canvasHeight = 500;
 var g_borderWidth = 50;
 var g_borderHeight = 50;
-var g_pluginWidth;
-var g_pluginHeight;
 var g_clientWidth;
 var g_clientHeight;
 
@@ -153,7 +149,6 @@ function changeBrushTexture() {
       if (g_brushTexture) {
         g_pack.removeObject(g_brushTexture);
       }
-
       g_brushTexture = texture;
     }
   });

@@ -92,17 +92,6 @@ function loadTexture(loader, url, index) {
 }
 
 /**
- * Returns a deterministic pseudorandom number bewteen 0 and 1
- * @return {number} a random number between 0 and 1
- */
-var g_randSeed = 0;
-var g_randRange = Math.pow(2, 32);
-function pseudoRandom() {
-  return (g_randSeed = (134775813 * g_randSeed + 1) % g_randRange) /
-         g_randRange;
-}
-
-/**
  * Creates the client area.
  */
 function init() {
@@ -165,10 +154,11 @@ function initStep3() {
   // Normally we wouldn't pass in a random function but for selenium we need
   // the particle system to produce the exact same results each time so
   // we're passing in a predictable random function.
-  g_particleSystem = o3djs.particles.createParticleSystem(g_pack,
-                                                          g_viewInfo,
-                                                          g_clockParam,
-                                                          pseudoRandom);
+  g_particleSystem = o3djs.particles.createParticleSystem(
+      g_pack,
+      g_viewInfo,
+      g_clockParam,
+      g_math.pseudoRandom);
   setupFlame();
   setupNaturalGasFlame();
   setupSmoke();
@@ -376,7 +366,7 @@ function setupGoogle() {
     velocity: [1, 0, 1]},
     function(particleIndex, parameters) {
       //var index = particleIndex;
-      var index = Math.floor(pseudoRandom() * positions.length);
+      var index = Math.floor(g_math.pseudoRandom() * positions.length);
       index = Math.min(index, positions.length - 1);
       parameters.position[0] = positions[index][0];
       parameters.position[1] = positions[index][1];
@@ -452,8 +442,9 @@ function setupBall() {
     colorMult: [1, 1, 0.5, 1], colorMultRange: [0, 0, 0.5, 0],
     billboard: false},
     function(particleIndex, parameters) {
-      var matrix = g_math.matrix4.rotationY(pseudoRandom() * Math.PI * 2);
-      g_math.matrix4.rotateX(matrix, pseudoRandom() * Math.PI);
+      var matrix = g_math.matrix4.rotationY(
+          g_math.pseudoRandom() * Math.PI * 2);
+      g_math.matrix4.rotateX(matrix, g_math.pseudoRandom() * Math.PI);
       var position = g_math.matrix4.transformDirection(matrix, [0, 100, 0]);
       parameters.position = position;
       parameters.orientation = o3djs.quaternions.rotationToQuaternion(matrix);
@@ -483,13 +474,16 @@ function setupCube() {
     billboard: false},
     function(particleIndex, parameters) {
       var matrix = g_math.matrix4.rotationY(
-          Math.floor(pseudoRandom() * 4) * Math.PI * 0.5);
-      g_math.matrix4.rotateX(matrix,
-                             Math.floor(pseudoRandom() * 3) * Math.PI * 0.5);
+          Math.floor(g_math.pseudoRandom() * 4) * Math.PI * 0.5);
+      g_math.matrix4.rotateX(
+          matrix,
+          Math.floor(g_math.pseudoRandom() * 3) * Math.PI * 0.5);
       parameters.orientation = o3djs.quaternions.rotationToQuaternion(matrix);
       var position = g_math.matrix4.transformDirection(
           matrix,
-          [pseudoRandom() * 200 - 100, 100, pseudoRandom() * 200 - 100]);
+          [g_math.pseudoRandom() * 200 - 100,
+           100,
+           g_math.pseudoRandom() * 200 - 100]);
       parameters.position = position;
     });
   transform.addShape(emitter.shape);

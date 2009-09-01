@@ -52,7 +52,7 @@ o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 
 // Events
 // init() once the page has finished loading.
@@ -81,7 +81,7 @@ function createInstances(pack, shape) {
         transform.translate((x - 4.5) * 100,
                             (y - 4.5) * 100,
                             (z - 4.5) * 100);
-        transform.createParam('colorMult', 'ParamFloat4').value = [
+        transform.createParam('diffuse', 'ParamFloat4').value = [
             x * 0.1,
             y * 0.1,
             z * 0.1,
@@ -126,30 +126,11 @@ function initStep2(clientElements) {
       0.1,
       10000);
 
-  // Create and load the effect.
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/phong-with-colormult.shader');
-
-  // Create a Material for the effect.
-  var material = g_pack.createObject('Material');
-
-  // Apply our effect to this material.
-  material.effect = effect;
-
-  // Set the material's drawList.
-  material.drawList = g_viewInfo.performanceDrawList;
-
-  // Create the params the effect needs on the material.
-  effect.createUniformParameters(material);
-
-  // Set the material parameters.
-  material.getParam('lightWorldPos').value = [1000, 1000, 0];
-  material.getParam('lightIntensity').value = [1, 1, 1, 1];
-  material.getParam('ambientIntensity').value = [0.1, 0.1, 0.1, 1];
-  material.getParam('ambient').value = [1, 1, 1, 1];
-  material.getParam('diffuse').value = [1, 1, 1, 1];
-  material.getParam('specular').value = [0.5, 0.5, 0.5, 1];
-  material.getParam('shininess').value = 50;
+  // Create a material.
+  var material = o3djs.material.createBasicMaterial(
+    g_pack,
+    g_viewInfo,
+    [1, 1, 1, 1]);
 
   // Create a sphere.
   var shape = o3djs.primitives.createSphere(g_pack, material, 25, 10, 12);

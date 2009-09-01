@@ -356,15 +356,6 @@ function dumpCameraInfo() {
                   g_math.radToDeg(g_camera.fieldOfView) + '};\n');
 }
 
-/**
- * Returns a deterministic pseudorandom number bewteen 0 and 1.
- * @return {number} a random number between 0 and 1.
- */
-function pseudoRandom() {
-  return (g_randSeed = (134775813 * g_randSeed + 1) % g_randRange) /
-         g_randRange;
-}
-
 // ***************************** Mouse functions *******************************
 
 /**
@@ -1079,16 +1070,17 @@ function toggleSimpleMaterials(e) {
         var effect = material.effect;
         g_materialSwapTable[material.clientId] = effect;
         if (!g_simpleEffects[effect.clientId]) {
-          pseudoRandom();  // eat a random number to get pleasing colors.
-          pseudoRandom();  // eat a random number to get pleasing colors.
+          // eat some random number to get pleasing colors.
+          g_math.pseudoRandom();
+          g_math.pseudoRandom();
           var newEffect = g_mainPack.createObject('Effect');
           newEffect.loadFromFXString(
               o3djs.util.getElementContentById('simpleshader'));
           newEffect.createUniformParameters(newEffect);
           newEffect.getParam('simpleColor').value = [
-              pseudoRandom(),
-              pseudoRandom(),
-              pseudoRandom(),
+              g_math.pseudoRandom(),
+              g_math.pseudoRandom(),
+              g_math.pseudoRandom(),
               1];
           g_simpleEffects[effect.clientId] = newEffect;
         }
@@ -2072,10 +2064,11 @@ function initStep2(clientElements) {
   g_clipHeightParam = g_globalParams.createParam('clipHeight', 'ParamFloat');
   g_proxyOffsetParam = g_globalParams.createParam('offset', 'ParamFloat');
 
-  g_particleSystem = o3djs.particles.createParticleSystem(g_mainPack,
-                                                          g_mainViewInfo,
-                                                          g_globalClockParam,
-                                                          pseudoRandom);
+  g_particleSystem = o3djs.particles.createParticleSystem(
+      g_mainPack,
+      g_mainViewInfo,
+      g_globalClockParam,
+      g_math.pseudoRandom);
 
   // Since we set the state for the draw pass to 'AlphaReference' = 0.7
   // We need to set it back to 0.0 for the particles.
@@ -2350,7 +2343,7 @@ function setupWater() {
       for (var yy = 0; yy < info.height; ++yy) {
         for (var xx = 0; xx < info.width; ++xx) {
           for (var cc = 0; cc < 3; ++cc) {
-            pixels.push(pseudoRandom());
+            pixels.push(g_math.pseudoRandom());
           }
         }
       }

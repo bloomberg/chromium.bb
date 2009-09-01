@@ -48,7 +48,7 @@ o3djs.require('o3djs.math');
 o3djs.require('o3djs.loader');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 
 // Events
 // Run the init() once the page has finished loading.
@@ -66,18 +66,12 @@ var g_target;
 var g_up;
 var g_bitmaps = [];  // bitmaps by URL.
 
-function makeShape(texture, effect) {
-  // Create a Material for the effect.
-  var myMaterial = g_pack.createObject('Material');
-
-  // Set the material's drawList for opaque objects.
-  myMaterial.drawList = g_viewInfo.performanceDrawList;
-
-  // Apply our effect to this material.
-  myMaterial.effect = effect;
-
-  // Create the parameters the effect needs on the material.
-  effect.createUniformParameters(myMaterial);
+function makeShape(texture) {
+  // Create a material.
+  var myMaterial = o3djs.material.createMaterialFromFile(
+      g_pack,
+      'shaders/texture-only.shader',
+      g_viewInfo.performanceDrawList);
 
   // Creates a quad.
   var myShape = o3djs.primitives.createPlane(g_pack,
@@ -87,10 +81,10 @@ function makeShape(texture, effect) {
                                              1,  // quads across
                                              1);  // quads down
 
-  // Get the material's sampler parameter and put a sampler on it.
+  // Get the material's sampler parameter, get the sampler on it and set its
+  // texture.
   var sampler_param = myMaterial.getParam('texSampler0');
-  var sampler = g_pack.createObject('Sampler');
-  sampler_param.value = sampler;
+  var sampler = sampler_param.value;
 
   // Set the texture to use.
   sampler.texture = texture;
@@ -178,10 +172,6 @@ function initStep2(clientElements) {
   g_viewInfo.drawContext.view = view_matrix;
   g_viewInfo.drawContext.projection = proj_matrix;
 
-  // Create and load the effect.
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/texture-only.shader');
-
   var loader = o3djs.loader.createLoader(callback);
   loadBitmap(loader, 'shaving_cream_300x300.jpg');
   loadBitmap(loader, 'four_pixel.png');
@@ -220,7 +210,7 @@ function initStep2(clientElements) {
     texture.drawImage(bitmap1, 0, 0, 0, 300, 300, 1, 0, 0, 150, 150);
     texture.drawImage(bitmap2, 0, 0, 0, 2, 2, 2, 0, 0, 75, 75);
 
-    makeShape(texture, effect);
+    makeShape(texture);
   }
   o3djs.event.addEventListener(o3dElement, 'wheel', scrollMe);
 }

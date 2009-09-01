@@ -64,7 +64,7 @@ o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 
 // Events
 // Run the init() function once the page has finished loading.
@@ -127,22 +127,11 @@ function initStep2(clientElements) {
   g_animate = false;
   g_animateAngle = 0;
 
-  // Create and load the effect.
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/vertex-color.shader');
-
-  // Create a material for it.
-  var myMaterial = g_pack.createObject('Material');
-
-  // Set the material's drawList
-  myMaterial.drawList = g_viewInfo.performanceDrawList;
-
-  // Apply our effect to this material. The effect tells the 3D hardware
-  // which shader to use.
-  myMaterial.effect = effect;
-
-  // Create the parameters the effect needs on the material.
-  effect.createUniformParameters(myMaterial);
+  // Create a material.
+  var myMaterial = o3djs.material.createMaterialFromFile(
+      g_pack,
+      'shaders/vertex-color.shader',
+      g_viewInfo.performanceDrawList);
 
   // Create a cube.
   var cube = o3djs.primitives.createRainbowCube(g_pack, myMaterial, 1);

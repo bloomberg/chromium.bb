@@ -83,7 +83,7 @@ medium  canvas-fonts                      screenshot pdiff_threshold(200) pdiff_
 medium  canvas-texturedraw
 medium  checkers                          screenshot pdiff_threshold(200)
 medium  convolution                       screenshot pdiff_threshold(200)
-medium  culling                           screenshot pdiff_threshold(450) downsample(1)
+medium  culling                           screenshot(9) pdiff_threshold(450) downsample(1)
 medium  debugging                         screenshot pdiff_threshold(200) pdiff_threshold_mac(3000)
 medium  displayfps
 small   generate-texture                  screenshot pdiff_threshold(200) except(*iexplore)
@@ -91,13 +91,13 @@ medium  hellocube                         screenshot pdiff_threshold(200)
 medium  hellocube-colors                  screenshot pdiff_threshold(200)
 medium  helloworld                        screenshot pdiff_threshold(200)
 medium  hud-2d-overlay                    screenshot pdiff_threshold(200) pdiff_threshold_win(200)
-medium  instance-override                 screenshot pdiff_threshold(200)
+medium  instance-override                 screenshot(2) pdiff_threshold(200)
 medium  instancing                        screenshot pdiff_threshold(200)
 medium  juggler                           screenshot downsample(1)
 medium  julia                             screenshot
 small   multiple-views                    screenshot pdiff_threshold(200)
 medium  old-school-shadows                screenshot pdiff_threshold(200)
-medium  particles                         screenshot pdiff_threshold(200)
+medium  particles                         screenshot(2) pdiff_threshold(200)
 medium  primitives                        screenshot pdiff_threshold(200) pdiff_threshold_mac(20000) colorfactor(.7)
 medium  procedural-texture                screenshot pdiff_threshold(200)
 medium  render-targets                    screenshot pdiff_threshold(200)
@@ -112,7 +112,7 @@ small   texturesamplers                   screenshot pdiff_threshold_win(1200) p
 medium  tutorial-primitive                screenshot pdiff_threshold(200) pdiff_threshold_mac(10400)
 large   vertex-shader                     screenshot timeout(45000) pdiff_threshold(200)  except(*iexplore)
 medium  vertex-shader-animation           screenshot pdiff_threshold(200)
-medium  zsorting                          screenshot pdiff_threshold_win(200) pdiff_threshold_mac(39500)
+medium  zsorting                          screenshot(9) pdiff_threshold_win(200) pdiff_threshold_mac(39500)
 # box2d-3d works in browsers but for some reason times out on some configs
 #large   box2d-3d/box2d-3d                timeout(45000) except(*googlechrome)
 large   simpleviewer/simpleviewer         screenshot pdiff_threshold(100)

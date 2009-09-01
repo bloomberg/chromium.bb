@@ -59,7 +59,7 @@ o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
-o3djs.require('o3djs.effect');
+o3djs.require('o3djs.material');
 
 // global variables
 var g_o3d;
@@ -111,20 +111,11 @@ function initStep2(clientElements) {
       g_client.root,
       g_client.renderGraphRoot);
 
-  // Create and load the effect.
-  var effect = g_pack.createObject('Effect');
-  o3djs.effect.loadEffect(effect, 'shaders/phong-vertex-anim.shader');
-
-  // Create a new Material for the quad.
-  var material = g_pack.createObject('Material');
-
-  // Set the material's drawList
-  material.drawList = g_viewInfo.performanceDrawList;
-  material.effect = effect;
-
-  // Create Params on the material for all the uniform parameters needed by
-  // the effect.
-  effect.createUniformParameters(material);
+  // Create a material.
+  var material = o3djs.material.createMaterialFromFile(
+      g_pack,
+      'shaders/phong-vertex-anim.shader',
+      g_viewInfo.performanceDrawList);
 
   // Set the material parameters.
   material.getParam('lightWorldPos').value = [-40, 100, 0];
