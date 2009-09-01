@@ -35,7 +35,7 @@ TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
-TEST_F(WorkerTest, WorkerFastLayoutTests) {
+TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
     "use-machine-stack.html",
