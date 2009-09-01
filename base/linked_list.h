@@ -5,7 +5,8 @@
 #ifndef BASE_LINKED_LIST_H_
 #define BASE_LINKED_LIST_H_
 
-// Simple LinkedList type.
+// Simple LinkedList type. (See the Q&A section to understand how this
+// differs from std::list).
 //
 // To use, start by declaring the class which will be contained in the linked
 // list, as extending LinkNode (this gives it next/previous pointers).
@@ -47,6 +48,34 @@
 //     ...
 //   }
 //
+// Questions and Answers:
+//
+// Q. Should I use std::list or base::LinkedList?
+//
+// A. The main reason to use base::LinkedList over std::list is
+//    performance. If you don't care about the performance differences
+//    then use an STL container, as it makes for better code readability.
+//
+//    Comparing the performance of base::LinkedList<T> to std::list<T*>:
+//
+//    * Erasing an element of type T* from base::LinkedList<T> is
+//      an O(1) operation. Whereas for std::list<T*> it is O(n).
+//      That is because with std::list<T*> you must obtain an
+//      iterator to the T* element before you can call erase(iterator).
+//
+//    * Insertion operations with base::LinkedList<T> never require
+//      heap allocations.
+//
+// Q. How does base::LinkedList implementation differ from std::list?
+//
+// A. Doubly-linked lists are made up of nodes that contain "next" and
+//    "previous" pointers that reference other nodes in the list.
+//
+//    With base::LinkedList<T>, the type being inserted already reserves
+//    space for the "next" and "previous" pointers (base::LinkNode<T>*).
+//    Whereas with std::list<T> the type can be anything, so the implementation
+//    needs to glue on the "next" and "previous" pointers using
+//    some internal node type.
 
 namespace base {
 
