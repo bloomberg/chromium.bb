@@ -8,6 +8,7 @@
 
 #include "app/drag_drop_types.h"
 #include "app/gfx/canvas.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "views/fill_layout.h"
@@ -780,19 +781,14 @@ bool RootView::ProcessKeyEvent(const KeyEvent& event) {
   bool consumed = false;
 
   View* v = GetFocusedView();
-#if defined(OS_WIN)
   // Special case to handle right-click context menus triggered by the
   // keyboard.
-  if (v && v->IsEnabled() && ((event.GetCharacter() == VK_APPS) ||
-      (event.GetCharacter() == VK_F10 && event.IsShiftDown()))) {
+  if (v && v->IsEnabled() && ((event.GetCharacter() == base::VKEY_APPS) ||
+      (event.GetCharacter() == base::VKEY_F10 && event.IsShiftDown()))) {
     gfx::Point screen_loc = v->GetKeyboardContextMenuLocation();
     v->ShowContextMenu(screen_loc.x(), screen_loc.y(), false);
     return true;
   }
-#else
-  // TODO(port): The above block needs the VK_* refactored out.
-  NOTIMPLEMENTED();
-#endif
 
   for (; v && v != this && !consumed; v = v->GetParent()) {
     consumed = (event.GetType() == Event::ET_KEY_PRESSED) ?

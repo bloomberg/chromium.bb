@@ -20,32 +20,6 @@ namespace {
 // DrawStringInt().
 static cairo_font_options_t* cairo_font_options = NULL;
 
-// Returns a new pango font, free with pango_font_description_free().
-PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font) {
-  gfx::Font font = gfx_font;  // Copy so we can call non-const methods.
-  PangoFontDescription* pfd = pango_font_description_new();
-  pango_font_description_set_family(pfd, WideToUTF8(font.FontName()).c_str());
-  pango_font_description_set_size(pfd, font.FontSize() * PANGO_SCALE);
-
-  switch (font.style()) {
-    case gfx::Font::NORMAL:
-      // Nothing to do, should already be PANGO_STYLE_NORMAL.
-      break;
-    case gfx::Font::BOLD:
-      pango_font_description_set_weight(pfd, PANGO_WEIGHT_BOLD);
-      break;
-    case gfx::Font::ITALIC:
-      pango_font_description_set_style(pfd, PANGO_STYLE_ITALIC);
-      break;
-    case gfx::Font::UNDERLINED:
-      // TODO(deanm): How to do underlined?  Where do we use it?  Probably have
-      // to paint it ourselves, see pango_font_metrics_get_underline_position.
-      break;
-  }
-
-  return pfd;
-}
-
 // Update |cairo_font_options| based on GtkSettings, allocating it if needed.
 static void UpdateCairoFontOptions() {
   if (!cairo_font_options)
@@ -156,7 +130,7 @@ static void SetupPangoLayout(PangoLayout* layout,
             PANGO_WRAP_WORD_CHAR : PANGO_WRAP_WORD);
   }
 
-  PangoFontDescription* desc = PangoFontFromGfxFont(font);
+  PangoFontDescription* desc = gfx::Font::PangoFontFromGfxFont(font);
   pango_layout_set_font_description(layout, desc);
   pango_font_description_free(desc);
 }

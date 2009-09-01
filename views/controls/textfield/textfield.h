@@ -5,10 +5,9 @@
 #ifndef VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
 #define VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
 
-#include <string>
-
 #include "app/gfx/font.h"
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "views/view.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -60,7 +59,7 @@ class Textfield : public View {
    public:
     // This method is called whenever the text in the field changes.
     virtual void ContentsChanged(Textfield* sender,
-                                 const std::wstring& new_contents) = 0;
+                                 const string16& new_contents) = 0;
 
     // This method is called to get notified about keystrokes in the edit.
     // This method returns true if the message was handled and should not be
@@ -97,11 +96,14 @@ class Textfield : public View {
   bool IsMultiLine() const;
 
   // Gets/Sets the text currently displayed in the Textfield.
-  const std::wstring& text() const { return text_; }
-  void SetText(const std::wstring& text);
+  const string16& text() const { return text_; }
+  void SetText(const string16& text);
 
   // Appends the given string to the previously-existing text in the field.
-  void AppendText(const std::wstring& text);
+  void AppendText(const string16& text);
+
+  // Returns the text that is currently selected.
+  string16 GetSelectedText() const;
 
   // Causes the edit field to be fully selected.
   void SelectAll();
@@ -201,7 +203,7 @@ class Textfield : public View {
   gfx::Font font_;
 
   // The text displayed in the Textfield.
-  std::wstring text_;
+  string16 text_;
 
   // True if this Textfield cannot accept input and is read-only.
   bool read_only_;

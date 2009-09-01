@@ -5,6 +5,7 @@
 #ifndef VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WRAPPER_H_
 #define VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WRAPPER_H_
 
+#include "base/string16.h"
 #include "base/gfx/native_widget_types.h"
 
 namespace views {
@@ -21,17 +22,17 @@ class NativeTextfieldWrapper {
   virtual ~NativeTextfieldWrapper() {}
 
   // Gets the text displayed in the wrapped native text field.
-  virtual std::wstring GetText() const = 0;
-  
+  virtual string16 GetText() const = 0;
+
   // Updates the text displayed with the text held by the Textfield.
   virtual void UpdateText() = 0;
 
   // Adds the specified text to the text already displayed by the wrapped native
   // text field.
-  virtual void AppendText(const std::wstring& text) = 0;
+  virtual void AppendText(const string16& text) = 0;
 
   // Gets the text that is selected in the wrapped native text field.
-  virtual std::wstring GetSelectedText() const = 0;
+  virtual string16 GetSelectedText() const = 0;
 
   // Selects all the text in the edit.  Use this in place of SetSelAll() to
   // avoid selecting the "phantom newline" at the end of the edit.

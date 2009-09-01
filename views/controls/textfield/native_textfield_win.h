@@ -40,10 +40,10 @@ class NativeTextfieldWin
   void AttachHack();
 
   // Overridden from NativeTextfieldWrapper:
-  virtual std::wstring GetText() const;
+  virtual string16 GetText() const;
   virtual void UpdateText();
-  virtual void AppendText(const std::wstring& text);
-  virtual std::wstring GetSelectedText() const;
+  virtual void AppendText(const string16& text);
+  virtual string16 GetSelectedText() const;
   virtual void SelectAll();
   virtual void ClearSelection();
   virtual void UpdateBorder();

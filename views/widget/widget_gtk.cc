@@ -221,7 +221,6 @@ void WidgetGtk::Init(GtkWidget* parent,
                         GDK_POINTER_MOTION_MASK |
                         GDK_KEY_PRESS_MASK |
                         GDK_KEY_RELEASE_MASK);
-
   SetRootViewForWidget(widget_, root_view_.get());
 
   MessageLoopForUI::current()->AddObserver(this);
@@ -241,8 +240,6 @@ void WidgetGtk::Init(GtkWidget* parent,
                    G_CALLBACK(CallButtonPress), NULL);
   g_signal_connect(G_OBJECT(window_contents_), "button_release_event",
                    G_CALLBACK(CallButtonRelease), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "focus_out_event",
-                   G_CALLBACK(CallFocusOut), NULL);
   g_signal_connect(G_OBJECT(window_contents_), "grab_broken_event",
                    G_CALLBACK(CallGrabBrokeEvent), NULL);
   g_signal_connect(G_OBJECT(window_contents_), "grab_notify",
@@ -263,7 +260,6 @@ void WidgetGtk::Init(GtkWidget* parent,
                    G_CALLBACK(CallFocusIn), NULL);
   g_signal_connect(G_OBJECT(widget_), "focus_out_event",
                    G_CALLBACK(CallFocusOut), NULL);
-
   g_signal_connect(G_OBJECT(widget_), "destroy",
                    G_CALLBACK(CallDestroy), NULL);
   if (transparent_) {

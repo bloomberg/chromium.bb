@@ -9,6 +9,7 @@
 #include "base/clipboard.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
@@ -18,6 +19,7 @@
 #include "views/controls/scroll_view.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/event.h"
+#include "views/focus/accelerator_handler.h"
 #include "views/focus/view_storage.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
@@ -26,6 +28,7 @@
 #include "views/widget/widget_win.h"
 #elif defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
+#include "views/window/window_gtk.h"
 #endif
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
@@ -204,7 +207,6 @@ TEST_F(ViewTest, DidChangeBounds) {
   EXPECT_EQ(v->bounds(), gfx::Rect(new_rect));
   delete v;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // AddRemoveNotifications
@@ -614,6 +616,42 @@ TEST_F(ViewTest, HitTestMasks) {
   EXPECT_EQ(v2, root_view->GetViewForPoint(v2_centerpoint));
   EXPECT_EQ(v1, root_view->GetViewForPoint(v1_origin));
   EXPECT_EQ(root_view, root_view->GetViewForPoint(v2_origin));
+}
+
+TEST_F(ViewTest, Textfield) {
+  const string16 kText = ASCIIToUTF16("Reality is that which, when you stop "
+                                      "believing it, doesn't go away.");
+  const string16 kExtraText = ASCIIToUTF16("Pretty deep, Philip!");
+  const string16 kEmptyString;
+
+  Clipboard clipboard;
+
+  Widget* window = CreateWidget();
+#if defined(OS_WIN)
+  static_cast<WidgetWin*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
+#else
+  static_cast<WidgetGtk*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
+#endif
+  RootView* root_view = window->GetRootView();
+
+  Textfield* textfield = new Textfield();
+  root_view->AddChildView(textfield);
+
+  // Test setting, appending text.
+  textfield->SetText(kText);
+  EXPECT_EQ(kText, textfield->text());
+  textfield->AppendText(kExtraText);
+  EXPECT_EQ(kText + kExtraText, textfield->text());
+  textfield->SetText(string16());
+  EXPECT_EQ(kEmptyString, textfield->text());
+
+  // Test selection related methods.
+  textfield->SetText(kText);
+  EXPECT_EQ(kEmptyString, textfield->GetSelectedText());
+  textfield->SelectAll();
+  EXPECT_EQ(kText, textfield->text());
+  textfield->ClearSelection();
+  EXPECT_EQ(kEmptyString, textfield->GetSelectedText());
 }
 
 #if defined(OS_WIN)

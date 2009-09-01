@@ -71,6 +71,7 @@
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils.h"
+#include "skia/ext/skia_utils_gtk.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
@@ -479,9 +480,7 @@ GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge) {
 }
 
 GdkColor SkColorToGdkColor(const SkColor& color) {
-  GdkColor color_gdk = GDK_COLOR_RGB(SkColorGetR(color), SkColorGetG(color),
-                                     SkColorGetB(color));
-  return color_gdk;
+  return skia::SkColorToGdkColor(color);
 }
 
 }  // namespace

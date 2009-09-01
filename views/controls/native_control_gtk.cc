@@ -55,7 +55,7 @@ void NativeControlGtk::VisibilityChanged(View* starting_from, bool is_visible) {
 
 void NativeControlGtk::Focus() {
   DCHECK(native_view());
-  NOTIMPLEMENTED();
+  gtk_widget_grab_focus(native_view());
 }
 
 void NativeControlGtk::NativeControlCreated(GtkWidget* native_control) {

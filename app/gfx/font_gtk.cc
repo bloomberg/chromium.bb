@@ -81,4 +81,31 @@ Font::Font() {
   CopyFont(*default_font_);
 }
 
+// static
+PangoFontDescription* Font::PangoFontFromGfxFont(
+    const gfx::Font& gfx_font) {
+  gfx::Font font = gfx_font;  // Copy so we can call non-const methods.
+  PangoFontDescription* pfd = pango_font_description_new();
+  pango_font_description_set_family(pfd, WideToUTF8(font.FontName()).c_str());
+  pango_font_description_set_size(pfd, font.FontSize() * PANGO_SCALE);
+
+  switch (font.style()) {
+    case gfx::Font::NORMAL:
+      // Nothing to do, should already be PANGO_STYLE_NORMAL.
+      break;
+    case gfx::Font::BOLD:
+      pango_font_description_set_weight(pfd, PANGO_WEIGHT_BOLD);
+      break;
+    case gfx::Font::ITALIC:
+      pango_font_description_set_style(pfd, PANGO_STYLE_ITALIC);
+      break;
+    case gfx::Font::UNDERLINED:
+      // TODO(deanm): How to do underlined?  Where do we use it?  Probably have
+      // to paint it ourselves, see pango_font_metrics_get_underline_position.
+      break;
+  }
+
+  return pfd;
+}
+
 }  // namespace gfx

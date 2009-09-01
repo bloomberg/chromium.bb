@@ -16,6 +16,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_gtk.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -139,11 +140,7 @@ bool GtkThemeProvider::UseGtkTheme() {
 }
 
 GdkColor GtkThemeProvider::GetGdkColor(int id) {
-  SkColor color = GetColor(id);
-  GdkColor gdkcolor =
-      GDK_COLOR_RGB(SkColorGetR(color), SkColorGetG(color),
-                    SkColorGetB(color));
-  return gdkcolor;
+  return skia::SkColorToGdkColor(GetColor(id));
 }
 
 GdkColor GtkThemeProvider::GetBorderColor() {

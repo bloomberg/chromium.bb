@@ -5,6 +5,9 @@
 #ifndef VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_GTK_H_
 #define VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_GTK_H_
 
+#include <gtk/gtk.h>
+
+#include "base/string16.h"
 #include "views/controls/native_control_gtk.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 
@@ -17,10 +20,10 @@ class NativeTextfieldGtk : public NativeControlGtk,
   ~NativeTextfieldGtk();
 
   // Overridden from NativeTextfieldWrapper:
-  virtual std::wstring GetText() const;
+  virtual string16 GetText() const;
   virtual void UpdateText();
-  virtual void AppendText(const std::wstring& text);
-  virtual std::wstring GetSelectedText() const;
+  virtual void AppendText(const string16& text);
+  virtual string16 GetSelectedText() const;
   virtual void SelectAll();
   virtual void ClearSelection();
   virtual void UpdateBorder();

@@ -4199,6 +4199,7 @@
             # on linux, though.
             'browser/download/download_manager_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
+	    'browser/gtk/options/cookies_view_unittest.cc',
             # Compact Language Detection (cld) is not supported in linux yet.
             '../third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
           ],
@@ -4217,6 +4218,7 @@
              ['exclude', 'browser/gtk/bookmark_editor_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/go_button_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/tabs/tab_renderer_gtk_unittest\\.cc$'],
+             ['exclude', 'browser/gtk/options/cookies_view_unittest\\.cc$'],
           ],
         }],
         ['OS=="mac"', {

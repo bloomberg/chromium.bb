@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
+#include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -290,7 +291,7 @@ void BookmarkBubbleView::Init() {
   layout->AddView(
       new Label(l10n_util::GetString(IDS_BOOMARK_BUBBLE_TITLE_TEXT)));
   title_tf_ = new views::Textfield();
-  title_tf_->SetText(GetTitle());
+  title_tf_->SetText(WideToUTF16(GetTitle()));
   layout->AddView(title_tf_);
 
   layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
@@ -420,7 +421,7 @@ void BookmarkBubbleView::ApplyEdits() {
   BookmarkModel* model = profile_->GetBookmarkModel();
   const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
   if (node) {
-    const std::wstring new_title = title_tf_->text();
+    const std::wstring new_title = UTF16ToWide(title_tf_->text());
     if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
       UserMetrics::RecordAction(L"BookmarkBubble_ChangeTitleInBubble",

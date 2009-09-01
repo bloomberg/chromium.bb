@@ -27,6 +27,7 @@ class NSFont;
 #endif
 typedef NSFont* NativeFont;
 #elif defined(OS_LINUX)
+typedef struct _PangoFontDescription PangoFontDescription;
 class SkTypeface;
 typedef SkTypeface* NativeFont;
 #else  // null port.
@@ -130,6 +131,10 @@ class Font {
   Font& operator=(const Font& other);
   // Setup a Skia context to use the current typeface
   void PaintSetup(SkPaint* paint) const;
+
+  // Converts |gfx_font| to a new pango font. Free the returned font with
+  // pango_font_description_free().
+  static PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font);
 #endif
 
  private:

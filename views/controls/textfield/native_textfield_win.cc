@@ -113,7 +113,7 @@ void NativeTextfieldWin::AttachHack() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldWin, NativeTextfieldWrapper implementation:
 
-std::wstring NativeTextfieldWin::GetText() const {
+string16 NativeTextfieldWin::GetText() const {
   int len = GetTextLength() + 1;
   std::wstring str;
   GetWindowText(WriteInto(&str, len), len);
@@ -132,14 +132,14 @@ void NativeTextfieldWin::UpdateText() {
   SetWindowText(text_to_set.c_str());
 }
 
-void NativeTextfieldWin::AppendText(const std::wstring& text) {
+void NativeTextfieldWin::AppendText(const string16& text) {
   int text_length = GetWindowTextLength();
   ::SendMessage(m_hWnd, TBM_SETSEL, true, MAKELPARAM(text_length, text_length));
   ::SendMessage(m_hWnd, EM_REPLACESEL, false,
                 reinterpret_cast<LPARAM>(text.c_str()));
 }
 
-std::wstring NativeTextfieldWin::GetSelectedText() const {
+string16 NativeTextfieldWin::GetSelectedText() const {
   // Figure out the length of the selection.
   long start;
   long end;

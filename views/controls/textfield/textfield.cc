@@ -81,13 +81,13 @@ bool Textfield::IsMultiLine() const {
   return !!(style_ & STYLE_MULTILINE);
 }
 
-void Textfield::SetText(const std::wstring& text) {
+void Textfield::SetText(const string16& text) {
   text_ = text;
   if (native_wrapper_)
     native_wrapper_->UpdateText();
 }
 
-void Textfield::AppendText(const std::wstring& text) {
+void Textfield::AppendText(const string16& text) {
   text_ += text;
   if (native_wrapper_)
     native_wrapper_->AppendText(text);
@@ -96,6 +96,12 @@ void Textfield::AppendText(const std::wstring& text) {
 void Textfield::SelectAll() {
   if (native_wrapper_)
     native_wrapper_->SelectAll();
+}
+
+string16 Textfield::GetSelectedText() const {
+  if (native_wrapper_)
+    return native_wrapper_->GetSelectedText();
+  return string16();
 }
 
 void Textfield::ClearSelection() const {
@@ -249,8 +255,16 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 
     // The native wrapper's lifetime will be managed by the view hierarchy after
     // we call AddChildView.
-    native_wrapper_ = CreateWrapper();
+    native_wrapper_ = NativeTextfieldWrapper::CreateWrapper(this);
     AddChildView(native_wrapper_->GetView());
+    // TODO(beng): Move this initialization to NativeTextfieldWin once it
+    //             subclasses NativeControlWin.
+    native_wrapper_->UpdateText();
+    native_wrapper_->UpdateBackgroundColor();
+    native_wrapper_->UpdateReadOnly();
+    native_wrapper_->UpdateFont();
+    native_wrapper_->UpdateEnabled();
+    native_wrapper_->UpdateBorder();
 
 #if defined(OS_WIN)
     // TODO(beng): remove this once NativeTextfieldWin subclasses

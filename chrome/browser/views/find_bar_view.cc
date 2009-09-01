@@ -164,7 +164,7 @@ FindBarView::~FindBarView() {
 }
 
 void FindBarView::SetFindText(const string16& find_text) {
-  find_text_->SetText(UTF16ToWide(find_text));
+  find_text_->SetText(find_text);
 }
 
 void FindBarView::UpdateForResult(const FindNotificationDetails& result,
@@ -175,9 +175,9 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
   // If we don't have any results and something was passed in, then that means
   // someone pressed F3 while the Find box was closed. In that case we need to
   // repopulate the Find box with what was passed in.
-  std::wstring search_string = find_text_->text();
+  string16 search_string = find_text_->text();
   if (search_string.empty() && !find_text.empty()) {
-    find_text_->SetText(UTF16ToWide(find_text));
+    find_text_->SetText(find_text);
     find_text_->SelectAll();
   }
 
@@ -412,7 +412,7 @@ void FindBarView::ButtonPressed(views::Button* sender) {
     case FIND_NEXT_TAG:
       if (!find_text_->text().empty()) {
         container_->GetFindBarController()->tab_contents()->StartFinding(
-            WideToUTF16(find_text_->text()),
+            find_text_->text(),
             sender->tag() == FIND_NEXT_TAG,
             false);  // Not case sensitive.
       }
@@ -435,7 +435,7 @@ void FindBarView::ButtonPressed(views::Button* sender) {
 // FindBarView, views::Textfield::Controller implementation:
 
 void FindBarView::ContentsChanged(views::Textfield* sender,
-                                  const std::wstring& new_contents) {
+                                  const string16& new_contents) {
   FindBarController* controller = container_->GetFindBarController();
   DCHECK(controller);
   // We must guard against a NULL tab_contents, which can happen if the text
@@ -449,8 +449,7 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
   // initiate search (even though old searches might be in progress).
   if (!new_contents.empty()) {
     // The last two params here are forward (true) and case sensitive (false).
-    controller->tab_contents()->StartFinding(WideToUTF16(new_contents),
-                                             true, false);
+    controller->tab_contents()->StartFinding(new_contents, true, false);
   } else {
     // The textbox is empty so we reset.  true = clear selection on page.
     controller->tab_contents()->StopFinding(true);
