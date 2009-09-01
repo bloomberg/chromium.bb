@@ -95,7 +95,7 @@ def Main(argv=None):
   generate_localizer = os.path.basename(argv[0])
 
   # Args
-  if len(argv) < 4:
+  if len(argv) < 3:
     sys.stderr.write('%s:0: error: Expected output file and then xibs\n' %
                      generate_localizer);
     return 1
