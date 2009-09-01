@@ -12,3 +12,18 @@ DownloadTest.UnknownSize
 ErrorPageTest.DNSError_GoBack2Forward2
 # Flakily hangs on Linux, may be due to same issue
 ErrorPageTest.DNSError_GoBack2AndForward
+# Flakily hangs on Mac
+ErrorPageTest.IFrameDNSError_GoBack
+# Hung several times locally on mac
+ErrorPageTest.DNSError_GoBack1
+# Hung one each on the mac bots
+AutomatedUITestBase.CloseBrowserWindow
+AutomatedUITestBase.OpenBrowserWindow
+ErrorPageTest.DNSError_GoBack2
+ResourceDispatcherTest.CrossSiteNavigationErrorPage
+SessionHistoryTest.JavascriptHistory
+TabRestoreUITest.RestoreCrossSiteWithExistingSiteInstance
+# Hung 7 times on the mac bots!
+ResourceDispatcherTest.SyncXMLHttpRequest_DuringUnload
+# Hung 4 times on the mac bots!
+TabRestoreUITest.BasicRestoreFromClosedWindow
