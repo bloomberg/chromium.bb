@@ -43,6 +43,7 @@
 #define _PTHREAD_H 1
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+#include <sys/nacl_nice.h>
 #include <sys/queue.h>
 #include <sys/types.h>
 /* NOTE: we assume the header file is the right one for the target */
