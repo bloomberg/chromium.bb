@@ -289,13 +289,13 @@ function packExtension() {
         <tr>
           <td width="100%" valign="top" align="left">
 
-            <h2>Installed Extensions</h2>
+            <h2>Installed extensions</h2>
             <div class="content">
 
               <div id="extensionTemplate">
 
                 <div class="extension-name" jsdisplay="extensions.length === 0">
-                    No Extensions Installed</div>
+                    No extensions installed</div>
 
                 <div jsdisplay="extensions.length > 0">
                   <div class="extension" jsselect="extensions">
@@ -307,7 +307,7 @@ function packExtension() {
                     <div class="extension-details">
                       <div class="extension-id">ID: <span jscontent="id"></div>
                       <div class="extension-description" jscontent="description"></div>
-                      Active Views:
+                      Active views:
                       <ul class="extension-views">
                         <li jsselect="views"><span jscontent="path"></span> -
                           <a jsvalues=".extensionView:$this" href="#"
@@ -342,8 +342,8 @@ function packExtension() {
             <h2>Tools</h2>
 
             <div class="sidebar-content">
-              <button onclick="loadExtension()">Load Unpacked Extension...</button><br />
-              <button onclick="packExtension()">Pack Extension...</button>
+              <button onclick="loadExtension()">Load unpacked extension...</button><br />
+              <button onclick="packExtension()">Pack extension...</button>
             </div>
           </td>
         </tr>

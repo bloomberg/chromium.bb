@@ -8,8 +8,8 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extensions_ui.h"
+#include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "grit/generated_resources.h"
 #include "views/controls/label.h"
@@ -17,41 +17,11 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/standard_layout.h"
 #include "views/view.h"
+#include "views/window/dialog_client_view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
 namespace {
-
-class PackDialogContent;
-
-// Manages packing an extension on the file thread and reporting the result
-// back to the UI.
-class PackExtensionJob : public base::RefCounted<PackExtensionJob> {
- public:
-  PackExtensionJob(PackDialogContent* dialog_content,
-                   const FilePath& root_directory,
-                   const FilePath& key_file);
-
-  // PackDialogContent calls this when it is closing, so that PackExtensionJob
-  // doesn't try to call back to the UI after it's destroyed.
-  void OnDialogClosed();
-
- private:
-  void RunOnFileThread();
-  void ReportSuccessOnUIThread();
-  void ReportFailureOnUIThread(const std::string& error);
-
-  MessageLoop* ui_loop_;
-  MessageLoop* file_loop_;
-  PackDialogContent* dialog_content_;
-  FilePath root_directory_;
-  FilePath key_file_;
-  FilePath crx_file_out_;
-  FilePath key_file_out_;
-
-  DISALLOW_COPY_AND_ASSIGN(PackExtensionJob);
-};
-
 
 // Puts up the the pack dialog, which has this basic layout:
 //
@@ -63,11 +33,12 @@ class PackExtensionJob : public base::RefCounted<PackExtensionJob> {
 //                                [ok] [cancel]
 class PackDialogContent
   : public views::View,
+    public PackExtensionJob::Client,
     public SelectFileDialog::Listener,
     public views::ButtonListener,
     public views::DialogDelegate {
  public:
-  PackDialogContent() {
+  PackDialogContent() : ok_button_(NULL) {
     using views::GridLayout;
 
     // Setup the layout.
@@ -116,7 +87,10 @@ class PackDialogContent
     layout->AddView(private_key_button_);
   }
 
-  void OnPackSuccess(const FilePath& crx_file, const FilePath& pem_file) {
+  // PackExtensionJob::Client
+  virtual void OnPackSuccess(const FilePath& crx_file,
+                             const FilePath& pem_file) {
+    ok_button_->SetEnabled(true);
     std::wstring message;
     if (!pem_file.empty()) {
       message = l10n_util::GetStringF(
@@ -132,9 +106,10 @@ class PackDialogContent
         l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_SUCCESS_TITLE),
         MB_OK | MB_SETFOREGROUND);
     GetWindow()->Close();
-}
+  }
 
   void OnPackFailure(const std::wstring& error) {
+    ok_button_->SetEnabled(true);
     win_util::MessageBox(GetWindow()->GetNativeWindow(), error,
         l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_FAILURE_TITLE),
         MB_OK | MB_SETFOREGROUND);
@@ -165,16 +140,24 @@ class PackDialogContent
       return false;
     }
 
-    pack_job_ = new PackExtensionJob(this, root_directory, key_file);
+    pack_job_ = new PackExtensionJob(this, root_directory, key_file,
+        ChromeThread::GetMessageLoop(ChromeThread::FILE));
 
     // Prevent the dialog from closing because PackExtensionJob is asynchronous.
     // We need to wait to find out if it succeeded before closing the window.
+    //
+    // Also disable the OK button while this is going so the user understands
+    // that something is happening.
+    views::DialogClientView* dialog = static_cast<views::DialogClientView*>(
+        GetWindow()->GetClientView());
+    ok_button_ = dialog->ok_button();
+    ok_button_->SetEnabled(false);
     return false;
   }
 
   virtual void OnClose() {
     if (pack_job_)
-      pack_job_->OnDialogClosed();
+      pack_job_->ClearClient();
   }
 
   // WindowDelegate
@@ -225,54 +208,13 @@ class PackDialogContent
   views::Textfield* private_key_textbox_;
   views::NativeButton* extension_root_button_;
   views::NativeButton* private_key_button_;
+  views::NativeButton* ok_button_;
 
   scoped_refptr<SelectFileDialog> file_dialog_;
   scoped_refptr<PackExtensionJob> pack_job_;
 
   DISALLOW_COPY_AND_ASSIGN(PackDialogContent);
 };
-
-
-PackExtensionJob::PackExtensionJob(PackDialogContent* dialog_content,
-                                   const FilePath& root_directory,
-                                   const FilePath& key_file)
-    : ui_loop_(MessageLoop::current()), dialog_content_(dialog_content),
-      root_directory_(root_directory), key_file_(key_file) {
-  ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &PackExtensionJob::RunOnFileThread));
-}
-
-void PackExtensionJob::OnDialogClosed() {
-  dialog_content_ = NULL;
-}
-
-void PackExtensionJob::RunOnFileThread() {
-  crx_file_out_ = root_directory_.ReplaceExtension(FILE_PATH_LITERAL("crx"));
-
-  if (key_file_.empty())
-    key_file_out_ = root_directory_.ReplaceExtension(FILE_PATH_LITERAL("pem"));
-
-  // TODO(aa): Need to internationalize the errors that ExtensionCreator
-  // returns.
-  ExtensionCreator creator;
-  if (creator.Run(root_directory_, crx_file_out_, key_file_, key_file_out_)) {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &PackExtensionJob::ReportSuccessOnUIThread));
-  } else {
-    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &PackExtensionJob::ReportFailureOnUIThread, creator.error_message()));
-  }
-}
-
-void PackExtensionJob::ReportSuccessOnUIThread() {
-  if (dialog_content_)
-    dialog_content_->OnPackSuccess(crx_file_out_, key_file_out_);
-}
-
-void PackExtensionJob::ReportFailureOnUIThread(const std::string& error) {
-  if (dialog_content_)
-    dialog_content_->OnPackFailure(UTF8ToWide(error));
-}
 
 } // namespace
 
