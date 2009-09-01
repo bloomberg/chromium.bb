@@ -1035,3 +1035,67 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0x4, ExprSize8 | ExprSignedHex },
 };
+0000000000000000: dc e5                                        fsubr %st5, %st0
+  { 2, { 0xdc, 0xe5, 0x00 },
+    NACLi_X87,
+    InstFlag(OpcodePlusR),
+    InstFsubr,
+    3, {
+      { OpcodeBaseMinus5, OpFlag(OperandExtendsOpcode) },
+      { St_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { RegST0, OpFlag(OpUse) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %st5, ExprSet | ExprUsed },
+  { OperandReference[1] , 2, 0 },
+  { ExprRegister[0] , %st0, ExprUsed },
+};
+0000000000000000: dc f3                                        fdivr %st3, %st0
+  { 2, { 0xdc, 0xf3, 0x00 },
+    NACLi_X87,
+    InstFlag(OpcodePlusR),
+    InstFdivr,
+    3, {
+      { OpcodeBaseMinus3, OpFlag(OperandExtendsOpcode) },
+      { St_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { RegST0, OpFlag(OpUse) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %st3, ExprSet | ExprUsed },
+  { OperandReference[1] , 2, 0 },
+  { ExprRegister[0] , %st0, ExprUsed },
+};
+0000000000000000: dc ea                                        fsub %st2, %st0
+  { 2, { 0xdc, 0xea, 0x00 },
+    NACLi_X87,
+    InstFlag(OpcodePlusR),
+    InstFsub,
+    3, {
+      { OpcodeBaseMinus2, OpFlag(OperandExtendsOpcode) },
+      { St_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { RegST0, OpFlag(OpUse) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %st2, ExprSet | ExprUsed },
+  { OperandReference[1] , 2, 0 },
+  { ExprRegister[0] , %st0, ExprUsed },
+};
+0000000000000000: dc ce                                        fmul %st6, %st0
+  { 2, { 0xdc, 0xce, 0x00 },
+    NACLi_X87,
+    InstFlag(OpcodePlusR),
+    InstFmul,
+    3, {
+      { OpcodeBaseMinus6, OpFlag(OperandExtendsOpcode) },
+      { St_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { RegST0, OpFlag(OpUse) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %st6, ExprSet | ExprUsed },
+  { OperandReference[1] , 2, 0 },
+  { ExprRegister[0] , %st0, ExprUsed },
+};

@@ -36,17 +36,38 @@
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
 void DefineDCOpcodes() {
-  int i;
-  DefineOpcodePrefix(PrefixDC);
+  int group;
+  int column;
+  int offset;
+  static const uint8_t kRow[] = {
+    0xC0, 0xC0, /* column groups: 0 to 7, 8 to F */
+    0xE0, 0xE0,
+    0xF0, 0xF0,
+  };
+  static const InstMnemonic kOpcodeName[] = {
+    InstFadd, /* row 0xC0, column 0 to 7 */
+    InstFmul, /* row 0xC0, column 8 to F */
+    InstFsubr,
+    InstFsub,
+    InstFdivr,
+    InstFdiv
+  };
 
-  /* TODO(karl) Fill this out with other examples. */
-  for (i = 0; i < 8; i++) {
-    DefineOpcode(0xC0 + i,
-                 NACLi_X87,
-                 InstFlag(OpcodePlusR),
-                 InstFadd);
-    DefineOperand(OpcodeBaseMinus0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(St_Operand, OpFlag(OpUse) | OpFlag(OpSet));
-    DefineOperand(RegST0, OpFlag(OpUse));
+  DefineOpcodePrefix(PrefixDC);
+  offset = 0;
+  for (group = 0; group < 6; ++group) {
+    for (column = 0; column < 8; column++) {
+      DefineOpcode(kRow[group] + column + offset,
+                   NACLi_X87,
+                   InstFlag(OpcodePlusR),
+                   kOpcodeName[group]);
+      DefineOperand(OpcodeBaseMinus0 + column, OpFlag(OperandExtendsOpcode));
+      DefineOperand(St_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+      DefineOperand(RegST0, OpFlag(OpUse));
+    }
+    if (offset)
+      offset = 0;
+    else
+      offset = 8;
   }
 }
