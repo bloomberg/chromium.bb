@@ -192,9 +192,13 @@ div.leftNavSelected {
 
 #pageFooter {
   margin-top:5em;
+  padding:0 10em;
   text-align:center;
   color: rgb(125, 125, 125);
+  font-size: 80%;
 }
+
+#pageFooter a:link { color: rgb(125,125,125) }
 
 #mainColumn table {
   border-collapse:collapse;
