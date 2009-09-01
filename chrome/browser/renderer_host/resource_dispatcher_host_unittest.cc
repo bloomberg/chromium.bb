@@ -12,11 +12,30 @@
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/render_messages.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
+
+namespace {
+
+// Returns the resource response header structure for this request.
+void GetResponseHead(const std::vector<IPC::Message>& messages,
+                     ResourceResponseHead* response_head) {
+  ASSERT_GE(messages.size(), 2U);
+
+  // The first messages should be received response.
+  ASSERT_EQ(ViewMsg_Resource_ReceivedResponse::ID, messages[0].type());
+
+  void* iter = NULL;
+  int request_id;
+  ASSERT_TRUE(IPC::ReadParam(&messages[0], &iter, &request_id));
+  ASSERT_TRUE(IPC::ReadParam(&messages[0], &iter, response_head));
+}
+
+}  // namespace
 
 static int RequestIDForMessage(const IPC::Message& msg) {
   int request_id = -1;
@@ -125,8 +144,8 @@ class ResourceDispatcherHostTest : public testing::Test,
                                    public ResourceDispatcherHost::Receiver {
  public:
   ResourceDispatcherHostTest()
-      : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
-        host_(NULL) {
+      : Receiver(ChildProcessInfo::RENDER_PROCESS, -1), host_(NULL),
+        old_factory_(NULL) {
     set_handle(base::GetCurrentProcessHandle());
   }
   // ResourceDispatcherHost::Receiver implementation
@@ -145,12 +164,21 @@ class ResourceDispatcherHostTest : public testing::Test,
  protected:
   // testing::Test
   virtual void SetUp() {
+    DCHECK(!test_fixture_);
+    test_fixture_ = this;
     ChildProcessSecurityPolicy::GetInstance()->Add(0);
-    URLRequest::RegisterProtocolFactory("test", &URLRequestTestJob::Factory);
+    URLRequest::RegisterProtocolFactory("test",
+                                        &ResourceDispatcherHostTest::Factory);
     EnsureTestSchemeIsAllowed();
   }
   virtual void TearDown() {
     URLRequest::RegisterProtocolFactory("test", NULL);
+    if (!scheme_.empty())
+      URLRequest::RegisterProtocolFactory(scheme_, old_factory_);
+
+    DCHECK(test_fixture_ == this);
+    test_fixture_ = NULL;
+
     ChildProcessSecurityPolicy::GetInstance()->Remove(0);
 
     // The plugin lib is automatically loaded during these test
@@ -184,10 +212,45 @@ class ResourceDispatcherHostTest : public testing::Test,
     }
   }
 
+  // Set a particular response for any request from now on. To switch back to
+  // the default bahavior, pass an empty |headers|. |headers| should be raw-
+  // formatted (NULLs instead of EOLs).
+  void SetResponse(const std::string& headers, const std::string& data) {
+    response_headers_ = headers;
+    response_data_ = data;
+  }
+
+  // Intercept requests for the given protocol.
+  void HandleScheme(const std::string& scheme) {
+    DCHECK(scheme_.empty());
+    DCHECK(!old_factory_);
+    scheme_ = scheme;
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+                       scheme_, &ResourceDispatcherHostTest::Factory);
+  }
+
+  // Our own URLRequestJob factory.
+  static URLRequestJob* Factory(URLRequest* request,
+                                const std::string& scheme) {
+    if (test_fixture_->response_headers_.empty()) {
+      return new URLRequestTestJob(request);
+    } else {
+      return new URLRequestTestJob(request, test_fixture_->response_headers_,
+                                   test_fixture_->response_data_, false);
+    }
+  }
+
   MessageLoopForIO message_loop_;
   ResourceDispatcherHost host_;
   ResourceIPCAccumulator accum_;
+  std::string response_headers_;
+  std::string response_data_;
+  std::string scheme_;
+  URLRequest::ProtocolFactory* old_factory_;
+  static ResourceDispatcherHostTest* test_fixture_;
 };
+// Static.
+ResourceDispatcherHostTest* ResourceDispatcherHostTest::test_fixture_ = NULL;
 
 void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,
                                                  int request_id,
@@ -697,4 +760,89 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
                          URLRequestTestJob::test_data_2());
   CheckSuccessfulRequest(msgs[kMaxRequests + 3],
                          URLRequestTestJob::test_data_2());
+}
+
+// Tests that we sniff the mime type for a simple request.
+TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  std::string response("HTTP/1.1 200 OK\n\n");
+  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
+                                                            response.size()));
+  std::string response_data("<html><title>Test One</title></html>");
+  SetResponse(raw_headers, response_data);
+
+  HandleScheme("http");
+  MakeTestRequest(0, 1, GURL("http:bla"));
+
+  // Flush all pending requests.
+  while (URLRequestTestJob::ProcessOnePendingMessage());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  // Sorts out all the messages we saw by request.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+  ASSERT_EQ(1U, msgs.size());
+
+  ResourceResponseHead response_head;
+  GetResponseHead(msgs[0], &response_head);
+  ASSERT_EQ("text/html", response_head.mime_type);
+}
+
+// Tests that we don't sniff the mime type when the server provides one.
+TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  std::string response("HTTP/1.1 200 OK\n"
+                       "Content-type: image/jpeg\n\n");
+  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
+                                                            response.size()));
+  std::string response_data("<html><title>Test One</title></html>");
+  SetResponse(raw_headers, response_data);
+
+  HandleScheme("http");
+  MakeTestRequest(0, 1, GURL("http:bla"));
+
+  // Flush all pending requests.
+  while (URLRequestTestJob::ProcessOnePendingMessage());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  // Sorts out all the messages we saw by request.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+  ASSERT_EQ(1U, msgs.size());
+
+  ResourceResponseHead response_head;
+  GetResponseHead(msgs[0], &response_head);
+  ASSERT_EQ("image/jpeg", response_head.mime_type);
+}
+
+// Tests that we don't sniff the mime type when there is no message body.
+TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  std::string response("HTTP/1.1 304 Not Modified\n\n");
+  std::string raw_headers(net::HttpUtil::AssembleRawHeaders(response.data(),
+                                                            response.size()));
+  std::string response_data;
+  SetResponse(raw_headers, response_data);
+
+  HandleScheme("http");
+  MakeTestRequest(0, 1, GURL("http:bla"));
+
+  // Flush all pending requests.
+  while (URLRequestTestJob::ProcessOnePendingMessage());
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  // Sorts out all the messages we saw by request.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+  ASSERT_EQ(1U, msgs.size());
+
+  ResourceResponseHead response_head;
+  GetResponseHead(msgs[0], &response_head);
+  ASSERT_EQ("", response_head.mime_type);
 }
