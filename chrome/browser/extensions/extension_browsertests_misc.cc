@@ -544,7 +544,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
   bool result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"testWindowOpen('chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaac/newtab.html')", &result);
+      L"testWindowOpen('"
+      L"chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab/newtab.html"
+      L"')", &result);
   ASSERT_TRUE(result);
 
   // Now the current tab should be the new tab.
