@@ -2431,3 +2431,9 @@ BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-style-filter.html = PASS 
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS CRASH
 
 BUG10480 LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
+
+// WebKit roll to 47941
+// These tests went red with r47922 change to FontLinux, possibly need rebaselining.
+BUG_MICHAELN LINUX : LayoutTests/fast/text/drawBidiText.html = FAIL
+BUG_MICHAELN LINUX : LayoutTests/fast/text/international/bidi-control-chars-treated-as-ZWS.html = FAIL
+BUG_MICHAELN LINUX : LayoutTests/fast/text/international/bidi-listbox-atsui.html = FAIL
