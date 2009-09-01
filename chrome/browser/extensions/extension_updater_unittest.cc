@@ -60,8 +60,8 @@ class ScopedTempPrefService {
   ScopedTempPrefService() {
     // Make sure different tests won't use the same prefs file. It will cause
     // problem when different tests are running in parallel.
-    FilePath pref_file = temp_dir_.path().AppendASCII(
-      StringPrintf("prefs_%lld", base::RandUint64()));
+    temp_dir_.CreateUniqueTempDir();
+    FilePath pref_file = temp_dir_.path().AppendASCII("prefs");
     prefs_.reset(new PrefService(pref_file, NULL));
   }
 
@@ -72,8 +72,9 @@ class ScopedTempPrefService {
   }
 
  private:
-  scoped_ptr<PrefService> prefs_;
+  // Ordering matters, we want |prefs_| to be destroyed before |temp_dir_|.
   ScopedTempDir temp_dir_;
+  scoped_ptr<PrefService> prefs_;
 };
 
 const char* kIdPrefix = "000000000000000000000000000000000000000";
@@ -442,6 +443,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(file_util::ReadFileToString(tmpfile_path, &file_contents));
     EXPECT_TRUE(extension_data == file_contents);
 
+    file_util::Delete(tmpfile_path, false);
     URLFetcher::set_factory(NULL);
   }
 
@@ -528,6 +530,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_FALSE(tmpfile_path.empty());
     EXPECT_EQ(id1, service.extension_id());
     message_loop.RunAllPending();
+    file_util::Delete(tmpfile_path, false);
 
     // Make sure the second fetch finished and asked the service to do an
     // update.
@@ -546,6 +549,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(file_util::ReadFileToString(service.install_path(),
                                             &file_contents));
     EXPECT_TRUE(extension_data2 == file_contents);
+    file_util::Delete(service.install_path(), false);
   }
 };
 
