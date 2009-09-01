@@ -525,6 +525,8 @@
         'ext/SkMemory_new_handler.cpp',
         'ext/skia_utils.cc',
         'ext/skia_utils.h',
+        'ext/skia_utils_gtk.cc',
+        'ext/skia_utils_gtk.h',
         'ext/skia_utils_mac.mm',
         'ext/skia_utils_mac.h',
         'ext/skia_utils_win.cc',
@@ -566,7 +568,7 @@
             ['exclude', '/mac/'] ],
         }],
         [ 'OS != "linux"', {
-          'sources/': [ ['exclude', '_linux\\.(cc|cpp)$'] ],
+          'sources/': [ ['exclude', '_(linux|gtk)\\.(cc|cpp)$'] ],
           'sources!': [
             '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
             '../third_party/skia/src/ports/SkFontHost_TryeType_Tables.cpp',
