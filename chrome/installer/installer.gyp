@@ -425,6 +425,7 @@
                 'linux/internal/common/prerm.include',
                 'linux/internal/common/repo.cron',
                 'linux/internal/common/rpm.include',
+                'linux/internal/common/rpmrepo.cron',
                 'linux/internal/common/updater',
                 'linux/internal/common/wrapper',
               ]
@@ -486,11 +487,23 @@
               '<(PRODUCT_DIR)/locales/en-US.pak',
               '<(PRODUCT_DIR)/themes/default.pak',
             ],
-            # TODO(mmoss) The ffmpeg libs are currently 32-bit only. Once we
-            # have 64-bit, this will need to copy the correct versions to the
-            # build output.
+            'deb_build': '<(PRODUCT_DIR)/installer/debian/build.sh',
+            'rpm_build': '<(PRODUCT_DIR)/installer/rpm/build.sh',
+            'deb_cmd': ['bash', '<(deb_build)', '-o' '<(PRODUCT_DIR)',
+                        '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)'],
+            'rpm_cmd': ['bash', '<(rpm_build)', '-o' '<(PRODUCT_DIR)',
+                        '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)'],
             'conditions': [
+              ['target_arch=="ia32"', {
+                'deb_arch': 'i386',
+                'rpm_arch': 'i386',
+              }],
               ['target_arch=="x64"', {
+                'deb_arch': 'amd64',
+                'rpm_arch': 'x86_64',
+                # TODO(mmoss) The ffmpeg libs are currently 32-bit only. Once
+                # we have 64-bit, this will need to copy the correct versions
+                # to the build output.
                 'input_files!': [
                   '<(PRODUCT_DIR)/libavcodec.so.52',
                   '<(PRODUCT_DIR)/libavformat.so.52',
@@ -500,58 +513,106 @@
             ],
           },
           'actions': [
+            # TODO(mmoss) gyp looping construct would be handy here ...
+            # These deb_packages* and rpm_packages* actions are the same except
+            # for the 'channel' variable.
             {
-              'action_name': 'deb_packages',
+              'variables': {
+                'channel': 'unstable',
+              },
+              'action_name': 'deb_packages_<(channel)',
               'process_outputs_as_sources': 1,
               'inputs': [
-                '<(PRODUCT_DIR)/installer/debian/build.sh',
+                '<(deb_build)',
                 '<@(input_files)',
               ],
-              'conditions': [
-                ['target_arch=="ia32"', {
-                  'outputs': [
-                    '<(PRODUCT_DIR)/google-chrome-unstable_<(version)-r<(revision)_i386.deb',
-                    # TODO(mmoss) Add other outputs once we start building
-                    # other channels.
-                  ],
-                }],
-                ['target_arch=="x64"', {
-                  'outputs': [
-                    '<(PRODUCT_DIR)/google-chrome-unstable_<(version)-r<(revision)_amd64.deb',
-                    # TODO(mmoss) Add other outputs once we start building
-                    # other channels.
-                  ],
-                }],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
               ],
-              'action': [
-                'bash', '<(PRODUCT_DIR)/installer/debian/build.sh',
-                '-o' '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)',
-                '-a', '<(target_arch)', '-c', 'dev',
+              'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
+            },
+            {
+              'variables': {
+                'channel': 'beta',
+              },
+              'action_name': 'deb_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(deb_build)',
+                '<@(input_files)',
               ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
+              ],
+              'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
+            },
+            {
+              'variables': {
+                'channel': 'stable',
+              },
+              'action_name': 'deb_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(deb_build)',
+                '<@(input_files)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
+              ],
+              'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
             },
           ],
           'conditions': [
             ['target_arch=="ia32"', {
               'actions': [
                 {
-                  'action_name': 'rpm_packages',
+                  'variables': {
+                    'channel': 'unstable',
+                  },
+                  'action_name': 'rpm_packages_<(channel)',
                   'process_outputs_as_sources': 1,
                   'inputs': [
-                    '<(PRODUCT_DIR)/installer/rpm/build.sh',
+                    '<(rpm_build)',
                     '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
                     '<@(input_files)',
                   ],
                   'outputs': [
-                    '<(PRODUCT_DIR)/google-chrome-unstable-<(version)-<(revision).i386.rpm',
-                    # TODO(mmoss) Add other outputs once we start building
-                    # other channels.
+                    '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
                   ],
-                  'action': [
-                    'bash', '<(PRODUCT_DIR)/installer/rpm/build.sh',
-                    '-o' '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)',
-                    '-a', '<(target_arch)', '-c', 'dev',
+                  'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
+                },
+                {
+                  'variables': {
+                    'channel': 'beta',
+                  },
+                  'action_name': 'rpm_packages_<(channel)',
+                  'process_outputs_as_sources': 1,
+                  'inputs': [
+                    '<(rpm_build)',
+                    '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
+                    '<@(input_files)',
                   ],
-                }
+                  'outputs': [
+                    '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
+                  ],
+                  'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
+                },
+                {
+                  'variables': {
+                    'channel': 'stable',
+                  },
+                  'action_name': 'rpm_packages_<(channel)',
+                  'process_outputs_as_sources': 1,
+                  'inputs': [
+                    '<(rpm_build)',
+                    '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
+                    '<@(input_files)',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
+                  ],
+                  'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
+                },
               ],
             }],
             ['target_arch=="x64"', {
