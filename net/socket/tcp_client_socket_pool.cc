@@ -44,6 +44,20 @@ TCPConnectJob::~TCPConnectJob() {
   // ~SingleRequestHostResolver and ~ClientSocket will take care of it.
 }
 
+LoadState TCPConnectJob::GetLoadState() const {
+  switch (next_state_) {
+    case kStateResolveHost:
+    case kStateResolveHostComplete:
+      return LOAD_STATE_RESOLVING_HOST;
+    case kStateTCPConnect:
+    case kStateTCPConnectComplete:
+      return LOAD_STATE_CONNECTING;
+    default:
+      NOTREACHED();
+      return LOAD_STATE_IDLE;
+  }
+}
+
 int TCPConnectJob::ConnectInternal() {
   next_state_ = kStateResolveHost;
   return DoLoop(OK);
@@ -88,13 +102,11 @@ int TCPConnectJob::DoLoop(int result) {
 }
 
 int TCPConnectJob::DoResolveHost() {
-  set_load_state(LOAD_STATE_RESOLVING_HOST);
   next_state_ = kStateResolveHostComplete;
   return resolver_.Resolve(resolve_info_, &addresses_, &callback_, load_log());
 }
 
 int TCPConnectJob::DoResolveHostComplete(int result) {
-  DCHECK_EQ(LOAD_STATE_RESOLVING_HOST, load_state());
   if (result == OK)
     next_state_ = kStateTCPConnect;
   return result;
@@ -102,7 +114,6 @@ int TCPConnectJob::DoResolveHostComplete(int result) {
 
 int TCPConnectJob::DoTCPConnect() {
   next_state_ = kStateTCPConnectComplete;
-  set_load_state(LOAD_STATE_CONNECTING);
   set_socket(client_socket_factory_->CreateTCPClientSocket(addresses_));
   connect_start_time_ = base::TimeTicks::Now();
   // TODO(eroman): Socket::Connect() should take a LoadLog.
@@ -110,7 +121,6 @@ int TCPConnectJob::DoTCPConnect() {
 }
 
 int TCPConnectJob::DoTCPConnectComplete(int result) {
-  DCHECK_EQ(load_state(), LOAD_STATE_CONNECTING);
   if (result == OK) {
     DCHECK(connect_start_time_ != base::TimeTicks());
     base::TimeDelta connect_duration =

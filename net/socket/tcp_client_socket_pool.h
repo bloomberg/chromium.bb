@@ -35,6 +35,7 @@ class TCPConnectJob : public ConnectJob {
   virtual ~TCPConnectJob();
 
   // ConnectJob methods.
+  virtual LoadState GetLoadState() const;
 
  private:
   enum State {
