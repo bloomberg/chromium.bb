@@ -867,20 +867,12 @@ void TabRendererGtk::PaintLoadingAnimation(gfx::Canvas* canvas) {
       loading_animation_.loading_animation_frames();
   const int image_size = frames->height();
   const int image_offset = loading_animation_.animation_frame() * image_size;
-  const int dst_y = favicon_bounds_.y();
+  DCHECK(image_size == favicon_bounds_.height());
+  DCHECK(image_size == favicon_bounds_.width());
 
-  // Just like with the Tab's title and favicon, the position for the page
-  // loading animation also needs to be mirrored if the UI layout is RTL.
-  int dst_x;
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
-    dst_x = width() - kLeftPadding - image_size;
-  } else {
-    dst_x = kLeftPadding;
-  }
-
-  canvas->DrawBitmapInt(*frames, image_offset, 0, image_size,
-                        image_size, dst_x, dst_y, image_size, image_size,
-                        false);
+  canvas->DrawBitmapInt(*frames, image_offset, 0, image_size, image_size,
+      favicon_bounds_.x(), favicon_bounds_.y(), image_size, image_size,
+      false);
 }
 
 int TabRendererGtk::IconCapacity() const {
