@@ -639,7 +639,6 @@ BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/security/local-video-src-from-re
 
 // These tests are for <audio> and <video> and they do not run well on Windows.
 BUG13907 WIN SLOW : LayoutTests/http/tests/security/local-video-source-from-remote.html = FAIL
-BUG13907 WIN SLOW : LayoutTests/http/tests/security/local-video-src-from-remote.html = FAIL
 BUG13907 WIN : LayoutTests/http/tests/media/remove-while-loading.html = FAIL
 BUG13907 WIN : LayoutTests/http/tests/media/video-play-stall-seek.html = FAIL
 BUG13907 WIN : LayoutTests/http/tests/media/video-play-stall.html = FAIL
@@ -1105,10 +1104,6 @@ BUG10313 : LayoutTests/plugins/bindings-test.html = FAIL
 // question mark) in them
 BUG10315 WIN LINUX : LayoutTests/fast/encoding/invalid-UTF-8.html = FAIL
 
-// HTTPS tests fail on the open source buildbot with error "cross-site
-// not access allowed".  See bug # 2306
-BUG10316 MAC : LayoutTests/http/tests/ssl/verify-ssl-enabled.php = FAIL PASS
-
 // These require application cache to be enabled.  Skip the tests because
 // they're all timing out.  TODO(tc): Upstream changes to the test so they
 // fail quickly if window.applicationCache is undefined (then we don't have to
@@ -1223,7 +1218,7 @@ BUG10324 WIN LINUX : LayoutTests/editing/selection/caret-rtl-2.html = FAIL
 // it doesn't need to block the current release
 BUG10325 WIN : LayoutTests/fast/dom/resource-locations-in-created-html-document.html = FAIL
 
-BUG10326 : LayoutTests/http/tests/messaging/cross-domain-message-event-dispatch.html = TIMEOUT FAIL PASS
+BUG10326 DEBUG : LayoutTests/http/tests/messaging/cross-domain-message-event-dispatch.html = TIMEOUT FAIL PASS
 
 // GURL/KURL difference in handling of "http:".
 // New test. We should fix it, but it doesn't need to block the current release
@@ -1374,7 +1369,6 @@ BUG10353 WIN LINUX : LayoutTests/fast/forms/textarea-rows-cols.html = FAIL
 
 // Form control scrollbars seem to be drawn incorrectly.
 BUG10353 LINUX : LayoutTests/fast/replaced/width100percent-textarea.html = FAIL
-BUG10353 LINUX : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
 BUG10668 : chrome/fast/dom/xss-DENIED-javascript-variations.html = FAIL
 // This test sometimes fails indefinitely, other times it takes 1-2 seconds.
 BUG14009 WIN MAC LINUX : LayoutTests/http/tests/misc/dns-prefetch-control.html = TIMEOUT PASS FAIL
@@ -1387,11 +1381,6 @@ BUG14009 WIN MAC LINUX : LayoutTests/http/tests/misc/dns-prefetch-control.html =
 // release
 BUG10354 WIN LINUX : LayoutTests/fast/layers/opacity-transforms.html = FAIL
 BUG10354 MAC : LayoutTests/plugins/netscape-construct.html = FAIL
-
-// MERGE 37604:38097 REGRESSIONS
-// New test. We should fix it, but it doesn't need to block the current release
-BUG10355 WIN LINUX : LayoutTests/http/tests/security/originHeader/origin-header-for-empty.html = TIMEOUT FAIL PASS
-BUG10355 MAC RELEASE : LayoutTests/http/tests/security/originHeader/origin-header-for-empty.html = TIMEOUT FAIL PASS
 
 // MERGE 38389:38450
 // WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=20342
@@ -1449,9 +1438,6 @@ BUG10366 MAC : LayoutTests/fast/events/option-tab.html = FAIL
 
 // event failures
 BUG10367 MAC : LayoutTests/fast/events/attempt-scroll-with-no-scrollbars.html = CRASH FAIL
-
-// history (currently flaky on Linx & Mac platforms)
-BUG10368 MAC LINUX : LayoutTests/http/tests/navigation/lockedhistory-iframe.html = FAIL PASS
 
 // selection
 BUG10369 MAC : LayoutTests/editing/selection/5109817.html = FAIL
@@ -1567,7 +1553,6 @@ BUG10397 LINUX : LayoutTests/fast/transforms/transformed-document-element.html =
 
 // Merge 39744:39913? - regressions
 BUG10403 LINUX : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = TIMEOUT PASS
-BUG10403 LINUX : LayoutTests/http/tests/local/stylesheet-and-script-load-order-http.html = TIMEOUT PASS
 BUG10403 LINUX : LayoutTests/svg/custom/animate-path-morphing.svg = FAIL PASS
 BUG10403 LINUX : LayoutTests/svg/custom/circular-marker-reference-1.svg = FAIL PASS
 BUG10403 LINUX : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
@@ -1823,13 +1808,6 @@ BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
 BUG9798 : chrome/fast/dom/extensions/interval.html = CRASH FAIL PASS
 BUG9798 LINUX : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/http/tests/misc/BOM-override-script.html = TIMEOUT PASS
-BUG9798 LINUX : LayoutTests/http/tests/navigation/error404-frames.html = TIMEOUT PASS
-BUG9798 LINUX : LayoutTests/http/tests/security/javascriptURL/xss-ALLOWED-to-javascript-url-sub-frame-2-level.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/http/tests/security/originHeader/origin-header-for-post.html = FAIL PASS TIMEOUT
-BUG9798 LINUX : LayoutTests/http/tests/security/postMessage/origin-unaffected-by-document-domain.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/http/tests/security/protocol-compare-case-insensitive.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/http/tests/security/xss-DENIED-assign-location-hostname.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/http/tests/security/xss-eval.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/scrollbars/basic-scrollbar.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/svg/batik/filters/filterRegions.svg = FAIL PASS
 BUG9798 LINUX : LayoutTests/svg/css/glyph-orientation-rounding-test.xhtml = FAIL PASS
@@ -1848,27 +1826,15 @@ BUG9798 LINUX : chrome/http/tests/misc/set-window-opener-to-null.html = FAIL PAS
 BUG9798 LINUX : pending/fast/repaint/bugzilla-6473.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/repeated-firing-background-color.html = FAIL PASS TIMEOUT
 BUG9798 LINUX RELEASE : LayoutTests/svg/carto.net/colourpicker.svg = FAIL PASS
-BUG9798 LINUX WIN : LayoutTests/http/tests/navigation/metaredirect-subframeload.html = TIMEOUT PASS
-BUG9798 MAC : LayoutTests/http/tests/security/cross-frame-access-name-getter.html = FAIL PASS
-BUG9798 MAC : LayoutTests/http/tests/security/cross-frame-access-selection.html = FAIL PASS
-BUG9798 MAC : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-sub-frame-2-level.html = FAIL PASS
-BUG9798 MAC : LayoutTests/http/tests/security/frameNavigation/xss-DENIED-targeted-link-navigation.html = FAIL PASS
-BUG9798 MAC : LayoutTests/http/tests/security/javascriptURL/xss-DENIED-from-javascript-url-in-foreign-domain-subframe.html = FAIL PASS
 BUG9798 MAC : LayoutTests/svg/custom/use-instanceRoot-as-event-target.xhtml = TIMEOUT FAIL
 BUG9798 MAC : LayoutTests/svg/hixie/processing-model/003.xml = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/tables/mozilla/other/test3.html = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/transitions/transition-timing-function.html = FAIL PASS
-BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-charset-and-css-extension.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-charset.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-text-css-and-invalid-type.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/empty-file-formdata.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/navigation/back-send-referrer.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/ssl/verify-ssl-enabled.php = TIMEOUT PASS FAIL
-BUG9798 WIN : LayoutTests/http/tests/uri/css-href.php = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/uri/escaped-entity.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/uri/utf8-path.html = TIMEOUT PASS
+BUG9798 WIN RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
+BUG9798 WIN RELEASE : LayoutTests/http/tests/uri/css-href.php = TIMEOUT PASS
+BUG9798 WIN RELEASE : LayoutTests/http/tests/uri/utf8-path.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
@@ -1883,8 +1849,6 @@ BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/tabgroup.svg = CRASH PASS
 BUG9797 MAC DEBUG : LayoutTests/tables/mozilla/bugs/bug137388-2.html = FAIL PASS
 BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9797 WIN LINUX : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
-BUG9797 WIN DEBUG : LayoutTests/http/tests/navigation/lockedhistory-iframe.html = FAIL PASS
-BUG9797 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-first-time.html = CRASH PASS
 BUG9797 BUG9798 WIN DEBUG : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = CRASH TIMEOUT PASS
 BUG9797 WIN DEBUG : LayoutTests/svg/W3C-SVG-1.1/extend-namespace-01-f.svg = CRASH PASS
 BUG9797 WIN DEBUG : LayoutTests/svg/css/css-box-min-width.html = CRASH PASS
@@ -2041,9 +2005,6 @@ BUG11795 MAC : LayoutTests/http/tests/misc/favicon-as-image.html = FAIL CRASH
 
 // Already baselined for chromium-win, may need to be done for mac/linux as well.
 BUG11796 LINUX : LayoutTests/fast/forms/search-styled.html = FAIL
-
-// Flaky Mac tests
-BUG11810 MAC : LayoutTests/http/tests/navigation/post-goback-same-url.html = TIMEOUT PASS
 
 // Flaky Linux tests
 BUG11832 LINUX : LayoutTests/svg/custom/circular-marker-reference-4.svg = FAIL PASS
@@ -2338,7 +2299,6 @@ BUG18724 LINUX DEBUG : LayoutTests/transitions/transition-drt-api-delay.html = P
 BUG18659 WIN : LayoutTests/http/tests/loading/redirect-methods.html = PASS TIMEOUT
 BUG18733 WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
 BUG18740 WIN : LayoutTests/http/tests/security/credentials-in-referer.html = PASS TIMEOUT
-BUG18794 WIN MAC : LayoutTests/http/tests/mime/standard-mode-does-not-load-stylesheet-with-text-plain.html = TIMEOUT PASS
 
 // Test failures caused by re-enabling skia asserts.
 BUG18896 WIN LINUX DEBUG : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
