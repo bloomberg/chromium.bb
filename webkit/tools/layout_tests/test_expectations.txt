@@ -908,9 +908,9 @@ BUG10295 MAC : LayoutTests/fast/dom/prototype-chain.html = FAIL
 BUG10296 MAC : LayoutTests/fast/text/international/bidi-menulist.html = FAIL
 BUG10296 LINUX : LayoutTests/fast/transforms/transform-on-inline.html = FAIL
 BUG10296 LINUX : LayoutTests/fast/transforms/transform-table-row.html = FAIL
-BUG10296 LINUX : LayoutTests/svg/batik/paints/patternPreserveAspectRatioA.svg = CRASH FAIL
+BUG10296 LINUX : LayoutTests/svg/batik/paints/patternPreserveAspectRatioA.svg = FAIL
 // Needs to be rebaselined.
-BUG10296 LINUX : LayoutTests/svg/custom/deep-dynamic-updates.svg = CRASH FAIL
+BUG10296 LINUX : LayoutTests/svg/custom/deep-dynamic-updates.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/custom/foreign-object-skew.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-33-t.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-17-b.svg = FAIL
@@ -1041,7 +1041,7 @@ BUG10304 LINUX : LayoutTests/svg/text/text-text-01-b.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/fonts-elem-01-t.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/fonts-elem-02-t.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/fonts-elem-03-b.svg = FAIL
-BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/fonts-elem-04-b.svg = CRASH FAIL
+BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/fonts-elem-04-b.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/fonts-elem-05-t.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/fonts-elem-06-t.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/fonts-elem-07-b.svg = FAIL
@@ -1061,8 +1061,6 @@ BUG10306 LINUX : LayoutTests/svg/carto.net/combobox.svg = FAIL
 
 // There are a ugly room between black strokes and white painting of characters.
 BUG10307 WIN : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = FAIL
-
-BUG10308 LINUX : LayoutTests/svg/dynamic-updates/SVGEllipseElement-svgdom-cx-prop.html = CRASH PASS
 
 // Linux pixeltest failure: slightly different shade of composited
 // alpha in bottom group.
@@ -1454,8 +1452,6 @@ BUG10371 MAC : LayoutTests/fast/loader/local-image-from-local.html = FAIL
 // Error from CGImageSourceUpdateData but everything else is correct.
 BUG10373 MAC : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
 
-// Crashing...
-
 // window.open crashes (some of these are flaky, in that they don't always
 // crash, and are noted as such)
 BUG10374 MAC : LayoutTests/plugins/open-and-close-window-with-plugin.html = CRASH TIMEOUT FAIL
@@ -1654,7 +1650,7 @@ BUG10438 MAC : LayoutTests/plugins/destroy-stream-twice.html = TIMEOUT
 
 // Flakey. Not clear when it started, but it was before 3/9/09.
 // This test also started failing with the merge of March 25th 2009
-BUG10441 LINUX : LayoutTests/fast/clip/outline-overflowClip.html = CRASH FAIL PASS
+BUG10441 LINUX : LayoutTests/fast/clip/outline-overflowClip.html = FAIL PASS
 BUG10441 : LayoutTests/transitions/transition-end-event-transform.html = FAIL PASS
 
 // Timing out starting 03/10/09
@@ -1717,7 +1713,8 @@ BUG10461 SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-verti
 // New failures from merge
 BUG10463 WIN LINUX : LayoutTests/editing/selection/hit-test-anonymous.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
-BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL CRASH
+BUG10463 WIN : LayoutTests/fast/forms/slider-zoomed.html = FAIL
+BUG10463 LINUX : LayoutTests/fast/forms/slider-zoomed.html = CRASH
 
 // New tests, need Chromium baseline.
 BUG10465 LINUX : LayoutTests/fast/borders/border-image-border-radius.html = FAIL
@@ -1843,9 +1840,7 @@ BUG9798 WIN : LayoutTests/svg/hixie/error/009.xml = CRASH PASS
 BUG9798 WIN : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg = CRASH PASS
 
-BUG9797 LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/filters-gauss-01-b.svg = CRASH PASS
-BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = CRASH FAIL
-BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/tabgroup.svg = CRASH PASS
+BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9797 MAC DEBUG : LayoutTests/tables/mozilla/bugs/bug137388-2.html = FAIL PASS
 BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9797 WIN LINUX : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
@@ -1909,10 +1904,10 @@ BUG10999 MAC : LayoutTests/editing/selection/click-in-padding-with-multiple-line
 // DumpRenderTree now dumps additional info on the element that was
 // passed to the policy delegate. So the dump changes.
 // We need to reflect the change in test shell.
-BUG11000 LINUX MAC WIN : LayoutTests/fast/encoding/mailto-always-utf-8.html = FAIL CRASH
-BUG11000 LINUX MAC WIN : LayoutTests/fast/loader/policy-delegate-action-hit-test-zoomed.html = FAIL
-BUG11000 LINUX MAC WIN : LayoutTests/http/tests/misc/policy-delegate-called-twice.html = FAIL
-BUG11000 LINUX MAC WIN : LayoutTests/http/tests/misc/redirect-to-external-url.html = FAIL
+BUG11000 : LayoutTests/fast/encoding/mailto-always-utf-8.html = FAIL CRASH
+BUG11000 : LayoutTests/fast/loader/policy-delegate-action-hit-test-zoomed.html = FAIL
+BUG11000 : LayoutTests/http/tests/misc/policy-delegate-called-twice.html = FAIL
+BUG11000 : LayoutTests/http/tests/misc/redirect-to-external-url.html = FAIL
 
 // New failures from WebKit merge 42725:42805
 // WebKit change http://trac.webkit.org/changeset/42785
@@ -2255,7 +2250,7 @@ BUG16823 MAC : LayoutTests/editing/style/smoosh-styles-003.html = FAIL
 BUG16823 MAC : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 
 // Failures from WebKit merge 45936:45958
-BUG18676 LINUX MAC : LayoutTests/fast/js/instanceof-operator.html = CRASH FAIL
+BUG18676 LINUX MAC : LayoutTests/fast/js/instanceof-operator.html = CRASH
 
 // New test from WebKit merge 46050:46087
 BUG17170 : LayoutTests/fast/dom/prototype-inheritance.html = FAIL
@@ -2271,7 +2266,7 @@ BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
 
 // Test failure from WebKit merge r46143:46194
 // Test crash from WebKit merge r47748:47759
-BUG17398 BUG20265 LINUX : LayoutTests/fast/forms/input-appearance-height.html = FAIL CRASH
+BUG17398 BUG20265 LINUX : LayoutTests/fast/forms/input-appearance-height.html = CRASH
 
 // Test failures from WebKit merge r46194:46229
 BUG17497 WIN DEBUG : LayoutTests/media/unsupported-rtsp.html = FAIL
