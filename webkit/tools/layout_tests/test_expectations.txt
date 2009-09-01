@@ -1782,7 +1782,6 @@ BUG10475 WIN LINUX : LayoutTests/fast/forms/range-thumb-height-percentage.html =
 SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PASS
 
 BUG10476 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = FAIL PASS
-BUG10476 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post-sync.html = FAIL PASS
 
 // Merge WebKit 42133:42199 regressions
 BUG10477 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
@@ -1837,11 +1836,6 @@ BUG9798 LINUX : LayoutTests/http/tests/security/postMessage/origin-unaffected-by
 BUG9798 LINUX : LayoutTests/http/tests/security/protocol-compare-case-insensitive.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/http/tests/security/xss-DENIED-assign-location-hostname.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/http/tests/security/xss-eval.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/http/tests/xmlhttprequest/access-control-basic-non-simple-allow-async.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/http/tests/xmlhttprequest/document-domain-set.html = TIMEOUT PASS
-BUG9798 LINUX : LayoutTests/http/tests/xmlhttprequest/failed-auth.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/scrollbars/basic-scrollbar.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/svg/batik/filters/filterRegions.svg = FAIL PASS
 BUG9798 LINUX : LayoutTests/svg/css/glyph-orientation-rounding-test.xhtml = FAIL PASS
@@ -1866,14 +1860,10 @@ BUG9798 MAC : LayoutTests/http/tests/security/cross-frame-access-selection.html 
 BUG9798 MAC : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-sub-frame-2-level.html = FAIL PASS
 BUG9798 MAC : LayoutTests/http/tests/security/frameNavigation/xss-DENIED-targeted-link-navigation.html = FAIL PASS
 BUG9798 MAC : LayoutTests/http/tests/security/javascriptURL/xss-DENIED-from-javascript-url-in-foreign-domain-subframe.html = FAIL PASS
-BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-response-headers.html = FAIL PASS
-BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-sync.html = FAIL PASS
-BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin.html = FAIL PASS
 BUG9798 MAC : LayoutTests/svg/custom/use-instanceRoot-as-event-target.xhtml = TIMEOUT FAIL
 BUG9798 MAC : LayoutTests/svg/hixie/processing-model/003.xml = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/tables/mozilla/other/test3.html = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/transitions/transition-timing-function.html = FAIL PASS
-BUG9798 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-gc.html = CRASH PASS
 BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-charset-and-css-extension.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-charset.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-text-css-and-invalid-type.html = TIMEOUT PASS
@@ -1904,13 +1894,10 @@ BUG9798 WIN : LayoutTests/http/tests/uri/utf8-path.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/authorization-header.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/failed-auth.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-contenttype-empty.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/svg/hixie/error/009.xml = CRASH PASS
 BUG9798 WIN : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg = CRASH PASS
-BUG9798 WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = TIMEOUT PASS
 
 BUG9797 LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/filters-gauss-01-b.svg = CRASH PASS
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = CRASH FAIL
@@ -2083,15 +2070,10 @@ BUG11810 MAC : LayoutTests/http/tests/navigation/post-goback-same-url.html = TIM
 // Flaky Linux tests
 BUG11832 LINUX : LayoutTests/svg/custom/circular-marker-reference-4.svg = FAIL PASS
 BUG11832 LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = FAIL PASS
-BUG11832 LINUX : LayoutTests/http/tests/xmlhttprequest/request-encoding.html = TIMEOUT PASS
-BUG11832 LINUX : LayoutTests/http/tests/xmlhttprequest/uri-resolution-opera-open-005.html = CRASH PASS
-BUG11832 LINUX : LayoutTests/http/tests/xmlhttprequest/uri-resolution-opera-open-010.html = CRASH PASS
-BUG11832 LINUX DEBUG : LayoutTests/http/tests/xmlhttprequest/web-apps/004.html = CRASH PASS
 
 // Flaky Windows/Linux Tests
 BUG11898 WIN LINUX MAC : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
 BUG11898 WIN DEBUG : LayoutTests/http/tests/misc/submit-get-in-utf16be.html = TIMEOUT PASS
-BUG11898 WIN : LayoutTests/http/tests/xmlhttprequest/web-apps/004.html = CRASH PASS
 BUG18772 WIN DEBUG : LayoutTests/http/tests/navigation/post-goback-same-url.html = TIMEOUT PASS
 
 // Need LINUX/Mac rebaselines after WebKit Update 437150:43770
@@ -2371,7 +2353,6 @@ BUG18584 DEBUG LINUX WIN : LayoutTests/animations/play-state.html = FAIL PASS
 BUG18584 : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
 
 // Flaky crashes
-BUG18206 LINUX MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-open-after-iframe-onload-remove-self.html = CRASH PASS
 BUG18656 MAC : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL CRASH
 BUG18724 LINUX DEBUG : LayoutTests/transitions/transition-drt-api-delay.html = PASS CRASH
 
