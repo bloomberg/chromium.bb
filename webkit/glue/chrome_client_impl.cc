@@ -45,6 +45,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebTextDirection.h"
 #include "webkit/api/public/WebURLRequest.h"
+#include "webkit/api/src/NotificationPresenterImpl.h"
 #include "webkit/api/src/WrappedResourceRequest.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframe_impl.h"
@@ -642,3 +643,9 @@ void ChromeClientImpl::GetPopupMenuInfo(PopupContainer* popup_container,
   info->selectedIndex = popup_container->selectedIndex();
   info->items.swap(output_items);
 }
+
+#if ENABLE(NOTIFICATIONS)
+WebCore::NotificationPresenter* ChromeClientImpl::notificationPresenter() const {
+  return webview_->GetNotificationPresenter();
+}
+#endif

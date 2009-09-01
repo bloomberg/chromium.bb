@@ -28,52 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebWorkerClient_h
-#define WebWorkerClient_h
-
-#include "WebMessagePortChannel.h"
+#ifndef WebNotificationPermissionCallback_h
+#define WebNotificationPermissionCallback_h
 
 namespace WebKit {
-    class WebNotificationPresenter;
-    class WebString;
-    class WebWorker;
 
-    // Provides an interface back to the in-page script object for a worker.
-    // All functions are expected to be called back on the thread that created
-    // the Worker object, unless noted.
-    class WebWorkerClient {
+    // Callback object used with WebNotificationPresenter.
+    class WebNotificationPermissionCallback {
     public:
-        virtual void postMessageToWorkerObject(
-            const WebString&,
-            const WebMessagePortChannelArray&) = 0;
-
-        virtual void postExceptionToWorkerObject(
-            const WebString& errorString, int lineNumber,
-            const WebString& sourceURL) = 0;
-
-        virtual void postConsoleMessageToWorkerObject(
-            int destinationIdentifier,
-            int sourceIdentifier,
-            int messageType,
-            int messageLevel,
-            const WebString& message,
-            int lineNumber,
-            const WebString& sourceURL) = 0;
-
-        virtual void confirmMessageFromWorkerObject(bool hasPendingActivity) = 0;
-        virtual void reportPendingActivity(bool hasPendingActivity) = 0;
-
-        virtual void workerContextDestroyed() = 0;
-
-        // Returns the notification presenter for this worker context.  Pointer
-        // is owned by the object implementing WebWorkerClient.
-        virtual WebNotificationPresenter* notificationPresenter() = 0;
-
-        // This can be called on any thread to create a nested worker.
-        virtual WebWorker* createWorker(WebWorkerClient* client) = 0;
+        // Method to be invoked when the async permission request involving
+        // this object has been completed.
+        virtual void permissionRequestComplete() = 0;
 
     protected:
-        ~WebWorkerClient() { }
+        // This object is to be destroyed after the callback is invoked;
+        // it should not be directly destroyed.
+        ~WebNotificationPermissionCallback() {}
     };
 
 } // namespace WebKit

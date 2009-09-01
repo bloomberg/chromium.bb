@@ -14,6 +14,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebSize.h"
+#include "webkit/api/src/NotificationPresenterImpl.h"
 #include "webkit/glue/back_forward_list_client_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webpreferences.h"
@@ -227,6 +228,11 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   // the underlying Node for them.
   WebCore::Node* GetNodeForWindowPos(int x, int y);
 
+#if ENABLE(NOTIFICATIONS)
+  // Returns the provider of desktop notifications.
+  WebKit::NotificationPresenterImpl* GetNotificationPresenter();
+#endif
+
  protected:
   friend class WebView;  // So WebView::Create can call our constructor
   friend class base::RefCounted<WebViewImpl>;
@@ -365,6 +371,11 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
 
   // Inspector settings.
   std::wstring inspector_settings_;
+
+#if ENABLE(NOTIFICATIONS)
+  // The provider of desktop notifications;
+  WebKit::NotificationPresenterImpl notification_presenter_;
+#endif
 
   // HACK: current_input_event is for ChromeClientImpl::show(), until we can fix
   // WebKit to pass enough information up into ChromeClient::show() so we can

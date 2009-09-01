@@ -68,6 +68,11 @@ class WebWorkerClientImpl : public WebCore::WorkerContextProxy,
   virtual WebKit::WebWorker* createWorker(WebKit::WebWorkerClient* client) {
     return NULL;
   }
+  virtual WebKit::WebNotificationPresenter* notificationPresenter() {
+    // TODO(johnnyg): Notifications not yet supported in workers.
+    // Coming soon.
+    return NULL;
+  }
 
  private:
   virtual ~WebWorkerClientImpl();

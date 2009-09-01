@@ -1848,6 +1848,14 @@ WebCore::Node* WebViewImpl::GetNodeForWindowPos(int x, int y) {
   return result.innerNonSharedNode();
 }
 
+#if ENABLE(NOTIFICATIONS)
+WebKit::NotificationPresenterImpl* WebViewImpl::GetNotificationPresenter() {
+  if (!notification_presenter_.isInitialized() && delegate_)
+    notification_presenter_.initialize(delegate_->GetNotificationPresenter());
+  return &notification_presenter_;
+}
+#endif
+
 void WebViewImpl::HideAutofillPopup() {
   HideAutoCompletePopup();
 }

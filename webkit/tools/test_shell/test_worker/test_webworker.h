@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "webkit/api/public/WebNotificationPresenter.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebWorker.h"
 #include "webkit/api/public/WebWorkerClient.h"
@@ -54,6 +55,9 @@ class TestWebWorker : public WebKit::WebWorker,
   virtual void reportPendingActivity(bool has_pending_activity);
   virtual void workerContextDestroyed();
   virtual WebKit::WebWorker* createWorker(WebKit::WebWorkerClient* client) {
+    return NULL;
+  }
+  virtual WebKit::WebNotificationPresenter* notificationPresenter() {
     return NULL;
   }
 

@@ -28,54 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebWorkerClient_h
-#define WebWorkerClient_h
+#ifndef NotificationPresenterImpl_h
+#define NotificationPresenterImpl_h
 
-#include "WebMessagePortChannel.h"
+#include "NotificationPresenter.h"
+#include "VoidCallback.h"
+
+#include <wtf/HashMap.h>
+#include <wtf/PassRefPtr.h>
+
+#if ENABLE(NOTIFICATIONS)
 
 namespace WebKit {
     class WebNotificationPresenter;
-    class WebString;
-    class WebWorker;
 
-    // Provides an interface back to the in-page script object for a worker.
-    // All functions are expected to be called back on the thread that created
-    // the Worker object, unless noted.
-    class WebWorkerClient {
+    class NotificationPresenterImpl : public WebCore::NotificationPresenter {
     public:
-        virtual void postMessageToWorkerObject(
-            const WebString&,
-            const WebMessagePortChannelArray&) = 0;
+        NotificationPresenterImpl() : m_presenter(0) { }
 
-        virtual void postExceptionToWorkerObject(
-            const WebString& errorString, int lineNumber,
-            const WebString& sourceURL) = 0;
+        void initialize(WebNotificationPresenter* presenter);
+        bool isInitialized();
 
-        virtual void postConsoleMessageToWorkerObject(
-            int destinationIdentifier,
-            int sourceIdentifier,
-            int messageType,
-            int messageLevel,
-            const WebString& message,
-            int lineNumber,
-            const WebString& sourceURL) = 0;
+        // WebCore::NotificationPresenter implementation.
+        virtual bool show(WebCore::Notification* object);
+        virtual void cancel(WebCore::Notification* object);
+        virtual void notificationObjectDestroyed(WebCore::Notification* object);
+        virtual WebCore::NotificationPresenter::Permission checkPermission(WebCore::SecurityOrigin* origin);
+        virtual void requestPermission(WebCore::SecurityOrigin* origin, WTF::PassRefPtr<WebCore::VoidCallback> callback);
 
-        virtual void confirmMessageFromWorkerObject(bool hasPendingActivity) = 0;
-        virtual void reportPendingActivity(bool hasPendingActivity) = 0;
-
-        virtual void workerContextDestroyed() = 0;
-
-        // Returns the notification presenter for this worker context.  Pointer
-        // is owned by the object implementing WebWorkerClient.
-        virtual WebNotificationPresenter* notificationPresenter() = 0;
-
-        // This can be called on any thread to create a nested worker.
-        virtual WebWorker* createWorker(WebWorkerClient* client) = 0;
-
-    protected:
-        ~WebWorkerClient() { }
+    private:
+        // WebNotificationPresenter that this object delegates to.
+        WebNotificationPresenter* m_presenter;
     };
 
 } // namespace WebKit
+
+#endif // ENABLE(NOTIFICATIONS)
 
 #endif

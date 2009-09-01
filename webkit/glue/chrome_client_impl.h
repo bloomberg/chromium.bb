@@ -148,6 +148,10 @@ class ChromeClientImpl : public WebCore::ChromeClientChromium {
 
   virtual PassOwnPtr<WebCore::HTMLParserQuirks> createHTMLParserQuirks() { return 0; }
 
+#if ENABLE(NOTIFICATIONS)
+  virtual WebCore::NotificationPresenter* notificationPresenter() const;
+#endif
+
  private:
   void GetPopupMenuInfo(WebCore::PopupContainer* popup_container,
                         WebKit::WebPopupMenuInfo* info);

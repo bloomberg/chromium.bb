@@ -53,6 +53,7 @@ class WebWorkerClient;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebNode;
+class WebNotificationPresenter;
 class WebURLRequest;
 class WebURLResponse;
 class WebWidget;
@@ -547,6 +548,12 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
 
   virtual void DidContentsSizeChange(WebKit::WebWidget* webwidget,
                                      int new_width, int new_height) {
+  }
+
+  // Called to retrieve the provider of desktop notifications.  Pointer
+  // is owned by the implementation of WebViewDelegate.
+  virtual WebKit::WebNotificationPresenter* GetNotificationPresenter() {
+    return NULL;
   }
 
   // UIDelegate --------------------------------------------------------------

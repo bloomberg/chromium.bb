@@ -47,6 +47,13 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient,
   virtual void workerContextDestroyed();
   virtual WebKit::WebWorker* createWorker(WebKit::WebWorkerClient* client);
 
+  virtual WebKit::WebNotificationPresenter* notificationPresenter() {
+    // TODO(johnnyg): Notifications are not yet hooked up to workers.
+    // Coming soon.
+    NOTREACHED();
+    return NULL;
+  }
+
   // IPC::Channel::Listener implementation.
   virtual void OnMessageReceived(const IPC::Message& message);
 
