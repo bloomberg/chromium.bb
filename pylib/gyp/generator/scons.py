@@ -116,8 +116,8 @@ if GetOption('verbose'):
   %(name)s_action = Action([%(action)s])
 else:
   %(name)s_action = Action([%(action)s], %(message)s)
-env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action, emitter=%(name)s_emitter)
-%(name)s_files = [f for f in input_files if str(f).endswith('.%(extension)s')]
+env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action,
+                                      emitter=%(name)s_emitter)
 
 _outputs = []
 _processed_input_files = []
@@ -398,7 +398,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
                  'process_outputs_as_sources_line' : poas_line,
              })
 
-  scons_target.write_target(fp)
+  scons_target.write_target(fp, '$SRC_DIR/'+subdir)
 
   copies = spec.get('copies', [])
   if copies:
@@ -591,23 +591,6 @@ else:
 
 sconsbuild_dir = Dir(%(sconsbuild_dir)s)
 
-src_dir = GetOption('repository')
-if src_dir:
-  # Deep SCons magick to support --srcdir={chromium_component}:
-  # By specifying --srcdir=, a connection has already been set up
-  # between our current directory (the build directory) and the
-  # component source directory (base/, net/, webkit/, etc.).
-  # The Chromium build is really rooted at src/, so we need to
-  # repoint the repository connection to that directory.  To
-  # do so and have everything just work, we must wipe out the
-  # existing connection by hand, including its cached value.
-  src_dir = sconsbuild_dir.repositories[0].dir
-  sconsbuild_dir.clear()
-  sconsbuild_dir.repositories = []
-else:
-  src_dir = Dir(%(src_dir)s)
-
-
 
 def FilterOut(self, **kw):
   kw = SCons.Environment.copy_non_reserved_keywords(kw)
@@ -697,10 +680,6 @@ def GypSharedLibrary(env, target, source, *args, **kw):
     env.Precious(result)
   return result
 
-def GypObject(env, *args, **kw):
-  result = env.Object(target, source, *args, **kw)
-  return result
-
 def add_gyp_methods(env):
   env.AddMethod(GypProgram)
   env.AddMethod(GypTestProgram)
@@ -708,7 +687,6 @@ def add_gyp_methods(env):
   env.AddMethod(GypLoadableModule)
   env.AddMethod(GypStaticLibrary)
   env.AddMethod(GypSharedLibrary)
-  env.AddMethod(GypObject)
 
   env.AddMethod(FilterOut)
 
@@ -722,7 +700,7 @@ base_env = Environment(
     OBJ_DIR='$TOP_BUILDDIR/obj',
     SCONSBUILD_DIR=sconsbuild_dir.abspath,
     SHARED_INTERMEDIATE_DIR='$OBJ_DIR/_global_intermediate',
-    SRC_DIR=src_dir,
+    SRC_DIR=Dir(%(src_dir)r),
     TARGET_PLATFORM='LINUX',
     TOP_BUILDDIR='$SCONSBUILD_DIR/$CONFIG_NAME',
     LIBPATH=['$LIB_DIR'],
@@ -750,19 +728,11 @@ if not GetOption('verbose'):
 
 add_gyp_methods(base_env)
 
-generator_output_dir = %(generator_output_dir)r
-
 for conf in conf_list:
   env = base_env.Clone(CONFIG_NAME=conf)
   SConsignFile(env.File('$TOP_BUILDDIR/.sconsign').abspath)
-  if generator_output_dir:
-    # GYP-generated SConscript files are in a separate directory tree;
-    # map the repository so the env.SConscript() call below finds them.
-    env.Dir('$OBJ_DIR').addRepository(env.Dir(generator_output_dir))
-  env.Dir('$OBJ_DIR').addRepository(env.Dir('$SRC_DIR'))
   for sconscript in sconscript_files:
-    target_alias = env.SConscript('$OBJ_DIR/%(subdir)s/' + sconscript,
-                                  exports=['env'])
+    target_alias = env.SConscript(sconscript, exports=['env'])
     if target_alias:
       target_alias_list.extend(target_alias)
 
@@ -837,15 +807,6 @@ def GenerateSConscriptWrapper(build_file, build_file_data, name,
   output_dir = os.path.dirname(output_filename)
   src_dir = build_file_data['_DEPTH']
   src_dir_rel = gyp.common.RelativePath(src_dir, output_dir)
-  subdir = gyp.common.RelativePath(os.path.dirname(build_file), src_dir)
-  if build_file.startswith(output_dir):
-    # Normal case:  we're generating SConscript files next to the .gyp file.
-    generator_output_dir = None
-  else:
-    # --generator-output was used to generate SConscript files in a seaparate
-    # directory tree.  Signal to the wrapper .scons file that it needs to
-    # use addRepository() to find the generated .scons files in the tree.
-    generator_output_dir = '.'
   scons_settings = build_file_data.get('scons_settings', {})
   sconsbuild_dir = scons_settings.get('sconsbuild_dir', '#')
   scons_tools = scons_settings.get('tools', ['default'])
@@ -860,13 +821,11 @@ def GenerateSConscriptWrapper(build_file, build_file_data, name,
   fp.write(header)
   fp.write(_wrapper_template % {
                'default_configuration' : default_configuration,
-               'generator_output_dir' : generator_output_dir,
                'name' : name,
                'scons_tools' : repr(scons_tools),
                'sconsbuild_dir' : repr(sconsbuild_dir),
                'sconscript_files' : '\n'.join(sconscript_file_lines),
-               'src_dir' : repr(src_dir_rel),
-               'subdir' : subdir,
+               'src_dir' : src_dir_rel,
            })
   fp.close()
 

@@ -61,7 +61,7 @@ class TargetBase(object):
     """
     name = self.full_product_name()
     return 'env.%s(%r, input_files)' % (self.builder_name, name)
-  def write_target(self, fp, pre=''):
+  def write_target(self, fp, src_dir='', pre=''):
     """
     Writes the lines necessary to build this target.
     """
@@ -89,7 +89,12 @@ compilable_sources_template = """
 _result = []
 for infile in input_files:
   if env.compilable(infile):
-    infile = env.%(name)s(infile)[0]
+    if type(infile) == type('') and not os.path.isabs(env.subst(infile)):
+      base, ext = os.path.splitext(infile)
+      object = '${OBJ_DIR}/${COMPONENT_NAME}/' + base
+      infile = env.%(name)s(object, %(src_dir)r + infile)[0]
+    else:
+      infile = env.%(name)s(infile)[0]
   _result.append(infile)
 input_files = _result
 """
@@ -104,11 +109,14 @@ class CompilableSourcesTargetBase(TargetBase):
   in SCons always put the object file next to the source file.)
   """
   intermediate_builder_name = None
-  def write_target(self, fp, pre=''):
+  def write_target(self, fp, src_dir='', pre=''):
     if self.intermediate_builder_name is None:
       raise NotImplementedError
+    if src_dir and not src_dir.endswith('/'):
+      src_dir += '/'
     variables = {
-        'name': self.intermediate_builder_name
+        'src_dir': src_dir,
+        'name': self.intermediate_builder_name,
     }
     fp.write(compilable_sources_template % variables)
     super(CompilableSourcesTargetBase, self).write_target(fp)
@@ -126,9 +134,9 @@ class ProgramTarget(CompilableSourcesTargetBase):
 
   # TODO:  remove these subclass methods by moving the env.File()
   # into the base class.
-  def write_target(self, fp):
+  def write_target(self, fp, src_dir='', pre=''):
     fp.write('\n_program = env.File(%r)' % self.full_product_name())
-    super(ProgramTarget, self).write_target(fp)
+    super(ProgramTarget, self).write_target(fp, src_dir, pre)
   def builder_call(self):
     return 'env.GypProgram(_program, input_files)'
 
