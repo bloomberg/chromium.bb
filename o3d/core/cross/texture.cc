@@ -59,12 +59,15 @@ Texture2D::Texture2D(ServiceLocator* service_locator,
                      int levels,
                      bool enable_render_surfaces)
     : Texture(service_locator, format, levels, enable_render_surfaces),
-      locked_levels_(0),
       surface_map_(levels) {
   RegisterReadOnlyParamRef(kWidthParamName, &width_param_);
   RegisterReadOnlyParamRef(kHeightParamName, &height_param_);
   width_param_->set_read_only_value(width);
   height_param_->set_read_only_value(height);
+
+  for (int ii = 0; ii < kMaxLevels; ++ii) {
+    locked_levels_[ii] = kNone;
+  }
 
   ClientInfoManager* client_info_manager =
       service_locator->GetService<ClientInfoManager>();
@@ -74,10 +77,17 @@ Texture2D::Texture2D(ServiceLocator* service_locator,
 }
 
 Texture2D::~Texture2D() {
-  if (locked_levels_ != 0) {
-    O3D_ERROR(service_locator())
-        << "Texture2D \"" << name()
-        << "\" was never unlocked before being destroyed.";
+  bool reported = false;
+  for (int ii = 0; ii < levels(); ++ii) {
+    if (IsLocked(ii)) {
+      if (!reported) {
+        reported = true;
+        O3D_ERROR(service_locator())
+            << "Texture2D \"" << name()
+            << "\" was never unlocked before being destroyed.";
+      }
+      Unlock(ii);
+    }
   }
 
   ClientInfoManager* client_info_manager =
@@ -163,7 +173,7 @@ void Texture2D::DrawImage(const Bitmap& src_img,
     return;
   }
 
-  LockHelper helper(this, dst_mip);
+  LockHelper helper(this, dst_mip, kWriteOnly);
   uint8* mip_data = helper.GetDataAs<uint8>();
   if (!mip_data) {
     return;
@@ -230,7 +240,7 @@ void Texture2D::DrawImage(const Canvas& src_img,
     return;
   }
 
-  LockHelper helper(this, dst_mip);
+  LockHelper helper(this, dst_mip, kWriteOnly);
   uint8* mip_data = helper.GetDataAs<uint8>();
   if (!mip_data) {
     return;
@@ -279,8 +289,8 @@ void Texture2D::GenerateMips(int source_level, int num_levels) {
 
   for (int ii = 0; ii < num_levels; ++ii) {
     int level = source_level + ii;
-    Texture2D::LockHelper src_helper(this, level);
-    Texture2D::LockHelper dst_helper(this, level + 1);
+    Texture2D::LockHelper src_helper(this, level, kReadOnly);
+    Texture2D::LockHelper dst_helper(this, level + 1, kWriteOnly);
     const uint8* src_data = src_helper.GetDataAs<const uint8>();
     if (!src_data) {
       O3D_ERROR(service_locator())
@@ -302,6 +312,59 @@ void Texture2D::GenerateMips(int source_level, int num_levels) {
   }
 }
 
+bool Texture2D::Lock(
+    int level, void** texture_data, int* pitch, AccessMode mode) {
+  DCHECK(texture_data);
+  DCHECK(pitch);
+  if (level >= levels() || level < 0) {
+    O3D_ERROR(service_locator())
+        << "Trying to lock inexistent level " << level << " on Texture \""
+        << name() << "\"";
+    return false;
+  }
+  if (IsLocked(level)) {
+    O3D_ERROR(service_locator())
+        << "Level " << level << " of texture \"" << name()
+        << "\" is already locked.";
+    return false;
+  }
+  if (render_surfaces_enabled()) {
+    O3D_ERROR(service_locator())
+        << "Attempting to lock a render-target texture: " << name();
+    return false;
+  }
+  bool success = PlatformSpecificLock(level, texture_data, pitch, mode);
+  if (success) {
+    locked_levels_[level] = mode;
+  } else {
+    O3D_ERROR(service_locator()) << "Failed to Lock Texture2D";
+  }
+  return success;
+}
+
+// Unlocks the given mipmap level of this texture.
+bool Texture2D::Unlock(int level) {
+  if (level >= levels() || level < 0) {
+    O3D_ERROR(service_locator())
+        << "Trying to unlock inexistent level " << level << " on Texture \""
+        << name() << "\"";
+    return false;
+  }
+  if (!IsLocked(level)) {
+    O3D_ERROR(service_locator())
+        << "Level " << level << " of texture \"" << name()
+        << "\" is not locked.";
+    return false;
+  }
+  bool result = PlatformSpecificUnlock(level);
+  if (result) {
+    locked_levels_[level] = kNone;
+  } else {
+    O3D_ERROR(service_locator()) << "Failed to Unlock Texture2D";
+  }
+  return result;
+}
+
 ObjectBase::Ref Texture2D::Create(ServiceLocator* service_locator) {
   return ObjectBase::Ref();
 }
@@ -318,8 +381,10 @@ RenderSurface::Ref Texture2D::GetRenderSurface(int mip_level) {
   return surface_map_[mip_level];
 }
 
-Texture2D::LockHelper::LockHelper(Texture2D* texture, int level)
-    : texture_(texture),
+Texture2D::LockHelper::LockHelper(
+    Texture2D* texture, int level, Texture::AccessMode mode)
+    : mode_(mode),
+      texture_(texture),
       level_(level),
       data_(NULL),
       locked_(false) {
@@ -333,7 +398,7 @@ Texture2D::LockHelper::~LockHelper() {
 
 void* Texture2D::LockHelper::GetData() {
   if (!locked_) {
-    locked_ = texture_->Lock(level_, &data_, &pitch_);
+    locked_ = texture_->Lock(level_, &data_, &pitch_, mode_);
     if (!locked_) {
       O3D_ERROR(texture_->service_locator())
           << "Unable to lock buffer '" << texture_->name() << "'";
@@ -348,9 +413,11 @@ TextureCUBE::TextureCUBE(ServiceLocator* service_locator,
                          int levels,
                          bool enable_render_surfaces)
     : Texture(service_locator, format, levels, enable_render_surfaces) {
-  for (unsigned int i = 0; i < 6; ++i) {
-    locked_levels_[i] = 0;
-    surface_maps_[i].resize(levels);
+  for (int f = 0; f < static_cast<int>(NUMBER_OF_FACES); ++f) {
+    for (int ii = 0; ii < kMaxLevels; ++ii) {
+      locked_levels_[f][ii] = kNone;
+    }
+    surface_maps_[f].resize(levels);
   }
   RegisterReadOnlyParamRef(kEdgeLengthParamName, &edge_length_param_);
   edge_length_param_->set_read_only_value(edge_length);
@@ -358,19 +425,27 @@ TextureCUBE::TextureCUBE(ServiceLocator* service_locator,
   ClientInfoManager* client_info_manager =
       service_locator->GetService<ClientInfoManager>();
   client_info_manager->AdjustTextureMemoryUsed(
-    static_cast<int>(image::ComputeMipChainSize(edge_length,
-                                                edge_length,
-                                                format,
-                                                levels)) * 6);
+    static_cast<int>(image::ComputeMipChainSize(
+        edge_length,
+        edge_length,
+        format,
+        levels)) * static_cast<int>(NUMBER_OF_FACES));
 }
 
 TextureCUBE::~TextureCUBE() {
-  for (unsigned int i = 0; i < 6; ++i) {
-    if (locked_levels_[i] != 0) {
-      O3D_ERROR(service_locator())
-          << "TextureCUBE \"" << name() << "\" was never unlocked before"
-          << "being destroyed.";
-      break;  // No need to report it more than once.
+  bool reported = false;
+  for (int f = 0; f < static_cast<int>(NUMBER_OF_FACES); ++f) {
+    for (int i = 0; i < levels(); ++i) {
+      if (IsLocked(static_cast<CubeFace>(f), i)) {
+        if (!reported) {
+          // No need to report it more than once.
+          reported = true;
+          O3D_ERROR(service_locator())
+              << "TextureCUBE \"" << name() << "\" was never unlocked before"
+              << "being destroyed.";
+        }
+        Unlock(static_cast<CubeFace>(f), i);
+      }
     }
   }
 
@@ -476,7 +551,7 @@ void TextureCUBE::DrawImage(const Bitmap& src_img, int src_mip,
             src_pitch);
   }
 
-  LockHelper helper(this, dest_face, dest_mip);
+  LockHelper helper(this, dest_face, dest_mip, kWriteOnly);
   uint8* mip_data = helper.GetDataAs<uint8>();
   if (!mip_data) {
     return;
@@ -544,7 +619,7 @@ void TextureCUBE::DrawImage(const Canvas& src_img,
     return;
   }
 
-  LockHelper helper(this, dest_face, dest_mip);
+  LockHelper helper(this, dest_face, dest_mip, kWriteOnly);
   uint8* mip_data = helper.GetDataAs<uint8>();
   if (!mip_data) {
     return;
@@ -595,9 +670,10 @@ void TextureCUBE::GenerateMips(int source_level, int num_levels) {
     for (int ii = 0; ii < num_levels; ++ii) {
       int level = source_level + ii;
       TextureCUBE::LockHelper src_helper(
-          this, static_cast<TextureCUBE::CubeFace>(face), level);
+          this, static_cast<TextureCUBE::CubeFace>(face), level, kReadOnly);
       TextureCUBE::LockHelper dst_helper(
-          this, static_cast<TextureCUBE::CubeFace>(face), level + 1);
+          this, static_cast<TextureCUBE::CubeFace>(face), level + 1,
+          kWriteOnly);
       const uint8* src_data = src_helper.GetDataAs<const uint8>();
       if (!src_data) {
         O3D_ERROR(service_locator())
@@ -622,11 +698,70 @@ void TextureCUBE::GenerateMips(int source_level, int num_levels) {
   }
 }
 
+// Locks the given face and mipmap level of this texture for loading from
+// main memory, and returns a pointer to the buffer.
+bool TextureCUBE::Lock(
+    CubeFace face, int level, void** texture_data, int* pitch,
+    AccessMode mode) {
+  DCHECK(texture_data);
+  DCHECK(pitch);
+  if (level >= levels() || level < 0) {
+    O3D_ERROR(service_locator())
+        << "Trying to lock inexistent level " << level << " on Texture \""
+        << name();
+    return false;
+  }
+  if (IsLocked(face, level)) {
+    O3D_ERROR(service_locator())
+        << "Level " << level << " Face " << face << " of texture \"" << name()
+        << "\" is already locked.";
+    return false;
+  }
+  if (render_surfaces_enabled()) {
+    O3D_ERROR(service_locator())
+        << "Attempting to lock a render-target texture: " << name();
+    return false;
+  }
+
+  bool success = PlatformSpecificLock(face, level, texture_data, pitch, mode);
+  if (success) {
+    locked_levels_[face][level] = mode;
+  } else {
+    O3D_ERROR(service_locator()) << "Failed to Lock TextureCUBE";
+  }
+  return success;
+}
+
+// Unlocks the given face and mipmap level of this texture.
+bool TextureCUBE::Unlock(CubeFace face, int level) {
+  if (level >= levels() || level < 0) {
+    O3D_ERROR(service_locator())
+        << "Trying to unlock inexistent level " << level << " on Texture \""
+        << name();
+    return false;
+  }
+  if (!IsLocked(face, level)) {
+    O3D_ERROR(service_locator())
+        << "Level " << level << " of texture \"" << name()
+        << "\" is not locked.";
+    return false;
+  }
+  bool result = PlatformSpecificUnlock(face, level);
+  if (result) {
+    locked_levels_[face][level] = kNone;
+  } else {
+    O3D_ERROR(service_locator()) << "Failed to Unlock TextureCUBE";
+  }
+  return result;
+}
+
 TextureCUBE::LockHelper::LockHelper(
     TextureCUBE* texture,
     CubeFace face,
-    int level)
-    : texture_(texture),
+    int level,
+    Texture::AccessMode mode)
+    : mode_(mode),
+      texture_(texture),
       face_(face),
       level_(level),
       data_(NULL),
@@ -641,7 +776,7 @@ TextureCUBE::LockHelper::~LockHelper() {
 
 void* TextureCUBE::LockHelper::GetData() {
   if (!locked_) {
-    locked_ = texture_->Lock(face_, level_, &data_, &pitch_);
+    locked_ = texture_->Lock(face_, level_, &data_, &pitch_, mode_);
     if (!locked_) {
       O3D_ERROR(texture_->service_locator())
           << "Unable to lock buffer '" << texture_->name() << "'";

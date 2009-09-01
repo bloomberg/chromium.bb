@@ -234,7 +234,7 @@ void SetRectCheck2D(o3d::Texture2D* self,
       return;
     }
   }
-  o3d::Texture2D::LockHelper helper(self, level);
+  o3d::Texture2D::LockHelper helper(self, level, o3d::Texture::kWriteOnly);
   void* data = helper.GetData();
   if (!data) {
     O3D_ERROR(self->service_locator()) << "could not lock texture";
@@ -310,7 +310,8 @@ void SetRectCheckCUBE(o3d::TextureCUBE* self,
       return;
     }
   }
-  o3d::TextureCUBE::LockHelper helper(self, face, level);
+  o3d::TextureCUBE::LockHelper helper(
+      self, face, level, o3d::Texture::kWriteOnly);
   void* data = helper.GetData();
   if (!data) {
     O3D_ERROR(self->service_locator()) << "could not lock texture";
@@ -494,7 +495,7 @@ std::vector<float> userglue_method_GetRect(o3d::Texture2D* self,
         << "Texture::Set not supported for this type of texture";
       return empty;
   }
-  o3d::Texture2D::LockHelper helper(self, level);
+  o3d::Texture2D::LockHelper helper(self, level, o3d::Texture::kReadOnly);
   void* data = helper.GetData();
   if (!data) {
     O3D_ERROR(self->service_locator()) << "could not lock texture";
@@ -580,7 +581,8 @@ std::vector<float> userglue_method_GetRect(o3d::TextureCUBE* self,
         << "Texture::Set not supported for this type of texture";
       return empty;
   }
-  o3d::TextureCUBE::LockHelper helper(self, face, level);
+  o3d::TextureCUBE::LockHelper helper(
+      self, face, level, o3d::Texture::kReadOnly);
   void* data = helper.GetData();
   if (!data) {
     O3D_ERROR(self->service_locator()) << "could not lock texture";

@@ -80,14 +80,14 @@ class Texture2DStub : public Texture2D {
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
 
  protected:
-  // Locks the image buffer of a given mipmap level for writing from main
-  // memory.
-  virtual bool Lock(int level, void** texture_data, int* pitch) {
+  // Overridden from Texture2D
+  virtual bool PlatformSpecificLock(
+      int level, void** texture_data, int* pitch, AccessMode mode) {
     return false;
   }
 
-  // Unlocks this texture and returns it to Stub control.
-  virtual bool Unlock(int level) { return true; }
+  // Overridden from Texture2D
+  virtual bool PlatformSpecificUnlock(int level) { return true; }
 
   // Overridden from Texture2D
   virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(int mip_level) {
@@ -136,15 +136,15 @@ class TextureCUBEStub : public TextureCUBE {
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
 
  protected:
-  // Locks the image buffer of a given face and mipmap level for loading
-  // from main memory.
-  virtual bool Lock(
-      CubeFace face, int level, void** texture_data, int* pitch) {
+  // Overridden from TextureCUBE
+  virtual bool PlatformSpecificLock(
+      CubeFace face, int level, void** texture_data, int* pitch,
+      AccessMode mode) {
     return false;
   }
 
-  // Unlocks the image buffer of a given face and mipmap level.
-  virtual bool Unlock(CubeFace face, int level) { return true; }
+  // Overridden from TextureCUBE
+  virtual bool PlatformSpecificUnlock(CubeFace face, int level) { return true; }
 
   // Overridden from TextureCUBE
   virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(CubeFace face,

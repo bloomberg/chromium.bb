@@ -42,7 +42,7 @@ namespace o3d {
 namespace {
 
 bool CompareTexture(Texture2D* texture, int level, const uint8* expected) {
-  Texture2D::LockHelper helper(texture, level);
+  Texture2D::LockHelper helper(texture, level, Texture::kReadOnly);
   const uint8* data = helper.GetDataAs<const uint8>();
   unsigned mip_width = image::ComputeMipDimension(level, texture->width());
   unsigned mip_height = image::ComputeMipDimension(level, texture->height());
@@ -90,6 +90,8 @@ TEST_F(Texture2DTest, Basic) {
   EXPECT_EQ(texture->format(), Texture::ARGB8);
   EXPECT_EQ(texture->levels(), 1);
   EXPECT_FALSE(texture->render_surfaces_enabled());
+  EXPECT_EQ(0, Texture::kMaxDimension >> Texture::kMaxLevels);
+  EXPECT_EQ(1, Texture::kMaxDimension >> (Texture::kMaxLevels - 1));
 }
 
 TEST_F(Texture2DTest, SetRect) {

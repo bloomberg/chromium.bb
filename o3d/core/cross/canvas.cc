@@ -161,7 +161,7 @@ void Canvas::DrawBitmap(Texture2D* texture2d,
     return;
   }
 
-  Texture2D::LockHelper lock_helper(texture2d, 0);
+  Texture2D::LockHelper lock_helper(texture2d, 0, Texture::kWriteOnly);
   uint8* texture_data = lock_helper.GetDataAs<uint8>();
   if (!texture_data) {
     return;

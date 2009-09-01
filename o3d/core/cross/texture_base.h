@@ -65,6 +65,14 @@ class Texture : public ParamObject {
     DXT5
   };
 
+  // Defines how you want to access a texture when locking.
+  enum AccessMode {
+    kNone = 0,
+    kReadOnly = 1,
+    kWriteOnly = 2,
+    kReadWrite = 3,
+  };
+
   typedef unsigned RGBASwizzleIndices[4];
 
   // This is the maximum texture size we allow and hence the largest
@@ -74,7 +82,8 @@ class Texture : public ParamObject {
   // NOTE: class Bitmap supports a larger size. The plan is to expose Bitmap
   // to Javascript so you can download larger images, scale them, then put
   // them in a texture.
-  static const int MAX_DIMENSION = 2048;
+  static const int kMaxDimension = 2048;
+  static const int kMaxLevels = 12;
 
   Texture(ServiceLocator* service_locator,
           Format format,

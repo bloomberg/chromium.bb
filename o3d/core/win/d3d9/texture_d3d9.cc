@@ -416,7 +416,7 @@ Texture2DD3D9* Texture2DD3D9::Create(ServiceLocator* service_locator,
       if (enable_render_surfaces) {
         texture->GetRenderSurface(level);
       } else if (!texture->IsCompressed()) {
-        texture->SetRect(level, 0, 0, 
+        texture->SetRect(level, 0, 0,
                          image::ComputeMipDimension(level, width),
                          image::ComputeMipDimension(level, height),
                          zero.get(), 0);
@@ -574,26 +574,12 @@ void Texture2DD3D9::SetRect(int level,
 
 // Locks the given mipmap level of this texture for loading from main memory,
 // and returns a pointer to the buffer.
-bool Texture2DD3D9::Lock(int level, void** texture_data, int* pitch) {
+bool Texture2DD3D9::PlatformSpecificLock(
+    int level, void** texture_data, int* pitch, Texture::AccessMode mode) {
   DCHECK(texture_data);
   DCHECK(pitch);
-  if (level >= levels() || level < 0) {
-    O3D_ERROR(service_locator())
-        << "Trying to lock inexistent level " << level << " on Texture \""
-        << name() << "\"";
-    return false;
-  }
-  if (IsLocked(level)) {
-    O3D_ERROR(service_locator())
-        << "Level " << level << " of texture \"" << name()
-        << "\" is already locked.";
-    return false;
-  }
-  if (render_surfaces_enabled()) {
-    O3D_ERROR(service_locator())
-        << "Attempting to lock a render-target texture: " << name();
-    return false;
-  }
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, levels());
 
   unsigned int mip_width = image::ComputeMipDimension(level, width());
   unsigned int mip_height = image::ComputeMipDimension(level, height());
@@ -602,19 +588,17 @@ bool Texture2DD3D9::Lock(int level, void** texture_data, int* pitch) {
     DCHECK(backing_bitmap_->image_data());
     *texture_data = backing_bitmap_->GetMipData(level);
     *pitch = image::ComputePitch(format(), mip_width);
-    locked_levels_ |= 1 << level;
     return true;
   } else {
     RECT rect = {0, 0, mip_width, mip_height};
     D3DLOCKED_RECT out_rect = {0};
 
-    if (HR(d3d_texture_->LockRect(level, &out_rect, &rect, 0))) {
+    if (HR(d3d_texture_->LockRect(level, &out_rect, &rect,
+                                  mode == kReadOnly ? D3DLOCK_READONLY : 0))) {
       *texture_data = out_rect.pBits;
       *pitch = out_rect.Pitch;
-      locked_levels_ |= 1 << level;
       return true;
     } else {
-      O3D_ERROR(service_locator()) << "Failed to Lock Texture2D (D3D9)";
       *texture_data = NULL;
       return false;
     }
@@ -622,30 +606,16 @@ bool Texture2DD3D9::Lock(int level, void** texture_data, int* pitch) {
 }
 
 // Unlocks the given mipmap level of this texture.
-bool Texture2DD3D9::Unlock(int level) {
-  if (level >= levels() || level < 0) {
-    O3D_ERROR(service_locator())
-        << "Trying to unlock inexistent level " << level << " on Texture \""
-        << name() << "\"";
-    return false;
-  }
-  if (!IsLocked(level)) {
-    O3D_ERROR(service_locator())
-        << "Level " << level << " of texture \"" << name()
-        << "\" is not locked.";
-    return false;
-  }
+bool Texture2DD3D9::PlatformSpecificUnlock(int level) {
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, levels());
+
   bool result = false;
   if (resize_to_pot_) {
     UpdateBackedMipLevel(level);
     result = true;
   } else {
     result = HR(d3d_texture_->UnlockRect(level));
-  }
-  if (result) {
-    locked_levels_ &= ~(1 << level);
-  } else {
-    O3D_ERROR(service_locator()) << "Failed to Unlock Texture2D (D3D9)";
   }
   return result;
 }
@@ -758,7 +728,7 @@ TextureCUBED3D9* TextureCUBED3D9::Create(ServiceLocator* service_locator,
         if (enable_render_surfaces) {
           texture->GetRenderSurface(static_cast<CubeFace>(face), level);
         } else if (!texture->IsCompressed()) {
-          texture->SetRect(static_cast<CubeFace>(face),level , 0, 0, 
+          texture->SetRect(static_cast<CubeFace>(face),level , 0, 0,
                            image::ComputeMipDimension(level, edge_length),
                            image::ComputeMipDimension(level, edge_length),
                            zero.get(), 0);
@@ -774,14 +744,6 @@ TextureCUBED3D9* TextureCUBED3D9::Create(ServiceLocator* service_locator,
 
 // Destructor releases the D3D9 texture resource.
 TextureCUBED3D9::~TextureCUBED3D9() {
-  for (unsigned int i = 0; i < 6; ++i) {
-    if (locked_levels_[i] != 0) {
-      O3D_ERROR(service_locator())
-          << "TextureCUBE \"" << name() << "\" was never unlocked before "
-          << "being destroyed.";
-      break;  // No need to report it more than once.
-    }
-  }
   d3d_cube_texture_ = NULL;
 }
 
@@ -941,27 +903,13 @@ void TextureCUBED3D9::SetRect(TextureCUBE::CubeFace face,
 
 // Locks the given face and mipmap level of this texture for loading from
 // main memory, and returns a pointer to the buffer.
-bool TextureCUBED3D9::Lock(
-    CubeFace face, int level, void** texture_data, int* pitch) {
+bool TextureCUBED3D9::PlatformSpecificLock(
+    CubeFace face, int level, void** texture_data, int* pitch,
+    Texture::AccessMode mode) {
   DCHECK(texture_data);
   DCHECK(pitch);
-  if (level >= levels() || level < 0) {
-    O3D_ERROR(service_locator())
-        << "Trying to lock inexistent level " << level << " on Texture \""
-        << name();
-    return false;
-  }
-  if (IsLocked(level, face)) {
-    O3D_ERROR(service_locator())
-        << "Level " << level << " Face " << face << " of texture \"" << name()
-        << "\" is already locked.";
-    return false;
-  }
-  if (render_surfaces_enabled()) {
-    O3D_ERROR(service_locator())
-        << "Attempting to lock a render-target texture: " << name();
-    return false;
-  }
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, levels());
 
   unsigned int mip_width = image::ComputeMipDimension(level, edge_length());
   unsigned int mip_height = mip_width;
@@ -971,20 +919,19 @@ bool TextureCUBED3D9::Lock(
     DCHECK(backing_bitmap->image_data());
     *texture_data = backing_bitmap->GetMipData(level);
     *pitch = image::ComputePitch(format(), mip_width);
-    locked_levels_[face] |= 1 << level;
     return true;
   } else {
     RECT rect = {0, 0, mip_width, mip_height};
     D3DLOCKED_RECT out_rect = {0};
 
-    if (HR(d3d_cube_texture_->LockRect(DX9CubeFace(face), level,
-                                       &out_rect, &rect, 0))) {
+    if (HR(d3d_cube_texture_->LockRect(
+        DX9CubeFace(face), level,
+        &out_rect, &rect,
+        mode == kReadOnly ? D3DLOCK_READONLY : 0))) {
       *texture_data = out_rect.pBits;
       *pitch = out_rect.Pitch;
-      locked_levels_[face] |= 1 << level;
       return true;
     } else {
-      O3D_ERROR(service_locator()) << "Failed to Lock Texture2D (D3D9)";
       *texture_data = NULL;
       return false;
     }
@@ -992,31 +939,15 @@ bool TextureCUBED3D9::Lock(
 }
 
 // Unlocks the given face and mipmap level of this texture.
-bool TextureCUBED3D9::Unlock(CubeFace face, int level) {
-  if (level >= levels() || level < 0) {
-    O3D_ERROR(service_locator())
-        << "Trying to unlock inexistent level " << level << " on Texture \""
-        << name();
-    return false;
-  }
-  if (!IsLocked(level, face)) {
-    O3D_ERROR(service_locator())
-        << "Level " << level << " of texture \"" << name()
-        << "\" is not locked.";
-    return false;
-  }
+bool TextureCUBED3D9::PlatformSpecificUnlock(CubeFace face, int level) {
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, levels());
   bool result = false;
   if (resize_to_pot_) {
     UpdateBackedMipLevel(face, level);
     result = true;
   } else {
-    result = HR(d3d_cube_texture_->UnlockRect(DX9CubeFace(face),
-                                              level));
-  }
-  if (result) {
-    locked_levels_[face] &= ~(1 << level);
-  } else {
-    O3D_ERROR(service_locator()) << "Failed to Unlock Texture2D (D3D9)";
+    result = HR(d3d_cube_texture_->UnlockRect(DX9CubeFace(face), level));
   }
   return result;
 }

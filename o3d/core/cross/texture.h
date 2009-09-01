@@ -54,7 +54,7 @@ class Texture2D : public Texture {
   // Class to help lock Texture2D. Automatically unlocks texture in destructor.
   class LockHelper {
    public:
-    explicit LockHelper(Texture2D* texture, int level);
+    explicit LockHelper(Texture2D* texture, int level, AccessMode mode);
     ~LockHelper();
 
     int pitch() const {
@@ -74,6 +74,7 @@ class Texture2D : public Texture {
     }
 
    private:
+    AccessMode mode_;
     Texture2D* texture_;
     int level_;
     int pitch_;
@@ -182,9 +183,10 @@ class Texture2D : public Texture {
   //  texture_data: [out] a pointer to the current texture data
   //  pitch: bytes across 1 row of pixels if uncompressed format. bytes across 1
   //     row of blocks if compressed format.
+  //  mode: The access mode.
   // Returns:
   //  true if the operation succeeds
-  virtual bool Lock(int level, void** texture_data, int* pitch) = 0;
+  bool Lock(int level, void** texture_data, int* pitch, AccessMode mode);
 
   // Notifies the texture object that the internal texture data has been
   // been modified.  Unlock must be called in conjunction with Lock.  Modifying
@@ -194,20 +196,30 @@ class Texture2D : public Texture {
   //  level: [in] the mipmap level that was modified
   // Returns:
   //  true if the operation succeeds
-  virtual bool Unlock(int level) = 0;
+  bool Unlock(int level);
+
+  // The platform specific part of Lock.
+  virtual bool PlatformSpecificLock(int level, void** texture_data, int* pitch,
+                                    AccessMode mode) = 0;
+
+  // The platform specific part of Unlock.
+  virtual bool PlatformSpecificUnlock(int level) = 0;
 
   // The platform specific part of GetRenderSurface.
   virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(
       int mip_level) = 0;
 
-  // Returns true if the mip-map level has been locked.
-  bool IsLocked(unsigned int level) {
+  // Returns the current locked mode.
+  AccessMode LockedMode(unsigned int level) {
     DCHECK_LT(static_cast<int>(level), levels());
-    return (locked_levels_ & (1 << level)) != 0;
+    return locked_levels_[level];
   }
 
-  // Bitfield that indicates mip levels that are currently locked.
-  unsigned int locked_levels_;
+  // Returns true if the mip-map level has been locked.
+  bool IsLocked(unsigned int level) {
+    return LockedMode(level) != kNone;
+  }
+
 
  private:
   friend class IClassManager;
@@ -221,6 +233,9 @@ class Texture2D : public Texture {
   ParamInteger::Ref width_param_;
   // The height of the texture, in texels.
   ParamInteger::Ref height_param_;
+
+  // Access mode for each level.
+  AccessMode locked_levels_[kMaxLevels];
 
   O3D_DECL_CLASS(Texture2D, Texture);
   DISALLOW_COPY_AND_ASSIGN(Texture2D);
@@ -244,7 +259,8 @@ class TextureCUBE : public Texture {
   // Automatically unlocks texture in destructor.
   class LockHelper {
    public:
-    explicit LockHelper(TextureCUBE* texture, CubeFace face, int level);
+    explicit LockHelper(TextureCUBE* texture, CubeFace face, int level,
+                        AccessMode mode);
     ~LockHelper();
 
     int pitch() const {
@@ -264,6 +280,7 @@ class TextureCUBE : public Texture {
     }
 
    private:
+    AccessMode mode_;
     TextureCUBE* texture_;
     CubeFace face_;
     int level_;
@@ -378,10 +395,12 @@ class TextureCUBE : public Texture {
   //  texture_data: [out] a pointer to the current texture data
   //  pitch: bytes across 1 row of pixels if uncompressed format. bytes across 1
   //     row of blocks if compressed format.
+  //  mode: The access mode.
   // Returns:
   //  true if the operation succeeds
-  virtual bool Lock(
-      CubeFace face, int level, void** texture_data, int* pitch) = 0;
+  bool Lock(
+      CubeFace face, int level, void** texture_data, int* pitch,
+      AccessMode mode);
 
   // Notifies the texture object that the internal texture data has been
   // been modified.  Unlock must be called in conjunction with Lock.
@@ -392,21 +411,30 @@ class TextureCUBE : public Texture {
   //  level: [in] the mipmap level that was modified
   // Returns:
   //  true if the operation succeeds
-  virtual bool Unlock(CubeFace face, int level) = 0;
+  bool Unlock(CubeFace face, int level);
+
+  // The platform specific part of Lock.
+  virtual bool PlatformSpecificLock(
+      CubeFace face, int level, void** texture_data, int* pitch,
+      AccessMode mode) = 0;
+
+  // The platform specific part of Unlock.
+  virtual bool PlatformSpecificUnlock(CubeFace face, int level) = 0;
 
   // The platform specific part of GetRenderSurface.
   virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(
       CubeFace face, int level) = 0;
 
-  // Returns true if the mip-map level has been locked.
-  bool IsLocked(unsigned int level, CubeFace face) {
+  // Returns the locked mode for a level
+  AccessMode LockedMode(CubeFace face, unsigned int level) {
     DCHECK_LT(static_cast<int>(level), levels());
-    return (locked_levels_[face] & (1 << level)) != 0;
+    return locked_levels_[face][level];
   }
 
-  // Bitfields that indicates mip levels that are currently locked, one per
-  // face.
-  unsigned int locked_levels_[NUMBER_OF_FACES];
+  // Returns true if the mip-map level has been locked.
+  bool IsLocked(CubeFace face, unsigned int level) {
+    return LockedMode(face, level) != kNone;
+  }
 
  private:
   friend class IClassManager;
@@ -418,6 +446,9 @@ class TextureCUBE : public Texture {
 
   // The length of each edge of the cube, in texels.
   ParamInteger::Ref edge_length_param_;
+
+  // AccessMode for each level on each face.
+  AccessMode locked_levels_[NUMBER_OF_FACES][kMaxLevels];
 
   O3D_DECL_CLASS(TextureCUBE, Texture);
   DISALLOW_COPY_AND_ASSIGN(TextureCUBE);

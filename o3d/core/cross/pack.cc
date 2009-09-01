@@ -166,14 +166,14 @@ Texture* Pack::CreateTextureFromBitmaps(
   for (BitmapRefArray::size_type ii = 0; ii < bitmaps.size(); ++ii) {
     temp_bitmaps.push_back(bitmaps[ii]);
     Bitmap* bitmap = temp_bitmaps[ii].Get();
-    if (bitmap->width() > static_cast<unsigned int>(Texture::MAX_DIMENSION) ||
-        bitmap->height() > static_cast<unsigned int>(Texture::MAX_DIMENSION)) {
+    if (bitmap->width() > static_cast<unsigned int>(Texture::kMaxDimension) ||
+        bitmap->height() > static_cast<unsigned int>(Texture::kMaxDimension)) {
       O3D_ERROR(service_locator())
           << "Bitmap (uri='" << uri
           << "', size="  << bitmap->width() << "x" << bitmap->height()
           << ", mips=" << bitmap->num_mipmaps()<< ") is larger than the "
-          << "maximum texture size which is (" << Texture::MAX_DIMENSION
-          << "x" << Texture::MAX_DIMENSION << ")";
+          << "maximum texture size which is (" << Texture::kMaxDimension
+          << "x" << Texture::kMaxDimension << ")";
       return NULL;
     }
     if (bitmap->width() != width || bitmap->height() != height) {
@@ -320,11 +320,11 @@ Texture2D* Pack::CreateTexture2D(int width,
     return NULL;
   }
 
-  if (width > Texture::MAX_DIMENSION ||
-      height > Texture::MAX_DIMENSION) {
+  if (width > Texture::kMaxDimension ||
+      height > Texture::kMaxDimension) {
     O3D_ERROR(service_locator())
-        << "Maximum texture size is (" << Texture::MAX_DIMENSION << "x"
-        << Texture::MAX_DIMENSION << ")";
+        << "Maximum texture size is (" << Texture::kMaxDimension << "x"
+        << Texture::kMaxDimension << ")";
     return NULL;
   }
 
@@ -361,9 +361,9 @@ TextureCUBE* Pack::CreateTextureCUBE(int edge_length,
     return NULL;
   }
 
-  if (edge_length > Texture::MAX_DIMENSION) {
+  if (edge_length > Texture::kMaxDimension) {
     O3D_ERROR(service_locator())
-        << "Maximum edge_length is " << Texture::MAX_DIMENSION;
+        << "Maximum edge_length is " << Texture::kMaxDimension;
     return NULL;
   }
 
@@ -398,11 +398,11 @@ RenderDepthStencilSurface* Pack::CreateDepthStencilSurface(int width,
     return NULL;
   }
 
-  if (width > Texture::MAX_DIMENSION ||
-      height > Texture::MAX_DIMENSION) {
+  if (width > Texture::kMaxDimension ||
+      height > Texture::kMaxDimension) {
     O3D_ERROR(service_locator())
-        << "Maximum texture size is (" << Texture::MAX_DIMENSION << "x"
-        << Texture::MAX_DIMENSION << ")";
+        << "Maximum texture size is (" << Texture::kMaxDimension << "x"
+        << Texture::kMaxDimension << ")";
     return NULL;
   }
 

@@ -92,10 +92,11 @@ class Texture2DD3D9 : public Texture2D {
 
  protected:
   // Overridden from Texture2D
-  virtual bool Lock(int level, void** texture_data, int* pitch);
+  virtual bool PlatformSpecificLock(
+      int level, void** texture_data, int* pitch, AccessMode mode);
 
   // Overridden from Texture2D
-  virtual bool Unlock(int level);
+  virtual bool PlatformSpecificUnlock(int level);
 
   // Overridden from Texture2D
   virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(int mip_level);
@@ -170,10 +171,12 @@ class TextureCUBED3D9 : public TextureCUBE {
 
  protected:
   // Overridden from TextureCUBE
-  bool Lock(CubeFace face, int level, void** texture_data, int* pitch);
+  virtual bool PlatformSpecificLock(
+      CubeFace face, int level, void** texture_data, int* pitch,
+      AccessMode mode);
 
   // Overridden from TextureCUBE
-  bool Unlock(CubeFace face, int level);
+  virtual bool PlatformSpecificUnlock(CubeFace face, int level);
 
   // Overridden from TextureCUBE.
   virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(CubeFace face,

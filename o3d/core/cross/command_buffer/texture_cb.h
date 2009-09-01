@@ -89,10 +89,11 @@ class Texture2DCB : public Texture2D {
 
  protected:
   // Overridden from Texture2D
-  virtual bool Lock(int level, void** texture_data, int* pitch);
+  virtual bool PlatformSpecificLock(
+      int level, void** texture_data, int* pitch, AccessMode mode);
 
   // Overridden from Texture2D
-  virtual bool Unlock(int level);
+  virtual bool PlatformSpecificUnlock(int level);
 
   // Overridden from Texture2D
   virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(int mip_level);
@@ -125,6 +126,9 @@ class Texture2DCB : public Texture2D {
   // Bitfield that indicates mip levels that are currently stored in the
   // backing bitmap.
   unsigned int has_levels_;
+
+  // Bitfield that indicates which mip levels are currently locked.
+  unsigned int locked_levels_;
 };
 
 // TextureCUBECB ---------------------------------------------------------------
@@ -166,11 +170,12 @@ class TextureCUBECB : public TextureCUBE {
 
  protected:
   // Overridden from TextureCUBE
-  virtual bool Lock(
-      CubeFace face, int level, void** texture_data, int* pitch);
+  virtual bool PlatformSpecificLock(
+      CubeFace face, int level, void** texture_data, int* pitch,
+      AccessMode mode);
 
   // Overridden from TextureCUBE
-  virtual bool Unlock(CubeFace face, int level);
+  virtual bool PlatformSpecificUnlock(CubeFace face, int level);
 
   // Overridden from TextureCUBE.
   virtual RenderSurface::Ref PlatformSpecificGetRenderSurface(CubeFace face,
@@ -186,7 +191,7 @@ class TextureCUBECB : public TextureCUBE {
 
 
   // Returns true if the backing bitmap has the data for the level.
-  bool HasLevel(unsigned int level, CubeFace face) {
+  bool HasLevel(CubeFace face, unsigned int level) {
     DCHECK_LT(level, levels());
     return (has_levels_[face] & (1 << level)) != 0;
   }
@@ -199,7 +204,10 @@ class TextureCUBECB : public TextureCUBE {
 
   // Bitfields that indicates mip levels that are currently stored in the
   // backing bitmap, one per face.
-  unsigned int has_levels_[6];
+  unsigned int has_levels_[NUMBER_OF_FACES];
+
+  // Bitfields that indicates which levels are currently locked, one per face.
+  unsigned int locked_levels_[NUMBER_OF_FACES];
 };
 
 }  // namespace o3d

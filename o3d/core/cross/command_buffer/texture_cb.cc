@@ -257,8 +257,9 @@ Texture2DCB::Texture2DCB(ServiceLocator* service_locator,
       renderer_(static_cast<RendererCB*>(
                     service_locator->GetService<Renderer>())),
       resource_id_(resource_id),
+      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))),
       has_levels_(0),
-      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
+      locked_levels_(0) {
   DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
 }
 
@@ -377,19 +378,10 @@ void Texture2DCB::SetRect(int level,
 
 // Locks the given mipmap level of this texture for loading from main memory,
 // and returns a pointer to the buffer.
-bool Texture2DCB::Lock(int level, void** data, int* pitch) {
-  if (level >= levels() || level < 0) {
-    O3D_ERROR(service_locator())
-        << "Trying to lock inexistent level " << level
-        << " on Texture \"" << name();
-    return false;
-  }
-  if (IsLocked(level)) {
-    O3D_ERROR(service_locator())
-        << "Level " << level << " of texture \"" << name()
-        << "\" is already locked.";
-    return false;
-  }
+bool Texture2DCB::PlatformSpecificLock(
+    int level, void** data, int* pitch, AccessMode mode) {
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, levels());
   if (!backing_bitmap_->image_data()) {
     DCHECK_EQ(has_levels_, 0);
     backing_bitmap_->Allocate(format(), width(), height(), levels(),
@@ -406,7 +398,7 @@ bool Texture2DCB::Lock(int level, void** data, int* pitch) {
     unsigned bytes_per_row = bytes_per_block * blocks_across;
     *pitch = bytes_per_row;
   }
-  if (!HasLevel(level)) {
+  if (mode != kWriteOnly && !HasLevel(level)) {
     DCHECK_EQ(backing_bitmap_->width(), width());
     DCHECK_EQ(backing_bitmap_->height(), height());
     DCHECK_EQ(backing_bitmap_->format(), format());
@@ -422,28 +414,20 @@ bool Texture2DCB::Lock(int level, void** data, int* pitch) {
 
 // Unlocks the given mipmap level of this texture, uploading the main memory
 // data buffer to the command buffer service.
-bool Texture2DCB::Unlock(int level) {
-  if (level >= levels() || level < 0) {
-    O3D_ERROR(service_locator())
-        << "Trying to unlock inexistent level " << level
-        << " on Texture \"" << name();
-    return false;
-  }
-  if (!IsLocked(level)) {
-    O3D_ERROR(service_locator())
-        << "Level " << level << " of texture \"" << name()
-        << "\" is not locked.";
-    return false;
-  }
+bool Texture2DCB::PlatformSpecificUnlock(int level) {
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, levels());
   DCHECK(backing_bitmap_->image_data());
   DCHECK_EQ(backing_bitmap_->width(), width());
   DCHECK_EQ(backing_bitmap_->height(), height());
   DCHECK_EQ(backing_bitmap_->format(), format());
   DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
-  DCHECK(HasLevel(level));
-  UpdateResourceFromBitmap(renderer_, resource_id_, level,
-                           TextureCUBE::FACE_POSITIVE_X,
-                           *backing_bitmap_.Get());
+  if (LockedMode(level) != kReadOnly) {
+    DCHECK(HasLevel(level));
+    UpdateResourceFromBitmap(renderer_, resource_id_, level,
+                             TextureCUBE::FACE_POSITIVE_X,
+                             *backing_bitmap_.Get());
+  }
   locked_levels_ &= ~(1 << level);
   if (locked_levels_ == 0) {
     backing_bitmap_->FreeData();
@@ -500,6 +484,7 @@ TextureCUBECB::TextureCUBECB(ServiceLocator* service_locator,
   for (int ii = 0; ii < static_cast<int>(NUMBER_OF_FACES); ++ii) {
     backing_bitmaps_[ii] = Bitmap::Ref(new Bitmap(service_locator));
     has_levels_[ii] = 0;
+    locked_levels_[ii] = 0;
   }
 }
 
@@ -623,20 +608,13 @@ void TextureCUBECB::SetRect(TextureCUBE::CubeFace face,
 
 // Locks the given face and mipmap level of this texture for loading from
 // main memory, and returns a pointer to the buffer.
-bool TextureCUBECB::Lock(CubeFace face, int level, void** data, int* pitch) {
-  if (level >= levels() || level < 0) {
-    O3D_ERROR(service_locator())
-        << "Trying to lock inexistent level " << level
-        << " on Texture \"" << name();
-    return false;
-  }
-  if (IsLocked(level, face)) {
-    O3D_ERROR(service_locator())
-        << "Level " << level << " Face " << face
-        << " of texture \"" << name()
-        << "\" is already locked.";
-    return false;
-  }
+bool TextureCUBECB::PlatformSpecificLock(
+    CubeFace face, int level, void** data, int* pitch,
+    Texture::AccessMode mode) {
+  DCHECK(data);
+  DCHECK(pitch);
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, levels());
   Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
   if (!backing_bitmap->image_data()) {
     DCHECK_EQ(has_levels_[face], 0);
@@ -653,9 +631,7 @@ bool TextureCUBECB::Lock(CubeFace face, int level, void** data, int* pitch) {
     unsigned bytes_per_row = bytes_per_block * blocks_across;
     *pitch = bytes_per_row;
   }
-  if (!HasLevel(level, face)) {
-    // TODO: add some API so we don't have to copy back the data if we
-    // will rewrite it all.
+  if (mode != kWriteOnly && !HasLevel(face, level)) {
     DCHECK_EQ(backing_bitmap->width(), edge_length());
     DCHECK_EQ(backing_bitmap->height(), edge_length());
     DCHECK_EQ(backing_bitmap->format(), format());
@@ -669,29 +645,21 @@ bool TextureCUBECB::Lock(CubeFace face, int level, void** data, int* pitch) {
 }
 
 // Unlocks the given face and mipmap level of this texture.
-bool TextureCUBECB::Unlock(CubeFace face, int level) {
-  if (level >= levels() || level < 0) {
-    O3D_ERROR(service_locator())
-        << "Trying to unlock inexistent level " << level
-        << " on Texture \"" << name();
-    return false;
-  }
-  if (!IsLocked(level, face)) {
-    O3D_ERROR(service_locator())
-        << "Level " << level << " Face " << face
-        << " of texture \"" << name()
-        << "\" is not locked.";
-    return false;
-  }
+bool TextureCUBECB::PlatformSpecificUnlock(CubeFace face, int level) {
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, levels());
   Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
   DCHECK(backing_bitmap->image_data());
   DCHECK_EQ(backing_bitmap->width(), edge_length());
   DCHECK_EQ(backing_bitmap->height(), edge_length());
   DCHECK_EQ(backing_bitmap->format(), format());
   DCHECK_GT(backing_bitmap->num_mipmaps(), level);
-  DCHECK(HasLevel(level, face));
-  UpdateResourceFromBitmap(renderer_, resource_id_, level, face,
-                           *backing_bitmap);
+
+  if (LockedMode(face, level) != kReadOnly) {
+    DCHECK(HasLevel(face, level));
+    UpdateResourceFromBitmap(renderer_, resource_id_, level, face,
+                             *backing_bitmap);
+  }
   locked_levels_[face] &= ~(1 << level);
   if (locked_levels_[face] == 0) {
     backing_bitmap->FreeData();
