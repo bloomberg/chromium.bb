@@ -8,10 +8,6 @@ and otherwise manipulate bookmarks.
 
 <h2 id="description">Description</h2>
 
-<p class="comment">
-[PENDING: This section needs to be reviewed and updated.]
-</p>
-
 <p>
 <a href="#type-BookmarkTreeNode">BookmarkTreeNode</a> objects
 are an important part of the <code>chrome.bookmarks</code> API.
@@ -130,6 +126,18 @@ Here's some code you could use to create that hierarchy:</p>
 <pre class="example comment">
 [PENDING: ...code goes here...]
 </pre>
+
+<h2 id="permissions">Permissions</h2>
+<p>You must declare the <var>bookmarks</var> permission
+in your extension's manifest to use the bookmarks API.</p>
+<p>Example:</p>
+<pre>{
+  "name": "My extension that uses bookmarks",
+  "version": "0.1",
+<b>  "permissions": [
+    "bookmarks"
+  ]</b>
+}</pre>
 
 
 <!-- PENDING: we could have links to source code and sample extensions. E.g.:

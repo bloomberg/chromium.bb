@@ -4,6 +4,7 @@
  
  .todo {
   color: red;
+  display: none;
 }
 
 body {

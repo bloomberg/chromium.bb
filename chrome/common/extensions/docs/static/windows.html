@@ -1,11 +1,32 @@
 <!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+Use the <code>chrome.windows</code> module
+to interact with browser windows.
+You can use this module to
+create, modify, and rearrange windows in the browser.
+</p>
+
+<h2 id="permissions">Permissions</h2>
+<p>You must declare the <var>tabs</var> permission
+(no, that isn't a typo -- the window and tabs modules interact so closely we
+decided to just share one permission between them)
+in your extension's manifest to use the windows API.</p>
+<p>Example:</p>
+<pre>{
+  "name": "My extension that uses windows",
+  "version": "0.1",
+<b>  "permissions": [
+    "tabs"
+  ]</b>
+}</pre>
+
 <h2 id="current-window">The current window</h2>
 
 <p>Many functions in the extension system
 take an optional <var>windowId</var> parameter
-which is documented to default to the <em>current window</em>.
+which is documented to default to the "current window".
 
-<p>The current window is the window that
+<p>The <em>current window</em> is the window that
 contains the code that is currently executing.
 It's important to realize that this can be
 different from the topmost or focused window.
