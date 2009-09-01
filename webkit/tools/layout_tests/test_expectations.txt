@@ -1501,13 +1501,6 @@ BUG10381 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-03-t.svg = FAIL PASS
 BUG10382 MAC : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 BUG10382 MAC : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
 
-// Most of the http tests seem to be flaky on the mac.
-// Don't mark these as FAIL since we want to know if tests start failing.
-// TODO(ojan): Remove all the mac http tests that are now redundant with the
-// following two lines.
-BUG10383 MAC : LayoutTests/http = CRASH TIMEOUT PASS
-BUG10672 MAC : chrome/http = PASS CRASH TIMEOUT
-
 // The following are flaky in that some times the timeout or crash, but we think
 // it is because of bugs in other parts of the code and not specific to what
 // these tests are doing.  The are being noted here so we can get the buildbots
@@ -2438,7 +2431,7 @@ BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-a
 BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
 
 // WebKit 47732:47748.
-BUG20324 WIN LINUX : LayoutTests/http/tests/security/javascriptURL/javascriptURL-in-new-iframe.html = CRASH
+BUG20324 : LayoutTests/http/tests/security/javascriptURL/javascriptURL-in-new-iframe.html = CRASH
 
 // WebKit 47748:47759. Crash only on Linux. Need investigation.
 BUG20265 LINUX : LayoutTests/fast/css/pseudo-required-optional-005.html = CRASH
@@ -2451,7 +2444,7 @@ BUG20265 LINUX : LayoutTests/platform/mac/accessibility/slider-supports-actions.
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
 
 // Webkit 47790:47797
-BUG20356 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = TIMEOUT
+BUG20356 : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = TIMEOUT
 
 // WebKit 47797:47804
 BUG20376 WIN : LayoutTests/media/audio-play-event.html = TIMEOUT
@@ -2469,6 +2462,12 @@ BUG_JORLOW : LayoutTests/editing/pasteboard/files-during-page-drags.html = FAIL
 // This newly added test times out on Mac:
 BUG20438 MAC : chrome/plugins/get-url-with-iframe-target.html = TIMEOUT
 BUG20438 MAC : chrome/plugins/get-url-with-iframe-target-no-crash.html = TIMEOUT
+
+// Mac LayoutTest/http errors after removing blanket exception.
+BUG20748 MAC : LayoutTests/http/tests/plugins/npapi-response-headers.html = TIMEOUT
+BUG20748 MAC : LayoutTests/http/tests/security/frameNavigation/xss-DENIED-plugin-navigation.html = TIMEOUT
+BUG20748 MAC : LayoutTests/http/tests/plugins/get-url.html = TIMEOUT
+BUG20748 MAC : LayoutTests/http/tests/plugins/interrupted-get-url.html = TIMEOUT
 
 BUG_OJAN WIN LINUX : LayoutTests/fast/css/remove-shorthand.html = FAIL
 BUG_OJAN WIN LINUX : LayoutTests/fast/inspector/style.html = FAIL
