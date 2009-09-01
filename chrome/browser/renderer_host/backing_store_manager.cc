@@ -46,7 +46,6 @@ static size_t MaxNumberOfBackingStores() {
 }
 
 // The maximum about of memory to use for all BackingStoreCache object combined.
-// We use this 
 static size_t MaxBackingStoreMemory() {
   // Compute in terms of the number of large monitor's worth of backing-store.
   return MaxNumberOfBackingStores() * kMemoryMultiplier;
@@ -119,7 +118,7 @@ BackingStore* CreateBackingStore(RenderWidgetHost* host,
     // won't be over-sized.
     CreateCacheSpace((current_mem + new_mem) - max_mem);
   }
-  DCHECK((BackingStoreManager::MemorySize() + new_mem) < max_mem);
+  DCHECK((BackingStoreManager::MemorySize() + new_mem) <= max_mem);
 
   BackingStoreCache* cache;
   if (new_mem > kSmallThreshold) {
