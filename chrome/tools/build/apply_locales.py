@@ -21,7 +21,7 @@ def main(argv):
 
   # Quote each element so filename spaces don't mess up GYP's attempt to parse
   # it into a list.
-  print " ".join(['"%s"' % x for x in results])
+  print ' '.join(["'%s'" % x for x in results])
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

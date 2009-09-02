@@ -33,6 +33,8 @@
       'uk', 'vi', 'zh-CN', 'zh-TW',
     ],
     'repack_locales_cmd': ['python', 'tools/build/repack_locales.py',],
+    # TODO: remove this helper when we have loops in GYP
+    'apply_locales_cmd': ['python', 'tools/build/apply_locales.py',],
     'browser_tests_sources': [
       'browser/browser_browsertest.cc',
       'browser/browser_init_browsertest.cc',
@@ -255,12 +257,8 @@
           ],
           'outputs': [
             '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
-            # TODO(mmoss) Generate this list from a helper script, like
-            # repack_locales_cmd.
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT)_da.pak',
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT)_en-US.pak',
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT)_he.pak',
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT)_zh-TW.pak',
+            # TODO: remove this helper when we have loops in GYP
+            '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
           ],
           'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)',
             'build', '-o', '<(grit_out_dir)',
@@ -3268,11 +3266,11 @@
                 '<(tool_path)',
                 '<(version_file_path)',
                 # TODO: remove this helper when we have loops in GYP
-                '>!@(tools/build/apply_locales.py \'<(grit_out_dir)/<(branding_name)_ZZLOCALE.pak\' <(locales))',
+                '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(branding_name)_ZZLOCALE.pak\' <(locales))',
               ],
               'outputs': [
                 # TODO: remove this helper when we have loops in GYP
-                '>!@(tools/build/apply_locales.py \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
+                '>!@(<(apply_locales_cmd) \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
               ],
               'action': [
                 '<(tool_path)',
@@ -4898,11 +4896,11 @@
                 '<(tool_path)',
                 '<(version_file_path)',
                 # TODO: remove this helper when we have loops in GYP
-                '>!@(tools/build/apply_locales.py \'<(grit_out_dir)/<(branding_name)_ZZLOCALE.pak\' <(locales))',
+                '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(branding_name)_ZZLOCALE.pak\' <(locales))',
               ],
               'outputs': [
                 # TODO: remove this helper when we have loops in GYP
-                '>!@(tools/build/apply_locales.py \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
+                '>!@(<(apply_locales_cmd) \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
               ],
               'action': [
                 '<(tool_path)',
