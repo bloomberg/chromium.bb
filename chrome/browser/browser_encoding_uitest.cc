@@ -4,20 +4,15 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/download/save_package.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/test/automation/automation_messages.h"
-#include "chrome/test/automation/automation_proxy.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "net/url_request/url_request_unittest.h"
-#include "chrome/common/pref_names.h"
 
-const wchar_t* const kTestDir = L"encoding_tests";
+static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("encoding_tests");
 
 class BrowserEncodingTest : public UITest {
  protected:
@@ -29,7 +24,8 @@ class BrowserEncodingTest : public UITest {
                  const FilePath& expected_result_file,
                  bool check_equal) {
     FilePath expected_result_filepath = UITest::GetTestFilePath(
-        kTestDir, expected_result_file.ToWStringHack());
+        FilePath(kTestDir).ToWStringHack(),
+        expected_result_file.ToWStringHack());
 
     ASSERT_TRUE(file_util::PathExists(expected_result_filepath));
     WaitForGeneratedFileAndCheck(generated_file,
@@ -41,11 +37,14 @@ class BrowserEncodingTest : public UITest {
 
   virtual void SetUp() {
     UITest::SetUp();
-    EXPECT_TRUE(file_util::CreateNewTempDirectory(L"", &save_dir_));
-    save_dir_ += FilePath::kSeparators[0];
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    save_dir_ = temp_dir_.path();
+    temp_sub_resource_dir_ = save_dir_.AppendASCII("sub_resource_files");
   }
 
-  std::wstring save_dir_;
+  ScopedTempDir temp_dir_;
+  FilePath save_dir_;
+  FilePath temp_sub_resource_dir_;
 };
 
 // TODO(jnd): 1. Some encodings are missing here. It'll be added later. See
@@ -55,50 +54,48 @@ class BrowserEncodingTest : public UITest {
 // also necessary.
 TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
   struct EncodingTestData {
-    const wchar_t* file_name;
+    const char* file_name;
     const wchar_t* encoding_name;
   };
 
   const EncodingTestData kEncodingTestDatas[] = {
-    { L"Big5.html", L"Big5" },
-    { L"EUC-JP.html", L"EUC-JP" },
-    { L"gb18030.html", L"gb18030" },
-    { L"iso-8859-1.html", L"ISO-8859-1" },
-    { L"ISO-8859-2.html", L"ISO-8859-2" },
-    { L"ISO-8859-4.html", L"ISO-8859-4" },
-    { L"ISO-8859-5.html", L"ISO-8859-5" },
-    { L"ISO-8859-6.html", L"ISO-8859-6" },
-    { L"ISO-8859-7.html", L"ISO-8859-7" },
-    { L"ISO-8859-8.html", L"ISO-8859-8" },
-    { L"ISO-8859-13.html", L"ISO-8859-13" },
-    { L"ISO-8859-15.html", L"ISO-8859-15" },
-    { L"KOI8-R.html", L"KOI8-R" },
-    { L"KOI8-U.html", L"KOI8-U" },
-    { L"macintosh.html", L"macintosh" },
-    { L"Shift-JIS.html", L"Shift_JIS" },
-    { L"UTF-8.html", L"UTF-8" },
-    { L"UTF-16LE.html", L"UTF-16LE" },
-    { L"windows-874.html", L"windows-874" },
-    { L"windows-949.html", L"windows-949" },
-    { L"windows-1250.html", L"windows-1250" },
-    { L"windows-1251.html", L"windows-1251" },
-    { L"windows-1252.html", L"windows-1252" },
-    { L"windows-1253.html", L"windows-1253" },
-    { L"windows-1254.html", L"windows-1254" },
-    { L"windows-1255.html", L"windows-1255" },
-    { L"windows-1256.html", L"windows-1256" },
-    { L"windows-1257.html", L"windows-1257" },
-    { L"windows-1258.html", L"windows-1258" }
+    { "Big5.html", L"Big5" },
+    { "EUC-JP.html", L"EUC-JP" },
+    { "gb18030.html", L"gb18030" },
+    { "iso-8859-1.html", L"ISO-8859-1" },
+    { "ISO-8859-2.html", L"ISO-8859-2" },
+    { "ISO-8859-4.html", L"ISO-8859-4" },
+    { "ISO-8859-5.html", L"ISO-8859-5" },
+    { "ISO-8859-6.html", L"ISO-8859-6" },
+    { "ISO-8859-7.html", L"ISO-8859-7" },
+    { "ISO-8859-8.html", L"ISO-8859-8" },
+    { "ISO-8859-13.html", L"ISO-8859-13" },
+    { "ISO-8859-15.html", L"ISO-8859-15" },
+    { "KOI8-R.html", L"KOI8-R" },
+    { "KOI8-U.html", L"KOI8-U" },
+    { "macintosh.html", L"macintosh" },
+    { "Shift-JIS.html", L"Shift_JIS" },
+    { "UTF-8.html", L"UTF-8" },
+    { "UTF-16LE.html", L"UTF-16LE" },
+    { "windows-874.html", L"windows-874" },
+    { "windows-949.html", L"windows-949" },
+    { "windows-1250.html", L"windows-1250" },
+    { "windows-1251.html", L"windows-1251" },
+    { "windows-1252.html", L"windows-1252" },
+    { "windows-1253.html", L"windows-1253" },
+    { "windows-1254.html", L"windows-1254" },
+    { "windows-1255.html", L"windows-1255" },
+    { "windows-1256.html", L"windows-1256" },
+    { "windows-1257.html", L"windows-1257" },
+    { "windows-1258.html", L"windows-1258" }
   };
-  const wchar_t* const kAliasTestDir = L"alias_mapping";
+  const char* const kAliasTestDir = "alias_mapping";
 
-  FilePath test_dir_path = FilePath::FromWStringHack(kTestDir);
-  test_dir_path =
-      test_dir_path.Append(FilePath::FromWStringHack(kAliasTestDir));
+  FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kAliasTestDir);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEncodingTestDatas); ++i) {
     FilePath test_file_path(test_dir_path);
-    test_file_path = test_file_path.Append(
-        FilePath::FromWStringHack(kEncodingTestDatas[i].file_name));
+    test_file_path = test_file_path.AppendASCII(
+        kEncodingTestDatas[i].file_name);
     GURL url =
         URLRequestMockHTTPJob::GetMockUrl(test_file_path.ToWStringHack());
 
@@ -118,17 +115,13 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
 // AutomationProvider::OverrideEncoding is not implemented yet.
 // TODO(port): Enable when encoding-related parts of Browser are ported.
 TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
-  const wchar_t* const kTestFileName =
-      L"gb18030_with_iso88591_meta.html";
-  const wchar_t* const kExpectedFileName =
-      L"expected_gb18030_saved_from_iso88591_meta.html";
-  const wchar_t* const kOverrideTestDir = L"user_override";
+  const char* const kTestFileName = "gb18030_with_iso88591_meta.html";
+  const char* const kExpectedFileName =
+      "expected_gb18030_saved_from_iso88591_meta.html";
+  const char* const kOverrideTestDir = "user_override";
 
-  FilePath test_dir_path = FilePath::FromWStringHack(kTestDir);
-  test_dir_path =
-      test_dir_path.Append(FilePath::FromWStringHack(kOverrideTestDir));
-  test_dir_path =
-      test_dir_path.Append(FilePath::FromWStringHack(kTestFileName));
+  FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kOverrideTestDir);
+  test_dir_path = test_dir_path.AppendASCII(kTestFileName);
   GURL url = URLRequestMockHTTPJob::GetMockUrl(test_dir_path.ToWStringHack());
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
@@ -152,22 +145,19 @@ TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
 
   // Dump the page, the content of dump page should be identical to the
   // expected result file.
-  std::wstring full_file_name = save_dir_ + kTestFileName;
+  FilePath full_file_name = save_dir_.AppendASCII(kTestFileName);
   // We save the page as way of complete HTML file, which requires a directory
   // name to save sub resources in it. Although this test file does not have
   // sub resources, but the directory name is still required.
-  std::wstring dir = save_dir_ + L"sub_resource_files";
-  EXPECT_TRUE(tab_proxy->SavePage(full_file_name, dir,
+  EXPECT_TRUE(tab_proxy->SavePage(full_file_name.ToWStringHack(),
+                                  temp_sub_resource_dir_.ToWStringHack(),
                                   SavePackage::SAVE_AS_COMPLETE_HTML));
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
-  FilePath expected_file_name =
-      FilePath::FromWStringHack(kOverrideTestDir);
-  expected_file_name =
-      expected_file_name.Append(FilePath::FromWStringHack(kExpectedFileName));
-  CheckFile(FilePath::FromWStringHack(full_file_name),
-            expected_file_name, true);
+  FilePath expected_file_name = FilePath().AppendASCII(kOverrideTestDir);
+  expected_file_name = expected_file_name.AppendASCII(kExpectedFileName);
+  CheckFile(full_file_name, expected_file_name, true);
 }
 #endif  // defined(OS_WIN)
 
@@ -187,70 +177,65 @@ TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
 // http://crbug.com/2927 for more details.
 TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
   struct EncodingAutoDetectTestData {
-    const wchar_t* test_file_name;   // File name of test data.
-    const wchar_t* expected_result;  // File name of expected results.
+    const char* test_file_name;   // File name of test data.
+    const char* expected_result;  // File name of expected results.
     const wchar_t* expected_encoding;  // expected encoding.
   };
   const EncodingAutoDetectTestData kTestDatas[] = {
-      { L"Big5_with_no_encoding_specified.html",
-        L"expected_Big5_saved_from_no_encoding_specified.html",
+      { "Big5_with_no_encoding_specified.html",
+        "expected_Big5_saved_from_no_encoding_specified.html",
         L"Big5" },
-      { L"gb18030_with_no_encoding_specified.html",
-        L"expected_gb18030_saved_from_no_encoding_specified.html",
+      { "gb18030_with_no_encoding_specified.html",
+        "expected_gb18030_saved_from_no_encoding_specified.html",
         L"gb18030" },
-      { L"iso-8859-1_with_no_encoding_specified.html",
-        L"expected_iso-8859-1_saved_from_no_encoding_specified.html",
+      { "iso-8859-1_with_no_encoding_specified.html",
+        "expected_iso-8859-1_saved_from_no_encoding_specified.html",
         L"ISO-8859-1" },
-      { L"ISO-8859-5_with_no_encoding_specified.html",
-        L"expected_ISO-8859-5_saved_from_no_encoding_specified.html",
+      { "ISO-8859-5_with_no_encoding_specified.html",
+        "expected_ISO-8859-5_saved_from_no_encoding_specified.html",
         L"ISO-8859-5" },
-      { L"ISO-8859-6_with_no_encoding_specified.html",
-        L"expected_ISO-8859-6_saved_from_no_encoding_specified.html",
+      { "ISO-8859-6_with_no_encoding_specified.html",
+        "expected_ISO-8859-6_saved_from_no_encoding_specified.html",
         L"ISO-8859-6" },
-      { L"ISO-8859-7_with_no_encoding_specified.html",
-        L"expected_ISO-8859-7_saved_from_no_encoding_specified.html",
+      { "ISO-8859-7_with_no_encoding_specified.html",
+        "expected_ISO-8859-7_saved_from_no_encoding_specified.html",
         L"ISO-8859-7" },
-      { L"ISO-8859-8_with_no_encoding_specified.html",
-        L"expected_ISO-8859-8_saved_from_no_encoding_specified.html",
+      { "ISO-8859-8_with_no_encoding_specified.html",
+        "expected_ISO-8859-8_saved_from_no_encoding_specified.html",
         L"ISO-8859-8-I" },
-      { L"KOI8-R_with_no_encoding_specified.html",
-        L"expected_KOI8-R_saved_from_no_encoding_specified.html",
+      { "KOI8-R_with_no_encoding_specified.html",
+        "expected_KOI8-R_saved_from_no_encoding_specified.html",
         L"KOI8-R" },
-      { L"Shift-JIS_with_no_encoding_specified.html",
-        L"expected_Shift-JIS_saved_from_no_encoding_specified.html",
+      { "Shift-JIS_with_no_encoding_specified.html",
+        "expected_Shift-JIS_saved_from_no_encoding_specified.html",
         L"Shift_JIS" },
-      { L"UTF-8_with_no_encoding_specified.html",
-        L"expected_UTF-8_saved_from_no_encoding_specified.html",
+      { "UTF-8_with_no_encoding_specified.html",
+        "expected_UTF-8_saved_from_no_encoding_specified.html",
         L"UTF-8" },
-      { L"windows-949_with_no_encoding_specified.html",
-        L"expected_windows-949_saved_from_no_encoding_specified.html",
+      { "windows-949_with_no_encoding_specified.html",
+        "expected_windows-949_saved_from_no_encoding_specified.html",
         L"windows-949" },
-      { L"windows-1251_with_no_encoding_specified.html",
-        L"expected_windows-1251_saved_from_no_encoding_specified.html",
+      { "windows-1251_with_no_encoding_specified.html",
+        "expected_windows-1251_saved_from_no_encoding_specified.html",
         L"windows-1251" },
-      { L"windows-1254_with_no_encoding_specified.html",
-        L"expected_windows-1254_saved_from_no_encoding_specified.html",
+      { "windows-1254_with_no_encoding_specified.html",
+        "expected_windows-1254_saved_from_no_encoding_specified.html",
         L"windows-1254" },
-      { L"windows-1255_with_no_encoding_specified.html",
-        L"expected_windows-1255_saved_from_no_encoding_specified.html",
+      { "windows-1255_with_no_encoding_specified.html",
+        "expected_windows-1255_saved_from_no_encoding_specified.html",
         L"windows-1255" },
-      { L"windows-1256_with_no_encoding_specified.html",
-        L"expected_windows-1256_saved_from_no_encoding_specified.html",
+      { "windows-1256_with_no_encoding_specified.html",
+        "expected_windows-1256_saved_from_no_encoding_specified.html",
         L"windows-1256" }
     };
-  const wchar_t* const kAutoDetectDir = L"auto_detect";
+  const char* const kAutoDetectDir = "auto_detect";
   // Directory of the files of expected results.
-  const wchar_t* const kExpectedResultDir = L"expected_results";
+  const char* const kExpectedResultDir = "expected_results";
 
   // Full path of saved file. full_file_name = save_dir_ + file_name[i];
-  std::wstring full_saved_file_name;
-  // Sub resource directory of saved file.
-  std::wstring tmp_save_dir(save_dir_);
-  tmp_save_dir += L"sub_resource_files";
+  FilePath full_saved_file_name;
 
-  FilePath test_dir_path = FilePath::FromWStringHack(kTestDir);
-  test_dir_path =
-      test_dir_path.Append(FilePath::FromWStringHack(kAutoDetectDir));
+  FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kAutoDetectDir);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDatas);i++) {
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -261,8 +246,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
     // incorrectly decode the page. Now we use ISO-8859-4.
     browser->SetStringPreference(prefs::kDefaultCharset, L"ISO-8859-4");
     FilePath test_file_path(test_dir_path);
-    test_file_path = test_file_path.Append(
-        FilePath::FromWStringHack(kTestDatas[i].test_file_name));
+    test_file_path = test_file_path.AppendASCII(kTestDatas[i].test_file_name);
     GURL url =
         URLRequestMockHTTPJob::GetMockUrl(test_file_path.ToWStringHack());
     scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -298,20 +282,17 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
 
     // Dump the page, the content of dump page should be equal with our expect
     // result file.
-    full_saved_file_name = save_dir_ + kTestDatas[i].test_file_name;
+    full_saved_file_name = save_dir_.AppendASCII(kTestDatas[i].test_file_name);
     // Full path of expect result file.
-    FilePath expected_result_file_name =
-        FilePath::FromWStringHack(kAutoDetectDir);
-    expected_result_file_name = expected_result_file_name.Append(
-        FilePath::FromWStringHack(kExpectedResultDir));
-    expected_result_file_name = expected_result_file_name.Append(
-        FilePath::FromWStringHack(kTestDatas[i].expected_result));
-    EXPECT_TRUE(tab->SavePage(full_saved_file_name, tmp_save_dir,
+    FilePath expected_result_file_name = FilePath().AppendASCII(kAutoDetectDir);
+    expected_result_file_name = expected_result_file_name.AppendASCII(
+        kExpectedResultDir);
+    expected_result_file_name = expected_result_file_name.AppendASCII(
+        kTestDatas[i].expected_result);
+    EXPECT_TRUE(tab->SavePage(full_saved_file_name.ToWStringHack(),
+                              temp_sub_resource_dir_.ToWStringHack(),
                               SavePackage::SAVE_AS_COMPLETE_HTML));
     EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
-    CheckFile(FilePath::FromWStringHack(full_saved_file_name),
-              expected_result_file_name,
-              true);
+    CheckFile(full_saved_file_name, expected_result_file_name, true);
   }
 }
-
