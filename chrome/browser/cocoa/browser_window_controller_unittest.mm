@@ -272,5 +272,89 @@ TEST_F(BrowserWindowControllerTest, TestTopLeftForBubble) {
   EXPECT_LT(p.x, all.origin.x + (all.size.width/2));
 }
 
+// By the "zoom frame", we mean what Apple calls the "standard frame".
+TEST_F(BrowserWindowControllerTest, TestZoomFrame) {
+  NSWindow* window = [controller_ window];
+  ASSERT_TRUE(window);
+  NSRect screenFrame = [[window screen] visibleFrame];
+  ASSERT_FALSE(NSIsEmptyRect(screenFrame));
+
+  // Minimum zoomed width is the larger of 60% of available horizontal space or
+  // 60% of available vertical space, subject to available horizontal space.
+  CGFloat minZoomWidth =
+      std::min(std::max((CGFloat)0.6 * screenFrame.size.width,
+                        (CGFloat)0.6 * screenFrame.size.height),
+               screenFrame.size.width);
+
+  // |testFrame| is the size of the window we start out with, and |zoomFrame| is
+  // the one returned by |-windowWillUseStandardFrame:defaultFrame:|.
+  NSRect testFrame;
+  NSRect zoomFrame;
+
+  // 1. Test a case where it zooms the window both horizontally and vertically,
+  // and only moves it vertically. "+ 32", etc. are just arbitrary constants
+  // used to check that the window is moved properly and not just to the origin;
+  // they should be small enough to not shove windows off the screen.
+  testFrame.size.width = 0.5 * minZoomWidth;
+  testFrame.size.height = 0.5 * screenFrame.size.height;
+  testFrame.origin.x = screenFrame.origin.x + 32;  // See above.
+  testFrame.origin.y = screenFrame.origin.y + 23;
+  [window setFrame:testFrame display:NO];
+  zoomFrame = [controller_ windowWillUseStandardFrame:window
+                                         defaultFrame:screenFrame];
+  EXPECT_LE(minZoomWidth, zoomFrame.size.width);
+  EXPECT_EQ(screenFrame.size.height, zoomFrame.size.height);
+  EXPECT_EQ(testFrame.origin.x, zoomFrame.origin.x);
+  EXPECT_EQ(screenFrame.origin.y, zoomFrame.origin.y);
+
+  // 2. Test a case where it zooms the window only horizontally, and only moves
+  // it horizontally.
+  testFrame.size.width = 0.5 * minZoomWidth;
+  testFrame.size.height = screenFrame.size.height;
+  testFrame.origin.x = screenFrame.origin.x + screenFrame.size.width -
+                       testFrame.size.width;
+  testFrame.origin.y = screenFrame.origin.y;
+  [window setFrame:testFrame display:NO];
+  zoomFrame = [controller_ windowWillUseStandardFrame:window
+                                         defaultFrame:screenFrame];
+  EXPECT_LE(minZoomWidth, zoomFrame.size.width);
+  EXPECT_EQ(screenFrame.size.height, zoomFrame.size.height);
+  EXPECT_EQ(screenFrame.origin.x + screenFrame.size.width -
+            zoomFrame.size.width, zoomFrame.origin.x);
+  EXPECT_EQ(screenFrame.origin.y, zoomFrame.origin.y);
+
+  // 3. Test a case where it zooms the window only vertically, and only moves it
+  // vertically.
+  testFrame.size.width = std::min((CGFloat)1.1 * minZoomWidth,
+                                  screenFrame.size.width);
+  testFrame.size.height = 0.3 * screenFrame.size.height;
+  testFrame.origin.x = screenFrame.origin.x + 32;  // See above (in 1.).
+  testFrame.origin.y = screenFrame.origin.y + 123;
+  [window setFrame:testFrame display:NO];
+  zoomFrame = [controller_ windowWillUseStandardFrame:window
+                                         defaultFrame:screenFrame];
+  // Use the actual width of the window frame, since it's subject to rounding.
+  EXPECT_EQ([window frame].size.width, zoomFrame.size.width);
+  EXPECT_EQ(screenFrame.size.height, zoomFrame.size.height);
+  EXPECT_EQ(testFrame.origin.x, zoomFrame.origin.x);
+  EXPECT_EQ(screenFrame.origin.y, zoomFrame.origin.y);
+
+  // 4. Test a case where zooming should do nothing (i.e., we're already at a
+  // zoomed frame).
+  testFrame.size.width = std::min((CGFloat)1.1 * minZoomWidth,
+                                  screenFrame.size.width);
+  testFrame.size.height = screenFrame.size.height;
+  testFrame.origin.x = screenFrame.origin.x + 32;  // See above (in 1.).
+  testFrame.origin.y = screenFrame.origin.y;
+  [window setFrame:testFrame display:NO];
+  zoomFrame = [controller_ windowWillUseStandardFrame:window
+                                         defaultFrame:screenFrame];
+  // Use the actual width of the window frame, since it's subject to rounding.
+  EXPECT_EQ([window frame].size.width, zoomFrame.size.width);
+  EXPECT_EQ(screenFrame.size.height, zoomFrame.size.height);
+  EXPECT_EQ(testFrame.origin.x, zoomFrame.origin.x);
+  EXPECT_EQ(screenFrame.origin.y, zoomFrame.origin.y);
+}
+
 
 /* TODO(???): test other methods of BrowserWindowController */

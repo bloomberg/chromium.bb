@@ -355,35 +355,110 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 // Called when the user clicks the zoom button (or selects it from the Window
-// menu). Zoom to the appropriate size based on the content. Make sure we
-// enforce a minimum width to ensure websites with small intrinsic widths
-// (such as google.com) don't end up with a wee window. Enforce a max width
-// that leaves room for icons on the right side. Use the full (usable) height
-// regardless.
+// menu) to determine the "standard size" of the window, based on the content
+// and other factors. If the current size/location differs nontrivally from the
+// standard size, Cocoa resizes the window to the standard size, and saves the
+// current size as the "user size". If the current size/location is the same (up
+// to a fudge factor) as the standard size, Cocoa resizes the window to the
+// saved user size. (It is possible for the two to coincide.) In this way, the
+// zoom button acts as a toggle. We determine the standard size based on the
+// content, but enforce a minimum width (calculated using the dimensions of the
+// screen) to ensure websites with small intrinsic width (such as google.com)
+// don't end up with a wee window. Moreover, we always declare the standard
+// width to be at least as big as the current width, i.e., we never want zooming
+// to the standard width to shrink the window. This is consistent with other
+// browsers' behaviour, and is desirable in multi-tab situations. Note, however,
+// that the "toggle" behaviour means that the window can still be "unzoomed" to
+// the user size.
 - (NSRect)windowWillUseStandardFrame:(NSWindow*)window
                         defaultFrame:(NSRect)frame {
+  // |frame| already fills the current screen. Never touch y and height since we
+  // always want to fill vertically.
+
   // If the shift key is down, maximize. Hopefully this should make the
   // "switchers" happy.
   if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] &
           NSShiftKeyMask) {
-    return [[window screen] visibleFrame];
+    return frame;
   }
 
-  const int kMinimumIntrinsicWidth = 700;
-  const int kScrollbarWidth = 16;
-  const int kSpaceForIcons = 50;
-  const NSSize screenSize = [[window screen] visibleFrame].size;
-  // Always leave room on the right for icons.
-  const int kMaxWidth = screenSize.width - kSpaceForIcons;
+  // To prevent strange results on portrait displays, the basic minimum zoomed
+  // width is the larger of: 60% of available width, 60% of available height
+  // (bounded by available width).
+  const CGFloat kProportion = 0.6;
+  CGFloat zoomedWidth =
+      std::max(kProportion * frame.size.width,
+               std::min(kProportion * frame.size.height, frame.size.width));
 
   TabContents* contents = browser_->tabstrip_model()->GetSelectedTabContents();
   if (contents) {
-    int intrinsicWidth = contents->view()->preferred_width() + kScrollbarWidth;
-    int tempWidth = std::max(intrinsicWidth, kMinimumIntrinsicWidth);
-    frame.size.width = std::min(tempWidth, kMaxWidth);
-    frame.size.height = screenSize.height;
+    // If the intrinsic width is bigger, then make it the zoomed width.
+    const int kScrollbarWidth = 16;  // FIXME(viettrungluu@gmail.com): ugh.
+    CGFloat intrinsicWidth = static_cast<CGFloat>(
+        contents->view()->preferred_width() + kScrollbarWidth);
+    zoomedWidth = std::max(zoomedWidth,
+                           std::min(intrinsicWidth, frame.size.width));
   }
+
+  // Never shrink from the current size on zoom (see above).
+  NSRect currentFrame = [[self window] frame];
+  zoomedWidth = std::max(zoomedWidth, currentFrame.size.width);
+
+  // |frame| determines our maximum extents. We need to set the origin of the
+  // frame -- and only move it left if necessary.
+  if (currentFrame.origin.x + zoomedWidth > frame.origin.x + frame.size.width)
+    frame.origin.x = frame.origin.x + frame.size.width - zoomedWidth;
+  else
+    frame.origin.x = currentFrame.origin.x;
+
+  // Set the width. Don't touch y or height.
+  frame.size.width = zoomedWidth;
+
   return frame;
+}
+
+// Determine whether we should let a window zoom/unzoom to the given |newFrame|.
+// We avoid letting unzoom move windows between screens, because it's really
+// strange and unintuitive.
+- (BOOL)windowShouldZoom:(NSWindow*)window toFrame:(NSRect)newFrame {
+  // Figure out which screen |newFrame| is on.
+  NSScreen* newScreen = nil;
+  CGFloat newScreenOverlapArea = 0.0;
+  for (NSScreen* screen in [NSScreen screens]) {
+    NSRect overlap = NSIntersectionRect(newFrame, [screen frame]);
+    CGFloat overlapArea = overlap.size.width * overlap.size.height;
+    if (overlapArea > newScreenOverlapArea) {
+      newScreen = screen;
+      newScreenOverlapArea = overlapArea;
+    }
+  }
+  // If we're somehow not on any screen, allow the zoom.
+  if (!newScreen)
+    return YES;
+
+  // If the new screen is the current screen, we can return a definitive YES.
+  // Note: This check is not strictly necessary, but just short-circuits in the
+  // "no-brainer" case. To test the complicated logic below, comment this out!
+  NSScreen* curScreen = [window screen];
+  if (newScreen == curScreen)
+    return YES;
+
+  // Worry a little: What happens when a window is on two (or more) screens?
+  // E.g., what happens in a 50-50 scenario? Cocoa may reasonably elect to zoom
+  // to the other screen rather than staying on the officially current one. So
+  // we compare overlaps with the current window frame, and see if Cocoa's
+  // choice was reasonable (allowing a small rounding error). This should
+  // hopefully avoid us ever erroneously denying a zoom when a window is on
+  // multiple screens.
+  NSRect curFrame = [window frame];
+  NSRect newScrIntersectCurFr = NSIntersectionRect([newScreen frame], curFrame);
+  NSRect curScrIntersectCurFr = NSIntersectionRect([curScreen frame], curFrame);
+  if (newScrIntersectCurFr.size.width*newScrIntersectCurFr.size.height >=
+      (curScrIntersectCurFr.size.width*curScrIntersectCurFr.size.height - 1.0))
+    return YES;
+
+  // If it wasn't reasonable, return NO.
+  return NO;
 }
 
 // Main method to resize browser window subviews.  This method should be called
