@@ -130,9 +130,10 @@ function initContext() {
 
 /**
  * Creates a material based on the given single color.
- * @param {Array} baseColor An array with 4 entries, the R,G,B, and A components
- *   of a color.
- * @return {Material} A material whose overall pigment is baseColor.
+ * @param {!o3djs.math.Vector4} baseColor A 4-component vector with
+ *     the R,G,B, and A components of a color.
+ * @return {!o3d.Material} A phong material whose overall pigment is
+ *     baseColor.
  */
 function createMaterial(baseColor) {
   // Create a new, empty Material object.

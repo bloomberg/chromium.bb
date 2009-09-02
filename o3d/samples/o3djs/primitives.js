@@ -1208,7 +1208,7 @@ o3djs.primitives.createDisc = function(pack, material,
  *     cylinder.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply
  *     all the vertices.
- * @return {o3djs.primitives.VertexInfo} The created cylinder vertices.
+ * @return {!o3djs.primitives.VertexInfo} The created cylinder vertices.
  */
 o3djs.primitives.createCylinderVertices = function(radius,
                                                    height,
@@ -1273,7 +1273,7 @@ o3djs.primitives.createCylinder = function(pack,
  *     truncated cone.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply
  *     all the vertices.
- * @return {o3djs.primitives.VertexInfo} The created truncated cone vertices.
+ * @return {!o3djs.primitives.VertexInfo} The created truncated cone vertices.
  */
 o3djs.primitives.createTruncatedConeVertices = function(bottomRadius,
                                                         topRadius,
