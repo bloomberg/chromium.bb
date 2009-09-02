@@ -184,10 +184,20 @@ void BookmarkBarGtk::Init(Profile* profile) {
   SetToolBarStyle();
   gtk_widget_set_name(bookmark_toolbar_.get(), "chrome-bookmark-toolbar");
   gtk_widget_set_app_paintable(bookmark_toolbar_.get(), TRUE);
-  g_signal_connect(G_OBJECT(bookmark_toolbar_.get()), "expose-event",
+  g_signal_connect(bookmark_toolbar_.get(), "expose-event",
                    G_CALLBACK(&OnToolbarExpose), this);
+  g_signal_connect(bookmark_toolbar_.get(), "size-allocate",
+                   G_CALLBACK(&OnToolbarSizeAllocate), this);
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), bookmark_toolbar_.get(),
                      TRUE, TRUE, 0);
+
+  overflow_button_ = theme_provider_->BuildChromeButton();
+  g_object_set_data(G_OBJECT(overflow_button_), "left-align-popup",
+                    reinterpret_cast<void*>(true));
+  SetOverflowButtonAppearance();
+  ConnectFolderButtonEvents(overflow_button_);
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), overflow_button_,
+                     FALSE, FALSE, 0);
 
   gtk_drag_dest_set(bookmark_toolbar_.get(), GTK_DEST_DEFAULT_DROP,
                     NULL, 0, kDragAction);
@@ -304,6 +314,7 @@ void BookmarkBarGtk::BookmarkNodeAdded(BookmarkModel* model,
                      item, index);
 
   SetInstructionState();
+  SetChevronState();
 }
 
 void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
@@ -322,6 +333,7 @@ void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
                        to_remove);
 
   SetInstructionState();
+  SetChevronState();
 }
 
 void BookmarkBarGtk::BookmarkNodeChanged(BookmarkModel* model,
@@ -337,6 +349,7 @@ void BookmarkBarGtk::BookmarkNodeChanged(BookmarkModel* model,
       GTK_TOOLBAR(bookmark_toolbar_.get()), index);
   GtkWidget* button = gtk_bin_get_child(GTK_BIN(item));
   bookmark_utils::ConfigureButtonForNode(node, model, button, theme_provider_);
+  SetChevronState();
 }
 
 void BookmarkBarGtk::BookmarkNodeFavIconLoaded(BookmarkModel* model,
@@ -368,6 +381,7 @@ void BookmarkBarGtk::CreateAllBookmarkButtons() {
       model_, other_bookmarks_button_, theme_provider_);
 
   SetInstructionState();
+  SetChevronState();
 }
 
 void BookmarkBarGtk::SetInstructionState() {
@@ -377,6 +391,19 @@ void BookmarkBarGtk::SetInstructionState() {
   } else {
     gtk_widget_hide(instructions_);
   }
+}
+
+void BookmarkBarGtk::SetChevronState() {
+  int extra_space = 0;
+
+  if (GTK_WIDGET_VISIBLE(overflow_button_))
+    extra_space = overflow_button_->allocation.width;
+
+  int overflow_idx = GetFirstHiddenBookmark(extra_space);
+  if (overflow_idx == -1)
+    gtk_widget_hide(overflow_button_);
+  else
+    gtk_widget_show_all(overflow_button_);
 }
 
 void BookmarkBarGtk::RemoveAllBookmarkButtons() {
@@ -389,6 +416,43 @@ int BookmarkBarGtk::GetBookmarkButtonCount() {
   int count = g_list_length(children);
   g_list_free(children);
   return count;
+}
+
+void BookmarkBarGtk::SetOverflowButtonAppearance() {
+  GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(overflow_button_));
+  if (former_child)
+    gtk_widget_destroy(former_child);
+
+  GtkWidget* new_child = theme_provider_->UseGtkTheme() ?
+      gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE) :
+      gtk_image_new_from_pixbuf(ResourceBundle::GetSharedInstance().
+          GetRTLEnabledPixbufNamed(IDR_BOOKMARK_BAR_CHEVRONS));
+
+  gtk_container_add(GTK_CONTAINER(overflow_button_), new_child);
+  SetChevronState();
+}
+
+int BookmarkBarGtk::GetFirstHiddenBookmark(int extra_space) {
+  int rv = 0;
+  bool overflow = false;
+  GList* toolbar_items =
+      gtk_container_get_children(GTK_CONTAINER(bookmark_toolbar_.get()));
+  for (GList* iter = toolbar_items; iter; iter = g_list_next(iter)) {
+    GtkWidget* tool_item = reinterpret_cast<GtkWidget*>(iter->data);
+    if (tool_item->allocation.x + tool_item->allocation.width >
+        bookmark_toolbar_.get()->allocation.width + extra_space) {
+      overflow = true;
+      break;
+    }
+    rv++;
+  }
+
+  g_list_free(toolbar_items);
+
+  if (!overflow)
+    return -1;
+
+  return rv;
 }
 
 bool BookmarkBarGtk::IsAlwaysShown() {
@@ -430,6 +494,8 @@ void BookmarkBarGtk::Observe(NotificationType type,
     // themes, we want to let the background show through the toolbar.
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()),
                                      theme_provider_->UseGtkTheme());
+
+    SetOverflowButtonAppearance();
   }
 }
 
@@ -504,7 +570,7 @@ const BookmarkNode* BookmarkBarGtk::GetNodeForToolButton(GtkWidget* widget) {
   // First check to see if |button| is special cased.
   if (widget == other_bookmarks_button_)
     return model_->other_node();
-  else if (widget == event_box_.get())
+  else if (widget == event_box_.get() || widget == overflow_button_)
     return model_->GetBookmarkBarNode();
 
   // Search the contents of |bookmark_toolbar_| for the corresponding widget
@@ -651,12 +717,16 @@ void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender,
   DCHECK(node);
   DCHECK(bar->page_navigator_);
 
+  int start_child_idx = 0;
+  if (sender == bar->overflow_button_)
+    start_child_idx = bar->GetFirstHiddenBookmark(0);
+
   bar->current_menu_.reset(
       new BookmarkMenuController(bar->browser_, bar->profile_,
                                  bar->page_navigator_,
                                  GTK_WINDOW(gtk_widget_get_toplevel(sender)),
                                  node,
-                                 0,
+                                 start_child_idx,
                                  false));
   GdkEventButton* event =
       reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
@@ -737,6 +807,13 @@ void BookmarkBarGtk::OnToolbarDragLeave(GtkToolbar* toolbar,
   }
 
   gtk_toolbar_set_drop_highlight_item(toolbar, NULL, 0);
+}
+
+// static
+void BookmarkBarGtk::OnToolbarSizeAllocate(GtkWidget* widget,
+                                           GtkAllocation* allocation,
+                                           BookmarkBarGtk* bar) {
+  bar->SetChevronState();
 }
 
 // static

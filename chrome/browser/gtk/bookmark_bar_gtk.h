@@ -84,6 +84,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   // any bookmarks in the bookmark bar node.
   void SetInstructionState();
 
+  // Sets the visibility of the overflow chevron.
+  void SetChevronState();
+
   // Helper function which destroys all the bookmark buttons in the GtkToolbar.
   void RemoveAllBookmarkButtons();
 
@@ -91,6 +94,17 @@ class BookmarkBarGtk : public AnimationDelegate,
   // is equivalent to the number of children the bookmark bar node from the
   // bookmark bar model has.
   int GetBookmarkButtonCount();
+
+  // Set the appearance of the overflow button appropriately (either chromium
+  // style or GTK style).
+  void SetOverflowButtonAppearance();
+
+  // Returns the index of the first bookmark that is not visible on the bar.
+  // Returns -1 if they are all visible.
+  // |extra_space| is how much extra space to give the toolbar during the
+  // calculation (for the purposes of determining if ditching the chevron
+  // would be a good idea).
+  int GetFirstHiddenBookmark(int extra_space);
 
   // Overridden from BookmarkModelObserver:
 
@@ -173,6 +187,9 @@ class BookmarkBarGtk : public AnimationDelegate,
                                  GdkDragContext* context,
                                  guint time,
                                  BookmarkBarGtk* bar);
+  static void OnToolbarSizeAllocate(GtkWidget* widget,
+                                    GtkAllocation* allocation,
+                                    BookmarkBarGtk* bar);
 
   // Used for both folder buttons and the toolbar.
   static void OnDragReceived(GtkWidget* widget,
@@ -214,6 +231,10 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // GtkToolbar which contains all the bookmark buttons.
   OwnedWidgetGtk bookmark_toolbar_;
+
+  // The button that shows extra bookmarks that don't fit on the bookmark
+  // bar.
+  GtkWidget* overflow_button_;
 
   // The other bookmarks button.
   GtkWidget* other_bookmarks_button_;
