@@ -111,11 +111,9 @@ class TabGtk : public TabRendererGtk,
   static gboolean OnButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event,
                                        TabGtk* tab);
 
-  // drag-end handler that signals when a drag action ends.
-  static void OnDragEnd(GtkWidget* widget, GdkDragContext* context,
-                        TabGtk* tab);
-
-  // drag-failed handler that is emitted when the drag fails.
+  // drag-failed handler that is emitted when the drag is finished.  The signal
+  // is drag-failed, but that is only in the gtk sense in that we never used
+  // the drag-n-drop API to transfer drop data.
   static gboolean OnDragFailed(GtkWidget* widget, GdkDragContext* context,
                                GtkDragResult result, TabGtk* tab);
 
@@ -138,6 +136,10 @@ class TabGtk : public TabRendererGtk,
   // Starts the dragging operation.  |drag_offset| is the offset inside the tab
   // bounds where the grab occurred.
   void StartDragging(gfx::Point drag_offset);
+
+  // Ends the dragging operations.  |canceled| is true if the operation was
+  // canceled.
+  void EndDrag(bool canceled);
 
   // An instance of a delegate object that can perform various actions based on
   // user gestures.

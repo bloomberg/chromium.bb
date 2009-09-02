@@ -200,34 +200,11 @@ gboolean TabGtk::OnButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event,
 }
 
 // static
-void TabGtk::OnDragEnd(GtkWidget* widget, GdkDragContext* context,
-                       TabGtk* tab) {
-  // We must let gtk clean up after we handle the drag operation, otherwise
-  // there will be outstanding references to the drag widget when we try to
-  // destroy it.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      tab->destroy_factory_.NewRunnableMethod(&TabGtk::DestroyDragWidget));
-
-  if (tab->last_mouse_down_) {
-    gdk_event_free(tab->last_mouse_down_);
-    tab->last_mouse_down_ = NULL;
-  }
-
-  // Notify the drag helper that we're done with any potential drag operations.
-  // Clean up the drag helper, which is re-created on the next mouse press.
-  tab->delegate_->EndDrag(false);
-
-  MessageLoopForUI::current()->RemoveObserver(tab);
-}
-
-// static
 gboolean TabGtk::OnDragFailed(GtkWidget* widget, GdkDragContext* context,
                               GtkDragResult result,
                               TabGtk* tab) {
-  // TODO(jhawkins): Implement an EndDrag method that wraps up functionality
-  // of OnDragEnd and OnDragFailed.  Take |result| into account for a canceled
-  // drag action.
-  OnDragEnd(widget, context, tab);
+  bool canceled = (result == GTK_DRAG_RESULT_USER_CANCELLED);
+  tab->EndDrag(canceled);
   return TRUE;
 }
 
@@ -320,7 +297,6 @@ void TabGtk::CreateDragWidget() {
   drag_widget_ = gtk_invisible_new();
   g_signal_connect(drag_widget_, "drag-failed",
                    G_CALLBACK(OnDragFailed), this);
-  g_signal_connect(drag_widget_, "drag-end", G_CALLBACK(OnDragEnd), this);
 }
 
 void TabGtk::DestroyDragWidget() {
@@ -340,4 +316,23 @@ void TabGtk::StartDragging(gfx::Point drag_offset) {
                  last_mouse_down_);
 
   delegate_->MaybeStartDrag(this, drag_offset);
+}
+
+void TabGtk::EndDrag(bool canceled) {
+  // We must let gtk clean up after we handle the drag operation, otherwise
+  // there will be outstanding references to the drag widget when we try to
+  // destroy it.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      destroy_factory_.NewRunnableMethod(&TabGtk::DestroyDragWidget));
+
+  if (last_mouse_down_) {
+    gdk_event_free(last_mouse_down_);
+    last_mouse_down_ = NULL;
+  }
+
+  // Notify the drag helper that we're done with any potential drag operations.
+  // Clean up the drag helper, which is re-created on the next mouse press.
+  delegate_->EndDrag(canceled);
+
+  MessageLoopForUI::current()->RemoveObserver(this);
 }
