@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
 
 #if defined(OS_WIN)  // TODO(port) - enable.
 // Tests that message passing between extensions and content scripts works.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_MessagingContentScript) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
                     .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")

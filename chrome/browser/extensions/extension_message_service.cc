@@ -153,11 +153,12 @@ void ExtensionMessageService::RemoveEventListener(const std::string& event_name,
   // It is possible that this RenderProcessHost is being destroyed.  If that is
   // the case, we'll have already removed his listeners, so do nothing here.
   RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
-  if (!rph)
+  if (!rph || rph->ListenersIterator().IsAtEnd())
     return;
 
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
-  DCHECK_EQ(listeners_[event_name].count(render_process_id), 1u) << event_name;
+  DCHECK_EQ(listeners_[event_name].count(render_process_id), 1u)
+      << " PID=" << render_process_id << " event=" << event_name;
   listeners_[event_name].erase(render_process_id);
 
   if (extension_devtools_manager_.get()) {
