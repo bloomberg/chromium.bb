@@ -2317,10 +2317,6 @@ BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS 
 
 BUG10480 LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
 
-// WebKit roll to 47952
-// Newly added test started out red on windows with r47950
-BUG20851 WIN : LayoutTests/fast/encoding/japanese-encoding-mix.html = FAIL
-
 // WebKit roll to 47982
 // This is a template, shouldn't be run, it got moved from a 'resources'
 // subdirectory, where things are automagically skipped, into the script-tests
