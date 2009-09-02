@@ -1066,20 +1066,6 @@
    fun:gtk_accel_label_destroy
 }
 {
-   bug_20580
-   Memcheck:Addr1
-   fun:syncJournal
-   fun:sqlite3PagerCommitPhaseOne
-   fun:sqlite3BtreeCommitPhaseOne
-   fun:vdbeCommit
-   fun:sqlite3VdbeHalt
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
-   fun:sqlite3_step
-   fun:sqlite3_exec
-   fun:_ZN7history16ArchivedDatabase17CommitTransactionEv
-}
-{
    bug_20581
    Memcheck:Leak
    ...

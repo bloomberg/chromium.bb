@@ -613,3 +613,61 @@
    fun:_ZN5NPAPI12_GLOBAL__N_117ReadSTRPluginInfoERK8FilePathP10__CFBundleP13WebPluginInfo
    fun:_ZN5NPAPI9PluginLib17ReadWebPluginInfoERK8FilePathP13WebPluginInfo
 }
+{
+   bug_20580
+   Memcheck:Addr1
+   fun:syncJournal
+   fun:sqlite3PagerCommitPhaseOne
+   fun:sqlite3BtreeCommitPhaseOne
+   fun:vdbeCommit
+   fun:sqlite3VdbeHalt
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN7history16ArchivedDatabase17CommitTransactionEv
+}
+{
+   bug_20580_b
+   Memcheck:Addr4
+   ...
+   fun:sqlite3BitvecDestroy
+   fun:pager_end_transaction
+   fun:sqlite3PagerCommitPhaseTwo
+   fun:sqlite3BtreeCommitPhaseTwo
+   fun:vdbeCommit
+   fun:sqlite3VdbeHalt
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN7history16ArchivedDatabase17CommitTransactionEv
+   fun:_ZN7history16ArchivedDatabase4InitERK8FilePath
+}
+{
+   bug_20837
+   Memcheck:Leak
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3DbMallocRaw
+   fun:sqlite3DbStrNDup
+   fun:sqlite3NameFromToken
+   fun:sqlite3StartTable
+   fun:yy_reduce
+   fun:sqlite3Parser
+   fun:sqlite3RunParser
+   fun:sqlite3Prepare
+   fun:sqlite3LockAndPrepare
+   fun:sqlite3_prepare
+   fun:sqlite3_exec
+   fun:sqlite3InitCallback
+   fun:sqlite3_exec
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN7history11URLDatabase27InitKeywordSearchTermsTableEv
+   fun:_ZN7history16ArchivedDatabase4InitERK8FilePath
+}
