@@ -678,9 +678,20 @@
           tests.join('</div><div>') + '</div></div>';
   }
 
+  /**
+   * Returns whether we should exclude test results from the test table.
+   * Note that we never want to exclude tests when we're in the individual
+   * tests view of the dashboard since the user is explicitly listing tests
+   * to view.
+   */
+  function shouldHideTest(testResult) {
+    return !currentState.tests &&
+        (test.isWontFix && !currentState.showWontFix ||
+         test.meetsExpectations && !currentState.showCorrectExpectations);
+  }
+
   function getHTMLForSingleTestRow(test, opt_builder) {
-    if ((test.isWontFix && !currentState.showWontFix) ||
-        (test.meetsExpectations && !currentState.showCorrectExpectations)) {
+    if (shouldHideTest(test)) {
       // The innerHTML call is considerably faster if we exclude the rows for
       // items we're not showing than if we hide them using display:none.
       return '';
