@@ -131,7 +131,7 @@ bool WidgetGtk::MakeTransparent() {
 
   if (!gdk_screen_is_composited(gdk_screen_get_default())) {
     // Transparency is only supported for compositing window managers.
-    DLOG(WARNING) << "compsiting not supported";
+    DLOG(WARNING) << "compositing not supported";
     return false;
   }
 

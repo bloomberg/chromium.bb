@@ -98,9 +98,6 @@ gfx::NativeView NativeComboboxGtk::GetTestingHandle() const {
   return native_view();
 }
 
-void NativeComboboxGtk::SelectionChanged() {
-  combobox_->SelectionChanged();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeComboboxGtk, NativeControlGtk overrides:
@@ -126,6 +123,12 @@ void NativeComboboxGtk::CreateNativeControl() {
 
 void NativeComboboxGtk::NativeControlCreated(GtkWidget* native_control) {
   NativeControlGtk::NativeControlCreated(native_control);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeComboboxGtk, private:
+void NativeComboboxGtk::SelectionChanged() {
+  combobox_->SelectionChanged();
 }
 
 // static

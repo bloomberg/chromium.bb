@@ -33,9 +33,9 @@ class NativeComboboxGtk : public NativeControlGtk,
   virtual void NativeControlCreated(GtkWidget* widget);
 
  private:
-  static void CallChanged(GtkWidget* widget, NativeComboboxGtk* combo);
-
   void SelectionChanged();
+
+  static void CallChanged(GtkWidget* widget, NativeComboboxGtk* combo);
 
   // The combobox we are bound to.
   Combobox* combobox_;
