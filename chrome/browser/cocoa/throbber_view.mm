@@ -4,12 +4,15 @@
 
 #import "chrome/browser/cocoa/throbber_view.h"
 
+#include <set>
+
 #include "base/logging.h"
 
 static const float kAnimationIntervalSeconds = 0.03;  // 30ms, same as windows
 
 @interface ThrobberView(PrivateMethods)
 - (id)initWithFrame:(NSRect)frame delegate:(id<ThrobberDataDelegate>)delegate;
+- (void)maintainTimer;
 - (void)animate;
 @end
 
@@ -152,26 +155,126 @@ static const float kAnimationIntervalSeconds = 0.03;  // 30ms, same as windows
 
 @end
 
-// A very simple object that is the target for the animation timer so that
-// the view isn't. We do this to avoid retain cycles as the timer
-// retains its target.
-@interface ThrobberTimerTarget : NSObject {
+typedef std::set<ThrobberView*> ThrobberSet;
+
+// ThrobberTimer manages the animation of a set of ThrobberViews.  It allows
+// a single timer instance to be shared among as many ThrobberViews as needed.
+@interface ThrobberTimer : NSObject {
  @private
-  ThrobberView* throbber_;  // Weak, owns us
+  // A set of weak references to each ThrobberView that should be notified
+  // whenever the timer fires.
+  ThrobberSet throbbers_;
+
+  // Weak reference to the timer that calls back to this object.  The timer
+  // retains this object.
+  NSTimer* timer_;
+
+  // Whether the timer is actively running.  To avoid timer construction
+  // and destruction overhead, the timer is not invalidated when it is not
+  // needed, but its next-fire date is set to [NSDate distantFuture].
+  // It is not possible to determine whether the timer has been suspended by
+  // comparing its fireDate to [NSDate distantFuture], though, so a separate
+  // variable is used to track this state.
+  BOOL timerRunning_;
+
+  // The thread that created this object.  Used to validate that ThrobberViews
+  // are only added and removed on the same thread that the fire action will
+  // be performed on.
+  NSThread* validThread_;
 }
-- (id)initWithThrobber:(ThrobberView*)view;
+
+// Returns a shared ThrobberTimer.  Everyone is expected to use the same
+// instance.
++ (ThrobberTimer*)sharedThrobberTimer;
+
+// Invalidates the timer, which will cause it to remove itself from the run
+// loop.  This causes the timer to be released, and it should then release
+// this object.
+- (void)invalidate;
+
+// Adds or removes ThrobberView objects from the throbbers_ set.
+- (void)addThrobber:(ThrobberView*)throbber;
+- (void)removeThrobber:(ThrobberView*)throbber;
 @end
 
-@implementation ThrobberTimerTarget
-- (id)initWithThrobber:(ThrobberView*)view {
+@interface ThrobberTimer(PrivateMethods)
+// Starts or stops the timer as needed as ThrobberViews are added and removed
+// from the throbbers_ set.
+- (void)maintainTimer;
+
+// Calls animate on each ThrobberView in the throbbers_ set.
+- (void)fire:(NSTimer*)timer;
+@end
+
+@implementation ThrobberTimer
+- (id)init {
   if ((self = [super init])) {
-    throbber_ = view;
+    // Start out with a timer that fires at the appropriate interval, but
+    // prevent it from firing by setting its next-fire date to the distant
+    // future.  Once a ThrobberView is added, the timer will be allowed to
+    // start firing.
+    timer_ = [NSTimer scheduledTimerWithTimeInterval:kAnimationIntervalSeconds
+                                              target:self
+                                            selector:@selector(fire:)
+                                            userInfo:nil
+                                             repeats:YES];
+    [timer_ setFireDate:[NSDate distantFuture]];
+    timerRunning_ = NO;
+
+    validThread_ = [NSThread currentThread];
   }
   return self;
 }
 
-- (void)animate:(NSTimer*)timer {
-  [throbber_ animate];
++ (ThrobberTimer*)sharedThrobberTimer {
+  // Leaked.  That's OK, it's scoped to the lifetime of the application.
+  static ThrobberTimer* sharedInstance = [[ThrobberTimer alloc] init];
+  return sharedInstance;
+}
+
+- (void)invalidate {
+  [timer_ invalidate];
+}
+
+- (void)addThrobber:(ThrobberView*)throbber {
+  DCHECK([NSThread currentThread] == validThread_);
+  throbbers_.insert(throbber);
+  [self maintainTimer];
+}
+
+- (void)removeThrobber:(ThrobberView*)throbber {
+  DCHECK([NSThread currentThread] == validThread_);
+  throbbers_.erase(throbber);
+  [self maintainTimer];
+}
+
+- (void)maintainTimer {
+  BOOL oldRunning = timerRunning_;
+  BOOL newRunning = throbbers_.empty() ? NO : YES;
+
+  if (oldRunning == newRunning)
+    return;
+
+  // To start the timer, set its next-fire date to an appropriate interval from
+  // now.  To suspend the timer, set its next-fire date to a preposterous time
+  // in the future.
+  NSDate* fireDate;
+  if (newRunning)
+    fireDate = [NSDate dateWithTimeIntervalSinceNow:kAnimationIntervalSeconds];
+  else
+    fireDate = [NSDate distantFuture];
+
+  [timer_ setFireDate:fireDate];
+  timerRunning_ = newRunning;
+}
+
+- (void)fire:(NSTimer*)timer {
+  for (ThrobberSet::const_iterator i = throbbers_.begin();
+       i != throbbers_.end();
+       ++i) {
+    ThrobberView* throbber = *i;
+    [throbber animate];
+  }
 }
 @end
 
@@ -204,31 +307,46 @@ static const float kAnimationIntervalSeconds = 0.03;  // 30ms, same as windows
 - (id)initWithFrame:(NSRect)frame delegate:(id<ThrobberDataDelegate>)delegate {
   if ((self = [super initWithFrame:frame])) {
     dataDelegate_ = [delegate retain];
-
-    // Start a timer for the animation frames.
-    target_.reset([[ThrobberTimerTarget alloc] initWithThrobber:self]);
-    timer_ = [NSTimer scheduledTimerWithTimeInterval:kAnimationIntervalSeconds
-                                              target:target_.get()
-                                            selector:@selector(animate:)
-                                            userInfo:nil
-                                             repeats:YES];
   }
   return self;
 }
 
 - (void)dealloc {
   [dataDelegate_ release];
-  if (timer_)
-    [timer_ invalidate];
+  [[ThrobberTimer sharedThrobberTimer] removeThrobber:self];
 
   [super dealloc];
 }
 
-- (void)removeFromSuperview {
-  [timer_ invalidate];
-  timer_ = nil;
+// Manages this ThrobberView's membership in the shared throbber timer set on
+// the basis of its visibility and whether its animation needs to continue
+// running.
+- (void)maintainTimer {
+  ThrobberTimer* throbberTimer = [ThrobberTimer sharedThrobberTimer];
 
-  [super removeFromSuperview];
+  if ([self window] && ![self isHidden] && ![dataDelegate_ animationIsComplete])
+    [throbberTimer addThrobber:self];
+  else
+    [throbberTimer removeThrobber:self];
+}
+
+// A ThrobberView added to a window may need to begin animating; a ThrobberView
+// removed from a window should stop.
+- (void)viewDidMoveToWindow {
+  [self maintainTimer];
+  [super viewDidMoveToWindow];
+}
+
+// A hidden ThrobberView should stop animating.
+- (void)viewDidHide {
+  [self maintainTimer];
+  [super viewDidHide];
+}
+
+// A visible ThrobberView may need to start animating.
+- (void)viewDidUnhide {
+  [self maintainTimer];
+  [super viewDidUnhide];
 }
 
 // Called when the ThrobberTimerTarget gets tickled by our timer. Advance the
@@ -238,8 +356,7 @@ static const float kAnimationIntervalSeconds = 0.03;  // 30ms, same as windows
   [self setNeedsDisplay:YES];
 
   if ([dataDelegate_ animationIsComplete]) {
-    [timer_ invalidate];
-    timer_ = nil;
+    [[ThrobberTimer sharedThrobberTimer] removeThrobber:self];
   }
 }
 
