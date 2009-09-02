@@ -3,10 +3,18 @@
 // found in the LICENSE file.
 
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
+#include "o3d/gpu_plugin/np_utils/base_np_object_mock.h"
+#include "o3d/gpu_plugin/np_utils/np_browser_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
-#include "o3d/gpu_plugin/np_utils/npn_test_stub.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/glue/plugins/nphostapi.h"
+
+using testing::_;
+using testing::DoAll;
+using testing::Return;
+using testing::SetArgumentPointee;
+using testing::StrictMock;
 
 namespace o3d {
 namespace gpu_plugin {
@@ -14,22 +22,11 @@ namespace gpu_plugin {
 class GPUPluginObjectTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    InitializeNPNTestStub();
-
-    np_class_ = const_cast<NPClass*>(
-        BaseNPObject::GetNPClass<GPUPluginObject>());
-
-    plugin_object_ = static_cast<GPUPluginObject*>(
-            gpu_plugin::NPN_CreateObject(NULL, np_class_));
+    plugin_object_ = NPCreateObject<GPUPluginObject>(NULL);
   }
 
-  virtual void TearDown() {
-    gpu_plugin::NPN_ReleaseObject(plugin_object_);
-    ShutdownNPNTestStub();
-  }
-
-  NPClass* np_class_;
-  GPUPluginObject* plugin_object_;
+  MockNPBrowser mock_browser_;
+  NPObjectPointer<GPUPluginObject> plugin_object_;
 };
 
 TEST_F(GPUPluginObjectTest, CanInitializeAndDestroyPluginObject) {
@@ -56,6 +53,7 @@ TEST_F(GPUPluginObjectTest, NewFailsIfAlreadyInitialized) {
                                                 NULL,
                                                 NULL,
                                                 NULL));
+  EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->Destroy(NULL));
 }
 
 TEST_F(GPUPluginObjectTest, NewFailsIfObjectHasPreviouslyBeenDestroyed) {
@@ -70,6 +68,11 @@ TEST_F(GPUPluginObjectTest, NewFailsIfObjectHasPreviouslyBeenDestroyed) {
                                                      NULL,
                                                      NULL,
                                                      NULL));
+}
+
+TEST_F(GPUPluginObjectTest, WindowIsNullBeforeSetWindowCalled) {
+  NPWindow window = plugin_object_->GetWindow();
+  EXPECT_EQ(NULL, window.window);
 }
 
 TEST_F(GPUPluginObjectTest, CanSetWindow) {
@@ -94,5 +97,8 @@ TEST_F(GPUPluginObjectTest, SetWindowFailsIfNotInitialized) {
   EXPECT_EQ(NPERR_GENERIC_ERROR, plugin_object_->SetWindow(&window));
 }
 
+TEST_F(GPUPluginObjectTest, CanGetScriptableNPObject) {
+  EXPECT_EQ(plugin_object_.Get(), plugin_object_->GetScriptableNPObject());
+}
 }  // namespace gpu_plugin
 }  // namespace o3d

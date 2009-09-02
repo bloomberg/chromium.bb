@@ -13,6 +13,14 @@ namespace gpu_plugin {
 
 class MockBaseNPObject : public BaseNPObject {
  public:
+  explicit MockBaseNPObject(NPP npp) : BaseNPObject(npp) {
+    ++count_;
+  }
+
+  ~MockBaseNPObject() {
+    --count_;
+  }
+
   static int count() {
     return count_;
   }
@@ -28,15 +36,6 @@ class MockBaseNPObject : public BaseNPObject {
   MOCK_METHOD1(RemoveProperty, bool(NPIdentifier));
   MOCK_METHOD2(Enumerate, bool(NPIdentifier**, uint32_t*));
   MOCK_METHOD3(Construct, bool(const NPVariant*, uint32_t, NPVariant*));
-
- protected:
-  explicit MockBaseNPObject(NPP npp) : BaseNPObject(npp) {
-    ++count_;
-  }
-
-  ~MockBaseNPObject() {
-    --count_;
-  }
 
  private:
   static int count_;

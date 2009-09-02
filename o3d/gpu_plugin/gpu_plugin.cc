@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "o3d/gpu_plugin/gpu_plugin.h"
-#include "o3d/gpu_plugin/plugin_object.h"
-#include "o3d/gpu_plugin/plugin_object_factory.h"
-#include "o3d/gpu_plugin/np_utils/npn_funcs.h"
+#include "o3d/gpu_plugin/gpu_plugin_object_factory.h"
+#include "o3d/gpu_plugin/np_utils/np_browser.h"
+#include "o3d/gpu_plugin/np_utils/np_plugin_object.h"
+#include "o3d/gpu_plugin/np_utils/np_plugin_object_factory.h"
 #include "webkit/glue/plugins/nphostapi.h"
 
 namespace o3d {
@@ -14,8 +15,8 @@ namespace gpu_plugin {
 // Definitions of NPAPI plugin entry points.
 
 namespace {
-bool g_initialized;
-PluginObjectFactory* g_plugin_object_factory = new PluginObjectFactory;
+NPBrowser* g_browser;
+GPUPluginObjectFactory g_plugin_object_factory;
 
 NPError NPP_New(NPMIMEType plugin_type, NPP instance,
                 uint16 mode, int16 argc, char* argn[],
@@ -23,14 +24,19 @@ NPError NPP_New(NPMIMEType plugin_type, NPP instance,
   if (!instance)
     return NPERR_INVALID_INSTANCE_ERROR;
 
-  PluginObject* plugin_object = g_plugin_object_factory->CreatePluginObject(
-    instance, plugin_type);
+  PluginObject* plugin_object =
+      NPPluginObjectFactory::get()->CreatePluginObject(instance, plugin_type);
   if (!plugin_object)
     return NPERR_GENERIC_ERROR;
 
   instance->pdata = plugin_object;
 
-  return plugin_object->New(plugin_type, argc, argn, argv, saved);
+  NPError error = plugin_object->New(plugin_type, argc, argn, argv, saved);
+  if (error != NPERR_NO_ERROR) {
+    plugin_object->Release();
+  }
+
+  return error;
 }
 
 NPError NPP_Destroy(NPP instance, NPSavedData** saved) {
@@ -38,7 +44,13 @@ NPError NPP_Destroy(NPP instance, NPSavedData** saved) {
     return NPERR_INVALID_INSTANCE_ERROR;
 
   PluginObject* plugin_object = static_cast<PluginObject*>(instance->pdata);
-  return plugin_object->Destroy(saved);
+  NPError error = plugin_object->Destroy(saved);
+
+  if (error == NPERR_NO_ERROR) {
+    plugin_object->Release();
+  }
+
+  return error;
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
@@ -63,9 +75,9 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
 
   PluginObject* plugin_object = static_cast<PluginObject*>(instance->pdata);
   switch (variable) {
-    case NPPVpluginScriptableInstance:
+    case NPPVpluginScriptableNPObject:
       *reinterpret_cast<NPObject**>(value) =
-          plugin_object->GetScriptableInstance();
+          plugin_object->GetScriptableNPObject();
       return NPERR_NO_ERROR;
     default:
       return NPERR_GENERIC_ERROR;
@@ -75,12 +87,6 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
 NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
   return NPERR_NO_ERROR;
 }
-}
-
-PluginObjectFactory*  SetPluginObjectFactory(PluginObjectFactory* factory) {
-  PluginObjectFactory* previous_factory = g_plugin_object_factory;
-  g_plugin_object_factory = factory;
-  return previous_factory;
 }
 
 NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs) {
@@ -102,28 +108,26 @@ NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs) {
   if (!browser_funcs)
     return NPERR_INVALID_FUNCTABLE_ERROR;
 
-  if (g_initialized)
+  if (g_browser)
     return NPERR_GENERIC_ERROR;
 
 #if defined(OS_LINUX)
   NP_GetEntryPoints(plugin_funcs);
 #endif
 
-  SetBrowserFuncs(browser_funcs);
-  g_initialized = true;
+  g_browser = new NPBrowser(browser_funcs);
 
   return NPERR_NO_ERROR;
 }
 
 NPError API_CALL NP_Shutdown() {
-  if (!g_initialized)
+  if (!g_browser)
     return NPERR_GENERIC_ERROR;
 
-  SetBrowserFuncs(NULL);
-  g_initialized = false;
+  delete g_browser;
+  g_browser = NULL;
 
   return NPERR_NO_ERROR;
 }
-
 }  // namespace gpu_plugin
 }  // namespace o3d

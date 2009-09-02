@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "o3d/gpu_plugin/np_utils/np_variant_utils.h"
+#include "o3d/gpu_plugin/np_utils/np_utils.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
@@ -61,18 +61,6 @@ bool NPVariantToValue(std::string* value, const NPVariant& variant) {
   return false;
 }
 
-bool NPVariantToValue(NPObject** value, const NPVariant& variant) {
-  if (NPVARIANT_IS_NULL(variant)) {
-    *value = NULL;
-    return true;
-  } else if (NPVARIANT_IS_OBJECT(variant)) {
-    *value = NPVARIANT_TO_OBJECT(variant);
-    return true;
-  }
-
-  return false;
-}
-
 void ValueToNPVariant(bool value, NPVariant* variant) {
   BOOLEAN_TO_NPVARIANT(value, *variant);
 }
@@ -90,18 +78,67 @@ void ValueToNPVariant(double value, NPVariant* variant) {
 }
 
 void ValueToNPVariant(const std::string& value, NPVariant* variant) {
-  NPUTF8* p = static_cast<NPUTF8*>(NPN_MemAlloc(value.length()));
+  NPUTF8* p = static_cast<NPUTF8*>(NPBrowser::get()->MemAlloc(value.length()));
   memcpy(p, value.c_str(), value.length());
   STRINGN_TO_NPVARIANT(p, value.length(), *variant);
 }
 
-void ValueToNPVariant(NPObject* value, NPVariant* variant) {
-  if (value) {
-    gpu_plugin::NPN_RetainObject(value);
-    OBJECT_TO_NPVARIANT(value, *variant);
+SmartNPVariant::SmartNPVariant() {
+  VOID_TO_NPVARIANT(*this);
+}
+
+SmartNPVariant::SmartNPVariant(const SmartNPVariant& rhs) {
+  Copy(rhs);
+}
+
+SmartNPVariant::~SmartNPVariant() {
+  Release();
+}
+
+SmartNPVariant& SmartNPVariant::operator=(const SmartNPVariant& rhs) {
+  Release();
+  Copy(rhs);
+  return *this;
+}
+
+void SmartNPVariant::Release() {
+  NPBrowser::get()->ReleaseVariantValue(this);
+  VOID_TO_NPVARIANT(*this);
+}
+
+void SmartNPVariant::Copy(const NPVariant& rhs) {
+  if (NPVARIANT_IS_OBJECT(rhs)) {
+    NPObject* object = NPVARIANT_TO_OBJECT(rhs);
+    OBJECT_TO_NPVARIANT(object, *this);
+    NPBrowser::get()->RetainObject(object);
+  } else if (NPVARIANT_IS_STRING(rhs)) {
+    NPUTF8* copy = static_cast<NPUTF8*>(NPBrowser::get()->MemAlloc(
+        rhs.value.stringValue.UTF8Length));
+    memcpy(copy,
+           rhs.value.stringValue.UTF8Characters,
+           rhs.value.stringValue.UTF8Length);
+    STRINGN_TO_NPVARIANT(copy, rhs.value.stringValue.UTF8Length, *this);
   } else {
-    NULL_TO_NPVARIANT(*variant);
+    memcpy(this, &rhs, sizeof(rhs));
   }
+}
+
+bool NPHasMethod(NPP npp,
+                 const NPObjectPointer<NPObject>& object,
+                 const NPUTF8* name) {
+  return NPBrowser::get()->HasMethod(
+      npp,
+      object.Get(),
+      NPBrowser::get()->GetStringIdentifier(name));
+}
+
+bool NPHasProperty(NPP npp,
+                   const NPObjectPointer<NPObject>& object,
+                   const NPUTF8* name) {
+  return NPBrowser::get()->HasProperty(
+      npp,
+      object.Get(),
+      NPBrowser::get()->GetStringIdentifier(name));
 }
 
 }  // namespace gpu_plugin

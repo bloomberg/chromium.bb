@@ -16,7 +16,7 @@ namespace gpu_plugin {
 class BaseNPObject : public NPObject {
  public:
   // Returns the NPClass for the concrete BaseNPObject subclass T.
-  template <typename T>
+  template <typename NPObjectType>
   static const NPClass* GetNPClass();
 
   NPP npp() const {
@@ -60,9 +60,9 @@ class BaseNPObject : public NPObject {
  private:
   // This template version of the NPClass allocate function creates a subclass
   // of BaseNPObject.
-  template <typename T>
+  template <typename NPObjectType>
   static NPObject* AllocateImpl(NPP npp, NPClass*) {
-    return new T(npp);
+    return new NPObjectType(npp);
   }
 
   // These implementations of the NPClass functions forward to the virtual
@@ -110,11 +110,11 @@ class BaseNPObject : public NPObject {
   DISALLOW_COPY_AND_ASSIGN(BaseNPObject);
 };
 
-template <typename T>
+template <typename NPObjectType>
 const NPClass* BaseNPObject::GetNPClass() {
   static NPClass np_class = {
     NP_CLASS_STRUCT_VERSION,
-    AllocateImpl<T>,
+    AllocateImpl<NPObjectType>,
     DeallocateImpl,
     InvalidateImpl,
     HasMethodImpl,
@@ -129,7 +129,6 @@ const NPClass* BaseNPObject::GetNPClass() {
   };
   return &np_class;
 };
-
 }  // namespace gpu_plugin
 }  // namespace o3d
 

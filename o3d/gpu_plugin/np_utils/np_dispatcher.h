@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "o3d/gpu_plugin/np_utils/np_variant_utils.h"
+#include "o3d/gpu_plugin/np_utils/np_utils.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
@@ -53,7 +53,8 @@ class BaseNPDispatcher {
       java_script_style_name[0] = tolower(java_script_style_name[0]);
     }
 
-    name_ = NPN_GetStringIdentifier(java_script_style_name.c_str());
+    name_ = NPBrowser::get()->GetStringIdentifier(
+        java_script_style_name.c_str());
   }
 
   virtual ~BaseNPDispatcher() {

@@ -5,10 +5,16 @@
 #ifndef O3D_GPU_PLUGIN_GPU_PLUGIN_OBJECT_H_
 #define O3D_GPU_PLUGIN_GPU_PLUGIN_OBJECT_H_
 
+#include <string>
+
 #include "o3d/gpu_plugin/np_utils/dispatched_np_object.h"
-#include "o3d/gpu_plugin/plugin_object.h"
+#include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
+#include "o3d/gpu_plugin/np_utils/np_plugin_object.h"
+#include "o3d/gpu_plugin/np_utils/np_utils.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
+
+struct NaClDesc;
 
 namespace o3d {
 namespace gpu_plugin {
@@ -18,10 +24,7 @@ class GPUPluginObject : public DispatchedNPObject, public PluginObject {
  public:
   static const NPUTF8 kPluginType[];
 
-  explicit GPUPluginObject(NPP npp)
-      : DispatchedNPObject(npp),
-        status_(CREATED) {
-  }
+  explicit GPUPluginObject(NPP npp);
 
   virtual NPError New(NPMIMEType plugin_type,
                       int16 argc,
@@ -36,7 +39,16 @@ class GPUPluginObject : public DispatchedNPObject, public PluginObject {
 
   virtual NPError Destroy(NPSavedData** saved);
 
-  virtual NPObject* GetScriptableInstance();
+  virtual void Release();
+
+  virtual NPObject* GetScriptableNPObject();
+
+  NPObjectPointer<NPObject> OpenCommandBuffer();
+
+ protected:
+  NP_UTILS_BEGIN_DISPATCHER_CHAIN(GPUPluginObject, DispatchedNPObject)
+    NP_UTILS_DISPATCHER(OpenCommandBuffer, NPObjectPointer<NPObject>())
+  NP_UTILS_END_DISPATCHER_CHAIN
 
  private:
   NPError PlatformSpecificSetWindow(NPWindow* new_window);
@@ -49,6 +61,8 @@ class GPUPluginObject : public DispatchedNPObject, public PluginObject {
 
   Status status_;
   NPWindow window_;
+  NPObjectPointer<NPObject> command_buffer_object_;
+  NPSharedMemory* shared_memory_;
 };
 
 }  // namespace gpu_plugin

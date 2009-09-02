@@ -14,11 +14,6 @@ typedef struct _NPNetscapeFuncs NPNetscapeFuncs;
 namespace o3d {
 namespace gpu_plugin {
 
-class PluginObjectFactory;
-
-// Replaces the plugin object factory and returns the previous one.
-PluginObjectFactory* SetPluginObjectFactory(PluginObjectFactory* factory);
-
 // Declarations of NPAPI plugin entry points.
 
 NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs);

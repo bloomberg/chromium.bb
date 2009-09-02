@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
-#include "o3d/gpu_plugin/plugin_object_factory.h"
-#include "o3d/gpu_plugin/np_utils/npn_test_stub.h"
+#include "o3d/gpu_plugin/gpu_plugin_object_factory.h"
+#include "o3d/gpu_plugin/np_utils/np_browser_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,16 +14,15 @@ namespace gpu_plugin {
 class PluginObjectFactoryTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    InitializeNPNTestStub();
-    factory_ = new PluginObjectFactory;
+    factory_ = new GPUPluginObjectFactory;
   }
 
   virtual void TearDown() {
     delete factory_;
-    ShutdownNPNTestStub();
   }
 
-  PluginObjectFactory* factory_;
+  StubNPBrowser stub_browser_;
+  GPUPluginObjectFactory* factory_;
 };
 
 TEST_F(PluginObjectFactoryTest, ReturnsNullForUnknownMimeType) {

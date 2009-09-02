@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef O3D_GPU_PLUGIN_PLUGIN_OBJECT_H_
-#define O3D_GPU_PLUGIN_PLUGIN_OBJECT_H_
+#ifndef O3D_GPU_PLUGIN_NP_UTILS_NP_PLUGIN_OBJECT_H_
+#define O3D_GPU_PLUGIN_NP_UTILS_NP_PLUGIN_OBJECT_H_
 
+#include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
@@ -15,12 +16,7 @@ namespace gpu_plugin {
 // of this interface.
 class PluginObject {
  public:
-  PluginObject() {
-  }
-
-  virtual ~PluginObject() {
-  }
-
+  // Initialize this object.
   virtual NPError New(NPMIMEType plugin_type,
                       int16 argc,
                       char* argn[],
@@ -31,9 +27,21 @@ class PluginObject {
 
   virtual int16 HandleEvent(NPEvent* event) = 0;
 
+  // Uninitialize but do not deallocate the object. Release will be called to
+  // deallocate if Destroy succeeds.
   virtual NPError Destroy(NPSavedData** saved) = 0;
 
-  virtual NPObject* GetScriptableInstance() = 0;
+  // Deallocate this object. This object is invalid after this returns.
+  virtual void Release() = 0;
+
+  virtual NPObject* GetScriptableNPObject() = 0;
+
+ protected:
+  PluginObject() {
+  }
+
+  virtual ~PluginObject() {
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PluginObject);
@@ -42,4 +50,4 @@ class PluginObject {
 }  // namespace gpu_plugin
 }  // namespace o3d
 
-#endif  // O3D_GPU_PLUGIN_PLUGIN_OBJECT_H_
+#endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_PLUGIN_OBJECT_H_

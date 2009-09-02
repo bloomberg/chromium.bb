@@ -52,7 +52,7 @@ bool DispatchedNPObject::Enumerate(NPIdentifier** names, uint32_t* num_names) {
 
   // Copy names into the array.
   *names = static_cast<NPIdentifier*>(
-      NPN_MemAlloc((*num_names) * sizeof(**names)));
+      NPBrowser::get()->MemAlloc((*num_names) * sizeof(**names)));
   int i = 0;
   for (BaseNPDispatcher* dispatcher = GetDynamicDispatcherChain();
        dispatcher;

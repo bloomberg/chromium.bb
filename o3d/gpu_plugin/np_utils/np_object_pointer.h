@@ -5,7 +5,8 @@
 #ifndef O3D_GPU_PLUGIN_NP_UTILS_NP_OBJECT_POINTER_H_
 #define O3D_GPU_PLUGIN_NP_UTILS_NP_OBJECT_POINTER_H_
 
-#include "o3d/gpu_plugin/np_utils/npn_funcs.h"
+#include "base/logging.h"
+#include "o3d/gpu_plugin/np_utils/np_browser.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
@@ -19,42 +20,60 @@ class NPObjectPointer {
   NPObjectPointer() : object_(NULL) {}
 
   NPObjectPointer(const NPObjectPointer& rhs) : object_(rhs.object_) {
-    if (object_) {
-      gpu_plugin::NPN_RetainObject(object_);
-    }
+    Retain();
   }
 
   explicit NPObjectPointer(NPObjectType* p) : object_(p) {
-    if (object_) {
-      gpu_plugin::NPN_RetainObject(object_);
-    }
+    Retain();
+  }
+
+  template <typename RHS>
+  NPObjectPointer(const NPObjectPointer<RHS>& rhs) : object_(rhs.Get()) {
+    Retain();
   }
 
   ~NPObjectPointer() {
-    if (object_) {
-      gpu_plugin::NPN_ReleaseObject(object_);
-    }
+    Release();
   }
 
   NPObjectPointer& operator=(const NPObjectPointer& rhs) {
-    if (object_) {
-      gpu_plugin::NPN_ReleaseObject(object_);
-    }
+    Release();
     object_ = rhs.object_;
-    if (object_) {
-      gpu_plugin::NPN_RetainObject(object_);
-    }
+    Retain();
     return *this;
+  }
+
+  template <typename RHS>
+  NPObjectPointer& operator=(const NPObjectPointer<RHS>& rhs) {
+    Release();
+    object_ = rhs.Get();
+    Retain();
+    return *this;
+  }
+
+  template <class RHS>
+  bool operator==(const NPObjectPointer<RHS>& rhs) const {
+    return object_ == rhs.Get();
+  }
+
+  template <class RHS>
+  bool operator!=(const NPObjectPointer<RHS>& rhs) const {
+    return object_ != rhs.Get();
   }
 
   // The NPObject convention for returning an NPObject pointer from a function
   // is that the caller is responsible for releasing the reference count.
   static NPObjectPointer FromReturned(NPObjectType* p) {
     NPObjectPointer pointer(p);
-    if (p) {
-      gpu_plugin::NPN_ReleaseObject(p);
-    }
+    pointer.Release();
     return pointer;
+  }
+
+  // The NPObject convention for returning an NPObject pointer from a function
+  // is that the caller is responsible for releasing the reference count.
+  NPObjectType* ToReturned() const {
+    Retain();
+    return object_;
   }
 
   NPObjectType* Get() const {
@@ -65,10 +84,32 @@ class NPObjectPointer {
     return object_;
   }
 
+  NPObjectType& operator*() const {
+    return *object_;
+  }
+
  private:
+  void Retain() const {
+    if (object_) {
+      NPBrowser::get()->RetainObject(object_);
+    }
+  }
+
+  void Release() const {
+    if (object_) {
+      NPBrowser::get()->ReleaseObject(object_);
+    }
+  }
+
   NPObjectType* object_;
 };
 
+// For test diagnostics.
+template <typename NPObjectType>
+std::ostream& operator<<(std::ostream& stream,
+                         const NPObjectPointer<NPObjectType>& pointer) {
+  return stream << pointer.Get();
+}
 }  // namespace gpu_plugin
 }  // namespace o3d
 

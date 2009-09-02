@@ -4,8 +4,9 @@
 
 #include "o3d/gpu_plugin/gpu_plugin.h"
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
-#include "o3d/gpu_plugin/plugin_object_factory_mock.h"
-#include "o3d/gpu_plugin/plugin_object_mock.h"
+#include "o3d/gpu_plugin/np_utils/base_np_object_mock.h"
+#include "o3d/gpu_plugin/np_utils/np_plugin_object_factory_mock.h"
+#include "o3d/gpu_plugin/np_utils/np_plugin_object_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/plugins/nphostapi.h"
 
@@ -31,13 +32,13 @@ class GPUPluginTest : public testing::Test {
     memset(&npp_, 0, sizeof(npp_));
     memset(&browser_funcs_, 0, sizeof(browser_funcs_));
     memset(&plugin_funcs_, 0, sizeof(plugin_funcs_));
+
     plugin_object_factory_ = new StrictMock<MockPluginObjectFactory>;
-    previous_plugin_object_factory_ = SetPluginObjectFactory(
-        plugin_object_factory_);
+
+    np_class_ = BaseNPObject::GetNPClass<StrictMock<MockBaseNPObject> >();
   }
 
   virtual void TearDown() {
-    SetPluginObjectFactory(previous_plugin_object_factory_);
     delete plugin_object_factory_;
   }
 
@@ -45,7 +46,7 @@ class GPUPluginTest : public testing::Test {
   NPNetscapeFuncs browser_funcs_;
   NPPluginFuncs plugin_funcs_;
   MockPluginObjectFactory* plugin_object_factory_;
-  PluginObjectFactory* previous_plugin_object_factory_;
+  const NPClass* np_class_;
 };
 
 TEST_F(GPUPluginTest, GetEntryPointsSetsNeededFunctionPointers) {
@@ -144,18 +145,20 @@ TEST_F(GPUPluginTest, NewCreatesAPluginObjectAndInitializesIt) {
       &npp_, const_cast<NPMIMEType>(GPUPluginObject::kPluginType)))
     .WillOnce(Return(&plugin_object));
 
-  NPObject scriptable_instance;
+  NPObject scriptable_object;
 
   EXPECT_CALL(plugin_object, New(
       const_cast<NPMIMEType>(GPUPluginObject::kPluginType),
       0, NULL, NULL, NULL))
     .WillOnce(Return(NPERR_NO_ERROR));
 
-  EXPECT_CALL(plugin_object, GetScriptableInstance())
-    .WillOnce(Return(&scriptable_instance));
+  EXPECT_CALL(plugin_object, GetScriptableNPObject())
+    .WillOnce(Return(&scriptable_object));
 
   EXPECT_CALL(plugin_object, Destroy(static_cast<NPSavedData**>(NULL)))
     .WillOnce(Return(NPERR_NO_ERROR));
+
+  EXPECT_CALL(plugin_object, Release());
 
   NP_GetEntryPoints(&plugin_funcs_);
   NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
@@ -164,10 +167,10 @@ TEST_F(GPUPluginTest, NewCreatesAPluginObjectAndInitializesIt) {
       const_cast<NPMIMEType>(GPUPluginObject::kPluginType),
       &npp_, 0, 0, NULL, NULL, NULL));
 
-  NPObject* result = NULL;
+  NPObject* result;
   EXPECT_EQ(NPERR_NO_ERROR, plugin_funcs_.getvalue(
-      &npp_, NPPVpluginScriptableInstance, &result));
-  EXPECT_EQ(&scriptable_instance, result);
+      &npp_, NPPVpluginScriptableNPObject, &result));
+  EXPECT_EQ(&scriptable_object, result);
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_funcs_.destroy(&npp_, NULL));
 
@@ -209,6 +212,8 @@ TEST_F(GPUPluginTest, SetWindowForwardsToPluginObject) {
   EXPECT_CALL(plugin_object, Destroy(static_cast<NPSavedData**>(NULL)))
     .WillOnce(Return(NPERR_NO_ERROR));
 
+  EXPECT_CALL(plugin_object, Release());
+
   NP_GetEntryPoints(&plugin_funcs_);
   NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
@@ -243,6 +248,8 @@ TEST_F(GPUPluginTest, HandleEventForwardsToPluginObject) {
   EXPECT_CALL(plugin_object, Destroy(static_cast<NPSavedData**>(NULL)))
     .WillOnce(Return(NPERR_NO_ERROR));
 
+  EXPECT_CALL(plugin_object, Release());
+
   NP_GetEntryPoints(&plugin_funcs_);
   NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
 
@@ -271,6 +278,8 @@ TEST_F(GPUPluginTest, GetValueReturnsErrorForUnknownVariable) {
 
   EXPECT_CALL(plugin_object, Destroy(static_cast<NPSavedData**>(NULL)))
     .WillOnce(Return(NPERR_NO_ERROR));
+
+  EXPECT_CALL(plugin_object, Release());
 
   NP_GetEntryPoints(&plugin_funcs_);
   NP_Initialize(&browser_funcs_ INITIALIZE_PLUGIN_FUNCS);
