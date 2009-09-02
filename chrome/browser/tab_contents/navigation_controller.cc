@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,8 +125,7 @@ NavigationController::NavigationController(TabContents* contents,
       tab_contents_(contents),
       max_restored_page_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(ssl_manager_(this)),
-      needs_reload_(false),
-      load_pending_entry_when_active_(false) {
+      needs_reload_(false) {
   DCHECK(profile_);
 }
 
@@ -388,41 +387,6 @@ void NavigationController::LoadURL(const GURL& url, const GURL& referrer,
   NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition);
 
   LoadEntry(entry);
-}
-
-void NavigationController::LoadURLLazily(const GURL& url,
-                                         const GURL& referrer,
-                                         PageTransition::Type type,
-                                         const std::wstring& title,
-                                         SkBitmap* icon) {
-  NavigationEntry* entry = CreateNavigationEntry(url, referrer, type);
-  entry->set_title(WideToUTF16Hack(title));
-  if (icon)
-    entry->favicon().set_bitmap(*icon);
-
-  DiscardNonCommittedEntriesInternal();
-  pending_entry_ = entry;
-  load_pending_entry_when_active_ = true;
-}
-
-bool NavigationController::LoadingURLLazily() const {
-  return load_pending_entry_when_active_;
-}
-
-const string16& NavigationController::GetLazyTitle() const {
-  if (pending_entry_)
-    return pending_entry_->GetTitleForDisplay(this);
-  else
-    return EmptyString16();
-}
-
-const SkBitmap& NavigationController::GetLazyFavIcon() const {
-  if (pending_entry_) {
-    return pending_entry_->favicon().bitmap();
-  } else {
-    ResourceBundle &rb = ResourceBundle::GetSharedInstance();
-    return *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
-  }
 }
 
 void NavigationController::DocumentLoadedInFrame() {
@@ -951,14 +915,8 @@ void NavigationController::DisablePromptOnRepost() {
 }
 
 void NavigationController::SetActive(bool is_active) {
-  if (is_active) {
-    if (needs_reload_) {
-      LoadIfNecessary();
-    } else if (load_pending_entry_when_active_) {
-      NavigateToPendingEntry(false);
-      load_pending_entry_when_active_ = false;
-    }
-  }
+  if (is_active && needs_reload_)
+    LoadIfNecessary();
 }
 
 void NavigationController::LoadIfNecessary() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -248,11 +248,6 @@ class NavigationController {
   void LoadURL(const GURL& url, const GURL& referrer,
                PageTransition::Type type);
 
-  // Load the specified URL the next time it becomes active.
-  void LoadURLLazily(const GURL& url, const GURL& referrer,
-                     PageTransition::Type type, const std::wstring& title,
-                     SkBitmap* icon);
-
   // Loads the current page if this NavigationController was restored from
   // history and the current page has not loaded yet.
   void LoadIfNecessary();
@@ -345,14 +340,6 @@ class NavigationController {
   void CopyStateFrom(const NavigationController& source);
 
   // Random data ---------------------------------------------------------------
-
-  // Returns true if this NavigationController is is configured to load a URL
-  // lazily. If true, use GetLazyTitle() and GetLazyFavIcon() to discover the
-  // titles and favicons. Since no request was made, this is the only info
-  // we have about this page. This feature is used by web application clusters.
-  bool LoadingURLLazily() const;
-  const string16& GetLazyTitle() const;
-  const SkBitmap& GetLazyFavIcon() const;
 
   // Returns the identifier used by session restore.
   const SessionID& session_id() const { return session_id_; }
@@ -502,10 +489,6 @@ class NavigationController {
 
   // Whether we need to be reloaded when made active.
   bool needs_reload_;
-
-  // If true, the pending entry is lazy and should be loaded as soon as this
-  // controller becomes active.
-  bool load_pending_entry_when_active_;
 
   // Unique identifier of this controller for session restore. This id is only
   // unique within the current session, and is not guaranteed to be unique

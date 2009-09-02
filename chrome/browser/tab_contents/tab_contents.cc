@@ -472,8 +472,6 @@ const string16& TabContents::GetTitle() const {
   entry = controller_.GetLastCommittedEntry();
   if (entry)
     return entry->GetTitleForDisplay(&controller_);
-  else if (controller_.LoadingURLLazily())
-    return controller_.GetLazyTitle();
   return EmptyString16();
 }
 
@@ -523,8 +521,6 @@ SkBitmap TabContents::GetFavIcon() const {
   entry = controller_.GetLastCommittedEntry();
   if (entry)
     return entry->favicon().bitmap();
-  else if (controller_.LoadingURLLazily())
-    return controller_.GetLazyFavIcon();
   return SkBitmap();
 }
 

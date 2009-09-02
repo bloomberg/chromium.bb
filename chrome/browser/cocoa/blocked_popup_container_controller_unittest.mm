@@ -69,9 +69,8 @@ class BlockedPopupContainerControllerTest : public RenderViewHostTestHarness {
 TEST_F(BlockedPopupContainerControllerTest, BasicPopupBlock) {
   // This is taken from the popup blocker unit test.
   TabContents* popup = BuildTabContents();
-  popup->controller().LoadURLLazily(GetTestCase("error"), GURL(),
-                                    PageTransition::LINK,
-                                    L"", NULL);
+  popup->controller().LoadURL(GetTestCase("error"), GURL(),
+                              PageTransition::LINK);
   container_->AddTabContents(popup, gfx::Rect(), host1);
   EXPECT_EQ(container_->GetBlockedPopupCount(), static_cast<size_t>(1));
   EXPECT_EQ(container_->GetTabContentsAt(0), popup);

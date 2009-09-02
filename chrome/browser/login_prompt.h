@@ -78,7 +78,7 @@ class LoginNotificationDetails {
 
   LoginHandler* handler_;  // Where to send the response.
 
-  DISALLOW_EVIL_CONSTRUCTORS(LoginNotificationDetails);
+  DISALLOW_COPY_AND_ASSIGN(LoginNotificationDetails);
 };
 
 // Prompts the user for their username and password.  This is designed to

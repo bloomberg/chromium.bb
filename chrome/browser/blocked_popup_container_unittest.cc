@@ -90,9 +90,8 @@ TEST_F(BlockedPopupContainerTest, BasicCase) {
 
   // Create another TabContents representing the blocked popup case.
   TabContents* popup = BuildTabContents();
-  popup->controller().LoadURLLazily(GetTestCase("error"), GURL(),
-                                    PageTransition::LINK,
-                                    L"", NULL);
+  popup->controller().LoadURL(GetTestCase("error"), GURL(),
+                              PageTransition::LINK);
   container_->AddTabContents(popup, gfx::Rect(), host1);
 
   EXPECT_EQ(container_->GetBlockedPopupCount(), static_cast<size_t>(1));
