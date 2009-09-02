@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/io_buffer.h"
 
 namespace {
@@ -110,13 +111,13 @@ bool CrossSiteResourceHandler::OnResponseStarted(int request_id,
     DLOG(WARNING) << "Request wasn't found";
     return false;
   }
-  ResourceDispatcherHost::ExtraRequestInfo* info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request);
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
 
   // If this is a download, just pass the response through without doing a
   // cross-site check.  The renderer will see it is a download and abort the
   // request.
-  if (info->is_download) {
+  if (info->is_download()) {
     return next_handler_->OnResponseStarted(request_id, response);
   }
 
@@ -202,8 +203,6 @@ void CrossSiteResourceHandler::ResumeResponse() {
     DLOG(WARNING) << "Resuming a request that wasn't found";
     return;
   }
-  ResourceDispatcherHost::ExtraRequestInfo* info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request);
 
   if (has_started_response_) {
     // Send OnResponseStarted to the new renderer.
@@ -216,7 +215,9 @@ void CrossSiteResourceHandler::ResumeResponse() {
   }
 
   // Remove ourselves from the ExtraRequestInfo.
-  info->cross_site_handler = NULL;
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
+  info->set_cross_site_handler(NULL);
 
   // If the response completed during the transition, notify the next
   // event handler.
@@ -248,9 +249,9 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
     DLOG(WARNING) << "Cross site response for a request that wasn't found";
     return;
   }
-  ResourceDispatcherHost::ExtraRequestInfo* info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request);
-  info->cross_site_handler = this;
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
+  info->set_cross_site_handler(this);
 
   if (has_started_response_) {
     // Pause the request until the old renderer is finished and the new

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
@@ -276,10 +277,10 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
   // Check to see if we should forward the data from this request to the
   // download thread.
   // TODO(paulg): Only download if the context from the renderer allows it.
-  ResourceDispatcherHost::ExtraRequestInfo* info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request_);
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request_);
 
-  if (info->allow_download && ShouldDownload(NULL)) {
+  if (info->allow_download() && ShouldDownload(NULL)) {
     if (response_->response_head.headers &&  // Can be NULL if FTP.
         response_->response_head.headers->response_code() / 100 != 2) {
       // The response code indicates that this is an error page, but we don't
@@ -291,14 +292,14 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
       return false;
     }
 
-    info->is_download = true;
+    info->set_is_download(true);
 
     scoped_refptr<DownloadThrottlingResourceHandler> download_handler =
         new DownloadThrottlingResourceHandler(host_,
                                              request_,
                                              request_->url(),
-                                             info->child_id,
-                                             info->route_id,
+                                             info->child_id(),
+                                             info->route_id(),
                                              request_id,
                                              in_complete);
     if (bytes_read_) {
@@ -313,9 +314,9 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
 
     // Send the renderer a response that indicates that the request will be
     // handled by an external source (the browser's DownloadManager).
-    real_handler_->OnResponseStarted(info->request_id, response_);
+    real_handler_->OnResponseStarted(info->request_id(), response_);
     URLRequestStatus status(URLRequestStatus::HANDLED_EXTERNALLY, 0);
-    real_handler_->OnResponseCompleted(info->request_id, status,
+    real_handler_->OnResponseCompleted(info->request_id(), status,
                                        std::string());
 
     // Ditch the old async handler that talks to the renderer for the new
@@ -331,9 +332,9 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
     return false;
 
   // We don't want to keep buffering as our buffer will fill up.
-  ResourceDispatcherHost::ExtraRequestInfo* info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request_);
-  host_->PauseRequest(info->child_id, info->request_id, true);
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request_);
+  host_->PauseRequest(info->child_id(), info->request_id(), true);
 
   // Schedule plugin loading on the file thread.
   // Note: it's possible that the only reference to this object is the task.  If
@@ -431,11 +432,11 @@ void BufferedResourceHandler::NotifyPluginsLoaded(
 void BufferedResourceHandler::OnPluginsLoaded() {
   wait_for_plugins_ = false;
   if (request_) {
-    ResourceDispatcherHost::ExtraRequestInfo* info =
-        ResourceDispatcherHost::ExtraInfoForRequest(request_);
-    host_->PauseRequest(info->child_id, info->request_id, false);
-    if (!CompleteResponseStarted(info->request_id, false))
-      host_->CancelRequest(info->child_id, info->request_id, false);
+    ResourceDispatcherHostRequestInfo* info =
+        ResourceDispatcherHost::InfoForRequest(request_);
+    host_->PauseRequest(info->child_id(), info->request_id(), false);
+    if (!CompleteResponseStarted(info->request_id(), false))
+      host_->CancelRequest(info->child_id(), info->request_id(), false);
   }
   Release();
 }

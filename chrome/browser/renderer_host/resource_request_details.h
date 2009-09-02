@@ -13,6 +13,7 @@
 
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 
@@ -31,14 +32,14 @@ class ResourceRequestDetails {
         status_(request->status()),
         ssl_cert_id_(cert_id),
         ssl_cert_status_(request->ssl_info().cert_status) {
-    const ResourceDispatcherHost::ExtraRequestInfo* info =
-        ResourceDispatcherHost::ExtraInfoForRequest(request);
+    const ResourceDispatcherHostRequestInfo* info =
+        ResourceDispatcherHost::InfoForRequest(request);
     DCHECK(info);
-    resource_type_ = info->resource_type;
-    frame_origin_ = info->frame_origin;
-    main_frame_origin_ = info->main_frame_origin;
-    filter_policy_ = info->filter_policy;
-    origin_child_id_ = info->child_id;
+    resource_type_ = info->resource_type();
+    frame_origin_ = info->frame_origin();
+    main_frame_origin_ = info->main_frame_origin();
+    filter_policy_ = info->filter_policy();
+    origin_child_id_ = info->child_id();
   }
 
   virtual ~ResourceRequestDetails() {}

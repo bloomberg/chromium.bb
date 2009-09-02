@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/ssl/ssl_cert_error_handler.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -30,10 +31,10 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
       request_has_been_notified_(false) {
   DCHECK(MessageLoop::current() != ui_loop);
 
-  ResourceDispatcherHost::ExtraRequestInfo* info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request);
-  request_id_.child_id = info->child_id;
-  request_id_.request_id = info->request_id;
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
+  request_id_.child_id = info->child_id();
+  request_id_.request_id = info->request_id();
 
   if (!ResourceDispatcherHost::RenderViewForRequest(request,
                                                     &render_process_host_id_,
@@ -178,9 +179,9 @@ void SSLErrorHandler::CompleteStartRequest(FilterPolicy::Type filter_policy) {
     DLOG(INFO) << "CompleteStartRequest() url: " << request->url().spec();
     // The request should not have been started (SUCCESS is the initial state).
     DCHECK(request->status().status() == URLRequestStatus::SUCCESS);
-    ResourceDispatcherHost::ExtraRequestInfo* info =
-        ResourceDispatcherHost::ExtraInfoForRequest(request);
-    info->filter_policy = filter_policy;
+    ResourceDispatcherHostRequestInfo* info =
+        ResourceDispatcherHost::InfoForRequest(request);
+    info->set_filter_policy(filter_policy);
     request->Start();
   }
   request_has_been_notified_ = true;

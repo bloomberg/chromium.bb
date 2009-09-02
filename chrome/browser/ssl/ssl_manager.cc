@@ -69,8 +69,8 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
   DLOG(INFO) << "OnSSLCertificateError() cert_error: " << cert_error <<
                 " url: " << request->url().spec();
 
-  ResourceDispatcherHost::ExtraRequestInfo* info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request);
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
   DCHECK(info);
 
   // A certificate error occurred.  Construct a SSLCertErrorHandler object and
@@ -78,9 +78,9 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
   ui_loop->PostTask(FROM_HERE,
       NewRunnableMethod(new SSLCertErrorHandler(rdh,
                                                 request,
-                                                info->resource_type,
-                                                info->frame_origin,
-                                                info->main_frame_origin,
+                                                info->resource_type(),
+                                                info->frame_origin(),
+                                                info->main_frame_origin(),
                                                 cert_error,
                                                 cert,
                                                 ui_loop),
@@ -91,26 +91,26 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
 bool SSLManager::ShouldStartRequest(ResourceDispatcherHost* rdh,
                                     URLRequest* request,
                                     MessageLoop* ui_loop) {
-  ResourceDispatcherHost::ExtraRequestInfo* info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request);
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
   DCHECK(info);
 
   // We cheat here and talk to the SSLPolicy on the IO thread because we need
   // to respond synchronously to avoid delaying all network requests...
   if (!SSLPolicy::IsMixedContent(request->url(),
-                                 info->resource_type,
-                                 info->filter_policy,
-                                 info->frame_origin))
+                                 info->resource_type(),
+                                 info->filter_policy(),
+                                 info->frame_origin()))
     return true;
 
 
   ui_loop->PostTask(FROM_HERE,
       NewRunnableMethod(new SSLMixedContentHandler(rdh,
                                                    request,
-                                                   info->resource_type,
-                                                   info->frame_origin,
-                                                   info->main_frame_origin,
-                                                   info->child_id,
+                                                   info->resource_type(),
+                                                   info->frame_origin(),
+                                                   info->main_frame_origin(),
+                                                   info->child_id(),
                                                    ui_loop),
                         &SSLMixedContentHandler::Dispatch));
   return false;

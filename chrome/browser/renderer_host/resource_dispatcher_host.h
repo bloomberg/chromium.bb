@@ -23,7 +23,6 @@
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/child_process_info.h"
-#include "chrome/common/filter_policy.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
@@ -34,6 +33,7 @@ class DownloadRequestManager;
 class LoginHandler;
 class MessageLoop;
 class PluginService;
+class ResourceDispatcherHostRequestInfo;
 class SafeBrowsingService;
 class SaveFileManager;
 class SSLClientAuthHandler;
@@ -70,125 +70,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
     explicit Receiver(ChildProcessInfo::ProcessType type, int child_id)
         : ChildProcessInfo(type, child_id) {}
     virtual ~Receiver() {}
-  };
-
-  // Holds the data we would like to associate with each request
-  class ExtraRequestInfo : public URLRequest::UserData {
-    friend class ResourceDispatcherHost;
-   public:
-    ExtraRequestInfo(ResourceHandler* handler,
-                     ChildProcessInfo::ProcessType process_type,
-                     int child_id,
-                     int route_id,
-                     int request_id,
-                     std::string frame_origin,
-                     std::string main_frame_origin,
-                     ResourceType::Type resource_type,
-                     uint64 upload_size)
-        : resource_handler(handler),
-          cross_site_handler(NULL),
-          login_handler(NULL),
-          ssl_client_auth_handler(NULL),
-          process_type(process_type),
-          child_id(child_id),
-          route_id(route_id),
-          request_id(request_id),
-          pending_data_count(0),
-          is_download(false),
-          pause_count(0),
-          frame_origin(frame_origin),
-          main_frame_origin(main_frame_origin),
-          resource_type(resource_type),
-          filter_policy(FilterPolicy::DONT_FILTER),
-          last_load_state(net::LOAD_STATE_IDLE),
-          upload_size(upload_size),
-          last_upload_position(0),
-          waiting_for_upload_progress_ack(false),
-          memory_cost(0),
-          is_paused(false),
-          called_on_response_started(false),
-          has_started_reading(false),
-          paused_read_bytes(0) {
-    }
-    virtual ~ExtraRequestInfo() { resource_handler->OnRequestClosed(); }
-
-    // Top-level ResourceHandler servicing this request.
-    scoped_refptr<ResourceHandler> resource_handler;
-
-    // CrossSiteResourceHandler for this request, if it is a cross-site request.
-    // (NULL otherwise.)  This handler is part of the chain of ResourceHandlers
-    // pointed to by resource_handler.
-    CrossSiteResourceHandler* cross_site_handler;
-
-    LoginHandler* login_handler;
-
-    SSLClientAuthHandler* ssl_client_auth_handler;
-
-    ChildProcessInfo::ProcessType process_type;
-
-    // The child process unique ID of the requestor. This duplicates the value
-    // stored on the request by SetChildProcessUniqueIDForRequest in
-    // url_request_tracking.
-    int child_id;
-
-    int route_id;
-
-    int request_id;
-
-    int pending_data_count;
-
-    // Downloads allowed only as a top level request.
-    bool allow_download;
-
-    // Whether this is a download.
-    bool is_download;
-
-    // The number of clients that have called pause on this request.
-    int pause_count;
-
-    // The security origin of the frame making this request.
-    std::string frame_origin;
-
-    // The security origin of the main frame that contains the frame making
-    // this request.
-    std::string main_frame_origin;
-
-    ResourceType::Type resource_type;
-
-    // Whether the content for this request should be filtered (on the renderer
-    // side) to make it more secure: images are stamped, frame content is
-    // replaced with an error message and all other resources are entirely
-    // filtered out.
-    FilterPolicy::Type filter_policy;
-
-    net::LoadState last_load_state;
-
-    uint64 upload_size;
-
-    uint64 last_upload_position;
-
-    base::TimeTicks last_upload_ticks;
-
-    bool waiting_for_upload_progress_ack;
-
-    // The approximate in-memory size (bytes) that we credited this request
-    // as consuming in |outstanding_requests_memory_cost_map_|.
-    int memory_cost;
-
-   private:
-    // Request is temporarily not handling network data. Should be used only
-    // by the ResourceDispatcherHost, not the event handlers.
-    bool is_paused;
-
-    // Whether we called OnResponseStarted for this request or not.
-    bool called_on_response_started;
-
-    // Whether this request has started reading any bytes from the response
-    // yet.  Will be true after the first (unpaused) call to Read.
-    bool has_started_reading;
-
-    // How many bytes have been read while this request has been paused.
-    int paused_read_bytes;
   };
 
   class Observer {
@@ -340,8 +221,9 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // Helper functions to get our extra data out of a request. The given request
   // must have been one we created so that it has the proper extra data pointer.
-  static ExtraRequestInfo* ExtraInfoForRequest(URLRequest* request);
-  static const ExtraRequestInfo* ExtraInfoForRequest(const URLRequest* request);
+  static ResourceDispatcherHostRequestInfo* InfoForRequest(URLRequest* request);
+  static const ResourceDispatcherHostRequestInfo* InfoForRequest(
+      const URLRequest* request);
 
   // Extracts the render view/process host's identifiers from the given request
   // and places them in the given out params (both required). If there are no
@@ -409,15 +291,16 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   friend class ShutdownTask;
 
-  void SetExtraInfoForRequest(URLRequest* request, ExtraRequestInfo* info) {
-    request->SetUserData(NULL, info);
-  }
+  // Associates the given info with the given request. The info will then be
+  // owned by the request.
+  void SetRequestInfo(URLRequest* request,
+                      ResourceDispatcherHostRequestInfo* info);
 
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
 
   // Returns true if the request is paused.
-  bool PauseRequestIfNeeded(ExtraRequestInfo* info);
+  bool PauseRequestIfNeeded(ResourceDispatcherHostRequestInfo* info);
 
   // Resumes the given request by calling OnResponseStarted or OnReadCompleted.
   void ResumeRequest(const GlobalRequestID& request_id);
@@ -493,9 +376,13 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
                               ResourceType::Type resource_type,
                               ResourceHandler* handler);
 
+  // Checks all pending requests and updates the load states and upload
+  // progress if necessary.
   void UpdateLoadStates();
 
-  void MaybeUpdateUploadProgress(ExtraRequestInfo *info, URLRequest *request);
+  // Checks the upload state and sends an update if one is necessary.
+  void MaybeUpdateUploadProgress(ResourceDispatcherHostRequestInfo *info,
+                                 URLRequest *request);
 
   // Resumes or cancels (if |cancel_requests| is true) any blocked requests.
   void ProcessBlockedRequestsForRoute(int process_unique_id,

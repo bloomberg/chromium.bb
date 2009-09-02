@@ -1661,6 +1661,8 @@
         'browser/renderer_host/render_widget_host_view_win.h',
         'browser/renderer_host/resource_dispatcher_host.cc',
         'browser/renderer_host/resource_dispatcher_host.h',
+        'browser/renderer_host/resource_dispatcher_host_request_info.cc',
+        'browser/renderer_host/resource_dispatcher_host_request_info.h',
         'browser/renderer_host/resource_handler.h',
         'browser/renderer_host/resource_message_filter.cc',
         'browser/renderer_host/resource_message_filter.h',

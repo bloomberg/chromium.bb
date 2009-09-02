@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "net/url_request/url_request.h"
@@ -38,12 +39,12 @@ bool UserScriptListener::ShouldStartRequest(URLRequest* request) {
 
   // If it's a frame load, then we need to check the URL against the list of
   // user scripts to see if we need to wait.
-  ResourceDispatcherHost::ExtraRequestInfo* info =
-      ResourceDispatcherHost::ExtraInfoForRequest(request);
+  ResourceDispatcherHostRequestInfo* info =
+    ResourceDispatcherHost::InfoForRequest(request);
   DCHECK(info);
 
-  if (info->resource_type != ResourceType::MAIN_FRAME &&
-      info->resource_type != ResourceType::SUB_FRAME) {
+  if (info->resource_type() != ResourceType::MAIN_FRAME &&
+      info->resource_type() != ResourceType::SUB_FRAME) {
     return true;
   }
 
@@ -66,7 +67,7 @@ bool UserScriptListener::ShouldStartRequest(URLRequest* request) {
 
   // Queue this request up.
   delayed_request_ids_.push_front(ResourceDispatcherHost::GlobalRequestID(
-      info->child_id, info->request_id));
+      info->child_id(), info->request_id()));
   return false;
 }
 

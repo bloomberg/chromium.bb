@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -64,12 +65,12 @@ class AutomationRequestInterceptor : public URLRequest::Interceptor {
 URLRequestJob* AutomationRequestInterceptor::MaybeIntercept(
     URLRequest* request) {
   if (request->url().SchemeIs("http") || request->url().SchemeIs("https")) {
-    ResourceDispatcherHost::ExtraRequestInfo* request_info =
-        ResourceDispatcherHost::ExtraInfoForRequest(request);
+    ResourceDispatcherHostRequestInfo* request_info =
+        ResourceDispatcherHost::InfoForRequest(request);
     if (request_info) {
       AutomationResourceMessageFilter::AutomationDetails details;
       if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
-              request_info->child_id, request_info->route_id, &details)) {
+              request_info->child_id(), request_info->route_id(), &details)) {
         URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
             details.tab_handle, details.filter);
         return job;

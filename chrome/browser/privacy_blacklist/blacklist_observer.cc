@@ -11,6 +11,7 @@
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -21,11 +22,11 @@ class BlockedContentNotice : public Task {
  public:
   BlockedContentNotice(const GURL& gurl,
                        const Blacklist::Match* match,
-                       const ResourceDispatcherHost::ExtraRequestInfo* info)
+                       const ResourceDispatcherHostRequestInfo* info)
       : gurl_(gurl),
         match_(match),
-        child_id_(info->child_id),
-        route_id_(info->route_id) {
+        child_id_(info->child_id()),
+        route_id_(info->route_id()) {
     if (match_->attributes() & Blacklist::kDontStoreCookies) {
       // No cookies stored.
       reason_ = l10n_util::GetStringUTF16(IDS_BLACKLIST_BLOCKED_COOKIES);
@@ -59,9 +60,8 @@ void BlacklistObserver::ContentBlocked(const URLRequest* request) {
   const URLRequest::UserData* d =
       request->GetUserData(&Blacklist::kRequestDataKey);
   const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
-  const ResourceDispatcherHost::ExtraRequestInfo* info =
-      static_cast<const ResourceDispatcherHost::ExtraRequestInfo*>(
-          request->GetUserData(NULL));
+  const ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
   const GURL& gurl = request->url();
   BlockedContentNotice* task = new BlockedContentNotice(gurl, match, info);
 
