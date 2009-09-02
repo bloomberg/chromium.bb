@@ -66,6 +66,43 @@ int __NaClSrpcDebugPrintCheckEnv() {
   return (NULL != env);
 }
 
+/*
+ * Get the printable form of an error code.
+ */
+char* NaClSrpcErrorString(NaClSrpcError error_code) {
+  switch (error_code) {
+   case NACL_SRPC_RESULT_OK:
+     return "No error";
+   case NACL_SRPC_RESULT_BREAK:
+     return "Break out of server RPC loop";
+   case NACL_SRPC_RESULT_MESSAGE_TRUNCATED:
+     return "Received message was shorter than expected";
+   case NACL_SRPC_RESULT_NO_MEMORY:
+     return "Out of memory";
+   case NACL_SRPC_RESULT_PROTOCOL_MISMATCH:
+     return "Client and server have different protocol versions";
+   case NACL_SRPC_RESULT_BAD_RPC_NUMBER:
+     return "No method for the given rpc number";
+   case NACL_SRPC_RESULT_BAD_ARG_TYPE:
+     return "Bad argument type received";
+   case NACL_SRPC_RESULT_TOO_MANY_ARGS:
+     return "Too many arguments (more than NACL_SRPC_MAX_ARGS or declared)";
+   case NACL_SRPC_RESULT_TOO_FEW_ARGS:
+     return "Too few arguments (fewer than declared)";
+   case NACL_SRPC_RESULT_IN_ARG_TYPE_MISMATCH:
+     return "Input argument type mismatch";
+   case NACL_SRPC_RESULT_OUT_ARG_TYPE_MISMATCH:
+     return "Output argument type mismatch";
+   case NACL_SRPC_RESULT_INTERNAL:
+     return "Internal error in rpc method";
+   case NACL_SRPC_RESULT_APP_ERROR:
+     return "Rpc application returned an error";
+   default:
+     break;
+  }
+  return "Unrecognized NaClSrpcError value";
+}
+
 #if !defined(__native_client__) && NACL_WINDOWS
 
 double __NaClSrpcGetUsec() {

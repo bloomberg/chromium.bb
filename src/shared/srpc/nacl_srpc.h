@@ -263,6 +263,23 @@ struct NaClSrpcArg {
 typedef struct NaClSrpcArg NaClSrpcArg;
 #endif
 
+/**
+ * Remote procedure call state structure.
+ */
+struct NaClSrpcRpc {
+  uint32_t         protocol_version;
+  uint64_t         request_id;
+  uint8_t          is_request;
+  uint32_t         rpc_number;
+  NaClSrpcError    app_error;
+};
+#ifndef __cplusplus
+/**
+ *  A typedef for struct NaClSrpcRpc for use in C.
+ */
+typedef struct NaClSrpcRpc  NaClSrpcRpc;
+#endif  /* __cplusplus */
+
 /* TODO(gregoryd) - duplicate string? */
 /**
  * A utility macro to set a string-typed argument.
@@ -337,21 +354,6 @@ typedef struct NaClSrpcDesc NaClSrpcDesc;
  */
 struct NaClSrpcImcBuffer {
   struct NaClImcMsgIoVec    iovec[1];  /**< IMC message descriptor */
-#ifdef __native_client__
-  struct NaClImcMsgHdr      header;  /**< IMC message header */
-  /**
-   * character array containing the data to be sent or received
-   */
-  unsigned char             bytes[IMC_USER_BYTES_MAX];
-  /**
-   * array of descriptors to be sent or received
-   */
-  NaClSrpcImcDescType       descs[IMC_USER_DESC_MAX];
-#else
-  struct NaClImcTypedMsgHdr header;
-  unsigned char             bytes[NACL_ABI_IMC_USER_BYTES_MAX];
-  NaClSrpcImcDescType       descs[NACL_ABI_IMC_USER_DESC_MAX];
-#endif
   /**
    * index into <code>bytes</code> of the next descriptor to be read or written
    */
@@ -364,6 +366,21 @@ struct NaClSrpcImcBuffer {
    * index into <code>bytes</code> of the last data byte to be read or written
    */
   size_t                    last_byte;
+#ifdef __native_client__
+  struct NaClImcMsgHdr      header;  /**< IMC message header */
+  /**
+   * array of descriptors to be sent or received
+   */
+  NaClSrpcImcDescType       descs[IMC_USER_DESC_MAX];
+  /**
+   * character array containing the data to be sent or received
+   */
+  unsigned char             bytes[IMC_USER_BYTES_MAX];
+#else
+  struct NaClImcTypedMsgHdr header;
+  NaClSrpcImcDescType       descs[NACL_ABI_IMC_USER_DESC_MAX];
+  unsigned char             bytes[NACL_ABI_IMC_USER_BYTES_MAX];
+#endif
 };
 #ifndef __cplusplus
 /**
@@ -386,8 +403,8 @@ struct NaClSrpcChannel {
    */
   struct NaClNrdXferEffector  eff;
 #endif
-  /** The message ID of the next message sent over this channel */
-  uint64_t                    next_message_id;
+  /** The id of the next rpc request message sent over this channel */
+  uint64_t                    next_outgoing_request_id;
   /** A structure used to buffer data to be sent over this channel */
   NaClSrpcImcBuffer           send_buf;
   /** A structure used to buffer data received over this channel */
@@ -692,6 +709,11 @@ void NaClSrpcGetTimes(NaClSrpcChannel *channel,
 void srpc_init();
 
 /**
+ * The current protocol (version) number used to send and receive RPCs.
+ */
+static const uint32_t kNaClSrpcProtocolVersion = 0xc0da0002;
+
+/**
  * RPC number for "implicit" timing method.
  */
 #define NACL_SRPC_GET_TIMES_METHOD              0xfffffffe
@@ -702,43 +724,34 @@ void srpc_init();
 
 
 /**
- * Generic message structure.
+ * Receive an RPC request from a channel.
  */
-struct NaClSrpcRpc {
-  uint64_t         request_id;
-  uint8_t          is_request;
-  uint32_t         rpc_number;
-  NaClSrpcError    app_error;
-};
-#ifndef __cplusplus
-/**
- *  A typedef for struct NaClSrpcRpc for use in C.
- */
-typedef struct NaClSrpcRpc  NaClSrpcRpc;
-#endif  /* __cplusplus */
-
-/**
- * Receive a message from a channel, either a request or a response.
- */
-extern int NaClSrpcReceiveMessage(NaClSrpcChannel* channel,
-                                  NaClSrpcRpc* rpc,
-                                  NaClSrpcArg* args[],
-                                  NaClSrpcArg* rets[]);
+extern int NaClSrpcRequestRead(NaClSrpcChannel* channel,
+                               NaClSrpcRpc* rpc,
+                               NaClSrpcArg* args[],
+                               NaClSrpcArg* rets[]);
 
 /**
  * Send an RPC request on the given channel.
  */
-extern NaClSrpcError NaClSrpcSendRequest(NaClSrpcChannel* channel,
-                                         NaClSrpcRpc* rpc,
-                                         NaClSrpcArg* args[],
-                                         NaClSrpcArg* rets[]);
+extern NaClSrpcError NaClSrpcRequestWrite(NaClSrpcChannel* channel,
+                                          NaClSrpcRpc* rpc,
+                                          NaClSrpcArg* args[],
+                                          NaClSrpcArg* rets[]);
+
+/**
+ * Receive an RPC response from a channel.
+ */
+extern int NaClSrpcResponseRead(NaClSrpcChannel* channel,
+                                NaClSrpcRpc* rpc,
+                                NaClSrpcArg* rets[]);
 
 /**
  * Send an RPC response on the given channel.
  */
-extern NaClSrpcError NaClSrpcSendResponse(NaClSrpcChannel* channel,
-                                          NaClSrpcRpc* rpc,
-                                          NaClSrpcArg* rets[]);
+extern NaClSrpcError NaClSrpcResponseWrite(NaClSrpcChannel* channel,
+                                           NaClSrpcRpc* rpc,
+                                           NaClSrpcArg* rets[]);
 EXTERN_C_END
 
 /**

@@ -99,8 +99,9 @@ static int NaClSrpcBuildInterfaceDesc(NaClSrpcChannel  *channel) {
     return 0;
   }
   /* Build the real rpc description from the resulting string. */
-  channel->rpc_descr = __NaClSrpcBuildSrpcDesc(outs[0]->u.caval.carr,
-                                               &channel->rpc_count);
+  channel->rpc_descr =
+      __NaClSrpcBuildSrpcDesc(outs[0]->u.caval.carr,
+                              &channel->rpc_count);
   /* Free the service string */
   free(out_carray.u.caval.carr);
   /* Return success */
@@ -134,8 +135,7 @@ int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
   channel->receive_usec = 0.0;
   channel->imc_read_usec = 0.0;
   channel->imc_write_usec = 0.0;
-  /* Initialize message id counter */
-  channel->next_message_id = 0;
+  channel->next_outgoing_request_id = 0;
   /* Do service discovery to speed method invocation. */
   if (0 == NaClSrpcBuildInterfaceDesc(channel)) {
     return 0;
@@ -213,8 +213,7 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
   channel->imc_read_usec = 0.0;
   channel->imc_write_usec = 0.0;
   channel->server_instance_data = server_instance_data;
-  /* Initialize message id counter */
-  channel->next_message_id = 0;
+  channel->next_outgoing_request_id = 0;
   /* Return success. */
   return 1;
 }
@@ -225,6 +224,6 @@ void NaClSrpcDtor(NaClSrpcChannel *channel) {
   effp->vtbl->Dtor(effp);
   NaClDescUnref(channel->imc_handle);
 #endif
-  if (channel->rpc_descr)
-    free(channel->rpc_descr);
+  free(channel->rpc_descr);
+  channel->rpc_descr = NULL;
 }

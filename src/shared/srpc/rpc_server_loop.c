@@ -57,6 +57,8 @@ static NaClSrpcError ServiceDiscovery(NaClSrpcChannel* channel,
     strncpy(out_args[0]->u.caval.carr,
             channel->service_string,
             channel->service_string_length);
+    /* Set the length of the string actually returned. */
+    out_args[0]->u.caval.count = channel->service_string_length;
     return NACL_SRPC_RESULT_OK;
   } else {
     return NACL_SRPC_RESULT_APP_ERROR;

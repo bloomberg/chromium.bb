@@ -53,7 +53,7 @@ EXTERN_C_BEGIN
 #include <sys/nacl_syscalls.h>
 typedef int SRPC_IMC_DESC_TYPE;
 #define SRPC_DESC_MAX    IMC_USER_DESC_MAX
-#define SIDE "NC: "
+#define SIDE "NC:   "
 #else
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
@@ -62,8 +62,8 @@ typedef struct NaClDesc* SRPC_IMC_DESC_TYPE;
 #define SRPC_DESC_MAX    NACL_ABI_IMC_USER_DESC_MAX
 #endif
 
-/*
 #define SRPC_DEBUG
+/*
  * SRPC_DEBUG enables trace output printing.
  */
 extern int gNaClSrpcDebugPrintEnabled;
@@ -80,7 +80,11 @@ extern int __NaClSrpcDebugPrintCheckEnv();
     }                                                                   \
   } while (0)
 #else
-#define dprintf(args) do { if (0) { printf args; } } while (0)
+#define dprintf(args) do { \
+    if (0) {               \
+      printf args;         \
+    }                      \
+  } while (0)
 #endif
 
 /*
@@ -102,22 +106,6 @@ char* __NaClSrpcBuildSDString(const struct NaClSrpcHandlerDesc methods[],
  * Parse service discovery strings to build descriptor tables.
  */
 NaClSrpcDesc* __NaClSrpcBuildSrpcDesc(const char* str, uint32_t* rpc_count);
-
-/*
- * Interfaces exported from rpc_serialize.c:
- * Utility functions to read and write argument vectors to the streams.
- */
-NaClSrpcError __NaClSrpcArgsGet(NaClSrpcChannel* channel,
-                                int allocate_args,
-                                int read_values,
-                                NaClSrpcArg* args[],
-                                const char* arg_types);
-
-NaClSrpcError __NaClSrpcArgsPut(NaClSrpcChannel* channel,
-                                int write_value,
-                                NaClSrpcArg* arg[]);
-
-void __NaClSrpcArgsFree(NaClSrpcArg* argvec[]);
 
 /*
  * Argument vector type checking functions.
@@ -158,15 +146,11 @@ extern int __NaClSrpcImcRead(void* buffer,
                              size_t elt_size,
                              size_t n_elt,
                              NaClSrpcChannel* channel);
-extern int __NaClSrpcImcReadRpc(NaClSrpcChannel* channel,
-                                NaClSrpcRpc* header);
 
 extern int __NaClSrpcImcWrite(const void* buffer,
                               size_t elt_size,
                               size_t n_elt,
                               NaClSrpcChannel* channel);
-extern void __NaClSrpcImcWriteRpc(NaClSrpcChannel* channel,
-                                  NaClSrpcRpc* rpc);
 
 extern int __NaClSrpcImcFlush(NaClSrpcChannel* channel);
 

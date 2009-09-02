@@ -44,7 +44,7 @@
 # if defined(__STRICT_ANSI__)
 #  define  NACL__PRIS_PREFIX "l"
 # else
-#  define  NACL__PRIS_PREFIX "z"
+#  define  NACL__PRIS_PREFIX
 # endif
 #endif
 

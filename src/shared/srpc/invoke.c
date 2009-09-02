@@ -51,21 +51,26 @@
 
 static int GetRpcTypes(NaClSrpcChannel* channel,
                        uint32_t rpc_num,
+                       const char** rpc_name,
                        const char** in_types,
                        const char** out_types) {
   if (0 == rpc_num) {
+    *rpc_name = "service_discovery";
     *in_types = "";
     *out_types = "C";
     return 1;
   } else if (NACL_SRPC_GET_TIMES_METHOD == rpc_num) {
+    *rpc_name = "NACL_SRPC_GET_TIMES_METHOD";
     *in_types = "";
     *out_types = "dddd";
     return 1;
   } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_num) {
+    *rpc_name = "NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD";
     *in_types = "i";
     *out_types = "";
     return 1;
   } else if (channel->rpc_count > rpc_num) {
+    *rpc_name = channel->rpc_descr[rpc_num].rpc_name;
     *in_types = channel->rpc_descr[rpc_num].in_args;
     *out_types = channel->rpc_descr[rpc_num].out_args;
     return 1;
@@ -83,14 +88,15 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
                               NaClSrpcArg* rets[]) {
   NaClSrpcRpc      rpc;
   NaClSrpcError    retval;
-  int              ret;
+  const char*      rpc_name;
   const char*      arg_types;
   const char*      ret_types;
   double           this_start_usec = 0.0;
   double           this_method_usec;
 
-  dprintf(("CLIENT: channel %p, rpc number %d\n", (void*) channel,
-           (unsigned) rpc_number));
+  dprintf(("InvokeV(channel %p, rpc number %"PRIu32")\n",
+           (void*) channel,
+           rpc_number));
   /*
    * If we are timing, get the start time.
    */
@@ -100,7 +106,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
     this_start_usec = __NaClSrpcGetUsec();
   }
 
-  if (GetRpcTypes(channel, rpc_number, &arg_types, &ret_types)) {
+  if (GetRpcTypes(channel, rpc_number, &rpc_name, &arg_types, &ret_types)) {
     /* Check input parameters for type conformance */
     if (0 == NaClSrpcTypeCheckOne(&arg_types, args)) {
       return NACL_SRPC_RESULT_IN_ARG_TYPE_MISMATCH;
@@ -112,36 +118,42 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   } else {
     return NACL_SRPC_RESULT_BAD_RPC_NUMBER;
   }
+  dprintf(("InvokeV(channel %p, rpc %"PRIu32" '%s')\n",
+           (void*) channel, rpc_number, rpc_name));
 
   /*
    * First we send the request.
    * This requires sending args and the types and array sizes from rets.
    */
+  rpc.protocol_version = kNaClSrpcProtocolVersion;
   rpc.rpc_number = rpc_number;
-  rpc.request_id = channel->next_message_id;
-  retval = NaClSrpcSendRequest(channel, &rpc, args, rets);
+  rpc.request_id = channel->next_outgoing_request_id;
+  rpc.app_error = NACL_SRPC_RESULT_OK;
+  retval = NaClSrpcRequestWrite(channel, &rpc, args, rets);
   if (NACL_SRPC_RESULT_OK != retval) {
-    dprintf(("SRPC: rpc request send failed\n"));
+    dprintf(("InvokeV: rpc request send failed\n"));
     return retval;
   }
 
+  dprintf(("InvokeV(channel %p, rpc %"PRIu32" '%s') waiting for response...\n",
+           (void*) channel, rpc_number, rpc_name));
   /*
    * Then we wait for the response.
    * This requires reading an error code reported by the rpc service itself.
    * If that error code is ok, then we get the return value vector.
    */
-  ret = NaClSrpcReceiveMessage(channel, &rpc, args, rets);
-  if (1 != ret) {
+  if (0 == NaClSrpcResponseRead(channel, &rpc, rets)) {
     dprintf(("SRPC: response receive failed\n"));
     return NACL_SRPC_RESULT_INTERNAL;
   }
   if (0 != rpc.is_request) {
-    dprintf(("SRPC: rpc is not response: %d\n", rpc.is_request));
+    dprintf(("InvokeV: rpc is not response: %d\n", rpc.is_request));
     /* Clear the rest of the buffer contents to ensure alignment */
     __NaClSrpcImcMarkReadBufferEmpty(channel);
     return NACL_SRPC_RESULT_INTERNAL;
   }
-  dprintf(("SRPC: received response\n"));
+  dprintf(("InvokeV: received response (%x, %s)\n",
+           rpc.app_error, NaClSrpcErrorString(rpc.app_error)));
 
   /*
    * If we are timing, collect the current time, compute the delta from
@@ -162,6 +174,7 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
                                    uint32_t         rpc_num,
                                    va_list          in_va,
                                    va_list          out_va) {
+  char const        *rpc_name;
   char const        *in_arglist;
   char const        *out_arglist;
   size_t            num_in;
@@ -173,7 +186,11 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
   char const        *p;
   NaClSrpcError     rv;
 
-  valid_rpc = GetRpcTypes(channel, rpc_num, &in_arglist, &out_arglist);
+  valid_rpc = GetRpcTypes(channel,
+                          rpc_num,
+                          &rpc_name,
+                          &in_arglist,
+                          &out_arglist);
   if (0 == valid_rpc) {
     return NACL_SRPC_RESULT_BAD_RPC_NUMBER;
   }
