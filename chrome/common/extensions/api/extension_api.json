@@ -156,7 +156,7 @@
       {
         "name": "getLastFocused",
         "type": "function",
-        "description": "Get the window that was most recenly focused -- typically the window 'on top'.",
+        "description": "Get the window that was most recently focused -- typically the window 'on top'.",
         "parameters": [
           {
             "type": "function",
@@ -180,7 +180,7 @@
             "optional": true,
             "description": "",
             "properties": {
-              "populate": {"type": "boolean", "optional": true, "description": "If true, each window object will have a <var>tabs</var> property that contains a list of the Tab objects for that window." }
+              "populate": {"type": "boolean", "optional": true, "description": "If true, each window object will have a <var>tabs</var> property that contains a list of the <a href='tabs.html#type-Tab'>Tab</a> objects for that window." }
             }
           },
           {
@@ -203,7 +203,7 @@
             "type": "object",
             "name": "createData",
             "properties": {
-              "url": {"type": "string", "optional": true, "description": "The URL to navigate the first tab to. Defaults to the New Tab Page."},
+              "url": {"type": "string", "optional": true, "description": "The URL to navigate the first tab to. Fully-qualified URLs must include a scheme (i.e. 'http://www.google.com', not 'www.google.com'). Relative URLs will be relative to the current page within the extension. Defaults to the New Tab Page."},
               "left": {"type": "integer", "optional": true, "description": "The number of pixels to position the new window from the left edge of the screen. If not specified, the new window is offset naturally from the last focusd window."},
               "top": {"type": "integer", "optional": true, "description": "The number of pixels to position the new window from the top edge of the screen. If not specified, the new window is offset naturally from the last focusd window."},
               "width": {"type": "integer", "minimum": 0, "optional": true, "description": "The width in pixels of the new window. If not specified defaults to a natural width."},
@@ -335,7 +335,7 @@
       {
         "name": "connect",
         "type": "function",
-        "description": "Connects to the content script(s) in the specified tab. The <a href='extension.html#event-onConnect'>chrome.extensions.onConnect</a> is fired in each content script running in the specified tab for the current extension. For more details, see <a href='content_scripts.html#messaging'>Content Script Messaging</a>.",
+        "description": "Connects to the content script(s) in the specified tab. The <a href='extension.html#event-onConnect'>chrome.extensions.onConnect</a> event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='content_scripts.html#messaging'>Content Script Messaging</a>.",
         "parameters": [
           {
             "type": "integer",
@@ -422,7 +422,7 @@
               "url": {
                 "type": "string",
                 "optional": true,
-                "description": "The URL to navigate the tab to initially. Defaults to the New Tab Page."
+                "description": "The URL to navigate the tab to initially. Fully-qualified URLs must include a scheme (i.e. 'http://www.google.com', not 'www.google.com'). Relative URLs will be relative to the current page within the extension. Defaults to the New Tab Page."
               },
               "selected": {
                 "type": "boolean",
@@ -525,7 +525,7 @@
       {
         "name": "captureVisibleTab",
         "type": "function",
-        "description": "Captures the visible area of the visible tab in a window.",
+        "description": "Captures the visible area of the currently selected tab in the specified window.",
         "parameters": [
           {
             "type": "integer",
@@ -536,7 +536,7 @@
           },
           {
             "type": "function", "name": "callback", "parameters": [
-              {"type": "string", "name": "dataUrl", "description": "a data url encoding of the captured tab."}
+              {"type": "string", "name": "dataUrl", "description": "A data URL of a JPEG encoding of the visible area of the captured tab. May be assigned to the 'src' property of an HTML Image element for display."}
             ]
           }
         ]

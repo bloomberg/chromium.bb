@@ -25,10 +25,11 @@ function generate() {
 }
 
 function done() {
+  var preNode = document.createElement('pre');
   var textNode = document.createTextNode(
       childFrame.contentWindow.serializePage());
-  document.getElementsByTagName("body")[0].appendChild(textNode);
-  
+  preNode.appendChild(textNode);
+  document.getElementsByTagName("body")[0].appendChild(preNode);
   layoutTestController.notifyDone();
 }
     </script>

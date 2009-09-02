@@ -59,11 +59,11 @@ def RenderPage(name, test_shell):
   p = Popen([test_shell, "--layout-tests", generator_url], shell=True,
       stdout=PIPE)
 
-  # first output line is url that was processed by test_shell
+  # first output line is url that was processed by test_shell.
   firstline = p.stdout.readline()
 
-  # second output line is the layoutTestShell.dumpText() value.
-  result = p.stdout.readline()  
+  # the remaining output will be the content of the generated page.
+  result = p.stdout.read()  
 
   # Remove page_shell
   os.remove(input_file)

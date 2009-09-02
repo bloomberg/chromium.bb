@@ -273,10 +273,12 @@ function getStaticTOC() {
   var lastH2;
   
   staticHNodes.each(function(n, i) {
-    var anchorName = n.nodeName + "-" + i;
-    var a = document.createElement('a');
-    a.name = anchorName;
-    n.parentNode.insertBefore(a, n);
+    var anchorName = n.id || n.nodeName + "-" + i;
+    if (!n.id) {
+      var a = document.createElement('a');
+      a.name = anchorName;
+      n.parentNode.insertBefore(a, n);
+    }
     var dataNode = { name: n.innerHTML, href: anchorName };
     
     if (n.nodeName == "H2") {
@@ -358,4 +360,14 @@ function getSignatureString(parameters) {
   });
 
   return retval.join(", ");	
+}
+
+function sortByName(a, b) {
+  if (a.name < b.name) {
+    return -1;
+  }
+  if (a.name > b.name) {
+    return 1;
+  }
+  return 0;
 }

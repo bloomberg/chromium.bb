@@ -99,7 +99,7 @@
                   <li jsdisplay="functions && functions.length > 0">
                     <a href="#methods">Methods</a>    
                     <ol>
-                      <li jsselect="functions">
+                      <li jsselect="functions.sort(sortByName)">
                         <a jscontent="name"
                            jsvalues=".href:'#method-' + name"
                            href="#method-anchor">methodName</a>
@@ -109,7 +109,7 @@
                   <li jsdisplay="events && events.length > 0">
                     <a href="#events">Events</a>
                     <ol>
-                      <li jsselect="events">
+                      <li jsselect="events.sort(sortByName)">
                         <a jscontent="name"
                            jsvalues=".href:'#event-' + name"
                            href="#event-anchor">eventName</a>
@@ -119,7 +119,7 @@
                   <li jsdisplay="types && types.length > 0">
                     <a href="#types">Types</a>
                     <ol>
-                      <li jsselect="types">
+                      <li jsselect="types.sort(sortByName)">
                         <a jscontent="id"
                            jsvalues=".href:'#type-' + id"
                            href="#id-anchor">id</a>
@@ -165,7 +165,7 @@
             <h3>Methods</h3>
 
             <!-- iterates over all functions -->
-            <div class="apiItem" jsselect="functions">
+            <div class="apiItem" jsselect="functions.sort(sortByName)">
               <a jsvalues=".name:'method-' + name"></a> <!-- method-anchor -->
               <h4 jscontent="name">method name</h4>
 
@@ -275,7 +275,7 @@
             <h3 id="events">Events</h3>
 
             <!-- iterates over all events -->
-            <div jsselect="events" class="apiItem">
+            <div jsselect="events.sort(sortByName)" class="apiItem">
               <a jsvalues=".name:'event-' + name"></a>
               <h4 jscontent="name">event name</h4>
 
@@ -307,7 +307,7 @@
           
           <!-- TYPES -->
           <div jsdisplay="types && types.length > 0" class="apiGroup">
-            <a name="types"></a>
+            <a name="types.sort(sortByName)"></a>
             <h3 id="types">Types</h3>
 
             <!-- iterates over all types -->

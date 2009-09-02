@@ -35,12 +35,8 @@ Objects that represent bookmarks can have the following properties:
 <dl>
 <dt> <code>id</code> </dt>
 <dd> An integer ID that's unique for each bookmark.
-     Don't save this ID in persistent storage;
-     the ID for a particular bookmark might change
-     the next time the browser is started.
-     <span class="comment">
-     [PENDING: these might be persistent now]
-     </span>
+     IDs are unique and persisted within the current profile and are
+     and stable across shutdown and startup of the browser.     
      </dd>
 
 <dt> <code>title</code> </dt>
