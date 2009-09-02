@@ -1,0 +1,75 @@
+<div id="pageData-title" class="pageData">Cross-Origin XMLHttpRequest</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+In regular web pages, the
+<a href="http://www.w3.org/TR/XMLHttpRequest/">XMLHttpRequest</a>
+object can be used to  send and receive data from remote servers, but is
+constrained by the
+<a href="http://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>.
+Extensions are allowed to access remote servers outside of their origin,
+but they must first declare their intent to do so.</p>
+
+<h2 id="extension-origin">Extension Origin</h2>
+<p>Each running extension exists within it's own seperate security origin. Without
+requesting additional priviliges, the extension can use
+the XMLHttpRequest to access resources within it's installation. For example, if
+the extension contains a JSON configuration file called <var>config.json</var>,
+in a <var>config_resources</var> folder, it could retrieve it's contents like
+this:</p>
+
+<pre>
+var xhr = new XMLHttpRequest();
+xhr.onreadystatechange = handleStateChange; // Implemented elsewhere.
+xhr.open("GET", chrome.extension.getURL('/config_resources/config.json'), true);
+xhr.send();
+</pre>
+
+<p>If the extension attempted to access a security origin other than itself,
+say</p>
+
+<pre>
+xhr.open("GET", "http://www.google.com", true);
+</pre>
+
+<p>The browser would disallow it.</p>
+
+<h2 id="requesting-permission">Requesting Cross-Origin Permissions</h2>
+
+<p>By adding hosts and/or host match patterns to the
+<a href="manifest.html#permissions">permissions<a> section of the 
+<a href="manifest.html">manifest</a> file, the extension can request access to 
+remote servers outside of it's origin.</p>
+
+<pre>"permissions": [
+  "http://www.google.com/",
+],
+</pre>
+
+<p>Cross-origin permission values can be either fully qualified host names,
+like</p>
+
+<pre>"http://www.google.com/" or
+"http://www.gmail.com/"</pre>
+
+<p>or match patterns, like</p>
+
+<pre>"http://*.google.com/" or
+"http://*/"</pre>
+
+<p>which would allow http access to all reachable domains. Note that here,
+match patterns are similar to <a href="match_patterns.html">content script
+match patterns</a>, but any path information following the host is ignored.</p>
+
+<p>Also, note that access is granted both by host and scheme. If an extension
+wants secure and non-secure http access to a given host or set
+of hosts, it must declare the permissions seperately:</p>
+
+<pre>"permissions": [
+  "http://www.google.com/",
+  "https://www.google.com/",
+],
+</pre>
+
+
+<!-- END AUTHORED CONTENT -->
