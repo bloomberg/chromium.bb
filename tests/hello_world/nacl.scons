@@ -32,13 +32,27 @@ Import('env')
 
 env.ComponentProgram('hello_world.nexe', 'hello_world.c')
 
-# NOTE: this is a temporary measure until we have sfi/validator for arm
+# NOTE: this is a temporary measure until we have sfi/validator for arm.
+#       Use this for arm:
+#       sel_ldr_flags=['-I', '-d'],
+
 if env['TARGET_ARCHITECTURE'] == 'x86':
   node = env.CommandSelLdrTestNacl(
       'hello_world_test.out',
-      #sel_ldr_flags=['-I', '-d'],               # NOTE: extra flags for arm
       command=[env.File('hello_world.nexe')],
       stdout_golden=env.File('hello_world.stdout'),
-    )
+      )
 
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_world_test')
+
+
+
+  env.ComponentProgram('exit.nexe', 'exit.c')
+
+  node = env.CommandSelLdrTestNacl(
+      'exit_test.out',
+      command=[env.File('exit.nexe')],
+      exit_status='69',
+      )
+
+  env.AddNodeToTestSuite(node, ['small_tests'], 'exit_test')
