@@ -683,19 +683,31 @@ class SvnChange(Change):
   def __init__(self, *args, **kwargs):
     Change.__init__(self, *args, **kwargs)
     self.scm = 'svn'
+    self._changelists = None
+
+  def _GetChangeLists(self):
+    """Get all change lists."""
+    if self._changelists == None:
+      previous_cwd = os.getcwd()
+      os.chdir(self.RepositoryRoot())
+      self._changelists = gcl.GetModifiedFiles()
+      os.chdir(previous_cwd)
+    return self._changelists
 
   def GetAllModifiedFiles(self):
     """Get all modified files."""
-    changelists = gcl.GetModifiedFiles()
+    changelists = self._GetChangeLists()
     all_modified_files = []
     for cl in changelists.values():
-      all_modified_files.extend([f[1] for f in cl])
+      all_modified_files.extend(
+          [os.path.join(self.RepositoryRoot(), f[1]) for f in cl])
     return all_modified_files
 
   def GetModifiedFiles(self):
     """Get modified files in the current CL."""
-    changelists = gcl.GetModifiedFiles()
-    return [f[1] for f in changelists[self.Name()]]
+    changelists = self._GetChangeLists()
+    return [os.path.join(self.RepositoryRoot(), f[1])
+            for f in changelists[self.Name()]]
 
 
 class GitChange(Change):
