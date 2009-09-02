@@ -267,10 +267,14 @@ int main(int argc, char* const argv[]) {
     }
 
     // Make sure the lproj we write to exists
+    NSString *lproj_name = [NSString stringWithFormat:@"%s.lproj", cur_lang];
+    // For Cocoa to find the locale at runtime, it needs to use '_' instead of
+    // '-'.  (http://crbug.com/20441)
+    lproj_name = [lproj_name stringByReplacingOccurrencesOfString:@"-"
+                                                       withString:@"_"];
     NSString *output_path =
         [[NSString stringWithUTF8String:output_dir]
-         stringByAppendingPathComponent:
-          [NSString stringWithFormat:@"%s.lproj", cur_lang]];
+         stringByAppendingPathComponent:lproj_name];
     NSError* error = nil;
     if (![fm fileExistsAtPath:output_path] &&
         ![fm createDirectoryAtPath:output_path

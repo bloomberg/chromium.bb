@@ -36,7 +36,9 @@ def calc_output(locale):
   """Determine the file that will be generated for the given locale."""
   #e.g. '<(INTERMEDIATE_DIR)/repack/da.pak',
   if sys.platform in ('darwin',):
-    return '%s/repack/%s.lproj/locale.pak' % (INT_DIR, locale)
+    # For Cocoa to find the locale at runtime, it needs to use '_' instead
+    # of '-'.  (http://crbug.com/20441)
+    return '%s/repack/%s.lproj/locale.pak' % (INT_DIR, locale.replace('-', '_'))
   else:
     return '%s/repack/%s.pak' % (INT_DIR, locale)
 

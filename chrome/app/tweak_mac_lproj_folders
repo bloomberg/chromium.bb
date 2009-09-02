@@ -17,17 +17,22 @@ cd "${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Contents/Resources"
 # TODO: This can go away about 09/01/09, when they won't exist on the bots or
 # developers' local builds.
 rm -rf "zh.lproj" "en.lproj"
+# Remove the invalid dirs with - instead of _ (http://crbug.com/20441)
+# TODO: This can go away about 09/09/09, when they won't exist on the bots or
+# developers' local builds.
+rm -rf "en-GB.lproj" "en-US.lproj" "es-419.lproj" "pt-BR.lproj" "pt-PT.lproj" \
+    "zh-CN.lproj" "zh-TW.lproj"
 
-# Provide an link for en.lproj that points to en-US.lproj.
+# Provide an link for en.lproj that points to en_US.lproj.
 
 # The standard OS language list includes English (en) and not a specific
-# "flavor" such as U.S. English (en-US). When checking for a language match,
+# "flavor" such as U.S. English (en_US). When checking for a language match,
 # the OS will remove subtags if no exact match is found, so that en will be
 # used if the user's preferred language list only contains British English
-# (en-GB) and no specific en-GB translation is available.
+# (en_GB) and no specific en_GB translation is available.
 #
 # To ensure that users with the default language list, which contains English
 # without any regional subtag, as well as users with a specific variant of
 # English with a regional subtag, will have access to an English-localized
-# application, a symbolic link from en.lproj to en-US.lproj is provided.
-ln -fhs "en-US.lproj" "en.lproj"
+# application, a symbolic link from en.lproj to en_US.lproj is provided.
+ln -fhs "en_US.lproj" "en.lproj"

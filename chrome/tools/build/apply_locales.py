@@ -6,17 +6,31 @@
 # TODO: remove this script when GYP has for loops
 
 import sys
+import optparse
 
 def main(argv):
-  if len(argv) < 3:
+
+  parser = optparse.OptionParser()
+  usage = 'usage: %s [options ...] format_string locale_list'
+  parser.set_usage(usage.replace('%s', '%prog'))
+  parser.add_option('-d', dest='dash_to_underscore', action="store_true",
+                    default=False, help='map "-" to "_" in locales')
+
+  (options, arglist) = parser.parse_args(argv)
+
+  if len(arglist) < 3:
     print 'ERROR: need string and list of locales'
     return 1
 
-  str_template = argv[1]
-  locales = argv[2:]
+  str_template = arglist[1]
+  locales = arglist[2:]
 
   results = []
   for locale in locales:
+    # For Cocoa to find the locale at runtime, it needs to use '_' instead
+    # of '-'.  (http://crbug.com/20441)
+    if options.dash_to_underscore:
+      locale = locale.replace('-', '_')
     results.append(str_template.replace('ZZLOCALE', locale))
 
   # Quote each element so filename spaces don't mess up GYP's attempt to parse

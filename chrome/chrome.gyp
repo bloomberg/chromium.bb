@@ -24,6 +24,8 @@
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     # TODO(mmoss) This might need to go somewhere more general, then we can use
     # it to also rewrite app/locales/locales.gyp with a helper script.
+    # NOTE: When these end up in the Mac bundle, we need to replace '-' for '_'
+    # so Cocoa is happy (http://crbug.com/20441).
     'locales': [
       'ar', 'bg', 'bn', 'ca', 'cs', 'da', 'de', 'el', 'en-GB',
       'en-US', 'es-419', 'es', 'et', 'fi', 'fil', 'fr', 'gu', 'he',
@@ -3270,7 +3272,7 @@
               ],
               'outputs': [
                 # TODO: remove this helper when we have loops in GYP
-                '>!@(<(apply_locales_cmd) \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
+                '>!@(<(apply_locales_cmd) -d \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
               ],
               'action': [
                 '<(tool_path)',
@@ -4900,7 +4902,7 @@
               ],
               'outputs': [
                 # TODO: remove this helper when we have loops in GYP
-                '>!@(<(apply_locales_cmd) \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
+                '>!@(<(apply_locales_cmd) -d \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
               ],
               'action': [
                 '<(tool_path)',
