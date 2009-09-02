@@ -2325,3 +2325,5 @@ BUG20851 WIN : LayoutTests/fast/encoding/japanese-encoding-mix.html = FAIL
 BUG20886 WIN DEBUG : LayoutTests/fast/js/regexp-no-extensions.html = CRASH PASS
 BUG20886 WIN DEBUG : LayoutTests/fast/js/repeat-cached-vm-reentry.html = CRASH PASS
 BUG20886 WIN DEBUG : LayoutTests/fast/js/regexp-non-capturing-groups.html = CRASH PASS
+
+BUG20898 MAC DEBUG : LayoutTests/svg/W3C-SVG-1.1/painting-marker-02-f.svg = FAIL PASS
