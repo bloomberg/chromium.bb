@@ -568,9 +568,7 @@
    # Strange...
    bug_20653a
    Memcheck:Param
-   write(buf)
-   fun:write$UNIX2003
-   fun:unixWrite
+   ...
    fun:sqlite3OsWrite
    fun:pager_write_pagelist
    fun:sqlite3PagerCommitPhaseOne
@@ -645,29 +643,32 @@
    fun:_ZN7history16ArchivedDatabase4InitERK8FilePath
 }
 {
+   bug_20580_c
+   Memcheck:Addr4
+   ...
+   fun:sqlite3MemSize
+   fun:sqlite3MallocSize
+   fun:sqlite3PageFree
+   fun:pager_truncate_cache
+   fun:pager_truncate
+   fun:pager_playback
+   fun:sqlite3PagerRollback
+   fun:sqlite3BtreeRollback
+   fun:sqlite3RollbackAll
+   fun:sqlite3VdbeHalt
+   fun:sqlite3VdbeExec
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN7history16ArchivedDatabase17CommitTransactionEv
+   fun:_ZN7history16ArchivedDatabase4InitERK8FilePath
+}
+{
    bug_20837
    Memcheck:Leak
    fun:malloc
    fun:sqlite3MemMalloc
    fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   fun:sqlite3DbMallocRaw
-   fun:sqlite3DbStrNDup
-   fun:sqlite3NameFromToken
-   fun:sqlite3StartTable
-   fun:yy_reduce
-   fun:sqlite3Parser
-   fun:sqlite3RunParser
-   fun:sqlite3Prepare
-   fun:sqlite3LockAndPrepare
-   fun:sqlite3_prepare
-   fun:sqlite3_exec
-   fun:sqlite3InitCallback
-   fun:sqlite3_exec
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
-   fun:sqlite3_step
-   fun:sqlite3_exec
+   ...
    fun:_ZN7history11URLDatabase27InitKeywordSearchTermsTableEv
    fun:_ZN7history16ArchivedDatabase4InitERK8FilePath
 }
