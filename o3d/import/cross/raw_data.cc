@@ -38,6 +38,7 @@
 #include "utils/cross/file_path_utils.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "utils/cross/dataurl.h"
 
 #ifdef OS_MACOSX
 #include <CoreFoundation/CoreFoundation.h>
@@ -92,7 +93,16 @@ RawData::Ref RawData::CreateFromFile(ServiceLocator* service_locator,
 
   return data;
 }
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+RawData::Ref RawData::CreateFromDataURL(ServiceLocator* service_locator,
+                                        const String& data_url) {
+  RawData::Ref raw_data(Create(service_locator, "", NULL, 0));
+  if (!raw_data->SetFromDataURL(data_url)) {
+    raw_data.Reset();
+  }
 
+  return raw_data;
+}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RawData::~RawData() {
   Discard();
@@ -137,7 +147,21 @@ bool RawData::SetFromFile(const String& filename) {
 
   return result;
 }
-
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool RawData::SetFromDataURL(const String& data_url) {
+  String error_string;
+  size_t data_length = 0;
+  bool no_errors = dataurl::FromDataURL(data_url,
+                                        &data_,
+                                        &data_length,
+                                        &error_string);
+  length_ = data_length;
+  if (!no_errors) {
+    O3D_ERROR(service_locator()) << error_string;
+    return false;
+  }
+  return true;
+}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const uint8 *RawData::GetData() const {
   // Return data immediately if we have it

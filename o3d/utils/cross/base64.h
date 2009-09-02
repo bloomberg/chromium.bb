@@ -40,6 +40,14 @@
 namespace o3d {
 namespace base64 {
 
+// The possible error codes that can occur during a decoding.
+enum DecodeStatus {
+  kSuccess,
+  kPadError,
+  kBadCharError,
+  kOutputOverflowError
+};
+
 // Returns the number of bytes needed to encode length bytes in base64.
 size_t GetEncodeLength(size_t length);
 
@@ -50,6 +58,32 @@ size_t GetEncodeLength(size_t length);
 //   length: the length of the source data
 //   dst: pointer to place to store result.
 void Encode(const void* src, size_t length, void* dst);
+
+// Used to obtain the number of bytes needed to decode the src data
+// from base64.
+// Parameters:
+//   src: pointer to the source data.
+//   input_length: the length of the source data
+//   decode_length: the length in bytes of the decoded data will be
+//     placed here.
+DecodeStatus GetDecodeLength(const void* src,
+                      size_t input_length,
+                      size_t* decode_length);
+
+// Decodes the src, which should be encoded in base64, into the dst.
+// dst must have enough space to hold the result. The number of bytes
+// necessary can be obtained by calling GetDecodeLength()
+// Parameters:
+//   src: pointer to the source data
+//   input_length: the length of the source data
+//   dst: pointer to where the result should be stored.
+//   dst_buffer_length: the size in bytes of the dst buffer. This is
+//     used to check for buffer overflow.
+// Returns an error code (of type DecodeStatus)
+DecodeStatus Decode(const void* src,
+             size_t input_length,
+             void* dst,
+             size_t dst_buffer_length);
 
 }  // namespace base64
 }  // namespace o3d

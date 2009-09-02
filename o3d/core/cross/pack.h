@@ -235,6 +235,13 @@ class Pack : public NamedObject {
   //   bitmaps: A vector of pointers to bitmaps. If empty there was an error.
   std::vector<Bitmap*> CreateBitmapsFromRawData(RawData* raw_data);
 
+  // Creates a new RawData from a String containing a data URL.
+  // Parameters:
+  //   data_url: Contains the data URL that is to be decoded.
+  // Returns:
+  //   A pointer to the RawData that contains the data URL's data.
+  RawData* CreateRawDataFromDataURL(const String& data_url);
+
   // Creates a new Texture2D object of the specified size and format and
   // reserves the necessary resources for it.
   // Parameters:

@@ -162,4 +162,20 @@ TEST_F(PackTest, RemoveObject) {
   EXPECT_TRUE(pack->Destroy());
 }
 
+TEST_F(PackTest, CreateRawDataFromDataURL) {
+  Pack* pack = object_manager()->CreatePack();
+  RawData* raw_data = pack->CreateRawDataFromDataURL("data:;base64,YWJj");
+
+  EXPECT_FALSE(raw_data == NULL);
+  EXPECT_FALSE(CheckErrorExists());
+}
+
+TEST_F(PackTest, CreateRawDataFromDataURLFail) {
+  Pack* pack = object_manager()->CreatePack();
+  RawData* raw_data = pack->CreateRawDataFromDataURL("data:;base64,Y");
+
+  EXPECT_TRUE(raw_data == NULL);
+  EXPECT_TRUE(CheckErrorExists());
+}
+
 }  // namespace o3d

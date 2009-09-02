@@ -309,6 +309,17 @@ std::vector<Bitmap*> Pack::CreateBitmapsFromRawData(RawData* raw_data) {
   return bitmaps;
 }
 
+// Creates a new RawData from a data URL.
+RawData* Pack::CreateRawDataFromDataURL(const String& data_url) {
+  RawData::Ref raw_data = RawData::CreateFromDataURL(service_locator(),
+                                                     data_url);
+
+  if (!raw_data.IsNull()) {
+    RegisterObject(raw_data);
+  }
+  return raw_data.Get();
+}
+
 // Creates a Texture2D object and allocates the necessary resources for it.
 Texture2D* Pack::CreateTexture2D(int width,
                                  int height,

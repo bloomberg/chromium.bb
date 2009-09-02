@@ -85,6 +85,134 @@ void Encode(const void* src_ptr, size_t length, void* dst_ptr) {
   }
 }
 
+// This function actually does the decoding.
+// Parameters:
+//   src_ptr: pointer to the source data
+//   input_length: The length in bytes of the source data.
+//   dst_ptr: pointer to where the output data should be stored.
+//   dst_buffer_length: the size in bytes of the dst_ptr buffer. This
+//     is used to check for overflow. Not used if write_destination is
+//     false.
+//   output_length: The output length (in bytes) will be stored here if
+//     it is not null.
+//   write_destination: If true, actually write to the output. Otherwise,
+//     the length of the output will be determined only.
+DecodeStatus PerformDecode(const void* src_ptr,
+                    size_t input_length,
+                    void* dst_ptr,
+                    size_t dst_buffer_length,
+                    size_t* output_length,
+                    bool write_destination) {
+  const int kDecodePad = -2;
+
+  static const int8 kDecodeData[] = {
+    62, -1, -1, -1, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, kDecodePad, -1, -1,
+    -1,  0,  1,  2,  3,  4,  5,  6, 7,  8,  9, 10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1,
+    -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
+  };
+
+  uint8* dst = reinterpret_cast<uint8*>(dst_ptr);
+  const uint8* dst_start = reinterpret_cast<const uint8*>(dst_ptr);
+  const uint8* dst_end = dst_start + dst_buffer_length;
+  const uint8* src = reinterpret_cast<const uint8*>(src_ptr);
+  bool pad_two = false;
+  bool pad_three = false;
+  const uint8* end = src + input_length;
+  while (src < end) {
+    uint8 bytes[4];
+    int byte = 0;
+    do {
+      uint8 src_byte = *src++;
+      if (src_byte == 0)
+        goto goHome;
+      if (src_byte <= ' ')
+        continue;  // treat as white space
+      if (src_byte < '+' || src_byte > 'z')
+        return kBadCharError;
+      int8 decoded = kDecodeData[src_byte - '+'];
+      bytes[byte] = decoded;
+      if (decoded < 0) {
+        if (decoded == kDecodePad)
+          goto handlePad;
+        return kBadCharError;
+      } else {
+        byte++;
+      }
+      if (*src)
+        continue;
+      if (byte == 0)
+        goto goHome;
+      if (byte == 4)
+        break;
+ handlePad:
+      if (byte < 2)
+        return kPadError;
+      pad_three = true;
+      if (byte == 2)
+        pad_two = true;
+      break;
+    } while (byte < 4);
+    int two, three;
+    if (write_destination) {
+      int one = (bytes[0] << 2) & 0xFF;
+      two = bytes[1];
+      one |= two >> 4;
+      two = (two << 4) & 0xFF;
+      three = bytes[2];
+      two |= three >> 2;
+      three = (three << 6) & 0xFF;
+      three |= bytes[3];
+      O3D_ASSERT(one < 256 && two < 256 && three < 256);
+      if (dst >= dst_end) {
+        return kOutputOverflowError;
+      }
+      *dst = one;
+    }
+    dst++;
+    if (pad_two)
+      break;
+    if (write_destination) {
+      if (dst >= dst_end) {
+        return kOutputOverflowError;
+      }
+      *dst = two;
+    }
+    dst++;
+    if (pad_three)
+      break;
+    if (write_destination) {
+      if (dst >= dst_end) {
+        return kOutputOverflowError;
+      }
+      *dst = three;
+    }
+    dst++;
+  }
+ goHome:
+  if (output_length) {
+    *output_length = dst - dst_start;
+  }
+  return kSuccess;
+}
+
+// Returns the number of bytes of output data after decoding from base64.
+DecodeStatus GetDecodeLength(const void* src,
+                      size_t input_length,
+                      size_t* decode_length) {
+  return PerformDecode(src, input_length, NULL, 0, decode_length, false);
+}
+
+// Decodes the src data from base64 and stores the result in dst.
+DecodeStatus Decode(const void* src,
+             size_t input_length,
+             void* dst,
+             size_t dst_buffer_length) {
+  return PerformDecode(src, input_length, dst, dst_buffer_length, NULL, true);
+}
+
 }  // namespace base64
 }  // namespace o3d
 

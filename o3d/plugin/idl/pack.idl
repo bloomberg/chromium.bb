@@ -325,6 +325,13 @@ typedef Bitmap[] BitmapArray;
     \return An Array of Bitmaps object.
   %]
   BitmapArray CreateBitmapsFromRawData(RawData raw_data);
+
+  %[
+    Create RawData given a data URL.
+    \param data_url The data URL from which to create the RawData.
+    \return The RawData.
+  %]
+  RawData CreateRawDataFromDataURL(String data_url);
 };  // Pack
 
 }  // namespace o3d

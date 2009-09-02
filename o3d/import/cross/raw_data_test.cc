@@ -157,7 +157,7 @@ struct TestData {
   size_t offset;
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
 TEST_F(RawDataTest, StringValue) {
   // A BOM in the front (valid)
@@ -264,6 +264,22 @@ TEST_F(RawDataTest, StringValue) {
       EXPECT_TRUE(str.empty());
     }
   }
+}
+
+TEST_F(RawDataTest, CreateFromDataURL) {
+  RawData::Ref ref = RawData::CreateFromDataURL(g_service_locator,
+                                                "data:;base64,YWJj");
+  ASSERT_FALSE(ref.IsNull());
+  EXPECT_EQ(3u, ref->GetLength());
+  EXPECT_FALSE(CheckErrorExists(error_status()));
+  EXPECT_EQ(0, memcmp(ref->GetData(), "abc", 3));
+}
+
+TEST_F(RawDataTest, CreateFromDataURLFail) {
+  RawData::Ref ref = RawData::CreateFromDataURL(g_service_locator,
+                                                "data:;base64,Y");
+  EXPECT_TRUE(ref.IsNull());
+  EXPECT_TRUE(CheckErrorExists(error_status()));
 }
 
 }  // namespace o3d
