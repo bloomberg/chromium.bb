@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,7 @@
 #include "chrome/app/breakpad_mac.h"
 #endif
 #if defined(OS_LINUX)
+#include "base/nss_init.h"
 #include "chrome/app/breakpad_linux.h"
 #endif
 #include "chrome/app/scoped_ole_initializer.h"
@@ -583,6 +584,9 @@ int ChromeMain(int argc, const char** argv) {
 #endif
   } else if (process_type.empty()) {
 #if defined(OS_LINUX)
+    // We want to be sure to init NSPR on the main thread.
+    base::EnsureNSPRInit();
+
     g_thread_init(NULL);
     // Glib type system initialization. Needed at least for gconf,
     // used in net/proxy/proxy_config_service_linux.cc. Most likely

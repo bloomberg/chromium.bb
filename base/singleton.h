@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ struct LeakySingletonTraits : public DefaultSingletonTraits<Type> {
 //
 // On every platform, if Traits::RAE is true, the singleton will be destroyed at
 // process exit. More precisely it uses base::AtExitManager which requires an
-// object of this type to be instanciated. AtExitManager mimics the semantics
+// object of this type to be instantiated. AtExitManager mimics the semantics
 // of atexit() such as LIFO order but under Windows is safer to call. For more
 // information see at_exit.h.
 //

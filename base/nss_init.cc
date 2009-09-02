@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,9 +56,27 @@ SECMODModule *InitDefaultRootCerts() {
   return NULL;
 }
 
+// A singleton to initialize/deinitialize NSPR.
+// Separate from the NSS singleton because we initialize NSPR on the UI thread.
+class NSPRInitSingleton {
+ public:
+  NSPRInitSingleton() {
+    PR_Init(PR_USER_THREAD, PR_PRIORITY_NORMAL, 0);
+  }
+
+  ~NSPRInitSingleton() {
+    PRStatus prstatus = PR_Cleanup();
+    if (prstatus != PR_SUCCESS) {
+      LOG(ERROR) << "PR_Cleanup failed; was NSPR initialized on wrong thread?";
+    }
+  }
+};
+
 class NSSInitSingleton {
  public:
   NSSInitSingleton() {
+    base::EnsureNSPRInit();
+
     SECStatus status;
     std::string database_dir = GetDefaultConfigDirectory();
     if (!database_dir.empty()) {
@@ -139,14 +157,6 @@ class NSSInitSingleton {
     }
 
     PL_ArenaFinish();
-
-    PRStatus prstatus = PR_Cleanup();
-    if (prstatus != PR_SUCCESS) {
-      // We LOG(ERROR) here because this failure is bad: it indicates
-      // NSPR isn't initialized and cleaned up on the same thread.
-      LOG(ERROR) << "PR_Cleanup failed; see "
-                    "http://code.google.com/p/chromium/issues/detail?id=18410";
-    }
   }
 
  private:
@@ -156,6 +166,10 @@ class NSSInitSingleton {
 }  // namespace
 
 namespace base {
+
+void EnsureNSPRInit() {
+  Singleton<NSPRInitSingleton>::get();
+}
 
 void EnsureNSSInit() {
   Singleton<NSSInitSingleton>::get();
