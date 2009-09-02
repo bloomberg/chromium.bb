@@ -224,6 +224,9 @@ void RenderWidgetHost::WasResized() {
   if (new_size == current_size_)
     return;
 
+  if (in_flight_size_ != gfx::Size() && new_size == in_flight_size_)
+    return;
+
   // We don't expect to receive an ACK when the requested size is empty.
   if (!new_size.IsEmpty())
     resize_ack_pending_ = true;
@@ -231,6 +234,8 @@ void RenderWidgetHost::WasResized() {
   if (!Send(new ViewMsg_Resize(routing_id_, new_size,
                                GetRootWindowResizerRect())))
     resize_ack_pending_ = false;
+  else
+    in_flight_size_ = new_size;
 }
 
 void RenderWidgetHost::GotFocus() {
@@ -588,6 +593,7 @@ void RenderWidgetHost::OnMsgPaintRect(
   if (is_resize_ack) {
     DCHECK(resize_ack_pending_);
     resize_ack_pending_ = false;
+    in_flight_size_.SetSize(0, 0);
   }
 
   bool is_repaint_ack =

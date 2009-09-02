@@ -460,6 +460,13 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // The current size of the RenderWidget.
   gfx::Size current_size_;
 
+  // The size we last sent as requested size to the renderer. |current_size_|
+  // is only updated once the resize message has been ack'd. This on the other
+  // hand is updated when the resize message is sent. This is very similar to
+  // |resize_ack_pending_|, but the latter is not set if the new size has width
+  // or height zero, which is why we need this too.
+  gfx::Size in_flight_size_;
+
   // True if a mouse move event was sent to the render view and we are waiting
   // for a corresponding ViewHostMsg_HandleInputEvent_ACK message.
   bool mouse_move_pending_;
