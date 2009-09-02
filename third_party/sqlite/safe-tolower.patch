@@ -1,0 +1,97 @@
+This patch removes the usage of tolower() in fts code, which is not locale
+neutral and causes problem in some locales such as Turkish.
+See http://crbug.com/15261 for details.
+An upstream ticket was also created for this issue:
+http://www.sqlite.org/src/tktview/991789d9f3136a0460dc83a33e815c1aa9757c26
+
+Index: ext/fts3/fts3.c
+===================================================================
+--- ext/fts3/fts3.c	(revision 24387)
++++ ext/fts3/fts3.c	(working copy)
+@@ -330,7 +330,7 @@
+   return (c&0x80)==0 ? isspace(c) : 0;
+ }
+ static int safe_tolower(char c){
+-  return (c&0x80)==0 ? tolower(c) : c;
++  return (c>='A' && c<='Z') ? (c-'A'+'a') : c;
+ }
+ static int safe_isalnum(char c){
+   return (c&0x80)==0 ? isalnum(c) : 0;
+Index: ext/fts3/fts3_tokenizer1.c
+===================================================================
+--- ext/fts3/fts3_tokenizer1.c	(revision 24387)
++++ ext/fts3/fts3_tokenizer1.c	(working copy)
+@@ -191,7 +191,7 @@
+         ** case-insensitivity.
+         */
+         unsigned char ch = p[iStartOffset+i];
+-        c->pToken[i] = ch<0x80 ? tolower(ch) : ch;
++        c->pToken[i] = (ch>='A' && ch<='Z') ? (ch-'A'+'a') : ch;
+       }
+       *ppToken = c->pToken;
+       *pnBytes = n;
+Index: ext/fts1/simple_tokenizer.c
+===================================================================
+--- ext/fts1/simple_tokenizer.c	(revision 24387)
++++ ext/fts1/simple_tokenizer.c	(working copy)
+@@ -138,7 +138,7 @@
+         ** case-insensitivity.
+         */
+         char ch = c->pCurrent[ii];
+-        c->zToken[ii] = (unsigned char)ch<0x80 ? tolower(ch) : ch;
++        c->zToken[ii] = ((ch>='A' && ch<='Z') ? (ch-'A'+'a') : ch);
+       }
+       c->zToken[n] = '\0';
+       *ppToken = c->zToken;
+Index: ext/fts1/fts1_tokenizer1.c
+===================================================================
+--- ext/fts1/fts1_tokenizer1.c	(revision 24387)
++++ ext/fts1/fts1_tokenizer1.c	(working copy)
+@@ -182,7 +182,7 @@
+         ** case-insensitivity.
+         */
+         unsigned char ch = p[iStartOffset+i];
+-        c->pToken[i] = ch<0x80 ? tolower(ch) : ch;
++        c->pToken[i] = (ch>='A' && ch<='Z') ? (ch-'A'+'a') : ch;
+       }
+       *ppToken = c->pToken;
+       *pnBytes = n;
+Index: ext/fts1/fts1.c
+===================================================================
+--- ext/fts1/fts1.c	(revision 24387)
++++ ext/fts1/fts1.c	(working copy)
+@@ -208,7 +208,7 @@
+   return (c&0x80)==0 ? isspace(c) : 0;
+ }
+ static int safe_tolower(char c){
+-  return (c&0x80)==0 ? tolower(c) : c;
++  return (c>='A' && c<='Z') ? (c-'A'+'a') : c;
+ }
+ static int safe_isalnum(char c){
+   return (c&0x80)==0 ? isalnum(c) : 0;
+Index: ext/fts2/fts2.c
+===================================================================
+--- ext/fts2/fts2.c	(revision 24387)
++++ ext/fts2/fts2.c	(working copy)
+@@ -372,7 +372,7 @@
+   return (c&0x80)==0 ? isspace(c) : 0;
+ }
+ static int safe_tolower(char c){
+-  return (c&0x80)==0 ? tolower(c) : c;
++  return (c>='A' && c<='Z') ? (c-'A'+'a') : c;
+ }
+ static int safe_isalnum(char c){
+   return (c&0x80)==0 ? isalnum(c) : 0;
+Index: ext/fts2/fts2_tokenizer1.c
+===================================================================
+--- ext/fts2/fts2_tokenizer1.c	(revision 24387)
++++ ext/fts2/fts2_tokenizer1.c	(working copy)
+@@ -191,7 +191,7 @@
+         ** case-insensitivity.
+         */
+         unsigned char ch = p[iStartOffset+i];
+-        c->pToken[i] = ch<0x80 ? tolower(ch) : ch;
++        c->pToken[i] = (ch>='A' && ch<='Z') ? (ch-'A'+'a') : ch;
+       }
+       *ppToken = c->pToken;
+       *pnBytes = n;

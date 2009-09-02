@@ -182,7 +182,7 @@ static int simpleNext(
         ** case-insensitivity.
         */
         unsigned char ch = p[iStartOffset+i];
-        c->pToken[i] = ch<0x80 ? tolower(ch) : ch;
+        c->pToken[i] = (ch>='A' && ch<='Z') ? (ch-'A'+'a') : ch;
       }
       *ppToken = c->pToken;
       *pnBytes = n;
