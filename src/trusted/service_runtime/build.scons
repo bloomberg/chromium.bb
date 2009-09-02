@@ -323,7 +323,8 @@ if sdl_mode != 'none':
       sdl_dll += env.Replicate('$STAGING_DIR', '$SDL_DIR/lib64/libSDL-1.2.so.0')
       sdl_dll += env.Replicate('.', '$SDL_DIR/lib64/libSDL-1.2.so.0')
       # add AddPluginPrerequisite if you build a 64-bit plugin
-if not env.get('COVERAGE_ENABLED') or not env.Bit('windows'):
+if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
+    env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
   SEL_LDR_NODE = env.ComponentProgram('sel_ldr', 'sel_main.c')
   # we need this to build the plugin, so register it here
   env.AddPluginPrerequisite(SEL_LDR_NODE[0])
@@ -362,21 +363,24 @@ unittest_inputs = [
     'sel_ldr_test.cc',
 ]
 
-unit_tests_exe = test_env.ComponentProgram('service_runtime_tests',
-                                           unittest_inputs,
-                                           EXTRA_LIBS=['gtest'])
-test_env.Requires(unit_tests_exe, sdl_dll)
+if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
+  unit_tests_exe = test_env.ComponentProgram('service_runtime_tests',
+                                             unittest_inputs,
+                                             EXTRA_LIBS=['gtest'])
+  test_env.Requires(unit_tests_exe, sdl_dll)
 
 
-node = test_env.CommandTestAgainstGoldenOutput(
-    'gtest_output.xml.out',
-    command=[unit_tests_exe, '--gtest_output=xml:${TARGET}'])
-test_env.AddNodeToTestSuite(node, ['small_tests'], 'run_service_runtime_tests')
+  node = test_env.CommandTestAgainstGoldenOutput(
+      'gtest_output.xml.out',
+      command=[unit_tests_exe, '--gtest_output=xml:${TARGET}'])
+  test_env.AddNodeToTestSuite(node, ['small_tests'],
+      'run_service_runtime_tests')
 
 
 # Doesn't work on windows under coverage.
 # TODO(bradnelson): fix this to work on windows under coverage.
-if not env.Bit('windows') or not env.get('COVERAGE_ENABLED'):
+if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
+    env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
   mmap_test_exe = env.ComponentProgram('mmap_test', ['mmap_test.c'])
   env.Requires(mmap_test_exe, crt)
   env.Requires(mmap_test_exe, sdl_dll)
@@ -487,7 +491,8 @@ env.AddNodeToTestSuite(node, ['small_tests'])
 
 # Doesn't work on windows under coverage.
 # TODO(bradnelson): fix this to work on windows under coverage.
-if not env.Bit('windows') or not env.get('COVERAGE_ENABLED'):
+if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
+    env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
   obj_proxy_test_inputs = [ 'fs/obj_proxy_test.c', ]
   obj_proxy_test = env.ComponentProgram('obj_proxy_test',
                                         obj_proxy_test_inputs)
