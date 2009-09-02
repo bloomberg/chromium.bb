@@ -557,6 +557,7 @@
    # Strange...
    bug_20653a
    Memcheck:Param
+   write(buf)
    ...
    fun:sqlite3OsWrite
    fun:pager_write_pagelist
@@ -658,6 +659,5 @@
    fun:sqlite3MemMalloc
    fun:mallocWithAlarm
    ...
-   fun:_ZN7history11URLDatabase27InitKeywordSearchTermsTableEv
    fun:_ZN7history16ArchivedDatabase4InitERK8FilePath
 }
