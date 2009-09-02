@@ -495,7 +495,11 @@
    fun:_Z10cssyyparsePv
 }
 {
-   # Leak of a CFMutableArray of certs in X509Certificate::Verify.
+   # Leak of a CFMutableArray of certs in Apple's
+   # Security::KeychainCore::Trust::evaluate(), which is called by
+   # SecTrustEvaluate().  The leak occurs when we precede a call to
+   # SecTrustEvaluate() with a call to SecTrustSetAnchorCertificates(), which
+   # we do only in the unit tests (to trust the test root CA certificate).
    bug_20459
    Memcheck:Leak
    fun:malloc_zone_malloc
