@@ -50,6 +50,8 @@ static std::string StripQueryParams(const std::string& path) {
 DOMUIThemeSource::DOMUIThemeSource(Profile* profile)
     : DataSource(chrome::kChromeUIThemePath, MessageLoop::current()),
       profile_(profile) {
+  InitNewTabCSS();
+  InitNewIncognitoTabCSS();
 }
 
 void DOMUIThemeSource::StartDataRequest(const std::string& path,
@@ -57,11 +59,11 @@ void DOMUIThemeSource::StartDataRequest(const std::string& path,
   // Our path may include cachebuster arguments, so trim them off.
   std::string uncached_path = StripQueryParams(path);
 
-  if (strcmp(uncached_path.c_str(), kNewTabCSSPath) == 0) {
-    SendNewTabCSS(request_id);
+  if (uncached_path == kNewTabCSSPath) {
+    SendNewTabCSS(request_id, new_tab_css_);
     return;
-  } else if (strcmp(uncached_path.c_str(), kNewIncognitoTabCSSPath) == 0) {
-    SendNewIncognitoTabCSS(request_id);
+  } else if (uncached_path == kNewIncognitoTabCSSPath) {
+    SendNewTabCSS(request_id, new_incognito_tab_css_);
     return;
   } else {
     int resource_id = ThemeResourcesUtil::GetId(uncached_path);
@@ -77,9 +79,11 @@ void DOMUIThemeSource::StartDataRequest(const std::string& path,
 std::string DOMUIThemeSource::GetMimeType(const std::string& path) const {
   std::string uncached_path = StripQueryParams(path);
 
-  if (strcmp(uncached_path.c_str(), kNewTabCSSPath) == 0 ||
-      strcmp(uncached_path.c_str(), kNewIncognitoTabCSSPath) == 0)
+  if (uncached_path == kNewTabCSSPath ||
+      uncached_path == kNewIncognitoTabCSSPath) {
     return "text/css";
+  }
+
   return "image/png";
 }
 
@@ -87,10 +91,27 @@ void DOMUIThemeSource::SendResponse(int request_id, RefCountedBytes* data) {
   ChromeURLDataManager::DataSource::SendResponse(request_id, data);
 }
 
+MessageLoop* DOMUIThemeSource::MessageLoopForRequestPath(
+    const std::string& path) const {
+  std::string uncached_path = StripQueryParams(path);
+
+  if (uncached_path == kNewTabCSSPath ||
+      uncached_path == kNewIncognitoTabCSSPath) {
+    // All of the operations that need to be on the UI thread for these
+    // requests are performed in InitNewTabCSS and InitNewIncognitoTabCSS,
+    // called by the constructor.  It is safe to call StartDataRequest for
+    // these resources from any thread, so return NULL.
+    return NULL;
+  }
+
+  // Superclass
+  return DataSource::MessageLoopForRequestPath(path);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DOMUIThemeSource, private:
 
-void DOMUIThemeSource::SendNewTabCSS(int request_id) {
+void DOMUIThemeSource::InitNewTabCSS() {
   ThemeProvider* tp = profile_->GetThemeProvider();
   DCHECK(tp);
 
@@ -161,19 +182,11 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
   string16 format_string = ASCIIToUTF16(new_tab_theme_css.as_string());
   const std::string css_string = UTF16ToASCII(ReplaceStringPlaceholders(
       format_string, subst, NULL));
-  const std::string css_string2 =  UTF16ToASCII(ReplaceStringPlaceholders(
+  new_tab_css_ = UTF16ToASCII(ReplaceStringPlaceholders(
       ASCIIToUTF16(css_string), subst2, NULL));
-
-  // Convert to a format appropriate for sending.
-  scoped_refptr<RefCountedBytes> css_bytes(new RefCountedBytes);
-  css_bytes->data.resize(css_string2.size());
-  std::copy(css_string2.begin(), css_string2.end(), css_bytes->data.begin());
-
-  // Send.
-  SendResponse(request_id, css_bytes);
 }
 
-void DOMUIThemeSource::SendNewIncognitoTabCSS(int request_id) {
+void DOMUIThemeSource::InitNewIncognitoTabCSS() {
   ThemeProvider* tp = profile_->GetThemeProvider();
   DCHECK(tp);
 
@@ -201,9 +214,12 @@ void DOMUIThemeSource::SendNewIncognitoTabCSS(int request_id) {
 
   // Create the string from our template and the replacements.
   string16 format_string = ASCIIToUTF16(new_tab_theme_css.as_string());
-  const std::string css_string = UTF16ToASCII(ReplaceStringPlaceholders(
+  new_incognito_tab_css_ = UTF16ToASCII(ReplaceStringPlaceholders(
       format_string, subst, NULL));
+}
 
+void DOMUIThemeSource::SendNewTabCSS(int request_id,
+                                     const std::string& css_string) {
   // Convert to a format appropriate for sending.
   scoped_refptr<RefCountedBytes> css_bytes(new RefCountedBytes);
   css_bytes->data.resize(css_string.size());

@@ -200,6 +200,14 @@ class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
     return "text/html";
   }
 
+  virtual MessageLoop* MessageLoopForRequestPath(const std::string& path)
+      const {
+    // NewTabHTMLSource does all of the operations that need to be on the
+    // UI thread from InitFullHTML, called by the constructor.  It is safe
+    // to call StartDataRequest from any thread, so return NULL.
+    return NULL;
+  }
+
   // Setters and getters for first_view.
   static void set_first_view(bool first_view) { first_view_ = first_view; }
   static bool first_view() { return first_view_; }
@@ -213,6 +221,17 @@ class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
   // the file and returns the file content if successful. This returns an empty
   // string in case of failure.
   static std::string GetCustomNewTabPageFromCommandLine();
+
+  // Populate full_html_.  This must be called from the UI thread because it
+  // involves profile access.
+  //
+  // A new NewTabHTMLSource object is used for each new tab page instance
+  // and each reload of an existing new tab page, so there is no concern
+  // about cached data becoming stale.
+  void InitFullHTML();
+
+  // The content to be served by StartDataRequest, stored by InitFullHTML.
+  std::string full_html_;
 
   // Whether this is the first viewing of the new tab page and
   // we think it is the user's startup page.
@@ -234,6 +253,7 @@ bool NewTabHTMLSource::first_run_ = true;
 NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
     : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
       profile_(profile) {
+  InitFullHTML();
 }
 
 void NewTabHTMLSource::StartDataRequest(const std::string& path,
@@ -245,6 +265,35 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
     return;
   }
 
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+  html_bytes->data.resize(full_html_.size());
+  std::copy(full_html_.begin(), full_html_.end(), html_bytes->data.begin());
+
+  SendResponse(request_id, html_bytes);
+}
+
+// static
+std::string NewTabHTMLSource::GetCustomNewTabPageFromCommandLine() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const std::wstring file_path_wstring = command_line->GetSwitchValue(
+      switches::kNewTabPage);
+
+#if defined(OS_WIN)
+  const FilePath::StringType file_path = file_path_wstring;
+#else
+  const FilePath::StringType file_path = WideToASCII(file_path_wstring);
+#endif
+
+  if (!file_path.empty()) {
+    std::string file_contents;
+    if (file_util::ReadFileToString(FilePath(file_path), &file_contents))
+      return file_contents;
+  }
+
+  return std::string();
+}
+
+void NewTabHTMLSource::InitFullHTML() {
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
   std::wstring title;
@@ -383,37 +432,10 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
             IDR_NEW_NEW_TAB_HTML);
   }
 
-  std::string full_html(new_tab_html.data(), new_tab_html.size());
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
-  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
-}
-
-// static
-std::string NewTabHTMLSource::GetCustomNewTabPageFromCommandLine() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  const std::wstring file_path_wstring = command_line->GetSwitchValue(
-      switches::kNewTabPage);
-
-#if defined(OS_WIN)
-  const FilePath::StringType file_path = file_path_wstring;
-#else
-  const FilePath::StringType file_path = WideToASCII(file_path_wstring);
-#endif
-
-  if (!file_path.empty()) {
-    std::string file_contents;
-    if (file_util::ReadFileToString(FilePath(file_path), &file_contents))
-      return file_contents;
-  }
-
-  return std::string();
+  full_html_.assign(new_tab_html.data(), new_tab_html.size());
+  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html_);
+  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html_);
+  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -432,7 +454,26 @@ class IncognitoTabHTMLSource : public ChromeURLDataManager::DataSource {
     return "text/html";
   }
 
+  virtual MessageLoop* MessageLoopForRequestPath(const std::string& path)
+      const {
+    // IncognitoTabHTMLSource does all of the operations that need to be on
+    // the UI thread from InitFullHTML, called by the constructor.  It is safe
+    // to call StartDataRequest from any thread, so return NULL.
+    return NULL;
+  }
+
  private:
+  // Populate full_html_.  This must be called from the UI thread because it
+  // involves profile access.
+  //
+  // A new IncognitoTabHTMLSource object is used for each incognito tab page
+  // instance and each reload of an existing incognito tab page, so there is
+  // no concern about cached data becoming stale.
+  void InitFullHTML();
+
+  // The content to be served by StartDataRequest, stored by InitFullHTML.
+  std::string full_html_;
+
   bool bookmark_bar_attached_;
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoTabHTMLSource);
@@ -441,10 +482,19 @@ class IncognitoTabHTMLSource : public ChromeURLDataManager::DataSource {
 IncognitoTabHTMLSource::IncognitoTabHTMLSource(bool bookmark_bar_attached)
     : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
       bookmark_bar_attached_(bookmark_bar_attached) {
+  InitFullHTML();
 }
 
 void IncognitoTabHTMLSource::StartDataRequest(const std::string& path,
                                               int request_id) {
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+  html_bytes->data.resize(full_html_.size());
+  std::copy(full_html_.begin(), full_html_.end(), html_bytes->data.begin());
+
+  SendResponse(request_id, html_bytes);
+}
+
+void IncognitoTabHTMLSource::InitFullHTML() {
   DictionaryValue localized_strings;
   localized_strings.SetString(L"title",
       l10n_util::GetString(IDS_NEW_TAB_TITLE));
@@ -460,14 +510,8 @@ void IncognitoTabHTMLSource::StartDataRequest(const std::string& path,
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_INCOGNITO_TAB_HTML));
 
-  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
-      incognito_tab_html, &localized_strings);
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html.size());
-  std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
+  full_html_ = jstemplate_builder::GetI18nTemplateHtml(incognito_tab_html,
+                                                       &localized_strings);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

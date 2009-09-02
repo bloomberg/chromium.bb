@@ -12,6 +12,7 @@
 #include "base/thread.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/url_constants.h"
@@ -225,9 +226,19 @@ bool ChromeURLDataManager::StartRequest(const GURL& url,
   job->SetMimeType(source->GetMimeType(path));
 
   // Forward along the request to the data source.
-  source->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(source, &DataSource::StartDataRequest,
-                        path, request_id));
+  MessageLoop* target_message_loop = source->MessageLoopForRequestPath(path);
+  if (!target_message_loop) {
+    // The DataSource is agnostic to which thread StartDataRequest is called
+    // on for this path.  Call directly into it from this thread, the IO
+    // thread.
+    source->StartDataRequest(path, request_id);
+  } else {
+    // The DataSource wants StartDataRequest to be called on a specific thread,
+    // usually the UI thread, for this path.
+    target_message_loop->PostTask(FROM_HERE,
+        NewRunnableMethod(source, &DataSource::StartDataRequest,
+                          path, request_id));
+  }
   return true;
 }
 
@@ -261,10 +272,15 @@ void ChromeURLDataManager::DataAvailable(
 void ChromeURLDataManager::DataSource::SendResponse(
     RequestID request_id,
     RefCountedBytes* bytes) {
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+  ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
       NewRunnableMethod(&chrome_url_data_manager,
                         &ChromeURLDataManager::DataAvailable,
                         request_id, scoped_refptr<RefCountedBytes>(bytes)));
+}
+
+MessageLoop* ChromeURLDataManager::DataSource::MessageLoopForRequestPath(
+    const std::string& path) const {
+  return message_loop_;
 }
 
 // static

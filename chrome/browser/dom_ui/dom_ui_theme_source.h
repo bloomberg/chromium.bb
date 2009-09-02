@@ -24,12 +24,20 @@ class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
 
   virtual void SendResponse(int request_id, RefCountedBytes* data);
 
- private:
-  // Generate and send the CSS for the new tab.
-  void SendNewTabCSS(int request_id);
+  virtual MessageLoop* MessageLoopForRequestPath(const std::string& path) const;
 
-  // Generate and send the CSS for the new incognito tab.
-  void SendNewIncognitoTabCSS(int request_id);
+ private:
+  // Populate new_tab_css_ and new_incognito_tab_css.  These must be called
+  // from the UI thread because they involve profile and theme access.
+  //
+  // A new DOMUIThemeSource object is used for each new tab page instance
+  // and each reload of an existing new tab page, so there is no concern about
+  // cached data becoming stale.
+  void InitNewTabCSS();
+  void InitNewIncognitoTabCSS();
+
+  // Send the CSS for the new tab or the new incognito tab.
+  void SendNewTabCSS(int request_id, const std::string& css_string);
 
   // Fetch and send the theme bitmap.
   void SendThemeBitmap(int request_id, int resource_id);
@@ -41,6 +49,11 @@ class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
   // How the background image on the new tab page should be tiled (see tiling
   // masks in browser_theme_provider.h).
   std::string GetNewTabBackgroundTilingCSS();
+
+  // The content to be served by SendNewTabCSS, stored by InitNewTabCSS and
+  // InitNewIncognitoTabCSS.
+  std::string new_tab_css_;
+  std::string new_incognito_tab_css_;
 
   Profile* profile_;
   DISALLOW_COPY_AND_ASSIGN(DOMUIThemeSource);

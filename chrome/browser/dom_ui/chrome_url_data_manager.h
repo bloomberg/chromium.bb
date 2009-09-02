@@ -59,7 +59,18 @@ class ChromeURLDataManager {
     // the request is over.
     void SendResponse(int request_id, RefCountedBytes* bytes);
 
-    MessageLoop* message_loop() const { return message_loop_; }
+    // Returns the MessageLoop on which the DataSource wishes to have
+    // StartDataRequest called to handle the request for |path|.  If the
+    // DataSource does not care which thread StartDataRequest is called on,
+    // this should return NULL.  The default implementation always returns
+    // message_loop_, which generally results in processing on the UI thread.
+    // It may be beneficial to return NULL for requests that are safe to handle
+    // directly on the IO thread.  This can improve performance by satisfying
+    // such requests more rapidly when there is a large amount of UI thread
+    // contention.
+    virtual MessageLoop* MessageLoopForRequestPath(const std::string& path)
+        const;
+
     const std::string& source_name() const { return source_name_; }
 
     static void SetFontAndTextDirection(DictionaryValue* localized_strings);
