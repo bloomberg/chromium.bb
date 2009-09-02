@@ -9,6 +9,7 @@
 import logging
 import optparse
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -32,14 +33,21 @@ class Lighttpd:
   try:
     _webkit_tests = path_utils.PathFromBase('third_party', 'WebKit',
                                             'LayoutTests', 'http', 'tests')
+    _js_test_resource = path_utils.PathFromBase('third_party', 'WebKit',
+                                                'LayoutTests', 'fast',
+                                                'js', 'resources')
   except path_utils.PathNotFound:
     # If third_party/WebKit/LayoutTests/http/tests does not exist, assume wekit
     # tests are located in webkit/data/layout_tests/LayoutTests/http/tests.
     try:
       _webkit_tests = path_utils.PathFromBase('webkit', 'data', 'layout_tests',
                                               'LayoutTests', 'http', 'tests')
+      _js_test_resource = path_utils.PathFromBase('webkit', 'data',
+                                                  'layout_tests', 'LayoutTests',
+                                                  'fast', 'js', 'resources')
     except path_utils.PathNotFound:
       _webkit_tests = None
+      _js_test_resource = None
 
   # New tests for Chrome
   try:
@@ -134,6 +142,10 @@ class Lighttpd:
     # POST.
     f.write(('server.upload-dirs = ( "%s" )\n\n') % (self._output_dir))
 
+    # Setup a link to where the js test templates are stored
+    f.write(('alias.url = ( "/js-test-resources" => "%s" )\n\n') %
+                (self._js_test_resource))
+
     # dump out of virtual host config at the bottom.
     if self._root:
       if self._port:
@@ -172,6 +184,16 @@ class Lighttpd:
                   '-m', module_path,
                   # Don't background
                   '-D' ]
+
+    # Copy liblightcomp.dylib to /tmp/lighttpd/lib to work around the bug that
+    # mod_alias.so loads it from the hard coded path.
+    if sys.platform == 'darwin':
+      tmp_module_path = '/tmp/lighttpd/lib'
+      if not os.path.exists(tmp_module_path):
+        os.makedirs(tmp_module_path)
+      lib_file = 'liblightcomp.dylib'
+      shutil.copyfile(os.path.join(module_path, lib_file),
+                      os.path.join(tmp_module_path, lib_file))
 
     # Put the cygwin directory first in the path to find cygwin1.dll
     env = os.environ

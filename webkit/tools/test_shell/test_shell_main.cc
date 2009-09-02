@@ -22,6 +22,7 @@
 #include "base/trace_event.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
+#include "net/base/net_util.h"
 #include "net/http/http_cache.h"
 #include "net/socket/ssl_test_util.h"
 #include "net/url_request/url_request_context.h"
@@ -271,6 +272,14 @@ int main(int argc, char* argv[]) {
             continue;
 
           params.test_url = strtok(filenameBuffer, " ");
+
+          // Set the current path to the directory that contains the test
+          // files. This is because certain test file may use the relative
+          // path.
+          GURL test_url(params.test_url);
+          FilePath test_file_path;
+          net::FileURLToFilePath(test_url, &test_file_path);
+          file_util::SetCurrentDirectory(test_file_path.DirName());
 
           int old_timeout_ms = TestShell::GetLayoutTestTimeout();
 
