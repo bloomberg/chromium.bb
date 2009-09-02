@@ -313,7 +313,6 @@ class ScriptableHandle: public ScriptableHandleBase {
       }
     }
 
-
     // if there are any inputs - marshal them
     if (NULL != args) {
       // Marshall the arguments from NPVariants into NaClSrpcArgs
@@ -359,8 +358,12 @@ class ScriptableHandle: public ScriptableHandleBase {
     for (i = 0; (i < NACL_SRPC_MAX_ARGS) && (NULL != inputs[i]); ++i) {
       switch (inputs[i]->tag) {
         case NACL_SRPC_ARG_TYPE_BOOL:
-          if (!NPVariantToScalar(&args[i], &inputs[i]->u.bval)) {
-            return false;
+          /* SCOPE */ {
+            bool val;
+            if (!NPVariantToScalar(&args[i], &val)) {
+              return false;
+            }
+            inputs[i]->u.bval = (0 != val);
           }
           break;
         case NACL_SRPC_ARG_TYPE_DOUBLE:
@@ -419,7 +422,7 @@ class ScriptableHandle: public ScriptableHandleBase {
                                   plugin_interface_->GetPluginIdentifier(),
                                   &inputs[i]->u.daval.count,
                                   &inputs[i]->u.daval.darr)) {
-                return false;
+              return false;
             }
           }
           break;
@@ -430,9 +433,10 @@ class ScriptableHandle: public ScriptableHandleBase {
                                   plugin_interface_->GetPluginIdentifier(),
                                   &inputs[i]->u.iaval.count,
                                   &inputs[i]->u.iaval.iarr)) {
-                return false;
+              return false;
             }
           }
+          break;
 
         default:
           return false;
@@ -448,21 +452,21 @@ class ScriptableHandle: public ScriptableHandleBase {
           if (!NPVariantToAllocatedArray(&args[i + inputs_length],
               &outputs[i]->u.caval.count,
               &outputs[i]->u.caval.carr)) {
-              return false;
+            return false;
           }
           break;
         case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
           if (!NPVariantToAllocatedArray(&args[i + inputs_length],
               &outputs[i]->u.daval.count,
               &outputs[i]->u.daval.darr)) {
-              return false;
+            return false;
           }
           break;
         case NACL_SRPC_ARG_TYPE_INT_ARRAY:
           if (!NPVariantToAllocatedArray(&args[i + inputs_length],
               &outputs[i]->u.iaval.count,
               &outputs[i]->u.iaval.iarr)) {
-              return false;
+            return false;
           }
           break;
         case NACL_SRPC_ARG_TYPE_BOOL:
@@ -475,7 +479,7 @@ class ScriptableHandle: public ScriptableHandleBase {
           return false;
       }
     }
-      return true;
+    return true;
   }
 
   bool MarshallOutputs(const NaClSrpcArg** outs,
@@ -518,7 +522,10 @@ class ScriptableHandle: public ScriptableHandleBase {
       }
       switch (outs[i]->tag) {
       case NACL_SRPC_ARG_TYPE_BOOL:
-        ScalarToNPVariant(outs[i]->u.bval, retvalue);
+        /* SCOPE */ {
+          bool val = (0 != outs[i]->u.bval);
+          ScalarToNPVariant(val, retvalue);
+        }
         break;
       case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
         /* SCOPE */ {

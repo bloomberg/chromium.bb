@@ -36,7 +36,8 @@ Import('env')
 ######################################################################
 env.ComponentProgram('srpc_test.nexe', 'srpc_test.c',
                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('srpc_test.nexe', 'run', ['srpcperf.html',
+env.Publish('srpc_test.nexe', 'run', ['srpc_basic.html',
+                                      'srpcperf.html',
                                       'srpc_shm.html',
                                       'srpc_plugin.html'])
 

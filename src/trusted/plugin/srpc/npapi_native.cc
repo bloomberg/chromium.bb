@@ -102,6 +102,15 @@ template<> bool NPVariantToScalar<NaClDesc*>(const NPVariant* var,
   return true;
 }
 
+template<> bool NPVariantToScalar<bool>(const NPVariant* var, bool* b) {
+  *b = false;
+  if (!NPVARIANT_IS_BOOLEAN(*var)) {
+    return false;
+  }
+  *b = NPVARIANT_TO_BOOLEAN(*var);
+  return true;
+}
+
 template<> bool NPVariantToScalar<char*>(const NPVariant* var, char** s) {
   // Initialize return value for failure cases.
   *s = NULL;

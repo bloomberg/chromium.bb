@@ -146,7 +146,7 @@ NaClSrpcError IntArrayMethod(NaClSrpcChannel *channel,
 NACL_SRPC_METHOD("int_array:I:I", IntArrayMethod);
 
 /*
- * Finally, a null RPC to test throughput and latency.
+ * A null RPC to test throughput and latency.
  */
 NaClSrpcError NullMethod(NaClSrpcChannel *channel,
                          NaClSrpcArg **in_args,
@@ -157,7 +157,7 @@ NaClSrpcError NullMethod(NaClSrpcChannel *channel,
 NACL_SRPC_METHOD("null_method::", NullMethod);
 
 /*
- * Experimental: a method to return a string.
+ * A method to return a string.
  */
 NaClSrpcError ReturnStringMethod(NaClSrpcChannel *channel,
                                  NaClSrpcArg **in_args,
@@ -182,12 +182,23 @@ NaClSrpcError ReturnStringMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("stringret_method:i:s", ReturnStringMethod);
+NACL_SRPC_METHOD("stringret:i:s", ReturnStringMethod);
 
 /*
- * Experimental: a method to return a file handle.
+ * A method to receive a handle (descriptor).
  */
+NaClSrpcError HandleMethod(NaClSrpcChannel *channel,
+                           NaClSrpcArg **in_args,
+                           NaClSrpcArg **out_args) {
+  /* If we got this far, things succeeded */
+  return NACL_SRPC_RESULT_OK;
+}
 
+NACL_SRPC_METHOD("handle:h:", HandleMethod);
+
+/*
+ * A method to return a handle (descriptor).
+ */
 NaClSrpcError ReturnHandleMethod(NaClSrpcChannel *channel,
                                  NaClSrpcArg **in_args,
                                  NaClSrpcArg **out_args) {
@@ -195,4 +206,4 @@ NaClSrpcError ReturnHandleMethod(NaClSrpcChannel *channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NACL_SRPC_METHOD("outh_method::h", ReturnHandleMethod);
+NACL_SRPC_METHOD("handleret::h", ReturnHandleMethod);

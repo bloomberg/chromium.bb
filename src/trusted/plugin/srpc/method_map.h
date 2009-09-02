@@ -196,4 +196,3 @@ class MethodMap {
 }  // namespace nacl_srpc
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_METHOD_MAP_H
-

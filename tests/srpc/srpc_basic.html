@@ -1,0 +1,409 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2009 Google Inc.  All rights reserved. -->
+  <head>
+    <title> SRPC Parameter Passing Test </title>
+    <style type="text/css">
+      td.notrun { background-color: skyblue }
+      td.pass { background-color: lime }
+      td.fail { background-color: red }
+    </style>
+    <script type="application/x-javascript">
+      <!--
+var SetTestResult = function(element_id, result) {
+  var element = document.getElementById(element_id);
+  element.className = result;
+}
+
+// The NaCl module.  Used to produce handles and for __shmFactory invocations.
+var server;
+// The default socket address for the plugin.
+var default_addr;
+// The address string of the default socket address for the plugin.
+var addr_str;
+// The count of failing tests.  Set from the queue length, and decremented
+// whenever a test passes.
+var failing_count;
+
+// The queue of small tests.
+var testQueue = [ ];
+var appendTest = function(test_descr) {
+  testQueue[testQueue.length] = test_descr;
+}
+
+var expectPass = function(element, has_return, fp) {
+  appendTest(new Array('pass', element, has_return, fp));
+}
+
+var expectFail = function(element, fp) {
+  appendTest(new Array('fail', element, fp));
+}
+
+var ScalarTypes = function() {
+  // Test passing scalar types.
+  expectPass('bool_passret',
+             true,
+             function() {
+               if (!server.bool(true) && server.bool(false)) {
+                 return true;
+               }
+             });
+  expectPass('double_passret',
+             true,
+             function() {
+               var dval = 3.1415;
+               if (server.double(dval) == -dval) {
+                 return true;
+               }
+             });
+  expectPass('int_passret',
+             true,
+             function() {
+               var ival = 12345;
+               if (server.int(ival) == -ival) {
+                 return true;
+               }
+             });
+}
+
+var ArrayTypes = function() {
+  // Test passing scalar types.
+  expectPass('chararr_passret',
+             true,
+             function() {
+               var carr = [ 72, 101, 108, 108, 111 ];
+               var ret_arr = server.char_array(carr, 5);
+               if (ret_arr[0] == carr[4] &&
+                   ret_arr[1] == carr[3] &&
+                   ret_arr[2] == carr[2] &&
+                   ret_arr[3] == carr[1] &&
+                   ret_arr[4] == carr[0]) {
+                 return true;
+               }
+             });
+  expectPass('doublearr_passret',
+             true,
+             function() {
+               var darr = [ 3.1, 1.4, 4.1, 1.5, 5.9 ];
+               var ret_arr = server.double_array(darr, 5);
+               if (ret_arr[0] == darr[4] &&
+                   ret_arr[1] == darr[3] &&
+                   ret_arr[2] == darr[2] &&
+                   ret_arr[3] == darr[1] &&
+                   ret_arr[4] == darr[0]) {
+                 return true;
+               }
+             });
+  expectPass('intarr_passret',
+             true,
+             function() {
+               var iarr = [ 1, 2, 3, 4, 5 ];
+               var ret_arr = server.int_array(iarr, 5);
+               if (ret_arr[0] == iarr[4] &&
+                   ret_arr[1] == iarr[3] &&
+                   ret_arr[2] == iarr[2] &&
+                   ret_arr[3] == iarr[1] &&
+                   ret_arr[4] == iarr[0]) {
+                 return true;
+               }
+             });
+}
+
+var SpecialTypes = function() {
+  // Test passing scalar types.
+  expectPass('string_send',
+             true,
+             function() {
+               var str = 'one more test';
+               var ret = server.string(str);
+               if (str.length == ret) {
+                 return true;
+               }
+             });
+  expectPass('string_return',
+             true,
+             function() {
+               var ret = server.stringret(0);
+               if ('string' == typeof(ret)) {
+                 return true;
+               }
+             });
+  expectPass('handle_send',
+             false,
+             function() {
+               var hnd = server.__defaultSocketAddress();
+               server.handle(hnd);
+             });
+  expectPass('handle_return',
+             true,
+             function() {
+               var ret = server.handleret();
+               if ('object' == typeof(ret)) {
+                 return true;
+               }
+             });
+}
+
+// The test run functions.
+var testExpectedPass = function(element, has_return, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    if (has_return && (undefined == result)) {
+      SetTestResult(element, 'fail');
+    } else {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    }
+  } catch (string) {
+    SetTestResult(element, 'fail');
+  }
+}
+
+var testExpectedFail = function(element, fp) {
+  var result = undefined;
+  try {
+    result = fp();
+    SetTestResult(element, 'fail');
+  } catch (string) {
+    if (undefined == result) {
+      SetTestResult(element, 'pass');
+      --failing_count;
+    } else {
+      SetTestResult(element, 'fail');
+    }
+  }
+}
+
+var RunAllTests = function() {
+  var i;
+  var len = testQueue.length;
+  // All tests are considered failure until they have run successfully.
+  // This catches runs that end prematurely.
+  failing_count = len;
+  for (i = 0; i < len; ++i) {
+    var test_descr = testQueue[i];
+    if ('pass' == test_descr[0]) {
+      testExpectedPass(test_descr[1], test_descr[2], test_descr[3]);
+    } else {
+      testExpectedFail(test_descr[1], test_descr[2]);
+    }
+  }
+  if (0 == failing_count) {
+    // All tests passed -- set the selenium magic to success here.
+  }
+}
+
+var EnqueuAndRunTests = function() {
+  // Setup -- abort entire test if this fails.
+  try {
+    // If these fail at the beginning, all the tests will abort.
+    // Otherwise more specific tests are done on them.
+    default_addr = server.__defaultSocketAddress();
+    addr_str = default_addr.toString();
+  } catch (string) {
+    window.alert('Socket address test setup failed.');
+    return;
+  }
+  // Enqueue the tests.
+  ScalarTypes();
+  ArrayTypes();
+  SpecialTypes();
+  // Run them all.
+  RunAllTests();
+}
+
+// Before running tests we need to ensure the Native Client modules are loaded.
+var startupTimeout;
+
+var RunTestsAfterLoad = function() {
+  // Initialize the selenium magic to failure here.
+  if (server.__moduleReady) {
+    EnqueuAndRunTests();
+  } else {
+    if (server.__moduleReady == undefined) {
+      alert('The Native Client plugin was unable to load');
+      return;
+    }
+    startupTimeout = setTimeout(RunTestsAfterLoad, 100);
+  }
+}
+
+// Init is called when the document has completed loading.
+var Init = function() {
+  // Remember object to make access to the elements easier.
+  server = document.getElementById('nacl_server');
+  // Run the tests after ensuring loads have completed.
+  RunTestsAfterLoad();
+}
+      -->
+    </script>
+  </head>
+  <body onload="Init();">
+    <h1> SRPC Parameter Passing Test </h1>
+    <table cellspacing=5 cellpadding=5 border=5>
+      <tr>
+        <td>
+        </td>
+        <td>
+          <b> Scalar types </b>
+        </td>
+        <td>
+          <b> Array types </b>
+        </td>
+        <td>
+          <b> Special types </b>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Boolean </b>
+        </b>
+        <td>
+          <table>
+            <tr>
+              <td id="bool_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+        </td>
+        <td>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Character (1-byte) </b>
+        </td>
+        <td>
+        </td>
+        <td>
+          <table>
+            <tr>
+              <td id="chararr_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Double (8-byte fp) </b>
+        </td>
+        <td>
+          <table>
+            <tr>
+              <td id="double_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table>
+            <tr>
+              <td id="doublearr_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Integer (4-byte) </b>
+        </td>
+        <td>
+          <table>
+            <tr>
+              <td id="int_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table>
+            <tr>
+              <td id="intarr_passret" class="notrun">
+                pass/return
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Strings (NUL-terminated)  </b>
+        </td>
+        <td>
+        </td>
+        <td>
+        </td>
+        <td valign=top>
+          <table>
+            <tr>
+              <td id="string_send" class="notrun">
+                send to NaCl
+              </td>
+            </tr>
+            <tr>
+              <td id="string_return" class="notrun">
+                return from NaCl
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b> Handle (descriptor) </b>
+        </td>
+        <td>
+        </td>
+        <td>
+        </td>
+        <td valign=top>
+          <table>
+            <tr>
+              <td id="handle_send" class="notrun">
+                send to NaCl
+              </td>
+            </tr>
+            <tr>
+              <td id="handle_return" class="notrun">
+                receive from NaCl
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <table summary="The color codes used for identifying test outcomes">
+      <tr> <td align="center"> <em> Legend </em> </td> </tr>
+      <tr> <td align="center" class="notrun"> Test not run </td> </tr>
+      <tr> <td align="center" class="pass"> Test passed </td> </tr>
+      <tr> <td align="center" class="fail"> Test failed </td> </tr>
+    </table>
+    <p>
+    <b>
+      NOTE: Some versions of some WebKit-based browsers do not correctly report
+      JavaScript exceptions raised by NPAPI plugins.  This can cause some of
+      the above tests to spuriously report failure.
+    </b>
+    </p>
+    <embed type="application/x-nacl-srpc" id="nacl_server"
+            width="0" height="0" src="srpc_test.nexe" />
+  </body>
+</html>
