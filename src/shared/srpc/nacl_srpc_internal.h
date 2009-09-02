@@ -62,8 +62,8 @@ typedef struct NaClDesc* SRPC_IMC_DESC_TYPE;
 #define SRPC_DESC_MAX    NACL_ABI_IMC_USER_DESC_MAX
 #endif
 
-#define SRPC_DEBUG
 /*
+#define SRPC_DEBUG
  * SRPC_DEBUG enables trace output printing.
  */
 extern int gNaClSrpcDebugPrintEnabled;
