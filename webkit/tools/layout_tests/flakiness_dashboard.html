@@ -116,10 +116,10 @@
       font-weight: bold;
     }
     #passing-tests {
-      -webkit-column-count: 3;
+      -webkit-column-count: 2;
       -webkit-column-gap: 25px;
       -webkit-column-rule: 1px dashed black;
-      -moz-column-count: 3;
+      -moz-column-count: 2;
       -moz-column-gap: 25px;
       -moz-column-rule: 1px dashed black;
     }
@@ -127,10 +127,6 @@
       color: red;
       font-size: large;
     }
-  </style>
-
-  <style id="wont-fix-style">
-    /* Will be popuplated with the display state for wontfix tests.*/
   </style>
 
   <script>
@@ -236,7 +232,7 @@
   // GLOBALS
   // The DUMMYVALUE gets shifted off the array in the first call to
   // generatePage.
-  var tableHeaders = ['DUMMYVALUE', 'modifiers', 'expectations',
+  var tableHeaders = ['DUMMYVALUE', 'bugs', 'modifiers', 'expectations',
       'missing', 'extra', 'slowest run',
       'flakiness (numbers are runtimes in seconds)'];
   var currentState = {builder: null, sortOrder: FORWARD, sortColumn: 'test'};
@@ -260,6 +256,8 @@
       missing: '',
       // String of extra expectations (i.e. expectations that never occur).
       extra: '',
+      // HTML for bug IDs for this test for all platforms
+      bugsHTML: '',
       // HTML for expectations for this test for all platforms
       expectationsHTML: '',
       // HTML for modifiers for this test for all platforms
@@ -276,6 +274,10 @@
 
   function stringContains(a, b) {
     return a.indexOf(b) != -1;
+  }
+
+  function trimString(str) {
+    return str.replace(/^\s+|\s+$/g, '');
   }
 
   function anyKeyInString(object, string) {
@@ -446,6 +448,24 @@
     return !stringContains(path, '.')
   }
 
+  function addHTMLToIndividualOptionsArray(array, html, isCurrentPlatform) {
+    if (html) {
+      array.push('<div class="option' +
+          (isCurrentPlatform ? '' : ' different-platform') + '">' + html +
+          '</div>');
+    }
+  }
+
+  function addHtmlToOptionsArrays(htmlArrays, expectations, modifiers, bugs,
+      isCurrentPlatform) {
+    addHTMLToIndividualOptionsArray(htmlArrays.expectations, expectations,
+        isCurrentPlatform);
+    addHTMLToIndividualOptionsArray(htmlArrays.modifiers, modifiers,
+        isCurrentPlatform);
+    addHTMLToIndividualOptionsArray(htmlArrays.bugs, getHtmlForBugs(bugs),
+        isCurrentPlatform);
+  }
+
   function processTestRunsForBuilder(builderName) {
     if (perBuilderFailures[builderName])
       return;
@@ -487,40 +507,51 @@
 
       if (expectationsMap[test] && expectationsMap[test].length) {
         var expectationsArray = expectationsMap[test];
-        var expectationsHTMLArray = [];
-        var modifiersHTMLArray = [];
+        var htmlArrays = {};
+        htmlArrays.expectations = [];
+        htmlArrays.modifiers = [];
+        htmlArrays.bugs = [];
 
         var thisBuilderExpectations;
         var thisBuilderModifiers;
         for (var i = 0; i < expectationsArray.length; i++) {
           var modifiers = expectationsArray[i].modifiers;
+          var bugs = modifiers.match(/BUG\d+/g);
+          if (bugs) {
+            for (var j = 0; j < bugs.length; j++) {
+              modifiers = modifiers.replace(bugs[j], '');
+            }
+            modifiers = trimString(modifiers);
+            bugs = bugs.join(' ');
+          } else {
+            bugs = '';
+          }
+
           var expectations = expectationsArray[i].expectations;
           if (hasPlatformAndBuildType(builderName, modifiers)) {
+            resultsForTest.bugs = bugs;
             resultsForTest.expectations = expectations;
             resultsForTest.modifiers = modifiers;
+            // TODO(ojan): Also specially mark slow tests that should be marked
+            // as slow or should have the slow modifier removed.
             resultsForTest.isWontFix = stringContains(modifiers, 'WONTFIX');
           } else {
-            expectationsHTMLArray.push(
-                '<div class="option different-platform">' + expectations +
-                '</div>');
-            modifiersHTMLArray.push(
-                '<div class="option different-platform">' +
-                getHtmlForModifiers(modifiers) +
-                '</div>');
+            addHtmlToOptionsArrays(htmlArrays, expectations, modifiers, bugs,
+                false);
           }
         }
 
         if (resultsForTest.expectations) {
-          expectationsHTMLArray.push('<div class="option">' +
-              resultsForTest.expectations + '</div>');
-          modifiersHTMLArray.push('<div class="option">' +
-              getHtmlForModifiers(resultsForTest.modifiers) + '</div>');
+          addHtmlToOptionsArrays(htmlArrays, resultsForTest.expectations,
+              resultsForTest.modifiers, resultsForTest.bugs, true);
         }
 
+        resultsForTest.bugsHTML +=
+            htmlArrays.bugs.join('<div class=separator></div>');
         resultsForTest.expectationsHTML +=
-            expectationsHTMLArray.join('<div class=separator></div>');
+            htmlArrays.expectations.join('<div class=separator></div>');
         resultsForTest.modifiersHTML +=
-            modifiersHTMLArray.join('<div class=separator></div>');
+            htmlArrays.modifiers.join('<div class=separator></div>');
       }
 
       var results = resultsByBuilder[builderName].tests[test].results.split('');
@@ -554,6 +585,10 @@
           missingExpectations.push(result);
       }
 
+      // TODO(ojan): Make this detect the case of a test that has NODATA,
+      // then fails for a few runs, then passes for the rest. We should
+      // consider that as meetsExpectations since every new test will have
+      // that pattern.
       resultsForTest.meetsExpectations =
           !missingExpectations.length && !extraExpectations.length;
       resultsForTest.missing = missingExpectations.sort().join(' ');
@@ -586,21 +621,21 @@
   }
 
   var bugUrlPrefix = '<a href="http://';
-  var bugUrlPostfix = '/$1">BUG$1</a> ';
+  var bugUrlPostfix = '/$1">$1</a> ';
   var internalBugReplaceValue = bugUrlPrefix + 'b' + bugUrlPostfix;
   var externalBugReplaceValue = bugUrlPrefix + 'crbug.com' + bugUrlPostfix;
 
   /**
-   * Returns the modifiers with BUG modifiers linking to the bug.
+   * Returns the BUG modifiers linking to the bug.
    * Bugs with 4 or 5 digits are crbug.com bugs. Bugs with 6 or 7 digits
    * are internal google bugs.
    */
-  function getHtmlForModifiers(modifiers) {
-    modifiers = modifiers.replace(/BUG(\d{4})(\ |$)/, externalBugReplaceValue);
-    modifiers = modifiers.replace(/BUG(\d{5})(\ |$)/, externalBugReplaceValue);
-    modifiers = modifiers.replace(/BUG(\d{6})(\ |$)/, internalBugReplaceValue);
-    modifiers = modifiers.replace(/BUG(\d{7})(\ |$)/, internalBugReplaceValue);
-    return modifiers
+  function getHtmlForBugs(bugs) {
+    bugs = bugs.replace(/BUG(\d{4})(\ |$)/g, externalBugReplaceValue);
+    bugs = bugs.replace(/BUG(\d{5})(\ |$)/g, externalBugReplaceValue);
+    bugs = bugs.replace(/BUG(\d{6})(\ |$)/g, internalBugReplaceValue);
+    bugs = bugs.replace(/BUG(\d{7})(\ |$)/g, internalBugReplaceValue);
+    return bugs;
   }
 
   function didTestPassAllRuns(builderName, testPath) {
@@ -644,23 +679,26 @@
   }
 
   function getHTMLForSingleTestRow(test, opt_builder) {
-    var classes = [];
-    if (!test.meetsExpectations)
-      classes.push('wrong-expectations');
-
-    if (test.isWontFix)
-      classes.push('wontfix');
+    if ((test.isWontFix && !currentState.showWontFix) ||
+        (test.meetsExpectations && !currentState.showCorrectExpectations)) {
+      // The innerHTML call is considerably faster if we exclude the rows for
+      // items we're not showing than if we hide them using display:none.
+      return '';
+    }
 
     // If opt_builder is provided, we're just viewing a single test
-    // with results for many builders.
+    // with results for many builders, so the first column is builder names
+    // instead of test paths.
     var testCellHTML = opt_builder ? opt_builder :
       '<span class="link" onclick="setState(\'tests\', \'' + test.test +
       '\');return false;">' + test.test + '</span>';
 
-    return '<tr class="' + classes.join(' ') +
+    return '<tr class="' +
+      (test.meetsExpectations ? '' : 'wrong-expectations') +
       // TODO(ojan): If a test is a chrome/ or a pending/ test, point to
       // src.chromium.org instead of trac.webkit.org.
       '"><td class=test-link>' + testCellHTML +
+      '</td><td class=options-container>' + test.bugsHTML +
       '</td><td class=options-container>' + test.modifiersHTML +
       '</td><td class=options-container>' + test.expectationsHTML +
       '</td><td>' + test.missing +
@@ -785,9 +823,16 @@
       var urlHasTests = false;
       for (var i = 0; i < hashParts.length; i++) {
         var itemParts = hashParts[i].split('=');
-        currentState[itemParts[0]] = decodeURIComponent(itemParts[1]);
-        if (itemParts[0] == 'tests')
+        // TODO(ojan): Validate keys and values to avoid XSS holes.
+        var key = itemParts[0];
+        currentState[key] = decodeURIComponent(itemParts[1]);
+        if (key == 'tests') {
           urlHasTests = true;
+        } else if (key == 'showWontFix' || key == 'showCorrectExpectations') {
+          // Convert these values to booleans so we don't have to do this check
+          // in a bunch of places.
+          currentState[key] = currentState[key] == 'true';
+        }
       }
     }
 
@@ -865,6 +910,12 @@
         'id=tests-input style="width:60%"></form>';
   }
 
+  function getLinkHTMLToToggleState(key, linkText) {
+    var isTrue = currentState[key];
+    return '<span class=link onclick="setState(\'' + key + '\', \'' + !isTrue +
+        '\')">' + (isTrue ? 'Hide' : 'Show') + ' ' + linkText + '</span>';
+  }
+
   function generatePageForBuilder(builderName) {
     processTestRunsForBuilder(builderName);
 
@@ -877,8 +928,10 @@
 
     var html = getHTMLForNavBar(builderName) +
         getHTMLForTestsWithExpectationsButNoFailures(builderName) +
-        '<h2>Failing tests</h2><input type=checkbox id=wont-fix-input ' +
-        'onclick="updateWontFixDisplay()">Show WONTFIX tests.' +
+        '<h2>Failing tests</h2>' +
+        getLinkHTMLToToggleState('showWontFix', 'WONTFIX tests') + ' | ' +
+        getLinkHTMLToToggleState('showCorrectExpectations',
+            'tests with correct expectations') +
         '<b> | All columns are sortable. | Skipped tests are not listed. | ' +
         'Flakiness reader order is newer --> older runs.</b>' +
         getHTMLForTestTable(tableRowsHTML);
@@ -890,22 +943,6 @@
       ths[i].addEventListener('click', changeSort, false);
       ths[i].className = "sortable";
     }
-
-    document.getElementById('wont-fix-input').checked =
-        currentState.showWontFix == 'true';
-    updateWontFixDisplay();
-  }
-
-  function updateWontFixDisplay() {
-    setState('showWontFix', document.getElementById('wont-fix-input').checked);
-    var wontFixStyle = currentState.showWontFix ? '' :
-        '.wontfix{display:none}';
-    var wontFixInput = document.getElementById('wont-fix-style');
-    if (stringContains(navigator.userAgent, 'WebKit')) {
-      wontFixInput.textContent = wontFixStyle;
-    } else {
-      wontFixInput.innerHTML = wontFixStyle;
-    }
   }
 
   function setState(key, value) {
@@ -916,6 +953,7 @@
       currentState.sortColumn = null;
       currentState.sortOrder = null;
       currentState.showWontFix = null;
+      currentState.showCorrectExpectations = null;
     } else {
       currentState.tests = null;
     }
@@ -927,14 +965,12 @@
       newLocation += 'builder=' + currentState.builder + '&' +
         'sortColumn=' + currentState.sortColumn + '&' +
         'sortOrder=' + currentState.sortOrder + '&' +
-        'showWontFix=' + currentState.showWontFix;
+        'showWontFix=' + currentState.showWontFix + '&' +
+        'showCorrectExpectations=' + currentState.showCorrectExpectations;
     }
 
     window.location.replace(newLocation);
-    // We don't need to regenerate the page if showWontFix is modified
-    // since we only need to modify a style element for that.
-    if (key != 'showWontFix')
-      generatePage();
+    generatePage();
   }
 
   function logTime(msg, startTime) {
