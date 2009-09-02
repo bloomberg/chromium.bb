@@ -172,6 +172,8 @@
         'controls/single_split_view.h',
         'controls/tabbed_pane/tabbed_pane.cc',
         'controls/tabbed_pane/tabbed_pane.h',
+        'controls/tabbed_pane/native_tabbed_pane_gtk.cc',
+        'controls/tabbed_pane/native_tabbed_pane_gtk.h',
         'controls/tabbed_pane/native_tabbed_pane_win.cc',
         'controls/tabbed_pane/native_tabbed_pane_win.h',
         'controls/tabbed_pane/native_tabbed_pane_wrapper.h',
