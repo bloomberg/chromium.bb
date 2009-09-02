@@ -17,6 +17,7 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/extensions/user_script.h"
@@ -182,7 +183,7 @@ void ExtensionsDOMHandler::HandleLoadMessage(const Value* value) {
       SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY),
       FilePath(), NULL, 0, FILE_PATH_LITERAL(""),
-      NULL, NULL);
+      dom_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
 }
 
 void ExtensionsDOMHandler::HandlePackMessage(const Value* value) {
