@@ -794,8 +794,16 @@ void Browser::Home(WindowOpenDisposition disposition) {
 void Browser::OpenCurrentURL() {
   UserMetrics::RecordAction(L"LoadURL", profile_);
   LocationBar* location_bar = window_->GetLocationBar();
+  WindowOpenDisposition open_disposition =
+      location_bar->GetWindowOpenDisposition();
+  if (open_disposition == CURRENT_TAB &&
+      tabstrip_model()->IsTabPinned(selected_index())) {
+    // To make pinned tabs feel more permanent any requests from the omnibox
+    // to open a url in the current tab result in creating a new tab.
+    open_disposition = NEW_FOREGROUND_TAB;
+  }
   OpenURLAtIndex(NULL, GURL(WideToUTF8(location_bar->GetInputString())), GURL(),
-                 location_bar->GetWindowOpenDisposition(),
+                 open_disposition,
                  location_bar->GetPageTransition(), -1, true);
 }
 
@@ -1440,7 +1448,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_NEW_PROFILE:           OpenNewProfileDialog();        break;
     case IDC_REPORT_BUG:            OpenBugReportDialog();         break;
 
-    case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();           break;
+    case IDC_SHOW_BOOKMARK_BAR:     FocusToolbar(); break;//ToggleBookmarkBar();           break;
     case IDC_SHOW_EXTENSION_SHELF:  ToggleExtensionShelf();        break;
 
     case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();         break;
