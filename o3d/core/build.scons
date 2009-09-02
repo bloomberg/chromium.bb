@@ -121,10 +121,12 @@ cross_inputs = [
 ]
 
 env.Append(CPPPATH=['$SKIA_DIR/include/core',
-                    '$SKIA_DIR/include/effects'])
+                    '$SKIA_DIR/include/effects'],
+           CPPDEFINES = [('O3D_PLUGIN_VERSION', '\\"$O3D_PLUGIN_VERSION\\"')])
 
 # Renderer and platform specific inputs.
 platform_inputs = []
+
 
 # Add a precompiled header declaration to the Windows environment.
 if env['TARGET_PLATFORM'] == 'WINDOWS':

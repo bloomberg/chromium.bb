@@ -143,12 +143,25 @@ TEST_F(MessageCommandsTest, MessageUpdateTexture2DRect) {
   EXPECT_EQ(10, msg2.msg.pitch);
 }
 
-TEST_F(MessageCommandsTest, MessageRenderTest) {
+TEST_F(MessageCommandsTest, MessageRender) {
   EXPECT_EQ(static_cast<int>(imc::RENDER), 7);
   EXPECT_EQ(0u, offsetof(MessageRender::Msg, message_id));
   MessageRender msg;
   EXPECT_EQ(imc::RENDER, msg.msg.message_id);
   EXPECT_EQ(4u, sizeof msg.msg);
+}
+
+TEST_F(MessageCommandsTest, MessageGetVersion) {
+  EXPECT_EQ(static_cast<int>(imc::GET_VERSION), 8);
+  EXPECT_EQ(0u, offsetof(MessageGetVersion::Msg, message_id));
+  MessageGetVersion msg;
+  EXPECT_EQ(imc::GET_VERSION, msg.msg.message_id);
+  EXPECT_EQ(4u, sizeof msg.msg);
+  const char* kVersion = "0.1.2.3";
+  MessageGetVersion::Response response(kVersion);
+  EXPECT_EQ(0u, offsetof(MessageGetVersion::ResponseData, version));
+  EXPECT_EQ(128u, sizeof(MessageGetVersion::ResponseData));  // NOLINT
+  EXPECT_STREQ(kVersion, response.data.version);
 }
 
 

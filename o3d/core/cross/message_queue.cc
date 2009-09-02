@@ -39,6 +39,7 @@
 #include <unistd.h>
 #endif
 #include "core/cross/message_queue.h"
+#include "core/cross/client_info.h"
 #include "core/cross/object_manager.h"
 #include "core/cross/bitmap.h"
 #include "core/cross/texture.h"
@@ -506,13 +507,13 @@ bool MessageQueue::ProcessMessageAllocateSharedMemory(
   }
 
   // Create a unique id for the shared memory buffer.
-  int32 buffer_id = next_shared_memory_id_++;
+  MessageAllocateSharedMemory::Response response(next_shared_memory_id_++);
 
   // Send the shared memory handle and the buffer id back to the client.
   nacl::MessageHeader response_header;
   nacl::IOVec id_vec;
-  id_vec.base = &buffer_id;
-  id_vec.length = sizeof(buffer_id);
+  id_vec.base = &response.data;
+  id_vec.length = sizeof(response.data);
 
   response_header.iov = &id_vec;
   response_header.iov_length = 1;
@@ -520,7 +521,7 @@ bool MessageQueue::ProcessMessageAllocateSharedMemory(
   response_header.handle_count = 1;
   int result = nacl::SendDatagram(client->client_handle(), &response_header, 0);
 
-  if (result != sizeof(buffer_id)) {
+  if (result != sizeof(response.data)) {
     LOG_IMC_ERROR("Failed to send shared memory handle back to the client");
     nacl::Unmap(shared_region, mem_size);
     nacl::Close(shared_memory);
@@ -528,7 +529,7 @@ bool MessageQueue::ProcessMessageAllocateSharedMemory(
   }
 
   // Register the newly created shared memory with the connected client.
-  client->RegisterSharedMemory(buffer_id,
+  client->RegisterSharedMemory(response.data.buffer_id,
                                shared_memory,
                                shared_region,
                                mem_size);
@@ -811,5 +812,46 @@ bool MessageQueue::ProcessMessageRender(
   }
   return true;
 }
+
+// Processes a request to get the O3D version.
+bool MessageQueue::ProcessMessageGetVersion(
+    ConnectedClient* client,
+    int message_length,
+    nacl::MessageHeader* header,
+    nacl::Handle* handles,
+    const MessageGetVersion::Msg& message) {
+  if (header->iov_length != 1 ||
+      header->handle_count != 0) {
+    LOG(ERROR) << "Malformed message for GET_VERSION";
+    return false;
+  }
+
+  ClientInfoManager* manager(service_locator_->GetService<ClientInfoManager>());
+  static const char* const kNullString = "";
+  const char* version = kNullString;
+  if (manager) {
+    version = manager->client_info().version().c_str();
+  }
+
+  // Send the version string.
+  DCHECK_LT(strlen(version),
+            MessageGetVersion::ResponseData::kMaxVersionLength);
+  MessageGetVersion::Response response(version);
+
+  nacl::MessageHeader response_header;
+  nacl::IOVec id_vec;
+  id_vec.base = &response.data;
+  id_vec.length = sizeof(response.data);
+
+  response_header.iov = &id_vec;
+  response_header.iov_length = 1;
+  response_header.handles = NULL;
+  response_header.handle_count = 0;
+  int result = nacl::SendDatagram(client->client_handle(), &response_header, 0);
+
+  return true;
+}
+
+
 
 }  // namespace o3d

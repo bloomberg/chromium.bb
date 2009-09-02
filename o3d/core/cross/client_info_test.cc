@@ -79,6 +79,14 @@ TEST_F(ClientInfoManagerTest, Basic) {
   EXPECT_FALSE(client_info_manager->client_info().software_renderer());
   EXPECT_FALSE(client_info_manager->client_info().non_power_of_two_textures());
 
+  int version[4] = { -1, -1, -1, -1 };
+  sscanf(client_info_manager->client_info().version().c_str(),
+         "%d.%d.%d.%d", &version[0], &version[1], &version[2], &version[3]);
+  EXPECT_NE(-1, version[0]);
+  EXPECT_NE(-1, version[1]);
+  EXPECT_NE(-1, version[2]);
+  EXPECT_NE(-1, version[3]);
+
   delete client_info_manager;
 }
 

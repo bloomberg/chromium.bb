@@ -61,6 +61,7 @@ O3D_PUSH_STRUCTURE_PACKING_1;
   OP(UNREGISTER_SHARED_MEMORY, MessageUnregisterSharedMemory) \
   OP(UPDATE_TEXTURE2D_RECT, MessageUpdateTexture2DRect) \
   OP(RENDER, MessageRender) \
+  OP(GET_VERSION, MessageGetVersion) \
 
 
 namespace imc {
@@ -123,15 +124,30 @@ struct MessageAllocateSharedMemory {
     int32 mem_size;
   };
 
+  // The response data.
+  struct ResponseData {
+    int32 buffer_id;
+  };
+
+  // A wrapper to manage the response data.
+  struct Response {
+   public:
+    Response(int32 buffer_id) {
+      data.buffer_id = buffer_id;
+    }
+
+    ResponseData data;
+  };
+
   MessageAllocateSharedMemory() {
     msg.message_id = Msg::kMessageId;
   }
 
   // Parameters:
-  //   in_mem_size: The number of bytes to allocate.
-  explicit MessageAllocateSharedMemory(int32 in_mem_size) {
+  //   mem_size: The number of bytes to allocate.
+  explicit MessageAllocateSharedMemory(int32 mem_size) {
     msg.message_id = Msg::kMessageId;
-    msg.mem_size = in_mem_size;
+    msg.mem_size = mem_size;
   }
 
   Msg msg;
@@ -171,26 +187,26 @@ struct MessageUpdateTexture2D {
   }
 
   // Parameters:
-  //   in_texture_id: The id of the texture to set.
-  //   in_level: The mip level of the texture to set.
-  //   in_shared_memory_id: The id of the shared memory the contains the data
+  //   texture_id: The id of the texture to set.
+  //   level: The mip level of the texture to set.
+  //   shared_memory_id: The id of the shared memory the contains the data
   //       to use to set the texture.
-  //   in_offset: The offset inside the shared memory where the texture data
+  //   offset: The offset inside the shared memory where the texture data
   //       starts.
-  //   in_number_of_bytes: The number of bytes to get out of shared memory.
+  //   number_of_bytes: The number of bytes to get out of shared memory.
   //       NOTE: this number MUST match the size of the texture. For example for
   //       an ARGB texture it must be mip_width * mip_height * 4 * sizeof(uint8)
-  MessageUpdateTexture2D(Id in_texture_id,
-                         int32 in_level,
-                         int32 in_shared_memory_id,
-                         int32 in_offset,
-                         int32 in_number_of_bytes) {
+  MessageUpdateTexture2D(Id texture_id,
+                         int32 level,
+                         int32 shared_memory_id,
+                         int32 offset,
+                         int32 number_of_bytes) {
     msg.message_id = Msg::kMessageId;
-    msg.texture_id = in_texture_id;
-    msg.level = in_level;
-    msg.shared_memory_id = in_shared_memory_id;
-    msg.offset = in_offset;
-    msg.number_of_bytes = in_number_of_bytes;
+    msg.texture_id = texture_id;
+    msg.level = level;
+    msg.shared_memory_id = shared_memory_id;
+    msg.offset = offset;
+    msg.number_of_bytes = number_of_bytes;
   }
 
   Msg msg;
@@ -211,9 +227,9 @@ struct MessageRegisterSharedMemory {
     msg.message_id = Msg::kMessageId;
   }
 
-  explicit MessageRegisterSharedMemory(int32 in_mem_size) {
+  explicit MessageRegisterSharedMemory(int32 mem_size) {
     msg.message_id = Msg::kMessageId;
-    msg.mem_size = in_mem_size;
+    msg.mem_size = mem_size;
   }
 
   Msg msg;
@@ -234,10 +250,10 @@ struct MessageUnregisterSharedMemory {
   }
 
   // Parameters:
-  //   in_buffer_id: The id of the buffer to unregister.
-  explicit MessageUnregisterSharedMemory(int32 in_buffer_id) {
+  //   buffer_id: The id of the buffer to unregister.
+  explicit MessageUnregisterSharedMemory(int32 buffer_id) {
     msg.message_id = Msg::kMessageId;
-    msg.buffer_id = in_buffer_id;
+    msg.buffer_id = buffer_id;
   }
 
   Msg msg;
@@ -286,36 +302,36 @@ struct MessageUpdateTexture2DRect {
   }
 
   // Parameters:
-  //   in_texture_id: The id of the texture to set.
-  //   in_level: The mip level of the texture to set.
-  //   in_x: The left edge of the rectangle to update in the texture.
-  //   in_y: The top edge of the rectangle to update in the texture.
-  //   in_width: The width of the rectangle to update in the texture.
-  //   in_height: The height of the rectangle to update in the texture.
-  //   in_shared_memory_id: The id of the shared memory the contains the data to
+  //   texture_id: The id of the texture to set.
+  //   level: The mip level of the texture to set.
+  //   x: The left edge of the rectangle to update in the texture.
+  //   y: The top edge of the rectangle to update in the texture.
+  //   width: The width of the rectangle to update in the texture.
+  //   height: The height of the rectangle to update in the texture.
+  //   shared_memory_id: The id of the shared memory the contains the data to
   //       use to set the texture.
-  //   in_offset: The offset inside the shared memory where the texture data
+  //   offset: The offset inside the shared memory where the texture data
   //       starts.
-  //   in_pitch: The number of bytes bytes across 1 row in the source data.
-  MessageUpdateTexture2DRect(Id in_texture_id,
-                             int32 in_level,
-                             int32 in_x,
-                             int32 in_y,
-                             int32 in_width,
-                             int32 in_height,
-                             int32 in_shared_memory_id,
-                             int32 in_offset,
-                             int32 in_pitch) {
+  //   pitch: The number of bytes bytes across 1 row in the source data.
+  MessageUpdateTexture2DRect(Id texture_id,
+                             int32 level,
+                             int32 x,
+                             int32 y,
+                             int32 width,
+                             int32 height,
+                             int32 shared_memory_id,
+                             int32 offset,
+                             int32 pitch) {
     msg.message_id = Msg::kMessageId;
-    msg.texture_id = in_texture_id;
-    msg.level = in_level;
-    msg.x = in_x;
-    msg.y = in_y;
-    msg.width = in_width;
-    msg.height = in_height;
-    msg.shared_memory_id = in_shared_memory_id;
-    msg.offset = in_offset;
-    msg.pitch = in_pitch;
+    msg.texture_id = texture_id;
+    msg.level = level;
+    msg.x = x;
+    msg.y = y;
+    msg.width = width;
+    msg.height = height;
+    msg.shared_memory_id = shared_memory_id;
+    msg.offset = offset;
+    msg.pitch = pitch;
   }
 
   Msg msg;
@@ -332,6 +348,44 @@ struct MessageRender {
   };
 
   MessageRender() {
+    msg.message_id = Msg::kMessageId;
+  }
+
+  Msg msg;
+};
+
+// Get the O3D version.
+struct MessageGetVersion {
+  // Message Content.
+  struct Msg {
+    static const imc::MessageId kMessageId = imc::GET_VERSION;
+
+    imc::MessageId message_id;
+  };
+
+  // The response data.
+  struct ResponseData {
+    static const size_t kMaxVersionLength = 128;
+    // a null terminated version string in the format "x.x.x.x" where x is an
+    // integer number. Note: There may be other data after the last digit which
+    // is currently undefined.
+    char version[kMaxVersionLength];
+  };
+
+  // A wrapper to manage the response data.
+  struct Response {
+   public:
+    Response(const char* version) {
+      strncpy(data.version, version,
+              std::min(strlen(version) + 1, sizeof(data.version)));
+      data.version[sizeof(data.version) - 1] = '\0';
+    }
+
+    ResponseData data;
+  };
+
+
+  MessageGetVersion() {
     msg.message_id = Msg::kMessageId;
   }
 

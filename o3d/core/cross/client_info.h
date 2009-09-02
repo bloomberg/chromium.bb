@@ -44,13 +44,7 @@ namespace o3d {
 // This class is used to report infomation about the client.
 class ClientInfo {
  public:
-  ClientInfo()
-      : num_objects_(0),
-        texture_memory_used_(0),
-        buffer_memory_used_(0),
-        software_renderer_(false),
-        non_power_of_two_textures_(false) {
-  }
+  ClientInfo();
 
   // The number of objects the client is currently tracking.
   int num_objects() const {
@@ -83,6 +77,11 @@ class ClientInfo {
     return non_power_of_two_textures_;
   }
 
+  // Gets the O3D version.
+  const String& version() const {
+    return version_;
+  }
+
  private:
   friend class ClientInfoManager;
 
@@ -91,6 +90,7 @@ class ClientInfo {
   int buffer_memory_used_;
   bool software_renderer_;
   bool non_power_of_two_textures_;
+  String version_;
 };
 
 // A class to manage the client info so other classes can easily look it up.

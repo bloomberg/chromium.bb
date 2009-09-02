@@ -13,6 +13,9 @@
       '../../<(gtestdir)',
       '../../<(nacldir)',
     ],
+    'defines': [
+      'O3D_PLUGIN_VERSION="<!(python version_info.py --version)"',
+    ],
     'conditions': [
       ['renderer == "d3d9" and OS == "win"',
         {

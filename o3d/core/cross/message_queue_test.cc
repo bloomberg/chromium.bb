@@ -33,6 +33,7 @@
 // Tests the functionality defined in MessageQueue.cc/h
 
 #include "core/cross/message_queue.h"
+#include "core/cross/client_info.h"
 #include "core/cross/object_manager.h"
 #include "core/cross/pack.h"
 #include "core/cross/error_status.h"
@@ -254,6 +255,9 @@ class TextureUpdateHelper {
 
   // Tells the renderer to render.
   bool Render();
+
+  // Gets the version
+  bool GetVersion();
 
  private:
   // Handle of the socket that's connected to o3d.
@@ -584,7 +588,49 @@ bool TextureUpdateHelper::Render() {
   // Send message.
   int result = nacl::SendDatagram(o3d_handle_, &header, 0);
   EXPECT_EQ(static_cast<int>(vec.length), result);
-  // Read back the boolean reply from the O3D plugin
+  return true;
+}
+
+bool TextureUpdateHelper::GetVersion() {
+  MessageGetVersion msg;
+  nacl::MessageHeader header;
+  nacl::IOVec vec;
+
+  vec.base = &msg.msg;
+  vec.length = sizeof(msg.msg);
+  header.iov = &vec;
+  header.iov_length = 1;
+  header.handles = NULL;
+  header.handle_count = 0;
+
+  // Send message.
+  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
+  EXPECT_EQ(static_cast<int>(vec.length), result);
+
+  // Wait for a message back from the server containing the version of O3D.
+  MessageGetVersion::ResponseData response;
+  nacl::MessageHeader reply_header;
+  nacl::IOVec version_vec;
+  version_vec.base = &response;
+  version_vec.length = sizeof(response);
+  reply_header.iov = &version_vec;
+  reply_header.iov_length = 1;
+  reply_header.handles = NULL;
+  reply_header.handle_count = 0;
+
+  result = nacl::ReceiveDatagram(o3d_handle_, &reply_header, 0);
+  EXPECT_EQ(version_vec.length, static_cast<unsigned>(result));
+  EXPECT_EQ(0, reply_header.flags & nacl::kMessageTruncated);
+  EXPECT_EQ(0U, reply_header.handle_count);
+  EXPECT_EQ(1U, reply_header.iov_length);
+
+  ClientInfoManager* manager(
+      g_service_locator->GetService<ClientInfoManager>());
+  EXPECT_TRUE(manager != NULL);
+  if (manager) {
+    EXPECT_EQ(0, manager->client_info().version().compare(response.version));
+  }
+
   return true;
 }
 
@@ -1145,7 +1191,7 @@ TEST_F(MessageQueueTest, ConcurrentSharedMemoryOperations) {
 
 namespace {
 
-// This helper class for Render test.
+// This is a helper class for Render test.
 class RenderTest : public PerThreadConnectedTest {
  private:
   int num_iterations_;
@@ -1212,6 +1258,52 @@ TEST_F(MessageQueueTest, Render) {
   RunTests(1, TimeDelta::FromSeconds(1), &provider);
   EXPECT_FALSE(CheckErrorExists());
   EXPECT_TRUE(renderer->need_to_render());
+}
+
+namespace {
+
+// This is a helper class for GetVersion test.
+class GetVersionTest : public PerThreadConnectedTest {
+ private:
+  int num_iterations_;
+
+ public:
+  explicit GetVersionTest(int num_iterations) {
+    num_iterations_ = num_iterations;
+  }
+
+  void Run(MessageQueue* queue, nacl::Handle socket_handle) {
+    String socket_addr = queue->GetSocketAddress();
+    TextureUpdateHelper helper;
+    if (!helper.ConnectToO3D(socket_addr.c_str(), socket_handle)) {
+      FAIL_TEST("Failed to connect to O3D");
+    }
+
+    for (int i = 0; i < num_iterations_; i++) {
+      bool result = helper.GetVersion();
+      if (!result) {
+        FAIL_TEST("Failed to request a GetVersion");
+      }
+    }
+
+    Pass();
+  }
+};
+
+}  // anonymous namespace.
+
+// Tests requesting a GetVersion.
+TEST_F(MessageQueueTest, GetVersion) {
+  class Provider : public TestProvider {
+   public:
+    virtual PerThreadConnectedTest* CreateTest() {
+      return new GetVersionTest(1);
+    }
+  };
+
+  Provider provider;
+  RunTests(1, TimeDelta::FromSeconds(1), &provider);
+  EXPECT_FALSE(CheckErrorExists());
 }
 
 }  // namespace o3d
