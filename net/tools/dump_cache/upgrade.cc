@@ -4,10 +4,16 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/entry_impl.h"
+#include "net/http/http_cache.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
+#include "net/tools/dump_cache/cache_dumper.h"
 
 namespace {
 
@@ -102,7 +108,7 @@ enum {
 
 class BaseSM : public MessageLoopForIO::IOHandler {
  public:
-  BaseSM(disk_cache::BackendImpl* cache, HANDLE channel);
+  BaseSM(HANDLE channel);
   virtual ~BaseSM();
 
  protected:
@@ -113,7 +119,6 @@ class BaseSM : public MessageLoopForIO::IOHandler {
 
   MessageLoopForIO::IOContext in_context_;
   MessageLoopForIO::IOContext out_context_;
-  disk_cache::BackendImpl* cache_;
   disk_cache::EntryImpl* entry_;
   HANDLE channel_;
   int state_;
@@ -125,9 +130,8 @@ class BaseSM : public MessageLoopForIO::IOHandler {
   DISALLOW_COPY_AND_ASSIGN(BaseSM);
 };
 
-BaseSM::BaseSM(disk_cache::BackendImpl* cache, HANDLE channel)
-      : cache_(cache), entry_(NULL), channel_(channel), state_(0),
-        pending_count_(0) {
+BaseSM::BaseSM(HANDLE channel)
+      : entry_(NULL), channel_(channel), state_(0), pending_count_(0) {
   in_buffer_.reset(new char[kChannelSize]);
   out_buffer_.reset(new char[kChannelSize]);
   input_ = reinterpret_cast<IoBuffer*>(in_buffer_.get());
@@ -195,9 +199,12 @@ bool BaseSM::IsPending() {
 
 class MasterSM : public BaseSM {
  public:
-  MasterSM(disk_cache::BackendImpl* cache, HANDLE channel)
-      : BaseSM(cache, channel) {}
-  virtual ~MasterSM() {}
+   MasterSM(const std::wstring& path, HANDLE channel, bool dump_to_disk)
+      : BaseSM(channel), path_(path), dump_to_disk_(dump_to_disk) {
+  }
+  virtual ~MasterSM() {
+    delete writer_;
+  }
 
   bool DoInit();
   virtual void OnIOCompleted(MessageLoopForIO::IOContext* context,
@@ -236,6 +243,10 @@ class MasterSM : public BaseSM {
   int bytes_remaining_;
   int offset_;
   int copied_entries_;
+  scoped_ptr<disk_cache::BackendImpl> cache_;
+  CacheDumpWriter* writer_;
+  const std::wstring& path_;
+  bool dump_to_disk_;
 };
 
 void MasterSM::OnIOCompleted(MessageLoopForIO::IOContext* context,
@@ -286,6 +297,19 @@ void MasterSM::OnIOCompleted(MessageLoopForIO::IOContext* context,
 bool MasterSM::DoInit() {
   DEBUGMSG("Master DoInit\n");
   DCHECK(state_ == MASTER_INITIAL);
+
+  if (dump_to_disk_) {
+    writer_ = new DiskDumper(path_);
+  } else {
+    cache_.reset(new disk_cache::BackendImpl(path_));
+    if (!cache_->Init()) {
+      printf("Unable to initialize new files\n");
+      return false;
+    }
+    writer_ = new CacheDumper(cache_.get());
+  }
+  if (!writer_)
+    return false;
 
   copied_entries_ = 0;
   remote_entry_ = 0;
@@ -343,17 +367,20 @@ void MasterSM::DoGetKey(int bytes_read) {
 
   std::string key(input_->buffer);
   DCHECK(key.size() == input_->msg.buffer_bytes - 1);
-  if (!cache_->CreateEntry(key,
-                           reinterpret_cast<disk_cache::Entry**>(&entry_))) {
+
+  if (!writer_->CreateEntry(key,
+                            reinterpret_cast<disk_cache::Entry**>(&entry_))) {
     printf("Skipping entry \"%s\" (name conflict!)\n", key.c_str());
     return SendGetPrevEntry();
   }
 
-  if (key.size() < 60) {
-    DEBUGMSG("Entry \"%s\" created\n", key.c_str());
-  } else {
-    DEBUGMSG("Entry (long name) created\n", key.c_str());
+  if (key.size() >= 64) {
+    key[60] = '.';
+    key[61] = '.';
+    key[62] = '.';
+    key[63] = '\0';
   }
+  DEBUGMSG("Entry \"%s\" created\n", key.c_str());
   state_ = MASTER_GET_USE_TIMES;
   Message msg;
   msg.command = GET_USE_TIMES;
@@ -403,8 +430,7 @@ void MasterSM::DoGetDataSize() {
 void MasterSM::CloseEntry() {
   DEBUGMSG("Master CloseEntry\n");
   printf("%c\r", copied_entries_ % 2 ? 'x' : '+');
-  entry_->SetTimes(last_used_, last_modified_);
-  entry_->Close();
+  writer_->CloseEntry(entry_, last_used_, last_modified_);
   entry_ = NULL;
   copied_entries_++;
   SendGetPrevEntry();
@@ -447,8 +473,7 @@ void MasterSM::DoReadData(int bytes_read) {
 
   scoped_refptr<net::WrappedIOBuffer> buf =
       new net::WrappedIOBuffer(input_->buffer);
-  if (read_size != entry_->WriteData(stream_, offset_, buf, read_size, NULL,
-                                     false))
+  if (!writer_->WriteEntry(entry_, stream_, offset_, buf, read_size))
     return Fail();
 
   offset_ += read_size;
@@ -482,8 +507,15 @@ void MasterSM::Fail() {
 
 class SlaveSM : public BaseSM {
  public:
-  SlaveSM(disk_cache::BackendImpl* cache, HANDLE channel)
-      : BaseSM(cache, channel), iterator_(NULL) {}
+  SlaveSM(const std::wstring& path, HANDLE channel)
+      : BaseSM(channel), iterator_(NULL) {
+    cache_.reset(new disk_cache::BackendImpl(path));
+    if (!cache_->Init()) {
+      printf("Unable to open cache files\n");
+      return;
+    }
+    cache_->SetUpgradeMode();
+  }
   virtual ~SlaveSM();
 
   bool DoInit();
@@ -509,6 +541,8 @@ class SlaveSM : public BaseSM {
   void Fail();
 
   void* iterator_;
+
+  scoped_ptr<disk_cache::BackendImpl> cache_;
 };
 
 SlaveSM::~SlaveSM() {
@@ -760,15 +794,10 @@ HANDLE CreateServer(std::wstring* pipe_number) {
 }
 
 // This is the controller process for an upgrade operation.
-int Upgrade(const std::wstring& output_path, HANDLE pipe) {
+int CopyCache(const std::wstring& output_path, HANDLE pipe, bool copy_to_text) {
   MessageLoop loop(MessageLoop::TYPE_IO);
-  disk_cache::BackendImpl cache(output_path);
-  if (!cache.Init()) {
-    printf("Unable to initialize new files\n");
-    return -1;
-  }
 
-  MasterSM master(&cache, pipe);
+  MasterSM master(output_path, pipe, copy_to_text);
   if (!master.DoInit()) {
     printf("Unable to talk with the helper\n");
     return -1;
@@ -788,14 +817,7 @@ int RunSlave(const std::wstring& input_path, const std::wstring& pipe_number) {
     return -1;
   }
 
-  disk_cache::BackendImpl cache(input_path);
-  if (!cache.Init()) {
-    printf("Unable to open cache files\n");
-    return -1;
-  }
-  cache.SetUpgradeMode();
-
-  SlaveSM slave(&cache, pipe);
+  SlaveSM slave(input_path, pipe);
   if (!slave.DoInit()) {
     printf("Unable to talk with the main process\n");
     return -1;
