@@ -1,3 +1,7 @@
 # Update of SP by addressing writeback.  Does not require a mask.
 e5bd0042  # ldral r0, [r13, #0x42]!
 e0800000  # addal r0, r0, r0
+
+# Load to SP, followed by unconditional mask.
+e5b0d042  # ldral r13, [r0, #0x42]!
+e3cdd480  # bical r13, r13, #0x80000000

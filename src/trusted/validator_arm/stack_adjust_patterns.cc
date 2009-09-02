@@ -56,13 +56,6 @@ class ValidatorStackAdjustPattern : public ValidatorPattern {
 ValidatorStackAdjustPattern::ValidatorStackAdjustPattern()
     : ValidatorPattern("stack adjustment", 2, 0) {}
 
-bool ValidatorStackAdjustPattern::MayBeUnsafe(const NcDecodeState &state) {
-  const NcDecodedInstruction& inst = state.CurrentInstruction();
-  // Check that sp modified, and not special mask instruction.
-  return GetBit(RegisterSets(&inst), SP_INDEX) &&
-      !GetBit(RegisterSetIncremented(&inst), SP_INDEX);
-}
-
 /**
  * Checks whether the instruction pointed to in the given state matches the
  * form of an in-place SP mask:
@@ -78,6 +71,17 @@ static bool isInPlaceStackMask(const NcDecodeState &state) {
       SP_INDEX == inst.values.arg1 &&
       inst.values.arg1 == inst.values.arg2 &&
       mask == kSpClearBitMask;
+}
+
+bool ValidatorStackAdjustPattern::MayBeUnsafe(const NcDecodeState &state) {
+  const NcDecodedInstruction& inst = state.CurrentInstruction();
+  // Check that sp modified, and not special mask instruction.
+  if (!GetBit(RegisterSets(&inst), SP_INDEX) ||
+      GetBit(RegisterSetIncremented(&inst), SP_INDEX)) {
+    return false;
+  }
+
+  return !isInPlaceStackMask(state);
 }
 
 bool ValidatorStackAdjustPattern::IsSafe(const NcDecodeState &state) {

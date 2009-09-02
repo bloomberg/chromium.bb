@@ -1,0 +1,12 @@
+
+validate: error: Unsafe use of stack adjustment instruction (not followed by BIC on 80000000):
+	       0:	e590d042 		ldr	sp, [r0, #66]
+
+
+validate: error: Unsafe use of stack adjustment instruction (not followed by BIC on 80000000):
+	       8:	e081d003 		add	sp, r1, r3
+
+
+validate: error: Unsafe use of stack adjustment instruction (not followed by BIC on 80000000):
+	      10:	e081d003 		add	sp, r1, r3
+

@@ -2,3 +2,7 @@
 # condition.
 03c552FF  # biceq r5, r5, #0xF000000F
 e12fff15  # bx r5
+
+# An indirect branch with a BIC that does the wrong thing.
+e1c12263 # bic r5, rY, rZ -- not the right BIC form.
+e12fff15 # bx r5

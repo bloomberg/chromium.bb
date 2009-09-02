@@ -1,4 +1,0 @@
-
-validate: error: Unsafe use of stack adjustment instruction (not followed by BIC on 80000000):
-	       0:	e590d042 		ldr	sp, [r0, #66]
-

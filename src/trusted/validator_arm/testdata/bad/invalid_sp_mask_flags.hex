@@ -1,3 +1,0 @@
-# Writing SP using data processing op, with a mask that might not execute.
-e081d003  # addal r13, r1, r3
-03cdd480  # biceq r13, r13, #0x80000000

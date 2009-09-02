@@ -1,2 +1,4 @@
        0:	03c552ff 	(eq)	bic	r5, r5, #-268435441
        4:	e12fff15 		bx	r5
+       8:	e1c12263 		bic	r2, r1, r3, ror #4
+       c:	e12fff15 		bx	r5
