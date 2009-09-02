@@ -245,6 +245,7 @@ class SkFileDescriptorStream : public SkStream {
             return;
 
         void* memory = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
+        close(fd);
         if (memory == MAP_FAILED)
             return;
 
