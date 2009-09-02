@@ -220,8 +220,10 @@ devtools.DebuggerAgent.prototype.pauseExecution = function() {
 /**
  * @param {number} sourceId Id of the script fot the breakpoint.
  * @param {number} line Number of the line for the breakpoint.
+ * @param {?string} condition The breakpoint condition.
  */
-devtools.DebuggerAgent.prototype.addBreakpoint = function(sourceId, line) {
+devtools.DebuggerAgent.prototype.addBreakpoint = function(
+    sourceId, line, condition) {
   var script = this.parsedScripts_[sourceId];
   if (!script) {
     return;
@@ -247,7 +249,8 @@ devtools.DebuggerAgent.prototype.addBreakpoint = function(sourceId, line) {
       'groupId': this.contextId_,
       'type': 'script',
       'target': script.getUrl(),
-      'line': line
+      'line': line,
+      'condition': condition
     };
   } else {
     var breakpointInfo = script.getBreakpointInfo(line);
@@ -262,7 +265,8 @@ devtools.DebuggerAgent.prototype.addBreakpoint = function(sourceId, line) {
       'groupId': this.contextId_,
       'type': 'scriptId',
       'target': sourceId,
-      'line': line
+      'line': line,
+      'condition': condition
     };
   }
 
@@ -271,11 +275,15 @@ devtools.DebuggerAgent.prototype.addBreakpoint = function(sourceId, line) {
   this.requestNumberToBreakpointInfo_[cmd.getSequenceNumber()] = breakpointInfo;
 
   devtools.DebuggerAgent.sendCommand_(cmd);
+  // Force v8 execution so that it gets to processing the requested command.
+  // It is necessary for being able to change a breakpoint just after it
+  // has been created (since we need an existing breakpoint id for that).
+  devtools.tools.evaluateJavaScript(devtools.DebuggerAgent.VOID_SCRIPT);
 };
 
 
 /**
- * @param {number} sourceId Id of the script fot the breakpoint.
+ * @param {number} sourceId Id of the script for the breakpoint.
  * @param {number} line Number of the line for the breakpoint.
  */
 devtools.DebuggerAgent.prototype.removeBreakpoint = function(sourceId, line) {
@@ -311,6 +319,40 @@ devtools.DebuggerAgent.prototype.removeBreakpoint = function(sourceId, line) {
   // 'setbreakpoint' response handler when we learn the id.
   if (id != -1) {
     this.requestClearBreakpoint_(id);
+  }
+};
+
+
+/**
+ * @param {number} sourceId Id of the script for the breakpoint.
+ * @param {number} line Number of the line for the breakpoint.
+ * @param {?string} condition New breakpoint condition.
+ */
+devtools.DebuggerAgent.prototype.updateBreakpoint = function(
+    sourceId, line, condition) {
+  var script = this.parsedScripts_[sourceId];
+  if (!script) {
+    return;
+  }
+
+  line = devtools.DebuggerAgent.webkitToV8LineNumber_(line);
+
+  var breakpointInfo;
+  if (script.getUrl()) {
+    var breakpoints = this.urlToBreakpoints_[script.getUrl()];
+    breakpointInfo = breakpoints[line];
+  } else {
+    breakpointInfo = script.getBreakpointInfo(line);
+  }
+
+  var id = breakpointInfo.getV8Id();
+
+  // If we don't know id of this breakpoint in the v8 debugger we cannot send
+  // the 'changebreakpoint' request.
+  if (id != -1) {
+    // TODO(apavlov): make use of the real values for 'enabled' and
+    // 'ignoreCount' when appropriate.
+    this.requestChangeBreakpoint_(id, true, condition, null);
   }
 };
 
@@ -584,6 +626,25 @@ devtools.DebuggerAgent.prototype.requestClearBreakpoint_ = function(
     breakpointId) {
   var cmd = new devtools.DebugCommand('clearbreakpoint', {
     'breakpoint': breakpointId
+  });
+  devtools.DebuggerAgent.sendCommand_(cmd);
+};
+
+
+/**
+ * Changes breakpoint parameters in the v8 debugger.
+ * @param {number} breakpointId Id of the breakpoint in the v8 debugger.
+ * @param {boolean} enabled Whether to enable the breakpoint.
+ * @param {?string} condition New breakpoint condition.
+ * @param {number} ignoreCount New ignore count for the breakpoint.
+ */
+devtools.DebuggerAgent.prototype.requestChangeBreakpoint_ = function(
+    breakpointId, enabled, condition, ignoreCount) {
+  var cmd = new devtools.DebugCommand('changebreakpoint', {
+    'breakpoint': breakpointId,
+    'enabled': enabled,
+    'condition': condition,
+    'ignoreCount': ignoreCount
   });
   devtools.DebuggerAgent.sendCommand_(cmd);
 };

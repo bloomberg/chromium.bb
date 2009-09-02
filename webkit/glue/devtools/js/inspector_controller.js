@@ -301,9 +301,10 @@ devtools.InspectorController.prototype.disableDebugger = function() {
  * Adds breakpoint to the given line of the source with given ID.
  * @param {string} sourceID Source Id to add breakpoint to.
  * @param {number} line Line number to add breakpoint to.
+ * @param {?string} condition The breakpoint condition.
  */
 devtools.InspectorController.prototype.addBreakpoint =
-    function(sourceID, line) {
+    function(sourceID, line, condition) {
 };
 
 
@@ -314,6 +315,17 @@ devtools.InspectorController.prototype.addBreakpoint =
  */
 devtools.InspectorController.prototype.removeBreakpoint =
     function(sourceID, line) {
+};
+
+
+/**
+ * Sets a breakpoint condition given a line of the source and an ID.
+ * @param {string} sourceID Source Id to remove breakpoint from.
+ * @param {number} line Line number to remove breakpoint from.
+ * @param {?string} condition New breakpoint condition.
+ */
+devtools.InspectorController.prototype.updateBreakpoint =
+    function(sourceID, line, condition) {
 };
 
 

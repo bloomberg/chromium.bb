@@ -159,8 +159,8 @@ devtools.InspectorControllerImpl.prototype.debuggerEnabled = function() {
 
 
 devtools.InspectorControllerImpl.prototype.addBreakpoint = function(
-    sourceID, line) {
-  devtools.tools.getDebuggerAgent().addBreakpoint(sourceID, line);
+    sourceID, line, condition) {
+  devtools.tools.getDebuggerAgent().addBreakpoint(sourceID, line, condition);
 };
 
 
@@ -169,6 +169,11 @@ devtools.InspectorControllerImpl.prototype.removeBreakpoint = function(
   devtools.tools.getDebuggerAgent().removeBreakpoint(sourceID, line);
 };
 
+devtools.InspectorControllerImpl.prototype.updateBreakpoint = function(
+    sourceID, line, condition) {
+  devtools.tools.getDebuggerAgent().updateBreakpoint(
+      sourceID, line, condition);
+};
 
 devtools.InspectorControllerImpl.prototype.pauseInDebugger = function() {
   devtools.tools.getDebuggerAgent().pauseExecution();
