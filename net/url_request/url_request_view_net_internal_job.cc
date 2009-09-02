@@ -9,8 +9,10 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
+#include "net/base/host_cache.h"
 #include "net/base/load_log_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 
@@ -189,7 +191,66 @@ class HostResolverCacheSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    out->append("TODO");
+    const net::HostCache* host_cache = context->host_resolver()->GetHostCache();
+
+    if (!host_cache || host_cache->caching_is_disabled()) {
+      out->append("<i>Caching is disabled.</i>");
+      return;
+    }
+
+    out->append(StringPrintf("<ul><li>Size: %u</li>"
+                             "<li>Capacity: %u</li>"
+                             "<li>Time to live (ms): %u</li></ul>",
+                             host_cache->size(),
+                             host_cache->max_entries(),
+                             host_cache->cache_duration_ms()));
+
+    out->append("<table border=1>"
+                "<tr>"
+                "<th>Host</th>"
+                "<th>First address</th>"
+                "<th>Time to live (ms)</th>"
+                "</tr>");
+
+    for (net::HostCache::EntryMap::const_iterator it =
+             host_cache->entries().begin();
+         it != host_cache->entries().end();
+         ++it) {
+      const std::string& host = it->first;
+      const net::HostCache::Entry* entry = it->second.get();
+
+      if (entry->error == net::OK) {
+        // Note that ttl_ms may be negative, for the cases where entries have
+        // expired but not been garbage collected yet.
+        int ttl_ms = static_cast<int>(
+            (entry->expiration - base::TimeTicks::Now()).InMilliseconds());
+
+        // Color expired entries blue.
+        if (ttl_ms > 0) {
+          out->append("<tr>");
+        } else {
+          out->append("<tr style='color:blue'>");
+        }
+
+        std::string address_str =
+            net::NetAddressToString(entry->addrlist.head());
+
+        out->append(StringPrintf("<td>%s</td><td>%s</td><td>%d</td></tr>",
+                                 EscapeForHTML(host).c_str(),
+                                 EscapeForHTML(address_str).c_str(),
+                                 ttl_ms));
+      } else {
+        // This was an entry that failed to be resolved.
+        // Color negative entries red.
+        out->append(StringPrintf(
+            "<tr style='color:red'><td>%s</td>"
+            "<td colspan=2>%s</td></tr>",
+            EscapeForHTML(host).c_str(),
+            EscapeForHTML(net::ErrorToString(entry->error)).c_str()));
+      }
+    }
+
+    out->append("</table>");
   }
 };
 
