@@ -226,6 +226,13 @@ TEST_F(NPUtilsTest, CanCopyStringSmartVariant) {
             v2.value.stringValue.UTF8Characters);
 }
 
+TEST_F(NPUtilsTest, CanReleaseSmartVariant) {
+  SmartNPVariant variant(std::string("hello"));
+  EXPECT_FALSE(variant.IsVoid());
+  variant.Release();
+  EXPECT_TRUE(variant.IsVoid());
+}
+
 template <typename T>
 class VariantMatcher : public testing::MatcherInterface<const NPVariant&> {
  public:
@@ -272,7 +279,7 @@ TEST_F(NPUtilsTest, CanInvokeVoidMethodWithNativeTypes) {
 
   VOID_TO_NPVARIANT(variant_);
 
-  EXPECT_CALL(*object, Invoke(name, Pointee(VariantMatches<int>(7)), 1, _))
+  EXPECT_CALL(*object, Invoke(name, Pointee(VariantMatches<int32>(7)), 1, _))
     .WillOnce(DoAll(SetArgumentPointee<3>(variant_),
                     Return(true)));
 
@@ -286,7 +293,7 @@ TEST_F(NPUtilsTest, InvokeVoidMethodCanFail) {
 
   VOID_TO_NPVARIANT(variant_);
 
-  EXPECT_CALL(*object, Invoke(name, Pointee(VariantMatches<int>(7)), 1, _))
+  EXPECT_CALL(*object, Invoke(name, Pointee(VariantMatches<int32>(7)), 1, _))
     .WillOnce(DoAll(SetArgumentPointee<3>(variant_),
                     Return(false)));
 
@@ -296,11 +303,11 @@ TEST_F(NPUtilsTest, InvokeVoidMethodCanFail) {
 TEST_F(NPUtilsTest, CanInvokeNonVoidMethodWithNativeTypes) {
   NPIdentifier name = NPBrowser::get()->GetStringIdentifier("foo");
   NPObjectPointer<MockBaseNPObject> object =
-      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);;
+      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);
 
   DOUBLE_TO_NPVARIANT(1.5, variant_);
 
-  EXPECT_CALL(*object, Invoke(name, Pointee(VariantMatches<int>(7)), 1, _))
+  EXPECT_CALL(*object, Invoke(name, Pointee(VariantMatches<int32>(7)), 1, _))
     .WillOnce(DoAll(SetArgumentPointee<3>(variant_),
                     Return(true)));
 
@@ -312,11 +319,11 @@ TEST_F(NPUtilsTest, CanInvokeNonVoidMethodWithNativeTypes) {
 TEST_F(NPUtilsTest, InvokeNonVoidMethodCanFail) {
   NPIdentifier name = NPBrowser::get()->GetStringIdentifier("foo");
   NPObjectPointer<MockBaseNPObject> object =
-      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);;
+      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);
 
   DOUBLE_TO_NPVARIANT(1.5, variant_);
 
-  EXPECT_CALL(*object, Invoke(name, Pointee(VariantMatches<int>(7)), 1, _))
+  EXPECT_CALL(*object, Invoke(name, Pointee(VariantMatches<int32>(7)), 1, _))
     .WillOnce(DoAll(SetArgumentPointee<3>(variant_),
                     Return(false)));
 
@@ -327,11 +334,11 @@ TEST_F(NPUtilsTest, InvokeNonVoidMethodCanFail) {
 TEST_F(NPUtilsTest, InvokeNonVoidMethodFailsIfResultIsIncompatible) {
   NPIdentifier name = NPBrowser::get()->GetStringIdentifier("foo");
   NPObjectPointer<MockBaseNPObject> object =
-      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);;
+      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);
 
   DOUBLE_TO_NPVARIANT(1.5, variant_);
 
-  EXPECT_CALL(*object, Invoke(name, Pointee(VariantMatches<int>(7)), 1, _))
+  EXPECT_CALL(*object, Invoke(name, Pointee(VariantMatches<int32>(7)), 1, _))
     .WillOnce(DoAll(SetArgumentPointee<3>(variant_),
                     Return(true)));
 
@@ -353,7 +360,7 @@ TEST_F(NPUtilsTest, CanDetermineIfObjectHasProperty) {
 TEST_F(NPUtilsTest, CanGetPropertyValue) {
   NPIdentifier name = NPBrowser::get()->GetStringIdentifier("foo");
   NPObjectPointer<MockBaseNPObject> object =
-      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);;
+      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);
 
   DOUBLE_TO_NPVARIANT(1.5, variant_);
 
@@ -365,10 +372,10 @@ TEST_F(NPUtilsTest, CanGetPropertyValue) {
   EXPECT_TRUE(NPGetProperty(NULL, object, "foo", &r));
 }
 
-TEST_F(NPUtilsTest, ReportsFailureIfResultTypeIsDifferent) {
+TEST_F(NPUtilsTest, NPGetPropertyReportsFailureIfResultTypeIsDifferent) {
   NPIdentifier name = NPBrowser::get()->GetStringIdentifier("foo");
   NPObjectPointer<MockBaseNPObject> object =
-      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);;
+      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);
 
   DOUBLE_TO_NPVARIANT(1.5, variant_);
 
@@ -380,16 +387,49 @@ TEST_F(NPUtilsTest, ReportsFailureIfResultTypeIsDifferent) {
   EXPECT_FALSE(NPGetProperty(NULL, object, "foo", &r));
 }
 
-TEST_F(NPUtilsTest, ReportsFailureFromGetProperty) {
+TEST_F(NPUtilsTest, NPGetPropertyReportsFailureFromGetProperty) {
   NPIdentifier name = NPBrowser::get()->GetStringIdentifier("foo");
   NPObjectPointer<MockBaseNPObject> object =
-      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);;
+      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);
 
   EXPECT_CALL(*object, GetProperty(name, _))
     .WillOnce(Return(false));
 
   double r;
   EXPECT_FALSE(NPGetProperty(NULL, object, "foo", &r));
+}
+
+TEST_F(NPUtilsTest, CanSetPropertyValue) {
+  NPIdentifier name = NPBrowser::get()->GetStringIdentifier("foo");
+  NPObjectPointer<MockBaseNPObject> object =
+      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);
+
+  EXPECT_CALL(*object, SetProperty(name, Pointee(VariantMatches(1.5))))
+    .WillOnce(Return(true));
+
+  EXPECT_TRUE(NPSetProperty(NULL, object, "foo", 1.5));
+}
+
+TEST_F(NPUtilsTest, NPSetPropertyReportsFailureFromSetProperty) {
+  NPIdentifier name = NPBrowser::get()->GetStringIdentifier("foo");
+  NPObjectPointer<MockBaseNPObject> object =
+      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);
+
+  EXPECT_CALL(*object, SetProperty(name, Pointee(VariantMatches(1.5))))
+    .WillOnce(Return(false));
+
+  EXPECT_FALSE(NPSetProperty(NULL, object, "foo", 1.5));
+}
+
+TEST_F(NPUtilsTest, CanRemovePropertyValue) {
+  NPIdentifier name = NPBrowser::get()->GetStringIdentifier("foo");
+  NPObjectPointer<MockBaseNPObject> object =
+      NPCreateObject<StrictMock<MockBaseNPObject> >(NULL);
+
+  EXPECT_CALL(*object, RemoveProperty(name))
+    .WillOnce(Return(true));
+
+  EXPECT_TRUE(NPRemoveProperty(NULL, object, "foo"));
 }
 
 }  // namespace gpu_plugin

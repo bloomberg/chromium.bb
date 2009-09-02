@@ -72,6 +72,19 @@ bool StubNPBrowser::GetProperty(NPP npp,
   return object->_class->getProperty(object, name, result);
 }
 
+bool StubNPBrowser::SetProperty(NPP npp,
+                            NPObject* object,
+                            NPIdentifier name,
+                            const NPVariant* result) {
+  return object->_class->setProperty(object, name, result);
+}
+
+bool StubNPBrowser::RemoveProperty(NPP npp,
+                                   NPObject* object,
+                                   NPIdentifier name) {
+  return object->_class->removeProperty(object, name);
+}
+
 bool StubNPBrowser::HasMethod(NPP npp,
                               NPObject* object,
                               NPIdentifier name) {

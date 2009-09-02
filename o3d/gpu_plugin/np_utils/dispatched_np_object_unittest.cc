@@ -66,7 +66,7 @@ class MockDispatchedNPObject : public DispatchedNPObject {
   NP_UTILS_END_DISPATCHER_CHAIN
 };
 
-class NPObjectDispatcherTest : public testing::Test {
+class DispatchedNPObjectTest : public testing::Test {
  protected:
   virtual void SetUp() {
     object_ = NPCreateObject<StrictMock<MockDispatchedNPObject> >(NULL);
@@ -85,7 +85,7 @@ class NPObjectDispatcherTest : public testing::Test {
   NPObjectPointer<BaseNPObject> passed_object_;
 };
 
-TEST_F(NPObjectDispatcherTest, CannotInvokeMissingFunction) {
+TEST_F(DispatchedNPObjectTest, CannotInvokeMissingFunction) {
   EXPECT_FALSE(object_->Invoke(
       NPBrowser::get()->GetStringIdentifier("missing"),
       NULL,
@@ -94,7 +94,7 @@ TEST_F(NPObjectDispatcherTest, CannotInvokeMissingFunction) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnNoParams) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnNoParams) {
   EXPECT_CALL(*object_, VoidReturnNoParams());
 
   EXPECT_TRUE(object_->Invoke(
@@ -105,7 +105,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnNoParams) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest,
+TEST_F(DispatchedNPObjectTest,
        CannotInvokeVoidReturnNoParamsWithTooManyParams) {
   EXPECT_FALSE(object_->Invoke(
       NPBrowser::get()->GetStringIdentifier("voidReturnNoParams"),
@@ -115,7 +115,7 @@ TEST_F(NPObjectDispatcherTest,
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnIntParam) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnIntParam) {
   EXPECT_CALL(*object_, VoidReturnIntParam(7));
 
   INT32_TO_NPVARIANT(7, args_[0]);
@@ -128,7 +128,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnIntParam) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnBoolParam) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnBoolParam) {
   EXPECT_CALL(*object_, VoidReturnBoolParam(true));
 
   BOOLEAN_TO_NPVARIANT(true, args_[0]);
@@ -141,7 +141,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnBoolParam) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnFloatParamWithDoubleParam) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnFloatParamWithDoubleParam) {
   EXPECT_CALL(*object_, VoidReturnFloatParam(7.0f));
 
   DOUBLE_TO_NPVARIANT(7.0, args_[0]);
@@ -154,7 +154,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnFloatParamWithDoubleParam) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnFloatParamWithIntParam) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnFloatParamWithIntParam) {
   EXPECT_CALL(*object_, VoidReturnFloatParam(7.0f));
 
   INT32_TO_NPVARIANT(7, args_[0]);
@@ -167,7 +167,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnFloatParamWithIntParam) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnDoubleParamWithDoubleParam) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnDoubleParamWithDoubleParam) {
   EXPECT_CALL(*object_, VoidReturnDoubleParam(7.0));
 
   DOUBLE_TO_NPVARIANT(7.0, args_[0]);
@@ -180,7 +180,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnDoubleParamWithDoubleParam) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnDoubleParamWithIntParam) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnDoubleParamWithIntParam) {
   EXPECT_CALL(*object_, VoidReturnDoubleParam(7.0f));
 
   INT32_TO_NPVARIANT(7, args_[0]);
@@ -193,7 +193,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnDoubleParamWithIntParam) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnStringParam) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnStringParam) {
   EXPECT_CALL(*object_, VoidReturnStringParam(std::string("hello")));
 
   STRINGZ_TO_NPVARIANT("hello", args_[0]);
@@ -206,7 +206,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnStringParam) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnObjectParamWithObject) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnObjectParamWithObject) {
   EXPECT_CALL(*object_, VoidReturnObjectParam(passed_object_));
 
   OBJECT_TO_NPVARIANT(passed_object_.Get(), args_[0]);
@@ -219,7 +219,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnObjectParamWithObject) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnObjectParamWithNull) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnObjectParamWithNull) {
   EXPECT_CALL(
       *object_,
       VoidReturnObjectParam(NPObjectPointer<BaseNPObject>()));
@@ -234,7 +234,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnObjectParamWithNull) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnTwoParams) {
+TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnTwoParams) {
   EXPECT_CALL(*object_, VoidReturnTwoParams(false, 7));
 
   BOOLEAN_TO_NPVARIANT(false, args_[0]);
@@ -248,7 +248,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeVoidReturnTwoParams) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeOverloadedWithNoParams) {
+TEST_F(DispatchedNPObjectTest, CanInvokeOverloadedWithNoParams) {
   EXPECT_CALL(*object_, Overloaded());
 
   EXPECT_TRUE(object_->Invoke(
@@ -259,7 +259,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeOverloadedWithNoParams) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeOverloadedWithOneStringParam) {
+TEST_F(DispatchedNPObjectTest, CanInvokeOverloadedWithOneStringParam) {
   EXPECT_CALL(*object_, Overloaded(std::string("hello")));
 
   STRINGZ_TO_NPVARIANT("hello", args_[0]);
@@ -272,7 +272,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeOverloadedWithOneStringParam) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeOverloadedWithOneBoolParam) {
+TEST_F(DispatchedNPObjectTest, CanInvokeOverloadedWithOneBoolParam) {
   EXPECT_CALL(*object_, Overloaded(true));
 
   BOOLEAN_TO_NPVARIANT(true, args_[0]);
@@ -285,7 +285,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeOverloadedWithOneBoolParam) {
   EXPECT_TRUE(NPVARIANT_IS_VOID(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeBoolReturn) {
+TEST_F(DispatchedNPObjectTest, CanInvokeBoolReturn) {
   EXPECT_CALL(*object_, BoolReturn()).WillOnce(Return(true));
 
   EXPECT_TRUE(object_->Invoke(
@@ -297,7 +297,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeBoolReturn) {
   EXPECT_TRUE(NPVARIANT_TO_BOOLEAN(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeIntReturn) {
+TEST_F(DispatchedNPObjectTest, CanInvokeIntReturn) {
   EXPECT_CALL(*object_, IntReturn()).WillOnce(Return(7));
 
   EXPECT_TRUE(object_->Invoke(
@@ -309,7 +309,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeIntReturn) {
   EXPECT_EQ(7, NPVARIANT_TO_INT32(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeFloatReturn) {
+TEST_F(DispatchedNPObjectTest, CanInvokeFloatReturn) {
   EXPECT_CALL(*object_, FloatReturn()).WillOnce(Return(7.0f));
 
   EXPECT_TRUE(object_->Invoke(
@@ -321,7 +321,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeFloatReturn) {
   EXPECT_EQ(7.0, NPVARIANT_TO_DOUBLE(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeDoubleReturn) {
+TEST_F(DispatchedNPObjectTest, CanInvokeDoubleReturn) {
   EXPECT_CALL(*object_, DoubleReturn()).WillOnce(Return(7.0));
 
   EXPECT_TRUE(object_->Invoke(
@@ -333,7 +333,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeDoubleReturn) {
   EXPECT_EQ(7.0, NPVARIANT_TO_DOUBLE(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeStringReturn) {
+TEST_F(DispatchedNPObjectTest, CanInvokeStringReturn) {
   EXPECT_CALL(*object_, StringReturn()).WillOnce(Return(std::string("hello")));
 
   EXPECT_TRUE(object_->Invoke(
@@ -351,7 +351,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeStringReturn) {
   NPBrowser::get()->ReleaseVariantValue(&result_);
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeObjectReturnWithObject) {
+TEST_F(DispatchedNPObjectTest, CanInvokeObjectReturnWithObject) {
   EXPECT_CALL(*object_, ObjectReturn()).WillOnce(Return(passed_object_));
 
   EXPECT_TRUE(object_->Invoke(
@@ -365,7 +365,7 @@ TEST_F(NPObjectDispatcherTest, CanInvokeObjectReturnWithObject) {
   NPBrowser::get()->ReleaseVariantValue(&result_);
 }
 
-TEST_F(NPObjectDispatcherTest, CanInvokeObjectReturnWithNull) {
+TEST_F(DispatchedNPObjectTest, CanInvokeObjectReturnWithNull) {
   EXPECT_CALL(*object_, ObjectReturn())
       .WillOnce(Return(NPObjectPointer<BaseNPObject>()));
 
@@ -377,17 +377,17 @@ TEST_F(NPObjectDispatcherTest, CanInvokeObjectReturnWithNull) {
   EXPECT_TRUE(NPVARIANT_IS_NULL(result_));
 }
 
-TEST_F(NPObjectDispatcherTest, HasMethodReturnsTrueIfMatchingMemberVariable) {
+TEST_F(DispatchedNPObjectTest, HasMethodReturnsTrueIfMatchingMemberVariable) {
   EXPECT_TRUE(object_->HasMethod(
       NPBrowser::get()->GetStringIdentifier("objectReturn")));
 }
 
-TEST_F(NPObjectDispatcherTest, HasMethodReturnsTrueIfNoMatchingMemberVariable) {
+TEST_F(DispatchedNPObjectTest, HasMethodReturnsTrueIfNoMatchingMemberVariable) {
   EXPECT_FALSE(object_->HasMethod(
       NPBrowser::get()->GetStringIdentifier("missing")));
 }
 
-TEST_F(NPObjectDispatcherTest, EnumeratesAllAvailableMethods) {
+TEST_F(DispatchedNPObjectTest, EnumeratesAllAvailableMethods) {
   NPIdentifier* names;
   uint32_t num_names;
   ASSERT_TRUE(object_->Enumerate(&names, &num_names));

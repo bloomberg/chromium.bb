@@ -17,7 +17,7 @@ namespace gpu_plugin {
 
 // Convert NPVariant to C++ type. Returns whether the conversion was successful.
 bool NPVariantToValue(bool* value, const NPVariant& variant);
-bool NPVariantToValue(int* value, const NPVariant& variant);
+bool NPVariantToValue(int32* value, const NPVariant& variant);
 bool NPVariantToValue(float* value, const NPVariant& variant);
 bool NPVariantToValue(double* value, const NPVariant& variant);
 bool NPVariantToValue(std::string* value, const NPVariant& variant);
@@ -57,7 +57,7 @@ inline bool NPVariantToValue(NPObjectPointer<NPObject>* value,
 
 // Convert C++ type to NPVariant.
 void ValueToNPVariant(bool value, NPVariant* variant);
-void ValueToNPVariant(int value, NPVariant* variant);
+void ValueToNPVariant(int32 value, NPVariant* variant);
 void ValueToNPVariant(float value, NPVariant* variant);
 void ValueToNPVariant(double value, NPVariant* variant);
 void ValueToNPVariant(const std::string& value, NPVariant* variant);
@@ -78,6 +78,7 @@ class SmartNPVariant : public NPVariant {
  public:
   SmartNPVariant();
   SmartNPVariant(const SmartNPVariant& rhs);
+  SmartNPVariant(const NPVariant& rhs);
 
   template <typename T>
   explicit SmartNPVariant(const T& v) {
@@ -87,11 +88,14 @@ class SmartNPVariant : public NPVariant {
   ~SmartNPVariant();
 
   SmartNPVariant& operator=(const SmartNPVariant& rhs);
+  SmartNPVariant& operator=(const NPVariant& rhs);
 
   template <typename T>
   bool GetValue(T* v) const {
     return NPVariantToValue(v, *this);
   }
+
+  bool IsVoid() const;
 
   template <typename T>
   void SetValue(const T& v) {
@@ -99,10 +103,14 @@ class SmartNPVariant : public NPVariant {
     ValueToNPVariant(v, this);
   }
 
+  void CopyTo(NPVariant* target) const;
+
+  // Sets the variant to void.
   void Release();
 
- private:
-  void Copy(const NPVariant& rhs);
+  // Called when an NPObject is invalidated to clear any references to other
+  // NPObjects. Does not release the object as it might no longer be valid.
+  void Invalidate();
 };
 
 // These allow a method to be invoked with automatic conversion of C++
@@ -233,6 +241,23 @@ bool NPGetProperty(NPP npp,
   }
   return false;
 }
+
+template <typename T>
+bool NPSetProperty(NPP npp,
+                   const NPObjectPointer<NPObject>& object,
+                   const NPUTF8* name,
+                   const T& value) {
+  SmartNPVariant variant(value);
+  return NPBrowser::get()->SetProperty(
+      npp,
+      object.Get(),
+      NPBrowser::get()->GetStringIdentifier(name),
+      &variant);
+}
+
+bool NPRemoveProperty(NPP npp,
+                      const NPObjectPointer<NPObject>& object,
+                      const NPUTF8* name);
 
 template <typename NPObjectType>
 NPObjectPointer<NPObjectType> NPCreateObject(NPP npp) {

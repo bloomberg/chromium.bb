@@ -46,6 +46,15 @@ class StubNPBrowser : public NPBrowser {
                            NPIdentifier name,
                            NPVariant* result);
 
+  virtual bool SetProperty(NPP npp,
+                           NPObject* object,
+                           NPIdentifier name,
+                           const NPVariant* result);
+
+  virtual bool RemoveProperty(NPP npp,
+                              NPObject* object,
+                              NPIdentifier name);
+
   virtual bool HasMethod(NPP npp,
                            NPObject* object,
                            NPIdentifier name);

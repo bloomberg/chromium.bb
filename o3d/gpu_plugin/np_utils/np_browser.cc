@@ -71,6 +71,19 @@ bool NPBrowser::GetProperty(NPP npp,
   return netscape_funcs_->getproperty(npp, object, name, result);
 }
 
+bool NPBrowser::SetProperty(NPP npp,
+                            NPObject* object,
+                            NPIdentifier name,
+                            const NPVariant* result) {
+  return netscape_funcs_->setproperty(npp, object, name, result);
+}
+
+bool NPBrowser::RemoveProperty(NPP npp,
+                               NPObject* object,
+                               NPIdentifier name) {
+  return netscape_funcs_->removeproperty(npp, object, name);
+}
+
 bool NPBrowser::HasMethod(NPP npp,
                           NPObject* object,
                           NPIdentifier name) {

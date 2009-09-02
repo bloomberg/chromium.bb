@@ -43,6 +43,7 @@ class GPUPluginObject : public DispatchedNPObject, public PluginObject {
 
   virtual NPObject* GetScriptableNPObject();
 
+  // Opens and returns the command buffer shared memory object.
   NPObjectPointer<NPObject> OpenCommandBuffer();
 
  protected:
