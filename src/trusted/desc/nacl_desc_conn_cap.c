@@ -48,6 +48,7 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 
 int NaClDescConnCapCtor(struct NaClDescConnCap          *self,
@@ -67,6 +68,14 @@ void NaClDescConnCapDtor(struct NaClDesc *vself) {
   vself->vtbl = (struct NaClDescVtbl *) NULL;
   NaClDescDtor(vself);
   return;
+}
+
+int NaClDescConnCapFstat(struct NaClDesc          *vself,
+                         struct NaClDescEffector  *effp,
+                         struct nacl_abi_stat     *statbuf) {
+  memset(statbuf, 0, sizeof *statbuf);
+  statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSOCKADDR;
+  return 0;
 }
 
 int NaClDescConnCapClose(struct NaClDesc          *vself,
@@ -182,7 +191,7 @@ struct NaClDescVtbl const kNaClDescConnCapVtbl = {
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
-  NaClDescFstatNotImplemented,
+  NaClDescConnCapFstat,
   NaClDescConnCapClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_CONN_CAP,

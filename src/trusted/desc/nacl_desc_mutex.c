@@ -36,6 +36,7 @@
 #include "native_client/src/include/portability.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -50,6 +51,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 /*
  * This file contains the implementation for the NaClDescMutex subclass
@@ -85,6 +87,14 @@ void NaClDescMutexDtor(struct NaClDesc *vself) {
   NaClIntrMutexDtor(&self->mu);
   vself->vtbl = (struct NaClDescVtbl *) NULL;
   NaClDescDtor(&self->base);
+}
+
+int NaClDescMutexFstat(struct NaClDesc          *vself,
+                       struct NaClDescEffector  *effp,
+                       struct nacl_abi_stat     *statbuf) {
+  memset(statbuf, 0, sizeof *statbuf);
+  statbuf->nacl_abi_st_mode = NACL_ABI_S_IFMUTEX;
+  return 0;
 }
 
 int NaClDescMutexClose(struct NaClDesc          *vself,
@@ -126,7 +136,7 @@ struct NaClDescVtbl const kNaClDescMutexVtbl = {
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
-  NaClDescFstatNotImplemented,
+  NaClDescMutexFstat,
   NaClDescMutexClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_MUTEX,

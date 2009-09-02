@@ -36,6 +36,7 @@
 #include "native_client/src/include/portability.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
@@ -51,6 +52,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 
 /*
@@ -84,6 +86,14 @@ void NaClDescSemaphoreDtor(struct NaClDesc *vself) {
   NaClSemDtor(&self->sem);
   vself->vtbl = (struct NaClDescVtbl *) NULL;
   NaClDescDtor(&self->base);
+}
+
+int NaClDescSemaphoreFstat(struct NaClDesc          *vself,
+                           struct NaClDescEffector  *effp,
+                           struct nacl_abi_stat     *statbuf) {
+  memset(statbuf, 0, sizeof *statbuf);
+  statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSEMA;
+  return 0;
 }
 
 int NaClDescSemaphoreClose(struct NaClDesc          *vself,
@@ -133,7 +143,7 @@ struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
-  NaClDescFstatNotImplemented,
+  NaClDescSemaphoreFstat,
   NaClDescSemaphoreClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_SEMAPHORE,

@@ -36,6 +36,7 @@
 #include "native_client/src/include/portability.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
@@ -52,6 +53,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 
 /*
@@ -153,6 +155,14 @@ ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
   return retval;
 }
 
+int NaClDescDirDescFstat(struct NaClDesc          *vself,
+                         struct NaClDescEffector  *effp,
+                         struct nacl_abi_stat     *statbuf) {
+  memset(statbuf, 0, sizeof *statbuf);
+  statbuf->nacl_abi_st_mode = NACL_ABI_S_IFDIR;
+  return 0;
+}
+
 int NaClDescDirDescClose(struct NaClDesc          *vself,
                          struct NaClDescEffector  *effp) {
   NaClDescUnref(vself);
@@ -176,7 +186,7 @@ struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
-  NaClDescFstatNotImplemented,
+  NaClDescDirDescFstat,
   NaClDescDirDescClose,
   NaClDescDirDescGetdents,
   NACL_DESC_DIR,

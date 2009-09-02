@@ -35,7 +35,7 @@
  */
 
 #include <stdlib.h>
-
+#include <string.h>
 #include <errno.h>
 
 #include "native_client/src/include/portability.h"
@@ -49,6 +49,7 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 
 int NaClDescImcBoundDescCtor(struct NaClDescImcBoundDesc  *self,
@@ -72,6 +73,14 @@ void NaClDescImcBoundDescDtor(struct NaClDesc *vself) {
   vself->vtbl = (struct NaClDescVtbl *) NULL;
   NaClDescDtor(vself);
   return;
+}
+
+int NaClDescImcBoundDescFstat(struct NaClDesc          *vself,
+                              struct NaClDescEffector  *effp,
+                              struct nacl_abi_stat     *statbuf) {
+  memset(statbuf, 0, sizeof *statbuf);
+  statbuf->nacl_abi_st_mode = NACL_ABI_S_IFBOUNDSOCK;
+  return 0;
 }
 
 int NaClDescImcBoundDescClose(struct NaClDesc         *vself,
@@ -165,7 +174,7 @@ struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
-  NaClDescFstatNotImplemented,
+  NaClDescImcBoundDescFstat,
   NaClDescImcBoundDescClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_BOUND_SOCKET,

@@ -34,6 +34,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 
 #include "native_client/src/include/portability.h"
@@ -57,6 +58,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 /*
  * This file contains the implementation of the NaClDescImcDesc
@@ -139,6 +141,22 @@ void NaClDescXferableDataDescDtor(struct NaClDesc *vself) {
 
   self->base.base.vtbl = &kNaClDescImcConnectedDescVtbl;
   (*self->base.base.vtbl->Dtor)(vself);
+}
+
+int NaClDescImcDescFstat(struct NaClDesc          *vself,
+                         struct NaClDescEffector  *effp,
+                         struct nacl_abi_stat     *statbuf) {
+  memset(statbuf, 0, sizeof *statbuf);
+  statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSOCK;
+  return 0;
+}
+
+int NaClDescXferableDataDescFstat(struct NaClDesc          *vself,
+                                  struct NaClDescEffector  *effp,
+                                  struct nacl_abi_stat     *statbuf) {
+  memset(statbuf, 0, sizeof *statbuf);
+  statbuf->nacl_abi_st_mode = NACL_ABI_S_IFDSOCK;
+  return 0;
 }
 
 int NaClDescImcConnectedDescClose(struct NaClDesc          *vself,
@@ -378,7 +396,7 @@ struct NaClDescVtbl const kNaClDescImcDescVtbl = {
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
-  NaClDescFstatNotImplemented,
+  NaClDescImcDescFstat,  /* diff */
   NaClDescImcConnectedDescClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_IMC_SOCKET,  /* diff */
@@ -410,7 +428,7 @@ struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
-  NaClDescFstatNotImplemented,
+  NaClDescXferableDataDescFstat,  /* diff */
   NaClDescImcConnectedDescClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_TRANSFERABLE_DATA_SOCKET,  /* diff */

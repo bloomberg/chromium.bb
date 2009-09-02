@@ -36,18 +36,29 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_INCLUDE_BITS_STAT_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_INCLUDE_BITS_STAT_H_
 
-#define NACL_ABI_S_IFMT       0170000
-#define NACL_ABI_S_IFSOCK     0140000  /* data-and-descriptor socket*/
-#define NACL_ABI_S_IFDSOCK    0130000  /* data-only, transferable socket*/
-#define NACL_ABI_S_IFLNK      0120000  /* symbolic link */
-#define NACL_ABI_S_IFSOCKADDR 0110000  /* socket address */
-#define NACL_ABI_S_IFREG      0100000  /* regular file */
-#define NACL_ABI_S_IFBLK      0060000  /* block device */
-#define NACL_ABI_S_IFDIR      0040000  /* directory */
-#define NACL_ABI_S_IFCHR      0020000  /* character device */
-#define NACL_ABI_S_IFIFO      0010000  /* fifo */
+/*
+ * nacl_abi_mode_t is uint32_t, so we have more bits to play with:
+ *
+ * 3 b/octal digit, 30 bits:   1234567890
+ */
+#define NACL_ABI_S_IFMT        0000370000  /* for now */
+#define NACL_ABI_S_IFSEMA      0000270000
+#define NACL_ABI_S_IFCOND      0000260000
+#define NACL_ABI_S_IFMUTEX     0000250000
+#define NACL_ABI_S_IFSHM       0000240000
+#define NACL_ABI_S_IFBOUNDSOCK 0000230000  /* bound socket*/
+#define NACL_ABI_S_IFSOCKADDR  0000220000  /* socket address */
+#define NACL_ABI_S_IFDSOCK     0000210000  /* data-only, transferable socket*/
 
-#define NACL_ABI_S_UNSUP      0170000  /* unsupported file type */
+#define NACL_ABI_S_IFSOCK      0000140000  /* data-and-descriptor socket*/
+#define NACL_ABI_S_IFLNK       0000120000  /* symbolic link */
+#define NACL_ABI_S_IFREG       0000100000  /* regular file */
+#define NACL_ABI_S_IFBLK       0000060000  /* block device */
+#define NACL_ABI_S_IFDIR       0000040000  /* directory */
+#define NACL_ABI_S_IFCHR       0000020000  /* character device */
+#define NACL_ABI_S_IFIFO       0000010000  /* fifo */
+
+#define NACL_ABI_S_UNSUP       0000370000  /* unsupported file type */
 /*
  * NaCl does not support file system objects other than regular files
  * and directories, and objects of other types will appear in the
