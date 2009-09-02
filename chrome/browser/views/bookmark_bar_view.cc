@@ -70,11 +70,6 @@ static const int kBarHeight = 29;
 // Preferred height of the bookmarks bar when only shown on the new tab page.
 const int BookmarkBarView::kNewtabBarHeight = 57;
 
-// How inset the bookmarks bar is when displayed on the new tab page. This is
-// in addition to the margins above.
-static const int kNewtabHorizontalPadding = 8;
-static const int kNewtabVerticalPadding = 12;
-
 // Padding between buttons.
 static const int kButtonPadding = 0;
 
@@ -376,6 +371,8 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
 
 // static
 const int BookmarkBarView::kMaxButtonWidth = 150;
+const int BookmarkBarView::kNewtabHorizontalPadding = 8;
+const int BookmarkBarView::kNewtabVerticalPadding = 12;
 
 // static
 bool BookmarkBarView::testing_ = false;
@@ -478,21 +475,7 @@ void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {
 }
 
 gfx::Size BookmarkBarView::GetPreferredSize() {
-  gfx::Size prefsize;
-  if (OnNewTabPage()) {
-    prefsize.set_height(kBarHeight + static_cast<int>(static_cast<double>
-                        (kNewtabBarHeight - kBarHeight) *
-                        (1 - size_animation_->GetCurrentValue())));
-  } else {
-    prefsize.set_height(static_cast<int>(static_cast<double>(kBarHeight) *
-                        size_animation_->GetCurrentValue()));
-  }
-
-  // Width doesn't matter, we're always given a width based on the browser
-  // size.
-  prefsize.set_width(1);
-
-  return prefsize;
+  return LayoutItems(true);
 }
 
 gfx::Size BookmarkBarView::GetMinimumSize() {
@@ -500,113 +483,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
 }
 
 void BookmarkBarView::Layout() {
-  if (!GetParent())
-    return;
-
-  int x = kLeftMargin;
-  int y = kTopMargin;
-  int width = View::width() - kRightMargin - kLeftMargin;
-  int height = View::height() - kTopMargin - kBottomMargin;
-  int separator_margin = kSeparatorMargin;
-
-  if (OnNewTabPage()) {
-    double current_state = 1 - size_animation_->GetCurrentValue();
-    x += static_cast<int>(static_cast<double>
-        (kNewtabHorizontalPadding) * current_state);
-    y += static_cast<int>(static_cast<double>
-        (kNewtabVerticalPadding) * current_state);
-    width -= static_cast<int>(static_cast<double>
-        (kNewtabHorizontalPadding) * current_state);
-    height -= static_cast<int>(static_cast<double>
-        (kNewtabVerticalPadding * 2) * current_state);
-    separator_margin -= static_cast<int>(static_cast<double>
-        (kSeparatorMargin) * current_state);
-  }
-
-  gfx::Size other_bookmarked_pref =
-      other_bookmarked_button_->GetPreferredSize();
-  gfx::Size overflow_pref = overflow_button_->GetPreferredSize();
-  gfx::Size bookmarks_separator_pref =
-      bookmarks_separator_view_->GetPreferredSize();
-
-#ifdef CHROME_PERSONALIZATION
-  gfx::Size sync_error_button_pref = sync_error_button_->GetPreferredSize();
-  const bool should_show_sync_error_button = ShouldShowSyncErrorButton();
-  int sync_error_total_width = 0;
-  if (should_show_sync_error_button) {
-    sync_error_total_width += kButtonPadding + sync_error_button_pref.width();
-  }
-  const int max_x = width - other_bookmarked_pref.width() - kButtonPadding -
-              overflow_pref.width() - kButtonPadding -
-              bookmarks_separator_pref.width() - sync_error_total_width;
-#else
-  const int max_x = width - other_bookmarked_pref.width() - kButtonPadding -
-              overflow_pref.width() - kButtonPadding -
-              bookmarks_separator_pref.width();
-#endif
-
-  // Next, layout out the buttons. Any buttons that are placed beyond the
-  // visible region and made invisible.
-  if (GetBookmarkButtonCount() == 0 && model_ && model_->IsLoaded()) {
-    gfx::Size pref = instructions_->GetPreferredSize();
-    instructions_->SetBounds(
-        x + kInstructionsPadding, y,
-        std::min(static_cast<int>(pref.width()),
-        max_x - x),
-        height);
-    instructions_->SetVisible(true);
-  } else {
-    instructions_->SetVisible(false);
-
-    for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
-      views::View* child = GetChildViewAt(i);
-      gfx::Size pref = child->GetPreferredSize();
-      int next_x = x + pref.width() + kButtonPadding;
-      child->SetVisible(next_x < max_x);
-      child->SetBounds(x, y, pref.width(), height);
-      x = next_x;
-    }
-  }
-
-  // Layout the right side of the bar.
-  const bool all_visible =
-      (GetBookmarkButtonCount() == 0 ||
-       GetChildViewAt(GetBookmarkButtonCount() - 1)->IsVisible());
-
-  // Layout the right side buttons.
-  x = max_x + kButtonPadding;
-
-  // The overflow button.
-  overflow_button_->SetBounds(x, y, overflow_pref.width(), height);
-  overflow_button_->SetVisible(!all_visible);
-  x += overflow_pref.width();
-
-  // Separator.
-  bookmarks_separator_view_->SetBounds(x,
-                                       y - kTopMargin,
-                                       bookmarks_separator_pref.width(),
-                                       height + kTopMargin + kBottomMargin -
-                                       separator_margin);
-  x += bookmarks_separator_pref.width();
-
-  // The other bookmarks button.
-  other_bookmarked_button_->SetBounds(x, y, other_bookmarked_pref.width(),
-                                      height);
-  x += other_bookmarked_pref.width() + kButtonPadding;
-
-#ifdef CHROME_PERSONALIZATION
-  // Set the real bounds of the sync error button only if it needs to appear on
-  // the bookmarks bar.
-  if (should_show_sync_error_button) {
-    x += kButtonPadding;
-    sync_error_button_->SetBounds(x, y, sync_error_button_pref.width(), height);
-    sync_error_button_->SetVisible(true);
-    x += sync_error_button_pref.width();
-  } else {
-    sync_error_button_->SetBounds(x, y, 0, height);
-    sync_error_button_->SetVisible(false);
-  }
-#endif
+  LayoutItems(false);
 }
 
 void BookmarkBarView::DidChangeBounds(const gfx::Rect& previous,
@@ -629,206 +506,6 @@ void BookmarkBarView::ViewHierarchyChanged(bool is_add,
       // Therefore we always force a layout when added.
       Layout();
     }
-  }
-}
-
-void BookmarkBarView::Paint(gfx::Canvas* canvas) {
-  if (IsDetachedStyle()) {
-    // Draw the background to match the new tab page.
-    ThemeProvider* tp = GetThemeProvider();
-    canvas->FillRectInt(
-        tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND),
-        0, 0, width(), height());
-
-    if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-      int tiling = BrowserThemeProvider::NO_REPEAT;
-      tp->GetDisplayProperty(BrowserThemeProvider::NTP_BACKGROUND_TILING,
-                             &tiling);
-      int alignment;
-      if (tp->GetDisplayProperty(BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT,
-                                 &alignment)) {
-        SkBitmap* ntp_background = tp->GetBitmapNamed(
-            IDR_THEME_NTP_BACKGROUND);
-
-        if (alignment & BrowserThemeProvider::ALIGN_TOP) {
-          PaintThemeBackgroundTopAligned(
-              canvas, ntp_background, tiling, alignment);
-        } else {
-          PaintThemeBackgroundBottomAligned(
-              canvas, ntp_background, tiling, alignment);
-        }
-      }
-    }
-
-    // Draw the 'bottom' of the toolbar above our bubble.
-    canvas->FillRectInt(ResourceBundle::toolbar_separator_color,
-                        0, 0, width(), 1);
-
-    SkRect rect;
-
-    // As 'hidden' according to the animation is the full in-tab state,
-    // we invert the value - when current_state is at '0', we expect the
-    // bar to be docked.
-    double current_state = 1 - size_animation_->GetCurrentValue();
-
-    // The 0.5 is to correct for Skia's "draw on pixel boundaries"ness.
-    double h_padding = static_cast<double>
-        (kNewtabHorizontalPadding) * current_state;
-    double v_padding = static_cast<double>
-        (kNewtabVerticalPadding) * current_state;
-    rect.set(SkDoubleToScalar(h_padding - 0.5),
-             SkDoubleToScalar(v_padding - 0.5),
-             SkDoubleToScalar(width() - h_padding - 0.5),
-             SkDoubleToScalar(height() - v_padding - 0.5));
-
-    double roundness = static_cast<double>
-        (kNewtabBarRoundness) * current_state;
-
-    // Draw our background.
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setColor(
-        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
-
-    canvas->drawRoundRect(rect,
-                          SkDoubleToScalar(roundness),
-                          SkDoubleToScalar(roundness), paint);
-
-    // Draw border
-    SkPaint border_paint;
-    border_paint.setColor(
-        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER));
-    border_paint.setStyle(SkPaint::kStroke_Style);
-    border_paint.setAlpha(96);
-    border_paint.setAntiAlias(true);
-
-    canvas->drawRoundRect(rect,
-                          SkDoubleToScalar(roundness),
-                          SkDoubleToScalar(roundness), border_paint);
-  } else {
-    gfx::Rect bounds = GetBounds(views::View::APPLY_MIRRORING_TRANSFORMATION);
-
-    SkColor theme_toolbar_color =
-        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
-    canvas->FillRectInt(theme_toolbar_color, 0, 0, width(), height());
-
-    canvas->TileImageInt(*GetThemeProvider()->
-        GetBitmapNamed(IDR_THEME_TOOLBAR),
-        GetParent()->GetBounds(views::View::APPLY_MIRRORING_TRANSFORMATION).x()
-        + bounds.x(), bounds.y(), 0, 0, width(), height());
-    canvas->FillRectInt(ResourceBundle::toolbar_separator_color,
-                        0, height() - 1, width(), 1);
-  }
-}
-
-void BookmarkBarView::PaintThemeBackgroundTopAligned(gfx::Canvas* canvas,
-    SkBitmap* ntp_background, int tiling, int alignment) {
-
-  if (alignment & BrowserThemeProvider::ALIGN_LEFT) {
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, 0, 0, width(), height());
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, 0, 0, width(),
-                           ntp_background->height());
-    else
-      canvas->TileImageInt(*ntp_background, 0, 0,
-          ntp_background->width(), ntp_background->height());
-
-  } else if (alignment & BrowserThemeProvider::ALIGN_RIGHT) {
-    int x_pos = width() % ntp_background->width() - ntp_background->width();
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, x_pos, 0,
-          width() + ntp_background->width(), height());
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, x_pos,
-          0, width() + ntp_background->width(), ntp_background->height());
-    else
-      canvas->TileImageInt(*ntp_background, width() - ntp_background->width(),
-          0, ntp_background->width(), ntp_background->height());
-
-  } else {  // ALIGN == CENTER
-    int x_pos = width() > ntp_background->width() ?
-        ((width() / 2 - ntp_background->width() / 2) %
-        ntp_background->width()) - ntp_background->width() :
-        width() / 2 - ntp_background->width() / 2;
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, x_pos, 0,
-                           width() + ntp_background->width(), height());
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, x_pos, 0,
-                           width() + ntp_background->width(),
-                           ntp_background->height());
-    else
-      canvas->TileImageInt(*ntp_background,
-          width() / 2 - ntp_background->width() / 2,
-          0, ntp_background->width(), ntp_background->height());
-  }
-}
-
-void BookmarkBarView::PaintThemeBackgroundBottomAligned(gfx::Canvas* canvas,
-    SkBitmap* ntp_background, int tiling, int alignment) {
-  int browser_height = GetParent()->GetBounds(
-      views::View::APPLY_MIRRORING_TRANSFORMATION).height();
-  int border_width = 5;
-  int y_pos = ((tiling == BrowserThemeProvider::REPEAT_X) ||
-               (tiling == BrowserThemeProvider::NO_REPEAT)) ?
-      browser_height - ntp_background->height() - height() - border_width :
-      browser_height % ntp_background->height() - height() - border_width -
-          ntp_background->height();
-
-  if (alignment & BrowserThemeProvider::ALIGN_LEFT) {
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, 0, y_pos, width(),
-          2 * height() + ntp_background->height() + 5);
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, 0, y_pos, width(),
-          ntp_background->height());
-    else if (tiling == BrowserThemeProvider::REPEAT_Y)
-      canvas->TileImageInt(*ntp_background, 0, y_pos,
-          ntp_background->width(),
-          2 * height() + ntp_background->height() + 5);
-    else
-      canvas->TileImageInt(*ntp_background, 0, y_pos, ntp_background->width(),
-          ntp_background->height());
-
-  } else if (alignment & BrowserThemeProvider::ALIGN_RIGHT) {
-    int x_pos = width() % ntp_background->width() - ntp_background->width();
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
-          width() + ntp_background->width(),
-          2 * height() + ntp_background->height() + 5);
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
-          width() + ntp_background->width(), ntp_background->height());
-    else if (tiling == BrowserThemeProvider::REPEAT_Y)
-      canvas->TileImageInt(*ntp_background, width() - ntp_background->width(),
-          y_pos, ntp_background->width(),
-          2 * height() + ntp_background->height() + 5);
-    else
-      canvas->TileImageInt(*ntp_background, width() - ntp_background->width(),
-          y_pos, ntp_background->width(), ntp_background->height());
-
-  } else {  // ALIGN == CENTER
-    int x_pos = width() > ntp_background->width() ?
-        ((width() / 2 - ntp_background->width() / 2) %
-        ntp_background->width()) - ntp_background->width() :
-        width() / 2 - ntp_background->width() / 2;
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
-          width() + ntp_background->width(),
-          2 * height() + ntp_background->height() + 5);
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
-          width() + ntp_background->width(), ntp_background->height());
-    else if (tiling == BrowserThemeProvider::REPEAT_Y)
-      canvas->TileImageInt(*ntp_background,
-          width() / 2 - ntp_background->width() / 2,
-          y_pos, ntp_background->width(),
-          2 * height() + ntp_background->height() + 5);
-    else
-      canvas->TileImageInt(*ntp_background,
-          width() / 2 - ntp_background->width() / 2,
-          y_pos, ntp_background->width(), ntp_background->height());
   }
 }
 
@@ -1872,6 +1549,151 @@ void BookmarkBarView::UpdateButtonColors() {
   }
 }
 
+gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
+  gfx::Size prefsize;
+  if (!GetParent() && !compute_bounds_only)
+    return prefsize;
+
+  int x = kLeftMargin;
+  int y = kTopMargin;
+  int width = View::width() - kRightMargin - kLeftMargin;
+  int height = View::height() - kTopMargin - kBottomMargin;
+  int separator_margin = kSeparatorMargin;
+
+  if (OnNewTabPage()) {
+    double current_state = 1 - size_animation_->GetCurrentValue();
+    x += static_cast<int>(static_cast<double>
+        (kNewtabHorizontalPadding) * current_state);
+    y += static_cast<int>(static_cast<double>
+        (kNewtabVerticalPadding) * current_state);
+    width -= static_cast<int>(static_cast<double>
+        (kNewtabHorizontalPadding) * current_state);
+    height -= static_cast<int>(static_cast<double>
+        (kNewtabVerticalPadding * 2) * current_state);
+    separator_margin -= static_cast<int>(static_cast<double>
+        (kSeparatorMargin) * current_state);
+  }
+
+  gfx::Size other_bookmarked_pref =
+      other_bookmarked_button_->GetPreferredSize();
+  gfx::Size overflow_pref = overflow_button_->GetPreferredSize();
+  gfx::Size bookmarks_separator_pref =
+      bookmarks_separator_view_->GetPreferredSize();
+
+#ifdef CHROME_PERSONALIZATION
+  gfx::Size sync_error_button_pref = sync_error_button_->GetPreferredSize();
+  const bool should_show_sync_error_button = ShouldShowSyncErrorButton();
+  int sync_error_total_width = 0;
+  if (should_show_sync_error_button) {
+    sync_error_total_width += kButtonPadding + sync_error_button_pref.width();
+  }
+  const int max_x = width - other_bookmarked_pref.width() - kButtonPadding -
+              overflow_pref.width() - kButtonPadding -
+              bookmarks_separator_pref.width() - sync_error_total_width;
+#else
+  const int max_x = width - other_bookmarked_pref.width() - kButtonPadding -
+              overflow_pref.width() - kButtonPadding -
+              bookmarks_separator_pref.width();
+#endif
+
+  // Next, layout out the buttons. Any buttons that are placed beyond the
+  // visible region and made invisible.
+  if (GetBookmarkButtonCount() == 0 && model_ && model_->IsLoaded()) {
+    gfx::Size pref = instructions_->GetPreferredSize();
+    if (!compute_bounds_only) {
+      instructions_->SetBounds(
+          x + kInstructionsPadding, y,
+          std::min(static_cast<int>(pref.width()),
+          max_x - x),
+          height);
+      instructions_->SetVisible(true);
+    }
+  } else {
+    if (!compute_bounds_only)
+      instructions_->SetVisible(false);
+
+    for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
+      views::View* child = GetChildViewAt(i);
+      gfx::Size pref = child->GetPreferredSize();
+      int next_x = x + pref.width() + kButtonPadding;
+      if (!compute_bounds_only) {
+        child->SetVisible(next_x < max_x);
+        child->SetBounds(x, y, pref.width(), height);
+      }
+      x = next_x;
+    }
+  }
+
+  // Layout the right side of the bar.
+  const bool all_visible =
+      (GetBookmarkButtonCount() == 0 ||
+       GetChildViewAt(GetBookmarkButtonCount() - 1)->IsVisible());
+
+  // Layout the right side buttons.
+  if (!compute_bounds_only)
+    x = max_x + kButtonPadding;
+  else
+    x += kButtonPadding;
+
+  // The overflow button.
+  if (!compute_bounds_only) {
+    overflow_button_->SetBounds(x, y, overflow_pref.width(), height);
+    overflow_button_->SetVisible(!all_visible);
+  }
+  x += overflow_pref.width();
+
+  // Separator.
+  if (!compute_bounds_only) {
+    bookmarks_separator_view_->SetBounds(x,
+                                         y - kTopMargin,
+                                         bookmarks_separator_pref.width(),
+                                         height + kTopMargin + kBottomMargin -
+                                         separator_margin);
+  }
+
+  x += bookmarks_separator_pref.width();
+
+  // The other bookmarks button.
+  if (!compute_bounds_only) {
+    other_bookmarked_button_->SetBounds(x, y, other_bookmarked_pref.width(),
+                                        height);
+  }
+  x += other_bookmarked_pref.width() + kButtonPadding;
+
+#ifdef CHROME_PERSONALIZATION
+  // Set the real bounds of the sync error button only if it needs to appear on
+  // the bookmarks bar.
+  if (should_show_sync_error_button) {
+    x += kButtonPadding;
+    if (!compute_bounds_only) {
+      sync_error_button_->SetBounds(x, y, sync_error_button_pref.width(), height);
+      sync_error_button_->SetVisible(true);
+    }
+    x += sync_error_button_pref.width();
+  } else if (!compute_bounds_only) {
+    sync_error_button_->SetBounds(x, y, 0, height);
+    sync_error_button_->SetVisible(false);
+  }
+#endif
+
+  // Set the preferred size computed so far.
+  if (compute_bounds_only) {
+    x += kRightMargin;
+    prefsize.set_width(x);
+    if (OnNewTabPage()) {
+      x += static_cast<int>(static_cast<double>(kNewtabHorizontalPadding) *
+          (1 - size_animation_->GetCurrentValue()));
+      prefsize.set_height(kBarHeight + static_cast<int>(static_cast<double>
+                          (kNewtabBarHeight - kBarHeight) *
+                          (1 - size_animation_->GetCurrentValue())));
+    } else {
+      prefsize.set_height(static_cast<int>(static_cast<double>(kBarHeight) *
+                          size_animation_->GetCurrentValue()));
+    }
+  }
+  return prefsize;
+}
+
 #ifdef CHROME_PERSONALIZATION
 // The sync state reported by the profile sync service determines whether or
 // not the re-login indicator button should be visible.
@@ -1907,3 +1729,4 @@ views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
   return sync_error_button;
 }
 #endif
+

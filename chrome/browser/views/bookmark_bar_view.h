@@ -95,7 +95,6 @@ class BookmarkBarView : public views::View,
   virtual void DidChangeBounds(const gfx::Rect& previous,
                                const gfx::Rect& current);
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual void Paint(gfx::Canvas* canvas);
   virtual void PaintChildren(gfx::Canvas* canvas);
   virtual bool GetDropFormats(
       int* formats,
@@ -109,6 +108,9 @@ class BookmarkBarView : public views::View,
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual void SetAccessibleName(const std::wstring& name);
+  double GetSizeAnimationValue() const {
+      return size_animation_->GetCurrentValue();
+  }
 
 #ifdef CHROME_PERSONALIZATION
   // ProfileSyncServiceObserver method.
@@ -192,15 +194,14 @@ class BookmarkBarView : public views::View,
   // If true we're running tests. This short circuits a couple of animations.
   static bool testing_;
 
+  // Constants used in Browser View, as well as here.
+  // How inset the bookmarks bar is when displayed on the new tab page.
+  static const int kNewtabHorizontalPadding;
+  static const int kNewtabVerticalPadding;
+
  private:
   class ButtonSeparatorView;
   struct DropInfo;
-
-  // Paint the theme background with the proper alignment.
-  void PaintThemeBackgroundTopAligned(gfx::Canvas* canvas,
-      SkBitmap* ntp_background, int tiling, int alignment);
-  void PaintThemeBackgroundBottomAligned(gfx::Canvas* canvas,
-      SkBitmap* ntp_background, int tiling, int alignment);
 
   // Task that invokes ShowDropFolderForNode when run. ShowFolderDropMenuTask
   // deletes itself once run.
@@ -396,6 +397,12 @@ class BookmarkBarView : public views::View,
   // Updates the colors for all the buttons in the bookmarks bar.
   void UpdateButtonColors();
 
+  // This method computes the bounds for the bookmark bar items. If
+  // |compute_bounds_only| = TRUE, the bounds for the items are just computed,
+  // but are not set. This mode is used by GetPreferredSize() to obtain the
+  // desired bounds. If |compute_bounds_only| = FALSE, the bounds are set.
+  gfx::Size LayoutItems(bool compute_bounds_only);
+
 #ifdef CHROME_PERSONALIZATION
   // Determines whether the sync error button should appear on the bookmarks
   // bar.
@@ -404,7 +411,6 @@ class BookmarkBarView : public views::View,
   // Creates the sync error button and adds it as a child view.
   views::TextButton* CreateSyncErrorButton();
 #endif
-
   NotificationRegistrar registrar_;
 
   Profile* profile_;
@@ -454,7 +460,7 @@ class BookmarkBarView : public views::View,
 
   ButtonSeparatorView* bookmarks_separator_view_;
 
-  // Owning browser. This is NULL duing testing.
+  // Owning browser. This is NULL during testing.
   Browser* browser_;
 
   // Animation controlling showing and hiding of the bar.

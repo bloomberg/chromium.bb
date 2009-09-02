@@ -108,6 +108,12 @@ class ExtensionShelf : public views::View,
   // Loads initial state from |model_|.
   void LoadFromModel();
 
+  // This method computes the bounds for the extension shelf items. If
+  // |compute_bounds_only| = TRUE, the bounds for the items are just computed,
+  // but are not set. This mode is used by GetPreferredSize() to obtain the
+  // desired bounds. If |compute_bounds_only| = FALSE, the bounds are set.
+  gfx::Size LayoutItems(bool compute_bounds_only);
+
   // Returns whether the extension shelf always shown (checks pref value).
   bool IsAlwaysShown();
 

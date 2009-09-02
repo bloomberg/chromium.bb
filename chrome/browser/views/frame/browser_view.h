@@ -342,7 +342,7 @@ class BrowserView : public BrowserWindow,
   // of the bottom of the control, for laying out the next control.
   int LayoutToolbar(int top);
   int LayoutBookmarkAndInfoBars(int top);
-  int LayoutBookmarkBar(int top);
+  int LayoutTopBar(int top);
   int LayoutInfoBar(int top);
   // Layout the TabContents container, between the coordinates |top| and
   // |bottom|.
@@ -403,6 +403,9 @@ class BrowserView : public BrowserWindow,
 
   // Initialize the hung plugin detector.
   void InitHangMonitor();
+
+  // Returns true if extensions and bookmarks are positioned next to each other.
+  bool ShowExtensionsOnTop();
 
   // Initialize class statics.
   static void InitClass();

@@ -414,6 +414,9 @@ const wchar_t kPackExtension[]              = L"pack-extension";
 // Optional PEM private key is to use in signing packaged .crx.
 const wchar_t kPackExtensionKey[]           = L"pack-extension-key";
 
+// Show extensions on top with toolbar.
+const wchar_t kShowExtensionsOnTop[]        = L"show-extensions-on-top";
+
 // Load an NPAPI plugin from the specified path.
 const wchar_t kLoadPlugin[]                    = L"load-plugin";
 

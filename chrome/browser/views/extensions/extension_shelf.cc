@@ -698,24 +698,7 @@ void ExtensionShelf::ToggleWhenExtensionShelfVisible(Profile* profile) {
 }
 
 gfx::Size ExtensionShelf::GetPreferredSize() {
-  if (!model_->count())
-    return gfx::Size(0, 0);
-
-  gfx::Size prefsize;
-  if (OnNewTabPage()) {
-    prefsize.set_height(kShelfHeight + static_cast<int>(static_cast<double>
-                            (kNewtabShelfHeight - kShelfHeight) *
-                            (1 - size_animation_->GetCurrentValue())));
-  } else {
-    prefsize.set_height(static_cast<int>(static_cast<double>(kShelfHeight) *
-                            size_animation_->GetCurrentValue()));
-  }
-
-  // Width doesn't matter, we're always given a width based on the browser
-  // size.
-  prefsize.set_width(1);
-
-  return prefsize;
+  return LayoutItems(true);
 }
 
 void ExtensionShelf::ChildPreferredSizeChanged(View* child) {
@@ -726,45 +709,9 @@ void ExtensionShelf::ChildPreferredSizeChanged(View* child) {
 }
 
 void ExtensionShelf::Layout() {
-  if (!GetParent())
-    return;
-  if (!model_)
-    return;
-
-  int x = kLeftMargin;
-  int y = kTopMargin;
-  int content_height = kShelfHeight - kTopMargin - kBottomMargin;
-  int max_x = width() - kRightMargin;
-
-  if (OnNewTabPage()) {
-    double current_state = 1 - size_animation_->GetCurrentValue();
-    x += static_cast<int>(static_cast<double>
-        (kNewtabHorizontalPadding + kNewtabExtraHorMargin) * current_state);
-    y += static_cast<int>(static_cast<double>
-        (kNewtabVerticalPadding + kNewtabExtraVerMargin) * current_state);
-    max_x -= static_cast<int>(static_cast<double>
-        (kNewtabHorizontalPadding) * current_state);
-  }
-
-  int count = model_->count();
-  for (int i = 0; i < count; ++i) {
-    x += kToolstripPadding;  // left padding
-    Toolstrip* toolstrip = ToolstripAtIndex(i);
-    if (!toolstrip)  // can be NULL while in the process of removing
-      continue;
-    View* view = toolstrip->GetShelfView();
-    gfx::Size pref = view->GetPreferredSize();
-    int next_x = x + pref.width() + kToolstripPadding;  // right padding
-    if (view == toolstrip->view())
-      toolstrip->view()->set_is_clipped(next_x >= max_x);
-    view->SetBounds(x, y, pref.width(), content_height);
-    view->Layout();
-    if (toolstrip->handle_visible())
-      toolstrip->LayoutHandle();
-    x = next_x + kToolstripDividerWidth;
-  }
-  SchedulePaint();
+  LayoutItems(false);
 }
+
 
 void ExtensionShelf::OnMouseEntered(const views::MouseEvent& event) {
 }
@@ -1002,6 +949,66 @@ void ExtensionShelf::LoadFromModel() {
   int count = model_->count();
   for (int i = 0; i < count; ++i)
     ToolstripInsertedAt(model_->ToolstripAt(i).host, i);
+}
+
+gfx::Size ExtensionShelf::LayoutItems(bool compute_bounds_only) {
+  if (!GetParent() || !model_ || !model_->count())
+    return gfx::Size(0, 0);
+
+  gfx::Size prefsize;
+  int x = kLeftMargin;
+  int y = kTopMargin;
+  int content_height = kShelfHeight - kTopMargin - kBottomMargin;
+  int max_x = width() - kRightMargin;
+
+  if (OnNewTabPage()) {
+    double current_state = 1 - size_animation_->GetCurrentValue();
+    x += static_cast<int>(static_cast<double>
+        (kNewtabHorizontalPadding + kNewtabExtraHorMargin) * current_state);
+    y += static_cast<int>(static_cast<double>
+        (kNewtabVerticalPadding + kNewtabExtraVerMargin) * current_state);
+    max_x -= static_cast<int>(static_cast<double>
+        (kNewtabHorizontalPadding) * current_state);
+  }
+
+  int count = model_->count();
+  for (int i = 0; i < count; ++i) {
+    x += kToolstripPadding;  // left padding
+    Toolstrip* toolstrip = ToolstripAtIndex(i);
+    if (!toolstrip)  // can be NULL while in the process of removing
+      continue;
+    View* view = toolstrip->GetShelfView();
+    gfx::Size pref = view->GetPreferredSize();
+    int next_x = x + pref.width() + kToolstripPadding;  // right padding
+    if (!compute_bounds_only) {
+      if (view == toolstrip->view())
+        toolstrip->view()->set_is_clipped(next_x >= max_x);
+      view->SetBounds(x, y, pref.width(), content_height);
+      view->Layout();
+      if (toolstrip->handle_visible())
+        toolstrip->LayoutHandle();
+    }
+    x = next_x + kToolstripDividerWidth;
+  }
+
+  if (!compute_bounds_only)
+    SchedulePaint();
+
+  if (compute_bounds_only) {
+    if (OnNewTabPage()) {
+      prefsize.set_height(kShelfHeight + static_cast<int>(static_cast<double>
+                              (kNewtabShelfHeight - kShelfHeight) *
+                              (1 - size_animation_->GetCurrentValue())));
+    } else {
+      prefsize.set_height(static_cast<int>(static_cast<double>(kShelfHeight) *
+                              size_animation_->GetCurrentValue()));
+    }
+
+    x += kRightMargin;
+    prefsize.set_width(x);
+  }
+
+  return prefsize;
 }
 
 bool ExtensionShelf::IsDetachedStyle() {
