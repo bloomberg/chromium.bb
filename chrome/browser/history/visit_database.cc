@@ -8,6 +8,7 @@
 #include <set>
 
 #include "chrome/browser/history/visit_database.h"
+#include "chrome/browser/history/visit_log.h"
 
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/page_transition_types.h"
@@ -115,6 +116,7 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit) {
   statement->bind_int64(3, visit->transition);
   statement->bind_int64(4, visit->segment_id);
   statement->bind_int64(5, visit->is_indexed);
+  AddEventToVisitLog(VisitLog::ADD_VISIT);
   if (statement->step() != SQLITE_DONE)
     return 0;
 
@@ -132,6 +134,7 @@ void VisitDatabase::DeleteVisit(const VisitRow& visit) {
     return;
   update_chain->bind_int64(0, visit.referring_visit);
   update_chain->bind_int64(1, visit.visit_id);
+  AddEventToVisitLog(VisitLog::UPDATE_VISIT);
   update_chain->step();
 
   // Now delete the actual visit.
@@ -140,6 +143,7 @@ void VisitDatabase::DeleteVisit(const VisitRow& visit) {
   if (!del.is_valid())
     return;
   del->bind_int64(0, visit.visit_id);
+  AddEventToVisitLog(VisitLog::DELETE_VISIT);
   del->step();
 }
 
@@ -150,6 +154,7 @@ bool VisitDatabase::GetRowForVisit(VisitID visit_id, VisitRow* out_visit) {
     return false;
 
   statement->bind_int64(0, visit_id);
+  AddEventToVisitLog(VisitLog::SELECT_VISIT);
   if (statement->step() != SQLITE_ROW)
     return false;
 
@@ -172,6 +177,7 @@ bool VisitDatabase::UpdateVisitRow(const VisitRow& visit) {
   statement->bind_int64(4, visit.segment_id);
   statement->bind_int64(5, visit.is_indexed);
   statement->bind_int64(6, visit.visit_id);
+  AddEventToVisitLog(VisitLog::UPDATE_VISIT);
   return statement->step() == SQLITE_DONE;
 }
 
@@ -187,6 +193,7 @@ bool VisitDatabase::GetVisitsForURL(URLID url_id, VisitVector* visits) {
     return false;
 
   statement->bind_int64(0, url_id);
+  AddEventToVisitLog(VisitLog::SELECT_VISIT);
   FillVisitVector(*statement, visits);
   return true;
 }
@@ -210,6 +217,7 @@ void VisitDatabase::GetAllVisitsInRange(Time begin_time, Time end_time,
   statement->bind_int64(2,
       max_results ? max_results : std::numeric_limits<int64>::max());
 
+  AddEventToVisitLog(VisitLog::SELECT_VISIT);
   FillVisitVector(*statement, visits);
 }
 
@@ -239,6 +247,7 @@ void VisitDatabase::GetVisitsInRangeForTransition(
   statement->bind_int64(4,
       max_results ? max_results : std::numeric_limits<int64>::max());
 
+  AddEventToVisitLog(VisitLog::SELECT_VISIT);
   FillVisitVector(*statement, visits);
 }
 
@@ -271,6 +280,7 @@ void VisitDatabase::GetVisibleVisitsInRange(Time begin_time, Time end_time,
   statement->bind_int(5, PageTransition::MANUAL_SUBFRAME);
   statement->bind_int(6, PageTransition::KEYWORD_GENERATED);
 
+  AddEventToVisitLog(VisitLog::SELECT_VISIT);
   std::set<URLID> found_urls;
   while (statement->step() == SQLITE_ROW) {
     VisitRow visit;
@@ -301,6 +311,7 @@ VisitID VisitDatabase::GetMostRecentVisitForURL(URLID url_id,
     return 0;
 
   statement->bind_int64(0, url_id);
+  AddEventToVisitLog(VisitLog::SELECT_VISIT);
   if (statement->step() != SQLITE_ROW)
     return 0;  // No visits for this URL.
 
@@ -329,6 +340,7 @@ bool VisitDatabase::GetMostRecentVisitsForURL(URLID url_id,
 
   statement->bind_int64(0, url_id);
   statement->bind_int(1, max_results);
+  AddEventToVisitLog(VisitLog::SELECT_VISIT);
   FillVisitVector(*statement, visits);
   return true;
 }
@@ -347,6 +359,7 @@ bool VisitDatabase::GetRedirectFromVisit(VisitID from_visit,
   statement->bind_int64(0, from_visit);
   statement->bind_int(1, PageTransition::IS_REDIRECT_MASK);
 
+  AddEventToVisitLog(VisitLog::SELECT_VISIT);
   if (statement->step() != SQLITE_ROW)
     return false;  // No redirect from this visit.
   if (to_visit)
@@ -373,6 +386,7 @@ bool VisitDatabase::GetRedirectToVisit(VisitID to_visit,
         "WHERE v.id = ?");
     statement->bind_int64(0, row.referring_visit);
 
+    AddEventToVisitLog(VisitLog::SELECT_VISIT);
     if (statement->step() != SQLITE_ROW)
       return false;
 
@@ -413,6 +427,7 @@ bool VisitDatabase::GetVisitCountToHost(const GURL& url,
   statement->bind_string(0, host_query_min);
   statement->bind_string(1, host_query_max);
 
+  AddEventToVisitLog(VisitLog::SELECT_VISIT);
   if (statement->step() != SQLITE_ROW) {
     // We've never been to this page before.
     *count = 0;
@@ -427,6 +442,7 @@ bool VisitDatabase::GetVisitCountToHost(const GURL& url,
 bool VisitDatabase::GetStartDate(Time* first_visit) {
   SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
       "SELECT MIN(visit_time) FROM visits WHERE visit_time != 0");
+  AddEventToVisitLog(VisitLog::SELECT_VISIT);
   if (!statement.is_valid() || statement->step() != SQLITE_ROW ||
       statement->column_int64(0) == 0) {
     *first_visit = Time::Now();
