@@ -30,8 +30,10 @@ namespace {
 // TODO(estade): It might be a good idea to vary this by locale.
 const int kMaxChars = 50;
 
-void SetImageMenuItem(GtkWidget* menu_item, const SkBitmap& bitmap) {
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
+void SetImageMenuItem(GtkWidget* menu_item,
+                      const BookmarkNode* node,
+                      BookmarkModel* model) {
+  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model, true);
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
                                 gtk_image_new_from_pixbuf(pixbuf));
   g_object_unref(pixbuf);
@@ -128,7 +130,7 @@ void BookmarkMenuController::BookmarkNodeFavIconLoaded(
   std::map<const BookmarkNode*, GtkWidget*>::iterator it =
       node_to_menu_widget_map_.find(node);
   if (it != node_to_menu_widget_map_.end())
-    SetImageMenuItem(it->second, model->GetFavIcon(node));
+    SetImageMenuItem(it->second, node, model);
 }
 
 void BookmarkMenuController::NavigateToMenuItem(
@@ -160,23 +162,14 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
     GtkWidget* menu_item =
         gtk_image_menu_item_new_with_label(WideToUTF8(elided_name).c_str());
     g_object_set_data(G_OBJECT(menu_item), "bookmark-node", AsVoid(node));
+    SetImageMenuItem(menu_item, node, profile_->GetBookmarkModel());
 
     if (node->is_url()) {
-      SkBitmap icon = profile_->GetBookmarkModel()->GetFavIcon(node);
-      if (icon.width() == 0) {
-        icon = *ResourceBundle::GetSharedInstance().
-            GetBitmapNamed(IDR_DEFAULT_FAVICON);
-      }
-      SetImageMenuItem(menu_item, icon);
       g_signal_connect(G_OBJECT(menu_item), "activate",
                        G_CALLBACK(OnMenuItemActivated), this);
       g_signal_connect(G_OBJECT(menu_item), "button-release-event",
                        G_CALLBACK(OnButtonReleased), this);
     } else if (node->is_folder()) {
-      SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
-          GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
-      SetImageMenuItem(menu_item, *folder_icon);
-
       GtkWidget* submenu = gtk_menu_new();
       BuildMenu(node, 0, submenu);
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
