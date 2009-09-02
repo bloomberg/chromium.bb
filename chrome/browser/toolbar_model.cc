@@ -163,6 +163,9 @@ ToolbarModel::InfoTextType ToolbarModel::GetInfoText(std::wstring* text,
   text->clear();
   tooltip->clear();
 
+  if (input_in_progress_)
+    return INFO_NO_INFO;
+
   NavigationController* navigation_controller = GetNavigationController();
   if (!navigation_controller)  // We might not have a controller on init.
     return INFO_NO_INFO;
