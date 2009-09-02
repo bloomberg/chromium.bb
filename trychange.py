@@ -312,9 +312,11 @@ def _SendChangeSVN(options):
   try:
     # Don't use  '--non-interactive', since we want it to prompt for
     # crendentials if necessary.
-    RunCommand(['svn', 'checkout', '--depth', 'empty',
-                '--username', options.email,
-                options.svn_repo, temp_dir])
+    command = ['svn', 'checkout', '--depth', 'empty',
+               options.svn_repo, temp_dir]
+    if options.email:
+      command += ['--username', options.email]
+    RunCommand(command)
     # TODO(maruel): Use a subdirectory per user?
     current_time = str(datetime.datetime.now()).replace(':', '.')
     file_name = (EscapeDot(options.user) + '.' + EscapeDot(options.name) +
