@@ -435,10 +435,6 @@ BUG8941 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = FA
 BUG20509 LINUX WIN : LayoutTests/fast/forms/input-text-maxlength.html = FAIL
 BUG20509 LINUX WIN : LayoutTests/fast/forms/input-text-paste-maxlength.html = FAIL
 
-// COMBINING GRAVE ACCENT appears higher than E WITH GRAVE.
-BUG20130 LINUX : LayoutTests/fast/text/stroking-decorations.html = FAIL
-BUG20130 LINUX : LayoutTests/fast/text/stroking.html = FAIL
-
 // Incrorect results, in incorrect international font metrics.
 BUG20521 LINUX WIN : LayoutTests/fast/text/atsui-multiple-renderers.html = FAIL
 BUG20521 LINUX WIN : LayoutTests/fast/text/atsui-pointtooffset-calls-cg.html = FAIL
