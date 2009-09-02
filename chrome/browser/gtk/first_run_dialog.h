@@ -31,6 +31,8 @@ class FirstRunDialog : public ImportObserver {
     user_data->OnDialogResponse(widget, response);
   }
   void OnDialogResponse(GtkWidget* widget, int response);
+  static void OnLearnMoreLinkClicked(GtkButton *button,
+                                     FirstRunDialog* first_run);
 
   // This method closes the first run window and quits the message loop so that
   // the Chrome startup can continue. This should be called when all the

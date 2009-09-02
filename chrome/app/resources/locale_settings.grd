@@ -534,6 +534,11 @@
         http://www.google.com/support/chrome/bin/answer.py?answer=114836&amp;hl=[GRITLANGCODE]
       </message>
 
+      <!-- The URL for the "Learn more" page for the usage/crash reporting option in the first run dialog. -->
+      <message name="IDS_LEARN_MORE_REPORTING_URL" translateable="false">
+        http://www.google.com/support/chrome/bin/answer.py?answer=96817&amp;hl=[GRITLANGCODE]
+      </message>
+
       <!-- The width and height of the bookmark manager in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_BOOKMARK_MANAGER_DIALOG_WIDTH_CHARS" use_name_for_id="true">
