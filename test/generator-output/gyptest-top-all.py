@@ -27,25 +27,22 @@ test.build_all('prog1.gyp', chdir='gypfiles')
 
 chdir = 'gypfiles'
 
-expect = """\
-Hello from %s
-Hello from inc.h
-Hello from inc1/include1.h
-Hello from inc2/include2.h
-Hello from inc3/include3.h
-Hello from subdir2/deeper/deeper.h
-"""
-
 if sys.platform in ('darwin',):
   chdir = 'src'
-test.run_built_executable('prog1', chdir=chdir, stdout=expect % 'prog1.c')
+test.run_built_executable('prog1',
+                          chdir=chdir,
+                          stdout="Hello from prog1.c\n")
 
 if sys.platform in ('darwin',):
   chdir = 'src/subdir2'
-test.run_built_executable('prog2', chdir=chdir, stdout=expect % 'prog2.c')
+test.run_built_executable('prog2',
+                          chdir=chdir,
+                          stdout="Hello from prog2.c\n")
 
 if sys.platform in ('darwin',):
   chdir = 'src/subdir3'
-test.run_built_executable('prog3', chdir=chdir, stdout=expect % 'prog3.c')
+test.run_built_executable('prog3',
+                          chdir=chdir,
+                          stdout="Hello from prog3.c\n")
 
 test.pass_test()

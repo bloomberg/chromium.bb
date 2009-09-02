@@ -154,7 +154,7 @@ def escape_quotes(s):
     return escape_quotes_re.sub('\\1\\"\\2\\"', s)
 
 
-def GenerateConfig(fp, config, indent='', src_dir=''):
+def GenerateConfig(fp, config, indent=''):
   """
   Generates SCons dictionary items for a gyp configuration.
 
@@ -178,15 +178,6 @@ def GenerateConfig(fp, config, indent='', src_dir=''):
       if value:
         if gyp_var in ('defines',):
           value = [escape_quotes(v) for v in value]
-        if gyp_var in ('include_dirs',):
-          if src_dir and not src_dir.endswith('/'):
-            src_dir += '/'
-          result = []
-          for v in value:
-            if not os.path.isabs(v):
-              v = src_dir + v
-            result.append(v)
-          value = result
         WriteList(fp,
                   map(repr, value),
                   prefix=indent,
@@ -287,7 +278,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     fp.write('    \'%s\' : {\n' % config_name)
 
     fp.write('        \'Append\' : dict(\n')
-    GenerateConfig(fp, config, indent, '$SRC_DIR/'+subdir)
+    GenerateConfig(fp, config, indent)
     libraries = spec.get('libraries')
     if libraries:
       WriteList(fp,
@@ -353,7 +344,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     fp.write('\n')
     fp.write(if_fmt % repr(setting.upper()))
     fp.write('  env.Append(\n')
-    GenerateConfig(fp, variants[setting], ' '*6, '$SRC_DIR/'+subdir)
+    GenerateConfig(fp, variants[setting], ' '*6)
     fp.write('  )\n')
 
   #
