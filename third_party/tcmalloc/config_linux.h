@@ -31,6 +31,12 @@
    */
 #define HAVE_DECL_VALLOC 1
 
+/* Define to 1 if you prefer to defer decommitting pages
+   (on OSes which have ability) which could be performed offline
+   (either by background thread or in idle time.)
+   */
+#define DEFER_DECOMMIT 0
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
 

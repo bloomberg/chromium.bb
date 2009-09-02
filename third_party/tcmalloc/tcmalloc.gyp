@@ -121,6 +121,7 @@
         'allocator_shim.cc',
         'generic_allocators.cc',
         'page_heap.cc',
+        'page_heap.h',
         'port.cc',
         'system-alloc.h',
         'tcmalloc.cc',
