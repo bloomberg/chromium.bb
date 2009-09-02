@@ -82,39 +82,7 @@ void SelectionClipboardGetContents(GtkClipboard* clipboard,
 
 }  // namespace
 
-// WebViewDelegate -----------------------------------------------------------
-
-WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
-    WebView* webview,
-    const GURL& url,
-    const std::string& mime_type,
-    const std::string& clsid,
-    std::string* actual_mime_type) {
-  bool allow_wildcard = true;
-  WebPluginInfo info;
-  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, clsid,
-                                                     allow_wildcard, &info,
-                                                     actual_mime_type))
-    return NULL;
-
-  const std::string& mtype =
-      (actual_mime_type && !actual_mime_type->empty()) ? *actual_mime_type
-                                                       : mime_type;
-  // TODO(evanm): we probably shouldn't be doing this mapping to X ids at
-  // this level.
-  GdkNativeWindow plugin_parent =
-      GDK_WINDOW_XWINDOW(shell_->webViewHost()->view_handle()->window);
-
-  return WebPluginDelegateImpl::Create(info.path, mtype, plugin_parent);
-}
-
-void TestWebViewDelegate::CreatedPluginWindow(gfx::PluginWindowHandle id) {
-  shell_->webViewHost()->CreatePluginContainer(id);
-}
-
-void TestWebViewDelegate::WillDestroyPluginWindow(gfx::PluginWindowHandle id) {
-  shell_->webViewHost()->DestroyPluginContainer(id);
-}
+// WebViewDelegate ------------------------------------------------------------
 
 void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
   GtkWidget* dialog = gtk_message_dialog_new(
@@ -124,6 +92,8 @@ void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
   gtk_dialog_run(GTK_DIALOG(dialog));  // Runs a nested message loop.
   gtk_widget_destroy(dialog);
 }
+
+// WebWidgetClient ------------------------------------------------------------
 
 void TestWebViewDelegate::show(WebNavigationPolicy policy) {
   WebWidgetHost* host = GetWidgetHost();
@@ -220,16 +190,54 @@ WebRect TestWebViewDelegate::windowResizerRect() {
   return WebRect();
 }
 
-void TestWebViewDelegate::DidMovePlugin(const WebPluginGeometry& move) {
+void TestWebViewDelegate::runModal() {
+  NOTIMPLEMENTED();
+}
+
+// WebPluginPageDelegate ------------------------------------------------------
+
+webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
+    const GURL& url,
+    const std::string& mime_type,
+    const std::string& clsid,
+    std::string* actual_mime_type) {
+  bool allow_wildcard = true;
+  WebPluginInfo info;
+  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, clsid,
+                                                     allow_wildcard, &info,
+                                                     actual_mime_type))
+    return NULL;
+
+  const std::string& mtype =
+      (actual_mime_type && !actual_mime_type->empty()) ? *actual_mime_type
+                                                       : mime_type;
+  // TODO(evanm): we probably shouldn't be doing this mapping to X ids at
+  // this level.
+  GdkNativeWindow plugin_parent =
+      GDK_WINDOW_XWINDOW(shell_->webViewHost()->view_handle()->window);
+
+  return WebPluginDelegateImpl::Create(info.path, mtype, plugin_parent);
+}
+
+void TestWebViewDelegate::CreatedPluginWindow(
+    gfx::PluginWindowHandle id) {
+  shell_->webViewHost()->CreatePluginContainer(id);
+}
+
+void TestWebViewDelegate::WillDestroyPluginWindow(
+    gfx::PluginWindowHandle id) {
+  shell_->webViewHost()->DestroyPluginContainer(id);
+}
+
+void TestWebViewDelegate::DidMovePlugin(
+    const webkit_glue::WebPluginGeometry& move) {
   WebWidgetHost* host = GetWidgetHost();
   GtkPluginContainerManager* plugin_container_manager =
       static_cast<WebViewHost*>(host)->plugin_container_manager();
   plugin_container_manager->MovePluginContainer(move);
 }
 
-void TestWebViewDelegate::runModal() {
-  NOTIMPLEMENTED();
-}
+// Public methods -------------------------------------------------------------
 
 void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
   if (is_empty_selection)
@@ -252,7 +260,7 @@ void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
   gtk_target_table_free(targets, num_targets);
 }
 
-// Private methods -----------------------------------------------------------
+// Private methods ------------------------------------------------------------
 
 void TestWebViewDelegate::SetPageTitle(const std::wstring& title) {
   gtk_window_set_title(GTK_WINDOW(shell_->mainWnd()),

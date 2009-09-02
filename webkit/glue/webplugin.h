@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBPLUGIN_H__
-#define WEBKIT_GLUE_WEBPLUGIN_H__
+#ifndef WEBKIT_GLUE_WEBPLUGIN_H_
+#define WEBKIT_GLUE_WEBPLUGIN_H_
 
 #include <string>
 #include <vector>
@@ -18,9 +18,16 @@
 typedef void* HANDLE;
 
 class GURL;
-class WebPluginResourceClient;
-
 struct NPObject;
+
+namespace WebKit {
+class WebFrame;
+}
+
+namespace webkit_glue {
+
+class WebPluginParentView;
+class WebPluginResourceClient;
 
 // Describes the new location for a plugin window.
 struct WebPluginGeometry {
@@ -37,20 +44,11 @@ struct WebPluginGeometry {
   bool visible;
 };
 
-
-enum RoutingStatus {
-  ROUTED,
-  NOT_ROUTED,
-  INVALID_URL,
-  GENERAL_FAILURE
-};
-
 // The WebKit side of a plugin implementation.  It provides wrappers around
 // operations that need to interact with the frame and other WebCore objects.
 class WebPlugin {
  public:
-  WebPlugin() { }
-  virtual ~WebPlugin() { }
+  virtual ~WebPlugin() {}
 
   // Called by the plugin delegate to let the WebPlugin know if the plugin is
   // windowed (i.e. handle is not NULL) or windowless (handle is NULL).  This
@@ -127,9 +125,6 @@ class WebPlugin {
   // Defers the loading of the resource identified by resource_id. This is
   // controlled by the defer parameter.
   virtual void SetDeferResourceLoading(int resource_id, bool defer) = 0;
-
- private:
-  DISALLOW_EVIL_CONSTRUCTORS(WebPlugin);
 };
 
 // Simpler version of ResourceHandleClient that lends itself to proxying.
@@ -151,5 +146,6 @@ class WebPluginResourceClient {
   virtual bool IsMultiByteResponseExpected() = 0;
 };
 
+}  // namespace webkit_glue
 
-#endif  // #ifndef WEBKIT_GLUE_WEBPLUGIN_H__
+#endif  // #ifndef WEBKIT_GLUE_WEBPLUGIN_H_

@@ -48,7 +48,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void SetSize(const gfx::Size& size) {}
   virtual gfx::NativeView GetNativeView() { return NULL; }
   virtual void MovePluginWindows(
-    const std::vector<WebPluginGeometry>& plugin_window_moves) {}
+      const std::vector<webkit_glue::WebPluginGeometry>& moves) {}
 #if defined(OS_WIN)
   virtual void ForwardMouseEventToRenderer(UINT message,
                                            WPARAM wparam,

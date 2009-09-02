@@ -18,7 +18,6 @@
 
 class PluginChannel;
 class WebPluginProxy;
-class WebPluginDelegate;
 struct PluginMsg_Init_Params;
 struct PluginMsg_DidReceiveResponseParams;
 struct PluginMsg_URLRequestReply_Params;
@@ -26,6 +25,10 @@ class WebCursor;
 
 namespace WebKit {
 class WebInputEvent;
+}
+
+namespace webkit_glue {
+class WebPluginDelegate;
 }
 
 // Converts the IPC messages from WebPluginDelegateProxy into calls to the
@@ -99,7 +102,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
 
   scoped_refptr<PluginChannel> channel_;
 
-  WebPluginDelegate* delegate_;
+  webkit_glue::WebPluginDelegate* delegate_;
   WebPluginProxy* webplugin_;
 
   // The url of the main frame hosting the plugin.

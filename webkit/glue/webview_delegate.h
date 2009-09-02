@@ -28,7 +28,6 @@
 
 #include <vector>
 
-#include "base/gfx/native_widget_types.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebNavigationPolicy.h"
 #include "webkit/api/public/WebNavigationType.h"
@@ -38,6 +37,7 @@
 
 namespace webkit_glue {
 class WebMediaPlayerDelegate;
+struct WebPluginGeometry;
 }
 
 namespace WebCore {
@@ -54,9 +54,11 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebNode;
 class WebNotificationPresenter;
+class WebPlugin;
 class WebURLRequest;
 class WebURLResponse;
 class WebWidget;
+struct WebPluginParams;
 struct WebPoint;
 struct WebPopupMenuInfo;
 struct WebRect;
@@ -67,10 +69,8 @@ class FilePath;
 class SkBitmap;
 class WebDevToolsAgentDelegate;
 class WebMediaPlayerDelegate;
-class WebPluginDelegate;
 class WebView;
 struct ContextMenuMediaParams;
-struct WebPluginGeometry;
 struct WebPreferences;
 
 enum NavigationGesture {
@@ -136,27 +136,11 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
     return NULL;
   }
 
-  // This method is called to create a WebPluginDelegate implementation when a
-  // new plugin is instanced.  See webkit_glue::CreateWebPluginDelegateHelper
-  // for a default WebPluginDelegate implementation.
-  // TODO(port): clsid is very Win- and ActiveX-specific; refactor to be more
-  // platform-neutral
-  virtual WebPluginDelegate* CreatePluginDelegate(
-      WebView* webview,
-      const GURL& url,
-      const std::string& mime_type,
-      const std::string& clsid,
-      std::string* actual_mime_type) {
+  virtual WebKit::WebPlugin* CreatePlugin(
+      WebKit::WebFrame* parent_frame,
+      const WebKit::WebPluginParams& params) {
     return NULL;
   }
-
-  // Called when a windowed plugin is created.
-  // Lets the view delegate create anything it is using to wrap the plugin.
-  virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle) { }
-
-  // Called when a windowed plugin is closing.
-  // Lets the view delegate shut down anything it is using to wrap the plugin.
-  virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle) { }
 
   // This method is called when the renderer creates a worker object.
   virtual WebKit::WebWorker* CreateWebWorker(WebKit::WebWorkerClient* client) {
@@ -203,12 +187,6 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // input AccessibilityObject and send it through IPC for handling on the
   // browser side.
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj) {
-  }
-
-  // Keeps track of the necessary window move for a plugin window that resulted
-  // from a scroll operation.  That way, all plugin windows can be moved at the
-  // same time as each other and the page.
-  virtual void DidMovePlugin(const WebPluginGeometry& move) {
   }
 
   // FrameLoaderClient -------------------------------------------------------
@@ -557,14 +535,6 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   }
 
   // UIDelegate --------------------------------------------------------------
-
-  // Asks the browser to show a modal HTML dialog.  The dialog is passed the
-  // given arguments as a JSON string, and returns its result as a JSON string
-  // through json_retval.
-  virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
-                                   const std::string& json_arguments,
-                                   std::string* json_retval) {
-  }
 
   // Displays a JavaScript alert panel associated with the given view. Clients
   // should visually indicate that this panel comes from JavaScript and some

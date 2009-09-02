@@ -12,6 +12,7 @@
 #include "base/gfx/rect.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
+#include "base/weak_ptr.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "googleurl/src/gurl.h"
@@ -34,17 +35,17 @@ class WaitableEvent;
 
 // An implementation of WebPluginDelegate that proxies all calls to
 // the plugin process.
-class WebPluginDelegateProxy : public WebPluginDelegate,
-                               public IPC::Channel::Listener,
-                               public IPC::Message::Sender  {
+class WebPluginDelegateProxy :
+    public webkit_glue::WebPluginDelegate,
+    public IPC::Channel::Listener,
+    public IPC::Message::Sender,
+    public base::SupportsWeakPtr<WebPluginDelegateProxy> {
  public:
-  static WebPluginDelegateProxy* Create(const GURL& url,
-                                        const std::string& mime_type,
-                                        const std::string& clsid,
-                                        RenderView* render_view);
-
-  // Called to drop our back-pointer to the containing RenderView.
-  void DropRenderView() { render_view_ = NULL; }
+  static WebPluginDelegateProxy* Create(
+      const GURL& url,
+      const std::string& mime_type,
+      const std::string& clsid,
+      const base::WeakPtr<RenderView>& render_view);
 
   // Called to drop our pointer to the window script object.
   void DropWindowScriptObject() { window_script_object_ = NULL; }
@@ -52,7 +53,7 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   // WebPluginDelegate implementation:
   virtual void PluginDestroyed();
   virtual bool Initialize(const GURL& url, char** argn, char** argv, int argc,
-                          WebPlugin* plugin, bool load_manually);
+                          webkit_glue::WebPlugin* plugin, bool load_manually);
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect);
   virtual void Paint(gfx::NativeDrawingContext context, const gfx::Rect& rect);
@@ -87,11 +88,16 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   virtual void DidManualLoadFail();
   virtual FilePath GetPluginPath();
   virtual void InstallMissingPlugin();
-  virtual WebPluginResourceClient* CreateResourceClient(int resource_id,
-                                                        const GURL& url,
-                                                        bool notify_needed,
-                                                        intptr_t notify_data,
-                                                        intptr_t existing_stream);
+  virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
+      int resource_id,
+      const GURL& url,
+      bool notify_needed,
+      intptr_t notify_data,
+      intptr_t existing_stream);
+  virtual bool IsWindowless() const;
+  virtual gfx::Rect GetRect() const;
+  virtual gfx::Rect GetClipRect() const;
+  virtual int GetQuirks() const;
 
  protected:
   template<class WebPluginDelegateProxy> friend class DeleteTask;
@@ -100,7 +106,7 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
  private:
   WebPluginDelegateProxy(const std::string& mime_type,
                          const std::string& clsid,
-                         RenderView* render_view);
+                         const base::WeakPtr<RenderView>& render_view);
 
   // Message handlers for messages that proxy WebPlugin methods, which
   // we translate into calls to the real WebPlugin.
@@ -161,8 +167,8 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   // point the window has already been destroyed).
   void WillDestroyWindow();
 
-  RenderView* render_view_;
-  WebPlugin* plugin_;
+  base::WeakPtr<RenderView> render_view_;
+  webkit_glue::WebPlugin* plugin_;
   bool windowless_;
   gfx::PluginWindowHandle window_;
   scoped_refptr<PluginChannelHost> channel_host_;

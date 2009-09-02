@@ -1,23 +1,18 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
-// Avoid collisions with the LOG macro
-#include <wtf/Assertions.h>
-#undef LOG
-
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/api/public/WebCString.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURLRequest.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugin_impl.h"
 
 using WebKit::WebHTTPBody;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
+using webkit_glue::WebPluginImpl;
 
 namespace {
 
@@ -26,18 +21,10 @@ class WebPluginImplTest : public testing::Test {
 
 }
 
-// These exist only to support the gTest assertion macros, and
-// shouldn't be used in normal program code.
-std::ostream& operator<<(std::ostream& out, const WebCore::String& str)
-{
-  return out << str.latin1().data();
-}
-
 static std::string GetHeader(const WebURLRequest& request, const char* name) {
   std::string result;
   TrimWhitespace(
-      webkit_glue::WebStringToStdString(
-          request.httpHeaderField(WebString::fromUTF8(name))),
+      request.httpHeaderField(WebString::fromUTF8(name)).utf8(),
       TRIM_ALL,
       &result);
   return result;

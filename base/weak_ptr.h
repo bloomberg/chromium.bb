@@ -161,6 +161,11 @@ class WeakPtr : public internal::WeakPtrBase {
     return get();
   }
 
+  void reset() {
+    ref_ = internal::WeakReference();
+    ptr_ = NULL;
+  }
+
  private:
   friend class SupportsWeakPtr<T>;
   friend class WeakPtrFactory<T>;

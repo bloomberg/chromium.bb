@@ -39,65 +39,13 @@ using WebKit::WebCursorInfo;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebRect;
 
-// WebViewDelegate -----------------------------------------------------------
-
-WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
-    WebView* webview,
-    const GURL& url,
-    const std::string& mime_type,
-    const std::string& clsid,
-    std::string* actual_mime_type) {
-  HWND hwnd = shell_->webViewHost()->view_handle();
-  if (!hwnd)
-    return NULL;
-
-  bool allow_wildcard = true;
-  WebPluginInfo info;
-  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, clsid,
-                                                     allow_wildcard, &info,
-                                                     actual_mime_type))
-    return NULL;
-
-  if (actual_mime_type && !actual_mime_type->empty())
-    return WebPluginDelegateImpl::Create(info.path, *actual_mime_type, hwnd);
-  else
-    return WebPluginDelegateImpl::Create(info.path, mime_type, hwnd);
-}
-
-void TestWebViewDelegate::DidMovePlugin(const WebPluginGeometry& move) {
-  unsigned long flags = 0;
-
-  if (move.rects_valid) {
-    HRGN hrgn = ::CreateRectRgn(move.clip_rect.x(),
-                                move.clip_rect.y(),
-                                move.clip_rect.right(),
-                                move.clip_rect.bottom());
-    gfx::SubtractRectanglesFromRegion(hrgn, move.cutout_rects);
-
-    // Note: System will own the hrgn after we call SetWindowRgn,
-    // so we don't need to call DeleteObject(hrgn)
-    ::SetWindowRgn(move.window, hrgn, FALSE);
-  } else {
-    flags |= (SWP_NOSIZE | SWP_NOMOVE);
-  }
-
-  if (move.visible)
-    flags |= SWP_SHOWWINDOW;
-  else
-    flags |= SWP_HIDEWINDOW;
-
-  ::SetWindowPos(move.window,
-                 NULL,
-                 move.window_rect.x(),
-                 move.window_rect.y(),
-                 move.window_rect.width(),
-                 move.window_rect.height(),
-                 flags);
-}
+// WebViewDelegate ------------------------------------------------------------
 
 void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
   MessageBox(NULL, message.c_str(), L"JavaScript Alert", MB_OK);
 }
+
+// WebWidgetClient ------------------------------------------------------------
 
 void TestWebViewDelegate::show(WebNavigationPolicy) {
   if (WebWidgetHost* host = GetWidgetHost()) {
@@ -176,11 +124,79 @@ void TestWebViewDelegate::runModal() {
     EnableWindow(*i, TRUE);
 }
 
+// WebPluginPageDelegate ------------------------------------------------------
+
+webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
+    const GURL& url,
+    const std::string& mime_type,
+    const std::string& clsid,
+    std::string* actual_mime_type) {
+  HWND hwnd = shell_->webViewHost()->view_handle();
+  if (!hwnd)
+    return NULL;
+
+  bool allow_wildcard = true;
+  WebPluginInfo info;
+  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, clsid,
+                                                     allow_wildcard, &info,
+                                                     actual_mime_type))
+    return NULL;
+
+  if (actual_mime_type && !actual_mime_type->empty())
+    return WebPluginDelegateImpl::Create(info.path, *actual_mime_type, hwnd);
+  else
+    return WebPluginDelegateImpl::Create(info.path, mime_type, hwnd);
+}
+
+void TestWebViewDelegate::CreatedPluginWindow(
+    gfx::PluginWindowHandle handle) {
+  // ignored
+}
+
+void TestWebViewDelegate::WillDestroyPluginWindow(
+    gfx::PluginWindowHandle handle) {
+  // ignored
+}
+
+void TestWebViewDelegate::DidMovePlugin(
+    const webkit_glue::WebPluginGeometry& move) {
+  unsigned long flags = 0;
+
+  if (move.rects_valid) {
+    HRGN hrgn = ::CreateRectRgn(move.clip_rect.x(),
+                                move.clip_rect.y(),
+                                move.clip_rect.right(),
+                                move.clip_rect.bottom());
+    gfx::SubtractRectanglesFromRegion(hrgn, move.cutout_rects);
+
+    // Note: System will own the hrgn after we call SetWindowRgn,
+    // so we don't need to call DeleteObject(hrgn)
+    ::SetWindowRgn(move.window, hrgn, FALSE);
+  } else {
+    flags |= (SWP_NOSIZE | SWP_NOMOVE);
+  }
+
+  if (move.visible)
+    flags |= SWP_SHOWWINDOW;
+  else
+    flags |= SWP_HIDEWINDOW;
+
+  ::SetWindowPos(move.window,
+                 NULL,
+                 move.window_rect.x(),
+                 move.window_rect.y(),
+                 move.window_rect.width(),
+                 move.window_rect.height(),
+                 flags);
+}
+
+// Public methods -------------------------------------------------------------
+
 void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
   // No selection clipboard on windows, do nothing.
 }
 
-// Private methods -----------------------------------------------------------
+// Private methods ------------------------------------------------------------
 
 void TestWebViewDelegate::SetPageTitle(const std::wstring& title) {
   // The Windows test shell, pre-refactoring, ignored this.  *shrug*

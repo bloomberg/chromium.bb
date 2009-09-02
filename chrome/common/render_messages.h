@@ -197,7 +197,7 @@ struct ViewHostMsg_PaintRect_Params {
   gfx::Size view_size;
 
   // New window locations for plugin child windows.
-  std::vector<WebPluginGeometry> plugin_window_moves;
+  std::vector<webkit_glue::WebPluginGeometry> plugin_window_moves;
 
   // The following describes the various bits that may be set in flags:
   //
@@ -234,7 +234,7 @@ struct ViewHostMsg_ScrollRect_Params {
   gfx::Size view_size;
 
   // New window locations for plugin child windows.
-  std::vector<WebPluginGeometry> plugin_window_moves;
+  std::vector<webkit_glue::WebPluginGeometry> plugin_window_moves;
 };
 
 // Parameters structure for ViewMsg_UploadFile.
@@ -1060,8 +1060,8 @@ struct ParamTraits<ViewHostMsg_ScrollRect_Params> {
 };
 
 template <>
-struct ParamTraits<WebPluginGeometry> {
-  typedef WebPluginGeometry param_type;
+struct ParamTraits<webkit_glue::WebPluginGeometry> {
+  typedef webkit_glue::WebPluginGeometry param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.window);
     WriteParam(m, p.window_rect);

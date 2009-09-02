@@ -25,6 +25,9 @@
 
 using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
+using webkit_glue::WebPlugin;
+using webkit_glue::WebPluginDelegate;
+using webkit_glue::WebPluginResourceClient;
 
 class FinishDestructionTask : public Task {
  public:
@@ -152,15 +155,16 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
   // PluginThread::current()->Send(new PluginProcessHostMsg_MapNativeViewId(
   //    params.containing_window, &parent));
 #endif
-  delegate_ = WebPluginDelegate::Create(path, mime_type_, parent);
 
-  if (delegate_) {
-    webplugin_ = new WebPluginProxy(
-        channel_, instance_id_, delegate_, page_url_);
+  webplugin_ = new WebPluginProxy(channel_, instance_id_, page_url_);
 #if defined(OS_WIN)
-    if (!webplugin_->SetModalDialogEvent(params.modal_dialog_event))
-      return;
+  if (!webplugin_->SetModalDialogEvent(params.modal_dialog_event))
+    return;
 #endif
+
+  delegate_ = WebPluginDelegate::Create(path, mime_type_, parent);
+  if (delegate_) {
+    webplugin_->set_delegate(delegate_);
     *result = delegate_->Initialize(
         params.url, argn, argv, argc, webplugin_, params.load_manually);
   }

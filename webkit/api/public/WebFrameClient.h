@@ -51,9 +51,7 @@ namespace WebKit {
         // Factory methods -----------------------------------------------------
 
         // May return null.
-        virtual WebPlugin* createPlugin(
-            WebFrame*, const WebURL& source, const WebString& mimeType,
-            const WebString& classID, WebString* actualMimeType) = 0;
+        virtual WebPlugin* createPlugin(WebFrame*, const WebPluginParams&) = 0;
 
         // May return null.
         virtual WebWorker* createWorker(WebFrame*, WebWorkerClient*) = 0;
@@ -189,6 +187,9 @@ namespace WebKit {
 
         // FIXME need to add:
         // find-in-page
+
+    protected:
+        ~WebFrameClient() { }
     };
 
 } // namespace WebKit

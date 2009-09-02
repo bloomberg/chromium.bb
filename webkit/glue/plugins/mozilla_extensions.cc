@@ -273,7 +273,7 @@ NS_IMETHODIMP MozillaExtensionApi::GetCookie(
   if (!plugin_instance_)
     return NS_ERROR_FAILURE;
 
-  WebPlugin* webplugin = plugin_instance_->webplugin();
+  webkit_glue::WebPlugin* webplugin = plugin_instance_->webplugin();
   if (!webplugin)
     return NS_ERROR_FAILURE;
 
@@ -306,7 +306,7 @@ NS_IMETHODIMP MozillaExtensionApi::SetCookie(
   if (!plugin_instance_)
     return NS_ERROR_FAILURE;
 
-  WebPlugin* webplugin = plugin_instance_->webplugin();
+  webkit_glue::WebPlugin* webplugin = plugin_instance_->webplugin();
   if (!webplugin)
     return NS_ERROR_FAILURE;
 

@@ -16,7 +16,7 @@ class PluginInstance;
 
 // A NPAPI Stream based on a URL.
 class PluginStreamUrl : public PluginStream,
-                        public WebPluginResourceClient {
+                        public webkit_glue::WebPluginResourceClient {
  public:
   // Create a new stream for sending to the plugin by fetching
   // a URL. If notifyNeeded is set, then the plugin will be notified
@@ -34,8 +34,8 @@ class PluginStreamUrl : public PluginStream,
   // it is still loading.
   virtual bool Close(NPReason reason);
 
-  virtual WebPluginResourceClient* AsResourceClient() {
-    return static_cast<WebPluginResourceClient*>(this);
+  virtual webkit_glue::WebPluginResourceClient* AsResourceClient() {
+    return static_cast<webkit_glue::WebPluginResourceClient*>(this);
   }
 
   virtual void CancelRequest();

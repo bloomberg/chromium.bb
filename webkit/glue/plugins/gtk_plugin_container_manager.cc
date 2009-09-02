@@ -52,7 +52,7 @@ void GtkPluginContainerManager::DestroyPluginContainer(
 }
 
 void GtkPluginContainerManager::MovePluginContainer(
-    const WebPluginGeometry& move) {
+    const webkit_glue::WebPluginGeometry& move) {
   DCHECK(host_widget_);
   GtkWidget *widget = MapIDToWidget(move.window);
   if (!widget)

@@ -26,6 +26,9 @@
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/webkit_glue.h"
 
+using webkit_glue::WebPlugin;
+using webkit_glue::WebPluginDelegate;
+using webkit_glue::WebPluginResourceClient;
 using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
@@ -160,9 +163,10 @@ void WebPluginDelegateImpl::DestroyInstance() {
   }
 }
 
-void WebPluginDelegateImpl::PlatformInitialize(WebPlugin* plugin) {
+void WebPluginDelegateImpl::PlatformInitialize() {
   // TODO(port): implement these after unforking.
 }
+
 void WebPluginDelegateImpl::PlatformDestroyInstance() {
   // TODO(port): implement these after unforking.
 }

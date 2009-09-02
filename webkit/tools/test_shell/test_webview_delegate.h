@@ -14,6 +14,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
+
 #include <map>
 
 #if defined(OS_LINUX)
@@ -21,12 +22,14 @@
 #endif
 
 #include "base/basictypes.h"
-#include "base/linked_ptr.h"
+#include "base/scoped_ptr.h"
+#include "base/weak_ptr.h"
 #if defined(OS_MACOSX)
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebPopupMenuInfo.h"
 #endif
 #include "webkit/glue/webcursor.h"
+#include "webkit/glue/webplugin_page_delegate.h"
 #include "webkit/glue/webview_delegate.h"
 #if defined(OS_WIN)
 #include "webkit/tools/test_shell/drag_delegate.h"
@@ -40,7 +43,9 @@ class GURL;
 class TestShell;
 class WebWidgetHost;
 
-class TestWebViewDelegate : public WebViewDelegate {
+class TestWebViewDelegate : public WebViewDelegate,
+                            public webkit_glue::WebPluginPageDelegate,
+                            public base::SupportsWeakPtr<TestWebViewDelegate> {
  public:
   struct CapturedContextMenuEvent {
     CapturedContextMenuEvent(ContextNodeType in_node_type,
@@ -70,16 +75,9 @@ class TestWebViewDelegate : public WebViewDelegate {
       WebView* webview,
       const WebKit::WebPopupMenuInfo& info);
 #endif
-  virtual WebPluginDelegate* CreatePluginDelegate(
-      WebView* webview,
-      const GURL& url,
-      const std::string& mime_type,
-      const std::string& clsid,
-      std::string* actual_mime_type);
-#if defined(OS_LINUX)
-  virtual void CreatedPluginWindow(gfx::PluginWindowHandle id);
-  virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle id);
-#endif
+  virtual WebKit::WebPlugin* CreatePlugin(
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params);
   virtual WebKit::WebMediaPlayer* CreateWebMediaPlayer(
       WebKit::WebMediaPlayerClient* client);
   virtual WebKit::WebWorker* CreateWebWorker(WebKit::WebWorkerClient* client);
@@ -87,7 +85,6 @@ class TestWebViewDelegate : public WebViewDelegate {
                        const GURL& url,
                        const GURL& referrer,
                        WebKit::WebNavigationPolicy policy);
-  virtual void DidMovePlugin(const WebPluginGeometry& move);
   virtual void RunJavaScriptAlert(WebKit::WebFrame* webframe,
                                   const std::wstring& message);
   virtual bool RunJavaScriptConfirm(WebKit::WebFrame* webframe,
@@ -202,10 +199,6 @@ class TestWebViewDelegate : public WebViewDelegate {
   virtual void DidChangeSelection(bool is_empty_selection);
   virtual void DidChangeContents();
   virtual void DidEndEditing();
-
-  virtual void DidStartLoading(WebView* webview);
-  virtual void DidStopLoading(WebView* webview);
-
   virtual void WindowObjectCleared(WebKit::WebFrame* webframe);
   virtual WebKit::WebNavigationPolicy PolicyForNavigationAction(
     WebView* webview,
@@ -234,7 +227,28 @@ class TestWebViewDelegate : public WebViewDelegate {
   virtual WebKit::WebRect windowResizerRect();
   virtual WebKit::WebScreenInfo screenInfo();
 
+  // webkit_glue::WebPluginPageDelegate
+  virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
+      const GURL& url,
+      const std::string& mime_type,
+      const std::string& clsid,
+      std::string* actual_mime_type);
+  virtual void CreatedPluginWindow(
+      gfx::PluginWindowHandle handle);
+  virtual void WillDestroyPluginWindow(
+      gfx::PluginWindowHandle handle);
+  virtual void DidMovePlugin(
+      const webkit_glue::WebPluginGeometry& move);
+  virtual void DidStartLoadingForPlugin() {}
+  virtual void DidStopLoadingForPlugin() {}
+  virtual void ShowModalHTMLDialogForPlugin(
+      const GURL& url,
+      const gfx::Size& size,
+      const std::string& json_arguments,
+      std::string* json_retval) {}
+
   TestWebViewDelegate(TestShell* shell);
+  ~TestWebViewDelegate();
   void Reset();
 
   void SetSmartInsertDeleteEnabled(bool enabled);
@@ -333,7 +347,7 @@ class TestWebViewDelegate : public WebViewDelegate {
   int page_id_;
   int last_page_id_updated_;
 
-  linked_ptr<TestShellExtraData> pending_extra_data_;
+  scoped_ptr<TestShellExtraData> pending_extra_data_;
 
   // Maps resource identifiers to a descriptive string.
   typedef std::map<uint32, std::string> ResourceMap;
@@ -358,7 +372,7 @@ class TestWebViewDelegate : public WebViewDelegate {
 #endif
 
 #if defined(OS_MACOSX)
-  linked_ptr<WebKit::WebPopupMenuInfo> popup_menu_info_;
+  scoped_ptr<WebKit::WebPopupMenuInfo> popup_menu_info_;
   WebKit::WebRect popup_bounds_;
 #endif
 
@@ -370,6 +384,8 @@ class TestWebViewDelegate : public WebViewDelegate {
 
   // true if we should block any redirects
   bool block_redirects_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWebViewDelegate);
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_WEBVIEW_DELEGATE_H_

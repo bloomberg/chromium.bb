@@ -403,9 +403,9 @@ gfx::NativeView RenderWidgetHostViewGtk::GetNativeView() {
 }
 
 void RenderWidgetHostViewGtk::MovePluginWindows(
-    const std::vector<WebPluginGeometry>& plugin_window_moves) {
-  for (size_t i = 0; i < plugin_window_moves.size(); ++i) {
-    plugin_container_manager_.MovePluginContainer(plugin_window_moves[i]);
+    const std::vector<webkit_glue::WebPluginGeometry>& moves) {
+  for (size_t i = 0; i < moves.size(); ++i) {
+    plugin_container_manager_.MovePluginContainer(moves[i]);
   }
 }
 

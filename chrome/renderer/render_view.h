@@ -17,6 +17,7 @@
 #include "base/shared_memory.h"
 #include "base/timer.h"
 #include "base/values.h"
+#include "base/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/view_types.h"
@@ -33,6 +34,7 @@
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/webaccessibilitymanager.h"
+#include "webkit/glue/webplugin_page_delegate.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview.h"
@@ -53,7 +55,6 @@ class GURL;
 class ListValue;
 class NavigationState;
 class PrintWebViewHelper;
-class WebPluginDelegate;
 class WebPluginDelegateProxy;
 class WebDevToolsAgentDelegate;
 struct ContextMenuMediaParams;
@@ -98,11 +99,14 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 //
 class RenderView : public RenderWidget,
                    public WebViewDelegate,
-                   public webkit_glue::DomSerializerDelegate {
+                   public webkit_glue::WebPluginPageDelegate,
+                   public webkit_glue::DomSerializerDelegate,
+                   public base::SupportsWeakPtr<RenderView> {
  public:
   struct RenderViewSet {
-    std::set<RenderView* > render_view_set_;
+    std::set<RenderView*> render_view_set_;
   };
+
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
   // parent of the WebView HWND that will be created.  The modal_dialog_event
   // is set by the RenderView whenever a modal dialog alert is shown, so that
@@ -150,9 +154,6 @@ class RenderView : public RenderWidget,
 
   // WebViewDelegate
   virtual bool CanAcceptLoadDrops() const;
-  virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
-                                   const std::string& json_arguments,
-                                   std::string* json_retval);
   virtual void RunJavaScriptAlert(WebKit::WebFrame* webframe,
                                   const std::wstring& message);
   virtual bool RunJavaScriptConfirm(WebKit::WebFrame* webframe,
@@ -263,16 +264,15 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebWidget* CreatePopupWidgetWithInfo(
       WebView* webview,
       const WebKit::WebPopupMenuInfo& info);
-  virtual WebPluginDelegate* CreatePluginDelegate(
-      WebView* webview,
-      const GURL& url,
-      const std::string& mime_type,
-      const std::string& clsid,
-      std::string* actual_mime_type);
+  virtual WebKit::WebPlugin* CreatePlugin(
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params);
   virtual WebKit::WebWorker* CreateWebWorker(WebKit::WebWorkerClient* client);
   virtual WebKit::WebMediaPlayer* CreateWebMediaPlayer(
       WebKit::WebMediaPlayerClient* client);
-  virtual void OnMissingPluginStatus(WebPluginDelegate* delegate, int status);
+  virtual void OnMissingPluginStatus(
+      WebPluginDelegateProxy* delegate,
+      int status);
   virtual void OpenURL(WebView* webview, const GURL& url,
                        const GURL& referrer,
                        WebKit::WebNavigationPolicy policy);
@@ -327,9 +327,6 @@ class RenderView : public RenderWidget,
                                          const WebKit::WebRect& selection);
   virtual bool WasOpenedByUserGesture() const;
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj);
-  virtual void DidMovePlugin(const WebPluginGeometry& move);
-  virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle);
-  virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle);
   virtual void SpellCheck(const std::wstring& word, int* misspell_location,
                           int* misspell_length);
   virtual std::wstring GetAutoCorrectWord(const std::wstring& word);
@@ -338,21 +335,35 @@ class RenderView : public RenderWidget,
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
 
-  // DomSerializerDelegate
-  virtual void DidSerializeDataForFrame(const GURL& frame_url,
-      const std::string& data, PageSavingSerializationStatus status);
-
   // WebKit::WebWidgetClient
   // Most methods are handled by RenderWidget.
   virtual void show(WebKit::WebNavigationPolicy policy);
   virtual void closeWidgetSoon();
   virtual void runModal();
 
+  // WebPluginPageDelegate:
+  virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
+      const GURL& url,
+      const std::string& mime_type,
+      const std::string& clsid,
+      std::string* actual_mime_type);
+  virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle);
+  virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle);
+  virtual void DidMovePlugin(const webkit_glue::WebPluginGeometry& move);
+  virtual void DidStartLoadingForPlugin();
+  virtual void DidStopLoadingForPlugin();
+  virtual void ShowModalHTMLDialogForPlugin(
+      const GURL& url,
+      const gfx::Size& size,
+      const std::string& json_arguments,
+      std::string* json_retval);
+
+  // DomSerializerDelegate
+  virtual void DidSerializeDataForFrame(const GURL& frame_url,
+      const std::string& data, PageSavingSerializationStatus status);
+
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderView();
-
-  // Called when a plugin is destroyed.
-  void PluginDestroyed(WebPluginDelegateProxy* proxy);
 
   // Called when a plugin has crashed.
   void PluginCrashed(base::ProcessId pid, const FilePath& plugin_path);
@@ -754,12 +765,9 @@ class RenderView : public RenderWidget,
   // Timer used to delay the updating of nav state (see SyncNavigationState).
   base::OneShotTimer<RenderView> nav_state_sync_timer_;
 
-  typedef std::vector<WebPluginDelegateProxy*> PluginDelegateList;
-  PluginDelegateList plugin_delegates_;
-
   // Remember the first uninstalled plugin, so that we can ask the plugin
   // to install itself when user clicks on the info bar.
-  WebPluginDelegate* first_default_plugin_;
+  base::WeakPtr<webkit_glue::WebPluginDelegate> first_default_plugin_;
 
   // If the browser hasn't sent us an ACK for the last FindReply we sent
   // to it, then we need to queue up the message (keeping only the most

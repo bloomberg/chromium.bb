@@ -44,6 +44,16 @@ namespace WebKit {
         virtual void invalidate() = 0;
         virtual void invalidateRect(const WebRect&) = 0;
 
+        // Causes the container to report its current geometry via
+        // WebPlugin::updateGeometry.
+        virtual void reportGeometry() = 0;
+
+        // Drop any references to script objects allocated by the plugin.
+        // These are objects derived from WebPlugin::scriptableObject.  This is
+        // called when the plugin is being destroyed or if it needs to be
+        // re-initialized.
+        virtual void clearScriptObjects() = 0;
+
         // Returns the scriptable object associated with the DOM element
         // containing the plugin.
         virtual NPObject* scriptableObjectForElement() = 0;

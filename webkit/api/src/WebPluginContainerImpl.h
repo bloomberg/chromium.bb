@@ -76,6 +76,8 @@ namespace WebKit {
         // WebPluginContainer methods
         virtual void invalidate();
         virtual void invalidateRect(const WebRect&);
+        virtual void reportGeometry();
+        virtual void clearScriptObjects();
         virtual NPObject* scriptableObjectForElement();
         virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed);
         virtual void loadFrameRequest(const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData);

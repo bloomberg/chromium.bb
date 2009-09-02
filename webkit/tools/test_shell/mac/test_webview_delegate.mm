@@ -21,7 +21,7 @@ using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
 using WebKit::WebWidget;
 
-// WebViewDelegate -----------------------------------------------------------
+// WebViewDelegate ------------------------------------------------------------
 
 WebWidget* TestWebViewDelegate::CreatePopupWidgetWithInfo(
     WebView* webview,
@@ -29,34 +29,6 @@ WebWidget* TestWebViewDelegate::CreatePopupWidgetWithInfo(
   WebWidget* webwidget = shell_->CreatePopupWidget(webview);
   popup_menu_info_.reset(new WebPopupMenuInfo(info));
   return webwidget;
-}
-
-WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
-    WebView* webview,
-    const GURL& url,
-    const std::string& mime_type,
-    const std::string& clsid,
-    std::string* actual_mime_type) {
-  WebWidgetHost *host = GetWidgetHost();
-  if (!host)
-    return NULL;
-  gfx::NativeView view = host->view_handle();
-
-  bool allow_wildcard = true;
-  WebPluginInfo info;
-  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, clsid,
-                                                     allow_wildcard, &info,
-                                                     actual_mime_type))
-    return NULL;
-
-  if (actual_mime_type && !actual_mime_type->empty())
-    return WebPluginDelegateImpl::Create(info.path, *actual_mime_type, view);
-  else
-    return WebPluginDelegateImpl::Create(info.path, mime_type, view);
-}
-
-void TestWebViewDelegate::DidMovePlugin(const WebPluginGeometry& move) {
-  // TODO(port): add me once plugins work.
 }
 
 void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
@@ -70,8 +42,7 @@ void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
   [alert runModal];
 }
 
-
-// WebWidgetDelegate ---------------------------------------------------------
+// WebWidgetClient ------------------------------------------------------------
 
 void TestWebViewDelegate::show(WebNavigationPolicy policy) {
   if (!popup_menu_info_.get())
@@ -199,11 +170,51 @@ void TestWebViewDelegate::runModal() {
   NOTIMPLEMENTED();
 }
 
+// WebPluginPageDelegate ------------------------------------------------------
+
+webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
+    const GURL& url,
+    const std::string& mime_type,
+    const std::string& clsid,
+    std::string* actual_mime_type) {
+  WebWidgetHost *host = GetWidgetHost();
+  if (!host)
+    return NULL;
+  gfx::NativeView view = host->view_handle();
+
+  bool allow_wildcard = true;
+  WebPluginInfo info;
+  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, clsid,
+                                                     allow_wildcard, &info,
+                                                     actual_mime_type))
+    return NULL;
+
+  if (actual_mime_type && !actual_mime_type->empty())
+    return WebPluginDelegateImpl::Create(info.path, *actual_mime_type, view);
+  else
+    return WebPluginDelegateImpl::Create(info.path, mime_type, view);
+}
+
+void TestWebViewDelegate::CreatedPluginWindow(
+    gfx::PluginWindowHandle handle) {
+}
+
+void TestWebViewDelegate::WillDestroyPluginWindow(
+    gfx::PluginWindowHandle handle) {
+}
+
+void TestWebViewDelegate::DidMovePlugin(
+    const webkit_glue::WebPluginGeometry& move) {
+  // TODO(port): add me once plugins work.
+}
+
+// Public methods -------------------------------------------------------------
+
 void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
   // No selection clipboard on mac, do nothing.
 }
 
-// Private methods -----------------------------------------------------------
+// Private methods ------------------------------------------------------------
 
 void TestWebViewDelegate::SetPageTitle(const std::wstring& title) {
   [[shell_->webViewHost()->view_handle() window]

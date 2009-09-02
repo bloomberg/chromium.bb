@@ -38,6 +38,7 @@
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/webdropdata.h"
+#include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webview.h"
@@ -62,6 +63,8 @@ using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebNavigationType;
 using WebKit::WebNavigationPolicy;
+using WebKit::WebPlugin;
+using WebKit::WebPluginParams;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSize;
@@ -184,6 +187,11 @@ WebWidget* TestWebViewDelegate::CreatePopupWidget(WebView* webview,
   return shell_->CreatePopupWidget(webview);
 }
 
+WebPlugin* TestWebViewDelegate::CreatePlugin(
+    WebFrame* frame, const WebPluginParams& params) {
+  return new webkit_glue::WebPluginImpl(frame, params, AsWeakPtr());
+}
+
 WebKit::WebMediaPlayer* TestWebViewDelegate::CreateWebMediaPlayer(
     WebKit::WebMediaPlayerClient* client) {
   scoped_refptr<media::FilterFactoryCollection> factory =
@@ -220,14 +228,6 @@ void TestWebViewDelegate::OpenURL(WebView* webview, const GURL& url,
   TestShell* shell = NULL;
   if (TestShell::CreateNewWindow(UTF8ToWide(url.spec()), &shell))
     shell->Show(policy);
-}
-
-void TestWebViewDelegate::DidStartLoading(WebView* webview) {
-  // Ignored
-}
-
-void TestWebViewDelegate::DidStopLoading(WebView* webview) {
-  // Ignored
 }
 
 void TestWebViewDelegate::WindowObjectCleared(WebFrame* webframe) {
@@ -817,7 +817,7 @@ void TestWebViewDelegate::SetUserStyleSheetLocation(const GURL& location) {
   prefs->Apply(shell_->webView());
 }
 
-// WebWidgetDelegate ---------------------------------------------------------
+// WebWidgetClient -----------------------------------------------------------
 
 void TestWebViewDelegate::didInvalidateRect(const WebRect& rect) {
   if (WebWidgetHost* host = GetWidgetHost())
@@ -869,8 +869,14 @@ TestWebViewDelegate::TestWebViewDelegate(TestShell* shell)
       block_redirects_(false) {
 }
 
+TestWebViewDelegate::~TestWebViewDelegate() {
+}
+
 void TestWebViewDelegate::Reset() {
-  *this = TestWebViewDelegate(shell_);
+  // Do a little placement new dance...
+  TestShell* shell = shell_;
+  this->~TestWebViewDelegate();
+  new (this) TestWebViewDelegate(shell);
 }
 
 void TestWebViewDelegate::SetSmartInsertDeleteEnabled(bool enabled) {

@@ -40,11 +40,11 @@
 
 using base::TimeDelta;
 using base::TimeTicks;
-
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebTextDirection;
+using webkit_glue::WebPluginGeometry;
 
 namespace {
 

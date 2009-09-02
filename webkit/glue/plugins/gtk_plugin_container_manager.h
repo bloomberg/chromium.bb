@@ -11,7 +11,10 @@
 #include "base/gfx/native_widget_types.h"
 
 typedef struct _GtkWidget GtkWidget;
+
+namespace webkit_glue {
 struct WebPluginGeometry;
+}
 
 // Helper class that creates and manages plugin containers (GtkSocket).
 class GtkPluginContainerManager {
@@ -29,7 +32,7 @@ class GtkPluginContainerManager {
 
   // Takes an update from WebKit about a plugin's position and side and moves
   // the plugin accordingly.
-  void MovePluginContainer(const WebPluginGeometry& move);
+  void MovePluginContainer(const webkit_glue::WebPluginGeometry& move);
 
  private:
   // Maps a plugin XID to the corresponding container widget.

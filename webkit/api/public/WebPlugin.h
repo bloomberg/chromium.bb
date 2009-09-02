@@ -39,15 +39,18 @@ namespace WebKit {
     class WebDataSource;
     class WebFrame;
     class WebInputEvent;
+    class WebPluginContainer;
     class WebURL;
     class WebURLResponse;
     struct WebCursorInfo;
+    struct WebPluginParams;
     struct WebRect;
     struct WebURLError;
     template <typename T> class WebVector;
 
     class WebPlugin {
     public:
+        virtual bool initialize(WebPluginContainer*) = 0;
         virtual void destroy() = 0;
 
         virtual NPObject* scriptableObject() = 0;

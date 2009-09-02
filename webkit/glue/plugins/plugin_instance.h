@@ -21,8 +21,11 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/npapi/bindings/npapi.h"
 
-class WebPlugin;
 class MessageLoop;
+
+namespace webkit_glue {
+class WebPlugin;
+}
 
 namespace NPAPI
 {
@@ -88,8 +91,10 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void set_transparent(bool value) { transparent_ = value; }
 
   // Get/Set the WebPlugin associated with this instance
-  WebPlugin* webplugin() { return webplugin_; }
-  void set_web_plugin(WebPlugin* webplugin) { webplugin_ = webplugin; }
+  webkit_glue::WebPlugin* webplugin() { return webplugin_; }
+  void set_web_plugin(webkit_glue::WebPlugin* webplugin) {
+    webplugin_ = webplugin;
+  }
 
   // Get the mimeType for this plugin stream
   const std::string &mime_type() { return mime_type_; }
@@ -225,7 +230,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   gfx::PluginWindowHandle                  window_handle_;
   bool                                     windowless_;
   bool                                     transparent_;
-  WebPlugin*                               webplugin_;
+  webkit_glue::WebPlugin*                  webplugin_;
   std::string                              mime_type_;
   GURL                                     get_url_;
   intptr_t                                 get_notify_data_;

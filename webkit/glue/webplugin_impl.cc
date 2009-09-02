@@ -1,58 +1,45 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
-#include "Document.h"
-#include "DocumentLoader.h"
-#include "FormState.h"
-#include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoadRequest.h"
-#include "HTMLFormElement.h"
-#include "KURL.h"
-#include "PlatformString.h"
-#include "ResourceResponse.h"
-#include "ScriptController.h"
-#include "ScriptValue.h"
-#include "Widget.h"
-
-#undef LOG
 #include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
+#include "skia/ext/platform_canvas.h"
+#if defined(OS_WIN)
+#include "webkit/activex_shim/activex_shared.h"
+#endif
 #include "webkit/api/public/WebConsoleMessage.h"
+#include "webkit/api/public/WebCString.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebData.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebHTTPBody.h"
 #include "webkit/api/public/WebHTTPHeaderVisitor.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebKitClient.h"
+#include "webkit/api/public/WebPluginContainer.h"
+#include "webkit/api/public/WebPluginParams.h"
 #include "webkit/api/public/WebRect.h"
-#include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLLoader.h"
 #include "webkit/api/public/WebURLLoaderClient.h"
 #include "webkit/api/public/WebURLResponse.h"
-#include "webkit/api/public/WebVector.h"
-#include "webkit/api/src/WebPluginContainerImpl.h"
-#include "webkit/glue/chrome_client_impl.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/multipart_response_delegate.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webplugin_delegate.h"
-#include "webkit/glue/webview_impl.h"
+#include "webkit/glue/webplugin_page_delegate.h"
+#include "webkit/glue/webview.h"
 #include "googleurl/src/gurl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebConsoleMessage;
+using WebKit::WebCString;
 using WebKit::WebCursorInfo;
 using WebKit::WebData;
 using WebKit::WebDataSource;
@@ -63,7 +50,7 @@ using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebPluginContainer;
-using WebKit::WebPluginContainerImpl;
+using WebKit::WebPluginParams;
 using WebKit::WebRect;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -75,6 +62,7 @@ using WebKit::WebURLResponse;
 using WebKit::WebVector;
 using webkit_glue::MultipartResponseDelegate;
 
+namespace webkit_glue {
 namespace {
 
 // This class handles individual multipart responses. It is instantiated when
@@ -209,60 +197,87 @@ void GetResponseInfo(const WebURLResponse& response,
   }
 }
 
+// Utility function to convert a vector to an array of char*'s.
+// Caller is responsible to free memory with DeleteArray().
+static char** ToArray(const WebVector<WebString>& input) {
+  char** array = new char*[input.size() + 1];
+  size_t index;
+  for (index = 0; index < input.size(); ++index) {
+    const WebCString& src = input[index].utf8();
+    array[index] = new char[src.length() + 1];
+    base::strlcpy(array[index], src.data(), src.length() + 1);
+    array[index][src.length()] = '\0';
+  }
+  array[index] = 0;
+  return array;
+}
+
+static void DeleteArray(char** array) {
+  char** ptr = array;
+  while (*ptr) {
+    delete[] *ptr;
+    ++ptr;
+  }
+  delete[] array;
+}
+
 }  // namespace
 
-PassRefPtr<WebCore::Widget> WebPluginImpl::Create(
-    const GURL& url,
-    char** argn,
-    char** argv,
-    int argc,
-    WebCore::HTMLPlugInElement* element,
-    WebFrameImpl* frame,
-    WebPluginDelegate* delegate,
-    bool load_manually,
-    const std::string& mime_type) {
-  // NOTE: frame contains element
+// WebKit::WebPlugin ----------------------------------------------------------
 
-  WebPluginImpl* webplugin = new WebPluginImpl(
-      frame, delegate, url, load_manually, mime_type, argc, argn, argv);
+bool WebPluginImpl::initialize(WebPluginContainer* container) {
+  if (!page_delegate_)
+    return false;
 
-  if (!delegate->Initialize(url, argn, argv, argc, webplugin, load_manually)) {
-    delegate->PluginDestroyed();
-    delete webplugin;
+  // Get the classid and version from attributes of the object.
+  std::string combined_clsid;
+#if defined(OS_WIN)
+  std::string clsid, version;
+  if (activex_shim::IsMimeTypeActiveX(mime_type_)) {
+    for (size_t i = 0; i < arg_count_; i++) {
+      const char* param_name = arg_names_[i];
+      const char* param_value = arg_values_[i];
+      if (base::strcasecmp(param_name, "classid") == 0) {
+        activex_shim::GetClsidFromClassidAttribute(param_value, &clsid);
+      } else if (base::strcasecmp(param_name, "codebase") == 0) {
+        version = activex_shim::GetVersionFromCodebaseAttribute(param_value);
+      }
+    }
+
+    // Attempt to map this clsid to a known NPAPI mime type if possible, failing
+    // which we attempt to load the activex shim for the clsid.
+    if (!activex_shim::GetMimeTypeForClsid(clsid, &mime_type_)) {
+      // We need to pass the combined clsid + version to PluginsList, so that it
+      // would detect if the requested version is installed. If not, it needs
+      // to use the default plugin to update the control.
+      if (!version.empty())
+        combined_clsid = clsid + "#" + version;
+      else
+        combined_clsid = clsid;
+    }
+  }
+#endif
+
+  std::string actual_mime_type;
+  WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
+      plugin_url_, mime_type_, combined_clsid, &actual_mime_type);
+  if (!plugin_delegate)
     return NULL;
+
+  bool ok = plugin_delegate->Initialize(
+      plugin_url_, arg_names_, arg_values_, arg_count_, this, load_manually_);
+  if (!ok) {
+    plugin_delegate->PluginDestroyed();
+    return false;
   }
 
-  PassRefPtr<WebPluginContainerImpl> container =
-      WebPluginContainerImpl::create(element, webplugin);
-  webplugin->SetContainer(container.get());
-  return container;
+  if (!actual_mime_type.empty())
+    mime_type_ = actual_mime_type;
+  delegate_ = plugin_delegate;
+
+  SetContainer(container);
+  return true;
 }
-
-WebPluginImpl::WebPluginImpl(WebFrameImpl* webframe,
-                             WebPluginDelegate* delegate,
-                             const GURL& plugin_url,
-                             bool load_manually,
-                             const std::string& mime_type,
-                             int arg_count,
-                             char** arg_names,
-                             char** arg_values)
-    : windowless_(false),
-      window_(NULL),
-      webframe_(webframe),
-      delegate_(delegate),
-      container_(NULL),
-      plugin_url_(plugin_url),
-      load_manually_(load_manually),
-      first_geometry_update_(true),
-      ignore_response_error_(false),
-      mime_type_(mime_type),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-
-  ArrayToVector(arg_count, arg_names, &arg_names_);
-  ArrayToVector(arg_count, arg_values, &arg_values_);
-}
-
-// WebKit::WebPlugin -----------------------------------------------------------
 
 void WebPluginImpl::destroy() {
   SetContainer(NULL);
@@ -291,23 +306,20 @@ void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& paint_rect) {
 void WebPluginImpl::updateGeometry(
     const WebRect& window_rect, const WebRect& clip_rect,
     const WebVector<WebRect>& cutout_rects, bool is_visible) {
-  if (window_) {
-    WebViewDelegate* view_delegate = GetWebViewDelegate();
-    if (view_delegate) {
-      // Notify the window hosting the plugin (the WebViewDelegate) that
-      // it needs to adjust the plugin, so that all the HWNDs can be moved
-      // at the same time.
-      WebPluginGeometry move;
-      move.window = window_;
-      move.window_rect = window_rect;
-      move.clip_rect = clip_rect;
-      for (size_t i = 0; i < cutout_rects.size(); ++i)
-        move.cutout_rects.push_back(cutout_rects[i]);
-      move.rects_valid = true;
-      move.visible = is_visible;
+  if (window_ && page_delegate_) {
+    // Notify the window hosting the plugin (the WebViewDelegate) that
+    // it needs to adjust the plugin, so that all the HWNDs can be moved
+    // at the same time.
+    WebPluginGeometry move;
+    move.window = window_;
+    move.window_rect = window_rect;
+    move.clip_rect = clip_rect;
+    for (size_t i = 0; i < cutout_rects.size(); ++i)
+      move.cutout_rects.push_back(cutout_rects[i]);
+    move.rects_valid = true;
+    move.visible = is_visible;
 
-      view_delegate->DidMovePlugin(move);
-    }
+    page_delegate_->DidMovePlugin(move);
   }
 
   if (first_geometry_update_ || window_rect != window_rect_ ||
@@ -343,11 +355,7 @@ void WebPluginImpl::updateFocus(bool focused) {
 }
 
 void WebPluginImpl::updateVisibility(bool visible) {
-  if (!window_)
-    return;
-
-  WebViewDelegate* view_delegate = GetWebViewDelegate();
-  if (!view_delegate)
+  if (!window_ || !page_delegate_)
     return;
 
   WebPluginGeometry move;
@@ -357,7 +365,7 @@ void WebPluginImpl::updateVisibility(bool visible) {
   move.rects_valid = false;
   move.visible = visible;
 
-  view_delegate->DidMovePlugin(move);
+  page_delegate_->DidMovePlugin(move);
 }
 
 bool WebPluginImpl::acceptsInputEvents() {
@@ -415,19 +423,43 @@ void WebPluginImpl::didFailLoadingFrameRequest(
 
 // -----------------------------------------------------------------------------
 
-WebPluginImpl::~WebPluginImpl() {
+WebPluginImpl::WebPluginImpl(
+    WebFrame* webframe, const WebPluginParams& params,
+    const base::WeakPtr<WebPluginPageDelegate>& page_delegate)
+    : windowless_(false),
+      window_(NULL),
+      page_delegate_(page_delegate),
+      webframe_(webframe),
+      delegate_(NULL),
+      container_(NULL),
+      plugin_url_(params.url),
+      load_manually_(params.loadManually),
+      first_geometry_update_(true),
+      ignore_response_error_(false),
+      mime_type_(params.mimeType.utf8()),
+      arg_names_(ToArray(params.attributeNames)),
+      arg_values_(ToArray(params.attributeValues)),
+      arg_count_(params.attributeNames.size()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
+  StringToLowerASCII(&mime_type_);
 }
 
+WebPluginImpl::~WebPluginImpl() {
+  if (arg_names_)
+    DeleteArray(arg_names_);
+  if (arg_values_)
+    DeleteArray(arg_values_);
+}
 
 void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
   if (window) {
     DCHECK(!windowless_);  // Make sure not called twice.
     window_ = window;
-    WebViewDelegate* view_delegate = GetWebViewDelegate();
-    if (view_delegate) {
+    if (page_delegate_) {
       // Tell the view delegate that the plugin window was created, so that it
       // can create necessary container widgets.
-      view_delegate->CreatedPluginWindow(window);
+      page_delegate_->CreatedPluginWindow(window);
     }
   } else {
     DCHECK(!window_);  // Make sure not called twice.
@@ -438,10 +470,8 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
 void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {
   DCHECK_EQ(window, window_);
   window_ = NULL;
-  WebViewDelegate* view_delegate = GetWebViewDelegate();
-  if (!view_delegate)
-    return;
-  view_delegate->WillDestroyPluginWindow(window);
+  if (page_delegate_)
+    page_delegate_->WillDestroyPluginWindow(window);
 }
 
 GURL WebPluginImpl::CompleteURL(const char* url) {
@@ -475,8 +505,8 @@ bool WebPluginImpl::SetPostData(WebURLRequest* request,
   bool rv = NPAPI::PluginHost::SetPostData(buf, length, &names, &values, &body);
 
   for (size_t i = 0; i < names.size(); ++i) {
-    request->addHTTPHeaderField(webkit_glue::StdStringToWebString(names[i]),
-                                webkit_glue::StdStringToWebString(values[i]));
+    request->addHTTPHeaderField(WebString::fromUTF8(names[i]),
+                                WebString::fromUTF8(values[i]));
   }
 
   WebString content_type_header = WebString::fromUTF8("Content-Type");
@@ -498,13 +528,16 @@ bool WebPluginImpl::SetPostData(WebURLRequest* request,
   return rv;
 }
 
-RoutingStatus WebPluginImpl::RouteToFrame(const char *method,
-                                          bool is_javascript_url,
-                                          const char* target, unsigned int len,
-                                          const char* buf, bool is_file_data,
-                                          bool notify_needed,
-                                          intptr_t notify_data,
-                                          const char* url, GURL* unused) {
+WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
+    const char *method,
+    bool is_javascript_url,
+    const char* target,
+    unsigned int len,
+    const char* buf,
+    bool is_file_data,
+    bool notify_needed,
+    intptr_t notify_data,
+    const char* url) {
   // If there is no target, there is nothing to do
   if (!target)
     return NOT_ROUTED;
@@ -594,10 +627,9 @@ std::string WebPluginImpl::GetCookies(const GURL& url, const GURL& policy_url) {
 void WebPluginImpl::ShowModalHTMLDialog(const GURL& url, int width, int height,
                                         const std::string& json_arguments,
                                         std::string* json_retval) {
-  WebViewDelegate* view_delegate = GetWebViewDelegate();
-  if (view_delegate) {
-    view_delegate->ShowModalHTMLDialog(
-        url, width, height, json_arguments, json_retval);
+  if (page_delegate_) {
+    page_delegate_->ShowModalHTMLDialogForPlugin(
+        url, gfx::Size(width, height), json_arguments, json_retval);
   }
 }
 
@@ -767,9 +799,8 @@ void WebPluginImpl::didFinishLoading(WebURLLoader* loader) {
     if (index != multi_part_response_map_.end()) {
       delete (*index).second;
       multi_part_response_map_.erase(index);
-
-      WebView* webview = webframe_->GetWebViewImpl();
-      webview->GetDelegate()->DidStopLoading(webview);
+      if (page_delegate_)
+        page_delegate_->DidStopLoadingForPlugin();
     }
     loader->setDefersLoading(true);
     WebPluginResourceClient* resource_client = client_info->client;
@@ -807,9 +838,8 @@ void WebPluginImpl::RemoveClient(WebURLLoader* loader) {
 }
 
 void WebPluginImpl::SetContainer(WebPluginContainer* container) {
-  if (container == NULL) {
+  if (!container)
     TearDownPluginInstance(NULL);
-  }
   container_ = container;
 }
 
@@ -836,10 +866,9 @@ void WebPluginImpl::HandleURLRequestInternal(
   // case in that the request is a javascript url and the target is "_self",
   // in which case we route the output to the plugin rather than routing it
   // to the plugin's frame.
-  GURL complete_url;
-  int routing_status = RouteToFrame(method, is_javascript_url, target, len,
-                                    buf, is_file_data, notify, notify_data,
-                                    url, &complete_url);
+  RoutingStatus routing_status =
+      RouteToFrame(method, is_javascript_url, target, len, buf, is_file_data,
+                   notify, notify_data, url);
   if (routing_status == ROUTED)
     return;
 
@@ -931,9 +960,9 @@ bool WebPluginImpl::InitiateHTTPRequest(int resource_id,
 }
 
 void WebPluginImpl::CancelDocumentLoad() {
-  if (frame()->loader()->activeDocumentLoader()) {
+  if (webframe_) {
     ignore_response_error_ = true;
-    frame()->loader()->activeDocumentLoader()->stopLoading();
+    webframe_->stopLoading();
   }
 }
 
@@ -988,8 +1017,8 @@ void WebPluginImpl::HandleHttpMultipartResponse(
     return;
   }
 
-  WebView* webview = webframe_->GetWebViewImpl();
-  webview->GetDelegate()->DidStartLoading(webview);
+  if (page_delegate_)
+    page_delegate_->DidStartLoadingForPlugin();
 
   MultiPartResponseClient* multi_part_response_client =
       new MultiPartResponseClient(client);
@@ -1003,11 +1032,11 @@ void WebPluginImpl::HandleHttpMultipartResponse(
 
 bool WebPluginImpl::ReinitializePluginForResponse(
     WebURLLoader* loader) {
-  WebFrameImpl* webframe = webframe_;
+  WebFrame* webframe = webframe_;
   if (!webframe)
     return false;
 
-  WebViewImpl* webview = webframe->GetWebViewImpl();
+  WebView* webview = webframe->view();
   if (!webview)
     return false;
 
@@ -1019,28 +1048,14 @@ bool WebPluginImpl::ReinitializePluginForResponse(
   container_ = container_widget;
   webframe_ = webframe;
 
-  WebViewDelegate* webview_delegate = webview->GetDelegate();
   std::string actual_mime_type;
-  WebPluginDelegate* plugin_delegate =
-      webview_delegate->CreatePluginDelegate(webview, plugin_url_,
-                                             mime_type_, std::string(),
-                                             &actual_mime_type);
+  WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
+      plugin_url_, mime_type_, std::string(), &actual_mime_type);
 
-  char** arg_names = new char*[arg_names_.size()];
-  char** arg_values = new char*[arg_values_.size()];
+  bool ok = plugin_delegate->Initialize(
+      plugin_url_, arg_names_, arg_values_, arg_count_, this, load_manually_);
 
-  for (unsigned int index = 0; index < arg_names_.size(); ++index) {
-    arg_names[index] = const_cast<char*>(arg_names_[index].c_str());
-    arg_values[index] = const_cast<char*>(arg_values_[index].c_str());
-  }
-
-  bool init_ok = plugin_delegate->Initialize(plugin_url_, arg_names,
-                                             arg_values, arg_names_.size(),
-                                             this, load_manually_);
-  delete[] arg_names;
-  delete[] arg_values;
-
-  if (!init_ok) {
+  if (!ok) {
     container_ = NULL;
     // TODO(iyengar) Should we delete the current plugin instance here?
     return false;
@@ -1050,8 +1065,9 @@ bool WebPluginImpl::ReinitializePluginForResponse(
   delegate_ = plugin_delegate;
 
   // Force a geometry update to occur to ensure that the plugin becomes
-  // visible.  TODO(darin): Avoid this cast!
-  static_cast<WebPluginContainerImpl*>(container_)->frameRectsChanged();
+  // visible.
+  container_->reportGeometry();
+
   // The plugin move sequences accumulated via DidMove are sent to the browser
   // whenever the renderer paints. Force a paint here to ensure that changes
   // to the plugin window are propagated to the browser.
@@ -1059,25 +1075,13 @@ bool WebPluginImpl::ReinitializePluginForResponse(
   return true;
 }
 
-void WebPluginImpl::ArrayToVector(int total_values, char** values,
-                                  std::vector<std::string>* value_vector) {
-  DCHECK(value_vector != NULL);
-  for (int index = 0; index < total_values; ++index) {
-    value_vector->push_back(values[index]);
-  }
-}
-
 void WebPluginImpl::TearDownPluginInstance(
     WebURLLoader* loader_to_ignore) {
-  // The frame maintains a list of JSObjects which are related to this
-  // plugin.  Tell the frame we're gone so that it can invalidate all
-  // of those sub JSObjects.
-  if (frame()) {
-    ASSERT(container_);
-    // TODO(darin): Avoid this cast!
-    frame()->script()->cleanupScriptObjectsForPlugin(
-        static_cast<WebKit::WebPluginContainerImpl*>(container_));
-  }
+  // The container maintains a list of JSObjects which are related to this
+  // plugin.  Tell the frame we're gone so that it can invalidate all of
+  // those sub JSObjects.
+  if (container_)
+    container_->clearScriptObjects();
 
   if (delegate_) {
     // Call PluginDestroyed() first to prevent the plugin from calling us back
@@ -1109,9 +1113,4 @@ void WebPluginImpl::TearDownPluginInstance(
   method_factory_.RevokeAll();
 }
 
-WebViewDelegate* WebPluginImpl::GetWebViewDelegate() {
-  if (!webframe_)
-    return NULL;
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  return webview ? webview->delegate() : NULL;
-}
+}  // namespace webkit_glue

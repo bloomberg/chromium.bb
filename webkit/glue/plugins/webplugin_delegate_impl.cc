@@ -21,6 +21,9 @@
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/webkit_glue.h"
 
+using webkit_glue::WebPlugin;
+using webkit_glue::WebPluginDelegate;
+using webkit_glue::WebPluginResourceClient;
 using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
@@ -30,17 +33,17 @@ WebPluginDelegate* WebPluginDelegate::Create(
     const FilePath& filename,
     const std::string& mime_type,
     gfx::PluginWindowHandle containing_view) {
-  scoped_refptr<NPAPI::PluginLib> plugin =
+  scoped_refptr<NPAPI::PluginLib> plugin_lib =
       NPAPI::PluginLib::CreatePluginLib(filename);
-  if (plugin.get() == NULL)
+  if (plugin_lib.get() == NULL)
     return NULL;
 
-  NPError err = plugin->NP_Initialize();
+  NPError err = plugin_lib->NP_Initialize();
   if (err != NPERR_NO_ERROR)
     return NULL;
 
   scoped_refptr<NPAPI::PluginInstance> instance =
-      plugin->CreateInstance(mime_type);
+      plugin_lib->CreateInstance(mime_type);
   return new WebPluginDelegateImpl(containing_view, instance.get());
 }
 
@@ -52,7 +55,7 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
                                        bool load_manually) {
   plugin_ = plugin;
 
-  instance_->set_web_plugin(plugin);
+  instance_->set_web_plugin(plugin_);
   NPAPI::PluginInstance* old_instance =
       NPAPI::PluginInstance::SetInitializingInstance(instance_);
 
@@ -86,7 +89,7 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
     instance_->set_window_handle(parent_);
   }
 
-  PlatformInitialize(plugin);
+  PlatformInitialize();
 
   plugin_url_ = url.spec();
 

@@ -12,7 +12,9 @@
 #include "base/ref_counted.h"
 #include "third_party/npapi/bindings/npapi.h"
 
+namespace webkit_glue {
 class WebPluginResourceClient;
+}
 
 namespace NPAPI {
 
@@ -59,7 +61,9 @@ class PluginStream : public base::RefCounted<PluginStream> {
   // Close the stream.
   virtual bool Close(NPReason reason);
 
-  virtual WebPluginResourceClient* AsResourceClient() { return NULL; }
+  virtual webkit_glue::WebPluginResourceClient* AsResourceClient() {
+    return NULL;
+  }
 
   // Cancels any HTTP requests initiated by the stream.
   virtual void CancelRequest() {}

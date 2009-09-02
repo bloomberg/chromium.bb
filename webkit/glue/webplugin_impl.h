@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,45 +9,33 @@
 #include <map>
 #include <vector>
 
-#include "Widget.h"
-
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/linked_ptr.h"
+#include "base/task.h"
+#include "base/weak_ptr.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebPlugin.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURLLoaderClient.h"
 #include "webkit/api/public/WebURLRequest.h"
-#include "webkit/glue/webframe_impl.h"
+#include "webkit/api/public/WebVector.h"
 #include "webkit/glue/webplugin.h"
 
-
-class WebFrameImpl;
-class WebPluginDelegate;
-
-namespace WebCore {
-class Event;
-class Frame;
-class HTMLPlugInElement;
-class IntRect;
-class KeyboardEvent;
-class KURL;
-class MouseEvent;
-class ResourceError;
-class ResourceResponse;
-class ScrollView;
-class String;
-class Widget;
-}
+class WebViewDelegate;
 
 namespace WebKit {
+class WebFrame;
 class WebPluginContainer;
 class WebURLResponse;
 class WebURLLoader;
 }
 
 namespace webkit_glue {
+
 class MultipartResponseDelegate;
-}
+class WebPluginDelegate;
+class WebPluginPageDelegate;
 
 // This is the WebKit side of the plugin implementation that forwards calls,
 // after changing out of WebCore types, to a delegate.  The delegate may
@@ -56,19 +44,11 @@ class WebPluginImpl : public WebPlugin,
                       public WebKit::WebPlugin,
                       public WebKit::WebURLLoaderClient {
  public:
-  // Creates a WebPlugin instance, as long as the delegate's initialization
-  // succeeds.  If it fails, the delegate is deleted and NULL is returned.
-  // Note that argn and argv are UTF8.
-  static PassRefPtr<WebCore::Widget> Create(const GURL& url,
-                                 char** argn,
-                                 char** argv,
-                                 int argc,
-                                 WebCore::HTMLPlugInElement* element,
-                                 WebFrameImpl* frame,
-                                 WebPluginDelegate* delegate,
-                                 bool load_manually,
-                                 const std::string& mime_type);
-  virtual ~WebPluginImpl();
+  WebPluginImpl(
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params,
+      const base::WeakPtr<WebPluginPageDelegate>& page_delegate);
+  ~WebPluginImpl();
 
   // Helper function for sorting post data.
   static bool SetPostData(WebKit::WebURLRequest* request,
@@ -76,12 +56,9 @@ class WebPluginImpl : public WebPlugin,
                           uint32 length);
 
  private:
-  WebPluginImpl(
-      WebFrameImpl* frame, WebPluginDelegate* delegate, const GURL& plugin_url,
-      bool load_manually, const std::string& mime_type, int arg_count,
-      char** arg_names, char** arg_values);
-
   // WebKit::WebPlugin methods:
+  virtual bool initialize(
+      WebKit::WebPluginContainer* container);
   virtual void destroy();
   virtual NPObject* scriptableObject();
   virtual void paint(
@@ -123,6 +100,13 @@ class WebPluginImpl : public WebPlugin,
                      bool notify_needed, intptr_t notify_data,
                      bool popups_allowed);
 
+  enum RoutingStatus {
+    ROUTED,
+    NOT_ROUTED,
+    INVALID_URL,
+    GENERAL_FAILURE
+  };
+
   // Given a download request, check if we need to route the output to a frame.
   // Returns ROUTED if the load is done and routed to a frame, NOT_ROUTED or
   // corresponding error codes otherwise.
@@ -130,7 +114,7 @@ class WebPluginImpl : public WebPlugin,
                              const char* target, unsigned int len,
                              const char* buf, bool is_file_data,
                              bool notify_needed, intptr_t notify_data,
-                             const char* url, GURL* completeURL);
+                             const char* url);
 
   // Cancels a pending request.
   void CancelResource(int id);
@@ -195,8 +179,6 @@ class WebPluginImpl : public WebPlugin,
   // request given a handle.
   void RemoveClient(WebKit::WebURLLoader* loader);
 
-  WebCore::Frame* frame() { return webframe_ ? webframe_->frame() : NULL; }
-
   void HandleURLRequest(const char *method,
                         bool is_javascript_url,
                         const char* target, unsigned int len,
@@ -231,15 +213,8 @@ class WebPluginImpl : public WebPlugin,
   // to handle the response identified by the loader parameter.
   bool ReinitializePluginForResponse(WebKit::WebURLLoader* loader);
 
-  // Helper functions to convert an array of names/values to a vector.
-  static void ArrayToVector(int total_values, char** values,
-                            std::vector<std::string>* value_vector);
-
   // Delayed task for downloading the plugin source URL.
   void OnDownloadPluginSrcUrl();
-
-  // Returns the WebViewDelegate associated with webframe_;
-  WebViewDelegate* GetWebViewDelegate();
 
   struct ClientInfo {
     int id;
@@ -257,7 +232,8 @@ class WebPluginImpl : public WebPlugin,
 
   bool windowless_;
   gfx::PluginWindowHandle window_;
-  WebFrameImpl* webframe_;
+  base::WeakPtr<WebPluginPageDelegate> page_delegate_;
+  WebKit::WebFrame* webframe_;
 
   WebPluginDelegate* delegate_;
 
@@ -290,15 +266,17 @@ class WebPluginImpl : public WebPlugin,
   // The mime type of the plugin.
   std::string mime_type_;
 
-  // Holds the list of argument names passed to the plugin.
-  std::vector<std::string> arg_names_;
-
-  // Holds the list of argument values passed to the plugin.
-  std::vector<std::string> arg_values_;
+  // Holds the list of argument names and values passed to the plugin.  We keep
+  // these so that we can re-initialize the plugin if we need to.
+  char** arg_names_;
+  char** arg_values_;
+  size_t arg_count_;
 
   ScopedRunnableMethodFactory<WebPluginImpl> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);
 };
+
+}  // namespace webkit_glue
 
 #endif  // #ifndef WEBKIT_GLUE_WEBPLUGIN_IMPL_H_

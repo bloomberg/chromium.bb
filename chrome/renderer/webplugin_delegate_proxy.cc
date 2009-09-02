@@ -59,7 +59,7 @@ using WebKit::WebString;
 
 // Proxy for WebPluginResourceClient.  The object owns itself after creation,
 // deleting itself after its callback has been called.
-class ResourceClientProxy : public WebPluginResourceClient {
+class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
  public:
   ResourceClientProxy(PluginChannelHost* channel, int instance_id)
     : channel_(channel), instance_id_(instance_id), resource_id_(0),
@@ -162,13 +162,14 @@ WebPluginDelegateProxy* WebPluginDelegateProxy::Create(
     const GURL& url,
     const std::string& mime_type,
     const std::string& clsid,
-    RenderView* render_view) {
+    const base::WeakPtr<RenderView>& render_view) {
   return new WebPluginDelegateProxy(mime_type, clsid, render_view);
 }
 
-WebPluginDelegateProxy::WebPluginDelegateProxy(const std::string& mime_type,
-                                               const std::string& clsid,
-                                               RenderView* render_view)
+WebPluginDelegateProxy::WebPluginDelegateProxy(
+    const std::string& mime_type,
+    const std::string& clsid,
+    const base::WeakPtr<RenderView>& render_view)
     : render_view_(render_view),
       plugin_(NULL),
       windowless_(false),
@@ -221,13 +222,12 @@ void WebPluginDelegateProxy::PluginDestroyed() {
     channel_host_ = NULL;
   }
 
-  render_view_->PluginDestroyed(this);
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 bool WebPluginDelegateProxy::Initialize(const GURL& url, char** argn,
                                         char** argv, int argc,
-                                        WebPlugin* plugin,
+                                        webkit_glue::WebPlugin* plugin,
                                         bool load_manually) {
   IPC::ChannelHandle channel_handle;
   FilePath plugin_path;
@@ -881,9 +881,10 @@ void WebPluginDelegateProxy::OnShowModalHTMLDialog(
     const GURL& url, int width, int height, const std::string& json_arguments,
     std::string* json_retval) {
   DCHECK(json_retval);
-  if (render_view_)
-    render_view_->ShowModalHTMLDialog(url, width, height, json_arguments,
-                                      json_retval);
+  if (render_view_) {
+    render_view_->ShowModalHTMLDialogForPlugin(
+        url, gfx::Size(width, height), json_arguments, json_retval);
+  }
 }
 
 static void EncodeDragData(const WebDragData& data, bool add_data,
@@ -1048,13 +1049,34 @@ void WebPluginDelegateProxy::OnHandleURLRequest(
                             params.popups_allowed);
 }
 
-WebPluginResourceClient* WebPluginDelegateProxy::CreateResourceClient(
+webkit_glue::WebPluginResourceClient*
+WebPluginDelegateProxy::CreateResourceClient(
     int resource_id, const GURL& url, bool notify_needed,
     intptr_t notify_data, intptr_t npstream) {
   ResourceClientProxy* proxy = new ResourceClientProxy(channel_host_,
                                                        instance_id_);
   proxy->Initialize(resource_id, url, notify_needed, notify_data, npstream);
   return proxy;
+}
+
+bool WebPluginDelegateProxy::IsWindowless() const {
+  NOTREACHED();
+  return false;
+}
+
+gfx::Rect WebPluginDelegateProxy::GetRect() const {
+  NOTREACHED();
+  return gfx::Rect();
+}
+
+gfx::Rect WebPluginDelegateProxy::GetClipRect() const {
+  NOTREACHED();
+  return gfx::Rect();
+}
+
+int WebPluginDelegateProxy::GetQuirks() const {
+  NOTREACHED();
+  return 0;
 }
 
 void WebPluginDelegateProxy::OnCancelDocumentLoad() {

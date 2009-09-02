@@ -11,12 +11,9 @@
 #include "base/string16.h"
 #include "third_party/npapi/bindings/npapi.h"
 
-struct NPObject;
-
 class FilePath;
 class GURL;
-class WebPlugin;
-class WebPluginResourceClient;
+struct NPObject;
 
 namespace WebKit {
 class WebInputEvent;
@@ -26,6 +23,11 @@ struct WebCursorInfo;
 namespace gfx {
 class Rect;
 }
+
+namespace webkit_glue {
+
+class WebPlugin;
+class WebPluginResourceClient;
 
 // This is the interface that a plugin implementation needs to provide.
 class WebPluginDelegate {
@@ -43,7 +45,6 @@ class WebPluginDelegate {
     PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW = 512,  // Linux
   };
 
-  WebPluginDelegate() {}
   virtual ~WebPluginDelegate() {}
 
   static WebPluginDelegate* Create(const FilePath& filename,
@@ -59,8 +60,8 @@ class WebPluginDelegate {
   // be passed from webkit. if false indicates that the plugin should download
   // the data. This also controls whether the plugin is instantiated as a full
   // page plugin (NP_FULL) or embedded (NP_EMBED).
-  virtual bool Initialize(const GURL& url, char** argn, char** argv,
-                          int argc, WebPlugin* plugin, bool load_manually) = 0;
+  virtual bool Initialize(const GURL& url, char** argn, char** argv, int argc,
+                          WebPlugin* plugin, bool load_manually) = 0;
 
   // Called when the WebPlugin is being destroyed.  This is a signal to the
   // delegate that it should tear-down the plugin implementation and not call
@@ -138,17 +139,16 @@ class WebPluginDelegate {
                                                         intptr_t notify_data,
                                                         intptr_t stream) = 0;
 
-  virtual bool IsWindowless() const;
+  virtual bool IsWindowless() const = 0;
 
-  virtual const gfx::Rect& GetRect() const;
+  virtual gfx::Rect GetRect() const = 0;
 
-  virtual const gfx::Rect& GetClipRect() const;
+  virtual gfx::Rect GetClipRect() const = 0;
 
   // Returns a combination of PluginQuirks.
-  virtual int GetQuirks() const;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebPluginDelegate);
+  virtual int GetQuirks() const = 0;
 };
 
-#endif  // #ifndef WEBKIT_GLUE_WEBPLUGIN_DELEGATE_H_
+}  // namespace webkit_glue
+
+#endif  // WEBKIT_GLUE_WEBPLUGIN_DELEGATE_H_

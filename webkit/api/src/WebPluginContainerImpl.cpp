@@ -72,15 +72,7 @@ namespace WebKit {
 void WebPluginContainerImpl::setFrameRect(const IntRect& frameRect)
 {
     Widget::setFrameRect(frameRect);
-
-    if (!parent())
-        return;
-
-    IntRect windowRect, clipRect;
-    Vector<IntRect> cutOutRects;
-    calculateGeometry(frameRect, windowRect, clipRect, cutOutRects);
-
-    m_webPlugin->updateGeometry(windowRect, clipRect, cutOutRects, isVisible());
+    reportGeometry();
 }
 
 void WebPluginContainerImpl::paint(GraphicsContext* gc, const IntRect& damageRect)
@@ -173,10 +165,7 @@ void WebPluginContainerImpl::handleEvent(Event* event)
 void WebPluginContainerImpl::frameRectsChanged()
 {
     Widget::frameRectsChanged();
-
-    // This is a hack to tickle re-positioning of the plugin in the case where
-    // our parent view was scrolled.
-    setFrameRect(frameRect());
+    reportGeometry();
 }
 
 void WebPluginContainerImpl::setParentVisible(bool parentVisible)
@@ -206,7 +195,7 @@ void WebPluginContainerImpl::setParent(ScrollView* view)
 
     Widget::setParent(view);
     if (view)
-        setFrameRect(frameRect());
+        reportGeometry();
 }
 
 void WebPluginContainerImpl::invalidate()
@@ -217,6 +206,26 @@ void WebPluginContainerImpl::invalidate()
 void WebPluginContainerImpl::invalidateRect(const WebRect& rect)
 {
     invalidateRect(static_cast<IntRect>(rect));
+}
+
+void WebPluginContainerImpl::reportGeometry()
+{
+    if (!parent())
+        return;
+
+    IntRect windowRect, clipRect;
+    Vector<IntRect> cutOutRects;
+    calculateGeometry(frameRect(), windowRect, clipRect, cutOutRects);
+
+    m_webPlugin->updateGeometry(windowRect, clipRect, cutOutRects, isVisible());
+}
+
+void WebPluginContainerImpl::clearScriptObjects()
+{
+    Frame* frame = m_element->document()->frame();
+    if (!frame)
+        return;
+    frame->script()->cleanupScriptObjectsForPlugin(this);
 }
 
 NPObject* WebPluginContainerImpl::scriptableObjectForElement()

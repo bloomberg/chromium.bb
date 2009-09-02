@@ -22,24 +22,28 @@
 #include "ipc/ipc_message.h"
 #include "webkit/glue/webplugin.h"
 
+class PluginChannel;
+
 namespace base {
 class WaitableEvent;
 }
 
-class PluginChannel;
+namespace webkit_glue {
 class WebPluginDelegate;
+}
 
 // This is an implementation of WebPlugin that proxies all calls to the
 // renderer.
-class WebPluginProxy : public WebPlugin {
+class WebPluginProxy : public webkit_glue::WebPlugin {
  public:
   // Creates a new proxy for WebPlugin, using the given sender to send the
   // marshalled WebPlugin calls.
   WebPluginProxy(PluginChannel* channel,
                  int route_id,
-                 WebPluginDelegate* delegate,
                  const GURL& page_url);
   ~WebPluginProxy();
+
+  void set_delegate(webkit_glue::WebPluginDelegate* d) { delegate_ = d; }
 
   // WebPlugin overrides
   void SetWindow(gfx::PluginWindowHandle window);
@@ -83,7 +87,7 @@ class WebPluginProxy : public WebPlugin {
 
   // Returns a WebPluginResourceClient object given its id, or NULL if no
   // object with that id exists.
-  WebPluginResourceClient* GetResourceClient(int id);
+  webkit_glue::WebPluginResourceClient* GetResourceClient(int id);
 
   // Returns the process id of the renderer that contains this plugin.
   int GetRendererProcessId();
@@ -122,7 +126,8 @@ class WebPluginProxy : public WebPlugin {
 
   bool IsOffTheRecord();
 
-  void ResourceClientDeleted(WebPluginResourceClient* resource_client);
+  void ResourceClientDeleted(
+      webkit_glue::WebPluginResourceClient* resource_client);
 
   base::WaitableEvent* modal_dialog_event() {
     return modal_dialog_event_.get();
@@ -151,7 +156,8 @@ class WebPluginProxy : public WebPlugin {
   // transform of the local HDC.
   void UpdateTransform();
 
-  typedef base::hash_map<int, WebPluginResourceClient*> ResourceClientMap;
+  typedef base::hash_map<int, webkit_glue::WebPluginResourceClient*>
+      ResourceClientMap;
   ResourceClientMap resource_clients_;
 
   scoped_refptr<PluginChannel> channel_;
@@ -159,7 +165,7 @@ class WebPluginProxy : public WebPlugin {
   uint32 cp_browsing_context_;
   NPObject* window_npobject_;
   NPObject* plugin_element_;
-  WebPluginDelegate* delegate_;
+  webkit_glue::WebPluginDelegate* delegate_;
   gfx::Rect damaged_rect_;
   bool waiting_for_paint_;
   scoped_ptr<base::WaitableEvent> modal_dialog_event_;

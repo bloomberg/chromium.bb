@@ -88,6 +88,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/glue/webplugin_delegate.h"
+#include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/webview.h"
 
 #if defined(OS_WIN)
@@ -191,7 +192,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       last_indexed_page_id_(-1),
       opened_by_user_gesture_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      first_default_plugin_(NULL),
       devtools_agent_(NULL),
       devtools_client_(NULL),
       history_back_list_count_(0),
@@ -215,13 +215,6 @@ RenderView::~RenderView() {
   Singleton<RenderViewSet>()->render_view_set_.erase(this);
   if (decrement_shared_popup_at_destruction_)
     shared_popup_counter_->data--;
-
-  // Clear any back-pointers that might still be held by plugins.
-  PluginDelegateList::iterator it = plugin_delegates_.begin();
-  while (it != plugin_delegates_.end()) {
-    (*it)->DropRenderView();
-    it = plugin_delegates_.erase(it);
-  }
 
   render_thread_->RemoveFilter(audio_message_filter_);
 }
@@ -256,24 +249,10 @@ void RenderView::SetNextPageID(int32 next_page_id) {
   next_page_id_ = next_page_id;
 }
 
-void RenderView::PluginDestroyed(WebPluginDelegateProxy* proxy) {
-  PluginDelegateList::iterator it =
-      std::find(plugin_delegates_.begin(), plugin_delegates_.end(), proxy);
-  DCHECK(it != plugin_delegates_.end());
-  plugin_delegates_.erase(it);
-  // If the plugin is deleted, we need to clear our reference in case user
-  // clicks the info bar to install. Unfortunately we are getting
-  // PluginDestroyed in single process mode. However, that is not a huge
-  // concern.
-  if (proxy == first_default_plugin_)
-    first_default_plugin_ = NULL;
-}
-
 void RenderView::PluginCrashed(base::ProcessId pid,
                                const FilePath& plugin_path) {
   Send(new ViewHostMsg_CrashedPlugin(routing_id_, pid, plugin_path));
 }
-
 
 void RenderView::JSOutOfMemory() {
   Send(new ViewHostMsg_JSOutOfMemory(routing_id_));
@@ -1070,7 +1049,7 @@ void RenderView::DidStartLoading(WebView* webview) {
   is_loading_ = true;
   // Clear the pointer so that we can assign it only when there is an unknown
   // plugin on a page.
-  first_default_plugin_ = NULL;
+  first_default_plugin_.reset();
 
   Send(new ViewHostMsg_DidStartLoading(routing_id_));
 }
@@ -1784,16 +1763,6 @@ void RenderView::OnPopupNotificationVisibilityChanged(bool visible) {
   popup_notification_visible_ = visible;
 }
 
-void RenderView::ShowModalHTMLDialog(const GURL& url, int width, int height,
-                                     const std::string& json_arguments,
-                                     std::string* json_retval) {
-  IPC::SyncMessage* msg = new ViewHostMsg_ShowModalHTMLDialog(
-      routing_id_, url, width, height, json_arguments, json_retval);
-
-  msg->set_pump_messages_event(modal_dialog_event_.get());
-  Send(msg);
-}
-
 uint32 RenderView::GetCPBrowsingContext() {
   uint32 context = 0;
   Send(new ViewHostMsg_GetCPBrowsingContext(&context));
@@ -1911,51 +1880,9 @@ WebWidget* RenderView::CreatePopupWidgetWithInfo(WebView* webview,
   return widget->webwidget();
 }
 
-WebPluginDelegate* RenderView::CreatePluginDelegate(
-    WebView* webview,
-    const GURL& url,
-    const std::string& mime_type,
-    const std::string& clsid,
-    std::string* actual_mime_type) {
-  if (!PluginChannelHost::IsListening())
-    return NULL;
-
-  GURL policy_url;
-  if (webview->GetMainFrame())
-    policy_url = webview->GetMainFrame()->url();
-
-  FilePath path;
-  render_thread_->Send(
-      new ViewHostMsg_GetPluginPath(url, policy_url, mime_type, clsid, &path,
-                                    actual_mime_type));
-  if (path.value().empty())
-    return NULL;
-
-  std::string mime_type_to_use;
-  if (!actual_mime_type->empty())
-    mime_type_to_use = *actual_mime_type;
-  else
-    mime_type_to_use = mime_type;
-
-  if (RenderProcess::current()->in_process_plugins()) {
-#if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
-    return WebPluginDelegate::Create(path,
-                                     mime_type_to_use,
-                                     gfx::NativeViewFromId(host_window_));
-#else
-    NOTIMPLEMENTED();
-    return NULL;
-#endif
-  }
-
-  WebPluginDelegateProxy* proxy =
-      WebPluginDelegateProxy::Create(url, mime_type_to_use, clsid, this);
-  if (!proxy)
-    return NULL;
-
-  plugin_delegates_.push_back(proxy);
-
-  return proxy;
+WebKit::WebPlugin* RenderView::CreatePlugin(
+    WebFrame* frame, const WebKit::WebPluginParams& params) {
+  return new webkit_glue::WebPluginImpl(frame, params, AsWeakPtr());
 }
 
 WebKit::WebMediaPlayer* RenderView::CreateWebMediaPlayer(
@@ -1993,13 +1920,14 @@ WebKit::WebMediaPlayer* RenderView::CreateWebMediaPlayer(
   return new webkit_glue::WebMediaPlayerImpl(client, factory);
 }
 
-void RenderView::OnMissingPluginStatus(WebPluginDelegate* delegate,
-                                       int status) {
+void RenderView::OnMissingPluginStatus(
+    WebPluginDelegateProxy* delegate,
+    int status) {
 #if defined(OS_WIN)
-  if (first_default_plugin_ == NULL) {
+  if (!first_default_plugin_) {
     // Show the InfoBar for the first available plugin.
     if (status == default_plugin::MISSING_PLUGIN_AVAILABLE) {
-      first_default_plugin_ = delegate;
+      first_default_plugin_ = delegate->AsWeakPtr();
       Send(new ViewHostMsg_MissingPluginStatus(routing_id_, status));
     }
   } else {
@@ -2082,6 +2010,88 @@ void RenderView::runModal() {
   DCHECK(did_show_) << "should already have shown the view";
 
   IPC::SyncMessage* msg = new ViewHostMsg_RunModal(routing_id_);
+
+  msg->set_pump_messages_event(modal_dialog_event_.get());
+  Send(msg);
+}
+
+webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
+    const GURL& url,
+    const std::string& mime_type,
+    const std::string& clsid,
+    std::string* actual_mime_type) {
+  if (!PluginChannelHost::IsListening())
+    return NULL;
+
+  GURL policy_url;
+  WebFrame* main_frame = webview()->GetMainFrame();
+  if (main_frame)
+    policy_url = main_frame->url();
+
+  FilePath path;
+  render_thread_->Send(
+      new ViewHostMsg_GetPluginPath(url, policy_url, mime_type, clsid, &path,
+                                    actual_mime_type));
+  if (path.value().empty())
+    return NULL;
+
+  const std::string* mime_type_to_use;
+  if (!actual_mime_type->empty())
+    mime_type_to_use = actual_mime_type;
+  else
+    mime_type_to_use = &mime_type;
+
+  if (RenderProcess::current()->in_process_plugins()) {
+#if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
+    return webkit_glue::WebPluginDelegate::Create(
+        path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
+#else
+    NOTIMPLEMENTED();
+    return NULL;
+#endif
+  }
+
+  return WebPluginDelegateProxy::Create(
+      url, *mime_type_to_use, clsid, AsWeakPtr());
+}
+
+void RenderView::CreatedPluginWindow(gfx::PluginWindowHandle window) {
+#if defined(OS_LINUX)
+  RenderThread::current()->Send(new ViewHostMsg_CreatePluginContainer(
+      routing_id(), window));
+#endif
+}
+
+void RenderView::WillDestroyPluginWindow(gfx::PluginWindowHandle window) {
+#if defined(OS_LINUX)
+  RenderThread::current()->Send(new ViewHostMsg_DestroyPluginContainer(
+      routing_id(), window));
+#endif
+  CleanupWindowInPluginMoves(window);
+}
+
+void RenderView::DidMovePlugin(const webkit_glue::WebPluginGeometry& move) {
+  SchedulePluginMove(move);
+}
+
+void RenderView::DidStartLoadingForPlugin() {
+  // TODO(darin): Make is_loading_ be a counter!
+  DidStartLoading(webview());
+}
+
+void RenderView::DidStopLoadingForPlugin() {
+  // TODO(darin): Make is_loading_ be a counter!
+  DidStopLoading(webview());
+}
+
+void RenderView::ShowModalHTMLDialogForPlugin(
+    const GURL& url,
+    const gfx::Size& size,
+    const std::string& json_arguments,
+    std::string* json_retval) {
+  IPC::SyncMessage* msg = new ViewHostMsg_ShowModalHTMLDialog(
+      routing_id_, url, size.width(), size.height(), json_arguments,
+      json_retval);
 
   msg->set_pump_messages_event(modal_dialog_event_.get());
   Send(msg);
@@ -2742,9 +2752,8 @@ void RenderView::OnSetAltErrorPageURL(const GURL& url) {
 
 void RenderView::OnInstallMissingPlugin() {
   // This could happen when the first default plugin is deleted.
-  if (first_default_plugin_ == NULL)
-    return;
-  first_default_plugin_->InstallMissingPlugin();
+  if (first_default_plugin_)
+    first_default_plugin_->InstallMissingPlugin();
 }
 
 void RenderView::OnFileChooserResponse(
@@ -3295,25 +3304,6 @@ void RenderView::FocusAccessibilityObject(
   // TODO(port): accessibility not yet implemented
   NOTIMPLEMENTED();
 #endif
-}
-
-void RenderView::DidMovePlugin(const WebPluginGeometry& move) {
-  SchedulePluginMove(move);
-}
-
-void RenderView::CreatedPluginWindow(gfx::PluginWindowHandle window) {
-#if defined(OS_LINUX)
-  RenderThread::current()->Send(new ViewHostMsg_CreatePluginContainer(
-      routing_id(), window));
-#endif
-}
-
-void RenderView::WillDestroyPluginWindow(gfx::PluginWindowHandle window) {
-#if defined(OS_LINUX)
-  RenderThread::current()->Send(new ViewHostMsg_DestroyPluginContainer(
-      routing_id(), window));
-#endif
-  CleanupWindowInPluginMoves(window);
 }
 
 void RenderView::SendPasswordForms(WebFrame* frame) {

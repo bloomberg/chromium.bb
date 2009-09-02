@@ -149,7 +149,7 @@ gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
 }
 
 void RenderWidgetHostViewMac::MovePluginWindows(
-    const std::vector<WebPluginGeometry>& plugin_window_moves) {
+    const std::vector<webkit_glue::WebPluginGeometry>& moves) {
   // All plugin stuff is TBD. TODO(avi,awalker): fill in
   // http://crbug.com/8192
 }

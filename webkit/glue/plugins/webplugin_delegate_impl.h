@@ -29,7 +29,7 @@ class PluginInstance;
 
 // An implementation of WebPluginDelegate that proxies all calls to
 // the plugin process.
-class WebPluginDelegateImpl : public WebPluginDelegate {
+class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
  public:
   static bool IsPluginDelegateWindow(gfx::NativeWindow window);
   static bool GetPluginNameFromWindow(gfx::NativeWindow window,
@@ -45,7 +45,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
                           char** argn,
                           char** argv,
                           int argc,
-                          WebPlugin* plugin,
+                          webkit_glue::WebPlugin* plugin,
                           bool load_manually);
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect);
@@ -76,15 +76,16 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   virtual void DidManualLoadFail();
   virtual FilePath GetPluginPath();
   virtual void InstallMissingPlugin();
-  virtual WebPluginResourceClient* CreateResourceClient(int resource_id,
-                                                        const GURL& url,
-                                                        bool notify_needed,
-                                                        intptr_t notify_data,
-                                                        intptr_t stream);
+  virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
+      int resource_id,
+      const GURL& url,
+      bool notify_needed,
+      intptr_t notify_data,
+      intptr_t stream);
 
   virtual bool IsWindowless() const { return windowless_ ; }
-  virtual const gfx::Rect& GetRect() const { return window_rect_; }
-  virtual const gfx::Rect& GetClipRect() const { return clip_rect_; }
+  virtual gfx::Rect GetRect() const { return window_rect_; }
+  virtual gfx::Rect GetClipRect() const { return clip_rect_; }
   virtual int GetQuirks() const { return quirks_; }
 
 #if defined(OS_MACOSX)
@@ -100,9 +101,8 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
                         NPAPI::PluginInstance *instance);
   ~WebPluginDelegateImpl();
 
-  // Called by Initialize(), used for platform-specific initialization
-  // code.
-  void PlatformInitialize(WebPlugin* plugin);
+  // Called by Initialize() for platform-specific initialization.
+  void PlatformInitialize();
 
   // Called by DestroyInstance(), used for platform-specific destruction.
   void PlatformDestroyInstance();
@@ -185,7 +185,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // used by windowed and windowless plugins
   bool windowless_;
 
-  WebPlugin* plugin_;
+  webkit_glue::WebPlugin* plugin_;
   scoped_refptr<NPAPI::PluginInstance> instance_;
 
 #if defined(OS_WIN)
@@ -308,7 +308,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Holds the current cursor set by the windowless plugin.
   WebCursor current_windowless_cursor_;
 
-  friend class WebPluginDelegate;
+  friend class webkit_glue::WebPluginDelegate;
 
   DISALLOW_EVIL_CONSTRUCTORS(WebPluginDelegateImpl);
 };

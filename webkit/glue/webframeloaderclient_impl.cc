@@ -31,10 +31,9 @@
 #include "base/string_util.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
-#if defined(OS_WIN)
-#include "webkit/activex_shim/activex_shared.h"
-#endif
 #include "webkit/api/public/WebForm.h"
+#include "webkit/api/public/WebPlugin.h"
+#include "webkit/api/public/WebPluginParams.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebVector.h"
@@ -49,8 +48,6 @@
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webframeloaderclient_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webplugin_delegate.h"
-#include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview_impl.h"
 
@@ -63,8 +60,10 @@ using WebKit::WebData;
 using WebKit::WebDataSourceImpl;
 using WebKit::WebNavigationType;
 using WebKit::WebNavigationPolicy;
+using WebKit::WebPlugin;
 using WebKit::WebPluginContainerImpl;
 using WebKit::WebPluginLoadObserver;
+using WebKit::WebPluginParams;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLError;
@@ -81,6 +80,14 @@ static const char kInternalErrorDomain[] = "webkit_glue";
 enum {
   ERR_POLICY_CHANGE = -10000,
 };
+
+static void CopyStringVector(
+    const Vector<String>& input, WebVector<WebString>* output) {
+  WebVector<WebString> result(input.size());
+  for (size_t i = 0; i < input.size(); ++i)
+    result[i] = webkit_glue::StringToWebString(input[i]);
+  output->swap(result);
+}
 
 WebFrameLoaderClient::WebFrameLoaderClient(WebFrameImpl* frame)
     : webframe_(frame),
@@ -1212,78 +1219,14 @@ PassRefPtr<Frame> WebFrameLoaderClient::createFrame(
   return webframe_->CreateChildFrame(frame_request, owner_element);
 }
 
-// Utility function to convert a vector to an array of char*'s.
-// Caller is responsible to free memory with DeleteToArray().
-static char** ToArray(const Vector<WebCore::String> &vector) {
-  char **rv = new char *[vector.size()+1];
-  unsigned int index = 0;
-  for (index = 0; index < vector.size(); ++index) {
-    WebCore::CString src = vector[index].utf8();
-    rv[index] = new char[src.length() + 1];
-    base::strlcpy(rv[index], src.data(), src.length() + 1);
-    rv[index][src.length()] = '\0';
-  }
-  rv[index] = 0;
-  return rv;
-}
-
-static void DeleteToArray(char** arr) {
-  char **ptr = arr;
-  while (*ptr != 0) {
-    delete [] *ptr;
-    ++ptr;
-  }
-  delete [] arr;
-}
-
-PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(const IntSize& size, // TODO(erikkay): how do we use this?
-                                           HTMLPlugInElement* element,
-                                           const KURL&url,
-                                           const Vector<String>& param_names,
-                                           const Vector<String>& param_values,
-                                           const String& mime_type,
-                                           bool load_manually) {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (!d)
-    return NULL;
-
-  GURL gurl = webkit_glue::KURLToGURL(url);
-  std::string my_mime_type =
-      webkit_glue::CStringToStdString(mime_type.latin1());
-  StringToLowerASCII(&my_mime_type);
-
-  // Get the classid and version from attributes of the object.
-  std::string combined_clsid;
-#if defined(OS_WIN)
-  std::string clsid, version;
-  if (activex_shim::IsMimeTypeActiveX(my_mime_type)) {
-    GURL url = webframe_->url();
-    for (unsigned int i = 0; i < param_names.size(); i++) {
-      String lowercase_param_name = param_names[i].lower();
-      if (lowercase_param_name == "classid") {
-        activex_shim::GetClsidFromClassidAttribute(
-            webkit_glue::CStringToStdString(param_values[i].latin1()), &clsid);
-      } else if (lowercase_param_name == "codebase") {
-        version = activex_shim::GetVersionFromCodebaseAttribute(
-            webkit_glue::CStringToStdString(param_values[i].latin1()));
-      }
-    }
-
-    // Attempt to map this clsid to a known NPAPI mime type if possible, failing
-    // which we attempt to load the activex shim for the clsid.
-    if (!activex_shim::GetMimeTypeForClsid(clsid, &my_mime_type)) {
-      // We need to pass the combined clsid + version to PluginsList, so that it
-      // would detect if the requested version is installed. If not, it needs
-      // to use the default plugin to update the control.
-      if (!version.empty())
-        combined_clsid = clsid + "#" + version;
-      else
-        combined_clsid = clsid;
-    }
-  }
-#endif
-
+PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(
+    const IntSize& size, // TODO(erikkay): how do we use this?
+    HTMLPlugInElement* element,
+    const KURL& url,
+    const Vector<String>& param_names,
+    const Vector<String>& param_values,
+    const String& mime_type,
+    bool load_manually) {
 #if defined(OS_POSIX)
   // WebCore asks us to make a plugin even if we don't have a
   // registered handler, with a comment saying it's so we can display
@@ -1298,29 +1241,29 @@ PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(const IntSize& size, // TO
     return NULL;
 #endif
 
-  std::string actual_mime_type;
-  WebPluginDelegate* plugin_delegate =
-      d->CreatePluginDelegate(webframe_->GetWebViewImpl(), gurl, my_mime_type,
-                              combined_clsid, &actual_mime_type);
-  if (!plugin_delegate)
+  WebViewImpl* webview = webframe_->GetWebViewImpl();
+  if (!webview->delegate())
     return NULL;
 
-  if (!actual_mime_type.empty())
-    my_mime_type = actual_mime_type;
+  WebPluginParams params;
+  params.url = webkit_glue::KURLToWebURL(url);
+  params.mimeType = webkit_glue::StringToWebString(mime_type);
+  CopyStringVector(param_names, &params.attributeNames);
+  CopyStringVector(param_values, &params.attributeValues);
+  params.loadManually = load_manually;
 
-  DCHECK(param_names.size() == param_values.size());
+  WebPlugin* webplugin = webview->delegate()->CreatePlugin(webframe_, params);
+  if (!webplugin)
+    return NULL;
 
-  char **argn = ToArray(param_names);
-  char **argv = ToArray(param_values);
-  int argc = static_cast<int>(param_names.size());
-  RefPtr<Widget> result = WebPluginImpl::Create(gurl, argn, argv, argc, element,
-                                         webframe_, plugin_delegate,
-                                         load_manually, my_mime_type);
+  // The container takes ownership of the WebPlugin.
+  RefPtr<WebPluginContainerImpl> container =
+      WebPluginContainerImpl::create(element, webplugin);
 
-  DeleteToArray(argn);
-  DeleteToArray(argv);
+  if (!webplugin->initialize(container.get()))
+    return NULL;
 
-  return result;
+  return container;
 }
 
 // This method gets called when a plugin is put in place of html content

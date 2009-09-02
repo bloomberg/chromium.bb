@@ -70,7 +70,7 @@ class RenderWidgetHostView {
 
   // Moves all plugin windows as described in the given list.
   virtual void MovePluginWindows(
-      const std::vector<WebPluginGeometry>& plugin_window_moves) = 0;
+      const std::vector<webkit_glue::WebPluginGeometry>& moves) = 0;
 
   // Actually set/take focus to/from the associated View component.
   virtual void Focus() = 0;

@@ -84,10 +84,10 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
   }
 }
 
-void WebPluginDelegateImpl::PlatformInitialize(WebPlugin* plugin) {
+void WebPluginDelegateImpl::PlatformInitialize() {
   gfx::PluginWindowHandle handle =
       windowless_ ? 0 : gtk_plug_get_id(GTK_PLUG(plug_));
-  plugin->SetWindow(handle);
+  plugin_->SetWindow(handle);
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {

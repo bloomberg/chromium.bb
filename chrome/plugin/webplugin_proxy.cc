@@ -34,6 +34,8 @@
 #endif
 
 using WebKit::WebBindings;
+using webkit_glue::WebPluginDelegate;
+using webkit_glue::WebPluginResourceClient;
 
 typedef std::map<CPBrowsingContext, WebPluginProxy*> ContextMap;
 static ContextMap& GetContextMap() {
@@ -43,14 +45,13 @@ static ContextMap& GetContextMap() {
 WebPluginProxy::WebPluginProxy(
     PluginChannel* channel,
     int route_id,
-    WebPluginDelegate* delegate,
     const GURL& page_url)
     : channel_(channel),
       route_id_(route_id),
       cp_browsing_context_(0),
       window_npobject_(NULL),
       plugin_element_(NULL),
-      delegate_(delegate),
+      delegate_(NULL),
       waiting_for_paint_(false),
       page_url_(page_url),
       ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this))

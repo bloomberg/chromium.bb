@@ -879,7 +879,8 @@ WebScreenInfo RenderWidget::screenInfo() {
   return results;
 }
 
-void RenderWidget::SchedulePluginMove(const WebPluginGeometry& move) {
+void RenderWidget::SchedulePluginMove(
+    const webkit_glue::WebPluginGeometry& move) {
   size_t i = 0;
   for (; i < plugin_window_moves_.size(); ++i) {
     if (plugin_window_moves_[i].window == move.window) {

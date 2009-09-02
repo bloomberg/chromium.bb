@@ -245,12 +245,12 @@ void WebPluginDelegateImpl::PluginDestroyed() {
   }
 }
 
-void WebPluginDelegateImpl::PlatformInitialize(WebPlugin* plugin) {
-  plugin->SetWindow(windowed_handle_);
+void WebPluginDelegateImpl::PlatformInitialize() {
+  plugin_->SetWindow(windowed_handle_);
   if (windowless_) {
     CreateDummyWindowForActivation();
     handle_event_pump_messages_event_ = CreateEvent(NULL, TRUE, FALSE, NULL);
-    plugin->SetWindowlessPumpEvent(handle_event_pump_messages_event_);
+    plugin_->SetWindowlessPumpEvent(handle_event_pump_messages_event_);
   }
 
   // The windowless version of the Silverlight plugin calls the

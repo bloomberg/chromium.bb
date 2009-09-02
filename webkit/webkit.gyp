@@ -1461,7 +1461,6 @@
         'glue/webmenurunner_mac.h',
         'glue/webmenurunner_mac.mm',
         'glue/webplugin.h',
-        'glue/webplugin_delegate.cc',
         'glue/webplugin_delegate.h',
         'glue/webplugin_impl.cc',
         'glue/webplugin_impl.h',

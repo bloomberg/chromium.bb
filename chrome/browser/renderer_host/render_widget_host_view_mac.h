@@ -84,7 +84,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetSize(const gfx::Size& size);
   virtual gfx::NativeView GetNativeView();
   virtual void MovePluginWindows(
-      const std::vector<WebPluginGeometry>& plugin_window_moves);
+      const std::vector<webkit_glue::WebPluginGeometry>& moves);
   virtual void Focus();
   virtual void Blur();
   virtual bool HasFocus();
