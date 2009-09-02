@@ -58,10 +58,8 @@ TEST_F(RedirectTest, Client) {
   GURL first_url = server->TestServerPageW(
       std::wstring(L"client-redirect?") + UTF8ToWide(final_url.spec()));
 
-  // We need the sleep for the client redirects, because it appears as two
-  // page visits in the browser.
-  NavigateToURL(first_url);
-  PlatformThread::Sleep(action_timeout_ms());
+  // The client redirect appears as two page visits in the browser.
+  NavigateToURLBlockUntilNavigationsComplete(first_url, 2);
 
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
@@ -78,8 +76,7 @@ TEST_F(RedirectTest, Client) {
   EXPECT_TRUE(final_url == tab_url);
 
   // Navigate one more time.
-  NavigateToURL(first_url);
-  PlatformThread::Sleep(action_timeout_ms());
+  NavigateToURLBlockUntilNavigationsComplete(first_url, 2);
 
   // The address bar should still display the final URL.
   EXPECT_TRUE(tab_proxy->GetCurrentURL(&tab_url));
@@ -96,21 +93,13 @@ TEST_F(RedirectTest, ClientEmptyReferer) {
   test_file = test_file.AppendASCII("file_client_redirect.html");
   GURL first_url = net::FilePathToFileURL(test_file);
 
-  NavigateToURL(first_url);
-  std::vector<GURL> redirects;
-  // We need the sleeps for the client redirects, because it appears as two
-  // page visits in the browser. And note for this test the browser actually
-  // loads the html file on disk, rather than just getting a response from
-  // the TestServer.
-  for (int i = 0; i < 10; ++i) {
-    PlatformThread::Sleep(sleep_timeout_ms());
-    scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-    ASSERT_TRUE(tab_proxy.get());
-    ASSERT_TRUE(tab_proxy->GetRedirectsFrom(first_url, &redirects));
-    if (!redirects.empty())
-      break;
-  }
+  // The client redirect appears as two page visits in the browser.
+  NavigateToURLBlockUntilNavigationsComplete(first_url, 2);
 
+  std::vector<GURL> redirects;
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+  ASSERT_TRUE(tab_proxy->GetRedirectsFrom(first_url, &redirects));
   ASSERT_EQ(1U, redirects.size());
   EXPECT_EQ(final_url.spec(), redirects[0].spec());
 }
@@ -123,8 +112,8 @@ TEST_F(RedirectTest, ClientCancelled) {
   ASSERT_TRUE(file_util::AbsolutePath(&first_path));
   GURL first_url = net::FilePathToFileURL(first_path);
 
-  NavigateToURL(first_url);
-  PlatformThread::Sleep(action_timeout_ms());
+  // The client redirect appears as two page visits in the browser.
+  NavigateToURLBlockUntilNavigationsComplete(first_url, 2);
 
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
@@ -244,15 +233,10 @@ TEST_F(RedirectTest, ClientFragments) {
   std::vector<GURL> redirects;
 
   NavigateToURL(first_url);
-  for (int i = 0; i < 10; ++i) {
-    PlatformThread::Sleep(sleep_timeout_ms());
-    scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-    ASSERT_TRUE(tab_proxy.get());
-    ASSERT_TRUE(tab_proxy->GetRedirectsFrom(first_url, &redirects));
-    if (!redirects.empty())
-      break;
-  }
 
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+  ASSERT_TRUE(tab_proxy->GetRedirectsFrom(first_url, &redirects));
   EXPECT_EQ(1U, redirects.size());
   EXPECT_EQ(first_url.spec() + "#myanchor", redirects[0].spec());
 }
