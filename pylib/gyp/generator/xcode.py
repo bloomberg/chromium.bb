@@ -971,7 +971,11 @@ exit 1
             'name': 'Copy to ' + copy_group['destination']
           },
           parent=xct)
-      pbxcp.SetDestination(copy_group['destination'])
+      dest = copy_group['destination']
+      if dest[0] not in ('/', '$'):
+        # Relative paths are relative to $(SRCROOT).
+        dest = '$(SRCROOT)/' + dest
+      pbxcp.SetDestination(dest)
 
       # TODO(mark): The usual comment about this knowing too much about
       # gyp.xcodeproj_file internals applies.

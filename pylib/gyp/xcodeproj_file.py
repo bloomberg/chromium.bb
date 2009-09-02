@@ -1896,13 +1896,16 @@ class PBXCopyFilesBuildPhase(XCBuildPhase):
       path_tree = path_tree_match.group(1)
       relative_path = path_tree_match.group(3)
 
-      if not path_tree in self.path_tree_to_subfolder:
-        raise KeyError, 'Can\'t use tree %s in a %s' % \
-                        (path_tree, self.__class__.__name__)
-      subfolder = self.path_tree_to_subfolder[path_tree]
-
-      if relative_path == None:
-        relative_path = ''
+      if path_tree in self.path_tree_to_subfolder:
+        subfolder = self.path_tree_to_subfolder[path_tree]
+        if relative_path == None:
+          relative_path = ''
+      else:
+        # The path starts with an unrecognized Xcode variable
+        # name like $(SRCROOT).  Xcode will still handle this
+        # as an "absolute path" that starts with the variable.
+        subfolder = 0
+        relative_path = path
     elif path.startswith('/'):
       # Special case.  Absolute paths are in dstSubfolderSpec 0.
       subfolder = 0

@@ -420,9 +420,9 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
         e, "Required 'files' key missing for 'copies' in %s." % build_file)
       raise
     if not files:
-      raise Exception(
-        "Required 'files' key is empty or missing for 'copies' in %s." %
-        build_file)
+      # TODO:  should probably add a (suppressible) warning;
+      # a null file list may be unintentional.
+      continue
     if not destdir:
       raise Exception(
         "Required 'destination' key is empty for 'copies' in %s." % build_file)
