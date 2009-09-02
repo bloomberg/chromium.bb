@@ -39,6 +39,10 @@
 
 namespace o3d {
 
+// Max length of the string storing the version of O3D as returned by the
+// GET_VERSION message
+#define MAX_VERSION_STRING_LENGTH 128
+
 // Make sure the compiler does not add extra padding to any of the message
 // structures.
 O3D_PUSH_STRUCTURE_PACKING_1;
@@ -365,11 +369,10 @@ struct MessageGetVersion {
 
   // The response data.
   struct ResponseData {
-    static const size_t kMaxVersionLength = 128;
     // a null terminated version string in the format "x.x.x.x" where x is an
     // integer number. Note: There may be other data after the last digit which
     // is currently undefined.
-    char version[kMaxVersionLength];
+    char version[MAX_VERSION_STRING_LENGTH];
   };
 
   // A wrapper to manage the response data.
