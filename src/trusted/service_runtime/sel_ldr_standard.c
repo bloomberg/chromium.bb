@@ -230,12 +230,101 @@ NaClErrorCode NaClProcessPhdrs(struct NaClApp *nap) {
   return LOAD_OK;
 }
 
+
+static void NaClDumpElfHeader(Elf32_Ehdr *elf_hdr) {
+#define DUMP(m,f)    do { NaClLog(2,                            \
+                                  #m " = %" f "\n",             \
+                                  elf_hdr->m); } while (0)
+  DUMP(e_ident+1, ".3s");
+  DUMP(e_type, "#x");
+  DUMP(e_machine, "#x");
+  DUMP(e_version, "#x");
+  DUMP(e_entry, "#x");
+  DUMP(e_phoff, "#x");
+  DUMP(e_shoff, "#x");
+  DUMP(e_flags, "#x");
+  DUMP(e_ehsize, "#x");
+  DUMP(e_phentsize, "#x");
+  DUMP(e_phnum, "#x");
+  DUMP(e_shentsize, "#x");
+  DUMP(e_shnum, "#x");
+  DUMP(e_shstrndx, "#x");
+#undef DUMP
+ NaClLog(2, "sizeof(Elf32_Ehdr) = %x\n", (int) sizeof *elf_hdr);
+}
+
+
+static NaClErrorCode NaClValidateElfHeader(Elf32_Ehdr *hdr,
+                                           enum NaClAbiMismatchOption
+                                           abi_mismatch_option) {
+ if (memcmp(hdr->e_ident, ELFMAG, SELFMAG)) {
+    return LOAD_BAD_ELF_MAGIC;
+  }
+  if (ELFCLASS32 != hdr->e_ident[EI_CLASS]) {
+    return LOAD_NOT_32_BIT;
+  }
+
+  if (ELFOSABI_NACL != hdr->e_ident[EI_OSABI]) {
+    NaClLog(LOG_ERROR, "Expected OSABI %d, got %d\n",
+            ELFOSABI_NACL,
+            hdr->e_ident[EI_OSABI]);
+    if (abi_mismatch_option == NACL_ABI_MISMATCH_OPTION_ABORT) {
+      return LOAD_BAD_ABI;
+    }
+  }
+
+  if (EF_NACL_ABIVERSION != hdr->e_ident[EI_ABIVERSION]) {
+    NaClLog(LOG_ERROR, "Expected ABIVERSION %d, got %d\n",
+            EF_NACL_ABIVERSION,
+            hdr->e_ident[EI_ABIVERSION]);
+    if (abi_mismatch_option == NACL_ABI_MISMATCH_OPTION_ABORT) {
+      return LOAD_BAD_ABI;
+    }
+  }
+
+  if (ET_EXEC != hdr->e_type) {
+    return LOAD_NOT_EXEC;
+  }
+
+  if (EM_EXPECTED_BY_NACL != hdr->e_machine) {
+    return LOAD_BAD_MACHINE;
+  }
+
+  if (EV_CURRENT != hdr->e_version) {
+    return LOAD_BAD_ELF_VERS;
+  }
+
+  return LOAD_OK;
+}
+
+
+static void NaClDumpElfProgramHeader(Elf32_Phdr *phdr) {
+#define DUMP(mem) do {                                         \
+    NaClLog(2, "%s: %x\n", #mem, phdr->mem);      \
+  } while (0)
+
+  DUMP(p_type);
+  DUMP(p_offset);
+  DUMP(p_vaddr);
+  DUMP(p_paddr);
+  DUMP(p_filesz);
+  DUMP(p_memsz);
+  DUMP(p_flags);
+  NaClLog(2, " (%s %s %s)\n",
+          (phdr->p_flags & PF_R) ? "PF_R" : "",
+          (phdr->p_flags & PF_W) ? "PF_W" : "",
+          (phdr->p_flags & PF_X) ? "PF_X" : "");
+  DUMP(p_align);
+#undef  DUMP
+  NaClLog(2, "\n");
+}
+
+
 NaClErrorCode NaClAppLoadFile(struct Gio                 *gp,
                               struct NaClApp             *nap,
                               enum NaClAbiMismatchOption abi_mismatch_option) {
   NaClErrorCode ret = LOAD_INTERNAL;
   NaClErrorCode subret;
-
   int           cur_ph;
 
   /* NACL_MAX_ADDR_BITS < 32 */
@@ -255,64 +344,14 @@ NaClErrorCode NaClAppLoadFile(struct Gio                 *gp,
     goto done;
   }
 
-#define DUMP(m,f)    do { NaClLog(2,                            \
-                                  #m " = %" f "\n",             \
-                                  nap->elf_hdr.m); } while (0)
-  DUMP(e_ident+1, ".3s");
-  DUMP(e_type, "#x");
-  DUMP(e_machine, "#x");
-  DUMP(e_version, "#x");
-  DUMP(e_entry, "#x");
-  DUMP(e_phoff, "#x");
-  DUMP(e_shoff, "#x");
-  DUMP(e_flags, "#x");
-  DUMP(e_ehsize, "#x");
-  DUMP(e_phentsize, "#x");
-  DUMP(e_phnum, "#x");
-  DUMP(e_shentsize, "#x");
-  DUMP(e_shnum, "#x");
-  DUMP(e_shstrndx, "#x");
-#undef DUMP
-  NaClLog(2, "sizeof(Elf32_Ehdr) = %x\n", (int) sizeof nap->elf_hdr);
+  NaClDumpElfHeader(&nap->elf_hdr);
 
-  if (memcmp(nap->elf_hdr.e_ident, ELFMAG, SELFMAG)) {
-    ret = LOAD_BAD_ELF_MAGIC;
+  subret = NaClValidateElfHeader(&nap->elf_hdr, abi_mismatch_option);
+  if (subret != LOAD_OK) {
+    ret = subret;
     goto done;
   }
-  if (ELFCLASS32 != nap->elf_hdr.e_ident[EI_CLASS]) {
-    ret = LOAD_NOT_32_BIT;
-    goto done;
-  }
-  if (ELFOSABI_NACL != nap->elf_hdr.e_ident[EI_OSABI]) {
-    NaClLog(LOG_ERROR, "Expected OSABI %d, got %d\n",
-            ELFOSABI_NACL,
-            nap->elf_hdr.e_ident[EI_OSABI]);
-    if (abi_mismatch_option == NACL_ABI_MISMATCH_OPTION_ABORT) {
-      ret = LOAD_BAD_ABI;
-      goto done;
-    }
-  }
-  if (EF_NACL_ABIVERSION != nap->elf_hdr.e_ident[EI_ABIVERSION]) {
-    NaClLog(LOG_ERROR, "Expected ABIVERSION %d, got %d\n",
-            EF_NACL_ABIVERSION,
-            nap->elf_hdr.e_ident[EI_ABIVERSION]);
-    if (abi_mismatch_option == NACL_ABI_MISMATCH_OPTION_ABORT) {
-      ret = LOAD_BAD_ABI;
-      goto done;
-    }
-  }
-  if (ET_EXEC != nap->elf_hdr.e_type) {
-    ret = LOAD_NOT_EXEC;
-    goto done;
-  }
-  if (EM_EXPECTED_BY_NACL != nap->elf_hdr.e_machine) {
-    ret = LOAD_BAD_MACHINE;
-    goto done;
-  }
-  if (EV_CURRENT != nap->elf_hdr.e_version) {
-    ret = LOAD_BAD_ELF_VERS;
-    goto done;
-  }
+
   nap->entry_pt = nap->elf_hdr.e_entry;
 
   if (nap->elf_hdr.e_flags & EF_NACL_ALIGN_MASK) {
@@ -334,7 +373,10 @@ NaClErrorCode NaClAppLoadFile(struct Gio                 *gp,
     ret = LOAD_TOO_MANY_SECT;  /* overloaded */
     goto done;
   }
+
+  /* TODO(robertm): determine who allocated this */
   free(nap->phdrs);
+
   nap->phdrs = malloc(nap->elf_hdr.e_phnum * sizeof nap->phdrs[0]);
   if (!nap->phdrs) {
     ret = LOAD_NO_MEMORY;
@@ -359,23 +401,9 @@ NaClErrorCode NaClAppLoadFile(struct Gio                 *gp,
       ret = LOAD_BAD_SECT;
       goto done;
     }
-#define DUMP(mem) do {\
-        NaClLog(2, "%s: %x\n", #mem, nap->phdrs[cur_ph].mem);  \
-      } while (0)
-    DUMP(p_type);
-    DUMP(p_offset);
-    DUMP(p_vaddr);
-    DUMP(p_paddr);
-    DUMP(p_filesz);
-    DUMP(p_memsz);
-    DUMP(p_flags);
-    NaClLog(2, " (%s %s %s)\n",
-            (nap->phdrs[cur_ph].p_flags & PF_R) ? "PF_R" : "",
-            (nap->phdrs[cur_ph].p_flags & PF_W) ? "PF_W" : "",
-            (nap->phdrs[cur_ph].p_flags & PF_X) ? "PF_X" : "");
-    DUMP(p_align);
-#undef  DUMP
-    NaClLog(2, "\n");
+
+
+    NaClDumpElfProgramHeader(&nap->phdrs[cur_ph]);
   }
 
   /*
@@ -409,12 +437,14 @@ NaClErrorCode NaClAppLoadFile(struct Gio                 *gp,
     goto done;
   }
 
+#if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
   NaClLog(2, "Validating image\n");
   subret = NaClValidateImage(nap);
   if (subret != LOAD_OK) {
     ret = subret;
     goto done;
   }
+#endif
 
   NaClLog(2, "Installing trampoline\n");
 

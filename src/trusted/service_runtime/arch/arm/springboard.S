@@ -70,6 +70,8 @@ IDENTIFIER(NaCl_springboard):
   NACL_HALT
 
   add sp, #16 /* popping four arguments placed by trampoline code */
+#if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
   bic r1, r1, #0xF000000F
+#endif
   bx r1
 IDENTIFIER(NaCl_springboard_end):
