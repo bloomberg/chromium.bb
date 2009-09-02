@@ -2602,6 +2602,7 @@
             'browser/browser_accessibility.cc',
             'browser/browser_accessibility_manager.cc',
             'browser/extensions/extension_creator.cc',
+            'browser/extensions/pack_extension_job.cc',
             'browser/dom_ui/html_dialog_contents.cc',
             'browser/encoding_menu_controller_delegate.cc',
             'browser/external_tab_container.cc',
