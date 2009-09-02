@@ -172,7 +172,7 @@ extern int munmap(void *start, size_t length);
  *  @param status The status to be returned.
  *  @return Exit does not return.
  */
-extern void exit(int status);
+extern void _exit(int status);
 /**
  *  @nacl
  *  Terminates the current thread.

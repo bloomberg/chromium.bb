@@ -62,6 +62,10 @@ int __NaClBrk(void  *end_data_segment) {
   return 0;
 }
 
+void *sysbrk(void* new_break) {
+  return NACL_SYSCALL(sysbrk)(new_break);
+}
+
 void  *sbrk(int increment) {
   void  *old_break;
   int   ret;
