@@ -407,21 +407,6 @@
    fun:thread_start
 }
 {
-   bug_18219
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:_CFRuntimeCreateInstance
-   fun:CGTypeCreateInstanceWithAllocator
-   fun:CGTypeCreateInstance
-   fun:CGImageCreate
-   fun:_NSCreateImageRef2
-   fun:-[CIImage(NSAppKitAdditions) initWithBitmapImageRep:]
-   fun:-[ThrobberFilmstripDelegate initWithImage:]
-   fun:+[ThrobberView filmstripThrobberViewWithFrame:image:]
-   fun:-[TabStripController tabChangedWithContents:atIndex:loadingOnly:]
-   fun:_ZN27TabStripModelObserverBridge12TabChangedAtEP11TabContentsib
-}
-{
    bug_18252
    Memcheck:Leak
    fun:calloc
