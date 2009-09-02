@@ -4,8 +4,8 @@
 
 #include <set>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -21,8 +21,8 @@ class ZipTest : public PlatformTest {
   virtual void SetUp() {
     PlatformTest::SetUp();
 
-    ASSERT_TRUE(file_util::CreateNewTempDirectory(
-        FILE_PATH_LITERAL("unzip_unittest_"), &test_dir_));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    test_dir_ = temp_dir_.path();
 
     FilePath zip_path(test_dir_);
     zip_contents_.insert(zip_path.AppendASCII("foo.txt"));
@@ -37,9 +37,6 @@ class ZipTest : public PlatformTest {
 
   virtual void TearDown() {
     PlatformTest::TearDown();
-    // Clean up test directory
-    ASSERT_TRUE(file_util::Delete(test_dir_, true));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
   }
 
   void TestUnzipFile(const FilePath::StringType& filename, bool need_success) {
@@ -79,6 +76,8 @@ class ZipTest : public PlatformTest {
   // the path to temporary directory used to contain the test operations
   FilePath test_dir_;
 
+  ScopedTempDir temp_dir_;
+
   // hard-coded contents of a known zip file
   std::set<FilePath> zip_contents_;
 };
@@ -104,16 +103,13 @@ TEST_F(ZipTest, Zip) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &src_dir));
   src_dir = src_dir.AppendASCII("zip").AppendASCII("test");
 
-  FilePath zip_file;
-  ASSERT_TRUE(file_util::CreateNewTempDirectory(
-      FILE_PATH_LITERAL("unzip_unittest_"), &zip_file));
-  zip_file = zip_file.AppendASCII("out.zip");
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath zip_file = temp_dir.path().AppendASCII("out.zip");
 
   EXPECT_TRUE(Zip(src_dir, zip_file));
 
   TestUnzipFile(zip_file, true);
-
-  EXPECT_TRUE(file_util::Delete(zip_file, false));
 }
 
 }  // namespace
