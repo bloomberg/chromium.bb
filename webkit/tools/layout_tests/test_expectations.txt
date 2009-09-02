@@ -2388,4 +2388,4 @@ BUG10480 LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PAS
 
 // WebKit roll to 47952
 // Newly added test started out red on windows with r47950
-BUG_MICHAELN WIN : LayoutTests/fast/encoding/japanese-encoding-mix.html = FAIL
+BUG20851 WIN : LayoutTests/fast/encoding/japanese-encoding-mix.html = FAIL
