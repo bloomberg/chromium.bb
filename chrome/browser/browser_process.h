@@ -99,7 +99,7 @@ class BrowserProcess {
   virtual base::Thread* db_thread() = 0;
 
 #if defined(OS_LINUX)
-  // Returns the thread that is used to process UI requests in cases were
+  // Returns the thread that is used to process UI requests in cases where
   // we can't route the request to the UI thread. Note that this thread
   // should only be used by the IO thread and this method is only safe to call
   // from the UI thread so, if you've ended up here, something has gone wrong.
