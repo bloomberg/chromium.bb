@@ -2321,6 +2321,12 @@ BUG10480 LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PAS
 // Newly added test started out red on windows with r47950
 BUG20851 WIN : LayoutTests/fast/encoding/japanese-encoding-mix.html = FAIL
 
+// WebKit roll to 47982
+// This is a template, shouldn't be run, it got moved from a 'resources'
+// subdirectory, where things are automagically skipped, into the script-tests
+// directory and is no longer automatically skipped.
+BUG20908 WONTFIX SKIP : LayoutTests/animations/script-tests/TEMPLATE.html = PASS FAIL CRASH TIMEOUT
+
 // Flakey crashes in js tests. Cause unknown.
 BUG20886 WIN DEBUG : LayoutTests/fast/js/regexp-no-extensions.html = CRASH PASS
 BUG20886 WIN DEBUG : LayoutTests/fast/js/repeat-cached-vm-reentry.html = CRASH PASS
