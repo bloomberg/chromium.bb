@@ -154,6 +154,51 @@ static void StopForDebuggerInit (const struct NaClApp *state) {
 #endif
 }
 
+static void PrintUsage() {
+  /* NOTE: this is broken up into multiple statements to work around
+           the constant string size limit */
+  fprintf(stderr,
+          "Usage: sel_ldr [-a d:addr]\n"
+          "               [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
+          "               [-f nacl_file]\n"
+          "               [-P SRPC port number]\n"
+          "\n"
+          "               [-D desc]\n"
+          "               [-X d] [-dmMv]\n"
+          "\n");
+  fprintf(stderr,
+          " -a associates an IMC address with application descriptor d\n"
+          " -h\n"
+          " -r\n"
+          " -w associate a host POSIX descriptor D with app desc d\n"
+          "    that was opened in O_RDWR, O_RDONLY, and O_WRONLY modes\n"
+          "    respectively\n"
+          " -i associates an IMC handle D with app desc d\n"
+          " -f file to load\n"
+          " -P set SRPC port number for SRPC calls\n"
+          " -v increases verbosity\n"
+          " -X create a bound socket and export the address via an\n"
+          "    IMC message to a corresponding NaCl app descriptor\n"
+          "    (use -1 to create the bound socket / address descriptor\n"
+          "    pair, but that no export via IMC should occur)\n"
+          " [NB: -m and -M only applies to the SDL builds\n ]\n");
+  fprintf(stderr,
+          " -m enforce that certain syscalls can only be made from\n"
+          "    the main NaCl app thread, so that we're enforcing (bug)\n"
+          "    compatibility with standalone windows apps that must\n"
+          "    make certain (e.g., graphics) calls from the main\n"
+          "    thread"
+          " -M allow syscalls to be made from any NaCl app thread,\n"
+          "    since these (windows-library-using) syscalls are\n"
+          "    actually done via a work queue using the sel_ldr\n"
+          "    main thread anyway\n"
+          "\n"
+          " (testing flags)\n"
+          " -d debug mode (allow access to files!)\n"
+          " -D dump bound socket address (if any) to this POSIX\n"
+          "    descriptor\n");
+}
+
 /*
  * Note that we cannot use the 3 arg declaration for main, since SDL
  * preprocessor defines main to SDLmain and then provides a
@@ -193,6 +238,7 @@ int main(int  ac,
 
   char                          *log_file = NULL;
   int                           log_desc = -1;
+  int                           debug_mode = 0;
   FILE                          *log_stream;
   char                          *env_verbosity;
   struct GioFile                log_gio;
@@ -260,6 +306,7 @@ int main(int  ac,
         fprintf(stderr, "DEBUG MODE ENABLED\n");
         NaClInsecurelyBypassAllAclChecks();
         NaClIgnoreValidatorResult();
+        debug_mode = 1;
         break;
       case 'h':
       case 'r':
@@ -322,50 +369,20 @@ int main(int  ac,
         export_addr_to = strtol(optarg, (char **) 0, 0);
         break;
       default:
-        fprintf(stderr,
-                "Usage: sel_ldr [-a d:addr]\n"
-                "               [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
-                "               [-f nacl_file]\n"
-                "               [-P SRPC port number]\n"
-                "\n"
-                "               [-D desc]\n"
-                "               [-X d] [-dmMv]\n"
-                "\n");
-        fprintf(stderr,
-                " -a associates an IMC address with application descriptor d\n"
-                " -h\n"
-                " -r\n"
-                " -w associate a host POSIX descriptor D with app desc d\n"
-                "    that was opened in O_RDWR, O_RDONLY, and O_WRONLY modes\n"
-                "    respectively\n"
-                " -i associates an IMC handle D with app desc d\n"
-                " -f file to load\n"
-                " -P set SRPC port number for SRPC calls\n"
-                " -v increases verbosity\n"
-                " -X create a bound socket and export the address via an\n"
-                "    IMC message to a corresponding NaCl app descriptor\n"
-                "    (use -1 to create the bound socket / address descriptor\n"
-                "    pair, but that no export via IMC should occur)\n"
-                " [NB: -m and -M only applies to the SDL builds\n ]\n");
-        fprintf(stderr,
-                " -m enforce that certain syscalls can only be made from\n"
-                "    the main NaCl app thread, so that we're enforcing (bug)\n"
-                "    compatibility with standalone windows apps that must\n"
-                "    make certain (e.g., graphics) calls from the main\n"
-                "    thread"
-                " -M allow syscalls to be made from any NaCl app thread,\n"
-                "    since these (windows-library-using) syscalls are\n"
-                "    actually done via a work queue using the sel_ldr\n"
-                "    main thread anyway\n"
-                "\n"
-                " (testing flags)\n"
-                " -d debug mode (allow access to files!)\n"
-                " -D dump bound socket address (if any) to this POSIX\n"
-                "    descriptor\n");
-        return -1;
+       fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
+       PrintUsage();
+       return -1;
     }
   }
 
+#if defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
+  if (debug_mode == 0) {
+    fprintf(stderr,
+            "ERROR: dangerous debug version of sel_ldr can only "
+            "be invoked with -d option");
+    return -1;
+  }
+#endif
   /*
    * change stdout/stderr to log file now, so that subsequent error
    * messages will go there.  unfortunately, error messages that
