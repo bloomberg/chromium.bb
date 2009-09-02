@@ -866,6 +866,7 @@
    bug_17451
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
    fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
    ...
