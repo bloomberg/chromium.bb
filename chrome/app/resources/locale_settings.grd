@@ -337,6 +337,29 @@
         80
       </message>
 
+      <!-- The width and height of the URL picker dialog box in characters and lines -->
+      <!-- (See above). -->
+      <message name="IDS_URLPICKER_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        80
+      </message>
+      <message name="IDS_URLPICKER_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+        30
+      </message>
+
+      <!-- The width of the page column of the URL picker dialog box, in characters.  -->
+      <message name="IDS_URLPICKER_DIALOG_LEFT_COLUMN_WIDTH_CHARS" use_name_for_id="true">
+        33
+      </message>
+
+      <!-- The width and height of the Passwords and Exceptions dialog box in -->
+      <!-- characters and lines (See above). -->
+      <message name="IDS_PASSWORDS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        106
+      </message>
+      <message name="IDS_PASSWORDS_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+        27
+      </message>
+
       <!-- The width and height of the Bug Reporting dialog box in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_BUGREPORT_DIALOG_WIDTH_CHARS" use_name_for_id="true">

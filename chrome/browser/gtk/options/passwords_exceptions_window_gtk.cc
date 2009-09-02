@@ -16,14 +16,7 @@
 #include "chrome/common/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-
-namespace {
-
-// Initial width of the passwords and exceptions window.
-const int kPasswordsExceptionsWindowInitialWidth = 565;
-const int kPasswordsExceptionsWindowInitialHeight = 400;
-
-}  // anonymous namespace
+#include "grit/locale_settings.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // PasswordsExceptionsWindowGtk
@@ -78,9 +71,6 @@ PasswordsExceptionsWindowGtk::PasswordsExceptionsWindowGtk(Profile* profile)
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
-  gtk_window_set_default_size(GTK_WINDOW(dialog_),
-                              kPasswordsExceptionsWindowInitialWidth,
-                              kPasswordsExceptionsWindowInitialHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
 
@@ -99,6 +89,15 @@ PasswordsExceptionsWindowGtk::PasswordsExceptionsWindowGtk(Profile* profile)
               IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE).c_str()));
 
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
+
+  gtk_widget_realize(dialog_);
+  int width = 1, height = 1;
+  gtk_util::GetWidgetSizeFromResources(
+      dialog_,
+      IDS_PASSWORDS_DIALOG_WIDTH_CHARS,
+      IDS_PASSWORDS_DIALOG_HEIGHT_LINES,
+      &width, &height);
+  gtk_window_set_default_size(GTK_WINDOW(dialog_), width, height);
 
   // We only have one button and don't do any special handling, so just hook it
   // directly to gtk_widget_destroy.

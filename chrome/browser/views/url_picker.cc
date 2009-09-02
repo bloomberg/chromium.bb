@@ -32,7 +32,7 @@
 using views::ColumnSet;
 using views::GridLayout;
 
-// Preferred height of the table.
+// Preferred width of the table.
 static const int kTableWidth = 300;
 
 UrlPickerDelegate::~UrlPickerDelegate() {}
@@ -254,8 +254,8 @@ void UrlPicker::PerformModelChange() {
 
 gfx::Size UrlPicker::GetPreferredSize() {
   return gfx::Size(views::Window::GetLocalizedContentsSize(
-      IDS_SHELFITEM_DIALOG_WIDTH_CHARS,
-      IDS_SHELFITEM_DIALOG_HEIGHT_LINES));
+      IDS_URLPICKER_DIALOG_WIDTH_CHARS,
+      IDS_URLPICKER_DIALOG_HEIGHT_LINES));
 }
 
 bool UrlPicker::AcceleratorPressed(

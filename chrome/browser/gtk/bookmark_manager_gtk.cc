@@ -575,6 +575,7 @@ void BookmarkManagerGtk::SetInitialWindowSize() {
 
   // Otherwise, just set a default size (GTK will override this if it's not
   // large enough to hold the window's contents).
+  gtk_widget_realize(window_);
   int width = 1, height = 1;
   gtk_util::GetWidgetSizeFromResources(
       window_,

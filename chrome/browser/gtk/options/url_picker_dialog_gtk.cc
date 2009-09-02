@@ -17,16 +17,10 @@
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "net/base/net_util.h"
 
 namespace {
-
-// Initial size for dialog.
-const int kDialogDefaultWidth = 450;
-const int kDialogDefaultHeight = 450;
-
-// Initial width of the first column.
-const int kTitleColumnInitialSize = 200;
 
 // Style for recent history label.
 const char kHistoryLabelMarkup[] = "<span weight='bold'>%s</span>";
@@ -57,8 +51,6 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   add_button_ = gtk_dialog_add_button(GTK_DIALOG(dialog_),
                                       GTK_STOCK_ADD, GTK_RESPONSE_OK);
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_OK);
-  gtk_window_set_default_size(GTK_WINDOW(dialog_), kDialogDefaultWidth,
-                              kDialogDefaultHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
 
@@ -139,7 +131,6 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
       column, l10n_util::GetStringUTF8(IDS_ASI_PAGE_COLUMN).c_str());
   gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_FIXED);
   gtk_tree_view_column_set_resizable(column, TRUE);
-  gtk_tree_view_column_set_fixed_width(column, kTitleColumnInitialSize);
   gtk_tree_view_column_set_sort_column_id(column, COL_TITLE);
 
   GtkTreeViewColumn* url_column = gtk_tree_view_column_new_with_attributes(
@@ -157,6 +148,22 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   url_table_model_->Reload(profile_);
 
   EnableControls();
+
+  // Set the size of the dialog.
+  gtk_widget_realize(dialog_);
+  int width = 1, height = 1;
+  gtk_util::GetWidgetSizeFromResources(
+      dialog_,
+      IDS_URLPICKER_DIALOG_WIDTH_CHARS,
+      IDS_URLPICKER_DIALOG_HEIGHT_LINES,
+      &width, &height);
+  gtk_window_set_default_size(GTK_WINDOW(dialog_), width, height);
+  // Set the width of the first column as well.
+  gtk_util::GetWidgetSizeFromResources(
+      dialog_,
+      IDS_URLPICKER_DIALOG_LEFT_COLUMN_WIDTH_CHARS, 0,
+      &width, NULL);
+  gtk_tree_view_column_set_fixed_width(column, width);
 
   gtk_widget_show_all(dialog_);
 

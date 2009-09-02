@@ -8,13 +8,13 @@
 #include "chrome/browser/views/options/passwords_page_view.h"
 #include "chrome/browser/views/options/exceptions_page_view.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "views/window/window.h"
 
 // static
 PasswordsExceptionsWindowView* PasswordsExceptionsWindowView::instance_ = NULL;
 
-static const int kDefaultWindowWidth = 530;
-static const int kDefaultWindowHeight = 240;
 static const int kDialogPadding = 7;
 
 namespace browser {
@@ -42,7 +42,7 @@ void PasswordsExceptionsWindowView::Show(Profile* profile) {
   if (!instance_) {
     instance_ = new PasswordsExceptionsWindowView(profile);
 
-    // instances_ will get deleted once Close() is called.
+    // |instance_| will get deleted once Close() is called.
     views::Window::CreateChromeWindow(NULL, gfx::Rect(), instance_);
   }
   if (!instance_->window()->IsVisible()) {
@@ -62,7 +62,9 @@ void PasswordsExceptionsWindowView::Layout() {
 }
 
 gfx::Size PasswordsExceptionsWindowView::GetPreferredSize() {
-  return gfx::Size(kDefaultWindowWidth, kDefaultWindowHeight);
+  return gfx::Size(views::Window::GetLocalizedContentsSize(
+      IDS_PASSWORDS_DIALOG_WIDTH_CHARS,
+      IDS_PASSWORDS_DIALOG_HEIGHT_LINES));
 }
 
 void PasswordsExceptionsWindowView::ViewHierarchyChanged(
@@ -83,7 +85,7 @@ std::wstring PasswordsExceptionsWindowView::GetWindowTitle() const {
 }
 
 void PasswordsExceptionsWindowView::WindowClosing() {
-  // |instnace_| is deleted once the window is closed, so we just have to set
+  // |instance_| is deleted once the window is closed, so we just have to set
   // it to NULL.
   instance_ = NULL;
 }
