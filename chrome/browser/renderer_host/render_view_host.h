@@ -418,14 +418,10 @@ class RenderViewHost : public RenderWidgetHost,
   // Creates a new RenderWidget with the given route id.
   void CreateNewWidget(int route_id, bool activatable);
 
-  // Send the response to an extension api call.
+  // Senf the response to an extension api call.
   void SendExtensionResponse(int request_id, bool success,
                              const std::string& response,
                              const std::string& error);
-
-  // Send a response to an extension api call that it was blocked for lack of
-  // permission.
-  void BlockExtensionRequest(int request_id);
 
   void SignalModalDialogEvent();
   void ResetModalDialogEvent();

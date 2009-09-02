@@ -40,7 +40,7 @@ void ExtensionDOMUI::ResetExtensionFunctionDispatcher(
   // Use the NavigationController to get the URL rather than the TabContents
   // since this is the real underlying URL (see HandleChromeURLOverride).
   NavigationController& controller = tab_contents()->controller();
-  const GURL& url = controller.GetActiveEntry()->url();
+  const GURL& url = controller.pending_entry()->url();
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(render_view_host, this, url));
 }

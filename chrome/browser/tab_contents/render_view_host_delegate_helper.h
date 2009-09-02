@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/gfx/rect.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -32,8 +31,7 @@ class RenderViewHostDelegateViewHelper {
 
   virtual void CreateNewWindow(int route_id,
                                base::WaitableEvent* modal_dialog_event,
-                               Profile* profile, SiteInstance* site,
-                               DOMUITypeID domui_type);
+                               Profile* profile, SiteInstance* site);
   virtual RenderWidgetHostView* CreateNewWidget(int route_id, bool activatable,
                                                 RenderProcessHost* process);
   virtual TabContents* GetCreatedWindow(int route_id);

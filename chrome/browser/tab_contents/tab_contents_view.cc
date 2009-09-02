@@ -32,10 +32,9 @@ void TabContentsView::UpdatePreferredWidth(int pref_width) {
 
 void TabContentsView::CreateNewWindow(int route_id,
                                       base::WaitableEvent* modal_dialog_event) {
-  delegate_view_helper_.CreateNewWindow(
-      route_id, modal_dialog_event,
-      tab_contents_->profile(), tab_contents_->GetSiteInstance(),
-      DOMUIFactory::GetDOMUIType(tab_contents_->GetURL()));
+  delegate_view_helper_.CreateNewWindow(route_id, modal_dialog_event,
+                                        tab_contents_->profile(),
+                                        tab_contents_->GetSiteInstance());
 }
 
 void TabContentsView::CreateNewWidget(int route_id, bool activatable) {
