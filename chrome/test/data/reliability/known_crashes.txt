@@ -126,3 +126,7 @@ PREFIX : webpluginproxy::setwindowlessbuffer___child_process_logging::setactiveu
 
 # 20825
 PREFIX : v8::internal::compiler::compile___v8::script::new___v8::script::compile___webcore::v8proxy::compilescript
+
+# 20915
+REGEX : ^base::messagepumpforio::schedulework___ucase_props_trieindex___canonicalize_map$
+PREFIX : npn_invalidaterect___webplugindelegateimpl
