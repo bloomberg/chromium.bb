@@ -1259,20 +1259,16 @@ int main(int argc, char** argv) {
       STARTUPINFO start_info = {0};
       start_info.cb = sizeof(start_info);
 
-      int command_size = MultiByteToWideChar(CP_ACP, 0, argv[0], -1, NULL, 0);
-      LPWSTR command = new WCHAR[command_size];
-      MultiByteToWideChar(CP_ACP, 0, argv[0], -1, command, command_size);
-
-      if (!CreateProcess(NULL,
-                         command,
-                         NULL,
-                         NULL,
-                         FALSE,
-                         CREATE_SUSPENDED,
-                         NULL,
-                         NULL,
-                         &start_info,
-                         &info)) {
+      if (!CreateProcessA(NULL,
+                          argv[0],
+                          NULL,
+                          NULL,
+                          FALSE,
+                          CREATE_SUSPENDED,
+                          NULL,
+                          NULL,
+                          &start_info,
+                          &info)) {
         NOTREACHED("Failed to launch \"%s\": %d\n", argv[0], GetLastError());
         return 1;
       }
