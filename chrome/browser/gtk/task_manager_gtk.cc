@@ -632,15 +632,32 @@ void TaskManagerGtk::OnResponse(GtkDialog* dialog, gint response_id,
 // static
 void TaskManagerGtk::OnTreeViewRealize(GtkTreeView* treeview,
                                        TaskManagerGtk* task_manager) {
-  GtkTreeViewColumn* column = gtk_tree_view_get_column(
-      GTK_TREE_VIEW(task_manager->treeview_),
+  // Four columns show by default: the page column, the memory column, the
+  // CPU column, and the network column. Initially we set the page column to
+  // take all the extra space, with the other columns being sized to fit the
+  // column names. Here we turn off the expand property of the first column
+  // (to make the table behave sanely when the user resizes columns) and set
+  // the effective sizes of all four default columns to the automatically
+  // chosen size before any rows are added. This causes them to stay at that
+  // size even if the data would overflow, preventing a horizontal scroll
+  // bar from appearing due to the row data.
+  const TaskManagerColumn dfl_columns[] = {kTaskManagerNetwork, kTaskManagerCPU,
+                                           kTaskManagerPhysicalMem};
+  GtkTreeViewColumn* column = NULL;
+  gint width;
+  for (size_t i = 0; i < arraysize(dfl_columns); ++i) {
+    column = gtk_tree_view_get_column(treeview,
+        TreeViewColumnIndexFromID(dfl_columns[i]));
+    width = gtk_tree_view_column_get_width(column);
+    TreeViewColumnSetWidth(column, width);
+  }
+  // Do the page column separately since it's a little different.
+  column = gtk_tree_view_get_column(treeview,
       TreeViewColumnIndexFromID(kTaskManagerPage));
-  gint width = gtk_tree_view_column_get_width(column);
+  width = gtk_tree_view_column_get_width(column);
   // Turn expanding back off to make resizing columns behave sanely.
   gtk_tree_view_column_set_expand(column, FALSE);
-  // Subtract 1 to work around some sort of fencepost error in GTK: without
-  // it, a horizontal scroll bar with one pixel of wiggle room will appear.
-  TreeViewColumnSetWidth(column, width - 1);
+  TreeViewColumnSetWidth(column, width);
 }
 
 // static
