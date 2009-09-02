@@ -368,6 +368,9 @@ class PrefObserverBridge : public NotificationObserver {
 
 // Show or hide the home button based on the pref.
 - (void)showOptionalHomeButton {
+  // Ignore this message if only showing the URL bar.
+  if (!hasToolbar_)
+    return;
   BOOL hide = showHomeButton_.GetValue() ? NO : YES;
   if (hide == [homeButton_ isHidden])
     return;  // Nothing to do, view state matches pref state.
@@ -387,6 +390,9 @@ class PrefObserverBridge : public NotificationObserver {
 
 // Show or hide the page and wrench buttons based on the pref.
 - (void)showOptionalPageWrenchButtons {
+  // Ignore this message if only showing the URL bar.
+  if (!hasToolbar_)
+    return;
   DCHECK([pageButton_ isHidden] == [wrenchButton_ isHidden]);
   BOOL hide = showPageOptionButtons_.GetValue() ? NO : YES;
   if (hide == [pageButton_ isHidden])

@@ -196,6 +196,30 @@ TEST_F(ToolbarControllerTest, TogglePageWrench) {
   EXPECT_NE(NSWidth(originalLocationBarFrame), NSWidth([locationBar frame]));
 }
 
+// Ensure that we don't toggle the buttons when we have a strip marked as not
+// having the full toolbar. Also ensure that the location bar doesn't change
+// size.
+TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
+  [bar_ setHasToolbar:NO];
+  NSView* homeButton = [[bar_ toolbarViews] objectAtIndex:kHomeIndex];
+  NSView* pageButton = [[bar_ toolbarViews] objectAtIndex:kPageIndex];
+  NSView* wrenchButton = [[bar_ toolbarViews] objectAtIndex:kWrenchIndex];
+  NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
+  NSRect locationBarFrame = [locationBar frame];
+  EXPECT_EQ([homeButton isHidden], YES);
+  EXPECT_EQ([pageButton isHidden], YES);
+  EXPECT_EQ([wrenchButton isHidden], YES);
+  [bar_ showOptionalHomeButton];
+  EXPECT_EQ([homeButton isHidden], YES);
+  NSRect newLocationBarFrame = [locationBar frame];
+  EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
+  [bar_ showOptionalPageWrenchButtons];
+  EXPECT_EQ([pageButton isHidden], YES);
+  EXPECT_EQ([wrenchButton isHidden], YES);
+  newLocationBarFrame = [locationBar frame];
+  EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
+}
+
 // Make sure, by default, the bookmark bar is the full width of the
 // toolbar.
 TEST_F(ToolbarControllerTest, BookmarkBarIsFullWidth) {
