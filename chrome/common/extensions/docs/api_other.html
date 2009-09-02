@@ -64,6 +64,7 @@
               <li jstcache="0"><a href="bookmarks.html" jstcache="0">Bookmarks</a></li>
               <li jstcache="0"><a href="themes.html" jstcache="0">Themes</a></li>
               <li jstcache="0"><a href="npapi.html" jstcache="0">NPAPI Plugins</a></li>
+              <li jstcache="0"><a href="xhr.html" jstcache="0">Cross-Origin XHR</a></li>
               <li jstcache="0"><a href="packaging.html" jstcache="0">Packaging</a></li>
               <li jstcache="0">Autoupdate</li>
             </ul>
@@ -163,15 +164,19 @@ you can bundle additional API libraries into your extension.
 
 <dl jstcache="0">
 <dt jstcache="0"><strong jstcache="0"> Standard JavaScript APIs </strong></dt>
-<dd jstcache="0"> <span class="comment" jstcache="0">[PENDING: define, explain; link to complete list]</span> 
+<dd jstcache="0"> These are the same core JavaScript and DOM APIs
+  that you can use in ordinary web apps.
+  <span class="comment" jstcache="0">[PENDING: check! should link to complete list]</span> 
 <!-- Use onclick in your toolbar div to add click behavior.
 E.g. window.open(someUrl). --></dd>
 <dt jstcache="0"><strong jstcache="0"> XMLHttpRequest </strong></dt>
 <dd jstcache="0">
-  Lets the extension request data from one or more servers.
-  The manifest specifies 
-  which domains the extension can send requests to.
-  <span class="comment" jstcache="0">[PENDING: link to doc]</span></dd>
+  Use <a href="xhr.html" jstcache="0">XMLHttpRequest</a>
+  to request data from one or more servers.
+  The <a href="manifest.html#permissions" jstcache="0">permissions</a> field
+  of the manifest specifies 
+  which hosts the extension can send requests to.
+  </dd>
 <dt jstcache="0"><strong jstcache="0"> WebKit APIs </strong></dt>
 <dd jstcache="0">
   Because Google Chrome is built upon WebKit,
@@ -190,10 +195,13 @@ E.g. window.open(someUrl). --></dd>
   <p class="comment" jstcache="0">[PENDING: link to complete list of webkit apis]</p>
 </dd>
 <dt jstcache="0"><strong jstcache="0"> V8 APIs</strong>, such as<strong jstcache="0"> JSON </strong></dt>
-<dd jstcache="0"> JSON is in V8, so you don't need to include a JSON library to use JSON functions. <span class="comment" jstcache="0">[PENDING: what other APIs are in v8? link to complete list]</span></dd>
-<dt jstcache="0"> <strong jstcache="0">HTML5</strong> <strong jstcache="0">APIs</strong>, such as <strong jstcache="0">localStorage</strong> and <strong jstcache="0">Web Workers</strong></dt>
-<dd jstcache="0"> HTML5 is still being defined and implemented, but one crucial feature it will provide is local storage... <!--
-localStorage.setItem(&quot;foo&quot;, &quot;bar&quot;); ... localStorage.getItem(&quot;foo&quot;); --> <span class="comment" jstcache="0">[PENDING: mention Web Workers, too. Other important API? link to complete list]</span></dd>
+<dd jstcache="0"> Because JSON is in V8, you don't need to include a JSON library to use JSON functions. <span class="comment" jstcache="0">[PENDING: what other APIs are in v8? link to complete list]</span></dd>
+<dt jstcache="0"> <strong jstcache="0">HTML5</strong> <strong jstcache="0">APIs</strong>, such as <strong jstcache="0">localStorage</strong></dt>
+<dd jstcache="0"> HTML5 is still being defined and implemented,
+  but Google Chrome already supports local storage,
+  which extensions can use to store data.
+<!--
+localStorage.setItem(&quot;foo&quot;, &quot;bar&quot;); ... localStorage.getItem(&quot;foo&quot;); --> <span class="comment" jstcache="0">[PENDING: Other important API? link to complete list]</span></dd>
 <dt jstcache="0"><strong jstcache="0">APIs in bundled libraries</strong></dt>
 <dd jstcache="0"> If you want to use a library that the browser doesn't provide
 (for example, jQuery),

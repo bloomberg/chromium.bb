@@ -14,7 +14,7 @@
     etc...) can be generated with a build step.
 --><!-- <html> must retain id="template --><html xmlns="http://www.w3.org/1999/xhtml" jstcache="0"><!-- <head> data is significant and loads the needed libraries and styles --><head jstcache="0">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" jstcache="0">
-    <title jscontent="getPageTitle()" jstcache="1">chrome.windows</title>
+    <title jscontent="getPageTitle()" jstcache="1">Windows</title>
     <link href="css/ApiRefStyles.css" rel="stylesheet" type="text/css" jstcache="0">
     <script type="text/javascript" src="../../../third_party/jstemplate/jstemplate_compiled.js" jstcache="0">
     </script>
@@ -41,7 +41,7 @@
         <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en" jstcache="0"></script>
       </div>
       <div id="pageTitle" jstcache="0">
-        <h1 jscontent="getPageTitle()" jstcache="1">chrome.windows</h1>
+        <h1 jscontent="getPageTitle()" jstcache="1">Windows</h1>
       </div>
     </div> <!-- /pageHeader -->
           
@@ -64,6 +64,7 @@
               <li jstcache="0"><a href="bookmarks.html" jstcache="0">Bookmarks</a></li>
               <li jstcache="0"><a href="themes.html" jstcache="0">Themes</a></li>
               <li jstcache="0"><a href="npapi.html" jstcache="0">NPAPI Plugins</a></li>
+              <li jstcache="0"><a href="xhr.html" jstcache="0">Cross-Origin XHR</a></li>
               <li jstcache="0"><a href="packaging.html" jstcache="0">Packaging</a></li>
               <li jstcache="0">Autoupdate</li>
             </ul>
@@ -96,7 +97,7 @@
           <p jstcache="0">Contents</p>
           <ol jstcache="0">
             <li jsselect="getStaticTOC()" jstcache="9" jsinstance="0">
-              <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#permissions">Permissions</a>
+              <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#manifest">Manifest</a>
               <ol jstcache="0">
                 <li jsselect="$this.children" jstcache="22" jsinstance="*0" style="display: none; ">
                   <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14">h3Name</a>
@@ -170,7 +171,9 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static" jstcache="0"><!-- BEGIN AUTHORED CONTENT -->
+        <div id="static" jstcache="0"><div id="pageData-title" class="pageData" jstcache="0">Windows</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary" jstcache="0">
 Use the <code jstcache="0">chrome.windows</code> module
 to interact with browser windows.
@@ -178,12 +181,15 @@ You can use this module to
 create, modify, and rearrange windows in the browser.
 </p>
 
-<h2 id="permissions" jstcache="0">Permissions</h2>
-<p jstcache="0">You must declare the <var jstcache="0">tabs</var> permission
-(no, that isn't a typo -- the window and tabs modules interact so closely we
-decided to just share one permission between them)
-in your extension's manifest to use the windows API.</p>
-<p jstcache="0">Example:</p>
+<h2 id="manifest" jstcache="0">Manifest</h2>
+<p jstcache="0">
+You must declare the "tabs" permission
+in your extension's manifest to use the windows API.
+(No, that isn't a typo —
+the window and tabs modules interact so closely we
+decided to just share one permission between them.)
+For example:
+</p>
 <pre jstcache="0">{
   "name": "My extension that uses windows",
   "version": "0.1",

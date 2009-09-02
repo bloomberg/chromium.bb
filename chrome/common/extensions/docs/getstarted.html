@@ -64,6 +64,7 @@
               <li jstcache="0"><a href="bookmarks.html" jstcache="0">Bookmarks</a></li>
               <li jstcache="0"><a href="themes.html" jstcache="0">Themes</a></li>
               <li jstcache="0"><a href="npapi.html" jstcache="0">NPAPI Plugins</a></li>
+              <li jstcache="0"><a href="xhr.html" jstcache="0">Cross-Origin XHR</a></li>
               <li jstcache="0"><a href="packaging.html" jstcache="0">Packaging</a></li>
               <li jstcache="0">Autoupdate</li>
             </ul>
@@ -179,23 +180,13 @@ To complete this tutorial, you must have Windows.
 
 <h2 id="browser" jstcache="0">Get your browser ready</h2>
 
-<p jstcache="0">
-To develop extensions for Google Chrome, you need to set up your browser:
-</p>
+<p jstcache="0">To develop extensions for Google Chrome,
+you'll need to <a href="http://dev.chromium.org/getting-involved/dev-channel" jstcache="0">subscribe
+to the dev channel</a> of Google Chrome for Windows.
 
-<ol jstcache="0">
-  <li jstcache="0"><a href="http://dev.chromium.org/getting-involved/dev-channel" jstcache="0">Subscribe
-  to the Dev channel</a> of Google Chrome for Windows.  </li>
-  <li jstcache="0"><a href="http://dev.chromium.org/developers/creating-and-using-profiles" jstcache="0">Create
-    a separate profile</a> for testing
-    <em jstcache="0">(optional but highly recommended)</em>.
-    Having a testing profile means that you can use Google Chrome
-    (with your default profile)
-    for everyday browsing,
-    even if your extension has horrible bugs.</li>
-</ol>
+</p><p jstcache="0"><b jstcache="0">Note:</b> This tutorial requires Windows. You can try it on Linux and OS X, and it may work, but in general the extensions support is quite a bit less stable on those platforms. We're working hard to bring them up to speed.
 
-<h2 id="load" jstcache="0">Create and load an extension</h2>
+</p><h2 id="load" jstcache="0">Create and load an extension</h2>
 <p jstcache="0">
 In this section, you'll write a <em jstcache="0">toolstrip</em> —
 an extension
@@ -234,8 +225,7 @@ at the bottom of the Google Chrome window.
   <li jstcache="0"> Load the extension.
     <ol type="a" jstcache="0">
       <li jstcache="0">
-      Bring up the Extensions page
-      by going to this URL:
+      Bring up the Extensions management page by going to this URL:
       <blockquote jstcache="0">
       <b jstcache="0">chrome://extensions</b>
       </blockquote>

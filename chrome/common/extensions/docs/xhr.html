@@ -64,6 +64,7 @@
               <li jstcache="0"><a href="bookmarks.html" jstcache="0">Bookmarks</a></li>
               <li jstcache="0"><a href="themes.html" jstcache="0">Themes</a></li>
               <li jstcache="0"><a href="npapi.html" jstcache="0">NPAPI Plugins</a></li>
+              <li jstcache="0" class="leftNavSelected">Cross-Origin XHR</li>
               <li jstcache="0"><a href="packaging.html" jstcache="0">Packaging</a></li>
               <li jstcache="0">Autoupdate</li>
             </ul>
@@ -151,20 +152,21 @@
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary" jstcache="0">
-In regular web pages, the
+Regular web pages can use the
 <a href="http://www.w3.org/TR/XMLHttpRequest/" jstcache="0">XMLHttpRequest</a>
-object can be used to  send and receive data from remote servers, but is
-constrained by the
+object to send and receive data from remote servers,
+but they're limited by the
 <a href="http://en.wikipedia.org/wiki/Same_origin_policy" jstcache="0">same origin policy</a>.
-Extensions are allowed to access remote servers outside of their origin,
-but they must first declare their intent to do so.</p>
+Extensions aren't so limited.
+An extension can talk to remote servers outside of its origin,
+as long as it first requests cross-origin permissions.</p>
 
-<h2 id="extension-origin" jstcache="0">Extension Origin</h2>
-<p jstcache="0">Each running extension exists within it's own seperate security origin. Without
-requesting additional priviliges, the extension can use
-the XMLHttpRequest to access resources within it's installation. For example, if
-the extension contains a JSON configuration file called <var jstcache="0">config.json</var>,
-in a <var jstcache="0">config_resources</var> folder, it could retrieve it's contents like
+<h2 id="extension-origin" jstcache="0">Extension origin</h2>
+<p jstcache="0">Each running extension exists within its own separate security origin. Without
+requesting additional privileges, the extension can use
+XMLHttpRequest to get resources within its installation. For example, if
+an extension contains a JSON configuration file called <code jstcache="0">config.json</code>,
+in a <code jstcache="0">config_resources</code> folder, the extension can retrieve the file's contents like
 this:</p>
 
 <pre jstcache="0">var xhr = new XMLHttpRequest();
@@ -173,44 +175,49 @@ xhr.open("GET", chrome.extension.getURL('/config_resources/config.json'), true);
 xhr.send();
 </pre>
 
-<p jstcache="0">If the extension attempted to access a security origin other than itself,
-say</p>
+<p jstcache="0">If the extension attempts to use a security origin other than itself,
+say http://www.google.com,
+the browser disallows it
+unless the extension has requested the appropriate cross-origin permissions.
+</p>
 
-<pre jstcache="0">xhr.open("GET", "http://www.google.com", true);
-</pre>
+<h2 id="requesting-permission" jstcache="0">Requesting cross-origin permissions</h2>
 
-<p jstcache="0">The browser would disallow it.</p>
-
-<h2 id="requesting-permission" jstcache="0">Requesting Cross-Origin Permissions</h2>
-
-<p jstcache="0">By adding hosts and/or host match patterns to the
+<p jstcache="0">By adding hosts or host match patterns (or both) to the
 <a href="manifest.html#permissions" jstcache="0">permissions</a><a jstcache="0"> section of the 
 </a><a href="manifest.html" jstcache="0">manifest</a> file, the extension can request access to 
-remote servers outside of it's origin.</p>
+remote servers outside of its origin.</p>
 
 <pre jstcache="0">"permissions": [
   "http://www.google.com/",
 ],
 </pre>
 
-<p jstcache="0">Cross-origin permission values can be either fully qualified host names,
-like</p>
+<p jstcache="0">Cross-origin permission values can be fully qualified host names,
+like these:</p>
 
-<pre jstcache="0">"http://www.google.com/" or
-"http://www.gmail.com/"</pre>
+<ul jstcache="0">
+  <li jstcache="0"> "http://www.google.com/" </li>
+  <li jstcache="0"> "http://www.gmail.com/" </li>
+</ul>
 
-<p jstcache="0">or match patterns, like</p>
+<p jstcache="0">Or they can be match patterns, like these:</p>
 
-<pre jstcache="0">"http://*.google.com/" or
-"http://*/"</pre>
+<ul jstcache="0">
+  <li jstcache="0"> "http://*.google.com/" </li>
+  <li jstcache="0"> "http://*/" </li>
+</ul>
 
-<p jstcache="0">which would allow http access to all reachable domains. Note that here,
+<p jstcache="0">
+A match pattern of "http://*/" allows HTTP access to all reachable domains.
+Note that here,
 match patterns are similar to <a href="match_patterns.html" jstcache="0">content script
-match patterns</a>, but any path information following the host is ignored.</p>
+match patterns</a>,
+but any path information following the host is ignored.</p>
 
-<p jstcache="0">Also, note that access is granted both by host and scheme. If an extension
-wants secure and non-secure http access to a given host or set
-of hosts, it must declare the permissions seperately:</p>
+<p jstcache="0">Also note that access is granted both by host and by scheme. If an extension
+wants both secure and non-secure HTTP access to a given host or set
+of hosts, it must declare the permissions separately:</p>
 
 <pre jstcache="0">"permissions": [
   "http://www.google.com/",

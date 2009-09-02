@@ -64,6 +64,7 @@
               <li jstcache="0" class="leftNavSelected">Bookmarks</li>
               <li jstcache="0"><a href="themes.html" jstcache="0">Themes</a></li>
               <li jstcache="0"><a href="npapi.html" jstcache="0">NPAPI Plugins</a></li>
+              <li jstcache="0"><a href="xhr.html" jstcache="0">Cross-Origin XHR</a></li>
               <li jstcache="0"><a href="packaging.html" jstcache="0">Packaging</a></li>
               <li jstcache="0">Autoupdate</li>
             </ul>
@@ -96,19 +97,19 @@
           <p jstcache="0">Contents</p>
           <ol jstcache="0">
             <li jsselect="getStaticTOC()" jstcache="9" jsinstance="0">
+              <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#manifest">Manifest</a>
+              <ol jstcache="0">
+                <li jsselect="$this.children" jstcache="22" jsinstance="*0" style="display: none; ">
+                  <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14">h3Name</a>
+                </li>
+              </ol>
+            </li><li jsselect="getStaticTOC()" jstcache="9" jsinstance="*1">
               <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#description">Description</a>
               <ol jstcache="0">
                 <li jsselect="$this.children" jstcache="22" jsinstance="0">
                   <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#overview-properties">Properties</a>
                 </li><li jsselect="$this.children" jstcache="22" jsinstance="*1">
                   <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#overview-examples">Examples</a>
-                </li>
-              </ol>
-            </li><li jsselect="getStaticTOC()" jstcache="9" jsinstance="*1">
-              <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#permissions">Permissions</a>
-              <ol jstcache="0">
-                <li jsselect="$this.children" jstcache="22" jsinstance="*0" style="display: none; ">
-                  <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14">h3Name</a>
                 </li>
               </ol>
             </li>
@@ -188,6 +189,18 @@ Use the <code jstcache="0">chrome.bookmarks</code> module to create, organize,
 and otherwise manipulate bookmarks.
 </p>
 
+<h2 id="manifest" jstcache="0">Manifest</h2>
+<p jstcache="0">You must declare the "bookmarks" permission
+in your extension's manifest to use the bookmarks API.
+For example:</p>
+<pre jstcache="0">{
+  "name": "My extension that uses bookmarks",
+  "version": "0.1",
+<b jstcache="0">  "permissions": [
+    "bookmarks"
+  ]</b>
+}</pre>
+
 <h2 id="description" jstcache="0">Description</h2>
 
 <p jstcache="0">
@@ -199,7 +212,7 @@ either a URL or a group of bookmarks, as you can see in the following figure.
 
 <img alt="2 kinds of bookmark objects" width="415" height="123" src="images/bookmarks.png" jstcache="0">
 <br jstcache="0">
-<span class="comment" jstcache="0">
+<span class="tbd" jstcache="0">
 [PENDING: this figure needs to be updated]
 </span>
 
@@ -291,20 +304,8 @@ Here's how those bookmarks might be represented with bookmark objects:</p>
 <p jstcache="0">
 Here's some code you could use to create that hierarchy:</p>
 
-<pre class="example comment" jstcache="0">[PENDING: ...code goes here...]
+<pre class="example tbd" jstcache="0">[PENDING: ...code goes here...]
 </pre>
-
-<h2 id="permissions" jstcache="0">Permissions</h2>
-<p jstcache="0">You must declare the <var jstcache="0">bookmarks</var> permission
-in your extension's manifest to use the bookmarks API.</p>
-<p jstcache="0">Example:</p>
-<pre jstcache="0">{
-  "name": "My extension that uses bookmarks",
-  "version": "0.1",
-<b jstcache="0">  "permissions": [
-    "bookmarks"
-  ]</b>
-}</pre>
 
 
 <!-- PENDING: we could have links to source code and sample extensions. E.g.:

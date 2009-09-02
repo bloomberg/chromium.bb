@@ -64,6 +64,7 @@
               <li jstcache="0"><a href="bookmarks.html" jstcache="0">Bookmarks</a></li>
               <li jstcache="0"><a href="themes.html" jstcache="0">Themes</a></li>
               <li jstcache="0"><a href="npapi.html" jstcache="0">NPAPI Plugins</a></li>
+              <li jstcache="0"><a href="xhr.html" jstcache="0">Cross-Origin XHR</a></li>
               <li jstcache="0"><a href="packaging.html" jstcache="0">Packaging</a></li>
               <li jstcache="0">Autoupdate</li>
             </ul>
@@ -103,7 +104,7 @@
                 </li>
               </ol>
             </li><li jsselect="getStaticTOC()" jstcache="9" jsinstance="1">
-              <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#execution_environment">Execution environment</a>
+              <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#extecution-environment">Execution environment</a>
               <ol jstcache="0">
                 <li jsselect="$this.children" jstcache="22" jsinstance="*0" style="display: none; ">
                   <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14">h3Name</a>
@@ -117,14 +118,14 @@
                 </li>
               </ol>
             </li><li jsselect="getStaticTOC()" jstcache="9" jsinstance="3">
-              <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#hostPageCommuncation">Communication with the embedding page</a>
+              <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#host-page-communication">Communication with the embedding page</a>
               <ol jstcache="0">
                 <li jsselect="$this.children" jstcache="22" jsinstance="*0" style="display: none; ">
                   <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14">h3Name</a>
                 </li>
               </ol>
             </li><li jsselect="getStaticTOC()" jstcache="9" jsinstance="*4">
-              <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#extensionFiles">Referring to extension files</a>
+              <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14" href="#extension-files">Referring to extension files</a>
               <ol jstcache="0">
                 <li jsselect="$this.children" jstcache="22" jsinstance="*0" style="display: none; ">
                   <a jscontent="name" jsvalues=".href:'#' + href" jstcache="14">h3Name</a>
@@ -240,7 +241,7 @@
 </tbody></table>
 
 
-<h2 id="execution_environment" jstcache="0">Execution environment</h2>
+<h2 id="extecution-environment" jstcache="0">Execution environment</h2>
 
 <p jstcache="0">Content scripts execute in a special environment called an <em jstcache="0">isolated world</em>. They have access to the DOM of the page they are injected into, but not to any JavaScript variables or functions created by the page. It looks to each content script as if there is no other JavaScript executing on the page it is running on. The same is true in reverse: JavaScript running on the page cannot call any functions or access any variables defined by content scripts.
 
@@ -272,15 +273,15 @@ document.getElementById("button").onclick = function() {
 
 <p jstcache="0">Now, if the button is pressed, you will see both greetings.
 
-</p><p jstcache="0">Isolated worlds allow each content script to make changes to its JavaScript environment without worrying about conflicting with the page or with other contnet scripts. For example, a content script could include JQuery v1 and the page could include JQuery v2, and they wouldn't conflict with each other.
+</p><p jstcache="0">Isolated worlds allow each content script to make changes to its JavaScript environment without worrying about conflicting with the page or with other content scripts. For example, a content script could include JQuery v1 and the page could include JQuery v2, and they wouldn't conflict with each other.
 
 </p><p jstcache="0">Another important benefit of isolated worlds is that they completely separate the JavaScript on the page from the JavaScript in extensions. This allows us to offer extra functionality to content scripts that should not be accessible from web pages without worrying about web pages accessing it.
 
 </p><h2 id="messaging" jstcache="0">Messaging</h2>
 
-<p jstcache="0">Content scripts can communicate with their parent extension using message passing. A message channel can be opened by either the content script or an extension page. Each side of the channel has a <a href="extension.html#port" jstcache="0">Port</a> object which can be used to send messages to the other side. The messages can contain any valid JSON object (null, boolean, number, string, array, or object).
+<p jstcache="0">Content scripts can communicate with their parent extension using message passing. A message channel can be opened by either the content script or an extension page. Each side of the channel has a <a href="extension.html#type-Port" jstcache="0">Port</a> object which can be used to send messages to the other side. The messages can contain any valid JSON object (null, boolean, number, string, array, or object).
 
-</p><p jstcache="0">The content script opens a channel to the extension using the <a href="extension.html#connect" jstcache="0">chrome.extension.connect()</a> method. The parent extension can also open a channel to a content script in a given tab by calling <a href="tabs.html#connect" jstcache="0">chrome.tabs.connect(tabId)</a>. In either case, the <a href="extension.html#onConnect" jstcache="0">onConnect</a> event is fired in the targeted page(s), and a connection is established.
+</p><p jstcache="0">The content script opens a channel to the extension using the <a href="extension.html#method-connect" jstcache="0">chrome.extension.connect()</a> method. The parent extension can also open a channel to a content script in a given tab by calling <a href="tabs.html#method-connect" jstcache="0">chrome.tabs.connect(tabId)</a>. In either case, the <a href="extension.html#event-onConnect" jstcache="0">onConnect</a> event is fired in the targeted page(s), and a connection is established.
 
 </p><p jstcache="0">When a channel is opened from a content script to an extension, the event is
 fired in all views in the extension. Any view can receive the event.
@@ -337,7 +338,7 @@ function onClick() {
 &lt;/script&gt;
 </pre>
 
-<h2 id="hostPageCommuncation" jstcache="0">Communication with the embedding page</h2>
+<h2 id="host-page-communication" jstcache="0">Communication with the embedding page</h2>
 
 <p jstcache="0">Although the execution environments of content scripts and the pages that host them are isolated from each other, they share access to the page's DOM. If the page wishes to communicate with the content script (or with the extension via the content script), it must do so through the shared DOM.</p>
 
@@ -365,7 +366,7 @@ document.getElementById('myCustomEventDiv').addEventListener('myCustomEvent', fu
 
 <p jstcache="0">In the above example, example.html (which is not a part of the extension) creates a custom event and then can decide to fire the event by setting the event data to a known location in the DOM and then dispatching the custom event. The content script listens for the name of the custom event on the known element and handles the event by inspecting the data of the element, and turning around to post the message to the extension process. In this way the page establishes a line of communication to the extension. The reverse is possible through similar means.</p>
 
-<h2 id="extensionFiles" jstcache="0">Referring to extension files</h2>
+<h2 id="extension-files" jstcache="0">Referring to extension files</h2>
 
 <p jstcache="0">
 Get the URL of an extension's file using
