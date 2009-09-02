@@ -24,6 +24,10 @@ const wchar_t NSSDecryptor::kNSS3Library[] = L"libnss3.dylib";
 // DYLD_FALLBACK_LIBRARY_PATH set on startup to said directory.
 bool NSSDecryptor::Init(const std::wstring& dll_path,
                         const std::wstring& db_path) {
+  if (getenv("DYLD_FALLBACK_LIBRARY_PATH") == NULL) {
+    LOG(ERROR) << "DYLD_FALLBACK_LIBRARY_PATH variable not set";
+    return false;
+  }
   FilePath dylib_file_path = FilePath::FromWStringHack(dll_path);
   FilePath nss3_path = dylib_file_path.Append("libnss3.dylib");
 

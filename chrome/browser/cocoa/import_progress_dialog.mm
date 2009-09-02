@@ -138,7 +138,8 @@ NSString* keyForImportItem(ImportItem item) {
   [self closeDialog];
   [self release];
 
-  MessageLoop::current()->Quit();
+  // Break out of modal event loop.
+  [NSApp stopModal];
 }
 
 @end
@@ -171,6 +172,16 @@ void StartImportingWithUI(gfx::NativeWindow parent_window,
                                    new ProfileWriter(target_profile),
                                    first_run);
 
+
+  // Display the window while spinning a message loop.
+  // For details on why we need a modal message loop see http://crbug.com/19169
+  NSWindow* progress_window = [progress_dialog_ window];
+  NSModalSession session = [NSApp beginModalSessionForWindow:progress_window];
   [progress_dialog_ showWindow:nil];
-  MessageLoop::current()->Run();
+  while(1) {
+    if ([NSApp runModalSession:session] != NSRunContinuesResponse)
+        break;
+    MessageLoop::current()->RunAllPending();
+  }
+  [NSApp endModalSession:session];
 }
