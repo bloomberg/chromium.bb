@@ -1448,7 +1448,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_NEW_PROFILE:           OpenNewProfileDialog();        break;
     case IDC_REPORT_BUG:            OpenBugReportDialog();         break;
 
-    case IDC_SHOW_BOOKMARK_BAR:     FocusToolbar(); break;//ToggleBookmarkBar();           break;
+    case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();           break;
     case IDC_SHOW_EXTENSION_SHELF:  ToggleExtensionShelf();        break;
 
     case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();         break;
