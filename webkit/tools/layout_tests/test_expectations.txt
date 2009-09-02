@@ -2385,3 +2385,7 @@ BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-style-filter.html = PASS 
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS CRASH
 
 BUG10480 LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
+
+// WebKit roll to 47952
+// Newly added test started out red on windows with r47950
+BUG_MICHAELN WIN : LayoutTests/fast/encoding/japanese-encoding-mix.html = FAIL
