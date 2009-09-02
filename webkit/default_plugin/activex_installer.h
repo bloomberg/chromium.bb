@@ -10,6 +10,8 @@
 #include <windows.h>
 #include <string>
 
+#include "base/scoped_comptr_win.h"
+
 // ActiveXInstaller is to help install an ActiveX control from a URL, usually
 // given by codebase.
 class ActiveXInstaller : public CComObjectRootEx<CComMultiThreadModel>,
@@ -51,14 +53,14 @@ class ActiveXInstaller : public CComObjectRootEx<CComMultiThreadModel>,
                                               HWND* phwnd);
 
 BEGIN_COM_MAP(ActiveXInstaller)
-	COM_INTERFACE_ENTRY(IBindStatusCallback)
-	COM_INTERFACE_ENTRY(IWindowForBindingUI)
+  COM_INTERFACE_ENTRY(IBindStatusCallback)
+  COM_INTERFACE_ENTRY(IWindowForBindingUI)
 END_COM_MAP()
 
  private:
   HWND wnd_;
   UINT notification_msg_;
-  CComPtr<IBindCtx> bind_ctx_;
+  ScopedComPtr<IBindCtx> bind_ctx_;
 };
 
 #endif // #ifndef WEBKIT_DEFAULT_PLUGIN_ACTIVEX_INSTALLER_H__

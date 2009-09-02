@@ -32,7 +32,7 @@ HRESULT ActiveXInstaller::StartDownload(const std::string& clsid,
       break;
 
     // Create the bind context, register it with myself (status callback).
-    hr = CreateBindCtx(0, &bind_ctx_);
+    hr = CreateBindCtx(0, bind_ctx_.Receive());
     if (FAILED(hr))
       break;
     BIND_OPTS opts;
