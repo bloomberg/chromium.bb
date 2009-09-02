@@ -27,7 +27,7 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "base/port.h"
-#include "third_party/cld/base/stl_decl.h"
+#include "third_party/cld/base/stl_decl_msvc.h"
 #include "third_party/cld/base/global_strip_options.h"
 
 // --------------------------------------------------------------------

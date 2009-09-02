@@ -23,7 +23,7 @@
 #include "third_party/cld/base/dynamic_annotations.h"
 #include "third_party/cld/base/macros.h"
 #include "third_party/cld/base/scoped_ptr.h"
-#include "third_party/cld/base/stl_decl.h"
+#include "third_party/cld/base/stl_decl_msvc.h"
 #include "third_party/cld/base/log_severity.h"
 #include "third_party/cld/base/vlog_is_on.h"
 #include "third_party/cld/base/global_strip_options.h"

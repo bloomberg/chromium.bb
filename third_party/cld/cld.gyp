@@ -78,7 +78,6 @@
             'bar/toolbar/cld/i18n/languages/public/languages.h',
             'base/casts.h',
             'base/commandlineflags.h',
-            'base/stl_decl.h',
             'base/global_strip_options.h',
             'base/logging.h',
             'base/macros.h',
