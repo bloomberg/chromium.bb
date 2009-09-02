@@ -203,7 +203,7 @@ TEST_F(DownloadTest, NoDownload) {
 // Download a 0-size file with a content-disposition header, verify that the
 // download tab opened and the file exists as the filename specified in the
 // header.  This also ensures we properly handle empty file downloads.
-TEST_F(DownloadTest, ContentDisposition) {
+TEST_F(DownloadTest, DISABLED_ContentDisposition) {
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
