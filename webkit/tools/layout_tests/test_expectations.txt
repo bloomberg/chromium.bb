@@ -1609,6 +1609,7 @@ BUG10435 LINUX : LayoutTests/fast/canvas/canvas-text-alignment.html = FAIL
 BUG10435 MAC : LayoutTests/editing/pasteboard/copy-standalone-image.html = FAIL
 // See above comment about this test on linux/win.
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
+BUG10435 DEBUG WIN : LayoutTests/editing/selection/move-by-line-001.html = FAIL PASS
 
 // New tests added in the 41420:41447 merge that fail (just needs a new baseline):
 BUG10437 LINUX : LayoutTests/fast/css-generated-content/hit-test-generated-content.html = FAIL
@@ -1770,13 +1771,14 @@ BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
 BUG9798 : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
+BUG9798 WIN DEBUG : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
 BUG9798 LINUX DEBUG : chrome/fast/dom/extensions/interval.html = CRASH FAIL PASS
 BUG9798 LINUX : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/http/tests/misc/BOM-override-script.html = TIMEOUT PASS
 BUG9798 LINUX DEBUG : LayoutTests/svg/text/text-text-07-t.svg = FAIL PASS
 BUG9798 LINUX : LayoutTests/tables/mozilla/bugs/45621.html = FAIL PASS CRASH
-BUG9798 LINUX DEBUG : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
+BUG9798 LINUX : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/transition-timing-function.html = FAIL PASS
 BUG9798 LINUX RELEASE : LayoutTests/svg/carto.net/colourpicker.svg = FAIL PASS
 BUG9798 MAC : LayoutTests/svg/custom/use-instanceRoot-as-event-target.xhtml = TIMEOUT FAIL
@@ -1998,9 +2000,7 @@ BUG14673 : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.h
 // Need investigation: test shell crashers.
 BUG14752 LINUX : LayoutTests/http/tests/cache/subresource-expiration.html = CRASH PASS
 BUG14751 LINUX DEBUG: LayoutTests/css2.1/atrule_longest_match.html = CRASH PASS
-
-// No longer crashes, but occasionally is slow
-BUG14767 SLOW LINUX RELEASE : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html = PASS
+BUG14767 LINUX : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html = CRASH PASS
 
 BUG14832 : LayoutTests/editing/selection/user-drag-element-and-user-select-none.html = FAIL
 BUG14831 : LayoutTests/fast/events/event-trace.html = FAIL
