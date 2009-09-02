@@ -6,6 +6,18 @@ Use the <code>chrome.bookmarks</code> module to create, organize,
 and otherwise manipulate bookmarks.
 </p>
 
+<h2 id="manifest">Manifest</h2>
+<p>You must declare the "bookmarks" permission
+in your extension's manifest to use the bookmarks API.
+For example:</p>
+<pre>{
+  "name": "My extension that uses bookmarks",
+  "version": "0.1",
+<b>  "permissions": [
+    "bookmarks"
+  ]</b>
+}</pre>
+
 <h2 id="description">Description</h2>
 
 <p>
@@ -21,7 +33,7 @@ either a URL or a group of bookmarks, as you can see in the following figure.
   height="123"
   src="images/bookmarks.png"></a>
 <br />
-<span class="comment">
+<span class="tbd">
 [PENDING: this figure needs to be updated]
 </span>
 
@@ -119,21 +131,9 @@ Here's how those bookmarks might be represented with bookmark objects:</p>
 <p>
 Here's some code you could use to create that hierarchy:</p>
 
-<pre class="example comment">
+<pre class="example tbd">
 [PENDING: ...code goes here...]
 </pre>
-
-<h2 id="permissions">Permissions</h2>
-<p>You must declare the <var>bookmarks</var> permission
-in your extension's manifest to use the bookmarks API.</p>
-<p>Example:</p>
-<pre>{
-  "name": "My extension that uses bookmarks",
-  "version": "0.1",
-<b>  "permissions": [
-    "bookmarks"
-  ]</b>
-}</pre>
 
 
 <!-- PENDING: we could have links to source code and sample extensions. E.g.:

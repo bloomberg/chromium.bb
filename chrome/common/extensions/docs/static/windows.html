@@ -8,12 +8,15 @@ You can use this module to
 create, modify, and rearrange windows in the browser.
 </p>
 
-<h2 id="permissions">Permissions</h2>
-<p>You must declare the <var>tabs</var> permission
-(no, that isn't a typo -- the window and tabs modules interact so closely we
-decided to just share one permission between them)
-in your extension's manifest to use the windows API.</p>
-<p>Example:</p>
+<h2 id="manifest">Manifest</h2>
+<p>
+You must declare the "tabs" permission
+in your extension's manifest to use the windows API.
+(No, that isn't a typo &mdash;
+the window and tabs modules interact so closely we
+decided to just share one permission between them.)
+For example:
+</p>
 <pre>{
   "name": "My extension that uses windows",
   "version": "0.1",
