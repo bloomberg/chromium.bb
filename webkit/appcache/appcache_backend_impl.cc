@@ -5,6 +5,8 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 
 #include "webkit/appcache/appcache_host.h"
+#include "webkit/appcache/appcache.h"
+#include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 

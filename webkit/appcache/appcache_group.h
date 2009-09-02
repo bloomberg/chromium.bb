@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
 
 namespace appcache {
@@ -15,7 +16,8 @@ class AppCache;
 class AppCacheService;
 
 // Collection of application caches identified by the same manifest URL.
-class AppCacheGroup {
+// A group exists as long as it is in use by a host or is being updated.
+class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
  public:
 
   enum UpdateStatus {
@@ -49,10 +51,11 @@ class AppCacheGroup {
   bool is_obsolete_;
 
   // old complete app caches
-  std::vector<AppCache*> old_caches_;
+  typedef std::vector<scoped_refptr<AppCache> > Caches;
+  Caches old_caches_;
 
   // newest cache in this group to be complete, aka relevant cache
-  AppCache* newest_complete_cache_;
+  scoped_refptr<AppCache> newest_complete_cache_;
 
   // to notify service when group is no longer needed
   AppCacheService* service_;

@@ -27,14 +27,14 @@ AppCacheGroup::~AppCacheGroup() {
 
   // Newest complete cache might never have been associated with a host
   // and thus would not be cleaned up by the backend impl during shutdown.
-  if (newest_complete_cache_) {
-    delete newest_complete_cache_;
-  }
+  if (newest_complete_cache_)
+    RemoveCache(newest_complete_cache_);
 
   service_->RemoveGroup(this);
 }
 
 void AppCacheGroup::AddCache(AppCache* complete_cache) {
+  DCHECK(complete_cache->is_complete());
   if (!newest_complete_cache_) {
     newest_complete_cache_ = complete_cache;
     return;
@@ -56,17 +56,16 @@ bool AppCacheGroup::RemoveCache(AppCache* cache) {
     if (!old_caches_.empty())
       return false;
 
-    newest_complete_cache_ = NULL;  // cache will be deleted by caller
+    newest_complete_cache_->set_owning_group(NULL);
+    newest_complete_cache_ = NULL;
   } else {
     // Unused old cache can always be removed.
-    std::vector<AppCache*>::iterator it =
+    Caches::iterator it =
       std::find(old_caches_.begin(), old_caches_.end(), cache);
-    if (it != old_caches_.end())
-      old_caches_.erase(it);        // cache will be deleted by caller
-  }
-
-  if (old_caches_.empty() && !newest_complete_cache_) {
-    delete this;
+    if (it != old_caches_.end()) {
+      (*it)->set_owning_group(NULL);
+      old_caches_.erase(it);
+    }
   }
 
   return true;

@@ -5,10 +5,13 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_HOST_H_
 #define WEBKIT_APPCACHE_APPCACHE_HOST_H_
 
+#include "base/ref_counted.h"
+
 namespace appcache {
 
 class AppCache;
 class AppCacheFrontend;
+class AppCacheGroup;
 
 // Server-side representation of an application cache host.
 class AppCacheHost {
@@ -20,9 +23,7 @@ class AppCacheHost {
   AppCacheFrontend* frontend() { return frontend_; }
 
   AppCache* selected_cache() { return selected_cache_; }
-  void set_selected_cache(AppCache* cache) {
-    selected_cache_ = cache;
-  }
+  void set_selected_cache(AppCache* cache);
 
   bool is_selection_pending() {
     return false;  // TODO(michaeln)
@@ -33,7 +34,11 @@ class AppCacheHost {
   int host_id_;
 
   // application cache associated with this host, if any
-  AppCache* selected_cache_;
+  scoped_refptr<AppCache> selected_cache_;
+
+  // The reference to the appcache group ensures the group exists as long
+  // as there is a host using a cache belonging to that group.
+  scoped_refptr<AppCacheGroup> group_;
 
   // frontend to deliver notifications about this host to child process
   AppCacheFrontend* frontend_;

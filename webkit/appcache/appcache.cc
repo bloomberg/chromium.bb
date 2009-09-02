@@ -11,6 +11,16 @@
 
 namespace appcache {
 
+AppCache::AppCache(AppCacheService *service, int64 cache_id)
+  : cache_id_(cache_id),
+    manifest_(NULL),
+    owning_group_(NULL),
+    online_whitelist_all_(false),
+    is_complete_(false),
+    service_(service) {
+  service_->AddCache(this);
+}
+
 AppCache::~AppCache() {
   DCHECK(associated_hosts_.empty());
   DCHECK(!owning_group_);
@@ -21,12 +31,8 @@ void AppCache::UnassociateHost(AppCacheHost* host) {
   associated_hosts_.erase(host);
 
   // Inform group if this cache is no longer in use.
-  if (associated_hosts_.empty()) {
-    if (!owning_group_ || owning_group_->RemoveCache(this)) {
-      owning_group_ = NULL;
-      delete this;
-    }
-  }
+  if (associated_hosts_.empty() && owning_group_)
+    owning_group_->RemoveCache(this);
 }
 
 void AppCache::AddEntry(const GURL& url, const AppCacheEntry& entry) {

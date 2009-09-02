@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/ref_counted.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/appcache/appcache_entry.h"
@@ -21,23 +22,18 @@ class AppCacheGroup;
 class AppCacheHost;
 class AppCacheService;
 
-// Set of cached resources for an application.
-class AppCache {
+// Set of cached resources for an application. A cache exists as long as a
+// host is associated with it, the cache is in an appcache group or the
+// cache is being created during an appcache upate.
+class AppCache : public base::RefCounted<AppCache> {
  public:
-   // TODO(jennb): need constructor to set cache_id and service
+  AppCache(AppCacheService *service, int64 cache_id);
   ~AppCache();
 
   int64 cache_id() { return cache_id_; }
 
   AppCacheGroup* owning_group() { return owning_group_; }
   void set_owning_group(AppCacheGroup* group) { owning_group_ = group; }
-
-  void AssociateHost(AppCacheHost* host) {
-    associated_hosts_.insert(host);
-  }
-
-  // Cache may be deleted after host is unassociated.
-  void UnassociateHost(AppCacheHost* host);
 
   bool is_complete() { return is_complete_; }
   void set_complete(bool value) { is_complete_ = value; }
@@ -59,7 +55,19 @@ class AppCache {
     return update_time_ > cache->update_time_;
   }
 
+  void set_update_time(base::TimeTicks ticks = base::TimeTicks::Now()) {
+    update_time_ = ticks;
+  }
+
  private:
+  friend class AppCacheHost;
+
+  // Use AppCacheHost::set_selected_cache() to manipulate host association.
+  void AssociateHost(AppCacheHost* host) {
+    associated_hosts_.insert(host);
+  }
+  void UnassociateHost(AppCacheHost* host);
+
   int64 cache_id_;
   AppCacheEntry* manifest_;  // also in entry map
   AppCacheGroup* owning_group_;
