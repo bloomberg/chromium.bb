@@ -686,8 +686,9 @@
    */
   function shouldHideTest(testResult) {
     return !currentState.tests &&
-        (test.isWontFix && !currentState.showWontFix ||
-         test.meetsExpectations && !currentState.showCorrectExpectations);
+        (testResult.isWontFix && !currentState.showWontFix ||
+         testResult.meetsExpectations &&
+         !currentState.showCorrectExpectations);
   }
 
   function getHTMLForSingleTestRow(test, opt_builder) {
