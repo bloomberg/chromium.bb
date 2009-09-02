@@ -25,9 +25,13 @@ static const int kInnerPadding = 1;
 // Spacing between buttons.
 static const int kHorizPadding = 3;
 
-static const int kURLWidth = 150;
+static const int kURLWidth = 180;
 
 static const int kChromeButtonSize = 25;
+
+// Draw this much white around the URL bar to make it look larger than it
+// actually is.
+static const int kURLPadding = 2;
 
 CompactNavigationBar::CompactNavigationBar(Browser* browser)
     : browser_(browser),
@@ -87,13 +91,14 @@ gfx::Size CompactNavigationBar::GetPreferredSize() {
   int width = 0;
 
   width += kChromeButtonSize + kHorizPadding;  // Chrome button.
-  width += kURLWidth + kHorizPadding;  // URL bar.
+  width += kURLWidth + kHorizPadding + kURLPadding * 2;  // URL bar.
   width += back_button_->GetPreferredSize().width() + kHorizPadding +
       kInnerPadding * 2;
   width += bf_separator_->GetPreferredSize().width() + kHorizPadding;
   width += forward_button_->GetPreferredSize().width() + kHorizPadding +
       kInnerPadding * 2;
 
+  width++;
   return gfx::Size(width, kChromeButtonSize);
 }
 
@@ -105,10 +110,6 @@ void CompactNavigationBar::Layout() {
 
   chrome_button_->SetBounds(curx, 0, kChromeButtonSize, height());
   curx += kChromeButtonSize + kHorizPadding;
-
-  // URL bar.
-  location_entry_view_->SetBounds(curx, 0, kURLWidth, height());
-  curx += kURLWidth + kHorizPadding;
 
   // "Back | Forward" section.
   gfx::Size button_size = back_button_->GetPreferredSize();
@@ -124,6 +125,11 @@ void CompactNavigationBar::Layout() {
   button_size.set_width(button_size.width() + kInnerPadding * 2);
   forward_button_->SetBounds(curx, 0, button_size.width(), height());
   curx += button_size.width() + kHorizPadding;
+
+  // URL bar.
+  location_entry_view_->SetBounds(curx + kURLPadding, 0,
+                                  kURLWidth + kURLPadding * 2, height());
+  curx += kURLWidth + kHorizPadding + kURLPadding * 2;
 }
 
 void CompactNavigationBar::Paint(gfx::Canvas* canvas) {
@@ -136,6 +142,15 @@ void CompactNavigationBar::Paint(gfx::Canvas* canvas) {
   else
     background = theme->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
   canvas->TileImageInt(*background, 0, 0, width(), height());
+
+  // Draw a white box around the edit field so that it looks larger. This is
+  // kind of what the default GTK location bar does, although they have a
+  // fancier border.
+  canvas->FillRectInt(0xFFFFFFFF,
+                      location_entry_view_->x() - kURLPadding,
+                      2,
+                      location_entry_view_->width() + kURLPadding * 2,
+                      height() - 5);
 }
 
 void CompactNavigationBar::ButtonPressed(views::Button* sender) {

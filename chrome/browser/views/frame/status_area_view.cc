@@ -17,6 +17,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/profile.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -113,8 +114,21 @@ void ClockView::OnTimer() {
 class OptionsMenuModel : public views::SimpleMenuModel,
                          public views::SimpleMenuModel::Delegate {
  public:
-  explicit OptionsMenuModel(views::SimpleMenuModel::Delegate* delegate)
-      : SimpleMenuModel(this) {
+  // These extra command IDs must be unique when combined with the options,
+  // so we just pick up the numbering where that stops.
+  enum OtherCommands {
+    CREATE_NEW_WINDOW = StatusAreaView::OPEN_TABS_ON_RIGHT + 1,
+  };
+
+  explicit OptionsMenuModel(Browser* browser,
+                            views::SimpleMenuModel::Delegate* delegate)
+      : SimpleMenuModel(this),
+        browser_(browser) {
+    AddItem(static_cast<int>(CREATE_NEW_WINDOW),
+            ASCIIToUTF16("New window"));
+
+    AddSeparator();
+
     AddItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_LEFT),
             ASCIIToUTF16("Open tabs on left"));
     AddItem(static_cast<int>(StatusAreaView::OPEN_TABS_CLOBBER),
@@ -139,6 +153,15 @@ class OptionsMenuModel : public views::SimpleMenuModel,
   }
   virtual void ExecuteCommand(int command_id) {
     switch (command_id) {
+      case CREATE_NEW_WINDOW:
+        // Reach into the GTK browser window and enable the flag to create the
+        // next window as a compact nav one.
+        // TODO(brettw) this is an evil hack, and is here so this can be tested.
+        // Remove it eventually.
+        static_cast<BrowserWindowGtk*>(browser_->window())->
+            set_next_window_should_use_compact_nav();
+        browser_->ExecuteCommand(IDC_NEW_WINDOW);
+        break;
       case StatusAreaView::OPEN_TABS_ON_LEFT:
       case StatusAreaView::OPEN_TABS_CLOBBER:
       case StatusAreaView::OPEN_TABS_ON_RIGHT:
@@ -151,6 +174,8 @@ class OptionsMenuModel : public views::SimpleMenuModel,
   }
 
  private:
+  Browser* browser_;
+
   DISALLOW_COPY_AND_ASSIGN(OptionsMenuModel);
 };
 
@@ -243,7 +268,7 @@ void StatusAreaView::CreateAppMenu() {
   if (app_menu_contents_.get())
     return;
 
-  options_menu_contents_.reset(new OptionsMenuModel(this));
+  options_menu_contents_.reset(new OptionsMenuModel(browser_, this));
 
   app_menu_contents_.reset(new views::SimpleMenuModel(this));
   app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
@@ -270,7 +295,7 @@ void StatusAreaView::CreateAppMenu() {
                               l10n_util::GetStringFUTF16(
                                   IDS_OPTIONS,
                                   l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  app_menu_contents_->AddSubMenu(ASCIIToUTF16("Compact nav bar options"),
+  app_menu_contents_->AddSubMenu(ASCIIToUTF16("Compact nav bar"),
                                  options_menu_contents_.get());
   app_menu_contents_->AddItem(IDC_ABOUT,
                               l10n_util::GetStringFUTF16(

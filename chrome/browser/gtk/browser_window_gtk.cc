@@ -82,10 +82,6 @@
 #include "views/controls/button/image_button.h"
 #include "views/widget/widget_gtk.h"
 
-// This command-line switch enables the compact navigation bar instead of the
-// regular toolbar.
-static const wchar_t kUseCompactNavBar[] = L"compact-nav";
-
 // This command-line switch enables the main menu button in the upper left
 // corner. By default it isn't shown.
 static const wchar_t kShowMainMenuButton[] = L"main-menu-button";
@@ -325,6 +321,40 @@ class MenuPopupCloser : public views::ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(MenuPopupCloser);
 };
 
+// This draws the spacer below the tab strip when we're using the compact
+// location bar (i.e. no location bar). This basically duplicates the painting
+// that the tab strip would have done for this region so that it blends
+// nicely in with the bottom of the tabs.
+gboolean OnCompactNavSpacerExpose(GtkWidget* widget,
+                                  GdkEventExpose* e,
+                                  BrowserWindowGtk* window) {
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+  cairo_rectangle(cr, e->area.x, e->area.y, e->area.width, e->area.height);
+  cairo_clip(cr);
+  // The toolbar is supposed to blend in with the active tab, so we have to pass
+  // coordinates for the IDR_THEME_TOOLBAR bitmap relative to the top of the
+  // tab strip.
+  gfx::Point tabstrip_origin =
+      window->tabstrip()->GetTabStripOriginForWidget(widget);
+  ThemeProvider* theme_provider =
+      window->browser()->profile()->GetThemeProvider();
+  GdkPixbuf* toolbar_background = theme_provider->GetPixbufNamed(
+      IDR_THEME_TOOLBAR);
+  gdk_cairo_set_source_pixbuf(cr, toolbar_background, tabstrip_origin.x(),
+                              tabstrip_origin.y());
+  // We tile the toolbar background in both directions.
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr,
+      tabstrip_origin.x(),
+      tabstrip_origin.y(),
+      e->area.x + e->area.width - tabstrip_origin.x(),
+      e->area.y + e->area.height - tabstrip_origin.y());
+  cairo_fill(cr);
+  cairo_destroy(cr);
+
+  return FALSE;
+}
+
 }  // namespace
 
 // Callback from GTK when the user clicks the main menu button.
@@ -344,7 +374,8 @@ static void OnMainMenuButtonClicked(GtkWidget* widget,
   menu_popup->SetContentsView(button);
   menu_popup->Show();
 }
-#endif
+
+#endif  // OS_CHROMEOS
 
 int GetCommandId(guint accel_key, GdkModifierType modifier) {
   // Bug 9806: If capslock is on, we will get a capital letter as accel_key.
@@ -486,6 +517,11 @@ GdkColor SkColorToGdkColor(const SkColor& color) {
 }  // namespace
 
 std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
+
+#if defined(OS_CHROMEOS)
+// Default to using the regular window style.
+bool BrowserWindowGtk::next_window_should_use_compact_nav_ = false;
+#endif
 
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
     :  browser_(browser),
@@ -1466,8 +1502,7 @@ void BrowserWindowGtk::InitWidgets() {
   GtkWidget* titlebar_hbox = NULL;
   GtkWidget* navbar_hbox = NULL;
   GtkWidget* status_hbox = NULL;
-  bool has_compact_nav_bar =
-      CommandLine::ForCurrentProcess()->HasSwitch(kUseCompactNavBar);
+  bool has_compact_nav_bar = next_window_should_use_compact_nav_;
   if (browser_->type() == Browser::TYPE_NORMAL) {
     bool show_main_menu_button =
         CommandLine::ForCurrentProcess()->HasSwitch(kShowMainMenuButton);
@@ -1480,6 +1515,10 @@ void BrowserWindowGtk::InitWidgets() {
       navbar_hbox = gtk_hbox_new(FALSE, 0);
       gtk_widget_show(navbar_hbox);
       gtk_box_pack_start(GTK_BOX(titlebar_hbox), navbar_hbox, FALSE, FALSE, 0);
+
+      // Reset the compact nav bit now that we're creating the next toplevel
+      // window. Code below will use our local has_compact_nav_bar variable.
+      next_window_should_use_compact_nav_ = false;
     } else if (show_main_menu_button) {
       CustomDrawButton* main_menu_button =
           new CustomDrawButton(IDR_MAIN_MENU_BUTTON, IDR_MAIN_MENU_BUTTON,
@@ -1517,6 +1556,13 @@ void BrowserWindowGtk::InitWidgets() {
 #if defined(OS_CHROMEOS)
   if (browser_->type() == Browser::TYPE_NORMAL && has_compact_nav_bar) {
     gtk_widget_hide(toolbar_->widget());
+
+    GtkWidget* spacer = gtk_vbox_new(FALSE, 0);
+    gtk_widget_set_size_request(spacer, -1, 3);
+    gtk_widget_show(spacer);
+    gtk_box_pack_start(GTK_BOX(content_vbox_), spacer, FALSE, FALSE, 0);
+    g_signal_connect(spacer, "expose-event",
+                     G_CALLBACK(&OnCompactNavSpacerExpose), this);
   }
 #endif
 

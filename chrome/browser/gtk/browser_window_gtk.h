@@ -154,6 +154,17 @@ class BrowserWindowGtk : public BrowserWindow,
   // Sets whether a drag is active. If a drag is active the window will not
   // close.
   void set_drag_active(bool drag_active) { drag_active_ = drag_active; }
+
+  // Sets the flag that the next toplevel browser window being created will
+  // use the compact nav bar. This is used to implement the "new compact nav
+  // window" menu option. This flag will be cleared after the next window is
+  // opened, which will revert to the old behavior.
+  //
+  // TODO(brettw) remove this when we figure out how this is actually going
+  // to work long-term. This is a hack so the feature can be tested.
+  static void set_next_window_should_use_compact_nav() {
+    next_window_should_use_compact_nav_ = true;
+  }
 #endif
 
   // Reset the mouse cursor to the default cursor if it was set to something
@@ -360,6 +371,8 @@ class BrowserWindowGtk : public BrowserWindow,
 
   CompactNavigationBar* compact_navigation_bar_;
   StatusAreaView* status_area_;
+
+  static bool next_window_should_use_compact_nav_;
 #endif
 
   // A map which translates an X Window ID into its respective GtkWindow.
