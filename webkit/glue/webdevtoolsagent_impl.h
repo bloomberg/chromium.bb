@@ -89,6 +89,12 @@ class WebDevToolsAgentImpl
   void InitDevToolsAgentHost();
   void ResetInspectorFrontendProxy();
 
+  // Creates InspectorBackend v8 wrapper in the utility context so that it's
+  // methods prototype is Function.protoype object from the utility context.
+  // Otherwise some useful methods  defined on Function.prototype(such as bind)
+  // are missing for InspectorController native methods.
+  v8::Local<v8::Object> CreateInspectorBackendV8Wrapper();
+
   int host_id_;
   WebDevToolsAgentDelegate* delegate_;
   WebViewImpl* web_view_impl_;

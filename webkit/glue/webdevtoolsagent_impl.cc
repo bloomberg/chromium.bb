@@ -8,6 +8,7 @@
 
 #include "Document.h"
 #include "EventListener.h"
+#include "InspectorBackend.h"
 #include "InspectorController.h"
 #include "InspectorFrontend.h"
 #include "InspectorResource.h"
@@ -19,6 +20,7 @@
 #include "ScriptValue.h"
 #include "V8Binding.h"
 #include "V8Proxy.h"
+#include "V8Utilities.h"
 #include <wtf/OwnPtr.h>
 #undef LOG
 
@@ -34,11 +36,13 @@
 #include "webkit/glue/webview_impl.h"
 
 using WebCore::Document;
+using WebCore::InspectorBackend;
 using WebCore::InspectorController;
 using WebCore::InspectorFrontend;
 using WebCore::InspectorResource;
 using WebCore::Node;
 using WebCore::Page;
+using WebCore::SafeAllocation;
 using WebCore::ScriptObject;
 using WebCore::ScriptState;
 using WebCore::ScriptValue;
@@ -49,6 +53,18 @@ using WebCore::V8Proxy;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebURLRequest;
+
+
+namespace {
+
+void InspectorBackendWeakReferenceCallback(v8::Persistent<v8::Value> object,
+                                           void* parameter) {
+  InspectorBackend* backend = static_cast<InspectorBackend*>(parameter);
+  backend->deref();
+  object.Dispose();
+}
+
+} //  namespace
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* web_view_impl,
@@ -225,11 +241,42 @@ void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
 
   v8::HandleScope scope;
   v8::Context::Scope utility_scope(utility_context_);
-  InspectorController* ic = web_view_impl_->page()->inspectorController();
+  // Call custom code to create inspector backend wrapper in the utility context
+  // instead of calling V8DOMWrapper::convertToV8Object that would create the
+  // wrapper in the Page main frame context.
+  v8::Handle<v8::Object> backend_wrapper = CreateInspectorBackendV8Wrapper();
+  if (backend_wrapper.IsEmpty()) {
+    return;
+  }
   utility_context_->Global()->Set(
       v8::String::New("InspectorController"),
-      V8DOMWrapper::convertToV8Object(V8ClassIndex::INSPECTORBACKEND,
-                                      ic->inspectorBackend()));
+      backend_wrapper);
+}
+
+v8::Local<v8::Object> WebDevToolsAgentImpl::CreateInspectorBackendV8Wrapper() {
+  V8ClassIndex::V8WrapperType descriptorType = V8ClassIndex::INSPECTORBACKEND;
+  v8::Handle<v8::Function> function =
+      V8DOMWrapper::getTemplate(descriptorType)->GetFunction();
+  if (function.IsEmpty()) {
+    // Return if allocation failed.
+    return v8::Local<v8::Object>();
+  }
+  v8::Local<v8::Object> instance = SafeAllocation::newInstance(function);
+  if (instance.IsEmpty()) {
+    // Avoid setting the wrapper if allocation failed.
+    return v8::Local<v8::Object>();
+  }
+  InspectorBackend* backend =
+      web_view_impl_->page()->inspectorController()->inspectorBackend();
+  V8DOMWrapper::setDOMWrapper(instance, V8ClassIndex::ToInt(descriptorType),
+                              backend);
+  // Create a weak reference to the v8 wrapper of InspectorBackend to deref
+  // InspectorBackend when the wrapper is garbage collected.
+  backend->ref();
+  v8::Persistent<v8::Object> weak_handle =
+      v8::Persistent<v8::Object>::New(instance);
+  weak_handle.MakeWeak(backend, &InspectorBackendWeakReferenceCallback);
+  return instance;
 }
 
 void WebDevToolsAgentImpl::ResetInspectorFrontendProxy() {
