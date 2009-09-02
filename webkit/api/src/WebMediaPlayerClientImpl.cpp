@@ -330,7 +330,10 @@ void WebMediaPlayerClientImpl::setSize(const IntSize& size)
 
 void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& rect)
 {
-    if (m_webMediaPlayer.get()) {
+    // Normally GraphicsContext operations do nothing when painting is disabled.
+    // Since we're accessing platformContext() directly we have to manually
+    // check.
+    if (m_webMediaPlayer.get() && !context->paintingDisabled()) {
 #if WEBKIT_USING_SKIA
         m_webMediaPlayer->paint(context->platformContext()->canvas(), rect);
 #elif WEBKIT_USING_CG
