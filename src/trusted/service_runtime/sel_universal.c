@@ -34,8 +34,6 @@
  */
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/imc/nacl_imc_c.h"
-#include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher_c.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,20 +50,18 @@ static int gettimeofday(struct timeval *tv, struct timezone *tz);
 #include <unistd.h>
 #endif
 
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher_c.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/nacl_check.h"
 
 #define MAX_ARRAY_SIZE                  4096
 #define MAX_COMMAND_LINE_ARGS           256
 #define SEL_LDR_CMD_LINE_EXEC_POS       4
-
-#if NACL_WINDOWS
-static char* kSelLdrPathname = "/usr/local/nacl-sdk/nacl/bin/sel_ldr.exe";
-#else
-static char* kSelLdrPathname = "/usr/local/nacl-sdk/nacl/bin/sel_ldr";
-#endif
-
-static char* g_sel_ldr_pathname;
 
 static int timed_rpc_count;
 static uint32_t timed_rpc_method = 1;
@@ -74,6 +70,96 @@ static int timed_rpc_bytes = 4000;
 void blackhole(char *s, ...) {}
 /* #define DEBUG printf */
 #define DEBUG blackhole
+
+/* Table for keeping track of descriptors passed to/from sel_universal */
+typedef struct DescList DescList;
+struct DescList {
+  DescList* next;
+  int number;
+  int is_local;
+  struct NaClDesc* desc;
+};
+static DescList* descriptors = NULL;
+
+int AddDescToList(struct NaClDesc* new_desc, int is_local) {
+  static int next_desc = 0;
+  DescList* new_list_element;
+  DescList** list_pointer;
+
+  /* Return an error if passed a null descriptor */
+  if (NULL == new_desc) {
+    return -1;
+  }
+  /* Create a descriptor list node. */
+  new_list_element = (DescList*) malloc(sizeof(DescList));
+  if (NULL == new_list_element) {
+    return -1;
+  }
+  new_list_element->number = next_desc++;
+  new_list_element->desc = new_desc;
+  new_list_element->is_local = is_local;
+  new_list_element->next = NULL;
+  /* Find the end of the list of descriptors*/
+  for (list_pointer = &descriptors;
+       NULL != *list_pointer;
+       list_pointer = &(*list_pointer)->next) {
+  }
+  *list_pointer = new_list_element;
+  return new_list_element->number;
+}
+
+struct NaClDesc* DescFromPlatformDesc(int fd, int mode) {
+  /*
+   * NB: this only works for Linux-like OSes for now.
+   */
+  struct NaClHostDesc* hd;
+  struct NaClDescIoDesc* iod;
+
+  hd = (struct NaClHostDesc*) malloc(sizeof(struct NaClHostDesc));
+  if (NULL == hd) {
+    return NULL;
+  }
+  if (NaClHostDescPosixDup(hd, fd, mode)) {
+    free(hd);
+    return NULL;
+  }
+  iod = (struct NaClDescIoDesc*) malloc(sizeof(struct NaClDescIoDesc));
+  if (NULL == iod) {
+    free(hd);
+    return NULL;
+  }
+  if (!NaClDescIoDescCtor(iod, hd)) {
+    free(hd);
+    return NULL;
+  }
+  return (struct NaClDesc*) iod;
+}
+
+void BuildDefaultDescList() {
+  AddDescToList(DescFromPlatformDesc(0, NACL_ABI_O_RDONLY), 1);
+  AddDescToList(DescFromPlatformDesc(1, NACL_ABI_O_WRONLY), 1);
+  AddDescToList(DescFromPlatformDesc(2, NACL_ABI_O_WRONLY), 1);
+}
+
+void PrintDescList() {
+  DescList* list;
+
+  printf("Descriptors:\n");
+  for (list = descriptors; NULL != list; list = list->next) {
+    printf("  %d: %s\n", list->number, list->is_local ? "local" : "returned");
+  }
+}
+
+struct NaClDesc* LookupDesc(int num) {
+  DescList* list;
+
+  for (list = descriptors; NULL != list; list = list->next) {
+    if (num == list->number) {
+      return list->desc;
+    }
+  }
+  return NULL;
+}
 
 /*  simple destructive tokenizer */
 typedef struct {
@@ -215,7 +301,7 @@ int ParseArg(NaClSrpcArg* arg, const char* token) {
    case NACL_SRPC_ARG_TYPE_HANDLE:
     val = strtol(&token[2], 0, 0);
     arg->tag = NACL_SRPC_ARG_TYPE_HANDLE;
-    arg->u.hval = (void *)val;
+    arg->u.hval = LookupDesc(val);
     break;
    case NACL_SRPC_ARG_TYPE_INT:
     val = strtol(&token[2], 0, 0);
@@ -291,7 +377,7 @@ void DumpArg(const NaClSrpcArg* arg) {
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_HANDLE:
-    printf("h(%"PRIxPTR")", (uintptr_t) arg->u.hval);
+    printf("h(%"PRIuPTR")", AddDescToList(arg->u.hval, 0));
     break;
    case NACL_SRPC_ARG_TYPE_INT:
     printf("i(%d)", arg->u.ival);
@@ -372,12 +458,28 @@ void FreeArrayArgs(NaClSrpcArg arg[], int count) {
   }
 }
 
-static void CommandLoop(NaClHandle imc_handle) {
-  NaClSrpcError    errcode;
-  NaClSrpcChannel  rpc_channel;
-  int              command_count = 0;
+static void PrintHelp() {
+  printf("Commands:\n");
+  printf("  # <anything>\n");
+  printf("    comment\n");
+  printf("  descs\n");
+  printf("    print the table of known descriptors (handles)\n");
+  printf("  rpc method_name <in_args> * <out_args>\n");
+  printf("    -- invoke method_name\n");
+  printf("  service\n");
+  printf("    print the methods found by service_discovery\n");
+  printf("  quit\n");
+  printf("    quit the program\n");
+  printf("  help\n");
+  printf("    print this menu\n");
+  printf("  ?\n");
+  printf("    print this menu\n");
+  /* TODO(sehr,robertm): we should have a syntax description option */
+}
 
-  NaClSrpcClientCtor(&rpc_channel, NaClSrpcImcDescTypeFromHandle(imc_handle));
+static void CommandLoop(NaClSrpcChannel* channel) {
+  NaClSrpcError    errcode;
+  int              command_count = 0;
 
   /*
    * Process rpcs.
@@ -403,10 +505,15 @@ static void CommandLoop(NaClHandle imc_handle) {
     }
 
     command =  tokens[0].start;
-    if (0 == strcmp("#", command)) {
+    if ('#' == command[0]) {
       continue;
+    } else if (0 == strcmp("help", command) ||
+               0 == strcmp("?", command)) {
+      PrintHelp();
     } else if (0 == strcmp("service", command)) {
-      NaClSrpcDumpInterfaceDesc(&rpc_channel);
+      NaClSrpcDumpInterfaceDesc(channel);
+    } else if (0 == strcmp("descs", command)) {
+      PrintDescList();
     } else if (0 == strcmp("quit", command)) {
       break;
     } else if (0 == strcmp("rpc", command)) {
@@ -460,14 +567,14 @@ static void CommandLoop(NaClHandle imc_handle) {
         continue;
       }
 
-      rpc_num = NaClSrpcGetRpcNum(&rpc_channel, tokens[1].start);
+      rpc_num = NaClSrpcGetRpcNum(channel, tokens[1].start);
       if (rpc_num < 0) {
         fprintf(stderr, "unknown rpc\n");
         continue;
       }
 
       fprintf(stderr,"using rpc %s no %d\n", tokens[1].start, rpc_num);
-      errcode = NaClSrpcInvokeV(&rpc_channel, rpc_num, inv, outv);
+      errcode = NaClSrpcInvokeV(channel, rpc_num, inv, outv);
       if (NACL_SRPC_RESULT_OK != errcode) {
         fprintf(stderr, "rpc call failed %s\n", NaClSrpcErrorString(errcode));
         continue;
@@ -489,11 +596,6 @@ static void CommandLoop(NaClHandle imc_handle) {
         continue;
     }
   }
-
-  /*
-   * Shut down the rpc streams.
-   */
-  NaClSrpcDtor(&rpc_channel);
 }
 
 
@@ -501,13 +603,12 @@ static void CommandLoop(NaClHandle imc_handle) {
  * This function works with the rpc services in tests/srpc to test the
  * interfaces.
  */
-static void TestRandomRpcs(NaClHandle imc_handle) {
+static void TestRandomRpcs(NaClSrpcChannel* channel) {
   NaClSrpcArg        in;
   NaClSrpcArg*       inv[2];
   NaClSrpcArg        out;
   NaClSrpcArg*       outv[2];
   NaClSrpcError      errcode;
-  NaClSrpcChannel    rpc_channel;
   int                argument_count;
   int                return_count;
   int                i;
@@ -519,22 +620,18 @@ static void TestRandomRpcs(NaClHandle imc_handle) {
   outv[1] = NULL;
 
   /*
-   * Set up the connection to the child process.
-   */
-  NaClSrpcClientCtor(&rpc_channel, NaClSrpcImcDescTypeFromHandle(imc_handle));
-  /*
    * TODO(sehr): set up timing on both ends of the IMC channel.
    */
 
   do {
-    if (timed_rpc_method < 1 || timed_rpc_method >= rpc_channel.rpc_count) {
+    if (timed_rpc_method < 1 || timed_rpc_method >= channel->rpc_count) {
       fprintf(stderr, "method number must be between 1 and %d (inclusive)\n",
-              rpc_channel.rpc_count - 1);
+              channel->rpc_count - 1);
       break;
     }
 
-    argument_count = strlen(rpc_channel.rpc_descr[timed_rpc_method].in_args);
-    return_count = strlen(rpc_channel.rpc_descr[timed_rpc_method].out_args);
+    argument_count = strlen(channel->rpc_descr[timed_rpc_method].in_args);
+    return_count = strlen(channel->rpc_descr[timed_rpc_method].out_args);
 
     if (argument_count != return_count) {
       fprintf(stderr, "method argument and return count must match\n");
@@ -571,10 +668,10 @@ static void TestRandomRpcs(NaClHandle imc_handle) {
                               "Told by an idiot, full of sound and fury,"
                               "Signifying nothing";
 
-      in.tag = rpc_channel.rpc_descr[timed_rpc_method].in_args[0];
-      out.tag = rpc_channel.rpc_descr[timed_rpc_method].out_args[0];
+      in.tag = channel->rpc_descr[timed_rpc_method].in_args[0];
+      out.tag = channel->rpc_descr[timed_rpc_method].out_args[0];
 
-      type = rpc_channel.rpc_descr[timed_rpc_method].in_args[0];
+      type = channel->rpc_descr[timed_rpc_method].in_args[0];
       switch (type) {
         case NACL_SRPC_ARG_TYPE_BOOL:
           in.u.bval = 1;
@@ -619,7 +716,7 @@ static void TestRandomRpcs(NaClHandle imc_handle) {
      * Do the rpcs.
      */
     for (i = 0; i < timed_rpc_count; ++i) {
-      errcode = NaClSrpcInvokeV(&rpc_channel, timed_rpc_method, inv, outv);
+      errcode = NaClSrpcInvokeV(channel, timed_rpc_method, inv, outv);
       if (NACL_SRPC_RESULT_OK != errcode) {
         fprintf(stderr, "rpc call failed %s\n", NaClSrpcErrorString(errcode));
         break;
@@ -641,7 +738,7 @@ static void TestRandomRpcs(NaClHandle imc_handle) {
       timer_outv[3] =  &tm[3];
       timer_outv[4] =  NULL;
 
-      NaClSrpcGetTimes(&rpc_channel,
+      NaClSrpcGetTimes(channel,
                        &total_server_usec,
                        &dummy_receive,
                        &dummy_imc_read,
@@ -652,7 +749,7 @@ static void TestRandomRpcs(NaClHandle imc_handle) {
       tm[1].tag = NACL_SRPC_ARG_TYPE_DOUBLE;
       tm[2].tag = NACL_SRPC_ARG_TYPE_DOUBLE;
       tm[3].tag = NACL_SRPC_ARG_TYPE_DOUBLE;
-      errcode = NaClSrpcInvokeV(&rpc_channel,
+      errcode = NaClSrpcInvokeV(channel,
                                 NACL_SRPC_GET_TIMES_METHOD,
                                 timer_inv,
                                 timer_outv);
@@ -663,11 +760,6 @@ static void TestRandomRpcs(NaClHandle imc_handle) {
       printf("PASS\n");
     }
   } while (0);
-
-  /*
-   * Shut down the rpc streams.
-   */
-  NaClSrpcDtor(&rpc_channel);
 }
 
 
@@ -676,35 +768,34 @@ static void TestRandomRpcs(NaClHandle imc_handle) {
 #endif
 
 int main(int  argc, char *argv[]) {
-  NaClHandle                 imc_handle;
   struct NaClSelLdrLauncher* launcher;
   int                        opt;
-  static char*               application_name;
+  static char*               application_name = NULL;
   char*                      nextp;
   int                        i;
   int                        sel_ldr_argc;
   char**                     tmp_ldr_argv;
-  char**                     sel_ldr_argv;
+  const char**               sel_ldr_argv;
   int                        module_argc;
-  char**                     module_argv;
+  const char**               module_argv;
+  struct NaClSrpcChannel     command_channel;
+  struct NaClSrpcChannel     untrusted_command_channel;
+  struct NaClSrpcChannel     channel;
+  static const char*         kFixedArgs[] = { "-P", "5", "-X", "5" };
+  static const size_t        kFixedArgCount = sizeof(kFixedArgs) /
+                                              sizeof(kFixedArgs[1]);
 
   /* Descriptor transfer requires the following. */
   NaClNrdAllModulesInit();
-
-  /* The -p option can change the sel_ldr binary used. */
-  g_sel_ldr_pathname = kSelLdrPathname;
 
   /* We are only testing if this count is not zero. */
   timed_rpc_count = 0;
 
   /* command line parsing */
-  while ((opt = getopt(argc, argv, "f:p:r:v")) != -1) {
+  while ((opt = getopt(argc, argv, "f:r:v")) != -1) {
     switch (opt) {
       case 'f':
         application_name = optarg;
-        break;
-      case 'p':
-        g_sel_ldr_pathname = optarg;
         break;
       case 'r':
         timed_rpc_count = strtol(optarg, &nextp, 0);
@@ -724,15 +815,22 @@ int main(int  argc, char *argv[]) {
         break;
       default:
         fprintf(stderr,
-                "Usage: sel_universal [-f nacl_file]\n"
-                "                     [-p sel_ldr]\n"
+                "Usage: sel_universal -f nacl_file\n"
                 "                     [-r count:method:bytes]\n");
         return -1;
     }
   }
 
+  if (NULL == application_name) {
+    fprintf(stderr, "-f nacl_file must be specified\n");
+    return 1;
+  }
+
+
   /*
-   * Pass any extra arguments on to sel_ldr or the application.
+   * Collect any extra arguments on to sel_ldr or the application.
+   * sel_ldr_argv contains the options to be passed to sel_ldr.
+   * module_argv contains the options to be passed to the application.
    */
   tmp_ldr_argv = NULL;
   sel_ldr_argc = 0;
@@ -747,7 +845,7 @@ int main(int  argc, char *argv[]) {
     } else if (module_argv == NULL) {
       /* sel_ldr arguments come next. */
       if (!strcmp("--", argv[i])) {
-        module_argv = &argv[i + 1];
+        module_argv = (const char**) &argv[i + 1];
       } else {
         ++sel_ldr_argc;
       }
@@ -758,14 +856,16 @@ int main(int  argc, char *argv[]) {
   }
 
   /*
-   * Append the -P 5 option to the command line to pass the channel to the
-   * SRPC interface.
+   * Prepend the fixed arguments to the command line.
    */
-  sel_ldr_argv = (char**) malloc(module_argc * sizeof(*module_argv));
-  sel_ldr_argv[0] = "-P";
-  sel_ldr_argv[1] = "5";
+  sel_ldr_argv =
+      (const char**) malloc((sel_ldr_argc + kFixedArgCount) *
+                            sizeof(*sel_ldr_argv));
+  for (i = 0; i < kFixedArgCount; ++i) {
+    sel_ldr_argv[i] = kFixedArgs[i];
+  }
   for (i = 0; i < sel_ldr_argc; ++i) {
-    sel_ldr_argv[i + 2] = tmp_ldr_argv[i];
+    sel_ldr_argv[i + kFixedArgCount] = tmp_ldr_argv[i];
   }
 
   /*
@@ -773,18 +873,38 @@ int main(int  argc, char *argv[]) {
    */
   launcher = NaClSelLdrStart(application_name,
                              5,
-                             sel_ldr_argc + 2,
+                             sel_ldr_argc + kFixedArgCount,
                              (const char**) sel_ldr_argv,
                              module_argc,
                              (const char**) module_argv);
-  imc_handle = NaClSelLdrGetChannel(launcher);
+
+  /*
+   * Open the communication channels to the service runtime.
+   */
+  if (!NaClSelLdrOpenSrpcChannels(launcher,
+                                  &command_channel,
+                                  &untrusted_command_channel,
+                                  &channel)) {
+    return 1;
+  }
+  BuildDefaultDescList();
 
   if (timed_rpc_count == 0) {
-    CommandLoop(imc_handle);
+    CommandLoop(&channel);
   } else {
-    TestRandomRpcs(imc_handle);
+    TestRandomRpcs(&channel);
   }
 
+  /*
+   * Close the connections to sel_ldr.
+   */
+  NaClSrpcDtor(&command_channel);
+  NaClSrpcDtor(&untrusted_command_channel);
+  NaClSrpcDtor(&channel);
+
+  /*
+   * And shut it down.
+   */
   NaClSelLdrShutdown(launcher);
 
   NaClNrdAllModulesFini();
