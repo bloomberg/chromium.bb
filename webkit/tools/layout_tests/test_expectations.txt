@@ -1161,7 +1161,7 @@ BUG11577 WIN LINUX : LayoutTests/editing/spelling/spelling-linebreak.html = FAIL
 // Accessibility is off in the browser, and accessibility is not a priority
 // for the current release.
 // Need to implement window.accessibilityController for these to work.
-BUG10322 : LayoutTests/accessibility = FAIL
+BUG10322 : LayoutTests/accessibility = FAIL PASS
 BUG10322 : LayoutTests/accessibility/non-native-image-crash.html = PASS
 BUG10322 : LayoutTests/accessibility/input-slider.html = TIMEOUT CRASH
 BUG10322 : LayoutTests/platform/mac/accessibility = FAIL
