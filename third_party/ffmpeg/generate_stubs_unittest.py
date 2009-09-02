@@ -65,15 +65,6 @@ INVALID_SIGNATURES = ['I am bad', 'Seriously bad(', ';;;']
 
 
 class GenerateStubModuleFunctionsUnittest(unittest.TestCase):
-  def testRemoveTrailingSlashes(self):
-    # Check simple cases.
-    self.assertEqual('/a/path', gs.RemoveTrailingSlashes('/a/path/'))
-    self.assertEqual('/a/path', gs.RemoveTrailingSlashes('/a/path///'))
-    self.assertEqual('/a/path', gs.RemoveTrailingSlashes('/a/path'))
-
-    # Should not remove the last slash.
-    self.assertEqual('/', gs.RemoveTrailingSlashes('/'))
-
   def testExtractModuleName(self):
     self.assertEqual('somefile-2', gs.ExtractModuleName('somefile-2.ext'))
 
@@ -131,36 +122,21 @@ class GenerateStubModuleFunctionsUnittest(unittest.TestCase):
     self.assertEqual(3, len(signatures))
 
 
-class WindowsLibCreatorUnittest(unittest.TestCase):
-  def setUp(self):
-    self.module_name = 'my_module-1'
-    self.signatures = [sig[1] for sig in SIMPLE_SIGNATURES]
-    self.out_dir = 'out_dir'
-    self.intermediate_dir = 'intermediate_dir'
-    self.creator = gs.WindowsLibCreator(self.module_name,
-                                        self.signatures,
-                                        self.intermediate_dir,
-                                        self.out_dir)
-
-  def testDefFilePath(self):
-    self.assertEqual('intermediate_dir/my_module-1.def',
-                     self.creator.DefFilePath())
-
-  def testLibFilePath(self):
-    self.assertEqual('out_dir/my_module-1.lib', self.creator.LibFilePath())
-
-  def testWriteDefFile(self):
+class WindowsLibUnittest(unittest.TestCase):
+  def testWriteWindowsDefFile(self):
+    module_name = 'my_module-1'
+    signatures = [sig[1] for sig in SIMPLE_SIGNATURES]
     outfile = StringIO.StringIO()
-    self.creator._WriteDefFile(outfile)
+    gs.WriteWindowsDefFile(module_name, signatures, outfile)
     contents = outfile.getvalue()
 
     # Check that the file header is correct.
     self.assertTrue(contents.startswith("""LIBRARY %s
 EXPORTS
-""" % self.module_name))
+""" % module_name))
 
     # Check that the signatures were exported.
-    for sig in self.signatures:
+    for sig in signatures:
       pattern = '\n  %s\n' % sig['name']
       self.assertTrue(re.search(pattern, contents),
                       msg='Expected match of "%s" in %s' % (pattern, contents))
@@ -191,15 +167,6 @@ class PosixStubWriterUnittest(unittest.TestCase):
         'UninitializeMy_module1',
         gs.PosixStubWriter.UninitializeModuleName(self.module_name))
 
-  def testHeaderFilePath(self):
-    self.assertEqual('outdir/mystubs-1.h',
-                     gs.PosixStubWriter.HeaderFilePath('mystubs-1', 'outdir'))
-
-  def testImplementationFilePath(self):
-    self.assertEqual(
-        'outdir/mystubs-1.cc',
-        gs.PosixStubWriter.ImplementationFilePath('mystubs-1', 'outdir'))
-
   def testStubFunctionPointer(self):
     self.assertEqual(
         'static int (*foo_ptr)(int a) = NULL;',
@@ -207,12 +174,14 @@ class PosixStubWriterUnittest(unittest.TestCase):
 
   def testStubFunction(self):
     # Test for a signature with a return value and a parameter.
-    self.assertEqual("""int foo(int a) {
+    self.assertEqual("""extern int foo(int a) __attribute__((weak));
+int foo(int a) {
   return foo_ptr(a);
 }""", gs.PosixStubWriter.StubFunction(SIMPLE_SIGNATURES[0][1]))
 
     # Test for a signature with a void return value and no parameters.
-    self.assertEqual("""void waldo(void) {
+    self.assertEqual("""extern void waldo(void) __attribute__((weak));
+void waldo(void) {
   waldo_ptr();
 }""", gs.PosixStubWriter.StubFunction(SIMPLE_SIGNATURES[4][1]))
 
