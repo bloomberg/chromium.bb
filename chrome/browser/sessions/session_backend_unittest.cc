@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "base/path_service.h"
-#include "base/time.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,16 +33,9 @@ SessionCommand* CreateCommandFromData(const TestData& data) {
 class SessionBackendTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    std::string b = Int64ToString(base::Time::Now().ToInternalValue());
-
-    PathService::Get(base::DIR_TEMP, &path_);
-    path_ = path_.Append(FILE_PATH_LITERAL("SessionTestDirs"));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    path_ = temp_dir_.path().Append(FILE_PATH_LITERAL("SessionTestDirs"));
     file_util::CreateDirectory(path_);
-    path_ = path_.AppendASCII(b);
-  }
-
-  virtual void TearDown() {
-    file_util::Delete(path_, true);
   }
 
   void AssertCommandEqualsData(const TestData& data, SessionCommand* command) {
@@ -56,6 +47,7 @@ class SessionBackendTest : public testing::Test {
 
   // Path used in testing.
   FilePath path_;
+  ScopedTempDir temp_dir_;
 };
 
 TEST_F(SessionBackendTest, SimpleReadWrite) {

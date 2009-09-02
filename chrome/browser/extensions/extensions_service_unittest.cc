@@ -6,13 +6,11 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/time.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
@@ -233,8 +231,8 @@ class ExtensionsServiceTest
 
   virtual void InitializeInstalledExtensionsService(const FilePath& prefs_file,
       const FilePath& source_install_dir) {
-    FilePath path_;
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &path_));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    FilePath path_ = temp_dir_.path();
     path_ = path_.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
     file_util::Delete(path_, true);
     file_util::CreateDirectory(path_);
@@ -249,8 +247,8 @@ class ExtensionsServiceTest
   }
 
   virtual void InitializeEmptyExtensionsService() {
-    FilePath path_;
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &path_));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    FilePath path_ = temp_dir_.path();
     path_ = path_.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
     file_util::Delete(path_, true);
     file_util::CreateDirectory(path_);
@@ -354,9 +352,8 @@ class ExtensionsServiceTest
 
     // We need to copy this to a temporary location because Update() will delete
     // it.
-    FilePath temp_dir;
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &temp_dir));
-    FilePath path = temp_dir.Append(in_path.BaseName());
+    FilePath path = temp_dir_.path();
+    path = path.Append(in_path.BaseName());
     ASSERT_TRUE(file_util::CopyFile(in_path, path));
 
     service_->UpdateExtension(id, path);
@@ -464,6 +461,7 @@ class ExtensionsServiceTest
   }
 
  protected:
+  ScopedTempDir temp_dir_;
   scoped_ptr<PrefService> prefs_;
   scoped_ptr<Profile> profile_;
   FilePath extensions_install_dir_;
