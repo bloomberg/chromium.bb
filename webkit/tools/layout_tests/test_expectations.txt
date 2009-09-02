@@ -492,10 +492,7 @@ BUG20566 : LayoutTests/fast/invalid/residual-style.html = FAIL
 
 // Vertical scrollbar created when there is no overflow.
 // See also https://bugs.webkit.org/show_bug.cgi?id=24434 .
-BUG1055396 LINUX WIN : LayoutTests/fast/forms/textarea-scrollbar-height.html = FAIL
-
-// Image with border="1" drawn without the border.
-BUG1064038 LINUX WIN : LayoutTests/fast/forms/image-border.html = FAIL
+BUG20826 LINUX WIN : LayoutTests/fast/forms/textarea-scrollbar-height.html = FAIL
 
 // Pixeltest failure: Form control metrics incorrect
 BUG10273 LINUX : LayoutTests/http/tests/navigation/javascriptlink-frames.html = FAIL PASS
@@ -503,7 +500,7 @@ BUG10273 LINUX : LayoutTests/http/tests/navigation/javascriptlink-frames.html = 
 // Mac Safari under certain circumstances automatically places
 // a caret in editable document even when none was requested programatically.
 // We don't intend to copy this feature (at least not for Beta).
-BUG742182 BUG845388 LINUX WIN : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
+BUG20844 LINUX WIN : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
 
 // The end result looks right, but the event messages differ.
 BUG845400 LINUX WIN : LayoutTests/editing/pasteboard/paste-xml.xhtml = FAIL
