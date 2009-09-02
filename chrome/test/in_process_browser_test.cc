@@ -238,11 +238,9 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
 void InProcessBrowserTest::ConfigureHostResolverProc(
     net::RuleBasedHostResolverProc* host_resolver_proc) {
-  // TODO(phajdan.jr): remove, http://crbug.com/2635
-  host_resolver_proc->AllowDirectLookup("*.google.com");
-
-  // TODO(phajdan.jr): remove, http://crbug.com/18365
-  host_resolver_proc->AllowDirectLookup("*.gstatic.com");
+  // Something inside the browser does this lookup implicitly. Make it fail
+  // to avoid external dependency. It won't break the tests.
+  host_resolver_proc->AddSimulatedFailure("*.google.com");
 
   // See http://en.wikipedia.org/wiki/Web_Proxy_Autodiscovery_Protocol
   // We don't want the test code to use it.
