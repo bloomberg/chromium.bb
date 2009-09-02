@@ -41,9 +41,13 @@ void Font::calculateMetrics() {
   PaintSetup(&paint);
   paint.getFontMetrics(&metrics);
 
-  ascent_ = SkScalarRound(-metrics.fAscent);
-  height_ = SkScalarRound(-metrics.fAscent + metrics.fDescent +
-                          metrics.fLeading);
+  // We need to know the number of whole pixels for these measurements. The
+  // height is the number of whole pixels above the baseline, plus the number
+  // of whole pixels below it.
+  ascent_ = SkScalarCeil(-metrics.fAscent);
+  height_ = ascent_ +
+            SkScalarCeil(metrics.fDescent) +
+            SkScalarCeil(metrics.fLeading);
 
   if (metrics.fAvgCharWidth) {
     avg_width_ = SkScalarRound(metrics.fAvgCharWidth);
@@ -54,6 +58,23 @@ void Font::calculateMetrics() {
 
     avg_width_ = static_cast<int>(ceilf(SkScalarToFloat(width)));
   }
+
+  // HACK ALERT! Skia and Pango don't agree about how to vertically size text.
+  // Since we use Pango in gfx::Canvas, we need to use its version of the
+  // height or various layouts will look weird.
+  //
+  // From debugging, it looks like Skia's notion of ascenders and descenders
+  // are correct from the pixel rendering, but includes no leading or other
+  // space around the text. Pango includes extra space (at least for the fonts
+  // tested). To hack around this, we now ask Pango to get the height of a
+  // string: we use "l" for the highest ascender, and "g" to get a descender.
+  //
+  // TODO(brettw/jhawkins): figure out how to get the real height that Pango
+  // will use in a reasonable way. This is a horrible hack!
+  int width, height;
+  Canvas cvs(1, 1, true);
+  cvs.SizeStringInt(L"lg", *this, &width, &height, 0);
+  height_ = height;
 }
 
 void Font::CopyFont(const Font& other) {

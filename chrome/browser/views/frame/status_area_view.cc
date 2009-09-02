@@ -68,7 +68,7 @@ ClockView::~ClockView() {
 }
 
 gfx::Size ClockView::GetPreferredSize() {
-  return gfx::Size(40, 10);
+  return gfx::Size(40, 17);
 }
 
 void ClockView::Paint(gfx::Canvas* canvas) {
