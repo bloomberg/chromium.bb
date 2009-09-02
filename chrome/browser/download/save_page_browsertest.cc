@@ -15,6 +15,8 @@
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(OS_MACOSX)
+// TODO(port): BUG16322
 static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("save_page");
 
 static const char* kAppendedExtension =
@@ -23,6 +25,8 @@ static const char* kAppendedExtension =
 #else
     ".html";
 #endif
+
+#endif  // !defined(OS_MACOSX)
 
 namespace {
 
@@ -70,6 +74,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   ScopedTempDir save_dir_;
 };
 
+#if !defined(OS_MACOSX)
+// TODO(port): BUG16322
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   FilePath file_name(FILE_PATH_LITERAL("a.htm"));
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
@@ -127,6 +133,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
       test_dir_.Append(FilePath(kTestDir)).AppendASCII("1.css"),
       dir.AppendASCII("1.css")));
 }
+#endif  // !defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
@@ -134,6 +141,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
   EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_SAVE_PAGE));
 }
 
+#if !defined(OS_MACOSX)
+// TODO(port): BUG16322
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   FilePath file_name(FILE_PATH_LITERAL("b.htm"));
 
@@ -168,5 +177,6 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
       test_dir_.Append(FilePath(kTestDir)).AppendASCII("1.css"),
       dir.AppendASCII("1.css")));
 }
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace
