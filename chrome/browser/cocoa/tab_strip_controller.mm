@@ -457,13 +457,13 @@ static const float kUseFullAvailableWidth = -1.0;
     [newTabButton_ setHidden:YES];
   } else {
     NSRect newTabNewFrame = [newTabButton_ frame];
-    if ([self inRapidClosureMode])
-      newTabNewFrame.origin = NSMakePoint(offset + kNewTabButtonOffset, 0);
-    else
-      newTabNewFrame.origin =
-          NSMakePoint(MIN(availableWidth, offset + kNewTabButtonOffset), 0);
+    // We've already ensured there's enough space for the new tab button
+    // so we don't have to check it against the available width. We do need
+    // to make sure we put it after any placeholder.
+    newTabNewFrame.origin = NSMakePoint(offset, 0);
     newTabNewFrame.origin.x = MAX(newTabNewFrame.origin.x,
-                                  NSMaxX(placeholderFrame_));
+                                  NSMaxX(placeholderFrame_)) +
+                                      kNewTabButtonOffset;
     if ([tabContentsArray_ count])
       [newTabButton_ setHidden:NO];
 
