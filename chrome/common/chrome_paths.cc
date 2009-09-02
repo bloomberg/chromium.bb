@@ -96,6 +96,7 @@ bool PathProvider(int key, FilePath* result) {
     case chrome::DIR_DEFAULT_DOWNLOADS:
       if (!GetUserDownloadsDirectory(&cur))
         return false;
+      create_dir = true;
       break;
     case chrome::DIR_CRASH_DUMPS:
       // The crash reports are always stored relative to the default user data
