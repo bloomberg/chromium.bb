@@ -1,1 +1,9 @@
-# There are no suppressions here yet.
+############################
+# Chromium
+
+{
+  Data races in URLRequestJobTracker (http://crbug.com/15147)
+  ThreadSanitizer:Race
+  ...
+  fun:*URLRequestJobTracker*
+}
