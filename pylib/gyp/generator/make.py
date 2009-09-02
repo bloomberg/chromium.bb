@@ -643,9 +643,11 @@ class MakefileWriter:
         self.WriteDoCmd([binpath], [self.output], 'copy',
                         comment = 'Copy this to the binary output path.')
       self.WriteMakeRule([filename], [binpath],
-                         comment = 'Short alias for building this executable.')
+                         comment = 'Short alias for building this executable.',
+                         phony = True)
       self.WriteMakeRule(['all'], [binpath],
-                         comment = 'Add executable to "all" target.')
+                         comment = 'Add executable to "all" target.',
+                         phony = True)
 
 
   def WriteList(self, list, variable=None, prefix=''):
@@ -677,7 +679,7 @@ class MakefileWriter:
 
 
   def WriteMakeRule(self, outputs, inputs, actions=None, comment=None,
-                    order_only=False, force=False):
+                    order_only=False, force=False, phony=False):
     """Write a Makefile rule, with some extra tricks.
 
     outputs: a list of outputs for the rule (note: this is not directly
@@ -688,9 +690,13 @@ class MakefileWriter:
              for making this Python script's code self-documenting)
     order_only: if true, makes the dependency order-only
     force: if true, include FORCE_DO_CMD as an order-only dep
+    phony: if true, the rule does not actually generate the named output, the
+           output is just a name to run the rule
     """
     if comment:
       self.WriteLn('# ' + comment)
+    if phony:
+      self.WriteLn('.PHONY: ' + ' '.join(outputs))
     # TODO(evanm): just make order_only a list of deps instead of these hacks.
     order_insert = '| ' if order_only else ''
     force_append = ''
