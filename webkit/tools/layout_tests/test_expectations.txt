@@ -714,17 +714,10 @@ BUG13907 WIN : LayoutTests/media/video-can-play-type.html = FAIL
 // This test crashes in debug build.
 BUG13907 WIN DEBUG : LayoutTests/media/video-document-types.html = FAIL CRASH
 BUG13907 WIN RELEASE : LayoutTests/media/video-document-types.html = PASS FAIL
-// This test is flaky.
-BUG13907 WIN : LayoutTests/media/video-source.html = PASS CRASH
 //BUG13907 WIN : LayoutTests/media/video-src-remove.html = FAIL
-BUG13907 WIN : LayoutTests/media/video-src-set.html = PASS CRASH
-BUG13907 WIN : LayoutTests/media/video-src-source.html = PASS CRASH
-BUG13907 WIN : LayoutTests/media/video-src.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/controls-styling.html = FAIL
 BUG13907 SKIP : LayoutTests/media/controls-strict.html = FAIL
 BUG17397 SKIP WIN : LayoutTests/media/audio-no-installed-engines.html = FAIL
-
-BUG17497 WIN : LayoutTests/media/video-play-pause-exception.html = PASS CRASH FAIL
 
 // Very flakey after r24022. Not sure if because of that change though.
 BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT
@@ -868,7 +861,7 @@ BUG10284 RELEASE : LayoutTests/svg/custom/path-bad-data.svg = FAIL
 BUG10285 WIN LINUX : LayoutTests/svg/custom/foreignObject-crash-on-hover.xml = FAIL
 
 // Merge 39744:39913? - regressions
-BUG10286 WIN LINUX: LayoutTests/svg/W3C-SVG-1.1/animate-elem-02-t.svg = FAIL PASS CRASH
+BUG10286 LINUX DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-02-t.svg = FAIL PASS CRASH
 
 BUG10287 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/coords-units-01-b.svg = FAIL PASS
 
@@ -909,7 +902,6 @@ BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-33-t.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-17-b.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/custom/gradient-stroke-width.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/custom/dominant-baseline-hanging.svg = FAIL
-BUG10296 LINUX : LayoutTests/svg/batik/text/textDecoration2.svg = FAIL PASS
 BUG10296 LINUX : LayoutTests/svg/batik/text/textLength.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/batik/text/textProperties.svg = FAIL PASS
 BUG10296 LINUX : LayoutTests/svg/custom/gradient-stop-corner-cases.svg = FAIL
@@ -949,7 +941,6 @@ BUG3244 LINUX WIN : LayoutTests/fast/backgrounds/svg-as-background-6.html = FAIL
 // pixeltest failure: font baseline should be on the path, not the centerline
 // There's no baseline at all for this!
 BUG992321 SKIP : LayoutTests/svg/batik/text/smallFonts.svg = FAIL
-BUG992321 WIN LINUX : LayoutTests/svg/batik/text/textBiDi.svg = FAIL
 
 // pixeltest failure: font baseline should be on the path, not the centerline
 BUG992321 LINUX WIN : LayoutTests/svg/batik/text/verticalTextOnPath.svg = FAIL
@@ -966,9 +957,6 @@ BUG992321 : LayoutTests/svg/custom/stroke-width-click.svg = FAIL CRASH
 
 // The red marker is not drawing the same way as the mac.
 BUG992321 LINUX WIN : LayoutTests/svg/custom/marker-changes.svg = PASS FAIL
-
-// 11 numbers differ, by an absolute total of 4.69
-BUG992321 : LayoutTests/svg/custom/use-on-symbol-inside-pattern.svg = FAIL
 
 BUG992321 LINUX WIN : LayoutTests/svg/hixie/text/003.html = FAIL
 
@@ -995,7 +983,7 @@ BUG992321 : LayoutTests/svg/custom/clip-path-referencing-use2.svg = FAIL PASS
 // Windows, but even so it still doesn't look identical because there is still
 // some problem with the fill color for the text.
 BUG10300 WIN LINUX : LayoutTests/svg/text/text-deco-01-b.svg = FAIL
-BUG10300 MAC LINUX : LayoutTests/svg/text/text-text-08-b.svg = FAIL PASS
+BUG10300 LINUX : LayoutTests/svg/text/text-text-08-b.svg = FAIL PASS
 
 // SVG masks aren't quite working yet.
 // Might also be related to https://bugs.webkit.org/show_bug.cgi?id=21910
@@ -1150,7 +1138,6 @@ BUG8402 MAC : LayoutTests/fast/forms/drag-out-of-textarea.html = FAIL PASS
 BUG8407 : LayoutTests/fast/loader/main-document-url-for-non-http-loads.html = FAIL
 
 // These tests are flaky as of 2009/06/09. Need to investigate.
-BUG13692 WIN : LayoutTests/svg/custom/polyline-hittest.svg = CRASH PASS
 BUG13692 WIN : LayoutTests/tables/mozilla/marvin/tables_bgcolor_green.html = CRASH PASS
 
 // <body><canvas height=100></canvas></body> is 1 px taller than upstream.
@@ -1462,10 +1449,6 @@ BUG10377 MAC : LayoutTests/fast/events/drag-in-frames.html = FAIL
 BUG10378 MAC : LayoutTests/fast/images/embed-image.html = FAIL CRASH
 BUG10378 MAC : LayoutTests/fast/images/object-image.html = FAIL CRASH
 
-// Some times it fails because the animation starts before the first dom dump
-// so the text doesn't match.
-BUG10379 MAC : LayoutTests/svg/hixie/perf/007.xml = FAIL PASS
-
 BUG10381 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-03-t.svg = FAIL PASS
 
 // These may be similar timing issue as above.
@@ -1549,9 +1532,6 @@ BUG10403 LINUX : LayoutTests/transitions/change-values-during-transition.html = 
 // might need to be rebaselined in win, 'DRAFT' rendering incorrect before
 BUG10405 WIN : LayoutTests/svg/custom/struct-use-09-b.svg = FAIL
 
-// Passes locally but Text diff fails on the buildbots
-BUG10406 LINUX : LayoutTests/svg/custom/path-getTotalLength.svg = FAIL PASS
-
 // Popup-menu doesn't draw in layout tests
 BUG10408 MAC : LayoutTests/fast/forms/menulist-no-overflow.html = FAIL
 
@@ -1628,7 +1608,6 @@ BUG10434 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
 // Regression from merge 41268:41286
 // We don't render linear gradient on text stroke.
 BUG10435 LINUX : LayoutTests/fast/canvas/canvas-text-alignment.html = FAIL
-BUG10435 LINUX : LayoutTests/svg/carto.net/scrollbar.svg = TIMEOUT PASS
 BUG10435 MAC : LayoutTests/editing/pasteboard/copy-standalone-image.html = FAIL
 // See above comment about this test on linux/win.
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
@@ -1798,12 +1777,7 @@ BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
 BUG9798 : chrome/fast/dom/extensions/interval.html = CRASH FAIL PASS
 BUG9798 LINUX : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/http/tests/misc/BOM-override-script.html = TIMEOUT PASS
-BUG9798 LINUX : LayoutTests/scrollbars/basic-scrollbar.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/svg/batik/filters/filterRegions.svg = FAIL PASS
-BUG9798 LINUX : LayoutTests/svg/css/glyph-orientation-rounding-test.xhtml = FAIL PASS
-BUG9798 LINUX : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = FAIL PASS
-BUG9798 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL PASS
-BUG9798 LINUX : LayoutTests/svg/text/text-text-07-t.svg = FAIL PASS
+BUG9798 LINUX DEBUG : LayoutTests/svg/text/text-text-07-t.svg = FAIL PASS
 BUG9798 LINUX : LayoutTests/tables/mozilla/bugs/45621.html = FAIL PASS CRASH
 BUG9798 LINUX : LayoutTests/tables/mozilla/bugs/bug137388-1.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/interrupted-all-transition.html = FAIL PASS
@@ -1817,7 +1791,6 @@ BUG9798 LINUX : pending/fast/repaint/bugzilla-6473.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/repeated-firing-background-color.html = FAIL PASS TIMEOUT
 BUG9798 LINUX RELEASE : LayoutTests/svg/carto.net/colourpicker.svg = FAIL PASS
 BUG9798 MAC : LayoutTests/svg/custom/use-instanceRoot-as-event-target.xhtml = TIMEOUT FAIL
-BUG9798 MAC : LayoutTests/svg/hixie/processing-model/003.xml = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/tables/mozilla/other/test3.html = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/transitions/transition-timing-function.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/empty-file-formdata.html = TIMEOUT PASS
@@ -1829,17 +1802,12 @@ BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-p
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/failed-auth.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/svg/hixie/error/009.xml = CRASH PASS
 BUG9798 WIN : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
-BUG9798 WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-change-externalResourcesRequired-while-loading.svg = CRASH PASS
-
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9797 MAC DEBUG : LayoutTests/tables/mozilla/bugs/bug137388-2.html = FAIL PASS
 BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9797 WIN LINUX : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9797 BUG9798 WIN DEBUG : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = CRASH TIMEOUT PASS
-BUG9797 WIN DEBUG : LayoutTests/svg/W3C-SVG-1.1/extend-namespace-01-f.svg = CRASH PASS
-BUG9797 WIN DEBUG : LayoutTests/svg/css/css-box-min-width.html = CRASH PASS
 BUG9797 WIN DEBUG : LayoutTests/traversal/node-iterator-009.html = CRASH PASS
 
 // Failed in WebKit merge 42287:42324
@@ -1871,10 +1839,8 @@ BUG10760 LINUX : LayoutTests/fast/forms/input-text-scroll-left-on-blur.html = FA
 BUG10760 LINUX : LayoutTests/fast/inline/25277-2.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/inline/25277.html = FAIL
 BUG10760 MAC : LayoutTests/svg/custom/marker-overflow-clip.svg = FAIL
-BUG10760 MAC LINUX : LayoutTests/svg/custom/marker-child-changes.svg = PASS FAIL
-BUG10760 MAC LINUX : LayoutTests/svg/custom/marker-viewBox-changes.svg = PASS FAIL
-BUG10760 MAC : LayoutTests/svg/custom/marker-changes.svg = PASS FAIL
-BUG11571 MAC : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = FAIL PASS
+BUG10760 LINUX : LayoutTests/svg/custom/marker-child-changes.svg = PASS FAIL
+BUG10760 LINUX RELEASE : LayoutTests/svg/custom/marker-viewBox-changes.svg = PASS FAIL
 
 // Needs investigation, perhaps just needs to be re-baselined on all
 // platforms.
@@ -1884,7 +1850,6 @@ BUG10861 WIN : LayoutTests/fast/dom/HTMLSelectElement/named-options.html = FAIL
 // New failures from WebKit Merge 42671:42725
 BUG10861 WIN : LayoutTests/http/tests/plugins/post-url-file.html = PASS
 BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = TIMEOUT
-BUG10861 LINUX MAC : LayoutTests/security/set-form-autocomplete-attribute.html = TIMEOUT PASS
 
 // WebKit change http://trac.webkit.org/changeset/42732 introduced Mac specific expectations,
 // but Chrome Mac has Windows behaviors.
@@ -1934,7 +1899,7 @@ WONTFIX SKIP : LayoutTests/webarchive/adopt-attribute-styled-node-webarchive.htm
 WONTFIX SKIP : LayoutTests/webarchive/adopt-inline-styled-node-webarchive.html = FAIL
 
 // Regressions from WebKit Merge 42932:42994
-BUG11239 MAC : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL PASS
+BUG11239 MAC DEBUG : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL PASS
 
 // Regressions from WebKit Merge 42932:42994 due to text metric changes.
 BUG11251 WIN : LayoutTests/fast/forms/textarea-width.html = FAIL
@@ -1942,10 +1907,6 @@ BUG11251 WIN LINUX : LayoutTests/fast/forms/text-control-intrinsic-widths.html =
 BUG11251 : chrome/fast/forms/textarea-metrics.html = FAIL
 BUG11251 WIN LINUX : LayoutTests/svg/custom/svg-fonts-in-text-controls.html = FAIL
 BUG11251 WIN LINUX : LayoutTests/fast/forms/textarea-metrics.html = FAIL
-
-// Regressions from r14994 (pulling in new WebKit)
-BUG11264 WIN : LayoutTests/plugins/getintidentifier-special-values.html = CRASH PASS
-BUG11264 WIN : LayoutTests/plugins/netscape-identifier-conversion.html = CRASH PASS
 
 // Regressions from WebKit Merge 43059:43114
 BUG11322 : LayoutTests/editing/text-iterator/basic-iteration.html = FAIL
@@ -1993,12 +1954,8 @@ BUG11795 MAC : LayoutTests/http/tests/misc/favicon-as-image.html = FAIL CRASH
 // Already baselined for chromium-win, may need to be done for mac/linux as well.
 BUG11796 LINUX : LayoutTests/fast/forms/search-styled.html = FAIL
 
-// Flaky Linux tests
-BUG11832 LINUX : LayoutTests/svg/custom/circular-marker-reference-4.svg = FAIL PASS
-BUG11832 LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = FAIL PASS
-
 // Flaky Windows/Linux Tests
-BUG11898 WIN LINUX MAC : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
+BUG11898 LINUX MAC DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
 BUG11898 WIN DEBUG : LayoutTests/http/tests/misc/submit-get-in-utf16be.html = TIMEOUT PASS
 BUG18772 WIN DEBUG : LayoutTests/http/tests/navigation/post-goback-same-url.html = TIMEOUT PASS
 
@@ -2290,7 +2247,6 @@ BUG18740 WIN : LayoutTests/http/tests/security/credentials-in-referer.html = PAS
 // Test failures caused by re-enabling skia asserts.
 BUG18896 WIN LINUX DEBUG : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
 BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = PASS FAIL
-BUG18896 MAC WIN DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = PASS CRASH
 BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-svgdom-clipPathUnits-prop.html = PASS FAIL
 
 // Test failures from WebKit merge 46894 to 46977
