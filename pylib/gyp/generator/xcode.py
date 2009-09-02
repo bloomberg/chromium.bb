@@ -496,7 +496,7 @@ def AddSourceToTarget(source, pbxp, xct):
   basename = posixpath.basename(source)
   (root, ext) = posixpath.splitext(basename)
   if ext != '':
-    ext = ext[1:]
+    ext = ext[1:].lower()
 
   if ext in source_extensions:
     xct.SourcesPhase().AddFile(source)
