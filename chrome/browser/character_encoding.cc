@@ -331,10 +331,18 @@ std::wstring CharacterEncoding::GetCanonicalEncodingNameByAliasName(
       WideToASCII(alias_name).c_str(), "IANA", &error_code);
   }
 
-  if (canonical_name)
+  if (canonical_name) {
+    // TODO(jnd) use a map to handle all customized {alias, canonical}
+    // encoding mappings if we have more than one pair.
+    // We don't want to add an unnecessary charset to the encoding menu, so we
+    // alias 'US-ASCII' to 'ISO-8859-1' in our UI without touching WebKit.
+    // http://crbug.com/15801.
+    if (alias_name == L"US-ASCII")
+      return GetCanonicalEncodingNameByCommandId(IDC_ENCODING_ISO88591);
     return ASCIIToWide(canonical_name);
-  else
+  } else {
     return std::wstring();
+  }
 }
 
 // Static

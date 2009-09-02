@@ -232,9 +232,7 @@ class TabContents : public PageNavigator,
   bool is_starred() const { return is_starred_; }
 
   const std::wstring& encoding() const { return encoding_; }
-  void set_encoding(const std::wstring& encoding) {
-    encoding_ = encoding;
-  }
+  void set_encoding(const std::wstring& encoding);
 
   // Internal state ------------------------------------------------------------
 

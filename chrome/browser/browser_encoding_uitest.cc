@@ -75,6 +75,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
     { "KOI8-U.html", L"KOI8-U" },
     { "macintosh.html", L"macintosh" },
     { "Shift-JIS.html", L"Shift_JIS" },
+    { "US-ASCII.html", L"ISO-8859-1" },  // http://crbug.com/15801    
     { "UTF-8.html", L"UTF-8" },
     { "UTF-16LE.html", L"UTF-16LE" },
     { "windows-874.html", L"windows-874" },

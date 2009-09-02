@@ -15,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cert_store.h"
+#include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
@@ -2471,3 +2472,8 @@ void TabContents::Observe(NotificationType type,
       NOTREACHED();
   }
 }
+
+void TabContents::set_encoding(const std::wstring& encoding) {
+  encoding_ = CharacterEncoding::GetCanonicalEncodingNameByAliasName(encoding);
+}
+
