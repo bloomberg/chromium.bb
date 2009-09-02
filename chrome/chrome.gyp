@@ -2259,13 +2259,15 @@
                   'app/nibs/BookmarkBubble.xib',
                   'app/nibs/BookmarkEditor.xib',
                   'app/nibs/BookmarkNameFolder.xib',
+                  'app/nibs/ClearBrowsingData.xib',
                   'app/nibs/MainMenu.xib',
+                  'app/nibs/SaveAccessoryView.xib',
                   'app/nibs/TabView.xib',
                   'app/nibs/Toolbar.xib',
                   # TODO(tvl): add other xibs as needed
                 ],
               },
-              'action_name': 'process_bookmark_bar_xib',
+              'action_name': 'Process xibs for localization',
               'process_outputs_as_sources': 1,
               'inputs': [
                 '<(xib_localizer_tool_path)',
