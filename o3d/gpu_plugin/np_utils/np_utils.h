@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef O3D_GPU_PLUGIN_NP_UTILS_NP_VARIANT_UTILS_H_
-#define O3D_GPU_PLUGIN_NP_UTILS_NP_VARIANT_UTILS_H_
+#ifndef O3D_GPU_PLUGIN_NP_UTILS_NP_UTILS_H_
+#define O3D_GPU_PLUGIN_NP_UTILS_NP_UTILS_H_
 
 #include <string>
 
@@ -73,7 +73,7 @@ void ValueToNPVariant(const NPObjectPointer<T>& value,
   }
 }
 
-// NPVariant that autmatically releases in destructor.
+// NPVariant that automatically manages lifetime of string and object variants.
 class SmartNPVariant : public NPVariant {
  public:
   SmartNPVariant();
@@ -101,7 +101,7 @@ class SmartNPVariant : public NPVariant {
 
   void Release();
 
-private:
+ private:
   void Copy(const NPVariant& rhs);
 };
 
@@ -245,4 +245,4 @@ NPObjectPointer<NPObjectType> NPCreateObject(NPP npp) {
 }  // namespace gpu_plugin
 }  // namespace o3d
 
-#endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_VARIANT_UTILS_H_
+#endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_UTILS_H_

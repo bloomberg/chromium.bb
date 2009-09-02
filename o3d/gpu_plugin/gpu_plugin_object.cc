@@ -10,6 +10,8 @@
 namespace o3d {
 namespace gpu_plugin {
 
+const int32 kCommandBufferSize = 1024;
+
 const NPUTF8 GPUPluginObject::kPluginType[] =
     "application/vnd.google.chrome.gpu-plugin";
 
@@ -95,7 +97,7 @@ NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
     return NPObjectPointer<NPObject>();
   }
 
-  if (!NPInvoke(npp(), system, "createSharedMemory", 1024,
+  if (!NPInvoke(npp(), system, "createSharedMemory", kCommandBufferSize,
                 &command_buffer_object_)) {
     return NPObjectPointer<NPObject>();
   }

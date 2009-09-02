@@ -37,6 +37,9 @@ class NPObjectPointer {
   }
 
   NPObjectPointer& operator=(const NPObjectPointer& rhs) {
+    if (object_ == rhs.Get())
+      return *this;
+
     Release();
     object_ = rhs.object_;
     Retain();
@@ -45,6 +48,9 @@ class NPObjectPointer {
 
   template <typename RHS>
   NPObjectPointer& operator=(const NPObjectPointer<RHS>& rhs) {
+    if (object_ == rhs.Get())
+      return *this;
+
     Release();
     object_ = rhs.Get();
     Retain();

@@ -118,6 +118,15 @@ TEST_F(NPObjectPointerTest, PointerCanBeAssigned) {
   EXPECT_EQ(2, raw_pointer_->referenceCount);
 }
 
+TEST_F(NPObjectPointerTest, PointerCanBeAssignedToSelf) {
+  NPObjectPointer<MockBaseNPObject> p(raw_pointer_);
+  NPBrowser::get()->ReleaseObject(raw_pointer_);
+  EXPECT_EQ(1, raw_pointer_->referenceCount);
+  p = p;
+  EXPECT_EQ(1, raw_pointer_->referenceCount);
+  NPBrowser::get()->RetainObject(raw_pointer_);
+}
+
 TEST_F(NPObjectPointerTest, PointerCanBeAssignedDerived) {
   NPObjectPointer<DerivedNPObject> p1(raw_derived_pointer_);
   EXPECT_EQ(2, raw_derived_pointer_->referenceCount);
@@ -136,6 +145,18 @@ TEST_F(NPObjectPointerTest, PointerCanBeAssignedDerived) {
     EXPECT_EQ(3, raw_derived_pointer_->referenceCount);
   }
   EXPECT_EQ(2, raw_derived_pointer_->referenceCount);
+}
+
+TEST_F(NPObjectPointerTest, DerivedPointerCanBeAssignedToSelf) {
+  NPObjectPointer<MockBaseNPObject> p1(raw_derived_pointer_);
+  NPObjectPointer<DerivedNPObject> p2(raw_derived_pointer_);
+  NPBrowser::get()->ReleaseObject(raw_derived_pointer_);
+  NPBrowser::get()->ReleaseObject(raw_derived_pointer_);
+  EXPECT_EQ(1, raw_derived_pointer_->referenceCount);
+  p1 = p2;
+  EXPECT_EQ(1, raw_derived_pointer_->referenceCount);
+  NPBrowser::get()->RetainObject(raw_derived_pointer_);
+  NPBrowser::get()->RetainObject(raw_derived_pointer_);
 }
 
 TEST_F(NPObjectPointerTest, CanComparePointersForEqual) {
