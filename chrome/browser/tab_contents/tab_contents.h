@@ -18,6 +18,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/fav_icon_helper.h"
 #include "chrome/browser/find_notification_details.h"
@@ -590,6 +591,10 @@ class TabContents : public PageNavigator,
     return &renderer_preferences_;
   }
 
+  void set_opener_dom_ui_type(DOMUITypeID opener_dom_ui_type) {
+    opener_dom_ui_type_ = opener_dom_ui_type;
+  }
+
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -1111,6 +1116,10 @@ class TabContents : public PageNavigator,
 
   // Settings that get passed to the renderer process.
   RendererPreferences renderer_preferences_;
+
+  // If this tab was created from a renderer using window.open, this will be
+  // non-NULL and represent the DOMUI of the opening renderer.
+  DOMUITypeID opener_dom_ui_type_;
 
   // ---------------------------------------------------------------------------
 

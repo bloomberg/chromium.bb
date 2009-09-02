@@ -259,7 +259,8 @@ TabContents::TabContents(Profile* profile,
       message_box_active_(CreateEvent(NULL, TRUE, FALSE, NULL)),
 #endif
       last_javascript_message_dismissal_(),
-      suppress_javascript_messages_(false) {
+      suppress_javascript_messages_(false),
+      opener_dom_ui_type_(DOMUIFactory::kNoDOMUI) {
   pending_install_.page_id = 0;
   pending_install_.callback_functor = NULL;
 
@@ -1268,6 +1269,21 @@ DOMUI* TabContents::GetDOMUIForCurrentState() {
 void TabContents::DidNavigateMainFramePostCommit(
     const NavigationController::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
+  if (opener_dom_ui_type_ != DOMUIFactory::kNoDOMUI) {
+    // If this is a window.open navigation, use the same DOMUI as the renderer
+    // that opened the window, as long as both renderers have the same
+    // privileges.
+    if (opener_dom_ui_type_ == DOMUIFactory::GetDOMUIType(GetURL())) {
+      DOMUI* dom_ui = DOMUIFactory::CreateDOMUIForURL(this, GetURL());
+      // dom_ui might be NULL if the URL refers to a non-existent extension.
+      if (dom_ui) {
+        render_manager_.SetDOMUIPostCommit(dom_ui);
+        dom_ui->RenderViewCreated(render_view_host());
+      }
+    }
+    opener_dom_ui_type_ = DOMUIFactory::kNoDOMUI;
+  }
+
   if (details.is_user_initiated_main_frame_load()) {
     // Clear the status bubble. This is a workaround for a bug where WebKit
     // doesn't let us know that the cursor left an element during a
@@ -2108,10 +2124,9 @@ void TabContents::ProcessDOMUIMessage(const std::string& message,
                                       int request_id,
                                       bool has_callback) {
   if (!render_manager_.dom_ui()) {
-    // We shouldn't get a DOM UI message when we haven't enabled the DOM UI.
-    // Because the renderer might be owned and sending random messages, we need
-    // to ignore these inproper ones.
-    NOTREACHED();
+    // This can happen if someone uses window.open() to open an extension URL
+    // from a non-extension context.
+    render_view_host()->BlockExtensionRequest(request_id);
     return;
   }
   render_manager_.dom_ui()->ProcessDOMUIMessage(message, content, request_id,

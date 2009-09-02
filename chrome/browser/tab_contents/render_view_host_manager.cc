@@ -187,6 +187,11 @@ void RenderViewHostManager::DidNavigateMainFrame(
   }
 }
 
+void RenderViewHostManager::SetDOMUIPostCommit(DOMUI* dom_ui) {
+  DCHECK(!dom_ui_.get());
+  dom_ui_.reset(dom_ui);
+}
+
 void RenderViewHostManager::RendererAbortedProvisionalLoad(
     RenderViewHost* render_view_host) {
   // We used to cancel the pending renderer here for cross-site downloads.

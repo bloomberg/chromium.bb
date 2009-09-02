@@ -11,8 +11,21 @@ class DOMUI;
 class GURL;
 class TabContents;
 
+// An opaque identifier used to identify a DOMUI. This can only be compared to
+// kNoDOMUI or other DOMUI types. See GetDOMUIType.
+typedef void* DOMUITypeID;
+
 class DOMUIFactory {
  public:
+  // A special DOMUI type that signifies that a given page would not use the
+  // DOM UI system.
+  static const DOMUITypeID kNoDOMUI;
+
+  // Returns a type identifier indicating what DOMUI we would use for the
+  // given URL. This is useful for comparing the potential DOMUIs for two URLs.
+  // Returns kNoDOMUI if the given URL will not use the DOM UI system.
+  static DOMUITypeID GetDOMUIType(const GURL& url);
+
   // Returns true if the given URL's scheme would trigger the DOM UI system.
   // This is a less precise test than UseDONUIForURL, which tells you whether
   // that specific URL matches a known one. This one is faster and can be used

@@ -127,6 +127,11 @@ class RenderViewHostManager
   // Called when a renderer's main frame navigates.
   void DidNavigateMainFrame(RenderViewHost* render_view_host);
 
+  // Set the DOMUI after committing a page load. This is useful for navigations
+  // initiated from a renderer, where we want to give the new renderer DOMUI
+  // privileges from the originating renderer.
+  void SetDOMUIPostCommit(DOMUI* dom_ui);
+
   // Called when a provisional load on the given renderer is aborted.
   void RendererAbortedProvisionalLoad(RenderViewHost* render_view_host);
 
