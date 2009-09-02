@@ -1794,7 +1794,8 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event,
   gdk_region_get_rectangles(event->region, &rects, &num_rects);
   qsort(rects, num_rects, sizeof(GdkRectangle), CompareGdkRectangles);
   std::vector<int> tabs_to_repaint;
-  if (tabstrip->CanPaintOnlyFavIcons(rects, num_rects, &tabs_to_repaint)) {
+  if (!tabstrip->IsDragSessionActive() &&
+      tabstrip->CanPaintOnlyFavIcons(rects, num_rects, &tabs_to_repaint)) {
     tabstrip->PaintOnlyFavIcons(event, tabs_to_repaint);
     g_free(rects);
     return TRUE;
