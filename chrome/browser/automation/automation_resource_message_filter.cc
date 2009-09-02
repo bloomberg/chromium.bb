@@ -4,6 +4,7 @@
 
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 
+#include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/automation/url_request_automation_job.h"
@@ -70,6 +71,9 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
                         OnSetFilteredInet)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetFilteredInetHitCount,
                         OnGetFilteredInetHitCount)
+    IPC_MESSAGE_HANDLER(AutomationMsg_RecordHistograms,
+                        OnRecordHistograms)
+
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -184,3 +188,11 @@ void AutomationResourceMessageFilter::OnGetFilteredInetHitCount(
     int* hit_count) {
   *hit_count = URLRequestFilter::GetInstance()->hit_count();
 }
+
+void AutomationResourceMessageFilter::OnRecordHistograms(
+    const std::vector<std::string>& histogram_list) {
+  for (size_t index = 0; index < histogram_list.size(); ++index) {
+    Histogram::DeserializeHistogramInfo(histogram_list[index]);
+  }
+}
+

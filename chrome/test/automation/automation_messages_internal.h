@@ -1068,4 +1068,9 @@ IPC_BEGIN_MESSAGES(Automation)
       AutomationMsg_GoForwardBlockUntilNavigationsComplete, int, int,
       AutomationMsg_NavigationResponseValues)
 
+  // This message is used by automaton clients to upload histogram data to the
+  // browser process.
+  IPC_MESSAGE_ROUTED1(AutomationMsg_RecordHistograms,
+                      std::vector<std::string> /* histogram_list */)
+
 IPC_END_MESSAGES(Automation)

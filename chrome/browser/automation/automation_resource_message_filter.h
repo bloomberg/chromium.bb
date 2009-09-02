@@ -76,6 +76,7 @@ class AutomationResourceMessageFilter
  private:
   void OnSetFilteredInet(bool enable);
   void OnGetFilteredInetHitCount(int* hit_count);
+  void OnRecordHistograms(const std::vector<std::string>& histogram_list);
 
   // A unique renderer id is a combination of renderer process id and
   // it's routing id.
