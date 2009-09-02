@@ -317,6 +317,37 @@ def CommandSelLdrTestNacl(env, name, command,
 pre_base_env.AddMethod(CommandSelLdrTestNacl)
 
 # ----------------------------------------------------------
+def CommandSelUniversalTestNacl(env, name, command,
+                                log_verbosity=2,
+                                sel_universal_flags=['-d'],
+                                size='medium',
+                                **extra):
+  if env['BUILD_SUBARCH'] == '64':
+    return []
+
+  # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
+  if 'TRUSTED_ENV' not in env:
+    print 'WARNING: no trusted env specified skipping test %s' % name
+    return []
+
+  trusted_env = env['TRUSTED_ENV']
+  sel_universal = trusted_env.File('${STAGING_DIR}/'
+                                   + '${PROGPREFIX}sel_universal${PROGSUFFIX}')
+  command = [sel_universal] + sel_universal_flags  + ['-f'] + command
+
+  # NOTE(robertm): log handling is a little magical
+  # We do not pass these via flags because those are not usable for
+  # sel_universal when testing via plugin, esp windows.
+  if 'log_golden' in extra:
+    logout = '${TARGET}.log'
+    extra['logout'] = logout
+    extra['osenv'] = 'NACLLOG=%s,NACLVERBOSITY=%d' % (logout, log_verbosity)
+
+  return CommandTestAgainstGoldenOutput(env, name, command, size, **extra)
+
+pre_base_env.AddMethod(CommandSelUniversalTestNacl)
+
+# ----------------------------------------------------------
 TEST_EXTRA_ARGS = ['stdin', 'logout',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'stdout_filter', 'stderr_filter', 'log_filter',

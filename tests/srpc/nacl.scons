@@ -67,3 +67,13 @@ env.ComponentProgram('cat.nexe', 'cat.c',
                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.Publish('cat.nexe', 'run', ['srpc_url_as_nacl_desc.html',
                                 'srpc_url_as_nacl_desc_success.html'])
+
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  node = env.CommandSelUniversalTestNacl(
+        'srpc_basic_test.out',
+        sel_universal_flags=[],
+        command=[env.File('srpc_test.nexe')],
+        stdin=env.File('srpc_basic_test.stdin'),
+        stdout_golden=env.File('srpc_basic_test.stdout'),
+        )
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test')

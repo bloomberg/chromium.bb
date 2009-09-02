@@ -385,7 +385,7 @@ struct NaClHostDesc *NaClHostDescPosixMake(int  posix_d,
     NaClLog(LOG_FATAL, "NaClHostDescPosixMake(%d,0x%x): malloc failed\n",
             posix_d, mode);
   }
-  if (!NaClHostDescPosixTake(nhdp, posix_d, mode)) {
+  if (NaClHostDescPosixTake(nhdp, posix_d, mode)) {
     NaClLog(LOG_FATAL, "NaClHostDescPosixMake(%d,0x%x): Take failed\n",
             posix_d, mode);
   }

@@ -109,30 +109,7 @@ int AddDescToList(struct NaClDesc* new_desc, int is_local) {
 }
 
 struct NaClDesc* DescFromPlatformDesc(int fd, int mode) {
-  /*
-   * NB: this only works for Linux-like OSes for now.
-   */
-  struct NaClHostDesc* hd;
-  struct NaClDescIoDesc* iod;
-
-  hd = (struct NaClHostDesc*) malloc(sizeof(struct NaClHostDesc));
-  if (NULL == hd) {
-    return NULL;
-  }
-  if (NaClHostDescPosixDup(hd, fd, mode)) {
-    free(hd);
-    return NULL;
-  }
-  iod = (struct NaClDescIoDesc*) malloc(sizeof(struct NaClDescIoDesc));
-  if (NULL == iod) {
-    free(hd);
-    return NULL;
-  }
-  if (!NaClDescIoDescCtor(iod, hd)) {
-    free(hd);
-    return NULL;
-  }
-  return (struct NaClDesc*) iod;
+  return (struct NaClDesc*) NaClDescIoDescMake(NaClHostDescPosixMake(fd, mode));
 }
 
 void BuildDefaultDescList() {
