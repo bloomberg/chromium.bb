@@ -1648,8 +1648,7 @@ BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAI
 // New failures from 41660:41709
 // Newly added tests.
 BUG9161 MAC LINUX WIN : LayoutTests/fast/forms/basic-textareas.html = FAIL
-BUG9163 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-request-headers.html = FAIL
-BUG9163 MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-request-headers.html = FAIL TIMEOUT
+BUG20894 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-request-headers.html = FAIL
 
 // Tests that fail in debug mode on linux
 BUG10454 DEBUG LINUX : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH
