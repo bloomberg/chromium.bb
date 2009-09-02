@@ -5,11 +5,11 @@
 #ifndef WEBKIT_ACTIVEX_SHIM_WEB_ACTIVEX_SITE_H__
 #define WEBKIT_ACTIVEX_SHIM_WEB_ACTIVEX_SITE_H__
 
-#include <atlbase.h>
-#include <atlcom.h>
 #include <objsafe.h>
 #include <map>
 #include <vector>
+
+#include "base/scoped_comptr_win.h"
 #include "webkit/activex_shim/activex_util.h"
 
 namespace activex_shim {
@@ -198,15 +198,15 @@ class WebActiveXSite : public MinimumIDispatchImpl,
 
   WebActiveXContainer* container_;
   // Theorectically the control could support only IUnknown interface. This is
-  // is the minimum requirement.
-  CComPtr<IUnknown> control_;
+  // the minimum requirement.
+  ScopedComPtr<IUnknown> control_;
   // These are all optional interfaces and they could be NULL even if we have
   // created the control successfully.
-  CComQIPtr<IDispatch> dispatch_;
-  CComQIPtr<IOleObject> ole_object_;
-  CComQIPtr<IOleInPlaceObject> inplace_object_;
-  CComQIPtr<IViewObject> view_object_;
-  CComQIPtr<IOleInPlaceObjectWindowless> inplace_object_windowless_;
+  ScopedComPtr<IDispatch> dispatch_;
+  ScopedComPtr<IOleObject> ole_object_;
+  ScopedComPtr<IOleInPlaceObject> inplace_object_;
+  ScopedComPtr<IViewObject> view_object_;
+  ScopedComPtr<IOleInPlaceObjectWindowless> inplace_object_windowless_;
   RECT rect_;
   // We need to remember whether we are activated so we can decide whether to
   // deactivate during destruction.

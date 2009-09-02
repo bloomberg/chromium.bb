@@ -32,13 +32,14 @@ WebActiveXSite::~WebActiveXSite() {
 }
 
 void WebActiveXSite::Init(WebActiveXContainer* container, IUnknown* control) {
+  DCHECK(control);
   container_ = container;
   control_.Attach(control);
-  dispatch_ = control;
-  ole_object_ = control;
-  inplace_object_ = control;
-  view_object_ = control;
-  inplace_object_windowless_ = control;
+  dispatch_.QueryFrom(control);
+  ole_object_.QueryFrom(control);
+  inplace_object_.QueryFrom(control);
+  view_object_.QueryFrom(control);
+  inplace_object_windowless_.QueryFrom(control);
 }
 
 void WebActiveXSite::FinalRelease() {
@@ -76,6 +77,8 @@ void WebActiveXSite::FinalRelease() {
 HRESULT WebActiveXSite::ActivateControl(
     int x, int y, int width, int height,
     const std::vector<ControlParam>& params) {
+  DCHECK(control_);
+
   // Set the rect size of site first before SetClientSite. Otherwise the
   // control may query the site for such information during SetClientSite.
   rect_.left = x;
@@ -92,8 +95,10 @@ HRESULT WebActiveXSite::ActivateControl(
   SetExtent(width, height);
 
   // Set initial properties.
-  CComQIPtr<IPersistPropertyBag> persist_property_bag = control_;
-  CComQIPtr<IPersistPropertyBag2> persist_property_bag2 = control_;
+  ScopedComPtr<IPersistPropertyBag> persist_property_bag;
+  persist_property_bag.QueryFrom(control_);
+  ScopedComPtr<IPersistPropertyBag2> persist_property_bag2;
+  persist_property_bag2.QueryFrom(control_);
   if (persist_property_bag2 != NULL || persist_property_bag != NULL) {
     // Use property bag for initialization. This is the preferred way.
     initial_params_ = params;
@@ -203,7 +208,7 @@ HRESULT STDMETHODCALLTYPE WebActiveXSite::QueryInterface(REFIID iid,
 
 // IOleClientSite
 HRESULT STDMETHODCALLTYPE WebActiveXSite::SaveObject() {
-  // Do not support saving object to persistant storage.
+  // Do not support saving object to persistent storage.
   return E_NOTIMPL;
 }
 

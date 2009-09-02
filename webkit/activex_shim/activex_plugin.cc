@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/fix_wp64.h"
+#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/activex_shim/activex_shared.h"
@@ -277,12 +278,16 @@ NPError ActiveXPlugin::NPP_SetWindow(NPWindow* window) {
                     GetWindowLong(hwnd, GWL_STYLE) | WS_CLIPCHILDREN |
                     WS_CLIPSIBLINGS);
       // If the control has a window, we need to subclass it.
-      CComQIPtr<IOleWindow> ole_window = container_->GetFirstControl();
-      if (ole_window != NULL) {
-        HWND control_wnd = NULL;
-        hr = ole_window->GetWindow(&control_wnd);
-        if (SUCCEEDED(hr)) {
-          SubclassWindow(control_wnd, ControlWindowProc);
+      IUnknown* control = container_->GetFirstControl();
+      if (control) {
+        ScopedComPtr<IOleWindow> ole_window;
+        ole_window.QueryFrom(control);
+        if (ole_window != NULL) {
+          HWND control_wnd = NULL;
+          hr = ole_window->GetWindow(&control_wnd);
+          if (SUCCEEDED(hr)) {
+            SubclassWindow(control_wnd, ControlWindowProc);
+          }
         }
       }
     }
@@ -441,11 +446,11 @@ void ActiveXPlugin::Draw(HDC dc, RECT* lprc, RECT* lpclip) {
 }
 
 IDispatch* ActiveXPlugin::GetDispatch() {
-  if (container_ == NULL)
+  if (container_ == NULL || container_->GetFirstControl() == NULL)
     return NULL;
-  IUnknown* unk = container_->GetFirstControl();
-  CComQIPtr<IDispatch> disp = unk;
-  if (disp == NULL)
+  ScopedComPtr<IDispatch> disp;
+  disp.QueryFrom(container_->GetFirstControl());
+  if (!disp)
     return NULL;
   IDispatch* res = disp.Detach();
   res->Release();

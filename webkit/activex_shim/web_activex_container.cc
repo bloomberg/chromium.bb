@@ -4,6 +4,7 @@
 
 #include "webkit/activex_shim/web_activex_container.h"
 
+#include "base/scoped_comptr_win.h"
 #include "webkit/activex_shim/activex_plugin.h"
 #include "webkit/activex_shim/activex_util.h"
 #include "webkit/activex_shim/npn_scripting.h"
@@ -307,7 +308,11 @@ bool WebActiveXContainer::OnWindowMessage(UINT msg, WPARAM wparam,
   HRESULT hr;
   for (unsigned int i = 0; i < sites_.size(); i++) {
     WebActiveXSite* site = sites_[i];
-    CComQIPtr<IOleInPlaceObjectWindowless> windowless = site->control_;
+    if (!site->control_)
+      continue;
+
+    ScopedComPtr<IOleInPlaceObjectWindowless> windowless;
+    windowless.QueryFrom(site->control_);
     if (windowless == NULL)
       continue;
 

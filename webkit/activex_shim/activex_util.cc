@@ -8,6 +8,7 @@
 #include <math.h>
 #include <ocmm.h>
 
+#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "webkit/activex_shim/npp_impl.h"
 #include "webkit/activex_shim/activex_plugin.h"
@@ -104,10 +105,10 @@ static bool DispGetFuncDesc(IDispatch* disp, const wchar_t* name,
   if (disp == NULL)
     return false;
   bool res = false;
-  CComPtr<ITypeInfo> tpi;
+  ScopedComPtr<ITypeInfo> tpi;
   TYPEATTR* typeattr = NULL;
   do {
-    HRESULT hr = disp->GetTypeInfo(0, LOCALE_SYSTEM_DEFAULT, &tpi);
+    HRESULT hr = disp->GetTypeInfo(0, LOCALE_SYSTEM_DEFAULT, tpi.Receive());
     if (FAILED(hr))
       break;
     hr = tpi->GetTypeAttr(&typeattr);
@@ -238,37 +239,42 @@ bool TestAndSetObjectSafetyOption(IObjectSafety* object_safety,
 }
 
 unsigned long GetAndSetObjectSafetyOptions(IUnknown* control) {
-  unsigned long ret = 0;
+  if (!control)
+    return 0;
 
   // If we have the interface then check that first.
-  CComQIPtr<IObjectSafety> object_safety = control;
-  if (object_safety != NULL) {
-    // Some controls only claim IPersistPropertyBag is safe. The best way
-    // would be checking if an interface is safe only when we use it. In reality
-    // this is sufficient enough, considering we have a whitelist.
-    static IID persist_iids[] = {IID_IPersist, IID_IPersistPropertyBag,
-                                 IID_IPersistPropertyBag2};
-    for (int i = 0; i < arraysize(persist_iids); ++i) {
-      if (TestAndSetObjectSafetyOption(object_safety, persist_iids[i],
-                                       INTERFACESAFE_FOR_UNTRUSTED_DATA)) {
-        ret |= SAFE_FOR_INITIALIZING;
-        break;
-      }
+  ScopedComPtr<IObjectSafety> object_safety;
+  object_safety.QueryFrom(control);
+  if (!object_safety)
+    return 0;
+
+  unsigned long ret = 0;
+
+  // Some controls only claim IPersistPropertyBag is safe. The best way
+  // would be checking if an interface is safe only when we use it. In reality
+  // this is sufficient enough, considering we have a whitelist.
+  static IID persist_iids[] = {IID_IPersist, IID_IPersistPropertyBag,
+                               IID_IPersistPropertyBag2};
+  for (int i = 0; i < arraysize(persist_iids); ++i) {
+    if (TestAndSetObjectSafetyOption(object_safety, persist_iids[i],
+                                     INTERFACESAFE_FOR_UNTRUSTED_DATA)) {
+      ret |= SAFE_FOR_INITIALIZING;
+      break;
     }
-    if (TestAndSetObjectSafetyOption(object_safety, IID_IDispatch,
-                                     INTERFACESAFE_FOR_UNTRUSTED_CALLER))
-      ret |= SAFE_FOR_SCRIPTING;
   }
+  if (TestAndSetObjectSafetyOption(object_safety, IID_IDispatch,
+                                   INTERFACESAFE_FOR_UNTRUSTED_CALLER))
+    ret |= SAFE_FOR_SCRIPTING;
+
   return ret;
 }
 
 unsigned long GetRegisteredObjectSafetyOptions(const CLSID& clsid) {
   unsigned long ret = 0;
   HRESULT hr;
-  CComPtr<ICatInformation> cat_info;
-  hr = CoCreateInstance(CLSID_StdComponentCategoriesMgr,
-                        NULL, CLSCTX_INPROC_SERVER, IID_ICatInformation,
-                        reinterpret_cast<void**>(&cat_info));
+  ScopedComPtr<ICatInformation> cat_info;
+  hr = cat_info.CreateInstance(CLSID_StdComponentCategoriesMgr,
+                               NULL, CLSCTX_INPROC_SERVER);
   DCHECK(SUCCEEDED(hr));
   if (FAILED(hr))
     return ret;
