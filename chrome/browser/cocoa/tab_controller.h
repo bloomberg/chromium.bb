@@ -40,8 +40,12 @@ enum TabLoadingState {
   IBOutlet NSMenu* contextMenu_;
   IBOutlet NSButton* closeButton_;
 
+  NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
+  BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
   BOOL selected_;
   TabLoadingState loadingState_;
+  float iconTitleXOffset_;  // between left edges of icon and title
+  float titleCloseWidthOffset_;  // between right edges of icon and close button
   id<TabControllerTarget> target_;  // weak, where actions are sent
   SEL action_;  // selector sent when tab is selected by clicking
 }
@@ -53,8 +57,8 @@ enum TabLoadingState {
 @property(assign, nonatomic) SEL action;
 
 // Minimum and maximum allowable tab width. The minimum width does not show
-// the icon or the close box. The selected tab always has at least a close box
-// so it has a different minimum width.
+// the icon or the close button. The selected tab always has at least a close
+// button so it has a different minimum width.
 + (float)minTabWidth;
 + (float)maxTabWidth;
 + (float)minSelectedTabWidth;
@@ -88,7 +92,7 @@ enum TabLoadingState {
 - (NSString *)toolTip;
 - (int)iconCapacity;
 - (BOOL)shouldShowIcon;
-- (BOOL)shouldShowCloseBox;
+- (BOOL)shouldShowCloseButton;
 @end  // TabController(TestingAPI)
 
 #endif  // CHROME_BROWSER_COCOA_TAB_CONTROLLER_H_

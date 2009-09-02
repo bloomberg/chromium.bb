@@ -21,10 +21,10 @@
 
 // The min widths match the windows values and are sums of left + right
 // padding, of which we have no comparable constants (we draw using paths, not
-// images). The selected tab width includes the close box width.
+// images). The selected tab width includes the close button width.
 + (float)minTabWidth { return 31; }
 + (float)minSelectedTabWidth { return 47; }
-+ (float)maxTabWidth { return 220.0; }
++ (float)maxTabWidth { return 220; }
 
 - (TabView*)tabView {
   return static_cast<TabView*>([self view]);
@@ -33,6 +33,7 @@
 - (id)init {
   self = [super initWithNibName:@"TabView" bundle:mac_util::MainAppBundle()];
   if (self != nil) {
+    isIconShowing_ = YES;
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(viewResized:)
@@ -59,9 +60,21 @@
 
 // Called when the tab's nib is done loading and all outlets are hooked up.
 - (void)awakeFromNib {
+  // Remember the icon's frame, so that if the icon is ever removed, a new
+  // one can later replace it in the proper location.
+  originalIconFrame_ = [iconView_ frame];
+
+  // When the icon is removed, the title expands to the left to fill the space
+  // left by the icon.  When the close button is removed, the title expands to
+  // the right to fill its space.  These are the amounts to expand and contract
+  // titleView_ under those conditions.
+  NSRect titleFrame = [titleView_ frame];
+  iconTitleXOffset_ = NSMinX(titleFrame) - NSMinX(originalIconFrame_);
+  titleCloseWidthOffset_ = NSMaxX([closeButton_ frame]) - NSMaxX(titleFrame);
+
   // Ensure we don't show favicon if the tab is already too small to begin with.
   [self updateVisibility];
-  [(id)iconView_ setImage:nsimage_cache::ImageNamed(@"nav.pdf")];
+
   [self internalSetSelected:selected_];
 }
 
@@ -103,13 +116,16 @@
 }
 
 - (void)setIconView:(NSView*)iconView {
-  NSRect currentFrame = [iconView_ frame];
   [iconView_ removeFromSuperview];
   iconView_ = iconView;
-  [iconView_ setFrame:currentFrame];
-  // Ensure we don't show favicon if the tab is already too small to begin with.
+  [iconView_ setFrame:originalIconFrame_];
+
+  // Ensure that the icon is suppressed if no icon is set or if the tab is too
+  // narrow to display one.
   [self updateVisibility];
-  [[self view] addSubview:iconView_];
+
+  if (iconView_)
+    [[self view] addSubview:iconView_];
 }
 
 - (NSView*)iconView {
@@ -124,42 +140,81 @@
 // tab. We never actually do this, but it's a helpful guide for determining
 // how much space we have available.
 - (int)iconCapacity {
-  float width = NSWidth([[self view] frame]);
-  float leftPadding = NSMinX([iconView_ frame]);
-  float rightPadding = width - NSMaxX([closeButton_ frame]);
-  float iconWidth = NSWidth([iconView_ frame]);
+  float width = NSMaxX([closeButton_ frame]) - NSMinX(originalIconFrame_);
+  float iconWidth = NSWidth(originalIconFrame_);
 
-  width -= leftPadding + rightPadding;
   return width / iconWidth;
 }
 
 // Returns YES if we should show the icon. When tabs get too small, we clip
-// the favicon before the close box for selected tabs, and prefer the favicon
-// for unselected tabs.
-// TODO(pinkerton): don't show the icon if there's no image data (eg, NTP).
+// the favicon before the close button for selected tabs, and prefer the
+// favicon for unselected tabs.  The icon can also be suppressed more directly
+// by clearing iconView_.
 - (BOOL)shouldShowIcon {
+  if (!iconView_)
+    return NO;
+
   int iconCapacity = [self iconCapacity];
   if ([self selected])
     return iconCapacity >= 2;
   return iconCapacity >= 1;
 }
 
-// Returns YES if we should be showing the close box. The selected tab always
-// shows the close box.
-- (BOOL)shouldShowCloseBox {
+// Returns YES if we should be showing the close button. The selected tab
+// always shows the close button.
+- (BOOL)shouldShowCloseButton {
   return [self selected] || [self iconCapacity] >= 3;
 }
 
-// Call to update the visibility of certain subviews, such as the icon or
-// close box, based on criteria like if the tab is selected and the current
-// tab width.
+// Updates the visibility of certain subviews, such as the icon and close
+// button, based on criteria such as the tab's selected state and its current
+// width.
 - (void)updateVisibility {
-  [iconView_ setHidden:[self shouldShowIcon] ? NO : YES];
-  [closeButton_ setHidden:[self shouldShowCloseBox] ? NO : YES];
+  // iconView_ may have been replaced or it may be nil, so [iconView_ isHidden]
+  // won't work.  Instead, the state of the icon is tracked separately in
+  // isIconShowing_.
+  BOOL oldShowIcon = isIconShowing_ ? YES : NO;
+  BOOL newShowIcon = [self shouldShowIcon] ? YES : NO;
+
+  [iconView_ setHidden:newShowIcon ? NO : YES];
+  isIconShowing_ = newShowIcon;
+
+  BOOL oldShowCloseButton = [closeButton_ isHidden] ? NO : YES;
+  BOOL newShowCloseButton = [self shouldShowCloseButton] ? YES : NO;
+
+  [closeButton_ setHidden:newShowCloseButton ? NO : YES];
+
+  // Adjust the title view based on changes to the icon's and close button's
+  // visibility.
+  NSRect titleFrame = [titleView_ frame];
+
+  if (oldShowIcon != newShowIcon) {
+    // Adjust the left edge of the title view according to the presence or
+    // absence of the icon view.
+
+    if (newShowIcon) {
+      titleFrame.origin.x += iconTitleXOffset_;
+      titleFrame.size.width -= iconTitleXOffset_;
+    } else {
+      titleFrame.origin.x -= iconTitleXOffset_;
+      titleFrame.size.width += iconTitleXOffset_;
+    }
+  }
+
+  if (oldShowCloseButton != newShowCloseButton) {
+    // Adjust the right edge of the title view according to the presence or
+    // absence of the close button.
+    if (newShowCloseButton)
+      titleFrame.size.width -= titleCloseWidthOffset_;
+    else
+      titleFrame.size.width += titleCloseWidthOffset_;
+  }
+
+  [titleView_ setFrame:titleFrame];
 }
 
 // Called when our view is resized. If it gets too small, start by hiding
-// the close box and only show it if tab is selected. Eventually, hide the
+// the close button and only show it if tab is selected. Eventually, hide the
 // icon as well. We know that this is for our view because we only registered
 // for notifications from our specific view.
 - (void)viewResized:(NSNotification*)info {

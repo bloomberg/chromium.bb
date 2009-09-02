@@ -226,7 +226,7 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
   frame.size.width = [TabController minTabWidth];
   [[controller view] setFrame:frame];
   EXPECT_FALSE([controller shouldShowIcon]);
-  EXPECT_FALSE([controller shouldShowCloseBox]);
+  EXPECT_FALSE([controller shouldShowCloseButton]);
 
   // Setting the icon when tab is at min width should not show icon (bug 18359).
   scoped_nsobject<NSView> newIcon(
@@ -242,7 +242,7 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
   [[controller view] setFrame:frame];
   EXPECT_FALSE([controller shouldShowIcon]);
   EXPECT_TRUE([newIcon isHidden]);
-  EXPECT_TRUE([controller shouldShowCloseBox]);
+  EXPECT_TRUE([controller shouldShowCloseButton]);
 
   // Test expanding the tab to max width and ensure the icon and close box
   // get put back, even when de-selected.
@@ -250,10 +250,10 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
   [[controller view] setFrame:frame];
   EXPECT_TRUE([controller shouldShowIcon]);
   EXPECT_FALSE([newIcon isHidden]);
-  EXPECT_TRUE([controller shouldShowCloseBox]);
+  EXPECT_TRUE([controller shouldShowCloseButton]);
   [controller setSelected:NO];
   EXPECT_TRUE([controller shouldShowIcon]);
-  EXPECT_TRUE([controller shouldShowCloseBox]);
+  EXPECT_TRUE([controller shouldShowCloseButton]);
 
   cap = [controller iconCapacity];
   EXPECT_GT(cap, 0);
