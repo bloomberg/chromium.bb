@@ -473,7 +473,7 @@ void IncognitoTabHTMLSource::StartDataRequest(const std::string& path,
 ///////////////////////////////////////////////////////////////////////////////
 // MostVisitedPage
 
-// This struct is used when getting the prepopulated pages in case the user
+// This struct is used when getting the pre-populated pages in case the user
 // hasn't filled up his most visited pages.
 struct MostVisitedPage {
   std::wstring title;
@@ -788,21 +788,31 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
 
   size_t data_index = 0;
   size_t output_index = 0;
+  size_t pre_populated_index = 0;
   const size_t pages_count = NewTabUI::UseOldNewTabPage() ?
       kOldMostVisitedPages : kMostVisitedPages;
-  while (output_index < pages_count && data_index < data->size()) {
+  static std::vector<MostVisitedPage> pre_populated_pages =
+        MostVisitedHandler::GetPrePopulatedPages();
+
+  while (output_index < pages_count) {
+    bool found = false;
     bool pinned = false;
     GURL url;
     string16 title;
     std::string pinned_url;
     std::string pinned_title;
+    GURL favicon_url;
+    GURL thumbnail_url;
 
     if (MostVisitedHandler::GetPinnedURLAtIndex(output_index, &pinned_url,
                                                 &pinned_title)) {
       url = GURL(pinned_url);
       title = UTF8ToUTF16(pinned_title);
       pinned = true;
-    } else {
+      found = true;
+    }
+
+    while (!found && data_index < data->size()) {
       const PageUsageData& page = *(*data)[data_index];
       data_index++;
       url = page.GetURL();
@@ -813,46 +823,50 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
         continue;
 
       title = page.GetTitle();
+      found = true;
     }
 
-    // Found a page.
-    DictionaryValue* page_value = new DictionaryValue();
-    SetURLTitleAndDirection(page_value, title, url);
-    page_value->SetBoolean(L"pinned", pinned);
-    pages_value.Append(page_value);
+    while (!found && pre_populated_index < pre_populated_pages.size()) {
+      MostVisitedPage page = pre_populated_pages[pre_populated_index++];
+      std::wstring key = GetDictionaryKeyForURL(page.url.spec());
+      if (pinned_urls_->HasKey(key) || url_blacklist_->HasKey(key) ||
+          seen_urls.find(page.url) != seen_urls.end())
+        continue;
+
+      title = WideToUTF16(page.title);
+      url = page.url;
+      favicon_url = page.favicon_url;
+      thumbnail_url = page.thumbnail_url;
+      found = true;
+    }
+
+    if (found) {
+      // Add fillers as needed.
+      while (pages_value.GetSize() < output_index) {
+        DictionaryValue* filler_value = new DictionaryValue();
+        filler_value->SetBoolean(L"filler", true);
+        pages_value.Append(filler_value);
+      }
+
+      DictionaryValue* page_value = new DictionaryValue();
+      SetURLTitleAndDirection(page_value, title, url);
+      page_value->SetBoolean(L"pinned", pinned);
+      if (!thumbnail_url.is_empty())
+        page_value->SetString(L"thumbnailUrl", thumbnail_url.spec());
+      if (!favicon_url.is_empty())
+        page_value->SetString(L"faviconUrl", favicon_url.spec());
+      pages_value.Append(page_value);
+      most_visited_urls_.push_back(url);
+      seen_urls.insert(url);
+    }
     output_index++;
-    most_visited_urls_.push_back(url);
-    seen_urls.insert(url);
   }
 
   // If we found no pages we treat this as the first run.
   FundamentalValue first_run(NewTabHTMLSource::first_run() &&
-                             pages_value.GetSize() == 0);
+      pages_value.GetSize() == pre_populated_pages.size());
   // but first_run should only be true once.
   NewTabHTMLSource::set_first_run(false);
-
-  // If we have less than pages_count we add some predetermined pages.
-  if (pages_value.GetSize() < pages_count) {
-    static std::vector<MostVisitedPage> pages =
-        MostVisitedHandler::GetPrePopulatedPages();
-    for (std::vector<MostVisitedPage>::const_iterator it = pages.begin();
-        it != pages.end() && pages_value.GetSize() < pages_count;
-        ++it) {
-      MostVisitedPage page = *it;
-      std::wstring key = GetDictionaryKeyForURL(page.url.spec());
-      if (!pinned_urls_->HasKey(key) && !url_blacklist_->HasKey(key) &&
-          seen_urls.find(page.url) == seen_urls.end()) {
-        DictionaryValue* page_value = new DictionaryValue();
-        SetURLTitleAndDirection(page_value, WideToUTF16(page.title), page.url);
-        page_value->SetBoolean(L"pinned", false);
-        page_value->SetString(L"thumbnailUrl", page.thumbnail_url.spec());
-        page_value->SetString(L"faviconUrl", page.favicon_url.spec());
-        pages_value.Append(page_value);
-        most_visited_urls_.push_back(page.url);
-        seen_urls.insert(page.url);
-      }
-    }
-  }
 
   dom_ui_->CallJavascriptFunction(L"mostVisitedPages", pages_value, first_run);
 }
