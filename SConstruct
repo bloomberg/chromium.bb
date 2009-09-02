@@ -395,6 +395,15 @@ if ARGUMENTS.get('pp', 0):
   pre_base_env.Append(PRINT_CMD_LINE_FUNC = CommandPrettyPrinter)
 
 # ----------------------------------------------------------
+# for generation of a promiscuous sel_ldr
+# ----------------------------------------------------------
+if ARGUMENTS.get('dangerous_debug_disable_inner_sandbox'):
+  pre_base_env.Append(
+      # NOTE: this also affects .S files
+      CPPDEFINES=['DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX'],
+      )
+
+# ----------------------------------------------------------
 DeclareBit('chrome',
            'Build the plugin as a static library to be linked with Chrome')
 pre_base_env.SetBitFromOption('chrome', False)

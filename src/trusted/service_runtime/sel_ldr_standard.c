@@ -264,6 +264,7 @@ static NaClErrorCode NaClValidateElfHeader(Elf32_Ehdr *hdr,
     return LOAD_NOT_32_BIT;
   }
 
+#if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
   if (ELFOSABI_NACL != hdr->e_ident[EI_OSABI]) {
     NaClLog(LOG_ERROR, "Expected OSABI %d, got %d\n",
             ELFOSABI_NACL,
@@ -281,6 +282,7 @@ static NaClErrorCode NaClValidateElfHeader(Elf32_Ehdr *hdr,
       return LOAD_BAD_ABI;
     }
   }
+#endif
 
   if (ET_EXEC != hdr->e_type) {
     return LOAD_NOT_EXEC;
