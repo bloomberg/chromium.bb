@@ -12,7 +12,6 @@
 #define IDM_EXIT                  105
 #define IDM_DUMP_BODY_TEXT        110
 #define IDM_DUMP_RENDER_TREE      111
-#define IDM_SHOW_WEB_INSPECTOR    112
 #define IDI_TESTSHELL             107
 #define IDI_SMALL                 108
 #define IDC_TESTSHELL             109

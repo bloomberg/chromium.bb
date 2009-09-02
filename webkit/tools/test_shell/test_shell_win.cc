@@ -573,9 +573,6 @@ LRESULT CALLBACK TestShell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
       case IDM_DUMP_RENDER_TREE:
         shell->DumpRenderTree();
         break;
-      case IDM_SHOW_WEB_INSPECTOR:
-        shell->webView()->InspectElement(0, 0);
-        break;
       }
     }
     break;
