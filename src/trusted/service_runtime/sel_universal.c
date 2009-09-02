@@ -377,7 +377,7 @@ void DumpArg(const NaClSrpcArg* arg) {
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_HANDLE:
-    printf("h(%"PRIuPTR")", AddDescToList(arg->u.hval, 0));
+    printf("h(%"PRIuPTR")", (uintptr_t) AddDescToList(arg->u.hval, 0));
     break;
    case NACL_SRPC_ARG_TYPE_INT:
     printf("i(%d)", arg->u.ival);
@@ -782,7 +782,7 @@ int main(int  argc, char *argv[]) {
   struct NaClSrpcChannel     untrusted_command_channel;
   struct NaClSrpcChannel     channel;
   static const char*         kFixedArgs[] = { "-P", "5", "-X", "5" };
-  static const size_t        kFixedArgCount = sizeof(kFixedArgs) /
+  static const int           kFixedArgCount = sizeof(kFixedArgs) /
                                               sizeof(kFixedArgs[1]);
 
   /* Descriptor transfer requires the following. */
