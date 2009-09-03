@@ -220,7 +220,7 @@ bool ForceTLSState::Deserialise(const std::string& input) {
     enabled_hosts_[host] = new_state;
   }
 
-  return enabled_hosts_.size();
+  return enabled_hosts_.size() > 0;
 }
 
 void ForceTLSState::DirtyNotify() {
