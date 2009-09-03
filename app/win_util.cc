@@ -4,13 +4,13 @@
 
 #include "app/win_util.h"
 
-#include <atlbase.h>
-#include <atlapp.h>
 #include <commdlg.h>
 #include <dwmapi.h>
 #include <propvarutil.h>
 #include <shellapi.h>
 #include <shlobj.h>
+
+#include <algorithm>
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
@@ -24,6 +24,7 @@
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_handle.h"
+#include "base/scoped_handle_win.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "grit/app_strings.h"
@@ -690,8 +691,8 @@ bool IsNumPadDigit(int key_code, bool extended_key) {
 void GrabWindowSnapshot(HWND window_handle,
                         std::vector<unsigned char>* png_representation) {
   // Create a memory DC that's compatible with the window.
-  CWindowDC window_hdc(window_handle);
-  CDC mem_hdc(::CreateCompatibleDC(window_hdc));
+  HDC window_hdc = GetWindowDC(window_handle);
+  ScopedHDC mem_hdc(CreateCompatibleDC(window_hdc));
 
   // Create a DIB that's the same size as the window.
   RECT content_rect = {0, 0, 0, 0};
@@ -702,18 +703,18 @@ void GrabWindowSnapshot(HWND window_handle,
   BITMAPINFOHEADER hdr;
   gfx::CreateBitmapHeader(width, height, &hdr);
   unsigned char *bit_ptr = NULL;
-  CBitmap bitmap(::CreateDIBSection(mem_hdc,
-                                    reinterpret_cast<BITMAPINFO*>(&hdr),
-                                    DIB_RGB_COLORS,
-                                    reinterpret_cast<void **>(&bit_ptr),
-                                    NULL, 0));
+  ScopedBitmap bitmap(CreateDIBSection(mem_hdc,
+                                       reinterpret_cast<BITMAPINFO*>(&hdr),
+                                       DIB_RGB_COLORS,
+                                       reinterpret_cast<void **>(&bit_ptr),
+                                       NULL, 0));
 
-  mem_hdc.SelectBitmap(bitmap);
+  SelectObject(mem_hdc, bitmap);
   // Clear the bitmap to white (so that rounded corners on windows
   // show up on a white background, and strangely-shaped windows
   // look reasonable). Not capturing an alpha mask saves a
   // bit of space.
-  mem_hdc.PatBlt(0, 0, width, height, WHITENESS);
+  PatBlt(mem_hdc, 0, 0, width, height, WHITENESS);
   // Grab a copy of the window
   // First, see if PrintWindow is defined (it's not in Windows 2000).
   typedef BOOL (WINAPI *PrintWindowPointer)(HWND, HDC, UINT);
@@ -729,7 +730,7 @@ void GrabWindowSnapshot(HWND window_handle,
   if (print_window)
     (*print_window)(window_handle, mem_hdc, 0);
   else
-    mem_hdc.BitBlt(0, 0, width, height, window_hdc, 0, 0, SRCCOPY);
+    BitBlt(mem_hdc, 0, 0, width, height, window_hdc, 0, 0, SRCCOPY);
 
   // We now have a copy of the window contents in a DIB, so
   // encode it into a useful format for posting to the bug report
@@ -737,6 +738,8 @@ void GrabWindowSnapshot(HWND window_handle,
   PNGEncoder::Encode(bit_ptr, PNGEncoder::FORMAT_BGRA,
                      width, height, width * 4, true,
                      png_representation);
+
+  ReleaseDC(window_handle, window_hdc);
 }
 
 bool IsWindowActive(HWND hwnd) {
