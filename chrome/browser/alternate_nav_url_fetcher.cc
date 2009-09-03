@@ -40,6 +40,8 @@ void AlternateNavURLFetcher::Observe(NotificationType type,
                         NotificationService::AllSources());
       registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                      Source<NavigationController>(controller_));
+      registrar_.Add(this, NotificationType::TAB_CLOSED,
+                     Source<NavigationController>(controller_));
 
       DCHECK_EQ(NOT_STARTED, state_);
       state_ = IN_PROGRESS;
@@ -56,6 +58,13 @@ void AlternateNavURLFetcher::Observe(NotificationType type,
                         Source<NavigationController>(controller_));
       navigated_to_entry_ = true;
       ShowInfobarIfPossible();
+      break;
+
+    case NotificationType::TAB_CLOSED:
+      // We have been closed. In order to prevent the URLFetcher from trying to
+      // access the controller that will be invalid, we delete ourselves.
+      // This deletes the URLFetcher and insures its callback won't be called.
+      delete this;
       break;
 
     default:
@@ -75,10 +84,10 @@ void AlternateNavURLFetcher::OnURLFetchComplete(const URLFetcher* source,
       (((response_code / 100) == 2) ||
        (response_code == 401) || (response_code == 407))) {
     state_ = SUCCEEDED;
-    ShowInfobarIfPossible();
   } else {
     state_ = FAILED;
   }
+  ShowInfobarIfPossible();
 }
 
 std::wstring AlternateNavURLFetcher::GetMessageTextWithOffset(
@@ -116,8 +125,11 @@ void AlternateNavURLFetcher::InfoBarClosed() {
 }
 
 void AlternateNavURLFetcher::ShowInfobarIfPossible() {
-  if (!navigated_to_entry_ || state_ != SUCCEEDED)
+  if (!navigated_to_entry_ || state_ != SUCCEEDED) {
+    if (state_ == FAILED)
+      delete this;
     return;
+  }
 
   infobar_contents_ = controller_->tab_contents();
   StoreActiveEntryUniqueID(infobar_contents_);
