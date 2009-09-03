@@ -146,7 +146,7 @@ if env.Bit('mac'):
      ],
      CCFLAGS = ['-F$MAC_BREAKPAD_DIR',
                 '-F$CG_DIR'],
-     CPPPATH = ['mac'],
+     CPPPATH = ['mac', '$MAC_BREAKPAD_SRC_DIR/Framework'],
      CPPDEFINES = ['XP_MACOSX']
   )
 
@@ -282,7 +282,7 @@ if env.Bit('mac'):
                         ]
   env['SHLIBPREFIX'] = ['']
   env['SHLIBSUFFIX'] = ['']
-  plugin_dll = env.SharedLibrary('o3d', inputs)
+  plugin_dll = env.SharedLibrary('O3D', inputs)
   plugin_artifacts = env.Replicate('$ARTIFACTS_DIR/O3D.plugin/Contents/MacOS/', plugin_dll)
 
   # insert version number into Info.plist
@@ -303,17 +303,17 @@ if env.Bit('mac'):
     '$ARTIFACTS_DIR/o3d_plugin.r', 'mac/o3d_plugin.r',
     REPLACE_STRINGS = plugin_replace_strings
   )
-  # Compile the string substituted o3d_plugin.r to make o3d.rsrc
-  env.Command('$ARTIFACTS_DIR/O3D.plugin/Contents/Resources/o3d.rsrc',
+  # Compile the string substituted o3d_plugin.r to make O3D.rsrc
+  env.Command('$ARTIFACTS_DIR/O3D.plugin/Contents/Resources/O3D.rsrc',
              ['$ARTIFACTS_DIR/o3d_plugin.r'],
              [
-             'Rez -useDF "$ARTIFACTS_DIR/o3d_plugin.r" -o "$ARTIFACTS_DIR/O3D.plugin/Contents/Resources/o3d.rsrc"'
+             'Rez -useDF "$ARTIFACTS_DIR/o3d_plugin.r" -o "$ARTIFACTS_DIR/O3D.plugin/Contents/Resources/O3D.rsrc"'
              ])
 
   if env['DEBUG']:
     stripCmd = 'echo debug build, no strip'
   else:
-    stripCmd = 'strip -S "$ARTIFACTS_DIR/O3D.plugin/Contents/MacOS/o3d"'
+    stripCmd = 'strip -S "$ARTIFACTS_DIR/O3D.plugin/Contents/MacOS/O3D"'
 
   # Cleanup end result
   created_installer = env.Command('$ARTIFACTS_DIR/plugin_done',
@@ -323,11 +323,11 @@ if env.Bit('mac'):
               'ditto "$SCONSTRUCT_DIR/installer/mac/O3D_Stats/build/Release/O3D_Stats.bundle" "$ARTIFACTS_DIR/O3D_Stats.bundle"',
               # Because the frameworks are inside a plugin bundle (not application bundle) the plugin executable needs to be
               # tweaked to reference their paths via @loader_path instead of @executable_path.
-              '$SCONSTRUCT_DIR/plugin/mac/Tools/fix_install_names.sh $ARTIFACTS_DIR/O3D.plugin/Contents/MacOS/o3d',
+              '$SCONSTRUCT_DIR/plugin/mac/Tools/fix_install_names.sh $ARTIFACTS_DIR/O3D.plugin/Contents/MacOS/O3D',
 
               # make a copy of the executable, before we strip all the symbols
-              'rm -f "$ARTIFACTS_DIR/o3d"',
-              'cp -f "$ARTIFACTS_DIR/O3D.plugin/Contents/MacOS/o3d" "$ARTIFACTS_DIR/o3d"',
+              'rm -f "$ARTIFACTS_DIR/O3D"',
+              'cp -f "$ARTIFACTS_DIR/O3D.plugin/Contents/MacOS/O3D" "$ARTIFACTS_DIR/O3D"',
               stripCmd,
               # Delete frameworks so we start fresh, and ditto can't get confused
               Delete("$ARTIFACTS_DIR/O3D.plugin/Contents/Frameworks/"),
@@ -349,14 +349,14 @@ if env.Bit('mac'):
 
   # Upload crash symbols to crash server.
   if int(ARGUMENTS.get('O3D_ENABLE_BREAKPAD', 0)):
-       env.Command('$ARTIFACTS_DIR/o3d.sym.breakpad',
+       env.Command('$ARTIFACTS_DIR/O3D.sym.breakpad',
                    created_installer,
                    ['echo "UPLOADING SYMBOLS TO go/crash"',
                     ' '.join(['"$MAC_BREAKPAD_PREBUILT_DIR/dump_syms"',
-                              '"$ARTIFACTS_DIR/o3d"',
-                              '> $ARTIFACTS_DIR/o3d.sym.breakpad']),
+                              '"$ARTIFACTS_DIR/O3D"',
+                              '> $ARTIFACTS_DIR/O3D.sym.breakpad']),
                     ' '.join(['"$MAC_BREAKPAD_PREBUILT_DIR/symupload"',
-                              '"$ARTIFACTS_DIR/o3d.sym.breakpad"',
+                              '"$ARTIFACTS_DIR/O3D.sym.breakpad"',
                               'http://crash-symbols:3842/upload'])
                               ])
 
@@ -372,7 +372,7 @@ if env.Bit('mac'):
       REPLACE_STRINGS = plugin_replace_strings
     )
     if int(ARGUMENTS.get('MAC_KILLSWITCH', 0)):
-      kill_command = 'rm "$ARTIFACTS_DIR/O3D.plugin/Contents/MacOS/o3d"'
+      kill_command = 'rm "$ARTIFACTS_DIR/O3D.plugin/Contents/MacOS/O3D"'
     else:
       kill_command = 'echo normal binary'
     # Cleanup end result and build the installer
