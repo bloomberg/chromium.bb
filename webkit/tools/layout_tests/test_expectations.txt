@@ -1897,8 +1897,6 @@ BUG11483 LINUX : LayoutTests/fast/forms/input-text-double-click.html = FAIL
 BUG11483 LINUX : LayoutTests/svg/text/foreignObject-repaint.xml = FAIL
 
 // Regressions from WebKit merge 43242:43321.  These just need to re-baselining:
-BUG_DARIN LINUX : LayoutTests/editing/pasteboard/5027857.html = FAIL
-BUG_DARIN LINUX : LayoutTests/editing/pasteboard/paste-pre-002.html = FAIL
 BUG_DARIN LINUX : LayoutTests/fast/forms/select-dirty-parent-pref-widths.html = FAIL
 BUG_DARIN LINUX : LayoutTests/svg/transforms/animated-path-inside-transformed-html.xhtml = FAIL
 BUG_DARIN LINUX : LayoutTests/svg/transforms/text-with-pattern-inside-transformed-html.xhtml = FAIL
