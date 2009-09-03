@@ -2317,12 +2317,6 @@ BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS 
 
 BUG10480 LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
 
-// WebKit roll to 47982
-// This is a template, shouldn't be run, it got moved from a 'resources'
-// subdirectory, where things are automagically skipped, into the script-tests
-// directory and is no longer automatically skipped.
-BUG20908 WONTFIX SKIP : LayoutTests/animations/script-tests/TEMPLATE.html = PASS FAIL CRASH TIMEOUT
-
 // Flakey crashes in js tests. Cause unknown.
 BUG20886 WIN DEBUG : LayoutTests/fast/js/regexp-no-extensions.html = CRASH PASS
 BUG20886 WIN DEBUG : LayoutTests/fast/js/repeat-cached-vm-reentry.html = CRASH PASS
