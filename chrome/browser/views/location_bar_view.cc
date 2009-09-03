@@ -15,6 +15,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
+#include "base/keyboard_codes.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -379,6 +380,15 @@ void LocationBarView::OnAutocompleteAccept(
 
 void LocationBarView::OnChanged() {
   DoLayout(false);
+}
+
+void LocationBarView::OnSetFocus() {
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (!focus_manager) {
+    NOTREACHED();
+    return;
+  }
+  focus_manager->SetFocusedView(this);
 }
 
 SkBitmap LocationBarView::GetFavIcon() const {
@@ -945,6 +955,13 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 #if defined(OS_WIN)
   return location_entry_->SkipDefaultKeyEventProcessing(e);
 #else
+  // TODO(jcampan): We need to refactor the code of
+  // AutocompleteEditViewWin::SkipDefaultKeyEventProcessing into this class so
+  // it can be shared between Windows and Linux.
+  // For now, we just override back-space as it is the accelerator for back
+  // navigation.
+  if (e.GetCharacter() == base::VKEY_BACK)
+    return true;
   return false;
 #endif
 }

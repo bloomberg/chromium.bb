@@ -239,8 +239,34 @@ void TabContentsViewGtk::TakeFocus(bool reverse) {
 
 void TabContentsViewGtk::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  NOTIMPLEMENTED();
-  // TODO(port): could be an accelerator, pass to parent.
+  // The renderer returned a keyboard event it did not process. This may be
+  // a keyboard shortcut that we have to process.
+  if (event.type != WebInputEvent::RawKeyDown)
+    return;
+
+  views::FocusManager* focus_manager =
+      views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
+  // We may not have a focus_manager at this point (if the tab has been switched
+  // by the time this message returned).
+  if (!focus_manager)
+    return;
+
+  bool shift_pressed = (event.modifiers & WebInputEvent::ShiftKey) ==
+                       WebInputEvent::ShiftKey;
+  bool ctrl_pressed = (event.modifiers & WebInputEvent::ControlKey) ==
+                      WebInputEvent::ControlKey;
+  bool alt_pressed = (event.modifiers & WebInputEvent::AltKey) ==
+                     WebInputEvent::AltKey;
+
+  focus_manager->ProcessAccelerator(views::Accelerator(event.os_event->keyval,
+                                                       shift_pressed,
+                                                       ctrl_pressed,
+                                                       alt_pressed));
+  // DANGER: |this| could be deleted now!
+
+  // Note that we do not handle Gtk mnemonics/accelerators or binding set here
+  // (as it is done in BrowserWindowGtk::HandleKeyboardEvent), as we override
+  // Gtk behavior completely.
 }
 
 void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {

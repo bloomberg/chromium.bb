@@ -188,6 +188,9 @@ void CompactNavigationBar::OnChanged() {
 void CompactNavigationBar::OnInputInProgress(bool in_progress) {
 }
 
+void CompactNavigationBar::OnSetFocus() {
+}
+
 SkBitmap CompactNavigationBar::GetFavIcon() const {
   return SkBitmap();
 }

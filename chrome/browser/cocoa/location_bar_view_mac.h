@@ -65,6 +65,7 @@ class LocationBarViewMac : public AutocompleteEditController,
       const GURL& alternate_nav_url);
   virtual void OnChanged();
   virtual void OnInputInProgress(bool in_progress);
+  virtual void OnSetFocus();
   virtual SkBitmap GetFavIcon() const;
   virtual std::wstring GetTitle() const;
 

@@ -750,6 +750,7 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusIn() {
   GdkModifierType modifiers;
   gdk_window_get_pointer(text_view_->window, NULL, NULL, &modifiers);
   model_->OnSetFocus((modifiers & GDK_CONTROL_MASK) != 0);
+  controller_->OnSetFocus();
   // TODO(deanm): Some keyword hit business, etc here.
 
   return FALSE;  // Continue propagation.

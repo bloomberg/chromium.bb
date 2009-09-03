@@ -47,6 +47,9 @@ class AutocompleteEditController {
   // the edit is guaranteed to be showing the permanent text.
   virtual void OnInputInProgress(bool in_progress) = 0;
 
+  // Called whenever the autocomplete edit gets focused.
+  virtual void OnSetFocus() = 0;
+
   // Returns the favicon of the current page.
   virtual SkBitmap GetFavIcon() const = 0;
 

@@ -346,6 +346,9 @@ void LocationBarViewGtk::OnInputInProgress(bool in_progress) {
   Update(NULL);
 }
 
+void LocationBarViewGtk::OnSetFocus() {
+}
+
 SkBitmap LocationBarViewGtk::GetFavIcon() const {
   NOTIMPLEMENTED();
   return SkBitmap();

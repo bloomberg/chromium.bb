@@ -224,6 +224,9 @@ void LocationBarViewMac::OnInputInProgress(bool in_progress) {
   NOTIMPLEMENTED();
 }
 
+void LocationBarViewMac::OnSetFocus() {
+}
+
 SkBitmap LocationBarViewMac::GetFavIcon() const {
   NOTIMPLEMENTED();
   return SkBitmap();
