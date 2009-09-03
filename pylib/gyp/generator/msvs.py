@@ -161,7 +161,7 @@ def _ConfigFullName(config_name, config_data):
                    config_data.get('configuration_platform', 'Win32')])
 
 
-def _PrepareActionRaw(config, cmd, cygwin_shell, has_input_path):
+def _PrepareActionRaw(config, cmd, cygwin_shell, has_input_path, quote_cmd):
   if cygwin_shell:
     # Find path to cygwin.
     cygwin_dir = _FixPath(config.get('msvs_cygwin_dirs', ['.'])[0])
@@ -197,13 +197,13 @@ def _PrepareActionRaw(config, cmd, cygwin_shell, has_input_path):
                  'cmd': direct_cmd}
     return cmd
   else:
-    if config.get('msvs_quote_cmd', True):
+    if quote_cmd:
       # Support a mode for using cmd directly.
       # Convert any paths to native form (first element is used directly).
       # TODO(quote):  regularize quoting path names throughout the module
       direct_cmd = [cmd[0]] + ['"%s"' % _FixPath(i) for i in cmd[1:]]
     else:
-      direct_cmd = cmd
+      direct_cmd = [cmd[0]] + [_FixPath(i) for i in cmd[1:]]
     # Collapse into a single command.
     return ' '.join(direct_cmd)
 
@@ -218,10 +218,9 @@ def _PrepareAction(config, rule, has_input_path):
   mcs = rule.get('msvs_cygwin_shell')
   if mcs is None:
     mcs = config.get('msvs_cygwin_shell', 1)
-  if int(mcs):
-    return _PrepareActionRaw(config, rule['action'], True, has_input_path)
-  else:
-    return _PrepareActionRaw(config, rule['action'], False, has_input_path)
+  quote_cmd = rule.get('msvs_quote_cmd', 1)
+  return _PrepareActionRaw(config, rule['action'], mcs,
+                           has_input_path, quote_cmd)
 
 
 def _PickPrimaryInput(inputs):
