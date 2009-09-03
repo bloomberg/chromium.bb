@@ -1045,7 +1045,7 @@ class TestDialogView : public views::View,
   }
 
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(Button* sender) {
+  virtual void ButtonPressed(Button* sender, const views::Event& event) {
     last_pressed_button_ = sender;
   }
 

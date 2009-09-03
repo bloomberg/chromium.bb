@@ -72,7 +72,7 @@ class PageInfoWindowView : public views::View,
   virtual void ShowCertDialog(int cert_id);
 
   // views::ButtonListener method.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // views::DialogDelegate methods:
   virtual int GetDialogButtons() const;
@@ -283,7 +283,8 @@ void PageInfoWindowView::ModelChanged() {
   LayoutSections();
 }
 
-void PageInfoWindowView::ButtonPressed(views::Button* sender) {
+void PageInfoWindowView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   // So far we only listen for the "Certificate info" button.
   DCHECK(cert_id_ != 0);
   ShowCertDialog(cert_id_);

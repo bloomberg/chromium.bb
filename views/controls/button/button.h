@@ -10,12 +10,13 @@
 namespace views {
 
 class Button;
+class Event;
 
 // An interface implemented by an object to let it know that a button was
 // pressed.
 class ButtonListener {
  public:
-  virtual void ButtonPressed(Button* sender) = 0;
+  virtual void ButtonPressed(Button* sender, const views::Event& event) = 0;
 };
 
 // A View representing a button. Depending on the specific type, the button
@@ -46,7 +47,7 @@ class Button : public View {
   explicit Button(ButtonListener* listener);
 
   // Cause the button to notify the listener that a click occurred.
-  virtual void NotifyClick(int mouse_event_flags);
+  virtual void NotifyClick(const views::Event& event);
 
   // The button's listener. Notified when clicked.
   ButtonListener* listener_;

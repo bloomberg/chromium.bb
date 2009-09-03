@@ -217,7 +217,8 @@ void PanelController::Close() {
   title_window_->Close();
 }
 
-void PanelController::ButtonPressed(views::Button* sender) {
+void PanelController::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == title_content_->close_button()) {
     browser_window_->Close();
   }

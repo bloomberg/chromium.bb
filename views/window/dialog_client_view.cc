@@ -367,7 +367,8 @@ bool DialogClientView::AcceleratorPressed(const Accelerator& accelerator) {
 ////////////////////////////////////////////////////////////////////////////////
 // DialogClientView, ButtonListener implementation:
 
-void DialogClientView::ButtonPressed(Button* sender) {
+void DialogClientView::ButtonPressed(
+    Button* sender, const views::Event& event) {
   // We NULL check the delegate here since the buttons can receive WM_COMMAND
   // messages even after they (and the window containing us) are destroyed.
   if (!GetDialogDelegate())

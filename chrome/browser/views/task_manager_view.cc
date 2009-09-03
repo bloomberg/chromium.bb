@@ -184,7 +184,7 @@ class TaskManagerView : public views::View,
                                     views::View* child);
 
   // ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // views::DialogDelegate
   virtual bool CanResize() const;
@@ -425,7 +425,8 @@ void TaskManagerView::Show() {
 }
 
 // ButtonListener implementation.
-void TaskManagerView::ButtonPressed(views::Button* sender) {
+void TaskManagerView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   DCHECK(sender == kill_button_);
   for (views::TableSelectionIterator iter  = tab_table_->SelectionBegin();
        iter != tab_table_->SelectionEnd(); ++iter) {

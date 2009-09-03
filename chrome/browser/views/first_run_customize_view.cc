@@ -156,7 +156,8 @@ void FirstRunCustomizeView::Layout() {
   AdjustDialogWidth(quick_shortcut_cbox_);
 }
 
-void FirstRunCustomizeView::ButtonPressed(views::Button* sender) {
+void FirstRunCustomizeView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (import_cbox_ == sender) {
     // Disable the import combobox if the user unchecks the checkbox.
     import_from_combo_->SetEnabled(import_cbox_->checked());

@@ -94,7 +94,8 @@ class TabRenderer : public views::View,
   std::wstring GetTitle() const;
 
   // views::ButtonListener overrides:
-  virtual void ButtonPressed(views::Button* sender) {}
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) {}
 
  private:
   // Overridden from views::View:

@@ -44,7 +44,7 @@ class ExceptionsPageView : public OptionsPageView,
   virtual void OnSelectionChanged();
 
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // PasswordsTableModelObserver implementation.
   virtual void OnRowCountChanged(size_t rows);

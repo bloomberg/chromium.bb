@@ -126,7 +126,7 @@ class ToolbarView : public views::View,
   virtual void EnabledStateChangedForCommand(int id, bool enabled);
 
   // Overridden from views::BaseButton::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from AutocompletePopupPositioner:
   virtual gfx::Rect GetPopupBounds() const;

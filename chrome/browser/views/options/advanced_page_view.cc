@@ -102,7 +102,8 @@ void AdvancedPageView::ResetToDefaults() {
 ///////////////////////////////////////////////////////////////////////////////
 // AdvancedPageView, views::ButtonListener implementation:
 
-void AdvancedPageView::ButtonPressed(views::Button* sender) {
+void AdvancedPageView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == reset_to_default_button_) {
     UserMetricsRecordAction(L"Options_ResetToDefaults", NULL);
     ResetDefaultsConfirmBox::ShowConfirmBox(

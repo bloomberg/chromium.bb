@@ -63,9 +63,9 @@ void ToolbarStarToggle::OnDragDone() {
   ignore_click_ = false;
 }
 
-void ToolbarStarToggle::NotifyClick(int mouse_event_flags) {
+void ToolbarStarToggle::NotifyClick(const views::Event& event) {
   if (!ignore_click_ && !browser::IsBookmarkBubbleViewShowing())
-    ToggleImageButton::NotifyClick(mouse_event_flags);
+    ToggleImageButton::NotifyClick(event);
 }
 
 SkBitmap ToolbarStarToggle::GetImageToPaint() {

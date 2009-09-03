@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/event.h"
 #include "views/standard_layout.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/textfield/textfield.h"
@@ -195,10 +196,11 @@ bool BookmarkBubbleView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
   if (accelerator.GetKeyCode() != base::VKEY_RETURN)
     return false;
+
   if (edit_button_->HasFocus())
-    ButtonPressed(edit_button_);
+    HandleButtonPressed(edit_button_);
   else
-    ButtonPressed(close_button_);
+    HandleButtonPressed(close_button_);
   return true;
 }
 
@@ -318,15 +320,9 @@ std::wstring BookmarkBubbleView::GetTitle() {
   return std::wstring();
 }
 
-void BookmarkBubbleView::ButtonPressed(views::Button* sender) {
-  if (sender == edit_button_) {
-    UserMetrics::RecordAction(L"BookmarkBubble_Edit", profile_);
-    ShowEditor();
-  } else {
-    DCHECK(sender == close_button_);
-    Close();
-  }
-  // WARNING: we've most likely been deleted when CloseWindow returns.
+void BookmarkBubbleView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  HandleButtonPressed(sender);
 }
 
 void BookmarkBubbleView::LinkActivated(Link* source, int event_flags) {
@@ -377,6 +373,17 @@ bool BookmarkBubbleView::CloseOnEscape() {
 
 void BookmarkBubbleView::Close() {
   static_cast<InfoBubble*>(GetWidget())->Close();
+}
+
+void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
+  if (sender == edit_button_) {
+    UserMetrics::RecordAction(L"BookmarkBubble_Edit", profile_);
+    ShowEditor();
+  } else {
+    DCHECK(sender == close_button_);
+    Close();
+  }
+  // WARNING: we've most likely been deleted when CloseWindow returns.
 }
 
 void BookmarkBubbleView::ShowEditor() {

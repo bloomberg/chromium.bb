@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1115,7 +1115,8 @@ void BookmarkBarView::RunMenu(views::View* view,
                             anchor_point, false);
 }
 
-void BookmarkBarView::ButtonPressed(views::Button* sender) {
+void BookmarkBarView::ButtonPressed(views::Button* sender,
+                                    const views::Event& event) {
 #ifdef CHROME_PERSONALIZATION
   // Show the login wizard if the user clicked the re-login button.
   if (sender->tag() == kSyncErrorButtonTag) {

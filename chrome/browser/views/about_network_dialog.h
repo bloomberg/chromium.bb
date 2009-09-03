@@ -48,7 +48,7 @@ class AboutNetworkDialog : public views::DialogDelegate,
   virtual bool CanResize() const;
 
   // views::ButtonListener.
-  virtual void ButtonPressed(views::Button* button);
+  virtual void ButtonPressed(views::Button* button, const views::Event& event);
 
   views::TextButton* track_toggle_;
   views::TextButton* show_button_;

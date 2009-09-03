@@ -87,6 +87,16 @@ class Event {
     return (flags_ & EF_ALT_DOWN) != 0;
   }
 
+  bool IsMouseEvent() const {
+    return type_ == ET_MOUSE_PRESSED ||
+           type_ == ET_MOUSE_DRAGGED ||
+           type_ == ET_MOUSE_RELEASED ||
+           type_ == ET_MOUSE_MOVED ||
+           type_ == ET_MOUSE_ENTERED ||
+           type_ == ET_MOUSE_EXITED ||
+           type_ == ET_MOUSEWHEEL;
+  }
+
 #if defined(OS_WIN)
   // Returns the EventFlags in terms of windows flags.
   int GetWindowsFlags() const;

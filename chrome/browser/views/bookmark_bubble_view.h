@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,12 +34,12 @@ class BookmarkBubbleView : public views::View,
                            public views::Combobox::Listener,
                            public InfoBubbleDelegate {
  public:
-   static void Show(views::Window* window,
-                    const gfx::Rect& bounds,
-                    InfoBubbleDelegate* delegate,
-                    Profile* profile,
-                    const GURL& url,
-                    bool newly_bookmarked);
+  static void Show(views::Window* window,
+                   const gfx::Rect& bounds,
+                   InfoBubbleDelegate* delegate,
+                   Profile* profile,
+                   const GURL& url,
+                   bool newly_bookmarked);
 
   static bool IsShowing();
 
@@ -105,7 +105,7 @@ class BookmarkBubbleView : public views::View,
   virtual void LinkActivated(views::Link* source, int event_flags);
 
   // ButtonListener method, closes the bubble or opens the edit dialog.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Combobox::Listener method. Changes the parent of the bookmark.
   virtual void ItemChanged(views::Combobox* combobox,
@@ -121,6 +121,9 @@ class BookmarkBubbleView : public views::View,
 
   // Closes the bubble.
   void Close();
+
+  // Handle the message when the user presses a button.
+  void HandleButtonPressed(views::Button* sender);
 
   // Shows the BookmarkEditor.
   void ShowEditor();

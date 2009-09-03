@@ -36,7 +36,7 @@ class ContentPageView : public OptionsPageView,
   virtual ~ContentPageView();
 
   // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
 #ifdef CHROME_PERSONALIZATION
   // views::LinkController method.

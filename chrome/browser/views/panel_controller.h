@@ -36,7 +36,7 @@ class PanelController : public views::ButtonListener {
   void UpdateTitleBar();
   void Close();
   // ButtonListener methods.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  private:
   class TitleContentView : public views::View {

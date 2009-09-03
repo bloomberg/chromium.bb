@@ -22,7 +22,7 @@ class NewBrowserWindowWidget : public views::ButtonListener {
   ~NewBrowserWindowWidget();
 
   // ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  private:
   // The profile the browser is created with.

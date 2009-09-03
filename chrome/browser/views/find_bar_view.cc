@@ -406,7 +406,8 @@ gfx::Size FindBarView::GetPreferredSize() {
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, views::ButtonListener implementation:
 
-void FindBarView::ButtonPressed(views::Button* sender) {
+void FindBarView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   switch (sender->tag()) {
     case FIND_PREVIOUS_TAG:
     case FIND_NEXT_TAG:
@@ -416,11 +417,14 @@ void FindBarView::ButtonPressed(views::Button* sender) {
             sender->tag() == FIND_NEXT_TAG,
             false);  // Not case sensitive.
       }
-      // Move the focus back to the text-field, we don't want the button
-      // focused.
-      // TODO(jcampan): http://crbug.com/9867 we should not change the focus
-      //                when teh button was pressed by pressing a key.
-      find_text_->RequestFocus();
+      if (event.IsMouseEvent()) {
+        // If mouse event, we move the focus back to the text-field, so that the
+        // user doesn't have to click on the text field to change the search. We
+        // don't want to do this for keyboard clicks on the button, since the
+        // user is more likely to press FindNext again than change the search
+        // query.
+        find_text_->RequestFocus();
+      }
       break;
     case CLOSE_TAG:
       container_->GetFindBarController()->EndFindSession();

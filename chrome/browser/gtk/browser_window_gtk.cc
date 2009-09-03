@@ -304,7 +304,7 @@ class MenuPopupCloser : public views::ButtonListener {
  public:
   MenuPopupCloser() {}
 
-  virtual void ButtonPressed(views::Button* sender) {
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
     if (menu_popup) {
       menu_popup->Close();
       // Close takes care of deleting the popup.

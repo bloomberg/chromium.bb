@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -215,11 +215,18 @@ void KeywordEditorView::OnSelectionChanged() {
 }
 
 void KeywordEditorView::OnDoubleClick() {
-  if (edit_button_->IsEnabled())
-    ButtonPressed(edit_button_);
+  if (edit_button_->IsEnabled()) {
+    DWORD pos = GetMessagePos();
+    POINT cursor_point = { GET_X_LPARAM(pos), GET_Y_LPARAM(pos) };
+    views::MouseEvent event(views::Event::ET_MOUSE_RELEASED,
+                            cursor_point.x, cursor_point.y,
+                            views::Event::EF_LEFT_BUTTON_DOWN);
+    ButtonPressed(edit_button_, event);
+  }
 }
 
-void KeywordEditorView::ButtonPressed(views::Button* sender) {
+void KeywordEditorView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == add_button_) {
     browser::EditSearchEngine(GetWindow()->GetNativeWindow(), NULL, this,
                               profile_);

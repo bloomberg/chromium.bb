@@ -90,7 +90,7 @@ class BookmarkEditorView : public BookmarkEditor,
   }
 
   // NativeButton.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // SimpleMenuModel::Delegate.
   virtual bool IsCommandIdChecked(int command_id) const;

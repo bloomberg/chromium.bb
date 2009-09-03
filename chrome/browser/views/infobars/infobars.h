@@ -75,7 +75,7 @@ class InfoBar : public views::View,
   void RemoveInfoBar() const;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  private:
   // Overridden from AnimationDelegate:
@@ -177,7 +177,7 @@ class ConfirmInfoBar : public AlertInfoBar {
                                     views::View* child);
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from InfoBar:
   virtual int GetAvailableWidth() const;

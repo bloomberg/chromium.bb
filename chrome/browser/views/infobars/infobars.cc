@@ -198,7 +198,7 @@ void InfoBar::RemoveInfoBar() const {
 
 // InfoBar, views::ButtonListener implementation: ------------------
 
-void InfoBar::ButtonPressed(views::Button* sender) {
+void InfoBar::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == close_button_) {
     if (delegate_)
       delegate_->InfoBarDismissed();
@@ -468,8 +468,9 @@ void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
 
 // ConfirmInfoBar, views::ButtonListener implementation: ---------------
 
-void ConfirmInfoBar::ButtonPressed(views::Button* sender) {
-  InfoBar::ButtonPressed(sender);
+void ConfirmInfoBar::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  InfoBar::ButtonPressed(sender, event);
   if (sender == ok_button_) {
     if (GetDelegate()->Accept())
       RemoveInfoBar();

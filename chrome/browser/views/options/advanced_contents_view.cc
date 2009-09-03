@@ -467,7 +467,7 @@ class PrivacySection : public AdvancedSection,
   virtual ~PrivacySection() {}
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from views::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* sender,
@@ -529,7 +529,8 @@ PrivacySection::PrivacySection(Profile* profile)
           l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)) {
 }
 
-void PrivacySection::ButtonPressed(views::Button* sender) {
+void PrivacySection::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == enable_link_doctor_checkbox_) {
     bool enabled = enable_link_doctor_checkbox_->checked();
     UserMetricsRecordAction(enabled ?
@@ -758,7 +759,7 @@ class WebContentSection : public AdvancedSection,
   virtual ~WebContentSection() {}
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  protected:
   // OptionsPageView overrides:
@@ -783,7 +784,8 @@ WebContentSection::WebContentSection(Profile* profile)
           l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT)) {
 }
 
-void WebContentSection::ButtonPressed(views::Button* sender) {
+void WebContentSection::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == gears_settings_button_) {
     UserMetricsRecordAction(L"Options_GearsSettings", NULL);
     GearsSettingsPressed(GetAncestor(GetWidget()->GetNativeView(), GA_ROOT));
@@ -853,7 +855,7 @@ class SecuritySection : public AdvancedSection,
   virtual ~SecuritySection() {}
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  protected:
   // OptionsPageView overrides:
@@ -881,7 +883,8 @@ SecuritySection::SecuritySection(Profile* profile)
           l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY)) {
 }
 
-void SecuritySection::ButtonPressed(views::Button* sender) {
+void SecuritySection::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == enable_ssl2_checkbox_) {
     bool enabled = enable_ssl2_checkbox_->checked();
     if (enabled) {
@@ -1010,7 +1013,7 @@ class NetworkSection : public AdvancedSection,
   virtual ~NetworkSection() {}
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  protected:
   // OptionsPageView overrides:
@@ -1032,7 +1035,8 @@ NetworkSection::NetworkSection(Profile* profile)
           l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK)) {
 }
 
-void NetworkSection::ButtonPressed(views::Button* sender) {
+void NetworkSection::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == change_proxies_button_) {
     UserMetricsRecordAction(L"Options_ChangeProxies", NULL);
     base::Thread* thread = g_browser_process->file_thread();
@@ -1086,7 +1090,7 @@ class DownloadSection : public AdvancedSection,
   }
 
   // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path, int index, void* params);
@@ -1135,7 +1139,8 @@ DownloadSection::DownloadSection(Profile* profile)
           l10n_util::GetString(IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME)) {
 }
 
-void DownloadSection::ButtonPressed(views::Button* sender) {
+void DownloadSection::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == download_browse_button_) {
     const std::wstring dialog_title =
        l10n_util::GetString(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE);

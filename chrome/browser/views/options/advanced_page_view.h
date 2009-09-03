@@ -28,7 +28,7 @@ class AdvancedPageView : public OptionsPageView,
   void ResetToDefaults();
 
   // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  protected:
   // OptionsPageView implementation:

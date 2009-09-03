@@ -50,7 +50,7 @@ class CustomFrameView : public NonClientFrameView,
   virtual gfx::Size GetPreferredSize();
 
   // ButtonListener implementation:
-  virtual void ButtonPressed(Button* sender);
+  virtual void ButtonPressed(Button* sender, const views::Event& event);
 
  private:
   // Returns the thickness of the border that makes up the window frame edges.

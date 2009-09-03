@@ -428,7 +428,8 @@ void DownloadItemView::Layout() {
   }
 }
 
-void DownloadItemView::ButtonPressed(views::Button* sender) {
+void DownloadItemView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == discard_button_) {
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                              base::Time::Now() - creation_time_);

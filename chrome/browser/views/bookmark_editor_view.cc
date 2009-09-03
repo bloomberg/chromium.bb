@@ -176,7 +176,8 @@ void BookmarkEditorView::ContentsChanged(Textfield* sender,
   UserInputChanged();
 }
 
-void BookmarkEditorView::ButtonPressed(Button* sender) {
+void BookmarkEditorView::ButtonPressed(
+    Button* sender, const views::Event& event) {
   DCHECK(sender);
   switch (sender->GetID()) {
     case kNewGroupButtonID:

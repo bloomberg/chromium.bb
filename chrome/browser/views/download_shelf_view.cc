@@ -307,7 +307,8 @@ void DownloadShelfView::LinkActivated(views::Link* source, int event_flags) {
   browser_->ShowDownloadsTab();
 }
 
-void DownloadShelfView::ButtonPressed(views::Button* button) {
+void DownloadShelfView::ButtonPressed(
+    views::Button* button, const views::Event& event) {
   Close();
 }
 

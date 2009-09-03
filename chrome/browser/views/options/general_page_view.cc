@@ -427,7 +427,8 @@ GeneralPageView::~GeneralPageView() {
 ///////////////////////////////////////////////////////////////////////////////
 // GeneralPageView, views::ButtonListener implementation:
 
-void GeneralPageView::ButtonPressed(views::Button* sender) {
+void GeneralPageView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == startup_homepage_radio_ ||
       sender == startup_last_session_radio_ ||
       sender == startup_custom_radio_) {

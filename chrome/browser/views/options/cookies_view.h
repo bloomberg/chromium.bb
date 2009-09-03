@@ -42,7 +42,7 @@ class CookiesView : public views::View,
   void UpdateSearchResults();
 
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // views::TableViewObserver implementation.
   virtual void OnSelectionChanged();

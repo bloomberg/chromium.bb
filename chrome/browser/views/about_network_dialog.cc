@@ -356,7 +356,8 @@ bool AboutNetworkDialog::CanResize() const {
   return true;
 }
 
-void AboutNetworkDialog::ButtonPressed(views::Button* button) {
+void AboutNetworkDialog::ButtonPressed(
+    views::Button* button, const views::Event& event) {
   if (button == track_toggle_) {
     if (tracking_) {
       track_toggle_->SetText(kStartTrackingLabel);

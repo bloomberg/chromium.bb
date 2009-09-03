@@ -32,7 +32,7 @@ class UninstallView : public views::View,
       MessageBoxFlags::DialogButton button) const;
 
   // Overridden form views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from views::WindowDelegate:
   virtual std::wstring GetWindowTitle() const;

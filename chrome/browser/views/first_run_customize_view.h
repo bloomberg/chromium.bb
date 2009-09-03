@@ -53,7 +53,7 @@ class FirstRunCustomizeView : public FirstRunViewBase,
   virtual bool Cancel();
 
   // Overridden form views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden form ComboboxModel.
   virtual int GetItemCount();

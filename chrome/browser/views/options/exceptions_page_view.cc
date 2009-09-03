@@ -85,7 +85,8 @@ void ExceptionsPageView::OnSelectionChanged() {
   remove_button_.SetEnabled(has_selection);
 }
 
-void ExceptionsPageView::ButtonPressed(views::Button* sender) {
+void ExceptionsPageView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   // Close will result in our destruction.
   if (sender == &remove_all_button_) {
     table_model_.ForgetAndRemoveAllSignons();

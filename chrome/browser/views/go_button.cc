@@ -52,7 +52,7 @@ void GoButton::ChangeMode(Mode mode, bool force) {
 ////////////////////////////////////////////////////////////////////////////////
 // GoButton, views::ButtonListener implementation:
 
-void GoButton::ButtonPressed(views::Button* button) {
+void GoButton::ButtonPressed(views::Button* button, const views::Event& event) {
   if (visible_mode_ == MODE_STOP) {
     browser_->Stop();
 

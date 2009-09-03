@@ -69,7 +69,7 @@ class DialogClientView : public ClientView,
   virtual bool AcceleratorPressed(const Accelerator& accelerator);
 
   // ButtonListener implementation:
-  virtual void ButtonPressed(Button* sender);
+  virtual void ButtonPressed(Button* sender, const views::Event& event);
 
  private:
   // Paint the size box in the bottom right corner of the window if it is

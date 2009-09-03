@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,7 +89,19 @@ bool CustomButton::IsTriggerableEvent(const MouseEvent& e) {
 bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
   if (enabled_) {
     SetState(BS_NORMAL);
-    NotifyClick(0);
+#if defined(OS_WIN)
+    KeyEvent key_event(Event::ET_KEY_RELEASED, accelerator.GetKeyCode(), 0, 0);
+#elif defined(OS_LINUX)
+    GdkEventKey gdk_key;
+    memset(&gdk_key, 0, sizeof(GdkEventKey));
+    gdk_key.type = GDK_KEY_RELEASE;
+    gdk_key.keyval = accelerator.GetKeyCode();
+    gdk_key.state = accelerator.IsAltDown() << 3 +
+                    accelerator.IsCtrlDown() << 2 +
+                    accelerator.IsShiftDown();
+    KeyEvent key_event(&gdk_key, false);
+#endif
+    NotifyClick(key_event);
     return true;
   }
   return false;
@@ -128,7 +140,7 @@ void CustomButton::OnMouseReleased(const MouseEvent& e, bool canceled) {
     } else {
       SetState(BS_HOT);
       if (IsTriggerableEvent(e)) {
-        NotifyClick(e.GetFlags());
+        NotifyClick(e);
         // We may be deleted at this point (by the listener's notification
         // handler) so no more doing anything, just return.
         return;
@@ -168,7 +180,7 @@ bool CustomButton::OnKeyPressed(const KeyEvent& e) {
       return true;
     } else if  (e.GetCharacter() == base::VKEY_RETURN) {
       SetState(BS_NORMAL);
-      NotifyClick(0);
+      NotifyClick(e);
       return true;
     }
   }
@@ -179,7 +191,7 @@ bool CustomButton::OnKeyReleased(const KeyEvent& e) {
   if (state_ != BS_DISABLED) {
     if (e.GetCharacter() == base::VKEY_SPACE) {
       SetState(BS_NORMAL);
-      NotifyClick(0);
+      NotifyClick(e);
       return true;
     }
   }

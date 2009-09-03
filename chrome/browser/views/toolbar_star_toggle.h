@@ -34,7 +34,7 @@ class ToolbarStarToggle : public views::ToggleImageButton,
 
  protected:
   // Only invokes super if ignore_click_ is true and the bubble isn't showing.
-  virtual void NotifyClick(int mouse_event_flags);
+  virtual void NotifyClick(const views::Event& event);
 
   // Overridden to so that we appear pressed while the bubble is showing.
   virtual SkBitmap GetImageToPaint();

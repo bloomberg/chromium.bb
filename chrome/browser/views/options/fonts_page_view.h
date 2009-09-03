@@ -36,7 +36,7 @@ class FontsPageView : public OptionsPageView,
   virtual ~FontsPageView();
 
   // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // views::Combobox::Listener implementation:
   virtual void ItemChanged(views::Combobox* combo_box,

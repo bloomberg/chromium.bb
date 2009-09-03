@@ -221,7 +221,7 @@ void Tab::ShowContextMenu(views::View* source, int x, int y,
 ///////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener implementation:
 
-void Tab::ButtonPressed(views::Button* sender) {
+void Tab::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == close_button())
     delegate_->CloseTab(this);
 }

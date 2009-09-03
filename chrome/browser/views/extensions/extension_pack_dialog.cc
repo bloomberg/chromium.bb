@@ -169,7 +169,7 @@ class PackDialogContent
   }
 
   // ButtonListener
-  virtual void ButtonPressed(views::Button* sender) {
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
     file_dialog_ = SelectFileDialog::Create(this);
 
     if (sender == extension_root_button_) {

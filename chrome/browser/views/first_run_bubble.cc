@@ -123,7 +123,7 @@ class FirstRunBubbleView : public FirstRunBubbleViewBase {
     keep_button_->RequestFocus();
   }
 
-  virtual void ButtonPressed(views::Button* sender) {
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
     bubble_window_->Close();
     if (change_button_ == sender) {
       Browser* browser = BrowserList::GetLastActive();
@@ -257,7 +257,7 @@ class FirstRunOEMBubbleView : public FirstRunBubbleViewBase {
     // No button in oem_bubble to request focus.
   }
 
-  virtual void ButtonPressed(views::Button* sender) {
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
     bubble_window_->Close();
   }
 

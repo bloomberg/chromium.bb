@@ -205,7 +205,8 @@ LanguagesPageView::~LanguagesPageView() {
     language_order_table_->SetModel(NULL);
 }
 
-void LanguagesPageView::ButtonPressed(views::Button* sender) {
+void LanguagesPageView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == move_up_button_) {
     OnMoveUpLanguage();
     language_table_edited_ = true;

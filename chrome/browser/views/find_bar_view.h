@@ -63,7 +63,7 @@ class FindBarView : public views::View,
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from views::Textfield::Controller:
   virtual void ContentsChanged(views::Textfield* sender,

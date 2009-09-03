@@ -44,7 +44,7 @@ class GeneralPageView : public OptionsPageView,
 
  protected:
   // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // views::Combobox::Listener implementation:
   virtual void ItemChanged(views::Combobox* combobox,

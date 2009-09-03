@@ -64,7 +64,7 @@ class DownloadItemView : public views::ButtonListener,
   virtual bool OnMouseDragged(const views::MouseEvent& event);
 
   // ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // AnimationDelegate implementation.
   virtual void AnimationProgressed(const Animation* animation);

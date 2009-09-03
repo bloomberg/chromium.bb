@@ -118,7 +118,8 @@ std::wstring UninstallView::GetDialogButtonLabel(
   return label;
 }
 
-void UninstallView::ButtonPressed(views::Button* sender) {
+void UninstallView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (change_default_browser_ == sender) {
     // Disable the browsers combobox if the user unchecks the checkbox.
     DCHECK(browsers_combo_);

@@ -94,7 +94,7 @@ class BlockedPopupContainerInternalView : public views::View,
   virtual gfx::Size GetPreferredSize();
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from Menu::Delegate:
 
@@ -228,7 +228,8 @@ gfx::Size BlockedPopupContainerInternalView::GetPreferredSize() {
   return preferred_size;
 }
 
-void BlockedPopupContainerInternalView::ButtonPressed(views::Button* sender) {
+void BlockedPopupContainerInternalView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == popup_count_label_) {
     launch_menu_.reset(views::Menu::Create(this, views::Menu::TOPLEFT,
                                            container_->GetNativeView()));

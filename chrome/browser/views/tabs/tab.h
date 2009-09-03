@@ -109,7 +109,7 @@ class Tab : public TabRenderer,
                                bool is_mouse_gesture);
 
   // views::ButtonListener overrides:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Creates a path that contains the clickable region of the tab's visual
   // representation. Used by GetViewForPoint for hit-testing.

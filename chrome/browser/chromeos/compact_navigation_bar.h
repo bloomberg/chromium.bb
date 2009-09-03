@@ -42,7 +42,7 @@ class CompactNavigationBar : public views::View,
 
  private:
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // AutocompleteController implementation.
   virtual void OnAutocompleteAccept(const GURL& url,

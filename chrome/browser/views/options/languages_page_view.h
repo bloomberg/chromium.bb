@@ -36,7 +36,7 @@ class LanguagesPageView : public OptionsPageView,
   virtual ~LanguagesPageView();
 
   // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Save Changes made to relevant pref members associated with this tab.
   // This is public since it is called by FontsLanguageWindowView in its

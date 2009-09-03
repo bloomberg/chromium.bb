@@ -103,7 +103,7 @@ class BitmapScrollBar : public ScrollBar,
   virtual bool OnKeyPressed(const KeyEvent& event);
 
   // BaseButton::ButtonListener overrides:
-  virtual void ButtonPressed(Button* sender);
+  virtual void ButtonPressed(Button* sender, const views::Event& event);
 
   // ScrollBar overrides:
   virtual void Update(int viewport_size,

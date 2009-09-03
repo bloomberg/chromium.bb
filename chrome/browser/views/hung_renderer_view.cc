@@ -139,7 +139,7 @@ class HungRendererDialogView : public views::View,
   virtual views::View* GetContentsView();
 
   // views::ButtonListener overrides:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  protected:
   // views::View overrides:
@@ -312,7 +312,8 @@ views::View* HungRendererDialogView::GetContentsView() {
 ///////////////////////////////////////////////////////////////////////////////
 // HungRendererDialogView, views::ButtonListener implementation:
 
-void HungRendererDialogView::ButtonPressed(views::Button* sender) {
+void HungRendererDialogView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == kill_button_) {
     // Kill the process.
     HANDLE process = contents_->process()->process().handle();

@@ -121,7 +121,7 @@ class TabStrip : public views::View,
   virtual bool HasAvailableDragActions() const;
 
   // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // MessageLoop::Observer implementation:
 #if defined(OS_WIN)

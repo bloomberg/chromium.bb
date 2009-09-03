@@ -347,7 +347,8 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::Button::ButtonListener implementation:
 
-void ToolbarView::ButtonPressed(views::Button* sender) {
+void ToolbarView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   int id = sender->tag();
   switch (id) {
     case IDC_BACK:

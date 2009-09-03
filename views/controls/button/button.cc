@@ -66,12 +66,12 @@ Button::Button(ButtonListener* listener)
       mouse_event_flags_(0) {
 }
 
-void Button::NotifyClick(int mouse_event_flags) {
-  mouse_event_flags_ = mouse_event_flags;
+void Button::NotifyClick(const views::Event& event) {
+  mouse_event_flags_ = event.IsMouseEvent() ? event.GetFlags() : 0;
   // We can be called when there is no listener, in cases like double clicks on
   // menu buttons etc.
   if (listener_)
-    listener_->ButtonPressed(this);
+    listener_->ButtonPressed(this, event);
   // NOTE: don't attempt to reset mouse_event_flags_ as the listener may have
   // deleted us.
 }

@@ -4,8 +4,14 @@
 
 #include "views/controls/button/native_button.h"
 
+#if defined(OS_WIN)
+#include <atlbase.h>
+#include <atlapp.h>  // for GET_X/Y_LPARAM
+#endif
+
 #if defined(OS_LINUX)
 #include <gdk/gdkkeysyms.h>
+#include "views/screen.h"
 #endif
 
 #include "app/l10n_util.h"
@@ -95,7 +101,17 @@ void NativeButton::ButtonPressed() {
   RequestFocus();
 
   // TODO(beng): obtain mouse event flags for native buttons someday.
-  NotifyClick(mouse_event_flags());
+#if defined(OS_WIN)
+  DWORD pos = GetMessagePos();
+  gfx::Point cursor_point(GET_X_LPARAM(pos), GET_Y_LPARAM(pos));
+#elif defined(OS_LINUX)
+  gfx::Point cursor_point = Screen::GetCursorScreenPoint();
+#endif
+
+  views::MouseEvent event(views::Event::ET_MOUSE_RELEASED,
+                          cursor_point.x(), cursor_point.y(),
+                          views::Event::EF_LEFT_BUTTON_DOWN);
+  NotifyClick(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +178,16 @@ std::string NativeButton::GetClassName() const {
 
 bool NativeButton::AcceleratorPressed(const Accelerator& accelerator) {
   if (IsEnabled()) {
-    NotifyClick(mouse_event_flags());
+#if defined(OS_WIN)
+    DWORD pos = GetMessagePos();
+    gfx::Point cursor_point(GET_X_LPARAM(pos), GET_Y_LPARAM(pos));
+#elif defined(OS_LINUX)
+    gfx::Point cursor_point = Screen::GetCursorScreenPoint();
+#endif
+    views::MouseEvent event(views::Event::ET_MOUSE_RELEASED,
+                            cursor_point.x(), cursor_point.y(),
+                            views::Event::EF_LEFT_BUTTON_DOWN);
+    NotifyClick(event);
     return true;
   }
   return false;

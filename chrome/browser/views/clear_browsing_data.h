@@ -73,7 +73,7 @@ class ClearBrowsingDataView : public views::View,
                            int new_index);
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  private:
   // Adds a new check-box as a child to the view.

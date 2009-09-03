@@ -127,7 +127,7 @@ class Tab2 : public views::View,
   };
 
   // views::ButtonListener overrides:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from views::View:
   virtual void Layout();

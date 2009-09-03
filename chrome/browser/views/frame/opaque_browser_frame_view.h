@@ -59,7 +59,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void SetAccessibleName(const std::wstring& name);
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const;

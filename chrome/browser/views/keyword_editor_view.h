@@ -76,7 +76,7 @@ class KeywordEditorView : public views::View,
   virtual void OnDoubleClick();
 
   // Button::ButtonListener method.
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // TemplateURLModelObserver notification.
   virtual void OnTemplateURLModelChanged();

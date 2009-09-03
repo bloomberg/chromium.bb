@@ -85,7 +85,8 @@ ContentPageView::~ContentPageView() {
 ///////////////////////////////////////////////////////////////////////////////
 // ContentPageView, views::ButtonListener implementation:
 
-void ContentPageView::ButtonPressed(views::Button* sender) {
+void ContentPageView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == passwords_asktosave_radio_ ||
       sender == passwords_neversave_radio_) {
     bool enabled = passwords_asktosave_radio_->checked();

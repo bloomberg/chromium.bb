@@ -211,7 +211,8 @@ void PasswordsPageView::OnSelectionChanged() {
   }
 }
 
-void PasswordsPageView::ButtonPressed(views::Button* sender) {
+void PasswordsPageView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   // Close will result in our destruction.
   if (sender == &remove_all_button_) {
     bool accepted = ConfirmMessageBoxDialog::Run(

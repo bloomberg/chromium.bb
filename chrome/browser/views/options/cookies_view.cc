@@ -358,7 +358,8 @@ void CookiesView::UpdateSearchResults() {
 ///////////////////////////////////////////////////////////////////////////////
 // CookiesView, views::Buttonlistener implementation:
 
-void CookiesView::ButtonPressed(views::Button* sender) {
+void CookiesView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == remove_button_) {
     cookies_table_->RemoveSelectedCookies();
   } else if (sender == remove_all_button_) {

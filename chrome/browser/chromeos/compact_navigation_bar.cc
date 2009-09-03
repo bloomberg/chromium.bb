@@ -153,7 +153,8 @@ void CompactNavigationBar::Paint(gfx::Canvas* canvas) {
                       height() - 5);
 }
 
-void CompactNavigationBar::ButtonPressed(views::Button* sender) {
+void CompactNavigationBar::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   TabContents* tab_contents = browser_->GetSelectedTabContents();
   if (!tab_contents)
     return;

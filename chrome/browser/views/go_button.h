@@ -37,7 +37,7 @@ class GoButton : public views::ToggleImageButton,
   void ChangeMode(Mode mode, bool force);
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* button);
+  virtual void ButtonPressed(views::Button* button, const views::Event& event);
 
   // Overridden from views::View:
   virtual void OnMouseExited(const views::MouseEvent& e);

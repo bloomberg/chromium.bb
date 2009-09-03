@@ -45,7 +45,8 @@ NewBrowserWindowWidget::~NewBrowserWindowWidget() {
   widget_ = NULL;
 }
 
-void NewBrowserWindowWidget::ButtonPressed(views::Button* sender) {
+void NewBrowserWindowWidget::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   UserMetrics::RecordAction(L"TabOverview_PressedCreateNewBrowserButton",
                             profile_);
 

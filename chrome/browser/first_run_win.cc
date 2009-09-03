@@ -798,7 +798,7 @@ class TryChromeDialog : public views::ButtonListener,
   // Overridden from ButtonListener. We have two buttons and according to
   // what the user clicked we set |result_| and we should always close and
   // end the modal loop.
-  virtual void ButtonPressed(views::Button* sender) {
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
     if (sender->tag() == BT_CLOSE_BUTTON) {
       result_ = Upgrade::TD_NOT_NOW;
     } else {

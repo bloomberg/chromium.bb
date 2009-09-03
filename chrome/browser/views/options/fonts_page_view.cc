@@ -229,7 +229,8 @@ FontsPageView::FontsPageView(Profile* profile)
 FontsPageView::~FontsPageView() {
 }
 
-void FontsPageView::ButtonPressed(views::Button* sender) {
+void FontsPageView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   HWND owning_hwnd = GetAncestor(GetWidget()->GetNativeView(), GA_ROOT);
   std::wstring font_name;
   int font_size = 0;

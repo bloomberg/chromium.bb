@@ -339,7 +339,8 @@ void ClearBrowsingDataView::ItemChanged(views::Combobox* sender,
 ////////////////////////////////////////////////////////////////////////////////
 // ClearBrowsingDataView, views::ButtonListener implementation:
 
-void ClearBrowsingDataView::ButtonPressed(views::Button* sender) {
+void ClearBrowsingDataView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == del_history_checkbox_)
     profile_->GetPrefs()->SetBoolean(prefs::kDeleteBrowsingHistory,
         del_history_checkbox_->checked() ? true : false);

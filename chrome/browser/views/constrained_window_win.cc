@@ -181,7 +181,7 @@ class ConstrainedWindowFrameView
   virtual void ThemeChanged();
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender);
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  private:
   // Returns the thickness of the border that makes up the window frame edges.
@@ -399,7 +399,8 @@ void ConstrainedWindowFrameView::ThemeChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowFrameView, views::ButtonListener implementation:
 
-void ConstrainedWindowFrameView::ButtonPressed(views::Button* sender) {
+void ConstrainedWindowFrameView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   if (sender == close_button_)
     container_->ExecuteSystemMenuCommand(SC_CLOSE);
 }

@@ -273,7 +273,7 @@ void Tab2::AddTabShapeToPath(gfx::Path* path) const {
 ///////////////////////////////////////////////////////////////////////////////
 // Tab2, views::ButtonListener implementation:
 
-void Tab2::ButtonPressed(views::Button* sender) {
+void Tab2::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == close_button_)
     model_->CloseTab(this);
 }

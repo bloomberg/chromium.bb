@@ -52,7 +52,7 @@ class DownloadShelfView : public DownloadShelf,
   // Implementation of ButtonListener.
   // Invoked when the user clicks the close button. Asks the browser to
   // hide the download shelf.
-  virtual void ButtonPressed(views::Button* button);
+  virtual void ButtonPressed(views::Button* button, const views::Event& event);
 
   // Implementation of DownloadShelf.
   virtual void AddDownload(BaseDownloadItemModel* download_model);

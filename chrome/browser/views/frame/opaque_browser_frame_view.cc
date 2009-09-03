@@ -421,7 +421,8 @@ void OpaqueBrowserFrameView::SetAccessibleName(const std::wstring& name) {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::ButtonListener implementation:
 
-void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender) {
+void OpaqueBrowserFrameView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
   views::Window* window = frame_->GetWindow();
   if (sender == minimize_button_)
     window->Minimize();
