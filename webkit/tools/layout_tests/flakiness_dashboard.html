@@ -17,6 +17,16 @@
     }
     form {
       margin: 3px 0;
+      display: -webkit-box;
+    }
+    form > * {
+      display: -webkit-box;
+    }
+    form > div {
+      -webkit-box-flex: 0;
+    }
+    form > input {
+      -webkit-box-flex: 1;
     }
     .test-link {
       white-space: normal;
@@ -55,24 +65,29 @@
       cursor: pointer;
       white-space: normal;
     }
-    .legend * {
-      white-space: nowrap;
-      display: inline-block;
-    }
     .results {
       cursor: pointer;
       padding: 0;
       font-size: 10px;
       text-align: center;
     }
-    .legend * {
-      padding: 0 3px;
-      margin: 3px 0;
+    #legend {
+      position: fixed;
+      top: 5px;
+      right: 5px;
+      width: 130px;
+      border: 2px solid grey;
+      background-color: white;
     }
-    .builders * {
+    #legend * {
+      margin: 3px;
+      padding: 0 2px;
+    }
+    body > div > :not(#legend) {
+      margin-right: 145px;
+    }
+    #builders * {
       margin: 0 5px;
-    }
-    .builders .link {
       display: inline-block;
       white-space: nowrap;
     }
@@ -126,6 +141,16 @@
     .not-found {
       color: red;
       font-size: large;
+    }
+    #loading-ui {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: yellow;
+      padding: 5px;
+      text-align: center;
+      font-weight: bold;
     }
   </style>
 
@@ -235,7 +260,6 @@
   var tableHeaders = ['DUMMYVALUE', 'bugs', 'modifiers', 'expectations',
       'missing', 'extra', 'slowest run',
       'flakiness (numbers are runtimes in seconds)'];
-  var currentState = {builder: null, sortOrder: FORWARD, sortColumn: 'test'};
   var perBuilderPlatformAndBuildType = {};
   var oldLocation;
   var perBuilderFailures = {};
@@ -261,7 +285,8 @@
       // HTML for expectations for this test for all platforms
       expectationsHTML: '',
       // HTML for modifiers for this test for all platforms
-      modifiersHTML: ''
+      modifiersHTML: '',
+      rawResults: ''
     };
   }
 
@@ -270,6 +295,10 @@
       if (stringContains(stringToMatch, elementsMap[element]))
         return element;
     }
+  }
+
+  function $(id) {
+    return document.getElementById(id);
   }
 
   function stringContains(a, b) {
@@ -470,6 +499,8 @@
     if (perBuilderFailures[builderName])
       return;
 
+    var start = Date.now();
+
     var failures = [];
     var allTests = getAllTests();
 
@@ -554,7 +585,9 @@
             htmlArrays.modifiers.join('<div class=separator></div>');
       }
 
-      var results = resultsByBuilder[builderName].tests[test].results.split('');
+      var rawResults = resultsByBuilder[builderName].tests[test].results;
+      resultsForTest.rawResults = rawResults;
+      var results = rawResults.split('');
 
       var unexpectedExpectations = [];
       var resultsMap = {}
@@ -608,6 +641,7 @@
     }
 
     perBuilderFailures[builderName] = failures;
+    logTime('processTestRunsForBuilder: ' + builderName, start);
   }
 
   function hasExpectations(expectations, resultName) {
@@ -679,16 +713,49 @@
   }
 
   /**
+   * Returns true if a test should be considered flaky. Uses heuristics to
+   * avoid common non-flaky cases.
+   */
+  function isTestFlaky(testResult) {
+    return testResult.flips > 1 && !isFixedNewTest(testResult);
+  }
+
+  /**
+   * Returns whether this tests results match the heuristic for new tests that
+   * have been fixed. Specifically, a new test that fails a couple
+   * times and then passes from then on would have results like PPPPFFFFNNNNN.
+   * Where that middle part can be a series of F's, S's or I's for the
+   * different types of failures.
+   */
+  function isFixedNewTest(testResult) {
+    if (testResult.isFixedNewTest === undefined) {
+      testResult.isFixedNewTest =
+          testResult.rawResults.match(/^P+(S+|F+|I+)N+$/);
+    }
+    return testResult.isFixedNewTest;
+  }
+
+  /**
    * Returns whether we should exclude test results from the test table.
    * Note that we never want to exclude tests when we're in the individual
    * tests view of the dashboard since the user is explicitly listing tests
    * to view.
    */
   function shouldHideTest(testResult) {
-    return !currentState.tests &&
-        (testResult.isWontFix && !currentState.showWontFix ||
-         testResult.meetsExpectations &&
-         !currentState.showCorrectExpectations);
+    if (currentState.tests)
+      return false;
+
+    if (testResult.isWontFix && !currentState.showWontFix)
+      return true;
+
+    if ((testResult.meetsExpectations || isFixedNewTest(testResult)) &&
+        !currentState.showCorrectExpectations) {
+      // Only hide flaky tests that match their expectations if showFlaky
+      // is false.
+      return !currentState.showFlaky || !isTestFlaky(testResult);
+    }
+
+    return !currentState.showFlaky && isTestFlaky(testResult);
   }
 
   function getHTMLForSingleTestRow(test, opt_builder) {
@@ -721,17 +788,15 @@
       '</tr>';
   }
 
+  function getSortColumnFromTableHeader(headerText) {
+    return headerText.split(' ', 1)[0];
+  }
+
   function getHTMLForTestTable(rowsHTML) {
-    var html = '<div class=legend>';
-    for (var expectation in EXPECTATIONS_MAP) {
-      html += '<span class=' + expectation + '>' +
-          EXPECTATIONS_MAP[expectation] + '</span>';
-    }
-    html += '<span class=wrong-expectations>WRONG EXPECTATIONS</span>' +
-        '</div><table class=test-table><thead><tr>';
+    var html = '<table class=test-table><thead><tr>';
     for (var i = 0; i < tableHeaders.length; i++) {
       // Use the first word of the header title as the sortkey
-      var thisSortValue = tableHeaders[i].split(' ')[0];
+      var thisSortValue = getSortColumnFromTableHeader(tableHeaders[i]);
       var arrowHTML = thisSortValue == currentState.sortColumn ?
           '<span class=' + currentState.sortOrder + '>' +
           (currentState.sortOrder == FORWARD ? '&uarr;' : '&darr;' ) +
@@ -805,8 +870,7 @@
     else
       order = FORWARD;
 
-    setState(sort, sortValue);
-    setState(orderKey, order);
+    setState(sort, sortValue, orderKey, order);
   }
 
   function sortTests(tests, column, order) {
@@ -826,27 +890,7 @@
   }
 
   function generatePage() {
-    var startTime = Date.now();
-    currentPlatformAndBuildType = null;
-    oldLocation = window.location.toString();
-    var hash = window.location.hash;
-    if (hash) {
-      var hashParts = hash.slice(1).split('&');
-      var urlHasTests = false;
-      for (var i = 0; i < hashParts.length; i++) {
-        var itemParts = hashParts[i].split('=');
-        // TODO(ojan): Validate keys and values to avoid XSS holes.
-        var key = itemParts[0];
-        currentState[key] = decodeURIComponent(itemParts[1]);
-        if (key == 'tests') {
-          urlHasTests = true;
-        } else if (key == 'showWontFix' || key == 'showCorrectExpectations') {
-          // Convert these values to booleans so we don't have to do this check
-          // in a bunch of places.
-          currentState[key] = currentState[key] == 'true';
-        }
-      }
-    }
+    parseCurrentLocation();
 
     // Only continue if all the JSON files have loaded.
     if (!expectationsLoaded)
@@ -858,22 +902,14 @@
     }
 
     tableHeaders.shift();
-    if (urlHasTests) {
+    if (currentState.tests) {
       tableHeaders.unshift('builder');
 
       generatePageForIndividualTests(currentState.tests.split(','));
     } else {
       tableHeaders.unshift('test');
-
-      if (!currentState.builder) {
-        for (var builder in builders) {
-          currentState.builder = builder;
-          break;
-        }
-      }
       generatePageForBuilder(currentState.builder);
     }
-    logTime('Time to generate page (includes innerHTML)', startTime);
   }
 
   function generatePageForIndividualTests(tests) {
@@ -904,28 +940,36 @@
     }
     setFullPageHTML(html);
 
-    document.getElementById('tests-input').value = currentState.tests;
+    $('tests-input').value = currentState.tests;
   }
 
   function getHTMLForNavBar(opt_builderName) {
-    var html = '<div class=builders>';
+    var html = '<div id=builders>';
     for (var builder in builders) {
       var className = builder == opt_builderName ? 'current-builder' : 'link';
       html += '<span class=' + className +
           ' onclick=\'setState("builder", "' + builder + '")\'>' +
           builder + '</span>';
     }
-    return html + '</div>' +
+    html += '</div>' +
         '<form onsubmit="setState(\'tests\', tests.value);return false;">' +
-        'Show tests on all platforms (slow): <input name=tests ' +
+        '<div>Show tests on all platforms (slow): </div><input name=tests ' +
         'placeholder="LayoutTests/foo/bar.html,LayoutTests/foo/baz.html" ' +
-        'id=tests-input style="width:60%"></form>';
+        'id=tests-input></form><div id="loading-ui">LOADING...</div>' +
+        '<div id=legend>';
+
+    for (var expectation in EXPECTATIONS_MAP) {
+      html += '<div class=' + expectation + '>' +
+          EXPECTATIONS_MAP[expectation] + '</div>';
+    }
+    return html + '<div class=wrong-expectations>WRONG EXPECTATIONS</div>' +
+        '</div>';
   }
 
   function getLinkHTMLToToggleState(key, linkText) {
     var isTrue = currentState[key];
     return '<span class=link onclick="setState(\'' + key + '\', \'' + !isTrue +
-        '\')">' + (isTrue ? 'Hide' : 'Show') + ' ' + linkText + '</span>';
+        '\')">' + (isTrue ? 'Hide' : 'Show') + ' ' + linkText + '</span> | ';
   }
 
   function generatePageForBuilder(builderName) {
@@ -940,12 +984,13 @@
 
     var html = getHTMLForNavBar(builderName) +
         getHTMLForTestsWithExpectationsButNoFailures(builderName) +
-        '<h2>Failing tests</h2>' +
-        getLinkHTMLToToggleState('showWontFix', 'WONTFIX tests') + ' | ' +
+        '<h2>Failing tests</h2><div>' +
+        getLinkHTMLToToggleState('showWontFix', 'WONTFIX tests')  +
         getLinkHTMLToToggleState('showCorrectExpectations',
             'tests with correct expectations') +
-        '<b> | All columns are sortable. | Skipped tests are not listed. | ' +
-        'Flakiness reader order is newer --> older runs.</b>' +
+        getLinkHTMLToToggleState('showFlaky', 'flaky tests') +
+        '<b>All columns are sortable. | Skipped tests are not listed. | ' +
+        'Flakiness reader order is newer --> older runs.</b></div>' +
         getHTMLForTestTable(tableRowsHTML);
 
     setFullPageHTML(html);
@@ -957,32 +1002,132 @@
     }
   }
 
+  // Permalinkable state of the page.
+  var currentState = {};
+
+  var defaultStateValues = {
+    sortOrder: BACKWARD,
+    sortColumn: 'flakiness',
+    showWontFix: false,
+    showCorrectExpectations: false,
+    showFlaky: true
+  };
+
+  for (var builder in builders) {
+    defaultStateValues.builder = builder;
+    break;
+  }
+
+  function fillDefaultStateValues() {
+    // tests has no states with default values.
+    if (currentState.tests)
+      return;
+
+    for (var state in defaultStateValues) {
+      if (!(state in currentState))
+        currentState[state] = defaultStateValues[state];
+    }
+  }
+
+  /**
+   * Sets the page state and regenerates the page. Takes varargs of key, value
+   * pairs.
+   */
   function setState(key, value) {
-    currentState[key] = value;
+    for (var i = 0; i < arguments.length; i = i + 2) {
+      var key = arguments[i];
+      if (key == 'tests') {
+        for (var state in currentState) {
+          delete currentState[state];
+        }
+      } else {
+        delete currentState.tests;
+      }
 
-    if (key == 'tests') {
-      currentState.builder = null;
-      currentState.sortColumn = null;
-      currentState.sortOrder = null;
-      currentState.showWontFix = null;
-      currentState.showCorrectExpectations = null;
-    } else {
-      currentState.tests = null;
+      currentState[key] = arguments[i + 1];
     }
 
-    var newLocation = window.location.pathname + '#';
-    if (currentState.tests) {
-      newLocation += 'tests=' + currentState.tests;
-    } else {
-      newLocation += 'builder=' + currentState.builder + '&' +
-        'sortColumn=' + currentState.sortColumn + '&' +
-        'sortOrder=' + currentState.sortOrder + '&' +
-        'showWontFix=' + currentState.showWontFix + '&' +
-        'showCorrectExpectations=' + currentState.showCorrectExpectations;
+    $('loading-ui').style.display = 'block';
+    setTimeout(function() {
+      window.location.replace(getPermaLinkURL());
+      generatePage();
+      $('loading-ui').style.display = 'none';
+    }, 0);
+  }
+
+  function parseCurrentLocation() {
+    oldLocation = window.location.href;
+    var hash = window.location.hash;
+    if (!hash) {
+      fillDefaultStateValues();
+      return;
     }
 
-    window.location.replace(newLocation);
-    generatePage();
+    var hashParts = hash.slice(1).split('&');
+    var urlHasTests = false;
+    for (var i = 0; i < hashParts.length; i++) {
+      var itemParts = hashParts[i].split('=');
+      if (itemParts.length != 2) {
+        console.log("Invalid parameter: " + hashParts[i]);
+        continue;
+      }
+
+      var key = itemParts[0];
+      var value = decodeURIComponent(itemParts[1]);
+      switch(key) {
+        case 'tests':
+          validateParameter(key, value,
+              function() { return value.match(/[A-Za-z0-9\-\_,]/); });
+          break;
+
+        case 'builder':
+          validateParameter(key, value,
+              function() { return value in builders; });
+          break;
+
+        case 'sortColumn':
+          validateParameter(key, value,
+              function() {
+                for (var i = 0; i < tableHeaders.length; i++) {
+                  if (value == getSortColumnFromTableHeader(tableHeaders[i]))
+                    return true;
+                }
+                return value == 'test';
+              });
+          break;
+
+        case 'sortOrder':
+          validateParameter(key, value,
+              function() { return value == FORWARD || value == BACKWARD; });
+          break;
+
+        case 'showWontFix':
+        case 'showCorrectExpectations':
+        case 'showFlaky':
+          currentState[key] = value == 'true';
+          break;
+
+        default:
+          console.log('Invalid key: ' + key + ' value: ' + value);
+      }
+    }
+    fillDefaultStateValues();
+  }
+
+  function validateParameter(key, value, validateFn) {
+    if (validateFn()) {
+      currentState[key] = value;
+    } else {
+      console.log(key + ' value is not valid: ' + value);
+    }
+  }
+
+  function getPermaLinkURL() {
+    var state = [];
+    for (var key in currentState) {
+      state.push(key + '=' + currentState[key]);
+    }
+    return window.location.pathname + '#' + state.join('&');
   }
 
   function logTime(msg, startTime) {
