@@ -1,0 +1,24 @@
+#
+# Assorted tests of broken direct branches.
+#
+
+# Some branches doing naughty things to trampolines.  The first instruction
+# in this file is at 128K, so we can reach them by short relative branches.
+# Note that, as these branches are relevant, the same instruction encoding is
+# used for both the valid and invalid cases.
+20000:
+ebfffff6  # A valid branch to the springboard's leading halt
+eafffff6  # An INVALID branch to the springboard's internals!
+eaffbffc  # A valid branch to trampoline 0
+ebffbffc  # An INVALID branch to trampoline 0's internals!
+
+# Some branches targeting various parts of a data bundle
+eb000003  # Jump to the first data word
+ea000001  # Jump to the head
+eb000003  # Jump to the tail
+ea000001  # Jump to the second data word
+
+e1277777  # data bundle header
+deadbeef  # data
+deadbeef  # data
+deadbeef  # data

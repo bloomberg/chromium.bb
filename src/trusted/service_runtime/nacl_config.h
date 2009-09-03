@@ -103,6 +103,22 @@
 #define NACL_SYSCALL_BLOCK_SIZE       (1 << NACL_SYSCALL_BLOCK_SHIFT)
 
 /*
+ * the extra space for the trampoline syscall code and the thread
+ * contexts must be a multiple of the page size.
+ *
+ * The address space begins with a 64KB region that is inaccessible to
+ * handle NULL pointers and also to reinforce protection agasint abuse of
+ * addr16/data16 prefixes.
+ * NACL_TRAMPOLINE_START gives the address of the first trampoline.
+ * NACL_TRAMPOLINE_END gives the address of the first byte after the
+ * trampolines.
+ */
+#define NACL_NULL_REGION_SHIFT  16
+#define NACL_TRAMPOLINE_START   (1 << NACL_NULL_REGION_SHIFT)
+#define NACL_TRAMPOLINE_SHIFT   16
+#define NACL_TRAMPOLINE_SIZE    (1 << NACL_TRAMPOLINE_SHIFT)
+#define NACL_TRAMPOLINE_END     (NACL_TRAMPOLINE_START + NACL_TRAMPOLINE_SIZE)
+/*
  * macros to provide uniform access to identifiers from assembly due
  * to different C -> asm name mangling convention
  */

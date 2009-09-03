@@ -1,0 +1,12 @@
+   20000:	ebfffff6 		bl	1ffe0
+   20004:	eafffff6 		b	1ffe4
+   20008:	eaffbffc 		b	10000
+   2000c:	ebffbffc 		bl	10004
+   20010:	eb000003 		bl	20024
+   20014:	ea000001 		b	20020
+   20018:	eb000003 		bl	2002c
+   2001c:	ea000001 		b	20028
+   20020:	e1277777 		bkpt	30583
+   20024:	deadbeef 	(le)	cdp	14, 10, cr11, cr13, cr15, 7
+   20028:	deadbeef 	(le)	cdp	14, 10, cr11, cr13, cr15, 7
+   2002c:	deadbeef 	(le)	cdp	14, 10, cr11, cr13, cr15, 7

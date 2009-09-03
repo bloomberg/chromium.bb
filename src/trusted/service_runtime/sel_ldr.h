@@ -81,24 +81,6 @@ extern int using_debug_configuration;
 /* wp: NACL_MAX_ADDR_BITS < 32, see NaClAppLoadFile */
 #define NACL_DEFAULT_ENTRY_PT   "NaClMain"
 
-/*
- * the extra space for the trampoline syscall code and the thread
- * contexts must be a multiple of the page size.
- *
- * The address space begins with a 64KB region that is inaccessible to
- * handle NULL pointers and also to reinforce protection agasint abuse of
- * addr16/data16 prefixes.
- * NACL_TRAMPOLINE_START gives the address of the first trampoline.
- * NACL_TRAMPOLINE_END gives the address of the first byte after the
- * trampolines.
- */
-#define NACL_NULL_REGION_SHIFT  16
-#define NACL_TRAMPOLINE_START   (1 << NACL_NULL_REGION_SHIFT)
-#define NACL_TRAMPOLINE_SHIFT   16
-#define NACL_TRAMPOLINE_SIZE    (1 << NACL_TRAMPOLINE_SHIFT)
-#define NACL_TRAMPOLINE_END     (NACL_TRAMPOLINE_START + NACL_TRAMPOLINE_SIZE)
-#define NACL_THREAD_CTX_SIZE    (64 << 10)
-
 #define NACL_DEFAULT_ALLOC_MAX  (32 << 20)  /* total brk and mmap allocs */
 #define NACL_DEFAULT_STACK_MAX  (16 << 20)  /* main thread stack */
 

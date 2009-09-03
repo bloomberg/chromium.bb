@@ -44,6 +44,9 @@
 #include "native_client/src/trusted/validator_arm/ncdecode.h"
 #include "native_client/src/trusted/validator_arm/validator_patterns.h"
 
+// TODO(cbiffle): this dependency is bad, but we need the info.  Move it out.
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+
 // Defines the block size assumed for unknown branching.
 int FLAGS_code_block_size = 16;
 
@@ -254,8 +257,19 @@ static void CheckBranchInst(const NcDecodeState &state) {
   const NcDecodedInstruction& branch = state.CurrentInstruction();
   uint32_t target = RealAddress(branch.vpc, branch.values.immediate);
 
-  // Verify in text segment.
-  if (FLAGS_branch_in_text_segment) {
+  // Verify that the target is in a text segment, or in the trampoline range.
+  if (target >= NACL_TRAMPOLINE_START && target < NACL_TRAMPOLINE_END) {
+    /*
+     * Branch targets within the trampoline range must target a trampoline
+     * entry point.  Note that this is a subset of possible bundle entry
+     * points, as the trampolines may be larger than bundles.
+     */
+    if ((target % NACL_SYSCALL_BLOCK_SIZE) != 0) {
+      ValidateError(
+          "Branch to trampoline does not target a valid entry point:\n  %s",
+          InstructionLine(&branch).c_str());
+    }
+  } else {
     bool in_text_segment = false;
     for (std::set<AddressRange>::const_iterator iter
              = valid_code_ranges->begin();
@@ -274,6 +288,8 @@ static void CheckBranchInst(const NcDecodeState &state) {
   }
 
   // Verify at even word boundary.
+  // TODO(cbiffle): the branches we allow can't even *generate* an unaligned
+  // address.  This is probably unnecessary, but confirm.
   if (FLAGS_branch_word_boundary && 0 != target % ARM_WORD_LENGTH) {
     ValidateError("Branch to non-word boundary:\n\t%s",
                   InstructionLine(&branch).c_str());
@@ -309,22 +325,22 @@ static void CheckBranchInst(const NcDecodeState &state) {
   */
 }
 
-// Check if the instruction in the current state defines a branch,
-// and if so, that the branch is valid.
+/*
+ * Check if the instruction in the current state defines a branch,
+ * and if so, that the branch is valid.
+ *
+ * Note that only direct (immediate) branches are checked here.  Indirect
+ * branches can be checked in isolation without global context, and are
+ * handled by dedicated patterns.
+ */
 static void CheckBranchInstructions(const NcDecodeState &state) {
   switch (state.CurrentInstruction().matched_inst->inst_kind) {
     case ARM_BRANCH_INST:
+    case ARM_BRANCH_AND_LINK:
       CheckBranchInst(state);
       break;
     default:
       break;
-      /* TODO(kschimpf) Add code to check other kinds of branches.
-        ARM_BRANCH_AND_LINK,
-        ARM_BRANCH_WITH_LINK_AND_EXCHANGE_1,
-        ARM_BRANCH_WITH_LINK_AND_EXCHANGE_2,
-        ARM_BRANCH_AND_EXCHANGE,
-        ARM_BRANCH_AND_EXCHANGE_TO_JAZELLE,
-      */
   }
 }
 
