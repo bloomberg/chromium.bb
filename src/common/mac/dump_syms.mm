@@ -68,15 +68,6 @@ static NSString *kHeaderCPUTypeKey = @"cpuType";
 // for pruning out extraneous non-function symbols.
 static const int kTextSection = 1;
 
-namespace __gnu_cxx {
-template<> 
-  struct hash<std::string> {
-    size_t operator()(const std::string& k) const {
-      return hash< const char* >()( k.c_str() );
-  }
-};
-}
-
 // Dump FunctionMap to stdout.  Print address, function name, file
 // name, line number, lowpc, and highpc if available.
 void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {

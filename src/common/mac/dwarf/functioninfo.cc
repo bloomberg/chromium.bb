@@ -39,27 +39,6 @@
 #include "common/mac/dwarf/bytereader.h"
 
 
-namespace __gnu_cxx {
-
-// Implement a string hash function so that std::string can be used as a key
-// in STL maps and sets.  The hash algorithm comes from the GNU C++ library,
-// in <tr1/functional>.  It is duplicated here because GCC versions prior to
-// 4.3.2 are unable to compile <tr1/functional> when RTTI is disabled, as it
-// may be in this code.
-
-template<>
-struct hash<std::string> {
-  std::size_t operator()(const std::string& s) const {
-    std::size_t result = 0;
-    for (std::string::const_iterator i = s.begin(); i != s.end(); ++i)
-      result = (result * 131) + *i;
-    return result;
-  }
-};
-
-}  // namespace __gnu_cxx
-
-
 namespace dwarf2reader {
 
 // Given an offset value, its form, and the base offset of the
