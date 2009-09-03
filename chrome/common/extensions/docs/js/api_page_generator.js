@@ -184,11 +184,12 @@ function renderTemplate() {
 
   // Render to template
   var input = new JsEvalContext(pageData);
-  var output = document.getElementsByTagName("html")[0];
+  var output = document.getElementsByTagName("body")[0];
   jstProcess(input, output);
 
   selectCurrentPageOnLeftNav();
   
+  document.title = getPageTitle();
   // Show
   if (window.postRender)
     window.postRender();
@@ -197,7 +198,21 @@ function renderTemplate() {
     parent.done();
 }
 
+function removeJsTemplateAttributes(root) {
+  var jsattributes = ["jscontent", "jsselect", "jsdisplay", "transclude",
+                      "jsvalues", "jsvars", "jseval", "jsskip", "jstcache"];
+
+  var nodes = root.getElementsByTagName("*");
+  for (var i = 0; i < nodes.length; i++) {
+    var n = nodes[i]
+    jsattributes.each(function(attributeName) {
+      n.removeAttribute(attributeName);
+    });
+  }
+}
+
 function serializePage() {
+ removeJsTemplateAttributes(document);
  var s = new XMLSerializer();
  return s.serializeToString(document);
 }

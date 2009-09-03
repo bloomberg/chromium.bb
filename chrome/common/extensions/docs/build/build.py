@@ -65,6 +65,9 @@ def RenderPage(name, test_shell):
   # the remaining output will be the content of the generated page.
   result = p.stdout.read()  
 
+  # remove the trailing #EOF that test shell appends to the output.
+  result = result.replace('#EOF', '')
+
   # Remove page_shell
   os.remove(input_file)
 
@@ -81,6 +84,7 @@ def RenderPage(name, test_shell):
 
   # Remove CRs that are appearing from captured test_shell output.
   result = result.replace('\r', '')
+
   # Write output
   open(input_file, 'wb').write(result);
   if (original and result == original):

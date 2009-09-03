@@ -1,4 +1,57 @@
   <div id="container">
+      <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
+      <!-- In particular, sub-templates that recurse, must be used by allowing
+           jstemplate to make a copy of the template in this section which 
+           are not operated on by way of the jsskip="true" -->           
+      <div jsskip="true" style="display:none">
+                      
+        <!-- VALUE -->
+        <div id="valueTemplate">
+          <dt>
+            <var jsdisplay="$this.name" jscontent="$this.name">paramName</var>
+              <em>
+                
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" jsdisplay="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span jsdisplay="getTypeRef($this)">
+                        <a jsvalues=".href: getTypeRefPage($this) + '#type-' + getTypeRef($this)" jscontent="getTypeRef($this)"> Type</a>
+                      </span>
+                      <span jsdisplay="!getTypeRef($this)">
+                        <span jsdisplay="isArray($this)">
+                          array of <span jsselect="items"><span transclude="typeTemplate"></span></span>
+                        </span>
+                        <span jsdisplay="!isArray($this)" jscontent="getTypeName($this)">paramType</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" jsdisplay="!$this.description">
+            Undocumented.
+          </dd>
+          <dd jsdisplay="$this.description"
+              jsvalues=".innerHTML:$this.description">
+            Description of this parameter from the json schema.
+          </dd>
+          
+          <!-- OBJECT PROPERTIES -->
+          <dd jsdisplay="shouldExpandObject($this)">
+            <dl>
+              <div jsselect="getPropertyListFromObject($this)">
+                <div transclude="valueTemplate">
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div> <!-- /VALUE -->
+        
+      </div> <!-- /SUBTEMPLATES -->
+                    
   <a name="top"> </a>
     <!-- API HEADER -->
     <div id="pageHeader">
@@ -185,53 +238,8 @@
                 <h4>Parameters</h4>
                 <dl>
                   <div jsselect="parameters">
-                  
-                    <!-- VALUE: This is a subtemplate that is used elsewhere
-                         via jsTemplate *transclude* -->
-                    <div id="valueTemplate">
-                      <dt>
-                        <var jsdisplay="$this.name" jscontent="$this.name">paramName</var>
-                          <em>
-                            
-                            <!-- TYPE -->
-                            <div style="display:inline">
-                              (
-                                <span class="optional" jsdisplay="optional">optional</span>
-                                <span id="typeTemplate">
-                                  <span jsdisplay="getTypeRef($this)">
-                                    <a jsvalues=".href: getTypeRefPage($this) + '#type-' + getTypeRef($this)" jscontent="getTypeRef($this)"> Type</a>
-                                  </span>
-                                  <span jsdisplay="!getTypeRef($this)">
-                                    <span jsdisplay="isArray($this)">
-                                      array of <span jsselect="items"><span transclude="typeTemplate"></span></span>
-                                    </span>
-                                    <span jsdisplay="!isArray($this)" jscontent="getTypeName($this)">paramType</span>
-                                  </span>
-                                </span>
-                              )
-                            </div>
-
-                          </em>
-                      </dt>
-                      <dd class="todo" jsdisplay="!$this.description">
-                        Undocumented.
-                      </dd>
-                      <dd jsdisplay="$this.description"
-                          jsvalues=".innerHTML:$this.description">
-                        Description of this parameter from the json schema.
-                      </dd>
-                      
-                      <!-- OBJECT PROPERTIES -->
-                      <dd jsdisplay="shouldExpandObject($this)">
-                        <dl>
-                          <div jsselect="getPropertyListFromObject($this)">
-                            <div transclude="valueTemplate">
-                            </div>
-                          </div>
-                        </dl>
-                      </dd>
-                    </div> <!-- /VALUE -->
-                    
+                    <div transclude="valueTemplate">
+                    </div>
                   </div>
                 </dl>
                 
