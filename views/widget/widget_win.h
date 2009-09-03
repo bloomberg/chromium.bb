@@ -453,8 +453,7 @@ class WidgetWin : public base::WindowImpl,
   virtual void OnFinalMessage(HWND window);
 
   // Start tracking all mouse events so that this window gets sent mouse leave
-  // messages too. |is_nonclient| is true when we should track WM_NCMOUSELEAVE
-  // messages instead of WM_MOUSELEAVE ones.
+  // messages too.
   void TrackMouseEvents(DWORD mouse_tracking_flags);
 
   // Actually handle mouse events. These functions are called by subclasses who

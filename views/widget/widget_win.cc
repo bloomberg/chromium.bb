@@ -504,6 +504,12 @@ void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
   SetMsgHandled(root_view_->ProcessKeyEvent(event));
 }
 
+// TODO(pkasting): ORing the pressed/released button into the flags is _wrong_.
+// It makes it impossible to tell which button was modified when multiple
+// buttons are/were held down.  We need to instead put the modified button into
+// a separate member on the MouseEvent, then audit all consumers of MouseEvents
+// to fix them to use the resulting values correctly.
+
 void WidgetWin::OnLButtonDown(UINT flags, const CPoint& point) {
   ProcessMousePressed(point, flags | MK_LBUTTON, false, false);
 }
