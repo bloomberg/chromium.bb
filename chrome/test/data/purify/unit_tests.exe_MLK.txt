@@ -1,0 +1,11 @@
+# See http://crbug.com/20703
+Alloc Location
+   ...
+   ipc/ipc_sync_channel.cc:347  IPC::SyncChannel::SyncChannel(basic_string::std const&,Mode::Channel::IPC,Listener::Channel::IPC *,MessageFilter::ChannelProxy::IPC *,MessageLoop *,bool,WaitableEvent::base *)
+   chrome/common/child_thread.cc:42  ChildThread::Init(void)
+   chrome/common/child_thread.cc:27  ChildThread::ChildThread(basic_string::std const&)
+   chrome/renderer/render_thread.cc:97  RenderThread::RenderThread(basic_string::std const&)
+   chrome/renderer/render_thread_unittest.cc:22  RenderThreadTest::SetUp(void)
+   testing/gtest/src/gtest.cc:2021  testing::Test::Run(void)
+   ^^^
+
