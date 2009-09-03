@@ -1150,3 +1150,13 @@
    Memcheck:Value4
    fun:_ZNK7WebCore23RenderThemeChromiumSkia21adjustSliderThumbSizeEPNS_12RenderObjectE
 }
+{
+   bug_21010a
+   Memcheck:Value4
+   fun:_ZN2v88internal10PagedSpace10FindObjectEPh
+}
+{
+   bug_21010b
+   Memcheck:Value4
+   fun:_ZN2v88internal18HeapObjectIterator17HasNextInNextPageEv
+}
