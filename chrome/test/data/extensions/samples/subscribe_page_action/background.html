@@ -43,9 +43,9 @@
         if (window.focused) {
           // Create a new tab showing the subscription page with the right
           // feed URL.
-          chrome.tabs.create({url: "subscribe.html?" +
-                                       feedData[pageActionInfo.tabId].feedUrl,
-                             windowId: window.windowId});
+          var url = "subscribe.html?" +
+              encodeURIComponent(feedData[pageActionInfo.tabId].feedUrl);
+          chrome.tabs.create({url: url, windowId: window.windowId});
         }
       });
     });

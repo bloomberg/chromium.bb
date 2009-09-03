@@ -3,9 +3,17 @@
 <title>Subscribe to feed</title>
 
 <script type="text/javascript">
-  // Grab the URL from the querystring, removing question mark at the front.
-  var feedUrl = document.location.search.substring(1);
+  // Grab the querystring, removing question mark at the front and splitting on
+  // the ampersand.
+  var queryString = location.search.substring(1).split("&");
 
+  // The feed URL is the first component and always present.
+  var feedUrl = decodeURIComponent(queryString[0]);
+  
+  // We allow synchronous requests for testing. This component is only present
+  // if true.
+  var synchronousRequest = queryString[1] == "synchronous";
+  
   // The XMLHttpRequest object that tries to load and parse the feed.
   var req;
 
@@ -35,7 +43,7 @@
     req = new XMLHttpRequest();
     req.onload = handleResponse;
     req.onerror = handleError;
-    req.open("GET", feedUrl, false);
+    req.open("GET", feedUrl, !synchronousRequest);
     req.send(null);
   }
 

@@ -238,7 +238,8 @@ GURL GetFeedUrl(const std::string& feed_page) {
 
   return GURL(net::FilePathToFileURL(subscribe).spec() +
               std::string("?") +
-              net::FilePathToFileURL(feed_dir).spec());
+              net::FilePathToFileURL(feed_dir).spec() +
+              "&synchronous");  // synchronous XHR for easier testing.
 }
 
 static const wchar_t* jscript_feed_title =
