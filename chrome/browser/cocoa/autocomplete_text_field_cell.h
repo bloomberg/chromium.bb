@@ -56,6 +56,9 @@
 - (void)setSearchHintString:(NSString*)aString;
 - (void)clearKeywordAndHint;
 
+// Return the portion of the cell to show the text cursor over.
+- (NSRect)textCursorFrameForFrame:(NSRect)cellFrame;
+
 // Return the portion of the cell to use for text display.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame;
 

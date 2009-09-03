@@ -191,8 +191,12 @@ const NSInteger kBaselineOffset = 4;
   [self drawInteriorWithFrame:cellFrame inView:controlView];
 }
 
+- (NSRect)textCursorFrameForFrame:(NSRect)cellFrame {
+  return NSInsetRect(cellFrame, 0, kBaselineAdjust);
+}
+
 - (NSRect)textFrameForFrame:(NSRect)cellFrame {
-  NSRect textFrame(cellFrame);
+  NSRect textFrame([self textCursorFrameForFrame:cellFrame]);
 
   if (hintString_) {
     DCHECK(!keywordString_);
@@ -217,7 +221,7 @@ const NSInteger kBaselineOffset = 4;
     }
   }
 
-  return NSInsetRect(textFrame, 0, kBaselineAdjust);
+  return textFrame;
 }
 
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -298,6 +302,11 @@ const NSInteger kBaselineOffset = 4;
                 delegate:anObject
                    start:selStart
                   length:selLength];
+}
+
+- (void)resetCursorRect:(NSRect)cellFrame inView:(NSView *)controlView {
+  [super resetCursorRect:[self textCursorFrameForFrame:cellFrame]
+                  inView:controlView];
 }
 
 @end

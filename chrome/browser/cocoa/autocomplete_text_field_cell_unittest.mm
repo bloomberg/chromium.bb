@@ -202,12 +202,16 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   const NSRect bounds([view_ bounds]);
   NSRect textFrame;
 
+  // The cursor frame should stay the same throughout.
+  const NSRect cursorFrame([cell textCursorFrameForFrame:bounds]);
+
   // At default settings, everything goes to the text area.
   textFrame = [cell textFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
   EXPECT_EQ(NSMinX(bounds), NSMinX(textFrame));
   EXPECT_EQ(NSMaxX(bounds), NSMaxX(textFrame));
+  EXPECT_TRUE(NSEqualRects(cursorFrame, textFrame));
 
   // Small search hint leaves text frame to left.
   [cell setSearchHintString:@"Search hint"];
@@ -215,6 +219,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
   EXPECT_LT(NSMaxX(textFrame), NSMaxX(bounds));
+  EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
   // Save search-hint's frame for future reference.
   const CGFloat searchHintMaxX(NSMaxX(textFrame));
@@ -230,6 +235,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
   EXPECT_LT(NSMaxX(textFrame), NSMaxX(bounds));
   EXPECT_LT(NSMaxX(textFrame), searchHintMaxX);
+  EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
   // Keyword search leaves text area to right.
   [cell setKeywordString:@"Search Engine:"];
@@ -239,6 +245,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_GT(NSMinX(textFrame), NSMinX(bounds));
   EXPECT_LT(NSMinX(textFrame), searchHintMaxX);
   EXPECT_GT(NSMaxX(textFrame), searchHintMaxX);
+  EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
   // Text frame should take everything over again on reset.
   [cell clearKeywordAndHint];
@@ -247,6 +254,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
   EXPECT_EQ(NSMinX(bounds), NSMinX(textFrame));
   EXPECT_EQ(NSMaxX(bounds), NSMaxX(textFrame));
+  EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 }
 
 }  // namespace
