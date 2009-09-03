@@ -60,6 +60,9 @@ struct RendererPreferences {
         hinting(RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT),
         subpixel_rendering(
             RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT),
+        focus_ring_color_r(0),
+        focus_ring_color_g(0),
+        focus_ring_color_b(0),
         browser_handles_top_level_requests(false) {
   }
 };

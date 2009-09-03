@@ -1150,15 +1150,3 @@
    Memcheck:Value4
    fun:_ZNK7WebCore23RenderThemeChromiumSkia21adjustSliderThumbSizeEPNS_12RenderObjectE
 }
-{
-   bug_20964
-   Memcheck:Cond
-   ...
-   fun:_ZN7WebCore7makeRGBEiii
-}
-{
-   bug_20964
-   Memcheck:Value4
-   ...
-   fun:_ZN7WebCore7makeRGBEiii
-}
