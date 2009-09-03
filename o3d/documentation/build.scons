@@ -62,6 +62,7 @@ if os.path.exists(env.subst(JSCOMP_PATH)):
              ['$JSDOC_EZT_TEMPLATE_DIR/annotated.tmpl',
               '$JSDOC_EZT_TEMPLATE_DIR/class.tmpl',
               '$JSDOC_EZT_TEMPLATE_DIR/classtree.tmpl',
+              '$JSDOC_EZT_TEMPLATE_DIR/dot.tmpl',
               '$JSDOC_EZT_TEMPLATE_DIR/filelist.tmpl',
               '$JSDOC_EZT_TEMPLATE_DIR/members.tmpl',
               '$JSDOC_EZT_TEMPLATE_DIR/namespaces.tmpl',

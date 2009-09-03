@@ -88,6 +88,13 @@ def MakePath(*file_paths):
   return os.path.join(_script_path, *file_paths)
 
 
+def MakeCommandName(name):
+  """adds '.exe' if on Windows"""
+  if os.name == 'nt':
+    return name + '.exe'
+  return name
+
+
 def UpdateGlobals(dict):
   """Copies pairs from dict into GlobalDict."""
   for i, v in dict.items():
@@ -228,6 +235,19 @@ def BuildO3DDocsFromJavaScript(js_files, ezt_output_dir, html_output_dir):
                   'classo3d_1_1_', 'o3d', '', '', '')
 
 
+def BuildO3DClassHierarchy(html_output_dir):
+  # TODO(gman): We need to make mutliple graphs. One for Params, one for
+  #     ParamMatrix4, one for RenderNode, one for everythng else.
+  dot_path = MakePath(_third_party_dir, 'graphviz', 'files', 'bin',
+                      MakeCommandName('dot'))
+  if os.path.exists(dot_path):
+    Execute([
+      dot_path,
+      '-Tcmapx', '-o' + MakePath(html_output_dir, 'class_hierarchy.map'),
+      '-Tpng', '-o' + MakePath(html_output_dir, 'class_hierarchy.png'),
+      MakePath(html_output_dir, 'class_hierarchy.dot')])
+
+
 def BuildO3DJSDocs(js_files, ezt_output_dir, html_output_dir, exports_file):
   RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, 'js_1_0_', 'o3djs',
                   'jsdocs', '..', exports_file)
@@ -361,6 +381,7 @@ def main(argv):
   BuildJavaScriptForDocsFromIDLs(idl_files, docs_js_outpath)
   BuildO3DDocsFromJavaScript([o3d_extra_externs_path] + docs_js_files,
                              o3d_docs_ezt_outpath, o3d_docs_html_outpath)
+  BuildO3DClassHierarchy(o3d_docs_html_outpath)
   BuildJavaScriptForExternsFromIDLs(idl_files, externs_js_outpath)
   BuildO3DExternsFile(externs_js_outpath,
                       o3d_extra_externs_path,

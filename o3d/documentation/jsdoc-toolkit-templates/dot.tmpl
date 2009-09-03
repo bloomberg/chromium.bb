@@ -1,0 +1,21 @@
+digraph G {
+  graph [
+    rankdir = LR
+  ]
+  node [
+    color = aquamarine
+    style = filled
+    shape = box
+  ]
+  edge [
+     dir = back
+  ]
+  {! var allClasses = data.filter(function($){return !$.isNamespace}).sort(makeSortby("alias")); !}
+  <for each="thisClass" in="allClasses">
+  <if test="thisClass.inheritsFrom.length">
+  {+thisClass.inheritsFrom[0].replace('o3d.', '')+} -> {+thisClass.alias.replace('o3d.','')+}
+  {+thisClass.alias.replace('o3d.','')+} [URL="/apis/o3d/docs/reference/{+getBaseURL()+}{+getLinkToClassByAlias(thisClass.alias)+}"]
+  </if>
+  </for>
+}
+

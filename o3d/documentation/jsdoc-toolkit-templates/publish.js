@@ -160,6 +160,7 @@ function publishInternal(symbolSet) {
     var annotatedTemplate = new JSDOC.JsPlate(templatesDir + 'annotated.tmpl');
     var namespacesTemplate = new JSDOC.JsPlate(templatesDir +
                                                'namespaces.tmpl');
+    var dotTemplate = new JSDOC.JsPlate(templatesDir + 'dot.tmpl');
   } catch(e) {
     generateError('Couldn\'t create the required templates: ' + e);
     System.exit(1);
@@ -266,6 +267,9 @@ function publishInternal(symbolSet) {
   var namespaces = namespacesTemplate.process(filteredClasses);
   IO.saveFile(publish.conf.outDir, 'namespaces' + publish.conf.ext, namespaces);
   IO.saveFile(publish.conf.htmlDir, 'namespaces.html', namespaces);
+
+  var dot = dotTemplate.process(filteredClasses);
+  IO.saveFile(publish.conf.htmlDir, 'class_hierarchy.dot', dot);
 
   if (publish.conf.exportsFile) {
     print("Writing exports: " + publish.conf.exportsFile);

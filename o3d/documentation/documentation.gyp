@@ -41,6 +41,7 @@
                   'jsdoc-toolkit-templates/annotated.tmpl',
                   'jsdoc-toolkit-templates/class.tmpl',
                   'jsdoc-toolkit-templates/classtree.tmpl',
+                  'jsdoc-toolkit-templates/dot.tmpl',
                   'jsdoc-toolkit-templates/filelist.tmpl',
                   'jsdoc-toolkit-templates/members.tmpl',
                   'jsdoc-toolkit-templates/namespaces.tmpl',
