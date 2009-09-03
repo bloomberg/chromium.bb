@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/browser/force_tls_persister.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -265,7 +264,7 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual net::ForceTLSState* GetForceTLSState() {
     if (!force_tls_state_.get())
-      force_tls_state_ = new net::ForceTLSState();
+      force_tls_state_.reset(new net::ForceTLSState());
 
     return force_tls_state_.get();
   }
@@ -522,7 +521,7 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_ptr<SSLHostState> ssl_host_state_;
 
   // The ForceTLSState that only stores enabled sites in memory.
-  scoped_refptr<net::ForceTLSState> force_tls_state_;
+  scoped_ptr<net::ForceTLSState> force_tls_state_;
 
   // Time we were started.
   Time start_time_;
@@ -824,11 +823,8 @@ SSLHostState* ProfileImpl::GetSSLHostState() {
 }
 
 net::ForceTLSState* ProfileImpl::GetForceTLSState() {
-  if (!force_tls_state_.get()) {
-    force_tls_state_ = new net::ForceTLSState();
-    force_tls_persister_ = new ForceTLSPersister(
-        force_tls_state_.get(), g_browser_process->file_thread());
-  }
+  if (!force_tls_state_.get())
+    force_tls_state_.reset(new net::ForceTLSState());
 
   return force_tls_state_.get();
 }

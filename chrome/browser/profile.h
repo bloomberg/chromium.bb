@@ -34,7 +34,6 @@ class ExtensionProcessManager;
 class ExtensionMessageService;
 class ExtensionsService;
 class FaviconService;
-class ForceTLSPersister;
 class HistoryService;
 class NavigationController;
 class PasswordStore;
@@ -155,7 +154,7 @@ class Profile {
   // called.
   virtual SSLHostState* GetSSLHostState() = 0;
 
-  // Retrieves a pointer to the ForceTLSState associated with this profile.
+  // Retrieves a pointer to the ForceTLStSate associated with this profile.
   // The ForceTLSState is lazily created the first time that this method is
   // called.
   virtual net::ForceTLSState* GetForceTLSState() = 0;
@@ -461,8 +460,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<SSLHostState> ssl_host_state_;
-  scoped_refptr<net::ForceTLSState> force_tls_state_;
-  scoped_refptr<ForceTLSPersister> force_tls_persister_;
+  scoped_ptr<net::ForceTLSState> force_tls_state_;
   scoped_ptr<PrefService> prefs_;
   scoped_refptr<ThumbnailStore> thumbnail_store_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
