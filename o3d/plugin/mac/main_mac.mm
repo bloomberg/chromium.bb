@@ -144,7 +144,7 @@ void DispatchKeyboardEvent(PluginObject* obj,
   theChar = TranslateMacControlCharToWebChar(theChar);
   int upperChar = (theChar >= 'a' && theChar <='z') ? theChar - 32 : theChar;
 
-  Event::Type type;
+  Event::Type type = Event::TYPE_KEYDOWN;  // Init to something valid.
   switch (kind) {
     case keyDown:
       // We'll also have to send a keypress below.
@@ -155,6 +155,9 @@ void DispatchKeyboardEvent(PluginObject* obj,
       break;
     case keyUp:
       type = Event::TYPE_KEYUP;
+      break;      
+    default:
+      return;
       break;
   }
   Event event(type);

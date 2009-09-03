@@ -94,6 +94,7 @@ static bool ReportMetrics(const char* extra_url_data,
         data.sum = [[item objectAtIndex:1] longLongValue];
         data.minimum = [[item objectAtIndex:2] longLongValue];
         data.maximum = [[item objectAtIndex:3] longLongValue];
+        data.align = 0;  // Pleases the compiler.
         current = new TimingMetric(short_name_c_str, data);
         }
         break;
