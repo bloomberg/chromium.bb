@@ -269,11 +269,18 @@ typedef std::set<ThrobberView*> ThrobberSet;
 }
 
 - (void)fire:(NSTimer*)timer {
-  for (ThrobberSet::const_iterator i = throbbers_.begin();
-       i != throbbers_.end();
-       ++i) {
-    ThrobberView* throbber = *i;
+  // The call to [throbber animate] may result in the ThrobberView calling
+  // removeThrobber: if it decides it's done animating.  That would invalidate
+  // the iterator, making it impossible to correctly get to the next element
+  // in the set.  To prevent that from happening, a second iterator is used
+  // and incremented before calling [throbber animate].
+  ThrobberSet::const_iterator current = throbbers_.begin();
+  ThrobberSet::const_iterator next = current;
+  while (current != throbbers_.end()) {
+    ++next;
+    ThrobberView* throbber = *current;
     [throbber animate];
+    current = next;
   }
 }
 @end
