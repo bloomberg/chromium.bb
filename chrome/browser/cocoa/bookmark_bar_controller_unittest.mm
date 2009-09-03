@@ -188,15 +188,15 @@ TEST_F(BookmarkBarControllerTest, FrameChangeNotification) {
 }
 
 // Confirm off the side button only enabled when reasonable.
-TEST_F(BookmarkBarControllerTest, OffTheSideButtonEnable) {
+TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
 
   [bar_ loaded:model];
-  EXPECT_FALSE([bar_ offTheSideButtonIsEnabled]);
+  EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
 
   for (int i = 0; i < 2; i++) {
     model->SetURLStarred(GURL("http://www.foo.com"), L"small", true);
-    EXPECT_FALSE([bar_ offTheSideButtonIsEnabled]);
+    EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
   }
 
   for (int i = 0; i < 20; i++) {
@@ -205,7 +205,7 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonEnable) {
                   L"super duper wide title",
                   GURL("http://superfriends.hall-of-justice.edu"));
   }
-  EXPECT_TRUE([bar_ offTheSideButtonIsEnabled]);
+  EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
 }
 
 TEST_F(BookmarkBarControllerTest, TagMap) {

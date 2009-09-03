@@ -112,25 +112,25 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 // TODO(jrg): when we are smarter about creating buttons (e.g. don't
 // bother creating buttons which aren't visible), we'll have to be
 // smarter here too.
-- (void)checkEnableOffTheSideButton {
+- (void)checkHideOffTheSideButton {
   NSButton* button = [buttons_ lastObject];
   if ((!button) ||
       (NSMaxX([button frame]) <=
        NSMaxX([[button superview] frame]))) {
-    [offTheSideButton_ setEnabled:NO];
+    [offTheSideButton_ setHidden:YES];
   } else {
-    [offTheSideButton_ setEnabled:YES];
+    [offTheSideButton_ setHidden:NO];
   }
 }
 
-- (BOOL)offTheSideButtonIsEnabled {
-  return [offTheSideButton_ isEnabled];
+- (BOOL)offTheSideButtonIsHidden {
+  return [offTheSideButton_ isHidden];
 }
 
 // Called when our controlled frame has changed size.
 // TODO(jrg): be smarter (e.g. add/remove buttons as appropriate).
 - (void)frameDidChange {
-  [self checkEnableOffTheSideButton];
+  [self checkHideOffTheSideButton];
 }
 
 // Show or hide the bar based on the value of |show|. Handles
@@ -520,11 +520,6 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 }
 
 // Add all items from the given model to our bookmark bar.
-// TODO(jrg): lots of things!
-//  - bookmark folders (e.g. menu from the button)
-//  - button and menu on the right for when bookmarks don't all fit on the
-//    screen
-//  - ...
 //
 // TODO(jrg): write a "build bar" so there is a nice spot for things
 // like the contextual menu which is invoked when not over a
@@ -577,7 +572,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   const BookmarkNode* node = model->GetBookmarkBarNode();
   [self clearBookmarkBar];
   [self addNodesToBar:node];
-  [self checkEnableOffTheSideButton];
+  [self checkHideOffTheSideButton];
 }
 
 - (void)beingDeleted:(BookmarkModel*)model {

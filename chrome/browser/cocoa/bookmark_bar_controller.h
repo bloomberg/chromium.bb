@@ -144,7 +144,7 @@ class PrefService;
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
 - (void)checkForBookmarkButtonGrowth:(NSButton*)button;
 - (void)frameDidChange;
-- (BOOL)offTheSideButtonIsEnabled;
+- (BOOL)offTheSideButtonIsHidden;
 - (NSMenu *)menuForFolderNode:(const BookmarkNode*)node;
 - (int64)nodeIdFromMenuTag:(int32)tag;
 - (int32)menuTagFromNodeId:(int64)menuid;
