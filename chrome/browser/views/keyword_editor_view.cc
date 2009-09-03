@@ -4,6 +4,8 @@
 
 #include "chrome/browser/views/keyword_editor_view.h"
 
+#include <atlbase.h>
+#include <atlapp.h>
 #include <vector>
 
 #include "app/l10n_util.h"
