@@ -567,6 +567,7 @@ bool UpdateTabFunction::RunImpl() {
     }
 
     controller.LoadURL(new_gurl, GURL(), PageTransition::LINK);
+    DCHECK_EQ(new_gurl.spec(), contents->GetURL().spec());
   }
 
   bool selected = false;
@@ -578,6 +579,7 @@ bool UpdateTabFunction::RunImpl() {
         &selected));
     if (selected && tab_strip->selected_index() != tab_index) {
       tab_strip->SelectTabContentsAt(tab_index, false);
+      DCHECK_EQ(contents, tab_strip->GetSelectedTabContents());
     }
   }
 

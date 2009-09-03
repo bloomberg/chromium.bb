@@ -94,6 +94,7 @@ chrome.test.runTests([
     chrome.tabs.update(testTabId, {"selected":true, "url": "chrome://c"},
                        testCallback(false, function(){
       chrome.tabs.getSelected(firstWindowId, testCallback(true, function(tab) {
+        assertEq(testTabId, tab.id);
         assertEq("chrome://c/", tab.url);
         assertEq(true, tab.selected);
       }));
