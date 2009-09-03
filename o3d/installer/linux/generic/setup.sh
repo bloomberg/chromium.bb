@@ -59,6 +59,15 @@ SetRootUser() {
 }
 
 
+UninstallO3d() {
+  # Uninstall previous version(s) of O3D before running setup
+  if [ -x "/opt/google/o3d/uninstall.sh" ]; then
+    echo "Removing previous version(s) of O3D"
+    /opt/google/o3d/uninstall.sh
+  fi
+}
+
+
 SetupO3d() {
   # Create npapi plugin directories, copy and symlink libs.
   O3D_DIR="/opt/google/o3d"
@@ -83,8 +92,9 @@ SetupO3d() {
   echo "ok"
 
   echo -n "Installing files to $O3D_DIR..."
-  install --mode=644 ${LIB3D} $O3D_DIR
-  install --mode=644 ${LIBS} $LIB_DIR
+  install --mode=0644 ${LIB3D} $O3D_DIR
+  install --mode=0755 ./uninstall.sh $O3D_DIR
+  install --mode=0644 ${LIBS} $LIB_DIR
   echo "ok"
 
   echo -n "Creating symlinks to plugin..."
@@ -132,4 +142,5 @@ SetupO3d() {
 
 CheckArch
 SetRootUser
+UninstallO3d
 SetupO3d
