@@ -13,6 +13,7 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/debug_on_start.h"
+#include "base/debug_util.h"
 #include "base/file_path.h"
 #include "base/icu_util.h"
 #include "base/logging.h"
@@ -32,6 +33,13 @@
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
+#endif
+
+#if defined(OS_POSIX)
+static void TestSuiteCrashHandler(int signal) {
+  StackTrace().PrintBacktrace();
+  _exit(1);
+}
 #endif
 
 class TestSuite {
@@ -124,6 +132,12 @@ class TestSuite {
     action.sa_flags = 0;
     sigemptyset(&action.sa_mask);
     CHECK(sigaction(SIGPIPE, &action, NULL) == 0);
+
+    // TODO(phajdan.jr): Catch other crashy signals, like SIGABRT.
+    CHECK(signal(SIGSEGV, &TestSuiteCrashHandler) != SIG_ERR);
+    CHECK(signal(SIGILL, &TestSuiteCrashHandler) != SIG_ERR);
+    CHECK(signal(SIGBUS, &TestSuiteCrashHandler) != SIG_ERR);
+    CHECK(signal(SIGFPE, &TestSuiteCrashHandler) != SIG_ERR);
 #endif  // OS_POSIX
 
 #if defined(OS_WIN)
