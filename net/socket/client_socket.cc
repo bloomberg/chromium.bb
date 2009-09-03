@@ -9,9 +9,9 @@
 
 namespace net {
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 // Identical to posix system call getpeername().
-// Needed by ssl_client_socket_nss.
+// Needed by ssl_client_socket_nss and ssl_client_socket_mac.
 int ClientSocket::GetPeerName(struct sockaddr *name, socklen_t *namelen) {
   // Default implementation just permits some unit tests to link.
   NOTREACHED();
