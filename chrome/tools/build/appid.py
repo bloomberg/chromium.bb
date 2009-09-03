@@ -22,11 +22,15 @@ const wchar_t kChromeGuid[] = L"%s";
 def GenerateAppIdHeader(opts):
   contents = GENERATED_APPID_INCLUDE_FILE_CONTENTS % opts.appid
 
-  output_file = open(opts.output_file, 'w')
   try:
-    output_file.write(contents)
-  finally:
-    output_file.close()
+    ofp = open(opts.output_file, 'r')
+  except EnvironmentError:
+    current_contents = None
+  else:
+    current_contents = ofp.read()
+
+  if contents != current_contents:
+    open(opts.output_file, 'w').write(contents)
 
 def main():
   parser = optparse.OptionParser()
