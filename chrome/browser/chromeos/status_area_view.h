@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_FRAME_STATUS_AREA_VIEW_H_
-#define CHROME_BROWSER_VIEWS_FRAME_STATUS_AREA_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_STATUS_AREA_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_STATUS_AREA_VIEW_H_
 
 #include "base/basictypes.h"
 #include "views/controls/menu/simple_menu_model.h"
@@ -71,4 +71,4 @@ class StatusAreaView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(StatusAreaView);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_FRAME_STATUS_AREA_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_STATUS_AREA_VIEW_H_

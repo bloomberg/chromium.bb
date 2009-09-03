@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/frame/status_area_view.h"
+#include "chrome/browser/chromeos/status_area_view.h"
 
 #include <algorithm>
 

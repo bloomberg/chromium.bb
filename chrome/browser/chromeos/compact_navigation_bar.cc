@@ -11,7 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/views/frame/status_area_view.h"
+#include "chrome/browser/chromeos/status_area_view.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/theme_resources.h"
