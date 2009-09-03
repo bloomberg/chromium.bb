@@ -19,7 +19,7 @@
 //     foo.reset(new Foo("wee3"));   // Foo("wee2") was destroyed.
 //     foo->Method();                // Foo::Method() called.
 //     foo.get()->Method();          // Foo::Method() called.
-//     SomeFunc(foo.Release());      // SomeFunc takes owernship, foo no longer
+//     SomeFunc(foo.release());      // SomeFunc takes owernship, foo no longer
 //                                   // manages a pointer.
 //     foo.reset(new Foo("wee4"));   // foo manages a pointer again.
 //     foo.reset();                  // Foo("wee4") destroyed, foo no longer
