@@ -1486,6 +1486,22 @@ BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-as-image-incremental-repaint.
 BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
 
+BUG8630 WIN LINUX : LayoutTests/fast/backgrounds/solid-color-context-restore.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/dynamic/containing-block-change.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/forms/hidden-listbox.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/forms/listbox-clip.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/frames/inline-object-inside-frameset.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/layers/add-layer-with-nested-stacking.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/layers/inline-dirty-z-order-lists.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/layers/layer-content-visibility-change.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/layers/remove-layer-with-nested-stacking.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/overflow/hidden-scrollbar-resize.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/reflections/inline-crash.html = FAIL
+BUG8630 WIN : LayoutTests/fast/replaced/width100percent-textarea.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/table/empty-section-crash.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
+BUG8630 WIN LINUX : pending/fast/repaint/bugzilla-6473.html = FAIL
+
 // Linux pixeltest failure: Failing to rotate the form control
 BUG10390 LINUX : LayoutTests/fast/transforms/transformed-focused-text-input.html = FAIL
 
