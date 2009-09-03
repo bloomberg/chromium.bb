@@ -22,7 +22,7 @@
 <translation id="5341849548509163798">Fa <ph name="NUMBER_MANY"/> hores</translation>
 <translation id="4422428420715047158">Domini:</translation>
 <translation id="4021918302616263355">Cerca <ph name="ENGINE"/> per a <ph name="SEARCH_TERMS"/></translation>
-<translation id="5376169624176189338">Fes clic per tornar enrere, o bé espera per veure l'historial</translation>
+<translation id="5376169624176189338">Feu clic per tornar enrere, o bé espereu per veure l'historial</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> segons restants</translation>
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="1383861834909034572">S'obre després de finalitzar</translation>
@@ -74,12 +74,14 @@
 <translation id="8534801226027872331">En aquest cas, el certificat presentat al teu navegador té errors i no es pot comprendre. Això pot significar que no podem comprendre la informació d'identitat del certificat o alguna informació utilitzada per assegurar la connexió. No hauries de continuar.</translation>
 <translation id="4422347585044846479">Edita l'adreça d'interès d'aquesta pàgina</translation>
 <translation id="7367545749698325833">Podeu importar els preferits i la configuració d'altres navegadors o bé esborrar les dades de navegació des d'aquest equip.</translation>
+<translation id="51285338152176012">Oculta les pestanyes tancades recentment</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>
 <translation id="2994458892329442723">Habilita complements</translation>
 <translation id="1669397342410349095">Denuncia el lloc web de pesca...</translation>
 <translation id="1674989413181946727">Configuració de SSL a tot l'equip:</translation>
 <translation id="8703575177326907206">La teva connexió a <ph name="DOMAIN"/> no està xifrada.</translation>
+<translation id="5600613131076600482">Les extensions tenen accés a l'equip i a les dades privades. Per tant, tingueu en compte que podrien publicar fotos poc adients al vostre mur.</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="2518917559152314023">A&amp;fegeix...</translation>
 <translation id="8217250408786235522">&amp;Normal (1.0x)</translation>
@@ -89,6 +91,7 @@
 <translation id="3512466011168167042">Mostra suggeriments per a errors de navegació</translation>
 <translation id="7767960058630128695">Contrasenyes:</translation>
 <translation id="6518014396551869914">Copia&amp; la imatge</translation>
+<translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="6363850194751762580">Gestiona les finestres emergents</translation>
 <translation id="4120898696391891645">No es carrega la pàgina</translation>
 <translation id="5584537427775243893">Important</translation>
@@ -123,7 +126,7 @@
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3873963583678942942">(Sense títol)</translation>
-<translation id="8725178340343806893">Favorits/Adreces d'interès</translation>
+<translation id="8725178340343806893">Preferits/Adreces d'interès</translation>
 <translation id="5177526793333269655">Visualització de miniatura</translation>
 <translation id="8926389886865778422">No m'ho tornis a preguntar</translation>
 <translation id="3605499851022050619">Pàgina de diagnòstic de navegació segura</translation>
@@ -300,6 +303,7 @@
 <translation id="3513979718339724672">Mostra'n les miniatures</translation>
 <translation id="7300965843904003671">Mostra sempre les finestres emergents de <ph name="URL"/></translation>
 <translation id="8211437954284917092">Introduïu una consulta al camp de text anterior per cercar els preferits.</translation>
+<translation id="2950143609136989144">Les extensions tenen accés a l'equip i a les dades privades. Per tant, tingueu en compte que podrien reenviar tots els vostres correus electrònics fins i tot a aquell amb qui us vau creuar pel carrer.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> fitxers</translation>
 <translation id="1291121346508216435">Corregeix l'ortografia automàticament:</translation>
 <translation id="6805291412499505360">Restringeix el mode en què es poden utilitzar les galetes de tercers</translation>
@@ -316,6 +320,7 @@
 <translation id="2356762928523809690">El servidor d'actualitzacions no està disponible (error: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Tema destacat</translation>
 <translation id="5436510242972373446">Cerca <ph name="SITE_NAME"/>:</translation>
+<translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="8730621377337864115">Finalitzat</translation>
 <translation id="6267166720438879315">Seleccioneu un certificat per autenticar-vos a <ph name="HOST_NAME"/></translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minut</translation>
@@ -430,6 +435,7 @@
 <translation id="3664021239099029884">Visualitza totes les baixades</translation>
 <translation id="2207746515960750386">Fa <ph name="MINUTE"/> min</translation>
 <translation id="7754704193130578113">Pregunta on desar cada fitxer abans de descarregar-lo</translation>
+<translation id="2838167480523328393">Instal·la &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
 <translation id="2497284189126895209">Tots els fitxers</translation>
 <translation id="5360606537916580043">Darrer dia</translation>
 <translation id="6589689504565594563">Suprimeix les galetes</translation>
@@ -475,6 +481,7 @@
 <translation id="6434892175081553796">Tanca les pestanyes obertes per aquesta pestanya</translation>
 <translation id="3268761268932257769">Penja imatges automàticament</translation>
 <translation id="7227780179130368205">S'ha detectat programari maliciós!</translation>
+<translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3942946088478181888">Més informació</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Predeterminada)</translation>
 <translation id="111844081046043029">Estàs segur que vols marxar d'aquesta pàgina?</translation>
@@ -501,6 +508,7 @@
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/>, Complet</translation>
 <translation id="2435457462613246316">Mostra la contrasenya</translation>
 <translation id="394984172568887996">Importat d'IE</translation>
+<translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="5315873049536339193">Identitat</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> no és actualment el teu navegador predeterminat.</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> dies</translation>
@@ -533,6 +541,7 @@
 <translation id="8349305172487531364">Barra d'adreces d'interès</translation>
 <translation id="7208899522964477531">Cerca <ph name="SITE_NAME"/> per a <ph name="SEARCH_TERMS"/></translation>
 <translation id="8004582292198964060">Navegador</translation>
+<translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Edita el nom de la carpeta</translation>
 <translation id="5433207235435438329">Idioma del corrector ortogràfic:</translation>
 <translation id="3183922693828471536">Desplaçament fins aquí</translation>
@@ -616,11 +625,13 @@
 <translation id="5538307496474303926">S'està netejant...</translation>
 <translation id="1285631718404404702">Mostra les activitats recents</translation>
 <translation id="6783679543387074885">Informa d'un error o d'un lloc web no vàlid</translation>
+<translation id="2022952840834921450">Les extensions tenen accés a l'equip i a les dades privades. Per tant, tingueu en compte que podrien enviar tweets o bé correus electrònics en nom vostre.</translation>
 <translation id="3413103074007669042">En aquesta pàgina hi ha algun contingut no segur.</translation>
 <translation id="4887833561977827087">Encara no hi ha cap element per mostrar.
         <ph name="BEGIN_LINK"/>Personalitzeu<ph name="END_LINK"/>
         els vostres clips web i afegiu més fonts.</translation>
 <translation id="5285267187067365830">Instal·la el complement</translation>
+<translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">Aquesta pàgina web no està disponible.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Codificació</translation>
@@ -645,6 +656,7 @@
 <translation id="777885533320815847">T&amp;emps doble (2.0x)</translation>
 <translation id="7554791636758816595">Pestanya nova</translation>
 <translation id="6231471673669497681">Í&amp;ndex de reproducció</translation>
+<translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Utilitza la recollida prèvia de DNS per millorar el rendiment de càrrega de la pàgina</translation>
 <translation id="1086613338090581534">Per a un certificat que no ha caducat, l'emissor és el responsable de mantenir el que s'anomena &quot;llista de revocació&quot;. Si un certificat es posa en perill, l'emissor el pot revocar afegint-lo a la llista de revocació i, llavors, el certificat ja no serà de confiança per al teu navegador. No és necessari mantenir l'estat de revocació dels certificats caducats, de manera que, encara que aquest certificat era vàlid per al lloc web que estàs visitant, ara ja no és possible determinar si el certificat es va posar en perill i, per tant, es va revocar, o si encara és segur. Conseqüentment, és impossible saber si t'estàs comunicant amb el lloc web legítim o si el certificat es va posar en perill i ara està en possessió d'un atacant amb el qual et comuniques. No hauries de continuar més enllà d'aquest punt.</translation>
 <translation id="3157931365184549694">Restaura</translation>
@@ -751,6 +763,7 @@
 <translation id="19901320010520290">El lloc web de &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; conté elements de llocs que semblen allotjar programari maliciós, és a dir, programari que pot malmetre l'equip o operar sense el vostre consentiment. Només el fet de visitar un lloc que allotgi aquest tipus de programari pot infectar el vostre equip. El lloc web en qüestió també allotja contingut de llocs que han estat detectats com a llocs de &quot;pesca&quot;. Els llocs de pesca enganyen els usuaris per divulgar la informació personal o financera i sovint fingeixen que representen institucions de confiança, com ara entitats bancàries.</translation>
 <translation id="2679312662830811292">Fa <ph name="NUMBER_ONE"/> minut</translation>
 <translation id="9065203028668620118">Edita</translation>
+<translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Cerca des de la barra d'adreces.</translation>
 <translation id="4867297348137739678">Darrera setmana</translation>
 <translation id="4881695831933465202">Obre</translation>
@@ -814,6 +827,7 @@
 <translation id="2927657246008729253">Canvia...</translation>
 <translation id="3478477629095836699">Configuració de galetes:</translation>
 <translation id="2108475813351458355">Connexió segura a <ph name="DOMAIN"/></translation>
+<translation id="1447542739493932962">Instal·leu només extensions de confiança.</translation>
 <translation id="942671148946453043">Has obert una finestra d'incognito. Les pàgines que obris en aquesta finestra no es mostraran al teu historial.</translation>
 <translation id="3503975005768721305">Afegeix un clip web nou</translation>
 <translation id="6996505290426962909">&amp;Importa les adreces d'interès i la configuració...</translation>
@@ -848,7 +862,7 @@
 <translation id="8400147561352026160">Maj+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="3366404380928138336">Sol·licitud de protocol extern</translation>
 <translation id="566920818739465183">Vas visitar aquest lloc per primera vegada el <ph name="VISIT_DATE"/>.</translation>
-<translation id="2961695502793809356">Fes clic per anar endavant, o bé mantén-lo premut per veure l'historial</translation>
+<translation id="2961695502793809356">Feu clic per anar endavant, o bé manteniu-lo premut per veure l'historial</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> segons</translation>
 <translation id="8689341121182997459">Caduca:</translation>
 <translation id="1857842694030005096">Més informació sobre aquest error</translation>
@@ -888,6 +902,7 @@
 <translation id="3455546154539383562">Has intentat accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el certificat que ha presentat el servidor ha estat revocat pel seu emissor. Això significa que en cap cas no s'hauria de confiar en les credencials de seguretat que ha presentat el servidor. És possible que t'estiguis comunicant amb un atacant. No hauries de continuar.</translation>
 <translation id="1177437665183591855">Error de certificat de servidor desconegut</translation>
 <translation id="3819800052061700452">&amp;Pantalla completa</translation>
+<translation id="3218306954729745977">Mostra les pestanyes tancades recentment</translation>
 <translation id="3737554291183722650">Títol de la pàgina:</translation>
 <translation id="4726901538158498735">Cerca predeterminada:</translation>
 <translation id="5101042277149003567">Obre totes les adreces d'interès</translation>
@@ -912,6 +927,7 @@
 <translation id="2149973817440762519">Edita les adreces d'interès</translation>
 <translation id="430831869130657585">Sufixos</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/>: <ph name="RECEIVED_AMOUNT"/></translation>
+<translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="4759238208242260848">Baixades</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="6314919950468685344">Tipus de lletra amb amplada fixa:</translation>
@@ -929,9 +945,10 @@
 <translation id="9071050381089585305">La seqüència no respon</translation>
 <translation id="969892804517981540">Muntatge oficial</translation>
 <translation id="724208122063442954">Has escollit obrir alguns tipus de fitxer automàticament després de baixar-los. Pots cancel·lar aquesta configuració perquè els fitxers no s'obrin automàticament.</translation>
-<translation id="4477534650265381513">Per a un accés ràpid, afegeix les adreces d'interès aquí a la barra d'adreces d'interès.</translation>
+<translation id="4477534650265381513">Per a un accés ràpid, afegiu les adreces d'interès aquí a la barra d'adreces d'interès.</translation>
 <translation id="8080048886850452639">Cop&amp;ia l'URL de l'àudio</translation>
 <translation id="8328145009876646418">Extrem esquerre</translation>
+<translation id="8203365863660628138">Confirma la instal·lació</translation>
 <translation id="406259880812417922">(Paraula clau: <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">Depurador de JavaScript  - En execució</translation>
 </translationbundle>

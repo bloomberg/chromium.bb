@@ -74,12 +74,14 @@
 <translation id="8534801226027872331">In this case, the certificate presented to your browser has errors and cannot be understood. This may mean that we cannot understand the identity information within the certificate or that certain other information in the certificate used to secure the connection. You should not proceed.</translation>
 <translation id="4422347585044846479">Edit bookmark for this page</translation>
 <translation id="7367545749698325833">You can import your bookmarks and settings from other browsers or clear your browsing data from this computer.</translation>
+<translation id="51285338152176012">Hide recently closed tabs</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="2994458892329442723">Enable plug-ins</translation>
 <translation id="1669397342410349095">Report phishing website...</translation>
 <translation id="1674989413181946727">Computer-wide SSL settings:</translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN"/> is not encrypted.</translation>
+<translation id="5600613131076600482">Extensions can access your computer and private data. They could post unflattering pictures to your Wall.</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="2518917559152314023">A&amp;dd...</translation>
 <translation id="8217250408786235522">&amp;Normal (1.0x)</translation>
@@ -89,6 +91,7 @@
 <translation id="3512466011168167042">Show suggestions for navigation errors</translation>
 <translation id="7767960058630128695">Passwords:</translation>
 <translation id="6518014396551869914">Cop&amp;y image</translation>
+<translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="6363850194751762580">Manage pop-ups</translation>
 <translation id="4120898696391891645">Page won't load</translation>
 <translation id="5584537427775243893">Importing</translation>
@@ -300,6 +303,7 @@
 <translation id="3513979718339724672">Show thumbnails</translation>
 <translation id="7300965843904003671">Always show pop-ups from <ph name="URL"/></translation>
 <translation id="8211437954284917092">Enter a query in the text field above to search your bookmarks.</translation>
+<translation id="2950143609136989144">Extensions have access your computer and private data. This means they could forward all your email to your spouse.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> files</translation>
 <translation id="1291121346508216435">Correct spelling automatically:</translation>
 <translation id="6805291412499505360">Restrict how third-party cookies can be used</translation>
@@ -316,6 +320,7 @@
 <translation id="2356762928523809690">Update server not available (error: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Featured theme</translation>
 <translation id="5436510242972373446">Search <ph name="SITE_NAME"/>:</translation>
+<translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="8730621377337864115">Done</translation>
 <translation id="6267166720438879315">Select a certificate to which you want to authenticate <ph name="HOST_NAME"/></translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min</translation>
@@ -433,6 +438,7 @@
 <translation id="3664021239099029884">View all downloads</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> minute/minutes ago</translation>
 <translation id="7754704193130578113">Ask where to save each file before downloading</translation>
+<translation id="2838167480523328393">Install &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
 <translation id="2497284189126895209">All Files</translation>
 <translation id="5360606537916580043">Last day</translation>
 <translation id="6589689504565594563">Delete cookies</translation>
@@ -478,6 +484,7 @@
 <translation id="6434892175081553796">Close tabs opened by this tab</translation>
 <translation id="3268761268932257769">Load images automatically</translation>
 <translation id="7227780179130368205">Malware Detected!</translation>
+<translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3942946088478181888">Help me understand</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Default)</translation>
 <translation id="111844081046043029">Are you sure that you want to leave this page?</translation>
@@ -504,6 +511,7 @@
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/>, Complete</translation>
 <translation id="2435457462613246316">Show password</translation>
 <translation id="394984172568887996">Imported From IE</translation>
+<translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="5315873049536339193">Identity</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> is not currently your default browser.</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> days</translation>
@@ -536,6 +544,7 @@
 <translation id="8349305172487531364">Bookmarks bar</translation>
 <translation id="7208899522964477531">Search <ph name="SITE_NAME"/> for <ph name="SEARCH_TERMS"/></translation>
 <translation id="8004582292198964060">Browser</translation>
+<translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Edit folder name</translation>
 <translation id="5433207235435438329">Spell checker language:</translation>
 <translation id="3183922693828471536">Scroll to Here</translation>
@@ -619,11 +628,13 @@
 <translation id="5538307496474303926">Clearing...</translation>
 <translation id="1285631718404404702">Show recent activities</translation>
 <translation id="6783679543387074885">Report Bug or Broken Website</translation>
+<translation id="2022952840834921450">Extensions have access your computer and private data. They could send tweets or email on your behalf.</translation>
 <translation id="3413103074007669042">This page contains some insecure content</translation>
 <translation id="4887833561977827087">There are no items to show here yet.
         <ph name="BEGIN_LINK"/>Customise<ph name="END_LINK"/>
         your web clips and add more sources.</translation>
 <translation id="5285267187067365830">Install plug-in...</translation>
+<translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">This web page is not available.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Encoding</translation>
@@ -648,6 +659,7 @@
 <translation id="777885533320815847">D&amp;ouble Time (2.0x)</translation>
 <translation id="7554791636758816595">New Tab</translation>
 <translation id="6231471673669497681">&amp;Playback Rate</translation>
+<translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Use DNS pre-fetching to improve page load performance</translation>
 <translation id="1086613338090581534">For a certificate which has not expired, the issuer of that certificate is responsible for maintaining something called a &quot;revocation list&quot;. If a certificate is ever compromised, the issuer can revoke it by adding it to the revocation list, and then this certificate will no longer be trusted by your browser. Revocation status is not required to be maintained for expired certificates, so while this certificate used to be valid for the website that you're visiting, at this point it is not possible to determine whether the certificate was compromised and subsequently revoked, or whether it remains secure. As such it is impossible to tell whether you're communicating with the legitimate website or whether the certificate was compromised and is now in the possession of an attacker with whom you are communicating. You should not proceed past this point.</translation>
 <translation id="3157931365184549694">Restore</translation>
@@ -754,6 +766,7 @@
 <translation id="19901320010520290">The web site at &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; contains elements from sites which appear to host malware – software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that hosts malware can infect your computer. The web site also hosts contents from sites that have been reported as “phishing” sites.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.</translation>
 <translation id="2679312662830811292"><ph name="NUMBER_ONE"/> min ago</translation>
 <translation id="9065203028668620118">Edit</translation>
+<translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Search from the address bar.</translation>
 <translation id="4867297348137739678">Last week</translation>
 <translation id="4881695831933465202">Open</translation>
@@ -817,6 +830,7 @@
 <translation id="2927657246008729253">Change...</translation>
 <translation id="3478477629095836699">Cookie settings:</translation>
 <translation id="2108475813351458355">Secure connection to <ph name="DOMAIN"/></translation>
+<translation id="1447542739493932962">Only install extensions you trust.</translation>
 <translation id="942671148946453043">You have opened an incognito window. Pages that you open in this window won't appear in your history.</translation>
 <translation id="3503975005768721305">Add a new web clip</translation>
 <translation id="6996505290426962909">&amp;Import bookmarks &amp;&amp; settings...</translation>
@@ -891,6 +905,7 @@
 <translation id="3455546154539383562">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the certificate that the server presented has been revoked by its issuer. This means that the security credentials that the server presented should absolutely not be trusted. You may be communicating with an attacker. You should not proceed.</translation>
 <translation id="1177437665183591855">Unknown server certificate error</translation>
 <translation id="3819800052061700452">&amp;Full screen</translation>
+<translation id="3218306954729745977">Show recently closed tabs</translation>
 <translation id="3737554291183722650">Page title:</translation>
 <translation id="4726901538158498735">Default search:</translation>
 <translation id="5101042277149003567">Open all bookmarks</translation>
@@ -915,6 +930,7 @@
 <translation id="2149973817440762519">Edit Bookmark</translation>
 <translation id="430831869130657585">Suffixes</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
+<translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="6314919950468685344">Fixed-width Font:</translation>
@@ -935,6 +951,7 @@
 <translation id="4477534650265381513">For quick access, place your bookmarks here in the bookmarks bar.</translation>
 <translation id="8080048886850452639">C&amp;opy audio URL</translation>
 <translation id="8328145009876646418">Left Edge</translation>
+<translation id="8203365863660628138">Confirm Installation</translation>
 <translation id="406259880812417922">(Keyword: <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">JavaScript Debugger - Running</translation>
 </translationbundle>

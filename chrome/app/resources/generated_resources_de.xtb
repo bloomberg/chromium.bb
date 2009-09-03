@@ -74,12 +74,14 @@
 <translation id="8534801226027872331">In diesem Fall weist das dem Browser präsentierte Zertifikat Fehler auf und kann nicht entschlüsselt werden. Dies bedeutet möglicherweise, dass entweder die Identitätsinformationen oder bestimmte andere Informationen im Zertifikat zum Sichern der Verbindung nicht entschlüsselt werden können. Fahren Sie nicht fort.</translation>
 <translation id="4422347585044846479">Lesezeichen für diese Seite bearbeiten</translation>
 <translation id="7367545749698325833">Sie können Lesezeichen und Einstellungen von anderen Browsern importieren oder Ihre Internetdaten von diesem Computer löschen.</translation>
+<translation id="51285338152176012">Zuletzt geschlossene Tabs ausblenden</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="2994458892329442723">Plug-ins aktivieren</translation>
 <translation id="1669397342410349095">Phishing-Website melden...</translation>
 <translation id="1674989413181946727">SSL-Einstellungen für den ganzen Computer:</translation>
 <translation id="8703575177326907206">Die Verbindung zu <ph name="DOMAIN"/> ist nicht verschlüsselt.</translation>
+<translation id="5600613131076600482">Erweiterungen können auf Ihren Computer und Ihre privaten Daten zugreifen. Sie könnten unangemessene Bilder auf Ihrer Pinnwand posten.</translation>
 <translation id="1644574205037202324">Verlauf</translation>
 <translation id="2518917559152314023">Hinz&amp;ufügen...</translation>
 <translation id="8217250408786235522">&amp;Normal (1,0 x)</translation>
@@ -89,6 +91,7 @@
 <translation id="3512466011168167042">Vorschläge für Navigationsfehler anzeigen</translation>
 <translation id="7767960058630128695">Passwörter:</translation>
 <translation id="6518014396551869914">Bild kop&amp;ieren</translation>
+<translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="6363850194751762580">Pop-ups verwalten</translation>
 <translation id="4120898696391891645">Seite kann nicht geladen werden</translation>
 <translation id="5584537427775243893">Importieren</translation>
@@ -300,6 +303,7 @@
 <translation id="3513979718339724672">Miniaturbilder anzeigen</translation>
 <translation id="7300965843904003671">Pop-ups von <ph name="URL"/> immer anzeigen</translation>
 <translation id="8211437954284917092">Geben Sie in das obige Textfeld eine Suchanfrage ein, um Lesezeichen zu suchen.</translation>
+<translation id="2950143609136989144">Erweiterungen können auf Ihren Computer und Ihre privaten Daten zugreifen. Dies bedeutet, dass sie all Ihre E-Mails zu Ihrem Ehepartner weiterleiten könnten.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> Dateien</translation>
 <translation id="1291121346508216435">Rechtschreibung automatisch korrigieren:</translation>
 <translation id="6805291412499505360">Verwendung von Cookies von Drittanbietern beschränken</translation>
@@ -316,6 +320,7 @@
 <translation id="2356762928523809690">Aktualisierungsserver ist nicht verfügbar (Fehler: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Vorgestelltes Design</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME"/> durchsuchen:</translation>
+<translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="6267166720438879315">Wählen Sie ein Zertifikat für die Authentifizierung bei <ph name="HOST_NAME"/> aus.</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> Minute</translation>
@@ -430,6 +435,7 @@
 <translation id="3664021239099029884">Alle Downloads anzeigen</translation>
 <translation id="2207746515960750386">Vor <ph name="MINUTE"/> Minute(n)</translation>
 <translation id="7754704193130578113">Vor dem Download von Dateien nach dem Speicherort fragen</translation>
+<translation id="2838167480523328393">&quot;<ph name="EXTENSION_NAME"/>&quot; installieren?</translation>
 <translation id="2497284189126895209">Alle Dateien</translation>
 <translation id="5360606537916580043">Letzter Tag</translation>
 <translation id="6589689504565594563">Cookies löschen</translation>
@@ -475,6 +481,7 @@
 <translation id="6434892175081553796">Über diesen Tab geöffnete Tabs schließen</translation>
 <translation id="3268761268932257769">Bilder automatisch laden</translation>
 <translation id="7227780179130368205">Malware entdeckt!</translation>
+<translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3942946088478181888">Mehr Infos dazu</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Standardeinstellung)</translation>
 <translation id="111844081046043029">Möchten Sie diese Seite wirklich verlassen?</translation>
@@ -501,6 +508,7 @@
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/> abgeschlossen</translation>
 <translation id="2435457462613246316">Neues Passwort</translation>
 <translation id="394984172568887996">Aus IE importiert</translation>
+<translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="5315873049536339193">Identität</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> ist zurzeit nicht Ihr Standardbrowser.</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> Tage</translation>
@@ -533,6 +541,7 @@
 <translation id="8349305172487531364">Lesezeichenleiste</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME"/> nach <ph name="SEARCH_TERMS"/> durchsuchen</translation>
 <translation id="8004582292198964060">Browser</translation>
+<translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Ordnername bearbeiten</translation>
 <translation id="5433207235435438329">Sprache der Rechtschreibprüfung:</translation>
 <translation id="3183922693828471536">Hierher blättern</translation>
@@ -616,10 +625,12 @@
 <translation id="5538307496474303926">Wird gelöscht...</translation>
 <translation id="1285631718404404702">&quot;Letzte Aktivitäten&quot; anzeigen</translation>
 <translation id="6783679543387074885">Fehler oder defekte Website melden</translation>
+<translation id="2022952840834921450">Erweiterungen können auf Ihren Computer und Ihre privaten Daten zugreifen. Sie könnten Tweets oder E-Mails in Ihrem Namen senden.</translation>
 <translation id="3413103074007669042">Diese Seite enthält unsicheren Content.</translation>
 <translation id="4887833561977827087">Es sind noch keine Elemente vorhanden.
 Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> und weitere Quellen hinzufügen.</translation>
 <translation id="5285267187067365830">Plug-in installieren...</translation>
+<translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">Diese Webseite ist nicht verfügbar.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">Codi&amp;erung</translation>
@@ -644,6 +655,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="777885533320815847">D&amp;oppelt (2,0 )</translation>
 <translation id="7554791636758816595">Neuer Tab</translation>
 <translation id="6231471673669497681">&amp;Wiedergabegeschwindigkeit</translation>
+<translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">DNS-Vorabruf zur Verbesserung der Seitenladeleistung verwenden</translation>
 <translation id="1086613338090581534">Der Aussteller eines Zertifikats, das nicht abgelaufen ist, ist für das Führen einer so genannten &quot;Sperrliste&quot; verantwortlich. Falls ein Zertifikat in den Besitz eines anderen gelangt, kann der Aussteller es widerrufen, indem er es der Sperrliste hinzufügt. In diesem Fall vertraut Ihr Browser dem Zertifikat nicht mehr. Für abgelaufene Zertifikate ist kein Widerrufstatus erforderlich. Während der Gültigkeit dieses Zertifikats für die besuchte Website kann daher nicht ermittelt werden, ob das Zertifikat in den Besitz eines anderen gelangt ist und später widerrufen wurde oder ob es weiterhin sicher ist. Daher kann nicht ermittelt werden, ob Sie mit der rechtmäßigen Website kommunizieren oder ob sich das Zertifikat nun im Besitz eines Hackers befindet und Sie jetzt mit diesem kommunizieren. In diesem Fall sollten Sie nicht fortfahren.</translation>
 <translation id="3157931365184549694">Wiederherstellen</translation>
@@ -750,6 +762,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="19901320010520290">Die Website unter &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; enthält Elemente von Websites, die anscheinend Malware hosten – Software, die den Computer beschädigen oder anderweitig ohne Ihre Zustimmung agieren kann. Schon der Zugriff auf eine Website, die Malware hostet, kann den Computer infizieren. Die Website hostet außerdem Content von Websites, die als &quot;Phishing&quot;-Websites gemeldet wurden. Solche Websites täuschen Nutzer, damit diese ihre privaten oder finanziellen Daten freigeben. Dies geschieht oft dadurch, dass sich Phishing-Websites als vertrauenswürdige Einrichtungen wie z. B. Banken ausgeben.</translation>
 <translation id="2679312662830811292">Vor <ph name="NUMBER_ONE"/> Minute</translation>
 <translation id="9065203028668620118">Bearbeiten</translation>
+<translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">In der Adressleiste suchen</translation>
 <translation id="4867297348137739678">Letzte Woche</translation>
 <translation id="4881695831933465202">Öffnen</translation>
@@ -813,6 +826,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="2927657246008729253">Ändern...</translation>
 <translation id="3478477629095836699">Cookie-Einstellungen:</translation>
 <translation id="2108475813351458355">Sichere Verbindung zu <ph name="DOMAIN"/></translation>
+<translation id="1447542739493932962">Installieren Sie nur vertrauenswürdige Erweiterungen.</translation>
 <translation id="942671148946453043">Sie haben ein Inkognito-Fenster geöffnet. Seiten, die Sie in diesem Fenster öffnen, erscheinen nicht im Verlauf.</translation>
 <translation id="3503975005768721305">Neuen Webclip hinzufügen</translation>
 <translation id="6996505290426962909">Lesezeichen und Einstellungen &amp;importieren...</translation>
@@ -887,6 +901,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="3455546154539383562">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen. Der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das von seinem Aussteller widerrufen wurde. Das bedeutet, dass die vom Server bereitgestellten Sicherheits-Berechtigungsnachweise (Security Credentials) absolut nicht vertrauenswürdig sind. Sie kommunizieren möglicherweise mit einem Hacker. Fahren Sie nicht fort.</translation>
 <translation id="1177437665183591855">Fehler wegen unbekanntem Serverzertifikat</translation>
 <translation id="3819800052061700452">&amp;Vollbildmodus</translation>
+<translation id="3218306954729745977">Zuletzt geschlossene Tabs anzeigen</translation>
 <translation id="3737554291183722650">Seitentitel:</translation>
 <translation id="4726901538158498735">Standardsuche:</translation>
 <translation id="5101042277149003567">Alle Lesezeichen öffnen</translation>
@@ -911,6 +926,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
 <translation id="430831869130657585">Suffixe</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
+<translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="1178581264944972037">Anhalten</translation>
 <translation id="6314919950468685344">Nichtproportionale Schrift:</translation>
@@ -930,6 +946,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="4477534650265381513">Platzieren Sie Ihre Lesezeichen hier in der Lesezeichenleiste, um schneller auf sie zugreifen zu können.</translation>
 <translation id="8080048886850452639">Audio-URL k&amp;opieren</translation>
 <translation id="8328145009876646418">Linker Rand</translation>
+<translation id="8203365863660628138">Installation bestätigen</translation>
 <translation id="406259880812417922">(Suchkürzel: <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">JavaScript-Debugger - Wird ausgeführt</translation>
 </translationbundle>

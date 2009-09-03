@@ -74,12 +74,14 @@
 <translation id="8534801226027872331">이는 브라우저에 제출된 인증서에 오류가 있어 인증서를 판독할 수 없는 경우입니다. 인증서의 주소 정보나 연결을 보호하는 데 사용된 인증서의 다른 정보를 크롬이 판독하지 못한 것일 수 있습니다. 더 이상 진행하지 않는 것이 좋습니다.</translation>
 <translation id="4422347585044846479">이 페이지에 대한 북마크 편집</translation>
 <translation id="7367545749698325833">북마크와 설정을 다른 브라우저에서 가져오거나 이 컴퓨터에서 인터넷 사용정보를 삭제할 수 있습니다.</translation>
+<translation id="51285338152176012">최근에 닫은 탭 숨기기</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="2994458892329442723">플러그인 활성화</translation>
 <translation id="1669397342410349095">피싱 웹사이트 신고하기...</translation>
 <translation id="1674989413181946727">컴퓨터 전체 SSL 설정:</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN"/>로의 연결은 암호화되지 않습니다.</translation>
+<translation id="5600613131076600482">확장 프로그램에서 사용자의 컴퓨터 및 개인정보에 액세스할 수 있습니다. 미니홈피나 블로그에 민망한 사진을 올려버릴 지도 모릅니다.</translation>
 <translation id="1644574205037202324">방문한 페이지</translation>
 <translation id="2518917559152314023">추가(&amp;D)...</translation>
 <translation id="8217250408786235522">보통(1.0x)(&amp;N)</translation>
@@ -89,6 +91,7 @@
 <translation id="3512466011168167042">탐색 오류에 대한 제안 표시</translation>
 <translation id="7767960058630128695">비밀번호:</translation>
 <translation id="6518014396551869914">이미지 복사(&amp;Y)</translation>
+<translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="6363850194751762580">팝업 관리</translation>
 <translation id="4120898696391891645">페이지가 로드되지 않음</translation>
 <translation id="5584537427775243893">가져오는 중</translation>
@@ -300,6 +303,7 @@
 <translation id="3513979718339724672">미리보기 이미지 표시</translation>
 <translation id="7300965843904003671"><ph name="URL"/>의 팝업을 항상 표시</translation>
 <translation id="8211437954284917092">북마크를 검색하려면 위의 입력란에 검색어를 입력하세요.</translation>
+<translation id="2950143609136989144">확장 프로그램에서 사용자의 컴퓨터 및 개인정보에 액세스할 수 있습니다. 사용자의 모든 이메일을 상사에게 전달해 버릴 지도 몰라요.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/>/<ph name="TOTAL_FILES"/> 파일</translation>
 <translation id="1291121346508216435">자동으로 맞춤법 검사:</translation>
 <translation id="6805291412499505360">제3자 쿠키 사용 방식 제한</translation>
@@ -316,6 +320,7 @@
 <translation id="2356762928523809690">서버를 업데이트할 수 없습니다(오류: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">추천 테마</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME"/> 검색:</translation>
+<translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="8730621377337864115">완료</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME"/>에 대해 인증을 받으려면 인증서를 선택하세요.</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/>분</translation>
@@ -430,6 +435,7 @@
 <translation id="3664021239099029884">다운로드 전체 보기</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/>분 전</translation>
 <translation id="7754704193130578113">다운로드 전에 각 파일의 저장 위치 확인</translation>
+<translation id="2838167480523328393">'<ph name="EXTENSION_NAME"/>'을(를) 설치하시겠습니까?</translation>
 <translation id="2497284189126895209">모든 파일</translation>
 <translation id="5360606537916580043">최종일</translation>
 <translation id="6589689504565594563">쿠키 삭제</translation>
@@ -475,6 +481,7 @@
 <translation id="6434892175081553796">이 탭에서 열린 탭 닫기</translation>
 <translation id="3268761268932257769">이미지 자동 로드</translation>
 <translation id="7227780179130368205">악성코드가 감지되었습니다.</translation>
+<translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3942946088478181888">자세한 정보</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/>(기본)</translation>
 <translation id="111844081046043029">이 페이지에서 벗어나시겠습니까?</translation>
@@ -501,6 +508,7 @@
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/> 다운로드 완료</translation>
 <translation id="2435457462613246316">비밀번호 표시</translation>
 <translation id="394984172568887996">IE에서 가져온 북마크</translation>
+<translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="5315873049536339193">주소</translation>
 <translation id="6144890426075165477">현재 <ph name="PRODUCT_NAME"/>이(가) 기본 브라우저로 설정되어 있지 않습니다.</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/>일</translation>
@@ -533,6 +541,7 @@
 <translation id="8349305172487531364">북마크바</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME"/>에서 <ph name="SEARCH_TERMS"/> 검색</translation>
 <translation id="8004582292198964060">브라우저</translation>
+<translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">폴더 이름 수정</translation>
 <translation id="5433207235435438329">맞춤법 검사기 언어:</translation>
 <translation id="3183922693828471536">여기로 스크롤</translation>
@@ -616,9 +625,11 @@
 <translation id="5538307496474303926">지우는 중...</translation>
 <translation id="1285631718404404702">최근 활동 표시</translation>
 <translation id="6783679543387074885">버그 및 깨진 웹사이트 신고하기</translation>
+<translation id="2022952840834921450">확장 프로그램에서 사용자의 컴퓨터 및 개인정보에 액세스할 수 있습니다. 사용자를 사칭하여 쪽지나 메일을 보낼 수도 있어요.</translation>
 <translation id="3413103074007669042">이 페이지에는 안전하지 못한 콘텐츠가 있습니다.</translation>
 <translation id="4887833561977827087">아직 표시할 항목이 없습니다. 웹 클립을 <ph name="BEGIN_LINK"/>맞춤설정<ph name="END_LINK"/>하고 소스를 추가하세요.</translation>
 <translation id="5285267187067365830">플러그인 설치...</translation>
+<translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">해당 웹페이지를 사용할 수 없습니다.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">인코딩(&amp;E)</translation>
@@ -643,6 +654,7 @@
 <translation id="777885533320815847">2배속(2.0x)(&amp;O)</translation>
 <translation id="7554791636758816595">새 탭</translation>
 <translation id="6231471673669497681">재생 속도(&amp;P)</translation>
+<translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">DNS 프리페칭으로 페이지 로드 속도 개선하기</translation>
 <translation id="1086613338090581534">만료되지 않은 인증서에 대해 인증서 발급자는 '폐기 목록'을 관리해야 할 책임이 있습니다. 인증서가 손상된 경우 발급자는 해당 인증서를 폐기 목록에 추가하여 인증서를 폐기할 수 있으며, 폐기된 인증서는 브라우저에서 신뢰하지 않습니다. 만료된 인증서에 대해서는 폐기 상태를 유지하지 않아도 되므로, 방문 중인 웹사이트에서 유효했던 인증서가 손상되어 폐기되었는지 또는 아직 안전하게 사용할 수 있는지를 현재로서는 확인할 수 없습니다. 이와 마찬가지로 통신 중인 웹사이트가 합법적인지 또는 인증서가 손상되어 현재 통신 중인 해커가 이를 소유하고 있는지를 확인할 수도 없습니다. 더 이상 진행하지 않는 것이 좋습니다.</translation>
 <translation id="3157931365184549694">복구</translation>
@@ -749,6 +761,7 @@
 <translation id="19901320010520290">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt;의 웹사이트에 악성 코드를 호스팅하는 것으로 추정되는 사이트에서 유입된 요소가 포함되어 있습니다. 악성 코드는 컴퓨터에 손상을 입히거나 사용자의 동의 없이 작동하는 소프트웨어입니다. 악성 코드가 설치된 사이트에 방문하는 것만으로도 사용자의 컴퓨터가 감염될 수 있습니다. 이 웹사이트에서는 '피싱' 사이트로 신고된 사이트에서 유입된 콘텐츠도 호스팅되고 있습니다. 피싱 사이트는 속임수를 통해 개인정보 및 금융정보를 몰래 빼내기 위해 만들어진 사이트로 종종 은행과 같은 공식기관을 사칭하기도 합니다.</translation>
 <translation id="2679312662830811292"><ph name="NUMBER_ONE"/>분 전</translation>
 <translation id="9065203028668620118">수정</translation>
+<translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">주소창에서 검색하세요.</translation>
 <translation id="4867297348137739678">지난주</translation>
 <translation id="4881695831933465202">열기</translation>
@@ -812,6 +825,7 @@
 <translation id="2927657246008729253">변경...</translation>
 <translation id="3478477629095836699">쿠키 설정:</translation>
 <translation id="2108475813351458355"><ph name="DOMAIN"/>에 대한 보안 연결</translation>
+<translation id="1447542739493932962">믿을 수 있는 확장 프로그램만 설치하시기 바랍니다.</translation>
 <translation id="942671148946453043">시크릿 창을 열었습니다. 이 창에서 여는 페이지는 방문한 페이지에 나타나지 않습니다.</translation>
 <translation id="3503975005768721305">새로운 웹 클립 추가</translation>
 <translation id="6996505290426962909">북마크 및 설정 가져오기(&amp;I)</translation>
@@ -886,6 +900,7 @@
 <translation id="3455546154539383562">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접근하려 했지만 서버가 제출한 인증서를 발급자가 폐기했습니다. 이는 서버에서 신뢰할 수 없는 보안 증명서를 제출했음을 의미합니다. 해커와 통신하는 것일 수 있으니, 더 이상 진행하지 않는 것이 좋습니다.</translation>
 <translation id="1177437665183591855">알 수 없는 서버 인증서 오류</translation>
 <translation id="3819800052061700452">전체화면(&amp;F)</translation>
+<translation id="3218306954729745977">최근에 닫은 탭 표시</translation>
 <translation id="3737554291183722650">페이지 제목:</translation>
 <translation id="4726901538158498735">기본 검색엔진:</translation>
 <translation id="5101042277149003567">모든 북마크 열기</translation>
@@ -910,6 +925,7 @@
 <translation id="2149973817440762519">북마크 수정</translation>
 <translation id="430831869130657585">접미사</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
+<translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="4759238208242260848">다운로드</translation>
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="6314919950468685344">고정폭 글꼴:</translation>
@@ -929,6 +945,7 @@
 <translation id="4477534650265381513">북마크바에 북마크를 추가하면 보다 빠르게 액세스할 수 있습니다.</translation>
 <translation id="8080048886850452639">오디오 URL 복사(&amp;O)</translation>
 <translation id="8328145009876646418">왼쪽 모서리</translation>
+<translation id="8203365863660628138">설치 확인</translation>
 <translation id="406259880812417922">(키워드: <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">자바스크립트 디버거 - 실행 중</translation>
 </translationbundle>

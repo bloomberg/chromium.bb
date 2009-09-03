@@ -74,12 +74,14 @@
 <translation id="8534801226027872331">У овом случају, сертификат који је представљен вашем прегледачу садржи грешке и не може да се протумачи. То може да значи да не можемо да схватимо информације о идентитету у оквиру сертификата или неке друге информације у сертификату које се користе за обезбеђивање везе. Не би требало да наставите.</translation>
 <translation id="4422347585044846479">Измените обележивач за ову страницу</translation>
 <translation id="7367545749698325833">Можете да увезете обележиваче и подешавања из других прегледача или да обришете податке прегледања са овог рачунара.</translation>
+<translation id="51285338152176012">Сакриј недавно затворене картице</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">Обележивачи</translation>
 <translation id="2994458892329442723">Омогући додатне компоненте</translation>
 <translation id="1669397342410349095">Пријави фишинг веб сајт...</translation>
 <translation id="1674989413181946727">SSL подешавања на нивоу рачунара:</translation>
 <translation id="8703575177326907206">Ваша веза са доменом <ph name="DOMAIN"/> није шифрована.</translation>
+<translation id="5600613131076600482">Додаци могу да приступе вашем рачунару и приватним подацима. Могли би објаве свакакве слике на вашем зиду.</translation>
 <translation id="1644574205037202324">Историја</translation>
 <translation id="2518917559152314023">Д&amp;одај...</translation>
 <translation id="8217250408786235522">&amp;Нормално (1,0x)</translation>
@@ -89,6 +91,7 @@
 <translation id="3512466011168167042">Прикажи предлоге за грешке при навигацији</translation>
 <translation id="7767960058630128695">Лозинке:</translation>
 <translation id="6518014396551869914">Коп&amp;ирај слику</translation>
+<translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="6363850194751762580">Управљајте искачућим прозорима</translation>
 <translation id="4120898696391891645">Страница неће да се учита</translation>
 <translation id="5584537427775243893">Увоз</translation>
@@ -300,6 +303,7 @@
 <translation id="3513979718339724672">Прикажи сличице</translation>
 <translation id="7300965843904003671">Увек приказуј искачуће прозоре са адресе <ph name="URL"/></translation>
 <translation id="8211437954284917092">За претрагу обележивача унесите упит у поље за текст изнад.</translation>
+<translation id="2950143609136989144">Додаци имају приступ вашем рачунару и приватним подацима. То значи да би могли да проследе сву вашу е-пошту комшији.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/><ph name="TOTAL_FILES"/> датотеке(а)</translation>
 <translation id="1291121346508216435">Исправљај правопис аутоматски:</translation>
 <translation id="6805291412499505360">Ограничи начин коришћења колачића независних произвођача</translation>
@@ -316,6 +320,7 @@
 <translation id="2356762928523809690">Сервер за ажурирање није доступан (грешка: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Истакнута тема</translation>
 <translation id="5436510242972373446">Претражи сајт <ph name="SITE_NAME"/>:</translation>
+<translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="6267166720438879315">Изаберите сертификат да бисте потврдили идентитет хосту <ph name="HOST_NAME"/></translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> мин.</translation>
@@ -433,6 +438,7 @@
 <translation id="3664021239099029884">Прикажи сва преузимања</translation>
 <translation id="2207746515960750386">Пре <ph name="MINUTE"/> мин</translation>
 <translation id="7754704193130578113">Питај где треба сачувати сваку датотеку пре преузимања</translation>
+<translation id="2838167480523328393">Желите ли да инсталирате „<ph name="EXTENSION_NAME"/>“?</translation>
 <translation id="2497284189126895209">Све датотеке</translation>
 <translation id="5360606537916580043">Последњи дан</translation>
 <translation id="6589689504565594563">Избриши колачиће</translation>
@@ -478,6 +484,7 @@
 <translation id="6434892175081553796">Затвори картице отворене овом картицом</translation>
 <translation id="3268761268932257769">Аутоматски учитај слике</translation>
 <translation id="7227780179130368205">Откривен је малвер!</translation>
+<translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3942946088478181888">Помоћ у разумевању</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (подразумевано)</translation>
 <translation id="111844081046043029">Желите ли заиста да напустите ову страницу?</translation>
@@ -504,6 +511,7 @@
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/>, довршено</translation>
 <translation id="2435457462613246316">Прикажи лозинку</translation>
 <translation id="394984172568887996">Увезено из IE прегледача</translation>
+<translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="5315873049536339193">Идентитет</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> тренутно није ваш подразумевани прегледач.</translation>
 <translation id="9107059250669762581">Дана: <ph name="NUMBER_DEFAULT"/></translation>
@@ -536,6 +544,7 @@
 <translation id="8349305172487531364">Трака са обележивачима</translation>
 <translation id="7208899522964477531">Претражи <ph name="SEARCH_TERMS"/> на <ph name="SITE_NAME"/></translation>
 <translation id="8004582292198964060">Прегледач</translation>
+<translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Измена имена директоријума</translation>
 <translation id="5433207235435438329">Језик за проверу правописа:</translation>
 <translation id="3183922693828471536">Помери се овде</translation>
@@ -619,11 +628,13 @@
 <translation id="5538307496474303926">Брисање...</translation>
 <translation id="1285631718404404702">Прикажи недавне активности</translation>
 <translation id="6783679543387074885">Пријављивање грешке или оштећеног веб сајта</translation>
+<translation id="2022952840834921450">Додаци имају приступ вашем рачунару и приватним подацима. Могли би да пошаљу пост на Tweeter или поруку е-поште у ваше име.</translation>
 <translation id="3413103074007669042">Ова страница садржи небезбедан садржај</translation>
 <translation id="4887833561977827087">Овде још увек нема ставки за приказ.
         <ph name="BEGIN_LINK"/>Прилагодите<ph name="END_LINK"/>
         веб клипове и додајте још извора.</translation>
 <translation id="5285267187067365830">Инсталирај додатну компоненту...</translation>
+<translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">Ова веб страница није доступна.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Кодирање</translation>
@@ -648,6 +659,7 @@
 <translation id="777885533320815847">Д&amp;воструко брже (2,0x)</translation>
 <translation id="7554791636758816595">Нова картица</translation>
 <translation id="6231471673669497681">&amp;Брзина репродукције</translation>
+<translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Користи DNS предучитавање да би побољшао перформансе учитавања странице</translation>
 <translation id="1086613338090581534">За сертификат који није истекао, издавач тог сертификата је одговоран за одржавање нечега што се зове „листа опозива“. Ако сертификат буде у било којем тренутку угрожен, издавач може да га опозове тако што ће га додати у листу опозива, и тај сертификат више неће бити поуздан за ваш прегледач. Одржавање статуса опозива се не захтева за истекле сертификате, тако да, иако је овај сертификат некада био важећи за веб сајт који посећујете, у овом тренутку није могуће одредити да ли је сертификат угрожен а затим опозиван, или остаје безбедан. Стога је немогуће рећи да ли комуницирате са законитим веб сајтом или је сертификат угрожен и сада га поседује нападач са којим комуницирате. Не би требало да наставите даље.</translation>
 <translation id="3157931365184549694">Поново отворите</translation>
@@ -754,6 +766,7 @@
 <translation id="19901320010520290">Веб сајт на адреси &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; садржи елементе са сајтова који изгледа да хостују малвер – софтвер који може да угрози ваш рачунар или да на други начин делује без ваше сагласности. Самo посета сајту који садржи малвер може да зарази рачунар. Веб сајт такође хостује садржај са сајтова пријављених као сајтови који се баве „пецањем“. Такви сајтови варају кориснике наводећи их да открију личне или финансијске информације, често тако што се претварају да представљају поуздане институције, као што су банке.</translation>
 <translation id="2679312662830811292">Пре <ph name="NUMBER_ONE"/> минут</translation>
 <translation id="9065203028668620118">Измени</translation>
+<translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Претражујте из траке за адресу.</translation>
 <translation id="4867297348137739678">Последња недеља</translation>
 <translation id="4881695831933465202">Отвори</translation>
@@ -817,6 +830,7 @@
 <translation id="2927657246008729253">Промени...</translation>
 <translation id="3478477629095836699">Подешавања за колачиће:</translation>
 <translation id="2108475813351458355">Безбедна веза са доменом <ph name="DOMAIN"/></translation>
+<translation id="1447542739493932962">Инсталирајте само додатке у које имате поверења.</translation>
 <translation id="942671148946453043">Отворили сте прозор за прегледање без архивирања. Странице које отворите у овом прозору неће се отворити у вашој историји.</translation>
 <translation id="3503975005768721305">Додавање новог веб клипа</translation>
 <translation id="6996505290426962909">&amp;Увези обележиваче и подешавања...</translation>
@@ -891,6 +905,7 @@
 <translation id="3455546154539383562">Покушали сте да дођете до домена &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, али је сертификат који је представио сервер опозван од стране његовог издавача. То значи да су безбедносни акредитиви које је представио сервер апсолутно непоуздани. Можда комуницирате са нападачем. Не би требало да наставите.</translation>
 <translation id="1177437665183591855">Непозната грешка сертификата сервера</translation>
 <translation id="3819800052061700452">&amp;Пун екран</translation>
+<translation id="3218306954729745977">Прикажи недавно затворене картице</translation>
 <translation id="3737554291183722650">Наслов странице:</translation>
 <translation id="4726901538158498735">Подразумевана претрага:</translation>
 <translation id="5101042277149003567">Отвори све обележиваче</translation>
@@ -915,6 +930,7 @@
 <translation id="2149973817440762519">Уређивање обележивача</translation>
 <translation id="430831869130657585">Суфикси</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
+<translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="4759238208242260848">Преузимања</translation>
 <translation id="1178581264944972037">Паузирај</translation>
 <translation id="6314919950468685344">Фонт фиксне ширине:</translation>
@@ -935,6 +951,7 @@
 <translation id="4477534650265381513">Ради брзог приступа, поставите обележиваче овде на траку са обележивачима.</translation>
 <translation id="8080048886850452639">К&amp;опирај URL адресу аудио снимка</translation>
 <translation id="8328145009876646418">Лева ивица</translation>
+<translation id="8203365863660628138">Потврда инсталације</translation>
 <translation id="406259880812417922">(Кључна реч: <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">Програм за отклањање JavaScript грешака – покренут</translation>
 </translationbundle>

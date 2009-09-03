@@ -74,12 +74,14 @@
 <translation id="8534801226027872331">ブラウザに提示された証明書にエラーがあり解析できません。したがって、証明書の ID 情報や、セキュリティで保護された接続を確保するための情報を読み取れない可能性があります。処理を続行しないでください。</translation>
 <translation id="4422347585044846479">このページのブックマークを編集します</translation>
 <translation id="7367545749698325833">他のブラウザからブックマークや設定をインポートしたり、このコンピュータに保存されている閲覧履歴データを消去したりできます。</translation>
+<translation id="51285338152176012">最近閉じたタブを非表示</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">ブックマーク</translation>
 <translation id="2994458892329442723">プラグインを有効にする</translation>
 <translation id="1669397342410349095">フィッシング サイトを報告...</translation>
 <translation id="1674989413181946727">コンピュータ共通の SSL 設定:</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN"/> への接続は暗号化されていません。</translation>
+<translation id="5600613131076600482">拡張機能からはコンピュータや個人データにアクセスできるため、プライベートな画像が勝手に壁紙に設定されることも起こりえます。</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="2518917559152314023">追加(&amp;D)...</translation>
 <translation id="8217250408786235522">標準（1.0x）(&amp;N)</translation>
@@ -89,6 +91,7 @@
 <translation id="3512466011168167042">ナビゲーションエラーがあれば解決のヒントを表示する</translation>
 <translation id="7767960058630128695">パスワード:</translation>
 <translation id="6518014396551869914">画像をコピー(&amp;Y)</translation>
+<translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="6363850194751762580">ポップアップの管理</translation>
 <translation id="4120898696391891645">ページが表示されない</translation>
 <translation id="5584537427775243893">インポート中</translation>
@@ -299,6 +302,7 @@
 <translation id="3513979718339724672">サムネイルを表示する</translation>
 <translation id="7300965843904003671"><ph name="URL"/> からのポップアップを常に表示</translation>
 <translation id="8211437954284917092">上の検索ボックスにキーワードを入力して、ブックマークを検索してください。</translation>
+<translation id="2950143609136989144">拡張機能からはコンピュータや個人データにアクセスできるため、プライベートなメールが勝手に転送されてしまうというようなことも起こりえます。</translation>
 <translation id="5958418293370246440"><ph name="TOTAL_FILES"/> 個中 <ph name="SAVED_FILES"/> 個のファイル</translation>
 <translation id="1291121346508216435">スペルの間違いを自動的に修正する:</translation>
 <translation id="6805291412499505360">サードパーティの Cookie の使用を制限する</translation>
@@ -325,6 +329,7 @@
 <translation id="2356762928523809690">更新サーバーにアクセスできません (エラー: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">おすすめのテーマ</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME"/> を検索:</translation>
+<translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="8730621377337864115">完了</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME"/> での認証に使用する証明書を選択してください</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> 分</translation>
@@ -439,6 +444,7 @@
 <translation id="3664021239099029884">すべてのダウンロードを見る</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> 分前</translation>
 <translation id="7754704193130578113">ファイルごとに保存する場所を確認する</translation>
+<translation id="2838167480523328393">「<ph name="EXTENSION_NAME"/>」をインストールしますか。</translation>
 <translation id="2497284189126895209">すべてのファイル</translation>
 <translation id="5360606537916580043">過去 1 日</translation>
 <translation id="6589689504565594563">Cookie</translation>
@@ -484,6 +490,7 @@
 <translation id="6434892175081553796">このページから開いたタブをすべて閉じる</translation>
 <translation id="3268761268932257769">画像の自動読み込み</translation>
 <translation id="7227780179130368205">不正なソフトウェアが検知されました</translation>
+<translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3942946088478181888">ヘルプ情報</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (既定)</translation>
 <translation id="111844081046043029">このページから移動してもよろしいですか？</translation>
@@ -510,6 +517,7 @@
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/> 完了</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
 <translation id="394984172568887996">IE ブックマーク</translation>
+<translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="5315873049536339193">ID</translation>
 <translation id="6144890426075165477">現在、<ph name="PRODUCT_NAME"/> は既定のブラウザに設定されていません。</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> 日</translation>
@@ -542,6 +550,7 @@
 <translation id="8349305172487531364">ブックマーク バー</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME"/> で <ph name="SEARCH_TERMS"/> を検索</translation>
 <translation id="8004582292198964060">ブラウザ</translation>
+<translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">フォルダ名の編集</translation>
 <translation id="5433207235435438329">スペルチェック言語:</translation>
 <translation id="3183922693828471536">ここまでスクロール</translation>
@@ -625,9 +634,11 @@
 <translation id="5538307496474303926">クリアしています...</translation>
 <translation id="1285631718404404702">最近のアクティビティを表示する</translation>
 <translation id="6783679543387074885">問題のあるサイトやバグを報告</translation>
+<translation id="2022952840834921450">拡張機能からはコンピュータや個人データにアクセスできるため、勝手に Twitter に投稿されたりメールを送信されたりすることも起こりえます。</translation>
 <translation id="3413103074007669042">このページには安全でないコンテンツが含まれています</translation>
 <translation id="4887833561977827087">表示できるアイテムがありません。ウェブクリップを<ph name="BEGIN_LINK"/>カスタマイズ<ph name="END_LINK"/>して他のソースを追加してください。</translation>
 <translation id="5285267187067365830">プラグインのインストール...</translation>
+<translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">このウェブサイトはご利用いただけません。</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">エンコード(&amp;E)</translation>
@@ -652,6 +663,7 @@
 <translation id="777885533320815847">2 倍速（2.0x）(&amp;O)</translation>
 <translation id="7554791636758816595">新しいタブ</translation>
 <translation id="6231471673669497681">再生速度(&amp;P)</translation>
+<translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">DNS プリフェッチを使用してページの表示速度を向上する</translation>
 <translation id="1086613338090581534">証明書が有効期限内の場合、その証明書の発行元はいわゆる「取り消しリスト」を保持する責任を有します。証明書が侵害された場合、取り消しリストに追加することで、発行元は、その証明書を取り消すことができます。これにより、ブラウザはこの証明書を信頼しないようになります。失効した証明書については、取り消しステータスを保持する必要はないため、証明書が侵害され取り消されるか、または安全が保持されるかどうかを、その証明書が有効な間に判断することは不可能です。したがって、通信しているウェブサイトが正当なものかどうか、または通信対象の証明書が侵害され現在は悪意のあるユーザーの所有物となっているかどうかを見分けることができません。これ以上、処理を続行しないでください。</translation>
 <translation id="3157931365184549694">復元</translation>
@@ -758,6 +770,7 @@
 <translation id="19901320010520290">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; のウェブサイトには、コンピュータに損害を与えたり無断で動作したりするマルウェアをホストしている可能性のあるサイトの要素が含まれています。マルウェアをホストするサイトにアクセスするだけでコンピュータに感染する場合があります。このウェブサイトは、「フィッシング」サイトとして報告されているサイトのコンテンツもホストしています。フィッシング サイトは、銀行などの信用機関を装うなどの手口で、ユーザーから個人情報や財務情報を不正に引き出します。</translation>
 <translation id="2679312662830811292"><ph name="NUMBER_ONE"/> 分前</translation>
 <translation id="9065203028668620118">編集</translation>
+<translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">アドレス バーから検索します。</translation>
 <translation id="4867297348137739678">過去 1 週間</translation>
 <translation id="4881695831933465202">開く</translation>
@@ -821,6 +834,7 @@
 <translation id="2927657246008729253">変更...</translation>
 <translation id="3478477629095836699">Cookie の設定:</translation>
 <translation id="2108475813351458355"><ph name="DOMAIN"/> への接続はセキュリティで保護されています</translation>
+<translation id="1447542739493932962">信頼できる拡張機能だけをインストールしてください。</translation>
 <translation id="942671148946453043">このウィンドウはシークレット モードです。このウィンドウで開いたページは履歴に残りません。</translation>
 <translation id="3503975005768721305">新しいウェブクリップの追加</translation>
 <translation id="6996505290426962909">ブックマークと設定のインポート(&amp;I)...</translation>
@@ -895,6 +909,7 @@
 <translation id="3455546154539383562">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーにより提示された証明書は発行元により取り消されています。これは、サーバーにより提示されたセキュリティ認証が信頼できないことを示しており、悪意のあるユーザーと通信を行っている可能性があります。処理を続行しないでください。</translation>
 <translation id="1177437665183591855">不明なサーバー証明書エラー</translation>
 <translation id="3819800052061700452">全画面表示(&amp;F)</translation>
+<translation id="3218306954729745977">最近閉じたタブを表示</translation>
 <translation id="3737554291183722650">ページ タイトル:</translation>
 <translation id="4726901538158498735">既定の検索エンジン:</translation>
 <translation id="5101042277149003567">すべてのブックマークを開く</translation>
@@ -919,6 +934,7 @@
 <translation id="2149973817440762519">ブックマークを編集</translation>
 <translation id="430831869130657585">サフィックス</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
+<translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="6314919950468685344">固定幅フォント:</translation>
@@ -939,6 +955,7 @@
 <translation id="4477534650265381513">こちらのブックマーク バーにブックマークを追加すると簡単にページにアクセスできます。</translation>
 <translation id="8080048886850452639">オーディオの URL をコピー(&amp;O)</translation>
 <translation id="8328145009876646418">左端</translation>
+<translation id="8203365863660628138">インストールの確認</translation>
 <translation id="406259880812417922">(キーワード: <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">JavaScript Debugger - 実行中</translation>
 </translationbundle>

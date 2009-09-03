@@ -74,12 +74,14 @@
 <translation id="8534801226027872331">এই ক্ষেত্রে, আপনার ব্রাউজারে উপস্থিত শংসাপত্রে ত্রুটি আছে এবং বোঝা যাবে না৷ এর অর্থ হতে পারে, আমরা শংসাপত্রের মধ্যে থাকা পরিচয় তথ্য অথবা কানেকশন নিরাপদ করার জন্য ব্যবহৃত শংসাপত্রের অন্য কিছু তথ্য বুঝতে পারছি না৷ আপনার এগিয়ে যাওয়া উচিত নয়৷</translation>
 <translation id="4422347585044846479">এই পৃষ্ঠার বুকমার্ক সম্পাদনা করুন</translation>
 <translation id="7367545749698325833">আপনি নিজের বুকমার্কগুলি ও সেটিংস অন্যান্য ব্রাউজার থেকে আমদানি করতে পারেন বা এই কম্পিউটার থেকে আপনার ব্রাউজিংয়ের ডেটা সাফ করতে পারেন৷</translation>
+<translation id="51285338152176012">সম্প্রতি বন্ধ হওয়া ট্যাবগুলি লুকান</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">বুকমার্কস</translation>
 <translation id="2994458892329442723">প্ল্যাগ-ইন সক্ষম করুন</translation>
 <translation id="1669397342410349095">ফিশিং ওয়েবসাইট প্রতিবেদন করুন...</translation>
 <translation id="1674989413181946727">কম্পিউটার-ওয়াইড SSL সেটিংস:</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN"/>-এ আপনার কানেকশন এনক্রিপ্ট হয় নি৷</translation>
+<translation id="5600613131076600482">এক্সটেনশনগুলি আপনার কম্পিউটার ও ব্যক্তিগত ডেটায় অ্যাক্সেস করতে পারে৷ সেগুলি আপনার ওয়ালে অস্বস্তিকর ছবি পোস্ট করতে পারে৷</translation>
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="2518917559152314023">যু&amp;ক্ত...</translation>
 <translation id="8217250408786235522">&amp;সাধারণ (1.0x)</translation>
@@ -89,6 +91,7 @@
 <translation id="3512466011168167042">নেভিগেশন ত্রুটির জন্য প্রস্তাবনা দেখান</translation>
 <translation id="7767960058630128695">পাসওয়ার্ড:</translation>
 <translation id="6518014396551869914">ছবি অনুলি&amp;পি করুন</translation>
+<translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="6363850194751762580">পপ-আপগুলি পরিচালনা করুন</translation>
 <translation id="4120898696391891645">পৃষ্ঠা লোড হবে না</translation>
 <translation id="5584537427775243893">আমদানি হচ্ছে</translation>
@@ -300,6 +303,7 @@
 <translation id="3513979718339724672">থাম্বনেইলগুলি দেখান</translation>
 <translation id="7300965843904003671">সর্বদা <ph name="URL"/> থেকে পপ-আপগুলি দেখান</translation>
 <translation id="8211437954284917092">আপনার বুকমার্কস অনুসন্ধানের জন্য উপরের পাঠ ক্ষেত্রে একটি ক্যোয়ারী লিখুন৷</translation>
+<translation id="2950143609136989144">এক্সটেনশনগুলির আপনার কম্পিউটার ও ব্যক্তিগত ডেটায় অ্যাক্সেস থাকে৷ এর অর্থ তারা আপনার সমস্ত মেল আপনার প্রিয়াকে পাঠিয়ে দিতে পারে৷</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/>টি / <ph name="TOTAL_FILES"/>টি ফাইল</translation>
 <translation id="1291121346508216435">স্বয়ংক্রিয়ভাবে বানান ঠিক করুন:</translation>
 <translation id="6805291412499505360">তৃতীয়-পক্ষ কুকিজ কেমনভাবে ব্যবহার করা হবে তা সীমিত করুন</translation>
@@ -326,6 +330,7 @@
 <translation id="2356762928523809690">আপডেট সার্ভার উপলব্ধ নয় (ত্রুটি: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">বৈশিষ্ট্যযুক্ত থিম</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME"/> অনুসন্ধান করুন:</translation>
+<translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="8730621377337864115">সম্পন্ন</translation>
 <translation id="6267166720438879315">নিজেকে <ph name="HOST_NAME"/> এ প্রমাণীকৃত করতে একটি শংসাপত্র নির্বাচন করুন</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> মিনিট</translation>
@@ -443,6 +448,7 @@
 <translation id="3664021239099029884">সমস্ত ডাউনলোড দেখুন</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> মিনিট আগে</translation>
 <translation id="7754704193130578113">প্রতিটি ফাইল ডাউনলোড করার আগে তা কোথায় সংরক্ষণ করতে হবে জিজ্ঞাসা করুন</translation>
+<translation id="2838167480523328393">&quot;<ph name="EXTENSION_NAME"/>&quot; ইনস্টল করবেন?</translation>
 <translation id="2497284189126895209">সকল ফাইল</translation>
 <translation id="5360606537916580043">অন্তিম দিন</translation>
 <translation id="6589689504565594563">কুকিজ মুছুন</translation>
@@ -488,6 +494,7 @@
 <translation id="6434892175081553796">এই ট্যাবের দ্বারা বন্ধ ট্যাবস খোলে</translation>
 <translation id="3268761268932257769">স্বয়ংক্রিয়ভাবে ছবি ডাউনলোড করুন</translation>
 <translation id="7227780179130368205">ম্যালওয়ার সনাক্ত হয়েছে!</translation>
+<translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3942946088478181888">আমাকে বুঝতে সাহায্য করুন</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (ডিফল্ট)</translation>
 <translation id="111844081046043029">আপনি এই পৃষ্ঠাটি ছেড়ে যাওয়ার ব্যাপারে কি নিশ্চিত?</translation>
@@ -514,6 +521,7 @@
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/>, সম্পূর্ণ</translation>
 <translation id="2435457462613246316">পাসওয়ার্ড দেখান</translation>
 <translation id="394984172568887996">IE থেকে আমাদানি করা</translation>
+<translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="5315873049536339193">পরিচয়</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> বর্তমানে আপনার ডিফল্ট ব্রাউজার নয়৷</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> দিন</translation>
@@ -546,6 +554,7 @@
 <translation id="8349305172487531364">বুকমার্কস দণ্ড</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME"/>-এ <ph name="SEARCH_TERMS"/> অনুসন্ধান করুন</translation>
 <translation id="8004582292198964060">ব্রাউজার</translation>
+<translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">ফোল্ডার নাম সম্পাদনা করুন</translation>
 <translation id="5433207235435438329">বানান-পরীক্ষা ভাষা:</translation>
 <translation id="3183922693828471536">এখান পর্যন্ত স্ক্রোল করুন</translation>
@@ -629,11 +638,13 @@
 <translation id="5538307496474303926">সাফ হচ্ছে...</translation>
 <translation id="1285631718404404702">সাম্প্রতিক ক্রিয়াকলাপগুলি দেখান</translation>
 <translation id="6783679543387074885">বাগ অথবা ভেঙে যাওয়া ওয়েব সাইটের প্রতিবেদন করুন</translation>
+<translation id="2022952840834921450">এক্সটেনশনগুলির আপনার কম্পিউটার ও ব্যক্তিগত ডেটায় অ্যাক্সেস থাকে৷ তারা আপনার হয়ে tweets বা ইমেল প্রেরণ করতে পারে৷</translation>
 <translation id="3413103074007669042">এই পৃষ্ঠাতে কিছু অনিরাপদ লিখিত সামগ্রী রয়েছে</translation>
 <translation id="4887833561977827087">এখানে প্রদর্শনের জন্য এখনও কোন আইটেম নেই৷
         আপনার ওয়েব ক্লিপগুলি <ph name="BEGIN_LINK"/>কাস্টমাইজ<ph name="END_LINK"/>
         করুন এবং আরও সংস্থান যুক্ত করুন৷</translation>
 <translation id="5285267187067365830">প্ল্যাগ-ইন ইনস্টল করুন...</translation>
+<translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">এই ওয়েবপৃষ্ঠাটি উপলবদ্ধ নয়৷</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;এনকোডিং</translation>
@@ -658,6 +669,7 @@
 <translation id="777885533320815847">দ্বি&amp;গুণ সময় (2.0x)</translation>
 <translation id="7554791636758816595">নতুন ট্যাব</translation>
 <translation id="6231471673669497681">&amp;প্লেব্যাক রেট</translation>
+<translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">পৃষ্ঠা লোড সম্পাদনা উন্নত করার জন্য DNS পূর্ব-আনয়ন ব্যবহার করুন</translation>
 <translation id="1086613338090581534">কোনো মেয়াদ শেষ না হওয়া শংসাপত্রের ইস্যুকারী সেটির “প্রত্যাহার তালিকা” নামক জিনিসের রক্ষনাবেক্ষণের জন্য দ্বায়িত্বশীল৷ যদি কোনো শংসাপত্রে কখনও সন্দেহ থাকে তাহলে ইস্যুকারী সেটিকে প্রত্যাহার তালিকাতে যুক্ত করে প্রত্যাহার করতে পারে এবং এরপর থেকে এই শংসাপত্রটিকে আপনার ব্রাউজার আর ভরসা করবে না৷ মেয়াদ শেষ হওয়া সংশাপত্রের জন্য প্রত্যাহার স্থিতি অক্ষুণ্ণ রাখার দরকার নেই, ফলে আপনার পরিদর্শন করা ওয়েবসাইটের জন্য এই শংসাপত্রটি বৈধ হলে, সেই ক্ষেত্রে এটি নির্ধারণ করা সম্ভব হয় না যে শংসাপত্রটি সন্দেহজনক এবং পশাত্কালে প্রত্যাহার করা হয়েছিল কি না অথবা এটি এখনও নিরাপদ কি না৷ যেমন আপনি আইনসঙ্গত ওয়েব সাইটে যোগাযোগ করছেন কি না অথবা শংসাপত্রটি সন্দেহজনক কি না এবং এখন আপনি যার সাথে যোগাযোগ করছেন সেটি আক্রমণকারীর অধীনে আছে কি না তা বলা সত্যিই অসম্ভব৷ আপনার এর বেশি এগোনো উচিত নয়৷</translation>
 <translation id="3157931365184549694">পুনরুদ্ধার করুন</translation>
@@ -764,6 +776,7 @@
 <translation id="19901320010520290">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; এ থাকা ওয়েবসাইটটিতে এমন সাইটগুলি থেকে উপাদান সমন্বিত রয়েছে যা দূষিত - সফ্টওয়্যার হোস্ট করে বলে মনে হচ্ছে, এটি আপনার কম্পিউটারের ক্ষতি করতে পারে বা অন্যথায় আপনার সম্মতি ছাড়াই পরিচালিত হতে পারে৷  ম্যালওয়ার হোস্ট করে এমন সাইট কেবলমাত্র পরিদর্শন করলেও আপনার কম্পিউটার আক্রান্ত হতে পারে৷ওয়েবসাইটটি &quot;ফিশিং&quot; সাইট হিসাবে প্রতিবেদন হওয়া সাইটগুলি থেকেও লিখিত সামগ্রীগুলি হোস্ট করতে পারে৷  ফিশিং সাইট প্রায়ই কোনো বিশ্বস্ত প্রতিষ্ঠান যেমন ব্যাঙ্ক রূপে নিজেদের উপস্থাপন করার ভান করে ব্যবহারকারীদের ব্যক্তিগত অথবা আর্থিক তথ্য প্রকাশ করার জন্য প্ররোচিত করে৷</translation>
 <translation id="2679312662830811292"><ph name="NUMBER_ONE"/> min ago</translation>
 <translation id="9065203028668620118">সম্পাদনা</translation>
+<translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">ঠিকানা দণ্ড থেকে সন্ধান করুন৷</translation>
 <translation id="4867297348137739678">গত সপ্তাহ</translation>
 <translation id="4881695831933465202">খুলুন</translation>
@@ -827,6 +840,7 @@
 <translation id="2927657246008729253">পরিবর্তন...</translation>
 <translation id="3478477629095836699">কুকি সেটিংস:</translation>
 <translation id="2108475813351458355"><ph name="DOMAIN"/>-এ নিরাপদ কানেকশন</translation>
+<translation id="1447542739493932962">কেবল আপনি যে এক্সটেনশনগুলিতে আস্থা রাখেন তা ইনস্টল করুন৷</translation>
 <translation id="942671148946453043">আপনি একটি ছদদ্মবেশ উইন্ডো খুলেছেন৷ এই উইন্ডোতে আপনি যে পৃষ্ঠাগুলি খুলেছেন সেগুলি আপনার ইতিহাসে উপস্থিত হবে না৷</translation>
 <translation id="3503975005768721305">একটি নতুন ওয়েব ক্লিপ যুক্ত করুন</translation>
 <translation id="6996505290426962909">বুকমার্কের &amp;&amp; সেটিংস &amp;আমদানি করুন...</translation>
@@ -901,6 +915,7 @@
 <translation id="3455546154539383562">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;–এ পৌঁছানোর প্রচেষ্টা করেছেন, কিন্তু সার্ভার দ্বারা উপস্থাপিত শংসাপত্রটি সেটির ইস্যুকারী প্রত্যাহার করেছে৷ এর অর্থ হল সার্ভার দ্বারা উপস্থাপিত নিরাপত্তা প্রমাণ-পত্রটিকে কখনই ভরসা করা উচিত নয়৷ হতে পারে আপনি একটি আক্রমণকারীর সাথে যোগাযোগ করছেন৷ আপনার এগিয়ে যাওয়া উচিত নয়৷</translation>
 <translation id="1177437665183591855">অজানা সার্ভার শংসাপত্র ত্রুটি</translation>
 <translation id="3819800052061700452">&amp;পূর্ণ-স্ক্রীন</translation>
+<translation id="3218306954729745977">সম্প্রতি বন্ধ হওয়া ট্যাবগুলি দেখান</translation>
 <translation id="3737554291183722650">পৃষ্ঠার শিরোনাম:</translation>
 <translation id="4726901538158498735">ডিফল্ট অনুসন্ধান:</translation>
 <translation id="5101042277149003567">সকল বুকমার্ক খুলুন</translation>
@@ -925,6 +940,7 @@
 <translation id="2149973817440762519">বুকমার্ক সম্পাদনা করুন</translation>
 <translation id="430831869130657585">সাফিক্স</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
+<translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="4759238208242260848">ডাউনলোডগুলি</translation>
 <translation id="1178581264944972037">বিরাম</translation>
 <translation id="6314919950468685344">নির্দিষ্ট-চওড়া হরফ:</translation>
@@ -945,6 +961,7 @@
 <translation id="4477534650265381513">দ্রুত অ্যাক্সেসের জন্য, আপনার বুকমার্কস এখানে বুকমার্কস দণ্ডে রাখুন৷</translation>
 <translation id="8080048886850452639">অ&amp;ডিও URL অনুলিপি করুন</translation>
 <translation id="8328145009876646418">বাম প্রান্ত</translation>
+<translation id="8203365863660628138">ইনস্টলেশন নিশ্চিত করুন</translation>
 <translation id="406259880812417922">(মূল শব্দ: <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">JavaScript ডিবাগার - চলমান</translation>
 </translationbundle>

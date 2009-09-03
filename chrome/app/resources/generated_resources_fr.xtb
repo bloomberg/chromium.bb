@@ -74,12 +74,14 @@
 <translation id="8534801226027872331">Cela signifie que le certificat présenté à votre navigateur contient des erreurs et qu'il ne peut pas être compris. Il est possible que les informations sur l'identité du certificat ou que d'autres informations du certificat relatives à la sécurité de la connexion soient incompréhensibles. Ne poursuivez pas.</translation>
 <translation id="4422347585044846479">Modifier le favori de cette page</translation>
 <translation id="7367545749698325833">Vous pouvez importer vos favoris et vos paramètres depuis d'autres navigateurs ou effacer les données de navigation de cet ordinateur.</translation>
+<translation id="51285338152176012">Masquer les onglets fermés récemment</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">Favoris</translation>
 <translation id="2994458892329442723">Activer les plug-ins</translation>
 <translation id="1669397342410349095">Signaler un site Web de phishing...</translation>
 <translation id="1674989413181946727">Paramètres SSL sur tout l'ordinateur :</translation>
 <translation id="8703575177326907206">Votre connexion à <ph name="DOMAIN"/> n'est pas cryptée.</translation>
+<translation id="5600613131076600482">Les extensions accèdent à votre ordinateur et à vos données personnelles. Elles pourraient rendre publiques des images peu flatteuses de vous.</translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="2518917559152314023">A&amp;jouter...</translation>
 <translation id="8217250408786235522">&amp;Normal (1.0x)</translation>
@@ -89,6 +91,7 @@
 <translation id="3512466011168167042">Afficher des suggestions lors d'erreurs de navigation</translation>
 <translation id="7767960058630128695">Mots de passe :</translation>
 <translation id="6518014396551869914">Cop&amp;ier l'image</translation>
+<translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="6363850194751762580">Gérer les fenêtres pop-up</translation>
 <translation id="4120898696391891645">La page ne se charge pas</translation>
 <translation id="5584537427775243893">Importation</translation>
@@ -300,6 +303,7 @@
 <translation id="3513979718339724672">Afficher les vignettes</translation>
 <translation id="7300965843904003671">Toujours afficher les fenêtres pop-up de <ph name="URL"/></translation>
 <translation id="8211437954284917092">Entrez votre requête dans la zone de texte ci-dessus pour lancer une recherche dans les favoris.</translation>
+<translation id="2950143609136989144">Les extensions ont accès à votre ordinateur et à vos données personnelles. Elles pourraient donc transférer tous vos e-mails à votre conjoint.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> fichiers</translation>
 <translation id="1291121346508216435">Corriger l'orthographe automatiquement :</translation>
 <translation id="6805291412499505360">Limiter l'utilisation des cookies tiers</translation>
@@ -316,6 +320,7 @@
 <translation id="2356762928523809690">Serveur de mise à jour non disponible (erreur : <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Thème disponible</translation>
 <translation id="5436510242972373446">Rechercher sur <ph name="SITE_NAME"/> :</translation>
+<translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="8730621377337864115">Terminé</translation>
 <translation id="6267166720438879315">Sélectionnez un certificat pour vous authentifier sur <ph name="HOST_NAME"/>.</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minute</translation>
@@ -430,6 +435,7 @@
 <translation id="3664021239099029884">Afficher tous les téléchargements</translation>
 <translation id="2207746515960750386">il y a <ph name="MINUTE"/> minute(s)</translation>
 <translation id="7754704193130578113">Toujours demander où enregistrer les fichiers</translation>
+<translation id="2838167480523328393">Voulez-vous installer &quot;<ph name="EXTENSION_NAME"/>&quot; ?</translation>
 <translation id="2497284189126895209">Tous les fichiers</translation>
 <translation id="5360606537916580043">Le dernier jour</translation>
 <translation id="6589689504565594563">Supprimer les cookies</translation>
@@ -475,6 +481,7 @@
 <translation id="6434892175081553796">Fermer les onglets ouverts par cet onglet</translation>
 <translation id="3268761268932257769">Charger automatiquement les images</translation>
 <translation id="7227780179130368205">Un logiciel malveillant a été détecté !</translation>
+<translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3942946088478181888">Plus d'informations</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (défaut)</translation>
 <translation id="111844081046043029">Voulez-vous vraiment quitter cette page ?</translation>
@@ -501,6 +508,7 @@
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/>, terminé</translation>
 <translation id="2435457462613246316">Afficher le mot de passe</translation>
 <translation id="394984172568887996">Importés depuis IE</translation>
+<translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="5315873049536339193">Identité</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> n'est pas votre navigateur par défaut.</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> jours</translation>
@@ -533,6 +541,7 @@
 <translation id="8349305172487531364">Barre de favoris</translation>
 <translation id="7208899522964477531">Rechercher <ph name="SEARCH_TERMS"/> sur <ph name="SITE_NAME"/></translation>
 <translation id="8004582292198964060">Navigateur</translation>
+<translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Modifier le nom du dossier</translation>
 <translation id="5433207235435438329">Langue du correcteur orthographique :</translation>
 <translation id="3183922693828471536">Défilement jusqu'ici</translation>
@@ -616,11 +625,13 @@
 <translation id="5538307496474303926">Opération en cours...</translation>
 <translation id="1285631718404404702">Afficher les activités récentes</translation>
 <translation id="6783679543387074885">Signaler un bug ou un site Web hors service</translation>
+<translation id="2022952840834921450">Les extensions ont accès à votre ordinateur et à vos données personnelles. Elles pourraient envoyer des &quot;tweets&quot; (ou &quot;gazouillis&quot;) ou des e-mails en votre nom.</translation>
 <translation id="3413103074007669042">Cette page présente du contenu non sécurisé.</translation>
 <translation id="4887833561977827087">Il n'y a aucun élément à afficher.
         <ph name="BEGIN_LINK"/>Personnalisez<ph name="END_LINK"/>
          vos extraits du Web et ajoutez d'autres sources.</translation>
 <translation id="5285267187067365830">Installer le plug-in...</translation>
+<translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">Page Web inaccessible</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">Codag&amp;e</translation>
@@ -645,6 +656,7 @@
 <translation id="777885533320815847">D&amp;oublé (2.0x)</translation>
 <translation id="7554791636758816595">Nouvel onglet</translation>
 <translation id="6231471673669497681">&amp;Vitesse de lecture</translation>
+<translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Utiliser la prélecture DNS pour améliorer les performances de chargement des pages</translation>
 <translation id="1086613338090581534">L'émetteur d'un certificat n'ayant pas expiré est tenu d'assurer la maintenance de ce qui s'appelle &quot;une liste de révocation&quot;. Si un certificat est compromis, l'émetteur peut le révoquer en l'ajoutant à la liste de révocation. Ce certificat n'est alors plus approuvé par votre navigateur. Il n'est pas nécessaire d'assurer la maintenance de l'état &quot;révoqué&quot; des certificats expirés. Donc, bien qu'un certificat ait été qualifié de valide pour le site Web que vous visitez actuellement, il est impossible de déterminer s'il a été, depuis, compromis puis révoqué ou s'il est toujours valide. Par conséquent, il n'est pas possible de s'assurer si vous communiquez avec un site Web légitime ou si le certificat a été compromis et se trouve maintenant en la possession d'un pirate informatique avec lequel vous communiquez. Ne poursuivez pas.</translation>
 <translation id="3157931365184549694">Rétablir</translation>
@@ -751,6 +763,7 @@
 <translation id="19901320010520290">Le site Web à l'adresse &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; contient des éléments provenant de sites semblant héberger des logiciels malveillants. Ces derniers peuvent nuire à votre ordinateur ou agir à votre insu. Votre ordinateur peut être infecté lors d'une simple visite d'un site hébergeant des logiciels de ce type. Ce site héberge également des informations provenant de sites signalés comme étant des sites de phishing. Les sites de phishing incitent les internautes à divulguer leurs informations personnelles en se faisant passer pour des institutions de confiance, telles que des banques.</translation>
 <translation id="2679312662830811292">il y a <ph name="NUMBER_ONE"/> minute</translation>
 <translation id="9065203028668620118">Modifier</translation>
+<translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Rechercher à partir de la barre d'adresse</translation>
 <translation id="4867297348137739678">La dernière semaine</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
@@ -814,6 +827,7 @@
 <translation id="2927657246008729253">Changer...</translation>
 <translation id="3478477629095836699">Paramètres des cookies :</translation>
 <translation id="2108475813351458355">Connexion sécurisée à <ph name="DOMAIN"/></translation>
+<translation id="1447542739493932962">Installez uniquement les extensions que vous jugez fiables.</translation>
 <translation id="942671148946453043">Vous avez ouvert une fenêtre en navigation privée. Les pages que vous ouvrez dans cette fenêtre n'apparaîtront pas dans votre historique.</translation>
 <translation id="3503975005768721305">Ajouter un nouvel extrait du Web</translation>
 <translation id="6996505290426962909">&amp;Importer mes favoris et paramètres...</translation>
@@ -888,6 +902,7 @@
 <translation id="3455546154539383562">Vous avez tenté d'accéder à &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le certificat présenté par le serveur a été révoqué par son émetteur. Cela signifie que les informations d'identification présentées par le serveur ne sont pas approuvées. Vous communiquez peut-être avec un pirate informatique. Ne poursuivez pas.</translation>
 <translation id="1177437665183591855">Erreur de certificat serveur inconnue</translation>
 <translation id="3819800052061700452">&amp;Plein écran</translation>
+<translation id="3218306954729745977">Afficher les onglets fermés récemment</translation>
 <translation id="3737554291183722650">Titre de page :</translation>
 <translation id="4726901538158498735">Recherche par défaut :</translation>
 <translation id="5101042277149003567">Ouvrir tous les favoris</translation>
@@ -912,6 +927,7 @@
 <translation id="2149973817440762519">Modifier le favori</translation>
 <translation id="430831869130657585">Suffixes</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
+<translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="6314919950468685344">Police à largeur fixe :</translation>
@@ -932,6 +948,7 @@
 <translation id="4477534650265381513">Mettez vos favoris dans la barre de favoris afin d'y accéder rapidement.</translation>
 <translation id="8080048886850452639">C&amp;opier l'URL du fichier audio</translation>
 <translation id="8328145009876646418">Côté gauche</translation>
+<translation id="8203365863660628138">Confirmer l'installation</translation>
 <translation id="406259880812417922">(Mot clé : <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">Débogueur JavaScript - Exécution</translation>
 </translationbundle>

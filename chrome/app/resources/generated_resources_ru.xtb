@@ -74,12 +74,14 @@
 <translation id="8534801226027872331">В этом случае представленный вашему браузеру сертификат содержит ошибки и содержащиеся в нем данные не могут быть распознаны. Это может означать, что мы не можем распознать идентификационные данные сертификата или другую информацию, которая необходима для защищенного соединения. Мы не рекомендуем продолжать далее.</translation>
 <translation id="4422347585044846479">Изменить закладку для этой страницы</translation>
 <translation id="7367545749698325833">Можно импортировать закладки и настройки из других браузеров или удалить данные о работе браузера с этого компьютера.</translation>
+<translation id="51285338152176012">Скрыть последние закрытые вкладки</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="2994458892329442723">Включить плагины</translation>
 <translation id="1669397342410349095">Сообщить о фишинге на веб-сайте...</translation>
 <translation id="1674989413181946727">Настройки SSL компьютера:</translation>
 <translation id="8703575177326907206">Соединение с <ph name="DOMAIN"/> не зашифровано.</translation>
+<translation id="5600613131076600482">Расширения имеют доступ к вашему компьютеру и личным данным. Возможно, они размещали компрометирующие изображения в вашем профиле.</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="2518917559152314023">Д&amp;обавить...</translation>
 <translation id="8217250408786235522">&amp;Обычная (1,0x)</translation>
@@ -89,6 +91,7 @@
 <translation id="3512466011168167042">Показывать подсказки для ошибок перемещения</translation>
 <translation id="7767960058630128695">Пароли:</translation>
 <translation id="6518014396551869914">Коп&amp;ировать картинку</translation>
+<translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="6363850194751762580">Управление всплывающими окнами</translation>
 <translation id="4120898696391891645">Страница не загружается</translation>
 <translation id="5584537427775243893">Импортирование</translation>
@@ -300,6 +303,7 @@
 <translation id="3513979718339724672">Показать уменьшенные изображения</translation>
 <translation id="7300965843904003671">Всегда показывать всплывающие окна с этого адреса: <ph name="URL"/></translation>
 <translation id="8211437954284917092">Введите запрос в текстовом поле выше, чтобы выполнить поиск по закладкам.</translation>
+<translation id="2950143609136989144">Расширения имеют доступ к вашему компьютеру и личным данным. Возможно, они пересылали все сообщения электронной почты вашей второй половине.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> файла(ов)</translation>
 <translation id="1291121346508216435">Исправлять орфографические ошибки автоматически:</translation>
 <translation id="6805291412499505360">Ограничить способы использования файлов cookie независимых разработчиков</translation>
@@ -316,6 +320,7 @@
 <translation id="2356762928523809690">Обновление сервера недоступно (ошибка: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Популярные темы</translation>
 <translation id="5436510242972373446">Поиск <ph name="SITE_NAME"/>:</translation>
+<translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="6267166720438879315">Выберите сертификат для аутентификации на <ph name="HOST_NAME"/></translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> мин.</translation>
@@ -433,6 +438,7 @@
 <translation id="3664021239099029884">Просмотреть все загрузки</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> мин. назад</translation>
 <translation id="7754704193130578113">Запрашивать место для сохранения каждого файла перед загрузкой</translation>
+<translation id="2838167480523328393">Установить &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
 <translation id="2497284189126895209">Все файлы</translation>
 <translation id="5360606537916580043">Последний день</translation>
 <translation id="6589689504565594563">Удалить файлы cookie</translation>
@@ -478,6 +484,7 @@
 <translation id="6434892175081553796">Закрыть вкладки, открытые этой вкладкой</translation>
 <translation id="3268761268932257769">Автоматически загружать картинки</translation>
 <translation id="7227780179130368205">Обнаружено вредоносное ПО!</translation>
+<translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3942946088478181888">Подробные сведения</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (по умолчанию)</translation>
 <translation id="111844081046043029">Вы действительно хотите покинуть эту страницу?</translation>
@@ -504,6 +511,7 @@
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/>, полностью</translation>
 <translation id="2435457462613246316">Показать пароль</translation>
 <translation id="394984172568887996">Импортировано из IE</translation>
+<translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="5315873049536339193">Идентификационные данные</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> не является сейчас браузером по умолчанию.</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> дн.</translation>
@@ -536,6 +544,7 @@
 <translation id="8349305172487531364">Панель закладок</translation>
 <translation id="7208899522964477531">Искать на <ph name="SITE_NAME"/>  <ph name="SEARCH_TERMS"/></translation>
 <translation id="8004582292198964060">Браузер</translation>
+<translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Изменить имя папки</translation>
 <translation id="5433207235435438329">Язык проверки правописания:</translation>
 <translation id="3183922693828471536">Прокрутить до этого места</translation>
@@ -619,11 +628,13 @@
 <translation id="5538307496474303926">Очистка...</translation>
 <translation id="1285631718404404702">Показать последние действия</translation>
 <translation id="6783679543387074885">Сообщить о неполадке на сайте</translation>
+<translation id="2022952840834921450">Расширения имеют доступ к вашему компьютеру и личным данным. Возможно, они отправляли сообщения в социальные сети или по электронной почте от вашего имени.</translation>
 <translation id="3413103074007669042">Эта страница содержит небезопасные элементы.</translation>
 <translation id="4887833561977827087">Нет элементов для отображения.
         <ph name="BEGIN_LINK"/>Настройте<ph name="END_LINK"/>
         веб-клипы и добавьте дополнительные источники.</translation>
 <translation id="5285267187067365830">Установить плагин...</translation>
+<translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">Веб-страница недоступна.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">&amp;Кодировка</translation>
@@ -648,6 +659,7 @@
 <translation id="777885533320815847">Вдвое &amp;быстрее (2,0x)</translation>
 <translation id="7554791636758816595">Новая вкладка</translation>
 <translation id="6231471673669497681">&amp;Скорость воспроизведения</translation>
+<translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Использовать упреждающее чтение DNS для ускорения загрузки страниц</translation>
 <translation id="1086613338090581534">Если срок действия сертификата не истек, его издатель несет ответственность за обеспечение списка отозванных сертификатов. В случае нарушения безопасности сертификата, он может быть отозван издателем путем добавления в список отозванных сертификатов. После этого он не будет являться доверенным для вашего браузера. Статус отзыва не обязателен для сертификатов, чей срок действия истек. Поэтому несмотря на то, что сертификат был действительным для  посещаемого сайта, после истечения его срока проверить, остается ли сертификат безопасным или он был отозван из-за нарушения целостности, нельзя. Таким образом, определить, что вы обмениваетесь данными с законным владельцем сайта или целостность сертификата нарушена и теперь им обладает злоумышленник, невозможно. Мы не рекомендуем продолжать далее.</translation>
 <translation id="3157931365184549694">Восстановить</translation>
@@ -754,6 +766,7 @@
 <translation id="19901320010520290">Веб-сайт &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; содержит элементы с сайтов, на которых, судя по всему, размещено вредоносное ПО – программы, которые могут нанести вред вашему компьютеру или выполнять действия без вашего согласия. Даже простое посещение сайта, на котором размещено вредоносное ПО, может привести к заражению вашего компьютера. На этом веб-сайте также размещены материалы с сайтов, которые, по нашим данным, являются фишинговыми. Фишинговые сайты обманом получают от пользователей личную или финансовую информацию, выдавая себя за сайты доверенных учреждений, например банков.</translation>
 <translation id="2679312662830811292"><ph name="NUMBER_ONE"/> мин. назад</translation>
 <translation id="9065203028668620118">Изменить</translation>
+<translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Поисковый запрос можно вводить прямо в адресной строке.</translation>
 <translation id="4867297348137739678">Последняя неделя</translation>
 <translation id="4881695831933465202">Открыть</translation>
@@ -817,6 +830,7 @@
 <translation id="2927657246008729253">Изменить...</translation>
 <translation id="3478477629095836699">Настройки файлов cookie:</translation>
 <translation id="2108475813351458355">Защищенное соединение с <ph name="DOMAIN"/></translation>
+<translation id="1447542739493932962">Устанавливайте только те расширения, которым вы доверяете.</translation>
 <translation id="942671148946453043">Вы открыли окно в режиме инкогнито. Страницы, открытые в этом окне, не будут показаны в истории.</translation>
 <translation id="3503975005768721305">Добавление нового веб-клипа</translation>
 <translation id="6996505290426962909">&amp;Импорт закладок и&amp; настроек...</translation>
@@ -891,6 +905,7 @@
 <translation id="3455546154539383562">Вы попытались открыть &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако представленный сервером сертификат был отозван издателем. Это значит, что представленным сервером идентификационным данным доверять ни в коем случае нельзя. Вполне вероятно, что вы обмениваетесь данными со злоумышленником. Мы не рекомендуем продолжать далее.</translation>
 <translation id="1177437665183591855">Неизвестная ошибка сертификата сервера</translation>
 <translation id="3819800052061700452">Полно&amp;экранный режим</translation>
+<translation id="3218306954729745977">Показать последние закрытые вкладки</translation>
 <translation id="3737554291183722650">Заголовок страницы:</translation>
 <translation id="4726901538158498735">Поиск по умолчанию:</translation>
 <translation id="5101042277149003567">Открыть все закладки</translation>
@@ -915,6 +930,7 @@
 <translation id="2149973817440762519">Изменить закладку</translation>
 <translation id="430831869130657585">Суффиксы</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
+<translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="4759238208242260848">Загрузки</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="6314919950468685344">Шрифт фиксированной ширины:</translation>
@@ -935,6 +951,7 @@
 <translation id="4477534650265381513">Для быстрого доступа поместите закладки сюда, в панель закладок.</translation>
 <translation id="8080048886850452639">К&amp;опировать URL аудиозаписи</translation>
 <translation id="8328145009876646418">Левый край</translation>
+<translation id="8203365863660628138">Подтверждение установки</translation>
 <translation id="406259880812417922">(Ключевое слово: <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">Отладчик JavaScript - Выполнение</translation>
 </translationbundle>

@@ -74,12 +74,14 @@
 <translation id="8534801226027872331">In dit geval bevat het certificaat voor uw browser fouten en kan niet worden verwerkt. Dat kan betekenen dat we de identiteitsgegevens in het certificaat niet kunnen verifiëren, of bepaalde andere informatie in het certificaat dat wordt gebruikt om de verbinding te beveiligen. U kunt beter niet verder gaan.</translation>
 <translation id="4422347585044846479">Bladwijzer voor deze pagina bewerken</translation>
 <translation id="7367545749698325833">U kunt uw bladwijzers en instellingen van andere browsers importeren of uw browsegegevens van deze computer wissen.</translation>
+<translation id="51285338152176012">Onlangs gesloten tabbladen verbergen</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">Bladwijzers</translation>
 <translation id="2994458892329442723">Plug-ins inschakelen</translation>
 <translation id="1669397342410349095">Phishingwebsite melden...</translation>
 <translation id="1674989413181946727">SSL-instellingen voor hele computer:</translation>
 <translation id="8703575177326907206">Uw verbinding met <ph name="DOMAIN"/> is niet gecodeerd.</translation>
+<translation id="5600613131076600482">Extensies hebben toegang tot uw computer en privégegevens. Ze zouden genante foto's van u op Facebook kunnen plaatsen.</translation>
 <translation id="1644574205037202324">Geschiedenis</translation>
 <translation id="2518917559152314023">&amp;Toevoegen...</translation>
 <translation id="8217250408786235522">&amp;Gemiddeld (1 x)</translation>
@@ -89,6 +91,7 @@
 <translation id="3512466011168167042">Suggesties weergeven voor navigatiefouten</translation>
 <translation id="7767960058630128695">Wachtwoorden:</translation>
 <translation id="6518014396551869914">A&amp;fbeelding kopiëren</translation>
+<translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="6363850194751762580">Pop-ups beheren</translation>
 <translation id="4120898696391891645">Pagina kan niet worden geladen</translation>
 <translation id="5584537427775243893">Importeren</translation>
@@ -300,6 +303,7 @@
 <translation id="3513979718339724672">Miniaturen weergeven</translation>
 <translation id="7300965843904003671">Pop-ups van <ph name="URL"/> altijd weergeven</translation>
 <translation id="8211437954284917092">Geef een zoekopdracht op in het bovenstaande tekstveld om uw bladwijzers te doorzoeken.</translation>
+<translation id="2950143609136989144">Extensies hebben toegang tot uw computer en privégegevens. Ze zouden al uw e-mail naar uw partner kunnen doorsturen.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> van <ph name="TOTAL_FILES"/> bestanden</translation>
 <translation id="1291121346508216435">Spelling automatisch corrigeren:</translation>
 <translation id="6805291412499505360">Het gebruik van cookies van derden beperken</translation>
@@ -316,6 +320,7 @@
 <translation id="2356762928523809690">De updateserver is niet beschikbaar (fout: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Aanbevolen thema</translation>
 <translation id="5436510242972373446">Zoeken op <ph name="SITE_NAME"/>:</translation>
+<translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="8730621377337864115">Gereed</translation>
 <translation id="6267166720438879315">Selecteer een certificaat om uw identiteit te verifiëren voor <ph name="HOST_NAME"/></translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minuut</translation>
@@ -433,6 +438,7 @@
 <translation id="3664021239099029884">Alle downloads weergeven</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> minuut/minuten geleden</translation>
 <translation id="7754704193130578113">Voorafgaand aan een download vragen waar een bestand moet worden opgeslagen</translation>
+<translation id="2838167480523328393">Wilt u '<ph name="EXTENSION_NAME"/>' installeren?</translation>
 <translation id="2497284189126895209">Alle bestanden</translation>
 <translation id="5360606537916580043">Afgelopen dag</translation>
 <translation id="6589689504565594563">Cookies verwijderen</translation>
@@ -478,6 +484,7 @@
 <translation id="6434892175081553796">Tabbladen sluiten die zijn geopend door dit tabblad</translation>
 <translation id="3268761268932257769">Afbeeldingen automatisch laden</translation>
 <translation id="7227780179130368205">Malware gedetecteerd!</translation>
+<translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
 <translation id="3942946088478181888">Meer informatie</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (standaard)</translation>
 <translation id="111844081046043029">Weet u zeker dat u deze pagina wilt verlaten?</translation>
@@ -504,6 +511,7 @@
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/>, voltooid</translation>
 <translation id="2435457462613246316">Wachtwoord weergeven</translation>
 <translation id="394984172568887996">Geïmporteerd uit Internet Explorer</translation>
+<translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="5315873049536339193">Identiteit</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> is momenteel niet uw standaardbrowser.</translation>
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> dagen</translation>
@@ -536,6 +544,7 @@
 <translation id="8349305172487531364">Bladwijzerbalk</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME"/> doorzoeken op <ph name="SEARCH_TERMS"/></translation>
 <translation id="8004582292198964060">Browser</translation>
+<translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Mapnaam bewerken</translation>
 <translation id="5433207235435438329">Taal voor spellingcontrole:</translation>
 <translation id="3183922693828471536">Hiernaartoe bladeren</translation>
@@ -619,11 +628,13 @@
 <translation id="5538307496474303926">Wissen...</translation>
 <translation id="1285631718404404702">Recente activiteiten weergeven</translation>
 <translation id="6783679543387074885">Fout of niet-bereikbare website melden</translation>
+<translation id="2022952840834921450">Extensies hebben toegang tot uw computer en privégegevens. Ze zouden namens u tweets of e-mail kunnen verzenden.</translation>
 <translation id="3413103074007669042">Deze pagina bevat bepaalde onveilige inhoud</translation>
 <translation id="4887833561977827087">Er worden hier nog geen items weergegeven.
         <ph name="BEGIN_LINK"/>Pas uw webclips aan<ph name="END_LINK"/>
         en voeg meer bronnen toe.</translation>
 <translation id="5285267187067365830">Plug-ins installeren...</translation>
+<translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">Deze webpagina is niet beschikbaar.</translation>
 <translation id="8520668773617044689">Firefox</translation>
 <translation id="8434177709403049435">Cod&amp;eren</translation>
@@ -648,6 +659,7 @@
 <translation id="777885533320815847">T&amp;weemaal zo snel (2 x)</translation>
 <translation id="7554791636758816595">Nieuw tabblad</translation>
 <translation id="6231471673669497681">Afs&amp;peelsnelheid</translation>
+<translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">DNS-prefetching gebruiken om pagina's sneller te laden</translation>
 <translation id="1086613338090581534">Voor niet-verlopen certificaten is de uitgever van een certificaat verantwoordelijk voor het onderhouden van iets dat een intrekkingslijst heet. Als een certificaat geen garanties meer kan bieden, kan de uitgever het intrekken door het aan de intrekkingslijst toe te voegen. Vervolgens wordt dit certificaat niet langer vertrouwd door uw browser. De intrekkingsstatus hoeft niet bijgehouden te worden voor verlopen certificaten. Hoewel dit certificaat eerder geldig was voor de website die u bezoekt, is het op dit moment niet mogelijk te bepalen of het certificaat is geschonden en daarom ingetrokken, of dat het nog veilig is. We kunnen daarom niet aangeven of u met een echte website communiceert of dat het certificaat geschonden is en in bezit is van een hacker, waarmee u nu communiceert. U kunt hier beter niet verder gaan.</translation>
 <translation id="3157931365184549694">Herstellen</translation>
@@ -754,6 +766,7 @@
 <translation id="19901320010520290">De website op &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; bevat elementen van sites die malware lijken te hosten. Dat is software die uw computer kan beschadigen of zonder uw medeweten acties kan uitvoeren. Uw computer kan worden geïnfecteerd wanneer u een site bezoekt die malware bevat. De website host ook inhoud van sites die zijn gemeld als 'phishingsites'. Phishingsites zijn sites die proberen gebruikers persoonlijke of financiële gegevens te laten opgeven, vaak door zich voor te doen als betrouwbare instellingen, zoals banken.</translation>
 <translation id="2679312662830811292"><ph name="NUMBER_ONE"/> minuut geleden</translation>
 <translation id="9065203028668620118">Bewerken</translation>
+<translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
 <translation id="8236028464988198644">Zoeken vanuit de adresbalk</translation>
 <translation id="4867297348137739678">Vorige week</translation>
 <translation id="4881695831933465202">Openen</translation>
@@ -817,6 +830,7 @@
 <translation id="2927657246008729253">Wijzigen...</translation>
 <translation id="3478477629095836699">Cookie-instellingen:</translation>
 <translation id="2108475813351458355">Beveiligde verbinding met <ph name="DOMAIN"/></translation>
+<translation id="1447542739493932962">Installeer alleen extensies die u vertrouwt.</translation>
 <translation id="942671148946453043">U heeft een incognitovenster geopend. Pagina's die u in dit venster opent, worden niet weergegeven in uw geschiedenis.</translation>
 <translation id="3503975005768721305">Nieuwe webclip toevoegen</translation>
 <translation id="6996505290426962909">Bladwijzers en &amp;instellingen importeren...</translation>
@@ -891,6 +905,7 @@
 <translation id="3455546154539383562">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar het certificaat dat de server retourneerde, is ingetrokken door de uitgever. Dat betekent dat de veiligheidsgaranties die de server heeft geretourneerd, absoluut niet kunnen worden vertrouwd. U communiceert mogelijk met een hacker. U kunt beter niet verder gaan.</translation>
 <translation id="1177437665183591855">Onbekende fout met servercertificaat</translation>
 <translation id="3819800052061700452">&amp;Volledig scherm</translation>
+<translation id="3218306954729745977">Onlangs gesloten tabbladen weergeven</translation>
 <translation id="3737554291183722650">Paginatitel:</translation>
 <translation id="4726901538158498735">Standaardzoekmachine</translation>
 <translation id="5101042277149003567">Alle bladwijzers openen</translation>
@@ -915,6 +930,7 @@
 <translation id="2149973817440762519">Bladwijzer bewerken</translation>
 <translation id="430831869130657585">Achtervoegsels</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>
+<translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
 <translation id="6314919950468685344">Lettertype met vaste breedte:</translation>
@@ -935,6 +951,7 @@
 <translation id="4477534650265381513">Plaats voor een snelle navigatie uw bladwijzers in deze bladwijzerbalk.</translation>
 <translation id="8080048886850452639">Audi&amp;o-URL kopiëren</translation>
 <translation id="8328145009876646418">Linkerzijde</translation>
+<translation id="8203365863660628138">Installatie bevestigen</translation>
 <translation id="406259880812417922">(Zoekwoord: <ph name="KEYWORD"/>)</translation>
 <translation id="2437750561138919253">Foutopsporing voor JavaScript: actief</translation>
 </translationbundle>
