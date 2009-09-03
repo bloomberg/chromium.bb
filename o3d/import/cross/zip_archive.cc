@@ -295,7 +295,7 @@ char  *ZipArchive::GetFileData(const string &filename, size_t *size) {
 
   result = unzOpenCurrentFilePassword(uf, NULL);
 
-  char *buffer;
+  char *buffer = NULL;
 
   if (result == UNZ_OK) {
     const int kBufferChunkSize = 32768;

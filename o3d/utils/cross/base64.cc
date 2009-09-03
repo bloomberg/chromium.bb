@@ -155,7 +155,7 @@ DecodeStatus PerformDecode(const void* src_ptr,
         pad_two = true;
       break;
     } while (byte < 4);
-    int two, three;
+    int two = 0, three = 0;
     if (write_destination) {
       int one = (bytes[0] << 2) & 0xFF;
       two = bytes[1];
