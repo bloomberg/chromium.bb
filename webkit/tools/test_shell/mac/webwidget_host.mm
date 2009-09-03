@@ -255,7 +255,15 @@ void WebWidgetHost::WheelEvent(NSEvent *event) {
 }
 
 void WebWidgetHost::KeyEvent(NSEvent *event) {
-  webwidget_->handleInputEvent(WebInputEventFactory::keyboardEvent(event));
+  WebKeyboardEvent keyboard_event(WebInputEventFactory::keyboardEvent(event));
+  webwidget_->handleInputEvent(keyboard_event);
+  if ([event type] == NSKeyDown) {
+    // Send a Char event here to emulate the keyboard events.
+    // TODO(hbono): Bug 20852 <http://crbug.com/20852> implement the
+    // NSTextInput protocol and remove this code.
+    keyboard_event.type = WebInputEvent::Char;
+    webwidget_->handleInputEvent(keyboard_event);
+  }
 }
 
 void WebWidgetHost::SetFocus(bool enable) {
