@@ -88,7 +88,7 @@
       'filepath': 'tools/.*',
     },
     'tests': {
-      'filepath': 'unittest|browsertest|uitest',
+      'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/.*',
     },
     'automation': {
       'filepath': 'chrome/browser/automation/.*|chrome/test/automation/.*',
