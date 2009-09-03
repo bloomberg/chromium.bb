@@ -212,7 +212,10 @@ std::string BuildTooltipFor(const BookmarkNode* node) {
     std::string escaped_title(escaped_title_cstr);
     g_free(escaped_title_cstr);
 
-    return std::string("<b>") + escaped_title + "</b>\n" + escaped_url;
+    if (!escaped_url.empty())
+      return std::string("<b>") + escaped_title + "</b>\n" + escaped_url;
+    else
+      return std::string("<b>") + escaped_title + "</b>";
   }
 }
 
