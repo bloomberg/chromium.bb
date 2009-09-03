@@ -1498,6 +1498,7 @@ BUG8630 WIN LINUX : LayoutTests/fast/layers/remove-layer-with-nested-stacking.ht
 BUG8630 WIN LINUX : LayoutTests/fast/overflow/hidden-scrollbar-resize.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/reflections/inline-crash.html = FAIL
 BUG8630 WIN : LayoutTests/fast/replaced/width100percent-textarea.html = FAIL
+BUG8630 WIN : LayoutTests/fast/replaced/width100percent-button.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/table/empty-section-crash.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
 BUG8630 WIN LINUX : pending/fast/repaint/bugzilla-6473.html = FAIL
