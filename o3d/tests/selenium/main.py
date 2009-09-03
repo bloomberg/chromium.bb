@@ -38,16 +38,24 @@ Launches browsers to test the local build of the o3d plugin
 and reports results back to the user.
 """
 
-
-
 import os
-import platform
+import sys
+
+script_dir = os.path.normpath(os.path.dirname(os.path.abspath(__file__)))
+o3d_dir = os.path.dirname(os.path.dirname(script_dir))
+src_dir = os.path.dirname(o3d_dir)
+third_party_dir = os.path.join(src_dir, 'third_party')
+gflags_dir = os.path.join(third_party_dir, 'gflags', 'python')
+selenium_dir = os.path.join(third_party_dir, 'selenium_rc', 'files')
+selenium_py_dir = os.path.join(selenium_dir, 'selenium-python-client-driver')
+sys.path.append(gflags_dir)
+sys.path.append(selenium_py_dir)
+
 import re
 import SimpleHTTPServer
 import socket
 import SocketServer
 import subprocess
-import sys
 import threading
 import time
 import unittest
@@ -60,13 +68,12 @@ import samples_tests
 import selenium_constants
 import selenium_utilities
 
-
-if platform.system() == "Windows":
+if sys.platform == 'win32' or sys.platform == 'cygwin':
   default_java_exe = "java.exe"
 else:
   default_java_exe = "java"
 
-# Commands line flags
+# Command line flags
 FLAGS = gflags.FLAGS
 gflags.DEFINE_boolean("verbose", False, "verbosity")
 gflags.DEFINE_boolean("screenshots", False, "takes screenshots")
@@ -76,8 +83,12 @@ gflags.DEFINE_string(
     "specifies the path to the java executable.")
 gflags.DEFINE_string(
     "selenium_server",
-    "",
+    os.path.join(selenium_dir, 'selenium-server', 'selenium-server.jar'),
     "specifies the path to the selenium server jar.")
+gflags.DEFINE_string(
+    "product_dir",
+    None,
+    "specifies the path to the build output directory.")
 gflags.DEFINE_string(
     "screencompare",
     "",
@@ -95,10 +106,12 @@ gflags.DEFINE_string(
     "testprefix", "Test",
     "specifies the prefix of tests to run")
 gflags.DEFINE_string(
-    "testsuffixes", "",
+    "testsuffixes",
+    "small,medium,large",
     "specifies the suffixes, separated by commas of tests to run")
 gflags.DEFINE_string(
-    "servertimeout", "30",
+    "servertimeout",
+    "30",
     "Specifies the timeout value, in seconds, for the selenium server.")
 
 # Browsers to choose from (for browser flag).
@@ -117,11 +130,8 @@ gflags.DEFINE_string(
     "(for platforms that don't support MOZ_PLUGIN_PATH)")
 gflags.DEFINE_string(
     "samplespath",
-    "/",
-    "specifies the path from the web root to the samples."
-    "eg. 'scons-out/test-dbg-d3d/artifacts'")
-
-TESTING_ROOT = os.path.abspath(os.path.dirname(__file__) + "/..")
+    "",
+    "specifies the path from the web root to the samples.")
 
 
 class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
@@ -366,8 +376,7 @@ class SeleniumSession(object):
     # Start up a static file server, to serve the test pages.
 
     if not http_root:
-      # Serve from the o3d directory
-      http_root = TESTING_ROOT + "/../"
+        http_root = FLAGS.product_dir
 
     self.http_server = LocalFileHTTPServer.StartServer(http_root)
 
@@ -403,10 +412,11 @@ class SeleniumSession(object):
     else:
       server_url = "http://localhost:"
     server_url += str(self.http_server.http_port)
-    browser_path_with_space = FLAGS.browserpath
 
-    if browser_path_with_space:
-      browser_path_with_space = " " + browser_path_with_space
+    browser_path_with_space = ""
+    if FLAGS.browserpath:
+      browser_path_with_space = " " + FLAGS.browserpath
+
     self.session = selenium.selenium("localhost",
                                      self.selenium_server.selenium_port,
                                      browser + browser_path_with_space,
@@ -572,7 +582,7 @@ def SeleniumSuite(session, browser, test_list, test_prefix, test_suffixes):
   suffixes = test_suffixes.split(",")
 
   # add sample tests.
-  filename = os.path.join(os.getcwd(), "tests", "selenium", "sample_list.txt")
+  filename = os.path.abspath(os.path.join(script_dir, "sample_list.txt"))
   AddTests(test_suite,
            session,
            browser,
@@ -584,8 +594,8 @@ def SeleniumSuite(session, browser, test_list, test_prefix, test_suffixes):
            FLAGS.samplespath.replace("\\", "/"))
 
   # add javascript tests.
-  filename = os.path.join(os.getcwd(), "tests", "selenium",
-                          "javascript_unit_test_list.txt")
+  filename = os.path.abspath(os.path.join(script_dir,
+                                          "javascript_unit_test_list.txt"))
   AddTests(test_suite,
            session,
            browser,
@@ -806,13 +816,13 @@ def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
       if opt.startswith("pdiff_threshold"):
         pixel_threshold = selenium_utilities.GetArgument(opt)
       elif (opt.startswith("pdiff_threshold_mac") and
-            platform.system() == "Darwin"):
+            sys.platform == "darwin"):
         pixel_threshold = selenium_utilities.GetArgument(opt)
       elif (opt.startswith("pdiff_threshold_win") and
-            platform.system() == "Microsoft"):
+            sys.platform == 'win32' or sys.platform == "cygwin"):
         pixel_threshold = selenium_utilities.GetArgument(opt)
       elif (opt.startswith("pdiff_threshold_linux") and
-            platform.system() == "Linux"):
+            sys.platform[:5] == "linux"):
         pixel_threshold = selenium_utilities.GetArgument(opt)
       elif (opt.startswith("colorfactor")):
         colorfactor = selenium_utilities.GetArgument(opt)
@@ -938,7 +948,7 @@ def main(unused_argv):
 
   # Open a new session to Selenium Remote Control
   selenium_session = SeleniumSession(FLAGS.verbose, FLAGS.java,
-                                     FLAGS.selenium_server,
+                                     os.path.abspath(FLAGS.selenium_server),
                                      FLAGS.servertimeout)
   if not selenium_session.http_server or not selenium_session.selenium_server:
     return 1
@@ -984,4 +994,17 @@ def main(unused_argv):
 
 if __name__ == "__main__":
   remaining_argv = FLAGS(sys.argv)
+
+  # Setup the environment for Firefox
+  os.environ["MOZ_CRASHREPORTER_DISABLE"] = "1"
+  os.environ["MOZ_PLUGIN_PATH"] = os.path.normpath(FLAGS.product_dir)
+
+  # Setup the LD_LIBRARY_PATH on Linux.
+  if sys.platform[:5] == "linux":
+    if os.environ.get("LD_LIBRARY_PATH"):
+      os.environ["LD_LIBRARY_PATH"] = os.pathsep.join(
+        [os.environ["LD_LIBRARY_PATH"], os.path.normpath(FLAGS.product_dir)])
+    else:
+      os.environ["LD_LIBRARY_PATH"] = os.path.normpath(FLAGS.product_dir)
+
   sys.exit(main(remaining_argv))

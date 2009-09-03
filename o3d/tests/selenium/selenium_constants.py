@@ -36,10 +36,13 @@ Variables that are shared across all the selenium scripts.
 
 
 import os
-import platform
+import sys
+
+script_dir = os.path.normpath(os.path.dirname(os.path.abspath(__file__)))
+o3d_dir = os.path.dirname(os.path.dirname(script_dir))
 
 # Default path where screenshots will be stored.
-DEFAULT_SCREENSHOT_PATH = os.path.join("..",
+DEFAULT_SCREENSHOT_PATH = os.path.join(o3d_dir,
                                        "tests",
                                        "selenium",
                                        "screenshots")
@@ -47,14 +50,14 @@ DEFAULT_SCREENSHOT_PATH = os.path.join("..",
 # Path where reference screenshots will be stored.
 # Unfortunately we need separate reference images for certain platforms
 # for certain tests.
-if platform.system() == "Darwin":
+if sys.platform == "darwin":
   PLATFORM_SCREENSHOT_DIR = "reference-mac"
-elif platform.system() == "Linux":
+elif sys.platform[:5] == "linux":
   PLATFORM_SCREENSHOT_DIR = "reference-linux"
-elif platform.system() == "Microsoft" or platform.system() == "Windows":
+elif sys.platform == "win32" or sys.platform == "cygwin":
   PLATFORM_SCREENSHOT_DIR = "reference-win"
 else:
-  raise Exception, 'Platform %s not supported' % platform.system()
+  raise Exception, 'Platform %s not supported' % sys.platform
 
 
 

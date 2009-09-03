@@ -540,10 +540,10 @@ run_env.Replace(
         len(run_env.subst('$SCONSTRUCT_DIR')):],
     SELENIUM_FLAGS = ('--verbose=$SELENIUM_VERBOSE '
                       '--selenium_server="$SELENIUM_SERVER_JAR" '
+                      '--product_dir="$ARTIFACTS_DIR" '
                       '--testprefix=$SELENIUM_TEST_PREFIX '
                       '--testsuffixes=$SELENIUM_TEST_SUFFIXES '
                       '--screencompare=$PDIFF_PATH '
-                      '--samplespath=$SELENIUM_SAMPLES_DIR '
                       '$SELENIUM_CAPTURE_SCREENSHOTS '
                       '$SELENIUM_EXTRA_FLAGS'),
 )
@@ -615,6 +615,24 @@ if run_env.Bit('mac'):
             'rm -rf "$MAC_FIREFOX_DIR"',
         ]
 
+def DeferSeleniumTestsInstall(env):
+  manifest = []
+  sconstruct_dir = env.subst('$SCONSTRUCT_DIR')
+  for root, dirs, files in \
+      os.walk(sconstruct_dir + '/tests/selenium/tests'):
+    if '.svn' in dirs:
+      dirs.remove('.svn')
+    for file in files:
+      manifest.append(os.path.join(root[len(sconstruct_dir) + 1:], file))
+  for manifest_item in manifest:
+    result = env.Command('$ARTIFACTS_DIR/' + manifest_item,
+                         '$MAIN_DIR/' + manifest_item,
+                         [Delete('$TARGET'),
+                          Copy('$TARGET', '$SOURCE'),
+                          Chmod('$TARGET', 0777)])
+    env.Publish('selenium', 'tests', result);
+
+env.Defer(DeferSeleniumTestsInstall)
 
 def DeferSelenium(env):
   if not selenium_good_to_go:
@@ -625,7 +643,8 @@ def DeferSelenium(env):
   else:
     run_selenium_firefox = run_env.Alias(
         'selenium_firefox',
-        [plugin_path, env.GetPublished('samples', 'asset_files')],
+        [plugin_path, env.GetPublished('samples', 'asset_files'),
+         env.GetPublished('selenium', 'tests')],
         # TODO: have a cleaner way to do this.
         [Delete('$ARTIFACTS_DIR/selenium/screenshots_firefox'),
          Mkdir('$ARTIFACTS_DIR/selenium/screenshots_firefox')] +
