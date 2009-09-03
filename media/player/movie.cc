@@ -2,9 +2,9 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "base/at_exit.h"
+#include "media/player/movie.h"
+
 #include "base/string_util.h"
-#include "media/base/factory.h"
 #include "media/base/pipeline_impl.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -12,11 +12,7 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
-#include "media/player/movie.h"
-#include "media/player/stdafx.h"
 #include "media/player/wtl_renderer.h"
-// view.h must come after wtl_renderer.h.
-#include "media/player/view.h"
 
 using media::AudioRendererImpl;
 using media::FFmpegAudioDecoder;

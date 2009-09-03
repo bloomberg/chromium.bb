@@ -2,44 +2,30 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-// View.h : Paints the current movie frame (with scaling) to the display.
-// TODO(fbarchard): Consider rewriting as view.cc and view.h
-
 #ifndef MEDIA_PLAYER_VIEW_H_
 #define MEDIA_PLAYER_VIEW_H_
 
-// Enable timing code by turning on TESTING macro.
-// #define TESTING 1
-
-#ifdef TESTING
-#define _CRT_SECURE_NO_WARNINGS
-#include <windows.h>
 #include <stdio.h>
 #include <process.h>
 #include <string.h>
-#endif
 
-#include <atlscrl.h>
-
-#include "base/basictypes.h"
 #include "media/base/buffers.h"
-#include "media/base/factory.h"
-#include "media/base/filters.h"
 #include "media/base/yuv_convert.h"
 #include "media/player/movie.h"
+#include "media/player/player_wtl.h"
 #include "media/player/wtl_renderer.h"
 
-#ifdef TESTING
-// Fetch current time as milliseconds.
-// Return as double for high duration and precision.
-static inline double GetTime() {
+// Fetchs current time as milliseconds.
+// Returns as double for high duration and precision.
+inline double GetTime() {
   LARGE_INTEGER perf_time, perf_hz;
   QueryPerformanceFrequency(&perf_hz);  // May change with speed step.
   QueryPerformanceCounter(&perf_time);
   return perf_time.QuadPart * 1000.0 / perf_hz.QuadPart;  // Convert to ms.
 }
-#endif
 
+// Paints the current movie frame (with scaling) to the display.
+// TODO(fbarchard): Consider rewriting as view.cc and view.h
 class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
  public:
   DECLARE_WND_CLASS_EX(NULL, 0, -1)
@@ -432,4 +418,3 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
 };
 
 #endif  // MEDIA_PLAYER_VIEW_H_
-

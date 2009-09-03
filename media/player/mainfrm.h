@@ -2,20 +2,24 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-// MainFrm.h : interface of the CMainFrame class
-// This file is in Microsoft coding style
-
 #ifndef MEDIA_PLAYER_MAINFRM_H_
 #define MEDIA_PLAYER_MAINFRM_H_
+
+#include "media/player/list.h"
+#include "media/player/props.h"
+#include "media/player/seek.h"
+#include "media/player/view.h"
 
 const int POPUP_MENU_POSITION = 0;
 const int FILE_MENU_POSITION = 0;
 const int RECENT_MENU_POSITION = 6;
 
-const wchar_t g_lpcstrMRURegKey[] = L"Software\\Google\\Video\\MediaPlayer";
-const wchar_t g_lpcstrApp[] = L"MediaPlayer";
+const wchar_t* const g_lpcstrMRURegKey =
+    L"Software\\Google\\Video\\MediaPlayer";
+const wchar_t* const g_lpcstrApp = L"MediaPlayer";
 
-
+// Interface of the CMainFrame class
+// TODO(fbarchard): Remove hungarian notation.
 class CMainFrame : public CFrameWindowImpl<CMainFrame>,
     public CUpdateUI<CMainFrame>,
     public CMessageFilter, public CIdleHandler,
@@ -712,4 +716,3 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
 };
 
 #endif  // MEDIA_PLAYER_MAINFRM_H_
-

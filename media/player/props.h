@@ -2,12 +2,15 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-// props.h : movie properties dialog
-// TODO(fbarchard): Remove hungarian notation.
-
 #ifndef MEDIA_PLAYER_PROPS_H_
 #define MEDIA_PLAYER_PROPS_H_
 
+#include "media/player/movie.h"
+
+#include "resource.h"
+
+// Movie properties dialog
+// TODO(fbarchard): Remove hungarian notation.
 class CFileName : public CWindowImpl<CFileName> {
  public:
 
@@ -321,4 +324,3 @@ class CBmpProperties : public CPropertySheetImpl<CBmpProperties> {
 };
 
 #endif  // MEDIA_PLAYER_PROPS_H_
-

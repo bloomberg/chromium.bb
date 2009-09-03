@@ -4,76 +4,23 @@
 
 // Stand alone media player application used for testing the media library.
 
-// ATL compatibility with Chrome build settings.
-#undef NOMINMAX
-#undef WIN32_LEAN_AND_MEAN
-
-#undef min
-#undef max
-#define NOMINMAX
-
-// Note this header must come before other ATL headers.
-#include "media/player/stdafx.h"
-#include <atlcrack.h>   // NOLINT
-#include <atlctrls.h>   // NOLINT
-#include <atlctrlw.h>   // NOLINT
-#include <atldlgs.h>    // NOLINT
-#include <atlframe.h>   // NOLINT
-#include <atlmisc.h>    // NOLINT
-#include <atlprint.h>   // NOLINT
-#include <atlscrl.h>    // NOLINT
+#include "media/player/player_wtl.h"
 
 #include "base/at_exit.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/file_path.h"
-#include "base/logging.h"
-#include "base/string_util.h"
-#include "base/time.h"
-
-// Note these headers are order sensitive.
-#include "media/base/factory.h"
 #include "media/base/pipeline_impl.h"
-#include "media/player/movie.h"
-#include "media/player/resource.h"
-#include "media/player/wtl_renderer.h"
-#include "media/player/view.h"
-#include "media/player/props.h"
-#include "media/player/seek.h"
-#include "media/player/list.h"
-#include "media/player/mainfrm.h"
-
-// Note these headers are NOT order sensitive.
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
+#include "media/player/mainfrm.h"
 
-// Enable timing code by turning on TESTING macro.
-// #define TESTING 1
-
-#ifdef TESTING
-#define _CRT_SECURE_NO_WARNINGS
-#include <windows.h>  // NOLINT
-#include <stdio.h>    // NOLINT
-#include <process.h>  // NOLINT
-#include <string.h>   // NOLINT
-
-// Fetch current time as milliseconds.
-// Return as double for high duration and precision.
-static inline double GetTime() {
-  LARGE_INTEGER perf_time, perf_hz;
-  QueryPerformanceFrequency(&perf_hz);  // May change with speed step.
-  QueryPerformanceCounter(&perf_time);
-  return perf_time.QuadPart * 1000.0 / perf_hz.QuadPart;  // Convert to ms.
-}
-#endif
+// See player_wtl.h to enable timing code by turning on TESTING macro.
 
 namespace switches {
-const wchar_t kExit[] = L"exit";
+const wchar_t* const kExit = L"exit";
 }  // namespace switches
-
 
 CAppModule g_module;
 
@@ -144,4 +91,3 @@ int WINAPI _tWinMain(HINSTANCE instance, HINSTANCE /*previous_instance*/,
 #endif
   return result;
 }
-

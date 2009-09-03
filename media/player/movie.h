@@ -7,7 +7,7 @@
 #ifndef MEDIA_PLAYER_MOVIE_H_
 #define MEDIA_PLAYER_MOVIE_H_
 
-#include <tchar.h>
+#include "media/player/player_wtl.h"
 
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
@@ -96,4 +96,3 @@ class Movie : public Singleton<Movie> {
 }  // namespace media
 
 #endif  // MEDIA_PLAYER_MOVIE_H_
-

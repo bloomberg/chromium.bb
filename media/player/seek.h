@@ -2,18 +2,18 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-// seek.h : movie seek dialog
-
 #ifndef MEDIA_PLAYER_SEEK_H_
 #define MEDIA_PLAYER_SEEK_H_
 
+#include "media/player/player_wtl.h"
+
+// Movie seek dialog.
 // TODO(fbachard): Frame properties only work for images, so
 // this tab is removed until movie frame properties can be added.
 class CSeek : public CSimpleDialog<IDD_SEEK>,
               public CMessageFilter,
               public CIdleHandler {
  public:
-
   CSeek() {
   }
 
@@ -95,4 +95,3 @@ class CSeek : public CSimpleDialog<IDD_SEEK>,
 };
 
 #endif  // MEDIA_PLAYER_SEEK_H_
-

@@ -2,11 +2,12 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-// list.h : class for Recent Files list
-
 #ifndef MEDIA_PLAYER_LIST_H_
 #define MEDIA_PLAYER_LIST_H_
 
+#include "media/player/player_wtl.h"
+
+// Recent Files list.
 class CMruList : public CWindowImpl<CMruList, CListBox> {
  public:
 
@@ -124,4 +125,3 @@ class CMruList : public CWindowImpl<CMruList, CListBox> {
 };
 
 #endif  // MEDIA_PLAYER_LIST_H_
-
