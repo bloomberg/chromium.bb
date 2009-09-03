@@ -1151,3 +1151,9 @@
    ...
    fun:_ZN7WebCore7makeRGBEiii
 }
+{
+   bug_20964
+   Memcheck:Value4
+   ...
+   fun:_ZN7WebCore7makeRGBEiii
+}
