@@ -493,6 +493,8 @@ const wchar_t kForceFieldTestNameAndValue[] = L"force-fieldtest";
 
 // Allows the new tab page resource to be loaded from a local HTML file. This
 // should be a path to the HTML file that you want to use for the new tab page.
+// It is used for manually testing new versions of the new tab page only,
+// performance will be poor.
 const wchar_t kNewTabPage[] = L"new-tab-page";
 
 // Switches back to the old new tab page.

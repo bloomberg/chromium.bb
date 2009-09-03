@@ -285,6 +285,10 @@ std::string NewTabHTMLSource::GetCustomNewTabPageFromCommandLine() {
 #endif
 
   if (!file_path.empty()) {
+    // Read the file contents in, blocking the UI thread of the browser.
+    // This is for testing purposes only! It is used to test new versions of
+    // the new tab page using a special command line option. Never use this
+    // in a way that will be used by default in product.
     std::string file_contents;
     if (file_util::ReadFileToString(FilePath(file_path), &file_contents))
       return file_contents;
