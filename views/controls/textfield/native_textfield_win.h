@@ -112,7 +112,7 @@ class NativeTextfieldWin
 
   // message handlers
   void OnChar(TCHAR key, UINT repeat_count, UINT flags);
-  void OnContextMenu(HWND window, const CPoint& point);
+  void OnContextMenu(HWND window, const POINT& point);
   void OnCopy();
   void OnCut();
   LRESULT OnImeChar(UINT message, WPARAM wparam, LPARAM lparam);

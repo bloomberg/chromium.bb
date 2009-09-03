@@ -122,7 +122,7 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
       parent_->OnDestroy();
   }
 
-  void OnContextMenu(HWND window, const WTL::CPoint& location) {
+  void OnContextMenu(HWND window, const POINT& location) {
     if (parent_)
       parent_->OnContextMenu(location);
   }
@@ -255,7 +255,7 @@ void NativeControl::Layout() {
   }
 }
 
-void NativeControl::OnContextMenu(const CPoint& location) {
+void NativeControl::OnContextMenu(const POINT& location) {
   if (!GetContextMenuController())
     return;
 

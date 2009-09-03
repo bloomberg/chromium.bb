@@ -537,9 +537,9 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
       // the position supplied in the l_param.
       if (table_view->UILayoutIsRightToLeft() &&
           (GET_X_LPARAM(l_param) != -1 || GET_Y_LPARAM(l_param) != -1)) {
-        WTL::CPoint screen_point;
+        POINT screen_point;
         GetCursorPos(&screen_point);
-        WTL::CPoint table_point = screen_point;
+        POINT table_point = screen_point;
         WTL::CRect client_rect;
         if (ScreenToClient(window, &table_point) &&
             GetClientRect(window, &client_rect) &&

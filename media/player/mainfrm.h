@@ -384,7 +384,7 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
     return 0;
   }
 
-  void OnContextMenu(CWindow wnd, CPoint point) {
+  void OnContextMenu(CWindow wnd, POINT point) {
     if (wnd.m_hWnd == m_view.m_hWnd) {
       CMenu menu;
       menu.LoadMenu(IDR_CONTEXTMENU);

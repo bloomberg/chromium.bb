@@ -272,8 +272,8 @@ void NativeTextfieldWin::OnChar(TCHAR ch, UINT repeat_count, UINT flags) {
   HandleKeystroke(GetCurrentMessage()->message, ch, repeat_count, flags);
 }
 
-void NativeTextfieldWin::OnContextMenu(HWND window, const CPoint& point) {
-  CPoint p(point);
+void NativeTextfieldWin::OnContextMenu(HWND window, const POINT& point) {
+  POINT p(point);
   if (point.x == -1 || point.y == -1) {
     GetCaretPos(&p);
     MapWindowPoints(HWND_DESKTOP, &p, 1);

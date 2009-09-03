@@ -481,7 +481,7 @@ bool TreeView::OnKeyDown(int virtual_key_code) {
   return false;
 }
 
-void TreeView::OnContextMenu(const WTL::CPoint& location) {
+void TreeView::OnContextMenu(const POINT& location) {
   if (!GetContextMenuController())
     return;
 

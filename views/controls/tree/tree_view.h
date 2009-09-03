@@ -161,7 +161,7 @@ class TreeView : public NativeControl, TreeModelObserver {
   // start editting.
   virtual bool OnKeyDown(int virtual_key_code);
 
-  virtual void OnContextMenu(const WTL::CPoint& location);
+  virtual void OnContextMenu(const POINT& location);
 
   // Returns the TreeModelNode for |tree_item|.
   TreeModelNode* GetNodeForTreeItem(HTREEITEM tree_item);
