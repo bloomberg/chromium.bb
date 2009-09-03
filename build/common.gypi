@@ -242,7 +242,13 @@
            '-pthread',
           '-fno-exceptions',
           '-Wall', # TODO(bradnelson): why does this disappear?!?
-          '-pedantic',
+        ],
+        'conditions': [
+          ['nacl_standalone==1', {
+            # TODO(gregoryd): remove the condition when the issues in
+            # Chrome code are fixed.
+            'cflags': ['-pedantic'],
+          }],
         ],
         'cflags_cc': [
           '-fno-rtti',
