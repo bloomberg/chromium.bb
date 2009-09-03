@@ -151,7 +151,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Shelf) {
 
 // Tests that installing and uninstalling extensions don't crash with an
 // incognito window open.
-// This test is disabled. see bug 16106.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Incognito) {
   // Open an incognito window to the extensions management page.  We just
   // want to make sure that we don't crash while playing with extensions when
