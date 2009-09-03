@@ -4,10 +4,7 @@
 
 #include "views/controls/scrollbar/bitmap_scroll_bar.h"
 
-#if defined(OS_WIN)
-#include <atlbase.h>
-#include <atlapp.h>  // for GET_X/Y_LPARAM
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
 #include "views/screen.h"
 #endif
 
@@ -68,7 +65,8 @@ class AutorepeatButton : public ImageButton {
   void NotifyClick() {
 #if defined(OS_WIN)
     DWORD pos = GetMessagePos();
-    gfx::Point cursor_point(GET_X_LPARAM(pos), GET_Y_LPARAM(pos));
+    POINTS points = MAKEPOINTS(pos);
+    gfx::Point cursor_point(points.x, points.y);
 #elif defined(OS_LINUX)
     gfx::Point cursor_point = Screen::GetCursorScreenPoint();
 #endif

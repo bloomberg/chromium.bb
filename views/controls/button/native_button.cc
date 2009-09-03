@@ -4,11 +4,6 @@
 
 #include "views/controls/button/native_button.h"
 
-#if defined(OS_WIN)
-#include <atlbase.h>
-#include <atlapp.h>  // for GET_X/Y_LPARAM
-#endif
-
 #if defined(OS_LINUX)
 #include <gdk/gdkkeysyms.h>
 #include "views/screen.h"
@@ -103,7 +98,8 @@ void NativeButton::ButtonPressed() {
   // TODO(beng): obtain mouse event flags for native buttons someday.
 #if defined(OS_WIN)
   DWORD pos = GetMessagePos();
-  gfx::Point cursor_point(GET_X_LPARAM(pos), GET_Y_LPARAM(pos));
+  POINTS points = MAKEPOINTS(pos);
+  gfx::Point cursor_point(points.x, points.y);
 #elif defined(OS_LINUX)
   gfx::Point cursor_point = Screen::GetCursorScreenPoint();
 #endif
@@ -180,7 +176,8 @@ bool NativeButton::AcceleratorPressed(const Accelerator& accelerator) {
   if (IsEnabled()) {
 #if defined(OS_WIN)
     DWORD pos = GetMessagePos();
-    gfx::Point cursor_point(GET_X_LPARAM(pos), GET_Y_LPARAM(pos));
+    POINTS points = MAKEPOINTS(pos);
+    gfx::Point cursor_point(points.x, points.y);
 #elif defined(OS_LINUX)
     gfx::Point cursor_point = Screen::GetCursorScreenPoint();
 #endif
