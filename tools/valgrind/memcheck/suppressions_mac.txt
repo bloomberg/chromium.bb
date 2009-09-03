@@ -661,3 +661,10 @@
    ...
    fun:_ZN7history16ArchivedDatabase4InitERK8FilePath
 }
+{
+   bug_20997
+   Memcheck:Param
+   socketcall.sendmsg(msg.msg_iov[i])
+   fun:sendmsg$UNIX2003
+   fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
+} 
