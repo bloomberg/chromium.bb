@@ -4,33 +4,64 @@
 
 #include "net/base/force_tls_state.h"
 
+#include "base/json_reader.h"
+#include "base/json_writer.h"
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domain.h"
 
 namespace net {
 
-ForceTLSState::ForceTLSState() {
+ForceTLSState::ForceTLSState()
+    : delegate_(NULL) {
 }
 
 void ForceTLSState::DidReceiveHeader(const GURL& url,
                                      const std::string& value) {
-  // TODO(abarth): Actually parse |value| once the spec settles down.
-  EnableHost(url.host());
+  int max_age;
+  bool include_subdomains;
+
+  if (!ParseHeader(value, &max_age, &include_subdomains))
+    return;
+
+  base::Time current_time(base::Time::Now());
+  base::TimeDelta max_age_delta = base::TimeDelta::FromSeconds(max_age);
+  base::Time expiry = current_time + max_age_delta;
+
+  EnableHost(url.host(), expiry, include_subdomains);
 }
 
-void ForceTLSState::EnableHost(const std::string& host) {
+void ForceTLSState::EnableHost(const std::string& host, base::Time expiry,
+                               bool include_subdomains) {
   // TODO(abarth): Canonicalize host.
   AutoLock lock(lock_);
-  enabled_hosts_.insert(host);
+
+  State state = {expiry, include_subdomains};
+  enabled_hosts_[host] = state;
+  DirtyNotify();
 }
 
 bool ForceTLSState::IsEnabledForHost(const std::string& host) {
   // TODO(abarth): Canonicalize host.
+  // TODO: check for subdomains too.
+
   AutoLock lock(lock_);
-  return enabled_hosts_.find(host) != enabled_hosts_.end();
+  std::map<std::string, State>::iterator i = enabled_hosts_.find(host);
+  if (i == enabled_hosts_.end())
+    return false;
+
+  base::Time current_time(base::Time::Now());
+  if (current_time > i->second.expiry) {
+    enabled_hosts_.erase(i);
+    DirtyNotify();
+    return false;
+  }
+
+  return true;
 }
 
 // "X-Force-TLS" ":" "max-age" "=" delta-seconds *1INCLUDESUBDOMAINS
@@ -128,6 +159,73 @@ bool ForceTLSState::ParseHeader(const std::string& value,
       NOTREACHED();
       return false;
   }
+}
+
+void ForceTLSState::SetDelegate(ForceTLSState::Delegate* delegate) {
+  AutoLock lock(lock_);
+
+  delegate_ = delegate;
+}
+
+bool ForceTLSState::Serialise(std::string* output) {
+  AutoLock lock(lock_);
+
+  DictionaryValue toplevel;
+  for (std::map<std::string, State>::const_iterator
+       i = enabled_hosts_.begin(); i != enabled_hosts_.end(); ++i) {
+    DictionaryValue* state = new DictionaryValue;
+    state->SetBoolean(L"include_subdomains", i->second.include_subdomains);
+    state->SetReal(L"expiry", i->second.expiry.ToDoubleT());
+
+    toplevel.Set(ASCIIToWide(i->first), state);
+  }
+
+  JSONWriter::Write(&toplevel, true /* pretty print */, output);
+  return true;
+}
+
+bool ForceTLSState::Deserialise(const std::string& input) {
+  AutoLock lock(lock_);
+
+  enabled_hosts_.clear();
+
+  scoped_ptr<Value> value(
+      JSONReader::Read(input, false /* do not allow trailing commas */));
+  if (!value.get() || !value->IsType(Value::TYPE_DICTIONARY))
+    return false;
+
+  DictionaryValue* dict_value = reinterpret_cast<DictionaryValue*>(value.get());
+  const base::Time current_time(base::Time::Now());
+
+  for (DictionaryValue::key_iterator
+       i = dict_value->begin_keys(); i != dict_value->end_keys(); ++i) {
+    DictionaryValue* state;
+    if (!dict_value->GetDictionary(*i, &state))
+      continue;
+
+    const std::string host = WideToASCII(*i);
+    bool include_subdomains;
+    double expiry;
+
+    if (!state->GetBoolean(L"include_subdomains", &include_subdomains) ||
+        !state->GetReal(L"expiry", &expiry)) {
+      continue;
+    }
+
+    base::Time expiry_time = base::Time::FromDoubleT(expiry);
+    if (expiry_time <= current_time)
+      continue;
+
+    State new_state = { expiry_time, include_subdomains };
+    enabled_hosts_[host] = new_state;
+  }
+
+  return enabled_hosts_.size();
+}
+
+void ForceTLSState::DirtyNotify() {
+  if (delegate_)
+    delegate_->StateIsDirty(this);
 }
 
 }  // namespace
