@@ -1029,12 +1029,12 @@ def main(options, args):
     print("html,txt,checksum,png");
     for t in test_runner._test_files:
       (expected_txt_dir, expected_txt_file) = path_utils.ExpectedBaseline(
-          t, '.txt')
+          t, '.txt')[0]
       (expected_png_dir, expected_png_file) = path_utils.ExpectedBaseline(
-          t, '.png')
+          t, '.png')[0]
       (expected_checksum_dir,
           expected_checksum_file) = path_utils.ExpectedBaseline(
-          t, '.checksum')
+          t, '.checksum')[0]
       print("%s,%s,%s,%s" % (path_utils.RelativeTestFilename(t),
             expected_txt_dir, expected_checksum_dir, expected_png_dir))
     return

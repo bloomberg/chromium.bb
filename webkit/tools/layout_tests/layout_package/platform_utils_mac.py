@@ -23,6 +23,9 @@ def PlatformVersion():
   '-snowleopard'. If the platform does not distinguish between
   minor versions, it returns ''."""
   os_version_string = platform.mac_ver()[0]  # e.g. "10.5.6"
+  if not os_version_string:
+    return '-leopard'
+
   release_version = int(os_version_string.split('.')[1])
 
   # we don't support 'tiger' or earlier releases
@@ -30,8 +33,11 @@ def PlatformVersion():
     return '-leopard'
   elif release_version == 6:
     return '-snowleopard'
+
   return ''
 
+# TODO: We should add leopard and snowleopard to the list of paths to check
+# once we start running the tests from snowleopard.
 def BaselineSearchPath():
   """Returns the list of directories to search for baselines/results, in
   order of preference. Paths are relative to the top of the source tree."""

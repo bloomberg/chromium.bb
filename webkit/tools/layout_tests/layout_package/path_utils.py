@@ -13,6 +13,9 @@ us including a few things that don't really have anything to do
 import errno
 import os
 import platform_utils
+import platform_utils_win
+import platform_utils_mac
+import platform_utils_linux
 
 # Cache some values so we don't have to recalculate them. _basedir is
 # used by PathFromBase() and caches the full (native) path to the top
@@ -49,8 +52,23 @@ def WebKitBaselinePath(platform):
   return PathFromBase('third_party', 'WebKit', 'LayoutTests',
                       'platform', platform)
 
+def BaselineSearchPath(platform=None):
+  """Returns the list of directories to search for baselines/results for a
+  given platform, in order of preference. Paths are relative to the top of the
+  source tree. If parameter platform is None, returns the list for the current
+  platform that the script is running on."""
+  if platform is None:
+    return platform_utils.BaselineSearchPath()
+  elif platform.startswith('mac'):
+    return platform_utils_mac.BaselineSearchPath()
+  elif platform.startswith('win'):
+    return platform_utils_win.BaselineSearchPath()
+  elif platform.startswith('linux'):
+    return platform_utils_linux.BaselineSearchPath()
+  else:
+    return platform_utils.BaselineSearchPath()
 
-def ExpectedBaseline(filename, suffix):
+def ExpectedBaseline(filename, suffix, platform=None, all_baselines=False):
   """Given a test name, finds where the baseline result is located. The
   result is returned as a pair of values, the absolute path to top of the test
   results directory, and the relative path from there to the results file.
@@ -65,13 +83,20 @@ def ExpectedBaseline(filename, suffix):
      filename: absolute filename to test file
      suffix: file suffix of the expected results, including dot; e.g. '.txt'
          or '.png'.  This should not be None, but may be an empty string.
+     platform: layout test platform: 'win', 'linux' or 'mac'. Defaults to the
+               current platform.
+     all_baselines: If True, return an ordered list of all baseline paths
+                    for the given platform. If False, return only the first
+                    one.
   Returns
-     platform_dir - abs path to the top of the results tree (or test tree)
-     results_filename - relative path from top of tree to the results file
+     a list of ( platform_dir, results_filename ), where
+       platform_dir - abs path to the top of the results tree (or test tree)
+       results_filename - relative path from top of tree to the results file
          (os.path.join of the two gives you the full path to the file, unless
           None was returned.)
   """
   global _baseline_search_path
+  global _search_path_platform
   testname = os.path.splitext(RelativeTestFilename(filename))[0]
 
   # While we still have tests in LayoutTests/, chrome/, and pending/, we need
@@ -80,24 +105,42 @@ def ExpectedBaseline(filename, suffix):
   platform_filename = testname + '-expected' + suffix
   testdir, base_filename = platform_filename.split('/', 1)
 
-  if _baseline_search_path is None:
-    _baseline_search_path = platform_utils.BaselineSearchPath()
+  if (_baseline_search_path is None) or (_search_path_platform != platform):
+    _baseline_search_path = BaselineSearchPath(platform)
+    _search_path_platform = platform
+
+  current_platform_dir = ChromiumBaselinePath(PlatformName(platform))
+
+  baselines = []
+  foundCurrentPlatform = False
   for platform_dir in _baseline_search_path:
-    # TODO(pamg): Clean this up once we upstream everything in chrome/ and
-    # pending/.
-    if os.path.basename(platform_dir).startswith('chromium'):
-      if os.path.exists(os.path.join(platform_dir, platform_filename)):
-        return platform_dir, platform_filename
-    else:
-      if os.path.exists(os.path.join(platform_dir, base_filename)):
-        return platform_dir, base_filename
+    # Find current platform from baseline search paths and start from there.
+    if platform_dir == current_platform_dir:
+      foundCurrentPlatform = True
+
+    if foundCurrentPlatform:
+      # TODO(pamg): Clean this up once we upstream everything in chrome/ and
+      # pending/.
+      if os.path.basename(platform_dir).startswith('chromium'):
+        if os.path.exists(os.path.join(platform_dir, platform_filename)):
+          baselines.append((platform_dir, platform_filename))
+      else:
+        if os.path.exists(os.path.join(platform_dir, base_filename)):
+          baselines.append((platform_dir, base_filename))
+
+      if not all_baselines and baselines:
+        return baselines
 
   # If it wasn't found in a platform directory, return the expected result
   # in the test directory, even if no such file actually exists.
   platform_dir = LayoutTestsDir(filename)
   if os.path.exists(os.path.join(platform_dir, platform_filename)):
-    return platform_dir, platform_filename
-  return None, platform_filename
+    baselines.append((platform_dir, platform_filename))
+
+  if baselines:
+    return baselines
+
+  return [(None, platform_filename)]
 
 def ExpectedFilename(filename, suffix):
   """Given a test name, returns an absolute path to its expected results.
@@ -115,7 +158,7 @@ def ExpectedFilename(filename, suffix):
          search list of directories, e.g., 'chromium-win', or
          'chromium-mac-leopard' (we follow the WebKit format)
   """
-  platform_dir, platform_filename = ExpectedBaseline(filename, suffix)
+  platform_dir, platform_filename = ExpectedBaseline(filename, suffix)[0]
   if platform_dir:
     return os.path.join(platform_dir, platform_filename)
   return os.path.join(LayoutTestsDir(filename), platform_filename)

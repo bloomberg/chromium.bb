@@ -161,3 +161,30 @@ class ImageDiff(test_type_base.TestTypeBase):
                           expected_hash, diff=False, wdiff=False)
 
     return failures
+
+  def DiffFiles(self, file1, file2):
+    """Diff two image files.
+
+    Args:
+      file1, file2: full paths of the files to compare.
+
+    Returns:
+      True if two files are different.
+      False otherwise.
+    """
+
+    try:
+      executable = path_utils.ImageDiffPath('Debug')
+    except Exception, e:
+      logging.warn('Failed to find image diff executable.')
+      return True
+
+    cmd = [ executable, file1, file2 ]
+    result = 1
+    try:
+      result = subprocess.call(cmd);
+    except OSError, e:
+      logging.warn('Failed to compare image diff: %s', e)
+      return True
+
+    return result == 1

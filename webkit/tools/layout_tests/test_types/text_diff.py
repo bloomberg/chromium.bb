@@ -34,19 +34,21 @@ class TestTextDiff(test_type_base.TestTypeBase):
     if the expected output file was not found."""
     # Read the platform-specific expected text.
     expected_filename = path_utils.ExpectedFilename(filename, '.txt')
-
     if show_sources:
       logging.debug('Using %s' % expected_filename)
+
+    return self.GetNormalizedText(expected_filename)
+
+  def GetNormalizedText(self, filename):
     try:
-      expected = open(expected_filename).read()
+      text = open(filename).read()
     except IOError, e:
       if errno.ENOENT != e.errno:
         raise
-      expected = ''
-      return expected
+      return ''
 
     # Normalize line endings
-    return expected.strip("\r\n").replace("\r\n", "\n") + "\n"
+    return text.strip("\r\n").replace("\r\n", "\n") + "\n"
 
   def _SaveBaselineData(self, filename, data, modifier):
     """Saves a new baseline file into the platform directory.
@@ -105,3 +107,15 @@ class TestTextDiff(test_type_base.TestTypeBase):
 
     return failures
 
+  def DiffFiles(self, file1, file2):
+    """Diff two text files.
+
+    Args:
+      file1, file2: full paths of the files to compare.
+
+    Returns:
+      True if two files are different.
+      False otherwise.
+    """
+
+    return self.GetNormalizedText(file1) != self.GetNormalizedText(file2)

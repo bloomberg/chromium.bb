@@ -32,9 +32,11 @@ import zipfile
 
 from layout_package import path_utils
 from layout_package import test_expectations
+from test_types import image_diff
+from test_types import text_diff
 
 BASELINE_SUFFIXES = ['.txt', '.png', '.checksum']
-
+REBASELINE_PLATFORM_ORDER = ['mac', 'win', 'linux']
 
 def RunShell(command, print_output=False):
   """Executes a command and returns the output.
@@ -354,6 +356,15 @@ class Rebaseliner(object):
         f.write(data)
         f.close()
 
+        # TODO(victorw): for now, the rebaselining tool checks whether
+        # or not THIS baseline is duplicate and should be skipped.
+        # We could improve the tool to check all baselines in upper and lower
+        # levels and remove all duplicated baselines.
+        if self._IsDupBaseline(expected_fullpath, test, suffix, self._platform):
+          # Clean up the duplicate baseline.
+          self._DeleteBaseline(expected_fullpath)
+          continue
+
         if not self._SvnAdd(expected_fullpath):
           svn_error = True
         elif suffix != '.checksum':
@@ -374,6 +385,82 @@ class Rebaseliner(object):
     os.remove(archive_file)
 
     return self._rebaselined_tests
+
+  def _IsDupBaseline(self, baseline_path, test, suffix, platform):
+    """Check whether a baseline is duplicate and can fallback to same
+       baseline for another platform. For example, if a test has same baseline
+       on linux and windows, then we only store windows baseline and linux
+       baseline will fallback to the windows version.
+
+    Args:
+      expected_filename: baseline expectation file name.
+      test: test name.
+      suffix: file suffix of the expected results, including dot; e.g. '.txt'
+              or '.png'.
+      platform: baseline platform 'mac', 'win' or 'linux'.
+
+    Returns:
+      True if the baseline is unnecessary.
+      False otherwise.
+    """
+    test_filepath = os.path.join(path_utils.LayoutTestsDir(), test)
+    all_baselines = path_utils.ExpectedBaseline(test_filepath,
+                                                suffix,
+                                                platform,
+                                                True)
+    for (fallback_dir, fallback_file) in all_baselines:
+      if fallback_dir and fallback_file:
+        fallback_fullpath = os.path.normpath(
+            os.path.join(fallback_dir, fallback_file))
+        if fallback_fullpath.lower() != baseline_path.lower():
+          if not self._DiffBaselines(baseline_path, fallback_fullpath):
+            logging.info('  Found same baseline at %s', fallback_fullpath)
+            return True
+          else:
+            return False
+
+    return False
+
+  def _DiffBaselines(self, file1, file2):
+    """Check whether two baselines are different.
+
+    Args:
+      file1, file2: full paths of the baselines to compare.
+
+    Returns:
+      True if two files are different or have different extensions.
+      False otherwise.
+    """
+
+    ext1 = os.path.splitext(file1)[1].upper()
+    ext2 = os.path.splitext(file2)[1].upper()
+    if ext1 != ext2:
+      logging.warn('Files to compare have different ext. File1: %s; File2: %s',
+                   file1, file2)
+      return True
+
+    if ext1 == '.PNG':
+      return image_diff.ImageDiff(self._platform, '').DiffFiles(file1,
+                                                                file2)
+    else:
+      return text_diff.TestTextDiff(self._platform, '').DiffFiles(file1,
+                                                                  file2)
+
+  def _DeleteBaseline(self, filename):
+    """Remove the file from SVN repository and delete it from disk.
+
+    Args:
+      filename: full path of the file to delete.
+    """
+
+    if not filename:
+      return
+
+    parent_dir, basename = os.path.split(filename)
+    original_dir = os.getcwd()
+    os.chdir(parent_dir)
+    status_output = RunShell(['svn', 'delete', '--force', basename], False)
+    os.chdir(original_dir)
 
   def _UpdateRebaselinedTestsInFile(self, backup):
     """Update the rebaselined tests in test expectations file.
@@ -432,6 +519,7 @@ class Rebaseliner(object):
     output = add_output.upper().rstrip()
     if output.startswith('A') and output.find(basename.upper()) >= 0:
       logging.info('  Added new file: "%s"', filename)
+      self._SvnPropSet(filename)
       return True
 
     if (not status_output) and (add_output.upper().find(
@@ -443,6 +531,32 @@ class Rebaseliner(object):
     logging.warn('  Svn status output: "%s"', status_output)
     logging.warn('  Svn add output: "%s"', add_output)
     return False
+
+  def _SvnPropSet(self, filename):
+    """Set the baseline property
+
+    Args:
+      filename: full path of the file to add.
+
+    Returns:
+      True if the file already exists in SVN or is sucessfully added to SVN.
+      False otherwise.
+    """
+    ext = os.path.splitext(filename)[1].upper()
+    if ext != '.TXT' and ext != '.PNG' and ext != '.CHECKSUM':
+      return
+
+    parent_dir, basename = os.path.split(filename)
+    original_dir = os.getcwd()
+    os.chdir(parent_dir)
+    if ext == '.PNG':
+      cmd = [ 'svn', 'pset', 'svn:mime-type', 'image/png', basename ]
+    else:
+      cmd = [ 'svn', 'pset', 'svn:eol-style', 'LF', basename ]
+
+    logging.debug('  Set svn prop: %s', ' '.join(cmd))
+    RunShell(cmd, False)
+    os.chdir(original_dir)
 
   def _CreateHtmlBaselineFiles(self, baseline_fullpath):
     """Create baseline files (old, new and diff) in html directory.
@@ -731,7 +845,7 @@ def main():
                            help='include debug-level logging.')
 
   option_parser.add_option('-p', '--platforms',
-                           default='win,mac,linux',
+                           default='mac,win,linux',
                            help=('Comma delimited list of platforms that need '
                                  'rebaselining.'))
 
@@ -803,9 +917,18 @@ def main():
     sys.exit(1)
   platforms = [p.strip().lower() for p in options.platforms.split(',')]
   for platform in platforms:
-    if not platform in test_expectations.TestExpectationsFile.PLATFORMS:
-      logging.error('Invalid platform platform: "%s"' % (platform))
+    if not platform in REBASELINE_PLATFORM_ORDER:
+      logging.error('Invalid platform: "%s"' % (platform))
       sys.exit(1)
+
+  # Adjust the platform order so rebaseline tool is running at the order of
+  # 'mac', 'win' and 'linux'. This is in same order with layout test baseline
+  # search paths. It simplifies how the rebaseline tool detects duplicate
+  # baselines. Check _IsDupBaseline method for details.
+  rebaseline_platforms = []
+  for platform in REBASELINE_PLATFORM_ORDER:
+    if platform in platforms:
+      rebaseline_platforms.append(platform)
 
   if not options.no_html_results:
     options.html_directory = SetupHtmlDirectory(options.html_directory,
@@ -813,7 +936,7 @@ def main():
 
   rebaselining_tests = set()
   backup = options.backup
-  for platform in platforms:
+  for platform in rebaseline_platforms:
     rebaseliner = Rebaseliner(platform, options)
 
     logging.info('')
@@ -830,7 +953,9 @@ def main():
   if not options.no_html_results:
     logging.info('')
     LogDashedString('Rebaselining result comparison started', None)
-    html_generator = HtmlGenerator(options, platforms, rebaselining_tests)
+    html_generator = HtmlGenerator(options,
+                                   rebaseline_platforms,
+                                   rebaselining_tests)
     html_generator.GenerateHtml()
     html_generator.ShowHtml()
     LogDashedString('Rebaselining result comparison done', None)
