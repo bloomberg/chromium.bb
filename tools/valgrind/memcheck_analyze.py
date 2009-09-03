@@ -116,6 +116,19 @@ def getTextOf(top_node, name):
                      if node.nodeType == node.TEXT_NODE])
   return text
 
+def getCDATAOf(top_node, name):
+  ''' Returns all CDATA in all DOM nodes with a certain |name| that are children
+  of |top_node|.
+  '''
+
+  text = ""
+  for nodes_named in top_node.getElementsByTagName(name):
+    text += "".join([node.data for node in nodes_named.childNodes
+                     if node.nodeType == node.CDATA_SECTION_NODE])
+  if (text == ""):
+    return None
+  return text
+
 def removeCommonRoot(source_dir, directory):
   '''Returns a string with the string prefix |source_dir| removed from
   |directory|.'''
@@ -171,7 +184,8 @@ class ValgrindError:
     '''
 
     # Valgrind errors contain one <what><stack> pair, plus an optional
-    # <auxwhat><stack> pair, plus an optional <origin><what><stack></origin>.
+    # <auxwhat><stack> pair, plus an optional <origin><what><stack></origin>,
+    # plus (since 3.5.0) a <suppression></suppression> pair.
     # (Origin is nicely enclosed; too bad the other two aren't.)
     # The most common way to see all three in one report is
     # a syscall with a parameter that points to uninitialized memory, e.g.
@@ -200,6 +214,27 @@ class ValgrindError:
     #     </frame>
     #   </stack>
     #   </origin>
+    #   <suppression>
+    #     <sname>insert_a_suppression_name_here</sname>
+    #     <skind>Memcheck:Param</skind>
+    #     <skaux>write(buf)</skaux>
+    #     <sframe> <fun>__write_nocancel</fun> </sframe>
+    #     ...
+    #     <sframe> <fun>main</fun> </sframe>
+    #     <rawtext>
+    # <![CDATA[
+    # {
+    #    <insert_a_suppression_name_here>
+    #    Memcheck:Param
+    #    write(buf)
+    #    fun:__write_nocancel
+    #    ...
+    #    fun:main
+    # }
+    # ]]>
+    #     </rawtext>
+    #   </suppression>
+    # </error>
     #
     # Each frame looks like this:
     #  <frame>
@@ -221,6 +256,7 @@ class ValgrindError:
 
     self._kind = getTextOf(error_node, "kind")
     self._backtraces = []
+    self._suppression = None
 
     # Iterate through the nodes, parsing <what|auxwhat><stack> pairs.
     description = None
@@ -241,6 +277,8 @@ class ValgrindError:
         description = None
         stack = None
         frames = None
+      elif node.localName == "suppression":
+        self._suppression = getCDATAOf(node, "rawtext");
 
   def __str__(self):
     ''' Pretty print the type and backtrace(s) of this specific error,
@@ -267,19 +305,27 @@ class ValgrindError:
         global TheAddressTable
         if TheAddressTable != None and frame[SRC_FILE_DIR] == "":
            # Try using gdb
-           foo = TheAddressTable.GetFileLine(frame[OBJECT_FILE], frame[INSTRUCTION_POINTER])
+           foo = TheAddressTable.GetFileLine(frame[OBJECT_FILE],
+                                             frame[INSTRUCTION_POINTER])
            if foo[0] != None:
              output += (" (" + foo[0] + ":" + foo[1] + ")")
         elif frame[SRC_FILE_DIR] != "":
-          output += (" (" + frame[SRC_FILE_DIR] + "/" + frame[SRC_FILE_NAME] + ":" +
-                     frame[SRC_LINE] + ")")
+          output += (" (" + frame[SRC_FILE_DIR] + "/" + frame[SRC_FILE_NAME] +
+                     ":" + frame[SRC_LINE] + ")")
         else:
           output += " (" + frame[OBJECT_FILE] + ")"
         output += "\n"
 
-      output += "Suppression:\n"
-      for frame in backtrace[1]:
-        output += "  fun:" + (frame[FUNCTION_NAME] or "*") + "\n"
+      # TODO(dank): stop synthesizing suppressions once everyone has
+      # valgrind-3.5 and we can rely on xml
+      if (self._suppression == None):
+        output += "Ssuppression:\n"
+        for frame in backtrace[1]:
+          output += "  fun:" + (frame[FUNCTION_NAME] or "*") + "\n"
+
+    if (self._suppression != None):
+      output += "Suppression:"
+      output += self._suppression
 
     return output
 
@@ -327,8 +373,8 @@ class MemcheckAnalyze:
       show_all_leaks: whether to show even less important leaks
     '''
 
+    global TheAddressTable
     if use_gdb:
-      global TheAddressTable
       TheAddressTable = _AddressTable()
     self._errors = set()
     badfiles = set()
@@ -377,7 +423,6 @@ class MemcheckAnalyze:
         if TheAddressTable != None:
           load_objs = parsed_file.getElementsByTagName("load_obj")
           for load_obj in load_objs:
-            global TheAddressTable
             obj = getTextOf(load_obj, "obj")
             ip = getTextOf(load_obj, "ip")
             TheAddressTable.AddBinaryAt(obj, ip)
@@ -404,6 +449,7 @@ class MemcheckAnalyze:
     if self._errors:
       logging.error("FAIL! There were %s errors: " % len(self._errors))
 
+      global TheAddressTable
       if TheAddressTable != None:
         TheAddressTable.ResolveAll()
 

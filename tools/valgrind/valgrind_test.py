@@ -210,8 +210,7 @@ class ValgrindTool(object):
     proc = ["valgrind",
             "--tool=%s" % tool_name,
             "--smc-check=all",
-            "--num-callers=%i" % self._num_callers,
-            "--demangle=no"]
+            "--num-callers=%i" % self._num_callers]
 
     if self._options.trace_children:
       proc += ["--trace-children=yes"];
@@ -347,7 +346,7 @@ class Memcheck(ValgrindTool):
                       help="Show whence uninitialized bytes came. 30% slower.")
 
   def ToolSpecificFlags(self):
-    ret = ["--leak-check=full"]
+    ret = ["--leak-check=full", "--gen-suppressions=all", "--demangle=no"]
 
     if self._options.show_all_leaks:
       ret += ["--show-reachable=yes"];

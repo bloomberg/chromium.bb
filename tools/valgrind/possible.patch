@@ -1,6 +1,6 @@
 Index: memcheck/mc_main.c
 ===================================================================
---- memcheck/mc_main.c	(revision 10771)
+--- memcheck/mc_main.c	(revision 10880)
 +++ memcheck/mc_main.c	(working copy)
 @@ -4658,6 +4658,7 @@
  LeakCheckMode MC_(clo_leak_check)             = LC_Summary;
@@ -28,9 +28,9 @@ Index: memcheck/mc_main.c
  "    --partial-loads-ok=no|yes        too hard to explain here; see manual [no]\n"
 Index: memcheck/mc_include.h
 ===================================================================
---- memcheck/mc_include.h	(revision 10771)
+--- memcheck/mc_include.h	(revision 10880)
 +++ memcheck/mc_include.h	(working copy)
-@@ -394,6 +394,9 @@
+@@ -395,6 +395,9 @@
  /* In leak check, show reachable-but-not-freed blocks?  default: NO */
  extern Bool MC_(clo_show_reachable);
  
@@ -42,19 +42,15 @@ Index: memcheck/mc_include.h
  extern Bool MC_(clo_workaround_gcc296_bugs);
 Index: memcheck/mc_leakcheck.c
 ===================================================================
---- memcheck/mc_leakcheck.c	(revision 10771)
+--- memcheck/mc_leakcheck.c	(revision 10880)
 +++ memcheck/mc_leakcheck.c	(working copy)
-@@ -843,7 +843,7 @@
-       //
-       lr = lr_array[i];
-       count_as_error = Unreached == lr->key.state || 
--                       Possible  == lr->key.state;
-+                       (MC_(clo_show_possible) && Possible == lr->key.state);
+@@ -845,7 +845,8 @@
        print_record = is_full_check &&
-                      ( MC_(clo_show_reachable) || count_as_error );
-       is_suppressed = 
-@@ -1113,4 +1113,3 @@
- /*--------------------------------------------------------------------*/
- /*--- end                                                          ---*/
- /*--------------------------------------------------------------------*/
--
+                      ( MC_(clo_show_reachable) ||
+                        Unreached == lr->key.state || 
+-                       Possible  == lr->key.state );
++                       ( MC_(clo_show_possible) && 
++                         Possible  == lr->key.state ) );
+       // We don't count a leaks as errors with --leak-check=summary.
+       // Otherwise you can get high error counts with few or no error
+       // messages, which can be confusing.  Also, you could argue that

@@ -1,6 +1,6 @@
 Index: coregrind/m_syswrap/syswrap-generic.c
 ===================================================================
---- coregrind/m_syswrap/syswrap-generic.c	(revision 10771)
+--- coregrind/m_syswrap/syswrap-generic.c	(revision 10880)
 +++ coregrind/m_syswrap/syswrap-generic.c	(working copy)
 @@ -2563,6 +2563,11 @@
  
@@ -21,7 +21,7 @@ Index: coregrind/m_syswrap/syswrap-generic.c
 -
 Index: coregrind/pub_core_libcfile.h
 ===================================================================
---- coregrind/pub_core_libcfile.h	(revision 10771)
+--- coregrind/pub_core_libcfile.h	(revision 10880)
 +++ coregrind/pub_core_libcfile.h	(working copy)
 @@ -41,6 +41,7 @@
  
@@ -33,7 +33,7 @@ Index: coregrind/pub_core_libcfile.h
  /* Convert an fd into a filename */
 Index: coregrind/m_main.c
 ===================================================================
---- coregrind/m_main.c	(revision 10771)
+--- coregrind/m_main.c	(revision 10880)
 +++ coregrind/m_main.c	(working copy)
 @@ -313,6 +313,48 @@
     }
@@ -217,21 +217,7 @@ Index: coregrind/m_main.c
     } else {
        // If they said --xml-fd=-1, don't print anything.  Plausible for use in
        // regression testing suites that use client requests to count errors.
-@@ -950,10 +925,9 @@
-                   i++;
-                }
- 
--               VG_(message_no_f_c)(Vg_UserMsg,
--                                   "<logfilequalifier> <var>%t</var> "
--                                   "<value>%t</value> </logfilequalifier>\n",
--                                   qualname,qual);
-+               VG_(printf_xml_no_f_c)( "<logfilequalifier> <var>%t</var> "
-+                                       "<value>%t</value> </logfilequalifier>\n",
-+                                       qualname,qual);
- 	       format[i] = '}';
- 	       i++;
- 	    }
-@@ -988,9 +962,12 @@
+@@ -989,9 +964,12 @@
     If logging to file or a socket, write details of parent PID and
     command line args, to help people trying to interpret the
     results of a run which encompasses multiple processes. */
@@ -247,7 +233,7 @@ Index: coregrind/m_main.c
  {
     Int    i;
     HChar* xpre  = VG_(clo_xml) ? "  <line>" : "";
-@@ -998,9 +975,15 @@
+@@ -999,9 +977,15 @@
     UInt (*umsg_or_xml)( const HChar*, ... )
        = VG_(clo_xml) ? VG_(printf_xml) : VG_(umsg);
  
@@ -263,7 +249,7 @@ Index: coregrind/m_main.c
  
     if (VG_(clo_xml)) {
        VG_(printf_xml)("<?xml version=\"1.0\"?>\n");
-@@ -1012,7 +995,7 @@
+@@ -1013,7 +997,7 @@
        VG_(printf_xml)("\n");
     }
  
@@ -272,7 +258,7 @@ Index: coregrind/m_main.c
  
        if (VG_(clo_xml))
           VG_(printf_xml)("<preamble>\n");
-@@ -1065,6 +1048,7 @@
+@@ -1067,6 +1051,7 @@
     }
     else
     if (VG_(clo_xml)) {
@@ -280,16 +266,7 @@ Index: coregrind/m_main.c
        VG_(printf_xml)("\n");
        VG_(printf_xml)("<pid>%d</pid>\n", VG_(getpid)());
        VG_(printf_xml)("<ppid>%d</ppid>\n", VG_(getppid)());
-@@ -1112,7 +1096,7 @@
-    }
- 
-    // Empty line after the preamble
--   if (VG_(clo_verbosity) > 0)
-+   if (VG_(clo_verbosity) > 1)
-       VG_(umsg)("\n");
-    if (VG_(clo_xml))
-       VG_(printf_xml)("\n");
-@@ -1372,7 +1356,6 @@
+@@ -1374,7 +1359,6 @@
     Int     need_help          = 0; // 0 = no, 1 = --help, 2 = --help-debug
     ThreadId tid_main          = VG_INVALID_THREADID;
     Bool    logging_to_fd      = False;
@@ -297,7 +274,7 @@ Index: coregrind/m_main.c
     Int     loglevel, i;
     struct vki_rlimit zero = { 0, 0 };
     XArray* addr2dihandle = NULL;
-@@ -1870,8 +1853,7 @@
+@@ -1872,8 +1856,7 @@
     VG_(debugLog)(1, "main",
                      "(main_) Process Valgrind's command line options, "
                      "setup logging\n");
@@ -307,7 +284,7 @@ Index: coregrind/m_main.c
  
     //--------------------------------------------------------------
     // Zeroise the millisecond counter by doing a first read of it.
-@@ -1884,10 +1866,10 @@
+@@ -1886,10 +1869,10 @@
     //   p: tl_pre_clo_init            [for 'VG_(details).name' and friends]
     //   p: main_process_cmd_line_options()
     //         [for VG_(clo_verbosity), VG_(clo_xml),
@@ -320,18 +297,9 @@ Index: coregrind/m_main.c
     VG_(debugLog)(1, "main", "...finished the preamble\n");
  
     //--------------------------------------------------------------
-@@ -2394,7 +2376,7 @@
-    // Finalisation: cleanup, messages, etc.  Order not so important, only
-    // affects what order the messages come.
-    //--------------------------------------------------------------
--   if (VG_(clo_verbosity) > 0)
-+   if (VG_(clo_verbosity) > 1)
-       VG_(message)(Vg_UserMsg, "\n");
-    if (VG_(clo_xml))
-       VG_(printf_xml)("\n");
 Index: coregrind/m_libcproc.c
 ===================================================================
---- coregrind/m_libcproc.c	(revision 10771)
+--- coregrind/m_libcproc.c	(revision 10880)
 +++ coregrind/m_libcproc.c	(working copy)
 @@ -33,9 +33,12 @@
  #include "pub_core_vkiscnums.h"
@@ -388,7 +356,7 @@ Index: coregrind/m_libcproc.c
           (*atforks[i].child)(tid);
 Index: coregrind/pub_core_options.h
 ===================================================================
---- coregrind/pub_core_options.h	(revision 10771)
+--- coregrind/pub_core_options.h	(revision 10880)
 +++ coregrind/pub_core_options.h	(working copy)
 @@ -74,6 +74,9 @@
  extern Char* VG_(clo_log_fname_expanded);

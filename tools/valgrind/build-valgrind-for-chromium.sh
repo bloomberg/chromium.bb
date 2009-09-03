@@ -12,11 +12,11 @@
 # fetch valgrind source via svn.  Most users won't need those options.
 
 # Checkout by date doesn't work unless you specify the friggin' timezone
-VALGRIND_SVN_REV=10771
+VALGRIND_SVN_REV=10880
 # And svn isn't smart enough to figure out what rev of the linked tree to get
-VEX_SVN_REV=1913
+VEX_SVN_REV=1914
 # and TSAN may be out of sync, so you have to check that out by rev anyway
-TSAN_SVN_REV=1111
+TSAN_SVN_REV=1129
 
 THISDIR=$(dirname "${0}")
 THISDIR=$(cd "${THISDIR}" && /bin/pwd)
@@ -75,8 +75,8 @@ then
     # ThreadSanitizer is an experimental dynamic data race detector.
     # See http://code.google.com/p/data-race-test/wiki/ThreadSanitizer
     svn checkout -r "${TSAN_SVN_REV}" http://data-race-test.googlecode.com/svn/trunk/tsan tsan
-    mkdir tsan/{docs,tests}
-    touch tsan/{docs,tests}/Makefile.am
+    mkdir tsan/tests
+    touch tsan/tests/Makefile.am
     patch -p 0 < tsan/valgrind.patch
   fi
 
