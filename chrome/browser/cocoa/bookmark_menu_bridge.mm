@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cocoa/bookmark_menu_bridge.h"
 #import <AppKit/AppKit.h>
+
+#include "app/l10n_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_BOOKMARK_MENU
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/cocoa/bookmark_menu_bridge.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
+#include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 
 BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile)
@@ -43,8 +46,16 @@ void BookmarkMenuBridge::Loaded(BookmarkModel* model) {
 
   ClearBookmarkMenu(bookmark_menu);
 
-  // TODO(jrg): limit the number of bookmarks in the menubar?
+  // Add bookmark bar items
+  [bookmark_menu addItem:[NSMenuItem separatorItem]];
   AddNodeToMenu(model->GetBookmarkBarNode(), bookmark_menu);
+
+  // Create a submenu for "other bookmarks", and fill it in.
+  NSString* other_items_title = base::SysWideToNSString(
+    l10n_util::GetString(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
+  [bookmark_menu addItem:[NSMenuItem separatorItem]];
+  AddNodeAsSubmenu(bookmark_menu, model->other_node(), other_items_title);
+
 }
 
 void BookmarkMenuBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {
@@ -120,25 +131,41 @@ Profile* BookmarkMenuBridge::GetProfile() {
 void BookmarkMenuBridge::ClearBookmarkMenu(NSMenu* menu) {
   bookmark_nodes_.clear();
   // Recursively delete all menus that look like a bookmark.  Assume
-  // all items with submenus contain only bookmarks.  This typically
-  // deletes everything except the first two items ("Add Bookmark..."
-  // and separator)
+  // all items with submenus contain only bookmarks.  Also delete all
+  // separator items since we explicirly add them back in. This should
+  // deletes everything except the first item ("Add Bookmark...").
   NSArray* items = [menu itemArray];
   for (NSMenuItem* item in items) {
     // Convention: items in the bookmark list which are bookmarks have
     // an action of openBookmarkMenuItem:.  Also, assume all items
     // with submenus are submenus of bookmarks.
     if (([item action] == @selector(openBookmarkMenuItem:)) ||
-        ([item hasSubmenu])) {
+        [item hasSubmenu] ||
+        [item isSeparatorItem]) {
       // This will eventually [obj release] all its kids, if it has
       // any.
       [menu removeItem:item];
     } else {
-      // Not a bookmark or item with submenu, so leave it alone.
+      // Leave it alone.
     }
   }
 }
 
+void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
+                                          const BookmarkNode* node,
+                                          NSString* title) {
+  NSMenuItem* items = [[[NSMenuItem alloc]
+                               initWithTitle:title
+                                      action:nil
+                               keyEquivalent:@""] autorelease];
+  [menu addItem:items];
+  NSMenu* other_submenu = [[[NSMenu alloc] initWithTitle:title]
+                            autorelease];
+  [menu setSubmenu:other_submenu forItem:items];
+  AddNodeToMenu(node, other_submenu);
+}
+
+// TODO(jrg): limit the number of bookmarks in the menubar?
 void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
   for (int i = 0; i < node->GetChildCount(); i++) {
     const BookmarkNode* child = node->GetChild(i);

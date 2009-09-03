@@ -79,11 +79,12 @@ TEST_F(BookmarkMenuBridgeTest, TestClearBookmarkMenu) {
   [item setSubmenu:[[[NSMenu alloc] initWithTitle:@"bar"] autorelease]];
   AddItemToMenu(menu, @"not", @selector(openBookmarkMenuItem:));
   AddItemToMenu(menu, @"zippy", @selector(length));
+  [menu addItem:[NSMenuItem separatorItem]];
 
   ClearBookmarkMenu(bridge_.get(), menu);
 
-  // Make sure all bookmark items are removed, and all items with
-  // submenus removed.
+  // Make sure all bookmark items are removed, all items with
+  // submenus removed, and all separator items are gone.
   EXPECT_EQ(2, [menu numberOfItems]);
   for (NSMenuItem *item in [menu itemArray]) {
     EXPECT_FALSE([[item title] isEqual:@"not"]);
@@ -110,48 +111,58 @@ TEST_F(BookmarkMenuBridgeTest, TestAddNodeToMenu) {
   // Set their titles to be the same as the URLs
   const BookmarkNode* node = NULL;
   model->AddURL(root, 0, ASCIIToWide(short_url), GURL(short_url));
+  int prev_count = [menu numberOfItems] - 1; // "extras" added at this point
   node = model->AddGroup(root, 1, empty);
   model->AddURL(root, 2, ASCIIToWide(long_url), GURL(long_url));
 
   // And the submenu fo the middle one
   model->AddURL(node, 0, empty, GURL("http://sub"));
 
-  EXPECT_EQ(3, [menu numberOfItems]);
+  EXPECT_EQ((NSInteger)(prev_count+3), [menu numberOfItems]);
 
-  // Confirm for just the first and last (index 0 and 2)
-  for (int x=0; x<3; x+=2) {
-    EXPECT_EQ(@selector(openBookmarkMenuItem:), [[menu itemAtIndex:x] action]);
-    EXPECT_EQ(NO, [[menu itemAtIndex:x] hasSubmenu]);
+  // Verify the 1st one is there with the right action.
+  NSMenuItem* item = [menu itemWithTitle:[NSString
+                                           stringWithUTF8String:short_url]];
+  EXPECT_TRUE(item);
+  EXPECT_EQ(@selector(openBookmarkMenuItem:), [item action]);
+  EXPECT_EQ(NO, [item hasSubmenu]);
+  NSMenuItem* short_item = item;
+  NSMenuItem* long_item = nil;
+
+  // Now confirm we have 2 submenus (the one we added, plus "other")
+  int subs = 0;
+  for (item in [menu itemArray]) {
+    if ([item hasSubmenu])
+      subs++;
   }
+  EXPECT_EQ(2, subs);
 
-  // Now confirm the middle one (index 1)
-  NSMenuItem* middle = [menu itemAtIndex:1];
-  EXPECT_NE(NO, [middle hasSubmenu]);
-  EXPECT_EQ(1, [[middle submenu] numberOfItems]);
-
-  // Confirm 1st and 3rd item have the same action (that we specified).
-  // Make sure the submenu item does NOT have an bookmark action.
-  EXPECT_EQ([[menu itemAtIndex:0] action], [[menu itemAtIndex:2] action]);
-  EXPECT_NE([[menu itemAtIndex:0] action], [[menu itemAtIndex:1] action]);
+  for (item in [menu itemArray]) {
+    if ([[item title] hasPrefix:@"http://super-duper"]) {
+      long_item = item;
+      break;
+    }
+  }
+  EXPECT_TRUE(long_item);
 
   // Make sure a short title looks fine
-  NSString* s = [[menu itemAtIndex:0] title];
+  NSString* s = [short_item title];
   EXPECT_TRUE([s isEqual:[NSString stringWithUTF8String:short_url]]);
 
   // Make sure a super-long title gets trimmed
-  s = [[menu itemAtIndex:0] title];
+  s = [long_item title];
   EXPECT_TRUE([s length] < strlen(long_url));
 
   // Confirm tooltips and confirm they are not trimmed (like the item
   // name might be).  Add tolerance for URL fixer-upping;
   // e.g. http://foo becomes http://foo/)
-  EXPECT_GE([[[menu itemAtIndex:0] toolTip] length], (2*strlen(short_url) - 5));
-  EXPECT_GE([[[menu itemAtIndex:2] toolTip] length], (2*strlen(long_url) - 5));
+  EXPECT_GE([[short_item toolTip] length], (2*strlen(short_url) - 5));
+  EXPECT_GE([[long_item toolTip] length], (2*strlen(long_url) - 5));
 
   // Make sure the favicon is non-nil (should be either the default site
   // icon or a favicon, if present).
-  EXPECT_TRUE([[menu itemAtIndex:0] image]);
-  EXPECT_TRUE([[menu itemAtIndex:2] image]);
+  EXPECT_TRUE([short_item image]);
+  EXPECT_TRUE([long_item image]);
 }
 
 // Makes sure our internal map of BookmarkNode to NSMenuItem works.
@@ -185,6 +196,24 @@ TEST_F(BookmarkMenuBridgeTest, TestGetMenuItemForNode) {
   EXPECT_FALSE(MenuItemForNode(bridge_.get(), NULL));
 }
 
+// Test that Loaded() adds both the bookmark bar nodes and the "other" nodes.
+TEST_F(BookmarkMenuBridgeTest, TestAddNodeToOther) {
+  std::wstring empty;
+  NSMenu* menu = bridge_->menu_.get();
+
+  BookmarkModel* model = bridge_->GetBookmarkModel();
+  const BookmarkNode* root = model->other_node();
+  EXPECT_TRUE(model && root);
+
+  const char* short_url = "http://foo/";
+  model->AddURL(root, 0, ASCIIToWide(short_url), GURL(short_url));
+
+  NSMenuItem* other = [menu itemAtIndex:([menu numberOfItems]-1)];
+  EXPECT_TRUE(other);
+  EXPECT_TRUE([other hasSubmenu]);
+  EXPECT_TRUE([[[[other submenu] itemAtIndex:0] title] isEqual:@"http://foo/"]);
+}
+
 TEST_F(BookmarkMenuBridgeTest, TestFavIconLoading) {
   std::wstring empty;
   NSMenu* menu = bridge_->menu_;
@@ -196,7 +225,7 @@ TEST_F(BookmarkMenuBridgeTest, TestFavIconLoading) {
   const BookmarkNode* node =
       model->AddURL(root, 0, ASCIIToWide("Test Item"),
                     GURL("http://favicon-test"));
-  NSMenuItem* item = [menu itemAtIndex:0];
+  NSMenuItem* item = [menu itemWithTitle:@"Test Item"];
   EXPECT_TRUE([item image]);
   [item setImage:nil];
   bridge_->BookmarkNodeFavIconLoaded(model, node);

@@ -64,6 +64,12 @@ class BookmarkMenuBridge : public BookmarkModelObserver {
   // Clear all bookmarks from the given bookmark menu.
   void ClearBookmarkMenu(NSMenu* menu);
 
+  // Helper for adding the node as a submenu to the menu with the
+  // given title.
+  void AddNodeAsSubmenu(NSMenu* menu,
+                        const BookmarkNode* node,
+                        NSString* title);
+
   // Helper for recursively adding items to our bookmark menu
   // All children of |node| will be added to |menu|.
   // TODO(jrg): add a counter to enforce maximum nodes added
