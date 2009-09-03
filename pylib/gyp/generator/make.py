@@ -73,6 +73,7 @@ builddir ?= $(rootdir)/$(builddir_name)/$(BUILDTYPE)
 
 # Object output directory.
 obj := $(builddir)/obj
+abs_obj := $(abspath $(obj))
 
 # We build up a list of all targets so we can slurp in the generated
 # dependency rule Makefiles in one pass.
@@ -187,7 +188,10 @@ $(if $(or $(command_changed),$(prereq_changed)),
 )
 endef
 
-all: $(all_targets)
+# Declare "all" target first so it is the default, even though we don't have the
+# deps yet.
+.PHONY: all
+all:
 
 # Use FORCE_DO_CMD to force a target to run.  Should be coupled with
 # do_cmd.
@@ -230,6 +234,10 @@ builddir_name ?= %s
 """)
 
 SHARED_FOOTER = """\
+# Now that we've included the sub-makefiles, we can define the rule depending on
+# all_targets.
+all: $(all_targets)
+
 # Add in dependency-tracking rules.  $(all_targets) is all targets in
 # our tree.  First, only consider targets that already have been
 # built, as unbuilt targets will be built regardless of dependency
@@ -364,7 +372,9 @@ class MakefileWriter:
       # we work around it here.
       dirs = set()
       for i, out in enumerate(outputs):
-        dirs.add(os.path.split(out)[0])
+        dir = os.path.split(out)[0]
+        if dir:
+          dirs.add(dir)
         if out.endswith('.bogus'):
           outputs[i] = out[:-len('.bogus')] + '.h'
       if action.get('process_outputs_as_sources', False):
@@ -380,13 +390,20 @@ class MakefileWriter:
         command = 'mkdir -p %s' % ' '.join(dirs) + '; ' + command
       self.WriteLn('cmd_%s = cd %s; %s' % (name, self.path, command))
       self.WriteLn()
-      self.WriteDoCmd(map(self.Absolutify, outputs),
+      outputs = map(self.Absolutify, outputs)
+      # The makefile rules are all relative to the top dir, but the gyp actions
+      # are defined relative to their containing dir.  This replaces the obj
+      # variable for the action rule with an absolute version so that the output
+      # goes in the right place.
+      self.WriteMakeRule(outputs, ['obj := $(abs_obj)'])
+      self.WriteDoCmd(outputs,
                       map(self.Absolutify, inputs),
                       command = name)
 
       # Stuff the outputs in a variable so we can refer to them later.
       outputs_variable = 'action_%s_outputs' % name
-      self.WriteLn('%s := %s' % (outputs_variable, ' '.join(outputs)))
+      self.WriteLn('%s := %s' % (outputs_variable,
+                                 ' '.join(outputs)))
       extra_outputs.append('$(%s)' % outputs_variable)
       self.WriteLn()
 
