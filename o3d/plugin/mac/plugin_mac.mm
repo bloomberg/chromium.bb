@@ -32,7 +32,7 @@
 
 
 #include "plugin_mac.h"
-#include <Breakpad/Breakpad.h>
+#include "Breakpad.h"
 #include <Cocoa/Cocoa.h>
 #include <QuickTime/QuickTime.h>
 #include "plugin/cross/o3d_glue.h"

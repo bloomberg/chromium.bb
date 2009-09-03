@@ -97,8 +97,10 @@
               'mac/graphics_utils_mac.mm',
             ],
             'mac_framework_dirs': [
-              '../../breakpad/src/client/mac/build/Release',
-              '<(cgdir)',
+              '../../<(cgdir)',
+            ],
+            'include_dirs': [
+              '../../breakpad/src/client/mac/Framework',
             ],
             'defines': [
               'XP_MACOSX=1',
@@ -112,7 +114,8 @@
                 '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
                 '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
                 '$(SDKROOT)/System/Library/Frameworks/QuickTime.framework',
-                '../../breakpad/src/client/mac/build/Release/Breakpad.framework',
+                'libbreakpad.a',
+                'libbreakpad_utilities.a',
                 '../../third_party/cg/files/mac/Cg.framework',
                 '../../third_party/glew/files/lib/libMacStaticGLEW.a',
               ],

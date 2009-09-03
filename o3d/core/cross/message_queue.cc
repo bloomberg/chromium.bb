@@ -846,7 +846,7 @@ bool MessageQueue::ProcessMessageGetVersion(
   response_header.iov_length = 1;
   response_header.handles = NULL;
   response_header.handle_count = 0;
-  int result = nacl::SendDatagram(client->client_handle(), &response_header, 0);
+  nacl::SendDatagram(client->client_handle(), &response_header, 0);
 
   return true;
 }

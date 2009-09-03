@@ -25,6 +25,16 @@
     'defines': [
       'GYP_BUILD',  # Needed to make a change in base/types.h conditional.
     ],
+    # This needs to be in a target_conditions block in order to successfully
+    # override the xcode_settings in ../../build/common.gypi.
+    # Something to do with evaluation order.
+    'target_conditions': [
+      ['OS=="mac"', {
+          'xcode_settings': {
+            'MACOSX_DEPLOYMENT_TARGET': '10.4',
+          },
+      }],
+    ],
   },
   'conditions' : [
     ['OS == "win"',
@@ -70,14 +80,16 @@
           'configurations': {
             'Debug': {
               'xcode_settings': {
-                'CFLAGS': ['-g',],
+#                'OTHER_CFLAGS': ['-ggdb', '-g',],
+                'GCC_DEBUGGING_SYMBOLS': 'full',
+        				'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
               },
             },
           },
           'xcode_settings': {
-            'CFLAGS': ['-gstabs+',
-                       '-fno-eliminate-unused-debug-symbols',
-                       '-mmacosx-version-min=10.4'],
+            'OTHER_CFLAGS': [
+               '-fno-eliminate-unused-debug-symbols',
+               '-mmacosx-version-min=10.4'],
             'WARNING_CFLAGS': ['-Wno-deprecated-declarations'],
             'WARNING_CXXFLAGS': ['-Wstrict-aliasing',
                                  '-Wno-deprecated',],

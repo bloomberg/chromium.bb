@@ -61,7 +61,7 @@ TEST_F(DataURLTest, FromDataURL) {
                                     &output,
                                     &output_length,
                                     &error_string));
-  EXPECT_EQ(3, output_length);
+  EXPECT_EQ(3u, output_length);
   EXPECT_EQ(0, memcmp("abc", output.get(), 3));
 }
 
