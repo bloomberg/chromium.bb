@@ -14,6 +14,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
 namespace {
@@ -262,14 +263,73 @@ class HostResolverSubSection : public SubSection {
   }
 };
 
+// Helper for the URLRequest "outstanding" and "live" sections.
+void OutputURLAndLoadLog(const GURL& url,
+                         const net::LoadLog* log,
+                         std::string* out) {
+  out->append("<li>");
+  out->append("<nobr>");
+  out->append(EscapeForHTML(url.spec()));
+  out->append("</nobr>");
+  if (log)
+    OutputTextInPre(net::LoadLogUtil::PrettyPrintAsEventTree(log), out);
+  out->append("</li>");
+}
+
+class URLRequestLiveSubSection : public SubSection {
+ public:
+  URLRequestLiveSubSection(SubSection* parent)
+      : SubSection(parent, "outstanding", "Outstanding requests") {
+  }
+
+  virtual void OutputBody(URLRequestContext* /*context*/, std::string* out) {
+    URLRequest::InstanceTracker* tracker = URLRequest::InstanceTracker::Get();
+
+    // Note that these are the requests across ALL contexts.
+    std::vector<URLRequest*> requests = tracker->GetLiveRequests();
+
+    out->append("<ol>");
+    for (size_t i = 0; i < requests.size(); ++i) {
+      // Reverse the list order, so we dispay from most recent to oldest.
+      size_t index = requests.size() - i - 1;
+      OutputURLAndLoadLog(requests[index]->original_url(),
+                          requests[index]->load_log(),
+                          out);
+    }
+    out->append("</ol>");
+  }
+};
+
+class URLRequestRecentSubSection : public SubSection {
+ public:
+  URLRequestRecentSubSection(SubSection* parent)
+      : SubSection(parent, "recent", "Recently completed requests") {
+  }
+
+  virtual void OutputBody(URLRequestContext* /*context*/, std::string* out) {
+    URLRequest::InstanceTracker* tracker = URLRequest::InstanceTracker::Get();
+
+    // Note that these are the recently completed requests across ALL contexts.
+    URLRequest::InstanceTracker::RecentRequestInfoList recent =
+        tracker->GetRecentlyDeceased();
+
+    out->append("<ol>");
+    for (size_t i = 0; i < recent.size(); ++i) {
+      // Reverse the list order, so we dispay from most recent to oldest.
+      size_t index = recent.size() - i - 1;
+      OutputURLAndLoadLog(recent[index].original_url,
+                          recent[index].load_log, out);
+    }
+    out->append("</ol>");
+  }
+};
+
 class URLRequestSubSection : public SubSection {
  public:
   URLRequestSubSection(SubSection* parent)
       : SubSection(parent, "urlrequest", "URLRequest") {
-  }
-
-  virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    out->append("TODO");
+    AddSubSection(new URLRequestLiveSubSection(this));
+    AddSubSection(new URLRequestRecentSubSection(this));
   }
 };
 
