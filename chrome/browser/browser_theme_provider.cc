@@ -210,6 +210,10 @@ void BrowserThemeProvider::WriteImagesToDisk() {
         NOTREACHED() << "Image file could not be written to disk.";
         return;
       }
+
+      // If we've successfully written the file to disk, only then add it
+      // to the prefs file.
+
     } else {
       NOTREACHED();
       return;
@@ -1000,11 +1004,7 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
       }
       std::map<int, SkBitmap*>::iterator it = image_cache_.find(base_id);
       if (it != image_cache_.end()) {
-        SkBitmap* frame = it->second;
-        int blur_amount = HasCustomImage(id) ? 1 : 2;
-        SkBitmap blurred =
-          skia::ImageOperations::CreateBlurredBitmap(*frame, blur_amount);
-        SkBitmap* bg_tab = new SkBitmap(TintBitmap(blurred,
+        SkBitmap* bg_tab = new SkBitmap(TintBitmap(*(it->second),
                                                    TINT_BACKGROUND_TAB));
 
         // If they've provided a custom image, overlay it.
