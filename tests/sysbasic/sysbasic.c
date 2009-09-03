@@ -33,9 +33,15 @@
  * NaCl tests for simple syscalls not using newlib
  */
 
+#define CHECK_ERRNO 1
 
 #include <bits/mman.h>
 #include <sys/nacl_syscalls.h>
+
+/* NOTE: defining CHECK_ERRNO pulls in some newlib magic (reent.h, etc.) */
+#if defined(CHECK_ERRNO)
+#include <errno.h>
+#endif
 
 
 int mystrlen(const char* s) {
@@ -60,6 +66,13 @@ void hextochar(int n, char buffer[9]) {
   }
 }
 
+void PrintInt(int i) {
+  char buffer[16];
+
+  hextochar(i, buffer);
+  myprint(buffer);
+  myprint("\n");
+}
 
 void Error(const char* message) {
   myprint("ERROR: ");
@@ -67,62 +80,94 @@ void Error(const char* message) {
   _exit(-1);
 }
 
+#if defined(CHECK_ERRNO)
+
+void CheckErrno(int expected) {
+  char buffer[16];
+
+  myprint("\nerrno\n");
+  hextochar(errno, buffer);
+  myprint(buffer);
+  myprint("\n");
+  if (expected != errno) Error("bad errno value\n");
+}
+
+#else
+
+void CheckErrno(int expected) {
+  expected = expected;
+}
+
+#endif
+
 const int kExitOk = 69;
 const int kSysbreakBase = 0x100000;
 const int kMmapBase = 0x200000;
 const int kMmapSize = 0x10000;
+const int kInvalidFileDescriptor = 100;
+
 
 int main() {
   int  i;
-  char buffer[16];
 
-  myprint("before null_syscall\n");
+  CheckErrno(0);
+
+  myprint("\nnull_syscall()\n");
   null_syscall();
 
-  myprint("before sysbreak(0)\n");
+  myprint("\nsysbreak()\n");
   i = (int) sysbrk(0);
-  hextochar(i, buffer);
-  myprint(buffer);
-  myprint("\n");
+  PrintInt(i);
+  if (0 == i) Error("bad sysbrk() value\n");
 
-  myprint("before sysbrk(0x100000)\n");
+  myprint("\nsysbrk()\n");
   i = (int) sysbrk((void *) kSysbreakBase);
-  hextochar(i, buffer);
-  myprint(buffer);
-  myprint("\n");
+  PrintInt(i);
   if (kSysbreakBase != i) Error("bad sysbrk() value\n");
 
-  myprint("before clock()\n");
-  myprint("# ");   /* add comment file so we can filter it out in golden file */
-  i = clock();
-  hextochar(i, buffer);
-  myprint(buffer);
-  myprint("\n");
-
-  myprint("before srpc_get_fd()\n");
+  myprint("\nsrpc_get_fd()\n");
   i = srpc_get_fd();
-  hextochar(i, buffer);
-  myprint(buffer);
-  myprint("\n");
+  PrintInt(i);
   if (69 != i) Error("bad  srpc_get_fd() value\n");
 
-  myprint("mmap()\n");
-  i = (int) mmap(0, kMmapSize,  PROT_READ, 0, 0, 0);
-  hextochar(i, buffer);
-  myprint(buffer);
-  myprint("\n");
-#if 0
+  myprint("\nmmap()\n");
+  i = (int) mmap(0, kMmapSize,
+                 PROT_READ, MAP_ANONYMOUS | MAP_SHARED,
+                 -1, 0);
+  PrintInt(i);
   if (-1 == i) Error("bad mmap() value\n");
-#endif
 
-  myprint("mmap()\n");
-  i = (int) mmap((void *)kMmapBase, kMmapSize,  PROT_READ, 0, 0, 0);
-  hextochar(i, buffer);
-  myprint(buffer);
-  myprint("\n");
-#if 0
-  if (kMmapBase != i ) Error("bad mmap() value\n");
-#endif
+  myprint("\nmunmap()\n");
+  i = (int) munmap((void *)i, kMmapSize);
+  PrintInt(i);
+  if (0 != i) Error("bad munmap() value\n");
+
+  myprint("\nmmap()\n");
+  i = (int) mmap((void *)kMmapBase, kMmapSize,
+                 PROT_READ, MAP_ANONYMOUS | MAP_SHARED,
+                 -1, 0);
+  PrintInt(i);
+  if (kMmapBase != i) Error("bad mmap() value\n");
+
+  myprint("\nmunmap()\n");
+  i = (int) munmap((void *)i, kMmapSize);
+  PrintInt(i);
+  if (0 != i) Error("bad munmap() value\n");
+
+  CheckErrno(0);
+
+  /* Some expect failures */
+  myprint("\nclose()\n");
+  i = (int) close(kInvalidFileDescriptor);
+  PrintInt(i);
+  if (~0 != i) Error("bad close value\n");
+  CheckErrno(EBADF);
+
+  myprint("\nclock()\n");
+  i = clock();
+  PrintInt(i);
+  if (~0 != i) Error("bad clock value\n");
+  CheckErrno(EACCES);
 
   myprint("before _exit()\n");
   _exit(kExitOk);
