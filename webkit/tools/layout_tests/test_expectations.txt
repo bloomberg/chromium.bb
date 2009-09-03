@@ -2334,3 +2334,11 @@ BUG20933 WIN : LayoutTests/editing/deleting/delete-br-013.html = FAIL
 BUG20933 WIN : LayoutTests/editing/pasteboard/paste-blockquote-into-blockquote-3.html = FAIL
 
 BUG20898 MAC DEBUG : LayoutTests/svg/W3C-SVG-1.1/painting-marker-02-f.svg = FAIL PASS
+
+// WebKit 48001:48020
+// New Webkit test: http://trac.webkit.org/changeset/48011
+// maxLength does not work for IME input in this test.
+BUG20993 : LayoutTests/fast/forms/input-maxlength-ime-completed.html = FAIL
+// Need to implement clearAllDatabases in layoutTestController.
+BUG20995 SKIP : LayoutTests/storage/statement-error-callback.html = FAIL
+
