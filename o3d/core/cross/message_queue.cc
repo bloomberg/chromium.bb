@@ -834,7 +834,7 @@ bool MessageQueue::ProcessMessageGetVersion(
   }
 
   // Send the version string.
-  DCHECK_LT(strlen(version), MAX_VERSION_STRING_LENGTH);
+  DCHECK_LT(strlen(version), static_cast<size_t>(MAX_VERSION_STRING_LENGTH));
   MessageGetVersion::Response response(version);
 
   nacl::MessageHeader response_header;
