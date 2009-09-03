@@ -9,6 +9,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 
 #include "base/logging.h"
+#include "base/mac_util.h"
 #include "chrome/common/transport_dib.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -32,10 +33,8 @@ BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
   if (!containing_window) {
     // If we are not in a containing window yet, create a CGBitmapContext
     // to use as a stand-in for the layer.
-    scoped_cftyperef<CGColorSpaceRef>
-        color_space(CGColorSpaceCreateDeviceRGB());
     cg_bitmap_.reset(CGBitmapContextCreate(NULL, size.width(), size.height(),
-        8, size.width() * 8, color_space,
+        8, size.width() * 8, mac_util::GetSystemColorSpace(),
         kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
   } else {
     CGContextRef context = static_cast<CGContextRef>(
@@ -57,13 +56,12 @@ size_t BackingStore::MemorySize() {
 void BackingStore::PaintRect(base::ProcessHandle process,
                              TransportDIB* bitmap,
                              const gfx::Rect& bitmap_rect) {
-  scoped_cftyperef<CGColorSpaceRef> color_space(CGColorSpaceCreateDeviceRGB());
   scoped_cftyperef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(NULL, bitmap->memory(),
       bitmap_rect.width() * bitmap_rect.height() * 4, NULL));
   scoped_cftyperef<CGImageRef> image(
       CGImageCreate(bitmap_rect.width(), bitmap_rect.height(), 8, 32,
-          4 * bitmap_rect.width(), color_space,
+          4 * bitmap_rect.width(), mac_util::GetSystemColorSpace(),
           kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
           data_provider, NULL, false, kCGRenderingIntentDefault));
 
@@ -111,8 +109,6 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
                               int dx, int dy,
                               const gfx::Rect& clip_rect,
                               const gfx::Size& view_size) {
-  if (!cg_layer()) return;
-
   // "Scroll" the contents of the layer by creating a new CGLayer,
   // copying the contents of the old one into the new one offset by the scroll
   // amount, swapping in the new CGLayer, and then painting in the new data.
@@ -145,11 +141,9 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
       cg_layer_.swap(new_layer);
     } else {
       // We don't have a layer, so scroll the contents of the CGBitmapContext.
-      scoped_cftyperef<CGColorSpaceRef>
-          color_space(CGColorSpaceCreateDeviceRGB());
       scoped_cftyperef<CGContextRef> new_bitmap(
           CGBitmapContextCreate(NULL, size_.width(), size_.height(), 8,
-              size_.width() * 8, color_space,
+              size_.width() * 8, mac_util::GetSystemColorSpace(),
               kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
       scoped_cftyperef<CGImageRef> bitmap_image(
           CGBitmapContextCreateImage(cg_bitmap_));

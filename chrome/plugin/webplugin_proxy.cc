@@ -11,6 +11,9 @@
 #include "app/win_util.h"
 #endif
 #include "base/gfx/blit.h"
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
 #include "base/scoped_handle.h"
 #include "base/shared_memory.h"
 #include "base/singleton.h"
@@ -562,14 +565,12 @@ void WebPluginProxy::SetWindowlessBuffer(
   // and then use that to create a CGContextRef.
   windowless_dib_.reset(TransportDIB::Map(windowless_buffer));
   background_dib_.reset(TransportDIB::Map(background_buffer));
-  scoped_cftyperef<CGColorSpaceRef> rgb_colorspace(
-      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
   windowless_context_.reset(CGBitmapContextCreate(
       windowless_dib_->memory(),
       delegate_->GetRect().width(),
       delegate_->GetRect().height(),
       8, 4 * delegate_->GetRect().width(),
-      rgb_colorspace,
+      mac_util::GetSystemColorSpace(),
       kCGImageAlphaPremultipliedFirst |
       kCGBitmapByteOrder32Host));
   CGContextTranslateCTM(windowless_context_, 0, delegate_->GetRect().height());
@@ -580,7 +581,7 @@ void WebPluginProxy::SetWindowlessBuffer(
         delegate_->GetRect().width(),
         delegate_->GetRect().height(),
         8, 4 * delegate_->GetRect().width(),
-        rgb_colorspace,
+        mac_util::GetSystemColorSpace(),
         kCGImageAlphaPremultipliedFirst |
         kCGBitmapByteOrder32Host));
     CGContextTranslateCTM(background_context_, 0,

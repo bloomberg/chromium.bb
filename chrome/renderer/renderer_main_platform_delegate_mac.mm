@@ -51,6 +51,10 @@ void SandboxWarmup() {
 
     CGColorSpaceRelease(rgb_colorspace);
     CGContextRelease(tmp);
+
+    // load in the color profiles we'll need (as a side effect).
+    (void) mac_util::GetSRGBColorSpace();
+    (void) mac_util::GetSystemColorSpace();
   }
 
   {  // [-NSColor colorUsingColorSpaceName] - 10.5.6

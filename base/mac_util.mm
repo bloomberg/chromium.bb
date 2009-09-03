@@ -104,5 +104,29 @@ FilePath GetUserLibraryPath() {
   return FilePath(library_dir_path);
 }
 
+CGColorSpaceRef GetSRGBColorSpace() {
+  // Leaked.  That's OK, it's scoped to the lifetime of the application.
+  static CGColorSpaceRef g_color_space_sRGB =
+      CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+  return g_color_space_sRGB;
+}
+
+CGColorSpaceRef GetSystemColorSpace() {
+  // Leaked.  That's OK, it's scoped to the lifetime of the application.
+  static CGColorSpaceRef g_system_color_space = NULL;
+
+  if (!g_system_color_space) {
+    // Get the System Profile for the main display
+    CMProfileRef system_profile = NULL;
+    if (CMGetSystemProfile(&system_profile) == noErr) {
+      // Create a colorspace with the system profile
+      g_system_color_space =
+          CGColorSpaceCreateWithPlatformColorSpace(system_profile);
+      // Close the profile
+      CMCloseProfile(system_profile);
+    }
+  }
+  return g_system_color_space;
+}
 
 }  // namespace mac_util

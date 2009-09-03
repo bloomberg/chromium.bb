@@ -51,6 +51,14 @@ OSType CreatorCodeForApplication();
 // Returns the ~/Library directory.
 FilePath GetUserLibraryPath();
 
+// Returns an sRGB color space.  The return value is a static value; do not
+// release it!
+CGColorSpaceRef GetSRGBColorSpace();
+
+// Returns the color space being used by the main display.  The return value
+// is a static value; do not release it!
+CGColorSpaceRef GetSystemColorSpace();
+
 }  // namespace mac_util
 
 #endif  // BASE_MAC_UTIL_H_
