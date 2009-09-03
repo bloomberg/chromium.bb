@@ -40,7 +40,7 @@ ButtonDropDown::~ButtonDropDown() {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool ButtonDropDown::OnMousePressed(const MouseEvent& e) {
-  if (IsEnabled() && e.IsLeftMouseButton() && HitTest(e.location())) {
+  if (IsEnabled() && IsTriggerableEvent(e) && HitTest(e.location())) {
     // Store the y pos of the mouse coordinates so we can use them later to
     // determine if the user dragged the mouse down (which should pop up the
     // drag down menu immediately, instead of waiting for the timer)
@@ -56,15 +56,15 @@ bool ButtonDropDown::OnMousePressed(const MouseEvent& e) {
 }
 
 void ButtonDropDown::OnMouseReleased(const MouseEvent& e, bool canceled) {
-  if (e.IsLeftMouseButton() || (e.IsRightMouseButton() &&
-                                !HitTest(e.location()))) {
+  if (IsTriggerableEvent(e) ||
+      (e.IsRightMouseButton() && !HitTest(e.location()))) {
     ImageButton::OnMouseReleased(e, canceled);
   }
 
   if (canceled)
     return;
 
-  if (e.IsLeftMouseButton())
+  if (IsTriggerableEvent(e))
     show_menu_factory_.RevokeAll();
 
   if (IsEnabled() && e.IsRightMouseButton() && HitTest(e.location())) {
