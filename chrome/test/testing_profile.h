@@ -53,8 +53,9 @@ class TestingProfile : public Profile {
   // Creates a TemplateURLModel. If not invoked the TemplateURLModel is NULL.
   void CreateTemplateURLModel();
 
-  // Creates a ThemeProvider. If not invoked the ThemeProvider is NULL.
-  void CreateThemeProvider();
+  // Uses a specific theme provider for this profile. TestingProfile takes
+  // ownership of |theme_provider|.
+  void UseThemeProvider(BrowserThemeProvider* theme_provider);
 
   virtual FilePath GetPath() {
     return path_;
@@ -142,7 +143,7 @@ class TestingProfile : public Profile {
   virtual bool HasCreatedDownloadManager() const {
     return false;
   }
-  virtual void InitThemes() { }
+  virtual void InitThemes();
   virtual void SetTheme(Extension* extension) { }
   virtual void SetNativeTheme() { }
   virtual void ClearTheme() { }
@@ -150,6 +151,7 @@ class TestingProfile : public Profile {
     return NULL;
   }
   virtual ThemeProvider* GetThemeProvider() {
+    InitThemes();
     return theme_provider_.get();
   }
   virtual URLRequestContext* GetRequestContext() {
@@ -267,8 +269,9 @@ class TestingProfile : public Profile {
   // The SessionService. Defaults to NULL, but can be set using the setter.
   scoped_refptr<SessionService> session_service_;
 
-  // The theme provider. Only created if CreateThemeProvider is invoked.
+  // The theme provider. Created lazily by GetThemeProvider()/InitThemes().
   scoped_refptr<BrowserThemeProvider> theme_provider_;
+  bool created_theme_provider_;
 
   // Do we have a history service? This defaults to the value of
   // history_service, but can be explicitly set.

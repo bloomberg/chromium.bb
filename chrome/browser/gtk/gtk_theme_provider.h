@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GTK_GTK_THEME_PROVIDER_H_
 #define CHROME_BROWSER_GTK_GTK_THEME_PROVIDER_H_
 
+#include <string>
 #include <vector>
 
 #include "chrome/browser/browser_theme_provider.h"
@@ -62,18 +63,23 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // label. Used for borders between GTK stuff and the webcontent.
   GdkColor GetBorderColor();
 
+  // Expose the inner widgets. Only used for testing.
+  GtkWidget* fake_window() { return fake_window_; }
+  GtkWidget* fake_label() { return fake_label_.get(); }
+
+ protected:
+  // Possibly creates a theme specific version of theme_toolbar_default.
+  // (minimally acceptable version right now, which is just a fill of the bg
+  // color; this should instead invoke gtk_draw_box(...) for complex theme
+  // engines.)
+  virtual SkBitmap* LoadThemeBitmap(int id);
+
  private:
   // Load theme data from preferences, possibly picking colors from GTK.
   virtual void LoadThemePrefs();
 
   // Let all the browser views know that themes have changed.
   virtual void NotifyThemeChanged();
-
-  // Possibly creates a theme specific version of theme_toolbar_default.
-  // (minimally acceptable version right now, which is just a fill of the bg
-  // color; this should instead invoke gtk_draw_box(...) for complex theme
-  // engines.)
-  virtual SkBitmap* LoadThemeBitmap(int id);
 
   // If use_gtk_ is true, completely ignores this call. Otherwise passes it to
   // the superclass.

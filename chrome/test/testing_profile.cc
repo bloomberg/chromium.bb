@@ -4,10 +4,15 @@
 
 #include "chrome/test/testing_profile.h"
 
+#include "build/build_config.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/common/chrome_constants.h"
+
+#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+#include "chrome/browser/gtk/gtk_theme_provider.h"
+#endif
 
 using base::Time;
 
@@ -70,6 +75,7 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
 
 TestingProfile::TestingProfile()
     : start_time_(Time::Now()),
+      created_theme_provider_(false),
       has_history_service_(false),
       off_the_record_(false),
       last_session_exited_cleanly_(true) {
@@ -166,8 +172,23 @@ void TestingProfile::CreateTemplateURLModel() {
   template_url_model_.reset(new TemplateURLModel(this));
 }
 
-void TestingProfile::CreateThemeProvider() {
-  theme_provider_ = new BrowserThemeProvider();
+void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
+  theme_provider->Init(this);
+  created_theme_provider_ = true;
+  theme_provider_ = theme_provider;
+}
+
+void TestingProfile::InitThemes() {
+  if (!created_theme_provider_) {
+#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+    scoped_refptr<BrowserThemeProvider> themes(new GtkThemeProvider);
+#else
+    scoped_refptr<BrowserThemeProvider> themes(new BrowserThemeProvider);
+#endif
+    themes->Init(this);
+    created_theme_provider_ = true;
+    theme_provider_.swap(themes);
+  }
 }
 
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {

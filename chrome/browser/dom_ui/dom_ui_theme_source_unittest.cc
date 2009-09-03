@@ -36,7 +36,7 @@ class DOMUISourcesTest : public testing::Test {
  private:
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
-    profile_.get()->CreateThemeProvider();
+    profile_->InitThemes();
     theme_source_ = new MockThemeSource(profile_.get());
   }
 
