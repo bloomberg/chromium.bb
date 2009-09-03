@@ -530,7 +530,8 @@
                       # Define strip_from_xcode in a variable ending in _path
                       # so that gyp understands it's a path and performs proper
                       # relativization during dict merging.
-                      'strip_from_xcode_path': '../../build/mac/strip_from_xcode',
+                      'strip_from_xcode_path':
+                          '../../build/mac/strip_from_xcode',
                     },
                     'postbuild_name': 'Strip If Needed',
                     'action': ['<(strip_from_xcode_path)'],
@@ -548,6 +549,7 @@
         {
           'rule_name': 'cygwin_assembler',
           'msvs_cygwin_shell': 0,
+          'msvs_quote_cmd': 0,
           'extension': 'S',
           'inputs': [
             '../src/third_party/gnu_binutils/files/as.exe',

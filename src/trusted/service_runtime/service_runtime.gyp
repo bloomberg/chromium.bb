@@ -168,13 +168,14 @@
           'conditions': [
             ['OS=="win"', {
               'msvs_cygwin_shell': 0,
+              'msvs_quote_cmd': 0,
             }],
             ['OS=="mac"', {
               # TODO(gregoryd): replace by a Python script
               # that does not use redirection.
               'action' :
                 ['bash', '-c', 'python nacl_syscall_handlers_gen3.py -c -f "Video|Audio|Multimedia" < <@(syscall_handler) > <@(_outputs)'],
-            }, { # OS != win
+            }, { # OS != mac
               'action':
                 # TODO(gregoryd): find out how to generate a file
                 # in such a location that can be found in both

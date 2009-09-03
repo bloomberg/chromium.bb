@@ -58,6 +58,7 @@
           'conditions': [
             ['OS=="win"', {
               'msvs_cygwin_shell': 0,
+              'msvs_quote_cmd': 0,
             }],
             ['OS=="mac"', {
               # TODO(gregoryd): replace with a python script that
@@ -83,6 +84,7 @@
           'conditions': [
             ['OS=="win"', {
               'msvs_cygwin_shell': 0,
+              'msvs_quote_cmd': 0,
             }],
             ['OS=="mac"', {
               'action':
