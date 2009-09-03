@@ -2784,10 +2784,11 @@ void RenderView::OnEnableIntrinsicWidthChangedMode() {
 void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
+#if defined(OS_LINUX)
   webview()->SetThemeFocusRingColor(renderer_prefs.focus_ring_color_r,
                                     renderer_prefs.focus_ring_color_g,
                                     renderer_prefs.focus_ring_color_b);
-
+#endif
 }
 
 void RenderView::OnMediaPlayerActionAt(int x,
