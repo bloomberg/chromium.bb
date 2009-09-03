@@ -53,13 +53,19 @@ class SubSection {
   // Outputs this subsection, and all of its children.
   void OutputRecursive(URLRequestContext* context, std::string* out) {
     if (!is_root()) {
+      std::string section_url =
+          std::string("view-net-internal:") + GetFullyQualifiedName();
+      // Canonicalizing the URL escapes characters which cause problems in HTML.
+      section_url = GURL(section_url).spec();
+
       // Print the heading.
       out->append(StringPrintf("<div>"
           "<span class=subsection_title>%s</span> "
-          "<span class=subsection_name>(about:net-internal/%s)<span>"
+          "<span class=subsection_name>(<a href='%s'>%s</a>)<span>"
           "</div>",
           EscapeForHTML(title_).c_str(),
-          EscapeForHTML(GetFullyQualifiedName()).c_str()));
+          section_url.c_str(),
+          EscapeForHTML(section_url).c_str()));
 
       out->append("<div class=subsection_body>");
     }
