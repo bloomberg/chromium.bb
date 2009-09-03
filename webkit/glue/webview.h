@@ -258,6 +258,10 @@ class WebView : public WebKit::WebWidget {
   // Gets the WebView's active state (i.e., state of control tints).
   virtual bool IsActive() = 0;
 
+#if defined(OS_LINUX)
+  virtual void SetThemeFocusRingColor(int r, int g, int b) = 0;
+#endif
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebView);
 };

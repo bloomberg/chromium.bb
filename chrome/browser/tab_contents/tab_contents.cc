@@ -72,6 +72,7 @@
 
 #if defined(OS_LINUX)
 #include "chrome/browser/gtk/create_application_shortcuts_dialog_gtk.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif  // defined(OS_LINUX)
 
 // Cross-Site Navigations
@@ -290,6 +291,10 @@ TabContents::TabContents(Profile* profile,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
                  NotificationService::AllSources());
+#if defined(OS_LINUX)
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+#endif
 
   // Keep a global copy of the previous search string (if any).
   static string16 global_last_search = string16();
@@ -2463,6 +2468,13 @@ void TabContents::Observe(NotificationType type,
       ExpireInfoBars(committed_details);
       break;
     }
+
+#if defined(OS_LINUX)
+    case NotificationType::BROWSER_THEME_CHANGED: {
+      render_view_host()->SyncRendererPrefs();
+      break;
+    }
+#endif
 
     default:
       NOTREACHED();

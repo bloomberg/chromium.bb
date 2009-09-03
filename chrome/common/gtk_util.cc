@@ -400,6 +400,15 @@ void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs) {
     }
   }
 
+  static GtkWidget* fixed = gtk_fixed_new();
+  GtkStyle* style = gtk_rc_get_style(fixed);
+  // base[SELECTED] seems more appropriate but in practice it is often too light
+  // to be easily visible.
+  GdkColor color = style->bg[GTK_STATE_SELECTED];
+  prefs->focus_ring_color_r = color.red / 257;
+  prefs->focus_ring_color_g = color.green / 257;
+  prefs->focus_ring_color_b = color.blue / 257;
+
   if (hint_style)
     g_free(hint_style);
   if (rgba_style)

@@ -46,6 +46,11 @@ struct RendererPreferences {
   // Currently only used by Linux.
   RendererPreferencesSubpixelRenderingEnum subpixel_rendering;
 
+  // The color of the focus ring. Currently only used on Linux.
+  int focus_ring_color_r;
+  int focus_ring_color_g;
+  int focus_ring_color_b;
+
   // Browser wants a look at all top level requests
   bool browser_handles_top_level_requests;
 

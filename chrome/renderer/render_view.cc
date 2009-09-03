@@ -278,13 +278,13 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
     decrement_shared_popup_at_destruction_ = false;
   }
 
-  OnSetRendererPrefs(renderer_prefs);
-
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
   webwidget_ = WebView::Create();
   webkit_preferences_.Apply(webview());
   webview()->InitializeMainFrame(this);
+
+  OnSetRendererPrefs(renderer_prefs);
 
 #if defined(OS_LINUX)
   // We have to enable ourselves as the editor delegate on linux so we can copy
@@ -2784,6 +2784,10 @@ void RenderView::OnEnableIntrinsicWidthChangedMode() {
 void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
+  webview()->SetThemeFocusRingColor(renderer_prefs.focus_ring_color_r,
+                                    renderer_prefs.focus_ring_color_g,
+                                    renderer_prefs.focus_ring_color_b);
+
 }
 
 void RenderView::OnMediaPlayerActionAt(int x,

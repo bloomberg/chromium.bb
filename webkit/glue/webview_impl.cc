@@ -44,6 +44,8 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "PopupMenuClient.h"
 #if defined(OS_WIN)
 #include "RenderThemeChromiumWin.h"
+#elif defined(OS_LINUX)
+#include "RenderThemeChromiumLinux.h"
 #else
 #include "RenderTheme.h"
 #endif
@@ -1777,6 +1779,13 @@ bool WebViewImpl::IsActive() {
       ? page()->focusController()->isActive()
       : false;
 }
+
+#if defined(OS_LINUX)
+void WebViewImpl::SetThemeFocusRingColor(int r, int g, int b) {
+  reinterpret_cast<RenderThemeChromiumLinux*>(theme())->
+      setFocusRingColor(Color(r, g, b));
+}
+#endif
 
 void WebViewImpl::DidCommitLoad(bool* is_new_navigation) {
   if (is_new_navigation)

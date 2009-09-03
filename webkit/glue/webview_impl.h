@@ -144,6 +144,9 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
 
   virtual void SetActive(bool active);
   virtual bool IsActive();
+#if defined(OS_LINUX)
+  virtual void SetThemeFocusRingColor(int r, int g, int b);
+#endif
 
   // WebViewImpl
 
