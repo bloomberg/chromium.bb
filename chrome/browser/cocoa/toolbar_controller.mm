@@ -302,8 +302,8 @@ class PrefObserverBridge : public NotificationObserver {
   // TODO(???): add more code here when implementing app mode to allow
   // turning off both toolbar AND location bar.
 
-  // TODO(jrg): add mode code to make the location bar NOT editable
-  // when in a pop-up.
+  // Make location bar not editable when in a pop-up.
+  [locationBar_ setEditable:toolbar];
 }
 
 - (NSView*)view {
