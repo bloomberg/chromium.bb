@@ -44,8 +44,11 @@ bool AmIBundled() {
 }
 
 bool IsBackgroundOnlyProcess() {
-  NSBundle* main_bundle = MainAppBundle();
-  NSDictionary* info_dictionary = [main_bundle infoDictionary];
+  // This function really does want to examine NSBundle's idea of the main
+  // bundle dictionary, and not the overriden MainAppBundle.  It needs to look
+  // at the actual running .app's Info.plist to access its LSUIElement
+  // property.
+  NSDictionary* info_dictionary = [[NSBundle mainBundle] infoDictionary];
   return [[info_dictionary objectForKey:@"LSUIElement"] boolValue] != NO;
 }
 
