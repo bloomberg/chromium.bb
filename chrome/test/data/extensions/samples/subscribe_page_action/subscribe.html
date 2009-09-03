@@ -35,7 +35,7 @@
     req = new XMLHttpRequest();
     req.onload = handleResponse;
     req.onerror = handleError;
-    req.open("GET", feedUrl, false);
+    req.open("GET", feedUrl, true);
     req.send(null);
   }
 
