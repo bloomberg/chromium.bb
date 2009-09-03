@@ -1146,6 +1146,11 @@
    fun:_ZN7WebCore8Document12updateLayoutEv
 }
 {
+   bug_20941
+   Memcheck:Value4
+   fun:_ZNK7WebCore23RenderThemeChromiumSkia21adjustSliderThumbSizeEPNS_12RenderObjectE
+}
+{
    bug_20964
    Memcheck:Cond
    ...
