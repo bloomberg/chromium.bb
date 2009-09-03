@@ -809,7 +809,7 @@ void WebFrameImpl::stopLoading() {
   // TODO(darin): Figure out what we should really do here.  It seems like a
   // bug that FrameLoader::stopLoading doesn't call stopAllLoaders.
   frame_->loader()->stopAllLoaders();
-  frame_->loader()->stopLoading(false);
+  frame_->loader()->stopLoading(WebCore::UnloadEventPolicyNone);
 }
 
 WebDataSource* WebFrameImpl::provisionalDataSource() const {
