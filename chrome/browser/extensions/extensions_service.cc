@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -113,7 +114,7 @@ ExtensionsService::ExtensionsService(Profile* profile,
           switches::kExtensionsUpdateFrequency)));
     }
     updater_ = new ExtensionUpdater(this, prefs, update_frequency,
-        backend_loop_, ChromeThread::GetMessageLoop(ChromeThread::IO));
+        backend_loop_, g_browser_process->io_thread()->message_loop());
   }
 
   backend_ = new ExtensionsServiceBackend(install_directory_, frontend_loop);
