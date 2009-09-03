@@ -1256,7 +1256,7 @@ int main(int argc, char** argv) {
       launched = true;
       argc--; argv++;
     } else if (!launched) {
-      STARTUPINFO start_info = {0};
+      STARTUPINFOA start_info = {0};
       start_info.cb = sizeof(start_info);
 
       if (!CreateProcessA(NULL,
