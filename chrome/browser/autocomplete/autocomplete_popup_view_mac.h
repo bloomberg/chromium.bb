@@ -61,7 +61,6 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
     // though.
   }
   virtual void UpdatePopupAppearance();
-  virtual void OnHoverEnabledOrDisabled(bool disabled) { NOTIMPLEMENTED(); }
 
   // This is only called by model in SetSelectedLine() after updating
   // everything.  Popup should already be visible.

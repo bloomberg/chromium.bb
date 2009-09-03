@@ -30,7 +30,6 @@ class AutocompletePopupViewGtk : public AutocompletePopupView {
   virtual bool IsOpen() const { return opened_; }
   virtual void InvalidateLine(size_t line);
   virtual void UpdatePopupAppearance();
-  virtual void OnHoverEnabledOrDisabled(bool disabled);
   virtual void PaintUpdatesNow();
   virtual AutocompletePopupModel* GetModel();
 

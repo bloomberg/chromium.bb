@@ -30,6 +30,9 @@ class AutocompleteResultViewModel {
   // Returns true if the index is selected.
   virtual bool IsSelectedIndex(size_t index) const = 0;
 
+  // Returns true if the index is hovered.
+  virtual bool IsHoveredIndex(size_t index) const = 0;
+
   // Called when the line at the specified index should be opened with the
   // provided disposition.
   virtual void OpenIndex(size_t index, WindowOpenDisposition disposition) = 0;
@@ -62,12 +65,12 @@ class AutocompletePopupContentsView : public views::View,
   virtual bool IsOpen() const;
   virtual void InvalidateLine(size_t line);
   virtual void UpdatePopupAppearance();
-  virtual void OnHoverEnabledOrDisabled(bool disabled);
   virtual void PaintUpdatesNow();
   virtual AutocompletePopupModel* GetModel();
 
   // Overridden from AutocompleteResultViewModel:
   virtual bool IsSelectedIndex(size_t index) const;
+  virtual bool IsHoveredIndex(size_t index) const;
   virtual void OpenIndex(size_t index, WindowOpenDisposition disposition);
   virtual void SetHoveredLine(size_t index);
   virtual void SetSelectedLine(size_t index, bool revert_to_default);

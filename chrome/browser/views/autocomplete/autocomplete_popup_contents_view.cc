@@ -135,9 +135,6 @@ class AutocompleteResultView : public views::View {
   AutocompleteResultViewModel* model_;
   size_t model_index_;
 
-  // True if the mouse is over this row.
-  bool hot_;
-
   // The font used to derive fonts for rendering the text in this row.
   gfx::Font font_;
 
@@ -297,7 +294,6 @@ AutocompleteResultView::AutocompleteResultView(
     const gfx::Font& font)
     : model_(model),
       model_index_(model_index),
-      hot_(false),
       font_(font),
       mirroring_context_(new MirroringContext()),
       match_(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED) {
@@ -360,28 +356,24 @@ gfx::Size AutocompleteResultView::GetPreferredSize() {
 }
 
 void AutocompleteResultView::OnMouseEntered(const views::MouseEvent& event) {
-  hot_ = true;
-  SchedulePaint();
+  model_->SetHoveredLine(model_index_);
 }
 
 void AutocompleteResultView::OnMouseMoved(const views::MouseEvent& event) {
-  if (!hot_) {
-    hot_ = true;
-    SchedulePaint();
-  }
+  model_->SetHoveredLine(model_index_);
+  if (event.IsLeftMouseButton())
+    model_->SetSelectedLine(model_index_, false);
 }
 
 void AutocompleteResultView::OnMouseExited(const views::MouseEvent& event) {
-  hot_ = false;
-  SchedulePaint();
+  model_->SetHoveredLine(AutocompletePopupModel::kNoMatch);
 }
 
 bool AutocompleteResultView::OnMousePressed(const views::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton()) {
+  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
     model_->SetHoveredLine(model_index_);
-    model_->SetSelectedLine(model_index_, false);
-  } else if (event.IsOnlyMiddleMouseButton()) {
-    model_->SetHoveredLine(model_index_);
+    if (event.IsLeftMouseButton())
+      model_->SetSelectedLine(model_index_, false);
   }
   return true;
 }
@@ -405,7 +397,8 @@ bool AutocompleteResultView::OnMouseDragged(const views::MouseEvent& event) {
 SkColor AutocompleteResultView::GetBackgroundColor() const {
   if (model_->IsSelectedIndex(model_index_))
     return kSelectedBackgroundColor;
-  return hot_ ? kHoverBackgroundColor : kBackgroundColor;
+  return model_->IsHoveredIndex(model_index_) ?
+      kHoverBackgroundColor : kBackgroundColor;
 }
 
 SkColor AutocompleteResultView::GetTextColor() const {
@@ -775,10 +768,6 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   SchedulePaint();
 }
 
-void AutocompletePopupContentsView::OnHoverEnabledOrDisabled(bool disabled) {
-  // TODO(beng): remove this from the interface.
-}
-
 void AutocompletePopupContentsView::PaintUpdatesNow() {
   // TODO(beng): remove this from the interface.
 }
@@ -792,6 +781,10 @@ AutocompletePopupModel* AutocompletePopupContentsView::GetModel() {
 
 bool AutocompletePopupContentsView::IsSelectedIndex(size_t index) const {
   return HasMatchAt(index) ? index == model_->selected_line() : false;
+}
+
+bool AutocompletePopupContentsView::IsHoveredIndex(size_t index) const {
+  return HasMatchAt(index) ? index == model_->hovered_line() : false;
 }
 
 void AutocompletePopupContentsView::OpenIndex(

@@ -51,9 +51,6 @@ class AutocompletePopupView {
   // mean opening or closing the window.
   virtual void UpdatePopupAppearance() = 0;
 
-  // Called by the model when hover is enabled or disabled.
-  virtual void OnHoverEnabledOrDisabled(bool disabled) = 0;
-
   // Paint any pending updates.
   virtual void PaintUpdatesNow() = 0;
 

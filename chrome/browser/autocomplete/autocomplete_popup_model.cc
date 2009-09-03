@@ -71,17 +71,13 @@ void AutocompletePopupModel::SetHoveredLine(size_t line) {
 
   // Make sure the old hovered line is redrawn.  No need to redraw the selected
   // line since selection overrides hover so the appearance won't change.
-  const bool is_enabling = (hovered_line_ == kNoMatch);
-  if (!is_enabling && (hovered_line_ != selected_line_))
+  if ((hovered_line_ != kNoMatch) && (hovered_line_ != selected_line_))
     view_->InvalidateLine(hovered_line_);
 
-  // Change the hover to the new line and make sure it's redrawn.
+  // Change the hover to the new line.
   hovered_line_ = line;
   if (!is_disabling && (hovered_line_ != selected_line_))
     view_->InvalidateLine(hovered_line_);
-
-  if (is_enabling || is_disabling)
-    view_->OnHoverEnabledOrDisabled(is_disabling);
 }
 
 void AutocompletePopupModel::SetSelectedLine(size_t line,
