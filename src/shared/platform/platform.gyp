@@ -114,6 +114,11 @@
       'target_name': 'platform',
       'type': 'static_library',
       'conditions': [
+        ['OS=="linux" or OS=="mac"', {
+          'cflags!': [
+            '-pedantic',
+          ],
+        }],
         ['OS=="linux" and nacl_standalone==1', {
           'link_settings': {
             'libraries': [

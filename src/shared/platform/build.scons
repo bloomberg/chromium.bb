@@ -33,9 +33,20 @@ import sys
 
 Import('env')
 
+basic_types_env = env.Clone()
+
 # TODO(tuduce): this should not be necessary once we go -std=c99
-if env.Bit('linux') or env.Bit('mac'):
-  env.FilterOut(CCFLAGS=['-pedantic'])
+if basic_types_env.Bit('linux') or env.Bit('mac'):
+  basic_types_env.FilterOut(CCFLAGS=['-pedantic'])
+
+# basic_types_env is needed for anything that includes
+# src/include/base/basictypes.h since it uses LL constants.  this is
+# used from condition_variable.cc, lock.cc, nacl_sync.cc,
+# time_linux.cc, and time.cc.
+#
+# Ick ick ick.
+#
+# sigh.
 
 platform_inputs = [];
 
@@ -54,11 +65,9 @@ if env.Bit('windows'):
     'win/port_win.c',
     'win/time_win.cc',
     'win/xlate_system_error.c',
-]
+  ]
 elif env.Bit('linux'):
   platform_inputs += [
-    'linux/condition_variable.cc',
-    'linux/lock.cc',
     'linux/nacl_semaphore.c',
     'linux/nacl_threads.c',
     'linux/nacl_host_desc.c',
@@ -66,22 +75,26 @@ elif env.Bit('linux'):
     'linux/nacl_secure_random.c',
     'linux/nacl_time.c',
     'linux/nacl_timestamp.c',
-    'linux/time_linux.cc',
-]
+  ] + map(basic_types_env.ComponentObject, [
+      'linux/condition_variable.cc',
+      'linux/lock.cc',
+      'linux/time_linux.cc',
+      ])
 elif env.Bit('mac'):
   platform_inputs += [
-    'linux/condition_variable.cc',
-    'linux/lock.cc',
     'osx/nacl_semaphore.c',
     'linux/nacl_threads.c',
     'linux/nacl_time.c',
     'linux/nacl_timestamp.c',
-    'linux/time_linux.cc',
     'linux/nacl_host_desc.c',
     'linux/nacl_secure_random.c',
     'linux/nacl_threads.c',
     'osx/nacl_host_dir.c',
-]
+  ] + map(basic_types_env.ComponentObject, [
+      'linux/condition_variable.cc',
+      'linux/lock.cc',
+      'linux/time_linux.cc',
+      ])
 
 platform_inputs += [
     'nacl_interruptible_condvar.c',
@@ -89,11 +102,12 @@ platform_inputs += [
     'nacl_host_desc_common.c',
     'nacl_global_secure_random.c',
     'nacl_secure_random_common.c',
-    'nacl_sync.cc',
     'nacl_sync_checked.c',
     'nacl_log.c',
+  ] + map(basic_types_env.ComponentObject, [
+    'nacl_sync.cc',
     'time.cc',
-]
+    ])
 
 env.ComponentLibrary('platform', platform_inputs)
 

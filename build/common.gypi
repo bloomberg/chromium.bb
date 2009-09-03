@@ -141,7 +141,7 @@
           # on Linux gyp into scons like it does on Mac gyp into xcodeproj.
           ['OS=="linux"', {
             'cflags': [ '-ftest-coverage',
-                        '-fprofile-arcs' ],
+                        '-fprofile-arcs'],
             'link_settings': { 'libraries': [ '-lgcov' ] },
           }],
         ]},
@@ -241,7 +241,8 @@
            '<(werror)',  # See note above about the werror variable.
            '-pthread',
           '-fno-exceptions',
-          '-Wall',
+          '-Wall', # TODO(bradnelson): why does this disappear?!?
+          '-pedantic',
         ],
         'cflags_cc': [
           '-fno-rtti',
@@ -467,7 +468,8 @@
           'PREBINDING': 'NO',
           'SDKROOT': 'macosx10.5',
           'USE_HEADERMAP': 'NO',
-          'WARNING_CFLAGS': ['-Wall', '-Wendif-labels'],
+          # TODO(bradnelson): -Werror ?!?
+          'WARNING_CFLAGS': ['-Wall', '-pedantic', '-Wendif-labels'],
           'conditions': [
             ['chromium_mac_pch', {'GCC_PRECOMPILE_PREFIX_HEADER': 'YES'},
                                  {'GCC_PRECOMPILE_PREFIX_HEADER': 'NO'}],

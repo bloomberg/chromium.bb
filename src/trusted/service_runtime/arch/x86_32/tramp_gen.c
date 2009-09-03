@@ -46,9 +46,9 @@ int main() {
           (uintptr_t) &NaCl_trampoline_seg_code));
   printf("\n");
 
-  printf("char kTrampolineCode[] = {\n");
+  printf("unsigned char kTrampolineCode[] = {\n");
   while (idx <= (unsigned char *) &NaCl_trampoline_seg_end) {
-    printf("0x%02x, ", *idx);
+    printf(" 0x%02x,", *idx);
     idx++;
   }
   printf("\n};\n");

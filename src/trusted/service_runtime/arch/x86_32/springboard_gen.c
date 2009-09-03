@@ -37,9 +37,9 @@
 int main() {
   unsigned char * idx = (unsigned char *) &NaCl_springboard;
 
-  printf("char kSpringboardCode[] = {\n");
+  printf("unsigned char kSpringboardCode[] = {\n");
   while (idx <= (unsigned char *) &NaCl_springboard_end) {
-    printf("0x%02x, ", *idx);
+    printf(" 0x%02x,", *idx);
     idx++;
   }
   printf("\n};\n");

@@ -75,6 +75,9 @@
           'XP_UNIX',
           'MOZ_X11',
         ],
+        'cflags': [
+          '-Wno-long-long',
+        ],
       }],
       ['OS=="mac"', {
         'defines': [
@@ -83,6 +86,9 @@
           'TARGET_API_MAC_CARBON=1',
           'NO_X11',
           'USE_SYSTEM_CONSOLE',
+        ],
+        'cflags': [
+          '-Wno-long-long',
         ],
         'link_settings': {
           'libraries': [
