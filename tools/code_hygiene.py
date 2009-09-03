@@ -255,7 +255,10 @@ class TabsChecker(GenericRegexChecker):
     return
 
   def FileFilter(self, filename):
-    return ("akefile" not in filename and not filename.endswith('.patch'))
+    return ("akefile" not in filename
+        and not filename.endswith('.patch')
+        and not filename.endswith('.valerr')
+        and not filename.endswith('.dis'))
 
 
 class FixmeChecker(GenericRegexChecker):
