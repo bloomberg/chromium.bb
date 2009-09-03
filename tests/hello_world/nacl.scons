@@ -30,29 +30,34 @@
 
 Import('env')
 
+# NOTE: make sure we can compile these benchmarks without libsrpc
+#       sadly this does not do anything on x86 since libsrpc
+#       is added by the driver
+env.Replace(LIBS=['c', 'nacl'])
+
 env.ComponentProgram('hello_world.nexe', 'hello_world.c')
-
-# NOTE: this is a temporary measure until we have sfi/validator for arm.
-#       Use this for arm:
-#       sel_ldr_flags=['-I', '-d'],
-
-if env['TARGET_ARCHITECTURE'] == 'x86':
-  node = env.CommandSelLdrTestNacl(
-      'hello_world_test.out',
-      command=[env.File('hello_world.nexe')],
-      stdout_golden=env.File('hello_world.stdout'),
-      )
-
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_world_test')
+node = env.CommandSelLdrTestNacl(
+    'hello_world_test.out',
+    command=[env.File('hello_world.nexe')],
+    stdout_golden=env.File('hello_world.stdout'),
+    )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_world_test')
 
 
+env.ComponentProgram('at_exit.nexe', 'at_exit.c')
+node = env.CommandSelLdrTestNacl(
+    'at_exit_test.out',
+    command=[env.File('at_exit.nexe')],
+    stdout_golden=env.File('at_exit.stdout'),
+    )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_at_exit_test')
 
-  env.ComponentProgram('exit.nexe', 'exit.c')
 
-  node = env.CommandSelLdrTestNacl(
-      'exit_test.out',
-      command=[env.File('exit.nexe')],
-      exit_status='69',
-      )
 
-  env.AddNodeToTestSuite(node, ['small_tests'], 'exit_test')
+env.ComponentProgram('exit.nexe', 'exit.c')
+node = env.CommandSelLdrTestNacl(
+    'exit_test.out',
+    command=[env.File('exit.nexe')],
+    exit_status='69',
+    )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_exit_test')

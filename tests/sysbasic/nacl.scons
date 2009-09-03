@@ -35,13 +35,11 @@ env.ComponentProgram('sysbasic.nexe',
                      'sysbasic.c',
                      EXTRA_LIBS=['srpc', 'pthread'])
 
-# NOTE: this is a temporary measure until we have sfi/validator for arm
-if env['TARGET_ARCHITECTURE'] == 'x86':
-  node = env.CommandSelLdrTestNacl(
-      'sysbasic_test.out',
-      sel_ldr_flags=['-P', '69'],
-      command=[env.File('sysbasic.nexe')],
-      exit_status='69',
-      )
+node = env.CommandSelLdrTestNacl(
+    'sysbasic_test.out',
+    sel_ldr_flags=['-P', '69', '-d'],
+    command=[env.File('sysbasic.nexe')],
+    exit_status='69',
+    )
 
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_sysbasic_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_sysbasic_test')

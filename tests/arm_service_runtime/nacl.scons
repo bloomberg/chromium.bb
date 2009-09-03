@@ -46,7 +46,6 @@ env.ComponentProgram('test_hello.nexe',
 
 node = env.CommandSelLdrTestNacl(
      'test_exit.out',
-     sel_ldr_flags=['-I'],
      command=[env.File('test_exit.nexe')],
      exit_status='42'
      )
@@ -58,7 +57,6 @@ env.AddNodeToTestSuite(node, ['medium_tests'], 'run_test_exit')
 #
 node = env.CommandSelLdrTestNacl(
      'test_hello.out',
-     sel_ldr_flags=['-I'],
      command=[env.File('test_hello.nexe')],
      stdout_golden=env.File('test_hello.stdout'),
      )

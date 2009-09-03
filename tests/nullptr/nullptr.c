@@ -1,12 +1,8 @@
 #include <stdio.h>
 
-int main(void)
-{
-  char  *byteptr;
-  char  byte;
-
-  byteptr = (char *) NULL;
-  byte = *byteptr;
-  printf("FAIL: address zero readable, contains %02x\n", byte & 0xff);
+int main(void) {
+  unsigned char *byteptr = 0;
+  unsigned char byte = *byteptr;
+  printf("FAIL: address zero readable, contains %02x\n", byte);
   return 1;
 }

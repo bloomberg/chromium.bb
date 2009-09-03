@@ -926,7 +926,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
       LINKFLAGS_FIRST = ['${NACL_SDK_LIB}/crt1.o','${NACL_SDK_LIB}/crti.o',],
       # NOTE: order is important
       LIBS = ['srpc', 'c', 'nacl'],
-      LINKFLAGS_LAST = ['-lc', '-lgcc', '${NACL_SDK_LIB}/crtn.o',],
+      LINKFLAGS_LAST = ['-lc', '-lgcc', '-lunimpl', '${NACL_SDK_LIB}/crtn.o',],
       EMULATOR  = EMULATOR,
       )
 
@@ -937,10 +937,9 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
 #      'tests/syscalls/nacl.scons',
 #      'tests/nullptr/nacl.scons',
       'tests/hello_world/nacl.scons',
-      'tests/fib/nacl.scons',
+#      'tests/fib/nacl.scons',
       'tests/noop/nacl.scons',
-#      'tests/null/nacl.scons',
-#      'tests/sysbasic/nacl.scons',
+      'tests/sysbasic/nacl.scons',
       'tests/arm_service_runtime/nacl.scons',
       ])
 
