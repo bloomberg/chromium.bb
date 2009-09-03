@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/external_protocol_handler.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/controls/message_box_view.h"
@@ -26,17 +26,25 @@ const int kMessageWidth = 400;
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// ExternalProtocolDialog, public:
+// ExternalProtocolHandler
 
 // static
-void ExternalProtocolDialog::RunExternalProtocolDialog(
-    const GURL& url, const std::wstring& command, int render_process_host_id,
-    int routing_id) {
+void ExternalProtocolHandler::RunExternalProtocolDialog(
+    const GURL& url, int render_process_host_id, int routing_id) {
+  std::wstring command =
+      ExternalProtocolDialog::GetApplicationForProtocol(url);
+  if (command.empty()) {
+    // ShellExecute won't do anything. Don't bother warning the user.
+    return;
+  }
   TabContents* tab_contents = tab_util::GetTabContentsByID(
       render_process_host_id, routing_id);
   ExternalProtocolDialog* handler =
       new ExternalProtocolDialog(tab_contents, url, command);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// ExternalProtocolDialog
 
 ExternalProtocolDialog::~ExternalProtocolDialog() {
 }
@@ -72,16 +80,8 @@ bool ExternalProtocolDialog::Accept() {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
                            base::Time::Now() - creation_time_);
 
-  MessageLoop* io_loop = g_browser_process->io_thread()->message_loop();
-  if (io_loop == NULL) {
-    // Returning true closes the dialog.
-    return true;
-  }
-
-  // Attempt to launch the application on the IO loop.
-  io_loop->PostTask(FROM_HERE,
-      NewRunnableFunction(
-          &ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck, url_));
+  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_);
+  // Returning true closes the dialog.
   return true;
 }
 
@@ -123,7 +123,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
   views::Window::CreateChromeWindow(root_hwnd, gfx::Rect(), this)->Show();
 }
 
-/* static */
+// static
 std::wstring ExternalProtocolDialog::GetApplicationForProtocol(
     const GURL& url) {
   std::wstring url_spec = ASCIIToWide(url.possibly_invalid_spec());

@@ -1246,6 +1246,8 @@
         'browser/gtk/extension_shelf_gtk.h',
         'browser/gtk/extension_view_gtk.cc',
         'browser/gtk/extension_view_gtk.h',
+        'browser/gtk/external_protocol_dialog_gtk.cc',
+        'browser/gtk/external_protocol_dialog_gtk.h',
         'browser/gtk/find_bar_gtk.cc',
         'browser/gtk/find_bar_gtk.h',
         'browser/gtk/first_run_bubble.cc',

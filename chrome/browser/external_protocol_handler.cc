@@ -20,10 +20,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/views/external_protocol_dialog.h"
-#endif
-
 // static
 void ExternalProtocolHandler::PrepopulateDictionary(DictionaryValue* win_pref) {
   static bool is_warm = false;
@@ -116,36 +112,27 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
   if (block_state == BLOCK)
     return;
 
-#if defined(OS_WIN)
   if (block_state == UNKNOWN) {
-    std::wstring command = ExternalProtocolDialog::GetApplicationForProtocol(
-                               escaped_url);
-    if (command.empty()) {
-      // ShellExecute won't do anything. Don't bother warning the user.
-      return;
-    }
-
+#if !defined(OS_MACOSX)
     // Ask the user if they want to allow the protocol. This will call
     // LaunchUrlWithoutSecurityCheck if the user decides to accept the protocol.
-    ExternalProtocolDialog::RunExternalProtocolDialog(escaped_url,
-                                                      command,
-                                                      render_process_host_id,
-                                                      tab_contents_id);
+    RunExternalProtocolDialog(escaped_url,
+                              render_process_host_id,
+                              tab_contents_id);
+#endif
+    // For now, allow only whitelisted protocols to fire on Mac.
+    // See http://crbug.com/15546.
     return;
   }
-#else
-  // For now, allow only whitelisted protocols to fire.
-  // TODO(port): implement dialog for Mac/Linux.
-  // See http://code.google.com/p/chromium/issues/detail?id=20731
-  // and http://code.google.com/p/chromium/issues/detail?id=15546.
-  if (block_state == UNKNOWN)
-    return;
-#endif
 
-  // Otherwise the protocol is white-listed, so go ahead and launch.
+  LaunchUrlWithoutSecurityCheck(escaped_url);
+}
+
+// static
+void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(const GURL& url) {
 #if defined(OS_MACOSX)
   // This must run on the main thread on OS X.
-  LaunchUrlWithoutSecurityCheck(escaped_url);
+  platform_util::OpenExternal(url);
 #else
   // Otherwise put this work on the file thread. On Windows ShellExecute may
   // block for a significant amount of time, and it shouldn't hurt on Linux.
@@ -155,15 +142,8 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
   }
 
   loop->PostTask(FROM_HERE,
-      NewRunnableFunction(
-          &ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck,
-          escaped_url));
+      NewRunnableFunction(&platform_util::OpenExternal, url));
 #endif
-}
-
-// static
-void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(const GURL& url) {
-  platform_util::OpenExternal(url);
 }
 
 // static
