@@ -6,11 +6,10 @@
 
 // Prevent include problems that result from render_messages.h including skia
 #define SK_IGNORE_STDINT_DOT_H
-#define NOMINMAX
 
 #include "native_client/src/include/portability.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/nacl/nacl_descriptors.h"
+#include "chrome/common/nacl_types.h"
 #include "chrome/renderer/render_thread.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
