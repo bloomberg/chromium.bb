@@ -52,8 +52,15 @@ SkColor GetAverageColorOfFavicon(SkBitmap* bitmap, SkAlpha alpha);
 // this image.
 void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]);
 
-// Create a color from a base color and a specific alpha value.
-SkColor SetColorAlpha(SkColor c, SkAlpha alpha);
+// Returns a blend of the supplied colors, ranging from |background| (for
+// |alpha| == 0) to |foreground| (for |alpha| == 255).
+SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha);
+
+// Given two possible foreground colors, return the one that is more readable
+// over |background|.
+SkColor PickMoreReadableColor(SkColor foreground1,
+                              SkColor foreground2,
+                              SkColor background);
 
 // Gets a Windows system color as a SkColor
 SkColor GetSysSkColor(int which);

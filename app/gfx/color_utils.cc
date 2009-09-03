@@ -250,8 +250,47 @@ void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]) {
   }
 }
 
-SkColor SetColorAlpha(SkColor c, SkAlpha alpha) {
-  return SkColorSetARGB(alpha, SkColorGetR(c), SkColorGetG(c), SkColorGetB(c));
+SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
+  if (alpha == 0)
+    return background;
+  else if (alpha == 0xFF)
+    return foreground;
+
+  return SkColorSetRGB(
+    ((SkColorGetR(foreground) * alpha) +
+     (SkColorGetR(background) * (0xFF - alpha))) / 0xFF,
+    ((SkColorGetG(foreground) * alpha) +
+     (SkColorGetG(background) * (0xFF - alpha))) / 0xFF,
+    ((SkColorGetB(foreground) * alpha) +
+     (SkColorGetB(background) * (0xFF - alpha))) / 0xFF);
+}
+
+// Next three functions' formulas from:
+// http://www.w3.org/TR/WCAG20/#relativeluminancedef
+// http://www.w3.org/TR/WCAG20/#contrast-ratiodef
+static double ConvertSRGB(double eight_bit_component) {
+  const double component = eight_bit_component / 255.0;
+  return (component <= 0.03928) ?
+      (component / 12.92) : pow((component + 0.055) / 1.055, 2.4);
+}
+
+static double RelativeLuminance(SkColor color) {
+  return (0.2126 * ConvertSRGB(SkColorGetR(color))) +
+      (0.7152 * ConvertSRGB(SkColorGetG(color))) +
+      (0.0722 * ConvertSRGB(SkColorGetB(color)));
+}
+
+static double ContrastRatio(SkColor color1, SkColor color2) {
+  const double l1 = RelativeLuminance(color1) + 0.05;
+  const double l2 = RelativeLuminance(color2) + 0.05;
+  return (l1 > l2) ? (l1 / l2) : (l2 / l1);
+}
+
+SkColor PickMoreReadableColor(SkColor foreground1,
+                              SkColor foreground2,
+                              SkColor background) {
+  return (ContrastRatio(foreground1, background) >=
+      ContrastRatio(foreground2, background)) ? foreground1 : foreground2;
 }
 
 SkColor GetSysSkColor(int which) {
