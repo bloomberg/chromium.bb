@@ -1609,7 +1609,9 @@ void RenderViewHost::OnExtensionRequest(const std::string& name,
                                         bool has_callback) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
           HasExtensionBindings(process()->id())) {
-    NOTREACHED() << "Blocked unauthorized use of extension bindings.";
+    // This can happen if someone uses window.open() to open an extension URL
+    // from a non-extension context.
+    BlockExtensionRequest(request_id);
     return;
   }
 
@@ -1621,6 +1623,11 @@ void RenderViewHost::SendExtensionResponse(int request_id, bool success,
                                            const std::string& error) {
   Send(new ViewMsg_ExtensionResponse(routing_id(), request_id, success,
       response, error));
+}
+
+void RenderViewHost::BlockExtensionRequest(int request_id) {
+  SendExtensionResponse(request_id, false, "",
+                        "Access to extension API denied.");
 }
 
 void RenderViewHost::OnExtensionPostMessage(

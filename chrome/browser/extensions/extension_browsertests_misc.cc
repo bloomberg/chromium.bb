@@ -501,3 +501,77 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UninstallDisabled) {
   EXPECT_EQ(0u, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
 }
+
+// Helper function for common code shared by the 3 WindowOpen tests below.
+static TabContents* WindowOpenHelper(Browser* browser, const GURL& start_url,
+                                    const std::string& newtab_url) {
+  ui_test_utils::NavigateToURL(browser, start_url);
+
+  bool result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.open('" + UTF8ToWide(newtab_url) + L"');"
+      L"window.domAutomationController.send(true);", &result);
+  EXPECT_TRUE(result);
+
+  // Now the current tab should be the new tab.
+  TabContents* newtab = browser->GetSelectedTabContents();
+  GURL expected_url = start_url.Resolve(newtab_url);
+  if (newtab->GetURL() != expected_url) {
+    ui_test_utils::WaitForNavigation(
+        &browser->GetSelectedTabContents()->controller());
+  }
+  EXPECT_EQ(newtab->GetURL(), expected_url);
+
+  return newtab;
+}
+
+// Tests that an extension page can call window.open to an extension URL and
+// the new window has extension privileges.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
+
+  TabContents* newtab = WindowOpenHelper(
+      browser(),
+      GURL("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/test.html"),
+      "newtab.html");
+
+  bool result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      newtab->render_view_host(), L"", L"testExtensionApi()", &result);
+  EXPECT_TRUE(result);
+}
+
+// Tests that if an extension page calls window.open to an invalid extension
+// URL, the browser doesn't crash.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
+
+  WindowOpenHelper(
+      browser(),
+      GURL("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/test.html"),
+      "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab/newtab.html");
+
+  // If we got to this point, we didn't crash, so we're good.
+}
+
+// Tests that calling window.open from the newtab page to an extension URL
+// does not give the new window extension privileges - because the opening page
+// does not have extension privileges.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
+
+  TabContents* newtab = WindowOpenHelper(
+      browser(),
+      GURL("about:blank"),
+      "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/newtab.html");
+
+  // Extension API should fail.
+  bool result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      newtab->render_view_host(), L"", L"testExtensionApi()", &result);
+  EXPECT_FALSE(result);
+}
