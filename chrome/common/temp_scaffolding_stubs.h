@@ -12,30 +12,20 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/gfx/native_widget_types.h"
-#include "base/gfx/size.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
-#include "base/string16.h"
 #include "build/build_config.h"
-#include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
-#include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
-class BookmarkContextMenu;
-class BookmarkNode;
-class Browser;
+#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+// For download_util::DragDownload
+#include "base/gfx/native_widget_types.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#endif
+
+class CancelableTask;
 class CommandLine;
 class DownloadItem;
-class MessageLoop;
-class NavigationController;
-class ProcessSingleton;
-class Profile;
-class RenderViewHostDelegate;
-class SiteInstance;
-class URLRequest;
 class TabContents;
 struct ViewHostMsg_DidPrintPage_Params;
 

@@ -10,29 +10,27 @@
 
 #include "base/gfx/rect.h"
 #include "base/logging.h"
-#include "chrome/browser/automation/automation_provider.h"
-#include "chrome/browser/download/download_request_dialog_delegate.h"
-#include "chrome/browser/download/download_request_manager.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/first_run.h"
-#include "chrome/browser/fonts_languages_window.h"
-#include "chrome/browser/hung_renderer_dialog.h"
-#include "chrome/browser/memory_details.h"
-#include "chrome/browser/options_window.h"
 #include "chrome/browser/rlz/rlz.h"
-#include "chrome/browser/shell_integration.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/common/process_watcher.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/dock_info.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/automation/automation_provider.h"
+#include "chrome/browser/fonts_languages_window.h"
+#include "chrome/browser/memory_details.h"
+#include "chrome/browser/options_window.h"
+#endif
+
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_manager.h"
+#include "chrome/browser/download/download_request_dialog_delegate.h"
+#include "chrome/browser/download/download_request_manager.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
-#include "views/controls/menu/menu_item_view.h"
-#include "views/controls/single_split_view.h"
 #endif
 
 class TabContents;
@@ -226,7 +224,7 @@ void MemoryDetails::StartFetch() {
 }
 #endif
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
 // This should prompt the user if she wants to allow more than one concurrent
 // download per tab. Until this is in place, always allow multiple downloads.
 class DownloadRequestDialogDelegateStub
@@ -300,7 +298,7 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
 
 //------------------------------------------------------------------------------
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
 
 ConstrainedWindow* ConstrainedWindow::CreateConstrainedDialog(
     TabContents* owner,
