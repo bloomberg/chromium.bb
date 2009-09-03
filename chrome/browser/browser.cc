@@ -83,6 +83,7 @@
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/location_bar_view.h"
+#include "chrome/browser/views/theme_install_bubble_view.h"
 #include "chrome/common/child_process_host.h"
 #endif  // OS_WIN
 
@@ -200,6 +201,10 @@ Browser::Browser(Type type, Profile* profile)
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CRASHED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+
+  // Need to know when to alert the user of theme install delay.
+  registrar_.Add(this, NotificationType::EXTENSION_READY_FOR_INSTALL,
                  NotificationService::AllSources());
 
   InitCommandState();
@@ -2159,6 +2164,23 @@ void Browser::Observe(NotificationType type,
     case NotificationType::BROWSER_THEME_CHANGED:
       window()->UserChangedTheme();
       break;
+
+    case NotificationType::EXTENSION_READY_FOR_INSTALL: {
+#if defined(OS_WIN)
+      if (BrowserList::GetLastActive() != this)
+        break;
+      TabContents* tab_contents =
+          BrowserList::GetLastActive()->GetSelectedTabContents();
+      if (!tab_contents)
+        break;
+      if (platform_util::IsVisible(tab_contents->GetNativeView()))
+        ThemeInstallBubbleView::Show(tab_contents);
+#else
+  NOTIMPLEMENTED();
+#endif
+      break;
+    }
+
 
     default:
       NOTREACHED() << "Got a notification we didn't register for.";

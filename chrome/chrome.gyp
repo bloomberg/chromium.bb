@@ -2093,6 +2093,8 @@
         'browser/views/task_manager_view.cc',
         'browser/views/theme_helpers.cc',
         'browser/views/theme_helpers.h',
+        'browser/views/theme_install_bubble_view.cc',
+        'browser/views/theme_install_bubble_view.h',
         'browser/views/toolbar_star_toggle.cc',
         'browser/views/toolbar_star_toggle.h',
         'browser/views/toolbar_view.cc',

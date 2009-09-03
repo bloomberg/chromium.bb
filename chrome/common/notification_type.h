@@ -613,6 +613,12 @@ class NotificationType {
     // details are an Extension*.
     EXTENSION_UPDATE_DISABLED,
 
+    // Sent when a theme is ready to be installed, so we can alert the user.
+    EXTENSION_READY_FOR_INSTALL,
+
+    // Sent on ExtensionOverinstallAttempted when no theme is detected.
+    NO_THEME_DETECTED,
+
     // Sent when a new theme is installed. The details are an Extension.
     THEME_INSTALLED,
 

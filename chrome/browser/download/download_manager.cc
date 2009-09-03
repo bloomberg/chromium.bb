@@ -32,6 +32,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/platform_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -1250,6 +1252,10 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
   // We don't support extensions in OTR mode.
   ExtensionsService* service = profile_->GetExtensionsService();
   if (service) {
+    NotificationService* nservice = NotificationService::current();
+      nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
+                       Source<DownloadManager>(this),
+                       NotificationService::NoDetails());
     CrxInstaller::Start(full_path,
                         service->install_directory(),
                         Extension::INTERNAL,

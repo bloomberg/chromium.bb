@@ -490,6 +490,11 @@ void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
         NotificationType::THEME_INSTALLED,
         Source<ExtensionsService>(this),
         Details<Extension>(extension));
+  } else {
+    NotificationService::current()->Notify(
+      NotificationType::NO_THEME_DETECTED,
+      Source<ExtensionsService>(this),
+      NotificationService::NoDetails());
   }
 }
 
