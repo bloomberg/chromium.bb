@@ -849,7 +849,8 @@ nacl_env = pre_base_env.Clone(
 )
 
 # limit the majority of test to x86 for now
-if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
+if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
+    nacl_env['TARGET_ARCHITECTURE'] == 'x86'):
   nacl_env.Append(
       CCFLAGS = ['-mfpmath=sse',
                  '-msse',
@@ -913,7 +914,8 @@ if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
             'tests/voronoi/nacl.scons',
             ])
 
-if nacl_env['BUILD_ARCHITECTURE'] == 'arm':
+if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
+    nacl_env['TARGET_ARCHITECTURE'] == 'arm'):
   # NOTE: we change the linker command line to make it possible to
   #       sneak in startup and cleanup code
   linkcom = (nacl_env['LINKCOM'].replace('$LINK ', '$LINK $LINKFLAGS_FIRST ') +
