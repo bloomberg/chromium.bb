@@ -419,10 +419,8 @@ static const float kUseFullAvailableWidth = -1.0;
         tabFrame.origin.x = offset;
       }
 
-      // Animate the tab in by putting it below the horizon, but don't bother
-      // if we only have 1 tab.
-      BOOL shouldAnimate = animate && [tabContentsArray_ count] > 1;
-      if (newTab && visible && shouldAnimate) {
+      // Animate the tab in by putting it below the horizon.
+      if (newTab && visible && animate) {
         [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
       }
 
@@ -451,8 +449,7 @@ static const float kUseFullAvailableWidth = -1.0;
   }
 
   // Hide the new tab button if we're explicitly told to. It may already
-  // be hidden, doing it again doesn't hurt. Otherwise position it
-  // appropriately, showing it if necessary.
+  // be hidden, doing it again doesn't hurt.
   if (forceNewTabButtonHidden_) {
     [newTabButton_ setHidden:YES];
   } else {
@@ -464,8 +461,10 @@ static const float kUseFullAvailableWidth = -1.0;
     newTabNewFrame.origin.x = MAX(newTabNewFrame.origin.x,
                                   NSMaxX(placeholderFrame_)) +
                                       kNewTabButtonOffset;
-    if ([tabContentsArray_ count])
-      [newTabButton_ setHidden:NO];
+    if (i > 0 && [newTabButton_ isHidden]) {
+      id target = animate ? [newTabButton_ animator] : newTabButton_;
+      [target setHidden:NO];
+    }
 
     if (!NSEqualRects(newTabTargetFrame_, newTabNewFrame)) {
       [newTabButton_ setFrame:newTabNewFrame];
