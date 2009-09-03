@@ -303,6 +303,9 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   void SaveTintData();
   void SaveDisplayPropertyData();
 
+  // Save the paths of data we have written to disk in prefs.
+  void SaveCachedImageData();
+
   // Save the id of the last theme installed.
   void SaveThemeID(const std::string& id);
 
@@ -314,7 +317,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   void FreePlatformCaches();
 
   // Encode image at image_cache_[id] as PNG and write to disk.
-  void WriteImagesToDisk();
+  bool WriteImagesToDisk();
 
   // Do we have a custom frame image or custom tints?
   bool ShouldTintFrames();
@@ -339,10 +342,9 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   NSColorMap nscolor_cache_;
 #endif
 
-  // We save here the images to be written to disk, along with the file paths
-  // where they are to be written.
-  typedef std::map<FilePath, SkBitmap*> ImageSaveCache;
-  ImageSaveCache image_save_cache_;
+  // Save the images to be written to disk, mapping file path to id.
+  typedef std::map<FilePath, int> ImagesDiskCache;
+  ImagesDiskCache images_disk_cache_;
 
   ResourceBundle& rb_;
   Profile* profile_;

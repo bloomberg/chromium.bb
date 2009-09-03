@@ -191,37 +191,35 @@ static std::map<const int, bool> themeable_images_;
 // A map of frame image IDs to the tints for those ids.
 static std::map<const int, int> frame_tints_;
 
-void BrowserThemeProvider::WriteImagesToDisk() {
-  // TODO(mirandac): move this to a different thread.
-  BrowserThemeProvider::ImageSaveCache::iterator iter;
-  for (iter = image_save_cache_.begin(); iter != image_save_cache_.end();
+// TODO(mirandac): move this to a different thread.
+bool BrowserThemeProvider::WriteImagesToDisk() {
+  BrowserThemeProvider::ImagesDiskCache::iterator iter;
+  for (iter = images_disk_cache_.begin();
+       iter != images_disk_cache_.end();
        iter++) {
     FilePath image_path = (*iter).first;
-    if ((*iter).second != NULL) {
-      SkBitmap* bitmap = (*iter).second;
-
+    ImageCache::const_iterator found = image_cache_.find((*iter).second);
+    if (found != image_cache_.end()) {
+      SkBitmap* bitmap = found->second;
       std::vector<unsigned char> image_data;
       if (!PNGEncoder::EncodeBGRASkBitmap(*bitmap, false, &image_data)) {
         NOTREACHED() << "Image file could not be encoded.";
-        return;
+        return false;
       }
-
       const char* image_data_ptr =
           reinterpret_cast<const char*>(&image_data[0]);
       if (!file_util::WriteFile(image_path,
                                 image_data_ptr, image_data.size())) {
         NOTREACHED() << "Image file could not be written to disk.";
-        return;
+        return false;
       }
-
-      // If we've successfully written the file to disk, only then add it
-      // to the prefs file.
-
     } else {
       NOTREACHED();
-      return;
+      return false;
     }
   }
+  // Save is only successful if we made it through the entire cache.
+  return true;
 }
 
 BrowserThemeProvider::BrowserThemeProvider()
@@ -250,6 +248,9 @@ BrowserThemeProvider::BrowserThemeProvider()
     resource_names_[IDR_THEME_FRAME_INCOGNITO] = "theme_frame_incognito";
     resource_names_[IDR_THEME_FRAME_INCOGNITO_INACTIVE] =
         "theme_frame_incognito_inactive";
+    resource_names_[IDR_THEME_TAB_BACKGROUND] = "theme_tab_background";
+    resource_names_[IDR_THEME_TAB_BACKGROUND_INCOGNITO] =
+        "theme_tab_background_incognito";
   }
 }
 
@@ -531,7 +532,8 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   if (ShouldTintFrames()) {
     GenerateFrameImages();
     GenerateTabImages();
-    WriteImagesToDisk();
+    if (WriteImagesToDisk())
+      SaveCachedImageData();
   }
 
   NotifyThemeChanged();
@@ -623,12 +625,7 @@ void BrowserThemeProvider::SaveThemeBitmap(
   FilePath image_path = image_dir_.Append(FilePath(resource_name));
 #endif
 
-  DictionaryValue* pref_images =
-      profile_->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeImages);
-    // TODO(mirandac): remove ToWStringHack from this class.
-    pref_images->SetString(UTF8ToWide(resource_name),
-                           WideToUTF8(image_path.ToWStringHack()));
-  image_save_cache_[image_path] = image_cache_[id];
+  images_disk_cache_[image_path] = id;
 }
 
 
@@ -1049,6 +1046,19 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
   return NULL;
 }
 
+void BrowserThemeProvider::SaveCachedImageData() {
+  DictionaryValue* pref_images =
+      profile_->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeImages);
+
+  for (ImagesDiskCache::iterator it = images_disk_cache_.begin();
+      it != images_disk_cache_.end(); it++) {
+    std::wstring disk_path = it->first.ToWStringHack();
+    std::string pref_name = resource_names_[it->second];
+    pref_images->SetString(UTF8ToWide(pref_name),
+                           WideToUTF8(disk_path));
+  }
+}
+
 void BrowserThemeProvider::SaveImageData(DictionaryValue* images_value) {
   // Save our images data.
   DictionaryValue* pref_images =
@@ -1185,8 +1195,8 @@ void BrowserThemeProvider::LoadThemePrefs() {
     GenerateFrameColors();
     GenerateFrameImages();
     GenerateTabImages();
-    if (process_images_) {
-      WriteImagesToDisk();
+    if (process_images_ && WriteImagesToDisk()) {
+      SaveCachedImageData();
       UserMetrics::RecordAction(L"Migrated noncached to cached theme.",
                                 profile_);
     }
@@ -1201,11 +1211,7 @@ void BrowserThemeProvider::ClearCaches() {
     delete i->second;
   }
   image_cache_.clear();
-
-  // The SkBitmaps in the image_save_cache_ are a subset of those stored in
-  // the image_cache_, and have therefore all been deleted in the lines above.
-  // TODO(mirandac): make memory management clearer here.
-  image_save_cache_.clear();
+  images_disk_cache_.clear();
 }
 
 #if defined(TOOLKIT_VIEWS)
