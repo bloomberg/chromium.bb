@@ -59,6 +59,15 @@
             ['OS=="win"', {
               'msvs_cygwin_shell': 0,
             }],
+            ['OS=="mac"', {
+              # TODO(gregoryd): replace with a python script that
+              # does not use redirection.
+              'action':
+                ['bash', '-c', '<@(_inputs) > <@(_outputs)'],
+            }, {
+              'action':
+                ['<@(_inputs)', '>', '<@(_outputs)'],
+            }],
           ],
           'inputs': [
             '<(PRODUCT_DIR)/tramp_gen',
@@ -66,8 +75,6 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/tramp_data.h',
           ],
-          'action':
-            ['<@(_inputs)', '>', '<@(_outputs)'],
           'process_outputs_as_sources': 1,
           'message': 'Creating tramp_data.h',
         },
@@ -77,6 +84,13 @@
             ['OS=="win"', {
               'msvs_cygwin_shell': 0,
             }],
+            ['OS=="mac"', {
+              'action':
+                ['bash', '-c', '<@(_inputs) > <@(_outputs)'],
+            }, {
+              'action':
+                ['<@(_inputs)', '>', '<@(_outputs)'],
+            }],
           ],
           'inputs': [
             '<(PRODUCT_DIR)/springboard_gen',
@@ -84,8 +98,6 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/springboard_data.h',
           ],
-          'action':
-            ['<@(_inputs)', '>', '<@(_outputs)'],
           'process_outputs_as_sources': 1,
           'message': 'Creating springboard_data.h',
         },
