@@ -469,7 +469,7 @@
           'SDKROOT': 'macosx10.5',
           'USE_HEADERMAP': 'NO',
           # TODO(bradnelson): -Werror ?!?
-          'WARNING_CFLAGS': ['-Wall', '-pedantic', '-Wendif-labels'],
+          'WARNING_CFLAGS': ['-Wall', '-pedantic', '-Wendif-labels', '-Wno-long-long'],
           'conditions': [
             ['chromium_mac_pch', {'GCC_PRECOMPILE_PREFIX_HEADER': 'YES'},
                                  {'GCC_PRECOMPILE_PREFIX_HEADER': 'NO'}],
