@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/mime_util.h"
 #include "base/thread.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -216,13 +217,12 @@ void SelectFileDialogImpl::AddFilters(GtkFileChooser* chooser) {
   for (size_t i = 0; i < file_types_.extensions.size(); ++i) {
     GtkFileFilter* filter = NULL;
     for (size_t j = 0; j < file_types_.extensions[i].size(); ++j) {
-      // TODO(estade): it's probably preferable to use mime types, but we are
-      // passed extensions, so it's much easier to use globs.
       if (!file_types_.extensions[i][j].empty()) {
         if (!filter)
           filter = gtk_file_filter_new();
-        gtk_file_filter_add_pattern(filter,
-            ("*." + file_types_.extensions[i][j]).c_str());
+        std::string mime_type = mime_util::GetFileMimeType(
+            FilePath("name.").Append(file_types_.extensions[i][j]));
+        gtk_file_filter_add_mime_type(filter, mime_type.c_str());
       }
     }
     // We didn't find any non-empty extensions to filter on.
@@ -235,14 +235,11 @@ void SelectFileDialogImpl::AddFilters(GtkFileChooser* chooser) {
       gtk_file_filter_set_name(filter, UTF16ToUTF8(
           file_types_.extension_description_overrides[i]).c_str());
     } else {
-      // TODO(estade): There is no system default filter description so we use
-      // the filter itself if the description is blank. This is far from
-      // perfect. If we have multiple patterns (such as *.png, *.bmp, etc.),
-      // this will only show the first pattern. Also, it would be better to have
-      // human readable names like "PNG image" rather than "*.png", particularly
-      // since extensions aren't a requirement on linux.
-      gtk_file_filter_set_name(filter,
-          ("*." + file_types_.extensions[i][0]).c_str());
+      // There is no system default filter description so we use
+      // the MIME type itself if the description is blank.
+      std::string mime_type = mime_util::GetFileMimeType(
+          FilePath("name.").Append(file_types_.extensions[i][0]));
+      gtk_file_filter_set_name(filter, mime_type.c_str());
     }
 
     gtk_file_chooser_add_filter(chooser, filter);
