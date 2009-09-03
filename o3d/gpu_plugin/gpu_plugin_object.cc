@@ -10,7 +10,9 @@
 namespace o3d {
 namespace gpu_plugin {
 
+namespace {
 const int32 kCommandBufferSize = 1024;
+}  // namespace anonymous
 
 const NPUTF8 GPUPluginObject::kPluginType[] =
     "application/vnd.google.chrome.gpu-plugin";
@@ -61,7 +63,7 @@ NPError GPUPluginObject::Destroy(NPSavedData** saved) {
     NPBrowser::get()->UnmapSharedMemory(npp(), shared_memory_);
   }
 
-  command_buffer_object_ = NPObjectPointer<NPObject>();
+  command_buffer_object_ = NPObjectPointer<CommandBuffer>();
 
   status_ = DESTROYED;
 
@@ -82,31 +84,9 @@ NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
   if (command_buffer_object_.Get())
     return command_buffer_object_;
 
-  NPObjectPointer<NPObject> window = NPObjectPointer<NPObject>::FromReturned(
-      NPBrowser::get()->GetWindowNPObject(npp()));
-  if (!window.Get())
-    return NPObjectPointer<NPObject>();
-
-  NPObjectPointer<NPObject> chromium;
-  if (!NPGetProperty(npp(), window, "chromium", &chromium)) {
-    return NPObjectPointer<NPObject>();
-  }
-
-  NPObjectPointer<NPObject> system;
-  if (!NPGetProperty(npp(), chromium, "system", &system)) {
-    return NPObjectPointer<NPObject>();
-  }
-
-  if (!NPInvoke(npp(), system, "createSharedMemory", kCommandBufferSize,
-                &command_buffer_object_)) {
-    return NPObjectPointer<NPObject>();
-  }
-
-  shared_memory_ = NPBrowser::get()->MapSharedMemory(
-      npp(), command_buffer_object_.Get(), 1024, false);
-  if (!shared_memory_) {
-    command_buffer_object_ = NPObjectPointer<NPObject>();
-    return NPObjectPointer<NPObject>();
+  command_buffer_object_ = NPCreateObject<CommandBuffer>(npp());
+  if (!command_buffer_object_->Initialize(kCommandBufferSize)) {
+    command_buffer_object_ = NPObjectPointer<CommandBuffer>();
   }
 
   return command_buffer_object_;

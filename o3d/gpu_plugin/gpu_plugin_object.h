@@ -7,14 +7,13 @@
 
 #include <string>
 
+#include "o3d/gpu_plugin/command_buffer.h"
 #include "o3d/gpu_plugin/np_utils/dispatched_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
 #include "o3d/gpu_plugin/np_utils/np_plugin_object.h"
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
-
-struct NaClDesc;
 
 namespace o3d {
 namespace gpu_plugin {
@@ -43,7 +42,7 @@ class GPUPluginObject : public DispatchedNPObject, public PluginObject {
 
   virtual NPObject* GetScriptableNPObject();
 
-  // Opens and returns the command buffer shared memory object.
+  // Initializes and returns the command buffer object.
   NPObjectPointer<NPObject> OpenCommandBuffer();
 
  protected:
@@ -62,7 +61,7 @@ class GPUPluginObject : public DispatchedNPObject, public PluginObject {
 
   Status status_;
   NPWindow window_;
-  NPObjectPointer<NPObject> command_buffer_object_;
+  NPObjectPointer<CommandBuffer> command_buffer_object_;
   NPSharedMemory* shared_memory_;
 };
 

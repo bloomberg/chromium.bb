@@ -17,6 +17,19 @@ namespace gpu_plugin {
 // normal for these calls.
 class MockNPBrowser : public StubNPBrowser {
  public:
+  NPObject* ConcreteCreateObject(NPP npp, const NPClass* cl) {
+    return StubNPBrowser::CreateObject(npp, cl);
+  }
+
+  MockNPBrowser() {
+    // Do not mock CreateObject by default but allow it to be mocked so object
+    // creation can be intercepted.
+    ON_CALL(*this, CreateObject(testing::_, testing::_))
+      .WillByDefault(testing::Invoke(this,
+                                     &MockNPBrowser::ConcreteCreateObject));
+  }
+
+  MOCK_METHOD2(CreateObject, NPObject*(NPP, const NPClass*));
   MOCK_METHOD1(GetWindowNPObject, NPObject*(NPP));
   MOCK_METHOD4(MapSharedMemory, NPSharedMemory*(NPP, NPObject*, size_t, bool));
   MOCK_METHOD2(UnmapSharedMemory, void(NPP, NPSharedMemory*));
