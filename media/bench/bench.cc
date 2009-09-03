@@ -17,11 +17,13 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "media/base/media.h"
 #include "media/filters/ffmpeg_common.h"
+#include "media/filters/ffmpeg_video_decoder.h"
 
 namespace switches {
 const wchar_t kStream[]                 = L"stream";
@@ -39,7 +41,7 @@ int main(int argc, const char** argv) {
 
   std::vector<std::wstring> filenames(cmd_line->GetLooseValues());
   if (filenames.empty()) {
-    std::cerr << "Usage: media_bench [OPTIONS] FILE\n"
+    std::cerr << "Usage: media_bench [OPTIONS] FILE [DUMPFILE]\n"
               << "  --stream=[audio|video]          "
               << "Benchmark either the audio or video stream\n"
               << "  --video-threads=N               "
@@ -62,7 +64,11 @@ int main(int argc, const char** argv) {
   }
 
   // Retrieve command line options.
-  std::string path(WideToUTF8(filenames[0]));
+  std::string in_path(WideToUTF8(filenames[0]));
+  std::string out_path;
+  if (filenames.size() > 1) {
+    out_path = WideToUTF8(filenames[1]);
+  }
   CodecType target_codec = CODEC_TYPE_UNKNOWN;
   int video_threads = 0;
 
@@ -108,14 +114,24 @@ int main(int argc, const char** argv) {
   avcodec_init();
   av_register_all();
   AVFormatContext* format_context = NULL;
-  if (av_open_input_file(&format_context, path.c_str(), NULL, 0, NULL) < 0) {
-    std::cerr << "Could not open " << path << std::endl;
+  if (av_open_input_file(&format_context, in_path.c_str(), NULL, 0, NULL) < 0) {
+    std::cerr << "Could not open " << in_path << std::endl;
     return 1;
+  }
+
+  // Open output file.
+  FILE *output = NULL;
+  if (!out_path.empty()) {
+    output = file_util::OpenFile(out_path.c_str(), "wb");
+    if (!output) {
+      LOG(ERROR) << "could not open output";
+      return 1;
+    }
   }
 
   // Parse a little bit of the stream to fill out the format context.
   if (av_find_stream_info(format_context) < 0) {
-    std::cerr << "Could not find stream info for " << path << std::endl;
+    std::cerr << "Could not find stream info for " << in_path << std::endl;
     return 1;
   }
 
@@ -220,6 +236,14 @@ int main(int argc, const char** argv) {
         if (size_out) {
           ++frames;
           read_result = 0;  // Force continuation.
+
+          if (output) {
+            if (fwrite(samples, 1, size_out, output) !=
+                static_cast<size_t>(size_out)) {
+              std::cerr << "could not write data after " << size_out;
+              return 1;
+            }
+          }
         }
       } else if (target_codec == CODEC_TYPE_VIDEO) {
         int got_picture = 0;
@@ -228,6 +252,47 @@ int main(int argc, const char** argv) {
         if (got_picture) {
           ++frames;
           read_result = 0;  // Force continuation.
+
+          // TODO(fbarchard): support formats other than YV12.
+          if (output) {
+            for (int plane = 0; plane < 3; ++plane) {
+              const uint8* source = frame->data[plane];
+              const size_t source_stride = frame->linesize[plane];
+              size_t bytes_per_line = codec_context->width;
+              size_t copy_lines = codec_context->height;
+              if (plane != 0) {
+                switch (codec_context->pix_fmt) {
+                  case PIX_FMT_YUV420P:
+                  case PIX_FMT_YUVJ420P:
+                    bytes_per_line /= 2;
+                    copy_lines = (copy_lines + 1) / 2;
+                    break;
+                  case PIX_FMT_YUV422P:
+                  case PIX_FMT_YUVJ422P:
+                    bytes_per_line /= 2;
+                    copy_lines = copy_lines;
+                    break;
+                  case PIX_FMT_YUV444P:
+                  case PIX_FMT_YUVJ444P:
+                    copy_lines = copy_lines;
+                    break;
+                  default:
+                    std::cerr << "unknown video format: "
+                              << codec_context->pix_fmt;
+                    return 1;
+                }
+              }
+              for (size_t i = 0; i < copy_lines; ++i) {
+                if (fwrite(source, 1, bytes_per_line, output) !=
+                           bytes_per_line) {
+                  std::cerr << "could not write data after "
+                            << bytes_per_line;
+                  return 1;
+                }
+                source += source_stride;
+              }
+            }
+          }
         }
       } else {
         NOTREACHED();
@@ -246,6 +311,9 @@ int main(int argc, const char** argv) {
     av_free_packet(&packet);
   } while (read_result >= 0);
   base::TimeDelta total = base::TimeTicks::HighResNow() - start;
+
+  if (output)
+    file_util::CloseFile(output);
 
   // Calculate the sum of times.  Note that some of these may be zero.
   double sum = 0;
