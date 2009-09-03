@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
+#import "chrome/browser/cocoa/menu_button.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/toolbar_model.h"
@@ -423,18 +424,6 @@ class PrefObserverBridge : public NotificationObserver {
   } else if (*prefName == prefs::kShowPageOptionsButtons) {
     [self showOptionalPageWrenchButtons];
   }
-}
-
-- (IBAction)showPageMenu:(id)sender {
-  [NSMenu popUpContextMenu:pageMenu_
-                 withEvent:[NSApp currentEvent]
-                   forView:pageButton_];
-}
-
-- (IBAction)showWrenchMenu:(id)sender {
-  [NSMenu popUpContextMenu:wrenchMenu_
-                 withEvent:[NSApp currentEvent]
-                   forView:wrenchButton_];
 }
 
 - (NSRect)starButtonInWindowCoordinates {

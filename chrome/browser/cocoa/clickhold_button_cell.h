@@ -26,8 +26,9 @@
 // Enable click-hold? Default: NO.
 @property(assign, nonatomic) BOOL enableClickHold;
 
-// Timeout is in seconds (at least 0.01, at most 3600). Default: 0.25 (a guess
-// at a Cocoa-ish value).
+// Timeout is in seconds (at least 0.0, at most 5; 0.0 means that the button
+// will always have its click-hold action activated immediately on press).
+// Default: 0.25 (a guess at a Cocoa-ish value).
 @property(assign, nonatomic) NSTimeInterval clickHoldTimeout;
 
 // Track only in the frame rectangle? Default: NO.

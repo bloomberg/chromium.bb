@@ -7,8 +7,8 @@
 #include "base/logging.h"
 
 // Minimum and maximum click-hold timeout.
-static const NSTimeInterval kMinTimeout = 0.01;
-static const NSTimeInterval kMaxTimeout = 3600.0;
+static const NSTimeInterval kMinTimeout = 0.0;
+static const NSTimeInterval kMaxTimeout = 5.0;
 
 // Drag distance threshold to activate click-hold; should be >= 0.
 static const CGFloat kDragDistThreshold = 2.5;

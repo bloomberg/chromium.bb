@@ -18,8 +18,9 @@
 class AutocompletePopupPositioner;
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;
-@class DelayedMenuButton;
 @class BackForwardMenuController;
+@class DelayedMenuButton;
+@class MenuButton;
 class Browser;
 class CommandUpdater;
 class LocationBar;
@@ -69,9 +70,6 @@ class ToolbarView;
   scoped_nsobject<NSTrackingArea> trackingArea_;
   NSButton* hoveredButton_;  // weak. Button under the mouse cursor.
 
-  IBOutlet NSMenu* pageMenu_;
-  IBOutlet NSMenu* wrenchMenu_;
-
   // The ordering is important for unit tests. If new items are added or the
   // ordering is changed, make sure to update |-toolbarViews| and the
   // corresponding enum in the unit tests.
@@ -81,8 +79,8 @@ class ToolbarView;
   IBOutlet NSButton* homeButton_;
   IBOutlet NSButton* starButton_;
   IBOutlet NSButton* goButton_;
-  IBOutlet NSButton* pageButton_;
-  IBOutlet NSButton* wrenchButton_;
+  IBOutlet MenuButton* pageButton_;
+  IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;
 }
 
@@ -129,11 +127,6 @@ class ToolbarView;
 
 // Return the bookmark bar controller.
 - (BookmarkBarController*)bookmarkBarController;
-
-// Actions for the optional menu buttons for the page and wrench menus. These
-// will show a menu while the mouse is down.
-- (IBAction)showPageMenu:(id)sender;
-- (IBAction)showWrenchMenu:(id)sender;
 
 // The bookmark bubble (when you click the star) needs to know where to go.
 // Somewhere near the star button seems like a good start.
