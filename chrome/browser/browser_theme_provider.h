@@ -38,10 +38,12 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   static const char* kColorNTPBackground;
   static const char* kColorNTPText;
   static const char* kColorNTPLink;
+  static const char* kColorNTPLinkUnderline;
   static const char* kColorNTPHeader;
   static const char* kColorNTPSection;
   static const char* kColorNTPSectionText;
   static const char* kColorNTPSectionLink;
+  static const char* kColorNTPSectionLinkUnderline;
   static const char* kColorControlBackground;
   static const char* kColorButtonBackground;
 
@@ -116,10 +118,12 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
     COLOR_NTP_BACKGROUND,
     COLOR_NTP_TEXT,
     COLOR_NTP_LINK,
+    COLOR_NTP_LINK_UNDERLINE,
     COLOR_NTP_HEADER,
     COLOR_NTP_SECTION,
     COLOR_NTP_SECTION_TEXT,
     COLOR_NTP_SECTION_LINK,
+    COLOR_NTP_SECTION_LINK_UNDERLINE,
     COLOR_CONTROL_BACKGROUND,
     COLOR_BUTTON_BACKGROUND,
     TINT_BUTTONS,

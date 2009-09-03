@@ -186,13 +186,19 @@ html[anim='false'] *,
 .link {
   cursor: pointer;
   text-decoration: underline;
-  color: hsl(213, 90%, 24%);
+  color: hsl(213, 90%, 24%, 0.33333);
   -webkit-appearance: none;
   border: 0;
   background: none;
 }
 
+.link-color {
+  color: hsl(213, 90%, 24%);
+  text-decoration: none;
+}
+
 .thumbnail-container {
+  color: hsl(213, 90%, 24%);
   text-decoration: none;
 }
 

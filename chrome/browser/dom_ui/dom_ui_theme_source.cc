@@ -120,12 +120,17 @@ void DOMUIThemeSource::InitNewTabCSS() {
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND);
   SkColor color_text = tp->GetColor(BrowserThemeProvider::COLOR_NTP_TEXT);
   SkColor color_link = tp->GetColor(BrowserThemeProvider::COLOR_NTP_LINK);
+  SkColor color_link_underline =
+      tp->GetColor(BrowserThemeProvider::COLOR_NTP_LINK_UNDERLINE);
+
   SkColor color_section =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION);
   SkColor color_section_text =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_TEXT);
   SkColor color_section_link =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_LINK);
+  SkColor color_section_link_underline =
+      tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_LINK_UNDERLINE);
 
   SkColor color_header =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER);
@@ -172,6 +177,8 @@ void DOMUIThemeSource::InitNewTabCSS() {
   subst2.push_back(
       UTF8ToUTF16(tp->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
           "block" : "none"));  // $$5
+  subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$6
+  subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
 
   // Get our template.
   static const StringPiece new_tab_theme_css(

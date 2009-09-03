@@ -119,6 +119,7 @@ function renderTip() {
   // There should always be only one tip.
   tipElement.textContent = '';
   tipElement.appendChild(createTip(tipCache));
+  fixLinkUnderlines(tipElement);
 }
 
 function recentlyClosedTabs(data) {
@@ -765,6 +766,7 @@ function syncMessageChanged(newMessage) {
     }
     el.textContent = newMessage.linktext;
     syncStatusElement.appendChild(el);
+    fixLinkUnderline(el);
   }
 }
 
@@ -1656,6 +1658,28 @@ function parseHtmlSubset(s) {
     }
   });
   return df;
+}
+
+/**
+ * Makes links and buttons support a different underline color.
+ * @param {Node} node The node to search for links and buttons in.
+ */
+function fixLinkUnderlines(node) {
+  var elements = node.querySelectorAll('a,button');
+  Array.prototype.forEach.call(elements, fixLinkUnderline);
+}
+
+/**
+ * Wraps the content of an element in a a link-color span.
+ * @param {Element} el The element to wrap.
+ */
+function fixLinkUnderline(el) {
+  var span = document.createElement('span');
+  span.className = 'link-color';
+  while (el.hasChildNodes()) {
+    span.appendChild(el.firstChild);
+  }
+  el.appendChild(span);
 }
 
 updateAttribution();

@@ -1,77 +1,102 @@
 html {
-  background-image:url(chrome://theme/theme_ntp_background?$1);
-  background-color:$2;
-  background-position:$3;
-  background-repeat:$5;
-  overflow:hidden;
+  background-image: url(chrome://theme/theme_ntp_background?$1);
+  background-color: $2; /* COLOR_NTP_BACKGROUND */
+  background-position: $3;
+  background-repeat: $5;
+  overflow: hidden;
 }
+
 html[bookmarkbarattached='true'] {
-  background-position:$4;
+  background-position: $4;
 }
+
 body {
-  color: $8;
-  height:100%;
-  overflow:auto;
+  color: $8; /* COLOR_NTP_TEXT */
+  height: 100%;
+  overflow: auto;
 }
+
 #main {
   background: url(chrome://theme/product_logo?$1) no-repeat 0 8px;
 }
+
 .thumbnail {
   border-color: $$1; /* COLOR_NTP_SECTION */
 }
+
 .thumbnail-container,
-.list > .thumbnail-container > .title,
-.list > .thumbnail-container > .title > div,
-.list .title > div,
 .thumbnail-container > .title {
-  color: $9;
+  color: $8; /* COLOR_NTP_TEXT */
 }
+
+.list > .thumbnail-container > .title {
+  color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
+}
+
+.list > .thumbnail-container > .title > div,
+.list .title > div {
+  color: $9; /* COLOR_NTP_LINK */
+}
+
 .thumbnail-container:focus .thumbnail,
 .thumbnail-container:hover .thumbnail {
-  border-color: $6;
+  border-color: $6; /* COLOR_NTP_HEADER */
 }
+
 .thumbnail-container:focus .edit-bar,
 .thumbnail-container:hover .edit-bar {
-  background-color: $6;
+  background-color: $6; /* COLOR_NTP_HEADER */
   background-image: -webkit-gradient(linear, left top, left bottom,
-                                     from($7),
-                                     to($6));
+                                     from($7), /* color_header_gradient_light */
+                                     to($6)); /* COLOR_NTP_HEADER */
 }
 .thumbnail-container:hover > .edit-mode-border {
-  background-color: $6;
+  background-color: $6; /* COLOR_NTP_HEADER */
 }
 
 #view-toolbar > input {
-  background-color: $7;
+  background-color: $7; /* color_header_gradient_light */
   -webkit-mask-image: url(chrome://theme/newtab_menu_mask);
 }
+
 #option-menu > [selected] {
-  background-color: $7;
+  background-color: $7; /* color_header_gradient_light */
   color: white;
 }
 
 #recently-closed {
-  border-color: $$2; /* color_section_border */
+  border-color: $$2; /* COLOR_NTP_SECTION_BORDER */
   background-color: $$1; /* COLOR_NTP_SECTION */
   color: $$3; /* COLOR_NTP_SECTION_TEXT */
 }
-#recently-closed span,
-#recently-closed a {
+
+#recently-closed > span {
+  color: $$7; /* COLOR_NTP_SECTION_LINK_UNDERLINE */
+  text-decoration: underline;
+}
+
+#recently-closed > span > .item {
   color: $$4; /* COLOR_NTP_SECTION_LINK */
-  text-decoration:underline;
+  text-decoration: none;
 }
 
 #attribution {
-  display : $$5;
-  color: $9;
-  text-align:right;
+  display: $$5;
+  color: $9; /* COLOR_NTP_LINK */
+  text-align: right;
 }
 
 #tip-line {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
-#tip-line a {
+.link-color {
   color: $9; /* COLOR_NTP_LINK */
-  text-decoration: underline;
+}
+
+:link,
+:visited,
+.link,
+.list > .thumbnail-container {
+  color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
 }

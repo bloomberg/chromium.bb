@@ -47,10 +47,13 @@ const char* BrowserThemeProvider::kColorBookmarkText = "bookmark_text";
 const char* BrowserThemeProvider::kColorNTPBackground = "ntp_background";
 const char* BrowserThemeProvider::kColorNTPText = "ntp_text";
 const char* BrowserThemeProvider::kColorNTPLink = "ntp_link";
+const char* BrowserThemeProvider::kColorNTPLinkUnderline = "ntp_link_underline";
 const char* BrowserThemeProvider::kColorNTPHeader = "ntp_header";
 const char* BrowserThemeProvider::kColorNTPSection = "ntp_section";
 const char* BrowserThemeProvider::kColorNTPSectionText = "ntp_section_text";
 const char* BrowserThemeProvider::kColorNTPSectionLink = "ntp_section_link";
+const char* BrowserThemeProvider::kColorNTPSectionLinkUnderline =
+    "ntp_section_link_underline";
 const char* BrowserThemeProvider::kColorControlBackground =
     "control_background";
 const char* BrowserThemeProvider::kColorButtonBackground = "button_background";
@@ -108,7 +111,7 @@ const SkColor BrowserThemeProvider::kDefaultColorNTPBackground =
 const SkColor BrowserThemeProvider::kDefaultColorNTPText =
     SkColorSetRGB(0, 0, 0);
 const SkColor BrowserThemeProvider::kDefaultColorNTPLink =
-    SkColorSetRGB(0, 0, 0);
+    SkColorSetRGB(6, 55, 116);
 const SkColor BrowserThemeProvider::kDefaultColorNTPHeader =
     SkColorSetRGB(75, 140, 220);
 const SkColor BrowserThemeProvider::kDefaultColorNTPSection =
@@ -116,7 +119,7 @@ const SkColor BrowserThemeProvider::kDefaultColorNTPSection =
 const SkColor BrowserThemeProvider::kDefaultColorNTPSectionText =
     SkColorSetRGB(0, 0, 0);
 const SkColor BrowserThemeProvider::kDefaultColorNTPSectionLink =
-    SkColorSetRGB(0, 0, 204);
+    SkColorSetRGB(6, 55, 116);
 const SkColor BrowserThemeProvider::kDefaultColorControlBackground = NULL;
 const SkColor BrowserThemeProvider::kDefaultColorButtonBackground = NULL;
 
@@ -330,6 +333,8 @@ const std::string BrowserThemeProvider::GetColorKey(int id) {
       return kColorNTPText;
     case COLOR_NTP_LINK:
       return kColorNTPLink;
+    case COLOR_NTP_LINK_UNDERLINE:
+      return kColorNTPLinkUnderline;
     case COLOR_NTP_HEADER:
       return kColorNTPHeader;
     case COLOR_NTP_SECTION:
@@ -338,6 +343,8 @@ const std::string BrowserThemeProvider::GetColorKey(int id) {
       return kColorNTPSectionText;
     case COLOR_NTP_SECTION_LINK:
       return kColorNTPSectionLink;
+    case COLOR_NTP_SECTION_LINK_UNDERLINE:
+      return kColorNTPSectionLinkUnderline;
     case COLOR_CONTROL_BACKGROUND:
       return kColorControlBackground;
     case COLOR_BUTTON_BACKGROUND:
@@ -401,6 +408,22 @@ SkColor BrowserThemeProvider::GetColor(int id) {
     else if (colors_.find(kColorNTPSection) != colors_.end())
       return colors_[kColorNTPSection];
     return GetDefaultColor(id);
+  }
+
+  // Special case the underline colors to use semi transparent in case not
+  // defined.
+  if (id == COLOR_NTP_SECTION_LINK_UNDERLINE) {
+    if (colors_.find(kColorNTPSectionLinkUnderline) != colors_.end())
+      return colors_[kColorNTPSectionLinkUnderline];
+    SkColor color_section_link = GetColor(COLOR_NTP_SECTION_LINK);
+    return SkColorSetA(color_section_link, SkColorGetA(color_section_link) / 3);
+  }
+
+  if (id == COLOR_NTP_LINK_UNDERLINE) {
+    if (colors_.find(kColorNTPLinkUnderline) != colors_.end())
+      return colors_[kColorNTPLinkUnderline];
+    SkColor color_link = GetColor(COLOR_NTP_LINK);
+    return SkColorSetA(color_link, SkColorGetA(color_link) / 3);
   }
 
   // TODO(glen): Figure out if we need to tint these. http://crbug.com/11578
