@@ -76,7 +76,7 @@ class TestRunner:
   _supported_file_extensions = set(['.html', '.shtml', '.xml', '.xhtml', '.pl',
                                     '.php', '.svg'])
   # When collecting test cases, skip these directories
-  _skipped_directories = set(['.svn', '_svn', 'resources'])
+  _skipped_directories = set(['.svn', '_svn', 'resources', 'script-tests'])
 
   # Top-level directories to shard when running tests.
   _shardable_directories = set(['chrome', 'LayoutTests', 'pending'])
