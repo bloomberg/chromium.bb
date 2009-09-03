@@ -113,14 +113,14 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
     return;
 
   if (block_state == UNKNOWN) {
-#if !defined(OS_MACOSX)
+#if defined(OS_WINDOWS) || defined(TOOLKIT_GTK)
     // Ask the user if they want to allow the protocol. This will call
     // LaunchUrlWithoutSecurityCheck if the user decides to accept the protocol.
     RunExternalProtocolDialog(escaped_url,
                               render_process_host_id,
                               tab_contents_id);
 #endif
-    // For now, allow only whitelisted protocols to fire on Mac.
+    // For now, allow only whitelisted protocols to fire on Mac and Linux/Views.
     // See http://crbug.com/15546.
     return;
   }
