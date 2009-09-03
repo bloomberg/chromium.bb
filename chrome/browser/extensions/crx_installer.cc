@@ -12,6 +12,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
@@ -251,6 +253,11 @@ void CrxInstaller::ReportFailureFromFileThread(const std::string& error) {
 
 void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
   DCHECK(MessageLoop::current() == ui_loop_);
+
+  NotificationService* service = NotificationService::current();
+  service->Notify(NotificationType::NO_THEME_DETECTED,
+                  Source<CrxInstaller>(this),
+                  NotificationService::NoDetails());
 
   // This isn't really necessary, it is only used because unit tests expect to
   // see errors get reported via this interface.
