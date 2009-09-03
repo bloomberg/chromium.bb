@@ -2328,3 +2328,7 @@ BUG20993 : LayoutTests/fast/forms/input-maxlength-ime-completed.html = FAIL
 // Need to implement clearAllDatabases in layoutTestController.
 BUG20995 SKIP : LayoutTests/storage/statement-error-callback.html = FAIL
 
+// WebKit 48020:48030
+BUG21033 : LayoutTests/fast/events/message-port-multi.html = TIMEOUT
+BUG21033 : LayoutTests/fast/dom/Window/window-postmessage-args.html = FAIL
+BUG21033 WIN LINUX : LayoutTests/fast/events/init-events.html = FAIL
