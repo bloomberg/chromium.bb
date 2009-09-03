@@ -469,12 +469,21 @@
           'SDKROOT': 'macosx10.5',
           'USE_HEADERMAP': 'NO',
           # TODO(bradnelson): -Werror ?!?
-          'WARNING_CFLAGS': ['-Wall', '-pedantic', '-Wendif-labels', '-Wno-long-long'],
+          'WARNING_CFLAGS': ['-Wall', '-Wendif-labels', '-Wno-long-long'],
           'conditions': [
             ['chromium_mac_pch', {'GCC_PRECOMPILE_PREFIX_HEADER': 'YES'},
                                  {'GCC_PRECOMPILE_PREFIX_HEADER': 'NO'}],
           ],
         },
+        'conditions': [
+          ['nacl_standalone==1', {
+            'xcode_settings': {
+              # TODO(gregoryd): remove the condition when the issues in
+              # Chrome code are fixed.
+              'WARNING_CFLAGS': ['-pedantic'],
+            },
+          }],
+        ],
         'defines': [
           'NACL_BLOCK_SHIFT=5',
           'NACL_BLOCK_SIZE=32',
