@@ -1,7 +1,6 @@
 #
-# fontconfig/fc-lang/ar.orth
+# fontconfig/fc-lang/pes.orth
 #
-# Copyright © 2002 Keith Packard
 # Copyright © 2009 Roozbeh Pournader
 #
 # Permission to use, copy, modify, distribute, and sell this software and its
@@ -22,18 +21,6 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Arabic (ar)
+# Western Farsi (pes)
 #
-# We are assuming that:
-# * Most fonts that claim to support an Arabic letter actually do so;
-# * Most modern text rendering software use OpenType tables, instead of
-#   directly using presentation forms.
-# * Some good Arabic fonts do not support codepoints for Arabic presentation
-#   forms.
-# Thus, we are switching to general forms of Arabic letters.
-#
-# General forms:
-0621-063a
-0641-064a
-# Presentations forms:
-# fe80-fefc
+include fa.orth
