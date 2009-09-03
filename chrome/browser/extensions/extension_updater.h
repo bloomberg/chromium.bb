@@ -58,6 +58,10 @@ class ExtensionUpdater
   // crx downloads. Does not cancel any in-progress installs.
   void Stop();
 
+  // Starts an update check right now, instead of waiting for the next regularly
+  // scheduled check.
+  void CheckNow();
+
  private:
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;

@@ -12,6 +12,7 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
@@ -88,6 +89,8 @@ void ExtensionsDOMHandler::RegisterMessages() {
       NewCallback(this, &ExtensionsDOMHandler::HandleLoadMessage));
   dom_ui_->RegisterMessageCallback("pack",
       NewCallback(this, &ExtensionsDOMHandler::HandlePackMessage));
+  dom_ui_->RegisterMessageCallback("autoupdate",
+      NewCallback(this, &ExtensionsDOMHandler::HandleAutoUpdateMessage));
 }
 
 void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
@@ -190,6 +193,13 @@ void ExtensionsDOMHandler::HandlePackMessage(const Value* value) {
 #if defined(OS_WIN)
   ShowPackDialog();
 #endif
+}
+
+void ExtensionsDOMHandler::HandleAutoUpdateMessage(const Value* value) {
+  ExtensionUpdater* updater = extensions_service_->updater();
+  if (updater) {
+    updater->CheckNow();
+  }
 }
 
 void ExtensionsDOMHandler::FileSelected(const FilePath& path, int index,

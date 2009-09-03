@@ -462,6 +462,15 @@ void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
 }
 
 void ExtensionUpdater::TimerFired() {
+  CheckNow();
+
+  // Save the last check time, and schedule the next check.
+  int64 now = Time::Now().ToInternalValue();
+  prefs_->SetInt64(kLastExtensionsUpdateCheck, now);
+  ScheduleNextCheck(TimeDelta::FromSeconds(frequency_seconds_));
+}
+
+void ExtensionUpdater::CheckNow() {
   // Generate a set of update urls for loaded extensions.
   std::set<GURL> urls;
 
@@ -501,10 +510,6 @@ void ExtensionUpdater::TimerFired() {
     // scheduled, so we don't need to check before calling it.
     StartUpdateCheck(*iter);
   }
-  // Save the last check time, and schedule the next check.
-  int64 now = Time::Now().ToInternalValue();
-  prefs_->SetInt64(kLastExtensionsUpdateCheck, now);
-  ScheduleNextCheck(TimeDelta::FromSeconds(frequency_seconds_));
 }
 
 

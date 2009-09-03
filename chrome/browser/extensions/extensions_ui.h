@@ -99,14 +99,17 @@ class ExtensionsDOMHandler
   // Callback for "pack" message.
   void HandlePackMessage(const Value* value);
 
+  // Callback for "autoupdate" message.
+  void HandleAutoUpdateMessage(const Value* value);
+
   // SelectFileDialog::Listener
   virtual void FileSelected(const FilePath& path,
                             int index, void* params);
   virtual void MultiFilesSelected(
     const std::vector<FilePath>& files, void* params) {
     NOTREACHED();
-  };
-  virtual void FileSelectionCanceled(void* params) {};
+  }
+  virtual void FileSelectionCanceled(void* params) {}
 
   // NotificationObserver
   virtual void Observe(NotificationType type,

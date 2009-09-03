@@ -211,6 +211,9 @@ class ExtensionsService
   // Whether the extension service is ready.
   bool is_ready() { return ready_; }
 
+  // Note that this may return NULL if autoupdate is not turned on.
+  ExtensionUpdater* updater() { return updater_.get(); }
+
  private:
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.

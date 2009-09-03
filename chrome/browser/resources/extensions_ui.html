@@ -276,6 +276,14 @@ function loadExtension() {
 function packExtension() {
   chrome.send('pack', []);
 }
+
+/**
+ * Handles the "Update extensions now" button being pressed.
+ */
+function autoUpdate() {
+  chrome.send('autoupdate', []);
+}
+
 </script>
 </head>
 <body onload="requestExtensionsData();">
@@ -343,7 +351,8 @@ function packExtension() {
 
             <div class="sidebar-content">
               <button onclick="loadExtension()">Load unpacked extension...</button><br />
-              <button onclick="packExtension()">Pack extension...</button>
+              <button onclick="packExtension()">Pack extension...</button><br />
+              <button onclick="autoUpdate()">Update extensions now</button>
             </div>
           </td>
         </tr>
