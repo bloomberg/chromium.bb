@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/gfx/jpeg_codec.h"
 #include "base/shared_memory.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/test/render_view_test.h"
 #include "net/base/net_errors.h"
 #include "printing/image.h"
@@ -866,4 +868,46 @@ TEST_F(RenderViewTest, DidFailProvisionalLoadWithErrorForCancellation) {
   view_->DidFailProvisionalLoadWithError(web_view, error, web_frame);
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->isViewSourceModeEnabled());
+}
+
+// Print page as bitmap test.
+TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
+#if defined(OS_WIN)
+  // Lets simulate a print pages with Hello world.
+  LoadHTML("<body><p>Hello world!</p></body>");
+
+  // Grab the printer settings from the printer.
+  ViewMsg_Print_Params print_settings;
+  MockPrinter* printer(render_thread_.printer());
+  printer->GetDefaultPrintSettings(&print_settings);
+  ViewMsg_PrintPage_Params page_params = ViewMsg_PrintPage_Params();
+  page_params.params = print_settings;
+  page_params.page_number = 0;
+
+  // Fetch the image data from the web frame.
+  std::vector<unsigned char> data;
+  view_->print_helper()->PrintPageAsJPEG(page_params,
+                                         view_->webview()->GetMainFrame(),
+                                         1.0f,
+                                         &data);
+  std::vector<unsigned char> decoded;
+  int w, h;
+  EXPECT_TRUE(JPEGCodec::Decode(&data[0], data.size(), JPEGCodec::FORMAT_RGBA,
+                                &decoded, &w, &h));
+
+  // Check if its not 100% white.
+  bool is_white = true;
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      unsigned char* px = &decoded[(y * w + x) * 4];
+      if (px[0] != 0xFF && px[1] != 0xFF && px[2] != 0xFF) {
+        is_white = false;
+        break;
+      }
+    }
+  }
+  ASSERT_TRUE(!is_white);
+#else
+  NOTIMPLEMENTED();
+#endif
 }

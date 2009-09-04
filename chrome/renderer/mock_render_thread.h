@@ -70,7 +70,7 @@ class MockRenderThread : public RenderThreadBase {
   void SendCloseMessage();
 
   // Returns the pseudo-printer instance.
-  const MockPrinter* printer() const { return printer_.get(); }
+  MockPrinter* printer() const { return printer_.get(); }
 
  private:
   // This function operates as a regular IPC listener.

@@ -151,6 +151,10 @@ class RenderView : public RenderWidget,
     return view_type_;
   }
 
+  PrintWebViewHelper* print_helper() {
+    return print_helper_.get();
+  }
+
   // IPC::Channel::Listener
   virtual void OnMessageReceived(const IPC::Message& msg);
 
