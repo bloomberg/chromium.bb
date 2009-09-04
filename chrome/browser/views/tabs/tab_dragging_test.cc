@@ -237,7 +237,8 @@ TEST_F(TabDraggingTest, DISABLED_Tab1Tab3) {
 
 // Drag Tab_1 into the position of Tab_3, and press ESCAPE before releasing the
 // left mouse button.
-TEST_F(TabDraggingTest, Tab1Tab3Escape) {
+// Flaky, see http://crbug.com/21092.
+TEST_F(TabDraggingTest, DISABLED_Tab1Tab3Escape) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window(browser->GetWindow());
