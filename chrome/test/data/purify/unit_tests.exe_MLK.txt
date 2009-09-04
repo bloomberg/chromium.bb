@@ -1,10 +1,3 @@
-?_Allocate@V?$scoped_refptr@VMessageFilter@ChannelProxy@IPC@@@@@std@@YAPAV?$scoped_refptr@VMessageFilter@ChannelProxy@IPC@@@@IPAV1@@Z [unit_tests.exe]
-Alloc Location
-   ...  
-   ipc/ipc_channel_proxy.cc  IPC::ChannelProxy::Context::OnAddFilter(MessageFilter::ChannelProxy::IPC *)
-   base/tuple.h  ?DispatchToMethod@VContext@ChannelProxy@IPC@@P8123@AEXPAVMessageFilter@23@@ZPAV423@@@YAXPAVContext@ChannelProxy@IPC@@P8012@AEXPAVMessageFilter@12@@ZABU?$Tuple1@PAVMessageFilter@ChannelProxy@IPC@@@@@Z
-   ^^^  
-
 IPC::Channel::ChannelImpl::Connect(void) [unit_tests.exe]
 Alloc Location
    ...  
