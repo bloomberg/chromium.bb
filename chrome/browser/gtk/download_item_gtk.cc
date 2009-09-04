@@ -51,10 +51,6 @@ const int kDangerousTextWidth = 350;
 // make the download item.
 const int kMinDownloadItemWidth = download_util::kSmallProgressIconSize;
 
-const char* kLabelColorMarkup = "<span color='#%s'>%s</span>";
-const char* kFilenameColor = "576C95";  // 87, 108, 149
-const char* kStatusColor = "7B8DAE";  // 123, 141, 174
-
 // New download item animation speed in milliseconds.
 const int kNewItemAnimationDurationMs = 800;
 
@@ -526,32 +522,29 @@ void DownloadItemGtk::UpdateNameLabel() {
       get_download()->GetFileName(),
       gfx::Font(), kTextWidth);
   if (theme_provider_->UseGtkTheme()) {
-    gtk_label_set_markup(GTK_LABEL(name_label_),
-                         WideToUTF8(elided_filename).c_str());
+    gtk_util::SetLabelColor(name_label_, NULL);
   } else {
-    gchar* label_markup =
-        g_markup_printf_escaped(kLabelColorMarkup, kFilenameColor,
-                                WideToUTF8(elided_filename).c_str());
-    gtk_label_set_markup(GTK_LABEL(name_label_), label_markup);
-    g_free(label_markup);
+    GdkColor color = theme_provider_->GetGdkColor(
+        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+    gtk_util::SetLabelColor(name_label_, &color);
   }
+
+  gtk_label_set_text(GTK_LABEL(name_label_),
+                     WideToUTF8(elided_filename).c_str());
 }
 
 void DownloadItemGtk::UpdateStatusLabel(GtkWidget* status_label,
                                         const std::string& status_text) {
   if (status_label) {
     if (theme_provider_->UseGtkTheme()) {
-      gtk_label_set_label(GTK_LABEL(status_label), status_text.c_str());
+      gtk_util::SetLabelColor(status_label, NULL);
     } else {
-      // TODO(erg): I am not sure which ThemeProvider color I'm supposed to use
-      // here. I am also not sure if using set_markup is the correct course of
-      // action compared to modifying the GtkStyle->text[].
-      gchar* label_markup =
-          g_markup_printf_escaped(kLabelColorMarkup, kStatusColor,
-                                  status_text.c_str());
-      gtk_label_set_markup(GTK_LABEL(status_label), label_markup);
-      g_free(label_markup);
+      GdkColor color = theme_provider_->GetGdkColor(
+          BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+      gtk_util::SetLabelColor(status_label, &color);
     }
+
+    gtk_label_set_label(GTK_LABEL(status_label), status_text.c_str());
   }
 }
 
@@ -568,21 +561,19 @@ void DownloadItemGtk::UpdateDangerWarning() {
       gtk_image_set_from_stock(GTK_IMAGE(dangerous_image_),
           GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_SMALL_TOOLBAR);
 
-      gtk_label_set_label(GTK_LABEL(dangerous_label_),
-                          dangerous_warning.c_str());
-      gtk_widget_set_size_request(dangerous_label_, -1, -1);
+      gtk_util::SetLabelColor(dangerous_label_, NULL);
     } else {
       // Set the warning icon.
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       GdkPixbuf* download_pixbuf = rb.GetPixbufNamed(IDR_WARNING);
       gtk_image_set_from_pixbuf(GTK_IMAGE(dangerous_image_), download_pixbuf);
 
-      gchar* label_markup =
-          g_markup_printf_escaped(kLabelColorMarkup, kFilenameColor,
-                                  dangerous_warning.c_str());
-      gtk_label_set_markup(GTK_LABEL(dangerous_label_), label_markup);
-      g_free(label_markup);
+      GdkColor color = theme_provider_->GetGdkColor(
+          BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+      gtk_util::SetLabelColor(dangerous_label_, &color);
     }
+
+    gtk_label_set_label(GTK_LABEL(dangerous_label_), dangerous_warning.c_str());
 
     // Until we switch to vector graphics, force the font size.
     gtk_util::ForceFontSizePixels(dangerous_label_, kTextSize);
