@@ -323,13 +323,13 @@ WebWidgetHost::~WebWidgetHost() {
 void WebWidgetHost::Resize(const gfx::Size &newsize) {
   // The pixel buffer backing us is now the wrong size
   canvas_.reset();
-
+  logical_size_ = newsize;
   webwidget_->resize(newsize);
 }
 
 void WebWidgetHost::Paint() {
-  int width = view_->allocation.width;
-  int height = view_->allocation.height;
+  int width = logical_size_.width();
+  int height = logical_size_.height();
   gfx::Rect client_rect(width, height);
 
   // Allocate a canvas if necessary

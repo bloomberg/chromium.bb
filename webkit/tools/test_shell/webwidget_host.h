@@ -132,6 +132,11 @@ class WebWidgetHost {
   int scroll_dy_;
 
   bool track_mouse_leave_;
+#if defined(OS_LINUX)
+  // Since GtkWindow resize is asynchronous, we have to stash the dimensions,
+  // so that the backing store doesn't have to wait for sizing to take place.
+  gfx::Size logical_size_;
+#endif
 
 #ifndef NDEBUG
   bool painting_;
