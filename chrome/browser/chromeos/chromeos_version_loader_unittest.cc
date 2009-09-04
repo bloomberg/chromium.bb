@@ -8,11 +8,12 @@
 
 typedef testing::Test ChromeOSVersionLoaderTest;
 
-static const char kTest1[] = "DIST_ID=1\nGOOGLE_RELEASE=0.2.3.3\nFOO=BAR";
-static const char kTest2[] = "DIST_ID=1\nGOOGLE_RELEASE=0.2.3.3";
-static const char kTest3[] = "GOOGLE_RELEASE=\"0.2.3.3\"";
-static const char kTest4[] = "GOOGLE_RELEASE=\"\"\"";
-static const char kTest5[] = "GOOGLE_RELEASE=\"\"";
+static const char kTest1[] =
+    "DIST_ID=1\nCHROMEOS_RELEASE_DESCRIPTION=0.2.3.3\nFOO=BAR";
+static const char kTest2[] = "DIST_ID=1\nCHROMEOS_RELEASE_DESCRIPTION=0.2.3.3";
+static const char kTest3[] = "CHROMEOS_RELEASE_DESCRIPTION=\"0.2.3.3\"";
+static const char kTest4[] = "CHROMEOS_RELEASE_DESCRIPTION=\"\"\"";
+static const char kTest5[] = "CHROMEOS_RELEASE_DESCRIPTION=\"\"";
 
 TEST_F(ChromeOSVersionLoaderTest, ParseVersion) {
   EXPECT_EQ("0.2.3.3", ChromeOSVersionLoader::ParseVersion(kTest1));

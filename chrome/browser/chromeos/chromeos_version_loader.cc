@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_process.h"
 
 // Beginning of line we look for that gives version number.
-static const char kPrefix[] = "GOOGLE_RELEASE=";
+static const char kPrefix[] = "CHROMEOS_RELEASE_DESCRIPTION=";
 
 // File to look for version number in.
 static const char kPath[] = "/etc/lsb-release";
