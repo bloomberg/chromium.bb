@@ -133,3 +133,42 @@ Alloc Location
    chrome/renderer/render_thread_unittest.cc  RenderThreadTest::SetUp(void)
    testing/gtest/src/gtest.cc  testing::Test::Run(void)
    ^^^  
+
+?_Allocate@PAVMessage@IPC@@@std@@YAPAPAVMessage@IPC@@IPAPAV12@@Z [unit_tests.exe]
+Alloc Location
+   ...  
+   ipc/ipc_channel_win.cc  IPC::Channel::ChannelImpl::Send(Message::IPC *)
+   ipc/ipc_channel_win.cc  IPC::Channel::Send(Message::IPC *)
+   ipc/ipc_channel_proxy.cc  IPC::ChannelProxy::Context::OnSendMessage(Message::IPC *)
+   ipc/ipc_channel_proxy.cc  IPC::SendTask::Run(void)
+   base/message_loop.cc  MessageLoop::RunTask(Task *)
+   ^^^  
+
+?_Allocate@PAVMessage@IPC@@@std@@YAPAPAVMessage@IPC@@IPAPAV12@@Z [unit_tests.exe]
+Alloc Location
+   ...  
+   ipc/ipc_channel_win.cc  IPC::Channel::ChannelImpl::Send(Message::IPC *)
+   ipc/ipc_channel_win.cc  IPC::Channel::Send(Message::IPC *)
+   ipc/ipc_channel_proxy.cc  IPC::ChannelProxy::Context::OnSendMessage(Message::IPC *)
+   ipc/ipc_channel_proxy.cc  IPC::SendTask::Run(void)
+   base/message_loop.cc  MessageLoop::RunTask(Task *)
+   ^^^  
+
+?A0xc590570c::RenderThreadTest_TestVisitedMsg_Test::TestBody(void) [unit_tests.exe]
+Alloc Location
+   ...  
+   chrome/renderer/render_thread_unittest.cc  RenderThreadTest_TestVisitedMsg_Test::TestBody(void)
+   testing/gtest/src/gtest.cc  testing::Test::Run(void)
+   ^^^  
+
+Pickle::Resize(UINT) [unit_tests.exe]
+Alloc Location
+   ...  
+   base/pickle.cc  Pickle::Resize(UINT)
+   base/pickle.cc  Pickle::Pickle(int)
+   ipc/ipc_message.cc  IPC::Message::Message(int,WORD,PriorityValue::Message::IPC)
+   ipc/ipc_message_utils.h  IPC::MessageWithTuple::MessageWithTuple(int,WORD,Tuple1 const&)
+   chrome/common/render_messages_internal.h  ViewMsg_VisitedLink_NewTable::ViewMsg_VisitedLink_NewTable(void * const const&)
+   chrome/renderer/render_thread_unittest.cc  RenderThreadTest_TestVisitedMsg_Test::TestBody(void)
+   testing/gtest/src/gtest.cc  testing::Test::Run(void)
+   ^^^
