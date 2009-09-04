@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include "native_client/src/shared/srpc/nacl_srpc.h"

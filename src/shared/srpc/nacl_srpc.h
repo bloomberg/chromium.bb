@@ -53,7 +53,6 @@
 #  include <stdint.h>
 #  include <sys/types.h>
 #  include <sys/nacl_imc_api.h>
-#  include <pthread.h>
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 /*
