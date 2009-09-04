@@ -30,6 +30,10 @@ const CGFloat kPopupRoundingRadius = 3.5;
 // Gap between the field and the popup.
 const CGFloat kPopupFieldGap = 2.0;
 
+// How opaque the popup window should be.  This matches Windows (see
+// autocomplete_popup_contents_view.cc, kGlassPopupTransparency).
+const CGFloat kPopupAlpha = 240.0 / 255.0;
+
 // How much space to leave for the left and right margins.
 const CGFloat kLeftRightMargin = 8.0;
 
@@ -48,13 +52,13 @@ const static NSInteger kMiddleButtonNumber(2);
 
 // Background colors for different states of the popup elements.
 NSColor* BackgroundColor() {
-  return [NSColor controlBackgroundColor];
+  return [[NSColor controlBackgroundColor] colorWithAlphaComponent:kPopupAlpha];
 }
 NSColor* SelectedBackgroundColor() {
-  return [NSColor selectedControlColor];
+  return [[NSColor selectedControlColor] colorWithAlphaComponent:kPopupAlpha];
 }
 NSColor* HoveredBackgroundColor() {
-  return [NSColor controlColor];
+  return [[NSColor controlHighlightColor] colorWithAlphaComponent:kPopupAlpha];
 }
 
 // TODO(shess): These are totally unprincipled.  I experimented with
