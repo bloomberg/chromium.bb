@@ -844,12 +844,10 @@ void RenderWidgetHost::PaintBackingStoreRect(TransportDIB* bitmap,
   }
 
   bool needs_full_paint = false;
-  BackingStore* backing_store =
-      BackingStoreManager::PrepareBackingStore(this, view_size,
-                                               process_->process().handle(),
-                                               bitmap, bitmap_rect,
-                                               &needs_full_paint);
-  DCHECK(backing_store != NULL);
+  BackingStoreManager::PrepareBackingStore(this, view_size,
+                                           process_->process().handle(),
+                                           bitmap, bitmap_rect,
+                                           &needs_full_paint);
   if (needs_full_paint) {
     repaint_start_time_ = TimeTicks::Now();
     repaint_ack_pending_ = true;

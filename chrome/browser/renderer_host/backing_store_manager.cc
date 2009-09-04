@@ -173,6 +173,9 @@ BackingStore* BackingStoreManager::PrepareBackingStore(
         bitmap_rect.x() != 0 || bitmap_rect.y() != 0) {
       DCHECK(needs_full_paint != NULL);
       *needs_full_paint = true;
+      // Makes no sense to paint the transport dib if we are going
+      // to request a full paint.
+      return NULL;
     }
     backing_store = CreateBackingStore(host, backing_store_size);
   }
