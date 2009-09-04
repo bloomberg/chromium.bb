@@ -176,7 +176,6 @@ GdkPixbuf* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
       return found->second;
   }
 
-
   std::vector<unsigned char> data;
   LoadImageResourceBytes(resource_id, &data);
   GdkPixbuf* pixbuf = LoadPixbuf(data, rtl_enabled);

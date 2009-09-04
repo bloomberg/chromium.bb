@@ -4890,6 +4890,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
     <!-- File chooser dialog default titles (only used on Linux) -->
+    <message name="IDS_SELECT_FOLDER_DIALOG_TITLE" desc="The default title for the Select Folder file chooser dialog.">
+      Select Folder
+    </message>
     <message name="IDS_SAVE_AS_DIALOG_TITLE" desc="The default title for the Save As file chooser dialog.">
       Save File
     </message>

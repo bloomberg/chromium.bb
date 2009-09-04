@@ -64,6 +64,9 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // us when we were told to show the dialog.
   void FileNotSelected(GtkWidget* dialog);
 
+  GtkWidget* CreateSelectFolderDialog(const std::string& title,
+      const FilePath& default_path, gfx::NativeWindow parent);
+
   GtkWidget* CreateFileOpenDialog(const std::string& title,
       const FilePath& default_path, gfx::NativeWindow parent);
 
@@ -84,7 +87,8 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // dialog. Used as a helper for the below callbacks.
   static bool IsCancelResponse(gint response_id);
 
-  // Callback for when the user responds to a Save As or Open File dialog.
+  // Callback for when the user responds to a Save As or Open File or
+  // Select Folder dialog.
   static void OnSelectSingleFileDialogResponse(
       GtkWidget* dialog, gint response_id, SelectFileDialogImpl* dialog_impl);
 
@@ -183,6 +187,10 @@ void SelectFileDialogImpl::SelectFile(
 
   GtkWidget* dialog = NULL;
   switch (type) {
+    case SELECT_FOLDER:
+      dialog = CreateSelectFolderDialog(title_string, default_path,
+                                         owning_window);
+      break;
     case SELECT_OPEN_FILE:
       dialog = CreateFileOpenDialog(title_string, default_path, owning_window);
       break;
@@ -194,7 +202,7 @@ void SelectFileDialogImpl::SelectFile(
       dialog = CreateSaveAsDialog(title_string, default_path, owning_window);
       break;
     default:
-      NOTIMPLEMENTED() << "Dialog type " << type << " not implemented.";
+      NOTREACHED();
       return;
   }
 
@@ -260,12 +268,14 @@ void SelectFileDialogImpl::AddFilters(GtkFileChooser* chooser) {
 
 void SelectFileDialogImpl::FileSelected(GtkWidget* dialog,
                                         const FilePath& path) {
-  if (type_ == SELECT_SAVEAS_FILE) {
+  if (type_ == SELECT_SAVEAS_FILE)
     *last_saved_path_ = path.DirName();
-  } else {
-    DCHECK_EQ(type_, SELECT_OPEN_FILE);
+  else if (type_ == SELECT_OPEN_FILE)
     *last_opened_path_ = path.DirName();
-  }
+  else if (type_ == SELECT_FOLDER)
+    *last_opened_path_ = path.DirName().DirName();
+  else
+    NOTREACHED();
 
   if (listener_) {
     GtkFileFilter* selected_filter =
@@ -295,6 +305,33 @@ void SelectFileDialogImpl::FileNotSelected(GtkWidget* dialog) {
     listener_->FileSelectionCanceled(params);
   RemoveParentForDialog(dialog);
   gtk_widget_destroy(dialog);
+}
+
+GtkWidget* SelectFileDialogImpl::CreateSelectFolderDialog(
+    const std::string& title,
+    const FilePath& default_path,
+    gfx::NativeWindow parent) {
+  std::string title_string = !title.empty() ? title :
+        l10n_util::GetStringUTF8(IDS_SELECT_FOLDER_DIALOG_TITLE);
+
+  GtkWidget* dialog =
+      gtk_file_chooser_dialog_new(title_string.c_str(), parent,
+                                  GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                  GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                  NULL);
+
+  if (!default_path.empty()) {
+    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
+                                  default_path.value().c_str());
+  } else if (!last_opened_path_->empty()) {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
+                                        last_opened_path_->value().c_str());
+  }
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), FALSE);
+  g_signal_connect(G_OBJECT(dialog), "response",
+                   G_CALLBACK(OnSelectSingleFileDialogResponse), this);
+  return dialog;
 }
 
 GtkWidget* SelectFileDialogImpl::CreateFileOpenDialog(const std::string& title,
