@@ -1882,7 +1882,7 @@ BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrollbar.html = FAIL
 BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrolled-type.html = FAIL
 
 // New tests from WebKit Merge 42932:42994
-BUG11179 : LayoutTests/http/tests/xmlhttprequest/detaching-frame-2.html = FAIL TIMEOUT
+BUG21128 : LayoutTests/http/tests/xmlhttprequest/detaching-frame-2.html = FAIL TIMEOUT
 
 // Chrome does not support WebArchives (just like Safari for Windows),
 // although we might eventually want to on Mac.
