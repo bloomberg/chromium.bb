@@ -139,9 +139,14 @@ bool DiskDumper::WriteEntry(disk_cache::Entry* entry, int index, int offset,
   int len;
   if (index == 0) {  // Stream 0 is the headers.
     net::HttpResponseInfo response_info;
+    bool truncated;
     if (!net::HttpCache::ParseResponseInfo(buf->data(), buf_len,
-                                           &response_info))
+                                           &response_info, &truncated))
       return false;
+
+    // Skip this entry if it was truncated (results in an empty file).
+    if (truncated)
+      return true;
 
     // Remove the size headers.
     response_info.headers->RemoveHeader("transfer-encoding");
