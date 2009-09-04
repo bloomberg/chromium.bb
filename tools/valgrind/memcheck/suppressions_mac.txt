@@ -293,13 +293,6 @@
    fun:_ZN13TestShellTest5SetUpEv
 }
 {
-   # Mac test_shell_tests.  See http://crbug.com/11134
-   bug_11134
-   Memcheck:Value4
-   fun:vCMMVectorConvert8BitRGBToRGB
-   fun:_ZNK15CMMConvRGBToRGB7ConvertER8CMM8BitsP14CMMRuntimeInfomm
-}
-{
    bug_12525
    Memcheck:Cond
    ...
@@ -664,4 +657,4 @@
    socketcall.sendmsg(msg.msg_iov[i])
    fun:sendmsg$UNIX2003
    fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
-} 
+}
