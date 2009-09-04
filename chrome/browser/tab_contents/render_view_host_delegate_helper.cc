@@ -135,7 +135,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   web_prefs.minimum_logical_font_size =
       prefs->GetInteger(prefs::kWebKitMinimumLogicalFontSize);
 
-  web_prefs.default_encoding = prefs->GetString(prefs::kDefaultCharset);
+  web_prefs.default_encoding =
+      WideToASCII(prefs->GetString(prefs::kDefaultCharset));
 
   web_prefs.javascript_can_open_windows_automatically =
       prefs->GetBoolean(prefs::kWebKitJavascriptCanOpenWindowsAutomatically);
@@ -202,8 +203,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
           web_prefs.default_encoding);
   if (web_prefs.default_encoding.empty()) {
     prefs->ClearPref(prefs::kDefaultCharset);
-    web_prefs.default_encoding = prefs->GetString(
-        prefs::kDefaultCharset);
+    web_prefs.default_encoding = WideToASCII(
+        prefs->GetString(prefs::kDefaultCharset));
   }
   DCHECK(!web_prefs.default_encoding.empty());
 

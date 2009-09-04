@@ -140,7 +140,8 @@ void FontsPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
           fixed_width_size_.GetValue()).c_str());
   }
   if (!pref_name || *pref_name == prefs::kDefaultCharset) {
-    const std::wstring current_encoding = default_encoding_.GetValue();
+    const std::string current_encoding =
+        WideToASCII(default_encoding_.GetValue());
     for (size_t i = 0; i < sorted_encoding_list_.size(); i++) {
       if (CharacterEncoding::GetCanonicalEncodingNameByCommandId(
           sorted_encoding_list_[i].encoding_id) == current_encoding) {
@@ -201,6 +202,6 @@ void FontsPageGtk::OnDefaultEncodingChanged(GtkComboBox* combo_box,
     return;
   }
   fonts_page->default_encoding_.SetValue(
-      CharacterEncoding::GetCanonicalEncodingNameByCommandId(
-          fonts_page->sorted_encoding_list_[index].encoding_id));
+      ASCIIToWide(CharacterEncoding::GetCanonicalEncodingNameByCommandId(
+          fonts_page->sorted_encoding_list_[index].encoding_id)));
 }

@@ -572,7 +572,7 @@ TEST_F(TabContentsTest, WebKitPrefs) {
   WebPreferences webkit_prefs = contents()->TestGetWebkitPrefs();
 
   // These values have been overridden by the profile preferences.
-  EXPECT_EQ(L"UTF-8", webkit_prefs.default_encoding);
+  EXPECT_EQ("UTF-8", webkit_prefs.default_encoding);
   EXPECT_EQ(20, webkit_prefs.default_font_size);
   EXPECT_EQ(false, webkit_prefs.text_areas_are_resizable);
   EXPECT_EQ(true, webkit_prefs.uses_universal_detector);

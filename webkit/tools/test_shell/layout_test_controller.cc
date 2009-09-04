@@ -894,7 +894,7 @@ void LayoutTestController::overridePreference(
     else if (key == "WebKitMinimumLogicalFontSize")
       preferences->minimum_logical_font_size = CppVariantToInt32(value);
     else if (key == "WebKitDefaultTextEncodingName")
-      preferences->default_encoding = CppVariantToWstring(value);
+      preferences->default_encoding = value.ToString();
     else if (key == "WebKitJavaScriptEnabled")
       preferences->javascript_enabled = CppVariantToBool(value);
     else if (key == "WebKitWebSecurityEnabled")

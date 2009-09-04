@@ -1831,7 +1831,7 @@ void AutomationProvider::SetBooleanPreference(int handle,
 
 // Gets the current used encoding name of the page in the specified tab.
 void AutomationProvider::GetPageCurrentEncoding(
-    int tab_handle, std::wstring* current_encoding) {
+    int tab_handle, std::string* current_encoding) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* nav = tab_tracker_->GetResource(tab_handle);
     Browser* browser = FindAndActivateTab(nav);
@@ -1844,7 +1844,7 @@ void AutomationProvider::GetPageCurrentEncoding(
 
 // Gets the current used encoding name of the page in the specified tab.
 void AutomationProvider::OverrideEncoding(int tab_handle,
-                                          const std::wstring& encoding_name,
+                                          const std::string& encoding_name,
                                           bool* success) {
   *success = false;
 #if defined(OS_WIN)

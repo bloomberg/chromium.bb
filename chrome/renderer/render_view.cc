@@ -1001,7 +1001,7 @@ void RenderView::UpdateTitle(WebFrame* frame, const std::wstring& title) {
 }
 
 void RenderView::UpdateEncoding(WebFrame* frame,
-                                const std::wstring& encoding_name) {
+                                const std::string& encoding_name) {
   // Only update main frame's encoding_name.
   if (webview()->GetMainFrame() == frame &&
       last_encoding_name_ != encoding_name) {
@@ -2575,7 +2575,7 @@ void RenderView::OnInsertText(const string16& text) {
   frame->insertText(text);
 }
 
-void RenderView::OnSetPageEncoding(const std::wstring& encoding_name) {
+void RenderView::OnSetPageEncoding(const std::string& encoding_name) {
   webview()->SetPageEncoding(encoding_name);
 }
 

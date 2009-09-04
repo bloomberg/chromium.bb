@@ -1013,19 +1013,20 @@ void Browser::ToggleEncodingAutoDetect() {
 
 void Browser::OverrideEncoding(int encoding_id) {
   UserMetrics::RecordAction(L"OverrideEncoding", profile_);
-  const std::wstring selected_encoding =
+  const std::string selected_encoding =
       CharacterEncoding::GetCanonicalEncodingNameByCommandId(encoding_id);
   TabContents* contents = GetSelectedTabContents();
   if (!selected_encoding.empty() && contents)
      contents->override_encoding(selected_encoding);
   // Update the list of recently selected encodings.
-  std::wstring new_selected_encoding_list;
+  std::string new_selected_encoding_list;
   if (CharacterEncoding::UpdateRecentlySelectdEncoding(
-          profile_->GetPrefs()->GetString(prefs::kRecentlySelectedEncoding),
-          encoding_id,
-          &new_selected_encoding_list)) {
+        WideToASCII(profile_->GetPrefs()->GetString(
+            prefs::kRecentlySelectedEncoding)),
+        encoding_id,
+        &new_selected_encoding_list)) {
     profile_->GetPrefs()->SetString(prefs::kRecentlySelectedEncoding,
-                                    new_selected_encoding_list);
+                                    ASCIIToWide(new_selected_encoding_list));
   }
 }
 

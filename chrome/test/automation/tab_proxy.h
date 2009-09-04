@@ -304,10 +304,10 @@ class TabProxy : public AutomationResourceProxy {
   bool WaitForNavigation(int64 last_navigation_time);
 
   // Gets the current used encoding of the page in the tab.
-  bool GetPageCurrentEncoding(std::wstring* encoding);
+  bool GetPageCurrentEncoding(std::string* encoding);
 
   // Uses the specified encoding to override encoding of the page in the tab.
-  bool OverrideEncoding(const std::wstring& encoding);
+  bool OverrideEncoding(const std::string& encoding);
 
 #if defined(OS_WIN)
   // Resizes the tab window.

@@ -6,6 +6,8 @@
 #define WEBKIT_GLUE_WEBVIEW_IMPL_H_
 
 #include <set>
+#include <string>
+#include <vector>
 
 #include "Page.h"
 
@@ -85,8 +87,10 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual WebKit::WebFrame* GetFocusedFrame();
   virtual void SetFocusedFrame(WebKit::WebFrame* frame);
   virtual WebKit::WebFrame* GetFrameWithName(const WebKit::WebString& name);
-  virtual WebKit::WebFrame* GetPreviousFrameBefore(WebKit::WebFrame* frame, bool wrap);
-  virtual WebKit::WebFrame* GetNextFrameAfter(WebKit::WebFrame* frame, bool wrap);
+  virtual WebKit::WebFrame* GetPreviousFrameBefore(WebKit::WebFrame* frame,
+                                                   bool wrap);
+  virtual WebKit::WebFrame* GetNextFrameAfter(WebKit::WebFrame* frame,
+                                              bool wrap);
   virtual void ClearFocusedNode();
   virtual void StopLoading();
   virtual void SetBackForwardListSize(int size);
@@ -95,8 +99,8 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual WebKit::WebSettings* GetSettings();
   virtual const std::wstring& GetInspectorSettings() const;
   virtual void SetInspectorSettings(const std::wstring& settings);
-  virtual void SetPageEncoding(const std::wstring& encoding_name);
-  virtual std::wstring GetMainFrameEncodingName();
+  virtual void SetPageEncoding(const std::string& encoding_name);
+  virtual std::string GetMainFrameEncodingName();
   virtual void ZoomIn(bool text_only);
   virtual void ZoomOut(bool text_only);
   virtual void ResetZoom();
@@ -386,11 +390,11 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   // HACK: current_input_event is for ChromeClientImpl::show(), until we can fix
   // WebKit to pass enough information up into ChromeClient::show() so we can
   // decide if the window.open event was caused by a middle-mouse click
-public:
+ public:
   static const WebKit::WebInputEvent* current_input_event() {
     return g_current_input_event;
   }
-private:
+ private:
   static const WebKit::WebInputEvent* g_current_input_event;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewImpl);

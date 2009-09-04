@@ -27,7 +27,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDefaultFixedFontSize(default_fixed_font_size);
   settings->setMinimumFontSize(minimum_font_size);
   settings->setMinimumLogicalFontSize(minimum_logical_font_size);
-  settings->setDefaultTextEncodingName(WideToUTF16Hack(default_encoding));
+  settings->setDefaultTextEncodingName(ASCIIToUTF16(default_encoding));
   settings->setJavaScriptEnabled(javascript_enabled);
   settings->setWebSecurityEnabled(web_security_enabled);
   settings->setJavaScriptCanOpenWindowsAutomatically(

@@ -119,13 +119,13 @@ static MenuGtk* BuildEncodingsMenu(Profile* profile,
            items.begin();
        i != items.end(); ++i) {
     if (i == items.begin()) {
-      menu->AppendCheckMenuItemWithLabel(i->first, WideToUTF8(i->second));
+      menu->AppendCheckMenuItemWithLabel(i->first, UTF16ToUTF8(i->second));
     } else if (i->first == 0) {
       menu->AppendSeparator();
     } else {
       GtkWidget* item =
           gtk_radio_menu_item_new_with_label(radio_group,
-                                             WideToUTF8(i->second).c_str());
+                                             UTF16ToUTF8(i->second).c_str());
       radio_group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
       menu->AppendMenuItem(i->first, item);
     }

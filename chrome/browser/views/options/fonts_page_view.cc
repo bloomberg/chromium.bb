@@ -68,7 +68,7 @@ class DefaultEncodingComboboxModel : public ComboboxModel {
     return sorted_encoding_list[index].encoding_display_name;
   }
 
-  std::wstring GetEncodingCharsetByIndex(int index) {
+  std::string GetEncodingCharsetByIndex(int index) {
     DCHECK(index >= 0 && canonical_encoding_names_length_ > index);
     int encoding_id = sorted_encoding_list[index].encoding_id;
     return CharacterEncoding::GetCanonicalEncodingNameByCommandId(encoding_id);
@@ -81,7 +81,7 @@ class DefaultEncodingComboboxModel : public ComboboxModel {
                                  NULL);
     const std::wstring current_encoding = current_encoding_string.GetValue();
     for (int i = 0; i < canonical_encoding_names_length_; i++) {
-      if (GetEncodingCharsetByIndex(i) == current_encoding)
+      if (GetEncodingCharsetByIndex(i) == WideToASCII(current_encoding))
         return i;
     }
 
@@ -90,7 +90,7 @@ class DefaultEncodingComboboxModel : public ComboboxModel {
 
  private:
   int canonical_encoding_names_length_;
-  DISALLOW_EVIL_CONSTRUCTORS(DefaultEncodingComboboxModel);
+  DISALLOW_COPY_AND_ASSIGN(DefaultEncodingComboboxModel);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -308,7 +308,7 @@ void FontsPageView::SaveChanges() {
   }
   // Set Encoding.
   if (default_encoding_changed_)
-    default_encoding_.SetValue(default_encoding_selected_);
+    default_encoding_.SetValue(ASCIIToWide(default_encoding_selected_));
 }
 
 void FontsPageView::InitControlLayout() {

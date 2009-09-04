@@ -375,7 +375,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  std::wstring local_state_path;
+  FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = file_util::PathExists(local_state_path);
 

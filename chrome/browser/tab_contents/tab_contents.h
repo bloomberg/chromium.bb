@@ -232,8 +232,8 @@ class TabContents : public PageNavigator,
 
   bool is_starred() const { return is_starred_; }
 
-  const std::wstring& encoding() const { return encoding_; }
-  void set_encoding(const std::wstring& encoding);
+  const std::string& encoding() const { return encoding_; }
+  void set_encoding(const std::string& encoding);
 
   // Internal state ------------------------------------------------------------
 
@@ -574,7 +574,7 @@ class TabContents : public PageNavigator,
   // the opposite of this, by which 'browser' is notified of
   // the encoding of the current tab from 'renderer' (determined by
   // auto-detect, http header, meta, bom detection, etc).
-  void override_encoding(const std::wstring& encoding) {
+  void override_encoding(const std::string& encoding) {
     set_encoding(encoding);
     render_view_host()->SetPageEncoding(encoding);
   }
@@ -828,7 +828,7 @@ class TabContents : public PageNavigator,
                            int32 page_id,
                            const std::wstring& title);
   virtual void UpdateEncoding(RenderViewHost* render_view_host,
-                              const std::wstring& encoding);
+                              const std::string& encoding);
   virtual void UpdateTargetURL(int32 page_id, const GURL& url);
   virtual void UpdateThumbnail(const GURL& url,
                                const SkBitmap& bitmap,
@@ -1020,7 +1020,7 @@ class TabContents : public PageNavigator,
   std::string contents_mime_type_;
 
   // Character encoding. TODO(jungshik) : convert to std::string
-  std::wstring encoding_;
+  std::string encoding_;
 
   // Data for shelves and stuff ------------------------------------------------
 

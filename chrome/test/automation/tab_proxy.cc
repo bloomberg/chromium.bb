@@ -645,7 +645,7 @@ bool TabProxy::WaitForNavigation(int64 last_navigation_time) {
       result == AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED;
 }
 
-bool TabProxy::GetPageCurrentEncoding(std::wstring* encoding) {
+bool TabProxy::GetPageCurrentEncoding(std::string* encoding) {
   if (!is_valid())
     return false;
 
@@ -654,7 +654,7 @@ bool TabProxy::GetPageCurrentEncoding(std::wstring* encoding) {
   return succeeded;
 }
 
-bool TabProxy::OverrideEncoding(const std::wstring& encoding) {
+bool TabProxy::OverrideEncoding(const std::string& encoding) {
   if (!is_valid())
     return false;
 

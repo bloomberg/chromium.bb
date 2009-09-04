@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_RENDER_VIEW_H_
 #define CHROME_RENDERER_RENDER_VIEW_H_
 
+#include <set>
 #include <string>
 #include <queue>
 #include <vector>
@@ -217,17 +218,15 @@ class RenderView : public RenderWidget,
   virtual void DidFailLoadWithError(WebView* webview,
                                     const WebKit::WebURLError& error,
                                     WebKit::WebFrame* forFrame);
-  virtual void DidFinishDocumentLoadForFrame(
-      WebView* webview,
-      WebKit::WebFrame* frame);
+  virtual void DidFinishDocumentLoadForFrame(WebView* webview,
+                                             WebKit::WebFrame* frame);
   virtual bool DidLoadResourceFromMemoryCache(
       WebView* webview,
       const WebKit::WebURLRequest& request,
       const WebKit::WebURLResponse& response,
       WebKit::WebFrame* frame);
-  virtual void DidHandleOnloadEventsForFrame(
-      WebView* webview,
-      WebKit::WebFrame* frame);
+  virtual void DidHandleOnloadEventsForFrame(WebView* webview,
+                                             WebKit::WebFrame* frame);
   virtual void DidChangeLocationWithinPageForFrame(WebView* webview,
                                                    WebKit::WebFrame* frame,
                                                    bool is_new_navigation);
@@ -476,7 +475,8 @@ class RenderView : public RenderWidget,
   // c) function:DidFinishDocumentLoadForFrame. When this function is
   // called, that means we have got whole html page. In here we should
   // finally get right encoding of page.
-  void UpdateEncoding(WebKit::WebFrame* frame, const std::wstring& encoding_name);
+  void UpdateEncoding(WebKit::WebFrame* frame,
+                      const std::string& encoding_name);
 
   // Captures the thumbnail and text contents for indexing for the given load
   // ID. If the view's load ID is different than the parameter, this call is
@@ -540,7 +540,7 @@ class RenderView : public RenderWidget,
   void OnDeterminePageText();
   void OnZoom(int function);
   void OnInsertText(const string16& text);
-  void OnSetPageEncoding(const std::wstring& encoding_name);
+  void OnSetPageEncoding(const std::string& encoding_name);
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
       const std::vector<GURL>& links,
@@ -712,7 +712,7 @@ class RenderView : public RenderWidget,
   ExternalHostBindings external_host_bindings_;
 
   // The last gotten main frame's encoding.
-  std::wstring last_encoding_name_;
+  std::string last_encoding_name_;
 
   // The URL we think the user's mouse is hovering over. We use this to
   // determine if we want to send a new one (we do not need to send

@@ -320,14 +320,14 @@ class MetricsService : public NotificationObserver,
   // creation time.
   void LogRendererInSandbox(bool on_sandbox_desktop);
 
-  // Set the value in preferences for for the number of bookmarks and folders
+  // Set the value in preferences for the number of bookmarks and folders
   // in node. The pref key for the number of bookmarks in num_bookmarks_key and
   // the pref key for number of folders in num_folders_key.
   void LogBookmarks(const BookmarkNode* node,
                     const wchar_t* num_bookmarks_key,
                     const wchar_t* num_folders_key);
 
-  // Sets preferences for the for the number of bookmarks in model.
+  // Sets preferences for the number of bookmarks in model.
   void LogBookmarks(BookmarkModel* model);
 
   // Records a child process related notification.  These are recorded to an

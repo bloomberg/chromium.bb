@@ -77,15 +77,16 @@ int EncodingMenuController::NumValidGUIEncodingIDs() {
 
 bool EncodingMenuController::IsItemChecked(
     Profile* browser_profile,
-    const std::wstring& current_tab_encoding,
+    const std::string& current_tab_encoding,
     int item_id) {
   if (!DoesCommandBelongToEncodingMenu(item_id)) {
     return false;
   }
 
-  std::wstring encoding = current_tab_encoding;
+  std::string encoding = current_tab_encoding;
   if (encoding.empty()) {
-    encoding = browser_profile->GetPrefs()->GetString(prefs::kDefaultCharset);
+    encoding = WideToASCII(browser_profile->GetPrefs()->GetString(
+        prefs::kDefaultCharset));
   }
 
   if (item_id == IDC_ENCODING_AUTO_DETECT) {
@@ -105,12 +106,12 @@ void EncodingMenuController::GetEncodingMenuItems(Profile* profile,
     EncodingMenuItemList* menuItems) {
 
   DCHECK(menuItems);
-  EncodingMenuItem separator(0, L"");
+  EncodingMenuItem separator(0, string16());
 
   menuItems->clear();
   menuItems->push_back(
       EncodingMenuItem(IDC_ENCODING_AUTO_DETECT,
-                       l10n_util::GetString(IDS_ENCODING_AUTO_DETECT)));
+                       l10n_util::GetStringUTF16(IDS_ENCODING_AUTO_DETECT)));
   menuItems->push_back(separator);
 
   // Create current display encoding list.
@@ -121,8 +122,9 @@ void EncodingMenuController::GetEncodingMenuItems(Profile* profile,
   // encodings and other encodings.
   encodings = CharacterEncoding::GetCurrentDisplayEncodings(
       g_browser_process->GetApplicationLocale(),
-      profile->GetPrefs()->GetString(prefs::kStaticEncodings),
-      profile->GetPrefs()->GetString(prefs::kRecentlySelectedEncoding));
+      WideToASCII(profile->GetPrefs()->GetString(prefs::kStaticEncodings)),
+      WideToASCII(profile->GetPrefs()->GetString(
+          prefs::kRecentlySelectedEncoding)));
   DCHECK(encodings);
   DCHECK(!encodings->empty());
 
@@ -135,10 +137,10 @@ void EncodingMenuController::GetEncodingMenuItems(Profile* profile,
       if (l10n_util::AdjustStringForLocaleDirection(encoding,
                                                     &bidi_safe_encoding))
         encoding.swap(bidi_safe_encoding);
-      menuItems->push_back(EncodingMenuItem(it->encoding_id, encoding));
+      menuItems->push_back(EncodingMenuItem(it->encoding_id,
+                                            WideToUTF16(encoding)));
     } else {
       menuItems->push_back(separator);
     }
   }
-
 }

@@ -55,40 +55,40 @@ class BrowserEncodingTest : public UITest {
 TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
   struct EncodingTestData {
     const char* file_name;
-    const wchar_t* encoding_name;
+    const char* encoding_name;
   };
 
   const EncodingTestData kEncodingTestDatas[] = {
-    { "Big5.html", L"Big5" },
-    { "EUC-JP.html", L"EUC-JP" },
-    { "gb18030.html", L"gb18030" },
-    { "iso-8859-1.html", L"ISO-8859-1" },
-    { "ISO-8859-2.html", L"ISO-8859-2" },
-    { "ISO-8859-4.html", L"ISO-8859-4" },
-    { "ISO-8859-5.html", L"ISO-8859-5" },
-    { "ISO-8859-6.html", L"ISO-8859-6" },
-    { "ISO-8859-7.html", L"ISO-8859-7" },
-    { "ISO-8859-8.html", L"ISO-8859-8" },
-    { "ISO-8859-13.html", L"ISO-8859-13" },
-    { "ISO-8859-15.html", L"ISO-8859-15" },
-    { "KOI8-R.html", L"KOI8-R" },
-    { "KOI8-U.html", L"KOI8-U" },
-    { "macintosh.html", L"macintosh" },
-    { "Shift-JIS.html", L"Shift_JIS" },
-    { "US-ASCII.html", L"ISO-8859-1" },  // http://crbug.com/15801    
-    { "UTF-8.html", L"UTF-8" },
-    { "UTF-16LE.html", L"UTF-16LE" },
-    { "windows-874.html", L"windows-874" },
-    { "windows-949.html", L"windows-949" },
-    { "windows-1250.html", L"windows-1250" },
-    { "windows-1251.html", L"windows-1251" },
-    { "windows-1252.html", L"windows-1252" },
-    { "windows-1253.html", L"windows-1253" },
-    { "windows-1254.html", L"windows-1254" },
-    { "windows-1255.html", L"windows-1255" },
-    { "windows-1256.html", L"windows-1256" },
-    { "windows-1257.html", L"windows-1257" },
-    { "windows-1258.html", L"windows-1258" }
+    { "Big5.html", "Big5" },
+    { "EUC-JP.html", "EUC-JP" },
+    { "gb18030.html", "gb18030" },
+    { "iso-8859-1.html", "ISO-8859-1" },
+    { "ISO-8859-2.html", "ISO-8859-2" },
+    { "ISO-8859-4.html", "ISO-8859-4" },
+    { "ISO-8859-5.html", "ISO-8859-5" },
+    { "ISO-8859-6.html", "ISO-8859-6" },
+    { "ISO-8859-7.html", "ISO-8859-7" },
+    { "ISO-8859-8.html", "ISO-8859-8" },
+    { "ISO-8859-13.html", "ISO-8859-13" },
+    { "ISO-8859-15.html", "ISO-8859-15" },
+    { "KOI8-R.html", "KOI8-R" },
+    { "KOI8-U.html", "KOI8-U" },
+    { "macintosh.html", "macintosh" },
+    { "Shift-JIS.html", "Shift_JIS" },
+    { "US-ASCII.html", "ISO-8859-1" },  // http://crbug.com/15801    
+    { "UTF-8.html", "UTF-8" },
+    { "UTF-16LE.html", "UTF-16LE" },
+    { "windows-874.html", "windows-874" },
+    { "windows-949.html", "windows-949" },
+    { "windows-1250.html", "windows-1250" },
+    { "windows-1251.html", "windows-1251" },
+    { "windows-1252.html", "windows-1252" },
+    { "windows-1253.html", "windows-1253" },
+    { "windows-1254.html", "windows-1254" },
+    { "windows-1255.html", "windows-1255" },
+    { "windows-1256.html", "windows-1256" },
+    { "windows-1257.html", "windows-1257" },
+    { "windows-1258.html", "windows-1258" }
   };
   const char* const kAliasTestDir = "alias_mapping";
 
@@ -105,7 +105,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
     ASSERT_TRUE(tab_proxy->NavigateToURL(url));
     WaitUntilTabCount(1);
 
-    std::wstring encoding;
+    std::string encoding;
     EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
     EXPECT_EQ(encoding, kEncodingTestDatas[i].encoding_name);
   }
@@ -130,19 +130,19 @@ TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   WaitUntilTabCount(1);
 
   // Get the encoding declared in the page.
-  std::wstring encoding;
+  std::string encoding;
   EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
-  EXPECT_EQ(encoding, L"ISO-8859-1");
+  EXPECT_EQ(encoding, "ISO-8859-1");
 
   // Override the encoding to "gb18030".
   int64 last_nav_time = 0;
   EXPECT_TRUE(tab_proxy->GetLastNavigationTime(&last_nav_time));
-  EXPECT_TRUE(tab_proxy->OverrideEncoding(L"gb18030"));
+  EXPECT_TRUE(tab_proxy->OverrideEncoding("gb18030"));
   EXPECT_TRUE(tab_proxy->WaitForNavigation(last_nav_time));
 
   // Re-get the encoding of page. It should be gb18030.
   EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
-  EXPECT_EQ(encoding, L"gb18030");
+  EXPECT_EQ(encoding, "gb18030");
 
   // Dump the page, the content of dump page should be identical to the
   // expected result file.
@@ -180,54 +180,54 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
   struct EncodingAutoDetectTestData {
     const char* test_file_name;   // File name of test data.
     const char* expected_result;  // File name of expected results.
-    const wchar_t* expected_encoding;  // expected encoding.
+    const char* expected_encoding;   // expected encoding.
   };
   const EncodingAutoDetectTestData kTestDatas[] = {
       { "Big5_with_no_encoding_specified.html",
         "expected_Big5_saved_from_no_encoding_specified.html",
-        L"Big5" },
+        "Big5" },
       { "gb18030_with_no_encoding_specified.html",
         "expected_gb18030_saved_from_no_encoding_specified.html",
-        L"gb18030" },
+        "gb18030" },
       { "iso-8859-1_with_no_encoding_specified.html",
         "expected_iso-8859-1_saved_from_no_encoding_specified.html",
-        L"ISO-8859-1" },
+        "ISO-8859-1" },
       { "ISO-8859-5_with_no_encoding_specified.html",
         "expected_ISO-8859-5_saved_from_no_encoding_specified.html",
-        L"ISO-8859-5" },
+        "ISO-8859-5" },
       { "ISO-8859-6_with_no_encoding_specified.html",
         "expected_ISO-8859-6_saved_from_no_encoding_specified.html",
-        L"ISO-8859-6" },
+        "ISO-8859-6" },
       { "ISO-8859-7_with_no_encoding_specified.html",
         "expected_ISO-8859-7_saved_from_no_encoding_specified.html",
-        L"ISO-8859-7" },
+        "ISO-8859-7" },
       { "ISO-8859-8_with_no_encoding_specified.html",
         "expected_ISO-8859-8_saved_from_no_encoding_specified.html",
-        L"ISO-8859-8-I" },
+        "ISO-8859-8-I" },
       { "KOI8-R_with_no_encoding_specified.html",
         "expected_KOI8-R_saved_from_no_encoding_specified.html",
-        L"KOI8-R" },
+        "KOI8-R" },
       { "Shift-JIS_with_no_encoding_specified.html",
         "expected_Shift-JIS_saved_from_no_encoding_specified.html",
-        L"Shift_JIS" },
+        "Shift_JIS" },
       { "UTF-8_with_no_encoding_specified.html",
         "expected_UTF-8_saved_from_no_encoding_specified.html",
-        L"UTF-8" },
+        "UTF-8" },
       { "windows-949_with_no_encoding_specified.html",
         "expected_windows-949_saved_from_no_encoding_specified.html",
-        L"windows-949" },
+        "windows-949" },
       { "windows-1251_with_no_encoding_specified.html",
         "expected_windows-1251_saved_from_no_encoding_specified.html",
-        L"windows-1251" },
+        "windows-1251" },
       { "windows-1254_with_no_encoding_specified.html",
         "expected_windows-1254_saved_from_no_encoding_specified.html",
-        L"windows-1254" },
+        "windows-1254" },
       { "windows-1255_with_no_encoding_specified.html",
         "expected_windows-1255_saved_from_no_encoding_specified.html",
-        L"windows-1255" },
+        "windows-1255" },
       { "windows-1256_with_no_encoding_specified.html",
         "expected_windows-1256_saved_from_no_encoding_specified.html",
-        L"windows-1256" }
+        "windows-1256" }
     };
   const char* const kAutoDetectDir = "auto_detect";
   // Directory of the files of expected results.
@@ -263,9 +263,9 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
 
     // Get the encoding used for the page, it must be the default charset we
     // just set.
-    std::wstring encoding;
+    std::string encoding;
     EXPECT_TRUE(tab->GetPageCurrentEncoding(&encoding));
-    EXPECT_EQ(encoding, L"ISO-8859-4");
+    EXPECT_EQ(encoding, "ISO-8859-4");
 
     // Enable the encoding auto detection.
     EXPECT_TRUE(browser->SetBooleanPreference(

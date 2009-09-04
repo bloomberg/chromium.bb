@@ -58,7 +58,7 @@ TEST_F(EncodingMenuControllerTest, ListEncodingMenuItems) {
 
 TEST_F(EncodingMenuControllerTest, IsItemChecked) {
   TestingProfile profile_en;
-  std::wstring encoding(L"UTF-8");
+  std::string encoding("UTF-8");
 
   // Check that enabling and disabling autodetect works.
   bool autodetect_enabed[] = {true, false};
@@ -86,7 +86,7 @@ TEST_F(EncodingMenuControllerTest, IsItemChecked) {
     ASSERT_FALSE(on && encoding_is_enabled);
     encoding_is_enabled |= on;
   }
-  
+
   // Make sure at least one encoding is enabled.
   ASSERT_TRUE(encoding_is_enabled);
 }

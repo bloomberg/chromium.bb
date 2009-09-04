@@ -2017,7 +2017,7 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
 }
 
 void TabContents::UpdateEncoding(RenderViewHost* render_view_host,
-                                 const std::wstring& encoding) {
+                                 const std::string& encoding) {
   set_encoding(encoding);
 }
 
@@ -2505,7 +2505,7 @@ void TabContents::Observe(NotificationType type,
   }
 }
 
-void TabContents::set_encoding(const std::wstring& encoding) {
+void TabContents::set_encoding(const std::string& encoding) {
   encoding_ = CharacterEncoding::GetCanonicalEncodingNameByAliasName(encoding);
 }
 

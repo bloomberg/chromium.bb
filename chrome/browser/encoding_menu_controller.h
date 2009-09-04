@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHORME_BROWSER_ENCODING_MENU_CONTROLLER_H_
-#define CHORME_BROWSER_ENCODING_MENU_CONTROLLER_H_
+#ifndef CHROME_BROWSER_ENCODING_MENU_CONTROLLER_H_
+#define CHROME_BROWSER_ENCODING_MENU_CONTROLLER_H_
 
+#include <utility>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"  // For DISALLOW_IMPLICIT_CONSTRUCTORS
+#include "base/basictypes.h"  // For DISALLOW_COPY_AND_ASSIGN
+#include "base/string16.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 class Browser;
@@ -21,7 +23,7 @@ class EncodingMenuController {
   FRIEND_TEST(EncodingMenuControllerTest, IsItemChecked);
 
  public:
-  typedef std::pair<int, std::wstring> EncodingMenuItem;
+  typedef std::pair<int, string16> EncodingMenuItem;
   typedef std::vector<EncodingMenuItem> EncodingMenuItemList;
 
  public:
@@ -34,7 +36,7 @@ class EncodingMenuController {
   // is checked.  Note that this header is included from objc, where the name
   // "id" is reserved.
   bool IsItemChecked(Profile* browser_profile,
-                     const std::wstring& current_tab_encoding,
+                     const std::string& current_tab_encoding,
                      int item_id);
 
   // Fills in a list of menu items in the order they should appear in the menu.
@@ -47,8 +49,8 @@ class EncodingMenuController {
   static const int kValidEncodingIds[];
   const int* ValidGUIEncodingIDs();
   int NumValidGUIEncodingIDs();
- private:
+
   DISALLOW_COPY_AND_ASSIGN(EncodingMenuController);
 };
 
-#endif // CHORME_BROWSER_ENCODING_MENU_CONTROLLER_H_
+#endif  // CHROME_BROWSER_ENCODING_MENU_CONTROLLER_H_

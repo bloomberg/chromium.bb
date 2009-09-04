@@ -214,18 +214,18 @@ IPC_BEGIN_MESSAGES(Automation)
   // This message asks the AutomationProvider whether a tab is waiting for
   // login info.
   IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_NeedsAuth,
-                             int, // tab handle
-                             bool) // status
+                             int,   // tab handle
+                             bool)  // status
 
   // This message requests the AutomationProvider to apply a certain
   // accelerator. It is completely asynchronous with the resulting accelerator
   // action.
   IPC_SYNC_MESSAGE_ROUTED2_0(AutomationMsg_ApplyAccelerator,
-                             int, // window handle
-                             int) // accelerator id like (IDC_BACK,
-                                  //  IDC_FORWARD, etc)
-                                  // The list can be found at
-                                  // chrome/app/chrome_dll_resource.h
+                             int,  // window handle
+                             int)  // accelerator id like (IDC_BACK,
+                                   //  IDC_FORWARD, etc)
+                                   // The list can be found at
+                                   // chrome/app/chrome_dll_resource.h
 
   // This message requests that the AutomationProvider executes a JavaScript,
   // which is sent embedded in a 'javascript:' URL.
@@ -843,13 +843,13 @@ IPC_BEGIN_MESSAGES(Automation)
   // web content tab.
   IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_GetPageCurrentEncoding,
                              int /* tab handle */,
-                             std::wstring /* current used encoding name */)
+                             std::string /* current used encoding name */)
 
   // Uses the specified encoding to override the encoding of the page in the
   // specified web content tab.
   IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_OverrideEncoding,
                              int /* tab handle */,
-                             std::wstring /* overrided encoding name */,
+                             std::string /* overrided encoding name */,
                              bool /* success */)
 
   // Used to disable the dialog box that prompts the user for a path when

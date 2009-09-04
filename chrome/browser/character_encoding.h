@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHARACTER_ENCODING_H__
-#define CHROME_BROWSER_CHARACTER_ENCODING_H__
+#ifndef CHROME_BROWSER_CHARACTER_ENCODING_H_
+#define CHROME_BROWSER_CHARACTER_ENCODING_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 
 class CharacterEncoding {
  public:
@@ -36,12 +37,12 @@ class CharacterEncoding {
   // Return canonical encoding name according to the command ID.
   // THIS FUNCTION IS NOT THREADSAFE. You must run this function
   // only in UI thread.
-  static std::wstring GetCanonicalEncodingNameByCommandId(int id);
+  static std::string GetCanonicalEncodingNameByCommandId(int id);
 
   // Return display name of canonical encoding according to the command
   // ID. THIS FUNCTION IS NOT THREADSAFE. You must run this function
   // only in UI thread.
-  static std::wstring GetCanonicalEncodingDisplayNameByCommandId(int id);
+  static string16 GetCanonicalEncodingDisplayNameByCommandId(int id);
 
   // Return count number of all supported canonical encoding.
   static int GetSupportCanonicalEncodingCount();
@@ -49,13 +50,13 @@ class CharacterEncoding {
   // Return canonical encoding name according to the index, which starts
   // from zero to GetSupportCanonicalEncodingCount() - 1. THIS FUNCTION
   // IS NOT THREADSAFE. You must run this function only in UI thread.
-  static std::wstring GetCanonicalEncodingNameByIndex(int index);
+  static std::string GetCanonicalEncodingNameByIndex(int index);
 
   // Return display name of canonical encoding according to the index,
   // which starts from zero to GetSupportCanonicalEncodingCount() - 1.
   // THIS FUNCTION IS NOT THREADSAFE. You must run this function
   // only in UI thread.
-  static std::wstring GetCanonicalEncodingDisplayNameByIndex(int index);
+  static string16 GetCanonicalEncodingDisplayNameByIndex(int index);
 
   // Return encoding command id according to the index, which starts from
   // zero to GetSupportCanonicalEncodingCount() - 1. Otherwise returns 0.
@@ -63,8 +64,8 @@ class CharacterEncoding {
 
   // Return canonical encoding name according to the encoding alias name. THIS
   // FUNCTION IS NOT THREADSAFE. You must run this function only in UI thread.
-  static std::wstring GetCanonicalEncodingNameByAliasName(
-      const std::wstring& alias_name);
+  static std::string GetCanonicalEncodingNameByAliasName(
+      const std::string& alias_name);
 
   // Returns the pointer of a vector of EncodingInfos corresponding to
   // encodings to display in the encoding menu. The locale-dependent static
@@ -80,26 +81,26 @@ class CharacterEncoding {
   // run this function only in UI thread.
   static const std::vector<EncodingInfo>* GetCurrentDisplayEncodings(
       const std::string& locale,
-      const std::wstring& locale_encodings,
-      const std::wstring& recently_select_encodings);
+      const std::string& locale_encodings,
+      const std::string& recently_select_encodings);
 
   // This function is for updating |original_selected_encoding_list| with a
   // |new_selected_encoding_id|. If the encoding is already in the original
   // list, then returns false. Otherwise |selected_encoding_list| will return a
   // new string for user selected encoding short list and function returns true.
   static bool UpdateRecentlySelectdEncoding(
-      const std::wstring& original_selected_encodings,
+      const std::string& original_selected_encodings,
       int new_selected_encoding_id,
-      std::wstring* selected_encodings);
+      std::string* selected_encodings);
 
   // Get encoding command id according to input encoding name. If the name is
   // valid, return corresponding encoding command id. Otherwise return 0;
   static int GetCommandIdByCanonicalEncodingName(
-      const std::wstring& encoding_name);
+      const std::string& encoding_name);
 
  private:
   // Disallow instantiating it since this class only contains static methods.
   DISALLOW_IMPLICIT_CONSTRUCTORS(CharacterEncoding);
 };
 
-#endif  // CHROME_BROWSER_CHARACTER_ENCODING_H__
+#endif  // CHROME_BROWSER_CHARACTER_ENCODING_H_

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_OPTIONS_FONTS_PAGE_VIEW_H__
-#define CHROME_BROWSER_VIEWS_OPTIONS_FONTS_PAGE_VIEW_H__
+#ifndef CHROME_BROWSER_VIEWS_OPTIONS_FONTS_PAGE_VIEW_H_
+#define CHROME_BROWSER_VIEWS_OPTIONS_FONTS_PAGE_VIEW_H_
+
+#include <string>
 
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/browser/shell_dialogs.h"
@@ -11,7 +13,6 @@
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
-
 
 namespace views {
 class GroupboxView;
@@ -118,10 +119,10 @@ class FontsPageView : public OptionsPageView,
   scoped_ptr<DefaultEncodingComboboxModel> default_encoding_combobox_model_;
   views::Label* default_encoding_combobox_label_;
   views::Combobox* default_encoding_combobox_;
-  std::wstring default_encoding_selected_;
+  std::string default_encoding_selected_;
   bool default_encoding_changed_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(FontsPageView);
+  DISALLOW_COPY_AND_ASSIGN(FontsPageView);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_OPTIONS_FONTS_PAGE_VIEW_H__
+#endif  // CHROME_BROWSER_VIEWS_OPTIONS_FONTS_PAGE_VIEW_H_

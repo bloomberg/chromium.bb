@@ -315,7 +315,7 @@ IPC_BEGIN_MESSAGES(View)
 
   // Change encoding of page in the renderer.
   IPC_MESSAGE_ROUTED1(ViewMsg_SetPageEncoding,
-                      std::wstring /*new encoding name*/)
+                      std::string /*new encoding name*/)
 
   // Requests the renderer to reserve a range of page ids.
   IPC_MESSAGE_ROUTED1(ViewMsg_ReservePageIDRange,
@@ -798,7 +798,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Change the encoding name of the page in UI when the page has detected
   // proper encoding name.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateEncoding,
-                      std::wstring /* new encoding name */)
+                      std::string /* new encoding name */)
 
   // Notifies the browser that we want to show a destination url for a potential
   // action (e.g. when the user is hovering over a link).

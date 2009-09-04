@@ -98,17 +98,17 @@ void EncodingMenuModel::Build() {
       encoding_menu_items.begin();
   for (; it != encoding_menu_items.end(); ++it) {
     int id = it->first;
-    std::wstring& label = it->second;
+    string16& label = it->second;
     if (id == 0) {
       AddSeparator();
     } else {
       if (id == IDC_ENCODING_AUTO_DETECT) {
-        AddCheckItem(id, WideToUTF16Hack(label));
+        AddCheckItem(id, label);
       } else {
         // Use the id of the first radio command as the id of the group.
         if (group_id <= 0)
           group_id = id;
-        AddRadioItem(id, WideToUTF16Hack(label), group_id);
+        AddRadioItem(id, label, group_id);
       }
     }
   }

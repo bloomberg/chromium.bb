@@ -23,57 +23,57 @@ const size_t kUserSelectedEncodingsMaxLength = 3;
 
 typedef struct {
   int resource_id;
-  const wchar_t* name;
+  const char* name;
   int category_string_id;
 } CanonicalEncodingData;
 
 // An array of all supported canonical encoding names.
 static CanonicalEncodingData canonical_encoding_names[] = {
-  { IDC_ENCODING_UTF8, L"UTF-8", IDS_ENCODING_UNICODE },
-  { IDC_ENCODING_UTF16LE, L"UTF-16LE", IDS_ENCODING_UNICODE },
-  { IDC_ENCODING_ISO88591, L"ISO-8859-1", IDS_ENCODING_WESTERN },
-  { IDC_ENCODING_WINDOWS1252, L"windows-1252", IDS_ENCODING_WESTERN },
-  { IDC_ENCODING_GBK, L"GBK", IDS_ENCODING_SIMP_CHINESE },
-  { IDC_ENCODING_GB18030, L"gb18030", IDS_ENCODING_SIMP_CHINESE },
-  { IDC_ENCODING_BIG5, L"Big5", IDS_ENCODING_TRAD_CHINESE },
-  { IDC_ENCODING_BIG5HKSCS, L"Big5-HKSCS", IDS_ENCODING_TRAD_CHINESE },
-  { IDC_ENCODING_KOREAN, L"windows-949", IDS_ENCODING_KOREAN },
-  { IDC_ENCODING_SHIFTJIS, L"Shift_JIS", IDS_ENCODING_JAPANESE },
-  { IDC_ENCODING_EUCJP, L"EUC-JP", IDS_ENCODING_JAPANESE },
-  { IDC_ENCODING_ISO2022JP, L"ISO-2022-JP", IDS_ENCODING_JAPANESE },
-  { IDC_ENCODING_THAI, L"windows-874", IDS_ENCODING_THAI },
-  { IDC_ENCODING_ISO885915, L"ISO-8859-15", IDS_ENCODING_WESTERN },
-  { IDC_ENCODING_MACINTOSH, L"macintosh", IDS_ENCODING_WESTERN },
-  { IDC_ENCODING_ISO88592, L"ISO-8859-2", IDS_ENCODING_CENTRAL_EUROPEAN },
-  { IDC_ENCODING_WINDOWS1250, L"windows-1250", IDS_ENCODING_CENTRAL_EUROPEAN },
-  { IDC_ENCODING_ISO88595, L"ISO-8859-5", IDS_ENCODING_CYRILLIC },
-  { IDC_ENCODING_WINDOWS1251, L"windows-1251", IDS_ENCODING_CYRILLIC },
-  { IDC_ENCODING_KOI8R, L"KOI8-R", IDS_ENCODING_CYRILLIC },
-  { IDC_ENCODING_KOI8U, L"KOI8-U", IDS_ENCODING_CYRILLIC },
-  { IDC_ENCODING_ISO88597, L"ISO-8859-7", IDS_ENCODING_GREEK },
-  { IDC_ENCODING_WINDOWS1253, L"windows-1253", IDS_ENCODING_GREEK },
-  { IDC_ENCODING_WINDOWS1254, L"windows-1254", IDS_ENCODING_TURKISH },
-  { IDC_ENCODING_WINDOWS1256, L"windows-1256", IDS_ENCODING_ARABIC },
-  { IDC_ENCODING_ISO88596, L"ISO-8859-6", IDS_ENCODING_ARABIC },
-  { IDC_ENCODING_WINDOWS1255, L"windows-1255", IDS_ENCODING_HEBREW },
-  { IDC_ENCODING_ISO88598I, L"ISO-8859-8-I", IDS_ENCODING_HEBREW },
-  { IDC_ENCODING_ISO88598, L"ISO-8859-8", IDS_ENCODING_HEBREW },
-  { IDC_ENCODING_WINDOWS1258, L"windows-1258", IDS_ENCODING_VIETNAMESE },
-  { IDC_ENCODING_ISO88594, L"ISO-8859-4", IDS_ENCODING_BALTIC },
-  { IDC_ENCODING_ISO885913, L"ISO-8859-13", IDS_ENCODING_BALTIC },
-  { IDC_ENCODING_WINDOWS1257, L"windows-1257", IDS_ENCODING_BALTIC },
-  { IDC_ENCODING_ISO88593, L"ISO-8859-3", IDS_ENCODING_SOUTH_EUROPEAN },
-  { IDC_ENCODING_ISO885910, L"ISO-8859-10", IDS_ENCODING_NORDIC },
-  { IDC_ENCODING_ISO885914, L"ISO-8859-14", IDS_ENCODING_CELTIC },
-  { IDC_ENCODING_ISO885916, L"ISO-8859-16", IDS_ENCODING_ROMANIAN },
+  { IDC_ENCODING_UTF8, "UTF-8", IDS_ENCODING_UNICODE },
+  { IDC_ENCODING_UTF16LE, "UTF-16LE", IDS_ENCODING_UNICODE },
+  { IDC_ENCODING_ISO88591, "ISO-8859-1", IDS_ENCODING_WESTERN },
+  { IDC_ENCODING_WINDOWS1252, "windows-1252", IDS_ENCODING_WESTERN },
+  { IDC_ENCODING_GBK, "GBK", IDS_ENCODING_SIMP_CHINESE },
+  { IDC_ENCODING_GB18030, "gb18030", IDS_ENCODING_SIMP_CHINESE },
+  { IDC_ENCODING_BIG5, "Big5", IDS_ENCODING_TRAD_CHINESE },
+  { IDC_ENCODING_BIG5HKSCS, "Big5-HKSCS", IDS_ENCODING_TRAD_CHINESE },
+  { IDC_ENCODING_KOREAN, "windows-949", IDS_ENCODING_KOREAN },
+  { IDC_ENCODING_SHIFTJIS, "Shift_JIS", IDS_ENCODING_JAPANESE },
+  { IDC_ENCODING_EUCJP, "EUC-JP", IDS_ENCODING_JAPANESE },
+  { IDC_ENCODING_ISO2022JP, "ISO-2022-JP", IDS_ENCODING_JAPANESE },
+  { IDC_ENCODING_THAI, "windows-874", IDS_ENCODING_THAI },
+  { IDC_ENCODING_ISO885915, "ISO-8859-15", IDS_ENCODING_WESTERN },
+  { IDC_ENCODING_MACINTOSH, "macintosh", IDS_ENCODING_WESTERN },
+  { IDC_ENCODING_ISO88592, "ISO-8859-2", IDS_ENCODING_CENTRAL_EUROPEAN },
+  { IDC_ENCODING_WINDOWS1250, "windows-1250", IDS_ENCODING_CENTRAL_EUROPEAN },
+  { IDC_ENCODING_ISO88595, "ISO-8859-5", IDS_ENCODING_CYRILLIC },
+  { IDC_ENCODING_WINDOWS1251, "windows-1251", IDS_ENCODING_CYRILLIC },
+  { IDC_ENCODING_KOI8R, "KOI8-R", IDS_ENCODING_CYRILLIC },
+  { IDC_ENCODING_KOI8U, "KOI8-U", IDS_ENCODING_CYRILLIC },
+  { IDC_ENCODING_ISO88597, "ISO-8859-7", IDS_ENCODING_GREEK },
+  { IDC_ENCODING_WINDOWS1253, "windows-1253", IDS_ENCODING_GREEK },
+  { IDC_ENCODING_WINDOWS1254, "windows-1254", IDS_ENCODING_TURKISH },
+  { IDC_ENCODING_WINDOWS1256, "windows-1256", IDS_ENCODING_ARABIC },
+  { IDC_ENCODING_ISO88596, "ISO-8859-6", IDS_ENCODING_ARABIC },
+  { IDC_ENCODING_WINDOWS1255, "windows-1255", IDS_ENCODING_HEBREW },
+  { IDC_ENCODING_ISO88598I, "ISO-8859-8-I", IDS_ENCODING_HEBREW },
+  { IDC_ENCODING_ISO88598, "ISO-8859-8", IDS_ENCODING_HEBREW },
+  { IDC_ENCODING_WINDOWS1258, "windows-1258", IDS_ENCODING_VIETNAMESE },
+  { IDC_ENCODING_ISO88594, "ISO-8859-4", IDS_ENCODING_BALTIC },
+  { IDC_ENCODING_ISO885913, "ISO-8859-13", IDS_ENCODING_BALTIC },
+  { IDC_ENCODING_WINDOWS1257, "windows-1257", IDS_ENCODING_BALTIC },
+  { IDC_ENCODING_ISO88593, "ISO-8859-3", IDS_ENCODING_SOUTH_EUROPEAN },
+  { IDC_ENCODING_ISO885910, "ISO-8859-10", IDS_ENCODING_NORDIC },
+  { IDC_ENCODING_ISO885914, "ISO-8859-14", IDS_ENCODING_CELTIC },
+  { IDC_ENCODING_ISO885916, "ISO-8859-16", IDS_ENCODING_ROMANIAN },
 };
 
 static const int canonical_encoding_names_length =
     arraysize(canonical_encoding_names);
 
-typedef std::map<int, std::pair<const wchar_t*, int> >
+typedef std::map<int, std::pair<const char*, int> >
     IdToCanonicalEncodingNameMapType;
-typedef std::map<const std::wstring, int> CanonicalEncodingNameToIdMapType;
+typedef std::map<const std::string, int> CanonicalEncodingNameToIdMapType;
 
 class CanonicalEncodingMap {
  public:
@@ -97,7 +97,7 @@ class CanonicalEncodingMap {
   std::vector<int> locale_dependent_encoding_ids_;
   std::vector<CharacterEncoding::EncodingInfo> current_display_encodings_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(CanonicalEncodingMap);
+  DISALLOW_COPY_AND_ASSIGN(CanonicalEncodingMap);
 };
 
 const IdToCanonicalEncodingNameMapType*
@@ -179,9 +179,9 @@ const int default_encoding_menus_length = arraysize(default_encoding_menus);
 // The parameter |maximum_size| indicates maximum size of encoding items we
 // want to get from the |encoding_list|.
 void ParseEncodingListSeparatedWithComma(
-    const std::wstring& encoding_list, std::vector<int>* const available_list,
+    const std::string& encoding_list, std::vector<int>* const available_list,
     size_t maximum_size) {
-  WStringTokenizer tokenizer(encoding_list, L",");
+  StringTokenizer tokenizer(encoding_list, ",");
   while (tokenizer.GetNext()) {
     int id = CharacterEncoding::GetCommandIdByCanonicalEncodingName(
         tokenizer.token());
@@ -194,15 +194,15 @@ void ParseEncodingListSeparatedWithComma(
   }
 }
 
-std::wstring GetEncodingDisplayName(std::wstring encoding_name,
-                                    int category_string_id) {
-  std::wstring category_name = l10n_util::GetString(category_string_id);
+string16 GetEncodingDisplayName(std::string encoding_name,
+                                int category_string_id) {
+  string16 category_name = l10n_util::GetStringUTF16(category_string_id);
   if (category_string_id != IDS_ENCODING_KOREAN &&
       category_string_id != IDS_ENCODING_THAI &&
       category_string_id != IDS_ENCODING_TURKISH) {
-    return l10n_util::GetStringF(IDS_ENCODING_DISPLAY_TEMPLATE,
-                                 category_name,
-                                 encoding_name);
+    return l10n_util::GetStringFUTF16(IDS_ENCODING_DISPLAY_TEMPLATE,
+                                      category_name,
+                                      ASCIIToUTF16(encoding_name));
   }
   return category_name;
 }
@@ -219,24 +219,25 @@ int GetEncodingCategoryStringIdByCommandId(int id) {
   return 0;
 }
 
-std::wstring GetEncodingCategoryStringByCommandId(int id) {
+std::string GetEncodingCategoryStringByCommandId(int id) {
   int category_id = GetEncodingCategoryStringIdByCommandId(id);
   if (category_id)
-    return l10n_util::GetString(category_id);
-  return std::wstring();
+    return l10n_util::GetStringUTF8(category_id);
+  return std::string();
 }
 
 }  // namespace
 
 CharacterEncoding::EncodingInfo::EncodingInfo(int id)
     : encoding_id(id) {
-  encoding_category_name = GetEncodingCategoryStringByCommandId(id),
-  encoding_display_name = GetCanonicalEncodingDisplayNameByCommandId(id);
+  encoding_category_name = UTF8ToWide(GetEncodingCategoryStringByCommandId(id));
+  encoding_display_name = UTF16ToWideHack(
+      GetCanonicalEncodingDisplayNameByCommandId(id));
 }
 
 // Static.
 int CharacterEncoding::GetCommandIdByCanonicalEncodingName(
-    const std::wstring& encoding_name) {
+    const std::string& encoding_name) {
   const CanonicalEncodingNameToIdMapType* map =
       canonical_encoding_name_map_singleton.
           GetCanonicalEncodingNameToIdMapData();
@@ -250,7 +251,7 @@ int CharacterEncoding::GetCommandIdByCanonicalEncodingName(
 }
 
 // Static.
-std::wstring CharacterEncoding::GetCanonicalEncodingNameByCommandId(int id) {
+std::string CharacterEncoding::GetCanonicalEncodingNameByCommandId(int id) {
   const IdToCanonicalEncodingNameMapType* map =
       canonical_encoding_name_map_singleton.
           GetIdToCanonicalEncodingNameMapData();
@@ -259,11 +260,11 @@ std::wstring CharacterEncoding::GetCanonicalEncodingNameByCommandId(int id) {
   IdToCanonicalEncodingNameMapType::const_iterator found_name = map->find(id);
   if (found_name != map->end())
     return found_name->second.first;
-  return std::wstring();
+  return std::string();
 }
 
 // Static.
-std::wstring CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(
+string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(
     int id) {
   const IdToCanonicalEncodingNameMapType* map =
       canonical_encoding_name_map_singleton.
@@ -274,7 +275,7 @@ std::wstring CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(
   if (found_name != map->end())
     return GetEncodingDisplayName(found_name->second.first,
                                   found_name->second.second);
-  return std::wstring();
+  return string16();
 }
 
 // Static.
@@ -284,19 +285,19 @@ int CharacterEncoding::GetSupportCanonicalEncodingCount() {
 }
 
 // Static.
-std::wstring CharacterEncoding::GetCanonicalEncodingNameByIndex(int index) {
+std::string CharacterEncoding::GetCanonicalEncodingNameByIndex(int index) {
   if (index < canonical_encoding_names_length)
     return canonical_encoding_names[index].name;
-  return std::wstring();
+  return std::string();
 }
 
 // Static.
-std::wstring CharacterEncoding::GetCanonicalEncodingDisplayNameByIndex(
+string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByIndex(
     int index) {
   if (index < canonical_encoding_names_length)
     return GetEncodingDisplayName(canonical_encoding_names[index].name,
         canonical_encoding_names[index].category_string_id);
-  return std::wstring();
+  return string16();
 }
 
 // Static.
@@ -307,8 +308,8 @@ int CharacterEncoding::GetEncodingCommandIdByIndex(int index) {
 }
 
 // Static.
-std::wstring CharacterEncoding::GetCanonicalEncodingNameByAliasName(
-    const std::wstring& alias_name) {
+std::string CharacterEncoding::GetCanonicalEncodingNameByAliasName(
+    const std::string& alias_name) {
   // If the input alias_name is already canonical encoding name, just return it.
   const CanonicalEncodingNameToIdMapType* map =
       canonical_encoding_name_map_singleton.
@@ -323,12 +324,12 @@ std::wstring CharacterEncoding::GetCanonicalEncodingNameByAliasName(
   UErrorCode error_code = U_ZERO_ERROR;
 
   const char* canonical_name = ucnv_getCanonicalName(
-      WideToASCII(alias_name).c_str(), "MIME", &error_code);
+      alias_name.c_str(), "MIME", &error_code);
   // If failed,  then try IANA next.
   if (U_FAILURE(error_code) || !canonical_name) {
     error_code = U_ZERO_ERROR;
     canonical_name = ucnv_getCanonicalName(
-      WideToASCII(alias_name).c_str(), "IANA", &error_code);
+      alias_name.c_str(), "IANA", &error_code);
   }
 
   if (canonical_name) {
@@ -337,11 +338,11 @@ std::wstring CharacterEncoding::GetCanonicalEncodingNameByAliasName(
     // We don't want to add an unnecessary charset to the encoding menu, so we
     // alias 'US-ASCII' to 'ISO-8859-1' in our UI without touching WebKit.
     // http://crbug.com/15801.
-    if (alias_name == L"US-ASCII")
+    if (alias_name == "US-ASCII")
       return GetCanonicalEncodingNameByCommandId(IDC_ENCODING_ISO88591);
-    return ASCIIToWide(canonical_name);
+    return canonical_name;
   } else {
-    return std::wstring();
+    return std::string();
   }
 }
 
@@ -353,8 +354,8 @@ std::wstring CharacterEncoding::GetCanonicalEncodingNameByAliasName(
 const std::vector<CharacterEncoding::EncodingInfo>*
     CharacterEncoding::GetCurrentDisplayEncodings(
     const std::string& locale,
-    const std::wstring& locale_encodings,
-    const std::wstring& recently_select_encodings) {
+    const std::string& locale_encodings,
+    const std::string& recently_select_encodings) {
   std::vector<int>* const locale_dependent_encoding_list =
       canonical_encoding_name_map_singleton.locale_dependent_encoding_ids();
   std::vector<CharacterEncoding::EncodingInfo>* const encoding_list =
@@ -366,7 +367,7 @@ const std::vector<CharacterEncoding::EncodingInfo>*
                                         locale_dependent_encoding_list,
                                         kUserSelectedEncodingsMaxLength);
 
-  static std::wstring cached_user_selected_encodings;
+  static std::string cached_user_selected_encodings;
   // Build current display encoding list.
   if (encoding_list->empty() ||
       cached_user_selected_encodings != recently_select_encodings) {
@@ -439,11 +440,11 @@ const std::vector<CharacterEncoding::EncodingInfo>*
 
 // Static
 bool CharacterEncoding::UpdateRecentlySelectdEncoding(
-    const std::wstring& original_selected_encodings,
+    const std::string& original_selected_encodings,
     int new_selected_encoding_id,
-    std::wstring* selected_encodings) {
+    std::string* selected_encodings) {
   // Get encoding name.
-  std::wstring encoding_name =
+  std::string encoding_name =
       GetCanonicalEncodingNameByCommandId(new_selected_encoding_id);
   DCHECK(!encoding_name.empty());
   // Check whether the new encoding is in local dependent encodings or original

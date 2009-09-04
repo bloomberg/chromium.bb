@@ -432,12 +432,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                             bool* success);
 
   // Gets the current used encoding name of the page in the specified tab.
-  void GetPageCurrentEncoding(int tab_handle, std::wstring* current_encoding);
+  void GetPageCurrentEncoding(int tab_handle, std::string* current_encoding);
 
   // Uses the specified encoding to override the encoding of the page in the
   // specified tab.
   void OverrideEncoding(int tab_handle,
-                        const std::wstring& encoding_name,
+                        const std::string& encoding_name,
                         bool* success);
 
   void SavePackageShouldPromptUser(bool should_prompt);

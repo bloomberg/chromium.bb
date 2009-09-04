@@ -156,10 +156,10 @@ class WebView : public WebKit::WebWidget {
   // Set the encoding of the current main frame. The value comes from
   // the encoding menu. WebKit uses the function named
   // SetCustomTextEncodingName to do override encoding job.
-  virtual void SetPageEncoding(const std::wstring& encoding_name) = 0;
+  virtual void SetPageEncoding(const std::string& encoding_name) = 0;
 
   // Return the canonical encoding name of current main webframe in webview.
-  virtual std::wstring GetMainFrameEncodingName() = 0;
+  virtual std::string GetMainFrameEncodingName() = 0;
 
   // Change the text zoom level. It will make the zoom level 20% larger or
   // smaller. If text_only is set, the text size will be changed. When unset,

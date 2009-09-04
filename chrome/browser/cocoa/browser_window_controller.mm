@@ -519,7 +519,7 @@ willPositionSheet:(NSWindow*)sheet
     if (!current_tab) {
       return;
     }
-    const std::wstring encoding = current_tab->encoding();
+    const std::string encoding = current_tab->encoding();
 
     bool toggled = encoding_controller.IsItemChecked(profile, encoding, tag);
     NSInteger oldState = [item state];

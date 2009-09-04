@@ -1403,25 +1403,25 @@ void WebViewImpl::SetInspectorSettings(const std::wstring& settings) {
 
 // Set the encoding of the current main frame to the one selected by
 // a user in the encoding menu.
-void WebViewImpl::SetPageEncoding(const std::wstring& encoding_name) {
+void WebViewImpl::SetPageEncoding(const std::string& encoding_name) {
   if (!page_.get())
     return;
 
   if (!encoding_name.empty()) {
     // only change override encoding, don't change default encoding
     // TODO(brettw) use std::string for encoding names.
-    String new_encoding_name(webkit_glue::StdWStringToString(encoding_name));
+    String new_encoding_name(webkit_glue::StdStringToString(encoding_name));
     page_->mainFrame()->loader()->reloadWithOverrideEncoding(new_encoding_name);
   }
 }
 
 // Return the canonical encoding name of current main webframe in webview.
-std::wstring WebViewImpl::GetMainFrameEncodingName() {
+std::string WebViewImpl::GetMainFrameEncodingName() {
   if (!page_.get())
-    return std::wstring();
+    return std::string();
 
   String encoding_name = page_->mainFrame()->loader()->encoding();
-  return webkit_glue::StringToStdWString(encoding_name);
+  return webkit_glue::StringToStdString(encoding_name);
 }
 
 void WebViewImpl::ZoomIn(bool text_only) {

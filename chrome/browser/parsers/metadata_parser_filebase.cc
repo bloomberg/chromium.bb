@@ -30,7 +30,7 @@ bool FileMetadataParser::Parse() {
   return true;
 }
 
-bool FileMetadataParser::GetProperty(const std::string&key,
+bool FileMetadataParser::GetProperty(const std::string& key,
                                      std::string* value) {
   PropertyMap::iterator it = properties_.find(key.c_str());
   if (it == properties_.end()) {

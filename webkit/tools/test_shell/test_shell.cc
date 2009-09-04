@@ -402,7 +402,7 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->fixed_font_family = L"Courier";
         web_prefs_->sans_serif_font_family = L"Helvetica";
 
-        web_prefs_->default_encoding = L"ISO-8859-1";
+        web_prefs_->default_encoding = "ISO-8859-1";
         web_prefs_->default_font_size = 16;
         web_prefs_->default_fixed_font_size = 13;
         web_prefs_->minimum_font_size = 1;
