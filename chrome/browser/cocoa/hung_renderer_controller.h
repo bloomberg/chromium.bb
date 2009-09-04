@@ -26,6 +26,8 @@
   IBOutlet NSButton* waitButton_;
   IBOutlet NSButton* killButton_;
   IBOutlet NSTableView* tableView_;
+  IBOutlet NSImageView* imageView_;
+  IBOutlet NSTextField* messageView_;
 
   // The TabContents for which this dialog is open.  Should never be
   // NULL while this dialog is open.
