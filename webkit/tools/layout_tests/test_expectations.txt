@@ -2322,3 +2322,6 @@ BUG_VICTORW : LayoutTests/fast/dom/DOMImplementation/detached-doctype.html = CRA
 BUG_VICTORW LINUX : LayoutTests/fast/forms/select-double-onchange.html = FAIL
 BUG_VICTORW LINUX : LayoutTests/fast/forms/select-script-onchange.html = FAIL
 BUG_VICTORW : LayoutTests/http/tests/security/javascriptURL/xss-ALLOWED-from-javascript-url-sub-frame-2-level.html = CRASH
+
+// Webkit 48061:48071
+BUG_VICTORW WIN DEBUG : LayoutTests/fast/regex/cross-frame-callable.html = TIMEOUT
