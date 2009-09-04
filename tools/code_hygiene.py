@@ -349,7 +349,11 @@ class LineLengthChecker(object):
   def __init__(self):
     pass
 
-  def FindProblems(self, unused_filename, data):
+  def FindProblems(self, filename, data):
+    # Exempt golden files used in tests from line-length limits.
+    if filename.endswith('.val') or filename.endswith('.valerr'):
+      return
+
     lines = data.split('\n')
     problem = []
     for no, line in enumerate(lines):
