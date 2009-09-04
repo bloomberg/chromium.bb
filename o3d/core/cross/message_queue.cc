@@ -582,7 +582,8 @@ bool MessageQueue::ProcessMessageUpdateTexture2D(
 
   // Check that we will not be reading past the end of the allocated shared
   // memory.
-  if (message.offset + message.number_of_bytes > info->size) {
+  if (message.offset + message.number_of_bytes > info->size ||
+      message.offset + message.number_of_bytes < message.offset) {
     O3D_ERROR(service_locator_)
         << "Offset + texture size exceeds allocated shared memory size ("
         << message.offset << " + " << message.number_of_bytes << " > "
@@ -657,7 +658,8 @@ bool MessageQueue::ProcessMessageUpdateTexture2DRect(
   int32 number_of_bytes =
       (message.height - 1) * message.pitch +
       image::ComputePitch(texture_object->format(), message.width);
-  if (message.offset + number_of_bytes > info->size) {
+  if (message.offset + number_of_bytes > info->size ||
+      message.offset + number_of_bytes < message.offset) {
     O3D_ERROR(service_locator_)
         << "Offset + size as computed by width, height and pitch"
         << " exceeds allocated shared memory size ("
