@@ -59,7 +59,7 @@ void ExtensionErrorReporter::ReportError(const std::string& message,
 
   // TODO(aa): Print the error message out somewhere better. I think we are
   // going to need some sort of 'extension inspector'.
-  LOG(WARNING) << message;
+  LOG(ERROR) << "Extension error: " << message;
 
   if (enable_noisy_errors_ && be_noisy) {
 #if defined(OS_WIN)
