@@ -500,7 +500,7 @@ class MinidumpWriter {
     }
 
     TypedMDRVA<uint32_t> list(&minidump_writer_);
-    if (!list.AllocateObjectAndArray(num_output_mappings, sizeof(MDRawModule)))
+    if (!list.AllocateObjectAndArray(num_output_mappings, MD_MODULE_SIZE))
       return false;
 
     dirent->stream_type = MD_MODULE_LIST_STREAM;
@@ -513,7 +513,7 @@ class MinidumpWriter {
         continue;
 
       MDRawModule mod;
-      my_memset(&mod, 0, sizeof(mod));
+      my_memset(&mod, 0, MD_MODULE_SIZE);
       mod.base_of_image = mapping.start_addr;
       mod.size_of_image = mapping.size;
       const size_t filepath_len = my_strlen(mapping.name);
@@ -569,7 +569,7 @@ class MinidumpWriter {
         return false;
       mod.module_name_rva = ld.rva;
 
-      list.CopyIndexAfterObject(j++, &mod, sizeof(mod));
+      list.CopyIndexAfterObject(j++, &mod, MD_MODULE_SIZE);
     }
 
     return true;
