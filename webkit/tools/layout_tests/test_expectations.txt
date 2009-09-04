@@ -1916,13 +1916,6 @@ BUG_DARIN LINUX : LayoutTests/svg/transforms/text-with-pattern-with-svg-transfor
 // Regressions from WebKit merge 43242:43321.
 BUG_DARIN LINUX DEBUG : LayoutTests/transitions/mask-transitions.html = FAIL PASS
 
-// Need rebaselines from http://trac.webkit.org/changeset/43355
-
-// Caused by WebKit merge 43346:43361.  These likely just need re-baselining.
-// Most likely caused by http://trac.webkit.org/changeset/43355
-BUG11613 WIN : LayoutTests/http/tests/navigation/anchor-frames.html = FAIL
-BUG11613 WIN : LayoutTests/http/tests/navigation/javascriptlink-frames.html = FAIL
-
 // TODO(erg): Attempted to rebaseline these tests as part of the above
 // 43346:43361 rebaseling from http://trac.webkit.org/changeset/43355. Turned
 // tree red. May be more involved then just rebaselining.
