@@ -35,17 +35,6 @@ Import('env')
 
 env['COMPONENT_TEST_SUBSYSTEM_WINDOWS'] = True
 
-if env.Bit('windows'):
-  # gmock on MSVC currently has 3 issues:
-  # - it needs <tuple>, that MSVC doesn't have. We could use boost for that
-  # - the 1.0.0 version triggers a bug in MSVC where function-local template
-  #   types cause duplicate symbols. It may be fixed in a more recent release.
-  # - on MSVC, it triggers a bug where it gets confused between chrome's and
-  #   gmock's version of down_cast.
-  use_gmock = False
-else:
-  use_gmock = True
-
 gtest_env = env.Clone()
 gtest_env.Append(
     CPPPATH = ['$GTEST_DIR/include',
@@ -58,13 +47,12 @@ gtest_sources = [
 gtest_objs = [gtest_env.ComponentObject(name, '$GTEST_DIR/src/%s.cc' % name)
               for name in gtest_sources]
 
-if use_gmock:
-  gmock_env = gtest_env.Clone()
-  gmock_env.Append(CPPPATH = ['$GMOCK_DIR/include',
-                              '$GMOCK_DIR'])
-  gmock_sources = ['gmock-all']
-  gtest_objs += [gmock_env.ComponentObject(name, '$GMOCK_DIR/src/%s.cc' % name)
-                for name in gmock_sources]
+gmock_env = gtest_env.Clone()
+gmock_env.Append(CPPPATH = ['$GMOCK_DIR/include',
+                            '$GMOCK_DIR'])
+gmock_sources = ['gmock-all']
+gtest_objs += [gmock_env.ComponentObject(name, '$GMOCK_DIR/src/%s.cc' % name)
+              for name in gmock_sources]
 gtest_lib = gtest_env.Library('gtest', gtest_objs)
 
 env.Append(
@@ -298,15 +286,12 @@ if 'RENDERER_CB' in env['CPPDEFINES']:
       'command_buffer/common/cross/bitfield_helpers_test.cc',
       'command_buffer/service/cross/effect_utils_test.cc',
       'command_buffer/service/cross/resource_test.cc',
-  ]
-  if use_gmock:
-    tests += [
-        'command_buffer/client/cross/cmd_buffer_helper_test.cc',
-        'command_buffer/client/cross/fenced_allocator_test.cc',
-        'command_buffer/client/cross/buffer_sync_proxy_test.cc',
-        'command_buffer/service/cross/buffer_rpc_test.cc',
-        'command_buffer/service/cross/cmd_buffer_engine_test.cc',
-        'command_buffer/service/cross/cmd_parser_test.cc',
+      'command_buffer/client/cross/cmd_buffer_helper_test.cc',
+      'command_buffer/client/cross/fenced_allocator_test.cc',
+      'command_buffer/client/cross/buffer_sync_proxy_test.cc',
+      'command_buffer/service/cross/buffer_rpc_test.cc',
+      'command_buffer/service/cross/cmd_buffer_engine_test.cc',
+      'command_buffer/service/cross/cmd_parser_test.cc',
     ]
 
 unit_tests  = env.Program('unit_tests', tests)
