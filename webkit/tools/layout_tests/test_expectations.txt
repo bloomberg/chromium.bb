@@ -2294,9 +2294,6 @@ BUG20265 LINUX : LayoutTests/platform/mac/accessibility/slider-supports-actions.
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
 
-// Webkit 47790:47797
-BUG20356 : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = TIMEOUT
-
 // WebKit 47797:47804
 BUG20376 WIN : LayoutTests/media/audio-play-event.html = TIMEOUT
 // Was marked as flakey above (I commented it out).

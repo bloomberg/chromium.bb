@@ -21,6 +21,7 @@
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
+#include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
@@ -99,6 +100,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) {
   BindMethod("setCanOpenWindows", &LayoutTestController::setCanOpenWindows);
   BindMethod("setCloseRemainingWindowsWhenComplete", &LayoutTestController::setCloseRemainingWindowsWhenComplete);
   BindMethod("objCIdentityIsEqual", &LayoutTestController::objCIdentityIsEqual);
+  BindMethod("setAlwaysAcceptCookies", &LayoutTestController::setAlwaysAcceptCookies);
   BindMethod("setWindowIsKey", &LayoutTestController::setWindowIsKey);
   BindMethod("setTabKeyCyclesThroughElements", &LayoutTestController::setTabKeyCyclesThroughElements);
   BindMethod("setUserStyleSheetLocation", &LayoutTestController::setUserStyleSheetLocation);
@@ -428,6 +430,7 @@ void LayoutTestController::Reset() {
   globalFlag_.Set(false);
   webHistoryItemCount_.Set(0);
 
+  SimpleResourceLoaderBridge::SetAcceptAllCookies(false);
   WebKit::resetOriginAccessWhiteLists();
 
   if (close_remaining_windows_) {
@@ -495,6 +498,14 @@ void LayoutTestController::setCloseRemainingWindowsWhenComplete(
     const CppArgumentList& args, CppVariant* result) {
   if (args.size() > 0 && args[0].isBool()) {
     close_remaining_windows_ = args[0].value.boolValue;
+  }
+  result->SetNull();
+}
+
+void LayoutTestController::setAlwaysAcceptCookies(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() > 0) {
+    SimpleResourceLoaderBridge::SetAcceptAllCookies(CppVariantToBool(args[0]));
   }
   result->SetNull();
 }
@@ -812,7 +823,7 @@ void LayoutTestController::evaluateScriptInIsolatedWorld(
   result->SetNull();
 }
 
-// Need these conversions because the format of the value for overridePreference
+// Need these conversions because the format of the value for booleans
 // may vary - for example, on mac "1" and "0" are used for boolean.
 bool LayoutTestController::CppVariantToBool(const CppVariant& value) {
   if (value.isBool())
@@ -827,7 +838,7 @@ bool LayoutTestController::CppVariantToBool(const CppVariant& value) {
       return false;
   }
   shell_->delegate()->AddMessageToConsole(shell_->webView(),
-      L"Invalid value for preference. Expected boolean value.", 0, L"");
+      L"Invalid value. Expected boolean value.", 0, L"");
   return false;
 }
 

@@ -38,6 +38,7 @@
 #include "base/timer.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "net/base/cookie_policy.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -52,6 +53,7 @@
 #include "webkit/tools/test_shell/test_shell_request_context.h"
 
 using webkit_glue::ResourceLoaderBridge;
+using net::CookiePolicy;
 using net::HttpResponseHeaders;
 
 namespace {
@@ -653,6 +655,7 @@ void SimpleResourceLoaderBridge::Init(URLRequestContext* context) {
     request_context = new TestShellRequestContext();
   }
   request_context->AddRef();
+  SimpleResourceLoaderBridge::SetAcceptAllCookies(false);
 }
 
 // static
@@ -665,6 +668,7 @@ void SimpleResourceLoaderBridge::Shutdown() {
   }
 }
 
+// static
 void SimpleResourceLoaderBridge::SetCookie(const GURL& url,
                                            const GURL& first_party_for_cookies,
                                            const std::string& cookie) {
@@ -680,6 +684,7 @@ void SimpleResourceLoaderBridge::SetCookie(const GURL& url,
       cookie_setter.get(), &CookieSetter::Set, url, cookie));
 }
 
+// static
 std::string SimpleResourceLoaderBridge::GetCookies(
     const GURL& url, const GURL& first_party_for_cookies) {
   // Proxy to IO thread to synchronize w/ network loading
@@ -697,6 +702,7 @@ std::string SimpleResourceLoaderBridge::GetCookies(
   return getter->GetResult();
 }
 
+// static
 bool SimpleResourceLoaderBridge::EnsureIOThread() {
   if (io_thread)
     return true;
@@ -708,4 +714,11 @@ bool SimpleResourceLoaderBridge::EnsureIOThread() {
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   return io_thread->StartWithOptions(options);
+}
+
+// static
+void SimpleResourceLoaderBridge::SetAcceptAllCookies(bool accept_all_cookies) {
+  CookiePolicy::Type policy_type = accept_all_cookies ?
+      CookiePolicy::ALLOW_ALL_COOKIES : CookiePolicy::BLOCK_THIRD_PARTY_COOKIES;
+  request_context->cookie_policy()->set_type(policy_type);
 }

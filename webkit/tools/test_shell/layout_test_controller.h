@@ -88,6 +88,9 @@ class LayoutTestController : public CppBoundClass {
   // the identity of its two arguments in C++.
   void objCIdentityIsEqual(const CppArgumentList& args, CppVariant* result);
 
+  // Changes the cookie policy from the default to allow all cookies.
+  void setAlwaysAcceptCookies(const CppArgumentList& args, CppVariant* result);
+
   // Gives focus to the window.
   void setWindowIsKey(const CppArgumentList& args, CppVariant* result);
 
