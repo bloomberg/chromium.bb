@@ -139,7 +139,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
     }
   }
 }
-
+#ifndef OS_MACOSX
 void PrintWebViewHelper::PrintPageAsJPEG(
     const ViewMsg_PrintPage_Params& params,
     WebFrame* frame,
@@ -174,7 +174,7 @@ void PrintWebViewHelper::PrintPageAsJPEG(
       image_data);
   DCHECK(encoded);
 }
-
+#endif
 bool PrintWebViewHelper::Send(IPC::Message* msg) {
   return render_view_->Send(msg);
 }
