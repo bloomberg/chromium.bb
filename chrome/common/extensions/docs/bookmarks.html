@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/bootstrap.js"></script>
   <title>Bookmarks</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
-      <!-- In particular, sub-templates that recursive, must be used by allowing
+      <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which 
            are not operated on by way of the jsskip="true" -->           
       <div style="display:none">
@@ -402,10 +402,8 @@ Here's some code you could use to create that hierarchy:</p>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Creates a bookmark or folder under the specified parentId.  If url is NULL or missing, it will be a folder.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1569,10 +1567,8 @@ Here's some code you could use to create that hierarchy:</p>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Removes a bookmark or an empty bookmark folder.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1708,10 +1704,8 @@ Here's some code you could use to create that hierarchy:</p>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Recursively removes a bookmark folder.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -2035,10 +2029,8 @@ Here's some code you could use to create that hierarchy:</p>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Updates the properties of a bookmark or folder. Only specify the properties that you want to change, unspecified properties will be left unchanged.  NOTE: currently, only 'title' is supported.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -2306,10 +2298,8 @@ Here's some code you could use to create that hierarchy:</p>
               </div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the event goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when a bookmark or folder changes.  NOTE: currently, only title changes trigger this.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -2455,10 +2445,8 @@ Here's some code you could use to create that hierarchy:</p>
               </div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the event goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when the children of a folder have changed their order.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -2614,10 +2602,8 @@ Here's some code you could use to create that hierarchy:</p>
               </div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the event goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when a bookmark or folder is created.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -2723,10 +2709,8 @@ Here's some code you could use to create that hierarchy:</p>
               </div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the event goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when a bookmark or folder is moved to a different parent folder.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -3001,10 +2985,8 @@ Here's some code you could use to create that hierarchy:</p>
               </div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p style="display: none; ">
-                  A description from the json schema def of the event goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when a bookmark or folder is removed.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -3222,12 +3204,10 @@ Here's some code you could use to create that hierarchy:</p>
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>A node in the bookmarks tree, which is either a bookmark or a folder.  Child nodes are ordered within their parent.</dd>
           
           <!-- OBJECT PROPERTIES -->
           <dd>
@@ -3258,12 +3238,10 @@ Here's some code you could use to create that hierarchy:</p>
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>The unique identifier for the node.</dd>
           
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3301,12 +3279,10 @@ Here's some code you could use to create that hierarchy:</p>
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>The id of the parent folder node.  Not present in the root node.</dd>
           
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3344,12 +3320,10 @@ Here's some code you could use to create that hierarchy:</p>
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>The 0-based position of this node within its parent.</dd>
           
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3387,12 +3361,10 @@ Here's some code you could use to create that hierarchy:</p>
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>The URL navigated to when a user clicks on the bookmark.  This field isn't present for folders.</dd>
           
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3430,12 +3402,10 @@ Here's some code you could use to create that hierarchy:</p>
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>The text displayed for the node.</dd>
           
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3473,12 +3443,10 @@ Here's some code you could use to create that hierarchy:</p>
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>When this node was created, represented in milliseconds since the epoch (new Date(dateAdded)).</dd>
           
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3516,12 +3484,10 @@ Here's some code you could use to create that hierarchy:</p>
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>When the contents of this folder last changed, represented in milliseconds since the epoch.</dd>
           
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -3569,12 +3535,10 @@ Here's some code you could use to create that hierarchy:</p>
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>An ordered list of children of this node.</dd>
           
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">

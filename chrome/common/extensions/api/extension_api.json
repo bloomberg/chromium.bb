@@ -45,6 +45,22 @@
         }
       },
       {
+        "name": "getURL",
+        "type": "function",
+        "description": "Convert a relative path within an extension install directory to a fully-qualified URL.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "path",
+            "description": "A path to a resource within an extension expressed relative to it's install directory."
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "The fully-qualified URL to the resource."
+        }
+      },
+      {
         "name": "getViews",
         "type": "function",
         "description": "Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes toolstrips, background pages, and tabs.",
