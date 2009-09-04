@@ -46,6 +46,11 @@ devtools.InspectorController = function() {
    * @type {boolean}
    */
   this.resourceTrackingEnabled_ = false;
+
+  /**
+   * @type {boolean}
+   */
+  this.timelineEnabled_ = false;
 };
 
 
@@ -278,6 +283,31 @@ devtools.InspectorController.prototype.disableResourceTracking = function() {
  */
 devtools.InspectorController.prototype.resourceTrackingEnabled = function() {
   return this.resourceTrackingEnabled_;
+};
+
+
+/**
+ * Enables timeline.
+ */
+devtools.InspectorController.prototype.enableTimeline = function() {
+  this.timelineEnabled_ = true;
+  WebInspector.timelineWasEnabled();
+};
+
+
+/**
+ * Disables timeline.
+ */
+devtools.InspectorController.prototype.disableTimeline = function() {
+  this.timelineEnabled_ = false;
+  WebInspector.timelineWasDisabled();
+};
+
+/**
+ * @return {boolean} True iff timeline is enabled.
+ */
+devtools.InspectorController.prototype.timelineEnabled = function() {
+  return this.timelineEnabled_;
 };
 
 

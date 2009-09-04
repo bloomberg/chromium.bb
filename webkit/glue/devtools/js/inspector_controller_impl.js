@@ -23,6 +23,8 @@ devtools.InspectorControllerImpl = function() {
   this.installInspectorControllerDelegate_('setTextNodeValue');
   this.installInspectorControllerDelegate_('enableResourceTracking');
   this.installInspectorControllerDelegate_('disableResourceTracking');
+  this.installInspectorControllerDelegate_('enableTimeline');
+  this.installInspectorControllerDelegate_('disableTimeline');
 
   this.installInjectedScriptDelegate_('getStyles');
   this.installInjectedScriptDelegate_('getComputedStyle');
