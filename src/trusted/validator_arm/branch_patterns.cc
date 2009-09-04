@@ -56,6 +56,17 @@ static bool isControlFlowBic(const NcDecodeState &state) {
   }
 }
 
+static bool isNaclHalt(const NcDecodeState &state) {
+  if (state.CurrentInstructionIs(ARM_MOV)
+      && state.CurrentInstructionIs(ARM_DP_I)) {
+    const NcDecodedInstruction &inst = state.CurrentInstruction();
+    // We don't need to process the shift field: 0 << x == 0.
+    return inst.values.immediate == 0;
+  } else {
+    return false;
+  }
+}
+
 /*
  * Validator pattern for a safe mask-and-branch sequence.
  */
@@ -103,7 +114,8 @@ class NonBranchPcUpdatePattern : public ValidatorPattern {
         && !state.CurrentInstructionIs(ARM_BRANCH);
   }
   virtual bool IsSafe(const NcDecodeState &state) {
-    return isControlFlowBic(state);
+    return isControlFlowBic(state)
+        || isNaclHalt(state);
   }
 };
 
