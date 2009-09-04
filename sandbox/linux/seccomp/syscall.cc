@@ -203,7 +203,7 @@ void* Sandbox::defaultSystemCallHandler(int syscallNum, void* arg0, void* arg1,
   // the exact instruction sequence in libc, we might not be able to reliably
   // filter out these system calls at the time when we instrument the code.
   SysCalls sys;
-  unsigned long rc;
+  long     rc;
   switch (syscallNum) {
     case __NR_read:
       Debug::syscall(syscallNum, "Allowing unrestricted system call");

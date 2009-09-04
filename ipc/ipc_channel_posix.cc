@@ -254,6 +254,10 @@ Channel::ChannelImpl::ChannelImpl(const std::string& channel_id, Mode mode,
       server_listen_pipe_(-1),
       pipe_(-1),
       client_pipe_(-1),
+#if defined(OS_LINUX)
+      fd_pipe_(-1),
+      remote_fd_pipe_(-1),
+#endif
       listener_(listener),
       waiting_connect_(true),
       processing_incoming_(false),
@@ -338,7 +342,7 @@ bool Channel::ChannelImpl::CreatePipe(const std::string& channel_id,
         pipe_ = Singleton<base::GlobalDescriptors>()->Get(kPrimaryIPCChannel);
       }
     } else {
-      waiting_connect_ = false;
+      waiting_connect_ = mode == MODE_SERVER;
     }
   }
 
@@ -346,6 +350,25 @@ bool Channel::ChannelImpl::CreatePipe(const std::string& channel_id,
   scoped_ptr<Message> msg(new Message(MSG_ROUTING_NONE,
                                       HELLO_MESSAGE_TYPE,
                                       IPC::Message::PRIORITY_NORMAL));
+  #if defined(OS_LINUX)
+  if (!uses_fifo_) {
+    // On Linux, the seccomp sandbox makes it very expensive to call
+    // recvmsg() and sendmsg(). Often, we are perfectly OK with resorting to
+    // read() and write(), which are cheap.
+    //
+    // As we cannot anticipate, when the sender will provide us with file
+    // handles, we have to make the decision about whether we call read() or
+    // recvmsg() before we actually make the call. The easiest option is to
+    // create a dedicated socketpair() for exchanging file handles.
+    if (mode == MODE_SERVER) {
+      fd_pipe_ = -1;
+    } else if (remote_fd_pipe_ == -1) {
+      if (!SocketPair(&fd_pipe_, &remote_fd_pipe_)) {
+        return false;
+      }
+    }
+  }
+  #endif
   if (!msg->WriteInt(base::GetCurrentProcId())) {
     Close();
     return false;
@@ -376,7 +399,7 @@ bool Channel::ChannelImpl::Connect() {
         MessageLoopForIO::WATCH_READ,
         &read_watcher_,
         this);
-    waiting_connect_ = false;
+    waiting_connect_ = mode_ == MODE_SERVER;
   }
 
   if (!waiting_connect_)
@@ -390,12 +413,11 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
   struct msghdr msg = {0};
   struct iovec iov = {input_buf_, Channel::kReadBufferSize};
 
-  msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
   msg.msg_control = input_cmsg_buf_;
 
   for (;;) {
-    msg.msg_controllen = sizeof(input_cmsg_buf_);
+    msg.msg_iov = &iov;
 
     if (bytes_read == 0) {
       if (pipe_ == -1)
@@ -404,8 +426,17 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
       // Read from pipe.
       // recvmsg() returns 0 if the connection has closed or EAGAIN if no data
       // is waiting on the pipe.
-      bytes_read = HANDLE_EINTR(recvmsg(pipe_, &msg, MSG_DONTWAIT));
-
+#if defined(OS_LINUX)
+      if (fd_pipe_ >= 0) {
+        bytes_read = HANDLE_EINTR(read(pipe_, input_buf_,
+                                       Channel::kReadBufferSize));
+        msg.msg_controllen = 0;
+      } else
+#endif
+      {
+        msg.msg_controllen = sizeof(input_cmsg_buf_);
+        bytes_read = HANDLE_EINTR(recvmsg(pipe_, &msg, MSG_DONTWAIT));
+      }
       if (bytes_read < 0) {
         if (errno == EAGAIN) {
           return true;
@@ -496,18 +527,20 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
 
     // A pointer to an array of |num_fds| file descriptors which includes any
     // fds that have spilled over from a previous read.
-    const int* fds;
-    unsigned num_fds;
+    const int* fds = NULL;
+    unsigned num_fds = 0;
     unsigned fds_i = 0;  // the index of the first unused descriptor
 
     if (input_overflow_fds_.empty()) {
       fds = wire_fds;
       num_fds = num_wire_fds;
     } else {
-      const size_t prev_size = input_overflow_fds_.size();
-      input_overflow_fds_.resize(prev_size + num_wire_fds);
-      memcpy(&input_overflow_fds_[prev_size], wire_fds,
-             num_wire_fds * sizeof(int));
+      if (num_wire_fds > 0) {
+        const size_t prev_size = input_overflow_fds_.size();
+        input_overflow_fds_.resize(prev_size + num_wire_fds);
+        memcpy(&input_overflow_fds_[prev_size], wire_fds,
+               num_wire_fds * sizeof(int));
+      }
       fds = &input_overflow_fds_[0];
       num_fds = input_overflow_fds_.size();
     }
@@ -517,13 +550,59 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
       if (message_tail) {
         int len = static_cast<int>(message_tail - p);
         Message m(p, len);
+
         if (m.header()->num_fds) {
           // the message has file descriptors
           const char* error = NULL;
           if (m.header()->num_fds > num_fds - fds_i) {
             // the message has been completely received, but we didn't get
             // enough file descriptors.
-            error = "Message needs unreceived descriptors";
+#if defined(OS_LINUX)
+            if (!uses_fifo_) {
+              char dummy;
+              struct iovec fd_pipe_iov = { &dummy, 1 };
+              msg.msg_iov = &fd_pipe_iov;
+              msg.msg_controllen = sizeof(input_cmsg_buf_);
+              ssize_t n = HANDLE_EINTR(recvmsg(fd_pipe_, &msg, MSG_DONTWAIT));
+              if (n == 1 && msg.msg_controllen > 0) {
+                for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg); cmsg;
+                     cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+                  if (cmsg->cmsg_level == SOL_SOCKET &&
+                      cmsg->cmsg_type == SCM_RIGHTS) {
+                    const unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
+                    DCHECK(payload_len % sizeof(int) == 0);
+                    wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
+                    num_wire_fds = payload_len / 4;
+
+                    if (msg.msg_flags & MSG_CTRUNC) {
+                      LOG(ERROR) << "SCM_RIGHTS message was truncated"
+                                 << " cmsg_len:" << cmsg->cmsg_len
+                                 << " fd:" << pipe_;
+                      for (unsigned i = 0; i < num_wire_fds; ++i)
+                        HANDLE_EINTR(close(wire_fds[i]));
+                      return false;
+                    }
+                    break;
+                  }
+                }
+                if (input_overflow_fds_.empty()) {
+                  fds = wire_fds;
+                  num_fds = num_wire_fds;
+                } else {
+                  if (num_wire_fds > 0) {
+                    const size_t prev_size = input_overflow_fds_.size();
+                    input_overflow_fds_.resize(prev_size + num_wire_fds);
+                    memcpy(&input_overflow_fds_[prev_size], wire_fds,
+                           num_wire_fds * sizeof(int));
+                  }
+                  fds = &input_overflow_fds_[0];
+                  num_fds = input_overflow_fds_.size();
+                }
+              }
+            }
+            if (m.header()->num_fds > num_fds - fds_i)
+#endif
+              error = "Message needs unreceived descriptors";
           }
 
           if (m.header()->num_fds >
@@ -558,7 +637,26 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
         if (m.routing_id() == MSG_ROUTING_NONE &&
             m.type() == HELLO_MESSAGE_TYPE) {
           // The Hello message contains only the process id.
-          listener_->OnChannelConnected(MessageIterator(m).NextInt());
+          void *iter = NULL;
+          int pid;
+          if (!m.ReadInt(&iter, &pid)) {
+            NOTREACHED();
+          }
+#if defined(OS_LINUX)
+          if (mode_ == MODE_SERVER && !uses_fifo_) {
+            // On Linux, the Hello message from the client to the server
+            // also contains the fd_pipe_, which  will be used for all
+            // subsequent file descriptor passing.
+            DCHECK_EQ(m.file_descriptor_set()->size(), 1);
+            base::FileDescriptor descriptor;
+            if (!m.ReadFileDescriptor(&iter, &descriptor)) {
+              NOTREACHED();
+            }
+            fd_pipe_ = descriptor.fd;
+            CHECK(descriptor.auto_close);
+          }
+#endif
+          listener_->OnChannelConnected(pid);
         } else {
           listener_->OnMessageReceived(m);
         }
@@ -567,6 +665,10 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
         // Last message is partial.
         break;
       }
+      input_overflow_fds_ = std::vector<int>(&fds[fds_i], &fds[num_fds]);
+      fds_i = 0;
+      fds = &input_overflow_fds_[0];
+      num_fds = input_overflow_fds_.size();
     }
     input_overflow_buf_.assign(p, end - p);
     input_overflow_fds_ = std::vector<int>(&fds[fds_i], &fds[num_fds]);
@@ -590,20 +692,46 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
                               // no connection?
   is_blocked_on_write_ = false;
 
-  if (output_queue_.empty())
+  if (output_queue_.empty()) {
     return true;
+  }
 
-  if (pipe_ == -1)
+  if (pipe_ == -1) {
     return false;
+  }
 
   // Write out all the messages we can till the write blocks or there are no
   // more outgoing messages.
   while (!output_queue_.empty()) {
     Message* msg = output_queue_.front();
 
+#if defined(OS_LINUX)
+    scoped_ptr<Message> hello;
+    if (remote_fd_pipe_ != -1 &&
+        msg->routing_id() == MSG_ROUTING_NONE &&
+        msg->type() == HELLO_MESSAGE_TYPE) {
+      hello.reset(new Message(MSG_ROUTING_NONE,
+                              HELLO_MESSAGE_TYPE,
+                              IPC::Message::PRIORITY_NORMAL));
+      void* iter = NULL;
+      int pid;
+      if (!msg->ReadInt(&iter, &pid) ||
+          !hello->WriteInt(pid)) {
+        NOTREACHED();
+      }
+      DCHECK_EQ(hello->size(), msg->size());
+      if (!hello->WriteFileDescriptor(base::FileDescriptor(remote_fd_pipe_,
+                                                           false))) {
+        NOTREACHED();
+      }
+      msg = hello.get();
+      DCHECK_EQ(msg->file_descriptor_set()->size(), 1);
+    }
+#endif
+
     size_t amt_to_write = msg->size() - message_send_bytes_written_;
     DCHECK(amt_to_write != 0);
-    const char *out_bytes = reinterpret_cast<const char*>(msg->data()) +
+    const char* out_bytes = reinterpret_cast<const char*>(msg->data()) +
         message_send_bytes_written_;
 
     struct msghdr msgh = {0};
@@ -612,6 +740,9 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
     msgh.msg_iovlen = 1;
     char buf[CMSG_SPACE(
         sizeof(int[FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE]))];
+
+    ssize_t bytes_written = 1;
+    int fd_written = -1;
 
     if (message_send_bytes_written_ == 0 &&
         !msg->file_descriptor_set()->empty()) {
@@ -632,9 +763,43 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       msgh.msg_controllen = cmsg->cmsg_len;
 
       msg->header()->num_fds = num_fds;
+
+#if defined(OS_LINUX)
+      if (!uses_fifo_ &&
+          (msg->routing_id() != MSG_ROUTING_NONE ||
+           msg->type() != HELLO_MESSAGE_TYPE)) {
+        // Only the Hello message sends the file descriptor with the message.
+        // Subsequently, we can send file descriptors on the dedicated
+        // fd_pipe_ which makes Seccomp sandbox operation more efficient.
+        struct iovec fd_pipe_iov = { const_cast<char *>(""), 1 };
+        msgh.msg_iov = &fd_pipe_iov;
+        fd_written = fd_pipe_;
+        bytes_written = HANDLE_EINTR(sendmsg(fd_pipe_, &msgh, MSG_DONTWAIT));
+        msgh.msg_iov = &iov;
+        msgh.msg_controllen = 0;
+        if (bytes_written > 0) {
+          msg->file_descriptor_set()->CommitAll();
+        }
+      }
+#endif
     }
 
-    ssize_t bytes_written = HANDLE_EINTR(sendmsg(pipe_, &msgh, MSG_DONTWAIT));
+    if (bytes_written == 1) {
+      fd_written = pipe_;
+#if defined(OS_LINUX)
+      if (mode_ != MODE_SERVER && !uses_fifo_ &&
+          msg->routing_id() == MSG_ROUTING_NONE &&
+          msg->type() == HELLO_MESSAGE_TYPE) {
+        DCHECK_EQ(msg->file_descriptor_set()->size(), 1);
+      }
+      if (!uses_fifo_ && !msgh.msg_controllen) {
+        bytes_written = HANDLE_EINTR(write(pipe_, out_bytes, amt_to_write));
+      } else
+#endif
+      {
+        bytes_written = HANDLE_EINTR(sendmsg(pipe_, &msgh, MSG_DONTWAIT));
+      }
+    }
     if (bytes_written > 0)
       msg->file_descriptor_set()->CommitAll();
 
@@ -646,7 +811,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
         return false;
       }
 #endif  // OS_MACOSX
-      LOG(ERROR) << "pipe error on " << pipe_ << ": " << strerror(errno);
+      LOG(ERROR) << "pipe error on " << fd_written << ": " << strerror(errno);
       return false;
     }
 
@@ -673,8 +838,8 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       DLOG(INFO) << "sent message @" << msg << " on channel @" << this <<
                     " with type " << msg->type();
 #endif
+      delete output_queue_.front();
       output_queue_.pop();
-      delete msg;
     }
   }
   return true;
@@ -710,27 +875,29 @@ int Channel::ChannelImpl::GetClientFileDescriptor() const {
 void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
   bool send_server_hello_msg = false;
   if (waiting_connect_ && mode_ == MODE_SERVER) {
-    // In the case of a socketpair() the server starts listening on its end
-    // of the pipe in Connect().
-    DCHECK(uses_fifo_);
+    if (uses_fifo_) {
+      if (!ServerAcceptFifoConnection(server_listen_pipe_, &pipe_)) {
+        Close();
+      }
 
-    if (!ServerAcceptFifoConnection(server_listen_pipe_, &pipe_)) {
-      Close();
+      // No need to watch the listening socket any longer since only one client
+      // can connect.  So unregister with libevent.
+      server_listen_connection_watcher_.StopWatchingFileDescriptor();
+
+      // Start watching our end of the socket.
+      MessageLoopForIO::current()->WatchFileDescriptor(
+          pipe_,
+          true,
+          MessageLoopForIO::WATCH_READ,
+          &read_watcher_,
+          this);
+
+      waiting_connect_ = false;
+    } else {
+      // In the case of a socketpair() the server starts listening on its end
+      // of the pipe in Connect().
+      waiting_connect_ = false;
     }
-
-    // No need to watch the listening socket any longer since only one client
-    // can connect.  So unregister with libevent.
-    server_listen_connection_watcher_.StopWatchingFileDescriptor();
-
-    // Start watching our end of the socket.
-    MessageLoopForIO::current()->WatchFileDescriptor(
-        pipe_,
-        true,
-        MessageLoopForIO::WATCH_READ,
-        &read_watcher_,
-        this);
-
-    waiting_connect_ = false;
     send_server_hello_msg = true;
   }
 
@@ -783,6 +950,16 @@ void Channel::ChannelImpl::Close() {
     Singleton<PipeMap>()->RemoveAndClose(pipe_name_);
     client_pipe_ = -1;
   }
+#if defined(OS_LINUX)
+  if (fd_pipe_ != -1) {
+    HANDLE_EINTR(close(fd_pipe_));
+    fd_pipe_ = -1;
+  }
+  if (remote_fd_pipe_ != -1) {
+    HANDLE_EINTR(close(remote_fd_pipe_));
+    remote_fd_pipe_ = -1;
+  }
+#endif
 
   if (uses_fifo_) {
     // Unlink the FIFO

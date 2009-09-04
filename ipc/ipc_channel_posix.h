@@ -83,6 +83,12 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // pipe_ that is passed to the client.
   int client_pipe_;
 
+#if defined(OS_LINUX)
+  // Linux uses a dedicated socketpair() for passing file descriptors.
+  int fd_pipe_;
+  int remote_fd_pipe_;
+#endif
+
   // The "name" of our pipe.  On Windows this is the global identifier for
   // the pipe.  On POSIX it's used as a key in a local map of file descriptors.
   std::string pipe_name_;
