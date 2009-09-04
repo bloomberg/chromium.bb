@@ -48,7 +48,10 @@
                        (dev)->pci_device == 0x2A42 || \
                        (dev)->pci_device == 0x2E02 || \
                        (dev)->pci_device == 0x2E12 || \
-                       (dev)->pci_device == 0x2E22)
+                       (dev)->pci_device == 0x2E22 || \
+                       (dev)->pci_device == 0x2E32 || \
+                       (dev)->pci_device == 0x0042 || \
+                       (dev)->pci_device == 0x0046)
 
 #define IS_I965GM(dev) ((dev)->pci_device == 0x2A02)
 
