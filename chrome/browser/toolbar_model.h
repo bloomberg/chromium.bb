@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "third_party/skia/include/core/SkColor.h"
 
 class NavigationController;
 class NavigationEntry;
@@ -57,10 +56,10 @@ class ToolbarModel {
   // Default value: NO_ICON.
   virtual Icon GetIcon();
 
-  // Sets the text and color of the text displayed in the info bubble that
-  // appears when the user hovers the mouse over the icon.
+  // Sets the text displayed in the info bubble that appears when the user
+  // hovers the mouse over the icon.
   // Default value: empty string.
-  virtual void GetIconHoverText(std::wstring* text, SkColor* text_color);
+  virtual void GetIconHoverText(std::wstring* text);
 
   // Sets |text| to contain the text that should be displayed on the right of
   // the location bar, and |tooltip| to the tooltip text that should be shown

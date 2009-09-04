@@ -313,19 +313,7 @@ AutocompleteEditViewWin::ScopedSuspendUndo::~ScopedSuspendUndo() {
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditViewWin
 
-// TODO (jcampan): these colors should be derived from the system colors to
-// ensure they show properly. Bug #948807.
-// Colors used to emphasize the scheme in the URL.
-
 namespace {
-
-const COLORREF kSecureSchemeColor = RGB(0, 150, 20);
-const COLORREF kInsecureSchemeColor = RGB(200, 0, 0);
-
-// Colors used to strike-out the scheme when it is insecure.
-const SkColor kSchemeStrikeoutColor = SkColorSetRGB(210, 0, 0);
-const SkColor kSchemeSelectedStrikeoutColor =
-    SkColorSetRGB(255, 255, 255);
 
 // These are used to hook the CRichEditCtrl's calls to BeginPaint() and
 // EndPaint() and provide a memory DC instead.  See OnPaint().
@@ -465,12 +453,10 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
   const long kTwipsPerPixel = kTwipsPerInch / GetDeviceCaps(dc, LOGPIXELSY);
   ::ReleaseDC(NULL, dc);
 
-  // Set the default character style -- adjust to our desired baseline and make
-  // text grey.
+  // Set the default character style -- adjust to our desired baseline.
   CHARFORMAT cf = {0};
-  cf.dwMask = CFM_OFFSET | CFM_COLOR;
+  cf.dwMask = CFM_OFFSET;
   cf.yOffset = -font_y_adjustment_ * kTwipsPerPixel;
-  cf.crTextColor = GetSysColor(COLOR_GRAYTEXT);
   SetDefaultCharFormat(cf);
 
   // By default RichEdit has a drop target. Revoke it so that we can install our
@@ -518,8 +504,9 @@ void AutocompleteEditViewWin::Update(
 
   const ToolbarModel::SecurityLevel security_level =
       toolbar_model_->GetSchemeSecurityLevel();
-  const COLORREF background_color = skia::SkColorToCOLORREF(
-      LocationBarView::kBackgroundColorByLevel[security_level]);
+  const COLORREF background_color =
+      skia::SkColorToCOLORREF(LocationBarView::GetColor(
+          security_level == ToolbarModel::SECURE, LocationBarView::BACKGROUND));
   const bool changed_security_level =
       (security_level != scheme_security_level_);
 
@@ -2016,13 +2003,19 @@ void AutocompleteEditViewWin::EmphasizeURLComponents() {
   CHARFORMAT cf = {0};
   cf.dwMask = CFM_COLOR;
   cf.dwEffects = 0;
-  cf.crTextColor = GetSysColor(emphasize ? COLOR_GRAYTEXT : COLOR_WINDOWTEXT);
+  const bool is_secure = (scheme_security_level_ == ToolbarModel::SECURE);
+  // If we're going to emphasize parts of the text, then the baseline state
+  // should be "de-emphasized".  If not, then everything should be rendered in
+  // the standard text color.
+  cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(is_secure,
+      emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
   SelectAll(false);
   SetSelectionCharFormat(cf);
 
   if (emphasize) {
     // We've found a host name, give it more emphasis.
-    cf.crTextColor = GetSysColor(COLOR_WINDOWTEXT);
+    cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(
+        is_secure, LocationBarView::TEXT));
     SetSelection(host.begin, host.end());
     SetSelectionCharFormat(cf);
   }
@@ -2031,13 +2024,12 @@ void AutocompleteEditViewWin::EmphasizeURLComponents() {
   insecure_scheme_component_.reset();
   if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
       (scheme_security_level_ != ToolbarModel::NORMAL)) {
-    if (scheme_security_level_ == ToolbarModel::SECURE) {
-      cf.crTextColor = kSecureSchemeColor;
-    } else {
+    if (!is_secure) {
       insecure_scheme_component_.begin = scheme.begin;
       insecure_scheme_component_.len = scheme.len;
-      cf.crTextColor = kInsecureSchemeColor;
     }
+    cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(
+        is_secure, LocationBarView::SECURITY_TEXT));
     SetSelection(scheme.begin, scheme.end());
     SetSelectionCharFormat(cf);
   }
@@ -2134,7 +2126,8 @@ void AutocompleteEditViewWin::DrawSlashForInsecureScheme(
   canvas.save();
   if (selection_rect.isEmpty() ||
       canvas.clipRect(selection_rect, SkRegion::kDifference_Op)) {
-    paint.setColor(kSchemeStrikeoutColor);
+    paint.setColor(LocationBarView::GetColor(false,
+        LocationBarView::SCHEME_STRIKEOUT));
     canvas.drawLine(start_point.fX, start_point.fY,
                     end_point.fX, end_point.fY, paint);
   }
@@ -2142,7 +2135,8 @@ void AutocompleteEditViewWin::DrawSlashForInsecureScheme(
 
   // Draw the selected portion of the stroke.
   if (!selection_rect.isEmpty() && canvas.clipRect(selection_rect)) {
-    paint.setColor(kSchemeSelectedStrikeoutColor);
+    paint.setColor(LocationBarView::GetColor(false,
+                                             LocationBarView::SELECTED_TEXT));
     canvas.drawLine(start_point.fX, start_point.fY,
                     end_point.fX, end_point.fY, paint);
   }

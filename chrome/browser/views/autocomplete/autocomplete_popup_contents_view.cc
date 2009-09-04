@@ -28,55 +28,79 @@
 #include "app/win_util.h"
 #endif
 
-// Colors for various components of the view.
+namespace {
+
+enum ResultViewState {
+  NORMAL = 0,
+  SELECTED,
+  HOVERED,
+  NUM_STATES
+};
+
+enum ColorKind {
+  BACKGROUND = 0,
+  TEXT,
+  DIMMED_TEXT,
+  URL,
+  NUM_KINDS
+};
+
+SkColor GetColor(ResultViewState state, ColorKind kind) {
+  static bool initialized = false;
+  static SkColor colors[NUM_STATES][NUM_KINDS];
+  if (!initialized) {
 #if defined(OS_WIN)
-static const SkColor kBackgroundColor =
-    color_utils::GetSysSkColor(COLOR_WINDOW);
-static const SkColor kSelectedBackgroundColor =
-    color_utils::GetSysSkColor(COLOR_HIGHLIGHT);
-static const SkColor kHoverBackgroundColor =
-    SkColorSetA(kSelectedBackgroundColor, 127);
-static const SkColor kTextColor =
-    color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-static const SkColor kSelectedTextColor =
-    color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
-static const SkColor kDimTextColor =
-    color_utils::GetSysSkColor(COLOR_GRAYTEXT);
-static const SkColor kSelectedDimTextColor =
-    color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
+    colors[NORMAL][BACKGROUND] = color_utils::GetSysSkColor(COLOR_WINDOW);
+    colors[SELECTED][BACKGROUND] = color_utils::GetSysSkColor(COLOR_HIGHLIGHT);
+    colors[NORMAL][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+    colors[SELECTED][TEXT] = color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
 #else
-// TODO(beng): source from theme provider.
-static const SkColor kBackgroundColor = SK_ColorWHITE;
-static const SkColor kSelectedBackgroundColor = SK_ColorBLUE;
-static const SkColor kHoverBackgroundColor = SK_ColorCYAN;
-static const SkColor kTextColor = SK_ColorBLACK;
-static const SkColor kSelectedTextColor = SK_ColorWHITE;
-static const SkColor kDimTextColor = SK_ColorGRAY;
-static const SkColor kSelectedDimTextColor = SK_ColorWHITE;
+    // TODO(beng): source from theme provider.
+    colors[NORMAL][BACKGROUND] = SK_ColorWHITE;
+    colors[SELECTED][BACKGROUND] = SK_ColorBLUE;
+    colors[NORMAL][TEXT] = SK_ColorBLACK;
+    colors[SELECTED][TEXT] = SK_ColorWHITE;
 #endif
-static const SkColor kStandardURLColor = SkColorSetRGB(0, 0x80, 0);
-static const SkColor kHighlightURLColor = SkColorSetRGB(0xD0, 0xFF, 0xD0);
-static const int kGlassPopupTransparency = 240;
-static const int kOpaquePopupTransparency = 255;
-static const int kHoverRowAlpha = 0x40;
+    colors[HOVERED][BACKGROUND] =
+        color_utils::AlphaBlend(colors[SELECTED][BACKGROUND],
+                                colors[NORMAL][BACKGROUND], 64);
+    colors[HOVERED][TEXT] = colors[NORMAL][TEXT];
+    const SkColor kDarkURL = SkColorSetRGB(0, 128, 0);
+    const SkColor kLightURL = SkColorSetRGB(128, 255, 128);
+    for (int i = 0; i < NUM_STATES; ++i) {
+      colors[i][DIMMED_TEXT] =
+          color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 128);
+      colors[i][URL] = color_utils::PickMoreReadableColor(kDarkURL, kLightURL,
+          colors[i][BACKGROUND]);
+    }
+    initialized = true;
+  }
+
+  return colors[state][kind];
+}
+
+const SkAlpha kGlassPopupAlpha = 240;
+const SkAlpha kOpaquePopupAlpha = 255;
 // The minimum distance between the top and bottom of the icon and the top or
 // bottom of the row. "Minimum" is used because the vertical padding may be
 // larger, depending on the size of the text.
-static const int kIconVerticalPadding = 2;
+const int kIconVerticalPadding = 2;
 // The minimum distance between the top and bottom of the text and the top or
 // bottom of the row. See comment about the use of "minimum" for
 // kIconVerticalPadding.
-static const int kTextVerticalPadding = 3;
+const int kTextVerticalPadding = 3;
 // The padding at the left edge of the row, left of the icon.
-static const int kRowLeftPadding = 6;
+const int kRowLeftPadding = 6;
 // The padding on the right edge of the row, right of the text.
-static const int kRowRightPadding = 3;
+const int kRowRightPadding = 3;
 // The horizontal distance between the right edge of the icon and the left edge
 // of the text.
-static const int kIconTextSpacing = 9;
+const int kIconTextSpacing = 9;
 // The size delta between the font used for the edit and the result rows. Passed
 // to gfx::Font::DeriveFont.
-static const int kEditFontAdjust = -1;
+const int kEditFontAdjust = -1;
+
+}
 
 class AutocompleteResultView : public views::View {
  public:
@@ -102,9 +126,7 @@ class AutocompleteResultView : public views::View {
   virtual bool OnMouseDragged(const views::MouseEvent& event);
 
  private:
-  // Get colors for row backgrounds and text for different row states.
-  SkColor GetBackgroundColor() const;
-  SkColor GetTextColor() const;
+  ResultViewState GetState() const;
 
   SkBitmap* GetIcon() const;
 
@@ -305,7 +327,9 @@ AutocompleteResultView::~AutocompleteResultView() {
 }
 
 void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
-  canvas->FillRectInt(GetBackgroundColor(), 0, 0, width(), height());
+  const ResultViewState state = GetState();
+  if (state != NORMAL)
+    canvas->drawColor(GetColor(state, BACKGROUND));
 
   int x = MirroredLeftPointForRect(icon_bounds_);
 
@@ -394,16 +418,10 @@ bool AutocompleteResultView::OnMouseDragged(const views::MouseEvent& event) {
   return false;
 }
 
-SkColor AutocompleteResultView::GetBackgroundColor() const {
+ResultViewState AutocompleteResultView::GetState() const {
   if (model_->IsSelectedIndex(model_index_))
-    return kSelectedBackgroundColor;
-  return model_->IsHoveredIndex(model_index_) ?
-      kHoverBackgroundColor : kBackgroundColor;
-}
-
-SkColor AutocompleteResultView::GetTextColor() const {
-  return model_->IsSelectedIndex(model_index_) ? kSelectedTextColor
-                                               : kTextColor;
+    return SELECTED;
+  return model_->IsHoveredIndex(model_index_) ? HOVERED : NORMAL;
 }
 
 SkBitmap* AutocompleteResultView::GetIcon() const {
@@ -529,16 +547,11 @@ gfx::Font AutocompleteResultView::GetFragmentFont(int style) const {
 }
 
 SkColor AutocompleteResultView::GetFragmentTextColor(int style) const {
-  bool selected = model_->IsSelectedIndex(model_index_);
-  if (style & ACMatchClassification::URL) {
-    // TODO(beng): bring over the contrast logic from the old popup and massage
-    //             these values. See autocomplete_popup_view_win.cc and
-    //             LuminosityContrast etc.
-    return selected ? kHighlightURLColor : kStandardURLColor;
-  }
-  if (style & ACMatchClassification::DIM)
-    return selected ? kSelectedDimTextColor : kDimTextColor;
-  return GetTextColor();
+  const ResultViewState state = GetState();
+  if (style & ACMatchClassification::URL)
+    return GetColor(state, URL);
+  return GetColor(state,
+      (style & ACMatchClassification::DIM) ? DIMMED_TEXT : TEXT);
 }
 
 void AutocompleteResultView::InitClass() {
@@ -838,7 +851,7 @@ void AutocompletePopupContentsView::PaintChildren(gfx::Canvas* canvas) {
   // shader to fill a path representing the round-rect clipping region. This
   // yields a nice anti-aliased edge.
   gfx::Canvas contents_canvas(width(), height(), true);
-  contents_canvas.FillRectInt(kBackgroundColor, 0, 0, width(), height());
+  contents_canvas.drawColor(GetColor(NORMAL, BACKGROUND));
   View::PaintChildren(&contents_canvas);
   // We want the contents background to be slightly transparent so we can see
   // the blurry glass effect on DWM systems behind. We do this _after_ we paint
@@ -937,14 +950,10 @@ void AutocompletePopupContentsView::UpdateBlurRegion() {
 void AutocompletePopupContentsView::MakeCanvasTransparent(
     gfx::Canvas* canvas) {
   // Allow the window blur effect to show through the popup background.
-  SkPaint paint;
-  SkColor transparency = GetThemeProvider()->ShouldUseNativeFrame() ?
-      kGlassPopupTransparency : kOpaquePopupTransparency;
-  paint.setColor(SkColorSetARGB(transparency, 255, 255, 255));
-  paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
-  paint.setStyle(SkPaint::kFill_Style);
-  canvas->FillRectInt(0, 0, canvas->getDevice()->width(),
-                      canvas->getDevice()->height(), paint);
+  SkAlpha alpha = GetThemeProvider()->ShouldUseNativeFrame() ?
+      kGlassPopupAlpha : kOpaquePopupAlpha;
+  canvas->drawColor(SkColorSetA(GetColor(NORMAL, BACKGROUND), alpha),
+                    SkXfermode::kDstIn_Mode);
 }
 
 // static

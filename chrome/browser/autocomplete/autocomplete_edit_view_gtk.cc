@@ -20,7 +20,6 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
@@ -29,8 +28,12 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 
-#if !defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/location_bar_view.h"
+#include "skia/ext/skia_utils_gtk.h"
+#else
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/location_bar_view_gtk.h"
 #endif
 
 namespace {
@@ -509,7 +512,8 @@ void AutocompleteEditViewGtk::SetBaseColor() {
 
   // If we're on a secure connection, ignore what the theme wants us to do
   // and use a yellow background.
-  if (use_gtk && scheme_security_level_ != ToolbarModel::SECURE) {
+  bool is_secure = (scheme_security_level_ == ToolbarModel::SECURE);
+  if (use_gtk && !is_secure) {
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, NULL);
 
     // Grab the text colors out of the style and set our tags to use them.
@@ -525,8 +529,15 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     g_object_set(G_OBJECT(normal_text_tag_), "foreground-gdk",
                  &style->text[GTK_STATE_NORMAL], NULL);
   } else {
+#if defined(TOOLKIT_VIEWS)
+    const GdkColor background_color = skia::SkColorToGdkColor(
+        LocationBarView::GetColor(is_secure, LocationBarView::BACKGROUND));
+    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL,
+        &background_color);
+#else
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL,
         &LocationBarViewGtk::kBackgroundColorByLevel[scheme_security_level_]);
+#endif
 
     g_object_set(G_OBJECT(faded_text_tag_), "foreground", kTextBaseColor, NULL);
     g_object_set(G_OBJECT(normal_text_tag_), "foreground", "#000000", NULL);

@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/color_utils.h"
 #include "app/gfx/favicon_size.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -47,28 +48,12 @@
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #include "chrome/browser/views/first_run_bubble.h"
-#else
-#include "base/gfx/gtk_util.h"
-#include "chrome/browser/gtk/location_bar_view_gtk.h"
 #endif
 
 using views::View;
 
-const int LocationBarView::kVertMargin = 2;
-
-const SkColor LocationBarView::kBackgroundColorByLevel[] = {
-  SkColorSetRGB(255, 245, 195),  // SecurityLevel SECURE: Yellow.
-  SkColorSetRGB(255, 255, 255),  // SecurityLevel NORMAL: White.
-  SkColorSetRGB(255, 255, 255),  // SecurityLevel INSECURE: White.
-};
-#if defined(OS_LINUX)
 // static
-const GdkColor LocationBarViewGtk::kBackgroundColorByLevel[3] = {
-  GDK_COLOR_RGB(255, 245, 195),  // SecurityLevel SECURE: Yellow.
-  GDK_COLOR_RGB(255, 255, 255),  // SecurityLevel NORMAL: White.
-  GDK_COLOR_RGB(255, 255, 255),  // SecurityLevel INSECURE: White.
-};
-#endif
+const int LocationBarView::kVertMargin = 2;
 
 // Padding on the right and left of the entry field.
 static const int kEntryPadding = 3;
@@ -140,10 +125,6 @@ LocationBarView::~LocationBarView() {
   DeletePageActionViews();
 }
 
-bool LocationBarView::IsInitialized() const {
-  return location_entry_view_ != NULL;
-}
-
 void LocationBarView::Init() {
   if (popup_window_mode_) {
     font_ = ResourceBundle::GetSharedInstance().GetFont(
@@ -192,25 +173,18 @@ void LocationBarView::Init() {
   selected_keyword_view_.SetVisible(false);
   selected_keyword_view_.SetParentOwned(false);
 
-#if defined(OS_WIN)
-  DWORD sys_color = GetSysColor(COLOR_GRAYTEXT);
-  SkColor gray = SkColorSetRGB(GetRValue(sys_color), GetGValue(sys_color),
-                               GetBValue(sys_color));
-#else
-  NOTIMPLEMENTED();
-  SkColor gray = SK_ColorGRAY;
-#endif
+  SkColor dimmed_text = GetColor(false, DEEMPHASIZED_TEXT);
 
   AddChildView(&type_to_search_view_);
   type_to_search_view_.SetVisible(false);
   type_to_search_view_.SetFont(font_);
-  type_to_search_view_.SetColor(gray);
+  type_to_search_view_.SetColor(dimmed_text);
   type_to_search_view_.SetParentOwned(false);
 
   AddChildView(&keyword_hint_view_);
   keyword_hint_view_.SetVisible(false);
   keyword_hint_view_.SetFont(font_);
-  keyword_hint_view_.SetColor(gray);
+  keyword_hint_view_.SetColor(dimmed_text);
   keyword_hint_view_.SetParentOwned(false);
 
   AddChildView(&security_image_view_);
@@ -230,6 +204,74 @@ void LocationBarView::Init() {
   Update(NULL);
 
   OnChanged();
+}
+
+bool LocationBarView::IsInitialized() const {
+  return location_entry_view_ != NULL;
+}
+
+// static
+SkColor LocationBarView::GetColor(bool is_secure, ColorKind kind) {
+  enum SecurityState {
+    NOT_SECURE = 0,
+    SECURE,
+    NUM_STATES
+  };
+
+  static bool initialized = false;
+  static SkColor colors[NUM_STATES][NUM_KINDS];
+  if (!initialized) {
+#if defined(OS_WIN)
+    colors[NOT_SECURE][BACKGROUND] = color_utils::GetSysSkColor(COLOR_WINDOW);
+    colors[NOT_SECURE][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+    colors[NOT_SECURE][SELECTED_TEXT] =
+        color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
+#else
+    // TODO(beng): source from theme provider.
+    colors[NOT_SECURE][BACKGROUND] = SK_ColorWHITE;
+    colors[NOT_SECURE][TEXT] = SK_ColorBLACK;
+    colors[NOT_SECURE][SELECTED_TEXT] = SK_ColorWHITE;
+#endif
+    colors[SECURE][BACKGROUND] = SkColorSetRGB(255, 245, 195);
+    colors[SECURE][TEXT] = SkColorSetRGB(0, 0, 0);
+    colors[SECURE][SELECTED_TEXT] = 0;  // Unused
+    colors[NOT_SECURE][DEEMPHASIZED_TEXT] =
+        color_utils::AlphaBlend(colors[NOT_SECURE][TEXT],
+                                colors[NOT_SECURE][BACKGROUND], 128);
+    colors[SECURE][DEEMPHASIZED_TEXT] =
+        color_utils::AlphaBlend(colors[SECURE][TEXT],
+                                colors[SECURE][BACKGROUND], 128);
+    const SkColor kDarkNotSecureText = SkColorSetRGB(200, 0, 0);
+    const SkColor kLightNotSecureText = SkColorSetRGB(255, 55, 55);
+    colors[NOT_SECURE][SECURITY_TEXT] =
+        color_utils::PickMoreReadableColor(kDarkNotSecureText,
+                                           kLightNotSecureText,
+                                           colors[NOT_SECURE][BACKGROUND]);
+    colors[SECURE][SECURITY_TEXT] = SkColorSetRGB(0, 150, 20);
+#if 0  // Info bubble background color is system theme window background color
+    colors[NOT_SECURE][SECURITY_INFO_BUBBLE_TEXT] =
+        colors[NOT_SECURE][SECURITY_TEXT];
+    const SkColor kDarkSecureInfoBubbleText = SkColorSetRGB(0, 153, 51);
+    const SkColor kLightSecureInfoBubbleText = SkColorSetRGB(102, 255, 152);
+    colors[SECURE][SECURITY_INFO_BUBBLE_TEXT] =
+        color_utils::PickMoreReadableColor(kDarkSecureInfoBubbleText,
+                                           kLightSecureInfoBubbleText,
+                                           colors[NOT_SECURE][BACKGROUND]);
+#else  // Info bubble background color is white
+    colors[NOT_SECURE][SECURITY_INFO_BUBBLE_TEXT] = kDarkNotSecureText;
+    colors[SECURE][SECURITY_INFO_BUBBLE_TEXT] = SkColorSetRGB(0, 153, 51);
+#endif
+    const SkColor kDarkSchemeStrikeout = SkColorSetRGB(210, 0, 0);
+    const SkColor kLightSchemeStrikeout = SkColorSetRGB(255, 45, 45);
+    colors[NOT_SECURE][SCHEME_STRIKEOUT] =
+        color_utils::PickMoreReadableColor(kDarkSchemeStrikeout,
+                                           kLightSchemeStrikeout,
+                                           colors[NOT_SECURE][BACKGROUND]);
+    colors[SECURE][SCHEME_STRIKEOUT] = 0;  // Unused
+    initialized = true;
+  }
+
+  return colors[is_secure ? SECURE : NOT_SECURE][kind];
 }
 
 void LocationBarView::Update(const TabContents* tab_for_state_restoring) {
@@ -282,8 +324,6 @@ void LocationBarView::Layout() {
 void LocationBarView::Paint(gfx::Canvas* canvas) {
   View::Paint(canvas);
 
-  SkColor bg = kBackgroundColorByLevel[model_->GetSchemeSecurityLevel()];
-
   const SkBitmap* background =
       popup_window_mode_ ?
           kPopupBackground :
@@ -291,8 +331,10 @@ void LocationBarView::Paint(gfx::Canvas* canvas) {
 
   canvas->TileImageInt(*background, 0, 0, 0, 0, width(), height());
   int top_margin = TopMargin();
-  canvas->FillRectInt(bg, 0, top_margin, width(),
-                      std::max(height() - top_margin - kVertMargin, 0));
+  canvas->FillRectInt(
+      GetColor(model_->GetSchemeSecurityLevel() == ToolbarModel::SECURE,
+               BACKGROUND),
+      0, top_margin, width(), std::max(height() - top_margin - kVertMargin, 0));
 }
 
 void LocationBarView::VisibleBoundsInRootChanged() {
@@ -675,7 +717,7 @@ void LocationBarView::SetInfoText(const std::wstring& text,
   info_label_.SetVisible(!text.empty());
   info_label_.SetText(text);
   if (text_type == ToolbarModel::INFO_EV_TEXT)
-    info_label_.SetColor(SkColorSetRGB(0, 150, 20));  // Green.
+    info_label_.SetColor(GetColor(true, SECURITY_TEXT));
   info_label_.SetTooltipText(tooltip_text);
 }
 
@@ -1163,10 +1205,10 @@ bool LocationBarView::SecurityImageView::OnMousePressed(
 
 void LocationBarView::SecurityImageView::ShowInfoBubble() {
   std::wstring text;
-  SkColor text_color;
-  model_->GetIconHoverText(&text, &text_color);
-
-  ShowInfoBubbleImpl(text, text_color);
+  model_->GetIconHoverText(&text);
+  ShowInfoBubbleImpl(text, GetColor(
+      model_->GetSecurityLevel() == ToolbarModel::SECURE,
+      SECURITY_INFO_BUBBLE_TEXT));
 }
 
 // PageActionImageView----------------------------------------------------------
@@ -1329,8 +1371,11 @@ bool LocationBarView::PageActionImageView::OnMousePressed(
 }
 
 void LocationBarView::PageActionImageView::ShowInfoBubble() {
-  SkColor text_color = SK_ColorBLACK;
-  ShowInfoBubbleImpl(ASCIIToWide(tooltip_), text_color);
+#if 0  // Info bubble background color is system theme window background color
+  ShowInfoBubbleImpl(ASCIIToWide(tooltip_), GetColor(false, TEXT));
+#else  // Info bubble background color is white
+  ShowInfoBubbleImpl(ASCIIToWide(tooltip_), SK_ColorBLACK);
+#endif
 }
 
 void LocationBarView::PageActionImageView::UpdateVisibility(

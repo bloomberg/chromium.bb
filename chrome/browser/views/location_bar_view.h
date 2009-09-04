@@ -56,6 +56,17 @@ class LocationBarView : public LocationBar,
     virtual void OnInputInProgress(bool in_progress) = 0;
   };
 
+  enum ColorKind {
+    BACKGROUND = 0,
+    TEXT,
+    SELECTED_TEXT,
+    DEEMPHASIZED_TEXT,
+    SECURITY_TEXT,
+    SECURITY_INFO_BUBBLE_TEXT,
+    SCHEME_STRIKEOUT,
+    NUM_KINDS
+  };
+
   LocationBarView(Profile* profile,
                   CommandUpdater* command_updater,
                   ToolbarModel* model,
@@ -69,6 +80,10 @@ class LocationBarView : public LocationBar,
   // Returns whether this instance has been initialized by callin Init. Init can
   // only be called when the receiving instance is attached to a view container.
   bool IsInitialized() const;
+
+  // Returns the appropriate color for the desired kind, based on the user's
+  // system theme.
+  static SkColor GetColor(bool is_secure, ColorKind kind);
 
   // Updates the location bar.  We also reset the bar's permanent text and
   // security style, and, if |tab_for_state_restoring| is non-NULL, also restore
@@ -140,7 +155,6 @@ class LocationBarView : public LocationBar,
   virtual int PageActionVisibleCount();
 
   static const int kVertMargin;
-  static const SkColor kBackgroundColorByLevel[];
 
  protected:
   void Focus();

@@ -106,13 +106,8 @@ ToolbarModel::Icon ToolbarModel::GetIcon() {
   }
 }
 
-void ToolbarModel::GetIconHoverText(std::wstring* text, SkColor* text_color) {
-  static const SkColor kOKHttpsInfoBubbleTextColor =
-      SkColorSetRGB(0, 153, 51);  // Green.
-  static const SkColor kBrokenHttpsInfoBubbleTextColor =
-      SkColorSetRGB(255, 0, 0);  // Red.
-
-  DCHECK(text && text_color);
+void ToolbarModel::GetIconHoverText(std::wstring* text) {
+  DCHECK(text);
 
   NavigationController* navigation_controller = GetNavigationController();
   // We don't expect to be called during initialization, so the controller
@@ -130,12 +125,10 @@ void ToolbarModel::GetIconHoverText(std::wstring* text, SkColor* text_color) {
             SSLErrorInfo::CreateError(SSLErrorInfo::MIXED_CONTENTS,
                                       NULL, GURL::EmptyGURL());
         text->assign(error_info.short_description());
-        *text_color = kBrokenHttpsInfoBubbleTextColor;
       } else {
         DCHECK(entry->url().has_host());
         text->assign(l10n_util::GetStringF(IDS_SECURE_CONNECTION,
                                            UTF8ToWide(entry->url().host())));
-        *text_color = kOKHttpsInfoBubbleTextColor;
       }
       break;
     }
@@ -147,7 +140,6 @@ void ToolbarModel::GetIconHoverText(std::wstring* text, SkColor* text_color) {
         NOTREACHED();
         return;
       }
-      *text_color = kBrokenHttpsInfoBubbleTextColor;
       break;
     }
     default:
