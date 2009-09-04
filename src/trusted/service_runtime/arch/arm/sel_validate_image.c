@@ -33,8 +33,6 @@
  * Invoke validator for NaCl secure ELF loader (NaCl SEL).
  */
 
-//#include <string.h>
-
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/validator_arm/ncvalidate.h"
@@ -47,7 +45,6 @@ void NaClIgnoreValidatorResult() {
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   uintptr_t               memp;
   uintptr_t               endp;
-  struct NCValidatorState *vstate;
   size_t                  regionsize;
   NaClErrorCode           rcode = LOAD_BAD_FILE;
 
