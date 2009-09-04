@@ -191,6 +191,10 @@ class MessageNode(base.ContentNode):
     id = id_map[self.GetTextualIds()[0]]
 
     message = self.ws_at_start + self.Translate(lang) + self.ws_at_end
+    if "\\n" in message:
+      # Windows automatically translates \n to a new line, but GTK+ doesn't.
+      # Manually do the conversion here rather than at run time.
+      message = message.replace("\\n", "\n")
     # |message| is a python unicode string, so convert to a utf16 byte stream
     # because that's the format of datapacks.  We skip the first 2 bytes
     # because it is the BOM.
