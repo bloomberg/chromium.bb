@@ -9,7 +9,9 @@
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "base/thread.h"
+#include "build/build_config.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -289,6 +291,10 @@ FilePath PrefService::GetFilePath(const wchar_t* path) const {
   }
   bool rv = pref->GetValue()->GetAsString(&result);
   DCHECK(rv);
+#if defined(OS_POSIX)
+  // We store filepaths as UTF8, so convert it back to the system type.
+  result = base::SysWideToNativeMB(UTF8ToWide(result));
+#endif
   return FilePath(result);
 }
 
@@ -511,7 +517,14 @@ void PrefService::SetFilePath(const wchar_t* path, const FilePath& value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
+#if defined(OS_POSIX)
+  // Value::SetString only knows about UTF8 strings, so convert the path from
+  // the system native value to UTF8.
+  std::string path_utf8 = WideToUTF8(base::SysNativeMBToWide(value.value()));
+  bool rv = persistent_->SetString(path, path_utf8);
+#else
   bool rv = persistent_->SetString(path, value.value());
+#endif
   DCHECK(rv);
 
   FireObserversIfChanged(path, old_value.get());
