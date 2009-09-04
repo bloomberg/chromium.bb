@@ -12,7 +12,6 @@
       'type': '<(library)',
       'msvs_guid': 'CD9CA56E-4E94-444C-87D4-58CA1E6F300D',
       'sources': [
-        'precompiled.cc',
         #'../third_party/skia/src/animator/SkAnimate.h',
         #'../third_party/skia/src/animator/SkAnimateActive.cpp',
         #'../third_party/skia/src/animator/SkAnimateActive.h',
@@ -559,7 +558,6 @@
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
-        'precompiled.cc',
       ],
       'conditions': [
         [ 'OS != "mac"', {
@@ -628,12 +626,6 @@
             '../third_party/skia/src/ports/SkThread_pthread.cpp',
             '../third_party/skia/src/ports/SkTime_Unix.cc',
           ],
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header': 'include/core/SkTypes.h',
-              'msvs_precompiled_source': 'precompiled.cc',
-            },
-          },
           'include_dirs': [
             'config/win',
           ],

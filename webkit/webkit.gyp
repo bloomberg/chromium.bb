@@ -245,8 +245,6 @@
       ],
       'sources': [
         '<@(javascriptcore_files)',
-        'build/precompiled_webkit.cc',
-        'build/precompiled_webkit.h',
       ],
       'sources/': [
         # First exclude everything ...
@@ -268,12 +266,6 @@
         '../third_party/icu38/icu38.gyp:icui18n',
         '../third_party/icu38/icu38.gyp:icuuc',
       ],
-      'configurations': {
-        'Debug': {
-          'msvs_precompiled_header': 'build/precompiled_webkit.h',
-          'msvs_precompiled_source': 'build/precompiled_webkit.cc',
-        },
-      },
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
       'conditions': [
         ['OS=="win"', {
@@ -295,11 +287,6 @@
           'include_dirs!': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
-        }, { # OS != "win"
-          'sources!': [
-            'build/precompiled_webkit.cc',
-            'build/precompiled_webkit.h',
-           ],
         }],
         ['OS=="linux"', {
           'defines': ['WTF_USE_PTHREADS=1'],

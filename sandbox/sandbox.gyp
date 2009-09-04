@@ -198,10 +198,6 @@
             'src/win_utils.h',
             'src/window.h',
             'src/window.cc',
-
-            # Precompiled headers.
-            'src/stdafx.cc',
-            'src/stdafx.h',
           ],
           'include_dirs': [
             '..',
@@ -215,12 +211,6 @@
               ],
             },
           ],
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header': 'src/stdafx.h',
-              'msvs_precompiled_source': 'src/stdafx.cc',
-            },
-          },
           'direct_dependent_settings': {
             'include_dirs': [
               'src',
@@ -250,17 +240,7 @@
             'src/registry_policy_test.cc',
             'src/sync_policy_test.cc',
             'src/unload_dll_test.cc',
-
-            # Precompiled headers.
-            'tests/integration_tests/stdafx.cc',
-            'tests/integration_tests/stdafx.h',
           ],
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header': 'tests/integration_tests/stdafx.h',
-              'msvs_precompiled_source': 'tests/integration_tests/stdafx.cc',
-            },
-          },
         },
         {
           'target_name': 'sbox_validation_tests',
@@ -276,17 +256,7 @@
             'tests/validation_tests/commands.cc',
             'tests/validation_tests/commands.h',
             'tests/validation_tests/suite.cc',
-
-            # Precompiled headers.
-            'tests/validation_tests/stdafx.cc',
-            'tests/validation_tests/stdafx.h',
           ],
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header': 'tests/validation_tests/stdafx.h',
-              'msvs_precompiled_source': 'tests/validation_tests/stdafx.cc',
-            },
-          },
         },
         {
           'target_name': 'sbox_unittests',
@@ -308,17 +278,7 @@
             'src/policy_opcodes_unittest.cc',
             'src/ipc_unittest.cc',
             'src/threadpool_unittest.cc',
-
-            # Precompiled headers.
-            'tests/unit_tests/stdafx.cc',
-            'tests/unit_tests/stdafx.h',
           ],
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header': 'tests/unit_tests/stdafx.h',
-              'msvs_precompiled_source': 'tests/unit_tests/stdafx.cc',
-            },
-          },
         },
         {
           'target_name': 'sandbox_poc',
@@ -335,10 +295,6 @@
             'sandbox_poc/sandbox.h',
             'sandbox_poc/sandbox.ico',
             'sandbox_poc/sandbox.rc',
-
-            # Precompiled headers.
-            'sandbox_poc/stdafx.cc',
-            'sandbox_poc/stdafx.h',
           ],
           'link_settings': {
             'libraries': [
@@ -348,12 +304,6 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
-            },
-          },
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header': 'sandbox_poc/stdafx.h',
-              'msvs_precompiled_source': 'sandbox_poc/stdafx.cc',
             },
           },
         },
@@ -371,10 +321,6 @@
             'sandbox_poc/pocdll/registry.cc',
             'sandbox_poc/pocdll/spyware.cc',
             'sandbox_poc/pocdll/utils.h',
-
-            # Precompiled headers.
-            'sandbox_poc/pocdll/stdafx.cc',
-            'sandbox_poc/pocdll/stdafx.h',
           ],
           'defines': [
             'POCDLL_EXPORTS',
@@ -382,12 +328,6 @@
           'include_dirs': [
             '..',
           ],
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header': 'sandbox_poc/pocdll/stdafx.h',
-              'msvs_precompiled_source': 'sandbox_poc/pocdll/stdafx.cc',
-            },
-          },
         },
       ],
     }],

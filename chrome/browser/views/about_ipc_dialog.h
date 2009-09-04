@@ -5,13 +5,19 @@
 #ifndef CHROME_BROWSER_VIEWS_ABOUT_IPC_DIALOG_H_
 #define CHROME_BROWSER_VIEWS_ABOUT_IPC_DIALOG_H_
 
+#if defined(OS_WIN) && defined(IPC_MESSAGE_LOG_ENABLED)
+
+#include <atlbase.h>
+#include <atlapp.h>
+#include <atlwin.h>
+#include <atlctrls.h>
+
 #include "base/singleton.h"
 #include "ipc/ipc_logging.h"
 #include "views/controls/button/button.h"
 #include "views/controls/table/table_view.h"
 #include "views/window/dialog_delegate.h"
 
-#if defined(OS_WIN) && defined(IPC_MESSAGE_LOG_ENABLED)
 
 class Profile;
 namespace views {
@@ -54,7 +60,7 @@ class AboutIPCDialog : public views::DialogDelegate,
   // views::ButtonListener.
   virtual void ButtonPressed(views::Button* button, const views::Event& event);
 
-  CListViewCtrl message_list_;
+  WTL::CListViewCtrl message_list_;
 
   views::TextButton* track_toggle_;
   views::TextButton* clear_button_;

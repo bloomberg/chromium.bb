@@ -362,7 +362,7 @@ void AboutIPCDialog::Layout() {
   if (!message_list_.m_hWnd) {
     HWND parent_window = GetRootView()->GetWidget()->GetNativeView();
 
-    CRect rect(0, 0, 10, 10);
+    RECT rect = {0, 0, 10, 10};
     HWND list_hwnd = message_list_.Create(parent_window,
         rect, NULL, WS_CHILD | WS_VISIBLE | LVS_SORTASCENDING);
     message_list_.SetViewType(LVS_REPORT);
