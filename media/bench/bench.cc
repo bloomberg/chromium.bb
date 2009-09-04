@@ -22,6 +22,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "media/base/media.h"
+#include "media/bench/file_protocol.h"
 #include "media/filters/ffmpeg_common.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 
@@ -113,6 +114,7 @@ int main(int argc, const char** argv) {
   // Register FFmpeg and attempt to open file.
   avcodec_init();
   av_register_all();
+  av_register_protocol(&kFFmpegFileProtocol);
   AVFormatContext* format_context = NULL;
   if (av_open_input_file(&format_context, in_path.c_str(), NULL, 0, NULL) < 0) {
     std::cerr << "Could not open " << in_path << std::endl;
