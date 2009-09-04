@@ -46,6 +46,19 @@ static std::wstring FindBestMatchFontFamilyName(const char* family_name) {
   return font_family;
 }
 
+// static
+Font Font::CreateFont(PangoFontDescription* desc) {
+  gint size = pango_font_description_get_size(desc);
+  const char* family_name = pango_font_description_get_family(desc);
+
+  // Find best match font for |family_name| to make sure we can get
+  // a SkTypeface for the default font.
+  // TODO(agl): remove this.
+  std::wstring font_family = FindBestMatchFontFamilyName(family_name);
+
+  return Font(CreateFont(font_family, size / PANGO_SCALE));
+}
+
 // Get the default gtk system font (name and size).
 Font::Font() {
   if (default_font_ == NULL) {
@@ -62,16 +75,7 @@ Font::Font() {
 
     PangoFontDescription* desc =
         pango_font_description_from_string(font_name);
-    gint size = pango_font_description_get_size(desc);
-    const char* family_name = pango_font_description_get_family(desc);
-
-    // Find best match font for |family_name| to make sure we can get
-    // a SkTypeface for the default font.
-    // TODO(agl): remove this.
-    std::wstring font_family = FindBestMatchFontFamilyName(family_name);
-
-    default_font_ = new Font(CreateFont(font_family, size / PANGO_SCALE));
-
+    default_font_ = new Font(CreateFont(desc));
     pango_font_description_free(desc);
     g_free(font_name);
 

@@ -125,6 +125,7 @@ class Font {
     return dlus * font_ref_->height() / 8;
   }
 #elif defined(OS_LINUX)
+  static Font CreateFont(PangoFontDescription* desc);
   // We need a copy constructor and assignment operator to deal with
   // the Skia reference counting.
   Font(const Font& other);
