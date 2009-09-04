@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ TEST_F(CreateDirWorkItemTest, CreatePath) {
   dir_to_create = dir_to_create.AppendASCII("d");
 
   scoped_ptr<CreateDirWorkItem> work_item(
-      WorkItem::CreateCreateDirWorkItem(dir_to_create.ToWStringHack()));
+      WorkItem::CreateCreateDirWorkItem(dir_to_create));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -70,7 +70,7 @@ TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
   ASSERT_TRUE(file_util::PathExists(dir_to_create));
 
   scoped_ptr<CreateDirWorkItem> work_item(
-      WorkItem::CreateCreateDirWorkItem(dir_to_create.ToWStringHack()));
+      WorkItem::CreateCreateDirWorkItem(dir_to_create));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -94,7 +94,7 @@ TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
   dir_to_create_3 = dir_to_create_3.AppendASCII("ccc");
 
   scoped_ptr<CreateDirWorkItem> work_item(
-      WorkItem::CreateCreateDirWorkItem(dir_to_create_3.ToWStringHack()));
+      WorkItem::CreateCreateDirWorkItem(dir_to_create_3));
 
   EXPECT_TRUE(work_item->Do());
 
@@ -127,7 +127,7 @@ TEST_F(CreateDirWorkItemTest, RollbackWithMissingDir) {
   dir_to_create_3 = dir_to_create_3.AppendASCII("cccc");
 
   scoped_ptr<CreateDirWorkItem> work_item(
-      WorkItem::CreateCreateDirWorkItem(dir_to_create_3.ToWStringHack()));
+      WorkItem::CreateCreateDirWorkItem(dir_to_create_3));
 
   EXPECT_TRUE(work_item->Do());
 

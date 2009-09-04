@@ -1,12 +1,14 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_INSTALLER_UTIL_CREATE_DIR_WORK_ITEM_H__
-#define CHROME_INSTALLER_UTIL_CREATE_DIR_WORK_ITEM_H__
+#ifndef CHROME_INSTALLER_UTIL_CREATE_DIR_WORK_ITEM_H_
+#define CHROME_INSTALLER_UTIL_CREATE_DIR_WORK_ITEM_H_
 
 #include <string>
 #include <windows.h>
+
+#include "base/file_path.h"
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that creates a directory with the specified path.
@@ -26,7 +28,7 @@ class CreateDirWorkItem : public WorkItem {
  private:
   friend class WorkItem;
 
-  CreateDirWorkItem(const std::wstring& path);
+  explicit CreateDirWorkItem(const FilePath& path);
 
   // Get the top most directory that needs to be created in order to create
   // "path_", and set "top_path_" accordingly. if "path_" already exists,
@@ -34,12 +36,12 @@ class CreateDirWorkItem : public WorkItem {
   void GetTopDirToCreate();
 
   // Path of the directory to be created.
-  std::wstring path_;
+  FilePath path_;
 
   // The top most directory that needs to be created.
-  std::wstring top_path_;
+  FilePath top_path_;
 
   bool rollback_needed_;
 };
 
-#endif  // CHROME_INSTALLER_UTIL_CREATE_DIR_WORK_ITEM_H__
+#endif  // CHROME_INSTALLER_UTIL_CREATE_DIR_WORK_ITEM_H_

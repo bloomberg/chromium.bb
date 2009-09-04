@@ -30,7 +30,7 @@ CopyTreeWorkItem* WorkItem::CreateCopyTreeWorkItem(
                               overwrite_option, alternative_path);
 }
 
-CreateDirWorkItem* WorkItem::CreateCreateDirWorkItem(const std::wstring& path) {
+CreateDirWorkItem* WorkItem::CreateCreateDirWorkItem(const FilePath& path) {
   return new CreateDirWorkItem(path);
 }
 

@@ -74,7 +74,7 @@ bool WorkItemList::AddCopyTreeWorkItem(const std::wstring& source_path,
   return AddWorkItem(item);
 }
 
-bool WorkItemList::AddCreateDirWorkItem(const std::wstring& path) {
+bool WorkItemList::AddCreateDirWorkItem(const FilePath& path) {
   WorkItem* item = reinterpret_cast<WorkItem*>(
       WorkItem::CreateCreateDirWorkItem(path));
   return AddWorkItem(item);

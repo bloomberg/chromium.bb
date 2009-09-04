@@ -10,6 +10,8 @@
 #include <list>
 #include <string>
 
+#include "base/file_path.h"
+
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that recursively contains a list of WorkItems. Thus it
@@ -41,7 +43,7 @@ class WorkItemList : public WorkItem {
                            const std::wstring& alternative_path = L"");
 
   // Add a CreateDirWorkItem that creates a directory at the given path.
-  bool AddCreateDirWorkItem(const std::wstring& path);
+  bool AddCreateDirWorkItem(const FilePath& path);
 
   // Add a CreateRegKeyWorkItem that creates a registry key at the given
   // path.

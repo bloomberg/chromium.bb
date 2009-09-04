@@ -12,6 +12,8 @@
 #include <windows.h>
 #include <string>
 
+#include "base/file_path.h"
+
 class CopyTreeWorkItem;
 class CreateDirWorkItem;
 class CreateRegKeyWorkItem;
@@ -51,7 +53,7 @@ class WorkItem {
       const std::wstring& alternative_path = L"");
 
   // Create a CreateDirWorkItem that creates a directory at the given path.
-  static CreateDirWorkItem* CreateCreateDirWorkItem(const std::wstring& path);
+  static CreateDirWorkItem* CreateCreateDirWorkItem(const FilePath& path);
 
   // Create a CreateRegKeyWorkItem that creates a registry key at the given
   // path.

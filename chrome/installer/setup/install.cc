@@ -59,7 +59,8 @@ void AddInstallerCopyTasks(const std::wstring& exe_path,
                            bool system_level) {
   std::wstring installer_dir(installer::GetInstallerPathUnderChrome(
       install_path, new_version));
-  install_list->AddCreateDirWorkItem(installer_dir);
+  install_list->AddCreateDirWorkItem(
+      FilePath::FromWStringHack(installer_dir));
 
   std::wstring exe_dst(installer_dir);
   std::wstring archive_dst(installer_dir);
@@ -324,11 +325,11 @@ bool installer::InstallNewVersion(const std::wstring& exe_path,
 
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
   // A temp directory that work items need and the actual install directory.
-  install_list->AddCreateDirWorkItem(temp_dir);
-  install_list->AddCreateDirWorkItem(install_path);
+  install_list->AddCreateDirWorkItem(FilePath::FromWStringHack(temp_dir));
+  install_list->AddCreateDirWorkItem(FilePath::FromWStringHack(install_path));
 
   // If it is system level install copy the version folder (since we want to
-  // take the permissions of %ProgramFiles% folder) otherwise just move it. 
+  // take the permissions of %ProgramFiles% folder) otherwise just move it.
   if (reg_root == HKEY_LOCAL_MACHINE) {
     install_list->AddCopyTreeWorkItem(
         AppendPath(src_path, new_version.GetString()),
