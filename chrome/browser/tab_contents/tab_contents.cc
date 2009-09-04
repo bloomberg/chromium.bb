@@ -9,6 +9,7 @@
 #include "base/file_version_info.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/autofill_manager.h"
 #include "chrome/browser/blocked_popup_container.h"
@@ -1657,8 +1658,16 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
       FileVersionInfo::CreateFileVersionInfo(plugin_path));
   if (version_info.get()) {
     const std::wstring& product_name = version_info->product_name();
-    if (!product_name.empty())
+    if (!product_name.empty()) {
       plugin_name = product_name;
+#if defined(OS_MACOSX)
+      // Many plugins on the Mac have .plugin in the actual name, which looks
+      // terrible, so look for that and strip it off if present.
+      const std::wstring plugin_extension(L".plugin");
+      if (EndsWith(plugin_name, plugin_extension, true))
+        plugin_name.erase(plugin_name.length() - plugin_extension.length());
+#endif  // OS_MACOSX
+    }
   }
 #else
   NOTIMPLEMENTED() << " convert plugin path to plugin name";
