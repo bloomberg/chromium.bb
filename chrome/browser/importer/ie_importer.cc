@@ -142,7 +142,7 @@ void IEImporter::ImportPasswordsIE6() {
     return;
   }
 
-  CComPtr<IPStore, &IID_IPStore> pstore;
+  CComPtr<IPStore> pstore;
   HRESULT result = PStoreCreateInstance(&pstore, 0, 0, 0);
   if (result != S_OK) {
     FreeLibrary(pstorec_dll);
