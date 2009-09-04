@@ -6,3 +6,25 @@ e12fff15  # bx r5
 # An indirect branch with a BIC that does the wrong thing.
 e1c12263 # bic r5, rY, rZ -- not the right BIC form.
 e12fff15 # bx r5
+
+# The same two cases tested above, except using blx instead of bx.
+03c552FF  # biceq r5, r5, #0xF000000F
+e12fff35  # blx r5
+e1c12263  # bic r5, rY, rZ -- not the right BIC form.
+e12fff35  # blx r5
+
+# And again, except now we use BXJ.
+03c552FF  # biceq r5, r5, #0xF000000F
+e12fff25  # bxj r5
+e1c12263  # bic r5, rY, rZ -- not the right BIC form.
+e12fff25  # bxj r5
+
+# A sneaky data-processing operation pretending it's a branch.
+e28ef042  # add r15, r15, #0x42
+
+# A data-processing operation that's actually allowed to be a branch...
+e3cef2ff  # bic r15, r14, #0xF000000F  - mask from other register
+e3cff2ff  # bic r15, r14, #0xF000000F  - mask in place
+
+# ...and a form that isn't.
+e1cef00d  # bic r15, r14, r13

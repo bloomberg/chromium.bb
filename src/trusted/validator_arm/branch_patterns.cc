@@ -42,43 +42,72 @@
 // The expected mask for safe indirect branches.
 static const uint32_t kControlFlowMask = 0xF000000F;
 
-// Validator pattern for a safe mask-and-branch sequence.
+// A function that recognizes a proper control flow BIC sequence.
+static bool isControlFlowBic(const NcDecodeState &state) {
+  if (state.CurrentInstructionIs(ARM_BIC)) {
+    const NcDecodedInstruction &inst = state.CurrentInstruction();
+    // We don't check that this is a register-immediate BIC, but that's okay:
+    // the immediate field is 0 in other cases and will fail this check.
+    uint32_t rhs = ImmediateRotateRight(inst.values.immediate,
+        inst.values.shift * 2);
+    return rhs == kControlFlowMask;
+  } else {
+    return false;
+  }
+}
+
+/*
+ * Validator pattern for a safe mask-and-branch sequence.
+ */
 class SafeIndirectBranchPattern : public ValidatorPattern {
  public:
   SafeIndirectBranchPattern() : ValidatorPattern("indirect branch", 2, 1) {}
   virtual ~SafeIndirectBranchPattern() {}
 
-  virtual bool MayBeUnsafe(const NcDecodeState &state);
-  virtual bool IsSafe(const NcDecodeState &state);
+  virtual bool MayBeUnsafe(const NcDecodeState &state) {
+    return state.CurrentInstructionIs(ARM_BRANCH_RS);
+  }
+  virtual bool IsSafe(const NcDecodeState &state) {
+    NcDecodeState pred(state);
+    pred.PreviousInstruction();
+
+    if (!pred.HasValidPc() || !isControlFlowBic(pred)) return false;
+
+    const NcDecodedInstruction &branch = state.CurrentInstruction();
+    const NcDecodedInstruction &mask = pred.CurrentInstruction();
+
+    if (branch.values.cond == mask.values.cond
+        && branch.values.arg4 == mask.values.arg2) {
+      // Note: we don't care whether the BIC sets flags.  If it does, we may
+      // mask without branching, which is basically a no-op.
+      return true;
+    }
+
+    return false;
+  }
 };
 
-bool SafeIndirectBranchPattern::MayBeUnsafe(const NcDecodeState &state) {
-  return state.CurrentInstructionIs(ARM_BRANCH_RS);
-}
+/*
+ * Validator pattern for non-branch writes to PC.
+ */
+class NonBranchPcUpdatePattern : public ValidatorPattern {
+ public:
+  NonBranchPcUpdatePattern()
+      : ValidatorPattern("non-branch PC update", 1, 0) {}
+  virtual ~NonBranchPcUpdatePattern() {}
 
-bool SafeIndirectBranchPattern::IsSafe(const NcDecodeState &state) {
-  NcDecodeState pred(state);
-  pred.PreviousInstruction();
-
-  if (!pred.HasValidPc() || !pred.CurrentInstructionIs(ARM_BIC)) return false;
-
-  const NcDecodedInstruction &branch = state.CurrentInstruction();
-  const NcDecodedInstruction &mask = pred.CurrentInstruction();
-
-  uint32_t rhs =
-      ImmediateRotateRight(mask.values.immediate, mask.values.shift * 2);
-
-  if (branch.values.cond == mask.values.cond
-      && branch.values.arg4 == mask.values.arg2
-      && kControlFlowMask == rhs) {
-    // Note: we don't care whether the BIC sets flags.  If it does, we may
-    // mask without branching, which is basically a no-op.
-    return true;
+  virtual bool MayBeUnsafe(const NcDecodeState &state) {
+    const NcDecodedInstruction &inst = state.CurrentInstruction();
+    return GetBit(RegisterSets(&inst), PC_INDEX)
+        && !state.CurrentInstructionIs(ARM_BRANCH_RS)
+        && !state.CurrentInstructionIs(ARM_BRANCH);
   }
-
-  return false;
-}
+  virtual bool IsSafe(const NcDecodeState &state) {
+    return isControlFlowBic(state);
+  }
+};
 
 void InstallBranchPatterns() {
   RegisterValidatorPattern(new SafeIndirectBranchPattern());
+  RegisterValidatorPattern(new NonBranchPcUpdatePattern());
 }
