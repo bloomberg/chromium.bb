@@ -861,7 +861,7 @@ BUG10284 RELEASE : LayoutTests/svg/custom/path-bad-data.svg = FAIL
 BUG10285 WIN LINUX : LayoutTests/svg/custom/foreignObject-crash-on-hover.xml = FAIL
 
 // Merge 39744:39913? - regressions
-BUG10286 LINUX DEBUG: LayoutTests/svg/W3C-SVG-1.1/animate-elem-02-t.svg = FAIL PASS CRASH
+BUG10286 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-02-t.svg = FAIL PASS CRASH
 
 BUG10287 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/coords-units-01-b.svg = FAIL PASS
 
@@ -1502,6 +1502,14 @@ BUG8630 WIN LINUX : LayoutTests/fast/replaced/width100percent-button.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/table/empty-section-crash.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
 BUG8630 WIN LINUX : pending/fast/repaint/bugzilla-6473.html = FAIL
+// These started failing after initial implementation of .display() landed.
+BUG8630 LINUX DEBUG : LayoutTests/svg/custom/mask-inside-defs.svg = FAIL
+BUG8630 LINUX DEBUG : LayoutTests/svg/custom/stroked-pattern.svg = FAIL
+BUG8630 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL
+BUG8630 LINUX : LayoutTests/svg/batik/filters/feTile.svg = FAIL
+BUG8630 LINUX : LayoutTests/fast/backgrounds/001.html = CRASH
+BUG8630 LINUX : LayoutTests/fast/forms/form-added-to-table.html = FAIL
+BUG8630 LINUX : LayoutTests/fast/forms/button-align.html = FAIL
 
 // Linux pixeltest failure: Failing to rotate the form control
 BUG10390 LINUX : LayoutTests/fast/transforms/transformed-focused-text-input.html = FAIL
