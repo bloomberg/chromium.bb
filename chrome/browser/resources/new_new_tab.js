@@ -959,6 +959,7 @@ function OptionMenu(button, menu) {
 OptionMenu.prototype = {
   show: function() {
     this.menu.style.display = 'block';
+    addClass(this.button, 'open');
     this.button.focus();
 
     // Listen to document and window events so that we hide the menu when the
@@ -969,6 +970,7 @@ OptionMenu.prototype = {
 
   hide: function() {
     this.menu.style.display = 'none';
+    removeClass(this.button, 'open');
     this.setSelectedIndex(-1);
 
     document.removeEventListener('focus', this.boundMaybeHide_, true);

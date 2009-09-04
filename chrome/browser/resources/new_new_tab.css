@@ -610,7 +610,8 @@ html[dir='rtl'] #view-toolbar {
   background-image: url(chrome://theme/newtab_option_h);
 }
 
-#option-button:active {
+#option-button:active,
+#option-button.open {
   background-image: url(chrome://theme/newtab_option_p);
 }
 
