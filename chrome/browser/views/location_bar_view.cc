@@ -248,7 +248,6 @@ SkColor LocationBarView::GetColor(bool is_secure, ColorKind kind) {
                                            kLightNotSecureText,
                                            colors[NOT_SECURE][BACKGROUND]);
     colors[SECURE][SECURITY_TEXT] = SkColorSetRGB(0, 150, 20);
-#if 0  // Info bubble background color is system theme window background color
     colors[NOT_SECURE][SECURITY_INFO_BUBBLE_TEXT] =
         colors[NOT_SECURE][SECURITY_TEXT];
     const SkColor kDarkSecureInfoBubbleText = SkColorSetRGB(0, 153, 51);
@@ -257,10 +256,6 @@ SkColor LocationBarView::GetColor(bool is_secure, ColorKind kind) {
         color_utils::PickMoreReadableColor(kDarkSecureInfoBubbleText,
                                            kLightSecureInfoBubbleText,
                                            colors[NOT_SECURE][BACKGROUND]);
-#else  // Info bubble background color is white
-    colors[NOT_SECURE][SECURITY_INFO_BUBBLE_TEXT] = kDarkNotSecureText;
-    colors[SECURE][SECURITY_INFO_BUBBLE_TEXT] = SkColorSetRGB(0, 153, 51);
-#endif
     const SkColor kDarkSchemeStrikeout = SkColorSetRGB(210, 0, 0);
     const SkColor kLightSchemeStrikeout = SkColorSetRGB(255, 45, 45);
     colors[NOT_SECURE][SCHEME_STRIKEOUT] =
@@ -1371,11 +1366,7 @@ bool LocationBarView::PageActionImageView::OnMousePressed(
 }
 
 void LocationBarView::PageActionImageView::ShowInfoBubble() {
-#if 0  // Info bubble background color is system theme window background color
   ShowInfoBubbleImpl(ASCIIToWide(tooltip_), GetColor(false, TEXT));
-#else  // Info bubble background color is white
-  ShowInfoBubbleImpl(ASCIIToWide(tooltip_), SK_ColorBLACK);
-#endif
 }
 
 void LocationBarView::PageActionImageView::UpdateVisibility(

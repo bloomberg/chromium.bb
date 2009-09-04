@@ -5,6 +5,7 @@
 #include "chrome/browser/views/info_bubble.h"
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/color_utils.h"
 #include "app/gfx/path.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser_window.h"
@@ -38,7 +39,13 @@ static const int kArrowXOffset = 13;
 static const int kArrowToContentPadding = -4;
 
 // Background color of the bubble.
+#if defined(OS_WIN)
+static const SkColor kBackgroundColor =
+    color_utils::GetSysSkColor(COLOR_WINDOW);
+#else
+// TODO(beng): source from theme provider.
 static const SkColor kBackgroundColor = SK_ColorWHITE;
+#endif
 
 // Color of the border and arrow.
 static const SkColor kBorderColor1 = SkColorSetRGB(99, 99, 99);
