@@ -95,6 +95,7 @@ subcommands:
    config
    diff
    export
+   pack
    revert
    status
    sync
@@ -195,6 +196,30 @@ Examples:
 """,
     "export":
     """Wrapper for svn export for all managed directories
+""",
+    "pack":
+
+    """Generate a patch which can be applied at the root of the tree.
+Internally, runs 'svn diff' on each checked out module and
+dependencies, and performs minimal postprocessing of the output. The
+resulting patch is printed to stdout and can be applied to a freshly
+checked out tree via 'patch -p0 < patchfile'. Additional args and
+options to 'svn diff' can be passed after gclient options.
+
+usage: pack [options] [--] [svn args/options]
+
+Valid options:
+  --verbose            : output additional diagnostics
+
+Examples:
+  gclient pack > patch.txt
+      generate simple patch for configured client and dependences
+  gclient pack -- -x -b > patch.txt
+      generate patch using 'svn diff -x -b' to suppress
+      whitespace-only differences
+  gclient pack -- -r HEAD -x -b > patch.txt
+      generate patch, diffing each file versus the latest version of
+      each module
 """,
     "revert":
     """Revert every file in every managed directory in the client view.
@@ -408,40 +433,44 @@ def RemoveDirectory(*path):
 def SubprocessCall(command, in_directory, fail_status=None):
   """Runs command, a list, in directory in_directory.
 
-  This function wraps SubprocessCallAndCapture, but does not perform the
-  capturing functions.  See that function for a more complete usage
+  This function wraps SubprocessCallAndFilter, but does not perform the
+  filtering functions.  See that function for a more complete usage
   description.
   """
   # Call subprocess and capture nothing:
-  SubprocessCallAndCapture(command, in_directory, fail_status)
+  SubprocessCallAndFilter(command, in_directory, True, True, fail_status)
 
 
-def SubprocessCallAndCapture(command, in_directory, fail_status=None,
-                             pattern=None, capture_list=None):
+def SubprocessCallAndFilter(command,
+                            in_directory,
+                            print_messages,
+                            print_stdout,
+                            fail_status=None, filter=None):
   """Runs command, a list, in directory in_directory.
 
-  A message indicating what is being done, as well as the command's stdout,
-  is printed to out.
+  If print_messages is true, a message indicating what is being done
+  is printed to stdout. If print_stdout is true, the command's stdout
+  is also forwarded to stdout.
 
-  If a pattern is specified, any line in the output matching pattern will have
-  its first match group appended to capture_list.
+  If a filter function is specified, it is expected to take a single
+  string argument, and it will be called with each line of the
+  subprocess's output. Each line has had the trailing newline character
+  trimmed.
 
   If the command fails, as indicated by a nonzero exit status, gclient will
   exit with an exit status of fail_status.  If fail_status is None (the
   default), gclient will raise an Error exception.
   """
 
-  print("\n________ running \'%s\' in \'%s\'"
-        % (' '.join(command), in_directory))
+  if print_messages:
+    print("\n________ running \'%s\' in \'%s\'"
+          % (' '.join(command), in_directory))
 
   # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
   # executable, but shell=True makes subprocess on Linux fail when it's called
   # with a list because it only tries to execute the first item in the list.
   kid = subprocess.Popen(command, bufsize=0, cwd=in_directory,
       shell=(sys.platform == 'win32'), stdout=subprocess.PIPE)
-
-  if pattern:
-    compiled_pattern = re.compile(pattern)
 
   # Also, we need to forward stdout to prevent weird re-ordering of output.
   # This has to be done on a per byte basis to make sure it is not buffered:
@@ -451,12 +480,12 @@ def SubprocessCallAndCapture(command, in_directory, fail_status=None,
   in_line = ""
   while in_byte:
     if in_byte != "\r":
-      sys.stdout.write(in_byte)
-      in_line += in_byte
-    if in_byte == "\n" and pattern:
-      match = compiled_pattern.search(in_line[:-1])
-      if match:
-        capture_list.append(match.group(1))
+      if print_stdout:
+        sys.stdout.write(in_byte)
+      if in_byte != "\n":
+        in_line += in_byte
+    if in_byte == "\n" and filter:
+      filter(in_line)
       in_line = ""
     in_byte = kid.stdout.read(1)
   rv = kid.wait()
@@ -566,11 +595,54 @@ def RunSVNAndGetFileList(args, in_directory, file_list):
         'update':   update_pattern,
       }[args[0]]
 
-  SubprocessCallAndCapture(command,
-                           in_directory,
-                           pattern=pattern,
-                           capture_list=file_list)
+  compiled_pattern = re.compile(pattern)
 
+  def CaptureMatchingLines(line):
+    match = compiled_pattern.search(line)
+    if match:
+      file_list.append(match.group(1))
+
+  RunSVNAndFilterOutput(args,
+                        in_directory,
+                        True,
+                        True,
+                        CaptureMatchingLines)
+
+def RunSVNAndFilterOutput(args,
+                          in_directory,
+                          print_messages,
+                          print_stdout,
+                          filter):
+  """Runs svn checkout, update, status, or diff, optionally outputting
+  to stdout.
+
+  The first item in args must be either "checkout", "update",
+  "status", or "diff".
+
+  svn's stdout is passed line-by-line to the given filter function. If
+  print_stdout is true, it is also printed to sys.stdout as in RunSVN.
+
+  Args:
+    args: A sequence of command line parameters to be passed to svn.
+    in_directory: The directory where svn is to be run.
+    print_messages: Whether to print status messages to stdout about
+      which Subversion commands are being run.
+    print_stdout: Whether to forward Subversion's output to stdout.
+    filter: A function taking one argument (a string) which will be
+      passed each line (with the ending newline character removed) of
+      Subversion's output for filtering.
+
+  Raises:
+    Error: An error occurred while running the svn command.
+  """
+  command = [SVN_COMMAND]
+  command.extend(args)
+
+  SubprocessCallAndFilter(command,
+                          in_directory,
+                          print_messages,
+                          print_stdout,
+                          filter=filter)
 
 def CaptureSVNInfo(relpath, in_directory=None, print_error=True):
   """Returns a dictionary from the svn info output for the given file.
@@ -732,6 +804,7 @@ class SCMWrapper(object):
           'revert':   self.revert,
           'status':   self.status,
           'diff':     self.diff,
+          'pack':     self.pack,
           'runhooks': self.status,
         }
 
@@ -940,6 +1013,49 @@ class SCMWrapper(object):
     else:
       RunSVNAndGetFileList(command, path, file_list)
 
+  def pack(self, options, args, file_list):
+    """Generates a patch file which can be applied to the root of the
+    repository."""
+    path = os.path.join(self._root_dir, self.relpath)
+    command = ['diff']
+    command.extend(args)
+    # Simple class which tracks which file is being diffed and
+    # replaces instances of its file name in the original and
+    # working copy lines of the svn diff output.
+    class DiffFilterer(object):
+      index_string = "Index: "
+      original_prefix = "--- "
+      working_prefix = "+++ "
+
+      def __init__(self, relpath):
+        # Note that we always use '/' as the path separator to be
+        # consistent with svn's cygwin-style output on Windows
+        self._relpath = relpath.replace("\\", "/")
+        self._current_file = ""
+        self._replacement_file = ""
+
+      def SetCurrentFile(self, file):
+        self._current_file = file
+        # Note that we always use '/' as the path separator to be
+        # consistent with svn's cygwin-style output on Windows
+        self._replacement_file = self._relpath + '/' + file
+
+      def ReplaceAndPrint(self, line):
+        print(line.replace(self._current_file, self._replacement_file))
+
+      def Filter(self, line):
+        if (line.startswith(self.index_string)):
+          self.SetCurrentFile(line[len(self.index_string):])
+          self.ReplaceAndPrint(line)
+        else:
+          if (line.startswith(self.original_prefix) or
+              line.startswith(self.working_prefix)):
+            self.ReplaceAndPrint(line)
+          else:
+            print line
+          
+    filterer = DiffFilterer(self.relpath)
+    RunSVNAndFilterOutput(command, path, False, False, filterer.Filter)
 
 ## GClient implementation.
 
@@ -948,7 +1064,8 @@ class GClient(object):
   """Object that represent a gclient checkout."""
 
   supported_commands = [
-    'cleanup', 'diff', 'export', 'revert', 'status', 'update', 'runhooks'
+    'cleanup', 'diff', 'export', 'pack', 'revert', 'status', 'update',
+    'runhooks'
   ]
 
   def __init__(self, root_dir, options):
@@ -1599,6 +1716,23 @@ def DoHelp(options, args):
     raise Error("unknown subcommand '%s'; see 'gclient help'" % args[0])
 
 
+def DoPack(options, args):
+  """Handle the pack subcommand.
+
+  Raises:
+    Error: if client isn't configured properly.
+  """
+  client = GClient.LoadCurrentConfig(options)
+  if not client:
+    raise Error("client not configured; see 'gclient config'")
+  if options.verbose:
+    # Print out the .gclient file.  This is longer than if we just printed the
+    # client dict, but more legible, and it might contain helpful comments.
+    print(client.ConfigContent())
+  options.verbose = True
+  return client.RunOnDeps('pack', args)
+
+
 def DoStatus(options, args):
   """Handle the status subcommand.
 
@@ -1718,6 +1852,7 @@ gclient_command_map = {
   "diff": DoDiff,
   "export": DoExport,
   "help": DoHelp,
+  "pack": DoPack,
   "status": DoStatus,
   "sync": DoUpdate,
   "update": DoUpdate,

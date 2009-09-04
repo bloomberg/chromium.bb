@@ -322,7 +322,10 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
       cwd = input_api.os_path.dirname(unit_test)
       unit_test = input_api.os_path.basename(unit_test)
       env = input_api.environ.copy()
-      backpath = [input_api.os_path.pathsep.join(['..'] * (cwd.count('/') + 1))]
+      # At least on Windows, it seems '.' must explicitly be in PYTHONPATH
+      backpath = [
+          '.', input_api.os_path.pathsep.join(['..'] * (cwd.count('/') + 1))
+        ]
       if env.get('PYTHONPATH'):
         backpath.append(env.get('PYTHONPATH'))
       env['PYTHONPATH'] = input_api.os_path.pathsep.join((backpath))

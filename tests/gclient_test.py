@@ -20,6 +20,7 @@ __author__ = 'stephen5.ng@gmail.com (Stephen Ng)'
 
 import __builtin__
 import os
+import re
 import StringIO
 import unittest
 
@@ -110,7 +111,7 @@ class GClientCommandsTestCase(GClientBaseTestCase):
     known_commands = [gclient.DoCleanup, gclient.DoConfig, gclient.DoDiff,
                       gclient.DoExport, gclient.DoHelp, gclient.DoStatus,
 		      gclient.DoUpdate, gclient.DoRevert, gclient.DoRunHooks,
-		      gclient.DoRevInfo]
+		      gclient.DoRevInfo, gclient.DoPack]
     for (k,v) in gclient.gclient_command_map.iteritems():
       # If it fails, you need to add a test case for the new command.
       self.assert_(v in known_commands)
@@ -300,6 +301,18 @@ class TestDoExport(GenericCommandTestCase):
   def testBadClient(self):
     self.args = ['dir']
     self.BadClient(gclient.DoExport)
+
+
+class TestDoPack(GenericCommandTestCase):
+  def Options(self, *args, **kwargs):
+      return self.OptionsObject(self, *args, **kwargs)
+
+  def testBasic(self):
+    self.ReturnValue('pack', gclient.DoPack, 0)
+  def testError(self):
+    self.ReturnValue('pack', gclient.DoPack, 42)
+  def testBadClient(self):
+    self.BadClient(gclient.DoPack)
 
 
 class TestDoRevert(GenericCommandTestCase):
@@ -1020,7 +1033,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
   def testDir(self):
     members = [
       'FullUrlForRelativeUrl', 'RunCommand', 'cleanup', 'diff', 'export',
-      'relpath', 'revert', 'scm_name', 'status', 'update', 'url',
+      'pack', 'relpath', 'revert', 'scm_name', 'status', 'update', 'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
@@ -1260,12 +1273,12 @@ class RunSVNTestCase(BaseTestCase):
     gclient.RunSVN(['foo', 'bar'], param2)
 
 
-class SubprocessCallAndCaptureTestCase(BaseTestCase):
+class SubprocessCallAndFilterTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
     self.mox.StubOutWithMock(gclient, 'CaptureSVN')
 
-  def testSubprocessCallAndCapture(self):
+  def testSubprocessCallAndFilter(self):
     command = ['boo', 'foo', 'bar']
     in_directory = 'bleh'
     fail_status = None
@@ -1283,9 +1296,18 @@ class SubprocessCallAndCaptureTestCase(BaseTestCase):
                              shell=(gclient.sys.platform == 'win32'),
                              stdout=gclient.subprocess.PIPE).AndReturn(kid)
     self.mox.ReplayAll()
+    compiled_pattern = re.compile(pattern)
+    line_list = []
     capture_list = []
-    gclient.SubprocessCallAndCapture(command, in_directory, fail_status,
-                                     pattern, capture_list)
+    def FilterLines(line):
+      line_list.append(line)
+      match = compiled_pattern.search(line)
+      if match:
+        capture_list.append(match.group(1))
+    gclient.SubprocessCallAndFilter(command, in_directory,
+                                    True, True,
+                                    fail_status, FilterLines)
+    self.assertEquals(line_list, ['ahah', 'accb', 'allo', 'addb'])
     self.assertEquals(capture_list, ['cc', 'dd'])
 
   def testCaptureSVNStatus(self):
