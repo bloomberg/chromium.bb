@@ -10,6 +10,7 @@ import os.path
 import shutil
 import sys
 import time
+import urllib
 
 from subprocess import Popen, PIPE
 from optparse import OptionParser
@@ -40,11 +41,11 @@ def RenderPage(name, test_shell):
   Calls test_shell --layout-tests .../generator.html?<name> and writes the
   result to .../docs/<name>.html
   """
-  
+
   if not name:
     raise Exception("RenderPage called with empty name");
 
-  generator_url = _generator_html + "?" + name
+  generator_url = "file:" + urllib.pathname2url(_generator_html) + "?" + name
   input_file = _base_dir + "/" + name + ".html"
 
   # Copy page_shell to destination output and move aside original, if it exists.
@@ -56,14 +57,14 @@ def RenderPage(name, test_shell):
   shutil.copy(_page_shell_html, input_file)
 
   # Run test_shell and capture result
-  p = Popen([test_shell, "--layout-tests", generator_url], shell=True,
+  p = Popen([test_shell, "--layout-tests", generator_url],
       stdout=PIPE)
 
   # first output line is url that was processed by test_shell.
   firstline = p.stdout.readline()
 
   # the remaining output will be the content of the generated page.
-  result = p.stdout.read()  
+  result = p.stdout.read()
 
   # remove the trailing #EOF that test shell appends to the output.
   result = result.replace('#EOF', '')
@@ -76,9 +77,9 @@ def RenderPage(name, test_shell):
         raise Exception("test_shell returned TEST_TIMED_OUT.\n" +
                         "Their was probably a problem with generating the " +
                         "page\n" +
-                        "Try copying template/page_shell.html to:\n" + 
-                        input_file + 
-                        "\nAnd open it in chrome using the file: scheme.\n" + 
+                        "Try copying template/page_shell.html to:\n" +
+                        input_file +
+                        "\nAnd open it in chrome using the file: scheme.\n" +
                         "Look from javascript errors via the inspector.")
     raise Exception("test_shell returned unexpected output: " + result);
 
@@ -97,8 +98,8 @@ def FindTestShell():
   chrome_dir = os.path.normpath(_base_dir + "/../../../")
   src_dir = os.path.normpath(chrome_dir + "/../")
 
-  search_locations = []    
-    
+  search_locations = []
+
   if (sys.platform in ('cygwin', 'win32')):
     search_locations.append(chrome_dir + "/Debug/test_shell.exe")
     search_locations.append(chrome_dir + "/Release/test_shell.exe")
@@ -121,9 +122,9 @@ def FindTestShell():
 
   raise Exception ("Could not find test_shell executable\n" +
                    "**test_shell may need to be built**\n" +
-                   "Searched: \n" + "\n".join(search_locations) + "\n" + 
+                   "Searched: \n" + "\n".join(search_locations) + "\n" +
                    "To specify a path to test_shell use --test-shell-path")
-  
+
 def GetAPIModuleNames():
   contents = open(_extension_api_json, 'r').read();
   extension_api = json.loads(contents, encoding="ASCII")
@@ -145,10 +146,10 @@ def main():
   else:
     test_shell = FindTestShell()
 
-  # Read static file names 
+  # Read static file names
   static_names = GetStaticFileNames()
 
-  # Read module names 
+  # Read module names
   module_names = GetAPIModuleNames()
 
   # All pages to generate
@@ -159,7 +160,7 @@ def main():
     modified_file = RenderPage(page, test_shell)
     if (modified_file):
       modified_files.append(modified_file)
-      
+
   if (len(modified_files) == 0):
     print "Output files match existing files. No changes made."
   else:
