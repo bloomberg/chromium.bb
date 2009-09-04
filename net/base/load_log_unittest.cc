@@ -7,32 +7,6 @@
 
 namespace net {
 
-base::TimeTicks MakeTime(int t) {
-  base::TimeTicks ticks;  // initialized to 0.
-  ticks += base::TimeDelta::FromMilliseconds(t);
-  return ticks;
-}
-
-void ExpectLogContains(const LoadLog* log,
-                       size_t i,
-                       LoadLog::EventType expected_event,
-                       LoadLog::EventPhase expected_phase) {
-  ASSERT_LT(i, log->events().size());
-  EXPECT_EQ(expected_event, log->events()[i].type);
-  EXPECT_EQ(expected_phase, log->events()[i].phase);
-}
-
-void ExpectLogContains(const LoadLog* log,
-                       size_t i,
-                       base::TimeTicks expected_time,
-                       LoadLog::EventType expected_event,
-                       LoadLog::EventPhase expected_phase) {
-  ASSERT_LT(i, log->events().size());
-  EXPECT_TRUE(expected_time == log->events()[i].time);
-  EXPECT_EQ(expected_event, log->events()[i].type);
-  EXPECT_EQ(expected_phase, log->events()[i].phase);
-}
-
 namespace {
 
 TEST(LoadLogTest, Nullable) {
