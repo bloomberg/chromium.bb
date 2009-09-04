@@ -16,6 +16,7 @@
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebURLRequest.h"
+#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
 using WebKit::WebRect;
@@ -139,7 +140,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
     }
   }
 }
-#ifndef OS_MACOSX
+
 void PrintWebViewHelper::PrintPageAsJPEG(
     const ViewMsg_PrintPage_Params& params,
     WebFrame* frame,
@@ -159,7 +160,7 @@ void PrintWebViewHelper::PrintPageAsJPEG(
 
   // Access the bitmap from the canvas device.
   skia::PlatformCanvas canvas(size_x, size_y, true);
-  frame->printPage(params.page_number, &canvas);
+  frame->printPage(params.page_number, webkit_glue::ToWebCanvas(&canvas));
   const SkBitmap& bitmap = canvas.getDevice()->accessBitmap(false);
 
   // Encode the SkBitmap to jpeg.
@@ -174,7 +175,7 @@ void PrintWebViewHelper::PrintPageAsJPEG(
       image_data);
   DCHECK(encoded);
 }
-#endif
+
 bool PrintWebViewHelper::Send(IPC::Message* msg) {
   return render_view_->Send(msg);
 }
