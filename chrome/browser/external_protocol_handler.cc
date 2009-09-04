@@ -113,7 +113,7 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
     return;
 
   if (block_state == UNKNOWN) {
-#if defined(OS_WINDOWS) || defined(TOOLKIT_GTK)
+#if defined(OS_WIN) || defined(TOOLKIT_GTK)
     // Ask the user if they want to allow the protocol. This will call
     // LaunchUrlWithoutSecurityCheck if the user decides to accept the protocol.
     RunExternalProtocolDialog(escaped_url,
