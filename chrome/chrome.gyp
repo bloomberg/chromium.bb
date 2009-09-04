@@ -829,6 +829,8 @@
         'browser/chromeos/pipe_reader.h',
         'browser/chromeos/external_cookie_handler.cc',
         'browser/chromeos/external_cookie_handler.h',
+	'browser/chromeos/gview_request_interceptor.cc',
+	'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/settings_page_view.cc',
         'browser/chromeos/settings_page_view.h',
         'browser/chromeos/status_area_view.cc',
@@ -3956,6 +3958,7 @@
         'browser/chromeos/chromeos_version_loader_unittest.cc',
         'browser/chromeos/pipe_reader_unittest.cc',
         'browser/chromeos/external_cookie_handler_unittest.cc',
+	'browser/chromeos/gview_request_interceptor_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
         # exclude them from non-Mac builds.

@@ -239,6 +239,7 @@ extern const wchar_t kSyncServiceURL[];
 
 #if defined(OS_CHROMEOS)
 extern const wchar_t kCookiePipe[];
+extern const wchar_t kEnableGView[];
 #endif
 
 extern const wchar_t kEnableByteRangeSupport[];

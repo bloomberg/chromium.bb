@@ -597,6 +597,10 @@ const wchar_t kSyncServiceURL[]  = L"sync-url";
 // The name of the pipe over which the Chrome OS login manager will send
 // single-sign-on cookies.
 const wchar_t kCookiePipe[] = L"cookie-pipe";
+
+// Enable the redirection of viewable document requests to the Google
+// Document Viewer.
+const wchar_t kEnableGView[] = L"enable-gview";
 #endif
 
 // Enable experimental support for cached byte-ranges.

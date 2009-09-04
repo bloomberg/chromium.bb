@@ -65,6 +65,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/views/tabs/tab_overview_message_listener.h"
 #endif
 
@@ -349,6 +350,13 @@ bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
   // Create the TabOverviewMessageListener so that it can listen for messages
   // regardless of what window has focus.
   TabOverviewMessageListener::instance();
+
+  // Install the GView request interceptor that will redirect requests
+  // of compatible documents (PDF, etc) to the GView document viewer.
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  if (parsed_command_line.HasSwitch(switches::kEnableGView)) {
+    GViewRequestInterceptor::GetGViewRequestInterceptor();
+  }
 #endif
   return true;
 }
