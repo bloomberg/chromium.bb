@@ -245,17 +245,18 @@ const NSInteger kBaselineOffset = 4;
                               NSMinX(textFrame) - x,
                               cellFrame.size.height - 2 * kKeywordYInset));
 
-  // Draw the token rectangle with rounded corners.
+  // Draw a token rectangle with rounded corners.
   NSRect frame(NSInsetRect(infoFrame, 0.5, 0.5));
   NSBezierPath* path =
       [NSBezierPath bezierPathWithRoundedRect:frame xRadius:4.0 yRadius:4.0];
 
-  // Matches the color of the highlighted line in the popup.
-  [[NSColor selectedControlColor] set];
+  [[NSColor controlColor] set];
   [path fill];
 
-  // Border around token rectangle, match focus ring's inner color.
-  [[[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:0.5] set];
+  GTMTheme *theme = [controlView gtm_theme];
+  NSColor* stroke = [theme strokeColorForStyle:GTMThemeStyleToolBarButton
+                                         state:YES];
+  [stroke setStroke];
   [path setLineWidth:1.0];
   [path stroke];
 
