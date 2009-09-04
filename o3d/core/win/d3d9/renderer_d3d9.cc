@@ -735,6 +735,16 @@ class IntegerStateHandler : public TypedStateHandler<ParamInteger> {
   }
 };
 
+class ColorWriteStateHandler : public TypedStateHandler<ParamInteger> {
+ public:
+  virtual void SetStateFromTypedParam(RendererD3D9* renderer,
+                                      ParamInteger* param) const {
+    int mask = param->value();
+    HR(renderer->d3d_device()->SetRenderState(D3DRS_COLORWRITEENABLE, mask));
+    renderer->SetWriteMask(mask);
+  }
+};
+
 class AlphaReferenceHandler : public TypedStateHandler<ParamFloat> {
  public:
   virtual void SetStateFromTypedParam(RendererD3D9* renderer,
@@ -888,7 +898,7 @@ RendererD3D9::RendererD3D9(ServiceLocator* service_locator)
   AddStateHandler(State::kStencilWriteMaskParamName,
                   new IntegerStateHandler<D3DRS_STENCILWRITEMASK>);
   AddStateHandler(State::kColorWriteEnableParamName,
-                  new IntegerStateHandler<D3DRS_COLORWRITEENABLE>);
+                  new ColorWriteStateHandler);
   AddStateHandler(State::kBlendEquationParamName,
                   new BlendEquationHandler<D3DRS_BLENDOP>);
   AddStateHandler(State::kTwoSidedStencilEnableParamName,

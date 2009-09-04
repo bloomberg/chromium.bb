@@ -101,11 +101,13 @@ bool Renderer::IsForceSoftwareRenderer() {
 Renderer::Renderer(ServiceLocator* service_locator)
     : current_render_surface_(NULL),
       current_depth_surface_(NULL),
+      current_render_surface_is_back_buffer_(true),
       service_locator_(service_locator),
       service_(service_locator, this),
       features_(service_locator),
       viewport_(0.0f, 0.0f, 1.0f, 1.0f),
       depth_range_(0.0f, 1.0f),
+      write_mask_(0xf),
       render_frame_count_(0),
       transforms_processed_(0),
       transforms_culled_(0),
@@ -124,7 +126,8 @@ Renderer::Renderer(ServiceLocator* service_locator)
       display_height_(0),
       dest_x_offset_(0),
       dest_y_offset_(0),
-      supports_npot_(false) {
+      supports_npot_(false),
+      back_buffer_cleared_(false) {
 }
 
 Renderer::~Renderer() {
@@ -259,6 +262,8 @@ bool Renderer::StartRendering() {
     draw_elements_processed_ = 0;
     draw_elements_rendered_ = 0;
     primitives_rendered_ = 0;
+    back_buffer_cleared_ = 0;
+    current_render_surface_is_back_buffer_ = true;
 
     result = PlatformSpecificStartRendering();
     if (result) {
@@ -317,9 +322,57 @@ void Renderer::Clear(const Float4 &color,
                      bool depth_flag,
                      int stencil,
                      bool stencil_flag) {
+  // If we are currently rendering to the backbuffer and it has not been cleared
+  // AND if we are not about to clear it entirely then clear it.
+  bool covers_everything = false;
+  if (!back_buffer_cleared_ && current_render_surface_is_back_buffer_) {
+    covers_everything =
+        !(viewport_[0] != 0.0f || viewport_[1] != 0.0f ||
+          viewport_[2] != 1.0f || viewport_[3] != 1.0f ||
+          depth_range_[0] != 0.0f || depth_range_[1] != 1.0f) &&
+        color_flag && depth_flag && stencil_flag && write_mask_ == 0xF;
+    if (!covers_everything) {
+      ClearBackBuffer();
+    }
+  }
+
   ApplyDirtyStates();
   PlatformSpecificClear(
       color, color_flag, depth, depth_flag, stencil, stencil_flag);
+
+  // If we are currently rendering to the backbuffer and it has not been cleared
+  // and we just cleared everything then mark it as cleared.
+  if (!back_buffer_cleared_ && current_render_surface_is_back_buffer_ &&
+      covers_everything) {
+    back_buffer_cleared_ = true;
+  }
+}
+
+void Renderer::ClearBackBuffer() {
+  DCHECK(rendering_);
+  DCHECK(!back_buffer_cleared_);
+  DCHECK(current_render_surface_is_back_buffer_);
+
+  // Save all states that would effect clear the back buffer.
+  Float4 old_viewport;
+  Float2 old_depth_range;
+  GetViewport(&old_viewport, &old_depth_range);
+
+  // Set the states needed to clear the entire backbuffer.
+  SetViewport(Float4(0.0f, 0.0f, 1.0f, 1.0f), Float2(0.0f, 1.0f));
+  PushRenderStates(clear_back_buffer_state_);
+  ApplyDirtyStates();
+
+  // Clear the backbuffer.
+  PlatformSpecificClear(
+      Float4(0.5f, 0.5f, 0.5f, 1.0f), true,
+      0.0f, true,
+      0, true);
+  back_buffer_cleared_ = true;
+
+  // restore the states.
+  SetViewport(old_viewport, old_depth_range);
+  PopRenderStates();
 }
 
 void Renderer::GetViewport(Float4* viewport, Float2* depth_range) {
@@ -475,8 +528,12 @@ void CreateStateParam(State *state,
 }
 
 void Renderer::AddDefaultStates() {
+  // TODO(gman): It's possible for the user to get these out of the client
+  //     and then change them which could lead to inconsistent results.
   default_state_ = State::Ref(new State(service_locator_, this));
   default_state_->set_name(O3D_STRING_CONSTANT("defaultState"));
+  clear_back_buffer_state_ = State::Ref(new State(service_locator_, this));
+  clear_back_buffer_state_->set_name(O3D_STRING_CONSTANT("clearState"));
 
   CreateStateParam<ParamBoolean>(default_state_,
                                  State::kAlphaTestEnableParamName,
@@ -605,6 +662,10 @@ void Renderer::AddDefaultStates() {
     DCHECK(param_stack.empty());
     param_stack.push_back(param);
   }
+
+  CreateStateParam<ParamInteger>(clear_back_buffer_state_,
+                                 State::kColorWriteEnableParamName,
+                                 0xf);
 }
 
 void Renderer::RemoveDefaultStates() {
@@ -647,6 +708,7 @@ void Renderer::RenderElement(Element* element,
                              Material* material,
                              ParamObject* override,
                              ParamCache* param_cache) {
+  ClearBackBufferIfNotCleared();
   IncrementDrawElementsRendered();
   State *current_state = material ? material->state() : NULL;
   PushRenderStates(current_state);
@@ -707,8 +769,10 @@ void Renderer::PopRenderStates() {
 
 void Renderer::SetRenderSurfaces(
     const RenderSurface* surface,
-    const RenderDepthStencilSurface* depth_surface) {
+    const RenderDepthStencilSurface* depth_surface,
+    bool is_back_buffer) {
   DCHECK(rendering_);
+  current_render_surface_is_back_buffer_ = is_back_buffer;
   if (surface != NULL || depth_surface != NULL) {
     SetRenderSurfacesPlatformSpecific(surface, depth_surface);
     current_render_surface_ = surface;
@@ -733,11 +797,15 @@ void Renderer::SetRenderSurfaces(
 
 void Renderer::GetRenderSurfaces(
     const RenderSurface** surface,
-    const RenderDepthStencilSurface** depth_surface) {
+    const RenderDepthStencilSurface** depth_surface,
+    bool* is_back_buffer) {
+  DCHECK(rendering_);
   DCHECK(surface);
   DCHECK(depth_surface);
+  DCHECK(is_back_buffer);
   *surface = current_render_surface_;
   *depth_surface = current_depth_surface_;
+  *is_back_buffer = current_render_surface_is_back_buffer_;
 }
 
 bool Renderer::SafeToBindTexture(Texture* texture) const {

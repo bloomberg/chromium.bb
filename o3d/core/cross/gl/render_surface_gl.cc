@@ -62,16 +62,19 @@ Bitmap::Ref RenderSurfaceGL::PlatformSpecificGetBitmap() const {
   bitmap->Allocate(
       Texture::ARGB8, clip_width(), clip_height(), 1, Bitmap::IMAGE);
 
-  const RenderSurface* old_render_surface_;
-  const RenderDepthStencilSurface* old_depth_surface_;
+  const RenderSurface* old_render_surface;
+  const RenderDepthStencilSurface* old_depth_surface;
+  bool old_is_back_buffer;
 
-  renderer->GetRenderSurfaces(&old_render_surface_, &old_depth_surface_);
-  renderer->SetRenderSurfaces(this, NULL);
+  renderer->GetRenderSurfaces(&old_render_surface, &old_depth_surface,
+                              &old_is_back_buffer);
+  renderer->SetRenderSurfaces(this, NULL, false);
 
   ::glReadPixels(0, 0, clip_width(), clip_height(), GL_BGRA, GL_UNSIGNED_BYTE,
                  bitmap->image_data());
 
-  renderer->SetRenderSurfaces(old_render_surface_, old_depth_surface_);
+  renderer->SetRenderSurfaces(old_render_surface, old_depth_surface,
+                              old_is_back_buffer);
 
   return bitmap;
 }

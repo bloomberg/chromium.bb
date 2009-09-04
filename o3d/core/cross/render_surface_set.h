@@ -100,6 +100,7 @@ class RenderSurfaceSet : public RenderNode {
 
   const RenderSurface* old_render_surface_;
   const RenderDepthStencilSurface* old_depth_stencil_surface_;
+  bool old_is_back_buffer_;
 
   ParamRenderSurface::Ref render_surface_param_;
   ParamRenderDepthStencilSurface::Ref render_depth_stencil_surface_param_;

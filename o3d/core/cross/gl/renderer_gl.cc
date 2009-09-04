@@ -492,6 +492,7 @@ class ColorWriteEnableHandler : public TypedStateHandler<ParamInteger> {
                   (mask & 0x2) != 0,
                   (mask & 0x4) != 0,
                   (mask & 0x8) != 0);
+    renderer->SetWriteMask(mask);
   }
 };
 

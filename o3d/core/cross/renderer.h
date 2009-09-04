@@ -296,8 +296,11 @@ class Renderer {
   //   surface: RenderSurface to bind to the color buffer.
   //   depth_surface: RenderDepthStencilSurface to bind to the depth/stencil
   //       buffer.
+  //   is_back_buffer: True if the render surface being set should be considered
+  //       the backbuffer.
   void SetRenderSurfaces(const RenderSurface* surface,
-                         const RenderDepthStencilSurface* depth_surface);
+                         const RenderDepthStencilSurface* depth_surface,
+                         bool is_back_buffer);
 
   // Gets the current render surfaces.
   // Parameters:
@@ -305,8 +308,11 @@ class Renderer {
   //       buffer.
   //   depth_surface: pointer to variable to hold RenderDepthStencilSurface to
   //       bind to the depth/stencil buffer.
+  //   is_back_buffer: pointer to variable to hold whether or not the surface
+  //       returned is the back buffer.
   void GetRenderSurfaces(const RenderSurface** surface,
-                         const RenderDepthStencilSurface** depth_surface);
+                         const RenderDepthStencilSurface** depth_surface,
+                         bool* is_back_buffer);
 
   // Creates a StreamBank, returning a platform specific implementation class.
   virtual StreamBank::Ref CreateStreamBank() = 0;
@@ -518,6 +524,14 @@ class Renderer {
     rendering_ = rendering;
   }
 
+  // Used only by the ColorWriteEnable state handlers. Should not be used
+  // elsewhere.
+  // Sets the write mask. This must be called by platform specific renderers
+  // when the color write mask is changed.
+  void SetWriteMask(int mask) {
+    write_mask_ = mask & 0xF;
+  }
+
  protected:
   typedef vector_map<String, StateHandler*> StateHandlerMap;
   typedef std::vector<ParamVector> ParamVectorArray;
@@ -618,6 +632,7 @@ class Renderer {
   // The current render surfaces. NULL = no surface.
   const RenderSurface* current_render_surface_;
   const RenderDepthStencilSurface* current_depth_surface_;
+  bool current_render_surface_is_back_buffer_;
 
   Sampler::Ref error_sampler_;  // sampler used when one is missing.
   Texture::Ref error_texture_;  // texture used when one is missing.
@@ -638,6 +653,10 @@ class Renderer {
   // State object holding the default state settings.
   State::Ref default_state_;
 
+  // A State object holding the settings required to be able to clear the
+  // back buffer.
+  State::Ref clear_back_buffer_state_;
+
   // Lost Resources Callbacks.
   LostResourcesCallbackManager lost_resources_callback_manager_;
 
@@ -654,6 +673,22 @@ class Renderer {
   }
 
  private:
+  // Adds the default states to their respective stacks.
+  void AddDefaultStates();
+
+  // Removes the default states from their respective stacks.
+  void RemoveDefaultStates();
+
+  // Clears the backbuffer.
+  void ClearBackBuffer();
+
+  // Clears the backbuffer if it has not been cleared.
+  void ClearBackBufferIfNotCleared() {
+    if (!back_buffer_cleared_ && current_render_surface_is_back_buffer_) {
+      ClearBackBuffer();
+    }
+  }
+
   ServiceLocator* service_locator_;
   ServiceImplementation<Renderer> service_;
   ServiceDependency<Features> features_;
@@ -663,6 +698,9 @@ class Renderer {
 
   // Current depth range.
   Float2 depth_range_;
+
+  // Current write mask.
+  int write_mask_;
 
   int render_frame_count_;  // count of times we've rendered frame.
   int transforms_processed_;  // count of transforms processed this frame.
@@ -702,11 +740,8 @@ class Renderer {
   // Whether or not the underlying API supports non-power-of-two textures.
   bool supports_npot_;
 
-  // Adds the default states to their respective stacks.
-  void AddDefaultStates();
-
-  // Removes the default states from their respective stacks.
-  void RemoveDefaultStates();
+  // Whether the backbuffer has been cleared this frame.
+  bool back_buffer_cleared_;
 
   DISALLOW_COPY_AND_ASSIGN(Renderer);
 };

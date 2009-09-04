@@ -47,30 +47,6 @@ extern o3d::DisplayWindow* g_display_window;
 
 namespace o3d {
 
-class MockRenderer {
- public:
-  explicit MockRenderer(Renderer* renderer)
-    : renderer_(renderer) {}
-  virtual ~MockRenderer() {}
-
-  void StartRendering() {
-    renderer_->set_rendering(true);
-  }
-  void FinishRendering() {
-    renderer_->set_rendering(false);
-  }
-  void SetRenderSurfaces(const RenderSurface* surface,
-                         const RenderDepthStencilSurface* depth_surface) {
-    renderer_->SetRenderSurfaces(surface, depth_surface);
-  }
-  void GetRenderSurfaces(const RenderSurface** surface,
-                         const RenderDepthStencilSurface** depth_surface) {
-    renderer_->GetRenderSurfaces(surface, depth_surface);
-  }
- private:
-  Renderer* renderer_;
-};
-
 class RenderSurfaceTest : public testing::Test {
  public:
   RenderSurfaceTest()
@@ -80,8 +56,8 @@ class RenderSurfaceTest : public testing::Test {
     return service_locator_;
   }
 
-  MockRenderer* renderer() {
-    return renderer_;
+  Renderer* renderer() {
+    return g_renderer;
   }
 
  protected:
@@ -89,16 +65,14 @@ class RenderSurfaceTest : public testing::Test {
     service_locator_ = new ServiceLocator;
     features_ = new Features(service_locator_);
     pack_ = object_manager_->CreatePack();
-    renderer_ = new MockRenderer(g_renderer);
-    renderer_->StartRendering();
+    g_renderer->StartRendering();
   }
 
   virtual void TearDown() {
-    renderer_->FinishRendering();
+    g_renderer->FinishRendering();
     pack_->Destroy();
     delete features_;
     delete service_locator_;
-    delete renderer_;
   }
 
   Pack* pack() { return pack_; }
@@ -107,7 +81,6 @@ class RenderSurfaceTest : public testing::Test {
   ServiceLocator* service_locator_;
   Features* features_;
   Pack* pack_;
-  MockRenderer* renderer_;
 };
 
 // Test that non PoT textures can't make render surfaces
@@ -151,41 +124,15 @@ TEST_F(RenderSurfaceTest, SwapRenderSurfaces) {
       pack()->CreateDepthStencilSurface(16, 32);
 
   // Now swap surfaces.
-  renderer()->SetRenderSurfaces(render_surface, depth_surface);
+  renderer()->SetRenderSurfaces(render_surface, depth_surface, false);
   const RenderSurface* test_render_surface = NULL;
   const RenderDepthStencilSurface* test_depth_surface = NULL;
-  renderer()->GetRenderSurfaces(&test_render_surface, &test_depth_surface);
+  bool test_is_back_buffer;
+  renderer()->GetRenderSurfaces(&test_render_surface, &test_depth_surface,
+                                &test_is_back_buffer);
   ASSERT_TRUE(test_render_surface == render_surface);
   ASSERT_TRUE(test_depth_surface == depth_surface);
-}
-
-TEST_F(RenderSurfaceTest, SetBackSurfaces) {
-  Texture2D* texture = pack()->CreateTexture2D(16, 32, Texture::ARGB8, 2, true);
-  ASSERT_TRUE(NULL != texture);
-
-  RenderSurface::Ref render_surface = texture->GetRenderSurface(0);
-  ASSERT_TRUE(NULL != render_surface);
-  ASSERT_TRUE(texture == render_surface->texture());
-
-  RenderDepthStencilSurface* depth_surface =
-      pack()->CreateDepthStencilSurface(16, 32);
-
-  // Save the original surfaces for comparison.
-  const RenderSurface* original_render_surface = NULL;
-  const RenderDepthStencilSurface* original_depth_surface = NULL;
-  renderer()->GetRenderSurfaces(&original_render_surface,
-                                &original_depth_surface);
-  // Now swap surfaces.
-  renderer()->SetRenderSurfaces(render_surface, depth_surface);
-  // Return the back buffers
-  renderer()->SetRenderSurfaces(NULL, NULL);
-  // Get the original surfaces again for comparison.
-  const RenderSurface* restored_render_surface = NULL;
-  const RenderDepthStencilSurface* restored_depth_surface = NULL;
-  renderer()->GetRenderSurfaces(&original_render_surface,
-                                &original_depth_surface);
-  ASSERT_TRUE(original_render_surface == restored_render_surface);
-  ASSERT_TRUE(original_depth_surface == restored_depth_surface);
+  ASSERT_FALSE(test_is_back_buffer);
 }
 
 TEST_F(RenderSurfaceTest, RenderSurfaceSetTest) {
@@ -208,19 +155,26 @@ TEST_F(RenderSurfaceTest, RenderSurfaceSetTest) {
 
   const RenderSurface* old_render_surface = NULL;
   const RenderDepthStencilSurface* old_depth_surface = NULL;
-  renderer()->GetRenderSurfaces(&old_render_surface, &old_depth_surface);
+  bool old_is_back_buffer = false;
+  renderer()->GetRenderSurfaces(&old_render_surface, &old_depth_surface,
+                                &old_is_back_buffer);
 
   render_surface_set->Render(&render_context);
   const RenderSurface* test_render_surface = NULL;
   const RenderDepthStencilSurface* test_depth_surface = NULL;
-  renderer()->GetRenderSurfaces(&test_render_surface, &test_depth_surface);
+  bool test_is_back_buffer = false;
+  renderer()->GetRenderSurfaces(&test_render_surface, &test_depth_surface,
+                                &test_is_back_buffer);
   ASSERT_TRUE(test_render_surface == render_surface);
   ASSERT_TRUE(test_depth_surface == depth_surface);
+  ASSERT_FALSE(test_is_back_buffer);
 
   render_surface_set->PostRender(&render_context);
-  renderer()->GetRenderSurfaces(&test_render_surface, &test_depth_surface);
+  renderer()->GetRenderSurfaces(&test_render_surface, &test_depth_surface,
+                                &test_is_back_buffer);
   ASSERT_TRUE(test_render_surface == old_render_surface);
   ASSERT_TRUE(test_depth_surface == old_depth_surface);
+  ASSERT_TRUE(test_is_back_buffer == old_is_back_buffer);
 }
 
 }  // namespace o3d

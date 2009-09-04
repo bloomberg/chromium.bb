@@ -452,13 +452,16 @@ String Client::GetScreenshotAsDataURL()  {
 
   const RenderSurface* old_render_surface_;
   const RenderDepthStencilSurface* old_depth_surface_;
+  bool is_back_buffer;
 
-  renderer_->GetRenderSurfaces(&old_render_surface_, &old_depth_surface_);
-  renderer_->SetRenderSurfaces(surface, depth);
+  renderer_->GetRenderSurfaces(&old_render_surface_, &old_depth_surface_,
+                               &is_back_buffer);
+  renderer_->SetRenderSurfaces(surface, depth, true);
 
   RenderClientInner(false, true);
 
-  renderer_->SetRenderSurfaces(old_render_surface_, old_depth_surface_);
+  renderer_->SetRenderSurfaces(old_render_surface_, old_depth_surface_,
+                               is_back_buffer);
 
   Bitmap::Ref bitmap(surface->GetBitmap());
   if (bitmap.IsNull()) {

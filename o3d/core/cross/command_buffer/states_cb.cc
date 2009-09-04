@@ -255,6 +255,26 @@ class BitFieldStateHandler : public TypedStateHandler<ParamInteger> {
   bool *dirty_;
 };
 
+// A handler for the color write state.
+class ColorWriteStateHandler : public TypedStateHandler<ParamInteger> {
+ public:
+  ColorWriteStateHandler(uint32 *value, bool *dirty)
+      : value_(value),
+        dirty_(dirty) {
+  }
+
+  virtual void SetStateFromTypedParam(RendererCB* renderer,
+                                      ParamInteger* param) const {
+    int mask = param->value();
+    o3d::command_buffer::set_color_write::AllColorsMask::Set(value_, mask);
+    renderer->SetWriteMask(mask);
+    *dirty_ = true;
+  }
+ private:
+  uint32 *value_;
+  bool *dirty_;
+};
+
 // A template that generates a handler for full-size values (uint32, int32,
 // float).
 // Template Parameters:
@@ -618,7 +638,7 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
                               new EnableStateHandler<DitherEnable>(arg, dirty));
     renderer->AddStateHandler(
         State::kColorWriteEnableParamName,
-        new BitFieldStateHandler<AllColorsMask>(arg, dirty));
+        new ColorWriteStateHandler(arg, dirty));
   }
 }
 
