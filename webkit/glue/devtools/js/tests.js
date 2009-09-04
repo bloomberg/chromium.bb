@@ -344,9 +344,16 @@ TestSuite.prototype.testShowScriptsTab = function() {
   // Intercept parsedScriptSource calls to check that all expected scripts are
   // added to the debugger.
   var test = this;
+  var receivedConsoleApiSource = false;
   this.addSniffer(WebInspector, 'parsedScriptSource',
       function(sourceID, sourceURL, source, startingLine) {
-        if (sourceURL.search(/debugger_test_page.html$/) != -1) {
+        if (sourceURL == undefined) {
+          if (receivedConsoleApiSource) {
+            test.fail('Unexpected script without URL');
+          } else {
+            receivedConsoleApiSource = true;
+          }
+        } else if (sourceURL.search(/debugger_test_page.html$/) != -1) {
           if (parsedDebuggerTestPageHtml) {
             test.fail('Unexpected parse event: ' + sourceURL);
           }
@@ -359,7 +366,10 @@ TestSuite.prototype.testShowScriptsTab = function() {
           test.fail('No visible script view: ' + sourceURL);
         }
 
-        if (parsedDebuggerTestPageHtml) {
+        // There should be two scripts: one for the main page and another
+        // one which is source of console API(see
+        // InjectedScript._ensureCommandLineAPIInstalled).
+        if (parsedDebuggerTestPageHtml && receivedConsoleApiSource) {
            test.releaseControl();
         }
       }, true /* sticky */);
