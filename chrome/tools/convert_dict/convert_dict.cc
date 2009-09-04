@@ -44,19 +44,28 @@ bool VerifyWords(const convert_dict::DicReader::WordList& org_words,
   char buf[buf_size];
   for (size_t i = 0; i < org_words.size(); i++) {
     int affix_matches = iter.Advance(buf, buf_size, affix_ids);
-    if (affix_matches == 0)
-      return false;  // Found the end before we expectd.
-    if (org_words[i].first != buf)
-      return false;  // Word doesn't match.
+    if (affix_matches == 0) {
+      printf("Found the end before we expected\n");
+      return false;
+    }
 
-    if (affix_matches != static_cast<int>(org_words[i].second.size()))
-      return false;  // Different number of affix indices.
+    if (org_words[i].first != buf) {
+      printf("Word doesn't match, word #%s\n", buf);
+      return false;
+    }
+
+    if (affix_matches != static_cast<int>(org_words[i].second.size())) {
+      printf("Different number of affix indices, word #%s\n", buf);
+      return false;
+    }
 
     // Check the individual affix indices.
     for (size_t affix_index = 0; affix_index < org_words[i].second.size();
          affix_index++) {
-      if (affix_ids[affix_index] != org_words[i].second[affix_index])
-        return false;  // Index doesn't match.
+      if (affix_ids[affix_index] != org_words[i].second[affix_index]) {
+        printf("Index doesn't match, word #%s\n", buf);
+        return false;
+      }
     }
   }
 
