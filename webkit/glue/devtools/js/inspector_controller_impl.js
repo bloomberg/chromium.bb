@@ -26,6 +26,7 @@ devtools.InspectorControllerImpl = function() {
   this.installInspectorControllerDelegate_('enableTimeline');
   this.installInspectorControllerDelegate_('disableTimeline');
 
+  //TODO: nuke with the next WebKit roll.
   this.installInjectedScriptDelegate_('getStyles');
   this.installInjectedScriptDelegate_('getComputedStyle');
   this.installInjectedScriptDelegate_('getInlineStyle');
@@ -269,6 +270,24 @@ devtools.InspectorControllerImpl.prototype.getProperties = function(
 
 
 /**
+ * @override
+ */
+devtools.InspectorControllerImpl.prototype.dispatchOnInjectedScript = function(
+    callId, methodName, argsString) {
+  var callback = function(result, isException) {
+    WebInspector.didDispatchOnInjectedScript(callId,
+        isException ? result : JSON.parse(result),
+        isException);
+  };
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.Callback.wrap(callback),
+      'InjectedScript',
+      JSON.stringify(['dispatch', methodName, argsString]));
+};
+
+
+/**
+ * TODO: nuke with the next WebKit roll.
  * Installs delegating handler into the inspector controller.
  * @param {string} methodName Method to install delegating handler for.
  */
@@ -280,6 +299,7 @@ devtools.InspectorControllerImpl.prototype.installInjectedScriptDelegate_ =
 
 
 /**
+ * TODO: nuke with the next WebKit roll.
  * Bound function with the installInjectedScriptDelegate_ actual
  * implementation.
  */
