@@ -1163,6 +1163,8 @@
         'browser/external_protocol_handler.h',
         'browser/external_tab_container.cc',
         'browser/external_tab_container.h',
+        'browser/force_tls_persister.cc',
+        'browser/force_tls_persister.h',
         'browser/global_keyboard_shortcuts_mac.h',
         'browser/global_keyboard_shortcuts_mac.mm',
         'browser/fav_icon_helper.cc',
