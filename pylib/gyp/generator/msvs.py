@@ -444,7 +444,7 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
          'IntDir=$(IntDir)',
          '-j', '${NUMBER_OF_PROCESSORS_PLUS_1}',
          '-f', filename]
-  cmd = _PrepareActionRaw(c_data, cmd, True, False)
+  cmd = _PrepareActionRaw(c_data, cmd, True, False, True)
   # TODO(bradnelson): this won't be needed if we have a better way to pick
   #                   the primary input.
   all_inputs = list(all_inputs)
