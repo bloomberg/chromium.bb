@@ -68,7 +68,13 @@ class ToolbarView;
 
   // Tracking area for mouse enter/exit/moved in the toolbar.
   scoped_nsobject<NSTrackingArea> trackingArea_;
-  NSButton* hoveredButton_;  // weak. Button under the mouse cursor.
+
+  // We retain/release the hover button since interaction with the
+  // button may make it go away (e.g. delete menu option over a
+  // bookmark button).  Thus this variable is not weak.  The
+  // hoveredButton_ is required to have an NSCell that responds to
+  // setMouseInside:animate:.
+  NSButton* hoveredButton_;
 
   // The ordering is important for unit tests. If new items are added or the
   // ordering is changed, make sure to update |-toolbarViews| and the
@@ -141,6 +147,8 @@ class ToolbarView;
 - (void)showOptionalHomeButton;
 - (void)showOptionalPageWrenchButtons;
 - (gfx::Rect)autocompletePopupPosition;
+// Return a hover button for the current event.
+- (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TOOLBAR_CONTROLLER_H_

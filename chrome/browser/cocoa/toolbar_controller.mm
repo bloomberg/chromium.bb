@@ -193,17 +193,30 @@ class PrefObserverBridge : public NotificationObserver {
 }
 - (void)mouseExited:(NSEvent*)theEvent {
   [[hoveredButton_ cell] setMouseInside:NO animate:YES];
+  [hoveredButton_ release];
   hoveredButton_ = nil;
 }
 
-- (void)mouseMoved:(NSEvent *)theEvent {
-  NSButton *targetView = (NSButton *)[[self view]
-                                      hitTest:[theEvent locationInWindow]];
-  if (![targetView isKindOfClass:[NSButton class]]) targetView = nil;
+- (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent {
+  NSButton* targetView = (NSButton *)[[self view]
+                                       hitTest:[theEvent locationInWindow]];
+
+  // Only interpret the view as a hoverButton_ if it's both button and has a
+  // button cell that cares.  GradientButtonCell derived cells care.
+  if (([targetView isKindOfClass:[NSButton class]]) &&
+      ([[targetView cell]
+         respondsToSelector:@selector(setMouseInside:animate:)]))
+    return targetView;
+  return nil;
+}
+
+- (void)mouseMoved:(NSEvent*)theEvent {
+  NSButton* targetView = [self hoverButtonForEvent:theEvent];
   if (hoveredButton_ != targetView) {
     [[hoveredButton_ cell] setMouseInside:NO animate:YES];
     [[targetView cell] setMouseInside:YES animate:YES];
-    hoveredButton_ = targetView;
+    [hoveredButton_ release];
+    hoveredButton_ = [targetView retain];
   }
 }
 

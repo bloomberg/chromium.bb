@@ -8,12 +8,32 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #import "chrome/browser/cocoa/view_resizer_pong.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+// An NSView that fakes out hitTest:.
+@interface HitView : NSView {
+  id hitTestReturn_;
+}
+@end
+
+@implementation HitView
+
+- (void)setHitTestReturn:(id)rtn {
+  hitTestReturn_ = rtn;
+}
+
+- (NSView *)hitTest:(NSPoint)aPoint {
+  return hitTestReturn_;
+}
+
+@end
+
 
 namespace {
 
@@ -274,6 +294,34 @@ TEST_F(ToolbarControllerTest, AutocompletePopupPosition) {
   EXPECT_GE(popupFrame.bottom(), NSMinY(locationFrame));
 }
 
+TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
+  scoped_nsobject<HitView> view([[HitView alloc]
+                                  initWithFrame:NSMakeRect(0,0,100,100)]);
+  [bar_ setView:view];
+  NSEvent* event = [NSEvent mouseEventWithType:NSMouseMoved
+                                      location:NSMakePoint(10,10)
+                                 modifierFlags:0
+                                     timestamp:0
+                                  windowNumber:0
+                                       context:nil
+                                   eventNumber:0
+                                    clickCount:0
+                                      pressure:0.0];
+
+  // NOT a match.
+  [view setHitTestReturn:bar_.get()];
+  EXPECT_FALSE([bar_ hoverButtonForEvent:event]);
+
+  // Not yet...
+  scoped_nsobject<NSButton> button([[NSButton alloc] init]);
+  [view setHitTestReturn:button];
+  EXPECT_FALSE([bar_ hoverButtonForEvent:event]);
+
+  // Now!
+  scoped_nsobject<GradientButtonCell> cell([[GradientButtonCell alloc] init]);
+  [button setCell:cell.get()];
+  EXPECT_TRUE([bar_ hoverButtonForEvent:nil]);
+}
 
 
 }  // namespace
