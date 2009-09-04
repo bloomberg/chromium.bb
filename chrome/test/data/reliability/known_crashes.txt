@@ -129,7 +129,7 @@ PREFIX : v8::internal::compiler::compile___v8::script::new___v8::script::compile
 
 # 20915
 REGEX : ^base::messagepumpforio::schedulework___ucase_props_trieindex___canonicalize_map$
-REGEX: ^base::messagepumpforio::schedulework___propsvectors___propsvectorstrie_index
+PREFIX : base::messagepumpforio::schedulework___propsvectors___propsvectorstrie_index
 PREFIX : npn_invalidaterect___webplugindelegateimpl
 
 # 21054
