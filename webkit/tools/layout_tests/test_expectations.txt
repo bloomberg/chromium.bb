@@ -2287,11 +2287,9 @@ BUG20748 MAC : LayoutTests/http/tests/security/frameNavigation/xss-DENIED-plugin
 BUG20748 MAC : LayoutTests/http/tests/plugins/get-url.html = TIMEOUT
 BUG20748 MAC : LayoutTests/http/tests/plugins/interrupted-get-url.html = TIMEOUT
 
-BUG_OJAN WIN LINUX : LayoutTests/fast/css/remove-shorthand.html = FAIL
-BUG_OJAN WIN LINUX : LayoutTests/fast/inspector/style.html = FAIL
-
-// Flaky crashes
+// started crashing at build 5804 then green until 5863 of webkit-dbg-2
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-style-filter.html = PASS CRASH
+// started crashing at build 5859 of webkit-dbg-2
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS CRASH
 
 BUG10480 LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
