@@ -929,6 +929,45 @@ g_suite.testShouldSetVertexBufferData = function() {
   g_test.assertEquals(12, field.size);
 };
 
+g_suite.testShouldSetVertexBufferDataNotBinary = function() {
+  var json = {
+    version: o3djs.serialization.supportedVersion,
+    objects: {
+      'o3d.VertexBuffer': [
+        {
+          custom: {
+            fieldData: [
+              {
+                id: 55,
+                type: "o3d.FloatField",
+                numComponents: 1,
+                data: [1.25,-3]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  };
+
+  var pack = g_client.createPack();
+  var deserializer = o3djs.serialization.createDeserializer(pack, json);
+  deserializer.run();
+
+  g_test.assertEquals(1, pack.objects.length);
+  var buffer = pack.objects[0];
+  g_test.assertEquals(2, buffer.numElements);
+  g_test.assertEquals(1, buffer.fields.length);
+  var field = buffer.fields[0];
+  g_test.assertEquals('o3d.FloatField', field.className);
+  g_test.assertEquals(1, field.numComponents);
+  g_test.assertEquals(4, field.size);
+  var data = field.getAt(0, 2);
+  g_test.assertEquals(1.25, data[0]);
+  g_test.assertEquals(-3, data[1]);
+
+};
+
 g_suite.testShouldSetDestinationBufferData = function() {
   var json = {
     version: o3djs.serialization.supportedVersion,
@@ -1048,6 +1087,46 @@ g_suite.testShouldSetCurveWithKeys = function() {
   g_test.assertEquals(1, pack.objects.length);
   var keys = pack.objects[0].keys;
   g_test.assertEquals(14, keys.length);
+};
+
+g_suite.testShouldSetCurveWithKeysNotBinary = function() {
+  var json = {
+    version: o3djs.serialization.supportedVersion,
+    objects: {
+      'o3d.Curve': [
+        {
+          custom: {
+            keys: [
+              [1,1,2],
+              [2,3,4],
+              [3,5,8,6,7,9,10]
+            ]
+          }
+        }
+      ]
+    }
+  };
+
+  var pack = g_client.createPack();
+  var deserializer = o3djs.serialization.createDeserializer(pack, json);
+  deserializer.run();
+  g_test.assertEquals(1, pack.objects.length);
+  var curve = pack.objects[0];
+  var keys = curve.keys;
+  g_test.assertEquals(3, keys.length);
+  g_test.assertEquals('o3d.StepCurveKey', keys[0].className);
+  g_test.assertEquals('o3d.LinearCurveKey', keys[1].className);
+  g_test.assertEquals('o3d.BezierCurveKey', keys[2].className);
+  g_test.assertEquals(1, keys[0].input);
+  g_test.assertEquals(2, keys[0].output);
+  g_test.assertEquals(3, keys[1].input);
+  g_test.assertEquals(4, keys[1].output);
+  g_test.assertEquals(5, keys[2].input);
+  g_test.assertEquals(8, keys[2].output);
+  g_test.assertEquals(6, keys[2].inTangent[0]);
+  g_test.assertEquals(7, keys[2].inTangent[1]);
+  g_test.assertEquals(9, keys[2].outTangent[0]);
+  g_test.assertEquals(10, keys[2].outTangent[1]);
 };
 
 g_suite.testShouldSetSkinEvalStreams = function() {
@@ -1357,6 +1436,44 @@ g_suite.testShouldSetSkinData = function() {
   g_test.assertEquals(79, skin.influences.length);
   g_test.assertEquals(2, skin.influences[0].length);
   g_test.assertArrayEquals([2, 1], skin.influences[0]);
+};
+
+g_suite.testShouldSetSkinDataNotBinary = function() {
+  var json = {
+    version: o3djs.serialization.supportedVersion,
+    objects: {
+      'o3d.Skin': [
+        {
+          properties: {
+            influences: [[1, 2],[2, 3, 4, 5]],
+            inverseBindPoseMatrices: [
+                [[1, 2, 3, 4],
+                 [5, 6, 7, 8],
+                 [9, 10, 11, 12],
+                 [13, 14, 15, 16]],
+                [[1, 2, 3, 4],
+                 [5, 6, 7, 8.5],
+                 [9, 10, 11, 12],
+                 [13, 14, 15, 1]]]
+          }
+        }
+      ]
+    }
+  };
+
+  var pack = g_client.createPack();
+  var deserializer = o3djs.serialization.createDeserializer(pack, json);
+  deserializer.run();
+
+  g_test.assertEquals(1, pack.objects.length);
+  var skin = pack.objects[0];
+  g_test.assertEquals(2, skin.influences.length);
+  g_test.assertEquals(2, skin.influences[0].length);
+  g_test.assertEquals(4, skin.influences[1][2]);
+  g_test.assertArrayEquals([1, 2], skin.influences[0]);
+  g_test.assertArrayEquals([2, 3, 4, 5], skin.influences[1]);
+  g_test.assertEquals(2, skin.inverseBindPoseMatrices.length);
+  g_test.assertEquals(8.5, skin.inverseBindPoseMatrices[1][1][3]);
 };
 
 g_suite.testExceptionIfEffectShaderCannotBeFound = function() {

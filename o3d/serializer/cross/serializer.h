@@ -150,6 +150,20 @@ class Serializer {
     NUM_SECTIONS
   };
 
+  // Serialization Options.
+  struct Options {
+    enum BinaryOutput {
+       kBinaryOutputOn, // output binary
+       kBinaryOutputOff,  // don't output binary.
+    };
+
+    explicit Options(BinaryOutput in_binary_output)
+        : binary_output(in_binary_output) {
+    }
+
+    BinaryOutput binary_output;
+  };
+
   // Any object that starts with this prefix will not be seralized
   // but a reference to it will be put at the top of the json object.
   static const char* ROOT_PREFIX;
@@ -158,7 +172,8 @@ class Serializer {
   // given StructuredWriter and IArchiveGenerator.
   explicit Serializer(ServiceLocator* service_locator,
                       StructuredWriter* writer,
-                      IArchiveGenerator* archive_generator);
+                      IArchiveGenerator* archive_generator,
+                      const Options& options);
   ~Serializer();
 
   // Serialize a Pack and all the objects contained by the pack
@@ -181,6 +196,7 @@ class Serializer {
   ServiceDependency<IClassManager> class_manager_;
   StructuredWriter* writer_;
   IArchiveGenerator* archive_generator_;
+  Options options_;
 
   struct SectionConfig {
     const char* name_;

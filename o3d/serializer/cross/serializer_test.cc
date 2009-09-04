@@ -105,7 +105,9 @@ class SerializerTest : public testing::Test {
       : object_manager_(g_service_locator),
         output_(StringWriter::CR_LF),
         json_writer_(&output_, 2),
-        serializer_(g_service_locator, &json_writer_, &archive_generator_) {
+        serializer_(
+            g_service_locator, &json_writer_, &archive_generator_,
+            Serializer::Options(Serializer::Options::kBinaryOutputOn)) {
     json_writer_.BeginCompacting();
   }
 
@@ -316,6 +318,37 @@ TEST_F(SerializerTest, ShouldSerializeCurveCustomSection) {
       length1 + length2);
 
   EXPECT_EQ(expected.ToString(), output_.ToString());
+}
+
+TEST_F(SerializerTest, ShouldSerializeCurveCustomSectionNotBinary) {
+  Serializer serializer(
+      g_service_locator, &json_writer_, &archive_generator_,
+      Serializer::Options(Serializer::Options::kBinaryOutputOff));
+  Curve* curve = pack_->Create<Curve>();
+
+  StepCurveKey* step_key = curve->Create<StepCurveKey>();
+  step_key->SetInput(1);
+  step_key->SetOutput(2);
+
+  LinearCurveKey* linear_key = curve->Create<LinearCurveKey>();
+  linear_key->SetInput(3);
+  linear_key->SetOutput(4);
+
+  BezierCurveKey* bezier_key = curve->Create<BezierCurveKey>();
+  bezier_key->SetInput(5);
+  bezier_key->SetInTangent(Float2(6, 7));
+  bezier_key->SetOutput(8);
+  bezier_key->SetOutTangent(Float2(9, 10));
+
+  serializer.SerializePackBinary(pack_);
+  serializer.SerializeSection(curve, Serializer::CUSTOM_SECTION);
+
+  StringWriter expected(StringWriter::CR_LF);
+  expected.WriteFormatted(
+      "\"keys\":[[1,1,2],[2,3,4],[3,5,8,6,7,9,10]]");
+
+  EXPECT_EQ(expected.ToString(), output_.ToString());
+  EXPECT_TRUE(archive_generator_.add_file_records_.empty());
 }
 
 TEST_F(SerializerTest, ShouldSerializeCurveKeysToSingleBinaryFile) {
@@ -711,6 +744,26 @@ TEST_F(SerializerTest, ShouldSerializeSkinProperties) {
       output_.ToString());
 }
 
+TEST_F(SerializerTest, ShouldSerializeSkinPropertiesNotBinary) {
+  Serializer serializer(
+      g_service_locator, &json_writer_, &archive_generator_,
+      Serializer::Options(Serializer::Options::kBinaryOutputOff));
+  Skin* skin = pack_->Create<Skin>();
+  skin->SetInverseBindPoseMatrix(0, Matrix4::identity());
+  Skin::Influences influences(1);
+  influences[0] = Skin::Influence(1, 2);
+  skin->SetVertexInfluences(0, influences);
+
+  serializer.SerializeSection(skin, Serializer::PROPERTIES_SECTION);
+
+  EXPECT_EQ(
+      "\"influences\":[[1,2]],"
+      "\"inverseBindPoseMatrices\":"
+      "[[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]]",
+      output_.ToString());
+  EXPECT_TRUE(archive_generator_.add_file_records_.empty());
+}
+
 TEST_F(SerializerTest, ShouldSerializeSkinCustomSection) {
   Skin* skin1 = pack_->Create<Skin>();
   Skin::Influences influences(1);
@@ -1037,7 +1090,37 @@ TEST_F(SerializerTest, SerializesVertexBuffer) {
   EXPECT_EQ(expected.ToString(), output_.ToString());
 }
 
-TEST_F(SerializerTest, SerializesAllVertexBufferBinaryToSingleFileInArchive) {
+TEST_F(SerializerTest, SerializesVertexBufferNotBinary) {
+  Serializer serializer(
+      g_service_locator, &json_writer_, &archive_generator_,
+      Serializer::Options(Serializer::Options::kBinaryOutputOff));
+  Buffer* buffer = pack_->Create<VertexBuffer>();
+  Field* field = buffer->CreateField(FloatField::GetApparentClass(), 1);
+  buffer->AllocateElements(2);
+  {
+    BufferLockHelper locker(buffer);
+    float* data = locker.GetDataAs<float>(Buffer::WRITE_ONLY);
+    data[0] = 1.25f;
+    data[1] = -3.0f;
+  }
+
+  serializer.SerializePackBinary(pack_);
+  serializer.SerializeSection(buffer, Serializer::CUSTOM_SECTION);
+
+  StringWriter expected(StringWriter::CR_LF);
+  expected.WriteFormatted(
+    "\"fieldData\":[{"
+    "\"id\":%d,"
+    "\"type\":\"o3d.FloatField\","
+    "\"numComponents\":1,\"data\":[1.25,-3]}]",
+    field->id(), field->id());
+
+  EXPECT_EQ(expected.ToString(), output_.ToString());
+  EXPECT_TRUE(archive_generator_.add_file_records_.empty());
+}
+
+TEST_F(SerializerTest,
+       SerializesAllVertexBufferBinaryToSingleFileInArchive) {
   Buffer* buffer1 = pack_->Create<VertexBuffer>();
   buffer1->CreateField(FloatField::GetApparentClass(), 1);
   buffer1->AllocateElements(2);

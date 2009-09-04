@@ -56,6 +56,17 @@ o3djs.serialization = o3djs.serialization || {};
 o3djs.serialization.supportedVersion = 5;
 
 /**
+ * These are the values the sample o3dConverter uses to identify curve key
+ * types.
+ * @type {!Object}
+ */
+o3djs.serialization.CURVE_KEY_TYPES = {
+  step: 1,
+  linear: 2,
+  bezier: 3,
+};
+
+/**
  * Options for deserialization.
  *
  * opt_animSource is an optional ParamFloat that will be bound as the source
@@ -92,6 +103,49 @@ o3djs.serialization.Deserializer = function(pack, json) {
   this.archiveInfo = null;
 
   /**
+   * Deserializes a Buffer .
+   * @param {!o3djs.serialization.Deserializer} deserializer The deserializer.
+   * @param {!Object} json The json for this buffer.
+   * @param {string} type The type of buffer to create.
+   * @param {string} uri The uri of the file containing the binary data.
+   */
+  function deserializeBuffer(deserializer, json, type, uri) {
+    var object = deserializer.pack.createObject(type);
+    if ('custom' in json) {
+      if ('fieldData' in json.custom) {
+        var fieldDataArray = json.custom.fieldData;
+        if (fieldDataArray.length > 0) {
+          var fields = [];
+          // First create all the fields
+          for (var ii = 0; ii < fieldDataArray.length; ++ii) {
+            var data = fieldDataArray[ii];
+            var field = object.createField(data.type, data.numComponents);
+            fields.push(field);
+            deserializer.addObject(data.id, field);
+          }
+          var firstData = fieldDataArray[0];
+          var numElements = firstData.data.length / firstData.numComponents;
+          object.allocateElements(numElements);
+          // Now set the data.
+          for (var ii = 0; ii < fieldDataArray.length; ++ii) {
+            var data = fieldDataArray[ii];
+            fields[ii].setAt(0, data.data);
+          }
+        }
+      } else {
+        var rawData = deserializer.archiveInfo.getFileByURI(uri);
+        object.set(rawData,
+                   json.custom.binaryRange[0],
+                   json.custom.binaryRange[1] - json.custom.binaryRange[0]);
+        for (var i = 0; i < json.custom.fields.length; ++i) {
+          deserializer.addObject(json.custom.fields[i], object.fields[i]);
+        }
+      }
+    }
+    return object;
+  }
+
+  /**
    * A map from classname to a function that will create
    * instances of objects. Add entries to support additional classes.
    * @type {!Object}
@@ -112,48 +166,18 @@ o3djs.serialization.Deserializer = function(pack, json) {
     },
 
     'o3d.VertexBuffer': function(deserializer, json) {
-      var object = deserializer.pack.createObject('o3d.VertexBuffer');
-      if ('custom' in json) {
-        var rawData = deserializer.archiveInfo.getFileByURI(
-            'vertex-buffers.bin');
-        object.set(rawData,
-                   json.custom.binaryRange[0],
-                   json.custom.binaryRange[1] - json.custom.binaryRange[0]);
-        for (var i = 0; i < json.custom.fields.length; ++i) {
-          deserializer.addObject(json.custom.fields[i], object.fields[i]);
-        }
-      }
-      return object;
+      return deserializeBuffer(
+          deserializer, json, 'o3d.VertexBuffer', 'vertex-buffers.bin');
     },
 
     'o3d.SourceBuffer': function(deserializer, json) {
-      var object = deserializer.pack.createObject('o3d.SourceBuffer');
-      if ('custom' in json) {
-        var rawData = deserializer.archiveInfo.getFileByURI(
-            'vertex-buffers.bin');
-        object.set(rawData,
-                   json.custom.binaryRange[0],
-                   json.custom.binaryRange[1] - json.custom.binaryRange[0]);
-        for (var i = 0; i < json.custom.fields.length; ++i) {
-          deserializer.addObject(json.custom.fields[i], object.fields[i]);
-        }
-      }
-      return object;
+      return deserializeBuffer(
+          deserializer, json, 'o3d.SourceBuffer', 'vertex-buffers.bin');
     },
 
     'o3d.IndexBuffer': function(deserializer, json) {
-      var object = deserializer.pack.createObject('o3d.IndexBuffer');
-      if ('custom' in json) {
-        var rawData = deserializer.archiveInfo.getFileByURI(
-            'index-buffers.bin');
-        object.set(rawData,
-                   json.custom.binaryRange[0],
-                   json.custom.binaryRange[1] - json.custom.binaryRange[0]);
-        for (var i = 0; i < json.custom.fields.length; ++i) {
-          deserializer.addObject(json.custom.fields[i], object.fields[i]);
-        }
-      }
-      return object;
+      return deserializeBuffer(
+          deserializer, json, 'o3d.IndexBuffer', 'index-buffers.bin');
     },
 
     'o3d.Texture2D': function(deserializer, json) {
@@ -201,10 +225,31 @@ o3djs.serialization.Deserializer = function(pack, json) {
   this.initCallbacks = {
     'o3d.Curve': function(deserializer, object, json) {
       if ('custom' in json) {
-        var rawData = deserializer.archiveInfo.getFileByURI('curve-keys.bin');
-        object.set(rawData,
-                   json.custom.binaryRange[0],
-                   json.custom.binaryRange[1] - json.custom.binaryRange[0]);
+        if ('keys' in json.custom) {
+          var keys = json.custom.keys;
+          var stepType = o3djs.serialization.CURVE_KEY_TYPES.step;
+          var linearType = o3djs.serialization.CURVE_KEY_TYPES.linear;
+          var bezierType = o3djs.serialization.CURVE_KEY_TYPES.bezier;
+          for (var ii = 0; ii < keys.length; ++ii) {
+            var key = keys[ii];
+            switch (key[0]) {
+            case stepType:  // Step
+              object.addStepKeys(key.slice(1));
+              break;
+            case linearType:  // Linear
+              object.addLinearKeys(key.slice(1));
+              break;
+            case bezierType:  // Bezier
+              object.addBezierKeys(key.slice(1));
+              break;
+            }
+          }
+        } else {
+          var rawData = deserializer.archiveInfo.getFileByURI('curve-keys.bin');
+          object.set(rawData,
+                     json.custom.binaryRange[0],
+                     json.custom.binaryRange[1] - json.custom.binaryRange[0]);
+        }
       }
     },
 

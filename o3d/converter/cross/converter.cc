@@ -238,7 +238,11 @@ bool Convert(const FilePath& in_filename,
   if (!options.pretty_print) {
     json_writer.BeginCompacting();
   }
-  Serializer serializer(&service_locator, &json_writer, &archive_generator);
+  Serializer::Options serializer_options(
+      options.binary ? Serializer::Options::kBinaryOutputOn :
+                       Serializer::Options::kBinaryOutputOff);
+  Serializer serializer(
+      &service_locator, &json_writer, &archive_generator, serializer_options);
   serializer.SerializePack(pack.Get());
   json_writer.Close();
   out_writer.Close();

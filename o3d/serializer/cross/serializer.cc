@@ -217,8 +217,13 @@ bool ParamIsSerialized(Param* param) {
 
 class PropertiesVisitor : public VisitorBase<PropertiesVisitor> {
  public:
-  explicit PropertiesVisitor(StructuredWriter* writer)
-      : writer_(writer) {
+  // Parameters:
+  //   writer: The writer to use.
+  //   binary: True to write parts that can be binary in binary. False for pure
+  //      JSON.
+  PropertiesVisitor(StructuredWriter* writer, bool binary)
+      : writer_(writer),
+        binary_(binary) {
     Enable<Curve>(&PropertiesVisitor::Visit);
     Enable<Element>(&PropertiesVisitor::Visit);
     Enable<NamedObject>(&PropertiesVisitor::Visit);
@@ -314,6 +319,25 @@ class PropertiesVisitor : public VisitorBase<PropertiesVisitor> {
   void Visit(Skin* skin) {
     Visit(static_cast<NamedObject*>(skin));
 
+    if (!binary_) {
+      writer_->WritePropertyName("influences");
+      writer_->BeginCompacting();
+      writer_->OpenArray();
+      const Skin::InfluencesArray& influences_array = skin->influences();
+      for (int i = 0; i != influences_array.size(); ++i) {
+        const Skin::Influences& influences = influences_array[i];
+        writer_->OpenArray();
+        for (int j = 0; j != influences.size(); ++j) {
+          const Skin::Influence& influence = influences[j];
+          Serialize(writer_, influence.matrix_index);
+          Serialize(writer_, influence.weight);
+        }
+        writer_->CloseArray();
+      }
+      writer_->CloseArray();
+      writer_->EndCompacting();
+    }
+
     writer_->WritePropertyName("inverseBindPoseMatrices");
     writer_->BeginCompacting();
     writer_->OpenArray();
@@ -346,12 +370,17 @@ class PropertiesVisitor : public VisitorBase<PropertiesVisitor> {
   }
 
   StructuredWriter* writer_;
+  bool binary_;
 };
 
 class CustomVisitor : public VisitorBase<CustomVisitor> {
  public:
-  explicit CustomVisitor(StructuredWriter* writer,
-                         BinaryArchiveManager* binary_archive_manager)
+  // Parameters:
+  //   writer: The writer to use.
+  //   binary_archive_manager: The binary archive manager to add binary data
+  //      too. If this is NULL will write JSON instead where appropriate.
+  CustomVisitor(StructuredWriter* writer,
+                BinaryArchiveManager* binary_archive_manager)
       : writer_(writer),
         binary_archive_manager_(binary_archive_manager) {
     Enable<DestinationBuffer>(&CustomVisitor::Visit);
@@ -363,6 +392,11 @@ class CustomVisitor : public VisitorBase<CustomVisitor> {
     Enable<StreamBank>(&CustomVisitor::Visit);
     Enable<Texture2D>(&CustomVisitor::Visit);
     Enable<TextureCUBE>(&CustomVisitor::Visit);
+    if (!binary_archive_manager) {
+      Enable<BezierCurveKey>(&CustomVisitor::Visit);
+      Enable<LinearCurveKey>(&CustomVisitor::Visit);
+      Enable<StepCurveKey>(&CustomVisitor::Visit);
+    }
   }
 
  private:
@@ -394,21 +428,94 @@ class CustomVisitor : public VisitorBase<CustomVisitor> {
   void Visit(Buffer* buffer) {
     Visit(static_cast<NamedObject*>(buffer));
 
-    writer_->WritePropertyName("fields");
-    writer_->OpenArray();
-    const FieldRefArray& fields = buffer->fields();
-    for (size_t ii = 0; ii < fields.size(); ++ii) {
-      Field* field = fields[ii].Get();
-      Serialize(writer_, field->id());
-    }
-    writer_->CloseArray();
+    if (binary_archive_manager_) {
+      writer_->WritePropertyName("fields");
+      writer_->OpenArray();
+      const FieldRefArray& fields = buffer->fields();
+      for (size_t ii = 0; ii < fields.size(); ++ii) {
+        Field* field = fields[ii].Get();
+        Serialize(writer_, field->id());
+      }
+      writer_->CloseArray();
 
-    WriteObjectBinaryRange(buffer);
+      WriteObjectBinaryRange(buffer);
+    } else {
+      writer_->WritePropertyName("fieldData");
+      writer_->OpenArray();
+      const FieldRefArray& fields = buffer->fields();
+      for (size_t ii = 0; ii < fields.size(); ++ii) {
+        Field* field = fields[ii].Get();
+        writer_->BeginCompacting();
+        writer_->OpenObject();
+        writer_->WritePropertyName("id");
+        Serialize(writer_, field->id());
+        writer_->WritePropertyName("type");
+        Serialize(writer_, field->GetClassName());
+        writer_->WritePropertyName("numComponents");
+        Serialize(writer_, field->num_components());
+        writer_->WritePropertyName("data");
+        writer_->OpenArray();
+        Buffer* buffer = field->buffer();
+        if (buffer) {
+          unsigned num_elements = buffer->num_elements();
+          scoped_array<float> data(
+              new float[num_elements * field->num_components()]);
+          field->GetAsFloats(
+              0, data.get(), field->num_components(), num_elements);
+          for (size_t jj = 0; jj < num_elements; ++jj) {
+            Serialize(writer_, data[jj]);
+          }
+        }
+        writer_->CloseArray();
+        writer_->CloseObject();
+        writer_->EndCompacting();
+      }
+      writer_->CloseArray();
+    }
+  }
+
+  void Visit(BezierCurveKey* key) {
+    Serialize(writer_, CurveKey::TYPE_BEZIER);
+    Serialize(writer_, key->input());
+    Serialize(writer_, key->output());
+    Serialize(writer_, key->in_tangent()[0]);
+    Serialize(writer_, key->in_tangent()[1]);
+    Serialize(writer_, key->out_tangent()[0]);
+    Serialize(writer_, key->out_tangent()[1]);
+  }
+
+  void Visit(LinearCurveKey* key) {
+    Serialize(writer_, CurveKey::TYPE_LINEAR);
+    Serialize(writer_, key->input());
+    Serialize(writer_, key->output());
+  }
+
+  void Visit(StepCurveKey* key) {
+    Serialize(writer_, CurveKey::TYPE_STEP);
+    Serialize(writer_, key->input());
+    Serialize(writer_, key->output());
   }
 
   void Visit(Curve* curve) {
     Visit(static_cast<NamedObject*>(curve));
-    WriteObjectBinaryRange(curve);
+
+    if (binary_archive_manager_) {
+      WriteObjectBinaryRange(curve);
+    } else {
+      writer_->WritePropertyName("keys");
+      writer_->BeginCompacting();
+      writer_->OpenArray();
+      const CurveKeyRefArray& keys = curve->keys();
+      for (CurveKeyRefArray::const_iterator it = keys.begin();
+          it != keys.end(); ++it) {
+        CurveKey* key = it->Get();
+        writer_->OpenArray();
+        Accept(key);
+        writer_->CloseArray();
+      }
+      writer_->CloseArray();
+      writer_->EndCompacting();
+    }
   }
 
   void Visit(ObjectBase* object) {
@@ -425,7 +532,9 @@ class CustomVisitor : public VisitorBase<CustomVisitor> {
 
   void Visit(Skin* skin) {
     Visit(static_cast<NamedObject*>(skin));
-    WriteObjectBinaryRange(skin);
+    if (binary_archive_manager_) {
+      WriteObjectBinaryRange(skin);
+    }
   }
 
   void Visit(SkinEval* skin_eval) {
@@ -719,17 +828,21 @@ bool NameStartsWithPrefix(const ObjectBase* object,
 
 Serializer::Serializer(ServiceLocator* service_locator,
                        StructuredWriter* writer,
-                       IArchiveGenerator* archive_generator)
+                       IArchiveGenerator* archive_generator,
+                       const Serializer::Options& options)
     : class_manager_(service_locator),
       writer_(writer),
-      archive_generator_(archive_generator) {
+      archive_generator_(archive_generator),
+      options_(options) {
+  bool binary = options.binary_output == Options::kBinaryOutputOn;
   sections_[PROPERTIES_SECTION].name_ = "properties";
-  sections_[PROPERTIES_SECTION].visitor_ = new PropertiesVisitor(writer_);
+  sections_[PROPERTIES_SECTION].visitor_ =
+      new PropertiesVisitor(writer_, binary);
   sections_[CUSTOM_SECTION].name_ = "custom";
   sections_[CUSTOM_SECTION].visitor_ = new CustomVisitor(
-      writer_, &binary_archive_manager_);
+      writer_, binary ? &binary_archive_manager_ : false);
   param_visitor_ = new ParamVisitor(writer_);
-  binary_visitor_ = new BinaryVisitor(&binary_archive_manager_);
+  binary_visitor_ = binary ? new BinaryVisitor(&binary_archive_manager_) : NULL;
 }
 
 Serializer::~Serializer() {
@@ -737,7 +850,9 @@ Serializer::~Serializer() {
     delete sections_[i].visitor_;
   }
   delete param_visitor_;
-  delete binary_visitor_;
+  if (binary_visitor_) {
+    delete binary_visitor_;
+  }
 }
 
 void Serializer::SerializePack(Pack* pack) {
@@ -798,9 +913,11 @@ void Serializer::SerializePack(Pack* pack) {
 }
 
 void Serializer::SerializePackBinary(Pack* pack) {
-  std::vector<ObjectBase*> objects = pack->GetByClass<ObjectBase>();
-  for (std::vector<ObjectBase*>::size_type i = 0; i < objects.size(); ++i) {
-    binary_visitor_->Accept(objects[i]);
+  if (binary_visitor_) {
+    std::vector<ObjectBase*> objects = pack->GetByClass<ObjectBase>();
+    for (std::vector<ObjectBase*>::size_type i = 0; i < objects.size(); ++i) {
+      binary_visitor_->Accept(objects[i]);
+    }
   }
 }
 
