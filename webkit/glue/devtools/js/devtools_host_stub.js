@@ -170,6 +170,10 @@ RemoteToolsAgentStub.prototype.ExecuteUtilityFunction = function(callId,
 };
 
 
+RemoteToolsAgentStub.prototype.ExecuteVoidJavaScript = function() {
+};
+
+
 RemoteToolsAgentStub.prototype.SetResourceTrackingEnabled = function(enabled, always) {
   RemoteToolsAgent.SetResourcesPanelEnabled(enabled);
   if (enabled) {

@@ -398,11 +398,31 @@ TestSuite.prototype.testSetBreakpoint = function() {
   this.addSniffer(devtools.DebuggerAgent.prototype, 'handleScriptsResponse_',
       function(msg) {
         var scriptSelect = document.getElementById('scripts-files');
-        var scriptResource =
-            scriptSelect.options[scriptSelect.selectedIndex].representedObject;
+        var options = scriptSelect.options;
 
-        test.assertTrue(scriptResource instanceof WebInspector.Resource);
-        test.assertTrue(!!scriptResource.url);
+        // There should be console API source (see
+        // InjectedScript._ensureCommandLineAPIInstalled) and the page script.
+        test.assertEquals(2, options.length, 'Unexpected number of scripts.');
+        test.assertEquals(0, scriptSelect.selectedIndex);
+
+        // Select page's script if it's not current option.
+        var scriptResource;
+        if (options[scriptSelect.selectedIndex].text ==
+            'debugger_test_page.html') {
+          scriptResource =
+              options[scriptSelect.selectedIndex].representedObject;
+        } else {
+          var pageScriptIndex = (1 - scriptSelect.selectedIndex);
+          test.assertEquals('debugger_test_page.html',
+                            options[pageScriptIndex].text);
+          scriptResource = options[pageScriptIndex].representedObject;
+          // Current panel is 'Scripts'.
+          WebInspector.currentPanel._showScriptOrResource(scriptResource);
+        }
+
+        test.assertTrue(scriptResource instanceof WebInspector.Resource,
+                        'Unexpected resource class.');
+        test.assertTrue(!!scriptResource.url, 'Resource URL is null.');
         test.assertTrue(
             scriptResource.url.search(/debugger_test_page.html$/) != -1,
             'Main HTML resource should be selected.');
@@ -419,12 +439,12 @@ TestSuite.prototype.testSetBreakpoint = function() {
           test.addSniffer(view, '_sourceFrameSetupFinished', function(event) {
             view._addBreakpoint(breakpointLine);
             // Force v8 execution.
-            devtools.tools.evaluateJavaScript('javascript:void(0)');
+            RemoteToolsAgent.ExecuteVoidJavaScript();
           });
         } else {
           view._addBreakpoint(breakpointLine);
           // Force v8 execution.
-          devtools.tools.evaluateJavaScript('javascript:void(0)');
+          RemoteToolsAgent.ExecuteVoidJavaScript();
         }
       });
 
