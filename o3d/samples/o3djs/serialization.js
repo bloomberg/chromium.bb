@@ -63,8 +63,7 @@ o3djs.serialization.supportedVersion = 5;
 o3djs.serialization.CURVE_KEY_TYPES = {
   step: 1,
   linear: 2,
-  bezier: 3,
-};
+  bezier: 3};
 
 /**
  * Options for deserialization.
