@@ -548,7 +548,7 @@ BUG1204878 : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
 // Since we don't have Aqua-themed controls, don't ignore the
 // box-shadow properties of controls that request Aqua theming.  But since Aqua
 // controls are rare on the web, defer this fix.
-BUG1130795 BUG20265 WIN LINUX : LayoutTests/fast/forms/box-shadow-override.html = FAIL CRASH
+BUG21118 WIN LINUX : LayoutTests/fast/forms/box-shadow-override.html = FAIL
 
 // These tests are not valid: the so-called expected results are not known to
 // be correct.
