@@ -713,7 +713,7 @@ IAccessible* AutocompleteEditViewWin::GetIAccessible() {
       return NULL;
 
     // Wrap the created object in a smart pointer so it won't leak.
-    CComPtr<IAccessible> accessibility_comptr(accessibility);
+    ScopedComPtr<IAccessible> accessibility_comptr(accessibility);
     if (!SUCCEEDED(accessibility->Initialize(this)))
       return NULL;
 
@@ -1222,7 +1222,7 @@ LRESULT AutocompleteEditViewWin::OnGetObject(UINT uMsg,
 
     if (autocomplete_accessibility_) {
       return LresultFromObject(IID_IAccessible, wparam,
-                               autocomplete_accessibility_.p);
+                               autocomplete_accessibility_);
     }
   }
   return 0;
@@ -1878,8 +1878,8 @@ void AutocompleteEditViewWin::GetSelection(CHARRANGE& sel) const {
   ITextDocument* const text_object_model = GetTextObjectModel();
   if (!text_object_model)
     return;
-  CComPtr<ITextSelection> selection;
-  const HRESULT hr = text_object_model->GetSelection(&selection);
+  ScopedComPtr<ITextSelection> selection;
+  const HRESULT hr = text_object_model->GetSelection(selection.Receive());
   DCHECK(hr == S_OK);
   long flags;
   selection->GetFlags(&flags);
@@ -1908,8 +1908,8 @@ void AutocompleteEditViewWin::SetSelection(LONG start, LONG end) {
   ITextDocument* const text_object_model = GetTextObjectModel();
   if (!text_object_model)
     return;
-  CComPtr<ITextSelection> selection;
-  const HRESULT hr = text_object_model->GetSelection(&selection);
+  ScopedComPtr<ITextSelection> selection;
+  const HRESULT hr = text_object_model->GetSelection(selection.Receive());
   DCHECK(hr == S_OK);
   selection->SetFlags(tomSelStartActive);
 }
@@ -2220,9 +2220,10 @@ ITextDocument* AutocompleteEditViewWin::GetTextObjectModel() const {
   if (!text_object_model_) {
     // This is lazily initialized, instead of being initialized in the
     // constructor, in order to avoid hurting startup performance.
-    CComPtr<IRichEditOle> ole_interface;
+    ScopedComPtr<IRichEditOle, NULL> ole_interface;
     ole_interface.Attach(GetOleInterface());
-    text_object_model_ = ole_interface;
+    if (ole_interface)
+      text_object_model_.QueryFrom(ole_interface);
   }
   return text_object_model_;
 }

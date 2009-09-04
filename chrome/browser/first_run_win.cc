@@ -23,6 +23,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/registry.h"
+#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -93,8 +94,8 @@ FilePath GetDefaultPrefFilePath(bool create_profile_dir,
 }
 
 bool InvokeGoogleUpdateForRename() {
-  CComPtr<IProcessLauncher> ipl;
-  if (!FAILED(ipl.CoCreateInstance(__uuidof(ProcessLauncherClass)))) {
+  ScopedComPtr<IProcessLauncher> ipl;
+  if (!FAILED(ipl.CreateInstance(__uuidof(ProcessLauncherClass)))) {
     ULONG_PTR phandle = NULL;
     DWORD id = GetCurrentProcessId();
     if (!FAILED(ipl->LaunchCmdElevated(google_update::kChromeGuid,

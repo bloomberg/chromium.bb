@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_accessibility_manager.h"
 
+#include "base/scoped_comptr_win.h"
 #include "chrome/browser/browser_accessibility.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -43,7 +44,7 @@ STDMETHODIMP BrowserAccessibilityManager::CreateAccessibilityInstance(
     if (!instance)
       return E_FAIL;
 
-    CComPtr<IAccessible> accessibility_instance(instance);
+    ScopedComPtr<IAccessible> accessibility_instance(instance);
 
     // Set class member variables.
     instance->Initialize(acc_obj_id, routing_id, process_id, parent_hwnd);

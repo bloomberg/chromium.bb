@@ -4,7 +4,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include <atlbase.h>
 #include <windows.h>
 #include <unknwn.h>
 #include <intshcut.h>
@@ -17,6 +16,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_comptr_win.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/importer.h"
@@ -258,14 +258,13 @@ class TestObserver : public ProfileWriter,
 };
 
 bool CreateUrlFile(std::wstring file, std::wstring url) {
-  CComPtr<IUniformResourceLocator> locator;
-  HRESULT result = locator.CoCreateInstance(CLSID_InternetShortcut, NULL,
-                                            CLSCTX_INPROC_SERVER);
+  ScopedComPtr<IUniformResourceLocator> locator;
+  HRESULT result = locator.CreateInstance(CLSID_InternetShortcut, NULL,
+                                          CLSCTX_INPROC_SERVER);
   if (FAILED(result))
     return false;
-  CComPtr<IPersistFile> persist_file;
-  result = locator->QueryInterface(IID_IPersistFile,
-                                   reinterpret_cast<void**>(&persist_file));
+  ScopedComPtr<IPersistFile> persist_file;
+  result = persist_file.QueryFrom(locator);
   if (FAILED(result))
     return false;
   result = locator->SetURL(url.c_str(), 0);
@@ -278,8 +277,8 @@ bool CreateUrlFile(std::wstring file, std::wstring url) {
 }
 
 void ClearPStoreType(IPStore* pstore, const GUID* type, const GUID* subtype) {
-  CComPtr<IEnumPStoreItems> item;
-  HRESULT result = pstore->EnumItems(0, type, subtype, 0, &item);
+  ScopedComPtr<IEnumPStoreItems, NULL> item;
+  HRESULT result = pstore->EnumItems(0, type, subtype, 0, item.Receive());
   if (result == PST_E_OK) {
     wchar_t* item_name;
     while (SUCCEEDED(item->Next(1, &item_name, 0))) {
@@ -347,7 +346,7 @@ TEST_F(ImporterTest, IEImporter) {
   // Sets up dummy password data.
   HRESULT res;
   #if 0  // This part of the test is disabled. See bug #2466
-  CComPtr<IPStore> pstore;
+  ScopedComPtr<IPStore> pstore;
   HMODULE pstorec_dll;
   GUID type = IEImporter::kUnittestGUID;
   GUID subtype = IEImporter::kUnittestGUID;
@@ -357,7 +356,7 @@ TEST_F(ImporterTest, IEImporter) {
     pstorec_dll = LoadLibrary(L"pstorec.dll");
     PStoreCreateFunc PStoreCreateInstance =
         (PStoreCreateFunc)GetProcAddress(pstorec_dll, "PStoreCreateInstance");
-    res = PStoreCreateInstance(&pstore, 0, 0, 0);
+    res = PStoreCreateInstance(pstore.Receive(), 0, 0, 0);
     ASSERT_TRUE(res == S_OK);
     ClearPStoreType(pstore, &type, &subtype);
     PST_TYPEINFO type_info;
@@ -370,9 +369,9 @@ TEST_F(ImporterTest, IEImporter) {
 #endif
 
   // Sets up a special history link.
-  CComPtr<IUrlHistoryStg2> url_history_stg2;
-  res = url_history_stg2.CoCreateInstance(CLSID_CUrlHistory, NULL,
-                                          CLSCTX_INPROC_SERVER);
+  ScopedComPtr<IUrlHistoryStg2> url_history_stg2;
+  res = url_history_stg2.CreateInstance(CLSID_CUrlHistory, NULL,
+                                        CLSCTX_INPROC_SERVER);
   ASSERT_TRUE(res == S_OK);
   res = url_history_stg2->AddUrl(kIEIdentifyUrl, kIEIdentifyTitle, 0);
   ASSERT_TRUE(res == S_OK);

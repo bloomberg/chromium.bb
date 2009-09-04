@@ -1221,7 +1221,8 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
           IID_IAccessible, 1000,
           render_widget_host_->routing_id(),
           render_widget_host_->process()->id(),
-          m_hWnd, reinterpret_cast<void **>(&browser_accessibility_root_));
+          m_hWnd,
+          reinterpret_cast<void **>(browser_accessibility_root_.Receive()));
 
       if (!browser_accessibility_root_) {
         // No valid root found, return with failure.

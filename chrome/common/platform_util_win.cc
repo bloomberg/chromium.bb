@@ -4,8 +4,6 @@
 
 #include "chrome/common/platform_util.h"
 
-#include <atlbase.h>
-#include <atlapp.h>
 #include <commdlg.h>
 #include <dwmapi.h>
 #include <shellapi.h>
@@ -17,6 +15,7 @@
 #include "base/gfx/native_widget_types.h"
 #include "base/logging.h"
 #include "base/registry.h"
+#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 
@@ -58,8 +57,8 @@ void ShowItemInFolder(const FilePath& full_path) {
     return;
   }
 
-  CComPtr<IShellFolder> desktop;
-  HRESULT hr = SHGetDesktopFolder(&desktop);
+  ScopedComPtr<IShellFolder> desktop;
+  HRESULT hr = SHGetDesktopFolder(desktop.Receive());
   if (FAILED(hr))
     return;
 

@@ -9,6 +9,7 @@
 
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
@@ -192,7 +193,7 @@ class GoogleUpdateJobObserver
 
   // Allows us control the upgrade process to a small degree. After OnComplete
   // has been called, this object can not be used.
-  CComPtr<IProgressWndEvents> event_sink_;
+  ScopedComPtr<IProgressWndEvents> event_sink_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -259,18 +260,18 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
                          main_loop);
   }
 
-  CComPtr<IJobObserver> job_holder(job_observer);
+  ScopedComPtr<IJobObserver> job_holder(job_observer);
 
-  CComPtr<IGoogleUpdate> on_demand;
+  ScopedComPtr<IGoogleUpdate> on_demand;
 
   if (InstallUtil::IsPerUserInstall(chrome_exe_path.c_str())) {
-    hr = on_demand.CoCreateInstance(CLSID_OnDemandUserAppsClass);
+    hr = on_demand.CreateInstance(CLSID_OnDemandUserAppsClass);
   } else {
     // The Update operation needs Admin privileges for writing
     // to %ProgramFiles%. On Vista we need to elevate before instantiating
     // the updater instance.
     if (!install_if_newer) {
-      hr = on_demand.CoCreateInstance(CLSID_OnDemandMachineAppsClass);
+      hr = on_demand.CreateInstance(CLSID_OnDemandMachineAppsClass);
     } else {
       HWND foreground_hwnd = NULL;
       if (window != NULL) {
@@ -278,8 +279,8 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
       }
 
       hr = CoCreateInstanceAsAdmin(CLSID_OnDemandMachineAppsClass,
-                                   IID_IGoogleUpdate, foreground_hwnd,
-                                   reinterpret_cast<void**>(&on_demand));
+          IID_IGoogleUpdate, foreground_hwnd,
+          reinterpret_cast<void**>(on_demand.Receive()));
     }
   }
 

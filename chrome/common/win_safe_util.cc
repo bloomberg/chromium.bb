@@ -4,7 +4,6 @@
 
 #include <shlobj.h>
 #include <shobjidl.h>
-#include <atlcomcli.h>
 
 #include "chrome/common/win_safe_util.h"
 
@@ -12,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 
 namespace win_util {
@@ -24,8 +24,8 @@ namespace win_util {
 bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
                            const FilePath& full_path,
                            const std::wstring& source_url) {
-  ATL::CComPtr<IAttachmentExecute> attachment_services;
-  HRESULT hr = attachment_services.CoCreateInstance(CLSID_AttachmentServices);
+  ScopedComPtr<IAttachmentExecute> attachment_services;
+  HRESULT hr = attachment_services.CreateInstance(CLSID_AttachmentServices);
   if (FAILED(hr)) {
     // We don't have Attachment Execution Services, it must be a pre-XP.SP2
     // Windows installation, or the thread does not have COM initialized.

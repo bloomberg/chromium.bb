@@ -7,7 +7,6 @@
 #include <windows.h>
 #include <commdlg.h>
 #include <shlobj.h>
-#include <atlbase.h>
 
 #include <algorithm>
 #include <set>
@@ -17,6 +16,7 @@
 #include "app/win_util.h"
 #include "base/file_util.h"
 #include "base/registry.h"
+#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
@@ -453,10 +453,10 @@ bool SelectFileDialogImpl::RunSelectFolderDialog(const std::wstring& title,
     STRRET out_dir_buffer;
     ZeroMemory(&out_dir_buffer, sizeof(out_dir_buffer));
     out_dir_buffer.uType = STRRET_WSTR;
-    CComPtr<IShellFolder> shell_folder = NULL;
-    if (SHGetDesktopFolder (&shell_folder) == NOERROR) {
+    ScopedComPtr<IShellFolder> shell_folder;
+    if (SHGetDesktopFolder(shell_folder.Receive()) == NOERROR) {
       HRESULT hr = shell_folder->GetDisplayNameOf(list, SHGDN_FORPARSING,
-                                                 &out_dir_buffer);
+                                                  &out_dir_buffer);
       if (SUCCEEDED(hr) && out_dir_buffer.uType == STRRET_WSTR) {
         *path = FilePath(out_dir_buffer.pOleStr);
         CoTaskMemFree(out_dir_buffer.pOleStr);

@@ -21,8 +21,8 @@ HRESULT AutocompleteAccessibility::Initialize(
 
   // Create a default accessible object for this instance.
   return CreateStdAccessibleObject(edit_box_->m_hWnd, OBJID_CLIENT,
-                                   IID_IAccessible, reinterpret_cast<void **>
-                                       (&default_accessibility_server_));
+      IID_IAccessible,
+      reinterpret_cast<void **>(default_accessibility_server_.Receive()));
 }
 
 STDMETHODIMP AutocompleteAccessibility::get_accChildCount(LONG* child_count) {

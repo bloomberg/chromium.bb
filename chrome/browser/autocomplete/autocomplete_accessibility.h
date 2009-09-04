@@ -10,6 +10,7 @@
 #include <oleacc.h>
 
 #include "base/basictypes.h"
+#include "base/scoped_comptr_win.h"
 
 class AutocompleteEditViewWin;
 
@@ -103,7 +104,7 @@ class ATL_NO_VTABLE AutocompleteAccessibility
   // A pointer containing the Windows' default IAccessible implementation for
   // this object. Used where it is acceptable to return default MSAA
   // information.
-  CComPtr<IAccessible> default_accessibility_server_;
+  ScopedComPtr<IAccessible> default_accessibility_server_;
 
  private:
   const AutocompleteEditViewWin* edit_box_;
