@@ -17,9 +17,7 @@ gfx::Point Screen::GetCursorScreenPoint() {
   return gfx::Point(x, y);
 }
 
-// static
-gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
-  // TODO(beng): use |window|.
+gfx::Rect static GetPrimaryMonitorBounds() {
   guchar* raw_data = NULL;
   gint data_len = 0;
   gboolean success = gdk_property_get(gdk_get_default_root_window(),
@@ -30,6 +28,18 @@ gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
   DCHECK(success);
   glong* data = reinterpret_cast<glong*>(raw_data);
   return gfx::Rect(data[0], data[1], data[0] + data[2], data[1] + data[3]);
+}
+
+// static
+gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
+  // TODO(beng): use |window|.
+  return GetPrimaryMonitorBounds();
+}
+
+// static
+gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
+  // TODO: use |point|.
+  return GetPrimaryMonitorBounds();
 }
 
 }  // namespace

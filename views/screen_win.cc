@@ -24,5 +24,18 @@ gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
   return gfx::Rect(monitor_info.rcWork);
 }
 
+// static
+gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
+  POINT initial_loc = { point.x(), point.y() };
+  HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
+  if (!monitor)
+    return gfx::Rect();
+
+  MONITORINFO mi = {0};
+  mi.cbSize = sizeof(mi);
+  GetMonitorInfo(monitor, &mi);
+  return gfx::Rect(mi.rcMonitor);
+}
+
 }  // namespace
 
