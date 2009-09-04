@@ -32,8 +32,8 @@
 
 // This file contains the GAPI decoder class.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H__
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H__
+#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
+#define O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_
 
 #include "core/cross/types.h"
 #include "command_buffer/service/cross/cmd_parser.h"
@@ -128,4 +128,4 @@ class GAPIDecoder : public AsyncAPIInterface {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H__
+#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_GAPI_DECODER_H_

@@ -36,8 +36,8 @@
 // would be definitely preferable, unfortunately it doesn't work on Windows
 // yet.
 
-#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_MOCKS_H__
-#define O3D_COMMAND_BUFFER_COMMON_CROSS_MOCKS_H__
+#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_MOCKS_H_
+#define O3D_COMMAND_BUFFER_COMMON_CROSS_MOCKS_H_
 
 #include <vector>
 #include "gmock/gmock.h"
@@ -145,4 +145,4 @@ class BufferSyncMock : public BufferSyncInterface {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_MOCKS_H__
+#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_MOCKS_H_

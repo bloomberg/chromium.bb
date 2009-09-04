@@ -32,8 +32,8 @@
 
 // This file contains the definition for resource classes and the resource map.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H__
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H__
+#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_
+#define O3D_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_
 
 #include <vector>
 #include "base/scoped_ptr.h"
@@ -268,4 +268,4 @@ template<class T> class ResourceMap {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H__
+#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_RESOURCE_H_

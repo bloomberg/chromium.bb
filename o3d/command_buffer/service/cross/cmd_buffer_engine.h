@@ -33,8 +33,8 @@
 // This file defines the CommandBufferEngine class, providing the main loop for
 // the service, exposing the RPC API, managing the command parser.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H__
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H__
+#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_
+#define O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_
 
 #include <vector>
 #include "base/scoped_ptr.h"
@@ -211,4 +211,4 @@ class CommandBufferEngine : public BufferSyncInterface {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H__
+#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_BUFFER_ENGINE_H_

@@ -30,8 +30,8 @@
  */
 
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_RENDER_SURFACE_D3D9_H__
-#define O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_RENDER_SURFACE_D3D9_H__
+#ifndef O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_RENDER_SURFACE_D3D9_H_
+#define O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_RENDER_SURFACE_D3D9_H_
 
 // This file contains the definition of the D3D9 versions of
 // render surface-related resource classes.
@@ -98,5 +98,5 @@ class RenderDepthStencilSurfaceD3D9 : public RenderDepthStencilSurface {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_RENDER_SURFACE_D3D9_H__
+#endif  // O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_RENDER_SURFACE_D3D9_H_
 

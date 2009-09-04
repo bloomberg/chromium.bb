@@ -33,8 +33,8 @@
 // This file contains a helper template class used to access bit fields in
 // unsigned int_ts.
 
-#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_BITFIELD_HELPERS_H__
-#define O3D_COMMAND_BUFFER_COMMON_CROSS_BITFIELD_HELPERS_H__
+#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_BITFIELD_HELPERS_H_
+#define O3D_COMMAND_BUFFER_COMMON_CROSS_BITFIELD_HELPERS_H_
 
 namespace o3d {
 namespace command_buffer {
@@ -68,4 +68,4 @@ template<int shift, int length> class BitField {
 }  // namespace o3d
 
 
-#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_BITFIELD_HELPERS_H__
+#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_BITFIELD_HELPERS_H_

@@ -32,8 +32,8 @@
 
 // This file defines a few utilities for Direct3D.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_D3D9_UTILS_H__
-#define O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_D3D9_UTILS_H__
+#ifndef O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_D3D9_UTILS_H_
+#define O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_D3D9_UTILS_H_
 
 #ifndef NOMINMAX
 // windows.h defines min() and max() as macros, conflicting with std::min and
@@ -152,4 +152,4 @@ static bool D3DSemanticToCBSemantic(
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_D3D9_UTILS_H__
+#endif  // O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_D3D9_UTILS_H_

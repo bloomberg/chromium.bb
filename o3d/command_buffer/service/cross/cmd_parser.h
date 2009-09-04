@@ -32,8 +32,8 @@
 
 // This file contains the command parser class.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H__
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H__
+#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H_
+#define O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H_
 
 #include "core/cross/types.h"
 #include "command_buffer/common/cross/rpc.h"
@@ -110,4 +110,4 @@ class AsyncAPIInterface {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H__
+#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_CMD_PARSER_H_

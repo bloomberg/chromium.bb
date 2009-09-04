@@ -33,8 +33,8 @@
 // This file contains the GAPID3D9 class, implementing the GAPI interface for
 // D3D9.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_GAPI_D3D9_H__
-#define O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_GAPI_D3D9_H__
+#ifndef O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_GAPI_D3D9_H_
+#define O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_GAPI_D3D9_H_
 
 #include "command_buffer/common/cross/gapi_interface.h"
 #include "command_buffer/service/win/d3d9/d3d9_utils.h"
@@ -428,5 +428,5 @@ class GAPID3D9 : public GAPIInterface {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_GAPI_D3D9_H__
+#endif  // O3D_COMMAND_BUFFER_SERVICE_WIN_D3D9_GAPI_D3D9_H_
 

@@ -32,8 +32,8 @@
 
 // This file defines the Command Buffer Synchronous API.
 
-#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_BUFFER_SYNC_API_H__
-#define O3D_COMMAND_BUFFER_COMMON_CROSS_BUFFER_SYNC_API_H__
+#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_BUFFER_SYNC_API_H_
+#define O3D_COMMAND_BUFFER_COMMON_CROSS_BUFFER_SYNC_API_H_
 
 #include "command_buffer/common/cross/rpc.h"
 
@@ -165,4 +165,4 @@ class BufferSyncInterface {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_BUFFER_SYNC_API_H__
+#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_BUFFER_SYNC_API_H_

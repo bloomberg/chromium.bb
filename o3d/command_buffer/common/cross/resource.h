@@ -33,8 +33,8 @@
 // This file contains definitions for resource flags, enums, and helper
 // functions.
 
-#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_RESOURCE_H__
-#define O3D_COMMAND_BUFFER_COMMON_CROSS_RESOURCE_H__
+#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_RESOURCE_H_
+#define O3D_COMMAND_BUFFER_COMMON_CROSS_RESOURCE_H_
 
 #include <algorithm>
 #include "base/basictypes.h"
@@ -222,4 +222,4 @@ enum FilteringMode {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_RESOURCE_H__
+#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_RESOURCE_H_

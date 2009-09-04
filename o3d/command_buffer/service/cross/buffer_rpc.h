@@ -34,8 +34,8 @@
 // service side: an implementation of a RPC service, forwarding calls to
 // a Command Buffer API implemention (RPC -> API).
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_BUFFER_RPC_H__
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_BUFFER_RPC_H__
+#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_BUFFER_RPC_H_
+#define O3D_COMMAND_BUFFER_SERVICE_CROSS_BUFFER_RPC_H_
 
 #include "command_buffer/common/cross/buffer_sync_api.h"
 #include "command_buffer/common/cross/rpc.h"
@@ -98,4 +98,4 @@ class BufferRPCImpl: public RPCImplInterface {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_BUFFER_RPC_H__
+#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_BUFFER_RPC_H_

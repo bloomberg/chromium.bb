@@ -32,8 +32,8 @@
 
 // This file contains a few helper functions for running big tests.
 
-#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_BIG_TEST_HELPERS_H__
-#define O3D_COMMAND_BUFFER_SERVICE_CROSS_BIG_TEST_HELPERS_H__
+#ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_BIG_TEST_HELPERS_H_
+#define O3D_COMMAND_BUFFER_SERVICE_CROSS_BIG_TEST_HELPERS_H_
 
 #include <build/build_config.h>
 #include "core/cross/types.h"
@@ -67,4 +67,4 @@ int big_test_main(int argc, wchar_t **argv);
 int big_test_main(int argc, char **argv);
 #endif
 
-#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_BIG_TEST_HELPERS_H__
+#endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_BIG_TEST_HELPERS_H_

@@ -33,8 +33,8 @@
 // This file contains the interface class for the low-level graphics API
 // (GAPI).
 
-#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_GAPI_INTERFACE_H__
-#define O3D_COMMAND_BUFFER_COMMON_CROSS_GAPI_INTERFACE_H__
+#ifndef O3D_COMMAND_BUFFER_COMMON_CROSS_GAPI_INTERFACE_H_
+#define O3D_COMMAND_BUFFER_COMMON_CROSS_GAPI_INTERFACE_H_
 
 #include "command_buffer/common/cross/buffer_sync_api.h"
 #include "command_buffer/common/cross/resource.h"
@@ -918,4 +918,4 @@ class GAPIInterface {
 }  // namespace command_buffer
 }  // namespace o3d
 
-#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_GAPI_INTERFACE_H__
+#endif  // O3D_COMMAND_BUFFER_COMMON_CROSS_GAPI_INTERFACE_H_
