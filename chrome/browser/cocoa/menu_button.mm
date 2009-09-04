@@ -54,7 +54,7 @@
 // Reset various settings of the button and its associated |ClickHoldButtonCell|
 // to the standard state which provides reasonable defaults.
 - (void)resetToDefaults {
-  id cell = [self cell];
+  ClickHoldButtonCell* cell = [self cell];
   DCHECK([cell isKindOfClass:[ClickHoldButtonCell class]]);
   [cell setEnableClickHold:YES];
   [cell setClickHoldTimeout:0.0];       // Make menu trigger immediately.

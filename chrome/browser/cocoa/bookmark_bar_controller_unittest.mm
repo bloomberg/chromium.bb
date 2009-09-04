@@ -524,6 +524,49 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
   [bar_ setUrlDelegate:nil];
 }
 
+TEST_F(BookmarkBarControllerTest, TestBuildOffTheSideMenu) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  NSMenu* menu = [bar_ offTheSideMenu];
+  ASSERT_TRUE(menu);
+
+  // The bookmark bar should start out with nothing.
+  EXPECT_EQ(0U, [[bar_ buttons] count]);
+
+  // Make sure things work when there's nothing. Note that there should always
+  // be a blank first menu item.
+  [bar_ buildOffTheSideMenu];
+  EXPECT_EQ(1, [menu numberOfItems]);
+
+  // We add lots of bookmarks. At first, we expect nothing to be added to the
+  // off-the-side menu. But once they start getting added, we expect the
+  // remaining ones to be added too. We expect a reasonably substantial number
+  // of items to be added by the end.
+  int num_off_the_side = 0;
+  for (int i = 0; i < 50; i++) {
+    const BookmarkNode* parent = model->GetBookmarkBarNode();
+    model->AddURL(parent, parent->GetChildCount(),
+                  L"very wide title",
+                  GURL("http://www.foobar.com/"));
+    [bar_ buildOffTheSideMenu];
+
+    if (num_off_the_side) {
+      num_off_the_side++;
+      EXPECT_EQ(1 + num_off_the_side, [menu numberOfItems]);
+    } else {
+      EXPECT_TRUE([menu numberOfItems] == 1 || [menu numberOfItems] == 2);
+      if ([menu numberOfItems] == 2)
+        num_off_the_side++;
+    }
+  }
+  EXPECT_GE(num_off_the_side, 20);
+
+  // Reset, and check that the built menu is "empty" again.
+  [bar_ clearBookmarkBar];
+  EXPECT_EQ(0U, [[bar_ buttons] count]);
+  [bar_ buildOffTheSideMenu];
+  EXPECT_EQ(1, [menu numberOfItems]);
+}
+
 // Cannot test these methods since they simply call a single static
 // method, BookmarkEditor::Show(), which is impossible to mock.
 // editBookmark:, addPage:

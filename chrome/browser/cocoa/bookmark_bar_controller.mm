@@ -15,6 +15,7 @@
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
+#import "chrome/browser/cocoa/menu_button.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
@@ -101,6 +102,8 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
        selector:@selector(frameDidChange)
            name:NSViewFrameDidChangeNotification
          object:[self view]];
+
+  DCHECK([offTheSideButton_ menu]);
 }
 
 - (void)showIfNeeded {
@@ -294,28 +297,41 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   }
 }
 
-// TODO(jrg): cache the menu so we don't need to build it every time.
+// Rebuild the off-the-side menu, taking into account which buttons are
+// displayed.
+// TODO(jrg,viettrungluu): only (re)build the menu when necessary.
 // TODO(jrg): if we get smarter such that we don't even bother
 //   creating buttons which aren't visible, we'll need to be smarter
 //   here.
-- (IBAction)openOffTheSideMenuFromButton:(id)sender {
-  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+- (void)buildOffTheSideMenu {
+  NSMenu* menu = [self offTheSideMenu];
+  DCHECK(menu);
+
+  // Remove old menu items (backwards order is as good as any); leave the
+  // blank one at position 0 (see menu_button.h).
+  for (NSInteger i = [menu numberOfItems] - 1; i >= 1 ; i--)
+    [menu removeItemAtIndex:i];
+
+  // Add items corresponding to buttons which aren't displayed or are only
+  // partly displayed.
   for (NSButton* each_button in buttons_.get()) {
     if (NSMaxX([each_button frame]) >
         NSMaxX([[each_button superview] frame])) {
-      [self addNode:[self nodeFromButton:each_button] toMenu:menu.get()];
+      [self addNode:[self nodeFromButton:each_button] toMenu:menu];
     }
   }
+}
 
-  // TODO(jrg): once we disable the button when the menu should be
-  // empty, remove this 'helper'.
-  if (![menu numberOfItems]) {
-    [self tagEmptyMenu:menu];
-  }
+// Get the off-the-side menu.
+- (NSMenu*)offTheSideMenu {
+  return [offTheSideButton_ menu];
+}
 
-  [NSMenu popUpContextMenu:menu
-                 withEvent:[NSApp currentEvent]
-                   forView:sender];
+// Called by any menus which have set us as their delegate (right now just the
+// off-the-side menu?).
+- (void)menuNeedsUpdate:(NSMenu*)menu {
+  if (menu == [self offTheSideMenu])
+    [self buildOffTheSideMenu];
 }
 
 // As a convention we set the menu's delegate to be the button's cell

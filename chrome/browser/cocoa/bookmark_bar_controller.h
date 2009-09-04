@@ -18,6 +18,7 @@ class BookmarkModel;
 class BookmarkNode;
 @class BookmarkBarView;
 class GURL;
+@class MenuButton;
 class Profile;
 class PrefService;
 @protocol ViewResizer;
@@ -68,7 +69,7 @@ class PrefService;
   id<BookmarkURLOpener> urlDelegate_;  // weak
 
   IBOutlet NSView* buttonView_;
-  IBOutlet NSButton* offTheSideButton_;
+  IBOutlet MenuButton* offTheSideButton_;
   IBOutlet NSMenu* buttonContextMenu_;
 }
 
@@ -98,7 +99,6 @@ class PrefService;
 // From a button, ...
 - (IBAction)openBookmark:(id)sender;
 - (IBAction)openFolderMenuFromButton:(id)sender;
-- (IBAction)openOffTheSideMenuFromButton:(id)sender;
 // From a context menu over the button, ...
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender;
 - (IBAction)openBookmarkInNewWindow:(id)sender;
@@ -148,6 +148,8 @@ class PrefService;
 - (NSMenu *)menuForFolderNode:(const BookmarkNode*)node;
 - (int64)nodeIdFromMenuTag:(int32)tag;
 - (int32)menuTagFromNodeId:(int64)menuid;
+- (void)buildOffTheSideMenu;
+- (NSMenu*)offTheSideMenu;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_

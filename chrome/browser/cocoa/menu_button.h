@@ -13,10 +13,14 @@
 @interface MenuButton : NSButton {
  @private
   IBOutlet NSMenu* menu_;
-  BOOL openAtRight_;
 }
 
-// The menu to display.
+// The menu to display. Note that it should have no (i.e., a blank) title and
+// that the 0-th entry should be blank (and won't be displayed). (This is
+// because we use a pulldown list, for which Cocoa uses the 0-th item as "title"
+// in the button. This might change if we ever switch to a pop-up. Our direct
+// use of the given NSMenu object means that the one can set and use NSMenu's
+// delegate as usual.)
 @property(assign, nonatomic) NSMenu* menu;
 
 @end  // @interface MenuButton
