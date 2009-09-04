@@ -36,8 +36,8 @@ Import('env')
 basic_types_env = env.Clone()
 
 # TODO(tuduce): this should not be necessary once we go -std=c99
-if basic_types_env.Bit('linux') or env.Bit('mac'):
-  basic_types_env.FilterOut(CCFLAGS=['-pedantic'])
+if basic_types_env.Bit('linux') or basic_types_env.Bit('mac'):
+  basic_types_env.Append(CCFLAGS=['-Wno-long-long'])
 
 # basic_types_env is needed for anything that includes
 # src/include/base/basictypes.h since it uses LL constants.  this is
@@ -123,3 +123,6 @@ if env.Bit('windows'):
   env.AddNodeToTestSuite(node,
                          ['large_tests'],
                          'run_platform_tests')
+
+env.EnsureRequiredBuildWarnings()
+basic_types_env.EnsureRequiredBuildWarnings()

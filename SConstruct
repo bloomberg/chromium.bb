@@ -33,6 +33,8 @@ import os
 import stat
 import sys
 sys.path.append("./common")
+import sets
+from SCons.Errors import UserError
 
 
 # NOTE: Underlay for  src/third_party_mod/gtest
@@ -57,6 +59,27 @@ pre_base_env = Environment(
     LIBS_STRICT = True,
     LIBS_DO_SUBST = True,
 )
+
+# ----------------------------------------------------------
+# Method to make sure -pedantic, etc, are not stripped from the
+# default env, since occasionally an engineer will be tempted down the
+# dark -- but wide and well-trodden -- path of expediency and stray
+# from the path of correctness.
+
+def EnsureRequiredBuildWarnings(env):
+  if env.Bit('linux') or env.Bit('mac'):
+    required_env_flags = sets.Set(['-pedantic', '-Wall', '-Werror' ])
+    ccflags = sets.Set(env.get('CCFLAGS'))
+
+    if not required_env_flags.issubset(ccflags):
+      raise UserError('required build flags missing: '
+                      + ' '.join(required_env_flags.difference(ccflags)))
+  else:
+    # windows get a pass for now
+    pass
+
+pre_base_env.AddMethod(EnsureRequiredBuildWarnings)
+
 
 # ----------------------------------------------------------
 # Generic Test Wrapper

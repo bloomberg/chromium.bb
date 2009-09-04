@@ -35,6 +35,12 @@ Import('env')
 env.Append(CPPPATH=['${TARGET_ROOT}'])
 # this is needed for including gen/... files, see GENERATED below
 
+# normally comment out -- uncomment out to test the pedantic removal
+# check below.
+#if env.Bit('linux') or env.Bit('mac'):
+#  env.FilterOut(CCFLAGS=['-pedantic'])
+#  env.FilterOut(CCFLAGS=['-Wall'])
+
 # TODO(robertm): move those into EXTR_LIB when feature available
 env.Prepend(
     LIBS = [
@@ -330,6 +336,8 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
     env.ComponentProgram('nacl_ldt_unittest', 'nacl_ldt_unittest.c')
   env.Requires(SEL_LDR_NODE, crt)
   env.Requires(SEL_LDR_NODE, sdl_dll)
+
+env.EnsureRequiredBuildWarnings()
 
 # ----------------------------------------------------------
 # Unit Tests

@@ -102,3 +102,6 @@ if env.Bit('linux') and env.get('BUILD_ARCHITECTURE') == 'x86':
     'nrd_xfer_test.out',
     [env.File('nrd_xfer_test.sh'), nrd_tester[0]])
    env.AddNodeToTestSuite(node, ['medium_tests'], 'run_nrd_xfer_test')
+
+env.EnsureRequiredBuildWarnings()
+env_no_strict_aliasing.EnsureRequiredBuildWarnings()
