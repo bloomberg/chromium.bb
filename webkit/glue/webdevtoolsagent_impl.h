@@ -47,6 +47,7 @@ class WebDevToolsAgentImpl
       int call_id,
       const WebCore::String& function_name,
       const WebCore::String& json_args);
+  virtual void ExecuteVoidJavaScript();
   virtual void GetResourceContent(
       int call_id,
       int identifier);

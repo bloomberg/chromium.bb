@@ -14,6 +14,10 @@
   METHOD3(ExecuteUtilityFunction, int /* call_id */, \
       String /* function_name */, String /* json_args */) \
   \
+  /* Request the agent to to run a no-op JavaScript function to trigger v8
+     execution. */ \
+  METHOD0(ExecuteVoidJavaScript) \
+  \
   /* Requests that the agent sends content of the resource with given id to the
      delegate. */ \
   METHOD2(GetResourceContent, int /* call_id */, int /* identifier */)

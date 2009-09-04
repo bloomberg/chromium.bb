@@ -188,6 +188,21 @@ String DebuggerAgentImpl::ExecuteUtilityFunction(
   }
 }
 
+void DebuggerAgentImpl::ExecuteVoidJavaScript(v8::Handle<v8::Context> context) {
+  v8::HandleScope scope;
+  ASSERT(!context.IsEmpty());
+  v8::Context::Scope context_scope(context);
+  DebuggerAgentManager::UtilityContextScope utility_scope;
+
+  v8::Handle<v8::Value> function =
+      context->Global()->Get(v8::String::New("devtools$$void"));
+  ASSERT(function->IsFunction());
+  v8::Handle<v8::Value> args[] = {
+    v8::Local<v8::Value>()
+  };
+  v8::Handle<v8::Function>::Cast(function)->Call(context->Global(), 0, args);
+}
+
 WebCore::Page* DebuggerAgentImpl::GetPage() {
   return web_view_impl_->page();
 }

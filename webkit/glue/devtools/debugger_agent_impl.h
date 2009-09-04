@@ -57,6 +57,11 @@ class DebuggerAgentImpl : public DebuggerAgent {
       const WebCore::String& json_args,
       WebCore::String* exception);
 
+  // Executes a no-op function in the utility context. We don't use
+  // ExecuteUtilityFunction for that to avoid script evaluation leading to
+  // undesirable AfterCompile events.
+  void ExecuteVoidJavaScript(v8::Handle<v8::Context> context);
+
   WebCore::Page* GetPage();
   WebDevToolsAgentImpl* webdevtools_agent() { return webdevtools_agent_; };
 

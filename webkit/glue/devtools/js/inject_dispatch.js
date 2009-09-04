@@ -70,3 +70,11 @@ var dispatch = function(method, var_args) {
   var call = JSON.stringify(sanitizeJson(args));
   DevToolsAgentHost.dispatch(call);
 };
+
+
+/**
+ * A no-op function that is called by debugger agent just to trigger v8
+ * execution.
+ */
+function devtools$$void() {
+}

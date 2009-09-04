@@ -174,6 +174,10 @@ void WebDevToolsAgentImpl::ExecuteUtilityFunction(
       result, exception);
 }
 
+void WebDevToolsAgentImpl::ExecuteVoidJavaScript() {
+  debugger_agent_impl_->ExecuteVoidJavaScript(utility_context_);
+}
+
 void WebDevToolsAgentImpl::GetResourceContent(
     int call_id,
     int identifier) {
