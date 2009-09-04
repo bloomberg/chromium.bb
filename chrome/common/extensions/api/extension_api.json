@@ -713,15 +713,16 @@
       {
         "id": "BookmarkTreeNode",
         "type": "object",
+        "description": "A node in the bookmarks tree, which is either a bookmark or a folder.  Child nodes are ordered within their parent.",
         "properties": {
-          "id": {"type": "string", "minimum": 0},
-          "parentId": {"type": "string", "minimum": 0, "optional": true},
-          "index": {"type": "integer", "optional": true},
-          "url": {"type": "string", "optional": true},
-          "title": {"type": "string"},
-          "dateAdded": {"type": "number", "optional": true},
-          "dateGroupModified": {"type": "number", "optional": true},
-          "children": {"type": "array", "optional": true, "items": {"$ref": "BookmarkTreeNode"}}
+          "id": {"type": "string", "minimum": 0, "description": "The unique identifier for the node."},
+          "parentId": {"type": "string", "minimum": 0, "optional": true, "description": "The id of the parent folder node.  Not present in the root node."},
+          "index": {"type": "integer", "optional": true, "description": "The 0-based position of this node within its parent."},
+          "url": {"type": "string", "optional": true, "description": "The URL navigated to when a user clicks on the bookmark.  This field isn't present for folders."},
+          "title": {"type": "string", "description": "The text displayed for the node."},
+          "dateAdded": {"type": "number", "optional": true, "description": "When this node was created, represented in milliseconds since the epoch (new Date(dateAdded))."},
+          "dateGroupModified": {"type": "number", "optional": true, "description": "When the contents of this folder last changed, represented in milliseconds since the epoch."},
+          "children": {"type": "array", "optional": true, "items": {"$ref": "BookmarkTreeNode"}, "description": "An ordered list of children of this node."}
         }
       }
     ],
@@ -795,7 +796,7 @@
       {
         "name": "create",
         "type": "function",
-        "description": "",
+        "description": "Creates a bookmark or folder under the specified parentId.  If url is NULL or missing, it will be a folder.",
         "parameters": [
           {
             "type": "object",
@@ -844,7 +845,7 @@
       {
         "name": "update",
         "type": "function",
-        "description": "",
+        "description": "Updates the properties of a bookmark or folder. Only specify the properties that you want to change, unspecified properties will be left unchanged.  NOTE: currently, only 'title' is supported.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
@@ -867,7 +868,7 @@
       {
         "name": "remove",
         "type": "function",
-        "description": "",
+        "description": "Removes a bookmark or an empty bookmark folder.",
         "parameters": [
           {"type": "string", "name": "id"},
           {"type": "function", "name": "callback", "optional": true, "parameters": []}
@@ -876,7 +877,7 @@
       {
         "name": "removeTree",
         "type": "function",
-        "description": "",
+        "description": "Recursively removes a bookmark folder.",
         "parameters": [
           {"type": "string", "name": "id"},
           {"type": "function", "name": "callback", "optional": true, "parameters": []}
@@ -887,7 +888,7 @@
       {
         "name": "onCreated",
         "type": "function",
-        "description": "",
+        "description": "Fired when a bookmark or folder is created.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
@@ -899,7 +900,7 @@
       {
         "name": "onRemoved",
         "type": "function",
-        "description": "",
+        "description": "Fired when a bookmark or folder is removed.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
@@ -915,7 +916,7 @@
       {
         "name": "onChanged",
         "type": "function",
-        "description": "",
+        "description": "Fired when a bookmark or folder changes.  NOTE: currently, only title changes trigger this.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
@@ -930,7 +931,7 @@
       {
         "name": "onMoved",
         "type": "function",
-        "description": "",
+        "description": "Fired when a bookmark or folder is moved to a different parent folder.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
@@ -948,7 +949,7 @@
       {
         "name": "onChildrenReordered",
         "type": "function",
-        "description": "",
+        "description": "Fired when the children of a folder have changed their order.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
