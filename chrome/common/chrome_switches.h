@@ -205,7 +205,7 @@ extern const wchar_t kFileDescriptorLimit[];
 
 extern const wchar_t kEnableMonitorProfile[];
 
-extern const wchar_t kEnableXSSAuditor[];
+extern const wchar_t kDisableXSSAuditor[];
 
 #if defined(OS_POSIX)
 extern const wchar_t kEnableCrashReporter[];
