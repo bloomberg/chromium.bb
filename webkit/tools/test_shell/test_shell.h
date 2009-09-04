@@ -212,7 +212,7 @@ public:
 
     // Writes the image captured from the given web frame to the given file.
     // The returned string is the ASCII-ized MD5 sum of the image.
-    static std::string DumpImage(WebView* view,
+    static std::string DumpImage(skia::PlatformCanvas* canvas,
                                  const std::wstring& file_name,
                                  const std::string& pixel_hash);
 

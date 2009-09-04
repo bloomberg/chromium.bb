@@ -241,8 +241,11 @@ void TestShell::Dump(TestShell* shell) {
       // command line (for the dump pixels argument), and the MD5 sum to
       // stdout.
       dumped_anything = true;
-      std::string md5sum = DumpImage(shell->webView(), params->pixel_file_name,
-          params->pixel_hash);
+      WebViewHost* view_host = shell->webViewHost();
+      view_host->webview()->layout();
+      view_host->Paint();
+      std::string md5sum = DumpImage(view_host->canvas(),
+          params->pixel_file_name, params->pixel_hash);
       printf("#MD5:%s\n", md5sum.c_str());
     }
     if (dumped_anything)
@@ -252,19 +255,10 @@ void TestShell::Dump(TestShell* shell) {
 }
 
 // static
-std::string TestShell::DumpImage(WebView* view,
+std::string TestShell::DumpImage(skia::PlatformCanvas* canvas,
     const std::wstring& file_name, const std::string& pixel_hash) {
-  view->layout();
-  const WebSize& size = view->size();
-
-  skia::PlatformCanvas canvas;
-  if (!canvas.initialize(size.width, size.height, true))
-    return std::string();
-  view->paint(webkit_glue::ToWebCanvas(&canvas),
-              WebRect(0, 0, size.width, size.height));
-
   skia::BitmapPlatformDevice& device =
-      static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());
+      static_cast<skia::BitmapPlatformDevice&>(canvas->getTopPlatformDevice());
   const SkBitmap& src_bmp = device.accessBitmap(false);
 
   // Encode image.

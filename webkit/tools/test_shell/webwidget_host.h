@@ -61,6 +61,12 @@ class WebWidgetHost {
 
   WebKit::WebScreenInfo GetScreenInfo();
 
+  // Paints the entire canvas a semi-transparent black (grayish). This is used
+  // by the layout tests in fast/repaint. The alpha value matches upstream.
+  void DisplayRepaintMask() {
+    canvas()->drawARGB(167, 0, 0, 0);
+  }
+
  protected:
   WebWidgetHost();
   ~WebWidgetHost();

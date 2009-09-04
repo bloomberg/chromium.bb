@@ -754,6 +754,9 @@ void LayoutTestController::dumpSelectionRect(
 
 void LayoutTestController::display(
     const CppArgumentList& args, CppVariant* result) {
+  WebViewHost* view_host = shell_->webViewHost();
+  view_host->Paint();
+  view_host->DisplayRepaintMask();
   result->SetNull();
 }
 

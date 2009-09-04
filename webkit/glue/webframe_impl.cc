@@ -1565,12 +1565,15 @@ void WebFrameImpl::Paint(WebCanvas* canvas, const WebRect& rect) {
 #else
     NOTIMPLEMENTED();
 #endif
+    gc.save();
     if (frame_->document() && frameview()) {
+      gc.clip(dirty_rect);
       frameview()->paint(&gc, dirty_rect);
       frame_->page()->inspectorController()->drawNodeHighlight(gc);
     } else {
       gc.fillRect(dirty_rect, Color::white);
     }
+    gc.restore();
   }
 }
 
