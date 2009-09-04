@@ -109,8 +109,6 @@ static const int kWindowBorderWidth = 5;
 // If not -1, windows are shown with this state.
 static int explicit_show_state = -1;
 
-static const float kMinimumBookmarkBarWidthAsRatioOfWidth = 0.5;
-
 // How round the 'new tab' style bookmarks bar is.
 static const int kNewtabBarRoundness = 5;
 // ------------
@@ -1859,8 +1857,15 @@ int BrowserView::LayoutBookmarkAndInfoBars(int top) {
 }
 
 int BrowserView::LayoutTopBar(int top) {
+  // This method lays out the the bookmark bar, and, if required, the extension
+  // shelf by its side. The bookmark bar appears on the right of the extension
+  // shelf. If there are too many bookmark items and extension toolstrips to fit
+  // in the single bar, some compromises are made as follows:
+  // 1. The bookmark bar is shrunk till it reaches the minimum width.
+  // 2. After reaching the minimum width, the bookmark bar width is kept fixed -
+  //    the extension shelf bar width is reduced.
   DCHECK(active_bookmark_bar_);
-  int y = top;
+  int y = top, x = 0;
   if (!IsBookmarkBarVisible()) {
     bookmark_bar_view_->SetVisible(false);
     bookmark_bar_view_->SetBounds(0, y, width(), 0);
@@ -1869,7 +1874,6 @@ int BrowserView::LayoutTopBar(int top) {
     return y;
   }
 
-  int bookmark_bar_width = width();
   int bookmark_bar_height = bookmark_bar_view_->GetPreferredSize().height();
   y -= kSeparationLineHeight + (bookmark_bar_view_->IsDetachedStyle() ?
       0 : bookmark_bar_view_->GetToolbarOverlap(false));
@@ -1880,26 +1884,30 @@ int BrowserView::LayoutTopBar(int top) {
       bookmark_bar_height = extensionshelf_height;
 
     if (!bookmark_bar_view_->IsDetachedStyle()) {
-      int extension_shelf_min_width =
+      int extension_shelf_width =
           extension_shelf_->GetPreferredSize().width();
-      bookmark_bar_width -= extension_shelf_min_width;
+      int bookmark_bar_given_width = width() - extension_shelf_width;
       int minimum_allowed_bookmark_bar_width =
-          static_cast<int>(width() * kMinimumBookmarkBarWidthAsRatioOfWidth);
-      if (bookmark_bar_width < minimum_allowed_bookmark_bar_width)
-        bookmark_bar_width = minimum_allowed_bookmark_bar_width;
+          bookmark_bar_view_->GetMinimumSize().width();
+      if (bookmark_bar_given_width < minimum_allowed_bookmark_bar_width) {
+        // The bookmark bar cannot compromise on its width any more. The
+        // extension shelf needs to shrink now.
+        extension_shelf_width =
+            width() - minimum_allowed_bookmark_bar_width;
+      }
       extension_shelf_->SetVisible(true);
-      extension_shelf_->SetBounds(bookmark_bar_width, y,
-                                  width() - bookmark_bar_width,
+      extension_shelf_->SetBounds(x, y, extension_shelf_width,
                                   bookmark_bar_height);
+      x += extension_shelf_width;
     } else {
-        // TODO (sidchat): For detached style bookmark bar, set the extensions
-        // shelf in a better position. Issue = 20741.
-        extension_shelf_->SetVisible(false);
+      // TODO (sidchat): For detached style bookmark bar, set the extensions
+      // shelf in a better position. Issue = 20741.
+      extension_shelf_->SetVisible(false);
     }
   }
 
   bookmark_bar_view_->SetVisible(true);
-  bookmark_bar_view_->SetBounds(0, y, bookmark_bar_width, bookmark_bar_height);
+  bookmark_bar_view_->SetBounds(x, y, width() - x, bookmark_bar_height);
   return y + bookmark_bar_height;
 }
 

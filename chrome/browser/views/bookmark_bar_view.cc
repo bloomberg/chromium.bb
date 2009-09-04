@@ -479,7 +479,35 @@ gfx::Size BookmarkBarView::GetPreferredSize() {
 }
 
 gfx::Size BookmarkBarView::GetMinimumSize() {
-  return gfx::Size(0, kBarHeight);
+  // The minimum width of the bookmark bar should at least contain the overflow
+  // button, by which one can access all the Bookmark Bar items, and the "Other
+  // Bookmarks" folder, along with appropriate margins and button padding.
+  int width = kLeftMargin;
+
+  if (OnNewTabPage()) {
+    double current_state = 1 - size_animation_->GetCurrentValue();
+    width += 2 * static_cast<int>(static_cast<double>
+        (kNewtabHorizontalPadding) * current_state);
+  }
+
+  int sync_error_total_width = 0;
+#ifdef CHROME_PERSONALIZATION
+  gfx::Size sync_error_button_pref = sync_error_button_->GetPreferredSize();
+  if (ShouldShowSyncErrorButton())
+    sync_error_total_width += kButtonPadding + sync_error_button_pref.width();
+#endif
+
+  gfx::Size other_bookmarked_pref =
+      other_bookmarked_button_->GetPreferredSize();
+  gfx::Size overflow_pref = overflow_button_->GetPreferredSize();
+  gfx::Size bookmarks_separator_pref =
+      bookmarks_separator_view_->GetPreferredSize();
+
+  width += (other_bookmarked_pref.width() + kButtonPadding +
+      overflow_pref.width() + kButtonPadding +
+      bookmarks_separator_pref.width() + sync_error_total_width);
+
+  return gfx::Size(width, kBarHeight);
 }
 
 void BookmarkBarView::Layout() {
@@ -720,7 +748,12 @@ void BookmarkBarView::OnStateChanged() {
   // When the sync state changes, it is sufficient to invoke View::Layout since
   // during layout we query the profile sync service and determine whether the
   // new state requires showing the sync error button so that the user can
-  // re-enter her password.
+  // re-enter her password. If extension shelf appears along with the bookmark
+  // shelf, it too needs to be layed out. Since both have the same parent, it is
+  // enough to let the parent layout both of these children.
+  // TODO (sky): This should not require Layout() and SchedulePaint(). Needs
+  //             some cleanup.
+  PreferredSizeChanged();
   Layout();
   SchedulePaint();
 }
