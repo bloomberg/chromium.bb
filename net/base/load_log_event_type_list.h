@@ -87,4 +87,11 @@ EVENT_TYPE(SOCKET_POOL_STALLED_MAX_SOCKETS)
 // The request stalled because there are too many sockets in the group.
 EVENT_TYPE(SOCKET_POOL_STALLED_MAX_SOCKETS_PER_GROUP)
 
+// ------------------------------------------------------------------------
+// URLRequest
+// ------------------------------------------------------------------------
+
+// Measures the time between URLRequest::Start() and
+// URLRequest::ResponseStarted().
+EVENT_TYPE(URL_REQUEST_START)
 
