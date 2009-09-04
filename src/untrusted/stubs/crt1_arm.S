@@ -29,8 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Native Client crt0 startup code for arm */
-
 /* TODO(robertm): find a header to put this in */
         .set ARM_BUNDLE_SIZE, 4
 
@@ -43,5 +41,37 @@
         .global _start
 _start:
         /* TODO: add the real code here */
+        /* register _fini as atexit */
+
+
+        /* TODO: add the real code here */
+        /*        bl __pthread_initialize */
+
+        /* TODO: add the real code here */
+        /* register __pthread_shutdown   as atexit */
+
+        nop
+        nop
+        nop
+        bl _init
+
+        /* TODO: add the real code here */
+        /* bl __srpc_init */
+
+        /* NOTE: we do not have SDL support on arm yet */
+        /* call    __av_wait */
+
+        nop
+        nop
+        nop
         bl main
-        bl _exit
+
+        /* TODO: add the real code here */
+        /* push {r0} */
+        /* bl __srpc_wait */
+        /* pop {r0} */
+
+        nop
+        nop
+        nop
+        bl exit    /* from newlib */
