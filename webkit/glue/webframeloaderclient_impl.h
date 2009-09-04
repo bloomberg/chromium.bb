@@ -126,6 +126,9 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
 
   virtual bool shouldGoToHistoryItem(WebCore::HistoryItem*) const;
 
+  virtual void didDisplayInsecureContent();
+  virtual void didRunInsecureContent(WebCore::SecurityOrigin*);
+
   virtual WebCore::ResourceError blockedError(const WebCore::ResourceRequest&);
   virtual WebCore::ResourceError cancelledError(const WebCore::ResourceRequest&);
   virtual WebCore::ResourceError cannotShowURLError(const WebCore::ResourceRequest&);

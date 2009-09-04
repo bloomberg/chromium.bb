@@ -1025,6 +1025,12 @@ bool WebFrameLoaderClient::shouldGoToHistoryItem(HistoryItem*) const {
   return true;
 }
 
+void WebFrameLoaderClient::didDisplayInsecureContent() {
+}
+
+void WebFrameLoaderClient::didRunInsecureContent(SecurityOrigin*) {
+}
+
 ResourceError WebFrameLoaderClient::blockedError(const WebCore::ResourceRequest&) {
   // FIXME
   return ResourceError();
