@@ -30,26 +30,28 @@
 
 Import('env')
 
+sources = ['access.c',
+           'chdir.c',
+           'chmod.c',
+           'chown.c',
+           'endpwent.c',
+           'fcntl.c',
+           'getegid.c',
+           'geteuid.c',
+           'getppid.c',
+           'getpwnam.c',
+           'getwd.c',
+           'ioctl.c',
+           'mkdir.c',
+           'rmdir.c',
+           'select.c',
+           'sleep.c',
+           'umask.c',
+           'utime.c']
 
-env.ComponentLibrary('libunimpl',
-                     ['access.c',
-                      'chdir.c',
-                      'chmod.c',
-                      'chown.c',
-                      'endpwent.c',
-                      'fcntl.c',
-                      'getegid.c',
-                      'geteuid.c',
-                      'getppid.c',
-                      'getpwnam.c',
-                      'getwd.c',
-                      'ioctl.c',
-                      'mkdir.c',
-                      'rmdir.c',
-                      'select.c',
-                      'sleep.c',
-                      'umask.c',
-                      'utime.c'])
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  sources.append('raise.c')
 
 
+env.ComponentLibrary('libunimpl', sources)
 env.AddLibraryToSdk(['libunimpl'])
