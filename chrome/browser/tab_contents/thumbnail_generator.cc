@@ -46,8 +46,8 @@
 
 namespace {
 
-static const int kThumbnailWidth = 294;
-static const int kThumbnailHeight = 204;
+static const int kThumbnailWidth = 212;
+static const int kThumbnailHeight = 132;
 
 // Indicates the time that the RWH must be visible for us to update the
 // thumbnail on it. If the user holds down control enter, there will be a lot

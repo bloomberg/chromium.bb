@@ -145,8 +145,8 @@ using WebKit::WebWorkerClient;
 static const size_t kMaxIndexChars = 65535;
 
 // Size of the thumbnails that we'll generate
-static const int kThumbnailWidth = 196;
-static const int kThumbnailHeight = 136;
+static const int kThumbnailWidth = 212;
+static const int kThumbnailHeight = 132;
 
 // Delay in milliseconds that we'll wait before capturing the page contents
 // and thumbnail.
