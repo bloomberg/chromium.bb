@@ -44,15 +44,15 @@ void ShellIntegration::DefaultBrowserWorker::ObserverDestroyed() {
 
 void ShellIntegration::DefaultBrowserWorker::ExecuteCheckDefaultBrowser() {
   DCHECK(MessageLoop::current() == file_loop_);
-  bool is_default = ShellIntegration::IsDefaultBrowser();
+  DefaultBrowserState state = ShellIntegration::IsDefaultBrowser();
   ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &DefaultBrowserWorker::CompleteCheckDefaultBrowser, is_default));
+      &DefaultBrowserWorker::CompleteCheckDefaultBrowser, state));
 }
 
 void ShellIntegration::DefaultBrowserWorker::CompleteCheckDefaultBrowser(
-    bool is_default) {
+    DefaultBrowserState state) {
   DCHECK(MessageLoop::current() == ui_loop_);
-  UpdateUI(is_default);
+  UpdateUI(state);
 }
 
 void ShellIntegration::DefaultBrowserWorker::ExecuteSetAsDefaultBrowser() {
@@ -70,10 +70,21 @@ void ShellIntegration::DefaultBrowserWorker::CompleteSetAsDefaultBrowser() {
   }
 }
 
-void ShellIntegration::DefaultBrowserWorker::UpdateUI(bool is_default) {
+void ShellIntegration::DefaultBrowserWorker::UpdateUI(
+    DefaultBrowserState state) {
   if (observer_) {
-    DefaultBrowserUIState state =
-        is_default ? STATE_DEFAULT : STATE_NOT_DEFAULT;
-    observer_->SetDefaultBrowserUIState(state);
+    switch (state) {
+      case NOT_DEFAULT_BROWSER:
+        observer_->SetDefaultBrowserUIState(STATE_NOT_DEFAULT);
+        break;
+      case IS_DEFAULT_BROWSER:
+        observer_->SetDefaultBrowserUIState(STATE_IS_DEFAULT);
+        break;
+      case UNKNOWN_DEFAULT_BROWSER:
+        observer_->SetDefaultBrowserUIState(STATE_UNKNOWN);
+        break;
+      default:
+        break;
+    }
   }
 }

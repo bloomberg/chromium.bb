@@ -646,7 +646,7 @@ void GeneralPageView::SetDefaultBrowserUIState(
     ShellIntegration::DefaultBrowserUIState state) {
   bool button_enabled = state == ShellIntegration::STATE_NOT_DEFAULT;
   default_browser_use_as_default_button_->SetEnabled(button_enabled);
-  if (state == ShellIntegration::STATE_DEFAULT) {
+  if (state == ShellIntegration::STATE_IS_DEFAULT) {
     default_browser_status_label_->SetText(
       l10n_util::GetStringF(IDS_OPTIONS_DEFAULTBROWSER_DEFAULT,
                             l10n_util::GetString(IDS_PRODUCT_NAME)));
@@ -655,6 +655,12 @@ void GeneralPageView::SetDefaultBrowserUIState(
   } else if (state == ShellIntegration::STATE_NOT_DEFAULT) {
     default_browser_status_label_->SetText(
         l10n_util::GetStringF(IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT,
+                              l10n_util::GetString(IDS_PRODUCT_NAME)));
+    default_browser_status_label_->SetColor(kNotDefaultBrowserLabelColor);
+    Layout();
+  } else if (state == ShellIntegration::STATE_UNKNOWN) {
+    default_browser_status_label_->SetText(
+        l10n_util::GetStringF(IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
                               l10n_util::GetString(IDS_PRODUCT_NAME)));
     default_browser_status_label_->SetColor(kNotDefaultBrowserLabelColor);
     Layout();

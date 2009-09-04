@@ -44,13 +44,13 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   return true;
 }
 
-bool ShellIntegration::IsDefaultBrowser() {
+ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
   // First determine the app path. If we can't determine what that is, we have
   // bigger fish to fry...
   std::wstring app_path;
   if (!PathService::Get(base::FILE_EXE, &app_path)) {
     LOG(ERROR) << "Error getting app exe path";
-    return false;
+    return UNKNOWN_DEFAULT_BROWSER;
   }
   // When we check for default browser we don't necessarily want to count file
   // type handlers and icons as having changed the default browser status,
@@ -69,7 +69,7 @@ bool ShellIntegration::IsDefaultBrowser() {
         NULL, CLSCTX_INPROC, __uuidof(IApplicationAssociationRegistration),
         (void**)&pAAR);
     if (!SUCCEEDED(hr))
-      return false;
+      return UNKNOWN_DEFAULT_BROWSER;
 
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     std::wstring app_name = dist->GetApplicationName();
@@ -84,9 +84,13 @@ bool ShellIntegration::IsDefaultBrowser() {
       BOOL result = TRUE;
       hr = pAAR->QueryAppIsDefault(kChromeProtocols[i].c_str(), AT_URLPROTOCOL,
           AL_EFFECTIVE, app_name.c_str(), &result);
-      if (!SUCCEEDED(hr) || (result == FALSE)) {
+      if (!SUCCEEDED(hr)) {
         pAAR->Release();
-        return false;
+        return UNKNOWN_DEFAULT_BROWSER;
+      }
+      if (result == FALSE) {
+        pAAR->Release();
+        return NOT_DEFAULT_BROWSER;
       }
     }
     pAAR->Release();
@@ -105,7 +109,7 @@ bool ShellIntegration::IsDefaultBrowser() {
       RegKey key(root_key, key_path.c_str(), KEY_READ);
       std::wstring value;
       if (!key.Valid() || !key.ReadValue(L"", &value))
-        return false;
+        return UNKNOWN_DEFAULT_BROWSER;
       // Need to normalize path in case it's been munged.
       CommandLine command_line(L"");
       command_line.ParseFromString(value);
@@ -117,10 +121,10 @@ bool ShellIntegration::IsDefaultBrowser() {
                        short_path.end(),
                        short_app_path.begin(),
                        CaseInsensitiveCompare<wchar_t>())))
-        return false;
+        return NOT_DEFAULT_BROWSER;
     }
   }
-  return true;
+  return IS_DEFAULT_BROWSER;
 }
 
 // There is no reliable way to say which browser is default on a machine (each

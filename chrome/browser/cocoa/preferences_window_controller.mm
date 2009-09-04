@@ -554,15 +554,16 @@ enum { kHomepageNewTabPage, kHomepageURL };
   [self didChangeValueForKey:@"defaultBrowser"];
 }
 
-// Returns if Chromium is the default browser.
-- (BOOL)isDefaultBrowser {
-  return ShellIntegration::IsDefaultBrowser() ? YES : NO;
+// Returns the Chromium default browser state.
+- (ShellIntegration::DefaultBrowserState)isDefaultBrowser {
+  return ShellIntegration::IsDefaultBrowser();
 }
 
 // Returns the text color of the "chromium is your default browser" text (green
 // for yes, red for no).
 - (NSColor*)defaultBrowserTextColor {
-  return [self isDefaultBrowser] ?
+  ShellIntegration::DefaultBrowserState state = [self isDefaultBrowser];
+  return (state == ShellIntegration::IS_DEFAULT_BROWSER) ?
     [NSColor colorWithCalibratedRed:0.0 green:135.0/255.0 blue:0 alpha:1.0] :
     [NSColor colorWithCalibratedRed:135.0/255.0 green:0 blue:0 alpha:1.0];
 }
@@ -570,9 +571,14 @@ enum { kHomepageNewTabPage, kHomepageURL };
 // Returns the text for the "chromium is your default browser" string dependent
 // on if Chromium actually is or not.
 - (NSString*)defaultBrowserText {
-  BOOL isDefault = [self isDefaultBrowser];
-  int stringId = isDefault ? IDS_OPTIONS_DEFAULTBROWSER_DEFAULT :
-      IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
+  ShellIntegration::DefaultBrowserState state = [self isDefaultBrowser];
+  int stringId;
+  if (state == ShellIntegration::IS_DEFAULT_BROWSER)
+    stringId = IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
+  else if (state == ShellIntegration::NOT_DEFAULT_BROWSER)
+    stringId = IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
+  else
+    stringId = IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
   std::wstring text =
       l10n_util::GetStringF(stringId, l10n_util::GetString(IDS_PRODUCT_NAME));
   return base::SysWideToNSString(text);

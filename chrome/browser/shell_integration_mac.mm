@@ -22,7 +22,7 @@ namespace {
 bool IsIdentifierDefaultBrowser(NSString* identifier) {
   NSString* defaultBrowser =
       [[NSWorkspace sharedWorkspace] defaultBrowserIdentifier];
-  if (!identifier || !defaultBrowser)
+  if (!defaultBrowser)
     return false;
   // We need to ensure we do the comparison case-insensitive as LS doesn't
   // persist the case of our bundle id.
@@ -33,14 +33,17 @@ bool IsIdentifierDefaultBrowser(NSString* identifier) {
 
 }  // namespace
 
-// Returns true if this instance of Chromium is the default browser. (Defined
-// as being the handler for the http/https protocols... we don't want to
-// report false here if the user has simply chosen to open HTML files in a
-// text editor and ftp links with a FTP client).
-bool ShellIntegration::IsDefaultBrowser() {
+// Attempt to determine if this instance of Chrome is the default browser and
+// return the appropriate state. (Defined as being the handler for HTTP/HTTPS
+// protocols; we don't want to report "no" here if the user has simply chosen
+// to open HTML files in a text editor and FTP links with an FTP client.)
+ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
   NSBundle* mainBundle = mac_util::MainAppBundle();
   NSString* myIdentifier = [mainBundle bundleIdentifier];
-  return IsIdentifierDefaultBrowser(myIdentifier);
+  if (!myIdentifier)
+    return UNKNOWN_DEFAULT_BROWSER;
+  return IsIdentifierDefaultBrowser(myIdentifier) ? IS_DEFAULT_BROWSER
+                                                  : NOT_DEFAULT_BROWSER;
 }
 
 // Returns true if Firefox is the default browser for the current user.

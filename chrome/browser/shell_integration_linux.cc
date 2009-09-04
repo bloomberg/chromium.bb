@@ -180,7 +180,7 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   return LaunchXdgUtility(argv);
 }
 
-bool ShellIntegration::IsDefaultBrowser() {
+ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
   std::vector<std::string> argv;
   argv.push_back("xdg-settings");
   argv.push_back("check");
@@ -189,15 +189,12 @@ bool ShellIntegration::IsDefaultBrowser() {
 
   std::string reply;
   if (!base::GetAppOutput(CommandLine(argv), &reply)) {
-    // If xdg-settings fails, we assume that we should pretend we're the default
-    // browser to avoid giving repeated prompts to set ourselves as the default.
-    // TODO(mdm): Really, being the default browser should be a ternary query:
-    // yes, no, and "don't know" so the UI can reflect this more accurately.
-    return true;
+    // xdg-settings failed: we can't determine or set the default browser.
+    return UNKNOWN_DEFAULT_BROWSER;
   }
 
   // Allow any reply that starts with "yes".
-  return reply.find("yes") == 0;
+  return (reply.find("yes") == 0) ? IS_DEFAULT_BROWSER : NOT_DEFAULT_BROWSER;
 }
 
 bool ShellIntegration::IsFirefoxDefaultBrowser() {

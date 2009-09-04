@@ -21,11 +21,21 @@ class ShellIntegration {
   // this operation fails.
   static bool SetAsDefaultBrowser();
 
-  // Returns true if this instance of Chrome is the default browser. (Defined
-  // as being the handler for the http/https protocols... we don't want to
-  // report false here if the user has simply chosen to open HTML files in a
-  // text editor and ftp links with a FTP client).
-  static bool IsDefaultBrowser();
+  // On Linux, it may not be possible to determine or set the default browser
+  // on some desktop environments or configurations. So, we use this enum and
+  // not a plain bool. (Note however that if used like a bool, this enum will
+  // have reasonable behavior.)
+  enum DefaultBrowserState {
+    NOT_DEFAULT_BROWSER = 0,
+    IS_DEFAULT_BROWSER,
+    UNKNOWN_DEFAULT_BROWSER
+  };
+
+  // Attempt to determine if this instance of Chrome is the default browser and
+  // return the appropriate state. (Defined as being the handler for HTTP/HTTPS
+  // protocols; we don't want to report "no" here if the user has simply chosen
+  // to open HTML files in a text editor and FTP links with an FTP client.)
+  static DefaultBrowserState IsDefaultBrowser();
 
   // Returns true if Firefox is likely to be the default browser for the current
   // user. This method is very fast so it can be invoked in the UI thread.
@@ -59,8 +69,9 @@ class ShellIntegration {
   // The current default browser UI state
   enum DefaultBrowserUIState {
     STATE_PROCESSING,
-    STATE_DEFAULT,
-    STATE_NOT_DEFAULT
+    STATE_NOT_DEFAULT,
+    STATE_IS_DEFAULT,
+    STATE_UNKNOWN
   };
 
   class DefaultBrowserObserver {
@@ -95,7 +106,7 @@ class ShellIntegration {
     // thread.  |CompleteCheckDefaultBrowser| notifies the view to update on the
     // UI thread.
     void ExecuteCheckDefaultBrowser();
-    void CompleteCheckDefaultBrowser(bool is_default);
+    void CompleteCheckDefaultBrowser(DefaultBrowserState state);
 
     // Functions that track the process of setting Chrome as the default
     // browser.  |ExecuteSetAsDefaultBrowser| updates the registry on the file
@@ -106,7 +117,7 @@ class ShellIntegration {
 
     // Updates the UI in our associated view with the current default browser
     // state.
-    void UpdateUI(bool is_default);
+    void UpdateUI(DefaultBrowserState state);
 
     DefaultBrowserObserver* observer_;
 

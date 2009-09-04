@@ -3470,6 +3470,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT" desc="The text displayed when Chrome is not the default browser">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is not currently your default browser.
       </message>
+      <message name="IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN" desc="The text displayed when Chrome cannot determine or set the default browser">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cannot determine or set the default browser.
+      </message>
       <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chrome as default' browser button">
         Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
       </message>

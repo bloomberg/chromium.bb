@@ -693,13 +693,17 @@ void GeneralPageGtk::SetDefaultBrowserUIState(
     ShellIntegration::DefaultBrowserUIState state) {
   const char* color = NULL;
   std::string text;
-  if (state == ShellIntegration::STATE_DEFAULT) {
+  if (state == ShellIntegration::STATE_IS_DEFAULT) {
     color = kDefaultBrowserLabelColor;
     text = l10n_util::GetStringFUTF8(IDS_OPTIONS_DEFAULTBROWSER_DEFAULT,
         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   } else if (state == ShellIntegration::STATE_NOT_DEFAULT) {
     color = kNotDefaultBrowserLabelColor;
     text = l10n_util::GetStringFUTF8(IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT,
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  } else if (state == ShellIntegration::STATE_UNKNOWN) {
+    color = kNotDefaultBrowserLabelColor;
+    text = l10n_util::GetStringFUTF8(IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   }
   if (color) {
