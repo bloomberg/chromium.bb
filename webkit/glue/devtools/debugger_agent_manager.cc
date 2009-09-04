@@ -211,14 +211,12 @@ void DebuggerAgentManager::OnV8DebugMessage(const v8::Debug::Message& message) {
     return;
   }
 
-  if (in_utility_context_) {
-    if (message.GetEvent() == v8::Break) {
-      // This may happen when two tabs are being debugged in the same process.
-      // Suppose that first debugger is pauesed on an exception. It will run
-      // nested MessageLoop which may process Break request from the second
-      // debugger.
-      debug_break_delayed_ = true;
-    }
+  if (in_utility_context_ && message.GetEvent() == v8::Break) {
+    // This may happen when two tabs are being debugged in the same process.
+    // Suppose that first debugger is pauesed on an exception. It will run
+    // nested MessageLoop which may process Break request from the second
+    // debugger.
+    debug_break_delayed_ = true;
   } else {
     // If the context is from one of the inpected tabs or injected extension
     // scripts it must have host_id in the data field.

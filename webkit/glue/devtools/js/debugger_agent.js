@@ -68,6 +68,13 @@ devtools.DebuggerAgent = function() {
   this.scriptsCacheInitialized_ = false;
 
   /**
+   * Whether the scripts list should be requested next time when context id is
+   * set.
+   * @type {boolean}
+   */
+  this.requestScriptsWhenContextIdSet_ = false;
+
+  /**
    * Active profiler modules flags.
    * @type {number}
    */
@@ -112,9 +119,18 @@ devtools.DebuggerAgent.ScopeType = {
 /**
  * A no-op JS expression that is sent to the inspected page in order to force v8
  * execution.
+ * @type {string}
  */
 devtools.DebuggerAgent.VOID_SCRIPT = 'javascript:void(0)';
 
+/**
+ * AfterCompile event source for devtools.DebuggerAgent.VOID_SCRIPT.
+ * @type {string}
+ */
+devtools.DebuggerAgent.VOID_SCRIPT_EVAL_SOURCE =
+   'with (window._inspectorCommandLineAPI) { with (window) { ' +
+   devtools.DebuggerAgent.VOID_SCRIPT +
+   ' } }';
 
 /**
  * A copy of enum from include/v8.h
@@ -134,6 +150,9 @@ devtools.DebuggerAgent.ProfilerModules = {
  */
 devtools.DebuggerAgent.prototype.reset = function() {
   this.contextId_ = null;
+  // No need to request scripts since they all will be pushed in AfterCompile
+  // events.
+  this.requestScriptsWhenContextIdSet_ = false;
   this.parsedScripts_ = {};
   this.requestNumberToBreakpointInfo_ = {};
   this.callFrames_ = [];
@@ -146,8 +165,8 @@ devtools.DebuggerAgent.prototype.reset = function() {
 
 
 /**
- * Initializes scripts UI. Asynchronously requests for all parsed scripts
- * if necessary. Response will be processed in handleScriptsResponse_.
+ * Initializes scripts UI. This method is called every time Scripts panel
+ * is shown. It will send request for context id if it's not set yet.
  */
 devtools.DebuggerAgent.prototype.initUI = function() {
   // There can be a number of scripts from after-compile events that are
@@ -158,20 +177,20 @@ devtools.DebuggerAgent.prototype.initUI = function() {
         undefined /* script source */, script.getLineOffset());
   }
 
+  // Initialize scripts cache when Scripts panel is shown first time.
+  if (this.scriptsCacheInitialized_) {
+    return;
+  }
+  this.scriptsCacheInitialized_ = true;
   if (this.contextId_) {
     // We already have context id. This means that we are here from the
     // very beginning of the page load cycle and hence will get all scripts
     // via after-compile events. No need to request scripts for this session.
     return;
   }
-
+  // Script list should be requested only when current context id is known.
   RemoteDebuggerAgent.GetContextId();
-  var cmd = new devtools.DebugCommand('scripts', {
-    'includeSource': false
-  });
-  devtools.DebuggerAgent.sendCommand_(cmd);
-  // Force v8 execution so that it gets to processing the requested command.
-  devtools.tools.evaluateJavaScript(devtools.DebuggerAgent.VOID_SCRIPT);
+  this.requestScriptsWhenContextIdSet_ = true;
 };
 
 
@@ -704,6 +723,28 @@ devtools.DebuggerAgent.prototype.requestLookup_ = function(handles, callback) {
  */
 devtools.DebuggerAgent.prototype.setContextId_ = function(contextId) {
   this.contextId_ = contextId;
+
+  // If it's the first time context id is set request scripts list.
+  if (this.requestScriptsWhenContextIdSet_) {
+    this.requestScriptsWhenContextIdSet_ = false;
+    var cmd = new devtools.DebugCommand('scripts', {
+      'includeSource': false
+    });
+    devtools.DebuggerAgent.sendCommand_(cmd);
+    // Force v8 execution so that it gets to processing the requested command.
+    devtools.tools.evaluateJavaScript(devtools.DebuggerAgent.VOID_SCRIPT);
+
+    var debuggerAgent = this;
+    this.requestSeqToCallback_[cmd.getSequenceNumber()] = function(msg) {
+      // Handle the response iff the context id hasn't changed since the request
+      // was issued. Otherwise if the context id did change all up-to-date
+      // scripts will be pushed in after compile events and there is no need to
+      // handle the response.
+      if (contextId == debuggerAgent.contextId_) {
+        debuggerAgent.handleScriptsResponse_(msg);
+      }
+    };
+  }
 };
 
 
@@ -732,7 +773,7 @@ devtools.DebuggerAgent.prototype.handleDebuggerOutput_ = function(output) {
     }
   } else if (msg.getType() == 'response') {
     if (msg.getCommand() == 'scripts') {
-      this.handleScriptsResponse_(msg);
+      this.invokeCallbackForResponse_(msg);
     } else if (msg.getCommand() == 'setbreakpoint') {
       this.handleSetBreakpointResponse_(msg);
     } else if (msg.getCommand() == 'clearbreakpoint') {
@@ -787,10 +828,6 @@ devtools.DebuggerAgent.prototype.handleExceptionEvent_ = function(msg) {
  * @param {devtools.DebuggerMessage} msg
  */
 devtools.DebuggerAgent.prototype.handleScriptsResponse_ = function(msg) {
-  if (this.invokeCallbackForResponse_(msg)) {
-    return;
-  }
-
   var scripts = msg.getBody();
   for (var i = 0; i < scripts.length; i++) {
     var script = scripts[i];
@@ -888,9 +925,10 @@ devtools.DebuggerAgent.prototype.handleAfterCompileEvent_ = function(msg) {
  *     evaluation and should not appear in the UI.
  */
 devtools.DebuggerAgent.prototype.isVoidScript_ = function(script) {
+  var voidScript = devtools.DebuggerAgent.VOID_SCRIPT_EVAL_SOURCE;
   return !script.name &&
-         (script.sourceStart == devtools.DebuggerAgent.VOID_SCRIPT ||
-          script.source == devtools.DebuggerAgent.VOID_SCRIPT);
+         (script.sourceStart == voidScript ||
+          script.source == voidScript);
 };
 
 
