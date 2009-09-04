@@ -922,6 +922,8 @@ void LayoutTestController::overridePreference(
       preferences->xss_auditor_enabled = CppVariantToBool(value);
     else if (key == "WebKitLocalStorageEnabledPreferenceKey")
       preferences->local_storage_enabled = CppVariantToBool(value);
+    else if (key == "WebKitOfflineWebApplicationCacheEnabled")
+      preferences->application_cache_enabled = CppVariantToBool(value);
     else {
       std::wstring message(L"Invalid name for preference: ");
       message.append(ASCIIToWide(key));
