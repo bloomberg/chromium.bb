@@ -403,7 +403,6 @@ TestSuite.prototype.testSetBreakpoint = function() {
         // There should be console API source (see
         // InjectedScript._ensureCommandLineAPIInstalled) and the page script.
         test.assertEquals(2, options.length, 'Unexpected number of scripts.');
-        test.assertEquals(0, scriptSelect.selectedIndex);
 
         // Select page's script if it's not current option.
         var scriptResource;
