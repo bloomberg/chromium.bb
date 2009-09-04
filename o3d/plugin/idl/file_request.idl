@@ -35,25 +35,29 @@ namespace o3d {
 callback void FileRequestCallback();
 
 %[
-  A FileRequest object is used to carry out an asynchronous request for a file
+  A FileRequest is used to carry out an asynchronous request for a file
   to be loaded.  Its use parallels that of XMLHttpRequest; you create one, call
   open, set the onreadystatechange callback, and call send.
   Note that unlike XMLHttpRequests, FileRequests cannot be reused.
 
-  For texture loads, on success the texture will be stored in a field of the
-  same name on the FileRequest itself.
+  For RawData loads, on success the RawData will be stored in the data field
+  on the FileRequest itself. It is only valid until the FileRequest is freed by
+  calling pack.removeObject(request).
 
   \code
-  var request = pack.createFileRequest("TEXTURE");
-  var texture;
+  var request = pack.createFileRequest("RAWDATA");
   request.open("GET", url, true);
   request.onreadystatechange = function() {
     if (request.done) {
       if (request.success) {
-        texture = request.texture;
+        var rawData = request.data;
+        // do something with raw data like create a bitmap.
+        ...
       } else {
-        dump('Load of texture file returned failure.');
+        dump('Load of rawdata returned failure.');
       }
+      // Free the request (and the rawData)
+      pack.removeObject(request);
     }
   };
   request.send();
@@ -74,7 +78,8 @@ callback void FileRequestCallback();
   [getter=uri] String uri;
   %[
     On completion of successful texture file loads, this holds the loaded
-    texture.
+    texture. Loading textures through FileRequest is depreated.
+    @deprecated
   %]
   [getter=texture] Texture? texture;
 
@@ -88,6 +93,8 @@ callback void FileRequestCallback();
     Whether or not to generate mip-maps on textures that are loaded (default:
     true). Mip-maps are not generated for DXTC textures. DDS files can contain
     pre-computed mip-maps for DXTC textures though.
+    Loading textures through FileRequest is depreated.
+    @deprecated
   %]
   [getter, setter] bool generate_mipmaps;
 
