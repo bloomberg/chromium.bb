@@ -1709,8 +1709,7 @@ BUG10461 SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-verti
 // New failures from merge
 BUG10463 WIN LINUX : LayoutTests/editing/selection/hit-test-anonymous.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
-BUG10463 WIN : LayoutTests/fast/forms/slider-zoomed.html = FAIL
-BUG10463 LINUX : LayoutTests/fast/forms/slider-zoomed.html = CRASH
+BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL
 
 // New tests, need Chromium baseline.
 BUG10465 LINUX : LayoutTests/fast/borders/border-image-border-radius.html = FAIL
@@ -1719,16 +1718,6 @@ BUG10465 LINUX : LayoutTests/fast/clip/overflow-border-radius-clip.html = FAIL
 // Needs rebaseline. See WebKit 41948
 BUG10468 MAC : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 BUG10468 WIN DEBUG : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
-
-// Merge WebKit: 41944:41999, Linux failures.
-// Merge WebKit:  47748:47759, Linux crashes.
-BUG10471 BUG20265 LINUX : LayoutTests/fast/events/tabindex-focus-blur-all.html = FAIL CRASH
-BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/focus2.html = FAIL CRASH
-BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/slider-mouse-events.html = FAIL CRASH
-BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/slider-onchange-event.html = FAIL CRASH
-BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/slider-padding.html = FAIL CRASH
-BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/slider-thumb-shared-style.html = FAIL CRASH
-BUG10471 BUG20265 LINUX : LayoutTests/fast/forms/slider-transformed.html = FAIL CRASH
 
 // Mac flaky failures.
 BUG10472 MAC : LayoutTests/svg/css/glyph-orientation-rounding-test.xhtml = FAIL PASS
@@ -2073,12 +2062,6 @@ BUG11613 MAC : LayoutTests/http/tests/security/cross-frame-access-call.html = FA
 // WebKit merge 45601:45610
 BUG16162 : LayoutTests/fast/loader/subframe-navigate-during-main-frame-load.html = FAIL
 
-// WebKit merge 45635:45640
-
-// WebKit merge 45659:45664, failure
-// WebKit merge 47748:47759, crash
-BUG16355 BUG20265 LINUX : LayoutTests/fast/forms/slider-delete-while-dragging-thumb.html = FAIL CRASH
-
 // Tests that rely on cross-process MessagePorts.  No point in running them in
 // test_shell, since we'd have to use a completely different implementation from
 // what is used in the browser.
@@ -2216,10 +2199,6 @@ BUG17398 LINUX : LayoutTests/fast/borders/borderRadiusDashed03.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/css/pseudo-cache-stale.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
 
-// Test failure from WebKit merge r46143:46194
-// Test crash from WebKit merge r47748:47759
-BUG17398 BUG20265 LINUX : LayoutTests/fast/forms/input-appearance-height.html = CRASH
-
 // Test failures from WebKit merge r46194:46229
 BUG17497 WIN DEBUG : LayoutTests/media/unsupported-rtsp.html = FAIL
 BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = FAIL
@@ -2292,13 +2271,6 @@ BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
 
 // WebKit 47732:47748.
 BUG20324 : LayoutTests/http/tests/security/javascriptURL/javascriptURL-in-new-iframe.html = CRASH
-
-// WebKit 47748:47759. Crash only on Linux. Need investigation.
-BUG20265 LINUX : LayoutTests/fast/css/pseudo-required-optional-005.html = CRASH
-BUG20265 LINUX : LayoutTests/fast/forms/ValidityState-valueMissing-005.html = CRASH
-BUG20265 LINUX : LayoutTests/fast/forms/range-default-value.html = CRASH
-BUG20265 LINUX : LayoutTests/fast/forms/range-reset.html = CRASH
-BUG20265 LINUX : LayoutTests/platform/mac/accessibility/slider-supports-actions.html = CRASH FAIL
 
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
