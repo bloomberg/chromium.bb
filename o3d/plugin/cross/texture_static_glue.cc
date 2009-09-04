@@ -444,7 +444,10 @@ void userglue_method_SetRect(o3d::Texture2D* self,
 void userglue_method_Set(o3d::Texture2D* self,
                          int level,
                          const std::vector<float>& values) {
-  SetRectCheck2D(self, level, 0, 0, self->width(), values, true);
+  SetRectCheck2D(
+      self, level, 0, 0,
+      o3d::image::ComputeMipDimension(level, self->width()),
+      values, true);
 }
 std::vector<float> userglue_method_GetRect(o3d::Texture2D* self,
                                            int level,
@@ -531,7 +534,9 @@ void userglue_method_Set(o3d::TextureCUBE* self,
                          o3d::TextureCUBE::CubeFace face,
                          int level,
                          const std::vector<float>& values) {
-  SetRectCheckCUBE(self, face, level, 0, 0, self->edge_length(), values, true);
+  SetRectCheckCUBE(self, face, level, 0, 0,
+                   o3d::image::ComputeMipDimension(level, self->edge_length()),
+                   values, true);
 }
 std::vector<float> userglue_method_GetRect(o3d::TextureCUBE* self,
                                            o3d::TextureCUBE::CubeFace face,
