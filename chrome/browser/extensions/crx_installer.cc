@@ -198,6 +198,11 @@ void CrxInstaller::ContinueInstall() {
 }
 
 void CrxInstaller::AbortInstall() {
+  // Kill the theme loading bubble.
+  NotificationService* service = NotificationService::current();
+  service->Notify(NotificationType::NO_THEME_DETECTED,
+                  Source<CrxInstaller>(this),
+                  NotificationService::NoDetails());
   Release();  // balanced in ConfirmInstall().
 
   // We're done. Since we don't post any more tasks to ourself, our ref count
