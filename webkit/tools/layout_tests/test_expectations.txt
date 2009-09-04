@@ -1142,10 +1142,6 @@ BUG8407 : LayoutTests/fast/loader/main-document-url-for-non-http-loads.html = FA
 // <body><canvas height=100></canvas></body> is 1 px taller than upstream.
 BUG13809 WIN LINUX : LayoutTests/fast/canvas/canvas-empty-image-pattern.html = FAIL
 
-// This test has been failing since the FocusController::setFocused API was
-// added in WebKit.
-BUG16018 : LayoutTests/fast/dom/HTMLDocument/hasFocus.html = FAIL
-
 // We don't draw the spelling markers at all in test shell.
 BUG11577 WIN LINUX : LayoutTests/editing/spelling/inline_spelling_markers.html = FAIL
 BUG11577 LINUX : LayoutTests/editing/spelling/spellcheck-attribute.html = FAIL
