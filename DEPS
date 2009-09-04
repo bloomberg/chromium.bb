@@ -29,12 +29,12 @@ deps = {
 
   "src/third_party/hunspell":
    "/trunk/deps/third_party/hunspell128@24986",
- 
+
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@219",
 
   "src/tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@601",
+    "http://gyp.googlecode.com/svn/trunk@604",
 
   "src/v8":
     "http://v8.googlecode.com/svn/trunk@2811",
