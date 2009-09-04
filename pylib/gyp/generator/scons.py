@@ -154,7 +154,7 @@ def escape_quotes(s):
     return escape_quotes_re.sub('\\1\\"\\2\\"', s)
 
 
-def GenerateConfig(fp, config, indent=''):
+def GenerateConfig(fp, config, indent='', src_dir=''):
   """
   Generates SCons dictionary items for a gyp configuration.
 
@@ -178,8 +178,22 @@ def GenerateConfig(fp, config, indent=''):
       if value:
         if gyp_var in ('defines',):
           value = [escape_quotes(v) for v in value]
+        if gyp_var in ('include_dirs',):
+          if src_dir and not src_dir.endswith('/'):
+            src_dir += '/'
+          result = []
+          for v in value:
+            if not os.path.isabs(v) and not v[0] == '$':
+              v = src_dir + v
+            # Force SCons to evaluate the CPPPATH directories at
+            # SConscript-read time, so delayed evaluation of $SRC_DIR
+            # doesn't point it to the --generator-output= directory.
+            result.append('env.Dir(%r)' % v)
+          value = result
+        else:
+          value = map(repr, value)
         WriteList(fp,
-                  map(repr, value),
+                  value,
                   prefix=indent,
                   preamble='%s%s = [\n    ' % (indent, scons_var),
                   postamble=postamble)
@@ -265,6 +279,11 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
   fp.write('\nImport("env")\n')
 
   #
+  fp.write('\n')
+  fp.write('env = env.Clone(COMPONENT_NAME=%s,\n' % repr(component_name))
+  fp.write('                TARGET_NAME=%s)\n' % repr(target_name))
+
+  #
   for config in spec['configurations'].itervalues():
     if config.get('scons_line_length'):
       fp.write(_spawn_hack)
@@ -278,7 +297,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     fp.write('    \'%s\' : {\n' % config_name)
 
     fp.write('        \'Append\' : dict(\n')
-    GenerateConfig(fp, config, indent)
+    GenerateConfig(fp, config, indent, '$SRC_DIR/'+subdir)
     libraries = spec.get('libraries')
     if libraries:
       WriteList(fp,
@@ -317,11 +336,6 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     fp.write('    },\n')
   fp.write('}\n')
 
-  #
-  fp.write('\n')
-  fp.write('env = env.Clone(COMPONENT_NAME=%s,\n' % repr(component_name))
-  fp.write('                TARGET_NAME=%s)\n' % repr(target_name))
-
   fp.write('\n'
            'config = configurations[env[\'CONFIG_NAME\']]\n'
            'env.Append(**config[\'Append\'])\n'
@@ -338,13 +352,17 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
            '  elif _var in os.environ:\n'
            '    env[\'ENV\'][_var] = os.environ[_var]\n')
 
+  #
+  #fp.write("\nif env.has_key('CPPPATH'):\n")
+  #fp.write("  env['CPPPATH'] = map(env.Dir, env['CPPPATH'])\n")
+
   variants = spec.get('variants', {})
   for setting in sorted(variants.keys()):
     if_fmt = 'if ARGUMENTS.get(%s) not in (None, \'0\'):\n'
     fp.write('\n')
     fp.write(if_fmt % repr(setting.upper()))
     fp.write('  env.Append(\n')
-    GenerateConfig(fp, variants[setting], ' '*6)
+    GenerateConfig(fp, config, indent, '$SRC_DIR/'+subdir)
     fp.write('  )\n')
 
   #
@@ -807,6 +825,8 @@ def GenerateSConscriptWrapper(build_file, build_file_data, name,
   output_dir = os.path.dirname(output_filename)
   src_dir = build_file_data['_DEPTH']
   src_dir_rel = gyp.common.RelativePath(src_dir, output_dir)
+  if not src_dir_rel:
+    src_dir_rel = '.'
   scons_settings = build_file_data.get('scons_settings', {})
   sconsbuild_dir = scons_settings.get('sconsbuild_dir', '#')
   scons_tools = scons_settings.get('tools', ['default'])
