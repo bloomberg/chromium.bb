@@ -1,0 +1,28 @@
+
+validate: error: Unsafe use of register-register store instruction:
+	       0:	e7810002 		str	r0, [r1, r2]
+
+
+validate: error: Unsafe use of register-register store instruction:
+	       4:	e7a10002 		str	r0, [r1, r2]!
+
+
+validate: error: Unsafe use of register-register store instruction:
+	       8:	e7810022 		str	r0, [r1, r2, lsr #32]
+
+
+validate: error: The store without address mask pattern crosses block boundaries:
+	      10:	e5810042 		str	r0, [r1, #66]
+
+
+validate: error: Unsafe use of store without address mask instruction:
+	      14:	e5810042 		str	r0, [r1, #66]
+
+
+validate: error: Unsafe use of store without address mask instruction:
+	      24:	e5810042 		str	r0, [r1, #66]
+
+
+validate: error: Unsafe use of store without address mask instruction:
+	      2c:	e5810042 		str	r0, [r1, #66]
+

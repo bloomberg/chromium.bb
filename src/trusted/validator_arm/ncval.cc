@@ -1,5 +1,4 @@
-/*
- * Copyright 2009, Google Inc.
+/* * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +44,7 @@
 #include "native_client/src/trusted/validator_arm/arm_validate.h"
 #include "native_client/src/trusted/validator_arm/stack_adjust_patterns.h"
 #include "native_client/src/trusted/validator_arm/branch_patterns.h"
+#include "native_client/src/trusted/validator_arm/store_patterns.h"
 #include "native_client/src/trusted/validator_arm/segment_parser.h"
 #include "native_client/src/trusted/validator_arm/ncdecode.h"
 #include "native_client/src/trusted/validator_arm/nop_patterns.h"
@@ -123,6 +123,7 @@ int main(int argc, const char *argv[]) {
 
   InstallBranchPatterns();
   InstallStackAdjustPatterns();
+  InstallStorePatterns();
 
   if (FLAGS_count_pattern_usage) {
     InstallInstructionCounterPatterns();

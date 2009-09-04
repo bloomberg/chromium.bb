@@ -38,7 +38,8 @@ if env['TARGET_ARCHITECTURE'] != 'arm':
 if env.Bit('linux'):
   # NOTE: we cannot use TARGET_ROOT here because we want to share this file
   #       between different scons invocations
-  gen_dec='${DESTINATION_ROOT}/gen/native_client/src/trusted/validator_arm/ncdecode_instruction.c'
+  gen_dec=('${DESTINATION_ROOT}/gen/native_client/src/trusted/validator_arm/'
+           'ncdecode_instruction.c')
 
   env.ComponentLibrary('arm_inst',
                        ['arm_insts.c',
@@ -48,11 +49,13 @@ if env.Bit('linux'):
                        ['arm_validate.cc',
                         'branch_patterns.cc',
                         gen_dec,
+                        'masks.cc',
                         'ncdecode.cc',
                         'ncvalidate.cc',
                         'nop_patterns.cc',
                         'register_set_use.c',
                         'stack_adjust_patterns.cc',
+                        'store_patterns.cc',
                         'validator_patterns.cc'])
 
   env.ComponentLibrary('seg_parser',
