@@ -655,76 +655,8 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   virtual void JSOutOfMemory() {
   }
 
-  // EditorDelegate ----------------------------------------------------------
-
-  // These methods exist primarily to allow a specialized executable to record
-  // edit events for testing purposes.  Most embedders are not expected to
-  // override them. In fact, by default these editor delegate methods aren't
-  // even called by the EditorClient, for performance reasons. To enable them,
-  // call WebView::SetUseEditorDelegate(true) for each WebView.
-
-  virtual bool ShouldBeginEditing(WebView* webview, std::wstring range) {
-    return true;
-  }
-
-  virtual bool ShouldEndEditing(WebView* webview, std::wstring range) {
-    return true;
-  }
-
-  virtual bool ShouldInsertNode(WebView* webview,
-                                std::wstring node,
-                                std::wstring range,
-                                std::wstring action) {
-    return true;
-  }
-
-  virtual bool ShouldInsertText(WebView* webview,
-                                std::wstring text,
-                                std::wstring range,
-                                std::wstring action) {
-    return true;
-  }
-
-  virtual bool ShouldChangeSelectedRange(WebView* webview,
-                                         std::wstring fromRange,
-                                         std::wstring toRange,
-                                         std::wstring affinity,
-                                         bool stillSelecting) {
-    return true;
-  }
-
-  virtual bool ShouldDeleteRange(WebView* webview, std::wstring range) {
-    return true;
-  }
-
-  virtual bool ShouldApplyStyle(WebView* webview,
-                                std::wstring style,
-                                std::wstring range) {
-    return true;
-  }
-
-  virtual bool SmartInsertDeleteEnabled() {
-    return true;
-  }
-
-  virtual bool IsSelectTrailingWhitespaceEnabled() {
-#if defined(OS_WIN)
-    return true;
-#else
-    return false;
-#endif
-  }
-
-  virtual void DidBeginEditing() { }
-  virtual void DidChangeSelection(bool is_empty_selection) { }
-  virtual void DidChangeContents() { }
-  virtual void DidEndEditing() { }
-
   // Notification that a user metric has occurred.
   virtual void UserMetricsRecordAction(const std::wstring& action) { }
-  virtual void UserMetricsRecordComputedAction(const std::wstring& action) {
-    UserMetricsRecordAction(action);
-  }
 
   // -------------------------------------------------------------------------
 
@@ -810,9 +742,6 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   virtual std::wstring GetAutoCorrectWord(const std::wstring& misspelled_word) {
     return std::wstring();
   }
-
-  // Changes the state of the input method editor.
-  virtual void SetInputMethodState(bool enabled) { }
 
   // Asks the user to print the page or a specific frame. Called in response to
   // a window.print() call.

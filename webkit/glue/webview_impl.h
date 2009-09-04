@@ -16,6 +16,7 @@
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/src/NotificationPresenterImpl.h"
 #include "webkit/glue/back_forward_list_client_impl.h"
+#include "webkit/glue/editor_client_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
@@ -35,6 +36,7 @@ class Widget;
 }
 
 namespace WebKit {
+class WebEditingClient;
 class WebKeyboardEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
@@ -74,11 +76,10 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void setTextDirection(WebKit::WebTextDirection direction);
 
   // WebView methods:
-  virtual void InitializeMainFrame(WebViewDelegate* delegate);
+  virtual void InitializeMainFrame();
   virtual bool ShouldClose();
   virtual void ClosePage();
   virtual WebViewDelegate* GetDelegate();
-  virtual void SetUseEditorDelegate(bool value);
   virtual void SetTabKeyCyclesThroughElements(bool value);
   virtual WebKit::WebFrame* GetMainFrame();
   virtual WebKit::WebFrame* GetFocusedFrame();
@@ -244,7 +245,8 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   void OnImageFetchComplete(webkit_glue::ImageResourceFetcher* fetcher,
                             const SkBitmap& bitmap);
 
-  WebViewImpl();
+  WebViewImpl(
+      WebViewDelegate* delegate, WebKit::WebEditingClient* editing_client);
   ~WebViewImpl();
 
   void ModifySelection(uint32 message,
@@ -252,6 +254,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
                        const WebCore::PlatformKeyboardEvent& e);
 
   WebViewDelegate* delegate_;
+  EditorClientImpl editor_client_impl_;
   WebKit::WebSize size_;
 
   WebKit::WebPoint last_mouse_position_;

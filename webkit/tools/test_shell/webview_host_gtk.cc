@@ -13,19 +13,20 @@
 #include "webkit/glue/plugins/gtk_plugin_container.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
+#include "webkit/tools/test_shell/test_webview_delegate.h"
 
 // static
 WebViewHost* WebViewHost::Create(GtkWidget* parent_view,
-                                 WebViewDelegate* delegate,
+                                 TestWebViewDelegate* delegate,
                                  const WebPreferences& prefs) {
   WebViewHost* host = new WebViewHost();
 
   host->view_ = WebWidgetHost::CreateWidget(parent_view, host);
   host->plugin_container_manager_.set_host_widget(host->view_);
 
-  host->webwidget_ = WebView::Create();
+  host->webwidget_ = WebView::Create(delegate, delegate);
   prefs.Apply(host->webview());
-  host->webview()->InitializeMainFrame(delegate);
+  host->webview()->InitializeMainFrame();
   host->webwidget_->layout();
 
   return host;

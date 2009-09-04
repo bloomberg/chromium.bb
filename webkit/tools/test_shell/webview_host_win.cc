@@ -10,12 +10,13 @@
 #include "skia/ext/platform_canvas.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
+#include "webkit/tools/test_shell/test_webview_delegate.h"
 
 static const wchar_t kWindowClassName[] = L"WebViewHost";
 
 /*static*/
 WebViewHost* WebViewHost::Create(HWND parent_view,
-                                 WebViewDelegate* delegate,
+                                 TestWebViewDelegate* delegate,
                                  const WebPreferences& prefs) {
   WebViewHost* host = new WebViewHost();
 
@@ -38,9 +39,9 @@ WebViewHost* WebViewHost::Create(HWND parent_view,
                              GetModuleHandle(NULL), NULL);
   win_util::SetWindowUserData(host->view_, host);
 
-  host->webwidget_ = WebView::Create();
+  host->webwidget_ = WebView::Create(delegate, delegate);
   prefs.Apply(host->webview());
-  host->webview()->InitializeMainFrame(delegate);
+  host->webview()->InitializeMainFrame();
 
   return host;
 }

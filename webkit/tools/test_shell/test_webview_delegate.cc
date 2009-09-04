@@ -26,6 +26,8 @@
 #include "webkit/api/public/WebHistoryItem.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebKit.h"
+#include "webkit/api/public/WebNode.h"
+#include "webkit/api/public/WebRange.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
@@ -59,16 +61,20 @@
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDragData;
+using WebKit::WebEditingAction;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebNavigationType;
 using WebKit::WebNavigationPolicy;
+using WebKit::WebNode;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
+using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSize;
 using WebKit::WebString;
+using WebKit::WebTextAffinity;
 using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
@@ -170,6 +176,61 @@ std::string GetErrorDescription(const WebURLError& error) {
 
   return StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
       domain.c_str(), code, error.unreachableURL.spec().data());
+}
+
+std::string GetNodeDescription(const WebNode& node, int exception) {
+  if (exception)
+    return "ERROR";
+  if (node.isNull())
+    return "(null)";
+  std::string str = node.nodeName().utf8();
+  const WebNode& parent = node.parentNode();
+  if (!parent.isNull()) {
+    str.append(" > ");
+    str.append(GetNodeDescription(parent, 0));
+  }
+  return str;
+}
+
+std::string GetRangeDescription(const WebRange& range) {
+  if (range.isNull())
+    return "(null)";
+  int exception = 0;
+  std::string str = "range from ";
+  int offset = range.startOffset();
+  str.append(IntToString(offset));
+  str.append(" of ");
+  WebNode container = range.startContainer(exception);
+  str.append(GetNodeDescription(container, exception));
+  str.append(" to ");
+  offset = range.endOffset();
+  str.append(IntToString(offset));
+  str.append(" of ");
+  container = range.endContainer(exception);
+  str.append(GetNodeDescription(container, exception));
+  return str;
+}
+
+std::string GetEditingActionDescription(WebEditingAction action) {
+  switch (action) {
+    case WebKit::WebEditingActionTyped:
+      return "WebViewInsertActionTyped";
+    case WebKit::WebEditingActionPasted:
+      return "WebViewInsertActionPasted";
+    case WebKit::WebEditingActionDropped:
+      return "WebViewInsertActionDropped";
+  }
+  return "(UNKNOWN ACTION)";
+}
+
+std::string GetTextAffinityDescription(WebTextAffinity affinity) {
+  switch (affinity) {
+    case WebKit::WebTextAffinityUpstream:
+      return "NSSelectionAffinityUpstream";
+    case WebKit::WebTextAffinityDownstream:
+      return "NSSelectionAffinityDownstream";
+  }
+  return "(UNKNOWN AFFINITY)";
 }
 
 }  // namespace
@@ -659,135 +720,6 @@ void TestWebViewDelegate::ShowContextMenu(
   captured_context_menu_events_.push_back(context);
 }
 
-// The output from these methods in layout test mode should match that
-// expected by the layout tests.  See EditingDelegate.m in DumpRenderTree.
-bool TestWebViewDelegate::ShouldBeginEditing(WebView* webview,
-                                             std::wstring range) {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    std::string utf8 = WideToUTF8(range);
-    printf("EDITING DELEGATE: shouldBeginEditingInDOMRange:%s\n",
-           utf8.c_str());
-  }
-  return shell_->AcceptsEditing();
-}
-
-bool TestWebViewDelegate::ShouldEndEditing(WebView* webview,
-                                           std::wstring range) {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    std::string utf8 = WideToUTF8(range);
-    printf("EDITING DELEGATE: shouldEndEditingInDOMRange:%s\n",
-           utf8.c_str());
-  }
-  return shell_->AcceptsEditing();
-}
-
-bool TestWebViewDelegate::ShouldInsertNode(WebView* webview,
-                                           std::wstring node,
-                                           std::wstring range,
-                                           std::wstring action) {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    std::string utf8_node = WideToUTF8(node);
-    std::string utf8_range = WideToUTF8(range);
-    std::string utf8_action = WideToUTF8(action);
-    printf("EDITING DELEGATE: shouldInsertNode:%s "
-               "replacingDOMRange:%s givenAction:%s\n",
-           utf8_node.c_str(), utf8_range.c_str(), utf8_action.c_str());
-  }
-  return shell_->AcceptsEditing();
-}
-
-bool TestWebViewDelegate::ShouldInsertText(WebView* webview,
-                                           std::wstring text,
-                                           std::wstring range,
-                                           std::wstring action) {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    std::string utf8_text = WideToUTF8(text);
-    std::string utf8_range = WideToUTF8(range);
-    std::string utf8_action = WideToUTF8(action);
-    printf("EDITING DELEGATE: shouldInsertText:%s "
-               "replacingDOMRange:%s givenAction:%s\n",
-           utf8_text.c_str(), utf8_range.c_str(), utf8_action.c_str());
-  }
-  return shell_->AcceptsEditing();
-}
-
-bool TestWebViewDelegate::ShouldChangeSelectedRange(WebView* webview,
-                                                    std::wstring fromRange,
-                                                    std::wstring toRange,
-                                                    std::wstring affinity,
-                                                    bool stillSelecting) {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    std::string utf8_from = WideToUTF8(fromRange);
-    std::string utf8_to = WideToUTF8(toRange);
-    std::string utf8_affinity = WideToUTF8(affinity);
-    printf("EDITING DELEGATE: shouldChangeSelectedDOMRange:%s "
-               "toDOMRange:%s affinity:%s stillSelecting:%s\n",
-           utf8_from.c_str(),
-           utf8_to.c_str(),
-           utf8_affinity.c_str(),
-           (stillSelecting ? "TRUE" : "FALSE"));
-  }
-  return shell_->AcceptsEditing();
-}
-
-bool TestWebViewDelegate::ShouldDeleteRange(WebView* webview,
-                                            std::wstring range) {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    std::string utf8 = WideToUTF8(range);
-    printf("EDITING DELEGATE: shouldDeleteDOMRange:%s\n", utf8.c_str());
-  }
-  return shell_->AcceptsEditing();
-}
-
-bool TestWebViewDelegate::ShouldApplyStyle(WebView* webview,
-                                           std::wstring style,
-                                           std::wstring range) {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    std::string utf8_style = WideToUTF8(style);
-    std::string utf8_range = WideToUTF8(range);
-    printf("EDITING DELEGATE: shouldApplyStyle:%s toElementsInDOMRange:%s\n",
-           utf8_style.c_str(), utf8_range.c_str());
-  }
-  return shell_->AcceptsEditing();
-}
-
-bool TestWebViewDelegate::SmartInsertDeleteEnabled() {
-  return smart_insert_delete_enabled_;
-}
-
-bool TestWebViewDelegate::IsSelectTrailingWhitespaceEnabled() {
-  return select_trailing_whitespace_enabled_;
-}
-
-void TestWebViewDelegate::DidBeginEditing() {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    printf("EDITING DELEGATE: "
-           "webViewDidBeginEditing:WebViewDidBeginEditingNotification\n");
-  }
-}
-
-void TestWebViewDelegate::DidChangeSelection(bool is_empty_selection) {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    printf("EDITING DELEGATE: "
-    "webViewDidChangeSelection:WebViewDidChangeSelectionNotification\n");
-  }
-  UpdateSelectionClipboard(is_empty_selection);
-}
-
-void TestWebViewDelegate::DidChangeContents() {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    printf("EDITING DELEGATE: "
-           "webViewDidChange:WebViewDidChangeNotification\n");
-  }
-}
-
-void TestWebViewDelegate::DidEndEditing() {
-  if (shell_->ShouldDumpEditingCallbacks()) {
-    printf("EDITING DELEGATE: "
-           "webViewDidEndEditing:WebViewDidEndEditingNotification\n");
-  }
-}
-
 void TestWebViewDelegate::NavigateBackForwardSoon(int offset) {
   shell_->navigation_controller()->GoToOffset(offset);
 }
@@ -845,6 +777,122 @@ WebScreenInfo TestWebViewDelegate::screenInfo() {
     return host->GetScreenInfo();
 
   return WebScreenInfo();
+}
+
+// WebEditingClient ----------------------------------------------------------
+// The output from these methods in layout test mode should match that
+// expected by the layout tests.  See EditingDelegate.m in DumpRenderTree.
+
+bool TestWebViewDelegate::shouldBeginEditing(const WebRange& range) {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: shouldBeginEditingInDOMRange:%s\n",
+           GetRangeDescription(range).c_str());
+  }
+  return shell_->AcceptsEditing();
+}
+
+bool TestWebViewDelegate::shouldEndEditing(const WebRange& range) {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: shouldEndEditingInDOMRange:%s\n",
+           GetRangeDescription(range).c_str());
+  }
+  return shell_->AcceptsEditing();
+}
+
+bool TestWebViewDelegate::shouldInsertNode(const WebNode& node,
+                                           const WebRange& range,
+                                           WebEditingAction action) {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: shouldInsertNode:%s "
+           "replacingDOMRange:%s givenAction:%s\n",
+           GetNodeDescription(node, 0).c_str(),
+           GetRangeDescription(range).c_str(),
+           GetEditingActionDescription(action).c_str());
+  }
+  return shell_->AcceptsEditing();
+}
+
+bool TestWebViewDelegate::shouldInsertText(const WebString& text,
+                                           const WebRange& range,
+                                           WebEditingAction action) {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: shouldInsertText:%s "
+           "replacingDOMRange:%s givenAction:%s\n",
+           text.utf8().data(),
+           GetRangeDescription(range).c_str(),
+           GetEditingActionDescription(action).c_str());
+  }
+  return shell_->AcceptsEditing();
+}
+
+bool TestWebViewDelegate::shouldChangeSelectedRange(const WebRange& from_range,
+                                                    const WebRange& to_range,
+                                                    WebTextAffinity affinity,
+                                                    bool still_selecting) {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: shouldChangeSelectedDOMRange:%s "
+           "toDOMRange:%s affinity:%s stillSelecting:%s\n",
+           GetRangeDescription(from_range).c_str(),
+           GetRangeDescription(to_range).c_str(),
+           GetTextAffinityDescription(affinity).c_str(),
+           (still_selecting ? "TRUE" : "FALSE"));
+  }
+  return shell_->AcceptsEditing();
+}
+
+bool TestWebViewDelegate::shouldDeleteRange(const WebRange& range) {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: shouldDeleteDOMRange:%s\n",
+           GetRangeDescription(range).c_str());
+  }
+  return shell_->AcceptsEditing();
+}
+
+bool TestWebViewDelegate::shouldApplyStyle(const WebString& style,
+                                           const WebRange& range) {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: shouldApplyStyle:%s toElementsInDOMRange:%s\n",
+           style.utf8().data(),
+           GetRangeDescription(range).c_str());
+  }
+  return shell_->AcceptsEditing();
+}
+
+bool TestWebViewDelegate::isSmartInsertDeleteEnabled() {
+  return smart_insert_delete_enabled_;
+}
+
+bool TestWebViewDelegate::isSelectTrailingWhitespaceEnabled() {
+  return select_trailing_whitespace_enabled_;
+}
+
+void TestWebViewDelegate::didBeginEditing() {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: "
+           "webViewDidBeginEditing:WebViewDidBeginEditingNotification\n");
+  }
+}
+
+void TestWebViewDelegate::didChangeSelection(bool is_empty_selection) {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: "
+    "webViewDidChangeSelection:WebViewDidChangeSelectionNotification\n");
+  }
+  UpdateSelectionClipboard(is_empty_selection);
+}
+
+void TestWebViewDelegate::didChangeContents() {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: "
+           "webViewDidChange:WebViewDidChangeNotification\n");
+  }
+}
+
+void TestWebViewDelegate::didEndEditing() {
+  if (shell_->ShouldDumpEditingCallbacks()) {
+    printf("EDITING DELEGATE: "
+           "webViewDidEndEditing:WebViewDidEndEditingNotification\n");
+  }
 }
 
 // Public methods ------------------------------------------------------------

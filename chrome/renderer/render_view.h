@@ -29,6 +29,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/api/public/WebConsoleMessage.h"
+#include "webkit/api/public/WebEditingClient.h"
 #include "webkit/api/public/WebTextDirection.h"
 #include "webkit/glue/dom_serializer_delegate.h"
 #include "webkit/glue/form_data.h"
@@ -99,6 +100,7 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 //
 class RenderView : public RenderWidget,
                    public WebViewDelegate,
+                   public WebKit::WebEditingClient,
                    public webkit_glue::WebPluginPageDelegate,
                    public webkit_glue::DomSerializerDelegate,
                    public base::SupportsWeakPtr<RenderView> {
@@ -179,7 +181,6 @@ class RenderView : public RenderWidget,
                                    const std::wstring& message,
                                    unsigned int line_no,
                                    const std::wstring& source_id);
-
   virtual void DidStartLoading(WebView* webview);
   virtual void DidStopLoading(WebView* webview);
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,
@@ -212,20 +213,23 @@ class RenderView : public RenderWidget,
   virtual void DidFailLoadWithError(WebView* webview,
                                     const WebKit::WebURLError& error,
                                     WebKit::WebFrame* forFrame);
-  virtual void DidFinishDocumentLoadForFrame(WebView* webview, WebKit::WebFrame* frame);
+  virtual void DidFinishDocumentLoadForFrame(
+      WebView* webview,
+      WebKit::WebFrame* frame);
   virtual bool DidLoadResourceFromMemoryCache(
       WebView* webview,
       const WebKit::WebURLRequest& request,
       const WebKit::WebURLResponse& response,
       WebKit::WebFrame* frame);
-  virtual void DidHandleOnloadEventsForFrame(WebView* webview, WebKit::WebFrame* frame);
+  virtual void DidHandleOnloadEventsForFrame(
+      WebView* webview,
+      WebKit::WebFrame* frame);
   virtual void DidChangeLocationWithinPageForFrame(WebView* webview,
                                                    WebKit::WebFrame* frame,
                                                    bool is_new_navigation);
   virtual void DidContentsSizeChange(WebKit::WebWidget* webwidget,
                                      int new_width,
                                      int new_height);
-
   virtual void DidCompleteClientRedirect(WebView* webview,
                                          WebKit::WebFrame* frame,
                                          const GURL& source);
@@ -240,13 +244,11 @@ class RenderView : public RenderWidget,
                                   uint32 identifier,
                                   const WebKit::WebURLResponse& response);
   virtual void DidFinishLoading(WebKit::WebFrame* webframe, uint32 identifier);
-
   virtual void WindowObjectCleared(WebKit::WebFrame* webframe);
   virtual void DocumentElementAvailable(WebKit::WebFrame* webframe);
   virtual void DidCreateScriptContextForFrame(WebKit::WebFrame* webframe);
   virtual void DidDestroyScriptContextForFrame(WebKit::WebFrame* webframe);
   virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* webframe);
-
   virtual WebKit::WebNavigationPolicy PolicyForNavigationAction(
       WebView* webview,
       WebKit::WebFrame* frame,
@@ -254,7 +256,6 @@ class RenderView : public RenderWidget,
       WebKit::WebNavigationType type,
       WebKit::WebNavigationPolicy default_policy,
       bool is_redirect);
-
   virtual WebView* CreateWebView(WebView* webview,
                                  bool user_gesture,
                                  const GURL& creator_url);
@@ -280,7 +281,6 @@ class RenderView : public RenderWidget,
                                 const GURL& image_url,
                                 bool errored,
                                 const SkBitmap& image);
-
   virtual void ShowContextMenu(WebView* webview,
                                ContextNodeType node_type,
                                int x,
@@ -297,10 +297,8 @@ class RenderView : public RenderWidget,
                                const std::string& frame_charset);
   virtual void StartDragging(WebView* webview,
                              const WebKit::WebDragData& drag_data);
-
   virtual void TakeFocus(WebView* webview, bool reverse);
   virtual void JSOutOfMemory();
-
   virtual void NavigateBackForwardSoon(int offset);
   virtual int GetHistoryBackListCount();
   virtual int GetHistoryForwardListCount();
@@ -308,18 +306,10 @@ class RenderView : public RenderWidget,
   virtual void SetTooltipText(WebView* webview,
                               const std::wstring& tooltip_text,
                               WebKit::WebTextDirection text_direction_hint);
-  // Called when the text selection changed. This is only called on linux since
-  // on other platforms the RenderView doesn't act as an editor client delegate.
-  virtual void DidChangeSelection(bool is_empty_selection);
-
   virtual void DownloadUrl(const GURL& url, const GURL& referrer);
-
   virtual void UpdateInspectorSettings(const std::wstring& raw_settings);
-
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate();
-
   virtual void PasteFromSelectionClipboard();
-
   virtual void ReportFindInPageMatchCount(int count, int request_id,
                                           bool final_update);
   virtual void ReportFindInPageSelection(int request_id,
@@ -330,7 +320,6 @@ class RenderView : public RenderWidget,
   virtual void SpellCheck(const std::wstring& word, int* misspell_location,
                           int* misspell_length);
   virtual std::wstring GetAutoCorrectWord(const std::wstring& word);
-  virtual void SetInputMethodState(bool enabled);
   virtual void ScriptedPrint(WebKit::WebFrame* frame);
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
@@ -341,7 +330,31 @@ class RenderView : public RenderWidget,
   virtual void closeWidgetSoon();
   virtual void runModal();
 
-  // WebPluginPageDelegate:
+  // WebKit::WebEditingClient
+  virtual bool shouldBeginEditing(const WebKit::WebRange& range);
+  virtual bool shouldEndEditing(const WebKit::WebRange& range);
+  virtual bool shouldInsertNode(
+      const WebKit::WebNode& node, const WebKit::WebRange& range,
+      WebKit::WebEditingAction action);
+  virtual bool shouldInsertText(
+      const WebKit::WebString& text, const WebKit::WebRange& range,
+      WebKit::WebEditingAction action);
+  virtual bool shouldChangeSelectedRange(
+      const WebKit::WebRange& from, const WebKit::WebRange& to,
+      WebKit::WebTextAffinity affinity, bool still_selecting);
+  virtual bool shouldDeleteRange(const WebKit::WebRange& range);
+  virtual bool shouldApplyStyle(
+      const WebKit::WebString& style, const WebKit::WebRange& range);
+  virtual bool isSmartInsertDeleteEnabled();
+  virtual bool isSelectTrailingWhitespaceEnabled();
+  virtual void setInputMethodEnabled(bool enabled);
+  virtual void didBeginEditing() {}
+  virtual void didChangeSelection(bool is_selection_empty);
+  virtual void didChangeContents() {}
+  virtual void didExecuteCommand(const WebKit::WebString& command_name);
+  virtual void didEndEditing() {}
+
+  // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
       const GURL& url,
       const std::string& mime_type,

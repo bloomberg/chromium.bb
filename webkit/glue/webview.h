@@ -13,6 +13,7 @@
 
 namespace WebKit {
 class WebDragData;
+class WebEditingClient;
 class WebFrame;
 class WebSettings;
 struct WebPoint;
@@ -49,12 +50,15 @@ class WebView : public WebKit::WebWidget {
   virtual ~WebView() {}
 
   // This method creates a WebView that is NOT yet initialized.  You will need
-  // to call InitializeMainFrame to finish the initialization.
-  static WebView* Create();
+  // to call InitializeMainFrame to finish the initialization.  You may pass
+  // NULL for the editing_client parameter if you are not interested in those
+  // notifications.
+  static WebView* Create(
+      WebViewDelegate* delegate, WebKit::WebEditingClient* editing_client);
 
   // After creating a WebView, you should immediately call this function.
   // You can optionally modify the settings (via GetSettings()) in between.
-  virtual void InitializeMainFrame(WebViewDelegate* delegate) = 0;
+  virtual void InitializeMainFrame() = 0;
 
   // Tells all Page instances of this view to update the visited link state for
   // the specified hash.
@@ -68,12 +72,6 @@ class WebView : public WebKit::WebWidget {
   // passed to WebView::Initialize. The caller must check this value before
   // using it, it will be NULL during closing of the view.
   virtual WebViewDelegate* GetDelegate() = 0;
-
-  // Instructs the EditorClient whether to pass editing notifications on to a
-  // delegate, if one is present.  This allows embedders that haven't
-  // overridden any editor delegate methods to avoid the performance impact of
-  // calling them.
-  virtual void SetUseEditorDelegate(bool value) = 0;
 
   // Method that controls whether pressing Tab key cycles through page elements
   // or inserts a '\t' char in text area

@@ -28,17 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTextAffinity_h
-#define WebTextAffinity_h
+// Use this file to assert that various WebKit API enum values continue
+// matching WebCore defined enum values.
+
+// FIXME: Move all of the COMPILE_ASSERTs for enums into this file.
+
+#include "EditorInsertAction.h"
+#include "TextAffinity.h"
+#include "WebEditingAction.h"
+#include "WebTextAffinity.h"
+#include <wtf/Assertions.h>
+
+using namespace WebCore;
 
 namespace WebKit {
 
-    // These constants specify the preferred direction of selection.
-    enum WebTextAffinity {
-        WebTextAffinityUpstream,   // The selection is moving toward the top of the document.
-        WebTextAffinityDownstream, // The selection is moving toward the bottom of the document.
-    };
+#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, webcore_name) \
+    COMPILE_ASSERT(int(webkit_name) == int(webcore_name), webkit_name)
+
+COMPILE_ASSERT_MATCHING_ENUM(WebEditingActionTyped, EditorInsertActionTyped);
+COMPILE_ASSERT_MATCHING_ENUM(WebEditingActionPasted, EditorInsertActionPasted);
+COMPILE_ASSERT_MATCHING_ENUM(WebEditingActionDropped, EditorInsertActionDropped);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebTextAffinityUpstream, UPSTREAM);
+COMPILE_ASSERT_MATCHING_ENUM(WebTextAffinityDownstream, DOWNSTREAM);
 
 } // namespace WebKit
-
-#endif

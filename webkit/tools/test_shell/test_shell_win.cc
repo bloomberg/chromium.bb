@@ -359,7 +359,6 @@ bool TestShell::Initialize(const std::wstring& startingURL) {
   // create webview
   m_webViewHost.reset(
       WebViewHost::Create(m_mainWnd, delegate_.get(), *TestShell::web_prefs_));
-  webView()->SetUseEditorDelegate(true);
   delegate_->RegisterDragDrop();
 
   // Load our initial content.

@@ -24,6 +24,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
+#include "webkit/api/public/WebEditingClient.h"
 #if defined(OS_MACOSX)
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebPopupMenuInfo.h"
@@ -44,6 +45,7 @@ class TestShell;
 class WebWidgetHost;
 
 class TestWebViewDelegate : public WebViewDelegate,
+                            public WebKit::WebEditingClient,
                             public webkit_glue::WebPluginPageDelegate,
                             public base::SupportsWeakPtr<TestWebViewDelegate> {
  public:
@@ -174,6 +176,7 @@ class TestWebViewDelegate : public WebViewDelegate,
                                        uint32 identifier,
                                        const WebKit::WebURLError& error);
 
+#if 0
   virtual bool ShouldBeginEditing(WebView* webview, std::wstring range);
   virtual bool ShouldEndEditing(WebView* webview, std::wstring range);
   virtual bool ShouldInsertNode(WebView* webview,
@@ -199,6 +202,8 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void DidChangeSelection(bool is_empty_selection);
   virtual void DidChangeContents();
   virtual void DidEndEditing();
+#endif
+
   virtual void WindowObjectCleared(WebKit::WebFrame* webframe);
   virtual WebKit::WebNavigationPolicy PolicyForNavigationAction(
     WebView* webview,
@@ -211,7 +216,7 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual int GetHistoryBackListCount();
   virtual int GetHistoryForwardListCount();
 
-  // WebWidgetClient
+  // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect& rect);
   virtual void didScrollRect(int dx, int dy,
                              const WebKit::WebRect& clip_rect);
@@ -226,6 +231,30 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual WebKit::WebRect rootWindowRect();
   virtual WebKit::WebRect windowResizerRect();
   virtual WebKit::WebScreenInfo screenInfo();
+
+  // WebKit::WebEditingClient
+  virtual bool shouldBeginEditing(const WebKit::WebRange& range);
+  virtual bool shouldEndEditing(const WebKit::WebRange& range);
+  virtual bool shouldInsertNode(
+      const WebKit::WebNode& node, const WebKit::WebRange& range,
+      WebKit::WebEditingAction action);
+  virtual bool shouldInsertText(
+      const WebKit::WebString& text, const WebKit::WebRange& range,
+      WebKit::WebEditingAction action);
+  virtual bool shouldChangeSelectedRange(
+      const WebKit::WebRange& from, const WebKit::WebRange& to,
+      WebKit::WebTextAffinity affinity, bool still_selecting);
+  virtual bool shouldDeleteRange(const WebKit::WebRange& range);
+  virtual bool shouldApplyStyle(
+      const WebKit::WebString& style, const WebKit::WebRange& range);
+  virtual bool isSmartInsertDeleteEnabled();
+  virtual bool isSelectTrailingWhitespaceEnabled();
+  virtual void setInputMethodEnabled(bool enabled) {}
+  virtual void didBeginEditing();
+  virtual void didChangeSelection(bool is_selection_empty);
+  virtual void didChangeContents();
+  virtual void didExecuteCommand(const WebKit::WebString& command_name) {}
+  virtual void didEndEditing();
 
   // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(

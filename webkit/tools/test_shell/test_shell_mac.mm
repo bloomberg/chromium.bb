@@ -264,7 +264,6 @@ bool TestShell::Initialize(const std::wstring& startingURL) {
       WebViewHost::Create([m_mainWnd contentView],
                           delegate_.get(),
                           *TestShell::web_prefs_));
-  webView()->SetUseEditorDelegate(true);
   delegate_->RegisterDragDrop();
   TestShellWebView* web_view =
       static_cast<TestShellWebView*>(m_webViewHost->view_handle());

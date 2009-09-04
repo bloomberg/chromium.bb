@@ -13,12 +13,13 @@
 #include "webkit/api/public/WebSize.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
+#include "webkit/tools/test_shell/test_webview_delegate.h"
 
 using WebKit::WebSize;
 
 // static
 WebViewHost* WebViewHost::Create(NSView* parent_view,
-                                 WebViewDelegate* delegate,
+                                 TestWebViewDelegate* delegate,
                                  const WebPreferences& prefs) {
   WebViewHost* host = new WebViewHost();
 
@@ -34,9 +35,9 @@ WebViewHost* WebViewHost::Create(NSView* parent_view,
   [parent_view addSubview:host->view_];
   [host->view_ release];
 
-  host->webwidget_ = WebView::Create();
+  host->webwidget_ = WebView::Create(delegate, delegate);
   prefs.Apply(host->webview());
-  host->webview()->InitializeMainFrame(delegate);
+  host->webview()->InitializeMainFrame();
   host->webwidget_->resize(WebSize(content_rect.size.width,
                                    content_rect.size.height));
 

@@ -369,10 +369,6 @@ bool TestShell::Initialize(const std::wstring& startingURL) {
   m_webViewHost.reset(
       WebViewHost::Create(vbox, delegate_.get(), *TestShell::web_prefs_));
 
-  // Enables output of "EDDITING DELEGATE: " debugging lines in the layout test
-  // output.
-  webView()->SetUseEditorDelegate(true);
-
   gtk_container_add(GTK_CONTAINER(m_mainWnd), vbox);
   gtk_widget_show_all(GTK_WIDGET(m_mainWnd));
 

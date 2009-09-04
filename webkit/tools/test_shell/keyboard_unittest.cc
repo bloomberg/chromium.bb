@@ -39,7 +39,7 @@ class KeyboardTest : public testing::Test {
   const char* InterpretKeyEvent(
       const WebKeyboardEvent& keyboard_event,
       PlatformKeyboardEvent::Type key_type) {
-    EditorClientImpl editor_impl(NULL);
+    EditorClientImpl editor_impl(NULL, NULL);
 
     PlatformKeyboardEventBuilder evt(keyboard_event);
     evt.setKeyType(key_type);

@@ -108,17 +108,21 @@ using WebKit::WebConsoleMessage;
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDragData;
+using WebKit::WebEditingAction;
 using WebKit::WebForm;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
+using WebKit::WebNode;
 using WebKit::WebPopupMenuInfo;
+using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebScriptSource;
 using WebKit::WebSettings;
 using WebKit::WebSize;
 using WebKit::WebString;
+using WebKit::WebTextAffinity;
 using WebKit::WebTextDirection;
 using WebKit::WebURL;
 using WebKit::WebURLError;
@@ -280,17 +284,11 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
-  webwidget_ = WebView::Create();
+  webwidget_ = WebView::Create(this, this);
   webkit_preferences_.Apply(webview());
-  webview()->InitializeMainFrame(this);
+  webview()->InitializeMainFrame();
 
   OnSetRendererPrefs(renderer_prefs);
-
-#if defined(OS_LINUX)
-  // We have to enable ourselves as the editor delegate on linux so we can copy
-  // text selections to the X clipboard.
-  webview()->SetUseEditorDelegate(true);
-#endif
 
   // Don't let WebCore keep a B/F list - we have our own.
   // We let it keep 1 entry because FrameLoader::goToItem expects an item in the
@@ -1033,8 +1031,7 @@ void RenderView::UpdateSessionHistory(WebFrame* frame) {
       routing_id_, page_id_, webkit_glue::HistoryItemToString(item)));
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// WebViewDelegate
+// WebViewDelegate ------------------------------------------------------------
 
 bool RenderView::CanAcceptLoadDrops() const {
   return renderer_preferences_.can_accept_load_drops;
@@ -1977,6 +1974,8 @@ void RenderView::DidContentsSizeChange(WebWidget* webwidget,
   }
 }
 
+// WebKit::WebWidgetClient ----------------------------------------------------
+
 // We are supposed to get a single call to Show for a newly created RenderView
 // that was created via RenderView::CreateWebView.  So, we wait until this
 // point to dispatch the ShowView message.
@@ -2014,6 +2013,99 @@ void RenderView::runModal() {
   msg->set_pump_messages_event(modal_dialog_event_.get());
   Send(msg);
 }
+
+// WebKit::WebEditingClient ---------------------------------------------------
+
+bool RenderView::shouldBeginEditing(const WebRange& range) {
+  return true;
+}
+
+bool RenderView::shouldEndEditing(const WebRange& range) {
+  return true;
+}
+
+bool RenderView::shouldInsertNode(const WebNode& node, const WebRange& range,
+                                  WebEditingAction action) {
+  return true;
+}
+
+bool RenderView::shouldInsertText(const WebString& text, const WebRange& range,
+                                  WebEditingAction action) {
+  return true;
+}
+
+bool RenderView::shouldChangeSelectedRange(const WebRange& from_range,
+                                           const WebRange& to_range,
+                                           WebTextAffinity affinity,
+                                           bool still_selecting) {
+  return true;
+}
+
+bool RenderView::shouldDeleteRange(const WebRange& range) {
+  return true;
+}
+
+bool RenderView::shouldApplyStyle(const WebString& style,
+                                  const WebRange& range) {
+  return true;
+}
+
+bool RenderView::isSmartInsertDeleteEnabled() {
+  return true;
+}
+
+bool RenderView::isSelectTrailingWhitespaceEnabled() {
+#if defined(OS_WIN)
+  return true;
+#else
+  return false;
+#endif
+}
+
+void RenderView::setInputMethodEnabled(bool enabled) {
+  // Save the updated IME status and mark the input focus has been updated.
+  // The IME status is to be sent to a browser process next time when
+  // the input caret is rendered.
+  if (!ime_control_busy_) {
+    ime_control_updated_ = true;
+    ime_control_new_state_ = enabled;
+  }
+}
+
+void RenderView::didChangeSelection(bool is_empty_selection) {
+#if defined(OS_LINUX)
+  if (!handling_input_event_)
+      return;
+  // TODO(estade): investigate incremental updates to the selection so that we
+  // don't send the entire selection over IPC every time.
+  if (!is_empty_selection) {
+    // Sometimes we get repeated didChangeSelection calls from webkit when
+    // the selection hasn't actually changed. We don't want to report these
+    // because it will cause us to continually claim the X clipboard.
+    const std::string& this_selection =
+        webview()->GetFocusedFrame()->selectionAsText().utf8();
+    if (this_selection == last_selection_)
+      return;
+
+    Send(new ViewHostMsg_SelectionChanged(routing_id_,
+         this_selection));
+    last_selection_ = this_selection;
+  } else {
+    last_selection_.clear();
+  }
+#endif
+}
+
+void RenderView::didExecuteCommand(const WebString& command_name) {
+  const std::wstring& name = UTF16ToWideHack(command_name);
+  if (StartsWith(name, L"Move", true) ||
+      StartsWith(name, L"Insert", true) ||
+      StartsWith(name, L"Delete", true))
+    return;
+  UserMetricsRecordAction(name);
+}
+
+// webkit_glue::WebPluginPageDelegate -----------------------------------------
 
 webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     const GURL& url,
@@ -2444,16 +2536,6 @@ std::wstring RenderView::GetAutoCorrectWord(
   return autocorrect_word;
 }
 
-void RenderView::SetInputMethodState(bool enabled) {
-  // Save the updated IME status and mark the input focus has been updated.
-  // The IME status is to be sent to a browser process next time when
-  // the input caret is rendered.
-  if (!ime_control_busy_) {
-    ime_control_updated_ = true;
-    ime_control_new_state_ = enabled;
-  }
-}
-
 void RenderView::ScriptedPrint(WebFrame* frame) {
   DCHECK(webview());
   if (webview()) {
@@ -2526,30 +2608,6 @@ void RenderView::SetTooltipText(WebView* webview,
                                 WebTextDirection text_direction_hint) {
   Send(new ViewHostMsg_SetTooltipText(routing_id_, tooltip_text,
                                       text_direction_hint));
-}
-
-void RenderView::DidChangeSelection(bool is_empty_selection) {
-#if defined(OS_LINUX)
-  if (!handling_input_event_)
-      return;
-  // TODO(estade): investigate incremental updates to the selection so that we
-  // don't send the entire selection over IPC every time.
-  if (!is_empty_selection) {
-    // Sometimes we get repeated DidChangeSelection calls from webkit when
-    // the selection hasn't actually changed. We don't want to report these
-    // because it will cause us to continually claim the X clipboard.
-    const std::string& this_selection =
-        webview()->GetFocusedFrame()->selectionAsText().utf8();
-    if (this_selection == last_selection_)
-      return;
-
-    Send(new ViewHostMsg_SelectionChanged(routing_id_,
-         this_selection));
-    last_selection_ = this_selection;
-  } else {
-    last_selection_.clear();
-  }
-#endif
 }
 
 void RenderView::DownloadUrl(const GURL& url, const GURL& referrer) {

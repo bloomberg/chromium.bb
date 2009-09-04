@@ -17,7 +17,7 @@
 
 struct WebPreferences;
 class WebView;
-class WebViewDelegate;
+class TestWebViewDelegate;
 
 // This class is a simple NativeView-based host for a WebView
 class WebViewHost : public WebWidgetHost {
@@ -26,7 +26,7 @@ class WebViewHost : public WebWidgetHost {
   // The newly created window should be resized after it is created, using the
   // MoveWindow (or equivalent) function.
   static WebViewHost* Create(gfx::NativeView parent_view,
-                             WebViewDelegate* delegate,
+                             TestWebViewDelegate* delegate,
                              const WebPreferences& prefs);
 
   WebView* webview() const;

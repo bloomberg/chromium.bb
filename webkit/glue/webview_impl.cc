@@ -101,6 +101,7 @@ using WebKit::WebCompositionCommand;
 using WebKit::WebCompositionCommandConfirm;
 using WebKit::WebCompositionCommandDiscard;
 using WebKit::WebDragData;
+using WebKit::WebEditingClient;
 using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
@@ -323,24 +324,22 @@ static const WebCore::PopupContainerSettings kAutocompletePopupSettings = {
 // WebView ----------------------------------------------------------------
 
 /*static*/
-WebView* WebView::Create() {
-  WebViewImpl* instance = new WebViewImpl();
+WebView* WebView::Create(WebViewDelegate* delegate,
+                         WebEditingClient* editing_client) {
+  WebViewImpl* instance = new WebViewImpl(delegate, editing_client);
   instance->AddRef();
   return instance;
 }
 
-void WebViewImpl::InitializeMainFrame(WebViewDelegate* delegate) {
+void WebViewImpl::InitializeMainFrame() {
   // NOTE: The WebFrameImpl takes a reference to itself within InitMainFrame
   // and releases that reference once the corresponding Frame is destroyed.
   scoped_refptr<WebFrameImpl> main_frame = new WebFrameImpl();
 
-  // Set the delegate before initializing the frame, so that notifications like
-  // DidCreateDataSource make their way to the client.
-  delegate_ = delegate;
   main_frame->InitMainFrame(this);
 
   WebDevToolsAgentDelegate* tools_delegate =
-      delegate->GetWebDevToolsAgentDelegate();
+      delegate_->GetWebDevToolsAgentDelegate();
   if (tools_delegate)
     devtools_agent_.reset(new WebDevToolsAgentImpl(this, tools_delegate));
 
@@ -363,8 +362,11 @@ void WebView::ResetVisitedLinkState() {
 }
 
 
-WebViewImpl::WebViewImpl()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(back_forward_list_client_impl_(this)),
+WebViewImpl::WebViewImpl(WebViewDelegate* delegate,
+                         WebEditingClient* editing_client)
+    : delegate_(delegate),
+      ALLOW_THIS_IN_INITIALIZER_LIST(editor_client_impl_(this, editing_client)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(back_forward_list_client_impl_(this)),
       observed_new_navigation_(false),
 #ifndef NDEBUG
       new_navigation_loader_(NULL),
@@ -393,7 +395,7 @@ WebViewImpl::WebViewImpl()
   // the page will take ownership of the various clients
   page_.reset(new Page(new ChromeClientImpl(this),
                        new ContextMenuClientImpl(this),
-                       new EditorClientImpl(this),
+                       &editor_client_impl_,
                        new DragClientImpl(this),
                        new WebInspectorClient(this)));
 
@@ -411,14 +413,6 @@ WebViewImpl::~WebViewImpl() {
 
 RenderTheme* WebViewImpl::theme() const {
   return page_.get() ? page_->theme() : RenderTheme::defaultTheme().get();
-}
-
-void WebViewImpl::SetUseEditorDelegate(bool value) {
-  ASSERT(page_ != 0);  // The macro doesn't like (!page_) with a scoped_ptr.
-  ASSERT(page_->editorClient());
-  EditorClientImpl* editor_client =
-      static_cast<EditorClientImpl*>(page_->editorClient());
-  editor_client->SetUseEditorDelegate(value);
 }
 
 void WebViewImpl::SetTabKeyCyclesThroughElements(bool value) {
@@ -957,6 +951,7 @@ void WebViewImpl::close() {
   // Reset the delegate to prevent notifications being sent as we're being
   // deleted.
   delegate_ = NULL;
+  editor_client_impl_.DropEditingClient();
 
   Release();  // Balances AddRef from WebView::Create
 }

@@ -18,13 +18,19 @@ class HTMLInputElement;
 class Node;
 class PlatformKeyboardEvent;
 }
+namespace WebKit {
+class WebEditingClient;
+}
 
-class WebView;
 class WebViewImpl;
 
 class EditorClientImpl : public WebCore::EditorClient {
  public:
-  EditorClientImpl(WebView* web_view);
+  EditorClientImpl(WebViewImpl* web_view,
+                   WebKit::WebEditingClient* editing_client);
+
+  void DropEditingClient() { editing_client_ = NULL; }
+
   virtual ~EditorClientImpl();
   virtual void pageDestroyed();
 
@@ -103,20 +109,6 @@ class EditorClientImpl : public WebCore::EditorClient {
                                  WTF::Vector<WebCore::String>& guesses);
   virtual void setInputMethodState(bool enabled);
 
-  void SetUseEditorDelegate(bool value) { use_editor_delegate_ = value; }
-
-  // It would be better to add these methods to the objects they describe, but
-  // those are in WebCore and therefore inaccessible.
-  virtual std::wstring DescribeOrError(int number,
-                                       WebCore::ExceptionCode ec);
-  virtual std::wstring DescribeOrError(WebCore::Node* node,
-                                       WebCore::ExceptionCode ec);
-  virtual std::wstring Describe(WebCore::Range* range);
-  virtual std::wstring Describe(WebCore::Node* node);
-  virtual std::wstring Describe(WebCore::EditorInsertAction action);
-  virtual std::wstring Describe(WebCore::EAffinity affinity);
-  virtual std::wstring Describe(WebCore::CSSStyleDeclaration* style);
-
   // Shows the form autofill popup for |node| if it is an HTMLInputElement and
   // it is empty.  This is called when you press the up or down arrow in a
   // text-field or when clicking an already focused text-field.
@@ -162,7 +154,7 @@ class EditorClientImpl : public WebCore::EditorClient {
 
  protected:
   WebViewImpl* web_view_;
-  bool use_editor_delegate_;
+  WebKit::WebEditingClient* editing_client_;
   bool in_redo_;
 
   typedef std::deque<WTF::RefPtr<WebCore::EditCommand> > EditCommandStack;
