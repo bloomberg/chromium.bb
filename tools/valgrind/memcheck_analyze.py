@@ -174,13 +174,14 @@ class ValgrindError:
   ValgrindError is immutable and is hashed on its pretty printed output.
   '''
 
-  def __init__(self, source_dir, error_node):
+  def __init__(self, source_dir, error_node, commandline):
     ''' Copies all the relevant information out of the DOM and into object
     properties.
 
     Args:
       error_node: The <error></error> DOM node we're extracting from.
       source_dir: Prefix that should be stripped from the <dir> node.
+      commandline: The command that was run under valgrind
     '''
 
     # Valgrind errors contain one <what><stack> pair, plus an optional
@@ -257,6 +258,7 @@ class ValgrindError:
     self._kind = getTextOf(error_node, "kind")
     self._backtraces = []
     self._suppression = None
+    self._commandline = commandline
 
     # Iterate through the nodes, parsing <what|auxwhat><stack> pairs.
     description = None
@@ -284,6 +286,9 @@ class ValgrindError:
     ''' Pretty print the type and backtrace(s) of this specific error,
         including suppression (which is just a mangled backtrace).'''
     output = self._kind + "\n"
+    if (self._commandline):
+      output += self._commandline + "\n"
+
     for backtrace in self._backtraces:
       output += backtrace[0] + "\n"
       filter = subprocess.Popen("c++filt -n", stdin=subprocess.PIPE,
@@ -427,12 +432,21 @@ class MemcheckAnalyze:
             ip = getTextOf(load_obj, "ip")
             TheAddressTable.AddBinaryAt(obj, ip)
 
+        commandline = None
+        preamble = parsed_file.getElementsByTagName("preamble")[0];
+        for node in preamble.getElementsByTagName("line"):
+          if node.localName == "line":
+            for x in node.childNodes:
+              if x.nodeType == node.TEXT_NODE and "Command" in x.data:
+                commandline = x.data
+                break
+
         raw_errors = parsed_file.getElementsByTagName("error")
         for raw_error in raw_errors:
           # Ignore "possible" leaks for now by default.
           if (show_all_leaks or
               getTextOf(raw_error, "kind") != "Leak_PossiblyLost"):
-            error = ValgrindError(source_dir, raw_error)
+            error = ValgrindError(source_dir, raw_error, commandline)
             self._errors.add(error)
 
     if len(badfiles) > 0:
