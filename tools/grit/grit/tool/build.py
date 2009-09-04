@@ -208,12 +208,15 @@ are exported to translation interchange files (e.g. XMB files), etc.
         os.rename(output.GetOutputFilename() + '.tmp',
                   output.GetOutputFilename())
       else:
-        files_match = filecmp.cmp(output.GetOutputFilename(),
-            output.GetOutputFilename() + '.tmp')
-        if (output.GetType() != 'rc_header' or not files_match
-            or sys.platform != 'win32'):
-          shutil.copy2(output.GetOutputFilename() + '.tmp',
-                       output.GetOutputFilename())
+        # CHROMIUM SPECIFIC CHANGE.
+        # This clashes with gyp + vstudio, which expect the output timestamp
+        # to change on a rebuild, even if nothing has changed.
+        #files_match = filecmp.cmp(output.GetOutputFilename(),
+        #    output.GetOutputFilename() + '.tmp')
+        #if (output.GetType() != 'rc_header' or not files_match
+        #    or sys.platform != 'win32'):
+        shutil.copy2(output.GetOutputFilename() + '.tmp',
+                     output.GetOutputFilename())
         os.remove(output.GetOutputFilename() + '.tmp')
 
       self.VerboseOut(' done.\n')

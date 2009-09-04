@@ -34,6 +34,20 @@
       'ru', 'sk', 'sl', 'sr', 'sv', 'ta', 'te', 'th', 'tr',
       'uk', 'vi', 'zh-CN', 'zh-TW',
     ],
+    'chrome_strings_grds': [
+      # Localizable resources.
+      'app/resources/locale_settings.grd',
+      'app/chromium_strings.grd',
+      'app/generated_resources.grd',
+      'app/google_chrome_strings.grd',
+    ],
+    'chrome_resources_grds': [
+      # Data resources.
+      'browser/browser_resources.grd',
+      'common/common_resources.grd',
+      'renderer/renderer_resources.grd',
+    ],
+    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',],
     'repack_locales_cmd': ['python', 'tools/build/repack_locales.py',],
     # TODO: remove this helper when we have loops in GYP
     'apply_locales_cmd': ['python', 'tools/build/apply_locales.py',],
@@ -167,6 +181,11 @@
       'target_name': 'chrome_resources',
       'type': 'none',
       'msvs_guid': 'B95AB527-F7DB-41E9-AD91-EB51EE0F56BE',
+      'variables': {
+        'chrome_resources_inputs': [
+          '<!@(<(grit_info_cmd) --inputs <(chrome_resources_grds))',
+        ],
+      },
       'rules': [
         {
           'rule_name': 'grit',
@@ -186,13 +205,22 @@
             ],
           },
           'inputs': [
-            '../tools/grit/grit.py',
+            '<@(chrome_resources_inputs)',
           ],
           'outputs': [
             '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
             '<(grit_out_dir)/<(RULE_INPUT_ROOT).pak',
+            # TODO(bradnelson): move to something like this instead
+            #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(chrome_resources_grds))',
+            # This currently cannot work because gyp only evaluates the
+            # outputs once (rather than per case where the rule applies).
+            # This means you end up with all the outputs from all the grd
+            # files, which angers scons and confuses vstudio.
+            # One alternative would be to turn this into several actions,
+            # but that would be rather verbose.
           ],
-          'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)',
+          'action': ['python', '../tools/grit/grit.py', '-i',
+            '<(RULE_INPUT_PATH)',
             'build', '-o', '<(grit_out_dir)',
             '-D', '<(chrome_build)',
             '-E', '<(branded_env)',
@@ -201,10 +229,8 @@
         },
       ],
       'sources': [
-        # Data resources.
-        'browser/browser_resources.grd',
-        'common/common_resources.grd',
-        'renderer/renderer_resources.grd',
+        '<@(chrome_resources_grds)',
+        '<@(chrome_resources_inputs)',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -239,6 +265,11 @@
           'type': 'none',
         }],
       ],
+      'variables': {
+        'chrome_strings_inputs': [
+          '<!@(<(grit_info_cmd) --inputs <(chrome_strings_grds))',
+        ],
+      },
       'rules': [
         {
           'rule_name': 'grit',
@@ -256,16 +287,20 @@
             ],
           },
           'inputs': [
-            '../tools/grit/grit.py',
+            '<@(chrome_strings_inputs)',
           ],
           'outputs': [
             '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
             # TODO: remove this helper when we have loops in GYP
             '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
+            # TODO(bradnelson): move to something like this
+            #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(chrome_strings_grds))',
+            # See comment in chrome_resources as to why.
           ],
-          'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)',
-            'build', '-o', '<(grit_out_dir)',
-            '-D', '<(chrome_build)'],
+          'action': ['python', '../tools/grit/grit.py', '-i',
+                    '<(RULE_INPUT_PATH)',
+                    'build', '-o', '<(grit_out_dir)',
+                    '-D', '<(chrome_build)'],
           'conditions': [
             ['chromeos==1', {
               'action': ['-D', 'chromeos'],
@@ -275,11 +310,8 @@
         },
       ],
       'sources': [
-        # Localizable resources.
-        'app/resources/locale_settings.grd',
-        'app/chromium_strings.grd',
-        'app/generated_resources.grd',
-        'app/google_chrome_strings.grd',
+        '<@(chrome_strings_grds)',
+        '<@(chrome_strings_inputs)',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -312,14 +344,10 @@
             ],
           },
           'inputs': [
-            '<(input_path)',
+            '<!@(<(grit_info_cmd) --inputs <(input_path))',
           ],
           'outputs': [
-            '<(grit_out_dir)/grit/theme_resources.h',
-            '<(grit_out_dir)/grit/theme_resources_map.cc',
-            '<(grit_out_dir)/grit/theme_resources_map.h',
-            '<(grit_out_dir)/theme_resources.pak',
-            '<(grit_out_dir)/theme_resources.rc',
+            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
           ],
           'action': [
             'python', '<(grit_path)',
