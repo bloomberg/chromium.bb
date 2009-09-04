@@ -19,7 +19,6 @@
 import subprocess
 import sys
 import os
-import os.path
 
 script_dir = os.path.join(os.path.dirname(sys.argv[0]))
 third_party = os.path.normpath(

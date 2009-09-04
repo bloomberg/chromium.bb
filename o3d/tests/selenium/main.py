@@ -992,12 +992,35 @@ def main(unused_argv):
     # Return error code 1.
     return 1
 
+def GetChromePath():
+  value = None
+  if sys.platform == "win32" or sys.platform == "cygwin":
+    import _winreg
+    try:
+      key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
+                            "Applications\\chrome.exe\\shell\\open\\command")
+      (value, type) = _winreg.QueryValueEx(key, None)
+      _winreg.CloseKey(key)
+    except WindowsError:
+      raise Exception("Unable to determine location for Chrome -- "
+                      "it is installed?")
+    value = os.path.dirname(value)
+  return value
+
 if __name__ == "__main__":
   remaining_argv = FLAGS(sys.argv)
 
   # Setup the environment for Firefox
   os.environ["MOZ_CRASHREPORTER_DISABLE"] = "1"
   os.environ["MOZ_PLUGIN_PATH"] = os.path.normpath(FLAGS.product_dir)
+
+  # Setup the path for chrome.
+  chrome_path = GetChromePath()
+  if chrome_path:
+    if os.environ.get("PATH"):
+      os.environ["PATH"] = os.pathsep.join([os.environ["PATH"], chrome_path])
+    else:
+      os.environ["PATH"] =  chrome_path
 
   # Setup the LD_LIBRARY_PATH on Linux.
   if sys.platform[:5] == "linux":

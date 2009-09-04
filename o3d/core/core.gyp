@@ -24,13 +24,21 @@
           ],
         }
       ],
+      ['OS == "linux"',
+        {
+          'cflags': [
+            '-include',
+            'core/cross/precompile.h',
+          ],
+        },
+      ],
       ['renderer == "gl"',
         {
           'include_dirs': [
             '../../<(glewdir)/include',
             '../../<(cgdir)/include',
           ],
-        }
+        },
       ],
     ],
   },
@@ -240,7 +248,6 @@
       'direct_dependent_settings': {
         'include_dirs': [
           '..',
-          'cross',
         ],
       },
       'conditions': [
@@ -255,7 +262,15 @@
                 'win',
               ],
             },
-          }
+          },
+        ],
+        ['renderer == "gl"',
+          {
+            'dependencies': [
+              '../build/libs.gyp:cg_libs',
+              '../build/libs.gyp:gl_libs',
+            ],
+          },
         ],
         ['OS == "linux"',
           {
@@ -268,7 +283,7 @@
                 'linux',
               ],
             },
-          }
+          },
         ],
         ['OS == "mac"',
           {
@@ -281,10 +296,10 @@
                 'mac',
               ],
             },
-           'xcode_settings': {
-             'GCC_PREFIX_HEADER': 'cross/precompile.h',
-           },
-         },
+            'xcode_settings': {
+              'GCC_PREFIX_HEADER': 'cross/precompile.h',
+            },
+          },
         ],
       ],
     },
@@ -299,10 +314,10 @@
       'conditions': [
         ['OS == "mac"',
           {
-           'xcode_settings': {
-             'GCC_PREFIX_HEADER': 'cross/precompile.h',
-           },
-         },
+            'xcode_settings': {
+              'GCC_PREFIX_HEADER': 'cross/precompile.h',
+            },
+          },
         ],
         ['renderer == "gl"',
           {
@@ -332,7 +347,7 @@
               'cross/gl/utils_gl.cc',
               'cross/gl/utils_gl.h',
             ],
-          }
+          },
         ],
         ['renderer == "d3d9" and OS == "win"',
           {
@@ -362,7 +377,7 @@
               'win/d3d9/utils_d3d9.cc',
               'win/d3d9/utils_d3d9.h',
             ],
-          }
+          },
         ],
       ],
     },

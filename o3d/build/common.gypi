@@ -16,10 +16,14 @@
     'nacldir': 'third_party/native_client/googleclient',
     'nixysadir': 'third_party/nixysa',
     'npapidir': 'third_party/npapi',
+    'pdiffdir': 'third_party/pdiff/files',
     'pngdir': 'third_party/libpng',
+    'screenshotsdir': 'o3d_assets/tests/screenshots',
+    'seleniumdir': 'third_party/selenium_rc/files',
     'skiadir': 'third_party/skia/include',
     'zlibdir': 'third_party/zlib',
     'o3d_in_chrome%': 0,
+    'selenium_screenshots%': 0,
   },
   'target_defaults': {
     'defines': [
@@ -44,7 +48,6 @@
           'cgdir': 'third_party/cg/files/win',
           'swiftshaderdir': 'o3d-internal/third_party/swiftshader/files',
           'LIBRARY_SUFFIX': '.lib',
-          'CONFIGURATION': '$(ConfigurationName)',
         },
         'target_defaults': {
           'defines': [
@@ -65,7 +68,6 @@
           'renderer': 'gl',
           'cgdir': 'third_party/cg/files/mac',
           'LIBRARY_SUFFIX': '.a',
-          'CONFIGURATION': '$(CONFIGURATION)',
         },
         'target_defaults': {
           'defines': [
@@ -103,12 +105,21 @@
           'renderer': 'gl',
           'cgdir': 'third_party/cg/files/linux',
           'LIBRARY_SUFFIX': '.a',
-          'CONFIGURATION': '$(CONFIGURATION)',
         },
         'target_defaults': {
           'defines': [
-            'RENDERER_GL',
+            'LINUX',
+            'MOZ_X11',
+            'NACL_LINUX=1',
             'OS_LINUX',
+            'RENDERER_GL',
+            'SK_BUILD_FOR_UNIX',
+            'UNICODE',
+            'XP_UNIX',
+          ],
+          'cflags': [
+            '-fvisibility=hidden',
+            '-Wstrict-aliasing',
           ],
         },
       },

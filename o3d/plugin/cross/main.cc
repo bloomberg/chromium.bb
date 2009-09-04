@@ -169,7 +169,7 @@ NPError EXPORT_SYMBOL OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   return NPERR_NO_ERROR;
 }
 
-char * EXPORT_SYMBOL NP_GetMIMEDescription(void) {
+char* NP_GetMIMEDescription(void) {
   return const_cast<char*>(O3D_PLUGIN_MIME_TYPE "::O3D MIME");
 }
 

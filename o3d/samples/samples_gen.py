@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os.path
+import posixpath
 import sys
 
 output_filename = 'samples_gen.gyp'
@@ -96,23 +96,32 @@ output_file.write("""# Copyright (c) 2009 The Chromium Authors. All rights reser
       ],
       'actions': [\n""")
 for asset in assets:
-  filename = os.path.splitext(os.path.basename(asset['path']))[0]
+  filename = posixpath.splitext(posixpath.basename(asset['path']))[0]
   filename = filename.replace('.','_')
   filename = filename.replace('-','_')
   filename = filename.lower()
   name = "convert_" + filename
   output = asset['path'].replace('convert_', '')
-  output = os.path.splitext(output)[0] + ".o3dtgz"
-  output_dir = os.path.dirname(output)
+  output = posixpath.splitext(output)[0] + ".o3dtgz"
+  output_dir = posixpath.dirname(output)
   output_file.write("        {\n")
   output_file.write("          'action_name': '%s',\n" % name)
   output_file.write("          'inputs': [\n")
   output_file.write("            '../o3d_assets/samples/%s',\n" % asset['path'])
   output_file.write("          ],\n")
   output_file.write("          'outputs': [\n")
-  output_file.write("            '../samples/%s',\n" % output)
+  if sys.platform[:5] == 'linux':
+    # TODO(gspencer): This is a HACK!  We shouldn't need to put the
+    # absolute path here, but currently on Linux (scons), it is unable
+    # to copy generated items out of the source tree (because the
+    # repository mojo fails to find it and puts in the wrong path).
+    output_file.write("            '%s',\n" % posixpath.abspath(output))
+  else:
+    output_file.write("            '../samples/%s',\n" % output)
   output_file.write("          ],\n")
   output_file.write("          'action': [\n")
+  if sys.platform[:5] == 'linux':
+    output_file.write("            'LD_LIBRARY_PATH=<(PRODUCT_DIR):<(PRODUCT_DIR)/lib',\n")
   output_file.write("            '<(PRODUCT_DIR)/o3dConverter',\n")
   output_file.write("            '--no-condition',\n")
   output_file.write("            '--up-axis=%s',\n" % asset['up'])
@@ -128,8 +137,8 @@ output_file.write("      ],\n")
 copies = {}
 for asset in assets:
   output = asset['path'].replace('convert_', '')
-  output = os.path.splitext(output)[0] + ".o3dtgz"
-  output_dir = os.path.dirname(output)
+  output = posixpath.splitext(output)[0] + ".o3dtgz"
+  output_dir = posixpath.dirname(output)
   if output_dir in copies:
     # Make sure we don't add any twice.
     if not output in copies[output_dir]:
@@ -141,7 +150,7 @@ for asset in assets:
 # Skipping the ones in the assets above (if any).
 manifest = open("MANIFEST", "r")
 for item in manifest.read().splitlines():
-  item_dir = os.path.dirname(item)
+  item_dir = posixpath.dirname(item)
   if item_dir in copies:
     if not item in copies[item_dir]:
       copies[item_dir] += [item]
@@ -155,7 +164,14 @@ for (dir, paths) in copies.items():
                     "'<(PRODUCT_DIR)/samples/%s',\n" % dir)
   output_file.write("          'files': [\n")
   for path in paths:
-    output_file.write("            '../samples/%s',\n" % path)
+    if sys.platform[:5] == 'linux':
+      # TODO(gspencer): This is a HACK!  We shouldn't need to put the
+      # absolute path here, but currently on Linux (scons), it is unable
+      # to copy generated items out of the source tree (because the
+      # repository mojo fails to find it and puts in the wrong path).
+      output_file.write("            '%s',\n" % posixpath.abspath(path))
+    else:
+      output_file.write("            '../samples/%s',\n" % path)
   output_file.write("          ],\n")
   output_file.write("        },\n")
 

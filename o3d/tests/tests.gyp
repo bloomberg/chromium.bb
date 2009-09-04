@@ -38,7 +38,6 @@
         '../import/archive.gyp:o3dArchiveTest',
         '../import/import.gyp:o3dImportTest',
         '../serializer/serializer.gyp:o3dSerializerTest',
-        '../statsreport/statsreport.gyp:o3dStatsReportTest',
         '../utils/utils.gyp:o3dUtils',
         '../utils/utils.gyp:o3dUtilsTest',
       ],
@@ -83,10 +82,29 @@
         },
       ],
       'conditions' : [
+        ['renderer == "gl"',
+          {
+            'dependencies': [
+              '../build/libs.gyp:cg_libs',
+              '../build/libs.gyp:gl_libs',
+            ],
+          },
+        ],
         ['OS == "mac"',
           {
+            'dependencies': [
+              '../statsreport/statsreport.gyp:o3dStatsReportTest',
+            ],
             'sources': [
               'common/mac/testing_common.mm',
+            ],
+            'copies': [
+              {
+                'destination': '<(PRODUCT_DIR)',
+                'files': [
+                  '../../<(pdiffdir)/bin/mac/perceptualdiff',
+                ],
+              },
             ],
             'include_dirs': [
               '../../third_party/glew/files/include',
@@ -105,9 +123,21 @@
         ],
         ['OS == "win"',
           {
+            'dependencies': [
+              '../statsreport/statsreport.gyp:o3dStatsReportTest',
+            ],
             'sources': [
               'common/win/testing_common.cc',
               'common/win/testing_common.h',
+            ],
+            'copies': [
+              {
+                'destination': '<(PRODUCT_DIR)',
+                'files': [
+                  '../../<(pdiffdir)/bin/win/perceptualdiff.exe',
+                  '../../<(pdiffdir)/bin/win/FreeImage.dll',
+                ],
+              },
             ],
             'msvs_settings': {
               'VCLinkerTool': {
@@ -138,7 +168,7 @@
               'common/win/dxcapture.cc',
             ],
             'include_dirs': [
-              '$(DXSDK_DIR)/Include',
+              '"$(DXSDK_DIR)/Include"',
             ],
             'msvs_settings': {
               'VCLinkerTool': {
@@ -156,8 +186,13 @@
             'sources': [
               'common/linux/testing_common.cc',
             ],
-            'include_dirs': [
-              '../../third_party/glew/files/include',
+            'copies': [
+              {
+                'destination': '<(PRODUCT_DIR)',
+                'files': [
+                  '../../<(pdiffdir)/bin/linux/perceptualdiff',
+                ],
+              },
             ],
           },
         ],

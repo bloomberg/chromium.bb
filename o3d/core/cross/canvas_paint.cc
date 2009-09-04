@@ -157,6 +157,7 @@ StrokeDrawLooper::StrokeDrawLooper(SkFlattenableReadBuffer& buffer) {
 
 O3D_DEFN_CLASS(CanvasPaint, ParamObject);
 
+#ifndef OS_LINUX
 static SkPaint::Align ToSKAlign(CanvasPaint::TextAlign align) {
   switch (align) {
     case CanvasPaint::LEFT:
@@ -169,6 +170,7 @@ static SkPaint::Align ToSKAlign(CanvasPaint::TextAlign align) {
       return SkPaint::kLeft_Align;
   }
 }
+#endif  // OS_LINUX
 
 CanvasPaint::CanvasPaint(ServiceLocator* service_locator)
     : ParamObject(service_locator),

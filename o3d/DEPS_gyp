@@ -4,12 +4,13 @@ vars = {
   "chromium_rev": "22547",
   "o3d_code_rev": "145",
   "skia_rev": "279",
-  "gyp_rev": "601",
+  "gyp_rev": "626",
   "gtest_rev": "267",
   "gflags_rev": "30",
   "breakpad_rev": "346",
   "v8_rev": "2624",
   "icu38_rev": "20192",
+  "nacl_rev": "569",
 }
 
 deps = {
@@ -90,10 +91,8 @@ deps = {
   "base":
     Var("chromium_trunk") + "/src/base@" + Var("chromium_rev"),
 
-  # NACL has to be in this weird directory because it looks for
-  # googleclient two levels above it.
   "native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@492",
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" + Var("nacl_rev"),
 
   "breakpad/src":
     "http://google-breakpad.googlecode.com/svn/trunk/src@" + Var("breakpad_rev"),
@@ -115,7 +114,6 @@ deps = {
 
   "testing/gmock":
     Var("chromium_trunk") + "/src/testing/gmock@" + Var("chromium_rev"),
-#    "http://googlemock.googlecode.com/svn/tags/release-1.0.0",
 
   # Stuff needed for GYP to run
   "build":
@@ -146,7 +144,7 @@ deps_os = {
 hooks = [
   {
     # A change to a .gyp, .gypi, or to GYP itself shound run the generator.
-    "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]",
+    "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]|MANIFEST$",
     "action": ["python", "tools/gyp/gyp", "o3d/build/all.gyp", "--depth", "."],
   },
 ]

@@ -66,8 +66,19 @@
         },
       },
       'xcode_settings': {
-        'OTHER_CFLAGS': ['-x', 'c++'],
+        'OTHER_CFLAGS': [
+          '-x', 'c++',
+        ],
       },
+      'conditions': [
+        ['OS == "linux"',
+          {
+            'cflags': [
+              '-x', 'c++',
+            ],
+          }
+        ],
+      ],
     },
     {
       'target_name': 'o3dTechniqueTest',

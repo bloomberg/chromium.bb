@@ -37,8 +37,6 @@
         'cross/collada.h',
         'cross/collada_zip_archive.cc',
         'cross/collada_zip_archive.h',
-        'cross/destination_buffer.cc',
-        'cross/destination_buffer.h',
         'cross/file_output_stream_processor.cc',
         'cross/file_output_stream_processor.h',
         'cross/precompile.h',
@@ -51,6 +49,13 @@
       ],
 
       'conditions' : [
+        ['renderer == "gl"',
+          {
+            'dependencies': [
+              '../build/libs.gyp:cg_libs',
+            ],
+          },
+        ],
         ['renderer == "d3d9" and OS == "win"',
           {
             'include_dirs': [
@@ -87,6 +92,13 @@
             ],
             'include_dirs': [
               '../../third_party/glew/files/include',
+              '/usr/include/cairo',
+              '/usr/include/glib-2.0',
+              '/usr/include/gtk-2.0',
+              '/usr/include/pango-1.0',
+              '/usr/lib/glib-2.0/include',
+              '/usr/lib/gtk-2.0/include',
+              '/usr/include/atk-1.0',
             ],
           },
         ],
@@ -97,8 +109,11 @@
       'type': 'static_library',
       'sources': [
         'cross/camera_info.cc',
+        'cross/camera_info.h',
         'cross/destination_buffer.cc',
+        'cross/destination_buffer.h',
         'cross/json_object.cc',
+        'cross/json_object.h',
       ],
     },
     {

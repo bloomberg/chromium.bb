@@ -35,7 +35,6 @@
         '../import/import.gyp:o3dImport',
         '../serializer/serializer.gyp:o3dSerializer',
         '../utils/utils.gyp:o3dUtils',
-        '../build/libs.gyp:cg_libs',
       ],
       'sources': [
         'cross/buffer_stub.cc',
@@ -56,6 +55,13 @@
         'cross/texture_stub.h',
       ],
       'conditions' : [
+        ['renderer == "gl"',
+          {
+            'dependencies': [
+              '../build/libs.gyp:cg_libs',
+            ],
+          },
+        ],
         ['OS == "mac"',
           {
             'postbuilds': [
@@ -83,19 +89,28 @@
             },
           },
         ],
+        ['OS == "linux"',
+          {
+            'link_settings': {
+              'libraries': [
+                '-lGL',
+              ],
+            },
+          },
+        ],
         ['OS == "win"',
           {
             'dependencies': [
               '../build/libs.gyp:dx_dll',
+              '../build/libs.gyp:cg_libs',
             ],
+            'link_settings': {
+              'libraries': [
+                '-lrpcrt4.lib',
+              ],
+            },
             'msvs_settings': {
               'VCLinkerTool': {
-                'AdditionalDependencies': [
-                  'rpcrt4.lib',
-                  '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
-                  '../../<(cgdir)/lib/cg.lib',
-                  '../../<(cgdir)/lib/cgGL.lib',
-                ],
                 # Set /SUBSYSTEM:CONSOLE for converter.exe, since
                 # it is a console app.
                 'SubSystem': '1',

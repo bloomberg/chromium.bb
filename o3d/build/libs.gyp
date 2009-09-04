@@ -13,15 +13,99 @@
   ],
   'targets': [
     {
+      'target_name': 'gl_libs',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '../../<(glewdir)/include',
+        ],
+      },
+      'conditions': [
+        [ 'OS=="linux"',
+          {
+            'direct_dependent_settings': {
+              'defines': [
+                'GL_GLEXT_PROTOTYPES',
+              ],
+              'scons_variable_settings': {
+                'LIBPATH': [
+                  '../../<(glewdir)/lib',
+                ],
+              },
+              'libraries': [
+                "-lGL",
+                "-lGLEW",
+              ],
+            },
+          },
+        ],
+        [ 'OS=="mac"',
+          {
+            'direct_dependent_settings': {
+              'libraries': [
+                '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+              ],
+            },
+          },
+        ],
+      ],
+    },
+    {
       'target_name': 'cg_libs',
       'type': 'none',
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '../../<(cgdir)/include',
+        ],
+      },
+      'conditions': [
+        [ 'OS=="linux"',
+          {
+            'direct_dependent_settings': {
+              'scons_variable_settings': {
+                'LIBPATH': [
+                  '<(PRODUCT_DIR)',
+                ],
+              },
+              'libraries': [
+                "-lCg",
+                "-lCgGL",
+              ],
+            },
+          },
+        ],
+        [ 'OS=="win"',
+          {
+            'direct_dependent_settings': {
+              'libraries': [
+                "../../<(cgdir)/lib/cg.lib",
+                "../../<(cgdir)/lib/cgD3D9.lib",
+                "../../<(cgdir)/lib/cgGL.lib",
+                "../../<(cgdir)/lib/glut32.lib",
+              ],
+            },
+          },
+        ],
+        [ 'OS=="mac"',
+          {
+            'direct_dependent_settings': {
+              'libraries': [
+                "<(PRODUCT_DIR)/Cg.framework",
+              ],
+            },
+          }
+        ],
+      ],
       'copies': [
         {
           'destination': '<(PRODUCT_DIR)',
           'conditions' : [
-            [ 'OS=="mac"',
+            [ 'OS=="linux"',
               {
                 'files': [
+                  "../../<(cgdir)/lib/libCg.so",
+                  "../../<(cgdir)/lib/libCgGL.so",
+                  "../../<(cgdir)/bin/cgc",
                 ],
               },
             ],
@@ -49,25 +133,38 @@
     },
   ],
   'conditions': [
-    ['OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'dx_dll',
-          'type': 'none',
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'conditions' : [
-                ['"<(dx_redist_exists)" == "True"', {
-                  'files': ['<(dx_redist_path)/d3dx9_36.dll'],
-                },{
-                  'files': ['$(windir)/system32/d3dx9_36.dll'],
-                }],
+    ['OS=="win"',
+      {
+        'targets': [
+          {
+            'target_name': 'dx_dll',
+            'type': 'none',
+            'direct_dependent_settings': {
+              'include_dirs': [
+                '$(DXSDK_DIR)/Include',
+              ],
+              'libraries': [
+                '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
               ],
             },
-          ],
-        },
-      ],
-    }],
+            'copies': [
+              {
+                'destination': '<(PRODUCT_DIR)',
+                'conditions' : [
+                  ['"<(dx_redist_exists)" == "True"',
+                    {
+                      'files': ['<(dx_redist_path)/d3dx9_36.dll'],
+                    },
+                    {
+                      'files': ['$(windir)/system32/d3dx9_36.dll'],
+                    }
+                  ],
+                ],
+              },
+            ],
+          },
+        ],
+      }
+    ],
   ],
 }

@@ -73,6 +73,13 @@
             ],
           },
         ],
+        ['renderer == "gl"',
+          {
+            'dependencies': [
+              '../build/libs.gyp:cg_libs',
+            ],
+          },
+        ],
         ['OS == "mac"',
           {
             'mac_bundle': 1,
@@ -82,7 +89,7 @@
               '../../breakpad/breakpad.gyp:breakpad',
             ],
             'xcode_settings': {
-             'INFOPLIST_FILE': '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
+              'INFOPLIST_FILE': '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
             },
             'mac_bundle_resources': [
               'mac/Resources/English.lproj',
@@ -144,18 +151,42 @@
               {
                 'postbuild_name': 'Process Resource File',
                 'action': ['python',
-                           'version_info.py',
-                           'mac/o3d_plugin.r',
-                           '${BUILT_PRODUCTS_DIR}/O3D.r',
-                           ],
+                  'version_info.py',
+                  'mac/o3d_plugin.r',
+                  '${BUILT_PRODUCTS_DIR}/O3D.r',
+                ],
               },
               {
                 'postbuild_name': 'Compile Resource File',
                 'action': ['/usr/bin/Rez',
-                           '-o',
-                           '${BUILT_PRODUCTS_DIR}/O3D.plugin/Contents/Resources/O3D.rsrc',
-                           '${BUILT_PRODUCTS_DIR}/O3D.r',
-                           ],
+                  '-o',
+                  '${BUILT_PRODUCTS_DIR}/O3D.plugin/Contents/Resources/O3D.rsrc',
+                  '${BUILT_PRODUCTS_DIR}/O3D.r',
+                ],
+              },
+            ],
+          },
+        ],
+        ['OS == "linux"',
+          {
+            'sources': [
+              'linux/main_linux.cc',
+              'linux/config.cc',
+            ],
+            'link_settings': {
+              'libraries': [
+                '-lGL',
+              ],
+            },
+            # On Linux, shared library targets aren't copied to the
+            # product dir automatically.  Filed GYP issue #74 to address this.
+            # TODO(gspencer): Remove when issue #74 is resolved.
+            'copies': [
+              {
+                'destination': '<(PRODUCT_DIR)',
+                'files': [
+                  '<(PRODUCT_DIR)/obj/o3d/plugin/<(LIBRARY_PREFIX)<(_target_name)<(SHARED_LIB_SUFFIX)',
+                ],
               },
             ],
           },
@@ -330,11 +361,11 @@
             'msvs_settings': {
               'VCLinkerTool': {
                 'ModuleDefinitionFile':
-                  'npapi_host_control/win/npapi_host_control.def'
+                'npapi_host_control/win/npapi_host_control.def'
               },
               'VCCLCompilerTool': {
                 'ForcedIncludeFiles':
-                  'plugin/npapi_host_control/win/precompile.h',
+                'plugin/npapi_host_control/win/precompile.h',
                 'CompileAs': '2', # Build all the files as C++, since
                                   # ATL requires that.
               },
@@ -342,6 +373,29 @@
             'msvs_configuration_attributes': {
               'UseOfATL': '1', # 1 = static link to ATL, 2 = dynamic link
             },
+          },
+          {
+            'target_name': 'o3d_host_register',
+            'type': 'none',
+            'dependencies': [
+              'o3d_host',
+            ],
+            'actions': [
+              {
+                'action_name': 'register_o3d_host',
+                'inputs': [
+                  '<(PRODUCT_DIR)/o3d_host.dll',
+                ],
+                'outputs': [
+                  'file_that_never_exists_so_this_action_always_runs',
+                ],
+                'action': [
+                  'regsvr32',
+                  '/s',
+                  '<(_inputs)',
+                ],
+              },
+            ],
           },
         ],
       },

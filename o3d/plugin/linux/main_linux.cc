@@ -94,7 +94,6 @@ void LinuxExposeHandler(Widget w,
                         Boolean *cont) {
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   if (event->type != Expose) return;
-  XExposeEvent *expose_event = &event->xexpose;
   DrawPlugin(obj);
 }
 
@@ -468,6 +467,7 @@ static gboolean GtkHandleMouseButton(GtkWidget *widget,
     event.set_type(Event::TYPE_DBLCLICK);
     obj->client()->AddEventToQueue(event);
   }
+  return TRUE;
 }
 
 static gboolean GtkHandleKey(GtkWidget *widget,
