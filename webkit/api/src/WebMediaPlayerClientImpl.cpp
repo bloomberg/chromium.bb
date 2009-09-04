@@ -407,6 +407,7 @@ MediaPlayer::SupportsType WebMediaPlayerClientImpl::supportsType(const String& t
     case WebMimeRegistry::MayBeSupported:
         return MediaPlayer::MayBeSupported;
     }
+    return MediaPlayer::IsNotSupported;
 }
 
 WebMediaPlayerClientImpl::WebMediaPlayerClientImpl()
