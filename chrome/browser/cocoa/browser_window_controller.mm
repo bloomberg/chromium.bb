@@ -508,7 +508,8 @@ willPositionSheet:(NSWindow*)sheet
   }
 
   // Update the checked/Unchecked state of items in the encoding menu.
-  // On Windows this logic is part of encoding_menu_controller_delegate.cc
+  // On Windows, this logic is part of |EncodingMenuModel| in
+  // browser/views/toolbar_view.h.
   EncodingMenuController encoding_controller;
   if (encoding_controller.DoesCommandBelongToEncodingMenu(tag)) {
     DCHECK(browser_.get());
