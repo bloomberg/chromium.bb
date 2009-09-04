@@ -28,25 +28,20 @@ const int kMessageWidth = 400;
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url, int render_process_host_id, int routing_id) {
-  TabContents* tab_contents = tab_util::GetTabContentsByID(
-      render_process_host_id, routing_id);
-  new ExternalProtocolDialogGtk(url, tab_contents);
+  new ExternalProtocolDialogGtk(url);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // ExternalProtocolDialogGtk
 
-ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(
-    const GURL& url, TabContents* tab_contents)
+ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
     : url_(url),
       creation_time_(base::Time::Now()) {
-  GtkWindow* parent = tab_contents ?
-                      tab_contents->view()->GetTopLevelNativeWindow() : NULL;
 
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_EXTERNAL_PROTOCOL_TITLE).c_str(),
-      parent,
-      (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
+      NULL,
+      GTK_DIALOG_NO_SEPARATOR,
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_REJECT,
       NULL);
