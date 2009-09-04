@@ -30,6 +30,7 @@
 
 Import('env')
 
+# make sure we are in bare bones mode: no startup code no libs
 env.Replace(LINKFLAGS_FIRST = [],
             LIBS = [],
             LINKFLAGS_LAST = [],)
@@ -38,25 +39,21 @@ env.Replace(LINKFLAGS_FIRST = [],
 env.ComponentProgram('test_exit.nexe',
                      'test_exit.s',
                      LINKFLAGS=['-nostdlib'])
-
-env.ComponentProgram('test_hello.nexe',
-                     'test_hello.s',
-                     LINKFLAGS=['-nostdlib'])
-
-
 node = env.CommandSelLdrTestNacl(
      'test_exit.out',
+     sel_ldr_flags=['-I', '-d'],
      command=[env.File('test_exit.nexe')],
      exit_status='42'
      )
 env.AddNodeToTestSuite(node, ['medium_tests'], 'run_test_exit')
 
-# TODO: The below does not quite work yet.
-#      The problem seems to be that the message is written to fd 6 rather
-#      than fd 1 (=stdout)
-#
+
+env.ComponentProgram('test_hello.nexe',
+                     'test_hello.s',
+                     LINKFLAGS=['-nostdlib'])
 node = env.CommandSelLdrTestNacl(
      'test_hello.out',
+     sel_ldr_flags=['-I', '-d'],
      command=[env.File('test_hello.nexe')],
      stdout_golden=env.File('test_hello.stdout'),
      )
