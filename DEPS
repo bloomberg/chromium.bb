@@ -81,6 +81,9 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/storage/domstorage":
     Var("webkit_trunk") + "/LayoutTests/storage/domstorage@" +
     Var("webkit_revision"),
+
+  "src/chrome/tools/test/reference_build":
+    "/trunk/deps/reference_builds@25506",
 }
 
 
