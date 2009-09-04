@@ -158,14 +158,6 @@ class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
   bool multibyte_response_expected_;
 };
 
-WebPluginDelegateProxy* WebPluginDelegateProxy::Create(
-    const GURL& url,
-    const std::string& mime_type,
-    const std::string& clsid,
-    const base::WeakPtr<RenderView>& render_view) {
-  return new WebPluginDelegateProxy(mime_type, clsid, render_view);
-}
-
 WebPluginDelegateProxy::WebPluginDelegateProxy(
     const std::string& mime_type,
     const std::string& clsid,
@@ -225,15 +217,16 @@ void WebPluginDelegateProxy::PluginDestroyed() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-bool WebPluginDelegateProxy::Initialize(const GURL& url, char** argn,
-                                        char** argv, int argc,
+bool WebPluginDelegateProxy::Initialize(const GURL& url,
+                                        const std::vector<std::string>& arg_names,
+                                        const std::vector<std::string>& arg_values,
                                         webkit_glue::WebPlugin* plugin,
                                         bool load_manually) {
   IPC::ChannelHandle channel_handle;
-  FilePath plugin_path;
+  WebPluginInfo info;
   if (!RenderThread::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
           url, mime_type_, clsid_, webkit_glue::GetWebKitLocale(),
-          &channel_handle, &plugin_path))) {
+          &channel_handle, &info))) {
     return false;
   }
 
@@ -262,7 +255,7 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url, char** argn,
   if (!result)
     return false;
 
-  plugin_path_ = plugin_path;
+  info_ = info;
   channel_host_ = channel_host;
   instance_id_ = instance_id;
 
@@ -273,12 +266,11 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url, char** argn,
   params.containing_window = render_view_->host_window();
   params.url = url;
   params.page_url = page_url_;
-  for (int i = 0; i < argc; ++i) {
-    params.arg_names.push_back(argn[i]);
-    params.arg_values.push_back(argv[i]);
-
-    if (LowerCaseEqualsASCII(params.arg_names.back(), "wmode") &&
-        LowerCaseEqualsASCII(params.arg_values.back(), "transparent")) {
+  params.arg_names = arg_names;
+  params.arg_values = arg_values;
+  for (size_t i = 0; i < arg_names.size(); ++i) {
+    if (LowerCaseEqualsASCII(arg_names[i], "wmode") &&
+        LowerCaseEqualsASCII(arg_values[i], "transparent")) {
       transparent_ = true;
     }
   }
@@ -348,10 +340,6 @@ void WebPluginDelegateProxy::DidManualLoadFail() {
   Send(new PluginMsg_DidManualLoadFail(instance_id_));
 }
 
-FilePath WebPluginDelegateProxy::GetPluginPath() {
-  return plugin_path_;
-}
-
 void WebPluginDelegateProxy::InstallMissingPlugin() {
   Send(new PluginMsg_InstallMissingPlugin(instance_id_));
 }
@@ -400,7 +388,7 @@ void WebPluginDelegateProxy::OnChannelError() {
     }
     plugin_->Invalidate();
   }
-  render_view_->PluginCrashed(GetProcessId(), plugin_path_);
+  render_view_->PluginCrashed(GetProcessId(), info_.path);
 }
 
 void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
@@ -430,28 +418,41 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
     }
   }
 
-  IPC::Message* msg = NULL;
+  PluginMsg_UpdateGeometry_Param param;
+  param.window_rect = window_rect;
+  param.clip_rect = clip_rect;
+  param.windowless_buffer = TransportDIB::DefaultHandleValue();
+  param.background_buffer = TransportDIB::DefaultHandleValue();
+
 #if defined(OS_POSIX)
   // If we're using POSIX mmap'd TransportDIBs, sending the handle across
   // IPC establishes a new mapping rather than just sending a window ID,
   // so only do so if we've actually recreated the shared memory bitmaps.
-  if (!bitmaps_changed) {
-    msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
-        TransportDIB::DefaultHandleValue(), TransportDIB::DefaultHandleValue());
-  } else
+  if (bitmaps_changed)
 #endif
-  if (transport_store_.get() && background_store_.get()) {
-    msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
-        transport_store_->handle(), background_store_->handle());
-  } else if (transport_store_.get()) {
-    msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
-        transport_store_->handle(), TransportDIB::DefaultHandleValue());
-  } else {
-    msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
-        TransportDIB::DefaultHandleValue(), TransportDIB::DefaultHandleValue());
+  {
+    if (transport_store_.get()) {
+      param.windowless_buffer = transport_store_->handle();
+    } else if (background_store_.get()) {
+      param.background_buffer = background_store_->handle();
+    }
   }
 
-  msg->set_unblock(true);
+ IPC::Message* msg;
+#if defined (OS_WIN)
+  std::wstring filename = StringToLowerASCII(info_.path.BaseName().value());
+  if (info_.name.find(L"Windows Media Player") != std::wstring::npos) {
+    // Need to update geometry synchronously with WMP, otherwise if a site
+    // scripts the plugin to start playing while it's in the middle of handling
+    // an update geometry message, videos don't play.  See urls in bug 20260.
+    msg = new PluginMsg_UpdateGeometrySync(instance_id_, param);
+  } else
+#endif
+  {
+    msg = new PluginMsg_UpdateGeometry(instance_id_, param);
+    msg->set_unblock(true);
+  }
+
   Send(msg);
 }
 
@@ -1057,26 +1058,6 @@ WebPluginDelegateProxy::CreateResourceClient(
                                                        instance_id_);
   proxy->Initialize(resource_id, url, notify_needed, notify_data, npstream);
   return proxy;
-}
-
-bool WebPluginDelegateProxy::IsWindowless() const {
-  NOTREACHED();
-  return false;
-}
-
-gfx::Rect WebPluginDelegateProxy::GetRect() const {
-  NOTREACHED();
-  return gfx::Rect();
-}
-
-gfx::Rect WebPluginDelegateProxy::GetClipRect() const {
-  NOTREACHED();
-  return gfx::Rect();
-}
-
-int WebPluginDelegateProxy::GetQuirks() const {
-  NOTREACHED();
-  return 0;
 }
 
 void WebPluginDelegateProxy::OnCancelDocumentLoad() {

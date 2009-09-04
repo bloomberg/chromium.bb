@@ -67,7 +67,7 @@ class PluginProcessHost : public ChildProcessHost,
   // channel name.
   static void ReplyToRenderer(ResourceMessageFilter* renderer_message_filter,
                               const IPC::ChannelHandle& channel,
-                              const FilePath& plugin_path,
+                              const WebPluginInfo& info,
                               IPC::Message* reply_msg);
 
   // This function is called on the IO thread once we receive a reply from the

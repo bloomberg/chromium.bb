@@ -141,11 +141,6 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
   }
 
   return plugin_host;
-
-  // TODO(jabdelmalek): adding a new channel means we can have one less
-  // renderer process (since each child process uses one handle in the
-  // IPC thread and main thread's WaitForMultipleObjects call).  Limit the
-  // number of plugin processes.
 }
 
 void PluginService::OpenChannelToPlugin(
@@ -164,7 +159,7 @@ void PluginService::OpenChannelToPlugin(
   } else {
     PluginProcessHost::ReplyToRenderer(renderer_msg_filter,
                                        IPC::ChannelHandle(),
-                                       FilePath(),
+                                       WebPluginInfo(),
                                        reply_msg);
   }
 }

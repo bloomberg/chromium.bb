@@ -81,13 +81,13 @@
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webaccessibilitymanager_impl.h"
 #include "webkit/glue/webdevtoolsagent_delegate.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
-#include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/webview.h"
 
@@ -2135,7 +2135,7 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
 
   if (RenderProcess::current()->in_process_plugins()) {
 #if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
-    return webkit_glue::WebPluginDelegate::Create(
+    return WebPluginDelegateImpl::Create(
         path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
 #else
     NOTIMPLEMENTED();
@@ -2143,8 +2143,7 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
 #endif
   }
 
-  return WebPluginDelegateProxy::Create(
-      url, *mime_type_to_use, clsid, AsWeakPtr());
+  return new WebPluginDelegateProxy(*mime_type_to_use, clsid, AsWeakPtr());
 }
 
 void RenderView::CreatedPluginWindow(gfx::PluginWindowHandle window) {

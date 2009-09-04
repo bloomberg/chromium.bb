@@ -197,30 +197,6 @@ void GetResponseInfo(const WebURLResponse& response,
   }
 }
 
-// Utility function to convert a vector to an array of char*'s.
-// Caller is responsible to free memory with DeleteArray().
-static char** ToArray(const WebVector<WebString>& input) {
-  char** array = new char*[input.size() + 1];
-  size_t index;
-  for (index = 0; index < input.size(); ++index) {
-    const WebCString& src = input[index].utf8();
-    array[index] = new char[src.length() + 1];
-    base::strlcpy(array[index], src.data(), src.length() + 1);
-    array[index][src.length()] = '\0';
-  }
-  array[index] = 0;
-  return array;
-}
-
-static void DeleteArray(char** array) {
-  char** ptr = array;
-  while (*ptr) {
-    delete[] *ptr;
-    ++ptr;
-  }
-  delete[] array;
-}
-
 }  // namespace
 
 // WebKit::WebPlugin ----------------------------------------------------------
@@ -234,9 +210,9 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 #if defined(OS_WIN)
   std::string clsid, version;
   if (activex_shim::IsMimeTypeActiveX(mime_type_)) {
-    for (size_t i = 0; i < arg_count_; i++) {
-      const char* param_name = arg_names_[i];
-      const char* param_value = arg_values_[i];
+    for (size_t i = 0; i < arg_names_.size(); i++) {
+      const char* param_name = arg_names_[i].c_str();
+      const char* param_value = arg_values_[i].c_str();
       if (base::strcasecmp(param_name, "classid") == 0) {
         activex_shim::GetClsidFromClassidAttribute(param_value, &clsid);
       } else if (base::strcasecmp(param_name, "codebase") == 0) {
@@ -265,7 +241,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
     return NULL;
 
   bool ok = plugin_delegate->Initialize(
-      plugin_url_, arg_names_, arg_values_, arg_count_, this, load_manually_);
+      plugin_url_, arg_names_, arg_values_, this, load_manually_);
   if (!ok) {
     plugin_delegate->PluginDestroyed();
     return false;
@@ -437,19 +413,17 @@ WebPluginImpl::WebPluginImpl(
       first_geometry_update_(true),
       ignore_response_error_(false),
       mime_type_(params.mimeType.utf8()),
-      arg_names_(ToArray(params.attributeNames)),
-      arg_values_(ToArray(params.attributeValues)),
-      arg_count_(params.attributeNames.size()),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
   StringToLowerASCII(&mime_type_);
+
+  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
+    arg_names_.push_back(params.attributeNames[i].utf8());
+    arg_values_.push_back(params.attributeValues[i].utf8());
+  }
 }
 
 WebPluginImpl::~WebPluginImpl() {
-  if (arg_names_)
-    DeleteArray(arg_names_);
-  if (arg_values_)
-    DeleteArray(arg_values_);
 }
 
 void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
@@ -1053,7 +1027,7 @@ bool WebPluginImpl::ReinitializePluginForResponse(
       plugin_url_, mime_type_, std::string(), &actual_mime_type);
 
   bool ok = plugin_delegate->Initialize(
-      plugin_url_, arg_names_, arg_values_, arg_count_, this, load_manually_);
+      plugin_url_, arg_names_, arg_values_, this, load_manually_);
 
   if (!ok) {
     container_ = NULL;

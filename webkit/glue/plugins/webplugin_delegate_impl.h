@@ -31,6 +31,24 @@ class PluginInstance;
 // the plugin process.
 class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
  public:
+  enum PluginQuirks {
+    PLUGIN_QUIRK_SETWINDOW_TWICE = 1,  // Win32
+    PLUGIN_QUIRK_THROTTLE_WM_USER_PLUS_ONE = 2,  // Win32
+    PLUGIN_QUIRK_DONT_CALL_WND_PROC_RECURSIVELY = 4,  // Win32
+    PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY = 8,  // Win32
+    PLUGIN_QUIRK_DONT_ALLOW_MULTIPLE_INSTANCES = 16,  // Win32
+    PLUGIN_QUIRK_DIE_AFTER_UNLOAD = 32,  // Win32
+    PLUGIN_QUIRK_PATCH_SETCURSOR = 64,  // Win32
+    PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS = 128,  // Win32
+    PLUGIN_QUIRK_WINDOWLESS_OFFSET_WINDOW_TO_DRAW = 256,  // Linux
+    PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW = 512,  // Linux
+    PLUGIN_QUIRK_NO_WINDOWLESS = 1024,  // Windows
+  };
+
+  static WebPluginDelegateImpl* Create(const FilePath& filename,
+                                       const std::string& mime_type,
+                                       gfx::PluginWindowHandle containing_view);
+
   static bool IsPluginDelegateWindow(gfx::NativeWindow window);
   static bool GetPluginNameFromWindow(gfx::NativeWindow window,
                                       std::wstring *plugin_name);
@@ -42,9 +60,8 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // WebPluginDelegate implementation
   virtual void PluginDestroyed();
   virtual bool Initialize(const GURL& url,
-                          char** argn,
-                          char** argv,
-                          int argc,
+                          const std::vector<std::string>& arg_names,
+                          const std::vector<std::string>& arg_values,
                           webkit_glue::WebPlugin* plugin,
                           bool load_manually);
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
@@ -86,7 +103,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   virtual bool IsWindowless() const { return windowless_ ; }
   virtual gfx::Rect GetRect() const { return window_rect_; }
   virtual gfx::Rect GetClipRect() const { return clip_rect_; }
-  virtual int GetQuirks() const { return quirks_; }
+
+  // Returns a combination of PluginQuirks.
+  int GetQuirks() const { return quirks_; }
 
 #if defined(OS_MACOSX)
   // Informs the delegate that the context used for painting windowless plugins

@@ -495,7 +495,7 @@ void PluginProcessHost::OnChannelError() {
   for (size_t i = 0; i < pending_requests_.size(); ++i) {
     ReplyToRenderer(pending_requests_[i].renderer_message_filter_.get(),
                     IPC::ChannelHandle(),
-                    FilePath(),
+                    WebPluginInfo(),
                     pending_requests_[i].reply_msg);
   }
 
@@ -573,10 +573,9 @@ void PluginProcessHost::OnResolveProxyCompleted(IPC::Message* reply_msg,
 void PluginProcessHost::ReplyToRenderer(
     ResourceMessageFilter* renderer_message_filter,
     const IPC::ChannelHandle& channel,
-    const FilePath& plugin_path,
+    const WebPluginInfo& info,
     IPC::Message* reply_msg) {
-  ViewHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg, channel,
-                                                    plugin_path);
+  ViewHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg, channel, info);
   renderer_message_filter->Send(reply_msg);
 }
 
@@ -602,7 +601,9 @@ void PluginProcessHost::RequestPluginChannel(
     sent_requests_.push(ChannelRequest(
         renderer_message_filter, mime_type, reply_msg));
   } else {
-    ReplyToRenderer(renderer_message_filter, IPC::ChannelHandle(), FilePath(),
+    ReplyToRenderer(renderer_message_filter,
+                    IPC::ChannelHandle(),
+                    WebPluginInfo(),
                     reply_msg);
   }
 }
@@ -613,7 +614,7 @@ void PluginProcessHost::OnChannelCreated(
 
   ReplyToRenderer(request.renderer_message_filter_.get(),
                   channel_handle,
-                  info_.path,
+                  info_,
                   request.reply_msg);
   sent_requests_.pop();
 }

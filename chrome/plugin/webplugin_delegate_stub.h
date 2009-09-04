@@ -20,6 +20,7 @@ class PluginChannel;
 class WebPluginProxy;
 struct PluginMsg_Init_Params;
 struct PluginMsg_DidReceiveResponseParams;
+struct PluginMsg_UpdateGeometry_Param;
 struct PluginMsg_URLRequestReply_Params;
 class WebCursor;
 
@@ -27,9 +28,7 @@ namespace WebKit {
 class WebInputEvent;
 }
 
-namespace webkit_glue {
-class WebPluginDelegate;
-}
+class WebPluginDelegateImpl;
 
 // Converts the IPC messages from WebPluginDelegateProxy into calls to the
 // actual WebPluginDelegate object.
@@ -72,10 +71,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
 
   void OnPrint(base::SharedMemoryHandle* shared_memory, size_t* size);
 
-  void OnUpdateGeometry(const gfx::Rect& window_rect,
-                        const gfx::Rect& clip_rect,
-                        const TransportDIB::Handle& windowless_buffer,
-                        const TransportDIB::Handle& background_buffer);
+  void OnUpdateGeometry(const PluginMsg_UpdateGeometry_Param& param);
   void OnGetPluginScriptableObject(int* route_id, intptr_t* npobject_ptr);
   void OnSendJavaScriptStream(const GURL& url,
                               const std::string& result,
@@ -102,7 +98,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
 
   scoped_refptr<PluginChannel> channel_;
 
-  webkit_glue::WebPluginDelegate* delegate_;
+  WebPluginDelegateImpl* delegate_;
   WebPluginProxy* webplugin_;
 
   // The url of the main frame hosting the plugin.

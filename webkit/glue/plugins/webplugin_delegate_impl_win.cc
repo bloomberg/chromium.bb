@@ -203,6 +203,9 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
              std::wstring::npos) {
     // Windows Media Player needs two NPP_SetWindow calls.
     quirks_ |= PLUGIN_QUIRK_SETWINDOW_TWICE;
+
+    // Windowless mode doesn't work in the WMP NPAPI plugin.
+    quirks_ |= PLUGIN_QUIRK_NO_WINDOWLESS;
   } else if (instance_->mime_type() == "audio/x-pn-realaudio-plugin" ||
              filename == "nppl3260.dll") {
     quirks_ |= PLUGIN_QUIRK_DONT_CALL_WND_PROC_RECURSIVELY;

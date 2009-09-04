@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,6 +100,13 @@ struct NPVariant_Param {
   std::string string_value;
   int npobject_routing_id;
   intptr_t npobject_pointer;
+};
+
+struct PluginMsg_UpdateGeometry_Param {
+  gfx::Rect window_rect;
+  gfx::Rect clip_rect;
+  TransportDIB::Handle windowless_buffer;
+  TransportDIB::Handle background_buffer;
 };
 
 
@@ -404,6 +411,39 @@ struct ParamTraits<NPVariant_Param> {
     } else if (p.type == NPVARIANT_PARAM_OBJECT_POINTER) {
       LogParam(p.npobject_pointer, l);
     }
+  }
+};
+
+// For windowless plugins, windowless_buffer
+// contains a buffer that the plugin draws into.  background_buffer is used
+// for transparent windowless plugins, and holds the background of the plugin
+// rectangle.
+template <>
+struct ParamTraits<PluginMsg_UpdateGeometry_Param> {
+  typedef PluginMsg_UpdateGeometry_Param param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.window_rect);
+    WriteParam(m, p.clip_rect);
+    WriteParam(m, p.windowless_buffer);
+    WriteParam(m, p.background_buffer);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    return
+      ReadParam(m, iter, &r->window_rect) &&
+      ReadParam(m, iter, &r->clip_rect) &&
+      ReadParam(m, iter, &r->windowless_buffer) &&
+      ReadParam(m, iter, &r->background_buffer);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.window_rect, l);
+    l->append(L", ");
+    LogParam(p.clip_rect, l);
+    l->append(L", ");
+    LogParam(p.windowless_buffer, l);
+    l->append(L", ");
+    LogParam(p.background_buffer, l);
+    l->append(L")");
   }
 };
 

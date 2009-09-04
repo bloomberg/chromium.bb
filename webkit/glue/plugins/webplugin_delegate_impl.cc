@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "webkit/api/public/WebInputEvent.h"
@@ -29,7 +30,7 @@ using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 
-WebPluginDelegate* WebPluginDelegate::Create(
+WebPluginDelegateImpl* WebPluginDelegateImpl::Create(
     const FilePath& filename,
     const std::string& mime_type,
     gfx::PluginWindowHandle containing_view) {
@@ -47,12 +48,12 @@ WebPluginDelegate* WebPluginDelegate::Create(
   return new WebPluginDelegateImpl(containing_view, instance.get());
 }
 
-bool WebPluginDelegateImpl::Initialize(const GURL& url,
-                                       char** argn,
-                                       char** argv,
-                                       int argc,
-                                       WebPlugin* plugin,
-                                       bool load_manually) {
+bool WebPluginDelegateImpl::Initialize(
+    const GURL& url,
+    const std::vector<std::string>& arg_names,
+    const std::vector<std::string>& arg_values,
+    WebPlugin* plugin,
+    bool load_manually) {
   plugin_ = plugin;
 
   instance_->set_web_plugin(plugin_);
@@ -69,7 +70,21 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
   if (quirks_ & PLUGIN_QUIRK_DIE_AFTER_UNLOAD)
     webkit_glue::SetForcefullyTerminatePluginProcess(true);
 
-  bool start_result = instance_->Start(url, argn, argv, argc, load_manually);
+  int argc = 0;
+  scoped_array<char*> argn(new char*[arg_names.size()]);
+  scoped_array<char*> argv(new char*[arg_names.size()]);
+  for (size_t i = 0; i < arg_names.size(); ++i) {
+    if (quirks_ & PLUGIN_QUIRK_NO_WINDOWLESS &&
+        LowerCaseEqualsASCII(arg_names[i], "windowlessvideo")) {
+      continue;
+    }
+    argn[argc] = const_cast<char*>(arg_names[i].c_str());
+    argv[argc] = const_cast<char*>(arg_values[i].c_str());
+    argc++;
+  }
+
+  bool start_result = instance_->Start(
+      url, argn.get(), argv.get(), argc, load_manually);
 
   NPAPI::PluginInstance::SetInitializingInstance(old_instance);
 

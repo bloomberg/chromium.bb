@@ -32,24 +32,7 @@ class WebPluginResourceClient;
 // This is the interface that a plugin implementation needs to provide.
 class WebPluginDelegate {
  public:
-  enum PluginQuirks {
-    PLUGIN_QUIRK_SETWINDOW_TWICE = 1,  // Win32
-    PLUGIN_QUIRK_THROTTLE_WM_USER_PLUS_ONE = 2,  // Win32
-    PLUGIN_QUIRK_DONT_CALL_WND_PROC_RECURSIVELY = 4,  // Win32
-    PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY = 8,  // Win32
-    PLUGIN_QUIRK_DONT_ALLOW_MULTIPLE_INSTANCES = 16,  // Win32
-    PLUGIN_QUIRK_DIE_AFTER_UNLOAD = 32,  // Win32
-    PLUGIN_QUIRK_PATCH_SETCURSOR = 64,  // Win32
-    PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS = 128,  // Win32
-    PLUGIN_QUIRK_WINDOWLESS_OFFSET_WINDOW_TO_DRAW = 256,  // Linux
-    PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW = 512,  // Linux
-  };
-
   virtual ~WebPluginDelegate() {}
-
-  static WebPluginDelegate* Create(const FilePath& filename,
-                                   const std::string& mime_type,
-                                   gfx::PluginWindowHandle containing_view);
 
   // Initializes the plugin implementation with the given (UTF8) arguments.
   // Note that the lifetime of WebPlugin must be longer than this delegate.
@@ -60,8 +43,11 @@ class WebPluginDelegate {
   // be passed from webkit. if false indicates that the plugin should download
   // the data. This also controls whether the plugin is instantiated as a full
   // page plugin (NP_FULL) or embedded (NP_EMBED).
-  virtual bool Initialize(const GURL& url, char** argn, char** argv, int argc,
-                          WebPlugin* plugin, bool load_manually) = 0;
+  virtual bool Initialize(const GURL& url,
+                          const std::vector<std::string>& arg_names,
+                          const std::vector<std::string>& arg_values,
+                          WebPlugin* plugin,
+                          bool load_manually) = 0;
 
   // Called when the WebPlugin is being destroyed.  This is a signal to the
   // delegate that it should tear-down the plugin implementation and not call
@@ -126,9 +112,6 @@ class WebPluginDelegate {
   // Indicates a failure in data receipt.
   virtual void DidManualLoadFail() = 0;
 
-  // Only available after Initialize is called.
-  virtual FilePath GetPluginPath() = 0;
-
   // Only supported when the plugin is the default plugin.
   virtual void InstallMissingPlugin() = 0;
 
@@ -138,15 +121,6 @@ class WebPluginDelegate {
                                                         bool notify_needed,
                                                         intptr_t notify_data,
                                                         intptr_t stream) = 0;
-
-  virtual bool IsWindowless() const = 0;
-
-  virtual gfx::Rect GetRect() const = 0;
-
-  virtual gfx::Rect GetClipRect() const = 0;
-
-  // Returns a combination of PluginQuirks.
-  virtual int GetQuirks() const = 0;
 };
 
 }  // namespace webkit_glue

@@ -549,8 +549,8 @@ void ResourceMessageFilter::OnGetPluginPath(const GURL& url,
                                             const std::string& clsid,
                                             FilePath* filename,
                                             std::string* url_mime_type) {
-  *filename = plugin_service_->GetPluginPath(url, policy_url, mime_type, clsid,
-                                             url_mime_type);
+  *filename = plugin_service_->GetPluginPath(
+      url, policy_url, mime_type, clsid, url_mime_type);
 }
 
 void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
@@ -558,8 +558,8 @@ void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
                                                   const std::string& clsid,
                                                   const std::wstring& locale,
                                                   IPC::Message* reply_msg) {
-  plugin_service_->OpenChannelToPlugin(this, url, mime_type, clsid,
-                                       locale, reply_msg);
+  plugin_service_->OpenChannelToPlugin(
+      this, url, mime_type, clsid, locale, reply_msg);
 }
 
 void ResourceMessageFilter::OnCreateDedicatedWorker(const GURL& url,

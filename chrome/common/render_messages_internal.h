@@ -1024,7 +1024,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::string /* clsid */,
                               std::wstring /* locale */,
                               IPC::ChannelHandle /* handle to channel */,
-                              FilePath /* plugin_path */)
+                              WebPluginInfo /* info */)
 
 #if defined(OS_LINUX)
   // A renderer sends this when it needs a browser-side widget for

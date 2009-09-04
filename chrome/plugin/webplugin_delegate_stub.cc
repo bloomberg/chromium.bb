@@ -20,18 +20,17 @@
 #include "skia/ext/platform_device.h"
 #include "webkit/api/public/WebBindings.h"
 #include "webkit/api/public/WebCursorInfo.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/glue/webplugin_delegate.h"
 
 using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
 using webkit_glue::WebPlugin;
-using webkit_glue::WebPluginDelegate;
 using webkit_glue::WebPluginResourceClient;
 
 class FinishDestructionTask : public Task {
  public:
-  FinishDestructionTask(WebPluginDelegate* delegate, WebPlugin* webplugin)
+  FinishDestructionTask(WebPluginDelegateImpl* delegate, WebPlugin* webplugin)
     : delegate_(delegate), webplugin_(webplugin) { }
 
   void Run() {
@@ -43,7 +42,7 @@ class FinishDestructionTask : public Task {
   }
 
  private:
-  WebPluginDelegate* delegate_;
+  WebPluginDelegateImpl* delegate_;
   WebPlugin* webplugin_;
 };
 
@@ -99,6 +98,7 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_GetPluginScriptableObject,
                         OnGetPluginScriptableObject)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometry, OnUpdateGeometry)
+    IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometrySync, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_SendJavaScriptStream,
                         OnSendJavaScriptStream)
     IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveManualResponse,
@@ -126,17 +126,9 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
   child_process_logging::ScopedActiveURLSetter url_setter(page_url_);
 
   *result = false;
-  int argc = static_cast<int>(params.arg_names.size());
-  if (argc != static_cast<int>(params.arg_values.size())) {
+  if (params.arg_names.size() != params.arg_values.size()) {
     NOTREACHED();
     return;
-  }
-
-  char **argn = new char*[argc];
-  char **argv = new char*[argc];
-  for (int i = 0; i < argc; ++i) {
-    argn[i] = const_cast<char*>(params.arg_names[i].c_str());
-    argv[i] = const_cast<char*>(params.arg_values[i].c_str());
   }
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -162,15 +154,15 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
     return;
 #endif
 
-  delegate_ = WebPluginDelegate::Create(path, mime_type_, parent);
+  delegate_ = WebPluginDelegateImpl::Create(path, mime_type_, parent);
   if (delegate_) {
     webplugin_->set_delegate(delegate_);
-    *result = delegate_->Initialize(
-        params.url, argn, argv, argc, webplugin_, params.load_manually);
+    *result = delegate_->Initialize(params.url,
+                                    params.arg_names,
+                                    params.arg_values,
+                                    webplugin_,
+                                    params.load_manually);
   }
-
-  delete[] argn;
-  delete[] argv;
 }
 
 void WebPluginDelegateStub::OnWillSendRequest(int id, const GURL& url) {
@@ -278,13 +270,10 @@ void WebPluginDelegateStub::OnPrint(base::SharedMemoryHandle* shared_memory,
 }
 
 void WebPluginDelegateStub::OnUpdateGeometry(
-    const gfx::Rect& window_rect,
-    const gfx::Rect& clip_rect,
-    const TransportDIB::Handle& windowless_buffer,
-    const TransportDIB::Handle& background_buffer) {
+    const PluginMsg_UpdateGeometry_Param& param) {
   webplugin_->UpdateGeometry(
-      window_rect, clip_rect,
-      windowless_buffer, background_buffer);
+      param.window_rect, param.clip_rect,
+      param.windowless_buffer, param.background_buffer);
 }
 
 void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id,

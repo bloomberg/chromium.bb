@@ -19,6 +19,7 @@
 #include "ipc/ipc_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/glue/webplugin.h"
+#include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/webplugin_delegate.h"
 
 struct NPObject;
@@ -41,19 +42,20 @@ class WebPluginDelegateProxy :
     public IPC::Message::Sender,
     public base::SupportsWeakPtr<WebPluginDelegateProxy> {
  public:
-  static WebPluginDelegateProxy* Create(
-      const GURL& url,
-      const std::string& mime_type,
-      const std::string& clsid,
-      const base::WeakPtr<RenderView>& render_view);
+  WebPluginDelegateProxy(const std::string& mime_type,
+                         const std::string& clsid,
+                         const base::WeakPtr<RenderView>& render_view);
 
   // Called to drop our pointer to the window script object.
   void DropWindowScriptObject() { window_script_object_ = NULL; }
 
   // WebPluginDelegate implementation:
   virtual void PluginDestroyed();
-  virtual bool Initialize(const GURL& url, char** argn, char** argv, int argc,
-                          webkit_glue::WebPlugin* plugin, bool load_manually);
+  virtual bool Initialize(const GURL& url,
+                          const std::vector<std::string>& arg_names,
+                          const std::vector<std::string>& arg_values,
+                          webkit_glue::WebPlugin* plugin,
+                          bool load_manually);
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect);
   virtual void Paint(gfx::NativeDrawingContext context, const gfx::Rect& rect);
@@ -86,7 +88,6 @@ class WebPluginDelegateProxy :
   virtual void DidReceiveManualData(const char* buffer, int length);
   virtual void DidFinishManualLoading();
   virtual void DidManualLoadFail();
-  virtual FilePath GetPluginPath();
   virtual void InstallMissingPlugin();
   virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
       int resource_id,
@@ -94,20 +95,12 @@ class WebPluginDelegateProxy :
       bool notify_needed,
       intptr_t notify_data,
       intptr_t existing_stream);
-  virtual bool IsWindowless() const;
-  virtual gfx::Rect GetRect() const;
-  virtual gfx::Rect GetClipRect() const;
-  virtual int GetQuirks() const;
 
  protected:
   template<class WebPluginDelegateProxy> friend class DeleteTask;
   ~WebPluginDelegateProxy();
 
  private:
-  WebPluginDelegateProxy(const std::string& mime_type,
-                         const std::string& clsid,
-                         const base::WeakPtr<RenderView>& render_view);
-
   // Message handlers for messages that proxy WebPlugin methods, which
   // we translate into calls to the real WebPlugin.
   void OnSetWindow(gfx::PluginWindowHandle window);
@@ -175,7 +168,7 @@ class WebPluginDelegateProxy :
   std::string mime_type_;
   std::string clsid_;
   int instance_id_;
-  FilePath plugin_path_;
+  WebPluginInfo info_;
 
   gfx::Rect plugin_rect_;
 

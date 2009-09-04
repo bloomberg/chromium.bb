@@ -12,6 +12,7 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "webkit/api/public/WebInputEvent.h"
@@ -64,7 +65,7 @@ int g_current_y_offset = 0;
 
 }  // namespace
 
-WebPluginDelegate* WebPluginDelegate::Create(
+WebPluginDelegateImpl* WebPluginDelegateImpl::Create(
     const FilePath& filename,
     const std::string& mime_type,
     gfx::PluginWindowHandle containing_view) {
@@ -112,9 +113,8 @@ void WebPluginDelegateImpl::PluginDestroyed() {
 }
 
 bool WebPluginDelegateImpl::Initialize(const GURL& url,
-                                       char** argn,
-                                       char** argv,
-                                       int argc,
+                                       const std::vector<std::string>& arg_names,
+                                       const std::vector<std::string>& arg_values,
                                        WebPlugin* plugin,
                                        bool load_manually) {
   plugin_ = plugin;
@@ -123,8 +123,21 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
   NPAPI::PluginInstance* old_instance =
       NPAPI::PluginInstance::SetInitializingInstance(instance_);
 
+  int argc = 0;
+  scoped_array<char*> argn(new char*[arg_names.size()]);
+  scoped_array<char*> argv(new char*[arg_names.size()]);
+  for (size_t i = 0; i < arg_names.size(); ++i) {
+    if (quirks_ & PLUGIN_QUIRK_NO_WINDOWLESS &&
+        LowerCaseEqualsASCII(arg_names[i], "windowlessvideo")) {
+      continue;
+    }
+    argn[argc] = const_cast<char*>(arg_names[i].c_str());
+    argv[argc] = const_cast<char*>(arg_values[i].c_str());
+    argc++;
+  }
 
-  bool start_result = instance_->Start(url, argn, argv, argc, load_manually);
+  bool start_result = instance_->Start(
+      url, argn.get(), argv.get(), argc, load_manually);
 
   NPAPI::PluginInstance::SetInitializingInstance(old_instance);
 

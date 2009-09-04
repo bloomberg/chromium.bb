@@ -165,15 +165,13 @@ IPC_BEGIN_MESSAGES(Plugin)
                              int /* reason */,
                              intptr_t /* notify_data */)
 
-  // Updates the plugin location.  For windowless plugins, windowless_buffer
-  // contains a buffer that the plugin draws into.  background_buffer is used
-  // for transparent windowless plugins, and holds the background of the plugin
-  // rectangle.
-  IPC_MESSAGE_ROUTED4(PluginMsg_UpdateGeometry,
-                      gfx::Rect /* window_rect */,
-                      gfx::Rect /* clip_rect */,
-                      TransportDIB::Handle /* windowless_buffer */,
-                      TransportDIB::Handle /* background_buffer */)
+  // Updates the plugin location.
+  IPC_MESSAGE_ROUTED1(PluginMsg_UpdateGeometry,
+                      PluginMsg_UpdateGeometry_Param)
+
+  // A synchronous version of above.
+  IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_UpdateGeometrySync,
+                             PluginMsg_UpdateGeometry_Param)
 
   IPC_SYNC_MESSAGE_ROUTED0_0(PluginMsg_SetFocus)
 

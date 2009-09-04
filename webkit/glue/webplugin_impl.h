@@ -268,9 +268,8 @@ class WebPluginImpl : public WebPlugin,
 
   // Holds the list of argument names and values passed to the plugin.  We keep
   // these so that we can re-initialize the plugin if we need to.
-  char** arg_names_;
-  char** arg_values_;
-  size_t arg_count_;
+  std::vector<std::string> arg_names_;
+  std::vector<std::string> arg_values_;
 
   ScopedRunnableMethodFactory<WebPluginImpl> method_factory_;
 
