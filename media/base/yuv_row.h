@@ -65,7 +65,7 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
 #if !defined(USE_MMX)
 #if defined(_MSC_VER)
 #define USE_MMX 1
-#elif defined(OS_LINUX) && !defined(ARCH_CPU_X86_64)
+#elif defined(OS_LINUX) && defined(ARCH_CPU_X86)
 #define USE_MMX 1
 #else
 #define USE_MMX 0
@@ -83,4 +83,3 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
 #endif
 
 #endif  // MEDIA_BASE_YUV_ROW_H_
-
