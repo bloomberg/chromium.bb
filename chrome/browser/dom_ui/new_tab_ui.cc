@@ -530,6 +530,15 @@ struct MostVisitedPage {
   GURL favicon_url;
 };
 
+// Adds the fields in the page to the dictionary.
+void SetMostVisistedPage(DictionaryValue* dict, const MostVisitedPage& page) {
+  SetURLTitleAndDirection(dict, WideToUTF16(page.title), page.url);
+  if (!page.favicon_url.is_empty())
+    dict->SetString(L"faviconUrl", page.favicon_url.spec());
+  if (!page.thumbnail_url.is_empty())
+    dict->SetString(L"thumbnailUrl", page.thumbnail_url.spec());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // MostVisitedHandler
 
@@ -585,12 +594,11 @@ class MostVisitedHandler : public DOMMessageHandler,
   // |url|.
   std::wstring GetDictionaryKeyForURL(const std::string& url);
 
-  // Gets the |url| and |title| for a pinned URL at a given index. This returns
+  // Gets the page data for a pinned URL at a given index. This returns
   // true if found.
-  const bool GetPinnedURLAtIndex(const int index, std::string* url,
-                                 std::string* title);
+  const bool GetPinnedURLAtIndex(const int index, MostVisitedPage* page);
 
-  void AddPinnedURL(const GURL& url, const std::string& title, int index);
+  void AddPinnedURL(const MostVisitedPage& page, int index);
   void RemovePinnedURL(const GURL& url);
 
   static std::vector<MostVisitedPage> GetPrePopulatedPages();
@@ -730,39 +738,53 @@ void MostVisitedHandler::HandleAddPinnedURL(const Value* value) {
   }
 
   const ListValue* list = static_cast<const ListValue*>(value);
-  std::string url;
-  std::string title;
-  std::string index_string;
+  DCHECK(list->GetSize() == 5) << "Wrong number of params to addPinnedURL";
+  MostVisitedPage mvp;
+  std::string tmp_string;
   int index;
 
-  bool r = list->GetString(0, &url);
+  bool r = list->GetString(0, &tmp_string);
   DCHECK(r) << "Missing URL in addPinnedURL from the NTP Most Visited.";
+  mvp.url = GURL(tmp_string);
 
-  r = list->GetString(1, &title);
+  r = list->GetString(1, &tmp_string);
   DCHECK(r) << "Missing title in addPinnedURL from the NTP Most Visited.";
+  mvp.title = UTF8ToWide(tmp_string);
 
-  r = list->GetString(2, &index_string);
+  r = list->GetString(2, &tmp_string);
+  DCHECK(r) << "Failed to read the favicon URL in addPinnedURL from the NTP "
+            << "Most Visited.";
+  if (!tmp_string.empty())
+    mvp.favicon_url = GURL(tmp_string);
+
+  r = list->GetString(3, &tmp_string);
+  DCHECK(r) << "Failed to read the thumbnail URL in addPinnedURL from the NTP "
+            << "Most Visited.";
+  if (!tmp_string.empty())
+    mvp.thumbnail_url = GURL(tmp_string);
+
+  r = list->GetString(4, &tmp_string);
   DCHECK(r) << "Missing index in addPinnedURL from the NTP Most Visited.";
-  index = StringToInt(index_string);
+  index = StringToInt(tmp_string);
 
-  AddPinnedURL(GURL(url), title, index);
+  AddPinnedURL(mvp, index);
 }
 
-void MostVisitedHandler::AddPinnedURL(const GURL& url, const std::string& title,
-                                      int index) {
+void MostVisitedHandler::AddPinnedURL(const MostVisitedPage& page, int index) {
   // Remove any pinned URL at the given index.
-  std::string old_url;
-  std::string old_title;
-  if (GetPinnedURLAtIndex(index, &old_url, &old_title))
-    RemovePinnedURL(GURL(old_url));
+  MostVisitedPage old_page;
+  if (GetPinnedURLAtIndex(index, &old_page)) {
+    RemovePinnedURL(old_page.url);
+  }
 
   DictionaryValue* new_value = new DictionaryValue();
-  SetURLTitleAndDirection(new_value, UTF8ToUTF16(title), url);
+  SetMostVisistedPage(new_value, page);
+
   bool r = new_value->SetInteger(L"index", index);
   DCHECK(r) << "Failed to set the index for a pinned URL from the NTP Most "
             << "Visited.";
 
-  r = pinned_urls_->Set(GetDictionaryKeyForURL(url.spec()), new_value);
+  r = pinned_urls_->Set(GetDictionaryKeyForURL(page.url.spec()), new_value);
   DCHECK(r) << "Failed to add pinned URL from the NTP Most Visited.";
 
   // TODO(arv): Notify observers?
@@ -796,8 +818,7 @@ void MostVisitedHandler::RemovePinnedURL(const GURL& url) {
 }
 
 const bool MostVisitedHandler::GetPinnedURLAtIndex(const int index,
-                                                   std::string* url,
-                                                   std::string* title) {
+    MostVisitedPage* page) {
   // This iterates over all the pinned URLs. It might seem like it is worth
   // having a map from the index to the item but the number of items is limited
   // to the number of items the most visited section is showing on the NTP so
@@ -815,9 +836,19 @@ const bool MostVisitedHandler::GetPinnedURLAtIndex(const int index,
       DictionaryValue* dict = static_cast<DictionaryValue*>(value);
       dict->GetInteger(L"index", &dict_index);
       if (dict_index == index) {
-        if (!dict->GetString(L"url", url))
+        // The favicon and thumbnail URLs may be empty.
+        std::string tmp_string;
+        if (dict->GetString(L"faviconUrl", &tmp_string))
+          page->favicon_url = GURL(tmp_string);
+        if (dict->GetString(L"thumbnailUrl", &tmp_string))
+          page->thumbnail_url = GURL(tmp_string);
+
+        if (dict->GetString(L"url", &tmp_string))
+          page->url = GURL(tmp_string);
+        else
           return false;
-        return dict->GetString(L"title", title);
+
+        return dict->GetString(L"title", &page->title);
       }
     } else {
       NOTREACHED() << "DictionaryValue iterators are filthy liars.";
@@ -845,17 +876,11 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
   while (output_index < pages_count) {
     bool found = false;
     bool pinned = false;
-    GURL url;
-    string16 title;
     std::string pinned_url;
     std::string pinned_title;
-    GURL favicon_url;
-    GURL thumbnail_url;
+    MostVisitedPage mvp;
 
-    if (MostVisitedHandler::GetPinnedURLAtIndex(output_index, &pinned_url,
-                                                &pinned_title)) {
-      url = GURL(pinned_url);
-      title = UTF8ToUTF16(pinned_title);
+    if (MostVisitedHandler::GetPinnedURLAtIndex(output_index, &mvp)) {
       pinned = true;
       found = true;
     }
@@ -863,28 +888,24 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
     while (!found && data_index < data->size()) {
       const PageUsageData& page = *(*data)[data_index];
       data_index++;
-      url = page.GetURL();
+      mvp.url = page.GetURL();
 
       // Don't include blacklisted or pinned URLs.
-      std::wstring key = GetDictionaryKeyForURL(url.spec());
+      std::wstring key = GetDictionaryKeyForURL(mvp.url.spec());
       if (pinned_urls_->HasKey(key) || url_blacklist_->HasKey(key))
         continue;
 
-      title = page.GetTitle();
+      mvp.title = UTF16ToWide(page.GetTitle());
       found = true;
     }
 
     while (!found && pre_populated_index < pre_populated_pages.size()) {
-      MostVisitedPage page = pre_populated_pages[pre_populated_index++];
-      std::wstring key = GetDictionaryKeyForURL(page.url.spec());
+      mvp = pre_populated_pages[pre_populated_index++];
+      std::wstring key = GetDictionaryKeyForURL(mvp.url.spec());
       if (pinned_urls_->HasKey(key) || url_blacklist_->HasKey(key) ||
-          seen_urls.find(page.url) != seen_urls.end())
+          seen_urls.find(mvp.url) != seen_urls.end())
         continue;
 
-      title = WideToUTF16(page.title);
-      url = page.url;
-      favicon_url = page.favicon_url;
-      thumbnail_url = page.thumbnail_url;
       found = true;
     }
 
@@ -897,15 +918,11 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
       }
 
       DictionaryValue* page_value = new DictionaryValue();
-      SetURLTitleAndDirection(page_value, title, url);
+      SetMostVisistedPage(page_value, mvp);
       page_value->SetBoolean(L"pinned", pinned);
-      if (!thumbnail_url.is_empty())
-        page_value->SetString(L"thumbnailUrl", thumbnail_url.spec());
-      if (!favicon_url.is_empty())
-        page_value->SetString(L"faviconUrl", favicon_url.spec());
       pages_value.Append(page_value);
-      most_visited_urls_.push_back(url);
-      seen_urls.insert(url);
+      most_visited_urls_.push_back(mvp.url);
+      seen_urls.insert(mvp.url);
     }
     output_index++;
   }

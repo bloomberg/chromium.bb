@@ -357,6 +357,10 @@ function hideSection(section) {
 }
 
 var mostVisited = {
+  addPinnedUrl_: function(data, index) {
+    chrome.send('addPinnedURL', [data.url, data.title, data.faviconUrl || '',
+                                 data.thumbnailUrl || '', String(index)]);
+  },
   getItem: function(el) {
     return findAncestorByClass(el, 'thumbnail-container');
   },
@@ -370,7 +374,7 @@ var mostVisited = {
     var data = mostVisitedData[index];
     data.pinned = !data.pinned;
     if (data.pinned) {
-      chrome.send('addPinnedURL', [data.url, data.title, String(index)]);
+      this.addPinnedUrl_(data, index);
     } else {
       chrome.send('removePinnedURL', [data.url]);
     }
@@ -399,16 +403,14 @@ var mostVisited = {
     swapDomNodes(source, destination);
 
     var sourceData = mostVisitedData[sourceIndex];
-    chrome.send('addPinnedURL', [sourceData.url, sourceData.title,
-                                 String(destinationIndex)]);
+    this.addPinnedUrl_(sourceData, destinationIndex);
     sourceData.pinned = true;
     this.updatePinnedDom_(source, true);
 
     var destinationData = mostVisitedData[destinationIndex];
     // Only update the destination if it was pinned before.
     if (destinationData.pinned) {
-      chrome.send('addPinnedURL', [destinationData.url, destinationData.title,
-                                   String(sourceIndex)]);
+      this.addPinnedUrl_(destinationData, sourceIndex);
     }
     mostVisitedData[destinationIndex] = sourceData;
     mostVisitedData[sourceIndex] = destinationData;
@@ -467,7 +469,7 @@ var mostVisited = {
       showNotification('', actionText, function() {
         self.removeFromBlackList(url);
         if (wasPinned) {
-          chromeSend('addPinnedURL', [url, oldItem.title, String(oldIndex)]);
+          self.addPinnedUrl_(oldItem, oldIndex);
         }
         chrome.send('getMostVisited');
       });
