@@ -620,23 +620,9 @@ void HistoryService::SetInMemoryBackend(
 }
 
 void HistoryService::NotifyTooNew() {
-#if defined(OS_WIN)
-  // Find the last browser window to display our message box from.
-  Browser* cur_browser = BrowserList::GetLastActive();
-  // TODO(brettw): Do this some other way or beng will kick you. e.g. move to
-  //               BrowserView.
-  HWND parent_hwnd =
-      reinterpret_cast<HWND>(cur_browser->window()->GetNativeHandle());
-  HWND cur_hwnd = cur_browser ? parent_hwnd : NULL;
-
-  std::wstring title = l10n_util::GetString(IDS_PRODUCT_NAME);
-  std::wstring message = l10n_util::GetString(IDS_PROFILE_TOO_NEW_ERROR);
-  MessageBox(cur_hwnd, message.c_str(), title.c_str(),
-             MB_OK | MB_ICONWARNING | MB_TOPMOST);
-#else
-  // TODO(port): factor this out into platform-specific code.
-  NOTIMPLEMENTED();
-#endif
+  Source<HistoryService> source(this);
+  NotificationService::current()->Notify(NotificationType::HISTORY_TOO_NEW,
+      source, NotificationService::NoDetails());
 }
 
 void HistoryService::DeleteURL(const GURL& url) {

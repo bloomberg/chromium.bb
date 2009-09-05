@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/base_paths_linux.h"
@@ -69,6 +70,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/app_resources.h"
+#include "grit/generated_resources.h"
+#include "grit/google_chrome_strings.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils.h"
 #include "skia/ext/skia_utils_gtk.h"
@@ -1071,6 +1074,17 @@ void BrowserWindowGtk::ShowNewProfileDialog() {
 void BrowserWindowGtk::ShowRepostFormWarningDialog(
     TabContents* tab_contents) {
   new RepostFormWarningGtk(GetNativeHandle(), &tab_contents->controller());
+}
+
+void BrowserWindowGtk::ShowHistoryTooNewDialog() {
+  std::string title = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
+  std::string message = l10n_util::GetStringUTF8(IDS_PROFILE_TOO_NEW_ERROR);
+  GtkWidget* dialog = gtk_message_dialog_new(window_,
+      static_cast<GtkDialogFlags>(0), GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
+      "%s", message.c_str());
+  gtk_window_set_title(GTK_WINDOW(dialog), title.c_str());
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
 }
 
 void BrowserWindowGtk::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,

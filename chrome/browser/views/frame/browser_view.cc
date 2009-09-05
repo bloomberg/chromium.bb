@@ -66,6 +66,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
+#include "app/win_util.h"
 #include "chrome/browser/jumplist.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #elif defined(OS_LINUX)
@@ -1201,6 +1202,26 @@ void BrowserView::ShowNewProfileDialog() {
 
 void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   browser::ShowRepostFormWarningDialog(GetNativeHandle(), tab_contents);
+}
+
+void BrowserView::ShowHistoryTooNewDialog() {
+#if defined(OS_WIN)
+  std::wstring title = l10n_util::GetString(IDS_PRODUCT_NAME);
+  std::wstring message = l10n_util::GetString(IDS_PROFILE_TOO_NEW_ERROR);
+  win_util::MessageBox(GetNativeHandle(), message, title,
+                       MB_OK | MB_ICONWARNING | MB_TOPMOST);
+#elif defined(OS_LINUX)
+  std::string title = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
+  std::string message = l10n_util::GetStringUTF8(IDS_PROFILE_TOO_NEW_ERROR);
+  GtkWidget* dialog = gtk_message_dialog_new(GetNativeHandle(),
+      static_cast<GtkDialogFlags>(0), GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
+      "%s", message.c_str());
+  gtk_window_set_title(GTK_WINDOW(dialog), title.c_str());
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {

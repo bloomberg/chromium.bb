@@ -202,6 +202,8 @@ Browser::Browser(Type type, Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::HISTORY_TOO_NEW,
+                 NotificationService::AllSources());
 
   // Need to know when to alert the user of theme install delay.
   registrar_.Add(this, NotificationType::EXTENSION_READY_FOR_INSTALL,
@@ -2177,11 +2179,17 @@ void Browser::Observe(NotificationType type,
       if (platform_util::IsVisible(tab_contents->GetNativeView()))
         ThemeInstallBubbleView::Show(tab_contents);
 #else
-  NOTIMPLEMENTED();
+      NOTIMPLEMENTED();
 #endif
       break;
     }
 
+    case NotificationType::HISTORY_TOO_NEW: {
+      if (BrowserList::GetLastActive() != this)
+        break;
+      window()->ShowHistoryTooNewDialog();
+      break;
+    }
 
     default:
       NOTREACHED() << "Got a notification we didn't register for.";

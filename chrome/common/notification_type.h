@@ -494,6 +494,10 @@ class NotificationType {
     // history_notifications.h).
     FAVICON_CHANGED,
 
+    // Sent by history if the history database is too new.  The active browser
+    // window should notify the user of this error.
+    HISTORY_TOO_NEW,
+
     // Thumbnails---------------------------------------------------------------
 
     // Set by ThumbnailStore when it was finished loading data from disk on

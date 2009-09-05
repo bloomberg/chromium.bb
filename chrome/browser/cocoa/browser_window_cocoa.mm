@@ -259,6 +259,10 @@ void BrowserWindowCocoa::ShowRepostFormWarningDialog(
   NOTIMPLEMENTED();
 }
 
+void BrowserWindowCocoa::ShowHistoryTooNewDialog() {
+  NOTIMPLEMENTED();
+}
+
 // We allow closing the window here since the real quit decision on Mac is made
 // in [AppController quit:].
 void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads() {
