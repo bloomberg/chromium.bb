@@ -213,7 +213,7 @@ class CookieMonster : public CookieStore {
   // lazily in InitStoreIfNecessary().
   bool initialized_;
 
-  PersistentCookieStore* store_;
+  scoped_refptr<PersistentCookieStore> store_;
 
   // The resolution of our time isn't enough, so we do something
   // ugly and increment when we've seen the same time twice.
@@ -367,7 +367,11 @@ class CookieMonster::CanonicalCookie {
   bool httponly_;
 };
 
-class CookieMonster::PersistentCookieStore {
+typedef base::RefCountedThreadSafe<CookieMonster::PersistentCookieStore>
+    RefcountedPersistentCookieStore;
+
+class CookieMonster::PersistentCookieStore
+    : public RefcountedPersistentCookieStore {
  public:
   virtual ~PersistentCookieStore() { }
 

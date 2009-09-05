@@ -155,10 +155,12 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
   // setup cookie store
   if (!context->cookie_store_) {
     DCHECK(!cookie_store_path.empty());
-    context->cookie_db_.reset(new SQLitePersistentCookieStore(
-        cookie_store_path.ToWStringHack(),
-        g_browser_process->db_thread()->message_loop()));
-    context->cookie_store_ = new net::CookieMonster(context->cookie_db_.get());
+
+    scoped_refptr<SQLitePersistentCookieStore> cookie_db =
+        new SQLitePersistentCookieStore(
+            cookie_store_path.ToWStringHack(),
+            g_browser_process->db_thread()->message_loop());
+    context->cookie_store_ = new net::CookieMonster(cookie_db.get());
   }
 
   return context;
@@ -180,11 +182,12 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginalForExtensions(
 
   // All we care about for extensions is the cookie store.
   DCHECK(!cookie_store_path.empty());
-  context->cookie_db_.reset(new SQLitePersistentCookieStore(
-      cookie_store_path.ToWStringHack(),
-      g_browser_process->db_thread()->message_loop()));
-  net::CookieMonster* cookie_monster = new net::CookieMonster(
-      context->cookie_db_.get());
+
+  scoped_refptr<SQLitePersistentCookieStore> cookie_db =
+      new SQLitePersistentCookieStore(
+          cookie_store_path.ToWStringHack(),
+          g_browser_process->db_thread()->message_loop());
+  net::CookieMonster* cookie_monster = new net::CookieMonster(cookie_db.get());
 
   // Enable cookies for extension URLs only.
   const char* schemes[] = {chrome::kExtensionScheme};
@@ -542,14 +545,4 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
 
   delete ftp_transaction_factory_;
   delete http_transaction_factory_;
-
-  // Do not delete the cookie store in the case of the media context, as it is
-  // owned by the original context.
-  // TODO(eroman): The lifetime expectation of cookie_store_ is not right.
-  // The assumption here is that the original request context (which owns
-  // cookie_store_) is going to outlive the media context (which uses it).
-  // However based on the destruction order of profiles this is not true.
-  // http://crbug.com/15289.
-  if (!is_media_)
-    delete cookie_store_;
 }

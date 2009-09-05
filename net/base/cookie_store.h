@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 #include "base/time.h"
 #include "net/base/cookie_options.h"
 
@@ -20,8 +21,8 @@ namespace net {
 class CookieMonster;
 
 // An interface for storing and retrieving cookies. Implementations need to
-// be therad safe as its methods can be accessed from IO as well as UI threads.
-class CookieStore {
+// be thread safe as its methods can be accessed from IO as well as UI threads.
+class CookieStore : public base::RefCountedThreadSafe<CookieStore> {
  public:
    virtual ~CookieStore() {}
 

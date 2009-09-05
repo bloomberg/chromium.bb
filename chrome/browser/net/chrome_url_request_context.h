@@ -127,7 +127,6 @@ class ChromeURLRequestContext : public URLRequestContext,
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
 
-  scoped_ptr<SQLitePersistentCookieStore> cookie_db_;
   PrefService* prefs_;
   const Blacklist* blacklist_;
   bool is_media_;

@@ -202,7 +202,7 @@ class AutomationProfileImpl : public Profile {
 
  protected:
   Profile* original_profile_;
-  scoped_ptr<net::CookieStore> alternate_cookie_store_;
+  scoped_refptr<net::CookieStore> alternate_cookie_store_;
   scoped_refptr<URLRequestContext> alternate_reqeust_context_;
   int tab_handle_;
 

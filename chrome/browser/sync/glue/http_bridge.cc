@@ -79,7 +79,6 @@ HttpBridge::RequestContext::RequestContext(
 }
 
 HttpBridge::RequestContext::~RequestContext() {
-  delete cookie_store_;
   delete http_transaction_factory_;
 }
 

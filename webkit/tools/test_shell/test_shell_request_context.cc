@@ -66,7 +66,6 @@ void TestShellRequestContext::Init(
 }
 
 TestShellRequestContext::~TestShellRequestContext() {
-  delete cookie_store_;
   delete ftp_transaction_factory_;
   delete http_transaction_factory_;
 }

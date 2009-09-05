@@ -22,9 +22,6 @@ class TestURLRequestContext : public URLRequestContext {
   TestURLRequestContext() {
     cookie_store_ = new net::CookieMonster();
   }
-  virtual ~TestURLRequestContext() {
-    delete cookie_store_;
-  }
 };
 
 class CookieTestingProfile : public TestingProfile {

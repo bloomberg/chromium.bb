@@ -113,10 +113,11 @@ void AutomationProfileImpl::Initialize(Profile* original_profile,
   original_profile_ = original_profile;
 
   URLRequestContext* original_context = original_profile_->GetRequestContext();
-  net::CookieStore* original_cookie_store = original_context->cookie_store();
-  alternate_cookie_store_.reset(new AutomationCookieStore(this,
-                                                          original_cookie_store,
-                                                          automation_client));
+  scoped_refptr<net::CookieStore> original_cookie_store =
+      original_context->cookie_store();
+  alternate_cookie_store_ = new AutomationCookieStore(this,
+                                                      original_cookie_store,
+                                                      automation_client);
   alternate_reqeust_context_ = new AutomationURLRequestContext(
       original_context, alternate_cookie_store_.get());
 }
