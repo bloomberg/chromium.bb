@@ -528,7 +528,7 @@ run_env.Replace(
                       '--product_dir="$ARTIFACTS_DIR" '
                       '--testprefix=$SELENIUM_TEST_PREFIX '
                       '--testsuffixes=$SELENIUM_TEST_SUFFIXES '
-                      '--screencompare=$PDIFF_PATH '
+                      '--screencompare="${PDIFF_PATH.abspath}" '
                       '$SELENIUM_CAPTURE_SCREENSHOTS '
                       '$SELENIUM_EXTRA_FLAGS'),
 )
