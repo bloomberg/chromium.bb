@@ -2314,11 +2314,18 @@ BUG21033 : LayoutTests/fast/dom/Window/window-postmessage-args.html = FAIL
 BUG21033 WIN LINUX : LayoutTests/fast/events/init-events.html = FAIL
 
 // WebKit 48034:48061
+// Need to implement layoutTestController.addUserScript.
 BUG21113 : LayoutTests/userscripts/script-run-at-end.html = FAIL
+// undefined pageshowEvent.persisted cause the test hangs.
 BUG21136 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached-with-frames.html = TIMEOUT
+// Accessing attributes of an object created with
+// "document.implementation.createDocumentType" causes NULL pointers
 BUG14091 : LayoutTests/fast/dom/DOMImplementation/detached-doctype.html = CRASH
+// The linux layout result in build bot shows the changed method does not
+// executed.
 BUG21141 LINUX : LayoutTests/fast/forms/select-double-onchange.html = FAIL
-BUG_VICTORW LINUX : LayoutTests/fast/forms/select-script-onchange.html = FAIL
+BUG21141 LINUX : LayoutTests/fast/forms/select-script-onchange.html = FAIL
+// The test is flaky.
 BUG_VICTORW : LayoutTests/http/tests/security/javascriptURL/xss-ALLOWED-from-javascript-url-sub-frame-2-level.html = PASS CRASH
 
 // Webkit 48061:48071
