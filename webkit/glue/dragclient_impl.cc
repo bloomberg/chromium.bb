@@ -4,27 +4,15 @@
 
 #include "config.h"
 
-#include "base/compiler_specific.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
+#include "ChromiumDataObject.h"
 #include "ClipboardChromium.h"
-#include "DragData.h"
 #include "Frame.h"
-#include "HitTestResult.h"
-#include "Image.h"
-#include "KURL.h"
-MSVC_POP_WARNING();
 #undef LOG
 
-#include "webkit/glue/dragclient_impl.h"
-
-#include "base/logging.h"
-#include "base/string_util.h"
 #include "webkit/api/public/WebDragData.h"
-#include "webkit/glue/context_menu.h"
+#include "webkit/glue/dragclient_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview_impl.h"
 
 using WebKit::WebDragData;
@@ -83,5 +71,5 @@ WebCore::DragImageRef DragClientImpl::createDragImageForLink(
 }
 
 void DragClientImpl::dragControllerDestroyed() {
-  delete this;
+  // Our lifetime is bound to the WebViewImpl.
 }

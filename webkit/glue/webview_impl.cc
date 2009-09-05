@@ -68,15 +68,10 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/src/WebInputEventConversion.h"
 #include "webkit/api/src/WebSettingsImpl.h"
-#include "webkit/glue/chrome_client_impl.h"
-#include "webkit/glue/context_menu_client_impl.h"
 #include "webkit/glue/dom_operations.h"
-#include "webkit/glue/dragclient_impl.h"
-#include "webkit/glue/editor_client_impl.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/image_resource_fetcher.h"
-#include "webkit/glue/inspector_client_impl.h"
 #include "webkit/glue/media_player_action.h"
 #include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
@@ -365,8 +360,12 @@ void WebView::ResetVisitedLinkState() {
 WebViewImpl::WebViewImpl(WebViewDelegate* delegate,
                          WebEditingClient* editing_client)
     : delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(editor_client_impl_(this, editing_client)),
       ALLOW_THIS_IN_INITIALIZER_LIST(back_forward_list_client_impl_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(chrome_client_impl_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(context_menu_client_impl_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(drag_client_impl_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(editor_client_impl_(this, editing_client)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(inspector_client_impl_(this)),
       observed_new_navigation_(false),
 #ifndef NDEBUG
       new_navigation_loader_(NULL),
@@ -393,11 +392,11 @@ WebViewImpl::WebViewImpl(WebViewDelegate* delegate,
   last_mouse_position_ = WebPoint(-1, -1);
 
   // the page will take ownership of the various clients
-  page_.reset(new Page(new ChromeClientImpl(this),
-                       new ContextMenuClientImpl(this),
+  page_.reset(new Page(&chrome_client_impl_,
+                       &context_menu_client_impl_,
                        &editor_client_impl_,
-                       new DragClientImpl(this),
-                       new WebInspectorClient(this)));
+                       &drag_client_impl_,
+                       &inspector_client_impl_));
 
   page_->backForwardList()->setClient(&back_forward_list_client_impl_);
   page_->setGroupName(kPageGroupName);
@@ -951,7 +950,6 @@ void WebViewImpl::close() {
   // Reset the delegate to prevent notifications being sent as we're being
   // deleted.
   delegate_ = NULL;
-  editor_client_impl_.DropEditingClient();
 
   Release();  // Balances AddRef from WebView::Create
 }

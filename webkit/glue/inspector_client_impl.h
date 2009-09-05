@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_INSPECTOR_CLIENT_IMPL_H__
-#define WEBKIT_GLUE_INSPECTOR_CLIENT_IMPL_H__
+#ifndef WEBKIT_GLUE_INSPECTOR_CLIENT_IMPL_H_
+#define WEBKIT_GLUE_INSPECTOR_CLIENT_IMPL_H_
 
 #include "InspectorClient.h"
 #include "InspectorController.h"
@@ -14,9 +14,10 @@
 class WebNodeHighlight;
 class WebViewImpl;
 
-class WebInspectorClient : public WebCore::InspectorClient {
-public:
-  WebInspectorClient(WebViewImpl*);
+class InspectorClientImpl : public WebCore::InspectorClient {
+ public:
+  InspectorClientImpl(WebViewImpl*);
+  ~InspectorClientImpl();
 
   // InspectorClient
   virtual void inspectorDestroyed();
@@ -48,18 +49,16 @@ public:
 
   virtual void inspectorWindowObjectCleared();
 
-private:
-  ~WebInspectorClient();
-
+ private:
   void LoadSettings();
   void SaveSettings();
 
   // The WebViewImpl of the page being inspected; gets passed to the constructor
-  scoped_refptr<WebViewImpl> inspected_web_view_;
+  WebViewImpl* inspected_web_view_;
 
   typedef HashMap<WebCore::String, WebCore::InspectorController::Setting>
       SettingsMap;
   OwnPtr<SettingsMap> settings_;
 };
 
-#endif // WEBKIT_GLUE_INSPECTOR_CLIENT_IMPL_H__
+#endif // WEBKIT_GLUE_INSPECTOR_CLIENT_IMPL_H_

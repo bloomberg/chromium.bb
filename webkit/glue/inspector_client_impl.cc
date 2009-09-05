@@ -41,51 +41,51 @@ static const float kDefaultInspectorYPos = 50;
 static const float kDefaultInspectorHeight = 640;
 static const float kDefaultInspectorWidth = 480;
 
-WebInspectorClient::WebInspectorClient(WebViewImpl* webView)
-  : inspected_web_view_(webView) {
+InspectorClientImpl::InspectorClientImpl(WebViewImpl* webView)
+    : inspected_web_view_(webView) {
   ASSERT(inspected_web_view_);
 }
 
-WebInspectorClient::~WebInspectorClient() {
+InspectorClientImpl::~InspectorClientImpl() {
 }
 
-void WebInspectorClient::inspectorDestroyed() {
-  delete this;
+void InspectorClientImpl::inspectorDestroyed() {
+  // Our lifetime is bound to the WebViewImpl.
 }
 
-Page* WebInspectorClient::createPage() {
+Page* InspectorClientImpl::createPage() {
   // This method should never be called in Chrome as inspector front-end lives
   // in a separate process.
   NOTREACHED();
   return NULL;
 }
 
-void WebInspectorClient::showWindow() {
+void InspectorClientImpl::showWindow() {
   DCHECK(inspected_web_view_->GetWebDevToolsAgentImpl());
   InspectorController* inspector =
       inspected_web_view_->page()->inspectorController();
   inspector->setWindowVisible(true);
 }
 
-void WebInspectorClient::closeWindow() {
+void InspectorClientImpl::closeWindow() {
   if (inspected_web_view_->page())
     inspected_web_view_->page()->inspectorController()->setWindowVisible(false);
 }
 
-bool WebInspectorClient::windowVisible() {
+bool InspectorClientImpl::windowVisible() {
   DCHECK(inspected_web_view_->GetWebDevToolsAgentImpl());
   return false;
 }
 
-void WebInspectorClient::attachWindow() {
+void InspectorClientImpl::attachWindow() {
   // TODO(jackson): Implement this
 }
 
-void WebInspectorClient::detachWindow() {
+void InspectorClientImpl::detachWindow() {
   // TODO(jackson): Implement this
 }
 
-void WebInspectorClient::setAttachedWindowHeight(unsigned int height) {
+void InspectorClientImpl::setAttachedWindowHeight(unsigned int height) {
   // TODO(dglazkov): Implement this
   NOTIMPLEMENTED();
 }
@@ -100,33 +100,33 @@ static void invalidateNodeBoundingRect(WebViewImpl* web_view) {
     web_view->GetDelegate()->didInvalidateRect(damaged_rect);
 }
 
-void WebInspectorClient::highlight(Node* node) {
+void InspectorClientImpl::highlight(Node* node) {
   // InspectorController does the actually tracking of the highlighted node
   // and the drawing of the highlight. Here we just make sure to invalidate
   // the rects of the old and new nodes.
   hideHighlight();
 }
 
-void WebInspectorClient::hideHighlight() {
+void InspectorClientImpl::hideHighlight() {
   // TODO: Should be able to invalidate a smaller rect.
   invalidateNodeBoundingRect(inspected_web_view_);
 }
 
-void WebInspectorClient::inspectedURLChanged(const String& newURL) {
+void InspectorClientImpl::inspectedURLChanged(const String& newURL) {
   // TODO(jackson): Implement this
 }
 
-String WebInspectorClient::localizedStringsURL() {
+String InspectorClientImpl::localizedStringsURL() {
   NOTIMPLEMENTED();
   return String();
 }
 
-String WebInspectorClient::hiddenPanels() {
+String InspectorClientImpl::hiddenPanels() {
   // Enumerate tabs that are currently disabled.
   return "scripts,profiles,databases";
 }
 
-void WebInspectorClient::populateSetting(
+void InspectorClientImpl::populateSetting(
     const String& key,
     InspectorController::Setting& setting) {
   LoadSettings();
@@ -134,7 +134,7 @@ void WebInspectorClient::populateSetting(
     setting = settings_->get(key);
 }
 
-void WebInspectorClient::storeSetting(
+void InspectorClientImpl::storeSetting(
     const String& key,
     const InspectorController::Setting& setting) {
   LoadSettings();
@@ -142,17 +142,17 @@ void WebInspectorClient::storeSetting(
   SaveSettings();
 }
 
-void WebInspectorClient::removeSetting(const String& key) {
+void InspectorClientImpl::removeSetting(const String& key) {
   LoadSettings();
   settings_->remove(key);
   SaveSettings();
 }
 
-void WebInspectorClient::inspectorWindowObjectCleared() {
+void InspectorClientImpl::inspectorWindowObjectCleared() {
   NOTIMPLEMENTED();
 }
 
-void WebInspectorClient::LoadSettings() {
+void InspectorClientImpl::LoadSettings() {
   if (settings_)
     return;
 
@@ -191,7 +191,7 @@ void WebInspectorClient::LoadSettings() {
   }
 }
 
-void WebInspectorClient::SaveSettings() {
+void InspectorClientImpl::SaveSettings() {
   String data;
   for (SettingsMap::iterator it = settings_->begin(); it != settings_->end();
        ++it) {

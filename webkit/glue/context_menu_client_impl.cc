@@ -4,9 +4,6 @@
 
 #include "config.h"
 
-#include "base/compiler_specific.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
 #include "ContextMenu.h"
 #include "Document.h"
 #include "DocumentLoader.h"
@@ -20,20 +17,17 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "KURL.h"
 #include "MediaError.h"
 #include "Widget.h"
-MSVC_POP_WARNING();
 #undef LOG
 
-#include "webkit/glue/context_menu_client_impl.h"
-
 #include "base/string_util.h"
+#include "base/word_iterator.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLResponse.h"
 #include "webkit/api/src/WebDataSourceImpl.h"
 #include "webkit/glue/context_menu.h"
+#include "webkit/glue/context_menu_client_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webview_impl.h"
-
-#include "base/word_iterator.h"
 
 using WebKit::WebDataSource;
 using WebKit::WebDataSourceImpl;
@@ -79,8 +73,7 @@ std::wstring GetMisspelledWord(const WebCore::ContextMenu* default_menu,
     // Don't provide suggestions for multiple words.
     if (!IsASingleWord(misspelled_word_string))
       return L"";
-    else
-      return misspelled_word_string;
+    return misspelled_word_string;
   }
 
   WebCore::HitTestResult hit_test_result = selected_frame->eventHandler()->
@@ -122,7 +115,7 @@ ContextMenuClientImpl::~ContextMenuClientImpl() {
 }
 
 void ContextMenuClientImpl::contextMenuDestroyed() {
-  delete this;
+  // Our lifetime is bound to the WebViewImpl.
 }
 
 // Figure out the URL of a page or subframe. Returns |page_type| as the type,
@@ -328,11 +321,5 @@ void ContextMenuClientImpl::stopSpeaking() {
 }
 
 bool ContextMenuClientImpl::shouldIncludeInspectElementItem() {
-    return false;  // TODO(jackson): Eventually include the inspector context menu item
+  return false;
 }
-
-#if defined(OS_MACOSX)
-void ContextMenuClientImpl::searchWithSpotlight() {
-  // TODO(pinkerton): write this
-}
-#endif

@@ -5,12 +5,10 @@
 #ifndef WEBKIT_GLUE_EDITOR_CLIENT_IMPL_H__
 #define WEBKIT_GLUE_EDITOR_CLIENT_IMPL_H__
 
-#include <deque>
-
 #include "DOMWindow.h"
 #include "EditorClient.h"
-
-#include "base/task.h"
+#include "Timer.h"
+#include <wtf/Deque.h>
 
 namespace WebCore {
 class Frame;
@@ -28,8 +26,6 @@ class EditorClientImpl : public WebCore::EditorClient {
  public:
   EditorClientImpl(WebViewImpl* web_view,
                    WebKit::WebEditingClient* editing_client);
-
-  void DropEditingClient() { editing_client_ = NULL; }
 
   virtual ~EditorClientImpl();
   virtual void pageDestroyed();
@@ -142,26 +138,15 @@ class EditorClientImpl : public WebCore::EditorClient {
                 bool autofill_on_empty_value,
                 bool requires_caret_at_end);
 
-  // This method is invoked later by Autofill() as when Autofill() is invoked
-  // (from one of the EditorClient callback) the carret position is not
-  // reflecting the last text change yet and we need it to decide whether or not
-  // to show the autofill popup.
-  void DoAutofill(WebCore::HTMLInputElement* input_element,
-                  bool form_autofill_only,
-                  bool autofill_on_empty_value,
-                  bool requires_caret_at_end,
-                  bool backspace);
-
- protected:
-  WebViewImpl* web_view_;
-  WebKit::WebEditingClient* editing_client_;
-  bool in_redo_;
-
-  typedef std::deque<WTF::RefPtr<WebCore::EditCommand> > EditCommandStack;
-  EditCommandStack undo_stack_;
-  EditCommandStack redo_stack_;
-
  private:
+  // Called to process the autofill described by autofill_args_.
+  // This method is invoked asynchronously if the caret position is not
+  // reflecting the last text change yet, and we need it to decide whether or
+  // not to show the autofill popup.
+  void DoAutofill(WebCore::Timer<EditorClientImpl>*);
+
+  void CancelPendingAutofill();
+
   // Returns whether or not the focused control needs spell-checking.
   // Currently, this function just retrieves the focused node and determines
   // whether or not it is a <textarea> element or an element whose
@@ -170,6 +155,14 @@ class EditorClientImpl : public WebCore::EditorClient {
   // proposed in this issue. We should also retrieve "spellcheck" attributes
   // for text fields and create a flag to over-write the default behavior.
   bool ShouldSpellcheckByDefault();
+
+  WebViewImpl* web_view_;
+  WebKit::WebEditingClient* editing_client_;
+  bool in_redo_;
+
+  typedef Deque< RefPtr<WebCore::EditCommand> > EditCommandStack;
+  EditCommandStack undo_stack_;
+  EditCommandStack redo_stack_;
 
   // Whether the last entered key was a backspace.
   bool backspace_or_delete_pressed_;
@@ -183,8 +176,17 @@ class EditorClientImpl : public WebCore::EditorClient {
   };
   int spell_check_this_field_status_;
 
-  // The method factory used to post autofill related tasks.
-  ScopedRunnableMethodFactory<EditorClientImpl> autofill_factory_;
+  // Used to delay autofill processing.
+  WebCore::Timer<EditorClientImpl> autofill_timer_;
+
+  struct AutofillArgs {
+    RefPtr<WebCore::HTMLInputElement> input_element;
+    bool autofill_form_only;
+    bool autofill_on_empty_value;
+    bool require_caret_at_end;
+    bool backspace_or_delete_pressed;
+  };
+  OwnPtr<AutofillArgs> autofill_args_;
 };
 
 #endif  // WEBKIT_GLUE_EDITOR_CLIENT_IMPL_H__

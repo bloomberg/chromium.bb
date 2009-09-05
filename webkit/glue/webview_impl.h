@@ -18,7 +18,11 @@
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/src/NotificationPresenterImpl.h"
 #include "webkit/glue/back_forward_list_client_impl.h"
+#include "webkit/glue/chrome_client_impl.h"
+#include "webkit/glue/context_menu_client_impl.h"
+#include "webkit/glue/dragclient_impl.h"
 #include "webkit/glue/editor_client_impl.h"
+#include "webkit/glue/inspector_client_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
@@ -258,13 +262,18 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
                        const WebCore::PlatformKeyboardEvent& e);
 
   WebViewDelegate* delegate_;
+
+  webkit_glue::BackForwardListClientImpl back_forward_list_client_impl_;
+  ChromeClientImpl chrome_client_impl_;
+  ContextMenuClientImpl context_menu_client_impl_;
+  DragClientImpl drag_client_impl_;
   EditorClientImpl editor_client_impl_;
+  InspectorClientImpl inspector_client_impl_;
+
   WebKit::WebSize size_;
 
   WebKit::WebPoint last_mouse_position_;
   scoped_ptr<WebCore::Page> page_;
-
-  webkit_glue::BackForwardListClientImpl back_forward_list_client_impl_;
 
   // This flag is set when a new navigation is detected.  It is used to satisfy
   // the corresponding argument to WebViewDelegate::DidCommitLoadForFrame.

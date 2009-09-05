@@ -6,7 +6,6 @@
 // and I'm not really sure what to do about most of them.
 
 #include "config.h"
-#include "webkit/glue/editor_client_impl.h"
 
 #include "Document.h"
 #include "EditCommand.h"
@@ -22,10 +21,8 @@
 #include "PlatformKeyboardEvent.h"
 #include "PlatformString.h"
 #include "RenderObject.h"
-
 #undef LOG
-#include "base/message_loop.h"
-#include "base/string_util.h"
+
 #include "webkit/api/public/WebEditingAction.h"
 #include "webkit/api/public/WebEditingClient.h"
 #include "webkit/api/public/WebKit.h"
@@ -40,11 +37,11 @@
 #include "webkit/glue/webview.h"
 #include "webkit/glue/webview_impl.h"
 
-using webkit_glue::AutofillForm;
 using WebKit::WebEditingAction;
 using WebKit::WebEditingClient;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
+using webkit_glue::AutofillForm;
 
 // Arbitrary depth limit for the undo stack, to keep it from using
 // unbounded memory.  This is the maximum number of distinct undoable
@@ -63,14 +60,17 @@ EditorClientImpl::EditorClientImpl(WebViewImpl* web_view,
       in_redo_(false),
       backspace_or_delete_pressed_(false),
       spell_check_this_field_status_(SPELLCHECK_AUTOMATIC),
-      ALLOW_THIS_IN_INITIALIZER_LIST(autofill_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          autofill_timer_(this, &EditorClientImpl::DoAutofill)) {
 }
 
 EditorClientImpl::~EditorClientImpl() {
 }
 
 void EditorClientImpl::pageDestroyed() {
-  // Ignored since our lifetime is managed by the WebViewImpl.
+  // Our lifetime is bound to the WebViewImpl.  This is our signal that we
+  // should no longer notify the consumer.
+  editing_client_ = NULL;
 }
 
 bool EditorClientImpl::shouldShowDeleteInterface(WebCore::HTMLElement* elem) {
@@ -272,15 +272,15 @@ void EditorClientImpl::didSetSelectionTypesForPasteboard() {
 void EditorClientImpl::registerCommandForUndo(
     PassRefPtr<WebCore::EditCommand> command) {
   if (undo_stack_.size() == kMaximumUndoStackDepth)
-    undo_stack_.pop_front();  // drop oldest item off the far end
+    undo_stack_.removeFirst();  // drop oldest item off the far end
   if (!in_redo_)
     redo_stack_.clear();
-  undo_stack_.push_back(command);
+  undo_stack_.append(command);
 }
 
 void EditorClientImpl::registerCommandForRedo(
     PassRefPtr<WebCore::EditCommand> command) {
-  redo_stack_.push_back(command);
+  redo_stack_.append(command);
 }
 
 void EditorClientImpl::clearUndoRedoOperations() {
@@ -289,17 +289,18 @@ void EditorClientImpl::clearUndoRedoOperations() {
 }
 
 bool EditorClientImpl::canUndo() const {
-  return !undo_stack_.empty();
+  return !undo_stack_.isEmpty();
 }
 
 bool EditorClientImpl::canRedo() const {
-  return !redo_stack_.empty();
+  return !redo_stack_.isEmpty();
 }
 
 void EditorClientImpl::undo() {
   if (canUndo()) {
-    RefPtr<WebCore::EditCommand> command(undo_stack_.back());
-    undo_stack_.pop_back();
+    EditCommandStack::iterator back = --undo_stack_.end();
+    RefPtr<WebCore::EditCommand> command(*back);
+    undo_stack_.remove(back);
     command->unapply();
     // unapply will call us back to push this command onto the redo stack.
   }
@@ -307,8 +308,9 @@ void EditorClientImpl::undo() {
 
 void EditorClientImpl::redo() {
   if (canRedo()) {
-    RefPtr<WebCore::EditCommand> command(redo_stack_.back());
-    redo_stack_.pop_back();
+    EditCommandStack::iterator back = --redo_stack_.end();
+    RefPtr<WebCore::EditCommand> command(*back);
+    redo_stack_.remove(back);
 
     ASSERT(!in_redo_);
     in_redo_ = true;
@@ -649,8 +651,9 @@ void EditorClientImpl::textFieldDidEndEditing(WebCore::Element* element) {
   // Notification that focus was lost.  Be careful with this, it's also sent
   // when the page is being closed.
 
-  // Cancel any pending DoAutofill calls.
-  autofill_factory_.RevokeAll();
+  // Cancel any pending DoAutofill call.
+  autofill_args_.clear();
+  autofill_timer_.stop();
 
   // Hide any showing popup.
   web_view_->HideAutoCompletePopup();
@@ -693,11 +696,12 @@ bool EditorClientImpl::ShowFormAutofillForNode(WebCore::Node* node) {
 }
 
 bool EditorClientImpl::Autofill(WebCore::HTMLInputElement* input_element,
-                                bool form_autofill_only,
+                                bool autofill_form_only,
                                 bool autofill_on_empty_value,
-                                bool requires_caret_at_end) {
-  // Cancel any pending DoAutofill calls.
-  autofill_factory_.RevokeAll();
+                                bool require_caret_at_end) {
+  // Cancel any pending DoAutofill call.
+  autofill_args_.clear();
+  autofill_timer_.stop();
 
   // Let's try to trigger autofill for that field, if applicable.
   if (!input_element->isEnabledFormControl() || !input_element->isTextField() ||
@@ -713,41 +717,37 @@ bool EditorClientImpl::Autofill(WebCore::HTMLInputElement* input_element,
   if (input_element->value().length() > kMaximumTextSizeForAutofill)
     return false;
 
-  if (!requires_caret_at_end) {
-    DoAutofill(input_element, form_autofill_only, autofill_on_empty_value,
-               false, backspace_or_delete_pressed_);
+  autofill_args_ = new AutofillArgs();
+  autofill_args_->input_element = input_element;
+  autofill_args_->autofill_form_only = autofill_form_only;
+  autofill_args_->autofill_on_empty_value = autofill_on_empty_value;
+  autofill_args_->require_caret_at_end = require_caret_at_end;
+  autofill_args_->backspace_or_delete_pressed = backspace_or_delete_pressed_;
+
+  if (!require_caret_at_end) {
+    DoAutofill(NULL);
   } else {
     // We post a task for doing the autofill as the caret position is not set
-    // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
-    // we need it to determine whether or not to trigger autofill.
-    std::wstring value =
-        webkit_glue::StringToStdWString(input_element->value());
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        autofill_factory_.NewRunnableMethod(&EditorClientImpl::DoAutofill,
-                                            input_element,
-                                            form_autofill_only,
-                                            autofill_on_empty_value,
-                                            true,
-                                            backspace_or_delete_pressed_));
+    // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976)
+    // and we need it to determine whether or not to trigger autofill.
+    autofill_timer_.startOneShot(0.0);
   }
   return true;
 }
 
-void EditorClientImpl::DoAutofill(WebCore::HTMLInputElement* input_element,
-                                  bool form_autofill_only,
-                                  bool autofill_on_empty_value,
-                                  bool requires_caret_at_end,
-                                  bool backspace) {
+void EditorClientImpl::DoAutofill(WebCore::Timer<EditorClientImpl>* timer) {
+  OwnPtr<AutofillArgs> args(autofill_args_.release());
+  WebCore::HTMLInputElement* input_element = args->input_element.get();
+
   std::wstring value = webkit_glue::StringToStdWString(input_element->value());
 
   // Enforce autofill_on_empty_value and caret_at_end.
-  bool is_caret_at_end = requires_caret_at_end ?
-        input_element->selectionStart() == input_element->selectionEnd() &&
-        input_element->selectionEnd() == static_cast<int>(value.length()) :
-        true;  // When |requires_caret_at_end| is false, just pretend we are at
-               // the end.
-  if ((!autofill_on_empty_value && value.empty()) || !is_caret_at_end) {
+  bool is_caret_at_end = args->require_caret_at_end ?
+      input_element->selectionStart() == input_element->selectionEnd() &&
+      input_element->selectionEnd() == static_cast<int>(value.length()) :
+      true;  // When |require_caret_at_end| is false, just pretend we are at
+             // the end.
+  if ((!args->autofill_on_empty_value && value.empty()) || !is_caret_at_end) {
     web_view_->HideAutoCompletePopup();
     return;
   }
@@ -760,18 +760,26 @@ void EditorClientImpl::DoAutofill(WebCore::HTMLInputElement* input_element,
   webkit_glue::PasswordAutocompleteListener* listener =
       webframe->GetPasswordListener(input_element);
   if (listener) {
-    if (form_autofill_only)
+    if (args->autofill_form_only)
       return;
 
-    listener->OnInlineAutocompleteNeeded(input_element, value, backspace, true);
+    listener->OnInlineAutocompleteNeeded(
+        input_element, value, args->backspace_or_delete_pressed, true);
     return;
   }
 
   // Then trigger form autofill.
   std::wstring name = AutofillForm::GetNameForInputElement(input_element);
-  DCHECK_GT(static_cast<int>(name.length()), 0);
-  web_view_->delegate()->QueryFormFieldAutofill(name, value,
-      reinterpret_cast<int64>(input_element));
+  ASSERT(static_cast<int>(name.length()) > 0);
+
+  if (web_view_->delegate())
+    web_view_->delegate()->QueryFormFieldAutofill(name, value,
+        reinterpret_cast<int64>(input_element));
+}
+
+void EditorClientImpl::CancelPendingAutofill() {
+  autofill_args_.clear();
+  autofill_timer_.stop();
 }
 
 void EditorClientImpl::OnAutofillSuggestionAccepted(

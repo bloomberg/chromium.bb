@@ -4,9 +4,6 @@
 
 #include "config.h"
 
-#include "base/compiler_specific.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
 #include "AccessibilityObject.h"
 #include "AXObjectCache.h"
 #include "CharacterNames.h"
@@ -29,14 +26,8 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #if USE(V8)
 #include "V8Proxy.h"
 #endif
-MSVC_POP_WARNING();
-
 #undef LOG
 
-#include "webkit/glue/chrome_client_impl.h"
-
-#include "base/gfx/rect.h"
-#include "base/logging.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebInputEvent.h"
@@ -47,6 +38,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/src/NotificationPresenterImpl.h"
 #include "webkit/api/src/WrappedResourceRequest.h"
+#include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webkit_glue.h"
@@ -111,7 +103,7 @@ ChromeClientImpl::~ChromeClientImpl() {
 }
 
 void ChromeClientImpl::chromeDestroyed() {
-  delete this;
+  // Our lifetime is bound to the WebViewImpl.
 }
 
 void ChromeClientImpl::setWindowRect(const WebCore::FloatRect& r) {
