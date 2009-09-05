@@ -27,7 +27,7 @@ PluginInstallerImpl::PluginInstallerImpl(int16 mode)
       mode_(mode),
       plugin_install_stream_(NULL),
       plugin_installer_state_(PluginInstallerStateUndefined),
-      install_dialog_(PluginInstallDialog::AddInstaller(this, plugin_name_)),
+      install_dialog_(NULL),
       enable_click_(false),
       icon_(NULL),
       bold_font_(NULL),
@@ -256,13 +256,14 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
     bool plugin_available = false;
     if (reason == NPRES_DONE) {
       DLOG(INFO) << "Received Done notification for plugin list download";
-      set_plugin_installer_state(PluginListDownloaded);
       plugin_database_handler_.ParsePluginList();
       if (plugin_database_handler_.GetPluginDetailsForMimeType(
               mime_type_.c_str(), desired_language_.c_str(),
               &plugin_download_url_, &plugin_name_,
               &plugin_download_url_for_display_)) {
         plugin_available = true;
+        install_dialog_ = PluginInstallDialog::AddInstaller(this, plugin_name_);
+        set_plugin_installer_state(PluginListDownloaded);
       } else {
         set_plugin_installer_state(PluginListDownloadedPluginNotFound);
       }
@@ -556,7 +557,7 @@ void PluginInstallerImpl::PaintUserActionInformation(HDC paint_dc,
 
 void PluginInstallerImpl::ShowInstallDialog() {
   enable_click_ = false;
-  install_dialog_->ShowInstallDialog();
+  install_dialog_->ShowInstallDialog(hwnd());
 }
 
 LRESULT PluginInstallerImpl::OnLButtonDown(UINT message, WPARAM wparam,

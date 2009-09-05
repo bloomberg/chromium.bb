@@ -35,7 +35,7 @@ class PluginInstallDialog : public CDialogImpl<PluginInstallDialog> {
   // Lets this object know that the given installer object is going away.
   void RemoveInstaller(PluginInstallerImpl* installer);
 
-  void ShowInstallDialog();
+  void ShowInstallDialog(HWND parent);
 
  private:
   PluginInstallDialog(const std::wstring& plugin_name);

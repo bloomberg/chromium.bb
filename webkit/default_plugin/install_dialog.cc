@@ -51,11 +51,11 @@ void PluginInstallDialog::RemoveInstaller(PluginInstallerImpl* installer) {
   NOTREACHED();
 }
 
-void PluginInstallDialog::ShowInstallDialog() {
+void PluginInstallDialog::ShowInstallDialog(HWND parent) {
   if (IsWindow())
     return;
 
-  Create(NULL, NULL);
+  Create(parent, NULL);
   ShowWindow(SW_SHOW);
 }
 
