@@ -32,7 +32,18 @@ const wchar_t kVideoThreads[]           = L"video-threads";
 const wchar_t kFast2[]                  = L"fast2";
 const wchar_t kSkip[]                   = L"skip";
 const wchar_t kFlush[]                  = L"flush";
+const wchar_t kHash[]                   = L"hash";
 }  // namespace switches
+
+namespace {
+// DJB2 hash
+unsigned int hash_djb2(const uint8* s,
+                       size_t len, unsigned int hash) {
+  while (len--)
+    hash = hash * 33 + *s++;
+  return hash;
+}
+}
 
 int main(int argc, const char** argv) {
   base::AtExitManager exit_manager;
@@ -51,6 +62,8 @@ int main(int argc, const char** argv) {
               << "Enable fast2 flag\n"
               << "  --flush                         "
               << "Flush last frame\n"
+              << "  --hash                          "
+              << "Hash decoded buffers\n"
               << "  --skip=[1|2|3]                  "
               << "1=loop nonref, 2=loop, 3= frame nonref\n" << std::endl;
     return 1;
@@ -101,6 +114,12 @@ int main(int argc, const char** argv) {
   bool flush = false;
   if (cmd_line->HasSwitch(switches::kFlush)) {
     flush = true;
+  }
+
+  unsigned int hash_value = 5381u;  // Seed for DJB2.
+  bool hash = false;
+  if (cmd_line->HasSwitch(switches::kHash)) {
+    hash = true;
   }
 
   int skip = 0;
@@ -246,6 +265,10 @@ int main(int argc, const char** argv) {
               return 1;
             }
           }
+          if (hash) {
+            hash_value = hash_djb2(reinterpret_cast<const uint8*>(samples),
+                                   size_out, hash_value);
+          }
         }
       } else if (target_codec == CODEC_TYPE_VIDEO) {
         int got_picture = 0;
@@ -255,8 +278,7 @@ int main(int argc, const char** argv) {
           ++frames;
           read_result = 0;  // Force continuation.
 
-          // TODO(fbarchard): support formats other than YV12.
-          if (output) {
+          if (output || hash) {
             for (int plane = 0; plane < 3; ++plane) {
               const uint8* source = frame->data[plane];
               const size_t source_stride = frame->linesize[plane];
@@ -272,11 +294,9 @@ int main(int argc, const char** argv) {
                   case PIX_FMT_YUV422P:
                   case PIX_FMT_YUVJ422P:
                     bytes_per_line /= 2;
-                    copy_lines = copy_lines;
                     break;
                   case PIX_FMT_YUV444P:
                   case PIX_FMT_YUVJ444P:
-                    copy_lines = copy_lines;
                     break;
                   default:
                     std::cerr << "unknown video format: "
@@ -284,14 +304,22 @@ int main(int argc, const char** argv) {
                     return 1;
                 }
               }
-              for (size_t i = 0; i < copy_lines; ++i) {
-                if (fwrite(source, 1, bytes_per_line, output) !=
-                           bytes_per_line) {
-                  std::cerr << "could not write data after "
-                            << bytes_per_line;
-                  return 1;
+              if (output) {
+                for (size_t i = 0; i < copy_lines; ++i) {
+                  if (fwrite(source, 1, bytes_per_line, output) !=
+                             bytes_per_line) {
+                    std::cerr << "could not write data after "
+                              << bytes_per_line;
+                    return 1;
+                  }
+                  source += source_stride;
                 }
-                source += source_stride;
+              }
+              if (hash) {
+                for (size_t i = 0; i < copy_lines; ++i) {
+                  hash_value = hash_djb2(source, bytes_per_line, hash_value);
+                  source += source_stride;
+                }
               }
             }
           }
@@ -333,6 +361,10 @@ int main(int argc, const char** argv) {
             << " ms" << std::endl;
   std::cout << "  Summation:" << std::setw(10) << sum
             << " ms" << std::endl;
+  if (hash) {
+    std::cout << "       Hash:" << std::setw(10) << hash_value
+              << std::endl;
+  }
 
   if (frames > 0u) {
     // Calculate the average time per frame.

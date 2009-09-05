@@ -4,6 +4,7 @@
 
 #include "media/bench/file_protocol.h"
 
+#include <stdio.h>
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "media/filters/ffmpeg_common.h"
@@ -37,7 +38,9 @@ int WriteContext(URLContext* h, unsigned char* buf, int size) {
 
 offset_t SeekContext(URLContext* h, offset_t offset, int whence) {
 #if defined(OS_WIN)
-  return _fseeki64(ToFile(h->priv_data), offset, whence);
+  return static_cast<offset_t> (_fseeki64(ToFile(h->priv_data),
+                                          static_cast<int64>(offset),
+                                          whence));
 #else
   return fseek(ToFile(h->priv_data), offset, whence);
 #endif
