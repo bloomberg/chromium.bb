@@ -11,8 +11,11 @@
 #include "base/iat_patch.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "base/registry.h"
+#include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
+#include "base/win_util.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/glue_util.h"
@@ -67,6 +70,10 @@ base::LazyInstance<iat_patch::IATPatchFunction> g_iat_patch_track_popup_menu(
 base::LazyInstance<iat_patch::IATPatchFunction> g_iat_patch_set_cursor(
     base::LINKER_INITIALIZED);
 
+// Helper object for patching the RegEnumKeyExW API.
+base::LazyInstance<iat_patch::IATPatchFunction> g_iat_patch_reg_enum_key_ex_w(
+    base::LINKER_INITIALIZED);
+
 // http://crbug.com/16114
 // Enforces providing a valid device context in NPWindow, so that NPP_SetWindow
 // is never called with NPNWindoTypeDrawable and NPWindow set to NULL.
@@ -98,6 +105,71 @@ class DrawableContextEnforcer {
   NPWindow* window_;
   bool disposable_dc_;
 };
+
+// These are from ntddk.h
+typedef LONG NTSTATUS;
+
+#ifndef STATUS_SUCCESS
+#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+#endif
+
+#ifndef STATUS_BUFFER_TOO_SMALL
+#define STATUS_BUFFER_TOO_SMALL ((NTSTATUS)0xC0000023L)
+#endif
+
+typedef enum _KEY_INFORMATION_CLASS {
+  KeyBasicInformation,
+  KeyNodeInformation,
+  KeyFullInformation,
+  KeyNameInformation,
+  KeyCachedInformation,
+  KeyVirtualizationInformation
+} KEY_INFORMATION_CLASS;
+
+typedef struct _KEY_NAME_INFORMATION {
+  ULONG NameLength;
+  WCHAR Name[1];
+} KEY_NAME_INFORMATION, *PKEY_NAME_INFORMATION;
+
+typedef DWORD (__stdcall *ZwQueryKeyType)(
+    HANDLE  key_handle,
+    int key_information_class,
+    PVOID  key_information,
+    ULONG  length,
+    PULONG  result_length);
+
+// Returns a key's full path.
+std::wstring GetKeyPath(HKEY key) {
+  if (key == NULL)
+    return L"";
+
+  HMODULE dll = GetModuleHandle(L"ntdll.dll");
+  if (dll == NULL)
+    return L"";
+
+  ZwQueryKeyType func = reinterpret_cast<ZwQueryKeyType>(
+      ::GetProcAddress(dll, "ZwQueryKey"));
+  if (func == NULL)
+    return L"";
+
+  DWORD size = 0;
+  DWORD result = 0;
+  result = func(key, KeyNameInformation, 0, 0, &size);
+  if (result != STATUS_BUFFER_TOO_SMALL)
+    return L"";
+
+  scoped_array<char> buffer(new char[size]);
+  if (buffer.get() == NULL)
+    return L"";
+
+  result = func(key, KeyNameInformation, buffer.get(), size, &size);
+  if (result != STATUS_SUCCESS)
+    return L"";
+
+  KEY_NAME_INFORMATION* info =
+      reinterpret_cast<KEY_NAME_INFORMATION*>(buffer.get());
+  return std::wstring(info->Name, info->NameLength / sizeof(wchar_t));
+}
 
 }  // namespace
 
@@ -206,6 +278,9 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 
     // Windowless mode doesn't work in the WMP NPAPI plugin.
     quirks_ |= PLUGIN_QUIRK_NO_WINDOWLESS;
+
+    // Non-admin users on XP couldn't modify the key to force the new UI.
+    quirks_ |= PLUGIN_QUIRK_PATCH_REGENUMKEYEXW;
   } else if (instance_->mime_type() == "audio/x-pn-realaudio-plugin" ||
              filename == "nppl3260.dll") {
     quirks_ |= PLUGIN_QUIRK_DONT_CALL_WND_PROC_RECURSIVELY;
@@ -218,7 +293,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     quirks_ |= PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY;
     // VLC 0.8.6d and 0.8.6e crash if multiple instances are created.
     quirks_ |= PLUGIN_QUIRK_DONT_ALLOW_MULTIPLE_INSTANCES;
-  } else if (filename == "npctrl.dll") {
+  } else if (filename == "npctrl.dll") {  // Silverlight
     // Explanation for this quirk can be found in
     // WebPluginDelegateImpl::Initialize.
     quirks_ |= PLUGIN_QUIRK_PATCH_SETCURSOR;
@@ -256,14 +331,12 @@ void WebPluginDelegateImpl::PlatformInitialize() {
     plugin_->SetWindowlessPumpEvent(handle_event_pump_messages_event_);
   }
 
-  // The windowless version of the Silverlight plugin calls the
-  // WindowFromPoint API and passes the result of that to the
-  // TrackPopupMenu API call as the owner window. This causes the API
-  // to fail as the API expects the window handle to live on the same
-  // thread as the caller. It works in the other browsers as the plugin
-  // lives on the browser thread. Our workaround is to intercept the
-  // TrackPopupMenu API for Silverlight and replace the window handle
-  // with the dummy activation window.
+  // Windowless plugins call the WindowFromPoint API and passes the result of
+  // that to the TrackPopupMenu API call as the owner window. This causes the
+  // API to fail as the API expects the window handle to live on the same thread
+  // as the caller. It works in the other browsers as the plugin lives on the
+  // browser thread. Our workaround is to intercept the TrackPopupMenu API and
+  // replace the window handle with the dummy activation window.
   if (windowless_ && !g_iat_patch_track_popup_menu.Pointer()->is_patched()) {
     g_iat_patch_track_popup_menu.Pointer()->Patch(
         GetPluginPath().value().c_str(), "user32.dll", "TrackPopupMenu",
@@ -282,21 +355,37 @@ void WebPluginDelegateImpl::PlatformInitialize() {
         GetPluginPath().value().c_str(), "user32.dll", "SetCursor",
         WebPluginDelegateImpl::SetCursorPatch);
   }
+
+  // On XP, WMP will use its old UI unless a registry key under HKLM has the
+  // name of the current process.  We do it in the installer for admin users,
+  // for the rest patch this function.
+  if ((quirks_ & PLUGIN_QUIRK_PATCH_REGENUMKEYEXW) &&
+      win_util::GetWinVersion() == win_util::WINVERSION_XP &&
+      !RegKey().Open(HKEY_LOCAL_MACHINE,
+          L"SOFTWARE\\Microsoft\\MediaPlayer\\ShimInclusionList\\chrome.exe") &&
+      !g_iat_patch_reg_enum_key_ex_w.Pointer()->is_patched()) {
+    g_iat_patch_reg_enum_key_ex_w.Pointer()->Patch(
+        L"wmpdxm.dll", "advapi32.dll", "RegEnumKeyExW",
+        WebPluginDelegateImpl::RegEnumKeyExWPatch);
+  }
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {
-  if (instance_->plugin_lib()) {
-    // Unpatch if this is the last plugin instance.
-    if (instance_->plugin_lib()->instance_count() == 1) {
-      if (g_iat_patch_set_cursor.Pointer()->is_patched()) {
-        g_iat_patch_set_cursor.Pointer()->Unpatch();
-      }
+  if (!instance_->plugin_lib())
+    return;
 
-      if (g_iat_patch_track_popup_menu.Pointer()->is_patched()) {
-        g_iat_patch_track_popup_menu.Pointer()->Unpatch();
-      }
-    }
-  }
+  // Unpatch if this is the last plugin instance.
+  if (instance_->plugin_lib()->instance_count() != 1)
+    return;
+
+  if (g_iat_patch_set_cursor.Pointer()->is_patched())
+    g_iat_patch_set_cursor.Pointer()->Unpatch();
+
+  if (g_iat_patch_track_popup_menu.Pointer()->is_patched())
+    g_iat_patch_track_popup_menu.Pointer()->Unpatch();
+
+  if (g_iat_patch_reg_enum_key_ex_w.Pointer()->is_patched())
+    g_iat_patch_reg_enum_key_ex_w.Pointer()->Unpatch();
 }
 
 void WebPluginDelegateImpl::Paint(HDC hdc, const gfx::Rect& rect) {
@@ -1155,4 +1244,22 @@ HCURSOR WINAPI WebPluginDelegateImpl::SetCursorPatch(HCURSOR cursor) {
   g_current_plugin_instance->current_windowless_cursor_.InitFromExternalCursor(
       cursor);
   return previous_cursor;
+}
+
+LONG WINAPI WebPluginDelegateImpl::RegEnumKeyExWPatch(
+    HKEY key, DWORD index, LPWSTR name, LPDWORD name_size, LPDWORD reserved,
+    LPWSTR class_name, LPDWORD class_size, PFILETIME last_write_time) {
+  DWORD orig_size = *name_size;
+  LONG rv = RegEnumKeyExW(key, index, name, name_size, reserved, class_name,
+                          class_size, last_write_time);
+  if (rv == ERROR_SUCCESS &&
+      GetKeyPath(key).find(L"Microsoft\\MediaPlayer\\ShimInclusionList") !=
+          std::wstring::npos) {
+    static const wchar_t kChromeExeName[] = L"chrome.exe";
+    wcsncpy_s(name, orig_size, kChromeExeName, arraysize(kChromeExeName));
+    *name_size =
+        std::min(orig_size, static_cast<DWORD>(arraysize(kChromeExeName)));
+  }
+
+  return rv;
 }

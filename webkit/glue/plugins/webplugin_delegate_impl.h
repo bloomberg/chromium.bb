@@ -43,6 +43,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
     PLUGIN_QUIRK_WINDOWLESS_OFFSET_WINDOW_TO_DRAW = 256,  // Linux
     PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW = 512,  // Linux
     PLUGIN_QUIRK_NO_WINDOWLESS = 1024,  // Windows
+    PLUGIN_QUIRK_PATCH_REGENUMKEYEXW = 2048, // Windows
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,
@@ -310,6 +311,11 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
   // SetCursor interceptor for windowless plugins.
   static HCURSOR WINAPI SetCursorPatch(HCURSOR cursor);
+
+  // RegEnumKeyExW interceptor.
+  static LONG WINAPI RegEnumKeyExWPatch(
+      HKEY key, DWORD index, LPWSTR name, LPDWORD name_size, LPDWORD reserved,
+      LPWSTR class_name, LPDWORD class_size, PFILETIME last_write_time);
 #endif
 
 #if defined(OS_MACOSX)
