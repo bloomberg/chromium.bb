@@ -2315,11 +2315,14 @@ BUG21033 WIN LINUX : LayoutTests/fast/events/init-events.html = FAIL
 
 // WebKit 48034:48061
 BUG21113 : LayoutTests/userscripts/script-run-at-end.html = FAIL
-BUG_VICTORW : LayoutTests/fast/events/pageshow-pagehide-on-back-cached-with-frames.html = TIMEOUT
-BUG_VICTORW : LayoutTests/fast/dom/DOMImplementation/detached-doctype.html = CRASH
-BUG_VICTORW LINUX : LayoutTests/fast/forms/select-double-onchange.html = FAIL
+BUG21136 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached-with-frames.html = TIMEOUT
+BUG14091 : LayoutTests/fast/dom/DOMImplementation/detached-doctype.html = CRASH
+BUG21141 LINUX : LayoutTests/fast/forms/select-double-onchange.html = FAIL
 BUG_VICTORW LINUX : LayoutTests/fast/forms/select-script-onchange.html = FAIL
-BUG_VICTORW : LayoutTests/http/tests/security/javascriptURL/xss-ALLOWED-from-javascript-url-sub-frame-2-level.html = CRASH
+BUG_VICTORW : LayoutTests/http/tests/security/javascriptURL/xss-ALLOWED-from-javascript-url-sub-frame-2-level.html = PASS CRASH
 
 // Webkit 48061:48071
 BUG_VICTORW WIN DEBUG : LayoutTests/fast/regex/cross-frame-callable.html = TIMEOUT
+
+// Webkit 48071:48078
+BUG_VICTORW MAC : LayoutTests/fast/forms/enter-clicks-buttons.html = CRASH
