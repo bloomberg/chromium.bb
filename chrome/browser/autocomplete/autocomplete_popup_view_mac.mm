@@ -298,9 +298,12 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
                                                backing:NSBackingStoreBuffered
                                                  defer:YES]);
     [popup_ setMovableByWindowBackground:NO];
-    // The window will have rounded borders.
+    // The window shape is determined by the content view
+    // (AutocompleteMatrix).
     [popup_ setAlphaValue:1.0];
     [popup_ setOpaque:NO];
+    [popup_ setBackgroundColor:[NSColor clearColor]];
+    [popup_ setHasShadow:YES];
     [popup_ setLevel:NSNormalWindowLevel];
 
     AutocompleteMatrix* matrix =
@@ -635,20 +638,15 @@ void AutocompletePopupViewMac::OnMiddleClick() {
   middleClickAction_ = anAction;
 }
 
+- (BOOL)isOpaque {
+  return NO;
+}
+
 // This handles drawing the decorations of the rounded popup window,
 // calling on NSMatrix to draw the actual contents.
 - (void)drawRect:(NSRect)rect {
-  // Background clear so we can round the corners.
-  [[NSColor clearColor] set];
-  NSRectFill([self frame]);
-
-  // The toolbar items we're mirroring for shape are inset slightly
-  // for width.  I don't know why, which is why I didn't make this a
-  // constant, yet.  The factor of 0.5 on both dimensions is to put
-  // the stroke down the middle of the pixels.
-  const NSRect border(NSInsetRect([self bounds], 1.5, 0.5));
   NSBezierPath* path =
-      [NSBezierPath bezierPathWithRoundedRect:border
+      [NSBezierPath bezierPathWithRoundedRect:[self bounds]
                                       xRadius:kPopupRoundingRadius
                                       yRadius:kPopupRoundingRadius];
 
@@ -657,12 +655,6 @@ void AutocompletePopupViewMac::OnMiddleClick() {
   [path addClip];
   [super drawRect:rect];
   [NSGraphicsContext restoreGraphicsState];
-
-  // Put a border over that.
-  // TODO(shess): Theme the color?
-  [[NSColor lightGrayColor] setStroke];
-  [path setLineWidth:1.0];
-  [path stroke];
 }
 
 @end

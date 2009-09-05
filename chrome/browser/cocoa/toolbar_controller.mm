@@ -448,14 +448,15 @@ class PrefObserverBridge : public NotificationObserver {
   // The popup should span from the left edge of the star button to the right
   // edge of the go button.  The returned height is ignored.
   NSRect locationFrame = [locationBar_ frame];
-  int minX = NSMinX([starButton_ frame]);
-  int maxX = NSMaxX([goButton_ frame]);
+  // TODO(shess): The buttons have an extra 2 pixels between the edge
+  // of the visual button and the edge of the logical button.  This
+  // seems wrong.
+  int minX = NSMinX([starButton_ frame]) + 2.0;
+  int maxX = NSMaxX([goButton_ frame]) - 2.0;
   DCHECK(minX < NSMinX(locationFrame));
   DCHECK(maxX > NSMaxX(locationFrame));
 
-  // TODO(shess): The + 1.0 is because the field's visual boundary
-  // differs from its on-screen boundary.
-  NSRect r = NSMakeRect(minX, NSMinY(locationFrame) + 1.0, maxX - minX, 0);
+  NSRect r = NSMakeRect(minX, NSMinY(locationFrame), maxX - minX, 0);
   return gfx::Rect(NSRectToCGRect([[self view] convertRect:r toView:nil]));
 }
 @end
