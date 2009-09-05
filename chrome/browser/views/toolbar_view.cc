@@ -1089,8 +1089,8 @@ void ToolbarView::CreateAppMenu() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync)) {
     app_menu_contents_->AddItem(IDC_SYNC_BOOKMARKS,
                                 l10n_util::GetString(IDS_SYNC_MENU_LABEL));
+    app_menu_contents_->AddSeparator();
   }
-  app_menu_contents_->AddSeparator();
 #endif
   app_menu_contents_->AddItem(IDC_OPTIONS,
                               l10n_util::GetStringFUTF16(
