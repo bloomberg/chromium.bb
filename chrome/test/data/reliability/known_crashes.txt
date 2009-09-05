@@ -138,3 +138,8 @@ PREFIX : deletetask<safebrowsingdatabase>::run
 PREFIX : deletetask<browsingdataremover>::run
 PREFIX : deletetask<webplugindelegateproxy>::run
 PREFIX : messageloop::dowork
+
+# 21162
+PREFIX : v8::internal::invoke
+PREFIX : webcore::renderlayer
+PREFIX : webcore::renderobject
