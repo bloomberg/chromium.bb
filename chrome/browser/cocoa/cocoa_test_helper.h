@@ -14,6 +14,28 @@
 #import "base/scoped_nsobject.h"
 #include "chrome/common/mac_app_names.h"
 
+// Background windows normally will not display things such as focus
+// rings.  This class allows -isKeyWindow to be manipulated to test
+// such things.
+
+@interface CocoaTestHelperWindow : NSWindow {
+ @private
+  BOOL pretendIsKeyWindow_;
+}
+
+// Init a borderless non-defered window with backing store.
+- (id)initWithContentRect:(NSRect)contentRect;
+
+// Init with a default frame.
+- (id)init;
+
+// Set value to return for -isKeyWindow.
+- (void)setPretendIsKeyWindow:(BOOL)isKeyWindow;
+
+- (BOOL)isKeyWindow;
+
+@end
+
 // A class that initializes Cocoa and sets up resources for many of our
 // Cocoa controller unit tests. It does several key things:
 //   - Creates and displays an empty Cocoa window for views to live in
@@ -38,11 +60,7 @@ class CocoaTestHelper {
     [NSApplication sharedApplication];
 
     // Create a window.
-    NSRect frame = NSMakeRect(0, 0, 800, 600);
-    window_.reset([[NSWindow alloc] initWithContentRect:frame
-                                              styleMask:0
-                                                backing:NSBackingStoreBuffered
-                                                  defer:NO]);
+    window_.reset([[CocoaTestHelperWindow alloc] init]);
     if (DebugUtil::BeingDebugged()) {
       [window_ orderFront:nil];
     } else {
@@ -58,8 +76,21 @@ class CocoaTestHelper {
   NSWindow* window() const { return window_.get(); }
   NSView* contentView() const { return [window_ contentView]; }
 
+  // Set |window_| to pretend to be key and make |aView| its
+  // firstResponder.
+  void makeFirstResponder(NSView* aView) {
+    [window_ setPretendIsKeyWindow:YES];
+    [window_ makeFirstResponder:aView];
+  }
+
+  // Clear |window_| firstResponder and stop pretending to be key.
+  void clearFirstResponder() {
+    [window_ makeFirstResponder:nil];
+    [window_ setPretendIsKeyWindow:NO];
+  }
+
  private:
-  scoped_nsobject<NSWindow> window_;
+  scoped_nsobject<CocoaTestHelperWindow> window_;
 };
 
 #endif  // CHROME_BROWSER_COCOA_COCOA_TEST_HELPER

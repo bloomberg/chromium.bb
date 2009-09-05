@@ -85,6 +85,11 @@ TEST_F(AutocompleteTextFieldTest, Cell) {
 TEST_F(AutocompleteTextFieldTest, Display) {
   [field_ display];
 
+  // Test focussed drawing.
+  cocoa_helper_.makeFirstResponder(field_);
+  [field_ display];
+  cocoa_helper_.clearFirstResponder();
+
   // Test display of various cell configurations.
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 

@@ -17,10 +17,11 @@ class AutocompleteTextFieldCellTest : public PlatformTest {
   AutocompleteTextFieldCellTest() {
     // Make sure this is wide enough to play games with the cell
     // decorations.
-    NSRect frame = NSMakeRect(0, 0, 300, 30);
+    const NSRect frame = NSMakeRect(0, 0, 300, 30);
     view_.reset([[NSTextField alloc] initWithFrame:frame]);
     scoped_nsobject<AutocompleteTextFieldCell> cell(
         [[AutocompleteTextFieldCell alloc] initTextCell:@"Testing"]);
+    [cell setEditable:YES];
     [view_ setCell:cell.get()];
     [cocoa_helper_.contentView() addSubview:view_.get()];
   }
@@ -40,6 +41,11 @@ TEST_F(AutocompleteTextFieldCellTest, AddRemove) {
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(AutocompleteTextFieldCellTest, Display) {
   [view_ display];
+
+  // Test focussed drawing.
+  cocoa_helper_.makeFirstResponder(view_);
+  [view_ display];
+  cocoa_helper_.clearFirstResponder();
 
   // Test display of various cell configurations.
   AutocompleteTextFieldCell* cell =

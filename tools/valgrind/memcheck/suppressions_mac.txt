@@ -673,4 +673,13 @@
    socketcall.sendmsg(msg.msg_iov[i])
    fun:sendmsg$UNIX2003
    fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
+} 
+{
+  bug_21137
+  Memcheck:Leak
+  fun:malloc
+  ...
+  fun:+[NSColor keyboardFocusIndicatorColor]
+  ...
+  fun:-[AutocompleteTextFieldCell drawWithFrame:inView:]
 }

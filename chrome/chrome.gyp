@@ -909,6 +909,7 @@
         'browser/cocoa/clickhold_button_cell.h',
         'browser/cocoa/clickhold_button_cell.mm',
         'browser/cocoa/cocoa_test_helper.h',
+        'browser/cocoa/cocoa_test_helper.mm',
         'browser/cocoa/command_observer_bridge.h',
         'browser/cocoa/command_observer_bridge.mm',
         'browser/cocoa/constrained_window_mac.h',
