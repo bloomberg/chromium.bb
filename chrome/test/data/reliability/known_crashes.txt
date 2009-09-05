@@ -136,4 +136,5 @@ PREFIX : runnablemethod<ipc::channelproxy::context,void (__thiscall ipc::channel
 # 21054
 PREFIX : deletetask<safebrowsingdatabase>::run
 PREFIX : deletetask<browsingdataremover>::run
+PREFIX : deletetask<webplugindelegateproxy>::run
 PREFIX : messageloop::dowork
