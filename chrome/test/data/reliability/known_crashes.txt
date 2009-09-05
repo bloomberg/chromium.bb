@@ -131,6 +131,7 @@ PREFIX : v8::internal::compiler::compile___v8::script::new___v8::script::compile
 REGEX : ^base::messagepumpforio::schedulework___ucase_props_trieindex___canonicalize_map$
 PREFIX : base::messagepumpforio::schedulework___propsvectors___propsvectorstrie_index
 PREFIX : npn_invalidaterect___webplugindelegateimpl
+PREFIX : runnablemethod<ipc::channelproxy::context,void (__thiscall ipc::channelproxy::context::*)(ipc::message const &),tuple1<ipc::message> >::run___base::messagepumpforui::dorunloop
 
 # 21054
 PREFIX : deletetask<safebrowsingdatabase>::run
