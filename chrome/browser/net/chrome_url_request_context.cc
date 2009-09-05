@@ -331,7 +331,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
 
   blacklist_ = profile->GetBlacklist();
 
-  force_tls_state_ = profile->GetForceTLSState();
+  strict_transport_security_state_ = profile->GetStrictTransportSecurityState();
 
   if (profile->GetExtensionsService()) {
     const ExtensionList* extensions =
@@ -371,7 +371,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   ftp_transaction_factory_ = other->ftp_transaction_factory_;
   cookie_store_ = other->cookie_store_;
   cookie_policy_.set_type(other->cookie_policy_.type());
-  force_tls_state_ = other->force_tls_state_;
+  strict_transport_security_state_ = other->strict_transport_security_state_;
   accept_language_ = other->accept_language_;
   accept_charset_ = other->accept_charset_;
   referrer_charset_ = other->referrer_charset_;

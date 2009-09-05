@@ -14,7 +14,6 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "net/base/force_tls_state.h"
 
 using WebKit::WebConsoleMessage;
 
@@ -69,8 +68,7 @@ class SSLInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 SSLPolicyBackend::SSLPolicyBackend(NavigationController* controller)
     : controller_(controller),
-      ssl_host_state_(controller->profile()->GetSSLHostState()),
-      force_tls_state_(controller->profile()->GetForceTLSState()) {
+      ssl_host_state_(controller->profile()->GetSSLHostState()) {
   DCHECK(controller_);
 }
 
@@ -160,10 +158,6 @@ void SSLPolicyBackend::AllowMixedContentForHost(const std::string& host) {
 bool SSLPolicyBackend::DidAllowMixedContentForHost(
     const std::string& host) const {
   return ssl_host_state_->DidAllowMixedContentForHost(host);
-}
-
-bool SSLPolicyBackend::IsForceTLSEnabledForHost(const std::string& host) const {
-  return force_tls_state_->IsEnabledForHost(host);
 }
 
 void SSLPolicyBackend::Reload() {

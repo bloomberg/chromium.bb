@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_FORCE_TLS_STATE_H_
-#define NET_BASE_FORCE_TLS_STATE_H_
+#ifndef NET_BASE_STRICT_TRANSPORT_SECURITY_STATE_H_
+#define NET_BASE_STRICT_TRANSPORT_SECURITY_STATE_H_
 
 #include <map>
 #include <string>
@@ -17,25 +17,27 @@ class GURL;
 
 namespace net {
 
-// ForceTLSState
+// StrictTransportSecurityState
 //
-// Tracks which hosts have enabled ForceTLS.  After a host enables ForceTLS,
-// then we refuse to talk to the host over HTTP, treat all certificate errors as
-// fatal, and refuse to load any mixed content.
+// Tracks which hosts have enabled StrictTransportSecurityState.  After a host
+// enables StrictTransportSecurityState, then we refuse to talk to the host
+// over HTTP, treat all certificate errors as fatal, and refuse to load any
+// mixed content.
 //
-class ForceTLSState : public base::RefCountedThreadSafe<ForceTLSState> {
+class StrictTransportSecurityState :
+    public base::RefCountedThreadSafe<StrictTransportSecurityState> {
  public:
-  ForceTLSState();
+  StrictTransportSecurityState();
 
   // Called when we see an X-Force-TLS header that we should process.  Modifies
   // our state as instructed by the header.
   void DidReceiveHeader(const GURL& url, const std::string& value);
 
-  // Enable ForceTLS for |host|.
+  // Enable StrictTransportSecurity for |host|.
   void EnableHost(const std::string& host, base::Time expiry,
                   bool include_subdomains);
 
-  // Returns whether |host| has had ForceTLS enabled.
+  // Returns whether |host| has had StrictTransportSecurity enabled.
   bool IsEnabledForHost(const std::string& host);
 
   // Returns |true| if |value| parses as a valid X-Force-TLS header value.
@@ -54,8 +56,8 @@ class ForceTLSState : public base::RefCountedThreadSafe<ForceTLSState> {
   class Delegate {
    public:
     // This function may not block and may be called with internal locks held.
-    // Thus it must not reenter the ForceTLSState object.
-    virtual void StateIsDirty(ForceTLSState* state) = 0;
+    // Thus it must not reenter the StrictTransportSecurityState object.
+    virtual void StateIsDirty(StrictTransportSecurityState* state) = 0;
   };
 
   void SetDelegate(Delegate*);
@@ -68,7 +70,7 @@ class ForceTLSState : public base::RefCountedThreadSafe<ForceTLSState> {
   // our state is dirty.
   void DirtyNotify();
 
-  // The set of hosts that have enabled ForceTLS.
+  // The set of hosts that have enabled StrictTransportSecurity.
   std::map<std::string, State> enabled_hosts_;
 
   // Protect access to our data members with this lock.
@@ -77,9 +79,9 @@ class ForceTLSState : public base::RefCountedThreadSafe<ForceTLSState> {
   // Our delegate who gets notified when we are dirtied, or NULL.
   Delegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ForceTLSState);
+  DISALLOW_COPY_AND_ASSIGN(StrictTransportSecurityState);
 };
 
 }  // namespace net
 
-#endif  // NET_BASE_FORCE_TLS_STATE_H_
+#endif  // NET_BASE_STRICT_TRANSPORT_SECURITY_STATE_H_

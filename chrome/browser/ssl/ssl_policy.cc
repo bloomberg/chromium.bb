@@ -118,11 +118,7 @@ void SSLPolicy::OnMixedContent(SSLMixedContentHandler* handler) {
 
   // If the user has added an exception, doctor the |filter_policy|.
   std::string host = GURL(handler->main_frame_origin()).host();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceHTTPS) &&
-      backend_->IsForceTLSEnabledForHost(host)) {
-    // We're supposed to block all mixed content for this host.
-    filter_policy = FilterPolicy::FILTER_ALL;
-  } else if (backend_->DidAllowMixedContentForHost(host) ||
+  if (backend_->DidAllowMixedContentForHost(host) ||
              backend_->DidMarkHostAsBroken(host, handler->pid())) {
     // Let the mixed content through.
     filter_policy = FilterPolicy::DONT_FILTER;

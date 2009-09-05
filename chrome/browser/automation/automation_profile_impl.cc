@@ -29,7 +29,7 @@ class AutomationURLRequestContext : public ChromeURLRequestContext {
     http_transaction_factory_ = NULL;
     ftp_transaction_factory_ = NULL;
     cookie_store_ = NULL;
-    force_tls_state_ = NULL;
+    strict_transport_security_state_ = NULL;
 
     // Clear ChromeURLRequestContext members.
     prefs_ = NULL;

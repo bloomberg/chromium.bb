@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/force_tls_state.h"
+#include "net/base/strict_transport_security_state.h"
 
 #include "base/json_reader.h"
 #include "base/json_writer.h"
@@ -16,12 +16,12 @@
 
 namespace net {
 
-ForceTLSState::ForceTLSState()
+StrictTransportSecurityState::StrictTransportSecurityState()
     : delegate_(NULL) {
 }
 
-void ForceTLSState::DidReceiveHeader(const GURL& url,
-                                     const std::string& value) {
+void StrictTransportSecurityState::DidReceiveHeader(const GURL& url,
+                                                    const std::string& value) {
   int max_age;
   bool include_subdomains;
 
@@ -35,8 +35,9 @@ void ForceTLSState::DidReceiveHeader(const GURL& url,
   EnableHost(url.host(), expiry, include_subdomains);
 }
 
-void ForceTLSState::EnableHost(const std::string& host, base::Time expiry,
-                               bool include_subdomains) {
+void StrictTransportSecurityState::EnableHost(const std::string& host,
+                                         base::Time expiry,
+                                         bool include_subdomains) {
   // TODO(abarth): Canonicalize host.
   AutoLock lock(lock_);
 
@@ -45,7 +46,7 @@ void ForceTLSState::EnableHost(const std::string& host, base::Time expiry,
   DirtyNotify();
 }
 
-bool ForceTLSState::IsEnabledForHost(const std::string& host) {
+bool StrictTransportSecurityState::IsEnabledForHost(const std::string& host) {
   // TODO(abarth): Canonicalize host.
   // TODO: check for subdomains too.
 
@@ -66,9 +67,9 @@ bool ForceTLSState::IsEnabledForHost(const std::string& host) {
 
 // "X-Force-TLS" ":" "max-age" "=" delta-seconds *1INCLUDESUBDOMAINS
 // INCLUDESUBDOMAINS = [ " includeSubDomains" ]
-bool ForceTLSState::ParseHeader(const std::string& value,
-                                int* max_age,
-                                bool* include_subdomains) {
+bool StrictTransportSecurityState::ParseHeader(const std::string& value,
+                                               int* max_age,
+                                               bool* include_subdomains) {
   DCHECK(max_age);
   DCHECK(include_subdomains);
 
@@ -161,13 +162,14 @@ bool ForceTLSState::ParseHeader(const std::string& value,
   }
 }
 
-void ForceTLSState::SetDelegate(ForceTLSState::Delegate* delegate) {
+void StrictTransportSecurityState::SetDelegate(
+    StrictTransportSecurityState::Delegate* delegate) {
   AutoLock lock(lock_);
 
   delegate_ = delegate;
 }
 
-bool ForceTLSState::Serialise(std::string* output) {
+bool StrictTransportSecurityState::Serialise(std::string* output) {
   AutoLock lock(lock_);
 
   DictionaryValue toplevel;
@@ -184,7 +186,7 @@ bool ForceTLSState::Serialise(std::string* output) {
   return true;
 }
 
-bool ForceTLSState::Deserialise(const std::string& input) {
+bool StrictTransportSecurityState::Deserialise(const std::string& input) {
   AutoLock lock(lock_);
 
   enabled_hosts_.clear();
@@ -223,7 +225,7 @@ bool ForceTLSState::Deserialise(const std::string& input) {
   return enabled_hosts_.size() > 0;
 }
 
-void ForceTLSState::DirtyNotify() {
+void StrictTransportSecurityState::DirtyNotify() {
   if (delegate_)
     delegate_->StateIsDirty(this);
 }

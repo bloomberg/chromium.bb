@@ -19,7 +19,7 @@
 #include "chrome/common/notification_registrar.h"
 
 namespace net {
-class ForceTLSState;
+class StrictTransportSecurityState;
 class SSLConfigService;
 }
 class Blacklist;
@@ -34,7 +34,6 @@ class ExtensionProcessManager;
 class ExtensionMessageService;
 class ExtensionsService;
 class FaviconService;
-class ForceTLSPersister;
 class HistoryService;
 class NavigationController;
 class PasswordStore;
@@ -44,6 +43,7 @@ class SessionService;
 class SpellChecker;
 class SSLConfigServiceManager;
 class SSLHostState;
+class StrictTransportSecurityPersister;
 class SQLitePersistentCookieStore;
 class TabRestoreService;
 class TemplateURLFetcher;
@@ -155,10 +155,11 @@ class Profile {
   // called.
   virtual SSLHostState* GetSSLHostState() = 0;
 
-  // Retrieves a pointer to the ForceTLSState associated with this profile.
-  // The ForceTLSState is lazily created the first time that this method is
-  // called.
-  virtual net::ForceTLSState* GetForceTLSState() = 0;
+  // Retrieves a pointer to the StrictTransportSecurityState associated with
+  // this profile.  The StrictTransportSecurityState is lazily created the
+  // first time that this method is called.
+  virtual net::StrictTransportSecurityState*
+      GetStrictTransportSecurityState() = 0;
 
   // Retrieves a pointer to the FaviconService associated with this
   // profile.  The FaviconService is lazily created the first time
@@ -370,7 +371,7 @@ class ProfileImpl : public Profile,
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
   virtual UserScriptMaster* GetUserScriptMaster();
   virtual SSLHostState* GetSSLHostState();
-  virtual net::ForceTLSState* GetForceTLSState();
+  virtual net::StrictTransportSecurityState* GetStrictTransportSecurityState();
   virtual ExtensionsService* GetExtensionsService();
   virtual ExtensionDevToolsManager* GetExtensionDevToolsManager();
   virtual ExtensionProcessManager* GetExtensionProcessManager();
@@ -461,8 +462,10 @@ class ProfileImpl : public Profile,
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<SSLHostState> ssl_host_state_;
-  scoped_refptr<net::ForceTLSState> force_tls_state_;
-  scoped_refptr<ForceTLSPersister> force_tls_persister_;
+  scoped_refptr<net::StrictTransportSecurityState>
+      strict_transport_security_state_;
+  scoped_refptr<StrictTransportSecurityPersister>
+      strict_transport_security_persister_;
   scoped_ptr<PrefService> prefs_;
   scoped_refptr<ThumbnailStore> thumbnail_store_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;

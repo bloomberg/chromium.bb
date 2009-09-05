@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/force_tls_persister.h"
+#include "chrome/browser/strict_transport_security_persister.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -10,23 +10,26 @@
 #include "base/path_service.h"
 #include "base/thread.h"
 #include "chrome/common/chrome_paths.h"
-#include "net/base/force_tls_state.h"
+#include "net/base/strict_transport_security_state.h"
 
-ForceTLSPersister::ForceTLSPersister(net::ForceTLSState* state,
-                                     base::Thread* file_thread,
-                                     const FilePath& profile_path)
+StrictTransportSecurityPersister::StrictTransportSecurityPersister(
+    net::StrictTransportSecurityState* state,
+    base::Thread* file_thread,
+    const FilePath& profile_path)
     : state_is_dirty_(false),
-      force_tls_state_(state),
+      strict_transport_security_state_(state),
       file_thread_(file_thread),
-      state_file_(profile_path.Append(FILE_PATH_LITERAL("ForceTLS"))) {
+      state_file_(profile_path.Append(
+          FILE_PATH_LITERAL("StrictTransportSecurity"))) {
   state->SetDelegate(this);
 
-  Task* task = NewRunnableMethod(this, &ForceTLSPersister::LoadState);
+  Task* task = NewRunnableMethod(this,
+      &StrictTransportSecurityPersister::LoadState);
   file_thread->message_loop()->PostDelayedTask(FROM_HERE, task,
                                                1000 /* 1 second */);
 }
 
-void ForceTLSPersister::LoadState() {
+void StrictTransportSecurityPersister::LoadState() {
   // Runs on |file_thread_|
   AutoLock locked_(lock_);
   DCHECK(file_thread_->message_loop() == MessageLoop::current());
@@ -35,24 +38,27 @@ void ForceTLSPersister::LoadState() {
   if (!file_util::ReadFileToString(state_file_, &state))
     return;
 
-  force_tls_state_->Deserialise(state);
+  strict_transport_security_state_->Deserialise(state);
 }
 
-void ForceTLSPersister::StateIsDirty(net::ForceTLSState* state) {
-  // Runs on arbitary thread, may not block nor reenter |force_tls_state_|
+void StrictTransportSecurityPersister::StateIsDirty(
+    net::StrictTransportSecurityState* state) {
+  // Runs on arbitary thread, may not block nor reenter
+  // |strict_transport_security_state_|.
   AutoLock locked_(lock_);
-  DCHECK(state == force_tls_state_);
+  DCHECK(state == strict_transport_security_state_);
 
   if (state_is_dirty_)
     return;  // we already have a serialisation scheduled
 
-  Task* task = NewRunnableMethod(this, &ForceTLSPersister::SerialiseState);
+  Task* task = NewRunnableMethod(this,
+      &StrictTransportSecurityPersister::SerialiseState);
   file_thread_->message_loop()->PostDelayedTask(FROM_HERE, task,
                                                 1000 /* 1 second */);
   state_is_dirty_ = true;
 }
 
-void ForceTLSPersister::SerialiseState() {
+void StrictTransportSecurityPersister::SerialiseState() {
   // Runs on |file_thread_|
   AutoLock locked_(lock_);
   DCHECK(file_thread_->message_loop() == MessageLoop::current());
@@ -61,7 +67,7 @@ void ForceTLSPersister::SerialiseState() {
   state_is_dirty_ = false;
 
   std::string state;
-  if (!force_tls_state_->Serialise(&state))
+  if (!strict_transport_security_state_->Serialise(&state))
     return;
 
   file_util::WriteFile(state_file_, state.data(), state.size());

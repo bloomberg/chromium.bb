@@ -100,7 +100,7 @@ class TestingProfile : public Profile {
   virtual SSLHostState* GetSSLHostState() {
     return NULL;
   }
-  virtual net::ForceTLSState* GetForceTLSState() {
+  virtual net::StrictTransportSecurityState* GetStrictTransportSecurityState() {
     return NULL;
   }
   virtual FaviconService* GetFaviconService(ServiceAccessType access) {

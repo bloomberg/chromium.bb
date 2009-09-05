@@ -69,8 +69,8 @@ class AutomationProfileImpl : public Profile {
   virtual SSLHostState* GetSSLHostState() {
     return original_profile_->GetSSLHostState();
   }
-  virtual net::ForceTLSState* GetForceTLSState() {
-    return original_profile_->GetForceTLSState();
+  virtual net::StrictTransportSecurityState* GetStrictTransportSecurityState() {
+    return original_profile_->GetStrictTransportSecurityState();
   }
   virtual FaviconService* GetFaviconService(ServiceAccessType access) {
     return original_profile_->GetFaviconService(access);

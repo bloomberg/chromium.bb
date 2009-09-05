@@ -20,7 +20,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/browser/force_tls_persister.h"
+#include "chrome/browser/strict_transport_security_persister.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -50,7 +50,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "grit/locale_settings.h"
-#include "net/base/force_tls_state.h"
+#include "net/base/strict_transport_security_state.h"
 
 #if defined(OS_LINUX)
 #include "net/ocsp/nss_ocsp.h"
@@ -263,11 +263,13 @@ class OffTheRecordProfileImpl : public Profile,
     return ssl_host_state_.get();
   }
 
-  virtual net::ForceTLSState* GetForceTLSState() {
-    if (!force_tls_state_.get())
-      force_tls_state_ = new net::ForceTLSState();
+  virtual net::StrictTransportSecurityState* GetStrictTransportSecurityState() {
+    if (!strict_transport_security_state_.get()) {
+      strict_transport_security_state_ =
+          new net::StrictTransportSecurityState();
+    }
 
-    return force_tls_state_.get();
+    return strict_transport_security_state_.get();
   }
 
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) {
@@ -521,8 +523,9 @@ class OffTheRecordProfileImpl : public Profile,
   // the user visited while OTR.
   scoped_ptr<SSLHostState> ssl_host_state_;
 
-  // The ForceTLSState that only stores enabled sites in memory.
-  scoped_refptr<net::ForceTLSState> force_tls_state_;
+  // The StrictTransportSecurityState that only stores enabled sites in memory.
+  scoped_refptr<net::StrictTransportSecurityState>
+      strict_transport_security_state_;
 
   // Time we were started.
   Time start_time_;
@@ -823,14 +826,16 @@ SSLHostState* ProfileImpl::GetSSLHostState() {
   return ssl_host_state_.get();
 }
 
-net::ForceTLSState* ProfileImpl::GetForceTLSState() {
-  if (!force_tls_state_.get()) {
-    force_tls_state_ = new net::ForceTLSState();
-    force_tls_persister_ = new ForceTLSPersister(
-        force_tls_state_.get(), g_browser_process->file_thread(), path_);
+net::StrictTransportSecurityState*
+    ProfileImpl::GetStrictTransportSecurityState() {
+  if (!strict_transport_security_state_.get()) {
+    strict_transport_security_state_ = new net::StrictTransportSecurityState();
+    strict_transport_security_persister_ = new StrictTransportSecurityPersister(
+        strict_transport_security_state_.get(),
+        g_browser_process->file_thread(), path_);
   }
 
-  return force_tls_state_.get();
+  return strict_transport_security_state_.get();
 }
 
 PrefService* ProfileImpl::GetPrefs() {
