@@ -582,8 +582,11 @@ class PopupBorder : public views::Border {
 
   // Returns the border radius of the edge of the popup.
   static int GetBorderRadius() {
-    InitClass();
-    return dropshadow_topleft_->width() - dropshadow_left_->width() - 1;
+    // We can't safely calculate a border radius by comparing the sizes of the
+    // side and corner images, because either may have been extended in various
+    // directions in order to do more subtle dropshadow fading or other effects.
+    // So we hardcode the most accurate value.
+    return 4;
   }
 
   // Overridden from views::Border:
@@ -839,7 +842,7 @@ void AutocompletePopupContentsView::AnimationProgressed(
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, views::View overrides:
 
-void AutocompletePopupContentsView::PaintChildren(gfx::Canvas* canvas) {
+void AutocompletePopupContentsView::Paint(gfx::Canvas* canvas) {
   // We paint our children in an unconventional way.
   //
   // Because the border of this view creates an anti-aliased round-rect region
@@ -873,6 +876,11 @@ void AutocompletePopupContentsView::PaintChildren(gfx::Canvas* canvas) {
   gfx::Path path;
   MakeContentsPath(&path, GetLocalBounds(false));
   canvas->drawPath(path, paint);
+
+  // Now we paint the border, so it will be alpha-blended atop the contents.
+  // This looks slightly better in the corners than drawing the contents atop
+  // the border.
+  PaintBorder(canvas);
 }
 
 void AutocompletePopupContentsView::Layout() {

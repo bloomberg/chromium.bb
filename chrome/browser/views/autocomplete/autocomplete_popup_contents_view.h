@@ -79,7 +79,10 @@ class AutocompletePopupContentsView : public views::View,
   virtual void AnimationProgressed(const Animation* animation);
 
   // Overridden from views::View:
-  virtual void PaintChildren(gfx::Canvas* canvas);
+  virtual void Paint(gfx::Canvas* canvas);
+  virtual void PaintChildren(gfx::Canvas* canvas) {
+    // We paint our children inside Paint().
+  }
   virtual void Layout();
 
  private:
