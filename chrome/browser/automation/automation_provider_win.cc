@@ -335,10 +335,14 @@ void AutomationProvider::CreateExternalTab(
   *tab_handle = 0;
   *tab_container_window = NULL;
   *tab_window = NULL;
-  ExternalTabContainer* external_tab_container =
+  scoped_refptr<ExternalTabContainer> external_tab_container =
       new ExternalTabContainer(this, automation_resource_message_filter_);
+
   Profile* profile = settings.is_off_the_record ?
       profile_->GetOffTheRecordProfile() : profile_;
+
+  // When the ExternalTabContainer window is created we grab a reference on it
+  // which is released when the window is destroyed.
   external_tab_container->Init(profile, settings.parent, settings.dimensions,
       settings.style, settings.load_requests_via_automation,
       settings.handle_top_level_requests, NULL);
@@ -350,7 +354,7 @@ void AutomationProvider::CreateExternalTab(
     *tab_container_window = external_tab_container->GetNativeView();
     *tab_window = tab_contents->GetNativeView();
   } else {
-    delete external_tab_container;
+    external_tab_container->Uninitialize();
   }
 }
 
@@ -451,3 +455,33 @@ void AutomationProvider::OnForwardContextMenuCommandToChrome(int tab_handle,
     tab_contents->delegate()->ExecuteContextMenuCommand(command);
   }
 }
+
+void AutomationProvider::ConnectExternalTab(
+    intptr_t cookie,
+    gfx::NativeWindow* tab_container_window,
+    gfx::NativeWindow* tab_window,
+    int* tab_handle) {
+  *tab_handle = 0;
+  *tab_container_window = NULL;
+  *tab_window = NULL;
+
+  scoped_refptr<ExternalTabContainer> external_tab_container =
+      ExternalTabContainer::RemovePendingTab(cookie);
+  if (!external_tab_container.get()) {
+    NOTREACHED();
+    return;
+  }
+
+  if (AddExternalTab(external_tab_container)) {
+    external_tab_container->Reinitialize(this,
+                                         automation_resource_message_filter_);
+    TabContents* tab_contents = external_tab_container->tab_contents();
+    *tab_handle = external_tab_container->tab_handle();
+    external_tab_container->set_tab_handle(*tab_handle);
+    *tab_container_window = external_tab_container->GetNativeView();
+    *tab_window = tab_contents->GetNativeView();
+  } else {
+    external_tab_container->Uninitialize();
+  }
+}
+

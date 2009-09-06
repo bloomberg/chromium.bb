@@ -1001,13 +1001,6 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_GetFilteredInetHitCount,
                              int /* hit_count */)
 
-  IPC_MESSAGE_ROUTED5(AutomationMsg_AttachExternalTab,
-                      int /* tab_handle */,
-                      int /* existing_tab_handle */,
-                      gfx::NativeWindow  /* Tab container window */,
-                      gfx::NativeWindow  /* Tab window */,
-                      int /* disposition */)
-
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   // See previous definition of this message for explanation of why it is
   // defined twice.
@@ -1072,5 +1065,17 @@ IPC_BEGIN_MESSAGES(Automation)
   // browser process.
   IPC_MESSAGE_ROUTED1(AutomationMsg_RecordHistograms,
                       std::vector<std::string> /* histogram_list */)
+
+  IPC_MESSAGE_ROUTED3(AutomationMsg_AttachExternalTab,
+                      int /* tab_handle */,
+                      intptr_t /* cookie */,
+                      int /* disposition */)
+
+  // Sent when the automation client connects to an existing tab.
+  IPC_SYNC_MESSAGE_ROUTED1_3(AutomationMsg_ConnectExternalTab,
+                             intptr_t /* cookie */,
+                             gfx::NativeWindow  /* Tab container window */,
+                             gfx::NativeWindow  /* Tab window */,
+                             int  /* Handle to the new tab */)
 
 IPC_END_MESSAGES(Automation)

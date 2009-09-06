@@ -138,6 +138,11 @@ class NavigationController {
     return profile_;
   }
 
+  // Sets the profile for this controller.
+  void set_profile(Profile* profile) {
+    profile_ = profile;
+  }
+
   // Initializes this NavigationController with the given saved navigations,
   // using selected_navigation as the currently loaded entry. Before this call
   // the controller should be unused (there should be no current entry). This is

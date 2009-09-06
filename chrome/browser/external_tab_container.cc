@@ -27,6 +27,8 @@
 
 static const wchar_t kWindowObjectKey[] = L"ChromeWindowObject";
 
+ExternalTabContainer::PendingTabs ExternalTabContainer::pending_tabs_;
+
 ExternalTabContainer::ExternalTabContainer(
     AutomationProvider* automation, AutomationResourceMessageFilter* filter)
     : automation_(automation),
@@ -40,7 +42,7 @@ ExternalTabContainer::ExternalTabContainer(
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
-  Uninitialize(GetNativeView());
+  Uninitialize();
 }
 
 bool ExternalTabContainer::Init(Profile* profile,
@@ -81,12 +83,15 @@ bool ExternalTabContainer::Init(Profile* profile,
     profile = automation_profile_.get();
   }
 
-  if (existing_contents)
+  if (existing_contents) {
     tab_contents_ = existing_contents;
-  else
+    tab_contents_->controller().set_profile(profile);
+  } else {
     tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL);
+  }
 
   tab_contents_->set_delegate(this);
+
   tab_contents_->GetMutableRendererPrefs()->browser_handles_top_level_requests =
       handle_top_level_requests;
 
@@ -136,6 +141,47 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   disabled_context_menu_ids_.push_back(
       IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+  return true;
+}
+
+void ExternalTabContainer::Uninitialize() {
+  registrar_.RemoveAll();
+  if (tab_contents_) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTERNAL_TAB_CLOSED,
+        Source<NavigationController>(&tab_contents_->controller()),
+        Details<ExternalTabContainer>(this));
+
+    delete tab_contents_;
+    tab_contents_ = NULL;
+  }
+}
+
+bool ExternalTabContainer::Reinitialize(
+    AutomationProvider* automation_provider,
+    AutomationResourceMessageFilter* filter) {
+  if (!automation_provider || !filter) {
+    NOTREACHED();
+    return false;
+  }
+
+  automation_ = automation_provider;
+  automation_resource_message_filter_ = filter;
+
+  if (load_requests_via_automation_) {
+    RenderViewHost* rvh = tab_contents_->render_view_host();
+    if (rvh) {
+      AutomationResourceMessageFilter::RegisterRenderView(
+          rvh->process()->id(), rvh->routing_id(),
+          tab_handle_, automation_resource_message_filter_);
+    }
+
+    DCHECK(automation_profile_.get() != NULL);
+    Profile* profile = tab_contents_->profile()->GetOriginalProfile();
+    DCHECK(profile != NULL);
+    automation_profile_->Initialize(profile, filter);
+  }
+
   return true;
 }
 
@@ -229,24 +275,32 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
     case NEW_BACKGROUND_TAB: {
       DCHECK(automation_ != NULL);
 
-      ExternalTabContainer* new_container =
-          new ExternalTabContainer(automation_,
-                                   automation_resource_message_filter_);
-      bool result = new_container->Init(automation_profile_.get(),
-                                        NULL,
-                                        initial_pos,
-                                        WS_CHILD,
-                                        load_requests_via_automation_,
-                                        handle_top_level_requests_,
-                                        new_contents);
-      DCHECK(result);
-      result = automation_->AddExternalTab(new_container);
-      DCHECK(result);
+      scoped_refptr<ExternalTabContainer> new_container =
+          new ExternalTabContainer(NULL, NULL);
 
-      automation_->Send(new AutomationMsg_AttachExternalTab(
-          0, tab_handle_, new_container->tab_handle(),
-          new_container->GetNativeView(), new_contents->GetNativeView(),
-          disposition));
+      // Make sure that ExternalTabContainer instance is initialized with
+      // an unwrapped Profile.
+      bool result = new_container->Init(
+          new_contents->profile()->GetOriginalProfile(),
+          NULL,
+          initial_pos,
+          WS_CHILD,
+          load_requests_via_automation_,
+          handle_top_level_requests_,
+          new_contents);
+
+      if (result) {
+        pending_tabs_[reinterpret_cast<intptr_t>(new_container.get())] =
+            new_container;
+
+        automation_->Send(new AutomationMsg_AttachExternalTab(
+            0,
+            tab_handle_,
+            reinterpret_cast<intptr_t>(new_container.get()),
+            disposition));
+      } else {
+        NOTREACHED();
+      }
       break;
     }
 
@@ -453,30 +507,30 @@ void ExternalTabContainer::Observe(NotificationType type,
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, views::WidgetWin overrides:
 
+LRESULT ExternalTabContainer::OnCreate(LPCREATESTRUCT create_struct) {
+  LRESULT result = views::WidgetWin::OnCreate(create_struct);
+  if (result == 0) {
+    // Grab a reference here which will be released in OnFinalMessage
+    AddRef();
+  }
+  return result;
+}
+
 void ExternalTabContainer::OnDestroy() {
-  Uninitialize(GetNativeView());
+  Uninitialize();
   WidgetWin::OnDestroy();
   if (browser_.get()) {
     ::DestroyWindow(browser_->window()->GetNativeHandle());
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// ExternalTabContainer, private:
-
-void ExternalTabContainer::Uninitialize(HWND window) {
-  registrar_.RemoveAll();
-  if (tab_contents_) {
-    NotificationService::current()->Notify(
-        NotificationType::EXTERNAL_TAB_CLOSED,
-        Source<NavigationController>(&tab_contents_->controller()),
-        Details<ExternalTabContainer>(this));
-
-    delete tab_contents_;
-    tab_contents_ = NULL;
-  }
+void ExternalTabContainer::OnFinalMessage(HWND window) {
+  // Release the reference which we grabbed in WM_CREATE.
+  Release();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ExternalTabContainer, private:
 bool ExternalTabContainer::ProcessUnhandledKeyStroke(HWND window,
                                                      UINT message,
                                                      WPARAM wparam,
@@ -532,5 +586,18 @@ bool ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,
   nav_info->title =  UTF16ToWideHack(entry->title());
   nav_info->url = entry->url();
   return true;
+}
+
+ExternalTabContainer* ExternalTabContainer::RemovePendingTab(intptr_t cookie) {
+  PendingTabs::iterator index = pending_tabs_.find(cookie);
+  if (index != pending_tabs_.end()) {
+    scoped_refptr<ExternalTabContainer> container = (*index).second;
+    pending_tabs_.erase(index);
+    return container.release();
+  }
+
+  NOTREACHED() << "Failed to find ExternalTabContainer for cookie: "
+               << cookie;
+  return NULL;
 }
 

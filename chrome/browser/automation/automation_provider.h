@@ -299,6 +299,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                          gfx::NativeWindow* tab_window,
                          int* tab_handle);
 
+  void ConnectExternalTab(intptr_t cookie,
+                          gfx::NativeWindow* tab_container_window,
+                          gfx::NativeWindow* tab_window,
+                          int* tab_handle);
+
   void NavigateInExternalTab(
       int handle, const GURL& url,
       AutomationMsg_NavigationResponseValues* status);

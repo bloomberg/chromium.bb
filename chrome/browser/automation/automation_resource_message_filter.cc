@@ -46,7 +46,18 @@ void AutomationResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
 void AutomationResourceMessageFilter::OnChannelClosing() {
   channel_ = NULL;
   request_map_.clear();
-  filtered_render_views_.clear();
+
+  // Only erase RenderViews which are associated with this
+  // AutomationResourceMessageFilter instance.
+  RenderViewMap::iterator index = filtered_render_views_.begin();
+  while (index != filtered_render_views_.end()) {
+    const AutomationDetails& details = (*index).second;
+    if (details.filter.get() == this) {
+      filtered_render_views_.erase(index++);
+    } else {
+      index++;
+    }
+  }
 }
 
 // Called on the IPC thread:

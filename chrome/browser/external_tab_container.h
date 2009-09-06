@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTERNAL_TAB_CONTAINER_H_
 
 #include <vector>
+#include <map>
 
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/automation/automation_profile_impl.h"
@@ -32,8 +33,11 @@ struct NavigationInfo;
 // TODO(beng): Should override WidgetWin instead of Widget.
 class ExternalTabContainer : public TabContentsDelegate,
                              public NotificationObserver,
-                             public views::WidgetWin {
+                             public views::WidgetWin,
+                             public base::RefCounted<ExternalTabContainer> {
  public:
+  typedef std::map<intptr_t, scoped_refptr<ExternalTabContainer> > PendingTabs;
+
   ExternalTabContainer(AutomationProvider* automation,
       AutomationResourceMessageFilter* filter);
   ~ExternalTabContainer();
@@ -58,6 +62,19 @@ class ExternalTabContainer : public TabContentsDelegate,
             bool load_requests_via_automation,
             bool handle_top_level_requests,
             TabContents* existing_tab_contents);
+
+  // Unhook the keystroke listener and notify about the closing TabContents.
+  // This function gets called from three places, which is fine.
+  // 1. OnFinalMessage
+  // 2. In the destructor.
+  // 3. In AutomationProvider::CreateExternalTab
+  void Uninitialize();
+
+  // Used to reinitialize the automation channel and related information
+  // for this container. Typically used when an ExternalTabContainer
+  // instance is created by Chrome and attached to an automation client.
+  bool Reinitialize(AutomationProvider* automation_provider,
+                    AutomationResourceMessageFilter* filter);
 
   // This is invoked when the external host reflects back to us a keyboard
   // message it did not process
@@ -127,21 +144,22 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                               gfx::NativeWindow parent_window);
 
+  // Returns the ExternalTabContainer instance associated with the cookie
+  // passed in. It also erases the corresponding reference from the map.
+  // Returns NULL if we fail to find the cookie in the map.
+  static ExternalTabContainer* RemovePendingTab(intptr_t cookie);
 
  protected:
   // Overridden from views::WidgetWin:
+  virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
   virtual void OnDestroy();
+  virtual void OnFinalMessage(HWND window);
+
   bool InitNavigationInfo(IPC::NavigationInfo* nav_info,
                           NavigationType::Type nav_type,
                           int relative_offset);
 
  private:
-  // Unhook the keystroke listener and notify about the closing TabContents.
-  // This function gets called from two places, which is fine.
-  // 1. OnFinalMessage
-  // 2. In the destructor.
-  void Uninitialize(HWND window);
-
   // Helper function for processing keystokes coming back from the renderer
   // process.
   bool ProcessUnhandledKeyStroke(HWND window, UINT message, WPARAM wparam,
@@ -181,6 +199,9 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // A customized profile for automation specific needs.
   scoped_ptr<AutomationProfileImpl> automation_profile_;
+
+  // Contains ExternalTabContainers that have not been connected to as yet.
+  static PendingTabs pending_tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };
