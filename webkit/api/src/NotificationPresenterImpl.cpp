@@ -45,15 +45,6 @@ using namespace WebCore;
 
 namespace WebKit {
 
-// Ensure that our publicly defined enum values never get out of sync with the
-// ones declared for use within WebCore.
-#define COMPILE_ASSERT_MATCHING_ENUM(name) \
-    COMPILE_ASSERT(int(WebNotificationPresenter::name) == int(NotificationPresenter::name), name)
-
-COMPILE_ASSERT_MATCHING_ENUM(PermissionAllowed);
-COMPILE_ASSERT_MATCHING_ENUM(PermissionNotAllowed);
-COMPILE_ASSERT_MATCHING_ENUM(PermissionDenied);
-
 class VoidCallbackClient : public WebNotificationPermissionCallback {
 public:
     VoidCallbackClient(PassRefPtr<VoidCallback> callback)

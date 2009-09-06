@@ -71,16 +71,6 @@ namespace WebCore {
 
 // Clipboard ------------------------------------------------------------------
 
-COMPILE_ASSERT(
-    int(PasteboardPrivate::HTMLFormat) == int(WebClipboard::FormatHTML),
-    FormatHTML);
-COMPILE_ASSERT(
-    int(PasteboardPrivate::BookmarkFormat) == int(WebClipboard::FormatBookmark),
-    FormatBookmark);
-COMPILE_ASSERT(
-    int(PasteboardPrivate::WebSmartPasteFormat) == int(WebClipboard::FormatSmartPaste),
-    FormatSmartPaste);
-
 bool ChromiumBridge::clipboardIsFormatAvailable(
     PasteboardPrivate::ClipboardFormat format)
 {

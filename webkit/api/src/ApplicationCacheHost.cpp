@@ -245,26 +245,6 @@ bool ApplicationCacheHost::isApplicationCacheEnabled()
            && m_documentLoader->frame()->settings()->offlineWebApplicationCacheEnabled();
 }
 
-// Ensure that our publicly defined enum values never get out of sync with the
-// ones declared for use within WebCore.
-#define COMPILE_ASSERT_MATCHING_ENUM(webcoreName, publicName) \
-    COMPILE_ASSERT(int(ApplicationCacheHost::webcoreName) == int(WebApplicationCacheHost::publicName), webcoreName)
-
-COMPILE_ASSERT_MATCHING_ENUM(UNCACHED, Uncached);
-COMPILE_ASSERT_MATCHING_ENUM(IDLE, Idle);
-COMPILE_ASSERT_MATCHING_ENUM(CHECKING, Checking);
-COMPILE_ASSERT_MATCHING_ENUM(DOWNLOADING, Downloading);
-COMPILE_ASSERT_MATCHING_ENUM(UPDATEREADY, UpdateReady);
-COMPILE_ASSERT_MATCHING_ENUM(OBSOLETE, Obsolete);
-COMPILE_ASSERT_MATCHING_ENUM(CHECKING_EVENT, CheckingEvent);
-COMPILE_ASSERT_MATCHING_ENUM(ERROR_EVENT, ErrorEvent);
-COMPILE_ASSERT_MATCHING_ENUM(NOUPDATE_EVENT, NoUpdateEvent);
-COMPILE_ASSERT_MATCHING_ENUM(DOWNLOADING_EVENT, DownloadingEvent);
-COMPILE_ASSERT_MATCHING_ENUM(PROGRESS_EVENT, ProgressEvent);
-COMPILE_ASSERT_MATCHING_ENUM(UPDATEREADY_EVENT, UpdateReadyEvent);
-COMPILE_ASSERT_MATCHING_ENUM(CACHED_EVENT, CachedEvent);
-COMPILE_ASSERT_MATCHING_ENUM(OBSOLETE_EVENT, ObsoleteEvent);
-
 }  // namespace WebCore
 
 #endif  // ENABLE(OFFLINE_WEB_APPLICATIONS)

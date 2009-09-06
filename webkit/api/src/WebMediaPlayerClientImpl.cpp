@@ -234,24 +234,6 @@ void WebMediaPlayerClientImpl::setVolume(float volume)
 
 MediaPlayer::NetworkState WebMediaPlayerClientImpl::networkState() const
 {
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::Empty) == int(MediaPlayer::Empty), Empty);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::Idle) == int(MediaPlayer::Idle), Idle);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::Loading) == int(MediaPlayer::Loading), Loading);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::Loaded) == int(MediaPlayer::Loaded), Loaded);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::FormatError) == int(MediaPlayer::FormatError),
-        FormatError);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::NetworkError) == int(MediaPlayer::NetworkError),
-        NetworkError);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::DecodeError) == int(MediaPlayer::DecodeError),
-        DecodeError);
-
     if (m_webMediaPlayer.get())
         return static_cast<MediaPlayer::NetworkState>(m_webMediaPlayer->networkState());
     return MediaPlayer::Empty;
@@ -259,22 +241,6 @@ MediaPlayer::NetworkState WebMediaPlayerClientImpl::networkState() const
 
 MediaPlayer::ReadyState WebMediaPlayerClientImpl::readyState() const
 {
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::HaveNothing) == int(MediaPlayer::HaveNothing),
-        HaveNothing);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::HaveMetadata) == int(MediaPlayer::HaveMetadata),
-        HaveMetadata);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::HaveCurrentData) == int(MediaPlayer::HaveCurrentData),
-        HaveCurrentData);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::HaveFutureData) == int(MediaPlayer::HaveFutureData),
-        HaveFutureData);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::HaveEnoughData) == int(MediaPlayer::HaveEnoughData),
-        HaveEnoughData);
-
     if (m_webMediaPlayer.get())
         return static_cast<MediaPlayer::ReadyState>(m_webMediaPlayer->readyState());
     return MediaPlayer::HaveNothing;
@@ -359,19 +325,6 @@ bool WebMediaPlayerClientImpl::hasSingleSecurityOrigin() const
 
 MediaPlayer::MovieLoadType WebMediaPlayerClientImpl::movieLoadType() const
 {
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::Unknown) == int(MediaPlayer::Unknown),
-        Unknown);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::Download) == int(MediaPlayer::Download),
-        Download);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::StoredStream) == int(MediaPlayer::StoredStream),
-        StoredStream);
-    COMPILE_ASSERT(
-        int(WebMediaPlayer::LiveStream) == int(MediaPlayer::LiveStream),
-        LiveStream);
-
     if (m_webMediaPlayer.get())
         return static_cast<MediaPlayer::MovieLoadType>(
             m_webMediaPlayer->movieLoadType());
