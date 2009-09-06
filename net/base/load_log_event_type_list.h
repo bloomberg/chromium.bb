@@ -95,3 +95,21 @@ EVENT_TYPE(SOCKET_POOL_STALLED_MAX_SOCKETS_PER_GROUP)
 // URLRequest::ResponseStarted().
 EVENT_TYPE(URL_REQUEST_START)
 
+// ------------------------------------------------------------------------
+// HttpCache
+// ------------------------------------------------------------------------
+
+// Measures the time while opening a disk cache entry.
+EVENT_TYPE(HTTP_CACHE_OPEN_ENTRY)
+
+// Measures the time while creating a disk cache entry.
+EVENT_TYPE(HTTP_CACHE_CREATE_ENTRY)
+
+// Measures the time while reading the response info from a disk cache entry.
+EVENT_TYPE(HTTP_CACHE_READ_INFO)
+
+// Measures the time that an HttpCache::Transaction is stalled waiting for
+// the cache entry to become available (for example if we are waiting for
+// exclusive access to an existing entry).
+EVENT_TYPE(HTTP_CACHE_WAITING)
+
