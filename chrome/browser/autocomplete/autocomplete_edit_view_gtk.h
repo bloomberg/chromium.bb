@@ -385,6 +385,13 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   NotificationRegistrar registrar_;
 #endif
 
+  // Indicates if Enter key was pressed.
+  //
+  // It's used in the key press handler to detect an Enter key press event
+  // during sync dispatch of "end-user-action" signal so that an unexpected
+  // change caused by the event can be ignored in OnAfterPossibleChange().
+  bool enter_was_pressed_;
+
   // Indicates if Tab key was pressed.
   //
   // It's only used in the key press handler to detect a Tab key press event
