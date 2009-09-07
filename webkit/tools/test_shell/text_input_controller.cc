@@ -52,8 +52,13 @@ void TextInputController::insertText(
   if (!main_frame)
     return;
 
-  if (args.size() >= 1 && args[0].isString())
+  if (args.size() >= 1 && args[0].isString()) {
+    if (main_frame->hasMarkedText()) {
+      main_frame->unmarkText();
+      main_frame->replaceSelection(WebString());
+    }
     main_frame->insertText(WebString::fromUTF8(args[0].ToString()));
+  }
 }
 
 void TextInputController::doCommand(
