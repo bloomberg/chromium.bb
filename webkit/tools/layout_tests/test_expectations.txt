@@ -1493,7 +1493,6 @@ BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-3509.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-5699.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-6278.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-6388.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-6473.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-7235.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/button-spurious-layout-hint.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/caret-outside-block.html = FAIL
