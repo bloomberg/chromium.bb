@@ -3702,6 +3702,9 @@
           'include_dirs': [
             'third_party/wtl/include',
           ],
+          'dependencies': [
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+          ],
         }],
       ],
     },
@@ -3820,6 +3823,7 @@
             '../views/views.gyp:views',
             # run time dependency
             '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
           ],
           'link_settings': {
             'libraries': [
@@ -4253,6 +4257,7 @@
             'installer/installer.gyp:installer_util_strings',
             '../views/views.gyp:views',
             'test_chrome_plugin',  # run time dependency
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
           ],
           'include_dirs': [
             'third_party/wtl/include',
@@ -4360,6 +4365,11 @@
             '../views/views.gyp:views',
           ],
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+          ],
+        },],
       ],
     },
     {
@@ -4501,6 +4511,11 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+          ],
+        },],
       ],
     },
     {
@@ -4554,6 +4569,9 @@
         ['OS=="win"', {
           'include_dirs': [
             'third_party/wtl/include',
+          ],
+          'dependencies': [
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
           ],
         }], # OS="win"
       ], # conditions
@@ -5058,6 +5076,13 @@
           'sources': [
             'tools/pbl_tool/pbl_tool.cc',
           ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+              ],
+            },],
+          ],
         },
         {
           'target_name': 'perf_tests',
@@ -5112,6 +5137,9 @@
                   },
                 },
               },
+              'dependencies': [
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+              ],
             }],
           ],
         },
@@ -5205,6 +5233,7 @@
                 'crash_service',  # run time dependency
                 'installer/installer.gyp:installer_util_strings',
                 '../views/views.gyp:views',
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
               ],
               'sources': [
                 '../webkit/glue/resources/aliasb.cur',
@@ -5551,6 +5580,7 @@
                   'chrome_dll_version',
                   'installer/installer.gyp:installer_util_strings',
                   '../views/views.gyp:views',
+                  '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
                 ],
               }],
             ],
@@ -5606,6 +5636,13 @@
             # defined in 'variables' at the top of the file.
             '<@(browser_tests_sources)',
             '<@(browser_tests_sources_win_specific)',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+              ],
+            },],
           ],
         },
         {
@@ -5675,6 +5712,13 @@
             'tools/profiles/generate_profile.cc',
             'tools/profiles/thumbnail-inl.h',
           ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+              ],
+            },],
+          ],
         },
         {
           'target_name': 'plugin_tests',
@@ -5699,6 +5743,13 @@
           'sources': [
             'test/plugin/plugin_test.cpp',
           ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+              ],
+            },],
+          ],
         },
         {
           'target_name': 'reliability_tests',
@@ -5719,6 +5770,13 @@
             'test/reliability/page_load_test.h',
             'test/reliability/reliability_test_suite.h',
             'test/reliability/run_all_unittests.cc',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+              ],
+            },],
           ],
         },
         {
@@ -5755,6 +5813,13 @@
           ],
           'sources': [
             'test/selenium/selenium_test.cc',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+              ],
+            },],
           ],
         },
         {
