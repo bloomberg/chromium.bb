@@ -96,8 +96,8 @@ bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
     memset(&gdk_key, 0, sizeof(GdkEventKey));
     gdk_key.type = GDK_KEY_RELEASE;
     gdk_key.keyval = accelerator.GetKeyCode();
-    gdk_key.state = accelerator.IsAltDown() << 3 +
-                    accelerator.IsCtrlDown() << 2 +
+    gdk_key.state = (accelerator.IsAltDown() << 3) +
+                    (accelerator.IsCtrlDown() << 2) +
                     accelerator.IsShiftDown();
     KeyEvent key_event(&gdk_key, false);
 #endif

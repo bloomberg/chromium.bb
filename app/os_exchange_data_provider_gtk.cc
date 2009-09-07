@@ -164,7 +164,7 @@ void OSExchangeDataProviderGtk::SetHtml(const std::wstring& html,
 }
 
 bool OSExchangeDataProviderGtk::GetString(std::wstring* data) const {
-  if (formats_ & OSExchangeData::STRING == 0)
+  if ((formats_ & OSExchangeData::STRING) == 0)
     return false;
   *data = UTF16ToWideHack(string_);
   return true;
@@ -172,7 +172,7 @@ bool OSExchangeDataProviderGtk::GetString(std::wstring* data) const {
 
 bool OSExchangeDataProviderGtk::GetURLAndTitle(GURL* url,
                                                std::wstring* title) const {
-  if (formats_ & OSExchangeData::URL == 0)
+  if ((formats_ & OSExchangeData::URL) == 0)
     return false;
   if (!url_.is_valid())
     return false;
@@ -183,7 +183,7 @@ bool OSExchangeDataProviderGtk::GetURLAndTitle(GURL* url,
 }
 
 bool OSExchangeDataProviderGtk::GetFilename(std::wstring* full_path) const {
-  if (formats_ & OSExchangeData::FILE_NAME == 0)
+  if ((formats_ & OSExchangeData::FILE_NAME) == 0)
     return false;
   *full_path = UTF16ToWideHack(filename_);
   return true;
@@ -202,7 +202,7 @@ bool OSExchangeDataProviderGtk::GetPickledData(GdkAtom format,
 bool OSExchangeDataProviderGtk::GetFileContents(
     std::wstring* filename,
     std::string* file_contents) const {
-  if (formats_ & OSExchangeData::FILE_CONTENTS == 0)
+  if ((formats_ & OSExchangeData::FILE_CONTENTS) == 0)
     return false;
   *filename = UTF16ToWideHack(filename_);
   *file_contents = file_contents_;
@@ -211,7 +211,7 @@ bool OSExchangeDataProviderGtk::GetFileContents(
 
 bool OSExchangeDataProviderGtk::GetHtml(std::wstring* html,
                                         GURL* base_url) const {
-  if (formats_ & OSExchangeData::HTML == 0)
+  if ((formats_ & OSExchangeData::HTML) == 0)
     return false;
   *html = UTF16ToWideHack(filename_);
   *base_url = base_url_;

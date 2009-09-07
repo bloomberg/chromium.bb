@@ -2532,8 +2532,6 @@
                 ['include', '^browser/gtk/import_lock_dialog_gtk.h'],
                 ['include', '^browser/gtk/keyword_editor_view.cc'],
                 ['include', '^browser/gtk/keyword_editor_view.h'],
-                ['include', '^browser/gtk/list_store_favicon_loader.cc'],
-                ['include', '^browser/gtk/list_store_favicon_loader.h'],
                 ['include', '^browser/gtk/menu_gtk.cc'],
                 ['include', '^browser/gtk/menu_gtk.h'],
                 ['include', '^browser/gtk/tab_contents_drag_source.cc'],
@@ -2550,6 +2548,11 @@
                 ['exclude', '^browser/tab_contents/tab_contents_view_gtk.h'],
                 ['exclude', '^browser/tab_contents/render_view_context_menu_gtk.cc'],
                 ['exclude', '^browser/tab_contents/render_view_context_menu_gtk.h'],
+                # This compiles but has Linux shared build linking issues due to
+                # missing rsa_private_key functions.
+                ['exclude', '^browser/extensions/extension_creator.cc'],
+                # This compiles but it needs extension_creator.
+                ['exclude', '^browser/extensions/pack_extension_job.cc'],
               ],
             }],
             ['chromeos==1',{

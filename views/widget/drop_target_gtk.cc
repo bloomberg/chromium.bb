@@ -302,7 +302,7 @@ void DropTargetGtk::RequestFormats(GdkDragContext* context,
     requested_formats_ |= OSExchangeData::FILE_CONTENTS;
     NOTIMPLEMENTED();
   }
-  if ((formats & OSExchangeData::FILE_NAME != 0) &&
+  if (((formats & OSExchangeData::FILE_NAME) != 0) &&
       (requested_formats_ & OSExchangeData::FILE_NAME) == 0) {
     requested_formats_ |= OSExchangeData::FILE_NAME;
     NOTIMPLEMENTED();

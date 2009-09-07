@@ -46,11 +46,6 @@ void ShowHtmlDialogView(gfx::NativeWindow parent, Browser* browser,
   NOTIMPLEMENTED();
 }
 
-FindBar* CreateFindBar(BrowserView* browser_view) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 void ShowPasswordsExceptionsWindowView(Profile* profile) {
   NOTIMPLEMENTED();
 }
