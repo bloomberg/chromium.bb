@@ -127,13 +127,6 @@ struct _drm_intel_bo_gem {
     int validate_index;
 
     /**
-     * Boolean whether we've started swrast
-     * Set when the buffer has been mapped
-     * Cleared when the buffer is unmapped
-     */
-    int swrast;
-
-    /**
      * Current tiling mode
      */
     uint32_t tiling_mode;
@@ -663,30 +656,26 @@ drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	    return ret;
 	}
 	bo_gem->mem_virtual = (void *)(uintptr_t)mmap_arg.addr_ptr;
-	bo_gem->swrast = 0;
     }
     DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
 	bo_gem->mem_virtual);
     bo->virtual = bo_gem->mem_virtual;
 
-    if (bo_gem->global_name != 0 || !bo_gem->swrast) {
-	set_domain.handle = bo_gem->gem_handle;
-	set_domain.read_domains = I915_GEM_DOMAIN_CPU;
-	if (write_enable)
-	    set_domain.write_domain = I915_GEM_DOMAIN_CPU;
-	else
-	    set_domain.write_domain = 0;
-	do {
-	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN,
-			&set_domain);
-	} while (ret == -1 && errno == EINTR);
-	if (ret != 0) {
-	    fprintf (stderr, "%s:%d: Error setting swrast %d: %s\n",
-		     __FILE__, __LINE__, bo_gem->gem_handle, strerror (errno));
-	    pthread_mutex_unlock(&bufmgr_gem->lock);
-	    return ret;
-	}
-	bo_gem->swrast = 1;
+    set_domain.handle = bo_gem->gem_handle;
+    set_domain.read_domains = I915_GEM_DOMAIN_CPU;
+    if (write_enable)
+	set_domain.write_domain = I915_GEM_DOMAIN_CPU;
+    else
+	set_domain.write_domain = 0;
+    do {
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN,
+		    &set_domain);
+    } while (ret == -1 && errno == EINTR);
+    if (ret != 0) {
+	fprintf (stderr, "%s:%d: Error setting to CPU domain %d: %s\n",
+		 __FILE__, __LINE__, bo_gem->gem_handle, strerror (errno));
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+	return ret;
     }
 
     pthread_mutex_unlock(&bufmgr_gem->lock);
@@ -797,14 +786,16 @@ drm_intel_gem_bo_unmap(drm_intel_bo *bo)
     assert(bo_gem->mem_virtual != NULL);
 
     pthread_mutex_lock(&bufmgr_gem->lock);
-    if (bo_gem->swrast) {
-	sw_finish.handle = bo_gem->gem_handle;
-	do {
-	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SW_FINISH,
-			&sw_finish);
-	} while (ret == -1 && errno == EINTR);
-	bo_gem->swrast = 0;
-    }
+
+    /* Cause a flush to happen if the buffer's pinned for scanout, so the
+     * results show up in a timely manner.
+     */
+    sw_finish.handle = bo_gem->gem_handle;
+    do {
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SW_FINISH,
+		    &sw_finish);
+    } while (ret == -1 && errno == EINTR);
+
     bo->virtual = NULL;
     pthread_mutex_unlock(&bufmgr_gem->lock);
     return 0;
@@ -1099,9 +1090,6 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
     for (i = 0; i < bufmgr_gem->exec_count; i++) {
 	drm_intel_bo *bo = bufmgr_gem->exec_bos[i];
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
-
-	/* Need to call swrast on next bo_map */
-	bo_gem->swrast = 0;
 
 	/* Disconnect the buffer from the validate list */
 	bo_gem->validate_index = -1;
