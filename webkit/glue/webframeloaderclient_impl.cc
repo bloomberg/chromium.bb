@@ -320,7 +320,6 @@ void WebFrameLoaderClient::dispatchDidFailLoading(DocumentLoader* loader,
 
 void WebFrameLoaderClient::dispatchDidFinishDocumentLoad() {
   WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
   DocumentLoader* documentLoader =
       webframe_->frame()->loader()->activeDocumentLoader();
   WebDataSourceImpl* data_source =
@@ -330,8 +329,8 @@ void WebFrameLoaderClient::dispatchDidFinishDocumentLoad() {
   // listeners and their associated HTMLInputElements.
   webframe_->ClearPasswordListeners();
 
-  if (d)
-    d->DidFinishDocumentLoadForFrame(webview, webframe_);
+  if (webview && webview->delegate())
+    webview->delegate()->DidFinishDocumentLoadForFrame(webview, webframe_);
 }
 
 bool WebFrameLoaderClient::dispatchDidLoadResourceFromMemoryCache(
