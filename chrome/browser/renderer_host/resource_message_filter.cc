@@ -52,7 +52,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
-#elif defined(OS_MACOSX) || defined(OS_LINUX)
+#elif defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_FREEBSD)
 // TODO(port) remove this.
 #include "chrome/common/temp_scaffolding_stubs.h"
 #endif

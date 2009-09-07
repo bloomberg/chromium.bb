@@ -146,7 +146,7 @@
       ['exclude', '/(gtk|win|x11)_[^/]*\\.cc$'],
     ],
     'conditions': [
-      ['OS=="linux"', {'sources/': [
+      ['OS=="linux" or OS=="freebsd"', {'sources/': [
         ['include', '/gtk/'],
         ['include', '_(gtk|linux|posix|skia|x)(_unittest)?\\.cc$'],
         ['include', '/(gtk|x11)_[^/]*\\.cc$'],
@@ -2224,6 +2224,12 @@
             'browser/views/autocomplete/autocomplete_popup_gtk.h'
           ],
         }],
+	['OS=="freebsd"', {
+	  'dependencies': [
+            '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:nss',
+	  ],
+	}],
         ['OS=="mac"', {
           'sources!': [
             'browser/automation/automation_provider_list_generic.cc',
@@ -2680,7 +2686,7 @@
         'browser/debugger/inspectable_tab_proxy.h',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -3021,7 +3027,7 @@
         'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd"', {
           'actions': [
             {
               'action_name': 'manpage',
@@ -3462,7 +3468,7 @@
               'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
               'process_outputs_as_mac_bundle_resources': 1,
               'conditions': [
-                ['OS=="linux"', {
+                ['OS=="linux" or OS=="freebsd"', {
                   'outputs=': [
                     '<(INTERMEDIATE_DIR)/repack/default.pak',
                   ]

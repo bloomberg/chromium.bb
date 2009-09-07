@@ -20,12 +20,12 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(USE_BASE_DATA_PACK)
 namespace base {
 class DataPack;
 }
 #endif
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 typedef struct _GdkPixbuf GdkPixbuf;
 #endif
 namespace gfx {
@@ -123,7 +123,7 @@ class ResourceBundle {
 #elif defined(OS_MACOSX)
   // Wrapper for GetBitmapNamed. Converts the bitmap to an autoreleased NSImage.
   NSImage* GetNSImageNamed(int resource_id);
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   // Gets the GdkPixbuf with the specified resource_id, first by looking into
   // the theme data, than in the current module data if applicable.  Returns a
   // pointer to a shared instance of the GdkPixbuf.  This shared GdkPixbuf is
@@ -160,7 +160,7 @@ class ResourceBundle {
 #if defined(OS_WIN)
   // Windows stores resources in DLLs, which are managed by HINSTANCE.
   typedef HINSTANCE DataHandle;
-#elif defined(OS_LINUX) || defined(OS_MACOSX)
+#elif defined(USE_BASE_DATA_PACK)
   // Linux uses base::DataPack.
   typedef base::DataPack* DataHandle;
 #endif
@@ -208,7 +208,7 @@ class ResourceBundle {
   // ownership of the pointers.
   typedef std::map<int, SkBitmap*> SkImageMap;
   SkImageMap skia_images_;
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   typedef std::map<int, GdkPixbuf*> GdkPixbufMap;
   GdkPixbufMap gdk_pixbufs_;
 #endif

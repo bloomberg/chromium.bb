@@ -105,7 +105,7 @@
 
 // BEGIN GOOGLE MODIFICATIONS
 // On Linux and Mac, be sure to set Mozilla-specific macros.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_FREEBSD)
 #define XP_UNIX 1
 #define MOZ_X11 1
 #elif defined(OS_MACOSX)

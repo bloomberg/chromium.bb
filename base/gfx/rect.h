@@ -19,7 +19,7 @@
 
 #if defined(OS_WIN)
 typedef struct tagRECT RECT;
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 typedef struct _GdkRectangle GdkRectangle;
 #endif
 
@@ -34,7 +34,7 @@ class Rect {
   explicit Rect(const RECT& r);
 #elif defined(OS_MACOSX)
   explicit Rect(const CGRect& r);
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   explicit Rect(const GdkRectangle& r);
 #endif
   Rect(const gfx::Point& origin, const gfx::Size& size);
@@ -45,7 +45,7 @@ class Rect {
   Rect& operator=(const RECT& r);
 #elif defined(OS_MACOSX)
   Rect& operator=(const CGRect& r);
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   Rect& operator=(const GdkRectangle& r);
 #endif
 
@@ -97,7 +97,7 @@ class Rect {
 #if defined(OS_WIN)
   // Construct an equivalent Win32 RECT object.
   RECT ToRECT() const;
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   GdkRectangle ToGdkRectangle() const;
 #elif defined(OS_MACOSX)
   // Construct an equivalent CoreGraphics object.

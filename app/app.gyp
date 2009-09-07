@@ -238,6 +238,9 @@
           },
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/app/grit/<(RULE_INPUT_ROOT).h',
+            # TODO(benl) Generate this list from a helper script, like
+            # repack_locales_cmd in chrome.gyp (see TODO(mmoss))
+            '<(SHARED_INTERMEDIATE_DIR)/app/<(RULE_INPUT_ROOT)_ar.pak',
             '<(SHARED_INTERMEDIATE_DIR)/app/<(RULE_INPUT_ROOT)_en-US.pak',
           ],
           'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)',

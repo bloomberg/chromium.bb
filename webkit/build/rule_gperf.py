@@ -41,13 +41,16 @@ assert input_name in gperf_commands
 (input_root, input_ext) = posixpath.splitext(input_name)
 output_cpp = posixpath.join(output_dir, input_root + '.cpp')
 
-command = ['gperf', '--output-file', output_cpp]
+#command = ['gperf', '--output-file', output_cpp]
+command = ['gperf']
 command.extend(gperf_commands[input_name])
 command.append(input_file)
 
+ofile = open(output_cpp, 'w')
+
 # Do it.  check_call is new in 2.5, so simulate its behavior with call and
 # assert.
-return_code = subprocess.call(command)
+return_code = subprocess.call(command, stdout=ofile.fileno())
 assert return_code == 0
 
 output_c = posixpath.join(output_dir, input_root + '.c')

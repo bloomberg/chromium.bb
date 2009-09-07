@@ -47,7 +47,7 @@ class PlatformCanvas : public SkCanvas {
   // For two-part init, call if you use the no-argument constructor above
   bool initialize(int width, int height, bool is_opaque, uint8_t* data = NULL);
 
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__FreeBSD__)
   // Linux ---------------------------------------------------------------------
 
   // Construct a canvas from the given memory region. The memory is not cleared

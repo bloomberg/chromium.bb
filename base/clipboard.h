@@ -21,7 +21,7 @@ class FilePath;
 class Clipboard {
  public:
   typedef std::string FormatType;
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   typedef struct _GtkClipboard GtkClipboard;
   typedef std::map<FormatType, std::pair<char*, size_t> > TargetMap;
 #endif
@@ -167,7 +167,7 @@ class Clipboard {
   void WriteFiles(const char* file_data, size_t file_len);
 
   void WriteBitmap(const char* pixel_data, const char* size_data);
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD)
   // |format_name| is an ASCII string and should be NULL-terminated.
   // TODO(estade): port to mac.
   void WriteData(const char* format_name, size_t format_len,
@@ -200,7 +200,7 @@ class Clipboard {
 
   // True if we can create a window.
   bool create_window_;
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   // Data is stored in the |clipboard_data_| map until it is saved to the system
   // clipboard. The Store* functions save data to the |clipboard_data_| map. The
   // SetGtkClipboard function replaces whatever is on the system clipboard with

@@ -288,7 +288,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd"', {
           'defines': ['WTF_USE_PTHREADS=1'],
           'direct_dependent_settings': {
             'defines': ['WTF_USE_PTHREADS=1'],
@@ -775,7 +775,7 @@
             '../v8/tools/gyp/v8.gyp:v8',
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd"', {
           'dependencies': [
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',
@@ -936,7 +936,7 @@
             'include_dirs+++': ['../third_party/WebKit/WebCore/dom'],
           },
         }],
-        ['OS!="linux"', {'sources/': [['exclude', '(Gtk|Linux)\\.cpp$']]}],
+        ['OS!="linux" and OS!="freebsd"', {'sources/': [['exclude', '(Gtk|Linux)\\.cpp$']]}],
         ['OS!="mac"', {'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]}],
         ['OS!="win"', {
           'sources/': [
@@ -1109,7 +1109,7 @@
         'api/src/win/WebScreenInfoFactory.cpp',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd"', {
           'dependencies': [
             '../build/linux/system.gyp:x11',
             '../build/linux/system.gyp:gtk',
@@ -1119,7 +1119,7 @@
             'api/public/gtk',
             'api/public/linux',
           ],
-        }, { # else: OS!="linux"
+        }, { # else: OS!="linux" and OS!="freebsd"
           'sources/': [
             ['exclude', '/gtk/'],
             ['exclude', '/x11/'],
@@ -1204,6 +1204,9 @@
           ],
           'outputs': [
             '<(grit_out_dir)/grit/webkit_strings.h',
+            # TODO(benl) Generate this list from a helper script, like
+            # repack_locales_cmd in chrome.gyp (see TODO(mmoss))
+            '<(grit_out_dir)/webkit_strings_ar.pak',
             '<(grit_out_dir)/webkit_strings_da.pak',
             '<(grit_out_dir)/webkit_strings_da.rc',
             '<(grit_out_dir)/webkit_strings_en-US.pak',
@@ -1482,7 +1485,7 @@
         'webcore',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../base/base.gyp:linux_versioninfo',
@@ -1494,7 +1497,7 @@
           'sources!': [
             'glue/plugins/plugin_stubs.cc',
           ],
-        }, { # else: OS!="linux"
+        }, { # else: OS!="linux" and OS!="freebsd"
           'sources/': [['exclude', '_(linux|gtk)(_data)?\\.cc$'],
                        ['exclude', r'/gtk_']],
         }],

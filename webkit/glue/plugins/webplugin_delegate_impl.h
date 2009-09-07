@@ -19,7 +19,7 @@
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin_delegate.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 typedef struct _GdkDrawable GdkPixmap;
 #endif
 
@@ -217,7 +217,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   bool is_calling_wndproc;
 #endif // OS_WIN
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   // The pixmap we're drawing into, for a windowless plugin.
   GdkPixmap* pixmap_;
   double first_event_time_;
@@ -298,7 +298,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 
   // Runnable Method Factory used to invoke the OnUserGestureEnd method
   // asynchronously.
-#if !defined(OS_LINUX)
+#if !defined(USE_X11)
   ScopedRunnableMethodFactory<WebPluginDelegateImpl> user_gesture_msg_factory_;
 #endif
 

@@ -46,7 +46,7 @@ class NSView;
 class NSWindow;
 class NSTextField;
 #endif  // __OBJC__
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 typedef struct _GdkCursor GdkCursor;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
@@ -69,7 +69,7 @@ typedef NSTextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
 typedef void* NativeCursor;
 typedef void* NativeMenu;
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 typedef GtkWidget* NativeView;
 typedef GtkWindow* NativeWindow;
 typedef GtkWidget* NativeEditView;
@@ -102,15 +102,15 @@ static inline NativeView NativeViewFromId(NativeViewId id) {
 
 #define NativeViewFromId(x) NATIVE_VIEW_FROM_ID_NOT_AVAILABLE_ON_MAC
 
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 // A NativeView on Linux is a GtkWidget*. However, we can't go directly from an
 // X window ID to a GtkWidget. Thus, functions which handle NativeViewIds from
 // the renderer have to use Xlib. This is fine since these functions are
 // generally performed on the BACKGROUND_X thread which can't use GTK anyway.
 
-#define NativeViewFromId(x) NATIVE_VIEW_FROM_ID_NOT_AVAILIBLE_ON_LINUX
+#define NativeViewFromId(x) NATIVE_VIEW_FROM_ID_NOT_AVAILIBLE_ON_X11
 
-#endif  // defined(OS_LINUX)
+#endif  // defined(USE_X11)
 
 // Convert a NativeView to a NativeViewId. See the comments above
 // NativeViewFromId.
@@ -118,10 +118,10 @@ static inline NativeView NativeViewFromId(NativeViewId id) {
 static inline NativeViewId IdFromNativeView(NativeView view) {
   return reinterpret_cast<NativeViewId>(view);
 }
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 // Not inlined because it involves pulling too many headers.
 NativeViewId IdFromNativeView(NativeView view);
-#endif  // defined(OS_LINUX)
+#endif  // defined(USE_X11)
 
 
 // PluginWindowHandle is an abstraction wrapping "the types of windows
@@ -129,7 +129,7 @@ NativeViewId IdFromNativeView(NativeView view);
 // window id.
 #if defined(OS_WIN)
   typedef HWND PluginWindowHandle;
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   typedef unsigned long PluginWindowHandle;
 #else
   // On OS X we don't have windowed plugins.

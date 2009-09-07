@@ -12,7 +12,7 @@
 #include "skia/ext/platform_device_win.h"
 #elif defined(__APPLE__)
 #include "skia/ext/platform_device_mac.h"
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__FreeBSD__)
 #include "skia/ext/platform_device_linux.h"
 #endif
 

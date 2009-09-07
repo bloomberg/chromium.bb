@@ -119,7 +119,10 @@ void Clipboard::SetGtkClipboard() {
   int i = 0;
   for (Clipboard::TargetMap::iterator iter = clipboard_data_->begin();
        iter != clipboard_data_->end(); ++iter, ++i) {
-    targets[i].target = strndup(iter->first.data(), iter->first.size());
+    targets[i].target = static_cast<gchar*>(malloc(iter->first.size() + 1));
+    memcpy(targets[i].target, iter->first.data(), iter->first.size());
+    targets[i].target[iter->first.size()] = '\0';
+
     targets[i].flags = 0;
     targets[i].info = i;
   }

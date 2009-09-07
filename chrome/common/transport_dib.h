@@ -13,7 +13,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 #include "chrome/common/x11_util.h"
 #endif
 
@@ -81,7 +81,7 @@ class TransportDIB {
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
   static Handle DefaultHandleValue() { return Handle(); }
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   typedef int Handle;  // These two ints are SysV IPC shared memory keys
   typedef int Id;
 
@@ -123,7 +123,7 @@ class TransportDIB {
   // wire to give this transport DIB to another process.
   Handle handle() const;
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   // Map the shared memory into the X server and return an id for the shared
   // segment.
   XID MapToX(Display* connection);
@@ -135,7 +135,7 @@ class TransportDIB {
   explicit TransportDIB(base::SharedMemoryHandle dib);
   base::SharedMemory shared_memory_;
   uint32 sequence_num_;
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   int key_;  // SysV shared memory id
   void* address_;  // mapped address
   XID x_shm_;  // X id for the shared segment

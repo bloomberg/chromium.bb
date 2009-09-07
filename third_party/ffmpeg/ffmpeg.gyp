@@ -8,7 +8,7 @@
   ],
   'target_defaults': {
     'conditions': [
-      ['OS!="linux"', {'sources/': [['exclude', '/linux/']]}],
+      ['OS!="linux" and OS!="freebsd"', {'sources/': [['exclude', '/linux/']]}],
       ['OS!="mac"', {'sources/': [['exclude', '/mac/']]}],
       ['OS!="win"', {'sources/': [['exclude', '/win/']]}],
     ],
@@ -201,7 +201,7 @@
             ],
           },
           'dependencies': ['../../build/win/system.gyp:cygwin'],
-        }], ['OS=="linux"', {
+        }], ['OS=="linux" or OS=="freebsd"', {
           'conditions': [
             ['use_system_ffmpeg==0', {
               'variables': {

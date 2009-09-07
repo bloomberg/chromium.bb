@@ -8,7 +8,7 @@
 #if defined(OS_WIN)
 #include <objidl.h>
 #include <mlang.h>
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_FREEBSD)
 #include <sys/utsname.h>
 #endif
 

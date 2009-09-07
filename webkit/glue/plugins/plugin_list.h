@@ -35,7 +35,7 @@ class PluginInstance;
 // This struct holds entry points into a plugin.  The entry points are
 // slightly different between Linux and other platforms.
 struct PluginEntryPoints {
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_FREEBSD)
   NP_GetEntryPointsFunc np_getentrypoints;
 #endif
   NP_InitializeFunc np_initialize;

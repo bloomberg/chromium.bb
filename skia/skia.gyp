@@ -578,7 +578,7 @@
         [ 'OS != "win"', {
           'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],
         }],
-        [ 'OS == "linux"', {
+        [ 'OS == "linux" or OS == "freebsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gdk',
             '../build/linux/system.gyp:fontconfig',

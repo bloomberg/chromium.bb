@@ -1334,7 +1334,7 @@ bool WebFrameLoaderClient::ActionSpecifiesNavigationPolicy(
     return false;
 
   const MouseEvent* event = static_cast<const MouseEvent*>(action.event());
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD)
   const bool new_tab_modifier = (event->button() == 1) || event->ctrlKey();
 #elif defined(OS_MACOSX)
   const bool new_tab_modifier = (event->button() == 1) || event->metaKey();

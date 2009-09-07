@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
 #include <cryptoht.h>
 #elif defined(OS_MACOSX)
 #include <Security/cssm.h>
@@ -81,7 +81,7 @@ class SignatureVerifier {
 
   std::vector<uint8> signature_;
 
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
   VFYContext* vfy_context_;
 #elif defined(OS_MACOSX)
   std::vector<uint8> public_key_info_;
