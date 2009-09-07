@@ -117,7 +117,7 @@ FcFileScan (FcFontSet	    *set,
 	    const FcChar8   *file,
 	    FcBool	    force)
 {
-    return FcFileScanConfig (set, dirs, blanks, file, NULL);
+    return FcFileScanConfig (set, dirs, blanks, file, FcConfigGetCurrent ());
 }
 
 /*
@@ -225,7 +225,7 @@ FcDirScan (FcFontSet	    *set,
     if (cache || !force)
 	return FcFalse;
 
-    return FcDirScanConfig (set, dirs, blanks, dir, force, NULL);
+    return FcDirScanConfig (set, dirs, blanks, dir, force, FcConfigGetCurrent ());
 }
 
 /*
