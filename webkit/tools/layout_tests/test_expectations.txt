@@ -2258,9 +2258,6 @@ BUG19665 MAC : LayoutTests/platform/mac/editing/input/kotoeri-enter-to-confirm-a
 // WebKit 47719:47732. New test. Time out on all 3 platforms.
 BUG20341 : LayoutTests/loader/go-back-to-different-window-size.html = TIMEOUT
 
-// WebKit 47732:47748.
-BUG20324 : LayoutTests/http/tests/security/javascriptURL/javascriptURL-in-new-iframe.html = CRASH
-
 // WebKit 47777:47790 - getOwnPropertyDescriptor
 BUG20345 : LayoutTests/fast/js/getOwnPropertyDescriptor.html = FAIL
 
