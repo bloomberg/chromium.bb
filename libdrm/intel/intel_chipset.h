@@ -50,6 +50,7 @@
                        (dev)->pci_device == 0x2E12 || \
                        (dev)->pci_device == 0x2E22 || \
                        (dev)->pci_device == 0x2E32 || \
+                       (dev)->pci_device == 0x2E42 || \
                        (dev)->pci_device == 0x0042 || \
                        (dev)->pci_device == 0x0046)
 
@@ -59,7 +60,9 @@
 
 #define IS_G4X(dev) ((dev)->pci_device == 0x2E02 || \
                      (dev)->pci_device == 0x2E12 || \
-                     (dev)->pci_device == 0x2E22)
+                     (dev)->pci_device == 0x2E22 || \
+                     (dev)->pci_device == 0x2E32 || \
+                     (dev)->pci_device == 0x2E42)
 
 #define IS_G33(dev)    ((dev)->pci_device == 0x29C2 ||  \
                         (dev)->pci_device == 0x29B2 ||  \
