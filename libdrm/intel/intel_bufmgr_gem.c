@@ -69,15 +69,6 @@ typedef struct _drm_intel_bo_gem drm_intel_bo_gem;
 
 struct drm_intel_gem_bo_bucket {
    drmMMListHead head;
-
-   /**
-    * Limit on the number of entries in this bucket.
-    *
-    * 0 means that this caching at this bucket size is disabled.
-    * -1 means that there is no limit to caching at this size.
-    */
-   int max_entries;
-   int num_entries;
    unsigned long size;
 };
 
@@ -105,6 +96,7 @@ typedef struct _drm_intel_bufmgr_gem {
     uint64_t gtt_size;
     int available_fences;
     int pci_device;
+    char bo_reuse;
 } drm_intel_bufmgr_gem;
 
 struct _drm_intel_bo_gem {
@@ -342,7 +334,7 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
     /* If we don't have caching at this size, don't actually round the
      * allocation up.
      */
-    if (bucket == NULL || bucket->max_entries == 0) {
+    if (bucket == NULL) {
 	bo_size = size;
 	if (bo_size < page_size)
 	    bo_size = page_size;
@@ -352,7 +344,7 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
 
     pthread_mutex_lock(&bufmgr_gem->lock);
     /* Get a buffer out of the cache if available */
-    if (bucket != NULL && bucket->num_entries > 0) {
+    if (bucket != NULL && !DRMLISTEMPTY(&bucket->head)) {
 	if (for_render) {
 	    /* Allocate new render-target BOs from the tail (MRU)
 	     * of the list, as it will likely be hot in the GPU cache
@@ -360,7 +352,6 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
 	     */
 	    bo_gem = DRMLISTENTRY(drm_intel_bo_gem, bucket->head.prev, head);
 	    DRMLISTDEL(&bo_gem->head);
-	    bucket->num_entries--;
 	    alloc_from_cache = 1;
 	} else {
 	    /* For non-render-target BOs (where we're probably going to map it
@@ -374,7 +365,6 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
 	    if (!drm_intel_gem_bo_busy(&bo_gem->bo)) {
 		alloc_from_cache = 1;
 		DRMLISTDEL(&bo_gem->head);
-		bucket->num_entries--;
 	    }
 	}
     }
@@ -553,7 +543,6 @@ drm_intel_gem_cleanup_bo_cache(drm_intel_bufmgr_gem *bufmgr_gem, time_t time)
 		break;
 
 	    DRMLISTDEL(&bo_gem->head);
-	    bucket->num_entries--;
 
 	    drm_intel_gem_bo_free(&bo_gem->bo);
 	}
@@ -587,11 +576,7 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 	bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
 	/* Put the buffer into our internal cache for reuse if we can. */
 	tiling_mode = I915_TILING_NONE;
-	if (bo_gem->reusable &&
-	    bucket != NULL &&
-	    (bucket->max_entries == -1 ||
-	     (bucket->max_entries > 0 &&
-	      bucket->num_entries < bucket->max_entries)) &&
+	if (bufmgr_gem->bo_reuse && bo_gem->reusable && bucket != NULL &&
 	    drm_intel_gem_bo_set_tiling(bo, &tiling_mode, 0) == 0)
 	{
 	    struct timespec time;
@@ -606,7 +591,6 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 	    bo_gem->reloc_count = 0;
 
 	    DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
-	    bucket->num_entries++;
 
 	    drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time.tv_sec);
 	} else {
@@ -931,7 +915,6 @@ drm_intel_bufmgr_gem_destroy(drm_intel_bufmgr *bufmgr)
 	while (!DRMLISTEMPTY(&bucket->head)) {
 	    bo_gem = DRMLISTENTRY(drm_intel_bo_gem, bucket->head.next, head);
 	    DRMLISTDEL(&bo_gem->head);
-	    bucket->num_entries--;
 
 	    drm_intel_gem_bo_free(&bo_gem->bo);
 	}
@@ -1225,11 +1208,8 @@ void
 drm_intel_bufmgr_gem_enable_reuse(drm_intel_bufmgr *bufmgr)
 {
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
-    int i;
 
-    for (i = 0; i < DRM_INTEL_GEM_BO_BUCKETS; i++) {
-	bufmgr_gem->cache_bucket[i].max_entries = -1;
-    }
+    bufmgr_gem->bo_reuse = 1;
 }
 
 /**
