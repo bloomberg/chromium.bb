@@ -178,6 +178,19 @@ bool BufferedResourceHandler::DelayResponse() {
     response_->response_head.mime_type.assign(mime_type);
   }
 
+  if (mime_type == "application/rss+xml" ||
+      mime_type == "application/atom+xml") {
+    // Sad face.  The server told us that they wanted us to treat the response
+    // as RSS or Atom.  Unfortunately, we don't have a built-in feed previewer
+    // like other browsers.  We can't just render the content as XML because
+    // web sites let third parties inject arbitrary script into their RSS
+    // feeds.  That leaves us with little choice but to practically ignore the
+    // response.  In the future, when we have an RSS feed previewer, we can
+    // remove this logic.
+    mime_type.assign("text/plain");
+    response_->response_head.mime_type.assign(mime_type);
+  }
+
   if (ShouldBuffer(request_->url(), mime_type)) {
     // This is a temporary fix for the fact that webkit expects to have
     // enough data to decode the doctype in order to select the rendering
