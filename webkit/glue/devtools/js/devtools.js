@@ -159,6 +159,7 @@ WebInspector.loaded = function() {
   devtools.tools.reset();
 
   Preferences.ignoreWhitespace = false;
+  Preferences.samplingCPUProfiler = true;
   oldLoaded.call(this);
 
   // Hide dock button on Mac OS.
@@ -273,40 +274,6 @@ WebInspector.ScriptsPanel.prototype.__defineGetter__(
     this.enableToggleButton.visible = false;
     oldShow.call(this);
   };
-})();
-
-
-// As columns in data grid can't be changed after initialization,
-// we need to intercept the constructor and modify columns upon creation.
-(function InterceptDataGridForProfiler() {
-   var originalDataGrid = WebInspector.DataGrid;
-   WebInspector.DataGrid = function(columns) {
-     if (('average' in columns) && ('calls' in columns)) {
-       delete columns['average'];
-       delete columns['calls'];
-     }
-     return new originalDataGrid(columns);
-   };
-})();
-
-
-// WebKit's profiler displays milliseconds with high resolution (shows
-// three digits after the decimal point). We never have such resolution,
-// as our minimal sampling rate is 1 ms. So we are disabling high resolution
-// to avoid visual clutter caused by meaningless ".000" parts.
-(function InterceptTimeDisplayInProfiler() {
-   var originalDataGetter =
-       WebInspector.ProfileDataGridNode.prototype.__lookupGetter__('data');
-   WebInspector.ProfileDataGridNode.prototype.__defineGetter__('data',
-     function() {
-       var oldNumberSecondsToString = Number.secondsToString;
-       Number.secondsToString = function(seconds, formatterFunction) {
-         return oldNumberSecondsToString(seconds, formatterFunction, false);
-       };
-       var data = originalDataGetter.call(this);
-       Number.secondsToString = oldNumberSecondsToString;
-       return data;
-     });
 })();
 
 
