@@ -12,9 +12,6 @@
 #include "webkit/api/public/WebVector.h"
 #include "webkit/glue/glue_serialize.h"
 
-using namespace std;
-using namespace webkit_glue;
-
 using WebKit::WebData;
 using WebKit::WebHistoryItem;
 using WebKit::WebHTTPBody;
@@ -113,8 +110,8 @@ class GlueSerializeTest : public testing::Test {
                          b_body.elementAt(i, b_elem); ++i) {
         EXPECT_EQ(a_elem.type, b_elem.type);
         if (a_elem.type == WebHTTPBody::Element::TypeData) {
-          EXPECT_EQ(string(a_elem.data.data(), a_elem.data.size()),
-                    string(b_elem.data.data(), b_elem.data.size()));
+          EXPECT_EQ(std::string(a_elem.data.data(), a_elem.data.size()),
+                    std::string(b_elem.data.data(), b_elem.data.size()));
         } else {
           EXPECT_EQ(string16(a_elem.filePath), string16(b_elem.filePath));
         }
@@ -138,10 +135,10 @@ TEST_F(GlueSerializeTest, BackwardsCompatibleTest) {
 
   // Make sure version 3 (current version) can read versions 1 and 2.
   for (int i = 1; i <= 2; i++) {
-    string serialized_item;
-    HistoryItemToVersionedString(item, i, &serialized_item);
+    std::string serialized_item;
+    webkit_glue::HistoryItemToVersionedString(item, i, &serialized_item);
     const WebHistoryItem& deserialized_item =
-        HistoryItemFromString(serialized_item);
+        webkit_glue::HistoryItemFromString(serialized_item);
     ASSERT_FALSE(item.isNull());
     ASSERT_FALSE(deserialized_item.isNull());
     HistoryItemExpectEqual(item, deserialized_item);
@@ -152,9 +149,9 @@ TEST_F(GlueSerializeTest, BackwardsCompatibleTest) {
 // deserialized.
 TEST_F(GlueSerializeTest, HistoryItemSerializeTest) {
   const WebHistoryItem& item = MakeHistoryItem(true, true);
-  const string& serialized_item = HistoryItemToString(item);
+  const std::string& serialized_item = webkit_glue::HistoryItemToString(item);
   const WebHistoryItem& deserialized_item =
-      HistoryItemFromString(serialized_item);
+      webkit_glue::HistoryItemFromString(serialized_item);
 
   ASSERT_FALSE(item.isNull());
   ASSERT_FALSE(deserialized_item.isNull());
@@ -173,7 +170,7 @@ TEST_F(GlueSerializeTest, BadMessagesTest) {
     // Bad real number.
     p.WriteInt(-1);
     std::string s(static_cast<const char*>(p.data()), p.size());
-    HistoryItemFromString(s);
+    webkit_glue::HistoryItemFromString(s);
   }
   {
     double d = 0;
@@ -195,9 +192,8 @@ TEST_F(GlueSerializeTest, BadMessagesTest) {
     p.WriteInt(1);
     p.WriteInt(WebHTTPBody::Element::TypeData);
     std::string s(static_cast<const char*>(p.data()), p.size());
-    HistoryItemFromString(s);
+    webkit_glue::HistoryItemFromString(s);
   }
 }
 
-
-} // namespace
+}  // namespace

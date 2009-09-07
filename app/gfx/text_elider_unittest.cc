@@ -9,8 +9,6 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace gfx;
-
 namespace {
 
 const wchar_t kEllipsis[] = L"\x2026";

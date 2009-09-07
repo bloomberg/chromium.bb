@@ -22,9 +22,6 @@
 
 namespace skia {
 
-// TODO(brettw) remove this and put this file in the skia namespace.
-using namespace gfx;
-
 namespace {
 
 // Returns the ceiling/floor as an integer.

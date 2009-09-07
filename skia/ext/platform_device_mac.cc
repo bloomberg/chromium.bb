@@ -12,9 +12,6 @@
 
 namespace skia {
 
-// TODO(brettw) remove this when the gfx namespaces are all removed.
-using namespace gfx;
-
 namespace {
 
 // Constrains position and size to fit within available_size.
@@ -96,7 +93,8 @@ void PlatformDevice::LoadTransformToCGContext(CGContextRef context,
 
   // Reset matrix to identity.
   CGAffineTransform orig_cg_matrix = CGContextGetCTM(context);
-  CGAffineTransform orig_cg_matrix_inv = CGAffineTransformInvert(orig_cg_matrix);
+  CGAffineTransform orig_cg_matrix_inv = CGAffineTransformInvert(
+      orig_cg_matrix);
   CGContextConcatCTM(context, orig_cg_matrix_inv);
 
   // assert that we have indeed returned to the identity Matrix.
@@ -112,7 +110,8 @@ void PlatformDevice::LoadTransformToCGContext(CGContextRef context,
   SkScalar ty = -matrix.getTranslateY(); // y axis is flipped.
   transformed_matrix.setTranslateY(ty + (SkScalar)height);
 
-  CGAffineTransform cg_matrix = SkMatrixToCGAffineTransform(transformed_matrix);
+  CGAffineTransform cg_matrix = gfx::SkMatrixToCGAffineTransform(
+      transformed_matrix);
 
   // Load final transform into context.
   CGContextConcatCTM(context, cg_matrix);
@@ -127,7 +126,7 @@ void PlatformDevice::LoadClippingRegionToCGContext(
     // region can be empty, in which case everything will be clipped.
     SkRect rect;
     rect.setEmpty();
-    CGContextClipToRect(context, SkRectToCGRect(rect));
+    CGContextClipToRect(context, gfx::SkRectToCGRect(rect));
   } else if (region.isRect()) {
     // Do the transformation.
     SkRect rect;
@@ -135,7 +134,7 @@ void PlatformDevice::LoadClippingRegionToCGContext(
     transformation.mapRect(&rect);
     SkIRect irect;
     rect.round(&irect);
-    CGContextClipToRect(context, SkIRectToCGRect(irect));
+    CGContextClipToRect(context, gfx::SkIRectToCGRect(irect));
   } else {
     // It is complex.
     SkPath path;
