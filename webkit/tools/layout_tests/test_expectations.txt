@@ -1437,10 +1437,6 @@ BUG10374 MAC : LayoutTests/plugins/open-and-close-window-with-plugin.html = CRAS
 BUG10376 MAC : LayoutTests/fast/dom/isindex-002.html = FAIL
 BUG10376 MAC : LayoutTests/fast/events/init-events.html = FAIL
 
-// This tests has a comment about order isn't really defined and could change,
-// maybe we just need to update to this order?
-BUG10377 MAC : LayoutTests/fast/events/drag-in-frames.html = FAIL
-
 // These two have a different object type in the dom dump. Plugin-related.
 // Ignored on Win/Linux because they rely on QT to provide a TIFF decoder.
 BUG10378 MAC : LayoutTests/fast/images/embed-image.html = FAIL CRASH
@@ -1610,7 +1606,7 @@ BUG8630 LINUX DEBUG : LayoutTests/svg/custom/mask-inside-defs.svg = FAIL PASS
 BUG8630 LINUX DEBUG : LayoutTests/svg/custom/stroked-pattern.svg = FAIL PASS
 BUG8630 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL PASS
 BUG8630 LINUX : LayoutTests/svg/batik/filters/feTile.svg = FAIL PASS
-BUG8630 LINUX : LayoutTests/fast/backgrounds/001.html = CRASH PASS
+BUG8630 LINUX : LayoutTests/fast/backgrounds/001.html = CRASH FAIL PASS
 BUG8630 LINUX : LayoutTests/fast/forms/form-added-to-table.html = FAIL PASS
 BUG8630 LINUX : LayoutTests/fast/forms/button-align.html = FAIL PASS
 BUG8630 LINUX : LayoutTests/fast/forms/slider-thumb-stylability.html = FAIL PASS
@@ -2103,9 +2099,9 @@ BUG14207 WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS 
 BUG14673 : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL TIMEOUT
 
 // Need investigation: test shell crashers.
-BUG14752 LINUX : LayoutTests/http/tests/cache/subresource-expiration.html = CRASH PASS
+BUG14752 LINUX : LayoutTests/http/tests/cache/subresource-expiration.html = CRASH FAIL PASS
 BUG14751 LINUX DEBUG: LayoutTests/css2.1/atrule_longest_match.html = CRASH PASS
-BUG14767 LINUX : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html = CRASH PASS
+BUG14767 LINUX : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html = CRASH FAIL PASS
 
 BUG14832 : LayoutTests/editing/selection/user-drag-element-and-user-select-none.html = FAIL
 BUG14831 : LayoutTests/fast/events/event-trace.html = FAIL
@@ -2134,7 +2130,7 @@ BUG15478 SKIP : LayoutTests/fast/frames/viewsource-on-image-file.html = FAIL
 BUG15478 SKIP : LayoutTests/platform/qt/fast/events/event-sender-keydown-frame.html = FAIL
 
 // WebKit 45270:45287
-BUG15490 LINUX : LayoutTests/editing/deleting/25322-1.html = PASS CRASH
+BUG15490 LINUX : LayoutTests/editing/deleting/25322-1.html = PASS FAIL CRASH
 
 // Flaky for a while on DEBUG; also related to BUG17974
 BUG15267 LINUX DEBUG : LayoutTests/transitions/cancel-transition.html = PASS FAIL
@@ -2391,7 +2387,7 @@ BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-style-filter.html = PASS 
 // started crashing at build 5859 of webkit-dbg-2
 BUG20786 WIN DEBUG : LayoutTests/fast/dom/undetectable-document-all.html = PASS CRASH
 
-BUG10480 LINUX DEBUG : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
+BUG10480 LINUX : LayoutTests/editing/selection/move-by-line-001.html = PASS FAIL
 
 // Flakey crashes in js tests. Cause unknown.
 BUG20886 WIN DEBUG : LayoutTests/fast/js/regexp-no-extensions.html = CRASH PASS
@@ -2432,3 +2428,7 @@ BUG21267 : LayoutTests/fast/events/click-focus-anchor.html = FAIL
 BUG21267 : LayoutTests/fast/events/tab-focus-anchor.html = FAIL
 
 BUG_JAPHET MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
+
+// Flaky as of WebKit r48155
+BUG_JAPHET WIN : LayoutTests/transitions/transition-end-event-transform.html = FAIL PASS
+
