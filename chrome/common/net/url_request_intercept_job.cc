@@ -30,7 +30,6 @@ URLRequestInterceptJob::URLRequestInterceptJob(URLRequest* request,
     : URLRequestJob(request),
       cprequest_(cprequest),
       plugin_(plugin),
-      got_headers_(false),
       read_buffer_(NULL) {
   cprequest_->data = this;  // see FromCPRequest().
 

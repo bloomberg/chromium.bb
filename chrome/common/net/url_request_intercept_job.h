@@ -58,7 +58,6 @@ class URLRequestInterceptJob
   NotificationRegistrar registrar_;
   scoped_ptr<ScopableCPRequest> cprequest_;
   ChromePluginLib* plugin_;
-  bool got_headers_;
   net::IOBuffer* read_buffer_;
   int read_buffer_size_;
 
