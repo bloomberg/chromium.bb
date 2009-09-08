@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "o3d/gpu_plugin/command_buffer.h"
-#include "o3d/gpu_plugin/np_utils/base_np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/dynamic_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_browser_mock.h"
+#include "o3d/gpu_plugin/np_utils/np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,15 +19,14 @@ using testing::StrictMock;
 namespace o3d {
 namespace gpu_plugin {
 
-class MockSystemNPObject : public DispatchedNPObject {
+class MockSystemNPObject : public DefaultNPObject<NPObject> {
  public:
-  explicit MockSystemNPObject(NPP npp) : DispatchedNPObject(npp) {
+  explicit MockSystemNPObject(NPP npp) {
   }
 
   MOCK_METHOD1(CreateSharedMemory, NPObjectPointer<NPObject>(int32));
 
- protected:
-  NP_UTILS_BEGIN_DISPATCHER_CHAIN(MockSystemNPObject, DispatchedNPObject)
+  NP_UTILS_BEGIN_DISPATCHER_CHAIN(MockSystemNPObject, DefaultNPObject<NPObject>)
     NP_UTILS_DISPATCHER(CreateSharedMemory, NPObjectPointer<NPObject>(int32))
   NP_UTILS_END_DISPATCHER_CHAIN
 
@@ -65,8 +64,8 @@ TEST_F(CommandBufferTest, InitializesCommandBuffer) {
   EXPECT_CALL(mock_browser_, GetWindowNPObject(NULL))
     .WillOnce(Return(window_object_.ToReturned()));
 
-  NPObjectPointer<BaseNPObject> expected_buffer =
-      NPCreateObject<BaseNPObject>(NULL);
+  NPObjectPointer<NPObject> expected_buffer =
+      NPCreateObject<MockNPObject>(NULL);
 
   EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
     .WillOnce(Return(expected_buffer));
@@ -92,7 +91,7 @@ TEST_F(CommandBufferTest, InitializeFailsIfCannotCreateSharedMemory) {
     .WillOnce(Return(window_object_.ToReturned()));
 
   EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
-    .WillOnce(Return(NPObjectPointer<BaseNPObject>()));
+    .WillOnce(Return(NPObjectPointer<NPObject>()));
 
   EXPECT_FALSE(command_buffer_object_->Initialize(1024));
   EXPECT_EQ(NPObjectPointer<NPObject>(), command_buffer_object_->GetBuffer());
@@ -102,8 +101,8 @@ TEST_F(CommandBufferTest, InitializeFailsIfCannotMapSharedMemory) {
   EXPECT_CALL(mock_browser_, GetWindowNPObject(NULL))
     .WillOnce(Return(window_object_.ToReturned()));
 
-  NPObjectPointer<BaseNPObject> expected_buffer =
-      NPCreateObject<BaseNPObject>(NULL);
+  NPObjectPointer<NPObject> expected_buffer =
+      NPCreateObject<MockNPObject>(NULL);
 
   EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
     .WillOnce(Return(expected_buffer));

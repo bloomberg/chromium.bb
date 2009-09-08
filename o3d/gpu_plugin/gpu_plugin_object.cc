@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
+#include "o3d/gpu_plugin/np_utils/np_utils.h"
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
 
 namespace o3d {
@@ -18,7 +19,7 @@ const NPUTF8 GPUPluginObject::kPluginType[] =
     "application/vnd.google.chrome.gpu-plugin";
 
 GPUPluginObject::GPUPluginObject(NPP npp)
-    : DispatchedNPObject(npp),
+    : npp_(npp),
       status_(CREATED),
       shared_memory_(NULL) {
   memset(&window_, 0, sizeof(window_));
@@ -60,7 +61,7 @@ NPError GPUPluginObject::Destroy(NPSavedData** saved) {
     return NPERR_GENERIC_ERROR;
 
   if (shared_memory_) {
-    NPBrowser::get()->UnmapSharedMemory(npp(), shared_memory_);
+    NPBrowser::get()->UnmapSharedMemory(npp_, shared_memory_);
   }
 
   command_buffer_object_ = NPObjectPointer<CommandBuffer>();
@@ -84,7 +85,7 @@ NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
   if (command_buffer_object_.Get())
     return command_buffer_object_;
 
-  command_buffer_object_ = NPCreateObject<CommandBuffer>(npp());
+  command_buffer_object_ = NPCreateObject<CommandBuffer>(npp_);
   if (!command_buffer_object_->Initialize(kCommandBufferSize)) {
     command_buffer_object_ = NPObjectPointer<CommandBuffer>();
   }

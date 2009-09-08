@@ -7,7 +7,7 @@
 namespace o3d {
 namespace gpu_plugin {
 
-DynamicNPObject::DynamicNPObject(NPP npp) : BaseNPObject(npp) {
+DynamicNPObject::DynamicNPObject(NPP npp) {
 }
 
 void DynamicNPObject::Invalidate() {

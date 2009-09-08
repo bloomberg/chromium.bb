@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// There is deliberately no sentry here. This file is included multiple times,
-// once for each dispatcher specialiation arity.
+// There is deliberately no header guard here. This file is included multiple
+// times, once for each dispatcher specialiation arity. Do not include this
+// file directly. Include np_dispatcher.h instead.
 
 template <typename NPObjectType PARAM_TYPENAMES>
 class NPDispatcher<NPObjectType, void(PARAM_TYPES)>

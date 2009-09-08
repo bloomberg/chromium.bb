@@ -4,9 +4,10 @@
 
 #include <string>
 
-#include "o3d/gpu_plugin/np_utils/dispatched_np_object.h"
+#include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_browser_stub.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
+#include "o3d/gpu_plugin/np_utils/np_object_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,10 +20,9 @@ namespace gpu_plugin {
 // This mock class has a dispatcher chain with an entry for each mocked
 // function. The tests that follow that invoking an NPAPI method calls the
 // corresponding mocked member function.
-class MockDispatchedNPObject : public DispatchedNPObject {
+class MockDispatchedNPObject : public DefaultNPObject<NPObject> {
  public:
-  explicit MockDispatchedNPObject(NPP npp)
-      : DispatchedNPObject(npp) {
+  explicit MockDispatchedNPObject(NPP npp) {
   }
 
   MOCK_METHOD0(VoidReturnNoParams, void());
@@ -31,7 +31,7 @@ class MockDispatchedNPObject : public DispatchedNPObject {
   MOCK_METHOD1(VoidReturnFloatParam, void(float));
   MOCK_METHOD1(VoidReturnDoubleParam, void(double));
   MOCK_METHOD1(VoidReturnStringParam, void(std::string));
-  MOCK_METHOD1(VoidReturnObjectParam, void(NPObjectPointer<BaseNPObject>));
+  MOCK_METHOD1(VoidReturnObjectParam, void(NPObjectPointer<NPObject>));
   MOCK_METHOD2(VoidReturnTwoParams, void(bool, int));
   MOCK_METHOD0(Overloaded, void());
   MOCK_METHOD1(Overloaded, void(bool));
@@ -41,18 +41,16 @@ class MockDispatchedNPObject : public DispatchedNPObject {
   MOCK_METHOD0(FloatReturn, float());
   MOCK_METHOD0(DoubleReturn, double());
   MOCK_METHOD0(StringReturn, std::string());
-  MOCK_METHOD0(ObjectReturn, NPObjectPointer<BaseNPObject>());
+  MOCK_METHOD0(ObjectReturn, NPObjectPointer<NPObject>());
 
- protected:
-  NP_UTILS_BEGIN_DISPATCHER_CHAIN(MockDispatchedNPObject, DispatchedNPObject)
+  NP_UTILS_BEGIN_DISPATCHER_CHAIN(MockDispatchedNPObject, DefaultNPObject<NPObject>)
     NP_UTILS_DISPATCHER(VoidReturnNoParams, void())
     NP_UTILS_DISPATCHER(VoidReturnBoolParam, void(bool))
     NP_UTILS_DISPATCHER(VoidReturnIntParam, void(int))
     NP_UTILS_DISPATCHER(VoidReturnFloatParam, void(float))
     NP_UTILS_DISPATCHER(VoidReturnDoubleParam, void(double))
     NP_UTILS_DISPATCHER(VoidReturnStringParam, void(std::string))
-    NP_UTILS_DISPATCHER(VoidReturnObjectParam,
-        void(NPObjectPointer<BaseNPObject>))
+    NP_UTILS_DISPATCHER(VoidReturnObjectParam, void(NPObjectPointer<NPObject>))
     NP_UTILS_DISPATCHER(VoidReturnTwoParams, void(bool, int))
     NP_UTILS_DISPATCHER(Overloaded, void())
     NP_UTILS_DISPATCHER(Overloaded, void(bool))
@@ -62,7 +60,7 @@ class MockDispatchedNPObject : public DispatchedNPObject {
     NP_UTILS_DISPATCHER(FloatReturn, float())
     NP_UTILS_DISPATCHER(DoubleReturn, double())
     NP_UTILS_DISPATCHER(StringReturn, std::string())
-    NP_UTILS_DISPATCHER(ObjectReturn, NPObjectPointer<BaseNPObject>());
+    NP_UTILS_DISPATCHER(ObjectReturn, NPObjectPointer<NPObject>());
   NP_UTILS_END_DISPATCHER_CHAIN
 };
 
@@ -70,7 +68,7 @@ class DispatchedNPObjectTest : public testing::Test {
  protected:
   virtual void SetUp() {
     object_ = NPCreateObject<StrictMock<MockDispatchedNPObject> >(NULL);
-    passed_object_ = NPCreateObject<BaseNPObject>(NULL);
+    passed_object_ = NPCreateObject<MockNPObject>(NULL);
 
     for (int i = 0; i != arraysize(args_); ++i) {
       NULL_TO_NPVARIANT(args_[i]);
@@ -82,7 +80,7 @@ class DispatchedNPObjectTest : public testing::Test {
   NPVariant args_[3];
   NPVariant result_;
   NPObjectPointer<MockDispatchedNPObject> object_;
-  NPObjectPointer<BaseNPObject> passed_object_;
+  NPObjectPointer<NPObject> passed_object_;
 };
 
 TEST_F(DispatchedNPObjectTest, CannotInvokeMissingFunction) {
@@ -222,7 +220,7 @@ TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnObjectParamWithObject) {
 TEST_F(DispatchedNPObjectTest, CanInvokeVoidReturnObjectParamWithNull) {
   EXPECT_CALL(
       *object_,
-      VoidReturnObjectParam(NPObjectPointer<BaseNPObject>()));
+      VoidReturnObjectParam(NPObjectPointer<NPObject>()));
 
   NULL_TO_NPVARIANT(args_[0]);
 
@@ -367,7 +365,7 @@ TEST_F(DispatchedNPObjectTest, CanInvokeObjectReturnWithObject) {
 
 TEST_F(DispatchedNPObjectTest, CanInvokeObjectReturnWithNull) {
   EXPECT_CALL(*object_, ObjectReturn())
-      .WillOnce(Return(NPObjectPointer<BaseNPObject>()));
+      .WillOnce(Return(NPObjectPointer<NPObject>()));
 
   EXPECT_TRUE(object_->Invoke(
       NPBrowser::get()->GetStringIdentifier("objectReturn"),

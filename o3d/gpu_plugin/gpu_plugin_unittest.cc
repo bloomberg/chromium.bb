@@ -4,7 +4,7 @@
 
 #include "o3d/gpu_plugin/gpu_plugin.h"
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
-#include "o3d/gpu_plugin/np_utils/base_np_object_mock.h"
+#include "o3d/gpu_plugin/np_utils/np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_plugin_object_factory_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_plugin_object_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,7 +35,7 @@ class GPUPluginTest : public testing::Test {
 
     plugin_object_factory_ = new StrictMock<MockPluginObjectFactory>;
 
-    np_class_ = BaseNPObject::GetNPClass<StrictMock<MockBaseNPObject> >();
+    np_class_ = NPGetClass<StrictMock<MockNPObject> >();
   }
 
   virtual void TearDown() {

@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "o3d/gpu_plugin/np_utils/base_np_object.h"
+#include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
 
 namespace o3d {
@@ -15,16 +15,16 @@ namespace gpu_plugin {
 
 // NPObjects of this type have a dictionary of property name / variant pairs
 // that can be changed at runtime through NPAPI.
-class DynamicNPObject : public BaseNPObject {
+class DynamicNPObject : public DefaultNPObject<NPObject> {
  public:
   explicit DynamicNPObject(NPP npp);
 
-  virtual void Invalidate();
-  virtual bool HasProperty(NPIdentifier name);
-  virtual bool GetProperty(NPIdentifier name, NPVariant* result);
-  virtual bool SetProperty(NPIdentifier name, const NPVariant* value);
-  virtual bool RemoveProperty(NPIdentifier name);
-  virtual bool Enumerate(NPIdentifier** names, uint32_t* count);
+  void Invalidate();
+  bool HasProperty(NPIdentifier name);
+  bool GetProperty(NPIdentifier name, NPVariant* result);
+  bool SetProperty(NPIdentifier name, const NPVariant* value);
+  bool RemoveProperty(NPIdentifier name);
+  bool Enumerate(NPIdentifier** names, uint32_t* count);
 
  private:
   typedef std::map<NPIdentifier, SmartNPVariant> PropertyMap;

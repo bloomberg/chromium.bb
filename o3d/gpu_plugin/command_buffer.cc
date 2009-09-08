@@ -7,12 +7,12 @@
 namespace o3d {
 namespace gpu_plugin {
 
-CommandBuffer::CommandBuffer(NPP npp) : DispatchedNPObject(npp) {
+CommandBuffer::CommandBuffer(NPP npp) : npp_(npp) {
 }
 
 CommandBuffer::~CommandBuffer() {
   if (shared_memory_) {
-    NPBrowser::get()->UnmapSharedMemory(npp(), shared_memory_);
+    NPBrowser::get()->UnmapSharedMemory(npp_, shared_memory_);
   }
 }
 
@@ -21,27 +21,27 @@ bool CommandBuffer::Initialize(int32 size) {
     return false;
 
   NPObjectPointer<NPObject> window = NPObjectPointer<NPObject>::FromReturned(
-      NPBrowser::get()->GetWindowNPObject(npp()));
+      NPBrowser::get()->GetWindowNPObject(npp_));
   if (!window.Get())
     return false;
 
   NPObjectPointer<NPObject> chromium;
-  if (!NPGetProperty(npp(), window, "chromium", &chromium)) {
+  if (!NPGetProperty(npp_, window, "chromium", &chromium)) {
     return false;
   }
 
   NPObjectPointer<NPObject> system;
-  if (!NPGetProperty(npp(), chromium, "system", &system)) {
+  if (!NPGetProperty(npp_, chromium, "system", &system)) {
     return false;
   }
 
-  if (!NPInvoke(npp(), system, "createSharedMemory", size,
+  if (!NPInvoke(npp_, system, "createSharedMemory", size,
                 &buffer_object_)) {
     return false;
   }
 
   shared_memory_ = NPBrowser::get()->MapSharedMemory(
-      npp(), buffer_object_.Get(), size, false);
+      npp_, buffer_object_.Get(), size, false);
   if (!shared_memory_) {
     buffer_object_ = NPObjectPointer<NPObject>();
     return false;

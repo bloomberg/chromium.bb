@@ -4,8 +4,8 @@
 
 #include "o3d/gpu_plugin/command_buffer_mock.h"
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
-#include "o3d/gpu_plugin/np_utils/base_np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_browser_mock.h"
+#include "o3d/gpu_plugin/np_utils/np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -107,7 +107,7 @@ TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsInitializedCommandBuffer) {
   NPObjectPointer<MockCommandBuffer> command_buffer_object =
       NPCreateObject<StrictMock<MockCommandBuffer> >(NULL);
   EXPECT_CALL(mock_browser_, CreateObject(NULL,
-      BaseNPObject::GetNPClass<CommandBuffer>()))
+      NPGetClass<CommandBuffer>()))
     .WillOnce(Return(command_buffer_object.ToReturned()));
 
   EXPECT_CALL(*command_buffer_object.Get(), Initialize(1024))
@@ -132,7 +132,7 @@ TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsNullIfCannotInitialize) {
   NPObjectPointer<MockCommandBuffer> command_buffer_object =
       NPCreateObject<StrictMock<MockCommandBuffer> >(NULL);
   EXPECT_CALL(mock_browser_, CreateObject(NULL,
-      BaseNPObject::GetNPClass<CommandBuffer>()))
+      NPGetClass<CommandBuffer>()))
     .WillOnce(Return(command_buffer_object.ToReturned()));
 
   EXPECT_CALL(*command_buffer_object.Get(), Initialize(1024))

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "o3d/gpu_plugin/np_utils/base_np_object_mock.h"
-#include "o3d/gpu_plugin/np_utils/base_np_object.h"
+#include "o3d/gpu_plugin/np_utils/np_class.h"
+#include "o3d/gpu_plugin/np_utils/np_object_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,22 +12,17 @@ using testing::StrictMock;
 namespace o3d {
 namespace gpu_plugin {
 
-class BaseNPObjectTest : public testing::Test {
+class NPClassTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    np_class = BaseNPObject::GetNPClass<StrictMock<MockBaseNPObject> >();
+    np_class = NPGetClass<StrictMock<MockNPObject> >();
 
     // Dummy identifier is never used with real NPAPI so it can point to
     // anything.
     identifier = this;
-
-    // Make sure no MockBaseNPObject objects exist before test.
-    ASSERT_EQ(0, MockBaseNPObject::count());
   }
 
   virtual void TearDown() {
-    // Make sure no MockBaseNPObject leaked an object.
-    ASSERT_EQ(0, MockBaseNPObject::count());
   }
 
   NPP_t npp_;
@@ -37,22 +32,16 @@ class BaseNPObjectTest : public testing::Test {
   NPVariant result;
 };
 
-
-TEST_F(BaseNPObjectTest, AllocateAndDeallocateObject) {
-  EXPECT_EQ(0, MockBaseNPObject::count());
-
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, AllocateAndDeallocateObject) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
   EXPECT_TRUE(NULL != object);
 
-  EXPECT_EQ(1, MockBaseNPObject::count());
-
   np_class->deallocate(object);
-  EXPECT_EQ(0, MockBaseNPObject::count());
 }
 
-TEST_F(BaseNPObjectTest, InvalidateForwards) {
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, InvalidateForwards) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
 
   EXPECT_CALL(*object, Invalidate());
@@ -61,8 +50,8 @@ TEST_F(BaseNPObjectTest, InvalidateForwards) {
   np_class->deallocate(object);
 }
 
-TEST_F(BaseNPObjectTest, HasMethodForwards) {
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, HasMethodForwards) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
 
   EXPECT_CALL(*object, HasMethod(identifier));
@@ -71,8 +60,8 @@ TEST_F(BaseNPObjectTest, HasMethodForwards) {
   np_class->deallocate(object);
 }
 
-TEST_F(BaseNPObjectTest, InvokeForwards) {
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, InvokeForwards) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
 
   EXPECT_CALL(*object, Invoke(identifier, args, 3, &result));
@@ -81,8 +70,8 @@ TEST_F(BaseNPObjectTest, InvokeForwards) {
   np_class->deallocate(object);
 }
 
-TEST_F(BaseNPObjectTest, InvokeDefaultForwards) {
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, InvokeDefaultForwards) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
 
   EXPECT_CALL(*object, InvokeDefault(args, 3, &result));
@@ -91,8 +80,8 @@ TEST_F(BaseNPObjectTest, InvokeDefaultForwards) {
   np_class->deallocate(object);
 }
 
-TEST_F(BaseNPObjectTest, HasPropertyForwards) {
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, HasPropertyForwards) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
 
   EXPECT_CALL(*object, HasProperty(identifier));
@@ -101,8 +90,8 @@ TEST_F(BaseNPObjectTest, HasPropertyForwards) {
   np_class->deallocate(object);
 }
 
-TEST_F(BaseNPObjectTest, GetPropertyForwards) {
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, GetPropertyForwards) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
 
   EXPECT_CALL(*object, GetProperty(identifier, &result));
@@ -111,8 +100,8 @@ TEST_F(BaseNPObjectTest, GetPropertyForwards) {
   np_class->deallocate(object);
 }
 
-TEST_F(BaseNPObjectTest, SetPropertyForwards) {
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, SetPropertyForwards) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
 
   EXPECT_CALL(*object, SetProperty(identifier, &result));
@@ -121,8 +110,8 @@ TEST_F(BaseNPObjectTest, SetPropertyForwards) {
   np_class->deallocate(object);
 }
 
-TEST_F(BaseNPObjectTest, RemovePropertyForwards) {
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, RemovePropertyForwards) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
 
   EXPECT_CALL(*object, RemoveProperty(identifier));
@@ -131,8 +120,8 @@ TEST_F(BaseNPObjectTest, RemovePropertyForwards) {
   np_class->deallocate(object);
 }
 
-TEST_F(BaseNPObjectTest, EnumerateForwards) {
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, EnumerateForwards) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
 
   NPIdentifier* identifier = NULL;
@@ -143,8 +132,8 @@ TEST_F(BaseNPObjectTest, EnumerateForwards) {
   np_class->deallocate(object);
 }
 
-TEST_F(BaseNPObjectTest, ConstructForwards) {
-  MockBaseNPObject* object = static_cast<MockBaseNPObject*>(
+TEST_F(NPClassTest, ConstructForwards) {
+  MockNPObject* object = static_cast<MockNPObject*>(
       np_class->allocate(&npp_, const_cast<NPClass*>(np_class)));
 
   EXPECT_CALL(*object, Construct(args, 3, &result));

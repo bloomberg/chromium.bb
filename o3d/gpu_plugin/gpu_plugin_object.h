@@ -19,7 +19,8 @@ namespace o3d {
 namespace gpu_plugin {
 
 // The scriptable object for the GPU plugin.
-class GPUPluginObject : public DispatchedNPObject, public PluginObject {
+class GPUPluginObject : public DefaultNPObject<NPObject>,
+                        public PluginObject {
  public:
   static const NPUTF8 kPluginType[];
 
@@ -45,8 +46,7 @@ class GPUPluginObject : public DispatchedNPObject, public PluginObject {
   // Initializes and returns the command buffer object.
   NPObjectPointer<NPObject> OpenCommandBuffer();
 
- protected:
-  NP_UTILS_BEGIN_DISPATCHER_CHAIN(GPUPluginObject, DispatchedNPObject)
+  NP_UTILS_BEGIN_DISPATCHER_CHAIN(GPUPluginObject, DefaultNPObject<NPObject>)
     NP_UTILS_DISPATCHER(OpenCommandBuffer, NPObjectPointer<NPObject>())
   NP_UTILS_END_DISPATCHER_CHAIN
 
@@ -59,6 +59,7 @@ class GPUPluginObject : public DispatchedNPObject, public PluginObject {
     DESTROYED,
   };
 
+  NPP npp_;
   Status status_;
   NPWindow window_;
   NPObjectPointer<CommandBuffer> command_buffer_object_;

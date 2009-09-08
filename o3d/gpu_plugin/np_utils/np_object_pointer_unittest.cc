@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "o3d/gpu_plugin/np_utils/base_np_object_mock.h"
+#include "o3d/gpu_plugin/np_utils/np_class.h"
+#include "o3d/gpu_plugin/np_utils/np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_browser_stub.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -14,21 +15,18 @@ using testing::StrictMock;
 namespace o3d {
 namespace gpu_plugin {
 
-class DerivedNPObject : public MockBaseNPObject {
+class DerivedNPObject : public MockNPObject {
  public:
-  explicit DerivedNPObject(NPP npp) : MockBaseNPObject(npp) {
+  explicit DerivedNPObject(NPP npp) : MockNPObject(npp) {
   }
 };
 
 class NPObjectPointerTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    np_class_ = BaseNPObject::GetNPClass<StrictMock<MockBaseNPObject> >();
+    np_class_ = NPGetClass<StrictMock<MockNPObject> >();
 
-    // Make sure no MockBaseNPObject objects exist before test.
-    ASSERT_EQ(0, MockBaseNPObject::count());
-
-    raw_pointer_ = static_cast<MockBaseNPObject*>(
+    raw_pointer_ = static_cast<MockNPObject*>(
       NPBrowser::get()->CreateObject(NULL, np_class_));
 
     raw_derived_pointer_ = static_cast<DerivedNPObject*>(
@@ -38,26 +36,23 @@ class NPObjectPointerTest : public testing::Test {
   virtual void TearDown() {
     NPBrowser::get()->ReleaseObject(raw_pointer_);
     NPBrowser::get()->ReleaseObject(raw_derived_pointer_);
-
-    // Make sure no MockBaseNPObject leaked an object.
-    ASSERT_EQ(0, MockBaseNPObject::count());
   }
 
   StubNPBrowser stub_browser_;
   const NPClass* np_class_;
-  MockBaseNPObject* raw_pointer_;
+  MockNPObject* raw_pointer_;
   DerivedNPObject* raw_derived_pointer_;
 };
 
 TEST_F(NPObjectPointerTest, PointerIsNullByDefault) {
-  NPObjectPointer<MockBaseNPObject> p;
+  NPObjectPointer<MockNPObject> p;
   ASSERT_TRUE(NULL == p.Get());
 }
 
 TEST_F(NPObjectPointerTest, PointerCanBeExplicitlyConstructedFromRawPointer) {
   EXPECT_EQ(1, raw_pointer_->referenceCount);
   {
-    NPObjectPointer<MockBaseNPObject> p(raw_pointer_);
+    NPObjectPointer<MockNPObject> p(raw_pointer_);
     ASSERT_TRUE(raw_pointer_ == p.Get());
     EXPECT_EQ(2, raw_pointer_->referenceCount);
   }
@@ -66,15 +61,15 @@ TEST_F(NPObjectPointerTest, PointerCanBeExplicitlyConstructedFromRawPointer) {
 
 TEST_F(NPObjectPointerTest,
     PointerCanBeExplicitlyConstructedFromNullRawPointer) {
-  NPObjectPointer<MockBaseNPObject> p(NULL);
+  NPObjectPointer<MockNPObject> p(NULL);
   ASSERT_TRUE(NULL == p.Get());
 }
 
 TEST_F(NPObjectPointerTest, PointerCanBeCopyConstructed) {
-  NPObjectPointer<MockBaseNPObject> p1(raw_pointer_);
+  NPObjectPointer<MockNPObject> p1(raw_pointer_);
   EXPECT_EQ(2, raw_pointer_->referenceCount);
   {
-    NPObjectPointer<MockBaseNPObject> p2(p1);
+    NPObjectPointer<MockNPObject> p2(p1);
     ASSERT_TRUE(raw_pointer_ == p2.Get());
     EXPECT_EQ(3, raw_pointer_->referenceCount);
   }
@@ -85,7 +80,7 @@ TEST_F(NPObjectPointerTest, PointerCanBeConstructedFromDerived) {
   NPObjectPointer<DerivedNPObject> p1(raw_derived_pointer_);
   EXPECT_EQ(2, raw_derived_pointer_->referenceCount);
   {
-    NPObjectPointer<MockBaseNPObject> p2(p1);
+    NPObjectPointer<MockNPObject> p2(p1);
     ASSERT_TRUE(raw_derived_pointer_ == p2.Get());
     EXPECT_EQ(3, raw_derived_pointer_->referenceCount);
   }
@@ -94,20 +89,20 @@ TEST_F(NPObjectPointerTest, PointerCanBeConstructedFromDerived) {
 
 TEST_F(NPObjectPointerTest,
     PointerCanBeCopyConstructedFromNull) {
-  NPObjectPointer<MockBaseNPObject> p(NULL);
+  NPObjectPointer<MockNPObject> p(NULL);
   ASSERT_TRUE(NULL == p.Get());
 }
 
 TEST_F(NPObjectPointerTest, PointerCanBeAssigned) {
-  NPObjectPointer<MockBaseNPObject> p1(raw_pointer_);
+  NPObjectPointer<MockNPObject> p1(raw_pointer_);
   EXPECT_EQ(2, raw_pointer_->referenceCount);
   {
-    NPObjectPointer<MockBaseNPObject> p2;
+    NPObjectPointer<MockNPObject> p2;
     p2 = p1;
     ASSERT_TRUE(raw_pointer_ == p2.Get());
     EXPECT_EQ(3, raw_pointer_->referenceCount);
 
-    p2 = NPObjectPointer<MockBaseNPObject>();
+    p2 = NPObjectPointer<MockNPObject>();
     ASSERT_TRUE(NULL == p2.Get());
     EXPECT_EQ(2, raw_pointer_->referenceCount);
 
@@ -119,7 +114,7 @@ TEST_F(NPObjectPointerTest, PointerCanBeAssigned) {
 }
 
 TEST_F(NPObjectPointerTest, PointerCanBeAssignedToSelf) {
-  NPObjectPointer<MockBaseNPObject> p(raw_pointer_);
+  NPObjectPointer<MockNPObject> p(raw_pointer_);
   NPBrowser::get()->ReleaseObject(raw_pointer_);
   EXPECT_EQ(1, raw_pointer_->referenceCount);
   p = p;
@@ -131,12 +126,12 @@ TEST_F(NPObjectPointerTest, PointerCanBeAssignedDerived) {
   NPObjectPointer<DerivedNPObject> p1(raw_derived_pointer_);
   EXPECT_EQ(2, raw_derived_pointer_->referenceCount);
   {
-    NPObjectPointer<MockBaseNPObject> p2;
+    NPObjectPointer<MockNPObject> p2;
     p2 = p1;
     ASSERT_TRUE(raw_derived_pointer_ == p2.Get());
     EXPECT_EQ(3, raw_derived_pointer_->referenceCount);
 
-    p2 = NPObjectPointer<MockBaseNPObject>();
+    p2 = NPObjectPointer<MockNPObject>();
     ASSERT_TRUE(NULL == p2.Get());
     EXPECT_EQ(2, raw_derived_pointer_->referenceCount);
 
@@ -148,7 +143,7 @@ TEST_F(NPObjectPointerTest, PointerCanBeAssignedDerived) {
 }
 
 TEST_F(NPObjectPointerTest, DerivedPointerCanBeAssignedToSelf) {
-  NPObjectPointer<MockBaseNPObject> p1(raw_derived_pointer_);
+  NPObjectPointer<MockNPObject> p1(raw_derived_pointer_);
   NPObjectPointer<DerivedNPObject> p2(raw_derived_pointer_);
   NPBrowser::get()->ReleaseObject(raw_derived_pointer_);
   NPBrowser::get()->ReleaseObject(raw_derived_pointer_);
@@ -160,21 +155,21 @@ TEST_F(NPObjectPointerTest, DerivedPointerCanBeAssignedToSelf) {
 }
 
 TEST_F(NPObjectPointerTest, CanComparePointersForEqual) {
-  NPObjectPointer<MockBaseNPObject> p1(raw_pointer_);
+  NPObjectPointer<MockNPObject> p1(raw_pointer_);
   NPObjectPointer<DerivedNPObject> p2(raw_derived_pointer_);
   EXPECT_TRUE(p1 == p1);
   EXPECT_FALSE(p1 == p2);
   EXPECT_FALSE(p2 == p1);
-  EXPECT_FALSE(p1 == NPObjectPointer<MockBaseNPObject>());
+  EXPECT_FALSE(p1 == NPObjectPointer<MockNPObject>());
 }
 
 TEST_F(NPObjectPointerTest, CanComparePointersForNotEqual) {
-  NPObjectPointer<MockBaseNPObject> p1(raw_pointer_);
+  NPObjectPointer<MockNPObject> p1(raw_pointer_);
   NPObjectPointer<DerivedNPObject> p2(raw_derived_pointer_);
   EXPECT_FALSE(p1 != p1);
   EXPECT_TRUE(p1 != p2);
   EXPECT_TRUE(p2 != p1);
-  EXPECT_TRUE(p1 != NPObjectPointer<MockBaseNPObject>());
+  EXPECT_TRUE(p1 != NPObjectPointer<MockNPObject>());
 }
 
 TEST_F(NPObjectPointerTest, ArrowOperatorCanBeUsedToAccessNPObjectMembers) {
@@ -182,12 +177,12 @@ TEST_F(NPObjectPointerTest, ArrowOperatorCanBeUsedToAccessNPObjectMembers) {
 
   EXPECT_CALL(*raw_pointer_, HasProperty(name)).WillOnce(Return(true));
 
-  NPObjectPointer<MockBaseNPObject> p(raw_pointer_);
+  NPObjectPointer<MockNPObject> p(raw_pointer_);
   EXPECT_TRUE(p->HasProperty(name));
 }
 
 TEST_F(NPObjectPointerTest, StarOperatorReturnsNPObjectReference) {
-  NPObjectPointer<MockBaseNPObject> p(raw_pointer_);
+  NPObjectPointer<MockNPObject> p(raw_pointer_);
   EXPECT_EQ(raw_pointer_, &*p);
 }
 
@@ -195,21 +190,21 @@ TEST_F(NPObjectPointerTest, PointerCanBeConstructedFromReturnedNPObject) {
   NPBrowser::get()->RetainObject(raw_pointer_);
   EXPECT_EQ(2, raw_pointer_->referenceCount);
   {
-    NPObjectPointer<MockBaseNPObject> p(
-      NPObjectPointer<MockBaseNPObject>::FromReturned(raw_pointer_));
+    NPObjectPointer<MockNPObject> p(
+      NPObjectPointer<MockNPObject>::FromReturned(raw_pointer_));
     EXPECT_EQ(2, raw_pointer_->referenceCount);
   }
   EXPECT_EQ(1, raw_pointer_->referenceCount);
 }
 
 TEST_F(NPObjectPointerTest, PointerCanBeConstructedFromReturnedNullNPObject) {
-  NPObjectPointer<MockBaseNPObject> p(
-    NPObjectPointer<MockBaseNPObject>::FromReturned(NULL));
+  NPObjectPointer<MockNPObject> p(
+    NPObjectPointer<MockNPObject>::FromReturned(NULL));
   EXPECT_TRUE(NULL == p.Get());
 }
 
 TEST_F(NPObjectPointerTest, PointerCanBeReturnedAsARawNPObject) {
-  NPObjectPointer<MockBaseNPObject> p(raw_pointer_);
+  NPObjectPointer<MockNPObject> p(raw_pointer_);
   EXPECT_EQ(raw_pointer_, p.ToReturned());
 
   // Check reference count is incremented before return for caller.
@@ -219,7 +214,7 @@ TEST_F(NPObjectPointerTest, PointerCanBeReturnedAsARawNPObject) {
 }
 
 TEST_F(NPObjectPointerTest, NULLPointerCanBeReturnedAsARawNPObject) {
-  NPObjectPointer<MockBaseNPObject> p;
+  NPObjectPointer<MockNPObject> p;
   EXPECT_TRUE(NULL == p.ToReturned());
 }
 

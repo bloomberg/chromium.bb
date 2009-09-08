@@ -8,6 +8,7 @@
 #include <string>
 
 #include "o3d/gpu_plugin/np_utils/np_browser.h"
+#include "o3d/gpu_plugin/np_utils/np_class.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -30,7 +31,7 @@ bool NPVariantToValue(NPObjectPointer<T>* value,
     return true;
   } else if (NPVARIANT_IS_OBJECT(variant)) {
     NPObject* object = NPVARIANT_TO_OBJECT(variant);
-    if (object->_class == BaseNPObject::GetNPClass<T>()) {
+    if (object->_class == NPGetClass<T>()) {
       *value = NPObjectPointer<T>(static_cast<T*>(
           NPVARIANT_TO_OBJECT(variant)));
       return true;
@@ -78,7 +79,7 @@ class SmartNPVariant : public NPVariant {
  public:
   SmartNPVariant();
   SmartNPVariant(const SmartNPVariant& rhs);
-  SmartNPVariant(const NPVariant& rhs);
+  explicit SmartNPVariant(const NPVariant& rhs);
 
   template <typename T>
   explicit SmartNPVariant(const T& v) {
@@ -261,7 +262,7 @@ bool NPRemoveProperty(NPP npp,
 
 template <typename NPObjectType>
 NPObjectPointer<NPObjectType> NPCreateObject(NPP npp) {
-  const NPClass* np_class = BaseNPObject::GetNPClass<NPObjectType>();
+  const NPClass* np_class = NPGetClass<NPObjectType>();
   NPObjectType* object = static_cast<NPObjectType*>(
       NPBrowser::get()->CreateObject(npp, np_class));
   return NPObjectPointer<NPObjectType>::FromReturned(object);

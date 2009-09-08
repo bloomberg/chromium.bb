@@ -11,17 +11,38 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
-// These macros are used to make dispatcher chains. See the comment for the
-// DispatchedNPObject class.
+// Dispatchers make regular member functions available as NPObject methods.
+// Usage:
+//
+// class MyNPObject : public DefaultNPObject<NPObject> {
+//  public:
+//   int MyMethod(bool a, float b);
+//   NP_UTILS_BEGIN_DISPATCHER_CHAIN(MyNPObject, DispatchedNPObject)
+//     NP_UTILS_DISPATCHER(MyMethod, int(bool, float))
+//   NP_UTILS_END_DISPATCHER_CHAIN
+// };
+//
+// Multiple member functions may be listed in the dispatcher chain. Inheritance
+// is supported. The following types are supported as return types and parameter
+// types:
+//   * bool
+//   * int
+//   * float
+//   * double
+//   * std::string
+//   * NPObject*
+//
+
+// These macros are used to make dispatcher chains.
 #define NP_UTILS_NP_UTILS_DISPATCHER_JOIN2(a, b) a ## b
 #define NP_UTILS_DISPATCHER_JOIN(a, b) NP_UTILS_NP_UTILS_DISPATCHER_JOIN2(a, b)
 #define NP_UTILS_DISPATCHER_UNIQUE                                             \
   NP_UTILS_DISPATCHER_JOIN(dispatcher, __LINE__)
 
 #define NP_UTILS_BEGIN_DISPATCHER_CHAIN(Class, BaseClass)                      \
-  static BaseNPDispatcher* GetStaticDispatcherChain() {                        \
+  static BaseNPDispatcher* GetDispatcherChain() {                              \
     typedef Class ThisClass;                                                   \
-    BaseNPDispatcher* top_dispatcher = BaseClass::GetStaticDispatcherChain();  \
+    BaseNPDispatcher* top_dispatcher = BaseClass::GetDispatcherChain();        \
 
 #define NP_UTILS_DISPATCHER(name, Signature)                                   \
     static NPDispatcher<ThisClass, Signature>                                  \
@@ -34,9 +55,25 @@
 #define NP_UTILS_END_DISPATCHER_CHAIN                                          \
     return top_dispatcher;                                                     \
   }                                                                            \
-  virtual BaseNPDispatcher* GetDynamicDispatcherChain() {                      \
-    static BaseNPDispatcher* top_dispatcher = GetStaticDispatcherChain();      \
-    return top_dispatcher;                                                     \
+  bool HasMethod(NPIdentifier name) {                                          \
+    return DispatcherHasMethodHelper(GetDispatcherChain(), this, name);        \
+  }                                                                            \
+  bool Invoke(NPIdentifier name,                                               \
+              const NPVariant* args,                                           \
+              uint32_t num_args,                                               \
+              NPVariant* result) {                                             \
+    return DispatcherInvokeHelper(GetDispatcherChain(),                        \
+                                  this,                                        \
+                                  name,                                        \
+                                  args,                                        \
+                                  num_args,                                    \
+                                  result);                                     \
+  }                                                                            \
+  bool Enumerate(NPIdentifier** names, uint32_t* num_names) {                  \
+    return DispatcherEnumerateHelper(GetDispatcherChain(),                     \
+                                     this,                                     \
+                                     names,                                    \
+                                     num_names);                               \
   }                                                                            \
 
 namespace o3d {
@@ -44,21 +81,9 @@ namespace gpu_plugin {
 
 class BaseNPDispatcher {
  public:
-  explicit BaseNPDispatcher(BaseNPDispatcher* next, const NPUTF8* name)
-      : next_(next) {
-    // Convert first character to lower case if it is the ASCII range.
-    // TODO(apatrick): do this correctly for non-ASCII characters.
-    std::string java_script_style_name(name);
-    if (isupper(java_script_style_name[0])) {
-      java_script_style_name[0] = tolower(java_script_style_name[0]);
-    }
+  BaseNPDispatcher(BaseNPDispatcher* next, const NPUTF8* name);
 
-    name_ = NPBrowser::get()->GetStringIdentifier(
-        java_script_style_name.c_str());
-  }
-
-  virtual ~BaseNPDispatcher() {
-  }
+  virtual ~BaseNPDispatcher();
 
   BaseNPDispatcher* next() const {
     return next_;
@@ -80,6 +105,22 @@ class BaseNPDispatcher {
   NPIdentifier name_;
   DISALLOW_COPY_AND_ASSIGN(BaseNPDispatcher);
 };
+
+bool DispatcherHasMethodHelper(BaseNPDispatcher* chain,
+                               NPObject* object,
+                               NPIdentifier name);
+
+bool DispatcherInvokeHelper(BaseNPDispatcher* chain,
+                            NPObject* object,
+                            NPIdentifier name,
+                            const NPVariant* args,
+                            uint32_t num_args,
+                            NPVariant* result);
+
+bool DispatcherEnumerateHelper(BaseNPDispatcher* chain,
+                               NPObject* object,
+                               NPIdentifier** names,
+                               uint32_t* num_names);
 
 // This class should never be instantiated. It is always specialized. Attempting
 // to instantiate it results in a compilation error. This might mean an
