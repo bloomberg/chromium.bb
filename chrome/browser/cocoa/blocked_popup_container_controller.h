@@ -11,6 +11,8 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/blocked_popup_container.h"
 
+@class BubbleView;
+
 // Controller for the blocked popup view. Communicates with the cross-platform
 // code via a C++ bridge class, below. The BlockedPopupContainer class doesn't
 // really "own" the bridge, it just keeps a pointer to it and calls Destroy() on
@@ -25,7 +27,10 @@
  @private
   scoped_ptr<BlockedPopupContainerView> bridge_;
   BlockedPopupContainer* container_;  // Weak. "owns" me.
-  scoped_nsobject<NSView> view_;
+  scoped_nsobject<BubbleView> view_;
+  scoped_nsobject<NSButton> closeButton_;
+  // Tracking area for close button mouseover images.
+  scoped_nsobject<NSTrackingArea> closeTrackingArea_;
   IBOutlet NSPopUpButton* popupButton_;
 }
 
@@ -44,8 +49,7 @@
 @end
 
 @interface BlockedPopupContainerController(ForTesting)
-- (NSView*)view;
-- (NSPopUpButton*)popupButton;
+- (BubbleView*)view;
 - (IBAction)closePopup:(id)sender;
 - (NSMenu*)buildMenu;
 - (void)setContainer:(BlockedPopupContainer*)container;

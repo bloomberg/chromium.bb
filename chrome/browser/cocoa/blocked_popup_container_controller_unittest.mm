@@ -9,7 +9,7 @@
 #include "base/scoped_nsautorelease_pool.h"
 #import "chrome/browser/cocoa/blocked_popup_container_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
-#import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,6 +62,7 @@ class BlockedPopupContainerControllerTest : public RenderViewHostTestHarness {
   }
 
   base::ScopedNSAutoreleasePool pool;
+  CocoaTestHelper cocoa_helper_;
   BlockedPopupContainer* container_;
   BlockedPopupContainerController* cocoa_controller_;
 };
@@ -77,11 +78,11 @@ TEST_F(BlockedPopupContainerControllerTest, BasicPopupBlock) {
   EXPECT_FALSE(container_->IsHostWhitelisted(0));
 
   // Ensure the view has been displayed. If it has a superview, then ShowView()
-  // has been called on the bridge. If the button has a string, then
+  // has been called on the bridge. If the bubble has a string, then
   // UpdateLabel() has been called.
   EXPECT_TRUE([cocoa_controller_ view]);
   EXPECT_TRUE([[cocoa_controller_ view] superview]);
-  EXPECT_TRUE([[[cocoa_controller_ popupButton] title] length] > 0);
+  EXPECT_TRUE([[[cocoa_controller_ view] content] length] > 0);
 
   // Validate the menu. It should have 4 items (the dummy title item, 1 poupup,
   // a separator, 1 host).

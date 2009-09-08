@@ -6,12 +6,11 @@
 
 #include "app/l10n_util.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/cocoa/bubble_view.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
-
-#import "chrome/browser/cocoa/background_gradient_view.h"
 
 // A C++ bridge class that manages the interaction between the C++ interface
 // and the Objective-C view controller that implements the popup blocker.
@@ -50,6 +49,7 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
 }
 
 - (void)dealloc {
+  [closeButton_ removeTrackingArea:closeTrackingArea_.get()];
   [view_ removeFromSuperview];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
@@ -68,10 +68,14 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
   static const float kCloseBoxPaddingY = 2.0;
   static const float kLabelPaddingX = 5.0;
 
+  NSWindow* window = [[self containingView] window];
+
   // Create it below the parent's bottom edge so we can animate it into place.
   NSRect startFrame = NSMakeRect(0.0, -kHeight, kWidth, kHeight);
-  view_.reset([[BackgroundGradientView alloc] initWithFrame:startFrame]);
+  view_.reset([[BubbleView alloc] initWithFrame:startFrame
+                                  themeProvider:window]);
   [view_ setAutoresizingMask:NSViewMinXMargin | NSViewMaxYMargin];
+  [view_ setCornerFlags:kRoundedTopLeftCorner | kRoundedTopRightCorner];
 
   // Create the text label and position it. We'll resize it later when the
   // label gets updated. The view owns the label, we only hold a weak reference.
@@ -88,11 +92,11 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
   [popupButton_ setPreferredEdge:NSMaxYEdge];
   // TODO(pinkerton): no matter what, the arrows always draw in the middle
   // of the button. We can turn off the arrows entirely, but then will the
-  // user ever know to click it? Leave them on for now.
-  //[[popupButton_ cell] setArrowPosition:NSPopUpNoArrow];
+  // user ever know to click it?
+  [[popupButton_ cell] setArrowPosition:NSPopUpNoArrow];
   [[popupButton_ cell] setAltersStateOfSelectedItem:NO];
   // If we don't add this, no title will ever display.
-  [popupButton_ addItemWithTitle:@"placeholder"];
+  [popupButton_ addItemWithTitle:@""];
   [view_ addSubview:popupButton_];
 
   // Register for notifications that the menu is about to display so we can
@@ -108,14 +112,28 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
                                  kCloseBoxPaddingY,
                                  kCloseBoxSize,
                                  kCloseBoxSize);
-  NSButton* close = [[[NSButton alloc] initWithFrame:closeFrame] autorelease];
-  [close setAutoresizingMask:NSViewMinXMargin];
-  [close setImage:nsimage_cache::ImageNamed(@"close_bar.pdf")];
-  [close setAlternateImage:nsimage_cache::ImageNamed(@"close_bar_p.pdf")];
-  [close setBordered:NO];
-  [close setTarget:self];
-  [close setAction:@selector(closePopup:)];
-  [view_ addSubview:close];
+  closeButton_.reset([[NSButton alloc] initWithFrame:closeFrame]);
+  [closeButton_ setAutoresizingMask:NSViewMinXMargin];
+  [closeButton_ setButtonType:NSMomentaryChangeButton];
+  [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar.pdf")];
+  [closeButton_
+      setAlternateImage:nsimage_cache::ImageNamed(@"close_bar_p.pdf")];
+  [closeButton_ setBordered:NO];
+  [closeButton_ setTarget:self];
+  [closeButton_ setAction:@selector(closePopup:)];
+  [view_ addSubview:closeButton_];
+
+  // Set up the tracking rect for the close button mouseover.  Add it
+  // to the |closeButton_| view, but we'll handle the message ourself.
+  // The mouseover is always enabled, because the close button works
+  // regardless of key/main/active status.
+  closeTrackingArea_.reset(
+      [[NSTrackingArea alloc] initWithRect:[closeButton_ bounds]
+                                   options:NSTrackingMouseEnteredAndExited |
+                                           NSTrackingActiveAlways
+                                     owner:self
+                                  userInfo:nil]);
+  [closeButton_ addTrackingArea:closeTrackingArea_.get()];
 }
 
 // Returns the C++ brige object.
@@ -127,7 +145,10 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
 // so that it stays around as the RWHVMac is created/destroyed during
 // navigation.
 - (NSView*)containingView {
-  return container_->GetConstrainingContents(NULL)->view()->GetNativeView();
+  NSView* view = nil;
+  if (container_)
+    view = container_->GetConstrainingContents(NULL)->view()->GetNativeView();
+  return view;
 }
 
 - (void)show {
@@ -185,7 +206,7 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
         l10n_util::GetStringUTF16(IDS_POPUPS_UNBLOCKED));
   }
   [self resizeWithLabel:label];
-  [popupButton_ setTitle:label];
+  [view_ setContent:label];
 }
 
 // Called when the user selects an item from the popup menu. The tag, if below
@@ -284,17 +305,26 @@ void GetURLAndTitleForPopup(
   [[notify object] setMenu:menu];
 }
 
-- (NSView*)view {
+// Only used for testing.
+- (BubbleView*)view {
   return view_.get();
-}
-
-- (NSPopUpButton*)popupButton {
-  return popupButton_;
 }
 
 // Only used for testing.
 - (void)setContainer:(BlockedPopupContainer*)container {
   container_ = container;
+}
+
+// Called when the mouse enters the tracking rect for the close box.
+- (void)mouseEntered:(NSEvent *)theEvent {
+  if ([theEvent trackingArea] == closeTrackingArea_)
+    [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar_h.pdf")];
+}
+
+// Called when the mouse exits the tracking rect for the close box.
+- (void)mouseExited:(NSEvent *)theEvent {
+  if ([theEvent trackingArea] == closeTrackingArea_)
+    [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar.pdf")];
 }
 
 @end

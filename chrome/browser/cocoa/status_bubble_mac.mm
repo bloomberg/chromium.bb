@@ -7,6 +7,7 @@
 #include "app/gfx/text_elider.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/cocoa/bubble_view.h"
 #include "googleurl/src/gurl.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
@@ -23,14 +24,6 @@ const float kWindowWidthPercent = 1.0f/3.0f;
 const int kMousePadding = 20;
 
 const int kTextPadding = 3;
-const int kTextPositionX = 4;
-const int kTextPositionY = 2;
-
-const float kWindowFill = 0.8f;
-const float kWindowEdge = 0.7f;
-
-// The roundedness of the edges of our bubble.
-const int kBubbleCornerRadius = 4.0f;
 
 // How long each fade should last for.
 const int kShowFadeDuration = 0.120f;
@@ -40,25 +33,6 @@ const int kHideFadeDuration = 0.200f;
 
 // TODO(avi):
 // - do display delay
-
-enum BubbleStyle {
-  STYLE_BOTTOM,    // Hanging off the bottom of the parent window
-  STYLE_FLOATING,  // Between BOTTOM and STANDARD
-  STYLE_STANDARD   // Nestled in the corner of the parent window
-};
-
-@interface StatusBubbleViewCocoa : NSView {
- @private
-  NSString* content_;
-  BubbleStyle style_;
-  NSWindow* parent_;
-}
-
-- (void)setContent:(NSString*)content;
-- (void)setStyle:(BubbleStyle)style;
-- (void)setParent:(NSWindow*)parent;
-- (NSFont*)font;
-@end
 
 StatusBubbleMac::StatusBubbleMac(NSWindow* parent, id delegate)
     : parent_(parent),
@@ -86,7 +60,7 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::wstring& languages) {
 
   NSRect frame = [window_ frame];
   int text_width = static_cast<int>(frame.size.width -
-                                    kTextPositionX -
+                                    kBubbleViewTextPositionX -
                                     kTextPadding);
   NSFont* font = [[window_ contentView] font];
   gfx::Font font_chr =
@@ -177,18 +151,21 @@ void StatusBubbleMac::MouseMoved() {
     // and mate to the edges of the tab content).
     if (offset >= NSHeight(window_frame)) {
       offset = NSHeight(window_frame);
-      [[window_ contentView] setStyle:STYLE_BOTTOM];
+      [[window_ contentView] setCornerFlags:
+          kRoundedBottomLeftCorner | kRoundedBottomRightCorner];
     } else if (offset > 0) {
-      [[window_ contentView] setStyle:STYLE_FLOATING];
+      [[window_ contentView] setCornerFlags:
+          kRoundedTopRightCorner | kRoundedBottomLeftCorner |
+          kRoundedBottomRightCorner];
     } else {
-      [[window_ contentView] setStyle:STYLE_STANDARD];
+      [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
     }
 
     offset_ = offset;
     window_frame.origin.y -= offset;
   } else {
     offset_ = 0;
-    [[window_ contentView] setStyle:STYLE_STANDARD];
+    [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
   }
 
   // |delegate_| can be nil during unit tests.
@@ -222,10 +199,12 @@ void StatusBubbleMac::Create() {
   [window_ setOpaque:NO];
   [window_ setHasShadow:NO];
 
-  StatusBubbleViewCocoa* view =
-      [[[StatusBubbleViewCocoa alloc] initWithFrame:NSZeroRect] autorelease];
-  [view setParent:parent_];
-
+  // We do not need to worry about the bubble outliving |parent_| because our
+  // teardown sequence in BWC guarantees that |parent_| outlives the status
+  // bubble and that the StatusBubble is torn down completely prior to the
+  // window going away.
+  scoped_nsobject<BubbleView> view(
+      [[BubbleView alloc] initWithFrame:NSZeroRect themeProvider:parent_]);
   [window_ setContentView:view];
 
   [parent_ addChildWindow:window_ ordered:NSWindowAbove];
@@ -233,7 +212,7 @@ void StatusBubbleMac::Create() {
   [window_ setAlphaValue:0.0f];
 
   offset_ = 0;
-  [view setStyle:STYLE_STANDARD];
+  [view setCornerFlags:kRoundedTopRightCorner];
   MouseMoved();
 }
 
@@ -251,116 +230,3 @@ void StatusBubbleMac::FadeOut() {
   [NSAnimationContext endGrouping];
 }
 
-@implementation StatusBubbleViewCocoa
-
-- (void)dealloc {
-  [parent_ release];
-  [content_ release];
-  [super dealloc];
-}
-
-- (void)setContent:(NSString*)content {
-  [content_ autorelease];
-  content_ = [content copy];
-  [self setNeedsDisplay:YES];
-}
-
-- (void)setStyle:(BubbleStyle)style {
-  style_ = style;
-  [self setNeedsDisplay:YES];
-}
-
-- (void)setParent:(NSWindow*)parent {
-  [parent_ autorelease];
-  parent_ = [parent retain];
-  [self setNeedsDisplay:YES];
-}
-
-- (GTMTheme*)gtm_theme {
-  return [parent_ gtm_theme];
-}
-
-- (NSFont*)font {
-  return [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-}
-
-- (void)drawRect:(NSRect)rect {
-  float tl_radius, tr_radius, bl_radius, br_radius;
-
-  switch (style_) {
-    case STYLE_BOTTOM:
-      tl_radius = 0.0f;
-      tr_radius = 0.0f;
-      bl_radius = kBubbleCornerRadius;
-      br_radius = kBubbleCornerRadius;
-      break;
-    case STYLE_FLOATING:
-      tl_radius = 0.0f;
-      tr_radius = kBubbleCornerRadius;
-      bl_radius = kBubbleCornerRadius;
-      br_radius = kBubbleCornerRadius;
-      break;
-    case STYLE_STANDARD:
-      tl_radius = 0.0f;
-      tr_radius = kBubbleCornerRadius;
-      bl_radius = 0.0f;
-      br_radius = 0.0f;
-      break;
-    default:
-      NOTREACHED();
-      tl_radius = 0.0f;
-      tr_radius = 0.0f;
-      bl_radius = 0.0f;
-      br_radius = 0.0f;
-  }
-
-  // Background / Edge
-
-  NSRect bounds = [self bounds];
-  bounds = NSInsetRect(bounds, 0.5, 0.5);
-  NSBezierPath *border = [NSBezierPath gtm_bezierPathWithRoundRect:bounds
-                                               topLeftCornerRadius:tl_radius
-                                              topRightCornerRadius:tr_radius
-                                            bottomLeftCornerRadius:bl_radius
-                                           bottomRightCornerRadius:br_radius];
-
-  NSColor* color =
-      [[self gtm_theme] backgroundColorForStyle:GTMThemeStyleToolBar
-                                          state:GTMThemeStateActiveWindow];
-
-  // workaround for default theme
-  // TODO(alcor) next GTM update return nil for background color if not set;
-  if ([color isEqual:[NSColor colorWithCalibratedWhite:0.5 alpha:1.0]])
-    color = nil;
-  if (!color)
-    color = [NSColor colorWithCalibratedWhite:0.9 alpha:1.0];
-  [color set];
-  [border fill];
-
-  border = [NSBezierPath gtm_bezierPathWithRoundRect:bounds
-                                 topLeftCornerRadius:tl_radius
-                                topRightCornerRadius:tr_radius
-                              bottomLeftCornerRadius:bl_radius
-                             bottomRightCornerRadius:br_radius];
-
-  [[NSColor colorWithDeviceWhite:kWindowEdge alpha:1.0f] set];
-  [border stroke];
-
-  // Text
-  NSColor* textColor = [color gtm_legibleTextColor];
-  NSFont* textFont = [self font];
-  NSShadow* textShadow = [[[NSShadow alloc] init] autorelease];
-  [textShadow setShadowBlurRadius:0.0f];
-  [textShadow setShadowColor:[textColor gtm_legibleTextColor]];
-  [textShadow setShadowOffset:NSMakeSize(0.0f, -1.0f)];
-
-  NSDictionary* textDict = [NSDictionary dictionaryWithObjectsAndKeys:
-    textColor, NSForegroundColorAttributeName,
-    textFont, NSFontAttributeName,
-    textShadow, NSShadowAttributeName,
-    nil];
-  [content_ drawAtPoint:NSMakePoint(kTextPositionX, kTextPositionY)
-         withAttributes:textDict];
-}
-
-@end
