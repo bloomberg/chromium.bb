@@ -25,22 +25,26 @@ bool win_heap_init(bool use_lfh) {
   return true;
 }
 
-void* win_heap_malloc(size_t s) {
-  return HeapAlloc(win_heap, 0, s);
+void* win_heap_malloc(size_t size) {
+  return HeapAlloc(win_heap, 0, size);
 }
 
-void* win_heap_realloc(void* p, size_t s) {
-  if (!p)
-    return win_heap_malloc(s);
-  return HeapReAlloc(win_heap, 0, p, s);
+void win_heap_free(void* size) {
+  HeapFree(win_heap, 0, size);
 }
 
-void win_heap_free(void* s) {
-  HeapFree(win_heap, 0, s);
+void* win_heap_realloc(void* ptr, size_t size) {
+  if (!ptr)
+    return win_heap_malloc(size);
+  if (!size) {
+    win_heap_free(ptr);
+    return NULL;
+  }
+  return HeapReAlloc(win_heap, 0, ptr, size);
 }
 
-size_t win_heap_msize(void* p) {
-  return HeapSize(win_heap, 0, p);
+size_t win_heap_msize(void* ptr) {
+  return HeapSize(win_heap, 0, ptr);
 }
 
 }  // extern "C"
