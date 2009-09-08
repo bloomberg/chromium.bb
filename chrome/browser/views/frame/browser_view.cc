@@ -1900,10 +1900,6 @@ int BrowserView::LayoutTopBar(int top) {
       0 : bookmark_bar_view_->GetToolbarOverlap(false));
 
   if (ShowExtensionsOnTop()) {
-    int extensionshelf_height = extension_shelf_->GetPreferredSize().height();
-    if (extensionshelf_height >= bookmark_bar_height)
-      bookmark_bar_height = extensionshelf_height;
-
     if (!bookmark_bar_view_->IsDetachedStyle()) {
       int extension_shelf_width =
           extension_shelf_->GetPreferredSize().width();
