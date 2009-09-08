@@ -727,7 +727,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   ::SendMessage(normal->GetTestingHandle(), WM_CUT, 0, 0);
 
   string16 result;
-  clipboard.ReadText(&result);
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kNormalText, result);
   normal->SetText(kNormalText);  // Let's revert to the original content.
 
@@ -735,7 +735,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   read_only->SelectAll();
   ::SendMessage(read_only->GetTestingHandle(), WM_CUT, 0, 0);
   result.clear();
-  clipboard.ReadText(&result);
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
@@ -743,7 +743,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   password->SelectAll();
   ::SendMessage(password->GetTestingHandle(), WM_CUT, 0, 0);
   result.clear();
-  clipboard.ReadText(&result);
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
@@ -756,19 +756,19 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   read_only->SelectAll();
   ::SendMessage(read_only->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
-  clipboard.ReadText(&result);
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kReadOnlyText, result);
 
   normal->SelectAll();
   ::SendMessage(normal->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
-  clipboard.ReadText(&result);
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kNormalText, result);
 
   password->SelectAll();
   ::SendMessage(password->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
-  clipboard.ReadText(&result);
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
   // We don't let you copy from a password field, clipboard should not have
   // changed.
   EXPECT_EQ(kNormalText, result);

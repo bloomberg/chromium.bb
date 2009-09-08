@@ -73,6 +73,9 @@ COMPILE_ASSERT_MATCHING_ENUM(WebClipboard::FormatHTML, PasteboardPrivate::HTMLFo
 COMPILE_ASSERT_MATCHING_ENUM(WebClipboard::FormatBookmark, PasteboardPrivate::BookmarkFormat);
 COMPILE_ASSERT_MATCHING_ENUM(WebClipboard::FormatSmartPaste, PasteboardPrivate::WebSmartPasteFormat);
 
+COMPILE_ASSERT_MATCHING_ENUM(WebClipboard::BufferStandard, PasteboardPrivate::StandardBuffer);
+COMPILE_ASSERT_MATCHING_ENUM(WebClipboard::BufferSelection, PasteboardPrivate::SelectionBuffer);
+
 COMPILE_ASSERT_MATCHING_ENUM(WebCursorInfo::TypePointer, PlatformCursor::TypePointer);
 COMPILE_ASSERT_MATCHING_ENUM(WebCursorInfo::TypeCross, PlatformCursor::TypeCross);
 COMPILE_ASSERT_MATCHING_ENUM(WebCursorInfo::TypeHand, PlatformCursor::TypeHand);

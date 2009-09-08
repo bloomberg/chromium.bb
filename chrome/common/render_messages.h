@@ -10,6 +10,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/clipboard.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
@@ -2183,6 +2184,39 @@ struct ParamTraits<URLPattern> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     LogParam(p.GetAsString(), l);
+  }
+};
+
+template <>
+struct ParamTraits<Clipboard::Buffer> {
+  typedef Clipboard::Buffer param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int buffer;
+    if (!m->ReadInt(iter, &buffer) || !Clipboard::IsValidBuffer(buffer))
+      return false;
+    *p = Clipboard::FromInt(buffer);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    std::wstring type;
+    switch (p) {
+      case Clipboard::BUFFER_STANDARD:
+        type = L"BUFFER_STANDARD";
+        break;
+#if defined(OS_LINUX)
+      case Clipboard::BUFFER_SELECTION:
+        type = L"BUFFER_SELECTION";
+        break;
+#endif
+      default:
+        type = L"UNKNOWN";
+        break;
+    }
+
+    LogParam(type, l);
   }
 };
 

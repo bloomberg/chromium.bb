@@ -46,10 +46,17 @@ namespace WebKit {
             FormatSmartPaste
         };
 
-        virtual bool isFormatAvailable(Format) = 0;
+        enum Buffer {
+            BufferStandard,
+            // Used on platforms like the X Window System that treat selection
+            // as a type of clipboard.
+            BufferSelection
+        };
 
-        virtual WebString readPlainText() = 0;
-        virtual WebString readHTML(WebURL*) = 0;
+        virtual bool isFormatAvailable(Format, Buffer) = 0;
+
+        virtual WebString readPlainText(Buffer) = 0;
+        virtual WebString readHTML(Buffer, WebURL*) = 0;
 
         virtual void writeHTML(
             const WebString& htmlText, const WebURL&,

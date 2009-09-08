@@ -44,9 +44,9 @@ TEST_F(ClipboardTest, ClearTest) {
   }
 
   EXPECT_FALSE(clipboard.IsFormatAvailable(
-      Clipboard::GetPlainTextWFormatType()));
+      Clipboard::GetPlainTextWFormatType(), Clipboard::BUFFER_STANDARD));
   EXPECT_FALSE(clipboard.IsFormatAvailable(
-      Clipboard::GetPlainTextFormatType()));
+      Clipboard::GetPlainTextFormatType(), Clipboard::BUFFER_STANDARD));
 }
 
 TEST_F(ClipboardTest, TextTest) {
@@ -61,12 +61,13 @@ TEST_F(ClipboardTest, TextTest) {
   }
 
   EXPECT_TRUE(clipboard.IsFormatAvailable(
-      Clipboard::GetPlainTextWFormatType()));
-  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetPlainTextFormatType()));
-  clipboard.ReadText(&text_result);
+      Clipboard::GetPlainTextWFormatType(), Clipboard::BUFFER_STANDARD));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetPlainTextFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &text_result);
 
   EXPECT_EQ(text, text_result);
-  clipboard.ReadAsciiText(&ascii_text);
+  clipboard.ReadAsciiText(Clipboard::BUFFER_STANDARD, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(text), ascii_text);
 }
 
@@ -81,8 +82,9 @@ TEST_F(ClipboardTest, HTMLTest) {
     clipboard_writer.WriteHTML(markup, url);
   }
 
-  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType()));
-  clipboard.ReadHTML(&markup_result, &url_result);
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &markup_result, &url_result);
   EXPECT_EQ(markup, markup_result);
 #if defined(OS_WIN)
   // TODO(playmobil): It's not clear that non windows clipboards need to support
@@ -103,8 +105,9 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
     clipboard_writer.WriteHTML(markup, url);
   }
 
-  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType()));
-  clipboard.ReadHTML(&markup_result, &url_result);
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &markup_result, &url_result);
   EXPECT_EQ(markup, markup_result);
 #if defined(OS_WIN)
   // TODO(playmobil): It's not clear that non windows clipboards need to support
@@ -126,7 +129,8 @@ TEST_F(ClipboardTest, BookmarkTest) {
     clipboard_writer.WriteBookmark(title, url);
   }
 
-  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetUrlWFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetUrlWFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
   clipboard.ReadBookmark(&title_result, &url_result);
   EXPECT_EQ(title, title_result);
   EXPECT_EQ(url, url_result);
@@ -147,21 +151,22 @@ TEST_F(ClipboardTest, MultiFormatTest) {
     clipboard_writer.WriteText(text);
   }
 
-  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
   EXPECT_TRUE(clipboard.IsFormatAvailable(
-      Clipboard::GetPlainTextWFormatType()));
+      Clipboard::GetPlainTextWFormatType(), Clipboard::BUFFER_STANDARD));
   EXPECT_TRUE(clipboard.IsFormatAvailable(
-      Clipboard::GetPlainTextFormatType()));
-  clipboard.ReadHTML(&markup_result, &url_result);
+      Clipboard::GetPlainTextFormatType(), Clipboard::BUFFER_STANDARD));
+  clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &markup_result, &url_result);
   EXPECT_EQ(markup, markup_result);
 #if defined(OS_WIN)
   // TODO(playmobil): It's not clear that non windows clipboards need to support
   // this.
   EXPECT_EQ(url, url_result);
 #endif  // defined(OS_WIN)
-  clipboard.ReadText(&text_result);
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &text_result);
   EXPECT_EQ(text, text_result);
-  clipboard.ReadAsciiText(&ascii_text);
+  clipboard.ReadAsciiText(Clipboard::BUFFER_STANDARD, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(text), ascii_text);
 }
 
@@ -235,7 +240,8 @@ TEST_F(ClipboardTest, DataTest) {
     clipboard_writer.WritePickledData(write_pickle, format);
   }
 
-  ASSERT_TRUE(clipboard.IsFormatAvailableByString(format));
+  ASSERT_TRUE(clipboard.IsFormatAvailableByString(
+      format, Clipboard::BUFFER_STANDARD));
   std::string output;
   clipboard.ReadData(format, &output);
   ASSERT_FALSE(output.empty());
@@ -262,12 +268,14 @@ TEST_F(ClipboardTest, HyperlinkTest) {
     clipboard_writer.WriteHyperlink(title, url);
   }
 
-  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetUrlWFormatType()));
-  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetUrlWFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
   clipboard.ReadBookmark(&title_result, &url_result);
   EXPECT_EQ(title, title_result);
   EXPECT_EQ(url, url_result);
-  clipboard.ReadHTML(&html_result, &url_result);
+  clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &html_result, &url_result);
   EXPECT_EQ(html, html_result);
 }
 
@@ -280,7 +288,7 @@ TEST_F(ClipboardTest, WebSmartPasteTest) {
   }
 
   EXPECT_TRUE(clipboard.IsFormatAvailable(
-      Clipboard::GetWebKitSmartPasteFormatType()));
+      Clipboard::GetWebKitSmartPasteFormatType(), Clipboard::BUFFER_STANDARD));
 }
 
 TEST_F(ClipboardTest, BitmapTest) {
@@ -297,6 +305,7 @@ TEST_F(ClipboardTest, BitmapTest) {
     clipboard_writer.WriteBitmapFromPixels(fake_bitmap, gfx::Size(3, 4));
   }
 
-  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
 }
 #endif  // defined(OS_WIN)

@@ -625,30 +625,34 @@ void ResourceMessageFilter::OnClipboardWriteObjects(
 // functions.
 
 void ResourceMessageFilter::OnClipboardIsFormatAvailable(
-    Clipboard::FormatType format, IPC::Message* reply) {
-  const bool result = GetClipboard()->IsFormatAvailable(format);
+    Clipboard::FormatType format, Clipboard::Buffer buffer,
+    IPC::Message* reply) {
+  const bool result = GetClipboard()->IsFormatAvailable(format, buffer);
   ViewHostMsg_ClipboardIsFormatAvailable::WriteReplyParams(reply, result);
   Send(reply);
 }
 
-void ResourceMessageFilter::OnClipboardReadText(IPC::Message* reply) {
+void ResourceMessageFilter::OnClipboardReadText(Clipboard::Buffer buffer,
+                                                IPC::Message* reply) {
   string16 result;
-  GetClipboard()->ReadText(&result);
+  GetClipboard()->ReadText(buffer, &result);
   ViewHostMsg_ClipboardReadText::WriteReplyParams(reply, result);
   Send(reply);
 }
 
-void ResourceMessageFilter::OnClipboardReadAsciiText(IPC::Message* reply) {
+void ResourceMessageFilter::OnClipboardReadAsciiText(Clipboard::Buffer buffer,
+                                                     IPC::Message* reply) {
   std::string result;
-  GetClipboard()->ReadAsciiText(&result);
+  GetClipboard()->ReadAsciiText(buffer, &result);
   ViewHostMsg_ClipboardReadAsciiText::WriteReplyParams(reply, result);
   Send(reply);
 }
 
-void ResourceMessageFilter::OnClipboardReadHTML(IPC::Message* reply) {
+void ResourceMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
+                                                IPC::Message* reply) {
   std::string src_url_str;
   string16 markup;
-  GetClipboard()->ReadHTML(&markup, &src_url_str);
+  GetClipboard()->ReadHTML(buffer, &markup, &src_url_str);
   const GURL src_url = GURL(src_url_str);
 
   ViewHostMsg_ClipboardReadHTML::WriteReplyParams(reply, markup, src_url);

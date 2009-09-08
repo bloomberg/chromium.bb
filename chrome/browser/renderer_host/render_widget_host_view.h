@@ -132,10 +132,6 @@ class RenderWidgetHostView {
   // Notifies the View that the renderer text selection has changed.
   virtual void SelectionChanged(const std::string& text) { };
 
-  // Tells the View to get the text from the selection clipboard and send it
-  // back to the renderer asynchronously.
-  virtual void PasteFromSelectionClipboard() { }
-
   // Tells the View whether the context menu is showing. This is used on Linux
   // to suppress updates to webkit focus for the duration of the show.
   virtual void ShowingContextMenu(bool showing) { }

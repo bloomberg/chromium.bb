@@ -74,6 +74,34 @@ class Clipboard {
   typedef std::vector<ObjectMapParam> ObjectMapParams;
   typedef std::map<int /* ObjectType */, ObjectMapParams> ObjectMap;
 
+  // Buffer designates which clipboard the action should be applied to.
+  // Only platforms that use the X Window System support the selection
+  // buffer. Furthermore we currently only use a buffer other than the
+  // standard buffer when reading from the clipboard so only those
+  // functions accept a buffer parameter.
+  enum Buffer {
+    BUFFER_STANDARD,
+#if defined(OS_LINUX)
+    BUFFER_SELECTION,
+#endif
+  };
+
+  static bool IsValidBuffer(int32 buffer) {
+    switch (buffer) {
+      case BUFFER_STANDARD:
+        return true;
+#if defined(OS_LINUX)
+      case BUFFER_SELECTION:
+        return true;
+#endif
+    }
+    return false;
+  }
+
+  static Buffer FromInt(int32 buffer) {
+    return static_cast<Buffer>(buffer);
+  }
+
   Clipboard();
   ~Clipboard();
 
@@ -90,20 +118,21 @@ class Clipboard {
   void WriteObjects(const ObjectMap& objects, base::ProcessHandle process);
 
   // Tests whether the clipboard contains a certain format
-  bool IsFormatAvailable(const FormatType& format) const;
+  bool IsFormatAvailable(const FormatType& format, Buffer buffer) const;
 
   // As above, but instead of interpreting |format| by some platform-specific
   // definition, interpret it as a literal MIME type.
-  bool IsFormatAvailableByString(const std::string& format) const;
+  bool IsFormatAvailableByString(const std::string& format,
+                                 Buffer buffer) const;
 
   // Reads UNICODE text from the clipboard, if available.
-  void ReadText(string16* result) const;
+  void ReadText(Buffer buffer, string16* result) const;
 
   // Reads ASCII text from the clipboard, if available.
-  void ReadAsciiText(std::string* result) const;
+  void ReadAsciiText(Buffer buffer, std::string* result) const;
 
   // Reads HTML from the clipboard, if available.
-  void ReadHTML(string16* markup, std::string* src_url) const;
+  void ReadHTML(Buffer buffer, string16* markup, std::string* src_url) const;
 
   // Reads a bookmark from the clipboard, if available.
   void ReadBookmark(string16* title, std::string* url) const;
@@ -213,8 +242,12 @@ class Clipboard {
   // Insert a mapping into clipboard_data_.
   void InsertMapping(const char* key, char* data, size_t data_len);
 
+  // find the gtk clipboard for the passed buffer enum
+  GtkClipboard* LookupBackingClipboard(Buffer clipboard) const;
+
   TargetMap* clipboard_data_;
   GtkClipboard* clipboard_;
+  GtkClipboard* primary_selection_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Clipboard);

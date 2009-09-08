@@ -825,8 +825,6 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnRemoveAutofillEntry)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionRequest, OnExtensionRequest)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PasteFromSelectionClipboard,
-                        OnMsgPasteFromSelectionClipboard)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionPostMessage,
                         OnExtensionPostMessage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityFocusChange,
@@ -1260,11 +1258,6 @@ void RenderViewHost::OnMsgSetTooltipText(
 void RenderViewHost::OnMsgSelectionChanged(const std::string& text) {
   if (view())
     view()->SelectionChanged(text);
-}
-
-void RenderViewHost::OnMsgPasteFromSelectionClipboard() {
-  if (view())
-    view()->PasteFromSelectionClipboard();
 }
 
 void RenderViewHost::OnMsgRunFileChooser(bool multiple_files,

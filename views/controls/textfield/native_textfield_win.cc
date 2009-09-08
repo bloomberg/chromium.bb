@@ -664,11 +664,12 @@ void NativeTextfieldWin::OnPaste() {
     return;
 
   Clipboard* clipboard = ViewsDelegate::views_delegate->GetClipboard();
-  if (!clipboard->IsFormatAvailable(Clipboard::GetPlainTextWFormatType()))
+  if (!clipboard->IsFormatAvailable(Clipboard::GetPlainTextWFormatType(),
+                                    Clipboard::BUFFER_STANDARD))
     return;
 
   std::wstring clipboard_str;
-  clipboard->ReadText(&clipboard_str);
+  clipboard->ReadText(Clipboard::BUFFER_STANDARD, &clipboard_str);
   if (!clipboard_str.empty()) {
     std::wstring collapsed(CollapseWhitespace(clipboard_str, false));
     if (textfield_->style() & Textfield::STYLE_LOWERCASE)

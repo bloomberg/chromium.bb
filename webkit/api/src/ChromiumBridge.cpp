@@ -72,21 +72,28 @@ namespace WebCore {
 // Clipboard ------------------------------------------------------------------
 
 bool ChromiumBridge::clipboardIsFormatAvailable(
-    PasteboardPrivate::ClipboardFormat format)
+    PasteboardPrivate::ClipboardFormat format,
+    PasteboardPrivate::ClipboardBuffer buffer)
 {
     return webKitClient()->clipboard()->isFormatAvailable(
-        static_cast<WebClipboard::Format>(format));
+        static_cast<WebClipboard::Format>(format),
+        static_cast<WebClipboard::Buffer>(buffer));
 }
 
-String ChromiumBridge::clipboardReadPlainText()
+String ChromiumBridge::clipboardReadPlainText(
+    PasteboardPrivate::ClipboardBuffer buffer)
 {
-    return webKitClient()->clipboard()->readPlainText();
+    return webKitClient()->clipboard()->readPlainText(
+        static_cast<WebClipboard::Buffer>(buffer));
 }
 
-void ChromiumBridge::clipboardReadHTML(String* htmlText, KURL* sourceURL)
+void ChromiumBridge::clipboardReadHTML(
+    PasteboardPrivate::ClipboardBuffer buffer,
+    String* htmlText, KURL* sourceURL)
 {
     WebURL url;
-    *htmlText = webKitClient()->clipboard()->readHTML(&url);
+    *htmlText = webKitClient()->clipboard()->readHTML(
+        static_cast<WebClipboard::Buffer>(buffer), &url);
     *sourceURL = url;
 }
 

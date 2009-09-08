@@ -15,10 +15,12 @@
 
 class MockWebClipboardImpl : public WebKit::WebClipboard {
  public:
-  virtual bool isFormatAvailable(WebKit::WebClipboard::Format);
+  virtual bool isFormatAvailable(WebKit::WebClipboard::Format,
+                                 WebKit::WebClipboard::Buffer);
 
-  virtual WebKit::WebString readPlainText();
-  virtual WebKit::WebString readHTML(WebKit::WebURL*);
+  virtual WebKit::WebString readPlainText(WebKit::WebClipboard::Buffer);
+  virtual WebKit::WebString readHTML(WebKit::WebClipboard::Buffer,
+                                     WebKit::WebURL*);
 
   virtual void writeHTML(
       const WebKit::WebString& htmlText, const WebKit::WebURL&,

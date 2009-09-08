@@ -524,11 +524,6 @@ void RenderWidgetHostViewGtk::SelectionChanged(const std::string& text) {
   gtk_clipboard_set_text(x_clipboard, text.c_str(), text.length());
 }
 
-void RenderWidgetHostViewGtk::PasteFromSelectionClipboard() {
-  GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
-  gtk_clipboard_request_text(x_clipboard, ReceivedSelectionText, this);
-}
-
 void RenderWidgetHostViewGtk::ShowingContextMenu(bool showing) {
   is_showing_context_menu_ = showing;
 }
@@ -612,17 +607,6 @@ void RenderWidgetHostViewGtk::ShowCurrentCursor() {
   // The window now owns the cursor.
   if (gdk_cursor)
     gdk_cursor_unref(gdk_cursor);
-}
-
-void RenderWidgetHostViewGtk::ReceivedSelectionText(GtkClipboard* clipboard,
-    const gchar* text, gpointer userdata) {
-  // If there's nothing to paste (|text| is NULL), do nothing.
-  if (!text)
-    return;
-  RenderWidgetHostViewGtk* host_view =
-      reinterpret_cast<RenderWidgetHostViewGtk*>(userdata);
-  host_view->host_->Send(new ViewMsg_InsertText(host_view->host_->routing_id(),
-                                                UTF8ToUTF16(text)));
 }
 
 void RenderWidgetHostViewGtk::CreatePluginContainer(

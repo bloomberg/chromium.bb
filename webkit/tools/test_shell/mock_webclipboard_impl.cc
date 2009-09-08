@@ -16,7 +16,7 @@
 using WebKit::WebString;
 using WebKit::WebURL;
 
-bool MockWebClipboardImpl::isFormatAvailable(Format format) {
+bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   switch (format) {
     case FormatHTML:
       return !m_htmlText.isEmpty();
@@ -28,15 +28,30 @@ bool MockWebClipboardImpl::isFormatAvailable(Format format) {
       NOTREACHED();
       return false;
   }
+
+  switch (buffer) {
+    case BufferStandard:
+      break;
+    case BufferSelection:
+#if defined(OS_LINUX)
+      break;
+#endif
+    default:
+      NOTREACHED();
+      return false;
+  }
+
   return true;
 }
 
-WebKit::WebString MockWebClipboardImpl::readPlainText() {
+WebKit::WebString MockWebClipboardImpl::readPlainText(
+    WebKit::WebClipboard::Buffer buffer) {
   return m_plainText;
 }
 
 // TODO(wtc): set output argument *url.
-WebKit::WebString MockWebClipboardImpl::readHTML(WebKit::WebURL* url) {
+WebKit::WebString MockWebClipboardImpl::readHTML(
+    WebKit::WebClipboard::Buffer buffer, WebKit::WebURL* url) {
   return m_htmlText;
 }
 

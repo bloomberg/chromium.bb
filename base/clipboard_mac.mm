@@ -135,7 +135,9 @@ void Clipboard::WriteWebSmartPaste() {
   [pb setData:nil forType:format];
 }
 
-bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format) const {
+bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
+                                  Clipboard::Buffer buffer) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
   NSString* format_ns = base::SysUTF8ToNSString(format);
 
   NSPasteboard* pb = GetPasteboard();
@@ -144,7 +146,8 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format) const {
   return [types containsObject:format_ns];
 }
 
-void Clipboard::ReadText(string16* result) const {
+void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
   NSPasteboard* pb = GetPasteboard();
   NSString* contents = [pb stringForType:NSStringPboardType];
 
@@ -153,7 +156,9 @@ void Clipboard::ReadText(string16* result) const {
               result);
 }
 
-void Clipboard::ReadAsciiText(std::string* result) const {
+void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
+                              std::string* result) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
   NSPasteboard* pb = GetPasteboard();
   NSString* contents = [pb stringForType:NSStringPboardType];
 
@@ -163,7 +168,9 @@ void Clipboard::ReadAsciiText(std::string* result) const {
     result->assign([contents UTF8String]);
 }
 
-void Clipboard::ReadHTML(string16* markup, std::string* src_url) const {
+void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
+                         std::string* src_url) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
   if (markup) {
     NSPasteboard* pb = GetPasteboard();
     NSArray *supportedTypes = [NSArray arrayWithObjects:NSHTMLPboardType,

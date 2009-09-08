@@ -55,8 +55,9 @@ std::string WebClipboardImpl::URLToImageMarkup(const WebURL& url,
   return markup;
 }
 
-bool WebClipboardImpl::isFormatAvailable(Format format) {
+bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   Clipboard::FormatType format_type;
+  Clipboard::Buffer buffer_type;
 
   switch (format) {
     case FormatHTML:
@@ -75,20 +76,29 @@ bool WebClipboardImpl::isFormatAvailable(Format format) {
       return false;
   }
 
-  return ClipboardIsFormatAvailable(format_type);
+  if (!ConvertBufferType(buffer, &buffer_type))
+    return false;
+
+  return ClipboardIsFormatAvailable(format_type, buffer_type);
 }
 
-WebString WebClipboardImpl::readPlainText() {
-  if (ClipboardIsFormatAvailable(Clipboard::GetPlainTextWFormatType())) {
+WebString WebClipboardImpl::readPlainText(Buffer buffer) {
+  Clipboard::Buffer buffer_type;
+  if (!ConvertBufferType(buffer, &buffer_type))
+    return WebString();
+
+  if (ClipboardIsFormatAvailable(Clipboard::GetPlainTextWFormatType(),
+                                 buffer_type)) {
     string16 text;
-    ClipboardReadText(&text);
+    ClipboardReadText(buffer_type, &text);
     if (!text.empty())
       return text;
   }
 
-  if (ClipboardIsFormatAvailable(Clipboard::GetPlainTextFormatType())) {
+  if (ClipboardIsFormatAvailable(Clipboard::GetPlainTextFormatType(),
+                                 buffer_type)) {
     std::string text;
-    ClipboardReadAsciiText(&text);
+    ClipboardReadAsciiText(buffer_type, &text);
     if (!text.empty())
       return ASCIIToUTF16(text);
   }
@@ -96,10 +106,14 @@ WebString WebClipboardImpl::readPlainText() {
   return WebString();
 }
 
-WebString WebClipboardImpl::readHTML(WebURL* source_url) {
+WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url) {
+  Clipboard::Buffer buffer_type;
+  if (!ConvertBufferType(buffer, &buffer_type))
+    return WebString();
+
   string16 html_stdstr;
   GURL gurl;
-  ClipboardReadHTML(&html_stdstr, &gurl);
+  ClipboardReadHTML(buffer_type, &html_stdstr, &gurl);
   *source_url = gurl;
   return html_stdstr;
 }
@@ -142,6 +156,24 @@ void WebClipboardImpl::writeImage(
     scw.WriteHTML(UTF8ToUTF16(URLToImageMarkup(url, title)), "");
     scw.WriteText(UTF8ToUTF16(url.spec()));
   }
+}
+
+bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
+                                         Clipboard::Buffer* result) {
+  switch (buffer) {
+    case BufferStandard:
+      *result = Clipboard::BUFFER_STANDARD;
+      break;
+    case BufferSelection:
+#if defined(OS_LINUX)
+      *result = Clipboard::BUFFER_SELECTION;
+      break;
+#endif
+    default:
+      NOTREACHED();
+      return false;
+  }
+  return true;
 }
 
 }  // namespace webkit_glue

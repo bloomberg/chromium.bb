@@ -152,16 +152,17 @@ HCURSOR LoadCursor(int cursor_id);
 Clipboard* ClipboardGetClipboard();
 
 // Tests whether the clipboard contains a certain format
-bool ClipboardIsFormatAvailable(const Clipboard::FormatType& format);
+bool ClipboardIsFormatAvailable(const Clipboard::FormatType& format,
+                                Clipboard::Buffer buffer);
 
 // Reads UNICODE text from the clipboard, if available.
-void ClipboardReadText(string16* result);
+void ClipboardReadText(Clipboard::Buffer buffer, string16* result);
 
 // Reads ASCII text from the clipboard, if available.
-void ClipboardReadAsciiText(std::string* result);
+void ClipboardReadAsciiText(Clipboard::Buffer buffer, std::string* result);
 
 // Reads HTML from the clipboard, if available.
-void ClipboardReadHTML(string16* markup, GURL* url);
+void ClipboardReadHTML(Clipboard::Buffer buffer, string16* markup, GURL* url);
 
 // Gets the directory where the application data and libraries exist.  This
 // may be a versioned subdirectory, or it may be the same directory as the

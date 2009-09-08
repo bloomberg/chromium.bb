@@ -102,8 +102,9 @@ void ResourceMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
 
 // Called on the UI thread.
 void ResourceMessageFilter::DoOnClipboardIsFormatAvailable(
-    Clipboard::FormatType format, IPC::Message* reply_msg) {
-  const bool result = GetClipboard()->IsFormatAvailable(format);
+    Clipboard::FormatType format, Clipboard::Buffer buffer,
+    IPC::Message* reply_msg) {
+  const bool result = GetClipboard()->IsFormatAvailable(format, buffer);
 
   ViewHostMsg_ClipboardIsFormatAvailable::WriteReplyParams(reply_msg, result);
 
@@ -113,9 +114,10 @@ void ResourceMessageFilter::DoOnClipboardIsFormatAvailable(
 }
 
 // Called on the UI thread.
-void ResourceMessageFilter::DoOnClipboardReadText(IPC::Message* reply_msg) {
+void ResourceMessageFilter::DoOnClipboardReadText(Clipboard::Buffer buffer,
+                                                  IPC::Message* reply_msg) {
   string16 result;
-  GetClipboard()->ReadText(&result);
+  GetClipboard()->ReadText(buffer, &result);
 
   ViewHostMsg_ClipboardReadText::WriteReplyParams(reply_msg, result);
 
@@ -126,9 +128,9 @@ void ResourceMessageFilter::DoOnClipboardReadText(IPC::Message* reply_msg) {
 
 // Called on the UI thread.
 void ResourceMessageFilter::DoOnClipboardReadAsciiText(
-    IPC::Message* reply_msg) {
+    Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   std::string result;
-  GetClipboard()->ReadAsciiText(&result);
+  GetClipboard()->ReadAsciiText(buffer, &result);
 
   ViewHostMsg_ClipboardReadAsciiText::WriteReplyParams(reply_msg, result);
 
@@ -138,10 +140,11 @@ void ResourceMessageFilter::DoOnClipboardReadAsciiText(
 }
 
 // Called on the UI thread.
-void ResourceMessageFilter::DoOnClipboardReadHTML(IPC::Message* reply_msg) {
+void ResourceMessageFilter::DoOnClipboardReadHTML(Clipboard::Buffer buffer,
+                                                  IPC::Message* reply_msg) {
   std::string src_url_str;
   string16 markup;
-  GetClipboard()->ReadHTML(&markup, &src_url_str);
+  GetClipboard()->ReadHTML(buffer, &markup, &src_url_str);
   const GURL src_url = GURL(src_url_str);
 
   ViewHostMsg_ClipboardReadHTML::WriteReplyParams(reply_msg, markup, src_url);
@@ -177,26 +180,33 @@ void ResourceMessageFilter::OnGetRootWindowRect(gfx::NativeViewId view,
 
 // Called on the IO thread.
 void ResourceMessageFilter::OnClipboardIsFormatAvailable(
-    Clipboard::FormatType format, IPC::Message* reply_msg) {
+    Clipboard::FormatType format, Clipboard::Buffer buffer,
+    IPC::Message* reply_msg) {
   ui_loop()->PostTask(FROM_HERE, NewRunnableMethod(
         this, &ResourceMessageFilter::DoOnClipboardIsFormatAvailable, format,
+        buffer, reply_msg));
+}
+
+// Called on the IO thread.
+void ResourceMessageFilter::OnClipboardReadText(Clipboard::Buffer buffer,
+                                                IPC::Message* reply_msg) {
+  ui_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &ResourceMessageFilter::DoOnClipboardReadText, buffer,
         reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnClipboardReadText(IPC::Message* reply_msg) {
+void ResourceMessageFilter::OnClipboardReadAsciiText(Clipboard::Buffer buffer,
+                                                     IPC::Message* reply_msg) {
   ui_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &ResourceMessageFilter::DoOnClipboardReadText, reply_msg));
+        this, &ResourceMessageFilter::DoOnClipboardReadAsciiText, buffer,
+        reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnClipboardReadAsciiText(IPC::Message* reply_msg) {
+void ResourceMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
+                                                IPC::Message* reply_msg) {
   ui_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &ResourceMessageFilter::DoOnClipboardReadAsciiText, reply_msg));
-}
-
-// Called on the IO thread.
-void ResourceMessageFilter::OnClipboardReadHTML(IPC::Message* reply_msg) {
-  ui_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &ResourceMessageFilter::DoOnClipboardReadHTML, reply_msg));
+        this, &ResourceMessageFilter::DoOnClipboardReadHTML, buffer,
+        reply_msg));
 }

@@ -586,9 +586,6 @@ WONTFIX : LayoutTests/storage/domstorage/sessionstorage/private-browsing-affects
 // Depends on SessionStorage.  I'm not sure if this is working yet, but I don't think we need to SKIP it.
 BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-callback.html = TIMEOUT
 
-// WebKit and us disagree how this is best done.  Disable for now.
-BUG4360 : LayoutTests/storage/domstorage/localstorage/complex-keys.html = FAIL
-
 // Database
 BUG4359 SKIP : LayoutTests/storage/close-during-stress-test.html = PASS
 BUG4359 SKIP : LayoutTests/storage/database-lock-after-reload.html = PASS
@@ -1993,9 +1990,6 @@ BUG11123 LINUX : LayoutTests/fast/css/nested-layers-with-hover.html = FAIL
 BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrollbar.html = FAIL
 BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrolled-type.html = FAIL
 
-// New tests from WebKit Merge 42932:42994
-BUG21128 : LayoutTests/http/tests/xmlhttprequest/detaching-frame-2.html = FAIL
-
 // Chrome does not support WebArchives (just like Safari for Windows),
 // although we might eventually want to on Mac.
 WONTFIX SKIP : LayoutTests/webarchive/adopt-attribute-styled-body-webarchive.html = FAIL
@@ -2433,9 +2427,8 @@ BUG_VICTORW : LayoutTests/http/tests/security/javascriptURL/xss-ALLOWED-from-jav
 // Webkit 48061:48071
 BUG_VICTORW WIN DEBUG : LayoutTests/fast/regex/cross-frame-callable.html = TIMEOUT
 
-// Webkit 48071:48078
-BUG_VICTORW MAC : LayoutTests/fast/forms/enter-clicks-buttons.html = CRASH
-
 // WebKit 48098:48155
 BUG21267 : LayoutTests/fast/events/click-focus-anchor.html = FAIL
 BUG21267 : LayoutTests/fast/events/tab-focus-anchor.html = FAIL
+
+BUG_JAPHET MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS

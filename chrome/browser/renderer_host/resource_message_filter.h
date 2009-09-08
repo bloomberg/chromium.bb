@@ -171,10 +171,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnClipboardWriteObjects(const Clipboard::ObjectMap& objects);
 
   void OnClipboardIsFormatAvailable(Clipboard::FormatType format,
+                                    Clipboard::Buffer buffer,
                                     IPC::Message* reply);
-  void OnClipboardReadText(IPC::Message* reply);
-  void OnClipboardReadAsciiText(IPC::Message* reply);
-  void OnClipboardReadHTML(IPC::Message* reply);
+  void OnClipboardReadText(Clipboard::Buffer buffer, IPC::Message* reply);
+  void OnClipboardReadAsciiText(Clipboard::Buffer buffer, IPC::Message* reply);
+  void OnClipboardReadHTML(Clipboard::Buffer buffer, IPC::Message* reply);
 
 #if !defined(OS_MACOSX)
   // Not handled in the IO thread on Mac.
@@ -252,10 +253,12 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void DoOnGetWindowRect(gfx::NativeViewId view, IPC::Message* reply_msg);
   void DoOnGetRootWindowRect(gfx::NativeViewId view, IPC::Message* reply_msg);
   void DoOnClipboardIsFormatAvailable(Clipboard::FormatType format,
+                                      Clipboard::Buffer buffer,
                                       IPC::Message* reply_msg);
-  void DoOnClipboardReadText(IPC::Message* reply_msg);
-  void DoOnClipboardReadAsciiText(IPC::Message* reply_msg);
-  void DoOnClipboardReadHTML(IPC::Message* reply_msg);
+  void DoOnClipboardReadText(Clipboard::Buffer buffer, IPC::Message* reply_msg);
+  void DoOnClipboardReadAsciiText(Clipboard::Buffer buffer,
+                                  IPC::Message* reply_msg);
+  void DoOnClipboardReadHTML(Clipboard::Buffer buffer, IPC::Message* reply_msg);
 #endif
 
   bool CheckBenchmarkingEnabled();

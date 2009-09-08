@@ -392,7 +392,7 @@ bool CanPasteFromClipboard(const BookmarkNode* node) {
     return false;
 
   return g_browser_process->clipboard()->IsFormatAvailable(
-      BookmarkDragData::kClipboardFormatString);
+      BookmarkDragData::kClipboardFormatString, Clipboard::BUFFER_STANDARD);
 }
 
 std::string GetNameForURL(const GURL& url) {

@@ -92,6 +92,7 @@ void GdkPixbufFree(guchar* pixels, gpointer data) {
 
 Clipboard::Clipboard() {
   clipboard_ = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+  primary_selection_ = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
 }
 
 Clipboard::~Clipboard() {
@@ -207,18 +208,23 @@ void Clipboard::WriteData(const char* format_name, size_t format_len,
 // We do not use gtk_clipboard_wait_is_target_available because of
 // a bug with the gtk clipboard. It caches the available targets
 // and does not always refresh the cache when it is appropriate.
-bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format) const {
+bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
+                                  Clipboard::Buffer buffer) const {
+  GtkClipboard* clipboard = LookupBackingClipboard(buffer);
+  if (clipboard == NULL)
+    return false;
+
   bool format_is_plain_text = GetPlainTextFormatType() == format;
   if (format_is_plain_text) {
     // This tries a number of common text targets.
-    if (gtk_clipboard_wait_is_text_available(clipboard_))
+    if (gtk_clipboard_wait_is_text_available(clipboard))
       return true;
   }
 
   bool retval = false;
   GdkAtom* targets = NULL;
   GtkSelectionData* data =
-      gtk_clipboard_wait_for_contents(clipboard_,
+      gtk_clipboard_wait_for_contents(clipboard,
                                       gdk_atom_intern("TARGETS", false));
 
   if (!data)
@@ -234,7 +240,7 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format) const {
   // programs.
   if (num <= 0) {
     if (format_is_plain_text) {
-      gchar* text = gtk_clipboard_wait_for_text(clipboard_);
+      gchar* text = gtk_clipboard_wait_for_text(clipboard);
       if (text) {
         g_free(text);
         retval = true;
@@ -257,13 +263,18 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format) const {
   return retval;
 }
 
-bool Clipboard::IsFormatAvailableByString(const std::string& format) const {
-  return IsFormatAvailable(format);
+bool Clipboard::IsFormatAvailableByString(const std::string& format,
+                                          Clipboard::Buffer buffer) const {
+  return IsFormatAvailable(format, buffer);
 }
 
-void Clipboard::ReadText(string16* result) const {
+void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
+  GtkClipboard* clipboard = LookupBackingClipboard(buffer);
+  if (clipboard == NULL)
+    return;
+
   result->clear();
-  gchar* text = gtk_clipboard_wait_for_text(clipboard_);
+  gchar* text = gtk_clipboard_wait_for_text(clipboard);
 
   if (text == NULL)
     return;
@@ -273,9 +284,14 @@ void Clipboard::ReadText(string16* result) const {
   g_free(text);
 }
 
-void Clipboard::ReadAsciiText(std::string* result) const {
+void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
+                              std::string* result) const {
+  GtkClipboard* clipboard = LookupBackingClipboard(buffer);
+  if (clipboard == NULL)
+    return;
+
   result->clear();
-  gchar* text = gtk_clipboard_wait_for_text(clipboard_);
+  gchar* text = gtk_clipboard_wait_for_text(clipboard);
 
   if (text == NULL)
     return;
@@ -290,10 +306,14 @@ void Clipboard::ReadFile(FilePath* file) const {
 
 // TODO(estade): handle different charsets.
 // TODO(port): set *src_url.
-void Clipboard::ReadHTML(string16* markup, std::string* src_url) const {
+void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
+                         std::string* src_url) const {
+  GtkClipboard* clipboard = LookupBackingClipboard(buffer);
+  if (clipboard == NULL)
+    return;
   markup->clear();
 
-  GtkSelectionData* data = gtk_clipboard_wait_for_contents(clipboard_,
+  GtkSelectionData* data = gtk_clipboard_wait_for_contents(clipboard,
       StringToGdkAtom(GetHtmlFormatType()));
 
   if (!data)
@@ -355,3 +375,22 @@ void Clipboard::InsertMapping(const char* key,
 
   (*clipboard_data_)[key] = std::make_pair(data, data_len);
 }
+
+GtkClipboard* Clipboard::LookupBackingClipboard(Buffer clipboard) const {
+  GtkClipboard* result;
+
+  switch (clipboard) {
+    case BUFFER_STANDARD:
+      result = clipboard_;
+      break;
+    case BUFFER_SELECTION:
+      result = primary_selection_;
+      break;
+    default:
+      NOTREACHED();
+      result = NULL;
+      break;
+  }
+  return result;
+}
+

@@ -397,18 +397,22 @@ void Clipboard::WriteToClipboard(unsigned int format, HANDLE handle) {
   }
 }
 
-bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format) const {
+bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
+                                  Clipboard::Buffer buffer) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
   return ::IsClipboardFormatAvailable(StringToInt(format)) != FALSE;
 }
 
 bool Clipboard::IsFormatAvailableByString(
-    const std::string& ascii_format) const {
+    const std::string& ascii_format, Clipboard::Buffer buffer) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
   std::wstring wide_format = ASCIIToWide(ascii_format);
   CLIPFORMAT format = ::RegisterClipboardFormat(wide_format.c_str());
   return ::IsClipboardFormatAvailable(format) != FALSE;
 }
 
-void Clipboard::ReadText(string16* result) const {
+void Clipboard::ReadText(Clipboard::Buffer buffer, string16* result) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
   if (!result) {
     NOTREACHED();
     return;
@@ -429,7 +433,9 @@ void Clipboard::ReadText(string16* result) const {
   ::GlobalUnlock(data);
 }
 
-void Clipboard::ReadAsciiText(std::string* result) const {
+void Clipboard::ReadAsciiText(Clipboard::Buffer buffer,
+                              std::string* result) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
   if (!result) {
     NOTREACHED();
     return;
@@ -450,7 +456,9 @@ void Clipboard::ReadAsciiText(std::string* result) const {
   ::GlobalUnlock(data);
 }
 
-void Clipboard::ReadHTML(string16* markup, std::string* src_url) const {
+void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
+                         std::string* src_url) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
   if (markup)
     markup->clear();
 

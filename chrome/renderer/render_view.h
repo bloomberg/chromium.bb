@@ -314,7 +314,6 @@ class RenderView : public RenderWidget,
   virtual void DownloadUrl(const GURL& url, const GURL& referrer);
   virtual void UpdateInspectorSettings(const std::wstring& raw_settings);
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate();
-  virtual void PasteFromSelectionClipboard();
   virtual void ReportFindInPageMatchCount(int count, int request_id,
                                           bool final_update);
   virtual void ReportFindInPageSelection(int request_id,
@@ -540,7 +539,6 @@ class RenderView : public RenderWidget,
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnDeterminePageText();
   void OnZoom(int function);
-  void OnInsertText(const string16& text);
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(

@@ -174,23 +174,27 @@ Clipboard* ClipboardGetClipboard(){
   return NULL;
 }
 
-bool ClipboardIsFormatAvailable(const Clipboard::FormatType& format) {
+bool ClipboardIsFormatAvailable(const Clipboard::FormatType& format,
+                                Clipboard::Buffer buffer) {
   bool result;
   RenderThread::current()->Send(
-      new ViewHostMsg_ClipboardIsFormatAvailable(format, &result));
+      new ViewHostMsg_ClipboardIsFormatAvailable(format, buffer, &result));
   return result;
 }
 
-void ClipboardReadText(string16* result) {
-  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadText(result));
+void ClipboardReadText(Clipboard::Buffer buffer, string16* result) {
+  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadText(buffer,
+                                                                  result));
 }
 
-void ClipboardReadAsciiText(std::string* result) {
-  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadAsciiText(result));
+void ClipboardReadAsciiText(Clipboard::Buffer buffer, std::string* result) {
+  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadAsciiText(buffer,
+                                                                       result));
 }
 
-void ClipboardReadHTML(string16* markup, GURL* url) {
-  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadHTML(markup, url));
+void ClipboardReadHTML(Clipboard::Buffer buffer, string16* markup, GURL* url) {
+  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadHTML(buffer,
+                                                                  markup, url));
 }
 
 GURL GetInspectorURL() {

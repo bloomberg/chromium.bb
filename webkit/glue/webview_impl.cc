@@ -35,6 +35,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "NodeRenderStyle.h"
 #include "Page.h"
 #include "PageGroup.h"
+#include "Pasteboard.h"
 #include "PlatformContextSkia.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformMouseEvent.h"
@@ -564,8 +565,11 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
                                                     ShouldHitTestScrollbars);
     if (!hit_test_result.scrollbar() && focused) {
       Editor* editor = focused->editor();
-      if (editor && editor->canEdit())
-        delegate_->PasteFromSelectionClipboard();
+      Pasteboard* pasteboard = Pasteboard::generalPasteboard();
+      bool oldSelectionMode = pasteboard->isSelectionMode();
+      pasteboard->setSelectionMode(true);
+      editor->command(AtomicString("Paste")).execute();
+      pasteboard->setSelectionMode(oldSelectionMode);
     }
   }
 #endif

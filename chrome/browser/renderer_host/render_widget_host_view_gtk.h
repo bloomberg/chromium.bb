@@ -61,7 +61,6 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual void Destroy();
   virtual void SetTooltipText(const std::wstring& tooltip_text);
   virtual void SelectionChanged(const std::string& text);
-  virtual void PasteFromSelectionClipboard();
   virtual void ShowingContextMenu(bool showing);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
   virtual void SetBackground(const SkBitmap& background);
@@ -77,12 +76,6 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
 
   // Update the display cursor for the render view.
   void ShowCurrentCursor();
-
-  // When we've requested the text from the X clipboard, GTK returns it to us
-  // through this callback.
-  static void ReceivedSelectionText(GtkClipboard* clipboard,
-                                    const gchar* text,
-                                    gpointer userdata);
 
   // The model object.
   RenderWidgetHost* const host_;

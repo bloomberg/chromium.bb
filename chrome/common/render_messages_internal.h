@@ -309,10 +309,6 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED1(ViewMsg_Zoom,
                       int /* One of PageZoom::Function */)
 
-  // Insert text in the currently focused input area.
-  IPC_MESSAGE_ROUTED1(ViewMsg_InsertText,
-                      string16  /* text */)
-
   // Change encoding of page in the renderer.
   IPC_MESSAGE_ROUTED1(ViewMsg_SetPageEncoding,
                       std::string /*new encoding name*/)
@@ -975,10 +971,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       int32 /* page_id */,
                       GURL /* url of the favicon */)
 
-  // Request that the browser get the text from the selection clipboard and send
-  // it back to the renderer via ViewMsg_SelectionClipboardResponse.
-  IPC_MESSAGE_ROUTED0(ViewHostMsg_PasteFromSelectionClipboard)
-
   // Used to tell the parent that the user right clicked on an area of the
   // content area, and a context menu should be shown for it. The params
   // object contains information about the node(s) that were selected when the
@@ -1050,14 +1042,18 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // free the shared memory used to transfer the bitmap.
   IPC_SYNC_MESSAGE_CONTROL1_0(ViewHostMsg_ClipboardWriteObjectsSync,
       Clipboard::ObjectMap /* objects */)
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ClipboardIsFormatAvailable,
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_ClipboardIsFormatAvailable,
                               std::string /* format */,
+                              Clipboard::Buffer /* buffer */,
                               bool /* result */)
-  IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_ClipboardReadText,
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ClipboardReadText,
+                              Clipboard::Buffer /* buffer */,
                               string16 /* result */)
-  IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_ClipboardReadAsciiText,
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ClipboardReadAsciiText,
+                              Clipboard::Buffer  /* buffer */,
                               std::string /* result */)
-  IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_ClipboardReadHTML,
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ClipboardReadHTML,
+                              Clipboard::Buffer  /* buffer */,
                               string16 /* markup */,
                               GURL /* url */)
 

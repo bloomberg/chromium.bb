@@ -354,7 +354,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(ViewMsg_DeterminePageText, OnDeterminePageText)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
-    IPC_MESSAGE_HANDLER(ViewMsg_InsertText, OnInsertText)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_SetupDevToolsClient, OnSetupDevToolsClient)
     IPC_MESSAGE_HANDLER(ViewMsg_DownloadFavIcon, OnDownloadFavIcon)
@@ -2572,13 +2571,6 @@ void RenderView::OnZoom(int function) {
   }
 }
 
-void RenderView::OnInsertText(const string16& text) {
-  WebFrame* frame = webview()->GetFocusedFrame();
-  if (!frame)
-    return;
-  frame->insertText(text);
-}
-
 void RenderView::OnSetPageEncoding(const std::string& encoding_name) {
   webview()->SetPageEncoding(encoding_name);
 }
@@ -2623,10 +2615,6 @@ void RenderView::UpdateInspectorSettings(const std::wstring& raw_settings) {
 
 WebDevToolsAgentDelegate* RenderView::GetWebDevToolsAgentDelegate() {
   return devtools_agent_.get();
-}
-
-void RenderView::PasteFromSelectionClipboard() {
-  Send(new ViewHostMsg_PasteFromSelectionClipboard(routing_id_));
 }
 
 WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
