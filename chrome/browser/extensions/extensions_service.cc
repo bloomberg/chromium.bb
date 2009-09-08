@@ -220,8 +220,11 @@ void ExtensionsService::EnableExtension(const std::string& extension_id) {
     return;
   }
 
+  // Remember that we enabled it, unless it's temporary.
+  if (extension->location() != Extension::LOAD)
+    extension_prefs_->SetExtensionState(extension, Extension::ENABLED);
+
   // Move it over to the enabled list.
-  extension_prefs_->SetExtensionState(extension, Extension::ENABLED);
   extensions_.push_back(extension);
   ExtensionList::iterator iter = std::find(disabled_extensions_.begin(),
                                            disabled_extensions_.end(),
@@ -233,6 +236,33 @@ void ExtensionsService::EnableExtension(const std::string& extension_id) {
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_LOADED,
+      Source<ExtensionsService>(this),
+      Details<Extension>(extension));
+}
+
+void ExtensionsService::DisableExtension(const std::string& extension_id) {
+  Extension* extension = GetExtensionByIdInternal(extension_id, true, false);
+  if (!extension) {
+    NOTREACHED() << "Trying to disable an extension that isn't enabled.";
+    return;
+  }
+
+  // Remember that we disabled it, unless it's temporary.
+  if (extension->location() != Extension::LOAD)
+    extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
+
+  // Move it over to the disabled list.
+  disabled_extensions_.push_back(extension);
+  ExtensionList::iterator iter = std::find(extensions_.begin(),
+                                           extensions_.end(),
+                                           extension);
+  extensions_.erase(iter);
+
+  ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
+      extension->GetChromeURLOverrides());
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_UNLOADED,
       Source<ExtensionsService>(this),
       Details<Extension>(extension));
 }

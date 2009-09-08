@@ -129,10 +129,10 @@ class ExtensionsService
   void UninstallExtension(const std::string& extension_id,
                           bool external_uninstall);
 
-  // Enable a previously disabled extension and reload it. The extension should
-  // already exist in the extension prefs.
-  // TODO(mpcomplete): add DisableExtension.
+  // Enable or disable an extension. The extension must be in the opposite state
+  // before calling.
   void EnableExtension(const std::string& extension_id);
+  void DisableExtension(const std::string& extension_id);
 
   // Load the extension from the directory |extension_path|.
   void LoadExtension(const FilePath& extension_path);

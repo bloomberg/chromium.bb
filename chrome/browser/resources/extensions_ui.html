@@ -247,11 +247,11 @@ function handleReloadExtension(node) {
 }
 
 /**
- * Handles a 'reenable' button getting clicked.
+ * Handles a 'enable' or 'disable' button getting clicked.
  */
-function handleEnableExtension(node) {
+function handleEnableExtension(node, enable) {
   // Tell the C++ ExtensionDOMHandler to reload the extension.
-  chrome.send('enable', [node.extensionId]);
+  chrome.send('enable', [node.extensionId, String(enable)]);
   requestExtensionsData();
 }
 
@@ -325,8 +325,13 @@ function autoUpdate() {
                       <div class="extension-actions">
                         <button
                           jsvalues=".extensionId:id"
+                          jsdisplay="enabled"
+                          onclick="handleEnableExtension(this, false)"
+                          >Disable</button>
+                        <button
+                          jsvalues=".extensionId:id"
                           jsdisplay="!enabled"
-                          onclick="handleEnableExtension(this)"
+                          onclick="handleEnableExtension(this, true)"
                           >Enable</button>
                         <button
                           jsvalues=".extensionId:id"

@@ -121,6 +121,7 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
   dom_ui_->CallJavascriptFunction(L"returnExtensionsData", results);
 
   // Register for notifications that we need to reload the page.
+  registrar_.RemoveAll();
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
       NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
@@ -165,10 +166,15 @@ void ExtensionsDOMHandler::HandleReloadMessage(const Value* value) {
 void ExtensionsDOMHandler::HandleEnableMessage(const Value* value) {
   CHECK(value->IsType(Value::TYPE_LIST));
   const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 1);
-  std::string extension_id;
+  CHECK(list->GetSize() == 2);
+  std::string extension_id, enable_str;
   CHECK(list->GetString(0, &extension_id));
-  extensions_service_->EnableExtension(extension_id);
+  CHECK(list->GetString(1, &enable_str));
+  if (enable_str == "true") {
+    extensions_service_->EnableExtension(extension_id);
+  } else {
+    extensions_service_->DisableExtension(extension_id);
+  }
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {

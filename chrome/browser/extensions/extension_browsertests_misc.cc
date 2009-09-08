@@ -502,6 +502,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UninstallDisabled) {
   EXPECT_EQ(0u, service->disabled_extensions()->size());
 }
 
+// Tests that disabling and re-enabling an extension works.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DisableEnable) {
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionProcessManager* manager =
+      browser()->profile()->GetExtensionProcessManager();
+
+  // Load an extension, expect the toolstrip to be available.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
+                    .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
+                    .AppendASCII("1.0")));
+  EXPECT_EQ(1u, service->extensions()->size());
+  EXPECT_EQ(0u, service->disabled_extensions()->size());
+  EXPECT_TRUE(FindHostWithPath(manager, "/toolstrip.html", 1));
+
+  // After disabling, the toolstrip should go away.
+  service->DisableExtension("bjafgdebaacbbbecmhlhpofkepfkgcpa");
+  EXPECT_EQ(0u, service->extensions()->size());
+  EXPECT_EQ(1u, service->disabled_extensions()->size());
+  EXPECT_FALSE(FindHostWithPath(manager, "/toolstrip.html", 0));
+
+  // And bring it back.
+  service->EnableExtension("bjafgdebaacbbbecmhlhpofkepfkgcpa");
+  EXPECT_EQ(1u, service->extensions()->size());
+  EXPECT_EQ(0u, service->disabled_extensions()->size());
+  EXPECT_TRUE(FindHostWithPath(manager, "/toolstrip.html", 1));
+}
+
 // Helper function for common code shared by the 3 WindowOpen tests below.
 static TabContents* WindowOpenHelper(Browser* browser, const GURL& start_url,
                                     const std::string& newtab_url) {
