@@ -63,12 +63,12 @@ void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
 
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(
     WebURLRequest& request) {
-  request.setAppCacheContextID(host_id_);
+  request.setAppCacheHostID(host_id_);
 }
 
 void WebApplicationCacheHostImpl::willStartSubResourceRequest(
     WebURLRequest& request) {
-  request.setAppCacheContextID(host_id_);
+  request.setAppCacheHostID(host_id_);
 }
 
 void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
@@ -89,20 +89,23 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
   has_status_ = false;
   has_cached_status_ = false;
 
+  GURL manifest_gurl(manifest_url);
+  if (manifest_gurl.has_ref()) {
+    GURL::Replacements replacements;
+    replacements.ClearRef();
+    manifest_gurl = manifest_gurl.ReplaceComponents(replacements);
+  }
+
   // Check for new 'master' entries.
   if (main_response_.appCacheID() == kNoCacheId) {
     should_capture_main_response_ = is_in_http_family_ ? YES : NO;
     backend_->SelectCache(host_id_, main_response_url_,
-                          kNoCacheId, manifest_url);
+                          kNoCacheId, manifest_gurl);
     return true;
   }
 
   // Check for 'foreign' entries.
-  // TODO(michaeln): add manifestUrl() accessor to WebURLResponse,
-  //                 for now we don't really detect 'foreign' entries.
-  // TODO(michaeln): put an == operator on WebURL?
-  GURL manifest_gurl(manifest_url);
-  GURL main_response_manifest_gurl(manifest_url);  // = mainResp.manifestUrl()
+  GURL main_response_manifest_gurl(main_response_.appCacheManifestURL());
   if (main_response_manifest_gurl != manifest_gurl) {
     backend_->MarkAsForeignEntry(host_id_, main_response_url_,
                                  main_response_.appCacheID());
@@ -129,10 +132,14 @@ void WebApplicationCacheHostImpl::didReceiveResponseForMainResource(
 
 void WebApplicationCacheHostImpl::didReceiveDataForMainResource(
     const char* data, int len) {
+  if (should_capture_main_response_ == NO)
+    return;
   // TODO(michaeln): write me
 }
 
 void WebApplicationCacheHostImpl::didFinishLoadingMainResource(bool success) {
+  if (should_capture_main_response_ == NO)
+    return;
   // TODO(michaeln): write me
 }
 

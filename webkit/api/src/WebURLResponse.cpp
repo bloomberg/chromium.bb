@@ -210,12 +210,22 @@ void WebURLResponse::setIsContentFiltered(bool isContentFiltered)
 
 long long WebURLResponse::appCacheID() const
 {
-    return m_private->m_resourceResponse->getAppCacheID();
+    return m_private->m_resourceResponse->appCacheID();
 }
 
 void WebURLResponse::setAppCacheID(long long appCacheID)
 {
     m_private->m_resourceResponse->setAppCacheID(appCacheID);
+}
+
+WebURL WebURLResponse::appCacheManifestURL() const
+{
+    return m_private->m_resourceResponse->appCacheManifestURL();
+}
+
+void WebURLResponse::setAppCacheManifestURL(const WebURL& url)
+{
+    m_private->m_resourceResponse->setAppCacheManifestURL(url);
 }
 
 WebCString WebURLResponse::securityInfo() const

@@ -100,6 +100,9 @@ namespace WebKit {
         WEBKIT_API long long appCacheID() const;
         WEBKIT_API void setAppCacheID(long long);
 
+        WEBKIT_API WebURL appCacheManifestURL() const;
+        WEBKIT_API void setAppCacheManifestURL(const WebURL&);
+
         // A consumer controlled value intended to be used to record opaque
         // security info related to this request.
         WEBKIT_API WebCString securityInfo() const;

@@ -151,8 +151,7 @@ void PopulateURLResponse(
   response->setExpectedContentLength(info.content_length);
   response->setSecurityInfo(info.security_info);
   response->setAppCacheID(info.appcache_id);
-  // TODO(michaeln):
-  // response->setAppCacheManifestUrl(info.appcache_manifest_url);
+  response->setAppCacheManifestURL(info.appcache_manifest_url);
 
   const net::HttpResponseHeaders* headers = info.headers;
   if (!headers)
@@ -338,7 +337,7 @@ void WebURLLoaderImpl::Context::Start(
       load_flags,
       requestor_pid,
       FromTargetType(request.targetType()),
-      request.appCacheContextID(),
+      request.appCacheHostID(),
       request.requestorID()));
 
   if (!request.httpBody().isNull()) {

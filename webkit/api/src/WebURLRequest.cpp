@@ -225,14 +225,14 @@ void WebURLRequest::setRequestorProcessID(int requestorProcessID)
     m_private->m_resourceRequest->setRequestorProcessID(requestorProcessID);
 }
 
-int WebURLRequest::appCacheContextID() const
+int WebURLRequest::appCacheHostID() const
 {
-    return m_private->m_resourceRequest->appCacheContextID();
+    return m_private->m_resourceRequest->appCacheHostID();
 }
 
-void WebURLRequest::setAppCacheContextID(int appCacheContextID)
+void WebURLRequest::setAppCacheHostID(int appCacheHostID)
 {
-    m_private->m_resourceRequest->setAppCacheContextID(appCacheContextID);
+    m_private->m_resourceRequest->setAppCacheHostID(appCacheHostID);
 }
 
 ResourceRequest& WebURLRequest::toMutableResourceRequest()
