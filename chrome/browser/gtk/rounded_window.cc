@@ -148,6 +148,7 @@ gboolean OnRoundedWindowExpose(GtkWidget* widget,
 
   GdkDrawable* drawable = GDK_DRAWABLE(event->window);
   GdkGC* gc = gdk_gc_new(drawable);
+  gdk_gc_set_clip_rectangle(gc, &event->area);
   gdk_gc_set_rgb_fg_color(gc, &data->border_color);
 
   // Stroke the frame border.

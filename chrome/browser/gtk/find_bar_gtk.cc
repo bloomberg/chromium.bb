@@ -735,6 +735,7 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
 
     GdkDrawable* drawable = GDK_DRAWABLE(e->window);
     GdkGC* gc = gdk_gc_new(drawable);
+    gdk_gc_set_clip_rectangle(gc, &e->area);
     GdkColor color = bar->theme_provider_->GetBorderColor();
     gdk_gc_set_rgb_fg_color(gc, &color);
 

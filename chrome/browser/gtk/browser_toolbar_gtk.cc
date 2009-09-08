@@ -533,6 +533,10 @@ void BrowserToolbarGtk::ChangeActiveMenu(GtkWidget* active_menu,
 gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
                                               GdkEventExpose* e,
                                               BrowserToolbarGtk* toolbar) {
+  // We don't need to render the toolbar image in GTK mode.
+  if (toolbar->theme_provider_->UseGtkTheme())
+    return FALSE;
+
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   cairo_rectangle(cr, e->area.x, e->area.y, e->area.width, e->area.height);
   cairo_clip(cr);

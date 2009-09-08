@@ -176,7 +176,8 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(instructions_, "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
 
-  gtk_widget_set_app_paintable(widget(), TRUE);
+  // Only paint in chrome theme mode.
+  gtk_widget_set_app_paintable(widget(), !theme_provider_->UseGtkTheme());
   g_signal_connect(G_OBJECT(widget()), "expose-event",
                    G_CALLBACK(&OnEventBoxExpose), this);
 
@@ -488,6 +489,9 @@ void BookmarkBarGtk::Observe(NotificationType type,
       DLOG(ERROR) << "Received a theme change notification while we "
                   << "don't have a BookmarkModel. Taking no action.";
     }
+
+    // When using the GTK+ theme, let GTK optimize the background drawing.
+    gtk_widget_set_app_paintable(widget(), !theme_provider_->UseGtkTheme());
 
     // When using the GTK+ theme, we need to have the event box be visible so
     // buttons don't get a halo color from the background.  When using Chromium
@@ -891,6 +895,10 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
 gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
                                           GdkEventExpose* event,
                                           BookmarkBarGtk* bar) {
+  // We don't need to render the toolbar image in GTK mode.
+  if (bar->theme_provider_->UseGtkTheme())
+    return FALSE;
+
   // Paint the background theme image.
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   cairo_rectangle(cr, event->area.x, event->area.y,
