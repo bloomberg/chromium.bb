@@ -355,6 +355,7 @@ void StatusBubbleMac::FadeOut() {
   [textShadow setShadowOffset:NSMakeSize(0.0f, -1.0f)];
 
   NSDictionary* textDict = [NSDictionary dictionaryWithObjectsAndKeys:
+    textColor, NSForegroundColorAttributeName,
     textFont, NSFontAttributeName,
     textShadow, NSShadowAttributeName,
     nil];

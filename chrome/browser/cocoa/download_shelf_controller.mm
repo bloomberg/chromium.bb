@@ -23,7 +23,7 @@ namespace {
 const size_t kMaxDownloadItemCount = 16;
 
 // Horizontal padding between two download items.
-const int kDownloadItemPadding = 2;
+const int kDownloadItemPadding = 0;
 
 // Duration for the open-new-leftmost-item animation, in seconds.
 const NSTimeInterval kDownloadItemOpenDuration = 0.8;

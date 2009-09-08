@@ -79,10 +79,12 @@ NSColor* BrowserThemeProvider::GetNSColor(int id) {
   if (color_iter != colors_.end()) {
     const SkColor& sk_color = color_iter->second;
 
-    NSColor* color = [NSColor colorWithCalibratedRed:SkColorGetR(sk_color)
-                                               green:SkColorGetG(sk_color)
-                                                blue:SkColorGetB(sk_color)
-                                               alpha:SkColorGetA(sk_color)];
+
+    NSColor* color = [NSColor
+        colorWithCalibratedRed:SkColorGetR(sk_color)/255.0
+                         green:SkColorGetG(sk_color)/255.0
+                          blue:SkColorGetB(sk_color)/255.0
+                         alpha:SkColorGetA(sk_color)/255.0];
 
     // We loaded successfully.  Cache the color.
     if (color) {

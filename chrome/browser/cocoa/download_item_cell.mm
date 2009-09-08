@@ -21,7 +21,7 @@ namespace {
 const CGFloat kImagePaddingTop = 7;
 
 // Distance from left border to icon
-const CGFloat kImagePaddingLeft = 8;
+const CGFloat kImagePaddingLeft = 9;
 
 // Width of icon
 const CGFloat kImageWidth = 16;
@@ -38,14 +38,17 @@ const CGFloat kTextPaddingRight = 3;
 
 // y coordinate of download name string, in view coords, when status message
 // is visible
-const CGFloat kPrimaryTextPosTop = 5;
+const CGFloat kPrimaryTextPosTop = 3;
 
 // y coordinate of download name string, in view coords, when status message
 // is not visible
 const CGFloat kPrimaryTextOnlyPosTop = 10;
 
 // y coordinate of status message, in view coords
-const CGFloat kSecondaryTextPosTop = 17;
+const CGFloat kSecondaryTextPosTop = 18;
+
+// Grey value of status text
+const CGFloat kSecondaryTextColor = 0.5;
 
 // Width of dropdown area on the right (includes 1px for the border on each
 // side).
@@ -56,6 +59,9 @@ const CGFloat kDropdownArrowWidth = 5;
 
 // Height of dropdown arrow
 const CGFloat kDropdownArrowHeight = 3;
+
+// Vertical displacement of dropdown area, relative to the "centered" position.
+const CGFloat kDropdownAreaY = -2;
 
 // Duration of the two-lines-to-one-line animation, in seconds
 NSTimeInterval kHideStatusDuration = 0.3;
@@ -79,6 +85,8 @@ const int kCompleteAnimationDuration = 2.5;
 - (void)hideSecondaryTitle;
 - (void)animation:(NSAnimation*)animation
        progressed:(NSAnimationProgress)progress;
+- (NSString*)elideTitle:(int)availableWidth;
+- (NSString*)elideStatus:(int)availableWidth;
 @end
 
 @implementation DownloadItemCell
@@ -94,7 +102,7 @@ const int kCompleteAnimationDuration = 2.5;
   [self setFont:[NSFont systemFontOfSize:
       [NSFont systemFontSizeForControlSize:NSSmallControlSize]]];
   [self setSecondaryFont:[NSFont systemFontOfSize:
-      [NSFont systemFontSizeForControlSize:NSMiniControlSize]]];
+      [NSFont systemFontSizeForControlSize:NSSmallControlSize]]];
 
   [self updateTrackingAreas:self];
   [[NSNotificationCenter defaultCenter]
@@ -285,19 +293,29 @@ const int kCompleteAnimationDuration = 2.5;
                                 toPoint:topLeft
                                  radius:radius];
   [path lineToPoint:topLeft];
-  [path closePath];  // Right path is closed
   return path;
 }
 
-- (void)elideTitle:(int)availableWidth {
+- (NSString*)elideTitle:(int)availableWidth {
   NSFont* font = [self font];
   gfx::Font font_chr =
       gfx::Font::CreateFont(base::SysNSStringToWide([font fontName]),
                             [font pointSize]);
 
-  NSString* titleString = base::SysWideToNSString(
+  return base::SysWideToNSString(
       ElideFilename(downloadPath_, font_chr, availableWidth));
-  [self setTitle:titleString];
+}
+
+- (NSString*)elideStatus:(int)availableWidth {
+  NSFont* font = [self secondaryFont];
+  gfx::Font font_chr =
+      gfx::Font::CreateFont(base::SysNSStringToWide([font fontName]),
+                            [font pointSize]);
+
+  return base::SysWideToNSString(ElideText(
+      base::SysNSStringToWide([self secondaryTitle]),
+      font_chr,
+      availableWidth));
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -354,11 +372,16 @@ const int kCompleteAnimationDuration = 2.5;
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   // Draw title
-  [self elideTitle:cellFrame.size.width -
-      (kTextPosLeft + kTextPaddingRight + kDropdownAreaWidth)];
+  CGFloat textWidth = cellFrame.size.width -
+      (kTextPosLeft + kTextPaddingRight + kDropdownAreaWidth);
+  [self setTitle:[self elideTitle:textWidth]];
+
+  NSColor* themeTextColor = [[[self controlView] gtm_theme]
+      textColorForStyle:GTMThemeStyleBookmarksBarButton
+                  state:GTMThemeStateActiveWindow];
 
   NSColor* color = [self isButtonPartPressed]
-      ? [NSColor alternateSelectedControlTextColor] : [NSColor textColor];
+      ? [NSColor alternateSelectedControlTextColor] : themeTextColor;
   NSString* primaryText = [self title];
 
   NSDictionary* primaryTextAttributes = [NSDictionary
@@ -374,8 +397,9 @@ const int kCompleteAnimationDuration = 2.5;
 
   // Draw secondary title, if any
   if ([self secondaryTitle] != nil && statusAlpha_ > 0) {
-    NSString* secondaryText = [self secondaryTitle];
-    NSColor* secondaryColor = [color colorWithAlphaComponent:statusAlpha_];
+    NSString* secondaryText = [self elideStatus:textWidth];
+    NSColor* secondaryColor = [NSColor colorWithDeviceWhite:kSecondaryTextColor
+                                                      alpha:statusAlpha_];
     NSDictionary* secondaryTextAttributes = [NSDictionary
         dictionaryWithObjectsAndKeys:
         secondaryColor, NSForegroundColorAttributeName,
@@ -430,25 +454,46 @@ const int kCompleteAnimationDuration = 2.5;
                  operation:NSCompositeSourceOver
                   fraction:[self isEnabled] ? 1.0 : 0.5];
 
+  // Separator between button and popup parts
+  CGFloat lx = NSMaxX(cellFrame) - kDropdownAreaWidth + 0.5;
+  [[NSColor colorWithDeviceWhite:0.0 alpha:0.1] set];
+  [NSBezierPath strokeLineFromPoint:NSMakePoint(lx, NSMinY(cellFrame) + 1)
+                            toPoint:NSMakePoint(lx, NSMaxY(cellFrame) - 1)];
+  [[NSColor colorWithDeviceWhite:1.0 alpha:0.1] set];
+  [NSBezierPath strokeLineFromPoint:NSMakePoint(lx + 1, NSMinY(cellFrame) + 1)
+                            toPoint:NSMakePoint(lx + 1, NSMaxY(cellFrame) - 1)];
+
   // Popup arrow. Put center of mass of the arrow in the center of the
   // dropdown area.
   CGFloat cx = NSMaxX(cellFrame) - kDropdownAreaWidth/2 + 0.5;
   CGFloat cy = NSMidY(cellFrame);
   NSPoint p1 = NSMakePoint(cx - kDropdownArrowWidth/2,
-                           cy - kDropdownArrowHeight/3);
+                           cy - kDropdownArrowHeight/3 + kDropdownAreaY);
   NSPoint p2 = NSMakePoint(cx + kDropdownArrowWidth/2,
-                           cy - kDropdownArrowHeight/3);
-  NSPoint p3 = NSMakePoint(cx, cy + kDropdownArrowHeight*2/3);
+                           cy - kDropdownArrowHeight/3 + kDropdownAreaY);
+  NSPoint p3 = NSMakePoint(cx, cy + kDropdownArrowHeight*2/3 + kDropdownAreaY);
   NSBezierPath *triangle = [NSBezierPath bezierPath];
   [triangle moveToPoint:p1];
   [triangle lineToPoint:p2];
   [triangle lineToPoint:p3];
   [triangle closePath];
 
+  NSGraphicsContext* context = [NSGraphicsContext currentContext];
+  [context saveGraphicsState];
+
+  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  [shadow setShadowColor:[NSColor whiteColor]];
+  [shadow setShadowOffset:NSMakeSize(0, -1)];
+  [shadow setShadowBlurRadius:0.0];
+  [shadow set];
+
   NSColor* fill = [self isDropdownPartPressed]
-      ? [NSColor alternateSelectedControlTextColor] : [NSColor textColor];
+      ? [NSColor alternateSelectedControlTextColor] : themeTextColor;
   [fill setFill];
+
   [triangle fill];
+
+  [context restoreGraphicsState];
 }
 
 - (NSRect)imageRectForBounds:(NSRect)cellFrame {
