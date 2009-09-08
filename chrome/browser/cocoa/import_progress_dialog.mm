@@ -8,7 +8,9 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #import "base/scoped_nsobject.h"
+#include "base/string_util.h"
 #import "base/sys_string_conversions.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -59,8 +61,11 @@ NSString* keyForImportItem(ImportItem item) {
     import_host_observer_bridge_.reset(new ImporterObserverBridge(self));
     importer_host_->SetObserver(import_host_observer_bridge_.get());
 
+    string16 productName = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
     NSString* explanatory_text = l10n_util::GetNSStringF(
-        IDS_IMPORT_PROGRESS_EXPLANATORY_TEXT_MAC, browserName);
+        IDS_IMPORT_PROGRESS_EXPLANATORY_TEXT_MAC,
+        productName,
+        browserName);
     [self setExplanatoryText:explanatory_text];
 
     progress_text_ =

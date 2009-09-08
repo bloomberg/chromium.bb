@@ -2591,7 +2591,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <if expr="os == 'darwin'">
         <message name="IDS_IMPORT_PROGRESS_EXPLANATORY_TEXT_MAC" desc="Text displayed above status items in Import Dialog">
-          Google Chrome is now importing the following items from <ph name="IMPORT_BROWSER_NAME">$1<ex>Safari</ex></ph>:
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is now importing the following items from <ph name="IMPORT_BROWSER_NAME">$2<ex>Safari</ex></ph>:
         </message>
         <message name="IDS_IMPORT_IMPORTING_PROGRESS_TEXT_MAC" desc="Status text displayed when an item in the Import Progress Dialog is being imported.">
           Importing...
@@ -3305,6 +3305,31 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SCROLLBAR_CXMENU_SCROLLDOWN" desc="The label for the 'Scroll Down' item">
         Scroll Down
       </message>
+
+      <!-- Mac First-run dialog messages -->
+      <if expr="os == 'darwin'">
+        <message name="IDS_FIRSTRUN_DLG_MAC_WINDOW_TITLE" desc="Window title of First Run Title on OS X - displayed in Window title bar">
+          Welcome to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+        </message>
+        <message name="IDS_FIRSTRUN_DLG_MAC_MAIN_LABEL" desc="Main label for first run dialog, displayed above options">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will do these tasks:
+        </message>
+        <message name="IDS_FIRSTRUN_DLG_MAC_COMPLETE_INSTALLATION_LABEL" desc="Label at top of Dialog noting what's going to happen">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is ready to complete your installation
+        </message>
+        <message name="IDS_FIRSTRUN_DLG_MAC_OPTIONS_TARGET_BROWSER_DROPDOWN_LABEL" desc="Label for dropdown indicating which browser to import from">
+        Import settings from
+        </message>
+        <message name="IDS_FIRSTRUN_DLG_MAC_OPTIONS_SEND_USAGE_STATS_LABEL" desc="Label for checkbox to ask whether to send usage stats to Google">
+        Help make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> better by automatically sending usage statistics and crash reports to Google
+        </message>
+        <message name="IDS_FIRSTRUN_DLG_MAC_OPTIONS_DEFAULT_BROWSER_LABEL" desc="Label for option to make Chrome your default browser in dropdown">
+          Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
+        </message>
+        <message name="IDS_FIRSTRUN_DLG_MAC_START_CHROME_BUTTON" desc="Button to Start Google Chrome">
+          Start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+        </message>
+      </if>
 
       <!-- First-run messages -->
       <message name="IDS_FIRSTRUN_DLG_CANCEL" desc="Text for CANCEL button on first-run dialog">
