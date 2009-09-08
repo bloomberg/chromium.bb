@@ -2456,3 +2456,7 @@ BUG_VICTORW WIN DEBUG : LayoutTests/fast/regex/cross-frame-callable.html = TIMEO
 
 // Webkit 48071:48078
 BUG_VICTORW MAC : LayoutTests/fast/forms/enter-clicks-buttons.html = CRASH
+
+// WebKit 48098:48155
+BUG21267 : LayoutTests/fast/events/click-focus-anchor.html = FAIL
+BUG21267 : LayoutTests/fast/events/tab-focus-anchor.html = FAIL
