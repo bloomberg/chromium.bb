@@ -478,8 +478,16 @@ void WidgetGtk::DidProcessEvent(GdkEvent* event) {
 // TODO(beng): organize into sections:
 
 void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
+  // We turn off double buffering for two reasons:
+  // 1. We draw to a canvas then composite to the screen, which means we're
+  //    doing our own double buffering already.
+  // 2. GTKs double buffering clips to the dirty region. RootView occasionally
+  //    needs to expand the paint region (see RootView::OnPaint). This means
+  //    that if we use GTK's double buffering and we tried to expand the dirty
+  //    region, it wouldn't get painted.
   if (type_ == TYPE_CHILD) {
     window_contents_ = widget_ = gtk_fixed_new();
+    GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
     gtk_fixed_set_has_window(GTK_FIXED(widget_), true);
     if (!parent && !null_parent_) {
       GtkWidget* popup = gtk_window_new(GTK_WINDOW_POPUP);
@@ -492,6 +500,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
   } else {
     widget_ = gtk_window_new(
         type_ == TYPE_WINDOW ? GTK_WINDOW_TOPLEVEL : GTK_WINDOW_POPUP);
+    GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
 
     if (!bounds.size().IsEmpty()) {
       // When we realize the window, the window manager is given a size. If we
@@ -507,6 +516,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     SetViewForNative(widget_, this);
 
     window_contents_ = gtk_fixed_new();
+    GTK_WIDGET_UNSET_FLAGS(window_contents_, GTK_DOUBLE_BUFFERED);
     gtk_fixed_set_has_window(GTK_FIXED(window_contents_), true);
     gtk_container_add(GTK_CONTAINER(widget_), window_contents_);
     gtk_widget_show(window_contents_);
@@ -1036,12 +1046,11 @@ void WidgetGtk::ConfigureWidgetForTransparentBackground() {
     return;
   }
   // To make the background transparent we need to install the RGBA colormap
-  // on both the window and fixed. In addition we need to turn off double
-  // buffering and make sure no decorations are drawn. The last bit is to make
-  // sure the widget doesn't attempt to draw a pixmap in it's background.
+  // on both the window and fixed. In addition we need to make sure no
+  // decorations are drawn. The last bit is to make sure the widget doesn't
+  // attempt to draw a pixmap in it's background.
   gtk_widget_set_colormap(widget_, rgba_colormap);
   gtk_widget_set_app_paintable(widget_, true);
-  GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
   gtk_widget_realize(widget_);
   gdk_window_set_decorations(widget_->window,
                              static_cast<GdkWMDecoration>(0));
@@ -1050,7 +1059,6 @@ void WidgetGtk::ConfigureWidgetForTransparentBackground() {
 
   gtk_widget_set_colormap(window_contents_, rgba_colormap);
   gtk_widget_set_app_paintable(window_contents_, true);
-  GTK_WIDGET_UNSET_FLAGS(window_contents_, GTK_DOUBLE_BUFFERED);
   gtk_widget_realize(window_contents_);
   // Widget must be realized before setting pixmap.
   gdk_window_set_back_pixmap(window_contents_->window, NULL, FALSE);
