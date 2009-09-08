@@ -19,8 +19,8 @@ bool DebugUtil::WaitForDebugger(int wait_seconds, bool silent) {
 }
 
 const void *const *StackTrace::Addresses(size_t* count) {
-  *count = trace_.size();
-  if (trace_.size())
-    return &trace_[0];
+  *count = count_;
+  if (count_)
+    return trace_;
   return NULL;
 }

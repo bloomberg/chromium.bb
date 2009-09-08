@@ -40,7 +40,22 @@ static void TestSuiteCrashHandler(int signal) {
   StackTrace().PrintBacktrace();
   _exit(1);
 }
-#endif
+#endif  // OS_POSIX
+
+#if defined(OS_WIN)
+// Previous unhandled filter. Will be called if not NULL when we intercept an
+// exception.
+__declspec(selectany) LPTOP_LEVEL_EXCEPTION_FILTER g_previous_filter = NULL;
+
+// Prints the exception call stack.
+// This is the unit tests exception filter.
+inline long WINAPI UnitTestExceptionFilter(EXCEPTION_POINTERS* info) {
+  StackTrace(info).PrintBacktrace();
+  if (g_previous_filter)
+    return g_previous_filter(info);
+  return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif  // OS_WIN
 
 class TestSuite {
  public:
@@ -155,6 +170,9 @@ class TestSuite {
       // As a hack workaround, just #ifdef out this code for Purify builds.
       logging::SetLogAssertHandler(UnitTestAssertHandler);
 #endif  // !defined(PURIFY)
+      // Add stack dumping support on exception on windows. Similar to OS_POSIX
+      // signal() handling above.
+      g_previous_filter = SetUnhandledExceptionFilter(&UnitTestExceptionFilter);
     }
 #endif  // defined(OS_WIN)
 

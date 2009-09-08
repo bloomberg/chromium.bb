@@ -105,10 +105,12 @@ class SymbolContext {
   // This function should only be called if Init() has been called.  We do not
   // LOG(FATAL) here because this code is called might be triggered by a
   // LOG(FATAL) itself.
-  void OutputTraceToStream(const std::vector<void*>& trace, std::ostream* os) {
+  void OutputTraceToStream(const void* const* trace,
+                           int count,
+                           std::ostream* os) {
     AutoLock lock(lock_);
 
-    for (size_t i = 0; (i < trace.size()) && os->good(); ++i) {
+    for (size_t i = 0; (i < count) && os->good(); ++i) {
       const int kMaxNameLength = 256;
       DWORD_PTR frame = reinterpret_cast<DWORD_PTR>(trace[i]);
 
@@ -220,19 +222,41 @@ void DebugUtil::BreakDebugger() {
 }
 
 StackTrace::StackTrace() {
-  // From http://msdn.microsoft.com/en-us/library/bb204633(VS.85).aspx,
-  // the sum of FramesToSkip and FramesToCapture must be less than 63,
-  // so set it to 62.
-  const int kMaxCallers = 62;
+  // When walking our own stack, use CaptureStackBackTrace().
+  count_ = CaptureStackBackTrace(0, arraysize(trace_), trace_, NULL);
+}
 
-  void* callers[kMaxCallers];
-  // TODO(ajwong): Migrate this to StackWalk64.
-  int count = CaptureStackBackTrace(0, kMaxCallers, callers, NULL);
-  if (count > 0) {
-    trace_.resize(count);
-    memcpy(&trace_[0], callers, sizeof(callers[0]) * count);
-  } else {
-    trace_.resize(0);
+StackTrace::StackTrace(EXCEPTION_POINTERS* exception_pointers) {
+  // When walking an exception stack, we need to use StackWalk64().
+  count_ = 0;
+  // Initialize stack walking.
+  STACKFRAME64 stack_frame;
+  memset(&stack_frame, 0, sizeof(stack_frame));
+#if defined(_WIN64)
+  int machine_type = IMAGE_FILE_MACHINE_AMD64;
+  stack_frame.AddrPC.Offset = exception_pointers->ContextRecord->Rip;
+  stack_frame.AddrFrame.Offset = exception_pointers->ContextRecord->Rbp;
+  stack_frame.AddrStack.Offset = exception_pointers->ContextRecord->Rsp;
+#else
+  int machine_type = IMAGE_FILE_MACHINE_I386;
+  stack_frame.AddrPC.Offset = exception_pointers->ContextRecord->Eip;
+  stack_frame.AddrFrame.Offset = exception_pointers->ContextRecord->Ebp;
+  stack_frame.AddrStack.Offset = exception_pointers->ContextRecord->Esp;
+#endif
+  stack_frame.AddrPC.Mode = AddrModeFlat;
+  stack_frame.AddrFrame.Mode = AddrModeFlat;
+  stack_frame.AddrStack.Mode = AddrModeFlat;
+  while (StackWalk64(machine_type,
+                     GetCurrentProcess(),
+                     GetCurrentThread(),
+                     &stack_frame,
+                     exception_pointers->ContextRecord,
+                     NULL,
+                     &SymFunctionTableAccess64,
+                     &SymGetModuleBase64,
+                     NULL) &&
+         count_ < arraysize(trace_)) {
+    trace_[count_++] = reinterpret_cast<void*>(stack_frame.AddrPC.Offset);
   }
 }
 
@@ -246,11 +270,11 @@ void StackTrace::OutputToStream(std::ostream* os) {
   if (error != ERROR_SUCCESS) {
     (*os) << "Error initializing symbols (" << error
           << ").  Dumping unresolved backtrace:\n";
-    for (size_t i = 0; (i < trace_.size()) && os->good(); ++i) {
+    for (int i = 0; (i < count_) && os->good(); ++i) {
       (*os) << "\t" << trace_[i] << "\n";
     }
   } else {
     (*os) << "Backtrace:\n";
-    context->OutputTraceToStream(trace_, os);
+    context->OutputTraceToStream(trace_, count_, os);
   }
 }

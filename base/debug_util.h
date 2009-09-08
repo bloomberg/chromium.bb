@@ -14,24 +14,40 @@
 
 #include "base/basictypes.h"
 
+#if defined(OS_WIN)
+struct _EXCEPTION_POINTERS;
+#endif
+
 // A stacktrace can be helpful in debugging. For example, you can include a
 // stacktrace member in a object (probably around #ifndef NDEBUG) so that you
 // can later see where the given object was created from.
 class StackTrace {
  public:
-  // Create a stacktrace from the current location
+  // Creates a stacktrace from the current location
   StackTrace();
-  // Get an array of instruction pointer values.
+#if defined(OS_WIN)
+  // Creates a stacktrace for an exception.
+  // Note: this function will throw an import not found (StackWalk64) exception
+  // on system without dbghelp 5.1.
+  StackTrace(_EXCEPTION_POINTERS* exception_pointers);
+#endif
+  // Gets an array of instruction pointer values.
   //   count: (output) the number of elements in the returned array
   const void *const *Addresses(size_t* count);
-  // Print a backtrace to stderr
+  // Prints a backtrace to stderr
   void PrintBacktrace();
 
-  // Resolve backtrace to symbols and write to stream.
+  // Resolves backtrace to symbols and write to stream.
   void OutputToStream(std::ostream* os);
 
  private:
-  std::vector<void*> trace_;
+  // From http://msdn.microsoft.com/en-us/library/bb204633.aspx,
+  // the sum of FramesToSkip and FramesToCapture must be less than 63,
+  // so set it to 62. Even if on POSIX it could be a larger value, it usually
+  // doesn't give much more information.
+  static const int MAX_TRACES = 62;
+  void* trace_[MAX_TRACES];
+  int count_;
 
   DISALLOW_EVIL_CONSTRUCTORS(StackTrace);
 };

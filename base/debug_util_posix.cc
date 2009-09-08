@@ -116,42 +116,30 @@ void DebugUtil::BreakDebugger() {
 }
 
 StackTrace::StackTrace() {
-  const int kMaxCallers = 256;
-
-  void* callers[kMaxCallers];
-  int count = backtrace(callers, kMaxCallers);
-
   // Though the backtrace API man page does not list any possible negative
-  // return values, we still still exclude them because they would break the
-  // memcpy code below.
-  if (count > 0) {
-    trace_.resize(count);
-    memcpy(&trace_[0], callers, sizeof(callers[0]) * count);
-  } else {
-    trace_.resize(0);
-  }
+  // return values, we take no chance.
+  count_ = std::max(backtrace(trace_, arraysize(trace_)), 0);
 }
 
 void StackTrace::PrintBacktrace() {
   fflush(stderr);
-  backtrace_symbols_fd(&trace_[0], trace_.size(), STDERR_FILENO);
+  backtrace_symbols_fd(trace_, count_, STDERR_FILENO);
 }
 
 void StackTrace::OutputToStream(std::ostream* os) {
-  scoped_ptr_malloc<char*> trace_symbols(
-      backtrace_symbols(&trace_[0], trace_.size()));
+  scoped_ptr_malloc<char*> trace_symbols(backtrace_symbols(trace_, count_));
 
   // If we can't retrieve the symbols, print an error and just dump the raw
   // addresses.
   if (trace_symbols.get() == NULL) {
     (*os) << "Unable get symbols for backtrace (" << strerror(errno)
           << "). Dumping raw addresses in trace:\n";
-    for (size_t i = 0; i < trace_.size(); ++i) {
+    for (int i = 0; i < count_; ++i) {
       (*os) << "\t" << trace_[i] << "\n";
     }
   } else {
     (*os) << "Backtrace:\n";
-    for (size_t i = 0; i < trace_.size(); ++i) {
+    for (int i = 0; i < count_; ++i) {
       (*os) << "\t" << trace_symbols.get()[i] << "\n";
     }
   }
