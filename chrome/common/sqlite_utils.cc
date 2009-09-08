@@ -42,8 +42,14 @@ class ReleaseSQLErrorHandler : public VanillaSQLErrorHandler {
  public:
   virtual int HandleError(int error, sqlite3* db) {
     error_ = error;
-    // TODO(cpu): need to write to some place so we can trigger
-    // the diagnostic-repair mode.
+    // TOD(cpu): Remove this code once it has a few days of air time.
+    if (error == SQLITE_INTERNAL ||
+        error == SQLITE_NOMEM ||
+        error == SQLITE_CORRUPT ||
+        error == SQLITE_IOERR ||
+        error == SQLITE_CONSTRAINT ||
+        error == SQLITE_NOTADB)
+      CHECK(false) << "sqlite fatal error " << error;
     return error;
   }
 };
@@ -277,7 +283,8 @@ int SQLStatement::prepare(sqlite3* db, const char* sql, int sql_len) {
   DCHECK(!stmt_);
   int rv = sqlite3_prepare_v2(db, sql, sql_len, &stmt_, NULL);
   if (rv != SQLITE_OK) {
-    DLOG(ERROR) << "SQLStatement.prepare_v2 failed: " << sqlite3_errmsg(db);
+   SQLErrorHandler* error_handler = GetErrorHandlerFactory()->Make();
+   return error_handler->HandleError(rv, db_handle());
   }
   return rv;
 }
