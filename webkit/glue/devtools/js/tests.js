@@ -320,7 +320,7 @@ TestSuite.prototype.testProfilerTab = function() {
         // that is called 'fib' or 'eternal_fib'. If found, it will mean
         // that we actually have profiled page's code.
         while (node) {
-          if (node.functionName.indexOf("fib") != -1) {
+          if (node.functionName.indexOf('fib') != -1) {
             test.releaseControl();
           }
           node = node.traverseNextNode(true, null, true);
@@ -328,9 +328,21 @@ TestSuite.prototype.testProfilerTab = function() {
 
         test.fail();
       });
+  var ticksCount = 0;
+  var tickRecord = '\nt,';
+  this.addSniffer(RemoteDebuggerAgent, 'DidGetNextLogLines',
+      function(log) {
+        var pos = 0;
+        while ((pos = log.indexOf(tickRecord, pos)) != -1) {
+          pos += tickRecord.length;
+          ticksCount++;
+        }
+        if (ticksCount > 100) {
+          InspectorController.stopProfiling();
+        }
+      }, true);
 
   InspectorController.startProfiling();
-  window.setTimeout('InspectorController.stopProfiling();', 1000);
   this.takeControl();
 };
 

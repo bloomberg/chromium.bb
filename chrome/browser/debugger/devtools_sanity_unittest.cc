@@ -145,8 +145,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceHeaders) {
 }
 
 // Tests profiler panel.
-// Flaky, http://crbug.com/21108
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestProfilerTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
 }
 

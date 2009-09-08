@@ -6,10 +6,23 @@
       }
 
       function eternal_fib() {
-        window.setTimeout("fib(20); eternal_fib();", 0);
+        var started = Date.now();
+        while(true) {
+          fib(20);
+          // Make page responsive by making a break every 100 ms.
+          if (Date.now() - started >= 100) {
+            setTimeout(eternal_fib, 0);
+            return;
+          }
+        }
+      }
+
+      function load() {
+        // Let the page do initial rendering, then go.
+        setTimeout(eternal_fib, 200);
       }
     </script>
   </head>
-  <body onload="eternal_fib()">
+  <body onload="load()">
   </body>
 </html>
