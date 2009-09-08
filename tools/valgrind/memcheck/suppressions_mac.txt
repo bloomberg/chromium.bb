@@ -120,6 +120,7 @@
 {
    # suddenly very common as of 6 aug 2009
    bug_11333b
+   Memcheck:Leak
    fun:malloc
    fun:stdSmartNewPtr
    fun:stdSmartNewHandle
@@ -618,12 +619,7 @@
    fun:pager_end_transaction
    fun:sqlite3PagerCommitPhaseTwo
    fun:sqlite3BtreeCommitPhaseTwo
-   fun:vdbeCommit
-   fun:sqlite3VdbeHalt
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
-   fun:sqlite3_step
-   fun:sqlite3_exec
+   ...
    fun:_ZN7history16ArchivedDatabase17CommitTransactionEv
    fun:_ZN7history16ArchivedDatabase4InitERK8FilePath
 }
@@ -659,6 +655,32 @@
    fun:_ZN7history16ArchivedDatabase17CommitTransactionEv
 }
 {
+   bug_20580_e
+   Memcheck:Addr1
+   fun:sqlite3DeleteTable
+   fun:sqlite3SchemaFree
+   fun:sqlite3ResetInternalSchema
+   fun:sqlite3RollbackAll
+   fun:sqlite3VdbeHalt
+   fun:sqlite3VdbeExec
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN7history16ArchivedDatabase17CommitTransactionEv
+}
+{
+   bug_20580_f
+   Memcheck:Addr4
+   fun:pager_lookup
+   fun:sqlite3PagerAcquire2
+   fun:sqlite3PagerAcquire
+   fun:sqlite3BtreeGetPage
+   fun:sqlite3BtreeBeginTrans
+   fun:sqlite3VdbeExec
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN7history16ArchivedDatabase16BeginTransactionEv
+}
+{
    bug_20837
    Memcheck:Leak
    fun:malloc
@@ -675,11 +697,52 @@
    fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
 } 
 {
-  bug_21137
-  Memcheck:Leak
-  fun:malloc
-  ...
-  fun:+[NSColor keyboardFocusIndicatorColor]
-  ...
-  fun:-[AutocompleteTextFieldCell drawWithFrame:inView:]
+   bug_21279
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSt8_Rb_treeIN15tracked_objects8LocationESt4pairIKS1_PNS0_6BirthsEESt10_Select1stIS6_ESt4lessIS1_ESaIS6_EE9_M_insertEPSt18_Rb_tree_node_baseSE_RKS6_
+   fun:_ZNSt8_Rb_treeIN15tracked_objects8LocationESt4pairIKS1_PNS0_6BirthsEESt10_Select1stIS6_ESt4lessIS1_ESaIS6_EE13insert_uniqueESt17_Rb_tree_iteratorIS6_ERKS6_
+   fun:_ZN15tracked_objects10ThreadData12FindLifetimeERKNS_8LocationE
+   fun:_ZN15tracked_objects7Tracked13SetBirthPlaceERKNS_8LocationE
+   ...
+   fun:_ZN17VisitedLinkMaster12TableBuilder10OnCompleteEb
+}
+{
+   bug_21279_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN17VisitedLinkMaster12TableBuilder10OnCompleteEb
+   fun:_ZN7history14HistoryBackend11IterateURLsEPN14HistoryService13URLEnumeratorE
+}
+{
+   bug_21280
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   ...
+   fun:ATSFontLoadUnicodeCharacterSet
+   ...
+   fun:__NSFontInstanceInfoInitializeMetricsInfo
+   ...
+   fun:-[NSFont boundingRectForGlyph:]
+}
+{
+   bug_21280_b
+   Memcheck:Addr2
+   fun:CFRetain
+   fun:CFDictionarySetValue
+   fun:_ZNK9TBaseFont20SetAttributeInternalEPKvS1_
+   fun:_ZNK9TBaseFont16CopyCharacterSetEv
+   fun:-[__NSFontTypefaceInfo _nominalCharacterCoverage]
+   fun:-[__NSSharedFontInstanceInfo _characterCoverage]
+   fun:__NSFontInstanceInfoInitializeMetricsInfo
+   fun:-[__NSSharedFontInstanceInfo _numberOfGlyphs]
+   fun:-[NSFont boundingRectForGlyph:]
+}
+{
+   bug_21286
+   Memcheck:Leak
+   fun:_Znw*
+   fun:sendSimpleEventToSelf
+   fun:aeInitializeFromHIToolbox
+   fun:INIT_AppleEvents
 }

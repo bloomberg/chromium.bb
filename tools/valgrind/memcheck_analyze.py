@@ -324,7 +324,7 @@ class ValgrindError:
       # TODO(dank): stop synthesizing suppressions once everyone has
       # valgrind-3.5 and we can rely on xml
       if (self._suppression == None):
-        output += "Ssuppression:\n"
+        output += "Suppression:\n"
         for frame in backtrace[1]:
           output += "  fun:" + (frame[FUNCTION_NAME] or "*") + "\n"
 
