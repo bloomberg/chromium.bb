@@ -38,34 +38,7 @@
 #include "native_client/src/trusted/validator_arm/arm_validate.h"
 #include "native_client/src/trusted/validator_arm/register_set_use.h"
 #include "native_client/src/trusted/validator_arm/validator_patterns.h"
-
-// The expected mask for safe indirect branches.
-static const uint32_t kControlFlowMask = 0xF000000F;
-
-// A function that recognizes a proper control flow BIC sequence.
-static bool isControlFlowBic(const NcDecodeState &state) {
-  if (state.CurrentInstructionIs(ARM_BIC)) {
-    const NcDecodedInstruction &inst = state.CurrentInstruction();
-    // We don't check that this is a register-immediate BIC, but that's okay:
-    // the immediate field is 0 in other cases and will fail this check.
-    uint32_t rhs = ImmediateRotateRight(inst.values.immediate,
-        inst.values.shift * 2);
-    return rhs == kControlFlowMask;
-  } else {
-    return false;
-  }
-}
-
-static bool isNaclHalt(const NcDecodeState &state) {
-  if (state.CurrentInstructionIs(ARM_MOV)
-      && state.CurrentInstructionIs(ARM_DP_I)) {
-    const NcDecodedInstruction &inst = state.CurrentInstruction();
-    // We don't need to process the shift field: 0 << x == 0.
-    return inst.values.immediate == 0;
-  } else {
-    return false;
-  }
-}
+#include "native_client/src/trusted/validator_arm/masks.h"
 
 /*
  * Validator pattern for a safe mask-and-branch sequence.
@@ -82,21 +55,25 @@ class SafeIndirectBranchPattern : public ValidatorPattern {
     NcDecodeState pred(state);
     pred.PreviousInstruction();
 
-    if (!pred.HasValidPc() || !isControlFlowBic(pred)) return false;
+    // Make sure we haven't walked out of the text segment.
+    if (!pred.HasValidPc()) return false;
 
     const NcDecodedInstruction &branch = state.CurrentInstruction();
-    const NcDecodedInstruction &mask = pred.CurrentInstruction();
 
-    if (branch.values.cond == mask.values.cond
-        && branch.values.arg4 == mask.values.arg2) {
-      // Note: we don't care whether the BIC sets flags.  If it does, we may
-      // mask without branching, which is basically a no-op.
-      return true;
-    }
-
-    return false;
+    return CheckControlMask(pred, branch.values.arg4, branch.values.cond);
   }
 };
+
+static bool isNaclHalt(const NcDecodeState &state) {
+  if (state.CurrentInstructionIs(ARM_MOV)
+      && state.CurrentInstructionIs(ARM_DP_I)) {
+    const NcDecodedInstruction &inst = state.CurrentInstruction();
+    // We don't need to process the shift field: 0 << x == 0.
+    return inst.values.immediate == 0;
+  } else {
+    return false;
+  }
+}
 
 /*
  * Validator pattern for non-branch writes to PC.
@@ -110,12 +87,12 @@ class NonBranchPcUpdatePattern : public ValidatorPattern {
   virtual bool MayBeUnsafe(const NcDecodeState &state) {
     const NcDecodedInstruction &inst = state.CurrentInstruction();
     return GetBit(RegisterSets(&inst), PC_INDEX)
+        && !isNaclHalt(state)
         && !state.CurrentInstructionIs(ARM_BRANCH_RS)
         && !state.CurrentInstructionIs(ARM_BRANCH);
   }
   virtual bool IsSafe(const NcDecodeState &state) {
-    return isControlFlowBic(state)
-        || isNaclHalt(state);
+    return CheckControlMask(state, PC_INDEX, kIgnoreCondition);
   }
 };
 

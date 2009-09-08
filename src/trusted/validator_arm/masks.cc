@@ -61,3 +61,26 @@ bool CheckDataMask(const NcDecodeState &state, int32_t reg, int32_t condition) {
     return false;
   }
 }
+
+static const uint32_t kControlMask = 0xF000000F;
+bool CheckControlMask(const NcDecodeState &state,
+                      int32_t reg,
+                      int32_t condition) {
+  const NcDecodedInstruction &inst = state.CurrentInstruction();
+
+  if (state.CurrentInstructionIs(ARM_BIC)) {
+    // We don't check that this is a register-immediate BIC, because the
+    // immediate field will be 0 in all other cases.
+    uint32_t rhs =
+        ImmediateRotateRight(inst.values.immediate, inst.values.shift * 2);
+
+    bool conditions_match = (condition == kIgnoreCondition)
+        || (inst.values.cond == condition);
+
+    return rhs == kControlMask
+        && conditions_match
+        && inst.values.arg2 == reg;
+  } else {
+    return false;
+  }
+}
