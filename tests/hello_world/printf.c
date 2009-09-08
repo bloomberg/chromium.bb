@@ -30,69 +30,24 @@
  */
 
 /*
- *TODO(robertm): find documentation for eabi
+   It can't get much simpler than this (uh, except for noop.c).
+*/
 
- *                  The stack organization
- *                  0(sp)                   argc
- *                  4(sp)                   argv[0]
- *                  ...
- *                  (4*argc)(sp)            NULL
- *                  (4*(argc+1))(sp)        envp[0]
- *                  ...
- *                                          NULL
- */
+#include <stdio.h>
+#include <stdlib.h>
 
-/*  TODO(robertm): find a header to put this in */
+int main(int argc, char* argv[]) {
+  int i;
 
-     .set ARM_BUNDLE_SIZE, 4
+  for (i = 1; i < argc; ++i) {
+    long x;
+    printf("%s\n", argv[i]);
 
-    .data
-    .globl environ
-
-    .text
-    .align ARM_BUNDLE_SIZE
-
-    .global _start
-_start:
-
-    /* clear frame pointer and link register */
-    mov r11, #0
-    mov r14, #0
-    pop {r0}  /* get argc */
-    mov r1, sp  /* get argv */
-
-    /* TODO: add the real code here */
-    /* register _fini as atexit */
-
-
-    /* TODO: add the real code here */
-    /*        bl __pthread_initialize */
-
-    /* TODO: add the real code here */
-    /* register __pthread_shutdown   as atexit */
-
-    nop
-    nop
-    nop
-    bl _init
-
-    /* TODO: add the real code here */
-    /* bl __srpc_init */
-
-    /* NOTE: we do not have SDL support on arm yet */
-    /* call    __av_wait */
-
-    nop
-    nop
-    nop
-    bl main
-
-    /* TODO: add the real code here */
-    /* push {r0} */
-    /* bl __srpc_wait */
-    /* pop {r0} */
-
-    nop
-    nop
-    nop
-    bl exit    /* from newlib */
+    x = strtol(argv[i], 0, 0);
+    printf("%ld\n", x);
+    printf("%lx\n", x);
+    printf("0x%08lx\n", x);
+    printf("\n");
+  }
+  return 0;
+}

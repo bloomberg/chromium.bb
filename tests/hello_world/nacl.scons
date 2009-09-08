@@ -53,7 +53,6 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_at_exit_test')
 
 
-
 env.ComponentProgram('exit.nexe', 'exit.c')
 node = env.CommandSelLdrTestNacl(
     'exit_test.out',
@@ -61,3 +60,12 @@ node = env.CommandSelLdrTestNacl(
     exit_status='69',
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_exit_test')
+
+
+env.ComponentProgram('printf.nexe', 'printf.c')
+node = env.CommandSelLdrTestNacl(
+    'printf_test.out',
+    command=[env.File('printf.nexe'), '1000', '1', '0',],
+    stdout_golden=env.File('printf.stdout'),
+    )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_printf_test')
