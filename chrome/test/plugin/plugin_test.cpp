@@ -249,27 +249,7 @@ TEST_F(ActiveXTest, DISABLED_EmbeddedMPE) {
   TestActiveX(L"mpe_test.html", kLongWaitTimeout, false);
 }
 
-
-// The default plugin tests defined below rely on the following webkit
-// functions and the IsPluginProcess function which is defined in the global
-// namespace. Stubbed these out for now.
-namespace webkit_glue {
-
-bool DownloadUrl(const std::string& url, HWND caller_window) {
-  return false;
-}
-
-bool GetPluginFinderURL(std::string* plugin_finder_url) {
-  return true;
-}
-
-} // namespace webkit_glue
-
-bool IsPluginProcess() {
-  return false;
-}
-
-TEST_F(PluginTest, DefaultPluginParsingTest) {
+TEST_F(PluginTest, DISABLED_DefaultPluginParsingTest) {
   PluginInstallerImpl plugin_installer(NP_EMBED);
   NPP_t plugin_instance = {0};
 
