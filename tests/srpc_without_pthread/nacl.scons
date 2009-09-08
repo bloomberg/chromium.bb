@@ -33,7 +33,7 @@ Import('env')
 # NOTE: it is not clear whether this makes a difference but we have
 #       other mechanisms in place to unsure we do not link in
 #       unwanted libs
-env.Replace(LIBS==['srpc'])
+env.Replace(LIBS=['srpc'])
 
 env.ComponentProgram('basic_srpc.nexe', 'basic_srpc.c')
 node = env.CommandSelLdrTestNacl(
