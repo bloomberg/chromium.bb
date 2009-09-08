@@ -69,7 +69,6 @@ views::Window* BrowserFrameWin::GetWindow() {
 }
 
 void BrowserFrameWin::TabStripCreated(TabStripWrapper* tabstrip) {
-  root_view_->set_tabstrip(tabstrip);
 }
 
 int BrowserFrameWin::GetMinimizeButtonOffset() const {
@@ -319,7 +318,7 @@ void BrowserFrameWin::UpdateFrameAfterFrameChange() {
 }
 
 views::RootView* BrowserFrameWin::CreateRootView() {
-  root_view_ = new BrowserRootView(this);
+  root_view_ = new BrowserRootView(browser_view_, this);
   return root_view_;
 }
 

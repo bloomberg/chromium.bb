@@ -43,7 +43,6 @@ views::Window* BrowserFrameGtk::GetWindow() {
 }
 
 void BrowserFrameGtk::TabStripCreated(TabStripWrapper* tabstrip) {
-  root_view_->set_tabstrip(tabstrip);
 }
 
 int BrowserFrameGtk::GetMinimizeButtonOffset() const {
@@ -79,6 +78,6 @@ ThemeProvider* BrowserFrameGtk::GetDefaultThemeProvider() const {
 }
 
 views::RootView* BrowserFrameGtk::CreateRootView() {
-  root_view_ = new BrowserRootView(this);
+  root_view_ = new BrowserRootView(browser_view_, this);
   return root_view_;
 }

@@ -166,6 +166,9 @@ class AutocompleteEditModel : public NotificationObserver {
   // Navigates to the destination last supplied to CanPasteAndGo.
   void PasteAndGo();
 
+  // Returns the url set by way of CanPasteAndGo.
+  const GURL& paste_and_go_url() const { return paste_and_go_url_; }
+
   // Returns true if this is a paste-and-search rather than paste-and-go (or
   // nothing).
   bool is_paste_and_search() const {

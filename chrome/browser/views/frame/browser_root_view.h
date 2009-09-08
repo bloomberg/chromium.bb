@@ -7,6 +7,7 @@
 
 #include "views/widget/root_view.h"
 
+class BrowserView;
 class OSExchangeData;
 class TabStripWrapper;
 
@@ -18,16 +19,12 @@ class TabStripWrapper;
 class BrowserRootView : public views::RootView {
  public:
   // You must call set_tabstrip before this class will accept drops.
-  BrowserRootView(views::Widget* widget);
-
-  // Sets the tabstrip associated with this window. This is used to forward
-  // drag and drop operations to, so no drops will be accepted if there is no
-  // tabstrip set.
-  void set_tabstrip(TabStripWrapper* tabstrip) { tabstrip_ = tabstrip; }
+  BrowserRootView(BrowserView* browser_view, views::Widget* widget);
 
   virtual bool GetDropFormats(
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats);
+  virtual bool AreDropTypesRequired();
   virtual bool CanDrop(const OSExchangeData& data);
   virtual void OnDragEntered(const views::DropTargetEvent& event);
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
@@ -41,10 +38,20 @@ class BrowserRootView : public views::RootView {
   // Converts the event from the hosts coordinate system to the tabstrips
   // coordinate system.
   views::DropTargetEvent* MapEventToTabStrip(
-      const views::DropTargetEvent& event);
+      const views::DropTargetEvent& event,
+      const OSExchangeData& data);
 
-  // The TabStrip.
-  TabStripWrapper* tabstrip_;
+  TabStripWrapper* tabstrip() const;
+
+  // Returns true if |data| has string contents and the user can "paste and go"
+  // (see AutocompleteEditModel::CanPasteAndGo for details). If |url| is
+  // non-null and the user can "paste and go", |url| is set to the
+  // "paste and go" url.
+  bool GetPasteAndGoURL(const OSExchangeData& data,
+                        GURL* url);
+
+  // The BrowserView.
+  BrowserView* browser_view_;
 
   // If true, drag and drop events are being forwarded to the tab strip.
   // This is used to determine when to send OnDragEntered and OnDragExited
