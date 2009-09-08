@@ -2999,6 +2999,8 @@
         'app/theme/close_bar_h.pdf',
         'app/theme/close_bar_p.pdf',
         'app/theme/downloads_favicon.png',
+        'app/theme/find_next_Template.pdf',
+        'app/theme/find_prev_Template.pdf',
         'app/theme/forward_Template.pdf',
         'app/theme/go_Template.pdf',
         'app/theme/home_Template.pdf',
