@@ -1568,7 +1568,7 @@
             '../v8/tools/logreader.js',
             '../v8/tools/profile.js',
             '../v8/tools/profile_view.js',
-            '../v8/tools/splaytree.js',            
+            '../v8/tools/splaytree.js',
           ],
         },
         {
@@ -1581,5 +1581,31 @@
         },
       ],
     },
-  ],
+  ], # targets
+  'conditions': [
+    ['OS=="linux"', {
+      # See the comments in libxul_hack.cc for a description of why these
+      # libraries exist.
+      'targets': [
+        {
+          # We want to build exactly "libxul.so".
+          'target_name': 'xul',
+          'product_dir': '<(PRODUCT_DIR)',
+          'type': 'loadable_module',
+          'sources': [
+            'tools/libxul_hack/libxul_hack.cc'
+          ],
+        },
+        {
+          # We want to build exactly "libxpcom.so".
+          'target_name': 'xpcom',
+          'product_dir': '<(PRODUCT_DIR)',
+          'type': 'loadable_module',
+          'sources': [
+            'tools/libxul_hack/libxul_hack.cc'
+          ],
+        },
+      ], # targets
+    }],
+  ], # conditions
 }
