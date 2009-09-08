@@ -71,6 +71,7 @@
       '../third_party/WebKit/WebCore/platform/image-decoders/skia',
       '../third_party/WebKit/WebCore/platform/image-decoders/xbm',
       '../third_party/WebKit/WebCore/platform/image-encoders/skia',
+      '../third_party/WebKit/WebCore/platform/mock',
       '../third_party/WebKit/WebCore/platform/network',
       '../third_party/WebKit/WebCore/platform/network/chromium',
       '../third_party/WebKit/WebCore/platform/sql',
