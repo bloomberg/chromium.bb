@@ -108,6 +108,8 @@ bool ShouldForcefullyTerminatePluginProcess();
 // File path string conversions.
 FilePath::StringType WebStringToFilePathString(const WebKit::WebString& str);
 WebKit::WebString FilePathStringToWebString(const FilePath::StringType& str);
+FilePath WebStringToFilePath(const WebKit::WebString& str);
+WebKit::WebString FilePathToWebString(const FilePath& file_path);
 
 // Returns a WebCanvas pointer associated with the given Skia canvas.
 WebKit::WebCanvas* ToWebCanvas(skia::PlatformCanvas*);

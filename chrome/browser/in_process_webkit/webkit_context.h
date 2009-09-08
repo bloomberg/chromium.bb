@@ -7,6 +7,9 @@
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+
+class DOMStorageContext;
 
 // There's one WebKitContext per profile.  Various DispatcherHost classes
 // have a pointer to the Context to store shared state.
@@ -17,12 +20,19 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
   const FilePath& data_path() const { return data_path_; }
   bool is_incognito() const { return is_incognito_; }
 
+  // Initialized lazily.  Pointer is valid for the lifetime of this instance.
+  DOMStorageContext* GetDOMStorageContext();
+
  private:
   friend class base::RefCountedThreadSafe<WebKitContext>;
   ~WebKitContext();
 
-  FilePath data_path_;
-  bool is_incognito_;
+  // Copies of profile data that can be accessed on any thread.
+  const FilePath data_path_;
+  const bool is_incognito_;
+
+  // The state for DOM Storage.
+  scoped_ptr<DOMStorageContext> dom_storage_context_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebKitContext);
 };

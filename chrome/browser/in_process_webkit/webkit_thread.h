@@ -49,14 +49,15 @@ class WebKitThread {
   class InternalWebKitThread : public ChromeThread {
    public:
     InternalWebKitThread();
-    virtual ~InternalWebKitThread() { }
+    virtual ~InternalWebKitThread();
     // Does the actual initialization and shutdown of WebKit.  Called at the
     // beginning and end of the thread's lifetime.
     virtual void Init();
     virtual void CleanUp();
 
    private:
-    BrowserWebKitClientImpl* webkit_client_;
+    // The WebKitClient implementation.  Only access on WebKit thread.
+    scoped_ptr<BrowserWebKitClientImpl> webkit_client_;
   };
 
   // Returns the WebKit thread's message loop or NULL if we're in

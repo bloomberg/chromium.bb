@@ -273,6 +273,14 @@ WebString FilePathStringToWebString(const FilePath::StringType& str) {
 #endif
 }
 
+FilePath WebStringToFilePath(const WebKit::WebString& str) {
+  return FilePath(WebStringToFilePathString(str));
+}
+
+WebKit::WebString FilePathToWebString(const FilePath& file_path) {
+  return FilePathStringToWebString(file_path.value());
+}
+
 std::string GetWebKitVersion() {
   return StringPrintf("%d.%d", WEBKIT_VERSION_MAJOR, WEBKIT_VERSION_MINOR);
 }

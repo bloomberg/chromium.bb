@@ -5,20 +5,12 @@
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 
 #include "base/nullable_string16.h"
-#include "base/stl_util-inl.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/in_process_webkit/dom_storage_context.h"
+#include "chrome/browser/in_process_webkit/storage_area.h"
+#include "chrome/browser/in_process_webkit/storage_namespace.h"
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
 #include "chrome/common/render_messages.h"
-#include "webkit/api/public/WebKit.h"
-#include "webkit/api/public/WebStorageArea.h"
-#include "webkit/api/public/WebStorageNamespace.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/glue/webkit_glue.h"
-
-using WebKit::WebStorageArea;
-using WebKit::WebStorageNamespace;
-using WebKit::WebString;
 
 DOMStorageDispatcherHost::DOMStorageDispatcherHost(
     IPC::Message::Sender* message_sender,
@@ -27,8 +19,6 @@ DOMStorageDispatcherHost::DOMStorageDispatcherHost(
     : webkit_context_(webkit_context),
       webkit_thread_(webkit_thread),
       message_sender_(message_sender),
-      last_storage_area_id_(0),
-      last_storage_namespace_id_(0),
       ever_used_(false),
       shutdown_(false) {
   DCHECK(webkit_context_.get());
@@ -38,14 +28,13 @@ DOMStorageDispatcherHost::DOMStorageDispatcherHost(
 
 DOMStorageDispatcherHost::~DOMStorageDispatcherHost() {
   DCHECK(shutdown_);
-  // TODO(jorlow): This sometimes fails on the bots.  Why??
-  //DCHECK(!ever_used_ || ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
 }
 
 void DOMStorageDispatcherHost::Shutdown() {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     message_sender_ = NULL;
     if (!ever_used_) {
+      // No need to (possibly) spin up the WebKit thread for a no-op.
       shutdown_ = true;
       return;
     }
@@ -60,12 +49,10 @@ void DOMStorageDispatcherHost::Shutdown() {
   DCHECK(ever_used_);
   DCHECK(!message_sender_);
   DCHECK(!shutdown_);
-
-  STLDeleteContainerPairSecondPointers(storage_area_map_.begin(),
-                                       storage_area_map_.end());
-  STLDeleteContainerPairSecondPointers(storage_namespace_map_.begin(),
-                                       storage_namespace_map_.end());
   shutdown_ = true;
+
+  // TODO(jorlow): If we have any locks, release them here.  (Must be on the
+  //               WebKit thread.)
 }
 
 bool DOMStorageDispatcherHost::OnMessageReceived(const IPC::Message& message,
@@ -127,16 +114,13 @@ void DOMStorageDispatcherHost::OnNamespaceId(bool is_local_storage,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  WebStorageNamespace* new_namespace;
-  if (is_local_storage) {
-    new_namespace = WebStorageNamespace::createLocalStorageNamespace(
-        GetLocalStoragePath());
-  } else {
-    new_namespace = WebStorageNamespace::createSessionStorageNamespace();
-  }
-  int64 new_namespace_id = AddStorageNamespace(new_namespace);
+  StorageNamespace* new_namespace;
+  if (is_local_storage)
+    new_namespace = Context()->LocalStorage();
+  else
+    new_namespace = Context()->NewSessionStorage();
   ViewHostMsg_DOMStorageNamespaceId::WriteReplyParams(reply_msg,
-                                                      new_namespace_id);
+                                                      new_namespace->id());
   Send(reply_msg);
 }
 
@@ -152,12 +136,12 @@ void DOMStorageDispatcherHost::OnCloneNamespaceId(int64 namespace_id,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  WebStorageNamespace* existing_namespace = GetStorageNamespace(namespace_id);
+  StorageNamespace* existing_namespace =
+      Context()->GetStorageNamespace(namespace_id);
   CHECK(existing_namespace);  // TODO(jorlow): Do better than this.
-  WebStorageNamespace* new_namespace = existing_namespace->copy();
-  int64 new_namespace_id = AddStorageNamespace(new_namespace);
+  StorageNamespace* new_namespace = existing_namespace->Copy();
   ViewHostMsg_DOMStorageCloneNamespaceId::WriteReplyParams(reply_msg,
-                                                           new_namespace_id);
+                                                           new_namespace->id());
   Send(reply_msg);
 }
 
@@ -171,7 +155,11 @@ void DOMStorageDispatcherHost::OnDerefNamespaceId(int64 namespace_id) {
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  // TODO(jorlow): We need to track resources so we can free them.
+  StorageNamespace* storage_namespace =
+      Context()->GetStorageNamespace(namespace_id);
+  CHECK(storage_namespace);  // TODO(jorlow): Do better than this.
+  // TODO(jorlow): Track resources here so we can free them (even beyond just
+  //               when the renderer process dies).
 }
 
 void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
@@ -187,12 +175,12 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  WebStorageNamespace* storage_namespace = GetStorageNamespace(namespace_id);
+  StorageNamespace* storage_namespace =
+      Context()->GetStorageNamespace(namespace_id);
   CHECK(storage_namespace);  // TODO(jorlow): Do better than this.
-  WebStorageArea* storage_area = storage_namespace->createStorageArea(origin);
-  int64 storage_area_id = AddStorageArea(storage_area);
+  StorageArea* storage_area = storage_namespace->GetStorageArea(origin);
   ViewHostMsg_DOMStorageCloneNamespaceId::WriteReplyParams(reply_msg,
-                                                           storage_area_id);
+                                                           storage_area->id());
   Send(reply_msg);
 }
 
@@ -206,12 +194,11 @@ void DOMStorageDispatcherHost::OnLock(int64 storage_area_id,
     return;
   }
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  bool invalidate_cache;
-  size_t bytes_left_in_quota;
-  WebStorageArea* storage_area = GetStorageArea(storage_area_id);
+  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  storage_area->lock(invalidate_cache, bytes_left_in_quota);
+  // TODO(jorlow): Implement locking, quotas, etc...
+  bool invalidate_cache = true;
+  size_t bytes_left_in_quota = 9999999;
   ViewHostMsg_DOMStorageLock::WriteReplyParams(reply_msg, invalidate_cache,
                                                bytes_left_in_quota);
   Send(reply_msg);
@@ -227,9 +214,9 @@ void DOMStorageDispatcherHost::OnUnlock(int64 storage_area_id) {
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  WebStorageArea* storage_area = GetStorageArea(storage_area_id);
+  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  storage_area->unlock();
+  // TODO(jorlow): Do something.
 }
 
 void DOMStorageDispatcherHost::OnLength(int64 storage_area_id,
@@ -243,9 +230,9 @@ void DOMStorageDispatcherHost::OnLength(int64 storage_area_id,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  WebStorageArea* storage_area = GetStorageArea(storage_area_id);
+  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  unsigned length = storage_area->length();
+  unsigned length = storage_area->Length();
   ViewHostMsg_DOMStorageLength::WriteReplyParams(reply_msg, length);
   Send(reply_msg);
 }
@@ -261,9 +248,9 @@ void DOMStorageDispatcherHost::OnKey(int64 storage_area_id, unsigned index,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  WebStorageArea* storage_area = GetStorageArea(storage_area_id);
+  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  const NullableString16& key = storage_area->key(index);
+  const NullableString16& key = storage_area->Key(index);
   ViewHostMsg_DOMStorageKey::WriteReplyParams(reply_msg, key);
   Send(reply_msg);
 }
@@ -281,9 +268,9 @@ void DOMStorageDispatcherHost::OnGetItem(int64 storage_area_id,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  WebStorageArea* storage_area = GetStorageArea(storage_area_id);
+  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  const NullableString16& value = storage_area->getItem(key);
+  const NullableString16& value = storage_area->GetItem(key);
   ViewHostMsg_DOMStorageGetItem::WriteReplyParams(reply_msg, value);
   Send(reply_msg);
 }
@@ -301,9 +288,9 @@ void DOMStorageDispatcherHost::OnSetItem(int64 storage_area_id,
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   bool quota_exception = false;
-  WebStorageArea* storage_area = GetStorageArea(storage_area_id);
+  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  storage_area->setItem(key, value, quota_exception);
+  storage_area->SetItem(key, value, &quota_exception);
   DCHECK(!quota_exception);  // This is tracked by the renderer.
 }
 
@@ -318,9 +305,9 @@ void DOMStorageDispatcherHost::OnRemoveItem(int64 storage_area_id,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  WebStorageArea* storage_area = GetStorageArea(storage_area_id);
+  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  storage_area->removeItem(key);
+  storage_area->RemoveItem(key);
 }
 
 void DOMStorageDispatcherHost::OnClear(int64 storage_area_id,
@@ -335,51 +322,11 @@ void DOMStorageDispatcherHost::OnClear(int64 storage_area_id,
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   // TODO(jorlow): Return the total quota for this domain.
-  size_t bytes_left_in_quota = 0;
-  WebStorageArea* storage_area = GetStorageArea(storage_area_id);
+  size_t bytes_left_in_quota = 9999999;
+  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  storage_area->clear();
+  storage_area->Clear();
   ViewHostMsg_DOMStorageClear::WriteReplyParams(reply_msg,
                                                 bytes_left_in_quota);
   Send(reply_msg);
-}
-
-WebStorageArea* DOMStorageDispatcherHost::GetStorageArea(int64 id) {
-  StorageAreaMap::iterator iterator = storage_area_map_.find(id);
-  if (iterator == storage_area_map_.end())
-    return NULL;
-  return iterator->second;
-}
-
-WebStorageNamespace* DOMStorageDispatcherHost::GetStorageNamespace(int64 id) {
-  StorageNamespaceMap::iterator iterator = storage_namespace_map_.find(id);
-  if (iterator == storage_namespace_map_.end())
-    return NULL;
-  return iterator->second;
-}
-
-int64 DOMStorageDispatcherHost::AddStorageArea(
-    WebStorageArea* new_storage_area) {
-  // Create a new ID and insert it into our map.
-  int64 new_storage_area_id = ++last_storage_area_id_;
-  DCHECK(!GetStorageArea(new_storage_area_id));
-  storage_area_map_[new_storage_area_id] = new_storage_area;
-  return new_storage_area_id;
-}
-
-int64 DOMStorageDispatcherHost::AddStorageNamespace(
-    WebStorageNamespace* new_namespace) {
-  // Create a new ID and insert it into our map.
-  int64 new_namespace_id = ++last_storage_namespace_id_;
-  DCHECK(!GetStorageNamespace(new_namespace_id));
-  storage_namespace_map_[new_namespace_id] = new_namespace;
-  return new_namespace_id;
-}
-
-WebString DOMStorageDispatcherHost::GetLocalStoragePath() {
-  const FilePath& path = webkit_context_->data_path();
-  if (path.empty())
-    return WebString();
-  FilePath::StringType path_string = path.AppendASCII("localStorage").value();
-  return webkit_glue::FilePathStringToWebString(path_string);
 }

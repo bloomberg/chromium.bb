@@ -7,17 +7,12 @@
 
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "chrome/browser/in_process_webkit/storage_area.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "ipc/ipc_message.h"
 
-class WebKitContext;
+class DOMStorageContext;
 class WebKitThread;
-
-namespace WebKit {
-class WebStorageArea;
-class WebStorageNamespace;
-class WebString;
-}
 
 // This class handles the logistics of DOM Storage within the browser process.
 // It mostly ferries information between IPCs and the WebKit implementations,
@@ -58,19 +53,11 @@ class DOMStorageDispatcherHost :
   void OnRemoveItem(int64 storage_area_id, const string16& key);
   void OnClear(int64 storage_area_id, IPC::Message* reply_msg);
 
-  // Get a WebStorageNamespace or WebStorageArea based from its ID.  Only call
-  // on the WebKit thread.
-  WebKit::WebStorageArea* GetStorageArea(int64 id);
-  WebKit::WebStorageNamespace* GetStorageNamespace(int64 id);
-
-  // Add a WebStorageNamespace or WebStorageArea and get a new unique ID for
-  // it.  Only call on the WebKit thread.
-  int64 AddStorageArea(WebKit::WebStorageArea* new_storage_area);
-  int64 AddStorageNamespace(WebKit::WebStorageNamespace* new_namespace);
-
-  // Get the path to the LocalStorage directory.  Calculate it if we haven't
-  // already.  Only call on the WebKit thread.
-  WebKit::WebString GetLocalStoragePath();
+  // A shortcut for accessing our context.
+  DOMStorageContext* Context() {
+    DCHECK(!shutdown_);
+    return webkit_context_->GetDOMStorageContext();
+  }
 
   // Data shared between renderer processes with the same profile.
   scoped_refptr<WebKitContext> webkit_context_;
@@ -80,22 +67,6 @@ class DOMStorageDispatcherHost :
 
   // Only set on the IO thread.
   IPC::Message::Sender* message_sender_;
-
-  // The last used storage_area_id and storage_namespace_id's.  Only use on the
-  // WebKit thread.
-  int64 last_storage_area_id_;
-  int64 last_storage_namespace_id_;
-
-  // Used to maintain a mapping between storage_area_id's used in IPC messages
-  // and the actual WebStorageArea instances.  Only use on the WebKit thread.
-  typedef base::hash_map<int64, WebKit::WebStorageArea*> StorageAreaMap;
-  StorageAreaMap storage_area_map_;
-
-  // Mapping between storage_namespace_id's used in IPC messages and the
-  // WebStorageNamespace instances.  Only use on the WebKit thread.
-  typedef base::hash_map<int64, WebKit::WebStorageNamespace*>
-      StorageNamespaceMap;
-  StorageNamespaceMap storage_namespace_map_;
 
   // Has this dispatcher ever handled a message.  If not, then we can skip
   // the entire shutdown procedure.  This is only set to true on the IO thread

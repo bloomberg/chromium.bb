@@ -27,8 +27,6 @@ void WebKitThread::Shutdown() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(io_message_loop_);
 
-  // TODO(jorlow): Start flushing LocalStorage?
-
   AutoLock lock(io_message_loop_lock_);
   io_message_loop_ = NULL;
 }
@@ -48,24 +46,23 @@ bool WebKitThread::PostIOThreadTask(
 }
 
 WebKitThread::InternalWebKitThread::InternalWebKitThread()
-    : ChromeThread(ChromeThread::WEBKIT),
-      webkit_client_(NULL) {
+    : ChromeThread(ChromeThread::WEBKIT) {
+}
+
+WebKitThread::InternalWebKitThread::~InternalWebKitThread() {
 }
 
 void WebKitThread::InternalWebKitThread::Init() {
-  DCHECK(!webkit_client_);
-  webkit_client_ = new BrowserWebKitClientImpl;
-  DCHECK(webkit_client_);
-  WebKit::initialize(webkit_client_);
+  DCHECK(!webkit_client_.get());
+  webkit_client_.reset(new BrowserWebKitClientImpl);
+  WebKit::initialize(webkit_client_.get());
   // If possible, post initialization tasks to this thread (rather than doing
   // them now) so we don't block the IO thread any longer than we have to.
 }
 
 void WebKitThread::InternalWebKitThread::CleanUp() {
-  // TODO(jorlow): Block on LocalStorage being 100% shut down.
-  DCHECK(webkit_client_);
+  DCHECK(webkit_client_.get());
   WebKit::shutdown();
-  delete webkit_client_;
 }
 
 MessageLoop* WebKitThread::InitializeThread() {
