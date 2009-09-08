@@ -98,13 +98,13 @@
     # TODO(jcampan): move these vars to views.gyp.
     'views_unit_tests_sources': [
       '../views/view_unittest.cc',
+      '../views/focus/focus_manager_unittest.cc',
     ],
     'views_unit_tests_sources_win_specific': [
       # TODO(jcampan): make the following tests work on Linux.
       '../views/controls/label_unittest.cc',
       '../views/controls/table/table_view_unittest.cc',
       '../views/grid_layout_unittest.cc',
-      '../views/focus/focus_manager_unittest.cc',
     ],
     'conditions': [
       ['OS=="mac"', {
@@ -4221,6 +4221,7 @@
              ['exclude', 'browser/gtk/tabs/tab_renderer_gtk_unittest\\.cc$'],
 	     ['exclude', 'browser/gtk/options/cookies_view_unittest\\.cc$'],
 	     ['exclude', 'browser/gtk/options/languages_page_gtk_unittest\\.cc$'],
+	     ['exclude', 'browser/gtk/gtk_theme_provider_unittest\\.cc$'],
           ],
         }],
         ['OS=="mac"', {

@@ -16,17 +16,18 @@ void FocusManager::ClearNativeFocus() {
 }
 
 void FocusManager::FocusNativeView(gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
+  if (native_view && !gtk_widget_is_focus(native_view))
+    gtk_widget_grab_focus(native_view);
 }
 
  // static
 FocusManager* FocusManager::GetFocusManagerForNativeView(
     gfx::NativeView native_view) {
-  GtkWidget* parent;
-  while ((parent = gtk_widget_get_parent(native_view)) != NULL) {
-    native_view = parent;
-  }
-  WidgetGtk* widget = WidgetGtk::GetViewForNative(native_view);
+  GtkWidget* root = gtk_widget_get_toplevel(native_view);
+  if (!root || !GTK_WIDGET_TOPLEVEL(root))
+    return NULL;
+
+  WidgetGtk* widget = WidgetGtk::GetViewForNative(root);
   if (!widget) {
     NOTREACHED();
     return NULL;
