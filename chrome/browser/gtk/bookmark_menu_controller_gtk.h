@@ -35,6 +35,8 @@ class BookmarkMenuController : public BaseBookmarkModelObserver {
                          bool show_other_folder);
   virtual ~BookmarkMenuController();
 
+  GtkWidget* widget() { return menu_; }
+
   // Pops up the menu. |widget| must be a GtkChromeButton.
   void Popup(GtkWidget* widget, gint button_type, guint32 timestamp);
 
@@ -104,7 +106,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver {
   // all sorts of weird non-standard things with this menu, like:
   // - The menu is a drag target
   // - The menu items have context menus.
-  OwnedWidgetGtk menu_;
+  GtkWidget* menu_;
 
   // Whether we should ignore the next button release event (because we were
   // dragging).

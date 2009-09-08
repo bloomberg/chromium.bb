@@ -97,16 +97,16 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
       node_(node),
       ignore_button_release_(false),
       triggering_widget_(NULL) {
-  menu_.Own(gtk_menu_new());
-  BuildMenu(node, start_child_index, menu_.get());
-  g_signal_connect(menu_.get(), "hide",
+  menu_ = gtk_menu_new();
+  BuildMenu(node, start_child_index, menu_);
+  g_signal_connect(menu_, "hide",
                    G_CALLBACK(OnMenuHidden), this);
-  gtk_widget_show_all(menu_.get());
+  gtk_widget_show_all(menu_);
 }
 
 BookmarkMenuController::~BookmarkMenuController() {
   profile_->GetBookmarkModel()->RemoveObserver(this);
-  menu_.Destroy();
+  gtk_menu_popdown(GTK_MENU(menu_));
 }
 
 void BookmarkMenuController::Popup(GtkWidget* widget, gint button_type,
@@ -116,13 +116,13 @@ void BookmarkMenuController::Popup(GtkWidget* widget, gint button_type,
   triggering_widget_ = widget;
   gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(widget),
                                     GTK_STATE_ACTIVE);
-  gtk_menu_popup(GTK_MENU(menu_.get()), NULL, NULL,
+  gtk_menu_popup(GTK_MENU(menu_), NULL, NULL,
                  &MenuGtk::MenuPositionFunc,
                  widget, button_type, timestamp);
 }
 
 void BookmarkMenuController::BookmarkModelChanged() {
-  gtk_menu_popdown(GTK_MENU(menu_.get()));
+  gtk_menu_popdown(GTK_MENU(menu_));
 }
 
 void BookmarkMenuController::BookmarkNodeFavIconLoaded(
@@ -279,7 +279,7 @@ gboolean BookmarkMenuController::OnButtonReleased(
 
     // We need to manually dismiss the popup menu because we're overriding
     // button-release-event.
-    gtk_menu_popdown(GTK_MENU(controller->menu_.get()));
+    gtk_menu_popdown(GTK_MENU(controller->menu_));
     return TRUE;
   }
 

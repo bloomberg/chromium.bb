@@ -1309,6 +1309,8 @@
         'browser/gtk/list_store_favicon_loader.h',
         'browser/gtk/location_bar_view_gtk.cc',
         'browser/gtk/location_bar_view_gtk.h',
+        'browser/gtk/menu_bar_helper.cc',
+        'browser/gtk/menu_bar_helper.h',
         'browser/gtk/menu_gtk.cc',
         'browser/gtk/menu_gtk.h',
         'browser/gtk/nine_box.cc',

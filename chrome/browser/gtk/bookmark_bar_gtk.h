@@ -8,10 +8,12 @@
 #include <gtk/gtk.h>
 
 #include <string>
+#include <vector>
 
 #include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -28,6 +30,7 @@ struct GtkThemeProvider;
 
 class BookmarkBarGtk : public AnimationDelegate,
                        public BookmarkModelObserver,
+                       public MenuBarHelper::Delegate,
                        public NotificationObserver {
  public:
   explicit BookmarkBarGtk(Profile* profile, Browser* browser,
@@ -76,6 +79,10 @@ class BookmarkBarGtk : public AnimationDelegate,
   virtual void AnimationProgressed(const Animation* animation);
   virtual void AnimationEnded(const Animation* animation);
 
+  // MenuBarHelper::Delegate implementation ------------------------------------
+  virtual void PopupForButton(GtkWidget* button);
+  virtual void PopupForButtonNextTo(GtkWidget* button,
+                                    GtkMenuDirectionType dir);
  private:
   // Helper function which generates GtkToolItems for |bookmark_toolbar_|.
   void CreateAllBookmarkButtons();
@@ -104,7 +111,10 @@ class BookmarkBarGtk : public AnimationDelegate,
   // |extra_space| is how much extra space to give the toolbar during the
   // calculation (for the purposes of determining if ditching the chevron
   // would be a good idea).
-  int GetFirstHiddenBookmark(int extra_space);
+  // If non-NULL, |showing_folders| is packed with all the folders that are
+  // showing on the bar.
+  int GetFirstHiddenBookmark(int extra_space,
+                             std::vector<GtkWidget*>* showing_folders);
 
   // Overridden from BookmarkModelObserver:
 
@@ -251,6 +261,8 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // Whether we should show the instructional text in the bookmark bar.
   bool show_instructions_;
+
+  MenuBarHelper menu_bar_helper_;
 
   // The last displayed right click menu, or NULL if no menus have been
   // displayed yet.

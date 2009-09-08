@@ -101,7 +101,8 @@ BookmarkBarGtk::BookmarkBarGtk(Profile* profile, Browser* browser,
       dragged_node_(NULL),
       toolbar_drop_item_(NULL),
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
-      show_instructions_(true) {
+      show_instructions_(true),
+      menu_bar_helper_(this) {
   Init(profile);
   SetProfile(profile);
 
@@ -310,9 +311,12 @@ void BookmarkBarGtk::BookmarkNodeAdded(BookmarkModel* model,
   }
   DCHECK(index >= 0 && index <= GetBookmarkButtonCount());
 
-  GtkToolItem* item = CreateBookmarkToolItem(parent->GetChild(index));
+  const BookmarkNode* node = parent->GetChild(index);
+  GtkToolItem* item = CreateBookmarkToolItem(node);
   gtk_toolbar_insert(GTK_TOOLBAR(bookmark_toolbar_.get()),
                      item, index);
+  if (node->is_folder())
+    menu_bar_helper_.Add(gtk_bin_get_child(GTK_BIN(item)));
 
   SetInstructionState();
   SetChevronState();
@@ -330,6 +334,7 @@ void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
 
   GtkWidget* to_remove = GTK_WIDGET(gtk_toolbar_get_nth_item(
       GTK_TOOLBAR(bookmark_toolbar_.get()), old_index));
+  menu_bar_helper_.Remove(gtk_bin_get_child(GTK_BIN(to_remove)));
   gtk_container_remove(GTK_CONTAINER(bookmark_toolbar_.get()),
                        to_remove);
 
@@ -376,6 +381,8 @@ void BookmarkBarGtk::CreateAllBookmarkButtons() {
   for (int i = 0; i < node->GetChildCount(); ++i) {
     GtkToolItem* item = CreateBookmarkToolItem(node->GetChild(i));
     gtk_toolbar_insert(GTK_TOOLBAR(bookmark_toolbar_.get()), item, -1);
+    if (node->is_folder())
+      menu_bar_helper_.Add(gtk_bin_get_child(GTK_BIN(item)));
   }
 
   bookmark_utils::ConfigureButtonForNode(model_->other_node(),
@@ -400,7 +407,7 @@ void BookmarkBarGtk::SetChevronState() {
   if (GTK_WIDGET_VISIBLE(overflow_button_))
     extra_space = overflow_button_->allocation.width;
 
-  int overflow_idx = GetFirstHiddenBookmark(extra_space);
+  int overflow_idx = GetFirstHiddenBookmark(extra_space, NULL);
   if (overflow_idx == -1)
     gtk_widget_hide(overflow_button_);
   else
@@ -409,6 +416,9 @@ void BookmarkBarGtk::SetChevronState() {
 
 void BookmarkBarGtk::RemoveAllBookmarkButtons() {
   gtk_util::RemoveAllChildren(bookmark_toolbar_.get());
+  menu_bar_helper_.Clear();
+  menu_bar_helper_.Add(other_bookmarks_button_);
+  menu_bar_helper_.Add(overflow_button_);
 }
 
 int BookmarkBarGtk::GetBookmarkButtonCount() {
@@ -433,7 +443,8 @@ void BookmarkBarGtk::SetOverflowButtonAppearance() {
   SetChevronState();
 }
 
-int BookmarkBarGtk::GetFirstHiddenBookmark(int extra_space) {
+int BookmarkBarGtk::GetFirstHiddenBookmark(
+    int extra_space, std::vector<GtkWidget*>* showing_folders) {
   int rv = 0;
   bool overflow = false;
   GList* toolbar_items =
@@ -444,6 +455,10 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(int extra_space) {
         bookmark_toolbar_.get()->allocation.width + extra_space) {
       overflow = true;
       break;
+    }
+    if (showing_folders &&
+        model_->GetBookmarkBarNode()->GetChild(rv)->is_folder()) {
+      showing_folders->push_back(gtk_bin_get_child(GTK_BIN(tool_item)));
     }
     rv++;
   }
@@ -534,7 +549,6 @@ GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
                      G_CALLBACK(OnClicked), this);
     gtk_util::SetButtonTriggersNavigation(button);
   } else {
-    // TODO(erg): This button can also be a drop target.
     ConnectFolderButtonEvents(button);
   }
 
@@ -717,24 +731,7 @@ void BookmarkBarGtk::OnButtonDragGet(GtkWidget* widget, GdkDragContext* context,
 // static
 void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender,
                                      BookmarkBarGtk* bar) {
-  const BookmarkNode* node = bar->GetNodeForToolButton(sender);
-  DCHECK(node);
-  DCHECK(bar->page_navigator_);
-
-  int start_child_idx = 0;
-  if (sender == bar->overflow_button_)
-    start_child_idx = bar->GetFirstHiddenBookmark(0);
-
-  bar->current_menu_.reset(
-      new BookmarkMenuController(bar->browser_, bar->profile_,
-                                 bar->page_navigator_,
-                                 GTK_WINDOW(gtk_widget_get_toplevel(sender)),
-                                 node,
-                                 start_child_idx,
-                                 false));
-  GdkEventButton* event =
-      reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
-  bar->current_menu_->Popup(sender, event->button, event->time);
+  bar->PopupForButton(sender);
 }
 
 // static
@@ -971,4 +968,58 @@ gboolean BookmarkBarGtk::OnSeparatorExpose(GtkWidget* widget,
   cairo_pattern_destroy(pattern);
 
   return TRUE;
+}
+
+// MenuBarHelper::Delegate implementation --------------------------------------
+void BookmarkBarGtk::PopupForButton(GtkWidget* button) {
+  const BookmarkNode* node = GetNodeForToolButton(button);
+  DCHECK(node);
+  DCHECK(page_navigator_);
+
+  int first_hidden = GetFirstHiddenBookmark(0, NULL);
+  if (button != overflow_button_ && button != other_bookmarks_button_ &&
+      node->GetParent()->IndexOfChild(node) >= first_hidden) {
+    return;
+  }
+
+  current_menu_.reset(
+      new BookmarkMenuController(browser_, profile_,
+                                 page_navigator_,
+                                 GTK_WINDOW(gtk_widget_get_toplevel(button)),
+                                 node,
+                                 button == overflow_button_ ?
+                                     first_hidden : 0,
+                                 false));
+  menu_bar_helper_.MenuStartedShowing(button, current_menu_->widget());
+  GdkEventButton* event =
+      reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
+  current_menu_->Popup(button, event->button, event->time);
+}
+
+void BookmarkBarGtk::PopupForButtonNextTo(GtkWidget* button,
+                                          GtkMenuDirectionType dir) {
+  const BookmarkNode* relative_node = GetNodeForToolButton(button);
+  DCHECK(relative_node);
+
+  // Find out the order of the buttons.
+  std::vector<GtkWidget*> folder_list;
+  const int first_hidden = GetFirstHiddenBookmark(0, &folder_list);
+  if (first_hidden != -1)
+    folder_list.push_back(overflow_button_);
+  folder_list.push_back(other_bookmarks_button_);
+
+  // Find the position of |button|.
+  int button_idx = -1;
+  for (size_t i = 0; i < folder_list.size(); ++i) {
+    if (folder_list[i] == button) {
+      button_idx = i;
+      break;
+    }
+  }
+  DCHECK_NE(button_idx, -1);
+
+  // Find the GtkWidget* for the actual target button.
+  int shift = dir == GTK_MENU_DIR_PARENT ? -1 : 1;
+  button_idx = (button_idx + shift + folder_list.size()) % folder_list.size();
+  PopupForButton(folder_list[button_idx]);
 }
