@@ -26,6 +26,8 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/root_view.h"
 
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
 
 
