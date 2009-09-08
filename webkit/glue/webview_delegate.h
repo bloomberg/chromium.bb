@@ -28,6 +28,7 @@
 
 #include <vector>
 
+#include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebNavigationPolicy.h"
 #include "webkit/api/public/WebNavigationType.h"
@@ -639,10 +640,14 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
 
   // Starts a drag session with the supplied contextual information.
   // webview: The WebView sending the delegate method.
+  // mouseCoords: Current mouse coordinates
   // drop_data: a WebDropData struct which should contain all the necessary
   // information for dragging data out of the webview.
+  // drag_source_operation_mask: indicates what drag operations are allowed
   virtual void StartDragging(WebView* webview,
-                             const WebKit::WebDragData& drag_data) {
+                             const WebKit::WebPoint &mouseCoords,
+                             const WebKit::WebDragData& drag_data,
+                             WebKit::WebDragOperationsMask operations_mask) {
   }
 
   // Returns the focus to the client.

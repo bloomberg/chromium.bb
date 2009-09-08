@@ -331,13 +331,15 @@ IPC_BEGIN_MESSAGES(View)
                       webkit_glue::PasswordFormDomManager::FillData)
 
   // D&d drop target messages.
-  IPC_MESSAGE_ROUTED3(ViewMsg_DragTargetDragEnter,
+  IPC_MESSAGE_ROUTED4(ViewMsg_DragTargetDragEnter,
                       WebDropData /* drop_data */,
                       gfx::Point /* client_pt */,
-                      gfx::Point /* screen_pt */)
-  IPC_MESSAGE_ROUTED2(ViewMsg_DragTargetDragOver,
+                      gfx::Point /* screen_pt */,
+                      WebKit::WebDragOperationsMask /* ops_allowed */)
+  IPC_MESSAGE_ROUTED3(ViewMsg_DragTargetDragOver,
                       gfx::Point /* client_pt */,
-                      gfx::Point /* screen_pt */)
+                      gfx::Point /* screen_pt */,
+                      WebKit::WebDragOperationsMask /* ops_allowed */)
   IPC_MESSAGE_ROUTED0(ViewMsg_DragTargetDragLeave)
   IPC_MESSAGE_ROUTED2(ViewMsg_DragTargetDrop,
                       gfx::Point /* client_pt */,
@@ -351,7 +353,7 @@ IPC_BEGIN_MESSAGES(View)
                       gfx::Point /* client_pt */,
                       gfx::Point /* screen_pt */,
                       bool /* ended */,
-                      bool /* cancelled */)
+                      WebKit::WebDragOperation /* drag_operation */)
 
   // Notifies the renderer that the system DoDragDrop call has ended.
   IPC_MESSAGE_ROUTED0(ViewMsg_DragSourceSystemDragEnded)
@@ -1104,13 +1106,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // WebDropData struct contains contextual information about the pieces of the
   // page the user dragged. The parent uses this notification to initiate a
   // drag session at the OS level.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_StartDragging,
-                      WebDropData /* drop_data */)
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_StartDragging,
+                      WebDropData /* drop_data */,
+                      WebKit::WebDragOperationsMask /* ops_allowed */)
 
   // The page wants to update the mouse cursor during a drag & drop operation.
   // |is_drop_target| is true if the mouse is over a valid drop target.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateDragCursor,
-                      bool /* is_drop_target */)
+                      WebKit::WebDragOperation /* drag_operation */)
 
   // Tells the browser to move the focus to the next (previous if reverse is
   // true) focusable element.

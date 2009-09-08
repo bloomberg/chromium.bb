@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "chrome/common/view_types.h"
 #include "net/base/load_states.h"
+#include "webkit/api/public/WebDragOperation.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutofillForm;
@@ -111,11 +112,12 @@ class RenderViewHostDelegate {
     // The user started dragging content of the specified type within the
     // RenderView. Contextual information about the dragged content is supplied
     // by WebDropData.
-    virtual void StartDragging(const WebDropData& drop_data) = 0;
+    virtual void StartDragging(const WebDropData& drop_data,
+                               WebKit::WebDragOperationsMask allowed_ops) = 0;
 
     // The page wants to update the mouse cursor during a drag & drop operation.
-    // |is_drop_target| is true if the mouse is over a valid drop target.
-    virtual void UpdateDragCursor(bool is_drop_target) = 0;
+    // |operation| describes the current operation (none, move, copy, link.)
+    virtual void UpdateDragCursor(WebKit::WebDragOperation operation) = 0;
 
     // Notification that view for this delegate got the focus.
     virtual void GotFocus() = 0;

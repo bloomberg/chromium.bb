@@ -96,6 +96,10 @@ using WebKit::WebCompositionCommand;
 using WebKit::WebCompositionCommandConfirm;
 using WebKit::WebCompositionCommandDiscard;
 using WebKit::WebDragData;
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationCopy;
+using WebKit::WebDragOperationNone;
+using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingClient;
 using WebKit::WebFrame;
 using WebKit::WebInputEvent;
@@ -129,10 +133,19 @@ static const double kMaxTextSizeMultiplier = 3.0;
 // one page group.
 static const char* kPageGroupName = "default";
 
-// The webcore drag operation type when something is trying to be dropped on
-// the webview.  These values are taken from Apple's windows port.
-static const WebCore::DragOperation kDropTargetOperation =
-    static_cast<WebCore::DragOperation>(DragOperationCopy | DragOperationLink);
+// Ensure that the WebKit::WebDragOperation enum values stay in sync with
+// the original WebCore::DragOperation constants.
+#define COMPILE_ASSERT_MATCHING_ENUM(webcore_name) \
+   COMPILE_ASSERT(int(WebCore::webcore_name) == int(WebKit::Web##webcore_name),\
+                  dummy##webcore_name)
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationNone);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationCopy);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationLink);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationGeneric);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationPrivate);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationMove);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationDelete);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 
 // AutocompletePopupMenuClient
 class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
@@ -380,7 +393,8 @@ WebViewImpl::WebViewImpl(WebViewDelegate* delegate,
       drag_target_dispatch_(false),
       drag_identity_(0),
       drop_effect_(DROP_EFFECT_DEFAULT),
-      drop_accept_(false),
+      operations_allowed_(WebKit::WebDragOperationNone),
+      drag_operation_(WebKit::WebDragOperationNone),
       autocomplete_popup_showing_(false),
       is_transparent_(false) {
   // WebKit/win/WebView.cpp does the same thing, except they call the
@@ -1495,24 +1509,16 @@ void WebViewImpl::ShowJavaScriptConsole() {
   page_->inspectorController()->showPanel(InspectorController::ConsolePanel);
 }
 
-void WebViewImpl::DragSourceCancelledAt(
-    const WebPoint& client_point,
-    const WebPoint& screen_point) {
-  PlatformMouseEvent pme(webkit_glue::WebPointToIntPoint(client_point),
-                         webkit_glue::WebPointToIntPoint(screen_point),
-                         NoButton, MouseEventMoved, 0, false, false, false,
-                         false, 0);
-  page_->mainFrame()->eventHandler()->dragSourceEndedAt(pme, DragOperationNone);
-}
-
 void WebViewImpl::DragSourceEndedAt(
     const WebPoint& client_point,
-    const WebPoint& screen_point) {
+    const WebPoint& screen_point,
+    WebDragOperation operation) {
   PlatformMouseEvent pme(webkit_glue::WebPointToIntPoint(client_point),
                          webkit_glue::WebPointToIntPoint(screen_point),
                          LeftButton, MouseEventMoved, 0, false, false, false,
                          false, 0);
-  page_->mainFrame()->eventHandler()->dragSourceEndedAt(pme, DragOperationCopy);
+  page_->mainFrame()->eventHandler()->dragSourceEndedAt(pme,
+      static_cast<WebCore::DragOperation>(operation));
 }
 
 void WebViewImpl::DragSourceMovedTo(
@@ -1534,52 +1540,70 @@ void WebViewImpl::DragSourceSystemDragEnded() {
   }
 }
 
-bool WebViewImpl::DragTargetDragEnter(
+WebDragOperation WebViewImpl::DragTargetDragEnter(
     const WebDragData& web_drag_data,
     int identity,
     const WebPoint& client_point,
-    const WebPoint& screen_point) {
+    const WebPoint& screen_point,
+    WebDragOperation operations_allowed) {
   DCHECK(!current_drag_data_.get());
 
   current_drag_data_ =
       webkit_glue::WebDragDataToChromiumDataObject(web_drag_data);
   drag_identity_ = identity;
+  operations_allowed_ = operations_allowed;
 
   DragData drag_data(
       current_drag_data_.get(),
       webkit_glue::WebPointToIntPoint(client_point),
       webkit_glue::WebPointToIntPoint(screen_point),
-      kDropTargetOperation);
+      static_cast<WebCore::DragOperation>(operations_allowed));
 
   drop_effect_ = DROP_EFFECT_DEFAULT;
   drag_target_dispatch_ = true;
   DragOperation effect = page_->dragController()->dragEntered(&drag_data);
+  // Mask the operation against the drag source's allowed operations.
+  if ((effect & drag_data.draggingSourceOperationMask()) != effect) {
+    effect = DragOperationNone;
+  }
   drag_target_dispatch_ = false;
 
   if (drop_effect_ != DROP_EFFECT_DEFAULT)
-    return drop_accept_ = (drop_effect_ != DROP_EFFECT_NONE);
-  return drop_accept_ = (effect != DragOperationNone);
+    drag_operation_ = (drop_effect_ != DROP_EFFECT_NONE) ?
+        WebDragOperationCopy : WebDragOperationNone;
+  else
+    drag_operation_ = static_cast<WebDragOperation>(effect);
+  return drag_operation_;
 }
 
-bool WebViewImpl::DragTargetDragOver(
+WebDragOperation WebViewImpl::DragTargetDragOver(
     const WebPoint& client_point,
-    const WebPoint& screen_point) {
+    const WebPoint& screen_point,
+    WebDragOperation operations_allowed) {
   DCHECK(current_drag_data_.get());
 
+  operations_allowed_ = operations_allowed;
   DragData drag_data(
       current_drag_data_.get(),
       webkit_glue::WebPointToIntPoint(client_point),
       webkit_glue::WebPointToIntPoint(screen_point),
-      kDropTargetOperation);
+      static_cast<WebCore::DragOperation>(operations_allowed));
 
   drop_effect_ = DROP_EFFECT_DEFAULT;
   drag_target_dispatch_ = true;
   DragOperation effect = page_->dragController()->dragUpdated(&drag_data);
+  // Mask the operation against the drag source's allowed operations.
+  if ((effect & drag_data.draggingSourceOperationMask()) != effect) {
+    effect = DragOperationNone;
+  }
   drag_target_dispatch_ = false;
 
   if (drop_effect_ != DROP_EFFECT_DEFAULT)
-    return drop_accept_ = (drop_effect_ != DROP_EFFECT_NONE);
-  return drop_accept_ = (effect != DragOperationNone);
+    drag_operation_ = (drop_effect_ != DROP_EFFECT_NONE) ?
+        WebDragOperationCopy : WebDragOperationNone;
+  else
+    drag_operation_ = static_cast<WebDragOperation>(effect);
+  return drag_operation_;
 }
 
 void WebViewImpl::DragTargetDragLeave() {
@@ -1589,7 +1613,7 @@ void WebViewImpl::DragTargetDragLeave() {
       current_drag_data_.get(),
       IntPoint(),
       IntPoint(),
-      kDropTargetOperation);
+      static_cast<WebCore::DragOperation>(operations_allowed_));
 
   drag_target_dispatch_ = true;
   page_->dragController()->dragExited(&drag_data);
@@ -1597,7 +1621,7 @@ void WebViewImpl::DragTargetDragLeave() {
 
   current_drag_data_ = NULL;
   drop_effect_ = DROP_EFFECT_DEFAULT;
-  drop_accept_ = false;
+  drag_operation_ = WebDragOperationNone;
   drag_identity_ = 0;
 }
 
@@ -1611,9 +1635,9 @@ void WebViewImpl::DragTargetDrop(
   // flight, or else delayed by javascript processing in this webview.  If a
   // drop happens before our IPC reply has reached the browser process, then
   // the browser forwards the drop to this webview.  So only allow a drop to
-  // proceed if our webview drop_accept_ state is true.
+  // proceed if our webview drag_operation_ state is not DragOperationNone.
 
-  if (!drop_accept_) {  // IPC RACE CONDITION: do not allow this drop.
+  if (drag_operation_ == WebDragOperationNone) {  // IPC RACE CONDITION: do not allow this drop.
     DragTargetDragLeave();
     return;
   }
@@ -1622,7 +1646,7 @@ void WebViewImpl::DragTargetDrop(
       current_drag_data_.get(),
       webkit_glue::WebPointToIntPoint(client_point),
       webkit_glue::WebPointToIntPoint(screen_point),
-      kDropTargetOperation);
+      static_cast<WebCore::DragOperation>(operations_allowed_));
 
   drag_target_dispatch_ = true;
   page_->dragController()->performDrag(&drag_data);
@@ -1630,7 +1654,7 @@ void WebViewImpl::DragTargetDrop(
 
   current_drag_data_ = NULL;
   drop_effect_ = DROP_EFFECT_DEFAULT;
-  drop_accept_ = false;
+  drag_operation_ = WebDragOperationNone;
   drag_identity_ = 0;
 }
 
@@ -1795,11 +1819,13 @@ void WebViewImpl::DidCommitLoad(bool* is_new_navigation) {
   observed_new_navigation_ = false;
 }
 
-void WebViewImpl::StartDragging(const WebDragData& drag_data) {
+void WebViewImpl::StartDragging(WebPoint event_pos,
+                                const WebDragData& drag_data,
+                                WebDragOperationsMask mask) {
   if (delegate_) {
     DCHECK(!doing_drag_and_drop_);
     doing_drag_and_drop_ = true;
-    delegate_->StartDragging(this, drag_data);
+    delegate_->StartDragging(this, event_pos, drag_data, mask);
   }
 }
 

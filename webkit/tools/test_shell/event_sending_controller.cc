@@ -45,7 +45,8 @@ using WebKit::WebInputEventFactory;
 
 using base::Time;
 using base::TimeTicks;
-
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationsMask;
 using WebKit::WebDragData;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
@@ -62,6 +63,8 @@ int EventSendingController::last_button_number_ = -1;
 namespace {
 
 static WebDragData current_drag_data;
+static WebDragOperation current_drag_effect;
+static WebDragOperationsMask current_drag_effects_allowed;
 static bool replaying_saved_events = false;
 static std::queue<WebMouseEvent> mouse_event_queue;
 
@@ -188,6 +191,8 @@ void EventSendingController::Reset() {
   // The test should have finished a drag and the mouse button state.
   DCHECK(current_drag_data.isNull());
   current_drag_data.reset();
+  current_drag_effect = WebKit::WebDragOperationNone;
+  current_drag_effects_allowed = WebKit::WebDragOperationNone;
   pressed_button_ = WebMouseEvent::ButtonNone;
   dragMode.Set(true);
 #if defined(OS_WIN)
@@ -211,9 +216,17 @@ WebView* EventSendingController::webview() {
 }
 
 // static
-void EventSendingController::DoDragDrop(const WebDragData& drag_data) {
+void EventSendingController::DoDragDrop(const WebKit::WebPoint &event_pos,
+                                        const WebDragData& drag_data,
+                                        WebDragOperationsMask mask) {
+  WebMouseEvent event;
+  InitMouseEvent(WebInputEvent::MouseDown, pressed_button_, event_pos, &event);
+  WebPoint client_point(event.x, event.y);
+  WebPoint screen_point(event.globalX, event.globalY);
   current_drag_data = drag_data;
-  webview()->DragTargetDragEnter(drag_data, 0, WebPoint(), WebPoint());
+  current_drag_effects_allowed = mask;
+  current_drag_effect = webview()->DragTargetDragEnter(
+      drag_data, 0, client_point, screen_point, current_drag_effects_allowed);
 
   // Finish processing events.
   ReplaySavedEvents();
@@ -313,14 +326,17 @@ void EventSendingController::mouseUp(
     WebPoint client_point(e.x, e.y);
     WebPoint screen_point(e.globalX, e.globalY);
 
-    bool valid = webview()->DragTargetDragOver(client_point, screen_point);
-    if (valid) {
-      webview()->DragSourceEndedAt(client_point, screen_point);
+    webview()->DragSourceMovedTo(client_point, screen_point);
+    current_drag_effect = webview()->DragTargetDragOver(client_point,
+                                                  screen_point,
+                                                  current_drag_effects_allowed);
+    if (current_drag_effect) {
       webview()->DragTargetDrop(client_point, screen_point);
     } else {
-      webview()->DragSourceEndedAt(client_point, screen_point);
       webview()->DragTargetDragLeave();
     }
+    webview()->DragSourceEndedAt(client_point, screen_point,
+                                 current_drag_effect);
 
     current_drag_data.reset();
   }
@@ -357,7 +373,9 @@ void EventSendingController::DoMouseMove(const WebMouseEvent& e) {
     WebPoint screen_point(e.globalX, e.globalY);
 
     webview()->DragSourceMovedTo(client_point, screen_point);
-    webview()->DragTargetDragOver(client_point, screen_point);
+    current_drag_effect = webview()->DragTargetDragOver(
+                                  client_point, screen_point,
+                                  current_drag_effects_allowed);
   }
 }
 

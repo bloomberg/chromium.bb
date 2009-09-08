@@ -11,6 +11,8 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
 
+using WebKit::WebDragOperationsMask;
+
 @implementation WebDropTarget
 
 // |contents| is the TabContents representing this tab, used to communicate
@@ -25,8 +27,8 @@
 
 // Call to set whether or not we should allow the drop. Takes effect the
 // next time |-draggingUpdated:| is called.
-- (void)setIsDropTarget:(BOOL)isDropTarget {
-  isDropTarget_ = isDropTarget;
+- (void)setCurrentOperation: (NSDragOperation)operation {
+  current_operation_ = operation;
 }
 
 // Given a point in window coordinates and a view in that window, return a
@@ -85,13 +87,16 @@
   NSPoint windowPoint = [info draggingLocation];
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
+  NSDragOperation mask = [info draggingSourceOperationMask];
   tabContents_->render_view_host()->DragTargetDragEnter(data,
       gfx::Point(viewPoint.x, viewPoint.y),
-      gfx::Point(screenPoint.x, screenPoint.y));
+      gfx::Point(screenPoint.x, screenPoint.y),
+      static_cast<WebDragOperationsMask>(mask));
 
-  isDropTarget_ = YES;
-
-  return NSDragOperationCopy;
+  // We won't know the true operation (whether the drag is allowed) until we
+  // hear back from the renderer. For now, be optimistic:
+  current_operation_ = NSDragOperationCopy;
+  return current_operation_;
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)info {
@@ -121,13 +126,13 @@
   NSPoint windowPoint = [info draggingLocation];
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
+  NSDragOperation mask = [info draggingSourceOperationMask];
   tabContents_->render_view_host()->DragTargetDragOver(
       gfx::Point(viewPoint.x, viewPoint.y),
-      gfx::Point(screenPoint.x, screenPoint.y));
+      gfx::Point(screenPoint.x, screenPoint.y),
+      static_cast<WebDragOperationsMask>(mask));
 
-  if (!isDropTarget_)
-    return NSDragOperationNone;
-  return NSDragOperationCopy;
+  return current_operation_;
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)info

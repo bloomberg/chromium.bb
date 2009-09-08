@@ -18,6 +18,8 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
 
+using WebKit::WebDragOperationCopy;
+
 namespace {
 
 // A helper method for getting the preferred drop effect.
@@ -113,7 +115,8 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
   ScreenToClient(GetHWND(), &client_pt);
   tab_contents_->render_view_host()->DragTargetDragEnter(drop_data,
       gfx::Point(client_pt.x, client_pt.y),
-      gfx::Point(cursor_position.x, cursor_position.y));
+      gfx::Point(cursor_position.x, cursor_position.y),
+      WebDragOperationCopy);  // FIXME(snej): Send actual operation
 
   // We lie here and always return a DROPEFFECT because we don't want to
   // wait for the IPC call to return.
@@ -135,7 +138,8 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
   ScreenToClient(GetHWND(), &client_pt);
   tab_contents_->render_view_host()->DragTargetDragOver(
       gfx::Point(client_pt.x, client_pt.y),
-      gfx::Point(cursor_position.x, cursor_position.y));
+      gfx::Point(cursor_position.x, cursor_position.y),
+      WebDragOperationCopy);  // FIXME(snej): Send actual operation
 
   if (!is_drop_target_)
     return DROPEFFECT_NONE;

@@ -49,6 +49,9 @@
 using base::TimeDelta;
 using webkit_glue::PasswordFormDomManager;
 using WebKit::WebConsoleMessage;
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationNone;
+using WebKit::WebDragOperationsMask;
 using WebKit::WebFindOptions;
 using WebKit::WebInputEvent;
 using WebKit::WebTextDirection;
@@ -460,7 +463,8 @@ void RenderViewHost::FillPasswordForm(
 void RenderViewHost::DragTargetDragEnter(
     const WebDropData& drop_data,
     const gfx::Point& client_pt,
-    const gfx::Point& screen_pt) {
+    const gfx::Point& screen_pt,
+    WebDragOperationsMask operations_allowed) {
   // Grant the renderer the ability to load the drop_data.
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
@@ -473,12 +477,14 @@ void RenderViewHost::DragTargetDragEnter(
     policy->GrantUploadFile(process()->id(), path);
   }
   Send(new ViewMsg_DragTargetDragEnter(routing_id(), drop_data, client_pt,
-                                       screen_pt));
+                                       screen_pt, operations_allowed));
 }
 
 void RenderViewHost::DragTargetDragOver(
-    const gfx::Point& client_pt, const gfx::Point& screen_pt) {
-  Send(new ViewMsg_DragTargetDragOver(routing_id(), client_pt, screen_pt));
+    const gfx::Point& client_pt, const gfx::Point& screen_pt,
+    WebDragOperationsMask operations_allowed) {
+  Send(new ViewMsg_DragTargetDragOver(routing_id(), client_pt, screen_pt,
+                                      operations_allowed));
 }
 
 void RenderViewHost::DragTargetDragLeave() {
@@ -608,22 +614,14 @@ void RenderViewHost::CopyImageAt(int x, int y) {
   Send(new ViewMsg_CopyImageAt(routing_id(), x, y));
 }
 
-void RenderViewHost::DragSourceCancelledAt(
-    int client_x, int client_y, int screen_x, int screen_y) {
-  Send(new ViewMsg_DragSourceEndedOrMoved(
-      routing_id(),
-      gfx::Point(client_x, client_y),
-      gfx::Point(screen_x, screen_y),
-      true, true));
-}
-
 void RenderViewHost::DragSourceEndedAt(
-    int client_x, int client_y, int screen_x, int screen_y) {
+    int client_x, int client_y, int screen_x, int screen_y,
+    WebDragOperation operation) {
   Send(new ViewMsg_DragSourceEndedOrMoved(
       routing_id(),
       gfx::Point(client_x, client_y),
       gfx::Point(screen_x, screen_y),
-      true, false));
+      true, operation));
 }
 
 void RenderViewHost::DragSourceMovedTo(
@@ -632,7 +630,7 @@ void RenderViewHost::DragSourceMovedTo(
       routing_id(),
       gfx::Point(client_x, client_y),
       gfx::Point(screen_x, screen_y),
-      false, false));
+      false, WebDragOperationNone));
 }
 
 void RenderViewHost::DragSourceSystemDragEnded() {
@@ -1331,16 +1329,17 @@ void RenderViewHost::OnMsgAutofillFormSubmitted(
 }
 
 void RenderViewHost::OnMsgStartDragging(
-    const WebDropData& drop_data) {
+    const WebDropData& drop_data,
+    WebDragOperationsMask drag_operations_mask) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view)
-    view->StartDragging(drop_data);
+      view->StartDragging(drop_data, drag_operations_mask);
 }
 
-void RenderViewHost::OnUpdateDragCursor(bool is_drop_target) {
+void RenderViewHost::OnUpdateDragCursor(WebDragOperation current_op) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view)
-    view->UpdateDragCursor(is_drop_target);
+    view->UpdateDragCursor(current_op);
 }
 
 void RenderViewHost::OnTakeFocus(bool reverse) {

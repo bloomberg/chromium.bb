@@ -21,12 +21,29 @@
 
 #include "chrome/common/temp_scaffolding_stubs.h"
 
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationsMask;
+
+// Ensure that the WebKit::WebDragOperation enum values stay in sync with
+// NSDragOperation constants, since the code below static_casts between 'em.
+#define COMPILE_ASSERT_MATCHING_ENUM(name) \
+  COMPILE_ASSERT(int(NS##name) == int(WebKit::Web##name), enum_mismatch_##name)
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationNone);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationCopy);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationLink);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationGeneric);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationPrivate);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationMove);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationDelete);
+COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
+
 @interface TabContentsViewCocoa (Private)
 - (id)initWithTabContentsViewMac:(TabContentsViewMac*)w;
 - (void)processKeyboardEvent:(NSEvent*)event;
 - (void)registerDragTypes;
-- (void)setIsDropTarget:(BOOL)isTarget;
-- (void)startDragWithDropData:(const WebDropData&)dropData;
+- (void)setCurrentDragOperation:(NSDragOperation)operation;
+- (void)startDragWithDropData:(const WebDropData&)dropData
+            dragOperationMask:(NSDragOperation)operationMask;
 @end
 
 // static
@@ -83,11 +100,14 @@ void TabContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
   *out = [cocoa_view_.get() NSRectToRect:[cocoa_view_.get() bounds]];
 }
 
-void TabContentsViewMac::StartDragging(const WebDropData& drop_data) {
+void TabContentsViewMac::StartDragging(const WebDropData& drop_data,
+    WebDragOperationsMask allowed_operations) {
   // The drag invokes a nested event loop, but we need to continue processing
   // events.
   MessageLoop::current()->SetNestableTasksAllowed(true);
-  [cocoa_view_ startDragWithDropData:drop_data];
+  NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations);
+  [cocoa_view_ startDragWithDropData:drop_data
+                   dragOperationMask:mask];
   MessageLoop::current()->SetNestableTasksAllowed(false);
 }
 
@@ -166,8 +186,8 @@ void TabContentsViewMac::RestoreFocus() {
   }
 }
 
-void TabContentsViewMac::UpdateDragCursor(bool is_drop_target) {
-  [cocoa_view_ setIsDropTarget:is_drop_target ? YES : NO];
+void TabContentsViewMac::UpdateDragCursor(WebDragOperation operation) {
+  [cocoa_view_ setCurrentDragOperation: operation];
 }
 
 void TabContentsViewMac::GotFocus() {
@@ -269,8 +289,8 @@ void TabContentsViewMac::Observe(NotificationType type,
   [self registerForDraggedTypes:types];
 }
 
-- (void)setIsDropTarget:(BOOL)isTarget {
-  [dropTarget_ setIsDropTarget:isTarget];
+- (void)setCurrentDragOperation:(NSDragOperation)operation {
+  [dropTarget_ setCurrentOperation:operation];
 }
 
 - (TabContents*)tabContents {
@@ -325,11 +345,13 @@ void TabContentsViewMac::Observe(NotificationType type,
                              forType:type];
 }
 
-- (void)startDragWithDropData:(const WebDropData&)dropData {
+- (void)startDragWithDropData:(const WebDropData&)dropData
+            dragOperationMask:(NSDragOperation)operationMask {
   dragSource_.reset([[WebDragSource alloc]
           initWithContentsView:self
                       dropData:&dropData
-                    pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]]);
+                    pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
+             dragOperationMask:operationMask]);
   [dragSource_ startDrag];
 }
 
@@ -338,16 +360,14 @@ void TabContentsViewMac::Observe(NotificationType type,
 // Returns what kind of drag operations are available. This is a required
 // method for NSDraggingSource.
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
-  // TODO(pinkerton): I think this is right...
-  return NSDragOperationCopy;
+  return [dragSource_ draggingSourceOperationMaskForLocal:isLocal];
 }
 
 // Called when a drag initiated in our view ends.
 - (void)draggedImage:(NSImage*)anImage
              endedAt:(NSPoint)screenPoint
            operation:(NSDragOperation)operation {
-  [dragSource_ endDragAt:screenPoint
-             isCancelled:(operation == NSDragOperationNone)];
+  [dragSource_ endDragAt:screenPoint operation:operation];
 
   // Might as well throw out this object now.
   dragSource_.reset();

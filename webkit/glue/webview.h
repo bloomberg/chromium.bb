@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebWidget.h"
 
 namespace WebKit {
@@ -185,15 +186,11 @@ class WebView : public WebKit::WebWidget {
   // Show the JavaScript console.
   virtual void ShowJavaScriptConsole() = 0;
 
-  // Notifies the webview that a drag has been cancelled.
-  virtual void DragSourceCancelledAt(
-      const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point) = 0;
-
-  // Notifies the webview that a drag has terminated.
+  // Notifies the webview that a drag has ended (with a drop or a cancel).
   virtual void DragSourceEndedAt(
       const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point) = 0;
+      const WebKit::WebPoint& screen_point,
+      WebKit::WebDragOperation operation) = 0;
 
   // Notifies the webview that a drag and drop operation is in progress, with
   // dropable items over the view.
@@ -206,13 +203,15 @@ class WebView : public WebKit::WebWidget {
 
   // Callback methods when a drag and drop operation is trying to drop data
   // on this webview.
-  virtual bool DragTargetDragEnter(
+  virtual WebKit::WebDragOperation DragTargetDragEnter(
       const WebKit::WebDragData& drag_data, int identity,
       const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point) = 0;
-  virtual bool DragTargetDragOver(
+      const WebKit::WebPoint& screen_point,
+      WebKit::WebDragOperationsMask operations_allowed) = 0;
+  virtual WebKit::WebDragOperation DragTargetDragOver(
       const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point) = 0;
+      const WebKit::WebPoint& screen_point,
+      WebKit::WebDragOperationsMask operations_allowed) = 0;
   virtual void DragTargetDragLeave() = 0;
   virtual void DragTargetDrop(
       const WebKit::WebPoint& client_point,

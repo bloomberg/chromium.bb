@@ -32,6 +32,9 @@
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/webdropdata.h"
 
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationNone;
+using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
 
 namespace {
@@ -132,7 +135,8 @@ void TabContentsViewWin::GetContainerBounds(gfx::Rect* out) const {
   GetBounds(out, false);
 }
 
-void TabContentsViewWin::StartDragging(const WebDropData& drop_data) {
+void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
+                                       WebDragOperationsMask ops) {
   OSExchangeData data;
 
   // TODO(tc): Generate an appropriate drag image.
@@ -189,6 +193,7 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data) {
   MessageLoop::current()->SetNestableTasksAllowed(true);
   DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source_,
              DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
+  // TODO(snej): Use 'ops' param instead of hardcoding dropeffects
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 
   drag_source_ = NULL;
@@ -358,8 +363,8 @@ void TabContentsViewWin::CancelDragAndCloseTab() {
   close_tab_after_drag_ends_ = true;
 }
 
-void TabContentsViewWin::UpdateDragCursor(bool is_drop_target) {
-  drop_target_->set_is_drop_target(is_drop_target);
+void TabContentsViewWin::UpdateDragCursor(WebDragOperation operation) {
+  drop_target_->set_is_drop_target(operation != WebDragOperationNone);
 }
 
 void TabContentsViewWin::GotFocus() {

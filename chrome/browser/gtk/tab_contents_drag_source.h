@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/message_loop.h"
+#include "webkit/api/public/WebDragOperation.h"
 
 class TabContents;
 class TabContentsView;
@@ -44,9 +45,10 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   static void OnDragEndThunk(GtkWidget* widget,
                              GdkDragContext* drag_context,
                              TabContentsDragSource* handler) {
-    handler->OnDragEnd();
+    handler->OnDragEnd(WebKit::WebDragOperationCopy);
+    // TODO(snej): Pass actual operation instead of hardcoding copy
   }
-  void OnDragEnd();
+  void OnDragEnd(WebKit::WebDragOperation operation);
   static void OnDragDataGetThunk(GtkWidget* drag_widget,
                                  GdkDragContext* context,
                                  GtkSelectionData* selection_data,

@@ -25,6 +25,9 @@
 #include "net/base/escape.h"
 #include "views/window/window_delegate.h"
 
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationsMask;
+
 namespace {
 
 class ResourceRequestTask : public Task {
@@ -86,8 +89,9 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   virtual void ShowCreatedWidget(int route_id,
                                  const gfx::Rect& initial_pos);
   virtual void ShowContextMenu(const ContextMenuParams& params);
-  virtual void StartDragging(const WebDropData& drop_data);
-  virtual void UpdateDragCursor(bool is_drop_target);
+  virtual void StartDragging(const WebDropData& drop_data,
+                             WebDragOperationsMask operations_allowed);
+  virtual void UpdateDragCursor(WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
@@ -549,12 +553,13 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::ShowContextMenu(
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::StartDragging(
-    const WebDropData& drop_data) {
+    const WebDropData& drop_data,
+    WebDragOperationsMask allowed_operations) {
   NOTREACHED() << "InterstitialPage does not support dragging yet.";
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::UpdateDragCursor(
-    bool is_drop_target) {
+    WebDragOperation) {
   NOTREACHED() << "InterstitialPage does not support dragging yet.";
 }
 

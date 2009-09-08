@@ -36,6 +36,11 @@
 #include "chrome/common/notification_type.h"
 #include "webkit/glue/webdropdata.h"
 
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationCopy;
+using WebKit::WebDragOperationNone;
+using WebKit::WebDragOperationsMask;
+
 namespace {
 
 // TODO(erg): I have no idea how to programatically figure out how wide the
@@ -139,15 +144,16 @@ class WebDragDest {
 
   // This is called when the renderer responds to a drag motion event. We must
   // update the system drag cursor.
-  void UpdateDragStatus(bool is_drop_target) {
+  void UpdateDragStatus(WebDragOperation operation) {
     if (context_) {
       // TODO(estade): we might want to support other actions besides copy,
       // but that would increase the cost of getting our drag success guess
       // wrong.
-      gdk_drag_status(context_, is_drop_target ? GDK_ACTION_COPY :
+      is_drop_target_ = operation != WebDragOperationNone;
+      // TODO(snej): Pass appropriate GDK action instead of hardcoding COPY
+      gdk_drag_status(context_, is_drop_target_ ? GDK_ACTION_COPY :
                                 static_cast<GdkDragAction>(0),
                       drag_over_time_);
-      is_drop_target_ = false;
     }
   }
 
@@ -203,7 +209,9 @@ class WebDragDest {
     } else if (data_requests_ == 0) {
       tab_contents_->render_view_host()->
           DragTargetDragOver(gtk_util::ClientPoint(widget_),
-                             gtk_util::ScreenPoint(widget_));
+                             gtk_util::ScreenPoint(widget_),
+                             WebDragOperationCopy);
+      // TODO(snej): Pass appropriate DragOperation instead of hardcoding
       drag_over_time_ = time;
     }
 
@@ -266,7 +274,9 @@ class WebDragDest {
       tab_contents_->render_view_host()->
           DragTargetDragEnter(*drop_data_.get(),
                               gtk_util::ClientPoint(widget_),
-                              gtk_util::ScreenPoint(widget_));
+                              gtk_util::ScreenPoint(widget_),
+                              WebDragOperationCopy);
+      // TODO(snej): Pass appropriate DragOperation instead of hardcoding
       drag_over_time_ = time;
     }
   }
@@ -533,8 +543,8 @@ void TabContentsViewGtk::RestoreFocus() {
     SetInitialFocus();
 }
 
-void TabContentsViewGtk::UpdateDragCursor(bool is_drop_target) {
-  drag_dest_->UpdateDragStatus(is_drop_target);
+void TabContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
+  drag_dest_->UpdateDragStatus(operation);
 }
 
 void TabContentsViewGtk::GotFocus() {
@@ -598,10 +608,12 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
 
 // Render view DnD -------------------------------------------------------------
 
-void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
+void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
+                                       WebDragOperationsMask ops) {
   DCHECK(GetContentNativeView());
 
   drag_source_->StartDragging(drop_data, &last_mouse_down_);
+  // TODO(snej): Make use of the WebDragOperationsMask somehow
 }
 
 // -----------------------------------------------------------------------------

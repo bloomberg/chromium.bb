@@ -16,6 +16,7 @@
 #include "webkit/glue/webview_impl.h"
 
 using WebKit::WebDragData;
+using WebKit::WebPoint;
 
 void DragClientImpl::willPerformDragDestinationAction(
     WebCore::DragDestinationAction,
@@ -59,7 +60,14 @@ void DragClientImpl::startDrag(WebCore::DragImageRef drag_image,
   WebDragData drag_data = webkit_glue::ChromiumDataObjectToWebDragData(
       static_cast<WebCore::ClipboardChromium*>(clipboard)->dataObject());
 
-  webview_->StartDragging(drag_data);
+  WebCore::DragOperation drag_operation_mask;
+  if (!clipboard->sourceOperation(drag_operation_mask)) {
+    drag_operation_mask = WebCore::DragOperationEvery;
+  }
+
+  webview_->StartDragging(webkit_glue::IntPointToWebPoint(event_pos),
+      drag_data,
+      static_cast<WebKit::WebDragOperationsMask>(drag_operation_mask));
 }
 
 WebCore::DragImageRef DragClientImpl::createDragImageForLink(

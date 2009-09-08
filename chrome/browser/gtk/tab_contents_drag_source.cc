@@ -12,6 +12,9 @@
 #include "chrome/common/gtk_util.h"
 #include "webkit/glue/webdropdata.h"
 
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationNone;
+
 TabContentsDragSource::TabContentsDragSource(
     TabContentsView* tab_contents_view)
     : tab_contents_view_(tab_contents_view),
@@ -170,15 +173,16 @@ gboolean TabContentsDragSource::OnDragFailed() {
   gfx::Point client = gtk_util::ClientPoint(GetContentNativeView());
 
   if (tab_contents()->render_view_host()) {
-    tab_contents()->render_view_host()->DragSourceCancelledAt(
-        client.x(), client.y(), root.x(), root.y());
+    tab_contents()->render_view_host()->DragSourceEndedAt(
+        client.x(), client.y(), root.x(), root.y(),
+        WebDragOperationNone);
   }
 
   // Let the native failure animation run.
   return FALSE;
 }
 
-void TabContentsDragSource::OnDragEnd() {
+void TabContentsDragSource::OnDragEnd(WebDragOperation operation) {
   MessageLoopForUI::current()->RemoveObserver(this);
 
   if (!drag_failed_) {
@@ -187,7 +191,7 @@ void TabContentsDragSource::OnDragEnd() {
 
     if (tab_contents()->render_view_host()) {
       tab_contents()->render_view_host()->DragSourceEndedAt(
-          client.x(), client.y(), root.x(), root.y());
+          client.x(), client.y(), root.x(), root.y(), operation);
     }
   }
 

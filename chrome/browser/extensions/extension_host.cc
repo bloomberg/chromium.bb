@@ -30,6 +30,9 @@
 
 #include "webkit/glue/context_menu.h"
 
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationsMask;
+
 // static
 bool ExtensionHost::enable_dom_automation_ = false;
 
@@ -275,10 +278,11 @@ void ExtensionHost::ShowContextMenu(const ContextMenuParams& params) {
   DevToolsManager::GetInstance()->OpenDevToolsWindow(render_view_host());
 }
 
-void ExtensionHost::StartDragging(const WebDropData& drop_data) {
+void ExtensionHost::StartDragging(const WebDropData& drop_data,
+    WebDragOperationsMask operation_mask) {
 }
 
-void ExtensionHost::UpdateDragCursor(bool is_drop_target) {
+void ExtensionHost::UpdateDragCursor(WebDragOperation operation) {
 }
 
 void ExtensionHost::GotFocus() {

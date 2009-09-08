@@ -15,6 +15,9 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
 
+using WebKit::WebDragOperationNone;
+using WebKit::WebDragOperationCopy;
+
 namespace {
 
 static void GetCursorPositions(gfx::NativeWindow wnd, gfx::Point* client,
@@ -53,8 +56,9 @@ void WebDragSource::OnDragSourceCancel() {
   gfx::Point client;
   gfx::Point screen;
   GetCursorPositions(source_wnd_, &client, &screen);
-  render_view_host_->DragSourceCancelledAt(client.x(), client.y(),
-                                           screen.x(), screen.y());
+  render_view_host_->DragSourceEndedAt(client.x(), client.y(),
+                                       screen.x(), screen.y(),
+                                       WebDragOperationNone);
 }
 
 void WebDragSource::OnDragSourceDrop() {
@@ -65,7 +69,9 @@ void WebDragSource::OnDragSourceDrop() {
   gfx::Point screen;
   GetCursorPositions(source_wnd_, &client, &screen);
   render_view_host_->DragSourceEndedAt(client.x(), client.y(),
-                                       screen.x(), screen.y());
+                                       screen.x(), screen.y(),
+                                       WebDragOperationCopy);
+  // TODO(jpa): This needs to be fixed to send the actual drag operation.
 }
 
 void WebDragSource::OnDragSourceMove() {

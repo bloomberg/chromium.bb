@@ -27,6 +27,7 @@
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebNode.h"
+#include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRange.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
@@ -61,6 +62,7 @@
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDragData;
+using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
@@ -69,6 +71,7 @@ using WebKit::WebNavigationPolicy;
 using WebKit::WebNode;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
+using WebKit::WebPoint;
 using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
@@ -675,7 +678,9 @@ void TestWebViewDelegate::SetStatusbarText(WebView* webview,
 }
 
 void TestWebViewDelegate::StartDragging(WebView* webview,
-                                        const WebDragData& drag_data) {
+                                        const WebPoint &mouse_coords,
+                                        const WebDragData& drag_data,
+                                        WebDragOperationsMask mask) {
   if (WebKit::layoutTestMode()) {
     WebDragData mutable_drag_data = drag_data;
     if (shell_->layout_test_controller()->ShouldAddFileToPasteboard()) {
@@ -685,7 +690,7 @@ void TestWebViewDelegate::StartDragging(WebView* webview,
 
     // When running a test, we need to fake a drag drop operation otherwise
     // Windows waits for real mouse events to know when the drag is over.
-    EventSendingController::DoDragDrop(mutable_drag_data);
+    EventSendingController::DoDragDrop(mouse_coords, mutable_drag_data, mask);
   } else {
     // TODO(tc): Drag and drop is disabled in the test shell because we need
     // to be able to convert from WebDragData to an IDataObject.

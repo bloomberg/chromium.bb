@@ -22,6 +22,9 @@ struct WebDropData;
 
   // Our pasteboard.
   scoped_nsobject<NSPasteboard> pasteboard_;
+
+  // A mask of the allowed drag operations.
+  NSDragOperation dragOperationMask_;
 }
 
 // Initialize a WebDragSource object for a drag (originating on the given
@@ -29,7 +32,11 @@ struct WebDropData;
 // with data types appropriate for dropData.
 - (id)initWithContentsView:(TabContentsViewCocoa*)contentsView
                   dropData:(const WebDropData*)dropData
-                pasteboard:(NSPasteboard*)pboard;
+                pasteboard:(NSPasteboard*)pboard
+         dragOperationMask:(NSDragOperation)dragOperationMask;
+
+// Returns a mask of the allowed drag operations.
+- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 
 // Call when asked to do a lazy write to the pasteboard; hook up to
 // -pasteboard:provideDataForType: (on the contentsView).
@@ -43,7 +50,7 @@ struct WebDropData;
 // End the drag and clear the pasteboard; hook up to
 // -draggedImage:endedAt:operation:.
 - (void)endDragAt:(NSPoint)screenPoint
-      isCancelled:(BOOL)cancelled;
+        operation:(NSDragOperation)operation;
 
 // Drag moved; hook up to -draggedImage:movedTo:.
 - (void)moveDragTo:(NSPoint)screenPoint;

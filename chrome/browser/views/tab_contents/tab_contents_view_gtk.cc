@@ -160,8 +160,10 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
   GetBounds(out, false);
 }
 
-void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
+void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
+                                       WebDragOperationsMask ops) {
   drag_source_->StartDragging(drop_data, &last_mouse_down_);
+  // TODO(snej): Make use of WebDragOperationsMask
 }
 
 void TabContentsViewGtk::OnContentsDestroy() {
@@ -222,7 +224,7 @@ void TabContentsViewGtk::RestoreFocus() {
   SetInitialFocus();
 }
 
-void TabContentsViewGtk::UpdateDragCursor(bool is_drop_target) {
+void TabContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
   NOTIMPLEMENTED();
 }
 

@@ -22,7 +22,7 @@ typedef RenderViewHost* RenderViewHostIdentifier;
 
   // Updated asynchronously during a drag to tell us whether or not we should
   // allow the drop.
-  BOOL isDropTarget_;
+  NSDragOperation current_operation_;
 
   // Keep track of the render view host we're dragging over.  If it changes
   // during a drag, we need to re-send the DragEnter message.
@@ -34,9 +34,10 @@ typedef RenderViewHost* RenderViewHostIdentifier;
 // (if necessary).
 - (id)initWithTabContents:(TabContents*)contents;
 
-// Call to set whether or not we should allow the drop. Takes effect the
+// Sets the current operation negotiated by the source and destination,
+// which determines whether or not we should allow the drop. Takes effect the
 // next time |-draggingUpdated:| is called.
-- (void)setIsDropTarget:(BOOL)isDropTarget;
+- (void)setCurrentOperation: (NSDragOperation)operation;
 
 // Messages to send during the tracking of a drag, ususally upon receiving
 // calls from the view system. Communicates the drag messages to WebCore.

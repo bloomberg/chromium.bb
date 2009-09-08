@@ -299,7 +299,9 @@ class RenderView : public RenderWidget,
                                const std::string& security_info,
                                const std::string& frame_charset);
   virtual void StartDragging(WebView* webview,
-                             const WebKit::WebDragData& drag_data);
+                             const WebKit::WebPoint &mouseCoords,
+                             const WebKit::WebDragData& drag_data,
+                             WebKit::WebDragOperationsMask operations_mask);
   virtual void TakeFocus(WebView* webview, bool reverse);
   virtual void JSOutOfMemory();
   virtual void NavigateBackForwardSoon(int offset);
@@ -552,9 +554,11 @@ class RenderView : public RenderWidget,
       const webkit_glue::PasswordFormDomManager::FillData& form_data);
   void OnDragTargetDragEnter(const WebDropData& drop_data,
                              const gfx::Point& client_pt,
-                             const gfx::Point& screen_pt);
+                             const gfx::Point& screen_pt,
+                             WebKit::WebDragOperationsMask operations_allowed);
   void OnDragTargetDragOver(const gfx::Point& client_pt,
-                            const gfx::Point& screen_pt);
+                            const gfx::Point& screen_pt,
+                            WebKit::WebDragOperationsMask operations_allowed);
   void OnDragTargetDragLeave();
   void OnDragTargetDrop(const gfx::Point& client_pt,
                         const gfx::Point& screen_pt);
@@ -579,7 +583,8 @@ class RenderView : public RenderWidget,
 
   void OnDragSourceEndedOrMoved(const gfx::Point& client_point,
                                 const gfx::Point& screen_point,
-                                bool ended, bool cancelled);
+                                bool ended,
+                                WebKit::WebDragOperation drag_operation);
   void OnDragSourceSystemDragEnded();
   void OnInstallMissingPlugin();
   void OnFileChooserResponse(const std::vector<FilePath>& file_names);

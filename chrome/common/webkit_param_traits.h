@@ -27,6 +27,7 @@
 #include "webkit/api/public/WebCache.h"
 #include "webkit/api/public/WebCompositionCommand.h"
 #include "webkit/api/public/WebConsoleMessage.h"
+#include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebFindOptions.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebScreenInfo.h"
@@ -299,6 +300,23 @@ struct ParamTraits<WebKit::WebTextDirection> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     LogParam(static_cast<int>(p), l);
+  }
+};
+
+template <>
+  struct ParamTraits<WebKit::WebDragOperation> {
+  typedef WebKit::WebDragOperation param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    int temp;
+    bool res = m->ReadInt(iter, &temp);
+    *r = static_cast<param_type>(temp);
+    return res;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(StringPrintf(L"%d", p));
   }
 };
 

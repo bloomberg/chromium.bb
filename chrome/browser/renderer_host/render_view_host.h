@@ -16,6 +16,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_zoom.h"
 #include "webkit/api/public/WebConsoleMessage.h"
+#include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebTextDirection.h"
 #include "webkit/glue/autofill_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
@@ -238,9 +239,11 @@ class RenderViewHost : public RenderWidgetHost,
   // D&d drop target messages that get sent to WebKit.
   void DragTargetDragEnter(const WebDropData& drop_data,
                            const gfx::Point& client_pt,
-                           const gfx::Point& screen_pt);
+                           const gfx::Point& screen_pt,
+                           WebKit::WebDragOperationsMask operations_allowed);
   void DragTargetDragOver(const gfx::Point& client_pt,
-                          const gfx::Point& screen_pt);
+                          const gfx::Point& screen_pt,
+                          WebKit::WebDragOperationsMask operations_allowed);
   void DragTargetDragLeave();
   void DragTargetDrop(const gfx::Point& client_pt,
                       const gfx::Point& screen_pt);
@@ -306,15 +309,11 @@ class RenderViewHost : public RenderWidgetHost,
   // Copies the image at the specified point.
   void CopyImageAt(int x, int y);
 
-  // Notifies the renderer that a drag and drop was cancelled. This is
-  // necessary because the render may be the one that started the drag.
-  void DragSourceCancelledAt(
-      int client_x, int client_y, int screen_x, int screen_y);
-
-  // Notifies the renderer that a drop occurred. This is necessary because the
-  // render may be the one that started the drag.
+  // Notifies the renderer that a a drag operation that it started has ended,
+  // either in a drop or by being cancelled.
   void DragSourceEndedAt(
-      int client_x, int client_y, int screen_x, int screen_y);
+      int client_x, int client_y, int screen_x, int screen_y,
+      WebKit::WebDragOperation operation);
 
   // Notifies the renderer that a drag and drop operation is in progress, with
   // droppable items positioned over the renderer's view.
@@ -526,8 +525,9 @@ class RenderViewHost : public RenderWidgetHost,
   void OnMsgPasswordFormsSeen(
       const std::vector<webkit_glue::PasswordForm>& forms);
   void OnMsgAutofillFormSubmitted(const webkit_glue::AutofillForm& forms);
-  void OnMsgStartDragging(const WebDropData& drop_data);
-  void OnUpdateDragCursor(bool is_drop_target);
+  void OnMsgStartDragging(const WebDropData& drop_data,
+                          WebKit::WebDragOperationsMask operations_allowed);
+  void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTakeFocus(bool reverse);
   void OnMsgPageHasOSDD(int32 page_id, const GURL& doc_url, bool autodetected);
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);

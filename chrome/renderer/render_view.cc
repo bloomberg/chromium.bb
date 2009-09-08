@@ -108,6 +108,8 @@ using WebKit::WebConsoleMessage;
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDragData;
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
 using WebKit::WebForm;
 using WebKit::WebFrame;
@@ -2235,8 +2237,12 @@ void RenderView::ShowContextMenu(WebView* webview,
 }
 
 void RenderView::StartDragging(WebView* webview,
-                               const WebDragData& drag_data) {
-  Send(new ViewHostMsg_StartDragging(routing_id_, WebDropData(drag_data)));
+                               const WebKit::WebPoint &mouseCoords,
+                               const WebDragData& drag_data,
+                               WebDragOperationsMask allowed_ops) {
+  Send(new ViewHostMsg_StartDragging(routing_id_,
+                                     WebDropData(drag_data),
+                                     allowed_ops));
 }
 
 void RenderView::TakeFocus(WebView* webview, bool reverse) {
@@ -2709,12 +2715,10 @@ void RenderView::OnReservePageIDRange(int size_of_range) {
 
 void RenderView::OnDragSourceEndedOrMoved(const gfx::Point& client_point,
                                           const gfx::Point& screen_point,
-                                          bool ended, bool cancelled) {
+                                          bool ended,
+                                          WebDragOperation op) {
   if (ended) {
-    if (cancelled)
-      webview()->DragSourceCancelledAt(client_point, screen_point);
-    else
-      webview()->DragSourceEndedAt(client_point, screen_point);
+    webview()->DragSourceEndedAt(client_point, screen_point, op);
   } else {
     webview()->DragSourceMovedTo(client_point, screen_point);
   }
@@ -2771,22 +2775,27 @@ void RenderView::OnFillPasswordForm(
 
 void RenderView::OnDragTargetDragEnter(const WebDropData& drop_data,
                                        const gfx::Point& client_point,
-                                       const gfx::Point& screen_point) {
-  bool is_drop_target = webview()->DragTargetDragEnter(
+                                       const gfx::Point& screen_point,
+                                       WebDragOperationsMask ops) {
+  WebDragOperation operation = webview()->DragTargetDragEnter(
       drop_data.ToDragData(),
       drop_data.identity,
       client_point,
-      screen_point);
+      screen_point,
+      ops);
 
-  Send(new ViewHostMsg_UpdateDragCursor(routing_id_, is_drop_target));
+  Send(new ViewHostMsg_UpdateDragCursor(routing_id_, operation));
 }
 
 void RenderView::OnDragTargetDragOver(const gfx::Point& client_point,
-                                      const gfx::Point& screen_point) {
-  bool is_drop_target =
-      webview()->DragTargetDragOver(client_point, screen_point);
+                                      const gfx::Point& screen_point,
+                                      WebDragOperationsMask ops) {
+  WebDragOperation operation = webview()->DragTargetDragOver(
+      client_point,
+      screen_point,
+      ops);
 
-  Send(new ViewHostMsg_UpdateDragCursor(routing_id_, is_drop_target));
+  Send(new ViewHostMsg_UpdateDragCursor(routing_id_, operation));
 }
 
 void RenderView::OnDragTargetDragLeave() {

@@ -122,7 +122,8 @@ void PromiseWriterTask::Run() {
 
 - (id)initWithContentsView:(TabContentsViewCocoa*)contentsView
                   dropData:(const WebDropData*)dropData
-                pasteboard:(NSPasteboard*)pboard {
+                pasteboard:(NSPasteboard*)pboard
+         dragOperationMask:(NSDragOperation)dragOperationMask {
   if ((self = [super init])) {
     contentsView_ = contentsView;
     DCHECK(contentsView_);
@@ -133,10 +134,16 @@ void PromiseWriterTask::Run() {
     pasteboard_.reset([pboard retain]);
     DCHECK(pasteboard_.get());
 
+    dragOperationMask_ = dragOperationMask;
+
     [self fillPasteboard];
   }
 
   return self;
+}
+
+- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
+  return dragOperationMask_;
 }
 
 - (void)lazyWriteToPasteboard:(NSPasteboard*)pboard forType:(NSString*)type {
@@ -226,7 +233,7 @@ void PromiseWriterTask::Run() {
 }
 
 - (void)endDragAt:(NSPoint)screenPoint
-      isCancelled:(BOOL)cancelled {
+        operation:(NSDragOperation)operation {
   RenderViewHost* rvh = [contentsView_ tabContents]->render_view_host();
   if (rvh) {
     rvh->DragSourceSystemDragEnded();
@@ -239,13 +246,9 @@ void PromiseWriterTask::Run() {
     NSRect screenFrame = [[[contentsView_ window] screen] frame];
     screenPoint.y = screenFrame.size.height - screenPoint.y;
 
-    if (cancelled) {
-      rvh->DragSourceCancelledAt(localPoint.x, localPoint.y,
-                                 screenPoint.x, screenPoint.y);
-    } else {
-      rvh->DragSourceEndedAt(localPoint.x, localPoint.y,
-                             screenPoint.x, screenPoint.y);
-    }
+    rvh->DragSourceEndedAt(localPoint.x, localPoint.y,
+                           screenPoint.x, screenPoint.y,
+                           static_cast<WebKit::WebDragOperation>(operation));
   }
 
   // Make sure the pasteboard owner isn't us.

@@ -104,7 +104,9 @@ class TestWebViewDelegate : public WebViewDelegate,
                                    unsigned int line_no,
                                    const std::wstring& source_id);
   virtual void StartDragging(WebView* webview,
-                             const WebKit::WebDragData& drag_data);
+                             const WebKit::WebPoint &mouseCoords,
+                             const WebKit::WebDragData& drag_data,
+                             WebKit::WebDragOperationsMask operations_mask);
   virtual void ShowContextMenu(WebView* webview,
                                ContextNodeType node_type,
                                int x,

@@ -111,23 +111,23 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void CopyImageAt(int x, int y);
   virtual void InspectElement(int x, int y);
   virtual void ShowJavaScriptConsole();
-  virtual void DragSourceCancelledAt(
-      const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point);
   virtual void DragSourceEndedAt(
       const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point);
+      const WebKit::WebPoint& screen_point,
+      WebKit::WebDragOperation operation);
   virtual void DragSourceMovedTo(
       const WebKit::WebPoint& client_point,
       const WebKit::WebPoint& screen_point);
   virtual void DragSourceSystemDragEnded();
-  virtual bool DragTargetDragEnter(
+  virtual WebKit::WebDragOperation DragTargetDragEnter(
       const WebKit::WebDragData& drag_data, int identity,
       const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point);
-  virtual bool DragTargetDragOver(
+      const WebKit::WebPoint& screen_point,
+      WebKit::WebDragOperationsMask operations_allowed);
+  virtual WebKit::WebDragOperation DragTargetDragOver(
       const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point);
+      const WebKit::WebPoint& screen_point,
+      WebKit::WebDragOperationsMask operations_allowed);
   virtual void DragTargetDragLeave();
   virtual void DragTargetDrop(
       const WebKit::WebPoint& client_point,
@@ -231,7 +231,9 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   }
 
   // Start a system drag and drop operation.
-  void StartDragging(const WebKit::WebDragData& drag_data);
+  void StartDragging(WebKit::WebPoint event_pos,
+      const WebKit::WebDragData& drag_data,
+      WebKit::WebDragOperationsMask drag_source_operation_mask);
 
   // Hides the autocomplete popup if it is showing.
   void HideAutoCompletePopup();
@@ -369,9 +371,13 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
     DROP_EFFECT_COPY
   } drop_effect_;
 
-  // When true, the drag data can be dropped onto the current drop target in
-  // this WebView (the drop target can accept the drop).
-  bool drop_accept_;
+  // The available drag operations (copy, move link...) allowed by the source.
+  WebKit::WebDragOperation operations_allowed_;
+
+  // The current drag operation as negotiated by the source and destination.
+  // When not equal to DragOperationNone, the drag data can be dropped onto the
+  // current drop target in this WebView (the drop target can accept the drop).
+  WebKit::WebDragOperation drag_operation_;
 
   // The autocomplete popup.  Kept around and reused every-time new suggestions
   // should be shown.

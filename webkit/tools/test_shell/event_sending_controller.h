@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "base/gfx/point.h"
 #include "base/task.h"
+#include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/glue/cpp_bound_class.h"
 
@@ -28,6 +29,7 @@ class WebView;
 namespace WebKit {
 class WebDragData;
 class WebMouseEvent;
+struct WebPoint;
 }
 
 class EventSendingController : public CppBoundClass {
@@ -40,7 +42,9 @@ class EventSendingController : public CppBoundClass {
   void Reset();
 
   // Simulate drag&drop system call.
-  static void DoDragDrop(const WebKit::WebDragData& drag_data);
+  static void DoDragDrop(const WebKit::WebPoint &event_pos,
+                         const WebKit::WebDragData& drag_data,
+                         WebKit::WebDragOperationsMask operations_mask);
 
   // JS callback methods.
   void mouseDown(const CppArgumentList& args, CppVariant* result);
