@@ -11,14 +11,13 @@
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/native_metafile.h"
+#include "skia/ext/vector_canvas.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebFrame.h"
 
 using WebKit::WebConsoleMessage;
 using WebKit::WebFrame;
 using WebKit::WebString;
-
-#include "skia/ext/vector_canvas.h"
 
 void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   const int kMinSecondsToIgnoreJavascriptInitiatedPrint = 2;
@@ -149,6 +148,33 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   DidFinishPrinting(user_cancelled_print);
 }
 
+void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
+                                    WebFrame* frame) {
+  PrepareFrameAndViewForPrint prep_frame_view(params.params,
+                                              frame,
+                                              frame->view());
+  int page_count = prep_frame_view.GetExpectedPageCount();
+
+  Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
+                                               params.params.document_cookie,
+                                               page_count));
+  if (page_count) {
+    ViewMsg_PrintPage_Params page_params;
+    page_params.params = params.params;
+    if (params.pages.empty()) {
+      for (int i = 0; i < page_count; ++i) {
+        page_params.page_number = i;
+        PrintPage(page_params, prep_frame_view.GetPrintCanvasSize(), frame);
+      }
+    } else {
+      for (size_t i = 0; i < params.pages.size(); ++i) {
+        page_params.page_number = params.pages[i];
+        PrintPage(page_params, prep_frame_view.GetPrintCanvasSize(), frame);
+      }
+    }
+  }
+}
+
 void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                 const gfx::Size& canvas_size,
                                 WebFrame* frame) {
@@ -177,7 +203,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   skia::PlatformCanvas canvas(size_x, size_y, true);
   canvas.drawARGB(255, 255, 255, 255, SkPorterDuff::kSrc_Mode);
   float webkit_shrink = frame->PrintPage(params.page_number, &canvas);
-  if (shrink <= 0) {
+  if (shrink <= 0 || webkit_shrink <= 0) {
     NOTREACHED() << "Printing page " << params.page_number << " failed.";
   } else {
     // Update the dpi adjustment with the "page shrink" calculated in webkit.
@@ -204,7 +230,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   // 100% GDI based.
   skia::VectorCanvas canvas(hdc, size_x, size_y);
   float webkit_shrink = frame->printPage(params.page_number, &canvas);
-  if (shrink <= 0) {
+  if (shrink <= 0 || webkit_shrink <= 0) {
     NOTREACHED() << "Printing page " << params.page_number << " failed.";
   } else {
     // Update the dpi adjustment with the "page shrink" calculated in webkit.

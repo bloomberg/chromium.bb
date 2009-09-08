@@ -54,7 +54,7 @@ namespace printing {
 
 class PrintViewManager : public RenderViewHostDelegate::Printing {
  public:
-  PrintViewManager(TabContents&) { }
+  PrintViewManager(TabContents& owner) : owner_(owner) { }
   void Stop() { NOTIMPLEMENTED(); }
   void Destroy() { }
   bool OnRenderViewGone(RenderViewHost*) {
@@ -66,9 +66,17 @@ class PrintViewManager : public RenderViewHostDelegate::Printing {
   virtual void DidGetPrintedPagesCount(int cookie, int number_pages) {
     NOTIMPLEMENTED();
   }
+
+#if defined(OS_LINUX)
+  virtual void DidPrintPage(const ViewHostMsg_DidPrintPage_Params& params);
+#else
   virtual void DidPrintPage(const ViewHostMsg_DidPrintPage_Params& params) {
     NOTIMPLEMENTED();
   }
+#endif
+
+ private:
+  TabContents& owner_;
 };
 
 class PrintingContext {

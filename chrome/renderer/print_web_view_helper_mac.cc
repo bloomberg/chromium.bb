@@ -13,6 +13,12 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   NOTIMPLEMENTED();
 }
 
+void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
+                                    WebKit::WebFrame* frame) {
+  // TODO(port) implement printing
+  NOTIMPLEMENTED();
+}
+
 void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
                                    WebFrame* frame) {

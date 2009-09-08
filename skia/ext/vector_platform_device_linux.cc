@@ -4,48 +4,41 @@
 
 #include "skia/ext/vector_platform_device.h"
 
-// TODO(myhuang): We have to decide or allow the user the choose the type
-// of the surface in the future.
-#include <cairo-pdf.h>
+#include <cairo.h>
 
 #include "third_party/skia/include/core/SkTypeface.h"
 
 namespace skia {
 
-VectorPlatformDevice* VectorPlatformDevice::create(int width, int height) {
+VectorPlatformDevice* VectorPlatformDevice::create(PlatformSurface context,
+                                                   int width, int height) {
+  SkASSERT(cairo_status(context) == CAIRO_STATUS_SUCCESS);
   SkASSERT(width > 0);
   SkASSERT(height > 0);
 
-  // TODO(myhuang): Can we get rid of the bitmap? In this vetorial device,
-  // the content of this bitmap is meaningless. However, it does occupy
+  // TODO(myhuang): Can we get rid of the bitmap? In this vectorial device,
+  // the content of this bitmap might be meaningless. However, it does occupy
   // lots of memory space.
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
 
-  return new VectorPlatformDevice(bitmap);
+  return new VectorPlatformDevice(context, bitmap);
 }
 
-VectorPlatformDevice::VectorPlatformDevice(const SkBitmap& bitmap)
-    : PlatformDevice(bitmap) {
+VectorPlatformDevice::VectorPlatformDevice(PlatformSurface context,
+                                           const SkBitmap& bitmap)
+    : PlatformDevice(bitmap), context_(context) {
   SkASSERT(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
 
-  // FIXME(myhuang): At this moment, we write the PDF file to the disk
-  // for testing when we run chromium without sanboxing.
-  surface_ = cairo_pdf_surface_create("chrome_printing_test.pdf",
-                                      width(), height());
-  SkASSERT(surface_);
-  context_ = cairo_create(surface_);
-  SkASSERT(context_);
+  // Increase the reference count to keep the context alive.
+  cairo_reference(context_);
 
   transform_.reset();
 }
 
 VectorPlatformDevice::~VectorPlatformDevice() {
-  SkASSERT(surface_);
-  SkASSERT(context_);
-
+  // Un-ref |context_| since we referenced it in the constructor.
   cairo_destroy(context_);
-  cairo_surface_destroy(surface_);
 }
 
 void VectorPlatformDevice::drawBitmap(const SkDraw& draw,
@@ -163,7 +156,7 @@ void VectorPlatformDevice::drawPath(const SkDraw& draw,
                        current_points[3].fX, current_points[3].fY);
       } break;
 
-      case SkPath::kClose_Verb: {  // iter.next returns 1 point (the last point)
+      case SkPath::kClose_Verb: {  // iter.next returns 1 point (the last pt).
         cairo_close_path(context_);
       } break;
 

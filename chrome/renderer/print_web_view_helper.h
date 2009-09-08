@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_PRINT_WEB_VIEW_DELEGATE_H_
-#define CHROME_RENDERER_PRINT_WEB_VIEW_DELEGATE_H_
+#ifndef CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
+#define CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
 
 #include <vector>
 
@@ -19,6 +19,13 @@ class Size;
 namespace IPC {
 class Message;
 }
+
+#if defined(OS_LINUX)
+namespace printing {
+class PdfPsMetafile;
+typedef PdfPsMetafile NativeMetafile;
+}
+#endif
 
 class RenderView;
 class WebView;
@@ -88,9 +95,16 @@ class PrintWebViewHelper : public WebViewDelegate {
                     WebKit::WebFrame* web_frame);
 
   // Prints the page listed in |params|.
+#if defined(OS_LINUX)
+  void PrintPage(const ViewMsg_PrintPage_Params& params,
+                 const gfx::Size& canvas_size,
+                 WebKit::WebFrame* frame,
+                 printing::NativeMetafile* metafile);
+#else
   void PrintPage(const ViewMsg_PrintPage_Params& params,
                  const gfx::Size& canvas_size,
                  WebKit::WebFrame* frame);
+#endif
 
   // Prints all the pages listed in |params|.
   // It will implicitly revert the document to display CSS media type.
@@ -129,4 +143,4 @@ class PrintWebViewHelper : public WebViewDelegate {
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelper);
 };
 
-#endif  // CHROME_RENDERER_PRINT_WEB_VIEW_DELEGATE_H_
+#endif  // CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_

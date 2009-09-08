@@ -9,20 +9,18 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
-typedef struct _cairo_surface cairo_surface_t;
-
 namespace skia {
 
 // This device is basically a wrapper that provides a surface for SkCanvas
 // to draw into. It is basically an adaptor which converts skia APIs into
-// cooresponding Cairo APIs and outputs to a Cairo PDF surface. Please NOTE
-// that since it is completely vectorial, the bitmap content in it is thus
+// cooresponding Cairo APIs and outputs to a Cairo surface. Please NOTE that
+// since it is completely vectorial, the bitmap content in it is thus
 // meaningless.
 class VectorPlatformDevice : public PlatformDevice {
  public:
-  // Factory function.
-  static VectorPlatformDevice* create(int width, int height);
-
+  // Factory function. Ownership of |context| is not transferred.
+  static VectorPlatformDevice* create(PlatformSurface context,
+                                      int width, int height);
   virtual ~VectorPlatformDevice();
 
   virtual bool IsVectorial() { return true; }
@@ -56,10 +54,12 @@ class VectorPlatformDevice : public PlatformDevice {
                             const SkColor colors[], SkXfermode* xmode,
                             const uint16_t indices[], int indexCount,
                             const SkPaint& paint);
-  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region);
+  virtual void setMatrixClip(const SkMatrix& transform,
+                             const SkRegion& region);
 
  protected:
-  explicit VectorPlatformDevice(const SkBitmap& bitmap);
+  explicit VectorPlatformDevice(PlatformSurface context,
+                                const SkBitmap& bitmap);
 
  private:
   // Apply paint's color in the context.
@@ -95,11 +95,8 @@ class VectorPlatformDevice : public PlatformDevice {
   // The current clipping region.
   SkRegion clip_region_;
 
-  // Context's target surface. It is a PS/PDF surface.
-  cairo_surface_t* surface_;
-
   // Device context.
-  cairo_t* context_;
+  PlatformSurface context_;
 
   // Copy & assign are not supported.
   VectorPlatformDevice(const VectorPlatformDevice&);

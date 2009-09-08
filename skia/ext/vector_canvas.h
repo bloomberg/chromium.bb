@@ -8,6 +8,10 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/vector_platform_device.h"
 
+#if defined(__linux__)
+typedef struct _cairo cairo_t;
+#endif
+
 namespace skia {
 
 // This class is a specialization of the regular PlatformCanvas. It is designed
@@ -20,7 +24,8 @@ class VectorCanvas : public PlatformCanvas {
 #if defined(WIN32)
   VectorCanvas(HDC dc, int width, int height);
 #elif defined(__linux__)
-  VectorCanvas(int width, int height);
+  // Caller owns |context|. Ownership is not transferred.
+  VectorCanvas(cairo_t* context, int width, int height);
 #endif
   virtual ~VectorCanvas();
 
@@ -28,10 +33,11 @@ class VectorCanvas : public PlatformCanvas {
 #if defined(WIN32)
   bool initialize(HDC context, int width, int height);
 #elif defined(__linux__)
-  bool initialize(int width, int height);
+  // Ownership of |context| is not transferred.
+  bool initialize(cairo_t* context, int width, int height);
 #endif
 
-  virtual SkBounder* setBounder(SkBounder*);
+  virtual SkBounder* setBounder(SkBounder* bounder);
 #if defined(WIN32) || defined(__linux__)
   virtual SkDevice* createDevice(SkBitmap::Config config,
                                  int width, int height,
@@ -40,12 +46,15 @@ class VectorCanvas : public PlatformCanvas {
   virtual SkDrawFilter* setDrawFilter(SkDrawFilter* filter);
 
  private:
-  // |is_opaque| is unused. |shared_section| is in fact the HDC used for output.
 #if defined(WIN32)
+  // |shared_section| is in fact the HDC used for output. |is_opaque| is unused.
   virtual SkDevice* createPlatformDevice(int width, int height, bool is_opaque,
                                          HANDLE shared_section);
 #elif defined(__linux__)
-  virtual SkDevice* createPlatformDevice(int width, int height, bool is_opaque);
+  // Ownership of |context| is not transferred. |is_opaque| is unused.
+  virtual SkDevice* createPlatformDevice(cairo_t* context,
+                                         int width, int height,
+                                         bool is_opaque);
 #endif
 
   // Returns true if the top device is vector based and not bitmap based.

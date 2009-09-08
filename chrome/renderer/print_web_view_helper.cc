@@ -29,7 +29,6 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     WebFrame* frame,
     WebView* web_view)
         : frame_(frame), web_view_(web_view), expected_pages_count_(0) {
-
   print_canvas_size_.set_width(
       printing::ConvertUnit(print_params.printable_size.width(),
                             static_cast<int>(print_params.dpi),
@@ -112,33 +111,6 @@ bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
   print_web_view_->GetMainFrame()->loadRequest(WebURLRequest(url));
 
   return true;
-}
-
-void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
-                                    WebFrame* frame) {
-  PrepareFrameAndViewForPrint prep_frame_view(params.params,
-                                              frame,
-                                              frame->view());
-  int page_count = prep_frame_view.GetExpectedPageCount();
-
-  Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
-                                               params.params.document_cookie,
-                                               page_count));
-  if (page_count) {
-    ViewMsg_PrintPage_Params page_params;
-    page_params.params = params.params;
-    if (params.pages.empty()) {
-      for (int i = 0; i < page_count; ++i) {
-        page_params.page_number = i;
-        PrintPage(page_params, prep_frame_view.GetPrintCanvasSize(), frame);
-      }
-    } else {
-      for (size_t i = 0; i < params.pages.size(); ++i) {
-        page_params.page_number = params.pages[i];
-        PrintPage(page_params, prep_frame_view.GetPrintCanvasSize(), frame);
-      }
-    }
-  }
 }
 
 void PrintWebViewHelper::PrintPageAsJPEG(

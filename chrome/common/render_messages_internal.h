@@ -1338,11 +1338,21 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UploadProgress_ACK,
                       int /* request_id */)
 
+#if defined(OS_WIN)
   // Duplicates a shared memory handle from the renderer to the browser. Then
   // the renderer can flush the handle.
   IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_DuplicateSection,
                              base::SharedMemoryHandle /* renderer handle */,
                              base::SharedMemoryHandle /* browser handle */)
+#endif
+
+#if defined(OS_LINUX)
+  // Asks the browser create a block of shared memory for the renderer to fill
+  // in resulting NativeMetafile in printing.
+  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_AllocateShareMemory,
+                             size_t /* buffer size */,
+                             base::SharedMemoryHandle /* browser handle */)
+#endif
 
   // Provide the browser process with information about the WebCore resource
   // cache.

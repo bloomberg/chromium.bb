@@ -9,14 +9,14 @@
 
 namespace skia {
 
-VectorCanvas::VectorCanvas(int width, int height) {
-  bool initialized = initialize(width, height);
+VectorCanvas::VectorCanvas(cairo_t* context, int width, int height) {
+  bool initialized = initialize(context, width, height);
 
   SkASSERT(initialized);
 }
 
-bool VectorCanvas::initialize(int width, int height) {
-  SkDevice* device = createPlatformDevice(width, height, true);
+bool VectorCanvas::initialize(cairo_t* context, int width, int height) {
+  SkDevice* device = createPlatformDevice(context, width, height, true);
   if (!device)
     return false;
 
@@ -29,19 +29,23 @@ SkDevice* VectorCanvas::createDevice(SkBitmap::Config config,
                                      int width, int height,
                                      bool is_opaque, bool isForLayer) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  return createPlatformDevice(width, height, is_opaque);
+  return createPlatformDevice(NULL, width, height, is_opaque);
 }
 
-SkDevice* VectorCanvas::createPlatformDevice(int width,
-                                             int height, bool is_opaque) {
+SkDevice* VectorCanvas::createPlatformDevice(cairo_t* context,
+                                             int width,
+                                             int height,
+                                             bool is_opaque) {
   // TODO(myhuang): Here we might also have similar issues as those on Windows
   // (vector_canvas_win.cc, http://crbug.com/18382 & http://crbug.com/18383).
   // Please note that is_opaque is true when we use this class for printing.
-  if (!is_opaque) {
+  // Fallback to bitmap when context is NULL.
+  if (!is_opaque || NULL == context) {
     return BitmapPlatformDevice::Create(width, height, is_opaque);
   }
 
-  PlatformDevice* device = VectorPlatformDevice::create(width, height);
+  PlatformDevice* device =
+      VectorPlatformDevice::create(context, width, height);
   return device;
 }
 

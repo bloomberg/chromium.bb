@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_RESOURCE_MSG_FILTER_H_
 #define CHROME_BROWSER_RENDERER_HOST_RESOURCE_MSG_FILTER_H_
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include <string>
 #include <vector>
 
@@ -25,10 +29,6 @@
 #include "chrome/common/transport_dib.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "webkit/api/public/WebCache.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
 
 class AppCacheDispatcherHost;
 class AudioRendererHost;
@@ -190,8 +190,20 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetPreferredExtensionForMimeType(const std::string& mime_type,
                                           FilePath::StringType* ext);
   void OnGetCPBrowsingContext(uint32* context);
+
+#if defined(OS_WIN)
+  // Used to pass resulting EMF from renderer to browser in printing.
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
                           base::SharedMemoryHandle* browser_handle);
+#endif
+
+#if defined(OS_LINUX)
+  // Used to ask the browser allocate a block of shared memory for the renderer
+  // to fill in resulting PDF in renderer.
+  void OnAllocateShareMemory(size_t buffer_size,
+                             base::SharedMemoryHandle* browser_handle);
+#endif
+
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);
 
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
