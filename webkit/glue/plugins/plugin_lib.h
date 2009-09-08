@@ -12,6 +12,7 @@
 #include "base/file_path.h"
 #include "base/native_library.h"
 #include "base/ref_counted.h"
+#include "build/build_config.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/webplugin.h"
 
@@ -33,6 +34,14 @@ class PluginLib : public base::RefCounted<PluginLib> {
   // returns true, with the information being put into "info".
   // Returns false if the library couldn't be found, or if it's not a plugin.
   static bool ReadWebPluginInfo(const FilePath& filename, WebPluginInfo* info);
+
+#if defined(OS_LINUX)
+  // Parse the result of an NP_GetMIMEDescription() call, returning
+  // false on parse error.  This API is only used on Linux, and is
+  // exposed here for testing.
+  static bool ParseMIMEDescription(const char* description,
+                                   std::vector<WebPluginMimeType>* mime_types);
+#endif
 
   // Unloads all the loaded plugin libraries and cleans up the plugin map.
   static void UnloadAllPlugins();

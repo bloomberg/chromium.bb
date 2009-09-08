@@ -341,6 +341,7 @@
         '../../glue/mock_resource_loader_bridge.h',
         '../../glue/multipart_response_delegate_unittest.cc',
         '../../glue/password_autocomplete_listener_unittest.cc',
+        '../../glue/plugins/plugin_lib_unittest.cc',
         '../../glue/regular_expression_unittest.cc',
         '../../glue/resource_fetcher_unittest.cc',
         '../../glue/unittest_test_server.h',

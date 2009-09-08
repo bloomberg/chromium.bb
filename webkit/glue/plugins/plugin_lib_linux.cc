@@ -82,28 +82,9 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
     mime_description = NP_GetMIMEDescription();
 
   if (mime_description) {
-    // We parse the description here into WebPluginMimeType structures.
-    // Description for Flash 10 looks like (all as one string):
-    //   "application/x-shockwave-flash:swf:Shockwave Flash;"
-    //   "application/futuresplash:spl:FutureSplash Player"
-    std::vector<std::string> descriptions;
-    SplitString(mime_description, ';', &descriptions);
-    for (size_t i = 0; i < descriptions.size(); ++i) {
-      if (descriptions[i].empty())
-        continue;  // Don't warn if they have trailing semis.
-
-      std::vector<std::string> fields;
-      SplitString(descriptions[i], ':', &fields);
-      if (fields.size() != 3) {
-        LOG(WARNING) << "Couldn't parse plugin info: " << descriptions[i];
-        continue;
-      }
-
-      WebPluginMimeType mime_type;
-      mime_type.mime_type = fields[0];
-      SplitString(fields[1], ',', &mime_type.file_extensions);
-      mime_type.description = UTF8ToWide(fields[2]);
-      info->mime_types.push_back(mime_type);
+    if (!ParseMIMEDescription(mime_description, &info->mime_types)) {
+      base::UnloadNativeLibrary(dl);
+      return false;
     }
   }
 
@@ -126,6 +107,42 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
   }
 
   base::UnloadNativeLibrary(dl);
+
+  return true;
+}
+
+// static
+bool PluginLib::ParseMIMEDescription(
+    const char* description,
+    std::vector<WebPluginMimeType>* mime_types) {
+  // TODO(evanm): rewrite this to better match Firefox; see
+  // ParsePluginMimeDescription near
+  // http://mxr.mozilla.org/firefox/source/modules/plugin/base/src/nsPluginsDirUtils.h#53
+
+  // We parse the description here into WebPluginMimeType structures.
+  // Description for Flash 10 looks like (all as one string):
+  //   "application/x-shockwave-flash:swf:Shockwave Flash;"
+  //   "application/futuresplash:spl:FutureSplash Player"
+  std::vector<std::string> descriptions;
+  SplitString(description, ';', &descriptions);
+  for (size_t i = 0; i < descriptions.size(); ++i) {
+    if (descriptions[i].empty())
+      continue;  // Don't warn if they have trailing semis.
+
+    std::vector<std::string> fields;
+    SplitString(descriptions[i], ':', &fields);
+    if (fields.size() != 3) {
+      LOG(WARNING) << "Couldn't parse plugin info: " << description;
+      // This plugin's got something weird going on; abort.
+      return false;
+    }
+
+    WebPluginMimeType mime_type;
+    mime_type.mime_type = fields[0];
+    SplitString(fields[1], ',', &mime_type.file_extensions);
+    mime_type.description = UTF8ToWide(fields[2]);
+    mime_types->push_back(mime_type);
+  }
 
   return true;
 }
