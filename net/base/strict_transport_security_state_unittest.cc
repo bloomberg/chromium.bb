@@ -78,6 +78,8 @@ TEST_F(StrictTransportSecurityStateTest, BogusHeaders) {
       "max-age=3488923 includesubdomains x", &max_age, &include_subdomains));
   EXPECT_FALSE(net::StrictTransportSecurityState::ParseHeader(
       "max-age=34889.23 includesubdomains", &max_age, &include_subdomains));
+  EXPECT_FALSE(net::StrictTransportSecurityState::ParseHeader(
+      "max-age=34889 includesubdomains", &max_age, &include_subdomains));
 
   EXPECT_EQ(max_age, 42);
   EXPECT_FALSE(include_subdomains);
@@ -103,17 +105,27 @@ TEST_F(StrictTransportSecurityStateTest, ValidHeaders) {
   EXPECT_FALSE(include_subdomains);
 
   EXPECT_TRUE(net::StrictTransportSecurityState::ParseHeader(
-      "max-age=123 incLudesUbdOmains", &max_age, &include_subdomains));
+      "max-age=123;incLudesUbdOmains", &max_age, &include_subdomains));
   EXPECT_EQ(max_age, 123);
   EXPECT_TRUE(include_subdomains);
 
   EXPECT_TRUE(net::StrictTransportSecurityState::ParseHeader(
-      "max-age=394082038    incLudesUbdOmains", &max_age, &include_subdomains));
+      "max-age=394082;  incLudesUbdOmains", &max_age, &include_subdomains));
+  EXPECT_EQ(max_age, 394082);
+  EXPECT_TRUE(include_subdomains);
+
+  EXPECT_TRUE(net::StrictTransportSecurityState::ParseHeader(
+      "max-age=39408299  ;incLudesUbdOmains", &max_age, &include_subdomains));
+  EXPECT_EQ(max_age, 39408299);
+  EXPECT_TRUE(include_subdomains);
+
+  EXPECT_TRUE(net::StrictTransportSecurityState::ParseHeader(
+      "max-age=394082038  ;  incLudesUbdOmains", &max_age, &include_subdomains));
   EXPECT_EQ(max_age, 394082038);
   EXPECT_TRUE(include_subdomains);
 
   EXPECT_TRUE(net::StrictTransportSecurityState::ParseHeader(
-      "  max-age=0    incLudesUbdOmains   ", &max_age, &include_subdomains));
+      "  max-age=0  ;  incLudesUbdOmains   ", &max_age, &include_subdomains));
   EXPECT_EQ(max_age, 0);
   EXPECT_TRUE(include_subdomains);
 }

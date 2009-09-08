@@ -65,8 +65,8 @@ bool StrictTransportSecurityState::IsEnabledForHost(const std::string& host) {
   return true;
 }
 
-// "X-Force-TLS" ":" "max-age" "=" delta-seconds *1INCLUDESUBDOMAINS
-// INCLUDESUBDOMAINS = [ " includeSubDomains" ]
+// "Strict-Transport-Security" ":"
+//     "max-age" "=" delta-seconds [ ";" "includeSubDomains" ]
 bool StrictTransportSecurityState::ParseHeader(const std::string& value,
                                                int* max_age,
                                                bool* include_subdomains) {
@@ -84,14 +84,13 @@ bool StrictTransportSecurityState::ParseHeader(const std::string& value,
     AFTER_INCLUDE_SUBDOMAINS,
   } state = START;
 
-  StringTokenizer tokenizer(value, " =");
+  StringTokenizer tokenizer(value, " \t=;");
   tokenizer.set_options(StringTokenizer::RETURN_DELIMS);
   while (tokenizer.GetNext()) {
     DCHECK(!tokenizer.token_is_delim() || tokenizer.token().length() == 1);
-    DCHECK(tokenizer.token_is_delim() || *tokenizer.token_begin() != ' ');
     switch (state) {
       case START:
-        if (*tokenizer.token_begin() == ' ')
+        if (IsAsciiWhitespace(*tokenizer.token_begin()))
           continue;
         if (!LowerCaseEqualsASCII(tokenizer.token(), "max-age"))
           return false;
@@ -99,7 +98,7 @@ bool StrictTransportSecurityState::ParseHeader(const std::string& value,
         break;
 
       case AFTER_MAX_AGE_LABEL:
-        if (*tokenizer.token_begin() == ' ')
+        if (IsAsciiWhitespace(*tokenizer.token_begin()))
           continue;
         if (*tokenizer.token_begin() != '=')
           return false;
@@ -108,7 +107,7 @@ bool StrictTransportSecurityState::ParseHeader(const std::string& value,
         break;
 
       case AFTER_MAX_AGE_EQUALS:
-        if (*tokenizer.token_begin() == ' ')
+        if (IsAsciiWhitespace(*tokenizer.token_begin()))
           continue;
         if (!StringToInt(tokenizer.token(), &max_age_candidate))
           return false;
@@ -118,13 +117,15 @@ bool StrictTransportSecurityState::ParseHeader(const std::string& value,
         break;
 
       case AFTER_MAX_AGE:
-        if (*tokenizer.token_begin() != ' ')
+        if (IsAsciiWhitespace(*tokenizer.token_begin()))
+          continue;
+        if (*tokenizer.token_begin() != ';')
           return false;
         state = AFTER_MAX_AGE_INCLUDE_SUB_DOMAINS_DELIMITER;
         break;
 
       case AFTER_MAX_AGE_INCLUDE_SUB_DOMAINS_DELIMITER:
-        if (*tokenizer.token_begin() == ' ')
+        if (IsAsciiWhitespace(*tokenizer.token_begin()))
           continue;
         if (!LowerCaseEqualsASCII(tokenizer.token(), "includesubdomains"))
           return false;
@@ -132,7 +133,7 @@ bool StrictTransportSecurityState::ParseHeader(const std::string& value,
         break;
 
       case AFTER_INCLUDE_SUBDOMAINS:
-        if (*tokenizer.token_begin() != ' ')
+        if (!IsAsciiWhitespace(*tokenizer.token_begin()))
           return false;
         break;
 
@@ -148,10 +149,11 @@ bool StrictTransportSecurityState::ParseHeader(const std::string& value,
     case AFTER_MAX_AGE_EQUALS:
       return false;
     case AFTER_MAX_AGE:
-    case AFTER_MAX_AGE_INCLUDE_SUB_DOMAINS_DELIMITER:
       *max_age = max_age_candidate;
       *include_subdomains = false;
       return true;
+    case AFTER_MAX_AGE_INCLUDE_SUB_DOMAINS_DELIMITER:
+      return false;
     case AFTER_INCLUDE_SUBDOMAINS:
       *max_age = max_age_candidate;
       *include_subdomains = true;
