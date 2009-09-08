@@ -324,10 +324,10 @@ class PropertiesVisitor : public VisitorBase<PropertiesVisitor> {
       writer_->BeginCompacting();
       writer_->OpenArray();
       const Skin::InfluencesArray& influences_array = skin->influences();
-      for (int i = 0; i != influences_array.size(); ++i) {
+      for (Skin::InfluencesArray::size_type i = 0; i != influences_array.size(); ++i) {
         const Skin::Influences& influences = influences_array[i];
         writer_->OpenArray();
-        for (int j = 0; j != influences.size(); ++j) {
+        for (Skin::Influences::size_type j = 0; j != influences.size(); ++j) {
           const Skin::Influence& influence = influences[j];
           Serialize(writer_, influence.matrix_index);
           Serialize(writer_, influence.weight);

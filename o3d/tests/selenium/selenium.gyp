@@ -76,10 +76,37 @@
           'python<(EXECUTABLE_SUFFIX)',
           'o3d/tests/selenium/main.py',
           '<@(selenium_args)',
+          '--browserpath=<(browser_path)',
           '--browser=*firefox',
           '--screenshotsdir=<(PRODUCT_DIR)/tests/selenium/screenshots_firefox',
         ],
       },
+      'conditions': [
+        ['OS=="win"',
+          {
+            'variables': {
+              'browser_path': '',
+            },
+          }
+        ],
+        ['OS=="linux"',
+          {
+            'variables': {
+              'browser_path': '',
+            },
+          },
+        ],
+        ['OS=="mac"',
+          {
+            'dependencies': [
+              'unpack_firefox',
+            ],
+            'variables': {
+              'browser_path': '<(PRODUCT_DIR)/selenium_firefox/Firefox.app/Contents/MacOS/firefox-bin',
+            },
+          },
+        ],
+      ],
     },
     {
       'target_name': 'selenium_chrome',
@@ -99,26 +126,30 @@
           'python<(EXECUTABLE_SUFFIX)',
           'main.py',
           '<@(selenium_args)',
+          '--browserpath=<(browser_path)',
           '--browser=*googlechrome',
           '--screenshotsdir=<(PRODUCT_DIR)/tests/selenium/screenshots_chrome',
         ],
       },
       'conditions': [
+        ['OS=="win"',
+          {
+            'variables': {
+              'browser_path': '',
+            },
+          }
+        ],
         ['OS=="linux"',
           {
             'variables': {
-              'selenium_args': [
-                '--browserpath=/usr/bin/google-chrome',
-              ],
+              'browser_path': '/usr/bin/google-chrome',
             },
           },
         ],
         ['OS=="mac"',
           {
             'variables': {
-              'selenium_args': [
-                '--browserpath="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"',
-              ],
+              'browser_path': 'mac_chrome.sh',
             },
           },
         ],
@@ -138,6 +169,27 @@
     ['OS=="mac"',
       {
         'targets': [
+          {
+            'target_name': 'unpack_firefox',
+            'type': 'none',
+            'actions': [
+              {
+                'action_name': 'unpack_firefox',
+                'inputs': [
+                  '<(PRODUCT_DIR)/O3D.plugin',
+                ],
+                'outputs': [
+                  '<(PRODUCT_DIR)/selenium_firefox',
+                ],
+                'action': [
+                  'python',
+                  'unpack_firefox.py',
+                  '--plugin_path=<(PRODUCT_DIR)/O3D.plugin',
+                  '--product_path=<(PRODUCT_DIR)',
+                ],
+              },
+            ],
+          },
           {
             'target_name': 'selenium_safari',
             'type': 'none',
