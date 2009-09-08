@@ -178,8 +178,7 @@ static void AddNToCoprocessorOp(const MetaCoprocessorLoadStoreOp* pattern,
       op->expected_values.opcode |= 0x4;
       AddInstruction(op);
       break;
-    default:
-      {
+    default: {
         ModeledOpInfo* op1 = CopyOfOpInfo(op);
         AddInstruction(op);
         op1->expected_values.opcode |= 0x4;
@@ -203,8 +202,7 @@ static void AddUNToCoprocessorOp(const MetaCoprocessorLoadStoreOp* pattern,
       op->expected_values.opcode |= 0x8;
       AddNToCoprocessorOp(pattern, op);
       break;
-    default:
-      {
+    default: {
         ModeledOpInfo* op1 = CopyOfOpInfo(op);
         AddNToCoprocessorOp(pattern, op);
         op1->expected_values.opcode |= 0x8;
@@ -228,6 +226,7 @@ static ModeledOpInfo* CoprocessorOpLoadStoreCopy(const ModeledOpInfo* op,
   } else {
     copy_op->name = "stc";
     copy_op->inst_kind = ARM_STC;
+    copy_op->arm_safe = FALSE;
   }
   return copy_op;
 }
