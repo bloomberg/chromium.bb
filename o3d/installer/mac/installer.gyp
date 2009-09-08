@@ -29,6 +29,31 @@
         '../../plugin/plugin.gyp:npo3dautoplugin',
         '../../samples/samples.gyp:samples',
       ],
+      'postbuilds': [
+        {
+          'variables': {
+            'installer_script_path': './make_installer.sh',
+          },
+          'postbuild_name': 'Make Installer',
+          'action': ['<(installer_script_path)', '<(dotnppversion)',],
+        },
+      ],
+    },
+    {
+      'target_name': 'disk_image',
+      'type': 'none',
+      'dependencies': [
+        'installer',
+      ],
+      'postbuilds': [
+        {
+          'variables': {
+            'disk_image_script_path': './make_disk_image.sh',
+          },
+          'postbuild_name': 'Make Disk Image',
+          'action': ['<(disk_image_script_path)', '<(dotnppversion)',],
+        },
+      ],
     },
   ],
 }

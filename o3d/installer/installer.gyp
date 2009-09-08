@@ -25,7 +25,7 @@
         ['OS=="mac"',
           {
             'dependencies': [
-              'mac/installer.gyp:installer',
+              'mac/installer.gyp:disk_image',
             ],
           },
         ],

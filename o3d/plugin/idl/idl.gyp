@@ -149,7 +149,6 @@
           'action': [
             'python',
             'codegen.py',
-            '--force', # If the build system wants to rebuild, we rebuild.
             '--binding-module=o3d:../../plugin/o3d_binding.py',
             '--generate=npapi',
             '--output-dir=<(idl_out_path)',
