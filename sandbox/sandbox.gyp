@@ -100,8 +100,6 @@
             'src/interception_agent.cc',
             'src/interception_agent.h',
             'src/interception_internal.h',
-            'src/pe_image.cc',
-            'src/pe_image.h',
             'src/resolver.cc',
             'src/resolver.h',
             'src/service_resolver.cc',
@@ -268,7 +266,6 @@
           'sources': [
             'tests/unit_tests/unit_tests.cc',
             'src/interception_unittest.cc',
-            'src/pe_image_unittest.cc',
             'src/service_resolver_unittest.cc',
             'src/restricted_token_unittest.cc',
             'src/job_unittest.cc',

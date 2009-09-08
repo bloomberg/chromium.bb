@@ -5,8 +5,8 @@
 #include "sandbox/src/service_resolver.h"
 
 #include "base/logging.h"
+#include "base/pe_image.h"
 #include "base/scoped_ptr.h"
-#include "sandbox/src/pe_image.h"
 #include "sandbox/src/sandbox_types.h"
 #include "sandbox/src/sandbox_utils.h"
 

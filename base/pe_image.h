@@ -205,7 +205,7 @@ class PEImage {
   bool VerifyMagic() const;
 
   // Converts an rva value to the appropriate address.
-  virtual PVOID RVAToAddr(DWORD_PTR rva) const;
+  virtual PVOID RVAToAddr(DWORD rva) const;
 
   // Converts an rva value to an offset on disk.
   // Returns true on success.
@@ -225,7 +225,7 @@ class PEImageAsData : public PEImage {
  public:
   explicit PEImageAsData(HMODULE hModule) : PEImage(hModule) {}
 
-  virtual PVOID RVAToAddr(DWORD_PTR rva) const;
+  virtual PVOID RVAToAddr(DWORD rva) const;
 };
 
 inline bool PEImage::IsOrdinal(LPCSTR name) {

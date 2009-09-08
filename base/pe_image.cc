@@ -521,14 +521,14 @@ bool PEImage::ImageAddrToOnDiskOffset(LPVOID address,
   return true;
 }
 
-PVOID PEImage::RVAToAddr(DWORD_PTR rva) const {
+PVOID PEImage::RVAToAddr(DWORD rva) const {
   if (rva == 0)
     return NULL;
 
   return reinterpret_cast<char*>(module_) + rva;
 }
 
-PVOID PEImageAsData::RVAToAddr(DWORD_PTR rva) const {
+PVOID PEImageAsData::RVAToAddr(DWORD rva) const {
   if (rva == 0)
     return NULL;
 

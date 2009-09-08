@@ -7,9 +7,9 @@
 #include "sandbox/src/policy_broker.h"
 
 #include "base/logging.h"
+#include "base/pe_image.h"
 #include "base/win_util.h"
 #include "sandbox/src/interception.h"
-#include "sandbox/src/pe_image.h"
 #include "sandbox/src/policy_target.h"
 #include "sandbox/src/process_thread_interception.h"
 #include "sandbox/src/sandbox.h"

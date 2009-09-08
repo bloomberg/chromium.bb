@@ -5,10 +5,10 @@
 #include "sandbox/src/target_process.h"
 
 #include "base/basictypes.h"
+#include "base/pe_image.h"
 #include "base/scoped_ptr.h"
 #include "sandbox/src/crosscall_server.h"
 #include "sandbox/src/crosscall_client.h"
-#include "sandbox/src/pe_image.h"
 #include "sandbox/src/policy_low_level.h"
 #include "sandbox/src/sandbox_types.h"
 #include "sandbox/src/sharedmem_ipc_server.h"
@@ -54,7 +54,7 @@ void* GetBaseAddress(const wchar_t* exe_name, void* entry_point) {
   if (NULL == exe)
     return exe;
 
-  sandbox::PEImage pe(exe);
+  PEImage pe(exe);
   if (!pe.VerifyMagic()) {
     ::FreeLibrary(exe);
     return exe;

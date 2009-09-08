@@ -10,9 +10,9 @@
 #include "sandbox/src/interception.h"
 
 #include "base/logging.h"
+#include "base/pe_image.h"
 #include "base/scoped_ptr.h"
 #include "sandbox/src/interception_internal.h"
-#include "sandbox/src/pe_image.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_utils.h"
 #include "sandbox/src/service_resolver.h"
