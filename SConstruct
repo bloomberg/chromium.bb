@@ -912,6 +912,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
           'tests/nullptr/nacl.scons',
           'tests/srpc/nacl.scons',
           'tests/srpc_hw/nacl.scons',
+          'tests/srpc_without_pthread/nacl.scons',
           'tests/sysbasic/nacl.scons',
           'tests/syscalls/nacl.scons',
           'tests/threads/nacl.scons',
