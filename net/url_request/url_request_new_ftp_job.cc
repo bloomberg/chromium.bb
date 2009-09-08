@@ -284,6 +284,11 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
 }
 
 void URLRequestNewFtpJob::LogFtpServerType(const net::ListState& list_state) {
+  // We can't recognize server type based on empty directory listings. Don't log
+  // that as unknown, it's misleading.
+  if (!list_state.parsed_one)
+    return;
+
   switch (list_state.lstyle) {
     case 'E':
       net::UpdateFtpServerTypeHistograms(net::SERVER_EPLF);
