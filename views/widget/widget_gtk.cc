@@ -287,6 +287,11 @@ void WidgetGtk::Init(GtkWidget* parent,
 
   tooltip_manager_.reset(new TooltipManagerGtk(this));
 
+  // Register for tooltips.
+  g_object_set(G_OBJECT(window_contents_), "has-tooltip", TRUE, NULL);
+  g_signal_connect(G_OBJECT(window_contents_), "query_tooltip",
+                   G_CALLBACK(CallQueryTooltip), this);
+
   if (type_ == TYPE_CHILD) {
     if (parent) {
       WidgetGtk* parent_widget = GetViewForNative(parent);
@@ -678,7 +683,7 @@ gboolean WidgetGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
   last_mouse_event_was_move_ = false;
   if (!has_capture_ && !is_mouse_down_)
     root_view_->ProcessOnMouseExited();
-  return true;
+  return false;
 }
 
 gboolean WidgetGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
@@ -689,6 +694,13 @@ gboolean WidgetGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
 gboolean WidgetGtk::OnKeyRelease(GtkWidget* widget, GdkEventKey* event) {
   KeyEvent key_event(event, false);
   return root_view_->ProcessKeyEvent(key_event);
+}
+
+gboolean WidgetGtk::OnQueryTooltip(gint x,
+                                   gint y,
+                                   gboolean keyboard_mode,
+                                   GtkTooltip* tooltip) {
+  return tooltip_manager_->ShowTooltip(x, y, keyboard_mode, tooltip);
 }
 
 gboolean WidgetGtk::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
@@ -980,6 +992,16 @@ gboolean WidgetGtk::CallKeyRelease(GtkWidget* widget, GdkEventKey* event) {
     return false;
 
   return widget_gtk->OnKeyRelease(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallQueryTooltip(GtkWidget* widget,
+                                     gint x,
+                                     gint y,
+                                     gboolean keyboard_mode,
+                                     GtkTooltip* tooltip,
+                                     WidgetGtk* host) {
+  return host->OnQueryTooltip(x, y, keyboard_mode, tooltip);
 }
 
 gboolean WidgetGtk::CallScroll(GtkWidget* widget, GdkEventScroll* event) {

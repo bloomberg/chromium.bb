@@ -155,6 +155,10 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   virtual gboolean OnFocusOut(GtkWidget* widget, GdkEventFocus* event);
   virtual gboolean OnKeyPress(GtkWidget* widget, GdkEventKey* event);
   virtual gboolean OnKeyRelease(GtkWidget* widget, GdkEventKey* event);
+  virtual gboolean OnQueryTooltip(gint x,
+                                  gint y,
+                                  gboolean keyboard_mode,
+                                  GtkTooltip* tooltip);
   virtual gboolean OnScroll(GtkWidget* widget, GdkEventScroll* event) {
     return false;
   }
@@ -258,6 +262,12 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   static gboolean CallFocusOut(GtkWidget* widget, GdkEventFocus* event);
   static gboolean CallKeyPress(GtkWidget* widget, GdkEventKey* event);
   static gboolean CallKeyRelease(GtkWidget* widget, GdkEventKey* event);
+  static gboolean CallQueryTooltip(GtkWidget* widget,
+                                   gint x,
+                                   gint y,
+                                   gboolean keyboard_mode,
+                                   GtkTooltip* tooltip,
+                                   WidgetGtk* host);
   static gboolean CallScroll(GtkWidget* widget, GdkEventScroll* event);
   static gboolean CallVisibilityNotify(GtkWidget* widget,
                                        GdkEventVisibility* event);

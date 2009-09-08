@@ -12,6 +12,7 @@
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -46,9 +47,9 @@
 #include "views/background.h"
 #include "views/controls/button/button_dropdown.h"
 #include "views/controls/label.h"
+#include "views/widget/tooltip_manager.h"
 #if defined(OS_WIN)
 #include "views/drag_utils.h"
-#include "views/widget/tooltip_manager.h"
 #endif
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
@@ -584,7 +585,6 @@ void ToolbarView::ShowContextMenu(int x, int y, bool is_mouse_gesture) {
 }
 
 void ToolbarView::DidGainFocus() {
-#if defined(OS_WIN)
   // Check to see if MSAA focus should be restored to previously focused button,
   // and if button is an enabled, visibled child of toolbar.
   if (!acc_focused_view_ ||
@@ -616,6 +616,7 @@ void ToolbarView::DidGainFocus() {
     view_index = acc_focused_view_->GetID();
   }
 
+#if defined(OS_WIN)
   gfx::NativeView wnd = GetWidget()->GetNativeView();
 
   // Notify Access Technology that there was a change in keyboard focus.
@@ -628,7 +629,6 @@ void ToolbarView::DidGainFocus() {
 }
 
 void ToolbarView::WillLoseFocus() {
-#if defined(OS_WIN)
   if (acc_focused_view_) {
     // Resetting focus state.
     acc_focused_view_->SetHotTracked(false);
@@ -636,14 +636,9 @@ void ToolbarView::WillLoseFocus() {
   // Any tooltips that are active should be hidden when toolbar loses focus.
   if (GetWidget() && GetWidget()->GetTooltipManager())
     GetWidget()->GetTooltipManager()->HideKeyboardTooltip();
-#else
-  // TODO(port): deal with toolbar a11y focus.
-  NOTIMPLEMENTED();
-#endif
 }
 
 bool ToolbarView::OnKeyPressed(const views::KeyEvent& e) {
-#if defined(OS_WIN)
   // Paranoia check, button should be initialized upon toolbar gaining focus.
   if (!acc_focused_view_)
     return false;
@@ -652,15 +647,15 @@ bool ToolbarView::OnKeyPressed(const views::KeyEvent& e) {
   int next_view = focused_view;
 
   switch (e.GetCharacter()) {
-    case VK_LEFT:
+    case base::VKEY_LEFT:
       next_view = GetNextAccessibleViewIndex(focused_view, true);
       break;
-    case VK_RIGHT:
+    case base::VKEY_RIGHT:
       next_view = GetNextAccessibleViewIndex(focused_view, false);
       break;
-    case VK_DOWN:
-    case VK_RETURN:
-      // VK_SPACE is already handled by the default case.
+    case base::VKEY_DOWN:
+    case base::VKEY_RETURN:
+      // VKEY_SPACE is already handled by the default case.
       if (acc_focused_view_->GetID() == VIEW_ID_PAGE_MENU ||
           acc_focused_view_->GetID() == VIEW_ID_APP_MENU) {
         // If a menu button in toolbar is activated and its menu is displayed,
@@ -697,24 +692,23 @@ bool ToolbarView::OnKeyPressed(const views::KeyEvent& e) {
     // Hot-track new focused button.
     acc_focused_view_->SetHotTracked(true);
 
-    // Retrieve information to generate an MSAA focus event.
-    int view_id = acc_focused_view_->GetID();
-    gfx::NativeView wnd = GetWidget()->GetNativeView();
-
     // Show the tooltip for the view that got the focus.
     if (GetWidget()->GetTooltipManager()) {
       GetWidget()->GetTooltipManager()->
           ShowKeyboardTooltip(GetChildViewAt(next_view));
     }
+#if defined(OS_WIN)
+    // Retrieve information to generate an MSAA focus event.
+    gfx::NativeView wnd = GetWidget()->GetNativeView();
+    int view_id = acc_focused_view_->GetID();
     // Notify Access Technology that there was a change in keyboard focus.
     ::NotifyWinEvent(EVENT_OBJECT_FOCUS, wnd, OBJID_CLIENT,
                      static_cast<LONG>(view_id));
+#else
+    NOTIMPLEMENTED();
+#endif
     return true;
   }
-#else
-  // TODO(port): deal with toolbar a11y focus.
-  NOTIMPLEMENTED();
-#endif
   return false;
 }
 

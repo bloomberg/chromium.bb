@@ -7,17 +7,21 @@
 
 #include "views/widget/tooltip_manager.h"
 
+#include <gtk/gtk.h>
+
 namespace views {
 
-class Widget;
+class WidgetGtk;
 
-// TooltipManager takes care of the wiring to support tooltips for Views. You
-// almost never need to interact directly with TooltipManager, rather look to
-// the various tooltip methods on View.
+// TooltipManager implementation for Gtk.
 class TooltipManagerGtk : public TooltipManager {
  public:
-  explicit TooltipManagerGtk(Widget* widget);
+  explicit TooltipManagerGtk(WidgetGtk* widget);
   virtual ~TooltipManagerGtk() {}
+
+  // Shows the tooltip at the specified location. Returns true if the tooltip
+  // should be shown, false otherwise.
+  bool ShowTooltip(int x, int y, bool for_keyboard, GtkTooltip* gtk_tooltip);
 
   // TooltipManager.
   virtual void UpdateTooltip();
@@ -26,8 +30,15 @@ class TooltipManagerGtk : public TooltipManager {
   virtual void HideKeyboardTooltip();
 
  private:
+  // Sends the show_help signal to widget_. This signal triggers showing the
+  // keyboard tooltip if it isn't showing, or hides it if it is showing.
+  bool SendShowHelpSignal();
+
   // Our owner.
-  Widget* widget_;
+  WidgetGtk* widget_;
+
+  // The view supplied to the last invocation of ShowKeyboardTooltip.
+  View* keyboard_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerGtk);
 };

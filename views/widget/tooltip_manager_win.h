@@ -108,16 +108,6 @@ class TooltipManagerWin : public TooltipManager {
   // positive value.
   int CalcTooltipHeight();
 
-  // Trims the tooltip to fit, setting text to the clipped result, width to the
-  // width (in pixels) of the clipped text and line_count to the number of lines
-  // of text in the tooltip.
-  void TrimTooltipToFit(std::wstring* text,
-                        int* width,
-                        int* line_count,
-                        int position_x,
-                        int position_y,
-                        HWND window);
-
   // Invoked when the timer elapses and tooltip has to be destroyed.
   void DestroyKeyboardTooltipWindow(HWND window_to_destroy);
 

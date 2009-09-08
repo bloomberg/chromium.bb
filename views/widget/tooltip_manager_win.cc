@@ -7,7 +7,7 @@
 #include <windowsx.h>
 #include <limits>
 
-#include "app/gfx/text_elider.h"
+#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
@@ -24,26 +24,6 @@ static int tooltip_height_ = 0;
 // Default timeout for the tooltip displayed using keyboard.
 // Timeout is mentioned in milliseconds.
 static const int kDefaultTimeout = 4000;
-
-// Maximum number of lines we allow in the tooltip.
-static const int kMaxLines = 6;
-
-// Maximum number of characters we allow in a tooltip.
-static const int kMaxTooltipLength = 1024;
-
-// Breaks |text| along line boundaries, placing each line of text into lines.
-static void SplitTooltipString(const std::wstring& text,
-                               std::vector<std::wstring>* lines) {
-  size_t index = 0;
-  size_t next_index;
-  while ((next_index = text.find(TooltipManagerWin::GetLineSeparator(), index))
-         != std::wstring::npos && lines->size() < kMaxLines) {
-    lines->push_back(text.substr(index, next_index - index));
-    index = next_index + TooltipManagerWin::GetLineSeparator().size();
-  }
-  if (next_index != text.size() && lines->size() < kMaxLines)
-    lines->push_back(text.substr(index, text.size() - index));
-}
 
 // static
 int TooltipManager::GetTooltipHeight() {
@@ -181,8 +161,10 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
               !tooltip_text_.empty()) {
             // View has a valid tip, copy it into TOOLTIPINFO.
             clipped_text_ = tooltip_text_;
+            gfx::Point screen_loc(last_mouse_x_, last_mouse_y_);
+            View::ConvertPointToScreen(widget_->GetRootView(), &screen_loc);
             TrimTooltipToFit(&clipped_text_, &tooltip_width_, &line_count_,
-                             last_mouse_x_, last_mouse_y_, tooltip_hwnd_);
+                             screen_loc.x(), screen_loc.y());
             // Adjust the clipped tooltip text for locale direction.
             l10n_util::AdjustStringForLocaleDirection(clipped_text_,
                                                       &clipped_text_);
@@ -279,58 +261,6 @@ int TooltipManagerWin::CalcTooltipHeight() {
   return height + tooltip_margin.top + tooltip_margin.bottom;
 }
 
-void TooltipManagerWin::TrimTooltipToFit(std::wstring* text,
-                                         int* max_width,
-                                         int* line_count,
-                                         int position_x,
-                                         int position_y,
-                                         HWND window) {
-  *max_width = 0;
-  *line_count = 0;
-
-  // Clamp the tooltip length to kMaxTooltipLength so that we don't
-  // accidentally DOS the user with a mega tooltip (since Windows doesn't seem
-  // to do this itself).
-  if (text->length() > kMaxTooltipLength)
-    *text = text->substr(0, kMaxTooltipLength);
-
-  // Determine the available width for the tooltip.
-  gfx::Point screen_loc(position_x, position_y);
-  View::ConvertPointToScreen(widget_->GetRootView(), &screen_loc);
-  gfx::Rect monitor_bounds =
-      win_util::GetMonitorBoundsForRect(gfx::Rect(screen_loc.x(),
-                                                  screen_loc.y(),
-                                                  0, 0));
-  RECT tooltip_margin;
-  SendMessage(window, TTM_GETMARGIN, 0, (LPARAM)&tooltip_margin);
-  const int available_width = monitor_bounds.width() - tooltip_margin.left -
-      tooltip_margin.right;
-  if (available_width <= 0)
-    return;
-
-  // Split the string.
-  std::vector<std::wstring> lines;
-  SplitTooltipString(*text, &lines);
-  *line_count = static_cast<int>(lines.size());
-
-  // Format each line to fit.
-  gfx::Font font = GetDefaultFont();
-  std::wstring result;
-  for (std::vector<std::wstring>::iterator i = lines.begin(); i != lines.end();
-       ++i) {
-    std::wstring elided_text = gfx::ElideText(*i, font, available_width);
-    *max_width = std::max(*max_width, font.GetStringWidth(elided_text));
-    if (i == lines.begin() && i + 1 == lines.end()) {
-      *text = elided_text;
-      return;
-    }
-    if (!result.empty())
-      result.append(GetLineSeparator());
-    result.append(elided_text);
-  }
-  *text = result;
-}
-
 void TooltipManagerWin::UpdateTooltip(int x, int y) {
   RootView* root_view = widget_->GetRootView();
   View* view = root_view->GetViewForPoint(gfx::Point(x, y));
@@ -397,8 +327,6 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   gfx::Rect focused_bounds = focused_view->bounds();
   gfx::Point screen_point;
   focused_view->ConvertPointToScreen(focused_view, &screen_point);
-  gfx::Point relative_point_coordinates;
-  focused_view->ConvertPointToWidget(focused_view, &relative_point_coordinates);
   keyboard_tooltip_hwnd_ = CreateWindowEx(
       WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
@@ -407,8 +335,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   int tooltip_width;
   int line_count;
   TrimTooltipToFit(&tooltip_text, &tooltip_width, &line_count,
-                   relative_point_coordinates.x(),
-                   relative_point_coordinates.y(), keyboard_tooltip_hwnd_);
+                   screen_point.x(), screen_point.y());
   TOOLINFO keyboard_toolinfo;
   memset(&keyboard_toolinfo, 0, sizeof(keyboard_toolinfo));
   keyboard_toolinfo.cbSize = sizeof(keyboard_toolinfo);

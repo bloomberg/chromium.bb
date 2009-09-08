@@ -32,6 +32,10 @@ class TooltipManager {
   // Returns the separator for lines of text in a tooltip.
   static const std::wstring& GetLineSeparator();
 
+  // Returns the maximum width of the tooltip. |x| and |y| give the location
+  // the tooltip is to be displayed on in screen coordinates.
+  static int GetMaxWidth(int x, int y);
+
   TooltipManager() {}
   virtual ~TooltipManager() {}
 
@@ -46,6 +50,17 @@ class TooltipManager {
 
   // Invoked when toolbar loses focus.
   virtual void HideKeyboardTooltip() = 0;
+
+ protected:
+  // Trims the tooltip to fit, setting |text| to the clipped result,
+  // |max_width| to the width (in pixels) of the clipped text and |line_count|
+  // to the number of lines of text in the tooltip. |x| and |y| give the
+  // location of the tooltip in screen coordinates.
+  static void TrimTooltipToFit(std::wstring* text,
+                               int* max_width,
+                               int* line_count,
+                               int x,
+                               int y);
 };
 
 }  // namespace views

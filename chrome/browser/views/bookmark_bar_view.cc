@@ -43,11 +43,6 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#include "base/base_drag_source.h"
-#endif
-
 using views::CustomButton;
 using views::DropTargetEvent;
 using views::MenuButton;
@@ -141,13 +136,8 @@ static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
                                                 const GURL& url,
                                                 const std::wstring& title,
                                                 const std::wstring& languages) {
-#if defined(OS_WIN)
-  gfx::Rect monitor_bounds = win_util::GetMonitorBoundsForRect(
-      gfx::Rect(screen_loc.x(), screen_loc.y(), 1, 1));
-#else
-  gfx::Rect monitor_bounds(0, 0, 10000, 10000);
-  NOTIMPLEMENTED();
-#endif
+  int max_width = views::TooltipManager::GetMaxWidth(screen_loc.x(),
+                                                     screen_loc.y());
   gfx::Font tt_font = views::TooltipManager::GetDefaultFont();
   std::wstring result;
 
@@ -155,11 +145,9 @@ static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
   if (!title.empty()) {
     std::wstring localized_title;
     if (l10n_util::AdjustStringForLocaleDirection(title, &localized_title))
-      result.append(gfx::ElideText(localized_title,
-                                   tt_font,
-                                   monitor_bounds.width()));
+      result.append(gfx::ElideText(localized_title, tt_font, max_width));
     else
-      result.append(gfx::ElideText(title, tt_font, monitor_bounds.width()));
+      result.append(gfx::ElideText(title, tt_font, max_width));
   }
 
   // Only show the URL if the url and title differ.
@@ -173,10 +161,7 @@ static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
     // "/http://www.yahoo.com" when rendered, as is, in an RTL context since
     // the Unicode BiDi algorithm puts certain characters on the left by
     // default.
-    std::wstring elided_url(gfx::ElideUrl(url,
-                                          tt_font,
-                                          monitor_bounds.width(),
-                                          languages));
+    std::wstring elided_url(gfx::ElideUrl(url, tt_font, max_width, languages));
     if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
       l10n_util::WrapStringWithLTRFormatting(&elided_url);
     result.append(elided_url);
