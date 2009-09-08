@@ -375,7 +375,10 @@ bool URLRequestViewNetInternalJob::GetData(std::string* mime_type,
                ".subsection_title { font-weight: bold; }\n"
                ".subsection_name { font-size: 80%; }\n"
                "</style>"
-               "</head><body>");
+               "</head><body>"
+               "<p><a href='http://sites.google.com/a/chromium.org/dev/"
+               "developers/design-documents/view-net-internal'>"
+               "Help: how do I use this?</a></p>");
 
   SubSection* all = Singleton<AllSubSections>::get();
   SubSection* section = all;
