@@ -49,6 +49,8 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
                               profile->GetPrefs(), this);
   ask_to_save_form_autofill_.Init(prefs::kFormAutofillEnabled,
                                   profile->GetPrefs(), this);
+  use_custom_chrome_frame_.Init(prefs::kUseCustomChromeFrame,
+                                profile->GetPrefs(), this);
 
   // Load initial values
   NotifyPrefChanged(NULL);
@@ -57,6 +59,9 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
 ContentPageGtk::~ContentPageGtk() {
 }
 
+// If |pref_name| is NULL, set the state of all the widgets. (This is used
+// in ContentPageGtk() above to initialize the dialog.) Otherwise, reset the
+// state of the widget for the given preference name, as it has changed.
 void ContentPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
   initializing_ = true;
   if (!pref_name || *pref_name == prefs::kPasswordManagerEnabled) {
@@ -76,6 +81,11 @@ void ContentPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
       gtk_toggle_button_set_active(
           GTK_TOGGLE_BUTTON(form_autofill_neversave_radio_), TRUE);
     }
+  }
+  if (!pref_name || *pref_name == prefs::kUseCustomChromeFrame) {
+    gtk_toggle_button_set_active(
+        GTK_TOGGLE_BUTTON(system_title_bar_checkbox_),
+        !use_custom_chrome_frame_.GetValue());
   }
   initializing_ = false;
 }
@@ -172,7 +182,16 @@ GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
 }
 
 GtkWidget* ContentPageGtk::InitThemesGroup() {
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+
+  // "Use system title bar and borders" checkbox.
+  system_title_bar_checkbox_ = gtk_check_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_SHOW_WINDOW_DECORATIONS).c_str());
+  g_signal_connect(G_OBJECT(system_title_bar_checkbox_), "clicked",
+                   G_CALLBACK(OnSystemTitleBarCheckboxClicked), this);
+  gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_checkbox_,
+                     FALSE, FALSE, 0);
 
   // GTK theme button.
   GtkWidget* gtk_theme_button = gtk_button_new_with_label(
@@ -195,7 +214,9 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
                    G_CALLBACK(OnGetThemesButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(hbox), themes_gallery_button, FALSE, FALSE, 0);
 
-  return hbox;
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+
+  return vbox;
 }
 
 // static
@@ -238,6 +259,13 @@ void ContentPageGtk::OnGetThemesButtonClicked(GtkButton* widget,
   BrowserList::GetLastActive()->OpenURL(
       GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
       GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+}
+
+// static
+void ContentPageGtk::OnSystemTitleBarCheckboxClicked(GtkButton* widget,
+                                                     ContentPageGtk* page) {
+  bool use_custom = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  page->use_custom_chrome_frame_.SetValue(use_custom);
 }
 
 // static

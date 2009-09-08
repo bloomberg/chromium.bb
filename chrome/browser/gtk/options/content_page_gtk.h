@@ -49,6 +49,10 @@ class ContentPageGtk : public OptionsPageBase {
   static void OnGetThemesButtonClicked(GtkButton* widget,
                                        ContentPageGtk* page);
 
+  // Callback for system title bar checkbox.
+  static void OnSystemTitleBarCheckboxClicked(GtkButton* widget,
+                                              ContentPageGtk* page);
+
   // Callback for passwords exceptions button.
   static void OnPasswordsExceptionsButtonClicked(GtkButton* widget,
                                                  ContentPageGtk* page);
@@ -65,9 +69,12 @@ class ContentPageGtk : public OptionsPageBase {
   GtkWidget* passwords_asktosave_radio_;
   GtkWidget* passwords_neversave_radio_;
 
-  // Widget for the Form Autofill group.
+  // Widgets for the Form Autofill group.
   GtkWidget* form_autofill_asktosave_radio_;
   GtkWidget* form_autofill_neversave_radio_;
+
+  // Widgets for the Themes group.
+  GtkWidget* system_title_bar_checkbox_;
 
   // The parent GtkTable widget
   GtkWidget* page_;
@@ -75,6 +82,7 @@ class ContentPageGtk : public OptionsPageBase {
   // Pref members.
   BooleanPrefMember ask_to_save_passwords_;
   BooleanPrefMember ask_to_save_form_autofill_;
+  BooleanPrefMember use_custom_chrome_frame_;
 
   // Flag to ignore gtk callbacks while we are loading prefs, to avoid
   // then turning around and saving them again.
