@@ -8,7 +8,8 @@ var chrome = chrome || {};
   chrome.test.tests = chrome.test.tests || [];
 
   var completed = false;
-  var currentTest;
+  var currentTest = null;
+  var lastTest = null;
 
   function complete() {
     completed = true;
@@ -48,7 +49,28 @@ var chrome = chrome || {};
     complete();
   }
 
+  var pendingCallbacks = 0;
+  var totalCallbacks = 0;
+  
+  function callbackAdded() {
+    pendingCallbacks++;
+    chrome.test.assertEq(totalCallbacks, 0);
+  };
+  
+  function callbackCompleted() {
+    if (!totalCallbacks)
+      totalCallbacks = pendingCallbacks;
+    pendingCallbacks--;
+    if (pendingCallbacks == 0) {
+      //chrome.test.log("  " + totalCallbacks + " callbacks ran");
+      totalCallbacks = 0;
+      chrome.test.succeed();
+    }
+  };
+
   chrome.test.runNextTest = function() {
+    chrome.test.assertEq(pendingCallbacks, 0);
+    lastTest = currentTest;
     currentTest = chrome.test.tests.shift();
     if (!currentTest) {
       allTestsSucceeded();
@@ -104,36 +126,68 @@ var chrome = chrome || {};
                        chrome.extension.lastError.message);
     }
   };
+  
+  function safeFunctionApply(func, arguments) {
+    try {
+      if (func) {
+        func.apply(null, arguments);
+      }
+    } catch (e) {
+      var stack = null;
+      if (typeof(e.stack) != "undefined") {
+        stack = e.stack.toString();
+      }
+      var msg = "Exception during execution of callback in " +
+                currentTest.name;
+      if (stack) {
+        msg += "\n" + stack;
+      } else {
+        msg += "\n(no stack available)";
+      }
+      chrome.test.fail(msg);
+    }
+  };
 
   // Wrapper for generating test functions, that takes care of calling
   // assertNoLastError() and (optionally) succeed() for you.
-  chrome.test.testCallback = function(succeedWhenDone, func) {
+  chrome.test.callback = function(func, expectedError) {
+    chrome.test.assertEq(typeof(func), 'function');
+    callbackAdded();
     return function() {
-      chrome.test.assertNoLastError();
-      try {
-        if (func) {
-          func.apply(null, arguments);
-        }
-      } catch (e) {
-        var stack = null;
-        if (typeof(e.stack) != "undefined") {
-          stack = e.stack.toString();
-        }
-        var msg = "Exception during execution of testCallback in " +
-                  currentTest.name;
-        if (stack) {
-          msg += "\n" + stack;
-        } else {
-          msg += "\n(no stack available)";
-        }
-        chrome.test.fail(msg);
+      if (expectedError == null) {
+        chrome.test.assertNoLastError();
+      } else {
+        chrome.test.assertEq(typeof(expectedError), 'string');
+        chrome.test.assertEq(expectedError, chrome.extension.lastError.message);
       }
-      if (succeedWhenDone) {
-        chrome.test.succeed();
-      }
+      safeFunctionApply(func, arguments);
+      callbackCompleted();
     };
   };
+  
+  chrome.test.listenOnce = function(event, func) {
+    callbackAdded();
+    var listener = function() {
+      event.removeListener(listener);
+      safeFunctionApply(func, arguments);      
+      callbackCompleted();
+    };
+    event.addListener(listener);
+  };
+  
+  chrome.test.callbackPass = function(func) {
+    return chrome.test.callback(func);
+  };
 
+  chrome.test.callbackFail = function(func, expectedError) {
+    return chrome.test.callback(func, expectedError);
+  };
+
+  // TODO(erikkay) This is deprecated and should be removed.
+  chrome.test.testCallback = function(succeedWhenDone, func) {
+    return chrome.test.callback(func);
+  };
+  
   chrome.test.runTests = function(tests) {
     chrome.test.tests = tests;
     chrome.test.runNextTest();

@@ -6,6 +6,5 @@
 
 // Flaky, http://crbug.com/19866. Please consult phajdan.jr before re-enabling.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Bookmarks) {
-  // TODO(erikkay) no initial state for this test.
   ASSERT_TRUE(RunExtensionTest("bookmarks")) << message_;
 }

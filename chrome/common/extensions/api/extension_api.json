@@ -916,7 +916,7 @@
       {
         "name": "onRemoved",
         "type": "function",
-        "description": "Fired when a bookmark or folder is removed.",
+        "description": "Fired when a bookmark or folder is removed.  When a folder is removed recursively, a single notification is fired for the folder, and none for its contents.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
@@ -965,7 +965,7 @@
       {
         "name": "onChildrenReordered",
         "type": "function",
-        "description": "Fired when the children of a folder have changed their order.",
+        "description": "Fired when the children of a folder have changed their order due to the order being sorted in the UI.  This is not called as a result of a move().",
         "parameters": [
           {"type": "string", "name": "id"},
           {

@@ -197,9 +197,6 @@ void ExtensionBookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
   const BookmarkNode* node = parent->GetChild(index);
   args.Append(new StringValue(Int64ToString(node->id())));
   DictionaryValue* obj = ExtensionBookmarks::GetNodeDictionary(node, false);
-
-  // Remove id since it's already being passed as the first argument.
-  obj->Remove(keys::kIdKey, NULL);
   args.Append(obj);
 
   std::string json_args;
