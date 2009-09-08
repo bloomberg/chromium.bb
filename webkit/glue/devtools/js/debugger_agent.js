@@ -112,7 +112,8 @@ devtools.DebuggerAgent.ScopeType = {
   Global: 0,
   Local: 1,
   With: 2,
-  Closure: 3
+  Closure: 3,
+  Catch: 4
 };
 
 
@@ -1047,6 +1048,9 @@ devtools.DebuggerAgent.prototype.formatCallFrame_ = function(stackFrame) {
             devtools.DebuggerAgent.formatObjectProxy_(stackFrame.receiver);
         break;
       case ScopeType.With:
+      // Catch scope is treated as a regular with scope by WebKit so we
+      // also treat it this way.
+      case ScopeType.Catch:
         scopeObjectProxy.isWithBlock = true;
         break;
       case ScopeType.Closure:
