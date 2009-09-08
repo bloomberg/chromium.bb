@@ -224,7 +224,8 @@ TEST_F(DomCheckerTest, File) {
   PrintResults(new_passes, new_failures);
 }
 
-TEST_F(DomCheckerTest, Http) {
+// TODO(arv): http://code.google.com/p/chromium/issues/detail?id=21321
+TEST_F(DomCheckerTest, DISABLED_Http) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDomCheckerTest))
     return;
 
