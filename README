@@ -1,11 +1,21 @@
                               Fontconfig
              Font configuration and customization library
-                             Version 2.7.2
-                              2009-08-31
+                             Version 2.7.3
+                              2009-09-08
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.7.3
+
+Behdad Esfahbod (2):
+      Use default config in FcFileScan() and FcDirScan()
+      Bump libtool version in preparation for release
+
+Roozbeh Pournader (2):
+      Correct Ewe (ee) orthography to use U+025B (bug #20711)
+      Updated Arabic, Persian, and Urdu orthographies
 
 2.7.2
 
