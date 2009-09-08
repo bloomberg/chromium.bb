@@ -10,14 +10,10 @@
 #include "base/time.h"
 #include "net/base/mime_util.h"
 #include "webkit/default_plugin/plugin_main.h"
+#include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/webkit_glue.h"
 #include "googleurl/src/gurl.h"
-
-#if defined(OS_WIN)
-#include "webkit/activex_shim/activex_shared.h"
-#include "webkit/glue/plugins/plugin_constants_win.h"
-#endif
 
 namespace NPAPI {
 
@@ -172,8 +168,6 @@ void PluginList::LoadPlugins(bool refresh) {
     LoadPluginsFromDir(directories_to_scan[i], &new_plugins);
   }
 
-  LoadInternalPlugins(&new_plugins);
-
   if (webkit_glue::IsDefaultPluginEnabled())
     LoadPlugin(FilePath(kDefaultPluginLibraryName), &new_plugins);
 
@@ -216,7 +210,6 @@ void PluginList::LoadPlugin(const FilePath &path,
 }
 
 bool PluginList::FindPlugin(const std::string& mime_type,
-                            const std::string& clsid,
                             bool allow_wildcard,
                             WebPluginInfo* info) {
   DCHECK(mime_type == StringToLowerASCII(mime_type));
@@ -225,14 +218,6 @@ bool PluginList::FindPlugin(const std::string& mime_type,
   AutoLock lock(lock_);
   for (size_t i = 0; i < plugins_.size(); ++i) {
     if (SupportsType(plugins_[i], mime_type, allow_wildcard)) {
-#if defined(OS_WIN)
-      if (!clsid.empty() && plugins_[i].path.value() == kActiveXShimFileName) {
-        // Special handling for ActiveX shim. If ActiveX is not installed, we
-        // should use the default plugin to show the installation UI.
-        if (!activex_shim::IsActiveXInstalled(clsid))
-          continue;
-      }
-#endif
       *info = plugins_[i];
       return true;
     }
@@ -241,7 +226,8 @@ bool PluginList::FindPlugin(const std::string& mime_type,
   return false;
 }
 
-bool PluginList::FindPlugin(const GURL &url, std::string* actual_mime_type,
+bool PluginList::FindPlugin(const GURL &url,
+                            std::string* actual_mime_type,
                             WebPluginInfo* info) {
   LoadPlugins(false);
   AutoLock lock(lock_);
@@ -308,19 +294,11 @@ void PluginList::GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
 
 bool PluginList::GetPluginInfo(const GURL& url,
                                const std::string& mime_type,
-                               const std::string& clsid,
                                bool allow_wildcard,
                                WebPluginInfo* info,
                                std::string* actual_mime_type) {
-  bool found = FindPlugin(mime_type,
-                          clsid,
-                          allow_wildcard, info);
-  if (!found
-      || (info->path.value() == kDefaultPluginLibraryName
-#if defined(OS_WIN)
-                                                          && clsid.empty()
-#endif
-                                                                          )) {
+  bool found = FindPlugin(mime_type, allow_wildcard, info);
+  if (!found || (info->path.value() == kDefaultPluginLibraryName)) {
     WebPluginInfo info2;
     if (FindPlugin(url, actual_mime_type, &info2)) {
       found = true;

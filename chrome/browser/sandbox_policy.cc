@@ -279,9 +279,7 @@ bool ApplyPolicyForUntrustedPlugin(sandbox::TargetPolicy* policy) {
 }
 
 // Adds the custom policy rules for a given plugin. |trusted_plugins| contains
-// the comma separate list of plugins that should not be sandboxed. The plugin
-// in the list can be either the plugin dll name of the class id if it's an
-// ActiveX.
+// the comma separate list of plugin dll names that should not be sandboxed.
 bool AddPolicyForPlugin(const CommandLine* cmd_line,
                         sandbox::TargetPolicy* policy) {
   std::wstring plugin_dll = cmd_line->

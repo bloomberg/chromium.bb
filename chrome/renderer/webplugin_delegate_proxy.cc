@@ -160,14 +160,12 @@ class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
 
 WebPluginDelegateProxy::WebPluginDelegateProxy(
     const std::string& mime_type,
-    const std::string& clsid,
     const base::WeakPtr<RenderView>& render_view)
     : render_view_(render_view),
       plugin_(NULL),
       windowless_(false),
       window_(NULL),
       mime_type_(mime_type),
-      clsid_(clsid),
       npobject_(NULL),
       window_script_object_(NULL),
       sad_plugin_(NULL),
@@ -225,7 +223,7 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
   IPC::ChannelHandle channel_handle;
   WebPluginInfo info;
   if (!RenderThread::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
-          url, mime_type_, clsid_, webkit_glue::GetWebKitLocale(),
+          url, mime_type_, webkit_glue::GetWebKitLocale(),
           &channel_handle, &info))) {
     return false;
   }

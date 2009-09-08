@@ -155,7 +155,6 @@
         ['OS=="win"', {
           'dependencies': [
             'tools/test_shell/test_shell.gyp:*',
-            'activex_shim_dll/activex_shim_dll.gyp:*',
           ],
         }],
       ],
@@ -928,7 +927,6 @@
           ],
           'defines': [
             '__PRETTY_FUNCTION__=__FUNCTION__',
-            'DISABLE_ACTIVEX_TYPE_CONVERSION_MPLAYER2',
           ],
           # This is needed because Event.h in this directory is blocked
           # by a system header on windows.
@@ -1532,7 +1530,6 @@
           ],
           'dependencies': [
             '../build/win/system.gyp:cygwin',
-            'activex_shim/activex_shim.gyp:activex_shim',
             'default_plugin/default_plugin.gyp:default_plugin',
           ],
           'sources!': [

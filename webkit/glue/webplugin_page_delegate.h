@@ -20,12 +20,9 @@ class WebPluginPageDelegate {
   // This method is called to create a WebPluginDelegate implementation when a
   // new plugin is instanced.  See webkit_glue::CreateWebPluginDelegateHelper
   // for a default WebPluginDelegate implementation.
-  // TODO(port): clsid is very Win- and ActiveX-specific; refactor to be more
-  // platform-neutral
   virtual WebPluginDelegate* CreatePluginDelegate(
       const GURL& url,
       const std::string& mime_type,
-      const std::string& clsid,
       std::string* actual_mime_type) = 0;
 
   // Called when a windowed plugin is created.

@@ -91,8 +91,6 @@ extern const wchar_t kPrint[];
 extern const wchar_t kDnsLogDetails[];
 extern const wchar_t kDnsPrefetchDisable[];
 
-extern const wchar_t kAllowAllActiveX[];
-
 extern const wchar_t kDisableDevTools[];
 extern const wchar_t kAlwaysEnableDevTools[];
 extern const wchar_t kEnableExtensionTimelineApi[];

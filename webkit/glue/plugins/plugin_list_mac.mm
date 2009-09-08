@@ -99,8 +99,4 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   return true;
 }
 
-void PluginList::LoadInternalPlugins(std::vector<WebPluginInfo>* plugins) {
-  // none for now
-}
-
 } // namespace NPAPI

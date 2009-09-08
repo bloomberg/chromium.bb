@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "webkit/activex_shim/npp_impl.h"
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -46,7 +45,6 @@ NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs) {
 
 NPError API_CALL NP_Initialize(NPNetscapeFuncs* funcs) {
   g_browser = funcs;
-  activex_shim::g_browser = funcs;
   return 0;
 }
 

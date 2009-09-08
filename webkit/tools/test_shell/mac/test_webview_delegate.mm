@@ -175,7 +175,6 @@ void TestWebViewDelegate::runModal() {
 webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
     const GURL& url,
     const std::string& mime_type,
-    const std::string& clsid,
     std::string* actual_mime_type) {
   WebWidgetHost *host = GetWidgetHost();
   if (!host)
@@ -184,10 +183,10 @@ webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
 
   bool allow_wildcard = true;
   WebPluginInfo info;
-  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, clsid,
-                                                     allow_wildcard, &info,
-                                                     actual_mime_type))
+  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(
+          url, mime_type,  allow_wildcard, &info, actual_mime_type)) {
     return NULL;
+  }
 
   if (actual_mime_type && !actual_mime_type->empty())
     return WebPluginDelegateImpl::Create(info.path, *actual_mime_type, view);

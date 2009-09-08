@@ -711,7 +711,7 @@ CPError STDCALL CPB_SendMessage(CPID id, const void *data, uint32 data_len) {
   if (!service)
     return CPERR_FAILURE;
   PluginProcessHost *host =
-  service->FindOrStartPluginProcess(plugin->filename(), std::string());
+  service->FindOrStartPluginProcess(plugin->filename());
   if (!host)
     return CPERR_FAILURE;
 

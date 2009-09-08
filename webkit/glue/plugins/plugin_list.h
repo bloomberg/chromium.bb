@@ -118,7 +118,6 @@ class PluginList {
   // plugins which support wildcard mime types (* as the mime type).
   bool GetPluginInfo(const GURL& url,
                      const std::string& mime_type,
-                     const std::string& clsid,
                      bool allow_wildcard,
                      WebPluginInfo* info,
                      std::string* actual_mime_type);
@@ -149,22 +148,16 @@ class PluginList {
   bool ShouldLoadPlugin(const WebPluginInfo& info,
                         std::vector<WebPluginInfo>* plugins);
 
-  // Load internal plugins.
-  void LoadInternalPlugins(std::vector<WebPluginInfo>* plugins);
-
-  // Find a plugin by mime type, and clsid.
-  // If clsid is empty, we will just find the plugin that supports mime type.
-  // Otherwise, if mime_type is application/x-oleobject etc that's supported by
-  // by our activex shim, we need to check if the specified ActiveX exists.
-  // If not we will not return the activex shim, instead we will let the
-  // default plugin handle activex installation.
+  // Find a plugin by mime type.
   // The allow_wildcard parameter controls whether this function returns
   // plugins which support wildcard mime types (* as the mime type)
-  bool FindPlugin(const std::string &mime_type, const std::string& clsid,
-                  bool allow_wildcard, WebPluginInfo* info);
+  bool FindPlugin(const std::string &mime_type,
+                  bool allow_wildcard,
+                  WebPluginInfo* info);
 
   // Find a plugin by extension. Returns the corresponding mime type.
-  bool FindPlugin(const GURL &url, std::string* actual_mime_type,
+  bool FindPlugin(const GURL &url,
+                  std::string* actual_mime_type,
                   WebPluginInfo* info);
 
   // Returns true if the given WebPluginInfo supports "mime-type".
@@ -199,9 +192,6 @@ class PluginList {
 #if defined(OS_WIN)
   // true if we shouldn't load the new WMP plugin.
   bool dont_load_new_wmp_;
-
-  // true if we should use our internal ActiveX shim
-  bool use_internal_activex_shim_;
 #endif
 
   //

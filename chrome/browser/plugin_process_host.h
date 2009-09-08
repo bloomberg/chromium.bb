@@ -40,12 +40,8 @@ class PluginProcessHost : public ChildProcessHost,
   ~PluginProcessHost();
 
   // Initialize the new plugin process, returning true on success. This must
-  // be called before the object can be used. If plugin_path is the
-  // ActiveX-shim, then activex_clsid is the class id of ActiveX control,
-  // otherwise activex_clsid is ignored.
-  bool Init(const WebPluginInfo& info,
-            const std::string& activex_clsid,
-            const std::wstring& locale);
+  // be called before the object can be used.
+  bool Init(const WebPluginInfo& info, const std::wstring& locale);
 
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);

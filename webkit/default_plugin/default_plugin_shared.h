@@ -21,6 +21,6 @@ enum MissingPluginStatus {
   MISSING_PLUGIN_USER_STARTED_DOWNLOAD
 };
 
-}  // namespace activex_shim
+}  // namespace default_plugin
 
 #endif // #ifndef WEBKIT_DEFAULT_PLUGIN_DEFAULT_PLUGIN_SHARED_H

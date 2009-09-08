@@ -327,7 +327,6 @@ bool BrowserRenderProcessHost::Init() {
     switches::kDisableLogging,
     switches::kLoggingLevel,
     switches::kDebugPrint,
-    switches::kAllowAllActiveX,
     switches::kMemoryProfiling,
     switches::kEnableWatchdog,
     switches::kMessageLoopHistogrammer,

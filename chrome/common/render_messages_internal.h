@@ -924,11 +924,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Returns a path to a plugin for the given url and mime type.  If there's
   // no plugin, an empty string is returned.
-  IPC_SYNC_MESSAGE_CONTROL4_2(ViewHostMsg_GetPluginPath,
+  IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_GetPluginPath,
                               GURL /* url */,
                               GURL /* policy_url */,
                               std::string /* mime_type */,
-                              std::string /* clsid */,
                               FilePath /* filename */,
                               std::string /* actual mime type for url */)
 
@@ -1020,10 +1019,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // create a plugin.  The browser will create the plugin process if
   // necessary, and will return a handle to the channel on success.
   // On error an empty string is returned.
-  IPC_SYNC_MESSAGE_CONTROL4_2(ViewHostMsg_OpenChannelToPlugin,
+  IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_OpenChannelToPlugin,
                               GURL /* url */,
                               std::string /* mime_type */,
-                              std::string /* clsid */,
                               std::wstring /* locale */,
                               IPC::ChannelHandle /* handle to channel */,
                               WebPluginInfo /* info */)

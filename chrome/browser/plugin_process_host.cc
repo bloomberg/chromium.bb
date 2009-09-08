@@ -329,7 +329,6 @@ PluginProcessHost::~PluginProcessHost() {
 }
 
 bool PluginProcessHost::Init(const WebPluginInfo& info,
-                             const std::string& activex_clsid,
                              const std::wstring& locale) {
   info_ = info;
   set_name(info_.name);
@@ -363,7 +362,6 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
     switches::kLoggingLevel,
     switches::kLogPluginMessages,
     switches::kUserDataDir,
-    switches::kAllowAllActiveX,
     switches::kEnableDCHECK,
     switches::kSilentDumpOnDCHECK,
     switches::kMemoryProfiling,

@@ -65,8 +65,7 @@ class PluginService
   // has been started by this service. This will start a process to host the
   // 'plugin_path' if needed. If the process fails to start, the return value
   // is NULL. Must be called on the IO thread.
-  PluginProcessHost* FindOrStartPluginProcess(const FilePath& plugin_path,
-                                              const std::string& clsid);
+  PluginProcessHost* FindOrStartPluginProcess(const FilePath& plugin_path);
 
   // Opens a channel to a plugin process for the given mime type, starting
   // a new plugin process if necessary.  This must be called on the IO thread
@@ -74,7 +73,6 @@ class PluginService
   void OpenChannelToPlugin(ResourceMessageFilter* renderer_msg_filter,
                            const GURL& url,
                            const std::string& mime_type,
-                           const std::string& clsid,
                            const std::wstring& locale,
                            IPC::Message* reply_msg);
 
@@ -84,7 +82,6 @@ class PluginService
   FilePath GetPluginPath(const GURL& url,
                          const GURL& policy_url,
                          const std::string& mime_type,
-                         const std::string& clsid,
                          std::string* actual_mime_type);
 
   // The UI thread's message loop

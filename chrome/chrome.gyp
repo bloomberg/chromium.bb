@@ -5393,8 +5393,6 @@
             '../rlz/rlz.gyp:*',
             '../sandbox/sandbox.gyp:*',
             '../tools/memory_watcher/memory_watcher.gyp:*',
-            '../webkit/activex_shim/activex_shim.gyp:*',
-            '../webkit/activex_shim_dll/activex_shim_dll.gyp:*',
             '../v8/tools/gyp/v8.gyp:v8_shell',
           ],
         },
@@ -5451,33 +5449,6 @@
               ],
               'message': 'Generating version information in <(_outputs)'
             },
-          ],
-        },
-        {
-          'target_name': 'activex_test_control',
-          'type': 'shared_library',
-          'msvs_guid': '414D4D24-5D65-498B-A33F-3A29AD3CDEDC',
-          'include_dirs': [
-            '..',
-            '<(INTERMEDIATE_DIR)',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lcomsuppw.lib',
-            ],
-          },
-          'sources': [
-            'test/activex_test_control/activex_test_control.cc',
-            'test/activex_test_control/activex_test_control.def',
-            'test/activex_test_control/activex_test_control.idl',
-            'test/activex_test_control/activex_test_control.rc',
-            'test/activex_test_control/activex_test_control.rgs',
-            'test/activex_test_control/chrome_test_control.bmp',
-            'test/activex_test_control/chrome_test_control.cc',
-            'test/activex_test_control/chrome_test_control.h',
-            'test/activex_test_control/chrome_test_control.rgs',
-            'test/activex_test_control/chrome_test_control_cp.h',
-            'test/activex_test_control/resource.h',
           ],
         },
         {

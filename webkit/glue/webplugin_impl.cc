@@ -8,9 +8,6 @@
 #include "base/string_util.h"
 #include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
-#if defined(OS_WIN)
-#include "webkit/activex_shim/activex_shared.h"
-#endif
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebCString.h"
 #include "webkit/api/public/WebCursorInfo.h"
@@ -205,38 +202,9 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!page_delegate_)
     return false;
 
-  // Get the classid and version from attributes of the object.
-  std::string combined_clsid;
-#if defined(OS_WIN)
-  std::string clsid, version;
-  if (activex_shim::IsMimeTypeActiveX(mime_type_)) {
-    for (size_t i = 0; i < arg_names_.size(); i++) {
-      const char* param_name = arg_names_[i].c_str();
-      const char* param_value = arg_values_[i].c_str();
-      if (base::strcasecmp(param_name, "classid") == 0) {
-        activex_shim::GetClsidFromClassidAttribute(param_value, &clsid);
-      } else if (base::strcasecmp(param_name, "codebase") == 0) {
-        version = activex_shim::GetVersionFromCodebaseAttribute(param_value);
-      }
-    }
-
-    // Attempt to map this clsid to a known NPAPI mime type if possible, failing
-    // which we attempt to load the activex shim for the clsid.
-    if (!activex_shim::GetMimeTypeForClsid(clsid, &mime_type_)) {
-      // We need to pass the combined clsid + version to PluginsList, so that it
-      // would detect if the requested version is installed. If not, it needs
-      // to use the default plugin to update the control.
-      if (!version.empty())
-        combined_clsid = clsid + "#" + version;
-      else
-        combined_clsid = clsid;
-    }
-  }
-#endif
-
   std::string actual_mime_type;
   WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
-      plugin_url_, mime_type_, combined_clsid, &actual_mime_type);
+      plugin_url_, mime_type_, &actual_mime_type);
   if (!plugin_delegate)
     return NULL;
 
@@ -1024,7 +992,7 @@ bool WebPluginImpl::ReinitializePluginForResponse(
 
   std::string actual_mime_type;
   WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
-      plugin_url_, mime_type_, std::string(), &actual_mime_type);
+      plugin_url_, mime_type_, &actual_mime_type);
 
   bool ok = plugin_delegate->Initialize(
       plugin_url_, arg_names_, arg_values_, this, load_manually_);

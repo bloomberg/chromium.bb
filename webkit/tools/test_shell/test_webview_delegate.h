@@ -262,7 +262,6 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
       const GURL& url,
       const std::string& mime_type,
-      const std::string& clsid,
       std::string* actual_mime_type);
   virtual void CreatedPluginWindow(
       gfx::PluginWindowHandle handle);

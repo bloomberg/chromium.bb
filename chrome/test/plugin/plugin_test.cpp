@@ -80,13 +80,10 @@ class PluginTest : public UITest {
                       KEY_WRITE)) {
         regkey.CreateKey(L"CHROME.EXE", KEY_READ);
       }
-      launch_arguments_.AppendSwitch(kNoNativeActiveXShimSwitch);
-
     } else if (strcmp(test_info->name(), "MediaPlayerOld") == 0) {
       // When testing the old WMP plugin, we need to force Chrome to not load
       // the new plugin.
       launch_arguments_.AppendSwitch(kUseOldWMPPluginSwitch);
-      launch_arguments_.AppendSwitch(kNoNativeActiveXShimSwitch);
     } else if (strcmp(test_info->name(), "FlashSecurity") == 0) {
       launch_arguments_.AppendSwitchWithValue(switches::kTestSandbox,
                                               L"security_tests.dll");
@@ -182,132 +179,4 @@ TEST_F(PluginTest, DISABLED_Java) {
 
 TEST_F(PluginTest, Silverlight) {
   TestPlugin(L"silverlight.html", kShortWaitTimeout, false);
-}
-
-typedef HRESULT (__stdcall* DllRegUnregServerFunc)();
-
-class ActiveXTest : public PluginTest {
- public:
-  ActiveXTest() {
-    dll_registered = false;
-  }
- protected:
-  void TestActiveX(const std::wstring& test_case, int timeout, bool reg_dll) {
-    if (reg_dll) {
-      RegisterTestControl(true);
-      dll_registered = true;
-    }
-    TestPlugin(test_case, timeout, false);
-  }
-  virtual void TearDown() {
-    PluginTest::TearDown();
-    if (dll_registered)
-      RegisterTestControl(false);
-  }
-  void RegisterTestControl(bool register_server) {
-    std::wstring test_control_path = browser_directory_.ToWStringHack() +
-        L"\\activex_test_control.dll";
-    HMODULE h = LoadLibrary(test_control_path.c_str());
-    ASSERT_TRUE(h != NULL) << "Failed to load activex_test_control.dll";
-    const char* func_name = register_server ?
-                                "DllRegisterServer" : "DllUnregisterServer";
-    DllRegUnregServerFunc func = reinterpret_cast<DllRegUnregServerFunc>(
-        GetProcAddress(h, func_name));
-    // This should never happen actually.
-    ASSERT_TRUE(func != NULL) << "Failed to find reg/unreg function.";
-    HRESULT hr = func();
-    const char* error_message = register_server ? "Failed to register dll."
-                                                : "Failed to unregister dll";
-    ASSERT_TRUE(SUCCEEDED(hr)) << error_message;
-    FreeLibrary(h);
-  }
- private:
-  bool dll_registered;
-};
-
-TEST_F(ActiveXTest, EmbeddedWMP) {
-  TestActiveX(L"activex_embedded_wmp.html", kLongWaitTimeout, false);
-}
-
-TEST_F(ActiveXTest, WMP) {
-  TestActiveX(L"activex_wmp.html", kLongWaitTimeout, false);
-}
-
-TEST_F(ActiveXTest, WMPNoEmbedMimeType) {
-  TestActiveX(L"activex_wmp_no_embed_mime_type.html", kLongWaitTimeout, false);
-}
-
-TEST_F(ActiveXTest, DISABLED_CustomScripting) {
-  TestActiveX(L"activex_custom_scripting.html", kShortWaitTimeout, true);
-}
-
-TEST_F(ActiveXTest, DISABLED_EmbeddedMP3) {
-  TestActiveX(L"mp3_test.html", kLongWaitTimeout, false);
-}
-
-TEST_F(ActiveXTest, DISABLED_EmbeddedMPE) {
-  TestActiveX(L"mpe_test.html", kLongWaitTimeout, false);
-}
-
-TEST_F(PluginTest, DISABLED_DefaultPluginParsingTest) {
-  PluginInstallerImpl plugin_installer(NP_EMBED);
-  NPP_t plugin_instance = {0};
-
-  char *arg_names[] = {
-    "classid",
-    "codebase"
-  };
-
-  char *arg_values[] = {
-    "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000",
-    "http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab",
-  };
-
-  bool is_activex = false;
-  std::string raw_activex_clsid;
-  std::string activex_clsid;
-  std::string activex_codebase;
-  std::string plugin_download_url;
-  std::string plugin_finder_url;
-
-  ASSERT_TRUE(PluginInstallerImpl::ParseInstantiationArguments(
-      "application/x-shockwave-flash",
-      &plugin_instance,
-      arraysize(arg_names),
-      arg_names,
-      arg_values,
-      &raw_activex_clsid,
-      &is_activex,
-      &activex_clsid,
-      &activex_codebase,
-      &plugin_download_url,
-      &plugin_finder_url));
-
-  EXPECT_EQ(is_activex, false);
-
-
-  ASSERT_TRUE(PluginInstallerImpl::ParseInstantiationArguments(
-      "",
-      &plugin_instance,
-      arraysize(arg_names),
-      arg_names,
-      arg_values,
-      &raw_activex_clsid,
-      &is_activex,
-      &activex_clsid,
-      &activex_codebase,
-      &plugin_download_url,
-      &plugin_finder_url));
-
-  EXPECT_EQ(is_activex, true);
-  EXPECT_EQ(
-      activex_codebase,
-      "http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab");
-
-  EXPECT_EQ(activex_clsid, "{D27CDB6E-AE6D-11cf-96B8-444553540000}");
-  EXPECT_EQ(raw_activex_clsid, "D27CDB6E-AE6D-11cf-96B8-444553540000");
-
-  EXPECT_EQ(
-      activex_codebase,
-      "http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab");
 }

@@ -43,7 +43,6 @@ class WebPluginDelegateProxy :
     public base::SupportsWeakPtr<WebPluginDelegateProxy> {
  public:
   WebPluginDelegateProxy(const std::string& mime_type,
-                         const std::string& clsid,
                          const base::WeakPtr<RenderView>& render_view);
 
   // Called to drop our pointer to the window script object.
@@ -166,7 +165,6 @@ class WebPluginDelegateProxy :
   gfx::PluginWindowHandle window_;
   scoped_refptr<PluginChannelHost> channel_host_;
   std::string mime_type_;
-  std::string clsid_;
   int instance_id_;
   WebPluginInfo info_;
 

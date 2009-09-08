@@ -2112,7 +2112,6 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
 webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     const GURL& url,
     const std::string& mime_type,
-    const std::string& clsid,
     std::string* actual_mime_type) {
   if (!PluginChannelHost::IsListening())
     return NULL;
@@ -2123,9 +2122,8 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     policy_url = main_frame->url();
 
   FilePath path;
-  render_thread_->Send(
-      new ViewHostMsg_GetPluginPath(url, policy_url, mime_type, clsid, &path,
-                                    actual_mime_type));
+  render_thread_->Send(new ViewHostMsg_GetPluginPath(
+      url, policy_url, mime_type, &path, actual_mime_type));
   if (path.value().empty())
     return NULL;
 
@@ -2145,7 +2143,7 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
 #endif
   }
 
-  return new WebPluginDelegateProxy(*mime_type_to_use, clsid, AsWeakPtr());
+  return new WebPluginDelegateProxy(*mime_type_to_use, AsWeakPtr());
 }
 
 void RenderView::CreatedPluginWindow(gfx::PluginWindowHandle window) {

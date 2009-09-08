@@ -552,20 +552,18 @@ void ResourceMessageFilter::OnPluginsLoaded(IPC::Message* reply_msg) {
 void ResourceMessageFilter::OnGetPluginPath(const GURL& url,
                                             const GURL& policy_url,
                                             const std::string& mime_type,
-                                            const std::string& clsid,
                                             FilePath* filename,
                                             std::string* url_mime_type) {
   *filename = plugin_service_->GetPluginPath(
-      url, policy_url, mime_type, clsid, url_mime_type);
+      url, policy_url, mime_type, url_mime_type);
 }
 
 void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
                                                   const std::string& mime_type,
-                                                  const std::string& clsid,
                                                   const std::wstring& locale,
                                                   IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPlugin(
-      this, url, mime_type, clsid, locale, reply_msg);
+      this, url, mime_type, locale, reply_msg);
 }
 
 void ResourceMessageFilter::OnCreateDedicatedWorker(const GURL& url,

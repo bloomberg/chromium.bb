@@ -102,7 +102,7 @@ const wchar_t kDisableAltWinstation[]         = L"disable-winsta";
 const wchar_t kSafePlugins[]                   = L"safe-plugins";
 
 // Excludes these plugins from the plugin sandbox.
-// This is a comma-separated list of plugin library names and activex clsid.
+// This is a comma-separated list of plugin library names.
 const wchar_t kTrustedPlugins[]                = L"trusted-plugins";
 
 // Runs the security test for the sandbox.
@@ -265,12 +265,6 @@ const wchar_t kDebugPrint[]                    = L"debug-print";
 
 // Prints the pages on the screen.
 const wchar_t kPrint[] = L"print";
-
-// Allow initialization of all activex controls. This is only to help website
-// developers test their controls to see if they are compatible in Chrome.
-// Note there's a duplicate value in activex_shared.cc (to avoid
-// dependency on chrome module). Please change both locations at the same time.
-const wchar_t kAllowAllActiveX[]               = L"allow-all-activex";
 
 // Browser flag to disable the web inspector for all renderers.
 const wchar_t kDisableDevTools[]               = L"disable-dev-tools";

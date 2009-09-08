@@ -145,12 +145,10 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetPluginPath(const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,
-                       const std::string& clsid,
                        FilePath* filename,
                        std::string* actual_mime_type);
   void OnOpenChannelToPlugin(const GURL& url,
                              const std::string& mime_type,
-                             const std::string& clsid,
                              const std::wstring& locale,
                              IPC::Message* reply_msg);
   void OnCreateDedicatedWorker(const GURL& url,

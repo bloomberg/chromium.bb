@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "base/registry.h"
 #include "base/string_util.h"
-#include "webkit/activex_shim/npp_impl.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/webkit_glue.h"
@@ -196,31 +195,6 @@ namespace NPAPI
 void PluginList::PlatformInit() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   dont_load_new_wmp_ = command_line.HasSwitch(kUseOldWMPPluginSwitch);
-  use_internal_activex_shim_ =
-      !command_line.HasSwitch(kNoNativeActiveXShimSwitch);
-
-  const PluginVersionInfo builtin_plugins[] = {
-  {
-    FilePath(kActiveXShimFileNameForMediaPlayer),
-    kActiveXShimFileNameForMediaPlayer,
-    L"Windows Media Player",
-    L"1, 0, 0, 1",
-    L"application/x-ms-wmp|application/asx|video/x-ms-asf-plugin|"
-        L"application/x-mplayer2|video/x-ms-asf|video/x-ms-wm|audio/x-ms-wma|"
-        L"audio/x-ms-wax|video/x-ms-wmv|video/x-ms-wvx|audio/mpeg|video/mpeg",
-    L"*|*|*|*|asf,asx,*|wm,*|wma,*|wax,*|wmv,*|wvx,*|mp2,mp3,mpa,mpeg,mpg|"
-        L"mpeg,mpg,m1v,mpe",
-    L"",
-    {
-      activex_shim::ActiveX_Shim_NP_GetEntryPoints,
-      activex_shim::ActiveX_Shim_NP_Initialize,
-      activex_shim::ActiveX_Shim_NP_Shutdown
-    }
-  },
-  };
-
-  for (int i = 0; i < arraysize(builtin_plugins); ++i)
-    internal_plugins_.push_back(builtin_plugins[i]);
 }
 
 void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
@@ -326,38 +300,25 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
 
   // Special WMP handling
 
-  // We will use the ActiveX shim to handle embedded WMP media.
-  if (use_internal_activex_shim_) {
-    if (filename == kNewWMPPlugin || filename == kOldWMPPlugin)
+  // If both the new and old WMP plugins exist, only load the new one.
+  if (filename == kNewWMPPlugin) {
+    if (dont_load_new_wmp_)
       return false;
-  } else {
-    // If both the new and old WMP plugins exist, only load the new one.
-    if (filename == kNewWMPPlugin) {
-      if (dont_load_new_wmp_)
-        return false;
 
-      for (size_t i = 0; i < plugins->size(); ++i) {
-        if ((*plugins)[i].path.BaseName().value() == kOldWMPPlugin) {
-          plugins->erase(plugins->begin() + i);
-          break;
-        }
+    for (size_t i = 0; i < plugins->size(); ++i) {
+      if ((*plugins)[i].path.BaseName().value() == kOldWMPPlugin) {
+        plugins->erase(plugins->begin() + i);
+        break;
       }
-    } else if (filename == kOldWMPPlugin) {
-      for (size_t i = 0; i < plugins->size(); ++i) {
-        if ((*plugins)[i].path.BaseName().value() == kNewWMPPlugin)
-          return false;
-      }
+    }
+  } else if (filename == kOldWMPPlugin) {
+    for (size_t i = 0; i < plugins->size(); ++i) {
+      if ((*plugins)[i].path.BaseName().value() == kNewWMPPlugin)
+        return false;
     }
   }
 
   return true;
-}
-
-void PluginList::LoadInternalPlugins(std::vector<WebPluginInfo>* plugins) {
-  if (!use_internal_activex_shim_)
-    return;
-  LoadPlugin(FilePath(kActiveXShimFileName), plugins);
-  LoadPlugin(FilePath(kActiveXShimFileNameForMediaPlayer), plugins);
 }
 
 } // namespace NPAPI

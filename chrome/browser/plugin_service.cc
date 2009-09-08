@@ -116,8 +116,7 @@ PluginProcessHost* PluginService::FindPluginProcess(
 }
 
 PluginProcessHost* PluginService::FindOrStartPluginProcess(
-    const FilePath& plugin_path,
-    const std::string& clsid) {
+    const FilePath& plugin_path) {
   DCHECK(MessageLoop::current() ==
          ChromeThread::GetMessageLoop(ChromeThread::IO));
 
@@ -134,7 +133,7 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
 
   // This plugin isn't loaded by any plugin process, so create a new process.
   plugin_host = new PluginProcessHost();
-  if (!plugin_host->Init(info, clsid, ui_locale_)) {
+  if (!plugin_host->Init(info, ui_locale_)) {
     DCHECK(false);  // Init is not expected to fail
     delete plugin_host;
     return NULL;
@@ -144,36 +143,34 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
 }
 
 void PluginService::OpenChannelToPlugin(
-    ResourceMessageFilter* renderer_msg_filter, const GURL& url,
-    const std::string& mime_type, const std::string& clsid,
-    const std::wstring& locale, IPC::Message* reply_msg) {
+    ResourceMessageFilter* renderer_msg_filter,
+    const GURL& url,
+    const std::string& mime_type,
+    const std::wstring& locale,
+    IPC::Message* reply_msg) {
   DCHECK(MessageLoop::current() ==
          ChromeThread::GetMessageLoop(ChromeThread::IO));
   // We don't need a policy URL here because that was already checked by a
   // previous call to GetPluginPath.
   GURL policy_url;
-  FilePath plugin_path = GetPluginPath(url, policy_url, mime_type, clsid, NULL);
-  PluginProcessHost* plugin_host = FindOrStartPluginProcess(plugin_path, clsid);
+  FilePath plugin_path = GetPluginPath(url, policy_url, mime_type, NULL);
+  PluginProcessHost* plugin_host = FindOrStartPluginProcess(plugin_path);
   if (plugin_host) {
     plugin_host->OpenChannelToPlugin(renderer_msg_filter, mime_type, reply_msg);
   } else {
-    PluginProcessHost::ReplyToRenderer(renderer_msg_filter,
-                                       IPC::ChannelHandle(),
-                                       WebPluginInfo(),
-                                       reply_msg);
+    PluginProcessHost::ReplyToRenderer(
+        renderer_msg_filter, IPC::ChannelHandle(), WebPluginInfo(), reply_msg);
   }
 }
 
 FilePath PluginService::GetPluginPath(const GURL& url,
                                       const GURL& policy_url,
                                       const std::string& mime_type,
-                                      const std::string& clsid,
                                       std::string* actual_mime_type) {
   bool allow_wildcard = true;
   WebPluginInfo info;
-  if (NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, clsid,
-                                                    allow_wildcard, &info,
-                                                    actual_mime_type) &&
+  if (NPAPI::PluginList::Singleton()->GetPluginInfo(
+          url, mime_type, allow_wildcard, &info, actual_mime_type) &&
       PluginAllowedForURL(info.path, policy_url)) {
     return info.path;
   }
