@@ -10,7 +10,7 @@ details on the presubmit API built into gcl.
 """
 
 UNIT_TESTS = [
-  'tests.simplejson_unittest',
+  'tests.perf_expectations_unittest',
 ]
 
 PERF_EXPECTATIONS = 'perf_expectations.json'
