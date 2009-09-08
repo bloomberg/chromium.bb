@@ -1482,31 +1482,8 @@ BUG700464 LINUX : LayoutTests/fast/css/hsla-color.html = FAIL
 // layoutTestController.testRepaint(). The only reason they are not marked as
 // failures for Mac is because Mac doesn't yet run pixel tests where the
 // regression becomes visible.
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/4774354.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/4776765.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/background-generated.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/background-misaligned.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/backgroundSizeRepaint.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/body-background-image.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/border-fit-lines.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/border-radius-repaint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/border-repaint-glitch.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/box-shadow-dynamic.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/box-shadow-h.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/box-shadow-v.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-3509.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-5699.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-6278.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-6388.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/bugzilla-7235.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/button-spurious-layout-hint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/caret-outside-block.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/change-transform.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/clip-with-layout-delta.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/clipped-relative.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/containing-block-position-change.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/content-into-overflow.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/continuation-after-outline.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/control-clip.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/create-layer-repaint.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/delete-into-nested-block.html = FAIL
