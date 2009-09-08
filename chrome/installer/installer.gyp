@@ -191,7 +191,6 @@
                 '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.h',
               ],
-              'msvs_quote_cmd': 0,
               'action': [
                 # The create_string_rc.py script requires the checked-in
                 # python.exe that has google modules installed, and
