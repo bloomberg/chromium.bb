@@ -14,7 +14,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Cross-Origin XMLHttpRequest</title></head><body>  <div id="container">
+  <title>AutoUpdate</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which 
@@ -86,7 +86,7 @@
         <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
       </div>
       <div id="pageTitle">
-        <h1>Cross-Origin XMLHttpRequest</h1>
+        <h1>AutoUpdate</h1>
       </div>
     </div> <!-- /pageHeader -->
           
@@ -109,9 +109,9 @@
               <li><a href="bookmarks.html">Bookmarks</a></li>
               <li><a href="themes.html">Themes</a></li>
               <li><a href="npapi.html">NPAPI Plugins</a></li>
-              <li class="leftNavSelected">Cross-Origin XHR</li>
+              <li><a href="xhr.html">Cross-Origin XHR</a></li>
               <li><a href="packaging.html">Packaging</a></li>
-              <li><a href="autoupdate.html">Autoupdate</a></li>
+              <li class="leftNavSelected">Autoupdate</li>
             </ul>
           </li>
           <li><a href="tutorials.html"><div>Tutorials</div></a>
@@ -138,18 +138,33 @@
     
       <div id="mainColumn">
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
+        <div id="toc">
           <p>Contents</p>
           <ol>
-            <li>
-              <a>h2Name</a>
+            <li jsinstance="0">
+              <a href="#H2-0">Introduction</a>
               <ol>
-                <li>
+                <li jsinstance="*0" style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
+            </li><li jsinstance="*1">
+              <a href="#H2-1">Overview</a>
+              <ol>
+                <li jsinstance="0">
+                  <a href="#H3-2">Update URL</a>
+                </li><li jsinstance="1">
+                  <a href="#H3-3">Update Manifest</a>
+                </li><li jsinstance="2">
+                  <a href="#H3-4">Testing</a>
+                </li><li jsinstance="3">
+                  <a href="#H3-5">Advanced Usage : Request Parameters</a>
+                </li><li jsinstance="*4">
+                  <a href="#H3-6">Advanced Usage : Minimum Browser Version</a>
+                </li>
+              </ol>
             </li>
-            <div>
+            <div style="display: none; ">
               <li>
                 <a href="#apiReference">API reference</a>
                 <ol>
@@ -193,85 +208,108 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-title" class="pageData">Cross-Origin XMLHttpRequest</div>
+        <div id="static"><div id="pageData-title" class="pageData">AutoUpdate</div>
+<div id="pageData-showTOC" class="pageData">true</div>
+<a name="H2-0"></a><h2>Introduction</h2>
+<p>We want extensions to be autoupdated for some of the same reasons as chrome itself: to incorporate bug and security fixes, add new features or performance enhancements, and improve user interfaces.</p>
 
-<!-- BEGIN AUTHORED CONTENT -->
-<p id="classSummary">
-Regular web pages can use the
-<a href="http://www.w3.org/TR/XMLHttpRequest/">XMLHttpRequest</a>
-object to send and receive data from remote servers,
-but they're limited by the
-<a href="http://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>.
-Extensions aren't so limited.
-An extension can talk to remote servers outside of its origin,
-as long as it first requests cross-origin permissions.</p>
+<p>For extensions packaged and distributed via the extensions gallery, developers will be able to use a web interface to release updated versions of their extensions and do not need to concern themselves with the rest of this document.</p>
 
-<h2 id="extension-origin">Extension origin</h2>
-<p>Each running extension exists within its own separate security origin. Without
-requesting additional privileges, the extension can use
-XMLHttpRequest to get resources within its installation. For example, if
-an extension contains a JSON configuration file called <code>config.json</code>,
-in a <code>config_resources</code> folder, the extension can retrieve the file's contents like
-this:</p>
+<p>Those who choose to host extensions themselves instead of using the gallery will probably want to use autoupdate for their extensions as described below. You might want to make sure you are familiar with <a href="packaging.html">Packaging</a> first.</p>
 
-<pre>var xhr = new XMLHttpRequest();
-xhr.onreadystatechange = handleStateChange; // Implemented elsewhere.
-xhr.open("GET", chrome.extension.getURL('/config_resources/config.json'), true);
-xhr.send();
+
+<a name="H2-1"></a><h2>Overview</h2>
+<ul><li>An extension manifest may contain an "update_url" for doing update checks.</li>
+<li>The content returned by an update check is an "update manifest" xml document listing the latest version of an extension (or set of extensions, more on that later).</li></ul>
+
+<p>Every few hours, the browser will check if any installed extensions have an autoupdate url. For each one, it will make a request to that url looking for an update manifest xml file. If the update manifest mentions a version of an extension that is more recent than what's installed, it will download and install the new version. Similar to manual updates, the new crx must be signed with the same private key as the currently installed version.</p>
+
+
+<a name="H3-2"></a><h3>Update URL</h3>
+<p>For those who are hosting their own extensions, you need to add the "update_url" key to your manifest.json file like this:</p>
+<pre>{
+  "name": "Test Extension",
+  "version": "1.0",
+  "description": "My test extension",
+  <b>"update_url": "http://myhost.com/mytestextension/updates.xml"</b>,
+  "toolstrips": ["mytoolstrip.html"]
+}
 </pre>
 
-<p>If the extension attempts to use a security origin other than itself,
-say http://www.google.com,
-the browser disallows it
-unless the extension has requested the appropriate cross-origin permissions.
-</p>
+<a name="H3-3"></a><h3>Update Manifest</h3>
+<p>The "update manifest" returned by the server&nbsp;should be an xml document that looks like this (parts you'll want to modify highlighted):</p>
 
-<h2 id="requesting-permission">Requesting cross-origin permissions</h2>
-
-<p>By adding hosts or host match patterns (or both) to the
-<a href="manifest.html#permissions">permissions</a><a> section of the 
-</a><a href="manifest.html">manifest</a> file, the extension can request access to 
-remote servers outside of its origin.</p>
-
-<pre>"permissions": [
-  "http://www.google.com/",
-],
+<pre>&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+&lt;gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'&gt;
+  &lt;app appid='<b>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</b>'&gt;
+   &nbsp;&lt;updatecheck&nbsp;codebase='<b>http://myhost.com/mytestextension/mte_v2.crx</b>'&nbsp;version='<b>2.0</b>' /&gt;
+  &lt;/app&gt;
+&lt;/gupdate&gt;
 </pre>
 
-<p>Cross-origin permission values can be fully qualified host names,
-like these:</p>
+<p>(This xml format is borrowed from that used by Omaha, Google's update infrastructure. See <a href="http://code.google.com/p/omaha/">http://code.google.com/p/omaha/</a> for more details.)</p>
 
-<ul>
-  <li> "http://www.google.com/" </li>
-  <li> "http://www.gmail.com/" </li>
-</ul>
+<p><b>appid</b><br>
+The 'appid' property is the extension id, generated based on a hash of the extension's public key as described in <a href="packaging.html">Packaging</a>. You can find out the id of your extension by going to chrome://extensions/ in a chrome browser where you have the extension installed.</p>
 
-<p>Or they can be match patterns, like these:</p>
+<p><b>codebase</b><br>
+The 'codebase' property is a url to the crx file.</p>
 
-<ul>
-  <li> "http://*.google.com/" </li>
-  <li> "http://*/" </li>
-</ul>
+<p><b>version</b><br>
+This is used by the client to determine whether it should download the crx file at 'codebase'. It should match the version parameter in the crx file's manifest.json file.</p>
+<p>The update manifest xml file may contain information about multiple extensions by including multiple <code>&lt;app&gt;</code> tags.</p>
 
-<p>
-A match pattern of "http://*/" allows HTTP access to all reachable domains.
-Note that here,
-match patterns are similar to <a href="match_patterns.html">content script
-match patterns</a>,
-but any path information following the host is ignored.</p>
 
-<p>Also note that access is granted both by host and by scheme. If an extension
-wants both secure and non-secure HTTP access to a given host or set
-of hosts, it must declare the permissions separately:</p>
+<a name="H3-4"></a><h3>Testing</h3>
+<p>The default update check frequency is several hours, which obviously makes testing challenging. To overcome this, you can use the --extensions-update-frequency command line flag to set a more frequent interval in seconds. For instance, to make checks run every 45 seconds, you would run chrome like this:</p>
+<pre>chrome.exe <b>--extensions-update-frequency=45</b></pre>
 
-<pre>"permissions": [
-  "http://www.google.com/",
-  "https://www.google.com/",
-],
+<p>Note that this affects checks for all installed extensions, so consider the bandwidth and server load implications of this. You may want to temporarily uninstall all but the one extension you are testing with, and should not run with this option turned on during normal browser usage. In the future we may remove this command flag and replace it with a different mechanism to trigger update checks for testing (perhaps a button on the chrome://extensions page). Star the following issue to receive updates: <a href="http://crbug.com/17853" rel="nofollow">http://crbug.com/17853</a>.</p>
+
+<p><b>Addendum:</b> the "Update now" button has been added, and will be present in dev channel builds soon (likely 4.0.207.x and above).</p>
+
+
+<a name="H3-5"></a><h3>Advanced Usage : Request Parameters</h3>
+<p>The basic autoupdate mechanism is designed to make the server-side work as easy as just dropping a static xml file onto any plain webserver such as apache, and updating that xml file as you release new versions of your extension(s).</p>
+<p>More advanced developers may wish to take advantage of the fact that we add on parameters to the request for the update manifest to indicate the extension id and version. Then they can use the same update_url for all of their extensions pointing to a url running dynamic server side code instead of a static xml file.</p>
+<p>The format of the request parameters is:</p>
+<p><code>&nbsp;&nbsp;?x=&lt;extension_data&gt;</code></p>
+<p>where <code>&lt;extension_data&gt;</code> is an url-encoded string of the format:</p>
+<p><code>&nbsp;&nbsp;id=&lt;id&gt;&amp;v=&lt;version&gt;</code></p>
+
+<p>So for example, say we have two extensions installed</p>
+<p>&nbsp;&nbsp;Extension 1 with id "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" and version "1.1"<br>
+&nbsp;&nbsp;Extension 2 with id "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" and version "0.4"</p>
+
+<p>and that both point at the same update_url: <code>http://test.com/extension_updates.php</code></p>
+
+<p>The two requests made would be:</p>
+<code>http://test.com/extension_updates.php?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%26v%3D1.1</code>
+<br>
+<code>http://test.com/extension_updates.php?x=id%3Dbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb%26v%3D0.4</code>
+
+<p><b>Note</b>: in releases before 3.0.196.x there was a bug in how request parameters were put together (<a href="http://crbug.com/17469" rel="nofollow">http://crbug.com/17469</a>).</p>
+
+<h4>Future work for Request Parameters</h4>
+<p>While not implemented yet, we will eventually list multiple extensions in a single request for each unique update_url. For the above example, the request would end up being:</p>
+<p><code>http://test.com/extension_updates.php?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%26v%3D1.1&amp;x=id%3Dbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb%26v%3D0.4</code></p>
+
+<p>If the number of installed extensions using the same update_url is large enough that a GET request url would be too long (probably greater than 1024 characters or so), the update check will instead issue a POST with the request parameters in the POST body.</p>
+
+
+<a name="H3-6"></a><h3>Advanced Usage : Minimum Browser Version</h3>
+<p>As we add more API's to the extensions system, it's possible you will want to release an updated version of an extension that will only work with newer versions of the chrome browser. While chrome itself is autoupdated, it can take a few days before the majority of the userbase has updated to any given new release. To ensure that a given extension update will only apply to chrome version at or higher than a specific version, you would add the prodversionmin parameter to the <code>&lt;app&gt;</code> tag in your update manifest. For example:</p>
+
+<pre>&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+&lt;gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'&gt;
+&nbsp;&nbsp;&lt;app appid='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'&gt;
+&nbsp;&nbsp; &nbsp;&lt;updatecheck&nbsp;codebase='http://myhost.com/mytestextension/mte_v2.crx'&nbsp;version='2.0' <b>prodversionmin='3.0.193.0'</b>/&gt;
+&nbsp;&nbsp;&lt;/app&gt;
+&lt;/gupdate&gt;
 </pre>
 
+<p>This would ensure that users of this extension would only autoupdate to version 2 if they are running chrome 3.0.193.0 or greater.</p>
 
-<!-- END AUTHORED CONTENT -->
 </div>
 
         <!-- API PAGE -->

@@ -111,7 +111,7 @@
               <li><a href="npapi.html">NPAPI Plugins</a></li>
               <li><a href="xhr.html">Cross-Origin XHR</a></li>
               <li><a href="packaging.html">Packaging</a></li>
-              <li>Autoupdate</li>
+              <li><a href="autoupdate.html">Autoupdate</a></li>
             </ul>
           </li>
           <li><a href="tutorials.html"><div>Tutorials</div></a>
@@ -2446,7 +2446,7 @@ Here's some code you could use to create that hierarchy:</p>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when the children of a folder have changed their order.</p>
+                <p>Fired when the children of a folder have changed their order due to the order being sorted in the UI.  This is not called as a result of a move().</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -2986,7 +2986,7 @@ Here's some code you could use to create that hierarchy:</p>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when a bookmark or folder is removed.</p>
+                <p>Fired when a bookmark or folder is removed.  When a folder is removed recursively, a single notification is fired for the folder, and none for its contents.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>

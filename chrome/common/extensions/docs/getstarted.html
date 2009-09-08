@@ -111,7 +111,7 @@
               <li><a href="npapi.html">NPAPI Plugins</a></li>
               <li><a href="xhr.html">Cross-Origin XHR</a></li>
               <li><a href="packaging.html">Packaging</a></li>
-              <li>Autoupdate</li>
+              <li><a href="autoupdate.html">Autoupdate</a></li>
             </ul>
           </li>
           <li><a href="tutorials.html"><div>Tutorials</div></a>
@@ -219,19 +219,28 @@
 
 <p>
 This tutorial walks you through creating a simple extension.
-To complete this tutorial, you must have Windows.
-(Linux and Mac don't yet support extensions.)
+You'll add a button to Google Chrome
+that, when clicked, displays an automatically generated page.
+The button and page will look something like this:
 </p>
+
+<img src="images/hello_world-page-small.gif" width="291" height="184" alt="a window with a grid of images related to HELLO WORLD">
 
 <h2 id="browser">Get your browser ready</h2>
 
 <p>To develop extensions for Google Chrome,
-you'll need to <a href="http://dev.chromium.org/getting-involved/dev-channel">subscribe
+you need to <a href="http://dev.chromium.org/getting-involved/dev-channel">subscribe
 to the dev channel</a> of Google Chrome for Windows.
+</p>
 
-</p><p><b>Note:</b> This tutorial requires Windows. You can try it on Linux and OS X, and it may work, but in general the extensions support is quite a bit less stable on those platforms. We're working hard to bring them up to speed.
+<p>
+<b>Note:</b> This tutorial requires Windows.
+You can try it on Linux and OS X, and it might work,
+but the extensions support is less stable on those platforms.
+We're working hard to bring them up to speed.
+</p>
 
-</p><h2 id="load">Create and load an extension</h2>
+<h2 id="load">Create and load an extension</h2>
 <p>
 In this section, you'll write a <em>toolstrip</em> —
 an extension
@@ -283,7 +292,7 @@ at the bottom of the Google Chrome window.
 
       <li>
       In the file dialog,
-      navigate to your extension's directory
+      navigate to your extension's folder
       (<code>c:\myext</code>, for example)
       and click the <b>OK</b> button.
       </li>
@@ -359,7 +368,7 @@ looking something like this:
 </ol>
 <p> It should look something like this:</p>
 
-<img src="images/hello_world-page.gif" alt="a window with a grid of images related to HELLO WORLD">
+<img src="images/hello_world-page.gif" width="583" height="368" alt="a window with a grid of images related to HELLO WORLD">
 
 <p> If you don't see that page,
 try the instructions again,
