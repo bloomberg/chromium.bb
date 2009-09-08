@@ -143,3 +143,6 @@ PREFIX : messageloop::dowork
 PREFIX : v8::internal::invoke
 PREFIX : webcore::renderlayer
 PREFIX : webcore::renderobject
+
+# 21295
+PREFIX : renderwidgethost::getbackingstore
