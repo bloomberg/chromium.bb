@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,25 +77,26 @@ class NSSInitSingleton {
   NSSInitSingleton() {
     base::EnsureNSPRInit();
 
-    SECStatus status;
+    SECStatus status = SECFailure;
     std::string database_dir = GetDefaultConfigDirectory();
     if (!database_dir.empty()) {
       // Initialize with a persistant database (~/.pki/nssdb).
       // Use "sql:" which can be shared by multiple processes safely.
       status = NSS_InitReadWrite(
           StringPrintf("sql:%s", database_dir.c_str()).c_str());
-    } else {
-      LOG(WARNING) << "Initialize NSS without using a persistent database "
-                   << "(~/.pki/nssdb).";
-      status = NSS_NoDB_Init(".");
+      if (status != SECSuccess) {
+        LOG(ERROR) << "Error initializing NSS with a persistent "
+                      "databases: NSS error code " << PR_GetError();
+      }
     }
     if (status != SECSuccess) {
-      char buffer[513] = "Couldn't retrieve error";
-      PRInt32 err_length = PR_GetErrorTextLength();
-      if (err_length > 0 && static_cast<size_t>(err_length) < sizeof(buffer))
-        PR_GetErrorText(buffer);
-
-      NOTREACHED() << "Error initializing NSS: " << buffer;
+      LOG(WARNING) << "Initialize NSS without a persistent database "
+                      "(~/.pki/nssdb).";
+      status = NSS_NoDB_Init(NULL);
+      if (status != SECSuccess) {
+        LOG(ERROR) << "Error initializing NSS without a persistent "
+                      "database: NSS error code " << PR_GetError();
+      }
     }
 
     // If we haven't initialized the password for the NSS databases,
