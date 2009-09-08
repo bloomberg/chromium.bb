@@ -49,7 +49,7 @@ BUG_OJAN SLOW : LayoutTests/http/tests/xmlhttprequest/simple-cross-origin-progre
 BUG_OJAN SLOW MAC LINUX : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS
 BUG_OJAN SLOW WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
 BUG_OJAN SLOW LINUX : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
-BUG18702 MAC : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
+BUG18702 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
 BUG_OJAN SLOW WIN MAC : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = PASS
 BUG_OJAN SLOW : LayoutTests/tables/mozilla/other/slashlogo.html = PASS
 
@@ -412,11 +412,14 @@ BUG10270 WIN : LayoutTests/fast/dom/frame-loading-via-document-write.html = TIME
 BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/cache-override.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods
 BUG18978 SKIP : LayoutTests/http/tests/xmlhttprequest/methods-lower-case.html = TIMEOUT CRASH
-BUG18978 : LayoutTests/http/tests/xmlhttprequest/methods-async.html = FAIL TIMEOUT
-BUG18978 WIN LINUX MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL TIMEOUT PASS
+BUG18978 : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT
+BUG18978 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
+BUG18978 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL TIMEOUT
 // LightTPD doesn't accept unknown HTTP methods and passes CGIs a Content-Type
 // even when a request didn't send the header.
-BUG18978 : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL TIMEOUT CRASH
+BUG18978 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL
+BUG18978 MAC RELEASE: LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL TIMEOUT
+BUG18978 MAC DEBUG: LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL
 // This passes when run in Chrome. It appears to be because of a difference
 // in how lighttpd serves up the svn resource image (or the image
 // contained in the svg image).
@@ -1865,12 +1868,13 @@ BUG10477 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = T
 // Merge WebKit: 42026:42115 new tests
 BUG10475 WIN LINUX : LayoutTests/fast/block/positioning/negative-rel-position.html = FAIL
 // This test isn't just slow -- sometimes it times out indefinitely.
-BUG10475 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
+BUG10475 WIN : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
+BUG10475 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
 BUG10475 WIN LINUX : LayoutTests/fast/forms/range-thumb-height-percentage.html = FAIL
 
 SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PASS
 
-BUG10476 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = FAIL PASS
+BUG10476 WIN RELEASE: LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = FAIL PASS
 
 // Merge WebKit 42133:42199 regressions
 BUG10477 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
@@ -1910,7 +1914,8 @@ BUG10479 MAC : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
-BUG9798 : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
+BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
+BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
@@ -1928,10 +1933,10 @@ BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PA
 BUG9798 WIN RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
 BUG9798 WIN RELEASE : LayoutTests/http/tests/uri/css-href.php = TIMEOUT PASS
 BUG9798 WIN RELEASE : LayoutTests/http/tests/uri/utf8-path.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
+BUG9798 WIN MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/failed-auth.html = TIMEOUT PASS
+BUG9798 WIN MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
+BUG9798 : LayoutTests/http/tests/xmlhttprequest/failed-auth.html = TIMEOUT PASS
 BUG9798 WIN RELEASE : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
@@ -2012,7 +2017,7 @@ BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrollbar.html = FAIL
 BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrolled-type.html = FAIL
 
 // New tests from WebKit Merge 42932:42994
-BUG21128 : LayoutTests/http/tests/xmlhttprequest/detaching-frame-2.html = FAIL TIMEOUT
+BUG21128 : LayoutTests/http/tests/xmlhttprequest/detaching-frame-2.html = FAIL
 
 // Chrome does not support WebArchives (just like Safari for Windows),
 // although we might eventually want to on Mac.
@@ -2124,7 +2129,7 @@ BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-ch
 BUG14207 WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
 
 // Newly added test http://trac.webkit.org/changeset/44816
-BUG14673 : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL CRASH TIMEOUT
+BUG14673 : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL TIMEOUT
 
 // Need investigation: test shell crashers.
 BUG14752 LINUX : LayoutTests/http/tests/cache/subresource-expiration.html = CRASH PASS
@@ -2342,7 +2347,7 @@ BUG18724 LINUX DEBUG : LayoutTests/transitions/transition-drt-api-delay.html = P
 
 // Flaky timeout
 BUG18659 WIN : LayoutTests/http/tests/loading/redirect-methods.html = PASS TIMEOUT
-BUG18733 WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
+BUG18733 WIN MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
 BUG18740 WIN : LayoutTests/http/tests/security/credentials-in-referer.html = PASS TIMEOUT
 
 // Test failures caused by re-enabling skia asserts.
