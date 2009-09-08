@@ -59,13 +59,14 @@ class EventSendingController : public CppBoundClass {
   void zoomPageOut(const CppArgumentList& args, CppVariant* result);
   void scheduleAsynchronousClick(const CppArgumentList& args,
                                  CppVariant* result);
+  void beginDragWithFiles(const CppArgumentList& args, CppVariant* result);
+  CppVariant dragMode;
 
   // Unimplemented stubs
   void contextClick(const CppArgumentList& args, CppVariant* result);
   void enableDOMUIEventLogging(const CppArgumentList& args, CppVariant* result);
   void fireKeyboardEventsToElement(const CppArgumentList& args, CppVariant* result);
   void clearKillRing(const CppArgumentList& args, CppVariant* result);
-  CppVariant dragMode;
 
   // Properties used in layout tests.
 #if defined(OS_WIN)

@@ -261,8 +261,8 @@ long long WebKitClientImpl::databaseGetFileSize(
 }
 
 bool WebKitClientImpl::fileExists(const WebKit::WebString& path) {
-  NOTREACHED();
-  return false;
+  FilePath::StringType file_path = webkit_glue::WebStringToFilePathString(path);
+  return file_util::PathExists(FilePath(file_path));
 }
 
 bool WebKitClientImpl::deleteFile(const WebKit::WebString& path) {

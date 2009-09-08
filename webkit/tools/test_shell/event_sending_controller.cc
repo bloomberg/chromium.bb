@@ -26,12 +26,17 @@
 #include <queue>
 
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "webkit/api/public/WebDragData.h"
+#include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebPoint.h"
+#include "webkit/api/public/WebString.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
@@ -52,6 +57,7 @@ using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebPoint;
+using WebKit::WebString;
 
 TestShell* EventSendingController::shell_ = NULL;
 gfx::Point EventSendingController::last_mouse_pos_;
@@ -171,6 +177,8 @@ EventSendingController::EventSendingController(TestShell* shell)
   BindMethod("zoomPageOut", &EventSendingController::zoomPageOut);
   BindMethod("scheduleAsynchronousClick",
              &EventSendingController::scheduleAsynchronousClick);
+  BindMethod("beginDragWithFiles",
+             &EventSendingController::beginDragWithFiles);
 
   // When set to true (the default value), we batch mouse move and mouse up
   // events so we can simulate drag & drop.
@@ -613,6 +621,34 @@ void EventSendingController::scheduleAsynchronousClick(
   MessageLoop::current()->PostTask(FROM_HERE,
       method_factory_.NewRunnableMethod(&EventSendingController::mouseUp,
                                         args, static_cast<CppVariant*>(NULL)));
+}
+
+void EventSendingController::beginDragWithFiles(
+    const CppArgumentList& args, CppVariant* result) {
+  current_drag_data.initialize();
+  std::vector<std::wstring> files = args[0].ToStringVector();
+  for (size_t i = 0; i < files.size(); ++i) {
+    FilePath file_path = FilePath::FromWStringHack(files[i]);
+    file_util::AbsolutePath(&file_path);
+    current_drag_data.appendToFileNames(
+        webkit_glue::FilePathStringToWebString(file_path.value()));
+  }
+  current_drag_effects_allowed = WebKit::WebDragOperationCopy;
+
+  // Provide a drag source.
+  WebPoint client_point(last_mouse_pos_.x(), last_mouse_pos_.y());
+  WebPoint screen_point(last_mouse_pos_.x(), last_mouse_pos_.y());
+  webview()->DragTargetDragEnter(current_drag_data, 0,
+                                 client_point, screen_point,
+                                 current_drag_effects_allowed);
+
+  // dragMode saves events and then replays them later. We don't need/want that.
+  dragMode.Set(false);
+
+  // Make the rest of eventSender think a drag is in progress.
+  pressed_button_ = WebMouseEvent::ButtonLeft;
+
+  result->SetNull();
 }
 
 //
