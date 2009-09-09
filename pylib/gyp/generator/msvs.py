@@ -87,7 +87,7 @@ def _FixPath(path):
   Returns:
     The path with all slashes made into backslashes.
   """
-  if fixpath_prefix and not os.path.isabs(path):
+  if fixpath_prefix and not os.path.isabs(path) and not path[0] == '$':
     path = os.path.join(fixpath_prefix, path)
   return path.replace('/', '\\')
 
@@ -855,6 +855,8 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     for config_name, c_data in spec['configurations'].iteritems():
       for src in cpy.get('files', []):
         dst = os.path.join(cpy['destination'], os.path.basename(src))
+        # _AddCustomBuildTool() will call _FixPath() on the inputs and
+        # outputs, so do the same for our generated command line.
         cmd = 'mkdir "%s" 2>nul & set ERRORLEVEL=0 & copy /Y "%s" "%s"' % (
             _FixPath(cpy['destination']), _FixPath(src), _FixPath(dst))
         _AddCustomBuildTool(p, config_name, c_data,

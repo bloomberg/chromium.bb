@@ -451,6 +451,10 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
            '    GYPCopy(\'$TARGET\', \'$SOURCE\'))\n')
     for f in copy['files']:
       dest = os.path.join(destdir, os.path.split(f)[1])
+      if not os.path.isabs(f) and not f[0] == '$':
+        f = '$SRC_DIR/%s/%s' % (subdir, f)
+      if not os.path.isabs(dest) and not dest[0] == '$':
+        dest = '$SRC_DIR/%s/%s' % (subdir, dest)
       fp.write(fmt % (repr(dest), repr(f)))
       fp.write('target_files.extend(_outputs)\n')
 
