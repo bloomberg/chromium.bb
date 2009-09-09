@@ -80,8 +80,9 @@ URLRequestJob* URLRequestNewFtpJob::Factory(URLRequest* request,
                                             const std::string& scheme) {
   DCHECK_EQ(scheme, "ftp");
 
+  int port = request->url().IntPort();
   if (request->url().has_port() &&
-      !net::IsPortAllowedByFtp(request->url().IntPort()))
+    !net::IsPortAllowedByFtp(port) && !net::IsPortAllowedByOverride(port))
     return new URLRequestErrorJob(request, net::ERR_UNSAFE_PORT);
 
   DCHECK(request->context());
