@@ -4,15 +4,12 @@
 
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <atlbase.h>
-#endif
+#include <algorithm>
 
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
@@ -117,7 +114,7 @@ class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
 
   void DidReceiveData(const char* buffer, int length, int data_offset) {
     DCHECK(channel_ != NULL);
-    DCHECK(length > 0);
+    DCHECK_GT(length, 0);
     std::vector<char> data;
     data.resize(static_cast<size_t>(length));
     memcpy(&data.front(), buffer, length);
@@ -216,10 +213,10 @@ void WebPluginDelegateProxy::PluginDestroyed() {
 }
 
 bool WebPluginDelegateProxy::Initialize(const GURL& url,
-                                        const std::vector<std::string>& arg_names,
-                                        const std::vector<std::string>& arg_values,
-                                        webkit_glue::WebPlugin* plugin,
-                                        bool load_manually) {
+    const std::vector<std::string>& arg_names,
+    const std::vector<std::string>& arg_values,
+    webkit_glue::WebPlugin* plugin,
+    bool load_manually) {
   IPC::ChannelHandle channel_handle;
   WebPluginInfo info;
   if (!RenderThread::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
@@ -323,7 +320,7 @@ void WebPluginDelegateProxy::DidReceiveManualResponse(
 
 void WebPluginDelegateProxy::DidReceiveManualData(const char* buffer,
                                                   int length) {
-  DCHECK(length > 0);
+  DCHECK_GT(length, 0);
   std::vector<char> data;
   data.resize(static_cast<size_t>(length));
   memcpy(&data.front(), buffer, length);
@@ -436,7 +433,7 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
     }
   }
 
- IPC::Message* msg;
+  IPC::Message* msg;
 #if defined (OS_WIN)
   std::wstring filename = StringToLowerASCII(info_.path.BaseName().value());
   if (info_.name.find(L"Windows Media Player") != std::wstring::npos) {

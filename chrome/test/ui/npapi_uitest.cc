@@ -6,7 +6,6 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <shlobj.h>
-#include <atlbase.h>
 #include <comutil.h>
 
 // runtime headers
@@ -207,7 +206,7 @@ TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
   ASSERT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
       &available_buttons));
   ASSERT_TRUE(modal_dialog_showing);
-  ASSERT_TRUE((MessageBoxFlags::DIALOGBUTTON_OK & available_buttons) != 0);
+  ASSERT_NE((MessageBoxFlags::DIALOGBUTTON_OK & available_buttons), 0);
   ASSERT_TRUE(automation()->ClickAppModalDialogButton(
       MessageBoxFlags::DIALOGBUTTON_OK));
 
@@ -216,7 +215,7 @@ TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
   ASSERT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
       &available_buttons));
   ASSERT_TRUE(modal_dialog_showing);
-  ASSERT_TRUE((MessageBoxFlags::DIALOGBUTTON_OK & available_buttons) != 0);
+  ASSERT_NE((MessageBoxFlags::DIALOGBUTTON_OK & available_buttons), 0);
   ASSERT_TRUE(automation()->ClickAppModalDialogButton(
       MessageBoxFlags::DIALOGBUTTON_OK));
 }
@@ -244,14 +243,14 @@ TEST_F(NPAPIVisiblePluginTester, NewFails) {
 }
 
 TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
- if (!UITest::in_process_renderer()) {
+  if (!UITest::in_process_renderer()) {
     GURL url = GetTestUrl(L"npapi",
                           L"execute_script_delete_in_npn_evaluate.html");
     NavigateToURL(url);
     WaitForFinish("npobject_delete_plugin_in_evaluate", "1", url,
                   kTestCompleteCookie, kTestCompleteSuccess,
                   kShortWaitTimeout);
- }
+  }
 }
 
 // Flaky. See http://crbug.com/17645

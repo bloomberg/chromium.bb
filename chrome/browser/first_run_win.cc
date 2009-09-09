@@ -4,8 +4,6 @@
 
 #include "chrome/browser/first_run.h"
 
-#include <atlbase.h>
-#include <atlcom.h>
 #include <windows.h>
 #include <shellapi.h>
 #include <shlobj.h>

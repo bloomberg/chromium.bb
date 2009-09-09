@@ -40,12 +40,13 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <shlobj.h>
-#include <atlbase.h>
 #include <comutil.h>
 
 #include <stdlib.h>
 #include <string.h>
 #include <memory.h>
+
+#include <string>
 
 #include "base/file_path.h"
 #include "base/file_util.h"

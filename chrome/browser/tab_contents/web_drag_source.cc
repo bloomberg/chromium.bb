@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(OS_WIN)
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlmisc.h>
-#endif
-
 #include "chrome/browser/tab_contents/web_drag_source.h"
 
 #include "chrome/browser/renderer_host/render_view_host.h"
