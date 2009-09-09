@@ -66,6 +66,7 @@ ZygoteHost::ZygoteHost() {
   }
   // Append any switches from the browser process that need to be forwarded on
   // to the zygote/renderers.
+  // Should this list be obtained from browser_render_process_host.cc?
   if (browser_command_line.HasSwitch(switches::kAllowSandboxDebugging)) {
     cmd_line.AppendSwitch(switches::kAllowSandboxDebugging);
   }

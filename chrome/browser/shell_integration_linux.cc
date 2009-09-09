@@ -166,9 +166,9 @@ class CreateDesktopShortcutTask : public Task {
 
 }  // namespace
 
-// We delegate the difficult of setting the default browser in Linux desktop
-// environments to a new xdg utility, xdg-settings. We'll have to include a copy
-// of it for this to work, obviously, but that's actually the suggested approach
+// We delegate the difficulty of setting the default browser in Linux desktop
+// environments to a new xdg utility, xdg-settings. We have to include a copy of
+// it for this to work, obviously, but that's actually the suggested approach
 // for xdg utilities anyway.
 
 bool ShellIntegration::SetAsDefaultBrowser() {
