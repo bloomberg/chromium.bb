@@ -99,12 +99,12 @@ bool Renderer::IsForceSoftwareRenderer() {
 }
 
 Renderer::Renderer(ServiceLocator* service_locator)
-    : current_render_surface_(NULL),
-      current_depth_surface_(NULL),
-      current_render_surface_is_back_buffer_(true),
-      service_locator_(service_locator),
+    : service_locator_(service_locator),
       service_(service_locator, this),
       features_(service_locator),
+      current_render_surface_(NULL),
+      current_depth_surface_(NULL),
+      current_render_surface_is_back_buffer_(true),
       viewport_(0.0f, 0.0f, 1.0f, 1.0f),
       depth_range_(0.0f, 1.0f),
       write_mask_(0xf),
@@ -251,9 +251,8 @@ void Renderer::SetClientSize(int width, int height) {
 
 bool Renderer::StartRendering() {
   DCHECK_GE(start_depth_, 0);
-  ++start_depth_;
   bool result = true;
-  if (start_depth_ == 1) {
+  if (start_depth_ == 0) {
     ++render_frame_count_;
     rendering_ = true;
     transforms_culled_ = 0;
@@ -276,6 +275,9 @@ bool Renderer::StartRendering() {
         Clear(Float4(0.5f, 0.5f, 0.5f, 1.0f), true, 1.0f, true, 0, true);
       }
     }
+  }
+  if (result) {
+    ++start_depth_;
   }
   return result;
 }
@@ -308,6 +310,9 @@ void Renderer::FinishRendering() {
   if (start_depth_ == 0) {
     ApplyDirtyStates();
     PlatformSpecificFinishRendering();
+    // Don't hold pointers to these when we are finished rendering.
+    current_render_surface_ = NULL;
+    current_depth_surface_ = NULL;
     rendering_ = false;
   }
 }

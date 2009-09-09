@@ -629,36 +629,10 @@ class Renderer {
   // Sets the client's size. Derived classes must call this on Init and Resize.
   void SetClientSize(int width, int height);
 
-  // The current render surfaces. NULL = no surface.
-  const RenderSurface* current_render_surface_;
-  const RenderDepthStencilSurface* current_depth_surface_;
-  bool current_render_surface_is_back_buffer_;
-
-  Sampler::Ref error_sampler_;  // sampler used when one is missing.
-  Texture::Ref error_texture_;  // texture used when one is missing.
-  Texture::Ref fallback_error_texture_;  // texture used when error_texture is
-                                         // null.
-  ParamObject::Ref error_object_;  // holds params used for missing textures.
-  ParamSampler::Ref error_param_sampler_;  // A Param for the error sampler.
-
-  // Map of State Handlers.
-  StateHandlerMap state_handler_map_;
-
-  // Stack of state params
-  ParamVectorArray state_param_stacks_;
-
-  // Stack of state objects.
-  StateArray state_stack_;
-
-  // State object holding the default state settings.
-  State::Ref default_state_;
-
-  // A State object holding the settings required to be able to clear the
-  // back buffer.
-  State::Ref clear_back_buffer_state_;
-
-  // Lost Resources Callbacks.
-  LostResourcesCallbackManager lost_resources_callback_manager_;
+  // Calls any registered lost resources callback.
+  void CallLostResourcesCallback() const {
+    lost_resources_callback_manager_.Run();
+  }
 
   int dest_x_offset() const {
     return dest_x_offset_;
@@ -692,6 +666,37 @@ class Renderer {
   ServiceLocator* service_locator_;
   ServiceImplementation<Renderer> service_;
   ServiceDependency<Features> features_;
+
+  // The current render surfaces. NULL = no surface.
+  const RenderSurface* current_render_surface_;
+  const RenderDepthStencilSurface* current_depth_surface_;
+  bool current_render_surface_is_back_buffer_;
+
+  Sampler::Ref error_sampler_;  // sampler used when one is missing.
+  Texture::Ref error_texture_;  // texture used when one is missing.
+  Texture::Ref fallback_error_texture_;  // texture used when error_texture is
+                                         // null.
+  ParamObject::Ref error_object_;  // holds params used for missing textures.
+  ParamSampler::Ref error_param_sampler_;  // A Param for the error sampler.
+
+  // Map of State Handlers.
+  StateHandlerMap state_handler_map_;
+
+  // Stack of state params
+  ParamVectorArray state_param_stacks_;
+
+  // Stack of state objects.
+  StateArray state_stack_;
+
+  // State object holding the default state settings.
+  State::Ref default_state_;
+
+  // A State object holding the settings required to be able to clear the
+  // back buffer.
+  State::Ref clear_back_buffer_state_;
+
+  // Lost Resources Callbacks.
+  LostResourcesCallbackManager lost_resources_callback_manager_;
 
   // Current viewport setting.
   Float4 viewport_;

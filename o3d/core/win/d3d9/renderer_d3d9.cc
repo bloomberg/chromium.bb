@@ -1266,7 +1266,7 @@ void RendererD3D9::TestLostDevice() {
     // Direct3d tells us it is possible to reset the device now..
     // So let's attempt a reset!
     if (ResetDevice()) {
-      lost_resources_callback_manager_.Run();
+      CallLostResourcesCallback();
     }
   }
 }
