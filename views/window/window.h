@@ -17,6 +17,7 @@ namespace views {
 class ClientView;
 class NonClientFrameView;
 class NonClientView;
+class Widget;
 class WindowDelegate;
 
 // An interface implemented by an object that provides a top level window.
@@ -45,6 +46,11 @@ class Window {
   // IsAppWindow. Called during application shutdown when the last "app window"
   // is closed.
   static void CloseAllSecondaryWindows();
+
+  // Used by |CloseAllSecondaryWindows|. If |widget|'s window is a secondary
+  // window, the window is closed. If |widget| has no window, it is closed.
+  // Does nothing if |widget| is null.
+  static void CloseSecondaryWidget(Widget* widget);
 
   // Retrieves the window's bounds, including its frame.
   virtual gfx::Rect GetBounds() const = 0;

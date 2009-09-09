@@ -9,6 +9,7 @@
 #include "app/resource_bundle.h"
 #include "base/gfx/size.h"
 #include "base/string_util.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -39,6 +40,23 @@ gfx::Size Window::GetLocalizedContentsSize(int col_resource_id,
                                            int row_resource_id) {
   return gfx::Size(GetLocalizedContentsWidth(col_resource_id),
                    GetLocalizedContentsHeight(row_resource_id));
+}
+
+// static
+void Window::CloseSecondaryWidget(Widget* widget) {
+  if (!widget)
+    return;
+
+  // Close widget if it's identified as a secondary window.
+  Window* window = widget->GetWindow();
+  if (window) {
+    if (!window->IsAppWindow())
+      window->Close();
+  } else {
+    // If it's not a Window, then close it anyway since it probably is
+    // secondary.
+    widget->Close();
+  }
 }
 
 }  // namespace views

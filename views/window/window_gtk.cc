@@ -90,7 +90,11 @@ Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
 
 // static
 void Window::CloseAllSecondaryWindows() {
-  NOTIMPLEMENTED();
+  for (GList* window = gtk_window_list_toplevels(); window;
+       window = g_list_next(window)) {
+    Window::CloseSecondaryWidget(
+        WidgetGtk::GetViewForNative(GTK_WIDGET(window->data)));
+  }
 }
 
 gfx::Rect WindowGtk::GetBounds() const {
