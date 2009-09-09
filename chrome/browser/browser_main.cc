@@ -459,8 +459,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   // This is experimental code. See first_run_win.cc for more info.
-  if (parsed_command_line.HasSwitch(switches::kTryChromeAgain)) {
-    Upgrade::TryResult answer = Upgrade::ShowTryChromeDialog();
+  std::wstring try_chrome =
+      parsed_command_line.GetSwitchValue(switches::kTryChromeAgain);
+  if (!try_chrome.empty()) {
+    Upgrade::TryResult answer =
+        Upgrade::ShowTryChromeDialog(StringToInt(try_chrome));
     if (answer == Upgrade::TD_NOT_NOW)
       return ResultCodes::NORMAL_EXIT_EXP1;
     if (answer == Upgrade::TD_UNINSTALL_CHROME)

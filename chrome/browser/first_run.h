@@ -126,7 +126,8 @@ class Upgrade {
   // Shows a modal dialog asking the user to give chrome another try. See
   // above for the possible outcomes of the function. This is an experimental,
   // non-localized dialog.
-  static TryResult ShowTryChromeDialog();
+  // |version| can be 0, 1 or 2 and selects what strings to present.
+  static TryResult ShowTryChromeDialog(size_t version);
 };
 
 // A subclass of BrowserProcessImpl that does not have a GoogleURLTracker

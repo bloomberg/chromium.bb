@@ -176,7 +176,7 @@ bool Upgrade::SwapNewChromeExeIfPresent() {
 }
 
 // static
-Upgrade::TryResult ShowTryChromeDialog() {
+Upgrade::TryResult ShowTryChromeDialog(size_t version) {
   return Upgrade::TD_NOT_NOW;
 }
 
