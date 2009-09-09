@@ -50,6 +50,19 @@ void PluginList::PlatformInit() {
 }
 
 void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
+  // See http://groups.google.com/group/chromium-dev/browse_thread/thread/7a70e5fcbac786a9
+  // for discussion.
+  // We first consult Chrome-specific dirs, then fall back on the logic
+  // Mozilla uses.
+
+  // TODO(evanm): maybe consult our own plugins dir, like
+  // ~/.config/chromium/Plugins?
+
+  // The Chrome binary dir + "plugins/".
+  FilePath dir;
+  PathService::Get(base::DIR_EXE, &dir);
+  plugin_dirs->push_back(dir.Append("plugins"));
+
   // Mozilla code to reference:
   // http://mxr.mozilla.org/firefox/ident?i=NS_APP_PLUGINS_DIR_LIST
   // and tens of accompanying files (mxr is very helpful).
@@ -70,15 +83,8 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   const char* home = getenv("HOME");
   if (home)
     plugin_dirs->push_back(FilePath(home).Append(".mozilla/plugins"));
-  // TODO(evanm): maybe consult our own plugins dir, like
-  // ~/.config/chromium/Plugins?
 
-  // 3) NS_APP_PLUGINS_DIR: the binary dir + "plugins/".
-  FilePath dir;
-  PathService::Get(base::DIR_EXE, &dir);
-  plugin_dirs->push_back(dir.Append("plugins"));
-
-  // 4) NS_SYSTEM_PLUGINS_DIR:
+  // 3) NS_SYSTEM_PLUGINS_DIR:
   // This varies across different versions of Firefox, so check 'em all.
   plugin_dirs->push_back(FilePath("/usr/lib/mozilla/plugins"));
   plugin_dirs->push_back(FilePath("/usr/lib/firefox/plugins"));
