@@ -25,25 +25,8 @@ devtools.InspectorControllerImpl = function() {
   this.installInspectorControllerDelegate_('disableResourceTracking');
   this.installInspectorControllerDelegate_('enableTimeline');
   this.installInspectorControllerDelegate_('disableTimeline');
-
-  //TODO: nuke with the next WebKit roll.
-  this.installInjectedScriptDelegate_('getStyles');
-  this.installInjectedScriptDelegate_('getComputedStyle');
-  this.installInjectedScriptDelegate_('getInlineStyle');
-  this.installInjectedScriptDelegate_('applyStyleText');
-  this.installInjectedScriptDelegate_('setStyleText');
-  this.installInjectedScriptDelegate_('toggleStyleEnabled');
-  this.installInjectedScriptDelegate_('applyStyleRuleText');
-  this.installInjectedScriptDelegate_('addStyleSelector');
-  this.installInjectedScriptDelegate_('setStyleProperty');
-  this.installInjectedScriptDelegate_('getPrototypes');
-  this.installInjectedScriptDelegate_('setPropertyValue');
-  this.installInjectedScriptDelegate_('evaluate');
-  this.installInjectedScriptDelegate_('addInspectedNode');
-  this.installInjectedScriptDelegate_('pushNodeToFrontend');
-  this.installInjectedScriptDelegate_('performSearch');
-  this.installInjectedScriptDelegate_('searchCanceled');
-  this.installInjectedScriptDelegate_('openInInspectedWindow');
+  this.installInspectorControllerDelegate_('setting');
+  this.installInspectorControllerDelegate_('setSetting');
 };
 goog.inherits(devtools.InspectorControllerImpl,
     devtools.InspectorController);
@@ -287,21 +270,8 @@ devtools.InspectorControllerImpl.prototype.dispatchOnInjectedScript = function(
 
 
 /**
- * TODO: nuke with the next WebKit roll.
- * Installs delegating handler into the inspector controller.
- * @param {string} methodName Method to install delegating handler for.
- */
-devtools.InspectorControllerImpl.prototype.installInjectedScriptDelegate_ =
-    function(methodName) {
-  this[methodName] = goog.bind(this.callInjectedScript_, this,
-      methodName);
-};
-
-
-/**
- * TODO: nuke with the next WebKit roll.
- * Bound function with the installInjectedScriptDelegate_ actual
- * implementation.
+ * This method allows calling a methods on InjectedScript object in the
+ * inspected page.
  */
 devtools.InspectorControllerImpl.prototype.callInjectedScript_ =
     function(methodName, var_arg) {
