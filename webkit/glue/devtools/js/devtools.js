@@ -291,11 +291,11 @@ WebInspector.ScriptsPanel.prototype.__defineGetter__(
 
 
 /*
- * @override	
- * TODO(mnaganov): Restore l10n when it will be agreed that it is needed.	
- */	
-WebInspector.UIString = function(string) {	
-  return String.vsprintf(string, Array.prototype.slice.call(arguments, 1));	
+ * @override
+ * TODO(mnaganov): Restore l10n when it will be agreed that it is needed.
+ */
+WebInspector.UIString = function(string) {
+  return String.vsprintf(string, Array.prototype.slice.call(arguments, 1));
 };
 
 
@@ -362,14 +362,31 @@ WebInspector.UIString = function(string) {
 })();
 
 
+(function () {
+var orig = InjectedScriptAccess.getProperties;
+InjectedScriptAccess.getProperties = function(
+    objectProxy, ignoreHasOwnProperty, callback) {
+  if (objectProxy.isScope) {
+    devtools.tools.getDebuggerAgent().resolveScope(objectProxy.objectId,
+        callback);
+  } else if (objectProxy.isV8Ref) {
+    devtools.tools.getDebuggerAgent().resolveChildren(objectProxy.objectId,
+        callback, true);
+  } else {
+    orig.apply(this, arguments);
+  }
+};
+})()
+
+
 WebInspector.resourceTrackingWasEnabled = function()
 {
     InspectorController.resourceTrackingEnabled_ = true;
     this.panels.resources.resourceTrackingWasEnabled();
-}
+};
 
 WebInspector.resourceTrackingWasDisabled = function()
 {
     InspectorController.resourceTrackingEnabled_ = false;
     this.panels.resources.resourceTrackingWasDisabled();
-}
+};

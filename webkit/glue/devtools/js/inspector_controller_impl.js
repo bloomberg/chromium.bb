@@ -237,24 +237,6 @@ devtools.InspectorControllerImpl.prototype.evaluateInCallFrame =
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.getProperties = function(
-    objectProxy, ignoreHasOwnProperty, callback) {
-  if (objectProxy.isScope) {
-    devtools.tools.getDebuggerAgent().resolveScope(objectProxy.objectId,
-        callback);
-  } else if (objectProxy.isV8Ref) {
-    devtools.tools.getDebuggerAgent().resolveChildren(objectProxy.objectId,
-        callback, true);
-  } else {
-    this.callInjectedScript_('getProperties', objectProxy,
-        ignoreHasOwnProperty, callback);
-  }
-};
-
-
-/**
- * @override
- */
 devtools.InspectorControllerImpl.prototype.dispatchOnInjectedScript = function(
     callId, methodName, argsString) {
   var callback = function(result, isException) {
@@ -266,21 +248,6 @@ devtools.InspectorControllerImpl.prototype.dispatchOnInjectedScript = function(
       devtools.Callback.wrap(callback),
       'InjectedScript',
       JSON.stringify(['dispatch', methodName, argsString]));
-};
-
-
-/**
- * This method allows calling a methods on InjectedScript object in the
- * inspected page.
- */
-devtools.InspectorControllerImpl.prototype.callInjectedScript_ =
-    function(methodName, var_arg) {
-  var allArgs = Array.prototype.slice.call(arguments);
-  var callback = allArgs[allArgs.length - 1];
-  var args = Array.prototype.slice.call(allArgs, 0, allArgs.length - 1);
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.InspectorControllerImpl.parseWrap_(callback),
-      'InjectedScript', JSON.stringify(args));
 };
 
 
