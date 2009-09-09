@@ -289,11 +289,20 @@ class TestGypMSVS(TestGypBase):
     if not self.build_tool:
       # We didn't find 'devenv' on the path.  Just hard-code a default,
       # and revisit this if it becomes important.
-      self.build_tool = os.path.join('\\Program Files',
-                                     'Microsoft Visual Studio 8',
-                                     'Common7',
-                                     'IDE',
-                                     'devenv.exe')
+      possible = [
+        ('C:\\Program Files',
+         'Microsoft Visual Studio 8', 'Common7', 'IDE', 'devenv.exe'),
+
+        # Note:  if you're using this, set GYP_MSVS_VERSION=2008
+        # to get the tests to pass.
+        ('C:\\Program Files (x86)',
+         'Microsoft Visual Studio 9.0', 'Common7', 'IDE', 'devenv.exe'),
+      ]
+      for build_tool in possible:
+        bt = os.path.join(*build_tool)
+        if os.path.exists(bt):
+          self.build_tool = bt
+          break
   def run_build(self, gyp_file, *args, **kw):
     """
     Runs a Visual Studio build using the configuration generated
