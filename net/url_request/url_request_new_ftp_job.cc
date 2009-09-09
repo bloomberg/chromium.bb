@@ -264,7 +264,24 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
               result.fe_fname, false, file_size,
               base::Time::FromLocalExploded(result.fe_time)));
         break;
-      case net::FTP_TYPE_SYMLINK:
+      case net::FTP_TYPE_SYMLINK: {
+          std::string filename(result.fe_fname, result.fe_fnlen);
+
+          // Parsers for styles 'U' and 'W' handle " -> " themselves.
+          if (state.lstyle != 'U' && state.lstyle != 'W') {
+            std::string::size_type offset = filename.find(" -> ");
+            if (offset != std::string::npos)
+              filename = filename.substr(0, offset);
+          }
+
+          if (StringToInt64(result.fe_size, &file_size)) {
+            file_entry.append(net::GetDirectoryListingEntry(
+                RawByteSequenceToFilename(filename.c_str(), encoding_),
+                filename, false, file_size,
+                base::Time::FromLocalExploded(result.fe_time)));
+          }
+        }
+        break;
       case net::FTP_TYPE_JUNK:
       case net::FTP_TYPE_COMMENT:
         break;
