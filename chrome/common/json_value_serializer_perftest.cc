@@ -18,17 +18,17 @@ namespace {
 class JSONValueSerializerTests : public testing::Test {
  protected:
   virtual void SetUp() {
-    static const wchar_t* const kTestFilenames[] = {
-      L"serializer_nested_test.js",
-      L"serializer_test.js",
-      L"serializer_test_nowhitespace.js",
+    static const char* const kTestFilenames[] = {
+      "serializer_nested_test.js",
+      "serializer_test.js",
+      "serializer_test_nowhitespace.js",
     };
 
     // Load test cases
     for (size_t i = 0; i < arraysize(kTestFilenames); ++i) {
-      std::wstring filename;
+      FilePath filename;
       EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &filename));
-      file_util::AppendToPath(&filename, kTestFilenames[i]);
+      filename = filename.AppendASCII(kTestFilenames[i]);
 
       std::string test_case;
       EXPECT_TRUE(file_util::ReadFileToString(filename, &test_case));

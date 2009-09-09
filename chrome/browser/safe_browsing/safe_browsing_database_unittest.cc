@@ -1038,7 +1038,7 @@ void PrintStat(const char* name) {
   LOG(INFO) << StringPrintf("%s %d", name, value);
 }
 
-std::wstring GetFullSBDataPath(const std::wstring& path) {
+FilePath GetFullSBDataPath(const std::wstring& path) {
   FilePath full_path;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &full_path));
   full_path = full_path.AppendASCII("chrome");
@@ -1047,7 +1047,7 @@ std::wstring GetFullSBDataPath(const std::wstring& path) {
   full_path = full_path.AppendASCII("safe_browsing");
   full_path = full_path.Append(FilePath::FromWStringHack(path));
   CHECK(file_util::PathExists(full_path));
-  return full_path.ToWStringHack();
+  return full_path;
 }
 
 struct ChunksInfo {
@@ -1070,9 +1070,8 @@ void PeformUpdate(const std::wstring& initial_db,
   file_util::Delete(path, false);
 
   if (!initial_db.empty()) {
-    std::wstring full_initial_db = GetFullSBDataPath(initial_db);
-    ASSERT_TRUE(file_util::CopyFile(
-        FilePath::FromWStringHack(full_initial_db), path));
+    FilePath full_initial_db = GetFullSBDataPath(initial_db);
+    ASSERT_TRUE(file_util::CopyFile(full_initial_db, path));
   }
 
   SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create();
@@ -1129,9 +1128,8 @@ void UpdateDatabase(const std::wstring& initial_db,
 
   SafeBrowsingProtocolParser parser;
   if (!updates_path.empty()) {
-    std::wstring data_dir = GetFullSBDataPath(updates_path);
-    file_util::FileEnumerator file_enum(
-        FilePath::FromWStringHack(data_dir), false,
+    FilePath data_dir = GetFullSBDataPath(updates_path);
+    file_util::FileEnumerator file_enum(data_dir, false,
         file_util::FileEnumerator::FILES);
     while (true) {
       std::wstring file = file_enum.Next().ToWStringHack();
@@ -1166,7 +1164,7 @@ void UpdateDatabase(const std::wstring& initial_db,
   std::vector<SBChunkDelete>* deletes = new std::vector<SBChunkDelete>;
   if (!response_path.empty()) {
     std::string update;
-    std::wstring full_response_path = GetFullSBDataPath(response_path);
+    FilePath full_response_path = GetFullSBDataPath(response_path);
     if (file_util::ReadFileToString(full_response_path, &update)) {
       int next_update;
       bool result, rekey, reset;

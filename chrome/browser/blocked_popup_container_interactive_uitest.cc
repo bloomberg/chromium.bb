@@ -37,10 +37,10 @@ class BlockedPopupContainerInteractiveTest : public UITest {
     ASSERT_TRUE(tab_.get());
   }
 
-  void NavigateMainTabTo(const std::wstring& file_name) {
+  void NavigateMainTabTo(const std::string& file_name) {
     FilePath filename(test_data_directory_);
     filename = filename.AppendASCII("constrained_files");
-    filename = filename.Append(FilePath::FromWStringHack(file_name));
+    filename = filename.AppendASCII(file_name);
     ASSERT_TRUE(tab_->NavigateToURL(net::FilePathToFileURL(filename)));
   }
 
@@ -62,7 +62,7 @@ class BlockedPopupContainerInteractiveTest : public UITest {
 };
 
 TEST_F(BlockedPopupContainerInteractiveTest, TestOpenAndResizeTo) {
-  NavigateMainTabTo(L"constrained_window_onload_resizeto.html");
+  NavigateMainTabTo("constrained_window_onload_resizeto.html");
   SimulateClickInCenterOf(window_);
 
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2, 1000));
@@ -140,7 +140,7 @@ bool ParseCountOutOfTitle(const std::wstring& title, int* output) {
 // Tests that in the window.open() equivalent of a fork bomb, we stop building
 // windows.
 TEST_F(BlockedPopupContainerInteractiveTest, DontSpawnEndlessPopups) {
-  NavigateMainTabTo(L"infinite_popups.html");
+  NavigateMainTabTo("infinite_popups.html");
   SimulateClickInCenterOf(window_);
 
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2, 1000));
@@ -183,7 +183,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, DontSpawnEndlessPopups) {
 // Make sure that we refuse to close windows when a constrained popup is
 // displayed.
 TEST_F(BlockedPopupContainerInteractiveTest, WindowOpenWindowClosePopup) {
-  NavigateMainTabTo(L"openclose_main.html");
+  NavigateMainTabTo("openclose_main.html");
   SimulateClickInCenterOf(window_);
 
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2, 5000));
@@ -202,7 +202,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, WindowOpenWindowClosePopup) {
 }
 
 TEST_F(BlockedPopupContainerInteractiveTest, BlockAlertFromBlockedPopup) {
-  NavigateMainTabTo(L"block_alert.html");
+  NavigateMainTabTo("block_alert.html");
 
   // Wait for there to be an app modal dialog (and fail if it's shown).
   ASSERT_FALSE(automation()->WaitForAppModalDialog(4000));
@@ -219,7 +219,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, BlockAlertFromBlockedPopup) {
 }
 
 TEST_F(BlockedPopupContainerInteractiveTest, ShowAlertFromNormalPopup) {
-  NavigateMainTabTo(L"show_alert.html");
+  NavigateMainTabTo("show_alert.html");
   SimulateClickInCenterOf(window_);
 
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2, 5000));
@@ -246,7 +246,7 @@ TEST_F(BlockedPopupContainerInteractiveTest, ShowAlertFromNormalPopup) {
 // Make sure that window focus works while creating a popup window so that we
 // don't
 TEST_F(BlockedPopupContainerInteractiveTest, DontBreakOnBlur) {
-  NavigateMainTabTo(L"window_blur_test.html");
+  NavigateMainTabTo("window_blur_test.html");
   SimulateClickInCenterOf(window_);
 
   // Wait for the popup window to open.

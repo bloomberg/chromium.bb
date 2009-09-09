@@ -24,7 +24,7 @@ class UnittestTestServer : public HTTPTestServer {
   static UnittestTestServer* CreateServer() {
     UnittestTestServer* test_server = new UnittestTestServer();
     FilePath no_cert;
-    FilePath docroot = FilePath::FromWStringHack(L"webkit/data");
+    FilePath docroot(FILE_PATH_LITERAL("webkit/data"));
     if (!test_server->Start(net::TestServerLauncher::ProtoHTTP,
         "localhost", 1337, docroot, no_cert, std::wstring())) {
       delete test_server;

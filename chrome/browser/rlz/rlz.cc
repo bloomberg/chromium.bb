@@ -80,11 +80,11 @@ FuncT WireExport(HMODULE module, const char* export_name) {
 }
 
 HMODULE LoadRLZLibraryInternal(int directory_key) {
-  std::wstring rlz_path;
+  FilePath rlz_path;
   if (!PathService::Get(directory_key, &rlz_path))
     return NULL;
-  file_util::AppendToPath(&rlz_path, L"rlz.dll");
-  return ::LoadLibraryW(rlz_path.c_str());
+  rlz_path = rlz_path.AppendASCII("rlz.dll");
+  return ::LoadLibraryW(rlz_path.value().c_str());
 }
 
 bool LoadRLZLibrary(int directory_key) {
@@ -261,12 +261,11 @@ class DelayedInitTask : public Task {
   bool IsGoogleDefaultSearch() {
     if (!g_browser_process)
       return false;
-    std::wstring user_data_dir;
+    FilePath user_data_dir;
     if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
       return false;
     ProfileManager* profile_manager = g_browser_process->profile_manager();
-    Profile* profile = profile_manager->
-        GetDefaultProfile(FilePath::FromWStringHack(user_data_dir));
+    Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
     if (!profile)
       return false;
     const TemplateURL* url_template =

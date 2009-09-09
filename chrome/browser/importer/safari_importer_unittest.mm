@@ -17,12 +17,11 @@
 // structure as ~/Library in the Chrome test data directory.
 // This function returns the path to that directory.
 FilePath GetTestSafariLibraryPath() {
-    std::wstring test_dir_wstring;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_dir_wstring);
-    FilePath test_dir = FilePath::FromWStringHack(test_dir_wstring);
+    FilePath test_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
 
     // Our simulated ~/Library directory
-    test_dir = test_dir.Append("safari_import");
+    test_dir = test_dir.AppendASCII("safari_import");
     return test_dir;
 }
 

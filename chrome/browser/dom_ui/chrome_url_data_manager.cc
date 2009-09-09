@@ -116,7 +116,7 @@ void RegisterURLRequestChromeJob() {
 }
 
 void UnregisterURLRequestChromeJob() {
-  std::wstring inspector_dir;
+  FilePath inspector_dir;
   if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
     chrome_url_data_manager.RemoveFileSource("inspector");
     chrome_url_data_manager.RemoveFileSource(chrome::kChromeUIDevToolsHost);

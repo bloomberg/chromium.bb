@@ -32,7 +32,7 @@ typedef struct {
 
 // static
 FileVersionInfo* FileVersionInfo::CreateFileVersionInfoForCurrentModule() {
-  std::wstring app_path;
+  FilePath app_path;
   if (!PathService::Get(base::FILE_MODULE, &app_path))
     return NULL;
 

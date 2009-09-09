@@ -288,8 +288,8 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
 
   virtual bool MakeGETRequest(const std::string& page_name) = 0;
 
-  std::wstring GetDataDirectory() {
-    return launcher_.GetDocumentRootPath().ToWStringHack();
+  FilePath GetDataDirectory() {
+    return launcher_.GetDocumentRootPath();
   }
 
  protected:

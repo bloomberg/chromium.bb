@@ -33,13 +33,13 @@ class TemplateURLParserTest : public testing::Test {
   // the data dir). The TemplateURL is placed in template_url_.
   // The result of Parse is stored in the field parse_result_ (this doesn't
   // use a return value due to internally using ASSERT_).
-  void ParseFile(const std::wstring& file_name,
+  void ParseFile(const std::string& file_name,
                  TemplateURLParser::ParameterFilter* filter) {
     FilePath full_path;
     parse_result_ = false;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &full_path));
     full_path = full_path.AppendASCII("osdd");
-    full_path = full_path.Append(FilePath::FromWStringHack(file_name));
+    full_path = full_path.AppendASCII(file_name);
     ASSERT_TRUE(file_util::PathExists(full_path));
 
     std::string contents;
@@ -61,28 +61,28 @@ class TemplateURLParserTest : public testing::Test {
 TEST_F(TemplateURLParserTest, FailOnBogusURL) {
   if (IsDisabled())
     return;
-  ParseFile(L"bogus.xml", NULL);
+  ParseFile("bogus.xml", NULL);
   EXPECT_FALSE(parse_result_);
 }
 
 TEST_F(TemplateURLParserTest, PassOnHTTPS) {
   if (IsDisabled())
     return;
-  ParseFile(L"https.xml", NULL);
+  ParseFile("https.xml", NULL);
   EXPECT_TRUE(parse_result_);
 }
 
 TEST_F(TemplateURLParserTest, FailOnPost) {
   if (IsDisabled())
     return;
-  ParseFile(L"post.xml", NULL);
+  ParseFile("post.xml", NULL);
   EXPECT_FALSE(parse_result_);
 }
 
 TEST_F(TemplateURLParserTest, TestDictionary) {
   if (IsDisabled())
     return;
-  ParseFile(L"dictionary.xml", NULL);
+  ParseFile("dictionary.xml", NULL);
   ASSERT_TRUE(parse_result_);
   EXPECT_EQ(L"Dictionary.com", template_url_.short_name());
   EXPECT_TRUE(template_url_.GetFavIconURL() ==
@@ -96,7 +96,7 @@ TEST_F(TemplateURLParserTest, TestDictionary) {
 TEST_F(TemplateURLParserTest, TestMSDN) {
   if (IsDisabled())
     return;
-  ParseFile(L"msdn.xml", NULL);
+  ParseFile("msdn.xml", NULL);
   ASSERT_TRUE(parse_result_);
   EXPECT_EQ(L"Search \" MSDN", template_url_.short_name());
   EXPECT_TRUE(template_url_.GetFavIconURL() ==
@@ -110,7 +110,7 @@ TEST_F(TemplateURLParserTest, TestMSDN) {
 TEST_F(TemplateURLParserTest, TestWikipedia) {
   if (IsDisabled())
     return;
-  ParseFile(L"wikipedia.xml", NULL);
+  ParseFile("wikipedia.xml", NULL);
   ASSERT_TRUE(parse_result_);
   EXPECT_EQ(L"Wikipedia (English)", template_url_.short_name());
   EXPECT_TRUE(template_url_.GetFavIconURL() ==
@@ -131,7 +131,7 @@ TEST_F(TemplateURLParserTest, TestWikipedia) {
 TEST_F(TemplateURLParserTest, NoCrashOnEmptyAttributes) {
   if (IsDisabled())
     return;
-  ParseFile(L"url_with_no_attributes.xml", NULL);
+  ParseFile("url_with_no_attributes.xml", NULL);
 }
 
 // Filters any param which as an occurrence of name_str_ in its name or an
@@ -161,7 +161,7 @@ TEST_F(TemplateURLParserTest, TestFirefoxEbay) {
   // This file uses the Parameter extension
   // (see http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0)
   ParamFilterImpl filter("ebay", "ebay");
-  ParseFile(L"firefox_ebay.xml", &filter);
+  ParseFile("firefox_ebay.xml", &filter);
   ASSERT_TRUE(parse_result_);
   EXPECT_EQ(L"eBay", template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);
@@ -182,7 +182,7 @@ TEST_F(TemplateURLParserTest, TestFirefoxWebster) {
     return;
   // This XML file uses a namespace.
   ParamFilterImpl filter("", "Mozilla");
-  ParseFile(L"firefox_webster.xml", &filter);
+  ParseFile("firefox_webster.xml", &filter);
   ASSERT_TRUE(parse_result_);
   EXPECT_EQ(L"Webster", template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);
@@ -200,7 +200,7 @@ TEST_F(TemplateURLParserTest, TestFirefoxYahoo) {
     return;
   // This XML file uses a namespace.
   ParamFilterImpl filter("", "Mozilla");
-  ParseFile(L"firefox_yahoo.xml", &filter);
+  ParseFile("firefox_yahoo.xml", &filter);
   ASSERT_TRUE(parse_result_);
   EXPECT_EQ(L"Yahoo", template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);
@@ -223,7 +223,7 @@ TEST_F(TemplateURLParserTest, TestPostSuggestion) {
     return;
   // This XML file uses a namespace.
   ParamFilterImpl filter("", "Mozilla");
-  ParseFile(L"post_suggestion.xml", &filter);
+  ParseFile("post_suggestion.xml", &filter);
   ASSERT_TRUE(parse_result_);
   EXPECT_EQ(L"Yahoo", template_url_.short_name());
   EXPECT_TRUE(template_url_.url() != NULL);

@@ -145,12 +145,13 @@ void ProcessSingleton::Create() {
   ATOM clazz = RegisterClassEx(&wc);
   DCHECK(clazz);
 
-  std::wstring user_data_dir;
+  FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
 
   // Set the window's title to the path of our user data directory so other
   // Chrome instances can decide if they should forward to us or not.
-  window_ = CreateWindow(chrome::kMessageWindowClass, user_data_dir.c_str(),
+  window_ = CreateWindow(chrome::kMessageWindowClass,
+                         user_data_dir.value().c_str(),
                          0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, 0);
   DCHECK(window_);
 

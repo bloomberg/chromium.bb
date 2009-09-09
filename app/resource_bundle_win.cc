@@ -74,14 +74,14 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::wstring& pref_locale) {
 
 void ResourceBundle::LoadThemeResources() {
   DCHECK(NULL == theme_data_) << "theme dll already loaded";
-  std::wstring theme_data_path;
+  FilePath theme_data_path;
   PathService::Get(app::DIR_THEMES, &theme_data_path);
-  file_util::AppendToPath(&theme_data_path, L"default.dll");
+  theme_data_path = theme_data_path.AppendASCII("default.dll");
 
   // The dll should only have resources, not executable code.
-  theme_data_ = LoadLibraryEx(theme_data_path.c_str(), NULL,
-                             GetDataDllLoadFlags());
-  DCHECK(theme_data_ != NULL) << "unable to load " << theme_data_path;
+  theme_data_ = LoadLibraryEx(theme_data_path.value().c_str(), NULL,
+                              GetDataDllLoadFlags());
+  DCHECK(theme_data_ != NULL) << "unable to load " << theme_data_path.value();
 }
 
 /* static */
