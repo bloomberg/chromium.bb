@@ -160,7 +160,11 @@ void* realloc(void* ptr, size_t size) __THROW {
     // TCMalloc case.
     new_ptr = do_realloc(ptr, size);
 #endif
-    if (new_ptr)
+
+    // Subtle warning:  NULL return does not alwas indicate out-of-memory.  If
+    // the requested new size is zero, realloc should free the ptr and return
+    // NULL.
+    if (new_ptr || !size)
       return new_ptr;
     if (!new_mode || !call_new_handler(true))
       break;
