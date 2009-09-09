@@ -62,9 +62,6 @@
 
 #define FUN_TO_VOID_PTR(a) ((void*)((uintptr_t) a))
 
-void __pthread_memset(void* s, int c, size_t size);
-void __newlib_thread_init();
-
 /* Thread management global variables */
 const int __nc_kMaxCachedMemoryBlocks = 50;
 
@@ -99,22 +96,8 @@ int __nc_memory_block_counter[2];
   (void*)(((int32_t)(Address) + ((AlignmentRequirement) - 1)) \
   & ~((AlignmentRequirement) - 1))
 
-/* The macro assumes that the TDB is stored immediately after the TLS template
-* (i.e. at higher address) and uses symbols defined by the linker */
-#define TLS_TO_TDB(Tls) \
-  ((nc_thread_descriptor_t *)((char *)(Tls) + TLS_SIZE))
-
-/* TLS memory starts right after the block header. The result should be 16-byte
- * aligned thanks to the padding
- */
-#define NODE_TO_DATA(TlsNode) \
+#define NODE_TO_PAYLOAD(TlsNode) \
   ((char*)(TlsNode) + sizeof(nc_thread_memory_block_t))
-
-#define ALIGNED_NODE_TO_DATA(TlsNode) \
-  ALIGN_ADDRESS((NODE_TO_DATA(TlsNode)), TLS_ALIGNMENT)
-
-#define NODE_TO_TDB(TlsNode) \
-  TLS_TO_TDB(ALIGNED_NODE_TO_DATA(TlsNode))
 
 /* Internal functions */
 
@@ -227,9 +210,7 @@ static nc_thread_memory_block_t* nc_allocate_memory_block_mu(
       required_size = NC_DEFAULT_STACK_SIZE + (TLS_ALIGNMENT - 1);
       break;
     case TLS_AND_TDB_MEMORY:
-      required_size = TLS_SIZE +
-        sizeof(nc_thread_descriptor_t) +
-        (TLS_ALIGNMENT - 1);
+      required_size = __nacl_tls_combined_size(sizeof(nc_thread_descriptor_t));
       break;
     case MAX_MEMORY_TYPE:
     default:
@@ -306,12 +287,14 @@ static void nc_release_basic_data_mu(nc_basic_thread_data_t *basic_data) {
   free(basic_data);
 }
 
-static void nc_release_tls_node(nc_thread_memory_block_t *tls_node) {
-  if (tls_node) {
-    nc_thread_descriptor_t* tdb_to_release = NODE_TO_TDB(tls_node);
-    tdb_to_release->basic_data->tdb = NULL;
-    tls_node->is_used = 0;
-    nc_free_memory_block_mu(TLS_AND_TDB_MEMORY, tls_node);
+static void nc_release_tls_node(nc_thread_memory_block_t *block) {
+  if (block) {
+    nc_thread_descriptor_t* tdb =
+      (nc_thread_descriptor_t *) __nacl_tls_tdb_start(NODE_TO_PAYLOAD(block));
+
+    tdb->basic_data->tdb = NULL;
+    block->is_used = 0;
+    nc_free_memory_block_mu(TLS_AND_TDB_MEMORY, block);
   }
 }
 
@@ -485,7 +468,6 @@ int pthread_create(pthread_t *thread_id,
   nc_thread_descriptor_t *new_tdb = NULL;
   nc_basic_thread_data_t *new_basic_data = NULL;
   nc_thread_memory_block_t *tls_node = NULL;
-  char *tls = NULL;
 
   /* TODO(gregoryd) - right now a single lock is used, try to optimize? */
   pthread_mutex_lock(&__nc_thread_management_lock);
@@ -496,14 +478,11 @@ int pthread_create(pthread_t *thread_id,
     tls_node = nc_allocate_memory_block_mu(TLS_AND_TDB_MEMORY);
     if (NULL == tls_node)
       break;
-    /* Ensure that tls pointer is aligned, since the compiler assumes that */
-    tls = ALIGNED_NODE_TO_DATA(tls_node);
 
-    /* copy the TLS template into the TLS area */
-    memcpy(tls, TLS_TDATA_START, TLS_TDATA_SIZE);
-    memset(tls + TLS_TDATA_SIZE, 0, TLS_TBSS_SIZE);
+    __nacl_tls_data_bss_initialize_from_template(NODE_TO_PAYLOAD(tls_node));
 
-    new_tdb = TLS_TO_TDB(tls);
+    new_tdb = (nc_thread_descriptor_t *)
+              __nacl_tls_tdb_start(NODE_TO_PAYLOAD(tls_node));
     /* TODO(gregoryd): consider creating a pool of basic_data structs,
      * similar to stack and TLS+TDB (probably when adding the support for
      * variable stack size).
@@ -535,7 +514,7 @@ int pthread_create(pthread_t *thread_id,
       retval = -1;
       break;
     }
-    thread_stack = NODE_TO_DATA(stack_node);
+    thread_stack = NODE_TO_PAYLOAD(stack_node);
     thread_stack = ALIGN_ADDRESS(thread_stack, 16);
     new_tdb->stack_node = stack_node;
 

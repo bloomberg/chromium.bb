@@ -37,24 +37,31 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_NACL_TLS_H
 #define NATIVE_CLIENT_SRC_UNTRUSTED_NACL_TLS_H
 
+
+/* TODO(robertm): try to reduce visibility of this constant */
 #define TLS_ALIGNMENT 32
 
-/* Symbols defined by the linker */
-extern char __tls_template_start;
-extern char __tls_template_tdata_end;
-extern char __tls_template_end;
+/* size of tls data + bss + alignment fluff + tdb_size */
+size_t __nacl_tls_combined_size(size_t tdb_size);
 
-/* We can find TLS sections using symbols created by the linker */
-#define TLS_TDATA_START (&__tls_template_start)
-#define TLS_TDATA_SIZE (&__tls_template_tdata_end - TLS_TDATA_START)
-#define TLS_TBSS_SIZE (&__tls_template_end - &__tls_template_tdata_end)
-#define TLS_SIZE (&__tls_template_end - &__tls_template_start)
+/* start of tdb given a combined tls area, c.f. comment in .c file */
+void *__nacl_tls_tdb_start(void* p);
 
-/* This function initializes TLS and TDB for the main thread.
-* It is always called - with and without pthreads.
-* TDB initialization for the main thread is somewhat simpler than for
-* other threads.
-*/
+
+/* given a tls block, initialize data and bss from template */
+void __nacl_tls_data_bss_initialize_from_template(void* combined_area);
+
+/*
+ * This function initializes TLS and TDB for the main thread.
+ * It is always called - with and without pthreads.
+ * TDB initialization for the main thread is somewhat simpler than for
+ * other threads.
+ */
 int __pthread_initialize_minimal(size_t tdb_size);
+
+
+/* nacl specific addition defined in newlib */
+void __newlib_thread_init();
+
 
 #endif /* NATIVE_CLIENT_SRC_UNTRUSTED_NACL_TLS_H */
