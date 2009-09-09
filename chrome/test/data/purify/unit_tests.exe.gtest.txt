@@ -31,3 +31,7 @@ DnsMasterTest.MassiveConcurrentLookupTest
 
 # issue 19834
 SpellCheckTest.*
+
+# issue 21401
+ResourceDispatcherHostTest.TooManyOutstandingRequests
+
