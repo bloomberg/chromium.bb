@@ -1015,7 +1015,7 @@ void TabStripGtk::TabChangedAt(TabContents* contents, int index,
                                bool loading_only) {
   // Index is in terms of the model. Need to make sure we adjust that index in
   // case we have an animation going.
-  TabGtk* tab = GetTabAt(index);
+  TabGtk* tab = GetTabAtAdjustForAnimation(index);
   tab->UpdateData(contents, loading_only);
   tab->UpdateFromModel();
 }
@@ -1211,6 +1211,16 @@ TabGtk* TabStripGtk::GetTabAt(int index) const {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, GetTabCount());
   return tab_data_.at(index).tab;
+}
+
+TabGtk* TabStripGtk::GetTabAtAdjustForAnimation(int index) const {
+  if (active_animation_.get() &&
+      active_animation_->type() == TabAnimation::REMOVE &&
+      index >=
+      static_cast<RemoveTabAnimation*>(active_animation_.get())->index()) {
+    index++;
+  }
+  return GetTabAt(index);
 }
 
 void TabStripGtk::RemoveTabAt(int index) {

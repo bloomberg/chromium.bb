@@ -2495,7 +2495,7 @@ void Browser::ProcessPendingUIUpdates() {
 
     if (flags & TabContents::INVALIDATE_TAB) {
       tabstrip_model_.UpdateTabContentsStateAt(
-          tabstrip_model_.GetIndexOfController(&contents->controller()), false);
+          tabstrip_model_.GetIndexOfTabContents(contents), false);
       window_->UpdateTitleBar();
 
       if (selected_tab && contents == selected_tab) {

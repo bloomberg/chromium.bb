@@ -271,8 +271,18 @@ class TabStripGtk : public TabStripModelObserver,
   // Returns the number of pinned tabs.
   int GetPinnedTabCount() const;
 
-  // Retrieves the Tab at the specified index.
+  // Retrieves the Tab at the specified index. Take care in using this, you may
+  // need to use GetTabAtAdjustForAnimation.
   TabGtk* GetTabAt(int index) const;
+
+  // Returns the tab at the specified index. If a remove animation is on going
+  // and the index is >= the index of the tab being removed, the index is
+  // incremented. While a remove operation is on going the indices of the model
+  // do not line up with the indices of the view. This method adjusts the index
+  // accordingly.
+  //
+  // Use this instead of GetTabAt if the index comes from the model.
+  TabGtk* GetTabAtAdjustForAnimation(int index) const;
 
   // Returns the exact (unrounded) current width of each tab.
   void GetCurrentTabWidths(double* unselected_width,
