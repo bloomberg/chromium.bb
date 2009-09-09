@@ -981,9 +981,8 @@ TEST_F(AutomationProxyTest, AutocompleteParallelProxy) {
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
-// Not run on linux because of flakiness. http://crbug.com/19876
-#if defined(OS_WIN)
-TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
+// So flaky, http://crbug.com/19876. Consult phajdan.jr before re-enabling.
+TEST_F(AutomationProxyVisibleTest, DISABLED_AutocompleteMatchesTest) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<AutocompleteEditProxy> edit(
@@ -1000,7 +999,6 @@ TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   EXPECT_TRUE(edit->GetAutocompleteMatches(&matches));
   EXPECT_FALSE(matches.empty());
 }
-#endif  // defined(OS_WIN)
 
 // Disabled because flaky see bug #5314.
 TEST_F(AutomationProxyTest, DISABLED_AppModalDialogTest) {
