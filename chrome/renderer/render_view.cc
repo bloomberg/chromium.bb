@@ -212,7 +212,9 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       determine_page_text_after_loading_stops_(false),
       view_type_(ViewType::INVALID),
       browser_window_id_(-1),
-      last_top_level_navigation_page_id_(-1),
+     last_top_level_navigation_page_id_(-1),
+      has_spell_checker_document_tag_(false),
+      document_tag_(0),
       webkit_preferences_(webkit_preferences) {
   Singleton<RenderViewSet>()->render_view_set_.insert(this);
 }
@@ -221,6 +223,9 @@ RenderView::~RenderView() {
   Singleton<RenderViewSet>()->render_view_set_.erase(this);
   if (decrement_shared_popup_at_destruction_)
     shared_popup_counter_->data--;
+
+  // Tell the spellchecker that the document is closed.
+  Send(new ViewHostMsg_DocumentWithTagClosed(routing_id_, document_tag_));
 
   render_thread_->RemoveFilter(audio_message_filter_);
 }
@@ -346,6 +351,9 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Copy, OnCopy)
     IPC_MESSAGE_HANDLER(ViewMsg_Paste, OnPaste)
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
+    IPC_MESSAGE_HANDLER(ViewMsg_ToggleSpellPanel, OnToggleSpellPanel)
+    IPC_MESSAGE_HANDLER(ViewMsg_AdvanceToNextMisspelling,
+                        OnAdvanceToNextMisspelling)
     IPC_MESSAGE_HANDLER(ViewMsg_ToggleSpellCheck, OnToggleSpellCheck)
     IPC_MESSAGE_HANDLER(ViewMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectAll, OnSelectAll)
@@ -826,6 +834,23 @@ void RenderView::OnReplace(const std::wstring& text) {
     return;
 
   webview()->GetFocusedFrame()->replaceSelection(WideToUTF16Hack(text));
+}
+
+void RenderView::OnAdvanceToNextMisspelling() {
+  if (!webview())
+    return;
+  webview()->GetFocusedFrame()->executeCommand(
+      WebString::fromUTF8("AdvanceToNextMisspelling"));
+}
+
+void RenderView::OnToggleSpellPanel(bool is_currently_visible) {
+  if (!webview())
+    return;
+  // We need to tell the webView whether the spelling panel is visible or not so
+  // that it won't need to make ipc calls later.
+  webview()->SetSpellingPanelVisibility(is_currently_visible);
+  webview()->GetFocusedFrame()->executeCommand(
+      WebString::fromUTF8("ToggleSpellPanel"));
 }
 
 void RenderView::OnToggleSpellCheck() {
@@ -2520,22 +2545,43 @@ bool RenderView::WasOpenedByUserGesture() const {
   return opened_by_user_gesture_;
 }
 
-void RenderView::SpellCheck(const std::wstring& word, int* misspell_location,
-                            int* misspell_length) {
-  Send(new ViewHostMsg_SpellCheck(routing_id_, word, misspell_location,
-                                  misspell_length));
+void RenderView::SpellCheck(const std::wstring& word, int tag,
+                                   int* misspell_location,
+                                   int* misspell_length) {
+  Send(new ViewHostMsg_SpellCheck(routing_id_, word, tag,
+                                         misspell_location, misspell_length));
 }
 
 std::wstring RenderView::GetAutoCorrectWord(
-    const std::wstring& misspelled_word) {
+    const std::wstring& misspelled_word, int tag) {
   std::wstring autocorrect_word;
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kAutoSpellCorrect)) {
-    Send(new ViewHostMsg_GetAutoCorrectWord(routing_id_, misspelled_word,
+    Send(new ViewHostMsg_GetAutoCorrectWord(routing_id_, misspelled_word, tag,
                                             &autocorrect_word));
   }
 
   return autocorrect_word;
+}
+
+void RenderView::ShowSpellingUI(bool show) {
+  Send(new ViewHostMsg_ShowSpellingPanel(routing_id_, show));
+}
+
+int RenderView::SpellCheckerDocumentTag() {
+  if (!has_spell_checker_document_tag_) {
+    // Make the call to get the tag.
+    int tag;
+    Send(new ViewHostMsg_GetDocumentTag(routing_id_, &tag));
+    document_tag_ = tag;
+    has_spell_checker_document_tag_ = true;
+  }
+  return document_tag_;
+}
+
+void RenderView::UpdateSpellingUIWithMisspelledWord(const std::wstring& word) {
+  Send(new ViewHostMsg_UpdateSpellingPanelWithMisspelledWord(
+      routing_id_, word));
 }
 
 void RenderView::ScriptedPrint(WebFrame* frame) {

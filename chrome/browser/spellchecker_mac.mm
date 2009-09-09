@@ -7,11 +7,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/spellchecker_common.h"
-#include "chrome/browser/spellchecker_platform_engine.h"
+#include "base/logging.h"
 #include "base/time.h"
 #include "base/histogram.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/spellchecker_common.h"
+#include "chrome/browser/spellchecker_platform_engine.h"
 
 using base::TimeTicks;
 namespace {
@@ -92,9 +93,30 @@ bool SpellCheckerProvidesPanel() {
   return true;
 }
 
-bool SpellCheckerPanelVisible() {
-  return [[[NSSpellChecker sharedSpellChecker] spellingPanel]
-            isVisible] ? true : false;
+bool SpellingPanelVisible() {
+  // This should only be called from the main thread.
+  DCHECK([NSThread currentThread] == [NSThread mainThread]);
+  return [[[NSSpellChecker sharedSpellChecker] spellingPanel] isVisible];
+}
+
+void ShowSpellingPanel(bool show) {
+  if (show) {
+    [[[NSSpellChecker sharedSpellChecker] spellingPanel]
+        performSelectorOnMainThread:@selector(makeKeyAndOrderFront:)
+                         withObject:nil
+                      waitUntilDone:YES];
+  } else {
+    [[[NSSpellChecker sharedSpellChecker] spellingPanel]
+        performSelectorOnMainThread:@selector(close)
+                         withObject:nil
+                      waitUntilDone:YES];
+  }
+}
+
+void UpdateSpellingPanelWithMisspelledWord(const std::wstring& word) {
+  NSString * word_to_display = base::SysWideToNSString(word);
+  [[NSSpellChecker sharedSpellChecker]
+          updateSpellingPanelWithMisspelledWord:word_to_display];
 }
 
 void Init() {
@@ -121,7 +143,11 @@ void SetLanguage(const std::string& lang_to_set) {
   [[NSSpellChecker sharedSpellChecker] setLanguage:NS_lang_to_set];
 }
 
-bool CheckSpelling(const std::string& word_to_check) {
+static int last_seen_tag_;
+
+bool CheckSpelling(const std::string& word_to_check, int tag) {
+  last_seen_tag_ = tag;
+
   // [[NSSpellChecker sharedSpellChecker] checkSpellingOfString] returns an
   // NSRange that we can look at to determine if a word is misspelled.
   NSRange spell_range = {0,0};
@@ -130,7 +156,9 @@ bool CheckSpelling(const std::string& word_to_check) {
   NSString* NS_word_to_check = base::SysUTF8ToNSString(word_to_check);
   // Check the spelling, starting at the beginning of the word.
   spell_range = [[NSSpellChecker sharedSpellChecker]
-                 checkSpellingOfString:NS_word_to_check startingAt:0];
+                  checkSpellingOfString:NS_word_to_check startingAt:0
+                  language:nil wrap:NO inSpellDocumentWithTag:tag
+                  wordCount:NULL];
 
   // If the length of the misspelled word == 0,
   // then there is no misspelled word.
@@ -164,6 +192,21 @@ void AddWord(const std::wstring& word) {
 void RemoveWord(const std::wstring& word) {
   NSString *word_to_remove = base::SysWideToNSString(word);
   [[NSSpellChecker sharedSpellChecker] unlearnWord:word_to_remove];
+}
+
+int GetDocumentTag() {
+  NSInteger doc_tag = [NSSpellChecker uniqueSpellDocumentTag];
+  return static_cast<int>(doc_tag);
+}
+
+void IgnoreWord(const std::string& word) {
+  [[NSSpellChecker sharedSpellChecker] ignoreWord:base::SysUTF8ToNSString(word)
+                           inSpellDocumentWithTag:last_seen_tag_];
+}
+
+void CloseDocumentWithTag(int tag) {
+  [[NSSpellChecker sharedSpellChecker]
+      closeSpellDocumentWithTag:static_cast<NSInteger>(tag)];
 }
 }  // namespace SpellCheckerPlatform
 

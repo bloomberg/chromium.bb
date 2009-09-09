@@ -275,6 +275,7 @@ class RenderViewHost : public RenderWidgetHost,
   void AddToDictionary(const std::wstring& word);
   void Delete();
   void SelectAll();
+  void ToggleSpellPanel(bool is_currently_visible);
 
   // Downloads an image notifying the FavIcon delegate appropriately. The
   // returned integer uniquely identifies the download for the lifetime of the

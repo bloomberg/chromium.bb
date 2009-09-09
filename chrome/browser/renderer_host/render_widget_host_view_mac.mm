@@ -12,6 +12,7 @@
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/mac/WebInputEventFactory.h"
@@ -690,6 +691,58 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
   return ([event type] == NSKeyDown) ? YES : NO;
 }
 
+// Spellchecking methods
+// The next three methods are implemented here since this class is the first
+// responder for anything in the browser.
+
+// This message is sent whenever the user specifies that a word should be
+// changed from the spellChecker.
+- (void)changeSpelling:(id)sender {
+  // Grab the currently selected word from the spell panel, as this is the word
+  // that we want to replace the selected word in the text with.
+  NSString* newWord = [[sender selectedCell] stringValue];
+  if (newWord != nil) {
+    RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
+    thisHostView->GetRenderWidgetHost()->ReplaceWord(
+        base::SysNSStringToWide(newWord));
+  }
+}
+
+// This message is sent by NSSpellChecker whenever the next word should be
+// advanced to, either after a correction or clicking the "Find Next" button.
+// This isn't documented anywhere useful, like in NSSpellProtocol.h with the
+// other spelling panel methods. This is probably because Apple assumes that the
+// the spelling panel will be used with an NSText, which will automatically
+// catch this and advance to the next word for you. Thanks Apple.
+- (void)checkSpelling:(id)sender {
+  RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
+  thisHostView->GetRenderWidgetHost()->AdvanceToNextMisspelling();
+}
+
+// This message is sent by the spelling panel whenever a word is ignored.
+- (void)ignoreSpelling:(id)sender {
+  // Ideally, we would ask the current RenderView for its tag, but that would
+  // mean making a blocking IPC call from the browser. Instead,
+  // SpellCheckerPlatform::CheckSpelling remembers the last tag and
+  // SpellCheckerPlatform::IgnoreWord assumes that is the correct tag.
+  NSString* wordToIgnore = [sender stringValue];
+  if (wordToIgnore != nil) {
+    SpellCheckerPlatform::IgnoreWord(base::SysNSStringToUTF8(wordToIgnore));
+
+    // Strangely, the spellingPanel doesn't send checkSpelling after a word is
+    // ignored, so we have to explicitly call AdvanceToNextMisspelling here.
+    RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
+    thisHostView->GetRenderWidgetHost()->AdvanceToNextMisspelling();
+  }
+}
+
+- (void)showGuessPanel:(id)sender {
+  RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
+  thisHostView->GetRenderWidgetHost()->ToggleSpellPanel(
+      SpellCheckerPlatform::SpellingPanelVisible());
+}
+
+// END Spellchecking methods
 
 // Below is the nasty tooltip stuff -- copied from WebKit's WebHTMLView.mm
 // with minor modifications for code style and commenting.

@@ -27,6 +27,7 @@
 #include "chrome/browser/renderer_host/file_system_accessor.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/spellchecker.h"
+#include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/appcache/appcache_dispatcher_host.h"
@@ -296,8 +297,15 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
                           OnForwardToWorker)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SpellCheck, OnSpellCheck)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDocumentTag,
+                                      OnGetDocumentTag)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentWithTagClosed,
+                          OnDocumentWithTagClosed)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetAutoCorrectWord,
                                       OnGetAutoCorrectWord)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_ShowSpellingPanel, OnShowSpellingPanel)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
+                          OnUpdateSpellingPanelWithMisspelledWord)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DnsPrefetch, OnDnsPrefetch)
       IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms,
                           OnRendererHistograms)
@@ -376,7 +384,7 @@ void ResourceMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
     int misspell_location, misspell_length;
     bool is_misspelled = !spellchecker_->SpellCheckWord(
         params.misspelled_word.c_str(),
-        static_cast<int>(params.misspelled_word.length()),
+        static_cast<int>(params.misspelled_word.length()), 0,
         &misspell_location, &misspell_length,
         &params.dictionary_suggestions);
 
@@ -870,14 +878,14 @@ Clipboard* ResourceMessageFilter::GetClipboard() {
 // spellings are correct.
 //
 // Note: This is called in the IO thread.
-void ResourceMessageFilter::OnSpellCheck(const std::wstring& word,
+void ResourceMessageFilter::OnSpellCheck(const std::wstring& word, int tag,
                                          IPC::Message* reply_msg) {
   int misspell_location = 0;
   int misspell_length = 0;
 
   if (spellchecker_ != NULL) {
     spellchecker_->SpellCheckWord(word.c_str(),
-                                  static_cast<int>(word.length()),
+                                  static_cast<int>(word.length()), tag,
                                   &misspell_location, &misspell_length, NULL);
   }
 
@@ -887,18 +895,38 @@ void ResourceMessageFilter::OnSpellCheck(const std::wstring& word,
   return;
 }
 
+void ResourceMessageFilter::OnGetDocumentTag(IPC::Message* reply_msg) {
+  int tag = SpellCheckerPlatform::GetDocumentTag();
+  ViewHostMsg_GetDocumentTag::WriteReplyParams(reply_msg, tag);
+  Send(reply_msg);
+  return;
+}
+
+void ResourceMessageFilter::OnDocumentWithTagClosed(int tag) {
+  SpellCheckerPlatform::CloseDocumentWithTag(tag);
+}
 
 void ResourceMessageFilter::OnGetAutoCorrectWord(const std::wstring& word,
+                                                 int tag,
                                                  IPC::Message* reply_msg) {
   std::wstring autocorrect_word;
   if (spellchecker_ != NULL) {
-    spellchecker_->GetAutoCorrectionWord(word, &autocorrect_word);
+    spellchecker_->GetAutoCorrectionWord(word, tag, &autocorrect_word);
   }
 
   ViewHostMsg_GetAutoCorrectWord::WriteReplyParams(reply_msg,
                                                    autocorrect_word);
   Send(reply_msg);
   return;
+}
+
+void ResourceMessageFilter::OnShowSpellingPanel(bool show) {
+  SpellCheckerPlatform::ShowSpellingPanel(show);
+}
+
+void ResourceMessageFilter::OnUpdateSpellingPanelWithMisspelledWord(
+                                                     const std::wstring& word) {
+  SpellCheckerPlatform::UpdateSpellingPanelWithMisspelledWord(word);
 }
 
 void ResourceMessageFilter::Observe(NotificationType type,

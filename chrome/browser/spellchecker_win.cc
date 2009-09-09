@@ -28,28 +28,33 @@ bool SpellCheckerProvidesPanel() {
   return false;
 }
 
-bool SpellCheckerPanelVisible() {
+bool SpellingPanelVisible() {
   return false;
 }
 
-void Init() {
-}
+void ShowSpellingPanel(bool show) { }
 
-void SetLanguage(const std::string& lang_to_set) {
-}
+void UpdateSpellingPanelWithMisspelledWord(const std::wstring& word) { }
 
-bool CheckSpelling(const std::string& word_to_check) {
+void Init() { }
+
+void SetLanguage(const std::string& lang_to_set) { }
+
+bool CheckSpelling(const std::string& word_to_check, int tag) {
   return false;
 }
 
 void FillSuggestionList(const std::string& wrong_word,
-                        std::vector<std::wstring>* optional_suggestions) {
-}
+                        std::vector<std::wstring>* optional_suggestions) { }
 
-void AddWord(const std::wstring& word) {
-}
+void AddWord(const std::wstring& word) { }
 
-void RemoveWord(const std::wstring& word) {
-}
+void RemoveWord(const std::wstring& word) { }
+
+int GetDocumentTag() { return 0; }
+
+void IgnoreWord(const std::string& word) { }
+
+void CloseDocumentWithTag(int tag) { }
 
 }  // namespace SpellCheckerPlatform

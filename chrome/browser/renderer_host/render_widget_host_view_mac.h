@@ -30,7 +30,7 @@ class RWHVMEditCommandHelper;
 // when it's removed from the view system.
 
 @interface RenderWidgetHostViewCocoa
-    : BaseView <RenderWidgetHostViewMacOwner, NSTextInput> {
+    : BaseView <RenderWidgetHostViewMacOwner, NSTextInput, NSChangeSpelling> {
  @private
   RenderWidgetHostViewMac* renderWidgetHostView_;
   BOOL canBeKeyView_;

@@ -64,6 +64,8 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // SpellCheck a word.
   // Returns true if spelled correctly, false otherwise.
   // If the spellchecker failed to initialize, always returns true.
+  // The |tag| parameter should either be a unique identifier for the document
+  // that the word came from (if the current platform requires it), or 0.
   // In addition, finds the suggested words for a given word
   // and puts them into |*optional_suggestions|.
   // If the word is spelled correctly, the vector is empty.
@@ -71,6 +73,7 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // Note that Doing suggest lookups can be slow.
   bool SpellCheckWord(const wchar_t* in_word,
                       int in_word_len,
+                      int tag,
                       int* misspelling_start,
                       int* misspelling_len,
                       std::vector<std::wstring>* optional_suggestions);
@@ -78,7 +81,7 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // Find a possible correctly spelled word for a misspelled word. Computes an
   // empty string if input misspelled word is too long, there is ambiguity, or
   // the correct spelling cannot be determined.
-  void GetAutoCorrectionWord(const std::wstring& word,
+  void GetAutoCorrectionWord(const std::wstring& word, int tag,
       std::wstring* autocorrect_word);
 
   // Turn auto spell correct support ON or OFF.
@@ -124,7 +127,7 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
 
   // When called, relays the request to check the spelling to the proper
   // backend, either hunspell or a platform-specific backend.
-  bool CheckSpelling(const std::string& word_to_check);
+  bool CheckSpelling(const std::string& word_to_check, int tag);
 
   // When called, relays the request to fill the list with suggestions to
   // the proper backend, either hunspell or a platform-specific backend.
@@ -144,7 +147,7 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
 
   // Returns whether or not the given word is a contraction of valid words
   // (e.g. "word:word").
-  bool IsValidContraction(const string16& word);
+  bool IsValidContraction(const string16& word, int tag);
 
   // Return the file name of the dictionary, including the path and the version
   // numbers.

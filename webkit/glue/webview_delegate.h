@@ -729,16 +729,27 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // indices (inclusive) will be filled with the offsets of the boundary of the
   // word within the given buffer. The out pointers must be specified. If the
   // word is correctly spelled (returns true), they will be set to (0,0).
-  virtual void SpellCheck(const std::wstring& word, int* misspell_location,
+  virtual void SpellCheck(const std::wstring& word, int tag,
+                          int* misspell_location,
                           int* misspell_length) {
     *misspell_location = *misspell_length = 0;
   }
 
   // Computes an auto correct word for a misspelled word. If no word is found,
   // empty string is computed.
-  virtual std::wstring GetAutoCorrectWord(const std::wstring& misspelled_word) {
+  virtual std::wstring GetAutoCorrectWord(const std::wstring& misspelled_word,
+                                          int tag) {
     return std::wstring();
   }
+
+  // Returns the document tag for the current WebView.
+  virtual int SpellCheckerDocumentTag() { return 0; }
+
+  // Switches the spelling panel to be displayed or not based on |show|.
+  virtual void ShowSpellingUI(bool show) { }
+
+  // Update the spelling panel with the |word|.
+  virtual void UpdateSpellingUIWithMisspelledWord(const std::wstring& word) { }
 
   // Asks the user to print the page or a specific frame. Called in response to
   // a window.print() call.

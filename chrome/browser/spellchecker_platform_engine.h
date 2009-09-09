@@ -26,7 +26,14 @@ bool SpellCheckerAvailable();
 bool SpellCheckerProvidesPanel();
 
 // Returns true if the platform spellchecker panel is visible.
-bool SpellCheckerPanelVisible();
+bool SpellingPanelVisible();
+
+// Shows the spelling panel if |show| is true and hides it if it is not.
+void ShowSpellingPanel(bool show);
+
+// Changes the word show in the spelling panel to be |word|. Note that the
+// spelling panel need not be displayed for this to work.
+void UpdateSpellingPanelWithMisspelledWord(const std::wstring& word);
 
 // Do any initialization needed for spellchecker.
 void Init();
@@ -43,7 +50,7 @@ void SetLanguage(const std::string& lang_to_set);
 
 // Checks the spelling of the given string, using the platform-specific
 // spellchecker. Returns true if the word is spelled correctly.
-bool CheckSpelling(const std::string& word_to_check);
+bool CheckSpelling(const std::string& word_to_check, int tag);
 
 // Fills the given vector |optional_suggestions| with a number (up to
 // kMaxSuggestions, which is defined in spellchecker_common.h) of suggestions
@@ -56,6 +63,21 @@ void AddWord(const std::wstring& word);
 
 // Remove a given word from the platform dictionary.
 void RemoveWord(const std::wstring& word);
+
+// Gets a unique tag to identify a document. Used in ignoring words.
+int GetDocumentTag();
+
+// Tells the platform spellchecker to ignore a word. This doesn't take a tag
+// because in most of the situations in which it is called, the only way to know
+// the tag for sure is to ask the renderer, which would mean blocking in the
+// browser, so (on the mac, anyway) we remember the most recent tag and use
+// it, since it should always be from the same document.
+void IgnoreWord(const std::string& word);
+
+// Tells the platform spellchecker that a document associated with a tag has
+// closed. Generally, this means that any ignored words associated with that
+// document can now be forgotten.
+void CloseDocumentWithTag(int tag);
 }
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_PLATFORM_ENGINE_H_

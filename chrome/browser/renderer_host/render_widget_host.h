@@ -328,6 +328,15 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // And to also expose it to the RenderWidgetHostView.
   virtual gfx::Rect GetRootWindowResizerRect() const;
 
+  // Makes an IPC call to toggle the spelling panel.
+  void ToggleSpellPanel(bool is_currently_visible);
+
+  // Makes an IPC call to tell webkit to replace the currently selected word.
+  void ReplaceWord(const std::wstring& word);
+
+  // Makes an IPC call to tell webkit to advance to the next misspelling.
+  void AdvanceToNextMisspelling();
+
   // Sets the active state (i.e., control tints).
   virtual void SetActive(bool active);
 

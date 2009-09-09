@@ -184,6 +184,11 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED0(ViewMsg_ToggleSpellCheck)
   IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
   IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
+  IPC_MESSAGE_ROUTED1(ViewMsg_ToggleSpellPanel, bool)
+
+  // This message tells the renderer to advance to the next misspelling. It is
+  // sent when the user clicks the "Find Next" button on the spelling panel.
+  IPC_MESSAGE_ROUTED0(ViewMsg_AdvanceToNextMisspelling)
 
   // Copies the image at location x, y to the clipboard (if there indeed is an
   // image at that location).
@@ -928,13 +933,34 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::string /* actual mime type for url */)
 
   // Requests spellcheck for a word.
-  IPC_SYNC_MESSAGE_ROUTED1_2(ViewHostMsg_SpellCheck,
+  IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_SpellCheck,
                              std::wstring /* word to check */,
+                             int /* document tag*/,
                              int /* misspell location */,
                              int /* misspell length */)
 
-  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetAutoCorrectWord,
+  // Asks the browser for a unique document tag.
+  IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetDocumentTag,
+                             int /* the tag */)
+
+
+  // This message tells the spellchecker that a document, identified by an int
+  // tag, has been closed and all of the ignored words for that document can be
+  // forgotten.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentWithTagClosed,
+                      int /* the tag */)
+
+  // Tells the browser to display or not display the SpellingPanel
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowSpellingPanel,
+                      bool /* if true, then show it, otherwise hide it*/)
+
+  // Tells the browser to update the spelling panel with the given word.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
+                      std::wstring /* the word to update the panel with */)
+
+  IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetAutoCorrectWord,
                              std::wstring /* word to check */,
+                             int /* tag for the document containg the word */,
                              std::wstring /* autocorrected word */)
 
   // Initiate a download based on user actions like 'ALT+click'.

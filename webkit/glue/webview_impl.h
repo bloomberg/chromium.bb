@@ -242,6 +242,9 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   // the underlying Node for them.
   WebCore::Node* GetNodeForWindowPos(int x, int y);
 
+  virtual void SetSpellingPanelVisibility(bool is_visible);
+  virtual bool GetSpellingPanelVisibility();
+
 #if ENABLE(NOTIFICATIONS)
   // Returns the provider of desktop notifications.
   WebKit::NotificationPresenterImpl* GetNotificationPresenter();
@@ -393,6 +396,9 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
 
   // Whether the webview is rendering transparently.
   bool is_transparent_;
+
+  // Whether the spelling panel is currently being displayed or not.
+  bool spelling_panel_is_visible_;
 
   // Inspector settings.
   std::wstring inspector_settings_;

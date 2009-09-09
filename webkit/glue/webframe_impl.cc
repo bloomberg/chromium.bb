@@ -973,6 +973,12 @@ bool WebFrameImpl::executeCommand(const WebString& name) {
     rv = frame()->editor()->command(AtomicString("BackwardDelete")).execute();
   } else if (EqualsASCII(command, "DeleteForward")) {
     rv = frame()->editor()->command(AtomicString("ForwardDelete")).execute();
+  } else if (EqualsASCII(command, "AdvanceToNextMisspelling")) {
+    // False must be passed here, or the currently selected word will never be
+    // skipped.
+    frame()->editor()->advanceToNextMisspelling(false);
+  } else if (EqualsASCII(command, "ToggleSpellPanel")) {
+    frame()->editor()->showSpellingGuessPanel();
   } else {
     rv = frame()->editor()->command(AtomicString(command.c_str())).execute();
   }

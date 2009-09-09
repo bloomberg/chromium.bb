@@ -533,7 +533,7 @@ bool SpellChecker::Initialize() {
   return false;
 }
 
-void SpellChecker::GetAutoCorrectionWord(const std::wstring& word,
+void SpellChecker::GetAutoCorrectionWord(const std::wstring& word, int tag,
                                          std::wstring* autocorrect_word) {
   autocorrect_word->clear();
   if (!auto_spell_correct_turned_on_)
@@ -560,7 +560,7 @@ void SpellChecker::GetAutoCorrectionWord(const std::wstring& word,
 
     // Check spelling.
     misspelling_start = misspelling_len = 0;
-    SpellCheckWord(misspelled_word, word_length, &misspelling_start,
+    SpellCheckWord(misspelled_word, word_length, tag, &misspelling_start,
         &misspelling_len, NULL);
 
     // Make decision: if only one swap produced a valid word, then we want to
@@ -604,7 +604,7 @@ void SpellChecker::AddCustomWordsToHunspell() {
 // This function is a fall-back when the SpellcheckWordIterator class
 // returns a concatenated word which is not in the selected dictionary
 // (e.g. "in'n'out") but each word is valid.
-bool SpellChecker::IsValidContraction(const string16& contraction) {
+bool SpellChecker::IsValidContraction(const string16& contraction, int tag) {
   SpellcheckWordIterator word_iterator;
   word_iterator.Initialize(&character_attributes_, contraction.c_str(),
                            contraction.length(), false);
@@ -613,7 +613,7 @@ bool SpellChecker::IsValidContraction(const string16& contraction) {
   int word_start;
   int word_length;
   while (word_iterator.GetNextWord(&word, &word_start, &word_length)) {
-    if (!CheckSpelling(UTF16ToUTF8(word)))
+    if (!CheckSpelling(UTF16ToUTF8(word), tag))
       return false;
   }
   return true;
@@ -622,6 +622,7 @@ bool SpellChecker::IsValidContraction(const string16& contraction) {
 bool SpellChecker::SpellCheckWord(
     const wchar_t* in_word,
     int in_word_len,
+    int tag,
     int* misspelling_start,
     int* misspelling_len,
     std::vector<std::wstring>* optional_suggestions) {
@@ -665,13 +666,13 @@ bool SpellChecker::SpellCheckWord(
     // Found a word (or a contraction) that the spellchecker can check the
     // spelling of.
     std::string encoded_word = UTF16ToUTF8(word);
-    bool word_ok = CheckSpelling(encoded_word);
+    bool word_ok = CheckSpelling(encoded_word, tag);
     if (word_ok)
       continue;
 
     // If the given word is a concatenated word of two or more valid words
     // (e.g. "hello:hello"), we should treat it as a valid word.
-    if (IsValidContraction(word))
+    if (IsValidContraction(word, tag))
       continue;
 
     *misspelling_start = word_start;
@@ -739,12 +740,12 @@ void SpellChecker::AddWord(const std::wstring& word) {
     write_word_task->Run();
 }
 
-bool SpellChecker::CheckSpelling(const std::string& word_to_check) {
+bool SpellChecker::CheckSpelling(const std::string& word_to_check, int tag) {
   bool word_correct = false;
 
   TimeTicks begin_time = TimeTicks::Now();
   if (is_using_platform_spelling_engine_) {
-    word_correct = SpellCheckerPlatform::CheckSpelling(word_to_check);
+    word_correct = SpellCheckerPlatform::CheckSpelling(word_to_check, tag);
   } else {
     // |hunspell_->spell| returns 0 if the word is spelled correctly and
     // non-zero otherwsie.

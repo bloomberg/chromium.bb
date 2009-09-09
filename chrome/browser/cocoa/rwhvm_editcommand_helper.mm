@@ -95,6 +95,7 @@ const char* kEditCommands[] = {
   "selectToMark",
   "selectWord",
   "setMark",
+  "showGuessPanel",
   "subscript",
   "superscript",
   "swapWithMark",

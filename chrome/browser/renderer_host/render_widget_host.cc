@@ -877,3 +877,15 @@ void RenderWidgetHost::ScrollBackingStoreRect(TransportDIB* bitmap,
   backing_store->ScrollRect(process_->process().handle(), bitmap, bitmap_rect,
                             dx, dy, clip_rect, view_size);
 }
+
+void RenderWidgetHost::ToggleSpellPanel(bool is_currently_visible) {
+  Send(new ViewMsg_ToggleSpellPanel(routing_id(), is_currently_visible));
+}
+
+void RenderWidgetHost::ReplaceWord(const std::wstring& word) {
+  Send(new ViewMsg_Replace(routing_id_, word));
+}
+
+void RenderWidgetHost::AdvanceToNextMisspelling() {
+  Send(new ViewMsg_AdvanceToNextMisspelling(routing_id_));
+}

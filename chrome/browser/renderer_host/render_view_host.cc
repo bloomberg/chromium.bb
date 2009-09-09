@@ -558,6 +558,10 @@ void RenderViewHost::SelectAll() {
   Send(new ViewMsg_SelectAll(routing_id()));
 }
 
+void RenderViewHost::ToggleSpellPanel(bool is_currently_visible) {
+  Send(new ViewMsg_ToggleSpellPanel(routing_id(), is_currently_visible));
+}
+
 int RenderViewHost::DownloadFavIcon(const GURL& url, int image_size) {
   if (!url.is_valid()) {
     NOTREACHED();

@@ -19,6 +19,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/spellchecker.h"
+#include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
@@ -258,6 +259,15 @@ void RenderViewContextMenu::AppendEditableItems() {
       l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD));
 
+  // Add option for showing the spelling panel if the platfrom spellchecker
+  // supports it.
+  if (SpellCheckerPlatform::SpellCheckerAvailable() &&
+      SpellCheckerPlatform::SpellCheckerProvidesPanel()) {
+    AppendCheckboxMenuItem(IDC_SPELLPANEL_TOGGLE,  l10n_util::GetStringUTF16(
+              SpellCheckerPlatform::SpellingPanelVisible() ?
+              IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL :
+              IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL));
+  }
   FinishSubMenu();
 
   AppendSeparator();
@@ -700,6 +710,10 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
           LANGUAGES_PAGE, profile_);
       break;
 
+    case IDC_SPELLPANEL_TOGGLE:
+      source_tab_contents_->render_view_host()->ToggleSpellPanel(
+                                  SpellCheckerPlatform::SpellingPanelVisible());
+      break;
     case IDS_CONTENT_CONTEXT_ADDSEARCHENGINE:  // Not implemented.
     default:
       break;

@@ -159,10 +159,14 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
                      const GURL& referrer);
-  void OnSpellCheck(const std::wstring& word,
+  void OnSpellCheck(const std::wstring& word, int tag,
                     IPC::Message* reply_msg);
-  void OnGetAutoCorrectWord(const std::wstring& word,
+  void OnGetDocumentTag(IPC::Message* reply_msg);
+  void OnDocumentWithTagClosed(int tag);
+  void OnGetAutoCorrectWord(const std::wstring& word, int tag,
                             IPC::Message* reply_msg);
+  void OnShowSpellingPanel(bool show);
+  void OnUpdateSpellingPanelWithMisspelledWord(const std::wstring& word);
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
   void OnRendererHistograms(int sequence_number,
                             const std::vector<std::string>& histogram_info);

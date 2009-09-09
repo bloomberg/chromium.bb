@@ -243,6 +243,9 @@ class WebView : public WebKit::WebWidget {
   virtual void SetIsTransparent(bool is_transparent) = 0;
   virtual bool GetIsTransparent() const = 0;
 
+  virtual void SetSpellingPanelVisibility(bool is_visible) = 0;
+  virtual bool GetSpellingPanelVisibility() = 0;
+
   // Performs an action from a context menu for the node at the given
   // location.
   virtual void MediaPlayerActionAt(int x,

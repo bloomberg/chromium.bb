@@ -7,7 +7,9 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/browser/spellchecker.h"
+#include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -280,6 +282,7 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     int misspelling_length;
     bool result = spell_checker->SpellCheckWord(kTestCases[i].input,
                                                 static_cast<int>(input_length),
+                                                0,
                                                 &misspelling_start,
                                                 &misspelling_length, NULL);
 
@@ -377,9 +380,7 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     {L"compitition", false, 0,0,L"competition"},
     {L"conceed", false, 0,0,L"concede"},
     {L"congradulate", false, 0,0,L"congratulate"},
-    // TODO(pwicks): This fails as a result of 13432.
-    // Once that is fixed, uncomment this.
-    // {L"consciencious", false, 0,0,L"conscientious"},
+    {L"consciencious", false, 0, 0, L"conscientious"},
     {L"concious", false, 0,0,L"conscious"},
     {L"concensus", false, 0,0,L"consensus"},
     {L"contraversy", false, 0,0,L"controversy"},
@@ -452,9 +453,7 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     {L"imediately", false, 0,0,L"immediately"},
     {L"incidently", false, 0,0,L"incidentally"},
     {L"independant", false, 0,0,L"independent"},
-    // TODO(pwicks): This fails as a result of 13432.
-    // Once that is fixed, uncomment this.
-    // {L"indispensible", false, 0,0,L"indispensable"},
+    {L"indispensible", false, 0, 0, L"indispensable"},
     {L"innoculate", false, 0,0,L"inoculate"},
     {L"inteligence", false, 0,0,L"intelligence"},
     {L"intresting", false, 0,0,L"interesting"},
@@ -533,9 +532,7 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     {L"proffesional", false, 0,0,L"professional"},
     {L"professer", false, 0,0,L"professor"},
     {L"promiss", false, 0,0,L"promise"},
-    // TODO(pwicks): This fails as a result of 13432.
-    // Once that is fixed, uncomment this.
-    // {L"pronounciation", false, 0,0,L"pronunciation"},
+    {L"pronounciation", false, 0, 0, L"pronunciation"},
     {L"prufe", false, 0,0,L"proof"},
     {L"psycology", false, 0,0,L"psychology"},
     {L"publically", false, 0,0,L"publicly"},
@@ -631,6 +628,7 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     int misspelling_length;
     bool result = spell_checker->SpellCheckWord(kTestCases[i].input,
                                                 static_cast<int>(input_length),
+                                                0,
                                                 &misspelling_start,
                                                 &misspelling_length,
                                                 &suggestions);
@@ -899,6 +897,7 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     int misspelling_length = 0;
     bool result = spell_checker->SpellCheckWord(kTestCases[i].input,
                                                 static_cast<int>(input_length),
+                                                0,
                                                 &misspelling_start,
                                                 &misspelling_length, NULL);
 
@@ -940,6 +939,7 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckAddToDictionary_EN_US) {
     int misspelling_length;
     bool result = spell_checker->SpellCheckWord(kTestCases[i].word_to_add,
                                                 static_cast<int>(input_length),
+                                                0,
                                                 &misspelling_start,
                                                 &misspelling_length,
                                                 &suggestions);
@@ -964,6 +964,7 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckAddToDictionary_EN_US) {
     bool result = spell_checker_new->SpellCheckWord(
         kTestCases[i].word_to_add,
         static_cast<int>(input_length),
+        0,
         &misspelling_start,
         &misspelling_length,
         &suggestions);
@@ -1030,6 +1031,7 @@ TEST_F(SpellCheckTest, DISABLED_SpellCheckSuggestionsAddToDictionary_EN_US) {
     int misspelling_length;
     bool result = spell_checker->SpellCheckWord(kTestCasesToBeTested[i].input,
                                                 static_cast<int>(input_length),
+                                                0,
                                                 &misspelling_start,
                                                 &misspelling_length,
                                                 &suggestions);
@@ -1081,9 +1083,86 @@ TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
     std::wstring misspelled_word(kTestCases[i].input);
     std::wstring expected_autocorrect_word(kTestCases[i].expected_result);
     std::wstring autocorrect_word;
-    spell_checker->GetAutoCorrectionWord(misspelled_word, &autocorrect_word);
+    spell_checker->GetAutoCorrectionWord(misspelled_word, 0, &autocorrect_word);
 
     // Check for spelling.
     EXPECT_EQ(expected_autocorrect_word, autocorrect_word);
   }
 }
+
+#if defined(OS_MACOSX)
+// Tests that words are properly ignored. Currently only enabled on OS X as it
+// is the only platform to support ignoring words. Note that in this test, we
+// supply a non-zero doc_tag, in order to test that ignored words are matched to
+// the correct document.
+TEST_F(SpellCheckTest, IgnoreWords_EN_US) {
+  static const struct {
+    // A misspelled word.
+    const wchar_t* input;
+    bool input_result;
+    } kTestCases[] = {
+    {L"teh",false},
+    {L"moer", false},
+    {L"watre",false},
+    {L"noen", false},
+    };
+
+  FilePath hunspell_directory = GetHunspellDirectory();
+  ASSERT_FALSE(hunspell_directory.empty());
+
+  scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
+      hunspell_directory, "en-US", NULL, FilePath()));
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+    std::wstring word(kTestCases[i].input);
+    std::string misspelled_word = base::SysWideToUTF8(word);
+    std::vector<std::wstring> suggestions;
+    size_t input_length = 0;
+    if (kTestCases[i].input != NULL) {
+      input_length = wcslen(kTestCases[i].input);
+    }
+    int misspelling_start;
+    int misspelling_length;
+
+    int doc_tag = SpellCheckerPlatform::GetDocumentTag();
+    bool result = spell_checker->SpellCheckWord(kTestCases[i].input,
+                                                static_cast<int>(input_length),
+                                                doc_tag,
+                                                &misspelling_start,
+                                                &misspelling_length,
+                                                &suggestions);
+
+    // The word should show up as misspelled.
+    EXPECT_EQ(kTestCases[i].input_result, result);
+
+    // Ignore the word.
+    SpellCheckerPlatform::IgnoreWord(misspelled_word);
+
+    // Spellcheck again.
+    result = spell_checker->SpellCheckWord(kTestCases[i].input,
+                                           static_cast<int>(input_length),
+                                           doc_tag,
+                                           &misspelling_start,
+                                           &misspelling_length,
+                                           &suggestions);
+
+    // The word should now show up as correctly spelled.
+    EXPECT_EQ(!(kTestCases[i].input_result), result);
+
+    // Close the docuemnt. Any words that we had previously ignored should no
+    // longer be ignored and thus should show up as misspelled.
+    SpellCheckerPlatform::CloseDocumentWithTag(doc_tag);
+
+    // Spellcheck one more time.
+    result = spell_checker->SpellCheckWord(kTestCases[i].input,
+                                           static_cast<int>(input_length),
+                                           doc_tag,
+                                           &misspelling_start,
+                                           &misspelling_length,
+                                           &suggestions);
+
+    // The word should now show be spelled wrong again
+    EXPECT_EQ(kTestCases[i].input_result, result);
+  }
+} // Test IgnoreWords_EN_US
+#endif // OS_MACOSX

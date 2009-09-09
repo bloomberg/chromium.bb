@@ -1934,3 +1934,11 @@ HitTestResult WebViewImpl::HitTestResultForWindowPos(const IntPoint& pos) {
   return page_->mainFrame()->eventHandler()->
       hitTestResultAtPoint(doc_point, false);
 }
+
+void WebViewImpl::SetSpellingPanelVisibility(bool is_visible) {
+  spelling_panel_is_visible_ = is_visible;
+}
+
+bool WebViewImpl::GetSpellingPanelVisibility() {
+  return spelling_panel_is_visible_;
+}

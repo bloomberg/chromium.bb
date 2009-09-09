@@ -152,7 +152,13 @@ void EditorClientImpl::toggleGrammarChecking() {
 }
 
 int EditorClientImpl::spellCheckerDocumentTag() {
+#if defined(OS_MACOSX)
+  WebViewDelegate* d = web_view_->delegate();
+  if (d)
+    return d->SpellCheckerDocumentTag();
+#else
   NOTIMPLEMENTED();
+#endif // OS_MACOSX
   return 0;
 }
 
@@ -838,7 +844,8 @@ void EditorClientImpl::checkSpellingOfString(const UChar* str, int length,
   if (isContinuousSpellCheckingEnabled() && d) {
     std::wstring word =
         webkit_glue::StringToStdWString(WebCore::String(str, length));
-    d->SpellCheck(word, &spell_location, &spell_length);
+    d->SpellCheck(word, spellCheckerDocumentTag(),
+                  &spell_location, &spell_length);
   } else {
     spell_location = 0;
     spell_length = 0;
@@ -867,7 +874,8 @@ WebCore::String EditorClientImpl::getAutoCorrectSuggestionForMisspelledWord(
       return WebCore::String();
   }
 
-  std::wstring autocorrect_word = d->GetAutoCorrectWord(word);
+  std::wstring autocorrect_word =
+      d->GetAutoCorrectWord(word, spellCheckerDocumentTag());
   return webkit_glue::StdWStringToString(autocorrect_word);
 }
 
@@ -887,16 +895,28 @@ void EditorClientImpl::updateSpellingUIWithGrammarString(const WebCore::String&,
   NOTIMPLEMENTED();
 }
 
-void EditorClientImpl::updateSpellingUIWithMisspelledWord(const WebCore::String&) {
-  NOTIMPLEMENTED();
+void EditorClientImpl::updateSpellingUIWithMisspelledWord(
+    const WebCore::String& misspelled_word) {
+  std::wstring word = webkit_glue::StringToStdWString(misspelled_word);
+  WebViewDelegate* d = web_view_->delegate();
+  if (d) {
+    d->UpdateSpellingUIWithMisspelledWord(word);
+  }
 }
 
 void EditorClientImpl::showSpellingUI(bool show) {
-  NOTIMPLEMENTED();
+  WebViewDelegate* d = web_view_->delegate();
+  if (d) {
+    d->ShowSpellingUI(show);
+  }
 }
 
 bool EditorClientImpl::spellingUIIsShowing() {
-  return false;
+  // SpellingPanel visibility is stored in the web_view_ every time a toggle
+  // message is sent from the browser. If we were to send a message to the
+  // browser and ask for the visibility, then we run into problems accessing
+  // cocoa methods on the UI thread.
+  return web_view_->GetSpellingPanelVisibility();
 }
 
 void EditorClientImpl::getGuessesForWord(const WebCore::String&,

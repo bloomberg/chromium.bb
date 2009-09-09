@@ -467,6 +467,12 @@ each locale. aa1 -->
       <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD" desc="The name of the Check the spelling of this field command in the content area context menu">
         &amp;Check the spelling of this field
       </message>
+      <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="The name of the Show Spelling Panel command in the content area context menu">
+        &amp;Show Spelling Panel
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="The name of the Hide Spelling Panel command in the content area context menu">
+        &amp;Hide Spelling Panel
+      </message>
       <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
         Select &amp;all
       </message>
