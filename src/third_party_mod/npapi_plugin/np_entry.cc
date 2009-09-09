@@ -55,9 +55,11 @@ extern "C" {
                                           );
   NP_EXPORT(NPError) OSCALL NP_GetEntryPoints(NPPluginFuncs* pFuncs);
   NP_EXPORT(NPError) OSCALL NP_Shutdown(void);
+#if defined(NACL_STANDALONE)  //  No need for this in Chrome
   // Firefox 2 requires main() to be defined.
   NP_EXPORT(int) main(NPNetscapeFuncs* nsTable, NPPluginFuncs* pluginFuncs,
                       NPP_ShutdownUPP* unloadUpp);
+#endif
 }
 
 #endif  // XP_MACOSX
@@ -213,7 +215,7 @@ NPError OSCALL NP_Shutdown()
   return NPERR_NO_ERROR;
 }
 
-#ifdef XP_MACOSX
+#if defined(XP_MACOSX) && defined(NACL_STANDALONE)  // Not required for Chrome
 
 int main(NPNetscapeFuncs* nsTable, NPPluginFuncs* pluginFuncs, NPP_ShutdownUPP* unloadUpp)
 {
