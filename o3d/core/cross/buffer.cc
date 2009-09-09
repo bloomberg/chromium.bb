@@ -204,6 +204,13 @@ bool Buffer::ReshuffleBuffer(unsigned int new_stride, Field* field_to_remove) {
   }
   if (num_elements_) {
     size_t size_in_bytes = num_elements_ * new_stride;
+    // Check for size_t overflow.
+    if (size_in_bytes / new_stride != num_elements_) {
+      O3D_ERROR(service_locator())
+          << "Attempt to allocate too many elements for the current set of "
+          << "fields on buffer.";
+      return false;
+    }
     std::vector<uint8> temp(size_in_bytes);
 
     // Copy old fields into new buffer.
