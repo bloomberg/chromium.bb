@@ -325,6 +325,11 @@ def CommandSelLdrTestNacl(env, name, command,
   trusted_env = env['TRUSTED_ENV']
   sel_ldr = trusted_env.File('${STAGING_DIR}/'
                              + '${PROGPREFIX}sel_ldr${PROGSUFFIX}')
+
+  # Temporarily: ignore ABI mismatch on ARM.
+  if env['BUILD_ARCHITECTURE'] == 'arm':
+    sel_ldr_flags = sel_ldr_flags + ['-I']
+
   command = [sel_ldr] + sel_ldr_flags  + ['-f'] + command
 
   # NOTE(robertm): log handling is a little magical
