@@ -60,8 +60,17 @@ View* NativeTabbedPaneGtk::RemoveTabAtIndex(int index) {
       // last tab. nothing to select.
     }
   }
-  View* removed_tab = GetTabViewAt(index);
 
+  GtkWidget* page =
+      gtk_notebook_get_nth_page(GTK_NOTEBOOK(native_view()), index);
+  WidgetGtk* widget = WidgetGtk::GetViewForNative(page);
+
+  // detach the content view from widget so that we can delete widget
+  // without destroying the content view.
+  View* removed_tab = GetTabViewAt(index);
+  widget->GetRootView()->RemoveChildView(removed_tab);
+
+  // widget delete itself when native_view is deleted.
   gtk_notebook_remove_page(GTK_NOTEBOOK(native_view()), index);
 
   return removed_tab;

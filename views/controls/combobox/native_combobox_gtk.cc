@@ -114,15 +114,15 @@ void NativeComboboxGtk::CreateNativeControl() {
                    G_CALLBACK(CallChanged), this);
 
   NativeControlCreated(widget);
-
-  // Set the data from combobox
-  UpdateFromModel();
-  // and show the 1st item by default.
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
 }
 
 void NativeComboboxGtk::NativeControlCreated(GtkWidget* native_control) {
   NativeControlGtk::NativeControlCreated(native_control);
+
+  // Set the data from combobox
+  UpdateFromModel();
+  // and show the 1st item by default.
+  gtk_combo_box_set_active(GTK_COMBO_BOX(native_control), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
