@@ -15,7 +15,7 @@ import simplejson
 
 class JSONResultsGenerator:
 
-  MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG = 200
+  MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG = 500
   # Min time (seconds) that will be added to the JSON.
   MIN_TIME = 1
   JSON_PREFIX = "ADD_RESULTS("
@@ -24,6 +24,12 @@ class JSONResultsGenerator:
   LAYOUT_TESTS_PATH = "layout_tests"
   PASS_RESULT = "P"
   NO_DATA_RESULT = "N"
+  VERSION = 1
+  VERSION_KEY = "version"
+  RESULTS = "results"
+  TIMES = "times"
+  BUILD_NUMBERS = "buildNumbers"
+  TESTS = "tests"
 
   def __init__(self, failures, individual_test_timings, builder_name,
       build_number, results_file_path, all_tests):
@@ -119,17 +125,19 @@ class JSONResultsGenerator:
       # just grab it from wherever it's archived to.
       results_json = {}
 
+    self._ConvertJSONToCurrentVersion(results_json)
+
     if self._builder_name not in results_json:
       results_json[self._builder_name] = self._CreateResultsForBuilderJSON()
 
-    tests = results_json[self._builder_name]["tests"]
+    tests = results_json[self._builder_name][self.TESTS]
     all_failing_tests = set(self._failures.iterkeys())
     all_failing_tests.update(tests.iterkeys())
 
-    build_numbers = results_json[self._builder_name]["buildNumbers"]
+    build_numbers = results_json[self._builder_name][self.BUILD_NUMBERS]
     build_numbers.insert(0, self._build_number)
     build_numbers = build_numbers[:self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG]
-    results_json[self._builder_name]["buildNumbers"] = build_numbers
+    results_json[self._builder_name][self.BUILD_NUMBERS] = build_numbers
     num_build_numbers = len(build_numbers)
 
     for test in all_failing_tests:
@@ -142,25 +150,66 @@ class JSONResultsGenerator:
         tests[test] = self._CreateResultsAndTimesJSON()
 
       thisTest = tests[test]
-      thisTest["results"] = result_and_time.result + thisTest["results"]
-      thisTest["times"].insert(0, result_and_time.time)
-
+      self._InsertItemRunLengthEncoded(result_and_time.result,
+          thisTest[self.RESULTS])
+      self._InsertItemRunLengthEncoded(result_and_time.time,
+          thisTest[self.TIMES])
       self._NormalizeResultsJSON(thisTest, test, tests, num_build_numbers)
 
     # Specify separators in order to get compact encoding.
     results_str = simplejson.dumps(results_json, separators=(',', ':'))
     return self.JSON_PREFIX + results_str + self.JSON_SUFFIX
 
+  def _InsertItemRunLengthEncoded(self, item, encoded_results):
+    """Inserts the item into the run-length encoded results.
+
+    Args:
+      item: String or number to insert.
+      encoded_results: run-length encoded results. An array of arrays, e.g.
+          [[3,'A'],[1,'Q']] encodes AAAQ.
+    """
+    if len(encoded_results) and item == encoded_results[0][1]:
+      encoded_results[0][0] += 1
+    else:
+      # Use a list instead of a class for the run-length encoding since we
+      # want the serialized form to be concise.
+      encoded_results.insert(0, [1, item])
+
+  def _ConvertJSONToCurrentVersion(self, results_json):
+    """If the JSON does not match the current version, converts it to the
+    current version and adds in the new version number.
+    """
+    if (self.VERSION_KEY in results_json and
+        results_json[self.VERSION_KEY] == self.VERSION):
+      return
+
+    for builder in results_json:
+      tests = results_json[builder][self.TESTS]
+      for path in tests:
+        test = tests[path]
+        test[self.RESULTS] = self._RunLengthEncode(test[self.RESULTS])
+        test[self.TIMES] = self._RunLengthEncode(test[self.TIMES])
+
+    results_json[self.VERSION_KEY] = self.VERSION
+
+  def _RunLengthEncode(self, result_list):
+    """Run-length encodes a list or string of results."""
+    encoded_results = [];
+    current_result = None;
+    for item in reversed(result_list):
+      self._InsertItemRunLengthEncoded(item, encoded_results)
+    return encoded_results
+
   def _CreateResultsAndTimesJSON(self):
     results_and_times = {}
-    results_and_times["results"] = ""
-    results_and_times["times"] = []
+    results_and_times[self.RESULTS] = []
+    results_and_times[self.TIMES] = []
     return results_and_times
 
   def _CreateResultsForBuilderJSON(self):
     results_for_builder = {}
-    results_for_builder['buildNumbers'] = []
-    results_for_builder['tests'] = {}
+    results_for_builder[self.BUILD_NUMBERS] = []
+    results_for_builder[self.TESTS] = {}
     return results_for_builder
 
   def _GetResultsCharForFailure(self, test):
@@ -182,6 +231,23 @@ class JSONResultsGenerator:
     else:
       return "O"
 
+  def _RemoveItemsOverMaxNumberOfBuilds(self, encoded_list):
+    """Removes items from the run-length encoded list after the final itme that
+    exceeds the max number of builds to track.
+
+    Args:
+      encoded_results: run-length encoded results. An array of arrays, e.g.
+          [[3,'A'],[1,'Q']] encodes AAAQ.
+    """
+    num_builds = 0
+    index = 0
+    for result in encoded_list:
+      num_builds = num_builds + result[0]
+      index = index + 1
+      if num_builds > self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG:
+        return encoded_list[:index]
+    return encoded_list
+
   def _NormalizeResultsJSON(self, test, test_path, tests, num_build_numbers):
     """ Prune tests where all runs pass or tests that no longer exist and
     truncate all results to maxNumberOfBuilds and pad results that don't
@@ -193,32 +259,15 @@ class JSONResultsGenerator:
       tests: The JSON object with all the test results for this builder.
       num_build_numbers: The number to truncate/pad results to.
     """
-    results = test["results"]
-    num_results = len(results)
-    times = test["times"]
-
-    if num_results != len(times):
-      logging.error("Test has different number of build times versus results")
-      times = []
-      results = ""
-      num_results = 0
-
-    # Truncate or right-pad so there are exactly maxNumberOfBuilds results.
-    if num_results > num_build_numbers:
-      results = results[:num_build_numbers]
-      times = times[:num_build_numbers]
-    elif num_results < num_build_numbers:
-      num_to_pad = num_build_numbers - num_results
-      results = results + num_to_pad * self.NO_DATA_RESULT
-      times.extend(num_to_pad * [0])
-
-    test["results"] = results
-    test["times"] = times
+    test[self.RESULTS] = self._RemoveItemsOverMaxNumberOfBuilds(
+        test[self.RESULTS])
+    test[self.TIMES] = self._RemoveItemsOverMaxNumberOfBuilds(test[self.TIMES])
 
     # Remove all passes/no-data from the results to reduce noise and filesize.
-    if (results == num_build_numbers * self.NO_DATA_RESULT or
-        (max(times) <= self.MIN_TIME and num_results and
-         results == num_build_numbers * self.PASS_RESULT)):
+    if (self._IsResultsAllOfType(test[self.RESULTS], self.PASS_RESULT) or
+        (self._IsResultsAllOfType(test[self.RESULTS], self.NO_DATA_RESULT) and
+         max(test[self.TIMES],
+             lambda x, y : cmp(x[1], y[1])) <= self.MIN_TIME)):
       del tests[test_path]
 
     # Remove tests that don't exist anymore.
@@ -226,6 +275,11 @@ class JSONResultsGenerator:
     full_path = os.path.normpath(full_path)
     if not os.path.exists(full_path):
       del tests[test_path]
+
+  def _IsResultsAllOfType(self, results, type):
+    """Returns whether all teh results are of the given type (e.g. all passes).
+    """
+    return len(results) == 1 and results[0][1] == type
 
 class ResultAndTime:
   """A holder for a single result and runtime for a test."""

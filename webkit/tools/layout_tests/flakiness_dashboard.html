@@ -15,17 +15,22 @@
       font-size: 16px;
       margin-bottom: .25em;
     }
-    form {
-      margin: 3px 0;
+    #max-results-form {
+      display: inline;
+    }
+    #max-results-input {
+      width: 30px;
+    }
+    #tests-form {
       display: -webkit-box;
     }
-    form > * {
+    #tests-form > * {
       display: -webkit-box;
     }
-    form > div {
+    #tests-form > div {
       -webkit-box-flex: 0;
     }
-    form > input {
+    #tests-input {
       -webkit-box-flex: 1;
     }
     .test-link {
@@ -172,60 +177,278 @@
    *   -add the builder name to the list of builders below.
    */
 
-  // Default to layout_tests.
-  var testType = 'layout_test_results';
-  var params = window.location.search.substring(1).split('&');
-  for (var i = 0; i < params.length; i++) {
-    var thisParam = params[i].split('=');
-    if (thisParam[0] == 'testtype') {
-      testType = thisParam[1];
-      break;
+   // CONSTANTS
+   var FORWARD = 'forward';
+   var BACKWARD = 'backward';
+   var TEST_URL_BASE_PATH =
+       'http://trac.webkit.org/projects/webkit/browser/trunk/';
+   var BUILDERS_BASE_PATH =
+       'http://build.chromium.org/buildbot/waterfall/builders/';
+   var EXPECTATIONS_MAP = {
+     'T': 'TIMEOUT',
+     'C': 'CRASH',
+     'P': 'PASS',
+     'F': 'TEXT FAIL',
+     'S': 'SIMPLIFIED',
+     'I': 'IMAGE',
+     'O': 'OTHER',
+     'N': 'NO DATA'
+   };
+   var PLATFORMS = {'MAC': 'MAC', 'LINUX': 'LINUX', 'WIN': 'WIN'};
+   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
+
+   // GLOBALS
+   // The DUMMYVALUE gets shifted off the array in the first call to
+   // generatePage.
+   var tableHeaders = ['DUMMYVALUE', 'bugs', 'modifiers', 'expectations',
+       'missing', 'extra', 'slowest run',
+       'flakiness (numbers are runtimes in seconds)'];
+   var perBuilderPlatformAndBuildType = {};
+   var perBuilderFailures = {};
+   // Map of builder to arrays of tests that are listed in the expectations file
+   // but have for that builder.
+   var perBuilderWithExpectationsButNoFailures = {};
+
+
+  // Generic utility functions.
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function stringContains(a, b) {
+    return a.indexOf(b) != -1;
+  }
+
+  function isValidName(str) {
+    return str.match(/[A-Za-z0-9\-\_,]/);
+  }
+
+  function trimString(str) {
+    return str.replace(/^\s+|\s+$/g, '');
+  }
+
+  function anyKeyInString(object, string) {
+    for (var key in object) {
+      if (stringContains(string, key))
+        return true;
+    }
+    return false;
+  }
+
+  function validateParameter(state, key, value, validateFn) {
+    if (validateFn()) {
+      state[key] = value;
+    } else {
+      console.log(key + ' value is not valid: ' + value);
     }
   }
 
-  // Map of builderName (the name shown in the waterfall)
-  // to builderPath (the path used in the builder's URL)
-  // TODO(ojan): Make this switch based off of the testType.
-  var builders = {
-    'Webkit': 'webkit-rel',
-    'Webkit (dbg)(1)': 'webkit-dbg-1',
-    'Webkit (dbg)(2)': 'webkit-dbg-2',
-    'Webkit (dbg)(3)': 'webkit-dbg-3',
-    'Webkit Linux': 'webkit-rel-linux',
-    'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
-    'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',
-    'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
-    'Webkit Mac10.5': 'webkit-rel-mac5',
-    'Webkit Mac10.5 (dbg)(1)': 'webkit-dbg-mac5-1',
-    'Webkit Mac10.5 (dbg)(2)': 'webkit-dbg-mac5-2',
-    'Webkit Mac10.5 (dbg)(3)': 'webkit-dbg-mac5-3'
+  /**
+   * Parses a string (e.g. window.location.hash) and calls
+   * validValueHandler(key, value) for each key-value pair in the string.
+   */
+  function parseParameters(parameterStr, validValueHandler) {
+    var params = parameterStr.split('&');
+    for (var i = 0; i < params.length; i++) {
+      var thisParam = params[i].split('=');
+      if (thisParam.length != 2) {
+        console.log('Invalid query parameter: ' + params[i]);
+        continue;
+      }
+
+      var key = thisParam[0];
+      var value = decodeURIComponent(thisParam[1]);
+      if (!validValueHandler(key, value))
+        console.log('Invalid key: ' + key + ' value: ' + value);
+    }
+  }
+
+  function appendScript(path) {
+    var script = document.createElement('script');
+    script.src = path;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+
+  // Parse query parameters.
+  var queryState = {'debug': false, 'testType': 'layout_test_results'};
+
+  function handleValidQueryParameter(key, value) {
+    switch (key) {
+      case 'testType':
+        validateParameter(queryState, key, value,
+            function() {
+              return isValidName(value);
+            });
+
+        return true;
+
+      case 'debug':
+        queryState[key] = value == 'true';
+
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  parseParameters(window.location.search.substring(1),
+      handleValidQueryParameter);
+  if (queryState['debug']) {
+    // In debug mode point to the results.json and expectations.json in the
+    // local tree. Useful for debugging changes to the python JSON generator.
+    var builders = {'DUMMY_BUILDER_NAME': ''};
+    var builderBase = '../../Debug/';
+    queryState['testType'] = 'layout-test-results';
+  } else {
+    // Map of builderName (the name shown in the waterfall)
+    // to builderPath (the path used in the builder's URL)
+    // TODO(ojan): Make this switch based off of the testType.
+    var builders = {
+      'Webkit': 'webkit-rel',
+      'Webkit (dbg)(1)': 'webkit-dbg-1',
+      'Webkit (dbg)(2)': 'webkit-dbg-2',
+      'Webkit (dbg)(3)': 'webkit-dbg-3',
+      'Webkit Linux': 'webkit-rel-linux',
+      'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
+      'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',
+      'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
+      'Webkit Mac10.5': 'webkit-rel-mac5',
+      'Webkit Mac10.5 (dbg)(1)': 'webkit-dbg-mac5-1',
+      'Webkit Mac10.5 (dbg)(2)': 'webkit-dbg-mac5-2',
+      'Webkit Mac10.5 (dbg)(3)': 'webkit-dbg-mac5-3'
+    };
+    var builderBase = 'http://build.chromium.org/buildbot/';
+  }
+
+  // Parse hash parameters.
+  // Permalinkable state of the page.
+  var currentState = {};
+
+  var defaultStateValues = {
+    sortOrder: BACKWARD,
+    sortColumn: 'flakiness',
+    showWontFix: false,
+    showCorrectExpectations: false,
+    showFlaky: true,
+    maxResults: 200
   };
 
+  for (var builder in builders) {
+    defaultStateValues.builder = builder;
+    break;
+  }
+
+  function fillDefaultStateValues() {
+    // tests has no states with default values.
+    if (currentState.tests)
+      return;
+
+    for (var state in defaultStateValues) {
+      if (!(state in currentState))
+        currentState[state] = defaultStateValues[state];
+    }
+  }
+
+  function handleValidHashParameter(key, value) {
+    switch(key) {
+      case 'tests':
+        validateParameter(currentState, key, value,
+            function() {
+              return isValidName(value);
+            });
+
+        return true;
+
+      case 'builder':
+        validateParameter(currentState, key, value,
+            function() {
+              return value in builders;
+            });
+
+        return true;
+
+      case 'sortColumn':
+        validateParameter(currentState, key, value,
+            function() {
+              for (var i = 0; i < tableHeaders.length; i++) {
+                if (value == getSortColumnFromTableHeader(tableHeaders[i]))
+                  return true;
+              }
+              return value == 'test';
+            });
+
+        return true;
+
+      case 'sortOrder':
+        validateParameter(currentState, key, value,
+            function() {
+              return value == FORWARD || value == BACKWARD;
+            });
+
+        return true;
+
+      case 'maxResults':
+        validateParameter(currentState, key, value,
+            function() {
+              return value.match(/^\d+$/)
+            });
+
+        return true;
+
+      case 'showWontFix':
+      case 'showCorrectExpectations':
+      case 'showFlaky':
+        currentState[key] = value == 'true';
+
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  // Keep the location around for detecting changes to hash arguments
+  // manually typed into the URL bar.
+  var oldLocation;
+
+  function parseAllParameters() {
+    oldLocation = window.location.href;
+    parseParameters(window.location.search.substring(1),
+        handleValidQueryParameter);
+    parseParameters(window.location.hash.substring(1),
+        handleValidHashParameter);
+    fillDefaultStateValues();
+  }
+
+  parseAllParameters();
+
+  // Append JSON script elements.
   var resultsByBuilder = {};
   // Maps test path to an array of {builder, testResults} objects.
   var testToResultsMap = {};
   var expectationsByTest = {};
   function ADD_RESULTS(builds) {
     for (var builderName in builds) {
-      resultsByBuilder[builderName] = builds[builderName];
+      if (builderName != 'version')
+        resultsByBuilder[builderName] = builds[builderName];
     }
 
     generatePage();
   }
-  var BUILDER_BASE = 'http://build.chromium.org/buildbot/';
+
   function getPathToBuilderResultsFile(builderName) {
-    return BUILDER_BASE + testType + '/' + builders[builderName] + '/';
-  }
-  for (var builderName in builders) {
-    var script = document.createElement('script');
-    script.src = getPathToBuilderResultsFile(builderName) + 'results.json';
-    document.getElementsByTagName('head')[0].appendChild(script);
+    return builderBase + queryState['testType'] + '/' +
+        builders[builderName] + '/';
   }
 
-  var script = document.createElement('script');
+  for (var builderName in builders) {
+    appendScript(getPathToBuilderResultsFile(builderName) + 'results.json');
+  }
+
   // Grab expectations file from any builder.
-  script.src = getPathToBuilderResultsFile(builderName) + 'expectations.json';
-  document.getElementsByTagName('head')[0].appendChild(script);
+  appendScript(getPathToBuilderResultsFile(builderName) + 'expectations.json');
 
   var expectationsLoaded = false;
   function ADD_EXPECTATIONS(expectations) {
@@ -234,38 +457,6 @@
     generatePage();
   }
 
-  // CONSTANTS
-  var FORWARD = 'forward';
-  var BACKWARD = 'backward';
-  var TEST_URL_BASE_PATH =
-      'http://trac.webkit.org/projects/webkit/browser/trunk/';
-  var BUILDERS_BASE_PATH =
-      'http://build.chromium.org/buildbot/waterfall/builders/';
-  var EXPECTATIONS_MAP = {
-    'T': 'TIMEOUT',
-    'C': 'CRASH',
-    'P': 'PASS',
-    'F': 'TEXT FAIL',
-    'S': 'SIMPLIFIED',
-    'I': 'IMAGE',
-    'O': 'OTHER',
-    'N': 'NO DATA'
-  };
-  var PLATFORMS = {'MAC': 'MAC', 'LINUX': 'LINUX', 'WIN': 'WIN'};
-  var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
-
-  // GLOBALS
-  // The DUMMYVALUE gets shifted off the array in the first call to
-  // generatePage.
-  var tableHeaders = ['DUMMYVALUE', 'bugs', 'modifiers', 'expectations',
-      'missing', 'extra', 'slowest run',
-      'flakiness (numbers are runtimes in seconds)'];
-  var perBuilderPlatformAndBuildType = {};
-  var oldLocation;
-  var perBuilderFailures = {};
-  // Map of builder to arrays of tests that are listed in the expectations file
-  // but have for that builder.
-  var perBuilderWithExpectationsButNoFailures = {};
 
   function createResultsObjectForTest(test) {
     return {
@@ -295,26 +486,6 @@
       if (stringContains(stringToMatch, elementsMap[element]))
         return element;
     }
-  }
-
-  function $(id) {
-    return document.getElementById(id);
-  }
-
-  function stringContains(a, b) {
-    return a.indexOf(b) != -1;
-  }
-
-  function trimString(str) {
-    return str.replace(/^\s+|\s+$/g, '');
-  }
-
-  function anyKeyInString(object, string) {
-    for (var key in object) {
-      if (stringContains(string, key))
-        return true;
-    }
-    return false;
   }
 
   /**
@@ -585,17 +756,16 @@
             htmlArrays.modifiers.join('<div class=separator></div>');
       }
 
-      var rawResults = resultsByBuilder[builderName].tests[test].results;
+      var rawTest = resultsByBuilder[builderName].tests[test];
+      resultsForTest.rawTimes = rawTest.times;
+      var rawResults = rawTest.results;
       resultsForTest.rawResults = rawResults;
-      var results = rawResults.split('');
+      resultsForTest.flips = rawResults.length - 1;
 
       var unexpectedExpectations = [];
       var resultsMap = {}
-      for (var i = 0; i < results.length - 1; i++) {
-        if (results[i] != results[i + 1])
-          resultsForTest.flips++;
-
-        var expectation = getExpectationsFileStringForResult(results[i]);
+      for (var i = 0; i < rawResults.length; i++) {
+        var expectation = getExpectationsFileStringForResult(rawResults[i][1]);
         resultsMap[expectation] = true;
       }
 
@@ -618,19 +788,24 @@
           missingExpectations.push(result);
       }
 
-      // TODO(ojan): Make this detect the case of a test that has NODATA,
-      // then fails for a few runs, then passes for the rest. We should
-      // consider that as meetsExpectations since every new test will have
-      // that pattern.
+      var times = resultsByBuilder[builderName].tests[test].times;
+      for (var i = 0; i < times.length; i++) {
+        resultsForTest.slowestTime = Math.max(resultsForTest.slowestTime,
+            times[i][1]);
+      }
+
+      if (resultsForTest.slowestTime &&
+          (!resultsForTest.expectations ||
+           !stringContains(resultsForTest.expectations, 'TIMEOUT')) &&
+          (!resultsForTest.modifiers ||
+           !stringContains(resultsForTest.modifiers, 'SLOW'))) {
+        missingExpectations.push('SLOW');
+      }
+
       resultsForTest.meetsExpectations =
           !missingExpectations.length && !extraExpectations.length;
       resultsForTest.missing = missingExpectations.sort().join(' ');
       resultsForTest.extra = extraExpectations.sort().join(' ');
-
-      var times = resultsByBuilder[builderName].tests[test].times;
-      resultsForTest.slowestTime = Math.max.apply(null, times)
-
-      resultsForTest.html = getHtmlForTestResults(builderName, test);
 
       failures.push(resultsForTest);
 
@@ -672,29 +847,49 @@
     return bugs;
   }
 
-  function didTestPassAllRuns(builderName, testPath) {
-    var numBuilds = resultsByBuilder[builderName].buildNumbers.length;
-    var passingResults = Array(numBuilds + 1).join('P');
-    var results = resultsByBuilder[builderName].tests[testPath].results;
-    return results == passingResults;
-  }
-
   function loadBuilderPageForBuildNumber(builderName, buildNumber) {
     window.open(BUILDERS_BASE_PATH + builderName + '/builds/' + buildNumber);
   }
 
-  function getHtmlForTestResults(builderName, testPath) {
+  function getHtmlForTestResults(test, builder) {
     var html = '';
-    var test = resultsByBuilder[builderName].tests[testPath];
-    var results = test.results.split('');
-    var times = test.times;
-    var buildNumbers = resultsByBuilder[builderName].buildNumbers;
-    for (var i = 0; i < results.length; i++) {
+    var results = test.rawResults.concat();
+    var times = test.rawTimes.concat();
+    var buildNumbers = resultsByBuilder[builder].buildNumbers;
+
+    var indexToReplaceCurrentResult = -1;
+    var indexToReplaceCurrentTime = -1;
+    var currentResultArray, currentTimeArray, currentResult, innerHTML;
+    for (var i = 0;
+         i < buildNumbers.length && i < currentState.maxResults;
+         i++) {
+      if (i > indexToReplaceCurrentResult) {
+        currentResultArray = results.shift();
+        if (currentResultArray) {
+          currentResult = currentResultArray[1];
+          indexToReplaceCurrentResult += currentResultArray[0];
+        } else {
+          currentResult = 'N';
+          indexToReplaceCurrentResult += buildNumbers.length;
+        }
+      }
+
+      if (i > indexToReplaceCurrentTime) {
+        currentTimeArray = times.shift();
+        var currentTime = 0;
+        if (currentResultArray) {
+          currentTime = currentTimeArray[1];
+          indexToReplaceCurrentTime += currentTimeArray[0];
+        } else {
+          indexToReplaceCurrentTime += buildNumbers.length;
+        }
+        innerHTML = currentTime || '&nbsp;';
+      }
+
       var buildNumber = buildNumbers[i];
-      var innerHTML = times[i] > 0 ? times[i] : '&nbsp;';
       html += '<td title="Build:' + buildNumber + '" class="results ' +
-          results[i] + '" onclick=\'loadBuilderPageForBuildNumber("' +
-          builderName + '","' + buildNumber + '")\'>' + innerHTML + '</td>';
+          currentResult + '" onclick=\'loadBuilderPageForBuildNumber("' +
+          builder + '","' + buildNumber + '")\'>' + innerHTML + '</td>';
     }
     return html;
   }
@@ -717,7 +912,7 @@
    * avoid common non-flaky cases.
    */
   function isTestFlaky(testResult) {
-    return testResult.flips > 1 && !isFixedNewTest(testResult);
+    return testResult.flips > 1 && !isFixedTest(testResult);
   }
 
   /**
@@ -727,12 +922,21 @@
    * Where that middle part can be a series of F's, S's or I's for the
    * different types of failures.
    */
-  function isFixedNewTest(testResult) {
-    if (testResult.isFixedNewTest === undefined) {
-      testResult.isFixedNewTest =
-          testResult.rawResults.match(/^P+(S+|F+|I+)N+$/);
+  function isFixedTest(testResult) {
+    if (testResult.isFixedTest === undefined) {
+      var results = testResult.rawResults;
+      var isFixedTest = results[0][1] == 'P';
+      if (isFixedTest && results.length > 1) {
+        var secondResult = results[1][1];
+        isFixedTest = secondResult == 'S' || secondResult == 'F' ||
+            secondResult == 'I';
+      }
+      if (isFixedTest && results.length > 2) {
+        isFixedTest = results.length == 3 && results[2][1] == 'N';
+      }
+      testResult.isFixedTest = isFixedTest;
     }
-    return testResult.isFixedNewTest;
+    return testResult.isFixedTest;
   }
 
   /**
@@ -748,7 +952,7 @@
     if (testResult.isWontFix && !currentState.showWontFix)
       return true;
 
-    if ((testResult.meetsExpectations || isFixedNewTest(testResult)) &&
+    if ((testResult.meetsExpectations || isFixedTest(testResult)) &&
         !currentState.showCorrectExpectations) {
       // Only hide flaky tests that match their expectations if showFlaky
       // is false.
@@ -758,17 +962,17 @@
     return !currentState.showFlaky && isTestFlaky(testResult);
   }
 
-  function getHTMLForSingleTestRow(test, opt_builder) {
+  function getHTMLForSingleTestRow(test, builder, opt_isCrossBuilderView) {
     if (shouldHideTest(test)) {
       // The innerHTML call is considerably faster if we exclude the rows for
       // items we're not showing than if we hide them using display:none.
       return '';
     }
 
-    // If opt_builder is provided, we're just viewing a single test
+    // If opt_isCrossBuilderView is true, we're just viewing a single test
     // with results for many builders, so the first column is builder names
     // instead of test paths.
-    var testCellHTML = opt_builder ? opt_builder :
+    var testCellHTML = opt_isCrossBuilderView ? builder :
       '<span class="link" onclick="setState(\'tests\', \'' + test.test +
       '\');return false;">' + test.test + '</span>';
 
@@ -783,9 +987,7 @@
       '</td><td>' + test.missing +
       '</td><td>' + test.extra +
       '</td><td>' + (test.slowestTime ? test.slowestTime + 's' : '') +
-      '</td>' +
-      test.html +
-      '</tr>';
+      '</td>' + getHtmlForTestResults(test, builder) + '</tr>';
   }
 
   function getSortColumnFromTableHeader(headerText) {
@@ -890,8 +1092,6 @@
   }
 
   function generatePage() {
-    parseCurrentLocation();
-
     // Only continue if all the JSON files have loaded.
     if (!expectationsLoaded)
       return;
@@ -930,7 +1130,7 @@
         var tableRowsHTML = '';
         for (var j = 0; j < testResults.length; j++) {
           tableRowsHTML += getHTMLForSingleTestRow(testResults[j].results,
-              testResults[j].builder);
+              testResults[j].builder, true);
         }
         html += getHTMLForTestTable(tableRowsHTML);
       } else {
@@ -952,7 +1152,8 @@
           builder + '</span>';
     }
     html += '</div>' +
-        '<form onsubmit="setState(\'tests\', tests.value);return false;">' +
+        '<form id=tests-form ' +
+        'onsubmit="setState(\'tests\', tests.value);return false;">' +
         '<div>Show tests on all platforms (slow): </div><input name=tests ' +
         'placeholder="LayoutTests/foo/bar.html,LayoutTests/foo/baz.html" ' +
         'id=tests-input></form><div id="loading-ui">LOADING...</div>' +
@@ -968,8 +1169,8 @@
 
   function getLinkHTMLToToggleState(key, linkText) {
     var isTrue = currentState[key];
-    return '<span class=link onclick="setState(\'' + key + '\', \'' + !isTrue +
-        '\')">' + (isTrue ? 'Hide' : 'Show') + ' ' + linkText + '</span> | ';
+    return '<span class=link onclick="setState(\'' + key + '\', ' + !isTrue +
+        ')">' + (isTrue ? 'Hide' : 'Show') + ' ' + linkText + '</span> | ';
   }
 
   function generatePageForBuilder(builderName) {
@@ -979,8 +1180,11 @@
     var results = perBuilderFailures[builderName];
     sortTests(results, currentState.sortColumn, currentState.sortOrder);
     for (var i = 0; i < results.length; i++) {
-      tableRowsHTML += getHTMLForSingleTestRow(results[i]);
+      tableRowsHTML += getHTMLForSingleTestRow(results[i], builderName);
     }
+
+    var testsHTML = tableRowsHTML ? getHTMLForTestTable(tableRowsHTML) :
+        '<div>No tests. Try showing tests with correct expectations.</div>';
 
     var html = getHTMLForNavBar(builderName) +
         getHTMLForTestsWithExpectationsButNoFailures(builderName) +
@@ -989,9 +1193,13 @@
         getLinkHTMLToToggleState('showCorrectExpectations',
             'tests with correct expectations') +
         getLinkHTMLToToggleState('showFlaky', 'flaky tests') +
+        '<form id=max-results-form ' +
+        'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
+        '><span>Max results to show: </span>' +
+        '<input name=maxResults id=max-results-input></form> | ' +
         '<b>All columns are sortable. | Skipped tests are not listed. | ' +
         'Flakiness reader order is newer --> older runs.</b></div>' +
-        getHTMLForTestTable(tableRowsHTML);
+        testsHTML;
 
     setFullPageHTML(html);
 
@@ -1000,33 +1208,8 @@
       ths[i].addEventListener('click', changeSort, false);
       ths[i].className = "sortable";
     }
-  }
 
-  // Permalinkable state of the page.
-  var currentState = {};
-
-  var defaultStateValues = {
-    sortOrder: BACKWARD,
-    sortColumn: 'flakiness',
-    showWontFix: false,
-    showCorrectExpectations: false,
-    showFlaky: true
-  };
-
-  for (var builder in builders) {
-    defaultStateValues.builder = builder;
-    break;
-  }
-
-  function fillDefaultStateValues() {
-    // tests has no states with default values.
-    if (currentState.tests)
-      return;
-
-    for (var state in defaultStateValues) {
-      if (!(state in currentState))
-        currentState[state] = defaultStateValues[state];
-    }
+    $('max-results-input').value = currentState.maxResults;
   }
 
   /**
@@ -1046,88 +1229,29 @@
 
       currentState[key] = arguments[i + 1];
     }
+    window.location.replace(getPermaLinkURL());
+    handleLocationChange();
+  }
 
+  function handleLocationChange() {
     $('loading-ui').style.display = 'block';
     setTimeout(function() {
-      window.location.replace(getPermaLinkURL());
+      oldLocation = window.location.href;
       generatePage();
-      $('loading-ui').style.display = 'none';
     }, 0);
   }
 
-  function parseCurrentLocation() {
-    oldLocation = window.location.href;
-    var hash = window.location.hash;
-    if (!hash) {
-      fillDefaultStateValues();
-      return;
-    }
-
-    var hashParts = hash.slice(1).split('&');
-    var urlHasTests = false;
-    for (var i = 0; i < hashParts.length; i++) {
-      var itemParts = hashParts[i].split('=');
-      if (itemParts.length != 2) {
-        console.log("Invalid parameter: " + hashParts[i]);
-        continue;
-      }
-
-      var key = itemParts[0];
-      var value = decodeURIComponent(itemParts[1]);
-      switch(key) {
-        case 'tests':
-          validateParameter(key, value,
-              function() { return value.match(/[A-Za-z0-9\-\_,]/); });
-          break;
-
-        case 'builder':
-          validateParameter(key, value,
-              function() { return value in builders; });
-          break;
-
-        case 'sortColumn':
-          validateParameter(key, value,
-              function() {
-                for (var i = 0; i < tableHeaders.length; i++) {
-                  if (value == getSortColumnFromTableHeader(tableHeaders[i]))
-                    return true;
-                }
-                return value == 'test';
-              });
-          break;
-
-        case 'sortOrder':
-          validateParameter(key, value,
-              function() { return value == FORWARD || value == BACKWARD; });
-          break;
-
-        case 'showWontFix':
-        case 'showCorrectExpectations':
-        case 'showFlaky':
-          currentState[key] = value == 'true';
-          break;
-
-        default:
-          console.log('Invalid key: ' + key + ' value: ' + value);
-      }
-    }
-    fillDefaultStateValues();
-  }
-
-  function validateParameter(key, value, validateFn) {
-    if (validateFn()) {
-      currentState[key] = value;
-    } else {
-      console.log(key + ' value is not valid: ' + value);
-    }
-  }
-
   function getPermaLinkURL() {
+    return window.location.pathname + '?' + joinParameters(queryState) + '#' +
+        joinParameters(currentState);
+  }
+
+  function joinParameters(stateObject) {
     var state = [];
-    for (var key in currentState) {
-      state.push(key + '=' + currentState[key]);
+    for (var key in stateObject) {
+      state.push(key + '=' + encodeURIComponent(stateObject[key]));
     }
-    return window.location.pathname + '#' + state.join('&');
+    return state.join('&');
   }
 
   function logTime(msg, startTime) {
@@ -1139,8 +1263,10 @@
     // onload firing and the last script tag being executed.
     logTime('Time to load JS', pageLoadStartTime);
     setInterval(function() {
-      if (oldLocation != window.location)
-        generatePage();
+      if (oldLocation != window.location.href) {
+        parseAllParameters();
+        handleLocationChange();
+      }
     }, 100);
   }
   </script>
