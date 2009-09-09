@@ -145,8 +145,10 @@ TEST_F(RenderSurfaceTest, RenderSurfaceSetTest) {
 
   RenderDepthStencilSurface* depth_surface =
       pack()->CreateDepthStencilSurface(16, 32);
+  ASSERT_TRUE(depth_surface != NULL);
 
   RenderSurfaceSet* render_surface_set = pack()->Create<RenderSurfaceSet>();
+  ASSERT_TRUE(render_surface_set != NULL);
   render_surface_set->set_render_surface(render_surface);
   render_surface_set->set_render_depth_stencil_surface(depth_surface);
   ASSERT_TRUE(render_surface_set->ValidateBoundSurfaces());
