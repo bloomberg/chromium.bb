@@ -102,20 +102,20 @@ NaClSrpcDesc* __NaClSrpcBuildSrpcDesc(const char* str, uint32_t* rpc_count) {
 void NaClSrpcDumpInterfaceDesc(const NaClSrpcChannel  *channel) {
   uint32_t i;
   printf("RPC %-20s %-10s %-10s\n", "Name", "Input args", "Output args");
-  for (i = 0; i < channel->rpc_count; ++i) {
+  for (i = 0; i < channel->client.rpc_count; ++i) {
     printf("%3u %-20s %-10s %-10s\n",
            (unsigned int) i,
-           channel->rpc_descr[i].rpc_name,
-           channel->rpc_descr[i].in_args,
-           channel->rpc_descr[i].out_args);
+           channel->client.rpc_descr[i].rpc_name,
+           channel->client.rpc_descr[i].in_args,
+           channel->client.rpc_descr[i].out_args);
   }
 }
 
 int NaClSrpcGetRpcNum(const NaClSrpcChannel  *channel,
                       char const             *name) {
   uint32_t i;
-  for (i = 0; i < channel->rpc_count;  ++i) {
-    if (!strcmp(name, channel->rpc_descr[i].rpc_name)) {
+  for (i = 0; i < channel->client.rpc_count;  ++i) {
+    if (!strcmp(name, channel->client.rpc_descr[i].rpc_name)) {
       return i;
     }
   }

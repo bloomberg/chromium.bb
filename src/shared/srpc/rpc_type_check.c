@@ -35,12 +35,11 @@
  */
 
 #include <string.h>
-#include "nacl_srpc.h"
-#include "nacl_srpc_internal.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
-int NaClSrpcTypeCheckOne(char const          **pp,
-                         struct NaClSrpcArg  **alist)
-{
+int NaClSrpcTypeCheckOne(char const  **pp,
+                         NaClSrpcArg **alist) {
   char const  *p;
 
   for (p = *pp; *p != '\0' && *p != ':'; ++p, ++alist) {
@@ -80,10 +79,9 @@ int NaClSrpcTypeCheckOne(char const          **pp,
   return 1;
 }
 
-int NaClSrpcTypeCheckArgs(char const         *fmt,
-                          struct NaClSrpcArg **in_args,
-                          struct NaClSrpcArg **out_args)
-{
+int NaClSrpcTypeCheckArgs(char const  *fmt,
+                          NaClSrpcArg **in_args,
+                          NaClSrpcArg **out_args) {
   char const  *p;
 
   /* skip over rpc name */

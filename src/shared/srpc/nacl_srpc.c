@@ -80,8 +80,9 @@ static int NaClSrpcBuildInterfaceDesc(NaClSrpcChannel  *channel) {
   outs[0] = &out_carray;
   outs[1] = NULL;
 
-  channel->rpc_descr = basic_services;
-  channel->rpc_count = sizeof(basic_services) / sizeof(basic_services[0]);
+  channel->client.rpc_descr = basic_services;
+  channel->client.rpc_count =
+      sizeof(basic_services) / sizeof(basic_services[0]);
 
   /* Build the argument value for invoking service discovery */
   out_carray.tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
@@ -99,9 +100,9 @@ static int NaClSrpcBuildInterfaceDesc(NaClSrpcChannel  *channel) {
     return 0;
   }
   /* Build the real rpc description from the resulting string. */
-  channel->rpc_descr =
+  channel->client.rpc_descr =
       __NaClSrpcBuildSrpcDesc(outs[0]->u.caval.carr,
-                              &channel->rpc_count);
+                              &channel->client.rpc_count);
   /* Free the service string */
   free(out_carray.u.caval.carr);
   /* Return success */
@@ -126,6 +127,9 @@ int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
     return 0;
   }
 #endif
+  /* Initialize the server information. */
+  channel->server.rpc_count = 0;
+  channel->server.rpc_descr = NULL;
   /* Construct the buffers. */
   __NaClSrpcImcBufferCtor(&channel->send_buf, 1);
   __NaClSrpcImcBufferCtor(&channel->receive_buf, 0);
@@ -160,6 +164,9 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
     return 0;
   }
 #endif
+  /* Initialize the client information. */
+  channel->client.rpc_count = 0;
+  channel->client.rpc_descr = NULL;
   /* Construct the buffers. */
   __NaClSrpcImcBufferCtor(&channel->send_buf, 1);
   __NaClSrpcImcBufferCtor(&channel->receive_buf, 0);
@@ -171,12 +178,12 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
    * This is a server connection, build the descriptors by parsing the
    * handler descriptors passed in.
    */
-  channel->rpc_descr =
-      (NaClSrpcDesc*) malloc(handler_count * sizeof(*channel->rpc_descr));
-  if (NULL == channel->rpc_descr) {
+  channel->server.rpc_descr = (NaClSrpcDesc*)
+      malloc(handler_count * sizeof(*channel->server.rpc_descr));
+  if (NULL == channel->server.rpc_descr) {
     return 0;
   }
-  channel->rpc_count = handler_count;
+  channel->server.rpc_count = handler_count;
   for (i = 0; i < handler_count; ++i) {
     const char* p;
     const char* nextp;
@@ -188,23 +195,23 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
     if (NULL == p) {
       return 0;
     }
-    channel->rpc_descr[i].rpc_name = CopyStringLength(p, nextp - p);
+    channel->server.rpc_descr[i].rpc_name = CopyStringLength(p, nextp - p);
     p = nextp + 1;
     /* Get inargs. */
     nextp = strchr(p, ':');
     if (NULL == p) {
       return 0;
     }
-    channel->rpc_descr[i].in_args = CopyStringLength(p, nextp - p);
+    channel->server.rpc_descr[i].in_args = CopyStringLength(p, nextp - p);
     p = nextp + 1;
     /* Get outargs. */
     nextp = strchr(p, '\0');
     if (NULL == p) {
       return 0;
     }
-    channel->rpc_descr[i].out_args = CopyStringLength(p, nextp - p);
+    channel->server.rpc_descr[i].out_args = CopyStringLength(p, nextp - p);
     /* Add the handler pointer to the descriptor.  */
-    channel->rpc_descr[i].handler = handlers[i].handler;
+    channel->server.rpc_descr[i].handler = handlers[i].handler;
   }
   /* Disable timing and initialize the timing counters. */
   channel->timing_enabled = 0;
@@ -224,6 +231,85 @@ void NaClSrpcDtor(NaClSrpcChannel *channel) {
   effp->vtbl->Dtor(effp);
   NaClDescUnref(channel->imc_handle);
 #endif
-  free(channel->rpc_descr);
-  channel->rpc_descr = NULL;
+  free(channel->client.rpc_descr);
+  channel->client.rpc_descr = NULL;
+  free(channel->server.rpc_descr);
+  channel->server.rpc_descr = NULL;
+}
+
+/*
+ * Support for timing the SRPC infrastructure.
+ */
+static NaClSrpcError GetTimes(NaClSrpcChannel* channel,
+                              NaClSrpcArg** in_args,
+                              NaClSrpcArg** out_args) {
+  NaClSrpcGetTimes(channel,
+                   &out_args[0]->u.dval,
+                   &out_args[1]->u.dval,
+                   &out_args[2]->u.dval,
+                   &out_args[3]->u.dval);
+  return NACL_SRPC_RESULT_OK;
+}
+
+static NaClSrpcError SetTimingEnabled(NaClSrpcChannel* channel,
+                                      NaClSrpcArg** in_args,
+                                      NaClSrpcArg** out_args) {
+  NaClSrpcToggleChannelTiming(channel, in_args[0]->u.ival);
+  return NACL_SRPC_RESULT_OK;
+}
+
+void NaClSrpcToggleChannelTiming(NaClSrpcChannel* channel, int enable_timing) {
+  channel->timing_enabled = enable_timing;
+}
+
+void NaClSrpcGetTimes(NaClSrpcChannel* channel,
+                      double* send_time,
+                      double* receive_time,
+                      double* imc_read_time,
+                      double* imc_write_time) {
+  *send_time = channel->send_usec;
+  *receive_time = channel->receive_usec;
+  *imc_read_time = channel->imc_read_usec;
+  *imc_write_time = channel->imc_write_usec;
+}
+
+/*
+ * Service information lookup functions.
+ */
+int NaClSrpcGetArgTypes(const NaClSrpcService* service,
+                        uint32_t rpc_number,
+                        const char** rpc_name,
+                        const char** in_types,
+                        const char** out_types) {
+  if (NACL_SRPC_GET_TIMES_METHOD == rpc_number) {
+    *rpc_name = "NACL_SRPC_GET_TIMES_METHOD";
+    *in_types = "";
+    *out_types = "dddd";
+  } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_number) {
+    *rpc_name = "NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD";
+    *in_types = "";
+    *out_types = "i";
+  } else if (rpc_number >= service->rpc_count) {
+    dprintf(("SERVER:     RPC bad rpc number: %u not in [0, %u)\n",
+             (unsigned) rpc_number, (unsigned) service->rpc_count));
+    return 0;
+  } else {
+    *rpc_name = service->rpc_descr[rpc_number].rpc_name;
+    *in_types = service->rpc_descr[rpc_number].in_args;
+    *out_types = service->rpc_descr[rpc_number].out_args;
+  }
+  return 1;
+}
+
+NaClSrpcMethod NaClSrpcGetMethod(const NaClSrpcChannel* channel,
+                                 uint32_t rpc_number) {
+  if (NACL_SRPC_GET_TIMES_METHOD == rpc_number) {
+    return GetTimes;
+  } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_number) {
+    return SetTimingEnabled;
+  } else if (rpc_number >= channel->server.rpc_count) {
+    return NULL;
+  } else {
+    return channel->server.rpc_descr[rpc_number].handler;
+  }
 }

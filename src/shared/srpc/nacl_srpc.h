@@ -266,11 +266,15 @@ typedef struct NaClSrpcArg NaClSrpcArg;
  * Remote procedure call state structure.
  */
 struct NaClSrpcRpc {
-  uint32_t         protocol_version;
-  uint64_t         request_id;
-  uint8_t          is_request;
-  uint32_t         rpc_number;
-  NaClSrpcError    app_error;
+  uint32_t                  protocol_version;
+  uint64_t                  request_id;
+  uint8_t                   is_request;
+  uint32_t                  rpc_number;
+  NaClSrpcError             app_error;
+  /* State maintained for transmission/reception, but not serialized */
+  const char*               ret_types;
+  NaClSrpcArg**             rets;
+  struct NaClSrpcImcBuffer* buffer;
 };
 #ifndef __cplusplus
 /**
@@ -373,6 +377,11 @@ struct NaClSrpcImcBuffer {
   NaClSrpcImcDescType       descs[IMC_USER_DESC_MAX];
   /**
    * character array containing the data to be sent or received
+   * This element must be an array to ensure that proper range checking
+   * on reads and writes can be done using sizeof(bytes).  See the note
+   * in imc_buffer.c.
+   * TODO(sehr,bsy): use a preprocessor macro to assert that this element
+   * is an array rather than a pointer.
    */
   unsigned char             bytes[IMC_USER_BYTES_MAX];
 #else
@@ -386,6 +395,32 @@ struct NaClSrpcImcBuffer {
  *  A typedef for struct NaClSrpcImcBuffer for use in C.
  */
 typedef struct NaClSrpcImcBuffer NaClSrpcImcBuffer;
+#endif
+
+/**
+ * A description of the services available on a channel.
+ */
+struct NaClSrpcService {
+  /**
+   * A pointer to an array of RPC service descriptors used to type check and
+   * dispatch RPC requests.
+   */
+  NaClSrpcDesc*               rpc_descr;
+  /** The number of elements in the <code>rpc_descr</code> array. */
+  uint32_t                    rpc_count;
+  /**
+   * A zero terminated string containing name:ins:outs triples used to respond
+   * to service_discovery RPCs.
+   */
+  const char*                 service_string;
+  /** The length of <code>service_string</code> in bytes */
+  size_t                      service_string_length;
+};
+#ifndef __cplusplus
+/**
+ *  A typedef for struct NaClSrpcService for use in C.
+ */
+typedef struct NaClSrpcService NaClSrpcService;
 #endif
 
 /**
@@ -409,25 +444,19 @@ struct NaClSrpcChannel {
   /** A structure used to buffer data received over this channel */
   NaClSrpcImcBuffer           receive_buf;
   /**
-   * A pointer to an array of RPC service descriptors used to type check and
-   * dispatch RPC requests.
+   * The services implemented by this server.
    */
-  NaClSrpcDesc*               rpc_descr;
-  /** The number of elements in the <code>rpc_descr</code> array. */
-  uint32_t                    rpc_count;
+  NaClSrpcService             server;
+  /**
+   * The services available to this client.
+   */
+  NaClSrpcService             client;
   /**
    * A pointer to channel-specific data.  This allows RPC method
    * implementations to be used across multiple services while still
    * maintaining reentrancy
    */
   void                        *server_instance_data;
-  /**
-   * A zero terminated string containing name:ins:outs triples used to respond
-   * to service_discovery RPCs.
-   */
-  const char*                 service_string;
-  /** The length of <code>service_string</code> in bytes */
-  size_t                      service_string_length;
   /**
    * A boolean value indicating execution timing is enabled on this channel
    */
@@ -488,13 +517,6 @@ int NaClSrpcServerCtor(NaClSrpcChannel           *channel,
                        NaClSrpcImcDescType       imc_desc,
                        const NaClSrpcHandlerDesc *handlers,
                        void*                     instance_data);
-/**
- *  A utility function that creates a NaClSrpcImcDescType from the
- *  platform-defined NaClHandle type.
- *  @param handle The handle to be converted.
- *  @return On success, a valid NaClSrpcImcDescType.  On failure, -1.
- */
-NaClSrpcImcDescType NaClSrpcImcDescTypeFromHandle(NaClHandle handle);
 
 /**
  *  Destroys the specified client or server channel.
@@ -666,16 +688,6 @@ extern NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel *channel,
                                         va_list           out_va);
 
 /**
- *  @serverSrpc  Receives an RPC request, invokes the corresponding method
- *  from the table in the channel, and returns the result.
- *  @param channel The channel descriptor to use to invoke the RPC.
- *  @return A NaClSrpcResultCodes indicating success (NACL_SRPC_RESULT_OK)
- *  or failure.
- *  @see NaClSrpcResultCodes
- */
-NaClSrpcError NaClSrpcReceiveAndDispatch(NaClSrpcChannel *channel);
-
-/**
  *  @eitherSrpc  Enables or disables timing of the specified channel.
  *  @param channel The channel descriptor whose timing to consult.
  *  @param enable_timing If zero, disable timing.  Otherwise, enable timing.
@@ -721,36 +733,58 @@ static const uint32_t kNaClSrpcProtocolVersion = 0xc0da0002;
  */
 #define NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD  0xfffffffd
 
+extern int NaClSrpcGetArgTypes(const NaClSrpcService* service,
+                               uint32_t rpc_number,
+                               const char** rpc_name,
+                               const char** in_types,
+                               const char** out_types);
 
 /**
- * Receive an RPC request from a channel.
+ * Deserialize a message header from a buffer.
  */
-extern int NaClSrpcRequestRead(NaClSrpcChannel* channel,
-                               NaClSrpcRpc* rpc,
-                               NaClSrpcArg* args[],
-                               NaClSrpcArg* rets[]);
+extern int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
+                          NaClSrpcRpc* rpc);
+
+
+/**
+ * Deserialize a request message from a buffer.
+ */
+extern int NaClSrpcRequestGet(NaClSrpcImcBuffer* buffer,
+                              const NaClSrpcRpc* rpc,
+                              const char* arg_types,
+                              NaClSrpcArg* args[],
+                              const char* ret_types,
+                              NaClSrpcArg* rets[]);
 
 /**
  * Send an RPC request on the given channel.
  */
-extern NaClSrpcError NaClSrpcRequestWrite(NaClSrpcChannel* channel,
-                                          NaClSrpcRpc* rpc,
-                                          NaClSrpcArg* args[],
-                                          NaClSrpcArg* rets[]);
+extern int NaClSrpcRequestWrite(NaClSrpcChannel* channel,
+                                NaClSrpcRpc* rpc,
+                                NaClSrpcArg* args[],
+                                NaClSrpcArg* rets[]);
 
 /**
- * Receive an RPC response from a channel.
+ * Deserialize a response message from a buffer.
  */
-extern int NaClSrpcResponseRead(NaClSrpcChannel* channel,
-                                NaClSrpcRpc* rpc,
-                                NaClSrpcArg* rets[]);
+extern int NaClSrpcResponseGet(NaClSrpcImcBuffer* buffer,
+                               const NaClSrpcRpc* rpc,
+                               const char* ret_types,
+                               NaClSrpcArg* rets[]);
 
 /**
  * Send an RPC response on the given channel.
  */
-extern NaClSrpcError NaClSrpcResponseWrite(NaClSrpcChannel* channel,
-                                           NaClSrpcRpc* rpc,
-                                           NaClSrpcArg* rets[]);
+extern int NaClSrpcResponseWrite(NaClSrpcChannel* channel,
+                                 NaClSrpcRpc* rpc,
+                                 NaClSrpcArg* rets[]);
+
+/**
+ * Wait for a sent RPC to receive a response.
+ */
+extern void NaClSrpcRpcWait(NaClSrpcChannel* channel,
+                            NaClSrpcRpc* rpc);
+
 EXTERN_C_END
 
 /**

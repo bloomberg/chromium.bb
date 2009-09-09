@@ -54,6 +54,17 @@
 #endif
 
 /*
+ * The receive/dispatch function returns an enum indicating how the enclosing
+ * loop should proceed.
+ */
+typedef enum {
+  DISPATCH_CONTINUE,  /* Continue receive-dispatch loop */
+  DISPATCH_BREAK,     /* Break out of loop was requested by invoked method */
+  DISPATCH_RESPONSE,  /* Instead of a request, we received a response */
+  DISPATCH_EOF,       /* No more requests or responses can be received */
+} DispatchReturn;
+
+/*
  * Message formats:
  * SRPC communicates using two main message types, requests and responses.
  * Both are communicated with an rpc (header) prepended.
@@ -84,13 +95,15 @@
  */
 typedef struct ArgEltInterface ArgEltInterface;
 struct ArgEltInterface {
-  int (*get)(NaClSrpcChannel* channel,
+  int (*get)(NaClSrpcImcBuffer* buffer,
              int allocate,
              int read_value,
              NaClSrpcArg* arg);
-  int (*put)(NaClSrpcArg* arg, int write_value, NaClSrpcChannel* channel);
-  void (*print)(NaClSrpcArg* arg);
-  uint32_t (*length)(NaClSrpcArg* arg, int write_value, int* descs);
+  int (*put)(const NaClSrpcArg* arg,
+             int write_value,
+             NaClSrpcImcBuffer* buffer);
+  void (*print)(const NaClSrpcArg* arg);
+  uint32_t (*length)(const NaClSrpcArg* arg, int write_value, int* descs);
   void (*free)(NaClSrpcArg* arg);
 };
 
@@ -100,13 +113,13 @@ struct ArgEltInterface {
 typedef struct ArgsIoInterface ArgsIoInterface;
 struct ArgsIoInterface {
   int (*get)(const ArgsIoInterface* argsdesc,
-             NaClSrpcChannel* channel,
+             NaClSrpcImcBuffer* buffer,
              int allocate_args,
              int read_values,
              NaClSrpcArg* argvec[],
              const char* arg_types);
   int (*put)(const ArgsIoInterface* argsdesc,
-             NaClSrpcChannel* channel,
+             NaClSrpcImcBuffer* buffer,
              int write_value,
              NaClSrpcArg* argvec[]);
   int (*length)(const ArgsIoInterface* argsdesc,
@@ -116,106 +129,98 @@ struct ArgsIoInterface {
                 uint32_t* handles);
   void (*free)(const ArgsIoInterface* argsdesc,
                NaClSrpcArg* argvec[]);
-  const ArgEltInterface* (*element_interface)(NaClSrpcArg* arg);
+  const ArgEltInterface* (*element_interface)(const NaClSrpcArg* arg);
 };
 static const ArgsIoInterface* GetArgsInterface(uint32_t protocol_version);
 
-/*
- * Support for timing the SRPC infrastructure.
- */
-static NaClSrpcError GetTimes(NaClSrpcChannel* channel,
-                              NaClSrpcArg** in_args,
-                              NaClSrpcArg** out_args);
-static NaClSrpcError SetTimingEnabled(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** in_args,
-                                      NaClSrpcArg** out_args);
 
-static int NaClSrpcGetArgTypes(NaClSrpcChannel* channel,
-                               uint32_t rpc_number,
-                               const char **rpc_name,
-                               const char **in_types,
-                               const char **out_types) {
-  if (NACL_SRPC_GET_TIMES_METHOD == rpc_number) {
-    *rpc_name = "NACL_SRPC_GET_TIMES_METHOD";
-    *in_types = "";
-    *out_types = "dddd";
-  } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_number) {
-    *rpc_name = "NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD";
-    *in_types = "";
-    *out_types = "i";
-  } else if (rpc_number >= channel->rpc_count) {
-    dprintf(("SERVER:     RPC bad rpc number: %u not in [0, %u)\n",
-             (unsigned) rpc_number, (unsigned) channel->rpc_count));
-    return 0;
-  } else {
-    *rpc_name = channel->rpc_descr[rpc_number].rpc_name;
-    *in_types = channel->rpc_descr[rpc_number].in_args;
-    *out_types = channel->rpc_descr[rpc_number].out_args;
-  }
-  return 1;
-}
-
-static NaClSrpcMethod GetMethod(NaClSrpcChannel* channel,
-                                uint32_t rpc_number) {
-  if (NACL_SRPC_GET_TIMES_METHOD == rpc_number) {
-    return GetTimes;
-  } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_number) {
-    return SetTimingEnabled;
-  } else if (rpc_number >= channel->rpc_count) {
-    return NULL;
-  } else {
-    return channel->rpc_descr[rpc_number].handler;
-  }
-}
-
-/*
- *  The high level APIs provided for external use.
- */
-NaClSrpcError NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel) {
+static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
+                                                 NaClSrpcRpc* rpc_stack_top) {
+  NaClSrpcImcBuffer* buffer;
   NaClSrpcRpc rpc;
+  const char* rpc_name;
+  const char* arg_types;
+  const char* ret_types;
   NaClSrpcArg* args[NACL_SRPC_MAX_ARGS + 1];
   NaClSrpcArg* rets[NACL_SRPC_MAX_ARGS + 1];
   NaClSrpcMethod method;
-  NaClSrpcError retval;
+  int retval;
   int return_break = 0;
   double this_start_usec = 0.0;
   double this_method_usec;
   const ArgsIoInterface* desc;
 
+  dprintf((SIDE "ReceiveAndDispatch: %p\n", (void*) rpc_stack_top));
   /* If we are timing, get the start time. */
   if (channel->timing_enabled) {
     this_start_usec = __NaClSrpcGetUsec();
   }
   /* Read a message from the channel. */
-  if (!NaClSrpcRequestRead(channel, &rpc, args, rets)) {
+  buffer = __NaClSrpcImcFillbuf(channel);
+  if (NULL == buffer) {
+    dprintf((SIDE "ReceiveAndDispatch: buffer read failed\n"));
+    return DISPATCH_EOF;
+  }
+  /* Deserialize the header (0 indicates failure) */
+  if (!NaClSrpcRpcGet(buffer, &rpc)) {
+    dprintf((SIDE "ReceiveAndDispatch: rpc deserialize failed\n"));
+    /* Drop the current request and continue */
+    return DISPATCH_CONTINUE;
+  }
+  /* If it is not a request, return failure. */
+  if (!rpc.is_request) {
+    if (NULL != rpc_stack_top) {
+      if (rpc.request_id == rpc_stack_top->request_id) {
+        /* Back up to the start of the message and process it as a response. */
+        rpc_stack_top->buffer = buffer;
+      } else {
+        /* Received an out-of-order response.  Drop it and abort. */
+        return DISPATCH_BREAK;
+      }
+      return DISPATCH_RESPONSE;
+    }
+    /* Drop the out-of-order response and continue */
+    return DISPATCH_CONTINUE;
+  }
+  /* Get types for receiving args and rets */
+  retval = NaClSrpcGetArgTypes(&channel->server,
+                               rpc.rpc_number,
+                               &rpc_name,
+                               &arg_types,
+                               &ret_types);
+  if (!retval) {
+    dprintf(("RequestGet: bad rpc number in request\n"));
+    /* Drop the request with a bad rpc number and continue */
+    return DISPATCH_CONTINUE;
+  }
+  /* Deserialize the request from the buffer. */
+  if (!NaClSrpcRequestGet(buffer, &rpc, arg_types, args, ret_types, rets)) {
     dprintf((SIDE "ReceiveAndDispatch: receive message failed\n"));
-    return NACL_SRPC_RESULT_MESSAGE_TRUNCATED;
+    return DISPATCH_EOF;
   }
   desc = GetArgsInterface(rpc.protocol_version);
   /* Then we invoke the method, which computes a return code. */
-  method = GetMethod(channel, rpc.rpc_number);
+  method = NaClSrpcGetMethod(channel, rpc.rpc_number);
   if (NULL == method) {
     dprintf((SIDE "ReceiveAndDispatch: bad rpc number %"PRIu32"\n",
              rpc.rpc_number));
-    return NACL_SRPC_RESULT_BAD_RPC_NUMBER;
+    return DISPATCH_CONTINUE;
   }
   rpc.app_error = (*method)(channel, args, rets);
   if (NACL_SRPC_RESULT_BREAK == rpc.app_error) {
-    dprintf((SIDE "ReceiveAndDispatch: method returned break\n"));
     return_break = 1;
     rpc.app_error = NACL_SRPC_RESULT_OK;
   }
-  dprintf((SIDE "ReceiveAndDispatch: invoked method\n"));
   /* Then we return the rets. */
   retval = NaClSrpcResponseWrite(channel, &rpc, rets);
   /* Then we free the memory for the args and rets. */
   desc->free(desc, args);
   desc->free(desc, rets);
-  if (NACL_SRPC_RESULT_OK != retval) {
-    /* If the response write failed, there was a serious error.  Return. */
-    return retval;
+  if (!retval) {
+    /* If the response write failed, drop request and continue. */
+    dprintf((SIDE "ReceiveAndDispatch: response write failed\n"));
+    return DISPATCH_CONTINUE;
   }
-  dprintf((SIDE "ReceiveAndDispatch: destroyed args and rets\n"));
   /*
    * If we are timing, collect the current time, compute the delta from
    * the start, and update the cumulative counter.
@@ -226,85 +231,94 @@ NaClSrpcError NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel) {
   }
   /* Return code to either continue or break out of the processing loop. */
   if (return_break) {
-    return NACL_SRPC_RESULT_BREAK;
+    return DISPATCH_BREAK;
   } else {
-    return NACL_SRPC_RESULT_OK;
+    return DISPATCH_CONTINUE;
   }
 }
 
 /*
- * Static function definitions.
+ * After an RPC is sent, the current thread can block waiting for the
+ * response.  As currently there is only one thread receiving messages,
+ * this thread will handle receiving and dispatching while waiting for
+ * its response.  This allows for one thread to process calls back and
+ * forth between client and server, as required for the NPAPI main thread
+ * in Pepper.
  */
-static NaClSrpcError GetTimes(NaClSrpcChannel* channel,
-                              NaClSrpcArg** in_args,
-                              NaClSrpcArg** out_args) {
-  NaClSrpcGetTimes(channel,
-                   &out_args[0]->u.dval,
-                   &out_args[1]->u.dval,
-                   &out_args[2]->u.dval,
-                   &out_args[3]->u.dval);
-  return NACL_SRPC_RESULT_OK;
-}
+void NaClSrpcRpcWait(NaClSrpcChannel* channel,
+                     NaClSrpcRpc* rpc) {
+  DispatchReturn retval;
 
-static NaClSrpcError SetTimingEnabled(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** in_args,
-                                      NaClSrpcArg** out_args) {
-  NaClSrpcToggleChannelTiming(channel, in_args[0]->u.ival);
-  return NACL_SRPC_RESULT_OK;
+  /*
+   * Loop receiving RPCs and processing them.
+   * The loop stops when the receive/dispatch function returns.
+   */
+  do {
+    retval = NaClSrpcReceiveAndDispatch(channel, rpc);
+  } while (DISPATCH_CONTINUE == retval);
+  /* Process responses */
+  dprintf((SIDE "response to RpcWait: %p, %d\n", (void*) rpc, retval));
+  if (NULL != rpc &&
+      DISPATCH_RESPONSE == retval) {
+    NaClSrpcImcBuffer* buffer = rpc->buffer;
+    /* We know here that the buffer contains a response to the current rpc. */
+    __NaClSrpcImcRefill(buffer);
+    /* Deserialize the header (0 indicates failure) */
+    if (!NaClSrpcRpcGet(buffer, rpc)) {
+      dprintf((SIDE "InvokeV: rpc deserialize failed\n"));
+      rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
+      return;
+    }
+    /* Paranoia: if the message is a request, return an error */
+    if (rpc->is_request) {
+      dprintf(("Response: rpc is not response: %d\n", rpc->is_request));
+      rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
+      return;
+    }
+    if (!NaClSrpcResponseGet(buffer, rpc, rpc->ret_types, rpc->rets)) {
+      dprintf(("SRPC: response receive failed\n"));
+      rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
+      return;
+    }
+  }
 }
-
-void NaClSrpcToggleChannelTiming(NaClSrpcChannel* channel, int enable_timing) {
-  channel->timing_enabled = enable_timing;
-}
-
-void NaClSrpcGetTimes(NaClSrpcChannel* channel,
-                      double* send_time,
-                      double* receive_time,
-                      double* imc_read_time,
-                      double* imc_write_time) {
-  *send_time = channel->send_usec;
-  *receive_time = channel->receive_usec;
-  *imc_read_time = channel->imc_read_usec;
-  *imc_write_time = channel->imc_write_usec;
-}
-
 
 /*
  * Argument element I/O interfaces.
  */
 
 #define BASIC_TYPE_IO_DECLARE(name, impl_type, field, format)   \
-static int name##Get(NaClSrpcChannel* channel,                  \
+static int name##Get(NaClSrpcImcBuffer* buffer,                 \
                      int allocate_memory,                       \
                      int read_value,                            \
                      NaClSrpcArg* arg) {                        \
   if (read_value &&                                             \
-      1 != __NaClSrpcImcRead(&arg->u.field,                     \
+      1 != __NaClSrpcImcRead(buffer,                            \
                              sizeof(impl_type),                 \
                              1,                                 \
-                             channel)) {                        \
+                             &arg->u.field)) {                  \
     return 0;                                                   \
   }                                                             \
   return 1;                                                     \
 }                                                               \
                                                                 \
-static int name##Put(NaClSrpcArg* arg,                          \
+static int name##Put(const NaClSrpcArg* arg,                    \
                      int write_value,                           \
-                     NaClSrpcChannel* channel) {                \
+                     NaClSrpcImcBuffer* buffer) {               \
   if (write_value) {                                            \
     return 1 == __NaClSrpcImcWrite(&arg->u.field,               \
                                    sizeof(impl_type),           \
                                    1,                           \
-                                   channel);                    \
+                                   buffer);                     \
   }                                                             \
   return 1;                                                     \
 }                                                               \
                                                                 \
-static void name##Print(NaClSrpcArg* arg) {                     \
+static void name##Print(const NaClSrpcArg* arg) {               \
   dprintf(("%"#format"", arg->u.field));                        \
 }                                                               \
                                                                 \
-static uint32_t name##Length(NaClSrpcArg* arg,                  \
+static uint32_t name##Length(const NaClSrpcArg* arg,            \
                              int write_value,                   \
                              int* handles) {                    \
   *handles = 0;                                                 \
@@ -330,14 +344,14 @@ BASIC_TYPE_IO_DECLARE(Double, double, dval, f)
 BASIC_TYPE_IO_DECLARE(Int, int, ival, d)
 
 #define ARRAY_TYPE_IO_DECLARE(name, impl_type, field, array)                   \
-static int name##ArrGet(NaClSrpcChannel* channel,                              \
-                     int allocate_memory,                                      \
-                     int read_value,                                           \
-                     NaClSrpcArg* arg) {                                       \
+static int name##ArrGet(NaClSrpcImcBuffer* buffer,                             \
+                        int allocate_memory,                                   \
+                        int read_value,                                        \
+                        NaClSrpcArg* arg) {                                    \
   uint32_t dimdim;                                                             \
   size_t dim;                                                                  \
                                                                                \
-  if (1 != __NaClSrpcImcRead(&dimdim, sizeof(dim), 1, channel)) {              \
+  if (1 != __NaClSrpcImcRead(buffer, sizeof(dim), 1, &dimdim)) {               \
     return 0;                                                                  \
   }                                                                            \
   dim = (size_t) dimdim;                                                       \
@@ -354,20 +368,20 @@ static int name##ArrGet(NaClSrpcChannel* channel,                              \
     return 0;                                                                  \
   }                                                                            \
   if (read_value &&                                                            \
-      dim != __NaClSrpcImcRead(arg->u.field.array,                             \
+      dim != __NaClSrpcImcRead(buffer,                                         \
                                sizeof(impl_type),                              \
                                dim,                                            \
-                               channel)) {                                     \
+                               arg->u.field.array)) {                          \
     return 0;                                                                  \
   }                                                                            \
   return 1;                                                                    \
 }                                                                              \
                                                                                \
-static int name##ArrPut(NaClSrpcArg* arg,                                      \
-                     int write_value,                                          \
-                     NaClSrpcChannel* channel) {                               \
+static int name##ArrPut(const NaClSrpcArg* arg,                                \
+                        int write_value,                                       \
+                        NaClSrpcImcBuffer* buffer) {                           \
   if (1 !=                                                                     \
-      __NaClSrpcImcWrite(&arg->u.field.count, sizeof(uint32_t), 1, channel)) { \
+      __NaClSrpcImcWrite(&arg->u.field.count, sizeof(uint32_t), 1, buffer)) {  \
     return 0;                                                                  \
   }                                                                            \
   if (write_value) {                                                           \
@@ -375,20 +389,20 @@ static int name##ArrPut(NaClSrpcArg* arg,                                      \
         __NaClSrpcImcWrite(arg->u.field.array,                                 \
                            sizeof(impl_type),                                  \
                            arg->u.field.count,                                 \
-                           channel);                                           \
+                           buffer);                                            \
   }                                                                            \
   return 1;                                                                    \
 }                                                                              \
                                                                                \
-static void name##ArrPrint(NaClSrpcArg* arg) {                                 \
+static void name##ArrPrint(const NaClSrpcArg* arg) {                           \
   dprintf(("[%"PRIu32"], array = %p",                                          \
            arg->u.field.count,                                                 \
            (void*) arg->u.field.array));                                       \
 }                                                                              \
                                                                                \
-static uint32_t name##ArrLength(NaClSrpcArg* arg,                              \
-                             int write_value,                                  \
-                             int* handles) {                                   \
+static uint32_t name##ArrLength(const NaClSrpcArg* arg,                        \
+                                int write_value,                               \
+                                int* handles) {                                \
   *handles = 0;                                                                \
   if (write_value) {                                                           \
     return sizeof(uint32_t) + sizeof(impl_type) * arg->u.field.count;          \
@@ -417,26 +431,26 @@ ARRAY_TYPE_IO_DECLARE(Int, int, iaval, iarr)
 /*
  * Handle (descriptor) type I/O support.
  */
-static int HandleGet(NaClSrpcChannel* channel,
+static int HandleGet(NaClSrpcImcBuffer* buffer,
                      int allocate_memory,
                      int read_value,
                      NaClSrpcArg* arg) {
   if (read_value) {
-    arg->u.hval = __NaClSrpcImcReadDesc(channel);
+    arg->u.hval = __NaClSrpcImcReadDesc(buffer);
   }
   return 1;
 }
 
-static int HandlePut(NaClSrpcArg* arg,
+static int HandlePut(const NaClSrpcArg* arg,
                      int write_value,
-                     NaClSrpcChannel* channel) {
+                     NaClSrpcImcBuffer* buffer) {
   if (write_value) {
-    return 1 == __NaClSrpcImcWriteDesc(channel, arg->u.hval);
+    return 1 == __NaClSrpcImcWriteDesc(arg->u.hval, buffer);
   }
   return 1;
 }
 
-static void HandlePrint(NaClSrpcArg* arg) {
+static void HandlePrint(const NaClSrpcArg* arg) {
 #ifdef __native_client__
   dprintf(("%d", arg->u.hval));
 #else
@@ -444,7 +458,7 @@ static void HandlePrint(NaClSrpcArg* arg) {
 #endif  /* __native_client__ */
 }
 
-static uint32_t HandleLength(NaClSrpcArg* arg,
+static uint32_t HandleLength(const NaClSrpcArg* arg,
                              int write_value,
                              int* handles) {
   if (write_value) {
@@ -465,7 +479,7 @@ static const ArgEltInterface kHandleIoInterface = {
 /*
  * String type I/O support.
  */
-static int StringGet(NaClSrpcChannel* channel,
+static int StringGet(NaClSrpcImcBuffer* buffer,
                      int allocate_memory,
                      int read_value,
                      NaClSrpcArg* arg) {
@@ -473,7 +487,7 @@ static int StringGet(NaClSrpcChannel* channel,
   size_t dim;
 
   if (read_value) {
-    if (1 != __NaClSrpcImcRead(&dimdim, sizeof(dim), 1, channel)) {
+    if (1 != __NaClSrpcImcRead(buffer, sizeof(dim), 1, &dimdim)) {
       return 0;
     }
     /*
@@ -488,7 +502,7 @@ static int StringGet(NaClSrpcChannel* channel,
     if (NULL == arg->u.sval) {
       return 0;
     }
-    if (dim != __NaClSrpcImcRead(arg->u.sval, sizeof(char), dim, channel)) {
+    if (dim != __NaClSrpcImcRead(buffer, sizeof(char), dim, arg->u.sval)) {
       return 0;
     }
     arg->u.sval[dim] = '\0';
@@ -496,25 +510,25 @@ static int StringGet(NaClSrpcChannel* channel,
   return 1;
 }
 
-static int StringPut(NaClSrpcArg* arg,
+static int StringPut(const NaClSrpcArg* arg,
                      int write_value,
-                     NaClSrpcChannel* channel) {
+                     NaClSrpcImcBuffer* buffer) {
   if (write_value) {
     uint32_t slen = (uint32_t) strlen(arg->u.sval);
-    if (1 != __NaClSrpcImcWrite(&slen, sizeof(slen), 1, channel) ||
+    if (1 != __NaClSrpcImcWrite(&slen, sizeof(slen), 1, buffer) ||
         slen !=
-        __NaClSrpcImcWrite(arg->u.sval, 1, (size_t) slen, channel)) {
+        __NaClSrpcImcWrite(arg->u.sval, 1, (size_t) slen, buffer)) {
       return 0;
     }
   }
   return 1;
 }
 
-static void StringPrint(NaClSrpcArg* arg) {
+static void StringPrint(const NaClSrpcArg* arg) {
   dprintf((", strlen %u, '%s'", (unsigned) strlen(arg->u.sval), arg->u.sval));
 }
 
-static uint32_t StringLength(NaClSrpcArg* arg,
+static uint32_t StringLength(const NaClSrpcArg* arg,
                              int write_value,
                              int* handles) {
   *handles = 0;
@@ -537,24 +551,24 @@ static const ArgEltInterface kStringIoInterface = {
 /*
  * Invalid type I/O support.
  */
-static int InvalidGet(NaClSrpcChannel* channel,
+static int InvalidGet(NaClSrpcImcBuffer* buffer,
                       int allocate_memory,
                       int read_value,
                       NaClSrpcArg* arg) {
   return 0;
 }
 
-static int InvalidPut(NaClSrpcArg* arg,
+static int InvalidPut(const NaClSrpcArg* arg,
                       int write_value,
-                      NaClSrpcChannel* channel) {
+                      NaClSrpcImcBuffer* buffer) {
   return 0;
 }
 
-static void InvalidPrint(NaClSrpcArg* arg) {
+static void InvalidPrint(const NaClSrpcArg* arg) {
   dprintf(("INVALID"));
 }
 
-static uint32_t InvalidLength(NaClSrpcArg* arg,
+static uint32_t InvalidLength(const NaClSrpcArg* arg,
                               int write_value,
                               int* handles) {
   *handles = 0;
@@ -568,41 +582,11 @@ static const ArgEltInterface kInvalidIoInterface = {
   InvalidGet, InvalidPut, InvalidPrint, InvalidLength, InvalidFree
 };
 
-static const ArgEltInterface* ArgsGetEltInterface(NaClSrpcArg* arg) {
-  switch (arg->tag) {
-   case NACL_SRPC_ARG_TYPE_INVALID:
-    return &kInvalidIoInterface;
-   case NACL_SRPC_ARG_TYPE_BOOL:
-    return &kBoolIoInterface;
-   case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-    return &kCharArrIoInterface;
-   case NACL_SRPC_ARG_TYPE_DOUBLE:
-    return &kDoubleIoInterface;
-   case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-    return &kDoubleArrIoInterface;
-   case NACL_SRPC_ARG_TYPE_HANDLE:
-    return &kHandleIoInterface;
-   case NACL_SRPC_ARG_TYPE_INT:
-    return &kIntIoInterface;
-   case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-    return &kIntArrIoInterface;
-   case NACL_SRPC_ARG_TYPE_STRING:
-    return &kStringIoInterface;
-   case NACL_SRPC_ARG_TYPE_OBJECT:
-    return &kInvalidIoInterface;
-   case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-    return &kInvalidIoInterface;
-   default:
-    break;
-  }
-  return &kInvalidIoInterface;
-}
-
 /*
  * Argument vector (Args) I/O interface.
  */
 static int ArgsGet(const ArgsIoInterface* argsdesc,
-                   NaClSrpcChannel* channel,
+                   NaClSrpcImcBuffer* buffer,
                    int allocate_args,
                    int read_values,
                    NaClSrpcArg* argvec[],
@@ -611,7 +595,7 @@ static int ArgsGet(const ArgsIoInterface* argsdesc,
   uint32_t i;
   NaClSrpcArg *args = NULL;
 
-  if (1 != __NaClSrpcImcRead(&lenu32, sizeof(lenu32), 1, channel)) {
+  if (1 != __NaClSrpcImcRead(buffer, sizeof(lenu32), 1, &lenu32)) {
     return 0;
   }
   if (lenu32 >= NACL_SRPC_MAX_ARGS) {
@@ -655,7 +639,7 @@ static int ArgsGet(const ArgsIoInterface* argsdesc,
     char read_type;
     const ArgEltInterface* desc;
 
-    if (1 != __NaClSrpcImcRead(&read_type, sizeof(char), 1, channel)) {
+    if (1 != __NaClSrpcImcRead(buffer, sizeof(char), 1, &read_type)) {
       goto error;
     }
     if (args[i].tag != read_type) {
@@ -667,7 +651,7 @@ static int ArgsGet(const ArgsIoInterface* argsdesc,
     /* Get the I/O descriptor for the type to be read */
     desc = argsdesc->element_interface(argvec[i]);
     /* Read the element */
-    if (!desc->get(channel, allocate_args, read_values, argvec[i])) {
+    if (!desc->get(buffer, allocate_args, read_values, argvec[i])) {
       goto error;
     }
   }
@@ -681,7 +665,7 @@ error:
 }
 
 static int ArgsPut(const ArgsIoInterface* argsdesc,
-                   NaClSrpcChannel* channel,
+                   NaClSrpcImcBuffer* buffer,
                    int write_value,
                    NaClSrpcArg* argvec[]) {
   uint32_t i;
@@ -691,18 +675,18 @@ static int ArgsPut(const ArgsIoInterface* argsdesc,
   if (length >= NACL_SRPC_MAX_ARGS) {
     return 0;
   }
-  if (1 != __NaClSrpcImcWrite(&length, sizeof(length), 1, channel)) {
+  if (1 != __NaClSrpcImcWrite(&length, sizeof(length), 1, buffer)) {
     return 0;
   }
 
   for (i = 0; i < length; ++i) {
     const ArgEltInterface* desc = argsdesc->element_interface(argvec[i]);
     /* The tag */
-    if (1 != __NaClSrpcImcWrite(&argvec[i]->tag, sizeof(char), 1, channel)) {
+    if (1 != __NaClSrpcImcWrite(&argvec[i]->tag, sizeof(char), 1, buffer)) {
       return 0;
     }
     /* And the individual type */
-    if (!desc->put(argvec[i], write_value, channel)) {
+    if (!desc->put(argvec[i], write_value, buffer)) {
       return 0;
     }
   }
@@ -750,6 +734,36 @@ static void ArgsFree(const ArgsIoInterface* argsdesc,
   free(argvec[0]);
 }
 
+static const ArgEltInterface* ArgsGetEltInterface(const NaClSrpcArg* arg) {
+  switch (arg->tag) {
+   case NACL_SRPC_ARG_TYPE_INVALID:
+    return &kInvalidIoInterface;
+   case NACL_SRPC_ARG_TYPE_BOOL:
+    return &kBoolIoInterface;
+   case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+    return &kCharArrIoInterface;
+   case NACL_SRPC_ARG_TYPE_DOUBLE:
+    return &kDoubleIoInterface;
+   case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+    return &kDoubleArrIoInterface;
+   case NACL_SRPC_ARG_TYPE_HANDLE:
+    return &kHandleIoInterface;
+   case NACL_SRPC_ARG_TYPE_INT:
+    return &kIntIoInterface;
+   case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+    return &kIntArrIoInterface;
+   case NACL_SRPC_ARG_TYPE_STRING:
+    return &kStringIoInterface;
+   case NACL_SRPC_ARG_TYPE_OBJECT:
+    return &kInvalidIoInterface;
+   case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+    return &kInvalidIoInterface;
+   default:
+    break;
+  }
+  return &kInvalidIoInterface;
+}
+
 static const struct ArgsIoInterface kArgsIoInterface = {
   ArgsGet, ArgsPut, ArgsLength, ArgsFree, ArgsGetEltInterface
 };
@@ -760,10 +774,10 @@ static const ArgsIoInterface* GetArgsInterface(uint32_t protocol_version) {
 }
 
 /*
- * RpcRead attempts to read a message header from the specified channel.
+ * NaClSrpcRpcGet reads a message header from the specified buffer.
  * It returns 1 if successful, and 0 otherwise.
  */
-static int RpcRead(NaClSrpcChannel* channel,
+int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
                    NaClSrpcRpc* rpc) {
   uint32_t protocol;
   uint8_t is_req = 0;
@@ -771,8 +785,8 @@ static int RpcRead(NaClSrpcChannel* channel,
   uint32_t rpc_num = 0;
   NaClSrpcError app_err = NACL_SRPC_RESULT_OK;
 
-  dprintf((SIDE "RpcRead starting\n"));
-  if (1 != __NaClSrpcImcRead(&protocol, sizeof(protocol), 1, channel)) {
+  dprintf((SIDE "RpcGet starting\n"));
+  if (1 != __NaClSrpcImcRead(buffer, sizeof(protocol), 1, &protocol)) {
     dprintf((SIDE "READ: protocol read fail\n"));
     return 0;
   }
@@ -781,30 +795,30 @@ static int RpcRead(NaClSrpcChannel* channel,
    * If there are protocol version specific rpc fields, a version dispatcher
    * would need to go here.
    */
-  if (1 != __NaClSrpcImcRead(&request_id, sizeof(request_id), 1, channel)) {
-    dprintf((SIDE "RpcRead: request_id read fail\n"));
+  if (1 != __NaClSrpcImcRead(buffer, sizeof(request_id), 1, &request_id)) {
+    dprintf((SIDE "RpcGet: request_id read fail\n"));
     return 0;
   }
   rpc->request_id = request_id;
-  if (1 != __NaClSrpcImcRead(&is_req, sizeof(is_req), 1, channel)) {
-    dprintf((SIDE "RpcRead: is_request read fail\n"));
+  if (1 != __NaClSrpcImcRead(buffer, sizeof(is_req), 1, &is_req)) {
+    dprintf((SIDE "RpcGet: is_request read fail\n"));
     return 0;
   }
   rpc->is_request = is_req;
-  if (1 != __NaClSrpcImcRead(&rpc_num, sizeof(rpc_num), 1, channel)) {
-    dprintf((SIDE "RpcRead: rpc_number read fail\n"));
+  if (1 != __NaClSrpcImcRead(buffer, sizeof(rpc_num), 1, &rpc_num)) {
+    dprintf((SIDE "RpcGet: rpc_number read fail\n"));
     return 0;
   }
   rpc->rpc_number = rpc_num;
   if (!rpc->is_request) {
     /* Responses also need to read the app_error member */
-    if (1 != __NaClSrpcImcRead(&app_err, sizeof(app_err), 1, channel)) {
-      dprintf((SIDE "RpcRead: app_error read fail\n"));
+    if (1 != __NaClSrpcImcRead(buffer, sizeof(app_err), 1, &app_err)) {
+      dprintf((SIDE "RpcGet: app_error read fail\n"));
       return 0;
     }
   }
   rpc->app_error = app_err;
-  dprintf((SIDE "RpcRead(%"PRIx32", %s, %"PRIu32", %s) done\n",
+  dprintf((SIDE "RpcGet(%"PRIx32", %s, %"PRIu32", %s) done\n",
            rpc->protocol_version,
            (rpc->is_request == 0) ? "response" : "request",
            rpc->rpc_number,
@@ -813,11 +827,11 @@ static int RpcRead(NaClSrpcChannel* channel,
 }
 
 /*
- * RpcWrite writes an RPC header on the specified channel.  We can only
+ * RpcWrite writes an RPC header to the specified buffer.  We can only
  * send the current protocol version.
  */
 static int RpcWrite(const ArgsIoInterface* desc,
-                    NaClSrpcChannel* channel,
+                    NaClSrpcImcBuffer* buffer,
                     NaClSrpcRpc* rpc) {
   dprintf((SIDE "RpcWrite(%"PRIx32", %s, %"PRIu32", %s)\n",
            rpc->protocol_version,
@@ -828,28 +842,28 @@ static int RpcWrite(const ArgsIoInterface* desc,
       __NaClSrpcImcWrite(&rpc->protocol_version,
                          sizeof(rpc->protocol_version),
                          1,
-                         channel)) {
+                         buffer)) {
     return 0;
   }
   if (1 !=
       __NaClSrpcImcWrite(&rpc->request_id,
                          sizeof(rpc->request_id),
                          1,
-                         channel)) {
+                         buffer)) {
     return 0;
   }
   if (1 !=
       __NaClSrpcImcWrite(&rpc->is_request,
                          sizeof(rpc->is_request),
                          1,
-                         channel)) {
+                         buffer)) {
     return 0;
   }
   if (1 !=
       __NaClSrpcImcWrite(&rpc->rpc_number,
                          sizeof(rpc->rpc_number),
                          1,
-                         channel)) {
+                         buffer)) {
     return 0;
   }
   /* Responses also need to send the app_error member */
@@ -858,7 +872,7 @@ static int RpcWrite(const ArgsIoInterface* desc,
         __NaClSrpcImcWrite(&rpc->app_error,
                            sizeof(rpc->app_error),
                            1,
-                           channel)) {
+                           buffer)) {
       return 0;
     }
   }
@@ -880,91 +894,65 @@ static void RpcLength(const ArgsIoInterface* desc,
 }
 
 /*
- * Receive a message from the specified channel.  If the next message on
- * the channel is a response, it is simply returned.  If the next message
- * is a request, it is returned, and a template of a response is returned
- * via the pointer passed in.
+ * Deserialize a request from the buffer.  If successful, the input
+ * arguments and the template of the returns is returned.
  */
-int NaClSrpcRequestRead(NaClSrpcChannel* channel,
-                        NaClSrpcRpc* rpc,
-                        NaClSrpcArg* args[],
-                        NaClSrpcArg* rets[]) {
-  uint32_t retval;
+int NaClSrpcRequestGet(NaClSrpcImcBuffer* buffer,
+                       const NaClSrpcRpc* rpc,
+                       const char* arg_types,
+                       NaClSrpcArg* args[],
+                       const char* ret_types,
+                       NaClSrpcArg* rets[]) {
   const ArgsIoInterface* desc;
-  const char* rpc_name;
-  const char* in_types;
-  const char* out_types;
 
-  /* Read the common rpc structure (0 indicates failure) */
-  if (!RpcRead(channel, rpc)) {
-    dprintf((SIDE "RequestRead: rpc read failed\n"));
-    /* Clear the rest of the buffer contents to ensure alignment */
-    __NaClSrpcImcMarkReadBufferEmpty(channel);
-    return 0;
-  }
+  dprintf((SIDE "RequestGet(%p, %"PRIu32"\n",
+          (void*) buffer,
+          rpc->rpc_number));
   /* Get the Args I/O descriptor for the protocol version read */
   desc = GetArgsInterface(rpc->protocol_version);
-  /* Process request or response */
-  if (!rpc->is_request) {
-    return 0;
-  }
-  /* Announce start of request processing */
-  dprintf((SIDE "RequestRead: rpc %"PRIu32"\n", rpc->rpc_number));
-  /* Get types for receiving args and rets */
-  retval = NaClSrpcGetArgTypes(channel,
-                               rpc->rpc_number,
-                               &rpc_name,
-                               &in_types,
-                               &out_types);
-  if (!retval) {
-    dprintf(("RequestRead: bad rpc number in request\n"));
-    return 0;
-  }
-  if (!desc->get(desc, channel, 1, 1, args, in_types)) {
-    dprintf(("RequestRead: argument vector receive failed\n"));
+  if (!desc->get(desc, buffer, 1, 1, args, arg_types)) {
+    dprintf(("RequestGet: argument vector receive failed\n"));
     return 0; /* get frees memory on error. */
   }
-  /* Construct the rets from the channel. */
-  if (!desc->get(desc, channel, 1, 0, rets, out_types)) {
-    dprintf(("RequestRead: rets template receive failed\n"));
+  /* Construct the rets from the buffer. */
+  if (!desc->get(desc, buffer, 1, 0, rets, ret_types)) {
+    dprintf(("RequestGet: rets template receive failed\n"));
     desc->free(desc, args);
     return 0;
   }
-  dprintf((SIDE "RequestRead(%p, %"PRIu32", %s) received\n",
-           (void*) channel, rpc->rpc_number, rpc_name));
+  dprintf((SIDE "RequestGet(%p, %"PRIu32") received\n",
+           (void*) buffer,
+           rpc->rpc_number));
   return 1;
 }
 
-static int RequestWrite(const ArgsIoInterface* desc,
-                        NaClSrpcRpc* rpc,
-                        NaClSrpcArg* args[],
-                        NaClSrpcArg* rets[],
-                        NaClSrpcChannel* channel) {
-  dprintf(("RequestWrite(%p, %"PRIu32")\n", (void*) channel, rpc->rpc_number));
+static int RequestPut(const ArgsIoInterface* desc,
+                      NaClSrpcRpc* rpc,
+                      NaClSrpcArg* args[],
+                      NaClSrpcArg* rets[],
+                      NaClSrpcImcBuffer* buffer) {
+  dprintf(("RequestPut(%p, %"PRIu32")\n",
+           (void*) buffer,
+           rpc->rpc_number));
   /* Set up and send rpc */
   rpc->is_request = 1;
   rpc->app_error = NACL_SRPC_RESULT_OK;
-  if (!RpcWrite(desc, channel, rpc)) {
+  if (!RpcWrite(desc, buffer, rpc)) {
     return 0;
   }
   /* Then send the args */
-  if (!desc->put(desc, channel, 1, args)) {
-    dprintf(("RequestWrite: args send failed\n"));
+  if (!desc->put(desc, buffer, 1, args)) {
+    dprintf(("RequestPut: args send failed\n"));
     return 0;
   }
   /* And finally the rets template */
-  if (!desc->put(desc, channel, 0, rets)) {
-    dprintf(("RequestWrite: rets template send failed\n"));
+  if (!desc->put(desc, buffer, 0, rets)) {
+    dprintf(("RequestPut: rets template send failed\n"));
     return 0;
   }
-  if (!__NaClSrpcImcFlush(channel)) {
-    /* Requests with bad handles could fail.  Report to the caller. */
-    dprintf(("RequestWrite(%p, %"PRIu32") failed\n",
-             (void*) channel, rpc->rpc_number));
-    return 0;
-  }
-  dprintf(("RequestWrite(%p, %"PRIu32") sent\n",
-           (void*) channel, rpc->rpc_number));
+  dprintf(("RequestPut(%p, %"PRIu32") sent\n",
+           (void*) buffer,
+           rpc->rpc_number));
   return 1;
 }
 
@@ -993,112 +981,77 @@ static int RequestLength(const ArgsIoInterface* desc,
   return 1;
 }
 
-NaClSrpcError NaClSrpcRequestWrite(NaClSrpcChannel* channel,
-                                   NaClSrpcRpc* rpc,
-                                   NaClSrpcArg* args[],
-                                   NaClSrpcArg* rets[]) {
+int NaClSrpcRequestWrite(NaClSrpcChannel* channel,
+                         NaClSrpcRpc* rpc,
+                         NaClSrpcArg* args[],
+                         NaClSrpcArg* rets[]) {
   uint32_t bytes;
   uint32_t handles;
   const ArgsIoInterface* desc = GetArgsInterface(rpc->protocol_version);
+  NaClSrpcImcBuffer* buffer;
 
   if (!RequestLength(desc, args, rets, &bytes, &handles)) {
-    return NACL_SRPC_RESULT_INTERNAL;
-  }
-  if (!RequestWrite(desc, rpc, args, rets, channel)) {
-    return NACL_SRPC_RESULT_INTERNAL;
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-/*
- * Receive a message from the specified channel.  If the next message on
- * the channel is a response, it is simply returned.  If the next message
- * is a request, it is returned, and a template of a response is returned
- * via the pointer passed in.
- */
-int NaClSrpcResponseRead(NaClSrpcChannel* channel,
-                         NaClSrpcRpc* rpc,
-                         NaClSrpcArg* rets[]) {
-  uint32_t retval;
-  const ArgsIoInterface* desc;
-  const char* rpc_name;
-  const char* in_types;
-  const char* out_types;
-
-
-  /* Read the common rpc structure (0 indicates failure) */
-  if (!RpcRead(channel, rpc)) {
-    dprintf((SIDE "ResponseRead: rpc read failed\n"));
-    /* Clear the rest of the buffer contents to ensure alignment */
-    __NaClSrpcImcMarkReadBufferEmpty(channel);
     return 0;
   }
-  /* Get the Args I/O descriptor for the protocol version read */
-  desc = GetArgsInterface(rpc->protocol_version);
-  /* If the message is a request, return an error */
-  if (rpc->is_request) {
+  buffer = &channel->send_buf;
+  if (!RequestPut(desc, rpc, args, rets, buffer)) {
     return 0;
   }
-  /* Announce start of response processing */
-  dprintf((SIDE "ResponseRead: response, rpc %"PRIu32"\n", rpc->rpc_number));
-  /* Get types for receiving rets */
-  retval = NaClSrpcGetArgTypes(channel,
-                               rpc->rpc_number,
-                               &rpc_name,
-                               &in_types,
-                               &out_types);
-  if (!retval) {
-    dprintf((SIDE "ResponseRead: bad rpc number\n"));
+  if (!__NaClSrpcImcFlush(buffer, channel)) {
+    /* Requests with bad handles could fail.  Report to the caller. */
+    dprintf(("NaClSrpcRequestWrite(%p, %"PRIu32") failed\n",
+             (void*) buffer,
+             rpc->rpc_number));
     return 0;
   }
-  if (NACL_SRPC_RESULT_OK != rpc->app_error) {
-    dprintf(("ResponseRead: method returned failure: %d\n", rpc->app_error));
-    /* Clear the rest of the buffer contents to ensure alignment */
-    __NaClSrpcImcMarkReadBufferEmpty(channel);
-    return 1;
-  }
-  dprintf((SIDE "ResponseRead: getting rets\n"));
-  if (!desc->get(desc, channel, 0, 1, rets, out_types)) {
-    dprintf(("ResponseRead: rets receive failed\n"));
-    /* Clear the rest of the buffer contents to ensure alignment */
-    __NaClSrpcImcMarkReadBufferEmpty(channel);
-    /* get cleans up argument memory before returning */
-    return 0;
-  }
-  dprintf((SIDE "ResponseRead(%p, %"PRIu32", %s) received\n",
-           (void*) channel, rpc->rpc_number, rpc_name));
   return 1;
 }
 
-static int ResponseWrite(const ArgsIoInterface* desc,
-                         NaClSrpcRpc* rpc,
-                         NaClSrpcArg* rets[],
-                         NaClSrpcChannel* channel) {
-  dprintf((SIDE "SRPC: ResponseWrite\n"));
-  rpc->is_request = 0;
-  if (!RpcWrite(desc, channel, rpc)) {
+/*
+ * Deserialize a response from the buffer.  If successful, the return
+ * values are returned.
+ */
+int NaClSrpcResponseGet(NaClSrpcImcBuffer* buffer,
+                        const NaClSrpcRpc* rpc,
+                        const char* ret_types,
+                        NaClSrpcArg* rets[]) {
+  const ArgsIoInterface* desc;
+
+  /* Get the Args I/O descriptor for the protocol version read */
+  desc = GetArgsInterface(rpc->protocol_version);
+  /* Announce start of response processing */
+  dprintf((SIDE "ResponseGet: response, rpc %"PRIu32"\n", rpc->rpc_number));
+  if (NACL_SRPC_RESULT_OK != rpc->app_error) {
+    dprintf(("ResponseGet: method returned failure: %d\n", rpc->app_error));
+    return 1;
+  }
+  dprintf((SIDE "ResponseGet: getting rets\n"));
+  if (!desc->get(desc, buffer, 0, 1, rets, ret_types)) {
+    dprintf(("ResponseGet: rets receive failed\n"));
+    /* get cleans up argument memory before returning */
     return 0;
   }
-  if (!desc->put(desc, channel, 1, rets)) {
+  dprintf((SIDE "ResponseGet(%p, %"PRIu32") received\n",
+           (void*) buffer, rpc->rpc_number));
+  return 1;
+}
+
+static int ResponsePut(const ArgsIoInterface* desc,
+                       NaClSrpcRpc* rpc,
+                       NaClSrpcArg* rets[],
+                       NaClSrpcImcBuffer* buffer) {
+  dprintf((SIDE "ResponsePut(%p, %"PRIu32")\n",
+           (void*) buffer, rpc->rpc_number));
+  rpc->is_request = 0;
+  if (!RpcWrite(desc, buffer, rpc)) {
+    return 0;
+  }
+  if (!desc->put(desc, buffer, 1, rets)) {
     dprintf(("SRPC: rets send failed\n"));
     return 0;
   }
-  if (!__NaClSrpcImcFlush(channel)) {
-    /*
-     * If the put call fails due to a bad handle, the transport layer
-     * doesn't send anything.  Therefore we need to return an error message
-     * so that the client doesn't wait forever.
-     */
-    rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
-    rpc->is_request = 0;
-    if (!RpcWrite(desc, channel, rpc)) {
-      return 0;
-    }
-    __NaClSrpcImcFlush(channel);
-    dprintf(("SRPC: transmission error occurred\n"));
-  }
-  dprintf((SIDE "ResponseWrite(%p, %"PRIu32", %d, %s): sent\n",
-           (void*) channel, rpc->rpc_number, rpc->app_error,
+  dprintf((SIDE "ResponsePut(%p, %"PRIu32", %d, %s): sent\n",
+           (void*) buffer, rpc->rpc_number, rpc->app_error,
            NaClSrpcErrorString(rpc->app_error)));
   return 1;
 }
@@ -1122,12 +1075,17 @@ static int ResponseLength(const ArgsIoInterface* desc,
   return 1;
 }
 
-NaClSrpcError NaClSrpcResponseWrite(NaClSrpcChannel* channel,
-                                    NaClSrpcRpc* rpc,
-                                    NaClSrpcArg* rets[]) {
+/*
+ * NaClSrpcResponseWrite writes the header and the return values on the
+ * specified channel.
+ */
+int NaClSrpcResponseWrite(NaClSrpcChannel* channel,
+                          NaClSrpcRpc* rpc,
+                          NaClSrpcArg* rets[]) {
   uint32_t bytes;
   uint32_t handles;
   const ArgsIoInterface* desc = GetArgsInterface(rpc->protocol_version);
+  NaClSrpcImcBuffer* buffer;
 
   /*
    * ResponseLength computes the requirements for a write buffer.
@@ -1135,10 +1093,31 @@ NaClSrpcError NaClSrpcResponseWrite(NaClSrpcChannel* channel,
    * serialization from buffer send/receive.
    */
   if (!ResponseLength(desc, rets, &bytes, &handles)) {
-    return NACL_SRPC_RESULT_INTERNAL;
+    return 0;
   }
-  if (!ResponseWrite(desc, rpc, rets, channel)) {
-    return NACL_SRPC_RESULT_INTERNAL;
+  /* Get the buffer to write into */
+  buffer = &channel->send_buf;
+  /* Serialize into the buffer */
+  if (!ResponsePut(desc, rpc, rets, buffer)) {
+    dprintf(("ResponseWrite: couldn't put rets\n"));
+    return 0;
   }
-  return NACL_SRPC_RESULT_OK;
+  /* Flush the buffer to the channel */
+  if (!__NaClSrpcImcFlush(buffer, channel)) {
+    /*
+     * If the flush call fails due to a bad handle, the transport layer
+     * doesn't send anything.  Therefore we need to return an error message
+     * so that the client doesn't wait forever.
+     */
+    dprintf(("ResponseWrite: flush failed -- sending internal error\n"));
+    rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
+    rpc->is_request = 0;
+    if (!RpcWrite(desc, buffer, rpc)) {
+      dprintf(("ResponseWrite: flush failed twice -- giving up\n"));
+      return 0;
+    }
+    __NaClSrpcImcFlush(buffer, channel);
+  }
+  dprintf(("NaClSrpcResponseWrite: sent\n"));
+  return 1;
 }

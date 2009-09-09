@@ -110,12 +110,12 @@ NaClSrpcDesc* __NaClSrpcBuildSrpcDesc(const char* str, uint32_t* rpc_count);
 /*
  * Argument vector type checking functions.
  */
-int NaClSrpcTypeCheckOne(char const          **pp,
-                         struct NaClSrpcArg  **alist);
+int NaClSrpcTypeCheckOne(char const   **pp,
+                         NaClSrpcArg  **alist);
 
-int NaClSrpcTypeCheckArgs(char const         *fmt,
-                          struct NaClSrpcArg **in_args,
-                          struct NaClSrpcArg **out_args);
+int NaClSrpcTypeCheckArgs(char const  *fmt,
+                          NaClSrpcArg **in_args,
+                          NaClSrpcArg **out_args);
 
 /*
  * We only need these structure definitions and macros for NativeClient
@@ -138,29 +138,32 @@ extern NaClSrpcError __CommandLoop();
 extern void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer,
                                     int is_write_buf);
 
-extern void __NaClSrpcImcMarkReadBufferEmpty(NaClSrpcChannel* channel);
+extern NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel);
 
-extern int __NaClSrpcImcFillbuf(NaClSrpcChannel* channel);
-
-extern int __NaClSrpcImcRead(void* buffer,
+extern int __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
                              size_t elt_size,
                              size_t n_elt,
-                             NaClSrpcChannel* channel);
+                             void* target);
 
-extern int __NaClSrpcImcWrite(const void* buffer,
+extern void __NaClSrpcImcRefill(NaClSrpcImcBuffer* buffer);
+
+extern int __NaClSrpcImcWrite(const void* source,
                               size_t elt_size,
                               size_t n_elt,
+                              NaClSrpcImcBuffer* buffer);
+
+extern int __NaClSrpcImcFlush(NaClSrpcImcBuffer* buffer,
                               NaClSrpcChannel* channel);
 
-extern int __NaClSrpcImcFlush(NaClSrpcChannel* channel);
-
 /* Descriptor passing */
-extern NaClSrpcImcDescType __NaClSrpcImcReadDesc(NaClSrpcChannel* channel);
-extern int __NaClSrpcImcWriteDesc(NaClSrpcChannel* channel,
-                                  NaClSrpcImcDescType desc);
+extern NaClSrpcImcDescType __NaClSrpcImcReadDesc(NaClSrpcImcBuffer* buffer);
+extern int __NaClSrpcImcWriteDesc(NaClSrpcImcDescType desc,
+                                  NaClSrpcImcBuffer* buffer);
 /*
  * Utility functions.
  */
+extern NaClSrpcMethod NaClSrpcGetMethod(const NaClSrpcChannel* channel,
+                                        uint32_t rpc_number);
 extern double __NaClSrpcGetUsec();
 
 EXTERN_C_END

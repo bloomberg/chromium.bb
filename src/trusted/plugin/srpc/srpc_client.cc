@@ -90,8 +90,8 @@ SrpcClient::~SrpcClient() {
 void SrpcClient::GetMethods() {
   dprintf(("SrpcClient::GetMethods(%p)\n", static_cast<void *>(this)));
   // Get the exported methods.
-  const struct NaClSrpcDesc *descrs = srpc_channel_.rpc_descr;
-  uint32_t count = srpc_channel_.rpc_count;
+  const struct NaClSrpcDesc *descrs = srpc_channel_.client.rpc_descr;
+  uint32_t count = srpc_channel_.client.rpc_count;
   // Intern the methods into a mapping from NPIdentifiers to MethodInfo.
   for (uint32_t i = 0; i < count; ++i) {
     const char* name = descrs[i].rpc_name;
@@ -112,8 +112,8 @@ void SrpcClient::GetMethods() {
 NaClSrpcArg* SrpcClient::GetSignatureObject() {
   dprintf(("SrpcClient::GetSignatureObject(%p)\n", static_cast<void *>(this)));
   // Get the exported methods.
-  const struct NaClSrpcDesc *descrs = srpc_channel_.rpc_descr;
-  uint32_t count = srpc_channel_.rpc_count;
+  const struct NaClSrpcDesc *descrs = srpc_channel_.client.rpc_descr;
+  uint32_t count = srpc_channel_.client.rpc_count;
   NaClSrpcArg* ret_array = new(std::nothrow) NaClSrpcArg;
   if ((NULL == ret_array) || !InitSrpcArgArray(ret_array, count)) {
     if (0 != count) {

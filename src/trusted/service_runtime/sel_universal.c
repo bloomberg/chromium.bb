@@ -601,14 +601,17 @@ static void TestRandomRpcs(NaClSrpcChannel* channel) {
    */
 
   do {
-    if (timed_rpc_method < 1 || timed_rpc_method >= channel->rpc_count) {
+    if (timed_rpc_method < 1 ||
+        timed_rpc_method >= channel->client.rpc_count) {
       fprintf(stderr, "method number must be between 1 and %d (inclusive)\n",
-              channel->rpc_count - 1);
+              channel->client.rpc_count - 1);
       break;
     }
 
-    argument_count = strlen(channel->rpc_descr[timed_rpc_method].in_args);
-    return_count = strlen(channel->rpc_descr[timed_rpc_method].out_args);
+    argument_count =
+        strlen(channel->client.rpc_descr[timed_rpc_method].in_args);
+    return_count =
+        strlen(channel->client.rpc_descr[timed_rpc_method].out_args);
 
     if (argument_count != return_count) {
       fprintf(stderr, "method argument and return count must match\n");
@@ -645,10 +648,10 @@ static void TestRandomRpcs(NaClSrpcChannel* channel) {
                               "Told by an idiot, full of sound and fury,"
                               "Signifying nothing";
 
-      in.tag = channel->rpc_descr[timed_rpc_method].in_args[0];
-      out.tag = channel->rpc_descr[timed_rpc_method].out_args[0];
+      in.tag = channel->client.rpc_descr[timed_rpc_method].in_args[0];
+      out.tag = channel->client.rpc_descr[timed_rpc_method].out_args[0];
 
-      type = channel->rpc_descr[timed_rpc_method].in_args[0];
+      type = channel->client.rpc_descr[timed_rpc_method].in_args[0];
       switch (type) {
         case NACL_SRPC_ARG_TYPE_BOOL:
           in.u.bval = 1;

@@ -49,36 +49,6 @@
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
 
-static int GetRpcTypes(NaClSrpcChannel* channel,
-                       uint32_t rpc_num,
-                       const char** rpc_name,
-                       const char** in_types,
-                       const char** out_types) {
-  if (0 == rpc_num) {
-    *rpc_name = "service_discovery";
-    *in_types = "";
-    *out_types = "C";
-    return 1;
-  } else if (NACL_SRPC_GET_TIMES_METHOD == rpc_num) {
-    *rpc_name = "NACL_SRPC_GET_TIMES_METHOD";
-    *in_types = "";
-    *out_types = "dddd";
-    return 1;
-  } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_num) {
-    *rpc_name = "NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD";
-    *in_types = "i";
-    *out_types = "";
-    return 1;
-  } else if (channel->rpc_count > rpc_num) {
-    *rpc_name = channel->rpc_descr[rpc_num].rpc_name;
-    *in_types = channel->rpc_descr[rpc_num].in_args;
-    *out_types = channel->rpc_descr[rpc_num].out_args;
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
 /*
  * Methods for invoking RPCs.
  */
@@ -86,13 +56,13 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
                               uint32_t rpc_number,
                               NaClSrpcArg* args[],
                               NaClSrpcArg* rets[]) {
-  NaClSrpcRpc      rpc;
-  NaClSrpcError    retval;
-  const char*      rpc_name;
-  const char*      arg_types;
-  const char*      ret_types;
-  double           this_start_usec = 0.0;
-  double           this_method_usec;
+  NaClSrpcRpc        rpc;
+  NaClSrpcError      retval;
+  const char*        rpc_name;
+  const char*        arg_types;
+  const char*        ret_types;
+  double             this_start_usec = 0.0;
+  double             this_method_usec;
 
   dprintf(("InvokeV(channel %p, rpc number %"PRIu32")\n",
            (void*) channel,
@@ -100,13 +70,15 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   /*
    * If we are timing, get the start time.
    */
-  dprintf(("CLIENT: channel timing %s\n",
-          ((channel->timing_enabled != 0) ? "ENABLED" : "DISABLED")));
   if (channel->timing_enabled) {
     this_start_usec = __NaClSrpcGetUsec();
   }
 
-  if (GetRpcTypes(channel, rpc_number, &rpc_name, &arg_types, &ret_types)) {
+  if (NaClSrpcGetArgTypes(&channel->client,
+                          rpc_number,
+                          &rpc_name,
+                          &arg_types,
+                          &ret_types)) {
     /* Check input parameters for type conformance */
     if (0 == NaClSrpcTypeCheckOne(&arg_types, args)) {
       return NACL_SRPC_RESULT_IN_ARG_TYPE_MISMATCH;
@@ -116,6 +88,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
       return NACL_SRPC_RESULT_OUT_ARG_TYPE_MISMATCH;
     }
   } else {
+    dprintf((SIDE "InvokeV: bad rpc number\n"));
     return NACL_SRPC_RESULT_BAD_RPC_NUMBER;
   }
   dprintf(("InvokeV(channel %p, rpc %"PRIu32" '%s')\n",
@@ -129,37 +102,29 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   rpc.rpc_number = rpc_number;
   rpc.request_id = channel->next_outgoing_request_id;
   rpc.app_error = NACL_SRPC_RESULT_OK;
+  rpc.rets = rets;
+  rpc.ret_types = ret_types;
   retval = NaClSrpcRequestWrite(channel, &rpc, args, rets);
-  if (NACL_SRPC_RESULT_OK != retval) {
+  if (!retval) {
     dprintf(("InvokeV: rpc request send failed\n"));
-    return retval;
+    return NACL_SRPC_RESULT_INTERNAL;
   }
 
   dprintf(("InvokeV(channel %p, rpc %"PRIu32" '%s') waiting for response...\n",
-           (void*) channel, rpc_number, rpc_name));
-  /*
-   * Then we wait for the response.
-   * This requires reading an error code reported by the rpc service itself.
-   * If that error code is ok, then we get the return value vector.
-   */
-  if (0 == NaClSrpcResponseRead(channel, &rpc, rets)) {
-    dprintf(("SRPC: response receive failed\n"));
-    return NACL_SRPC_RESULT_INTERNAL;
-  }
-  if (0 != rpc.is_request) {
-    dprintf(("InvokeV: rpc is not response: %d\n", rpc.is_request));
-    /* Clear the rest of the buffer contents to ensure alignment */
-    __NaClSrpcImcMarkReadBufferEmpty(channel);
-    return NACL_SRPC_RESULT_INTERNAL;
-  }
-  dprintf(("InvokeV: received response (%x, %s)\n",
-           rpc.app_error, NaClSrpcErrorString(rpc.app_error)));
+           (void*) channel,
+           rpc_number,
+           rpc_name));
+  /* Then we wait for the response. */
+  NaClSrpcRpcWait(channel, &rpc);
+  dprintf(("InvokeV: received response (%d, %s)\n",
+           rpc.app_error,
+           NaClSrpcErrorString(rpc.app_error)));
 
   /*
    * If we are timing, collect the current time, compute the delta from
    * the start, and update the cumulative counter.
    */
-  if (0 != channel->timing_enabled) {
+  if (channel->timing_enabled) {
     this_method_usec = __NaClSrpcGetUsec();
     channel->send_usec += this_method_usec;
   }
@@ -168,35 +133,124 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
 }
 
 /*
- * TODO(sehr): split this function.  It's much too big.
+ * Parameter passing and return involves a significant amount of replication
+ * that could be handled through templates.  What follows is a set of
+ * macros for that task.
  */
+/*
+ * Some steps involve skipping a parameter in a va_arg list.
+ */
+#define SKIP(va, impl_type) \
+    (void) va_arg(in_va, impl_type);
+
+/*
+ * The first phase is the args[] vector construction.
+ */
+#define SCALAR_ARG(arg, field, va, impl_type) \
+    (arg)->u.field = va_arg(in_va, impl_type)
+#define ARRAY_ARG(arg, field, array_name, va, impl_type) \
+    (arg)->u.field.count = va_arg(in_va, uint32_t);         \
+    (arg)->u.field.array_name = va_arg(in_va, impl_type)
+#define BOOL_ARG(arg, field, va, impl_type) \
+    (arg)->u.bval = (va_arg(in_va, impl_type) != 0)
+
+/*
+ * The second phase is the rets[] vector construction before invocation.
+ */
+#define SCALAR_RETINIT(arg, field, va, impl_type) \
+    (arg)->u.field = (impl_type) 0;               \
+    SKIP(va, impl_type *)
+#define ARRAY_RETINIT(arg, field, array_name, va, impl_type) \
+    ARRAY_ARG(arg, field, array_name, va, impl_type)
+#define BOOL_RETINIT(arg, field, va, impl_type) \
+    SKIP(va, impl_type *)
+
+/*
+ * The third phase is skipping the args[] after invocation.
+ */
+#define SCALAR_SKIP(arg, field, va, impl_type) \
+    SKIP(va, impl_type)
+#define ARRAY_SKIP(arg, field, array_name, va, impl_type) \
+    SKIP(va, uint32_t)                                    \
+    SKIP(va, impl_type)
+#define BOOL_SKIP(arg, field, va, impl_type) \
+    SCALAR_SKIP(arg, field, va, impl_type)
+
+/*
+ * The fourth phase is copying the rets[] into the va_args after invocation.
+ */
+#define SCALAR_RET(arg, field, va, impl_type) \
+    *va_arg(va, impl_type *) = (arg)->u.field
+#define ARRAY_RET(arg, field, array_name, va, impl_type) \
+    ARRAY_SKIP(arg, field, array_name, va, impl_type)
+#define BOOL_RET(arg, field, va, impl_type) \
+    *va_arg(va, impl_type *) = ((arg)->u.field != 0)
+
+/*
+ * All the phases consist of a loop around a switch enumerating types.
+ */
+#define ARGRET_SWITCH(phase, va, arg)                           \
+    switch (*p) {                                               \
+      case NACL_SRPC_ARG_TYPE_BOOL:                             \
+        BOOL_##phase(arg, bval, va, int);                       \
+        break;                                                  \
+      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:                       \
+        ARRAY_##phase(arg, caval, carr, va, char*);             \
+        break;                                                  \
+      case NACL_SRPC_ARG_TYPE_DOUBLE:                           \
+        SCALAR_##phase(arg, dval, va, double);                  \
+        break;                                                  \
+      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:                     \
+        ARRAY_##phase(arg, daval, darr, va, double*);           \
+        break;                                                  \
+      case NACL_SRPC_ARG_TYPE_HANDLE:                           \
+        SCALAR_##phase(arg, hval, va, NaClSrpcImcDescType);     \
+        break;                                                  \
+      case NACL_SRPC_ARG_TYPE_INT:                              \
+        SCALAR_##phase(arg, ival, va, int);                     \
+        break;                                                  \
+      case NACL_SRPC_ARG_TYPE_INT_ARRAY:                        \
+        ARRAY_##phase(arg, iaval, iarr, va, int*);              \
+        break;                                                  \
+      case NACL_SRPC_ARG_TYPE_STRING:                           \
+        SCALAR_##phase(arg, sval, va, char*);                   \
+        break;                                                  \
+      /*                                                        \
+       * The two cases below are added to avoid warnings,       \
+       * they are only used  in the plugin code                 \
+       */                                                       \
+      case NACL_SRPC_ARG_TYPE_OBJECT:                           \
+      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:                    \
+      default:                                                  \
+        rv = NACL_SRPC_RESULT_APP_ERROR;                        \
+        goto abort4;                                            \
+    }
+
 NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
                                    uint32_t         rpc_num,
                                    va_list          in_va,
                                    va_list          out_va) {
   char const        *rpc_name;
-  char const        *in_arglist;
-  char const        *out_arglist;
+  char const        *arg_types;
+  char const        *ret_types;
   size_t            num_in;
   size_t            num_out;
   uint32_t          i;
-  int               valid_rpc;
   NaClSrpcArg       **inv;
   NaClSrpcArg       **outv;
   char const        *p;
   NaClSrpcError     rv;
 
-  valid_rpc = GetRpcTypes(channel,
-                          rpc_num,
-                          &rpc_name,
-                          &in_arglist,
-                          &out_arglist);
-  if (0 == valid_rpc) {
+  if (!NaClSrpcGetArgTypes(&channel->client,
+                           rpc_num,
+                           &rpc_name,
+                           &arg_types,
+                           &ret_types)) {
     return NACL_SRPC_RESULT_BAD_RPC_NUMBER;
   }
 
-  num_in = strlen(in_arglist);
-  num_out = strlen(out_arglist);
+  num_in = strlen(arg_types);
+  num_out = strlen(ret_types);
 
   if (NACL_SRPC_MAX_ARGS < num_in || NACL_SRPC_MAX_ARGS < num_out) {
     return NACL_SRPC_RESULT_APP_ERROR;
@@ -235,176 +289,23 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
 
   rv = NACL_SRPC_RESULT_INTERNAL;
 
-  for (i = 0, p = in_arglist; i < num_in; ++i, ++p) {
-    switch (*p) {
-      case NACL_SRPC_ARG_TYPE_BOOL:
-        inv[i]->u.bval = va_arg(in_va, int) != 0;
-        break;
-      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-        inv[i]->u.caval.count = va_arg(in_va, uint32_t);
-        inv[i]->u.caval.carr = va_arg(in_va, char *);
-        break;
-      case NACL_SRPC_ARG_TYPE_DOUBLE:
-        inv[i]->u.dval = va_arg(in_va, double);
-        break;
-      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-        inv[i]->u.daval.count = va_arg(in_va, uint32_t);
-        inv[i]->u.daval.darr = va_arg(in_va, double *);
-        break;
-      case NACL_SRPC_ARG_TYPE_HANDLE:
-        inv[i]->u.hval = va_arg(in_va, NaClSrpcImcDescType);
-        break;
-      case NACL_SRPC_ARG_TYPE_INT:
-        inv[i]->u.ival = va_arg(in_va, int);
-        break;
-      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-        inv[i]->u.iaval.count = va_arg(in_va, uint32_t);
-        inv[i]->u.iaval.iarr = va_arg(in_va, int *);
-        break;
-      case NACL_SRPC_ARG_TYPE_STRING:
-        /*
-         * When args are actually passed via a read/write
-         * interface, this essentially turns into a counted
-         * string, except that we count the bytes.
-         */
-        inv[i]->u.sval = va_arg(in_va, char *);
-        break;
-      /*
-       * The two cases below are added to avoid warnings, they are only used
-       * in the plugin code
-       */
-      case NACL_SRPC_ARG_TYPE_OBJECT:
-      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-      default:
-        rv = NACL_SRPC_RESULT_APP_ERROR;
-        goto abort4;
-    }
+  for (i = 0, p = arg_types; i < num_in; ++i, ++p) {
+    ARGRET_SWITCH(ARG, in_va, inv[i]);
     inv[i]->tag = *p;
   }
 
-  for (i = 0, p = out_arglist; i < num_out; ++i, ++p) {
-    switch (*p) {
-      case NACL_SRPC_ARG_TYPE_BOOL:
-        outv[i]->u.bval = 0;
-        (void) va_arg(in_va, int *);
-        break;
-      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-        outv[i]->u.caval.count = va_arg(in_va, uint32_t);
-        outv[i]->u.caval.carr = va_arg(in_va, char *);
-        break;
-      case NACL_SRPC_ARG_TYPE_DOUBLE:
-        outv[i]->u.dval = 0;
-        (void) va_arg(in_va, double *);
-        break;
-      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-        outv[i]->u.daval.count = va_arg(in_va, uint32_t);
-        outv[i]->u.daval.darr = va_arg(in_va, double *);
-        break;
-      case NACL_SRPC_ARG_TYPE_HANDLE:
-        outv[i]->u.hval = 0;
-        (void) va_arg(in_va, NaClSrpcImcDescType);
-        break;
-      case NACL_SRPC_ARG_TYPE_INT:
-        outv[i]->u.ival = 0;
-        (void) va_arg(in_va, int *);
-        break;
-      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-        outv[i]->u.iaval.count = va_arg(in_va, uint32_t);
-        outv[i]->u.iaval.iarr = va_arg(in_va, int *);
-        break;
-      /*
-       * The two cases below are added to avoid warnings, they are only used
-       * in the plugin code
-       */
-      case NACL_SRPC_ARG_TYPE_OBJECT:
-      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-      default:
-        rv = NACL_SRPC_RESULT_APP_ERROR;
-        goto abort4;
-    }
+  for (i = 0, p = ret_types; i < num_out; ++i, ++p) {
+    ARGRET_SWITCH(RETINIT, in_va, outv[i]);
     outv[i]->tag = *p;
   }
 
   rv = NaClSrpcInvokeV(channel, rpc_num, inv, outv);
 
-  for (i = 0, p = in_arglist; i < num_in; ++i, ++p) {
-    switch (*p) {
-      case NACL_SRPC_ARG_TYPE_BOOL:
-        (void) va_arg(out_va, int);
-        break;
-      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-        (void) va_arg(out_va, uint32_t);
-        (void) va_arg(out_va, char *);
-        break;
-      case NACL_SRPC_ARG_TYPE_DOUBLE:
-        (void) va_arg(out_va, double);
-        break;
-      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-        (void) va_arg(out_va, uint32_t);
-        (void) va_arg(out_va, double *);
-        break;
-      case NACL_SRPC_ARG_TYPE_HANDLE:
-        (void) va_arg(out_va, void *);
-        break;
-      case NACL_SRPC_ARG_TYPE_INT:
-        (void) va_arg(out_va, int);
-        break;
-      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-        (void) va_arg(out_va, uint32_t);
-        (void) va_arg(out_va, int *);
-        break;
-      case NACL_SRPC_ARG_TYPE_STRING:
-        (void) va_arg(out_va, char *);
-        break;
-      /*
-       * The two cases below are added to avoid warnings, they are only used
-       * in the plugin code
-       */
-      case NACL_SRPC_ARG_TYPE_OBJECT:
-      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-      default:
-        rv = NACL_SRPC_RESULT_APP_ERROR;
-        goto abort4;
-    }
+  for (i = 0, p = arg_types; i < num_in; ++i, ++p) {
+    ARGRET_SWITCH(SKIP, out_va, inv[i]);
   }
-  for (i = 0, p = out_arglist; i < num_out; ++i, ++p) {
-    switch (*p) {
-      case NACL_SRPC_ARG_TYPE_BOOL:
-        *va_arg(out_va, int *) = outv[i]->u.bval != 0;
-        break;
-      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-        (void) va_arg(out_va, uint32_t);
-        (void) va_arg(out_va, char *);
-        break;
-      case NACL_SRPC_ARG_TYPE_DOUBLE:
-        *va_arg(out_va, double *) = outv[i]->u.dval;
-        break;
-      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-        (void) va_arg(out_va, uint32_t);
-        (void) va_arg(out_va, double *);
-        break;
-      case NACL_SRPC_ARG_TYPE_HANDLE:
-        *va_arg(out_va, NaClSrpcImcDescType *) = outv[i]->u.hval;
-        break;
-      case NACL_SRPC_ARG_TYPE_INT:
-        *va_arg(out_va, int *) = outv[i]->u.ival;
-        break;
-      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-        (void) va_arg(out_va, uint32_t);
-        (void) va_arg(out_va, int *);
-        break;
-      case NACL_SRPC_ARG_TYPE_STRING:
-        /* fall through; earlier checks should have caught this */
-      /*
-       * The two cases below are added to avoid warnings, they are only used
-       * in the plugin code
-       */
-      case NACL_SRPC_ARG_TYPE_OBJECT:
-      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-      default:
-        rv = NACL_SRPC_RESULT_APP_ERROR;
-        goto abort4;
-    }
+  for (i = 0, p = ret_types; i < num_out; ++i, ++p) {
+    ARGRET_SWITCH(RET, out_va, outv[i]);
   }
 
 abort4:

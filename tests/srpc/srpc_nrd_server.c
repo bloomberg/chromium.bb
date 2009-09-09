@@ -120,7 +120,7 @@ static NaClSrpcError GetMsg(NaClSrpcChannel *channel,
   }
 }
 
-/* Shutdown simply returns a string in a character array. */
+/* Shutdown stops the RPC service. */
 static NaClSrpcError Shutdown(NaClSrpcChannel *channel,
                               NaClSrpcArg **in_args,
                               NaClSrpcArg **out_args) {

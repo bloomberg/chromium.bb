@@ -53,12 +53,12 @@ struct ServiceDesc {
 static NaClSrpcError ServiceDiscovery(NaClSrpcChannel* channel,
                                       NaClSrpcArg** in_args,
                                       NaClSrpcArg** out_args) {
-  if (out_args[0]->u.caval.count >= channel->service_string_length) {
+  if (out_args[0]->u.caval.count >= channel->server.service_string_length) {
     strncpy(out_args[0]->u.caval.carr,
-            channel->service_string,
-            channel->service_string_length);
+            channel->server.service_string,
+            channel->server.service_string_length);
     /* Set the length of the string actually returned. */
-    out_args[0]->u.caval.count = channel->service_string_length;
+    out_args[0]->u.caval.count = channel->server.service_string_length;
     return NACL_SRPC_RESULT_OK;
   } else {
     return NACL_SRPC_RESULT_APP_ERROR;
@@ -175,7 +175,6 @@ static struct ServiceDesc* BuildDesc(
 static int ServerLoop(struct ServiceDesc* desc,
                       const char* service_str,
                       size_t service_str_length) {
-  int retval;
   NaClSrpcChannel* channel;
 
   /*
@@ -199,17 +198,14 @@ static int ServerLoop(struct ServiceDesc* desc,
   /*
    * Save the service discovery string and length to avoid recomputation.
    */
-  channel->service_string = service_str;
-  channel->service_string_length = service_str_length;
+  channel->server.service_string = service_str;
+  channel->server.service_string_length = service_str_length;
   /*
    * Loop receiving RPCs and processing them.
    * The loop stops when a method requests a break out of the loop
    * or the IMC layer is unable to satisfy a request.
    */
-  do {
-    retval = NaClSrpcReceiveAndDispatch(channel);
-  } while ((NACL_SRPC_RESULT_BREAK != retval) &&
-           (NACL_SRPC_RESULT_MESSAGE_TRUNCATED != retval));
+  NaClSrpcRpcWait(channel, NULL);
   /*
    * Disconnect the SRPC channel.
    */
@@ -263,6 +259,23 @@ int NaClSrpcServerLoopImcDesc(NaClSrpcImcDescType imc_socket_desc,
   return ServerLoop(service_desc, service_str, service_str_length);
 }
 
+static NaClSrpcImcDescType ImcDescTypeFromHandle(NaClHandle handle) {
+#ifdef __native_client__
+  return handle;
+#else
+  struct NaClDescImcDesc* desc =
+      (struct NaClDescImcDesc*) malloc(sizeof(struct NaClDescImcDesc));
+  if (NULL == desc) {
+    return NULL;
+  }
+  if (!NaClDescImcDescCtor(desc, handle)) {
+    free(desc);
+    return NULL;
+  }
+  return (struct NaClDesc*) desc;
+#endif  /* __native_client__ */
+}
+
 int NaClSrpcServerLoop(NaClHandle socket_desc,
                        const NaClSrpcHandlerDesc methods[],
                        void* server_instance_data) {
@@ -273,8 +286,9 @@ int NaClSrpcServerLoop(NaClHandle socket_desc,
     printf("socket descriptor %d invalid\n", socket_desc);
     return 0;
   }
-  return NaClSrpcServerLoopImcDesc(NaClSrpcImcDescTypeFromHandle(socket_desc),
-                                   methods, server_instance_data);
+  return NaClSrpcServerLoopImcDesc(ImcDescTypeFromHandle(socket_desc),
+                                   methods,
+                                   server_instance_data);
 }
 
 #ifdef __native_client__
