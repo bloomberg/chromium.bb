@@ -866,6 +866,11 @@ def DoPresubmitChecks(change,
                             may_prompt=False):
           error_count += 1
         output_stream.write('\n')
+
+  total_time = time.time() - start_time
+  if total_time > 1.0:
+    print "Presubmit checks took %.1fs to calculate." % total_time
+
   if not errors and warnings and may_prompt:
     output_stream.write(
       'There were presubmit warnings. Sure you want to continue? (y/N): ')
@@ -873,9 +878,6 @@ def DoPresubmitChecks(change,
     if response.strip().lower() != 'y':
       error_count += 1
 
-  total_time = time.time() - start_time
-  if total_time > 1.0:
-    print "Presubmit checks took %.1fs to calculate." % total_time
   global _ASKED_FOR_FEEDBACK
   # Ask for feedback one time out of 5.
   if (len(results) and random.randint(0, 4) == 0 and not _ASKED_FOR_FEEDBACK):
