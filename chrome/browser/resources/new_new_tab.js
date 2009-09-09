@@ -872,8 +872,8 @@ function afterTransition(f) {
     // Make sure we do not use a timer during load since it slows down the UI.
     f();
   } else {
-    // The duration of all transitions are 500ms
-    window.setTimeout(f, 500);
+    // The duration of all transitions are .15s
+    window.setTimeout(f, 150);
   }
 }
 
@@ -1558,6 +1558,7 @@ var dnd = {
 
     item.style.left = x + 'px';
     item.style.top = y + 'px';
+    item.style.zIndex = 2;
   },
 
   // We listen to mousedown to get the relative position of the cursor for dnd.
