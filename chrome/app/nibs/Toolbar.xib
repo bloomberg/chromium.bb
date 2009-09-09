@@ -2,15 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9L31a</string>
+		<string key="IBDocument.SystemVersion">9F33</string>
 		<string key="IBDocument.InterfaceBuilderVersion">677</string>
-		<string key="IBDocument.AppKitVersion">949.54</string>
-		<string key="IBDocument.HIToolboxVersion">353.00</string>
+		<string key="IBDocument.AppKitVersion">949.34</string>
+		<string key="IBDocument.HIToolboxVersion">352.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="42"/>
 			<integer value="1"/>
-			<integer value="48"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -253,8 +251,9 @@
 							<int key="NSCellFlags2">134250496</int>
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="64724822"/>
+							<int key="NSTag">-2</int>
 							<reference key="NSControlView" ref="571076484"/>
-							<int key="NSButtonFlags">141312255</int>
+							<int key="NSButtonFlags">149700863</int>
 							<int key="NSButtonFlags2">134</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
@@ -269,7 +268,7 @@
 					<object class="NSButton" id="602421009">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">265</int>
-						<string key="NSFrame">{{577, 5}, {35, 27}}</string>
+						<string key="NSFrame">{{574, 5}, {35, 27}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33005</int>
 						<bool key="NSEnabled">YES</bool>
@@ -278,8 +277,9 @@
 							<int key="NSCellFlags2">134250496</int>
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="64724822"/>
+							<int key="NSTag">1</int>
 							<reference key="NSControlView" ref="602421009"/>
-							<int key="NSButtonFlags">140787967</int>
+							<int key="NSButtonFlags">149176575</int>
 							<int key="NSButtonFlags2">6</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
