@@ -729,7 +729,7 @@ BUG13907 : LayoutTests/fast/layers/video-layer.html = FAIL
 BUG13907 WIN : LayoutTests/media/event-attributes.html = FAIL
 
 // Crash on Mac and Linux. Need investigation.
-BUG_JIANLI MAC LINUX : LayoutTests/fast/events/drag-to-navigate.html = CRASH
+BUG_JIANLI MAC LINUX : LayoutTests/fast/events/drag-to-navigate.html = TIMEOUT CRASH
 
 // Function arguments object is copied for each access.
 BUG941049 : LayoutTests/fast/js/kde/function_arguments.html = FAIL
