@@ -114,6 +114,9 @@ class Thread : PlatformThread::Delegate {
   // Called just prior to starting the message loop
   virtual void Init() {}
 
+  // Called to start the message loop
+  virtual void Run(MessageLoop* message_loop);
+
   // Called just after the message loop ends
   virtual void CleanUp() {}
 
