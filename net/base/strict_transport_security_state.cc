@@ -8,11 +8,13 @@
 #include "base/json_writer.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/sha2.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/registry_controlled_domain.h"
+#include "net/base/base64.h"
+#include "net/base/dns_util.h"
 
 namespace net {
 
@@ -36,33 +38,54 @@ void StrictTransportSecurityState::DidReceiveHeader(const GURL& url,
 }
 
 void StrictTransportSecurityState::EnableHost(const std::string& host,
-                                         base::Time expiry,
-                                         bool include_subdomains) {
-  // TODO(abarth): Canonicalize host.
+                                              base::Time expiry,
+                                              bool include_subdomains) {
+  const std::string canonicalised_host = CanonicaliseHost(host);
+  if (canonicalised_host.empty())
+    return;
+  char hashed[base::SHA256_LENGTH];
+  base::SHA256HashString(canonicalised_host, hashed, sizeof(hashed));
+
   AutoLock lock(lock_);
 
   State state = {expiry, include_subdomains};
-  enabled_hosts_[host] = state;
+  enabled_hosts_[std::string(hashed, sizeof(hashed))] = state;
   DirtyNotify();
 }
 
 bool StrictTransportSecurityState::IsEnabledForHost(const std::string& host) {
-  // TODO(abarth): Canonicalize host.
-  // TODO: check for subdomains too.
-
-  AutoLock lock(lock_);
-  std::map<std::string, State>::iterator i = enabled_hosts_.find(host);
-  if (i == enabled_hosts_.end())
+  const std::string canonicalised_host = CanonicaliseHost(host);
+  if (canonicalised_host.empty())
     return false;
 
   base::Time current_time(base::Time::Now());
-  if (current_time > i->second.expiry) {
-    enabled_hosts_.erase(i);
-    DirtyNotify();
-    return false;
+  AutoLock lock(lock_);
+
+  for (size_t i = 0; canonicalised_host[i]; i += canonicalised_host[i] + 1) {
+    char hashed_domain[base::SHA256_LENGTH];
+
+    base::SHA256HashString(&canonicalised_host[i], &hashed_domain,
+                           sizeof(hashed_domain));
+    std::map<std::string, State>::iterator j =
+        enabled_hosts_.find(std::string(hashed_domain, sizeof(hashed_domain)));
+    if (j == enabled_hosts_.end())
+      continue;
+
+    if (current_time > j->second.expiry) {
+      enabled_hosts_.erase(j);
+      DirtyNotify();
+      continue;
+    }
+
+    // If we matched the domain exactly, it doesn't matter what the value of
+    // include_subdomains is.
+    if (i == 0)
+      return true;
+
+    return j->second.include_subdomains;
   }
 
-  return true;
+  return false;
 }
 
 // "Strict-Transport-Security" ":"
@@ -171,6 +194,27 @@ void StrictTransportSecurityState::SetDelegate(
   delegate_ = delegate;
 }
 
+// This function converts the binary hashes, which we store in
+// |enabled_hosts_|, to a base64 string which we can include in a JSON file.
+static std::wstring HashedDomainToExternalString(const std::string& hashed) {
+  std::string out;
+  CHECK(Base64Encode(hashed, &out));
+  return ASCIIToWide(out);
+}
+
+// This inverts |HashedDomainToExternalString|, above. It turns an external
+// string (from a JSON file) into an internal (binary) string.
+static std::string ExternalStringToHashedDomain(const std::wstring& external) {
+  std::string external_ascii = WideToASCII(external);
+  std::string out;
+  if (!Base64Decode(external_ascii, &out) ||
+      out.size() != base::SHA256_LENGTH) {
+    return std::string();
+  }
+
+  return out;
+}
+
 bool StrictTransportSecurityState::Serialise(std::string* output) {
   AutoLock lock(lock_);
 
@@ -181,7 +225,7 @@ bool StrictTransportSecurityState::Serialise(std::string* output) {
     state->SetBoolean(L"include_subdomains", i->second.include_subdomains);
     state->SetReal(L"expiry", i->second.expiry.ToDoubleT());
 
-    toplevel.Set(ASCIIToWide(i->first), state);
+    toplevel.Set(HashedDomainToExternalString(i->first), state);
   }
 
   JSONWriter::Write(&toplevel, true /* pretty print */, output);
@@ -207,7 +251,6 @@ bool StrictTransportSecurityState::Deserialise(const std::string& input) {
     if (!dict_value->GetDictionary(*i, &state))
       continue;
 
-    const std::string host = WideToASCII(*i);
     bool include_subdomains;
     double expiry;
 
@@ -220,16 +263,56 @@ bool StrictTransportSecurityState::Deserialise(const std::string& input) {
     if (expiry_time <= current_time)
       continue;
 
+    std::string hashed = ExternalStringToHashedDomain(*i);
+    if (hashed.empty())
+      continue;
+
     State new_state = { expiry_time, include_subdomains };
-    enabled_hosts_[host] = new_state;
+    enabled_hosts_[hashed] = new_state;
   }
 
-  return enabled_hosts_.size() > 0;
+  return true;
 }
 
 void StrictTransportSecurityState::DirtyNotify() {
   if (delegate_)
     delegate_->StateIsDirty(this);
+}
+
+// static
+std::string StrictTransportSecurityState::CanonicaliseHost(
+    const std::string& host) {
+  // We cannot perform the operations as detailed in the spec here as |host|
+  // has already undergone IDN processing before it reached us. Thus, we check
+  // that there are no invalid characters in the host and lowercase the result.
+
+  std::string new_host;
+  if (!DNSDomainFromDot(host, &new_host)) {
+    NOTREACHED();
+    return std::string();
+  }
+
+  for (size_t i = 0; new_host[i]; i += new_host[i] + 1) {
+    const unsigned label_length = static_cast<unsigned>(new_host[i]);
+    if (!label_length)
+      break;
+
+    for (size_t j = 0; j < label_length; ++j) {
+      // RFC 3490, 4.1, step 3
+      if (!IsSTD3ASCIIValidCharacter(new_host[i + 1 + j]))
+        return std::string();
+
+      new_host[i + 1 + j] = tolower(new_host[i + 1 + j]);
+    }
+
+    // step 3(b)
+    if (new_host[i + 1] == '-' ||
+        new_host[i + label_length] == '-') {
+      return std::string();
+    }
+  }
+
+  return new_host;
 }
 
 }  // namespace

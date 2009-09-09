@@ -70,7 +70,9 @@ class StrictTransportSecurityState :
   // our state is dirty.
   void DirtyNotify();
 
-  // The set of hosts that have enabled StrictTransportSecurity.
+  // The set of hosts that have enabled StrictTransportSecurity. The keys here
+  // are SHA256(DNSForm(domain)) where DNSForm converts from dotted form
+  // ('www.google.com') to the form used in DNS: "\x03www\x06google\x03com"
   std::map<std::string, State> enabled_hosts_;
 
   // Protect access to our data members with this lock.
@@ -78,6 +80,8 @@ class StrictTransportSecurityState :
 
   // Our delegate who gets notified when we are dirtied, or NULL.
   Delegate* delegate_;
+
+  static std::string CanonicaliseHost(const std::string& host);
 
   DISALLOW_COPY_AND_ASSIGN(StrictTransportSecurityState);
 };

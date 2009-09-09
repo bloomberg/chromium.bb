@@ -5,8 +5,6 @@
 #include "net/base/strict_transport_security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
 class StrictTransportSecurityStateTest : public testing::Test {
 };
 
@@ -130,4 +128,79 @@ TEST_F(StrictTransportSecurityStateTest, ValidHeaders) {
   EXPECT_TRUE(include_subdomains);
 }
 
-}  // namespace
+TEST_F(StrictTransportSecurityStateTest, SimpleMatches) {
+  scoped_refptr<net::StrictTransportSecurityState> state(
+      new net::StrictTransportSecurityState);
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+
+  EXPECT_FALSE(state->IsEnabledForHost("google.com"));
+  state->EnableHost("google.com", expiry, false);
+  EXPECT_TRUE(state->IsEnabledForHost("google.com"));
+}
+
+TEST_F(StrictTransportSecurityStateTest, MatchesCase1) {
+  scoped_refptr<net::StrictTransportSecurityState> state(
+      new net::StrictTransportSecurityState);
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+
+  EXPECT_FALSE(state->IsEnabledForHost("google.com"));
+  state->EnableHost("GOOgle.coM", expiry, false);
+  EXPECT_TRUE(state->IsEnabledForHost("google.com"));
+}
+
+TEST_F(StrictTransportSecurityStateTest, MatchesCase2) {
+  scoped_refptr<net::StrictTransportSecurityState> state(
+      new net::StrictTransportSecurityState);
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+
+  EXPECT_FALSE(state->IsEnabledForHost("GOOgle.coM"));
+  state->EnableHost("google.com", expiry, false);
+  EXPECT_TRUE(state->IsEnabledForHost("GOOgle.coM"));
+}
+
+TEST_F(StrictTransportSecurityStateTest, SubdomainMatches) {
+  scoped_refptr<net::StrictTransportSecurityState> state(
+      new net::StrictTransportSecurityState);
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+
+  EXPECT_FALSE(state->IsEnabledForHost("google.com"));
+  state->EnableHost("google.com", expiry, true);
+  EXPECT_TRUE(state->IsEnabledForHost("google.com"));
+  EXPECT_TRUE(state->IsEnabledForHost("foo.google.com"));
+  EXPECT_TRUE(state->IsEnabledForHost("foo.bar.google.com"));
+  EXPECT_TRUE(state->IsEnabledForHost("foo.bar.baz.google.com"));
+  EXPECT_FALSE(state->IsEnabledForHost("com"));
+}
+
+TEST_F(StrictTransportSecurityStateTest, Serialise1) {
+  scoped_refptr<net::StrictTransportSecurityState> state(
+      new net::StrictTransportSecurityState);
+  std::string output;
+  state->Serialise(&output);
+  EXPECT_TRUE(state->Deserialise(output));
+}
+
+TEST_F(StrictTransportSecurityStateTest, Serialise2) {
+  scoped_refptr<net::StrictTransportSecurityState> state(
+      new net::StrictTransportSecurityState);
+
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+
+  EXPECT_FALSE(state->IsEnabledForHost("google.com"));
+  state->EnableHost("google.com", expiry, true);
+
+  std::string output;
+  state->Serialise(&output);
+  EXPECT_TRUE(state->Deserialise(output));
+
+  EXPECT_TRUE(state->IsEnabledForHost("google.com"));
+  EXPECT_TRUE(state->IsEnabledForHost("foo.google.com"));
+  EXPECT_TRUE(state->IsEnabledForHost("foo.bar.google.com"));
+  EXPECT_TRUE(state->IsEnabledForHost("foo.bar.baz.google.com"));
+  EXPECT_FALSE(state->IsEnabledForHost("com"));
+}
