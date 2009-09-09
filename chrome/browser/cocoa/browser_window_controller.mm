@@ -817,6 +817,10 @@ willPositionSheet:(NSWindow*)sheet
                                  yStretchiness:0];
 }
 
+- (BOOL)isTabFullyVisible:(TabView*)tab {
+  return [tabStripController_ isTabFullyVisible:tab];
+}
+
 - (void)showNewTabButton:(BOOL)show {
   [tabStripController_ showNewTabButton:show];
 }

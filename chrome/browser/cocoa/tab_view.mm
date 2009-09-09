@@ -267,9 +267,12 @@ static const CGFloat kRapidCloseDist = 2.5;
                                          frame:NSOffsetRect(sourceTabFrame_,
                                                             offset, 0)
                                  yStretchiness:stretchiness];
-
+    // Check that we haven't pulled the tab too far to start a drag. This
+    // can include either pulling it too far down, or off the side of the tab
+    // strip that would cause it to no longer be fully visible.
+    BOOL stillVisible = [sourceController_ isTabFullyVisible:self];
     CGFloat tearForce = fabs(thisPoint.y - dragOrigin_.y);
-    if (tearForce > kTearDistance) {
+    if (tearForce > kTearDistance || !stillVisible) {
       draggingWithinTabStrip_ = NO;
       // When you finally leave the strip, we treat that as the origin.
       dragOrigin_.x = thisPoint.x;

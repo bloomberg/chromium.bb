@@ -37,6 +37,10 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 // view.
 static const float kUseFullAvailableWidth = -1.0;
 
+// Left-side indent for tab layout so tabs don't overlap with the window
+// controls.
+static const float kIndentLeavingSpaceForControls = 64.0;
+
 // A simple view class that prevents the Window Server from dragging the area
 // behind tabs. Sometimes core animation confuses it. Unfortunately, it can also
 // falsely pick up clicks during rapid tab closure, so we have to account for
@@ -321,6 +325,12 @@ static const float kUseFullAvailableWidth = -1.0;
   [self layoutTabs];
 }
 
+- (BOOL)isTabFullyVisible:(TabView*)tab {
+  NSRect frame = [tab frame];
+  return NSMinX(frame) >= kIndentLeavingSpaceForControls &&
+      NSMaxX(frame) <= NSMaxX([tabView_ frame]);
+}
+
 - (void)showNewTabButton:(BOOL)show {
   forceNewTabButtonHidden_ = show ? NO : YES;
   if (forceNewTabButtonHidden_)
@@ -338,7 +348,6 @@ static const float kUseFullAvailableWidth = -1.0;
 // tabs would cause an overflow.
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate {
-  const float kIndentLeavingSpaceForControls = 64.0;
   const float kTabOverlap = 20.0;
   const float kNewTabButtonOffset = 8.0;
   const float kMaxTabWidth = [TabController maxTabWidth];

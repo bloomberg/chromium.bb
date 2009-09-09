@@ -73,6 +73,12 @@
 // waits until the next call to |-layoutTabs| to show it again.
 - (void)showNewTabButton:(BOOL)show;
 
+// Returns whether or not |tab| can still be fully seen in the tab strip or if
+// its current position would cause it be obscured by things such as the edge
+// of the window or the window decorations. Returns YES only if the entire tab
+// is visible. The default implementation always returns YES.
+- (BOOL)isTabFullyVisible:(TabView*)tab;
+
 // Called to check if the receiver can receive dragged tabs from
 // source.  Return YES if so.  The default implementation returns NO.
 - (BOOL)canReceiveFrom:(TabWindowController*)source;

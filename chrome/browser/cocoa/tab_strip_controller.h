@@ -120,6 +120,12 @@ class ToolbarModel;
                           frame:(NSRect)frame
                   yStretchiness:(CGFloat)yStretchiness;
 
+// Returns whether or not |tab| can still be fully seen in the tab strip or if
+// its current position would cause it be obscured by things such as the edge
+// of the window or the window decorations. Returns YES only if the entire tab
+// is visible.
+- (BOOL)isTabFullyVisible:(TabView*)tab;
+
 // Show or hide the new tab button. The button is hidden immediately, but
 // waits until the next call to |-layoutTabs| to show it again.
 - (void)showNewTabButton:(BOOL)show;

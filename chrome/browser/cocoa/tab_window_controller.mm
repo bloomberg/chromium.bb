@@ -155,6 +155,11 @@
   [self showNewTabButton:YES];
 }
 
+- (BOOL)isTabFullyVisible:(TabView*)tab {
+  // Subclasses should implement this, but it's not necessary.
+  return YES;
+}
+
 - (void)showNewTabButton:(BOOL)show {
   // subclass must implement
   NOTIMPLEMENTED();
