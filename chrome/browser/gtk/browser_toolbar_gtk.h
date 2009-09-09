@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -34,7 +35,8 @@ class ToolbarStarToggleGtk;
 class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
-                          public AutocompletePopupPositioner {
+                          public AutocompletePopupPositioner,
+                          public MenuBarHelper::Delegate {
  public:
   explicit BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
   virtual ~BrowserToolbarGtk();
@@ -88,6 +90,11 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Implement AutocompletePopupPositioner, return the position of where the
   // Omnibox results popup should go (from the star to the go buttons).
   virtual gfx::Rect GetPopupBounds() const;
+
+  // MenuBarHelper::Delegate implementation ------------------------------------
+  virtual void PopupForButton(GtkWidget* button);
+  virtual void PopupForButtonNextTo(GtkWidget* button,
+                                    GtkMenuDirectionType dir);
 
  private:
   // Builds a toolbar button with all the properties set.
@@ -143,15 +150,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                                  guint info, guint time,
                                  BrowserToolbarGtk* toolbar);
 
-  // These event handlers are used to fake menu-bar behavior in the page and
-  // app menus.
-  static gboolean OnPageAppMenuMouseMotion(GtkWidget* widget,
-                                           GdkEventMotion* event,
-                                           BrowserToolbarGtk* toolbar);
-  static void OnPageAppMenuMoveCurrent(GtkWidget* widget,
-                                       GtkMenuDirectionType dir,
-                                       BrowserToolbarGtk* toolbar);
-
   // Sometimes we only want to show the location w/o the toolbar buttons (e.g.,
   // in a popup window).
   bool ShouldOnlyShowLocation() const;
@@ -206,6 +204,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // A GtkEntry that isn't part of the hierarchy. We keep this for native
   // rendering.
   OwnedWidgetGtk offscreen_entry_;
+
+  MenuBarHelper menu_bar_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserToolbarGtk);
 };
