@@ -135,10 +135,6 @@ void Thread::StopSoon() {
   message_loop_->PostTask(FROM_HERE, new ThreadQuitTask());
 }
 
-void Thread::Run(MessageLoop* message_loop) {
-  message_loop->Run();
-}
-
 void Thread::ThreadMain() {
   // The message loop for this thread.
   MessageLoop message_loop(startup_data_->options.message_loop_type);
@@ -157,7 +153,7 @@ void Thread::ThreadMain() {
   // startup_data_ can't be touched anymore since the starting thread is now
   // unlocked.
 
-  Run(message_loop_);
+  message_loop.Run();
 
   // Let the thread do extra cleanup.
   CleanUp();

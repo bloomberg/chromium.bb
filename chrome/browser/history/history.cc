@@ -40,7 +40,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
-#include "chrome/browser/history/visit_log.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/common/chrome_constants.h"
@@ -54,26 +53,7 @@
 using base::Time;
 using history::HistoryBackend;
 
-namespace {
-
-class ChromeHistoryThread : public ChromeThread {
- public:
-  ChromeHistoryThread() : ChromeThread(ChromeThread::HISTORY) {}
-  virtual ~ChromeHistoryThread() {
-    // We cannot rely on our base class to call Stop() in case we want our
-    // CleanUp function to run.
-    Stop();
-  }
- protected:
-  virtual void Run(MessageLoop* message_loop) {
-    // Allocate VisitLog on local stack so it will be saved in crash dump.
-    history::VisitLog visit_log;
-    history::InitVisitLog(&visit_log);
-    message_loop->Run();
-  }
-};
-
-}  // namespace
+static const char* kHistoryThreadName = "Chrome_HistoryThread";
 
 // Sends messages from the backend to us on the main thread. This must be a
 // separate class from the history service so that it can hold a reference to
@@ -120,7 +100,7 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 const history::StarID HistoryService::kBookmarkBarID = 1;
 
 HistoryService::HistoryService()
-    : thread_(new ChromeHistoryThread()),
+    : thread_(new base::Thread(kHistoryThreadName)),
       profile_(NULL),
       backend_loaded_(false) {
   // Is NULL when running generate_profile.
@@ -131,7 +111,7 @@ HistoryService::HistoryService()
 }
 
 HistoryService::HistoryService(Profile* profile)
-    : thread_(new ChromeHistoryThread()),
+    : thread_(new base::Thread(kHistoryThreadName)),
       profile_(profile),
       backend_loaded_(false) {
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
