@@ -57,8 +57,12 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 
   // 1) MOZ_PLUGIN_PATH env variable.
   const char* moz_plugin_path = getenv("MOZ_PLUGIN_PATH");
-  if (moz_plugin_path)
-    plugin_dirs->push_back(FilePath(moz_plugin_path));
+  if (moz_plugin_path) {
+    std::vector<std::string> paths;
+    SplitString(moz_plugin_path, ':', &paths);
+    for (size_t i = 0; i < paths.size(); ++i)
+      plugin_dirs->push_back(FilePath(paths[i]));
+  }
 
   // 2) NS_USER_PLUGINS_DIR: ~/.mozilla/plugins.
   // This is a de-facto standard, so even though we're not Mozilla, let's
