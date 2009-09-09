@@ -977,9 +977,16 @@ void BookmarkBarGtk::PopupForButton(GtkWidget* button) {
   DCHECK(page_navigator_);
 
   int first_hidden = GetFirstHiddenBookmark(0, NULL);
-  if (button != overflow_button_ && button != other_bookmarks_button_ &&
-      node->GetParent()->IndexOfChild(node) >= first_hidden) {
-    return;
+  if (first_hidden == -1) {
+    // No overflow exists: don't show anything for the overflow button.
+    if (button == overflow_button_)
+      return;
+  } else {
+    // Overflow exists: don't show anything for an overflowed folder button.
+    if (button != overflow_button_ && button != other_bookmarks_button_ &&
+        node->GetParent()->IndexOfChild(node) >= first_hidden) {
+      return;
+    }
   }
 
   current_menu_.reset(
