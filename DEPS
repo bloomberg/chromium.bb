@@ -100,7 +100,7 @@ deps_os = {
   },
   "mac": {
     "src/third_party/GTM":
-      "http://google-toolbox-for-mac.googlecode.com/svn/trunk@201",
+      "http://google-toolbox-for-mac.googlecode.com/svn/trunk@211",
     "src/third_party/pdfsqueeze":
       "http://pdfsqueeze.googlecode.com/svn/trunk@2",
     "src/third_party/WebKit/WebKit/mac":

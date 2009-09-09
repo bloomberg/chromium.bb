@@ -2266,6 +2266,8 @@
           'sources': [
             'browser/net/ssl_config_service_manager_system.cc',
             # Build the necessary GTM sources
+            '../third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.h',
+            '../third_party/GTM/AppKit/GTMFadeTruncatingTextFieldCell.m',
             '../third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.m',
             '../third_party/GTM/AppKit/GTMNSColor+Luminance.m',
             '../third_party/GTM/AppKit/GTMTheme.m',
@@ -2274,6 +2276,8 @@
             '../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h',
             '../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.m',
             '../third_party/GTM/AppKit/GTMWindowSheetController.m',
+            '../third_party/GTM/Foundation/GTMNSNumber+64Bit.h',
+            '../third_party/GTM/Foundation/GTMNSNumber+64Bit.m',
             # Build necessary Mozilla sources
             '../third_party/mozilla/include/NSPasteboard+Utils.h',
             '../third_party/mozilla/include/NSPasteboard+Utils.mm',
@@ -2289,6 +2293,7 @@
           'include_dirs': [
             '../third_party/GTM',
             '../third_party/GTM/AppKit',
+            '../third_party/GTM/Foundation',
           ],
           'link_settings': {
             'libraries': [
