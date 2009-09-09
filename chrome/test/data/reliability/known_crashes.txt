@@ -75,9 +75,6 @@ SUBSTRING : webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer_
 # 18799
 PREFIX : webplugindelegatestub::onmessagereceived___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::runhandler___messageloop::run___pluginmain___chromemain___wwinmain_____tmaincrtstartup
 
-# 19393
-PREFIX : npapi::pluginstreamurl::didreceivedata___webplugindelegatestub::ondidreceivedata
-
 # 19428
 PREFIX : webcore::rendertextcontrol::calcprefwidths___webcore::renderbox::minprefwidth___webcore::renderblock::calcinlineprefwidths
 
