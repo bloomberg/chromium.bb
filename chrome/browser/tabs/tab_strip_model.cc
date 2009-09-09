@@ -398,8 +398,14 @@ void TabStripModel::AddTabContents(TabContents* contents,
   // layout is performed with sane view dimensions even when we're opening a
   // new background tab.
   if (TabContents* old_contents = GetSelectedTabContents()) {
-    if (!foreground)
+    if (!foreground) {
+      contents->HideContents();
       contents->view()->SizeContents(old_contents->view()->GetContainerSize());
+      // We need to hide the contents or else we get and execute paints for
+      // background tabs. With enough background tabs they will steal the
+      // backing store of the visible tab causing flashing. See bug 20831.
+      
+    }
   }
 }
 
