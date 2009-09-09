@@ -79,11 +79,7 @@ float FrobeniusNorm(const Matrix3& matrix);
 // See http://en.wikipedia.org/wiki/Matrix_norm
 float FrobeniusNorm(const Matrix4& matrix);
 
-const float kPi = acosf(-1.0f);
+extern const float kPi;
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_MATH_UTILITIES_H_
-
-
-
-

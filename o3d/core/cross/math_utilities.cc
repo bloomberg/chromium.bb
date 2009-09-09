@@ -161,7 +161,6 @@ uint16 FloatToHalf(float value) {
 }
 
 float HalfToFloat(uint16 half) {
-  unsigned int value;
   unsigned int sign = static_cast<unsigned int>(half >> 15);
   unsigned int mantissa = static_cast<unsigned int>(half & ((1 << 10) - 1));
   unsigned int exponent = static_cast<unsigned int>(
@@ -198,8 +197,12 @@ float HalfToFloat(uint16 half) {
     exponent = (exponent << 13) + kHalfFloatMinBiasedExpAsSingleFpExponent;
   }
 
-  value = (sign << 31) | exponent | mantissa;
-  return *((float *)&value);
+  union {
+    unsigned int int_value;
+    float float_value;
+  } value;
+  value.int_value = (sign << 31) | exponent | mantissa;
+  return value.float_value;
 }
 
 }  // namespace Vectormath
@@ -225,4 +228,6 @@ float FrobeniusNorm(const Matrix4& matrix) {
   }
   return sqrtf(sumOfElementsSquared);
 }
+
+const float kPi = ::acosf(-1.0f);
 }  // namespace o3d

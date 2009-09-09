@@ -239,16 +239,19 @@ TEST_F(MemoryStreamTest, EndianSanityFloat32) {
   uint8 *p8 = reinterpret_cast<uint8*>(p);
   MemoryWriteStream write_stream(p8, sizeof(int32) * 2);
 
-  float value = 3.14159f;
-  write_stream.WriteLittleEndianFloat32(value);
-  write_stream.WriteBigEndianFloat32(value);
+  union {
+    int32 ivalue;
+    float fvalue;
+  } value;
+  value.fvalue = 3.14159f;
+  write_stream.WriteLittleEndianFloat32(value.fvalue);
+  write_stream.WriteBigEndianFloat32(value.fvalue);
 
   // Verify that the bytes are in the correct order
-  int32 ivalue = *reinterpret_cast<int32*>(&value);  // interpret float as int32
-  uint8 byte1 = ivalue & 0xff;
-  uint8 byte2 = (ivalue >> 8) & 0xff;
-  uint8 byte3 = (ivalue >> 16) & 0xff;
-  uint8 byte4 = (ivalue >> 24) & 0xff;
+  uint8 byte1 = value.ivalue & 0xff;
+  uint8 byte2 = (value.ivalue >> 8) & 0xff;
+  uint8 byte3 = (value.ivalue >> 16) & 0xff;
+  uint8 byte4 = (value.ivalue >> 24) & 0xff;
 
   // validate little-endian
   EXPECT_EQ(byte1, p8[0]);
