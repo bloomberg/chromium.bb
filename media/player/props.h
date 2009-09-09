@@ -10,14 +10,13 @@
 #include "resource.h"
 
 // Movie properties dialog
-// TODO(fbarchard): Remove hungarian notation.
 class CFileName : public CWindowImpl<CFileName> {
  public:
 
   CFileName() : file_name_(NULL) {
   }
 
-  void Init(HWND hwnd, wchar_t* lpstrName) {
+  void Init(HWND hwnd, wchar_t* str_name) {
     ATLASSERT(::IsWindow(hwnd));
     SubclassWindow(hwnd);
 
@@ -30,23 +29,23 @@ class CFileName : public CWindowImpl<CFileName> {
     tooltip_.AddTool(&ti);
 
     // Set text.
-    file_name_ = lpstrName;
+    file_name_ = str_name;
     if (file_name_ == NULL)
       return;
 
     CClientDC dc(m_hWnd);  // will not really paint
-    HFONT hFontOld = dc.SelectFont(AtlGetDefaultGuiFont());
+    HFONT old_font = dc.SelectFont(AtlGetDefaultGuiFont());
 
-    RECT rcText = rect;
-    dc.DrawText(file_name_, -1, &rcText,
+    RECT rect_text = rect;
+    dc.DrawText(file_name_, -1, &rect_text,
                 DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_NOPREFIX |
                 DT_CALCRECT);
-    BOOL bTooLong = (rcText.right > rect.right);
-    if (bTooLong)
+    BOOL is_too_long = (rect_text.right > rect.right);
+    if (is_too_long)
       tooltip_.UpdateTipText(file_name_, m_hWnd, tooltip_id_);
-    tooltip_.Activate(bTooLong);
+    tooltip_.Activate(is_too_long);
 
-    dc.SelectFont(hFontOld);
+    dc.SelectFont(old_font);
 
     Invalidate();
     UpdateWindow();
@@ -57,18 +56,18 @@ class CFileName : public CWindowImpl<CFileName> {
     MESSAGE_HANDLER(WM_PAINT, OnPaint)
   END_MSG_MAP()
 
-  LRESULT OnMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam,
-                         BOOL& bHandled) {
+  LRESULT OnMouseMessage(UINT message, WPARAM wparam, LPARAM lparam,
+                         BOOL& handled) {
     if (tooltip_.IsWindow()) {
-      MSG msg = { m_hWnd, uMsg, wParam, lParam };
+      MSG msg = { m_hWnd, message, wparam, lparam };
       tooltip_.RelayEvent(&msg);
     }
-    bHandled = FALSE;
+    handled = FALSE;
     return 1;
   }
 
-  LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
-                  BOOL& /*bHandled*/) {
+  LRESULT OnPaint(UINT /*message*/, WPARAM /*wparam*/, LPARAM /*lparam*/,
+                  BOOL& /*handled*/) {
     CPaintDC dc(m_hWnd);
     if (file_name_ != NULL) {
       RECT rect;
@@ -76,12 +75,12 @@ class CFileName : public CWindowImpl<CFileName> {
 
       dc.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
       dc.SetBkMode(TRANSPARENT);
-      HFONT hFontOld = dc.SelectFont(AtlGetDefaultGuiFont());
+      HFONT old_font = dc.SelectFont(AtlGetDefaultGuiFont());
 
       dc.DrawText(file_name_, -1, &rect, DT_SINGLELINE | DT_LEFT |
                   DT_VCENTER | DT_NOPREFIX | DT_PATH_ELLIPSIS);
 
-      dc.SelectFont(hFontOld);
+      dc.SelectFont(old_font);
     }
     return 0;
   }
@@ -108,20 +107,20 @@ class CPageOne : public CPropertyPageImpl<CPageOne> {
     CHAIN_MSG_MAP(CPropertyPageImpl<CPageOne>)
   END_MSG_MAP()
 
-  LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
-                       BOOL& /*bHandled*/) {
+  LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wparam*/, LPARAM /*lparam*/,
+                       BOOL& /*handled*/) {
     if (file_name_ != NULL) {
       file_location_.Init(GetDlgItem(IDC_FILELOCATION), file_name_);
 
       WIN32_FIND_DATA find_data;
-      HANDLE hFind = ::FindFirstFile(file_name_, &find_data);
-      if (hFind != INVALID_HANDLE_VALUE) {
+      HANDLE find_handle = ::FindFirstFile(file_name_, &find_data);
+      if (find_handle != INVALID_HANDLE_VALUE) {
         // TODO(fbarchard): Support files larger than 2 GB
-        int nSizeK = (find_data.nFileSizeLow / 1024);
-        if (nSizeK == 0 && find_data.nFileSizeLow != 0)
-          nSizeK = 1;
+        int size_k = (find_data.nFileSizeLow / 1024);
+        if (size_k == 0 && find_data.nFileSizeLow != 0)
+          size_k = 1;
         wchar_t szBuff[100];
-        wsprintf(szBuff, L"%i KB", nSizeK);
+        wsprintf(szBuff, L"%i KB", size_k);
         SetDlgItemText(IDC_FILESIZE, szBuff);
 
         // TODO(fbarchard): We need a pipeline property for frame rate.
@@ -154,12 +153,12 @@ class CPageOne : public CPropertyPageImpl<CPageOne> {
           lstrcat(szBuff, L"Hidden, ");
         if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) != 0)
           lstrcat(szBuff, L"System");
-        int nLen = lstrlen(szBuff);
-        if (nLen >= 2 && szBuff[nLen - 2] == L',')
-          szBuff[nLen - 2] = 0;
+        int length = lstrlen(szBuff);
+        if (length >= 2 && szBuff[length - 2] == L',')
+          szBuff[length - 2] = 0;
         SetDlgItemText(IDC_FILEATTRIB, szBuff);
 
-        ::FindClose(hFind);
+        ::FindClose(find_handle);
       }
     } else {
       SetDlgItemText(IDC_FILELOCATION, L"(Clipboard)");
@@ -188,19 +187,19 @@ class CPageTwo : public CPropertyPageImpl<CPageTwo> {
     CHAIN_MSG_MAP(CPropertyPageImpl<CPageTwo>)
   END_MSG_MAP()
 
-  LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
-                       BOOL& /*bHandled*/) {
+  LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wparam*/, LPARAM /*lparam*/,
+                       BOOL& /*handled*/) {
     // Special - remove unused buttons, move Close button, center wizard
     CPropertySheetWindow sheet = GetPropertySheet();
 #if !defined(_AYGSHELL_H_) && !defined(__AYGSHELL_H__)  // PPC specific.
     sheet.CancelToClose();
     RECT rect;
-    CButton btnCancel = sheet.GetDlgItem(IDCANCEL);
-    btnCancel.GetWindowRect(&rect);
+    CButton btn_cancel = sheet.GetDlgItem(IDCANCEL);
+    btn_cancel.GetWindowRect(&rect);
     sheet.ScreenToClient(&rect);
-    btnCancel.ShowWindow(SW_HIDE);
-    CButton btnClose = sheet.GetDlgItem(IDOK);
-    btnClose.SetWindowPos(NULL, &rect, SWP_NOZORDER | SWP_NOSIZE);
+    btn_cancel.ShowWindow(SW_HIDE);
+    CButton btn_close = sheet.GetDlgItem(IDOK);
+    btn_close.SetWindowPos(NULL, &rect, SWP_NOZORDER | SWP_NOSIZE);
     sheet.CenterWindow(GetPropertySheet().GetParent());
 
     sheet.ModifyStyleEx(WS_EX_CONTEXTHELP, 0);
@@ -208,21 +207,21 @@ class CPageTwo : public CPropertyPageImpl<CPageTwo> {
 
     // Get and display movie prperties.
     SetDlgItemText(IDC_TYPE, L"MP4 Movie");
-    wchar_t* lpstrCompression = L"H.264";
+    wchar_t* compression_text = L"H.264";
 
     if (file_name_ != NULL) {
-      HANDLE hFile = ::CreateFile(file_name_, GENERIC_READ,
-                                  FILE_SHARE_READ, NULL, OPEN_EXISTING,
-                                  FILE_ATTRIBUTE_NORMAL |
-                                  FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-      ATLASSERT(hFile != INVALID_HANDLE_VALUE);
-      if (hFile != INVALID_HANDLE_VALUE) {
+      HANDLE file_handle = ::CreateFile(file_name_, GENERIC_READ,
+                                        FILE_SHARE_READ, NULL, OPEN_EXISTING,
+                                        FILE_ATTRIBUTE_NORMAL |
+                                        FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+      ATLASSERT(file_handle != INVALID_HANDLE_VALUE);
+      if (file_handle != INVALID_HANDLE_VALUE) {
         DWORD dwRead = 0;
         BITMAPFILEHEADER bfh;
-        ::ReadFile(hFile, &bfh, sizeof(bfh), &dwRead, NULL);
+        ::ReadFile(file_handle, &bfh, sizeof(bfh), &dwRead, NULL);
         BITMAPINFOHEADER bih;
-        ::ReadFile(hFile, &bih, sizeof(bih), &dwRead, NULL);
-        ::CloseHandle(hFile);
+        ::ReadFile(file_handle, &bih, sizeof(bih), &dwRead, NULL);
+        ::CloseHandle(file_handle);
 
         SetDlgItemInt(IDC_WIDTH, bih.biWidth);
         SetDlgItemInt(IDC_HEIGHT, bih.biHeight);
@@ -233,17 +232,17 @@ class CPageTwo : public CPropertyPageImpl<CPageTwo> {
         switch (bih.biCompression) {
         case BI_RLE4:
         case BI_RLE8:
-          lpstrCompression = L"RLE";
+          compression_text = L"RLE";
           break;
         case BI_BITFIELDS:
-          lpstrCompression = L"Uncompressed with bitfields";
+          compression_text = L"Uncompressed with bitfields";
           break;
         case BI_JPEG:
         case BI_PNG:
-          lpstrCompression = L"Unknown";
+          compression_text = L"Unknown";
           break;
         }
-        SetDlgItemText(IDC_COMPRESSION, lpstrCompression);
+        SetDlgItemText(IDC_COMPRESSION, compression_text);
       }
     } else {   // Must be pasted from the clipboard.
       ATLASSERT(!bmp_.IsNull());
@@ -258,7 +257,7 @@ class CPageTwo : public CPropertyPageImpl<CPageTwo> {
         SetDlgItemInt(IDC_HORRES, dc.GetDeviceCaps(LOGPIXELSX));
         SetDlgItemInt(IDC_VERTRES, dc.GetDeviceCaps(LOGPIXELSX));
         SetDlgItemInt(IDC_BITDEPTH, bitmap.bmBitsPixel);
-        SetDlgItemText(IDC_COMPRESSION, lpstrCompression);
+        SetDlgItemText(IDC_COMPRESSION, compression_text);
       }
     }
     return TRUE;
@@ -278,8 +277,8 @@ class CPageThree : public CPropertyPageImpl<CPageThree> {
     CHAIN_MSG_MAP(CPropertyPageImpl<CPageThree>)
   END_MSG_MAP()
 
-  LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
-                       BOOL& /*bHandled*/) {
+  LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wparam*/, LPARAM /*lparam*/,
+                       BOOL& /*handled*/) {
     // Get and set screen properties.
     CClientDC dc(NULL);
     SetDlgItemInt(IDC_WIDTH, dc.GetDeviceCaps(HORZRES));
@@ -308,10 +307,10 @@ class CBmpProperties : public CPropertySheetImpl<CBmpProperties> {
     SetTitle(L"Movie Properties");
   }
 
-  void SetFileInfo(wchar_t* file_path, HBITMAP hBitmap) {
+  void SetFileInfo(wchar_t* file_path, HBITMAP bitmap) {
     page1_.file_name_ = file_path;
     page2_.file_name_ = file_path;
-    page2_.bmp_ = hBitmap;
+    page2_.bmp_ = bitmap;
   }
 
   BEGIN_MSG_MAP(CBmpProperties)
