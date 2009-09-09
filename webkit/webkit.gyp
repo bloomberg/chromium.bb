@@ -1625,7 +1625,7 @@
           'product_dir': '<(PRODUCT_DIR)',
           'type': 'loadable_module',
           'sources': [
-            'tools/libxul_hack/libxul_hack.cc'
+            'tools/libxul_hack/libxpcom_hack.cc'
           ],
         },
       ], # targets
