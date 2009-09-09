@@ -705,7 +705,8 @@ void ExtensionShelf::ChildPreferredSizeChanged(View* child) {
   Toolstrip *toolstrip = ToolstripForView(static_cast<ExtensionView*>(child));
   if (!toolstrip)
     return;
-  Layout();
+
+  PreferredSizeChanged();
 }
 
 void ExtensionShelf::Layout() {
