@@ -56,6 +56,7 @@ var SocketAddressNaClToBrowser = function() {
   SocketAddressLog('Invoking server.start_server');
   var socket_address2 = server.start_server();
   SocketAddressLog('Invoking connect');
+  alert(socket_address2.toString());
   var con_sock = socket_address2.connect();
   SocketAddressLog('Invoking getmsg');
   var retval = con_sock.getmsg(100);

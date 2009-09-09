@@ -38,6 +38,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 
 // Use a predefined symbol to get a handle to the current module.
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
@@ -46,6 +47,9 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 namespace nacl {
 
 SelLdrLauncher::~SelLdrLauncher() {
+  if (NULL != sock_addr_) {
+    NaClDescUnref(sock_addr_);
+  }
   if (kInvalidHandle != child_) {
     CloseHandle(child_);
   }

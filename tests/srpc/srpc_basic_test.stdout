@@ -22,3 +22,5 @@ double_array RESULTS:   D(5,5.900000,1.500000,4.100000,1.400000,3.100000)
 int_array RESULTS:   I(5,5,4,3,2,1)
 null_method RESULTS: 
 stringret RESULTS:   s("Ich weiss nicht, was soll es bedeutenDass ich so traurig bin,Ein Maerchen aus uralten Zeiten,Das kommt mir nicht aus dem Sinn.Die Luft ist kuehl und es dunkelt,Und ruhig fliesst der Rhein;Der Gipfel des Berges funkelt,Im Abendsonnenschein.Die schoenste Jungfrau sitzetDort oben wunderbar,Ihr gold'nes Geschmeide blitzet,Sie kaemmt ihr goldenes Haar,Sie kaemmt es mit goldenem Kamme,Und singt ein Lied dabei;Das hat eine wundersame,Gewalt'ge Melodei.")
+handle RESULTS: 
+handleret RESULTS:   h(4)

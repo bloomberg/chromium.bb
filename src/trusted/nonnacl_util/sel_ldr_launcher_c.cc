@@ -75,9 +75,15 @@ int NaClSelLdrOpenSrpcChannels(struct NaClSelLdrLauncher* launcher,
 NaClHandle NaClSelLdrGetChild(struct NaClSelLdrLauncher* launcher) {
   return (reinterpret_cast<struct nacl::SelLdrLauncher*>(launcher))->child_;
 }
+
 NaClHandle NaClSelLdrGetChannel(struct NaClSelLdrLauncher* launcher) {
   return (reinterpret_cast<struct nacl::SelLdrLauncher*>(launcher))->channel_;
 }
 
+struct NaClDesc* NaClSelLdrGetSockAddr(struct NaClSelLdrLauncher* launcher) {
+  struct nacl::SelLdrLauncher* obj =
+      reinterpret_cast<struct nacl::SelLdrLauncher*>(launcher);
+  return obj->GetSelLdrSocketAddress();
+}
 
 }  // extern "C"

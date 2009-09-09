@@ -41,6 +41,7 @@
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,6 +62,8 @@ extern int NaClSelLdrOpenSrpcChannels(struct NaClSelLdrLauncher* launcher,
 
 extern NaClHandle NaClSelLdrGetChild(struct NaClSelLdrLauncher* launcher);
 extern NaClHandle NaClSelLdrGetChannel(struct NaClSelLdrLauncher* launcher);
+extern struct NaClDesc* NaClSelLdrGetSockAddr(
+    struct NaClSelLdrLauncher* launcher);
 
 #ifdef __cplusplus
 }

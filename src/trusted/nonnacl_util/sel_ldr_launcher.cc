@@ -46,7 +46,8 @@ SelLdrLauncher::SelLdrLauncher() :
   channel_(kInvalidHandle),
   argc_(-1),
   argv_(NULL),
-  is_sel_ldr_(true) {
+  is_sel_ldr_(true),
+  sock_addr_(NULL) {
 }
 
 // Much of the code to connect to sel_ldr instances and open the respective
@@ -101,7 +102,6 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   struct NaClDescEffector *effp = NULL;
   struct NaClDesc *pair[2];
   struct NaClDesc *channel_desc = NULL;
-  struct NaClDesc *sock_addr = NULL;
   int start_result;
   struct NaClDesc* command_desc = NULL;
   struct NaClDesc* untrusted_command_desc = NULL;
@@ -134,13 +134,13 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   channel_ = kInvalidHandle;
 
   // Get the socket address from the descriptor.
-  sock_addr = GetSockAddr(effp, channel_desc);
-  if (NULL == sock_addr) {
+  sock_addr_ = GetSockAddr(effp, channel_desc);
+  if (NULL == sock_addr_) {
     goto done;
   }
 
   // The first connection goes to the trusted command channel.
-  if (NULL == (command_desc = Connect(effp, sock_addr))) {
+  if (NULL == (command_desc = Connect(effp, sock_addr_))) {
     goto done;
   }
   // Start the SRPC client to communicate with the trusted command channel.
@@ -157,7 +157,7 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   }
 
   // The second connection goes to the untrusted command channel.
-  if (NULL == (untrusted_command_desc = Connect(effp, sock_addr))) {
+  if (NULL == (untrusted_command_desc = Connect(effp, sock_addr_))) {
     goto done;
     return 0;
   }
@@ -169,7 +169,7 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   ctor_state |= kUntrustedCommandCtord;
 
   // The third connection goes to the service itself.
-  if (NULL == (untrusted_desc = Connect(effp, sock_addr))) {
+  if (NULL == (untrusted_desc = Connect(effp, sock_addr_))) {
     goto done;
   }
   // Start the SRPC client to communicate with the untrusted service
@@ -180,7 +180,6 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   ctor_state |= kUntrustedCtord;
 
   NaClDescUnref(channel_desc);
-  NaClDescUnref(sock_addr);
   return true;
 
  done:
@@ -198,9 +197,6 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   }
   if (NULL != command_desc) {
     NaClDescUnref(command_desc);
-  }
-  if (NULL != sock_addr) {
-    NaClDescUnref(sock_addr);
   }
   if (NULL != channel_desc) {
     NaClDescUnref(channel_desc);

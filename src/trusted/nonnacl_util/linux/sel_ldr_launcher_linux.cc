@@ -42,14 +42,21 @@
 #include <unistd.h>
 
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 
 namespace nacl {
 
 SelLdrLauncher::~SelLdrLauncher() {
+  // sock_addr_ is non-NULL only if the Start method successfully completes.
+  if (NULL != sock_addr_) {
+    NaClDescUnref(sock_addr_);
+  }
+  // Similarly, child_ is invalid unless Start successfully completes.
   if (kInvalidHandle != child_) {
     int status;
     waitpid(child_, &status, 0);
   }
+  // Similarly, channel_ is invalid unless Start successfully completes.
   if (kInvalidHandle != channel_) {
     Close(channel_);
   }

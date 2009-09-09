@@ -30,12 +30,27 @@
  */
 
 /*
-  Interface test for simple rpc.  Try out parameter passing.
-*/
+ * Interface test for simple rpc (SRPC).  Tests passing of all supported
+ * parameter and return types.
+ *
+ * It really only makes sense to run this test from within either sel_universal
+ * or the browser, as it is intended to test marshalling and serialization
+ * of parameters.
+ */
 
 #include <stdio.h>
 #include <string.h>
 #include <nacl/nacl_srpc.h>
+
+/*
+ * When running embedded, sel_ldr instances are invoked with the -X option.
+ * This creates a bound socket on descriptor 3 and its address on descriptor 4.
+ * The SRPC system accepts connections on descriptor 3, and creates an SRPC
+ * channel with a listener thread for each connection.
+ * 4 is a convenient transferrable descriptor for the "handle" parameter type.
+ * TODO(sehr): this should move to an SRPC header file.
+ */
+static const int kSrpcSocketAddressDescriptorNumber = 4;
 
 /*
  *  First, tests for scalar argument passing and return.
@@ -202,7 +217,7 @@ NACL_SRPC_METHOD("handle:h:", HandleMethod);
 NaClSrpcError ReturnHandleMethod(NaClSrpcChannel *channel,
                                  NaClSrpcArg **in_args,
                                  NaClSrpcArg **out_args) {
-  out_args[0]->u.hval = 2; /* stderr */
+  out_args[0]->u.hval = kSrpcSocketAddressDescriptorNumber;
   return NACL_SRPC_RESULT_OK;
 }
 

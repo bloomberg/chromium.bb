@@ -9,5 +9,5 @@ rpc double_array D(5,3.1,1.4,4.1,1.5,5.9) * D(5)
 rpc int_array I(5,1,2,3,4,5) * I(5)
 rpc null_method *
 rpc stringret i(0) * s("")
-# rpc handle h(0) *    STILL FAILS ON WINDOWS
-# rpc handleret * h(0)    STILL FAILS ON WINDOWS
+rpc handle h(3) *
+rpc handleret * h(0)

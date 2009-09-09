@@ -76,12 +76,12 @@ typedef struct DescList DescList;
 struct DescList {
   DescList* next;
   int number;
-  int is_local;
+  const char* print_name;
   struct NaClDesc* desc;
 };
 static DescList* descriptors = NULL;
 
-int AddDescToList(struct NaClDesc* new_desc, int is_local) {
+int AddDescToList(struct NaClDesc* new_desc, const char* print_name) {
   static int next_desc = 0;
   DescList* new_list_element;
   DescList** list_pointer;
@@ -97,7 +97,7 @@ int AddDescToList(struct NaClDesc* new_desc, int is_local) {
   }
   new_list_element->number = next_desc++;
   new_list_element->desc = new_desc;
-  new_list_element->is_local = is_local;
+  new_list_element->print_name = print_name;
   new_list_element->next = NULL;
   /* Find the end of the list of descriptors*/
   for (list_pointer = &descriptors;
@@ -113,9 +113,9 @@ struct NaClDesc* DescFromPlatformDesc(int fd, int mode) {
 }
 
 void BuildDefaultDescList() {
-  AddDescToList(DescFromPlatformDesc(0, NACL_ABI_O_RDONLY), 1);
-  AddDescToList(DescFromPlatformDesc(1, NACL_ABI_O_WRONLY), 1);
-  AddDescToList(DescFromPlatformDesc(2, NACL_ABI_O_WRONLY), 1);
+  AddDescToList(DescFromPlatformDesc(0, NACL_ABI_O_RDONLY), "stdin");
+  AddDescToList(DescFromPlatformDesc(1, NACL_ABI_O_WRONLY), "stdout");
+  AddDescToList(DescFromPlatformDesc(2, NACL_ABI_O_WRONLY), "stderr");
 }
 
 void PrintDescList() {
@@ -123,7 +123,7 @@ void PrintDescList() {
 
   printf("Descriptors:\n");
   for (list = descriptors; NULL != list; list = list->next) {
-    printf("  %d: %s\n", list->number, list->is_local ? "local" : "returned");
+    printf("  %d: %s\n", list->number, list->print_name);
   }
 }
 
@@ -354,7 +354,7 @@ void DumpArg(const NaClSrpcArg* arg) {
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_HANDLE:
-    printf("h(%"PRIuPTR")", (uintptr_t) AddDescToList(arg->u.hval, 0));
+    printf("h(%"PRIuPTR")", (uintptr_t) AddDescToList(arg->u.hval, "imported"));
     break;
    case NACL_SRPC_ARG_TYPE_INT:
     printf("i(%d)", arg->u.ival);
@@ -865,6 +865,7 @@ int main(int  argc, char *argv[]) {
     return 1;
   }
   BuildDefaultDescList();
+  AddDescToList(NaClSelLdrGetSockAddr(launcher), "module socket address");
 
   if (timed_rpc_count == 0) {
     CommandLoop(&channel);

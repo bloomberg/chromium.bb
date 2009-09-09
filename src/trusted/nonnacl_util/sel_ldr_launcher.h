@@ -42,6 +42,7 @@
 
 #include "native_client/src/shared/imc/nacl_imc.h"
 struct NaClSrpcChannel;
+struct NaClDesc;
 
 namespace nacl {
 
@@ -87,6 +88,9 @@ struct SelLdrLauncher {
 
   static const char* GetPluginDirname();
 
+  // Returns the socket address used to connect to the sel_ldr.
+  struct NaClDesc* GetSelLdrSocketAddress() const { return sock_addr_; }
+
   // Returns true if SelLdrLauncher has launched an instance of sel_ldr, or
   // false if SelLdrLauncher has launched a native OS binary instead of sel_ldr
   // for debugging.
@@ -129,6 +133,8 @@ struct SelLdrLauncher {
   // instead of sel_ldr for debugging.
   bool is_sel_ldr_;
   std::string application_name_;
+  // The socket address returned from sel_ldr for connects.
+  struct NaClDesc* sock_addr_;
 };
 
 }  // namespace nacl
