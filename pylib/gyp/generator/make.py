@@ -420,25 +420,29 @@ class MakefileWriter:
     """
     for rule in rules:
       name = self.target + '_' + rule['rule_name']
+      count = 0
       self.WriteLn('### Generated for rule %s:' % name)
 
       all_outputs = []
 
-      dirs = set()
       for rule_source in rule['rule_sources']:
+        dirs = set()
         rule_source_basename = os.path.basename(rule_source)
         (rule_source_root, rule_source_ext) = \
             os.path.splitext(rule_source_basename)
 
-        outputs = map(lambda out: out % { 'INPUT_ROOT': rule_source_root },
-                      rule['outputs'])
+        outputs = [self.ExpandInputRoot(out, rule_source_root)
+                   for out in rule['outputs']]
+        outputs = map(self.FixupArgPath, outputs)
         for out in outputs:
-          dirs.add(os.path.split(out)[0])
+          dir = os.path.dirname(out)
+          if dir:
+            dirs.add(dir)
           if rule.get('process_outputs_as_sources', False):
             extra_sources.append(out)
         all_outputs += outputs
         inputs = map(self.Absolutify, [rule_source] + rule.get('inputs', []))
-        actions = ['$(call do_cmd,%s)' % name]
+        actions = ['$(call do_cmd,%s_%d)' % (name, count)]
 
         if name == 'resources_grit':
           # HACK: This is ugly.  Grit intentionally doesn't touch the
@@ -452,25 +456,34 @@ class MakefileWriter:
         self.WriteMakeRule(outputs, inputs + ['FORCE_DO_CMD'], actions)
         self.WriteLn('all_targets += %s' % ' '.join(outputs))
 
-      self.WriteLn()
+        action = [self.ExpandInputRoot(ac, rule_source_root)
+                  for ac in rule['action']]
+        mkdirs = ''
+        if len(dirs) > 0:
+          mkdirs = 'mkdir -p %s; ' % ' '.join(dirs)
+        self.WriteLn("cmd_%(name)s_%(count)d = %(mkdirs)s%(action)s" % {
+          'action': gyp.common.EncodePOSIXShellList(
+              map(self.FixupArgPath, action)),
+          'count': count,
+          'mkdirs': mkdirs,
+          'name': name,
+        })
+        self.WriteLn(
+            'quiet_cmd_%(name)s_%(count)d = RULE %(name)s_%(count)d $@' % {
+          'count': count,
+          'name': name,
+        })
+        self.WriteLn()
+        count += 1
 
       outputs_variable = 'rule_%s_outputs' % name
       self.WriteList(all_outputs, outputs_variable)
       extra_outputs.append('$(%s)' % outputs_variable)
 
-      mkdirs = ''
-      if len(dirs) > 0:
-        mkdirs = 'mkdir -p %s; ' % ' '.join(dirs)
-      self.WriteLn("cmd_%(name)s = %(mkdirs)s%(action)s" % {
-        'mkdirs': mkdirs,
-        'name': name,
-        'action': gyp.common.EncodePOSIXShellList(map(self.FixupArgPath, rule['action']))
-      })
-      self.WriteLn('quiet_cmd_%(name)s = RULE %(name)s $@' % {
-        'name': name,
-      })
+      self.WriteLn('### Finished generating for rule: %s' % name)
       self.WriteLn()
-    self.WriteLn()
+    self.WriteLn('### Finished generating for all rules')
+    self.WriteLn('')
 
 
   def WriteCopies(self, copies, extra_outputs):
@@ -761,6 +774,17 @@ class MakefileWriter:
     if '/' in arg or '.h.' in arg:
       return self.Absolutify(arg)
     return arg
+
+
+  def ExpandInputRoot(self, template, expansion):
+    if '%(INPUT_ROOT)s' not in template:
+      return template
+    path = template % { 'INPUT_ROOT': expansion }
+    if not os.path.dirname(path):
+      # If it's just the file name, turn it into a path so FixupArgPath()
+      # will know to Absolutify() it.
+      path = os.path.join('.', path)
+    return path
 
 
 def GenerateOutput(target_list, target_dicts, data, params):
