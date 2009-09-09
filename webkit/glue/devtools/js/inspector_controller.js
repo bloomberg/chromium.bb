@@ -51,6 +51,11 @@ devtools.InspectorController = function() {
    * @type {boolean}
    */
   this.timelineEnabled_ = false;
+
+  /**
+   * @type {Object}
+   */
+  this.settings_ = {};
 };
 
 
@@ -478,5 +483,24 @@ devtools.InspectorController.prototype.stepOutOfFunctionInDebugger =
 devtools.InspectorController.prototype.stepOverStatementInDebugger =
     function() {
 };
+
+
+/**
+ * Sets a setting value in backend.
+ */
+devtools.InspectorController.prototype.setSetting =
+    function(setting, value) {
+  this.settings_[setting] = value;
+};
+
+
+/**
+ * Retrieves a setting value stored in backend.
+ */
+devtools.InspectorController.prototype.setting =
+    function(setting) {
+  return this.settings_[setting];
+};
+
 
 var InspectorController = new devtools.InspectorController();

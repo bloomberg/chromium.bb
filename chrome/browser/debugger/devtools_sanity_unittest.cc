@@ -125,39 +125,39 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestHostIsPresent) {
 }
 
 // Tests elements panel basics.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestElementsTreeRoot) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestElementsTreeRoot) {
   RunTest("testElementsTreeRoot", kSimplePage);
 }
 
 // Tests main resource load.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestMainResource) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestMainResource) {
   RunTest("testMainResource", kSimplePage);
 }
 
 // Tests resources panel enabling.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEnableResourcesTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
   RunTest("testEnableResourcesTab", kSimplePage);
 }
 
 // Tests resource headers.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestResourceHeaders) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceHeaders) {
   RunTest("testResourceHeaders", kResourceTestPage);
 }
 
 // Tests profiler panel.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestProfilerTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
 }
 
 // Tests scripts panel showing.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowScriptsTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
 // Tests set breakpoint.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestSetBreakpoint) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 
@@ -167,17 +167,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
 }
 
 // Tests console eval.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleEval) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
   RunTest("testConsoleEval", kConsoleTestPage);
 }
 
 // Tests console log.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleLog) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleLog) {
   RunTest("testConsoleLog", kConsoleTestPage);
 }
 
 // Tests eval global values.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEvalGlobal) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
   RunTest("testEvalGlobal", kEvalTestPage);
 }
 
