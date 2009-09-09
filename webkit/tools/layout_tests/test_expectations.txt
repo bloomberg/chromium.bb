@@ -2367,3 +2367,5 @@ BUG_JAPHET MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 // Flaky as of WebKit r48155
 BUG_JAPHET WIN : LayoutTests/transitions/transition-end-event-transform.html = FAIL PASS
 
+// Flaky, not clear as of when.
+BUG21411 : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
