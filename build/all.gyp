@@ -19,6 +19,8 @@
         '../src/trusted/plugin/plugin.gyp:npGoogleNaClPlugin',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
         '../src/trusted/validator_x86/validator_x86.gyp:*',
+        # Tests
+        '../src/trusted/service_runtime/service_runtime_tests.gyp:*',
       ],
       'conditions': [
         ['OS=="linux"', {

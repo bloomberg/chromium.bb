@@ -109,6 +109,7 @@
       ],
       'dependencies': [
         '../../shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+        '../../shared/platform/platform.gyp:platform',
       ],
     }
   ]
