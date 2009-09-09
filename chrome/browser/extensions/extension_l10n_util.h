@@ -24,6 +24,7 @@ bool ValidateDefaultLocale(const Extension* extension);
 // if messages file is present (we don't check content of messages file here).
 // Returns false if locale_name was not found in chrome_locales, and sets
 // error with locale_name.
+// If file name starts with . return true (helps testing extensions under svn).
 bool AddLocale(const std::set<std::string>& chrome_locales,
                const FilePath& locale_folder,
                Extension* extension,

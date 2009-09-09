@@ -6,9 +6,11 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +19,30 @@ namespace keys = extension_manifest_keys;
 
 namespace {
 
-  Extension* CreateMinimalExtension(const std::string& default_locale) {
+TEST(ExtensionL10nUtil, LoadGoodExtensionFromSVNTree) {
+  FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+      .AppendASCII("1.0.0.0");
+
+  FilePath locale_path = install_dir.AppendASCII(Extension::kLocaleFolder);
+  ASSERT_TRUE(file_util::PathExists(locale_path));
+
+  scoped_ptr<Extension> extension(new Extension(install_dir));
+  std::string error;
+  EXPECT_TRUE(extension_l10n_util::AddValidLocales(
+      locale_path, extension.get(), &error));
+  const std::set<std::string>& supported_locales =
+    extension->supported_locales();
+  EXPECT_EQ(2U, supported_locales.size());
+  EXPECT_TRUE(supported_locales.find("en-US") != supported_locales.end());
+  EXPECT_TRUE(supported_locales.find("sr") != supported_locales.end());
+}
+
+Extension* CreateMinimalExtension(const std::string& default_locale) {
 #if defined(OS_WIN)
   FilePath path(FILE_PATH_LITERAL("C:\\foo"));
 #elif defined(OS_POSIX)

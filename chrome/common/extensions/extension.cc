@@ -68,7 +68,7 @@ int Extension::id_counter_ = 0;
 
 const char Extension::kManifestFilename[] = "manifest.json";
 const char Extension::kLocaleFolder[] = "_locales";
-const char Extension::kMessagesFilename[] = "messages";
+const char Extension::kMessagesFilename[] = "messages.json";
 
 // A list of all the keys allowed by themes.
 static const wchar_t* kValidThemeKeys[] = {

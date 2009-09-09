@@ -6,6 +6,7 @@
   "icons": {
     "128": "icon_128.png"
   },
+  "default_locale": "en_US",
   "toolstrips": [
     {
       "path": "toolstrip1.html",

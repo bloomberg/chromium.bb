@@ -30,7 +30,6 @@ bool ValidateDefaultLocale(const Extension* extension) {
   }
 }
 
-
 bool AddLocale(const std::set<std::string>& chrome_locales,
                const FilePath& locale_folder,
                Extension* extension,
@@ -38,6 +37,10 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
                std::string* error) {
   // Normalize underscores to hyphens because that's what our locale files use.
   std::replace(locale_name->begin(), locale_name->end(), '_', '-');
+  // Accept name that starts with a . but don't add it to the list of supported
+  // locales.
+  if (locale_name->find(".") == 0)
+    return true;
   if (chrome_locales.find(*locale_name) == chrome_locales.end()) {
     // Fail if there is an extension locale that's not in the Chrome list.
     *error = StringPrintf("Supplied locale %s is not supported.",
