@@ -4,15 +4,11 @@
 
 #include "views/controls/scrollbar/native_scroll_bar.h"
 
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlwin.h>
-#include <atlcrack.h>
-#include <atlframe.h>
-#include <atlmisc.h>
+#include <algorithm>
 #include <string>
 
 #include "base/message_loop.h"
+#include "base/window_impl.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/widget.h"
 
@@ -22,25 +18,23 @@ namespace views {
 //
 // ScrollBarContainer
 //
-// Since windows scrollbar only send notifications to their parent hwnd, we
-// use instance of this class to wrap native scrollbars.
+// Since windows scrollbars only send notifications to their parent hwnd, we
+// use instances of this class to wrap native scrollbars.
 //
 /////////////////////////////////////////////////////////////////////////////
-class ScrollBarContainer : public CWindowImpl<ScrollBarContainer,
-                           CWindow,
-                           CWinTraits<WS_CHILD>> {
+class ScrollBarContainer : public base::WindowImpl {
  public:
-  ScrollBarContainer(ScrollBar* parent) : parent_(parent),
-                                          scrollbar_(NULL) {
-    Create(parent->GetWidget()->GetNativeView());
-    ::ShowWindow(m_hWnd, SW_SHOW);
+  explicit ScrollBarContainer(ScrollBar* parent) : parent_(parent),
+                                                   scrollbar_(NULL) {
+    set_window_style(WS_CHILD);
+    Init(parent->GetWidget()->GetNativeView(), gfx::Rect());
+    ShowWindow(hwnd(), SW_SHOW);
   }
 
   virtual ~ScrollBarContainer() {
   }
 
-  DECLARE_FRAME_WND_CLASS(L"ChromeViewsScrollBarContainer", NULL);
-  BEGIN_MSG_MAP(ScrollBarContainer);
+  BEGIN_MSG_MAP_EX(ScrollBarContainer);
     MSG_WM_CREATE(OnCreate);
     MSG_WM_ERASEBKGND(OnEraseBkgnd);
     MSG_WM_PAINT(OnPaint);
@@ -58,7 +52,7 @@ class ScrollBarContainer : public CWindowImpl<ScrollBarContainer,
     SCROLLINFO si;
     si.cbSize = sizeof(si);
     si.fMask = SIF_POS;
-    ::GetScrollInfo(scrollbar_, SB_CTL, &si);
+    GetScrollInfo(scrollbar_, SB_CTL, &si);
     int pos = si.nPos - o;
 
     if (pos < parent_->GetMinPosition())
@@ -71,25 +65,18 @@ class ScrollBarContainer : public CWindowImpl<ScrollBarContainer,
 
     si.nPos = pos;
     si.fMask = SIF_POS;
-    ::SetScrollInfo(scrollbar_, SB_CTL, &si, TRUE);
+    SetScrollInfo(scrollbar_, SB_CTL, &si, TRUE);
   }
 
  private:
 
   LRESULT OnCreate(LPCREATESTRUCT create_struct) {
-    scrollbar_ = CreateWindow(L"SCROLLBAR",
-                              L"",
+    scrollbar_ = CreateWindow(L"SCROLLBAR", L"",
                               WS_CHILD | (parent_->IsHorizontal() ?
                                           SBS_HORZ : SBS_VERT),
-                              0,
-                              0,
-                              parent_->width(),
-                              parent_->height(),
-                              m_hWnd,
-                              NULL,
-                              NULL,
-                              NULL);
-    ::ShowWindow(scrollbar_, SW_SHOW);
+                              0, 0, parent_->width(), parent_->height(),
+                              hwnd(), NULL, NULL, NULL);
+    ShowWindow(scrollbar_, SW_SHOW);
     return 1;
   }
 
@@ -99,23 +86,15 @@ class ScrollBarContainer : public CWindowImpl<ScrollBarContainer,
 
   void OnPaint(HDC ignore) {
     PAINTSTRUCT ps;
-    HDC dc = ::BeginPaint(*this, &ps);
-    ::EndPaint(*this, &ps);
+    HDC dc = BeginPaint(hwnd(), &ps);
+    EndPaint(hwnd(), &ps);
   }
 
   void OnSize(int type, const CSize& sz) {
-    ::SetWindowPos(scrollbar_,
-                   0,
-                   0,
-                   0,
-                   sz.cx,
-                   sz.cy,
-                   SWP_DEFERERASE |
-                   SWP_NOACTIVATE |
-                   SWP_NOCOPYBITS |
-                   SWP_NOOWNERZORDER |
-                   SWP_NOSENDCHANGING |
-                   SWP_NOZORDER);
+    SetWindowPos(scrollbar_,
+                 0, 0, 0, sz.cx, sz.cy,
+                 SWP_DEFERERASE | SWP_NOACTIVATE | SWP_NOCOPYBITS |
+                 SWP_NOOWNERZORDER | SWP_NOSENDCHANGING | SWP_NOZORDER);
   }
 
   void OnScroll(int code, HWND source, bool is_horizontal) {
@@ -137,13 +116,13 @@ class ScrollBarContainer : public CWindowImpl<ScrollBarContainer,
     SCROLLINFO si;
     si.cbSize = sizeof(si);
     si.fMask = SIF_POS | SIF_TRACKPOS;
-    ::GetScrollInfo(scrollbar_, SB_CTL, &si);
+    GetScrollInfo(scrollbar_, SB_CTL, &si);
     pos = si.nPos;
 
     ScrollBarController* sbc = parent_->GetController();
 
     switch (code) {
-      case SB_BOTTOM: // case SB_RIGHT:
+      case SB_BOTTOM:  // case SB_RIGHT:
         pos = parent_->GetMaxPosition();
         break;
       case SB_TOP:  // case SB_LEFT:
@@ -181,7 +160,7 @@ class ScrollBarContainer : public CWindowImpl<ScrollBarContainer,
 
     si.nPos = pos;
     si.fMask = SIF_POS;
-    ::SetScrollInfo(scrollbar_, SB_CTL, &si, TRUE);
+    SetScrollInfo(scrollbar_, SB_CTL, &si, TRUE);
 
     // Note: the system scrollbar modal loop doesn't give a chance
     // to our message_loop so we need to call DidProcessMessage()
@@ -222,7 +201,7 @@ NativeScrollBar::~NativeScrollBar() {
     // We always destroy the scrollbar container explicitly to cover all
     // cases including when the container is no longer connected to a
     // widget tree.
-    ::DestroyWindow(*sb_container_);
+    DestroyWindow(sb_container_->hwnd());
     delete sb_container_;
   }
 }
@@ -234,7 +213,7 @@ void NativeScrollBar::ViewHierarchyChanged(bool is_add, View *parent,
     sb_view_ = new NativeViewHost;
     AddChildView(sb_view_);
     sb_container_ = new ScrollBarContainer(this);
-    sb_view_->Attach(*sb_container_);
+    sb_view_->Attach(sb_container_->hwnd());
     Layout();
   }
 }
@@ -273,14 +252,11 @@ void NativeScrollBar::Update(int viewport_size,
   si.nMax = content_size;
   si.nPos = current_pos;
   si.nPage = viewport_size;
-  ::SetScrollInfo(sb_container_->GetScrollBarHWND(),
-                  SB_CTL,
-                  &si,
-                  TRUE);
+  SetScrollInfo(sb_container_->GetScrollBarHWND(), SB_CTL, &si, TRUE);
 }
 
 int NativeScrollBar::GetLayoutSize() const {
-  return ::GetSystemMetrics(IsHorizontal() ? SM_CYHSCROLL : SM_CYVSCROLL);
+  return GetSystemMetrics(IsHorizontal() ? SM_CYHSCROLL : SM_CYVSCROLL);
 }
 
 int NativeScrollBar::GetPosition() const {
@@ -305,7 +281,7 @@ bool NativeScrollBar::OnKeyPressed(const KeyEvent& event) {
     return false;
   }
   int code = -1;
-  switch(event.GetCharacter()) {
+  switch (event.GetCharacter()) {
     case VK_UP:
       if (!IsHorizontal())
         code = SB_LINEUP;
@@ -336,22 +312,22 @@ bool NativeScrollBar::OnKeyPressed(const KeyEvent& event) {
       break;
   }
   if (code != -1) {
-    ::SendMessage(*sb_container_,
-                  IsHorizontal() ? WM_HSCROLL : WM_VSCROLL,
-                  MAKELONG(static_cast<WORD>(code), 0), 0L);
+    SendMessage(sb_container_->hwnd(),
+                IsHorizontal() ? WM_HSCROLL : WM_VSCROLL,
+                MAKELONG(static_cast<WORD>(code), 0), 0L);
     return true;
   }
   return false;
 }
 
-//static
+// static
 int NativeScrollBar::GetHorizontalScrollBarHeight() {
-  return ::GetSystemMetrics(SM_CYHSCROLL);
+  return GetSystemMetrics(SM_CYHSCROLL);
 }
 
-//static
+// static
 int NativeScrollBar::GetVerticalScrollBarWidth() {
-  return ::GetSystemMetrics(SM_CXVSCROLL);
+  return GetSystemMetrics(SM_CXVSCROLL);
 }
 
 }  // namespace views
