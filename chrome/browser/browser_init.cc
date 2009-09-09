@@ -467,7 +467,8 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
     }
 #endif
     // Check whether we are the default browser.
-    if (!command_line_.HasSwitch(switches::kNoDefaultBrowserCheck))
+    if (process_startup &&
+        !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck))
       CheckDefaultBrowser(profile);
   } else {
     RecordLaunchModeHistogram(LM_AS_WEBAPP);
