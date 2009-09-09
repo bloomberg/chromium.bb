@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gtk/menu_bar_helper.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "chrome/common/gtk_util.h"
 
