@@ -51,6 +51,8 @@ class MockClientSocket : public ClientSocket {
                     CompletionCallback* callback) {
     return ERR_FAILED;
   }
+  virtual bool SetReceiveBufferSize(int32 size) { return true; }
+  virtual bool SetSendBufferSize(int32 size) { return true; }
 
  private:
   bool connected_;
@@ -84,6 +86,8 @@ class MockFailingClientSocket : public ClientSocket {
                     CompletionCallback* callback) {
     return ERR_FAILED;
   }
+  virtual bool SetReceiveBufferSize(int32 size) { return true; }
+  virtual bool SetSendBufferSize(int32 size) { return true; }
 };
 
 class MockPendingClientSocket : public ClientSocket {
@@ -121,6 +125,8 @@ class MockPendingClientSocket : public ClientSocket {
                     CompletionCallback* callback) {
     return ERR_FAILED;
   }
+  virtual bool SetReceiveBufferSize(int32 size) { return true; }
+  virtual bool SetSendBufferSize(int32 size) { return true; }
 
  private:
   void DoCallback(CompletionCallback* callback) {
