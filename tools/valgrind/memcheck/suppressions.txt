@@ -260,6 +260,13 @@
    fun:g_object_run_dispose
    fun:gtk_object_destroy
 }
+{
+   # Totem plugin leaks when we load it.
+   bug_21326
+   Memcheck:Leak
+   ...
+   fun:_ZN5NPAPI9PluginLib17ReadWebPluginInfoERK8FilePathP13WebPluginInfo
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
