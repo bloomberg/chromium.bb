@@ -75,6 +75,7 @@
       'browser/extensions/extension_startup_unittest.cc',
       'browser/extensions/extension_storage_apitest.cc',
       'browser/extensions/extension_tabs_apitest.cc',
+      'browser/extensions/extension_i18n_apitest.cc',
       'browser/views/browser_views_accessibility_browsertest.cc',
       'browser/views/find_bar_win_browsertest.cc',
       # TODO(jam): http://crbug.com/15101 These tests fail on Linux and Mac.
@@ -1140,6 +1141,8 @@
         'browser/extensions/extension_message_service.h',
         'browser/extensions/extension_browser_event_router.cc',
         'browser/extensions/extension_browser_event_router.h',
+        'browser/extensions/extension_i18n_api.cc',
+        'browser/extensions/extension_i18n_api.h',
         'browser/extensions/extension_page_actions_module.cc',
         'browser/extensions/extension_page_actions_module.h',
         'browser/extensions/extension_page_actions_module_constants.cc',

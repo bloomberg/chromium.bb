@@ -588,3 +588,19 @@ TEST_F(ExtensionAPIClientTest, CollapseToolstrip) {
                "Uncaught Error: Invalid value for argument 1. "
                "Expected 'function' but got 'integer'.");
 }
+
+// I18N API
+TEST_F(ExtensionAPIClientTest, GetAcceptLanguages) {
+  ExpectJsFail("chrome.i18n.getAcceptLanguages(32, function(){})",
+               "Uncaught Error: Too many arguments.");
+
+  ExpectJsFail("chrome.i18n.getAcceptLanguages()",
+               "Uncaught Error: Parameter 0 is required.");
+
+  ExpectJsFail("chrome.i18n.getAcceptLanguages('abc')",
+               "Uncaught Error: Invalid value for argument 0. "
+               "Expected 'function' but got 'string'.");
+
+  ExpectJsPass("chrome.i18n.getAcceptLanguages(function(){})",
+               "i18n.getAcceptLanguages", "null");
+}

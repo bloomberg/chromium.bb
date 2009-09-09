@@ -1019,6 +1019,28 @@
     "events": []
   },
   {
+    "namespace": "i18n",
+    "types": [],
+    "functions": [
+      {
+        "name": "getAcceptLanguages",
+        "type": "function",
+        "description": "Get accept languages of browser",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"name": "languages", "type": "array", "items": {"type": "string"}, "description": "Array of the accept languages of the browser, such as en-US,en,zh-CN"}
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+    ]
+  },
+  {
     "namespace": "devtools",
     "types": [
     ],

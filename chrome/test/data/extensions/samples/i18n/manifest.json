@@ -1,0 +1,6 @@
+{
+  "name": "AcceptLanguage",
+  "description": "Returns accept languages of the browser",
+  "version": "0.1",
+  "toolstrips": ["toolstrip.html"]
+}

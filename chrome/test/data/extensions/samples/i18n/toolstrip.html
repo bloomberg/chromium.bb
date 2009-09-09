@@ -1,0 +1,29 @@
+<!--
+Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+source code is governed by a BSD-style license that can be found in the
+LICENSE file.
+-->
+
+<html>
+  <head>
+    <script>
+      function getAcceptLanguages() {
+        chrome.i18n.getAcceptLanguages(function(languageList) {
+          var languages = "";
+          for (var i = 0; i < languageList.length; i++) {
+            if (i == languageList.length - 1)
+              languages += languageList[i];
+            else
+              languages += languageList[i] + ",";
+          }
+          document.getElementById("languageSpan").innerHTML = languages;
+        })
+      }
+    </script>
+  </head>
+  <body>
+    <div class="toolstrip-button" onclick="getAcceptLanguages();">
+    <span id="languageSpan">GetAcceptLanguage</span>
+    </div>
+  </body>
+</html>

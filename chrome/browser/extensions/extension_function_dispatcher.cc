@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/extension_i18n_api.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
 #include "chrome/browser/extensions/extension_page_actions_module_constants.h"
@@ -69,6 +70,7 @@ void FactoryRegistry::ResetFunctions() {
   // Register all functions here.
 
   namespace bookmarks = extension_bookmarks_module_constants;
+  namespace i18n = extension_i18n_api_functions;
   namespace page_actions = extension_page_actions_module_constants;
   namespace tabs = extension_tabs_module_constants;
   namespace test = extension_test_api_functions;
@@ -141,6 +143,10 @@ void FactoryRegistry::ResetFunctions() {
       &NewExtensionFunction<ToolstripExpandFunction>;
   factories_[toolstrip::kCollapseFunction] =
       &NewExtensionFunction<ToolstripCollapseFunction>;
+
+  // I18N.
+  factories_[i18n::kGetAcceptLanguagesFunction] =
+      &NewExtensionFunction<GetAcceptLanguagesFunction>;
 
   // Test.
   factories_[test::kPassFunction] =
