@@ -4,12 +4,6 @@
 
 #include "views/controls/menu/menu_win.h"
 
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlwin.h>
-#include <atlcrack.h>
-#include <atlframe.h>
-#include <atlmisc.h>
 #include <string>
 
 #include "app/gfx/canvas.h"
@@ -20,6 +14,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/window_impl.h"
 #include "views/accelerator.h"
 
 namespace views {
@@ -51,7 +46,7 @@ struct MenuWin::ItemData {
 namespace {
 
 static int ChromeGetMenuItemID(HMENU hMenu, int pos) {
-  // The built-in Windows ::GetMenuItemID doesn't work for submenus,
+  // The built-in Windows GetMenuItemID doesn't work for submenus,
   // so here's our own implementation.
   MENUITEMINFO mii = {0};
   mii.cbSize = sizeof(mii);
@@ -66,8 +61,7 @@ static int ChromeGetMenuItemID(HMENU hMenu, int pos) {
 // to intercept right clicks on the HMENU and notify the delegate as well as
 // for drawing icons.
 //
-class MenuHostWindow : public CWindowImpl<MenuHostWindow, CWindow,
-                                          CWinTraits<WS_CHILD>> {
+class MenuHostWindow : public base::WindowImpl {
  public:
   MenuHostWindow(MenuWin* menu, HWND parent_window) : menu_(menu) {
     int extended_style = 0;
@@ -76,15 +70,16 @@ class MenuHostWindow : public CWindowImpl<MenuHostWindow, CWindow,
     // underlying HWND.
     if (menu_->delegate()->IsRightToLeftUILayout())
       extended_style |= l10n_util::GetExtendedStyles();
-    Create(parent_window, gfx::Rect().ToRECT(), 0, 0, extended_style);
+    set_window_style(WS_CHILD);
+    set_window_ex_style(extended_style);
+    Init(parent_window, gfx::Rect());
   }
 
   ~MenuHostWindow() {
-    DestroyWindow();
+    DestroyWindow(hwnd());
   }
 
-  DECLARE_FRAME_WND_CLASS(L"MenuHostWindow", NULL);
-  BEGIN_MSG_MAP(MenuHostWindow);
+  BEGIN_MSG_MAP_EX(MenuHostWindow);
     MSG_WM_RBUTTONUP(OnRButtonUp)
     MSG_WM_MEASUREITEM(OnMeasureItem)
     MSG_WM_DRAWITEM(OnDrawItem)
@@ -367,7 +362,7 @@ void MenuWin::RunMenuAt(int x, int y) {
     active_host_window = new MenuHostWindow(this, owner_);
   }
   UINT selected_id =
-      TrackPopupMenuEx(menu_, flags, x, y, active_host_window->m_hWnd, NULL);
+      TrackPopupMenuEx(menu_, flags, x, y, active_host_window->hwnd(), NULL);
   if (created_host) {
     delete active_host_window;
     active_host_window = NULL;
