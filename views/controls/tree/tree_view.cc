@@ -4,15 +4,14 @@
 
 #include "views/controls/tree/tree_view.h"
 
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlmisc.h>
+#include <vector>
 
 #include "app/gfx/canvas_paint.h"
 #include "app/gfx/icon_util.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
+#include "base/gfx/point.h"
 #include "base/stl_util-inl.h"
 #include "base/win_util.h"
 #include "grit/app_resources.h"
@@ -53,7 +52,7 @@ TreeView::~TreeView() {
 void TreeView::SetModel(TreeModel* model) {
   if (model == model_)
     return;
-  if(model_ && tree_view_)
+  if (model_ && tree_view_)
     DeleteRootItems();
   if (model_)
     model_->SetObserver(NULL);
@@ -727,8 +726,7 @@ LRESULT CALLBACK TreeView::TreeWndProc(HWND window,
     case WM_RBUTTONDOWN:
       if (tree->select_on_right_mouse_down_) {
         TVHITTESTINFO hit_info;
-        hit_info.pt.x = GET_X_LPARAM(l_param);
-        hit_info.pt.y = GET_Y_LPARAM(l_param);
+        hit_info.pt = gfx::Point(l_param).ToPOINT();
         HTREEITEM hit_item = TreeView_HitTest(window, &hit_info);
         if (hit_item && (hit_info.flags & (TVHT_ONITEM | TVHT_ONITEMRIGHT |
                                            TVHT_ONITEMINDENT)) != 0)

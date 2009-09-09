@@ -4,11 +4,10 @@
 
 #include "chrome/browser/views/keyword_editor_view.h"
 
-#include <atlbase.h>
-#include <atlapp.h>
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "base/gfx/point.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"
@@ -219,9 +218,9 @@ void KeywordEditorView::OnSelectionChanged() {
 void KeywordEditorView::OnDoubleClick() {
   if (edit_button_->IsEnabled()) {
     DWORD pos = GetMessagePos();
-    POINT cursor_point = { GET_X_LPARAM(pos), GET_Y_LPARAM(pos) };
+    gfx::Point cursor_point(pos);
     views::MouseEvent event(views::Event::ET_MOUSE_RELEASED,
-                            cursor_point.x, cursor_point.y,
+                            cursor_point.x(), cursor_point.y(),
                             views::Event::EF_LEFT_BUTTON_DOWN);
     ButtonPressed(edit_button_, event);
   }
@@ -233,7 +232,7 @@ void KeywordEditorView::ButtonPressed(
     browser::EditSearchEngine(GetWindow()->GetNativeWindow(), NULL, this,
                               profile_);
   } else if (sender == remove_button_) {
-    DCHECK(table_view_->SelectedRowCount() == 1);
+    DCHECK_EQ(1, table_view_->SelectedRowCount());
     int last_view_row = -1;
     for (views::TableView::iterator i = table_view_->SelectionBegin();
          i != table_view_->SelectionEnd(); ++i) {

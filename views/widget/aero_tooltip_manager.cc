@@ -5,12 +5,11 @@
 #include "views/widget/aero_tooltip_manager.h"
 
 #include <windows.h>
-#include <atlbase.h>
-#include <atlapp.h>  // for GET_X/Y_LPARAM
 #include <commctrl.h>
 #include <shlobj.h>
 
 #include "app/l10n_util_win.h"
+#include "base/gfx/point.h"
 #include "base/message_loop.h"
 
 namespace views {
@@ -33,13 +32,12 @@ void AeroTooltipManager::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
     initial_timer_->Disown();
 
   if (u_msg == WM_MOUSEMOVE || u_msg == WM_NCMOUSEMOVE) {
-    int x = GET_X_LPARAM(l_param);
-    int y = GET_Y_LPARAM(l_param);
-    if (last_mouse_x_ != x || last_mouse_y_ != y) {
-      last_mouse_x_ = x;
-      last_mouse_y_ = y;
+    gfx::Point mouse_pos(l_param);
+    if (last_mouse_x_ != mouse_pos.x() || last_mouse_y_ != mouse_pos.y()) {
+      last_mouse_x_ = mouse_pos.x();
+      last_mouse_y_ = mouse_pos.y();
       HideKeyboardTooltip();
-      UpdateTooltip(x, y);
+      UpdateTooltip(mouse_pos.x(), mouse_pos.y());
     }
 
     // Delay opening of the tooltip just in case the user moves their

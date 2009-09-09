@@ -19,6 +19,12 @@ Point::Point(int x, int y) : x_(x), y_(y) {
 }
 
 #if defined(OS_WIN)
+Point::Point(DWORD point) {
+  POINTS points = MAKEPOINTS(point);
+  x_ = points.x;
+  y_ = points.y;
+}
+
 Point::Point(const POINT& point) : x_(point.x), y_(point.y) {
 }
 
