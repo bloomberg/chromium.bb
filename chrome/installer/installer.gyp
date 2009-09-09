@@ -176,20 +176,18 @@
         {
           'target_name': 'installer_util_strings',
           'msvs_guid': '0026A376-C4F1-4575-A1BA-578C69F07013',
-          # See hack in chrome.gyp:chrome_strings
-          'type': 'dummy_executable',
+          'type': 'none',
           'rules': [
             {
               'rule_name': 'installer_util_strings',
               'extension': 'grd',
               'inputs': [
-                # Hardcoded for now.
-                '../app/generated_resources.grd',
+                '<(RULE_INPUT_PATH)',
               ],
               'outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/<(RULE_INPUT_ROOT).h',
               ],
-              'action': ['../../third_party/python_24/python.exe',
+              'action': ['python',
                          'util/prebuild/create_string_rc.py',
                          '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings'],
               'message': 'Generating resources from <(RULE_INPUT_PATH)',
