@@ -31,6 +31,7 @@
       'BUILDING_CHROMIUM__=1',
       'USE_GOOGLE_URL_LIBRARY=1',
       'USE_SYSTEM_MALLOC=1',
+      'WEBCORE_NAVIGATOR_VENDOR="Google Inc."',
     ],
     'webcore_include_dirs': [
       '../third_party/WebKit/WebCore/accessibility',
@@ -102,6 +103,28 @@
           'BUILDING_ON_LEOPARD',
           # Match Safari and Mozilla on Mac x86.
           'WEBCORE_NAVIGATOR_PLATFORM="MacIntel"',
+
+          # Chromium's version of WebCore includes the following Objective-C
+          # classes. The system-provided WebCore framework may also provide
+          # these classes. Because of the nature of Objective-C binding
+          # (dynamically at runtime), it's possible for the Chromium-provided
+          # versions to interfere with the system-provided versions.  This may
+          # happen when a system framework attempts to use WebCore.framework,
+          # such as when converting an HTML-flavored string to an
+          # NSAttributedString.  The solution is to force Objective-C class
+          # names that would conflict to use alternate names.
+
+          # TODO(mark) This list will hopefully shrink but may also grow.
+          # Periodically run:
+          # nm libwebcore.a | grep -E '[atsATS] ([+-]\[|\.objc_class_name)'
+          # and make sure that everything listed there has the alternate
+          # ChromiumWebCoreObjC name, and that nothing extraneous is listed
+          # here. If all Objective-C can be eliminated from Chromium's WebCore
+          # library, these defines should be removed entirely.
+          # TODO(yaar) move these out of command line defines.
+          'ScrollbarPrefsObserver=ChromiumWebCoreObjCScrollbarPrefsObserver',
+          'WebCoreRenderThemeNotificationObserver=ChromiumWebCoreObjCWebCoreRenderThemeNotificationObserver',
+          'WebFontCache=ChromiumWebCoreObjCWebFontCache',
         ],
         'webcore_include_dirs+': [
           # platform/graphics/cg and mac needs to come before

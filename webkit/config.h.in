@@ -24,6 +24,22 @@
 
 #include <wtf/Platform.h>
 
+#if PLATFORM(WIN_OS) && !defined(BUILDING_WX__) && !COMPILER(GCC)
+#if defined(BUILDING_JavaScriptCore) || defined(BUILDING_WTF)
+#define JS_EXPORTDATA __declspec(dllexport)
+#else
+#define JS_EXPORTDATA __declspec(dllimport)
+#endif
+#if defined(BUILDING_WebCore) || defined(BUILDING_WebKit)
+#define WEBKIT_EXPORTDATA __declspec(dllexport)
+#else
+#define WEBKIT_EXPORTDATA __declspec(dllimport)
+#endif
+#else
+#define JS_EXPORTDATA
+#define WEBKIT_EXPORTDATA
+#endif
+
 #define MOBILE 0
 
 #ifdef __APPLE__
@@ -58,22 +74,6 @@
 
 #endif /* PLATFORM(WIN_OS) */
 
-// On MSW, wx headers need to be included before windows.h is.
-// The only way we can always ensure this is if we include wx here.
-#if PLATFORM(WX)
-// The defines in KeyboardCodes.h conflict with Windows as well, and the only way I've found
-// to address the problem is include KeyboarddCodes.h before windows.h, so do it here.
-#include "KeyboardCodes.h"
-#include <wx/defs.h>
-#endif
-
-#if !PLATFORM(SYMBIAN)
-#define IMPORT_C
-#define EXPORT_C
-#endif
-
-#define WTF_CHANGES 1
-
 #ifdef __cplusplus
 
 // These undefs match up with defines in WebCorePrefix.h for Mac OS X.
@@ -82,6 +82,15 @@
 #undef delete
 #include <wtf/FastMalloc.h>
 
+#endif
+
+// On MSW, wx headers need to be included before windows.h is.
+// The only way we can always ensure this is if we include wx here.
+#if PLATFORM(WX)
+// The defines in KeyboardCodes.h conflict with Windows as well, and the only way I've found
+// to address the problem is include KeyboarddCodes.h before windows.h, so do it here.
+#include "KeyboardCodes.h"
+#include <wx/defs.h>
 #endif
 
 // this breaks compilation of <QFontDatabase>, at least, so turn it off for now
@@ -98,13 +107,38 @@
 #endif
 
 #if PLATFORM(WIN)
+#if defined(WIN_CAIRO)
+#undef WTF_PLATFORM_CG
+#define WTF_PLATFORM_CAIRO 1
+#undef WTF_USE_CFNETWORK
+#define WTF_USE_CURL 1
+#ifndef _WINSOCKAPI_
+#define _WINSOCKAPI_ // Prevent inclusion of winsock.h in windows.h
+#endif
+#else
 #define WTF_PLATFORM_CG 1
 #undef WTF_PLATFORM_CAIRO
 #define WTF_USE_CFNETWORK 1
+#undef WTF_USE_CURL
+#endif
 #undef WTF_USE_WININET
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 0
 #endif
+
+#if PLATFORM(MAC)
+// ATSUI vs. CoreText
+#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD)
+#define WTF_USE_ATSUI 0
+#define WTF_USE_CORE_TEXT 1
+#else
+#define WTF_USE_ATSUI 1
+#define WTF_USE_CORE_TEXT 0
+#endif
+
+// New theme
+#define WTF_USE_NEW_THEME 1
+#endif // PLATFORM(MAC)
 
 #if PLATFORM(SYMBIAN)
 #undef WIN32
@@ -118,61 +152,36 @@
 #define U_HAVE_INTTYPES_H 0
 
 #include <stdio.h>
-#include <snprintf.h>
 #include <limits.h>
 #include <wtf/MathExtras.h>
 #endif
 
 #if PLATFORM(CHROMIUM)
 
-#define WTF_USE_GOOGLEURL 1
-
-#if PLATFORM(DARWIN)
-
-// Chromium's version of WebCore includes the following Objective-C classes.
-// The system-provided WebCore framework may also provide these classes.
-// Because of the nature of Objective-C binding (dynamically at runtime),
-// it's possible for the Chromium-provided versions to interfere with the
-// system-provided versions.  This may happen when a system framework attempts
-// to use WebCore.framework, such as when converting an HTML-flavored string
-// to an NSAttributedString.  The solution is to force Objective-C class names
-// that would conflict to use alternate names.
-//
-// TODO(mark): This list will hopefully shrink but may also grow.  Periodically
-// run "nm libwebcore.a | grep -E '[atsATS] ([+-]\[|\.objc_class_name)'" and
-// make sure that everything listed there has the alternate ChromiumWebCoreObjC
-// name, and that nothing extraneous is listed here.  If all Objective-C can
-// be eliminated from Chromium's WebCore library, these defines should be
-// removed entirely.
-
-#define ScrollbarPrefsObserver \
-        ChromiumWebCoreObjCScrollbarPrefsObserver
-#define WebCoreControlTintObserver \
-        ChromiumWebCoreObjCWebCoreControlTintObserver
-#define WebCoreRenderThemeNotificationObserver \
-        ChromiumWebCoreObjCWebCoreRenderThemeNotificationObserver
-#define WebFontCache \
-        ChromiumWebCoreObjCWebFontCache
-
-#else // !PLATFORM(DARWIN)
-
-// Don't define SKIA on Mac. Undefine other things as well that might get set
-// as side-effects.
+#if !PLATFORM(DARWIN)
+// Define SKIA on non-Mac.
 #define WTF_PLATFORM_SKIA 1
-#undef WTF_PLATFORM_CG
-#undef WTF_PLATFORM_CF
-
 #endif // !PLATFORM(DARWIN)
 
+// WebCore should compile with WTF_CHANGES as WTF does.
+#define WTF_CHANGES 1
+
+// Use the Googleurl library.
+#define WTF_USE_GOOGLEURL 1
+
+/* Chromium uses V8 by default */
 #if !defined(WTF_USE_V8)
 #define WTF_USE_V8 1
 #endif
 
+// Chromium doesn't use CFNetwork
 #undef WTF_USE_CFNETWORK
+
 // Upstream Platform.h's #ifdef check for other graphics libraries doesn't
 // check SKIA, so it falls back on defining CAIRO.  Undo that here.
-// TODO(evanm): clean this up.
+// TODO(yaar): clean this up once config.h.in is upstreamed back to webkit.
 #undef WTF_PLATFORM_CAIRO
+
 #endif // if PLATFORM(CHROMIUM)
 
 #if !defined(WTF_USE_V8)
@@ -201,11 +210,3 @@ typedef float CGFloat;
 #if PLATFORM(WIN) && PLATFORM(CG)
 #define WTF_USE_SAFARI_THEME 1
 #endif
-
-#ifndef WEBCORE_NAVIGATOR_VENDOR
-#ifdef GOOGLE_CHROME_BUILD
-#define WEBCORE_NAVIGATOR_VENDOR "Google Inc."
-#else
-#define WEBCORE_NAVIGATOR_VENDOR ""
-#endif // ifdef GOOGLE_CHROME_BUILD
-#endif // ifndef WEBCORE_NAVIGATOR_VENDOR
