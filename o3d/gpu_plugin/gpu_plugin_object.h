@@ -8,7 +8,7 @@
 #include <string>
 
 #include "o3d/gpu_plugin/command_buffer.h"
-#include "o3d/gpu_plugin/np_utils/dispatched_np_object.h"
+#include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
 #include "o3d/gpu_plugin/np_utils/np_plugin_object.h"
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
@@ -63,7 +63,6 @@ class GPUPluginObject : public DefaultNPObject<NPObject>,
   Status status_;
   NPWindow window_;
   NPObjectPointer<CommandBuffer> command_buffer_object_;
-  NPSharedMemory* shared_memory_;
 };
 
 }  // namespace gpu_plugin

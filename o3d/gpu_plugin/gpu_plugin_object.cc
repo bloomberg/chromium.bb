@@ -20,8 +20,7 @@ const NPUTF8 GPUPluginObject::kPluginType[] =
 
 GPUPluginObject::GPUPluginObject(NPP npp)
     : npp_(npp),
-      status_(CREATED),
-      shared_memory_(NULL) {
+      status_(CREATED) {
   memset(&window_, 0, sizeof(window_));
 }
 
@@ -59,10 +58,6 @@ int16 GPUPluginObject::HandleEvent(NPEvent* event) {
 NPError GPUPluginObject::Destroy(NPSavedData** saved) {
   if (status_ != INITIALIZED)
     return NPERR_GENERIC_ERROR;
-
-  if (shared_memory_) {
-    NPBrowser::get()->UnmapSharedMemory(npp_, shared_memory_);
-  }
 
   command_buffer_object_ = NPObjectPointer<CommandBuffer>();
 

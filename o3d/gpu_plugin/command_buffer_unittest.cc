@@ -7,6 +7,7 @@
 #include "o3d/gpu_plugin/np_utils/np_browser_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
+#include "o3d/gpu_plugin/system_services/shared_memory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -56,7 +57,8 @@ class CommandBufferTest : public testing::Test {
 };
 
 TEST_F(CommandBufferTest, TestBehaviorWhileUninitialized) {
-  EXPECT_EQ(NPObjectPointer<NPObject>(), command_buffer_object_->GetBuffer());
+  EXPECT_EQ(NPObjectPointer<NPObject>(),
+            command_buffer_object_->GetSharedMemory());
   EXPECT_EQ(0, command_buffer_object_->GetGetOffset());
 }
 
@@ -64,26 +66,21 @@ TEST_F(CommandBufferTest, InitializesCommandBuffer) {
   EXPECT_CALL(mock_browser_, GetWindowNPObject(NULL))
     .WillOnce(Return(window_object_.ToReturned()));
 
-  NPObjectPointer<NPObject> expected_buffer =
-      NPCreateObject<MockNPObject>(NULL);
+  NPObjectPointer<MockSharedMemory> expected_shared_memory =
+      NPCreateObject<StrictMock<MockSharedMemory> >(NULL);
 
   EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
-    .WillOnce(Return(expected_buffer));
+    .WillOnce(Return(expected_shared_memory));
 
-  NPSharedMemory shared_memory;
-
-  EXPECT_CALL(mock_browser_, MapSharedMemory(NULL,
-                                             expected_buffer.Get(),
-                                             1024,
-                                             false))
-    .WillOnce(Return(&shared_memory));
+  EXPECT_CALL(*expected_shared_memory.Get(), Map())
+    .WillOnce(Return(true));
 
   EXPECT_TRUE(command_buffer_object_->Initialize(1024));
-  EXPECT_EQ(expected_buffer, command_buffer_object_->GetBuffer());
+  EXPECT_EQ(expected_shared_memory, command_buffer_object_->GetSharedMemory());
 
   // Cannot reinitialize.
   EXPECT_FALSE(command_buffer_object_->Initialize(1024));
-  EXPECT_EQ(expected_buffer, command_buffer_object_->GetBuffer());
+  EXPECT_EQ(expected_shared_memory, command_buffer_object_->GetSharedMemory());
 }
 
 TEST_F(CommandBufferTest, InitializeFailsIfCannotCreateSharedMemory) {
@@ -94,27 +91,26 @@ TEST_F(CommandBufferTest, InitializeFailsIfCannotCreateSharedMemory) {
     .WillOnce(Return(NPObjectPointer<NPObject>()));
 
   EXPECT_FALSE(command_buffer_object_->Initialize(1024));
-  EXPECT_EQ(NPObjectPointer<NPObject>(), command_buffer_object_->GetBuffer());
+  EXPECT_EQ(NPObjectPointer<NPObject>(),
+            command_buffer_object_->GetSharedMemory());
 }
 
 TEST_F(CommandBufferTest, InitializeFailsIfCannotMapSharedMemory) {
   EXPECT_CALL(mock_browser_, GetWindowNPObject(NULL))
     .WillOnce(Return(window_object_.ToReturned()));
 
-  NPObjectPointer<NPObject> expected_buffer =
-      NPCreateObject<MockNPObject>(NULL);
+  NPObjectPointer<MockSharedMemory> expected_shared_memory =
+      NPCreateObject<StrictMock<MockSharedMemory> >(NULL);
 
   EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
-    .WillOnce(Return(expected_buffer));
+    .WillOnce(Return(expected_shared_memory));
 
-  EXPECT_CALL(mock_browser_, MapSharedMemory(NULL,
-                                             expected_buffer.Get(),
-                                             1024,
-                                             false))
-    .WillOnce(Return(static_cast<NPSharedMemory*>(NULL)));
+  EXPECT_CALL(*expected_shared_memory.Get(), Map())
+    .WillOnce(Return(false));
 
   EXPECT_FALSE(command_buffer_object_->Initialize(1024));
-  EXPECT_EQ(NPObjectPointer<NPObject>(), command_buffer_object_->GetBuffer());
+  EXPECT_EQ(NPObjectPointer<NPObject>(),
+            command_buffer_object_->GetSharedMemory());
 }
 }  // namespace gpu_plugin
 }  // namespace o3d

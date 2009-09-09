@@ -7,6 +7,7 @@
 
 #include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
+#include "o3d/gpu_plugin/system_services/shared_memory_public.h"
 
 namespace o3d {
 namespace gpu_plugin {
@@ -22,7 +23,7 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   virtual bool Initialize(int32 size);
 
   // Gets the shared memory object for the command buffer.
-  virtual NPObjectPointer<NPObject> GetBuffer();
+  virtual NPObjectPointer<NPObject> GetSharedMemory();
 
   // The client calls this to update its put offset.
   virtual void SetPutOffset(int32 offset);
@@ -34,13 +35,12 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
     NP_UTILS_DISPATCHER(Initialize, bool(int32))
     NP_UTILS_DISPATCHER(SetPutOffset, void(int32))
     NP_UTILS_DISPATCHER(GetGetOffset, int32())
-    NP_UTILS_DISPATCHER(GetBuffer, NPObjectPointer<NPObject>())
+    NP_UTILS_DISPATCHER(GetSharedMemory, NPObjectPointer<NPObject>())
   NP_UTILS_END_DISPATCHER_CHAIN
 
  private:
   NPP npp_;
-  NPObjectPointer<NPObject> buffer_object_;
-  NPSharedMemory* shared_memory_;
+  NPObjectPointer<CHRSharedMemory> shared_memory_;
 };
 
 }  // namespace gpu_plugin

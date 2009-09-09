@@ -31,8 +31,6 @@ class MockNPBrowser : public StubNPBrowser {
 
   MOCK_METHOD2(CreateObject, NPObject*(NPP, const NPClass*));
   MOCK_METHOD1(GetWindowNPObject, NPObject*(NPP));
-  MOCK_METHOD4(MapSharedMemory, NPSharedMemory*(NPP, NPObject*, size_t, bool));
-  MOCK_METHOD2(UnmapSharedMemory, void(NPP, NPSharedMemory*));
 };
 
 }  // namespace gpu_plugin

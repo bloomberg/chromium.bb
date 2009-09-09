@@ -11,13 +11,10 @@ CommandBuffer::CommandBuffer(NPP npp) : npp_(npp) {
 }
 
 CommandBuffer::~CommandBuffer() {
-  if (shared_memory_) {
-    NPBrowser::get()->UnmapSharedMemory(npp_, shared_memory_);
-  }
 }
 
 bool CommandBuffer::Initialize(int32 size) {
-  if (buffer_object_.Get())
+  if (shared_memory_.Get())
     return false;
 
   NPObjectPointer<NPObject> window = NPObjectPointer<NPObject>::FromReturned(
@@ -35,23 +32,30 @@ bool CommandBuffer::Initialize(int32 size) {
     return false;
   }
 
+  NPObjectPointer<NPObject> result;
   if (!NPInvoke(npp_, system, "createSharedMemory", size,
-                &buffer_object_)) {
+                &result)) {
     return false;
   }
 
-  shared_memory_ = NPBrowser::get()->MapSharedMemory(
-      npp_, buffer_object_.Get(), size, false);
-  if (!shared_memory_) {
-    buffer_object_ = NPObjectPointer<NPObject>();
+  // TODO(spatrick): validate NPClass before assuming a CHRSHaredMemory is
+  //    returned.
+  shared_memory_ = NPObjectPointer<CHRSharedMemory>(
+      static_cast<CHRSharedMemory*>(result.Get()));
+  if (!shared_memory_.Get())
+    return false;
+
+  bool mapped;
+  if (!NPInvoke(npp_, shared_memory_, "map", &mapped) || !mapped) {
+    shared_memory_ = NPObjectPointer<CHRSharedMemory>();
     return false;
   }
 
   return true;
 }
 
-NPObjectPointer<NPObject> CommandBuffer::GetBuffer() {
-  return buffer_object_;
+NPObjectPointer<NPObject> CommandBuffer::GetSharedMemory() {
+  return shared_memory_;
 }
 
 void CommandBuffer::SetPutOffset(int32 offset) {

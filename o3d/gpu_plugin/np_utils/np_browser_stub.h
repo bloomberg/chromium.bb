@@ -67,15 +67,6 @@ class StubNPBrowser : public NPBrowser {
 
   virtual NPObject* GetWindowNPObject(NPP npp);
 
-  // Chromium specific additions.
-  virtual NPSharedMemory* MapSharedMemory(NPP id,
-                                          NPObject* object,
-                                          size_t size,
-                                          bool read_only);
-
-  virtual void UnmapSharedMemory(NPP id,
-                                 NPSharedMemory* shared_memory);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(StubNPBrowser);
 };

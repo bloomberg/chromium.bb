@@ -103,17 +103,5 @@ bool StubNPBrowser::Invoke(NPP npp,
 NPObject* StubNPBrowser::GetWindowNPObject(NPP npp) {
   return NULL;
 }
-
-
-NPSharedMemory* StubNPBrowser::MapSharedMemory(NPP id,
-                                        NPObject* object,
-                                        size_t size,
-                                        bool read_only) {
-  return NULL;
-}
-
-void StubNPBrowser::UnmapSharedMemory(NPP id,
-                               NPSharedMemory* shared_memory) {
-}
 }  // namespace gpu_plugin
 }  // namespace o3d

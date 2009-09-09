@@ -12,13 +12,7 @@ namespace gpu_plugin {
 NPBrowser* NPBrowser::browser_;
 
 NPBrowser::NPBrowser(NPNetscapeFuncs* funcs)
-    : netscape_funcs_(funcs),
-      chromium_funcs_(NULL) {
-  // Attempt to get the Chromium functions.
-  if (netscape_funcs_ && netscape_funcs_->getvalue) {
-    netscape_funcs_->getvalue(NULL, NPNVchromiumFuncs, &chromium_funcs_);
-  }
-
+    : netscape_funcs_(funcs) {
   // Make this the first browser in the linked list.
   previous_browser_ = browser_;
   browser_ = this;
@@ -108,20 +102,6 @@ NPObject* NPBrowser::GetWindowNPObject(NPP npp) {
   } else {
     return NULL;
   }
-}
-
-NPSharedMemory* NPBrowser::MapSharedMemory(NPP id,
-                                           NPObject* object,
-                                           size_t size,
-                                           bool read_only) {
-  DCHECK(chromium_funcs_);
-  return chromium_funcs_->mapsharedmemory(id, object, size, read_only);
-}
-
-void NPBrowser::UnmapSharedMemory(NPP id,
-                                  NPSharedMemory* shared_memory) {
-  DCHECK(chromium_funcs_);
-  chromium_funcs_->unmapsharedmemory(id, shared_memory);
 }
 }  // namespace gpu_plugin
 }  // namespace o3d

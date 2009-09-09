@@ -9,7 +9,6 @@
 #include "third_party/npapi/bindings/npruntime.h"
 
 typedef struct _NPNetscapeFuncs NPNetscapeFuncs;
-typedef struct _NPChromiumFuncs NPChromiumFuncs;
 
 namespace o3d {
 namespace gpu_plugin {
@@ -72,20 +71,10 @@ class NPBrowser {
 
   virtual NPObject* GetWindowNPObject(NPP npp);
 
-  // Chromium specific additions.
-  virtual NPSharedMemory* MapSharedMemory(NPP id,
-                                          NPObject* object,
-                                          size_t size,
-                                          bool read_only);
-
-  virtual void UnmapSharedMemory(NPP id,
-                                 NPSharedMemory* shared_memory);
-
  private:
   static NPBrowser* browser_;
   NPBrowser* previous_browser_;
   NPNetscapeFuncs* netscape_funcs_;
-  NPChromiumFuncs* chromium_funcs_;
   DISALLOW_COPY_AND_ASSIGN(NPBrowser);
 };
 
