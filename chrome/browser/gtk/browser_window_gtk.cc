@@ -583,17 +583,13 @@ void BrowserWindowGtk::HandleKeyboardEvent(GdkEventKey* event) {
   // Handles a key event in following sequence:
   // 1. Our special key accelerators, such as ctrl-tab, etc.
   // 2. Gtk mnemonics and accelerators.
-  // 3. Gtk binding set.
   // This sequence matches the default key press handler of GtkWindow.
   //
-  // It's not necessary to care about the keyboard layout issue, as
-  // gtk_window_activate_key() and gtk_bindings_activate_event() take care of it
-  // automatically.
+  // It's not necessary to care about the keyboard layout, as
+  // gtk_window_activate_key() takes care of it automatically.
   if (!HandleCustomAccelerator(event->keyval, GdkModifierType(event->state),
                                browser_.get())) {
-    if (!gtk_window_activate_key(window_, event)) {
-      gtk_bindings_activate_event(GTK_OBJECT(window_), event);
-    }
+    gtk_window_activate_key(window_, event);
   }
 }
 
