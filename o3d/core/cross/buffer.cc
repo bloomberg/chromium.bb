@@ -159,6 +159,13 @@ bool Buffer::AllocateElements(unsigned num_elements) {
   }
 
   size_t size_in_bytes = num_elements * stride_;
+  // Check for size_t overflow.
+  if (size_in_bytes / stride_ != num_elements) {
+    O3D_ERROR(service_locator())
+        << "Attempt to allocate too many elements for the current set of "
+        << "fields on buffer.";
+    return false;
+  }
 
   if (size_in_bytes == 0) {
     O3D_ERROR(service_locator())
