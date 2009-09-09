@@ -647,6 +647,15 @@ string16 ToLower(const string16& string) {
   return result;
 }
 
+string16 ToUpper(const string16& string) {
+  icu::UnicodeString upper_u_str(
+      icu::UnicodeString(string.c_str()).toUpper(icu::Locale::getDefault()));
+  string16 result;
+  upper_u_str.extract(0, upper_u_str.length(),
+                      WriteInto(&result, upper_u_str.length() + 1));
+  return result;
+}
+
 // Returns the text direction for the default ICU locale. It is assumed
 // that SetICUDefaultLocale has been called to set the default locale to
 // the UI locale of Chrome.

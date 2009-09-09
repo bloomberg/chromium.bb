@@ -179,6 +179,9 @@ std::wstring ToLower(const std::wstring& string);
 #endif  // defined(WCHAR_T_IS_UTF32)
 string16 ToLower(const string16& string);
 
+// Returns the upper case equivalent of string.
+string16 ToUpper(const string16& string);
+
 // Represents the text direction returned by the GetTextDirection() function.
 enum TextDirection {
   UNKNOWN_DIRECTION,

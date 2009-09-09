@@ -439,3 +439,17 @@ TEST_F(L10nUtilTest, GetTextDirection) {
   // Japanese that uses multiple scripts
   EXPECT_EQ(l10n_util::LEFT_TO_RIGHT, GetTextDirection("ja"));
 }
+
+// Test upper and lower case string conversion.
+TEST_F(L10nUtilTest, UpperLower) {
+  string16 mixed(ASCIIToUTF16("Text with UPPer & lowER casE."));
+  const string16 expected_lower(ASCIIToUTF16("text with upper & lower case."));
+  const string16 expected_upper(ASCIIToUTF16("TEXT WITH UPPER & LOWER CASE."));
+
+  string16 result = l10n_util::ToLower(mixed);
+  EXPECT_EQ(result, expected_lower);
+
+  result = l10n_util::ToUpper(mixed);
+  EXPECT_EQ(result, expected_upper);
+}
+
