@@ -13,6 +13,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
+#include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/nine_box.h"
@@ -762,14 +763,13 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     cairo_clip(cr);
     gfx::Point tabstrip_origin =
         bar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
-    GdkPixbuf* background = bar->browser_->profile()->GetThemeProvider()->
-        GetPixbufNamed(IDR_THEME_TOOLBAR);
-    gdk_cairo_set_source_pixbuf(cr, background,
-                                tabstrip_origin.x(), tabstrip_origin.y());
+    CairoCachedSurface* background = bar->theme_provider_->GetSurfaceNamed(
+        IDR_THEME_TOOLBAR, widget);
+    background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr, tabstrip_origin.x(), tabstrip_origin.y(),
                         e->area.x + e->area.width - tabstrip_origin.x(),
-                        gdk_pixbuf_get_height(background));
+                        background->Height());
     cairo_fill(cr);
     cairo_destroy(cr);
 
