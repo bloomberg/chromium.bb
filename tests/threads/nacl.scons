@@ -30,12 +30,11 @@
 
 Import('env')
 
-######################################################################
-# Smoke Test
-######################################################################
-env.ComponentProgram('thread_test.nexe', 'thread_test.c',
-                     EXTRA_LIBS=['pthread'])
+# we do not need/want libsrpc and other defaut libs
+env.Replace(LIBS=['pthread'])
 
+
+env.ComponentProgram('thread_test.nexe', 'thread_test.c')
 node = env.CommandSelLdrTestNacl('thread_test.out',
                                  command=[env.File('thread_test.nexe')],
                                  # TODO: investigate why this is slow
@@ -43,4 +42,12 @@ node = env.CommandSelLdrTestNacl('thread_test.out',
                                  size='huge',
                                  stdout_golden=env.File('thread_test.stdout'),
                                  )
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_test')
+
+
+env.ComponentProgram('simple_thread_test.nexe', 'simple_thread_test.c')
+node = env.CommandSelLdrTestNacl('simple_thread_test.out',
+                                 command=[env.File('simple_thread_test.nexe')],
+                                 size='small',
+                                 )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_thread_test')
