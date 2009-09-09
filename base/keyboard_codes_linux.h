@@ -36,7 +36,7 @@
 
 namespace base {
 
-enum {
+typedef enum {
   VKEY_BACK = GDK_BackSpace,
   VKEY_TAB = GDK_Tab,
   VKEY_CLEAR = GDK_Clear,
@@ -207,7 +207,7 @@ enum {
   VKEY_PA1 = 0xFD,
   VKEY_OEM_CLEAR = 0xFE,
   VKEY_UNKNOWN = 0
-};
+} KeyboardCode;
 
 }  // namespace views
 

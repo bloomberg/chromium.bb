@@ -839,7 +839,7 @@ void TabContents::PopupNotificationVisibilityChanged(bool visible) {
   render_view_host()->PopupNotificationVisibilityChanged(visible);
 }
 
-gfx::NativeView TabContents::GetContentNativeView() {
+gfx::NativeView TabContents::GetContentNativeView() const {
   return view_->GetContentNativeView();
 }
 

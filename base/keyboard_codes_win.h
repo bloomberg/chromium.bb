@@ -9,7 +9,7 @@
 
 namespace base {
 
-enum {
+typedef enum {
   VKEY_BACK = VK_BACK,
   VKEY_TAB = VK_TAB,
   VKEY_CLEAR = VK_CLEAR,
@@ -177,7 +177,7 @@ enum {
   VKEY_PA1 = VK_PA1,
   VKEY_OEM_CLEAR = VK_OEM_CLEAR,
   VKEY_UNKNOWN = 0
-};
+} KeyboardCode;
 
 }  // namespace views
 

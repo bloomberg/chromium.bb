@@ -134,18 +134,50 @@ gfx::NativeView NativeTextfieldGtk::GetTestingHandle() const {
   return native_view();
 }
 
+// static
+gboolean NativeTextfieldGtk::OnKeyPressEventHandler(
+    GtkWidget* entry,
+    GdkEventKey* event,
+    NativeTextfieldGtk* textfield) {
+  return textfield->OnKeyPressEvent(event);
+}
+
+gboolean NativeTextfieldGtk::OnKeyPressEvent(GdkEventKey* event) {
+  Textfield::Controller* controller = textfield_->GetController();
+  if (controller) {
+    Textfield::Keystroke ks(event);
+    return controller->HandleKeystroke(textfield_, ks);
+  }
+  return false;
+}
+
+// static
+gboolean NativeTextfieldGtk::OnChangedHandler(
+    GtkWidget* entry,
+    NativeTextfieldGtk* textfield) {
+  return textfield->OnChanged();
+}
+
+gboolean NativeTextfieldGtk::OnChanged() {
+  Textfield::Controller* controller = textfield_->GetController();
+  if (controller)
+    controller->ContentsChanged(textfield_, GetText());
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldGtk, NativeControlGtk overrides:
 
 void NativeTextfieldGtk::CreateNativeControl() {
-  // TODO(brettw) hook in an observer to get text change events so we can call
-  // the controller.
   NativeControlCreated(gtk_entry_new());
 }
 
 void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {
   NativeControlGtk::NativeControlCreated(widget);
-  // TODO(port): post-creation init
+  g_signal_connect(widget, "changed",
+                   G_CALLBACK(OnChangedHandler), this);
+  g_signal_connect(widget, "key-press-event",
+                   G_CALLBACK(OnKeyPressEventHandler), this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -15,10 +15,6 @@ ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {
   return NULL;
 }
 
-void View::Focus() {
-  NOTIMPLEMENTED();
-}
-
 int View::GetHorizontalDragThreshold() {
   static bool determined_threshold = false;
   static int drag_threshold = 8;

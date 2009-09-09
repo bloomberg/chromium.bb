@@ -276,6 +276,14 @@ bool View::HasFocus() {
   return false;
 }
 
+void View::Focus() {
+  // Set the native focus to the root view window so it receives the keyboard
+  // messages.
+  FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager)
+    focus_manager->FocusNativeView(GetRootView()->GetWidget()->GetNativeView());
+}
+
 void View::SetHotTracked(bool flag) {
 }
 

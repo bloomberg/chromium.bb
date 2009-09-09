@@ -360,11 +360,12 @@ bool RootView::OnMousePressed(const MouseEvent& e) {
   if (focus_on_mouse_pressed_) {
 #if defined(OS_WIN)
     HWND hwnd = GetWidget()->GetNativeView();
-    if (::GetFocus() != hwnd) {
+    if (::GetFocus() != hwnd)
       ::SetFocus(hwnd);
-    }
 #else
-    NOTIMPLEMENTED();
+    GtkWidget* widget = GetWidget()->GetNativeView();
+    if (!gtk_widget_is_focus(widget))
+      gtk_widget_grab_focus(widget);
 #endif
   }
 
@@ -782,7 +783,6 @@ bool RootView::ProcessKeyEvent(const KeyEvent& event) {
     v->ShowContextMenu(screen_loc.x(), screen_loc.y(), false);
     return true;
   }
-
   for (; v && v != this && !consumed; v = v->GetParent()) {
     consumed = (event.GetType() == Event::ET_KEY_PRESSED) ?
         v->OnKeyPressed(event) : v->OnKeyReleased(event);

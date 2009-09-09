@@ -11,7 +11,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 
-class FindBarWin;
+class FindBarHost;
 
 namespace views {
 class ImageButton;
@@ -24,7 +24,7 @@ class View;
 //
 // The FindInPageView is responsible for drawing the UI controls of the
 // FindInPage window, the find text box, the 'Find' button and the 'Close'
-// button. It communicates the user search words to the FindBarWin.
+// button. It communicates the user search words to the FindBarHost.
 //
 ////////////////////////////////////////////////////////////////////////////////
 class FindBarView : public views::View,
@@ -38,7 +38,7 @@ class FindBarView : public views::View,
     CLOSE_TAG,              // The Close button (the 'X').
   };
 
-  explicit FindBarView(FindBarWin* container);
+  explicit FindBarView(FindBarHost* container);
   virtual ~FindBarView();
 
   // Sets the text displayed in the text box.
@@ -97,7 +97,7 @@ class FindBarView : public views::View,
 
   // Manages the OS-specific view for the find bar and acts as an intermediary
   // between us and the TabContentsView.
-  FindBarWin* container_;
+  FindBarHost* container_;
 
   // The controls in the window.
   views::Textfield* find_text_;

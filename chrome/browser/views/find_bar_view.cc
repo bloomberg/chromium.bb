@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/views/find_bar_win.h"
+#include "chrome/browser/views/find_bar_host.h"
 #include "chrome/browser/view_ids.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -76,7 +76,7 @@ static const int kDefaultCharWidth = 43;
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, public:
 
-FindBarView::FindBarView(FindBarWin* container)
+FindBarView::FindBarView(FindBarHost* container)
     : container_(container),
       find_text_(NULL),
       match_count_text_(NULL),
@@ -467,24 +467,20 @@ bool FindBarView::HandleKeystroke(views::Textfield* sender,
   if (!container_->IsVisible())
     return false;
 
-  // TODO(port): Handle this for other platforms.
-  #if defined(OS_WIN)
-  if (container_->MaybeForwardKeystrokeToWebpage(key.message, key.key,
-                                                 key.flags))
+  if (container_->MaybeForwardKeystrokeToWebpage(key))
     return true;  // Handled, we are done!
 
-  if (views::Textfield::IsKeystrokeEnter(key)) {
+  if (key.GetKeyboardCode() == base::VKEY_RETURN) {
     // Pressing Return/Enter starts the search (unless text box is empty).
-    std::wstring find_string = find_text_->text();
+    string16 find_string = find_text_->text();
     if (!find_string.empty()) {
       // Search forwards for enter, backwards for shift-enter.
       container_->GetFindBarController()->tab_contents()->StartFinding(
           find_string,
-          GetKeyState(VK_SHIFT) >= 0,
+          key.IsShiftHeld(),
           false);  // Not case sensitive.
     }
   }
-  #endif
 
   return false;
 }

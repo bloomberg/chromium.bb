@@ -33,7 +33,7 @@
 
 namespace base {
 
-enum {
+typedef enum {
   VKEY_BACK = 0x08,
   VKEY_TAB = 0x09,
   VKEY_CLEAR = 0x0C,
@@ -201,7 +201,7 @@ enum {
   VKEY_PA1 = 0xFD,
   VKEY_OEM_CLEAR = 0xFE,
   VKEY_UNKNOWN = 0
-};
+} KeyboardCode;
 
 }  // namespace views
 

@@ -295,7 +295,6 @@ void WidgetGtk::Init(GtkWidget* parent,
   if (type_ == TYPE_CHILD) {
     if (parent) {
       WidgetGtk* parent_widget = GetViewForNative(parent);
-      parent_widget->AddChild(widget_);
       parent_widget->PositionChild(widget_, bounds.x(), bounds.y(),
                                    bounds.width(), bounds.height());
     }
@@ -459,7 +458,16 @@ ThemeProvider* WidgetGtk::GetThemeProvider() const {
 }
 
 FocusManager* WidgetGtk::GetFocusManager() {
-  return focus_manager_.get();
+  if (focus_manager_.get())
+    return focus_manager_.get();
+
+  Widget* root = GetRootWidget();
+  if (root && root != this) {
+    // Widget subclasses may override GetFocusManager(), for example for
+    // dealing with cases where the widget has been unparented.
+    return root->GetFocusManager();
+  }
+  return NULL;
 }
 
 void WidgetGtk::ViewHierarchyChanged(bool is_add, View *parent,

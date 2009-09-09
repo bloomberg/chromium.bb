@@ -43,6 +43,17 @@ class NativeTextfieldGtk : public NativeControlGtk,
  private:
   Textfield* textfield_;
 
+  // Callback when the entry text changes.
+  static gboolean OnKeyPressEventHandler(
+      GtkWidget* entry,
+      GdkEventKey* event,
+      NativeTextfieldGtk* textfield);
+  gboolean OnKeyPressEvent(GdkEventKey* event);
+  static gboolean OnChangedHandler(
+      GtkWidget* entry,
+      NativeTextfieldGtk* textfield);
+  gboolean OnChanged();
+
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldGtk);
 };
 

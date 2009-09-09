@@ -4,10 +4,15 @@
 
 #include "views/controls/textfield/textfield.h"
 
+#if defined(OS_LINUX)
+#include <gdk/gdkkeysyms.h>
+#endif
+
 #include "app/gfx/insets.h"
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #endif
+
 #include "base/string_util.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/widget/widget.h"
@@ -167,28 +172,6 @@ void Textfield::SyncText() {
     text_ = native_wrapper_->GetText();
 }
 
-// static
-bool Textfield::IsKeystrokeEnter(const Keystroke& key) {
-#if defined(OS_WIN)
-  return key.key == VK_RETURN;
-#else
-  // TODO(port): figure out VK_constants
-  NOTIMPLEMENTED();
-  return false;
-#endif
-}
-
-// static
-bool Textfield::IsKeystrokeEscape(const Keystroke& key) {
-#if defined(OS_WIN)
-  return key.key == VK_ESCAPE;
-#else
-  // TODO(port): figure out VK_constants
-  NOTIMPLEMENTED();
-  return false;
-#endif
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, View overrides:
 
@@ -295,5 +278,33 @@ NativeTextfieldWrapper* Textfield::CreateWrapper() {
 
   return native_wrapper;
 }
+
+base::KeyboardCode Textfield::Keystroke::GetKeyboardCode() const {
+#if defined(OS_WIN)
+  return static_cast<base::KeyboardCode>(key_);
+#else
+  return static_cast<base::KeyboardCode>(event_.keyval);
+#endif
+}
+
+#if defined(OS_WIN)
+bool Textfield::Keystroke::IsControlHeld() const {
+  return GetKeyState(VK_CONTROL) >= 0;
+}
+
+bool Textfield::Keystroke::IsShiftHeld() const {
+  return GetKeyState(VK_SHIFT) >= 0;
+}
+#else
+bool Textfield::Keystroke::IsControlHeld() const {
+  return (event_.state & gtk_accelerator_get_default_mod_mask()) ==
+      GDK_CONTROL_MASK;
+}
+
+bool Textfield::Keystroke::IsShiftHeld() const {
+  return (event_.state & gtk_accelerator_get_default_mod_mask()) ==
+      GDK_SHIFT_MASK;
+}
+#endif
 
 }  // namespace views

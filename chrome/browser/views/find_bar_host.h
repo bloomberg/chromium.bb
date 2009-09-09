@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_FIND_BAR_WIN_H_
-#define CHROME_BROWSER_VIEWS_FIND_BAR_WIN_H_
+#ifndef CHROME_BROWSER_VIEWS_FIND_BAR_HOST_H_
+#define CHROME_BROWSER_VIEWS_FIND_BAR_HOST_H_
 
 #include "app/animation.h"
 #include "base/gfx/rect.h"
@@ -11,7 +11,9 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/widget.h"
 
 class BrowserView;
 class FindBarController;
@@ -25,41 +27,40 @@ class ExternalFocusTracker;
 class View;
 }
 
-// TODO(sky): rename this to FindBarViews.
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// The FindBarWin implements the container window for the Windows find-in-page
-// functionality. It uses the FindBarWin implementation to draw its content and
-// is responsible for showing, hiding, closing, and moving the window if needed,
+// The FindBarHost implements the container window for the
+// find-in-page functionality. It uses the appropriate implementation from
+// find_bar_host_win.cc or find_bar_host_gtk.cc to draw its content and is
+// responsible for showing, hiding, closing, and moving the window if needed,
 // for example if the window is obscuring the selection results. It also
-// receives notifications about the search results and communicates that to the
-// view.
+// receives notifications about the search results and communicates that to
+// the view.
 //
-// There is one FindBarWin per BrowserView, and its state is updated whenever
-// the selected Tab is changed. The FindBarWin is created when the BrowserView
-// is attached to the frame's Widget for the first time.
+// There is one FindBarHost per BrowserView, and its state is updated
+// whenever the selected Tab is changed. The FindBarHost is created when
+// the BrowserView is attached to the frame's Widget for the first time.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class FindBarWin : public views::AcceleratorTarget,
+class FindBarHost : public views::AcceleratorTarget,
                    public views::FocusChangeListener,
                    public AnimationDelegate,
                    public FindBar,
                    public FindBarTesting {
  public:
-  explicit FindBarWin(BrowserView* browser_view);
-  virtual ~FindBarWin();
+  explicit FindBarHost(BrowserView* browser_view);
+  virtual ~FindBarHost();
 
   // Whether we are animating the position of the Find window.
   bool IsAnimating();
 
-#if defined(OS_WIN)
   // Forwards selected keystrokes to the renderer. This is useful to make sure
   // that arrow keys and PageUp and PageDown result in scrolling, instead of
   // being eaten because the FindBar has focus. Returns true if the keystroke
   // was forwarded, false if not.
-  bool MaybeForwardKeystrokeToWebpage(UINT message, TCHAR key, UINT flags);
-#endif
+  bool MaybeForwardKeystrokeToWebpage(
+      const views::Textfield::Keystroke& key_stroke);
 
   void OnFinalMessage();
 
@@ -113,8 +114,6 @@ class FindBarWin : public views::AcceleratorTarget,
   static bool disable_animations_during_testing_;
 
  private:
-  class Host;
-
   // Retrieves the boundaries that the find bar has to work with within the
   // Chrome frame window. The resulting rectangle will be a rectangle that
   // overlaps the bottom of the Chrome toolbar by one pixel (so we can create
@@ -144,6 +143,19 @@ class FindBarWin : public views::AcceleratorTarget,
   // also: SetFocusChangeListener().
   void UnregisterEscAccelerator();
 
+  // Creates and returns the native Widget.
+  views::Widget* CreateHost();
+  // Allows implementation to tweak dialog position.
+  void SetDialogPositionNative(const gfx::Rect& new_pos, bool no_redraw);
+  // Allows implementation to tweak dialog position.
+  void GetDialogPositionNative(gfx::Rect* avoid_overlapping_rect);
+  // Returns the native view (is a child of the window widget in gtk).
+  gfx::NativeView GetNativeView(BrowserView* browser_view);
+  // Returns a keyboard event suitable for fowarding.
+  NativeWebKeyboardEvent GetKeyboardEvent(
+      const TabContents* contents,
+      const views::Textfield::Keystroke& key_stroke);
+
   // The BrowserView that created us.
   BrowserView* browser_view_;
 
@@ -172,9 +184,10 @@ class FindBarWin : public views::AcceleratorTarget,
 
   // Host is the Widget implementation that is created and maintained by the
   // find bar. It contains the FindBarView.
-  scoped_ptr<Host> host_;
+  scoped_ptr<views::Widget> host_;
 
-  DISALLOW_COPY_AND_ASSIGN(FindBarWin);
+  DISALLOW_COPY_AND_ASSIGN(FindBarHost);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_FIND_BAR_WIN_H_
+#endif  // CHROME_BROWSER_VIEWS_FIND_BAR_HOST_H_
+

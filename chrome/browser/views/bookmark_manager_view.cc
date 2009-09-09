@@ -503,7 +503,7 @@ void BookmarkManagerView::ContentsChanged(views::Textfield* sender,
 bool BookmarkManagerView::HandleKeystroke(
     views::Textfield* sender,
     const views::Textfield::Keystroke& key) {
-  if (views::Textfield::IsKeystrokeEnter(key)) {
+  if (key.GetKeyboardCode() == base::VKEY_RETURN) {
     PerformSearch();
     search_tf_->SelectAll();
   }

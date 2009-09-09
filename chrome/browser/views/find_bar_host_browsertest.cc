@@ -10,7 +10,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
-#include "chrome/browser/views/find_bar_win.h"
+#include "chrome/browser/views/find_bar_host.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -436,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Open the Find window with animations disabled.
-  FindBarWin::disable_animations_during_testing_ = true;
+  FindBarHost::disable_animations_during_testing_ = true;
   browser()->ShowFindBar();
 
   gfx::Point position;
@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Open the Find window with animations disabled.
-  FindBarWin::disable_animations_during_testing_ = true;
+  FindBarHost::disable_animations_during_testing_ = true;
   browser()->ShowFindBar();
 
   gfx::Point position;
@@ -512,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Open the Find window with animations disabled.
-  FindBarWin::disable_animations_during_testing_ = true;
+  FindBarHost::disable_animations_during_testing_ = true;
   browser()->ShowFindBar();
 
   gfx::Point start_position;
@@ -622,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Open the Find window with animations disabled.
-  FindBarWin::disable_animations_during_testing_ = true;
+  FindBarHost::disable_animations_during_testing_ = true;
   browser()->ShowFindBar();
 
   // Simulate a user clearing the search string. Ideally, we should be

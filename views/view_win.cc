@@ -22,14 +22,6 @@ ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {
   return accessibility_.get();
 }
 
-void View::Focus() {
-  // Set the native focus to the root view window so it receives the keyboard
-  // messages.
-  FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager)
-    focus_manager->FocusNativeView(GetRootView()->GetWidget()->GetNativeView());
-}
-
 int View::GetHorizontalDragThreshold() {
   static int threshold = -1;
   if (threshold == -1)

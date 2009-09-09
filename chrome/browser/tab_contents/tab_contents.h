@@ -378,7 +378,7 @@ class TabContents : public PageNavigator,
   // the view directly.
 
   // Returns the actual window that is focused when this TabContents is shown.
-  gfx::NativeView GetContentNativeView();
+  gfx::NativeView GetContentNativeView() const;
 
   // Returns the NativeView associated with this TabContents. Outside of
   // automation in the context of the UI, this is required to be implemented.

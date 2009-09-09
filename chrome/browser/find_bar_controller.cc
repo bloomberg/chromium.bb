@@ -103,7 +103,7 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FindBarWin, NotificationObserver implementation:
+// FindBarHost, NotificationObserver implementation:
 
 void FindBarController::Observe(NotificationType type,
                                 const NotificationSource& source,

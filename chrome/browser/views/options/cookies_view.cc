@@ -408,9 +408,9 @@ void CookiesView::ContentsChanged(views::Textfield* sender,
 
 bool CookiesView::HandleKeystroke(views::Textfield* sender,
                                   const views::Textfield::Keystroke& key) {
-  if (views::Textfield::IsKeystrokeEscape(key)) {
+  if (key.GetKeyboardCode() == base::VKEY_ESCAPE) {
     ResetSearchQuery();
-  } else if (views::Textfield::IsKeystrokeEnter(key)) {
+  } else if (key.GetKeyboardCode() == base::VKEY_RETURN) {
     search_update_factory_.RevokeAll();
     UpdateSearchResults();
   }

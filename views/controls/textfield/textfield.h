@@ -5,8 +5,13 @@
 #ifndef VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
 #define VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
 
+#if defined (OS_LINUX)
+#include <gdk/gdk.h>
+#endif
+
 #include "app/gfx/font.h"
 #include "base/basictypes.h"
+#include "base/keyboard_codes.h"
 #include "base/string16.h"
 #include "views/view.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -30,28 +35,44 @@ class Textfield : public View {
   // Cross-platform code can use IsKeystrokeEnter/Escape to check for these
   // two common key events.
   // TODO(brettw) this should be cleaned up to be more cross-platform.
+  class Keystroke {
+   public:
 #if defined(OS_WIN)
-  struct Keystroke {
-    Keystroke(unsigned int m,
+    const Keystroke(unsigned int m,
               wchar_t k,
               int r,
               unsigned int f)
-        : message(m),
-          key(k),
-          repeat_count(r),
-          flags(f) {
+        : message_(m),
+          key_(k),
+          repeat_count_(r),
+          flags_(f) {
     }
-
-    unsigned int message;
-    wchar_t key;
-    int repeat_count;
-    unsigned int flags;
-  };
+    unsigned int message() const { return message_; }
+    wchar_t key() const { return key_; }
+    int repeat_count() const { return repeat_count_; }
+    unsigned int flags() const { return flags_; }
 #else
-  struct Keystroke {
-    // TODO(brettw) figure out what this should be on GTK.
-  };
+    explicit Keystroke(GdkEventKey* event)
+        : event_(*event) {
+    }
+    const GdkEventKey* event() const { return &event_; }
 #endif
+    base::KeyboardCode GetKeyboardCode() const;
+    bool IsControlHeld() const;
+    bool IsShiftHeld() const;
+
+   private:
+#if defined(OS_WIN)
+    unsigned int message_;
+    wchar_t key_;
+    int repeat_count_;
+    unsigned int flags_;
+#else
+    GdkEventKey event_;
+#endif
+
+    DISALLOW_COPY_AND_ASSIGN(Keystroke);
+  };
 
   // This defines the callback interface for other code to be notified of
   // changes in the state of a text field.
@@ -156,15 +177,6 @@ class Textfield : public View {
   // This is important because the edit control can be replaced if it has
   // been deleted during a window close.
   void SyncText();
-
-  // Provides a cross-platform way of checking whether a keystroke is one of
-  // these common keys. Most code only checks keystrokes against these two keys,
-  // so the caller can be cross-platform by implementing the platform-specific
-  // parts in here.
-  // TODO(brettw) we should use a more cross-platform representation of
-  // keyboard events so these are not necessary.
-  static bool IsKeystrokeEnter(const Keystroke& key);
-  static bool IsKeystrokeEscape(const Keystroke& key);
 
 #ifdef UNIT_TEST
   gfx::NativeView GetTestingHandle() const {
