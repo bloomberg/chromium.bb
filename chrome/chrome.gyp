@@ -5573,6 +5573,15 @@
                   '../views/views.gyp:views',
                   '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
                 ],
+                'configurations': {
+                  'Debug': {
+                    'msvs_settings': {
+                      'VCLinkerTool': {
+                        'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                      },
+                    },
+                  },
+                },
               }],
             ],
         },
