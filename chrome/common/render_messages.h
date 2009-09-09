@@ -1579,7 +1579,6 @@ struct ParamTraits<RendererPreferences> {
     WriteParam(m, p.focus_ring_color_g);
     WriteParam(m, p.focus_ring_color_b);
     WriteParam(m, p.browser_handles_top_level_requests);
-    WriteParam(m, p.caret_blink_interval);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     if (!ReadParam(m, iter, &p->can_accept_load_drops))
@@ -1615,9 +1614,6 @@ struct ParamTraits<RendererPreferences> {
     p->focus_ring_color_b = focus_ring_color_b;
 
     if (!ReadParam(m, iter, &p->browser_handles_top_level_requests))
-      return false;
-
-    if (!ReadParam(m, iter, &p->caret_blink_interval))
       return false;
 
     return true;

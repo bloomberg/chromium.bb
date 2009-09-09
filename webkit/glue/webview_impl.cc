@@ -1809,11 +1809,6 @@ void WebViewImpl::SetThemeFocusRingColor(int r, int g, int b) {
   reinterpret_cast<RenderThemeChromiumLinux*>(theme())->
       setFocusRingColor(Color(r, g, b));
 }
-
-void WebViewImpl::SetCaretBlinkInterval(double interval) {
-  reinterpret_cast<RenderThemeChromiumLinux*>(theme())->
-      setCaretBlinkInterval(interval);
-}
 #endif
 
 void WebViewImpl::DidCommitLoad(bool* is_new_navigation) {

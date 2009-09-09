@@ -2886,7 +2886,6 @@ void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
   webview()->SetThemeFocusRingColor(renderer_prefs.focus_ring_color_r,
                                     renderer_prefs.focus_ring_color_g,
                                     renderer_prefs.focus_ring_color_b);
-  webview()->SetCaretBlinkInterval(renderer_prefs.caret_blink_interval);
 #endif
 }
 

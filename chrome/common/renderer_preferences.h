@@ -51,13 +51,8 @@ struct RendererPreferences {
   int focus_ring_color_g;
   int focus_ring_color_b;
 
-  // Browser wants a look at all top level requests.
+  // Browser wants a look at all top level requests
   bool browser_handles_top_level_requests;
-
-  // Cursor blink rate in seconds.
-  // Currently only changed from default on Linux.  Uses |gtk-cursor-blink|
-  // from GtkSettings.
-  double caret_blink_interval;
 
   RendererPreferences()
       : can_accept_load_drops(true),
