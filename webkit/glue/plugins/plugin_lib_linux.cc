@@ -81,12 +81,8 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
   if (NP_GetMIMEDescription)
     mime_description = NP_GetMIMEDescription();
 
-  if (mime_description) {
-    if (!ParseMIMEDescription(mime_description, &info->mime_types)) {
-      base::UnloadNativeLibrary(dl);
-      return false;
-    }
-  }
+  if (mime_description)
+    ParseMIMEDescription(mime_description, &info->mime_types);
 
   // The plugin name and description live behind NP_GetValue calls.
   typedef NPError (*NP_GetValueType)(void* unused,
@@ -112,39 +108,47 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
 }
 
 // static
-bool PluginLib::ParseMIMEDescription(
-    const char* description,
+void PluginLib::ParseMIMEDescription(
+    const std::string& description,
     std::vector<WebPluginMimeType>* mime_types) {
-  // TODO(evanm): rewrite this to better match Firefox; see
-  // ParsePluginMimeDescription near
+  // We parse the description here into WebPluginMimeType structures.
+  // Naively from the NPAPI docs you'd think you could use
+  // string-splitting, but the Firefox parser turns out to do something
+  // different: find the first colon, then the second, then a semi.
+  //
+  // See ParsePluginMimeDescription near
   // http://mxr.mozilla.org/firefox/source/modules/plugin/base/src/nsPluginsDirUtils.h#53
 
-  // We parse the description here into WebPluginMimeType structures.
-  // Description for Flash 10 looks like (all as one string):
-  //   "application/x-shockwave-flash:swf:Shockwave Flash;"
-  //   "application/futuresplash:spl:FutureSplash Player"
-  std::vector<std::string> descriptions;
-  SplitString(description, ';', &descriptions);
-  for (size_t i = 0; i < descriptions.size(); ++i) {
-    if (descriptions[i].empty())
-      continue;  // Don't warn if they have trailing semis.
-
-    std::vector<std::string> fields;
-    SplitString(descriptions[i], ':', &fields);
-    if (fields.size() != 3) {
-      LOG(WARNING) << "Couldn't parse plugin info: " << description;
-      // This plugin's got something weird going on; abort.
-      return false;
-    }
-
+  std::string::size_type ofs = 0;
+  for (;;) {
     WebPluginMimeType mime_type;
-    mime_type.mime_type = fields[0];
-    SplitString(fields[1], ',', &mime_type.file_extensions);
-    mime_type.description = UTF8ToWide(fields[2]);
-    mime_types->push_back(mime_type);
-  }
 
-  return true;
+    std::string::size_type end = description.find(':', ofs);
+    if (end == std::string::npos)
+      break;
+    mime_type.mime_type = description.substr(ofs, end - ofs);
+    ofs = end + 1;
+
+    end = description.find(':', ofs);
+    if (end == std::string::npos)
+      break;
+    const std::string extensions = description.substr(ofs, end - ofs);
+    SplitString(extensions, ',', &mime_type.file_extensions);
+    ofs = end + 1;
+
+    end = description.find(';', ofs);
+    // It's ok for end to run off the string here.  If there's no
+    // trailing semicolon we consume the remainder of the string.
+    if (end != std::string::npos) {
+      mime_type.description = UTF8ToWide(description.substr(ofs, end - ofs));
+    } else {
+      mime_type.description = UTF8ToWide(description.substr(ofs));
+    }
+    mime_types->push_back(mime_type);
+    if (end == std::string::npos)
+      break;
+    ofs = end + 1;
+  }
 }
 
 }  // namespace NPAPI

@@ -12,9 +12,9 @@
 // Test parsing a simple description: Real Audio.
 TEST(MIMEDescriptionParse, Simple) {
   std::vector<WebPluginMimeType> types;
-  ASSERT_TRUE(NPAPI::PluginLib::ParseMIMEDescription(
-                  "audio/x-pn-realaudio-plugin:rpm:RealAudio document;",
-                  &types));
+  NPAPI::PluginLib::ParseMIMEDescription(
+      "audio/x-pn-realaudio-plugin:rpm:RealAudio document;",
+      &types);
   ASSERT_EQ(1U, types.size());
   const WebPluginMimeType& type = types[0];
   EXPECT_EQ("audio/x-pn-realaudio-plugin", type.mime_type);
@@ -26,12 +26,12 @@ TEST(MIMEDescriptionParse, Simple) {
 // Test parsing a multi-entry description: QuickTime as provided by Totem.
 TEST(MIMEDescriptionParse, Multi) {
   std::vector<WebPluginMimeType> types;
-  ASSERT_TRUE(NPAPI::PluginLib::ParseMIMEDescription(
-                  "video/quicktime:mov:QuickTime video;video/mp4:mp4:MPEG-4 "
-                  "video;image/x-macpaint:pntg:MacPaint Bitmap image;image/x"
-                  "-quicktime:pict, pict1, pict2:QuickTime image;video/x-m4v"
-                  ":m4v:MPEG-4 video;",
-                  &types));
+  NPAPI::PluginLib::ParseMIMEDescription(
+      "video/quicktime:mov:QuickTime video;video/mp4:mp4:MPEG-4 "
+      "video;image/x-macpaint:pntg:MacPaint Bitmap image;image/x"
+      "-quicktime:pict, pict1, pict2:QuickTime image;video/x-m4v"
+      ":m4v:MPEG-4 video;",
+      &types);
 
   ASSERT_EQ(5U, types.size());
 
@@ -48,24 +48,57 @@ TEST(MIMEDescriptionParse, Multi) {
 // This comes from loading Totem with LANG=ja_JP.UTF-8.
 TEST(MIMEDescriptionParse, JapaneseUTF8) {
   std::vector<WebPluginMimeType> types;
-  ASSERT_TRUE(NPAPI::PluginLib::ParseMIMEDescription(
-                  "audio/x-ogg:ogg:Ogg \xe3\x82\xaa\xe3\x83\xbc\xe3\x83\x87"
-                  "\xe3\x82\xa3\xe3\x83\xaa",
-                  &types));
+  NPAPI::PluginLib::ParseMIMEDescription(
+      "audio/x-ogg:ogg:Ogg \xe3\x82\xaa\xe3\x83\xbc\xe3\x83\x87"
+      "\xe3\x82\xa3\xe3\x83\xaa",
+      &types);
 
   ASSERT_EQ(1U, types.size());
   // Check we got the right number of Unicode characters out of the parse.
   EXPECT_EQ(9U, types[0].description.size());
 }
 
-/*
+// Test that we handle corner cases gracefully.
+TEST(MIMEDescriptionParse, CornerCases) {
+  std::vector<WebPluginMimeType> types;
+  NPAPI::PluginLib::ParseMIMEDescription("mime/type:", &types);
+  EXPECT_TRUE(types.empty());
 
-TODO(evanm): write a test that covers the following, which does *not*
-parse properly with the current code.
+  types.clear();
+  NPAPI::PluginLib::ParseMIMEDescription("mime/type:ext1:", &types);
+  ASSERT_EQ(1U, types.size());
+  EXPECT_EQ("mime/type", types[0].mime_type);
+  EXPECT_EQ(1U, types[0].file_extensions.size());
+  EXPECT_EQ("ext1", types[0].file_extensions[0]);
+  EXPECT_EQ(L"", types[0].description);
+}
 
-application/x-java-vm:class,jar:IcedTea;application/x-java-applet:class,jar:IcedTea;application/x-java-applet;version=1.1:class,jar:IcedTea;application/x-java-applet;version=1.1.1:class,jar:IcedTea;application/x-java-applet;version=1.1.2:class,jar:IcedTea;application/x-java-applet;version=1.1.3:class,jar:IcedTea;application/x-java-applet;version=1.2:class,jar:IcedTea;application/x-java-applet;version=1.2.1:class,jar:IcedTea;application/x-java-applet;version=1.2.2:class,jar:IcedTea;application/x-java-applet;version=1.3:class,jar:IcedTea;application/x-java-applet;version=1.3.1:class,jar:IcedTea;application/x-java-applet;version=1.4:class,jar:IcedTea
- */
+// This Java plugin has embedded semicolons in the mime type.
+TEST(MIMEDescriptionParse, ComplicatedJava) {
+  std::vector<WebPluginMimeType> types;
+  NPAPI::PluginLib::ParseMIMEDescription(
+      "application/x-java-vm:class,jar:IcedTea;application/x-java"
+      "-applet:class,jar:IcedTea;application/x-java-applet;versio"
+      "n=1.1:class,jar:IcedTea;application/x-java-applet;version="
+      "1.1.1:class,jar:IcedTea;application/x-java-applet;version="
+      "1.1.2:class,jar:IcedTea;application/x-java-applet;version="
+      "1.1.3:class,jar:IcedTea;application/x-java-applet;version="
+      "1.2:class,jar:IcedTea;application/x-java-applet;version=1."
+      "2.1:class,jar:IcedTea;application/x-java-applet;version=1."
+      "2.2:class,jar:IcedTea;application/x-java-applet;version=1."
+      "3:class,jar:IcedTea;application/x-java-applet;version=1.3."
+      "1:class,jar:IcedTea;application/x-java-applet;version=1.4:"
+      "class,jar:IcedTea",
+      &types);
 
+  ASSERT_EQ(12U, types.size());
+  for (size_t i = 0; i < types.size(); ++i)
+    EXPECT_EQ(L"IcedTea", types[i].description);
+
+  // Verify that the mime types with semis are coming through ok.
+  EXPECT_TRUE(types[4].mime_type.find(';') != std::string::npos);
+}
 
 #endif  // defined(OS_LINUX)
+
 

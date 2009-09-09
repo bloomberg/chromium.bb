@@ -36,10 +36,9 @@ class PluginLib : public base::RefCounted<PluginLib> {
   static bool ReadWebPluginInfo(const FilePath& filename, WebPluginInfo* info);
 
 #if defined(OS_LINUX)
-  // Parse the result of an NP_GetMIMEDescription() call, returning
-  // false on parse error.  This API is only used on Linux, and is
-  // exposed here for testing.
-  static bool ParseMIMEDescription(const char* description,
+  // Parse the result of an NP_GetMIMEDescription() call.
+  // This API is only used on Linux, and is exposed here for testing.
+  static void ParseMIMEDescription(const std::string& description,
                                    std::vector<WebPluginMimeType>* mime_types);
 #endif
 
