@@ -3,32 +3,6 @@
 <script>
 var maps_key = "ABQIAAAATfHumDbW3OmRByfquHd3SRTRERdeAiwZ9EeJWta3L_JZVS0bOBRQeZgr4K0xyVKzUdnnuFl8X9PX0w";
 
-function xhr_geocode(address) {
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-      console.log(xhr.responseText);
-      var parsed = JSON.parse(xhr.responseText);
-      console.dir(parsed);
-      var point = parsed.Placemark[0].Point.coordinates;
-      var latlng = point[1] + "," + point[0];
-      window.open("http://maps.google.com/staticmap?center=" + latlng +
-                  "&markers=" + latlng + "&zoom=14" +
-                  "&size=512x512&sensor=false&key=" + maps_key,
-                  "mappy_popup",
-                  "width=512,height=512");
-    } else {
-      console.log("xhr: " + xhr.readyState);
-    }
-  };
-  var url = 
-      "http://maps.google.com/maps/geo?output=json&oe=utf8&sensor=false&key=" + 
-      maps_key + "&q=" + address;
-  console.log(url);
-  xhr.open("GET", url);
-  xhr.send(null);
-}
-
 function gclient_geocode(address) {
   var geocoder = new GClientGeocoder();
   geocoder.getLatLng(address, function(point) {
@@ -39,9 +13,8 @@ function gclient_geocode(address) {
       var url = "http://maps.google.com/staticmap?center=" + latlng +
                 "&markers=" + latlng + "&zoom=14" +
                 "&size=512x512&sensor=false&key=" + maps_key;
-      //window.open(url, "mappy_popup", "width=512,height=512");
       document.body.style.width = "512px";
-      setTimeout(chrome.toolstrip.expand, 100, 512, url);
+      setTimeout(chrome.toolstrip.expand, 100, {height:512, url:url});
     }
   });
 }
@@ -54,11 +27,9 @@ function map() {
     } else {
       port.onMessage.addListener(function(data) {
         var address = data.values[0];
-        //xhr_geocode(address);
         gclient_geocode(address);
       });
       port.postMessage({message: "hello tab: " + tab.id});
-      console.log("sent message");
     }
   });
 };
