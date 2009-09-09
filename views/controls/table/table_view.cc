@@ -4,10 +4,8 @@
 
 #include "views/controls/table/table_view.h"
 
+#include <commctrl.h>
 #include <windowsx.h>
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlmisc.h>
 
 #include <algorithm>
 
@@ -234,7 +232,7 @@ void TableView::OnItemsChanged(int start, int length) {
     return;
 
   if (length == -1) {
-    DCHECK(start >= 0);
+    DCHECK_GE(start, 0);
     length = model_->RowCount() - start;
   }
   int row_count = RowCount();
@@ -358,7 +356,7 @@ void TableView::OnItemsRemoved(int start, int length) {
 }
 
 void TableView::AddColumn(const TableColumn& col) {
-  DCHECK(all_columns_.count(col.id) == 0);
+  DCHECK_EQ(0, all_columns_.count(col.id));
   all_columns_[col.id] = col;
 }
 
@@ -540,10 +538,10 @@ LRESULT CALLBACK TableView::TableWndProc(HWND window,
         POINT screen_point;
         GetCursorPos(&screen_point);
         POINT table_point = screen_point;
-        WTL::CRect client_rect;
+        RECT client_rect;
         if (ScreenToClient(window, &table_point) &&
             GetClientRect(window, &client_rect) &&
-            client_rect.PtInRect(table_point)) {
+            PtInRect(&client_rect, table_point)) {
           // The point is over the client area of the table, handle it ourself.
           // But first select the row if it isn't already selected.
           LVHITTESTINFO hit_info = {0};
@@ -1203,17 +1201,18 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
         SkBitmap image = model_->GetIcon(model_index);
         if (!image.isNull()) {
           // Get the rect that holds the icon.
-          WTL::CRect icon_rect, client_rect;
+          RECT icon_rect, client_rect;
           if (ListView_GetItemRect(list_view_, view_index, &icon_rect,
                                    LVIR_ICON) &&
               GetClientRect(list_view_, &client_rect)) {
-            WTL::CRect intersection;
+            RECT intersection;
             // Client rect includes the header but we need to make sure we don't
             // paint into it.
             client_rect.top += content_offset_;
             // Make sure the region need to paint is visible.
-            if (intersection.IntersectRect(&icon_rect, &client_rect)) {
-              gfx::Canvas canvas(icon_rect.Width(), icon_rect.Height(), false);
+            if (IntersectRect(&intersection, &icon_rect, &client_rect)) {
+              gfx::Canvas canvas(icon_rect.right - icon_rect.left,
+                                 icon_rect.bottom - icon_rect.top, false);
 
               // It seems the state in nmcd.uItemState is not correct.
               // We'll retrieve it explicitly.
@@ -1259,7 +1258,7 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
         }
       }
       if (ImplementPostPaint()) {
-        WTL::CRect cell_rect;
+        RECT cell_rect;
         if (ListView_GetItemRect(list_view_, view_index, &cell_rect,
                                  LVIR_BOUNDS)) {
           PostPaint(model_index, 0, false, gfx::Rect(cell_rect),
@@ -1286,11 +1285,14 @@ void TableView::ResetColumnSizes() {
 
   // See comment in TableColumn for what this does.
   int width = this->width();
-  WTL::CRect native_bounds;
-  if (GetClientRect(GetNativeControlHWND(), &native_bounds) &&
-      native_bounds.Width() > 0) {
-    // Prefer the bounds of the window over our bounds, which may be different.
-    width = native_bounds.Width();
+  RECT native_bounds;
+  if (GetClientRect(GetNativeControlHWND(), &native_bounds)) {
+    int window_width = native_bounds.right - native_bounds.left;
+    if (window_width > 0) {
+      // Prefer the bounds of the window over our bounds, which may be
+      // different.
+      width = window_width;
+    }
   }
 
   float percent = 0;
@@ -1469,7 +1471,7 @@ void TableView::OnCheckedStateChanged(int model_row, bool is_checked) {
 }
 
 int TableView::PreviousSelectedViewIndex(int view_index) {
-  DCHECK(view_index >= 0);
+  DCHECK_GE(view_index, 0);
   if (!list_view_ || view_index <= 0)
     return -1;
 
@@ -1502,10 +1504,10 @@ void TableView::UpdateContentOffset() {
   POINT origin = {0, 0};
   MapWindowPoints(header, list_view_, &origin, 1);
 
-  WTL::CRect header_bounds;
+  RECT header_bounds;
   GetWindowRect(header, &header_bounds);
 
-  content_offset_ = origin.y + header_bounds.Height();
+  content_offset_ = origin.y + header_bounds.bottom - header_bounds.top;
 }
 
 //

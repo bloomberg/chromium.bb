@@ -4,10 +4,6 @@
 
 #include "chrome/browser/window_sizer.h"
 
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlmisc.h>
-
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -35,17 +31,17 @@ class DefaultMonitorInfoProvider : public WindowSizer::MonitorInfoProvider {
 
   virtual gfx::Rect GetMonitorWorkAreaMatching(
       const gfx::Rect& match_rect) const {
-    CRect other_bounds_crect = match_rect.ToRECT();
+    RECT other_bounds_rect = match_rect.ToRECT();
     MONITORINFO monitor_info = GetMonitorInfoForMonitor(MonitorFromRect(
-        &other_bounds_crect, MONITOR_DEFAULTTONEAREST));
+        &other_bounds_rect, MONITOR_DEFAULTTONEAREST));
     return gfx::Rect(monitor_info.rcWork);
   }
 
   virtual gfx::Point GetBoundsOffsetMatching(
       const gfx::Rect& match_rect) const {
-    CRect other_bounds_crect = match_rect.ToRECT();
+    RECT other_bounds_rect = match_rect.ToRECT();
     MONITORINFO monitor_info = GetMonitorInfoForMonitor(MonitorFromRect(
-        &other_bounds_crect, MONITOR_DEFAULTTONEAREST));
+        &other_bounds_rect, MONITOR_DEFAULTTONEAREST));
     return gfx::Point(monitor_info.rcWork.left - monitor_info.rcMonitor.left,
                       monitor_info.rcWork.top - monitor_info.rcMonitor.top);
   }

@@ -4,10 +4,6 @@
 
 #include "chrome/browser/dock_info.h"
 
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlmisc.h>
-
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/browser/browser.h"
@@ -28,7 +24,7 @@ namespace {
 class BaseWindowFinder {
  public:
   // Creates a BaseWindowFinder with the specified set of HWNDs to ignore.
-  BaseWindowFinder(const std::set<HWND>& ignore) : ignore_(ignore) {}
+  explicit BaseWindowFinder(const std::set<HWND>& ignore) : ignore_(ignore) {}
   virtual ~BaseWindowFinder() {}
 
  protected:
@@ -71,13 +67,13 @@ class TopMostFinder : public BaseWindowFinder {
       return true;
     }
 
-    if (!::IsWindowVisible(hwnd)) {
+    if (!IsWindowVisible(hwnd)) {
       // The window isn't visible, keep iterating.
       return false;
     }
 
-    CRect r;
-    if (!::GetWindowRect(hwnd, &r) || !r.PtInRect(screen_loc_.ToPOINT())) {
+    RECT r;
+    if (!GetWindowRect(hwnd, &r) || !PtInRect(&r, screen_loc_.ToPOINT())) {
       // The window doesn't contain the point, keep iterating.
       return false;
     }
@@ -145,9 +141,9 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
 
  protected:
   virtual bool ShouldStopIterating(HWND hwnd) {
-    CRect r;
-    if (::IsWindowVisible(hwnd) && ::GetWindowRect(hwnd, &r) &&
-        r.PtInRect(screen_loc_.ToPOINT())) {
+    RECT r;
+    if (IsWindowVisible(hwnd) && GetWindowRect(hwnd, &r) &&
+        PtInRect(&r, screen_loc_.ToPOINT())) {
       result_ = hwnd;
       return true;
     }
@@ -196,9 +192,9 @@ class DockToWindowFinder : public BaseWindowFinder {
  protected:
   virtual bool ShouldStopIterating(HWND hwnd) {
     BrowserView* window = BrowserView::GetBrowserViewForNativeWindow(hwnd);
-    CRect bounds;
-    if (!window || !::IsWindowVisible(hwnd) ||
-        !::GetWindowRect(hwnd, &bounds)) {
+    RECT bounds;
+    if (!window || !IsWindowVisible(hwnd) ||
+        !GetWindowRect(hwnd, &bounds)) {
       return false;
     }
 
@@ -310,6 +306,6 @@ void DockInfo::SizeOtherWindowTo(const gfx::Rect& bounds) const {
     // window we're docking to isn't maximized.
     ShowWindow(window(), SW_RESTORE | SW_SHOWNA);
   }
-  ::SetWindowPos(window(), HWND_TOP, bounds.x(), bounds.y(), bounds.width(),
-                 bounds.height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+  SetWindowPos(window(), HWND_TOP, bounds.x(), bounds.y(), bounds.width(),
+               bounds.height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER);
 }
