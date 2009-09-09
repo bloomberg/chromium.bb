@@ -56,6 +56,10 @@ class SubmenuView : public View {
   void PaintChildren(gfx::Canvas* canvas);
 
   // Drag and drop methods. These are forwarded to the MenuController.
+  virtual bool GetDropFormats(
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats);
+  virtual bool AreDropTypesRequired();
   virtual bool CanDrop(const OSExchangeData& data);
   virtual void OnDragEntered(const DropTargetEvent& event);
   virtual int OnDragUpdated(const DropTargetEvent& event);

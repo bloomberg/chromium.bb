@@ -112,7 +112,18 @@ void SubmenuView::PaintChildren(gfx::Canvas* canvas) {
     PaintDropIndicator(canvas, drop_item_, drop_position_);
 }
 
-// TODO(sky): need to add support for new dnd methods for Linux.
+bool SubmenuView::GetDropFormats(
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats) {
+  DCHECK(GetMenuItem()->GetMenuController());
+  return GetMenuItem()->GetMenuController()->GetDropFormats(this, formats,
+                                                            custom_formats);
+}
+
+bool SubmenuView::AreDropTypesRequired() {
+  DCHECK(GetMenuItem()->GetMenuController());
+  return GetMenuItem()->GetMenuController()->AreDropTypesRequired(this);
+}
 
 bool SubmenuView::CanDrop(const OSExchangeData& data) {
   DCHECK(GetMenuItem()->GetMenuController());

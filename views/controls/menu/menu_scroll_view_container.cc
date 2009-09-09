@@ -79,8 +79,9 @@ class MenuScrollButton : public View {
   }
 
   virtual void Paint(gfx::Canvas* canvas) {
-#if defined(OS_WIN)
     const MenuConfig& config = MenuConfig::instance();
+
+#if defined(OS_WIN)
     HDC dc = canvas->beginPlatformPaint();
 
     // The background.
@@ -88,6 +89,12 @@ class MenuScrollButton : public View {
     NativeTheme::instance()->PaintMenuItemBackground(
         NativeTheme::MENU, dc, MENU_POPUPITEM, MPI_NORMAL, false,
         &item_bounds);
+    canvas->endPlatformPaint();
+
+    SkColor arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
+#else
+    SkColor arrow_color = SK_ColorBLACK;
+#endif
 
     // Then the arrow.
     int x = width() / 2;
@@ -97,14 +104,8 @@ class MenuScrollButton : public View {
       delta_y = -1;
       y += config.scroll_arrow_height;
     }
-    SkColor arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
     for (int i = 0; i < config.scroll_arrow_height; ++i, --x, y += delta_y)
       canvas->FillRectInt(arrow_color, x, y, (i * 2) + 1, 1);
-
-    canvas->endPlatformPaint();
-#else
-    NOTIMPLEMENTED();
-#endif
   }
 
  private:

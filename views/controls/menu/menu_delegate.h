@@ -5,14 +5,14 @@
 #ifndef VIEWS_CONTROLS_MENU_MENU_DELEGATE_H_
 #define VIEWS_CONTROLS_MENU_MENU_DELEGATE_H_
 
+#include <set>
 #include <string>
 
 #include "app/drag_drop_types.h"
+#include "app/os_exchange_data.h"
 #include "base/logging.h"
 #include "views/controls/menu/controller.h"
 #include "views/event.h"
-
-class OSExchangeData;
 
 namespace views {
 
@@ -109,8 +109,22 @@ class MenuDelegate : Controller {
   // Where A has a submenu with children B and C. This is ONLY invoked for
   // A, not B and C.
   //
+
   // To restrict which children can be dropped on override GetDropOperation.
   virtual bool CanDrop(MenuItemView* menu, const OSExchangeData& data) {
+    return false;
+  }
+
+  // See view for a description of this method.
+  virtual bool GetDropFormats(
+      MenuItemView* menu,
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats) {
+    return false;
+  }
+
+  // See view for a description of this method.
+  virtual bool AreDropTypesRequired(MenuItemView* menu) {
     return false;
   }
 

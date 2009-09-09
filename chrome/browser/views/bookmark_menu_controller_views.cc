@@ -73,6 +73,19 @@ void BookmarkMenuController::ExecuteCommand(int id, int mouse_event_flags) {
       PageTransition::AUTO_BOOKMARK);
 }
 
+bool BookmarkMenuController::GetDropFormats(
+      views::MenuItemView* menu,
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats) {
+  *formats = OSExchangeData::URL;
+  custom_formats->insert(BookmarkDragData::GetBookmarkCustomFormat());
+  return true;
+}
+
+bool BookmarkMenuController::AreDropTypesRequired(views::MenuItemView* menu) {
+  return true;
+}
+
 bool BookmarkMenuController::CanDrop(views::MenuItemView* menu,
                                      const OSExchangeData& data) {
   // Only accept drops of 1 node, which is the case for all data dragged from

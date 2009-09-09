@@ -12,6 +12,7 @@
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/drag_utils.h"
+#include "views/screen.h"
 #include "views/view_constants.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -176,22 +177,10 @@ MenuItemView* MenuController::Run(gfx::NativeView parent,
   pending_state_.anchor = position;
   owner_ = parent;
 
-  // TODO: push this into Screen.
   // Calculate the bounds of the monitor we'll show menus on. Do this once to
   // avoid repeated system queries for the info.
-#if defined(OS_WIN)
-  POINT initial_loc = { bounds.x(), bounds.y() };
-  HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
-  if (monitor) {
-    MONITORINFO mi = {0};
-    mi.cbSize = sizeof(mi);
-    GetMonitorInfo(monitor, &mi);
-    // Menus appear over the taskbar.
-    pending_state_.monitor_bounds = gfx::Rect(mi.rcMonitor);
-  }
-#else
-  NOTIMPLEMENTED();
-#endif
+  pending_state_.monitor_bounds = Screen::GetMonitorAreaNearestPoint(
+      bounds.origin());
 
   // Set the selection, which opens the initial menu.
   SetSelection(root, true, true);
@@ -494,6 +483,19 @@ void MenuController::OnMouseEntered(SubmenuView* source,
                                     const MouseEvent& event) {
   // MouseEntered is always followed by a mouse moved, so don't need to
   // do anything here.
+}
+
+bool MenuController::GetDropFormats(
+      SubmenuView* source,
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats) {
+  return source->GetMenuItem()->GetDelegate()->GetDropFormats(
+      source->GetMenuItem(), formats, custom_formats);
+}
+
+bool MenuController::AreDropTypesRequired(SubmenuView* source) {
+  return source->GetMenuItem()->GetDelegate()->AreDropTypesRequired(
+      source->GetMenuItem());
 }
 
 bool MenuController::CanDrop(SubmenuView* source, const OSExchangeData& data) {

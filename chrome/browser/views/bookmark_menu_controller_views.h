@@ -72,6 +72,11 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // MenuDelegate methods.
   virtual bool IsTriggerableEvent(const views::MouseEvent& e);
   virtual void ExecuteCommand(int id, int mouse_event_flags);
+  virtual bool GetDropFormats(
+      views::MenuItemView* menu,
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats);
+  virtual bool AreDropTypesRequired(views::MenuItemView* menu);
   virtual bool CanDrop(views::MenuItemView* menu, const OSExchangeData& data);
   virtual int GetDropOperation(views::MenuItemView* item,
                                const views::DropTargetEvent& event,

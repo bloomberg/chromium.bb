@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 
 #include <list>
+#include <set>
 #include <vector>
 
 #include "base/message_loop.h"
@@ -79,6 +80,11 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   void OnMouseReleased(SubmenuView* source, const MouseEvent& event);
   void OnMouseMoved(SubmenuView* source, const MouseEvent& event);
   void OnMouseEntered(SubmenuView* source, const MouseEvent& event);
+  bool GetDropFormats(
+      SubmenuView* source,
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats);
+  bool AreDropTypesRequired(SubmenuView* source);
   bool CanDrop(SubmenuView* source, const OSExchangeData& data);
   void OnDragEntered(SubmenuView* source, const DropTargetEvent& event);
   int OnDragUpdated(SubmenuView* source, const DropTargetEvent& event);

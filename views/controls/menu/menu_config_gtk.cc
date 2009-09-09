@@ -12,7 +12,6 @@ namespace views {
 
 // static
 MenuConfig* MenuConfig::Create() {
-  // TODO: decide what we want this to look like.
   MenuConfig* config = new MenuConfig();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   config->font = rb.GetFont(ResourceBundle::BaseFont);
