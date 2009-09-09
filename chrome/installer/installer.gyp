@@ -175,38 +175,32 @@
         },
         {
           'target_name': 'installer_util_strings',
-          'type': 'dummy_executable',
           'msvs_guid': '0026A376-C4F1-4575-A1BA-578C69F07013',
-          'actions': [
+          # See hack in chrome.gyp:chrome_strings
+          'type': 'dummy_executable',
+          'rules': [
             {
-              # TODO(sgk):  Clean this up so that we pass in the
-              # file names to the script instead of having it hard-code
-              # matching path names internally.
-              'action_name': 'installer_util_strings',
+              'rule_name': 'installer_util_strings',
+              'extension': 'grd',
               'inputs': [
-                'util/prebuild/create_string_rc.py',
+                # Hardcoded for now.
                 '../app/generated_resources.grd',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
-                '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.h',
+                '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/<(RULE_INPUT_ROOT).h',
               ],
-              'action': [
-                # The create_string_rc.py script requires the checked-in
-                # python.exe that has google modules installed, and
-                # a PYTHONPATH pointing to grit so it can import FP.
-                # TODO:  clean this up
-                'set PYTHONPATH=../../tools/grit/grit/extern', '&&',
-                '../../third_party/python_24/python.exe',
-                'util/prebuild/create_string_rc.py',
-                '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings'
-              ],
-              'msvs_cygwin_shell': 0,
+              'action': ['../../third_party/python_24/python.exe',
+                         'util/prebuild/create_string_rc.py',
+                         '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings'],
+              'message': 'Generating resources from <(RULE_INPUT_PATH)',
             },
+          ],
+          'sources': [
+            '../app/generated_resources.grd',
           ],
           'direct_dependent_settings': {
             'include_dirs': [
-               '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings',
+              '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings',
             ],
           },
         },
