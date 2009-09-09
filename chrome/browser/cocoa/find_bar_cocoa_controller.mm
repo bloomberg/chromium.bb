@@ -128,6 +128,12 @@
 
 - (void)setFocusAndSelection {
   [[findText_ window] makeFirstResponder:findText_];
+
+  // Enable the buttons if the find text is non-empty.
+  BOOL buttonsEnabled = ([[findText_ stringValue] length] > 0) ? YES : NO;
+  [previousButton_ setEnabled:buttonsEnabled];
+  [nextButton_ setEnabled:buttonsEnabled];
+
 }
 
 - (void)setFindText:(const string16&)findText {
