@@ -47,42 +47,20 @@ REGEX : ^webplugindelegateimpl::nativewndproc$
 
 # End mysterious crash section.
 
-# 15547
-PREFIX : renderview::didfinishdocumentloadforframe___webframeloaderclient::dispatchdidfinishdocumentload___webcore::frameloader::finishedparsing___webcore::document::finishedparsing___webcore::htmltokenizer::end
-
 # 9615
 SUBSTRING : history::historybackend::~historybackend
 
 # 7701
 PREFIX : iat_patch::getiatfunction___iat_patch::restoreimportedfunction___iat_patch::iatpatchfunction::unpatch
 
-# 10791
-PREFIX : npapi::plugininstance::npp_destroy___webplugindelegateimpl::destroyinstance___webplugindelegateimpl::~webplugindelegateimpl
-PREFIX : webplugindelegateimpl::destroyinstance___webplugindelegateimpl::~webplugindelegateimpl
-
-# 5545
-PREFIX : npapi::plugininstance::npp_handleevent___webplugindelegateimpl::windowlesspaint___webpluginproxy::paint___webpluginproxy::onpaint
-
 # 17043
 PREFIX : npapi::pluginstream::trywritetoplugin___npapi::pluginstream::writetoplugin
-
-# 8020
-PREFIX : passwordformdommanager::findpasswordformfields___passwordformdommanager::createpasswordform___webframeloaderclient::dispatchdidfinishdocumentload
-
-# 12156
-SUBSTRING : views::focuswindowcallback___base::messagepumpforui::dorunloop
 
 # 10978
 PREFIX : webcore::renderobject::localtoabsolute___webcore::layoutstate::layoutstate___webcore::renderview::pushlayoutstate___webcore::frameview::layout
 
 # 17366
 SUBSTRING : operator=___webcore::frameview::scrolltoanchor___webcore::frameview::maintainscrollpositionatanchor___webcore::frameloader::gotoanchor
-
-# 17367
-PREFIX : wtf::hashtable<webcore::string,webcore::string,wtf::identityextractor<webcore::string>,webcore::stringhash,wtf::hashtraits<webcore::string>,wtf::hashtraits<webcore::string> >::add<webcore::string,webcore::string,wtf::identityhashtranslator<webcore::string,webcore::string,webcore::stringhash> >___webcore::frameloader::dispatchwillsendrequest___webcore::frameloader::willsendrequest___webcore::resourceloader::willsendrequest___webcore::mainresourceloader::willsendrequest___webcore::mainresourceloader::loadnow
-
-# 8033
-SUBSTRING : windowdragresponsetask::run___messageloop::runtask___messageloop::dowork
 
 # 18700
 SUBSTRING : std::deque<bool,std::allocator<bool> >::_tidy___messageloop::reloadworkqueue
@@ -92,7 +70,7 @@ SUBSTRING : std::deque<treenodeiterator<bookmarknode const >::position<bookmarkn
 SUBSTRING : spellchecker::dictionarydownloadcontroller::onurlfetchcomplete
 
 # 18793
-PREFIX : webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer___webcore::renderlayer::paint___webcore::frameview::paintcontents
+SUBSTRING : webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer___webcore::renderlayer::paint___webcore::frameview::paintcontents
 
 # 18799
 PREFIX : webplugindelegatestub::onmessagereceived___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::runhandler___messageloop::run___pluginmain___chromemain___wwinmain_____tmaincrtstartup
@@ -138,11 +116,6 @@ PREFIX : deletetask<safebrowsingdatabase>::run
 PREFIX : deletetask<browsingdataremover>::run
 PREFIX : deletetask<webplugindelegateproxy>::run
 PREFIX : messageloop::dowork
-
-# 21162
-PREFIX : v8::internal::invoke
-PREFIX : webcore::renderlayer
-PREFIX : webcore::renderobject
 
 # 21295
 PREFIX : renderwidgethost::getbackingstore
