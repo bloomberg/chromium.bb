@@ -316,7 +316,7 @@ void  NaClAppFreeAllMemory(struct NaClApp *nap);
 
 enum NaClAbiMismatchOption {
   NACL_ABI_MISMATCH_OPTION_ABORT,
-  NACL_ABI_MISMATCH_OPTION_IGNORE,
+  NACL_ABI_MISMATCH_OPTION_IGNORE
 };
 
 NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
