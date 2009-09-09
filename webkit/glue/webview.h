@@ -260,6 +260,7 @@ class WebView : public WebKit::WebWidget {
 
 #if defined(OS_LINUX)
   virtual void SetThemeFocusRingColor(int r, int g, int b) = 0;
+  virtual void SetCaretBlinkInterval(double interval) = 0;
 #endif
 
  private:

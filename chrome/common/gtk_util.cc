@@ -354,11 +354,19 @@ GtkWidget* IndentWidget(GtkWidget* content) {
 void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs) {
   DCHECK(prefs);
 
+  // From http://library.gnome.org/devel/gtk/unstable/GtkSettings.html, this is
+  // the default value for gtk-cursor-blink-time.
+  static const gint kGtkDefaultCursorBlinkTime = 1200;
+
+  gint cursor_blink_time = kGtkDefaultCursorBlinkTime;
+  gboolean cursor_blink = TRUE;
   gint antialias = 0;
   gint hinting = 0;
   gchar* hint_style = NULL;
   gchar* rgba_style = NULL;
   g_object_get(gtk_settings_get_default(),
+               "gtk-cursor-blink-time", &cursor_blink_time,
+               "gtk-cursor-blink", &cursor_blink,
                "gtk-xft-antialias", &antialias,
                "gtk-xft-hinting", &hinting,
                "gtk-xft-hintstyle", &hint_style,
@@ -370,6 +378,15 @@ void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs) {
   prefs->hinting = RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT;
   prefs->subpixel_rendering =
       RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT;
+
+  if (cursor_blink) {
+    // Dividing by 2*1000ms follows the WebKit GTK port and makes the blink
+    // frequency appear similar to the omnibox.  Without this the blink is too
+    // slow.
+    prefs->caret_blink_interval = cursor_blink_time / 2000.;
+  } else {
+    prefs->caret_blink_interval = 0;
+  }
 
   // g_object_get() doesn't tell us whether the properties were present or not,
   // but if they aren't (because gnome-settings-daemon isn't running), we'll get
