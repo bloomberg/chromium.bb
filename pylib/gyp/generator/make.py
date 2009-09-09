@@ -316,6 +316,11 @@ class MakefileWriter:
     extra_link_deps = []
 
     self.output = self.ComputeOutput(spec)
+    self._INSTALLABLE_TARGETS = ('executable', 'loadable_module')
+    if self.type in self._INSTALLABLE_TARGETS:
+      self.alias = os.path.basename(self.output)
+    else:
+      self.alias = self.output
 
     # Actions must come first, since they can generate more OBJs for use below.
     if 'actions' in spec:
@@ -336,7 +341,7 @@ class MakefileWriter:
                      extra_link_deps + link_deps, extra_outputs)
 
     # Update global list of target outputs, used in dependency tracking.
-    target_outputs[qualified_target] = self.output
+    target_outputs[qualified_target] = self.alias
 
     # Update global list of link dependencies.
     if self.type == 'static_library':
@@ -597,8 +602,7 @@ class MakefileWriter:
       print ("ERROR: What output file should be generated?",
              "typ", self.type, "target", target)
 
-    path = spec.get('product_dir',
-                    os.path.join('$(obj)', self.path))
+    path = spec.get('product_dir', os.path.join('$(obj)', self.path))
     return os.path.join(path, target)
 
 
@@ -666,13 +670,14 @@ class MakefileWriter:
     # 1) They need to install to the build dir or "product" dir.
     # 2) They get shortcuts for building (e.g. "make chrome").
     # 3) They are part of "make all".
-    if self.type in ('executable', 'loadable_module'):
-      filename = os.path.split(self.output)[1]
-      binpath = '$(builddir)/' + filename
+    if self.type in self._INSTALLABLE_TARGETS:
+      binpath = '$(builddir)/' + self.alias
+      installable_deps = [self.output]
       if binpath != self.output:
         self.WriteDoCmd([binpath], [self.output], 'copy',
                         comment = 'Copy this to the binary output path.')
-      self.WriteMakeRule([filename], [binpath],
+        installable_deps.append(binpath)
+      self.WriteMakeRule([self.alias], installable_deps,
                          comment = 'Short alias for building this executable.',
                          phony = True)
       self.WriteMakeRule(['all'], [binpath],
