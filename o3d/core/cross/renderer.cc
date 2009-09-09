@@ -263,6 +263,8 @@ bool Renderer::StartRendering() {
     draw_elements_rendered_ = 0;
     primitives_rendered_ = 0;
     back_buffer_cleared_ = 0;
+    current_render_surface_ = NULL;
+    current_depth_surface_ = NULL;
     current_render_surface_is_back_buffer_ = true;
 
     result = PlatformSpecificStartRendering();
