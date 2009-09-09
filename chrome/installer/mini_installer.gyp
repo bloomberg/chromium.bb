@@ -157,7 +157,7 @@
                 '<(PRODUCT_DIR)/chrome.exe',
                 '<(PRODUCT_DIR)/chrome.dll',
                 '<(PRODUCT_DIR)/locales/en-US.dll',
-                '<(PRODUCT_DIR)/icudt38.dll',
+                '<(PRODUCT_DIR)/icudt42.dll',
               ],
               'outputs': [
                 'xxx.out',

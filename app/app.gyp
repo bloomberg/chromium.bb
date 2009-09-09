@@ -48,8 +48,8 @@
         '../base/base.gyp:base_gfx',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
-        '../third_party/icu38/icu38.gyp:icui18n',
-        '../third_party/icu38/icu38.gyp:icuuc',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
       ],
       'include_dirs': [
         '..',
@@ -185,8 +185,8 @@
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
-        '../third_party/icu38/icu38.gyp:icui18n',
-        '../third_party/icu38/icu38.gyp:icuuc',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
       ],
       'sources': [

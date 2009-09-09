@@ -62,12 +62,17 @@ bool Initialize() {
                           ASCIIToWide(ICU_UTIL_DATA_SHARED_MODULE_NAME));
 
   HMODULE module = LoadLibrary(data_path.c_str());
-  if (!module)
+  if (!module) {
+    LOG(ERROR) << "Failed to load " << ICU_UTIL_DATA_SHARED_MODULE_NAME;
     return false;
+  }
 
   FARPROC addr = GetProcAddress(module, ICU_UTIL_DATA_SYMBOL);
-  if (!addr)
+  if (!addr) {
+    LOG(ERROR) << ICU_UTIL_DATA_SYMBOL << ": not found in "
+               << ICU_UTIL_DATA_SHARED_MODULE_NAME;
     return false;
+  }
 
   UErrorCode err = U_ZERO_ERROR;
   udata_setCommonData(reinterpret_cast<void*>(addr), &err);

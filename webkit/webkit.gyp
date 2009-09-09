@@ -235,8 +235,8 @@
       'msvs_guid': 'AA8A5A85-592B-4357-BC60-E0E91E026AF6',
       'dependencies': [
         'config',
-        '../third_party/icu38/icu38.gyp:icui18n',
-        '../third_party/icu38/icu38.gyp:icuuc',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
       ],
       'include_dirs': [
         '../third_party/WebKit/JavaScriptCore',
@@ -263,8 +263,8 @@
       },
       'export_dependent_settings': [
         'config',
-        '../third_party/icu38/icu38.gyp:icui18n',
-        '../third_party/icu38/icu38.gyp:icuuc',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
       ],
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
       'conditions': [

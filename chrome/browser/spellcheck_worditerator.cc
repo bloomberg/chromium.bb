@@ -11,12 +11,12 @@
 #include "base/string_util.h"
 #include "chrome/browser/spellchecker.h"
 
-#include "third_party/icu38/public/common/unicode/normlzr.h"
-#include "third_party/icu38/public/common/unicode/schriter.h"
-#include "third_party/icu38/public/common/unicode/uchar.h"
-#include "third_party/icu38/public/common/unicode/uscript.h"
-#include "third_party/icu38/public/common/unicode/uset.h"
-#include "third_party/icu38/public/i18n/unicode/ulocdata.h"
+#include "third_party/icu/public/common/unicode/normlzr.h"
+#include "third_party/icu/public/common/unicode/schriter.h"
+#include "third_party/icu/public/common/unicode/uchar.h"
+#include "third_party/icu/public/common/unicode/uscript.h"
+#include "third_party/icu/public/common/unicode/uset.h"
+#include "third_party/icu/public/i18n/unicode/ulocdata.h"
 
 SpellcheckCharAttribute::SpellcheckCharAttribute() {
   InitializeScriptTable();

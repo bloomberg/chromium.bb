@@ -9,16 +9,21 @@
 ** Returns 0 on failure, nonzero on success.
 ** This a hack job of icu_utils.cc:Initialize().  It's Chrome-specific code.
 */
+
+#define ICU_DATA_SYMBOL "icudt" U_ICU_VERSION_SHORT "_dat"
 int sqlite_shell_init_icu() {
   HMODULE module;
   FARPROC addr;
   UErrorCode err;
-  
-  module = LoadLibrary(L"icudt38.dll");
+
+  wchar_t dll_name[12];
+  wsprintf(dll_name, L"icudt%2S.dll", U_ICU_VERSION_SHORT);
+  dll_name[11] = L'\0';
+  module = LoadLibrary(dll_name);
   if (!module)
     return 0;
 
-  addr = GetProcAddress(module, "icudt38_dat");
+  addr = GetProcAddress(module, ICU_DATA_SYMBOL);
   if (!addr)
     return 0;
 

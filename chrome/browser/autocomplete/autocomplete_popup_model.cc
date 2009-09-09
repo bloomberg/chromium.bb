@@ -11,7 +11,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"
-#include "third_party/icu38/public/common/unicode/ubidi.h"
+#include "third_party/icu/public/common/unicode/ubidi.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupModel

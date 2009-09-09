@@ -17,7 +17,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "third_party/icu38/public/common/unicode/ubidi.h"
+#include "third_party/icu/public/common/unicode/ubidi.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)

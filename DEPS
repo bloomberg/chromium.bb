@@ -24,11 +24,11 @@ deps = {
   "src/third_party/WebKit":
     "/trunk/deps/third_party/WebKit@20601",
 
-  "src/third_party/icu38":
-    "/trunk/deps/third_party/icu38@24923",
+  "src/third_party/icu":
+    "/trunk/deps/third_party/icu42@25651",
 
   "src/third_party/hunspell":
-   "/trunk/deps/third_party/hunspell128@24986",
+   "/trunk/deps/third_party/hunspell128@25668",
 
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@219",

@@ -16,8 +16,8 @@
           'type': '<(library)',
           'dependencies': [
             '../../net/net.gyp:net_resources',
-            '../../third_party/icu38/icu38.gyp:icui18n',
-            '../../third_party/icu38/icu38.gyp:icuuc',
+            '../../third_party/icu/icu.gyp:icui18n',
+            '../../third_party/icu/icu.gyp:icuuc',
             '../../third_party/libxml/libxml.gyp:libxml',
             '../../third_party/npapi/npapi.gyp:npapi',
             '../webkit.gyp:webkit_resources',

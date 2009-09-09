@@ -494,7 +494,7 @@
           'msvs_guid': '0D04AEC1-6B68-492C-BCCF-808DFD69ABC6',
           'dependencies': [
             '../../../base/base.gyp:base',
-            '../../../third_party/icu38/icu38.gyp:icuuc',
+            '../../../third_party/icu/icu.gyp:icuuc',
             '../../../third_party/npapi/npapi.gyp:npapi',
           ],
           'sources': [
