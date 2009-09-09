@@ -157,7 +157,8 @@ int EditorClientImpl::spellCheckerDocumentTag() {
   if (d)
     return d->SpellCheckerDocumentTag();
 #else
-  NOTIMPLEMENTED();
+  // Can't use NOTIMPLEMENTED() here as it confounds the layout test output,
+  // but this should eventually be implemented for ignores to work.
 #endif // OS_MACOSX
   return 0;
 }
