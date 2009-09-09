@@ -367,21 +367,22 @@ void ExtensionMessageService::CloseChannel(int port_id) {
   // Note: The channel might be gone already, if the other side closed first.
   MessageChannelMap::iterator it = channels_.find(GET_CHANNEL_ID(port_id));
   if (it != channels_.end())
-    CloseChannelImpl(it, port_id);
+    CloseChannelImpl(it, port_id, true);
 }
 
 void ExtensionMessageService::CloseChannelImpl(
-    MessageChannelMap::iterator channel_iter, int closing_port_id) {
+    MessageChannelMap::iterator channel_iter, int closing_port_id,
+    bool notify_other_port) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   // Notify the other side.
   const MessagePort& port = IS_OPENER_PORT_ID(closing_port_id) ?
       channel_iter->second->receiver : channel_iter->second->opener;
 
-  DispatchOnDisconnect(port, GET_OPPOSITE_PORT_ID(closing_port_id));
+  if (notify_other_port)
+    DispatchOnDisconnect(port, GET_OPPOSITE_PORT_ID(closing_port_id));
   channels_.erase(channel_iter);
 }
-
 
 void ExtensionMessageService::PostMessageFromRenderer(
     int source_port_id, const std::string& message) {
@@ -456,10 +457,16 @@ void ExtensionMessageService::OnSenderClosed(IPC::Message::Sender* sender) {
   for (MessageChannelMap::iterator it = channels_.begin();
        it != channels_.end(); ) {
     MessageChannelMap::iterator current = it++;
+    // If both sides are the same renderer, and it is closing, there is no
+    // "other" port, so there's no need to notify it.
+    bool notify_other_port =
+        current->second->opener.sender != current->second->receiver.sender;
     if (current->second->opener.sender == sender) {
-      CloseChannelImpl(current, GET_CHANNEL_OPENER_ID(current->first));
+      CloseChannelImpl(current, GET_CHANNEL_OPENER_ID(current->first),
+                       notify_other_port);
     } else if (current->second->receiver.sender == sender) {
-      CloseChannelImpl(current, GET_CHANNEL_RECEIVERS_ID(current->first));
+      CloseChannelImpl(current, GET_CHANNEL_RECEIVERS_ID(current->first),
+                       notify_other_port);
     }
   }
 }

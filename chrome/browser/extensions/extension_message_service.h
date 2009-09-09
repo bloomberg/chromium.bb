@@ -134,7 +134,8 @@ class ExtensionMessageService
   // NOTE: this can be called from any thread.
   void AllocatePortIdPair(int* port1, int* port2);
 
-  void CloseChannelImpl(MessageChannelMap::iterator channel_iter, int port_id);
+  void CloseChannelImpl(MessageChannelMap::iterator channel_iter, int port_id,
+                        bool notify_other_port);
 
   // The UI message loop, used for posting tasks.
   MessageLoop* ui_loop_;
