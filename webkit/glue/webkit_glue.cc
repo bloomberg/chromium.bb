@@ -294,7 +294,6 @@ struct UserAgentState {
   }
 
   std::string user_agent;
-  std::string mimic_safari_user_agent;
   bool user_agent_requested;
   bool user_agent_is_overridden;
 };
@@ -354,7 +353,7 @@ std::string BuildOSCpuInfo() {
   return os_cpu;
 }
 
-void BuildUserAgent(bool mimic_safari, std::string* result) {
+void BuildUserAgent(std::string* result) {
   const char kUserAgentPlatform[] =
 #if defined(OS_WIN)
       "Windows";
@@ -376,15 +375,14 @@ void BuildUserAgent(bool mimic_safari, std::string* result) {
   // maximally compatible with Safari, we hope!!
   std::string product;
 
-  if (!mimic_safari) {
-    scoped_ptr<FileVersionInfo> version_info(
-        FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-    if (version_info.get())
-      product = "Chrome/" + WideToASCII(version_info->product_version());
+  scoped_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+  if (version_info.get()) {
+    product = "Chrome/" + WideToASCII(version_info->product_version());
+  } else {
+    DLOG(WARNING) << "Unknown product version";
+    product = "Chrome/0.0.0.0";
   }
-
-  if (product.empty())
-    product = "Version/3.2.1";
 
   // Derived from Safari's UA string.
   StringAppendF(
@@ -404,7 +402,7 @@ void BuildUserAgent(bool mimic_safari, std::string* result) {
 }
 
 void SetUserAgentToDefault() {
-  BuildUserAgent(false, &g_user_agent->user_agent);
+  BuildUserAgent(&g_user_agent->user_agent);
 }
 
 }  // namespace
@@ -423,14 +421,6 @@ const std::string& GetUserAgent(const GURL& url) {
   if (g_user_agent->user_agent.empty())
     SetUserAgentToDefault();
   g_user_agent->user_agent_requested = true;
-  if (!g_user_agent->user_agent_is_overridden) {
-    // For hotmail, we need to spoof as Safari (bug 4111).
-    if (MatchPattern(url.host(), "*.mail.live.com")) {
-      if (g_user_agent->mimic_safari_user_agent.empty())
-        BuildUserAgent(true, &g_user_agent->mimic_safari_user_agent);
-      return g_user_agent->mimic_safari_user_agent;
-    }
-  }
   return g_user_agent->user_agent;
 }
 
