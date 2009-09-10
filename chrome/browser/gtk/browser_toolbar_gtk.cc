@@ -430,16 +430,18 @@ gfx::Rect BrowserToolbarGtk::GetPopupBounds() const {
     right = go_->widget();
   }
 
-  // TODO(deanm): The go and star buttons probably share the same window,
-  // so this could be optimized to only one origin request.
-  gint right_x;
-  gdk_window_get_origin(right->window, &right_x, NULL);
-  right_x += right->allocation.x + right->allocation.width;
+  gint origin_x, origin_y;
+  DCHECK_EQ(left->window, right->window);
+  gdk_window_get_origin(left->window, &origin_x, &origin_y);
 
-  gint left_x, left_y;
-  gdk_window_get_origin(left->window, &left_x, &left_y);
-  left_x += left->allocation.x;
-  left_y += left->allocation.y + left->allocation.height;  // Bottom edge.
+  gint right_x = origin_x + right->allocation.x + right->allocation.width;
+
+  gint left_x = origin_x + left->allocation.x;
+
+  // Bottom edge.
+  gint left_y = origin_y + left->allocation.y + left->allocation.height;
+
+  DCHECK_LE(left_x, right_x);
 
   return gfx::Rect(left_x + kPopupLeftRightMargin, left_y + kPopupTopMargin,
                    right_x - left_x - (2 * kPopupLeftRightMargin), 0);
