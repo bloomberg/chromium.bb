@@ -9,6 +9,7 @@
 #include "base/gfx/gtk_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
+#include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/gtk/options/passwords_exceptions_window_gtk.h"
@@ -208,7 +209,7 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
   gtk_box_pack_start(GTK_BOX(hbox), themes_reset_button, FALSE, FALSE, 0);
 
   // Get themes button.
-  GtkWidget* themes_gallery_button = gtk_button_new_with_label(
+  GtkWidget* themes_gallery_button = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_BUTTON).c_str());
   g_signal_connect(G_OBJECT(themes_gallery_button), "clicked",
                    G_CALLBACK(OnGetThemesButtonClicked), this);

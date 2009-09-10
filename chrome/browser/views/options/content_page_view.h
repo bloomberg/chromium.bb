@@ -38,10 +38,10 @@ class ContentPageView : public OptionsPageView,
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-#ifdef CHROME_PERSONALIZATION
   // views::LinkController method.
   virtual void LinkActivated(views::Link* source, int event_flags);
 
+#ifdef CHROME_PERSONALIZATION
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 #endif
@@ -91,7 +91,7 @@ class ContentPageView : public OptionsPageView,
   // Controls for the Themes group
   OptionsGroupView* themes_group_;
   views::NativeButton* themes_reset_button_;
-  views::NativeButton* themes_gallery_button_;
+  views::Link* themes_gallery_link_;
 
   // Controls for the browsing data group.
   OptionsGroupView* browsing_data_group_;

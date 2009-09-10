@@ -54,7 +54,7 @@ ContentPageView::ContentPageView(Profile* profile)
       form_autofill_neversave_radio_(NULL),
       themes_group_(NULL),
       themes_reset_button_(NULL),
-      themes_gallery_button_(NULL),
+      themes_gallery_link_(NULL),
       browsing_data_label_(NULL),
       browsing_data_group_(NULL),
       import_button_(NULL),
@@ -115,11 +115,6 @@ void ContentPageView::ButtonPressed(
   } else if (sender == themes_reset_button_) {
     UserMetricsRecordAction(L"Options_ThemesReset", profile()->GetPrefs());
     profile()->ClearTheme();
-  } else if (sender == themes_gallery_button_) {
-    UserMetricsRecordAction(L"Options_ThemesGallery", profile()->GetPrefs());
-    BrowserList::GetLastActive()->OpenURL(
-        GURL(l10n_util::GetString(IDS_THEMES_GALLERY_URL)),
-        GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   } else if (sender == import_button_) {
     views::Window::CreateChromeWindow(
       GetWindow()->GetNativeWindow(),
@@ -144,13 +139,20 @@ void ContentPageView::ButtonPressed(
   }
 }
 
-#ifdef CHROME_PERSONALIZATION
 void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
+  if (source == themes_gallery_link_) {
+    UserMetricsRecordAction(L"Options_ThemesGallery", profile()->GetPrefs());
+    BrowserList::GetLastActive()->OpenURL(
+        GURL(l10n_util::GetString(IDS_THEMES_GALLERY_URL)),
+        GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+    return;
+  }
+#ifdef CHROME_PERSONALIZATION
   DCHECK_EQ(source, sync_action_link_);
   DCHECK(sync_service_);
   sync_service_->ShowLoginDialog();
-}
 #endif
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ContentPageView, OptionsPageView implementation:
@@ -341,8 +343,9 @@ void ContentPageView::InitFormAutofillGroup() {
 void ContentPageView::InitThemesGroup() {
   themes_reset_button_ = new views::NativeButton(this,
       l10n_util::GetString(IDS_THEMES_RESET_BUTTON));
-  themes_gallery_button_ = new views::NativeButton(this,
+  themes_gallery_link_ = new views::Link(
       l10n_util::GetString(IDS_THEMES_GALLERY_BUTTON));
+  themes_gallery_link_->SetController(this);
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -361,7 +364,7 @@ void ContentPageView::InitThemesGroup() {
 
   layout->StartRow(0, double_column_view_set_id);
   layout->AddView(themes_reset_button_);
-  layout->AddView(themes_gallery_button_);
+  layout->AddView(themes_gallery_link_);
 
   themes_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_THEMES_GROUP_NAME),
