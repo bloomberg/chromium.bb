@@ -4,6 +4,7 @@
 
 #include "base/waitable_event.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/load_log.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/proxy_info.h"
@@ -28,7 +29,8 @@ class MockProxyResolver : public ProxyResolver {
   virtual int GetProxyForURL(const GURL& query_url,
                              ProxyInfo* results,
                              CompletionCallback* callback,
-                             RequestHandle* request) {
+                             RequestHandle* request,
+                             LoadLog* load_log) {
     if (resolve_latency_ms_)
       PlatformThread::Sleep(resolve_latency_ms_);
 
@@ -36,6 +38,9 @@ class MockProxyResolver : public ProxyResolver {
 
     EXPECT_EQ(NULL, callback);
     EXPECT_EQ(NULL, request);
+
+    // Write something into |load_log| (doesn't really have any meaning.)
+    LoadLog::BeginEvent(load_log, LoadLog::TYPE_PROXY_RESOLVER_V8_DNS_RESOLVE);
 
     results->UseNamedProxy(query_url.host());
 
@@ -105,14 +110,15 @@ class BlockableProxyResolver : public MockProxyResolver {
   virtual int GetProxyForURL(const GURL& query_url,
                              ProxyInfo* results,
                              CompletionCallback* callback,
-                             RequestHandle* request) {
+                             RequestHandle* request,
+                             LoadLog* load_log) {
     if (should_block_) {
       blocked_.Signal();
       unblocked_.Wait();
     }
 
     return MockProxyResolver::GetProxyForURL(
-        query_url, results, callback, request);
+        query_url, results, callback, request, load_log);
   }
 
  private:
@@ -140,9 +146,10 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
 
   // Start request 0.
   TestCompletionCallback callback0;
+  scoped_refptr<LoadLog> log0(new LoadLog);
   ProxyInfo results0;
   rv = resolver->GetProxyForURL(
-      GURL("http://request0"), &results0, &callback0, NULL);
+      GURL("http://request0"), &results0, &callback0, NULL, log0);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait for request 0 to finish.
@@ -150,24 +157,28 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
   EXPECT_EQ(0, rv);
   EXPECT_EQ("PROXY request0:80", results0.ToPacString());
 
+  // The mock proxy resolver should have written 1 log entry. And
+  // on completion, this should have been copied into |log0|.
+  EXPECT_EQ(1u, log0->events().size());
+
   // Start 3 more requests (request1 to request3).
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
   rv = resolver->GetProxyForURL(
-      GURL("http://request1"), &results1, &callback1, NULL);
+      GURL("http://request1"), &results1, &callback1, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback2;
   ProxyInfo results2;
   rv = resolver->GetProxyForURL(
-      GURL("http://request2"), &results2, &callback2, NULL);
+      GURL("http://request2"), &results2, &callback2, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback3;
   ProxyInfo results3;
   rv = resolver->GetProxyForURL(
-      GURL("http://request3"), &results3, &callback3, NULL);
+      GURL("http://request3"), &results3, &callback3, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait for the requests to finish (they must finish in the order they were
@@ -203,7 +214,7 @@ TEST(SingleThreadedProxyResolverTest, CancelRequest) {
   TestCompletionCallback callback0;
   ProxyInfo results0;
   rv = resolver->GetProxyForURL(
-      GURL("http://request0"), &results0, &callback0, &request0);
+      GURL("http://request0"), &results0, &callback0, &request0, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait until requests 0 reaches the worker thread.
@@ -214,20 +225,20 @@ TEST(SingleThreadedProxyResolverTest, CancelRequest) {
   TestCompletionCallback callback1;
   ProxyInfo results1;
   rv = resolver->GetProxyForURL(
-      GURL("http://request1"), &results1, &callback1, NULL);
+      GURL("http://request1"), &results1, &callback1, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ProxyResolver::RequestHandle request2;
   TestCompletionCallback callback2;
   ProxyInfo results2;
   rv = resolver->GetProxyForURL(
-      GURL("http://request2"), &results2, &callback2, &request2);
+      GURL("http://request2"), &results2, &callback2, &request2, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback3;
   ProxyInfo results3;
   rv = resolver->GetProxyForURL(
-      GURL("http://request3"), &results3, &callback3, NULL);
+      GURL("http://request3"), &results3, &callback3, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Cancel request0 (inprogress) and request2 (pending).
@@ -272,19 +283,19 @@ TEST(SingleThreadedProxyResolverTest, CancelRequestByDeleting) {
   TestCompletionCallback callback0;
   ProxyInfo results0;
   rv = resolver->GetProxyForURL(
-      GURL("http://request0"), &results0, &callback0, NULL);
+      GURL("http://request0"), &results0, &callback0, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
   rv = resolver->GetProxyForURL(
-      GURL("http://request1"), &results1, &callback1, NULL);
+      GURL("http://request1"), &results1, &callback1, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback2;
   ProxyInfo results2;
   rv = resolver->GetProxyForURL(
-      GURL("http://request2"), &results2, &callback2, NULL);
+      GURL("http://request2"), &results2, &callback2, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait until request 0 reaches the worker thread.
@@ -327,7 +338,7 @@ TEST(SingleThreadedProxyResolverTest, CancelSetPacScript) {
   TestCompletionCallback callback0;
   ProxyInfo results0;
   rv = resolver->GetProxyForURL(
-      GURL("http://request0"), &results0, &callback0, &request0);
+      GURL("http://request0"), &results0, &callback0, &request0, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait until requests 0 reaches the worker thread.
@@ -346,7 +357,7 @@ TEST(SingleThreadedProxyResolverTest, CancelSetPacScript) {
   TestCompletionCallback callback1;
   ProxyInfo results1;
   rv = resolver->GetProxyForURL(
-      GURL("http://request1"), &results1, &callback1, NULL);
+      GURL("http://request1"), &results1, &callback1, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Unblock the worker thread so the requests can continue running.

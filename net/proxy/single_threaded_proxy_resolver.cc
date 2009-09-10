@@ -5,6 +5,7 @@
 #include "net/proxy/single_threaded_proxy_resolver.h"
 
 #include "base/thread.h"
+#include "net/base/load_log.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_info.h"
 
@@ -94,10 +95,12 @@ class SingleThreadedProxyResolver::Job
   Job(SingleThreadedProxyResolver* coordinator,
       const GURL& url,
       ProxyInfo* results,
-      CompletionCallback* callback)
+      CompletionCallback* callback,
+      LoadLog* load_log)
     : coordinator_(coordinator),
       callback_(callback),
       results_(results),
+      load_log_(load_log),
       url_(url),
       is_started_(false),
       origin_loop_(MessageLoop::current()) {
@@ -130,14 +133,24 @@ class SingleThreadedProxyResolver::Job
  private:
   // Runs on the worker thread.
   void DoQuery(ProxyResolver* resolver) {
-    int rv = resolver->GetProxyForURL(url_, &results_buf_, NULL, NULL);
+    scoped_refptr<LoadLog> worker_log(new LoadLog);
+    int rv = resolver->GetProxyForURL(url_, &results_buf_, NULL, NULL,
+                                      worker_log);
     DCHECK_NE(rv, ERR_IO_PENDING);
+
+    worker_log->AddRef();  // Balanced in QueryComplete.
     origin_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &Job::QueryComplete, rv));
+        NewRunnableMethod(this, &Job::QueryComplete, rv, worker_log));
   }
 
   // Runs the completion callback on the origin thread.
-  void QueryComplete(int result_code) {
+  void QueryComplete(int result_code, LoadLog* worker_log) {
+    // Merge the load log that was generated on the worker thread, into the
+    // main log.
+    if (load_log_)
+      load_log_->Append(worker_log);
+    worker_log->Release();
+
     // The Job may have been cancelled after it was started.
     if (!was_cancelled()) {
       if (result_code >= OK) {  // Note: unit-tests use values > 0.
@@ -159,6 +172,7 @@ class SingleThreadedProxyResolver::Job
   SingleThreadedProxyResolver* coordinator_;
   CompletionCallback* callback_;
   ProxyInfo* results_;
+  scoped_refptr<LoadLog> load_log_;
   GURL url_;
   bool is_started_;
 
@@ -193,10 +207,11 @@ SingleThreadedProxyResolver::~SingleThreadedProxyResolver() {
 int SingleThreadedProxyResolver::GetProxyForURL(const GURL& url,
                                                 ProxyInfo* results,
                                                 CompletionCallback* callback,
-                                                RequestHandle* request) {
+                                                RequestHandle* request,
+                                                LoadLog* load_log) {
   DCHECK(callback);
 
-  scoped_refptr<Job> job = new Job(this, url, results, callback);
+  scoped_refptr<Job> job = new Job(this, url, results, callback, load_log);
   pending_jobs_.push_back(job);
   ProcessPendingJobs();  // Jobs can never finish synchronously.
 

@@ -61,6 +61,16 @@ EVENT_TYPE(PROXY_SERVICE)
 EVENT_TYPE(PROXY_SERVICE_WAITING_FOR_INIT_PAC)
 
 // ------------------------------------------------------------------------
+// ProxyResolverV8
+// ------------------------------------------------------------------------
+
+// Measures the time taken to execute the "myIpAddress()" javascript binding.
+EVENT_TYPE(PROXY_RESOLVER_V8_MY_IP_ADDRESS)
+
+// Measures the time taken to execute the "dnsResolve()" javascript binding.
+EVENT_TYPE(PROXY_RESOLVER_V8_DNS_RESOLVE)
+
+// ------------------------------------------------------------------------
 // ClientSocketPoolBase::ConnectJob
 // ------------------------------------------------------------------------
 
