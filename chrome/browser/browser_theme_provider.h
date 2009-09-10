@@ -240,7 +240,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   virtual SkBitmap* LoadThemeBitmap(int id);
 
   // Save the modified bitmap at image_cache_[id].
-  virtual void SaveThemeBitmap(const std::string resource_name, int id);
+  virtual void SaveThemeBitmap(std::string resource_name, int id);
 
   Profile* profile() { return profile_; }
 
