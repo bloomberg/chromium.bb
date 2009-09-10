@@ -2352,3 +2352,6 @@ BUG21411 : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg
 BUG21439 : LayoutTests/userscripts/simple-stylesheet.html = FAIL
 // New database test that fails.
 BUG21442 : LayoutTests/storage/test-authorizer.html = TIMEOUT
+
+// Crashing on Linux Debug as of V8 update at r25855
+BUG21501 LINUX DEBUG : LayoutTests/svg/custom/linking-a-03-b-preserveAspectRatio.svg = CRASH
