@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cocoa/tab_view.h"
+#import "chrome/browser/cocoa/tab_view.h"
 
+#include "base/logging.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
-#include "chrome/browser/cocoa/tab_controller.h"
-#include "chrome/browser/cocoa/tab_window_controller.h"
+#import "chrome/browser/cocoa/tab_controller.h"
+#import "chrome/browser/cocoa/tab_window_controller.h"
 
 // Constants for inset and control points for tab shape.
 static const CGFloat kInsetMultiplier = 2.0/3.0;
@@ -142,6 +143,27 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   return YES;
 }
 
+// Find all the windows that could be a target. It has to be of the
+// appropriate class, and visible (obviously). Note that the window cannot be
+// a target for itself.
+- (NSArray*)dropTargetsForController:(TabWindowController*)dragController {
+  NSMutableArray* targets = [NSMutableArray array];
+  NSWindow* dragWindow = [dragController window];
+  for (NSWindow* window in [NSApp windows]) {
+    if (window == dragWindow) continue;
+    if (![window isVisible]) continue;
+    NSWindowController *controller = [window windowController];
+    if ([controller isKindOfClass:[TabWindowController class]]) {
+      TabWindowController* realController =
+          static_cast<TabWindowController*>(controller);
+      if ([realController canReceiveFrom:dragController]) {
+        [targets addObject:controller];
+      }
+    }
+  }
+  return targets;
+}
+
 // Handle clicks and drags in this button. We get here because we have
 // overridden acceptsFirstMouse: and the click is within our bounds.
 // TODO(pinkerton/alcor): This routine needs *a lot* of work to marry Cole's
@@ -193,13 +215,19 @@ static const CGFloat kRapidCloseDist = 2.5;
   tearTime_ = 0.0;
   draggingWithinTabStrip_ = YES;
 
-  // We don't want to "tear off" a tab if there's only one in the window. Treat
-  // it like we're dragging around a tab we've already detached. Note that
-  // unit tests might have |-numberOfTabs| reporting zero since the model
-  // won't be fully hooked up. We need to be prepared for that and not send
-  // them into the "magnetic" codepath.
+  // If there's more than one potential window to be a drop target, we want to
+  // treat a drag of a tab just like dragging around a tab that's already
+  // detached. Note that unit tests might have |-numberOfTabs| reporting zero
+  // since the model won't be fully hooked up. We need to be prepared for that
+  // and not send them into the "magnetic" codepath.
+  NSArray* targets = [self dropTargetsForController:sourceController_];
   moveWindowOnDrag_ =
-      [sourceController_ numberOfTabs] <= 1 || ![self canBeDragged];
+      ([sourceController_ numberOfTabs] < 2 && ![targets count]) ||
+      ![self canBeDragged];
+  // If we are dragging a tab, a window with a single tab should immediately
+  // snap off and not drag within the tab strip.
+  if (!moveWindowOnDrag_)
+    draggingWithinTabStrip_ = [sourceController_ numberOfTabs] > 1;
 
   dragOrigin_ = [NSEvent mouseLocation];
 
@@ -286,30 +314,13 @@ static const CGFloat kRapidCloseDist = 2.5;
 
   // Do not start dragging until the user has "torn" the tab off by
   // moving more than 3 pixels.
-  NSDate* targetDwellDate = nil; // The date this target was first chosen
-  NSMutableArray* targets = [NSMutableArray array];
+  NSDate* targetDwellDate = nil;  // The date this target was first chosen.
 
   NSPoint thisPoint = [NSEvent mouseLocation];
 
-  // Find all the windows that could be a target. It has to be of the
-  // appropriate class, and visible (obviously).
-  if (![targets count]) {
-    for (NSWindow* window in [NSApp windows]) {
-      if (window == dragWindow_) continue;
-      if (![window isVisible]) continue;
-      NSWindowController *controller = [window windowController];
-      if ([controller isKindOfClass:[TabWindowController class]]) {
-        TabWindowController* realController =
-            static_cast<TabWindowController*>(controller);
-        if ([realController canReceiveFrom:sourceController_]) {
-          [targets addObject:controller];
-        }
-      }
-    }
-  }
-
   // Iterate over possible targets checking for the one the mouse is in.
   // The mouse can be in either the tab or window frame.
+  NSArray* targets = [self dropTargetsForController:draggedController_];
   TabWindowController* newTarget = nil;
   for (TabWindowController* target in targets) {
     NSRect windowFrame = [[target window] frame];
@@ -338,10 +349,18 @@ static const CGFloat kRapidCloseDist = 2.5;
 
   // Create or identify the dragged controller.
   if (!draggedController_) {
-    // Detach from the current window and put it in a new window.
+    // Detach from the current window and put it in a new window. If there are
+    // no more tabs remaining after detaching, the source window is about to
+    // go away (it's been autoreleased) so we need to ensure we don't reference
+    // it any more. In that case the new controller becomes our source
+    // controller.
     draggedController_ = [sourceController_ detachTabToNewWindow:self];
     dragWindow_ = [draggedController_ window];
     [dragWindow_ setAlphaValue:0.0];
+    if (![sourceController_ numberOfTabs]) {
+      sourceController_ = draggedController_;
+      sourceWindow_ = dragWindow_;
+    }
 
     // If dragging the tab only moves the current window, do not show overlay
     // so that sheets stay on top of the window.
@@ -398,7 +417,6 @@ static const CGFloat kRapidCloseDist = 2.5;
     if (![[targetController_ window] isKeyWindow]) {
       // && ([targetDwellDate timeIntervalSinceNow] < -REQUIRED_DWELL)) {
       [[targetController_ window] orderFront:nil];
-      [targets removeAllObjects];
       targetDwellDate = nil;
     }
 
@@ -458,6 +476,7 @@ static const CGFloat kRapidCloseDist = 2.5;
   if (draggingWithinTabStrip_) {
     if (tabWasDragged_) {
       // Move tab to new location.
+      DCHECK([sourceController_ numberOfTabs]);
       TabWindowController* dropController = sourceController_;
       [dropController moveTabView:[dropController selectedTabView]
                    fromController:nil];
