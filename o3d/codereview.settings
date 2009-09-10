@@ -3,7 +3,7 @@ CODE_REVIEW_SERVER: codereview.chromium.org
 CC_LIST: o3d-review@googlegroups.com
 VIEW_VC: http://src.chromium.org/viewvc/chrome?view=rev&revision=
 STATUS: http://o3d-status.appspot.com/status
-TRY_ON_UPLOAD: True
+TRY_ON_UPLOAD: False
 TRYSERVER_HTTP_HOST: nacl-linux1.mtv.corp.google.com
 TRYSERVER_HTTP_PORT: 8013
 TRYSERVER_PROJECT: o3d
