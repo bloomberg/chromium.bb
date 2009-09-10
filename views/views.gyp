@@ -297,7 +297,6 @@
             'controls/scrollbar/bitmap_scroll_bar.cc',
             'controls/combo_box.cc',
             'controls/hwnd_view.cc',
-            'controls/message_box_view.cc',
             'controls/scroll_view.cc',
             'controls/table/group_table_view.cc',
             'controls/native_control.cc',

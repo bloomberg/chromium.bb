@@ -33,14 +33,14 @@ class NativeButtonGtk : public NativeControlGtk, public NativeButtonWrapper {
   virtual void CreateNativeControl();
   virtual void NativeControlCreated(GtkWidget* widget);
 
+  // Invoked when the user clicks on the button.
+  virtual void OnClicked();
+
   // Returns true if this button is actually a checkbox or radio button.
   virtual bool IsCheckbox() const { return false; }
 
  private:
   static void CallClicked(GtkButton* widget, NativeButtonGtk* button);
-
-  // Invoked when the user clicks on the button.
-  void OnClicked();
 
   // The NativeButton we are bound to.
   NativeButton* native_button_;
@@ -59,10 +59,25 @@ class NativeCheckboxGtk : public NativeButtonGtk {
   explicit NativeCheckboxGtk(Checkbox* checkbox);
 
  private:
+  static void CallClicked(GtkButton* widget, NativeCheckboxGtk* button);
+
   virtual void CreateNativeControl();
+
+  // Invoked when the user clicks on the button.
+  virtual void OnClicked();
+
+  // Overidden from NativeButtonWrapper
+  virtual void UpdateChecked();
 
   // Returns true if this button is actually a checkbox or radio button.
   virtual bool IsCheckbox() const { return true; }
+
+  Checkbox* checkbox_;
+
+  // a flag to prevent OnClicked event when updating
+  // gtk control via API gtk_toggle_button_set_active.
+  bool deliver_click_event_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeCheckboxGtk);
 };
 

@@ -47,7 +47,7 @@ MessageBoxView::MessageBoxView(int dialog_flags,
 
 std::wstring MessageBoxView::GetInputText() {
   if (prompt_field_)
-    return prompt_field_->text();
+    return UTF16ToWideHack(prompt_field_->text());
   return EmptyWString();
 }
 
@@ -106,7 +106,7 @@ bool MessageBoxView::AcceleratorPressed(
     return false;
 
   ScopedClipboardWriter scw(clipboard);
-  scw.WriteText(message_label_->GetText());
+  scw.WriteText(WideToUTF16Hack(message_label_->GetText()));
   return true;
 }
 
@@ -138,7 +138,7 @@ void MessageBoxView::Init(int dialog_flags,
 
   if (dialog_flags & MessageBoxFlags::kFlagHasPromptField) {
     prompt_field_ = new views::Textfield;
-    prompt_field_->SetText(default_prompt);
+    prompt_field_->SetText(WideToUTF16Hack(default_prompt));
   }
 
   ResetLayoutManager();
