@@ -254,7 +254,7 @@ STDMETHODIMP BrowserAccessibility::get_accDefaultAction(VARIANT var_id,
     return S_FALSE;
   }
 
-  *def_action = CComBSTR(response().output_string.c_str()).Detach();
+  *def_action = SysAllocString(response().output_string.c_str());
 
   DCHECK(*def_action);
   return S_OK;
@@ -280,7 +280,7 @@ STDMETHODIMP BrowserAccessibility::get_accDescription(VARIANT var_id,
     return S_FALSE;
   }
 
-  *desc = CComBSTR(response().output_string.c_str()).Detach();
+  *desc = SysAllocString(response().output_string.c_str());
 
   DCHECK(*desc);
   return S_OK;
@@ -342,7 +342,7 @@ STDMETHODIMP BrowserAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
     return S_FALSE;
   }
 
-  *help = CComBSTR(response().output_string.c_str()).Detach();
+  *help = SysAllocString(response().output_string.c_str());
 
   DCHECK(*help);
   return S_OK;
@@ -368,7 +368,7 @@ STDMETHODIMP BrowserAccessibility::get_accKeyboardShortcut(VARIANT var_id,
     return S_FALSE;
   }
 
-  *acc_key = CComBSTR(response().output_string.c_str()).Detach();
+  *acc_key = SysAllocString(response().output_string.c_str());
 
   DCHECK(*acc_key);
   return S_OK;
@@ -393,7 +393,7 @@ STDMETHODIMP BrowserAccessibility::get_accName(VARIANT var_id, BSTR* name) {
     return S_FALSE;
   }
 
-  *name = CComBSTR(response().output_string.c_str()).Detach();
+  *name = SysAllocString(response().output_string.c_str());
 
   DCHECK(*name);
   return S_OK;
@@ -504,7 +504,7 @@ STDMETHODIMP BrowserAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
     return S_FALSE;
   }
 
-  *value = CComBSTR(response().output_string.c_str()).Detach();
+  *value = SysAllocString(response().output_string.c_str());
 
   DCHECK(*value);
   return S_OK;

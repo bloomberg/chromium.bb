@@ -470,7 +470,7 @@ LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
         return static_cast<LRESULT>(0L);
       }
 
-      CComPtr<IAccessible> accessibility_instance(instance);
+      ScopedComPtr<IAccessible> accessibility_instance(instance);
 
       if (!SUCCEEDED(instance->Initialize(root_view_.get()))) {
         // Return with failure.

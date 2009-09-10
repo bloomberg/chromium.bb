@@ -29,7 +29,7 @@ STDMETHODIMP ViewAccessibilityWrapper::CreateDefaultInstance(REFIID iid) {
       if (!SUCCEEDED(hr) || !instance)
         return E_FAIL;
 
-      CComPtr<IAccessible> accessibility_instance(instance);
+      ScopedComPtr<IAccessible> accessibility_instance(instance);
 
       if (!SUCCEEDED(instance->Initialize(view_)))
         return E_FAIL;

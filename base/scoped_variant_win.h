@@ -40,11 +40,18 @@ class ScopedVariant {
   // VARIANT.lVal (32 bit sized field).
   explicit ScopedVariant(int value, VARTYPE vt = VT_I4);
 
+  // Creates a new double-precision type variant.  |vt| must be either VT_R8
+  // or VT_DATE.
+  explicit ScopedVariant(double value, VARTYPE vt = VT_R8);
+
   // VT_DISPATCH
   explicit ScopedVariant(IDispatch* dispatch);
 
   // VT_UNKNOWN
   explicit ScopedVariant(IUnknown* unknown);
+
+  // SAFEARRAY
+  explicit ScopedVariant(SAFEARRAY* safearray);
 
   // Copies the variant.
   explicit ScopedVariant(const VARIANT& var);

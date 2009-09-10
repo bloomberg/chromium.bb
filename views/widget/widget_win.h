@@ -11,6 +11,7 @@
 #include <atlmisc.h>
 
 #include "base/message_loop.h"
+#include "base/scoped_comptr_win.h"
 #include "base/system_monitor.h"
 #include "base/window_impl.h"
 #include "views/focus/focus_manager.h"
@@ -586,7 +587,7 @@ class WidgetWin : public base::WindowImpl,
   int last_mouse_move_y_;
 
   // Instance of accessibility information and handling for MSAA root
-  CComPtr<IAccessible> accessibility_root_;
+  ScopedComPtr<IAccessible> accessibility_root_;
 
   scoped_ptr<DefaultThemeProvider> default_theme_provider_;
 };

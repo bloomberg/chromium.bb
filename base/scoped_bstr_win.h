@@ -5,12 +5,10 @@
 #ifndef BASE_SCOPED_BSTR_WIN_H_
 #define BASE_SCOPED_BSTR_WIN_H_
 
-#include "base/basictypes.h"  // needed to pick up OS_WIN
-
-#include "base/logging.h"
-
 #include <windows.h>
 #include <oleauto.h>
+
+#include "base/logging.h"
 
 // Manages a BSTR string pointer.
 // The class interface is based on scoped_ptr.

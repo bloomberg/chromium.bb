@@ -9,6 +9,7 @@
 #include <oleacc.h>
 
 #include "base/basictypes.h"
+#include "base/scoped_comptr_win.h"
 
 namespace views {
 class View;
@@ -44,7 +45,7 @@ class ViewAccessibilityWrapper {
 
  private:
   // Instance of accessibility information and handling for a View.
-  CComPtr<IAccessible> accessibility_info_;
+  ScopedComPtr<IAccessible> accessibility_info_;
 
   // View needed to initialize IAccessible.
   views::View* view_;

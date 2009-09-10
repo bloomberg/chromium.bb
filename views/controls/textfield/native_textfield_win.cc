@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
@@ -94,9 +96,9 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
   }
 
   // Set up the text_object_model_.
-  CComPtr<IRichEditOle> ole_interface;
+  ScopedComPtr<IRichEditOle, &IID_IRichEditOle> ole_interface;
   ole_interface.Attach(GetOleInterface());
-  text_object_model_ = ole_interface;
+  text_object_model_.QueryFrom(ole_interface);
 }
 
 NativeTextfieldWin::~NativeTextfieldWin() {
@@ -305,7 +307,9 @@ void NativeTextfieldWin::OnCut() {
   ReplaceSel(L"", true);
 }
 
-LRESULT NativeTextfieldWin::OnImeChar(UINT message, WPARAM wparam, LPARAM lparam) {
+LRESULT NativeTextfieldWin::OnImeChar(UINT message,
+                                      WPARAM wparam,
+                                      LPARAM lparam) {
   // http://crbug.com/7707: a rich-edit control may crash when it receives a
   // WM_IME_CHAR message while it is processing a WM_IME_COMPOSITION message.
   // Since view controls don't need WM_IME_CHAR messages, we prevent WM_IME_CHAR
@@ -512,7 +516,7 @@ LRESULT NativeTextfieldWin::OnMouseWheel(UINT message, WPARAM w_param,
   // applicable.
   if (views::RerouteMouseWheel(m_hWnd, w_param, l_param))
     return 0;
-  return DefWindowProc(message, w_param, l_param);;
+  return DefWindowProc(message, w_param, l_param);
 }
 
 void NativeTextfieldWin::OnMouseMove(UINT keys, const CPoint& point) {
@@ -842,9 +846,9 @@ void NativeTextfieldWin::SetContainsMouse(bool contains_mouse) {
 
 ITextDocument* NativeTextfieldWin::GetTextObjectModel() const {
   if (!text_object_model_) {
-    CComPtr<IRichEditOle> ole_interface;
+    ScopedComPtr<IRichEditOle, &IID_IRichEditOle> ole_interface;
     ole_interface.Attach(GetOleInterface());
-    text_object_model_ = ole_interface;
+    text_object_model_.QueryFrom(ole_interface);
   }
   return text_object_model_;
 }

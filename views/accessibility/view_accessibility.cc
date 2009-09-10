@@ -326,7 +326,7 @@ STDMETHODIMP ViewAccessibility::get_accDefaultAction(VARIANT var_id,
         GetAccessibleDefaultAction(&temp_action);
   }
   if (!temp_action.empty()) {
-    *def_action = CComBSTR(temp_action.c_str()).Detach();
+    *def_action = SysAllocString(temp_action.c_str());
   } else {
     return S_FALSE;
   }
@@ -350,7 +350,7 @@ STDMETHODIMP ViewAccessibility::get_accDescription(VARIANT var_id, BSTR* desc) {
     view_->GetChildViewAt(var_id.lVal - 1)->GetTooltipText(0, 0, &temp_desc);
   }
   if (!temp_desc.empty()) {
-    *desc = CComBSTR(temp_desc.c_str()).Detach();
+    *desc = SysAllocString(temp_desc.c_str());
   } else {
     return S_FALSE;
   }
@@ -413,7 +413,7 @@ STDMETHODIMP ViewAccessibility::get_accKeyboardShortcut(VARIANT var_id,
         GetAccessibleKeyboardShortcut(&temp_key);
   }
   if (!temp_key.empty()) {
-    *acc_key = CComBSTR(temp_key.c_str()).Detach();
+    *acc_key = SysAllocString(temp_key.c_str());
   } else {
     return S_FALSE;
   }
@@ -440,7 +440,7 @@ STDMETHODIMP ViewAccessibility::get_accName(VARIANT var_id, BSTR* name) {
   }
   if (!temp_name.empty()) {
     // Return name retrieved.
-    *name = CComBSTR(temp_name.c_str()).Detach();
+    *name = SysAllocString(temp_name.c_str());
   } else {
     // If view has no name, return S_FALSE.
     return S_FALSE;

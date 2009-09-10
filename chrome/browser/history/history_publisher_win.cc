@@ -10,7 +10,10 @@
 #include <wtypes.h>
 
 #include "base/registry.h"
+#include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
+#include "base/scoped_variant_win.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 
@@ -107,30 +110,29 @@ void HistoryPublisher::PublishDataToIndexers(const PageData& page_data)
 
   CComSafeArray<unsigned char> thumbnail_arr;
   if (page_data.thumbnail) {
-    for(size_t i = 0; i < page_data.thumbnail->size(); ++i)
+    for (size_t i = 0; i < page_data.thumbnail->size(); ++i)
       thumbnail_arr.Add((*page_data.thumbnail)[i]);
   }
 
   // Send data to registered indexers.
-  for(size_t i = 0; i < indexers_.size(); ++i) {
-    indexers_[i]->SendPageData(
-        CComVariant(var_time, VT_DATE),
-        CComBSTR(page_data.url.spec().c_str()),
-        CComBSTR(page_data.html),
-        CComBSTR(page_data.title),
-        CComBSTR(page_data.thumbnail_format),
-        CComVariant(thumbnail_arr.m_psa));
+  ScopedVariant time(var_time, VT_DATE);
+  ScopedBstr url(ASCIIToWide(page_data.url.spec()).c_str());
+  ScopedBstr html(page_data.html);
+  ScopedBstr title(page_data.title);
+  ScopedBstr format(ASCIIToWide(page_data.thumbnail_format).c_str());
+  ScopedVariant psa(thumbnail_arr.m_psa);
+  for (size_t i = 0; i < indexers_.size(); ++i) {
+    indexers_[i]->SendPageData(time, url, html, title, format, psa);
   }
 }
 
 void HistoryPublisher::DeleteUserHistoryBetween(const base::Time& begin_time,
                                                 const base::Time& end_time)
     const {
-  double var_begin_time = TimeToUTCVariantTime(begin_time);
-  double var_end_time = TimeToUTCVariantTime(end_time);
-  for(size_t i = 0; i < indexers_.size(); ++i) {
-    indexers_[i]->DeleteUserHistoryBetween(CComVariant(var_begin_time, VT_DATE),
-                                           CComVariant(var_end_time, VT_DATE));
+  ScopedVariant var_begin_time(TimeToUTCVariantTime(begin_time), VT_DATE);
+  ScopedVariant var_end_time(TimeToUTCVariantTime(end_time), VT_DATE);
+  for (size_t i = 0; i < indexers_.size(); ++i) {
+    indexers_[i]->DeleteUserHistoryBetween(var_begin_time, var_end_time);
   }
 }
 

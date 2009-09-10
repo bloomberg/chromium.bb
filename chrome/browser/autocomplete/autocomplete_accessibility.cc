@@ -99,7 +99,7 @@ STDMETHODIMP AutocompleteAccessibility::get_accName(VARIANT var_id,
 
   if (!temp_name.empty()) {
     // Return name retrieved.
-    *name = CComBSTR(temp_name.c_str()).Detach();
+    *name = SysAllocString(temp_name.c_str());
   } else {
     // If no name is found, return S_FALSE.
     return S_FALSE;
@@ -127,20 +127,19 @@ STDMETHODIMP AutocompleteAccessibility::get_accValue(VARIANT var_id,
   std::wstring temp_value;
 
   if (var_id.lVal != CHILDID_SELF)
-   return E_INVALIDARG;
+    return E_INVALIDARG;
 
   // Edit box has no children, only handle self.
   temp_value = edit_box_->GetText();
   if (temp_value.empty())
-   return S_FALSE;
+    return S_FALSE;
 
-   // Return value retrieved.
-  *value = CComBSTR(temp_value.c_str()).Detach();
+  // Return value retrieved.
+  *value = SysAllocString(temp_value.c_str());
 
   DCHECK(*value);
 
   return S_OK;
-
 }
 
 STDMETHODIMP AutocompleteAccessibility::get_accState(VARIANT var_id,

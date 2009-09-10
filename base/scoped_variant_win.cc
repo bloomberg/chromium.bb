@@ -28,6 +28,12 @@ ScopedVariant::ScopedVariant(int value, VARTYPE vt) {
   var_.lVal = value;
 }
 
+ScopedVariant::ScopedVariant(double value, VARTYPE vt) {
+  DCHECK(vt == VT_R8 || vt == VT_DATE);
+  var_.vt = vt;
+  var_.dblVal = value;
+}
+
 ScopedVariant::ScopedVariant(IDispatch* dispatch) {
   var_.vt = VT_EMPTY;
   Set(dispatch);
@@ -36,6 +42,11 @@ ScopedVariant::ScopedVariant(IDispatch* dispatch) {
 ScopedVariant::ScopedVariant(IUnknown* unknown) {
   var_.vt = VT_EMPTY;
   Set(unknown);
+}
+
+ScopedVariant::ScopedVariant(SAFEARRAY* safearray) {
+  var_.vt = VT_EMPTY;
+  Set(safearray);
 }
 
 ScopedVariant::ScopedVariant(const VARIANT& var) {

@@ -13,6 +13,7 @@
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl
 #include <vsstyle.h>
 
+#include "base/scoped_comptr_win.h"
 #include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 
@@ -195,7 +196,7 @@ class NativeTextfieldWin
   gfx::Insets content_insets_;
 
   // This interface is useful for accessing the CRichEditCtrl at a low level.
-  mutable CComQIPtr<ITextDocument> text_object_model_;
+  mutable ScopedComPtr<ITextDocument> text_object_model_;
 
   // The position and the length of the ongoing composition string.
   // These values are used for removing a composition string from a search

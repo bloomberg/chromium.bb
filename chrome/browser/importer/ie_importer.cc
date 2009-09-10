@@ -4,19 +4,23 @@
 
 #include "chrome/browser/importer/ie_importer.h"
 
-#include <atlbase.h>
+#include <ole2.h>
 #include <intshcut.h>
 #include <pstore.h>
 #include <shlobj.h>
 #include <urlhist.h>
 
 #include <algorithm>
+#include <map>
+#include <string>
+#include <vector>
 
 #include "app/l10n_util.h"
 #include "app/win_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/registry.h"
+#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/win_util.h"
@@ -69,7 +73,7 @@ void IEImporter::StartImport(ProfileInfo profile_info,
 
   NotifyStarted();
 
-  // Some IE settings (such as Protected Storage) is obtained via COM APIs.
+  // Some IE settings (such as Protected Storage) are obtained via COM APIs.
   win_util::ScopedCOMInitializer com_initializer;
 
   if ((items & HOME_PAGE) && !cancelled())
@@ -142,8 +146,8 @@ void IEImporter::ImportPasswordsIE6() {
     return;
   }
 
-  CComPtr<IPStore> pstore;
-  HRESULT result = PStoreCreateInstance(&pstore, 0, 0, 0);
+  ScopedComPtr<IPStore, &IID_IPStore> pstore;
+  HRESULT result = PStoreCreateInstance(pstore.Receive(), 0, 0, 0);
   if (result != S_OK) {
     FreeLibrary(pstorec_dll);
     return;
@@ -152,9 +156,9 @@ void IEImporter::ImportPasswordsIE6() {
   std::vector<AutoCompleteInfo> ac_list;
 
   // Enumerates AutoComplete items in the protected database.
-  CComPtr<IEnumPStoreItems> item;
+  ScopedComPtr<IEnumPStoreItems, &IID_IEnumPStoreItems> item;
   result = pstore->EnumItems(0, &AutocompleteGUID,
-                             &AutocompleteGUID, 0, &item);
+                             &AutocompleteGUID, 0, item.Receive());
   if (result != PST_E_OK) {
     pstore.Release();
     FreeLibrary(pstorec_dll);
@@ -282,14 +286,14 @@ void IEImporter::ImportHistory() {
                                   chrome::kFileScheme};
   int total_schemes = arraysize(kSchemes);
 
-  CComPtr<IUrlHistoryStg2> url_history_stg2;
+  ScopedComPtr<IUrlHistoryStg2> url_history_stg2;
   HRESULT result;
-  result = url_history_stg2.CoCreateInstance(CLSID_CUrlHistory, NULL,
-                                             CLSCTX_INPROC_SERVER);
+  result = url_history_stg2.CreateInstance(CLSID_CUrlHistory, NULL,
+                                           CLSCTX_INPROC_SERVER);
   if (FAILED(result))
     return;
-  CComPtr<IEnumSTATURL> enum_url;
-  if (SUCCEEDED(result = url_history_stg2->EnumUrls(&enum_url))) {
+  ScopedComPtr<IEnumSTATURL> enum_url;
+  if (SUCCEEDED(result = url_history_stg2->EnumUrls(enum_url.Receive()))) {
     std::vector<history::URLRow> rows;
     STATURL stat_url;
     ULONG fetched;
@@ -541,14 +545,14 @@ void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
 
 std::wstring IEImporter::ResolveInternetShortcut(const std::wstring& file) {
   win_util::CoMemReleaser<wchar_t> url;
-  CComPtr<IUniformResourceLocator> url_locator;
-  HRESULT result = url_locator.CoCreateInstance(CLSID_InternetShortcut, NULL,
-                                                CLSCTX_INPROC_SERVER);
+  ScopedComPtr<IUniformResourceLocator> url_locator;
+  HRESULT result = url_locator.CreateInstance(CLSID_InternetShortcut, NULL,
+                                              CLSCTX_INPROC_SERVER);
   if (FAILED(result))
     return std::wstring();
 
-  CComPtr<IPersistFile> persist_file;
-  result = url_locator.QueryInterface(&persist_file);
+  ScopedComPtr<IPersistFile> persist_file;
+  result = persist_file.QueryFrom(url_locator);
   if (FAILED(result))
     return std::wstring();
 
