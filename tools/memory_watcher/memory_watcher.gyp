@@ -13,12 +13,15 @@
       'msvs_guid': '3BD81303-4E14-4559-AA69-B30C3BAB08DD',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/base.gyp:base_gfx',
       ],
       'defines': [
         'BUILD_MEMORY_WATCHER',
       ],
       'include_dirs': [
         '../..',
+        # TODO(beng): move wtl to src/third_party
+        '../../chrome/third_party/wtl/include',
       ],
       'sources': [
         'call_stack.cc',
