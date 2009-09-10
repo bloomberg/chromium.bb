@@ -269,38 +269,16 @@
     document.getElementsByTagName('head')[0].appendChild(script);
   }
 
+  // Parse hash parameters.
+  // Permalinkable state of the page.
+  var currentState = {};
 
-  // Parse query parameters.
-  var queryState = {'debug': false, 'testType': 'layout_test_results'};
-
-  function handleValidQueryParameter(key, value) {
-    switch (key) {
-      case 'testType':
-        validateParameter(queryState, key, value,
-            function() {
-              return isValidName(value);
-            });
-
-        return true;
-
-      case 'debug':
-        queryState[key] = value == 'true';
-
-        return true;
-
-      default:
-        return false;
-    }
-  }
-
-  parseParameters(window.location.search.substring(1),
-      handleValidQueryParameter);
-  if (queryState['debug']) {
+  if (stringContains(window.location.hash, "debug=true")) {
     // In debug mode point to the results.json and expectations.json in the
     // local tree. Useful for debugging changes to the python JSON generator.
     var builders = {'DUMMY_BUILDER_NAME': ''};
     var builderBase = '../../Debug/';
-    queryState['testType'] = 'layout-test-results';
+    currentState['testType'] = 'layout-test-results';
   } else {
     // Map of builderName (the name shown in the waterfall)
     // to builderPath (the path used in the builder's URL)
@@ -322,17 +300,14 @@
     var builderBase = 'http://build.chromium.org/buildbot/';
   }
 
-  // Parse hash parameters.
-  // Permalinkable state of the page.
-  var currentState = {};
-
   var defaultStateValues = {
     sortOrder: BACKWARD,
     sortColumn: 'flakiness',
     showWontFix: false,
     showCorrectExpectations: false,
     showFlaky: true,
-    maxResults: 200
+    maxResults: 200,
+    testType: 'layout_test_results'
   };
 
   for (var builder in builders) {
@@ -353,6 +328,14 @@
 
   function handleValidHashParameter(key, value) {
     switch(key) {
+      case 'testType':
+        validateParameter(currentState, key, value,
+            function() {
+              return isValidName(value);
+            });
+
+        return true;
+
       case 'tests':
         validateParameter(currentState, key, value,
             function() {
@@ -397,6 +380,7 @@
 
         return true;
 
+      case 'debug':
       case 'showWontFix':
       case 'showCorrectExpectations':
       case 'showFlaky':
@@ -415,8 +399,6 @@
 
   function parseAllParameters() {
     oldLocation = window.location.href;
-    parseParameters(window.location.search.substring(1),
-        handleValidQueryParameter);
     parseParameters(window.location.hash.substring(1),
         handleValidHashParameter);
     fillDefaultStateValues();
@@ -439,7 +421,7 @@
   }
 
   function getPathToBuilderResultsFile(builderName) {
-    return builderBase + queryState['testType'] + '/' +
+    return builderBase + currentState['testType'] + '/' +
         builders[builderName] + '/';
   }
 
@@ -1104,7 +1086,6 @@
     tableHeaders.shift();
     if (currentState.tests) {
       tableHeaders.unshift('builder');
-
       generatePageForIndividualTests(currentState.tests.split(','));
     } else {
       tableHeaders.unshift('test');
@@ -1212,6 +1193,9 @@
     $('max-results-input').value = currentState.maxResults;
   }
 
+  var singleBuilderViewParameters = ['sortOrder', 'sortColumn', 'showWontFix',
+      'showCorrectExpectations', 'showFlaky: true', 'maxResults'];
+
   /**
    * Sets the page state and regenerates the page. Takes varargs of key, value
    * pairs.
@@ -1220,7 +1204,7 @@
     for (var i = 0; i < arguments.length; i = i + 2) {
       var key = arguments[i];
       if (key == 'tests') {
-        for (var state in currentState) {
+        for (var state in singleBuilderViewParameters) {
           delete currentState[state];
         }
       } else {
@@ -1242,8 +1226,7 @@
   }
 
   function getPermaLinkURL() {
-    return window.location.pathname + '?' + joinParameters(queryState) + '#' +
-        joinParameters(currentState);
+    return window.location.pathname + '#' + joinParameters(currentState);
   }
 
   function joinParameters(stateObject) {
