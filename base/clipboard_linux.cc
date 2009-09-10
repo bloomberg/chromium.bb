@@ -21,6 +21,7 @@ namespace {
 const char kMimeBmp[] = "image/bmp";
 const char kMimeHtml[] = "text/html";
 const char kMimeText[] = "text/plain";
+const char kMimeURI[] = "text/uri-list";
 const char kMimeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 
 std::string GdkAtomToString(const GdkAtom& atom) {
@@ -52,6 +53,11 @@ void GetData(GtkClipboard* clipboard,
   if (target_string == kMimeBmp) {
     gtk_selection_data_set_pixbuf(selection_data,
         reinterpret_cast<GdkPixbuf*>(iter->second.first));
+  } else if (target_string == kMimeURI) {
+    gchar* uri_list[2];
+    uri_list[0] = reinterpret_cast<gchar*>(iter->second.first);
+    uri_list[1] = NULL;
+    gtk_selection_data_set_uris(selection_data, uri_list);
   } else {
     gtk_selection_data_set(selection_data, selection_data->target, 8,
                            reinterpret_cast<guchar*>(iter->second.first),
@@ -77,8 +83,9 @@ void ClearData(GtkClipboard* clipboard,
   }
 
   for (std::set<char*>::iterator iter = ptrs.begin();
-       iter != ptrs.end(); ++iter)
+       iter != ptrs.end(); ++iter) {
     delete[] *iter;
+  }
 
   delete map;
 }
@@ -183,14 +190,14 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
 
 void Clipboard::WriteBookmark(const char* title_data, size_t title_len,
                               const char* url_data, size_t url_len) {
-  // TODO(estade): implement this, but for now fail silently so we do not
-  // write error output during layout tests.
-  // NOTIMPLEMENTED();
-}
+  // Write as plain text.
+  WriteText(url_data, url_len);
 
-void Clipboard::WriteHyperlink(const char* title_data, size_t title_len,
-                               const char* url_data, size_t url_len) {
-  NOTIMPLEMENTED();
+  // Write as a URI.
+  char* data = new char[url_len + 1];
+  memcpy(data, url_data, url_len);
+  data[url_len] = NULL;
+  InsertMapping(kMimeURI, data, url_len + 1);
 }
 
 void Clipboard::WriteFiles(const char* file_data, size_t file_len) {
@@ -393,4 +400,3 @@ GtkClipboard* Clipboard::LookupBackingClipboard(Buffer clipboard) const {
   }
   return result;
 }
-

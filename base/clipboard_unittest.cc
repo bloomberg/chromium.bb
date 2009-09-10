@@ -258,25 +258,21 @@ TEST_F(ClipboardTest, DataTest) {
 TEST_F(ClipboardTest, HyperlinkTest) {
   Clipboard clipboard;
 
-  string16 title(ASCIIToUTF16("The Example Company")), title_result;
+  std::string title("The Example Company");
   std::string url("http://www.example.com/"), url_result;
-  string16 html(ASCIIToUTF16("<a href=\"http://www.example.com/\">"
-                             "The Example Company</a>")), html_result;
+  std::string html("<a href=\"http://www.example.com/\">"
+                   "The Example Company</a>");
+  string16 html_result;
 
   {
     ScopedClipboardWriter clipboard_writer(&clipboard);
     clipboard_writer.WriteHyperlink(title, url);
   }
 
-  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetUrlWFormatType(),
-                                          Clipboard::BUFFER_STANDARD));
   EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
                                           Clipboard::BUFFER_STANDARD));
-  clipboard.ReadBookmark(&title_result, &url_result);
-  EXPECT_EQ(title, title_result);
-  EXPECT_EQ(url, url_result);
   clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &html_result, &url_result);
-  EXPECT_EQ(html, html_result);
+  EXPECT_EQ(UTF8ToUTF16(html), html_result);
 }
 
 TEST_F(ClipboardTest, WebSmartPasteTest) {

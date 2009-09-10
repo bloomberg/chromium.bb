@@ -38,11 +38,6 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
                     &(params[1].front()), params[1].size());
       break;
 
-    case CBF_LINK:
-      WriteHyperlink(&(params[0].front()), params[0].size(),
-                     &(params[1].front()), params[1].size());
-      break;
-
     case CBF_FILES:
       WriteFiles(&(params[0].front()), params[0].size());
       break;

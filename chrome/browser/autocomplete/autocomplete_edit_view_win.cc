@@ -39,6 +39,7 @@
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
+#include "net/base/escape.h"
 #include "skia/ext/skia_utils_win.h"
 #include "views/drag_utils.h"
 #include "views/focus/focus_util_win.h"
@@ -1197,7 +1198,8 @@ void AutocompleteEditViewWin::OnCopy() {
         scw.WriteText(UTF8ToWide(url.spec()));
       else
         scw.WriteText(text);
-      scw.WriteHyperlink(text, url.spec());
+      scw.WriteBookmark(text, url.spec());
+      scw.WriteHyperlink(EscapeForHTML(UTF16ToUTF8(text)), url.spec());
       return;
     }
   }

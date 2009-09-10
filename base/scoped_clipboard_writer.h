@@ -41,10 +41,9 @@ class ScopedClipboardWriter {
   void WriteBookmark(const string16& bookmark_title,
                      const std::string& url);
 
-  // Adds both a bookmark and an HTML hyperlink to the clipboard.  It is a
-  // convenience wrapper around WriteBookmark and WriteHTML. |link_text| is
-  // used as the bookmark title.
-  void WriteHyperlink(const string16& link_text, const std::string& url);
+  // Adds an html hyperlink (<a href>) to the clipboard. |anchor_text| should
+  // be escaped prior to being passed in.
+  void WriteHyperlink(const std::string& anchor_text, const std::string& url);
 
   // Adds a file or group of files to the clipboard.
   void WriteFile(const FilePath& file);

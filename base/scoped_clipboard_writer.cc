@@ -67,18 +67,18 @@ void ScopedClipboardWriter::WriteBookmark(const string16& bookmark_title,
   objects_[Clipboard::CBF_BOOKMARK] = parameters;
 }
 
-void ScopedClipboardWriter::WriteHyperlink(const string16& link_text,
+void ScopedClipboardWriter::WriteHyperlink(const std::string& anchor_text,
                                            const std::string& url) {
-  if (link_text.empty() || url.empty())
+  if (anchor_text.empty() || url.empty())
     return;
 
-  std::string utf8_markup = UTF16ToUTF8(link_text);
-
-  Clipboard::ObjectMapParams parameters;
-  parameters.push_back(Clipboard::ObjectMapParam(utf8_markup.begin(),
-                                                 utf8_markup.end()));
-  parameters.push_back(Clipboard::ObjectMapParam(url.begin(), url.end()));
-  objects_[Clipboard::CBF_LINK] = parameters;
+  // Construct the hyperlink.
+  std::string html("<a href=\"");
+  html.append(url);
+  html.append("\">");
+  html.append(anchor_text);
+  html.append("</a>");
+  WriteHTML(UTF8ToUTF16(html), std::string());
 }
 
 void ScopedClipboardWriter::WriteFile(const FilePath& file) {

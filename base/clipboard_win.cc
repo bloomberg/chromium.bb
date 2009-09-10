@@ -209,27 +209,6 @@ void Clipboard::WriteBookmark(const char* title_data,
   WriteToClipboard(StringToInt(GetUrlWFormatType()), glob);
 }
 
-void Clipboard::WriteHyperlink(const char* title_data,
-                               size_t title_len,
-                               const char* url_data,
-                               size_t url_len) {
-  // Store as a bookmark.
-  WriteBookmark(title_data, title_len, url_data, url_len);
-
-  std::string title(title_data, title_len),
-      url(url_data, url_len),
-      link("<a href=\"");
-
-  // Construct the hyperlink.
-  link.append(url);
-  link.append("\">");
-  link.append(title);
-  link.append("</a>");
-
-  // Store hyperlink as html.
-  WriteHTML(link.c_str(), link.size(), NULL, 0);
-}
-
 void Clipboard::WriteWebSmartPaste() {
   DCHECK(clipboard_owner_);
   ::SetClipboardData(StringToInt(GetWebKitSmartPasteFormatType()), NULL);

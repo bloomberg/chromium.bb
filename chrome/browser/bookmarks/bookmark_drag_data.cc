@@ -12,6 +12,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/browser/browser_process.h"
+#include "net/base/escape.h"
 
 const char* BookmarkDragData::kClipboardFormatString =
     "chromium/x-bookmark-entries";
@@ -96,8 +97,11 @@ void BookmarkDragData::WriteToClipboard(Profile* profile) const {
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
   if (elements.size() == 1 && elements[0].is_url) {
-    scw.WriteBookmark(WideToUTF16Hack(elements[0].title),
-                      elements[0].url.spec());
+    string16 title = WideToUTF16Hack(elements[0].title);
+    std::string url = elements[0].url.spec();
+
+    scw.WriteBookmark(title, url);
+    scw.WriteHyperlink(EscapeForHTML(UTF16ToUTF8(title)), url);
   }
 
   Pickle pickle;

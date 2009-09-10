@@ -36,7 +36,6 @@ class Clipboard {
     CBF_TEXT,
     CBF_HTML,
     CBF_BOOKMARK,
-    CBF_LINK,
     CBF_FILES,
     CBF_WEBKIT,
     CBF_BITMAP,
@@ -185,11 +184,6 @@ class Clipboard {
                      size_t title_len,
                      const char* url_data,
                      size_t url_len);
-
-  void WriteHyperlink(const char* title_data,
-                      size_t title_len,
-                      const char* url_data,
-                      size_t url_len);
 
   void WriteWebSmartPaste();
 

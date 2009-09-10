@@ -73,13 +73,6 @@ void Clipboard::WriteBookmark(const char* title_data,
                               size_t title_len,
                               const char* url_data,
                               size_t url_len) {
-  WriteHyperlink(title_data, title_len, url_data, url_len);
-}
-
-void Clipboard::WriteHyperlink(const char* title_data,
-                               size_t title_len,
-                               const char* url_data,
-                               size_t url_len) {
   std::string title_str(title_data, title_len);
   NSString *title =  base::SysUTF8ToNSString(title_str);
   std::string url_str(url_data, url_len);
