@@ -701,7 +701,7 @@
    socketcall.sendmsg(msg.msg_iov[i])
    fun:sendmsg$UNIX2003
    fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
-} 
+}
 {
    bug_21279
    Memcheck:Leak
@@ -751,4 +751,14 @@
    fun:sendSimpleEventToSelf
    fun:aeInitializeFromHIToolbox
    fun:INIT_AppleEvents
+}
+{
+  bug_21479
+  Memcheck:Leak
+  fun:malloc_zone_malloc
+  fun:_CFRuntimeCreateInstance
+  fun:CFPasteboardCreate
+  fun:CFPasteboardCreateUnique
+  fun:+[NSPasteboard _pasteboardWithName:]
+  fun:+[NSPasteboard pasteboardWithUniqueName]
 }
