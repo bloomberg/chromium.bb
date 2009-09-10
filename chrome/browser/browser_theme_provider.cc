@@ -1091,6 +1091,7 @@ void BrowserThemeProvider::SaveCachedImageData() {
     pref_images->SetString(UTF8ToWide(pref_name),
                            WideToUTF8(disk_path));
   }
+  profile_->GetPrefs()->SavePersistentPrefs();
 }
 
 void BrowserThemeProvider::SaveImageData(DictionaryValue* images_value) {
