@@ -23,7 +23,6 @@ NativeControlGtk::~NativeControlGtk() {
 // NativeControlGtk, View overrides:
 
 void NativeControlGtk::SetEnabled(bool enabled) {
-  NOTIMPLEMENTED();
   if (IsEnabled() != enabled) {
     View::SetEnabled(enabled);
     if (native_view())
