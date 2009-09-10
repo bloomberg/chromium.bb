@@ -8,23 +8,22 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 
-#include "chrome/test/browser/browser_test_runner.h"
+#include "chrome/test/test_launcher/test_runner.h"
 #include "chrome/test/unit/chrome_test_suite.h"
 
-// This version of the browser test launcher forks a new process for each test
-// it runs.
+// This version of the test launcher forks a new process for each test it runs.
 
 namespace {
 
 const wchar_t* const kGTestListTestsFlag = L"gtest_list_tests";
 const wchar_t* const kChildProcessFlag = L"child";
 
-class OutOfProcBrowserTestRunner : public browser_tests::BrowserTestRunner {
+class OutOfProcTestRunner : public tests::TestRunner {
  public:
-  OutOfProcBrowserTestRunner() {
+  OutOfProcTestRunner() {
   }
 
-  virtual ~OutOfProcBrowserTestRunner() {
+  virtual ~OutOfProcTestRunner() {
   }
 
   bool Init() {
@@ -55,20 +54,19 @@ class OutOfProcBrowserTestRunner : public browser_tests::BrowserTestRunner {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OutOfProcBrowserTestRunner);
+  DISALLOW_COPY_AND_ASSIGN(OutOfProcTestRunner);
 };
 
-class OutOfProcBrowserTestRunnerFactory
-    : public browser_tests::BrowserTestRunnerFactory {
+class OutOfProcTestRunnerFactory : public tests::TestRunnerFactory {
  public:
-  OutOfProcBrowserTestRunnerFactory() { }
+  OutOfProcTestRunnerFactory() { }
 
-  virtual browser_tests::BrowserTestRunner* CreateBrowserTestRunner() const {
-    return new OutOfProcBrowserTestRunner();
+  virtual tests::TestRunner* CreateTestRunner() const {
+    return new OutOfProcTestRunner();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OutOfProcBrowserTestRunnerFactory);
+  DISALLOW_COPY_AND_ASSIGN(OutOfProcTestRunnerFactory);
 };
 
 }  // namespace
@@ -83,6 +81,6 @@ int main(int argc, char** argv) {
   if (command_line->HasSwitch(kGTestListTestsFlag))
     return ChromeTestSuite(argc, argv).Run();
 
-  OutOfProcBrowserTestRunnerFactory test_runner_factory;
-  return browser_tests::RunTests(test_runner_factory) ? 0 : 1;
+  OutOfProcTestRunnerFactory test_runner_factory;
+  return tests::RunTests(test_runner_factory) ? 0 : 1;
 }

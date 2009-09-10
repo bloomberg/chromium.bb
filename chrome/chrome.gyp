@@ -5327,10 +5327,10 @@
           ],
           'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
           'sources': [
-            'test/browser/run_all_unittests.cc',
-            'test/browser/browser_test_launcher_out_of_proc.cc',
-            'test/browser/browser_test_runner.cc',
-            'test/browser/browser_test_runner.h',
+            'test/test_launcher/out_of_proc_test_runner.cc',
+            'test/test_launcher/test_runner.cc',
+            'test/test_launcher/test_runner.h',
+            'test/test_launcher/run_all_unittests.cc',
             'test/unit/chrome_test_suite.h',
             # browser_tests_sources is defined in 'variables' at the top of the
             # file.
@@ -5539,7 +5539,7 @@
               'test/live_sync/live_bookmarks_sync_test.h',
               'test/live_sync/profile_sync_service_test_harness.cc',
               'test/live_sync/profile_sync_service_test_harness.h',
-              'test/browser/run_all_unittests.cc',
+              'test/test_launcher/run_all_unittests.cc',
               'test/test_notification_tracker.cc',
               'test/test_notification_tracker.h',
               'test/testing_browser_process.h',
@@ -5596,6 +5596,138 @@
             ],
         },
         {
+          'target_name': 'interactive_ui_tests_dll',
+	  # 'product_name': 'interactive_ui_tests',
+          'type': 'shared_library',
+          'msvs_guid': '04116FAF-DA17-46EE-B108-971FCF0F0AFC',
+          'dependencies': [
+            'chrome',
+            'chrome_resources',
+            'chrome_strings',
+            'debugger',
+            'test_support_common',
+            'test_support_ui',
+            'syncapi',
+            '../third_party/hunspell/hunspell.gyp:hunspell',
+            '../net/net.gyp:net_resources',
+            '../skia/skia.gyp:skia',
+            '../third_party/icu/icu.gyp:icui18n',
+            '../third_party/libpng/libpng.gyp:libpng',
+            '../third_party/libxml/libxml.gyp:libxml',
+            '../third_party/zlib/zlib.gyp:zlib',
+            '../testing/gtest.gyp:gtest',
+            '../third_party/npapi/npapi.gyp:npapi',
+            # run time dependency
+            '../webkit/webkit.gyp:webkit_resources',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
+          'sources': [
+            'browser/browser_focus_uitest.cc',
+            'browser/debugger/devtools_sanity_unittest.cc',
+            'browser/views/bookmark_bar_view_test.cc',
+            'browser/blocked_popup_container_interactive_uitest.cc',
+            'browser/views/find_bar_win_interactive_uitest.cc',
+            'browser/views/tabs/tab_dragging_test.cc',
+            'test/in_process_browser_test.cc',
+            'test/in_process_browser_test.h',
+            'test/interactive_ui/npapi_interactive_test.cc',
+            'test/interactive_ui/view_event_test_base.cc',
+            'test/interactive_ui/view_event_test_base.h',
+            'test/test_launcher/run_all_unittests.cc',
+            'test/test_launcher/test_runner.h',
+            'test/test_launcher/test_runner.cc',
+            'test/unit/chrome_test_suite.h',
+          ],
+          'conditions': [
+            ['OS=="linux"', {
+              'dependencies': [
+                '../build/linux/system.gyp:gtk',
+              ],
+              'sources!': [
+                # TODO(port)
+                'browser/views/bookmark_bar_view_test.cc',
+                'browser/views/find_bar_win_interactive_uitest.cc',
+                'browser/views/tabs/tab_dragging_test.cc',
+                'test/interactive_ui/npapi_interactive_test.cc',
+                'test/interactive_ui/view_event_test_base.cc',
+                'test/interactive_ui/view_event_test_base.h',
+              ],
+            }],
+            ['target_arch!="x64"', {
+              'dependencies': [
+                # run time dependency
+                '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
+              ],
+            }],
+            ['OS=="linux" and toolkit_views==1', {
+              'dependencies': [
+                '../views/views.gyp:views',
+              ],
+            }],
+            ['OS=="mac"', {
+              'sources!': [
+                # TODO(port)
+                'browser/browser_focus_uitest.cc',
+                'browser/debugger/devtools_sanity_unittest.cc',
+                'browser/views/bookmark_bar_view_test.cc',
+                'browser/blocked_popup_container_interactive_uitest.cc',
+                'browser/views/find_bar_win_interactive_uitest.cc',
+                'browser/views/tabs/tab_dragging_test.cc',
+                'test/interactive_ui/npapi_interactive_test.cc',
+                'test/interactive_ui/view_event_test_base.cc',
+                'test/interactive_ui/view_event_test_base.h',
+              ],
+            }],
+            ['OS=="win"', {
+              'include_dirs': [
+                'third_party/wtl/include',
+              ],
+              'dependencies': [
+                'chrome_dll_version',
+                'crash_service',  # run time dependency
+                'installer/installer.gyp:installer_util_strings',
+                '../views/views.gyp:views',
+              ],
+              'sources': [
+                '../webkit/glue/resources/aliasb.cur',
+                '../webkit/glue/resources/cell.cur',
+                '../webkit/glue/resources/col_resize.cur',
+                '../webkit/glue/resources/copy.cur',
+                '../webkit/glue/resources/row_resize.cur',
+                '../webkit/glue/resources/vertical_text.cur',
+                '../webkit/glue/resources/zoom_in.cur',
+                '../webkit/glue/resources/zoom_out.cur',
+
+                'app/chrome_dll.rc',
+                'test/data/resource.rc',
+
+                # TODO:  It would be nice to have these pulled in
+                # automatically from direct_dependent_settings in
+                # their various targets (net.gyp:net_resources, etc.),
+                # but that causes errors in other targets when
+                # resulting .res files get referenced multiple times.
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+              ],
+              'configurations': {
+                'Debug': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                    },
+                  },
+                },
+              },
+            }],
+          ],
+        },
+        {
           # Shared library used by the in-proc browser tests.
           'target_name': 'browser_tests_dll',
           'type': 'shared_library',
@@ -5631,9 +5763,9 @@
           },
           'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
           'sources': [
-            'test/browser/run_all_unittests.cc',
             'test/in_process_browser_test.cc',
             'test/in_process_browser_test.h',
+            'test/test_launcher/run_all_unittests.cc',
             'test/unit/chrome_test_suite.h',
             'test/ui_test_utils.cc',
             'app/chrome_dll.rc',
@@ -5668,9 +5800,9 @@
             '..',
           ],
           'sources': [
-            'test/browser/browser_test_launcher_in_proc.cc',
-            'test/browser/browser_test_runner.cc',
-            'test/browser/browser_test_runner.h',
+            'test/test_launcher/in_proc_test_runner.cc',
+            'test/test_launcher/test_runner.cc',
+            'test/test_launcher/test_runner.h',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
@@ -5678,6 +5810,23 @@
               'ProgramDatabaseFile': '$(OutDir)\\browser_tests_exe.pdb',
             },
           },
+        },
+        {
+          # Executable that runs the tests in-process (tests are bundled in a DLL).
+          'target_name': 'test_launcher',
+          'type': 'executable',
+          'msvs_guid': 'FA94F5AA-BC73-4926-A189-71FAA986C905',
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'test/test_launcher/in_proc_test_runner.cc',
+            'test/test_launcher/test_runner.cc',
+            'test/test_launcher/test_runner.h',
+          ],
         },
         {
           'target_name': 'crash_service',

@@ -14,36 +14,37 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 
-#include "chrome/test/browser/browser_test_runner.h"
+#include "chrome/test/test_launcher/test_runner.h"
 
-// This version of the browser test launcher loads a dynamic library containing
-// the tests and executes the them in that library. When the test has been run
-// the library is unloaded, to ensure atexit handlers are run and static
+// This version of the test launcher loads a dynamic library containing the
+// tests and executes the them in that library. When the test has been run the
+// library is unloaded, to ensure atexit handlers are run and static
 // initializers will be run again for the next test.
 
 namespace {
 
-const wchar_t* const kBrowserTesLibBaseName = L"browser_tests";
+const wchar_t* const kLibNameFlag = L"lib";
 const wchar_t* const kGTestListTestsFlag = L"gtest_list_tests";
 
-class InProcBrowserTestRunner : public browser_tests::BrowserTestRunner {
+class InProcTestRunner : public tests::TestRunner {
  public:
-  InProcBrowserTestRunner() : dynamic_lib_(NULL), run_test_proc_(NULL) {
+  explicit InProcTestRunner(const std::wstring& lib_name)
+      : lib_name_(lib_name),
+        dynamic_lib_(NULL),
+        run_test_proc_(NULL) {
   }
 
-  ~InProcBrowserTestRunner() {
+  ~InProcTestRunner() {
     if (!dynamic_lib_)
       return;
     base::UnloadNativeLibrary(dynamic_lib_);
-    LOG(INFO) << "Unloaded " <<
-        base::GetNativeLibraryName(kBrowserTesLibBaseName);
+    LOG(INFO) << "Unloaded " << base::GetNativeLibraryName(lib_name_);
   }
 
   bool Init() {
     FilePath lib_path;
     CHECK(PathService::Get(base::FILE_EXE, &lib_path));
-    lib_path = lib_path.DirName().Append(
-        base::GetNativeLibraryName(kBrowserTesLibBaseName));
+    lib_path = lib_path.DirName().Append(base::GetNativeLibraryName(lib_name_));
 
     LOG(INFO) << "Loading '" <<  lib_path.value() << "'";
 
@@ -72,7 +73,7 @@ class InProcBrowserTestRunner : public browser_tests::BrowserTestRunner {
     argv[0] = const_cast<char*>("");
     argv[1] = const_cast<char*>(filter_flag.c_str());
     // Always enable disabled tests.  This method is not called with disabled
-    // tests unless this flag was specified to the browser test executable.
+    // tests unless this flag was specified to the test launcher.
     argv[2] = "--gtest_also_run_disabled_tests";
     return RunAsIs(3, argv) == 0;
   }
@@ -85,23 +86,27 @@ class InProcBrowserTestRunner : public browser_tests::BrowserTestRunner {
  private:
   typedef int (CDECL *RunTestProc)(int, char**);
 
+  std::wstring lib_name_;
   base::NativeLibrary dynamic_lib_;
   RunTestProc run_test_proc_;
 
-  DISALLOW_COPY_AND_ASSIGN(InProcBrowserTestRunner);
+  DISALLOW_COPY_AND_ASSIGN(InProcTestRunner);
 };
 
-class InProcBrowserTestRunnerFactory
-    : public browser_tests::BrowserTestRunnerFactory {
+class InProcTestRunnerFactory : public tests::TestRunnerFactory {
  public:
-  InProcBrowserTestRunnerFactory() { }
+  explicit InProcTestRunnerFactory(const std::wstring& lib_name)
+      : lib_name_(lib_name) {
+  }
 
-  virtual browser_tests::BrowserTestRunner* CreateBrowserTestRunner() const {
-    return new InProcBrowserTestRunner();
+  virtual tests::TestRunner* CreateTestRunner() const {
+    return new InProcTestRunner(lib_name_);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InProcBrowserTestRunnerFactory);
+  std::wstring lib_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(InProcTestRunnerFactory);
 };
 
 }  // namespace
@@ -111,14 +116,20 @@ int main(int argc, char** argv) {
 
   CommandLine::Init(argc, argv);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  std::wstring lib_name = command_line->GetSwitchValue(kLibNameFlag);
+  if (lib_name.empty()) {
+    LOG(ERROR) << "No dynamic library name specified. You must specify one with"
+        " the --lib=<lib_name> option.";
+    return 1;
+  }
 
   if (command_line->HasSwitch(kGTestListTestsFlag)) {
-    InProcBrowserTestRunner test_runner;
+    InProcTestRunner test_runner(lib_name);
     if (!test_runner.Init())
       return 1;
     return test_runner.RunAsIs(argc, argv);
   }
 
-  InProcBrowserTestRunnerFactory test_runner_factory;
-  return browser_tests::RunTests(test_runner_factory) ? 0 : 1;
+  InProcTestRunnerFactory test_runner_factory(lib_name);
+  return tests::RunTests(test_runner_factory) ? 0 : 1;
 }

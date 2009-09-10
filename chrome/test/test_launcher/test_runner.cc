@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/browser/browser_test_runner.h"
+#include "chrome/test/test_launcher/test_runner.h"
 
 #include <vector>
 
@@ -23,9 +23,9 @@ const wchar_t* const kGTestRunDisabledTestsFlag =
 // |command_line| should contain the command line used to start the browser
 // test launcher, it is expected that it does not contain the
 // --gtest_list_tests flag already.
-// Note: we cannot implement this in-process for InProcessBrowserTestRunner as
-// GTest prints to the stdout and there are no good way of temporarily
-// redirecting outputs.
+// Note: we cannot implement this in-process for InProcessTestRunner as GTest
+// prints to the stdout and there are no good way of temporarily redirecting
+// outputs.
 bool GetTestList(const CommandLine& command_line,
                  std::vector<std::string>* test_list) {
   DCHECK(!command_line.HasSwitch(kGTestListTestsFlag));
@@ -72,15 +72,15 @@ bool GetTestList(const CommandLine& command_line,
 
 }  // namespace
 
-namespace browser_tests {
+namespace tests {
 
-BrowserTestRunner::BrowserTestRunner() {
+TestRunner::TestRunner() {
 }
 
-BrowserTestRunner::~BrowserTestRunner() {
+TestRunner::~TestRunner() {
 }
 
-bool RunTests(const BrowserTestRunnerFactory& browser_test_runner_factory) {
+bool RunTests(const TestRunnerFactory& test_runner_factory) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   DCHECK(!command_line->HasSwitch(kGTestListTestsFlag));
@@ -102,8 +102,7 @@ bool RunTests(const BrowserTestRunnerFactory& browser_test_runner_factory) {
   for (std::vector<std::string>::const_iterator iter = test_list.begin();
        iter != test_list.end(); ++iter) {
     std::string test_name = *iter;
-    scoped_ptr<BrowserTestRunner> test_runner(
-        browser_test_runner_factory.CreateBrowserTestRunner());
+    scoped_ptr<TestRunner> test_runner(test_runner_factory.CreateTestRunner());
     if (!test_runner.get() || !test_runner->Init())
       return false;
     test_run_count++;

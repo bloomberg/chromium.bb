@@ -2,34 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BROWSER_BROWSER_TEST_RUNNER_
-#define CHROME_TEST_BROWSER_BROWSER_TEST_RUNNER_
+#ifndef CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_
+#define CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 
-namespace browser_tests {
+namespace tests {
 
-class BrowserTestRunnerFactory;
+class TestRunnerFactory;
 
 // Runs the tests specified by the --gtest_filter flag specified in the command
 // line that started this process.
 // Returns true if all tests succeeded, false if there were no tests to run, or
 // one or more tests failed, or if initialization failed.
 // Results are printed to stdout.
-bool RunTests(const BrowserTestRunnerFactory& browser_test_runner_factory);
+bool RunTests(const TestRunnerFactory& test_runner_factory);
 
-// This class defines a way to run browser tests.
+// This class defines a way to run tests in an isolated environment (each test
+// having its static variables uninitialized).
 // There are 2 implementations, in-process and out-of-process.
-class BrowserTestRunner {
+class TestRunner {
  public:
-  BrowserTestRunner();
-  virtual  ~BrowserTestRunner();
+  TestRunner();
+  virtual ~TestRunner();
 
-  // Called once before the BrowserTestRunner is used.  Gives it an opportunity
-  // to perform any requried initialization.  Should return true if the
+  // Called once before the TestRunner is used.  Gives it an opportunity to
+  // perform any requried initialization.  Should return true if the
   // initialization was successful.
   virtual bool Init() = 0;
 
@@ -38,14 +39,14 @@ class BrowserTestRunner {
   virtual bool RunTest(const std::string& test_name) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserTestRunner);
+  DISALLOW_COPY_AND_ASSIGN(TestRunner);
 };
 
-class BrowserTestRunnerFactory {
+class TestRunnerFactory {
  public:
-  virtual BrowserTestRunner* CreateBrowserTestRunner() const = 0;
+  virtual TestRunner* CreateTestRunner() const = 0;
 };
 
 }  // namespace
 
-#endif  // CHROME_TEST_BROWSER_BROWSER_TEST_RUNNER_
+#endif  // CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_
