@@ -5629,7 +5629,7 @@
             'browser/debugger/devtools_sanity_unittest.cc',
             'browser/views/bookmark_bar_view_test.cc',
             'browser/blocked_popup_container_interactive_uitest.cc',
-            'browser/views/find_bar_win_interactive_uitest.cc',
+            'browser/views/find_bar_host_interactive_uitest.cc',
             'browser/views/tabs/tab_dragging_test.cc',
             'test/in_process_browser_test.cc',
             'test/in_process_browser_test.h',
@@ -5649,7 +5649,7 @@
               'sources!': [
                 # TODO(port)
                 'browser/views/bookmark_bar_view_test.cc',
-                'browser/views/find_bar_win_interactive_uitest.cc',
+                'browser/views/find_bar_host_interactive_uitest.cc',
                 'browser/views/tabs/tab_dragging_test.cc',
                 'test/interactive_ui/npapi_interactive_test.cc',
                 'test/interactive_ui/view_event_test_base.cc',
@@ -5674,7 +5674,7 @@
                 'browser/debugger/devtools_sanity_unittest.cc',
                 'browser/views/bookmark_bar_view_test.cc',
                 'browser/blocked_popup_container_interactive_uitest.cc',
-                'browser/views/find_bar_win_interactive_uitest.cc',
+                'browser/views/find_bar_host_interactive_uitest.cc',
                 'browser/views/tabs/tab_dragging_test.cc',
                 'test/interactive_ui/npapi_interactive_test.cc',
                 'test/interactive_ui/view_event_test_base.cc',
