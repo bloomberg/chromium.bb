@@ -91,6 +91,7 @@ def GetTryServerSettings():
   settings['http_port'] = gcl.GetCodeReviewSetting('TRYSERVER_HTTP_PORT')
   settings['http_host'] = gcl.GetCodeReviewSetting('TRYSERVER_HTTP_HOST')
   settings['svn_repo'] = gcl.GetCodeReviewSetting('TRYSERVER_SVN_URL')
+  settings['default_project'] = gcl.GetCodeReviewSetting('TRYSERVER_PROJECT')
   # Use http is the http_host name resolve, fallback to svn otherwise.
   if (settings['http_port'] and settings['http_host'] and
       _SafeResolve(settings['http_host'])):
@@ -255,6 +256,8 @@ def _ParseSendChangeOptions(options):
     values['patchset'] = options.patchset
   if options.target:
     values['target'] = options.target
+  if options.project:
+    values['project'] = options.project
   return values
 
 
@@ -420,7 +423,7 @@ def TryChange(argv,
   group.add_option("-b", "--bot", action="append",
                     help="Only use specifics build slaves, ex: '--bot win' to "
                          "run the try job only on the 'win' slave; see the try "
-                         "server watefall for the slave's name")
+                         "server waterfall for the slave's name")
   group.add_option("-r", "--revision",
                     help="Revision to use for the try job; default: the "
                          "revision will be determined by the try server; see "
@@ -431,6 +434,10 @@ def TryChange(argv,
   # TODO(maruel): help="Select a specific configuration, usually 'debug' or "
   #                    "'release'"
   group.add_option("--target", help=optparse.SUPPRESS_HELP)
+
+  # TODO(bradnelson): help="Override which project to use"
+  group.add_option("--project", help=optparse.SUPPRESS_HELP,
+                   default=default_settings['default_project'])
 
   # Override the list of tests to run, use multiple times to list many tests
   # (or comma separated)
