@@ -39,12 +39,23 @@ bool PathProviderLinux(int key, FilePath* result) {
     case base::DIR_SOURCE_ROOT:
       // On linux, unit tests execute two levels deep from the source root.
       // For example:  sconsbuild/{Debug|Release}/net_unittest
-      if (!PathService::Get(base::DIR_EXE, &path))
-        return false;
-      path = path.Append(FilePath::kParentDirectory)
-                 .Append(FilePath::kParentDirectory);
-      *result = path;
-      return true;
+      if (PathService::Get(base::DIR_EXE, &path)) {
+        path = path.DirName().DirName();
+        if (file_util::PathExists(path.Append("base/base_paths_linux.cc"))) {
+          *result = path;
+          return true;
+        }
+      }
+      // If that failed (maybe the build output is symlinked to a different
+      // drive) try assuming the current directory is the source root.
+      if (file_util::GetCurrentDirectory(&path) &&
+          file_util::PathExists(path.Append("base/base_paths_linux.cc"))) {
+        *result = path;
+        return true;
+      }
+      LOG(ERROR) << "Couldn't find your source root.  "
+                 << "Try running from your chromium/src directory.";
+      return false;
   }
   return false;
 }

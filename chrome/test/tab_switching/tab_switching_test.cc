@@ -29,9 +29,7 @@ namespace {
 class TabSwitchingUITest : public UITest {
  public:
   TabSwitchingUITest() {
-    PathService::Get(base::DIR_EXE, &path_prefix_);
-    path_prefix_ = path_prefix_.DirName();
-    path_prefix_ = path_prefix_.DirName();
+    PathService::Get(base::DIR_SOURCE_ROOT, &path_prefix_);
     path_prefix_ = path_prefix_.AppendASCII("data");
     path_prefix_ = path_prefix_.AppendASCII("tab_switching");
 

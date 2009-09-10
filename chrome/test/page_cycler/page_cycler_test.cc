@@ -180,9 +180,7 @@ class PageCyclerTest : public UITest {
 
     // Make sure the test data is checked out
     FilePath test_path;
-    PathService::Get(base::DIR_EXE, &test_path);
-    test_path = test_path.DirName();
-    test_path = test_path.DirName();
+    PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
     test_path = test_path.Append(FILE_PATH_LITERAL("data"));
     test_path = test_path.Append(FILE_PATH_LITERAL("page_cycler"));
     test_path = test_path.AppendASCII(name);

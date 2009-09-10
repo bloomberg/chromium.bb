@@ -48,9 +48,7 @@ class MemoryTest : public UITest {
 
     if (profile_dir.empty()) {
       // Compute the user-data-dir which contains our test cache.
-      PathService::Get(base::DIR_EXE, &profile_dir);
-      profile_dir = profile_dir.DirName();
-      profile_dir = profile_dir.DirName();
+      PathService::Get(base::DIR_SOURCE_ROOT, &profile_dir);
       profile_dir = profile_dir.AppendASCII("data");
       profile_dir = profile_dir.AppendASCII("memory_test");
       profile_dir = profile_dir.AppendASCII("general_mix");
