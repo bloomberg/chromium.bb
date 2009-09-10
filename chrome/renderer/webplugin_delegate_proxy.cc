@@ -426,11 +426,11 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
   if (bitmaps_changed)
 #endif
   {
-    if (transport_store_.get()) {
+    if (transport_store_.get())
       param.windowless_buffer = transport_store_->handle();
-    } else if (background_store_.get()) {
+
+    if (background_store_.get())
       param.background_buffer = background_store_->handle();
-    }
   }
 
   IPC::Message* msg;
