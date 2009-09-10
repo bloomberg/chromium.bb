@@ -17,6 +17,7 @@ class ErrorPageTest : public UITest {
         return true;
       PlatformThread::Sleep(sleep_timeout_ms() / 10);
     }
+    EXPECT_EQ(title, GetActiveTabTitle());
     return false;
   }
   bool WaitForTitleContaining(const std::string& title_substring) {
@@ -26,6 +27,8 @@ class ErrorPageTest : public UITest {
         return true;
       PlatformThread::Sleep(sleep_timeout_ms() / 10);
     }
+    LOG(ERROR) << "Could not find " << title_substring << " in "
+               << GetActiveTabTitle();
     return false;
   }
 };
