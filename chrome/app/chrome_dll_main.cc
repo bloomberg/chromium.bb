@@ -97,7 +97,7 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
 #elif defined(OS_POSIX)
 extern "C" {
 __attribute__((visibility("default")))
-int ChromeMain(int argc, const char** argv);
+int ChromeMain(int argc, char** argv);
 }
 #endif
 
@@ -298,7 +298,7 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
                                  sandbox::SandboxInterfaceInfo* sandbox_info,
                                  TCHAR* command_line) {
 #elif defined(OS_POSIX)
-int ChromeMain(int argc, const char** argv) {
+int ChromeMain(int argc, char** argv) {
 #endif
 
 #if defined(OS_MACOSX)
@@ -342,6 +342,10 @@ int ChromeMain(int argc, const char** argv) {
   CommandLine::Init(0, NULL);
 #else
   CommandLine::Init(argc, argv);
+#endif
+#if defined(OS_LINUX)
+  // Set up CommandLine::SetProcTitle() support.
+  CommandLine::SetTrueArgv(argv);
 #endif
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
@@ -594,8 +598,8 @@ int ChromeMain(int argc, const char** argv) {
     // definitely harmless, so retained as a reminder of this
     // requirement for gconf.
     g_type_init();
-    // gtk_init() can change |argc| and |argv|, but nobody else uses them.
-    gtk_init(&argc, const_cast<char***>(&argv));
+    // gtk_init() can change |argc| and |argv|.
+    gtk_init(&argc, &argv);
     SetUpGLibLogHandler();
 #endif
 

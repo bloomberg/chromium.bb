@@ -187,6 +187,7 @@ class Zygote {
       Singleton<base::GlobalDescriptors>()->Reset(mapping);
       CommandLine::Reset();
       CommandLine::Init(args);
+      CommandLine::SetProcTitle();
       return true;
     }
 

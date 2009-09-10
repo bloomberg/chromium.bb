@@ -300,8 +300,12 @@ bool BrowserRenderProcessHost::Init() {
   if (logging::DialogsAreSuppressed())
     cmd_line.AppendSwitch(switches::kNoErrorDialogs);
 
-  // propagate the following switches to the renderer command line
-  // (along with any associated values) if present in the browser command line
+  // Pass the process type first, so it shows first in process listings.
+  cmd_line.AppendSwitchWithValue(switches::kProcessType,
+                                 switches::kRendererProcess);
+
+  // Propagate the following switches to the renderer command line (along
+  // with any associated values) if present in the browser command line.
   static const wchar_t* const switch_names[] = {
     switches::kRendererAssertTest,
     switches::kRendererCrashTest,
@@ -371,9 +375,6 @@ bool BrowserRenderProcessHost::Init() {
     cmd_line.PrependWrapper(prefix);
   }
 #endif  // OS_POSIX
-
-  cmd_line.AppendSwitchWithValue(switches::kProcessType,
-                                 switches::kRendererProcess);
 
   cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
                                  ASCIIToWide(channel_id));
