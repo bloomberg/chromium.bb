@@ -6,9 +6,7 @@
 
 #include <string.h>
 
-#include "base/port.h"
 #include "chrome/browser/sync/util/path_helpers.h"
-#include "strings/strutil.h"
 
 #if ((!defined(OS_LINUX)) && (!defined(OS_MACOSX)))
 #error Compile this file on Mac OS X or Linux only.
