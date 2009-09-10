@@ -117,9 +117,9 @@ PREFIX : messageloop::dowork
 # 21295
 PREFIX : renderwidgethost::getbackingstore
 
-# bug 25120 from [25866:25873]
+# bug 21520 from [25866:25873]
 PREFIX: renderviewhost::setnavigationssuspended___renderviewhostmanager::shouldclosetabonunresponsiverenderer___tabcontents::rendererunresponsive
 
-# bug 25120 from [25874:25879]
+# bug 21520 from [25874:25879]
 PREFIX: renderviewhost::executejavascriptinwebframe___domui::calljavascriptfunction___downloadsdomhandler::sendcurrentdownloads
 PREFIX: deletetask<urlfetcher>::run
