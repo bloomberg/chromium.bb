@@ -574,6 +574,12 @@
    fun:sqlite3_exec
 }
 {
+   bug_20653c
+   Memcheck:Addr4
+   fun:pager_write_pagelist
+   fun:sqlite3PagerCommitPhaseOne
+}
+{
    bug_20808
    Memcheck:Addr8
    ...
