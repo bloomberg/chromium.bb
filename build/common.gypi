@@ -461,18 +461,22 @@
         'xcode_settings': {
           'ALWAYS_SEARCH_USER_PATHS': 'NO',
           'GCC_C_LANGUAGE_STANDARD': 'gnu99',
-          'GCC_CW_ASM_SYNTAX': 'NO',
-          'GCC_DYNAMIC_NO_PIC': 'NO',
-          'GCC_ENABLE_PASCAL_STRINGS': 'NO',
-          'GCC_INLINES_ARE_PRIVATE_EXTERN': 'YES',
-          'GCC_OBJC_CALL_CXX_CDTORS': 'YES',
-          'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',
-          'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',
+          'GCC_CW_ASM_SYNTAX': 'NO',                # No -fasm-blocks
+          'GCC_DYNAMIC_NO_PIC': 'NO',               # No -mdynamic-no-pic
+                                                    # (Equivalent to -fPIC)
+          'GCC_ENABLE_CPP_EXCEPTIONS': 'NO',        # -fno-exceptions
+          'GCC_ENABLE_CPP_RTTI': 'NO',              # -fno-rtti
+          'GCC_ENABLE_PASCAL_STRINGS': 'NO',        # No -mpascal-strings
+          'GCC_INLINES_ARE_PRIVATE_EXTERN': 'YES',  # -fvisibility-inlines-hidden
+          'GCC_OBJC_CALL_CXX_CDTORS': 'YES',        # -fobjc-call-cxx-cdtors
+          'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',      # -fvisibility=hidden
+          'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
+          'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',    # -Werror
           'GCC_VERSION': '4.2',
-          'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',
-          'MACOSX_DEPLOYMENT_TARGET': '10.5',
-          'PREBINDING': 'NO',
-          'SDKROOT': 'macosx10.5',
+          'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',  # -Wnewline-eof
+          'MACOSX_DEPLOYMENT_TARGET': '10.5',       # -mmacosx-version-min=10.5
+          'PREBINDING': 'NO',                       # No -Wl,-prebind
+          'SDKROOT': 'macosx10.5',                  # -isysroot
           'USE_HEADERMAP': 'NO',
           # TODO(bradnelson): -Werror ?!?
           'WARNING_CFLAGS': ['-Wall', '-Wendif-labels', '-Wno-long-long'],
