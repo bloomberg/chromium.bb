@@ -15,8 +15,11 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/gtk/first_run_bubble.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/rounded_window.h"
@@ -80,7 +83,17 @@ std::wstring GetKeywordName(Profile* profile,
   return std::wstring();
 }
 
+// If widget is visible, increment the int pointed to by count.
+// Suitible for use with gtk_container_foreach.
+void CountVisibleWidgets(GtkWidget* widget, gpointer count) {
+  if (GTK_WIDGET_VISIBLE(widget))
+    *static_cast<int*>(count) += 1;
+}
+
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarViewGtk
 
 // static
 const GdkColor LocationBarViewGtk::kBackgroundColorByLevel[3] = {
@@ -90,7 +103,8 @@ const GdkColor LocationBarViewGtk::kBackgroundColorByLevel[3] = {
 };
 
 LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
-    ToolbarModel* toolbar_model, AutocompletePopupPositioner* popup_positioner)
+    ToolbarModel* toolbar_model, AutocompletePopupPositioner* popup_positioner,
+    Browser* browser)
     : security_icon_event_box_(NULL),
       security_lock_icon_image_(NULL),
       security_warning_icon_image_(NULL),
@@ -104,6 +118,7 @@ LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
       profile_(NULL),
       command_updater_(command_updater),
       toolbar_model_(toolbar_model),
+      browser_(browser),
       popup_positioner_(popup_positioner),
       disposition_(CURRENT_TAB),
       transition_(PageTransition::TYPED),
@@ -226,6 +241,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_event_box_,
                    FALSE, FALSE, 0);
 
+  page_action_hbox_ = gtk_hbox_new(FALSE, kInnerPadding);
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), page_action_hbox_, FALSE, FALSE, 0);
+
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
@@ -239,6 +257,7 @@ void LocationBarViewGtk::SetProfile(Profile* profile) {
 
 void LocationBarViewGtk::Update(const TabContents* contents) {
   SetSecurityIcon(toolbar_model_->GetIcon());
+  UpdatePageActions();
   SetInfoText();
   location_entry_->Update(contents);
   // The security level (background color) could have changed, etc.
@@ -369,7 +388,37 @@ void LocationBarViewGtk::FocusSearch() {
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
-  // http://code.google.com/p/chromium/issues/detail?id=11973
+  std::vector<PageAction*> page_actions;
+  if (profile_->GetExtensionsService())
+      page_actions = profile_->GetExtensionsService()->GetPageActions();
+
+  // Initialize on the first call, or re-inialize if more extensions have been
+  // loaded or added after startup.
+  if (page_actions.size() != page_action_views_.size()) {
+    page_action_views_.reset(); // Delete the old views (if any).
+
+    for (size_t i = 0; i < page_actions.size(); ++i) {
+      page_action_views_.push_back(
+          new PageActionViewGtk(this, profile_, page_actions[i]));
+      gtk_box_pack_end(GTK_BOX(page_action_hbox_),
+                       page_action_views_[i]->widget(), FALSE, FALSE, 0);
+    }
+  }
+
+  TabContents* contents = browser_->GetSelectedTabContents();
+  if (!page_action_views_.empty() && contents) {
+    GURL url = GURL(WideToUTF8(toolbar_model_->GetText()));
+
+    for (size_t i = 0; i < page_action_views_.size(); i++)
+      page_action_views_[i]->UpdateVisibility(contents, url);
+  }
+
+  // If there are no visible page actions, hide the hbox too, so that it does
+  // not affect the padding in the location bar.
+  if (PageActionVisibleCount())
+    gtk_widget_show(page_action_hbox_);
+  else
+    gtk_widget_hide(page_action_hbox_);
 }
 
 void LocationBarViewGtk::SaveStateToContents(TabContents* contents) {
@@ -381,8 +430,10 @@ void LocationBarViewGtk::Revert() {
 }
 
 int LocationBarViewGtk::PageActionVisibleCount() {
-  NOTIMPLEMENTED();
-  return -1;
+  int count = 0;
+  gtk_container_foreach(GTK_CONTAINER(page_action_hbox_), CountVisibleWidgets,
+                        &count);
+  return count;
 }
 
 void LocationBarViewGtk::Observe(NotificationType type,
@@ -598,5 +649,105 @@ gboolean LocationBarViewGtk::OnSecurityIconPressed(
     return true;
   }
   tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarViewGtk::PageActionViewGtk
+
+LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
+    LocationBarViewGtk* owner, Profile* profile, const PageAction* page_action)
+    : owner_(owner),
+      profile_(profile),
+      page_action_(page_action) {
+  event_box_.Own(gtk_event_box_new());
+  // Make the event box not visible so it does not paint a background.
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
+  g_signal_connect(event_box_.get(), "button-press-event",
+                   G_CALLBACK(&OnButtonPressed), this);
+
+  image_.Own(gtk_image_new());
+  gtk_container_add(GTK_CONTAINER(event_box_.get()), image_.get());
+
+  Extension* extension = profile->GetExtensionsService()->GetExtensionById(
+      page_action->extension_id());
+  DCHECK(extension);
+
+  DCHECK(!page_action->icon_paths().empty());
+  const std::vector<std::string>& icon_paths = page_action->icon_paths();
+  pixbufs_.resize(icon_paths.size());
+  tracker_ = new ImageLoadingTracker(this, icon_paths.size());
+  for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
+       iter != icon_paths.end(); ++iter) {
+    tracker_->PostLoadImageTask(extension->GetResourcePath(*iter));
+  }
+}
+
+LocationBarViewGtk::PageActionViewGtk::~PageActionViewGtk() {
+  if (tracker_)
+    tracker_->StopTrackingImageLoad();
+  image_.Destroy();
+  event_box_.Destroy();
+  for (size_t i=0; i < pixbufs_.size(); ++i) {
+    if (pixbufs_[i])
+      g_object_unref(pixbufs_[i]);
+  }
+}
+
+void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
+    TabContents* contents, GURL url) {
+  // Save this off so we can pass it back to the extension when the action gets
+  // executed. See PageActionImageView::OnMousePressed.
+  current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
+  current_url_ = url;
+
+  const PageActionState* state = contents->GetPageActionState(page_action_);
+  bool visible = state != NULL;
+  if (visible) {
+    // Set the tooltip.
+    if (state->title().empty())
+      gtk_widget_set_tooltip_text(event_box_.get(),
+                                  page_action_->name().c_str());
+    else
+      gtk_widget_set_tooltip_text(event_box_.get(), state->title().c_str());
+    // Set the image.
+    int index = state->icon_index();
+    // The image index (if not within bounds) will be set to the first image.
+    if (index < 0 || index >= static_cast<int>(pixbufs_.size()))
+      index = 0;
+    // The pixbuf might not be loaded yet.
+    if (pixbufs_[index])
+      gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbufs_[index]);
+    else
+      visible = false;
+  }
+
+  if (visible) {
+    gtk_widget_show_all(event_box_.get());
+  } else {
+    gtk_widget_hide_all(event_box_.get());
+  }
+}
+
+void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(SkBitmap* image,
+                                                          size_t index) {
+  DCHECK(index < pixbufs_.size());
+  if (index == pixbufs_.size() - 1)
+    tracker_ = NULL;  // The tracker object will delete itself when we return.
+  pixbufs_[index] = gfx::GdkPixbufFromSkBitmap(image);
+  owner_->UpdatePageActions();
+}
+
+// static
+gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
+    GtkWidget* sender,
+    GdkEventButton* event,
+    LocationBarViewGtk::PageActionViewGtk* page_action_view) {
+  ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+      page_action_view->profile_,
+      page_action_view->page_action_->extension_id(),
+      page_action_view->page_action_->id(),
+      page_action_view->current_tab_id_,
+      page_action_view->current_url_.spec());
   return true;
 }

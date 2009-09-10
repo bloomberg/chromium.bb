@@ -11,6 +11,7 @@
 #include "app/gfx/font.h"
 #include "base/gfx/rect.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/image_loading_tracker.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
@@ -333,7 +334,8 @@ class LocationBarView : public LocationBar,
 
   // PageActionImageView is used to display the icon for a given PageAction
   // and notify the extension when the icon is clicked.
-  class PageActionImageView : public LocationBarImageView {
+  class PageActionImageView : public LocationBarImageView,
+                              public ImageLoadingTracker::Observer {
    public:
     PageActionImageView(
         LocationBarView* owner, Profile* profile,
@@ -346,20 +348,15 @@ class LocationBarView : public LocationBar,
     // Overridden from LocationBarImageView.
     virtual void ShowInfoBubble();
 
+    // Overridden from ImageLoadingTracker.
+    virtual void OnImageLoaded(SkBitmap* image, size_t index);
+
     // Called to notify the PageAction that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|
     // is the current page URL.
     void UpdateVisibility(TabContents* contents, GURL url);
 
-    // A callback for when the image has loaded.
-    void OnImageLoaded(SkBitmap* image, size_t index);
-
    private:
-    // We load the images for the PageActions on the file thread. These tasks
-    // help with that.
-    class LoadImageTask;
-    class ImageLoadingTracker;
-
     // The location bar view that owns us.
     LocationBarView* owner_;
 
@@ -430,10 +427,6 @@ class LocationBarView : public LocationBar,
 
   // Delete all page action views that we have created.
   void DeletePageActionViews();
-
-  // Retrieves a vector of all page actions, irrespective of which
-  // extension they belong to.
-  std::vector<PageAction*> GetPageActions();
 
   // Update the views for the Page Actions, to reflect state changes for
   // PageActions.

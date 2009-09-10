@@ -12,7 +12,6 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
-#include "app/gfx/favicon_size.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -39,11 +37,9 @@
 #include "chrome/common/page_action.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/image_operations.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#include "webkit/glue/image_decoder.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -657,29 +653,10 @@ void LocationBarView::DeletePageActionViews() {
   }
 }
 
-std::vector<PageAction*> LocationBarView::GetPageActions() {
-  std::vector<PageAction*> result;
-  if (!profile_->GetExtensionsService())
-    return result;
-
-  // Query the extension system to see how many page actions we have.
-  // TODO(finnur): Sort the page icons in some meaningful way.
-  const ExtensionList* extensions =
-      profile_->GetExtensionsService()->extensions();
-  for (ExtensionList::const_iterator iter = extensions->begin();
-       iter != extensions->end(); ++iter) {
-    const PageActionMap& page_actions = (*iter)->page_actions();
-    for (PageActionMap::const_iterator i(page_actions.begin());
-         i != page_actions.end(); ++i) {
-      result.push_back(i->second);
-    }
-  }
-
-  return result;
-}
-
 void LocationBarView::RefreshPageActionViews() {
-  std::vector<PageAction*> page_actions = GetPageActions();
+  std::vector<PageAction*> page_actions;
+  if (profile_->GetExtensionsService())
+    page_actions = profile_->GetExtensionsService()->GetPageActions();
 
   // On startup we sometimes haven't loaded any extensions. This makes sure
   // we catch up when the extensions (and any page actions) load.
@@ -1208,119 +1185,6 @@ void LocationBarView::SecurityImageView::ShowInfoBubble() {
 
 // PageActionImageView----------------------------------------------------------
 
-// The views need to load their icons asynchronously but might be deleted before
-// the images have loaded. This class stays alive while the request is in
-// progress (manages its own lifetime) and keeps track of whether the view still
-// cares about the icon loading.
-class LocationBarView::PageActionImageView::ImageLoadingTracker
-  : public base::RefCountedThreadSafe<ImageLoadingTracker> {
- public:
-  explicit ImageLoadingTracker(PageActionImageView* view, int image_count)
-    : view_(view), image_count_(image_count) {
-    AddRef();  // We hold on to a reference to ourself to make sure we don't
-               // get deleted until we get a response from image loading (see
-               // ImageLoadingDone).
-  }
-  ~ImageLoadingTracker() {}
-
-  void StopTrackingImageLoad() {
-    view_ = NULL;
-  }
-
-  void OnImageLoaded(SkBitmap* image, int index) {
-    if (image == NULL) {
-      NOTREACHED() << "Image failed to decode.";
-      image = new SkBitmap();
-    }
-    if (view_)
-      view_->OnImageLoaded(image, index);
-    delete image;
-    if (--image_count_ == 0)
-      Release();  // We are no longer needed.
-  }
-
- private:
-
-  // The view that is waiting for the image to load.
-  PageActionImageView* view_;
-
-  // The number of images this ImageTracker should keep track of.
-  int image_count_;
-};
-
-// The LoadImageTask is for asynchronously loading the image on the file thread.
-// If the image is successfully loaded and decoded it will report back on the
-// |callback_loop| to let the caller know the image is done loading.
-class LocationBarView::PageActionImageView::LoadImageTask : public Task {
- public:
-  // Constructor for the LoadImageTask class. |tracker| is the object that
-  // we use to communicate back to the entity that wants the image after we
-  // decode it. |path| is the path to load the image from. |index| is an
-  // identifier for the image that we pass back to the caller.
-  LoadImageTask(ImageLoadingTracker* tracker,
-                const FilePath& path,
-                int index)
-    : callback_loop_(MessageLoop::current()),
-      tracker_(tracker),
-      path_(path),
-      index_(index) {}
-
-  void ReportBack(SkBitmap* image) {
-    DCHECK(image);
-    callback_loop_->PostTask(FROM_HERE, NewRunnableMethod(tracker_,
-        &PageActionImageView::ImageLoadingTracker::OnImageLoaded,
-        image,
-        index_));
-  }
-
-  virtual void Run() {
-    // Read the file from disk.
-    std::string file_contents;
-    if (!file_util::PathExists(path_) ||
-        !file_util::ReadFileToString(path_, &file_contents)) {
-      ReportBack(NULL);
-      return;
-    }
-
-    // Decode the image using WebKit's image decoder.
-    const unsigned char* data =
-        reinterpret_cast<const unsigned char*>(file_contents.data());
-    webkit_glue::ImageDecoder decoder(gfx::Size(kFavIconSize, kFavIconSize));
-    scoped_ptr<SkBitmap> decoded(new SkBitmap());
-    *decoded = decoder.Decode(data, file_contents.length());
-    if (decoded->empty()) {
-      ReportBack(NULL);
-      return;  // Unable to decode.
-    }
-
-    if (decoded->width() != kFavIconSize || decoded->height() != kFavIconSize) {
-      // The bitmap is not the correct size, re-sample.
-      int new_width = decoded->width();
-      int new_height = decoded->height();
-      // Calculate what dimensions to use within the constraints (16x16 max).
-      calc_favicon_target_size(&new_width, &new_height);
-      *decoded = skia::ImageOperations::Resize(
-          *decoded, skia::ImageOperations::RESIZE_LANCZOS3,
-          new_width, new_height);
-    }
-
-    ReportBack(decoded.release());
-  }
-
- private:
-  // The message loop that we need to call back on to report that we are done.
-  MessageLoop* callback_loop_;
-
-  // The object that is waiting for us to respond back.
-  ImageLoadingTracker* tracker_;
-
-  // The path to the image to load asynchronously.
-  FilePath path_;
-
-  // The index of the icon being loaded.
-  int index_;
-};
-
 LocationBarView::PageActionImageView::PageActionImageView(
     LocationBarView* owner,
     Profile* profile,
@@ -1341,13 +1205,11 @@ LocationBarView::PageActionImageView::PageActionImageView(
   DCHECK(!page_action->icon_paths().empty());
   const std::vector<std::string>& icon_paths = page_action->icon_paths();
   page_action_icons_.resize(icon_paths.size());
-  int index = 0;
-  MessageLoop* file_loop = g_browser_process->file_thread()->message_loop();
   tracker_ = new ImageLoadingTracker(this, icon_paths.size());
   for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
     FilePath path = extension->GetResourcePath(*iter);
-    file_loop->PostTask(FROM_HERE, new LoadImageTask(tracker_, path, index++));
+    tracker_->PostLoadImageTask(path);
   }
 }
 
@@ -1367,6 +1229,15 @@ bool LocationBarView::PageActionImageView::OnMousePressed(
 
 void LocationBarView::PageActionImageView::ShowInfoBubble() {
   ShowInfoBubbleImpl(ASCIIToWide(tooltip_), GetColor(false, TEXT));
+}
+
+void LocationBarView::PageActionImageView::OnImageLoaded(SkBitmap* image,
+                                                         size_t index) {
+  DCHECK(index < page_action_icons_.size());
+  if (index == page_action_icons_.size() - 1)
+    tracker_ = NULL;  // The tracker object will delete itself when we return.
+  page_action_icons_[index] = *image;
+  owner_->UpdatePageActions();
 }
 
 void LocationBarView::PageActionImageView::UpdateVisibility(
@@ -1392,15 +1263,6 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
     ImageView::SetImage(page_action_icons_[index]);
   }
   SetVisible(visible);
-}
-
-void LocationBarView::PageActionImageView::OnImageLoaded(SkBitmap* image,
-                                                         size_t index) {
-  DCHECK(index < page_action_icons_.size());
-  if (index == page_action_icons_.size() - 1)
-    tracker_ = NULL;  // The tracker object will delete itself when we return.
-  page_action_icons_[index] = *image;
-  owner_->UpdatePageActions();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

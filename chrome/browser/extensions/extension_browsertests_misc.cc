@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
   EXPECT_TRUE(result);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ASSERT_TRUE(LoadExtension(
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(no_feed));
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 GURL GetFeedUrl(const std::string& feed_page) {
   FilePath test_dir;

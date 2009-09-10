@@ -1446,6 +1446,8 @@
         'browser/icon_manager_linux.cc',
         'browser/icon_manager_mac.mm',
         'browser/icon_manager_win.cc',
+        'browser/image_loading_tracker.cc',
+        'browser/image_loading_tracker.h',
         'browser/ime_input.cc',
         'browser/ime_input.h',
         'browser/importer/firefox2_importer.cc',

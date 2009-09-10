@@ -102,6 +102,10 @@ class ExtensionsService
     return GetExtensionByIdInternal(id, true, false);
   }
 
+  // Retrieves a vector of all page actions, irrespective of which
+  // extension they belong to.
+  std::vector<PageAction*> GetPageActions() const;
+
   // Install the extension file at |extension_path|.  Will install as an
   // update if an older version is already installed.
   // For fresh installs, this method also causes the extension to be

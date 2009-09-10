@@ -8,11 +8,14 @@
 #include <gtk/gtk.h>
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_vector.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
+#include "chrome/browser/image_loading_tracker.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -22,8 +25,10 @@
 
 class AutocompleteEditViewGtk;
 class AutocompletePopupPositioner;
+class Browser;
 class CommandUpdater;
 class GtkThemeProvider;
+class PageAction;
 class Profile;
 class SkBitmap;
 class TabContents;
@@ -36,7 +41,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
  public:
   LocationBarViewGtk(CommandUpdater* command_updater,
                      ToolbarModel* toolbar_model,
-                     AutocompletePopupPositioner* popup_positioner);
+                     AutocompletePopupPositioner* popup_positioner,
+                     Browser* browser_);
   virtual ~LocationBarViewGtk();
 
   void Init(bool popup_window_mode);
@@ -92,6 +98,57 @@ class LocationBarViewGtk : public AutocompleteEditController,
   static const GdkColor kBackgroundColorByLevel[3];
 
  private:
+  class PageActionViewGtk : public ImageLoadingTracker::Observer {
+   public:
+    PageActionViewGtk(
+        LocationBarViewGtk* owner, Profile* profile,
+        const PageAction* page_action);
+    virtual ~PageActionViewGtk();
+
+    GtkWidget* widget() { return event_box_.get(); }
+
+    // Called to notify the PageAction that it should determine whether to be
+    // visible or hidden. |contents| is the TabContents that is active, |url|
+    // is the current page URL.
+    void UpdateVisibility(TabContents* contents, GURL url);
+
+    // A callback from ImageLoadingTracker for when the image has loaded.
+    virtual void OnImageLoaded(SkBitmap* image, size_t index);
+
+   private:
+    static gboolean OnButtonPressed(GtkWidget* sender, GdkEventButton* event,
+                                    PageActionViewGtk* page_action_view);
+
+    // The location bar view that owns us.
+    LocationBarViewGtk* owner_;
+
+    // The current profile (not owned by us).
+    Profile* profile_;
+
+    // The PageAction that this view represents. The PageAction is not owned by
+    // us, it resides in the extension of this particular profile.
+    const PageAction* page_action_;
+
+    // The icons representing different states for the page action.
+    std::vector<GdkPixbuf*> pixbufs_;
+
+    // The object that is waiting for the image loading to complete
+    // asynchronously.  It will delete itself once it is done.
+    ImageLoadingTracker* tracker_;
+
+    // The widgets for this page action.
+    OwnedWidgetGtk event_box_;
+    OwnedWidgetGtk image_;
+
+    // The tab id we are currently showing the icon for.
+    int current_tab_id_;
+
+    // The URL we are currently showing the icon for.
+    GURL current_url_;
+
+    DISALLOW_COPY_AND_ASSIGN(PageActionViewGtk);
+  };
+
   static gboolean HandleExposeThunk(GtkWidget* widget, GdkEventExpose* event,
                                     gpointer userdata) {
     return reinterpret_cast<LocationBarViewGtk*>(userdata)->
@@ -129,6 +186,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Toolbar info text (EV cert info).
   GtkWidget* info_label_;
 
+  // Extension page action icons.
+  GtkWidget* page_action_hbox_;
+  ScopedVector<PageActionViewGtk> page_action_views_;
+
   // Area on the left shown when in tab to search mode.
   GtkWidget* tab_to_search_box_;
   GtkWidget* tab_to_search_label_;
@@ -144,6 +205,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   Profile* profile_;
   CommandUpdater* command_updater_;
   ToolbarModel* toolbar_model_;
+  Browser* browser_;
 
   // We need to hold on to this just to it pass to the edit.
   AutocompletePopupPositioner* popup_positioner_;

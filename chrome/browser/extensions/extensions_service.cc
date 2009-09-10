@@ -144,6 +144,22 @@ void ExtensionsService::Init() {
   GarbageCollectExtensions();
 }
 
+std::vector<PageAction*> ExtensionsService::GetPageActions() const {
+  std::vector<PageAction*> result;
+
+  // TODO(finnur): Sort the page icons in some meaningful way.
+  for (ExtensionList::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    const PageActionMap& page_actions = (*iter)->page_actions();
+    for (PageActionMap::const_iterator i(page_actions.begin());
+         i != page_actions.end(); ++i) {
+      result.push_back(i->second);
+    }
+  }
+
+  return result;
+}
+
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
   CrxInstaller::Start(extension_path, install_directory_, Extension::INTERNAL,
                       "",   // no expected id
