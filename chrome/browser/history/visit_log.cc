@@ -53,4 +53,9 @@ void AddEventToVisitLog(VisitLog::EventType event) {
   g_visit_log->AddEvent(event);
 }
 
+void ClearVisitLog() {
+  g_visit_log = NULL;
+}
+
+
 }  // namespace history

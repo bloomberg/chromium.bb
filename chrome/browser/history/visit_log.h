@@ -55,6 +55,7 @@ class VisitLog {
 
 void InitVisitLog(VisitLog* vlog);
 void AddEventToVisitLog(VisitLog::EventType event);
+void ClearVisitLog();
 
 }  // namespace history
 
