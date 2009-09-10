@@ -110,9 +110,13 @@ void RenderViewTest::TearDown() {
   view_ = NULL;
 
   mock_process_.reset();
-  WebKit::shutdown();
 
+  // After resetting the view_ and mock_process_ we may get some new tasks
+  // which need to be processed before shutting down WebKit
+  // (http://crbug.com/21508).
   msg_loop_.RunAllPending();
+
+  WebKit::shutdown();
 
   mock_keyboard_.reset();
 
