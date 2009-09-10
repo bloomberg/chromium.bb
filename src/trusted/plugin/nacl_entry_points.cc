@@ -42,7 +42,7 @@
 extern "C" {
   // Safari under OS X requires the following three entry points to be exported.
   NP_EXPORT(NPError) OSCALL NP_Initialize(NPNetscapeFuncs* pFuncs
-#ifdef XP_UNIX
+#ifdef XP_UNIX && !defined(XP_MACOSX)
                                           , NPPluginFuncs* pluginFuncs
 #endif  // XP_UNIX
     );
