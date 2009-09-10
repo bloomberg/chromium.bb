@@ -21,6 +21,7 @@
 #include "chrome/browser/gtk/bookmark_tree_model.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
+#include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -907,10 +908,9 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
       bar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
 
   GtkThemeProvider* theme_provider = bar->theme_provider_;
-  GdkPixbuf* toolbar_background = theme_provider->GetPixbufNamed(
-      IDR_THEME_TOOLBAR);
-  gdk_cairo_set_source_pixbuf(cr, toolbar_background, tabstrip_origin.x(),
-                              tabstrip_origin.y());
+  CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
+      IDR_THEME_TOOLBAR, widget);
+  background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
   // We tile the toolbar background in both directions.
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,

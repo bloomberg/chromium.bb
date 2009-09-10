@@ -242,6 +242,10 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // Save the modified bitmap at image_cache_[id].
   virtual void SaveThemeBitmap(std::string resource_name, int id);
 
+  // Clears the platform-specific caches. Do not call directly; it's called
+  // from ClearCaches().
+  virtual void FreePlatformCaches();
+
   Profile* profile() { return profile_; }
 
   // Subclasses may need us to not use the on-disk image cache. The GTK
@@ -311,10 +315,6 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
 
   // Frees generated images and clears the image cache.
   void ClearCaches();
-
-  // Clears the platform-specific caches. Do not call directly; it's called
-  // from ClearCaches().
-  void FreePlatformCaches();
 
   // Encode image at image_cache_[id] as PNG and write to disk.
   bool WriteImagesToDisk();

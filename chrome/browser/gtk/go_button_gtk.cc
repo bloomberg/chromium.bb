@@ -36,9 +36,7 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
       go_(theme_provider_, IDR_GO, IDR_GO_P, IDR_GO_H, 0),
       stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, 0),
       widget_(gtk_chrome_button_new()) {
-  gtk_widget_set_size_request(widget_.get(),
-                              gdk_pixbuf_get_width(go_.pixbufs(0)),
-                              gdk_pixbuf_get_height(go_.pixbufs(0)));
+  gtk_widget_set_size_request(widget_.get(), go_.Width(), go_.Height());
 
   gtk_widget_set_app_paintable(widget_.get(), TRUE);
   // We effectively double-buffer by virtue of having only one image...
@@ -245,9 +243,7 @@ void GoButtonGtk::UpdateThemeButtons() {
     gtk_widget_set_app_paintable(widget_.get(), FALSE);
     gtk_widget_set_double_buffered(widget_.get(), TRUE);
   } else {
-    gtk_widget_set_size_request(widget_.get(),
-                                gdk_pixbuf_get_width(go_.pixbufs(0)),
-                                gdk_pixbuf_get_height(go_.pixbufs(0)));
+    gtk_widget_set_size_request(widget_.get(), go_.Width(), go_.Height());
 
     gtk_widget_set_app_paintable(widget_.get(), TRUE);
     // We effectively double-buffer by virtue of having only one image...

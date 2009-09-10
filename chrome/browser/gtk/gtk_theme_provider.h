@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GTK_GTK_THEME_PROVIDER_H_
 #define CHROME_BROWSER_GTK_GTK_THEME_PROVIDER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -14,8 +15,10 @@
 
 #include "skia/ext/skia_utils.h"
 
+class CairoCachedSurface;
 class Profile;
 
+typedef struct _GdkDisplay GdkDisplay;
 typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
@@ -67,6 +70,11 @@ class GtkThemeProvider : public BrowserThemeProvider,
   GtkWidget* fake_window() { return fake_window_; }
   GtkWidget* fake_label() { return fake_label_.get(); }
 
+  // Returns a CairoCachedSurface for a particular Display. CairoCachedSurfaces
+  // (hopefully) live on the X server, instead of the client so we don't have
+  // to send the image to the server on each expose.
+  CairoCachedSurface* GetSurfaceNamed(int id, GtkWidget* widget_on_display);
+
  protected:
   // Possibly creates a theme specific version of theme_toolbar_default.
   // (minimally acceptable version right now, which is just a fill of the bg
@@ -85,6 +93,9 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // the superclass.
   virtual void SaveThemeBitmap(const std::string resource_name, int id);
 
+  // Additionally frees the CairoCachedSurfaces.
+  virtual void FreePlatformCaches();
+
   // Handles signal from GTK that our theme has been changed.
   static void OnStyleSet(GtkWidget* widget,
                          GtkStyle* previous_style,
@@ -96,6 +107,12 @@ class GtkThemeProvider : public BrowserThemeProvider,
   void SetThemeColorFromGtk(const char* id, GdkColor* color);
   void SetThemeTintFromGtk(const char* id, GdkColor* color,
                            const skia::HSL& default_tint);
+
+  // Split out from FreePlatformCaches so it can be called in our destructor;
+  // FreePlatformCaches() is called from the BrowserThemeProvider's destructor,
+  // but by the time ~BrowserThemeProvider() is run, the vtable no longer
+  // points to GtkThemeProvider's version.
+  void FreePerDisplaySurfaces();
 
   // A notification from the GtkChromeButton GObject destructor that we should
   // remove it from our internal list.
@@ -113,6 +130,11 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // A list of all GtkChromeButton instances. We hold on to these to notify
   // them of theme changes.
   std::vector<GtkWidget*> chrome_buttons_;
+
+  // Cairo surfaces for each GdkDisplay.
+  typedef std::map<int, CairoCachedSurface*> CairoCachedSurfaceMap;
+  typedef std::map<GdkDisplay*, CairoCachedSurfaceMap> PerDisplaySurfaceMap;
+  PerDisplaySurfaceMap per_display_surfaces_;
 };
 
 #endif  // CHROME_BROWSER_GTK_GTK_THEME_PROVIDER_H_

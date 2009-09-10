@@ -41,6 +41,7 @@
 #include "chrome/browser/gtk/bookmark_manager_gtk.h"
 #include "chrome/browser/gtk/browser_titlebar.h"
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
+#include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/download_shelf_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
@@ -339,12 +340,11 @@ gboolean OnCompactNavSpacerExpose(GtkWidget* widget,
   // tab strip.
   gfx::Point tabstrip_origin =
       window->tabstrip()->GetTabStripOriginForWidget(widget);
-  ThemeProvider* theme_provider =
-      window->browser()->profile()->GetThemeProvider();
-  GdkPixbuf* toolbar_background = theme_provider->GetPixbufNamed(
-      IDR_THEME_TOOLBAR);
-  gdk_cairo_set_source_pixbuf(cr, toolbar_background, tabstrip_origin.x(),
-                              tabstrip_origin.y());
+  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+      window->browser()->profile());
+  CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
+      IDR_THEME_TOOLBAR, widget);
+  background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
   // We tile the toolbar background in both directions.
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,
@@ -596,8 +596,8 @@ void BrowserWindowGtk::HandleKeyboardEvent(GdkEventKey* event) {
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
                                                GdkEventExpose* event,
                                                BrowserWindowGtk* window) {
-  ThemeProvider* theme_provider =
-      window->browser()->profile()->GetThemeProvider();
+  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+      window->browser()->profile());
 
   // Draw the default background.
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
@@ -613,18 +613,19 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
     image_name = window->browser()->profile()->IsOffTheRecord() ?
                  IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
   }
-  GdkPixbuf* pixbuf = theme_provider->GetPixbufNamed(image_name);
-  gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+  CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
+      image_name, widget);
+  surface->SetSource(cr, 0, 0);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr, event->area.x, event->area.y,
                       event->area.width, event->area.height);
   cairo_fill(cr);
 
   if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
-    GdkPixbuf* theme_overlay = theme_provider->GetPixbufNamed(
+    CairoCachedSurface* theme_overlay = theme_provider->GetSurfaceNamed(
         window->IsActive() ? IDR_THEME_FRAME_OVERLAY
-                           : IDR_THEME_FRAME_OVERLAY_INACTIVE);
-    gdk_cairo_set_source_pixbuf(cr, theme_overlay, 0, 0);
+                           : IDR_THEME_FRAME_OVERLAY_INACTIVE, widget);
+    theme_overlay->SetSource(cr, 0, 0);
     cairo_paint(cr);
   }
 
@@ -654,21 +655,20 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
 void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
                                          BrowserWindowGtk* window) {
   // Draw the shadow above the toolbar. Tabs on the tabstrip will draw over us.
-  ThemeProvider* theme_provider =
-      window->browser()->profile()->GetThemeProvider();
+  GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
+      window->browser()->profile());
   int left_x, top_y;
   gtk_widget_translate_coordinates(window->content_vbox_,
       GTK_WIDGET(window->window_), 0, 0, &left_x,
       &top_y);
   int width = window->content_vbox_->allocation.width;
 
-  GdkPixbuf* top_center =
-      theme_provider->GetPixbufNamed(IDR_CONTENT_TOP_CENTER);
-  gdk_cairo_set_source_pixbuf(cr, top_center,
-                              left_x, top_y - kContentShadowThickness);
+  CairoCachedSurface* top_center = theme_provider->GetSurfaceNamed(
+      IDR_CONTENT_TOP_CENTER, window->content_vbox_);
+  top_center->SetSource(cr, left_x, top_y - kContentShadowThickness);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr, left_x, top_y - kContentShadowThickness, width,
-                  gdk_pixbuf_get_height(top_center));
+                  top_center->Height());
   cairo_fill(cr);
 
   // Only draw the rest of the shadow if the user has the custom frame enabled.
@@ -680,10 +680,10 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   // corners extend to the base of the toolbar (one pixel above the dividing
   // line).
   int right_x = left_x + width;
-  GdkPixbuf* top_left =
-      theme_provider->GetPixbufNamed(IDR_CONTENT_TOP_LEFT_CORNER);
-  gdk_cairo_set_source_pixbuf(cr, top_left,
-      left_x - kContentShadowThickness, top_y - kContentShadowThickness);
+  CairoCachedSurface* top_left = theme_provider->GetSurfaceNamed(
+      IDR_CONTENT_TOP_LEFT_CORNER, window->content_vbox_);
+  top_left->SetSource(
+      cr, left_x - kContentShadowThickness, top_y - kContentShadowThickness);
   // The toolbar is shorter in location bar only mode so clip the image to the
   // height of the toolbar + the amount of shadow above the toolbar.
   int top_corner_height =
@@ -696,10 +696,9 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   cairo_fill(cr);
 
   // Likewise, we crop off the left column of pixels for the top right corner.
-  GdkPixbuf* top_right =
-      theme_provider->GetPixbufNamed(IDR_CONTENT_TOP_RIGHT_CORNER);
-  gdk_cairo_set_source_pixbuf(cr, top_right,
-                              right_x - 1, top_y - kContentShadowThickness);
+  CairoCachedSurface* top_right = theme_provider->GetSurfaceNamed(
+      IDR_CONTENT_TOP_RIGHT_CORNER, window->content_vbox_);
+  top_right->SetSource(cr, right_x - 1, top_y - kContentShadowThickness);
   cairo_rectangle(cr,
       right_x,
       top_y - kContentShadowThickness,
@@ -718,9 +717,9 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   // drawn by the bottom corners.
   int side_height = bottom_y - side_y - 1;
   if (side_height > 0) {
-    GdkPixbuf* left = theme_provider->GetPixbufNamed(IDR_CONTENT_LEFT_SIDE);
-    gdk_cairo_set_source_pixbuf(cr, left,
-                                left_x - kContentShadowThickness, side_y);
+    CairoCachedSurface* left = theme_provider->GetSurfaceNamed(
+        IDR_CONTENT_LEFT_SIDE, window->content_vbox_);
+    left->SetSource(cr, left_x - kContentShadowThickness, side_y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr,
         left_x - kContentShadowThickness,
@@ -729,8 +728,9 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
         side_height);
     cairo_fill(cr);
 
-    GdkPixbuf* right = theme_provider->GetPixbufNamed(IDR_CONTENT_RIGHT_SIDE);
-    gdk_cairo_set_source_pixbuf(cr, right, right_x - 1, side_y);
+    CairoCachedSurface* right = theme_provider->GetSurfaceNamed(
+        IDR_CONTENT_RIGHT_SIDE, window->content_vbox_);
+    right->SetSource(cr, right_x - 1, side_y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr,
         right_x,
@@ -742,24 +742,21 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
 
   // Draw the bottom corners.  The bottom corners also draw the bottom row of
   // pixels of the side shadows.
-  GdkPixbuf* bottom_left =
-      theme_provider->GetPixbufNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
-  gdk_cairo_set_source_pixbuf(cr, bottom_left,
-                              left_x - kContentShadowThickness, bottom_y - 1);
+  CairoCachedSurface* bottom_left = theme_provider->GetSurfaceNamed(
+      IDR_CONTENT_BOTTOM_LEFT_CORNER, window->content_vbox_);
+  bottom_left->SetSource(cr, left_x - kContentShadowThickness, bottom_y - 1);
   cairo_paint(cr);
 
-  GdkPixbuf* bottom_right =
-      theme_provider->GetPixbufNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER);
-  gdk_cairo_set_source_pixbuf(cr, bottom_right,
-                              right_x - 1, bottom_y - 1);
+  CairoCachedSurface* bottom_right = theme_provider->GetSurfaceNamed(
+      IDR_CONTENT_BOTTOM_RIGHT_CORNER, window->content_vbox_);
+  bottom_right->SetSource(cr, right_x - 1, bottom_y - 1);
   cairo_paint(cr);
 
   // Finally, draw the bottom row. Since we don't overlap the contents, we clip
   // the top row of pixels.
-  GdkPixbuf* bottom =
-      theme_provider->GetPixbufNamed(IDR_CONTENT_BOTTOM_CENTER);
-  gdk_cairo_set_source_pixbuf(cr, bottom,
-                              left_x + 1, bottom_y - 1);
+  CairoCachedSurface* bottom = theme_provider->GetSurfaceNamed(
+      IDR_CONTENT_BOTTOM_CENTER, window->content_vbox_);
+  bottom->SetSource(cr, left_x + 1, bottom_y - 1);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,
       left_x + 1,

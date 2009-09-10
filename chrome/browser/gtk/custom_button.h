@@ -16,6 +16,7 @@
 #include "chrome/common/owned_widget_gtk.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+class CairoCachedSurface;
 class GtkThemeProvider;
 
 // These classes implement two kinds of custom-drawn buttons.  They're
@@ -36,7 +37,9 @@ class CustomDrawButtonBase : public NotificationObserver {
 
   ~CustomDrawButtonBase();
 
-  GdkPixbuf* pixbufs(int i) const { return pixbufs_[i]; }
+  // Returns the dimensions of the first surface.
+  int Width() const;
+  int Height() const;
 
   gboolean OnExpose(GtkWidget* widget, GdkEventExpose* e);
 
@@ -52,12 +55,12 @@ class CustomDrawButtonBase : public NotificationObserver {
                        const NotificationDetails& details);
 
  private:
-  // We store one GdkPixbuf* for each possible state of the button;
+  // We store one surface for each possible state of the button;
   // INSENSITIVE is the last available state;
-  GdkPixbuf* pixbufs_[GTK_STATE_INSENSITIVE + 1];
+  scoped_ptr<CairoCachedSurface> surfaces_[GTK_STATE_INSENSITIVE + 1];
 
   // The background image.
-  GdkPixbuf* background_image_;
+  scoped_ptr<CairoCachedSurface> background_image_;
 
   // If non-negative, the state to paint the button.
   int paint_override_;
