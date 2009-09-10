@@ -2136,12 +2136,7 @@ void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
   // We don't always want to send the change messages over IPC, only if we've
   // be put in that mode by getting a |ViewMsg_EnableIntrinsicWidthChangedMode|
   // message.
-  // TODO(rafaelw): Figure out where the best place to set this for extensions
-  // is. It isn't clean to test for ExtensionView by examining the
-  // enabled_bindings. This needs to be generalized as it becomes clear what
-  // extension toolbars need.
-  if (BindingsPolicy::is_extension_enabled(enabled_bindings_) ||
-      send_preferred_width_changes_) {
+  if (send_preferred_width_changes_) {
     // WebCore likes to tell us things have changed even when they haven't, so
     // cache the width and only send the IPC message when we're sure the
     // width is different.

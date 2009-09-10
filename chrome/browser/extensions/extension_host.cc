@@ -345,6 +345,9 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   // See http://code.google.com/p/chromium/issues/detail?id=18240
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(render_view_host, this, url_));
+
+  render_view_host->Send(new ViewMsg_EnableIntrinsicWidthChangedMode(
+      render_view_host->routing_id()));
 }
 
 int ExtensionHost::GetBrowserWindowID() const {
