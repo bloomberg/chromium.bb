@@ -377,12 +377,13 @@ void BookmarkBarGtk::BookmarkNodeChildrenReordered(BookmarkModel* model,
 }
 
 void BookmarkBarGtk::CreateAllBookmarkButtons() {
-  const BookmarkNode* node = model_->GetBookmarkBarNode();
-  DCHECK(node && model_->other_node());
+  const BookmarkNode* bar = model_->GetBookmarkBarNode();
+  DCHECK(bar && model_->other_node());
 
   // Create a button for each of the children on the bookmark bar.
-  for (int i = 0; i < node->GetChildCount(); ++i) {
-    GtkToolItem* item = CreateBookmarkToolItem(node->GetChild(i));
+  for (int i = 0; i < bar->GetChildCount(); ++i) {
+    const BookmarkNode* node = bar->GetChild(i);
+    GtkToolItem* item = CreateBookmarkToolItem(node);
     gtk_toolbar_insert(GTK_TOOLBAR(bookmark_toolbar_.get()), item, -1);
     if (node->is_folder())
       menu_bar_helper_.Add(gtk_bin_get_child(GTK_BIN(item)));
