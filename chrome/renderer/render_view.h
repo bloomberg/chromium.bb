@@ -239,7 +239,6 @@ class RenderView : public RenderWidget,
   virtual void NavigateBackForwardSoon(int offset);
   virtual int GetHistoryBackListCount();
   virtual int GetHistoryForwardListCount();
-  virtual void OnNavStateChanged(WebView* webview);
   virtual void SetTooltipText(WebView* webview,
                               const std::wstring& tooltip_text,
                               WebKit::WebTextDirection text_direction_hint);
@@ -341,6 +340,7 @@ class RenderView : public RenderWidget,
   virtual void didFinishLoad(WebKit::WebFrame* frame);
   virtual void didChangeLocationWithinPage(
       WebKit::WebFrame* frame, bool is_new_navigation);
+  virtual void didUpdateCurrentHistoryItem(WebKit::WebFrame* frame);
   virtual void assignIdentifierToRequest(
       WebKit::WebFrame* frame, unsigned identifier,
       const WebKit::WebURLRequest& request);

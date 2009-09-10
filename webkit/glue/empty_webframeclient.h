@@ -61,6 +61,7 @@ class EmptyWebFrameClient : public WebKit::WebFrameClient {
   virtual void didFinishLoad(WebKit::WebFrame* frame) {}
   virtual void didChangeLocationWithinPage(
       WebKit::WebFrame* frame, bool is_new_navigation) {}
+  virtual void didUpdateCurrentHistoryItem(WebKit::WebFrame* frame) {}
   virtual void assignIdentifierToRequest(
       WebKit::WebFrame* frame, unsigned identifier,
       const WebKit::WebURLRequest& request) {}

@@ -2039,6 +2039,14 @@ void RenderView::didChangeLocationWithinPage(
   UpdateTitle(frame, frame->view()->GetMainFrame()->dataSource()->pageTitle());
 }
 
+void RenderView::didUpdateCurrentHistoryItem(WebFrame* frame) {
+  if (!nav_state_sync_timer_.IsRunning()) {
+    nav_state_sync_timer_.Start(
+        TimeDelta::FromSeconds(delay_seconds_for_form_state_sync_), this,
+        &RenderView::SyncNavigationState);
+  }
+}
+
 void RenderView::assignIdentifierToRequest(
     WebFrame* frame, unsigned identifier, const WebURLRequest& request) {
   // Ignore
@@ -2648,14 +2656,6 @@ int RenderView::GetHistoryBackListCount() {
 
 int RenderView::GetHistoryForwardListCount() {
   return history_forward_list_count_;
-}
-
-void RenderView::OnNavStateChanged(WebView* webview) {
-  if (!nav_state_sync_timer_.IsRunning()) {
-    nav_state_sync_timer_.Start(
-        TimeDelta::FromSeconds(delay_seconds_for_form_state_sync_), this,
-        &RenderView::SyncNavigationState);
-  }
 }
 
 void RenderView::SetTooltipText(WebView* webview,

@@ -598,10 +598,12 @@ void ChromeClientImpl::SetCursorForPlugin(const WebCursorInfo& cursor) {
   ignore_next_set_cursor_ = true;
 }
 
-void ChromeClientImpl::formStateDidChange(const WebCore::Node*) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate)
-    delegate->OnNavStateChanged(webview_);
+void ChromeClientImpl::formStateDidChange(const WebCore::Node* node) {
+  // The current history item is not updated yet.  That happens lazily when
+  // WebFrame::currentHistoryItem is requested.
+  WebFrameImpl* webframe = WebFrameImpl::FromFrame(node->document()->frame());
+  if (webframe->client())
+    webframe->client()->didUpdateCurrentHistoryItem(webframe);
 }
 
 void ChromeClientImpl::GetPopupMenuInfo(PopupContainer* popup_container,

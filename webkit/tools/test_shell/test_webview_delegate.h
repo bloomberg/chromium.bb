@@ -202,6 +202,7 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void didFinishLoad(WebKit::WebFrame*);
   virtual void didChangeLocationWithinPage(
       WebKit::WebFrame*, bool isNewNavigation);
+  virtual void didUpdateCurrentHistoryItem(WebKit::WebFrame*) {}
   virtual void assignIdentifierToRequest(
       WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLRequest&);
   virtual void willSendRequest(

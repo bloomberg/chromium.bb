@@ -163,8 +163,7 @@ namespace WebKit {
         // Called upon update to scroll position, document state, and other
         // non-navigational events related to the data held by WebHistoryItem.
         // WARNING: This method may be called very frequently.
-        // FIXME: Enable this method.
-        //virtual void didUpdateCurrentHistoryItem(WebFrame*) = 0;
+        virtual void didUpdateCurrentHistoryItem(WebFrame*) = 0;
 
 
         // Low-level resource notifications ------------------------------------

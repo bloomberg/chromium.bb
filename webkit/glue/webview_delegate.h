@@ -348,12 +348,6 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
     return 0;
   }
 
-  // Notification that the form state of an element in the document, scroll
-  // position, or possibly something else has changed that affects session
-  // history (HistoryItem). This function will be called frequently, so the
-  // implementor should not perform intensive operations in this notification.
-  virtual void OnNavStateChanged(WebView* webview) { }
-
   // -------------------------------------------------------------------------
 
   // Tell the delegate the tooltip text and its directionality hint for the
