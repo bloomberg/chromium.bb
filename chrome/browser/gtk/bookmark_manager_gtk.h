@@ -340,6 +340,8 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   // This is used to avoid recursively calling our right click handler. It is
   // only true when a right click is already being handled.
   bool ignore_rightclicks_;
+
+  GtkAccelGroup* accel_group_;
 };
 
 #endif  // CHROME_BROWSER_GTK_BOOKMARK_MANAGER_GTK_H_

@@ -322,6 +322,10 @@ BookmarkManagerGtk::~BookmarkManagerGtk() {
       gtk_paned_get_position(GTK_PANED(paned_)));
   SaveColumnConfiguration();
   model_->RemoveObserver(this);
+
+  gtk_accel_group_disconnect_key(accel_group_, GDK_w, GDK_CONTROL_MASK);
+  gtk_window_remove_accel_group(GTK_WINDOW(window_), accel_group_);
+  g_object_unref(accel_group_);
 }
 
 void BookmarkManagerGtk::InitWidgets() {
@@ -416,13 +420,10 @@ void BookmarkManagerGtk::InitWidgets() {
 }
 
 void BookmarkManagerGtk::ConnectAccelerators() {
-  GtkAccelGroup* accel_group = gtk_accel_group_new();
-  gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group);
+  accel_group_ = gtk_accel_group_new();
+  gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group_);
 
-  // Drop the initial ref on |accel_group| so |window_| will own it.
-  g_object_unref(accel_group);
-
-  gtk_accel_group_connect(accel_group,
+  gtk_accel_group_connect(accel_group_,
                           GDK_w, GDK_CONTROL_MASK, GtkAccelFlags(0),
                           g_cclosure_new(G_CALLBACK(OnGtkAccelerator),
                                          this, NULL));

@@ -112,6 +112,8 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   // The context menu controller.
   scoped_ptr<ContextMenuController> menu_controller_;
 
+  GtkAccelGroup* accel_group_;
+
   // An open task manager window. There can only be one open at a time. This
   // is reset to NULL when the window is closed.
   static TaskManagerGtk* instance_;

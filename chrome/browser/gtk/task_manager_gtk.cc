@@ -249,6 +249,13 @@ TaskManagerGtk* TaskManagerGtk::instance_ = NULL;
 TaskManagerGtk::~TaskManagerGtk() {
   task_manager_->OnWindowClosed();
   model_->RemoveObserver(this);
+
+  gtk_accel_group_disconnect_key(accel_group_, GDK_w, GDK_CONTROL_MASK);
+  gtk_window_remove_accel_group(GTK_WINDOW(dialog_), accel_group_);
+  g_object_unref(accel_group_);
+  accel_group_ = NULL;
+
+  gtk_widget_destroy(dialog_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -431,13 +438,10 @@ void TaskManagerGtk::SetInitialDialogSize() {
 }
 
 void TaskManagerGtk::ConnectAccelerators() {
-  GtkAccelGroup* accel_group = gtk_accel_group_new();
-  gtk_window_add_accel_group(GTK_WINDOW(dialog_), accel_group);
+  accel_group_ = gtk_accel_group_new();
+  gtk_window_add_accel_group(GTK_WINDOW(dialog_), accel_group_);
 
-  // Drop the initial ref on |accel_group| so |dialog_| will own it.
-  g_object_unref(accel_group);
-
-  gtk_accel_group_connect(accel_group,
+  gtk_accel_group_connect(accel_group_,
                           GDK_w, GDK_CONTROL_MASK, GtkAccelFlags(0),
                           g_cclosure_new(G_CALLBACK(OnGtkAccelerator),
                                          this, NULL));
@@ -717,7 +721,6 @@ gboolean TaskManagerGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
     // is destroyed.  The deleted object will receive gtk signals otherwise.
     gtk_dialog_response(GTK_DIALOG(task_manager->dialog_),
                         GTK_RESPONSE_DELETE_EVENT);
-    gtk_widget_destroy(task_manager->dialog_);
   }
 
   return TRUE;
