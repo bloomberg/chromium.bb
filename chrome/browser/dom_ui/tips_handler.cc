@@ -4,6 +4,7 @@
 
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_ui/tips_handler.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/web_resource/web_resource_service.h"
@@ -34,6 +35,20 @@ void TipsHandler::HandleGetTips(const Value* content) {
   // These values hold the data for each web resource item.
   int current_tip_index;
   std::string current_tip;
+
+  // If tips are not correct for our locale, do not send.  Wait for update.
+  // We need to check here because the new tab page calls for tips before
+  // the tip service starts up.
+  PrefService* current_prefs = dom_ui_->GetProfile()->GetPrefs();
+  if (current_prefs->HasPrefPath(prefs::kNTPTipsServer)) {
+    std::wstring server = current_prefs->GetString(prefs::kNTPTipsServer);
+    std::wstring locale = ASCIIToWide(
+        g_browser_process->GetApplicationLocale());
+    if (!EndsWith(server, locale, false)) {
+      dom_ui_->CallJavascriptFunction(L"tips", list_value);
+      return;
+    }
+  }
 
   if (tips_cache_ != NULL && tips_cache_->GetSize() >= 0) {
     if (tips_cache_->GetInteger(

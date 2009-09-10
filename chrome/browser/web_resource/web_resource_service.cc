@@ -196,15 +196,20 @@ void WebResourceService::Init() {
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_ = new WebResourceFetcher(this);
   prefs_->RegisterStringPref(prefs::kNTPTipsCacheUpdate, L"0");
+  std::wstring locale = ASCIIToWide(g_browser_process->GetApplicationLocale());
 
-  // TODO(mirandac): allow for language change without wiping out prefs file.
   if (prefs_->HasPrefPath(prefs::kNTPTipsServer)) {
-    web_resource_server_ = prefs_->GetString(prefs::kNTPTipsServer);
-  } else {
-    web_resource_server_ = kDefaultResourceServer;
-    web_resource_server_.append(
-      ASCIIToWide(g_browser_process->GetApplicationLocale()));
+     web_resource_server_ = prefs_->GetString(prefs::kNTPTipsServer);
+     // If we are in the correct locale, initialization is done.
+     if (EndsWith(web_resource_server_, locale, false))
+       return;
   }
+
+  // If we have not yet set a server, or if the tips server is set to the wrong
+  // locale, reset the server and force an immediate update of tips.
+  web_resource_server_ = kDefaultResourceServer;
+  web_resource_server_.append(locale);
+  prefs_->SetString(prefs::kNTPTipsCacheUpdate, L"");
 }
 
 void WebResourceService::EndFetch() {
@@ -258,13 +263,15 @@ void WebResourceService::StartAfterDelay() {
   if (prefs_->HasPrefPath(prefs::kNTPTipsCacheUpdate)) {
     std::wstring last_update_pref =
       prefs_->GetString(prefs::kNTPTipsCacheUpdate);
-    int ms_until_update = kCacheUpdateDelay -
-        static_cast<int>((base::Time::Now() - base::Time::FromDoubleT(
-        StringToDouble(WideToASCII(last_update_pref)))).InMilliseconds());
+    if (!last_update_pref.empty()) {
+      int ms_until_update = kCacheUpdateDelay -
+          static_cast<int>((base::Time::Now() - base::Time::FromDoubleT(
+          StringToDouble(WideToASCII(last_update_pref)))).InMilliseconds());
 
-    delay = ms_until_update > kCacheUpdateDelay ?
-            kCacheUpdateDelay : (ms_until_update < kStartResourceFetchDelay ?
-                                 kStartResourceFetchDelay : ms_until_update);
+      delay = ms_until_update > kCacheUpdateDelay ?
+              kCacheUpdateDelay : (ms_until_update < kStartResourceFetchDelay ?
+                                   kStartResourceFetchDelay : ms_until_update);
+    }
   }
 
   // Start fetch and wait for UpdateResourceCache.
