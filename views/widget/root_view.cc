@@ -512,8 +512,13 @@ void RootView::ProcessMouseDragCanceled() {
 void RootView::FocusView(View* view) {
   if (view != GetFocusedView()) {
     FocusManager* focus_manager = GetFocusManager();
+    // TODO(jcampan): This fails under WidgetGtk with TYPE_CHILD.
+    // (see http://crbug.com/21335) Reenable DCHECK and
+    // verify GetFocusManager works as expecte.
+#if defined(OS_WIN)
     DCHECK(focus_manager) << "No Focus Manager for Window " <<
         (GetWidget() ? GetWidget()->GetNativeView() : 0);
+#endif
     if (!focus_manager)
       return;
     focus_manager->SetFocusedView(view);
