@@ -248,12 +248,6 @@ class ValgrindError:
     #  </frame>
     # although the dir, file, and line elements are missing if there is
     # no debug info.
-    #
-    # With our patch for https://bugs.kde.org/show_bug.cgi?id=205000 in,
-    # the file also includes records of the form
-    # <load_obj><obj>/usr/lib/libgcc_s.1.dylib</obj><ip>0x27000</ip></load_obj>
-    # giving the filename and load address of each binary that was mapped
-    # into the process.
 
     self._kind = getTextOf(error_node, "kind")
     self._backtraces = []
@@ -378,10 +372,31 @@ class MemcheckAnalyze:
       show_all_leaks: whether to show even less important leaks
     '''
 
+    # Beyond the detailed errors parsed by ValgrindError above,
+    # the xml file contain records describing suppressions that were used:
+    # <suppcounts>
+    #  <pair>
+    #    <count>28</count>
+    #    <name>pango_font_leak_todo</name>
+    #  </pair>
+    #  <pair>
+    #    <count>378</count>
+    #    <name>bug_13243</name>
+    #  </pair>
+    # </suppcounts
+    # Collect these and print them at the end.
+    #
+    # With our patch for https://bugs.kde.org/show_bug.cgi?id=205000 in,
+    # the file also includes records of the form
+    # <load_obj><obj>/usr/lib/libgcc_s.1.dylib</obj><ip>0x27000</ip></load_obj>
+    # giving the filename and load address of each binary that was mapped
+    # into the process.
+
     global TheAddressTable
     if use_gdb:
       TheAddressTable = _AddressTable()
     self._errors = set()
+    self._suppcounts = {}
     badfiles = set()
     start = time.time()
     self._parse_failed = False
@@ -449,6 +464,15 @@ class MemcheckAnalyze:
             error = ValgrindError(source_dir, raw_error, commandline)
             self._errors.add(error)
 
+        suppcountlist = parsed_file.getElementsByTagName("suppcounts")[0]
+        for node in suppcountlist.getElementsByTagName("pair"):
+          count = getTextOf(node, "count");
+          name = getTextOf(node, "name");
+          if name in self._suppcounts:
+            self._suppcounts[name] += int(count)
+          else:
+            self._suppcounts[name] = int(count)
+
     if len(badfiles) > 0:
       logging.warn("valgrind didn't finish writing %d files?!" % len(badfiles))
       for file in badfiles:
@@ -459,6 +483,13 @@ class MemcheckAnalyze:
     if self._parse_failed:
       logging.error("FAIL! Couldn't parse Valgrind output file")
       return -2
+
+    print "-----------------------------------------------------"
+    print "Suppressions used:"
+    print "  count name"
+    for item in sorted(self._suppcounts.items(), key=lambda (k,v): (v,k)):
+      print "%7s %s" % (item[1], item[0])
+    print "-----------------------------------------------------"
 
     if self._errors:
       logging.error("FAIL! There were %s errors: " % len(self._errors))
