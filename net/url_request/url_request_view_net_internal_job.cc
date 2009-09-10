@@ -275,7 +275,7 @@ void OutputURLAndLoadLog(const GURL& url,
                          std::string* out) {
   out->append("<li>");
   out->append("<nobr>");
-  out->append(EscapeForHTML(url.spec()));
+  out->append(EscapeForHTML(url.possibly_invalid_spec()));
   out->append("</nobr>");
   if (log)
     OutputTextInPre(net::LoadLogUtil::PrettyPrintAsEventTree(log), out);
