@@ -66,6 +66,7 @@ TEST_F(WebDropTargetTest, URL) {
   PutURLOnPasteboard(@"http://www.google.com", pboard);
   [drop_target_ populateURLAndTitle:&data fromPasteboard:pboard];
   EXPECT_EQ(data.url.spec(), "http://www.google.com/");
+  [pboard releaseGlobally];
 
   // Put a 'url ' and 'urln' on the pasteboard and check it.
   NSString* title = @"Title of Awesomeness!";
@@ -80,6 +81,8 @@ TEST_F(WebDropTargetTest, URL) {
   [drop_target_ populateURLAndTitle:&data fromPasteboard:pboard];
   EXPECT_EQ(data.url.spec(), "http://www.something.com/");
   EXPECT_EQ(data.url_title, base::SysNSStringToUTF16(title));
+
+  [pboard releaseGlobally];
 }
 
 TEST_F(WebDropTargetTest, Data) {
@@ -98,6 +101,8 @@ TEST_F(WebDropTargetTest, Data) {
   EXPECT_EQ(data.url.spec(), "http://www.google.com/");
   EXPECT_EQ(data.plain_text, base::SysNSStringToUTF16(textString));
   EXPECT_EQ(data.text_html, base::SysNSStringToUTF16(htmlString));
+
+  [pboard releaseGlobally];
 }
 
 TEST_F(WebDropTargetTest, EnterExitDrop) {

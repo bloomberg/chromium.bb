@@ -44,6 +44,8 @@ TEST_F(DownloadUtilTest, AddFileToPasteboardTest) {
   NSString* expectedPath = [files objectAtIndex:0];
   NSString* realPath = base::SysWideToNSString(testPath.ToWStringHack());
   EXPECT_TRUE([expectedPath isEqualToString:realPath]);
+
+  [pasteboard releaseGlobally];
 }
 
 }  // namespace
