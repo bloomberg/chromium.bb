@@ -65,12 +65,12 @@ NPError OSCALL NaCl_NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
 }
 
 NPError OSCALL NaCl_NP_Initialize(NPNetscapeFuncs* pFuncs
-#ifdef XP_UNIX
+#if defined(XP_UNIX) && !defined(XP_MACOSX)
                                   , NPPluginFuncs* pluginFuncs
 #endif  // NACL_LINUX
                                   ) {
                                     return NP_Initialize(pFuncs
-#ifdef XP_UNIX
+#if defined(XP_UNIX) && !defined(XP_MACOSX)
                                       , pluginFuncs
 #endif  // NACL_LINUX
                                       );
