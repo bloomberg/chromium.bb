@@ -48,16 +48,16 @@ class UserScript {
 
     // If external_content_ is set returns it as content otherwise it returns
     // content_
-    const StringPiece GetContent() const {
+    const base::StringPiece GetContent() const {
       if (external_content_.data())
         return external_content_;
       else
         return content_;
     }
-    void set_external_content(const StringPiece& content) {
+    void set_external_content(const base::StringPiece& content) {
       external_content_ = content;
     }
-    const void set_content(const StringPiece& content) {
+    const void set_content(const base::StringPiece& content) {
       content_.assign(content.begin(), content.end());
     }
 
@@ -75,7 +75,7 @@ class UserScript {
 
     // The script content. It can be set to either loaded_content_ or
     // externally allocated string.
-    StringPiece external_content_;
+    base::StringPiece external_content_;
 
     // Set when the content is loaded by LoadContent
     std::string content_;

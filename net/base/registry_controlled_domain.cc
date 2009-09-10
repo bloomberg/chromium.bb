@@ -276,21 +276,23 @@ void RegistryControlledDomainService::Init() {
   ParseDomainData(kDomainData);
 }
 
-void RegistryControlledDomainService::ParseDomainData(const StringPiece& data) {
+void RegistryControlledDomainService::ParseDomainData(
+    const base::StringPiece& data) {
   domain_set_.clear();
 
   size_t line_end = 0;
   size_t line_start = 0;
   while (line_start < data.size()) {
     line_end = data.find('\n', line_start);
-    if (line_end == StringPiece::npos)
+    if (line_end == base::StringPiece::npos)
       line_end = data.size();
-    AddRule(StringPiece(data.data() + line_start, line_end - line_start));
+    AddRule(base::StringPiece(data.data() + line_start, line_end - line_start));
     line_start = line_end + 1;
   }
 }
 
-void RegistryControlledDomainService::AddRule(const StringPiece& rule_str) {
+void RegistryControlledDomainService::AddRule(
+    const base::StringPiece& rule_str) {
   DomainEntry rule(rule_str.data(), rule_str.size());
 
   // Valid rules may be either wild or exceptions, but not both.

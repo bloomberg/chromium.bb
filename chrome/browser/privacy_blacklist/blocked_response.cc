@@ -40,7 +40,7 @@ std::string GetHTML(const Blacklist::Match* match) {
   strings.SetString(L"name", entry->provider()->name());
   strings.SetString(L"url", entry->provider()->url());
 
-  const StringPiece html =
+  const base::StringPiece html =
     ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_BLACKLIST_HTML);
   return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
 }

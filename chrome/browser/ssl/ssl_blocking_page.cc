@@ -81,7 +81,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
       (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?
        L"rtl" : L"ltr");
 
-  static const StringPiece html(
+  static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_SSL_ROAD_BLOCK_HTML));
 

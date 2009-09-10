@@ -76,7 +76,7 @@ NSString* LoadStringFromDataPack(base::DataPack* data_pack,
                                  uint32_t resource_id,
                                  const char* resource_id_str) {
   NSString* result = nil;
-  StringPiece data;
+  base::StringPiece data;
   if (data_pack->Get(resource_id, &data)) {
     // Data pack encodes strings as UTF16.
     result =

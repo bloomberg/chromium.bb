@@ -609,9 +609,9 @@ void TestShell::ShowStartupDebuggingDialog() {
   [alert runModal];
 }
 
-StringPiece TestShell::NetResourceProvider(int key) {
+base::StringPiece TestShell::NetResourceProvider(int key) {
   // TODO(port): Return the requested resource.
-  return StringPiece();
+  return base::StringPiece();
 }
 
 //-----------------------------------------------------------------------------
@@ -619,7 +619,7 @@ StringPiece TestShell::NetResourceProvider(int key) {
 namespace webkit_glue {
 
 string16 GetLocalizedString(int message_id) {
-  StringPiece res;
+  base::StringPiece res;
   if (!g_resource_data_pack->Get(message_id, &res)) {
     LOG(FATAL) << "failed to load webkit string with id " << message_id;
   }
@@ -628,7 +628,7 @@ string16 GetLocalizedString(int message_id) {
                   res.length() / 2);
 }
 
-StringPiece GetDataResource(int resource_id) {
+base::StringPiece GetDataResource(int resource_id) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)
@@ -678,7 +678,7 @@ StringPiece GetDataResource(int resource_id) {
     break;
   }
 
-  return StringPiece();
+  return base::StringPiece();
 }
 
 void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {

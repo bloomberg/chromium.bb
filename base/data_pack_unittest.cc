@@ -24,7 +24,7 @@ TEST_F(DataPackTest, Load) {
   base::DataPack pack;
   ASSERT_TRUE(pack.Load(data_path_));
 
-  StringPiece data;
+  base::StringPiece data;
   ASSERT_TRUE(pack.Get(4, &data));
   EXPECT_EQ("this is id 4", data);
   ASSERT_TRUE(pack.Get(6, &data));

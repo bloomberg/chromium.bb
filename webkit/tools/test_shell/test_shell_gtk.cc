@@ -181,7 +181,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
 
   // fontconfig only knows how to load font config configs from a file name, so
   // we write to a temp file.
-  StringPiece font_config_xml;
+  base::StringPiece font_config_xml;
   g_resource_data_pack->Get(IDR_LINUX_FONT_CONFIG, &font_config_xml);
   FilePath fontconfig_path;
   if (!file_util::CreateTemporaryFile(&fontconfig_path)) {
@@ -270,7 +270,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
   }
 
   // Also load the layout-test-specific "Ahem" font.
-  StringPiece ahem_font;
+  base::StringPiece ahem_font;
   g_resource_data_pack->Get(IDR_AHEM_FONT, &ahem_font);
   g_ahem_path = new FilePath;
   if (!file_util::CreateTemporaryFile(g_ahem_path)) {
@@ -632,8 +632,8 @@ void TestShell::ShowStartupDebuggingDialog() {
 }
 
 // static
-StringPiece TestShell::NetResourceProvider(int key) {
-  StringPiece res;
+base::StringPiece TestShell::NetResourceProvider(int key) {
+  base::StringPiece res;
   g_resource_data_pack->Get(key, &res);
   return res;
 }
@@ -643,7 +643,7 @@ StringPiece TestShell::NetResourceProvider(int key) {
 namespace webkit_glue {
 
 string16 GetLocalizedString(int message_id) {
-  StringPiece res;
+  base::StringPiece res;
   if (!g_resource_data_pack->Get(message_id, &res)) {
     LOG(FATAL) << "failed to load webkit string with id " << message_id;
   }
@@ -652,7 +652,7 @@ string16 GetLocalizedString(int message_id) {
                   res.length() / 2);
 }
 
-StringPiece GetDataResource(int resource_id) {
+base::StringPiece GetDataResource(int resource_id) {
   switch (resource_id) {
     case IDR_FEED_PREVIEW:
       // It is necessary to return a feed preview template that contains

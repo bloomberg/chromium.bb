@@ -105,22 +105,22 @@ HICON ResourceBundle::LoadThemeIcon(int icon_id) {
   return ::LoadIcon(theme_data_, MAKEINTRESOURCE(icon_id));
 }
 
-StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
+base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
   void* data_ptr;
   size_t data_size;
   if (base::GetDataResourceFromModule(_AtlBaseModule.GetModuleInstance(),
                                       resource_id,
                                       &data_ptr,
                                       &data_size)) {
-    return StringPiece(static_cast<const char*>(data_ptr), data_size);
+    return base::StringPiece(static_cast<const char*>(data_ptr), data_size);
   } else if (locale_resources_data_ &&
              base::GetDataResourceFromModule(locale_resources_data_,
                                              resource_id,
                                              &data_ptr,
                                              &data_size)) {
-    return StringPiece(static_cast<const char*>(data_ptr), data_size);
+    return base::StringPiece(static_cast<const char*>(data_ptr), data_size);
   }
-  return StringPiece();
+  return base::StringPiece();
 }
 
 // Loads and returns a cursor from the current module.

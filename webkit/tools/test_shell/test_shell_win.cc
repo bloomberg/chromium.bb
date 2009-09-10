@@ -126,16 +126,17 @@ FilePath GetResourcesFilePath() {
   return path.AppendASCII("resources");
 }
 
-static StringPiece GetRawDataResource(HMODULE module, int resource_id) {
+static base::StringPiece GetRawDataResource(HMODULE module, int resource_id) {
   void* data_ptr;
   size_t data_size;
   return base::GetDataResourceFromModule(module, resource_id, &data_ptr,
-                                         &data_size) ?
-      StringPiece(static_cast<char*>(data_ptr), data_size) : StringPiece();
+                                         &data_size)
+      ? base::StringPiece(static_cast<char*>(data_ptr), data_size)
+      : base::StringPiece();
 }
 
 // This is called indirectly by the network layer to access resources.
-StringPiece NetResourceProvider(int key) {
+base::StringPiece NetResourceProvider(int key) {
   return GetRawDataResource(::GetModuleHandle(NULL), key);
 }
 
@@ -655,7 +656,7 @@ void TestShell::ShowStartupDebuggingDialog() {
 }
 
 // static
-StringPiece TestShell::NetResourceProvider(int key) {
+base::StringPiece TestShell::NetResourceProvider(int key) {
   return GetRawDataResource(::GetModuleHandle(NULL), key);
 }
 
@@ -677,7 +678,7 @@ string16 GetLocalizedString(int message_id) {
 }
 
 // TODO(tc): Convert this to using resources from test_shell.rc.
-StringPiece GetDataResource(int resource_id) {
+base::StringPiece GetDataResource(int resource_id) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)
@@ -730,7 +731,7 @@ StringPiece GetDataResource(int resource_id) {
     break;
   }
 
-  return StringPiece();
+  return base::StringPiece();
 }
 
 HCURSOR LoadCursor(int cursor_id) {

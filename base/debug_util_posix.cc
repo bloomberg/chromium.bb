@@ -92,11 +92,11 @@ bool DebugUtil::BeingDebugged() {
   if (num_read <= 0)
     return false;
 
-  StringPiece status(buf, num_read);
-  StringPiece tracer("TracerPid:\t");
+  base::StringPiece status(buf, num_read);
+  base::StringPiece tracer("TracerPid:\t");
 
-  StringPiece::size_type pid_index = status.find(tracer);
-  if (pid_index == StringPiece::npos)
+  base::StringPiece::size_type pid_index = status.find(tracer);
+  if (pid_index == base::StringPiece::npos)
     return false;
 
   // Our pid is 0 without a debugger, assume this for any pid starting with 0.

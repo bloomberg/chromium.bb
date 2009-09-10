@@ -247,7 +247,7 @@ std::string AboutPlugins() {
   localized_strings.SetString(L"enabled_no",
       l10n_util::GetString(IDS_ABOUT_PLUGINS_ENABLED_NO));
 
-  static const StringPiece plugins_html(
+  static const base::StringPiece plugins_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_PLUGINS_HTML));
 
@@ -348,7 +348,7 @@ std::string AboutStats() {
   }
 
   // Get about_stats.html
-  static const StringPiece stats_html(
+  static const base::StringPiece stats_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_STATS_HTML));
 
@@ -514,7 +514,7 @@ std::string AboutSync() {
                      full_status.max_consecutive_errors);
   }
 
-  static const StringPiece sync_html(
+  static const base::StringPiece sync_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_ABOUT_SYNC_HTML));
 
@@ -720,7 +720,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   }
 
   // Get about_memory.html
-  static const StringPiece memory_html(
+  static const base::StringPiece memory_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_MEMORY_HTML));
 

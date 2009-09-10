@@ -181,7 +181,7 @@ void DOMUIThemeSource::InitNewTabCSS() {
   subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
 
   // Get our template.
-  static const StringPiece new_tab_theme_css(
+  static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_NEW_TAB_THEME_CSS));
 
@@ -215,7 +215,7 @@ void DOMUIThemeSource::InitNewIncognitoTabCSS() {
   subst.push_back(UTF8ToUTF16(GetNewTabBackgroundTilingCSS()));  // $5
 
   // Get our template.
-  static const StringPiece new_tab_theme_css(
+  static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_NEW_INCOGNITO_TAB_THEME_CSS));
 

@@ -75,7 +75,7 @@ void ResourceBundle::LoadThemeResources() {
 bool ResourceBundle::LoadResourceBytes(DataHandle module, int resource_id,
                                        std::vector<unsigned char>* bytes) {
   DCHECK(module);
-  StringPiece data;
+  base::StringPiece data;
   if (!module->Get(resource_id, &data))
     return false;
 
@@ -85,11 +85,11 @@ bool ResourceBundle::LoadResourceBytes(DataHandle module, int resource_id,
   return true;
 }
 
-StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
+base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
   DCHECK(resources_data_);
-  StringPiece data;
+  base::StringPiece data;
   if (!resources_data_->Get(resource_id, &data))
-    return StringPiece();
+    return base::StringPiece();
   return data;
 }
 
@@ -101,7 +101,7 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
     return string16();
   }
 
-  StringPiece data;
+  base::StringPiece data;
   if (!locale_resources_data_->Get(message_id, &data)) {
     // Fall back on the main data pack (shouldn't be any strings here except in
     // unittests).

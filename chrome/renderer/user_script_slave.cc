@@ -42,8 +42,8 @@ UserScriptSlave::UserScriptSlave()
                 IDR_GREASEMONKEY_API_JS);
 
   // Count the number of lines that will be injected before the user script.
-  StringPiece::size_type pos = 0;
-  while ((pos = api_js_.find('\n', pos)) != StringPiece::npos) {
+  base::StringPiece::size_type pos = 0;
+  while ((pos = api_js_.find('\n', pos)) != base::StringPiece::npos) {
     user_script_start_line_++;
     pos++;
   }
@@ -95,14 +95,14 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
       int body_length = 0;
       CHECK(pickle.ReadData(&iter, &body, &body_length));
       script->js_scripts()[j].set_external_content(
-          StringPiece(body, body_length));
+          base::StringPiece(body, body_length));
     }
     for (size_t j = 0; j < script->css_scripts().size(); ++j) {
       const char* body = NULL;
       int body_length = 0;
       CHECK(pickle.ReadData(&iter, &body, &body_length));
       script->css_scripts()[j].set_external_content(
-          StringPiece(body, body_length));
+          base::StringPiece(body, body_length));
     }
   }
 

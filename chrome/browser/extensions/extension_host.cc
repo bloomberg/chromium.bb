@@ -151,7 +151,7 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
 }
 
 void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
-  static const StringPiece toolstrip_css(
+  static const base::StringPiece toolstrip_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_EXTENSIONS_TOOLSTRIP_CSS));
 #if defined(TOOLKIT_VIEWS)

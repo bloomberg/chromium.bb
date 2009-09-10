@@ -16,9 +16,9 @@
 
 namespace jstemplate_builder {
 
-std::string GetTemplateHtml(const StringPiece& html_template,
+std::string GetTemplateHtml(const base::StringPiece& html_template,
                             const DictionaryValue* json,
-                            const StringPiece& template_id) {
+                            const base::StringPiece& template_id) {
   std::string output(html_template.data(), html_template.size());
   AppendJsonHtml(json, &output);
   AppendJsTemplateSourceHtml(&output);
@@ -26,7 +26,7 @@ std::string GetTemplateHtml(const StringPiece& html_template,
   return output;
 }
 
-std::string GetI18nTemplateHtml(const StringPiece& html_template,
+std::string GetI18nTemplateHtml(const base::StringPiece& html_template,
                                 const DictionaryValue* json) {
   std::string output(html_template.data(), html_template.size());
   AppendJsonHtml(json, &output);
@@ -35,9 +35,9 @@ std::string GetI18nTemplateHtml(const StringPiece& html_template,
   return output;
 }
 
-std::string GetTemplatesHtml(const StringPiece& html_template,
+std::string GetTemplatesHtml(const base::StringPiece& html_template,
                              const DictionaryValue* json,
-                             const StringPiece& template_id) {
+                             const base::StringPiece& template_id) {
   std::string output(html_template.data(), html_template.size());
   AppendI18nTemplateSourceHtml(&output);
   AppendJsTemplateSourceHtml(&output);
@@ -67,8 +67,9 @@ void AppendJsonHtml(const DictionaryValue* json, std::string* output) {
 
 void AppendJsTemplateSourceHtml(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
-  static const StringPiece jstemplate_src(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_JSTEMPLATE_JS));
+  static const base::StringPiece jstemplate_src(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_JSTEMPLATE_JS));
 
   if (jstemplate_src.empty()) {
     NOTREACHED() << "Unable to get jstemplate src";
@@ -80,7 +81,7 @@ void AppendJsTemplateSourceHtml(std::string* output) {
   output->append("</script>");
 }
 
-void AppendJsTemplateProcessHtml(const StringPiece& template_id,
+void AppendJsTemplateProcessHtml(const base::StringPiece& template_id,
                                  std::string* output) {
   output->append("<script>");
   output->append("var tp = document.getElementById('");
@@ -92,7 +93,7 @@ void AppendJsTemplateProcessHtml(const StringPiece& template_id,
 
 void AppendI18nTemplateSourceHtml(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
-  static const StringPiece i18n_template_src(
+  static const base::StringPiece i18n_template_src(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_I18N_TEMPLATE_JS));
 

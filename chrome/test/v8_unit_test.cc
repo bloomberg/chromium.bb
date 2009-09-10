@@ -14,8 +14,8 @@ void V8UnitTest::SetUp() {
   context_ = v8::Context::New(NULL, global);
 }
 
-void V8UnitTest::ExecuteScriptInContext(const StringPiece& script_source,
-                                        const StringPiece& script_name) {
+void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
+                                        const base::StringPiece& script_name) {
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
   v8::Handle<v8::String> source = v8::String::New(script_source.data(),

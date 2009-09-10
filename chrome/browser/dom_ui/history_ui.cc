@@ -79,7 +79,7 @@ void HistoryUIHTMLSource::StartDataRequest(const std::string& path,
 
   SetFontAndTextDirection(&localized_strings);
 
-  static const StringPiece history_html(
+  static const base::StringPiece history_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_HISTORY_HTML));
   const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(

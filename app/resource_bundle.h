@@ -33,7 +33,9 @@ class Font;
 }
 class SkBitmap;
 typedef uint32 SkColor;
+namespace base {
 class StringPiece;
+}
 
 #if defined(OS_MACOSX)
 #ifdef __OBJC__
@@ -105,7 +107,7 @@ class ResourceBundle {
 
   // Like GetDataResource(), but avoids copying the resource.  Instead, it
   // returns a StringPiece which points into the actual resource in the image.
-  StringPiece GetRawDataResource(int resource_id);
+  base::StringPiece GetRawDataResource(int resource_id);
 
   // Get a localized string given a message id.  Returns an empty
   // string if the message_id is not found.

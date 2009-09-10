@@ -10,7 +10,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
+namespace base {
 class StringPiece;
+}
 
 // A superclass for unit tests that involve running JavaScript.  This class
 // sets up V8 context and has methods that make it easy to execute scripts in
@@ -23,8 +25,8 @@ class V8UnitTest : public testing::Test {
  protected:
   // Executes the given script source in the context.  The specified script
   // name is used when reporting errors.
-  virtual void ExecuteScriptInContext(const StringPiece& script_source,
-                                      const StringPiece& script_name);
+  virtual void ExecuteScriptInContext(const base::StringPiece& script_source,
+                                      const base::StringPiece& script_name);
 
   // Converts a v8::TryCatch into a human readable string.
   virtual std::string ExceptionToString(v8::TryCatch* try_catch);

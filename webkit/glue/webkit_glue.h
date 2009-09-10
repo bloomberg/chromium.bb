@@ -21,9 +21,12 @@
 
 class GURL;
 class SkBitmap;
-class StringPiece;
 class WebView;
 struct WebPluginInfo;
+
+namespace base {
+class StringPiece;
+}
 
 namespace skia {
 class PlatformCanvas;
@@ -139,7 +142,7 @@ string16 GetLocalizedString(int message_id);
 
 // Returns the raw data for a resource.  This resource must have been
 // specified as BINDATA in the relevant .rc file.
-StringPiece GetDataResource(int resource_id);
+base::StringPiece GetDataResource(int resource_id);
 
 #if defined(OS_WIN)
 // Loads and returns a cursor.

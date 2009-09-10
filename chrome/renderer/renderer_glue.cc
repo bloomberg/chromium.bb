@@ -158,7 +158,7 @@ void AppendToLog(const char* file, int line, const char* msg) {
   logging::LogMessage(file, line).stream() << msg;
 }
 
-StringPiece GetDataResource(int resource_id) {
+base::StringPiece GetDataResource(int resource_id) {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
 }
 

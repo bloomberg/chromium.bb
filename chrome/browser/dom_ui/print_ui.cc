@@ -51,7 +51,7 @@ void PrintUIHTMLSource::StartDataRequest(const std::string& path,
   SetFontAndTextDirection(&localized_strings);
 
   // Setup the print html page.
-  static const StringPiece print_html(
+  static const base::StringPiece print_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PRINT_TAB_HTML));
   const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(

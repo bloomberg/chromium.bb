@@ -16,9 +16,10 @@ namespace file_util {
   class MemoryMappedFile;
 }
 class FilePath;
-class StringPiece;
 
 namespace base {
+
+class StringPiece;
 
 class DataPack {
  public:

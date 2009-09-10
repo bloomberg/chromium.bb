@@ -48,7 +48,7 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString(L"title",
       l10n_util::GetString(IDS_EXTENSIONS_TITLE));
 
-  static const StringPiece extensions_html(
+  static const base::StringPiece extensions_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_EXTENSIONS_UI_HTML));
   std::string full_html(extensions_html.data(), extensions_html.size());

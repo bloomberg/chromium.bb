@@ -16,29 +16,31 @@
 #include <string>
 
 class DictionaryValue;
+namespace base {
 class StringPiece;
+}
 
 namespace jstemplate_builder {
 
 // A helper function that generates a string of HTML to be loaded.  The
 // string includes the HTML and the javascript code necessary to generate the
 // full page with support for JsTemplates.
-std::string GetTemplateHtml(const StringPiece& html_template,
+std::string GetTemplateHtml(const base::StringPiece& html_template,
                             const DictionaryValue* json,
-                            const StringPiece& template_id);
+                            const base::StringPiece& template_id);
 
 // A helper function that generates a string of HTML to be loaded.  The
 // string includes the HTML and the javascript code necessary to generate the
 // full page with support for i18n Templates.
-std::string GetI18nTemplateHtml(const StringPiece& html_template,
+std::string GetI18nTemplateHtml(const base::StringPiece& html_template,
                                 const DictionaryValue* json);
 
 // A helper function that generates a string of HTML to be loaded.  The
 // string includes the HTML and the javascript code necessary to generate the
 // full page with support for both i18n Templates and JsTemplates.
-std::string GetTemplatesHtml(const StringPiece& html_template,
+std::string GetTemplatesHtml(const base::StringPiece& html_template,
                              const DictionaryValue* json,
-                             const StringPiece& template_id);
+                             const base::StringPiece& template_id);
 
 // The following functions build up the different parts that the above
 // templates use.
@@ -52,7 +54,7 @@ void AppendJsTemplateSourceHtml(std::string* output);
 
 // Appends the code that processes the JsTemplate with the JSON. You should
 // call AppendJsTemplateSourceHtml and AppendJsonHtml before calling this.
-void AppendJsTemplateProcessHtml(const StringPiece& template_id,
+void AppendJsTemplateProcessHtml(const base::StringPiece& template_id,
                                  std::string* output);
 
 // Appends the source for i18n Templates in a script tag.

@@ -58,7 +58,8 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
       continue;
     }
 
-    if (external_crx.find(FilePath::kParentDirectory) != StringPiece::npos) {
+    if (external_crx.find(FilePath::kParentDirectory) !=
+        base::StringPiece::npos) {
       LOG(WARNING) << "Path traversal not allowed in path: "
                    << external_crx.c_str();
       continue;

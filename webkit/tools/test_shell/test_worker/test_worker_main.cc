@@ -166,8 +166,8 @@ string16 GetLocalizedString(int message_id) {
   return EmptyString16();
 }
 
-StringPiece GetDataResource(int resource_id) {
-  return StringPiece();
+base::StringPiece GetDataResource(int resource_id) {
+  return base::StringPiece();
 }
 
 void SetMediaPlayerAvailable(bool value) {

@@ -47,9 +47,12 @@
 typedef std::list<gfx::NativeWindow> WindowList;
 
 struct WebPreferences;
-class StringPiece;
 class TestNavigationEntry;
 class TestNavigationController;
+
+namespace base {
+class StringPiece;
+}
 
 class TestShell {
 public:
@@ -268,7 +271,7 @@ public:
     static void ShowStartupDebuggingDialog();
 
     // This is called indirectly by the network layer to access resources.
-    static StringPiece NetResourceProvider(int key);
+    static base::StringPiece NetResourceProvider(int key);
 
 protected:
     bool Initialize(const GURL& starting_url);

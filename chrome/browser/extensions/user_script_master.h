@@ -16,7 +16,9 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class MessageLoop;
+namespace base {
 class StringPiece;
+}
 
 // Manages a segment of shared memory that contains the user scripts the user
 // has installed.  Lives on the UI thread.
@@ -70,7 +72,7 @@ class UserScriptMaster : public base::RefCounted<UserScriptMaster>,
       : public base::RefCounted<UserScriptMaster::ScriptReloader> {
    public:
     // Parses the includes out of |script| and returns them in |includes|.
-    static bool ParseMetadataHeader(const StringPiece& script_text,
+    static bool ParseMetadataHeader(const base::StringPiece& script_text,
                                     UserScript* script);
 
     static void LoadScriptsFromDirectory(const FilePath& script_dir,

@@ -49,15 +49,15 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
 
   std::string response;
   if (path_raw == chrome::kSyncGaiaLoginPath) {
-    static const StringPiece html(ResourceBundle::GetSharedInstance()
+    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
     response = html.as_string();
   } else if (path_raw == chrome::kSyncMergeAndSyncPath) {
-    static const StringPiece html(ResourceBundle::GetSharedInstance()
+    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_MERGE_AND_SYNC_HTML));
     response = html.as_string();
   } else if (path_raw == chrome::kSyncSetupFlowPath) {
-    static const StringPiece html(ResourceBundle::GetSharedInstance()
+    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_SYNC_SETUP_FLOW_HTML));
     response = html.as_string();
   }

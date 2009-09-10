@@ -185,7 +185,7 @@ WebData WebKitClientImpl::loadResource(const char* name) {
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {
     if (!strcmp(name, resources[i].name)) {
-      StringPiece resource = GetDataResource(resources[i].id);
+      base::StringPiece resource = GetDataResource(resources[i].id);
       return WebData(resource.data(), resource.size());
     }
   }

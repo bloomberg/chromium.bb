@@ -23,8 +23,8 @@
 
 
 // Helper function to parse greasesmonkey headers
-static bool GetDeclarationValue(const StringPiece& line,
-                                const StringPiece& prefix,
+static bool GetDeclarationValue(const base::StringPiece& line,
+                                const base::StringPiece& prefix,
                                 std::string* value) {
   if (!line.starts_with(prefix))
     return false;
@@ -42,20 +42,20 @@ UserScriptMaster::ScriptReloader::ScriptReloader(UserScriptMaster* master)
 
 // static
 bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
-      const StringPiece& script_text, UserScript* script) {
+      const base::StringPiece& script_text, UserScript* script) {
   // http://wiki.greasespot.net/Metadata_block
-  StringPiece line;
+  base::StringPiece line;
   size_t line_start = 0;
   size_t line_end = 0;
   bool in_metadata = false;
 
-  static const StringPiece kUserScriptBegin("// ==UserScript==");
-  static const StringPiece kUserScriptEng("// ==/UserScript==");
-  static const StringPiece kIncludeDeclaration("// @include ");
-  static const StringPiece kMatchDeclaration("// @match ");
-  static const StringPiece kRunAtDeclaration("// @run-at ");
-  static const StringPiece kRunAtDocumentStartValue("document-start");
-  static const StringPiece kRunAtDocumentEndValue("document-end");
+  static const base::StringPiece kUserScriptBegin("// ==UserScript==");
+  static const base::StringPiece kUserScriptEng("// ==/UserScript==");
+  static const base::StringPiece kIncludeDeclaration("// @include ");
+  static const base::StringPiece kMatchDeclaration("// @match ");
+  static const base::StringPiece kRunAtDeclaration("// @run-at ");
+  static const base::StringPiece kRunAtDocumentStartValue("document-start");
+  static const base::StringPiece kRunAtDocumentEndValue("document-end");
 
   while (line_start < script_text.length()) {
     line_end = script_text.find('\n', line_start);
@@ -204,11 +204,11 @@ static base::SharedMemory* Serialize(const UserScriptList& scripts) {
     // Write scripts as 'data' so that we can read it out in the slave without
     // allocating a new string.
     for (size_t j = 0; j < script.js_scripts().size(); j++) {
-      StringPiece contents = script.js_scripts()[j].GetContent();
+      base::StringPiece contents = script.js_scripts()[j].GetContent();
       pickle.WriteData(contents.data(), contents.length());
     }
     for (size_t j = 0; j < script.css_scripts().size(); j++) {
-      StringPiece contents = script.css_scripts()[j].GetContent();
+      base::StringPiece contents = script.css_scripts()[j].GetContent();
       pickle.WriteData(contents.data(), contents.length());
     }
   }

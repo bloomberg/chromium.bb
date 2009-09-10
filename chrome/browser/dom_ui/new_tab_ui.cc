@@ -421,12 +421,12 @@ void NewTabHTMLSource::InitFullHTML() {
   // In case we have the new new tab page enabled we first try to read the file
   // provided on the command line. If that fails we just get the resource from
   // the resource bundle.
-  StringPiece new_tab_html;
+  base::StringPiece new_tab_html;
   std::string new_tab_html_str;
   new_tab_html_str = GetCustomNewTabPageFromCommandLine();
 
   if (!new_tab_html_str.empty()) {
-    new_tab_html = StringPiece(new_tab_html_str);
+    new_tab_html = base::StringPiece(new_tab_html_str);
   }
 
   if (new_tab_html.empty()) {
@@ -510,7 +510,7 @@ void IncognitoTabHTMLSource::InitFullHTML() {
 
   SetFontAndTextDirection(&localized_strings);
 
-  static const StringPiece incognito_tab_html(
+  static const base::StringPiece incognito_tab_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_INCOGNITO_TAB_HTML));
 

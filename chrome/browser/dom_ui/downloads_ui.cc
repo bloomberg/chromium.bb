@@ -99,7 +99,7 @@ void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
 
   SetFontAndTextDirection(&localized_strings);
 
-  static const StringPiece downloads_html(
+  static const base::StringPiece downloads_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DOWNLOADS_HTML));
   const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(

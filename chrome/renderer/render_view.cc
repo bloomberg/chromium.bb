@@ -3129,7 +3129,7 @@ bool RenderView::MaybeLoadAlternateErrorPage(WebFrame* frame,
 
 std::string RenderView::GetAltHTMLForTemplate(
     const DictionaryValue& error_strings, int template_resource_id) const {
-  const StringPiece template_html(
+  const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           template_resource_id));
 

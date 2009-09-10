@@ -40,7 +40,7 @@ class UserScriptSlave {
   STLElementDeleter<std::vector<UserScript*> > script_deleter_;
 
   // Greasemonkey API source that is injected with the scripts.
-  StringPiece api_js_;
+  base::StringPiece api_js_;
 
   // The line number of the first line of the user script among all of the
   // injected javascript.  This is used to make reported errors correspond with

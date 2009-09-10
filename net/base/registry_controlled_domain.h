@@ -227,7 +227,7 @@ class RegistryControlledDomainService {
   // consider the attributes when doing comparisons, so as far as any data
   // structures our concerned (ex our set), two DomainEntry's are equal as long
   // as their StringPiece (the domain) is equal.  This is the behavior we want.
-  class DomainEntry : public StringPiece {
+  class DomainEntry : public base::StringPiece {
    public:
     struct DomainEntryAttributes {
       DomainEntryAttributes() : exception(false), wildcard(false) { }
@@ -242,8 +242,9 @@ class RegistryControlledDomainService {
       bool wildcard;
     };
 
-    DomainEntry() : StringPiece() { }
-    DomainEntry(const char* ptr, size_type size) : StringPiece(ptr, size) { }
+    DomainEntry() : base::StringPiece() { }
+    DomainEntry(const char* ptr, size_type size)
+        : base::StringPiece(ptr, size) { }
     ~DomainEntry() { }
 
     // We override StringPiece's operator < to make it more efficent, since we
@@ -252,7 +253,7 @@ class RegistryControlledDomainService {
     bool operator<(const DomainEntry& other) const {
       // If we are the same size, call up to StringPiece's real less than.
       if (size() == other.size())
-        return *static_cast<const StringPiece*>(this) < other;
+        return *static_cast<const base::StringPiece*>(this) < other;
       // Consider ourselves less if we are smaller
       return size() < other.size();
     }
@@ -269,7 +270,7 @@ class RegistryControlledDomainService {
   // were populated from an embedded resource, we will reference the embedded
   // resource directly.  If we were populated through UseDomainData, then our
   // StringPiece will reference our local copy in copied_domain_data_.
-  void ParseDomainData(const StringPiece& data);
+  void ParseDomainData(const base::StringPiece& data);
 
   // Returns the singleton instance, after attempting to initialize it.
   // NOTE that if the effective-TLD data resource can't be found, the instance
@@ -277,7 +278,7 @@ class RegistryControlledDomainService {
   static RegistryControlledDomainService* GetInstance();
 
   // Adds one rule, assumed to be valid, to the domain_set_.
-  void AddRule(const StringPiece& rule_str);
+  void AddRule(const base::StringPiece& rule_str);
 
   // Internal workings of the static public methods.  See above.
   static std::string GetDomainAndRegistryImpl(const std::string& host);
