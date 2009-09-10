@@ -111,14 +111,13 @@ void InProcessBrowserTest::SetUp() {
 
   // Explicitly set the path of the exe used for the renderer and plugin,
   // otherwise they'll try to use unit_test.exe.
-  std::wstring subprocess_path;
+  FilePath subprocess_path;
   PathService::Get(base::FILE_EXE, &subprocess_path);
-  FilePath fp_subprocess_path = FilePath::FromWStringHack(subprocess_path);
-  subprocess_path = fp_subprocess_path.DirName().ToWStringHack();
-  file_util::AppendToPath(&subprocess_path,
-                          chrome::kBrowserProcessExecutablePath);
+  subprocess_path = subprocess_path.DirName();
+  subprocess_path = subprocess_path.AppendASCII(WideToASCII(
+      chrome::kBrowserProcessExecutablePath));
   command_line->AppendSwitchWithValue(switches::kBrowserSubprocessPath,
-                                      subprocess_path);
+                                      subprocess_path.ToWStringHack());
 
   // Enable warning level logging so that we can see when bad stuff happens.
   command_line->AppendSwitch(switches::kEnableLogging);
