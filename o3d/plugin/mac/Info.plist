@@ -38,6 +38,8 @@
 	</dict>
 	<key>WebPluginName</key>
 	<string>@@@PluginName@@@</string>
+	<key>O3DForceSoftwareRenderer</key>
+	<false/>
 
 	<key>BreakpadProduct</key>
 	<string>O3D</string>
