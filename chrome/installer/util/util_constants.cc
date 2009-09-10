@@ -18,6 +18,9 @@ const wchar_t kDeleteProfile[] = L"delete-profile";
 // Disable logging
 const wchar_t kDisableLogging[] = L"disable-logging";
 
+// Prevent installer from creating desktop shortcuts.
+const wchar_t kDoNotCreateShortcuts[] = L"do-not-create-shortcuts";
+
 // Prevent installer from launching Chrome after a successful first install.
 const wchar_t kDoNotLaunchChrome[] = L"do-not-launch-chrome";
 

@@ -46,6 +46,7 @@ namespace switches {
 extern const wchar_t kCreateAllShortcuts[];
 extern const wchar_t kDeleteProfile[];
 extern const wchar_t kDisableLogging[];
+extern const wchar_t kDoNotCreateShortcuts[];
 extern const wchar_t kDoNotLaunchChrome[];
 extern const wchar_t kDoNotRemoveSharedItems[];
 extern const wchar_t kEnableLogging[];

@@ -540,21 +540,25 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
       result = installer_util::NEW_VERSION_UPDATED;
     }
 
-    bool create_all_shortcut = installer_util::GetDistroBooleanPreference(prefs,
-        installer_util::master_preferences::kCreateAllShortcuts);
-    bool alt_shortcut = installer_util::GetDistroBooleanPreference(prefs,
-        installer_util::master_preferences::kAltShortcutText);
-    if (!CreateOrUpdateChromeShortcuts(exe_path, install_path,
-                                       new_version.GetString(), result,
-                                       system_install, create_all_shortcut,
-                                       alt_shortcut))
-      LOG(WARNING) << "Failed to create/update start menu shortcut.";
+    if (!installer_util::GetDistroBooleanPreference(prefs,
+            installer_util::master_preferences::kDoNotCreateShortcuts)) {
+      bool create_all_shortcut = installer_util::GetDistroBooleanPreference(
+          prefs, installer_util::master_preferences::kCreateAllShortcuts);
+      bool alt_shortcut = installer_util::GetDistroBooleanPreference(prefs,
+          installer_util::master_preferences::kAltShortcutText);
+      if (!CreateOrUpdateChromeShortcuts(exe_path, install_path,
+                                         new_version.GetString(), result,
+                                         system_install, create_all_shortcut,
+                                         alt_shortcut))
+        LOG(WARNING) << "Failed to create/update start menu shortcut.";
+
+      bool make_chrome_default = installer_util::GetDistroBooleanPreference(
+          prefs, installer_util::master_preferences::kMakeChromeDefault);
+      RegisterChromeOnMachine(install_path, system_install,
+                              make_chrome_default);
+    }
 
     RemoveOldVersionDirs(install_path, new_version.GetString());
-
-    bool make_chrome_default = installer_util::GetDistroBooleanPreference(prefs,
-        installer_util::master_preferences::kMakeChromeDefault);
-    RegisterChromeOnMachine(install_path, system_install, make_chrome_default);
   }
 
   return result;
