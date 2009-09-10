@@ -255,6 +255,14 @@ std::string DOMUIThemeSource::GetNewTabBackgroundCSS(bool bar_attached) {
   profile_->GetThemeProvider()->GetDisplayProperty(
       BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT, &alignment);
 
+  // TODO(glen): This is a quick workaround to hide the notused.png image when
+  // no image is provided - we don't have time right now to figure out why
+  // this is painting as white.
+  // http://crbug.com/17593
+  if (!profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
+    return "-64px";
+  }
+
   if (bar_attached)
     return BrowserThemeProvider::AlignmentToString(alignment);
 
@@ -265,14 +273,6 @@ std::string DOMUIThemeSource::GetNewTabBackgroundCSS(bool bar_attached) {
 #else
   int offset = 0;
 #endif
-
-  // TODO(glen): This is a quick workaround to hide the notused.png image when
-  // no image is provided - we don't have time right now to figure out why
-  // this is painting as white.
-  // http://crbug.com/17593
-  if (!profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-    return "-64px";
-  }
 
   if (alignment & BrowserThemeProvider::ALIGN_TOP) {
     if (alignment & BrowserThemeProvider::ALIGN_LEFT)

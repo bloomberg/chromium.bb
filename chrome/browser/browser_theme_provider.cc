@@ -256,6 +256,13 @@ BrowserThemeProvider::BrowserThemeProvider()
     resource_names_[IDR_THEME_TAB_BACKGROUND] = "theme_tab_background";
     resource_names_[IDR_THEME_TAB_BACKGROUND_INCOGNITO] =
         "theme_tab_background_incognito";
+    resource_names_[IDR_THEME_TOOLBAR] = "theme_toolbar";
+    resource_names_[IDR_THEME_TAB_BACKGROUND_V] = "theme_tab_background_v";
+    resource_names_[IDR_THEME_NTP_BACKGROUND] = "theme_ntp_background";
+    resource_names_[IDR_THEME_BUTTON_BACKGROUND] = "theme_button_background";
+    resource_names_[IDR_THEME_NTP_ATTRIBUTION] = "theme_ntp_attribution";
+    resource_names_[IDR_THEME_WINDOW_CONTROL_BACKGROUND] =
+        "theme_window_control_background";
   }
 }
 
