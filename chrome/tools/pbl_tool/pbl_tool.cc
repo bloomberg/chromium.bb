@@ -44,14 +44,15 @@ int IMAIN(int argc, ICHAR* argv[]) {
   for (int current = 1; current < argc-1; ++current) {
     FilePath input(argv[current]);
     if (!io.Read(input)) {
-      ICERR << "Error reading input file " << argv[current] << "\n";
+      ICERR << "Error reading " << argv[current] << ":\n"
+            << io.last_error() << "\n";
       return -1;
     }
   }
 
   FilePath output(argv[argc-1]);
   if (!io.Write(output))
-    ICERR << "Error writing output file " << argv[2] << "\n";
+    ICERR << "Error writing " << argv[2] << ":\n" << io.last_error() << "\n";
 
   return 0;
 }

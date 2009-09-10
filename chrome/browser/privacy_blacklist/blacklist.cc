@@ -5,6 +5,7 @@
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 
 #include "base/file_path.h"
@@ -159,35 +160,50 @@ void Blacklist::Match::AddEntry(const Entry* entry) {
   entries_.push_back(entry);
 }
 
-Blacklist::Blacklist(const FilePath& file) {
+Blacklist::Blacklist(const FilePath& file) : is_good_(false) {
   // No blacklist, nothing to load.
   if (file.value().empty())
     return;
 
-  BlacklistStoreInput input(file_util::OpenFile(file, "rb"));
+  FILE* fp = file_util::OpenFile(file, "rb");
+  if (fp == NULL)
+    return;
+
+  BlacklistStoreInput input(fp);
 
   // Read the providers
   std::size_t n = input.ReadNumProviders();
+  if (n == std::numeric_limits<uint32>::max())
+    return;
+
   providers_.reserve(n);
   std::string name;
   std::string url;
   for (std::size_t i = 0; i < n; ++i) {
-    input.ReadProvider(&name, &url);
+    if (!input.ReadProvider(&name, &url))
+      return;
     providers_.push_back(new Provider(name.c_str(), url.c_str()));
   }
 
   // Read the entries
   n = input.ReadNumEntries();
+  if (n == std::numeric_limits<uint32>::max())
+    return;
+
   std::string pattern;
   unsigned int attributes, provider;
   std::vector<std::string> types;
   for (unsigned int i = 0; i < n; ++i) {
-    input.ReadEntry(&pattern, &attributes, &types, &provider);
+    if (!input.ReadEntry(&pattern, &attributes, &types, &provider))
+      return;
+
     Entry* entry = new Entry(pattern, providers_[provider]);
     entry->AddAttributes(attributes);
     entry->SwapTypes(&types);
     blacklist_.push_back(entry);
   }
+
+  is_good_ = true;
 }
 
 Blacklist::~Blacklist() {
@@ -202,6 +218,9 @@ Blacklist::~Blacklist() {
 // Returns a pointer to the Blacklist-owned entry which matches the given
 // URL. If no matching Entry is found, returns null.
 Blacklist::Match* Blacklist::findMatch(const GURL& url) const {
+  if (!is_good_)
+    return NULL;  // Don't attempt to find matches if the data is corrupt.
+
   // Never match something which is not http, https or ftp.
   // TODO(idanan): Investigate if this would be an inclusion test instead of an
   // exclusion test and if there are other schemes to test for.

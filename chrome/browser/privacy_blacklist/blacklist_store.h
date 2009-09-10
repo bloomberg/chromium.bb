@@ -13,8 +13,6 @@
 
 class FilePath;
 
-// TODO(idanan): Error handling needed. I/O errors can always happen!
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Blacklist Binary Storage Output Class
@@ -30,27 +28,31 @@ class BlacklistStoreOutput {
   explicit BlacklistStoreOutput(FILE* file);
   ~BlacklistStoreOutput();
 
-  // Sets the number of providers stored.
-  void ReserveProviders(uint32);
+  // Returns true if the object initialized without error.
+  bool is_good() const { return is_good_; }
 
-  // Stores a provider.
-  void StoreProvider(const std::string& name, const std::string& url);
+  // Sets the number of providers stored. Returns true if successful.
+  bool ReserveProviders(uint32);
 
-  // Sets the number of entries stored.
-  void ReserveEntries(uint32);
+  // Stores a provider. Returns true if successful.
+  bool StoreProvider(const std::string& name, const std::string& url);
 
-  // Stores an entry.
-  void StoreEntry(const std::string& pattern,
+  // Sets the number of entries stored. Returns true if successful.
+  bool ReserveEntries(uint32);
+
+  // Stores an entry. Returns true if successful.
+  bool StoreEntry(const std::string& pattern,
                   uint32 attributes,
                   const std::vector<std::string>& types,
                   uint32 provider);
 
  private:
-  // Writes basic types to the stream.
-  void WriteUInt(uint32);
-  void WriteString(const std::string&);
+  // Writes basic types to the stream. Returns true if successful.
+  bool WriteUInt(uint32);
+  bool WriteString(const std::string&);
 
   FILE* file_;
+  bool is_good_;
   DISALLOW_COPY_AND_ASSIGN(BlacklistStoreOutput);
 };
 
@@ -69,17 +71,20 @@ class BlacklistStoreInput {
   explicit BlacklistStoreInput(FILE* file);
   ~BlacklistStoreInput();
 
+  // Returns true if this object initialized without error.
+  bool is_good() const { return is_good_; }
+
   // Reads the number of providers.
   uint32 ReadNumProviders();
 
-  // Reads a provider.
-  void ReadProvider(std::string* name, std::string* url);
+  // Reads a provider. Returns true on success.
+  bool ReadProvider(std::string* name, std::string* url);
 
-  // Reads the number of entries.
+  // Reads the number of entries. Returns true on success.
   uint32 ReadNumEntries();
 
   // Reads an entry.
-  void ReadEntry(std::string* pattern,
+  bool ReadEntry(std::string* pattern,
                  uint32* attributes,
                  std::vector<std::string>* types,
                  uint32* provider);
@@ -89,6 +94,7 @@ class BlacklistStoreInput {
   std::string ReadString();
 
   FILE* file_;
+  bool is_good_;
   DISALLOW_COPY_AND_ASSIGN(BlacklistStoreInput);
 };
 

@@ -39,6 +39,7 @@
 #include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -96,6 +97,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/rlz/rlz.h"
+#include "chrome/browser/views/blacklist_error_dialog.h"
 #include "chrome/browser/views/user_data_dir_dialog.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/helper.h"
@@ -558,6 +560,18 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
     return ResultCodes::NORMAL_EXIT;
   }
+  if (profile->GetBlacklist() && !profile->GetBlacklist()->is_good()) {
+    // TODO(idanan): Enable this for other platforms once the dispatching
+    // support code has been ported. See ifdefs in message_loop.h.
+#if defined(OS_WIN)
+    bool accepted = BlacklistErrorDialog::RunBlacklistErrorDialog();
+    if (!accepted)
+      return ResultCodes::NORMAL_EXIT;
+#else
+    return ResultCodes::NORMAL_EXIT;
+#endif
+  }
+
 
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);

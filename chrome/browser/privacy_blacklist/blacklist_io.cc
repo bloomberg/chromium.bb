@@ -59,15 +59,19 @@ bool BlacklistIO::Read(const FilePath& file) {
   // memory it would be the least of our worries. Typical blacklist files
   // are less than 200K.
   file_util::MemoryMappedFile input;
-  if (!input.Initialize(file) || !input.data())
+  if (!input.Initialize(file) || !input.data()) {
+    last_error_ = ASCIIToUTF16("File I/O error. Check path and permissions.");
     return false;
+  }
 
   const char* cur = reinterpret_cast<const char*>(input.data());
   const char* end = cur + input.length();
 
   // Check header.
-  if (!StartsWith(cur, end, header, arraysize(header)))
+  if (!StartsWith(cur, end, header, arraysize(header))) {
+    last_error_ = ASCIIToUTF16("Incorrect header.");
     return false;
+  }
 
   Blacklist::Provider* provider = new Blacklist::Provider;
   providers_.push_back(provider);
@@ -109,8 +113,10 @@ bool BlacklistIO::Read(const FilePath& file) {
     std::string pattern(cur, skip);
 
     cur = std::find_if(cur+pattern.size(), end, IsNotWhiteSpace());
-    if (!StartsWith(cur, end, arrow_tag, arraysize(arrow_tag)))
+    if (!StartsWith(cur, end, arrow_tag, arraysize(arrow_tag))) {
+      last_error_ = ASCIIToUTF16("Missing => in rule.");
       return false;
+    }
 
     scoped_ptr<Blacklist::Entry> entry(new Blacklist::Entry(pattern, provider));
 
@@ -129,11 +135,18 @@ bool BlacklistIO::Read(const FilePath& file) {
       if (tokenier.token_is_delim()) {
         switch (*tokenier.token_begin()) {
           case '(':
-            if (in_attribute) return false;
+            if (in_attribute) {
+              last_error_ =
+                  ASCIIToUTF16("Unexpected ( in attribute parameters.");
+              return false;
+            }
             in_attribute = true;
             continue;
           case ')':
-            if (!in_attribute) return false;
+            if (!in_attribute) {
+              last_error_ = ASCIIToUTF16("Unexpected ) in attribute list.");
+              return false;
+            }
             in_attribute = false;
             continue;
           default:
@@ -159,25 +172,43 @@ bool BlacklistIO::Read(const FilePath& file) {
 
 bool BlacklistIO::Write(const FilePath& file) {
   BlacklistStoreOutput output(file_util::OpenFile(file, "wb"));
+  if (!output.is_good()) {
+    last_error_ = ASCIIToUTF16("Error opening file for writing.");
+    return false;
+  }
 
   // Output providers, give each one an index.
   std::map<const Blacklist::Provider*, uint32> index;
   uint32 current = 0;
-  output.ReserveProviders(providers_.size());
+  if (!output.ReserveProviders(providers_.size())) {
+    last_error_ = ASCIIToUTF16("Error writing to file.");
+    return false;
+  }
+
   for (std::list<Blacklist::Provider*>::const_iterator i = providers_.begin();
        i != providers_.end(); ++i, ++current) {
-    output.StoreProvider((*i)->name(), (*i)->url());
+    if (!output.StoreProvider((*i)->name(), (*i)->url())) {
+      last_error_ = ASCIIToUTF16("Error writing to file.");
+      return false;
+    }
     index[*i] = current;
   }
 
   // Output entries, replacing the provider with its index.
-  output.ReserveEntries(blacklist_.size());
+  if (!output.ReserveEntries(blacklist_.size())) {
+    last_error_ = ASCIIToUTF16("Error writing to file.");
+    return false;
+  }
+
   for (std::list<Blacklist::Entry*>::const_iterator i = blacklist_.begin();
        i != blacklist_.end(); ++i) {
-    output.StoreEntry((*i)->pattern_,
-                      (*i)->attributes_,
-                      (*i)->types_,
-                      index[(*i)->provider_]);
+    if (!output.StoreEntry((*i)->pattern_,
+                           (*i)->attributes_,
+                           (*i)->types_,
+                           index[(*i)->provider_])) {
+      last_error_ = ASCIIToUTF16("Error writing to file.");
+      return false;
+    }
   }
   return true;
 }

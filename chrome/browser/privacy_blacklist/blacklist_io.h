@@ -7,6 +7,7 @@
 
 #include <list>
 
+#include "base/string16.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 
 class FilePath;
@@ -24,6 +25,12 @@ class BlacklistIO {
   // Writes a binary blacklist with aggregated entries for all read blacklists.
   bool Write(const FilePath& path);
 
+  // Returns the text of the last occuring error. An empty string is returned
+  // if no such error happened.
+  const string16& last_error() const {
+    return last_error_;
+  }
+
  private:
   // Introspection functions, for testing purposes.
   const std::list<Blacklist::Entry*>& blacklist() const {
@@ -35,6 +42,7 @@ class BlacklistIO {
 
   std::list<Blacklist::Entry*> blacklist_;
   std::list<Blacklist::Provider*> providers_;
+  string16 last_error_;  // Stores text of last error, empty if N/A.
 
   FRIEND_TEST(BlacklistIOTest, Generic);
   FRIEND_TEST(BlacklistIOTest, Combine);

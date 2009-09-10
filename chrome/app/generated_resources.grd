@@ -4953,6 +4953,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_BLACKLIST_BLOCKED_REFERRER" desc="Referrer sending was blacklisted.">
       Referrer not sent
     </message>
+    <message name="IDS_BLACKLIST_ERROR_LOADING_TITLE" desc="Title of the dialog shown when the privacy blacklist cannot be loaded.">
+      Privacy Blacklist Error
+    </message>
+    <message name="IDS_BLACKLIST_ERROR_LOADING_TEXT" desc="Text of the dialog shown when the privacy blacklist cannot be loaded.">
+      Your privacy blacklists failed to load.
+    </message>
+    <message name="IDS_BLACKLIST_ERROR_LOADING_CONTINUE" desc="Continue button text when blacklist cannot be loaded.">
+      Continue
+    </message>
+    <message name="IDS_BLACKLIST_ERROR_LOADING_EXIT" desc="Exit button text when the privacy blacklist cannot be loaded.">
+      Exit
+    </message>
 
     <!-- ProcessSingleton -->
     <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">

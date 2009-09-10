@@ -158,6 +158,9 @@ class Blacklist {
   // caller.
   Match* findMatch(const GURL&) const;
 
+  // Returns true if the blacklist object is in good health.
+  bool is_good() const { return is_good_; }
+
   // Helper to remove cookies from a header.
   static std::string StripCookies(const std::string&);
 
@@ -172,6 +175,8 @@ class Blacklist {
 
   std::vector<Entry*> blacklist_;
   std::vector<Provider*> providers_;
+
+  bool is_good_;  // True if the blacklist was read successfully.
 
   FRIEND_TEST(BlacklistTest, Generic);
   FRIEND_TEST(BlacklistTest, PatternMatch);

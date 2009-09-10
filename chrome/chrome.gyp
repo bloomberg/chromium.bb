@@ -1911,6 +1911,8 @@
         'browser/views/autocomplete/autocomplete_popup_win.h',
         'browser/views/autocomplete/autocomplete_popup_gtk.cc',
         'browser/views/autocomplete/autocomplete_popup_gtk.h',
+        'browser/views/blacklist_error_dialog.cc',
+        'browser/views/blacklist_error_dialog.h',
         'browser/views/blocked_popup_container_view_win.cc',
         'browser/views/blocked_popup_container_view_win.h',
         'browser/views/bookmark_bar_view.cc',
