@@ -501,7 +501,6 @@ std::string AboutSync() {
     AddIntSyncDetail(details, L"Conflicting Count",
                      full_status.conflicting_count);
     AddBoolSyncDetail(details, L"Syncing", full_status.syncing);
-    AddBoolSyncDetail(details, L"Syncer Paused", full_status.syncer_paused);
     AddBoolSyncDetail(details, L"Initial Sync Ended",
                       full_status.initial_sync_ended);
     AddBoolSyncDetail(details, L"Syncer Stuck", full_status.syncer_stuck);

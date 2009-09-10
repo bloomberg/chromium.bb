@@ -301,8 +301,6 @@ std::wstring ProfileSyncService::BuildSyncStatusSummaryText(
       return L"SYNCING";
     case sync_api::SyncManager::Status::READY:
       return L"READY";
-    case sync_api::SyncManager::Status::PAUSED:
-      return L"PAUSED";
     case sync_api::SyncManager::Status::CONFLICT:
       return L"CONFLICT";
     case sync_api::SyncManager::Status::OFFLINE_UNUSABLE:
