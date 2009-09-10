@@ -561,6 +561,7 @@ o3djs.util.getElementById = function(id) {
 
 /**
  * Identifies a JavaScript engine.
+ * @enum {number}
  */
 o3djs.util.Engine = {
   /**

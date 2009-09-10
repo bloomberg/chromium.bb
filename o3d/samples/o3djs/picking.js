@@ -384,7 +384,7 @@ o3djs.picking.TransformInfo = function(transform, parent) {
    */
   this.transform = transform;
   /**
-   * The transform of this transform info.
+   * The parent of this transform info.
    * @type {o3djs.picking.TransformInfo}
    */
   this.parent = parent;

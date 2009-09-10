@@ -199,7 +199,9 @@ o3djs.texture.createTextureFromBitmaps = function(
     }
     texture = pack.createTextureCUBE(dstWidth, format, targetMips, false);
     for (var ii = 0; ii < 6; ++ii) {
-      texture.setFromBitmap(ii, bitmaps[ii]);
+      texture.setFromBitmap(
+          /** @type {o3d.TextureCUBE.CubeFace} */ (ii),
+          bitmaps[ii]);
     }
   } else if (bitmaps.length == 1) {
     texture = pack.createTexture2D(
@@ -207,7 +209,7 @@ o3djs.texture.createTextureFromBitmaps = function(
     texture.setFromBitmap(bitmaps[0]);
   }
 
-  return texture;
+  return /** @type{!o3d.Texture} */ (texture);
 };
 
 /**

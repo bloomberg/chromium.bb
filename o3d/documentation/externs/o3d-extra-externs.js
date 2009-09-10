@@ -6,7 +6,7 @@ var plugin;
 
 /**
  * The main namespace for the o3d plugin.
- * @namespace
+ * @constructor
  */
 var o3d;
 

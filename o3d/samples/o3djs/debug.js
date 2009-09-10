@@ -650,16 +650,16 @@ o3djs.debug.DebugLineGroup = function(debugHelper, root) {
   this.currentColor_ = [1, 1, 1, 1];
 
   /**
-   * The transforms for all the lines in this group indexed by clientId.
+   * The lines in this group indexed by clientId.
    * @private
-   * @type {!Object.<number, !o3d.Transform>}
+   * @type {!Object.<number, !o3djs.debug.DebugLine>}
    */
   this.lineTransforms_ = { };
 
   /**
-   * The transforms for all the unused lines in this group indexed by clientId.
+   * The unused lines in this group indexed by clientId.
    * @private
-   * @type {!Object.<number, !o3d.Transform>}
+   * @type {!Object.<number, !o3djs.debug.DebugLine>}
    */
   this.freeLineTransforms_ = { };
 
@@ -725,7 +725,8 @@ o3djs.debug.DebugLineGroup.prototype.setColor = function(color) {
  * @return {!o3djs.debug.DebugLine} The DebugLine.
  */
 o3djs.debug.DebugLineGroup.prototype.getLine_ = function() {
-  for (var id in this.freeLineTransforms_) {
+  for (var sid in this.freeLineTransforms_) {
+    var id = /** @type {number} */ (sid);
     var line = this.freeLineTransforms_[id];
     delete this.freeLineTransforms_[id];
     return line;
@@ -755,7 +756,8 @@ o3djs.debug.DebugLineGroup.prototype.addLine = function(opt_start,
  * Clears all the lines in this group.
  */
 o3djs.debug.DebugLineGroup.prototype.clear = function() {
-  for (var id in this.lineTransforms_) {
+  for (var sid in this.lineTransforms_) {
+    var id = /** @type {number} */ (sid);
     var line = this.lineTransforms_[id];
     line.setVisible(false);
     this.freeLineTransforms_[id] = line;
@@ -768,7 +770,8 @@ o3djs.debug.DebugLineGroup.prototype.clear = function() {
  */
 o3djs.debug.DebugLineGroup.prototype.destroy = function() {
   this.clear();
-  for (var id in this.freeLineTransforms_) {
+  for (var sid in this.freeLineTransforms_) {
+    var id = /** @type {number} */ (sid);
     this.freeLineTransforms_[id].destroy();
   }
   this.freeLineTransforms_ = { };

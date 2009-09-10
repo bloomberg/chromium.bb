@@ -267,7 +267,7 @@ def BuildO3DExternsFile(js_files_dir, extra_externs_file, externs_file):
     # strip out @o3dparameter stuff
     for line in lines:
       if skipping:
-        if line.startswith('* @') or line.startswith(' */'):
+        if line.startswith(' * @') or line.startswith(' */'):
           skipping = False
       if not skipping:
         if line.startswith(' * @o3dparameter'):

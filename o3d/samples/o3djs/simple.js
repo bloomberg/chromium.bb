@@ -284,7 +284,8 @@ o3djs.simple.SimpleInfo.prototype.createSimpleShape = function(shape) {
  * @param {number} elapsedTime Time elapsed since last frame.
  */
 o3djs.simple.SimpleInfo.prototype.onRender_ = function(elapsedTime) {
-  for (var id in this.updateObjects_) {
+  for (var sid in this.updateObjects_) {
+    var id = /** @type {number} */ (sid);
     this.updateObjects_[id].onUpdate(elapsedTime);
   }
 };
@@ -295,7 +296,7 @@ o3djs.simple.SimpleInfo.prototype.onRender_ = function(elapsedTime) {
  */
 o3djs.simple.SimpleInfo.prototype.registerObjectForUpdate =
     function (simpleObject) {
-  this.updateObjects_[simpleObject.id] = true;
+  this.updateObjects_[simpleObject.id] = simpleObject;
 };
 
 /**

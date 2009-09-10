@@ -213,8 +213,8 @@ o3djs.math.Matrix = goog.typedef;
  */
 o3djs.math.pseudoRandom = function() {
   var math = o3djs.math;
-  return (math.randomSeed_ = 
-          (134775813 * math.randomSeed_ + 1) % 
+  return (math.randomSeed_ =
+          (134775813 * math.randomSeed_ + 1) %
           math.RANDOM_RANGE_) / math.RANDOM_RANGE_;
 };
 
@@ -1441,31 +1441,32 @@ o3djs.math.inverse4 = function(m) {
 
   var d = 1.0 / (m[0][0] * t0 + m[1][0] * t1 + m[2][0] * t2 + m[3][0] * t3);
 
-  return [[d * t0, d * t1, d * t2, d * t3],
-      [d * ((tmp_1 * m[1][0] + tmp_2 * m[2][0] + tmp_5 * m[3][0]) -
+  var row0 = [d * t0, d * t1, d * t2, d * t3];
+  var row1 = [d * ((tmp_1 * m[1][0] + tmp_2 * m[2][0] + tmp_5 * m[3][0]) -
           (tmp_0 * m[1][0] + tmp_3 * m[2][0] + tmp_4 * m[3][0])),
        d * ((tmp_0 * m[0][0] + tmp_7 * m[2][0] + tmp_8 * m[3][0]) -
           (tmp_1 * m[0][0] + tmp_6 * m[2][0] + tmp_9 * m[3][0])),
        d * ((tmp_3 * m[0][0] + tmp_6 * m[1][0] + tmp_11 * m[3][0]) -
           (tmp_2 * m[0][0] + tmp_7 * m[1][0] + tmp_10 * m[3][0])),
        d * ((tmp_4 * m[0][0] + tmp_9 * m[1][0] + tmp_10 * m[2][0]) -
-          (tmp_5 * m[0][0] + tmp_8 * m[1][0] + tmp_11 * m[2][0]))],
-      [d * ((tmp_12 * m[1][3] + tmp_15 * m[2][3] + tmp_16 * m[3][3]) -
+          (tmp_5 * m[0][0] + tmp_8 * m[1][0] + tmp_11 * m[2][0]))];
+  var row2 =[d * ((tmp_12 * m[1][3] + tmp_15 * m[2][3] + tmp_16 * m[3][3]) -
           (tmp_13 * m[1][3] + tmp_14 * m[2][3] + tmp_17 * m[3][3])),
        d * ((tmp_13 * m[0][3] + tmp_18 * m[2][3] + tmp_21 * m[3][3]) -
           (tmp_12 * m[0][3] + tmp_19 * m[2][3] + tmp_20 * m[3][3])),
        d * ((tmp_14 * m[0][3] + tmp_19 * m[1][3] + tmp_22 * m[3][3]) -
           (tmp_15 * m[0][3] + tmp_18 * m[1][3] + tmp_23 * m[3][3])),
        d * ((tmp_17 * m[0][3] + tmp_20 * m[1][3] + tmp_23 * m[2][3]) -
-          (tmp_16 * m[0][3] + tmp_21 * m[1][3] + tmp_22 * m[2][3]))],
-      [d * ((tmp_14 * m[2][2] + tmp_17 * m[3][2] + tmp_13 * m[1][2]) -
+          (tmp_16 * m[0][3] + tmp_21 * m[1][3] + tmp_22 * m[2][3]))];
+  var row3 = [d * ((tmp_14 * m[2][2] + tmp_17 * m[3][2] + tmp_13 * m[1][2]) -
           (tmp_16 * m[3][2] + tmp_12 * m[1][2] + tmp_15 * m[2][2])),
        d * ((tmp_20 * m[3][2] + tmp_12 * m[0][2] + tmp_19 * m[2][2]) -
           (tmp_18 * m[2][2] + tmp_21 * m[3][2] + tmp_13 * m[0][2])),
        d * ((tmp_18 * m[1][2] + tmp_23 * m[3][2] + tmp_15 * m[0][2]) -
           (tmp_22 * m[3][2] + tmp_14 * m[0][2] + tmp_19 * m[1][2])),
        d * ((tmp_22 * m[2][2] + tmp_16 * m[0][2] + tmp_21 * m[1][2]) -
-          (tmp_20 * m[1][2] + tmp_23 * m[2][2] + tmp_17 * m[0][2]))]];
+          (tmp_20 * m[1][2] + tmp_23 * m[2][2] + tmp_17 * m[0][2]))];
+  return [row0, row1, row2, row3];
 };
 
 /**
