@@ -112,11 +112,15 @@ class ExtensionShelf::PlaceholderView : public views::View {
 // The class itself also acts as the View for the handle of the toolstrip
 // it represents.
 class ExtensionShelf::Toolstrip : public views::View,
-                                  public BrowserBubble::Delegate {
+                                  public BrowserBubble::Delegate,
+                                  public AnimationDelegate {
  public:
   Toolstrip(ExtensionShelf* shelf, ExtensionHost* host,
             const Extension::ToolstripInfo& info);
   virtual ~Toolstrip();
+
+  // Convenience to calculate just the size of the handle.
+  gfx::Size GetHandlePreferredSize();
 
   // View
   virtual void Paint(gfx::Canvas* canvas);
@@ -181,6 +185,10 @@ class ExtensionShelf::Toolstrip : public views::View,
   virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
   virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
 
+  // AnimationDelegate
+  virtual void AnimationProgressed(const Animation* animation);
+  virtual void AnimationEnded(const Animation* animation);
+
  private:
   // The actual renderer that this toolstrip contains.
   ExtensionHost* host_;
@@ -210,11 +218,17 @@ class ExtensionShelf::Toolstrip : public views::View,
   bool dragging_;
   bool expanded_;
 
+  // The target expanded height of the toolstrip (used for animation).
+  int expanded_height_;
+
   // If dragging, where did the drag start from.
   gfx::Point initial_drag_location_;
 
   // Timers for tracking mouse hovering.
   ScopedRunnableMethodFactory<ExtensionShelf::Toolstrip> timer_factory_;
+
+  // Animate opening and closing the mole.
+  scoped_ptr<SlideAnimation> mole_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(Toolstrip);
 };
@@ -232,6 +246,8 @@ ExtensionShelf::Toolstrip::Toolstrip(ExtensionShelf* shelf,
   DCHECK(host->view());
   // We're owned by shelf_, not the bubble that we get inserted in and out of.
   SetParentOwned(false);
+
+  mole_animation_.reset(new SlideAnimation(this));
 
   std::wstring name = UTF8ToWide(host_->extension()->name());
   // |title_| isn't actually put in the view hierarchy.  We just use it
@@ -275,11 +291,16 @@ void ExtensionShelf::Toolstrip::Paint(gfx::Canvas* canvas) {
   }
 }
 
-gfx::Size ExtensionShelf::Toolstrip::GetPreferredSize() {
+gfx::Size ExtensionShelf::Toolstrip::GetHandlePreferredSize() {
   gfx::Size sz = title_->GetPreferredSize();
   sz.set_width(std::max(view()->width(), sz.width()));
   if (!expanded_)
     sz.Enlarge(2 + kHandlePadding * 2, kHandlePadding * 2);
+  return sz;
+}
+
+gfx::Size ExtensionShelf::Toolstrip::GetPreferredSize() {
+  gfx::Size sz = GetHandlePreferredSize();
   if (dragging_ || expanded_) {
     gfx::Size extension_size = view()->GetPreferredSize();
     sz.Enlarge(0, extension_size.height() + 2);
@@ -384,26 +405,47 @@ void ExtensionShelf::Toolstrip::LayoutHandle() {
   if (!handle_.get())
     return;
 
+  int handle_height;
+  if (mole_animation_->IsAnimating()) {
+    // We only want to animate the body of the mole window.  When we're
+    // expanding, this is everything except for the handle.  When we're
+    // collapsing, this is everything except for the handle and the toolstrip.
+    // We subtract this amount from the target height, figure out the step in
+    // the animation from the rest, and then add it back in.
+    int handle_offset = shelf_->height();
+    if (!mole_animation_->IsShowing())
+      handle_offset += GetPreferredSize().height();
+    else
+      handle_offset += GetHandlePreferredSize().height();
+    int h = expanded_height_ - handle_offset;
+    handle_height = static_cast<int>(h * mole_animation_->GetCurrentValue());
+    handle_height += handle_offset;
+  } else {
+    handle_height = height();
+  }
+
+  // Now figure out where to place the handle on the screen.  Since it's a top-
+  // level widget, we need to do some coordinate conversion to get this right.
   int handle_width = std::max(view()->width(), width());
-  gfx::Point origin(-kToolstripPadding, -(height() + kToolstripPadding - 1));
-  if (expanded_) {
-    origin.set_y(GetShelfView()->height() - height());
+  gfx::Point origin(-kToolstripPadding,
+                    -(handle_height + kToolstripPadding - 1));
+  if (expanded_ || mole_animation_->IsAnimating()) {
+    origin.set_y(GetShelfView()->height() - handle_height);
     views::View::ConvertPointToView(GetShelfView(), shelf_->GetRootView(),
                                     &origin);
   } else {
     views::View::ConvertPointToWidget(view(), &origin);
   }
   SetBounds(0, 0, handle_width, height());
-  handle_->SetBounds(origin.x(), origin.y(), handle_width, height());
-  handle_->ResizeToView();
+  handle_->SetBounds(origin.x(), origin.y(), handle_width, handle_height);
 }
 
 void ExtensionShelf::Toolstrip::ChildPreferredSizeChanged(View* child) {
   if (child == view()) {
     child->SizeToPreferredSize();
     Layout();
+    LayoutHandle();
     if (expanded_) {
-      LayoutHandle();
       placeholder_view_->SetWidth(child->width());
       shelf_->Layout();
     }
@@ -418,6 +460,20 @@ void ExtensionShelf::Toolstrip::BubbleBrowserWindowMoved(
 void ExtensionShelf::Toolstrip::BubbleBrowserWindowClosing(
     BrowserBubble* bubble) {
   DoHideShelfHandle();
+}
+
+void ExtensionShelf::Toolstrip::AnimationProgressed(
+    const Animation* animation) {
+  LayoutHandle();
+}
+
+void ExtensionShelf::Toolstrip::AnimationEnded(const Animation* animation) {
+  LayoutHandle();
+  if (!expanded_) {
+    // Must use the delay due to bug 18248.
+    HideShelfHandle(kHideDelayMs * 2);
+    AttachToShelf(false);
+  }
 }
 
 void ExtensionShelf::Toolstrip::DetachFromShelf(bool browserDetach) {
@@ -498,10 +554,12 @@ void ExtensionShelf::Toolstrip::Expand(int height, const GURL& url) {
   StopHandleTimer();
   DetachFromShelf(false);
 
+  mole_animation_->Show();
+
   gfx::Size extension_size = view()->GetPreferredSize();
   extension_size.set_height(height);
   view()->SetPreferredSize(extension_size);
-  LayoutHandle();
+  expanded_height_ = GetPreferredSize().height();
 
   // This is to prevent flickering as the page loads and lays out.
   // Once the navigation is finished, ExtensionView will wind up setting
@@ -515,10 +573,11 @@ void ExtensionShelf::Toolstrip::Collapse(const GURL& url) {
   expanded_ = false;
   view()->set_is_toolstrip(!expanded_);
 
+  mole_animation_->Hide();
+
   gfx::Size extension_size = view()->GetPreferredSize();
   extension_size.set_height(kToolstripHeight);
   view()->SetPreferredSize(extension_size);
-  AttachToShelf(false);
 
   if (!url.is_empty() && url != host_->GetURL()) {
     host_->NavigateToURL(url);
@@ -528,9 +587,6 @@ void ExtensionShelf::Toolstrip::Collapse(const GURL& url) {
     // visibility to true.
     view()->SetVisible(false);
   }
-
-  // Must use the delay due to bug 18248.
-  HideShelfHandle(kHideDelayMs);
 }
 
 void ExtensionShelf::Toolstrip::ShowShelfHandle() {
@@ -545,8 +601,10 @@ void ExtensionShelf::Toolstrip::ShowShelfHandle() {
 
 void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
   StopHandleTimer();
-  if (!handle_visible() || dragging_ || expanded_)
+  if (!handle_visible() || dragging_ || expanded_ ||
+      mole_animation_->IsAnimating()) {
     return;
+  }
   if (delay_ms) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         timer_factory_.NewRunnableMethod(
