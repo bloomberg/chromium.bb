@@ -2355,3 +2355,7 @@ BUG21442 : LayoutTests/storage/test-authorizer.html = TIMEOUT
 
 // Crashing on Linux Debug as of V8 update at r25855
 BUG21501 LINUX DEBUG : LayoutTests/svg/custom/linking-a-03-b-preserveAspectRatio.svg = CRASH
+
+// New test added by https://trac.webkit.org/changeset/48260.
+// Marked as SKIP because it fails to find the test expectations (dies early).
+BUG21522 SKIP : LayoutTests/http/tests/local/send-dragged-file.html = FAIL
