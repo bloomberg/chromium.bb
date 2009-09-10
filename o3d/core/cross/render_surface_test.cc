@@ -36,11 +36,11 @@
 #include "core/cross/pack.h"
 #include "core/cross/renderer.h"
 #include "core/cross/bitmap.h"
-#include "core/cross/features.h"
 #include "core/cross/texture.h"
 #include "core/cross/render_surface.h"
 #include "core/cross/render_surface_set.h"
 #include "core/cross/renderer_platform.h"
+#include "core/cross/error_status.h"
 
 // Defined in testing_common.cc, for each platform.
 extern o3d::DisplayWindow* g_display_window;
@@ -50,10 +50,8 @@ namespace o3d {
 class RenderSurfaceTest : public testing::Test {
  public:
   RenderSurfaceTest()
-      : object_manager_(g_service_locator) {}
-
-  ServiceLocator* service_locator() {
-    return service_locator_;
+      : object_manager_(g_service_locator),
+        error_status_(g_service_locator) {
   }
 
   Renderer* renderer() {
@@ -62,8 +60,6 @@ class RenderSurfaceTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    service_locator_ = new ServiceLocator;
-    features_ = new Features(service_locator_);
     pack_ = object_manager_->CreatePack();
     g_renderer->StartRendering();
   }
@@ -71,15 +67,13 @@ class RenderSurfaceTest : public testing::Test {
   virtual void TearDown() {
     g_renderer->FinishRendering();
     pack_->Destroy();
-    delete features_;
-    delete service_locator_;
+    error_status_.ClearLastError();
   }
 
   Pack* pack() { return pack_; }
 
   ServiceDependency<ObjectManager> object_manager_;
-  ServiceLocator* service_locator_;
-  Features* features_;
+  ErrorStatus error_status_;
   Pack* pack_;
 };
 
