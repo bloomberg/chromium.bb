@@ -46,7 +46,7 @@ class LoadLog : public base::RefCounted<LoadLog> {
   };
 
   // The maximum size of |events_|.
-  enum { kMaxNumEntries = 25 };
+  enum { kMaxNumEntries = 40 };
 
   // Ordered set of events that were logged.
   // TODO(eroman): use a StackVector or array to avoid allocations.
