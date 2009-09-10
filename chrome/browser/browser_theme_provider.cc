@@ -274,8 +274,7 @@ void BrowserThemeProvider::Init(Profile* profile) {
   DCHECK(CalledOnValidThread());
   profile_ = profile;
 
-  image_dir_ = profile_->GetPath().AppendASCII(
-      WideToASCII(chrome::kThemeImagesDirname));
+  image_dir_ = profile_->GetPath().Append(chrome::kThemeImagesDirname);
   if (!file_util::PathExists(image_dir_))
     file_util::CreateDirectory(image_dir_);
 
