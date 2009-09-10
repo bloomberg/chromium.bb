@@ -1863,11 +1863,6 @@ BUG10861 WIN : LayoutTests/fast/dom/HTMLSelectElement/named-options.html = FAIL
 BUG10861 WIN : LayoutTests/http/tests/plugins/post-url-file.html = PASS
 BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = TIMEOUT
 
-// WebKit change http://trac.webkit.org/changeset/42732 introduced Mac specific expectations,
-// but Chrome Mac has Windows behaviors.
-BUG20833 MAC : LayoutTests/editing/selection/click-in-margins-inside-editable-div.html = FAIL
-BUG20833 MAC : LayoutTests/editing/selection/click-in-padding-with-multiple-line-boxes.html = FAIL
-
 // New failures from WebKit merge 42725:42805
 // Because of WebKit change http://trac.webkit.org/changeset/42740,
 // DumpRenderTree now dumps additional info on the element that was
