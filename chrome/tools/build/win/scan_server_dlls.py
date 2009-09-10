@@ -64,15 +64,24 @@ def CreateRegisteredDllIncludeFile(registered_dll_list, header_output_dir):
       dll_array_string += ', '
     dll_array_string += "L\"%s\"" % dll
 
-  f = open(output_file, 'w')
+  if len(registered_dll_list) == 0:
+    contents = GENERATED_DLL_INCLUDE_FILE_CONTENTS % ("L\"\"", 0)
+  else:
+    contents = GENERATED_DLL_INCLUDE_FILE_CONTENTS % (dll_array_string,
+                                                      len(registered_dll_list))
+
+  # Don't rewrite the header file if we don't need to.
   try:
-    if len(registered_dll_list) == 0:
-      f.write(GENERATED_DLL_INCLUDE_FILE_CONTENTS % ("L\"\"", 0))
-    else:
-      f.write(GENERATED_DLL_INCLUDE_FILE_CONTENTS % (dll_array_string,
-                                                     len(registered_dll_list)))
-  finally:
-    f.close()
+    old_file = open(output_file, 'r')
+  except EnvironmentError:
+    old_contents = None
+  else:
+    old_contents = old_file.read()
+    old_file.close()
+
+  if contents != old_contents:
+    print 'Updating server dll header: ' + str(output_file)
+    open(output_file, 'w').write(contents)
 
 
 def ScanServerDlls(config, distribution, output_dir):
@@ -80,6 +89,8 @@ def ScanServerDlls(config, distribution, output_dir):
   subdirectory of output_dir named SERVERS_DIR. Returns a list of only the
   filename components of the paths to all matching DLLs.
   """
+
+  print "Scanning for server DLLs in " + output_dir
 
   registered_dll_list = []
   ScanDllsInSection(config, 'GENERAL', output_dir, registered_dll_list)
@@ -107,8 +118,9 @@ def ScanDllsInSection(config, section, output_dir, registered_dll_list):
     for file in glob.glob(os.path.join(output_dir, option)):
       if option.startswith(SERVERS_DIR):
         (x, file_name) = os.path.split(file)
-        print "Found server DLL file: " + file_name
-        registered_dll_list.append(file_name)
+        if file_name.lower().endswith('.dll'):
+          print "Found server DLL file: " + file_name
+          registered_dll_list.append(file_name)
 
 
 def RunSystemCommand(cmd):
