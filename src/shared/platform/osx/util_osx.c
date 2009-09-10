@@ -37,20 +37,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "native_client/src/shared/npruntime/nacl_util.h"
+size_t strnlen(const char* string, size_t max);
 
-namespace nacl {
-
-int GetPID() {
-  return getpid();
+size_t strnlen(const char* string, size_t max) {
+  const char* end = (const char*)memchr(string, '\0', max);
+  return end ? (size_t)(end - string) : max;
 }
-
-Handle OpenFile(const char* filename) {
-  return open(filename, O_RDONLY);
-}
-
-int ReadFile(Handle handle, void* buffer, size_t length) {
-  return read(handle, buffer, length);
-}
-
-}  // namespace nacl
