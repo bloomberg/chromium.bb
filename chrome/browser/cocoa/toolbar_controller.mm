@@ -4,10 +4,12 @@
 
 #import "chrome/browser/cocoa/toolbar_controller.h"
 
+#include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
@@ -17,12 +19,14 @@
 #import "chrome/browser/cocoa/menu_button.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "grit/generated_resources.h"
 
 // Name of image in the bundle for the yellow of the star icon.
 static NSString* const kStarredImageName = @"starred.pdf";
@@ -187,6 +191,10 @@ class PrefObserverBridge : public NotificationObserver {
                                      owner:self
                                   userInfo:nil]);
   [[self view] addTrackingArea:trackingArea_.get()];
+
+  // We want a dynamic tooltip on the go button, so tell the go button to ask
+  // use for the tooltip
+  [goButton_ addToolTipRect:[goButton_ bounds] owner:self userData:nil];
 }
 - (void)removeFromSuperview {
   NSLog(@"remove");
@@ -289,10 +297,22 @@ class PrefObserverBridge : public NotificationObserver {
 
 - (void)setStarredState:(BOOL)isStarred {
   NSImage* starImage = nil;
-  if (isStarred)
+  NSString* toolTip;
+  if (isStarred) {
     starImage = nsimage_cache::ImageNamed(kStarredImageName);
+    // Cache the string since we'll need it a lot
+    static NSString* starredToolTip =
+        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STARRED) retain];
+    toolTip = starredToolTip;
+  } else {
+    // Cache the string since we'll need it a lot
+    static NSString* starToolTip =
+        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STAR) retain];
+    toolTip = starToolTip;
+  }
 
   [(GradientButtonCell*)[starButton_ cell] setUnderlayImage:starImage];
+  [starButton_ setToolTip:toolTip];
 }
 
 - (void)setIsLoading:(BOOL)isLoading {
@@ -442,6 +462,56 @@ class PrefObserverBridge : public NotificationObserver {
 - (NSRect)starButtonInWindowCoordinates {
   return [[[starButton_ window] contentView] convertRect:[starButton_ bounds]
                                                 fromView:starButton_];
+}
+
+- (NSString *)view:(NSView *)view
+  stringForToolTip:(NSToolTipTag)tag
+             point:(NSPoint)point
+          userData:(void *)userData {
+  DCHECK(view == goButton_);
+
+  // Following chrome/browser/views/go_button.cc: GoButton::GetTooltipText()
+
+  // Is it currently 'stop'?
+  if ([goButton_ tag] == IDC_STOP) {
+    return l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STOP);
+  }
+
+  // It is 'go', so see what it would do...
+
+  // Fetch the EditView and EditModel
+  LocationBar* locationBar = [self locationBar];
+  DCHECK(locationBar);
+  AutocompleteEditView* editView = locationBar->location_entry();
+  DCHECK(editView);
+  AutocompleteEditModel* editModel = editView->model();
+  DCHECK(editModel);
+
+  std::wstring currentText(editView->GetText());
+  if (currentText.empty()) {
+    return nil;
+  }
+  string16 currentText16(WideToUTF16Hack(currentText));
+
+  // It is simply an url it is gonna go to, build the tip with the info.
+  if (editModel->CurrentTextIsURL()) {
+    return l10n_util::GetNSStringF(IDS_TOOLTIP_GO_SITE, currentText16);
+  }
+
+  // Build the tip based on what provide/template it will get.
+  std::wstring keyword(editModel->keyword());
+  TemplateURLModel* template_url_model =
+      editModel->profile()->GetTemplateURLModel();
+  const TemplateURL* provider =
+      (keyword.empty() || editModel->is_keyword_hint()) ?
+      template_url_model->GetDefaultSearchProvider() :
+      template_url_model->GetTemplateURLForKeyword(keyword);
+  if (!provider)
+    return nil;
+  std::wstring shortName(provider->AdjustedShortNameForLocaleDirection());
+  return l10n_util::GetNSStringF(IDS_TOOLTIP_GO_SEARCH,
+                                 WideToUTF16(shortName), currentText16);
+
 }
 
 - (gfx::Rect)autocompletePopupPosition {
