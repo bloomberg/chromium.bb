@@ -124,8 +124,8 @@ port.postMessage({found: (e != undefined)});
 
 // Also listen for new channels from the extension for when the button is
 // pressed.
-chrome.extension.onConnect.addListener(function(port, name) {
-  console.assert(name == "buttonClickedChannel");
+chrome.extension.onConnect.addListener(function(port) {
+  console.assert(port.name == "buttonClickedChannel");
   port.onMessage.addListener(function(msg) {
     if (msg.buttonClicked) {
       e.value = msg.passwordValue;
@@ -174,9 +174,9 @@ var customEvent = document.createEvent('Event');
 customEvent.initEvent('myCustomEvent', true, true);
 
 function fireCustomEvent(data) {
-  hidenDiv = document.getElementById('myCustomEventDiv');
-  hidenDiv.innerHTML = data
-  hidenDiv.dispatchEvent(customEvent);
+  hiddenDiv = document.getElementById('myCustomEventDiv');
+  hiddenDiv.innerHTML = data
+  hiddenDiv.dispatchEvent(customEvent);
 }</pre>
 
 <pre>contentscript.js
