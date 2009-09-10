@@ -9,7 +9,6 @@
 #include "base/gfx/gtk_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/notification_details.h"
@@ -164,25 +163,6 @@ GdkColor GtkThemeProvider::GetBorderColor() {
   return color;
 }
 
-CairoCachedSurface* GtkThemeProvider::GetSurfaceNamed(
-    int id, GtkWidget* widget_on_display) {
-  GdkDisplay* display = gtk_widget_get_display(widget_on_display);
-  CairoCachedSurfaceMap& surface_map = per_display_surfaces_[display];
-
-  // Check to see if we already have the pixbuf in the cache.
-  CairoCachedSurfaceMap::const_iterator found = surface_map.find(id);
-  if (found != surface_map.end())
-    return found->second;
-
-  GdkPixbuf* pixbuf = GetPixbufNamed(id);
-  CairoCachedSurface* surface = new CairoCachedSurface;
-  surface->UsePixbuf(pixbuf);
-
-  surface_map[id] = surface;
-
-  return surface;
-}
-
 void GtkThemeProvider::LoadThemePrefs() {
   if (use_gtk_) {
     LoadGtkValues();
@@ -226,19 +206,6 @@ void GtkThemeProvider::SaveThemeBitmap(const std::string resource_name,
     // all three platforms otherwise.
     BrowserThemeProvider::SaveThemeBitmap(resource_name, id);
   }
-}
-
-void GtkThemeProvider::FreePlatformCaches() {
-  BrowserThemeProvider::FreePlatformCaches();
-
-  for (PerDisplaySurfaceMap::iterator it = per_display_surfaces_.begin();
-       it != per_display_surfaces_.end(); ++it) {
-    for (CairoCachedSurfaceMap::iterator jt = it->second.begin();
-         jt != it->second.end(); ++jt) {
-      delete jt->second;
-    }
-  }
-  per_display_surfaces_.clear();
 }
 
 // static

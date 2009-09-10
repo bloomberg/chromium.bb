@@ -9,7 +9,6 @@
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/gfx/gtk_util.h"
-#include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/gtk_util.h"
@@ -26,10 +25,6 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
       highlight_id_(highlight_id),
       depressed_id_(depressed_id),
       theme_provider_(theme_provider) {
-  for (int i = 0; i < (GTK_STATE_INSENSITIVE + 1); ++i)
-    surfaces_[i].reset(new CairoCachedSurface);
-  background_image_.reset(new CairoCachedSurface);
-
   if (theme_provider) {
     // Load images by pretending that we got a BROWSER_THEME_CHANGED
     // notification.
@@ -41,39 +36,34 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
   } else {
     // Load the button images from the resource bundle.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    surfaces_[GTK_STATE_NORMAL]->UsePixbuf(
-        normal_id ? rb.GetRTLEnabledPixbufNamed(normal_id) : NULL);
-    surfaces_[GTK_STATE_ACTIVE]->UsePixbuf(
-        active_id ? rb.GetRTLEnabledPixbufNamed(active_id) : NULL);
-    surfaces_[GTK_STATE_PRELIGHT]->UsePixbuf(
-        highlight_id ? rb.GetRTLEnabledPixbufNamed(highlight_id) : NULL);
-    surfaces_[GTK_STATE_SELECTED]->UsePixbuf(NULL);
-    surfaces_[GTK_STATE_INSENSITIVE]->UsePixbuf(
-        depressed_id ? rb.GetRTLEnabledPixbufNamed(depressed_id) : NULL);
+    pixbufs_[GTK_STATE_NORMAL] =
+        normal_id ? rb.GetRTLEnabledPixbufNamed(normal_id) : NULL;
+    pixbufs_[GTK_STATE_ACTIVE] =
+        active_id ? rb.GetRTLEnabledPixbufNamed(active_id) : NULL;
+    pixbufs_[GTK_STATE_PRELIGHT] =
+        highlight_id ? rb.GetRTLEnabledPixbufNamed(highlight_id) : NULL;
+    pixbufs_[GTK_STATE_SELECTED] = NULL;
+    pixbufs_[GTK_STATE_INSENSITIVE] =
+        depressed_id ? rb.GetRTLEnabledPixbufNamed(depressed_id) : NULL;
   }
 }
 
 CustomDrawButtonBase::~CustomDrawButtonBase() {
-}
-
-int CustomDrawButtonBase::Width() const {
-  return surfaces_[0]->Width();
-}
-
-int CustomDrawButtonBase::Height() const {
-  return surfaces_[0]->Height();
+  if (background_image_) {
+    g_object_unref(background_image_);
+    background_image_ = NULL;
+  }
 }
 
 gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
-  CairoCachedSurface* pixbuf =
-      surfaces_[paint_override_ >= 0 ?
-                paint_override_ : GTK_WIDGET_STATE(widget)].get();
+  GdkPixbuf* pixbuf = pixbufs_[paint_override_ >= 0 ?
+                               paint_override_ : GTK_WIDGET_STATE(widget)];
 
   // Fall back to the default image if we don't have one for this state.
-  if (!pixbuf || !pixbuf->valid())
-    pixbuf = surfaces_[GTK_STATE_NORMAL].get();
+  if (!pixbuf)
+    pixbuf = pixbufs_[GTK_STATE_NORMAL];
 
-  if (!pixbuf || !pixbuf->valid())
+  if (!pixbuf)
     return FALSE;
 
   cairo_t* cairo_context = gdk_cairo_create(GDK_DRAWABLE(widget->window));
@@ -81,16 +71,16 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
 
   // The widget might be larger than the pixbuf. Paint the pixbuf flush with the
   // start of the widget (left for LTR, right for RTL) and its bottom.
-  gfx::Rect bounds = gfx::Rect(0, 0, pixbuf->Width(), 0);
+  gfx::Rect bounds = gfx::Rect(0, 0, gdk_pixbuf_get_width(pixbuf), 0);
   int x = gtk_util::MirroredLeftPointForRect(widget, bounds);
-  int y = widget->allocation.height - pixbuf->Height();
+  int y = widget->allocation.height - gdk_pixbuf_get_height(pixbuf);
 
-  if (background_image_->valid()) {
-    background_image_->SetSource(cairo_context, x, y);
+  if (background_image_) {
+    gdk_cairo_set_source_pixbuf(cairo_context, background_image_, x, y);
     cairo_paint(cairo_context);
   }
 
-  pixbuf->SetSource(cairo_context, x, y);
+  gdk_cairo_set_source_pixbuf(cairo_context, pixbuf, x, y);
   cairo_paint(cairo_context);
   cairo_destroy(cairo_context);
 
@@ -100,16 +90,14 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
 void CustomDrawButtonBase::SetBackground(SkColor color,
                                          SkBitmap* image, SkBitmap* mask) {
   if (!image || !mask) {
-    if (background_image_->valid()) {
-      background_image_->UsePixbuf(NULL);
+    if (background_image_) {
+      g_object_unref(background_image_);
+      background_image_ = NULL;
     }
   } else {
     SkBitmap img = skia::ImageOperations::CreateButtonBackground(color,
                                                                  *image, *mask);
-
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&img);
-    background_image_->UsePixbuf(pixbuf);
-    g_object_unref(pixbuf);
+    background_image_ = gfx::GdkPixbufFromSkBitmap(&img);
   }
 }
 
@@ -118,15 +106,15 @@ void CustomDrawButtonBase::Observe(NotificationType type,
   DCHECK(theme_provider_);
   DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
 
-  surfaces_[GTK_STATE_NORMAL]->UsePixbuf(normal_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(normal_id_) : NULL);
-  surfaces_[GTK_STATE_ACTIVE]->UsePixbuf(active_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(active_id_) : NULL);
-  surfaces_[GTK_STATE_PRELIGHT]->UsePixbuf(highlight_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(highlight_id_) : NULL);
-  surfaces_[GTK_STATE_SELECTED]->UsePixbuf(NULL);
-  surfaces_[GTK_STATE_INSENSITIVE]->UsePixbuf(depressed_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(depressed_id_) : NULL);
+  pixbufs_[GTK_STATE_NORMAL] = normal_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(normal_id_) : NULL;
+  pixbufs_[GTK_STATE_ACTIVE] = active_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(active_id_) : NULL;
+  pixbufs_[GTK_STATE_PRELIGHT] = highlight_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(highlight_id_) : NULL;
+  pixbufs_[GTK_STATE_SELECTED] = NULL;
+  pixbufs_[GTK_STATE_INSENSITIVE] = depressed_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(depressed_id_) : NULL;
 }
 
 CustomDrawButton::CustomDrawButton(int normal_id, int active_id,
@@ -223,8 +211,9 @@ void CustomDrawButton::SetBrowserTheme() {
     gtk_widget_set_app_paintable(widget_.get(), FALSE);
     gtk_widget_set_double_buffered(widget_.get(), TRUE);
   } else {
-    gtk_widget_set_size_request(widget_.get(), button_base_.Width(),
-                                button_base_.Height());
+    gtk_widget_set_size_request(widget_.get(),
+                                gdk_pixbuf_get_width(button_base_.pixbufs(0)),
+                                gdk_pixbuf_get_height(button_base_.pixbufs(0)));
 
     gtk_widget_set_app_paintable(widget_.get(), TRUE);
     // We effectively double-buffer by virtue of having only one image...

@@ -24,8 +24,9 @@ ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)
       theme_provider_(GtkThemeProvider::GetFrom(host->profile())),
       unstarred_(theme_provider_, IDR_STAR, IDR_STAR_P, IDR_STAR_H, IDR_STAR_D),
       starred_(theme_provider_, IDR_STARRED, IDR_STARRED_P, IDR_STARRED_H, 0) {
-  gtk_widget_set_size_request(widget_.get(), unstarred_.Width(),
-                              unstarred_.Height());
+  gtk_widget_set_size_request(widget_.get(),
+                             gdk_pixbuf_get_width(unstarred_.pixbufs(0)),
+                             gdk_pixbuf_get_height(unstarred_.pixbufs(0)));
 
   gtk_widget_set_app_paintable(widget_.get(), TRUE);
   // We effectively double-buffer by virtue of having only one image...
@@ -130,8 +131,9 @@ void ToolbarStarToggleGtk::UpdateGTKButton() {
     gtk_widget_set_app_paintable(widget_.get(), FALSE);
     gtk_widget_set_double_buffered(widget_.get(), TRUE);
   } else {
-    gtk_widget_set_size_request(widget_.get(), unstarred_.Width(),
-                                unstarred_.Height());
+    gtk_widget_set_size_request(widget_.get(),
+                                gdk_pixbuf_get_width(unstarred_.pixbufs(0)),
+                                gdk_pixbuf_get_height(unstarred_.pixbufs(0)));
 
     gtk_widget_set_app_paintable(widget_.get(), TRUE);
     // We effectively double-buffer by virtue of having only one image...

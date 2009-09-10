@@ -20,7 +20,6 @@
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/gtk/back_forward_button_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/go_button_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
@@ -542,9 +541,10 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
   gfx::Point tabstrip_origin =
       toolbar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
   GtkThemeProvider* theme_provider = toolbar->theme_provider_;
-  CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
-      IDR_THEME_TOOLBAR, widget);
-  background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
+  GdkPixbuf* toolbar_background = theme_provider->GetPixbufNamed(
+      IDR_THEME_TOOLBAR);
+  gdk_cairo_set_source_pixbuf(cr, toolbar_background, tabstrip_origin.x(),
+                              tabstrip_origin.y());
   // We tile the toolbar background in both directions.
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,
