@@ -14,6 +14,7 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/sync/sync_setup_flow.h"
+#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"
@@ -49,9 +50,34 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
 
   std::string response;
   if (path_raw == chrome::kSyncGaiaLoginPath) {
+    DictionaryValue localized_strings;
+    localized_strings.SetString(L"settingupsync",
+                                "Setting up Bookmarks Sync");
+    localized_strings.SetString(L"errorsigningin", "Error signing in");
+    localized_strings.SetString(L"introduction", 
+        "Google Chrome can store your bookmark data with your Google account."
+        "Bookmarks that you create on this computer will instantly be made"
+        "available on all the computers synced to this account.");
+    localized_strings.SetString(L"signinwithyour", "Sign in with your");
+    localized_strings.SetString(L"accountlabel", "Account");
+    localized_strings.SetString(L"cannotbeblank",
+                                "Required field cannot be left blank");
+    localized_strings.SetString(L"passwordlabel", "Password:");
+    localized_strings.SetString(L"emaillabel", "Email:");
+    localized_strings.SetString(L"invalidcredentials",
+                                "Username and password do not match.");
+    localized_strings.SetString(L"couldnotconnect",
+                                "Could not connect to the server");
+    localized_strings.SetString(L"cannotaccessaccount",
+                                "I cannot access my account");
+    localized_strings.SetString(L"createaccount",
+                                "Create a Google Account");
+    
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
-    response = html.as_string();
+
+    response = jstemplate_builder::GetI18nTemplateHtml(
+        html, &localized_strings);
   } else if (path_raw == chrome::kSyncMergeAndSyncPath) {
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_MERGE_AND_SYNC_HTML));

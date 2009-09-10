@@ -64,10 +64,6 @@
         f.Email.value = args.user; 
       }     
       resetErrorVisibility();
-      var t = document.getElementById("errormsg_1_Password");
-      if (t) {
-        t.innerHTML = "Username and password do not match. [<a href=\"http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444\">?</a>]";
-      }
       if (1 == args.error) {
         setElementDisplay("errormsg_1_Password", 'table-row');
         setBlurbError();
@@ -119,9 +115,8 @@
     }    
     
     function setBlurbError() {
-      var blurb = document.getElementById("top_blurb");
-      blurb.innerHTML =
-          '<font size="-1">Setting up Bookmarks Sync<br/><br/><b>Error signing in.</b></font>';
+      document.getElementById("top_blurb").style.display = "none";
+      document.getElementById("top_blurb_error").style.display = "block";
     }
     
     function resetErrorVisibility() {
@@ -162,10 +157,15 @@
 .gaia.captchahtml.cmt { font-family: arial, sans-serif; font-size: smaller;
                         font-style: italic; }
 --></style> 
-<p id="top_blurb"> <font size="-1">
-Google Chrome can store your bookmark data with your Google account. 
-Bookmarks that you create on this computer will instantly be made 
-available on all the computers synced to this account.</font></p>
+<div id="top_blurb">
+  <p><font size="-1"><span i18n-content="introduction"></span></font></p>
+</div>
+<div id="top_blurb_error" style="display:none">
+  <p><font size="-1">
+    <span i18n-content="settingupsync"></span><br/><br/>
+    <b><span i18n-content="errorsigningin"></span></b>
+  </font></p>
+</div>
 <form id="gaia_loginform" onsubmit="sendCredentialsAndClose(); return false;"> 
 <div id="gaia_loginbox"> 
 <table class="form-noindent" cellspacing="3" cellpadding="5" width="100%"
@@ -178,7 +178,7 @@ available on all the computers synced to this account.</font></p>
                cellspacing="0"> 
           <tr> 
             <td colspan="2" align="center"> 
-              <font size="-1"> Sign in with your </font> 
+              <font size="-1"><span i18n-content="signinwithyour"></span></font> 
               <table> 
                 <tr> 
                   <td valign="top"> 
@@ -186,7 +186,9 @@ available on all the computers synced to this account.</font></p>
                     </img> 
                   </td>  
                   <td valign="middle"> 
-                    <font size="+0"><b>Account</b> </font> 
+                    <font size="+0"><b>
+                      <span i18n-content="accountlabel"></span>
+                    </b></font> 
                   </td> 
                 </tr> 
               </table> 
@@ -210,8 +212,7 @@ available on all the computers synced to this account.</font></p>
           <tr> 
             <td nowrap="nowrap"> 
               <div align="right"> 
-                <span class="gaia le lbl"> 
-                  Email:
+                <span class="gaia le lbl" i18n-content="emaillabel">
                 </span> 
               </div> 
             </td> 
@@ -223,8 +224,8 @@ available on all the computers synced to this account.</font></p>
           <tr> 
             <td></td> 
             <td align="left"> 
-              <div class="errormsg" id="errormsg_0_Email"> 
-                Required field cannot be left blank
+              <div class="errormsg" id="errormsg_0_Email"
+                   i18n-content="cannotbeblank">
               </div> 
             </td> 
           </tr>           
@@ -234,8 +235,7 @@ available on all the computers synced to this account.</font></p>
           </tr> 
           <tr> 
             <td align="right"> 
-              <span class="gaia le lbl"> 
-                Password: 
+              <span class="gaia le lbl" i18n-content="passwordlabel">
               </span> 
             </td> 
             <td> 
@@ -246,8 +246,8 @@ available on all the computers synced to this account.</font></p>
           <tr> 
             <td></td> 
             <td align="left"> 
-              <div class="errormsg" id="errormsg_0_Password"> 
-                Required field cannot be left blank
+              <div class="errormsg" id="errormsg_0_Password"
+                   i18n-content="cannotbeblank">
               </div> 
             </td> 
           </tr>
@@ -255,7 +255,8 @@ available on all the computers synced to this account.</font></p>
             <td> 
             </td> 
             <td align="left"> 
-              <div class="errormsg" id="errormsg_1_Password">                 	
+              <div class="errormsg" id="errormsg_1_Password">
+              <span i18n-content="invalidcredentials"></span>[<a href="http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444">?</a>]
               </div> 
             </td> 
           </tr> 
@@ -263,8 +264,8 @@ available on all the computers synced to this account.</font></p>
             <td> 
             </td> 
             <td align="left"> 
-              <div class="errormsg" id="errormsg_0_Connection">                 	
-                Could not connect to the server
+              <div class="errormsg" id="errormsg_0_Connection"
+                   i18n-content="couldnotconnect">
               </div> 
             </td> 
           </tr>          
@@ -300,16 +301,15 @@ available on all the computers synced to this account.</font></p>
             <td colspan="2" height="16.0" class="gaia le fpwd"
                 align="center" valign="bottom"> 
               <a href="http://www.google.com/support/accounts/bin/answer.py?answer=48598&hl=en&fpUrl=https%3A%2F%2Fwww.google.com%2Faccounts%2FForgotPasswd%3FfpOnly%3D1%26service%3Dchromiumsync"
-                 target=_blank> 
-              I cannot access my account
+                 target=_blank i18n-content="cannotaccessaccount">
               </a> 
             </td>
           </tr> 
           <tr>
             <td colspan="2" height="16.0" class="gaia le fpwd"
                 align="center" valign="bottom"> 
-              <a href="javascript:var popup=window.open('https%3A%5Cx2F%5Cx2Fwww.google.com%5Cx2Faccounts%5Cx2FNewAccount%3Fservice%3Dchromiumsync', 'NewAccount', 'height=870,width=870,resizable=yes,scrollbars=yes');"> 
-              Create a Google account
+              <a href="javascript:var popup=window.open('https%3A%5Cx2F%5Cx2Fwww.google.com%5Cx2Faccounts%5Cx2FNewAccount%3Fservice%3Dchromiumsync', 'NewAccount', 'height=870,width=870,resizable=yes,scrollbars=yes');"
+                 i18n-content="createaccount">
               </a> 
            </td> 
           </tr>
