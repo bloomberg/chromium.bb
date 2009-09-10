@@ -21,6 +21,10 @@
 class RenderWidgetHost;
 // A conveience wrapper class for GtkIMContext;
 class GtkIMContextWrapper;
+// A convenience class for handling editor key bindings defined in gtk keyboard
+// theme.
+class GtkKeyBindingsHandler;
+class NativeWebKeyboardEvent;
 
 typedef struct _GtkClipboard GtkClipboard;
 typedef struct _GtkSelectionData GtkSelectionData;
@@ -71,6 +75,13 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
 
   void Paint(const gfx::Rect&);
 
+  // Called by GtkIMContextWrapper to forward a keyboard event to renderer.
+  // Before calling RenderWidgetHost::ForwardKeyboardEvent(), this method
+  // calls GtkKeyBindingsHandler::Match() against the event and send matched
+  // edit commands to renderer by calling
+  // RenderWidgetHost::ForwardEditCommandsForNextKeyEvent().
+  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
+
  private:
   friend class RenderWidgetHostViewGtkWidget;
 
@@ -116,8 +127,12 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // Used in OnGrabNotify() handler to track the focused state correctly.
   bool was_focused_before_grab_;
 
-  // A conveience wrapper object for GtkIMContext;
+  // A convenience wrapper object for GtkIMContext;
   scoped_ptr<GtkIMContextWrapper> im_context_;
+
+  // A convenience object for handling editor key bindings defined in gtk
+  // keyboard theme.
+  scoped_ptr<GtkKeyBindingsHandler> key_bindings_handler_;
 
   // Helper class that lets us allocate plugin containers and move them.
   GtkPluginContainerManager plugin_container_manager_;

@@ -146,7 +146,7 @@ void GtkIMContextWrapper::ProcessKeyEvent(GdkEventKey* event) {
   if (event->type == GDK_KEY_PRESS && !filtered)
     ProcessUnfilteredKeyPressEvent(&wke);
   else if (event->type == GDK_KEY_RELEASE)
-    host_view_->GetRenderWidgetHost()->ForwardKeyboardEvent(wke);
+    host_view_->ForwardKeyboardEvent(wke);
 
   // End of key event processing.
   is_in_key_event_handler_ = false;
@@ -291,15 +291,13 @@ void GtkIMContextWrapper::ProcessFilteredKeyPressEvent(
       wke->os_event->state = 0;
     }
   }
-  host_view_->GetRenderWidgetHost()->ForwardKeyboardEvent(*wke);
+  host_view_->ForwardKeyboardEvent(*wke);
 }
 
 void GtkIMContextWrapper::ProcessUnfilteredKeyPressEvent(
     NativeWebKeyboardEvent* wke) {
-  RenderWidgetHost* host = host_view_->GetRenderWidgetHost();
-
   // Send keydown event as it, because it's not filtered by IME.
-  host->ForwardKeyboardEvent(*wke);
+  host_view_->ForwardKeyboardEvent(*wke);
 
   // IME is disabled by WebKit or the GtkIMContext object cannot handle
   // this key event.
@@ -315,7 +313,7 @@ void GtkIMContextWrapper::ProcessUnfilteredKeyPressEvent(
   // see WebInputEventFactory::keyboardEvent() for details.
   if (wke->text[0]) {
     wke->type = WebKit::WebInputEvent::Char;
-    host->ForwardKeyboardEvent(*wke);
+    host_view_->ForwardKeyboardEvent(*wke);
   }
 }
 
@@ -338,7 +336,7 @@ void GtkIMContextWrapper::ProcessInputMethodResult(const GdkEventKey* event,
       NativeWebKeyboardEvent char_event(commit_text_[0],
                                         event->state,
                                         base::Time::Now().ToDoubleT());
-      host->ForwardKeyboardEvent(char_event);
+      host_view_->ForwardKeyboardEvent(char_event);
     } else {
       committed = true;
       // Send an IME event.

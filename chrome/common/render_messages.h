@@ -17,6 +17,7 @@
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/css_colors.h"
+#include "chrome/common/edit_command.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/filter_policy.h"
@@ -2218,6 +2219,26 @@ struct ParamTraits<Clipboard::Buffer> {
     }
 
     LogParam(type, l);
+  }
+};
+
+// Traits for EditCommand structure.
+template <>
+struct ParamTraits<EditCommand> {
+  typedef EditCommand param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.name);
+    WriteParam(m, p.value);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->name) && ReadParam(m, iter, &p->value);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.name, l);
+    l->append(L":");
+    LogParam(p.value, l);
+    l->append(L")");
   }
 };
 

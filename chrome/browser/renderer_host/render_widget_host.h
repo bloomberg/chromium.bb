@@ -13,6 +13,7 @@
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
+#include "chrome/common/edit_command.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/property_bag.h"
 #include "ipc/ipc_channel.h"
@@ -245,6 +246,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
   virtual void ForwardEditCommand(const std::string& name,
                                   const std::string& value);
+  virtual void ForwardEditCommandsForNextKeyEvent(
+      const EditCommands& edit_commands);
 
   // Update the text direction of the focused input element and notify it to a
   // renderer process.

@@ -331,6 +331,11 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   }
 
   handling_input_event_ = false;
+
+  WebInputEvent::Type type = input_event->type;
+  if (type == WebInputEvent::RawKeyDown || type == WebInputEvent::KeyDown ||
+      type == WebInputEvent::KeyUp || type == WebInputEvent::Char)
+    DidHandleKeyEvent();
 }
 
 void RenderWidget::OnMouseCaptureLost() {

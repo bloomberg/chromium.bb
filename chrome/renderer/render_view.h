@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "base/weak_ptr.h"
 #include "build/build_config.h"
+#include "chrome/common/edit_command.h"
 #include "chrome/common/navigation_gesture.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/view_types.h"
@@ -262,6 +263,7 @@ class RenderView : public RenderWidget,
   virtual void ScriptedPrint(WebKit::WebFrame* frame);
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
+  virtual bool HandleCurrentKeyboardEvent();
 
   // WebKit::WebWidgetClient
   // Most methods are handled by RenderWidget.
@@ -433,6 +435,8 @@ class RenderView : public RenderWidget,
                         const gfx::Rect& resizer_rect);
   // RenderWidget override
   virtual void DidPaint();
+  // RenderWidget override.
+  virtual void DidHandleKeyEvent();
 
  private:
   // For unit tests.
@@ -542,6 +546,7 @@ class RenderView : public RenderWidget,
   void OnSelectAll();
   void OnCopyImageAt(int x, int y);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
+  void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnSetupDevToolsClient();
   void OnCancelDownload(int32 download_id);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
@@ -910,6 +915,10 @@ class RenderView : public RenderWidget,
 
   // The settings this render view initialized WebKit with.
   WebPreferences webkit_preferences_;
+
+  // Stores edit commands associated to the next key event.
+  // Shall be cleared as soon as the next key event is processed.
+  EditCommands edit_commands_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };

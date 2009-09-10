@@ -1683,6 +1683,8 @@
         'browser/renderer_host/file_system_accessor.h',
         'browser/renderer_host/gtk_im_context_wrapper.cc',
         'browser/renderer_host/gtk_im_context_wrapper.h',
+        'browser/renderer_host/gtk_key_bindings_handler.cc',
+        'browser/renderer_host/gtk_key_bindings_handler.h',
         'browser/renderer_host/render_process_host.cc',
         'browser/renderer_host/render_process_host.h',
         'browser/renderer_host/render_sandbox_host_linux.h',
@@ -4213,6 +4215,9 @@
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
             '../sandbox/sandbox.gyp:*',
+          ],
+          'sources': [
+            'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
           ],
           'sources!': [
             # This test is mostly about renaming downloads to safe file

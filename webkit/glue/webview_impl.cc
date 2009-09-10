@@ -635,15 +635,10 @@ bool WebViewImpl::KeyEvent(const WebKeyboardEvent& event) {
 
   PlatformKeyboardEventBuilder evt(event);
 
-  if (WebInputEvent::RawKeyDown == event.type) {
-    if (handler->keyEvent(evt) && !evt.isSystemKey()) {
+  if (handler->keyEvent(evt)) {
+    if (WebInputEvent::RawKeyDown == event.type && !evt.isSystemKey())
       suppress_next_keypress_event_ = true;
-      return true;
-    }
-  } else {
-    if (handler->keyEvent(evt)) {
-      return true;
-    }
+    return true;
   }
 
   return KeyEventDefault(event);

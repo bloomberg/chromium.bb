@@ -196,6 +196,10 @@ class RenderWidget : public IPC::Channel::Listener,
   // GetWindowRect() we'll use this pending window rect as the size.
   void SetPendingWindowRect(const WebKit::WebRect& r);
 
+  // Called by OnHandleInputEvent() to notify subclasses that a key event was
+  // just handled.
+  virtual void DidHandleKeyEvent() {}
+
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
   int32 routing_id_;

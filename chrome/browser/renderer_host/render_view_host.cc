@@ -1592,6 +1592,13 @@ void RenderViewHost::ForwardEditCommand(const std::string& name,
   Send(message);
 }
 
+void RenderViewHost::ForwardEditCommandsForNextKeyEvent(
+    const EditCommands& edit_commands) {
+  IPC::Message* message = new ViewMsg_SetEditCommandsForNextKeyEvent(
+      routing_id(), edit_commands);
+  Send(message);
+}
+
 void RenderViewHost::ForwardMessageFromExternalHost(const std::string& message,
                                                     const std::string& origin,
                                                     const std::string& target) {

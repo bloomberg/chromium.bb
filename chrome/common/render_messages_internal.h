@@ -139,6 +139,20 @@ IPC_BEGIN_MESSAGES(View)
   // Message payload is a blob that should be cast to WebInputEvent
   IPC_MESSAGE_ROUTED0(ViewMsg_HandleInputEvent)
 
+  // This message notifies the renderer that the next key event is bound to one
+  // or more pre-defined edit commands. If the next key event is not handled
+  // by webkit, the specified edit commands shall be executed against current
+  // focused frame.
+  // Parameters
+  // * edit_commands (see chrome/common/edit_command_types.h)
+  //   Contains one or more edit commands.
+  // See third_party/WebKit/WebCore/editing/EditorCommand.cpp for detailed
+  // definition of webkit edit commands.
+  //
+  // This message must be sent just before sending a key event.
+  IPC_MESSAGE_ROUTED1(ViewMsg_SetEditCommandsForNextKeyEvent,
+                      EditCommands /* edit_commands */)
+
   // Message payload is the name/value of a WebCore edit command to execute.
   IPC_MESSAGE_ROUTED2(ViewMsg_ExecuteEditCommand,
                       std::string, /* name */

@@ -427,6 +427,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
+                        OnSetEditCommandsForNextKeyEvent);
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -3438,4 +3440,33 @@ void RenderView::Print(WebFrame* frame, bool script_initiated) {
     print_helper_.reset(new PrintWebViewHelper(this));
   }
   print_helper_->Print(frame, script_initiated);
+}
+
+void RenderView::OnSetEditCommandsForNextKeyEvent(
+    const EditCommands& edit_commands) {
+  edit_commands_ = edit_commands;
+}
+
+void RenderView::DidHandleKeyEvent() {
+  edit_commands_.clear();
+}
+
+bool RenderView::HandleCurrentKeyboardEvent() {
+  if (edit_commands_.empty())
+    return false;
+
+  WebFrame* frame = webview()->GetFocusedFrame();
+  if (!frame)
+    return false;
+
+  EditCommands::iterator it = edit_commands_.begin();
+  EditCommands::iterator end = edit_commands_.end();
+
+  for (; it != end; ++it) {
+    if (!frame->executeCommand(WebString::fromUTF8(it->name),
+                               WebString::fromUTF8(it->value)))
+      break;
+  }
+
+  return true;
 }

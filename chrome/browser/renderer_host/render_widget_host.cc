@@ -436,6 +436,12 @@ void RenderWidgetHost::ForwardEditCommand(const std::string& name,
   // edge cases for which edit commands don't make sense.
 }
 
+void RenderWidgetHost::ForwardEditCommandsForNextKeyEvent(
+    const EditCommands& edit_commands) {
+  // We don't need an implementation of this function here since this message is
+  // only handled by RenderView.
+}
+
 void RenderWidgetHost::RendererExited() {
   // Clearing this flag causes us to re-create the renderer when recovering
   // from a crashed renderer.

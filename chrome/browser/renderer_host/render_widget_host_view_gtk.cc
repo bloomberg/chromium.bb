@@ -28,6 +28,7 @@
 #include "chrome/common/x11_util.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"
+#include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "webkit/api/public/gtk/WebInputEventFactory.h"
 #include "webkit/glue/webcursor_gtk_data.h"
@@ -299,6 +300,8 @@ void RenderWidgetHostViewGtk::InitAsChild() {
   view_.Own(RenderWidgetHostViewGtkWidget::CreateNewWidget(this));
   // |im_context_| must be created after creating |view_| widget.
   im_context_.reset(new GtkIMContextWrapper(this));
+  // |key_bindings_handler_| must be created after creating |view_| widget.
+  key_bindings_handler_.reset(new GtkKeyBindingsHandler(view_.get()));
   plugin_container_manager_.set_host_widget(view_.get());
   gtk_widget_show(view_.get());
 }
@@ -311,6 +314,8 @@ void RenderWidgetHostViewGtk::InitAsPopup(
   view_.Own(RenderWidgetHostViewGtkWidget::CreateNewWidget(this));
   // |im_context_| must be created after creating |view_| widget.
   im_context_.reset(new GtkIMContextWrapper(this));
+  // |key_bindings_handler_| must be created after creating |view_| widget.
+  key_bindings_handler_.reset(new GtkKeyBindingsHandler(view_.get()));
   plugin_container_manager_.set_host_widget(view_.get());
   gtk_container_add(GTK_CONTAINER(popup), view_.get());
 
@@ -462,6 +467,7 @@ void RenderWidgetHostViewGtk::SetIsLoading(bool is_loading) {
 void RenderWidgetHostViewGtk::IMEUpdateStatus(int control,
                                               const gfx::Rect& caret_rect) {
   im_context_->UpdateStatus(control, caret_rect);
+  key_bindings_handler_->set_enabled(control != IME_DISABLE);
 }
 
 void RenderWidgetHostViewGtk::DidPaintRect(const gfx::Rect& rect) {
@@ -617,4 +623,13 @@ void RenderWidgetHostViewGtk::CreatePluginContainer(
 void RenderWidgetHostViewGtk::DestroyPluginContainer(
     gfx::PluginWindowHandle id) {
   plugin_container_manager_.DestroyPluginContainer(id);
+}
+
+void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  EditCommands edit_commands;
+  if (key_bindings_handler_->Match(event, &edit_commands)) {
+    host_->ForwardEditCommandsForNextKeyEvent(edit_commands);
+  }
+  host_->ForwardKeyboardEvent(event);
 }

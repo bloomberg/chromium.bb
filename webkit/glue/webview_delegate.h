@@ -415,6 +415,19 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // Called when an item was added to the history
   virtual void DidAddHistoryItem() { }
 
+  // The "CurrentKeyboardEvent" refers to the keyboard event passed to
+  // WebView's handleInputEvent method.
+  //
+  // This method is called in response to WebView's handleInputEvent() when
+  // the default action for the current keyboard event is not suppressed by the
+  // page, to give WebViewDelegate a chance to handle the keyboard event
+  // specially.
+  //
+  // Returns true if the keyboard event was handled by WebViewDelegate.
+  virtual bool HandleCurrentKeyboardEvent() {
+    return false;
+  }
+
  protected:
   ~WebViewDelegate() { }
 };
