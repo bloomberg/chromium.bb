@@ -16,7 +16,7 @@
 class URLRequestContext;
 
 namespace net {
-struct ListState;
+struct list_state;
 }
 
 // A URLRequestJob subclass that is built on top of FtpTransaction. It
@@ -56,7 +56,7 @@ class URLRequestNewFtpJob : public URLRequestJob {
 
   int ProcessFtpDir(net::IOBuffer *buf, int buf_size, int bytes_read);
 
-  void LogFtpServerType(const net::ListState& list_state);
+  void LogFtpServerType(const struct net::list_state& list_state);
 
   net::FtpRequestInfo request_info_;
   scoped_ptr<net::FtpTransaction> transaction_;

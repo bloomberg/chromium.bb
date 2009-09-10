@@ -245,27 +245,36 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
 
   int64 file_size;
   std::istringstream iss(std::string(buf->data(), bytes_read));
-  struct net::ListState state;
+  struct net::list_state state;
   memset(&state, 0, sizeof(state));
   while (getline(iss, line)) {
-    struct net::ListResult result;
+    struct net::list_result result;
     std::replace(line.begin(), line.end(), '\r', '\0');
-    net::LineType line_type = ParseFTPLine(line.c_str(), &state, &result);
+    int line_type = net::ParseFTPList(line.c_str(), &state, &result);
+
+    // The original code assumed months are in range 0-11 (PRExplodedTime),
+    // but our Time class expects a 1-12 range. Adjust it here, because
+    // the third-party parsing code uses bit-shifting on the month,
+    // and it'd be too easy to break that logic.
+    result.fe_time.month++;
+    DCHECK_LE(1, result.fe_time.month);
+    DCHECK_GE(12, result.fe_time.month);
+
     switch (line_type) {
-      case net::FTP_TYPE_DIRECTORY:
+      case 'd':  // Directory entry.
         file_entry.append(net::GetDirectoryListingEntry(
             RawByteSequenceToFilename(result.fe_fname, encoding_),
             result.fe_fname, true, 0,
             base::Time::FromLocalExploded(result.fe_time)));
         break;
-      case net::FTP_TYPE_FILE:
+      case 'f':  // File entry.
         if (StringToInt64(result.fe_size, &file_size))
           file_entry.append(net::GetDirectoryListingEntry(
               RawByteSequenceToFilename(result.fe_fname, encoding_),
               result.fe_fname, false, file_size,
               base::Time::FromLocalExploded(result.fe_time)));
         break;
-      case net::FTP_TYPE_SYMLINK: {
+      case 'l': {  // Symlink entry.
           std::string filename(result.fe_fname, result.fe_fnlen);
 
           // Parsers for styles 'U' and 'W' handle " -> " themselves.
@@ -283,10 +292,11 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
           }
         }
         break;
-      case net::FTP_TYPE_JUNK:
-      case net::FTP_TYPE_COMMENT:
+      case '?':  // Junk entry.
+      case '"':  // Comment entry.
         break;
       default:
+        NOTREACHED();
         break;
     }
   }
@@ -301,7 +311,8 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
   return bytes_to_copy;
 }
 
-void URLRequestNewFtpJob::LogFtpServerType(const net::ListState& list_state) {
+void URLRequestNewFtpJob::LogFtpServerType(
+    const struct net::list_state& list_state) {
   // We can't recognize server type based on empty directory listings. Don't log
   // that as unknown, it's misleading.
   if (!list_state.parsed_one)
