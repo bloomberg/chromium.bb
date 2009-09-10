@@ -34,6 +34,13 @@ generator_default_variables = {
 generator_handles_variants = True
 generator_wants_absolute_build_file_paths = True
 
+
+def FixPath(path, prefix):
+  if not os.path.isabs(path) and not path[0] == '$':
+    path = prefix + path
+  return path
+
+
 header = """\
 # This file is generated; do not edit.
 """
@@ -183,8 +190,7 @@ def GenerateConfig(fp, config, indent='', src_dir=''):
             src_dir += '/'
           result = []
           for v in value:
-            if not os.path.isabs(v) and not v[0] == '$':
-              v = src_dir + v
+            v = FixPath(v, src_dir)
             # Force SCons to evaluate the CPPPATH directories at
             # SConscript-read time, so delayed evaluation of $SRC_DIR
             # doesn't point it to the --generator-output= directory.
@@ -266,6 +272,8 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
   src_dir = build_file_data['_DEPTH']
   src_dir_rel = gyp.common.RelativePath(src_dir, output_dir)
   subdir = gyp.common.RelativePath(os.path.dirname(build_file), src_dir)
+  src_subdir = '$SRC_DIR/' + subdir
+  src_subdir_ = src_subdir + '/'
 
   component_name = os.path.splitext(os.path.basename(build_file))[0]
   target_name = spec['target_name']
@@ -297,7 +305,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     fp.write('    \'%s\' : {\n' % config_name)
 
     fp.write('        \'Append\' : dict(\n')
-    GenerateConfig(fp, config, indent, '$SRC_DIR/'+subdir)
+    GenerateConfig(fp, config, indent, src_subdir)
     libraries = spec.get('libraries')
     if libraries:
       WriteList(fp,
@@ -362,7 +370,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     fp.write('\n')
     fp.write(if_fmt % repr(setting.upper()))
     fp.write('  env.Append(\n')
-    GenerateConfig(fp, config, indent, '$SRC_DIR/'+subdir)
+    GenerateConfig(fp, config, indent, src_subdir)
     fp.write('  )\n')
 
   #
@@ -375,17 +383,18 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
 
   actions = spec.get('actions', [])
   for action in actions:
-    a = ['cd', '$SRC_DIR/'+subdir, '&&'] + action['action']
+    a = ['cd', src_subdir, '&&'] + action['action']
     message = action.get('message')
     if message:
       message = repr(message)
-    outputs = action.get('outputs', [])
+    inputs = [FixPath(f, src_subdir_) for f in action.get('inputs', [])]
+    outputs = [FixPath(f, src_subdir_) for f in action.get('outputs', [])]
     if outputs:
       template = _command_template
     else:
       template = _alias_template
     fp.write(template % {
-                 'inputs' : pprint.pformat(action.get('inputs', [])),
+                 'inputs' : pprint.pformat(inputs),
                  'outputs' : pprint.pformat(outputs),
                  'action' : pprint.pformat(a),
                  'message' : message,
@@ -398,7 +407,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
   rules = spec.get('rules', [])
   for rule in rules:
     name = rule['rule_name']
-    a = ['cd', '$SRC_DIR/'+subdir, '&&'] + rule['action']
+    a = ['cd', src_subdir, '&&'] + rule['action']
     message = rule.get('message')
     if message:
         message = repr(message)
@@ -416,7 +425,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
                  'process_outputs_as_sources_line' : poas_line,
              })
 
-  scons_target.write_target(fp, '$SRC_DIR/'+subdir)
+  scons_target.write_target(fp, src_subdir)
 
   copies = spec.get('copies', [])
   if copies:
@@ -451,10 +460,8 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
            '    GYPCopy(\'$TARGET\', \'$SOURCE\'))\n')
     for f in copy['files']:
       dest = os.path.join(destdir, os.path.split(f)[1])
-      if not os.path.isabs(f) and not f[0] == '$':
-        f = '$SRC_DIR/%s/%s' % (subdir, f)
-      if not os.path.isabs(dest) and not dest[0] == '$':
-        dest = '$SRC_DIR/%s/%s' % (subdir, dest)
+      f = FixPath(f, src_subdir_)
+      dest = FixPath(dest, src_subdir_)
       fp.write(fmt % (repr(dest), repr(f)))
       fp.write('target_files.extend(_outputs)\n')
 

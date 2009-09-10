@@ -4,10 +4,9 @@ import sys
 contents = r"""
 #include <stdio.h>
 
-int main(int argc, char *argv[])
+void prog1(void)
 {
-  printf("Hello from make-program.py\n");
-  return 0;
+  printf("Hello from make-prog1.py\n");
 }
 """
 
