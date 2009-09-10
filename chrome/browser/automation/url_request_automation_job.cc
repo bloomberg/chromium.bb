@@ -320,6 +320,16 @@ void URLRequestAutomationJob::OnRequestEnd(
   DLOG(INFO) << "URLRequestAutomationJob: " <<
       request_->url().spec() << " - request end. Status: " << status.status();
 
+  // TODO(tommi): When we hit certificate errors, notify the delegate via
+  // OnSSLCertificateError().  Right now we don't have the certificate
+  // so we don't.  We could possibly call OnSSLCertificateError with a NULL
+  // certificate, but I'm not sure if all implementations expect it.
+  // if (status.status() == URLRequestStatus::FAILED &&
+  //    net::IsCertificateError(status.os_error()) && request_->delegate()) {
+  //  request_->delegate()->OnSSLCertificateError(request_, status.os_error(),
+  //                                              NULL);
+  // }
+
   DisconnectFromMessageFilter();
   NotifyDone(status);
 
@@ -371,13 +381,14 @@ void URLRequestAutomationJob::StartAsync() {
 
   // Ensure that we do not send username and password fields in the referrer.
   GURL referrer(request_->GetSanitizedReferrer());
-#ifndef NDEBUG
-  // The referrer header should be suppressed if the preceding URL was
+
+  // The referrer header must be suppressed if the preceding URL was
   // a secure one and the new one is not.
   if (referrer.SchemeIsSecure() && !request_->url().SchemeIsSecure()) {
-    DCHECK(referrer.spec().empty());
+    DLOG(INFO) <<
+        "Suppressing referrer header since going from secure to non-secure";
+    referrer = GURL();
   }
-#endif
 
   // Ask automation to start this request.
   IPC::AutomationURLRequest automation_request = {
