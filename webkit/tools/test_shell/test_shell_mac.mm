@@ -611,7 +611,6 @@ void TestShell::ShowStartupDebuggingDialog() {
 
 StringPiece TestShell::NetResourceProvider(int key) {
   // TODO(port): Return the requested resource.
-  NOTIMPLEMENTED();
   return StringPiece();
 }
 
