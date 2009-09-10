@@ -517,6 +517,21 @@ GdkColor SkColorToGdkColor(const SkColor& color) {
   return skia::SkColorToGdkColor(color);
 }
 
+// A helper method for setting the GtkWindow size that should be used in place
+// of calling gtk_window_resize directly.  This is done to avoid a WM "feature"
+// where setting the window size to the screen size causes the WM to set the
+// EWMH for full screen mode.
+void SetWindowSize(GtkWindow* window, int width, int height) {
+  GdkScreen* screen = gdk_screen_get_default();
+  if (width == gdk_screen_get_width(screen) &&
+      height == gdk_screen_get_height(screen)) {
+    // Adjust the height so we don't trigger the WM feature.
+    gtk_window_resize(window, width, height - 1);
+  } else {
+    gtk_window_resize(window, width, height);
+  }
+}
+
 }  // namespace
 
 std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
@@ -800,7 +815,7 @@ void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
   gint height = static_cast<gint>(bounds.height());
 
   gtk_window_move(window_, x, y);
-  gtk_window_resize(window_, width, height);
+  SetWindowSize(window_, width, height);
 }
 
 void BrowserWindowGtk::Close() {
@@ -1442,16 +1457,7 @@ void BrowserWindowGtk::SetGeometryHints() {
     SetBounds(bounds);
   } else {
     // Ignore the position but obey the size.
-    GdkScreen* screen = gdk_screen_get_default();
-    if (bounds.width() == gdk_screen_get_width(screen) &&
-        bounds.height() == gdk_screen_get_height(screen)) {
-      // Work around a WM "feature" where if we set the window to the exact
-      // size of the monitor, the WM automatically puts us in full screen mode.
-      // Instead, adjust the height so we don't trigger this WM work around.
-      gtk_window_resize(window_, bounds.width(), bounds.height() - 1);
-    } else {
-      gtk_window_resize(window_, bounds.width(), bounds.height());
-    }
+    SetWindowSize(window_, bounds.width(), bounds.height());
   }
 }
 
