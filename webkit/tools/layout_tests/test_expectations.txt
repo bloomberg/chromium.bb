@@ -1467,21 +1467,18 @@ BUG10399 MAC : LayoutTests/fast/encoding/char-encoding-mac.html = FAIL
 // because we enforce non-transparent color in Font::drawGlyphs.
 BUG700464 LINUX : LayoutTests/fast/css/hsla-color.html = FAIL
 
-// Implement layoutTestController.display() and
-// layoutTestController.testRepaint(). The only reason they are not marked as
-// failures for Mac is because Mac doesn't yet run pixel tests where the
-// regression becomes visible.
+// Implement layoutTestController.testRepaint()
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-horizontal.html = FAIL
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-horizontal.html = FAIL
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-vertical.html = FAIL
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-vertical.html = FAIL
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow-horizontal.html = FAIL
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow.html = FAIL
+
+// Implement layoutTestController.display()
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/body-background-image.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/clip-with-layout-delta.html = FAIL
 
-BUG8630 LINUX : LayoutTests/fast/repaint/erase-overflow.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/inline-block-resize.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/inline-overflow.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/invisible-objects.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/layer-full-repaint.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/layer-hide-when-needs-layout.html = FAIL
-
-BUG8630 LINUX : LayoutTests/fast/repaint/layer-visibility.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-1.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-2.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-6.html = FAIL
@@ -1489,39 +1486,39 @@ BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-8.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-9.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-overflow.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/make-children-non-inline.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/overflow-clip-subtree-layout.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/overflow-outline-repaint.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/selected-replaced.html = FAIL
-
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-horizontal.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-horizontal.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-vertical.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-vertical.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/subtree-root-clip-2.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/subtree-root-clip-3.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/subtree-root-clip.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/table-col-background.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/table-row.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/repaint/table-section-overflow.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/text-shadow-horizontal.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/text-shadow.html = FAIL
-
 BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
-
 BUG8630 WIN LINUX : LayoutTests/fast/backgrounds/solid-color-context-restore.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/dynamic/containing-block-change.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/forms/hidden-listbox.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/forms/listbox-clip.html = FAIL
-BUG8630 LINUX : LayoutTests/fast/layers/layer-content-visibility-change.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/overflow/hidden-scrollbar-resize.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/reflections/inline-crash.html = FAIL
-BUG8630 WIN : LayoutTests/fast/replaced/width100percent-textarea.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
 BUG8630 WIN LINUX : pending/fast/repaint/bugzilla-6473.html = FAIL
-// These started flaking after initial implementation of .display() landed.
+
 BUG8630 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL PASS
-BUG8630 LINUX : LayoutTests/fast/backgrounds/001.html = CRASH FAIL PASS
+
+BUG18772 LINUX : LayoutTests/fast/backgrounds/001.html = CRASH FAIL PASS
+
+// Linux checksum computation produces results, different from Windows or upstream.
+BUG21386 LINUX : LayoutTests/fast/repaint/erase-overflow.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/inline-block-resize.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/inline-overflow.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/invisible-objects.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/layer-full-repaint.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/layer-hide-when-needs-layout.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/layer-visibility.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/overflow-clip-subtree-layout.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/subtree-root-clip-2.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/subtree-root-clip-3.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/subtree-root-clip.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/table-col-background.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/table-row.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/repaint/table-section-overflow.html = FAIL
+BUG21386 LINUX : LayoutTests/fast/layers/layer-content-visibility-change.html = FAIL
 
 // Linux pixeltest failure: Failing to rotate the form control
 BUG10390 LINUX : LayoutTests/fast/transforms/transformed-focused-text-input.html = FAIL
