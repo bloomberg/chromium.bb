@@ -13,16 +13,6 @@ set -e
 # Working in the resources directory
 cd "${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Contents/Resources"
 
-# Remove the stale zh.lproj
-# TODO: This can go away about 09/01/09, when they won't exist on the bots or
-# developers' local builds.
-rm -rf "zh.lproj" "en.lproj"
-# Remove the invalid dirs with - instead of _ (http://crbug.com/20441)
-# TODO: This can go away about 09/09/09, when they won't exist on the bots or
-# developers' local builds.
-rm -rf "en-GB.lproj" "en-US.lproj" "es-419.lproj" "pt-BR.lproj" "pt-PT.lproj" \
-    "zh-CN.lproj" "zh-TW.lproj"
-
 # Provide an link for en.lproj that points to en_US.lproj.
 
 # The standard OS language list includes English (en) and not a specific

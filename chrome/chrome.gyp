@@ -4884,13 +4884,6 @@
           ],
           'actions': [
             {
-              # TODO: remove this action and the script it runs after 09/01/09
-              'action_name': 'Remove old resources symlink',
-              'inputs': [],
-              'outputs': [],
-              'action': [ 'app/nuke_mac_resources_link' ],
-            },
-            {
               # Generate the InfoPlist.strings file
               'action_name': 'Generating InfoPlist.strings files',
               'variables': {
