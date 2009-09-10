@@ -75,7 +75,8 @@ def UpdateCurrentCheckoutIfAppropriate():
     print "Run 'git checkout gclient' to put this under control of gclient."
     return
 
-  if subprocess.call(['git', 'diff-index', '--exit-code', 'HEAD']):
+  if subprocess.call(['git', 'diff-index', '--exit-code', '--shortstat',
+	              'HEAD']):
     print "Resetting tree state to new revision."
     subprocess.check_call(['git', 'reset', '--hard'])
 
