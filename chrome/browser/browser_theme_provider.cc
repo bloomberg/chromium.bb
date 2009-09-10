@@ -5,6 +5,7 @@
 #include "chrome/browser/browser_theme_provider.h"
 
 #include "base/file_util.h"
+#include "base/string_util.h"
 #include "base/gfx/png_decoder.h"
 #include "base/gfx/png_encoder.h"
 #include "base/string_util.h"
@@ -144,6 +145,10 @@ static const int kDefaultDisplayPropertyNTPAlignment =
 static const int kDefaultDisplayPropertyNTPTiling =
     BrowserThemeProvider::NO_REPEAT;
 static const int kDefaultDisplayPropertyNTPInverseLogo = 0;
+
+// The sum of kFrameBorderThickness and kNonClientRestoredExtraThickness from
+// OpaqueBrowserFrameView.
+static const int kRestoredTabVerticalOffset = 15;
 
 // The image resources that will be tinted by the 'button' tint value.
 static const int kToolbarButtonIDs[] = {
@@ -481,7 +486,15 @@ bool BrowserThemeProvider::HasCustomImage(int id) {
   if (!themeable_images_[id])
     return false;
 
-  return (images_.find(id) != images_.end());
+  // A custom image = base name is NOT equal to resource name.  See note in
+  // SaveThemeBitmap describing the process by which an original image is
+  // tagged.
+  if (images_.find(id) != images_.end() &&
+      resource_names_.find(id) != resource_names_.end())
+    return !EndsWith(UTF8ToWide(images_[id]),
+                     UTF8ToWide(resource_names_[id]), false);
+  else
+    return false;
 }
 
 bool BrowserThemeProvider::GetRawData(int id,
@@ -612,17 +625,27 @@ SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) {
 }
 
 void BrowserThemeProvider::SaveThemeBitmap(
-    const std::string resource_name, int id) {
+    std::string resource_name, int id) {
   DCHECK(CalledOnValidThread());
   if (!image_cache_[id]) {
     NOTREACHED();
     return;
   }
 
+  // The images_ directory, at this point, contains only the custom images
+  // provided by the extension. We tag these images "_original" in the prefs
+  // file so we can distinguish them from images which have been generated and
+  // saved to disk by the theme caching process (WriteImagesToDisk).  This way,
+  // when we call HasCustomImage, we can check for the "_original" tag to see
+  // whether an image was originally provided by the extension, or saved
+  // in the caching process.
+  if (images_.find(id) != images_.end())
+    resource_name.append("_original");
+
 #if defined(OS_WIN)
-  FilePath image_path = image_dir_.Append(FilePath(UTF8ToWide(resource_name)));
+  FilePath image_path = image_dir_.Append(UTF8ToWide(resource_name));
 #elif defined(OS_POSIX)
-  FilePath image_path = image_dir_.Append(FilePath(resource_name));
+  FilePath image_path = image_dir_.Append(resource_name);
 #endif
 
   images_disk_cache_[image_path] = id;
@@ -1024,8 +1047,12 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
       }
       std::map<int, SkBitmap*>::iterator it = image_cache_.find(base_id);
       if (it != image_cache_.end()) {
-        SkBitmap* bg_tab = new SkBitmap(TintBitmap(*(it->second),
-                                                   TINT_BACKGROUND_TAB));
+        SkBitmap bg_tint = TintBitmap(*(it->second), TINT_BACKGROUND_TAB);
+        int vertical_offset = HasCustomImage(id) ?
+            kRestoredTabVerticalOffset : 0;
+        SkBitmap* bg_tab = new SkBitmap(
+            skia::ImageOperations::CreateTiledBitmap(bg_tint, 0,
+            vertical_offset, bg_tint.width(), bg_tint.height()));
 
         // If they've provided a custom image, overlay it.
         if (HasCustomImage(id)) {
