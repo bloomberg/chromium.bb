@@ -368,7 +368,7 @@ bool WebMediaPlayerImpl::seeking() const {
 
   if (ready_state_ == WebKit::WebMediaPlayer::HaveNothing)
     return false;
-  
+
   return ready_state_ == WebKit::WebMediaPlayer::HaveMetadata;
 }
 
@@ -391,10 +391,10 @@ int WebMediaPlayerImpl::dataRate() const {
   return 0;
 }
 
-float WebMediaPlayerImpl::maxTimeBuffered() const {
+const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  return static_cast<float>(pipeline_->GetBufferedTime().InSecondsF());
+  return buffered_;
 }
 
 float WebMediaPlayerImpl::maxTimeSeekable() const {
@@ -471,6 +471,12 @@ void WebMediaPlayerImpl::Repaint() {
 void WebMediaPlayerImpl::OnPipelineInitialize() {
   DCHECK(MessageLoop::current() == main_loop_);
   if (pipeline_->GetError() == media::PIPELINE_OK) {
+    // Only keep one time range starting from 0.
+    buffered_.push_back(
+        WebKit::WebTimeRange(
+            0.0f,
+            static_cast<float>(pipeline_->GetBufferedTime().InSecondsF())));
+
     // Since we have initialized the pipeline, say we have everything.
     // TODO(hclam): change this to report the correct status.
     SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);

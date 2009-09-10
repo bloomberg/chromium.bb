@@ -82,7 +82,7 @@ namespace WebKit {
         virtual WebCore::MediaPlayer::NetworkState networkState() const;
         virtual WebCore::MediaPlayer::ReadyState readyState() const;
         virtual float maxTimeSeekable() const;
-        virtual float maxTimeBuffered() const;
+        virtual WTF::PassRefPtr<WebCore::TimeRanges> buffered() const;
         virtual int dataRate() const;
         virtual void setAutobuffer(bool);
         virtual bool totalBytesKnown() const;

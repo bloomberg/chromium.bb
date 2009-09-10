@@ -173,7 +173,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   virtual void setVisible(bool visible);
   virtual bool setAutoBuffer(bool autoBuffer);
   virtual bool totalBytesKnown();
-  virtual float maxTimeBuffered() const;
+  virtual const WebKit::WebTimeRanges& buffered() const;
   virtual float maxTimeSeekable() const;
 
   // Methods for painting.
@@ -244,6 +244,9 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // TODO(hclam): get rid of these members and read from the pipeline directly.
   WebKit::WebMediaPlayer::NetworkState network_state_;
   WebKit::WebMediaPlayer::ReadyState ready_state_;
+
+  // Keep a list of buffered time ranges.
+  WebKit::WebTimeRanges buffered_;
 
   // Message loops for posting tasks between Chrome's main thread. Also used
   // for DCHECKs so methods calls won't execute in the wrong thread.

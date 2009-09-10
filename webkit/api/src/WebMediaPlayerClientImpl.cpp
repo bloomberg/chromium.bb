@@ -8,6 +8,7 @@
 #if ENABLE(VIDEO)
 
 #include "TemporaryGlue.h"
+#include "TimeRanges.h"
 #include "WebCanvas.h"
 #include "WebCString.h"
 #include "WebKit.h"
@@ -253,11 +254,18 @@ float WebMediaPlayerClientImpl::maxTimeSeekable() const
     return 0.0f;
 }
 
-float WebMediaPlayerClientImpl::maxTimeBuffered() const
+WTF::PassRefPtr<WebCore::TimeRanges> WebMediaPlayerClientImpl::buffered() const
 {
-    if (m_webMediaPlayer.get())
-        return m_webMediaPlayer->maxTimeBuffered();
-    return 0.0f;
+    if (m_webMediaPlayer.get()) {
+        WebTimeRanges webRanges = m_webMediaPlayer->buffered();
+
+        // FIXME: Save the time ranges in a member variable and update it when needed.
+        WTF::RefPtr<TimeRanges> ranges = TimeRanges::create();
+        for (size_t i = 0; i < webRanges.size(); ++i)
+            ranges->add(webRanges[i].start, webRanges[i].end);
+        return ranges.release();
+    }
+    return TimeRanges::create();
 }
 
 int WebMediaPlayerClientImpl::dataRate() const
