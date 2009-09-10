@@ -123,15 +123,13 @@ class LocationBarViewGtk : public AutocompleteEditController,
   OwnedWidgetGtk hbox_;
 
   // SSL icons.
-  GtkWidget* security_icon_align_;
+  GtkWidget* security_icon_event_box_;
   GtkWidget* security_lock_icon_image_;
   GtkWidget* security_warning_icon_image_;
   // Toolbar info text (EV cert info).
-  GtkWidget* info_label_align_;
   GtkWidget* info_label_;
 
   // Area on the left shown when in tab to search mode.
-  GtkWidget* tab_to_search_;
   GtkWidget* tab_to_search_box_;
   GtkWidget* tab_to_search_label_;
 

@@ -48,25 +48,14 @@ const int kFirstRunBubbleTopMargin = 1;
 // Task delay (in milliseconds) to show first run bubble.
 const int kFirstRunBubbleTaskDelay = 200;
 
-// Left and right padding/margin.
-// no icon/text  : 4px url_text 4px
-//                 [4px|url text|4px] <hide ssl icon> <hide ev text>
-// with icon     : 4px url_text 6px ssl_icon 8px
-//                 [4px|url text|4px] [2px|ssl icon|8px] <hide ev text>
-// with icon/text: 4px url_text 6px ssl_icon 8px ev_text 4px]
-//                 [4px|url text|4px] [2px|ssl icon|8px] [ev text|4px]
+// The padding around the top, bottom, and sides of the location bar hbox.
+// We don't want to edit control's text to be right against the edge,
+// as well the tab to search box and other widgets need to have the padding on
+// top and bottom to avoid drawing larger than the location bar space.
+const int kHboxBorder = 4;
 
-// We don't want to edit control's text to be right against the edge.
-const int kEditLeftRightPadding = 4;
-
-// Padding around the security icon.
-const int kSecurityIconPaddingLeft = 0;
-const int kSecurityIconPaddingRight = 6;
-
-const int kEvTextPaddingRight = 4;
-
-const int kKeywordTopBottomPadding = 4;
-const int kKeywordLeftRightPadding = 4;
+// Padding between the elements in the bar.
+static const int kInnerPadding = 4;
 
 // TODO(deanm): Eventually this should be painted with the background png
 // image, but for now we get pretty close by just drawing a solid border.
@@ -102,12 +91,10 @@ const GdkColor LocationBarViewGtk::kBackgroundColorByLevel[3] = {
 
 LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
     ToolbarModel* toolbar_model, AutocompletePopupPositioner* popup_positioner)
-    : security_icon_align_(NULL),
+    : security_icon_event_box_(NULL),
       security_lock_icon_image_(NULL),
       security_warning_icon_image_(NULL),
-      info_label_align_(NULL),
       info_label_(NULL),
-      tab_to_search_(NULL),
       tab_to_search_box_(NULL),
       tab_to_search_label_(NULL),
       tab_to_search_hint_(NULL),
@@ -140,7 +127,8 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                                                     popup_positioner_));
   location_entry_->Init();
 
-  hbox_.Own(gtk_hbox_new(FALSE, 0));
+  hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
+  gtk_container_set_border_width(GTK_CONTAINER(hbox_.get()), kHboxBorder);
   // We will paint for the alignment, to paint the background and border.
   gtk_widget_set_app_paintable(hbox_.get(), TRUE);
   // Have GTK double buffer around the expose signal.
@@ -167,20 +155,14 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   // Tab to search (the keyword box on the left hand side).
   tab_to_search_label_ = gtk_label_new(NULL);
-  // We need an alignment to pad our box inside the edit area.
-  tab_to_search_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(tab_to_search_),
-      kKeywordTopBottomPadding, kKeywordTopBottomPadding,
-      kKeywordLeftRightPadding, kKeywordLeftRightPadding);
 
-  // This crazy stack of alignments and event boxes creates a box around the
-  // keyword text with a border, background color, and padding around the text.
+  // This creates a box around the keyword text with a border, background color,
+  // and padding around the text.
   tab_to_search_box_ = gtk_util::CreateGtkBorderBin(
       tab_to_search_label_, NULL, 1, 1, 2, 2);
   gtk_util::ActAsRoundedWindow(tab_to_search_box_, kBorderColor, kCornerSize,
                                gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
-  gtk_container_add(GTK_CONTAINER(tab_to_search_), tab_to_search_box_);
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), tab_to_search_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), tab_to_search_box_, FALSE, FALSE, 0);
 
   GtkWidget* align = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   // TODO(erg): Like in BrowserToolbarGtk, this used to have a code path on
@@ -191,13 +173,13 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
     gtk_alignment_set_padding(GTK_ALIGNMENT(align),
                               kTopMargin + kBorderThickness,
                               kBottomMargin + kBorderThickness,
-                              kEditLeftRightPadding + kBorderThickness,
-                              kEditLeftRightPadding + kBorderThickness);
+                              kBorderThickness,
+                              kBorderThickness);
   } else {
     gtk_alignment_set_padding(GTK_ALIGNMENT(align),
                               kTopMargin + kBorderThickness,
                               kBottomMargin + kBorderThickness,
-                              kEditLeftRightPadding, kEditLeftRightPadding);
+                              0, 0);
   }
   gtk_container_add(GTK_CONTAINER(align), location_entry_->widget());
   gtk_box_pack_start(GTK_BOX(hbox_.get()), align, TRUE, TRUE, 0);
@@ -223,13 +205,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   // Pack info_label_ and security icons in hbox.  We hide/show them
   // by SetSecurityIcon() and SetInfoText().
-  info_label_align_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(info_label_align_),
-                            kTopMargin + kBorderThickness,
-                            kBottomMargin + kBorderThickness,
-                            0, kEvTextPaddingRight);
-  gtk_container_add(GTK_CONTAINER(info_label_align_), info_label_);
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), info_label_align_, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), info_label_, FALSE, FALSE, 0);
 
   GtkWidget* security_icon_box = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(security_icon_box),
@@ -237,23 +213,18 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_start(GTK_BOX(security_icon_box),
                      security_warning_icon_image_, FALSE, FALSE, 0);
 
-  security_icon_align_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(security_icon_align_),
-                            kTopMargin + kBorderThickness,
-                            kBottomMargin + kBorderThickness,
-                            kSecurityIconPaddingLeft,
-                            kSecurityIconPaddingRight);
   // GtkImage is a "no window" widget and requires a GtkEventBox to receive
   // events.
-  GtkWidget* event_box = gtk_event_box_new();
+  security_icon_event_box_ = gtk_event_box_new();
   // Make the event box not visible so it does not paint a background.
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box), FALSE);
-  g_signal_connect(event_box, "button-press-event",
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(security_icon_event_box_),
+                                   FALSE);
+  g_signal_connect(security_icon_event_box_, "button-press-event",
                    G_CALLBACK(&OnSecurityIconPressed), this);
 
-  gtk_container_add(GTK_CONTAINER(event_box), security_icon_box);
-  gtk_container_add(GTK_CONTAINER(security_icon_align_), event_box);
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_align_, FALSE, FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(security_icon_event_box_), security_icon_box);
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_event_box_,
+                   FALSE, FALSE, 0);
 
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
@@ -323,9 +294,9 @@ void LocationBarViewGtk::OnChanged() {
 
   if (show_selected_keyword) {
     SetKeywordLabel(keyword);
-    gtk_widget_show_all(tab_to_search_);
+    gtk_widget_show_all(tab_to_search_box_);
   } else {
-    gtk_widget_hide_all(tab_to_search_);
+    gtk_widget_hide_all(tab_to_search_box_);
   }
 
   if (show_keyword_hint) {
@@ -510,9 +481,9 @@ void LocationBarViewGtk::SetSecurityIcon(ToolbarModel::Icon icon) {
   gtk_widget_hide(GTK_WIDGET(security_lock_icon_image_));
   gtk_widget_hide(GTK_WIDGET(security_warning_icon_image_));
   if (icon != ToolbarModel::NO_ICON)
-    gtk_widget_show(GTK_WIDGET(security_icon_align_));
+    gtk_widget_show(GTK_WIDGET(security_icon_event_box_));
   else
-    gtk_widget_hide(GTK_WIDGET(security_icon_align_));
+    gtk_widget_hide(GTK_WIDGET(security_icon_event_box_));
   switch (icon) {
     case ToolbarModel::LOCK_ICON:
       gtk_widget_show(GTK_WIDGET(security_lock_icon_image_));
@@ -535,12 +506,12 @@ void LocationBarViewGtk::SetInfoText() {
   if (info_text_type == ToolbarModel::INFO_EV_TEXT) {
     gtk_widget_modify_fg(GTK_WIDGET(info_label_), GTK_STATE_NORMAL,
                          &kEvTextColor);
-    gtk_widget_show(GTK_WIDGET(info_label_align_));
+    gtk_widget_show(GTK_WIDGET(info_label_));
   } else {
     DCHECK_EQ(info_text_type, ToolbarModel::INFO_NO_INFO);
     DCHECK(info_text.empty());
     // Clear info_text.  Should we reset the fg here?
-    gtk_widget_hide(GTK_WIDGET(info_label_align_));
+    gtk_widget_hide(GTK_WIDGET(info_label_));
   }
   gtk_label_set_text(GTK_LABEL(info_label_), WideToUTF8(info_text).c_str());
   gtk_widget_set_tooltip_text(GTK_WIDGET(info_label_),
