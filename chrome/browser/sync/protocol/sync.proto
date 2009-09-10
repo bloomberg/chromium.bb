@@ -1,0 +1,344 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol for communication between sync client and server.
+
+syntax = "proto2";
+
+option java_api_version = 1;
+option cc_api_version = 1;
+option py_api_version = 1;
+option java_java5_enums = false;
+
+package sync_pb;
+
+// Used to store and send extended attributes, which are arbitrary
+// key value pairs.
+message ExtendedAttributes {
+  repeated group ExtendedAttribute = 1 {
+    required string key = 2;
+    required bytes value = 3;
+  }
+}
+
+// Used for inspecting how long we spent performing operations in different
+// backends. All times must be in millis.
+message ProfilingData {
+  optional int64 meta_data_write_time = 1;
+  optional int64 file_data_write_time = 2;
+  optional int64 user_lookup_time = 3;
+  optional int64 meta_data_read_time = 4;
+  optional int64 file_data_read_time = 5;
+  optional int64 total_request_time = 6;
+}
+
+message SyncEntity {
+  // This item's identifier.  In a commit of a new item, this will be a
+  // client-generated ID.  If the commit succeeds, the server will generate
+  // a globally unique ID and return it to the committing client in the
+  // CommitResponse.EntryResponse.  In the context of a GetUpdatesResponse,
+  // |id_string| is always the server generated ID.  The original
+  // client-generated ID is preserved in the |originator_client_id| field.
+  // Present in both GetUpdatesResponse and CommitMessage.
+  optional string id_string = 1;
+
+  // An id referencing this item's parent in the hierarchy.  In a
+  // CommitMessage, it is accepted for this to be a client-generated temporary
+  // ID if there was a new created item with that ID appearing earlier
+  // in the message.  In all other situations, it is a server ID.
+  // Present in both GetUpdatesResponse and CommitMessage.
+  optional string parent_id_string = 2;
+
+  // old_parent_id is only set in commits and indicates the old server
+  // parent(s) to remove. When omitted, the old parent is the same as
+  // the new.
+  // Present only in CommitMessage.
+  optional string old_parent_id = 3;
+
+  // The version of this item -- a monotonically increasing value that is
+  // maintained by for each item.  If zero in a CommitMessage, the server
+  // will interpret this entity as a newly-created item and generate a
+  // new server ID and an initial version number.  If nonzero in a
+  // CommitMessage, this item is treated as an update to an existing item, and
+  // the server will use |id_string| to locate the item.  Then, if the item's
+  // current version on the server does not match |version|, the commit will
+  // fail for that item.  The server will not update it, and will return
+  // a result code of CONFLICT.  In a GetUpdatesResponse, |version| is
+  // always positive and indentifies the revision of the item data being sent
+  // to the client.
+  // Present in both GetUpdatesResponse and CommitMessage.
+  required int64 version = 4;
+
+  // Last modification time (in java time milliseconds)
+  // Present in both GetUpdatesResponse and CommitMessage.
+  optional int64 mtime = 5;
+
+  // Creation time.
+  // Present in both GetUpdatesResponse and CommitMessage.
+  optional int64 ctime = 6;
+
+  // A unique-in-the parent name for this item.
+  // Present in both GetUpdatesResponse and CommitMessage.
+  required string name = 7;
+
+  // non_unique_name holds the base name stored serverside, which is different
+  // from |name| when |name| has been suffixed in a way to make it unique
+  // among its siblings.  In a GetUpdatesResponse, |non_unique_name| will
+  // be supplied in addition to |name|, and the client may choose which
+  // field to use depending on its needs.  In a CommitMessage,
+  // |non_unique_name| takes precedence over the |name| value if both are
+  // supplied.
+  // Present in both GetUpdatesResponse and CommitMessage.
+  optional string non_unique_name = 8;
+
+  // A value from a monotonically increasing sequence that indicates when
+  // this item was last updated on the server. This is now equivalent
+  // to version. This is now deprecated in favor of version.
+  // Present only in GetUpdatesResponse.
+  optional int64 sync_timestamp = 9;
+
+  // If present, singleton_tag identifies this item as being a uniquely
+  // instanced item.  The server ensures that there is never more
+  // than one entity in a user's store with the same singleton_tag value.
+  // This value is used to identify and find e.g. the "Google Chrome" settings
+  // folder without relying on it existing at a particular path, or having
+  // a particular name, in the data store.
+  // Present only in GetUpdatesResponse.
+  optional string singleton_tag = 10;
+
+  // If this group is present, it implies that this SyncEntity corresponds to
+  // a bookmark or a bookmark folder.
+  //
+  // TODO(idana): for now, we put the bookmarks related information explicitly
+  // in the protocol definition. When we start syncing more data types, it is
+  // probably going to be better if we represent the different types as
+  // extended attributes.
+  optional group BookmarkData = 11 {
+    // We use a required field to differentiate between a bookmark and a
+    // bookmark folder.
+    // Present in both GetUpdatesMessage and CommitMessage.
+    required bool bookmark_folder = 12;
+
+    // For bookmark objects, contains the bookmark's URL.
+    // Present in both GetUpdatesResponse and CommitMessage.
+    optional string bookmark_url = 13;
+
+    // For bookmark objects, contains the bookmark's favicon. The favicon is
+    // represented as a 16X16 PNG image.
+    // Present in both GetUpdatesResponse and CommitMessage.
+    optional bytes bookmark_favicon = 14;
+  }
+
+  // Supplies a numeric position for this item, relative to other items with
+  // the same parent.  This value is only meaningful in server-to-client
+  // contexts; to specify a position in a client-to-server commit context,
+  // use |insert_after_item_id|.
+  // Present only in GetUpdatesResponse.
+  optional int64 position_in_parent = 15;
+
+  // Contains the ID of the element (under the same parent) after which this
+  // element resides. An empty string indicates that the element is the first
+  // element in the parent.  This value is used during commits to specify
+  // a relative position for a position change.  In the context of
+  // a GetUpdatesMessage, |position_in_parent| is used instead to
+  // communicate position.
+  // Present only in CommitMessage.
+  optional string insert_after_item_id = 16;
+
+  // Arbitrary key/value pairs associated with this item.
+  // Present in both GetUpdatesResponse and CommitMessage.
+  optional ExtendedAttributes extended_attributes = 17;
+
+  // If true, indicates that this item has been (or should be) deleted.
+  // Present in both GetUpdatesResponse and CommitMessage.
+  optional bool deleted = 18 [default = false];
+
+  // A GUID that identifies the the sync client who initially committed
+  // this entity.  This value corresponds to |cache_guid| in CommitMessage.
+  // This field, along with |originator_client_item_id|, can be used to
+  // reunite the original with its official committed version in the case
+  // where a client does not receive or process the commit response for
+  // some reason.
+  // Present only in GetUpdatesResponse.
+  optional string originator_cache_guid = 19;
+
+  // The local item id of this entry from the client that initially
+  // committed this entity. Typically a negative integer.
+  // Present only in GetUpdatesResponse.
+  optional string originator_client_item_id = 20;
+};
+
+message CommitMessage {
+  repeated SyncEntity entries = 1;
+
+  // A GUID that identifies the committing sync client.  This value will be
+  // returned as originator_cache_guid for any new items.
+  optional string cache_guid = 2;
+};
+
+message GetUpdatesCallerInfo {
+  enum GET_UPDATES_SOURCE {
+    UNKNOWN = 0;  // The source was not set by the caller.
+    FIRST_UPDATE = 1;  // First update from an instance of Chrome.
+    LOCAL = 2;  // The source of the update was a local change.
+    NOTIFICATION = 3;  // The source of the update was a p2p notification.
+    PERIODIC = 4;  // The source of the update was periodic polling.
+    SYNC_CYCLE_CONTINUATION = 5;  // The source of the update was a
+  }                               // continuation of a previous update.
+
+  required GET_UPDATES_SOURCE source = 1;
+
+  // True only if notifications were enabled for this GetUpdateMessage.
+  optional bool notifications_enabled = 2;
+};
+
+message GetUpdatesMessage {
+  required int64 from_timestamp = 1;
+
+  // Indicates the reason for the GetUpdatesMessage.
+  optional GetUpdatesCallerInfo caller_info = 2;
+};
+
+message AuthenticateMessage {
+  required string auth_token = 1;
+};
+
+message ClientToServerMessage {
+  required string share = 1;
+  optional int32 protocol_version = 2 [default = 20];
+  enum CONTENTS {
+    COMMIT = 1;
+    GET_UPDATES = 2;
+    AUTHENTICATE = 3;
+  }
+
+  required CONTENTS message_contents = 3;
+  optional CommitMessage commit = 4;
+  optional GetUpdatesMessage get_updates = 5;
+  optional AuthenticateMessage authenticate = 6;
+
+  optional string store_birthday = 7; // Opaque store ID; if it changes, duck!
+  // The client sets this if it detects a sync issue. The server will tell it
+  // if it should perform a refresh.
+  optional bool sync_problem_detected = 8 [default = false];
+};
+
+message CommitResponse {
+  enum RESPONSE_TYPE {
+    SUCCESS = 1;
+    CONFLICT = 2; // You're out of date; update and check your data
+    // TODO(ncarter): What's the difference between RETRY and TRANSIENT_ERROR?
+    RETRY = 3; // Someone has a conflicting, non-expired session open
+    INVALID_MESSAGE = 4; // What the client sent was invalid, and trying again
+                         // won't help.
+    OVER_QUOTA = 5; // This operation would put you, or you are, over quota
+    TRANSIENT_ERROR = 6; // Something went wrong; try again in a bit
+  }
+  repeated group EntryResponse = 1 {
+    required RESPONSE_TYPE response_type = 2;
+
+    // Sync servers may also return a new ID for an existing item, indicating
+    // a new entry's been created to hold the data the client's sending up.
+    optional string id_string = 3;
+
+    // should be filled if our parent was assigned a new ID.
+    optional string parent_id_string = 4;
+
+    // This value is the same as the position_in_parent value returned within
+    // the SyncEntity message in GetUpdatesResponse.  It is returned if the
+    // item was assigned a new position.
+    optional int64 position_in_parent = 5;
+
+    // The item's current version.
+    optional int64 version = 6;
+
+    // Allows the server to move-aside an entry as it's being committed.
+    // This name is the same as the name field returned within the SyncEntity
+    // message in GetUpdatesResponse.
+    optional string name = 7;
+
+    // This name is the same as the non_unique_name field returned within the
+    // SyncEntity message in GetUpdatesResponse.
+    optional string non_unique_name = 8;
+
+    optional string error_message = 9;
+
+  }
+};
+
+message GetUpdatesResponse {
+  repeated SyncEntity entries = 1;
+  // If there are more changes on the server that weren't processed during this
+  // GetUpdates request, the client should send another GetUpdates request and
+  // use new_timestamp as the from_timestamp value within GetUpdatesMessage.
+  optional int64 new_timestamp = 2;
+  // The newest timestamp in the share. Used to give UI feedback on progress.
+  optional int64 newest_timestamp = 3;
+};
+
+// A user-identifying struct.  For a given Google account the email and display
+// name can change, but obfuscated_id should be constant.
+// The obfuscated id is optional because at least one planned use of the proto
+// (sharing) does not require it.
+message UserIdentification {
+  required string email = 1;  // the user's full primary email address.
+  optional string display_name = 2;  // the user's display name.
+  optional string obfuscated_id = 3;  // an obfuscated, opaque user id.
+};
+
+message AuthenticateResponse {
+  // Optional only for backward compatibility.
+  optional UserIdentification user = 1;
+};
+
+message ThrottleParameters {
+  // Deprecated. Remove this from the server side.
+  required int32 min_measure_payload_size = 1;
+  required double target_utilization = 2;
+  required double measure_interval_max = 3;
+  required double measure_interval_min = 4;
+  required double observation_window = 5;
+};
+
+// A command from the server instructing the client to update settings or
+// perform some operation.
+message ClientCommand {
+  // Time to wait before sending any requests to the server.
+  optional int32 set_sync_poll_interval = 1;  // in seconds
+  optional int32 set_sync_long_poll_interval = 2;  // in seconds
+
+  optional int32 max_commit_batch_size = 3;
+};
+
+message ClientToServerResponse {
+  optional CommitResponse commit = 1;
+  optional GetUpdatesResponse get_updates = 2;
+  optional AuthenticateResponse authenticate = 3;
+
+  enum ERROR_TYPE {
+    SUCCESS            = 0;
+    ACCESS_DENIED      = 1; // Returned when the user doesn't have access to
+                            // store (instead of HTTP 401).
+    NOT_MY_BIRTHDAY    = 2; // Returned when the server and client disagree on
+                            // the store birthday.
+    THROTTLED          = 3; // Returned when the store has exceeded the allowed
+                            // bandwidth utilization.
+    AUTH_EXPIRED       = 4; // Auth token or cookie has expired.
+    USER_NOT_ACTIVATED = 5; // User doesn't have the Chrome bit set on that
+                            // Google Account.
+    AUTH_INVALID       = 6; // Auth token or cookie is otherwise invalid.
+  }
+  optional ERROR_TYPE error_code = 4 [default = SUCCESS];
+  optional string error_message = 5;
+
+  // Opaque store ID; if it changes, the contents of the client's cache
+  // is meaningless to this server.  This happens most typically when
+  // you switch from one storage backend instance (say, a test instance)
+  // to another (say, the official instance).
+  optional string store_birthday = 6;
+
+  optional ClientCommand client_command = 7;
+  optional ProfilingData profiling_data = 8;
+};
+
