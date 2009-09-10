@@ -5408,7 +5408,7 @@ int sqlite3PagerLoadall(Pager* pPager)
    * loading all of the pages we want to.
    */
   for(i=1; i <= loadPages && pPager->nPage < pPager->mxPage; i++) {
-    DbPage *pPage;
+    DbPage *pPage = 0;
     rc = sqlite3PagerAcquire2(pPager, i, &pPage, 0,
                               &fileData[(i-1)*(i64)pPager->pageSize]);
     if (rc != SQLITE_OK)
