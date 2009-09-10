@@ -2359,3 +2359,9 @@ BUG_JAPHET WIN : LayoutTests/transitions/transition-end-event-transform.html = F
 
 // Flaky, not clear as of when.
 BUG21411 : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
+
+// WebKit 48217:48239
+// Fails because we don't support layoutTestController.addUserStyleSheet().
+BUG21439 : LayoutTests/userscripts/simple-stylesheet.html = FAIL
+// New database test that fails.
+BUG21442 : LayoutTests/storage/test-authorizer.html = TIMEOUT
