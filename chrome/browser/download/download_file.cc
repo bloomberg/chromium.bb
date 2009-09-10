@@ -137,6 +137,13 @@ bool DownloadFile::Open(const char* open_mode) {
   }
 
 #if defined(OS_WIN)
+  AnnotateWithSourceInformation();
+#endif
+  return true;
+}
+
+void DownloadFile::AnnotateWithSourceInformation() {
+#if defined(OS_WIN)
   // Sets the Zone to tell Windows that this file comes from the internet.
   // We ignore the return value because a failure is not fatal.
   win_util::SetInternetZoneIdentifier(full_path_);
@@ -144,7 +151,6 @@ bool DownloadFile::Open(const char* open_mode) {
   quarantine_mac::AddQuarantineMetadataToFile(full_path_, source_url_,
                                               referrer_url_);
 #endif
-  return true;
 }
 
 // DownloadFileManager implementation ------------------------------------------
@@ -565,6 +571,11 @@ void DownloadFileManager::OnFinalDownloadName(int id,
 
   DownloadFile* download = it->second;
   if (download->Rename(full_path)) {
+#if defined(OS_MACOSX)
+    // Done here because we only want to do this once; see
+    // http://crbug.com/13120 for details.
+    download->AnnotateWithSourceInformation();
+#endif
     ui_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(manager,
                           &DownloadManager::DownloadRenamedToFinalName,

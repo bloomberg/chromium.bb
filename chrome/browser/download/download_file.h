@@ -99,6 +99,9 @@ class DownloadFile {
   // Rename the download file. Returns 'true' if the rename was successful.
   bool Rename(const FilePath& full_path);
 
+  // Informs the OS that this file came from the internet.
+  void AnnotateWithSourceInformation();
+
   // Accessors.
   int64 bytes_so_far() const { return bytes_so_far_; }
   int id() const { return id_; }
