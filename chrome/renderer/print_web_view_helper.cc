@@ -96,7 +96,7 @@ bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
 
   print_web_view_.reset(WebView::Create(this, NULL));
   prefs.Apply(print_web_view_.get());
-  print_web_view_->InitializeMainFrame();
+  print_web_view_->InitializeMainFrame(NULL);
 
   print_pages_params_.reset(new ViewMsg_PrintPages_Params(params));
   print_pages_params_->pages.clear();  // Print all pages of selection.

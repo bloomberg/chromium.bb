@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "base/trace_event.h"
 #include "net/base/net_errors.h"
+#include "webkit/api/public/WebCString.h"
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/api/public/WebDragData.h"
@@ -64,8 +65,11 @@ using WebKit::WebDataSource;
 using WebKit::WebDragData;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
+using WebKit::WebForm;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
+using WebKit::WebMediaPlayer;
+using WebKit::WebMediaPlayerClient;
 using WebKit::WebNavigationType;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNode;
@@ -251,354 +255,15 @@ WebWidget* TestWebViewDelegate::CreatePopupWidget(WebView* webview,
   return shell_->CreatePopupWidget(webview);
 }
 
-WebPlugin* TestWebViewDelegate::CreatePlugin(
-    WebFrame* frame, const WebPluginParams& params) {
-  return new webkit_glue::WebPluginImpl(frame, params, AsWeakPtr());
-}
-
-WebKit::WebMediaPlayer* TestWebViewDelegate::CreateWebMediaPlayer(
-    WebKit::WebMediaPlayerClient* client) {
-  scoped_refptr<media::FilterFactoryCollection> factory =
-      new media::FilterFactoryCollection();
-
-  // TODO(hclam): this is the same piece of code as in RenderView, maybe they
-  // should be grouped together.
-  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
-      new webkit_glue::MediaResourceLoaderBridgeFactory(
-          GURL::EmptyGURL(),  // referrer
-          "null",             // frame origin
-          "null",             // main_frame_origin
-          base::GetCurrentProcId(),
-          appcache::kNoHostId,
-          0);
-  factory->AddFactory(webkit_glue::BufferedDataSource::CreateFactory(
-      MessageLoop::current(), bridge_factory));
-  // TODO(hclam): Use command line switch to determine which data source to use.
-  return new webkit_glue::WebMediaPlayerImpl(client, factory);
-}
-
-WebWorker* TestWebViewDelegate::CreateWebWorker(WebWorkerClient* client) {
-#if ENABLE(WORKERS)
-  return TestWebWorkerHelper::CreateWebWorker(client);
-#else
-  return NULL;
-#endif
-}
-
-void TestWebViewDelegate::OpenURL(WebView* webview, const GURL& url,
-                                  const GURL& referrer,
-                                  WebNavigationPolicy policy) {
-  DCHECK_NE(policy, WebKit::WebNavigationPolicyCurrentTab);
-  TestShell* shell = NULL;
-  if (TestShell::CreateNewWindow(UTF8ToWide(url.spec()), &shell))
-    shell->Show(policy);
-}
-
-void TestWebViewDelegate::WindowObjectCleared(WebFrame* webframe) {
-  shell_->BindJSObjectsToWindow(webframe);
-}
-
-WebNavigationPolicy TestWebViewDelegate::PolicyForNavigationAction(
-    WebView* webview,
-    WebFrame* frame,
-    const WebURLRequest& request,
-    WebNavigationType type,
-    WebNavigationPolicy default_policy,
-    bool is_redirect) {
-  WebNavigationPolicy result;
-  if (policy_delegate_enabled_) {
-    printf("Policy delegate: attempt to load %s with navigation type '%s'\n",
-           GetURLDescription(request.url()).c_str(),
-           WebNavigationTypeToString(type));
-    if (policy_delegate_is_permissive_) {
-      result = WebKit::WebNavigationPolicyCurrentTab;
-    } else {
-      result = WebKit::WebNavigationPolicyIgnore;
-    }
-    if (policy_delegate_should_notify_done_)
-      shell_->layout_test_controller()->PolicyDelegateDone();
-  } else {
-    result = default_policy;
-  }
-  return result;
-}
-
-void TestWebViewDelegate::AssignIdentifierToRequest(
-    WebFrame* webframe,
-    uint32 identifier,
-    const WebURLRequest& request) {
-  if (shell_->ShouldDumpResourceLoadCallbacks())
-    resource_identifier_map_[identifier] = request.url().spec();
-}
-
 std::string TestWebViewDelegate::GetResourceDescription(uint32 identifier) {
   ResourceMap::iterator it = resource_identifier_map_.find(identifier);
   return it != resource_identifier_map_.end() ? it->second : "<unknown>";
-}
-
-void TestWebViewDelegate::WillSendRequest(
-    WebFrame* webframe,
-    uint32 identifier,
-    WebURLRequest* request,
-    const WebURLResponse& redirect_response) {
-  GURL url = request->url();
-  std::string request_url = url.possibly_invalid_spec();
-
-  if (shell_->ShouldDumpResourceLoadCallbacks()) {
-    GURL main_document_url = request->firstPartyForCookies();
-    printf("%s - willSendRequest <NSURLRequest URL %s, main document URL %s,"
-           " http method %s> redirectResponse %s\n",
-           GetResourceDescription(identifier).c_str(),
-           request_url.c_str(),
-           GetURLDescription(main_document_url).c_str(),
-           request->httpMethod().utf8().data(),
-           GetResponseDescription(redirect_response).c_str());
-  }
-
-  if (!redirect_response.isNull() && block_redirects_) {
-    printf("Returning null for this redirect\n");
-
-    // To block the request, we set its URL to an empty one.
-    request->setURL(WebURL());
-    return;
-  }
-
-  std::string host = url.host();
-  if (TestShell::layout_test_mode() && !host.empty() &&
-      (url.SchemeIs("http") || url.SchemeIs("https")) &&
-       host != "127.0.0.1" &&
-       host != "255.255.255.255" &&  // Used in some tests that expect to get
-                                     // back an error.
-       host != "localhost") {
-    printf("Blocked access to external URL %s\n", request_url.c_str());
-
-    // To block the request, we set its URL to an empty one.
-    request->setURL(WebURL());
-    return;
-  }
-
-  TRACE_EVENT_BEGIN("url.load", identifier, request_url);
-  // Set the new substituted URL.
-  request->setURL(GURL(TestShell::RewriteLocalUrl(request_url)));
-}
-
-void TestWebViewDelegate::DidReceiveResponse(
-    WebFrame* webframe,
-    uint32 identifier,
-    const WebURLResponse& response) {
-  if (shell_->ShouldDumpResourceLoadCallbacks()) {
-    printf("%s - didReceiveResponse %s\n",
-           GetResourceDescription(identifier).c_str(),
-           GetResponseDescription(response).c_str());
-  }
-}
-
-void TestWebViewDelegate::DidFinishLoading(WebFrame* webframe,
-                                           uint32 identifier) {
-  TRACE_EVENT_END("url.load", identifier, "");
-  if (shell_->ShouldDumpResourceLoadCallbacks()) {
-    printf("%s - didFinishLoading\n",
-           GetResourceDescription(identifier).c_str());
-  }
-
-  resource_identifier_map_.erase(identifier);
-}
-
-void TestWebViewDelegate::DidFailLoadingWithError(WebFrame* webframe,
-                                                  uint32 identifier,
-                                                  const WebURLError& error) {
-  if (shell_->ShouldDumpResourceLoadCallbacks()) {
-    printf("%s - didFailLoadingWithError: %s\n",
-           GetResourceDescription(identifier).c_str(),
-           GetErrorDescription(error).c_str());
-  }
-
-  resource_identifier_map_.erase(identifier);
-}
-
-void TestWebViewDelegate::DidCreateDataSource(WebFrame* frame,
-                                              WebDataSource* ds) {
-  ds->setExtraData(pending_extra_data_.release());
-}
-
-void TestWebViewDelegate::DidStartProvisionalLoadForFrame(
-    WebView* webview,
-    WebFrame* frame,
-    NavigationGesture gesture) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didStartProvisionalLoadForFrame\n",
-           GetFrameDescription(frame).c_str());
-  }
-
-  if (!top_loading_frame_) {
-    top_loading_frame_ = frame;
-  }
-
-  if (shell_->layout_test_controller()->StopProvisionalFrameLoads()) {
-    printf("%S - stopping load in didStartProvisionalLoadForFrame callback\n",
-           GetFrameDescription(frame).c_str());
-    frame->stopLoading();
-  }
-  UpdateAddressBar(webview);
-}
-
-void TestWebViewDelegate::DidReceiveProvisionalLoadServerRedirect(
-    WebView* webview,
-    WebFrame* frame) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didReceiveServerRedirectForProvisionalLoadForFrame\n",
-           GetFrameDescription(frame).c_str());
-  }
-
-  UpdateAddressBar(webview);
-}
-
-void TestWebViewDelegate::DidFailProvisionalLoadWithError(
-    WebView* webview,
-    const WebURLError& error,
-    WebFrame* frame) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didFailProvisionalLoadWithError\n",
-           GetFrameDescription(frame).c_str());
-  }
-
-  LocationChangeDone(frame);
-
-  // Don't display an error page if we're running layout tests, because
-  // DumpRenderTree doesn't.
-  if (shell_->layout_test_mode())
-    return;
-
-  // Don't display an error page if this is simply a cancelled load.  Aside
-  // from being dumb, WebCore doesn't expect it and it will cause a crash.
-  if (error.reason == net::ERR_ABORTED)
-    return;
-
-  const WebDataSource* failed_ds = frame->provisionalDataSource();
-
-  TestShellExtraData* extra_data =
-      static_cast<TestShellExtraData*>(failed_ds->extraData());
-  bool replace = extra_data && extra_data->pending_page_id != -1;
-
-  const std::string& error_text =
-      StringPrintf("Error %d when loading url %s", error.reason,
-      failed_ds->request().url().spec().data());
-
-  // Make sure we never show errors in view source mode.
-  frame->enableViewSourceMode(false);
-
-  frame->loadHTMLString(
-      error_text, GURL("testshell-error:"), error.unreachableURL, replace);
-}
-
-void TestWebViewDelegate::DidCommitLoadForFrame(WebView* webview,
-                                                WebFrame* frame,
-                                                bool is_new_navigation) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didCommitLoadForFrame\n",
-           GetFrameDescription(frame).c_str());
-  }
-
-  UpdateForCommittedLoad(frame, is_new_navigation);
-}
-
-void TestWebViewDelegate::DidReceiveTitle(WebView* webview,
-                                          const std::wstring& title,
-                                          WebFrame* frame) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didReceiveTitle\n",
-           GetFrameDescription(frame).c_str());
-  }
-
-  if (shell_->ShouldDumpTitleChanges()) {
-    printf("TITLE CHANGED: %S\n", title.c_str());
-  }
-
-  SetPageTitle(title);
-}
-
-void TestWebViewDelegate::DidFinishLoadForFrame(WebView* webview,
-                                                WebFrame* frame) {
-  TRACE_EVENT_END("frame.load", this, frame->url().spec());
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didFinishLoadForFrame\n",
-           GetFrameDescription(frame).c_str());
-  }
-
-  UpdateAddressBar(webview);
-  LocationChangeDone(frame);
-}
-
-void TestWebViewDelegate::DidFailLoadWithError(WebView* webview,
-                                               const WebURLError& error,
-                                               WebFrame* frame) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didFailLoadWithError\n",
-           GetFrameDescription(frame).c_str());
-  }
-
-  LocationChangeDone(frame);
-}
-
-void TestWebViewDelegate::DidFinishDocumentLoadForFrame(WebView* webview,
-                                                        WebFrame* frame) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didFinishDocumentLoadForFrame\n",
-           GetFrameDescription(frame).c_str());
-  } else {
-    unsigned pending_unload_events = frame->unloadListenerCount();
-    if (pending_unload_events) {
-      printf("%S - has %u onunload handler(s)\n",
-          GetFrameDescription(frame).c_str(), pending_unload_events);
-    }
-  }
-}
-
-void TestWebViewDelegate::DidHandleOnloadEventsForFrame(WebView* webview,
-                                                        WebFrame* frame) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didHandleOnloadEventsForFrame\n",
-           GetFrameDescription(frame).c_str());
-  }
-}
-
-void TestWebViewDelegate::DidChangeLocationWithinPageForFrame(
-    WebView* webview, WebFrame* frame, bool is_new_navigation) {
-  frame->dataSource()->setExtraData(pending_extra_data_.release());
-
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didChangeLocationWithinPageForFrame\n",
-           GetFrameDescription(frame).c_str());
-  }
-
-  UpdateForCommittedLoad(frame, is_new_navigation);
 }
 
 void TestWebViewDelegate::DidReceiveIconForFrame(WebView* webview,
                                                  WebFrame* frame) {
   if (shell_->ShouldDumpFrameLoadCallbacks()) {
     printf("%S - didReceiveIconForFrame\n",
-           GetFrameDescription(frame).c_str());
-  }
-}
-
-void TestWebViewDelegate::WillPerformClientRedirect(WebView* webview,
-                                                    WebFrame* frame,
-                                                    const GURL& src_url,
-                                                    const GURL& dest_url,
-                                                    unsigned int delay_seconds,
-                                                    unsigned int fire_date) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - willPerformClientRedirectToURL: %s \n",
-           GetFrameDescription(frame).c_str(),
-           dest_url.possibly_invalid_spec().c_str());
-  }
-}
-
-void TestWebViewDelegate::DidCancelClientRedirect(WebView* webview,
-                                                  WebFrame* frame) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didCancelClientRedirectForFrame\n",
            GetFrameDescription(frame).c_str());
   }
 }
@@ -899,6 +564,352 @@ void TestWebViewDelegate::didEndEditing() {
            "webViewDidEndEditing:WebViewDidEndEditingNotification\n");
   }
 }
+
+// WebFrameClient ------------------------------------------------------------
+
+WebPlugin* TestWebViewDelegate::createPlugin(
+    WebFrame* frame, const WebPluginParams& params) {
+  return new webkit_glue::WebPluginImpl(frame, params, AsWeakPtr());
+}
+
+WebWorker* TestWebViewDelegate::createWorker(
+    WebFrame* frame, WebWorkerClient* client) {
+#if ENABLE(WORKERS)
+  return TestWebWorkerHelper::CreateWebWorker(client);
+#else
+  return NULL;
+#endif
+}
+
+WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
+    WebFrame* frame, WebMediaPlayerClient* client) {
+  scoped_refptr<media::FilterFactoryCollection> factory =
+      new media::FilterFactoryCollection();
+
+  // TODO(hclam): this is the same piece of code as in RenderView, maybe they
+  // should be grouped together.
+  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
+      new webkit_glue::MediaResourceLoaderBridgeFactory(
+          GURL::EmptyGURL(),  // referrer
+          "null",             // frame origin
+          "null",             // main_frame_origin
+          base::GetCurrentProcId(),
+          appcache::kNoHostId,
+          0);
+  factory->AddFactory(webkit_glue::BufferedDataSource::CreateFactory(
+      MessageLoop::current(), bridge_factory));
+  // TODO(hclam): Use command line switch to determine which data source to use.
+  return new webkit_glue::WebMediaPlayerImpl(client, factory);
+}
+
+void TestWebViewDelegate::willClose(WebFrame* frame) {
+}
+
+void TestWebViewDelegate::loadURLExternally(
+    WebFrame* frame, const WebURLRequest& request,
+    WebNavigationPolicy policy) {
+  DCHECK_NE(policy, WebKit::WebNavigationPolicyCurrentTab);
+  TestShell* shell = NULL;
+  if (TestShell::CreateNewWindow(request.url(), &shell))
+    shell->Show(policy);
+}
+
+WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
+    WebFrame* frame, const WebURLRequest& request,
+    WebNavigationType type, WebNavigationPolicy default_policy,
+    bool is_redirect) {
+  WebNavigationPolicy result;
+  if (policy_delegate_enabled_) {
+    printf("Policy delegate: attempt to load %s with navigation type '%s'\n",
+           GetURLDescription(request.url()).c_str(),
+           WebNavigationTypeToString(type));
+    if (policy_delegate_is_permissive_) {
+      result = WebKit::WebNavigationPolicyCurrentTab;
+    } else {
+      result = WebKit::WebNavigationPolicyIgnore;
+    }
+    if (policy_delegate_should_notify_done_)
+      shell_->layout_test_controller()->PolicyDelegateDone();
+  } else {
+    result = default_policy;
+  }
+  return result;
+}
+
+void TestWebViewDelegate::willSubmitForm(WebFrame* frame, const WebForm&) {
+  // Ignore
+}
+
+void TestWebViewDelegate::willPerformClientRedirect(
+    WebFrame* frame, const WebURL& from, const WebURL& to,
+    double interval, double fire_time) {
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - willPerformClientRedirectToURL: %s \n",
+           GetFrameDescription(frame).c_str(),
+           to.spec().data());
+  }
+}
+
+void TestWebViewDelegate::didCancelClientRedirect(WebFrame* frame) {
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didCancelClientRedirectForFrame\n",
+           GetFrameDescription(frame).c_str());
+  }
+}
+
+void TestWebViewDelegate::didCompleteClientRedirect(
+    WebFrame* frame, const WebURL& from) {
+}
+
+void TestWebViewDelegate::didCreateDataSource(
+    WebFrame* frame, WebDataSource* ds) {
+  ds->setExtraData(pending_extra_data_.release());
+}
+
+void TestWebViewDelegate::didStartProvisionalLoad(WebFrame* frame) {
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didStartProvisionalLoadForFrame\n",
+           GetFrameDescription(frame).c_str());
+  }
+
+  if (!top_loading_frame_) {
+    top_loading_frame_ = frame;
+  }
+
+  if (shell_->layout_test_controller()->StopProvisionalFrameLoads()) {
+    printf("%S - stopping load in didStartProvisionalLoadForFrame callback\n",
+           GetFrameDescription(frame).c_str());
+    frame->stopLoading();
+  }
+  UpdateAddressBar(frame->view());
+}
+
+void TestWebViewDelegate::didReceiveServerRedirectForProvisionalLoad(
+    WebFrame* frame) {
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didReceiveServerRedirectForProvisionalLoadForFrame\n",
+           GetFrameDescription(frame).c_str());
+  }
+  UpdateAddressBar(frame->view());
+}
+
+void TestWebViewDelegate::didFailProvisionalLoad(
+    WebFrame* frame, const WebURLError& error) {
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didFailProvisionalLoadWithError\n",
+           GetFrameDescription(frame).c_str());
+  }
+
+  LocationChangeDone(frame);
+
+  // Don't display an error page if we're running layout tests, because
+  // DumpRenderTree doesn't.
+  if (shell_->layout_test_mode())
+    return;
+
+  // Don't display an error page if this is simply a cancelled load.  Aside
+  // from being dumb, WebCore doesn't expect it and it will cause a crash.
+  if (error.reason == net::ERR_ABORTED)
+    return;
+
+  const WebDataSource* failed_ds = frame->provisionalDataSource();
+
+  TestShellExtraData* extra_data =
+      static_cast<TestShellExtraData*>(failed_ds->extraData());
+  bool replace = extra_data && extra_data->pending_page_id != -1;
+
+  const std::string& error_text =
+      StringPrintf("Error %d when loading url %s", error.reason,
+      failed_ds->request().url().spec().data());
+
+  // Make sure we never show errors in view source mode.
+  frame->enableViewSourceMode(false);
+
+  frame->loadHTMLString(
+      error_text, GURL("testshell-error:"), error.unreachableURL, replace);
+}
+
+void TestWebViewDelegate::didReceiveDocumentData(
+    WebFrame* frame, const char* data, size_t length,
+    bool& preventDefault) {
+  // Ignore
+}
+
+void TestWebViewDelegate::didCommitProvisionalLoad(
+    WebFrame* frame, bool is_new_navigation) {
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didCommitLoadForFrame\n",
+           GetFrameDescription(frame).c_str());
+  }
+  UpdateForCommittedLoad(frame, is_new_navigation);
+}
+
+void TestWebViewDelegate::didClearWindowObject(WebFrame* frame) {
+  shell_->BindJSObjectsToWindow(frame);
+}
+
+void TestWebViewDelegate::didCreateDocumentElement(WebFrame* frame) {
+  // Ignore
+}
+
+void TestWebViewDelegate::didReceiveTitle(
+    WebFrame* frame, const WebString& title) {
+  std::wstring wtitle = UTF16ToWideHack(title);
+
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didReceiveTitle\n",
+           GetFrameDescription(frame).c_str());
+  }
+
+  if (shell_->ShouldDumpTitleChanges()) {
+    printf("TITLE CHANGED: %S\n", wtitle.c_str());
+  }
+
+  SetPageTitle(wtitle);
+}
+
+void TestWebViewDelegate::didFinishDocumentLoad(WebFrame* frame) {
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didFinishDocumentLoadForFrame\n",
+           GetFrameDescription(frame).c_str());
+  } else {
+    unsigned pending_unload_events = frame->unloadListenerCount();
+    if (pending_unload_events) {
+      printf("%S - has %u onunload handler(s)\n",
+          GetFrameDescription(frame).c_str(), pending_unload_events);
+    }
+  }
+}
+
+void TestWebViewDelegate::didHandleOnloadEvents(WebFrame* frame) {
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didHandleOnloadEventsForFrame\n",
+           GetFrameDescription(frame).c_str());
+  }
+}
+
+void TestWebViewDelegate::didFailLoad(
+    WebFrame* frame, const WebURLError& error) {
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didFailLoadWithError\n",
+           GetFrameDescription(frame).c_str());
+  }
+  LocationChangeDone(frame);
+}
+
+void TestWebViewDelegate::didFinishLoad(WebFrame* frame) {
+  TRACE_EVENT_END("frame.load", this, frame->url().spec());
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didFinishLoadForFrame\n",
+           GetFrameDescription(frame).c_str());
+  }
+  UpdateAddressBar(frame->view());
+  LocationChangeDone(frame);
+}
+
+void TestWebViewDelegate::didChangeLocationWithinPage(
+    WebFrame* frame, bool is_new_navigation) {
+  frame->dataSource()->setExtraData(pending_extra_data_.release());
+
+  if (shell_->ShouldDumpFrameLoadCallbacks()) {
+    printf("%S - didChangeLocationWithinPageForFrame\n",
+           GetFrameDescription(frame).c_str());
+  }
+
+  UpdateForCommittedLoad(frame, is_new_navigation);
+}
+
+void TestWebViewDelegate::assignIdentifierToRequest(
+    WebFrame* frame, unsigned identifier, const WebURLRequest& request) {
+  if (shell_->ShouldDumpResourceLoadCallbacks())
+    resource_identifier_map_[identifier] = request.url().spec();
+}
+
+void TestWebViewDelegate::willSendRequest(
+    WebFrame* frame, unsigned identifier, WebURLRequest& request,
+    const WebURLResponse& redirect_response) {
+  GURL url = request.url();
+  std::string request_url = url.possibly_invalid_spec();
+
+  if (shell_->ShouldDumpResourceLoadCallbacks()) {
+    GURL main_document_url = request.firstPartyForCookies();
+    printf("%s - willSendRequest <NSURLRequest URL %s, main document URL %s,"
+           " http method %s> redirectResponse %s\n",
+           GetResourceDescription(identifier).c_str(),
+           request_url.c_str(),
+           GetURLDescription(main_document_url).c_str(),
+           request.httpMethod().utf8().data(),
+           GetResponseDescription(redirect_response).c_str());
+  }
+
+  if (!redirect_response.isNull() && block_redirects_) {
+    printf("Returning null for this redirect\n");
+
+    // To block the request, we set its URL to an empty one.
+    request.setURL(WebURL());
+    return;
+  }
+
+  std::string host = url.host();
+  if (TestShell::layout_test_mode() && !host.empty() &&
+      (url.SchemeIs("http") || url.SchemeIs("https")) &&
+       host != "127.0.0.1" &&
+       host != "255.255.255.255" &&  // Used in some tests that expect to get
+                                     // back an error.
+       host != "localhost") {
+    printf("Blocked access to external URL %s\n", request_url.c_str());
+
+    // To block the request, we set its URL to an empty one.
+    request.setURL(WebURL());
+    return;
+  }
+
+  TRACE_EVENT_BEGIN("url.load", identifier, request_url);
+  // Set the new substituted URL.
+  request.setURL(GURL(TestShell::RewriteLocalUrl(request_url)));
+}
+
+void TestWebViewDelegate::didReceiveResponse(
+    WebFrame* frame, unsigned identifier, const WebURLResponse& response) {
+  if (shell_->ShouldDumpResourceLoadCallbacks()) {
+    printf("%s - didReceiveResponse %s\n",
+           GetResourceDescription(identifier).c_str(),
+           GetResponseDescription(response).c_str());
+  }
+}
+
+void TestWebViewDelegate::didFinishResourceLoad(
+    WebFrame* frame, unsigned identifier) {
+  TRACE_EVENT_END("url.load", identifier, "");
+  if (shell_->ShouldDumpResourceLoadCallbacks()) {
+    printf("%s - didFinishLoading\n",
+           GetResourceDescription(identifier).c_str());
+  }
+  resource_identifier_map_.erase(identifier);
+}
+
+void TestWebViewDelegate::didFailResourceLoad(
+    WebFrame* frame, unsigned identifier, const WebURLError& error) {
+  if (shell_->ShouldDumpResourceLoadCallbacks()) {
+    printf("%s - didFailLoadingWithError: %s\n",
+           GetResourceDescription(identifier).c_str(),
+           GetErrorDescription(error).c_str());
+  }
+  resource_identifier_map_.erase(identifier);
+}
+
+void TestWebViewDelegate::didLoadResourceFromMemoryCache(
+    WebFrame* frame, const WebURLRequest&,
+    const WebURLResponse&) {
+}
+
+void TestWebViewDelegate::didExhaustMemoryAvailableForScript(WebFrame* frame) {
+}
+
+void TestWebViewDelegate::didChangeContentsSize(
+    WebFrame* frame, const WebSize&) {
+}
+
 
 // Public methods ------------------------------------------------------------
 

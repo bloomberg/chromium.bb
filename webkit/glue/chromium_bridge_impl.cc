@@ -32,6 +32,7 @@
 #include "googleurl/src/url_util.h"
 #include "skia/ext/skia_utils_win.h"
 #include "webkit/api/public/WebCursorInfo.h"
+#include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/glue_util.h"
@@ -94,11 +95,10 @@ void ChromiumBridge::notifyJSOutOfMemory(Frame* frame) {
   if (!frame)
     return;
 
-  // Dispatch to the delegate of the view that owns the frame.
-  WebViewImpl* webview = WebFrameImpl::FromFrame(frame)->GetWebViewImpl();
-  if (!webview || !webview->delegate())
+  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
+  if (!webframe->client())
     return;
-  webview->delegate()->JSOutOfMemory();
+  webframe->client()->didExhaustMemoryAvailableForScript(webframe);
 }
 
 // Plugin ---------------------------------------------------------------------

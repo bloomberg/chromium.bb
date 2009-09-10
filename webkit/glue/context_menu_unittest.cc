@@ -35,13 +35,12 @@ class ContextMenuCapturing : public TestShellTest {
 
 TEST_F(ContextMenuCapturing, ContextMenuCapturing) {
   // Make sure we have no stored mouse event state
-  WebViewDelegate* raw_delegate = test_shell_->webView()->GetDelegate();
-  TestWebViewDelegate* test_delegate = static_cast<TestWebViewDelegate*>(raw_delegate);
+  TestWebViewDelegate* test_delegate = test_shell_->delegate();
   test_delegate->clear_captured_context_menu_events();
   EXPECT_EQ(0U, test_delegate->captured_context_menu_events().size());
 
-  std::wstring test_url = GetTestURL(iframes_data_dir_, "testiframe.html");
-  test_shell_->LoadURL(test_url.c_str());
+  GURL test_url = GetTestURL(iframes_data_dir_, "testiframe.html");
+  test_shell_->LoadURL(test_url);
   test_shell_->WaitTestFinished();
 
   // Create a right click in the center of the iframe. (I'm hoping this will

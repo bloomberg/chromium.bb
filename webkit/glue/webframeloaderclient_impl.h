@@ -208,10 +208,6 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
       const WebCore::NavigationAction& action,
       WebKit::WebNavigationPolicy* policy);
 
-  // Returns NavigationGestureAuto if the last load was not user initiated,
-  // otherwise returns NavigationGestureUnknown.
-  NavigationGesture NavigationGestureForLastLoad();
-
   // Called when a dummy back-forward navigation is intercepted.
   void HandleBackForwardNavigation(const GURL&);
 

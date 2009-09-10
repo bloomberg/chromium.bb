@@ -57,7 +57,7 @@ TEST_F(ListenerLeakTest, ReferenceCycle) {
       .Append(FILE_PATH_LITERAL("data"))
       .Append(FILE_PATH_LITERAL("listener"))
       .Append(FILE_PATH_LITERAL("listener_leak1.html"));
-  test_shell_->LoadURL(listener_file.ToWStringHack().c_str());
+  test_shell_->LoadFile(listener_file);
   test_shell_->WaitTestFinished();
   ASSERT_EQ(0, GetNumObjects(log_skip, "EventListenerLeakTestObject1"));
 }
@@ -72,7 +72,7 @@ TEST_F(ListenerLeakTest, HiddenReferences) {
       .Append(FILE_PATH_LITERAL("data"))
       .Append(FILE_PATH_LITERAL("listener"))
       .Append(FILE_PATH_LITERAL("listener_leak2.html"));
-  test_shell_->LoadURL(listener_file.ToWStringHack().c_str());
+  test_shell_->LoadFile(listener_file);
   test_shell_->WaitTestFinished();
   ASSERT_EQ(1, GetNumObjects(log_skip, "EventListenerLeakTestObject2"));
 }

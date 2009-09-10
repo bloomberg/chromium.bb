@@ -22,7 +22,7 @@ namespace {
 class MimeTypeTests : public TestShellTest {
  public:
   void LoadURL(const GURL& url) {
-    test_shell_->LoadURL(UTF8ToWide(url.spec()).c_str());
+    test_shell_->LoadURL(url);
     test_shell_->WaitTestFinished();
   }
 

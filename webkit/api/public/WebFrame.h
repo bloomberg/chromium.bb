@@ -296,6 +296,9 @@ namespace WebKit {
         // Returns the number of registered unload listeners.
         virtual unsigned unloadListenerCount() const = 0;
 
+        // Returns true if a user gesture is currently being processed.
+        virtual bool isProcessingUserGesture() const = 0;
+
 
         // Editing -------------------------------------------------------------
 

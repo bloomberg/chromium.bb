@@ -147,6 +147,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebFindOptions.h"
 #include "webkit/api/public/WebForm.h"
+#include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebHistoryItem.h"
 #include "webkit/api/public/WebRange.h"
 #include "webkit/api/public/WebRect.h"
@@ -217,6 +218,7 @@ using WebKit::WebDataSource;
 using WebKit::WebDataSourceImpl;
 using WebKit::WebFindOptions;
 using WebKit::WebFrame;
+using WebKit::WebFrameClient;
 using WebKit::WebHistoryItem;
 using WebKit::WebForm;
 using WebKit::WebRange;
@@ -898,6 +900,10 @@ unsigned WebFrameImpl::unloadListenerCount() const {
   return frame()->domWindow()->pendingUnloadEventListeners();
 }
 
+bool WebFrameImpl::isProcessingUserGesture() const {
+  return frame()->loader()->isProcessingUserGesture();
+}
+
 void WebFrameImpl::replaceSelection(const WebString& wtext) {
   String text = webkit_glue::WebStringToString(wtext);
   RefPtr<DocumentFragment> fragment = createFragmentFromText(
@@ -1406,7 +1412,7 @@ void WebFrameImpl::increaseMatchCount(int count, int request_id) {
   total_matchcount_ += count;
 
   // Update the UI with the latest findings.
-  WebViewDelegate* webview_delegate = GetWebViewImpl()->GetDelegate();
+  WebViewDelegate* webview_delegate = GetWebViewImpl()->delegate();
   DCHECK(webview_delegate);
   if (webview_delegate)
     webview_delegate->ReportFindInPageMatchCount(total_matchcount_, request_id,
@@ -1417,7 +1423,7 @@ void WebFrameImpl::reportFindInPageSelection(const WebRect& selection_rect,
                                              int active_match_ordinal,
                                              int request_id) {
   // Update the UI with the latest selection rect.
-  WebViewDelegate* webview_delegate = GetWebViewImpl()->GetDelegate();
+  WebViewDelegate* webview_delegate = GetWebViewImpl()->delegate();
   DCHECK(webview_delegate);
   if (webview_delegate) {
     webview_delegate->ReportFindInPageSelection(
@@ -1458,9 +1464,10 @@ WebString WebFrameImpl::contentAsMarkup() const {
 
 int WebFrameImpl::live_object_count_ = 0;
 
-WebFrameImpl::WebFrameImpl()
+WebFrameImpl::WebFrameImpl(WebFrameClient* client)
   : ALLOW_THIS_IN_INITIALIZER_LIST(frame_loader_client_(this)),
     ALLOW_THIS_IN_INITIALIZER_LIST(scope_matches_factory_(this)),
+    client_(client),
     active_match_frame_(NULL),
     active_match_index_(-1),
     locating_active_rect_(false),
@@ -1500,7 +1507,7 @@ PassRefPtr<Frame> WebFrameImpl::CreateChildFrame(
     const FrameLoadRequest& request, HTMLFrameOwnerElement* owner_element) {
   // TODO(darin): share code with initWithName()
 
-  scoped_refptr<WebFrameImpl> webframe = new WebFrameImpl();
+  scoped_refptr<WebFrameImpl> webframe = new WebFrameImpl(client());
 
   // Add an extra ref on behalf of the Frame/FrameLoader, which references the
   // WebFrame via the FrameLoaderClient interface. See the comment at the top
@@ -1690,16 +1697,14 @@ void WebFrameImpl::SetFindEndstateFocusAndSelection() {
 }
 
 void WebFrameImpl::DidFail(const ResourceError& error, bool was_provisional) {
-  WebViewImpl* web_view = GetWebViewImpl();
-  WebViewDelegate* delegate = web_view->delegate();
-  if (delegate) {
-    const WebURLError& web_error =
-        webkit_glue::ResourceErrorToWebURLError(error);
-    if (was_provisional) {
-      delegate->DidFailProvisionalLoadWithError(web_view, web_error, this);
-    } else {
-      delegate->DidFailLoadWithError(web_view, web_error, this);
-    }
+  if (!client_)
+    return;
+  const WebURLError& web_error =
+      webkit_glue::ResourceErrorToWebURLError(error);
+  if (was_provisional) {
+    client_->didFailProvisionalLoad(this, web_error);
+  } else {
+    client_->didFailLoad(this, web_error);
   }
 }
 

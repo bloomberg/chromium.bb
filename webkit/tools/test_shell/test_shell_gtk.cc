@@ -97,7 +97,7 @@ void ReloadButtonClicked(GtkButton* button, TestShell* shell) {
 // Callback for when you press enter in the URL box.
 void URLEntryActivate(GtkEntry* entry, TestShell* shell) {
   const gchar* url = gtk_entry_get_text(entry);
-  shell->LoadURL(UTF8ToWide(url).c_str());
+  shell->LoadURL(GURL(url));
 }
 
 // Callback for Debug > Dump body text... menu item.
@@ -313,7 +313,7 @@ void TestShell::PlatformCleanUp() {
   }
 }
 
-bool TestShell::Initialize(const std::wstring& startingURL) {
+bool TestShell::Initialize(const GURL& starting_url) {
   m_mainWnd = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   gtk_window_set_title(m_mainWnd, "Test Shell");
   // Null out m_mainWnd when it is destroyed so we don't destroy it twice.
@@ -358,7 +358,7 @@ bool TestShell::Initialize(const std::wstring& startingURL) {
   m_editWnd = gtk_entry_new();
   g_signal_connect(G_OBJECT(m_editWnd), "activate",
                    G_CALLBACK(URLEntryActivate), this);
-  gtk_entry_set_text(GTK_ENTRY(m_editWnd), WideToUTF8(startingURL).c_str());
+  gtk_entry_set_text(GTK_ENTRY(m_editWnd), starting_url.spec().c_str());
 
   GtkToolItem* tool_item = gtk_tool_item_new();
   gtk_container_add(GTK_CONTAINER(tool_item), m_editWnd);
@@ -374,11 +374,10 @@ bool TestShell::Initialize(const std::wstring& startingURL) {
 
   // LoadURL will do a resize, so make sure we don't call LoadURL
   // until we've completed all of our GTK setup.
-  if (!startingURL.empty())
-    LoadURL(startingURL.c_str());
+  if (starting_url.is_valid())
+    LoadURL(starting_url);
 
-  bool bIsSVGTest = startingURL.find(L"W3C-SVG-1.1") != std::wstring::npos;
-  if (bIsSVGTest)
+  if (IsSVGTestURL(starting_url))
     SizeToSVG();
   else
     SizeToDefault();
@@ -554,8 +553,7 @@ void TestShell::ResizeSubViews() {
   shell->test_is_preparing_ = true;
 
   shell->set_test_params(&params);
-  std::wstring wstr = UTF8ToWide(params.test_url.c_str());
-  shell->LoadURL(wstr.c_str());
+  shell->LoadURL(GURL(params.test_url));
 
   shell->test_is_preparing_ = false;
   shell->WaitTestFinished();
@@ -564,36 +562,21 @@ void TestShell::ResizeSubViews() {
   return true;
 }
 
-void TestShell::LoadURLForFrame(const wchar_t* url,
-                                const wchar_t* frame_name) {
-  if (!url)
+void TestShell::LoadURLForFrame(const GURL& url,
+                                const std::wstring& frame_name) {
+  if (!url.is_valid())
     return;
 
-  bool bIsSVGTest = wcsstr(url, L"W3C-SVG-1.1") > 0;
-
-  if (bIsSVGTest)
+  if (IsSVGTestURL(url)) {
     SizeToSVG();
-  else {
+  } else {
     // only resize back to the default when running tests
     if (layout_test_mode())
       SizeToDefault();
   }
 
-  std::wstring frame_string;
-  if (frame_name)
-    frame_string = frame_name;
-
-  std::wstring path(url);
-  GURL gurl;
-  // PathExists will reject any string with no leading '/'
-  // as well as empty strings.
-  if (file_util::AbsolutePath(&path))
-    gurl = net::FilePathToFileURL(FilePath::FromWStringHack(path));
-  else
-    gurl = GURL(WideToUTF8(url));
-
-  navigation_controller_->LoadEntry(new TestNavigationEntry(
-    -1, gurl, std::wstring(), frame_string));
+  navigation_controller_->LoadEntry(
+      new TestNavigationEntry(-1, url, std::wstring(), frame_name));
 }
 
 // TODO(agl): PromptForSaveFile should use FilePath

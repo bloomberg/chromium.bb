@@ -103,6 +103,7 @@ using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingClient;
 using WebKit::WebFrame;
+using WebKit::WebFrameClient;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
@@ -340,17 +341,19 @@ WebView* WebView::Create(WebViewDelegate* delegate,
   return instance;
 }
 
-void WebViewImpl::InitializeMainFrame() {
+void WebViewImpl::InitializeMainFrame(WebFrameClient* frame_client) {
   // NOTE: The WebFrameImpl takes a reference to itself within InitMainFrame
   // and releases that reference once the corresponding Frame is destroyed.
-  scoped_refptr<WebFrameImpl> main_frame = new WebFrameImpl();
+  scoped_refptr<WebFrameImpl> main_frame = new WebFrameImpl(frame_client);
 
   main_frame->InitMainFrame(this);
 
-  WebDevToolsAgentDelegate* tools_delegate =
-      delegate_->GetWebDevToolsAgentDelegate();
-  if (tools_delegate)
-    devtools_agent_.reset(new WebDevToolsAgentImpl(this, tools_delegate));
+  if (delegate_) {
+    WebDevToolsAgentDelegate* tools_delegate =
+        delegate_->GetWebDevToolsAgentDelegate();
+    if (tools_delegate)
+      devtools_agent_.reset(new WebDevToolsAgentImpl(this, tools_delegate));
+  }
 
   // Restrict the access to the local file system
   // (see WebView.mm WebView::_commonInitializationWithFrameName).

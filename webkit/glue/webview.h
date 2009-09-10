@@ -15,6 +15,7 @@
 namespace WebKit {
 class WebDragData;
 class WebEditingClient;
+class WebFrameClient;
 class WebFrame;
 class WebSettings;
 struct WebPoint;
@@ -57,9 +58,10 @@ class WebView : public WebKit::WebWidget {
   static WebView* Create(
       WebViewDelegate* delegate, WebKit::WebEditingClient* editing_client);
 
-  // After creating a WebView, you should immediately call this function.
-  // You can optionally modify the settings (via GetSettings()) in between.
-  virtual void InitializeMainFrame() = 0;
+  // After creating a WebView, you should immediately call this function.  You
+  // can optionally modify the settings (via GetSettings()) in between.  The
+  // frame_client will receive events for the main frame and any child frames.
+  virtual void InitializeMainFrame(WebKit::WebFrameClient* frame_client) = 0;
 
   // Tells all Page instances of this view to update the visited link state for
   // the specified hash.

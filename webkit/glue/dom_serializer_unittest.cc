@@ -96,7 +96,7 @@ class DomSerializerTests : public TestShellTest,
   void LoadPageFromURL(const GURL& page_url) {
     // Load the test file.
     test_shell_->ResetTestController();
-    test_shell_->LoadURL(UTF8ToWide(page_url.spec()).c_str());
+    test_shell_->LoadURL(page_url);
     test_shell_->WaitTestFinished();
   }
 

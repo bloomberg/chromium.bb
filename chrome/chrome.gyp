@@ -524,6 +524,7 @@
         'common/message_router.h',
         'common/modal_dialog_event.h',
         'common/mru_cache.h',
+        'common/navigation_gesture.h',
         'common/navigation_types.h',
         'common/native_web_keyboard_event.h',
         'common/native_web_keyboard_event_linux.cc',

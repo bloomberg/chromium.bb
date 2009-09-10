@@ -147,8 +147,9 @@ public:
       return layout_test_controller_->AcceptsEditing();
     }
 
-    void LoadURL(const wchar_t* url);
-    void LoadURLForFrame(const wchar_t* url, const wchar_t* frame_name);
+    void LoadFile(const FilePath& file);
+    void LoadURL(const GURL& url);
+    void LoadURLForFrame(const GURL& url, const std::wstring& frame_name);
     void GoBackOrForward(int offset);
     void Reload();
     bool Navigate(const TestNavigationEntry& entry, bool reload);
@@ -166,7 +167,7 @@ public:
     static WindowList* windowList() { return window_list_; }
 
     // If shell is non-null, then *shell is assigned upon successful return
-    static bool CreateNewWindow(const std::wstring& startingURL,
+    static bool CreateNewWindow(const GURL& starting_url,
                                 TestShell** shell = NULL);
 
     static void DestroyWindow(gfx::NativeWindow windowHandle);
@@ -270,7 +271,8 @@ public:
     static StringPiece NetResourceProvider(int key);
 
 protected:
-    bool Initialize(const std::wstring& startingURL);
+    bool Initialize(const GURL& starting_url);
+    bool IsSVGTestURL(const GURL& url);
     void SizeToSVG();
     void SizeToDefault();
     void SizeTo(int width, int height);

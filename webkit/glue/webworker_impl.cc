@@ -21,6 +21,7 @@
 #undef LOG
 
 #include "base/logging.h"
+#include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebMessagePortChannel.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
@@ -28,6 +29,7 @@
 #include "webkit/api/public/WebWorkerClient.h"
 #include "webkit/api/src/PlatformMessagePortChannel.h"
 #include "webkit/api/src/WebDataSourceImpl.h"
+#include "webkit/glue/empty_webframeclient.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webpreferences.h"
@@ -36,7 +38,10 @@
 #include "webkit/glue/webworker_impl.h"
 
 using WebKit::WebCursorInfo;
+using WebKit::WebDataSource;
+using WebKit::WebDataSourceImpl;
 using WebKit::WebFrame;
+using WebKit::WebFrameClient;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMessagePortChannelArray;
 using WebKit::WebNavigationPolicy;
@@ -51,39 +56,22 @@ using WebKit::WebWorkerClient;
 
 // Dummy WebViewDelegate - we only need it in Worker process to load a
 // 'shadow page' which will initialize WebCore loader.
-class WorkerWebViewDelegate : public WebViewDelegate {
+class WorkerWebFrameClient : public webkit_glue::EmptyWebFrameClient {
  public:
-  WorkerWebViewDelegate() {}
-
-  virtual void didInvalidateRect(const WebRect&) {}
-  virtual void didScrollRect(int dx, int dy, const WebRect& clipRect) {}
-  virtual void didFocus() {}
-  virtual void didBlur() {}
-  virtual void didChangeCursor(const WebCursorInfo&) {}
-  virtual void closeWidgetSoon() {}
-  virtual void show(WebNavigationPolicy) {}
-  virtual void runModal() {}
-  virtual WebRect windowRect() { return WebRect(); }
-  virtual void setWindowRect(const WebRect&) {}
-  virtual WebRect windowResizerRect() { return WebRect(); }
-  virtual WebRect rootWindowRect() { return WebRect(); }
-  virtual WebScreenInfo screenInfo() { return WebScreenInfo(); }
-
   // Tell the loader to load the data into the 'shadow page' synchronously,
   // so we can grab the resulting Document right after load.
-  virtual void DidCreateDataSource(WebFrame* frame, WebKit::WebDataSource* ds) {
-    static_cast<WebKit::WebDataSourceImpl*>(ds)->
-        setDeferMainResourceDataLoad(false);
+  virtual void didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
+    static_cast<WebDataSourceImpl*>(ds)->setDeferMainResourceDataLoad(false);
   }
 
   // Lazy allocate and leak this instance.
-  static WorkerWebViewDelegate* worker_delegate() {
-    static WorkerWebViewDelegate* worker_delegate = new WorkerWebViewDelegate();
-    return worker_delegate;
+  static WorkerWebFrameClient* GetSharedInstance() {
+    static WorkerWebFrameClient client;
+    return &client;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WorkerWebViewDelegate);
+  WorkerWebFrameClient() {}
 };
 
 namespace WebKit {
@@ -149,9 +137,9 @@ void WebWorkerImpl::startWorkerContext(const WebURL& script_url,
   // loading requests from the worker context to the rest of WebKit and Chromium
   // infrastructure.
   DCHECK(!web_view_);
-  web_view_ = WebView::Create(WorkerWebViewDelegate::worker_delegate(), NULL);
+  web_view_ = WebView::Create(NULL, NULL);
   WebPreferences().Apply(web_view_);
-  web_view_->InitializeMainFrame();
+  web_view_->InitializeMainFrame(WorkerWebFrameClient::GetSharedInstance());
 
   WebFrameImpl* web_frame =
       static_cast<WebFrameImpl*>(web_view_->GetMainFrame());

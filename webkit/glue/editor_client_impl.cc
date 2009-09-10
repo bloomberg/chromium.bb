@@ -665,6 +665,9 @@ void EditorClientImpl::textFieldDidEndEditing(WebCore::Element* element) {
   // Hide any showing popup.
   web_view_->HideAutoCompletePopup();
 
+  if (!editing_client_)
+    return;  // The page is getting closed, don't fill the password.
+
   // Notify any password-listener of the focus change.
   WebCore::HTMLInputElement* input_element =
       webkit_glue::ElementToHTMLInputElement(element);
@@ -673,9 +676,6 @@ void EditorClientImpl::textFieldDidEndEditing(WebCore::Element* element) {
 
   WebFrameImpl* webframe =
       WebFrameImpl::FromFrame(input_element->document()->frame());
-  if (webframe->GetWebViewImpl() && !webframe->GetWebViewImpl()->GetDelegate())
-    return;  // The page is getting closed, don't fill the password.
-
   webkit_glue::PasswordAutocompleteListener* listener =
       webframe->GetPasswordListener(input_element);
   if (!listener)

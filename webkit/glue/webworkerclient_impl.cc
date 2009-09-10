@@ -26,6 +26,7 @@
 #include "webkit/glue/webworkerclient_impl.h"
 
 #include "base/command_line.h"
+#include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebKitClient.h"
 #include "webkit/api/public/WebMessagePortChannel.h"
@@ -40,6 +41,7 @@
 #include "webkit/glue/webview_impl.h"
 #include "webkit/glue/webworker_impl.h"
 
+using WebKit::WebFrameClient;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMessagePortChannelArray;
 using WebKit::WebString;
@@ -69,16 +71,10 @@ WebCore::WorkerContextProxy* WebCore::WorkerContextProxy::create(
   WebWorkerClientImpl* proxy = new WebWorkerClientImpl(worker);
 
   if (worker->scriptExecutionContext()->isDocument()) {
-    // Get to the RenderView, so that we can tell the browser to create a
-    // worker process if necessary.
     WebCore::Document* document = static_cast<WebCore::Document*>(
         worker->scriptExecutionContext());
-    WebFrameLoaderClient* frame_loader_client =
-        static_cast<WebFrameLoaderClient*>(
-            document->frame()->loader()->client());
-    WebViewDelegate* webview_delegate =
-        frame_loader_client->webframe()->GetWebViewImpl()->delegate();
-    webworker = webview_delegate->CreateWebWorker(proxy);
+    WebFrameImpl* webframe = WebFrameImpl::FromFrame(document->frame());
+    webworker = webframe->client()->createWorker(webframe, proxy);
   } else {
     WebCore::WorkerContextExecutionProxy* current_context =
         WebCore::WorkerContextExecutionProxy::retrieve();

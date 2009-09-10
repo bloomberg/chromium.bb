@@ -374,8 +374,7 @@ class WorkItemLoad : public LayoutTestController::WorkItem {
   WorkItemLoad(const GURL& url, const string& target)
       : url_(url), target_(target) {}
   bool Run(TestShell* shell) {
-    shell->LoadURLForFrame(UTF8ToWide(url_.spec()).c_str(),
-                           UTF8ToWide(target_).c_str());
+    shell->LoadURLForFrame(url_, UTF8ToWide(target_).c_str());
     return true;  // TODO(darin): Did it really start a navigation?
   }
  private:

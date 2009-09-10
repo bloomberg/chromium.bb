@@ -5,11 +5,13 @@
 #include "config.h"
 #include "webkit/api/src/TemporaryGlue.h"
 
+#include "Page.h"
 #include <wtf/Assertions.h>
 #undef LOG
 
+#include "webkit/api/public/WebFrameClient.h"
 #include "webkit/glue/chrome_client_impl.h"
-#include "webkit/glue/webview_impl.h"
+#include "webkit/glue/webframe_impl.h"
 
 using WebCore::Frame;
 using WebCore::Page;
@@ -19,11 +21,11 @@ namespace WebKit {
 // static
 WebMediaPlayer* TemporaryGlue::createWebMediaPlayer(
     WebMediaPlayerClient* client, Frame* frame) {
-  WebViewImpl* webview = WebFrameImpl::FromFrame(frame)->GetWebViewImpl();
-  if (!webview || !webview->delegate())
+  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
+  if (!webframe->client())
     return NULL;
 
-  return webview->delegate()->CreateWebMediaPlayer(client);
+  return webframe->client()->createMediaPlayer(webframe, client);
 }
 
 // static

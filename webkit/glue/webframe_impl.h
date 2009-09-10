@@ -60,6 +60,7 @@ struct WindowFeatures;
 
 namespace WebKit {
 class WebDataSourceImpl;
+class WebFrameClient;
 }
 
 // Implementation of WebFrame, note that this is a reference counted object.
@@ -130,6 +131,7 @@ class WebFrameImpl : public WebKit::WebFrame,
   virtual void dispatchWillSendRequest(WebKit::WebURLRequest& request);
   virtual void commitDocumentData(const char* data, size_t length);
   virtual unsigned unloadListenerCount() const;
+  virtual bool isProcessingUserGesture() const;
   virtual void replaceSelection(const WebKit::WebString& text);
   virtual void insertText(const WebKit::WebString& text);
   virtual void setMarkedText(
@@ -169,7 +171,7 @@ class WebFrameImpl : public WebKit::WebFrame,
   virtual WebKit::WebString contentAsText(size_t max_chars) const;
   virtual WebKit::WebString contentAsMarkup() const;
 
-  WebFrameImpl();
+  WebFrameImpl(WebKit::WebFrameClient* client);
   ~WebFrameImpl();
 
   static int live_object_count() {
@@ -242,6 +244,9 @@ class WebFrameImpl : public WebKit::WebFrame,
   webkit_glue::PasswordAutocompleteListener* GetPasswordListener(
       WebCore::HTMLInputElement* user_name_input_element);
 
+  WebKit::WebFrameClient* client() const { return client_; }
+  void drop_client() { client_ = NULL; }
+
  protected:
   friend class WebFrameLoaderClient;
 
@@ -257,6 +262,8 @@ class WebFrameImpl : public WebKit::WebFrame,
   // This is a factory for creating cancelable tasks for this frame that run
   // asynchronously in order to scope string matches during a find operation.
   ScopedRunnableMethodFactory<WebFrameImpl> scope_matches_factory_;
+
+  WebKit::WebFrameClient* client_;
 
   // This is a weak pointer to our corresponding WebCore frame.  A reference to
   // ourselves is held while frame_ is valid.  See our Closing method.

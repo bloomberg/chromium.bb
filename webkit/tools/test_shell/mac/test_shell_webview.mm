@@ -87,7 +87,7 @@
   NSURL* tempUrl = [NSURL URLWithString:url];
   if (tempUrl && ![tempUrl scheme])
     url = [@"http://" stringByAppendingString:url];
-  shell_->LoadURL(UTF8ToWide([url UTF8String]).c_str());
+  shell_->LoadURL(GURL(std::string([url UTF8String])));
 }
 
 - (void)mouseDown:(NSEvent *)theEvent {

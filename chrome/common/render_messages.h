@@ -21,6 +21,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/filter_policy.h"
 #include "chrome/common/modal_dialog_event.h"
+#include "chrome/common/navigation_gesture.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/transport_dib.h"

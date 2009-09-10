@@ -155,7 +155,7 @@ TEST_F(PluginTest, DeleteFrameDuringEvent) {
   FilePath test_html = data_dir_;
   test_html = test_html.AppendASCII("plugins");
   test_html = test_html.AppendASCII("delete_frame.html");
-  test_shell_->LoadURL(test_html.ToWStringHack().c_str());
+  test_shell_->LoadFile(test_html);
   test_shell_->WaitTestFinished();
 
   WebKit::WebMouseEvent input;
@@ -185,7 +185,7 @@ TEST_F(PluginTest, PluginVisibilty) {
   FilePath test_html = data_dir_;
   test_html = test_html.AppendASCII("plugins");
   test_html = test_html.AppendASCII("plugin_visibility.html");
-  test_shell_->LoadURL(test_html.ToWStringHack().c_str());
+  test_shell_->LoadFile(test_html);
   test_shell_->WaitTestFinished();
 
   WebFrame* main_frame = test_shell_->webView()->GetMainFrame();

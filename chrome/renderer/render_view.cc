@@ -114,9 +114,13 @@ using WebKit::WebEditingAction;
 using WebKit::WebForm;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
+using WebKit::WebMediaPlayer;
+using WebKit::WebMediaPlayerClient;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
 using WebKit::WebNode;
+using WebKit::WebPlugin;
+using WebKit::WebPluginParams;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRange;
 using WebKit::WebRect;
@@ -265,10 +269,6 @@ void RenderView::PluginCrashed(base::ProcessId pid,
   Send(new ViewHostMsg_CrashedPlugin(routing_id_, pid, plugin_path));
 }
 
-void RenderView::JSOutOfMemory() {
-  Send(new ViewHostMsg_JSOutOfMemory(routing_id_));
-}
-
 void RenderView::Init(gfx::NativeViewId parent_hwnd,
                       base::WaitableEvent* modal_dialog_event,
                       int32 opener_id,
@@ -293,7 +293,7 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   webwidget_ = WebView::Create(this, this);
   webkit_preferences_.Apply(webview());
-  webview()->InitializeMainFrame();
+  webview()->InitializeMainFrame(this);
 
   OnSetRendererPrefs(renderer_prefs);
 
@@ -1015,14 +1015,14 @@ void RenderView::UpdateURL(WebFrame* frame) {
 }
 
 // Tell the embedding application that the title of the active page has changed
-void RenderView::UpdateTitle(WebFrame* frame, const std::wstring& title) {
+void RenderView::UpdateTitle(WebFrame* frame, const string16& title) {
   // Ignore all but top level navigations...
-  if (webview()->GetMainFrame() == frame) {
+  if (!frame->parent()) {
     Send(new ViewHostMsg_UpdateTitle(
-             routing_id_,
-             page_id_,
-             title.length() > chrome::kMaxTitleChars ?
-                 title.substr(0, chrome::kMaxTitleChars) : title));
+        routing_id_,
+        page_id_,
+        UTF16ToWideHack(title.length() > chrome::kMaxTitleChars ?
+            title.substr(0, chrome::kMaxTitleChars) : title)));
   }
 }
 
@@ -1055,6 +1055,12 @@ void RenderView::UpdateSessionHistory(WebFrame* frame) {
 
   Send(new ViewHostMsg_UpdateState(
       routing_id_, page_id_, webkit_glue::HistoryItemToString(item)));
+}
+
+void RenderView::OpenURL(
+    const GURL& url, const GURL& referrer, WebNavigationPolicy policy) {
+  Send(new ViewHostMsg_OpenURL(
+      routing_id_, url, referrer, NavigationPolicyToDisposition(policy)));
 }
 
 // WebViewDelegate ------------------------------------------------------------
@@ -1112,16 +1118,6 @@ void RenderView::DidStopLoading(WebView* webview) {
   ResetPendingUpload();
 }
 
-void RenderView::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
-  // The rest of RenderView assumes that a WebDataSource will always have a
-  // non-null NavigationState.
-  if (pending_navigation_state_.get()) {
-    ds->setExtraData(pending_navigation_state_.release());
-  } else {
-    ds->setExtraData(NavigationState::CreateContentInitiated());
-  }
-}
-
 void RenderView::DidPaint() {
   WebFrame* main_frame = webview()->GetMainFrame();
 
@@ -1143,136 +1139,6 @@ void RenderView::DidPaint() {
       !navigation_state->finish_load_time().is_null()) {
     navigation_state->set_first_paint_after_load_time(now);
   }
-}
-
-void RenderView::DidStartProvisionalLoadForFrame(
-    WebView* webview,
-    WebFrame* frame,
-    NavigationGesture gesture) {
-  WebDataSource* ds = frame->provisionalDataSource();
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-
-  navigation_state->set_start_load_time(Time::Now());
-
-  // Update the request time if WebKit has better knowledge of it.
-  if (navigation_state->request_time().is_null()) {
-    double event_time = ds->triggeringEventTime();
-    if (event_time != 0.0)
-      navigation_state->set_request_time(Time::FromDoubleT(event_time));
-  }
-
-  bool is_top_most = !frame->parent();
-  if (is_top_most) {
-    navigation_gesture_ = gesture;
-
-    // Make sure redirect tracking state is clear for the new load.
-    completed_client_redirect_src_ = GURL();
-  } else if (frame->parent()->isLoading()) {
-    // Take note of AUTO_SUBFRAME loads here, so that we can know how to
-    // load an error page.  See DidFailProvisionalLoadWithError.
-    navigation_state->set_transition_type(PageTransition::AUTO_SUBFRAME);
-  }
-
-  Send(new ViewHostMsg_DidStartProvisionalLoadForFrame(
-       routing_id_, is_top_most, ds->request().url()));
-}
-
-bool RenderView::DidLoadResourceFromMemoryCache(WebView* webview,
-                                                const WebURLRequest& request,
-                                                const WebURLResponse& response,
-                                                WebFrame* frame) {
-  // Let the browser know we loaded a resource from the memory cache.  This
-  // message is needed to display the correct SSL indicators.
-  Send(new ViewHostMsg_DidLoadResourceFromMemoryCache(
-      routing_id_,
-      request.url(),
-      frame->securityOrigin().utf8(),
-      frame->top()->securityOrigin().utf8(),
-      response.securityInfo()));
-
-  return false;
-}
-
-void RenderView::DidReceiveProvisionalLoadServerRedirect(WebView* webview,
-                                                         WebFrame* frame) {
-  if (frame == webview->GetMainFrame()) {
-    // Received a redirect on the main frame.
-    WebDataSource* data_source =
-        webview->GetMainFrame()->provisionalDataSource();
-    if (!data_source) {
-      // Should only be invoked when we have a data source.
-      NOTREACHED();
-      return;
-    }
-    std::vector<GURL> redirects;
-    GetRedirectChain(data_source, &redirects);
-    if (redirects.size() >= 2) {
-      Send(new ViewHostMsg_DidRedirectProvisionalLoad(
-           routing_id_, page_id_, redirects[redirects.size() - 2],
-           redirects[redirects.size() - 1]));
-    }
-  }
-}
-
-void RenderView::DidFailProvisionalLoadWithError(WebView* webview,
-                                                 const WebURLError& error,
-                                                 WebFrame* frame) {
-  // Notify the browser that we failed a provisional load with an error.
-  //
-  // Note: It is important this notification occur before DidStopLoading so the
-  //       SSL manager can react to the provisional load failure before being
-  //       notified the load stopped.
-  //
-  WebDataSource* ds = frame->provisionalDataSource();
-  DCHECK(ds);
-
-  const WebURLRequest& failed_request = ds->request();
-
-  bool show_repost_interstitial =
-      (error.reason == net::ERR_CACHE_MISS &&
-       EqualsASCII(failed_request.httpMethod(), "POST"));
-  Send(new ViewHostMsg_DidFailProvisionalLoadWithError(
-      routing_id_, !frame->parent(), error.reason, error.unreachableURL,
-      show_repost_interstitial));
-
-  // Don't display an error page if this is simply a cancelled load.  Aside
-  // from being dumb, WebCore doesn't expect it and it will cause a crash.
-  if (error.reason == net::ERR_ABORTED)
-    return;
-
-  // Make sure we never show errors in view source mode.
-  frame->enableViewSourceMode(false);
-
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-
-  // If this is a failed back/forward/reload navigation, then we need to do a
-  // 'replace' load.  This is necessary to avoid messing up session history.
-  // Otherwise, we do a normal load, which simulates a 'go' navigation as far
-  // as session history is concerned.
-  //
-  // AUTO_SUBFRAME loads should always be treated as loads that do not advance
-  // the page id.
-  //
-  bool replace =
-      navigation_state->pending_page_id() != -1 ||
-      navigation_state->transition_type() == PageTransition::AUTO_SUBFRAME;
-
-  // If we failed on a browser initiated request, then make sure that our error
-  // page load is regarded as the same browser initiated request.
-  if (!navigation_state->is_content_initiated()) {
-    pending_navigation_state_.reset(NavigationState::CreateBrowserInitiated(
-        navigation_state->pending_page_id(),
-        navigation_state->transition_type(),
-        navigation_state->request_time()));
-  }
-
-  // Provide the user with a more helpful error page?
-  if (MaybeLoadAlternateErrorPage(frame, error, replace))
-    return;
-
-  // Fallback to a local error page.
-  LoadNavigationErrorPage(frame, failed_request, error, std::string(),
-                          replace);
 }
 
 void RenderView::LoadNavigationErrorPage(WebFrame* frame,
@@ -1310,275 +1176,11 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
                         replace);
 }
 
-void RenderView::DidReceiveDocumentData(WebFrame* frame, const char* data,
-                                        size_t data_len) {
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->dataSource());
-  if (!navigation_state->postpone_loading_data()) {
-    frame->commitDocumentData(data, data_len);
-    return;
-  }
-
-  // Continue buffering the response data for the original 404 page.  If it
-  // grows too large, then we'll just let it through.
-  navigation_state->append_postponed_data(data, data_len);
-  if (navigation_state->postponed_data().size() >= 512) {
-    navigation_state->set_postpone_loading_data(false);
-    frame->commitDocumentData(navigation_state->postponed_data().data(),
-                              navigation_state->postponed_data().size());
-    navigation_state->clear_postponed_data();
-  }
-}
-
-void RenderView::DidCommitLoadForFrame(WebView *webview, WebFrame* frame,
-                                       bool is_new_navigation) {
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->dataSource());
-
-  navigation_state->set_commit_load_time(Time::Now());
-  if (is_new_navigation) {
-    // When we perform a new navigation, we need to update the previous session
-    // history entry with state for the page we are leaving.
-    UpdateSessionHistory(frame);
-
-    // We bump our Page ID to correspond with the new session history entry.
-    page_id_ = next_page_id_++;
-
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(&RenderView::CapturePageInfo,
-                                          page_id_, true),
-        kDelayForForcedCaptureMs);
-  } else {
-    // Inspect the navigation_state on this frame to see if the navigation
-    // corresponds to a session history navigation...  Note: |frame| may or
-    // may not be the toplevel frame, but for the case of capturing session
-    // history, the first committed frame suffices.  We keep track of whether
-    // we've seen this commit before so that only capture session history once
-    // per navigation.
-    //
-    // Note that we need to check if the page ID changed. In the case of a
-    // reload, the page ID doesn't change, and UpdateSessionHistory gets the
-    // previous URL and the current page ID, which would be wrong.
-    if (navigation_state->pending_page_id() != -1 &&
-        navigation_state->pending_page_id() != page_id_ &&
-        !navigation_state->request_committed()) {
-      // This is a successful session history navigation!
-      UpdateSessionHistory(frame);
-      page_id_ = navigation_state->pending_page_id();
-    }
-  }
-
-  // Remember that we've already processed this request, so we don't update
-  // the session history again.  We do this regardless of whether this is
-  // a session history navigation, because if we attempted a session history
-  // navigation without valid HistoryItem state, WebCore will think it is a
-  // new navigation.
-  navigation_state->set_request_committed(true);
-
-  UpdateURL(frame);
-
-  // If this committed load was initiated by a client redirect, we're
-  // at the last stop now, so clear it.
-  completed_client_redirect_src_ = GURL();
-
-  // Check whether we have new encoding name.
-  UpdateEncoding(frame, webview->GetMainFrameEncodingName());
-}
-
-void RenderView::DidReceiveTitle(WebView* webview,
-                                 const std::wstring& title,
-                                 WebFrame* frame) {
-  UpdateTitle(frame, title);
-
-  // Also check whether we have new encoding name.
-  UpdateEncoding(frame, webview->GetMainFrameEncodingName());
-}
-
-void RenderView::DidFinishLoadForFrame(WebView* webview, WebFrame* frame) {
-  WebDataSource* ds = frame->dataSource();
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-  DCHECK(navigation_state);
-  navigation_state->set_finish_load_time(Time::Now());
-}
-
-void RenderView::DidFailLoadWithError(WebView* webview,
-                                      const WebURLError& error,
-                                      WebFrame* frame) {
-  // Currently this function is empty. When you implement something here and it
-  // will display any error messages in HTML, please make sure to call
-  // frame->SetInViewSourceMode(false) not to show them in view source mode.
-}
-
-void RenderView::DidFinishDocumentLoadForFrame(WebView* webview,
-                                               WebFrame* frame) {
-  WebDataSource* ds = frame->dataSource();
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-  DCHECK(navigation_state);
-  navigation_state->set_finish_document_load_time(Time::Now());
-
-  Send(new ViewHostMsg_DocumentLoadedInFrame(routing_id_));
-
-  // The document has now been fully loaded.  Scan for password forms to be
-  // sent up to the browser.
-  SendPasswordForms(frame);
-
-  // Check whether we have new encoding name.
-  UpdateEncoding(frame, webview->GetMainFrameEncodingName());
-
-  if (RenderThread::current())  // Will be NULL during unit tests.
-    RenderThread::current()->user_script_slave()->InjectScripts(
-        frame, UserScript::DOCUMENT_END);
-}
-
-void RenderView::DidHandleOnloadEventsForFrame(WebView* webview,
-                                               WebFrame* frame) {
-}
-
-void RenderView::DidChangeLocationWithinPageForFrame(WebView* webview,
-                                                     WebFrame* frame,
-                                                     bool is_new_navigation) {
-  // If this was a reference fragment navigation that we initiated, then we
-  // could end up having a non-null pending navigation state.  We just need to
-  // update the ExtraData on the datasource so that others who read the
-  // ExtraData will get the new NavigationState.  Similarly, if we did not
-  // initiate this navigation, then we need to take care to reset any pre-
-  // existing navigation state to a content-initiated navigation state.
-  // DidCreateDataSource conveniently takes care of this for us.
-  DidCreateDataSource(frame, frame->dataSource());
-
-  DidCommitLoadForFrame(webview, frame, is_new_navigation);
-
-  const string16& title =
-      webview->GetMainFrame()->dataSource()->pageTitle();
-  UpdateTitle(frame, UTF16ToWideHack(title));
-}
-
-void RenderView::DidCompleteClientRedirect(WebView* webview,
-                                           WebFrame* frame,
-                                           const GURL& source) {
-  if (webview->GetMainFrame() == frame)
-    completed_client_redirect_src_ = source;
-}
-
-void RenderView::WillCloseFrame(WebView* webview, WebFrame* frame) {
-  if (!frame->parent()) {
-    const GURL& url = frame->url();
-    if (url.SchemeIs("http") || url.SchemeIs("https"))
-      DumpLoadHistograms();
-  }
-}
-
-void RenderView::WillSubmitForm(WebView* webview, WebFrame* frame,
-                                const WebForm& form) {
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->provisionalDataSource());
-
-  if (navigation_state->transition_type() == PageTransition::LINK)
-    navigation_state->set_transition_type(PageTransition::FORM_SUBMIT);
-
-  // Save these to be processed when the ensuing navigation is committed.
-  navigation_state->set_searchable_form_data(
-      SearchableFormData::Create(form));
-  navigation_state->set_password_form_data(
-      PasswordFormDomManager::CreatePasswordForm(form));
-
-  if (form.isAutoCompleteEnabled()) {
-    scoped_ptr<AutofillForm> autofill_form(AutofillForm::Create(form));
-    if (autofill_form.get())
-      Send(new ViewHostMsg_AutofillFormSubmitted(routing_id_, *autofill_form));
-  }
-}
-
-void RenderView::WillSendRequest(WebFrame* frame, uint32 identifier,
-                                 WebURLRequest* request,
-                                 const WebURLResponse& redirect_response) {
-  request->setRequestorID(routing_id_);
-}
-
-void RenderView::DidReceiveResponse(WebFrame* frame, uint32 identifier,
-                                    const WebURLResponse& response) {
-  // Consider loading an alternate error page for 404 responses.
-  if (response.httpStatusCode() != 404)
-    return;
-
-  // Only do this for responses that correspond to a provisional data source
-  // of the top-most frame.  If we have a provisional data source, then we
-  // can't have any sub-resources yet, so we know that this response must
-  // correspond to a frame load.
-  if (!frame->provisionalDataSource() || frame->parent())
-    return;
-
-  // If we are in view source mode, then just let the user see the source of
-  // the server's 404 error page.
-  if (frame->isViewSourceModeEnabled())
-    return;
-
-  // Can we even load an alternate error page for this URL?
-  if (!GetAlternateErrorPageURL(response.url(), HTTP_404).is_valid())
-    return;
-
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->provisionalDataSource());
-  navigation_state->set_postpone_loading_data(true);
-  navigation_state->clear_postponed_data();
-}
-
-void RenderView::DidFinishLoading(WebFrame* frame, uint32 identifier) {
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->dataSource());
-  if (!navigation_state->postpone_loading_data())
-    return;
-
-  // The server returned a 404 and the content was < 512 bytes (which we
-  // suppressed).  Go ahead and fetch the alternate page content.
-
-  const GURL& frame_url = frame->url();
-
-  const GURL& error_page_url = GetAlternateErrorPageURL(frame_url, HTTP_404);
-  DCHECK(error_page_url.is_valid());
-
-  WebURLError original_error;
-  original_error.unreachableURL = frame_url;
-
-  navigation_state->set_alt_error_page_fetcher(
-      new AltErrorPageResourceFetcher(
-          error_page_url, frame, original_error,
-          NewCallback(this, &RenderView::AltErrorPageFinished)));
-}
-
 void RenderView::BindDOMAutomationController(WebFrame* frame) {
   dom_automation_controller_.set_message_sender(this);
   dom_automation_controller_.set_routing_id(routing_id_);
   dom_automation_controller_.BindToJavascript(frame,
                                               L"domAutomationController");
-}
-
-void RenderView::WindowObjectCleared(WebFrame* frame) {
-  if (BindingsPolicy::is_dom_automation_enabled(enabled_bindings_))
-    BindDOMAutomationController(frame);
-  if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_)) {
-    dom_ui_bindings_.set_message_sender(this);
-    dom_ui_bindings_.set_routing_id(routing_id_);
-    dom_ui_bindings_.BindToJavascript(frame, L"chrome");
-  }
-  if (BindingsPolicy::is_external_host_enabled(enabled_bindings_)) {
-    external_host_bindings_.set_message_sender(this);
-    external_host_bindings_.set_routing_id(routing_id_);
-    external_host_bindings_.BindToJavascript(frame, L"externalHost");
-  }
-}
-
-void RenderView::DocumentElementAvailable(WebFrame* frame) {
-  if (RenderThread::current())  // Will be NULL during unit tests.
-    RenderThread::current()->user_script_slave()->InjectScripts(
-        frame, UserScript::DOCUMENT_START);
-
-  // Notify the browser about non-blank documents loading in the top frame.
-  GURL url = frame->url();
-  if (url.is_valid() && url.spec() != "about:blank") {
-    if (frame == webview()->GetMainFrame())
-      Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));
-  }
 }
 
 void RenderView::DidCreateScriptContextForFrame(WebFrame* webframe) {
@@ -1591,99 +1193,6 @@ void RenderView::DidDestroyScriptContextForFrame(WebFrame* webframe) {
 
 void RenderView::DidCreateIsolatedScriptContext(WebFrame* webframe) {
   EventBindings::HandleContextCreated(webframe, true);
-}
-
-WebNavigationPolicy RenderView::PolicyForNavigationAction(
-    WebView* webview,
-    WebFrame* frame,
-    const WebURLRequest& request,
-    WebNavigationType type,
-    WebNavigationPolicy default_policy,
-    bool is_redirect) {
-  // Webkit is asking whether to navigate to a new URL.
-  // This is fine normally, except if we're showing UI from one security
-  // context and they're trying to navigate to a different context.
-  const GURL& url = request.url();
-
-  // If the browser is interested, then give it a chance to look at top level
-  // navigations
-  if (renderer_preferences_.browser_handles_top_level_requests &&
-      // Only send once.
-      last_top_level_navigation_page_id_ != page_id_ &&
-      // Not interested in reloads.
-      type != WebKit::WebNavigationTypeReload &&
-      type != WebKit::WebNavigationTypeFormSubmitted &&
-      // Must be a top level frame.
-      frame->parent() == NULL) {
-    // Skip if navigation is on the same page (using '#').
-    GURL frame_origin = GURL(frame->url()).GetOrigin();
-    if (url.GetOrigin() != frame_origin || url.ref().empty()) {
-      last_top_level_navigation_page_id_ = page_id_;
-      OpenURL(webview, url, GURL(), default_policy);
-      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
-    }
-  }
-
-  // A content initiated navigation may have originated from a link-click,
-  // script, drag-n-drop operation, etc.
-  bool is_content_initiated =
-      NavigationState::FromDataSource(frame->provisionalDataSource())->
-          is_content_initiated();
-
-  // We only care about navigations that are within the current tab (as opposed
-  // to, for example, opening a new window).
-  // But we sometimes navigate to about:blank to clear a tab, and we want to
-  // still allow that.
-  if (default_policy == WebKit::WebNavigationPolicyCurrentTab &&
-      is_content_initiated && frame->parent() == NULL &&
-      !url.SchemeIs(chrome::kAboutScheme)) {
-    // When we received such unsolicited navigations, we sometimes want to
-    // punt them up to the browser to handle.
-    if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
-        BindingsPolicy::is_extension_enabled(enabled_bindings_) ||
-        frame->isViewSourceModeEnabled() ||
-        url.SchemeIs(chrome::kViewSourceScheme) ||
-        url.SchemeIs(chrome::kPrintScheme)) {
-      OpenURL(webview, url, GURL(), default_policy);
-      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
-    }
-  }
-
-  // Detect when a page is "forking" a new tab that can be safely rendered in
-  // its own process.  This is done by sites like Gmail that try to open links
-  // in new windows without script connections back to the original page.  We
-  // treat such cases as browser navigations (in which we will create a new
-  // renderer for a cross-site navigation), rather than WebKit navigations.
-  //
-  // We use the following heuristic to decide whether to fork a new page in its
-  // own process:
-  // The parent page must open a new tab to about:blank, set the new tab's
-  // window.opener to null, and then redirect the tab to a cross-site URL using
-  // JavaScript.
-  bool is_fork =
-      // Must start from a tab showing about:blank, which is later redirected.
-      GURL(frame->url()) == GURL("about:blank") &&
-      // Must be the first real navigation of the tab.
-      GetHistoryBackListCount() < 1 &&
-      GetHistoryForwardListCount() < 1 &&
-      // The parent page must have set the child's window.opener to null before
-      // redirecting to the desired URL.
-      frame->opener() == NULL &&
-      // Must be a top-level frame.
-      frame->parent() == NULL &&
-      // Must not have issued the request from this page.
-      is_content_initiated &&
-      // Must be targeted at the current tab.
-      default_policy == WebKit::WebNavigationPolicyCurrentTab &&
-      // Must be a JavaScript navigation, which appears as "other".
-      type == WebKit::WebNavigationTypeOther;
-  if (is_fork) {
-    // Open the URL via the browser, not via WebKit.
-    OpenURL(webview, url, GURL(), default_policy);
-    return WebKit::WebNavigationPolicyIgnore;
-  }
-
-  return default_policy;
 }
 
 void RenderView::RunJavaScriptAlert(WebFrame* webframe,
@@ -1903,46 +1412,6 @@ WebWidget* RenderView::CreatePopupWidgetWithInfo(WebView* webview,
   return widget->webwidget();
 }
 
-WebKit::WebPlugin* RenderView::CreatePlugin(
-    WebFrame* frame, const WebKit::WebPluginParams& params) {
-  return new webkit_glue::WebPluginImpl(frame, params, AsWeakPtr());
-}
-
-WebKit::WebMediaPlayer* RenderView::CreateWebMediaPlayer(
-    WebKit::WebMediaPlayerClient* client) {
-  scoped_refptr<media::FilterFactoryCollection> factory =
-      new media::FilterFactoryCollection();
-  // Add in any custom filter factories first.
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
-    // Add the chrome specific audio renderer.
-    factory->AddFactory(
-        AudioRendererImpl::CreateFactory(audio_message_filter()));
-  }
-
-  // TODO(hclam): obtain the following parameters from |client|.
-  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
-      new webkit_glue::MediaResourceLoaderBridgeFactory(
-          GURL::EmptyGURL(),  // referrer
-          "null",             // frame origin
-          "null",             // main_frame_origin
-          base::GetCurrentProcId(),
-          appcache::kNoHostId,
-          routing_id());
-
-  if (!cmd_line->HasSwitch(switches::kSimpleDataSource)) {
-    // Add the chrome specific media data source.
-    factory->AddFactory(
-        webkit_glue::BufferedDataSource::CreateFactory(MessageLoop::current(),
-                                                       bridge_factory));
-  } else {
-    factory->AddFactory(
-        webkit_glue::SimpleDataSource::CreateFactory(MessageLoop::current(),
-                                                     bridge_factory));
-  }
-  return new webkit_glue::WebMediaPlayerImpl(client, factory);
-}
-
 void RenderView::OnMissingPluginStatus(
     WebPluginDelegateProxy* delegate,
     int status) {
@@ -1964,40 +1433,6 @@ void RenderView::OnMissingPluginStatus(
   // TODO(port): plugins current not supported
   NOTIMPLEMENTED();
 #endif
-}
-
-WebWorker* RenderView::CreateWebWorker(WebWorkerClient* client) {
-  return new WebWorkerProxy(client, RenderThread::current(), routing_id_);
-}
-
-void RenderView::OpenURL(WebView* webview, const GURL& url,
-                         const GURL& referrer,
-                         WebNavigationPolicy policy) {
-  Send(new ViewHostMsg_OpenURL(
-      routing_id_, url, referrer, NavigationPolicyToDisposition(policy)));
-}
-
-void RenderView::DidContentsSizeChange(WebWidget* webwidget,
-                                       int new_width,
-                                       int new_height) {
-  // We don't always want to send the change messages over IPC, only if we've
-  // be put in that mode by getting a |ViewMsg_EnableIntrinsicWidthChangedMode|
-  // message.
-  // TODO(rafaelw): Figure out where the best place to set this for extensions
-  // is. It isn't clean to test for ExtensionView by examining the
-  // enabled_bindings. This needs to be generalized as it becomes clear what
-  // extension toolbars need.
-  if (BindingsPolicy::is_extension_enabled(enabled_bindings_) ||
-      send_preferred_width_changes_) {
-    // WebCore likes to tell us things have changed even when they haven't, so
-    // cache the width and only send the IPC message when we're sure the
-    // width is different.
-    int width = webview()->GetMainFrame()->contentsPreferredWidth();
-    if (width != preferred_width_) {
-      Send(new ViewHostMsg_DidContentsPreferredWidthChange(routing_id_, width));
-      preferred_width_ = width;
-    }
-  }
 }
 
 // WebKit::WebWidgetClient ----------------------------------------------------
@@ -2129,6 +1564,583 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
       StartsWith(name, L"Delete", true))
     return;
   UserMetricsRecordAction(name);
+}
+
+// WebKit::WebFrameClient -----------------------------------------------------
+
+WebPlugin* RenderView::createPlugin(
+    WebFrame* frame, const WebPluginParams& params) {
+  return new webkit_glue::WebPluginImpl(frame, params, AsWeakPtr());
+}
+
+WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
+  return new WebWorkerProxy(client, RenderThread::current(), routing_id_);
+}
+
+WebMediaPlayer* RenderView::createMediaPlayer(
+    WebFrame* frame, WebMediaPlayerClient* client) {
+  scoped_refptr<media::FilterFactoryCollection> factory =
+      new media::FilterFactoryCollection();
+  // Add in any custom filter factories first.
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
+    // Add the chrome specific audio renderer.
+    factory->AddFactory(
+        AudioRendererImpl::CreateFactory(audio_message_filter()));
+  }
+
+  // TODO(hclam): obtain the following parameters from |client|.
+  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
+      new webkit_glue::MediaResourceLoaderBridgeFactory(
+          GURL::EmptyGURL(),  // referrer
+          "null",             // frame origin
+          "null",             // main_frame_origin
+          base::GetCurrentProcId(),
+          appcache::kNoHostId,
+          routing_id());
+
+  if (!cmd_line->HasSwitch(switches::kSimpleDataSource)) {
+    // Add the chrome specific media data source.
+    factory->AddFactory(
+        webkit_glue::BufferedDataSource::CreateFactory(MessageLoop::current(),
+                                                       bridge_factory));
+  } else {
+    factory->AddFactory(
+        webkit_glue::SimpleDataSource::CreateFactory(MessageLoop::current(),
+                                                     bridge_factory));
+  }
+  return new webkit_glue::WebMediaPlayerImpl(client, factory);
+}
+
+void RenderView::willClose(WebFrame* frame) {
+  if (!frame->parent()) {
+    const GURL& url = frame->url();
+    if (url.SchemeIs("http") || url.SchemeIs("https"))
+      DumpLoadHistograms();
+  }
+}
+
+void RenderView::loadURLExternally(
+    WebFrame* frame, const WebURLRequest& request,
+    WebNavigationPolicy policy) {
+  OpenURL(request.url(),
+          GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
+          policy);
+}
+
+WebNavigationPolicy RenderView::decidePolicyForNavigation(
+    WebFrame* frame, const WebURLRequest& request, WebNavigationType type,
+    WebNavigationPolicy default_policy, bool is_redirect) {
+  // Webkit is asking whether to navigate to a new URL.
+  // This is fine normally, except if we're showing UI from one security
+  // context and they're trying to navigate to a different context.
+  const GURL& url = request.url();
+
+  // If the browser is interested, then give it a chance to look at top level
+  // navigations
+  if (renderer_preferences_.browser_handles_top_level_requests &&
+      // Only send once.
+      last_top_level_navigation_page_id_ != page_id_ &&
+      // Not interested in reloads.
+      type != WebKit::WebNavigationTypeReload &&
+      type != WebKit::WebNavigationTypeFormSubmitted &&
+      // Must be a top level frame.
+      frame->parent() == NULL) {
+    // Skip if navigation is on the same page (using '#').
+    GURL frame_origin = GURL(frame->url()).GetOrigin();
+    if (url.GetOrigin() != frame_origin || url.ref().empty()) {
+      last_top_level_navigation_page_id_ = page_id_;
+      OpenURL(url, GURL(), default_policy);
+      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+    }
+  }
+
+  // A content initiated navigation may have originated from a link-click,
+  // script, drag-n-drop operation, etc.
+  bool is_content_initiated =
+      NavigationState::FromDataSource(frame->provisionalDataSource())->
+          is_content_initiated();
+
+  // We only care about navigations that are within the current tab (as opposed
+  // to, for example, opening a new window).
+  // But we sometimes navigate to about:blank to clear a tab, and we want to
+  // still allow that.
+  if (default_policy == WebKit::WebNavigationPolicyCurrentTab &&
+      is_content_initiated && frame->parent() == NULL &&
+      !url.SchemeIs(chrome::kAboutScheme)) {
+    // When we received such unsolicited navigations, we sometimes want to
+    // punt them up to the browser to handle.
+    if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
+        BindingsPolicy::is_extension_enabled(enabled_bindings_) ||
+        frame->isViewSourceModeEnabled() ||
+        url.SchemeIs(chrome::kViewSourceScheme) ||
+        url.SchemeIs(chrome::kPrintScheme)) {
+      OpenURL(url, GURL(), default_policy);
+      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+    }
+  }
+
+  // Detect when a page is "forking" a new tab that can be safely rendered in
+  // its own process.  This is done by sites like Gmail that try to open links
+  // in new windows without script connections back to the original page.  We
+  // treat such cases as browser navigations (in which we will create a new
+  // renderer for a cross-site navigation), rather than WebKit navigations.
+  //
+  // We use the following heuristic to decide whether to fork a new page in its
+  // own process:
+  // The parent page must open a new tab to about:blank, set the new tab's
+  // window.opener to null, and then redirect the tab to a cross-site URL using
+  // JavaScript.
+  bool is_fork =
+      // Must start from a tab showing about:blank, which is later redirected.
+      GURL(frame->url()) == GURL("about:blank") &&
+      // Must be the first real navigation of the tab.
+      GetHistoryBackListCount() < 1 &&
+      GetHistoryForwardListCount() < 1 &&
+      // The parent page must have set the child's window.opener to null before
+      // redirecting to the desired URL.
+      frame->opener() == NULL &&
+      // Must be a top-level frame.
+      frame->parent() == NULL &&
+      // Must not have issued the request from this page.
+      is_content_initiated &&
+      // Must be targeted at the current tab.
+      default_policy == WebKit::WebNavigationPolicyCurrentTab &&
+      // Must be a JavaScript navigation, which appears as "other".
+      type == WebKit::WebNavigationTypeOther;
+  if (is_fork) {
+    // Open the URL via the browser, not via WebKit.
+    OpenURL(url, GURL(), default_policy);
+    return WebKit::WebNavigationPolicyIgnore;
+  }
+
+  return default_policy;
+}
+
+void RenderView::willSubmitForm(WebFrame* frame, const WebForm& form) {
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->provisionalDataSource());
+
+  if (navigation_state->transition_type() == PageTransition::LINK)
+    navigation_state->set_transition_type(PageTransition::FORM_SUBMIT);
+
+  // Save these to be processed when the ensuing navigation is committed.
+  navigation_state->set_searchable_form_data(
+      SearchableFormData::Create(form));
+  navigation_state->set_password_form_data(
+      PasswordFormDomManager::CreatePasswordForm(form));
+
+  if (form.isAutoCompleteEnabled()) {
+    scoped_ptr<AutofillForm> autofill_form(AutofillForm::Create(form));
+    if (autofill_form.get())
+      Send(new ViewHostMsg_AutofillFormSubmitted(routing_id_, *autofill_form));
+  }
+}
+
+void RenderView::willPerformClientRedirect(
+    WebFrame* frame, const WebURL& from, const WebURL& to, double interval,
+    double fire_time) {
+  // Ignore
+}
+
+void RenderView::didCancelClientRedirect(WebFrame* frame) {
+  // Ignore
+}
+
+void RenderView::didCompleteClientRedirect(
+    WebFrame* frame, const WebURL& from) {
+  if (!frame->parent())
+    completed_client_redirect_src_ = from;
+}
+
+void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
+  // The rest of RenderView assumes that a WebDataSource will always have a
+  // non-null NavigationState.
+  if (pending_navigation_state_.get()) {
+    ds->setExtraData(pending_navigation_state_.release());
+  } else {
+    ds->setExtraData(NavigationState::CreateContentInitiated());
+  }
+}
+
+void RenderView::didStartProvisionalLoad(WebFrame* frame) {
+  WebDataSource* ds = frame->provisionalDataSource();
+  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+
+  navigation_state->set_start_load_time(Time::Now());
+
+  // Update the request time if WebKit has better knowledge of it.
+  if (navigation_state->request_time().is_null()) {
+    double event_time = ds->triggeringEventTime();
+    if (event_time != 0.0)
+      navigation_state->set_request_time(Time::FromDoubleT(event_time));
+  }
+
+  bool is_top_most = !frame->parent();
+  if (is_top_most) {
+    navigation_gesture_ = frame->isProcessingUserGesture() ?
+        NavigationGestureUnknown : NavigationGestureAuto;
+
+    // Make sure redirect tracking state is clear for the new load.
+    completed_client_redirect_src_ = GURL();
+  } else if (frame->parent()->isLoading()) {
+    // Take note of AUTO_SUBFRAME loads here, so that we can know how to
+    // load an error page.  See DidFailProvisionalLoadWithError.
+    navigation_state->set_transition_type(PageTransition::AUTO_SUBFRAME);
+  }
+
+  Send(new ViewHostMsg_DidStartProvisionalLoadForFrame(
+       routing_id_, is_top_most, ds->request().url()));
+}
+
+void RenderView::didReceiveServerRedirectForProvisionalLoad(WebFrame* frame) {
+  if (frame->parent())
+    return;
+  // Received a redirect on the main frame.
+  WebDataSource* data_source = frame->provisionalDataSource();
+  if (!data_source) {
+    // Should only be invoked when we have a data source.
+    NOTREACHED();
+    return;
+  }
+  std::vector<GURL> redirects;
+  GetRedirectChain(data_source, &redirects);
+  if (redirects.size() >= 2) {
+    Send(new ViewHostMsg_DidRedirectProvisionalLoad(
+         routing_id_, page_id_, redirects[redirects.size() - 2],
+         redirects[redirects.size() - 1]));
+  }
+}
+
+void RenderView::didFailProvisionalLoad(
+    WebFrame* frame, const WebURLError& error) {
+  // Notify the browser that we failed a provisional load with an error.
+  //
+  // Note: It is important this notification occur before DidStopLoading so the
+  //       SSL manager can react to the provisional load failure before being
+  //       notified the load stopped.
+  //
+  WebDataSource* ds = frame->provisionalDataSource();
+  DCHECK(ds);
+
+  const WebURLRequest& failed_request = ds->request();
+
+  bool show_repost_interstitial =
+      (error.reason == net::ERR_CACHE_MISS &&
+       EqualsASCII(failed_request.httpMethod(), "POST"));
+  Send(new ViewHostMsg_DidFailProvisionalLoadWithError(
+      routing_id_, !frame->parent(), error.reason, error.unreachableURL,
+      show_repost_interstitial));
+
+  // Don't display an error page if this is simply a cancelled load.  Aside
+  // from being dumb, WebCore doesn't expect it and it will cause a crash.
+  if (error.reason == net::ERR_ABORTED)
+    return;
+
+  // Make sure we never show errors in view source mode.
+  frame->enableViewSourceMode(false);
+
+  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+
+  // If this is a failed back/forward/reload navigation, then we need to do a
+  // 'replace' load.  This is necessary to avoid messing up session history.
+  // Otherwise, we do a normal load, which simulates a 'go' navigation as far
+  // as session history is concerned.
+  //
+  // AUTO_SUBFRAME loads should always be treated as loads that do not advance
+  // the page id.
+  //
+  bool replace =
+      navigation_state->pending_page_id() != -1 ||
+      navigation_state->transition_type() == PageTransition::AUTO_SUBFRAME;
+
+  // If we failed on a browser initiated request, then make sure that our error
+  // page load is regarded as the same browser initiated request.
+  if (!navigation_state->is_content_initiated()) {
+    pending_navigation_state_.reset(NavigationState::CreateBrowserInitiated(
+        navigation_state->pending_page_id(),
+        navigation_state->transition_type(),
+        navigation_state->request_time()));
+  }
+
+  // Provide the user with a more helpful error page?
+  if (MaybeLoadAlternateErrorPage(frame, error, replace))
+    return;
+
+  // Fallback to a local error page.
+  LoadNavigationErrorPage(frame, failed_request, error, std::string(),
+                          replace);
+}
+
+void RenderView::didReceiveDocumentData(
+    WebFrame* frame, const char* data, size_t data_len,
+    bool& prevent_default) {
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->dataSource());
+  if (!navigation_state->postpone_loading_data())
+    return;
+
+  // We're going to call commitDocumentData ourselves...
+  prevent_default = true;
+
+  // Continue buffering the response data for the original 404 page.  If it
+  // grows too large, then we'll just let it through.
+  navigation_state->append_postponed_data(data, data_len);
+  if (navigation_state->postponed_data().size() >= 512) {
+    navigation_state->set_postpone_loading_data(false);
+    frame->commitDocumentData(navigation_state->postponed_data().data(),
+                              navigation_state->postponed_data().size());
+    navigation_state->clear_postponed_data();
+  }
+}
+
+void RenderView::didCommitProvisionalLoad(
+    WebFrame* frame, bool is_new_navigation) {
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->dataSource());
+
+  navigation_state->set_commit_load_time(Time::Now());
+  if (is_new_navigation) {
+    // When we perform a new navigation, we need to update the previous session
+    // history entry with state for the page we are leaving.
+    UpdateSessionHistory(frame);
+
+    // We bump our Page ID to correspond with the new session history entry.
+    page_id_ = next_page_id_++;
+
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        method_factory_.NewRunnableMethod(&RenderView::CapturePageInfo,
+                                          page_id_, true),
+        kDelayForForcedCaptureMs);
+  } else {
+    // Inspect the navigation_state on this frame to see if the navigation
+    // corresponds to a session history navigation...  Note: |frame| may or
+    // may not be the toplevel frame, but for the case of capturing session
+    // history, the first committed frame suffices.  We keep track of whether
+    // we've seen this commit before so that only capture session history once
+    // per navigation.
+    //
+    // Note that we need to check if the page ID changed. In the case of a
+    // reload, the page ID doesn't change, and UpdateSessionHistory gets the
+    // previous URL and the current page ID, which would be wrong.
+    if (navigation_state->pending_page_id() != -1 &&
+        navigation_state->pending_page_id() != page_id_ &&
+        !navigation_state->request_committed()) {
+      // This is a successful session history navigation!
+      UpdateSessionHistory(frame);
+      page_id_ = navigation_state->pending_page_id();
+    }
+  }
+
+  // Remember that we've already processed this request, so we don't update
+  // the session history again.  We do this regardless of whether this is
+  // a session history navigation, because if we attempted a session history
+  // navigation without valid HistoryItem state, WebCore will think it is a
+  // new navigation.
+  navigation_state->set_request_committed(true);
+
+  UpdateURL(frame);
+
+  // If this committed load was initiated by a client redirect, we're
+  // at the last stop now, so clear it.
+  completed_client_redirect_src_ = GURL();
+
+  // Check whether we have new encoding name.
+  UpdateEncoding(frame, frame->view()->GetMainFrameEncodingName());
+}
+
+void RenderView::didClearWindowObject(WebFrame* frame) {
+  if (BindingsPolicy::is_dom_automation_enabled(enabled_bindings_))
+    BindDOMAutomationController(frame);
+  if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_)) {
+    dom_ui_bindings_.set_message_sender(this);
+    dom_ui_bindings_.set_routing_id(routing_id_);
+    dom_ui_bindings_.BindToJavascript(frame, L"chrome");
+  }
+  if (BindingsPolicy::is_external_host_enabled(enabled_bindings_)) {
+    external_host_bindings_.set_message_sender(this);
+    external_host_bindings_.set_routing_id(routing_id_);
+    external_host_bindings_.BindToJavascript(frame, L"externalHost");
+  }
+}
+
+void RenderView::didCreateDocumentElement(WebFrame* frame) {
+  if (RenderThread::current()) {  // Will be NULL during unit tests.
+    RenderThread::current()->user_script_slave()->InjectScripts(
+        frame, UserScript::DOCUMENT_START);
+  }
+
+  // Notify the browser about non-blank documents loading in the top frame.
+  GURL url = frame->url();
+  if (url.is_valid() && url.spec() != "about:blank") {
+    if (frame == webview()->GetMainFrame())
+      Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));
+  }
+}
+
+void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title) {
+  UpdateTitle(frame, title);
+
+  // Also check whether we have new encoding name.
+  UpdateEncoding(frame, frame->view()->GetMainFrameEncodingName());
+}
+
+void RenderView::didFinishDocumentLoad(WebFrame* frame) {
+  WebDataSource* ds = frame->dataSource();
+  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+  DCHECK(navigation_state);
+  navigation_state->set_finish_document_load_time(Time::Now());
+
+  Send(new ViewHostMsg_DocumentLoadedInFrame(routing_id_));
+
+  // The document has now been fully loaded.  Scan for password forms to be
+  // sent up to the browser.
+  SendPasswordForms(frame);
+
+  // Check whether we have new encoding name.
+  UpdateEncoding(frame, frame->view()->GetMainFrameEncodingName());
+
+  if (RenderThread::current()) {  // Will be NULL during unit tests.
+    RenderThread::current()->user_script_slave()->InjectScripts(
+        frame, UserScript::DOCUMENT_END);
+  }
+}
+
+void RenderView::didHandleOnloadEvents(WebFrame* frame) {
+  // Ignore
+}
+
+void RenderView::didFailLoad(WebFrame* frame, const WebURLError& error) {
+  // Ignore
+}
+
+void RenderView::didFinishLoad(WebFrame* frame) {
+  WebDataSource* ds = frame->dataSource();
+  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+  DCHECK(navigation_state);
+  navigation_state->set_finish_load_time(Time::Now());
+}
+
+void RenderView::didChangeLocationWithinPage(
+    WebFrame* frame, bool is_new_navigation) {
+  // If this was a reference fragment navigation that we initiated, then we
+  // could end up having a non-null pending navigation state.  We just need to
+  // update the ExtraData on the datasource so that others who read the
+  // ExtraData will get the new NavigationState.  Similarly, if we did not
+  // initiate this navigation, then we need to take care to reset any pre-
+  // existing navigation state to a content-initiated navigation state.
+  // DidCreateDataSource conveniently takes care of this for us.
+  didCreateDataSource(frame, frame->dataSource());
+
+  didCommitProvisionalLoad(frame, is_new_navigation);
+
+  UpdateTitle(frame, frame->view()->GetMainFrame()->dataSource()->pageTitle());
+}
+
+void RenderView::assignIdentifierToRequest(
+    WebFrame* frame, unsigned identifier, const WebURLRequest& request) {
+  // Ignore
+}
+
+void RenderView::willSendRequest(
+    WebFrame* frame, unsigned identifier, WebURLRequest& request,
+    const WebURLResponse& redirect_response) {
+  request.setRequestorID(routing_id_);
+}
+
+void RenderView::didReceiveResponse(
+    WebFrame* frame, unsigned identifier, const WebURLResponse& response) {
+  // Consider loading an alternate error page for 404 responses.
+  if (response.httpStatusCode() != 404)
+    return;
+
+  // Only do this for responses that correspond to a provisional data source
+  // of the top-most frame.  If we have a provisional data source, then we
+  // can't have any sub-resources yet, so we know that this response must
+  // correspond to a frame load.
+  if (!frame->provisionalDataSource() || frame->parent())
+    return;
+
+  // If we are in view source mode, then just let the user see the source of
+  // the server's 404 error page.
+  if (frame->isViewSourceModeEnabled())
+    return;
+
+  // Can we even load an alternate error page for this URL?
+  if (!GetAlternateErrorPageURL(response.url(), HTTP_404).is_valid())
+    return;
+
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->provisionalDataSource());
+  navigation_state->set_postpone_loading_data(true);
+  navigation_state->clear_postponed_data();
+}
+
+void RenderView::didFinishResourceLoad(
+    WebFrame* frame, unsigned identifier) {
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->dataSource());
+  if (!navigation_state->postpone_loading_data())
+    return;
+
+  // The server returned a 404 and the content was < 512 bytes (which we
+  // suppressed).  Go ahead and fetch the alternate page content.
+
+  const GURL& frame_url = frame->url();
+
+  const GURL& error_page_url = GetAlternateErrorPageURL(frame_url, HTTP_404);
+  DCHECK(error_page_url.is_valid());
+
+  WebURLError original_error;
+  original_error.unreachableURL = frame_url;
+
+  navigation_state->set_alt_error_page_fetcher(
+      new AltErrorPageResourceFetcher(
+          error_page_url, frame, original_error,
+          NewCallback(this, &RenderView::AltErrorPageFinished)));
+}
+
+void RenderView::didFailResourceLoad(
+    WebFrame* frame, unsigned identifier, const WebURLError& error) {
+  // Ignore
+}
+
+void RenderView::didLoadResourceFromMemoryCache(
+    WebFrame* frame, const WebURLRequest& request,
+    const WebURLResponse& response) {
+  // Let the browser know we loaded a resource from the memory cache.  This
+  // message is needed to display the correct SSL indicators.
+  Send(new ViewHostMsg_DidLoadResourceFromMemoryCache(
+      routing_id_,
+      request.url(),
+      frame->securityOrigin().utf8(),
+      frame->top()->securityOrigin().utf8(),
+      response.securityInfo()));
+}
+
+void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
+  Send(new ViewHostMsg_JSOutOfMemory(routing_id_));
+}
+
+void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
+  // We don't always want to send the change messages over IPC, only if we've
+  // be put in that mode by getting a |ViewMsg_EnableIntrinsicWidthChangedMode|
+  // message.
+  // TODO(rafaelw): Figure out where the best place to set this for extensions
+  // is. It isn't clean to test for ExtensionView by examining the
+  // enabled_bindings. This needs to be generalized as it becomes clear what
+  // extension toolbars need.
+  if (BindingsPolicy::is_extension_enabled(enabled_bindings_) ||
+      send_preferred_width_changes_) {
+    // WebCore likes to tell us things have changed even when they haven't, so
+    // cache the width and only send the IPC message when we're sure the
+    // width is different.
+    int width = webview()->GetMainFrame()->contentsPreferredWidth();
+    if (width != preferred_width_) {
+      Send(new ViewHostMsg_DidContentsPreferredWidthChange(routing_id_, width));
+      preferred_width_ = width;
+    }
+  }
 }
 
 // webkit_glue::WebPluginPageDelegate -----------------------------------------
@@ -3009,7 +3021,7 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
   WebFrame* main_frame = webview()->GetMainFrame();
   if (main_frame) {
     const GURL& url = main_frame->url();
-    // TODO(davemoore) this code should be removed once WillCloseFrame() gets
+    // TODO(davemoore) this code should be removed once willClose() gets
     // called when a page is destroyed. DumpLoadHistograms() is safe to call
     // multiple times for the same frame, but it will simplify things.
     if (url.SchemeIs(chrome::kHttpScheme) ||

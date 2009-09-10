@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
   StatsTable::set_current(table);
 
   TestShell* shell;
-  if (TestShell::CreateNewWindow(uri.ToWStringHack(), &shell)) {
+  if (TestShell::CreateNewWindow(net::FilePathToFileURL(uri), &shell)) {
     if (record_mode || playback_mode) {
       platform.SetWindowPositionForRecording(shell);
       WebKit::registerExtension(extensions_v8::PlaybackExtension::Get());

@@ -21,13 +21,14 @@ class BookmarkletTest : public TestShellTest {
   virtual void SetUp() {
     TestShellTest::SetUp();
 
-    test_shell_->LoadURL(L"data:text/html,start page");
+    test_shell_->LoadURL(GURL("data:text/html,start page"));
     test_shell_->WaitTestFinished();
   }
 };
 
 TEST_F(BookmarkletTest, Redirect) {
-  test_shell_->LoadURL(L"javascript:location.href='data:text/plain,SUCCESS'");
+  test_shell_->LoadURL(
+      GURL("javascript:location.href='data:text/plain,SUCCESS'"));
   test_shell_->WaitTestFinished();
   std::wstring text = test_shell_->GetDocumentText();
   EXPECT_EQ(L"SUCCESS", text);
@@ -38,7 +39,8 @@ TEST_F(BookmarkletTest, RedirectVoided) {
   // here is to emphasize that in either case the assignment to location during
   // the evaluation of the script should suppress loading the script result.
   // Here, because of the void() wrapping there is no script result.
-  test_shell_->LoadURL(L"javascript:void(location.href='data:text/plain,SUCCESS')");
+  test_shell_->LoadURL(
+      GURL("javascript:void(location.href='data:text/plain,SUCCESS')"));
   test_shell_->WaitTestFinished();
   std::wstring text = test_shell_->GetDocumentText();
   EXPECT_EQ(L"SUCCESS", text);
@@ -59,17 +61,17 @@ TEST_F(BookmarkletTest, NonEmptyResult) {
   EXPECT_EQ(L"false", text);
 #endif
 
-  test_shell_->LoadURL(L"javascript:'hello world'");
+  test_shell_->LoadURL(GURL("javascript:'hello world'"));
   MessageLoop::current()->RunAllPending();
   text = test_shell_->GetDocumentText();
   EXPECT_EQ(L"hello world", text);
 }
 
 TEST_F(BookmarkletTest, DocumentWrite) {
-  test_shell_->LoadURL(
-      L"javascript:document.open();"
-      L"document.write('hello world');"
-      L"document.close()");
+  test_shell_->LoadURL(GURL(
+      "javascript:document.open();"
+      "document.write('hello world');"
+      "document.close()"));
   MessageLoop::current()->RunAllPending();
   std::wstring text = test_shell_->GetDocumentText();
   EXPECT_EQ(L"hello world", text);

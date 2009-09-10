@@ -863,9 +863,8 @@ TEST_F(RenderViewTest, DidFailProvisionalLoadWithErrorForCancellation) {
   error.reason = net::ERR_ABORTED;
   error.unreachableURL = GURL("http://foo");
   WebFrame* web_frame = GetMainFrame();
-  WebView* web_view = web_frame->view();
   // A cancellation occurred.
-  view_->DidFailProvisionalLoadWithError(web_view, error, web_frame);
+  view_->didFailProvisionalLoad(web_frame, error);
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->isViewSourceModeEnabled());
 }

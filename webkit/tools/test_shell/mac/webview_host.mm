@@ -37,7 +37,7 @@ WebViewHost* WebViewHost::Create(NSView* parent_view,
 
   host->webwidget_ = WebView::Create(delegate, delegate);
   prefs.Apply(host->webview());
-  host->webview()->InitializeMainFrame();
+  host->webview()->InitializeMainFrame(delegate);
   host->webwidget_->resize(WebSize(content_rect.size.width,
                                    content_rect.size.height));
 

@@ -30,6 +30,7 @@
 
 #include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebCursorInfo.h"
+#include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebPopupMenuInfo.h"
@@ -487,10 +488,10 @@ PlatformWidget ChromeClientImpl::platformWindow() const {
 
 void ChromeClientImpl::contentsSizeChanged(WebCore::Frame* frame, const
     WebCore::IntSize& size) const {
-  WebViewDelegate* delegate = webview_->delegate();
-
-  if (delegate) {
-    delegate->DidContentsSizeChange(webview_, size.width(), size.height());
+  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
+  if (webframe->client()) {
+    webframe->client()->didChangeContentsSize(
+        webframe, webkit_glue::IntSizeToWebSize(size));
   }
 }
 

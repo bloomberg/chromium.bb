@@ -70,8 +70,8 @@ class ExampleTestShell : public TestShell {
 
   // This is a public interface to TestShell's protected method, so it
   // can be called by our CreateEmptyWindow.
-  bool PublicInitialize(const std::wstring& startingURL) {
-    return Initialize(startingURL);
+  bool PublicInitialize(const std::string& starting_url) {
+    return Initialize(GURL(starting_url));
   }
 
   CppBindingExampleWithOptionalFallback example_bound_class_;
@@ -84,7 +84,7 @@ class CppBoundClassTest : public TestShellTest {
    virtual void CreateEmptyWindow() {
      ExampleTestShell* host = new ExampleTestShell(useFallback());
      ASSERT_TRUE(host != NULL);
-     bool rv = host->PublicInitialize(L"about:blank");
+     bool rv = host->PublicInitialize("about:blank");
      if (rv) {
        test_shell_ = host;
        TestShell::windowList()->push_back(host->mainWnd());

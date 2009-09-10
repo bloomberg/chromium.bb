@@ -35,9 +35,9 @@ TEST_F(IFrameRedirectTest, Test) {
   iframes_data_dir_ = iframes_data_dir_.AppendASCII("iframe_redirect");
   ASSERT_TRUE(file_util::PathExists(iframes_data_dir_));
 
-  std::wstring test_url = GetTestURL(iframes_data_dir_, "main.html");
+  GURL test_url = GetTestURL(iframes_data_dir_, "main.html");
 
-  test_shell_->LoadURL(test_url.c_str());
+  test_shell_->LoadURL(test_url);
   test_shell_->WaitTestFinished();
 
   WebFrame* iframe =

@@ -12,10 +12,11 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "net/base/net_util.h"
 
-std::wstring TestShellTest::GetTestURL(const FilePath& test_case_path,
-                                       const std::string& test_case) {
-  return test_case_path.AppendASCII(test_case).ToWStringHack();
+GURL TestShellTest::GetTestURL(const FilePath& test_case_path,
+                               const std::string& test_case) {
+  return net::FilePathToFileURL(test_case_path.AppendASCII(test_case));
 }
 
 void TestShellTest::SetUp() {
@@ -32,7 +33,7 @@ void TestShellTest::SetUp() {
 
 void TestShellTest::TearDown() {
   // Loading a blank url clears the memory in the current page.
-  test_shell_->LoadURL(L"about:blank");
+  test_shell_->LoadURL(GURL("about:blank"));
   test_shell_->DestroyWindow(test_shell_->mainWnd());
   LayoutTestController::ClearShell();
 
@@ -41,5 +42,5 @@ void TestShellTest::TearDown() {
 }
 
 void TestShellTest::CreateEmptyWindow() {
-  TestShell::CreateNewWindow(L"about:blank", &test_shell_);
+  TestShell::CreateNewWindow(GURL("about:blank"), &test_shell_);
 }

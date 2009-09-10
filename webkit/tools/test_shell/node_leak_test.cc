@@ -65,7 +65,7 @@ class NodeLeakTest : public TestShellTest {
   }
 
   void NavigateToURL(const std::wstring& test_url) {
-    test_shell_->LoadURL(test_url.c_str());
+    test_shell_->LoadURL(GURL(WideToUTF8(test_url)));
     test_shell_->WaitTestFinished();
 
     // Depends on TestShellTests::TearDown to load blank page and

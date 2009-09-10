@@ -26,6 +26,7 @@
 #include "googleurl/src/url_util.h"
 #include "grit/webkit_strings.h"
 #include "net/base/mime_util.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "skia/ext/bitmap_platform_device.h"
@@ -131,7 +132,7 @@ TestShell::~TestShell() {
 
   // Navigate to an empty page to fire all the destruction logic for the
   // current page.
-  LoadURL(L"about:blank");
+  LoadURL(GURL("about:blank"));
 
   // Call GC twice to clean up garbage.
   CallJSGC();
@@ -160,10 +161,10 @@ TestShell::~TestShell() {
   }
 }
 
-bool TestShell::CreateNewWindow(const std::wstring& startingURL,
+bool TestShell::CreateNewWindow(const GURL& starting_url,
                                 TestShell** result) {
   TestShell* shell = new TestShell();
-  bool rv = shell->Initialize(startingURL);
+  bool rv = shell->Initialize(starting_url);
   if (rv) {
     if (result)
       *result = shell;
@@ -486,10 +487,14 @@ WebView* TestShell::CreateWebView(WebView* webview) {
     return NULL;
 
   TestShell* new_win;
-  if (!CreateNewWindow(std::wstring(), &new_win))
+  if (!CreateNewWindow(GURL(), &new_win))
     return NULL;
 
   return new_win->webView();
+}
+
+bool TestShell::IsSVGTestURL(const GURL& url) {
+  return url.is_valid() && url.spec().find("W3C-SVG-1.1") != std::string::npos;
 }
 
 void TestShell::SizeToSVG() {
@@ -506,8 +511,12 @@ void TestShell::ResetTestController() {
   delegate_->Reset();
 }
 
-void TestShell::LoadURL(const wchar_t* url) {
-  LoadURLForFrame(url, NULL);
+void TestShell::LoadFile(const FilePath& file) {
+  LoadURLForFrame(net::FilePathToFileURL(file), std::wstring());
+}
+
+void TestShell::LoadURL(const GURL& url) {
+  LoadURLForFrame(url, std::wstring());
 }
 
 bool TestShell::Navigate(const TestNavigationEntry& entry, bool reload) {

@@ -31,20 +31,26 @@
 #ifndef WebFrameClient_h
 #define WebFrameClient_h
 
-#error "This header file is still a work in progress; do not include!"
-
 #include "WebCommon.h"
-#include "WebNavigationGesture.h"
+#include "WebNavigationPolicy.h"
+#include "WebNavigationType.h"
 
 namespace WebKit {
+    class WebDataSource;
     class WebForm;
     class WebFrame;
     class WebMediaPlayer;
     class WebMediaPlayerClient;
+    class WebPlugin;
     class WebString;
     class WebURL;
+    class WebURLRequest;
+    class WebURLResponse;
     class WebWorker;
     class WebWorkerClient;
+    struct WebPluginParams;
+    struct WebSize;
+    struct WebURLError;
 
     class WebFrameClient {
     public:
@@ -90,7 +96,8 @@ namespace WebKit {
         // A client-side redirect will occur.  This may correspond to a <META
         // refresh> or some script activity.
         virtual void willPerformClientRedirect(
-            WebFrame*, const WebURL&, double interval, double fireTime) = 0;
+            WebFrame*, const WebURL& from, const WebURL& to,
+            double interval, double fireTime) = 0;
 
         // A client-side redirect was cancelled.
         virtual void didCancelClientRedirect(WebFrame*) = 0;
@@ -103,13 +110,23 @@ namespace WebKit {
         virtual void didCreateDataSource(WebFrame*, WebDataSource*) = 0;
 
         // A new provisional load has been started.
-        virtual void didStartProvisionalLoad(WebFrame*, WebNavigationGesture) = 0;
+        virtual void didStartProvisionalLoad(WebFrame*) = 0;
 
         // The provisional load was redirected via a HTTP 3xx response.
         virtual void didReceiveServerRedirectForProvisionalLoad(WebFrame*) = 0;
 
         // The provisional load failed.
         virtual void didFailProvisionalLoad(WebFrame*, const WebURLError&) = 0;
+
+        // Notifies the client to commit data for the given frame.  The client
+        // may optionally prevent default processing by setting preventDefault
+        // to true before returning.  If default processing is prevented, then
+        // it is up to the client to manually call commitDocumentData on the
+        // WebFrame.  It is only valid to call commitDocumentData within a call
+        // to didReceiveDocumentData.  If commitDocumentData is not called,
+        // then an empty document will be loaded.
+        virtual void didReceiveDocumentData(
+            WebFrame*, const char* data, size_t length, bool& preventDefault) = 0;
 
         // The provisional datasource is now committed.  The first part of the
         // response body has been received, and the encoding of the response
@@ -146,7 +163,8 @@ namespace WebKit {
         // Called upon update to scroll position, document state, and other
         // non-navigational events related to the data held by WebHistoryItem.
         // WARNING: This method may be called very frequently.
-        virtual void didUpdateCurrentHistoryItem(WebFrame*) = 0;
+        // FIXME: Enable this method.
+        //virtual void didUpdateCurrentHistoryItem(WebFrame*) = 0;
 
 
         // Low-level resource notifications ------------------------------------
@@ -156,16 +174,25 @@ namespace WebKit {
         virtual void assignIdentifierToRequest(
             WebFrame*, unsigned identifier, const WebURLRequest&) = 0;
 
-        // The request may be modified before it is sent.
+        // A request is about to be sent out, and the client may modify it.  Request
+        // is writable, and changes to the URL, for example, will change the request
+        // made.  If this request is the result of a redirect, then redirectResponse
+        // will be non-null and contain the response that triggered the redirect.
         virtual void willSendRequest(
-            WebFrame*, unsigned identifier, WebURLRequest&) = 0;
+            WebFrame*, unsigned identifier, WebURLRequest&,
+            const WebURLResponse& redirectResponse) = 0;
+
+        // Response headers have been received for the resource request given
+        // by identifier.
+        virtual void didReceiveResponse(
+            WebFrame*, unsigned identifier, const WebURLResponse&) = 0;
 
         // The resource request given by identifier succeeded.
-        virtual void didFinishLoading(
+        virtual void didFinishResourceLoad(
             WebFrame*, unsigned identifier) = 0;
 
         // The resource request given by identifier failed.
-        virtual void didFailLoading(
+        virtual void didFailResourceLoad(
             WebFrame*, unsigned identifier, const WebURLError&) = 0;
 
         // The specified request was satified from WebCore's memory cache.
@@ -182,7 +209,7 @@ namespace WebKit {
         // Geometry notifications ----------------------------------------------
 
         // The size of the content area changed.
-        virtual void didChangeContentsSize(WebFrame*) = 0;
+        virtual void didChangeContentsSize(WebFrame*, const WebSize&) = 0;
 
 
         // FIXME need to add:

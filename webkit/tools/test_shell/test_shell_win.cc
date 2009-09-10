@@ -267,8 +267,7 @@ bool TestShell::RunFileTest(const TestParams& params) {
 
   shell->test_is_preparing_ = true;
   shell->set_test_params(&params);
-  std::wstring wstr = UTF8ToWide(params.test_url.c_str());
-  shell->LoadURL(wstr.c_str());
+  shell->LoadURL(GURL(params.test_url));
 
   shell->test_is_preparing_ = false;
   shell->WaitTestFinished();
@@ -311,7 +310,7 @@ void TestShell::PlatformCleanUp() {
   win_util::SetWindowUserData(m_editWnd, NULL);
 }
 
-bool TestShell::Initialize(const std::wstring& startingURL) {
+bool TestShell::Initialize(const GURL& starting_url) {
   // Perform application initialization:
   m_mainWnd = CreateWindow(g_windowClass, g_windowTitle,
                            WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
@@ -362,14 +361,12 @@ bool TestShell::Initialize(const std::wstring& startingURL) {
   delegate_->RegisterDragDrop();
 
   // Load our initial content.
-  if (!startingURL.empty())
-    LoadURL(startingURL.c_str());
+  if (starting_url.is_valid())
+    LoadURL(starting_url);
 
   ShowWindow(webViewWnd(), SW_SHOW);
 
-  bool bIsSVGTest = startingURL.find(L"W3C-SVG-1.1") != std::wstring::npos;
-
-  if (bIsSVGTest) {
+  if (IsSVGTestURL(starting_url)) {
     SizeToSVG();
   } else {
     SizeToDefault();
@@ -500,15 +497,14 @@ void TestShell::ResizeSubViews() {
              rc.bottom - URLBAR_HEIGHT, TRUE);
 }
 
-void TestShell::LoadURLForFrame(const wchar_t* url,
-                                const wchar_t* frame_name) {
-  if (!url)
-      return;
+void TestShell::LoadURLForFrame(const GURL& url,
+                                const std::wstring& frame_name) {
+  if (!url.is_valid())
+    return;
 
-  TRACE_EVENT_BEGIN("url.load", this, WideToUTF8(url));
-  bool bIsSVGTest = wcsstr(url, L"W3C-SVG-1.1") > 0;
+  TRACE_EVENT_BEGIN("url.load", this, url.spec());
 
-  if (bIsSVGTest) {
+  if (IsSVGTestURL(url)) {
     SizeToSVG();
   } else {
     // only resize back to the default when running tests
@@ -516,20 +512,8 @@ void TestShell::LoadURLForFrame(const wchar_t* url,
       SizeToDefault();
   }
 
-  std::wstring urlString(url);
-  if (!urlString.empty() && (PathFileExists(url) || PathIsUNC(url))) {
-      wchar_t fileURL[INTERNET_MAX_URL_LENGTH];
-      DWORD fileURLLength = INTERNET_MAX_URL_LENGTH;
-      if (SUCCEEDED(UrlCreateFromPath(url, fileURL, &fileURLLength, 0)))
-          urlString.assign(fileURL);
-  }
-
-  std::wstring frame_string;
-  if (frame_name)
-      frame_string = frame_name;
-
-  navigation_controller_->LoadEntry(new TestNavigationEntry(
-      -1, GURL(urlString), std::wstring(), frame_string));
+  navigation_controller_->LoadEntry(
+      new TestNavigationEntry(-1, url, std::wstring(), frame_name));
 }
 
 LRESULT CALLBACK TestShell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
@@ -612,12 +596,12 @@ LRESULT CALLBACK TestShell::EditWndProc(HWND hwnd, UINT message,
   switch (message) {
     case WM_CHAR:
       if (wParam == VK_RETURN) {
-        wchar_t strPtr[MAX_URL_LENGTH + 1];  // Leave room for adding a NULL;
-        *((LPWORD)strPtr) = MAX_URL_LENGTH;
-        LRESULT strLen = SendMessage(hwnd, EM_GETLINE, 0, (LPARAM)strPtr);
-        if (strLen > 0) {
-          strPtr[strLen] = 0;  // EM_GETLINE doesn't NULL terminate.
-          shell->LoadURL(strPtr);
+        wchar_t str[MAX_URL_LENGTH + 1];  // Leave room for adding a NULL;
+        *((LPWORD)str) = MAX_URL_LENGTH;
+        LRESULT str_len = SendMessage(hwnd, EM_GETLINE, 0, (LPARAM)str);
+        if (str_len > 0) {
+          str[str_len] = 0;  // EM_GETLINE doesn't NULL terminate.
+          shell->LoadURL(GURL(str));
         }
 
         return 0;

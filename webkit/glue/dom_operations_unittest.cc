@@ -41,8 +41,7 @@ void DomOperationsTests::GetSavableResourceLinksForPage(
   GURL file_url = net::FilePathToFileURL(page_file_path);
   // Load the test file.
   test_shell_->ResetTestController();
-  std::wstring file_wurl = ASCIIToWide(file_url.spec());
-  test_shell_->LoadURL(file_wurl.c_str());
+  test_shell_->LoadURL(file_url);
   test_shell_->WaitTestFinished();
   // Get all savable resource links for the page.
   std::vector<GURL> resources_list;
@@ -52,9 +51,8 @@ void DomOperationsTests::GetSavableResourceLinksForPage(
                                              &referrers_list,
                                              &frames_list);
 
-  GURL main_page_gurl(WideToUTF8(file_wurl));
   ASSERT_TRUE(webkit_glue::GetAllSavableResourceLinksForCurrentPage(
-      test_shell_->webView(), main_page_gurl, &result));
+      test_shell_->webView(), file_url, &result));
   // Check all links of sub-resource
   for (std::vector<GURL>::const_iterator cit = resources_list.begin();
        cit != resources_list.end(); ++cit) {

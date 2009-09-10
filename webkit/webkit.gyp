@@ -1008,6 +1008,7 @@
         'api/public/WebEditingClient.h',
         'api/public/WebFindOptions.h',
         'api/public/WebFrame.h',
+        'api/public/WebFrameClient.h',
         'api/public/WebForm.h',
         'api/public/WebHistoryItem.h',
         'api/public/WebHTTPBody.h',

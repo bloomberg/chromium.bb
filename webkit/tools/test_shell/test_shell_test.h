@@ -20,8 +20,8 @@
 class TestShellTest : public testing::Test {
  protected:
   // Returns the path "test_case_path/test_case".
-  std::wstring GetTestURL(const FilePath& test_case_path,
-                          const std::string& test_case);
+  GURL GetTestURL(const FilePath& test_case_path,
+                  const std::string& test_case);
 
   virtual void SetUp();
   virtual void TearDown();

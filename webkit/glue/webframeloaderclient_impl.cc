@@ -32,6 +32,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "webkit/api/public/WebForm.h"
+#include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebPlugin.h"
 #include "webkit/api/public/WebPluginParams.h"
 #include "webkit/api/public/WebURL.h"
@@ -110,21 +111,20 @@ void WebFrameLoaderClient::frameLoaderDestroyed() {
 }
 
 void WebFrameLoaderClient::windowObjectCleared() {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->WindowObjectCleared(webframe_);
+  if (webframe_->client())
+    webframe_->client()->didClearWindowObject(webframe_);
 
-  WebDevToolsAgentImpl* tools_agent = webview->GetWebDevToolsAgentImpl();
-  if (tools_agent)
-    tools_agent->WindowObjectCleared(webframe_);
+  WebViewImpl* webview = webframe_->GetWebViewImpl();
+  if (webview) {
+    WebDevToolsAgentImpl* tools_agent = webview->GetWebDevToolsAgentImpl();
+    if (tools_agent)
+      tools_agent->WindowObjectCleared(webframe_);
+  }
 }
 
 void WebFrameLoaderClient::documentElementAvailable() {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->DocumentElementAvailable(webframe_);
+  if (webframe_->client())
+    webframe_->client()->didCreateDocumentElement(webframe_);
 }
 
 void WebFrameLoaderClient::didCreateScriptContextForFrame() {
@@ -196,6 +196,9 @@ void WebFrameLoaderClient::detachedFromParent3() {
   // go to a page and then navigate to a new page without getting any asserts
   // or crashes.
   webframe_->frame()->script()->proxy()->clearForClose();
+
+  // Drop any reference to the client since it may shortly become invalid.
+  webframe_->drop_client();
 }
 
 // This function is responsible for associating the |identifier| with a given
@@ -205,10 +208,10 @@ void WebFrameLoaderClient::detachedFromParent3() {
 void WebFrameLoaderClient::assignIdentifierToInitialRequest(
     unsigned long identifier, DocumentLoader* loader,
     const ResourceRequest& request) {
-  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
-  if (d) {
+  if (webframe_->client()) {
     WrappedResourceRequest webreq(request);
-    d->AssignIdentifierToRequest(webframe_, identifier, webreq);
+    webframe_->client()->assignIdentifierToRequest(
+        webframe_, identifier, webreq);
   }
 }
 
@@ -250,12 +253,12 @@ void WebFrameLoaderClient::dispatchWillSendRequest(
   if (request.firstPartyForCookies().isEmpty())
     request.setFirstPartyForCookies(KURL(ParsedURLString, "about:blank"));
 
-  // Give the delegate a crack at the request.
-  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
-  if (d) {
+  // Give the WebFrameClient a crack at the request.
+  if (webframe_->client()) {
     WrappedResourceRequest webreq(request);
     WrappedResourceResponse webresp(redirect_response);
-    d->WillSendRequest(webframe_, identifier, &webreq, webresp);
+    webframe_->client()->willSendRequest(
+        webframe_, identifier, webreq, webresp);
   }
 }
 
@@ -287,10 +290,9 @@ void WebFrameLoaderClient::dispatchDidCancelAuthenticationChallenge(
 void WebFrameLoaderClient::dispatchDidReceiveResponse(DocumentLoader* loader,
                                                       unsigned long identifier,
                                                       const ResourceResponse& response) {
-  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
-  if (d) {
+  if (webframe_->client()) {
     WrappedResourceResponse webresp(response);
-    d->DidReceiveResponse(webframe_, identifier, webresp);
+    webframe_->client()->didReceiveResponse(webframe_, identifier, webresp);
   }
 }
 
@@ -303,34 +305,26 @@ void WebFrameLoaderClient::dispatchDidReceiveContentLength(
 // Called when a particular resource load completes
 void WebFrameLoaderClient::dispatchDidFinishLoading(DocumentLoader* loader,
                                                     unsigned long identifier) {
-  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
-  if (d)
-    d->DidFinishLoading(webframe_, identifier);
+  if (webframe_->client())
+    webframe_->client()->didFinishResourceLoad(webframe_, identifier);
 }
 
 void WebFrameLoaderClient::dispatchDidFailLoading(DocumentLoader* loader,
                                                   unsigned long identifier,
                                                   const ResourceError& error) {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  if (webview && webview->delegate()) {
-    webview->delegate()->DidFailLoadingWithError(
+  if (webframe_->client()) {
+    webframe_->client()->didFailResourceLoad(
         webframe_, identifier, webkit_glue::ResourceErrorToWebURLError(error));
   }
 }
 
 void WebFrameLoaderClient::dispatchDidFinishDocumentLoad() {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  DocumentLoader* documentLoader =
-      webframe_->frame()->loader()->activeDocumentLoader();
-  WebDataSourceImpl* data_source =
-      WebDataSourceImpl::fromDocumentLoader(documentLoader);
-
   // A frame may be reused.  This call ensures we don't hold on to our password
   // listeners and their associated HTMLInputElements.
   webframe_->ClearPasswordListeners();
 
-  if (webview && webview->delegate())
-    webview->delegate()->DidFinishDocumentLoadForFrame(webview, webframe_);
+  if (webframe_->client())
+    webframe_->client()->didFinishDocumentLoad(webframe_);
 }
 
 bool WebFrameLoaderClient::dispatchDidLoadResourceFromMemoryCache(
@@ -338,17 +332,13 @@ bool WebFrameLoaderClient::dispatchDidLoadResourceFromMemoryCache(
     const ResourceRequest& request,
     const ResourceResponse& response,
     int length) {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-
-  bool result = false;
-  if (d) {
+  if (webframe_->client()) {
     WrappedResourceRequest webreq(request);
     WrappedResourceResponse webresp(response);
-    result = d->DidLoadResourceFromMemoryCache(webview, webreq, webresp,
-                                               webframe_);
+    webframe_->client()->didLoadResourceFromMemoryCache(
+        webframe_, webreq, webresp);
   }
-  return result;
+  return false;  // Do not suppress remaining notifications
 }
 
 void WebFrameLoaderClient::dispatchDidLoadResourceByXMLHttpRequest(
@@ -357,15 +347,8 @@ void WebFrameLoaderClient::dispatchDidLoadResourceByXMLHttpRequest(
 }
 
 void WebFrameLoaderClient::dispatchDidHandleOnloadEvents() {
-  // During the onload event of a subframe, the subframe can be removed.  In
-  // that case, it has no page.  This is covered by
-  // LayoutTests/fast/dom/replaceChild.html
-  if (!webframe_->frame()->page())
-    return;
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->DidHandleOnloadEventsForFrame(webview, webframe_);
+  if (webframe_->client())
+    webframe_->client()->didHandleOnloadEvents(webframe_);
 }
 
 // Redirect Tracking
@@ -469,37 +452,30 @@ void WebFrameLoaderClient::dispatchDidReceiveServerRedirectForProvisionalLoad() 
   // what happened).
   ds->appendRedirect(ds->request().url());
 
-  // Dispatch callback
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->DidReceiveProvisionalLoadServerRedirect(webview, webframe_);
+  if (webframe_->client())
+    webframe_->client()->didReceiveServerRedirectForProvisionalLoad(webframe_);
 }
 
 // Called on both success and failure of a client redirect.
 void WebFrameLoaderClient::dispatchDidCancelClientRedirect() {
   // No longer expecting a client redirect.
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview ? webview->delegate() : NULL;
-  if (d) {
+  if (webframe_->client()) {
     expected_client_redirect_src_ = GURL();
     expected_client_redirect_dest_ = GURL();
-
-    d->DidCancelClientRedirect(webview, webframe_);
+    webframe_->client()->didCancelClientRedirect(webframe_);
   }
 
   // No need to clear the redirect chain, since that data source has already
   // been deleted by the time this function is called.
 }
 
-void WebFrameLoaderClient::dispatchWillPerformClientRedirect(const KURL& url,
-                                                             double interval,
-                                                             double fire_date) {
+void WebFrameLoaderClient::dispatchWillPerformClientRedirect(
+    const KURL& url,
+    double interval,
+    double fire_date) {
   // Tells dispatchDidStartProvisionalLoad that if it sees this item it is a
   // redirect and the source item should be added as the start of the chain.
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview ? webview->delegate() : NULL;
-  if (d) {
+  if (webframe_->client()) {
     expected_client_redirect_src_ = webframe_->url();
     expected_client_redirect_dest_ = webkit_glue::KURLToGURL(url);
 
@@ -515,12 +491,12 @@ void WebFrameLoaderClient::dispatchWillPerformClientRedirect(const KURL& url,
       return;
     }
 
-    d->WillPerformClientRedirect(webview,
-                                 webframe_,
-                                 expected_client_redirect_src_,
-                                 expected_client_redirect_dest_,
-                                 static_cast<unsigned int>(interval),
-                                 static_cast<unsigned int>(fire_date));
+    webframe_->client()->willPerformClientRedirect(
+        webframe_,
+        expected_client_redirect_src_,
+        expected_client_redirect_dest_,
+        static_cast<unsigned int>(interval),
+        static_cast<unsigned int>(fire_date));
   }
 }
 
@@ -548,13 +524,13 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
     // properly flag these transitions. Once a proper fix for this bug is
     // identified and applied the following block may no longer be required.
     bool was_client_redirect =
-        ((url == expected_client_redirect_dest_) &&
-         (chain_end == expected_client_redirect_src_)) ||
-        (NavigationGestureForLastLoad() == NavigationGestureAuto);
+        (url == expected_client_redirect_dest_ &&
+         chain_end == expected_client_redirect_src_) ||
+        !webframe_->isProcessingUserGesture();
 
     if (was_client_redirect) {
-      if (d)
-        d->DidCompleteClientRedirect(webview, webframe_, chain_end);
+      if (webframe_->client())
+        webframe_->client()->didCompleteClientRedirect(webframe_, chain_end);
       ds->appendRedirect(chain_end);
       // Make sure we clear the expected redirect since we just effectively
       // completed it.
@@ -569,9 +545,9 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
 
   bool is_new_navigation;
   webview->DidCommitLoad(&is_new_navigation);
-  if (d) {
-    d->DidChangeLocationWithinPageForFrame(webview, webframe_,
-                                           is_new_navigation);
+  if (webframe_->client()) {
+    webframe_->client()->didChangeLocationWithinPage(
+        webframe_, is_new_navigation);
   }
 
   if (d)
@@ -579,10 +555,8 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
 }
 
 void WebFrameLoaderClient::dispatchWillClose() {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->WillCloseFrame(webview, webframe_);
+  if (webframe_->client())
+    webframe_->client()->willClose(webframe_);
 }
 
 void WebFrameLoaderClient::dispatchDidReceiveIcon() {
@@ -609,8 +583,6 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad() {
   // any redirects yet.
   DCHECK(!ds->hasRedirectChain());
 
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
   // If this load is what we expected from a client redirect, treat it as a
   // redirect from that original page. The expected redirect urls will be
   // cleared by DidCancelClientRedirect.
@@ -626,26 +598,23 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad() {
   }
   ds->appendRedirect(url);
 
-  if (d) {
+  if (webframe_->client()) {
     // As the comment for DidCompleteClientRedirect in webview_delegate.h
     // points out, whatever information its invocation contains should only
     // be considered relevant until the next provisional load has started.
     // So we first tell the delegate that the load started, and then tell it
     // about the client redirect the load is responsible for completing.
-    d->DidStartProvisionalLoadForFrame(webview, webframe_,
-                                       NavigationGestureForLastLoad());
+    webframe_->client()->didStartProvisionalLoad(webframe_);
     if (completing_client_redirect)
-      d->DidCompleteClientRedirect(webview, webframe_,
-                                   expected_client_redirect_src_);
+      webframe_->client()->didCompleteClientRedirect(
+          webframe_, expected_client_redirect_src_);
   }
 }
 
 void WebFrameLoaderClient::dispatchDidReceiveTitle(const String& title) {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d) {
-    d->DidReceiveTitle(webview, webkit_glue::StringToStdWString(title),
-                       webframe_);
+  if (webframe_->client()) {
+    webframe_->client()->didReceiveTitle(
+        webframe_, webkit_glue::StringToWebString(title));
   }
 }
 
@@ -653,9 +622,11 @@ void WebFrameLoaderClient::dispatchDidCommitLoad() {
   WebViewImpl* webview = webframe_->GetWebViewImpl();
   bool is_new_navigation;
   webview->DidCommitLoad(&is_new_navigation);
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->DidCommitLoadForFrame(webview, webframe_, is_new_navigation);
+
+  if (webframe_->client()) {
+    webframe_->client()->didCommitProvisionalLoad(
+        webframe_, is_new_navigation);
+  }
 
   WebDevToolsAgentImpl* tools_agent = webview->GetWebDevToolsAgentImpl();
   if (tools_agent) {
@@ -695,10 +666,9 @@ void WebFrameLoaderClient::dispatchDidFailLoad(const ResourceError& error) {
 void WebFrameLoaderClient::dispatchDidFinishLoad() {
   OwnPtr<WebPluginLoadObserver> plugin_load_observer = GetPluginLoadObserver();
 
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->DidFinishLoadForFrame(webview, webframe_);
+  if (webframe_->client())
+    webframe_->client()->didFinishLoad(webframe_);
+
   if (plugin_load_observer)
     plugin_load_observer->didFinishLoading();
 
@@ -835,13 +805,11 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
     PassRefPtr<WebCore::FormState> form_state) {
   PolicyAction policy_action = PolicyIgnore;
 
-  WebViewImpl* wv = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = wv->delegate();
   // It is valid for this function to be invoked in code paths where the
   // the webview is closed.
   // The NULL check here is to fix a crash that seems strange
   // (see - https://bugs.webkit.org/show_bug.cgi?id=23554).
-  if (d && !request.url().isNull()) {
+  if (webframe_->client() && !request.url().isNull()) {
     WebNavigationPolicy navigation_policy =
         WebKit::WebNavigationPolicyCurrentTab;
     ActionSpecifiesNavigationPolicy(action, &navigation_policy);
@@ -859,8 +827,8 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
         WebNavigationType webnav_type =
             WebDataSourceImpl::toWebNavigationType(action.type());
 
-        navigation_policy = d->PolicyForNavigationAction(
-            wv, webframe_, ds->request(), webnav_type, navigation_policy,
+        navigation_policy = webframe_->client()->decidePolicyForNavigation(
+            webframe_, ds->request(), webnav_type, navigation_policy,
             is_redirect);
       }
     }
@@ -871,13 +839,9 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
       policy_action = PolicyDownload;
     } else {
       if (navigation_policy != WebKit::WebNavigationPolicyIgnore) {
-        GURL referrer = webkit_glue::StringToGURL(
-            request.httpHeaderField("Referer"));
-
-        d->OpenURL(webframe_->GetWebViewImpl(),
-                   webkit_glue::KURLToGURL(request.url()),
-                   referrer,
-                   navigation_policy);
+        WrappedResourceRequest webreq(request);
+        webframe_->client()->loadURLExternally(
+            webframe_, webreq, navigation_policy);
       }
       policy_action = PolicyIgnore;
     }
@@ -896,11 +860,9 @@ void WebFrameLoaderClient::dispatchUnableToImplementPolicy(const ResourceError&)
 
 void WebFrameLoaderClient::dispatchWillSubmitForm(FramePolicyFunction function,
     PassRefPtr<FormState> form_ref) {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d) {
-    d->WillSubmitForm(webview, webframe_,
-                      webkit_glue::HTMLFormElementToWebForm(form_ref->form()));
+  if (webframe_->client()) {
+    webframe_->client()->willSubmitForm(
+        webframe_, webkit_glue::HTMLFormElementToWebForm(form_ref->form()));
   }
   (webframe_->frame()->loader()->*function)(PolicyUse);
 }
@@ -974,9 +936,12 @@ void WebFrameLoaderClient::didChangeTitle(DocumentLoader*) {
 // Called whenever data is received.
 void WebFrameLoaderClient::committedLoad(DocumentLoader* loader, const char* data, int length) {
   if (!plugin_widget_.get()) {
-    WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
-    if (d)
-      d->DidReceiveDocumentData(webframe_, data, length);
+    if (webframe_->client()) {
+      bool preventDefault = false;
+      webframe_->client()->didReceiveDocumentData(webframe_, data, length, preventDefault);
+      if (!preventDefault)
+        webframe_->commitDocumentData(data, length);
+    }
   }
 
   // If we are sending data to WebCore::MediaDocument, we should stop here
@@ -1158,9 +1123,8 @@ PassRefPtr<DocumentLoader> WebFrameLoaderClient::createDocumentLoader(
     const ResourceRequest& request,
     const SubstituteData& data) {
   RefPtr<WebDataSourceImpl> ds = WebDataSourceImpl::create(request, data);
-  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
-  if (d)
-    d->DidCreateDataSource(webframe_, ds.get());
+  if (webframe_->client())
+    webframe_->client()->didCreateDataSource(webframe_, ds.get());
   return ds.release();
 }
 
@@ -1246,8 +1210,7 @@ PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(
     return NULL;
 #endif
 
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  if (!webview->delegate())
+  if (!webframe_->client())
     return NULL;
 
   WebPluginParams params;
@@ -1257,7 +1220,7 @@ PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(
   CopyStringVector(param_values, &params.attributeValues);
   params.loadManually = load_manually;
 
-  WebPlugin* webplugin = webview->delegate()->CreatePlugin(webframe_, params);
+  WebPlugin* webplugin = webframe_->client()->createPlugin(webframe_, params);
   if (!webplugin)
     return NULL;
 
@@ -1359,16 +1322,6 @@ bool WebFrameLoaderClient::ActionSpecifiesNavigationPolicy(
     }
   }
   return true;
-}
-
-NavigationGesture WebFrameLoaderClient::NavigationGestureForLastLoad() {
-  // TODO(timsteele): isProcessingUserGesture() returns too many false positives
-  // (see bug 1051891) to trust it and assign NavigationGestureUser, so
-  // for now we assign Unknown in those cases and Auto otherwise.
-  // (Issue 874811 known false negative as well).
-  return webframe_->frame()->loader()->isProcessingUserGesture() ?
-      NavigationGestureUnknown :
-      NavigationGestureAuto;
 }
 
 void WebFrameLoaderClient::HandleBackForwardNavigation(const GURL& url) {

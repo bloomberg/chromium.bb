@@ -24,7 +24,7 @@ TEST_F(MediaLeakTest, VideoBear) {
                          .Append(FILE_PATH_LITERAL("data"))
                          .Append(FILE_PATH_LITERAL("media"))
                          .Append(FILE_PATH_LITERAL("bear.html"));
-  test_shell_->LoadURL(media_file.ToWStringHack().c_str());
+  test_shell_->LoadFile(media_file);
   test_shell_->WaitTestFinished();
 }
 
@@ -37,7 +37,7 @@ TEST_F(MediaLeakTest, DISABLED_ManyVideoBear) {
                          .Append(FILE_PATH_LITERAL("data"))
                          .Append(FILE_PATH_LITERAL("media"))
                          .Append(FILE_PATH_LITERAL("manybear.html"));
-  test_shell_->LoadURL(media_file.ToWStringHack().c_str());
+  test_shell_->LoadFile(media_file);
   test_shell_->WaitTestFinished();
 }
 

@@ -25,6 +25,7 @@
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
 #include "webkit/api/public/WebEditingClient.h"
+#include "webkit/api/public/WebFrameClient.h"
 #if defined(OS_MACOSX)
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebPopupMenuInfo.h"
@@ -46,6 +47,7 @@ class WebWidgetHost;
 
 class TestWebViewDelegate : public WebViewDelegate,
                             public WebKit::WebEditingClient,
+                            public WebKit::WebFrameClient,
                             public webkit_glue::WebPluginPageDelegate,
                             public base::SupportsWeakPtr<TestWebViewDelegate> {
  public:
@@ -77,16 +79,6 @@ class TestWebViewDelegate : public WebViewDelegate,
       WebView* webview,
       const WebKit::WebPopupMenuInfo& info);
 #endif
-  virtual WebKit::WebPlugin* CreatePlugin(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
-  virtual WebKit::WebMediaPlayer* CreateWebMediaPlayer(
-      WebKit::WebMediaPlayerClient* client);
-  virtual WebKit::WebWorker* CreateWebWorker(WebKit::WebWorkerClient* client);
-  virtual void OpenURL(WebView* webview,
-                       const GURL& url,
-                       const GURL& referrer,
-                       WebKit::WebNavigationPolicy policy);
   virtual void RunJavaScriptAlert(WebKit::WebFrame* webframe,
                                   const std::wstring& message);
   virtual bool RunJavaScriptConfirm(WebKit::WebFrame* webframe,
@@ -121,99 +113,7 @@ class TestWebViewDelegate : public WebViewDelegate,
                                int edit_flags,
                                const std::string& security_info,
                                const std::string& frame_charset);
-  virtual void DidCreateDataSource(WebKit::WebFrame* frame,
-                                   WebKit::WebDataSource* ds);
-  virtual void DidStartProvisionalLoadForFrame(
-    WebView* webview,
-    WebKit::WebFrame* frame,
-    NavigationGesture gesture);
-  virtual void DidReceiveProvisionalLoadServerRedirect(
-    WebView* webview, WebKit::WebFrame* frame);
-  virtual void DidFailProvisionalLoadWithError(
-      WebView* webview,
-      const WebKit::WebURLError& error,
-      WebKit::WebFrame* frame);
-  virtual void DidCommitLoadForFrame(
-      WebView* webview,
-      WebKit::WebFrame* frame,
-      bool is_new_navigation);
-  virtual void DidReceiveTitle(WebView* webview,
-                               const std::wstring& title,
-                               WebKit::WebFrame* frame);
-  virtual void DidFinishDocumentLoadForFrame(WebView* webview,
-                                             WebKit::WebFrame* frame);
-  virtual void DidHandleOnloadEventsForFrame(WebView* webview,
-                                             WebKit::WebFrame* frame);
-  virtual void DidChangeLocationWithinPageForFrame(WebView* webview,
-                                                   WebKit::WebFrame* frame,
-                                                   bool is_new_navigation);
   virtual void DidReceiveIconForFrame(WebView* webview, WebKit::WebFrame* frame);
-
-  virtual void WillPerformClientRedirect(WebView* webview,
-                                         WebKit::WebFrame* frame,
-                                         const GURL& src_url,
-                                         const GURL& dest_url,
-                                         unsigned int delay_seconds,
-                                         unsigned int fire_date);
-  virtual void DidCancelClientRedirect(WebView* webview,
-                                       WebKit::WebFrame* frame);
-
-  virtual void DidFinishLoadForFrame(WebView* webview, WebKit::WebFrame* frame);
-  virtual void DidFailLoadWithError(WebView* webview,
-                                    const WebKit::WebURLError& error,
-                                    WebKit::WebFrame* for_frame);
-
-  virtual void AssignIdentifierToRequest(WebKit::WebFrame* webframe,
-                                         uint32 identifier,
-                                         const WebKit::WebURLRequest& request);
-  virtual void WillSendRequest(WebKit::WebFrame* webframe,
-                               uint32 identifier,
-                               WebKit::WebURLRequest* request,
-                               const WebKit::WebURLResponse& redirect_response);
-  virtual void DidReceiveResponse(WebKit::WebFrame* webframe,
-                                  uint32 identifier,
-                                  const WebKit::WebURLResponse& response);
-  virtual void DidFinishLoading(WebKit::WebFrame* webframe, uint32 identifier);
-  virtual void DidFailLoadingWithError(WebKit::WebFrame* webframe,
-                                       uint32 identifier,
-                                       const WebKit::WebURLError& error);
-
-#if 0
-  virtual bool ShouldBeginEditing(WebView* webview, std::wstring range);
-  virtual bool ShouldEndEditing(WebView* webview, std::wstring range);
-  virtual bool ShouldInsertNode(WebView* webview,
-                                std::wstring node,
-                                std::wstring range,
-                                std::wstring action);
-  virtual bool ShouldInsertText(WebView* webview,
-                                std::wstring text,
-                                std::wstring range,
-                                std::wstring action);
-  virtual bool ShouldChangeSelectedRange(WebView* webview,
-                                         std::wstring fromRange,
-                                         std::wstring toRange,
-                                         std::wstring affinity,
-                                         bool stillSelecting);
-  virtual bool ShouldDeleteRange(WebView* webview, std::wstring range);
-  virtual bool ShouldApplyStyle(WebView* webview,
-                                std::wstring style,
-                                std::wstring range);
-  virtual bool SmartInsertDeleteEnabled();
-  virtual bool IsSelectTrailingWhitespaceEnabled();
-  virtual void DidBeginEditing();
-  virtual void DidChangeSelection(bool is_empty_selection);
-  virtual void DidChangeContents();
-  virtual void DidEndEditing();
-#endif
-
-  virtual void WindowObjectCleared(WebKit::WebFrame* webframe);
-  virtual WebKit::WebNavigationPolicy PolicyForNavigationAction(
-    WebView* webview,
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLRequest& request,
-    WebKit::WebNavigationType type,
-    WebKit::WebNavigationPolicy default_policy,
-    bool is_redirect);
   virtual void NavigateBackForwardSoon(int offset);
   virtual int GetHistoryBackListCount();
   virtual int GetHistoryForwardListCount();
@@ -257,6 +157,68 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void didChangeContents();
   virtual void didExecuteCommand(const WebKit::WebString& command_name) {}
   virtual void didEndEditing();
+
+  // WebKit::WebFrameClient
+  virtual WebKit::WebPlugin* createPlugin(
+      WebKit::WebFrame*, const WebKit::WebPluginParams&);
+  virtual WebKit::WebWorker* createWorker(
+      WebKit::WebFrame*, WebKit::WebWorkerClient*);
+  virtual WebKit::WebMediaPlayer* createMediaPlayer(
+      WebKit::WebFrame*, WebKit::WebMediaPlayerClient*);
+  virtual void willClose(WebKit::WebFrame*);
+  virtual void loadURLExternally(
+      WebKit::WebFrame*, const WebKit::WebURLRequest&,
+      WebKit::WebNavigationPolicy);
+  virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
+      WebKit::WebFrame*, const WebKit::WebURLRequest&,
+      WebKit::WebNavigationType, WebKit::WebNavigationPolicy default_policy,
+      bool isRedirect);
+  virtual void willSubmitForm(WebKit::WebFrame*, const WebKit::WebForm&);
+  virtual void willPerformClientRedirect(
+      WebKit::WebFrame*, const WebKit::WebURL& from, const WebKit::WebURL& to,
+      double interval, double fire_time);
+  virtual void didCancelClientRedirect(WebKit::WebFrame*);
+  virtual void didCompleteClientRedirect(
+      WebKit::WebFrame*, const WebKit::WebURL& from);
+  virtual void didCreateDataSource(
+      WebKit::WebFrame*, WebKit::WebDataSource*);
+  virtual void didStartProvisionalLoad(WebKit::WebFrame*);
+  virtual void didReceiveServerRedirectForProvisionalLoad(WebKit::WebFrame*);
+  virtual void didFailProvisionalLoad(
+      WebKit::WebFrame*, const WebKit::WebURLError&);
+  virtual void didReceiveDocumentData(
+      WebKit::WebFrame*, const char* data, size_t length,
+      bool& preventDefault);
+  virtual void didCommitProvisionalLoad(
+      WebKit::WebFrame*, bool is_new_navigation);
+  virtual void didClearWindowObject(WebKit::WebFrame*);
+  virtual void didCreateDocumentElement(WebKit::WebFrame*);
+  virtual void didReceiveTitle(
+      WebKit::WebFrame*, const WebKit::WebString& title);
+  virtual void didFinishDocumentLoad(WebKit::WebFrame*);
+  virtual void didHandleOnloadEvents(WebKit::WebFrame*);
+  virtual void didFailLoad(
+      WebKit::WebFrame*, const WebKit::WebURLError&);
+  virtual void didFinishLoad(WebKit::WebFrame*);
+  virtual void didChangeLocationWithinPage(
+      WebKit::WebFrame*, bool isNewNavigation);
+  virtual void assignIdentifierToRequest(
+      WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLRequest&);
+  virtual void willSendRequest(
+      WebKit::WebFrame*, unsigned identifier, WebKit::WebURLRequest&,
+      const WebKit::WebURLResponse& redirectResponse);
+  virtual void didReceiveResponse(
+      WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLResponse&);
+  virtual void didFinishResourceLoad(
+      WebKit::WebFrame*, unsigned identifier);
+  virtual void didFailResourceLoad(
+      WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLError&);
+  virtual void didLoadResourceFromMemoryCache(
+      WebKit::WebFrame*, const WebKit::WebURLRequest&,
+      const WebKit::WebURLResponse&);
+  virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame*);
+  virtual void didChangeContentsSize(
+      WebKit::WebFrame*, const WebKit::WebSize&);
 
   // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(

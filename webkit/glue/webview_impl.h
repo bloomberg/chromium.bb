@@ -82,7 +82,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void setTextDirection(WebKit::WebTextDirection direction);
 
   // WebView methods:
-  virtual void InitializeMainFrame();
+  virtual void InitializeMainFrame(WebKit::WebFrameClient* frame_client);
   virtual bool ShouldClose();
   virtual void ClosePage();
   virtual WebViewDelegate* GetDelegate();
