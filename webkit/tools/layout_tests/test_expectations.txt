@@ -1506,7 +1506,6 @@ BUG8630 LINUX : LayoutTests/fast/repaint/table-section-overflow.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/text-shadow-horizontal.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/text-shadow.html = FAIL
 
-BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-as-image-incremental-repaint.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
 
@@ -1514,27 +1513,15 @@ BUG8630 WIN LINUX : LayoutTests/fast/backgrounds/solid-color-context-restore.htm
 BUG8630 WIN LINUX : LayoutTests/fast/dynamic/containing-block-change.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/forms/hidden-listbox.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/forms/listbox-clip.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/frames/inline-object-inside-frameset.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/layers/add-layer-with-nested-stacking.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/layers/inline-dirty-z-order-lists.html = FAIL
 BUG8630 LINUX : LayoutTests/fast/layers/layer-content-visibility-change.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/layers/remove-layer-with-nested-stacking.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/overflow/hidden-scrollbar-resize.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/reflections/inline-crash.html = FAIL
 BUG8630 WIN : LayoutTests/fast/replaced/width100percent-textarea.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/replaced/width100percent-button.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/table/empty-section-crash.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
 BUG8630 WIN LINUX : pending/fast/repaint/bugzilla-6473.html = FAIL
 // These started flaking after initial implementation of .display() landed.
-BUG8630 LINUX DEBUG : LayoutTests/svg/custom/mask-inside-defs.svg = FAIL PASS
-BUG8630 LINUX DEBUG : LayoutTests/svg/custom/stroked-pattern.svg = FAIL PASS
 BUG8630 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL PASS
-BUG8630 LINUX : LayoutTests/svg/batik/filters/feTile.svg = FAIL PASS
 BUG8630 LINUX : LayoutTests/fast/backgrounds/001.html = CRASH FAIL PASS
-BUG8630 LINUX : LayoutTests/fast/forms/form-added-to-table.html = FAIL PASS
-BUG8630 LINUX : LayoutTests/fast/forms/button-align.html = FAIL PASS
-BUG8630 LINUX : LayoutTests/fast/forms/slider-thumb-stylability.html = FAIL PASS
 
 // Linux pixeltest failure: Failing to rotate the form control
 BUG10390 LINUX : LayoutTests/fast/transforms/transformed-focused-text-input.html = FAIL
