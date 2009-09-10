@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/notifier/base/time.h"
-#include "notifier/testing/notifier/unittest.h"
 
 namespace notifier {
 

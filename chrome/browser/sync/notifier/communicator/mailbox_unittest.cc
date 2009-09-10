@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/notifier/communicator/mailbox.h"
-#include "notifier/testing/notifier/unittest.h"
 
 namespace notifier {
 TEST_NOTIFIER_F(MailBoxTest);
