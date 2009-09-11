@@ -317,6 +317,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   void SetTextAndSelectedRange(const std::wstring& text,
                                const CharRange& range);
 
+  // Set the selection to |range|.
+  void SetSelectedRange(const CharRange& range);
+
   // The widget we expose, used for vertically centering the real text edit,
   // since the height will change based on the font / font size, etc.
   OwnedWidgetGtk alignment_;
@@ -346,9 +349,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   ToolbarModel::SecurityLevel scheme_security_level_;
 
-  // Text and selection at the point where the user started using the
+  // Selection at the point where the user started using the
   // arrows to move around in the popup.
-  std::wstring saved_temporary_text_;
   CharRange saved_temporary_selection_;
 
   // Tracking state before and after a possible change.

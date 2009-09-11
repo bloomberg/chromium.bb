@@ -177,10 +177,9 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   // Objective-C object to bridge field_ delegate calls to C++.
   scoped_nsobject<AutocompleteEditHelper> edit_helper_;
 
-  // Text and selection at the point where the user started using the
+  // Selection at the point where the user started using the
   // arrows to move around in the popup.
   NSRange saved_temporary_selection_;
-  std::wstring saved_temporary_text_;
 
   // Tracking state before and after a possible change for reporting
   // to model_.

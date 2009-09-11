@@ -451,10 +451,8 @@ void AutocompleteEditViewMac::OnTemporaryTextMaybeChanged(
   // TODO(shess): I believe this is for when the user arrows around
   // the popup, will be restored if they hit escape.  Figure out if
   // that is for certain it.
-  if (save_original_selection) {
+  if (save_original_selection)
     saved_temporary_selection_ = GetSelectedRange();
-    saved_temporary_text_ = GetText();
-  }
 
   SetWindowTextAndCaretPos(display_text, display_text.size());
   controller_->OnChanged();
@@ -478,8 +476,7 @@ bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
 }
 
 void AutocompleteEditViewMac::OnRevertTemporaryText() {
-  SetTextAndSelectedRange(saved_temporary_text_, saved_temporary_selection_);
-  saved_temporary_text_.clear();
+  SetSelectedRange(saved_temporary_selection_);
 }
 
 bool AutocompleteEditViewMac::IsFirstResponder() const {

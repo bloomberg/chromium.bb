@@ -109,9 +109,20 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
   // eliminated and just become a call to the observer on the edit.
   std::wstring keyword;
   const bool is_keyword_hint = GetKeywordForMatch(match, &keyword);
-  edit_model_->OnPopupDataChanged(
-      reset_to_default ? std::wstring() : match.fill_into_edit,
-      !reset_to_default, keyword, is_keyword_hint, match.type);
+
+  if (reset_to_default) {
+    std::wstring inline_autocomplete_text;
+    if ((match.inline_autocomplete_offset != std::wstring::npos) &&
+        (match.inline_autocomplete_offset < match.fill_into_edit.length())) {
+      inline_autocomplete_text =
+          match.fill_into_edit.substr(match.inline_autocomplete_offset);
+    }
+    edit_model_->OnPopupDataChanged(inline_autocomplete_text, false,
+                                    keyword, is_keyword_hint, match.type);
+  } else {
+    edit_model_->OnPopupDataChanged(match.fill_into_edit, true,
+                                    keyword, is_keyword_hint, match.type);
+  }
 
   // Repaint old and new selected lines immediately, so that the edit doesn't
   // appear to update [much] faster than the popup.  We must not update

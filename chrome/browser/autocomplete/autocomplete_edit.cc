@@ -456,6 +456,11 @@ void AutocompleteEditModel::OnPopupDataChanged(
     return;
   }
 
+  // TODO(suzhe): Instead of messing with |inline_autocomplete_text_| here,
+  // we should probably do it inside Observe(), and save/restore it around
+  // changes to the temporary text.  This will let us remove knowledge of
+  // inline autocompletions from the popup code.
+  //
   // Handle changes to inline autocomplete text.  Don't make changes if the user
   // is showing temporary text.  Making display changes would be obviously
   // wrong; making changes to the inline_autocomplete_text_ itself turns out to

@@ -338,26 +338,13 @@ void AutocompleteEditViewGtk::SetWindowTextAndCaretPos(const std::wstring& text,
   SetTextAndSelectedRange(text, range);
 }
 
-void AutocompleteEditViewGtk::SetTextAndSelectedRange(const std::wstring& text,
-                                                      const CharRange& range) {
-  std::string utf8 = WideToUTF8(text);
-  gtk_text_buffer_set_text(text_buffer_, utf8.data(), utf8.length());
-
-  GtkTextIter insert, bound;
-  ItersFromCharRange(range, &insert, &bound);
-  gtk_text_buffer_select_range(text_buffer_, &insert, &bound);
-}
-
 void AutocompleteEditViewGtk::SetForcedQuery() {
   const std::wstring current_text(GetText());
   if (current_text.empty() || (current_text[0] != '?')) {
     SetUserText(L"?");
   } else {
-    GtkTextIter start, end;
-    gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
-    gtk_text_buffer_get_iter_at_offset(text_buffer_, &start, 1);
     StartUpdatingHighlightedText();
-    gtk_text_buffer_select_range(text_buffer_, &start, &end);
+    SetSelectedRange(CharRange(current_text.size(), 1));
     FinishUpdatingHighlightedText();
   }
 }
@@ -407,10 +394,8 @@ void AutocompleteEditViewGtk::ClosePopup() {
 void AutocompleteEditViewGtk::OnTemporaryTextMaybeChanged(
     const std::wstring& display_text,
     bool save_original_selection) {
-  if (save_original_selection) {
+  if (save_original_selection)
     saved_temporary_selection_ = GetSelection();
-    saved_temporary_text_ = GetText();
-  }
 
   StartUpdatingHighlightedText();
   SetWindowTextAndCaretPos(display_text, display_text.length());
@@ -425,14 +410,8 @@ bool AutocompleteEditViewGtk::OnInlineAutocompleteTextMaybeChanged(
     return false;
 
   StartUpdatingHighlightedText();
-  SetWindowTextAndCaretPos(display_text, 0);
-
-  // Select the part of the text that was inline autocompleted.
-  GtkTextIter bound, insert;
-  gtk_text_buffer_get_bounds(text_buffer_, &insert, &bound);
-  gtk_text_buffer_get_iter_at_offset(text_buffer_, &insert, user_text_length);
-  gtk_text_buffer_select_range(text_buffer_, &insert, &bound);
-
+  CharRange range(display_text.size(), user_text_length);
+  SetTextAndSelectedRange(display_text, range);
   FinishUpdatingHighlightedText();
   TextChanged();
   return true;
@@ -440,9 +419,8 @@ bool AutocompleteEditViewGtk::OnInlineAutocompleteTextMaybeChanged(
 
 void AutocompleteEditViewGtk::OnRevertTemporaryText() {
   StartUpdatingHighlightedText();
-  SetTextAndSelectedRange(saved_temporary_text_, saved_temporary_selection_);
+  SetSelectedRange(saved_temporary_selection_);
   FinishUpdatingHighlightedText();
-  saved_temporary_text_.clear();
   TextChanged();
 }
 
@@ -1174,4 +1152,17 @@ void AutocompleteEditViewGtk::SavePrimarySelection(
 
   gtk_clipboard_set_text(
       clipboard, selected_text.data(), selected_text.size());
+}
+
+void AutocompleteEditViewGtk::SetTextAndSelectedRange(const std::wstring& text,
+                                                      const CharRange& range) {
+  std::string utf8 = WideToUTF8(text);
+  gtk_text_buffer_set_text(text_buffer_, utf8.data(), utf8.length());
+  SetSelectedRange(range);
+}
+
+void AutocompleteEditViewGtk::SetSelectedRange(const CharRange& range) {
+  GtkTextIter insert, bound;
+  ItersFromCharRange(range, &bound, &insert);
+  gtk_text_buffer_select_range(text_buffer_, &insert, &bound);
 }
