@@ -54,31 +54,30 @@ class ExtensionUITest : public ParentTestType {
   }
 
   void TestWithURL(const GURL& url) {
-    const IPC::ExternalTabSettings settings = {
-      NULL,
-      gfx::Rect(),
-      WS_POPUP,
-      false,
-      false
-    };
-
+    AutomationProxyForExternalTab* proxy =
+        static_cast<AutomationProxyForExternalTab*>(automation());
     HWND external_tab_container = NULL;
     HWND tab_wnd = NULL;
-    scoped_refptr<TabProxy> tab(automation()->CreateExternalTab(settings,
-        &external_tab_container, &tab_wnd));
-    ASSERT_TRUE(tab != NULL);
-    ASSERT_NE(FALSE, ::IsWindow(external_tab_container));
-    DoAdditionalPreNavigateSetup(tab.get());
+    scoped_refptr<TabProxy> tab(proxy->CreateTabWithHostWindow(false,
+        GURL(), &external_tab_container, &tab_wnd));
 
-    // We explicitly do not make this a toolstrip in the extension manifest,
-    // so that the test can control when it gets loaded, and so that we test
-    // the intended behavior that tabs should be able to show extension pages
-    // (useful for development etc.)
-    tab->NavigateInExternalTab(url);
-    EXPECT_EQ(true, ExternalTabMessageLoop(external_tab_container, 5000));
-    // Since the tab goes away lazily, wait a bit.
-    PlatformThread::Sleep(1000);
-    EXPECT_FALSE(tab->is_valid());
+    EXPECT_TRUE(tab->is_valid());
+    if (tab) {
+      // Enter a message loop to allow the tab to be created
+      proxy->WaitForNavigation(2000);
+      DoAdditionalPreNavigateSetup(tab.get());
+
+      // We explicitly do not make this a toolstrip in the extension manifest,
+      // so that the test can control when it gets loaded, and so that we test
+      // the intended behavior that tabs should be able to show extension pages
+      // (useful for development etc.)
+      tab->NavigateInExternalTab(url);
+      EXPECT_TRUE(proxy->WaitForMessage(action_max_timeout_ms()));
+
+      proxy->DestroyHostWindow();
+      proxy->WaitForTabCleanup(tab, action_max_timeout_ms());
+      EXPECT_FALSE(tab->is_valid());
+    }
   }
 
   // Override if you need additional stuff before we navigate the page.

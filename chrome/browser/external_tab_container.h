@@ -61,7 +61,8 @@ class ExternalTabContainer : public TabContentsDelegate,
             DWORD style,
             bool load_requests_via_automation,
             bool handle_top_level_requests,
-            TabContents* existing_tab_contents);
+            TabContents* existing_tab_contents,
+            const GURL& initial_url);
 
   // Unhook the keystroke listener and notify about the closing TabContents.
   // This function gets called from three places, which is fine.
@@ -158,6 +159,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   bool InitNavigationInfo(IPC::NavigationInfo* nav_info,
                           NavigationType::Type nav_type,
                           int relative_offset);
+  void Navigate(const GURL& url, const GURL& referrer);
 
  private:
   // Helper function for processing keystokes coming back from the renderer

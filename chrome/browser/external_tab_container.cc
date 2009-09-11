@@ -51,7 +51,8 @@ bool ExternalTabContainer::Init(Profile* profile,
                                 DWORD style,
                                 bool load_requests_via_automation,
                                 bool handle_top_level_requests,
-                                TabContents* existing_contents) {
+                                TabContents* existing_contents,
+                                const GURL& initial_url) {
   if (IsWindow()) {
     NOTREACHED();
     return false;
@@ -66,6 +67,7 @@ bool ExternalTabContainer::Init(Profile* profile,
     NOTREACHED();
     return false;
   }
+
   // TODO(jcampan): limit focus traversal to contents.
 
   // We don't ever remove the prop because the lifetime of this object
@@ -124,6 +126,13 @@ bool ExternalTabContainer::Init(Profile* profile,
       NotificationType::EXTERNAL_TAB_CREATED,
       Source<NavigationController>(controller),
       NotificationService::NoDetails());
+
+  // Start loading initial URL
+  if (!initial_url.is_empty()) {
+    // Navigate out of context since we don't have a 'tab_handle_' yet.
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &ExternalTabContainer::Navigate, initial_url, GURL()));
+  }
 
   // We need WS_POPUP to be on the window during initialization, but
   // once initialized we apply the requested style which may or may not
@@ -287,7 +296,8 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
           WS_CHILD,
           load_requests_via_automation_,
           handle_top_level_requests_,
-          new_contents);
+          new_contents,
+          GURL());
 
       if (result) {
         pending_tabs_[reinterpret_cast<intptr_t>(new_container.get())] =
@@ -585,6 +595,8 @@ bool ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,
       tab_contents_->controller().GetCurrentEntryIndex();
   nav_info->title =  UTF16ToWideHack(entry->title());
   nav_info->url = entry->url();
+  nav_info->security_style = entry->ssl().security_style();
+  nav_info->has_mixed_content = entry->ssl().has_mixed_content();
   return true;
 }
 
@@ -601,3 +613,12 @@ ExternalTabContainer* ExternalTabContainer::RemovePendingTab(intptr_t cookie) {
   return NULL;
 }
 
+void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
+  if (!tab_contents_) {
+    NOTREACHED();
+    return;
+  }
+
+  tab_contents_->controller().LoadURL(url, referrer,
+                                      PageTransition::START_PAGE);
+}

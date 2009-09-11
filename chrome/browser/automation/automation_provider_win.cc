@@ -345,7 +345,7 @@ void AutomationProvider::CreateExternalTab(
   // which is released when the window is destroyed.
   external_tab_container->Init(profile, settings.parent, settings.dimensions,
       settings.style, settings.load_requests_via_automation,
-      settings.handle_top_level_requests, NULL);
+      settings.handle_top_level_requests, NULL, settings.initial_url);
 
   if (AddExternalTab(external_tab_container)) {
     TabContents* tab_contents = external_tab_container->tab_contents();

@@ -325,6 +325,7 @@ struct ExternalTabSettings {
   bool is_off_the_record;
   bool load_requests_via_automation;
   bool handle_top_level_requests;
+  GURL initial_url;
 };
 
 // Traits for ExternalTabSettings structure to pack/unpack.
@@ -338,6 +339,7 @@ struct ParamTraits<ExternalTabSettings> {
     WriteParam(m, p.is_off_the_record);
     WriteParam(m, p.load_requests_via_automation);
     WriteParam(m, p.handle_top_level_requests);
+    WriteParam(m, p.initial_url);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->parent) &&
@@ -345,7 +347,8 @@ struct ParamTraits<ExternalTabSettings> {
            ReadParam(m, iter, &p->style) &&
            ReadParam(m, iter, &p->is_off_the_record) &&
            ReadParam(m, iter, &p->load_requests_via_automation) &&
-           ReadParam(m, iter, &p->handle_top_level_requests);
+           ReadParam(m, iter, &p->handle_top_level_requests) &&
+           ReadParam(m, iter, &p->initial_url);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -360,6 +363,8 @@ struct ParamTraits<ExternalTabSettings> {
     LogParam(p.load_requests_via_automation, l);
     l->append(L", ");
     LogParam(p.handle_top_level_requests, l);
+    l->append(L", ");
+    LogParam(p.initial_url, l);
     l->append(L")");
   }
 };
@@ -370,6 +375,8 @@ struct NavigationInfo {
   int navigation_index;
   std::wstring title;
   GURL url;
+  SecurityStyle security_style;
+  bool has_mixed_content;
 };
 
 // Traits for NavigationInfo structure to pack/unpack.
@@ -382,13 +389,17 @@ struct ParamTraits<NavigationInfo> {
     WriteParam(m, p.navigation_index);
     WriteParam(m, p.title);
     WriteParam(m, p.url);
+    WriteParam(m, p.security_style);
+    WriteParam(m, p.has_mixed_content);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->navigation_type) &&
            ReadParam(m, iter, &p->relative_offset) &&
            ReadParam(m, iter, &p->navigation_index) &&
            ReadParam(m, iter, &p->title) &&
-           ReadParam(m, iter, &p->url);
+           ReadParam(m, iter, &p->url) &&
+           ReadParam(m, iter, &p->security_style) &&
+           ReadParam(m, iter, &p->has_mixed_content);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -401,6 +412,10 @@ struct ParamTraits<NavigationInfo> {
     LogParam(p.title, l);
     l->append(L", ");
     LogParam(p.url, l);
+    l->append(L", ");
+    LogParam(p.security_style, l);
+    l->append(L", ");
+    LogParam(p.has_mixed_content, l);
     l->append(L")");
   }
 };

@@ -7,12 +7,15 @@
 
 #include <string>
 
+#include "base/gfx/native_widget_types.h"
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "base/time.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "googleurl/src/gurl.h"
+
+class TabProxy;
 
 // Base class for automation proxy testing.
 class AutomationProxyVisibleTest : public UITest {
@@ -46,7 +49,17 @@ class CustomAutomationProxyTest : public AutomationProxyVisibleTest {
 // was received.
 class AutomationProxyForExternalTab : public AutomationProxy {
  public:
+  // Allows us to reuse this mock for multiple tests. This is done
+  // by setting a state to trigger posting of Quit message to the
+  // wait loop.
+  enum QuitAfter {
+    QUIT_INVALID,
+    QUIT_AFTER_NAVIGATION,
+    QUIT_AFTER_MESSAGE,
+  };
+
   explicit AutomationProxyForExternalTab(int execution_timeout);
+  ~AutomationProxyForExternalTab();
 
   int messages_received() const {
     return messages_received_;
@@ -64,17 +77,46 @@ class AutomationProxyForExternalTab : public AutomationProxy {
     return target_;
   }
 
-  // Waits for the DidNavigate event to be processed on the current thread.
-  // Returns true if the event arrived, false if there was a timeout.
-  bool WaitForNavigationComplete(int max_time_to_wait_ms);
+  // Creates and sisplays a top-level window, that can be used as a parent
+  // to the external tab.window.
+  gfx::NativeWindow CreateHostWindow();
+  scoped_refptr<TabProxy> CreateTabWithHostWindow(bool is_incognito,
+      const GURL& initial_url, gfx::NativeWindow* container_wnd,
+      gfx::NativeWindow* tab_wnd);
+  void DestroyHostWindow();
+
+  // Wait for the event to happen or timeout
+  bool WaitForNavigation(int timeout_ms);
+  bool WaitForMessage(int timeout_ms);
+  bool WaitForTabCleanup(TabProxy* tab, int timeout_ms);
+
+  // Enters a message loop that processes window messages as well
+  // as calling MessageLoop::current()->RunAllPending() to process any
+  // incoming IPC messages. The timeout_ms parameter is the maximum
+  // time the loop will run. To end the loop earlier, post a quit message to
+  // the thread.
+  bool RunMessageLoop(int timeout_ms, gfx::NativeWindow window_to_monitor);
 
  protected:
-  virtual void OnMessageReceived(const IPC::Message& msg);
+#if defined(OS_WIN)
+  static const int kQuitLoopMessage = WM_APP + 11;
+  // Quit the message loop
+  void QuitLoop() {
+    DCHECK(IsWindow(host_window_));
+    // We could post WM_QUIT but lets keep it out of accidental usage
+    // by anyone else peeking it.
+    PostMessage(host_window_, kQuitLoopMessage, 0, 0);
+  }
+#endif  // defined(OS_WIN)
 
-  void OnDidNavigate(int tab_handle, const IPC::NavigationInfo& nav_info) {
-    navigate_complete_ = true;
+  // Internal state to flag posting of a quit message to the loop
+  void set_quit_after(QuitAfter q) {
+    quit_after_ = q;
   }
 
+  virtual void OnMessageReceived(const IPC::Message& msg);
+
+  void OnDidNavigate(int tab_handle, const IPC::NavigationInfo& nav_info);
   void OnForwardMessageToExternalHost(int handle,
                                       const std::string& message,
                                       const std::string& origin,
@@ -84,23 +126,13 @@ class AutomationProxyForExternalTab : public AutomationProxy {
   bool navigate_complete_;
   int messages_received_;
   std::string message_, origin_, target_;
+  QuitAfter quit_after_;
+  const wchar_t* host_window_class_;
+  gfx::NativeWindow host_window_;
 };
 
 // A test harness for testing external tabs.
 typedef CustomAutomationProxyTest<AutomationProxyForExternalTab>
     ExternalTabTestType;
-
-#if defined(OS_WIN)
-// Custom message loop for external tab testing.
-//
-// Creates a window and makes external_tab_window (the external tab's
-// window handle) a child of that window.
-//
-// The time_to_wait_ms parameter is the maximum time the loop will run. To
-// end the loop earlier, post a quit message (using the Win32
-// PostQuitMessage API) to the thread.
-bool ExternalTabMessageLoop(HWND external_tab_window,
-                            int time_to_wait_ms);
-#endif  // defined(OS_WIN)
 
 #endif  // CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_UITEST_H__
