@@ -98,6 +98,10 @@ class URLPattern {
   // Gets the path the pattern matches with the leading slash. This can have
   // embedded asterisks which are interpreted using glob rules.
   std::string path() const { return path_; }
+  void set_path(const std::string& path) {
+    path_ = path;
+    path_escaped_ = "";
+  }
 
  private:
   // Returns true if |test| matches our host.

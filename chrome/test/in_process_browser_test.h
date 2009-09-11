@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
 #define CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
 
+#include "net/base/mock_host_resolver.h"
 #include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,11 +71,6 @@ class InProcessBrowserTest : public testing::Test {
   // main thread before the browser is torn down.
   virtual void CleanUpOnMainThread() {}
 
-  // Allows subclasses to configure the host resolver procedure. By default
-  // this blocks requests to google.com as Chrome pings that on startup and we
-  // don't want to do that during testing.
-  virtual void ConfigureHostResolverProc(net::RuleBasedHostResolverProc* proc);
-
   // Invoked when a test is not finishing in a timely manner.
   void TimedOut();
 
@@ -89,6 +85,12 @@ class InProcessBrowserTest : public testing::Test {
   //
   // This is invoked from Setup.
   virtual Browser* CreateBrowser(Profile* profile);
+
+  // Returns the host resolver being used for the tests. Subclasses might want
+  // to configure it inside tests.
+  net::RuleBasedHostResolverProc* host_resolver() {
+    return host_resolver_.get();
+  }
 
   // Sets some test states (see below for comments).  Call this in your test
   // constructor.
@@ -127,6 +129,9 @@ class InProcessBrowserTest : public testing::Test {
 
   // Initial timeout value in ms.
   int initial_timeout_;
+
+  // Host resolver to use during the test.
+  scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessBrowserTest);
 };

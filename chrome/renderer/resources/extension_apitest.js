@@ -151,8 +151,12 @@ var chrome = chrome || {};
   // Wrapper for generating test functions, that takes care of calling
   // assertNoLastError() and (optionally) succeed() for you.
   chrome.test.callback = function(func, expectedError) {
-    chrome.test.assertEq(typeof(func), 'function');
+    if (func) {
+      chrome.test.assertEq(typeof(func), 'function');
+    }
+
     callbackAdded();
+
     return function() {
       if (expectedError == null) {
         chrome.test.assertNoLastError();
@@ -160,7 +164,11 @@ var chrome = chrome || {};
         chrome.test.assertEq(typeof(expectedError), 'string');
         chrome.test.assertEq(expectedError, chrome.extension.lastError.message);
       }
-      safeFunctionApply(func, arguments);
+      
+      if (func) {
+        safeFunctionApply(func, arguments);
+      }
+
       callbackCompleted();
     };
   };
@@ -179,8 +187,8 @@ var chrome = chrome || {};
     return chrome.test.callback(func);
   };
 
-  chrome.test.callbackFail = function(func, expectedError) {
-    return chrome.test.callback(func, expectedError);
+  chrome.test.callbackFail = function(expectedError) {
+    return chrome.test.callback(null, expectedError);
   };
 
   // TODO(erikkay) This is deprecated and should be removed.

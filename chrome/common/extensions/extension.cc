@@ -982,6 +982,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
         return false;
       }
 
+      // The path component is not used for host permissions, so we force it to
+      // match all paths.
+      pattern.set_path("/*");
+
       host_permissions_.push_back(pattern);
     }
   }
@@ -1085,6 +1089,16 @@ FilePath Extension::GetIconPath(Icons icon) {
   if (iter == icons_.end())
     return FilePath();
   return GetResourcePath(iter->second);
+}
+
+bool Extension::CanAccessHost(const GURL& url) const {
+  for (HostPermissions::const_iterator host = host_permissions_.begin();
+       host != host_permissions_.end(); ++host) {
+    if (host->MatchesUrl(url))
+      return true;
+  }
+
+  return false;
 }
 
 const std::set<std::string> Extension::GetEffectiveHostPermissions() const {

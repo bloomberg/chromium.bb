@@ -47,6 +47,7 @@ extern const char kNoSelectedTabError[];
 extern const char kInvalidUrlError[];
 extern const char kInternalVisibleTabCaptureError[];
 extern const char kNotImplementedError[];
+extern const char kCannotAccessPageError[];
 
 // Function names, Windows API.
 extern const char kGetWindowFunction[];

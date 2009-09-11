@@ -43,7 +43,7 @@ chrome.test.runTests([
     chrome.bookmarks.get("1", chrome.test.callbackPass(function(results) {
       chrome.test.assertTrue(compareNode(results[0], expected[0].children[0]));
     }));
-    chrome.bookmarks.get("42", chrome.test.callbackFail(function(){}, "Can't find bookmark for id."));
+    chrome.bookmarks.get("42", chrome.test.callbackFail("Can't find bookmark for id."));
   },
 
   function getArray() {
@@ -59,8 +59,9 @@ chrome.test.runTests([
 // compareNode and compareTrees are helper functions that the bookmarks test
 // uses for convenience.  They're not really relevant to the framework itself.
 
-Note that chrome.test.callbackFail takes a second argument which is the error
-message that it expects to get when the callback fails (chrome.extension.lastError.message).
+Note that chrome.test.callbackFail takes an argument which is the error message
+that it expects to get when the callback fails
+(chrome.extension.lastError.message).
 
 Here's what the output of this test might look like:
 [==========] Running 1 test from 1 test case.

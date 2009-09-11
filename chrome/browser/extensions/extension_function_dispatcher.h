@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 
 class Browser;
+class Extension;
 class ExtensionFunction;
 class ExtensionHost;
 class Profile;
@@ -73,6 +74,10 @@ class ExtensionFunctionDispatcher {
   // Gets the ExtensionHost associated with this object.  In the case of
   // tab hosted extension pages, this will return NULL.
   ExtensionHost* GetExtensionHost();
+
+  // Gets the extension the function is being invoked by. This should not ever
+  // return NULL.
+  Extension* GetExtension();
 
   // Handle a malformed message.  Possibly the result of an attack, so kill
   // the renderer.

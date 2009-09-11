@@ -251,6 +251,16 @@ ExtensionHost* ExtensionFunctionDispatcher::GetExtensionHost() {
   return delegate_->GetExtensionHost();
 }
 
+Extension* ExtensionFunctionDispatcher::GetExtension() {
+  ExtensionsService* service = profile()->GetExtensionsService();
+  DCHECK(service);
+
+  Extension* extension = service->GetExtensionById(extension_id());
+  DCHECK(extension);
+
+  return extension;
+}
+
 void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
                                                 const std::string& args,
                                                 int request_id,

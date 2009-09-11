@@ -21,6 +21,7 @@
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/base64.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
@@ -43,10 +44,6 @@ static bool GetTabById(int tab_id, Profile* profile, Browser** browser,
                        TabStripModel** tab_strip,
                        TabContents** contents,
                        int* tab_index, std::string* error_message);
-
-// Construct an absolute path from a relative path.
-static GURL AbsolutePath(Profile* profile, const std::string& extension_id,
-                         const std::string& relative_url);
 
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();
@@ -471,7 +468,7 @@ bool CreateTabFunction::RunImpl() {
     url.reset(new GURL(url_string));
     if (!url->is_valid()) {
       // The path as passed in is not valid. Try converting to absolute path.
-      *url = AbsolutePath(profile(), extension_id(), url_string);
+      *url = GetExtension()->GetResourceURL(url_string);
       if (!url->is_valid()) {
         error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
                                                          url_string);
@@ -558,7 +555,7 @@ bool UpdateTabFunction::RunImpl() {
 
     if (!new_gurl.is_valid()) {
       // The path as passed in is not valid. Try converting to absolute path.
-      new_gurl = AbsolutePath(profile(), extension_id(), url);
+      new_gurl = GetExtension()->GetResourceURL(url);
       if (!new_gurl.is_valid()) {
         error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
                                                          url);
@@ -566,8 +563,26 @@ bool UpdateTabFunction::RunImpl() {
       }
     }
 
+    // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
+    // we need to check host permissions before allowing them.
+    if (new_gurl.SchemeIs(chrome::kJavaScriptScheme)) {
+      if (!GetExtension()->CanAccessHost(contents->GetURL())) {
+        error_ = ExtensionErrorUtils::FormatErrorMessage(
+            keys::kCannotAccessPageError, contents->GetURL().spec());
+        return false;
+      }
+
+      // TODO(aa): How does controller queue URLs? Is there any chance that this
+      // JavaScript URL will end up applying to something other than
+      // controller->GetURL()?
+    }
+
     controller.LoadURL(new_gurl, GURL(), PageTransition::LINK);
-    DCHECK_EQ(new_gurl.spec(), contents->GetURL().spec());
+
+    // The URL of a tab contents never actually changes to a JavaScript URL, so
+    // this check only makes sense in other cases.
+    if (!new_gurl.SchemeIs(chrome::kJavaScriptScheme))
+      DCHECK_EQ(new_gurl.spec(), contents->GetURL().spec());
   }
 
   bool selected = false;
@@ -826,13 +841,6 @@ static Browser* GetBrowserInProfileWithId(Profile* profile,
         keys::kWindowNotFoundError, IntToString(window_id));
 
   return NULL;
-}
-
-static GURL AbsolutePath(Profile* profile, const std::string& extension_id,
-                         const std::string& relative_url) {
-  ExtensionsService* service = profile->GetExtensionsService();
-  Extension* extension = service->GetExtensionById(extension_id);
-  return Extension::GetResourceURL(extension->url(), relative_url);
 }
 
 static bool GetTabById(int tab_id, Profile* profile, Browser** browser,

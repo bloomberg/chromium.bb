@@ -79,7 +79,7 @@ chrome.test.runTests([
     chrome.bookmarks.get("1", pass(function(results) {
       chrome.test.assertTrue(compareNode(results[0], expected[0].children[0]));
     }));
-    chrome.bookmarks.get("42", fail(function(){}, "Can't find bookmark for id."));
+    chrome.bookmarks.get("42", fail("Can't find bookmark for id."));
   },
 
   function getArray() {

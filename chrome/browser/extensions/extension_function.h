@@ -66,6 +66,15 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   virtual void Run() = 0;
 
  protected:
+  // Gets the extension that called this function. This can return NULL for
+  // async functions.
+  Extension* GetExtension() {
+    if (dispatcher())
+      return dispatcher()->GetExtension();
+    else
+      return NULL;
+  }
+
   // The peer to the dispatcher that will service this extension function call.
   scoped_refptr<ExtensionFunctionDispatcher::Peer> peer_;
 

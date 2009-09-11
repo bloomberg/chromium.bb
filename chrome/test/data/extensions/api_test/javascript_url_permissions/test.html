@@ -1,0 +1,29 @@
+<script>
+var javaScriptURL = "javascript:void(document.body.bgColor='red')";
+
+chrome.tabs.create({ url: "http://a.com:1337/files/extensions/test_file.html" },
+                   function(tab) {
+  var firstTabId = tab.id;
+
+  chrome.tabs.create(
+      { url: "http://b.com:1337/files/extensions/test_file.html" },
+      function(tab) {
+    var secondTabId = tab.id;
+
+    chrome.test.runTests([
+      function javaScriptURLShouldFail() {
+        chrome.tabs.update(firstTabId, {url: javaScriptURL},
+            chrome.test.callbackFail('Cannot access contents of url ' +
+                '"http://a.com:1337/files/extensions/test_file.html". ' +
+                'Extension manifest must request permission to access this ' +
+                'host.'));
+      },
+
+      function javaScriptURLShouldSucceed() {
+        chrome.tabs.update(secondTabId, {url: javaScriptURL},
+            chrome.test.callbackPass());
+      }
+    ]);
+  });
+});
+</script>

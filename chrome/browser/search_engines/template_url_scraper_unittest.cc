@@ -20,13 +20,6 @@ class TemplateURLScraperTest : public InProcessBrowserTest {
   TemplateURLScraperTest() {
   }
 
- protected:
-  virtual void ConfigureHostResolverProc(net::RuleBasedHostResolverProc* proc) {
-    InProcessBrowserTest::ConfigureHostResolverProc(proc);
-    // We use foo.com in our tests.
-    proc->AddRule("*.foo.com", "localhost");
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TemplateURLScraperTest);
 };
@@ -61,6 +54,8 @@ class TemplateURLModelLoader : public NotificationObserver {
 
 /*
 IN_PROC_BROWSER_TEST_F(TemplateURLScraperTest, ScrapeWithOnSubmit) {
+  host_resolver()->AddRule("*.foo.com", "localhost");
+
   TemplateURLModel* template_urls = browser()->profile()->GetTemplateURLModel();
   TemplateURLModelLoader loader(template_urls);
 

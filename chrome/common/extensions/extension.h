@@ -199,12 +199,16 @@ class Extension {
   const std::vector<PluginInfo>& plugins() const { return plugins_; }
   const GURL& background_url() const { return background_url_; }
   const std::vector<ToolstripInfo>& toolstrips() const { return toolstrips_; }
-  const HostPermissions& host_permissions() const {
-    return host_permissions_;
-  }
   const std::vector<std::string>& api_permissions() const {
     return api_permissions_;
   }
+  const HostPermissions& host_permissions() const {
+    return host_permissions_;
+  }
+
+  // Returns true if the extension has permission to access the host for the
+  // specified URL.
+  bool CanAccessHost(const GURL& url) const;
 
   // Returns the set of hosts that the extension effectively has access to. This
   // is used in the permissions UI and is a combination of the hosts accessible
