@@ -7,13 +7,61 @@
 #include <stdio.h>
 
 #include <cairo.h>
+#include <cairo-ft.h>
 #include <cairo-pdf.h>
 #include <cairo-ps.h>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+#include <map>
+
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/singleton.h"
+#include "third_party/skia/include/core/SkFontHost.h"
+#include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 
 namespace {
+
+FT_Library g_ft_library = NULL;  // handle to FreeType library.
+
+struct FontInfo {
+  SkStream* font_stream;
+  FT_Face ft_face;
+  cairo_font_face_t* cairo_face;
+  cairo_user_data_key_t data_key;
+};
+
+typedef std::map<uint32_t, FontInfo> MapFontId2FontInfo;
+
+// NOTE: Only call this function when no further rendering will be performed,
+// and/or the metafile is closed.
+void CleanUpFonts() {
+  MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
+  DCHECK(g_font_cache);
+
+  for (MapFontId2FontInfo::iterator it = g_font_cache->begin();
+       it !=g_font_cache->end();
+       ++it) {
+    DCHECK(it->second.cairo_face);
+    DCHECK(it->second.font_stream);
+
+    cairo_font_face_destroy(it->second.cairo_face);
+    // |it->second.ft_face| is handled by Cairo.
+    it->second.font_stream->unref();
+  }
+  g_font_cache->clear();
+}
+
+void CleanUpFreeType() {
+  if (g_ft_library) {
+    FT_Error ft_error = FT_Done_FreeType(g_ft_library);
+    g_ft_library = NULL;
+    DCHECK_EQ(ft_error, 0);
+  }
+}
 
 // Tests if |surface| is valid.
 bool IsSurfaceValid(cairo_surface_t* surface) {
@@ -48,7 +96,7 @@ cairo_status_t WriteCairoStream(void* dst_buffer,
                                 unsigned int src_data_length) {
   DCHECK(dst_buffer);
   DCHECK(src_data);
-  DCHECK(src_data_length > 0);
+  DCHECK_GT(src_data_length, 0u);
 
   std::string* buffer = reinterpret_cast<std::string*>(dst_buffer);
   buffer->append(reinterpret_cast<const char*>(src_data), src_data_length);
@@ -67,8 +115,8 @@ PdfPsMetafile::PdfPsMetafile(const FileFormat& format)
 }
 
 PdfPsMetafile::~PdfPsMetafile() {
-  // Releases resources if we forgot to do so.
-  CleanUp();
+  // Releases all resources if we forgot to do so.
+  CleanUpAll();
 }
 
 bool PdfPsMetafile::Init() {
@@ -77,8 +125,17 @@ bool PdfPsMetafile::Init() {
   // page_surface_, and page_context_ are NULL, and current_page_ is empty.
   DCHECK(!context_);
   DCHECK(all_pages_.empty());
+  DCHECK(!g_ft_library);
 
-  // Create an 1 by 1 Cairo surface for entire PDF/PS file.
+  // Initializes FreeType library.
+  FT_Error ft_error = FT_Init_FreeType(&g_ft_library);
+  if (ft_error) {
+    DLOG(ERROR) << "Cannot initialize FreeType library for PdfPsMetafile.";
+    g_ft_library = NULL;
+    return false;
+  }
+
+  // Creates an 1 by 1 Cairo surface for entire PDF/PS file.
   // The size for each page will be overwritten later in StartPage().
   switch (format_) {
     case PDF: {
@@ -103,15 +160,17 @@ bool PdfPsMetafile::Init() {
   if (!IsSurfaceValid(surface_)) {
     DLOG(ERROR) << "Cannot create Cairo surface for PdfPsMetafile!";
     CleanUpSurface(&surface_);
+    CleanUpFreeType();
     return false;
   }
 
-  // Create a context.
+  // Creates a context.
   context_ = cairo_create(surface_);
   if (!IsContextValid(context_)) {
     DLOG(ERROR) << "Cannot create Cairo context for PdfPsMetafile!";
     CleanUpContext(&context_);
     CleanUpSurface(&surface_);
+    CleanUpFreeType();
     return false;
   }
 
@@ -145,7 +204,7 @@ cairo_t* PdfPsMetafile::StartPage(double width_in_points,
   DCHECK_GT(width_in_points, 0.);
   DCHECK_GT(height_in_points, 0.);
 
-  // Create a target surface for the new page.
+  // Creates a target surface for the new page.
   // Cairo 1.6.0 does NOT allow the first argument be NULL,
   // but some newer versions do support NULL pointer.
   switch (format_) {
@@ -167,7 +226,7 @@ cairo_t* PdfPsMetafile::StartPage(double width_in_points,
 
     default:
       NOTREACHED();
-      CleanUp();
+      CleanUpAll();
       return NULL;
   }
 
@@ -175,15 +234,15 @@ cairo_t* PdfPsMetafile::StartPage(double width_in_points,
   // Hence, we have to check if it points to a "nil" object.
   if (!IsSurfaceValid(page_surface_)) {
     DLOG(ERROR) << "Cannot create Cairo surface for PdfPsMetafile!";
-    CleanUp();
+    CleanUpAll();
     return NULL;
   }
 
-  // Create a context.
+  // Creates a context.
   page_context_ = cairo_create(page_surface_);
   if (!IsContextValid(page_context_)) {
     DLOG(ERROR) << "Cannot create Cairo context for PdfPsMetafile!";
-    CleanUp();
+    CleanUpAll();
     return NULL;
   }
 
@@ -195,9 +254,9 @@ bool PdfPsMetafile::FinishPage(float shrink) {
   DCHECK(IsContextValid(context_));
   DCHECK(IsSurfaceValid(page_surface_));
   DCHECK(IsContextValid(page_context_));
-  DCHECK(shrink > 0);
+  DCHECK_GT(shrink, 0);
 
-  // Flush all rendering for current page.
+  // Flushes all rendering for current page.
   cairo_surface_flush(page_surface_);
 
   // TODO(myhuang): Use real page settings.
@@ -226,20 +285,20 @@ bool PdfPsMetafile::FinishPage(float shrink) {
 
     default:
       NOTREACHED();
-      CleanUp();
+      CleanUpAll();
       return false;
   }
 
-  // Check if our surface is still valid after resizing.
+  // Checks if our surface is still valid after resizing.
   if (!IsSurfaceValid(surface_)) {
     DLOG(ERROR) << "Cannot resize Cairo surface for PdfPsMetafile!";
-    CleanUp();
+    CleanUpAll();
     return false;
   }
 
-  // Save context's states.
+  // Saves context's states.
   cairo_save(context_);
-  // Copy current page onto the surface of final result.
+  // Copies current page onto the surface of final result.
   // Margins are done by coordinates transformation.
   // Please NOTE that we have to call cairo_scale() before we call
   // cairo_set_source_surface().
@@ -275,16 +334,16 @@ bool PdfPsMetafile::FinishPage(float shrink) {
                   kScaledPrintableHeightInPoint);
   cairo_fill(context_);
 
-  // Finishing the duplication of current page.
+  // Finishes the duplication of current page.
   cairo_show_page(context_);
   cairo_surface_flush(surface_);
 
-  // Destroy resoreces for current page.
+  // Destroys resources for current page.
   CleanUpContext(&page_context_);
   CleanUpSurface(&page_surface_);
   current_page_.clear();
 
-  // Restore context's states.
+  // Restores context's states.
   cairo_restore(context_);
 
   return true;
@@ -302,6 +361,83 @@ void PdfPsMetafile::Close() {
 
   CleanUpContext(&context_);
   CleanUpSurface(&surface_);
+  CleanUpFonts();
+  CleanUpFreeType();
+}
+
+// static
+bool PdfPsMetafile::SelectFontById(cairo_t* context, uint32_t font_id) {
+  DCHECK(IsContextValid(context));
+  DCHECK(SkFontHost::ValidFontID(font_id));
+  DCHECK(g_ft_library);
+
+  // Checks if we have a cache hit.
+  MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
+  DCHECK(g_font_cache);
+
+  MapFontId2FontInfo::iterator it = g_font_cache->find(font_id);
+  if (it != g_font_cache->end()) {
+    cairo_set_font_face(context, it->second.cairo_face);
+    if (IsContextValid(context)) {
+      return true;
+    } else {
+      NOTREACHED() << "Cannot set font face in Cairo!";
+      return false;
+    }
+  }
+
+  // Cache missed. We need to load and create the font.
+  FontInfo new_font_info = {0};
+  new_font_info.font_stream = SkFontHost::OpenStream(font_id);
+  DCHECK(new_font_info.font_stream);
+  size_t stream_size = new_font_info.font_stream->getLength();
+  DCHECK(stream_size) << "The Font stream has nothing!";
+
+  FT_Error ft_error = FT_New_Memory_Face(
+      g_ft_library,
+      static_cast<FT_Byte*>(
+          const_cast<void*>(new_font_info.font_stream->getMemoryBase())),
+      stream_size,
+      0,
+      &new_font_info.ft_face);
+
+  if (ft_error) {
+    new_font_info.font_stream->unref();
+    DLOG(ERROR) << "Cannot create FT_Face!";
+    SkASSERT(false);
+    return false;
+  }
+
+  new_font_info.cairo_face = cairo_ft_font_face_create_for_ft_face(
+      new_font_info.ft_face, 0);
+  DCHECK(new_font_info.cairo_face) << "Cannot create font in Cairo!";
+
+  // Manage |new_font_info.ft_face|'s life by Cairo.
+  cairo_status_t status = cairo_font_face_set_user_data(
+      new_font_info.cairo_face,
+      &new_font_info.data_key,
+      new_font_info.ft_face,
+      reinterpret_cast<cairo_destroy_func_t>(FT_Done_Face));
+
+  if (status != CAIRO_STATUS_SUCCESS) {
+    DLOG(ERROR) << "Cannot set font's user data in Cairo!";
+    cairo_font_face_destroy(new_font_info.cairo_face);
+    FT_Done_Face(new_font_info.ft_face);
+    new_font_info.font_stream->unref();
+    SkASSERT(false);
+    return false;
+  }
+
+  // Inserts |new_font_info| info |g_font_cache|.
+  (*g_font_cache)[font_id] = new_font_info;
+
+  cairo_set_font_face(context, new_font_info.cairo_face);
+  if (IsContextValid(context)) {
+    return true;
+  }
+
+  DLOG(ERROR) << "Connot set font face in Cairo!";
+  return false;
 }
 
 unsigned int PdfPsMetafile::GetDataSize() const {
@@ -317,7 +453,7 @@ unsigned int PdfPsMetafile::GetDataSize() const {
 
 bool PdfPsMetafile::GetData(void* dst_buffer, size_t dst_buffer_size) const {
   DCHECK(dst_buffer);
-  DCHECK(dst_buffer_size > 0);
+  DCHECK_GT(dst_buffer_size, 0u);
   // We need to check at least these two members to ensure that either Init()
   // has been called to initialize |all_pages_|, or metafile has been closed.
   // Passing these two checks also implies that surface_, page_surface_, and
@@ -354,14 +490,15 @@ bool PdfPsMetafile::SaveTo(const FilePath& filename) const {
   return true;
 }
 
-void PdfPsMetafile::CleanUp() {
+void PdfPsMetafile::CleanUpAll() {
   CleanUpContext(&context_);
   CleanUpSurface(&surface_);
   CleanUpContext(&page_context_);
   CleanUpSurface(&page_surface_);
   current_page_.clear();
   all_pages_.clear();
+  CleanUpFonts();
+  CleanUpFreeType();
 }
 
 }  // namespace printing
-

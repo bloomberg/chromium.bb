@@ -6,6 +6,7 @@
 
 #include <cairo.h>
 
+#include "printing/pdf_ps_metafile_linux.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
 namespace skia {
@@ -258,20 +259,45 @@ void VectorPlatformDevice::drawPosText(const SkDraw& draw,
   // Text color.
   ApplyPaintColor(paint);
 
-  const uint16_t* glyphIDs = static_cast<const uint16_t*>(text);
+  const uint16_t* glyph_ids = static_cast<const uint16_t*>(text);
 
-  // Draw each glyph by its path.
-  for (size_t i = 0; i < len / sizeof(uint16_t); ++i) {
-    uint16_t glyphID = glyphIDs[i];
-    SkPath textPath;
-    paint.getTextPath(&glyphID,
-                      sizeof(uint16_t),
-                      pos[i * scalarsPerPos],
-                      (scalarsPerPos == 1) ?
-                        constY :
-                        pos[i * scalarsPerPos + 1],
-                      &textPath);
-    drawPath(draw, textPath, paint);
+  // The style is either kFill_Style or kStroke_Style.
+  if (paint.getStyle() & SkPaint::kStroke_Style) {
+    ApplyStrokeStyle(paint);
+
+    // Draw each glyph by its path.
+    for (size_t i = 0; i < len / sizeof(uint16_t); ++i) {
+      uint16_t glyph_id = glyph_ids[i];
+      SkPath textPath;
+      paint.getTextPath(&glyph_id,
+                        sizeof(uint16_t),
+                        pos[i * scalarsPerPos],
+                        (scalarsPerPos == 1) ?
+                            constY :
+                            pos[i * scalarsPerPos + 1],
+                        &textPath);
+      drawPath(draw, textPath, paint);
+    }
+  } else {  // kFill_Style.
+    // Selects correct font.
+    if (!printing::PdfPsMetafile::SelectFontById(
+            context_, paint.getTypeface()->uniqueID())) {
+      SkASSERT(false);
+      return;
+    }
+    cairo_set_font_size(context_, paint.getTextSize());
+
+    // Draw glyphs.
+    for (size_t i = 0; i < len / sizeof(uint16_t); ++i) {
+      uint16_t glyph_id = glyph_ids[i];
+
+      cairo_glyph_t glyph;
+      glyph.index = glyph_id;
+      glyph.x = pos[i * scalarsPerPos];
+      glyph.y = (scalarsPerPos == 1) ? constY : pos[i * scalarsPerPos + 1];
+
+      cairo_show_glyphs(context_, &glyph, 1);
+    }
   }
 }
 
@@ -440,9 +466,9 @@ void VectorPlatformDevice::InternalDrawBitmap(const SkBitmap& bitmap,
   SkAutoLockPixels image_lock(bitmap);
 
   cairo_surface_t* bitmap_surface =
-    cairo_image_surface_create_for_data(
-      reinterpret_cast<unsigned char*>(bitmap.getPixels()),
-      CAIRO_FORMAT_ARGB32, src_size_x, src_size_y, bitmap.rowBytes());
+      cairo_image_surface_create_for_data(
+          reinterpret_cast<unsigned char*>(bitmap.getPixels()),
+          CAIRO_FORMAT_ARGB32, src_size_x, src_size_y, bitmap.rowBytes());
 
   cairo_set_source_surface(context_, bitmap_surface, x, y);
   cairo_paint_with_alpha(context_, static_cast<double>(alpha) / 255.);
