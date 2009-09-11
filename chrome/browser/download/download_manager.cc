@@ -1181,11 +1181,14 @@ void DownloadManager::GenerateExtension(
     //         application/x-javascript.
     // 4. New extension is not ".tar" for .gz files. For misconfigured web
     //    servers, i.e. bug 5772.
+    // 5. The original extension is not ".tgz" & the new extension is not "gz".
     FilePath::StringType append_extension;
     if (net::GetPreferredExtensionForMimeType(mime_type, &append_extension)) {
       if (append_extension != FILE_PATH_LITERAL("txt") &&
           append_extension != extension &&
           !IsExecutable(append_extension) &&
+          !(append_extension == FILE_PATH_LITERAL("gz") &&
+            extension == FILE_PATH_LITERAL("tgz")) &&
           (append_extension != FILE_PATH_LITERAL("tar") ||
            extension != FILE_PATH_LITERAL("gz"))) {
         extension += FILE_PATH_LITERAL(".");

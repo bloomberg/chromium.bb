@@ -50,11 +50,6 @@ bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
   if (!ext_ref)
     return false;
 
-  ext_ref.reset(CFStringCreateWithFormat(kCFAllocatorDefault,
-                                         NULL,
-                                         CFSTR(".%@"),
-                                         ext_ref.get()));
-
   *ext = base::SysCFStringRefToUTF8(ext_ref);
   return true;
 }
