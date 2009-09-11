@@ -1224,10 +1224,17 @@ LocationBarView::PageActionImageView::~PageActionImageView() {
 
 bool LocationBarView::PageActionImageView::OnMousePressed(
     const views::MouseEvent& event) {
+  int button = -1;
+  if (event.IsLeftMouseButton())
+    button = 1;
+  else if (event.IsMiddleMouseButton())
+    button = 2;
+  else if (event.IsRightMouseButton())
+    button = 3;
   // Our PageAction icon was clicked on, notify proper authorities.
   ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
       profile_, page_action_->extension_id(), page_action_->id(),
-      current_tab_id_, current_url_.spec());
+      current_tab_id_, current_url_.spec(), button);
   return true;
 }
 

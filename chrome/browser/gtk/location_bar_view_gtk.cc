@@ -752,6 +752,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
       page_action_view->page_action_->extension_id(),
       page_action_view->page_action_->id(),
       page_action_view->current_tab_id_,
-      page_action_view->current_url_.spec());
+      page_action_view->current_url_.spec(),
+      event->button);
   return true;
 }

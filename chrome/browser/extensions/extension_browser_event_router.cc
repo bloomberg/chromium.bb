@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/extension_page_actions_module_constants.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
@@ -18,6 +19,7 @@
 
 namespace events = extension_event_names;
 namespace tab_keys = extension_tabs_module_constants;
+namespace page_action_keys = extension_page_actions_module_constants;
 
 ExtensionBrowserEventRouter::TabEntry::TabEntry()
     : state_(ExtensionTabUtil::TAB_COMPLETE),
@@ -345,7 +347,8 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
     const std::string& extension_id,
     const std::string& page_action_id,
     int tab_id,
-    const std::string& url) {
+    const std::string& url,
+    int button) {
   ListValue args;
 
   args.Append(Value::CreateStringValue(page_action_id));
@@ -353,6 +356,7 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
   DictionaryValue* data = new DictionaryValue();
   data->Set(tab_keys::kTabIdKey, Value::CreateIntegerValue(tab_id));
   data->Set(tab_keys::kTabUrlKey, Value::CreateStringValue(url));
+  data->Set(page_action_keys::kButtonKey, Value::CreateIntegerValue(button));
 
   args.Append(data);
 

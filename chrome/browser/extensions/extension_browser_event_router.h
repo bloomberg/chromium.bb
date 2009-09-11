@@ -53,7 +53,8 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                           const std::string& extension_id,
                           const std::string& page_action_id,
                           int tab_id,
-                          const std::string& url);
+                          const std::string& url,
+                          int button);
 
   // NotificationObserver.
   void Observe(NotificationType type,

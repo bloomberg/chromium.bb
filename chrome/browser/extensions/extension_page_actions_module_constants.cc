@@ -10,6 +10,7 @@ const wchar_t kTabIdKey[] = L"tabId";
 const wchar_t kUrlKey[] = L"url";
 const wchar_t kTitleKey[] = L"title";
 const wchar_t kIconIdKey[] = L"iconId";
+const wchar_t kButtonKey[] = L"button";
 
 const char kNoExtensionError[] = "No extension with id: *.";
 const char kNoTabError[] = "No tab with id: *.";

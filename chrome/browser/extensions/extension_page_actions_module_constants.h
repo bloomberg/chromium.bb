@@ -14,6 +14,7 @@ extern const wchar_t kTabIdKey[];
 extern const wchar_t kUrlKey[];
 extern const wchar_t kTitleKey[];
 extern const wchar_t kIconIdKey[];
+extern const wchar_t kButtonKey[];
 
 // Error messages.
 extern const char kNoExtensionError[];
