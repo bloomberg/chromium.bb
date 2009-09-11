@@ -49,6 +49,7 @@
 #include "native_client/src/include/portability.h"
 #endif
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
@@ -166,10 +167,14 @@ int __NaClSrpcImcWrite(const void* source,
    * rather than a pointer to a buffer.  If it were the latter, the subtraction
    * would almost invariably be negative, producing a massive size_t value
    * and allowing heap corruptions.
-   * TODO(sehr,bsy): use a preprocessor macro to asserts or causes a build
-   * failure if buffer->bytes is not an array.
    */
   size_t avail_bytes = sizeof(buffer->bytes) - buffer->next_byte;
+
+  /*
+   * protect against future change of buffer->bytes to be dynamically
+   * allocated, since otherwise avail_bytes becomes huge
+   */
+  NACL_ASSERT_IS_ARRAY(buffer->bytes);
 
   if (n_elt >= SIZE_T_MAX / elt_size) {
     return -1;

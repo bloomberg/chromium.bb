@@ -102,6 +102,7 @@ platform_inputs += [
     'nacl_interruptible_mutex.c',
     'nacl_host_desc_common.c',
     'nacl_global_secure_random.c',
+    'nacl_macros.c',
     'nacl_secure_random_common.c',
     'nacl_sync_checked.c',
     'nacl_log.c',

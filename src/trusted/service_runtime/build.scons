@@ -343,20 +343,20 @@ env.EnsureRequiredBuildWarnings()
 # Unit Tests
 # ----------------------------------------------------------
 
-test_env = env.Clone()
+gtest_env = env.Clone()
 
 # This is necessary for unittest_main.c which includes gtest/gtest.h
 # The problem is that gtest.h includes other files expecting the
 # include path to be set.  We do *not*, however, strip out the
 # -pedantic compiler flag for building non-gtest-using source files.
-test_env.Prepend(
+gtest_env.Prepend(
     CPPPATH=
       ['${SOURCE_ROOT}/testing/gtest/include'])
 
-if test_env.Bit('linux') or test_env.Bit('mac'):
+if gtest_env.Bit('linux') or gtest_env.Bit('mac'):
   # because of: gtest-typed-test.h:236:46: error:
   # anonymous variadic macros were introduced in C99
-  test_env.FilterOut(CCFLAGS=['-pedantic'])
+  gtest_env.FilterOut(CCFLAGS=['-pedantic'])
 
 unittest_inputs = [
     'unittest_main.cc',
@@ -368,16 +368,16 @@ unittest_inputs = [
 ]
 
 if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
-  unit_tests_exe = test_env.ComponentProgram('service_runtime_tests',
-                                             unittest_inputs,
-                                             EXTRA_LIBS=['gtest'])
-  test_env.Requires(unit_tests_exe, sdl_dll)
+  unit_tests_exe = gtest_env.ComponentProgram('service_runtime_tests',
+                                              unittest_inputs,
+                                              EXTRA_LIBS=['gtest'])
+  gtest_env.Requires(unit_tests_exe, sdl_dll)
 
 
-  node = test_env.CommandTestAgainstGoldenOutput(
+  node = gtest_env.CommandTestAgainstGoldenOutput(
       'gtest_output.xml.out',
       command=[unit_tests_exe, '--gtest_output=xml:${TARGET}'])
-  test_env.AddNodeToTestSuite(node, ['small_tests'],
+  gtest_env.AddNodeToTestSuite(node, ['small_tests'],
       'run_service_runtime_tests')
 
 
@@ -488,6 +488,52 @@ node = env.CommandTestAgainstGoldenOutput(
     command=[check_test_exe, '-s', '1', '-d'],
     exit_status=ABORT_EXIT)  # abort()
 env.AddNodeToTestSuite(node, ['small_tests'])
+
+
+nacl_base_test_exe = env.ComponentProgram('nacl_base_test',
+                                          ['nacl_base_test.c'])
+
+node = env.CommandTestAgainstGoldenOutput(
+    'nacl_base_test.out',
+    command=[nacl_base_test_exe])
+env.AddNodeToTestSuite(node, ['small_tests'])
+
+def FailsGood(exit_status):
+  if exit_status:
+    return 0
+  else:
+    return 1
+
+# Compile-time failures in nacl_macros.h only work for gcc right now.
+if not env.Bit('windows'):
+  fail_compile_env = env.Clone()
+  fail_compile_env['CCCOM'] = Action(fail_compile_env['CCCOM'],
+                                     exitstatfunc=FailsGood)
+  obj = fail_compile_env.ComponentObject('nacl_base_assert_is_array_test',
+                                         ['nacl_base_assert_is_array_test.c'])
+  fail_compile_env.AlwaysBuild(obj)
+  fail_compile_env.Alias('small_tests', obj)
+  fail_compile_env.Alias('compile_tests', obj)
+  obj = fail_compile_env.Object('nacl_base_array_size_test',
+                              ['nacl_base_array_size_test.c'])
+  fail_compile_env.AlwaysBuild(obj)
+  fail_compile_env.Alias('small_tests', obj)
+  fail_compile_env.Alias('compile_tests', obj)
+
+  fail_compile_env = env.Clone()
+  fail_compile_env['CCCOM'] = Action(fail_compile_env['CXXCOM'],
+                                   exitstatfunc=FailsGood)
+  obj = fail_compile_env.ComponentObject('nacl_base_assert_is_array_cpp_test',
+                                         ['nacl_base_assert_is_array_test.c'])
+  fail_compile_env.AlwaysBuild(obj)
+  fail_compile_env.Alias('small_tests', obj)
+  fail_compile_env.Alias('compile_tests', obj)
+  obj = fail_compile_env.ComponentObject('nacl_base_array_size_cpp_test',
+                                         ['nacl_base_array_size_test.c'])
+  fail_compile_env.AlwaysBuild(obj)
+  fail_compile_env.Alias('small_tests', obj)
+  fail_compile_env.Alias('compile_tests', obj)
+
 
 # ----------------------------------------------------------
 # Integration Tests
