@@ -148,7 +148,7 @@ ScopedDirLookup::ScopedDirLookup(DirectoryManager* dirman,
   dir_ = dirman->managed_directory_ &&
          (ComparePathNames(name, dirman->managed_directory_->name()) == 0) ?
          dirman->managed_directory_ : NULL;
-  good_ = dir_;
+  good_ = dir_ != NULL;
   good_checked_ = false;
 }
 

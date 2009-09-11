@@ -71,7 +71,7 @@ PathString ExpandTilde(const PathString& path) {
 // Returns a string with length or fewer elements, careful to
 // not truncate a string mid-surrogate pair.
 PathString TruncatePathString(const PathString& original, int length) {
-  if (original.size() <= length)
+  if (original.size() <= static_cast<size_t>(length))
     return original;
   if (length <= 0)
     return original;

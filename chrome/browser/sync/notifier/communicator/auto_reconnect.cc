@@ -45,7 +45,8 @@ int AutoReconnect::seconds_until() const {
   }
 
   // Do a ceiling on the value (to avoid returning before its time)
-  return (time_until_100ns + kSecsTo100ns - 1) / kSecsTo100ns;
+  int64 result = (time_until_100ns + kSecsTo100ns - 1) / kSecsTo100ns;
+  return static_cast<int>(result);
 }
 
 void AutoReconnect::StartReconnectTimer() {

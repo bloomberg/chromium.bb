@@ -72,7 +72,7 @@ bool SplitStringIntoKeyValuePairs(const string& line,
       // values; just record that our split failed.
       success = false;
     }
-    DCHECK_LE(value.size(), 1);
+    DCHECK_LE(value.size(), 1U);
     kv_pairs->push_back(make_pair(key, value.empty()? "" : value[0]));
   }
   return success;

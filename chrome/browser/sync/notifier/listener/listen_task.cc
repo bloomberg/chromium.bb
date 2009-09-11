@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/notifier/listener/listen_task.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "talk/base/task.h"
 #include "talk/xmllite/qname.h"
 #include "talk/xmllite/xmlelement.h"
@@ -60,10 +61,10 @@ bool ListenTask::IsValidNotification(const buzz::XmlElement* stanza) {
   //    </not:getAll>
   //  </cli:iq>
   if (MatchRequestIq(stanza, buzz::STR_SET, kQnNotifierGetAll) &&
-      !stricmp(stanza->Attr(buzz::QN_TO).c_str(),
-               GetClient()->jid().Str().c_str()) &&
-      !stricmp(stanza->Attr(buzz::QN_FROM).c_str(),
-               GetClient()->jid().BareJid().Str().c_str())) {
+      !base::strcasecmp(stanza->Attr(buzz::QN_TO).c_str(),
+                        GetClient()->jid().Str().c_str()) &&
+      !base::strcasecmp(stanza->Attr(buzz::QN_FROM).c_str(),
+                        GetClient()->jid().BareJid().Str().c_str())) {
     return true;
   }
   return false;

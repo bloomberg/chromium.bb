@@ -91,7 +91,7 @@ AllStatus::Status AllStatus::CreateBlankStatus() const {
 AllStatus::Status AllStatus::CalcSyncing(const SyncerEvent &event) const {
   Status status = CreateBlankStatus();
   SyncerStatus syncerStatus(event.last_session);
-  status.unsynced_count += syncerStatus.unsynced_count();
+  status.unsynced_count += static_cast<int>(syncerStatus.unsynced_count());
   status.conflicting_count += syncerStatus.conflicting_commits();
   if (syncerStatus.current_sync_timestamp() ==
       syncerStatus.servers_latest_timestamp()) {

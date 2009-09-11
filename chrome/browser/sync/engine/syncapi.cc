@@ -1362,6 +1362,7 @@ SyncManager::Status SyncManager::SyncInternal::ComputeAggregatedStatus() {
         allstatus()->status().updates_available,
         allstatus()->status().updates_received,
         allstatus()->status().disk_full,
+        false,   // TODO(ncarter): invalid store?
         allstatus()->status().max_consecutive_errors};
   return return_status;
 }

@@ -410,7 +410,7 @@ void DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
   }
   select.append(" FROM metas ");
   ScopedStatement statement(PrepareQuery(load_dbhandle_, select.c_str()));
-  base::hash_set<int> handles;
+  base::hash_set<int64> handles;
   while (EntryKernel* kernel = UnpackEntry(statement.get())) {
     DCHECK(handles.insert(kernel->ref(META_HANDLE)).second);  // Only in debug.
     entry_bucket->insert(kernel);

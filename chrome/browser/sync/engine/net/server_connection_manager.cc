@@ -56,7 +56,8 @@ bool ServerConnectionManager::Post::ReadBufferResponse(
   if (require_response && (1 > response->content_length))
     return false;
 
-  const int64 bytes_read = ReadResponse(buffer_out, response->content_length);
+  const int64 bytes_read = ReadResponse(buffer_out,
+      static_cast<int>(response->content_length));
   if (bytes_read != response->content_length) {
     response->server_status = HttpResponse::IO_ERROR;
     return false;
@@ -66,7 +67,8 @@ bool ServerConnectionManager::Post::ReadBufferResponse(
 
 bool ServerConnectionManager::Post::ReadDownloadResponse(
     HttpResponse* response, string* buffer_out) {
-  const int64 bytes_read = ReadResponse(buffer_out, response->content_length);
+  const int64 bytes_read = ReadResponse(buffer_out,
+      static_cast<int>(response->content_length));
 
   if (bytes_read != response->content_length) {
     LOG(ERROR) << "Mismatched content lengths, server claimed " <<
@@ -237,7 +239,8 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
       continue;
     }
     string time_response;
-    time_response.resize(response.content_length);
+    time_response.resize(
+        static_cast<string::size_type>(response.content_length));
     ok = post->ReadDownloadResponse(&response, &time_response);
     if (!ok || string::npos !=
         time_response.find_first_not_of("0123456789")) {

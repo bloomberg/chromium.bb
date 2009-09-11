@@ -115,9 +115,9 @@ struct timespec GetPThreadAbsoluteTime(uint32 ms) {
   // The number of 100 nanosecond intervals from Jan 1, 1601 'til Jan 1, 1970.
   const int64 kOffset = GG_LONGLONG(116444736000000000);
   timespec result;
-  result.tv_sec = (n.QuadPart - kOffset) / 10000000;
-  result.tv_nsec = (n.QuadPart - kOffset -
-                    (result.tv_sec * GG_LONGLONG(10000000))) * 100;
+  result.tv_sec = static_cast<long>((n.QuadPart - kOffset) / 10000000);
+  result.tv_nsec = static_cast<long>((n.QuadPart - kOffset -
+                    (result.tv_sec * GG_LONGLONG(10000000))) * 100);
   return result;
 #else
   struct timeval now;
