@@ -71,7 +71,7 @@ DWORD UnPackArchive(const std::wstring& archive, bool system_install,
     if (!installed_version) {
       LOG(ERROR) << "Can not use differential update when Chrome is not "
                  << "installed on the system.";
-      return installer_util::InstallStatus::CHROME_NOT_INSTALLED;
+      return installer_util::CHROME_NOT_INSTALLED;
     }
     std::wstring existing_archive =
         installer::GetChromeInstallPath(system_install);
@@ -445,8 +445,11 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     exit_code = tmp;
     return true;
   } else if (cmd_line.HasSwitch(installer_util::switches::kInactiveUserToast)) {
-    // Launch the inactive user toast experiment.
-    dist->InactiveUserToastExperiment();
+    // Launch the inactive user toast experiment. If there is no value
+    // associated with the switch the function uses 0 as the flavor.
+    std::wstring flavor =
+        cmd_line.GetSwitchValue(installer_util::switches::kInactiveUserToast);
+    dist->InactiveUserToastExperiment(StringToInt(flavor));
     return true;
   }
   return false;
