@@ -295,11 +295,11 @@ TabContentsIterator::TabContentsIterator()
 void TabContentsIterator::Advance() {
   // Unless we're at the beginning (index = -1) or end (iterator = end()),
   // then the current TabContents should be valid.
-  DCHECK(web_view_index_ || browser_iterator_ == BrowserList::end() ||
-    cur_) << "Trying to advance past the end";
+  DCHECK(web_view_index_ || browser_iterator_ == BrowserList::end() || cur_)
+      << "Trying to advance past the end";
 
   // Update cur_ to the next TabContents in the list.
-  for (;;) {
+  while (browser_iterator_ != BrowserList::end()) {
     web_view_index_++;
 
     while (web_view_index_ >= (*browser_iterator_)->tab_count()) {
