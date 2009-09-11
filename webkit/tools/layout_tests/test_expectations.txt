@@ -2322,3 +2322,14 @@ BUG21501 LINUX DEBUG : LayoutTests/svg/custom/linking-a-03-b-preserveAspectRatio
 // Need investigation after we enable file URL universal access in test shell.
 BUG_JIANLI WIN : LayoutTests/fast/events/dispatchEvent-crash.html = CRASH
 BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
+
+// New tests added in r48284
+BUG21644 : LayoutTests/http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = FAIL
+BUG21644 : LayoutTests/http/tests/security/mixedContent/data-url-iframe-in-main-frame.html = FAIL
+BUG21644 : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main-frame.html = FAIL
+BUG21644 : LayoutTests/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html = FAIL
+BUG21644 : LayoutTests/http/tests/security/mixedContent/insecure-image-in-main-frame.html = FAIL
+BUG21644 : LayoutTests/http/tests/security/mixedContent/insecure-script-in-iframe.html = FAIL
+BUG21644 : LayoutTests/http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html = FAIL
+BUG21644 : LayoutTests/http/tests/security/mixedContent/redirect-http-to-https-script-in-iframe.html = FAIL
+BUG21644 : LayoutTests/http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html = FAIL
