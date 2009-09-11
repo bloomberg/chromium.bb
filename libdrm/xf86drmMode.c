@@ -46,6 +46,7 @@
 #include <drm.h>
 #include <string.h>
 #include <dirent.h>
+#include <unistd.h>
 #include <errno.h>
 
 #define U642VOID(x) ((void *)(unsigned long)(x))
@@ -667,3 +668,45 @@ int drmModeCrtcSetGamma(int fd, uint32_t crtc_id, uint32_t size,
 
 	return 0;
 }
+
+int drmHandleEvent(int fd, drmEventContextPtr evctx)
+{
+	char buffer[1024];
+	int len, i;
+	struct drm_event *e;
+	struct drm_event_vblank *vblank;
+	
+	/* The DRM read semantics guarantees that we always get only
+	 * complete events. */
+
+	len = read(fd, buffer, sizeof buffer);
+	if (len == 0)
+		return 0;
+	if (len < sizeof *e)
+		return -1;
+
+	i = 0;
+	while (i < len) {
+		e = (struct drm_event *) &buffer[i];
+		switch (e->type) {
+		case DRM_EVENT_VBLANK:
+			if (evctx->version < 1 ||
+			    evctx->vblank_handler == NULL)
+				break;
+			vblank = (struct drm_event_vblank *) e;
+			evctx->vblank_handler(fd,
+					      vblank->sequence, 
+					      vblank->tv_sec,
+					      vblank->tv_usec,
+					      U642VOID (vblank->user_data));
+			break;
+			
+		default:
+			break;
+		}
+		i += e->length;
+	}
+
+	return 0;
+}
+

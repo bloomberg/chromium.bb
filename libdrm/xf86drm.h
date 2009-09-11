@@ -271,6 +271,7 @@ typedef struct _drmTextureRegion {
 typedef enum {
     DRM_VBLANK_ABSOLUTE = 0x0,	/**< Wait for specific vblank sequence number */
     DRM_VBLANK_RELATIVE = 0x1,	/**< Wait for given number of vblanks */
+    DRM_VBLANK_EVENT = 0x4000000,	/**< Send event instead of blocking */
     DRM_VBLANK_FLIP = 0x8000000,	/**< Scheduled buffer swap should flip */
     DRM_VBLANK_NEXTONMISS = 0x10000000,	/**< If missed, wait for next vblank */
     DRM_VBLANK_SECONDARY = 0x20000000,	/**< Secondary display controller */
@@ -666,5 +667,23 @@ extern void drmMsg(const char *format, ...);
 
 extern int drmSetMaster(int fd);
 extern int drmDropMaster(int fd);
+
+#define DRM_EVENT_CONTEXT_VERSION 1
+
+typedef struct _drmEventContext {
+
+	/* This struct is versioned so we can add more pointers if we
+	 * add more events. */
+	int version;
+
+	void (*vblank_handler)(int fd,
+			       unsigned int sequence, 
+			       unsigned int tv_sec,
+			       unsigned int tv_usec,
+			       void *user_data);
+
+} drmEventContext, *drmEventContextPtr;
+
+extern int drmHandleEvent(int fd, drmEventContextPtr evctx);
 
 #endif
