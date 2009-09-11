@@ -311,7 +311,7 @@ if pre_base_env['TARGET_ARCHITECTURE'] == 'x86':
 # ----------------------------------------------------------
 def CommandSelLdrTestNacl(env, name, command,
                           log_verbosity=2,
-                          sel_ldr_flags=['-d'],
+                          sel_ldr_flags=None,
                           size='medium',
                           **extra):
   if env['BUILD_SUBARCH'] == '64':
@@ -322,13 +322,17 @@ def CommandSelLdrTestNacl(env, name, command,
     print 'WARNING: no trusted env specified skipping test %s' % name
     return []
 
+  if sel_ldr_flags is None:
+    sel_ldr_flags = []
+
   trusted_env = env['TRUSTED_ENV']
   sel_ldr = trusted_env.File('${STAGING_DIR}/'
                              + '${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 
   # Temporarily: ignore ABI mismatch on ARM.
   if env['BUILD_ARCHITECTURE'] == 'arm':
-    sel_ldr_flags = sel_ldr_flags + ['-I']
+    sel_ldr_flags = sel_ldr_flags + ['-I', '-d']
+    # TODO(robertm): get rid of -d when arm tests stabilize
 
   command = [sel_ldr] + sel_ldr_flags  + ['-f'] + command
 

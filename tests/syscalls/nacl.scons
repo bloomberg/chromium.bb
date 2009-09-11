@@ -1,3 +1,4 @@
+# -*- python -*-
 # Copyright 2008, Google Inc.
 # All rights reserved.
 #
@@ -38,10 +39,13 @@ if not env.Bit('host_windows'):
              [Copy(env.File('file_ok_rdwr.txt'), env.File('file_ok.txt')),
               Chmod(env.File('file_ok_rdwr.txt'), 0755)])
 
+  # syscalls_test exercise open/read/write, so need filesystem access
+  # via the debug flag to sel_ldr
   node = env.CommandSelLdrTestNacl('syscalls_test.out',
                                    command=[env.File('syscalls.nexe'),
                                             env.File('file_ok_rdwr.txt')],
                                    stdout_golden=env.File('syscalls.stdout'),
                                    stdout_filter='"^(All tests PASSED)$|^(TEST.*)$"',
+                                   sel_ldr_flags=['-d'],
                                    )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
