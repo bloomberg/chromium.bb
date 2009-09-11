@@ -26,7 +26,6 @@
 #include "chrome/common/pref_service.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 
 namespace {
 
@@ -69,6 +68,8 @@ TaskManagerColumn TaskManagerResourceIDToColumnID(int id) {
       return kTaskManagerNetwork;
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
       return kTaskManagerProcessID;
+    case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:
+      return kTaskManagerGoatsTeleported;
     default:
       NOTREACHED();
       return static_cast<TaskManagerColumn>(-1);
@@ -91,6 +92,8 @@ int TaskManagerColumnIDToResourceID(int id) {
       return IDS_TASK_MANAGER_NET_COLUMN;
     case kTaskManagerProcessID:
       return IDS_TASK_MANAGER_PROCESS_ID_COLUMN;
+    case kTaskManagerGoatsTeleported:
+      return IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN;
     default:
       NOTREACHED();
       return -1;
@@ -138,6 +141,7 @@ void TreeViewInsertColumnWithPixbuf(GtkWidget* treeview, int resid) {
   // This is temporary: we'll turn expanding off after getting the size.
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+  gtk_tree_view_column_set_sort_column_id(column, colid);
 }
 
 // Inserts a column with a column id of |colid| and |name|.
@@ -151,6 +155,7 @@ void TreeViewInsertColumnWithName(GtkWidget* treeview,
   GtkTreeViewColumn* column = gtk_tree_view_get_column(
       GTK_TREE_VIEW(treeview), TreeViewColumnIndexFromID(colid));
   gtk_tree_view_column_set_resizable(column, TRUE);
+  gtk_tree_view_column_set_sort_column_id(column, colid);
 }
 
 // Loads the column name from |resid| and uses the corresponding
@@ -178,13 +183,10 @@ class TaskManagerGtk::ContextMenuController : public MenuGtk::Delegate {
   explicit ContextMenuController(TaskManagerGtk* task_manager)
       : task_manager_(task_manager) {
     menu_.reset(new MenuGtk(this, false));
-    for (int i = kTaskManagerPage; i < kTaskManagerColumnCount - 1; i++) {
+    for (int i = kTaskManagerPage; i < kTaskManagerColumnCount; i++) {
       menu_->AppendCheckMenuItemWithLabel(
           i, l10n_util::GetStringUTF8(TaskManagerColumnIDToResourceID(i)));
     }
-
-    menu_->AppendCheckMenuItemWithLabel(kTaskManagerGoatsTeleported,
-                                        "Goats Teleported");
   }
 
   virtual ~ContextMenuController() {}
@@ -388,12 +390,6 @@ void TaskManagerGtk::Init() {
   gtk_widget_add_events(treeview_,
                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
-  // Hide some columns by default
-  TreeViewColumnSetVisible(treeview_, kTaskManagerSharedMem, false);
-  TreeViewColumnSetVisible(treeview_, kTaskManagerPrivateMem, false);
-  TreeViewColumnSetVisible(treeview_, kTaskManagerProcessID, false);
-  TreeViewColumnSetVisible(treeview_, kTaskManagerGoatsTeleported, false);
-
   // |selection| is owned by |treeview_|.
   GtkTreeSelection* selection = gtk_tree_view_get_selection(
       GTK_TREE_VIEW(treeview_));
@@ -449,8 +445,41 @@ void TaskManagerGtk::ConnectAccelerators() {
 }
 
 void TaskManagerGtk::CreateTaskManagerTreeview() {
-  treeview_ = gtk_tree_view_new();
+  process_list_ = gtk_list_store_new(kTaskManagerColumnCount,
+      GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+      G_TYPE_STRING);
 
+  // Support sorting on all columns.
+  process_list_sort_ = gtk_tree_model_sort_new_with_model(
+      GTK_TREE_MODEL(process_list_));
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerPage,
+                                  ComparePage, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerPhysicalMem,
+                                  ComparePhysicalMemory, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerSharedMem,
+                                  CompareSharedMemory, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerPrivateMem,
+                                  ComparePrivateMemory, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerCPU,
+                                  CompareCPU, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerNetwork,
+                                  CompareNetwork, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerProcessID,
+                                  CompareProcessID, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerGoatsTeleported,
+                                  CompareGoatsTeleported, this, NULL);
+  treeview_ = gtk_tree_view_new_with_model(process_list_sort_);
+
+  // Insert all the columns.
   TreeViewInsertColumnWithPixbuf(treeview_, IDS_TASK_MANAGER_PAGE_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_SHARED_MEM_COLUMN);
@@ -458,18 +487,16 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_CPU_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_NET_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
+  TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
 
-  TreeViewInsertColumnWithName(treeview_, kTaskManagerGoatsTeleported,
-                               "Goats Teleported");
-
-  process_list_ = gtk_list_store_new(kTaskManagerColumnCount,
-      GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING);
-
-  gtk_tree_view_set_model(GTK_TREE_VIEW(treeview_),
-                          GTK_TREE_MODEL(process_list_));
+  // Hide some columns by default.
+  TreeViewColumnSetVisible(treeview_, kTaskManagerSharedMem, false);
+  TreeViewColumnSetVisible(treeview_, kTaskManagerPrivateMem, false);
+  TreeViewColumnSetVisible(treeview_, kTaskManagerProcessID, false);
+  TreeViewColumnSetVisible(treeview_, kTaskManagerGoatsTeleported, false);
+  
   g_object_unref(process_list_);
+  g_object_unref(process_list_sort_);
 }
 
 std::string TaskManagerGtk::GetModelText(int row, int col_id) {
@@ -505,7 +532,7 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
         return std::string();
       return WideToUTF8(model_->GetResourceProcessId(row));
 
-    case kTaskManagerGoatsTeleported:  // Goats Teleported!
+    case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!
       return WideToUTF8(model_->GetResourceGoatsTeleported(row));
 
     default:
@@ -536,7 +563,8 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
   std::string cpu = GetModelText(row, IDS_TASK_MANAGER_CPU_COLUMN);
   std::string net = GetModelText(row, IDS_TASK_MANAGER_NET_COLUMN);
   std::string procid = GetModelText(row, IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
-  std::string goats = GetModelText(row, kTaskManagerGoatsTeleported);
+  std::string goats = GetModelText(
+      row, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
   gtk_list_store_set(process_list_, iter,
                      kTaskManagerIcon, icon,
                      kTaskManagerPage, page.c_str(),
@@ -601,6 +629,13 @@ void TaskManagerGtk::OnLinkActivated() {
     DCHECK(browser);
   }
   browser->window()->Show();
+}
+
+gint TaskManagerGtk::CompareImpl(GtkTreeModel* model, GtkTreeIter* a,
+                                 GtkTreeIter* b, int id) {
+  int row1 = gtk_tree::GetRowNumForIter(model, a);
+  int row2 = gtk_tree::GetRowNumForIter(model, b);
+  return model_->CompareValues(row1, row2, id);
 }
 
 // static

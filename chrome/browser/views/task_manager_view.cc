@@ -33,13 +33,6 @@
 static const int kDefaultWidth = 460;
 static const int kDefaultHeight = 270;
 
-// An id for the most important column, made sufficiently large so as not to
-// collide with anything else.
-static const int64 kNuthMagicNumber = 1737350766;
-static const int kBitMask = 0x7FFFFFFF;
-static const int kGoatsTeleportedColumn =
-    (94024 * kNuthMagicNumber) & kBitMask;
-
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -115,7 +108,7 @@ std::wstring TaskManagerTableModel::GetText(int row, int col_id) {
         return std::wstring();
       return model_->GetResourceProcessId(row);
 
-    case kGoatsTeleportedColumn:  // Goats Teleported!
+    case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!
       return model_->GetResourceGoatsTeleported(row);
 
     default:
@@ -308,13 +301,10 @@ void TaskManagerView::Init() {
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PROCESS_ID_COLUMN, false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_SHARED_MEM_COLUMN, false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN, false);
+  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN,
+                                  false);
 
   UpdateStatsCounters();
-  TableColumn col(kGoatsTeleportedColumn, L"Goats Teleported",
-                  TableColumn::RIGHT, -1, 0);
-  col.sortable = true;
-  columns_.push_back(col);
-  tab_table_->AddColumn(col);
   tab_table_->SetObserver(this);
   SetContextMenuController(this);
   kill_button_ = new views::NativeButton(
