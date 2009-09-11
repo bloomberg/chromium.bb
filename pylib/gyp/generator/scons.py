@@ -220,7 +220,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
   selecting (at SCons build time) the specific configuration being built.
 
   The general outline of a generated SConscript file is:
- 
+
     --  Header
 
     --  Import 'env'.  This contains a $CONFIG_NAME construction
@@ -459,7 +459,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
            '    %s,\n'
            '    GYPCopy(\'$TARGET\', \'$SOURCE\'))\n')
     for f in copy['files']:
-      dest = os.path.join(destdir, os.path.split(f)[1])
+      dest = os.path.join(destdir, os.path.basename(f))
       f = FixPath(f, src_subdir_)
       dest = FixPath(dest, src_subdir_)
       fp.write(fmt % (repr(dest), repr(f)))
@@ -874,7 +874,7 @@ def TargetFilename(target, build_file=None, output_suffix=''):
   """
   if build_file is None:
     build_file, target = gyp.common.BuildFileAndTarget('', target)[:2]
-  output_file = os.path.join(os.path.split(build_file)[0],
+  output_file = os.path.join(os.path.dirname(build_file),
                              target + output_suffix + '.scons')
   return output_file
 
@@ -884,9 +884,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
   Generates all the output files for the specified targets.
   """
   options = params['options']
-  for build_file, build_file_dict in data.iteritems():
-    if not build_file.endswith('.gyp'):
-      continue
 
   if options.generator_output:
     def output_path(filename):
