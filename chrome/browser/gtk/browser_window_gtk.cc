@@ -573,12 +573,21 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
   gtk_window_group_add_window(gtk_window_group_new(), window_);
   g_object_unref(gtk_window_get_group(window_));
 
-  SetGeometryHints();
+  // For popups, we initialize widgets then set the window geometry, because
+  // popups need the widgets inited before they can set the window size
+  // properly. For other windows, we set the geometry first to prevent resize
+  // flicker.
+  if (browser_->type() & Browser::TYPE_POPUP) {
+    InitWidgets();
+    SetGeometryHints();
+  } else {
+    SetGeometryHints();
+    InitWidgets();
+  }
+
   ConnectHandlersToSignals();
   ConnectAccelerators();
-  bounds_ = GetInitialWindowBounds(window_);
 
-  InitWidgets();
   // Set the initial background color of widgets.
   SetBackgroundColor();
   HideUnsupportedWindowFeatures();
@@ -814,16 +823,31 @@ void BrowserWindowGtk::Show() {
     gtk_window_maximize(window_);
     maximize_after_show_ = false;
   }
+
+  // If we have sized the window by setting a size request for the render
+  // area, then undo it so that the render view can later adjust its own
+  // size.
+  gtk_widget_set_size_request(contents_container_->widget(), -1, -1);
 }
 
-void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
+void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds, bool exterior) {
   gint x = static_cast<gint>(bounds.x());
   gint y = static_cast<gint>(bounds.y());
   gint width = static_cast<gint>(bounds.width());
   gint height = static_cast<gint>(bounds.height());
 
   gtk_window_move(window_, x, y);
-  SetWindowSize(window_, width, height);
+
+  if (exterior) {
+    SetWindowSize(window_, width, height);
+  } else {
+    gtk_widget_set_size_request(contents_container_->widget(),
+                                width, height);
+  }
+}
+
+void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
+  SetBoundsImpl(bounds, true);
 }
 
 void BrowserWindowGtk::Close() {
@@ -1462,7 +1486,9 @@ void BrowserWindowGtk::SetGeometryHints() {
   // However, in cases like dropping a tab where the bounds are
   // specifically set, we do want to position explicitly.
   if (browser_->bounds_overridden()) {
-    SetBounds(bounds);
+    // For popups, bounds are set in terms of the client area rather than the
+    // entire window.
+    SetBoundsImpl(bounds, !(browser_->type() & Browser::TYPE_POPUP));
   } else {
     // Ignore the position but obey the size.
     SetWindowSize(window_, bounds.width(), bounds.height());
@@ -1495,6 +1521,8 @@ void BrowserWindowGtk::ConnectHandlersToSignals() {
 }
 
 void BrowserWindowGtk::InitWidgets() {
+  bounds_ = GetInitialWindowBounds(window_);
+
   // This vbox encompasses all of the widgets within the browser, including the
   // tabstrip and the content vbox.  The vbox is put in a floating container
   // (see gtk_floating_container.h) so we can position the
@@ -1637,9 +1665,9 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_widget_hide(devtools_container_->widget());
 
 #if defined(OS_CHROMEOS)
-  if (browser_->type() == Browser::TYPE_POPUP) {
+  if (browser_->type() & Browser::TYPE_POPUP) {
     toolbar_->Hide();
-    // The window manager needs the min size for popups
+    // The window manager needs the min size for popups.
     gtk_widget_set_size_request(
         GTK_WIDGET(window_), bounds_.width(), bounds_.height());
   }

@@ -78,14 +78,8 @@ TEST_F(BlockedPopupContainerInteractiveTest, TestOpenAndResizeTo) {
   ASSERT_TRUE(popup_window->GetViewBoundsWithTimeout(
                   VIEW_ID_TAB_CONTAINER, &rect, false, 1000, &is_timeout));
   ASSERT_FALSE(is_timeout);
-
-#if !defined(OS_LINUX)
-  // TODO(estade): This is a real failure; we create popups with the wrong size.
-  // Fix it. Note: it appears that we are setting the window's bounds to 300,320
-  // instead of setting the content's bounds to 300,320.
   EXPECT_EQ(300, rect.width());
   EXPECT_EQ(320, rect.height());
-#endif
 
 #if defined(OS_LINUX)
   // It seems we have to wait a little bit for the widgets to spin up before
