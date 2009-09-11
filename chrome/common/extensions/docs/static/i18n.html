@@ -1,0 +1,24 @@
+<div id="pageData-title" class="pageData">i18n</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+Use the <code>chrome.i18n</code> module to manipulate the i18n related browser
+settings, such as the accept languages.
+</p>
+
+<h3 id="overview-examples">Examples</h3>
+
+<p>
+The following code gets accept-languages from the browser and display them as a
+string by separating each accept-language with ','.
+</p>
+
+<pre>
+function getAcceptLanguages() {
+  chrome.i18n.getAcceptLanguages(function(languageList) {
+    var languages = languageList.join(",");
+    document.getElementById("languageSpan").innerHTML = languages;
+  })
+}
+</pre>
+<!-- END AUTHORED CONTENT -->

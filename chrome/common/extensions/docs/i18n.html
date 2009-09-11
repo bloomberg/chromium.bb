@@ -14,7 +14,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.i18n</title></head><body>  <div id="container">
+  <title>i18n</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which 
@@ -86,7 +86,7 @@
         <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
       </div>
       <div id="pageTitle">
-        <h1>chrome.i18n</h1>
+        <h1>i18n</h1>
       </div>
     </div> <!-- /pageHeader -->
           
@@ -112,6 +112,7 @@
               <li><a href="xhr.html">Cross-Origin XHR</a></li>
               <li><a href="packaging.html">Packaging</a></li>
               <li><a href="autoupdate.html">Autoupdate</a></li>
+              <li class="leftNavSelected">i18n</li>
             </ul>
           </li>
           <li><a href="tutorials.html"><div>Tutorials</div></a>
@@ -141,7 +142,7 @@
         <div id="toc">
           <p>Contents</p>
           <ol>
-            <li jsinstance="*0" style="display: none; ">
+            <li style="display: none; ">
               <a>h2Name</a>
               <ol>
                 <li>
@@ -193,7 +194,30 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"></div>
+        <div id="static"><div id="pageData-title" class="pageData">i18n</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+Use the <code>chrome.i18n</code> module to manipulate the i18n related browser
+settings, such as the accept languages.
+</p>
+
+<h3 id="overview-examples">Examples</h3>
+
+<p>
+The following code gets accept-languages from the browser and display them as a
+string by separating each accept-language with ','.
+</p>
+
+<pre>function getAcceptLanguages() {
+  chrome.i18n.getAcceptLanguages(function(languageList) {
+    var languages = languageList.join(",");
+    document.getElementById("languageSpan").innerHTML = languages;
+  })
+}
+</pre>
+<!-- END AUTHORED CONTENT -->
+</div>
 
         <!-- API PAGE -->
         <div class="apiPage">

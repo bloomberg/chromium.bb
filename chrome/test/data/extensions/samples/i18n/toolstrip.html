@@ -9,13 +9,7 @@ LICENSE file.
     <script>
       function getAcceptLanguages() {
         chrome.i18n.getAcceptLanguages(function(languageList) {
-          var languages = "";
-          for (var i = 0; i < languageList.length; i++) {
-            if (i == languageList.length - 1)
-              languages += languageList[i];
-            else
-              languages += languageList[i] + ",";
-          }
+          var languages = languageList.join(",");
           document.getElementById("languageSpan").innerHTML = languages;
         })
       }
