@@ -1,21 +1,19 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_TEXT_DATABASE_H__
-#define CHROME_BROWSER_HISTORY_TEXT_DATABASE_H__
+#ifndef CHROME_BROWSER_HISTORY_TEXT_DATABASE_H_
+#define CHROME_BROWSER_HISTORY_TEXT_DATABASE_H_
 
 #include <set>
 #include <vector>
 
+#include "app/sql/connection.h"
+#include "app/sql/meta_table.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/meta_table_helper.h"
 #include "googleurl/src/gurl.h"
-
-struct sqlite3;
-class SqliteStatementCache;
 
 namespace history {
 
@@ -144,9 +142,8 @@ class TextDatabase {
   // Ensures that the tables and indices are created. Returns true on success.
   bool CreateTables();
 
-  // See the constructor.
-  sqlite3* db_;
-  SqliteStatementCache* statement_cache_;
+  // The sql database. Not valid until Init is called.
+  sql::Connection db_;
 
   const FilePath path_;
   const DBIdent ident_;
@@ -155,17 +152,11 @@ class TextDatabase {
   // Full file name of the file on disk, computed in Init().
   FilePath file_name_;
 
-  // Nesting levels of transactions. Since sqlite only allows one open
-  // transaction, we simulate nested transactions by mapping the outermost one
-  // to a real transaction. Since this object never needs to do ROLLBACK, losing
-  // the ability for all transactions to rollback is inconsequential.
-  int transaction_nesting_;
+  sql::MetaTable meta_table_;
 
-  MetaTableHelper meta_table_;
-
-  DISALLOW_EVIL_CONSTRUCTORS(TextDatabase);
+  DISALLOW_COPY_AND_ASSIGN(TextDatabase);
 };
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_TEXT_DATABASE_H__
+#endif  // CHROME_BROWSER_HISTORY_TEXT_DATABASE_H_
