@@ -33,6 +33,10 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
+#if defined(HAVE_SDL)
+#  include <SDL.h>
+#endif
+
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 
