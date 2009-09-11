@@ -90,7 +90,7 @@ _result = []
 for infile in input_files:
   if env.compilable(infile):
     if type(infile) == type('') and not os.path.isabs(env.subst(infile)):
-      base, ext = os.path.splitext(infile)
+      base, ext = os.path.splitext(os.path.basename(infile))
       object = '${OBJ_DIR}/${COMPONENT_NAME}/' + base
       infile = env.%(name)s(object, %(src_dir)r + infile)[0]
     else:
