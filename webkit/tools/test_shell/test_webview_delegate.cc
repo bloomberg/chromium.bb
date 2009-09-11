@@ -260,14 +260,6 @@ std::string TestWebViewDelegate::GetResourceDescription(uint32 identifier) {
   return it != resource_identifier_map_.end() ? it->second : "<unknown>";
 }
 
-void TestWebViewDelegate::DidReceiveIconForFrame(WebView* webview,
-                                                 WebFrame* frame) {
-  if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didReceiveIconForFrame\n",
-           GetFrameDescription(frame).c_str());
-  }
-}
-
 void TestWebViewDelegate::AddMessageToConsole(WebView* webview,
                                               const std::wstring& message,
                                               unsigned int line_no,

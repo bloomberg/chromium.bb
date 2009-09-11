@@ -161,10 +161,6 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* webframe) {
   }
 
-  // This is called when the favicon for a frame has been received.
-  virtual void DidReceiveIconForFrame(WebView* webview, WebKit::WebFrame* frame) {
-  }
-
   // ChromeClient ------------------------------------------------------------
 
   // Appends a line to the application's error console.  The message contains

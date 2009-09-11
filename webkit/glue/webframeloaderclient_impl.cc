@@ -560,10 +560,8 @@ void WebFrameLoaderClient::dispatchWillClose() {
 }
 
 void WebFrameLoaderClient::dispatchDidReceiveIcon() {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->DidReceiveIconForFrame(webview, webframe_);
+  // The icon database is disabled, so this should never be called.
+  ASSERT_NOT_REACHED();
 }
 
 void WebFrameLoaderClient::dispatchDidStartProvisionalLoad() {

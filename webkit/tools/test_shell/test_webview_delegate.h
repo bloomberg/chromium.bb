@@ -113,7 +113,6 @@ class TestWebViewDelegate : public WebViewDelegate,
                                int edit_flags,
                                const std::string& security_info,
                                const std::string& frame_charset);
-  virtual void DidReceiveIconForFrame(WebView* webview, WebKit::WebFrame* frame);
   virtual void NavigateBackForwardSoon(int offset);
   virtual int GetHistoryBackListCount();
   virtual int GetHistoryForwardListCount();
