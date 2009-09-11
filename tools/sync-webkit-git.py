@@ -11,7 +11,12 @@ we can use git commands to make it match the version requested by DEPS.
 To use this:
 1) rm -rf third_party/WebKit
 2) git clone git://git.webkit.org/WebKit.git third_party/WebKit
-3) run ./tools/sync-webkit-git.py now, and again whenever you run gclient
+3) edit your .gclient "custom_deps" section to exclude components underneath
+   third_party/WebKit:
+     "src/third_party/WebKit/LayoutTests": None,
+     "src/third_party/WebKit/JavaScriptCore": None,
+     "src/third_party/WebKit/WebCore": None,
+4) run ./tools/sync-webkit-git.py now, and again whenever you run gclient
    sync.
 
 FAQ:
