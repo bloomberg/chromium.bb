@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/sync/notifier/base/async_network_alive.h"
+
 #include <winsock2.h>
 
-#include "chrome/browser/sync/notifier/base/async_network_alive.h"
+#include "base/scoped_handle_win.h"
 #include "chrome/browser/sync/notifier/base/utils.h"
+#include "talk/base/common.h"
 #include "talk/base/criticalsection.h"
 #include "talk/base/logging.h"
 #include "talk/base/scoped_ptr.h"
-#include "talk/base/common.h"
-#include "third_party/smartany/scoped_any.h"
 
 namespace notifier {
+
 class PlatformNetworkInfo {
  public:
   PlatformNetworkInfo() : ws_handle_(NULL), event_handle_(NULL) {
@@ -25,12 +27,12 @@ class PlatformNetworkInfo {
   void Close() {
     talk_base::CritScope crit_scope(&crit_sect_);
     if (ws_handle_) {
-      if (event_handle_)  // unblock any waiting for network changes
-        SetEvent(get(event_handle_));
+      if (event_handle_.IsValid())  // Unblock any waiting for network changes.
+        SetEvent(event_handle_.Get());
       // finishes the iteration.
       VERIFY(WSALookupServiceEnd(ws_handle_) == 0);
       ws_handle_ = NULL;
-      LOG_F(LS_INFO) << "WSACleanup 1";
+      LOG(INFO) << "WSACleanup 1";
       ::WSACleanup();
     }
   }
@@ -45,7 +47,7 @@ class PlatformNetworkInfo {
     Close();
     int result = Initialize();
     if (result != 0) {
-      LOG_F(LS_ERROR) << "failed:" << result;
+      LOG(ERROR) << "failed:" << result;
       // Default to alive on error.
       *error = true;
       return true;
@@ -94,13 +96,13 @@ class PlatformNetworkInfo {
           alive = true;
           flush_previous_result = true;
         } else {
-          LOG_F(LS_WARNING) << "failed:" << result;
+          LOG(WARNING) << "failed:" << result;
           *error = true;
           break;
         }
       }
     } while (true);
-    LOG_F(LS_INFO) << "alive: " << alive;
+    LOG(INFO) << "alive: " << alive;
     return alive;
   }
 
@@ -113,20 +115,20 @@ class PlatformNetworkInfo {
       talk_base::CritScope crit_scope(&crit_sect_);
       if (!ws_handle_)
         return false;
-      ASSERT(!event_handle_);
-      reset(event_handle_, ::CreateEvent(NULL, FALSE, FALSE, NULL));
-      if (!event_handle_) {
-        LOG_F(LS_WARNING) << "failed to CreateEvent";
+      ASSERT(!event_handle_.IsValid());
+      event_handle_.Set(CreateEvent(NULL, FALSE, FALSE, NULL));
+      if (!event_handle_.IsValid()) {
+        LOG(WARNING) << "failed to CreateEvent";
         return false;
       }
       WSAOVERLAPPED overlapped = {0};
-      overlapped.hEvent = get(event_handle_);
+      overlapped.hEvent = event_handle_.Get();
       WSACOMPLETION completion;
       ::SetZero(completion);
       completion.Type = NSP_NOTIFY_EVENT;
       completion.Parameters.Event.lpOverlapped = &overlapped;
 
-      LOG_F(LS_INFO) << "calling WSANSPIoctl";
+      LOG(INFO) << "calling WSANSPIoctl";
       // Do a non-blocking request for change notification.  event_handle_
       // will get signaled when there is a change, so we wait on it later.
       // It can also be signaled by Close() in order allow clean termination.
@@ -142,25 +144,25 @@ class PlatformNetworkInfo {
     if (NO_ERROR != result) {
       result = ::WSAGetLastError();
       if (WSA_IO_PENDING != result) {
-        LOG_F(LS_WARNING) << "failed: " << result;
-        reset(event_handle_);
+        LOG(WARNING) << "failed: " << result;
+        event_handle_.Close();
         return false;
       }
     }
-    LOG_F(LS_INFO) << "waiting";
-    WaitForSingleObject(get(event_handle_), INFINITE);
-    reset(event_handle_);
-    LOG_F(LS_INFO) << "changed";
+    LOG(INFO) << "waiting";
+    WaitForSingleObject(event_handle_.Get(), INFINITE);
+    event_handle_.Close();
+    LOG(INFO) << "changed";
     return true;
   }
 
  private:
   int Initialize() {
     WSADATA wsa_data;
-    LOG_F(LS_INFO) << "calling WSAStartup";
+    LOG(INFO) << "calling WSAStartup";
     int result = ::WSAStartup(MAKEWORD(2, 2), &wsa_data);
     if (result != ERROR_SUCCESS) {
-      LOG_F(LS_ERROR) << "failed:" << result;
+      LOG(ERROR) << "failed:" << result;
       return result;
     }
 
@@ -172,7 +174,7 @@ class PlatformNetworkInfo {
     if (0 != ::WSALookupServiceBegin(&query_set, LUP_RETURN_ALL,
                                      &ws_handle_)) {
       result = ::WSAGetLastError();
-      LOG_F(LS_INFO) << "WSACleanup 2";
+      LOG(INFO) << "WSACleanup 2";
       ::WSACleanup();
       ASSERT(ws_handle_ == NULL);
       ws_handle_ = NULL;
@@ -182,7 +184,7 @@ class PlatformNetworkInfo {
   }
   talk_base::CriticalSection crit_sect_;
   HANDLE ws_handle_;
-  scoped_event event_handle_;
+  ScopedHandle event_handle_;
   DISALLOW_COPY_AND_ASSIGN(PlatformNetworkInfo);
 };
 
