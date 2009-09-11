@@ -474,19 +474,4 @@ GdkColor AverageColors(GdkColor color_one, GdkColor color_two) {
   return average_color;
 }
 
-void SetAlwaysShowImage(GtkWidget* image_menu_item) {
-#if GTK_CHECK_VERSION(2, 16, 1)
-  gtk_image_menu_item_set_always_show_image(
-      GTK_IMAGE_MENU_ITEM(image_menu_item), TRUE);
-#else
-  if (gtk_check_version(2, 16, 1)) {
-    GValue true_value = { 0 };
-    g_value_init(&true_value, G_TYPE_BOOLEAN);
-    g_value_set_boolean(&true_value, TRUE);
-    g_object_set_property(G_OBJECT(image_menu_item), "always-show-image",
-                          &true_value);
-  }
-#endif
-}
-
 }  // namespace gtk_util
