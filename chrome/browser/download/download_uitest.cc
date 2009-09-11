@@ -147,7 +147,7 @@ class DownloadTest : public UITest {
     // reading a file written by a different process, using a different handle.
     // Windows does not guarantee that we will get the same contents even after
     // the other process closes the handle, flushes the buffers, etc.
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 20; i++) {
       PlatformThread::Sleep(sleep_timeout_ms());
 
       char buffer[100] = {0};
