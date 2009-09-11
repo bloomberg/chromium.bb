@@ -2086,6 +2086,9 @@ each locale. aa1 -->
       <message name="IDS_TASK_MANAGER_WORKER_PREFIX" desc="The prefix for a Task Manager HTML5 Web Worker process row">
         Web Worker: <ph name="WORKER_NAME">$1<ex>http://www.domain.com</ex></ph>
       </message>
+      <message name="IDS_TASK_MANAGER_UTILITY_PREFIX" desc="The prefix for a utility process row">
+        Utility:
+      </message>
 
       <!-- Extension Crashed Info Bar-->
       <message name="IDS_EXTENSION_CRASHED_INFOBAR_RESTART_BUTTON" desc="Title of the reload button in the extension crashed infobar. After the button is clicked, the extension will be reloaded.">

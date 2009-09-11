@@ -69,6 +69,8 @@ std::wstring ChildProcessInfo::GetLocalizedTitle() const {
     message_id = IDS_TASK_MANAGER_PLUGIN_PREFIX;
   } else if (type_ == ChildProcessInfo::WORKER_PROCESS) {
     message_id = IDS_TASK_MANAGER_WORKER_PREFIX;
+  } else if (type_ == ChildProcessInfo::UTILITY_PROCESS) {
+    message_id = IDS_TASK_MANAGER_UTILITY_PREFIX;
   } else {
     DCHECK(false) << "Need localized name for child process type.";
     return title;
