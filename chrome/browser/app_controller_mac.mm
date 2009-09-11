@@ -48,7 +48,6 @@
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount;
 - (BOOL)shouldQuitWithInProgressDownloads;
-- (NSMenu*)applicationDockMenu:(NSApplication*)sender;
 @end
 
 @implementation AppController
@@ -665,32 +664,6 @@
   if (![[aboutController_ window] isVisible])
     [[aboutController_ window] center];
   [aboutController_ showWindow:self];
-}
-
-- (NSMenu*)applicationDockMenu:(id)sender {
-  NSMenu* result = [[[NSMenu alloc] initWithTitle: @""] autorelease];
-  NSString* titleStr;
-  id item;
-
-  titleStr = base::SysWideToNSString(
-      l10n_util::GetString(IDS_NEW_WINDOW_MAC));
-  item = [[[NSMenuItem alloc] initWithTitle:titleStr
-                                     action:@selector(commandDispatch:)
-                              keyEquivalent:@""] autorelease];
-  [item setTarget:self];
-  [item setTag:IDC_NEW_WINDOW];
-  [result addItem:item];
-
-  titleStr = base::SysWideToNSString(
-      l10n_util::GetString(IDS_NEW_INCOGNITO_WINDOW_MAC));
-  item = [[[NSMenuItem alloc] initWithTitle:titleStr
-                                     action:@selector(commandDispatch:)
-                              keyEquivalent:@""] autorelease];
-  [item setTarget:self];
-  [item setTag:IDC_NEW_INCOGNITO_WINDOW];
-  [result addItem:item];
-
-  return result;
 }
 
 @end
