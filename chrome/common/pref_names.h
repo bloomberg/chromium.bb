@@ -81,6 +81,7 @@ extern const wchar_t kDeleteCache[];
 extern const wchar_t kDeleteCookies[];
 extern const wchar_t kDeletePasswords[];
 extern const wchar_t kDeleteFormData[];
+extern const wchar_t kDeleteSTSState[];
 extern const wchar_t kBookmarkTableNameWidth1[];
 extern const wchar_t kBookmarkTableURLWidth1[];
 extern const wchar_t kBookmarkTableNameWidth2[];

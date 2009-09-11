@@ -228,6 +228,7 @@ const wchar_t kDeleteCache[] = L"browser.clear_data.cache";
 const wchar_t kDeleteCookies[] = L"browser.clear_data.cookies";
 const wchar_t kDeletePasswords[] = L"browser.clear_data.passwords";
 const wchar_t kDeleteFormData[] = L"browser.clear_data.form_data";
+const wchar_t kDeleteSTSState[] = L"browser.clear_data.sts_state";
 const wchar_t kDeleteTimePeriod[] = L"browser.clear_data.time_period";
 
 // Integer prefs giving the widths of the columns in the bookmark table. Two

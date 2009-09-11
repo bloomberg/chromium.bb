@@ -48,6 +48,9 @@ class StrictTransportSecurityState :
                           int* max_age,
                           bool* include_subdomains);
 
+  // Deletes all the state and notifies the delegate that the state is dirty.
+  void Clear();
+
   struct State {
     base::Time expiry;  // the absolute time (UTC) when this record expires
     bool include_subdomains;  // subdomains included?
