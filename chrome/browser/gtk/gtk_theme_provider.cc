@@ -21,6 +21,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "grit/app_resources.h"
+//#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 namespace {
 
@@ -55,6 +58,10 @@ SkColor GdkToSkColor(GdkColor* color) {
 }
 
 }  // namespace
+
+GtkWidget* GtkThemeProvider::icon_widget_ = NULL;
+GdkPixbuf* GtkThemeProvider::default_folder_icon_ = NULL;
+GdkPixbuf* GtkThemeProvider::default_bookmark_icon_ = NULL;
 
 // static
 GtkThemeProvider* GtkThemeProvider::GetFrom(Profile* profile) {
@@ -185,6 +192,48 @@ CairoCachedSurface* GtkThemeProvider::GetSurfaceNamed(
   return surface;
 }
 
+// static
+GdkPixbuf* GtkThemeProvider::GetFolderIcon(bool native) {
+  if (native) {
+    if (!icon_widget_)
+      icon_widget_ = gtk_fixed_new();
+    // We never release our ref, so we will leak this on program shutdown.
+    if (!default_folder_icon_) {
+      default_folder_icon_ =
+          gtk_widget_render_icon(icon_widget_, GTK_STOCK_DIRECTORY,
+                                 GTK_ICON_SIZE_MENU, NULL);
+    }
+    if (default_folder_icon_)
+      return default_folder_icon_;
+  }
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  static GdkPixbuf* default_folder_icon_ = rb.GetPixbufNamed(
+      IDR_BOOKMARK_BAR_FOLDER);
+  return default_folder_icon_;
+}
+
+// static
+GdkPixbuf* GtkThemeProvider::GetDefaultFavicon(bool native) {
+  if (native) {
+    if (!icon_widget_)
+      icon_widget_ = gtk_fixed_new();
+    // We never release our ref, so we will leak this on program shutdown.
+    if (!default_bookmark_icon_) {
+      default_bookmark_icon_ =
+          gtk_widget_render_icon(icon_widget_, GTK_STOCK_FILE,
+                                 GTK_ICON_SIZE_MENU, NULL);
+    }
+    if (default_bookmark_icon_)
+      return default_bookmark_icon_;
+  }
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  static GdkPixbuf* default_bookmark_icon_ = rb.GetPixbufNamed(
+      IDR_DEFAULT_FAVICON);
+  return default_bookmark_icon_;
+}
+
 void GtkThemeProvider::LoadThemePrefs() {
   if (use_gtk_) {
     LoadGtkValues();
@@ -239,11 +288,23 @@ void GtkThemeProvider::FreePlatformCaches() {
 void GtkThemeProvider::OnStyleSet(GtkWidget* widget,
                                   GtkStyle* previous_style,
                                   GtkThemeProvider* provider) {
+  GdkPixbuf* default_folder_icon = default_folder_icon_;
+  GdkPixbuf* default_bookmark_icon = default_bookmark_icon_;
+  default_folder_icon_ = NULL;
+  default_bookmark_icon_ = NULL;
+
   if (provider->profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme)) {
     provider->ClearAllThemeData();
     provider->LoadGtkValues();
     provider->NotifyThemeChanged();
   }
+
+  // Free the old icons only after the theme change notification has gone
+  // through.
+  if (default_folder_icon)
+    g_object_unref(default_folder_icon);
+  if (default_bookmark_icon)
+    g_object_unref(default_bookmark_icon);
 }
 
 void GtkThemeProvider::LoadGtkValues() {

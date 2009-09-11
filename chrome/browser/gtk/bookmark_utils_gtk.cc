@@ -17,9 +17,6 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/gtk_util.h"
-#include "grit/app_resources.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 
 namespace {
 
@@ -50,10 +47,6 @@ void* AsVoid(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
 
-// This is a dummy widget that only exists so we have something to pass to
-// gtk_widget_render_icon().
-GtkWidget* icon_widget = NULL;
-
 }  // namespace
 
 namespace bookmark_utils {
@@ -63,42 +56,6 @@ const char kBookmarkNode[] = "bookmark-node";
 // Spacing between the buttons on the bar.
 const int kBarButtonPadding = 4;
 
-GdkPixbuf* GetFolderIcon(bool native) {
-  if (native) {
-    if (!icon_widget)
-      icon_widget = gtk_fixed_new();
-    // We never release our ref, so we will leak this on program shutdown.
-    static GdkPixbuf* default_folder_icon =
-        gtk_widget_render_icon(icon_widget, GTK_STOCK_DIRECTORY,
-                               GTK_ICON_SIZE_MENU, NULL);
-    if (default_folder_icon)
-      return default_folder_icon;
-  }
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  static GdkPixbuf* default_folder_icon = rb.GetPixbufNamed(
-      IDR_BOOKMARK_BAR_FOLDER);
-  return default_folder_icon;
-}
-
-GdkPixbuf* GetDefaultFavicon(bool native) {
-  if (native) {
-    if (!icon_widget)
-      icon_widget = gtk_fixed_new();
-    // We never release our ref, so we will leak this on program shutdown.
-    static GdkPixbuf* default_bookmark_icon =
-        gtk_widget_render_icon(icon_widget, GTK_STOCK_FILE,
-                               GTK_ICON_SIZE_MENU, NULL);
-    if (default_bookmark_icon)
-      return default_bookmark_icon;
-  }
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  static GdkPixbuf* default_bookmark_icon = rb.GetPixbufNamed(
-      IDR_DEFAULT_FAVICON);
-  return default_bookmark_icon;
-}
-
 GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
                             bool native) {
   GdkPixbuf* pixbuf;
@@ -107,11 +64,11 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
     if (model->GetFavIcon(node).width() != 0) {
       pixbuf = gfx::GdkPixbufFromSkBitmap(&model->GetFavIcon(node));
     } else {
-      pixbuf = GetDefaultFavicon(native);
+      pixbuf = GtkThemeProvider::GetDefaultFavicon(native);
       g_object_ref(pixbuf);
     }
   } else {
-    pixbuf = GetFolderIcon(native);
+    pixbuf = GtkThemeProvider::GetFolderIcon(native);
     g_object_ref(pixbuf);
   }
 

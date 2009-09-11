@@ -21,12 +21,6 @@ extern const char kBookmarkNode[];
 // Padding between the image and the label of a bookmark bar button.
 extern const int kBarButtonPadding;
 
-// These functions do not add a ref to the returned pixbuf, and it should not be
-// unreffed.
-// If |native| is true, get the GTK_STOCK version of the icon.
-GdkPixbuf* GetFolderIcon(bool native);
-GdkPixbuf* GetDefaultFavicon(bool native);
-
 // Get the image that is used to represent the node. This function adds a ref
 // to the returned pixbuf, so it requires a matching call to g_object_unref().
 GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,

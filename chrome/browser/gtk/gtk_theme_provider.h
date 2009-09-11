@@ -75,6 +75,12 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // to send the image to the server on each expose.
   CairoCachedSurface* GetSurfaceNamed(int id, GtkWidget* widget_on_display);
 
+  // These functions do not add a ref to the returned pixbuf, and it should not be
+  // unreffed.
+  // If |native| is true, get the GTK_STOCK version of the icon.
+  static GdkPixbuf* GetFolderIcon(bool native);
+  static GdkPixbuf* GetDefaultFavicon(bool native);
+
  protected:
   // Possibly creates a theme specific version of theme_toolbar_default.
   // (minimally acceptable version right now, which is just a fill of the bg
@@ -135,6 +141,17 @@ class GtkThemeProvider : public BrowserThemeProvider,
   typedef std::map<int, CairoCachedSurface*> CairoCachedSurfaceMap;
   typedef std::map<GdkDisplay*, CairoCachedSurfaceMap> PerDisplaySurfaceMap;
   PerDisplaySurfaceMap per_display_surfaces_;
+
+  // This is a dummy widget that only exists so we have something to pass to
+  // gtk_widget_render_icon().
+  static GtkWidget* icon_widget_;
+
+  // The default folder icon and default bookmark icon for the GTK theme.
+  // These are static because the system can only have one theme at a time.
+  // They are cached when they are requested the first time, and cleared when
+  // the system theme changes.
+  static GdkPixbuf* default_folder_icon_;
+  static GdkPixbuf* default_bookmark_icon_;
 };
 
 #endif  // CHROME_BROWSER_GTK_GTK_THEME_PROVIDER_H_

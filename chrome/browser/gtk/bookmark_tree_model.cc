@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 
 namespace {
 
@@ -23,7 +24,7 @@ void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
   // differently).
   gtk_tree_store_set(store, iter,
                      bookmark_utils::FOLDER_ICON,
-                     bookmark_utils::GetFolderIcon(true),
+                     GtkThemeProvider::GetFolderIcon(true),
                      bookmark_utils::FOLDER_NAME,
                      WideToUTF8(node->GetTitle()).c_str(),
                      bookmark_utils::ITEM_ID, node->id(),

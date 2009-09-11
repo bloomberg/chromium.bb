@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/gtk/bookmark_tree_model.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
@@ -313,7 +314,7 @@ void BookmarkEditorGtk::AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child) {
   gtk_tree_store_set(
       tree_store_, child,
       bookmark_utils::FOLDER_ICON,
-      bookmark_utils::GetFolderIcon(true),
+      GtkThemeProvider::GetFolderIcon(true),
       bookmark_utils::FOLDER_NAME,
       l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME).c_str(),
       bookmark_utils::ITEM_ID, static_cast<int64>(0),

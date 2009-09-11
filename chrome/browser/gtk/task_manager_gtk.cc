@@ -16,8 +16,9 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/gtk/bookmark_utils_gtk.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
@@ -518,7 +519,7 @@ GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
       ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_DEFAULT_FAVICON)->pixelRef()) {
     return static_cast<GdkPixbuf*>(g_object_ref(
-        bookmark_utils::GetDefaultFavicon(true)));
+        GtkThemeProvider::GetDefaultFavicon(true)));
   }
 
   return gfx::GdkPixbufFromSkBitmap(&icon);

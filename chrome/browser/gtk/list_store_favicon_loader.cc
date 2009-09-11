@@ -8,7 +8,7 @@
 
 #include "base/gfx/gtk_util.h"
 #include "base/gfx/png_decoder.h"
-#include "chrome/browser/gtk/bookmark_utils_gtk.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -18,7 +18,7 @@ ListStoreFavIconLoader::ListStoreFavIconLoader(
     : list_store_(list_store), favicon_col_(favicon_col),
       favicon_handle_col_(favicon_handle_col), profile_(profile),
       consumer_(consumer),
-      default_favicon_(bookmark_utils::GetDefaultFavicon(true)) {
+      default_favicon_(GtkThemeProvider::GetDefaultFavicon(true)) {
 }
 
 ListStoreFavIconLoader::~ListStoreFavIconLoader() {

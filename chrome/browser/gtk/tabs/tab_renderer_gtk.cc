@@ -762,7 +762,7 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
     } else {
       if (!data_.favicon.isNull()) {
         if (data_.is_default_favicon && theme_provider_->UseGtkTheme()) {
-          GdkPixbuf* favicon = bookmark_utils::GetDefaultFavicon(true);
+          GdkPixbuf* favicon = GtkThemeProvider::GetDefaultFavicon(true);
           canvas->DrawGdkPixbuf(favicon, favicon_bounds_.x(),
                                 favicon_bounds_.y() + fav_icon_hiding_offset_);
         } else {
