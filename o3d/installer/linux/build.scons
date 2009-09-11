@@ -175,7 +175,9 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
                       "debian_i386/rules"
                      ],
                      [("libnpo3dautoplugin.so",
-                           '$ARTIFACTS_DIR/libnpo3dautoplugin.so')
+                           '$ARTIFACTS_DIR/libnpo3dautoplugin.so'),
+                      ("libCg.so", '$ARTIFACTS_DIR/libCg.so'),
+                      ("libCgGL.so", '$ARTIFACTS_DIR/libCgGL.so')
                      ],
                      output_dir='$ARTIFACTS_DIR',
                      force_version=env.get('O3D_PLUGIN_VERSION'))
