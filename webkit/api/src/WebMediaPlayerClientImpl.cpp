@@ -7,7 +7,6 @@
 
 #if ENABLE(VIDEO)
 
-#include "TemporaryGlue.h"
 #include "TimeRanges.h"
 #include "WebCanvas.h"
 #include "WebCString.h"
@@ -117,7 +116,7 @@ void WebMediaPlayerClientImpl::load(const String& url)
 {
     Frame* frame = static_cast<HTMLMediaElement*>(
         m_mediaPlayer->mediaPlayerClient())->document()->frame();
-    m_webMediaPlayer.set(TemporaryGlue::createWebMediaPlayer(this, frame));
+    m_webMediaPlayer.set(webKitClient()->createWebMediaPlayer(this, frame));
     if (m_webMediaPlayer.get())
         m_webMediaPlayer->load(KURL(ParsedURLString, url));
 }

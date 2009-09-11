@@ -29,6 +29,10 @@ class WebWorkerClientImpl : public WebCore::WorkerContextProxy,
  public:
   WebWorkerClientImpl(WebCore::Worker* worker);
 
+  // WebCore::WorkerContextProxy Factory.
+  static WebCore::WorkerContextProxy* createWorkerContextProxy(
+      WebCore::Worker* worker);
+
   void set_webworker(WebKit::WebWorker* webworker);
 
   // WebCore::WorkerContextProxy methods:

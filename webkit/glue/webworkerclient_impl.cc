@@ -37,6 +37,7 @@
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframeloaderclient_impl.h"
 #include "webkit/glue/webframe_impl.h"
+#include "webkit/glue/webkitclient_impl.h"
 #include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview_impl.h"
 #include "webkit/glue/webworker_impl.h"
@@ -59,7 +60,9 @@ using WebKit::WebWorkerClient;
 //
 // Note that if we're running each worker in a separate process, then nested
 // workers end up using the same codepath as the renderer process.
-WebCore::WorkerContextProxy* WebCore::WorkerContextProxy::create(
+
+// static
+WebCore::WorkerContextProxy* WebWorkerClientImpl::createWorkerContextProxy(
     WebCore::Worker* worker) {
   if (!worker->scriptExecutionContext()->isDocument() &&
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -95,7 +98,6 @@ WebCore::WorkerContextProxy* WebCore::WorkerContextProxy::create(
   proxy->set_webworker(webworker);
   return proxy;
 }
-
 
 WebWorkerClientImpl::WebWorkerClientImpl(WebCore::Worker* worker)
     : script_execution_context_(worker->scriptExecutionContext()),

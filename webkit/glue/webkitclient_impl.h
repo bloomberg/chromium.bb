@@ -62,6 +62,24 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebApplicationCacheHostClient*);
 
+  // These are temporary methods that the WebKit layer can use to call to the
+  // Glue layer.  Once the Glue layer moves entirely into the WebKit layer,
+  // these methods will be deleted.
+  virtual WebKit::WebMediaPlayer* createWebMediaPlayer(
+      WebKit::WebMediaPlayerClient*, WebCore::Frame*);
+  virtual void setCursorForPlugin(const WebKit::WebCursorInfo&, WebCore::Frame*);
+  virtual WebCore::String uiResourceProtocol();
+  virtual void notifyJSOutOfMemory(WebCore::Frame*);
+  virtual int screenDepth(WebCore::Widget*);
+  virtual int screenDepthPerComponent(WebCore::Widget*);
+  virtual bool screenIsMonochrome(WebCore::Widget*);
+  virtual WebCore::IntRect screenRect(WebCore::Widget*);
+  virtual WebCore::IntRect screenAvailableRect(WebCore::Widget*);
+  virtual bool popupsAllowed(NPP);
+  virtual void widgetSetCursor(WebCore::Widget*, const WebCore::Cursor&);
+  virtual void widgetSetFocus(WebCore::Widget*);
+  virtual WebCore::WorkerContextProxy* createWorkerContextProxy(WebCore::Worker* worker);
+
  private:
   void DoTimeout() {
     if (shared_timer_func_)

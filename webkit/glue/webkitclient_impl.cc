@@ -2,6 +2,13 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
+#include "config.h"
+
+#include "FrameView.h"
+#include "ScrollView.h"
+#include <wtf/Assertions.h>
+#undef LOG
+
 #include "webkit/glue/webkitclient_impl.h"
 
 #include "base/file_path.h"
@@ -13,21 +20,59 @@
 #include "base/trace_event.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
+#include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebData.h"
+#include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebPluginListBuilder.h"
+#include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/glue/chrome_client_impl.h"
+#include "webkit/glue/glue_util.h"
+#include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/weburlloader_impl.h"
+#include "webkit/glue/webview_impl.h"
+#include "webkit/glue/webworkerclient_impl.h"
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
+using WebKit::WebCursorInfo;
 using WebKit::WebData;
 using WebKit::WebLocalizedString;
 using WebKit::WebPluginListBuilder;
 using WebKit::WebString;
 using WebKit::WebThemeEngine;
 using WebKit::WebURLLoader;
+using WebKit::WebWidgetClient;
+
+namespace {
+
+ChromeClientImpl* ToChromeClient(WebCore::Widget* widget) {
+  WebCore::FrameView* view;
+  if (widget->isFrameView()) {
+    view = static_cast<WebCore::FrameView*>(widget);
+  } else if (widget->parent() && widget->parent()->isFrameView()) {
+    view = static_cast<WebCore::FrameView*>(widget->parent());
+  } else {
+    return NULL;
+  }
+
+  WebCore::Page* page = view->frame() ? view->frame()->page() : NULL;
+  if (!page)
+    return NULL;
+
+  return static_cast<ChromeClientImpl*>(page->chrome()->client());
+}
+
+WebWidgetClient* ToWebWidgetClient(WebCore::Widget* widget) {
+  ChromeClientImpl* chrome_client = ToChromeClient(widget);
+  if (!chrome_client || !chrome_client->webview())
+    return NULL;
+  return chrome_client->webview()->delegate();
+}
+
+}
 
 namespace webkit_glue {
 
@@ -309,4 +354,112 @@ bool WebKitClientImpl::makeAllDirectories(
   return file_util::CreateDirectory(FilePath(file_path));
 }
 
+//--------------------------------------------------------------------------
+
+// These are temporary methods that the WebKit layer can use to call to the
+// Glue layer.  Once the Glue layer moves entirely into the WebKit layer, these
+// methods will be deleted.
+
+WebKit::WebMediaPlayer* WebKitClientImpl::createWebMediaPlayer(
+  WebKit::WebMediaPlayerClient* client, WebCore::Frame* frame) {
+  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
+  if (!webframe->client())
+    return NULL;
+
+  return webframe->client()->createMediaPlayer(webframe, client);
+}
+
+void WebKitClientImpl::setCursorForPlugin(
+    const WebKit::WebCursorInfo& cursor_info, WebCore::Frame* frame) {
+  WebCore::Page* page = frame->page();
+  if (!page)
+      return;
+
+  ChromeClientImpl* chrome_client =
+      static_cast<ChromeClientImpl*>(page->chrome()->client());
+
+  // A windowless plugin can change the cursor in response to the WM_MOUSEMOVE
+  // event. We need to reflect the changed cursor in the frame view as the
+  // mouse is moved in the boundaries of the windowless plugin.
+  chrome_client->SetCursorForPlugin(cursor_info);
+}
+
+void WebKitClientImpl::notifyJSOutOfMemory(WebCore::Frame* frame) {
+  if (!frame)
+    return;
+
+  WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
+  if (!webframe->client())
+    return;
+  webframe->client()->didExhaustMemoryAvailableForScript(webframe);
+}
+
+bool WebKitClientImpl::popupsAllowed(NPP npp) {
+  bool popups_allowed = false;
+  if (npp) {
+    NPAPI::PluginInstance* plugin_instance =
+        reinterpret_cast<NPAPI::PluginInstance*>(npp->ndata);
+    if (plugin_instance)
+      popups_allowed = plugin_instance->popups_allowed();
+  }
+  return popups_allowed;
+}
+
+WebCore::String WebKitClientImpl::uiResourceProtocol() {
+  return StdStringToString(webkit_glue::GetUIResourceProtocol());
+}
+
+int WebKitClientImpl::screenDepth(WebCore::Widget* widget) {
+  WebKit::WebWidgetClient* client = ToWebWidgetClient(widget);
+  if (!client)
+    return 0;
+  return client->screenInfo().depth;
+}
+
+int WebKitClientImpl::screenDepthPerComponent(WebCore::Widget* widget) {
+  WebKit::WebWidgetClient* client = ToWebWidgetClient(widget);
+  if (!client)
+    return 0;
+  return client->screenInfo().depthPerComponent;
+}
+
+bool WebKitClientImpl::screenIsMonochrome(WebCore::Widget* widget) {
+  WebKit::WebWidgetClient* client = ToWebWidgetClient(widget);
+  if (!client)
+    return false;
+  return client->screenInfo().isMonochrome;
+}
+
+WebCore::IntRect WebKitClientImpl::screenRect(WebCore::Widget* widget) {
+  WebKit::WebWidgetClient* client = ToWebWidgetClient(widget);
+  if (!client)
+    return WebCore::IntRect();
+  return ToIntRect(client->screenInfo().rect);
+}
+
+WebCore::IntRect WebKitClientImpl::screenAvailableRect(
+    WebCore::Widget* widget) {
+  WebKit::WebWidgetClient* client = ToWebWidgetClient(widget);
+  if (!client)
+    return WebCore::IntRect();
+  return ToIntRect(client->screenInfo().availableRect);
+}
+
+void WebKitClientImpl::widgetSetCursor(WebCore::Widget* widget,
+                                       const WebCore::Cursor& cursor) {
+  ChromeClientImpl* chrome_client = ToChromeClient(widget);
+  if (chrome_client)
+    chrome_client->SetCursor(CursorToWebCursorInfo(cursor));
+}
+
+void WebKitClientImpl::widgetSetFocus(WebCore::Widget* widget) {
+  ChromeClientImpl* chrome_client = ToChromeClient(widget);
+  if (chrome_client)
+    chrome_client->focus();
+}
+
+WebCore::WorkerContextProxy* WebKitClientImpl::createWorkerContextProxy(
+    WebCore::Worker* worker) {
+  return WebWorkerClientImpl::createWorkerContextProxy(worker);
+}
 }  // namespace webkit_glue

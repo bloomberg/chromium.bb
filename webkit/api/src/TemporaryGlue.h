@@ -35,8 +35,18 @@
 // use to call to the Glue layer.  Once the Glue layer moves entirely into the
 // WebKit layer, this file will be deleted.
 
+struct _NPP;
+typedef struct _NPP NPP_t;
+typedef NPP_t* NPP;
+
 namespace WebCore {
+    class Cursor;
     class Frame;
+    class IntRect;
+    class String;
+    class Widget;
+    class Worker;
+    class WorkerContextProxy;
 } // namespace WebCore
 
 namespace WebKit {
@@ -46,9 +56,19 @@ namespace WebKit {
 
     class TemporaryGlue {
     public:
-        static WebMediaPlayer* createWebMediaPlayer(WebMediaPlayerClient*, WebCore::Frame*);
-
-        static void setCursorForPlugin(const WebCursorInfo&, WebCore::Frame*);
+        virtual WebMediaPlayer* createWebMediaPlayer(WebMediaPlayerClient*, WebCore::Frame*) = 0;
+        virtual void setCursorForPlugin(const WebCursorInfo&, WebCore::Frame*) = 0;
+        virtual WebCore::String uiResourceProtocol() = 0;
+        virtual void notifyJSOutOfMemory(WebCore::Frame*) = 0;
+        virtual int screenDepth(WebCore::Widget*)  = 0;
+        virtual int screenDepthPerComponent(WebCore::Widget*)  = 0;
+        virtual bool screenIsMonochrome(WebCore::Widget*)  = 0;
+        virtual WebCore::IntRect screenRect(WebCore::Widget*)  = 0;
+        virtual WebCore::IntRect screenAvailableRect(WebCore::Widget*) = 0;
+        virtual bool popupsAllowed(NPP) = 0;
+        virtual void widgetSetCursor(WebCore::Widget*, const WebCore::Cursor&) = 0;
+        virtual void widgetSetFocus(WebCore::Widget*) = 0;
+        virtual WebCore::WorkerContextProxy* createWorkerContextProxy(WebCore::Worker* worker) = 0;
     };
 
 } // namespace WebKit

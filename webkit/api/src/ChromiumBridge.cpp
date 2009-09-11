@@ -43,6 +43,8 @@
 #include "WebPluginListBuilderImpl.h"
 #include "WebString.h"
 #include "WebURL.h"
+#include "Worker.h"
+#include "WorkerContextProxy.h"
 
 #if PLATFORM(WIN_OS)
 #include "WebRect.h"
@@ -503,6 +505,65 @@ WebCore::LinkHash ChromiumBridge::visitedLinkHash(const WebCore::KURL& base,
 bool ChromiumBridge::isLinkVisited(WebCore::LinkHash visitedLinkHash)
 {
     return webKitClient()->isLinkVisited(visitedLinkHash);
+}
+
+// These are temporary methoeds that the WebKit layer can use to call to the
+// Glue layer. Once the Glue layer moves entirely into the WebKit layer, these
+// methods will be deleted.
+
+String ChromiumBridge::uiResourceProtocol()
+{
+    return webKitClient()->uiResourceProtocol();
+}
+
+void ChromiumBridge::notifyJSOutOfMemory(WebCore::Frame* frame)
+{
+    return webKitClient()->notifyJSOutOfMemory(frame);
+}
+
+int ChromiumBridge::screenDepth(Widget* widget)
+{
+    return webKitClient()->screenDepth(widget);
+}
+
+int ChromiumBridge::screenDepthPerComponent(Widget* widget)
+{
+    return webKitClient()->screenDepthPerComponent(widget);
+}
+
+bool ChromiumBridge::screenIsMonochrome(Widget* widget)
+{
+    return webKitClient()->screenIsMonochrome(widget);
+}
+
+IntRect ChromiumBridge::screenRect(Widget* widget)
+{
+    return webKitClient()->screenRect(widget);
+}
+
+IntRect ChromiumBridge::screenAvailableRect(Widget* widget)
+{
+    return webKitClient()->screenAvailableRect(widget);
+}
+
+bool ChromiumBridge::popupsAllowed(NPP npp)
+{
+    return webKitClient()->popupsAllowed(npp);
+}
+
+void ChromiumBridge::widgetSetCursor(Widget* widget, const Cursor& cursor)
+{
+    return webKitClient()->widgetSetCursor(widget, cursor);
+}
+
+void ChromiumBridge::widgetSetFocus(Widget* widget)
+{
+    return webKitClient()->widgetSetFocus(widget);
+}
+
+WorkerContextProxy* WorkerContextProxy::create(Worker* worker)
+{
+    return webKitClient()->createWorkerContextProxy(worker);
 }
 
 } // namespace WebCore
