@@ -284,9 +284,6 @@ class ChromeTests:
     script_cmd = ["python.exe", script, "--run-singly", "-v",
                   "--noshow-results", "--time-out-ms=200000",
                   "--nocheck-sys-deps"]
-    if not run_all:
-      script_cmd.append("--run-chunk=%d:%d" % (chunk_num, chunk_size))
-
     if len(self._args):
       # if the arg is a txt file, then treat it as a list of tests
       if os.path.isfile(self._args[0]) and self._args[0][-4:] == ".txt":
@@ -299,8 +296,14 @@ class ChromeTests:
                               script_cmd, multi=True, cmd_args=["--timeout=0"])
       return ret
 
-    # store each chunk in its own directory so that we can find the data later
+    # Store each chunk in its own directory so that we can find the data later.
     chunk_dir = os.path.join("chunk_%05d" % chunk_num)
+    script_cmd.append("--run-chunk=%d:%d" % (chunk_num, chunk_size))
+
+    # Put the layout test results in the chunk dir as well.
+    script_cmd.append("--results-dir=%s" % os.path.join(self._report_dir,
+                                                        chunk_dir));
+
     ret = self.ScriptedTest("webkit", "test_shell.exe", "layout",
                             script_cmd, multi=True, cmd_args=["--timeout=0"],
                             out_dir_extra=chunk_dir)

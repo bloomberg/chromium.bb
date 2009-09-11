@@ -262,17 +262,26 @@ class TestRunner:
       slice_end = min(num_tests, slice_start + chunk_len)
 
       files = test_files[slice_start:slice_end]
-      logging.info('Run: %d tests (chunk slice [%d:%d] of %d)' % (
-          (slice_end - slice_start), slice_start, slice_end, num_tests))
+      tests_run_msg = 'Run: %d tests (chunk slice [%d:%d] of %d)' % (
+          (slice_end - slice_start), slice_start, slice_end, num_tests)
+      logging.info(tests_run_msg)
 
       # If we reached the end and we don't have enough tests, we run some
       # from the beginning.
       if self._options.run_chunk and (slice_end - slice_start < chunk_len):
         extra = 1 + chunk_len - (slice_end - slice_start)
-        logging.info('   last chunk is partial, appending [0:%d]' % extra)
+        extra_msg = '   last chunk is partial, appending [0:%d]' % extra
+        logging.info(extra_msg)
+        tests_run_msg += "\n" + extra_msg
         files.extend(test_files[0:extra])
       self._test_files_list = files
       self._test_files = set(files)
+
+      tests_run_filename = os.path.join(self._options.results_directory,
+                                        "tests_run.txt")
+      tests_run_file = open(tests_run_filename, "w")
+      tests_run_file.write(tests_run_msg)
+      tests_run_file.close()
 
       # update expectations so that the stats are calculated correctly
       self._expectations = self._ParseExpectations(
