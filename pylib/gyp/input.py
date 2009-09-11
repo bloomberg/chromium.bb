@@ -51,6 +51,7 @@ base_non_configuration_keys = [
   'copies',
   'default_configuration',
   'dependencies',
+  'dependencies_original',
   'link_languages',
   'libraries',
   'postbuilds',
@@ -1155,6 +1156,9 @@ def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
     if target_type == 'static_library':
       if not 'dependencies' in target_dict:
         continue
+
+      target_dict['dependencies_original'] = target_dict.get(
+          'dependencies', [])[:]
 
       index = 0
       while index < len(target_dict['dependencies']):

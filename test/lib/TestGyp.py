@@ -244,6 +244,14 @@ class TestGypMake(TestGypBase):
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join('out', configuration, name)]
     return self.run(program=program, *args, **kw)
+  def built_lib_must_exist(self, name, *args, **kw):
+    configuration = self.configuration or 'Default'
+    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
+    self.must_exist(lib_path)
+  def built_lib_must_not_exist(self, name, *args, **kw):
+    configuration = self.configuration or 'Default'
+    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
+    self.must_not_exist(lib_path)
 
 
 class TestGypMSVS(TestGypBase):
@@ -321,6 +329,14 @@ class TestGypMSVS(TestGypBase):
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join(configuration, '%s.exe' % name)]
     return self.run(program=program, *args, **kw)
+  def built_lib_must_exist(self, name, *args, **kw):
+    configuration = self.configuration or 'Default'
+    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
+    self.must_exist(lib_path)
+  def built_lib_must_not_exist(self, name, *args, **kw):
+    configuration = self.configuration or 'Default'
+    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
+    self.must_not_exist(lib_path)
 
 
 class TestGypSCons(TestGypBase):
@@ -369,6 +385,14 @@ class TestGypSCons(TestGypBase):
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join(configuration, name)]
     return self.run(program=program, *args, **kw)
+  def built_lib_must_exist(self, name, *args, **kw):
+    configuration = self.configuration or 'Default'
+    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
+    self.must_exist(lib_path)
+  def built_lib_must_not_exist(self, name, *args, **kw):
+    configuration = self.configuration or 'Default'
+    lib_path = self.workpath(configuration, 'lib', self.lib_ + name + self._lib)
+    self.must_not_exist(lib_path)
 
 
 class TestGypXcode(TestGypBase):
@@ -416,6 +440,16 @@ class TestGypXcode(TestGypBase):
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join('build', configuration, name)]
     return self.run(program=program, *args, **kw)
+  def built_lib_must_exist(self, name, *args, **kw):
+    configuration = self.configuration or 'Default'
+    lib_path = self.workpath('build', configuration,
+                             self.lib_ + name + self._lib)
+    self.must_exist(lib_path)
+  def built_lib_must_not_exist(self, name, *args, **kw):
+    configuration = self.configuration or 'Default'
+    lib_path = self.workpath('build', configuration,
+                             self.lib_ + name + self._lib)
+    self.must_not_exist(lib_path)
 
 
 format_class_list = [
