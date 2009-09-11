@@ -41,6 +41,11 @@ that contains the following items:
         that must be checked out to create the working directory
         layout for building and developing the solution's software.
 
+    deps_file
+        A string containing just the filename (not a path) of the file
+        in the solution dir to use as the list of dependencies.
+        This tag is optional, and defaults to "DEPS".
+
     custom_deps
         A dictionary containing optional custom overrides for entries
         in the solution's "DEPS" file.  This can be used to have
@@ -51,9 +56,10 @@ that contains the following items:
         that do not exist in the "DEPS" file.
 
 Within each checked-out solution, gclient expects to find a file
-named "DEPS" which defines the different component pieces of
-software that must be checked out for the solution.  The "DEPS"
-file is a Python script that defines a dictionary named "deps":
+typically named "DEPS" (it actually uses the value of the 'deps_file'
+key above) which defines the different component pieces of software
+that must be checked out for the solution.  The "DEPS" file is a
+Python script that defines a dictionary named "deps":
 
     deps = {
       "src/outside" : "http://outside-server/trunk@1234",

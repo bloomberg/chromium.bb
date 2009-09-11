@@ -262,29 +262,28 @@ usage: revinfo [options]
 """,
 }
 
-# parameterized by (solution_name, solution_url, safesync_url)
-DEFAULT_CLIENT_FILE_TEXT = (
-    """
-# An element of this array (a \"solution\") describes a repository directory
+DEFAULT_CLIENT_FILE_TEXT = ("""\
+# An element of this array (a "solution") describes a repository directory
 # that will be checked out into your working copy.  Each solution may
 # optionally define additional dependencies (via its DEPS file) to be
 # checked out alongside the solution's directory.  A solution may also
-# specify custom dependencies (via the \"custom_deps\" property) that
+# specify custom dependencies (via the "custom_deps" property) that
 # override or augment the dependencies specified by the DEPS file.
-# If a \"safesync_url\" is specified, it is assumed to reference the location of
+# If a "safesync_url" is specified, it is assumed to reference the location of
 # a text file which contains nothing but the last known good SCM revision to
 # sync against. It is fetched if specified and used unless --head is passed
+
 solutions = [
-  { \"name\"        : \"%s\",
-    \"url\"         : \"%s\",
-    \"custom_deps\" : {
+  { "name"        : "%(solution_name)s",
+    "url"         : "%(solution_url)s",
+    "custom_deps" : {
       # To use the trunk of a component instead of what's in DEPS:
-      #\"component\": \"https://svnserver/component/trunk/\",
+      #"component": "https://svnserver/component/trunk/",
       # To exclude a component from your working copy:
-      #\"data/really_large_component\": None,
+      #"data/really_large_component": None,
     },
-    \"safesync_url\": \"%s\"
-  }
+    "safesync_url": "%(safesync_url)s"
+  },
 ]
 """)
 
@@ -1131,9 +1130,11 @@ class GClient(object):
     return client
 
   def SetDefaultConfig(self, solution_name, solution_url, safesync_url):
-    self.SetConfig(DEFAULT_CLIENT_FILE_TEXT % (
-      solution_name, solution_url, safesync_url
-    ))
+    self.SetConfig(DEFAULT_CLIENT_FILE_TEXT % {
+      'solution_name': solution_name,
+      'solution_url': solution_url,
+      'safesync_url' : safesync_url,
+    })
 
   def _SaveEntries(self, entries):
     """Creates a .gclient_entries file to record the list of unique checkouts.
@@ -1431,6 +1432,9 @@ class GClient(object):
     # Run on the base solutions first.
     for solution in solutions:
       name = solution["name"]
+      deps_file = solution.get("deps_file", self._options.deps_file)
+      if '/' in deps_file or '\\' in deps_file:
+        raise Error("deps_file name must not be a path, just a filename.")
       if name in entries:
         raise Error("solution %s specified more than once" % name)
       url = solution["url"]
@@ -1443,7 +1447,7 @@ class GClient(object):
         self._options.revision = None
       try:
         deps_content = FileRead(os.path.join(self._root_dir, name,
-                                             self._options.deps_file))
+                                             deps_file))
       except IOError, e:
         if e.errno != errno.ENOENT:
           raise
@@ -1483,7 +1487,7 @@ class GClient(object):
           scm = SCMWrapper(url, self._root_dir, d)
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
-    
+
     # Convert all absolute paths to relative.
     for i in range(len(file_list)):
       # TODO(phajdan.jr): We should know exactly when the paths are absolute.
