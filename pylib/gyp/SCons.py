@@ -90,8 +90,12 @@ _result = []
 for infile in input_files:
   if env.compilable(infile):
     if type(infile) == type('') and not os.path.isabs(env.subst(infile)):
-      base, ext = os.path.splitext(os.path.basename(infile))
-      object = '${OBJ_DIR}/${COMPONENT_NAME}/' + base
+      # Force files below the build directory by replacing all '..'
+      # elements in the path with '__':
+      base, ext = os.path.splitext(os.path.normpath(infile))
+      base = [d == '..' and '__' or d for d in base.split('/')]
+      base = os.path.join(*base)
+      object = '${OBJ_DIR}/${COMPONENT_NAME}/${TARGET_NAME}/' + base
       infile = env.%(name)s(object, %(src_dir)r + infile)[0]
     else:
       infile = env.%(name)s(infile)[0]
