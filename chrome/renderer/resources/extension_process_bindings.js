@@ -19,6 +19,7 @@ var chrome = chrome || {};
   native function GetChromeHidden();
   native function GetNextRequestId();
   native function OpenChannelToTab();
+  native function GetRenderViewId();
 
   if (!chrome)
     chrome = {};
@@ -182,6 +183,14 @@ var chrome = chrome || {};
     }
   }
 
+  function setupToolstripEvents(renderViewId) {
+    chrome.toolstrip = chrome.toolstrip || {};
+    chrome.toolstrip.onExpanded =
+        new chrome.Event("toolstrip.onExpanded." + renderViewId);
+    chrome.toolstrip.onCollapsed =
+        new chrome.Event("toolstrip.onCollapsed." + renderViewId);
+  }
+
   chromeHidden.onLoad.addListener(function (extensionId) {
     chrome.extension = new chrome.Extension(extensionId);
 
@@ -298,5 +307,6 @@ var chrome = chrome || {};
     }
 
     setupPageActionEvents(extensionId);
+    setupToolstripEvents(GetRenderViewId());
   });
 })();

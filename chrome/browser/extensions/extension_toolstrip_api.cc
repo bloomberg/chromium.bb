@@ -4,15 +4,23 @@
 
 #include "chrome/browser/extensions/extension_toolstrip_api.h"
 
+#include "base/json_writer.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_shelf_model.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/profile.h"
 
 namespace extension_toolstrip_api_functions {
 const char kExpandFunction[] = "toolstrip.expand";
 const char kCollapseFunction[] = "toolstrip.collapse";
 };  // namespace extension_toolstrip_api_functions
+
+namespace extension_toolstrip_api_events {
+const char kOnToolstripExpanded[] = "toolstrip.onExpanded.%d";
+const char kOnToolstripCollapsed[] = "toolstrip.onCollapsed.%d";
+};  // namespace extension_toolstrip_api_events
 
 namespace {
 // Errors.
@@ -28,6 +36,7 @@ const int kMaxHeight = 1000;
 };  // namespace
 
 namespace keys = extension_tabs_module_constants;
+namespace events = extension_toolstrip_api_events;
 
 bool ToolstripFunction::RunImpl() {
   ExtensionHost* host = dispatcher()->GetExtensionHost();
@@ -118,4 +127,44 @@ bool ToolstripCollapseFunction::RunImpl() {
 
   model_->CollapseToolstrip(toolstrip_, url);
   return true;
+}
+
+// static
+void ToolstripEventRouter::DispatchEvent(Profile *profile,
+                                         int routing_id,
+                                         const char *event_name,
+                                         const Value& json) {
+  if (profile->GetExtensionMessageService()) {
+    std::string json_args;
+    JSONWriter::Write(&json, false, &json_args);
+    std::string full_event_name = StringPrintf(event_name, routing_id);
+    profile->GetExtensionMessageService()->
+        DispatchEventToRenderers(full_event_name, json_args);
+  }
+}
+
+// static
+void ToolstripEventRouter::OnToolstripExpanded(Profile* profile,
+                                               int routing_id,
+                                               const GURL &url,
+                                               int height) {
+  ListValue args;
+  DictionaryValue* obj = new DictionaryValue();
+  if (!url.is_empty())
+    obj->SetString(keys::kUrlKey, url.spec());
+  obj->SetInteger(keys::kHeightKey, height);
+  args.Append(obj);
+  DispatchEvent(profile, routing_id, events::kOnToolstripExpanded, args);
+}
+
+// static
+void ToolstripEventRouter::OnToolstripCollapsed(Profile* profile,
+                                                int routing_id,
+                                                const GURL &url) {
+  ListValue args;
+  DictionaryValue* obj = new DictionaryValue();
+  if (!url.is_empty())
+    obj->SetString(keys::kUrlKey, url.spec());
+  args.Append(obj);
+  DispatchEvent(profile, routing_id, events::kOnToolstripCollapsed, args);
 }

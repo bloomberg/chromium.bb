@@ -1,0 +1,14 @@
+<script>
+chrome.test.runTests([
+  function expand() {
+    chrome.test.listenOnce(chrome.toolstrip.onExpanded, function(){});
+    chrome.toolstrip.expand({height:200}, 
+                            chrome.test.callbackPass(function(){}));
+  },
+  
+  function collapse() {
+    chrome.test.listenOnce(chrome.toolstrip.onCollapsed, function(){});
+    chrome.toolstrip.collapse({}, chrome.test.callbackPass(function(){}));
+  }
+]);
+</script>

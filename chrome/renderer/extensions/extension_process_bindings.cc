@@ -106,6 +106,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetCurrentPageActions);
     } else if (name->Equals(v8::String::New("StartRequest"))) {
       return v8::FunctionTemplate::New(StartRequest);
+    } else if (name->Equals(v8::String::New("GetRenderViewId"))) {
+      return v8::FunctionTemplate::New(GetRenderViewId);
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -267,6 +269,13 @@ class ExtensionImpl : public ExtensionBase {
     renderview->SendExtensionRequest(name, json_args, request_id, has_callback);
 
     return v8::Undefined();
+  }
+
+  static v8::Handle<v8::Value> GetRenderViewId(const v8::Arguments& args) {
+    RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+    if (!renderview)
+      return v8::Undefined();
+    return v8::Integer::New(renderview->routing_id());
   }
 };
 

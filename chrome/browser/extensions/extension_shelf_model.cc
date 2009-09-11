@@ -9,7 +9,9 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_toolstrip_api.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 
@@ -132,6 +134,10 @@ void ExtensionShelfModel::ExpandToolstrip(iterator toolstrip,
   toolstrip->url = url;
   FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
                     ToolstripChanged(toolstrip));
+  int routing_id = toolstrip->host->render_view_host()->routing_id();
+  ToolstripEventRouter::OnToolstripExpanded(browser_->profile(),
+                                            routing_id,
+                                            url, height);
 }
 
 void ExtensionShelfModel::CollapseToolstrip(iterator toolstrip,
@@ -142,6 +148,10 @@ void ExtensionShelfModel::CollapseToolstrip(iterator toolstrip,
   toolstrip->url = url;
   FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
                     ToolstripChanged(toolstrip));
+  int routing_id = toolstrip->host->render_view_host()->routing_id();
+  ToolstripEventRouter::OnToolstripCollapsed(browser_->profile(),
+                                             routing_id,
+                                             url);
 }
 
 void ExtensionShelfModel::Observe(NotificationType type,

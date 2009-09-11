@@ -1,7 +1,35 @@
+<style>
+#map {
+  display: none;
+  width: 512px;
+  height: 512px;
+}
+</style>
 <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAATfHumDbW3OmRByfquHd3SRTRERdeAiwZ9EeJWta3L_JZVS0bOBRQeZgr4K0xyVKzUdnnuFl8X9PX0w&sensor=false"
         type="text/javascript"></script>
 <script>
 var maps_key = "ABQIAAAATfHumDbW3OmRByfquHd3SRTRERdeAiwZ9EeJWta3L_JZVS0bOBRQeZgr4K0xyVKzUdnnuFl8X9PX0w";
+
+chrome.toolstrip.onCollapsed.addListener(function() {
+  var map = document.getElementById("map");
+  map.src = "";
+  map.style.display = "none";
+  var button = document.getElementById("button");
+  button.style.display = "block";
+});
+
+function expand(url) {
+  var button = document.getElementById("button");
+  button.style.display = "none";
+  var map = document.getElementById("map");
+  map.src = url;
+  map.style.display = "block";
+  chrome.toolstrip.expand({height:512}, function() {});
+}
+
+function collapse() {
+  chrome.toolstrip.collapse({}, function() {});
+}
 
 function gclient_geocode(address) {
   var geocoder = new GClientGeocoder();
@@ -13,8 +41,7 @@ function gclient_geocode(address) {
       var url = "http://maps.google.com/staticmap?center=" + latlng +
                 "&markers=" + latlng + "&zoom=14" +
                 "&size=512x512&sensor=false&key=" + maps_key;
-      document.body.style.width = "512px";
-      setTimeout(chrome.toolstrip.expand, 100, {height:512, url:url});
+      expand(url);
     }
   });
 }
@@ -34,6 +61,7 @@ function map() {
   });
 };
 </script>
-<div class="toolstrip-button" onclick="map()">
+<div id="button" class="toolstrip-button" onclick="map()">
 <span>Mappy</span>
 </div>
+<img id="map" onclick="collapse()">
