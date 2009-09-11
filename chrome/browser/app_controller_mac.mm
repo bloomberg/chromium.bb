@@ -30,6 +30,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/browser/profile_manager.h"
@@ -108,6 +109,17 @@
 
   // Set up the command updater for when there are no windows open
   [self initMenuState];
+
+  // Activate (bring to foreground) if asked to do so.  On
+  // Windows this logic isn't necessary since
+  // BrowserWindow::Activate() calls ::SetForegroundWindow() which is
+  // adequate.  On Mac, BrowserWindow::Activate() calls -[NSWindow
+  // makeKeyAndOrderFront:] which does not activate the application
+  // itself.
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  if (parsed_command_line.HasSwitch(switches::kActivateOnLaunch)) {
+    [NSApp activateIgnoringOtherApps:YES];
+  }
 }
 
 // Checks if there are any tabs with sheets open, and if so, raises one of

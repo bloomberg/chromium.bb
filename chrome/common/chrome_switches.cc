@@ -604,4 +604,8 @@ const wchar_t kEnableByteRangeSupport[] = L"enable-byte-range-support";
 // numbers.
 const wchar_t kExplicitlyAllowedPorts[] = L"explicitly-allowed-ports";
 
+// Activate (make foreground) myself on launch.  Helpful when Chrome
+// is launched on the command line (e.g. by Selenium).  Only needed on Mac.
+const wchar_t kActivateOnLaunch[] = L"activate-on-launch";
+
 }  // namespace switches

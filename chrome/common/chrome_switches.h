@@ -244,6 +244,8 @@ extern const wchar_t kEnableByteRangeSupport[];
 
 extern const wchar_t kExplicitlyAllowedPorts[];
 
+extern const wchar_t kActivateOnLaunch[];
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_
