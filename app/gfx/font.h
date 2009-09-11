@@ -11,6 +11,10 @@
 
 #if defined(OS_WIN)
 typedef struct HFONT__* HFONT;
+#elif defined(OS_LINUX)
+#include "third_party/skia/include/core/SkRefCnt.h"
+class SkPaint;
+class SkTypeface;
 #endif
 
 #if defined(OS_WIN)
@@ -24,7 +28,8 @@ class NSFont;
 typedef NSFont* NativeFont;
 #elif defined(OS_LINUX)
 typedef struct _PangoFontDescription PangoFontDescription;
-typedef PangoFontDescription* NativeFont;
+class SkTypeface;
+typedef SkTypeface* NativeFont;
 #else  // null port.
 #error No known OS defined
 #endif
@@ -97,10 +102,6 @@ class Font {
   // Font Size.
   int FontSize();
 
-  // Returns a handle to the native font.
-  // NOTE: on linux this returns the PangoFontDescription* being held by this
-  // object. You should not modify or free it. If you need to use it, make a
-  // copy of it by way of pango_font_description_copy(nativeFont()).
   NativeFont nativeFont() const;
 
   // Creates a font with the default name and style.
@@ -125,6 +126,16 @@ class Font {
   }
 #elif defined(OS_LINUX)
   static Font CreateFont(PangoFontDescription* desc);
+  // We need a copy constructor and assignment operator to deal with
+  // the Skia reference counting.
+  Font(const Font& other);
+  Font& operator=(const Font& other);
+  // Setup a Skia context to use the current typeface
+  void PaintSetup(SkPaint* paint) const;
+
+  // Converts |gfx_font| to a new pango font. Free the returned font with
+  // pango_font_description_free().
+  static PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font);
 #endif
 
  private:
@@ -185,48 +196,32 @@ class Font {
   // Indirect reference to the HFontRef, which references the underlying HFONT.
   scoped_refptr<HFontRef> font_ref_;
 #elif defined(OS_LINUX)
-  // Used internally on Linux to cache information about the font. This is used
-  // similarly to HFontRef above, see it for a description of lifetime and
-  // usage by Font. Additionally PangoFontRef copies the PangoFontDescription
-  // passed into the constructor, and deletes it when the PangoFontRef is
-  // deleted.
-  class PangoFontRef : public base::RefCounted<PangoFontRef> {
-   public:
-    PangoFontRef(PangoFontDescription* pfd,
-                 const std::wstring& family,
-                 int size,
-                 int style,
-                 int height,
-                 int ascent,
-                 int ave_char_width);
-    ~PangoFontRef();
-
-    PangoFontDescription* pfd() const { return pfd_; }
-    const std::wstring& family() const { return family_; }
-    int size() const { return size_; }
-    int style() const { return style_; }
-    int height() const { return height_; }
-    int ascent() const { return ascent_; }
-    int ave_char_width() const { return ave_char_width_; }
-
-   private:
-    PangoFontDescription* pfd_;
-    const std::wstring family_;
-    const int size_;
-    const int style_;
-    const int height_;
-    const int ascent_;
-    const int ave_char_width_;
-
-    DISALLOW_COPY_AND_ASSIGN(PangoFontRef);
-  };
-
-  explicit Font(PangoFontDescription* pfd);
+  explicit Font(SkTypeface* typeface, const std::wstring& name,
+                int size, int style);
+  // Calculate and cache the font metrics.
+  void calculateMetrics();
+  // Make |this| a copy of |other|.
+  void CopyFont(const Font& other);
 
   // The default font, used for the default constructor.
   static Font* default_font_;
 
-  scoped_refptr<PangoFontRef> font_ref_;
+  // These two both point to the same SkTypeface. We use the SkAutoUnref to
+  // handle the reference counting, but without @typeface_ we would have to
+  // cast the SkRefCnt from @typeface_helper_ every time.
+  scoped_ptr<SkAutoUnref> typeface_helper_;
+  SkTypeface *typeface_;
+
+  // Additional information about the face
+  // Skia actually expects a family name and not a font name.
+  std::wstring font_family_;
+  int font_size_;
+  int style_;
+
+  // Cached metrics, generated at construction
+  int height_;
+  int ascent_;
+  int avg_width_;
 #elif defined(OS_MACOSX)
   explicit Font(const std::wstring& font_name, int font_size, int style);
 
