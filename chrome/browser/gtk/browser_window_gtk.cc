@@ -118,6 +118,12 @@ const int kResizeAreaCornerSize = 16;
 // actually a couple pixels more that should overlap the toolbar and web
 // content area, but we don't use those pixels.
 const int kContentShadowThickness = 2;
+// The offset to the background when the custom frame is off.  We want the
+// window background to line up with the tab background regardless of whether
+// we're in custom frame mode or not.  Since themes are designed with the
+// custom frame in mind, we need to offset the background when the custom frame
+// is off.
+const int kCustomFrameBackgroundVerticalOffset = 15;
 
 base::LazyInstance<ActiveWindowWatcher>
     g_active_window_watcher(base::LINKER_INITIALIZED);
@@ -630,7 +636,9 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
   }
   CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
       image_name, widget);
-  surface->SetSource(cr, 0, 0);
+  surface->SetSource(cr,
+      0,
+      window->UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr, event->area.x, event->area.y,
                       event->area.width, event->area.height);
