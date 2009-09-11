@@ -2,8 +2,88 @@
 # Chromium
 
 {
-  Data races in URLRequestJobTracker (http://crbug.com/15147)
+  bug_15147
   ThreadSanitizer:Race
   ...
   fun:*URLRequestJobTracker*
+}
+
+{
+  bug_18488
+  ThreadSanitizer:Race
+  ...
+  fun:*RefCountedBase*
+  fun:*HostResolver*
+}
+
+{
+  bug_21259
+  ThreadSanitizer:Race
+  ...
+  fun:*tracked_objects*ThreadData*StartTracking*
+}
+
+{
+  bug_21468
+  ThreadSanitizer:Race
+  ...
+  fun:*net*DirectoryLister*
+}
+
+{
+  bug_21474
+  ThreadSanitizer:Race
+  ...
+  fun:*ibevent*
+}
+
+############################
+# Data races in tests
+
+# TODO(timurrrr): bug item
+{
+  Data race on bool in base/thread_unittest
+  ThreadSanitizer:Race
+  ...
+  fun:*ToggleValue*Run*
+}
+
+# TODO(timurrrr): bug item
+{
+  Data race on bool in AssertReporter [test-only]
+  ThreadSanitizer:Race
+  ...
+  fun:*AssertReporter*warn*
+}
+
+# TODO(timurrrr): bug item
+{
+  Data race on WatchdogCounter [test-only]
+  ThreadSanitizer:Race
+  ...
+  fun:*WatchdogCounter*larm*
+}
+
+# TODO(timurrrr): bug item
+{
+  Data race on counter in WorkQueue [test-only]
+  ThreadSanitizer:Race
+  ...
+  fun:*WorkQueue*
+}
+
+# TODO(timurrrr): bug item
+{
+  Data race on vfptr in base/watchdog_unittest
+  ThreadSanitizer:Race
+  ...
+  fun:*WatchdogTest_*arm*Test_Test*TestBody*
+}
+
+# TODO(timurrrr): bug item
+{
+  Data race on vfptr in base/thread_unittest
+  ThreadSanitizer:Race
+  ...
+  fun:*ThreadTest_SleepInsideInit*TestBody*
 }
