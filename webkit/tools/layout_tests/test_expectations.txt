@@ -2327,15 +2327,6 @@ BUG21442 : LayoutTests/storage/test-authorizer.html = TIMEOUT
 // Crashing on Linux Debug as of V8 update at r25855
 BUG21501 LINUX DEBUG : LayoutTests/svg/custom/linking-a-03-b-preserveAspectRatio.svg = CRASH
 
-// New test added by https://trac.webkit.org/changeset/48260.
-// Marked as SKIP because it fails to find the test expectations (dies early).
-BUG21522 SKIP : LayoutTests/http/tests/local/send-dragged-file.html = FAIL
-
-// Need to rebaseline after we enable file URL universal access in test shell.
-BUG1026885 LINUX WIN : LayoutTests/editing/selection/4960137.html = FAIL
-BUG_JIANLI : LayoutTests/fast/dom/wrapper-classes.html = FAIL
-BUG_JIANLI : LayoutTests/fast/frames/frame-src-attribute.html = FAIL
-BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
-
 // Need investigation after we enable file URL universal access in test shell.
 BUG_JIANLI WIN : LayoutTests/fast/events/dispatchEvent-crash.html = CRASH
+BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
