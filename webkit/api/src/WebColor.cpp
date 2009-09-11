@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -28,110 +28,84 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
 #include "WebColor.h"
 
+#include "Color.h"
 #include "CSSValueKeywords.h"
+#include "RenderTheme.h"
 #include "UnusedParam.h"
 #include "WebColorName.h"
+
+using namespace::WebCore;
 
 namespace WebKit {
 
 static int toCSSValueKeyword(WebColorName in_value)
 {
     switch (in_value) {
-        case WebColorActiveBorder:
-            return CSSValueActiveborder;
-            break;
-        case WebColorActiveCaption:
-            return CSSValueActivecaption;
-            break;
-        case WebColorAppworkspace:
-            return CSSValueAppworkspace;
-            break;
-        case WebColorBackground:
-            return CSSValueBackground;
-            break;
-        case WebColorButtonFace:
-            return CSSValueButtonface;
-            break;
-        case WebColorButtonHighlight:
-            return CSSValueButtonhighlight;
-            break;
-        case WebColorButtonShadow:
-            return CSSValueButtonshadow;
-            break;
-        case WebColorButtonText:
-            return CSSValueButtontext;
-            break;
-        case WebColorCaptionText:
-            return CSSValueCaptiontext;
-            break;
-        case WebColorGrayText:
-            return CSSValueGraytext;
-            break;
-        case WebColorHighlight:
-            return CSSValueHighlight;
-            break;
-        case WebColorHighlightText:
-            return CSSValueHighlighttext;
-            break;
-        case WebColorInactiveBorder:
-            return CSSValueInactiveborder;
-            break;
-        case WebColorInactiveCaption:
-            return CSSValueInactivecaption;
-            break;
-        case WebColorInactiveCaptionText:
-            return CSSValueInactivecaptiontext;
-            break;
-        case WebColorInfoBackground:
-            return CSSValueInfobackground;
-            break;
-        case WebColorInfoText:
-            return CSSValueInfotext;
-            break;
-        case WebColorMenu:
-            return CSSValueMenu;
-            break;
-        case WebColorMenuText:
-            return CSSValueMenutext;
-            break;
-        case WebColorScrollbar:
-            return CSSValueScrollbar;
-            break;
-        case WebColorText:
-            return CSSValueText;
-            break;
-        case WebColorThreedDarkShadow:
-            return CSSValueThreeddarkshadow;
-            break;
-        case WebColorThreedShadow:
-            return CSSValueThreedshadow;
-            break;
-        case WebColorThreedFace:
-            return CSSValueThreedface;
-            break;
-        case WebColorThreedHighlight:
-            return CSSValueThreedhighlight;
-            break;
-        case WebColorThreedLightShadow:
-            return CSSValueThreedlightshadow;
-            break;
-        case WebColorWebkitFocusRingColor:
-            return CSSValueWebkitFocusRingColor;
-            break;
-        case WebColorWindow:
-            return CSSValueWindow;
-            break;
-        case WebColorWindowFrame:
-            return CSSValueWindowframe;
-            break;
-        case WebColorWindowText:
-            return CSSValueWindowtext;
-            break;
-        default:
-            return CSSValueInvalid;
-            break;
+    case WebColorActiveBorder:
+        return CSSValueActiveborder;
+    case WebColorActiveCaption:
+        return CSSValueActivecaption;
+    case WebColorAppworkspace:
+        return CSSValueAppworkspace;
+    case WebColorBackground:
+        return CSSValueBackground;
+    case WebColorButtonFace:
+        return CSSValueButtonface;
+    case WebColorButtonHighlight:
+        return CSSValueButtonhighlight;
+    case WebColorButtonShadow:
+        return CSSValueButtonshadow;
+    case WebColorButtonText:
+        return CSSValueButtontext;
+    case WebColorCaptionText:
+        return CSSValueCaptiontext;
+    case WebColorGrayText:
+        return CSSValueGraytext;
+    case WebColorHighlight:
+        return CSSValueHighlight;
+    case WebColorHighlightText:
+        return CSSValueHighlighttext;
+    case WebColorInactiveBorder:
+        return CSSValueInactiveborder;
+    case WebColorInactiveCaption:
+        return CSSValueInactivecaption;
+    case WebColorInactiveCaptionText:
+        return CSSValueInactivecaptiontext;
+    case WebColorInfoBackground:
+        return CSSValueInfobackground;
+    case WebColorInfoText:
+        return CSSValueInfotext;
+    case WebColorMenu:
+        return CSSValueMenu;
+    case WebColorMenuText:
+        return CSSValueMenutext;
+    case WebColorScrollbar:
+        return CSSValueScrollbar;
+    case WebColorText:
+        return CSSValueText;
+    case WebColorThreedDarkShadow:
+        return CSSValueThreeddarkshadow;
+    case WebColorThreedShadow:
+        return CSSValueThreedshadow;
+    case WebColorThreedFace:
+        return CSSValueThreedface;
+    case WebColorThreedHighlight:
+        return CSSValueThreedhighlight;
+    case WebColorThreedLightShadow:
+        return CSSValueThreedlightshadow;
+    case WebColorWebkitFocusRingColor:
+        return CSSValueWebkitFocusRingColor;
+    case WebColorWindow:
+        return CSSValueWindow;
+    case WebColorWindowFrame:
+        return CSSValueWindowframe;
+    case WebColorWindowText:
+        return CSSValueWindowtext;
+    default:
+        return CSSValueInvalid;
     }
 }
 
@@ -143,13 +117,19 @@ void setNamedColors(const WebColorName* colorNames, const WebColor* colors, size
 
       // Convert color to internal value identifier.
       int internalColorName = toCSSValueKeyword(colorName);
-      
+
+      if (internalColorName == CSSValueWebkitFocusRingColor)
+      {
+          RenderTheme::setCustomFocusRingColor(color);
+          continue;
+      }
+
       // TODO(jeremy): Set Color in RenderTheme.
       UNUSED_PARAM(internalColorName);  // Suppress compiler warnings for now.
       UNUSED_PARAM(colorName);
       UNUSED_PARAM(color);
   }
-  
+
   // TODO(jeremy): Tell RenderTheme to update colors.
 }
 

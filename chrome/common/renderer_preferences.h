@@ -12,6 +12,8 @@
 #ifndef CHROME_COMMON_RENDERER_PREFERENCES_H_
 #define CHROME_COMMON_RENDERER_PREFERENCES_H_
 
+#include "third_party/skia/include/core/SkColor.h"
+
 enum RendererPreferencesHintingEnum {
   RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT = 0,
   RENDERER_PREFERENCES_HINTING_NONE,
@@ -47,9 +49,7 @@ struct RendererPreferences {
   RendererPreferencesSubpixelRenderingEnum subpixel_rendering;
 
   // The color of the focus ring. Currently only used on Linux.
-  int focus_ring_color_r;
-  int focus_ring_color_g;
-  int focus_ring_color_b;
+  SkColor focus_ring_color;
 
   // Browser wants a look at all top level requests
   bool browser_handles_top_level_requests;
@@ -60,9 +60,7 @@ struct RendererPreferences {
         hinting(RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT),
         subpixel_rendering(
             RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT),
-        focus_ring_color_r(0),
-        focus_ring_color_g(0),
-        focus_ring_color_b(0),
+        focus_ring_color(0),
         browser_handles_top_level_requests(false) {
   }
 };

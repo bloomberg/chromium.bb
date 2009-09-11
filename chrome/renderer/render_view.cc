@@ -104,6 +104,8 @@ using webkit_glue::AutofillForm;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::SearchableFormData;
+using WebKit::WebColor;
+using WebKit::WebColorName;
 using WebKit::WebConsoleMessage;
 using WebKit::WebData;
 using WebKit::WebDataSource;
@@ -2886,9 +2888,8 @@ void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
 #if defined(OS_LINUX)
-  webview()->SetThemeFocusRingColor(renderer_prefs.focus_ring_color_r,
-                                    renderer_prefs.focus_ring_color_g,
-                                    renderer_prefs.focus_ring_color_b);
+  WebColorName name = WebKit::WebColorWebkitFocusRingColor;
+  WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
 #endif
 }
 

@@ -1577,9 +1577,7 @@ struct ParamTraits<RendererPreferences> {
     WriteParam(m, p.should_antialias_text);
     WriteParam(m, static_cast<int>(p.hinting));
     WriteParam(m, static_cast<int>(p.subpixel_rendering));
-    WriteParam(m, p.focus_ring_color_r);
-    WriteParam(m, p.focus_ring_color_g);
-    WriteParam(m, p.focus_ring_color_b);
+    WriteParam(m, p.focus_ring_color);
     WriteParam(m, p.browser_handles_top_level_requests);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -1600,20 +1598,10 @@ struct ParamTraits<RendererPreferences> {
         static_cast<RendererPreferencesSubpixelRenderingEnum>(
             subpixel_rendering);
 
-    int focus_ring_color_r;
-    if (!ReadParam(m, iter, &focus_ring_color_r))
+    int focus_ring_color;
+    if (!ReadParam(m, iter, &focus_ring_color))
       return false;
-    p->focus_ring_color_r = focus_ring_color_r;
-
-    int focus_ring_color_g;
-    if (!ReadParam(m, iter, &focus_ring_color_g))
-      return false;
-    p->focus_ring_color_g = focus_ring_color_g;
-
-    int focus_ring_color_b;
-    if (!ReadParam(m, iter, &focus_ring_color_b))
-      return false;
-    p->focus_ring_color_b = focus_ring_color_b;
+    p->focus_ring_color = focus_ring_color;
 
     if (!ReadParam(m, iter, &p->browser_handles_top_level_requests))
       return false;

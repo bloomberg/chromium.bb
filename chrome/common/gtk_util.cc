@@ -16,6 +16,7 @@
 #include "chrome/common/renderer_preferences.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace {
 
@@ -405,9 +406,8 @@ void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs) {
   // base[SELECTED] seems more appropriate but in practice it is often too light
   // to be easily visible.
   GdkColor color = style->bg[GTK_STATE_SELECTED];
-  prefs->focus_ring_color_r = color.red / 257;
-  prefs->focus_ring_color_g = color.green / 257;
-  prefs->focus_ring_color_b = color.blue / 257;
+  prefs->focus_ring_color =
+      SkColorSetRGB(color.red / 257, color.green / 257, color.blue / 257);
 
   if (hint_style)
     g_free(hint_style);
@@ -472,6 +472,21 @@ GdkColor AverageColors(GdkColor color_one, GdkColor color_two) {
   average_color.green = (color_one.green + color_two.green) / 2;
   average_color.blue = (color_one.blue + color_two.blue) / 2;
   return average_color;
+}
+
+void SetAlwaysShowImage(GtkWidget* image_menu_item) {
+#if GTK_CHECK_VERSION(2, 16, 1)
+  gtk_image_menu_item_set_always_show_image(
+      GTK_IMAGE_MENU_ITEM(image_menu_item), TRUE);
+#else
+  if (gtk_check_version(2, 16, 1)) {
+    GValue true_value = { 0 };
+    g_value_init(&true_value, G_TYPE_BOOLEAN);
+    g_value_set_boolean(&true_value, TRUE);
+    g_object_set_property(G_OBJECT(image_menu_item), "always-show-image",
+                          &true_value);
+  }
+#endif
 }
 
 }  // namespace gtk_util
