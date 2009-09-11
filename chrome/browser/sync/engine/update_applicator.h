@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// An UpdateApplicator is used to iterate over a number of unapplied
-// updates, applying them to the client using the given syncer session.
+// An UpdateApplicator is used to iterate over a number of unapplied updates,
+// applying them to the client using the given syncer session.
 //
 // UpdateApplicator might resemble an iterator, but it actually keeps retrying
 // failed updates until no remaining updates can be successfully applied.
@@ -11,8 +11,8 @@
 #ifndef CHROME_BROWSER_SYNC_ENGINE_UPDATE_APPLICATOR_H_
 #define CHROME_BROWSER_SYNC_ENGINE_UPDATE_APPLICATOR_H_
 
-#include <vector>
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/port.h"
@@ -38,9 +38,9 @@ class UpdateApplicator {
   bool AllUpdatesApplied() const;
 
   // This class does not automatically save its progress into the
-  // SyncerSession -- to get that to happen, call this method after
-  // update application is finished (i.e., when AttemptOneAllocation
-  // stops returning true).
+  // SyncerSession -- to get that to happen, call this method after update
+  // application is finished (i.e., when AttemptOneAllocation stops returning
+  // true).
   void SaveProgressIntoSessionState();
 
  private:

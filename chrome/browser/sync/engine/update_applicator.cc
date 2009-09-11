@@ -25,7 +25,7 @@ UpdateApplicator::UpdateApplicator(SyncerSession* session,
     successful_ids_.reserve(item_count);
   }
 
-// returns true if there's more to do.
+// Returns true if there's more to do.
 bool UpdateApplicator::AttemptOneApplication(
     syncable::WriteTransaction* trans) {
   // If there are no updates left to consider, we're done.

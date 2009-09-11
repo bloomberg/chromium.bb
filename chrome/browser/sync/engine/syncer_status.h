@@ -4,11 +4,11 @@
 //
 // TODO(sync): We eventually want to fundamentally change how we represent
 // status and inform the UI about the ways in which our status has changed.
-// Right now, we're just trying to keep the various command classes from
-// having to worry about this class.
+// Right now, we're just trying to keep the various command classes from having
+// to worry about this class.
 //
-// The UI will request that we fill this struct so it can show the current
-// sync state.
+// The UI will request that we fill this struct so it can show the current sync
+// state.
 //
 // THIS CLASS PROVIDES NO SYNCHRONIZATION GUARANTEES.
 
@@ -21,11 +21,12 @@
 #include "chrome/browser/sync/engine/sync_process_state.h"
 
 namespace browser_sync {
+
 class SyncerSession;
 
 class SyncerStatus {
  public:
-   explicit SyncerStatus(SyncCycleState* cycle_state, SyncProcessState* state)
+   SyncerStatus(SyncCycleState* cycle_state, SyncProcessState* state)
        : sync_process_state_(state),
          sync_cycle_state_(cycle_state){}
    explicit SyncerStatus(SyncerSession* s);
@@ -59,8 +60,8 @@ class SyncerStatus {
     return sync_process_state_->IsShareUsable();
   }
 
-  // During initial sync these two members can be used to
-  // measure sync progress.
+  // During initial sync these two members can be used to measure sync
+  // progress.
   int64 current_sync_timestamp() const {
     return sync_process_state_->current_sync_timestamp();
   }
@@ -97,12 +98,10 @@ class SyncerStatus {
     return sync_process_state_->BlockedItemsSize();
   }
 
-  // derive from sync_process_state blocked_item_ids_
   int stalled_updates() const {
     return sync_process_state_->BlockedItemsSize();
   }
 
-  // in sync_process_state
   int error_commits() const {
     return sync_process_state_->error_commits();
   }
@@ -111,7 +110,7 @@ class SyncerStatus {
     sync_process_state_->set_error_commits(val);
   }
 
-  // WEIRD COUNTER manipulation functions
+  // WEIRD COUNTER manipulation functions.
   int consecutive_problem_get_updates() const {
     return sync_process_state_->consecutive_problem_get_updates();
   }
@@ -176,11 +175,11 @@ class SyncerStatus {
   void zero_successful_commits() {
     sync_process_state_->zero_successful_commits();
   }
-  // end WEIRD COUNTER manipulation functions
+  // End WEIRD COUNTER manipulation functions.
 
   bool over_quota() const { return sync_cycle_state_->over_quota(); }
 
-  // Methods for managing error rate tracking in sync_process_state
+  // Methods for managing error rate tracking in sync_process_state.
   void TallyNewError() {
     sync_process_state_->TallyNewError();
   }
@@ -201,21 +200,21 @@ class SyncerStatus {
 
   void AuthSucceeded() { sync_process_state_->AuthSucceeded(); }
 
-  // Returns true if this object has been modified since last SetClean() call
+  // Returns true if this object has been modified since last SetClean() call.
   bool IsDirty() const {
     return sync_cycle_state_->IsDirty() || sync_process_state_->IsDirty();
   }
 
-  // Returns true if auth status has been modified since last SetClean() call
+  // Returns true if auth status has been modified since last SetClean() call.
   bool IsAuthDirty() const { return sync_process_state_->IsAuthDirty(); }
 
-  // Call to tell this status object that its new state has been seen
+  // Call to tell this status object that its new state has been seen.
   void SetClean() {
     sync_process_state_->SetClean();
     sync_cycle_state_->SetClean();
   }
 
-  // Call to tell this status object that its auth state has been seen
+  // Call to tell this status object that its auth state has been seen.
   void SetAuthClean() { sync_process_state_->SetAuthClean(); }
 
   void DumpStatusInfo() const {
@@ -246,10 +245,10 @@ class SyncerStatus {
   }
 
  private:
-
-  SyncCycleState *sync_cycle_state_;
-  SyncProcessState *sync_process_state_;
-
+  SyncCycleState* sync_cycle_state_;
+  SyncProcessState* sync_process_state_;
 };
+
 }  // namespace browser_sync
+
 #endif  // CHROME_BROWSER_SYNC_ENGINE_SYNCER_STATUS_H_

@@ -26,23 +26,23 @@ BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSetsCommand() {}
 BuildAndProcessConflictSetsCommand::~BuildAndProcessConflictSetsCommand() {}
 
 void BuildAndProcessConflictSetsCommand::ModelChangingExecuteImpl(
-    SyncerSession *session) {
+    SyncerSession* session) {
   session->set_conflict_sets_built(BuildAndProcessConflictSets(session));
 }
 
 bool BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSets(
-    SyncerSession *session) {
+    SyncerSession* session) {
   syncable::ScopedDirLookup dir(session->dirman(), session->account_name());
   if (!dir.good())
     return false;
   bool had_single_direction_sets = false;
-  {  // scope for transaction
+  {  // Scope for transaction.
     syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
     ConflictResolutionView conflict_view(session);
     BuildConflictSets(&trans, &conflict_view);
     had_single_direction_sets =
         ProcessSingleDirectionConflictSets(&trans, session);
-    // we applied some updates transactionally, lets try syncing again.
+    // We applied some updates transactionally, lets try syncing again.
     if (had_single_direction_sets)
       return true;
   }
@@ -86,9 +86,9 @@ namespace {
 void StoreLocalDataForUpdateRollback(syncable::Entry* entry,
                                      syncable::EntryKernel* backup) {
   CHECK(!entry->Get(syncable::IS_UNSYNCED)) << " Storing Rollback data for "
-    "entry that's unsynced." << *entry ;
+      "entry that's unsynced." << *entry ;
   CHECK(entry->Get(syncable::IS_UNAPPLIED_UPDATE)) << " Storing Rollback data "
-    "for entry that's not an unapplied update." << *entry ;
+      "for entry that's not an unapplied update." << *entry ;
   *backup = entry->GetKernelCopy();
 }
 
@@ -174,15 +174,18 @@ bool BuildAndProcessConflictSetsCommand::ApplyUpdatesTransactionally(
     syncable::WriteTransaction* trans,
     const vector<syncable::Id>* const update_set,
     SyncerSession* const session) {
-  vector<int64> handles;    // The handles in the |update_set| order.
-  vector<syncable::Id> rollback_ids;  // Holds the same Ids as update_set, but
-                            // sorted so that runs of adjacent nodes
-                            // appear in order.
-  rollback_ids.reserve(update_set->size());
-  syncable::MetahandleSet rollback_ids_inserted_items;  // Tracks what's added
-                                              // to |rollback_ids|.
+  // The handles in the |update_set| order.
+  vector<int64> handles;
 
+  // Holds the same Ids as update_set, but sorted so that runs of adjacent
+  // nodes appear in order.
+  vector<syncable::Id> rollback_ids;
+  rollback_ids.reserve(update_set->size());
+
+  // Tracks what's added to |rollback_ids|.
+  syncable::MetahandleSet rollback_ids_inserted_items;
   vector<syncable::Id>::const_iterator it;
+
   // 1. Build |rollback_ids| in the order required for successful rollback.
   //    Specifically, for positions to come out right, restoring an item
   //    requires that its predecessor in the sibling order is properly
@@ -295,8 +298,8 @@ void BuildAndProcessConflictSetsCommand::MergeSetsForIntroducedLoops(
   // or itself. If it gets to the root it does nothing. If it finds a loop all
   // moved unsynced entries in the list of crawled entries have their sets
   // merged with the entry.
-  // TODO(sync): Build test cases to cover this function when the argument
-  // list has settled.
+  // TODO(sync): Build test cases to cover this function when the argument list
+  // has settled.
   syncable::Id parent_id = entry->Get(syncable::SERVER_PARENT_ID);
   syncable::Entry parent(trans, syncable::GET_BY_ID, parent_id);
   if (!parent.good()) {
@@ -389,8 +392,8 @@ void CrawlDeletedTreeMergingSets(syncable::BaseTransaction* trans,
                                  Checker checker) {
   syncable::Id parent_id = entry.Get(syncable::PARENT_ID);
   syncable::Id double_step_parent_id = parent_id;
-  // This block builds sets where we've got an entry in a directory the
-  // server wants to delete.
+  // This block builds sets where we've got an entry in a directory the server
+  // wants to delete.
   //
   // Here we're walking up the tree to find all entries that the pass checks
   // deleted. We can be extremely strict here as anything unexpected means

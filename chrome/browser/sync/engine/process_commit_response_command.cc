@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_session.h"
 #include "chrome/browser/sync/engine/syncer_status.h"
+#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -56,7 +56,7 @@ ProcessCommitResponseCommand::ProcessCommitResponseCommand() {}
 ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
 
 void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
-    SyncerSession *session) {
+    SyncerSession* session) {
   // TODO(sync): This function returns if it sees problems. We probably want
   // to flag the need for an update or similar.
   ScopedDirLookup dir(session->dirman(), session->account_name());
@@ -104,7 +104,7 @@ void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
   set<syncable::Id> conflicting_new_folder_ids;
   set<syncable::Id> deleted_folders;
   bool truncated_commit_logged = false;
-  { // Scope for WriteTransaction
+  { // Scope for WriteTransaction.
     WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
     for (int i = 0; i < cr.entryresponse_size(); i++) {
       CommitResponse::RESPONSE_TYPE response_type =
@@ -226,7 +226,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     return CommitResponse::INVALID_MESSAGE;
   }
 
-  // implied by the IsValid call above, but here for clarity.
+  // Implied by the IsValid call above, but here for clarity.
   DCHECK_EQ(CommitResponse::SUCCESS, response) << response;
   // Check to see if we've been given the ID of an existing entry. If so treat
   // it as an error response and retry later.
@@ -305,12 +305,12 @@ void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
     if (syncing_was_set) {
       PerformCommitTimeNameAside(trans, server_entry, local_entry);
     } else {
-      // IS_UNSYNCED will ensure that this entry gets committed again,
-      // even if we skip this name aside. IS_UNSYNCED was probably previously
-      // set, but let's just set it anyway.
+      // IS_UNSYNCED will ensure that this entry gets committed again, even if
+      // we skip this name aside. IS_UNSYNCED was probably previously set, but
+      // let's just set it anyway.
       local_entry->Put(IS_UNSYNCED, true);
       LOG(INFO) << "Skipping commit time name aside because" <<
-        " entry was changed during commit.";
+          " entry was changed during commit.";
     }
   }
 

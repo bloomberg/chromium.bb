@@ -22,7 +22,7 @@ using std::string;
 DownloadUpdatesCommand::DownloadUpdatesCommand() {}
 DownloadUpdatesCommand::~DownloadUpdatesCommand() {}
 
-void DownloadUpdatesCommand::ExecuteImpl(SyncerSession *session) {
+void DownloadUpdatesCommand::ExecuteImpl(SyncerSession* session) {
   ClientToServerMessage client_to_server_message;
   ClientToServerResponse update_response;
 

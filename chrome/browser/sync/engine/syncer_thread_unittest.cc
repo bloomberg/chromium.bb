@@ -85,14 +85,14 @@ TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
 }
 
 TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
-  // Set up the environment
+  // Set up the environment.
   int user_idle_milliseconds_param = 0;
 
   SyncerThread syncer_thread(NULL, NULL, NULL, NULL, NULL);
   syncer_thread.DisableIdleDetection();
 
   // Notifications disabled should result in a polling interval of
-  // kDefaultShortPollInterval
+  // kDefaultShortPollInterval.
   {
     AllStatus::Status status = {};
     status.notifications_enabled = 0;
@@ -123,7 +123,7 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   }
 
   // Notifications enabled should result in a polling interval of
-  // SyncerThread::kDefaultLongPollIntervalSeconds
+  // SyncerThread::kDefaultLongPollIntervalSeconds.
   {
     AllStatus::Status status = {};
     status.notifications_enabled = 1;
@@ -229,8 +229,7 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     ASSERT_FALSE(continue_sync_cycle_param);
   }
 
-  // Regression for exponential backoff reset when the
-  // syncer is nudged.
+  // Regression for exponential backoff reset when the syncer is nudged.
   {
     AllStatus::Status status = {};
     status.unsynced_count = 1;

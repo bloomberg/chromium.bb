@@ -93,11 +93,8 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
 }  // namespace
 
 // static
-bool SyncerProtoUtil::PostClientToServerMessage(
-    ClientToServerMessage* msg,
-    ClientToServerResponse* response,
-    SyncerSession *session) {
-
+bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
+    ClientToServerResponse* response, SyncerSession* session) {
   bool rv = false;
   string tx, rx;
   CHECK(response);
@@ -126,8 +123,8 @@ bool SyncerProtoUtil::PostClientToServerMessage(
   SyncerStatus status(session);
   if (rv) {
     if (!VerifyResponseBirthday(dir, response)) {
-      // TODO(ncarter): Add a unit test for the case where the syncer
-      // becomes stuck due to a bad birthday.
+      // TODO(ncarter): Add a unit test for the case where the syncer becomes
+      // stuck due to a bad birthday.
       status.set_syncer_stuck(true);
       return false;
     }
@@ -191,8 +188,8 @@ bool SyncerProtoUtil::Compare(const syncable::Entry& local_entry,
     return false;
   }
 
-  // These checks are somewhat prolix, but they're easier to debug than
-  // a big boolean statement.
+  // These checks are somewhat prolix, but they're easier to debug than a big
+  // boolean statement.
   SyncName client_name = local_entry.GetName();
   if (client_name != name) {
     LOG(WARNING) << "Client name mismatch";
@@ -244,7 +241,7 @@ void SyncerProtoUtil::CopyBlobIntoProtoBytes(const syncable::Blob& blob,
 
 // static
 syncable::SyncName SyncerProtoUtil::NameFromSyncEntity(
-    const SyncEntity &entry) {
+    const SyncEntity& entry) {
   SyncName result(PSTR(""));
 
   AppendUTF8ToPathString(entry.name(), &result.value());
@@ -271,6 +268,5 @@ syncable::SyncName SyncerProtoUtil::NameFromCommitEntryResponse(
   }
   return result;
 }
-
 
 }  // namespace browser_sync

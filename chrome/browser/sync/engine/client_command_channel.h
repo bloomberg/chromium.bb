@@ -10,11 +10,11 @@
 
 namespace browser_sync {
 
-// Commands for the client come back in sync responses, which is kind
-// of inconvenient because some services (like the bandwidth throttler)
-// want to know about them.  So to avoid explicit dependencies on this
-// protocol behavior, the syncer dumps all client commands onto a shared
-// client command channel.
+// Commands for the client come back in sync responses, which is kind of
+// inconvenient because some services (like the bandwidth throttler) want to
+// know about them. So to avoid explicit dependencies on this protocol
+// behavior, the syncer dumps all client commands onto a shared client command
+// channel.
 
 struct ClientCommandChannelTraits {
   typedef const sync_pb::ClientCommand* EventType;

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "chrome/browser/sync/engine/syncer_session.h"
-#include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/browser/sync/syncable/blob.h"
+#include "chrome/browser/sync/util/sync_types.h"
 
 namespace syncable {
 class Entry;
@@ -35,20 +35,20 @@ class SyncerProtoUtil {
   // session->status()->syncer_stuck_ is set true if the birthday is
   // incorrect.  A false value will always be returned if birthday is bad.
   static bool PostClientToServerMessage(ClientToServerMessage* msg,
-      sync_pb::ClientToServerResponse* response, SyncerSession *session);
+      sync_pb::ClientToServerResponse* response, SyncerSession* session);
 
-  // Compares a syncable Entry to SyncEntity, returns true iff
-  // the data is identical.
+  // Compares a syncable Entry to SyncEntity, returns true iff the data is
+  // identical.
   //
-  // TODO(sync): The places where this function is used are arguable big
-  // causes of the fragility, because there's a tendency to freak out
-  // the moment the local and server values diverge.  However, this almost
-  // always indicates a sync bug somewhere earlier in the sync cycle.
+  // TODO(sync): The places where this function is used are arguable big causes
+  // of the fragility, because there's a tendency to freak out the moment the
+  // local and server values diverge. However, this almost always indicates a
+  // sync bug somewhere earlier in the sync cycle.
   static bool Compare(const syncable::Entry& local_entry,
                       const SyncEntity& server_entry);
 
-  // Utility methods for converting between syncable::Blobs and protobuf
-  // byte fields.
+  // Utility methods for converting between syncable::Blobs and protobuf byte
+  // fields.
   static void CopyProtoBytesIntoBlob(const std::string& proto_bytes,
                                      syncable::Blob* blob);
   static bool ProtoBytesEqualsBlob(const std::string& proto_bytes,
@@ -57,8 +57,7 @@ class SyncerProtoUtil {
                                      std::string* proto_bytes);
 
   // Extract the name fields from a sync entity.
-  static syncable::SyncName NameFromSyncEntity(
-      const SyncEntity& entry);
+  static syncable::SyncName NameFromSyncEntity(const SyncEntity& entry);
 
   // Extract the name fields from a commit entry response.
   static syncable::SyncName NameFromCommitEntryResponse(
@@ -68,6 +67,7 @@ class SyncerProtoUtil {
   SyncerProtoUtil() {}
   DISALLOW_COPY_AND_ASSIGN(SyncerProtoUtil);
 };
+
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_SYNCER_PROTO_UTIL_H_

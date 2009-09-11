@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 //
 // A class to run the syncer on a thread.
-//
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_H_
@@ -59,15 +58,13 @@ class SyncerThread {
   static const int kDefaultShortPollIntervalSeconds = 60;
   // Long poll is used when XMPP is on.
   static const int kDefaultLongPollIntervalSeconds = 3600;
-  // 30 minutes by default. If exponential backoff kicks in, this is
-  // the longest possible poll interval.
+  // 30 minutes by default. If exponential backoff kicks in, this is the
+  // longest possible poll interval.
   static const int kDefaultMaxPollIntervalMs = 30 * 60 * 1000;
 
-  SyncerThread(
-      ClientCommandChannel* command_channel,
+  SyncerThread(ClientCommandChannel* command_channel,
       syncable::DirectoryManager* mgr,
-      ServerConnectionManager* connection_manager,
-      AllStatus* all_status,
+      ServerConnectionManager* connection_manager, AllStatus* all_status,
       ModelSafeWorker* model_safe_worker);
   ~SyncerThread();
 
@@ -111,9 +108,8 @@ class SyncerThread {
     }
   };
 
-  typedef std::priority_queue<NudgeObject,
-                              std::vector<NudgeObject>, IsTimeSpecGreater>
-    NudgeQueue;
+  typedef std::priority_queue<NudgeObject, std::vector<NudgeObject>,
+                              IsTimeSpecGreater> NudgeQueue;
 
   // Threshold multipler for how long before user should be considered idle.
   static const int kPollBackoffThresholdMultiplier = 10;
@@ -157,13 +153,13 @@ class SyncerThread {
   void SetUpdatesSource(bool nudged, NudgeSource nudge_source,
                         bool* initial_sync);
 
-  // for unit tests only
+  // For unit tests only.
   void DisableIdleDetection() { disable_idle_detection_ = true; }
 
-  // false when we want to stop the thread.
+  // False when we want to stop the thread.
   bool stop_syncer_thread_;
 
-  // we use one mutex for all members except the channel.
+  // We use one mutex for all members except the channel.
   PThreadMutex mutex_;
   typedef PThreadScopedLock<PThreadMutex> MutexLock;
 
@@ -171,11 +167,11 @@ class SyncerThread {
   pthread_t thread_;
   bool thread_running_;
 
-  // Gets signaled whenever a thread outside of the syncer thread
-  // changes a member variable.
+  // Gets signaled whenever a thread outside of the syncer thread changes a
+  // member variable.
   PThreadCondVar changed_;
 
-  // State of the server connection
+  // State of the server connection.
   bool connected_;
 
   // State of the notification framework is tracked by these values.
@@ -207,8 +203,8 @@ class SyncerThread {
 
   scoped_ptr<SyncerEventChannel> syncer_event_channel_;
 
-  // This causes syncer to start syncing ASAP. If the rate of requests is
-  // too high the request will be silently dropped.  mutex_ should be held when
+  // This causes syncer to start syncing ASAP. If the rate of requests is too
+  // high the request will be silently dropped.  mutex_ should be held when
   // this is called.
   void NudgeSyncImpl(int milliseconds_from_now, NudgeSource source);
 

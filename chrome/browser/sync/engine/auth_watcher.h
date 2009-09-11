@@ -1,7 +1,7 @@
 // Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+//
 // AuthWatcher watches authentication events and user open and close
 // events and accordingly opens and closes shares.
 
@@ -24,6 +24,7 @@ class DirectoryManager;
 }
 
 namespace browser_sync {
+
 class AllStatus;
 class AuthWatcher;
 class ServerConnectionManager;
@@ -66,7 +67,7 @@ struct AuthWatcherEvent {
 
 class AuthWatcher {
  public:
-  // Normal progression is local -> gaia -> token
+  // Normal progression is local -> gaia -> token.
   enum Status { LOCALLY_AUTHENTICATED, GAIA_AUTHENTICATED, NOT_AUTHENTICATED };
   typedef syncable::DirectoryManagerEvent DirectoryManagerEvent;
   typedef syncable::DirectoryManager DirectoryManager;
@@ -83,8 +84,8 @@ class AuthWatcher {
               TalkMediator* talk_mediator);
   ~AuthWatcher();
 
-  // Returns true if the open share has gotten zero
-  // updates from the sync server (initial sync complete.)
+  // Returns true if the open share has gotten zero updates from the sync
+  // server (initial sync complete).
   bool LoadDirectoryListAndOpen(const PathString& login);
 
   typedef EventChannel<AuthWatcherEvent, PThreadMutex> Channel;
@@ -120,6 +121,9 @@ class AuthWatcher {
   // For synchronizing other destructors.
   void WaitForAuthThreadFinish();
 
+  bool AuthenticateWithToken(const std::string& email,
+                             const std::string& auth_token);
+
  protected:
   void Reset();
   void ClearAuthenticationData();
@@ -137,7 +141,7 @@ class AuthWatcher {
                         const bool save_credentials);
 
   // These two helpers should only be called from the auth function.
-  // returns false iff we had problems and should try GAIA_AUTH again.
+  // Returns false iff we had problems and should try GAIA_AUTH again.
   bool ProcessGaiaAuthSuccess();
   void ProcessGaiaAuthFailure();
 
@@ -151,11 +155,6 @@ class AuthWatcher {
 
   const std::string& sync_service_token() const { return sync_service_token_; }
 
- public:
-  bool AuthenticateWithToken(const std::string& email,
-                             const std::string& auth_token);
-
- protected:
   typedef PThreadScopedLock<PThreadMutex> MutexLock;
 
   // Passed to newly created threads.
@@ -197,6 +196,7 @@ class AuthWatcher {
   bool thread_handle_valid_;
   bool authenticating_now_;
   AuthWatcherEvent::AuthenticationTrigger current_attempt_trigger_;
+  DISALLOW_COPY_AND_ASSIGN(AuthWatcher);
 };
 
 }  // namespace browser_sync

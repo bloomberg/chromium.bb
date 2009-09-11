@@ -52,7 +52,7 @@ int64 ConflictResolutionView::servers_latest_timestamp() const {
   return process_state_->servers_latest_timestamp();
 }
 
-  // True iff we're stuck. User should contact support.
+// True iff we're stuck. User should contact support.
 bool ConflictResolutionView::syncer_stuck() const {
   return process_state_->syncer_stuck();
 }
@@ -155,12 +155,11 @@ ConflictResolutionView::BlockedItemsBegin() const {
 }
 
 set<syncable::Id>::iterator
-    ConflictResolutionView::CommitConflictsEnd() const {
+ConflictResolutionView::CommitConflictsEnd() const {
   return process_state_->ConflictingItemsEnd();
 }
 
-set<syncable::Id>::iterator
-    ConflictResolutionView::BlockedItemsEnd() const {
+set<syncable::Id>::iterator ConflictResolutionView::BlockedItemsEnd() const {
   return process_state_->BlockedItemsEnd();
 }
 

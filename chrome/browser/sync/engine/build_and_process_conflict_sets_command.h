@@ -28,10 +28,10 @@ class BuildAndProcessConflictSetsCommand : public ModelChangingSyncerCommand {
   BuildAndProcessConflictSetsCommand();
   virtual ~BuildAndProcessConflictSetsCommand();
 
-  virtual void ModelChangingExecuteImpl(SyncerSession *session);
+  virtual void ModelChangingExecuteImpl(SyncerSession* session);
 
  private:
-  bool BuildAndProcessConflictSets(SyncerSession *session);
+  bool BuildAndProcessConflictSets(SyncerSession* session);
 
   bool ProcessSingleDirectionConflictSets(
       syncable::WriteTransaction* trans, SyncerSession* const session);

@@ -1,7 +1,6 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCER_TYPES_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_TYPES_H_
@@ -16,9 +15,8 @@ class BaseTransaction;
 class Id;
 }
 
-// The intent of this is to keep all shared data types and enums
-// for the syncer in a single place without having dependencies between
-// other files.
+// The intent of this is to keep all shared data types and enums for the syncer
+// in a single place without having dependencies between other files.
 namespace browser_sync {
 
 class SyncProcessState;
@@ -27,16 +25,15 @@ class SyncerSession;
 class Syncer;
 
 enum UpdateAttemptResponse {
-  // Update was applied or safely ignored
+  // Update was applied or safely ignored.
   SUCCESS,
 
   // This state is deprecated.
   // TODO(sync): Remove this state.
   BLOCKED,
 
-  // Conflicts with the local data representation.
-  // This can also mean that the entry doesn't currently make sense
-  // if we applied it.
+  // Conflicts with the local data representation. This can also mean that the
+  // entry doesn't currently make sense if we applied it.
   CONFLICT,
 
   // This return value is only returned by AttemptToUpdateEntryWithoutMerge
@@ -65,9 +62,9 @@ enum ServerUpdateProcessingResult {
   SUCCESS_VALID = SUCCESS_STORED
 };
 
-// Different results from the verify phase will yield different
-// methods of processing in the ProcessUpdates phase. The SKIP
-// result means the entry doesn't go to the ProcessUpdates phase.
+// Different results from the verify phase will yield different methods of
+// processing in the ProcessUpdates phase. The SKIP result means the entry
+// doesn't go to the ProcessUpdates phase.
 enum VerifyResult {
   VERIFY_FAIL,
   VERIFY_SUCCESS,
@@ -122,8 +119,8 @@ struct SyncerEvent {
 
   int successful_commit_count;
 
-  // How many milliseconds later should the syncer kick in?
-  // for REQUEST_SYNC_NUDGE only.
+  // How many milliseconds later should the syncer kick in? For
+  // REQUEST_SYNC_NUDGE only.
   int nudge_delay_milliseconds;
 };
 

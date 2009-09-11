@@ -1,7 +1,7 @@
 // Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+//
 // The authenticator is a cross-platform class that handles authentication for
 // the sync client.
 //
@@ -86,8 +86,8 @@ class Authenticator {
   // TODO(sync): Make this function private when we're done.
   AuthenticationResult AuthenticateToken(std::string auth_token);
 
-  const char * display_email() const { return display_email_.c_str(); }
-  const char * display_name() const { return display_name_.c_str(); }
+  const char* display_email() const { return display_email_.c_str(); }
+  const char* display_name() const { return display_name_.c_str(); }
  private:
   // Stores the information in the UserIdentification returned from the server.
   AuthenticationResult HandleSuccessfulTokenRequest(
@@ -99,6 +99,7 @@ class Authenticator {
   std::string display_name_;
   std::string obfuscated_id_;
   UserSettings* const settings_;
+  DISALLOW_COPY_AND_ASSIGN(Authenticator);
 };
 
 }  // namespace browser_sync

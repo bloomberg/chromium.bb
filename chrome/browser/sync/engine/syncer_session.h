@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// SyncerSession holds the entire state of a single sync cycle;
-// GetUpdates, Commit, and Conflict Resolution. After said cycle, the
-// Session may contain items that were unable to be processed because of
-// errors.
+// SyncerSession holds the entire state of a single sync cycle; GetUpdates,
+// Commit, and Conflict Resolution. After said cycle, the Session may contain
+// items that were unable to be processed because of errors.
 //
 // THIS CLASS PROVIDES NO SYNCHRONIZATION GUARANTEES.
 
@@ -38,8 +37,8 @@ class SyncerSession {
   friend class ConflictResolutionView;
   friend class SyncerStatus;
  public:
-  // A utility to set the session's write transaction member,
-  // and later clear it when it the utility falls out of scope.
+  // A utility to set the session's write transaction member, and later clear
+  // it when it the utility falls out of scope.
   class ScopedSetWriteTransaction {
    public:
     ScopedSetWriteTransaction(SyncerSession* session,
@@ -190,8 +189,8 @@ class SyncerSession {
     sync_process_state_->EraseBlockedItem(the_id);
   }
 
-  // Returns true if at least one update application failed due to
-  // a conflict during this sync cycle.
+  // Returns true if at least one update application failed due to a conflict
+  // during this sync cycle.
   bool HasConflictingUpdates() const {
     std::vector<AppliedUpdate>::const_iterator it;
     for (it = sync_cycle_state_->AppliedUpdatesBegin();
@@ -321,8 +320,8 @@ class SyncerSession {
   }
 
   // TODO(chron): Unit test for this method.
-  // returns true iff this session contains data that should go through
-  // the sync engine again.
+  // returns true iff this session contains data that should go through the
+  // sync engine again.
   bool ShouldSyncAgain() const {
     return (HasRemainingItemsToCommit() &&
               sync_process_state_->successful_commits() > 0) ||
@@ -341,7 +340,7 @@ class SyncerSession {
     sync_cycle_state_->set_write_transaction(write_transaction);
   }
 
-  // sets the write transaction to null, but doesn't free the memory.
+  // Sets the write transaction to null, but doesn't free the memory.
   void ClearWriteTransaction() {
     sync_cycle_state_->ClearWriteTransaction();
   }

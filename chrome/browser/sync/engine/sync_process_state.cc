@@ -130,7 +130,7 @@ SyncProcessState& SyncProcessState::operator=(const SyncProcessState& counts) {
   return *this;
 }
 
-// status maintenance functions
+// Status maintenance functions.
 void SyncProcessState::set_invalid_store(const bool val) {
   UpdateDirty(val != invalid_store_);
   invalid_store_ = val;
@@ -181,7 +181,7 @@ void SyncProcessState::set_conflicting_commits(const int val) {
   stalled_commits_ = val;
 }
 
-// WEIRD COUNTER functions
+// WEIRD COUNTER functions.
 void SyncProcessState::increment_consecutive_problem_get_updates() {
   UpdateDirty(true);
   ++consecutive_problem_get_updates_;
@@ -233,7 +233,7 @@ void SyncProcessState::zero_successful_commits() {
   successful_commits_ = 0;
 }
 
-// Methods for managing error rate tracking
+// Methods for managing error rate tracking.
 void SyncProcessState::TallyNewError() {
   UpdateDirty(true);
   error_rate_ += (65536 - error_rate_) >> 2;
@@ -260,7 +260,7 @@ void SyncProcessState::MergeSets(const syncable::Id& id1,
   vector<syncable::Id>* set2 = id_to_conflict_set_[id2];
   vector<syncable::Id>* rv = 0;
   if (0 == set1 && 0 == set2) {
-    // neither item currently has a set so we build one.
+    // Neither item currently has a set so we build one.
     rv = new vector<syncable::Id>();
     rv->push_back(id1);
     if (id1 != id2) {
@@ -270,25 +270,25 @@ void SyncProcessState::MergeSets(const syncable::Id& id1,
     }
     conflict_sets_.insert(rv);
   } else if (0 == set1) {
-    // add the item to the existing set.
+    // Add the item to the existing set.
     rv = set2;
     rv->push_back(id1);
   } else if (0 == set2) {
-    // add the item to the existing set.
+    // Add the item to the existing set.
     rv = set1;
     rv->push_back(id2);
   } else if (set1 == set2) {
-    // It's the same set already
+    // It's the same set already.
     return;
   } else {
-    // merge the two sets.
+    // Merge the two sets.
     rv = set1;
-    // point all the second sets id's back to the first.
+    // Point all the second sets id's back to the first.
     vector<syncable::Id>::iterator i;
     for (i = set2->begin() ; i != set2->end() ; ++i) {
       id_to_conflict_set_[*i] = rv;
     }
-    // copy the second set to the first.
+    // Copy the second set to the first.
     rv->insert(rv->end(), set2->begin(), set2->end());
     conflict_sets_.erase(set2);
     delete set2;
@@ -311,13 +311,13 @@ SyncProcessState::~SyncProcessState() {
 }
 
 void SyncProcessState::AuthFailed() {
-  // dirty if the last one DIDN'T fail.
+  // Dirty if the last one DIDN'T fail.
   UpdateAuthDirty(true != auth_failed_);
   auth_failed_ = true;
 }
 
 void SyncProcessState::AuthSucceeded() {
-  // dirty if the last one DID fail.
+  // Dirty if the last one DID fail.
   UpdateAuthDirty(false != auth_failed_);
   auth_failed_ = false;
 }

@@ -69,8 +69,8 @@ TEST(SyncerProtoUtil, TestBlobToProtocolBufferBytesUtilityFunctions) {
                                                     test_blob2));
 }
 
-// Tests NameFromSyncEntity and NameFromCommitEntryResponse when only the
-// name field is provided.
+// Tests NameFromSyncEntity and NameFromCommitEntryResponse when only the name
+// field is provided.
 TEST(SyncerProtoUtil, NameExtractionOneName) {
   SyncEntity one_name_entity;
   CommitResponse_EntryResponse one_name_response;
@@ -91,8 +91,8 @@ TEST(SyncerProtoUtil, NameExtractionOneName) {
   EXPECT_TRUE(name_a == name_b);
 }
 
-// Tests NameFromSyncEntity and NameFromCommitEntryResponse when both the
-// name field and the non_unique_name fields are provided.
+// Tests NameFromSyncEntity and NameFromCommitEntryResponse when both the name
+// field and the non_unique_name fields are provided.
 TEST(SyncerProtoUtil, NameExtractionTwoNames) {
   SyncEntity two_name_entity;
   CommitResponse_EntryResponse two_name_response;

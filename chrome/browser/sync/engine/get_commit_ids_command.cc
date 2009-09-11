@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncer_session.h"
+#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
@@ -23,9 +23,9 @@ GetCommitIdsCommand::GetCommitIdsCommand(int commit_batch_size)
 
 GetCommitIdsCommand::~GetCommitIdsCommand() {}
 
-void GetCommitIdsCommand::ExecuteImpl(SyncerSession *session) {
-  // Gather the full set of unsynced items and store it in the session.
-  // They are not in the correct order for commit.
+void GetCommitIdsCommand::ExecuteImpl(SyncerSession* session) {
+  // Gather the full set of unsynced items and store it in the session. They
+  // are not in the correct order for commit.
   syncable::Directory::UnsyncedMetaHandles all_unsynced_handles;
   SyncerUtil::GetUnsyncedEntries(session->write_transaction(),
                                      &all_unsynced_handles);
@@ -117,7 +117,7 @@ bool GetCommitIdsCommand::IsCommitBatchFull() {
   return ordered_commit_set_.Size() >= requested_commit_batch_size_;
 }
 
-void GetCommitIdsCommand::AddCreatesAndMoves(SyncerSession *session) {
+void GetCommitIdsCommand::AddCreatesAndMoves(SyncerSession* session) {
   // Add moves and creates, and prepend their uncommitted parents.
   for (CommitMetahandleIterator iterator(session, &ordered_commit_set_);
       !IsCommitBatchFull() && iterator.Valid();
@@ -140,7 +140,7 @@ void GetCommitIdsCommand::AddCreatesAndMoves(SyncerSession *session) {
   ordered_commit_set_.Truncate(requested_commit_batch_size_);
 }
 
-void GetCommitIdsCommand::AddDeletes(SyncerSession *session) {
+void GetCommitIdsCommand::AddDeletes(SyncerSession* session) {
   set<syncable::Id> legal_delete_parents;
 
   for (CommitMetahandleIterator iterator(session, &ordered_commit_set_);
@@ -222,7 +222,7 @@ void GetCommitIdsCommand::AddDeletes(SyncerSession *session) {
   }
 }
 
-void GetCommitIdsCommand::BuildCommitIds(SyncerSession *session) {
+void GetCommitIdsCommand::BuildCommitIds(SyncerSession* session) {
   // Commits follow these rules:
   // 1. Moves or creates are preceded by needed folder creates, from
   //    root to leaf.  For folders whose contents are ordered, moves

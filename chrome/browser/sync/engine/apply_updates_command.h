@@ -22,7 +22,7 @@ class ApplyUpdatesCommand : public ModelChangingSyncerCommand {
   ApplyUpdatesCommand();
   virtual ~ApplyUpdatesCommand();
 
-  virtual void ModelChangingExecuteImpl(SyncerSession *session);
+  virtual void ModelChangingExecuteImpl(SyncerSession* session);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesCommand);

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Conflict resolution view is intended to provide a restricted
-// view of the sync cycle state for the conflict resolver. Since the
-// resolver doesn't get to see all of the SyncProcess, we can allow
-// it to operate on a subsection of the data.
+// Conflict resolution view is intended to provide a restricted view of the
+// sync cycle state for the conflict resolver. Since the resolver doesn't get
+// to see all of the SyncProcess, we can allow it to operate on a subsection of
+// the data.
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_CONFLICT_RESOLUTION_VIEW_H_
 #define CHROME_BROWSER_SYNC_ENGINE_CONFLICT_RESOLUTION_VIEW_H_

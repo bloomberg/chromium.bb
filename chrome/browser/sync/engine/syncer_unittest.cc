@@ -90,7 +90,6 @@ const int kTestDataLen = 12;
 const int64 kTestLogRequestTimestamp = 123456;
 }  // namespace
 
-
 class SyncerTest : public testing::Test {
  protected:
   SyncerTest() : client_command_channel_(0) {
@@ -198,17 +197,17 @@ class SyncerTest : public testing::Test {
     EXPECT_FALSE(attr.is_deleted());
     EXPECT_EQ(test_value, attr.value());
   }
-  bool SyncerStuck(SyncProcessState *state) {
+  bool SyncerStuck(SyncProcessState* state) {
     SyncerStatus status(NULL, state);
     return status.syncer_stuck();
   }
-  void SyncRepeatedlyToTriggerConflictResolution(SyncProcessState *state) {
+  void SyncRepeatedlyToTriggerConflictResolution(SyncProcessState* state) {
     // We should trigger after less than 6 syncs, but we want to avoid brittle
     // tests.
     for (int i = 0 ; i < 6 ; ++i)
       syncer_->SyncShare(state);
   }
-  void SyncRepeatedlyToTriggerStuckSignal(SyncProcessState *state) {
+  void SyncRepeatedlyToTriggerStuckSignal(SyncProcessState* state) {
     // We should trigger after less than 10 syncs, but we want to avoid brittle
     // tests.
     for (int i = 0 ; i < 12 ; ++i)
@@ -419,7 +418,7 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
   DoTruncationTest(dir, unsynced_handle_view, expected_order);
 }
 
-// TODO(chron): More corner case unit tests around validation
+// TODO(chron): More corner case unit tests around validation.
 TEST_F(SyncerTest, TestCommitMetahandleIterator) {
   SyncCycleState cycle_state;
   SyncerSession session(&cycle_state, state_.get());
@@ -665,8 +664,8 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNesting) {
       grandchild.Put(syncable::BASE_VERSION, 1);
     }
     {
-      // Create three deleted items which deletions we expect to
-      // be sent to the server.
+      // Create three deleted items which deletions we expect to be sent to the
+      // server.
       MutableEntry parent(&wtrans, syncable::CREATE, wtrans.root_id(),
                           PSTR("Pete"));
       ASSERT_TRUE(parent.good());
@@ -1121,9 +1120,9 @@ TEST_F(SyncerTest, NameSanitizationWithClientRename) {
 #endif
 
 namespace {
-void VerifyExistsWithNameInRoot(syncable::Directory *dir,
-                                const PathString &name,
-                                const string &entry,
+void VerifyExistsWithNameInRoot(syncable::Directory* dir,
+                                const PathString& name,
+                                const string& entry,
                                 int line) {
   ReadTransaction tr(dir, __FILE__, __LINE__);
   Entry e(&tr, syncable::GET_BY_PARENTID_AND_NAME, tr.root_id(),
@@ -1328,7 +1327,7 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
 TEST_F(SyncerTest, CommitTimeRename) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
-  // Create a folder and an entry
+  // Create a folder and an entry.
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry parent(&trans, CREATE, root_id_, PSTR("Folder"));
@@ -1340,12 +1339,12 @@ TEST_F(SyncerTest, CommitTimeRename) {
     WriteTestDataToEntry(&trans, &entry);
   }
 
-  // Mix in a directory creation too for later
+  // Mix in a directory creation too for later.
   mock_server_->AddUpdateDirectory(2, 0, "dir_in_root", 10, 10);
   mock_server_->SetCommitTimeRename("renamed_");
   syncer_->SyncShare();
 
-  // Verify it was correctly renamed
+  // Verify it was correctly renamed.
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
     Entry entry_folder(&trans, GET_BY_PATH, PSTR("renamed_Folder"));
@@ -1356,7 +1355,7 @@ TEST_F(SyncerTest, CommitTimeRename) {
             + PSTR("renamed_new_entry"));
     ASSERT_TRUE(entry_new.good());
 
-    // And that the unrelated directory creation worked without a rename
+    // And that the unrelated directory creation worked without a rename.
     Entry new_dir(&trans, GET_BY_PATH, PSTR("dir_in_root"));
     EXPECT_TRUE(new_dir.good());
   }
@@ -1364,14 +1363,14 @@ TEST_F(SyncerTest, CommitTimeRename) {
 
 
 TEST_F(SyncerTest, CommitTimeRenameI18N) {
-  // This is utf-8 for the diacritized Internationalization
+  // This is utf-8 for the diacritized Internationalization.
   const char* i18nString = "\xc3\x8e\xc3\xb1\x74\xc3\xa9\x72\xc3\xb1"
       "\xc3\xa5\x74\xc3\xae\xc3\xb6\xc3\xb1\xc3\xa5\x6c\xc3\xae"
       "\xc2\x9e\xc3\xa5\x74\xc3\xae\xc3\xb6\xc3\xb1";
 
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
-  // Create a folder and entry
+  // Create a folder and entry.
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry parent(&trans, CREATE, root_id_, PSTR("Folder"));
@@ -1383,12 +1382,12 @@ TEST_F(SyncerTest, CommitTimeRenameI18N) {
     WriteTestDataToEntry(&trans, &entry);
   }
 
-  // Mix in a directory creation too for later
+  // Mix in a directory creation too for later.
   mock_server_->AddUpdateDirectory(2, 0, "dir_in_root", 10, 10);
   mock_server_->SetCommitTimeRename(i18nString);
   syncer_->SyncShare();
 
-  // Verify it was correctly renamed
+  // Verify it was correctly renamed.
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
     PathString expectedFolder;
@@ -1403,7 +1402,7 @@ TEST_F(SyncerTest, CommitTimeRenameI18N) {
     Entry entry_new(&trans, GET_BY_PATH, expected);
     ASSERT_TRUE(entry_new.good());
 
-    // And that the unrelated directory creation worked without a rename
+    // And that the unrelated directory creation worked without a rename.
     Entry new_dir(&trans, GET_BY_PATH, PSTR("dir_in_root"));
     EXPECT_TRUE(new_dir.good());
   }
@@ -1412,7 +1411,7 @@ TEST_F(SyncerTest, CommitTimeRenameI18N) {
 TEST_F(SyncerTest, CommitTimeRenameCollision) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
-  // Create a folder to collide with
+  // Create a folder to collide with.
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry collider(&trans, CREATE, root_id_, PSTR("renamed_Folder"));
@@ -1470,7 +1469,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
     entry.Put(IS_UNSYNCED, true);
   }
 
-  // Verify it and pull the ID out of the folder
+  // Verify it and pull the ID out of the folder.
   syncable::Id folder_id;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
@@ -1488,7 +1487,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
     WriteTestDataToEntry(&trans, &entry);
   }
 
-  // Verify it and pull the ID out of the entry
+  // Verify it and pull the ID out of the entry.
   syncable::Id entry_id;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
@@ -1501,14 +1500,14 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
   }
 
   // Now, to emulate a commit response failure, we just don't commit it.
-  int64 new_version = 150;  // any larger value
+  int64 new_version = 150;  // any larger value.
   int64 timestamp = 20;  // arbitrary value.
   int64 size = 20;  // arbitrary.
   syncable::Id new_folder_id =
       syncable::Id::CreateFromServerId("folder_server_id");
 
   // the following update should cause the folder to both apply the update, as
-  // well as reassociate the id
+  // well as reassociate the id.
   mock_server_->AddUpdateDirectory(new_folder_id, root_id_,
       "new_folder", new_version, timestamp);
   mock_server_->SetLastUpdateOriginatorFields(
@@ -1554,7 +1553,7 @@ TEST_F(SyncerTest, CommitReuniteUpdate) {
     ASSERT_TRUE(entry.good());
     WriteTestDataToEntry(&trans, &entry);
   }
-  // Verify it and pull the ID out
+  // Verify it and pull the ID out.
   syncable::Id entry_id;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
@@ -1566,7 +1565,7 @@ TEST_F(SyncerTest, CommitReuniteUpdate) {
   }
 
   // Now, to emulate a commit response failure, we just don't commit it.
-  int64 new_version = 150;  // any larger value
+  int64 new_version = 150;  // any larger value.
   int64 timestamp = 20;  // arbitrary value.
   syncable::Id new_entry_id = syncable::Id::CreateFromServerId("server_id");
 
@@ -1590,12 +1589,11 @@ TEST_F(SyncerTest, CommitReuniteUpdate) {
   }
 }
 
-// A commit with a lost response must work even if the local entry
-// was deleted before the update is applied. We should not duplicate the local
-// entry in this case, but just create another one alongside.
-// We may wish to examine this behavior in the future as it can create hanging
-// uploads that never finish, that must be cleaned up on the server side
-// after some time.
+// A commit with a lost response must work even if the local entry was deleted
+// before the update is applied. We should not duplicate the local entry in
+// this case, but just create another one alongside. We may wish to examine
+// this behavior in the future as it can create hanging uploads that never
+// finish, that must be cleaned up on the server side after some time.
 TEST_F(SyncerTest, CommitReuniteUpdateDoesNotChokeOnDeletedLocalEntry) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
@@ -1606,7 +1604,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateDoesNotChokeOnDeletedLocalEntry) {
     ASSERT_TRUE(entry.good());
     WriteTestDataToEntry(&trans, &entry);
   }
-  // Verify it and pull the ID out
+  // Verify it and pull the ID out.
   syncable::Id entry_id;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
@@ -1618,7 +1616,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateDoesNotChokeOnDeletedLocalEntry) {
   }
 
   // Now, to emulate a commit response failure, we just don't commit it.
-  int64 new_version = 150;  // any larger value
+  int64 new_version = 150;  // any larger value.
   int64 timestamp = 20;  // arbitrary value.
   int64 size = 20;  // arbitrary.
   syncable::Id new_entry_id = syncable::Id::CreateFromServerId("server_id");
@@ -1655,7 +1653,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateDoesNotChokeOnDeletedLocalEntry) {
   }
 }
 
-// TODO(chron): Add more unsanitized name tests
+// TODO(chron): Add more unsanitized name tests.
 TEST_F(SyncerTest, ConflictMatchingEntryHandlesUnsanitizedNames) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
@@ -1797,7 +1795,7 @@ bool TouchFredAndGingerInRoot(Directory* dir) {
   MutableEntry fred(&trans, syncable::GET_BY_PARENTID_AND_NAME, trans.root_id(),
                     PSTR("fred"));
   CHECK(fred.good());
-  // Equivalent to touching the entry
+  // Equivalent to touching the entry.
   fred.Put(syncable::IS_UNSYNCED, true);
   fred.Put(syncable::SYNCING, false);
   MutableEntry ginger(&trans, syncable::GET_BY_PARENTID_AND_NAME,
@@ -2076,9 +2074,9 @@ TEST_F(SyncerTest, ThreeNamesClashWithResolver) {
 }
 
 /**
- * In the event that we have a double changed entry, that is
- * changed on both the client and the server, the conflict resolver
- * should just drop one of them and accept the other.
+ * In the event that we have a double changed entry, that is changed on both
+ * the client and the server, the conflict resolver should just drop one of
+ * them and accept the other.
  */
 TEST_F(SyncerTest, DoublyChangedWithResolver) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
@@ -2115,9 +2113,8 @@ TEST_F(SyncerTest, DoublyChangedWithResolver) {
   syncer_events_.clear();
 }
 
-// We got this repro case when someone was editing entries
-// while sync was occuring. The entry had changed out underneath
-// the user.
+// We got this repro case when someone was editing entries while sync was
+// occuring. The entry had changed out underneath the user.
 TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
@@ -2215,7 +2212,7 @@ TEST_F(SyncerTest, CommittingNewDeleted) {
 // We apply unapplied updates again before we get the update about the deletion.
 // This means we have an unapplied update where server_version < base_version.
 TEST_F(SyncerTest, UnappliedUpdateDuringCommit) {
-  // This test is a little fake
+  // This test is a little fake.
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   {
@@ -2224,7 +2221,7 @@ TEST_F(SyncerTest, UnappliedUpdateDuringCommit) {
     entry.Put(ID, ids_.FromNumber(20));
     entry.Put(BASE_VERSION, 1);
     entry.Put(SERVER_VERSION, 1);
-    entry.Put(SERVER_PARENT_ID, ids_.FromNumber(9999));  // bad parent
+    entry.Put(SERVER_PARENT_ID, ids_.FromNumber(9999));  // Bad parent.
     entry.Put(IS_UNSYNCED, true);
     entry.Put(IS_UNAPPLIED_UPDATE, true);
     entry.Put(IS_DEL, false);
@@ -2247,7 +2244,7 @@ TEST_F(SyncerTest, UnappliedUpdateDuringCommit) {
 //   remove fred
 // if no syncing occured midway, bob will have an illegal parent
 TEST_F(SyncerTest, DeletingEntryInFolder) {
-  // This test is a little fake
+  // This test is a little fake.
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   {
@@ -2371,8 +2368,8 @@ TEST_F(SyncerTest, CorruptUpdateBadFolderSwapUpdate) {
   syncer_events_.clear();
 }
 
-// TODO(chron): New set of folder swap commit tests that don't rely
-// on transactional commits.
+// TODO(chron): New set of folder swap commit tests that don't rely on
+// transactional commits.
 TEST_F(SyncerTest, DISABLED_FolderSwapCommit) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
@@ -2413,8 +2410,8 @@ TEST_F(SyncerTest, DISABLED_FolderSwapCommit) {
   syncer_events_.clear();
 }
 
-// TODO(chron): New set of folder swap commit tests that don't rely
-// on transactional commits.
+// TODO(chron): New set of folder swap commit tests that don't rely on
+// transactional commits.
 TEST_F(SyncerTest, DISABLED_DualFolderSwapCommit) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
@@ -2479,8 +2476,8 @@ TEST_F(SyncerTest, DISABLED_DualFolderSwapCommit) {
   syncer_events_.clear();
 }
 
-// TODO(chron): New set of folder swap commit tests that don't rely
-// on transactional commits.
+// TODO(chron): New set of folder swap commit tests that don't rely on
+// transactional commits.
 TEST_F(SyncerTest, DISABLED_TripleFolderRotateCommit) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
@@ -2531,8 +2528,8 @@ TEST_F(SyncerTest, DISABLED_TripleFolderRotateCommit) {
   syncer_events_.clear();
 }
 
-// TODO(chron): New set of folder swap commit tests that don't rely
-// on transactional commits.
+// TODO(chron): New set of folder swap commit tests that don't rely on
+// transactional commits.
 TEST_F(SyncerTest, DISABLED_ServerAndClientSwap) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
@@ -2763,7 +2760,7 @@ TEST_F(SyncerTest, NewEntryAndAlteredServerEntrySharePath) {
 
 // Circular links should be resolved by the server.
 TEST_F(SyncerTest, SiblingDirectoriesBecomeCircular) {
-  // we don't currently resolve this. This test ensures we don't
+  // we don't currently resolve this. This test ensures we don't.
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10);
@@ -2818,7 +2815,7 @@ TEST_F(SyncerTest, ConflictSetClassificationError) {
 }
 
 TEST_F(SyncerTest, SwapEntryNames) {
-  // Simple transaction test
+  // Simple transaction test.
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10);
@@ -3581,8 +3578,8 @@ TEST_F(SyncerTest, WeMovedSomethingIntoAFolderHierarchyServerHasDeleted2) {
   syncer_events_.clear();
 }
 
-// This test is to reproduce a check failure. Sometimes we would get a
-// bad ID back when creating an entry.
+// This test is to reproduce a check failure. Sometimes we would get a bad ID
+// back when creating an entry.
 TEST_F(SyncerTest, DuplicateIDReturn) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
@@ -3608,8 +3605,8 @@ TEST_F(SyncerTest, DuplicateIDReturn) {
   syncer_events_.clear();
 }
 
-// This test is not very useful anymore. It used to trigger
-// a more interesting condition.
+// This test is not very useful anymore. It used to trigger a more interesting
+// condition.
 TEST_F(SyncerTest, SimpleConflictOnAnEntry) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
@@ -3656,8 +3653,8 @@ TEST_F(SyncerTest, DeletedEntryWithBadParentInLoopCalculation) {
 }
 
 TEST_F(SyncerTest, ConflictResolverMergeOverwritesLocalEntry) {
-  // This test would die because it would rename
-  // a entry to a name that was taken in the namespace
+  // This test would die because it would rename a entry to a name that was
+  // taken in the namespace
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
 
@@ -3711,7 +3708,7 @@ TEST_F(SyncerTest, ConflictResolverMergesLocalDeleteAndServerUpdate) {
 
   mock_server_->AddUpdateBookmark(ids_.FromNumber(1), root_id_, "name", 10, 10);
 
-  // We don't care about actually committing, just the resolution
+  // We don't care about actually committing, just the resolution.
   mock_server_->set_conflict_all_commits(true);
   syncer_->SyncShare();
 
@@ -3747,7 +3744,7 @@ TEST_F(SyncerTest, UpdateFlipsTheFolderBit) {
   // Server update: entry-type object (not a container), revision 10.
   mock_server_->AddUpdateBookmark(ids_.FromNumber(1), root_id_, "name", 10, 10);
 
-  // Don't attempt to commit
+  // Don't attempt to commit.
   mock_server_->set_conflict_all_commits(true);
 
   // The syncer should not attempt to apply the invalid update.
@@ -3787,7 +3784,7 @@ TEST(SyncerSyncProcessState, MergeSetsTest) {
     EXPECT_EQ(c.IdToConflictSetGet(id[1]), c.IdToConflictSetGet(id[i]));
   }
 
-  // Check dupes don't cause double sets
+  // Check dupes don't cause double sets.
   SyncProcessState identical_set;
   identical_set.MergeSets(id[1], id[1]);
   EXPECT_EQ(identical_set.IdToConflictSetSize(), 1);
@@ -3795,8 +3792,8 @@ TEST(SyncerSyncProcessState, MergeSetsTest) {
 }
 
 // Bug Synopsis:
-// Merge conflict resolution will merge a new local entry
-// with another entry that needs updates, resulting in CHECK.
+// Merge conflict resolution will merge a new local entry with another entry
+// that needs updates, resulting in CHECK.
 TEST_F(SyncerTest, MergingExistingItems) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
@@ -3896,8 +3893,8 @@ TEST_F(SyncerTest, TestUndeleteUpdate) {
   mock_server_->AddUpdateDirectory(1, 0, "foo", 2, 4);
   mock_server_->SetLastUpdateDeleted();
   syncer_->SyncShare();
-  // This used to be rejected as it's an undeletion.
-  // Now, it results in moving the delete path aside.
+  // This used to be rejected as it's an undeletion. Now, it results in moving
+  // the delete path aside.
   mock_server_->AddUpdateDirectory(2, 1, "bar", 3, 5);
   syncer_->SyncShare();
   {
@@ -4170,10 +4167,10 @@ TEST_F(SyncerTest, TestSimpleUndelete) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());
   mock_server_->set_conflict_all_commits(true);
-  // let there be an entry from the server.
+  // Let there be an entry from the server.
   mock_server_->AddUpdateBookmark(id, root, "foo", 1, 10);
   syncer_->SyncShare();
-  // check it out and delete it
+  // Check it out and delete it.
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&wtrans, GET_BY_ID, id);
@@ -4181,7 +4178,7 @@ TEST_F(SyncerTest, TestSimpleUndelete) {
     EXPECT_FALSE(entry.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(entry.Get(IS_UNSYNCED));
     EXPECT_FALSE(entry.Get(IS_DEL));
-    // delete it locally
+    // Delete it locally.
     entry.Put(IS_DEL, true);
   }
   syncer_->SyncShare();
@@ -4196,7 +4193,7 @@ TEST_F(SyncerTest, TestSimpleUndelete) {
     EXPECT_FALSE(entry.Get(SERVER_IS_DEL));
   }
   syncer_->SyncShare();
-  // Update from server confirming deletion
+  // Update from server confirming deletion.
   mock_server_->AddUpdateBookmark(id, root, "foo", 2, 11);
   mock_server_->SetLastUpdateDeleted();
   syncer_->SyncShare();
@@ -4210,7 +4207,7 @@ TEST_F(SyncerTest, TestSimpleUndelete) {
     EXPECT_TRUE(entry.Get(IS_DEL));
     EXPECT_TRUE(entry.Get(SERVER_IS_DEL));
   }
-  // Undelete from server
+  // Undelete from server.
   mock_server_->AddUpdateBookmark(id, root, "foo", 2, 12);
   syncer_->SyncShare();
   // IS_DEL and SERVER_IS_DEL now both false.
@@ -4229,11 +4226,11 @@ TEST_F(SyncerTest, TestUndeleteWithMissingDeleteUpdate) {
   Id id = ids_.MakeServer("undeletion item"), root = ids_.root();
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());
-  // let there be a entry, from the server.
+  // Let there be a entry, from the server.
   mock_server_->set_conflict_all_commits(true);
   mock_server_->AddUpdateBookmark(id, root, "foo", 1, 10);
   syncer_->SyncShare();
-  // check it out and delete it
+  // Check it out and delete it.
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&wtrans, GET_BY_ID, id);
@@ -4241,7 +4238,7 @@ TEST_F(SyncerTest, TestUndeleteWithMissingDeleteUpdate) {
     EXPECT_FALSE(entry.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(entry.Get(IS_UNSYNCED));
     EXPECT_FALSE(entry.Get(IS_DEL));
-    // delete it locally
+    // Delete it locally.
     entry.Put(IS_DEL, true);
   }
   syncer_->SyncShare();
@@ -4256,8 +4253,8 @@ TEST_F(SyncerTest, TestUndeleteWithMissingDeleteUpdate) {
     EXPECT_FALSE(entry.Get(SERVER_IS_DEL));
   }
   syncer_->SyncShare();
-  // Say we do not get an update from server confirming deletion.
-  // Undelete from server
+  // Say we do not get an update from server confirming deletion. Undelete
+  // from server
   mock_server_->AddUpdateBookmark(id, root, "foo", 2, 12);
   syncer_->SyncShare();
   // IS_DEL and SERVER_IS_DEL now both false.
@@ -4277,7 +4274,7 @@ TEST_F(SyncerTest, TestUndeleteIgnoreCorrectlyUnappliedUpdate) {
   Id root = ids_.root();
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());
-  // duplicate! expect path clashing!
+  // Duplicate! expect path clashing!
   mock_server_->set_conflict_all_commits(true);
   mock_server_->AddUpdateBookmark(id1, root, "foo", 1, 10);
   mock_server_->AddUpdateBookmark(id2, root, "foo", 1, 10);
@@ -4310,8 +4307,8 @@ TEST_F(SyncerTest, CopySyncProcessState) {
 TEST_F(SyncerTest, SingletonTagUpdates) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());
-  // As a hurdle, introduce an item whose name is the same as the
-  // tag value we'll use later.
+  // As a hurdle, introduce an item whose name is the same as the tag value
+  // we'll use later.
   int64 hurdle_handle = CreateUnsyncedDirectory(PSTR("bob"), "id_bob");
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
@@ -4413,8 +4410,8 @@ class SyncerPositionUpdateTest : public SyncerTest {
 }  // namespace
 
 TEST_F(SyncerPositionUpdateTest, InOrderPositive) {
-  // Add a bunch of items in increasing order, starting with just
-  // positive position values.
+  // Add a bunch of items in increasing order, starting with just positive
+  // position values.
   AddRootItemWithPosition(100);
   AddRootItemWithPosition(199);
   AddRootItemWithPosition(200);
@@ -4453,8 +4450,8 @@ TEST_F(SyncerPositionUpdateTest, ReverseOrder) {
 }
 
 TEST_F(SyncerPositionUpdateTest, RandomOrderInBatches) {
-  // Mix it all up, interleaving position values,
-  // and try multiple batches of updates.
+  // Mix it all up, interleaving position values, and try multiple batches of
+  // updates.
   AddRootItemWithPosition(400);
   AddRootItemWithPosition(201);
   AddRootItemWithPosition(-400);
@@ -4585,4 +4582,5 @@ TEST_F(SyncerPositionTiebreakingTest, MidLowHigh) {
 
 const SyncerTest::CommitOrderingTest
 SyncerTest::CommitOrderingTest::LAST_COMMIT_ITEM = {-1, TestIdFactory::root()};
+
 }  // namespace browser_sync

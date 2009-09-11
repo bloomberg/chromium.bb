@@ -1,9 +1,9 @@
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// Utility functions manipulating syncable::Entries, intended for use by
-// the syncer.
+//
+// Utility functions manipulating syncable::Entries, intended for use by the
+// syncer.
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCER_UTIL_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_UTIL_H_
@@ -14,8 +14,8 @@
 
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
-#include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
@@ -23,7 +23,6 @@ namespace browser_sync {
 
 class SyncerSession;
 class SyncEntity;
-
 
 class SyncerUtil {
  public:

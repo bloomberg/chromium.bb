@@ -14,9 +14,9 @@ class SyncerSession;
 
 // A syncer command for wrapping up a sync cycle.
 //
-// Preconditions - syncing is complete
+// Preconditions - syncing is complete.
 //
-// Postconditions - The UI has been told that we're done syncing
+// Postconditions - The UI has been told that we're done syncing.
 
 class SyncerEndCommand : public SyncerCommand {
  public:
@@ -27,6 +27,7 @@ class SyncerEndCommand : public SyncerCommand {
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncerEndCommand);
 };
+
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_SYNCER_END_COMMAND_H_

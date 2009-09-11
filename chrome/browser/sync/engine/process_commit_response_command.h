@@ -49,6 +49,7 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
 
   DISALLOW_COPY_AND_ASSIGN(ProcessCommitResponseCommand);
 };
+
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_PROCESS_COMMIT_RESPONSE_COMMAND_H_

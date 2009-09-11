@@ -16,12 +16,12 @@ namespace browser_sync {
 SyncerCommand::SyncerCommand() {}
 SyncerCommand::~SyncerCommand() {}
 
-void SyncerCommand::Execute(SyncerSession *session) {
+void SyncerCommand::Execute(SyncerSession* session) {
   ExecuteImpl(session);
   SendNotifications(session);
 }
 
-void SyncerCommand::SendNotifications(SyncerSession *session) {
+void SyncerCommand::SendNotifications(SyncerSession* session) {
   syncable::ScopedDirLookup dir(session->dirman(), session->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";

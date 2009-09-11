@@ -19,9 +19,9 @@ namespace browser_sync {
 PostCommitMessageCommand::PostCommitMessageCommand() {}
 PostCommitMessageCommand::~PostCommitMessageCommand() {}
 
-void PostCommitMessageCommand::ExecuteImpl(SyncerSession *session) {
+void PostCommitMessageCommand::ExecuteImpl(SyncerSession* session) {
   if (session->commit_ids_empty())
-    return;  // nothing to commit
+    return;  // Nothing to commit.
   ClientToServerResponse response;
   syncable::ScopedDirLookup dir(session->dirman(), session->account_name());
   if (!dir.good())

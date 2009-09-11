@@ -1,11 +1,10 @@
 // Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 //
-// The all status object watches various sync engine components and aggregates
+// The AllStatus object watches various sync engine components and aggregates
 // the status of all of them into one place.
-//
+
 #ifndef CHROME_BROWSER_SYNC_ENGINE_ALL_STATUS_H_
 #define CHROME_BROWSER_SYNC_ENGINE_ALL_STATUS_H_
 
@@ -18,6 +17,7 @@
 #include "chrome/browser/sync/util/pthread_helpers.h"
 
 namespace browser_sync {
+
 class AuthWatcher;
 class GaiaAuthenticator;
 class ScopedStatusLockWithNotify;
@@ -155,6 +155,7 @@ class AllStatus {
   scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
 
   mutable PThreadMutex mutex_;  // Protects all data members.
+  DISALLOW_COPY_AND_ASSIGN(AllStatus);
 };
 
 struct AllStatusEvent {

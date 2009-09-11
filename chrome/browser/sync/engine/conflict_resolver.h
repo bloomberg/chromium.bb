@@ -39,7 +39,7 @@ class ConflictResolver {
   // Returns true if the syncer should try to apply its updates again.
   bool ResolveConflicts(const syncable::ScopedDirLookup& dir,
                         ConflictResolutionView* view,
-                        SyncerSession *session);
+                        SyncerSession* session);
 
   // Called by ProcessServerClientNameClash. Returns true if it's merged the
   // items, false otherwise. Does not re-check preconditions covered in
@@ -69,11 +69,11 @@ class ConflictResolver {
     BOGUS_SET,
   };
 
-  // Get a key for the given set. NB: May reorder set contents.
-  // The key is currently not very efficient, but will ease debugging.
+  // Get a key for the given set. NOTE: May reorder set contents. The key is
+  // currently not very efficient, but will ease debugging.
   ConflictSetCountMapKey GetSetKey(ConflictSet* conflict_set);
 
-  void IgnoreLocalChanges(syncable::MutableEntry * entry);
+  void IgnoreLocalChanges(syncable::MutableEntry* entry);
   void OverwriteServerChanges(syncable::WriteTransaction* trans,
                               syncable::MutableEntry* entry);
 
@@ -105,7 +105,7 @@ class ConflictResolver {
       ConflictSet* conflict_set,
       SyncerSession* session);
 
-  // Returns true if we're stuck
+  // Returns true if we're stuck.
   template <typename InputIt>
   bool LogAndSignalIfConflictStuck(syncable::BaseTransaction* trans,
                                    int attempt_count,

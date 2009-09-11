@@ -5,15 +5,15 @@
 #ifndef CHROME_BROWSER_SYNC_ENGINE_RESOLVE_CONFLICTS_COMMAND_H_
 #define CHROME_BROWSER_SYNC_ENGINE_RESOLVE_CONFLICTS_COMMAND_H_
 
-
-#include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 #include "base/basictypes.h"
+#include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 
 namespace syncable {
 class WriteTransaction;
 class MutableEntry;
 class Id;
 }
+
 namespace browser_sync {
 
 class SyncerSession;
@@ -28,7 +28,7 @@ class ResolveConflictsCommand : public ModelChangingSyncerCommand {
  private:
   DISALLOW_COPY_AND_ASSIGN(ResolveConflictsCommand);
 };
-}  // namespace browser_sync
 
+}  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_ENGINE_RESOLVE_CONFLICTS_COMMAND_H_

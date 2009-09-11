@@ -16,7 +16,7 @@ class DownloadUpdatesCommand : public SyncerCommand {
  public:
   DownloadUpdatesCommand();
   virtual ~DownloadUpdatesCommand();
-  virtual void ExecuteImpl(SyncerSession *session);
+  virtual void ExecuteImpl(SyncerSession* session);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesCommand);

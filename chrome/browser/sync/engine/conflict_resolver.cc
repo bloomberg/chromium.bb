@@ -244,8 +244,7 @@ bool NamesCollideWithChildrenOfFolder(BaseTransaction* trans,
   return false;
 }
 
-void GiveEntryNewName(WriteTransaction* trans,
-                      MutableEntry* entry) {
+void GiveEntryNewName(WriteTransaction* trans, MutableEntry* entry) {
   using namespace syncable;
   Name new_name =
       FindNewName(trans, entry->Get(syncable::PARENT_ID), entry->GetName());
@@ -289,7 +288,7 @@ bool ConflictResolver::AttemptItemMerge(WriteTransaction* trans,
       CHECK(child_entry.Put(syncable::PARENT_ID, desired_id));
       CHECK(child_entry.Put(syncable::IS_UNSYNCED, true));
       Id id = child_entry.Get(syncable::ID);
-      // we only note new entries for quicker merging next round.
+      // We only note new entries for quicker merging next round.
       if (!id.ServerKnows())
         children_of_merged_dirs_.insert(id);
     }
@@ -299,7 +298,7 @@ bool ConflictResolver::AttemptItemMerge(WriteTransaction* trans,
   }
 
   LOG(INFO) << "Identical client and server items merging server changes. " <<
-    *locally_named << " server: " << *server_named;
+      *locally_named << " server: " << *server_named;
 
   // Clear server_named's server data and mark it deleted so it goes away
   // quietly because it's now identical to a deleted local entry.
@@ -323,20 +322,20 @@ ConflictResolver::ProcessServerClientNameClash(WriteTransaction* trans,
                                                MutableEntry* server_named,
                                                SyncerSession* session) {
   if (!locally_named->ExistsOnClientBecauseDatabaseNameIsNonEmpty())
-    return NO_CLASH;  // locally_named is a server update.
+    return NO_CLASH;  // Locally_named is a server update.
   if (locally_named->Get(syncable::IS_DEL) ||
       server_named->Get(syncable::SERVER_IS_DEL)) {
     return NO_CLASH;
   }
   if (locally_named->Get(syncable::PARENT_ID) !=
       server_named->Get(syncable::SERVER_PARENT_ID)) {
-    return NO_CLASH;  // different parents
+    return NO_CLASH;  // Different parents.
   }
 
   PathString name = locally_named->GetSyncNameValue();
   if (0 != syncable::ComparePathNames(name,
       server_named->Get(syncable::SERVER_NAME))) {
-    return NO_CLASH;  // different names.
+    return NO_CLASH;  // Different names.
   }
 
   // First try to merge.
@@ -387,7 +386,7 @@ ConflictResolver::ConflictSetCountMapKey ConflictResolver::GetSetKey(
   // TODO(sync): Come up with a better scheme for set hashing. This scheme
   // will make debugging easy.
   // If this call to sort is removed, we need to add one before we use
-  // binary_search in ProcessConflictSet
+  // binary_search in ProcessConflictSet.
   sort(set->begin(), set->end());
   std::stringstream rv;
   for(ConflictSet::iterator i = set->begin() ; i != set->end() ; ++i )
@@ -422,7 +421,7 @@ bool AttemptToFixCircularConflict(WriteTransaction* trans,
       Entry parent(trans, syncable::GET_BY_ID, parentid);
       CHECK(parent.good());
       if (parentid == *i)
-        break; // it's a loop
+        break;  // It's a loop.
       parentid = parent.Get(syncable::PARENT_ID);
     }
     if (parentid.IsRoot())
@@ -445,11 +444,11 @@ bool AttemptToFixUnsyncedEntryInDeletedServerTree(WriteTransaction* trans,
   Id parentid = entry.Get(syncable::PARENT_ID);
   MutableEntry parent(trans, syncable::GET_BY_ID, parentid);
   if (!parent.good() || !parent.Get(syncable::IS_UNAPPLIED_UPDATE) ||
-    !parent.Get(syncable::SERVER_IS_DEL) ||
+      !parent.Get(syncable::SERVER_IS_DEL) ||
       !binary_search(conflict_set->begin(), conflict_set->end(), parentid))
     return false;
-  // We're trying to commit into a directory tree that's been deleted.
-  // To solve this we recreate the directory tree.
+  // We're trying to commit into a directory tree that's been deleted. To
+  // solve this we recreate the directory tree.
   //
   // We do this in two parts, first we ensure the tree is unaltered since the
   // conflict was detected.
@@ -494,35 +493,32 @@ bool AttemptToFixUpdateEntryInDeletedLocalTree(WriteTransaction* trans,
     !binary_search(conflict_set->begin(), conflict_set->end(), parent_id)) {
     return false;
   }
-  // We've deleted a directory tree that's got contents on the server.
-  // We recreate the directory to solve the problem.
+  // We've deleted a directory tree that's got contents on the server. We
+  // recreate the directory to solve the problem.
   //
   // We do this in two parts, first we ensure the tree is unaltered since
   // the conflict was detected.
   Id id = parent_id;
-  // As we will be crawling the path of deleted entries there's a chance
-  // we'll end up having to reparent an item as there will be an invalid
-  // parent.
+  // As we will be crawling the path of deleted entries there's a chance we'll
+  // end up having to reparent an item as there will be an invalid parent.
   Id reroot_id = syncable::kNullId;
-  // similarly crawling deleted items means we risk loops.
+  // Similarly crawling deleted items means we risk loops.
   int loop_detection = conflict_set->size();
   while (!id.IsRoot() && --loop_detection >= 0) {
     Entry parent(trans, syncable::GET_BY_ID, id);
-    // If we get a bad parent, or a parent that's deleted on client and
-    // server we recreate the hierarchy in the root.
+    // If we get a bad parent, or a parent that's deleted on client and server
+    // we recreate the hierarchy in the root.
     if (!parent.good()) {
       reroot_id = id;
       break;
     }
     CHECK(parent.Get(syncable::IS_DIR));
     if (!binary_search(conflict_set->begin(), conflict_set->end(), id)) {
-      // We've got to an entry that's not in the set. If it has been
-      // deleted between set building and this point in time we
-      // return false. If it had been deleted earlier it would have been
-      // in the set.
-      // TODO(sync): Revisit syncer code organization to see if
-      // conflict resolution can be done in the same transaction as set
-      // building.
+      // We've got to an entry that's not in the set. If it has been deleted
+      // between set building and this point in time we return false. If it had
+      // been deleted earlier it would have been in the set.
+      // TODO(sync): Revisit syncer code organization to see if conflict
+      // resolution can be done in the same transaction as set building.
       if (parent.Get(syncable::IS_DEL))
         return false;
       break;
@@ -540,8 +536,7 @@ bool AttemptToFixUpdateEntryInDeletedLocalTree(WriteTransaction* trans,
       reroot_id = entry.Get(syncable::PARENT_ID);
     else
       reroot_id = id;
-  // Now we fix things up by undeleting all the folders in the item's
-  // path.
+  // Now we fix things up by undeleting all the folders in the item's path.
   id = parent_id;
   while (!id.IsRoot() && id != reroot_id) {
     if (!binary_search(conflict_set->begin(), conflict_set->end(), id))
@@ -617,7 +612,6 @@ bool ConflictResolver::ProcessConflictSet(WriteTransaction* trans,
   return false;
 }
 
-
 template <typename InputIt>
 bool ConflictResolver::LogAndSignalIfConflictStuck(
     BaseTransaction* trans,
@@ -645,14 +639,14 @@ bool ConflictResolver::LogAndSignalIfConflictStuck(
   view->set_syncer_stuck(true);
 
   return true;
-  // TODO(sync): If we're stuck for a while we need to alert the user,
-  // clear cache or reset syncing. At the very least we should stop trying
-  // something that's obviously not working.
+  // TODO(sync): If we're stuck for a while we need to alert the user, clear
+  // cache or reset syncing. At the very least we should stop trying something
+  // that's obviously not working.
 }
 
 bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
                                               ConflictResolutionView* view,
-                                              SyncerSession *session) {
+                                              SyncerSession* session) {
   WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
   bool forward_progress = false;
   // First iterate over simple conflict items (those that belong to no set).
@@ -693,7 +687,7 @@ bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
 
 bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
                                         ConflictResolutionView* view,
-                                        SyncerSession *session) {
+                                        SyncerSession* session) {
   if (view->HasBlockedItems()) {
     LOG(INFO) << "Delaying conflict resolution, have " <<
         view->BlockedItemsSize() << " blocked items.";

@@ -31,14 +31,14 @@ static inline bool operator < (const timespec& a, const timespec& b) {
 
 namespace {
 
-// returns the amount of time since the user last interacted with
-// the computer, in milliseconds
+// Returns the amount of time since the user last interacted with the computer,
+// in milliseconds
 int UserIdleTime() {
 #ifdef OS_WINDOWS
   LASTINPUTINFO last_input_info;
   last_input_info.cbSize = sizeof(LASTINPUTINFO);
 
-  // get time in windows ticks since system start of last activity
+  // Get time in windows ticks since system start of last activity.
   BOOL b = ::GetLastInputInfo(&last_input_info);
   if (b == TRUE)
     return ::GetTickCount() - last_input_info.dwTime;
@@ -167,8 +167,8 @@ SyncerThread::~SyncerThread() {
 }
 
 // Creates and starts a syncer thread.
-// Returns true if it creates a thread or if there's currently a thread
-// running and false otherwise.
+// Returns true if it creates a thread or if there's currently a thread running
+// and false otherwise.
 bool SyncerThread::Start() {
   MutexLock lock(&mutex_);
   if (thread_running_) {
@@ -183,14 +183,14 @@ bool SyncerThread::Start() {
 }
 
 // Stop processing. A max wait of at least 2*server RTT time is recommended.
-// returns true if we stopped, false otherwise.
+// Returns true if we stopped, false otherwise.
 bool SyncerThread::Stop(int max_wait) {
   MutexLock lock(&mutex_);
   if (!thread_running_)
     return true;
   stop_syncer_thread_ = true;
   if (NULL != syncer_) {
-    // try to early exit the syncer
+    // Try to early exit the syncer.
     syncer_->RequestEarlyExit();
   }
   pthread_cond_broadcast(&changed_.condvar_);
@@ -214,13 +214,12 @@ void SyncerThread::WatchClientCommands(ClientCommandChannel* channel) {
       &SyncerThread::HandleClientCommand));
 }
 
-void SyncerThread::HandleClientCommand(ClientCommandChannel::EventType
-                                       event) {
+void SyncerThread::HandleClientCommand(ClientCommandChannel::EventType event) {
   if (!event) {
     return;
   }
 
-  // mutex not really necessary for these
+  // Mutex not really necessary for these.
   if (event->has_set_sync_poll_interval()) {
     syncer_short_poll_interval_seconds_ = event->set_sync_poll_interval();
   }
@@ -287,8 +286,8 @@ void SyncerThread::ThreadMainLoop() {
   }
 }
 
-// We check how long the user's been idle and sync less often if the
-// machine is not in use. The aim is to reduce server load.
+// We check how long the user's been idle and sync less often if the machine is
+// not in use. The aim is to reduce server load.
 int SyncerThread::CalculatePollingWaitTime(
     const AllStatus::Status& status,
     int last_poll_wait,  // in s
@@ -479,7 +478,7 @@ SyncerEventChannel* SyncerThread::channel() {
   return syncer_event_channel_.get();
 }
 
-// inputs and return value in milliseconds
+// Inputs and return value in milliseconds.
 int SyncerThread::CalculateSyncWaitTime(int last_interval, int user_idle_ms) {
   // syncer_polling_interval_ is in seconds
   int syncer_polling_interval_ms = syncer_polling_interval_ * 1000;
@@ -490,8 +489,8 @@ int SyncerThread::CalculateSyncWaitTime(int last_interval, int user_idle_ms) {
   // Get idle time, bounded by max wait.
   int idle = min(user_idle_ms, syncer_max_interval_);
 
-  // If the user has been idle for a while,
-  // we'll start decreasing the poll rate.
+  // If the user has been idle for a while, we'll start decreasing the poll
+  // rate.
   if (idle >= kPollBackoffThresholdMultiplier * syncer_polling_interval_ms) {
     next_wait = std::min(AllStatus::GetRecommendedDelaySeconds(
         last_interval / 1000), syncer_max_interval_ / 1000) * 1000;
@@ -500,7 +499,7 @@ int SyncerThread::CalculateSyncWaitTime(int last_interval, int user_idle_ms) {
   return next_wait;
 }
 
-// Called with mutex_ already locked
+// Called with mutex_ already locked.
 void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
                                  NudgeSource source) {
   const timespec nudge_time = GetPThreadAbsoluteTime(milliseconds_from_now);

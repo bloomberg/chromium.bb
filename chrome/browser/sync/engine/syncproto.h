@@ -23,8 +23,8 @@ class IdWrapper : public Base {
   }
 };
 
-// These wrapper classes contain no data, so their super
-// classes can be cast to them directly.
+// These wrapper classes contain no data, so their super classes can be cast to
+// them directly.
 class SyncEntity : public IdWrapper<sync_pb::SyncEntity> {
  public:
   void set_parent_id(const syncable::Id& id) {

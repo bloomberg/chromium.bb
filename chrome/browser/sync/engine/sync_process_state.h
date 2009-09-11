@@ -1,7 +1,6 @@
 // Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 //
 // The sync process consists of a sequence of sync cycles, each of which
 // (hopefully) moves the client into closer synchronization with the server.
@@ -43,7 +42,7 @@ class SyncProcessState {
       SyncerEventChannel* syncer_event_channel,
       ModelSafeWorker* model_safe_worker);
 
-  // intentionally not 'explicit' b/c it's a copy ctor:
+  // Intentionally not 'explicit' b/c it's a copy ctor:
   SyncProcessState(const SyncProcessState& counts);
   SyncProcessState& operator=(const SyncProcessState& that);
 
@@ -51,8 +50,7 @@ class SyncProcessState {
 
   syncable::DirectoryManager* dirman() const { return dirman_; }
 
-  ServerConnectionManager* connection_manager()
-      const {
+  ServerConnectionManager* connection_manager() const {
     return connection_manager_;
   }
 
@@ -64,7 +62,7 @@ class SyncProcessState {
     return syncer_event_channel_;
   }
 
-  // Functions that deal with conflict set stuff
+  // Functions that deal with conflict set stuff.
   IdToConflictSetMap::const_iterator IdToConflictSetFind(
       const syncable::Id& the_id) const {
     return id_to_conflict_set_.find(the_id);
@@ -103,7 +101,7 @@ class SyncProcessState {
   void CleanupSets();
   // END conflict set functions
 
-  // item id set manipulation functions
+  // Item id set manipulation functions.
   bool HasConflictingItems() const {
     return !conflicting_item_ids_.empty();
   }
@@ -179,15 +177,16 @@ class SyncProcessState {
   }
   // END item id set manipulation functions
 
-  // Assorted other state info
+  // Assorted other state info.
   int conflicting_updates() const { return conflicting_item_ids_.size(); }
 
+  // TODO(sync): make these two members private and add getters/setters.
   int num_sync_cycles_;
 
   // When we're over bandwidth quota, we don't update until past this time.
   time_t silenced_until_;
 
-  // Info that is tracked purely for status reporting
+  // Info that is tracked purely for status reporting.
 
   // During inital sync these two members can be used to measure sync progress.
   int64 current_sync_timestamp() const { return current_sync_timestamp_; }
@@ -224,7 +223,7 @@ class SyncProcessState {
 
   void set_stalled_commits(const int val);
 
-  // WEIRD COUNTER manipulation functions
+  // WEIRD COUNTER manipulation functions.
   int consecutive_problem_get_updates() const {
     return consecutive_problem_get_updates_;
   }
@@ -260,9 +259,9 @@ class SyncProcessState {
   void increment_successful_commits();
 
   void zero_successful_commits();
-  // end WEIRD COUNTER manipulation functions
+  // end WEIRD COUNTER manipulation functions.
 
-  // Methods for managing error rate tracking
+  // Methods for managing error rate tracking.
   void TallyNewError();
 
   void TallyBigNewError();
@@ -271,24 +270,24 @@ class SyncProcessState {
 
   void CheckErrorRateTooHigh();
 
-  // Methods for tracking authentication state
+  // Methods for tracking authentication state.
   void AuthFailed();
   void AuthSucceeded();
 
-  // Returns true if this object has been modified since last SetClean() call
+  // Returns true if this object has been modified since last SetClean() call.
   bool IsDirty() const { return dirty_; }
 
-  // Call to tell this status object that its new state has been seen
+  // Call to tell this status object that its new state has been seen.
   void SetClean() { dirty_ = false; }
 
-  // Returns true if auth status has been modified since last SetClean() call
+  // Returns true if auth status has been modified since last SetClean() call.
   bool IsAuthDirty() const { return auth_dirty_; }
 
-  // Call to tell this status object that its auth state has been seen
+  // Call to tell this status object that its auth state has been seen.
   void SetAuthClean() { auth_dirty_ = false; }
 
  private:
-  // for testing
+  // For testing.
   SyncProcessState()
       : account_name_(PSTR("")),
         dirman_(NULL),
@@ -316,7 +315,7 @@ class SyncProcessState {
         syncing_(false),
         invalid_store_(false) {}
 
-  ServerConnectionManager *connection_manager_;
+  ServerConnectionManager* connection_manager_;
   const PathString account_name_;
   syncable::DirectoryManager* const dirman_;
   ConflictResolver* const resolver_;
@@ -336,7 +335,7 @@ class SyncProcessState {
   // status reporting purposes.
   static const int ERROR_THRESHOLD = 500;
   int error_rate_;  // A EMA in the range [0,65536)
-  int64 current_sync_timestamp_;    // During inital sync these two members
+  int64 current_sync_timestamp_;  // During inital sync these two members
   int64 servers_latest_timestamp_;  // can be used to measure sync progress.
 
   // There remains sync state updating in:
@@ -357,15 +356,14 @@ class SyncProcessState {
   // consecutive_problem_get_updates_ resets when we get any updates (not on
   // pings) and increments whenever the request fails.
   int consecutive_problem_get_updates_;
-  // consecutive_problem_commits_ resets whenever we commit any number of
-  // items and increments whenever all commits fail for any reason.
+  // consecutive_problem_commits_ resets whenever we commit any number of items
+  // and increments whenever all commits fail for any reason.
   int consecutive_problem_commits_;
   // number of commits hitting transient errors since the last successful
   // commit.
   int consecutive_transient_error_commits_;
-  // Incremented when get_updates fails, commit fails, and when
-  // hitting transient errors. When any of these succeed, this counter
-  // is reset.
+  // Incremented when get_updates fails, commit fails, and when hitting
+  // transient errors. When any of these succeed, this counter is reset.
   // TODO(chron): Reduce number of weird counters we use.
   int consecutive_errors_;
   int successful_commits_;

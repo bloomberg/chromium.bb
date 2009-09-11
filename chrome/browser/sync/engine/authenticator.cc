@@ -15,12 +15,12 @@ namespace browser_sync {
 
 using std::string;
 
-Authenticator::Authenticator(ServerConnectionManager *manager,
+Authenticator::Authenticator(ServerConnectionManager* manager,
                              UserSettings* settings)
     : server_connection_manager_(manager), settings_(settings) {
 }
 
-Authenticator::Authenticator(ServerConnectionManager *manager)
+Authenticator::Authenticator(ServerConnectionManager* manager)
     : server_connection_manager_(manager), settings_(NULL) {
 }
 
@@ -31,8 +31,8 @@ Authenticator::AuthenticationResult Authenticator::Authenticate() {
 
 Authenticator::AuthenticationResult Authenticator::Authenticate(
     string username, string password, bool save_credentials) {
-  // TODO(scrub): need to figure out if this routine is used anywhere other than
-  // the test code.
+  // TODO(sync): need to figure out if this routine is used anywhere other
+  // than the test code.
   GaiaAuthenticator auth_service("ChromiumBrowser", "chromiumsync",
       "https://www.google.com:443/accounts/ClientLogin");
   const SignIn signin_type =

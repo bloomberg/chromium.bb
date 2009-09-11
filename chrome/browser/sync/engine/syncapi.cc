@@ -68,12 +68,12 @@ static const int kSSLPort = 443;
 // We shouldn't call InitLogFiles more than once since that will cause a crash.
 // So we use a global state variable to avoid that. This doesn't work in case
 // of multiple threads, and if some other part also tries to call InitLogFiles
-// apart from this file. But this is okay for now since this is the only
-// place we call InitLogFiles.
+// apart from this file. But this is okay for now since this is the only place
+// we call InitLogFiles.
 namespace {
 static bool g_log_files_initialized = false;
-static base::AtExitManager g_at_exit_manager;  // Necessary for NewCallback
-}  // empty namespace
+static base::AtExitManager g_at_exit_manager;  // Necessary for NewCallback.
+}  // namespace
 
 struct ThreadParams {
   browser_sync::ServerConnectionManager* conn_mgr;
@@ -82,9 +82,9 @@ struct ThreadParams {
 #endif
 };
 
-// This thread calls CheckServerReachable() whenever a change occurs
-// in the table that maps IP addresses to interfaces, for example when
-// the user unplugs his network cable.
+// This thread calls CheckServerReachable() whenever a change occurs in the
+// table that maps IP addresses to interfaces, for example when the user
+// unplugs his network cable.
 void* AddressWatchThread(void* arg) {
   NameCurrentThreadForDebugging("SyncEngine_AddressWatcher");
   LOG(INFO) << "starting the address watch thread";
@@ -369,8 +369,8 @@ WriteNode::~WriteNode() {
   delete entry_;
 }
 
-// Find an existing node matching the ID |id|, and bind this WriteNode
-// to it.  Return true on success.
+// Find an existing node matching the ID |id|, and bind this WriteNode to it.
+// Return true on success.
 bool WriteNode::InitByIdLookup(int64 id) {
   DCHECK(!entry_) << "Init called twice";
   DCHECK_NE(id, kInvalidId);
@@ -790,32 +790,31 @@ class SyncManager::SyncInternal {
   }
  private:
   // Try to authenticate using persisted credentials from a previous successful
-  // authentication. If no such credentials exist, calls OnAuthError on
-  // the client to collect credentials. Otherwise, there exist local
-  // credentials that were once used for a successful auth, so we'll try to
-  // re-use these.
-  // Failure of that attempt will be communicated as normal using
-  // OnAuthError. Since this entry point will bypass normal GAIA
-  // authentication and try to authenticate directly with the sync service
-  // using a cached token, authentication failure will generally occur due to
-  // expired credentials, or possibly because of a password change.
+  // authentication. If no such credentials exist, calls OnAuthError on the
+  // client to collect credentials. Otherwise, there exist local credentials
+  // that were once used for a successful auth, so we'll try to re-use these.
+  // Failure of that attempt will be communicated as normal using OnAuthError.
+  // Since this entry point will bypass normal GAIA authentication and try to
+  // authenticate directly with the sync service using a cached token,
+  // authentication failure will generally occur due to expired credentials, or
+  // possibly because of a password change.
   void AuthenticateForLastKnownUser();
 
-  // Helper to call OnAuthError when no authentication credentials
-  // are available.
+  // Helper to call OnAuthError when no authentication credentials are
+  // available.
   void RaiseAuthNeededEvent();
 
-  // Helper to set initialized_ to true and raise an event to clients to
-  // notify that initialization is complete and it is safe to send us changes.
-  // If already initialized, this is a no-op.
+  // Helper to set initialized_ to true and raise an event to clients to notify
+  // that initialization is complete and it is safe to send us changes. If
+  // already initialized, this is a no-op.
   void MarkAndNotifyInitializationComplete();
 
   // Determine if the parents or predecessors differ between the old and new
-  // versions of an entry stored in |a| and |b|.  Note that a node's index
-  // may change without its NEXT_ID changing if the node at NEXT_ID also
-  // moved (but the relative order is unchanged).  To handle such cases,
-  // we rely on the caller to treat a position update on any sibling as
-  // updating the positions of all siblings.
+  // versions of an entry stored in |a| and |b|.  Note that a node's index may
+  // change without its NEXT_ID changing if the node at NEXT_ID also moved (but
+  // the relative order is unchanged).  To handle such cases, we rely on the
+  // caller to treat a position update on any sibling as updating the positions
+  // of all siblings.
   static bool BookmarkPositionsDiffer(const syncable::EntryKernel& a,
                                       const syncable::Entry& b) {
     if (a.ref(syncable::NEXT_ID) != b.Get(syncable::NEXT_ID))
@@ -826,8 +825,8 @@ class SyncManager::SyncInternal {
   }
 
   // Determine if any of the fields made visible to clients of the Sync API
-  // differ between the versions of an entry stored in |a| and |b|.
-  // A return value of false means that it should be OK to ignore this change.
+  // differ between the versions of an entry stored in |a| and |b|. A return
+  // value of false means that it should be OK to ignore this change.
   static bool BookmarkPropertiesDiffer(const syncable::EntryKernel& a,
                                        const syncable::Entry& b) {
     if (a.ref(syncable::NAME) != b.Get(syncable::NAME))
@@ -867,8 +866,8 @@ class SyncManager::SyncInternal {
   // A sink for client commands from the syncer needed to create a SyncerThread.
   ClientCommandChannel command_channel_;
 
-  // The ServerConnectionManager used to abstract communication between
-  // the client (the Syncer) and the sync server.
+  // The ServerConnectionManager used to abstract communication between the
+  // client (the Syncer) and the sync server.
   scoped_ptr<SyncAPIServerConnectionManager> connection_manager_;
 
   // The thread that runs the Syncer. Needs to be explicitly Start()ed.
@@ -1369,9 +1368,9 @@ SyncManager::Status SyncManager::SyncInternal::ComputeAggregatedStatus() {
 
 void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
   if (!initialized()) {
-    // We get here if A) We have successfully authenticated at least once (
-    // because we attach HandleSyncerEvent only once we receive notification of
-    // successful authentication [locally or otherwise]), but B) the initial
+    // We get here if A) We have successfully authenticated at least once
+    // (because we attach HandleSyncerEvent only once we receive notification
+    // of successful authentication [locally or otherwise]), but B) the initial
     // sync had not completed at that time.
     if (SyncerStatus(event.last_session).IsShareUsable())
       MarkAndNotifyInitializationComplete();

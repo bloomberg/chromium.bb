@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_session.h"
+#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -57,14 +57,13 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
   }
 
   if (0 == status.servers_latest_timestamp()) {
-    // Hack since new server never gives us the server's latest
-    // timestamp.  But if a getupdates returns zero, then we know we
-    // are up to date.
+    // Hack since new server never gives us the server's latest timestamp. But
+    // if a getupdates returns zero, then we know we are up to date.
     status.set_servers_latest_timestamp(status.current_sync_timestamp());
   }
-  // If we have updates that are ALL supposed to be skipped, we don't want
-  // to get them again.  In fact, the account's final updates are all
-  // supposed to be skipped and we DON'T step past them, we will sync forever
+  // If we have updates that are ALL supposed to be skipped, we don't want to
+  // get them again.  In fact, the account's final updates are all supposed to
+  // be skipped and we DON'T step past them, we will sync forever.
   int64 latest_skip_timestamp = 0;
   bool any_non_skip_results = false;
   vector<VerifiedUpdate>::iterator it;
@@ -75,7 +74,7 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
 
     any_non_skip_results = (it->first != VERIFY_SKIP);
     if (!any_non_skip_results) {
-      // ALL updates were to be skipped, including this one
+      // ALL updates were to be skipped, including this one.
       if (update.sync_timestamp() > latest_skip_timestamp) {
         latest_skip_timestamp = update.sync_timestamp();
       }
@@ -88,8 +87,8 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
     switch (ProcessUpdate(dir, update)) {
       case SUCCESS_PROCESSED:
       case SUCCESS_STORED:
-        // We can update the timestamp because we store the update
-        // even if we can't apply it now.
+        // We can update the timestamp because we store the update even if we
+        // can't apply it now.
         if (update.sync_timestamp() > new_timestamp)
           new_timestamp = update.sync_timestamp();
         break;
@@ -113,7 +112,7 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
 }
 
 namespace {
-// returns true if the entry is still ok to process
+// Returns true if the entry is still ok to process.
 bool ReverifyEntry(syncable::WriteTransaction* trans, const SyncEntity& entry,
                    syncable::MutableEntry* same_id) {
 
@@ -121,15 +120,14 @@ bool ReverifyEntry(syncable::WriteTransaction* trans, const SyncEntity& entry,
   const bool is_directory = entry.IsFolder();
   const bool is_bookmark = entry.has_bookmarkdata();
 
-  return VERIFY_SUCCESS ==
-      SyncerUtil::VerifyUpdateConsistency(trans,
-                                              entry,
-                                              same_id,
-                                              deleted,
-                                              is_directory,
-                                              is_bookmark);
+  return VERIFY_SUCCESS == SyncerUtil::VerifyUpdateConsistency(trans,
+                                                               entry,
+                                                               same_id,
+                                                               deleted,
+                                                               is_directory,
+                                                               is_bookmark);
 }
-}  // anonymous namespace
+}  // namespace
 
 // TODO(sync): Refactor this code.
 // Process a single update. Will avoid touching global state.
@@ -148,8 +146,8 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   // We take a two step approach. First we store the entries data in the
   // server fields of a local entry and then move the data to the local fields
   MutableEntry update_entry(&trans, GET_BY_ID, id);
-  // TODO(sync): do we need to run ALL these checks, or is a mere version
-  //                check good enough?
+  // TODO(sync): do we need to run ALL these checks, or is a mere version check
+  // good enough?
   if (!ReverifyEntry(&trans, entry, &update_entry)) {
     return SUCCESS_PROCESSED;  // the entry has become irrelevant
   }

@@ -6,9 +6,9 @@
 #include "chrome/browser/sync/engine/verify_updates_command.h"
 
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
+#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -27,7 +27,7 @@ using syncable::SYNCER;
 VerifyUpdatesCommand::VerifyUpdatesCommand() {}
 VerifyUpdatesCommand::~VerifyUpdatesCommand() {}
 
-void VerifyUpdatesCommand::ExecuteImpl(SyncerSession *session) {
+void VerifyUpdatesCommand::ExecuteImpl(SyncerSession* session) {
   LOG(INFO) << "Beginning Update Verification";
   ScopedDirLookup dir(session->dirman(), session->account_name());
   if (!dir.good()) {

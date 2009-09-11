@@ -10,7 +10,7 @@
 
 namespace browser_sync {
 
-void ModelChangingSyncerCommand::ExecuteImpl(SyncerSession *session) {
+void ModelChangingSyncerCommand::ExecuteImpl(SyncerSession* session) {
   work_session_ = session;
   session->model_safe_worker()->DoWorkAndWaitUntilDone(
       NewCallback(this, &ModelChangingSyncerCommand::StartChangingModel));

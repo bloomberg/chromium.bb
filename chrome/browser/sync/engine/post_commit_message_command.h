@@ -16,7 +16,7 @@ class PostCommitMessageCommand : public SyncerCommand {
   PostCommitMessageCommand();
   virtual ~PostCommitMessageCommand();
 
-  virtual void ExecuteImpl(SyncerSession *session);
+  virtual void ExecuteImpl(SyncerSession* session);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PostCommitMessageCommand);

@@ -30,7 +30,7 @@ namespace browser_sync {
 BuildCommitCommand::BuildCommitCommand() {}
 BuildCommitCommand::~BuildCommitCommand() {}
 
-void BuildCommitCommand::ExecuteImpl(SyncerSession *session) {
+void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
   ClientToServerMessage message;
   message.set_share(ToUTF8(session->account_name()).get_string());
   message.set_message_contents(ClientToServerMessage::COMMIT);
@@ -49,7 +49,7 @@ void BuildCommitCommand::ExecuteImpl(SyncerSession *session) {
                             syncable::GET_BY_ID,
                             id);
     CHECK(meta_entry.good());
-    // this is the only change we make to the entry in this function.
+    // This is the only change we make to the entry in this function.
     meta_entry.Put(syncable::SYNCING, true);
 
     Name name = meta_entry.GetName();
@@ -64,8 +64,8 @@ void BuildCommitCommand::ExecuteImpl(SyncerSession *session) {
       sync_entry->set_non_unique_name(
         ToUTF8(name.non_unique_value()).get_string());
     }
-    // deleted items with negative parent ids can be a problem so we set the
-    // parent to 0. (TODO(sync): Still true in protocol?
+    // Deleted items with negative parent ids can be a problem so we set the
+    // parent to 0. (TODO(sync): Still true in protocol?).
     Id new_parent_id;
     if (meta_entry.Get(syncable::IS_DEL) &&
         !meta_entry.Get(syncable::PARENT_ID).ServerKnows()) {
@@ -77,10 +77,9 @@ void BuildCommitCommand::ExecuteImpl(SyncerSession *session) {
     // TODO(sync): Investigate all places that think transactional commits
     // actually exist.
     //
-    // This is the only logic we'll need when transactional commits are
-    // moved to the server.
-    // If our parent has changes, send up the old one so the server can
-    // correctly deal with multiple parents.
+    // This is the only logic we'll need when transactional commits are moved
+    // to the server. If our parent has changes, send up the old one so the
+    // server can correctly deal with multiple parents.
     if (new_parent_id != meta_entry.Get(syncable::SERVER_PARENT_ID) &&
         0 != meta_entry.Get(syncable::BASE_VERSION) &&
         syncable::CHANGES_VERSION != meta_entry.Get(syncable::BASE_VERSION)) {

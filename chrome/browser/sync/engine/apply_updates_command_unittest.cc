@@ -162,5 +162,4 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
       << "The updates with known ancestors should be successfully applied";
 }
 
-
 }  // namespace browser_sync

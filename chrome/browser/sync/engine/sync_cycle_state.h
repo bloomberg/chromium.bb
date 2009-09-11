@@ -1,7 +1,6 @@
 // Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 //
 // The sync process consists of a sequence of sync cycles, each of which
 // (hopefully) moves the client into closer synchronization with the server.
@@ -31,8 +30,8 @@ namespace browser_sync {
 typedef std::pair<VerifyResult, sync_pb::SyncEntity> VerifiedUpdate;
 typedef std::pair<UpdateAttemptResponse, syncable::Id> AppliedUpdate;
 
-// This is the type declaration for the eventsys channel that the syncer
-// uses to send events to other system components.
+// This is the type declaration for the eventsys channel that the syncer uses
+// to send events to other system components.
 struct SyncerEvent;
 
 // SyncCycleState holds the entire state of a single sync cycle;
@@ -101,15 +100,15 @@ class SyncCycleState {
     return verified_updates_.end();
   }
 
-  // Returns the number of update application attempts.  This includes
-  // both failures and successes.
+  // Returns the number of update application attempts.  This includes both
+  // failures and successes.
   int AppliedUpdatesSize() const {
     return applied_updates_.size();
   }
 
-  // Count the number of successful update applications that have happend
-  // this cycle.  Note that if an item is successfully applied twice,
-  // it will be double counted here.
+  // Count the number of successful update applications that have happend this
+  // cycle. Note that if an item is successfully applied twice, it will be
+  // double counted here.
   int SuccessfullyAppliedUpdateCount() const {
     int count = 0;
     for (std::vector<AppliedUpdate>::const_iterator it =
@@ -157,7 +156,7 @@ class SyncCycleState {
 
   bool has_open_write_transaction() { return write_transaction_ != NULL; }
 
-  // sets the write transaction to null, but doesn't free the memory.
+  // Sets the write transaction to null, but doesn't free the memory.
   void ClearWriteTransaction() { write_transaction_ = NULL; }
 
   ClientToServerMessage* commit_message() { return &commit_message_; }
@@ -197,11 +196,10 @@ class SyncCycleState {
 
   bool items_committed() const { return items_committed_; }
 
-
-  // Returns true if this object has been modified since last SetClean() call
+  // Returns true if this object has been modified since last SetClean() call.
   bool IsDirty() const { return dirty_; }
 
-  // Call to tell this status object that its new state has been seen
+  // Call to tell this status object that its new state has been seen.
   void SetClean() { dirty_ = false; }
 
   // Indicate that we've made a change to directory timestamp.
@@ -213,11 +211,10 @@ class SyncCycleState {
     return timestamp_dirty_;
   }
 
-
  private:
   void UpdateDirty(bool new_info) { dirty_ |= new_info; }
 
-  // download updates supplies:
+  // Download updates supplies:
   ClientToServerResponse update_response_;
   ClientToServerResponse commit_response_;
   ClientToServerMessage commit_message_;
@@ -238,7 +235,7 @@ class SyncCycleState {
 
   bool dirty_;
 
-  // some container for updates that failed verification
+  // Some container for updates that failed verification.
   std::vector<VerifiedUpdate> verified_updates_;
 
   // Stores the result of the various ApplyUpdate attempts we've made.

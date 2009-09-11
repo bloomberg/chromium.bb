@@ -49,7 +49,7 @@ namespace browser_sync {
 
 Syncer::Syncer(
     syncable::DirectoryManager* dirman,
-    const PathString &account_name,
+    const PathString& account_name,
     ServerConnectionManager* connection_manager,
     ModelSafeWorker* model_safe_worker)
     : account_name_(account_name),
@@ -88,7 +88,7 @@ bool Syncer::SyncShare() {
   return SyncShare(&state);
 }
 
-bool Syncer::SyncShare(SyncProcessState *process_state) {
+bool Syncer::SyncShare(SyncProcessState* process_state) {
   SyncCycleState cycle_state;
   SyncerSession session(&cycle_state, process_state);
   session.set_source(TestAndSetUpdatesSource());
@@ -107,11 +107,11 @@ bool Syncer::SyncShare(SyncerStep first_step, SyncerStep last_step) {
   return session.ShouldSyncAgain();
 }
 
-void Syncer::SyncShare(SyncerSession *session) {
+void Syncer::SyncShare(SyncerSession* session) {
   SyncShare(session, SYNCER_BEGIN, SYNCER_END);
 }
 
-void Syncer::SyncShare(SyncerSession *session,
+void Syncer::SyncShare(SyncerSession* session,
                        const SyncerStep first_step,
                        const SyncerStep last_step) {
   SyncerStep current_step = first_step;
@@ -275,7 +275,7 @@ void Syncer::SyncShare(SyncerSession *session,
   return;
 }
 
-void Syncer::ProcessClientCommand(SyncerSession *session) {
+void Syncer::ProcessClientCommand(SyncerSession* session) {
   if (!session->update_response().has_client_command())
     return;
   const ClientCommand command = session->update_response().client_command();

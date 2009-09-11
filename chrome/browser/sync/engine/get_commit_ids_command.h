@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SYNC_ENGINE_GET_COMMIT_IDS_COMMAND_H_
 #define CHROME_BROWSER_SYNC_ENGINE_GET_COMMIT_IDS_COMMAND_H_
 
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "chrome/browser/sync/engine/syncer_command.h"
-#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncer_session.h"
+#include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 using std::pair;
@@ -25,15 +25,15 @@ class GetCommitIdsCommand : public SyncerCommand {
   explicit GetCommitIdsCommand(int commit_batch_size);
   virtual ~GetCommitIdsCommand();
 
-  virtual void ExecuteImpl(SyncerSession *session);
+  virtual void ExecuteImpl(SyncerSession* session);
 
   // Returns a vector of IDs that should be committed.
   void BuildCommitIds(SyncerSession *session);
 
   // These classes are public for testing.
   // TODO(ncarter): This code is more generic than just Commit and can
-  // be reused elsewhere (e.g. PositionalRunBuilder, ChangeReorderBuffer
-  // do similar things).  Merge all these implementations.
+  // be reused elsewhere (e.g. ChangeReorderBuffer do similar things).  Merge
+  // all these implementations.
   class OrderedCommitSet {
    public:
     // TODO(chron): Reserve space according to batch size?
@@ -145,8 +145,8 @@ class GetCommitIdsCommand : public SyncerCommand {
           return false;
 
        // We should really not WRITE in this iterator, but we can fix that
-       // later. ValidateCommitEntry writes to the DB, and we add the
-       // blocked items. We should move that somewhere else later.
+       // later. ValidateCommitEntry writes to the DB, and we add the blocked
+       // items. We should move that somewhere else later.
        syncable::MutableEntry entry(session_->write_transaction(),
            syncable::GET_BY_HANDLE, metahandle);
        VerifyCommitResult verify_result =
@@ -154,7 +154,7 @@ class GetCommitIdsCommand : public SyncerCommand {
        if (verify_result == VERIFY_BLOCKED) {
          session_->AddBlockedItem(entry.Get(syncable::ID));  // TODO(chron): Ew.
        } else if (verify_result == VERIFY_UNSYNCABLE) {
-         // drop unsyncable entries.
+         // Drop unsyncable entries.
          entry.Put(syncable::IS_UNSYNCED, false);
        }
        return verify_result == VERIFY_OK;
@@ -173,8 +173,8 @@ class GetCommitIdsCommand : public SyncerCommand {
       syncable::Id parent_id);
 
   // OrderedCommitSet helpers for adding predecessors in order.
-  // TODO(ncarter): Refactor these so that the |result| parameter goes
-  // away, and AddItem doesn't need to consider two OrderedCommitSets.
+  // TODO(ncarter): Refactor these so that the |result| parameter goes away,
+  // and AddItem doesn't need to consider two OrderedCommitSets.
   bool AddItem(syncable::Entry* item, OrderedCommitSet* result);
   bool AddItemThenPredecessors(syncable::BaseTransaction* trans,
                                syncable::Entry* item,
@@ -186,9 +186,9 @@ class GetCommitIdsCommand : public SyncerCommand {
 
   bool IsCommitBatchFull();
 
-  void AddCreatesAndMoves(SyncerSession *session);
+  void AddCreatesAndMoves(SyncerSession* session);
 
-  void AddDeletes(SyncerSession *session);
+  void AddDeletes(SyncerSession* session);
 
   OrderedCommitSet ordered_commit_set_;
 

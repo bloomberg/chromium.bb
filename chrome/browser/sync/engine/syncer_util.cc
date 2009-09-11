@@ -102,7 +102,7 @@ syncable::Id SyncerUtil::GetNameConflictingItemId(
 // Returns the number of unsynced entries.
 // static
 int SyncerUtil::GetUnsyncedEntries(syncable::BaseTransaction* trans,
-                                       vector<int64> *handles) {
+                                   vector<int64> *handles) {
   trans->directory()->GetUnsyncedMetaHandles(trans, handles);
   LOG_IF(INFO, handles->size() > 0)
       << "Have " << handles->size() << " unsynced items.";
@@ -124,7 +124,7 @@ void SyncerUtil::ChangeEntryIDAndUpdateChildren(
                << *entry << "\n\n" << old_entry;
   }
   if (entry->Get(IS_DIR)) {
-    // Get all child entries of the old id
+    // Get all child entries of the old id.
     trans->directory()->GetChildHandles(trans, old_id, children);
     Directory::ChildHandles::iterator i = children->begin();
     while (i != children->end()) {
@@ -196,7 +196,7 @@ void SyncerUtil::AttemptReuniteLostCommitResponses(
       // An entry should never be version 0 and SYNCED.
       CHECK(local_entry.Get(IS_UNSYNCED));
 
-      // just a quick sanity check
+      // Just a quick sanity check.
       CHECK(!local_entry.Get(ID).ServerKnows());
 
       LOG(INFO) << "Reuniting lost commit response IDs" <<
@@ -251,7 +251,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntryWithoutMerge(
 
   CHECK(entry->good());
   if (!entry->Get(IS_UNAPPLIED_UPDATE))
-    return SUCCESS;  // No work to do
+    return SUCCESS;  // No work to do.
   syncable::Id id = entry->Get(ID);
 
   if (entry->Get(IS_UNSYNCED)) {
@@ -312,8 +312,8 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
     const SyncEntity& server_entry,
     const SyncName& name) {
   if (server_entry.deleted()) {
-    // The server returns very lightweight replies for deletions, so
-    // we don't clobber a bunch of fields on delete.
+    // The server returns very lightweight replies for deletions, so we don't
+    // clobber a bunch of fields on delete.
     local_entry->Put(SERVER_IS_DEL, true);
     local_entry->Put(SERVER_VERSION,
         std::max(local_entry->Get(SERVER_VERSION),
@@ -358,9 +358,9 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
   }
 
   local_entry->Put(SERVER_IS_DEL, server_entry.deleted());
-  // We only mark the entry as unapplied if its version is greater than
-  // the local data. If we're processing the update that corresponds to one of
-  // our commit we don't apply it as time differences may occur.
+  // We only mark the entry as unapplied if its version is greater than the
+  // local data. If we're processing the update that corresponds to one of our
+  // commit we don't apply it as time differences may occur.
   if (server_entry.version() > local_entry->Get(BASE_VERSION)) {
     local_entry->Put(IS_UNAPPLIED_UPDATE, true);
   }
@@ -392,7 +392,7 @@ void SyncerUtil::ApplyExtendedAttributes(
 // Creates a new Entry iff no Entry exists with the given id.
 // static
 void SyncerUtil::CreateNewEntry(syncable::WriteTransaction *trans,
-                                    const syncable::Id& id) {
+                                const syncable::Id& id) {
   syncable::MutableEntry entry(trans, syncable::GET_BY_ID, id);
   if (!entry.good()) {
     syncable::MutableEntry new_entry(trans, syncable::CREATE_NEW_UPDATE_ITEM,
@@ -412,8 +412,8 @@ bool SyncerUtil::ServerAndLocalOrdersMatch(syncable::Entry* entry) {
       break;
     local_up_to_date_predecessor = local_prev.Get(PREV_ID);
   }
-  // Now find the closest up-to-date sibling in the server order.
 
+  // Now find the closest up-to-date sibling in the server order.
   syncable::Id server_up_to_date_predecessor =
       ComputePrevIdFromServerPosition(entry->trans(), entry,
                                       entry->Get(SERVER_PARENT_ID));
@@ -493,8 +493,8 @@ void SyncerUtil::UpdateLocalDataFromServerData(
   CHECK(entry->Get(IS_UNAPPLIED_UPDATE));
   LOG(INFO) << "Updating entry : " << *entry;
   entry->Put(IS_BOOKMARK_OBJECT, entry->Get(SERVER_IS_BOOKMARK_OBJECT));
-  // This strange dance around the IS_DEL flag
-  // avoids problems when setting the name.
+  // This strange dance around the IS_DEL flag avoids problems when setting
+  // the name.
   if (entry->Get(SERVER_IS_DEL)) {
     entry->Put(IS_DEL, true);
   } else {
@@ -506,9 +506,9 @@ void SyncerUtil::UpdateLocalDataFromServerData(
                                              entry);
     bool was_doctored = name.HasBeenSanitized();
     if (was_doctored) {
-      // If we're changing the name of entry, either its name
-      // should be illegal, or some other entry should have an unsanitized
-      // name. There's should be a CHECK in every code path.
+      // If we're changing the name of entry, either its name should be
+      // illegal, or some other entry should have an unsanitized name.
+      // There's should be a CHECK in every code path.
       Entry blocking_entry(trans, GET_BY_PARENTID_AND_DBNAME,
                            entry->Get(SERVER_PARENT_ID),
                            name.value());
@@ -552,7 +552,7 @@ VerifyCommitResult SyncerUtil::ValidateCommitEntry(
     return VERIFY_UNSYNCABLE;
   }
   if (entry->Get(IS_DEL) && !entry->Get(ID).ServerKnows()) {
-    // drop deleted uncommitted entries.
+    // Drop deleted uncommitted entries.
     return VERIFY_UNSYNCABLE;
   }
   return VERIFY_OK;
@@ -593,7 +593,6 @@ void SyncerUtil::AddPredecessorsThenItem(
     syncable::IndexedBitField inclusion_filter,
     syncable::MetahandleSet* inserted_items,
     vector<syncable::Id>* commit_ids) {
-
   vector<syncable::Id>::size_type initial_size = commit_ids->size();
   if (!AddItemThenPredecessors(trans, item, inclusion_filter, inserted_items,
                                commit_ids))
@@ -654,7 +653,7 @@ void SyncerUtil::MarkDeletedChildrenSynced(
     syncable::Id id = entry.Get(PARENT_ID);
     while (id != trans.root_id()) {
       if (deleted_folders->find(id) != deleted_folders->end()) {
-        // We've synced the deletion of this deleted entries parent
+        // We've synced the deletion of this deleted entries parent.
         entry.Put(IS_UNSYNCED, false);
         break;
       }
@@ -704,7 +703,7 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
     // Then we've had an update for this entry before.
     if (is_directory != same_id->Get(SERVER_IS_DIR) ||
         has_bookmark_data != same_id->Get(SERVER_IS_BOOKMARK_OBJECT)) {
-      if (same_id->Get(IS_DEL)) {  // if we've deleted the item, we don't care.
+      if (same_id->Get(IS_DEL)) {  // If we've deleted the item, we don't care.
         return VERIFY_SKIP;
       } else {
         LOG(ERROR) << "Server update doesn't agree with previous updates. ";
@@ -762,14 +761,13 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
 // expressing an 'undelete'
 // static
 VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
-                                            const SyncEntity& entry,
-                                            syncable::MutableEntry* same_id) {
+                                        const SyncEntity& entry,
+                                        syncable::MutableEntry* same_id) {
   CHECK(same_id->good());
   LOG(INFO) << "Server update is attempting undelete. " << *same_id
             << "Update:" << SyncEntityDebugString(entry);
-  // Move the old one aside and start over.  It's too tricky to
-  // get the old one back into a state that would pass
-  // CheckTreeInvariants().
+  // Move the old one aside and start over.  It's too tricky to get the old one
+  // back into a state that would pass CheckTreeInvariants().
   if (same_id->Get(IS_DEL)) {
     same_id->Put(ID, trans->directory()->NextId());
     same_id->Put(BASE_VERSION, CHANGES_VERSION);
@@ -834,8 +832,8 @@ syncable::Id SyncerUtil::ComputePrevIdFromServerPosition(
       continue;
     }
 
-    // |update_entry| is considered to be somewhere after |candidate|, so
-    // store it as the upper bound.
+    // |update_entry| is considered to be somewhere after |candidate|, so store
+    // it as the upper bound.
     closest_sibling = candidate.Get(ID);
   }
 

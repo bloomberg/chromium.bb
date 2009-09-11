@@ -72,9 +72,9 @@ class ChangeReorderBuffer {
     return operations_.empty();
   }
 
-  // Output a reordered list of changes to |changelist| using the items
-  // that were pushed into the reorder buffer. |sync_trans| is used
-  // to determine the ordering.
+  // Output a reordered list of changes to |changelist| using the items that
+  // were pushed into the reorder buffer. |sync_trans| is used to determine the
+  // ordering.
   void GetAllChangesInTreeOrder(const BaseTransaction* sync_trans,
                                 std::vector<ChangeRecord>* changelist);
 
@@ -88,8 +88,8 @@ class ChangeReorderBuffer {
   };
   typedef std::map<int64, Operation> OperationMap;
 
-  // Stores the items that have been pushed into the buffer, and the
-  // type of operation that was associated with them.
+  // Stores the items that have been pushed into the buffer, and the type of
+  // operation that was associated with them.
   OperationMap operations_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeReorderBuffer);

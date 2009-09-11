@@ -74,12 +74,9 @@ class Syncer {
 
   // The constructor may be called from a thread that is not the Syncer's
   // dedicated thread, to allow some flexibility in the setup.
-  Syncer(
-      syncable::DirectoryManager* dirman,
-      const PathString &account_name,
+  Syncer(syncable::DirectoryManager* dirman, const PathString& account_name,
       ServerConnectionManager* connection_manager,
       ModelSafeWorker* model_safe_worker);
-
   ~Syncer();
 
   // Called by other threads to tell the syncer to stop what it's doing
@@ -95,7 +92,7 @@ class Syncer {
   // When |first_step| and |last_step| are provided, this means to perform
   // a partial sync cycle, stopping after |last_step| is performed.
   bool SyncShare();
-  bool SyncShare(SyncProcessState *sync_process_state);
+  bool SyncShare(SyncProcessState* sync_process_state);
   bool SyncShare(SyncerStep first_step, SyncerStep last_step);
 
   // Limit the batch size of commit operations to a specified number of items.
@@ -200,10 +197,10 @@ class Syncer {
 
 // Inline utility functions.
 
-// Given iterator ranges from two collections sorted according to a
-// common strict weak ordering, return true if the two ranges contain
-// any common items, and false if they do not.
-// This function is in this header so that it can be tested.
+// Given iterator ranges from two collections sorted according to a common
+// strict weak ordering, return true if the two ranges contain any common
+// items, and false if they do not. This function is in this header so that it
+// can be tested.
 template <class Iterator1, class Iterator2>
 bool SortedCollectionsIntersect(Iterator1 begin1, Iterator1 end1,
                                 Iterator2 begin2, Iterator2 end2) {
