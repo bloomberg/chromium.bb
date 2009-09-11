@@ -65,18 +65,14 @@ bool DOMStorageDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                     OnNamespaceId)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageCloneNamespaceId,
                                     OnCloneNamespaceId)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageDerefNamespaceId,
-                        OnDerefNamespaceId)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageStorageAreaId,
                                     OnStorageAreaId)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageLock, OnLock)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageUnlock, OnUnlock)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageLength, OnLength)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageKey, OnKey)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageGetItem, OnGetItem)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageSetItem, OnSetItem)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageRemoveItem, OnRemoveItem)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageClear, OnClear)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageClear, OnClear)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   if (handled)
@@ -145,23 +141,6 @@ void DOMStorageDispatcherHost::OnCloneNamespaceId(int64 namespace_id,
   Send(reply_msg);
 }
 
-void DOMStorageDispatcherHost::OnDerefNamespaceId(int64 namespace_id) {
-  DCHECK(!shutdown_);
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &DOMStorageDispatcherHost::OnDerefNamespaceId, namespace_id));
-    return;
-  }
-
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageNamespace* storage_namespace =
-      Context()->GetStorageNamespace(namespace_id);
-  CHECK(storage_namespace);  // TODO(jorlow): Do better than this.
-  // TODO(jorlow): Track resources here so we can free them (even beyond just
-  //               when the renderer process dies).
-}
-
 void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
                                                const string16& origin,
                                                IPC::Message* reply_msg) {
@@ -182,41 +161,6 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
   ViewHostMsg_DOMStorageCloneNamespaceId::WriteReplyParams(reply_msg,
                                                            storage_area->id());
   Send(reply_msg);
-}
-
-void DOMStorageDispatcherHost::OnLock(int64 storage_area_id,
-                                      IPC::Message* reply_msg) {
-  DCHECK(!shutdown_);
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &DOMStorageDispatcherHost::OnLock, storage_area_id, reply_msg));
-    return;
-  }
-
-  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
-  CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  // TODO(jorlow): Implement locking, quotas, etc...
-  bool invalidate_cache = true;
-  size_t bytes_left_in_quota = 9999999;
-  ViewHostMsg_DOMStorageLock::WriteReplyParams(reply_msg, invalidate_cache,
-                                               bytes_left_in_quota);
-  Send(reply_msg);
-}
-
-void DOMStorageDispatcherHost::OnUnlock(int64 storage_area_id) {
-  DCHECK(!shutdown_);
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
-    webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &DOMStorageDispatcherHost::OnUnlock, storage_area_id));
-    return;
-  }
-
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
-  CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  // TODO(jorlow): Do something.
 }
 
 void DOMStorageDispatcherHost::OnLength(int64 storage_area_id,
@@ -310,23 +254,17 @@ void DOMStorageDispatcherHost::OnRemoveItem(int64 storage_area_id,
   storage_area->RemoveItem(key);
 }
 
-void DOMStorageDispatcherHost::OnClear(int64 storage_area_id,
-                                       IPC::Message* reply_msg) {
+void DOMStorageDispatcherHost::OnClear(int64 storage_area_id) {
   DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
     webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &DOMStorageDispatcherHost::OnClear, storage_area_id, reply_msg));
+        &DOMStorageDispatcherHost::OnClear, storage_area_id));
     return;
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  // TODO(jorlow): Return the total quota for this domain.
-  size_t bytes_left_in_quota = 9999999;
   StorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
   storage_area->Clear();
-  ViewHostMsg_DOMStorageClear::WriteReplyParams(reply_msg,
-                                                bytes_left_in_quota);
-  Send(reply_msg);
 }

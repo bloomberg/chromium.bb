@@ -39,11 +39,8 @@ class DOMStorageDispatcherHost :
   // Message Handlers.
   void OnNamespaceId(bool is_local_storage, IPC::Message* reply_msg);
   void OnCloneNamespaceId(int64 namespace_id, IPC::Message* reply_msg);
-  void OnDerefNamespaceId(int64 namespace_id);
   void OnStorageAreaId(int64 namespace_id, const string16& origin,
                        IPC::Message* reply_msg);
-  void OnLock(int64 storage_area_id, IPC::Message* reply_msg);
-  void OnUnlock(int64 storage_area_id);
   void OnLength(int64 storage_area_id, IPC::Message* reply_msg);
   void OnKey(int64 storage_area_id, unsigned index, IPC::Message* reply_msg);
   void OnGetItem(int64 storage_area_id, const string16& key,
@@ -51,7 +48,7 @@ class DOMStorageDispatcherHost :
   void OnSetItem(int64 storage_area_id, const string16& key,
                  const string16& value);
   void OnRemoveItem(int64 storage_area_id, const string16& key);
-  void OnClear(int64 storage_area_id, IPC::Message* reply_msg);
+  void OnClear(int64 storage_area_id);
 
   // A shortcut for accessing our context.
   DOMStorageContext* Context() {

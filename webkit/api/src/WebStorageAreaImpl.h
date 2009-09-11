@@ -42,8 +42,6 @@ namespace WebKit {
     public:
         WebStorageAreaImpl(PassRefPtr<WebCore::StorageArea> storageArea);
         virtual ~WebStorageAreaImpl();
-        virtual void lock(bool& invalidateCache, size_t& bytesLeftInQuota);
-        virtual void unlock();
         virtual unsigned length();
         virtual WebString key(unsigned index);
         virtual WebString getItem(const WebString& key);

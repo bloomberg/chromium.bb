@@ -22,9 +22,6 @@ RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
 }
 
 RendererWebStorageNamespaceImpl::~RendererWebStorageNamespaceImpl() {
-  if (namespace_id_ != kUninitializedNamespaceId)
-    RenderThread::current()->Send(
-        new ViewHostMsg_DOMStorageDerefNamespaceId(namespace_id_));
 }
 
 WebKit::WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(

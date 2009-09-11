@@ -47,19 +47,6 @@ WebStorageAreaImpl::~WebStorageAreaImpl()
 {
 }
 
-void WebStorageAreaImpl::lock(bool& invalidateCache, size_t& bytesLeftInQuota)
-{
-    // FIXME: Enable locking.  http://crbug.com/16877
-    invalidateCache = false;
-    // FIXME: Enable quota support.  http://crbug.com/16876
-    bytesLeftInQuota = 0;
-}
-
-void WebStorageAreaImpl::unlock()
-{
-    // FIXME: Enable locking.  http://crbug.com/16877
-}
-
 unsigned WebStorageAreaImpl::length()
 {
     return m_storageArea->length();

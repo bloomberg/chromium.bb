@@ -37,23 +37,11 @@ namespace WebKit {
     class WebString;
 
     // In WebCore, there's one distinct StorageArea per origin per StorageNamespace. This
-    // class wraps a StorageArea. With the possible exception of lock/unlock all of these
-    // methods map very obviously to the WebStorage (often called DOM Storage) spec.
+    // class wraps a StorageArea.  All the methods have obvious connections to the spec:
     // http://dev.w3.org/html5/webstorage/
     class WebStorageArea {
     public:
         virtual ~WebStorageArea() { }
-
-        // Lock the storage area. Before calling any other other methods on this interface,
-        // you should always call lock and wait for it to return. InvalidateCache tells you
-        // that since the last time you locked the cache, someone else has modified it.
-        // BytesLeftInQuota tells you how many bytes are currently unused in the quota.
-        // These are both optimizations and can be ignored if you'd like.
-        virtual void lock(bool& invalidateCache, size_t& bytesLeftInQuota) = 0;
-
-        // Unlock the storage area. You should call this at the end of the JavaScript context
-        // or when you're about to execute anything synchronous per the DOM Storage spec.
-        virtual void unlock() = 0;
 
         // The number of key/value pairs in the storage area.
         virtual unsigned length() = 0;
