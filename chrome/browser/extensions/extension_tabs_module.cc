@@ -260,9 +260,14 @@ bool CreateWindowFunction::RunImpl() {
                                                   &url_input));
       url.reset(new GURL(url_input));
       if (!url->is_valid()) {
-        error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
-            url_input);
-        return false;
+        // The path as passed in is not valid. Try converting to absolute path.
+        *url = GetExtension()->GetResourceURL(url_input);
+        if (!url->is_valid()) {
+          error_ = ExtensionErrorUtils::FormatErrorMessage(
+              keys::kInvalidUrlError,
+              url_input);
+          return false;
+        }
       }
     }
   }
@@ -598,6 +603,10 @@ bool UpdateTabFunction::RunImpl() {
     }
   }
 
+  if (has_callback())
+    result_.reset(ExtensionTabUtil::CreateTabValue(contents, tab_strip,
+        tab_index));
+
   return true;
 }
 
@@ -616,9 +625,10 @@ bool MoveTabFunction::RunImpl() {
 
   Browser* source_browser = NULL;
   TabStripModel* source_tab_strip = NULL;
+  TabContents* contents = NULL;
   int tab_index = -1;
-  if (!GetTabById(tab_id, profile(), &source_browser, &source_tab_strip, NULL,
-      &tab_index, &error_))
+  if (!GetTabById(tab_id, profile(), &source_browser, &source_tab_strip,
+      &contents, &tab_index, &error_))
     return false;
 
   if (update_props->HasKey(keys::kWindowIdKey)) {
@@ -635,7 +645,7 @@ bool MoveTabFunction::RunImpl() {
     if (ExtensionTabUtil::GetWindowId(target_browser) !=
         ExtensionTabUtil::GetWindowId(source_browser)) {
       TabStripModel* target_tab_strip = target_browser->tabstrip_model();
-      TabContents *contents = source_tab_strip->DetachTabContentsAt(tab_index);
+      contents = source_tab_strip->DetachTabContentsAt(tab_index);
       if (!contents) {
         error_ = ExtensionErrorUtils::FormatErrorMessage(
             keys::kTabNotFoundError, IntToString(tab_id));
@@ -650,6 +660,10 @@ bool MoveTabFunction::RunImpl() {
       target_tab_strip->InsertTabContentsAt(new_index, contents,
           false, true);
 
+      if (has_callback())
+        result_.reset(ExtensionTabUtil::CreateTabValue(contents,
+            target_tab_strip, new_index));
+
       return true;
     }
   }
@@ -662,7 +676,10 @@ bool MoveTabFunction::RunImpl() {
 
   if (new_index != tab_index)
     source_tab_strip->MoveTabContentsAt(tab_index, new_index, false);
-
+  
+  if (has_callback())
+    result_.reset(ExtensionTabUtil::CreateTabValue(contents, source_tab_strip,
+        new_index));
   return true;
 }
 

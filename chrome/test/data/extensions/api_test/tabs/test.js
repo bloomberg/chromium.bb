@@ -16,6 +16,11 @@ var pass = chrome.test.callbackPass;
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 
+// Called by relative.html during onload.
+function relativePageLoaded() {
+  chrome.test.succeed();
+}
+
 chrome.test.runTests([
   function getSelected() {
     chrome.tabs.getSelected(null, pass(function(tab) {
@@ -57,7 +62,7 @@ chrome.test.runTests([
         chrome.tabs.create({"windowId" : secondWindowId, "url" : "chrome://b"},
                            pass());
       }));
-   }));
+    }));
   },
 
   function getAllFirstWindow() {
@@ -97,8 +102,9 @@ chrome.test.runTests([
     chrome.tabs.get(testTabId, pass(function(tab) {
       assertEq("chrome://a/", tab.url);
       // Update url.
-      chrome.tabs.update(testTabId, {"url": "chrome://c"},
-                         pass(function(){
+      chrome.tabs.update(testTabId, {"url": "chrome://c/"},
+                         pass(function(tab){
+        chrome.test.assertEq("chrome://c/", tab.url);
         // Check url.
         chrome.tabs.get(testTabId, pass(function(tab) {
           assertEq("chrome://c/", tab.url);
@@ -113,15 +119,17 @@ chrome.test.runTests([
       assertEq(true, tabs[2].selected);
       // Select tab[1].
       chrome.tabs.update(tabs[1].id, {selected: true},
-                         pass(function(){
+                         pass(function(tab1){
         // Check update of tab[1].
+        chrome.test.assertEq(true, tab1.selected);     
         chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
           assertEq(true, tabs[1].selected);
           assertEq(false, tabs[2].selected);
           // Select tab[2].
           chrome.tabs.update(tabs[2].id, {selected: true},
-                             pass(function(){
+                             pass(function(tab2){
             // Check update of tab[2].
+            chrome.test.assertEq(true, tab2.selected); 
             chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
               assertEq(false, tabs[1].selected);
               assertEq(true, tabs[2].selected);
@@ -183,15 +191,19 @@ chrome.test.runTests([
   //  Window2: b,(newtab),d
   function moveTabs() {
     chrome.tabs.move(moveTabIds['b'], {"windowId": moveWindow2, "index": 0},
-                     pass(function() {
+                     pass(function(tabB) {
+        chrome.test.assertEq(0, tabB.index);
         chrome.tabs.move(moveTabIds['e'], {"index": 2},
-                         pass(function() {
+                         pass(function(tabE) {
+          chrome.test.assertEq(2, tabE.index);           
           chrome.tabs.move(moveTabIds['d'], {"windowId": moveWindow2,
-              "index": 2}, pass(function() {}));
+                           "index": 2}, pass(function(tabD) {
+            chrome.test.assertEq(2, tabD.index);     
+        }));
       }));
     }));
   },
-
+  
   // Check that the tab/window state is what we expect after doing moves.
   function moveTabsCheck() {
     chrome.tabs.getAllInWindow(moveWindow1, pass(function(tabs) {
@@ -309,6 +321,43 @@ chrome.test.runTests([
     });
 
     chrome.tabs.remove(moveTabIds['c'], pass());
+  },
+
+  function setupRelativeUrlTests() {
+    chrome.windows.create({}, pass(function(win) {
+      assertTrue(win.id > 0);
+      firstWindowId = win.id;
+
+      chrome.windows.getAll({}, pass(function(windows) {
+        for (var i = 0; i < windows.length; i++) {
+          if (windows[i].id != firstWindowId) {
+            chrome.windows.remove(windows[i].id, pass());
+          }
+        }
+      }));
+    }));
+  },
+  
+  // The subsequent three tests all load relative.html, which calls
+  // this page's relativePageLoad(), which ends the test.
+  function relativeUrlTabsCreate() {
+    chrome.tabs.create({windowId: firstWindowId, url: 'relative.html'},
+      pass(function(tab){
+        testTabId = tab.id;
+      }
+    ));
+  },
+
+  function relativeUrlTabsUpdate() {
+    chrome.tabs.update(testTabId, {url: "chrome://a/"}, function(tab) {
+      chrome.test.assertEq("chrome://a/", tab.url);
+      chrome.tabs.update(tab.id, {url: "relative.html"}, function(tab) {  
+      });
+    });
+  },
+  
+  function relativeUrlWindowsCreate() {
+    chrome.windows.create({url: "relative.html"});
   }
 
   // TODO(asargent) We still need to add tests for the following:

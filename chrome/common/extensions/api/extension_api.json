@@ -475,7 +475,18 @@
               "selected": {"type": "boolean", "optional": true}
             }
           },
-          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "tab",
+                "$ref": "Tab",
+                "description": "Details about the updated tab."
+              }
+            ]
+          }
         ]
       },
       {
@@ -501,7 +512,18 @@
               }
             }
           },
-          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "tab",
+                "$ref": "Tab",
+                "description": "Details about the moved tab."
+              }
+            ]
+          }
         ]
       },
       {
