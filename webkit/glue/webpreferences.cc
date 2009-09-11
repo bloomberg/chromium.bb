@@ -64,9 +64,11 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Turn this on to cause WebCore to paint the resize corner for us.
   settings->setShouldPaintCustomScrollbars(true);
 
-  // Mitigate attacks from local HTML files by not granting file:// URLs
-  // universal access.
-  settings->setAllowUniversalAccessFromFileURLs(false);
+  // By default, allow_universal_access_from_file_urls is set to false and thus
+  // we mitigate attacks from local HTML files by not granting file:// URLs
+  // universal access. Only test shell will enable this.
+  settings->setAllowUniversalAccessFromFileURLs(
+      allow_universal_access_from_file_urls);
 
   // We prevent WebKit from checking if it needs to add a "text direction"
   // submenu to a context menu. it is not only because we don't need the result

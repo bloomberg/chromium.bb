@@ -423,6 +423,11 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->local_storage_enabled = true;
         web_prefs_->session_storage_enabled = true;
         web_prefs_->application_cache_enabled = false;
+
+        // Allow those layout tests running as local files, i.e. under
+        // LayoutTests/http/tests/local, to access http server.
+        if (layout_test_mode_)
+          web_prefs_->allow_universal_access_from_file_urls = true;
     }
 }
 

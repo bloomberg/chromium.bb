@@ -197,15 +197,18 @@ def FilenameToUri(full_path):
   elif relative_path.find("/http/") >= 0:
     port = 8081
 
-  if port:
+  # Make LayoutTests/http/tests/local run as local files. This is to mimic the
+  # logic in run-webkit-tests.
+  # TODO(jianli): Consider extending this to "media/".
+  if port and not relative_path.startswith("local/"):
     if relative_path.startswith("ssl/"):
       port += 443
       protocol = "https"
     else:
       protocol = "http"
     return "%s://127.0.0.1:%u/%s" % (protocol, port, relative_path)
-  else:
-    return "file:///" + GetAbsolutePath(full_path)
+
+  return "file:///" + GetAbsolutePath(full_path)
 
 def GetAbsolutePath(path):
   """Returns an absolute UNIX path."""

@@ -236,4 +236,25 @@ TEST_F(ShowModalDialogTest, BasicTest) {
 }
 #endif
 
+class SecurityTest : public UITest {
+ protected:
+  static const int kTestIntervalMs = 250;
+  static const int kTestWaitTimeoutMs = 60 * 1000;
+};
+
+TEST_F(SecurityTest, DisallowFileUrlUniversalAccessTest) {
+  scoped_refptr<TabProxy> tab(GetActiveTab());
+  ASSERT_TRUE(tab.get());
+
+  FilePath test_file(test_data_directory_);
+  test_file = test_file.AppendASCII("fileurl_universalaccess.html");
+
+  GURL url = net::FilePathToFileURL(test_file);
+  ASSERT_TRUE(tab->NavigateToURL(url));
+
+  std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
+        "status", kTestIntervalMs, kTestWaitTimeoutMs);
+  ASSERT_STREQ("Disallowed", value.c_str());
+}
+
 }  // namespace

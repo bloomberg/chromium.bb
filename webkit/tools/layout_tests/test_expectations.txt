@@ -94,22 +94,10 @@ WONTFIX SKIP : LayoutTests/fast/wml = FAIL
 // most likely these tests will always be JSC specific.
 WONTFIX SKIP : LayoutTests/fast/profiler = FAIL TIMEOUT
 
-// These tests depend on a bogus assumption that file:// URLs have universal
-// access to other URLs.  This isn't true for us.
-WONTFIX SKIP : LayoutTests/editing/selection/drag-in-iframe.html = TIMEOUT
-WONTFIX SKIP : LayoutTests/fast/dom/gc-6.html = TIMEOUT
-WONTFIX SKIP : LayoutTests/fast/dom/gc-7.html = TIMEOUT
-WONTFIX SKIP : LayoutTests/fast/frames/frame-set-same-location.html = TIMEOUT
-WONTFIX SKIP : LayoutTests/fast/frames/frame-set-same-src.html = TIMEOUT
-WONTFIX SKIP : LayoutTests/fast/frames/hover-timer-crash.html = TIMEOUT
-
 // This test doesn't terminate because it contains exponential
 // regexps.  It is safe to disable because we run the same tests
 // (sans the nonterminating ones) as part of the v8 tests.
 WONTFIX SKIP : LayoutTests/fast/regex/test1.html = PASS
-
-// We disallow file:// urls from doing XHR to data:.
-WONTFIX BUG9275 : LayoutTests/fast/encoding/char-decoding.html = FAIL
 
 // We use worker_uitests to run workers tests. Don't run them in test_shell.
 WONTFIX SKIP : LayoutTests/fast/workers = PASS TIMEOUT FAIL
@@ -1059,11 +1047,6 @@ BUG8696 LINUX WIN : LayoutTests/fast/backgrounds/svg-as-background-3.html = FAIL
 // http://code.google.com/p/chromium/issues/detail?id=7465 for details.
 BUG10311 WIN LINUX : LayoutTests/fast/canvas/pointInPath.html = FAIL
 
-// Following tests are failing because Chrome does not allow file url
-// to access non-file urls.
-// TODO(port): mac is passing these, does that mean something is wrong?
-BUG1026885 LINUX WIN : LayoutTests/editing/selection/4960137.html = FAIL
-
 // These fail the pixel tests in debug mode because they have
 // unpainted space (filled red in Debug but not in Release).
 // https://bugs.webkit.org/show_bug.cgi?id=8423
@@ -1989,7 +1972,6 @@ BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-split-inline.html = 
 // WebKit 44202:44252 introduced new failures (old tests)
 BUG12882 WIN : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = FAIL
 BUG12882 WIN : LayoutTests/fast/box-shadow/basic-shadows.html = FAIL
-BUG12882 : LayoutTests/fast/dom/Window/open-existing-pop-up-blocking.html = TIMEOUT
 
 // WebKit 44286:44342
 BUG13174 WIN DEBUG : LayoutTests/transitions/shorthand-border-transitions.html = PASS FAIL
@@ -2351,3 +2333,12 @@ BUG21501 LINUX DEBUG : LayoutTests/svg/custom/linking-a-03-b-preserveAspectRatio
 // New test added by https://trac.webkit.org/changeset/48260.
 // Marked as SKIP because it fails to find the test expectations (dies early).
 BUG21522 SKIP : LayoutTests/http/tests/local/send-dragged-file.html = FAIL
+
+// Need to rebaseline after we enable file URL universal access in test shell.
+BUG1026885 LINUX WIN : LayoutTests/editing/selection/4960137.html = FAIL
+BUG_JIANLI : LayoutTests/fast/dom/wrapper-classes.html = FAIL
+BUG_JIANLI : LayoutTests/fast/frames/frame-src-attribute.html = FAIL
+BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
+
+// Need investigation after we enable file URL universal access in test shell.
+BUG_JIANLI WIN : LayoutTests/fast/events/dispatchEvent-crash.html = CRASH

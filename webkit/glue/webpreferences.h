@@ -54,6 +54,8 @@ struct WebPreferences {
   bool user_style_sheet_enabled;
   GURL user_style_sheet_location;
 
+  bool allow_universal_access_from_file_urls;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.
@@ -89,7 +91,8 @@ struct WebPreferences {
         databases_enabled(false),
         session_storage_enabled(false),
         application_cache_enabled(false),
-        user_style_sheet_enabled(false) {
+        user_style_sheet_enabled(false),
+        allow_universal_access_from_file_urls(false) {
   }
 
   void Apply(WebView* web_view) const;
