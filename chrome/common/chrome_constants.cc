@@ -43,7 +43,10 @@ const wchar_t kHelperProcessExecutablePath[] =
     PRODUCT_STRING L".app/Contents/Resources/"
     PRODUCT_STRING L" Helper.app/Contents/MacOS/" PRODUCT_STRING L" Helper";
 #endif  // OS_*
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(CHROME_EXP_BUILD)
+const wchar_t kBrowserAppName[] = L"ChromeExp";
+const char    kStatsFilename[] = "ChromeExpStats2";
+#elif defined(GOOGLE_CHROME_BUILD)
 const wchar_t kBrowserAppName[] = L"Chrome";
 const char    kStatsFilename[] = "ChromeStats2";
 #else
