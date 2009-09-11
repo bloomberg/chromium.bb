@@ -33,42 +33,18 @@
   ],
   'targets': [
     {
-      'target_name': 'npGoogleNaClPlugin',
-      'type': 'shared_library',
+      # static library for linking with Chrome
+      'target_name': 'npGoogleNaClPluginChrome',
+      'type': 'static_library',
       'dependencies': [
-        '../nonnacl_util/nonnacl_util.gyp:nonnacl_util',
-        '../../shared/npruntime/npruntime.gyp:google_nacl_npruntime',
+        '../nonnacl_util/nonnacl_util_chrome.gyp:nonnacl_util_chrome',
         '../../shared/platform/platform.gyp:platform',
+        '../../../../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
         '<@(common_sources)',
-        'srpc/video.cc',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'sources': [
-            'nacl_plugin.def',
-            'nacl_plugin.rc',
-          ],
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              'ExceptionHandling': '2',  # /EHsc
-            },
-            'VCLinkerTool': {
-              'AdditionalLibraryDirectories': [
-                 '$(OutDir)/lib',
-              ],
-            },
-          },
-        }],
-        ['OS=="linux"', {
-          'link_settings': {
-            'libraries': [
-              '-lXt',
-              '-lX11',
-            ],
-          },
-        }],
+        'nacl_entry_points.cc',
+        'srpc/video_chrome.cc',
       ],
     },
   ]

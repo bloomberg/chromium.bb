@@ -29,8 +29,7 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "native_client/src/third_party/npapi/files/include/npapi.h"
-#include "native_client/src/third_party/npapi/files/include/npupp.h"
+#include "webkit/glue/plugins/nphostapi.h"
 
 // This code inside the ifdef is copied from
 // native_client/src/third_party_mod/npapi_plugin/np_entry.cc
@@ -41,22 +40,18 @@
 
 extern "C" {
   // Safari under OS X requires the following three entry points to be exported.
-  NP_EXPORT(NPError) OSCALL NP_Initialize(NPNetscapeFuncs* pFuncs
-#ifdef XP_UNIX && !defined(XP_MACOSX)
+  NPError API_CALL NP_Initialize(NPNetscapeFuncs* pFuncs
+#if defined(XP_UNIX) && !defined(XP_MACOSX)
                                           , NPPluginFuncs* pluginFuncs
 #endif  // XP_UNIX
     );
-  NP_EXPORT(NPError) OSCALL NP_GetEntryPoints(NPPluginFuncs* pFuncs);
-  NP_EXPORT(NPError) OSCALL NP_Shutdown(void);
-  // Firefox 2 requires main() to be defined.
-  NP_EXPORT(int) main(NPNetscapeFuncs* nsTable,
-                      NPPluginFuncs* pluginFuncs,
-                      NPP_ShutdownUPP* unloadUpp);
+  NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* pFuncs);
+  NPError API_CALL NP_Shutdown(void);
 }
 
 #endif  // XP_MACOSX
 
-NPError OSCALL NaCl_NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
+NPError API_CALL NaCl_NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
 #if NACL_WINDOWS || NACL_OSX
   return NP_GetEntryPoints(pFuncs);
 #else
@@ -64,7 +59,7 @@ NPError OSCALL NaCl_NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
 #endif
 }
 
-NPError OSCALL NaCl_NP_Initialize(NPNetscapeFuncs* pFuncs
+NPError API_CALL NaCl_NP_Initialize(NPNetscapeFuncs* pFuncs
 #if defined(XP_UNIX) && !defined(XP_MACOSX)
                                   , NPPluginFuncs* pluginFuncs
 #endif  // NACL_LINUX
@@ -76,7 +71,7 @@ NPError OSCALL NaCl_NP_Initialize(NPNetscapeFuncs* pFuncs
                                       );
 }
 
-NPError OSCALL NaCl_NP_Shutdown() {
+NPError API_CALL NaCl_NP_Shutdown() {
   return NP_Shutdown();
 }
 
