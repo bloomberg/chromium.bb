@@ -190,7 +190,11 @@
                 '<(RULE_INPUT_PATH)',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/<(RULE_INPUT_ROOT).h',
+                # Don't use <(RULE_INPUT_ROOT) to create the output file
+                # name, because the base name of the input
+                # (generated_resources.grd) doesn't match the generated file
+                # (installer_util_strings.h).
+                '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.h',
               ],
               'action': ['python',
                          'util/prebuild/create_string_rc.py',
