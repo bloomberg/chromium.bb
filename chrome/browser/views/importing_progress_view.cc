@@ -254,6 +254,12 @@ void ImportingProgressView::InitControlLayout() {
   layout->AddView(label_info_);
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 
+  if (items_ & HISTORY) {
+    layout->StartRow(0, double_column_view_set_id);
+    layout->AddView(state_history_.get());
+    layout->AddView(label_history_.get());
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
   if (items_ & FAVORITES && !bookmarks_import_) {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_bookmarks_.get());
@@ -270,12 +276,6 @@ void ImportingProgressView::InitControlLayout() {
     layout->StartRow(0, double_column_view_set_id);
     layout->AddView(state_passwords_.get());
     layout->AddView(label_passwords_.get());
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  }
-  if (items_ & HISTORY) {
-    layout->StartRow(0, double_column_view_set_id);
-    layout->AddView(state_history_.get());
-    layout->AddView(label_history_.get());
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
   if (items_ & COOKIES) {

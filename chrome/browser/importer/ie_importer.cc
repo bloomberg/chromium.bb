@@ -79,6 +79,11 @@ void IEImporter::StartImport(ProfileInfo profile_info,
   if ((items & HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
   // The order here is important!
+  if ((items & HISTORY) && !cancelled()) {
+    NotifyItemStarted(HISTORY);
+    ImportHistory();
+    NotifyItemEnded(HISTORY);
+  }
   if ((items & FAVORITES) && !cancelled()) {
     NotifyItemStarted(FAVORITES);
     ImportFavorites();
@@ -97,11 +102,6 @@ void IEImporter::StartImport(ProfileInfo profile_info,
     if (CurrentIEVersion() >= 7)
       ImportPasswordsIE7();
     NotifyItemEnded(PASSWORDS);
-  }
-  if ((items & HISTORY) && !cancelled()) {
-    NotifyItemStarted(HISTORY);
-    ImportHistory();
-    NotifyItemEnded(HISTORY);
   }
   NotifyEnded();
 }

@@ -276,6 +276,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   friend class CommitLaterTask;  // The commit task needs to call Commit().
   friend class HistoryTest;  // So the unit tests can poke our innards.
   FRIEND_TEST(HistoryBackendTest, DeleteAll);
+  FRIEND_TEST(HistoryBackendTest, ImportedFaviconsTest);
   FRIEND_TEST(HistoryBackendTest, URLsNoLongerBookmarked);
   friend class ::TestingProfile;
 

@@ -140,6 +140,13 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(const string16& source_profile,
 
   GtkWidget* item_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
+  if (items_ & HISTORY) {
+    history_ = gtk_label_new(
+        l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_HISTORY).c_str());
+    gtk_misc_set_alignment(GTK_MISC(history_), 0, 0.5);
+    gtk_box_pack_start(GTK_BOX(item_box), history_, FALSE, FALSE, 0);
+  }
+
   if (items_ & FAVORITES) {
     bookmarks_ = gtk_label_new(
         l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS).c_str());
@@ -159,13 +166,6 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(const string16& source_profile,
         l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_PASSWORDS).c_str());
     gtk_misc_set_alignment(GTK_MISC(passwords_), 0, 0.5);
     gtk_box_pack_start(GTK_BOX(item_box), passwords_, FALSE, FALSE, 0);
-  }
-
-  if (items_ & HISTORY) {
-    history_ = gtk_label_new(
-        l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_HISTORY).c_str());
-    gtk_misc_set_alignment(GTK_MISC(history_), 0, 0.5);
-    gtk_box_pack_start(GTK_BOX(item_box), history_, FALSE, FALSE, 0);
   }
 
   gtk_box_pack_start(GTK_BOX(control_group), gtk_util::IndentWidget(item_box),

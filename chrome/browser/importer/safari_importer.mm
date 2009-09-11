@@ -55,6 +55,11 @@ void SafariImporter::StartImport(ProfileInfo profile_info,
   NotifyStarted();
   if ((items & HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
+  if ((items & HISTORY) && !cancelled()) {
+    NotifyItemStarted(HISTORY);
+    ImportHistory();
+    NotifyItemEnded(HISTORY);
+  }
   if ((items & FAVORITES) && !cancelled()) {
     NotifyItemStarted(FAVORITES);
     ImportBookmarks();
@@ -64,11 +69,6 @@ void SafariImporter::StartImport(ProfileInfo profile_info,
     NotifyItemStarted(PASSWORDS);
     ImportPasswords();
     NotifyItemEnded(PASSWORDS);
-  }
-  if ((items & HISTORY) && !cancelled()) {
-    NotifyItemStarted(HISTORY);
-    ImportHistory();
-    NotifyItemEnded(HISTORY);
   }
   NotifyEnded();
 }

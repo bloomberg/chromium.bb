@@ -1433,16 +1433,33 @@ void HistoryBackend::SetImportedFavicons(
     }
 
     // Save the mapping from all the URLs to the favicon.
+    BookmarkService* bookmark_service = GetBookmarkService();
     for (std::set<GURL>::const_iterator url = favicon_usage[i].urls.begin();
          url != favicon_usage[i].urls.end(); ++url) {
       URLRow url_row;
-      if (!db_->GetRowForURL(*url, &url_row) ||
-          url_row.favicon_id() == favicon_id)
-        continue;  // Don't set favicons for unknown URLs.
-      url_row.set_favicon_id(favicon_id);
-      db_->UpdateURLRow(url_row.id(), url_row);
-
-      favicons_changed.insert(*url);
+      if (!db_->GetRowForURL(*url, &url_row)) {
+        // If the URL is present as a bookmark, add the url in history to
+        // save the favicon mapping. This will match with what history db does
+        // for regular bookmarked URLs with favicons - when history db is
+        // cleaned, we keep an entry in the db with 0 visits as long as that
+        // url is bookmarked.
+        if (bookmark_service && bookmark_service_->IsBookmarked(*url)) {
+          URLRow url_info(*url);
+          url_info.set_visit_count(0);
+          url_info.set_typed_count(0);
+          url_info.set_last_visit(base::Time());
+          url_info.set_hidden(false);
+          url_info.set_favicon_id(favicon_id);
+          db_->AddURL(url_info);
+          favicons_changed.insert(*url);
+        }
+      } else if (url_row.favicon_id() == 0) {
+        // URL is present in history, update the favicon *only* if it
+        // is not set already.
+        url_row.set_favicon_id(favicon_id);
+        db_->UpdateURLRow(url_row.id(), url_row);
+        favicons_changed.insert(*url);
+      }
     }
   }
 

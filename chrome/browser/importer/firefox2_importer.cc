@@ -49,6 +49,16 @@ void Firefox2Importer::StartImport(ProfileInfo profile_info,
   NotifyStarted();
   if ((items & HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
+
+  // Note history should be imported before bookmarks because bookmark import
+  // will also import favicons and we store favicon for a URL only if the URL
+  // exist in history or bookmarks.
+  if ((items & HISTORY) && !cancelled()) {
+    NotifyItemStarted(HISTORY);
+    ImportHistory();
+    NotifyItemEnded(HISTORY);
+  }
+
   if ((items & FAVORITES) && !cancelled()) {
     NotifyItemStarted(FAVORITES);
     ImportBookmarks();
@@ -63,11 +73,6 @@ void Firefox2Importer::StartImport(ProfileInfo profile_info,
     NotifyItemStarted(PASSWORDS);
     ImportPasswords();
     NotifyItemEnded(PASSWORDS);
-  }
-  if ((items & HISTORY) && !cancelled()) {
-    NotifyItemStarted(HISTORY);
-    ImportHistory();
-    NotifyItemEnded(HISTORY);
   }
   NotifyEnded();
 }

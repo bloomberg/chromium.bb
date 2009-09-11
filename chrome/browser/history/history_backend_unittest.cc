@@ -501,4 +501,66 @@ TEST_F(HistoryBackendTest, ClientRedirect) {
   EXPECT_TRUE(transition2 & PageTransition::CHAIN_END);
 }
 
+TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
+  // Setup test data - two Urls in the history, one with favicon assigned and
+  // one without.
+  GURL favicon_url1("http://www.google.com/favicon.ico");
+  FavIconID favicon1 = backend_->thumbnail_db_->AddFavIcon(favicon_url1);
+  std::vector<unsigned char> data;
+  data.push_back('1');
+  EXPECT_TRUE(backend_->thumbnail_db_->SetFavIcon(favicon1, data, Time::Now()));
+  URLRow row1(GURL("http://www.google.com/"));
+  row1.set_favicon_id(favicon1);
+  row1.set_visit_count(1);
+  row1.set_last_visit(Time::Now());
+  URLRow row2(GURL("http://news.google.com/"));
+  row2.set_visit_count(1);
+  row2.set_last_visit(Time::Now());
+  std::vector<URLRow> rows;
+  rows.push_back(row1);
+  rows.push_back(row2);
+  backend_->AddPagesWithDetails(rows);
+  URLRow url_row1, url_row2;
+  EXPECT_FALSE(backend_->db_->GetRowForURL(row1.url(), &url_row1) == 0);
+  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), &url_row2) == 0);
+  EXPECT_FALSE(url_row1.favicon_id() == 0);
+  EXPECT_TRUE(url_row2.favicon_id() == 0);
+
+  // Now provide one imported favicon for both URLs already in the registry.
+  // The new favicon should only be used with the URL that doesn't already have
+  // a favicon.
+  std::vector<history::ImportedFavIconUsage> favicons;
+  history::ImportedFavIconUsage favicon;
+  favicon.favicon_url = GURL("http://news.google.com/favicon.ico");
+  favicon.png_data.push_back('2');
+  favicon.urls.insert(row1.url());
+  favicon.urls.insert(row2.url());
+  favicons.push_back(favicon);
+  backend_->SetImportedFavicons(favicons);
+  EXPECT_FALSE(backend_->db_->GetRowForURL(row1.url(), &url_row1) == 0);
+  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), &url_row2) == 0);
+  EXPECT_FALSE(url_row1.favicon_id() == 0);
+  EXPECT_FALSE(url_row2.favicon_id() == 0);
+  EXPECT_FALSE(url_row1.favicon_id() == url_row2.favicon_id());
+
+  // A URL should not be added to history (to store favicon), if
+  // the URL is not bookmarked.
+  GURL url3("http://mail.google.com");
+  favicons.clear();
+  favicon.favicon_url = GURL("http://mail.google.com/favicon.ico");
+  favicon.png_data.push_back('3');
+  favicon.urls.insert(url3);
+  favicons.push_back(favicon);
+  backend_->SetImportedFavicons(favicons);
+  URLRow url_row3;
+  EXPECT_TRUE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);
+
+  // If the URL is bookmarked, it should get added to history with 0 visits.
+  bookmark_model_.AddURL(bookmark_model_.GetBookmarkBarNode(), 0,
+                         std::wstring(), url3);
+  backend_->SetImportedFavicons(favicons);
+  EXPECT_FALSE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);
+  EXPECT_TRUE(url_row3.visit_count() == 0);
+}
+
 }  // namespace history
