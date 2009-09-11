@@ -162,8 +162,15 @@ bool FontConfigDirect::Match(std::string* result_family,
         family_names_match =
           family.empty() ?
           true :
-          strcasecmp((char *)post_config_family,
-                     (char *)post_match_family) == 0;
+          (strcasecmp((char *)post_config_family,
+                      (char *)post_match_family) == 0 ||
+           // Workaround for Issue 12530:
+           //   requested family: "Bitstream Vera Sans"
+           //   post_config_family: "Arial"
+           //   post_match_family: "Bitstream Vera Sans"
+           // -> We should treat this case as a good match.
+           strcasecmp(family.c_str(),
+                      (char *)post_match_family) == 0);
         if (family_names_match)
           break;
       }
