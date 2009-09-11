@@ -194,12 +194,14 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
   gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_checkbox_,
                      FALSE, FALSE, 0);
 
+#if defined(TOOLKIT_GTK)
   // GTK theme button.
   GtkWidget* gtk_theme_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_THEMES_GTK_BUTTON).c_str());
   g_signal_connect(G_OBJECT(gtk_theme_button), "clicked",
                    G_CALLBACK(OnGtkThemeButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(hbox), gtk_theme_button, FALSE, FALSE, 0);
+#endif
 
   // Reset theme button.
   GtkWidget* themes_reset_button = gtk_button_new_with_label(
