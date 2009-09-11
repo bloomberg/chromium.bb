@@ -48,7 +48,9 @@ class Tab::TabContextMenuContents : public views::SimpleMenuModel,
 
   // Overridden from views::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const {
-    return false;
+    if (!tab_ || command_id != TabStripModel::CommandTogglePinned)
+      return false;
+    return tab_->pinned();
   }
   virtual bool IsCommandIdEnabled(int command_id) const {
     return tab_ && tab_->delegate()->IsCommandEnabledForTab(
@@ -93,6 +95,9 @@ class Tab::TabContextMenuContents : public views::SimpleMenuModel,
     AddItemWithStringId(TabStripModel::CommandCloseTabsOpenedBy,
                         IDS_TAB_CXMENU_CLOSETABSOPENEDBY);
     AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
+    AddSeparator();
+    AddCheckItemWithStringId(TabStripModel::CommandTogglePinned,
+                             IDS_TAB_CXMENU_PIN_TAB);
     menu_.reset(new views::Menu2(this));
   }
 

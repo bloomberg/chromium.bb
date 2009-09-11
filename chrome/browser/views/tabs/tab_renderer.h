@@ -46,6 +46,13 @@ class TabRenderer : public views::View,
   // See TabStripModel::TabChangedAt documentation for what loading_only means.
   void UpdateData(TabContents* contents, bool loading_only);
 
+  // Sets the pinned state of the tab.
+  void set_pinned(bool pinned) { data_.pinned = pinned; }
+  bool pinned() const { return data_.pinned; }
+
+  // Are we in the process of animating a pinned state change on this tab?
+  void set_animating_pinned_change(bool value);
+
   // Updates the display to reflect the contents of this TabRenderer's model.
   void UpdateFromModel();
 
@@ -82,6 +89,9 @@ class TabRenderer : public views::View,
   // Returns the preferred size of a single Tab, assuming space is
   // available.
   static gfx::Size GetStandardSize();
+
+  // Returns the width for pinned tabs. Pinned tabs always have this width.
+  static int GetPinnedWidth();
 
   // Loads the images to be used for the tab background.
   static void LoadTabImages();
@@ -124,10 +134,13 @@ class TabRenderer : public views::View,
   void ResetCrashedFavIcon();
 
   // Paint various portions of the Tab
+  void PaintTitle(SkColor title_color, gfx::Canvas* canvas);
+  void PaintIcon(gfx::Canvas* canvas);
   void PaintTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
   void PaintHoverTabBackground(gfx::Canvas* canvas, double opacity);
+  void PaintPinnedTabBackground(gfx::Canvas* canvas);
   void PaintLoadingAnimation(gfx::Canvas* canvas);
 
   // Returns the number of favicon-size elements that can fit in the tab's
@@ -172,6 +185,8 @@ class TabRenderer : public views::View,
     bool crashed;
     bool off_the_record;
     bool show_icon;
+    bool pinned;
+    bool animating_pinned_change;
   };
   TabData data_;
 
@@ -185,7 +200,6 @@ class TabRenderer : public views::View,
   static TabImage tab_active;
   static TabImage tab_inactive;
   static TabImage tab_alpha;
-  static TabImage tab_hover;
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.

@@ -158,6 +158,29 @@ class DraggedTabController : public TabContentsDelegate,
   // Handles moving the Tab within a TabStrip as well as updating the View.
   void MoveTab(const gfx::Point& screen_point);
 
+  // Cover for MakeDraggedTabPinned(0). This is invoked from the pin_timer_.
+  void MakeDraggedTabPinned();
+
+  // Changes the dragged tab from a normal tab to pinned, updating the
+  // necessary state.
+  void MakeDraggedTabPinned(int tab_index);
+
+  // If |screen_point| is along the edge of the tab strip and there are no
+  // pinned tabs in the model, pin_timer_ is started.
+  void StartPinTimerIfNecessary(const gfx::Point& screen_point);
+
+  // Invoked from |MoveTab| to adjust |dragged_tab_point|. |screen_point| is
+  // the location of the mouse and |from_index| the index the dragged tab is
+  // at.
+  // This updates the pinned state of the dragged tab and model based on the
+  // location of the mouse. If |screen_point| is before the pinned threshold
+  // the dragged tab (and model) are pinned. If |screen_point| is after the
+  // pinned threshold, the dragged tab is not allowed to go before the first
+  // non-pinned tab and the dragged tab (and model) are marked as non-pinned.
+  void AdjustDragPointForPinnedTabs(const gfx::Point& screen_point,
+                                    int* from_index,
+                                    gfx::Point* dragged_tab_point);
+
   // Returns the compatible TabStrip that is under the specified point (screen
   // coordinates), or NULL if there is none.
   TabStrip* GetTabStripForPoint(const gfx::Point& screen_point);
@@ -174,6 +197,12 @@ class DraggedTabController : public TabContentsDelegate,
 
   // Detach the dragged Tab from the current TabStrip.
   void Detach();
+
+  // Returns the horizontal location (relative to the tabstrip) at which the
+  // dragged tab is pinned. That is, if the current x location is < then the
+  // return value of this the dragged tab and model should be made pinned,
+  // otherwise the dragged tab and model should not be pinned.
+  int GetPinnedThreshold();
 
   // Returns the index where the dragged TabContents should be inserted into
   // the attached TabStripModel given the DraggedTabView's bounds
@@ -307,10 +336,19 @@ class DraggedTabController : public TabContentsDelegate,
   DockWindows dock_windows_;
   std::vector<DockDisplayer*> dock_controllers_;
 
+  // Was the tab originally pinned? Used if we end up reverting the drag.
+  const bool was_pinned_;
+
   // Timer used to bring the window under the cursor to front. If the user
   // stops moving the mouse for a brief time over a browser window, it is
   // brought to front.
   base::OneShotTimer<DraggedTabController> bring_to_front_timer_;
+
+  // Timer used to pin the first tab. When the user drags a tab to the first
+  // tab in the tab strip this timer is started. If the user doesn't move the
+  // mouse, the tab is pinned. This timer invokes MakeDraggedTabPinned when it
+  // fires.
+  base::OneShotTimer<DraggedTabController> pin_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DraggedTabController);
 };

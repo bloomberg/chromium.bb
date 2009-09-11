@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/favicon_size.h"
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -38,8 +39,14 @@ static const int kTitleCloseButtonSpacing = 5;
 static const int kStandardTitleWidth = 175;
 static const int kCloseButtonVertFuzz = 0;
 static const int kCloseButtonHorzFuzz = 5;
-static const int kFaviconSize = 16;
 static const int kSelectedTitleColor = SK_ColorBLACK;
+// Preferred width of pinned tabs.
+static const int kPinnedTabWidth = 64;
+// When a non-pinned tab is pinned the width of the tab animates. If the width
+// of a pinned tab is >= kPinnedTabRendererAsTabWidth then the tab is rendered
+// as a normal tab. This is done to avoid having the title immediately
+// disappear when transitioning a tab from normal to pinned.
+static const int kPinnedTabRendererAsTabWidth = kPinnedTabWidth + 30;
 
 // How long the hover state takes.
 static const int kHoverDurationMs = 90;
@@ -144,7 +151,7 @@ void InitResources() {
 int GetContentHeight() {
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
-  int content_height = std::max(kFaviconSize, title_font_height);
+  int content_height = std::max(kFavIconSize, title_font_height);
   return std::max(content_height, close_button_height);
 }
 
@@ -240,6 +247,9 @@ TabRenderer::TabRenderer()
       theme_provider_(NULL) {
   InitResources();
 
+  data_.pinned = false;
+  data_.animating_pinned_change = false;
+
   // Add the Close Button.
   close_button_ = new TabCloseButton(this);
   close_button_->SetImage(views::CustomButton::BS_NORMAL, close_button_n);
@@ -307,6 +317,10 @@ void TabRenderer::UpdateFromModel() {
   }
 }
 
+void TabRenderer::set_animating_pinned_change(bool value) {
+  data_.animating_pinned_change = value;
+}
+
 bool TabRenderer::IsSelected() const {
   return true;
 }
@@ -362,7 +376,7 @@ gfx::Size TabRenderer::GetMinimumUnselectedSize() {
 // static
 gfx::Size TabRenderer::GetMinimumSelectedSize() {
   gfx::Size minimum_size = GetMinimumUnselectedSize();
-  minimum_size.set_width(kLeftPadding + kFaviconSize + kRightPadding);
+  minimum_size.set_width(kLeftPadding + kFavIconSize + kRightPadding);
   return minimum_size;
 }
 
@@ -372,6 +386,11 @@ gfx::Size TabRenderer::GetStandardSize() {
   standard_size.set_width(
       standard_size.width() + kFavIconTitleSpacing + kStandardTitleWidth);
   return standard_size;
+}
+
+// static
+int TabRenderer::GetPinnedWidth() {
+  return kPinnedTabWidth;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -387,7 +406,7 @@ std::wstring TabRenderer::GetTitle() const {
 void TabRenderer::Paint(gfx::Canvas* canvas) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
-  if (width() < GetMinimumUnselectedSize().width())
+  if (width() < GetMinimumUnselectedSize().width() && !pinned())
     return;
 
   // See if the model changes whether the icons should be painted.
@@ -399,55 +418,16 @@ void TabRenderer::Paint(gfx::Canvas* canvas) {
 
   PaintTabBackground(canvas);
 
-  // Paint the loading animation if the page is currently loading, otherwise
-  // show the page's favicon.
-  if (show_icon) {
-    if (animation_state_ != ANIMATION_NONE) {
-      PaintLoadingAnimation(canvas);
-    } else {
-      canvas->save();
-      canvas->ClipRectInt(0, 0, width(), height() - 4);
-      if (should_display_crashed_favicon_) {
-        canvas->DrawBitmapInt(*crashed_fav_icon, 0, 0,
-                              crashed_fav_icon->width(),
-                              crashed_fav_icon->height(),
-                              favicon_bounds_.x(),
-                              favicon_bounds_.y() + fav_icon_hiding_offset_,
-                              kFaviconSize, kFaviconSize,
-                              true);
-      } else {
-        if (!data_.favicon.isNull()) {
-          // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
-          // to using that class to render the favicon).
-          canvas->DrawBitmapInt(data_.favicon, 0, 0,
-                                data_.favicon.width(),
-                                data_.favicon.height(),
-                                favicon_bounds_.x(),
-                                favicon_bounds_.y() + fav_icon_hiding_offset_,
-                                kFaviconSize, kFaviconSize,
-                                true);
-        }
-      }
-      canvas->restore();
-    }
-  }
-
-  // Paint the Title.
-  string16 title = data_.title;
-  if (title.empty()) {
-    if (data_.loading) {
-      title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
-    } else {
-      title = l10n_util::GetStringUTF16(IDS_TAB_UNTITLED_TITLE);
-    }
-  } else {
-    Browser::FormatTitleForDisplay(&title);
-  }
-
   SkColor title_color = GetThemeProvider()->
       GetColor(IsSelected() ?
           BrowserThemeProvider::COLOR_TAB_TEXT :
           BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT);
+
+  if (!pinned() || width() > kPinnedTabRendererAsTabWidth)
+    PaintTitle(title_color, canvas);
+
+  if (show_icon)
+    PaintIcon(canvas);
 
   // If the close button color has changed, generate a new one.
   if (!close_button_color_ || title_color != close_button_color_) {
@@ -457,10 +437,6 @@ void TabRenderer::Paint(gfx::Canvas* canvas) {
         rb.GetBitmapNamed(IDR_TAB_CLOSE),
         rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
   }
-
-  canvas->DrawStringInt(UTF16ToWideHack(title), *title_font, title_color,
-                        title_bounds_.x(), title_bounds_.y(),
-                        title_bounds_.width(), title_bounds_.height());
 }
 
 void TabRenderer::Layout() {
@@ -475,8 +451,21 @@ void TabRenderer::Layout() {
   // Size the Favicon.
   showing_icon_ = ShouldShowIcon();
   if (showing_icon_) {
-    int favicon_top = kTopPadding + (content_height - kFaviconSize) / 2;
-    favicon_bounds_.SetRect(lb.x(), favicon_top, kFaviconSize, kFaviconSize);
+    int favicon_top = kTopPadding + (content_height - kFavIconSize) / 2;
+    favicon_bounds_.SetRect(lb.x(), favicon_top, kFavIconSize, kFavIconSize);
+    if ((pinned() || data_.animating_pinned_change) &&
+        width() < kPinnedTabRendererAsTabWidth) {
+      int pin_delta = kPinnedTabRendererAsTabWidth - kPinnedTabWidth;
+      int ideal_delta = width() - kPinnedTabWidth;
+      if (ideal_delta < pin_delta) {
+        int ideal_x = (kPinnedTabWidth - kFavIconSize) / 2;
+        int x = favicon_bounds_.x() + static_cast<int>(
+            (1 - static_cast<float>(ideal_delta) /
+             static_cast<float>(pin_delta)) *
+            (ideal_x - favicon_bounds_.x()));
+        favicon_bounds_.set_x(x);
+      }
+    }
   } else {
     favicon_bounds_.SetRect(lb.x(), lb.y(), 0, 0);
   }
@@ -498,25 +487,28 @@ void TabRenderer::Layout() {
   }
 
   // Size the Title text to fill the remaining space.
-  int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
-  int title_top = kTopPadding + (content_height - title_font_height) / 2;
+  if (!pinned() || width() >= kPinnedTabRendererAsTabWidth) {
+    // Size the Title text to fill the remaining space.
+    int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
+    int title_top = kTopPadding + (content_height - title_font_height) / 2;
+    // If the user has big fonts, the title will appear rendered too far down
+    // on the y-axis if we use the regular top padding, so we need to adjust it
+    // so that the text appears centered.
+    gfx::Size minimum_size = GetMinimumUnselectedSize();
+    int text_height = title_top + title_font_height + kBottomPadding;
+    if (text_height > minimum_size.height())
+      title_top -= (text_height - minimum_size.height()) / 2;
 
-  // If the user has big fonts, the title will appear rendered too far down on
-  // the y-axis if we use the regular top padding, so we need to adjust it so
-  // that the text appears centered.
-  gfx::Size minimum_size = GetMinimumUnselectedSize();
-  int text_height = title_top + title_font_height + kBottomPadding;
-  if (text_height > minimum_size.height())
-    title_top -= (text_height - minimum_size.height()) / 2;
-
-  int title_width;
-  if (close_button_->IsVisible()) {
-    title_width = std::max(close_button_->x() -
-                           kTitleCloseButtonSpacing - title_left, 0);
-  } else {
-    title_width = std::max(lb.width() - title_left, 0);
+    int title_width;
+    if (close_button_->IsVisible()) {
+      title_width = std::max(close_button_->x() -
+                             kTitleCloseButtonSpacing - title_left, 0);
+    } else {
+      title_width = std::max(lb.width() - title_left, 0);
+    }
+    title_bounds_.SetRect(title_left, title_top, title_width,
+                          title_font_height);
   }
-  title_bounds_.SetRect(title_left, title_top, title_width, title_font_height);
 
   // Certain UI elements within the Tab (the favicon, etc.) are not represented
   // as child Views (which is the preferred method).  Instead, these UI elements
@@ -561,6 +553,55 @@ void TabRenderer::AnimationEnded(const Animation* animation) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabRenderer, private
+
+void TabRenderer::PaintTitle(SkColor title_color, gfx::Canvas* canvas) {
+  // Paint the Title.
+  string16 title = data_.title;
+  if (title.empty()) {
+    if (data_.loading) {
+      title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+    } else {
+      title = l10n_util::GetStringUTF16(IDS_TAB_UNTITLED_TITLE);
+    }
+  } else {
+    Browser::FormatTitleForDisplay(&title);
+  }
+
+  canvas->DrawStringInt(UTF16ToWideHack(title), *title_font, title_color,
+                        title_bounds_.x(), title_bounds_.y(),
+                        title_bounds_.width(), title_bounds_.height());
+}
+
+void TabRenderer::PaintIcon(gfx::Canvas* canvas) {
+  if (animation_state_ != ANIMATION_NONE) {
+    PaintLoadingAnimation(canvas);
+  } else {
+    canvas->save();
+    canvas->ClipRectInt(0, 0, width(), height() - kFavIconTitleSpacing);
+    if (should_display_crashed_favicon_) {
+      canvas->DrawBitmapInt(*crashed_fav_icon, 0, 0,
+                            crashed_fav_icon->width(),
+                            crashed_fav_icon->height(),
+                            favicon_bounds_.x(),
+                            favicon_bounds_.y() + fav_icon_hiding_offset_,
+                            kFavIconSize, kFavIconSize,
+                            true);
+    } else {
+      if (!data_.favicon.isNull()) {
+        // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
+        // to using that class to render the favicon).
+        canvas->DrawBitmapInt(data_.favicon, 0, 0,
+                              data_.favicon.width(),
+                              data_.favicon.height(),
+                              favicon_bounds_.x(),
+                              favicon_bounds_.y() + fav_icon_hiding_offset_,
+                              kFavIconSize, kFavIconSize,
+                              true);
+      }
+    }
+    canvas->restore();
+  }
+}
 
 void TabRenderer::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsSelected()) {
@@ -723,10 +764,14 @@ void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
   // loading animation also needs to be mirrored if the View's UI layout is
   // right-to-left.
   int dst_x;
-  if (UILayoutIsRightToLeft()) {
-    dst_x = width() - kLeftPadding - image_size;
+  if (pinned()) {
+    dst_x = favicon_bounds_.x();
   } else {
-    dst_x = kLeftPadding;
+    if (UILayoutIsRightToLeft()) {
+      dst_x = width() - kLeftPadding - image_size;
+    } else {
+      dst_x = kLeftPadding;
+    }
   }
   canvas->DrawBitmapInt(*frames, image_offset, 0, image_size,
                         image_size, dst_x, dst_y, image_size, image_size,
@@ -736,10 +781,12 @@ void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
 int TabRenderer::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
-  return (width() - kLeftPadding - kRightPadding) / kFaviconSize;
+  return (width() - kLeftPadding - kRightPadding) / kFavIconSize;
 }
 
 bool TabRenderer::ShouldShowIcon() const {
+  if (pinned() && height() >= GetMinimumUnselectedSize().height())
+    return true;
   if (!data_.show_icon) {
     return false;
   } else if (IsSelected()) {
@@ -752,7 +799,7 @@ bool TabRenderer::ShouldShowIcon() const {
 
 bool TabRenderer::ShouldShowCloseBox() const {
   // The selected tab never clips close button.
-  return IsSelected() || IconCapacity() >= 3;
+  return !pinned() && (IsSelected() || IconCapacity() >= 3);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

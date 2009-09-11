@@ -287,7 +287,6 @@ class TabRendererGtk : public AnimationDelegate {
   void PaintTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
-  void PaintPinnedTabBackground(gfx::Canvas* canvas);
   void PaintLoadingAnimation(gfx::Canvas* canvas);
 
   // Returns the number of favicon-size elements that can fit in the tab's

@@ -38,7 +38,8 @@ DraggedTabView::DraggedTabView(TabContents* datasource,
       attached_tab_size_(TabRenderer::GetMinimumSelectedSize()),
       photobooth_(NULL),
       contents_size_(contents_size),
-      close_animation_(this) {
+      close_animation_(this),
+      tab_width_(0) {
   SetParentOwned(false);
 
   renderer_->UpdateData(datasource, false);
@@ -107,17 +108,37 @@ void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
 void DraggedTabView::Attach(int selected_width) {
   attached_ = true;
   photobooth_ = NULL;
-  attached_tab_size_.set_width(selected_width);
 #if defined(OS_WIN)
   container_->SetOpacity(kOpaqueAlpha);
 #else
   NOTIMPLEMENTED();
 #endif
+  Resize(selected_width);
+}
+
+void DraggedTabView::Resize(int width) {
+  attached_tab_size_.set_width(width);
   ResizeContainer();
   Update();
 }
 
+void DraggedTabView::set_pinned(bool pinned) {
+  renderer_->set_pinned(pinned);
+}
+
+bool DraggedTabView::pinned() const {
+  return renderer_->pinned();
+}
+
 void DraggedTabView::Detach(NativeViewPhotobooth* photobooth) {
+  // Detached tabs are never pinned.
+  renderer_->set_pinned(false);
+
+  if (attached_tab_size_.width() != tab_width_) {
+    // The attached tab size differs from current tab size. Resize accordingly.
+    Resize(tab_width_);
+  }
+
   attached_ = false;
   photobooth_ = photobooth;
 #if defined(OS_WIN)

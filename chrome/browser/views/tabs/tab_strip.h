@@ -101,6 +101,7 @@ class TabStrip : public views::View,
                         bool pinned_state_changed);
   virtual void TabChangedAt(TabContents* contents, int index,
                             bool loading_only);
+  virtual void TabPinnedStateChanged(TabContents* contents, int index);
 
   // Tab::Delegate implementation:
   virtual bool IsTabSelected(const Tab* tab) const;
@@ -146,9 +147,14 @@ class TabStrip : public views::View,
   virtual BrowserTabStrip* AsBrowserTabStrip();
   virtual TabStrip* AsTabStrip();
 
+  // Horizontal gap between pinned and non-pinned tabs.
+  static const int pinned_to_non_pinned_gap_;
+
  private:
   class InsertTabAnimation;
   class MoveTabAnimation;
+  class PinAndMoveAnimation;
+  class PinnedTabAnimation;
   class RemoveTabAnimation;
   class ResizeLayoutAnimation;
   class TabAnimation;
@@ -156,6 +162,8 @@ class TabStrip : public views::View,
   friend class DraggedTabController;
   friend class InsertTabAnimation;
   friend class MoveTabAnimation;
+  friend class PinAndMoveAnimation;
+  friend class PinnedTabAnimation;
   friend class RemoveTabAnimation;
   friend class ResizeLayoutAnimation;
   friend class TabAnimation;
@@ -182,6 +190,9 @@ class TabStrip : public views::View,
   // Gets the number of Tabs in the collection.
   int GetTabCount() const;
 
+  // Returns the number of pinned tabs.
+  int GetPinnedTabCount() const;
+
   // -- Tab Resize Layout -----------------------------------------------------
 
   // Returns the exact (unrounded) current width of each tab.
@@ -192,9 +203,15 @@ class TabStrip : public views::View,
   // desired strip width and number of tabs.  If
   // |width_of_tabs_for_mouse_close_| is nonnegative we use that value in
   // calculating the desired strip width; otherwise we use the current width.
+  // |pinned_tab_count| gives the number of pinned tabs, and |tab_count| the
+  // number of pinned and non-pinned tabs.
   void GetDesiredTabWidths(int tab_count,
+                           int pinned_tab_count,
                            double* unselected_width,
                            double* selected_width) const;
+
+  // Returns the horizontal offset before the tab at |tab_index|.
+  int GetTabHOffset(int tab_index);
 
   // Perform an animated resize-relayout of the TabStrip immediately.
   void ResizeLayoutTabs();
@@ -252,6 +269,9 @@ class TabStrip : public views::View,
   void StartInsertTabAnimation(int index);
   void StartRemoveTabAnimation(int index, TabContents* contents);
   void StartMoveTabAnimation(int from_index, int to_index);
+  void StartPinnedTabAnimation(int index);
+  void StartPinAndMoveTabAnimation(int from_index, int to_index,
+                                   const gfx::Rect& start_bounds);
 
   // Returns true if detach or select changes in the model should be reflected
   // in the TabStrip. This returns false if we're closing all tabs in the
