@@ -39,7 +39,7 @@ class LocationBar {
   // Accepts the current string of text entered in the location bar.
   virtual void AcceptInput() = 0;
 
-  // Accept the current input, overriding the disposition.
+  // Accepts the current input, overriding the disposition.
   virtual void AcceptInputWithDisposition(WindowOpenDisposition) = 0;
 
   // Focuses and selects the contents of the location bar.
@@ -49,8 +49,12 @@ class LocationBar {
   // focus to it.
   virtual void FocusSearch() = 0;
 
-  // Update the state of the page actions.
+  // Updates the state of the page actions.
   virtual void UpdatePageActions() = 0;
+
+  // Called when the page-action data needs to be refreshed, e.g. when an
+  // extension is unloaded or crashes.
+  virtual void InvalidatePageActions() = 0;
 
   // Saves the state of the location bar to the specified TabContents, so that
   // it can be restored later. (Done when switching tabs).
@@ -68,6 +72,9 @@ class LocationBar {
 
 class LocationBarTesting {
  public:
+  // Returns the total number of page actions in the Omnibox.
+  virtual int PageActionCount() = 0;
+
   // Returns the number of visible page actions in the Omnibox.
   virtual int PageActionVisibleCount() = 0;
 };

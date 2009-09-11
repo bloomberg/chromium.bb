@@ -38,7 +38,12 @@ class ExtensionBrowserTest
     return InstallOrUpdateExtension(id, path, expected_change);
   }
 
+  void UnloadExtension(const std::string& extension_id);
+
   void UninstallExtension(const std::string& extension_id);
+
+  // Wait for the total number of page actions to change to |count|.
+  bool WaitForPageActionCountChangeTo(int count);
 
   // Wait for the number of visible page actions to change to |count|.
   bool WaitForPageActionVisibilityChangeTo(int count);

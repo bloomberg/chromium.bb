@@ -115,13 +115,40 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(
   return WaitForExtensionHostsToLoad();
 }
 
+void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  service->UnloadExtension(extension_id);
+}
+
 void ExtensionBrowserTest::UninstallExtension(const std::string& extension_id) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->UninstallExtension(extension_id, false);
 }
 
-bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(
-    int count) {
+bool ExtensionBrowserTest::WaitForPageActionCountChangeTo(int count) {
+  base::Time start_time = base::Time::Now();
+  while (true) {
+    LocationBarTesting* loc_bar =
+        browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+
+    int actions = loc_bar->PageActionCount();
+    if (actions == count)
+      return true;
+
+    if ((base::Time::Now() - start_time).InMilliseconds() > kTimeoutMs) {
+      std::cout << "Timed out waiting for page actions to (un)load.\n"
+                << "Currently loaded page actions: " << IntToString(actions)
+                << "\n";
+      return false;
+    }
+
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                            new MessageLoop::QuitTask, 200);
+    ui_test_utils::RunMessageLoop();
+  }
+}
+
+bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(int count) {
   base::Time start_time = base::Time::Now();
   while (true) {
     LocationBarTesting* loc_bar =
@@ -131,11 +158,12 @@ bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(
     if (visible == count)
       return true;
 
-    if ((base::Time::Now() - start_time).InMilliseconds() > kTimeoutMs)
+    if ((base::Time::Now() - start_time).InMilliseconds() > kTimeoutMs) {
+      std::cout << "Timed out waiting for page actions to become (in)visible.\n"
+                << "Currently visible page actions: " << IntToString(visible)
+                << "\n";
       return false;
-
-    std::cout << "Timed out waiting for page actions to become visible."
-              << "Currently visible page actions: " << IntToString(visible);
+    }
 
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                             new MessageLoop::QuitTask, 200);

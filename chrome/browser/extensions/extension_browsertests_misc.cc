@@ -27,6 +27,9 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/net_util.h"
 
+// ID assigned to the first unpacked extension loaded by LoadExtension().
+#define kDefaultExtensionID "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
 // Looks for an ExtensionHost whose URL has the given path component (including
 // leading slash).  Also verifies that the expected number of hosts are loaded.
 static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
@@ -219,6 +222,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   // Make sure the page action goes away.
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(no_feed));
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
+}
+
+// Tests that the location bar forgets about unloaded page actions.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
+  FilePath extension_path(test_data_dir_.AppendASCII("samples")
+                                        .AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(LoadExtension(extension_path));
+
+  // Navigation prompts the location bar to load page actions.
+  FilePath test_dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
+  FilePath feed = test_dir.AppendASCII("feeds")
+                          .AppendASCII("feed.html");
+
+  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(feed));
+  ASSERT_TRUE(WaitForPageActionCountChangeTo(1));
+
+  UnloadExtension(kDefaultExtensionID);
+
+  // Make sure the page action goes away when it's unloaded.
+  ASSERT_TRUE(WaitForPageActionCountChangeTo(0));
 }
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
@@ -562,7 +586,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
 
   TabContents* newtab = WindowOpenHelper(
       browser(),
-      GURL("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/test.html"),
+      GURL("chrome-extension://" kDefaultExtensionID "/test.html"),
       "newtab.html");
 
   bool result = false;
@@ -579,8 +603,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
 
   WindowOpenHelper(
       browser(),
-      GURL("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/test.html"),
-      "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab/newtab.html");
+      GURL("chrome-extension://" kDefaultExtensionID "/test.html"),
+      "chrome-extension://thisissurelynotavalidextensionid/newtab.html");
 
   // If we got to this point, we didn't crash, so we're good.
 }
@@ -595,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   TabContents* newtab = WindowOpenHelper(
       browser(),
       GURL("about:blank"),
-      "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/newtab.html");
+      "chrome-extension://" kDefaultExtensionID "/newtab.html");
 
   // Extension API should fail.
   bool result = false;

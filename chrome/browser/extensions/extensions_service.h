@@ -150,7 +150,8 @@ class ExtensionsService
   // Unload the specified extension.
   void UnloadExtension(const std::string& extension_id);
 
-  // Unload all extensions.
+  // Unload all extensions. This is currently only called on shutdown, and
+  // does not send notifications.
   void UnloadAllExtensions();
 
   // Called only by testing.

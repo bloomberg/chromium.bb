@@ -2142,6 +2142,8 @@ void Browser::Observe(NotificationType type,
     }
 
     case NotificationType::EXTENSION_UNLOADED: {
+      window()->GetLocationBar()->InvalidatePageActions();
+
       // Close any tabs from the unloaded extension.
       Extension* extension = Details<Extension>(details).ptr();
       for (int i = 0; i < tabstrip_model_.count(); i++) {
@@ -2156,6 +2158,8 @@ void Browser::Observe(NotificationType type,
     }
 
     case NotificationType::EXTENSION_PROCESS_CRASHED: {
+      window()->GetLocationBar()->InvalidatePageActions();
+
       TabContents* tab_contents = GetSelectedTabContents();
       if (!tab_contents)
         break;

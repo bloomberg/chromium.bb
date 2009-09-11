@@ -44,6 +44,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual void FocusLocation();
   virtual void FocusSearch();
   virtual void UpdatePageActions() { /* http://crbug.com/12281 */ }
+  virtual void InvalidatePageActions() { /* TODO(port): implement this */ }
   virtual void SaveStateToContents(TabContents* contents);
   virtual void Revert();
   virtual AutocompleteEditView* location_entry() {
@@ -52,6 +53,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual LocationBarTesting* GetLocationBarForTesting() { return this; }
 
   // Overriden from LocationBarTesting:
+  virtual int PageActionCount();
   virtual int PageActionVisibleCount();
 
   // Updates the location bar.  Resets the bar's permanent text and

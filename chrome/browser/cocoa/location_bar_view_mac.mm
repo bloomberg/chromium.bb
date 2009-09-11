@@ -241,6 +241,11 @@ void LocationBarViewMac::Revert() {
   edit_view_->RevertAll();
 }
 
+int LocationBarViewMac::PageActionCount() {
+  NOTIMPLEMENTED();
+  return -1;
+}
+
 int LocationBarViewMac::PageActionVisibleCount() {
   NOTIMPLEMENTED();
   return -1;

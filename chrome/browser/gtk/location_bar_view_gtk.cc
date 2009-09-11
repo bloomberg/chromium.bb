@@ -421,6 +421,10 @@ void LocationBarViewGtk::UpdatePageActions() {
     gtk_widget_hide(page_action_hbox_);
 }
 
+void LocationBarViewGtk::InvalidatePageActions() {
+  page_action_views_.reset();
+}
+
 void LocationBarViewGtk::SaveStateToContents(TabContents* contents) {
   location_entry_->SaveStateToTab(contents);
 }

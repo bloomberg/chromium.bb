@@ -284,6 +284,10 @@ void LocationBarView::UpdatePageActions() {
   SchedulePaint();
 }
 
+void LocationBarView::InvalidatePageActions() {
+  DeletePageActionViews();
+}
+
 void LocationBarView::Focus() {
 #if defined(OS_WIN)
   ::SetFocus(location_entry_->m_hWnd);

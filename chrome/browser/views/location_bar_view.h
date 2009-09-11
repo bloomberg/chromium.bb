@@ -145,6 +145,7 @@ class LocationBarView : public LocationBar,
   virtual void FocusLocation();
   virtual void FocusSearch();
   virtual void UpdatePageActions();
+  virtual void InvalidatePageActions();
   virtual void SaveStateToContents(TabContents* contents);
   virtual void Revert();
   virtual AutocompleteEditView* location_entry() {
@@ -153,6 +154,7 @@ class LocationBarView : public LocationBar,
   virtual LocationBarTesting* GetLocationBarForTesting() { return this; }
 
   // Overridden from LocationBarTesting:
+  virtual int PageActionCount() { return page_action_image_views_.size(); }
   virtual int PageActionVisibleCount();
 
   static const int kVertMargin;
