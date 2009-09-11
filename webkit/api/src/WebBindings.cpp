@@ -35,7 +35,7 @@
 #include "npruntime_priv.h"
 #include "webkit/api/public/WebDragData.h"
 
-#if USE(V8_BINDING)
+#if USE(V8)
 #include "ChromiumDataObject.h"
 #include "ClipboardChromium.h"
 #include "EventNames.h"
@@ -43,7 +43,7 @@
 #include "NPV8Object.h"  // for PrivateIdentifier
 #include "V8Helpers.h"
 #include "V8Proxy.h"
-#elif USE(JAVASCRIPTCORE_BINDINGS)
+#elif USE(JSC)
 #include "bridge/c/c_utility.h"
 #endif
 

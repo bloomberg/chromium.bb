@@ -34,6 +34,7 @@
       'WEBCORE_NAVIGATOR_VENDOR="Google Inc."',
     ],
     'webcore_include_dirs': [
+      '../third_party/WebKit/WebCore',
       '../third_party/WebKit/WebCore/accessibility',
       '../third_party/WebKit/WebCore/accessibility/chromium',
       '../third_party/WebKit/WebCore/bindings/v8',
@@ -188,51 +189,10 @@
       'target_name': 'config',
       'type': 'none',
       'msvs_guid': '2E2D3301-2EC4-4C0F-B889-87073B30F673',
-      'actions': [
-        {
-          'action_name': 'config.h',
-          'inputs': [
-            'config.h.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/config.h',
-          ],
-          # TODO(bradnelson): npapi.h, npruntime.h, npruntime_priv.h, and
-          # stdint.h shouldn't be in the SHARED_INTERMEDIATE_DIR, it's very
-          # global.
-          'action': ['python', 'build/action_jsconfig.py', 'v8', '<(SHARED_INTERMEDIATE_DIR)/webkit', '<@(_inputs)'],
-
-          'conditions': [
-            ['OS=="win"', {
-              'inputs': [
-                '../third_party/WebKit/WebCore/bridge/npapi.h',
-                '../third_party/WebKit/WebCore/bridge/npruntime.h',
-                '../third_party/WebKit/WebCore/bindings/v8/npruntime_priv.h',
-                '../third_party/WebKit/JavaScriptCore/os-win32/stdint.h',
-              ],
-            }],
-          ],
-        },
-      ],
       'direct_dependent_settings': {
         'defines': [
           '<@(feature_defines)',
           '<@(non_feature_defines)',
-        ],
-        # Always prepend the directory containing config.h.  This is important,
-        # because WebKit/JavaScriptCore has a config.h in it too.  The JSC
-        # config.h shouldn't be used, and its directory winds up in
-        # include_dirs in wtf and its dependents.  If the directory containing
-        # the real config.h weren't prepended, other targets might wind up
-        # picking up the wrong config.h, which can result in build failures or
-        # even random runtime problems due to different components being built
-        # with different configurations.
-        #
-        # The rightmost + is present because this direct_dependent_settings
-        # section gets merged into the (nonexistent) target_defaults one,
-        # eating the rightmost +.
-        'include_dirs++': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit',
         ],
       },
       'conditions': [
