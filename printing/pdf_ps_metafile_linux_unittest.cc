@@ -12,7 +12,7 @@
 
 typedef struct _cairo cairo_t;
 
-TEST(PdfTest, Basic) {
+TEST(PdfTest, DISABLED_Basic) {
   // Tests in-renderer constructor.
   printing::PdfPsMetafile pdf(printing::PdfPsMetafile::PDF);
   EXPECT_TRUE(pdf.Init());
@@ -56,7 +56,7 @@ TEST(PdfTest, Basic) {
   EXPECT_TRUE(pdf.SaveTo(FilePath("/dev/null")));
 }
 
-TEST(PsTest, Basic) {
+TEST(PsTest, DISABLED_Basic2) {
   // Tests in-renderer constructor.
   printing::PdfPsMetafile ps(printing::PdfPsMetafile::PS);
   EXPECT_TRUE(ps.Init());
@@ -99,4 +99,3 @@ TEST(PsTest, Basic) {
   // Tests if we can save data.
   EXPECT_TRUE(ps.SaveTo(FilePath("/dev/null")));
 }
-
