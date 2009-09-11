@@ -4,8 +4,10 @@
 
 #include "chrome/browser/history/in_memory_database.h"
 
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/time.h"
 
 namespace history {
 
@@ -71,12 +73,17 @@ bool InMemoryDatabase::InitFromDisk(const std::wstring& history_name) {
   }
 
   // Copy URL data to memory.
+  base::TimeTicks begin_load = base::TimeTicks::Now();
   if (sqlite3_exec(db_,
       "INSERT INTO urls SELECT * FROM history.urls WHERE typed_count > 0",
       NULL, NULL, NULL) != SQLITE_OK) {
     // Unable to get data from the history database. This is OK, the file may
     // just not exist yet.
   }
+  base::TimeTicks end_load = base::TimeTicks::Now();
+  UMA_HISTOGRAM_MEDIUM_TIMES("History.InMemoryDBPopulate",
+                             end_load - begin_load);
+  UMA_HISTOGRAM_COUNTS("History.InMemoryDBItemCount", sqlite3_changes(db_));
 
   // Detach from the history database on disk.
   if (sqlite3_exec(db_, "DETACH history", NULL, NULL, NULL) != SQLITE_OK) {
