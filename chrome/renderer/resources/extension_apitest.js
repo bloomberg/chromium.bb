@@ -50,20 +50,14 @@ var chrome = chrome || {};
   }
 
   var pendingCallbacks = 0;
-  var totalCallbacks = 0;
-  
+
   function callbackAdded() {
     pendingCallbacks++;
-    chrome.test.assertEq(totalCallbacks, 0);
   };
-  
+
   function callbackCompleted() {
-    if (!totalCallbacks)
-      totalCallbacks = pendingCallbacks;
     pendingCallbacks--;
     if (pendingCallbacks == 0) {
-      //chrome.test.log("  " + totalCallbacks + " callbacks ran");
-      totalCallbacks = 0;
       chrome.test.succeed();
     }
   };
@@ -126,7 +120,7 @@ var chrome = chrome || {};
                        chrome.extension.lastError.message);
     }
   };
-  
+
   function safeFunctionApply(func, arguments) {
     try {
       if (func) {
@@ -154,7 +148,6 @@ var chrome = chrome || {};
     if (func) {
       chrome.test.assertEq(typeof(func), 'function');
     }
-
     callbackAdded();
 
     return function() {
@@ -172,17 +165,34 @@ var chrome = chrome || {};
       callbackCompleted();
     };
   };
-  
+
   chrome.test.listenOnce = function(event, func) {
     callbackAdded();
     var listener = function() {
       event.removeListener(listener);
-      safeFunctionApply(func, arguments);      
+      safeFunctionApply(func, arguments);
       callbackCompleted();
     };
     event.addListener(listener);
   };
   
+  chrome.test.listenForever = function(event, func) {
+    callbackAdded();
+    
+    var listener = function() {
+      safeFunctionApply(func, arguments);
+    };
+
+    var done = {};
+    done.doneListening = function() {
+      event.removeListener(listener);
+      callbackCompleted();
+    };
+ 
+    event.addListener(listener);
+    return done;
+  };
+
   chrome.test.callbackPass = function(func) {
     return chrome.test.callback(func);
   };
@@ -191,14 +201,8 @@ var chrome = chrome || {};
     return chrome.test.callback(null, expectedError);
   };
 
-  // TODO(erikkay) This is deprecated and should be removed.
-  chrome.test.testCallback = function(succeedWhenDone, func) {
-    return chrome.test.callback(func);
-  };
-  
   chrome.test.runTests = function(tests) {
     chrome.test.tests = tests;
     chrome.test.runNextTest();
   };
-
 })();
