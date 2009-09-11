@@ -390,7 +390,7 @@
       <!-- The width and height of the About dialog box in characters and lines (See -->
       <!-- above). -->
       <message name="IDS_ABOUT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        83
+        86
       </message>
       <message name="IDS_ABOUT_DIALOG_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
         4
