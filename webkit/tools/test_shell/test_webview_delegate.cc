@@ -52,7 +52,7 @@
 #include "webkit/glue/window_open_disposition.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
-#include "webkit/tools/test_shell/test_webworker_helper.h"
+#include "webkit/tools/test_shell/test_web_worker.h"
 
 #if defined(OS_WIN)
 // TODO(port): make these files work everywhere.
@@ -567,7 +567,7 @@ WebPlugin* TestWebViewDelegate::createPlugin(
 WebWorker* TestWebViewDelegate::createWorker(
     WebFrame* frame, WebWorkerClient* client) {
 #if ENABLE(WORKERS)
-  return TestWebWorkerHelper::CreateWebWorker(client);
+  return new TestWebWorker();
 #else
   return NULL;
 #endif

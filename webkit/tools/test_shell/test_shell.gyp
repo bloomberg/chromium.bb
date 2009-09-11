@@ -85,12 +85,11 @@
         'test_shell_switches.h',
         'test_shell_win.cc',
         'test_shell_webkit_init.h',
+        'test_web_worker.h',
         'test_webview_delegate.cc',
         'test_webview_delegate.h',
         'test_webview_delegate_gtk.cc',
         'test_webview_delegate_win.cc',
-        'test_webworker_helper.cc',
-        'test_webworker_helper.h',
         'text_input_controller.cc',
         'text_input_controller.h',
         'webview_host.h',
@@ -218,7 +217,7 @@
       },
       'conditions': [
         ['OS=="win"', {
-          'dependencies': ['test_worker', 'layout_test_helper'],
+          'dependencies': ['layout_test_helper'],
           'resource_include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
@@ -605,45 +604,6 @@
               '<(SHARED_INTERMEDIATE_DIR)/test_shell',
             ],
           },
-        },
-      ],
-    }],
-    # Need to do the same for Linux. We build a separate dylib/dll/so
-    # so V8 can have a second set of global variables and run workers.
-    # Normally, workers run in a separate process.
-    ['OS!="linux"', {
-      'targets': [
-        {
-          'target_name': 'test_worker',
-          'type': 'shared_library',
-          'xcode_settings': {
-             'EXPORTED_SYMBOLS_FILE': 'test_worker/test_worker.exp',
-          },
-          'msvs_guid': '3E03D462-780D-4C4D-B22E-5E095E6CF110',
-          'msvs_disabled_warnings': [4800],
-          'dependencies': [
-            '../../../base/base.gyp:base',
-            '../../../base/base.gyp:base_gfx',
-            '../../../net/net.gyp:net',
-            '../../../skia/skia.gyp:skia',
-            '../../../testing/gtest.gyp:gtest',
-            '../../../third_party/npapi/npapi.gyp:npapi',
-            '../../webkit.gyp:glue',
-            '../../webkit.gyp:webkit',
-            # For simple_clipboard_impl.cc
-            'test_shell_common',
-          ],
-          'sources': [
-            'test_worker/test_webworker.cc',
-            'test_worker/test_webworker.h',
-            'test_worker/test_worker_main.cc',
-            'test_worker/test_worker.def',
-          ],
-          'conditions': [
-            ['OS!="win"', {
-              'sources!' : ['test_worker/test_worker.def'],
-            }],
-          ],
         },
       ],
     }],
