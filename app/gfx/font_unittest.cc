@@ -10,8 +10,7 @@ namespace {
 
 using gfx::Font;
 
-class FontTest : public testing::Test {
-};
+typedef testing::Test FontTest;
 
 TEST_F(FontTest, LoadArial) {
   Font cf(Font::CreateFont(L"Arial", 16));
@@ -31,13 +30,13 @@ TEST_F(FontTest, LoadArialBold) {
 TEST_F(FontTest, Ascent) {
   Font cf(Font::CreateFont(L"Arial", 16));
   ASSERT_GT(cf.baseline(), 2);
-  ASSERT_LT(cf.baseline(), 20);
+  ASSERT_LT(cf.baseline(), 22);
 }
 
 TEST_F(FontTest, Height) {
   Font cf(Font::CreateFont(L"Arial", 16));
   ASSERT_GT(cf.baseline(), 2);
-  ASSERT_LT(cf.baseline(), 20);
+  ASSERT_LT(cf.baseline(), 22);
 }
 
 TEST_F(FontTest, AvgWidths) {
