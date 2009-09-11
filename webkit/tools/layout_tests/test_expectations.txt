@@ -126,7 +126,8 @@ BUG1137420 WONTFIX : LayoutTests/fast/dom/Window/window-resize.html = FAIL
 // between a key event and a search event.  You cannot count on this
 // always being exactly the same, so we allow this to either PASS or FAIL
 // but not CRASH or TIMEOUT.
-WONTFIX : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS
+WONTFIX DEBUG SLOW WIN LINUX : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS
+WONTFIX DEBUG SLOW MAC : LayoutTests/fast/forms/search-event-delay.html = FAIL
 
 // Chrome uses different keyboard accelerators from those used by Safari, so
 // these tests will always fail.
@@ -137,10 +138,8 @@ WONTFIX : LayoutTests/editing/pasteboard/emacs-ctrl-a-k-y.html = FAIL
 WONTFIX : LayoutTests/editing/pasteboard/emacs-ctrl-k-y-001.html = FAIL
 WONTFIX : LayoutTests/editing/input/emacs-ctrl-o.html = FAIL
 
-// These tests check for very kjs-specific garbage collector behavior. Gc-8
-// tests behavior that makes no sense for us to implement. Gc-10 makes sense
-// but would have to be implemented much differently to work in v8.
-WONTFIX : LayoutTests/fast/dom/gc-8.html = FAIL
+// Checks for very kjs-specific garbage collector behavior.
+// Would have to be implemented much differently to work in v8.
 WONTFIX : LayoutTests/fast/dom/gc-10.html = FAIL
 
 // This fails because we're missing various useless apple-specific
@@ -806,7 +805,8 @@ BUG6735 : LayoutTests/plugins/netscape-throw-exception.html = FAIL
 BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL
 BUG10433 : LayoutTests/fast/dom/Window/webkitConvertPoint.html = FAIL
 
-BUG9071 WIN LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
+BUG9071 MAC WIN DEBUG SLOW : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
+BUG9071 LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
 BUG10436 WIN LINUX : LayoutTests/fast/block/float/nested-clearance.html = FAIL
 
 
@@ -1188,12 +1188,6 @@ BUG10328 LINUX : LayoutTests/fast/css/font-face-multiple-faces.html = FAIL
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10329 WIN : LayoutTests/http/tests/plugins/geturlnotify-from-npp-destroystream.html = FAIL PASS
 
-// This test is timing sensitive and sometimes fails.  However, other tests
-// in the LayoutTests/animations/ directory are timing sensitive in the same
-// way.  Maybe this is just flaky because it's animating faster?
-// Doesn't need to block our next release.
-BUG10330 : LayoutTests/animations/big-rotation.html = FAIL PASS
-
 // Uses ahem font and expects line heights to match some pixel value.
 // We should be able to pass this -- not sure what's wrong.
 BUG10331 LINUX : LayoutTests/css2.1/t1008-c44-ln-box-02-d-ag.html = FAIL
@@ -1437,7 +1431,6 @@ BUG10384 MAC : LayoutTests/fast/dom/Window/new-window-opener.html = CRASH TIMEOU
 BUG10384 MAC : LayoutTests/fast/forms/focus2.html = CRASH FAIL
 
 BUG10384 MAC : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = TIMEOUT FAIL PASS
-BUG10384 DEBUG MAC : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
 
 BUG10399 MAC : LayoutTests/fast/encoding/char-encoding-mac.html = FAIL
 
@@ -1793,7 +1786,6 @@ BUG9798 MAC : LayoutTests/svg/custom/use-instanceRoot-as-event-target.xhtml = TI
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/empty-file-formdata.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
 BUG9798 WIN RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
-BUG9798 WIN RELEASE : LayoutTests/http/tests/uri/css-href.php = TIMEOUT PASS
 BUG9798 WIN RELEASE : LayoutTests/http/tests/uri/utf8-path.html = TIMEOUT PASS
 BUG9798 WIN MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
@@ -2316,7 +2308,7 @@ BUG_JAPHET MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 BUG_JAPHET WIN : LayoutTests/transitions/transition-end-event-transform.html = FAIL PASS
 
 // Flaky, not clear as of when.
-BUG21411 : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
+BUG21411 SLOW WIN LINUX DEBUG: LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
 
 // WebKit 48217:48239
 // Fails because we don't support layoutTestController.addUserStyleSheet().
