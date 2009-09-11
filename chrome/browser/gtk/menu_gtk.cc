@@ -210,6 +210,8 @@ GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
                                 gtk_image_new_from_pixbuf(pixbuf));
   g_object_unref(pixbuf);
+  if (delegate_->AlwaysShowImages())
+    gtk_util::SetAlwaysShowImage(menu_item);
 
   return menu_item;
 }

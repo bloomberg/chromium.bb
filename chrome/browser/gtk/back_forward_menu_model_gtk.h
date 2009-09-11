@@ -29,6 +29,7 @@ class BackForwardMenuModelGtk : public BackForwardMenuModel,
   virtual bool IsCommandEnabled(int command_id) const;
   virtual void ExecuteCommand(int command_id);
   virtual void StoppedShowing();
+  virtual bool AlwaysShowImages() const;
 
  private:
   BackForwardButtonGtk* button_;

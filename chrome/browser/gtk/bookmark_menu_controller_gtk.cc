@@ -163,6 +163,7 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
         gtk_image_menu_item_new_with_label(WideToUTF8(elided_name).c_str());
     g_object_set_data(G_OBJECT(menu_item), "bookmark-node", AsVoid(node));
     SetImageMenuItem(menu_item, node, profile_->GetBookmarkModel());
+    gtk_util::SetAlwaysShowImage(menu_item);
 
     if (node->is_url()) {
       g_signal_connect(G_OBJECT(menu_item), "activate",

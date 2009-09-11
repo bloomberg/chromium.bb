@@ -54,3 +54,7 @@ void BackForwardMenuModelGtk::StoppedShowing() {
   if (button_)
     button_->StoppedShowingMenu();
 }
+
+bool BackForwardMenuModelGtk::AlwaysShowImages() const {
+  return true;
+}

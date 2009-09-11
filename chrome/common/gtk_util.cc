@@ -474,4 +474,25 @@ GdkColor AverageColors(GdkColor color_one, GdkColor color_two) {
   return average_color;
 }
 
+void SetAlwaysShowImage(GtkWidget* image_menu_item) {
+  // Compile time check: if it's available, just use the API.
+  // GTK_CHECK_VERSION is TRUE if the passed version is compatible.
+#if GTK_CHECK_VERSION(2, 16, 1)
+  gtk_image_menu_item_set_always_show_image(
+      GTK_IMAGE_MENU_ITEM(image_menu_item), TRUE);
+#else
+  // Run time check: if the API is not available, set the property manually.
+  // This will still only work with GTK 2.16+ as the property doesn't exist
+  // in earlier versions.
+  // gtk_check_version() returns NULL if the passed version is compatible.
+  if (!gtk_check_version(2, 16, 1)) {
+    GValue true_value = { 0 };
+    g_value_init(&true_value, G_TYPE_BOOLEAN);
+    g_value_set_boolean(&true_value, TRUE);
+    g_object_set_property(G_OBJECT(image_menu_item), "always-show-image",
+                          &true_value);
+  }
+#endif
+}
+
 }  // namespace gtk_util

@@ -43,6 +43,9 @@ class MenuGtk {
     virtual std::string GetLabel(int command_id) const { return std::string(); }
     virtual bool HasIcon(int command_id) const { return false; }
     virtual const SkBitmap* GetIcon(int command_id) const { return NULL; }
+    // Return true if we should override the "gtk-menu-images" system setting
+    // when showing image menu items for this menu.
+    virtual bool AlwaysShowImages() const { return false; }
   };
 
   // Builds a MenuGtk that uses |delegate| to perform actions and |menu_data|

@@ -171,6 +171,11 @@ void DrawTextEntryBackground(GtkWidget* offscreen_entry,
 // Returns the two colors averaged together.
 GdkColor AverageColors(GdkColor color_one, GdkColor color_two);
 
+// Show the image for the given menu item, even if the user's default is to not
+// show images. Only to be used for favicons or other menus where the image is
+// crucial to its functionality.
+void SetAlwaysShowImage(GtkWidget* image_menu_item);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_
