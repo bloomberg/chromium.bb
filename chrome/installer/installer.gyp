@@ -31,6 +31,10 @@
           'include_dirs': [
             '../..',
           ],
+          'variables': {
+            'extra_installer_util_sources%': [
+            ],
+          },
           'sources': [
             'util/browser_distribution.cc',
             'util/browser_distribution.h',
@@ -84,6 +88,7 @@
             'util/work_item_list.h',
             '../common/json_value_serializer.cc',
             '../common/pref_names.cc',
+            '<@(extra_installer_util_sources)',
           ],
         },
         {
