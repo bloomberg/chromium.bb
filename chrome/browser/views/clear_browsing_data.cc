@@ -256,6 +256,10 @@ void ClearBrowsingDataView::ViewHierarchyChanged(bool is_add,
 ////////////////////////////////////////////////////////////////////////////////
 // ClearBrowsingDataView, views::DialogDelegate implementation:
 
+int ClearBrowsingDataView::GetDefaultDialogButton() const {
+  return MessageBoxFlags::DIALOGBUTTON_NONE;
+}
+
 std::wstring ClearBrowsingDataView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
