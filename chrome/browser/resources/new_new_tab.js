@@ -904,7 +904,7 @@ function showNotification(text, actionText, opt_f, opt_delay) {
   // Remove any possible first-run trails.
   removeClass(notification, 'first-run');
 
-  var actionLink = notificationElement.querySelector('.link');
+  var actionLink = notificationElement.querySelector('.link-color');
   notificationElement.firstElementChild.textContent = text;
   actionLink.textContent = actionText;
 
@@ -924,7 +924,7 @@ function showNotification(text, actionText, opt_f, opt_delay) {
 function hideNotification() {
   var notificationElement = $('notification');
   removeClass(notificationElement, 'show');
-  var actionLink = notificationElement.querySelector('.link');
+  var actionLink = notificationElement.querySelector('.link-color');
   // Prevent tabbing to the hidden link.
   actionLink.tabIndex = -1;
 }
