@@ -36,7 +36,6 @@
 // This is required as some function declarations are missing for Mac OSX
 // in native_client/src/third_party/npapi/files/include/npupp.h that is included
 // above.
-#ifdef XP_MACOSX
 
 extern "C" {
   // Safari under OS X requires the following three entry points to be exported.
@@ -49,7 +48,6 @@ extern "C" {
   NPError API_CALL NP_Shutdown(void);
 }
 
-#endif  // XP_MACOSX
 
 NPError API_CALL NaCl_NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
 #if NACL_WINDOWS || NACL_OSX
