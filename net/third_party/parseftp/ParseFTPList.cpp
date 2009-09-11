@@ -162,6 +162,7 @@ int ParseFTPList(const char *line, struct list_state *state,
                 uint64 seconds = StringToInt64(p+1);
                 Time t = Time::FromTimeT(seconds);
                 t.LocalExplode(&(result->fe_time));
+                result->fe_time.month--;
               }
             }
           }
@@ -1172,6 +1173,7 @@ int ParseFTPList(const char *line, struct list_state *state,
           {
             Time t = Time::Now();
             t.LocalExplode(&(state->now_tm));
+            state->now_tm.month--;
             state->now_tm_valid = true;
           }
 
@@ -1640,6 +1642,7 @@ int ParseFTPList(const char *line, struct list_state *state,
                 {
                   Time t = Time::Now();
                   t.LocalExplode(&(state->now_tm));
+                  state->now_tm.month--;
                   state->now_tm_valid = true;
                 }
                 result->fe_time.year = state->now_tm.year;

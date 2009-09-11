@@ -102,6 +102,11 @@
 
 namespace net {
 
+/* WARNING: The 'month' field of base::Time::Exploded will be in range 0-11
+ * (0 = January) to match PRExplodedTime. The caller should add 1 to 'month'
+ * if it intends to use it.
+ */
+
 struct list_state
 {
   void           *magic;        /* to determine if previously initialized */

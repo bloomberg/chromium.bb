@@ -37,6 +37,7 @@ index b9ffbdc..be099e1 100644
 +                uint64 seconds = StringToInt64(p+1);
 +                Time t = Time::FromTimeT(seconds);
 +                t.LocalExplode(&(result->fe_time));
++                result->fe_time.month--;
                }
              }
            }
@@ -234,6 +235,7 @@ index b9ffbdc..be099e1 100644
 -            PR_ExplodeTime((state->now_time), PR_LocalTimeParameters, &(state->now_tm) );
 +            Time t = Time::Now();
 +            t.LocalExplode(&(state->now_tm));
++            state->now_tm.month--;
 +            state->now_tm_valid = true;
            }
  
@@ -353,6 +355,7 @@ index b9ffbdc..be099e1 100644
 -                  PR_ExplodeTime((state->now_time), PR_LocalTimeParameters, &(state->now_tm) );
 +                  Time t = Time::Now();
 +                  t.LocalExplode(&(state->now_tm));
++                  state->now_tm.month--;
 +                  state->now_tm_valid = true;
                  }
 -                result->fe_time.tm_year = state->now_tm.tm_year;
@@ -394,6 +397,11 @@ index 30ef8a3..b11abdc 100644
  #define SUPPORT_W16  /* win16 hosts: SuperTCP or NetManage Chameleon */
  
 +namespace net {
++
++/* WARNING: The 'month' field of base::Time::Exploded will be in range 0-11
++ * (0 = January) to match PRExplodedTime. The caller should add 1 to 'month'
++ * if it intends to use it.
++ */
 +
  struct list_state
  {
