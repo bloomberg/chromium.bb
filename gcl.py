@@ -853,6 +853,10 @@ def UploadCL(change_info, args):
   # ready when the issue is viewed.
   SendToRietveld("/lint/issue%s_%s" % (issue, patchset), timeout=0.5)
 
+  # Move back before considering try, so GetCodeReviewSettings is
+  # consistent.
+  os.chdir(previous_cwd)
+
   # Once uploaded to Rietveld, send it to the try server.
   if not no_try:
     try_on_upload = GetCodeReviewSetting('TRY_ON_UPLOAD')
@@ -862,7 +866,6 @@ def UploadCL(change_info, args):
         trychange_args.append('--clobber')
       TryChange(change_info, trychange_args, swallow_exception=True)
 
-  os.chdir(previous_cwd)
 
 
 def PresubmitCL(change_info):
