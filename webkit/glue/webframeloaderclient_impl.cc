@@ -915,11 +915,10 @@ void WebFrameLoaderClient::setMainFrameDocumentReady(bool ready) {
 // Creates a new connection and begins downloading from that (contrast this
 // with |download|).
 void WebFrameLoaderClient::startDownload(const ResourceRequest& request) {
-  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
-  if (d) {
-    const GURL url(webkit_glue::KURLToGURL(request.url()));
-    const GURL referrer(webkit_glue::StringToStdString(request.httpReferrer()));
-    d->DownloadUrl(url, referrer);
+  if (webframe_->client()) {
+    WrappedResourceRequest webreq(request);
+    webframe_->client()->loadURLExternally(
+        webframe_, webreq, WebKit::WebNavigationPolicyDownload);
   }
 }
 

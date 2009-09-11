@@ -242,7 +242,6 @@ class RenderView : public RenderWidget,
   virtual void SetTooltipText(WebView* webview,
                               const std::wstring& tooltip_text,
                               WebKit::WebTextDirection text_direction_hint);
-  virtual void DownloadUrl(const GURL& url, const GURL& referrer);
   virtual void UpdateInspectorSettings(const std::wstring& raw_settings);
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate();
   virtual void ReportFindInPageMatchCount(int count, int request_id,

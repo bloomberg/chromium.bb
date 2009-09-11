@@ -1625,9 +1625,12 @@ void RenderView::willClose(WebFrame* frame) {
 void RenderView::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
     WebNavigationPolicy policy) {
-  OpenURL(request.url(),
-          GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-          policy);
+  GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
+  if (policy == WebKit::WebNavigationPolicyDownload) {
+    Send(new ViewHostMsg_DownloadUrl(routing_id_, request.url(), referrer));
+  } else {
+    OpenURL(request.url(), referrer, policy);
+  }
 }
 
 WebNavigationPolicy RenderView::decidePolicyForNavigation(
@@ -2658,10 +2661,6 @@ void RenderView::SetTooltipText(WebView* webview,
                                 WebTextDirection text_direction_hint) {
   Send(new ViewHostMsg_SetTooltipText(routing_id_, tooltip_text,
                                       text_direction_hint));
-}
-
-void RenderView::DownloadUrl(const GURL& url, const GURL& referrer) {
-  Send(new ViewHostMsg_DownloadUrl(routing_id_, url, referrer));
 }
 
 void RenderView::UpdateInspectorSettings(const std::wstring& raw_settings) {

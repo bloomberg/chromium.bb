@@ -352,10 +352,6 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
                               const std::wstring& tooltip_text,
                               WebKit::WebTextDirection text_direction_hint) { }
 
-  // Downloading -------------------------------------------------------------
-
-  virtual void DownloadUrl(const GURL& url, const GURL& referrer) { }
-
   // InspectorClient ---------------------------------------------------------
 
   virtual void UpdateInspectorSettings(const std::wstring& raw_settings) { }

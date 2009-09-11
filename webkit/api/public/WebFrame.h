@@ -408,13 +408,6 @@ namespace WebKit {
         // about the new count.
         virtual void increaseMatchCount(int count, int identifier) = 0;
 
-        // Notifies the WebViewClient about a new selection rect. This will
-        // result in the browser getting notified.  For more information see
-        // WebViewClient.
-        virtual void reportFindInPageSelection(const WebRect& selectionRect,
-                                               int activeMatchOrdinal,
-                                               int identifier) = 0;
-
         // This function is called on the main frame to reset the total number
         // of matches found during the scoping effort.
         virtual void resetMatchCount() = 0;

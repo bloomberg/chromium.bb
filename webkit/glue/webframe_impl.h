@@ -163,9 +163,6 @@ class WebFrameImpl : public WebKit::WebFrame,
       const WebKit::WebFindOptions& options, bool reset);
   virtual void cancelPendingScopingEffort();
   virtual void increaseMatchCount(int count, int identifier);
-  virtual void reportFindInPageSelection(
-      const WebKit::WebRect& selection_rect, int active_match_ordinal,
-      int identifier);
   virtual void resetMatchCount();
   virtual WebKit::WebURL completeURL(const WebKit::WebString& url) const;
   virtual WebKit::WebString contentAsText(size_t max_chars) const;
@@ -326,6 +323,11 @@ class WebFrameImpl : public WebKit::WebFrame,
     INVALIDATE_SCROLLBAR    = 2,  // vertical scrollbar only.
     INVALIDATE_ALL          = 3   // both content area and the scrollbar.
   };
+
+  // Notifies the delegate about a new selection rect.
+  void ReportFindInPageSelection(
+      const WebKit::WebRect& selection_rect, int active_match_ordinal,
+      int identifier);
 
   // Invalidates a certain area within the frame.
   void InvalidateArea(AreaToInvalidate area);

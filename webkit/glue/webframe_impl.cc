@@ -1182,7 +1182,7 @@ bool WebFrameImpl::find(int request_id,
         rect.y -= frameview()->scrollOffset().height();
         *selection_rect = rect;
 
-        reportFindInPageSelection(rect,
+        ReportFindInPageSelection(rect,
                                   active_match_index_ + 1,
                                   request_id);
       }
@@ -1340,7 +1340,7 @@ void WebFrameImpl::scopeStringMatches(int request_id,
         // Notify browser of new location for the selected rectangle.
         result_bounds.move(-frameview()->scrollOffset().width(),
                            -frameview()->scrollOffset().height());
-        reportFindInPageSelection(
+        ReportFindInPageSelection(
             webkit_glue::IntRectToWebRect(
                 frame()->view()->convertToContainingWindow(result_bounds)),
             active_match_index_ + 1,
@@ -1419,7 +1419,7 @@ void WebFrameImpl::increaseMatchCount(int count, int request_id) {
                                                  frames_scoping_count_ == 0);
 }
 
-void WebFrameImpl::reportFindInPageSelection(const WebRect& selection_rect,
+void WebFrameImpl::ReportFindInPageSelection(const WebRect& selection_rect,
                                              int active_match_ordinal,
                                              int request_id) {
   // Update the UI with the latest selection rect.
