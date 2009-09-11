@@ -924,8 +924,19 @@ def GenerateOutput(target_list, target_dicts, data, params):
         # extra compilation activity is unnecessary.  With inputPaths and
         # outputPaths not supplied, make will always be called, but it knows
         # enough to not do anything when everything is up-to-date.
+
+        # To help speed things up, pass -j COUNT to make so it does some work
+        # in parallel.  Don't use ncpus because Xcode will build ncpus targets
+        # in parallel and if each target happens to have a rules step, there
+        # would be ncpus^2 things going.  With a machine that has 2 quad-core
+        # Xeons, a build can quickly run out of processes based on
+        # scheduling/other tasks, and randomly failing builds are no good.
         script = \
-"""exec "${DEVELOPER_BIN_DIR}/make" -f "${PROJECT_FILE_PATH}/%s" -j "$(sysctl -n hw.ncpu)"
+"""JOB_COUNT="$(sysctl -n hw.ncpu)"
+if [ "${JOB_COUNT}" -gt 4 ]; then
+  JOB_COUNT=4
+fi
+exec "${DEVELOPER_BIN_DIR}/make" -f "${PROJECT_FILE_PATH}/%s" -j "${JOB_COUNT}"
 exit 1
 """ % makefile_name
         ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
