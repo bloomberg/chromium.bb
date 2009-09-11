@@ -251,13 +251,12 @@ class RenderView : public RenderWidget,
                                          const WebKit::WebRect& selection);
   virtual bool WasOpenedByUserGesture() const;
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj);
-  virtual void SpellCheck(const std::wstring& word, int tag,
+  virtual void SpellCheck(const std::wstring& word,
                           int* misspell_location,
                           int* misspell_length);
-  virtual std::wstring GetAutoCorrectWord(const std::wstring& word, int tag);
+  virtual std::wstring GetAutoCorrectWord(const std::wstring& word);
   virtual void UpdateSpellingUIWithMisspelledWord(const std::wstring& word);
   virtual void ShowSpellingUI(bool show);
-  virtual int SpellCheckerDocumentTag();
   virtual void ScriptedPrint(WebKit::WebFrame* frame);
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
@@ -712,6 +711,9 @@ class RenderView : public RenderWidget,
   void UpdateFontRenderingFromRendererPrefs() { }
 #endif
 
+  // Initializes the document_tag_ member if necessary.
+  void EnsureDocumentTag();
+
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
   int enabled_bindings_;
@@ -906,8 +908,10 @@ class RenderView : public RenderWidget,
   // page id for the last navigation sent to the browser.
   int32 last_top_level_navigation_page_id_;
 
+#if defined(OS_MACOSX)
   // True if the current RenderView has been assigned a document tag.
-  bool has_spell_checker_document_tag_;
+  bool has_document_tag_;
+#endif
 
   // Document tag for this RenderView.
   int document_tag_;

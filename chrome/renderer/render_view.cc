@@ -216,8 +216,10 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       determine_page_text_after_loading_stops_(false),
       view_type_(ViewType::INVALID),
       browser_window_id_(-1),
-     last_top_level_navigation_page_id_(-1),
-      has_spell_checker_document_tag_(false),
+      last_top_level_navigation_page_id_(-1),
+#if defined(OS_MACOSX)
+      has_document_tag_(false),
+#endif
       document_tag_(0),
       webkit_preferences_(webkit_preferences) {
   Singleton<RenderViewSet>()->render_view_set_.insert(this);
@@ -228,8 +230,11 @@ RenderView::~RenderView() {
   if (decrement_shared_popup_at_destruction_)
     shared_popup_counter_->data--;
 
+#if defined(OS_MACOSX)
   // Tell the spellchecker that the document is closed.
-  Send(new ViewHostMsg_DocumentWithTagClosed(routing_id_, document_tag_));
+  if (has_document_tag_)
+    Send(new ViewHostMsg_DocumentWithTagClosed(routing_id_, document_tag_));
+#endif
 
   render_thread_->RemoveFilter(audio_message_filter_);
 }
@@ -2565,38 +2570,28 @@ bool RenderView::WasOpenedByUserGesture() const {
   return opened_by_user_gesture_;
 }
 
-void RenderView::SpellCheck(const std::wstring& word, int tag,
-                                   int* misspell_location,
-                                   int* misspell_length) {
-  Send(new ViewHostMsg_SpellCheck(routing_id_, word, tag,
-                                         misspell_location, misspell_length));
+void RenderView::SpellCheck(const std::wstring& word,
+                            int* misspell_location,
+                            int* misspell_length) {
+  EnsureDocumentTag();
+  Send(new ViewHostMsg_SpellCheck(
+      routing_id_, word, document_tag_, misspell_location, misspell_length));
 }
 
 std::wstring RenderView::GetAutoCorrectWord(
-    const std::wstring& misspelled_word, int tag) {
+    const std::wstring& misspelled_word) {
   std::wstring autocorrect_word;
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kAutoSpellCorrect)) {
-    Send(new ViewHostMsg_GetAutoCorrectWord(routing_id_, misspelled_word, tag,
-                                            &autocorrect_word));
+    EnsureDocumentTag();
+    Send(new ViewHostMsg_GetAutoCorrectWord(
+        routing_id_, misspelled_word, document_tag_, &autocorrect_word));
   }
-
   return autocorrect_word;
 }
 
 void RenderView::ShowSpellingUI(bool show) {
   Send(new ViewHostMsg_ShowSpellingPanel(routing_id_, show));
-}
-
-int RenderView::SpellCheckerDocumentTag() {
-  if (!has_spell_checker_document_tag_) {
-    // Make the call to get the tag.
-    int tag;
-    Send(new ViewHostMsg_GetDocumentTag(routing_id_, &tag));
-    document_tag_ = tag;
-    has_spell_checker_document_tag_ = true;
-  }
-  return document_tag_;
 }
 
 void RenderView::UpdateSpellingUIWithMisspelledWord(const std::wstring& word) {
@@ -3463,4 +3458,16 @@ bool RenderView::HandleCurrentKeyboardEvent() {
   }
 
   return true;
+}
+
+void RenderView::EnsureDocumentTag() {
+  // TODO(darin): There's actually no reason for this to be here.  We should
+  // have the browser side manage the document tag.
+#if defined(OS_MACOSX)
+  if (!has_document_tag_) {
+    // Make the call to get the tag.
+    Send(new ViewHostMsg_GetDocumentTag(routing_id_, &document_tag_));
+    has_document_tag_ = true;
+  }
+#endif
 }

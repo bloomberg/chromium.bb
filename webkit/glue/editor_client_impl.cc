@@ -152,14 +152,7 @@ void EditorClientImpl::toggleGrammarChecking() {
 }
 
 int EditorClientImpl::spellCheckerDocumentTag() {
-#if defined(OS_MACOSX)
-  WebViewDelegate* d = web_view_->delegate();
-  if (d)
-    return d->SpellCheckerDocumentTag();
-#else
-  // Can't use NOTIMPLEMENTED() here as it confounds the layout test output,
-  // but this should eventually be implemented for ignores to work.
-#endif // OS_MACOSX
+  ASSERT_NOT_REACHED();
   return 0;
 }
 
@@ -849,8 +842,7 @@ void EditorClientImpl::checkSpellingOfString(const UChar* str, int length,
   if (isContinuousSpellCheckingEnabled() && d) {
     std::wstring word =
         webkit_glue::StringToStdWString(WebCore::String(str, length));
-    d->SpellCheck(word, spellCheckerDocumentTag(),
-                  &spell_location, &spell_length);
+    d->SpellCheck(word, &spell_location, &spell_length);
   } else {
     spell_location = 0;
     spell_length = 0;
@@ -879,8 +871,7 @@ WebCore::String EditorClientImpl::getAutoCorrectSuggestionForMisspelledWord(
       return WebCore::String();
   }
 
-  std::wstring autocorrect_word =
-      d->GetAutoCorrectWord(word, spellCheckerDocumentTag());
+  std::wstring autocorrect_word = d->GetAutoCorrectWord(word);
   return webkit_glue::StdWStringToString(autocorrect_word);
 }
 

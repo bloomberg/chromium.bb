@@ -647,14 +647,6 @@ bool GetExeDirectory(FilePath* path) {
   return GetApplicationDirectory(path);
 }
 
-bool SpellCheckWord(const wchar_t* word, int word_len,
-                    int* misspelling_start, int* misspelling_len) {
-  // Report all words being correctly spelled.
-  *misspelling_start = 0;
-  *misspelling_len = 0;
-  return true;
-}
-
 bool IsPluginRunningInRendererProcess() {
   return true;
 }
