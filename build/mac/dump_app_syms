@@ -85,5 +85,5 @@ done
 if [ ! -e "${DSYM_TAR_PATH}" ] ; then
   # Change directory so that absolute paths aren't included in the archive.
   (cd "${BUILT_PRODUCTS_DIR}" &&
-   tar --owner 0 --group 0 -jcf "${DSYM_TAR_PATH}" "${DSYMS[@]}")
+   tar -jcf "${DSYM_TAR_PATH}" "${DSYMS[@]}")
 fi
