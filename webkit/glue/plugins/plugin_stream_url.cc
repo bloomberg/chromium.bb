@@ -65,9 +65,12 @@ void PluginStreamUrl::DidReceiveData(const char* buffer, int length,
     return;
 
   if (length > 0) {
-    Write(const_cast<char*>(buffer), length, data_offset);
-    if (id_ > 0)
-      instance()->webplugin()->SetDeferResourceLoading(id_, false);
+    // The PluginStreamUrl instance could get deleted if the plugin fails to
+    // accept data in NPP_Write.
+    if (Write(const_cast<char*>(buffer), length, data_offset) > 0) {
+      if (id_ > 0)
+        instance()->webplugin()->SetDeferResourceLoading(id_, false);
+    }
   }
 }
 

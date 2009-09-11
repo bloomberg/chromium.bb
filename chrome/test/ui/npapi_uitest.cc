@@ -16,6 +16,7 @@
 #include <ostream>
 
 #include "base/file_util.h"
+#include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -297,3 +298,15 @@ TEST_F(NPAPIVisiblePluginTester, MultipleInstancesSyncCalls) {
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
+TEST_F(NPAPIVisiblePluginTester, GetURLRequestFailWrite) {
+  if (UITest::in_process_renderer())
+    return;
+
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(
+      L"npapi/plugin_url_request_fail_write.html"));
+
+  NavigateToURL(url);
+
+  WaitForFinish("geturl_fail_write", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, kShortWaitTimeout);
+}

@@ -46,6 +46,7 @@ class PluginGetURLTest : public PluginTest {
   // This flag is set to true in the context of the NPN_Evaluate call.
   bool npn_evaluate_context_;
   std::string page_not_found_url_;
+  std::string fail_write_url_;
 };
 
 } // namespace NPAPIClient

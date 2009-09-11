@@ -46,6 +46,12 @@ NPError PluginGetURLTest::New(uint16 mode, int16 argc, const char* argn[],
   if (page_not_found_url) {
     page_not_found_url_ = page_not_found_url;
     expect_404_response_ = true;
+  } else {
+    const char* fail_write_url = GetArgValue("fail_write_url", argc,
+                                             argn, argv);
+    if (fail_write_url) {
+      fail_write_url_ = fail_write_url;
+    }
   }
 
   return PluginTest::New(mode, argc, argn, argv, saved);
@@ -59,6 +65,9 @@ NPError PluginGetURLTest::SetWindow(NPWindow* pNPWindow) {
 
     if (expect_404_response_) {
       HostFunctions()->geturl(id(), page_not_found_url_.c_str(), NULL);
+      return NPERR_NO_ERROR;
+    } else if (!fail_write_url_.empty()) {
+      HostFunctions()->geturl(id(), fail_write_url_.c_str(), NULL);
       return NPERR_NO_ERROR;
     }
 
@@ -106,6 +115,11 @@ NPError PluginGetURLTest::NewStream(NPMIMEType type, NPStream* stream,
     npn_evaluate_context_ = false;
     return NPERR_NO_ERROR;
   }
+
+  if (!fail_write_url_.empty()) {
+    return NPERR_NO_ERROR;
+  }
+
 
   unsigned long stream_id = reinterpret_cast<unsigned long>(
       stream->notifyData);
@@ -158,6 +172,11 @@ int32 PluginGetURLTest::Write(NPStream *stream, int32 offset, int32 len,
                               void *buffer) {
   if (test_completed()) {
     return PluginTest::Write(stream, offset, len, buffer);
+  }
+
+  if (!fail_write_url_.empty()) {
+    SignalTestCompleted();
+    return -1;
   }
 
   if (stream == NULL)
