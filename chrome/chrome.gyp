@@ -2206,10 +2206,6 @@
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
             '../base/base.gyp:linux_versioninfo',
-            # Build placeholder libraries to work around buggy plugins;
-            # see webkit.gyp for details.
-            '../webkit/webkit.gyp:xul',
-            '../webkit/webkit.gyp:xpcom',
           ],
           'sources!': [
             'browser/views/extensions/extension_shelf.cc',
