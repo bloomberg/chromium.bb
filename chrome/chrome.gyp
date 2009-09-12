@@ -3083,11 +3083,13 @@
                   'variables': {
                     'name': 'Google Chrome',
                     'filename': 'google-chrome',
+                    'confdir': 'google-chrome',
                   },
                 }, { # else branding!="Chrome"
                   'variables': {
                     'name': 'Chromium',
                     'filename': 'chromium-browser',
+                    'confdir': 'chromium',
                   },
                 }],
               ],
@@ -3104,6 +3106,7 @@
                 '<@(_outputs)',
                 '-e', 's/@@NAME@@/<(name)/',
                 '-e', 's/@@FILENAME@@/<(filename)/',
+                '-e', 's/@@CONFDIR@@/<(confdir)/',
               ],
               'message': 'Generating manpage'
             },

@@ -21,7 +21,7 @@ This manpage only describes invocation, environment, and arguments.
 \fB\-\-user\-data\-dir\fR=\fIDIR\fR
 Specifies the directory that user data (your "profile") is kept in.
 Defaults to
-.IR ~/.config/@@FILENAME@@/Default .
+.IR ~/.config/@@CONFDIR@@/Default .
 Separate instances of @@NAME@@ must use separate user data directories;
 repeated invocations of @@FILENAME@@ will reuse an existing process for
 a given user data directory.
