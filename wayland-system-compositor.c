@@ -37,6 +37,7 @@
 #define LIBUDEV_I_KNOW_THE_API_IS_SUBJECT_TO_CHANGE
 #include <libudev.h>
 
+#define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <eagle.h>
 
@@ -166,7 +167,6 @@ struct wlsc_surface {
 	struct wl_visual *visual;
 	GLuint texture;
 	struct wl_map map;
-	EGLSurface surface;
 	int width, height;
 	struct wl_list link;
 	struct wlsc_matrix matrix;
@@ -342,7 +342,6 @@ wlsc_surface_init(struct wlsc_surface *surface,
 	surface->map.y = y;
 	surface->map.width = width;
 	surface->map.height = height;
-	surface->surface = EGL_NO_SURFACE;
 	surface->visual = visual;
 	wlsc_matrix_init(&surface->matrix);
 }
@@ -393,8 +392,6 @@ wlsc_surface_destroy(struct wlsc_surface *surface,
 	wl_list_remove(&surface->link);
 
 	glDeleteTextures(1, &surface->texture);
-	if (surface->surface != EGL_NO_SURFACE)
-		eglDestroySurface(compositor->display, surface->surface);
 	free(surface);
 }
 
@@ -730,13 +727,9 @@ surface_attach(struct wl_client *client,
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_compositor *ec = es->compositor;
 
-	if (es->surface != EGL_NO_SURFACE)
-		eglDestroySurface(ec->display, es->surface);
-
 	es->width = width;
 	es->height = height;
-	es->surface = eglCreateSurfaceForName(ec->display, ec->config,
-					      name, width, height, stride, NULL);
+
 	if (visual == &ec->argb_visual.base)
 		es->visual = &ec->argb_visual;
 	else if (visual == &ec->premultiplied_argb_visual.base)
@@ -751,7 +744,9 @@ surface_attach(struct wl_client *client,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	eglBindTexImage(ec->display, es->surface, GL_TEXTURE_2D);
+	glTextureExternalMESA(GL_TEXTURE_2D, GL_RGBA, 4,
+			      width, height, stride / 4, name);
+	
 }
 
 static void
@@ -780,20 +775,35 @@ surface_copy(struct wl_client *client,
 	     int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	struct wlsc_compositor *ec = es->compositor;
-	EGLSurface src;
+	GLuint fbo[2], rb;
 
-	src = eglCreateSurfaceForName(ec->display, ec->config,
-				      name, x + width, y + height, stride, NULL);
+	glGenFramebuffers(2, fbo);
 
-	eglMakeCurrent(ec->display, es->surface, src, ec->context);
-	glDrawBuffer(GL_FRONT);
-	glReadBuffer(GL_FRONT);
-	glRasterPos2d(0, 0);
-	fprintf(stderr, "copypixels\n");
-	glCopyPixels(x, y, width, height, GL_COLOR);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, fbo[1]);
+	glGenRenderbuffers(1, &rb);
+	glBindRenderbuffer(GL_RENDERBUFFER_EXT, rb);
+	glRenderbufferExternalMESA(GL_RENDERBUFFER_EXT,
+				   GL_RGBA,
+				   es->width, es->height,
+				   stride / 4, name);
+	glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER_EXT,
+				  GL_COLOR_ATTACHMENT0_EXT,
+				  GL_RENDERBUFFER_EXT,
+				  rb);
 
-	eglDestroySurface(ec->display, src);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, fbo[0]);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER_EXT,
+			       GL_COLOR_ATTACHMENT0_EXT,
+			       GL_TEXTURE_2D, es->texture, 0);
+	
+	glBlitFramebuffer(x, y, x + width, y + height,
+			  dst_x, dst_y, dst_x+ width, dst_y + height,
+			  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+	glDeleteRenderbuffers(1, &rb);
+	glDeleteFramebuffers(2, fbo);
 }
 
 static void
