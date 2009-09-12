@@ -727,9 +727,11 @@ void TabContents::Copy() {
   render_view_host()->Copy();
 }
 
+#if defined(OS_MACOSX)
 void TabContents::CopyToFindPboard() {
   render_view_host()->CopyToFindPboard();
 }
+#endif
 
 void TabContents::Paste() {
   render_view_host()->Paste();

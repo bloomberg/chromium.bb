@@ -317,7 +317,9 @@ class TabContents : public PageNavigator,
   // cut/copy/paste focus. (http://b/1117225)
   virtual void Cut();
   virtual void Copy();
+#if defined(OS_MACOSX)
   virtual void CopyToFindPboard();
+#endif
   virtual void Paste();
 
   // Called on a TabContents when it isn't a popup, but a new window.

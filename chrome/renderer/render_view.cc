@@ -356,7 +356,9 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Redo, OnRedo)
     IPC_MESSAGE_HANDLER(ViewMsg_Cut, OnCut)
     IPC_MESSAGE_HANDLER(ViewMsg_Copy, OnCopy)
+#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyToFindPboard, OnCopyToFindPboard)
+#endif
     IPC_MESSAGE_HANDLER(ViewMsg_Paste, OnPaste)
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(ViewMsg_ToggleSpellPanel, OnToggleSpellPanel)
@@ -831,6 +833,7 @@ void RenderView::OnCopy() {
   UserMetricsRecordAction(L"Copy");
 }
 
+#if defined(OS_MACOSX)
 void RenderView::OnCopyToFindPboard() {
   if (!webview())
     return;
@@ -846,6 +849,7 @@ void RenderView::OnCopyToFindPboard() {
 
   UserMetricsRecordAction(L"CopyToFindPboard");
 }
+#endif
 
 void RenderView::OnPaste() {
   if (!webview())
