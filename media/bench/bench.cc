@@ -6,8 +6,14 @@
 // measure decoding performance between different FFmpeg compile and run-time
 // options.  We also use this tool to measure performance regressions when
 // testing newer builds of FFmpeg from trunk.
-//
-// This tool requires FFMPeg DLL's built with --enable-protocol=file.
+
+#include "build/build_config.h"
+
+// For pipe _setmode to binary
+#if defined(OS_WIN)
+#include <fcntl.h>
+#include <io.h>
+#endif
 
 #include <iomanip>
 #include <iostream>
@@ -18,7 +24,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/logging.h"
+#include "base/md5.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "media/base/media.h"
@@ -32,18 +38,52 @@ const wchar_t kVideoThreads[]           = L"video-threads";
 const wchar_t kFast2[]                  = L"fast2";
 const wchar_t kSkip[]                   = L"skip";
 const wchar_t kFlush[]                  = L"flush";
-const wchar_t kHash[]                   = L"hash";
+const wchar_t kDjb2[]                   = L"djb2";
+const wchar_t kMd5[]                    = L"md5";
+const wchar_t kFrames[]                 = L"frames";
 }  // namespace switches
 
 namespace {
 // DJB2 hash
-unsigned int hash_djb2(const uint8* s,
-                       size_t len, unsigned int hash) {
-  while (len--)
-    hash = hash * 33 + *s++;
+unsigned int DJB2Hash(const uint8* s,
+                      size_t len, unsigned int hash) {
+  if (len > 0) {
+    do {
+      hash = hash * 33 + *s++;
+    } while (--len);
+  }
   return hash;
 }
 }
+
+#if defined(OS_WIN)
+// warning: disable warning about exception handler.
+#pragma warning(disable:4509)
+
+// Thread priorities to make benchmark more stable.
+
+void EnterTimingSection() {
+  SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
+}
+
+void LeaveTimingSection() {
+  SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
+}
+#else
+void EnterTimingSection() {
+  pthread_attr_t pta;
+  struct sched_param param;
+
+  pthread_attr_init(&pta);
+  memset(&param, 0, sizeof(param));
+  param.sched_priority = 78;
+  pthread_attr_setschedparam(&pta, &param);
+  pthread_attr_destroy(&pta);
+}
+
+void LeaveTimingSection() {
+}
+#endif
 
 int main(int argc, const char** argv) {
   base::AtExitManager exit_manager;
@@ -58,12 +98,16 @@ int main(int argc, const char** argv) {
               << "Benchmark either the audio or video stream\n"
               << "  --video-threads=N               "
               << "Decode video using N threads\n"
+              << "  --frames=N                      "
+              << "Decode N frames\n"
               << "  --fast2                         "
               << "Enable fast2 flag\n"
               << "  --flush                         "
               << "Flush last frame\n"
-              << "  --hash                          "
-              << "Hash decoded buffers\n"
+              << "  --djb2                          "
+              << "Hash decoded buffers (DJB2)\n"
+              << "  --md5                           "
+              << "Hash decoded buffers (MD5)\n"
               << "  --skip=[1|2|3]                  "
               << "1=loop nonref, 2=loop, 3= frame nonref\n" << std::endl;
     return 1;
@@ -84,7 +128,6 @@ int main(int argc, const char** argv) {
     out_path = WideToUTF8(filenames[1]);
   }
   CodecType target_codec = CODEC_TYPE_UNKNOWN;
-  int video_threads = 0;
 
   // Determine whether to benchmark audio or video decoding.
   std::wstring stream(cmd_line->GetSwitchValue(switches::kStream));
@@ -100,10 +143,19 @@ int main(int argc, const char** argv) {
   }
 
   // Determine number of threads to use for video decoding (optional).
+  int video_threads = 0;
   std::wstring threads(cmd_line->GetSwitchValue(switches::kVideoThreads));
   if (!threads.empty() &&
       !StringToInt(WideToUTF16Hack(threads), &video_threads)) {
     video_threads = 0;
+  }
+
+  // Determine number of frames to decode (optional).
+  int max_frames = 0;
+  std::wstring frames_opt(cmd_line->GetSwitchValue(switches::kFrames));
+  if (!frames_opt.empty() &&
+      !StringToInt(WideToUTF16Hack(frames_opt), &max_frames)) {
+    max_frames = 0;
   }
 
   bool fast2 = false;
@@ -117,9 +169,16 @@ int main(int argc, const char** argv) {
   }
 
   unsigned int hash_value = 5381u;  // Seed for DJB2.
-  bool hash = false;
-  if (cmd_line->HasSwitch(switches::kHash)) {
-    hash = true;
+  bool hash_djb2 = false;
+  if (cmd_line->HasSwitch(switches::kDjb2)) {
+    hash_djb2 = true;
+  }
+
+  MD5Context ctx; // intermediate MD5 data: do not use
+  MD5Init(&ctx);
+  bool hash_md5 = false;
+  if (cmd_line->HasSwitch(switches::kMd5)) {
+    hash_md5 = true;
   }
 
   int skip = 0;
@@ -130,29 +189,48 @@ int main(int argc, const char** argv) {
     }
   }
 
+  std::ostream* log_out = &std::cout;
+#if defined(OS_WIN)
+  // Catch exceptions so this tool can be used in automated testing.
+  __try {
+#endif
+
   // Register FFmpeg and attempt to open file.
   avcodec_init();
   av_register_all();
   av_register_protocol(&kFFmpegFileProtocol);
   AVFormatContext* format_context = NULL;
   if (av_open_input_file(&format_context, in_path.c_str(), NULL, 0, NULL) < 0) {
-    std::cerr << "Could not open " << in_path << std::endl;
+    std::cerr << "Error: Could not open input for "
+              << in_path << std::endl;
     return 1;
   }
 
   // Open output file.
   FILE *output = NULL;
   if (!out_path.empty()) {
-    output = file_util::OpenFile(out_path.c_str(), "wb");
+    // TODO(fbarchard): Add pipe:1 for piping to stderr.
+    if (!strncmp(out_path.c_str(), "pipe:", 5) ||
+        !strcmp(out_path.c_str(), "-")) {
+      output = stdout;
+      log_out = &std::cerr;
+#if defined(OS_WIN)
+      _setmode(_fileno(stdout),_O_BINARY);
+#endif
+    } else {
+      output = file_util::OpenFile(out_path.c_str(), "wb");
+    }
     if (!output) {
-      LOG(ERROR) << "could not open output";
+      std::cerr << "Error: Could not open output "
+                << out_path << std::endl;
       return 1;
     }
   }
 
   // Parse a little bit of the stream to fill out the format context.
   if (av_find_stream_info(format_context) < 0) {
-    std::cerr << "Could not find stream info for " << in_path << std::endl;
+    std::cerr << "Error: Could not find stream info for "
+              << in_path << std::endl;
     return 1;
   }
 
@@ -164,23 +242,25 @@ int main(int argc, const char** argv) {
 
     // See if we found our target codec.
     if (codec_context->codec_type == target_codec && target_stream < 0) {
-      std::cout << "* ";
+      *log_out << "* ";
       target_stream = i;
     } else {
-      std::cout << "  ";
+      *log_out << "  ";
     }
 
-    if (codec_context->codec_type == CODEC_TYPE_UNKNOWN) {
-      std::cout << "Stream #" << i << ": Unknown" << std::endl;
+    if (!codec || (codec_context->codec_type == CODEC_TYPE_UNKNOWN)) {
+      *log_out << "Stream #" << i << ": Unknown" << std::endl;
     } else {
       // Print out stream information
-      std::cout << "Stream #" << i << ": " << codec->name << " ("
-                << codec->long_name << ")" << std::endl;
+      *log_out << "Stream #" << i << ": " << codec->name << " ("
+               << codec->long_name << ")" << std::endl;
     }
   }
 
   // Only continue if we found our target stream.
   if (target_stream < 0) {
+    std::cerr << "Error: Could not find target stream "
+              << target_stream << " for " << in_path << std::endl;
     return 1;
   }
 
@@ -188,6 +268,13 @@ int main(int argc, const char** argv) {
   AVPacket packet;
   AVCodecContext* codec_context = format_context->streams[target_stream]->codec;
   AVCodec* codec = avcodec_find_decoder(codec_context->codec_id);
+
+  // Only continue if we found our codec.
+  if (!codec) {
+    std::cerr << "Error: Could not find codec for "
+              << in_path << std::endl;
+    return 1;
+  }
 
   if (skip == 1) {
     codec_context->skip_loop_filter = AVDISCARD_NONREF;
@@ -204,15 +291,16 @@ int main(int argc, const char** argv) {
   // Initialize threaded decode.
   if (target_codec == CODEC_TYPE_VIDEO && video_threads > 0) {
     if (avcodec_thread_init(codec_context, video_threads) < 0) {
-      std::cerr << "WARNING: Could not initialize threading!\n"
+      std::cerr << "Warning: Could not initialize threading!\n"
                 << "Did you build with pthread/w32thread support?" << std::endl;
     }
   }
 
   // Initialize our codec.
   if (avcodec_open(codec_context, codec) < 0) {
-    std::cerr << "Could not open codec " << codec_context->codec->name
-              << std::endl;
+    std::cerr << "Error: Could not open codec "
+              << codec_context->codec->name << " for "
+              << in_path << std::endl;
     return 1;
   }
 
@@ -223,16 +311,18 @@ int main(int argc, const char** argv) {
   // Buffer used for video decoding.
   AVFrame* frame = avcodec_alloc_frame();
   if (!frame) {
-    std::cerr << "Could not allocate an AVFrame" << std::endl;
+    std::cerr << "Error: avcodec_alloc_frame for "
+              << in_path << std::endl;
     return 1;
   }
 
   // Stats collector.
+  EnterTimingSection();
   std::vector<double> decode_times;
   decode_times.reserve(4096);
   // Parse through the entire stream until we hit EOF.
   base::TimeTicks start = base::TimeTicks::HighResNow();
-  size_t frames = 0;
+  int frames = 0;
   int read_result = 0;
   do {
     read_result = av_read_frame(format_context, &packet);
@@ -249,77 +339,97 @@ int main(int argc, const char** argv) {
     // Only decode packets from our target stream.
     if (packet.stream_index == target_stream) {
       int result = -1;
-      base::TimeTicks decode_start = base::TimeTicks::HighResNow();
       if (target_codec == CODEC_TYPE_AUDIO) {
         int size_out = AVCODEC_MAX_AUDIO_FRAME_SIZE;
+
+        base::TimeTicks decode_start = base::TimeTicks::HighResNow();
         result = avcodec_decode_audio3(codec_context, samples, &size_out,
                                        &packet);
+        base::TimeDelta delta = base::TimeTicks::HighResNow() - decode_start;
+
         if (size_out) {
+          decode_times.push_back(delta.InMillisecondsF());
           ++frames;
           read_result = 0;  // Force continuation.
 
           if (output) {
             if (fwrite(samples, 1, size_out, output) !=
                 static_cast<size_t>(size_out)) {
-              std::cerr << "could not write data after " << size_out;
+              std::cerr << "Error: Could not write "
+                        << size_out << " bytes for " << in_path << std::endl;
               return 1;
             }
           }
-          if (hash) {
-            hash_value = hash_djb2(reinterpret_cast<const uint8*>(samples),
-                                   size_out, hash_value);
+          if (hash_djb2) {
+            hash_value = DJB2Hash(reinterpret_cast<const uint8*>(samples),
+                                  size_out, hash_value);
+          }
+          if (hash_md5) {
+            MD5Update(&ctx, reinterpret_cast<const uint8*>(samples),
+                      size_out);
           }
         }
       } else if (target_codec == CODEC_TYPE_VIDEO) {
         int got_picture = 0;
+
+        base::TimeTicks decode_start = base::TimeTicks::HighResNow();
         result = avcodec_decode_video2(codec_context, frame, &got_picture,
                                        &packet);
+        base::TimeDelta delta = base::TimeTicks::HighResNow() - decode_start;
+
         if (got_picture) {
+          decode_times.push_back(delta.InMillisecondsF());
           ++frames;
           read_result = 0;  // Force continuation.
 
-          if (output || hash) {
-            for (int plane = 0; plane < 3; ++plane) {
-              const uint8* source = frame->data[plane];
-              const size_t source_stride = frame->linesize[plane];
-              size_t bytes_per_line = codec_context->width;
-              size_t copy_lines = codec_context->height;
-              if (plane != 0) {
-                switch (codec_context->pix_fmt) {
-                  case PIX_FMT_YUV420P:
-                  case PIX_FMT_YUVJ420P:
-                    bytes_per_line /= 2;
-                    copy_lines = (copy_lines + 1) / 2;
-                    break;
-                  case PIX_FMT_YUV422P:
-                  case PIX_FMT_YUVJ422P:
-                    bytes_per_line /= 2;
-                    break;
-                  case PIX_FMT_YUV444P:
-                  case PIX_FMT_YUVJ444P:
-                    break;
-                  default:
-                    std::cerr << "unknown video format: "
-                              << codec_context->pix_fmt;
-                    return 1;
-                }
+          for (int plane = 0; plane < 3; ++plane) {
+            const uint8* source = frame->data[plane];
+            const size_t source_stride = frame->linesize[plane];
+            size_t bytes_per_line = codec_context->width;
+            size_t copy_lines = codec_context->height;
+            if (plane != 0) {
+              switch (codec_context->pix_fmt) {
+                case PIX_FMT_YUV420P:
+                case PIX_FMT_YUVJ420P:
+                  bytes_per_line /= 2;
+                  copy_lines = (copy_lines + 1) / 2;
+                  break;
+                case PIX_FMT_YUV422P:
+                case PIX_FMT_YUVJ422P:
+                  bytes_per_line /= 2;
+                  break;
+                case PIX_FMT_YUV444P:
+                case PIX_FMT_YUVJ444P:
+                  break;
+                default:
+                  std::cerr << "Error: Unknown video format "
+                            << codec_context->pix_fmt;
+                  return 1;
               }
-              if (output) {
-                for (size_t i = 0; i < copy_lines; ++i) {
-                  if (fwrite(source, 1, bytes_per_line, output) !=
-                             bytes_per_line) {
-                    std::cerr << "could not write data after "
-                              << bytes_per_line;
-                    return 1;
-                  }
-                  source += source_stride;
+            }
+            if (output) {
+              for (size_t i = 0; i < copy_lines; ++i) {
+                if (fwrite(source, 1, bytes_per_line, output) !=
+                           bytes_per_line) {
+                  std::cerr << "Error: Could not write data after "
+                            << copy_lines << " lines for "
+                            << in_path << std::endl;
+                  return 1;
                 }
+                source += source_stride;
               }
-              if (hash) {
-                for (size_t i = 0; i < copy_lines; ++i) {
-                  hash_value = hash_djb2(source, bytes_per_line, hash_value);
-                  source += source_stride;
-                }
+            }
+            if (hash_djb2) {
+              for (size_t i = 0; i < copy_lines; ++i) {
+                hash_value = DJB2Hash(source, bytes_per_line, hash_value);
+                source += source_stride;
+              }
+            }
+            if (hash_md5) {
+              for (size_t i = 0; i < copy_lines; ++i) {
+                MD5Update(&ctx, reinterpret_cast<const uint8*>(source),
+                          bytes_per_line);
+                source += source_stride;
               }
             }
           }
@@ -327,21 +437,22 @@ int main(int argc, const char** argv) {
       } else {
         NOTREACHED();
       }
-      base::TimeDelta delta = base::TimeTicks::HighResNow() - decode_start;
-
-      decode_times.push_back(delta.InMillisecondsF());
 
       // Make sure our decoding went OK.
       if (result < 0) {
-        std::cerr << "Error while decoding" << std::endl;
+        std::cerr << "Error: avcodec_decode returned "
+                  << result << " for " << in_path << std::endl;
         return 1;
       }
     }
     // Free our packet.
     av_free_packet(&packet);
+
+    if (max_frames && (frames >= max_frames))
+      break;
   } while (read_result >= 0);
   base::TimeDelta total = base::TimeTicks::HighResNow() - start;
-
+  LeaveTimingSection();
   if (output)
     file_util::CloseFile(output);
 
@@ -352,21 +463,17 @@ int main(int argc, const char** argv) {
   }
 
   // Print our results.
-  std::cout.setf(std::ios::fixed);
-  std::cout.precision(2);
-  std::cout << std::endl;
-  std::cout << "     Frames:" << std::setw(10) << frames
-            << std::endl;
-  std::cout << "      Total:" << std::setw(10) << total.InMillisecondsF()
-            << " ms" << std::endl;
-  std::cout << "  Summation:" << std::setw(10) << sum
-            << " ms" << std::endl;
-  if (hash) {
-    std::cout << "       Hash:" << std::setw(10) << hash_value
-              << std::endl;
-  }
+  log_out->setf(std::ios::fixed);
+  log_out->precision(2);
+  *log_out << std::endl;
+  *log_out << "     Frames:" << std::setw(11) << frames
+           << std::endl;
+  *log_out << "      Total:" << std::setw(11) << total.InMillisecondsF()
+           << " ms" << std::endl;
+  *log_out << "  Summation:" << std::setw(11) << sum
+           << " ms" << std::endl;
 
-  if (frames > 0u) {
+  if (frames > 0) {
     // Calculate the average time per frame.
     double average = sum / frames;
 
@@ -374,7 +481,7 @@ int main(int argc, const char** argv) {
     // Standard deviation will only be accurate if no threads are used.
     // TODO(fbarchard): Rethink standard deviation calculation.
     double squared_sum = 0;
-    for (size_t i = 0; i < frames; ++i) {
+    for (int i = 0; i < frames; ++i) {
       double difference = decode_times[i] - average;
       squared_sum += difference * difference;
     }
@@ -382,10 +489,27 @@ int main(int argc, const char** argv) {
     // Calculate the standard deviation (jitter).
     double stddev = sqrt(squared_sum / frames);
 
-    std::cout << "    Average:" << std::setw(10) << average
-              << " ms" << std::endl;
-    std::cout << "     StdDev:" << std::setw(10) << stddev
-              << " ms" << std::endl;
+    *log_out << "    Average:" << std::setw(11) << average
+             << " ms" << std::endl;
+    *log_out << "     StdDev:" << std::setw(11) << stddev
+             << " ms" << std::endl;
   }
+  if (hash_djb2) {
+    *log_out << "       DJB2:" << std::setw(11) << hash_value
+             << "  " << in_path << std::endl;
+  }
+  if (hash_md5) {
+    MD5Digest digest; // The result of the computation.
+    MD5Final(&digest, &ctx);
+    *log_out << "        MD5: " << MD5DigestToBase16(digest)
+             << " " << in_path << std::endl;
+  }
+#if defined(OS_WIN)
+  } __except(EXCEPTION_EXECUTE_HANDLER) {
+    *log_out << "  Exception:" << std::setw(11) << GetExceptionCode()
+             << " " << in_path << std::endl;
+    return 1;
+  }
+#endif
   return 0;
 }
