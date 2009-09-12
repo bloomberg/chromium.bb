@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,19 +19,14 @@ class FirstRunBubble : public InfoBubble,
                               const gfx::Rect& position_relative_to,
                               bool use_OEM_bubble);
 
-  FirstRunBubble()
-      : has_been_activated_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(enable_window_method_factory_(this)),
-        view_(NULL) {
-  }
-
-  virtual ~FirstRunBubble() {
-    // We should have called RevokeAll on the method factory already.
-    DCHECK(enable_window_method_factory_.empty());
-    enable_window_method_factory_.RevokeAll();
-  }
+ private:
+  FirstRunBubble();
+  virtual ~FirstRunBubble();
 
   void set_view(FirstRunBubbleViewBase* view) { view_ = view; }
+
+  // Re-enable the parent window.
+  void EnableParent();
 
 #if defined(OS_WIN)
   // Overridden from InfoBubble:
@@ -42,10 +37,6 @@ class FirstRunBubble : public InfoBubble,
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
-
- private:
-  // Re-enable the parent window.
-  void EnableParent();
 
   // Whether we have already been activated.
   bool has_been_activated_;

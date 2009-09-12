@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,18 +29,18 @@ namespace {
 
 // How much extra padding to put around our content over what the InfoBubble
 // provides.
-static const int kBubblePadding = 4;
+const int kBubblePadding = 4;
 
 // How much extra padding to put around our content over what the InfoBubble
 // provides in alternative OEM bubble.
-static const int kOEMBubblePadding = 4;
+const int kOEMBubblePadding = 4;
 
 // Padding between parts of strings on the same line (for instance,
 // "New!" and "Search from the address bar!"
-static const int kStringSeparationPadding = 2;
+const int kStringSeparationPadding = 2;
 
 // Margin around close button.
-static const int kMarginRightOfCloseButton = 7;
+const int kMarginRightOfCloseButton = 7;
 
 std::wstring GetDefaultSearchEngineName(Profile* profile) {
   if (!profile) {
@@ -71,132 +71,26 @@ class FirstRunBubbleViewBase : public views::View,
   virtual void BubbleShown() = 0;
 };
 
+// FirstRunBubbleView ---------------------------------------------------------
+
 class FirstRunBubbleView : public FirstRunBubbleViewBase {
  public:
-  FirstRunBubbleView(FirstRunBubble* bubble_window, Profile* profile)
-      : bubble_window_(bubble_window),
-        label1_(NULL),
-        label2_(NULL),
-        label3_(NULL),
-        keep_button_(NULL),
-        change_button_(NULL) {
-    gfx::Font& font =
-        ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
-
-    label1_ = new views::Label(l10n_util::GetString(IDS_FR_BUBBLE_TITLE));
-    label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
-    label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    AddChildView(label1_);
-
-    gfx::Size ps = GetPreferredSize();
-
-    label2_ = new views::Label(l10n_util::GetString(IDS_FR_BUBBLE_SUBTEXT));
-    label2_->SetMultiLine(true);
-    label2_->SetFont(font);
-    label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    label2_->SizeToFit(ps.width() - kBubblePadding * 2);
-    AddChildView(label2_);
-
-    std::wstring question_str
-        = l10n_util::GetStringF(IDS_FR_BUBBLE_QUESTION,
-                                GetDefaultSearchEngineName(profile));
-    label3_ = new views::Label(question_str);
-    label3_->SetMultiLine(true);
-    label3_->SetFont(font);
-    label3_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    label3_->SizeToFit(ps.width() - kBubblePadding * 2);
-    AddChildView(label3_);
-
-    std::wstring keep_str =
-        l10n_util::GetStringF(IDS_FR_BUBBLE_OK,
-                              GetDefaultSearchEngineName(profile));
-    keep_button_ = new views::NativeButton(this, keep_str);
-    keep_button_->SetIsDefault(true);
-    AddChildView(keep_button_);
-
-    std::wstring change_str = l10n_util::GetString(IDS_FR_BUBBLE_CHANGE);
-    change_button_ = new views::NativeButton(this, change_str);
-    AddChildView(change_button_);
-  }
-
-  void BubbleShown() {
-    keep_button_->RequestFocus();
-  }
-
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
-    bubble_window_->Close();
-    if (change_button_ == sender) {
-      Browser* browser = BrowserList::GetLastActive();
-      if (browser) {
-        ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
-                          browser->profile());
-      }
-    }
-  }
-
-  virtual void Layout() {
-    gfx::Size canvas = GetPreferredSize();
-
-    // The multiline business that follows is dirty hacks to get around
-    // bug 1325257.
-    label1_->SetMultiLine(false);
-    gfx::Size pref_size = label1_->GetPreferredSize();
-    label1_->SetMultiLine(true);
-    label1_->SizeToFit(canvas.width() - kBubblePadding * 2);
-    label1_->SetBounds(kBubblePadding, kBubblePadding,
-                       canvas.width() - kBubblePadding * 2,
-                       pref_size.height());
-
-    int next_v_space = label1_->y() + pref_size.height() +
-                       kRelatedControlSmallVerticalSpacing;
-
-    pref_size = label2_->GetPreferredSize();
-    label2_->SetBounds(kBubblePadding, next_v_space,
-                       canvas.width() - kBubblePadding * 2,
-                       pref_size.height());
-
-    next_v_space = label2_->y() + label2_->height() +
-                   kPanelSubVerticalSpacing;
-
-    pref_size = label3_->GetPreferredSize();
-    label3_->SetBounds(kBubblePadding, next_v_space,
-                       canvas.width() - kBubblePadding * 2,
-                       pref_size.height());
-
-    pref_size = change_button_->GetPreferredSize();
-    change_button_->SetBounds(
-        canvas.width() - pref_size.width() - kBubblePadding,
-        canvas.height() - pref_size.height() - kButtonVEdgeMargin,
-        pref_size.width(), pref_size.height());
-
-    pref_size = keep_button_->GetPreferredSize();
-    keep_button_->SetBounds(change_button_->x() - pref_size.width() -
-                            kRelatedButtonHSpacing, change_button_->y(),
-                            pref_size.width(), pref_size.height());
-  }
-
-  virtual gfx::Size GetPreferredSize() {
-    return gfx::Size(views::Window::GetLocalizedContentsSize(
-        IDS_FIRSTRUNBUBBLE_DIALOG_WIDTH_CHARS,
-        IDS_FIRSTRUNBUBBLE_DIALOG_HEIGHT_LINES));
-  }
-
-  virtual void FocusWillChange(View* focused_before, View* focused_now) {
-    if (focused_before && focused_before->GetClassName() ==
-                          views::NativeButton::kViewClassName) {
-      views::NativeButton* before =
-          static_cast<views::NativeButton*>(focused_before);
-      before->SetIsDefault(false);
-    }
-    if (focused_now && focused_now->GetClassName() ==
-                       views::NativeButton::kViewClassName) {
-      views::NativeButton* after =
-          static_cast<views::NativeButton*>(focused_now);
-      after->SetIsDefault(true);
-    }
-  }
+  FirstRunBubbleView(FirstRunBubble* bubble_window, Profile* profile);
 
  private:
+  virtual ~FirstRunBubbleView() { }
+
+  // FirstRunBubbleViewBase:
+  void BubbleShown();
+
+  // Overridden from View:
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void Layout();
+  virtual gfx::Size GetPreferredSize();
+
+  // FocusChangeListener:
+  virtual void FocusWillChange(View* focused_before, View* focused_now);
+
   FirstRunBubble* bubble_window_;
   views::Label* label1_;
   views::Label* label2_;
@@ -207,103 +101,149 @@ class FirstRunBubbleView : public FirstRunBubbleViewBase {
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleView);
 };
 
+FirstRunBubbleView::FirstRunBubbleView(FirstRunBubble* bubble_window,
+                                       Profile* profile)
+    : bubble_window_(bubble_window),
+      label1_(NULL),
+      label2_(NULL),
+      label3_(NULL),
+      keep_button_(NULL),
+      change_button_(NULL) {
+  gfx::Font& font =
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
+
+  label1_ = new views::Label(l10n_util::GetString(IDS_FR_BUBBLE_TITLE));
+  label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
+  label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  AddChildView(label1_);
+
+  gfx::Size ps = GetPreferredSize();
+
+  label2_ = new views::Label(l10n_util::GetString(IDS_FR_BUBBLE_SUBTEXT));
+  label2_->SetMultiLine(true);
+  label2_->SetFont(font);
+  label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label2_->SizeToFit(ps.width() - kBubblePadding * 2);
+  AddChildView(label2_);
+
+  std::wstring question_str = l10n_util::GetStringF(IDS_FR_BUBBLE_QUESTION,
+      GetDefaultSearchEngineName(profile));
+  label3_ = new views::Label(question_str);
+  label3_->SetMultiLine(true);
+  label3_->SetFont(font);
+  label3_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label3_->SizeToFit(ps.width() - kBubblePadding * 2);
+  AddChildView(label3_);
+
+  std::wstring keep_str = l10n_util::GetStringF(IDS_FR_BUBBLE_OK,
+      GetDefaultSearchEngineName(profile));
+  keep_button_ = new views::NativeButton(this, keep_str);
+  keep_button_->SetIsDefault(true);
+  AddChildView(keep_button_);
+
+  std::wstring change_str = l10n_util::GetString(IDS_FR_BUBBLE_CHANGE);
+  change_button_ = new views::NativeButton(this, change_str);
+  AddChildView(change_button_);
+}
+
+void FirstRunBubbleView::BubbleShown() {
+  keep_button_->RequestFocus();
+}
+
+void FirstRunBubbleView::ButtonPressed(views::Button* sender,
+                                       const views::Event& event) {
+  bubble_window_->Close();
+  if (change_button_ == sender) {
+    Browser* browser = BrowserList::GetLastActive();
+    if (browser) {
+      ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
+                        browser->profile());
+    }
+  }
+}
+
+void FirstRunBubbleView::Layout() {
+  gfx::Size canvas = GetPreferredSize();
+
+  // The multiline business that follows is dirty hacks to get around
+  // bug 1325257.
+  label1_->SetMultiLine(false);
+  gfx::Size pref_size = label1_->GetPreferredSize();
+  label1_->SetMultiLine(true);
+  label1_->SizeToFit(canvas.width() - kBubblePadding * 2);
+  label1_->SetBounds(kBubblePadding, kBubblePadding,
+                     canvas.width() - kBubblePadding * 2,
+                     pref_size.height());
+
+  int next_v_space = label1_->y() + pref_size.height() +
+                     kRelatedControlSmallVerticalSpacing;
+
+  pref_size = label2_->GetPreferredSize();
+  label2_->SetBounds(kBubblePadding, next_v_space,
+                     canvas.width() - kBubblePadding * 2,
+                     pref_size.height());
+
+  next_v_space = label2_->y() + label2_->height() +
+                 kPanelSubVerticalSpacing;
+
+  pref_size = label3_->GetPreferredSize();
+  label3_->SetBounds(kBubblePadding, next_v_space,
+                     canvas.width() - kBubblePadding * 2,
+                     pref_size.height());
+
+  pref_size = change_button_->GetPreferredSize();
+  change_button_->SetBounds(
+      canvas.width() - pref_size.width() - kBubblePadding,
+      canvas.height() - pref_size.height() - kButtonVEdgeMargin,
+      pref_size.width(), pref_size.height());
+
+  pref_size = keep_button_->GetPreferredSize();
+  keep_button_->SetBounds(change_button_->x() - pref_size.width() -
+                          kRelatedButtonHSpacing, change_button_->y(),
+                          pref_size.width(), pref_size.height());
+}
+
+gfx::Size FirstRunBubbleView::GetPreferredSize() {
+  return gfx::Size(views::Window::GetLocalizedContentsSize(
+      IDS_FIRSTRUNBUBBLE_DIALOG_WIDTH_CHARS,
+      IDS_FIRSTRUNBUBBLE_DIALOG_HEIGHT_LINES));
+}
+
+void FirstRunBubbleView::FocusWillChange(View* focused_before,
+                                         View* focused_now) {
+  if (focused_before &&
+      (focused_before->GetClassName() == views::NativeButton::kViewClassName)) {
+    views::NativeButton* before =
+        static_cast<views::NativeButton*>(focused_before);
+    before->SetIsDefault(false);
+  }
+  if (focused_now &&
+      (focused_now->GetClassName() == views::NativeButton::kViewClassName)) {
+    views::NativeButton* after = static_cast<views::NativeButton*>(focused_now);
+    after->SetIsDefault(true);
+  }
+}
+
+// FirstRunOEMBubbleView ------------------------------------------------------
+
 class FirstRunOEMBubbleView : public FirstRunBubbleViewBase {
  public:
-  FirstRunOEMBubbleView(FirstRunBubble* bubble_window, Profile* profile)
-      : bubble_window_(bubble_window),
-        label1_(NULL),
-        label2_(NULL),
-        label3_(NULL),
-        close_button_(NULL) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Font& font = rb.GetFont(ResourceBundle::MediumFont);
-
-    label1_ = new views::Label(
-              l10n_util::GetString(IDS_FR_OEM_BUBBLE_TITLE_1));
-    label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
-    label1_->SetColor(SK_ColorRED);
-    label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    AddChildView(label1_);
-
-    label2_ = new views::Label(
-              l10n_util::GetString(IDS_FR_OEM_BUBBLE_TITLE_2));
-    label2_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
-    label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    AddChildView(label2_);
-
-    gfx::Size ps = GetPreferredSize();
-
-    label3_ = new views::Label(
-              l10n_util::GetString(IDS_FR_OEM_BUBBLE_SUBTEXT));
-    label3_->SetMultiLine(true);
-    label3_->SetFont(font);
-    label3_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    label3_->SizeToFit(ps.width() - kOEMBubblePadding * 2);
-    AddChildView(label3_);
-
-    close_button_ = new views::ImageButton(this);
-    close_button_->SetImage(views::CustomButton::BS_NORMAL,
-        rb.GetBitmapNamed(IDR_CLOSE_BAR));
-    close_button_->SetImage(views::CustomButton::BS_HOT,
-        rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
-    close_button_->SetImage(views::CustomButton::BS_PUSHED,
-        rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
-
-    AddChildView(close_button_);
-  }
-
-  void BubbleShown() {
-    this->RequestFocus();
-    // No button in oem_bubble to request focus.
-  }
-
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
-    bubble_window_->Close();
-  }
-
-  virtual void Layout() {
-    gfx::Size canvas = GetPreferredSize();
-
-    // First, draw the close button on the far right.
-    gfx::Size sz = close_button_->GetPreferredSize();
-    close_button_->SetBounds(canvas.width() - sz.width() -
-                             kMarginRightOfCloseButton,
-                             kOEMBubblePadding,
-                             sz.width(),
-                             sz.height());
-
-    gfx::Size pref_size = label1_->GetPreferredSize();
-    label1_->SetBounds(kOEMBubblePadding, kOEMBubblePadding,
-                       pref_size.width() + kOEMBubblePadding * 2,
-                       pref_size.height());
-
-    pref_size = label2_->GetPreferredSize();
-    label2_->SetBounds(kOEMBubblePadding * 2 + label1_->
-                           GetPreferredSize().width(),
-                       kOEMBubblePadding,
-                       canvas.width() - kOEMBubblePadding * 2,
-                       pref_size.height());
-
-    int next_v_space = label1_->y() + pref_size.height() +
-                       kRelatedControlSmallVerticalSpacing;
-
-    pref_size = label3_->GetPreferredSize();
-    label3_->SetBounds(kOEMBubblePadding, next_v_space,
-                       canvas.width() - kOEMBubblePadding * 2,
-                       pref_size.height());
-  }
-
-  virtual gfx::Size GetPreferredSize() {
-    return gfx::Size(views::Window::GetLocalizedContentsSize(
-        IDS_FIRSTRUNOEMBUBBLE_DIALOG_WIDTH_CHARS,
-        IDS_FIRSTRUNOEMBUBBLE_DIALOG_HEIGHT_LINES));
-  }
-
-  virtual void FocusWillChange(View* focused_before, View* focused_now) {
-    // No buttons in oem_bubble to register focus changes.
-  }
+  FirstRunOEMBubbleView(FirstRunBubble* bubble_window, Profile* profile);
 
  private:
+  virtual ~FirstRunOEMBubbleView() { }
+
+  // FirstRunBubbleViewBase:
+  void BubbleShown();
+
+  // Overridden from View:
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void Layout();
+  virtual gfx::Size GetPreferredSize();
+
+  // FocusChangeListener:
+  virtual void FocusWillChange(View* focused_before, View* focused_now);
+
   FirstRunBubble* bubble_window_;
   views::Label* label1_;
   views::Label* label2_;
@@ -313,11 +253,143 @@ class FirstRunOEMBubbleView : public FirstRunBubbleViewBase {
   DISALLOW_COPY_AND_ASSIGN(FirstRunOEMBubbleView);
 };
 
-// Keep the bubble around for kLingerTime milliseconds, to prevent accidental
-// closure.
-static const int kLingerTime = 1000;
+FirstRunOEMBubbleView::FirstRunOEMBubbleView(FirstRunBubble* bubble_window,
+                                             Profile* profile)
+    : bubble_window_(bubble_window),
+      label1_(NULL),
+      label2_(NULL),
+      label3_(NULL),
+      close_button_(NULL) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::Font& font = rb.GetFont(ResourceBundle::MediumFont);
+
+  label1_ = new views::Label(l10n_util::GetString(IDS_FR_OEM_BUBBLE_TITLE_1));
+  label1_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
+  label1_->SetColor(SK_ColorRED);
+  label1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  AddChildView(label1_);
+
+  label2_ = new views::Label(l10n_util::GetString(IDS_FR_OEM_BUBBLE_TITLE_2));
+  label2_->SetFont(font.DeriveFont(3, gfx::Font::BOLD));
+  label2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  AddChildView(label2_);
+
+  gfx::Size ps = GetPreferredSize();
+
+  label3_ = new views::Label(l10n_util::GetString(IDS_FR_OEM_BUBBLE_SUBTEXT));
+  label3_->SetMultiLine(true);
+  label3_->SetFont(font);
+  label3_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label3_->SizeToFit(ps.width() - kOEMBubblePadding * 2);
+  AddChildView(label3_);
+
+  close_button_ = new views::ImageButton(this);
+  close_button_->SetImage(views::CustomButton::BS_NORMAL,
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR));
+  close_button_->SetImage(views::CustomButton::BS_HOT,
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+  close_button_->SetImage(views::CustomButton::BS_PUSHED,
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+
+  AddChildView(close_button_);
+}
+
+void FirstRunOEMBubbleView::BubbleShown() {
+  RequestFocus();
+  // No button in oem_bubble to request focus.
+}
+
+void FirstRunOEMBubbleView::ButtonPressed(views::Button* sender,
+                                          const views::Event& event) {
+  bubble_window_->Close();
+}
+
+void FirstRunOEMBubbleView::Layout() {
+  gfx::Size canvas = GetPreferredSize();
+
+  // First, draw the close button on the far right.
+  gfx::Size sz = close_button_->GetPreferredSize();
+  close_button_->SetBounds(
+      canvas.width() - sz.width() - kMarginRightOfCloseButton,
+      kOEMBubblePadding, sz.width(), sz.height());
+
+  gfx::Size pref_size = label1_->GetPreferredSize();
+  label1_->SetBounds(kOEMBubblePadding, kOEMBubblePadding,
+                     pref_size.width() + kOEMBubblePadding * 2,
+                     pref_size.height());
+
+  pref_size = label2_->GetPreferredSize();
+  label2_->SetBounds(
+      kOEMBubblePadding * 2 + label1_->GetPreferredSize().width(),
+      kOEMBubblePadding, canvas.width() - kOEMBubblePadding * 2,
+      pref_size.height());
+
+  int next_v_space =
+      label1_->y() + pref_size.height() + kRelatedControlSmallVerticalSpacing;
+
+  pref_size = label3_->GetPreferredSize();
+  label3_->SetBounds(kOEMBubblePadding, next_v_space,
+                     canvas.width() - kOEMBubblePadding * 2,
+                     pref_size.height());
+}
+
+gfx::Size FirstRunOEMBubbleView::GetPreferredSize() {
+  return gfx::Size(views::Window::GetLocalizedContentsSize(
+      IDS_FIRSTRUNOEMBUBBLE_DIALOG_WIDTH_CHARS,
+      IDS_FIRSTRUNOEMBUBBLE_DIALOG_HEIGHT_LINES));
+}
+
+void FirstRunOEMBubbleView::FocusWillChange(View* focused_before,
+                                            View* focused_now) {
+  // No buttons in oem_bubble to register focus changes.
+}
+
+// FirstRunBubble -------------------------------------------------------------
+
+// static
+FirstRunBubble* FirstRunBubble::Show(Profile* profile,
+                                     views::Window* parent,
+                                     const gfx::Rect& position_relative_to,
+                                     bool use_OEM_bubble) {
+  FirstRunBubble* window = new FirstRunBubble();
+  FirstRunBubbleViewBase* view = NULL;
+  if (use_OEM_bubble)
+    view = new FirstRunOEMBubbleView(window, profile);
+  else
+    view = new FirstRunBubbleView(window, profile);
+  window->SetDelegate(window);
+  window->set_view(view);
+  window->Init(parent, position_relative_to, view);
+  window->ShowWindow(SW_SHOW);
+  window->GetFocusManager()->AddFocusChangeListener(view);
+  view->BubbleShown();
+  return window;
+}
+
+FirstRunBubble::FirstRunBubble()
+    : has_been_activated_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(enable_window_method_factory_(this)),
+      view_(NULL) {
+}
+
+FirstRunBubble::~FirstRunBubble() {
+  // We should have called RevokeAll on the method factory already.
+  DCHECK(enable_window_method_factory_.empty());
+  enable_window_method_factory_.RevokeAll();
+}
+
+void FirstRunBubble::EnableParent() {
+  ::EnableWindow(GetParent(), true);
+  // Reactivate the FirstRunBubble so it responds to OnActivate messages.
+  SetWindowPos(GetParent(), 0, 0, 0, 0,
+               SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_SHOWWINDOW);
+}
 
 void FirstRunBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
+  // Keep the bubble around for kLingerTime milliseconds, to prevent accidental
+  // closure.
+  const int kLingerTime = 1000;
+
   // We might get re-enabled right before we are closed (sequence is: we get
   // deactivated, we call close, before we are actually closed we get
   // reactivated). Don't do the disabling of the parent in such cases.
@@ -344,30 +416,4 @@ void FirstRunBubble::InfoBubbleClosing(InfoBubble* info_bubble,
     ::EnableWindow(GetParent(), true);
   enable_window_method_factory_.RevokeAll();
   GetFocusManager()->RemoveFocusChangeListener(view_);
-}
-
-// static
-FirstRunBubble* FirstRunBubble::Show(Profile* profile, views::Window* parent,
-                                     const gfx::Rect& position_relative_to,
-                                     bool use_OEM_bubble) {
-  FirstRunBubble* window = new FirstRunBubble();
-  FirstRunBubbleViewBase* view = NULL;
-  if (use_OEM_bubble)
-    view = new FirstRunOEMBubbleView(window, profile);
-  else
-    view = new FirstRunBubbleView(window, profile);
-  window->SetDelegate(window);
-  window->set_view(view);
-  window->Init(parent, position_relative_to, view);
-  window->ShowWindow(SW_SHOW);
-  window->GetFocusManager()->AddFocusChangeListener(view);
-  view->BubbleShown();
-  return window;
-}
-
-void FirstRunBubble::EnableParent() {
-  ::EnableWindow(GetParent(), true);
-  // Reactivate the FirstRunBubble so it responds to OnActivate messages.
-  SetWindowPos(GetParent(), 0, 0, 0, 0,
-               SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_SHOWWINDOW);
 }
