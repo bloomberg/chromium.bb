@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
+#include "chrome/common/gtk_util.h"
 
 static const gchar* kLinkMarkup = "<u><span color=\"%s\">%s</span></u>";
 
@@ -182,7 +183,7 @@ static void gtk_chrome_link_button_init(GtkChromeLinkButton* button) {
   button->is_blue = TRUE;
   button->native_markup = NULL;
   button->using_native_theme = TRUE;
-  button->hand_cursor = gdk_cursor_new(GDK_HAND2);
+  button->hand_cursor = gtk_util::GetCursor(GDK_HAND2);
   button->text = NULL;
 
   gtk_container_add(GTK_CONTAINER(button), button->label);

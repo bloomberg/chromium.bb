@@ -24,6 +24,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/x11_util.h"
 #include "chrome/browser/renderer_host/backing_store.h"
@@ -607,7 +608,7 @@ void RenderWidgetHostViewGtk::ShowCurrentCursor() {
       break;
 
     default:
-      gdk_cursor = gdk_cursor_new(current_cursor_.GetCursorType());
+      gdk_cursor = gtk_util::GetCursor(current_cursor_.GetCursorType());
   }
   gdk_window_set_cursor(view_.get()->window, gdk_cursor);
   // The window now owns the cursor.

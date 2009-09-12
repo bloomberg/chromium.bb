@@ -1905,7 +1905,7 @@ gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
       browser->frame_cursor_ = NULL;
     }
     if (has_hit_edge) {
-      browser->frame_cursor_ = gdk_cursor_new(new_cursor);
+      browser->frame_cursor_ = gtk_util::GetCursor(new_cursor);
       gdk_window_set_cursor(GTK_WIDGET(browser->window_)->window,
                             browser->frame_cursor_);
     } else {
