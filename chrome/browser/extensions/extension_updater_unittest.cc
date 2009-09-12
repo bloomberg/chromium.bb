@@ -18,11 +18,13 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "libxml/globals.h"
 
-
+static int expected_load_flags =
+    net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
 
 // Do-nothing base class for further specialized test classes.
 class MockService : public ExtensionUpdateService {
@@ -370,6 +372,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string invalid_xml = "invalid xml";
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
         fetcher, url1, URLRequestStatus(), 200, ResponseCookies(),
         invalid_xml);
@@ -387,6 +390,7 @@ class ExtensionUpdaterTest : public testing::Test {
         "</gupdate>";
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
         fetcher, url2, URLRequestStatus(), 200, ResponseCookies(),
         kValidXml);
@@ -427,6 +431,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string extension_data("whatever");
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
         fetcher, test_url, URLRequestStatus(), 200, ResponseCookies(),
         extension_data);
@@ -474,6 +479,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string extension_data("aaabbb");
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
         fetcher, test_url, URLRequestStatus(), 200, ResponseCookies(),
         extension_data);
@@ -520,6 +526,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string extension_data1("whatever");
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
         fetcher, url1, URLRequestStatus(), 200, ResponseCookies(),
         extension_data1);
@@ -537,6 +544,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::string extension_data2("whatever2");
     fetcher = factory.GetFetcherByID(ExtensionUpdater::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
         fetcher, url2, URLRequestStatus(), 200, ResponseCookies(),
         extension_data2);

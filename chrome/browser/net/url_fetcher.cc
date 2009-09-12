@@ -287,6 +287,10 @@ void URLFetcher::set_load_flags(int load_flags) {
   core_->load_flags_ = load_flags;
 }
 
+int URLFetcher::load_flags() const {
+  return core_->load_flags_;
+}
+
 void URLFetcher::set_extra_request_headers(
     const std::string& extra_request_headers) {
   core_->extra_request_headers_ = extra_request_headers;

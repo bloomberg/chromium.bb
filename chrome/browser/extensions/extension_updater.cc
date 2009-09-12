@@ -28,6 +28,7 @@
 #include "chrome/common/pref_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
 using base::RandDouble;
@@ -600,6 +601,8 @@ void ExtensionUpdater::StartUpdateCheck(const GURL& url) {
     manifest_fetcher_.reset(
         URLFetcher::Create(kManifestFetcherId, url, URLFetcher::GET, this));
     manifest_fetcher_->set_request_context(Profile::GetDefaultRequestContext());
+    manifest_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                      net::LOAD_DO_NOT_SAVE_COOKIES);
     manifest_fetcher_->Start();
   }
 }
@@ -625,6 +628,8 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
         URLFetcher::Create(kExtensionFetcherId, url, URLFetcher::GET, this));
     extension_fetcher_->set_request_context(
         Profile::GetDefaultRequestContext());
+    extension_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                       net::LOAD_DO_NOT_SAVE_COOKIES);
     extension_fetcher_->Start();
     current_extension_fetch_ = ExtensionFetch(id, url, hash, version);
   }

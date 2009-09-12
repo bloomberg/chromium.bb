@@ -126,6 +126,9 @@ class URLFetcher {
   // called before the request is started.
   void set_load_flags(int load_flags);
 
+  // Returns the current load flags.
+  int load_flags() const;
+
   // Set extra headers on the request.  Must be called before the request
   // is started.
   void set_extra_request_headers(const std::string& extra_request_headers);
