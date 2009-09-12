@@ -59,6 +59,8 @@ class LoginHandlerGtk : public LoginHandler,
   }
 
   void SetModel(LoginModel* model) {
+    if (login_model_)
+      login_model_->SetObserver(NULL);
     login_model_ = model;
     if (login_model_)
       login_model_->SetObserver(this);
@@ -205,6 +207,8 @@ class LoginHandlerGtk : public LoginHandler,
       ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
           this, &LoginHandlerGtk::SendNotifications));
     }
+
+    SetModel(NULL);
 
     // Delete this object once all InvokeLaters have been called.
     request_loop_->ReleaseSoon(FROM_HERE, this);
