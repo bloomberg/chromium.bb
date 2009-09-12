@@ -535,6 +535,7 @@ class RenderView : public RenderWidget,
   void OnRedo();
   void OnCut();
   void OnCopy();
+  void OnCopyToFindPboard();
   void OnPaste();
   void OnReplace(const std::wstring& text);
   void OnAdvanceToNextMisspelling();

@@ -180,6 +180,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnClipboardReadText(Clipboard::Buffer buffer, IPC::Message* reply);
   void OnClipboardReadAsciiText(Clipboard::Buffer buffer, IPC::Message* reply);
   void OnClipboardReadHTML(Clipboard::Buffer buffer, IPC::Message* reply);
+#if defined(OS_MACOSX)
+  void OnClipboardFindPboardWriteString(const string16& text);
+#endif
 
 #if !defined(OS_MACOSX)
   // Not handled in the IO thread on Mac.

@@ -1724,6 +1724,7 @@
         'browser/renderer_host/resource_message_filter.cc',
         'browser/renderer_host/resource_message_filter.h',
         'browser/renderer_host/resource_message_filter_gtk.cc',
+        'browser/renderer_host/resource_message_filter_mac.mm',
         'browser/renderer_host/resource_message_filter_win.cc',
         'browser/renderer_host/resource_request_details.h',
         'browser/renderer_host/safe_browsing_resource_handler.cc',

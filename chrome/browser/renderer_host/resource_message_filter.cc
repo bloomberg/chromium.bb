@@ -323,6 +323,10 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                                       OnClipboardReadAsciiText)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadHTML,
                                       OnClipboardReadHTML)
+#if defined(OS_MACOSX)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardFindPboardWriteStringAsync,
+                          OnClipboardFindPboardWriteString)
+#endif
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromExtension,
                           OnGetMimeTypeFromExtension)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromFile,

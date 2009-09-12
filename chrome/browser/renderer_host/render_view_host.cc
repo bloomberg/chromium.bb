@@ -534,6 +534,13 @@ void RenderViewHost::Copy() {
   Send(new ViewMsg_Copy(routing_id()));
 }
 
+void RenderViewHost::CopyToFindPboard() {
+#if defined(OS_MACOSX)
+  // Windows/Linux don't have the concept of a find pasteboard.
+  Send(new ViewMsg_CopyToFindPboard(routing_id()));
+#endif
+}
+
 void RenderViewHost::Paste() {
   Send(new ViewMsg_Paste(routing_id()));
 }

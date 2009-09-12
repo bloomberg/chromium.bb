@@ -356,6 +356,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Redo, OnRedo)
     IPC_MESSAGE_HANDLER(ViewMsg_Cut, OnCut)
     IPC_MESSAGE_HANDLER(ViewMsg_Copy, OnCopy)
+    IPC_MESSAGE_HANDLER(ViewMsg_CopyToFindPboard, OnCopyToFindPboard)
     IPC_MESSAGE_HANDLER(ViewMsg_Paste, OnPaste)
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(ViewMsg_ToggleSpellPanel, OnToggleSpellPanel)
@@ -828,6 +829,22 @@ void RenderView::OnCopy() {
 
   webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
   UserMetricsRecordAction(L"Copy");
+}
+
+void RenderView::OnCopyToFindPboard() {
+  if (!webview())
+    return;
+
+  // Since the find pasteboard supports only plain text, this can be simpler
+  // than the |OnCopy()| case.
+  WebFrame* frame = webview()->GetFocusedFrame();
+  if (frame->hasSelection()) {
+    string16 selection = frame->selectionAsText();
+    RenderThread::current()->Send(
+        new ViewHostMsg_ClipboardFindPboardWriteStringAsync(selection));
+  }
+
+  UserMetricsRecordAction(L"CopyToFindPboard");
 }
 
 void RenderView::OnPaste() {

@@ -193,6 +193,7 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED0(ViewMsg_Redo)
   IPC_MESSAGE_ROUTED0(ViewMsg_Cut)
   IPC_MESSAGE_ROUTED0(ViewMsg_Copy)
+  IPC_MESSAGE_ROUTED0(ViewMsg_CopyToFindPboard)
   IPC_MESSAGE_ROUTED0(ViewMsg_Paste)
   IPC_MESSAGE_ROUTED1(ViewMsg_Replace, std::wstring)
   IPC_MESSAGE_ROUTED0(ViewMsg_ToggleSpellCheck)
@@ -1096,6 +1097,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               Clipboard::Buffer  /* buffer */,
                               string16 /* markup */,
                               GURL /* url */)
+
+#if defined(OS_MACOSX)
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_ClipboardFindPboardWriteStringAsync,
+      string16 /* text */)
+#endif
 
 #if defined(OS_WIN)
   // Request that the given font be loaded by the browser.

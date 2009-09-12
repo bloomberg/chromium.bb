@@ -336,6 +336,10 @@ void TabContentsViewMac::Observe(NotificationType type,
   [self tabContents]->Copy();
 }
 
+- (void)copyToFindPboard:(id)sender {
+  [self tabContents]->CopyToFindPboard();
+}
+
 - (void)paste:(id)sender {
   [self tabContents]->Paste();
 }

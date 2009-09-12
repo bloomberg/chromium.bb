@@ -269,6 +269,7 @@ class RenderViewHost : public RenderWidgetHost,
   void Redo();
   void Cut();
   void Copy();
+  void CopyToFindPboard();
   void Paste();
   void Replace(const std::wstring& text);
   void ToggleSpellCheck();
