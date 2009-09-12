@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
