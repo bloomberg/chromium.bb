@@ -597,7 +597,7 @@ page_flip_handler(int fd, unsigned int frame,
 			      &compositor->base,
 			      compositor->current_frame, msecs);
 
-	wl_event_source_timer_update(compositor->timer_source, 10);
+	wl_event_source_timer_update(compositor->timer_source, 5);
 	compositor->repaint_on_timeout = 1;
 
 	animate = container_of(compositor->animate_list.next, struct wlsc_animate, link);
