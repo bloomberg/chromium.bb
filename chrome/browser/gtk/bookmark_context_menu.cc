@@ -337,7 +337,7 @@ void BookmarkContextMenu::ExecuteCommand(int id) {
           editor_config = BookmarkEditor::SHOW_TREE;
         else
           editor_config = BookmarkEditor::NO_TREE;
-        BookmarkEditor::Show(wnd_, profile_, NULL, selection_[0],
+        BookmarkEditor::Show(wnd_, profile_, parent_, selection_[0],
                              editor_config, NULL);
 #else
         NOTIMPLEMENTED();

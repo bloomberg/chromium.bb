@@ -316,7 +316,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
           editor_config = BookmarkEditor::SHOW_TREE;
         else
           editor_config = BookmarkEditor::NO_TREE;
-        BookmarkEditor::Show(parent_window_, profile_, NULL, selection_[0],
+        BookmarkEditor::Show(parent_window_, profile_, parent_, selection_[0],
                              editor_config, NULL);
       } else {
         EditFolderController::Show(profile_, parent_window_, selection_[0],
