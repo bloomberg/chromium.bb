@@ -305,8 +305,12 @@ void SSLPolicy::ShowErrorPage(SSLCertErrorHandler* handler) {
                                                    true,
                                                    handler->request_url(),
                                                    security_info);
-  tab->controller().GetActiveEntry()->set_page_type(
-      NavigationEntry::ERROR_PAGE);
+
+  // TODO(jcampan): we may want to set the navigation entry type to
+  // PageType::ERROR_PAGE.  The navigation entry is not available at this point,
+  // it is created when the renderer receives a DidNavigate (triggered by the
+  // LoadAlternateHTMLString above). We'd probably need to pass the page type
+  // along with the security_info.
 }
 
 void SSLPolicy::AddMixedContentWarningToConsole(
