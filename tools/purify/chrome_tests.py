@@ -24,7 +24,6 @@ import common
 
 class TestNotFound(Exception): pass
 
-
 class ChromeTests:
 
   def __init__(self, options, args, test):
@@ -88,37 +87,74 @@ class ChromeTests:
                               "--source_dir=%s" % (self._source_dir),
                               "--save_cache"]
 
+  def FindBuildDir(self, target, module, exe):
+    module_dir = os.path.join(self._source_dir, module)
+    dir_chrome = os.path.join(self._source_dir, "chrome", target)
+    dir_module = os.path.join(module_dir, target)
+    if not os.path.isdir(dir_chrome) and not os.path.isdir(dir_module):
+      return None
+
+    if exe:
+      exe_chrome = os.path.join(dir_chrome, exe)
+      exe_module = os.path.join(dir_module, exe)
+      if not os.path.isfile(exe_chrome) and not os.path.isfile(exe_module):
+        return None
+      if os.path.isfile(exe_chrome) and not os.path.isfile(exe_module):
+        return dir_chrome
+      elif os.path.isfile(exe_module) and not os.path.isfile(exe_chrome):
+        return dir_module
+      elif (os.stat(exe_module)[stat.ST_MTIME] > 
+            os.stat(exe_chrome)[stat.ST_MTIME]):
+        return dir_module
+      else:
+        return dir_chrome
+    else:
+      if os.path.isdir(dir_chrome) and not os.path.isdir(dir_module):
+        return dir_chrome
+      elif os.path.isdir(dir_module) and not os.path.isdir(dir_chrome):
+        return dir_module
+      elif (os.stat(dir_module)[stat.ST_MTIME] >
+            os.stat(dir_chrome)[stat.ST_MTIME]):
+        return dir_module
+      else:
+        return dir_chrome
+
   def ComputeBuildDir(self, module, exe=None):
     ''' Computes the build dir for the given module / exe '''
     if self._options.build_dir:
       self._build_dir = self._options.build_dir
       return self._build_dir
-    # Recompute _build_dir since the module and exe might have changed from
-    # a previous call (we might be running multiple tests).
-    module_dir = os.path.join(self._source_dir, module)
-    dir_chrome = os.path.join(self._source_dir, "chrome", "Release")
-    dir_module = os.path.join(module_dir, "Release")
-    if exe:
-      exe_chrome = os.path.join(dir_chrome, exe)
-      exe_module = os.path.join(dir_module, exe)
-      if os.path.isfile(exe_chrome) and not os.path.isfile(exe_module):
-        self._build_dir = dir_chrome
-      elif os.path.isfile(exe_module) and not os.path.isfile(exe_chrome):
-        self._build_dir = dir_module
-      elif os.stat(exe_module)[stat.ST_MTIME] > os.stat(exe_chrome)[stat.ST_MTIME]:
-        self._build_dir = dir_module
+
+    # Use whatever build dir matches and was built most recently.  We prefer
+    # the 'Purify' build dir, so warn in other cases.
+    dirs = []
+    dir = self.FindBuildDir("Purify", module, exe)
+    if dir:
+      dirs.append(dir)
+    dir = self.FindBuildDir("Release", module, exe)
+    if dir:
+      dirs.append(dir)
+    dir = self.FindBuildDir("Debug", module, exe)
+    if dir:
+      dirs.append(dir)
+    while True:
+      if len(dirs) == 0:
+        raise Exception("Can't find appropriate build dir")
+      if len(dirs) == 1:
+        self._build_dir = dirs[0]
+        if self._build_dir.endswith("Debug"):
+          logging.warning("Using Debug build.  "
+                          "This is not recommended under Purify.")
+        elif self._build_dir.endswith("Release"):
+          logging.warning("Using Release build.  "
+                          "Consider building the 'Purify' target instead since "
+                          "you don't need to worry about setting a magic "
+                          "environment variable for it to behave correctly.")
+        return self._build_dir
+      if os.stat(dirs[0])[stat.ST_MTIME] > os.stat(dirs[1])[stat.ST_MTIME]:
+        dirs.remove(dirs[0])
       else:
-        self._build_dir = dir_chrome
-    else:
-      if os.path.isdir(dir_chrome) and not os.path.isdir(dir_module):
-        self._build_dir = dir_chrome
-      elif os.path.isdir(dir_module) and not os.path.isdir(dir_chrome):
-        self._build_dir = dir_module
-      elif os.stat(dir_module)[stat.ST_MTIME] > os.stat(dir_chrome)[stat.ST_MTIME]:
-        self._build_dir = dir_module
-      else:
-        self._build_dir = dir_chrome
-    return self._build_dir;
+        dirs.remove(dirs[1])
 
   def _DefaultCommand(self, module, exe=None):
     '''Generates the default command array that most tests will use.'''
@@ -136,6 +172,9 @@ class ChromeTests:
       cmd.append("--baseline")
     if self._options.verbose:
       cmd.append("--verbose")
+
+    # Recompute _build_dir since the module and exe might have changed from
+    # a previous call (we might be running multiple tests).
     self.ComputeBuildDir(module, exe);
     if exe:
       cmd.append(os.path.join(self._build_dir, exe))
