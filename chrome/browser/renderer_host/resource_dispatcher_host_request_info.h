@@ -54,7 +54,7 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
   }
 
   // Pointer to the login handler, or NULL if there is none for this request.
-  // This is a NON-OWNING pointer, and the caller is resounsible for the
+  // This is a NON-OWNING pointer, and the caller is responsible for the
   // pointer after calling set.
   LoginHandler* login_handler() const { return login_handler_; }
   void set_login_handler(LoginHandler* lh) { login_handler_ = lh; }
