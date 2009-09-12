@@ -81,11 +81,13 @@ void OnShutdownStarting(ShutdownType type) {
   }
 }
 
+#if defined(OS_WIN)
 FilePath GetShutdownMsPath() {
   FilePath shutdown_ms_file;
   PathService::Get(base::DIR_TEMP, &shutdown_ms_file);
   return shutdown_ms_file.AppendASCII(kShutdownMsFile);
 }
+#endif
 
 void Shutdown() {
   // Unload plugins. This needs to happen on the IO thread.
@@ -148,6 +150,7 @@ void Shutdown() {
     Upgrade::SwapNewChromeExeIfPresent();
   }
 
+#if defined(OS_WIN)
   if (shutdown_type_ > NOT_VALID && shutdown_num_processes_ > 0) {
     // Measure total shutdown time as late in the process as possible
     // and then write it to a file to be read at startup.
@@ -158,10 +161,12 @@ void Shutdown() {
     FilePath shutdown_ms_file = GetShutdownMsPath();
     file_util::WriteFile(shutdown_ms_file, shutdown_ms.c_str(), len);
   }
+#endif
 
   UnregisterURLRequestChromeJob();
 }
 
+#if defined(OS_WIN)
 void ReadLastShutdownInfo() {
   FilePath shutdown_ms_file = GetShutdownMsPath();
   std::string shutdown_ms_str;
@@ -208,5 +213,6 @@ void ReadLastShutdownInfo() {
     }
   }
 }
+#endif
 
 }  // namespace browser_shutdown

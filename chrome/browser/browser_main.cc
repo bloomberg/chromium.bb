@@ -590,8 +590,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
                           base::Time::Now().ToTimeT());
   }
 
+#if defined(OS_WIN)
   // Record last shutdown time into a histogram.
   browser_shutdown::ReadLastShutdownInfo();
+#endif
 
   // If the command line specifies 'uninstall' then we need to work here
   // unless we detect another chrome browser running.
