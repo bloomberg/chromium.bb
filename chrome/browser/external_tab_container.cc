@@ -13,6 +13,7 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/load_notification_details.h"
+#include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_external_win.h"
@@ -22,8 +23,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/automation/automation_messages.h"
-
 #include "grit/generated_resources.h"
+#include "views/window/window.h"
 
 static const wchar_t kWindowObjectKey[] = L"ChromeWindowObject";
 
@@ -374,6 +375,14 @@ bool ExternalTabContainer::TakeFocus(bool reverse) {
   }
 
   return true;
+}
+
+void ExternalTabContainer::ShowPageInfo(Profile* profile,
+                                        const GURL& url,
+                                        const NavigationEntry::SSLStatus& ssl,
+                                        bool show_history) {
+  browser::ShowPageInfo(GetNativeView(), profile, url, ssl,
+                        show_history);
 }
 
 bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {

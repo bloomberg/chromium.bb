@@ -125,6 +125,11 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   virtual bool TakeFocus(bool reverse);
 
+  virtual void ShowPageInfo(Profile* profile,
+                            const GURL& url,
+                            const NavigationEntry::SSLStatus& ssl,
+                            bool show_history);
+
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
