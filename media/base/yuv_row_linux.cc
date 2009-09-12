@@ -300,9 +300,9 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
   "mov    0x2c(%esp),%esi\n"
   "mov    0x30(%esp),%ebp\n"
   "mov    0x34(%esp),%ecx\n"
-  "jmp    convertend\n"
+  "jmp    Lconvertend\n"
 
-"convertloop:"
+"Lconvertloop:"
   "movzbl (%edi),%eax\n"
   "add    $0x1,%edi\n"
   "movzbl (%esi),%ebx\n"
@@ -321,12 +321,12 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
   "packuswb %mm2,%mm1\n"
   "movntq %mm1,0x0(%ebp)\n"
   "add    $0x8,%ebp\n"
-"convertend:"
+"Lconvertend:"
   "sub    $0x2,%ecx\n"
-  "jns    convertloop\n"
+  "jns    Lconvertloop\n"
 
   "and    $0x1,%ecx\n"
-  "je     convertdone\n"
+  "je     Lconvertdone\n"
 
   "movzbl (%edi),%eax\n"
   "movq   kCoefficientsRgbU(,%eax,8),%mm0\n"
@@ -338,7 +338,7 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,
   "psraw  $0x6,%mm1\n"
   "packuswb %mm1,%mm1\n"
   "movd   %mm1,0x0(%ebp)\n"
-"convertdone:"
+"Lconvertdone:"
   "popa\n"
   "ret\n"
 );
@@ -361,9 +361,9 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
   "mov    0x30(%esp),%ebp\n"
   "mov    0x34(%esp),%ecx\n"
   "xor    %ebx,%ebx\n"
-  "jmp    scaleend\n"
+  "jmp    Lscaleend\n"
 
-"scaleloop:"
+"Lscaleloop:"
   "mov    %ebx,%eax\n"
   "sar    $0x5,%eax\n"
   "movzbl (%edi,%eax,1),%eax\n"
@@ -389,12 +389,12 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
   "packuswb %mm2,%mm1\n"
   "movntq %mm1,0x0(%ebp)\n"
   "add    $0x8,%ebp\n"
-"scaleend:"
+"Lscaleend:"
   "sub    $0x2,%ecx\n"
-  "jns    scaleloop\n"
+  "jns    Lscaleloop\n"
 
   "and    $0x1,%ecx\n"
-  "je     scaledone\n"
+  "je     Lscaledone\n"
 
   "mov    %ebx,%eax\n"
   "sar    $0x5,%eax\n"
@@ -419,7 +419,7 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
   "packuswb %mm2,%mm1\n"
   "movd   %mm1,0x0(%ebp)\n"
 
-"scaledone:"
+"Lscaledone:"
   "popa\n"
   "ret\n"
 );
