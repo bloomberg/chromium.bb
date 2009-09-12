@@ -75,6 +75,7 @@ class Profile;
 - (IBAction)addHomepage:(id)sender;
 - (IBAction)removeSelectedHomepages:(id)sender;
 - (IBAction)useCurrentPagesAsHomepage:(id)sender;
+- (IBAction)manageSearchEngines:(id)sender;
 
 // User Data panel
 - (IBAction)showSavedPasswords:(id)sender;

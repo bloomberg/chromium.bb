@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/custom_home_pages_model.h"
+#import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #import "chrome/browser/cocoa/search_engine_list_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -537,6 +538,13 @@ enum { kHomepageNewTabPage, kHomepageURL };
 // popup by tickling the bindings with the new value.
 - (void)searchEngineModelChanged:(NSNotification*)notify {
   [self setSearchEngineSelectedIndex:[self searchEngineSelectedIndex]];
+}
+
+// Brings up the edit search engines window.
+- (IBAction)manageSearchEngines:(id)sender {
+  KeywordEditorCocoaController* controller =
+      [[KeywordEditorCocoaController alloc] initWithProfile:profile_];
+  [[controller window] makeKeyAndOrderFront:sender];
 }
 
 // Called when the user clicks the button to make Chromium the default

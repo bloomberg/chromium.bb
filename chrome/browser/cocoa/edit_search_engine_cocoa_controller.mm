@@ -1,0 +1,131 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "chrome/browser/cocoa/edit_search_engine_cocoa_controller.h"
+
+#include "app/l10n_util_mac.h"
+#include "app/resource_bundle.h"
+#import "base/mac_util.h"
+#include "base/sys_string_conversions.h"
+#include "chrome/browser/search_engines/template_url_model.h"
+#include "grit/app_resources.h"
+#include "grit/generated_resources.h"
+
+@implementation EditSearchEngineCocoaController
+
+- (id)initWithProfile:(Profile*)profile
+             delegate:(EditSearchEngineControllerDelegate*)delegate
+          templateURL:(const TemplateURL*)url {
+  DCHECK(profile);
+  NSString* nibpath = [mac_util::MainAppBundle()
+                        pathForResource:@"EditSearchEngine"
+                                 ofType:@"nib"];
+  if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
+    profile_ = profile;
+    templateURL_ = url;
+    controller_.reset(
+        new EditSearchEngineController(templateURL_, delegate, profile_));
+  }
+  return self;
+}
+
+- (void)awakeFromNib {
+  DCHECK([self window]);
+  DCHECK_EQ(self, [[self window] delegate]);
+  ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
+  goodImage_.reset([bundle.GetNSImageNamed(IDR_INPUT_GOOD) retain]);
+  badImage_.reset([bundle.GetNSImageNamed(IDR_INPUT_ALERT) retain]);
+  if (templateURL_) {
+    // Defaults to |..._NEW_WINDOW_TITLE|.
+    [[self window] setTitle:l10n_util::GetNSString(
+      IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE)];
+    [nameField_ setStringValue:
+        base::SysWideToNSString(templateURL_->short_name())];
+    [keywordField_ setStringValue:
+        base::SysWideToNSString(templateURL_->keyword())];
+    [urlField_ setStringValue:
+        base::SysWideToNSString(templateURL_->url()->DisplayURL())];
+    [urlField_ setEnabled:(templateURL_->prepopulate_id() == 0)];
+  }
+  // When creating a new keyword, this will mark the fields as "invalid" and
+  // will not let the user save. If this is an edit, then this will set all
+  // the images to the "valid" state.
+  [self validateFields];
+}
+
+// When the window closes, clean ourselves up.
+- (void)windowWillClose:(NSNotification*)notif {
+  [self autorelease];
+}
+
+- (IBAction)cancel:(id)sender {
+  [[self window] close];
+}
+
+- (IBAction)save:(id)sender {
+  DCHECK([self validateFields]);
+  std::wstring title = base::SysNSStringToWide([nameField_ stringValue]);
+  std::wstring keyword = base::SysNSStringToWide([keywordField_ stringValue]);
+  std::wstring url = base::SysNSStringToWide([urlField_ stringValue]);
+  controller_->AcceptAddOrEdit(title, keyword, url);
+  [[self window] close];
+}
+
+// Delegate method for the text fields.
+
+- (void)controlTextDidChange:(NSNotification*)notif {
+  [self validateFields];
+}
+
+- (void)controlTextDidEndEditing:(NSNotification*)notif {
+  [self validateFields];
+}
+
+// Private --------------------------------------------------------------------
+
+// Sets the appropriate image and tooltip based on a boolean |valid|.
+- (void)setIsValid:(BOOL)valid
+           toolTip:(int)messageID
+      forImageView:(NSImageView*)imageView
+         textField:(NSTextField*)textField {
+  NSImage* image = (valid) ? goodImage_ : badImage_;
+  [imageView setImage:image];
+
+  NSString* toolTip = nil;
+  if (!valid)
+    toolTip = l10n_util::GetNSString(messageID);
+  [textField setToolTip:toolTip];
+  [imageView setToolTip:toolTip];
+}
+
+// This sets the image state for all the controls and enables or disables the
+// done button. Returns YES if all the fields are valid.
+- (BOOL)validateFields {
+  std::wstring title = base::SysNSStringToWide([nameField_ stringValue]);
+  BOOL titleValid = controller_->IsTitleValid(title);
+  [self setIsValid:titleValid
+           toolTip:IDS_SEARCH_ENGINES_INVALID_TITLE_TT
+      forImageView:nameImage_
+         textField:nameField_];
+
+  std::wstring keyword = base::SysNSStringToWide([keywordField_ stringValue]);
+  BOOL keywordValid = controller_->IsKeywordValid(keyword);
+  [self setIsValid:keywordValid
+           toolTip:IDS_SEARCH_ENGINES_INVALID_KEYWORD_TT
+      forImageView:keywordImage_
+         textField:keywordField_];
+
+  std::wstring url = base::SysNSStringToWide([urlField_ stringValue]);
+  BOOL urlValid = controller_->IsURLValid(url);
+  [self setIsValid:urlValid
+           toolTip:IDS_SEARCH_ENGINES_INVALID_URL_TT
+      forImageView:urlImage_
+         textField:urlField_];
+
+  BOOL isValid = (titleValid && keywordValid && urlValid);
+  [doneButton_ setEnabled:isValid];
+  return isValid;
+}
+
+@end
