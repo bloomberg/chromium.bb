@@ -43,6 +43,10 @@ class ChromeTests:
     if test not in self._test_list:
       raise TestNotFound("Unknown test: %s" % test)
 
+    # Make sure tests running under purify are using the
+    # normal memory allocator instead of tcmalloc.
+    os.environ["CHROME_ALLOCATOR"] = "winheap"
+
     self._options = options
     self._args = args
     self._test = test
