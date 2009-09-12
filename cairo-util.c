@@ -33,7 +33,6 @@
 void
 blur_surface(cairo_surface_t *surface, int margin)
 {
-	cairo_surface_t *tmp;
 	int32_t width, height, stride, x, y, z, w;
 	uint8_t *src, *dst;
 	uint32_t *s, *d, a, p;
@@ -47,8 +46,7 @@ blur_surface(cairo_surface_t *surface, int margin)
 	stride = cairo_image_surface_get_stride(surface);
 	src = cairo_image_surface_get_data(surface);
 
-	tmp = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
-	dst = cairo_image_surface_get_data(tmp);
+	dst = malloc(height * stride);
 
 	half = size / 2;
 	a = 0;
@@ -113,5 +111,5 @@ blur_surface(cairo_surface_t *surface, int margin)
 		}
 	}
 
-	cairo_surface_destroy(tmp);
+	free(dst);
 }
