@@ -40,7 +40,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 
-int main(void) {
+int main(int  argc,
+         char **argv) {
   char buffer[4096];
   char *bufptr = buffer;
   size_t ix;
