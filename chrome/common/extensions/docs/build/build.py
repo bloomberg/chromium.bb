@@ -41,7 +41,6 @@ def RenderPage(name, test_shell):
   Calls test_shell --layout-tests .../generator.html?<name> and writes the
   result to .../docs/<name>.html
   """
-
   if not name:
     raise Exception("RenderPage called with empty name");
 
@@ -60,28 +59,27 @@ def RenderPage(name, test_shell):
   p = Popen([test_shell, "--layout-tests", generator_url],
       stdout=PIPE)
 
-  # first output line is url that was processed by test_shell.
-  firstline = p.stdout.readline()
-
   # the remaining output will be the content of the generated page.
   result = p.stdout.read()
 
-  # remove the trailing #EOF that test shell appends to the output.
-  result = result.replace('#EOF', '')
-
-  # Remove page_shell
-  os.remove(input_file)
-
-  if (not result.startswith(_expected_output_preamble)):
-    if (firstline.startswith("#TEST_TIMED_OUT")):
-        raise Exception("test_shell returned TEST_TIMED_OUT.\n" +
+  content_start = result.find(_expected_output_preamble)
+  if (content_start < 0):
+    if (result.startswith("#TEST_TIMED_OUT")):
+      raise Exception("test_shell returned TEST_TIMED_OUT.\n" +
                         "Their was probably a problem with generating the " +
                         "page\n" +
                         "Try copying template/page_shell.html to:\n" +
                         input_file +
                         "\nAnd open it in chrome using the file: scheme.\n" +
                         "Look from javascript errors via the inspector.")
-    raise Exception("test_shell returned unexpected output: " + result);
+    raise Exception("test_shell returned unexpected output: " + result)
+  result = result[content_start:]
+
+  # remove the trailing #EOF that test shell appends to the output.
+  result = result.replace('#EOF', '')
+
+  # Remove page_shell
+  os.remove(input_file)
 
   # Remove CRs that are appearing from captured test_shell output.
   result = result.replace('\r', '')
@@ -94,27 +92,33 @@ def RenderPage(name, test_shell):
     return input_file
 
 def FindTestShell():
-  # This is hackey. It is used to guess the location of the test_shell
+  # This is hacky. It is used to guess the location of the test_shell
   chrome_dir = os.path.normpath(_base_dir + "/../../../")
   src_dir = os.path.normpath(chrome_dir + "/../")
 
   search_locations = []
 
   if (sys.platform in ('cygwin', 'win32')):
+    home_dir = os.path.normpath(os.getenv("HOMEDRIVE") + os.getenv("HOMEPATH"))
     search_locations.append(chrome_dir + "/Debug/test_shell.exe")
     search_locations.append(chrome_dir + "/Release/test_shell.exe")
+    search_locations.append(home_dir + "/bin/test_shell/" +
+                            "test_shell.exe")
 
   if (sys.platform in ('linux', 'linux2')):
     search_locations.append(src_dir + "/sconsbuild/Debug/test_shell")
     search_locations.append(src_dir + "/out/Debug/test_shell")
     search_locations.append(src_dir + "/sconsbuild/Release/test_shell")
     search_locations.append(src_dir + "/out/Release/test_shell")
+    search_locations.append(os.getenv("HOME") + "/bin/test_shell/test_shell")
 
   if (sys.platform == 'darwin'):
     search_locations.append(src_dir +
         "/xcodebuild/Debug/TestShell.app/Contents/MacOS/TestShell")
     search_locations.append(src_dir +
         "/xcodebuild/Release/TestShell.app/Contents/MacOS/TestShell")
+    search_locations.append(os.getenv("HOME") + "/bin/test_shell/" +
+                            "TestShell.app/Contents/MacOS/TestShell")
 
   for loc in search_locations:
     if os.path.isfile(loc):
