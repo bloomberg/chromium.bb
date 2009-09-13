@@ -108,24 +108,28 @@ CGColorSpaceRef GetSRGBColorSpace() {
   // Leaked.  That's OK, it's scoped to the lifetime of the application.
   static CGColorSpaceRef g_color_space_sRGB =
       CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+  LOG_IF(ERROR, !g_color_space_sRGB) << "Couldn't get the sRGB color space";
   return g_color_space_sRGB;
 }
 
 CGColorSpaceRef GetSystemColorSpace() {
   // Leaked.  That's OK, it's scoped to the lifetime of the application.
-  static CGColorSpaceRef g_system_color_space = NULL;
+  // Try to get the main display's color space.
+  static CGColorSpaceRef g_system_color_space =
+      CGDisplayCopyColorSpace(CGMainDisplayID());
 
   if (!g_system_color_space) {
-    // Get the System Profile for the main display
-    CMProfileRef system_profile = NULL;
-    if (CMGetSystemProfile(&system_profile) == noErr) {
-      // Create a colorspace with the system profile
-      g_system_color_space =
-          CGColorSpaceCreateWithPlatformColorSpace(system_profile);
-      // Close the profile
-      CMCloseProfile(system_profile);
+    // Use a generic RGB color space.  This is better than nothing.
+    g_system_color_space = CGColorSpaceCreateDeviceRGB();
+
+    if (g_system_color_space) {
+      LOG(WARNING) <<
+          "Couldn't get the main display's color space, using generic";
+    } else {
+      LOG(ERROR) << "Couldn't get any color space";
     }
   }
+
   return g_system_color_space;
 }
 
