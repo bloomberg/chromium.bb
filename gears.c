@@ -322,7 +322,7 @@ handle_frame(void *data,
 
 	wl_compositor_commit(gears->compositor, 0);
 
-	gears->angle = timestamp / 20.0;
+	gears->angle = (GLfloat) (timestamp % 8192) * 360 / 8192.0;
 }
 
 static const struct wl_compositor_listener compositor_listener = {
