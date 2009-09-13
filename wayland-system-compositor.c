@@ -134,9 +134,6 @@ struct wlsc_compositor {
 
 	uint32_t meta_state;
 	struct wl_list animate_list;
-
-	struct wlsc_session *primary;
-	struct wl_list session_list;
 };
 
 #define META_DOWN 256
@@ -152,15 +149,6 @@ struct wlsc_animate {
 			uint32_t frame, uint32_t msecs);
 };
 
-struct wlsc_session {
-	struct wlsc_surface *surface;
-	struct wlsc_vector target, current, previous;
-	GLdouble target_angle, current_angle, previous_angle;
-	struct wlsc_animate animate;
-	struct wl_list link;
-	struct wlsc_listener listener;
-};
-
 struct wlsc_surface {
 	struct wl_surface base;
 	struct wlsc_compositor *compositor;
@@ -170,9 +158,6 @@ struct wlsc_surface {
 	int width, height;
 	struct wl_list link;
 	struct wlsc_matrix matrix;
-
-	/* FIXME: This should be it's own object at some point. */
-	struct wlsc_session session;
 };
 
 static const char *option_background = "background.jpg";
@@ -530,7 +515,7 @@ wlsc_surface_draw(struct wlsc_surface *es)
 	}
 
 	glPushMatrix();
-	glMultMatrixd(es->matrix.d);
+	//glMultMatrixd(es->matrix.d);
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glEnable(GL_TEXTURE_2D);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -750,9 +735,6 @@ surface_attach(struct wl_client *client,
 }
 
 static void
-wlsc_session_update_matrix(struct wlsc_session *session);
-
-static void
 surface_map(struct wl_client *client,
 	    struct wl_surface *surface,
 	    int32_t x, int32_t y, int32_t width, int32_t height)
@@ -763,8 +745,6 @@ surface_map(struct wl_client *client,
 	es->map.y = y;
 	es->map.width = width;
 	es->map.height = height;
-
-	wlsc_session_update_matrix(&es->session);
 }
 
 static void
@@ -823,191 +803,6 @@ const static struct wl_surface_interface surface_interface = {
 };
 
 static void
-wlsc_session_update_matrix(struct wlsc_session *session)
-{
-	GLdouble tx, ty;
-	struct wlsc_surface *s = session->surface;
-
-	tx = s->map.x + s->map.width / 2;
-	ty = s->map.y + s->map.height / 2;
-
-	wlsc_matrix_init(&s->matrix);
-	wlsc_matrix_translate(&s->matrix, -tx, -ty, 0);
-	wlsc_matrix_rotate(&s->matrix, session->current_angle, 0, 1, 0);
-	wlsc_matrix_translate(&s->matrix, tx + session->current.x,
-			      ty + session->current.y, session->current.z);
-}
-
-static void
-wl_session_animate(struct wlsc_animate *animate, 
-		   struct wlsc_compositor *compositor,
-		   uint32_t frame, uint32_t msecs)
-{
-	struct wlsc_session *session;
-	struct wlsc_surface *s;
-	double angle_force, angle;
-	struct wlsc_vector force, tmp;
-	double step = 0.2;
-	double friction = 1.5;
-	double spring = 0.2;
-
-	session = container_of(animate, struct wlsc_session, animate);
-	s = session->surface;
-
-	angle = session->current_angle;
-	angle_force = (session->target_angle - angle) * spring +
-		(session->previous_angle - angle) * friction;
-
-	session->current_angle =
-		angle + (angle - session->previous_angle) + angle_force * step;
-	session->previous_angle = angle;
-
-	force = session->target;
-	wlsc_vector_subtract(&force, &session->current);
-	wlsc_vector_scalar(&force, spring);
-	tmp = session->previous;
-	wlsc_vector_subtract(&tmp, &session->current);
-	wlsc_vector_scalar(&tmp, friction);
-	wlsc_vector_add(&force, &tmp);
-
-	wlsc_vector_scalar(&force, step);
-	wlsc_vector_add(&force, &session->current);
-	wlsc_vector_subtract(&force, &session->previous);
-	session->previous = session->current;
-	wlsc_vector_add(&session->current, &force);
-
-	wlsc_session_update_matrix(session);
-	
-	tmp = session->current;
-	wlsc_vector_subtract(&tmp, &session->target);
-	if (tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z > 0.001) {
-		wlsc_compositor_schedule_repaint(compositor);
-	} else {
-		wl_list_remove(&session->animate.link);
-		wl_list_init(&session->animate.link);
-	}
-}
-
-static void
-wlsc_session_activate(struct wlsc_compositor *compositor, struct wlsc_session *session)
-{
-	struct wlsc_session *s;
-	int i;
-
-	compositor->primary = session;
-	if (wl_list_empty(&compositor->session_list))
-		return;
-
-	session->target.x = 0;
-	session->target.y = 0;
-	session->target.z = -600;
-	session->target_angle = 0;
-	wl_list_remove(&session->animate.link);
-	wl_list_insert(compositor->animate_list.prev, &session->animate.link);
-
-	i = 0;
-	s = container_of(session->link.prev,
-			 struct wlsc_session, link);
-	while (&s->link != &compositor->session_list) {
-		s->target.x = -1000 - 500 * i;
-		s->target.y = 0;
-		s->target.z = -2500;
-		s->target_angle = M_PI / 4;
-		wl_list_remove(&s->animate.link);
-		wl_list_insert(compositor->animate_list.prev, &s->animate.link);
-		wlsc_surface_lower(s->surface);
-
-		s = container_of(s->link.prev,
-				 struct wlsc_session, link);
-		i++;
-	}
-
-	i = 0;
-	s = container_of(session->link.next,
-			 struct wlsc_session, link);
-	while (&s->link != &compositor->session_list) {
-		s->target.x = 1000 + 500 * i;
-		s->target.y = 0;
-		s->target.z = -2500;
-		s->target_angle = -M_PI / 4;
-		wl_list_remove(&s->animate.link);
-		wl_list_insert(compositor->animate_list.prev, &s->animate.link);
-		wlsc_surface_lower(s->surface);
-
-		s = container_of(s->link.next,
-				 struct wlsc_session, link);
-		i++;
-	}
-
-	wlsc_compositor_schedule_repaint(compositor);
-}
-
-static void
-wlsc_session_handle_surface_destroy(struct wlsc_listener *listener,
-				    struct wlsc_surface *surface)
-{
-	struct wlsc_session *session =
-		container_of(listener, struct wlsc_session, listener);
-	struct wlsc_compositor *compositor;
-	struct wlsc_session *primary;
-
-	if (session->surface != surface)
-		return;
-
-	compositor = session->surface->compositor;
-	if (compositor->primary == session) {
-		printf("destroy session %p [%p, %p]\n", session, session->link.prev, session->link.next);
-		if (session->link.next != &compositor->session_list)
-			primary = container_of(session->link.next,
-					       struct wlsc_session, link);
-		else if (session->link.prev != &compositor->session_list)
-			primary = container_of(session->link.prev,
-					       struct wlsc_session, link);
-		else
-			primary = NULL;
-	}
-
-	wl_list_remove(&session->animate.link);
-	wl_list_remove(&session->link);
-	wl_list_remove(&session->listener.link);
-
-	if (compositor->primary == session) {
-		printf("activating session %p\n", primary);
-		wlsc_session_activate(compositor, primary);
-	}
-}
-
-static void
-wlsc_session_init(struct wlsc_session *session, struct wlsc_surface *surface)
-{
-	struct wlsc_compositor *c = surface->compositor;
-
-	session->animate.animate = wl_session_animate;
-	wl_list_init(&session->animate.link);
-	wl_list_insert(c->session_list.prev, &session->link);
-
-	session->surface = surface;
-	session->current.x = 0;
-	session->current.y = 0;
-	session->current.z = 0;
-	session->current_angle = 0;
-	session->target.x = 0;
-	session->target.y = 0;
-	session->target.z = 0;
-	session->target_angle = 0;
-	session->previous_angle = 0;
-
-	wlsc_session_update_matrix(session);
-
-	session->listener.func = wlsc_session_handle_surface_destroy;
-	wl_list_insert(c->surface_destroy_listener_list.prev,
-		       &session->listener.link);
-
-	printf("added session %p [%p, %p]\n", session, session->link.prev, session->link.next);
-	printf(" - prev [%p]\n", session->link.prev->prev);
-}
-
-static void
 compositor_create_surface(struct wl_client *client,
 			  struct wl_compositor *compositor, uint32_t id)
 {
@@ -1024,9 +819,6 @@ compositor_create_surface(struct wl_client *client,
 	wl_list_insert(ec->surface_list.prev, &surface->link);
 	wl_client_add_surface(client, &surface->base,
 			      &surface_interface, id);
-
-	wlsc_session_init(&surface->session, surface);
-	wlsc_session_activate(ec, &surface->session);
 }
 
 static void
@@ -1205,7 +997,6 @@ notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
 {
 	struct wlsc_compositor *compositor = device->ec;
-	struct wlsc_session *s;
 	uint32_t *k, *end;
 
 	if (!compositor->vt_active)
@@ -1214,48 +1005,6 @@ notify_key(struct wlsc_input_device *device,
 	switch (key | compositor->meta_state) {
 	case KEY_BACKSPACE | META_DOWN:
 		on_term_signal(SIGTERM, compositor);
-		return;
-
- 	case KEY_LEFT | META_DOWN:
-		if (!compositor->primary || !state)
-			break;
-		s = container_of(compositor->primary->link.prev,
-				 struct wlsc_session, link);
-		if (&s->link != &compositor->session_list) {
-			wlsc_session_activate(compositor, s);
-			if (device->grab == 0)
-				wlsc_input_device_set_keyboard_focus(device, s->surface);
-		}
-		return;
-
-
- 	case KEY_RIGHT | META_DOWN:
-		if (!compositor->primary || !state)
-			break;
-		s = container_of(compositor->primary->link.next,
-				 struct wlsc_session, link);
-		if (&s->link != &compositor->session_list) {
-			wlsc_session_activate(compositor, s);
-			if (device->grab == 0)
-				wlsc_input_device_set_keyboard_focus(device, s->surface);
-
-		}
-		return;
-
-	case KEY_LEFTMETA:
-	case KEY_RIGHTMETA:
-	case KEY_LEFTMETA | META_DOWN:
-	case KEY_RIGHTMETA | META_DOWN:
-		compositor->meta_state = state ? META_DOWN : 0;
-
-		if (state == 0 && compositor->primary) {
-			s = compositor->primary;
-			s->target.z = 0;
-			wl_list_remove(&s->animate.link);
-			wl_list_insert(compositor->animate_list.prev, &s->animate.link);
-			wlsc_compositor_schedule_repaint(compositor);
-		}
-
 		return;
 	}
 
@@ -1724,7 +1473,6 @@ wlsc_compositor_create(struct wl_display *display)
 	wlsc_compositor_schedule_repaint(ec);
 
 	wl_list_init(&ec->animate_list);
-	wl_list_init(&ec->session_list);
 
 	return ec;
 }
