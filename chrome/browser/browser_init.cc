@@ -795,6 +795,8 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
             L"Extension Packaging Error", MB_OK | MB_SETFOREGROUND);
         return false;
       }
+#else
+      NOTIMPLEMENTED() << " extension creation not implemented on POSIX.";
 #endif  // defined(OS_WIN)
       return false;
     }
