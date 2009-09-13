@@ -38,23 +38,25 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 void SandboxWarmup() {
   base::ScopedNSAutoreleasePool scoped_pool;
 
-  { // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
-    CGColorSpaceRef rgb_colorspace =
-        CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+  {  // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
+    scoped_cftyperef<CGColorSpaceRef> rgb_colorspace(
+        CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
 
-    // Allocate a 1 byte image.
-    char data[8];
-    CGContextRef tmp = CGBitmapContextCreate(data, 1, 1, 8, 1*8,
-                                             rgb_colorspace,
-                                             kCGImageAlphaPremultipliedFirst |
-                                             kCGBitmapByteOrder32Host);
+    // Allocate a 1x1 image.
+    char data[4];
+    scoped_cftyperef<CGContextRef> context(
+        CGBitmapContextCreate(data, 1, 1, 8, 1 * 4,
+                              rgb_colorspace,
+                              kCGImageAlphaPremultipliedFirst |
+                                  kCGBitmapByteOrder32Host));
 
-    CGColorSpaceRelease(rgb_colorspace);
-    CGContextRelease(tmp);
-
-    // load in the color profiles we'll need (as a side effect).
+    // Load in the color profiles we'll need (as a side effect).
     (void) mac_util::GetSRGBColorSpace();
     (void) mac_util::GetSystemColorSpace();
+
+    // CGColorSpaceCreateSystemDefaultCMYK - 10.6
+    scoped_cftyperef<CGColorSpaceRef> cmyk_colorspace(
+        CGColorSpaceCreateWithName(kCGColorSpaceGenericCMYK));
   }
 
   {  // [-NSColor colorUsingColorSpaceName] - 10.5.6
