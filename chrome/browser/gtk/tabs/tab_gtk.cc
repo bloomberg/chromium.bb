@@ -227,10 +227,14 @@ void TabGtk::DidProcessEvent(GdkEvent* event) {
   GdkEventMotion* motion = reinterpret_cast<GdkEventMotion*>(event);
   GdkEventButton* button = reinterpret_cast<GdkEventButton*>(last_mouse_down_);
   bool dragging = gtk_drag_check_threshold(widget(),
-                                           button->x, button->y,
-                                           motion->x, motion->y);
-  if (dragging)
-    StartDragging(gfx::Point(button->x, button->y));
+                                           static_cast<gint>(button->x),
+                                           static_cast<gint>(button->y),
+                                           static_cast<gint>(motion->x),
+                                           static_cast<gint>(motion->y));
+  if (dragging) {
+    StartDragging(gfx::Point(static_cast<int>(button->x),
+                             static_cast<int>(button->y)));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

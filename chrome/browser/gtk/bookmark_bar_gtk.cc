@@ -482,8 +482,9 @@ bool BookmarkBarGtk::IsAlwaysShown() {
 void BookmarkBarGtk::AnimationProgressed(const Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
-  gint height = animation->GetCurrentValue() *
-      (kBookmarkBarHeight - kBookmarkBarMinimumHeight) +
+  gint height =
+      static_cast<gint>(animation->GetCurrentValue() *
+                        (kBookmarkBarHeight - kBookmarkBarMinimumHeight)) +
       kBookmarkBarMinimumHeight;
   gtk_widget_set_size_request(event_box_.get(), -1, height);
 }
