@@ -76,6 +76,7 @@
         'gfx/font.h',
         'gfx/font_gtk.cc',
         'gfx/font_mac.mm',
+        'gfx/font_skia.cc',
         'gfx/font_win.cc',
         'gfx/color_utils.cc',
         'gfx/color_utils.h',

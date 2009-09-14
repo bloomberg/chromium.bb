@@ -130,7 +130,9 @@ static void SetupPangoLayout(PangoLayout* layout,
             PANGO_WRAP_WORD_CHAR : PANGO_WRAP_WORD);
   }
 
-  pango_layout_set_font_description(layout, font.nativeFont());
+  PangoFontDescription* desc = gfx::Font::PangoFontFromGfxFont(font);
+  pango_layout_set_font_description(layout, desc);
+  pango_font_description_free(desc);
 }
 
 // static

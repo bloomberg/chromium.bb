@@ -105,7 +105,8 @@ void NativeTextfieldGtk::UpdateReadOnly() {
 void NativeTextfieldGtk::UpdateFont() {
   if (!native_view())
     return;
-  gtk_widget_modify_font(native_view(), textfield_->font().nativeFont());
+  gtk_widget_modify_font(native_view(),
+                         gfx::Font::PangoFontFromGfxFont(textfield_->font()));
 }
 
 void NativeTextfieldGtk::UpdateEnabled() {
