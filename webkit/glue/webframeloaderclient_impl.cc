@@ -987,9 +987,15 @@ bool WebFrameLoaderClient::shouldGoToHistoryItem(HistoryItem*) const {
 }
 
 void WebFrameLoaderClient::didDisplayInsecureContent() {
+  if (webframe_->client())
+    webframe_->client()->didDisplayInsecureContent(webframe_);
 }
 
-void WebFrameLoaderClient::didRunInsecureContent(SecurityOrigin*) {
+void WebFrameLoaderClient::didRunInsecureContent(SecurityOrigin* origin) {
+  if (webframe_->client()) {
+    webframe_->client()->didRunInsecureContent(webframe_,
+        webkit_glue::StringToWebString(origin->toString()));
+  }
 }
 
 ResourceError WebFrameLoaderClient::blockedError(const WebCore::ResourceRequest&) {

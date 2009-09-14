@@ -216,6 +216,9 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void didLoadResourceFromMemoryCache(
       WebKit::WebFrame*, const WebKit::WebURLRequest&,
       const WebKit::WebURLResponse&);
+  virtual void didDisplayInsecureContent(WebKit::WebFrame* frame);
+  virtual void didRunInsecureContent(
+      WebKit::WebFrame* frame, const WebKit::WebString& security_origin);
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame*);
   virtual void didChangeContentsSize(
       WebKit::WebFrame*, const WebKit::WebSize&);

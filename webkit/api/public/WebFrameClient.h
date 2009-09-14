@@ -198,6 +198,16 @@ namespace WebKit {
         virtual void didLoadResourceFromMemoryCache(
             WebFrame*, const WebURLRequest&, const WebURLResponse&) = 0;
 
+        // This frame has displayed inactive content (such as an image) from an
+        // insecure source.  Inactive content cannot spread to other frames.
+        virtual void didDisplayInsecureContent(WebFrame*) = 0;
+
+        // The indicated security origin has run active content (such as a
+        // script) from an insecure source.  Note that the insecure content can
+        // spread to other frames in the same origin.
+        virtual void didRunInsecureContent(
+            WebFrame*, const WebString& securityOrigin) = 0;
+
 
         // Script notifications ------------------------------------------------
 

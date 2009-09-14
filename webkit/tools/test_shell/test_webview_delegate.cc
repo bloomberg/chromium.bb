@@ -895,6 +895,17 @@ void TestWebViewDelegate::didLoadResourceFromMemoryCache(
     const WebURLResponse&) {
 }
 
+void TestWebViewDelegate::didDisplayInsecureContent(WebFrame* frame) {
+  if (shell_->ShouldDumpFrameLoadCallbacks())
+    printf("didDisplayInsecureContent\n");
+}
+
+void TestWebViewDelegate::didRunInsecureContent(
+    WebFrame* frame, const WebString& security_origin) {
+  if (shell_->ShouldDumpFrameLoadCallbacks())
+    printf("didRunInsecureContent\n");
+}
+
 void TestWebViewDelegate::didExhaustMemoryAvailableForScript(WebFrame* frame) {
 }
 

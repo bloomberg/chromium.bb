@@ -2326,7 +2326,5 @@ BUG21644 : LayoutTests/http/tests/security/mixedContent/data-url-iframe-in-main-
 BUG21644 : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main-frame.html = FAIL
 BUG21644 : LayoutTests/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html = FAIL
 BUG21644 : LayoutTests/http/tests/security/mixedContent/insecure-image-in-main-frame.html = FAIL
-BUG21644 : LayoutTests/http/tests/security/mixedContent/insecure-script-in-iframe.html = FAIL
 BUG21644 : LayoutTests/http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html = FAIL
-BUG21644 : LayoutTests/http/tests/security/mixedContent/redirect-http-to-https-script-in-iframe.html = FAIL
 BUG21644 : LayoutTests/http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html = FAIL

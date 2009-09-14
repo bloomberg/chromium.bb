@@ -357,6 +357,9 @@ class RenderView : public RenderWidget,
   virtual void didLoadResourceFromMemoryCache(
       WebKit::WebFrame* frame, const WebKit::WebURLRequest& request,
       const WebKit::WebURLResponse&);
+  virtual void didDisplayInsecureContent(WebKit::WebFrame* frame) {}
+  virtual void didRunInsecureContent(
+      WebKit::WebFrame* frame, const WebKit::WebString& security_origin) {}
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame* frame);
   virtual void didChangeContentsSize(
       WebKit::WebFrame* frame, const WebKit::WebSize& size);

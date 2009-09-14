@@ -313,6 +313,13 @@ class RequestProxy : public URLRequest::Delegate,
     }
   }
 
+  virtual void OnSSLCertificateError(URLRequest* request,
+                                     int cert_error,
+                                     net::X509Certificate* cert) {
+    // Allow all certificate errors.
+    request->ContinueDespiteLastError();
+  }
+
   virtual void OnReadCompleted(URLRequest* request, int bytes_read) {
     if (request->status().is_success() && bytes_read > 0) {
       OnReceivedData(bytes_read);
