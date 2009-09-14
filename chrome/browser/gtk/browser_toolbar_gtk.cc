@@ -52,6 +52,9 @@ const int kToolbarHeight = 29;
 // Padding within the toolbar above the buttons and location bar.
 const int kTopPadding = 4;
 
+// Exterior padding on left/right of toolbar.
+const int kLeftRightPadding = 2;
+
 // Height of the toolbar in pixels when we only show the location bar.
 const int kToolbarHeightLocationBarOnly = kToolbarHeight - 2;
 
@@ -155,7 +158,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
   toolbar_ = gtk_hbox_new(FALSE, kToolbarWidgetSpacing);
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-      ShouldOnlyShowLocation() ? 0 : kTopPadding, 0, 0, 0);
+      ShouldOnlyShowLocation() ? 0 : kTopPadding, 0,
+      kLeftRightPadding, kLeftRightPadding);
   g_signal_connect(alignment, "expose-event",
                    G_CALLBACK(&OnAlignmentExpose), this);
   gtk_container_add(GTK_CONTAINER(event_box_), alignment);
