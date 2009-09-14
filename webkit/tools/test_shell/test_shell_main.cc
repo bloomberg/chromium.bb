@@ -170,20 +170,30 @@ int main(int argc, char* argv[]) {
   }
 
   // Treat the first loose value as the initial URL to open.
-  FilePath uri;
+  GURL starting_url;
 
   // Default to a homepage if we're interactive.
   if (!layout_test_mode) {
-    PathService::Get(base::DIR_SOURCE_ROOT, &uri);
-    uri = uri.AppendASCII("webkit");
-    uri = uri.AppendASCII("data");
-    uri = uri.AppendASCII("test_shell");
-    uri = uri.AppendASCII("index.html");
+    FilePath path;
+    PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    path = path.AppendASCII("webkit");
+    path = path.AppendASCII("data");
+    path = path.AppendASCII("test_shell");
+    path = path.AppendASCII("index.html");
+    starting_url = net::FilePathToFileURL(path);
   }
 
   std::vector<std::wstring> loose_values = parsed_command_line.GetLooseValues();
-  if (loose_values.size() > 0)
-    uri = FilePath::FromWStringHack(loose_values[0]);
+  if (loose_values.size() > 0) {
+    GURL url(WideToUTF16Hack(loose_values[0]));
+    if (url.is_valid()) {
+      starting_url = url;
+    } else {
+      // Treat as a file path
+      starting_url =
+          net::FilePathToFileURL(FilePath::FromWStringHack(loose_values[0]));
+    }
+  }
 
   std::wstring js_flags =
     parsed_command_line.GetSwitchValue(test_shell::kJavaScriptFlags);
@@ -208,7 +218,7 @@ int main(int argc, char* argv[]) {
   StatsTable::set_current(table);
 
   TestShell* shell;
-  if (TestShell::CreateNewWindow(net::FilePathToFileURL(uri), &shell)) {
+  if (TestShell::CreateNewWindow(starting_url, &shell)) {
     if (record_mode || playback_mode) {
       platform.SetWindowPositionForRecording(shell);
       WebKit::registerExtension(extensions_v8::PlaybackExtension::Get());
@@ -255,7 +265,7 @@ int main(int argc, char* argv[]) {
           params.dump_tree = false;
       }
 
-      if (uri.empty()) {
+      if (!starting_url.is_valid()) {
         // Watch stdin for URLs.
         char filenameBuffer[kPathBufSize];
         while (fgets(filenameBuffer, sizeof(filenameBuffer), stdin)) {
@@ -297,7 +307,7 @@ int main(int argc, char* argv[]) {
       } else {
         // TODO(ojan): Provide a way for run-singly tests to pass
         // in a hash and then set params.pixel_hash here.
-        params.test_url = WideToUTF8(uri.ToWStringHack()).c_str();
+        params.test_url = starting_url.spec();
         TestShell::RunFileTest(params);
       }
 
