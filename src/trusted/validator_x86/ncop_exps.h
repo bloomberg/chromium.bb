@@ -37,82 +37,16 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOP_EXPS_H_
 
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
+#include "gen/native_client/src/trusted/validator_x86/ncop_expr_node_flag.h"
+#include "gen/native_client/src/trusted/validator_x86/ncop_expr_node_kind.h"
 
 /* Defines the state used to match an instruction, while walking
  * instructions using the NcInstIter.
  */
 struct NcInstState;
 
-/* Kinds of nodes that can appear in the operand vector. */
-typedef enum {
-  /* Unknown expression (typically denotes a problem). */
-  UndefinedExp,
-  /* A register. Value is the corresponding OperandKind defining the
-   * register.
-   */
-  ExprRegister,
-  /* An operand. Value is the index of the operand for the corresponding
-   * opcode. Has one kid, which is the root of the translated operand.
-   */
-  OperandReference,
-  /* A constant (up to 32 bits). Value is the value of the constant. */
-  ExprConstant,
-  /* A 64-bit constant, which has two children that are 32-bit constants. */
-  ExprConstant64,
-  /* A segment address. */
-  ExprSegmentAddress,
-  /* A memory offset. Value is zero. Has four kids: base, index,
-   * scale and disp, where the memory offset is:
-   *    base + index(or undefined) * scale + disp
-   */
-  ExprMemOffset,
-  /* Special marker used to define the number of ExprNodeKinds. */
-  ExprNodeKindEnumSize
-} ExprNodeKind;
-
-/* Returns the name of the ExprNodeKind. */
-const char* ExprNodeKindName(ExprNodeKind kind);
-
 /* Returns the number of kids an ExprNodeKind has. */
 int ExprNodeKindRank(ExprNodeKind kind);
-
-/* The set of possible flags associated with expr nodes. */
-typedef enum {
-  /* Defines that a set occurs for this subexpression. */
-  ExprSet,
-  /* Defines that a use occurs for this subexpression. */
-  ExprUsed,
-  /* Defines that an address is computed by the subexpression. */
-  ExprAddress,
-  /* Defines that the size of the data is 1 byte. */
-  ExprSize8,
-  /* Defines that the size of the data is 2 bytes. */
-  ExprSize16,
-  /* Defines that the size of the data is 4 bytes. */
-  ExprSize32,
-  /* Defines that the size of the data is 8 bytes. */
-  ExprSize64,
-  /* Defines that the constant is an unsigned hex value instead of an integer.
-   */
-  ExprUnsignedHex,
-  /* Defines that the constant is a signed hexidecimal value instead of
-   * an integer.
-   */
-  ExprSignedHex,
-  /* Defines that the constant is an unsigned integer instead of a hex value. */
-  ExprUnsignedInt,
-  /* Defines that the constant is a signed integer instead of a hex value. */
-  ExprSignedInt,
-  /* Defines an implicit argument that shouldn't be printed. */
-  ExprImplicit,
-  /* Defines that the corresponding constant is a jump target. */
-  ExprJumpTarget,
-  /* Special marker used to define the number of ExprNodeFlags. */
-  ExprNodeFlagEnumSize
-} ExprNodeFlagEnum;
-
-/* Returns the print name of the given flag. */
-const char* ExprNodeFlagName(ExprNodeFlagEnum flag);
 
 /* Defines a bit set of ExprNodeFlags. */
 typedef uint32_t ExprNodeFlags;

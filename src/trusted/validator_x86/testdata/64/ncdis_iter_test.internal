@@ -144,7 +144,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 00000000004003d4: e8 83 00 00 00                               call 0x40045c
   { 1, { 0xe8, 0x00, 0x00 },
@@ -162,7 +162,7 @@ ExprNodeVector[6] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x40045c, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
+  { ExprConstant[0] , 0x40045c, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 00000000004003de: e8 7d 05 00 00                               call 0x400960
   { 1, { 0xe8, 0x00, 0x00 },
@@ -180,7 +180,7 @@ ExprNodeVector[6] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x400960, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
+  { ExprConstant[0] , 0x400960, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: c3                                           ret
   { 1, { 0xc3, 0x00, 0x00 },
@@ -260,7 +260,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, 0 },
-  { ExprConstant[0] , 0x0, ExprUsed | ExprSize32 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x0, ExprUsed | ExprSize32 | ExprUnsignedHex },
 };
 0000000000400403: e9 e0 ff ff ff                               jmp 0x4003e8
   { 1, { 0xe9, 0x00, 0x00 },
@@ -275,7 +275,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
-  { ExprConstant[0] , 0x4003e8, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
+  { ExprConstant[0] , 0x4003e8, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: 49 89 d1                                     mov %r9, %rdx
   { 1, { 0x89, 0x00, 0x00 },
@@ -322,7 +322,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %r8, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x4008c0, ExprUsed | ExprSize32 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x4008c0, ExprUsed | ExprSize32 | ExprUnsignedHex },
 };
 0000000000000000: f4                                           hlt
   { 1, { 0xf4, 0x00, 0x00 },
@@ -380,7 +380,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
-  { ExprConstant[0] , 0x40046e, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
+  { ExprConstant[0] , 0x40046e, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: ff d0                                        call %rax
   { 1, { 0xff, 0x00, 0x00 },
@@ -414,7 +414,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
-  { ExprConstant[0] , 0x4004b3, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
+  { ExprConstant[0] , 0x4004b3, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: c9                                           leave
   { 1, { 0xc9, 0x00, 0x00 },
@@ -455,7 +455,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x0, ExprUsed | ExprSize32 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x0, ExprUsed | ExprSize32 | ExprUnsignedHex },
 };
 0000000000000000: bf 20 10 60 00                               mov %edi, 0x601020
   { 1, { 0xbf, 0x00, 0x00 },
@@ -471,7 +471,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %edi, ExprSet | ExprSize32 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x601020, ExprUsed | ExprSize32 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x601020, ExprUsed | ExprSize32 | ExprUnsignedHex },
 };
 0000000000000000: 48 8b 04 c5 a0 13 60 00                      mov %rax, [%rax*8+0x6013a0]
   { 1, { 0x8b, 0x00, 0x00 },
@@ -490,7 +490,7 @@ ExprNodeVector[8] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprConstant[0] , 8, ExprSize8 },
-  { ExprConstant[0] , 0x6013a0, ExprSize32 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x6013a0, ExprSize32 | ExprUnsignedHex },
 };
 0000000000000000: 89 7d fc                                     mov [%rbp-0x4], %edi
   { 1, { 0x89, 0x00, 0x00 },
@@ -548,7 +548,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , -0x8, ExprSize8 | ExprSignedHex },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 8b 45 fc                                     mov %eax, [%rbp-0x4]
   { 1, { 0x8b, 0x00, 0x00 },
@@ -609,7 +609,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rbp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x3, ExprSize8 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x3, ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 48 8d 2d 0f 07 20 00                         lea %rbp, [%rip+0x20070f]
   { 1, { 0x8d, 0x00, 0x00 },
@@ -647,9 +647,9 @@ ExprNodeVector[10] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
-  { ExprConstant64[2] , 0x1122334455667788, EpxrUnsignedHex },
-  { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
-  { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
+  { ExprConstant64[2] , 0x1122334455667788, ExprUnsignedHex },
+  { ExprConstant[0] , 0x55667788, ExprUnsignedHex },
+  { ExprConstant[0] , 0x11223344, ExprUnsignedHex },
 };
 0000000000000000: 66 a1 88 77 66 55 44 33 22 11                mov %ax, [0x1122334455667788]
   { 1, { 0xa1, 0x00, 0x00 },
@@ -668,9 +668,9 @@ ExprNodeVector[10] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
-  { ExprConstant64[2] , 0x1122334455667788, EpxrUnsignedHex },
-  { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
-  { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
+  { ExprConstant64[2] , 0x1122334455667788, ExprUnsignedHex },
+  { ExprConstant[0] , 0x55667788, ExprUnsignedHex },
+  { ExprConstant[0] , 0x11223344, ExprUnsignedHex },
 };
 0000000000000000: a2 88 77 66 55 44 33 22 11                   mov [0x1122334455667788], %al
   { 1, { 0xa2, 0x00, 0x00 },
@@ -687,9 +687,9 @@ ExprNodeVector[10] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
-  { ExprConstant64[2] , 0x1122334455667788, EpxrUnsignedHex },
-  { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
-  { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
+  { ExprConstant64[2] , 0x1122334455667788, ExprUnsignedHex },
+  { ExprConstant[0] , 0x55667788, ExprUnsignedHex },
+  { ExprConstant[0] , 0x11223344, ExprUnsignedHex },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
 };
@@ -708,9 +708,9 @@ ExprNodeVector[10] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
-  { ExprConstant64[2] , 0x1122334455667788, EpxrUnsignedHex },
-  { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
-  { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
+  { ExprConstant64[2] , 0x1122334455667788, ExprUnsignedHex },
+  { ExprConstant[0] , 0x55667788, ExprUnsignedHex },
+  { ExprConstant[0] , 0x11223344, ExprUnsignedHex },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %ax, ExprUsed | ExprSize16 },
 };
@@ -728,9 +728,9 @@ ExprNodeVector[6] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant64[2] , 0x1122334455667788, ExprUsed | EpxrUnsignedHex },
-  { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
-  { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
+  { ExprConstant64[2] , 0x1122334455667788, ExprUsed | ExprUnsignedHex },
+  { ExprConstant[0] , 0x55667788, ExprUnsignedHex },
+  { ExprConstant[0] , 0x11223344, ExprUnsignedHex },
 };
 0000000000000000: 44 8a 04 00                                  mov %r8b, [%rax+%rax*1]
   { 1, { 0x8a, 0x00, 0x00 },
@@ -825,7 +825,7 @@ ExprNodeVector[8] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
-  { ExprConstant[0] , 0x0, ExprSize32 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x0, ExprSize32 | ExprUnsignedHex },
 };
 0000000000000000: 66 0f 38 08 2c 25 00 00 00 00                psignb %xmm5, [0x0]
   { 3, { 0x0f, 0x38, 0x08 },
@@ -844,7 +844,7 @@ ExprNodeVector[8] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
-  { ExprConstant[0] , 0x0, ExprSize32 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x0, ExprSize32 | ExprUnsignedHex },
 };
 0000000000000000: 66 44 0f 38 08 2c 00                         psignb %xmm13, [%rax+%rax*1]
   { 3, { 0x0f, 0x38, 0x08 },
@@ -993,7 +993,7 @@ ExprNodeVector[8] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
-  { ExprConstant[0] , 0x4, ExprSize32 | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x4, ExprSize32 | ExprUnsignedHex },
 };
 0000000000000000: da 70 04                                     fidiv [%rax+0x4]
   { 1, { 0xda, 0x00, 0x00 },

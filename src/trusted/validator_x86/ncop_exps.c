@@ -38,6 +38,8 @@
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/utils/types.h"
+#include "gen/native_client/src/trusted/validator_x86/ncop_expr_node_flag_impl.h"
+#include "gen/native_client/src/trusted/validator_x86/ncop_expr_node_kind_impl.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -48,49 +50,26 @@
 
 typedef struct {
   /* The name of the expression operator. */
-  const char* const name;
+  ExprNodeKind name;
   /* The rank (i.e. number of children) the expression operator has. */
   const int rank;
 } ExprNodeKindDescriptor;
 
 /* The print names of valid ExprNodeKind values. */
-static const ExprNodeKindDescriptor g_ExprNodeKindDesc[ExprNodeKindEnumSize] = {
-  {"UndefinedExp", 0},
-  {"ExprRegister", 0},
-  {"OperandReference", 1},
-  {"ExprConstant", 0},
-  {"ExprConstant64", 2},
-  { "ExprSegmentAddress", 2},
-  { "ExprMemOffset", 4}
+static const ExprNodeKindDescriptor
+g_ExprNodeKindDesc[ExprNodeKindEnumSize + 1]= {
+  {UndefinedExp, 0},
+  {ExprRegister, 0},
+  {OperandReference, 1},
+  {ExprConstant, 0},
+  {ExprConstant64, 2},
+  {ExprSegmentAddress, 2},
+  {ExprMemOffset, 4},
 };
-
-const char* ExprNodeKindName(ExprNodeKind kind) {
-  return g_ExprNodeKindDesc[kind].name;
-}
 
 int ExprNodeKindRank(ExprNodeKind kind) {
+  assert(kind == g_ExprNodeKindDesc[kind].name);
   return g_ExprNodeKindDesc[kind].rank;
-}
-
-/* The print names of valid ExprNodeFlagEnum values. */
-static const char* const g_ExprNodeFlagName[ExprNodeFlagEnumSize] = {
-  "ExprSet",
-  "ExprUsed",
-  "ExprAddress",
-  "ExprSize8",
-  "ExprSize16",
-  "ExprSize32",
-  "ExprSize64",
-  "EpxrUnsignedHex",
-  "ExprSignedHex",
-  "ExprUnsignedInt",
-  "ExprSignedInt",
-  "ExprImplicit",
-  "ExprJumpTarget",
-};
-
-const char* ExprNodeFlagName(ExprNodeFlagEnum flag) {
-  return g_ExprNodeFlagName[flag];
 }
 
 /* Returns the register defined by the given node. */
@@ -216,7 +195,7 @@ void PrintExprNodeVector(FILE* file, ExprNodeVector* vector) {
     if (node->flags == 0) {
       fprintf(file, "0");
     } else {
-      ExprNodeFlagEnum f;
+      ExprNodeFlag f;
       Bool is_first = TRUE;
       for (f = 0; f < ExprNodeFlagEnumSize; f++) {
         if (node->flags & ExprFlag(f)) {

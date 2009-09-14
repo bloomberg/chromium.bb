@@ -1,0 +1,21 @@
+# Kinds of nodes that can appear in the operand vector
+# Each line defines a separate type of expr node.
+
+# Unknown expression (typically denotes a problem).
+UndefinedExp
+# A register. Value is the corresponding OperandKind defining the
+# register.
+ExprRegister
+# An operand. Value is the index of the operand for the corresponding
+# opcode. Has one kid, which is the root of the translated operand.
+OperandReference
+# A constant (up to 32 bits). Value is the value of the constant.
+ExprConstant
+# A 64-bit constant, which has two children that are 32-bit constants.
+ExprConstant64
+# A segment address.
+ExprSegmentAddress
+# A memory offset. Value is zero. Has four kids: base, index,
+# scale and disp, where the memory offset is:
+#    base + index(or undefined) * scale + disp
+ExprMemOffset

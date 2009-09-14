@@ -43,8 +43,44 @@ env.ComponentLibrary('nchelper', ['ncfileutil.c'])
 if env['TARGET_ARCHITECTURE'] != 'x86':
   Return()
 
+# Define where generated code should be put.
+ncv_gen_basedir = '${TARGET_ROOT}'
+ncv_gen_dir = ncv_gen_basedir +'/gen/native_client/src/trusted/validator_x86'
+
+#------------------------------------------------------
+# Generate the needed header files for enumerated types.
+# Note that we use the same directory for all platforms.
+
+# Define enumerate type files, and the options to process.
+ncv_enum_pairs = {
+    'ncopcode_prefix': "--name='OpcodePrefix' --add_size=1",
+    'ncopcode_insts':
+        "--name='InstMnemonic' --add_size=1 --sort=1 --name_prefix='Inst'",
+    'ncopcode_opcode_flags': "--name='OpcodeFlag' --add_size=1",
+    'ncopcode_operand_kind': "--name='OperandKind' --add_size=1",
+    'ncopcode_operand_flag': "--name='OperandFlag' --add_size=1",
+    'ncop_expr_node_flag': "--name='ExprNodeFlag' --add_size=1",
+    'ncop_expr_node_kind': "--name='ExprNodeKind' --add_size=1"
+    }
+
+# Now code generate the enumerated types.
+for ncv_enum in ncv_enum_pairs:
+  ncv_options = ncv_enum_pairs[ncv_enum]
+  ncv_base = ncv_gen_dir + "/" + ncv_enum
+  ncv_enum_file = env.File(ncv_enum + ".enum")
+  ncv_header_1 = env.File(ncv_base + ".h")
+  ncv_header_2 = env.File(ncv_base + "_impl.h")
+  ncv_headers = [ ncv_header_1 , ncv_header_2 ]
+  ncv_command = (
+      "${PYTHON} %s --header='%s' --source='%s' --path_prefix='%s' %s %s" %
+      (env.File('enum_gen.py'), ncv_header_1, ncv_header_2, ncv_gen_basedir,
+       ncv_options, ncv_enum_file))
+  env.Command(ncv_headers,
+              [ncv_enum_file, env.File('enum_gen.py')],
+              [ncv_command])
+
 env.ComponentLibrary('ncopcode_utils',
-                     ['ncopcode_desc.c']);
+                     ['ncopcode_desc.c'])
 
 # TODO(bradnelson): clean this up more
 sdl_env = env.Clone()
@@ -75,7 +111,6 @@ if env.AllBits('windows', 'debug'):
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
                          'x86/Microsoft.VC80.DebugCRT')
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
-
 
 # Isolate the environment for ncdecode_table to prevent a cycle.
 env_decode_table = env.Clone()
@@ -128,40 +163,26 @@ env.ComponentLibrary('ncvalidate_sfi',
 
 env.ComponentLibrary('ncdis_util', ['ncdis_util.c'])
 
-# NOTE: CODE GENERATION BELOW
-ncv_generated_ncdecode_headers =[
-  '${TARGET_ROOT}/gen/native_client/src/trusted/validator_x86/ncdecodetab.h',
-  '${TARGET_ROOT}/gen/native_client/src/trusted/validator_x86/ncdisasmtab.h'
-  ]
+#------------------------------------------------------------------
+# Generate the header files containing the modeled x86 instructions.
 
-ncv_generated_opcode_headers = [
-  '${TARGET_ROOT}/gen/native_client/src/trusted/validator_x86/nc_opcode_table.h'
-  ]
-
-ncv_generated_headers = (ncv_generated_ncdecode_headers
-                         + ncv_generated_opcode_headers)
+ncv_decodetab_h = env.File(ncv_gen_dir + '/ncdecodetab.h')
+ncv_disasmtab_h = env.File(ncv_gen_dir + '/ncdisasmtab.h')
 
 env.Command(
-    ncv_generated_headers,
-    # NOTE: work around for scons issue where ComponentProgram()
-    #       returns a obj/node and as a SIDEEFFECT copies node to staging/
-    # NOTE: we run both generators at once, because of the Delete/Mkdir
-    # directory updates done.
-    [ncdecode_table,
-     '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}',
-     ncdecode_tablegen,
-     '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}',
-     ],
-    ['echo CODE GENERATION: %s' % str(ncv_generated_headers),
-     Delete('${TARGET_ROOT}/gen/native_client/ncv'),
-     Mkdir('${TARGET_ROOT}/gen/native_client/ncv'),
-     # NOTE: force execution out of staging so that window finds the DLLs
-    '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX} -m%s %s %s' %
-     tuple([env['TARGET_SUBARCH']] + ncv_generated_ncdecode_headers),
-     # NOTE: force execution out of staging so that window finds the DLLs
-    '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s %s' %
-     tuple([env['TARGET_SUBARCH']] + ncv_generated_opcode_headers)
-     ])
+    [ncv_decodetab_h, ncv_disasmtab_h],
+    [ncdecode_table, '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}'],
+    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX} -m%s %s %s' %
+     (env['TARGET_SUBARCH'], ncv_decodetab_h, ncv_disasmtab_h)])
+
+ncv_opcode_table_h = env.File(ncv_gen_dir + '/nc_opcode_table.h')
+
+env.Command(
+    [ncv_opcode_table_h],
+    [ncdecode_tablegen,
+     '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}'],
+    ['${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s %s' %
+     (env['TARGET_SUBARCH'], ncv_opcode_table_h)])
 
 # ======================================================================
 # Decoder unittests

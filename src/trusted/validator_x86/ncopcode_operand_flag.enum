@@ -1,0 +1,22 @@
+# Define a set of possible opcode operand flags that can apply to an
+# operand.
+# Each line defines a separate operand flag.
+
+# Operand is used
+OpUse
+# Operand is set
+OpSet
+# Operand is an address (as in LEA).
+OpAddress
+# Operand is implicit (rather than explicit)
+OpImplicit
+# Operand is an extension of the opcode, rather than a (real) operand.
+# This should be defined on the first operand for opcodes with values
+# OpcodeInModRm, OpcodePlusR, and OpcodePlusI.
+OperandExtendsOpcode
+# When jump address, the jump is near (rather than far).
+OperandNear
+# When jump address, the jump is relative (rather than absolute.
+OperandRelative
+# Operand zero-extends 32-bit register results to 64-bits.
+OperandZeroExtends_v

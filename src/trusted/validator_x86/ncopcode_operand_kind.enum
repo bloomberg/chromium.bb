@@ -1,0 +1,373 @@
+# Defines possible kinds of operands an opcode can have.
+# Each line defines a separate operand kind.
+
+Unknown_Operand   # Unknown operand.
+
+# Note: The instruction decoder may count on the fact that the A_operand
+# values are contiguous, in the order specifed.
+
+# Models a far pointer.
+A_Operand
+
+# A far pointer, consisting of a 16-bit selector, and
+# a 16 bit offset (operand size is 16). Intel's notation
+# is ptr16:16.
+Aw_Operand
+
+# A far pointer, consisting of a 16-bit selector, and
+# a 32-bit offset (operand size is 32). Intel's notation
+# is ptr16:32.
+Av_Operand
+
+# A far pointer, consisting of a 16-bit selector, and
+# a 64-bit offset (operand size is 64). Intel's notation
+# is ptr16:64.
+Ao_Operand
+
+# Note: The instruction decoder may count on the fact that the E_operand
+# values are contiguous, in the order specified.
+
+# Models a general purpose register or memory operand.
+# Size is defined by the computed operand size.
+E_Operand
+
+# Models an 8-bit general-purpose register or memory
+# operand. Intel's notation is r/m8.
+Eb_Operand
+
+# Models a 16-bit general-purpose register or memory
+# operand. Intel's notation is r/m16
+Ew_Operand
+
+# Models a 32-bit general-purpose register or memory
+# operand. Intel's notation is r/m32.
+Ev_Operand
+
+# Models a 64-bit general-purpose register or memory
+# operand. Intel's notation is r/m64.
+Eo_Operand
+
+# Note: The instruction decoder may count on the fact that the G_Operand
+# values are contiguous, in the order specified.
+
+# Models a general purpose register operand.
+# Size is defined by the computed operand size.
+G_Operand
+
+# Models an 8-bit general purpose register operand.
+# Intel's notation is r8.
+Gb_Operand
+
+# Models a 16-bit general purpose register operand.
+# Intel's notation is r16.
+Gw_Operand
+
+# Models a 32-bit general-purpose register operand.
+# Intel's notation is r32
+Gv_Operand
+
+# Models a 64 bit general-purpose register operand.
+# Intel's notation is r64.
+Go_Operand
+
+# Models registers using the difference in the opcode base, from the opcode
+# value.
+G_OpcodeBase
+
+# Note: The instruction decoder may count on the fact that the I_Operand
+# values are contiguous, in the order specified.
+
+# Model an immediate value. Size is defined by the
+# computed operand size.
+I_Operand
+
+# An immediate 8-bit value. Intel's notation is imm8.
+Ib_Operand
+
+# An immediate 16-bit value. Intel's notation is imm16.
+Iw_Operand
+
+# An immediate 32-bit value. Intel's notation is imm32.
+Iv_Operand
+
+# An immediate 64-bit value. Intel's notation is imm64.
+Io_Operand
+
+# Note: The instruction decoder may count on the fact that the J_Operand
+# values are contiguous, in the order specified.
+
+# A relative address to branch to. Size is defined by
+# the computed operand size.
+J_Operand
+
+# A relative address (range 128 before, 127 after) the
+# end of the instruction. Intel's notation is rel8.
+Jb_Operand
+
+# A relative address that is 16 bits long (operand size).
+# Intel's notation is rel16
+Jw_Operand
+
+# A relative address that is 32 bits long (operand size).
+# Intel's notation is rel32.
+Jv_Operand
+
+# Note: The instruction decoder may count on the fact that the M_Operand
+# values are contiguous, in the order specified.
+
+# A 16, 32, or 64 bit operand in memory. ???
+# Intel's notation is m. Size is defined by the
+# computed operand size.
+M_Operand
+
+# A 8-bit operand in memory pointerd to by the DS:(E)Si or
+# ES:(E)DI registers. In 64-bit mode, it is pointed to
+# by the RSI or RDI registers. Intel's notation is m8.
+Mb_Operand
+
+# A 16-bit operand in memory pointed to by the DS:(E)SI
+# or ES:(E)DI registers. Intel's notation is m16.
+Mw_Operand
+
+# A 32-bit operand in memory pointed to by the DS:(E)SI
+# or ES:(E)DI registers. Intel's notation is m32.
+Mv_Operand
+
+# A 64-bit operand in memory. Intel's notation is m64.
+Mo_Operand
+
+# A 128-bit operand in memory. Intel's notation is m128.
+Mqo_Operand
+
+# A memory operand containing a far pointer composed of
+# a 16-bit selector and a 16 bit offset. Intel's notation
+# is m16:16.
+Mpw_Operand
+
+# A memory operand containing a far pointer composed of
+# a 16 bit selector and a 32 bit offset. Intel's notation
+# is m16:32.
+Mpv_Operand
+
+# A memory operand containing a far pointer composed of
+# a 16 bit selector and a 64 bit offset. Intel's notation
+# is m16:64.
+Mpo_Operand
+
+# Like E_Operand, but doesn't allow top-level registers
+# (i.e. only memory offsets for effective address).
+MemOffset_E_Operand
+
+# Like E_Operand, but uses MMX registers instead.
+Mmx_E_Operand
+
+# Like G_Operand, but uses MMX registers instead.
+Mmx_G_Operand
+
+Like E_Operand, but uses XMM registers instead.
+Xmm_E_Operand
+
+# Like G_Operand, but uses XMM registers instead.
+Xmm_G_Operand
+
+# Note: The instruction decoder may count on the fact that the O_Operand
+# values are contiguous, in the order specified.
+
+# A memory offset. Size is defined by the computed operand size.
+O_Operand
+
+# A memory 8-bit offset. Intel's notation is moffs8.
+Ob_Operand
+
+# A memory 16-bit offset. Intel's notation is moffs16.
+Ow_Operand
+
+# A memory 32-bit offset. Intel's notation is moffs32.
+Ov_Operand
+
+# A memory 64-bit offset. Intel's notation is moffs64.
+Oo_Operand
+
+# A segment register. The segment register bit assignments
+# are ES=0, CS=1, SS=2, DS=3, FS=4, GS=5. Intel's notation
+# is Sreg.
+S_Operand
+
+# A Floating point ST register enocoded in opcode byte.
+St_Operand
+
+# Note: The instruction decoder may count on the fact that the list
+# of register values are contiguous, in the order specified.
+
+# Unknown register - Used if actual register can't
+# be determined by the instruction decoder.
+RegUnknown
+RegAL             # 8-bit registers in 32-bit and 64-bit modes.
+RegBL
+RegCL
+RegDL
+
+RegAH             # Additional 8-bit regisister in 32-bit mode.
+RegBH
+RegCH
+RegDH
+
+RegDIL            # Additional 8-bit registers in 64-bit mode.
+RegSIL
+RegBPL
+RegSPL
+# Note: Intel manual claims that r8l..r15l should be used. However, AMD
+# manual and (xed from Intel) uses r8b..r15b. Therefore we will use the
+# latter.
+RegR8B
+RegR9B
+RegR10B
+RegR11B
+RegR12B
+RegR13B
+RegR14B
+RegR15B
+
+RegAX              # 16 bit registers in 32-bit and 64-bit modes.
+RegBX
+RegCX
+RegDX
+RegSI
+RegDI
+RegBP
+RegSP
+
+RegR8W             # 16 bit registers only in 64-bit mode.
+RegR9W
+RegR10W
+RegR11W
+RegR12W
+RegR13W
+RegR14W
+RegR15W
+
+RegEAX             # General 32-bit registers in 32-bit and 64-bit modes.
+RegEBX
+RegECX
+RegEDX
+RegESI
+RegEDI
+RegEBP
+RegESP
+
+RegR8D             # Additional 32-bit registers in 64-bit mode.
+RegR9D
+RegR10D
+RegR11D
+RegR12D
+RegR13D
+RegR14D
+RegR15D
+
+RegCS              # 16-bit segment registers in 32-bit and 64-bit modes.
+RegDS
+RegSS
+RegES
+RegFS
+RegGS
+
+RegEFLAGS          # Program status and control register in 32-bit mode.
+RegRFLAGS          # Program status and control register in 64-bit mode.
+
+RegEIP             # Instruction pointer in 32-bit mode.
+RegRIP             # Instruction pointer in 64-bit mode.
+
+RegRAX             # General purpose 64-bit registers in 64-bit mode.
+RegRBX
+RegRCX
+RegRDX
+RegRSI
+RegRDI
+RegRBP
+RegRSP
+RegR8
+RegR9
+RegR10
+RegR11
+RegR12
+RegR13
+RegR14
+RegR15
+
+# Stack register, based on address size - ESP in 32-bits, RSP in 64-bits.
+RegRESP
+# Use AX, EAX, or RAX, based on operand size.
+RegREAX
+# Use EIP or RIP, based on address size - EIP in 32-bits, RIP in 64-bits.
+RegREIP
+# Use EBP or RBP, based on 32/64 bit model.
+RegREBP
+
+# Floating point stack registers.
+RegST0
+RegST1
+RegST2
+RegST3
+RegST4
+RegST5
+RegST6
+RegST7
+
+# MMX registers.
+RegMMX0
+RegMMX1
+RegMMX2
+RegMMX3
+RegMMX4
+RegMMX5
+RegMMX6
+RegMMX7
+
+# XMM registers.
+RegXMM0
+RegXMM1
+RegXMM2
+RegXMM3
+RegXMM4
+RegXMM5
+RegXMM6
+RegXMM7
+RegXMM8
+RegXMM9
+RegXMM10
+RegXMM11
+RegXMM12
+RegXMM13
+RegXMM14
+RegXMM15
+
+# One of the eight general purpose registers, less the stack pointer, based
+# on operand size.
+RegGP7
+
+# The following only appears as the first (implicit) operand when the Opcode
+# has flag OpcodePlusR or OpcodePlusI . When defined, the operand defines the
+# amount to subtract from the opcode to get the opcode base.
+OpcodeBaseMinus0
+OpcodeBaseMinus1
+OpcodeBaseMinus2
+OpcodeBaseMinus3
+OpcodeBaseMinus4
+OpcodeBaseMinus5
+OpcodeBaseMinus6
+OpcodeBaseMinus7
+
+# The following only appears as the first (implicit) operand when the Opcode
+# has flag OpcodeInModRm. When defined, the operand defines the opcode value
+# inside the Mod/Rm byte.
+Opcode0
+Opcode1
+Opcode2
+Opcode3
+Opcode4
+Opcode5
+Opcode6
+Opcode7
+
+# Predefined constants.
+Const_1

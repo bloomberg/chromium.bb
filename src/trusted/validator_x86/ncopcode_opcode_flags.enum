@@ -1,0 +1,95 @@
+# Define set of possible instruction opcode flags that can apply
+# to an instruction.
+# Each line defines a separate instruction mnemonic.
+
+# Note: The following sufficies are used:
+#    b - 8 bits.
+#    w - 16 bits.
+#    v - 32 bits.
+#    o - 64 bits.
+
+# Indicates the use of a rex pefix that affects the operand size or
+# instruction semantics. Intel's Notation is REX.W. Only applies if
+# decoder is running in 64-bit mode.
+OpcodeUsesRexW
+
+# Indicates that opcode has REX prefix and REX.R is set.
+OpcodeHasRexR
+
+# Indicates that opcode has REX prefix and REX.R is not set.
+OpcodeHasNoRexR
+
+# Defines instruction that uses opcode value 0-7 in the ModR/M.rm field
+# as an operand. Intel's notation is /digit. Note: This data will be
+# stored in the first operand, using a ModRmOpcode operand kind.
+OpcodeInModRm
+
+# Defines instruction that the ModR/M byte contains a register operand and
+# an r/m operand. Intel's notation is /r
+OpcodeUsesModRm
+
+# Defines that the ModRm byte must be a value less than C0.
+ModRmLessThanC0ForX87Inst
+
+# Defines the size of the immediate value that must follow the opcode.
+# Intel's notation is ib, iw, id, and io.
+OpcodeHasImmed
+OpcodeHasImmed_b
+OpcodeHasImmed_w
+OpcodeHasImmed_v
+OpcodeHasImmed_o
+
+# In 32-bit mode, same as OpcodeHasImmed_v, In 64-bit mode, same as
+# OpcodeHasImmed_o.
+OpcodeHasImmed_Addr
+
+# Defines a register code, from 0 through 7, added to the hexadecimal byte
+# associated with the instruction, based on the operand size.
+# Intel's notation is +rb. See Intel manual, table 3-1 for details.
+# Note: to compute value 0-7, see first operand, which should be OperandBase.
+OpcodePlusR
+
+# Defines a number used in floating-point instructions when one of the
+# operands is ST(i) from the FPU register stack. The number i (which can
+# range from 0 to 7) is added to the hexidecimal byte given at the left
+# of the plus sign to form a single opcode byte. Intel's notation is +i.
+# Note: to compute value 0-7, see first operand, which sould be OperandBase.
+OpcodePlusI
+
+# Defines that in 64-bit mode, REX prefix should appear if using a 64-bit
+# only register. Only applicable if running in 64-bit mode.
+OpcodeRex
+
+# Indicates the REX prefix does not affect the legacy instruction in 64-bit
+# mode. Intel's notation is N.P.
+OpcodeLegacy
+
+# Defines that the opcode can be prefixed with a lock prefix.
+OpcodeLockable
+
+# Opcode only applies if running in 32-bit mode.
+Opcode32Only
+
+# Opcode only applies if running in 64-bit mode.
+Opcode64Only
+
+# Defines the expected size of the operand. Can be repeated.
+# The (possibly repeated) flags define the set possible operand
+# sizes that are allowed by the opcode.
+OperandSize_b
+OperandSize_w
+OperandSize_v
+OperandSize_o
+
+# Defines the expected size of addresses. Can be repeated.
+# The (possibly repeated) flags define the set of possible
+# address sizes that are allowed by the opcode.
+AddressSize_w
+AddressSize_v
+AddressSize_o
+
+# Operand size defaults to size 64 in 64-bit mode.
+OperandSizeDefaultIs64
+
+# Operand size must be 64 in 64-bit mode.
+OperandSizeForce64
