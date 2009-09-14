@@ -180,7 +180,8 @@ def _AddDoNotEditMessage(file, filename, enumfile):
 # Given a file name, convert it to the DEFINE name to use to make sure
 # the file is included at most once.
 def _GetDefineName(filename):
-  return filename.replace(".", "_").replace("/", "_").replace("-","_").upper()
+  return filename.replace(".", "_").replace(
+      "/", "_").replace("\\", "_").replace("-","_").upper()
 
 # Given the enumeration file name, and the constants defined within that file,
 # Generate a header file defining the enumeration, and the corresponding function
