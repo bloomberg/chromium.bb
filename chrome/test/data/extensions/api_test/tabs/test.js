@@ -341,11 +341,11 @@ chrome.test.runTests([
   // The subsequent three tests all load relative.html, which calls
   // this page's relativePageLoad(), which ends the test.
   function relativeUrlTabsCreate() {
-    chrome.tabs.create({windowId: firstWindowId, url: 'relative.html'},
-      pass(function(tab){
+    chrome.tabs.create({windowId: firstWindowId, url: 'relative.html'}, 
+      function(tab){
         testTabId = tab.id;
       }
-    ));
+    );
   },
 
   function relativeUrlTabsUpdate() {
