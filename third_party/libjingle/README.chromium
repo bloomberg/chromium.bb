@@ -1,0 +1,33 @@
+URL: http://code.google.com/p/libjingle/
+Version: 2.7.0
+License: BSD
+License File: COPYING
+
+Description:
+  Libjingle provides xmpp support to the sync code, which
+  lives at chrome/browser/sync/notifier.
+
+  Libjingle is distributed under a Berkeley-style license detailed in
+  files/COPYING.
+
+Local Modifications:
+  Applied changes per the patchfile mods-since-v0_4_0.diff.  That
+  includes the following items.
+  * Added support to specify the token_service in the auth stanza.
+  * Added support for non-gaia ids associated with gaia accounts.
+  * A bug fix in the task code to prevent infinite looping of aborted
+    tasks.
+  * Removed the definition of DISALLOW_EVIL_CONSTRUCTORS from common.h
+  * Introduction of #undef ETIMEDOUT to get around a conflict versus
+    pthreads.h.
+  * We use an "overrides" directory for some headers, for example,
+    scoped_ptr.h and basic_types.h, to avoid a duplicate functionality.
+    The overrides typically pull an implementation from src/base, and
+    then supplement this with any additional defines not found
+    in Chromium.
+  * Edits to config.h, changing some #defines.
+  * Removed some scripts and build files not needed by Chromium: aclocal.m4,
+    config.guess, config.h.in, config.sub, configure, depcomp, install-sh,
+    ltmain.sh, missing.
+  * Removed Makefile.in files, *.sln, *.vcproj.
+  * Removed "examples", "thirdparty", and "sessions" directories.
