@@ -336,7 +336,7 @@ void (*Sandbox::segv())(int signo) {
 void Sandbox::snapshotMemoryMappings(int processFd) {
   SysCalls sys;
   int mapsFd = sys.open("/proc/self/maps", O_RDONLY, 0);
-  if (mapsFd < 0 || !sendFd(processFd, mapsFd, -1, NULL, NULL)) {
+  if (mapsFd < 0 || !sendFd(processFd, mapsFd, -1, NULL, 0)) {
  failure:
     die("Cannot access /proc/self/maps");
   }

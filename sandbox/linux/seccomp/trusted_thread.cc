@@ -590,7 +590,7 @@ void Sandbox::createTrustedThread(int processFdPub, int cloneFdPub,
 #elif defined(__i386__)
   struct user_desc u;
   u.entry_number    = (typeof u.entry_number)-1;
-  u.base_addr       = NULL;
+  u.base_addr       = 0;
   u.limit           = 0xfffff;
   u.seg_32bit       = 1;
   u.contents        = 0;
