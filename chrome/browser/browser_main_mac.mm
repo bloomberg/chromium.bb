@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browser_main.h"
+
 #import <Cocoa/Cocoa.h>
+
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
+#include "base/debug_util.h"
+#include "chrome/app/breakpad_mac.h"
 #import "chrome/app/keystone_glue.h"
 #include "chrome/browser/browser_main_win.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
 
@@ -49,6 +55,11 @@ void WillTerminate() {
                     object:NSApp];
 }
 
+void RecordBreakpadStatusUMA(MetricsService* metrics) {
+  metrics->RecordBreakpadRegistration(IsCrashReporterEnabled());
+  metrics->RecordBreakpadHasDebugger(DebugUtil::BeingDebugged());
+}
+
 }  // namespace Platform
 
 // From browser_main_win.h, stubs until we figure out the right thing...
@@ -74,7 +85,4 @@ bool CheckMachineLevelInstall() {
 }
 
 void PrepareRestartOnCrashEnviroment(const CommandLine& parsed_command_line) {
-}
-
-void RecordBreakpadStatusUMA(MetricsService* metrics) {
 }

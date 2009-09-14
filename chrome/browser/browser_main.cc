@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
+#include "chrome/browser/browser_main.h"
 
 #include <algorithm>
 
@@ -124,25 +124,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #endif
-
-namespace Platform {
-
-void WillInitializeMainMessageLoop(const MainFunctionParams& parameters);
-void WillTerminate();
-
-#if defined(OS_WIN) || defined(OS_LINUX)
-// Perform any platform-specific work that needs to be done before the main
-// message loop is created and initialized.
-void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
-}
-
-// Perform platform-specific work that needs to be done after the main event
-// loop has ended.
-void WillTerminate() {
-}
-#endif
-
-}  // namespace Platform
 
 namespace {
 
@@ -817,7 +798,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 
   HandleErrorTestParameters(parsed_command_line);
-  RecordBreakpadStatusUMA(metrics);
+  Platform::RecordBreakpadStatusUMA(metrics);
   // Start up the extensions service. This should happen before Start().
   profile->InitExtensions();
   // Start up the web resource service.  This starts loading data after a

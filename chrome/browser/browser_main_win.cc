@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_main_win.h"
 
 #include <windows.h>
@@ -26,6 +27,22 @@
 #include "grit/generated_resources.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/window/window.h"
+
+namespace Platform {
+
+void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
+}
+
+void WillTerminate() {
+}
+
+void RecordBreakpadStatusUMA(MetricsService* metrics) {
+  DWORD len = ::GetEnvironmentVariableW(env_vars::kNoOOBreakpad, NULL, 0);
+  metrics->RecordBreakpadRegistration((len == 0));
+  metrics->RecordBreakpadHasDebugger(TRUE == ::IsDebuggerPresent());
+}
+
+}  // namespace Platform
 
 // Displays a warning message if the user is running chrome on windows 2000.
 // Returns true if the OS is win2000, false otherwise.
@@ -191,13 +208,4 @@ bool DoUpgradeTasks(const CommandLine& command_line) {
     NOTREACHED();
   }
   return true;
-}
-
-// We record in UMA the conditions that can prevent breakpad from generating
-// and sending crash reports. Namely that the crash reporting registration
-// failed and that the process is being debugged.
-void RecordBreakpadStatusUMA(MetricsService* metrics) {
-  DWORD len = ::GetEnvironmentVariableW(env_vars::kNoOOBreakpad, NULL, 0);
-  metrics->RecordBreakpadRegistration((len == 0));
-  metrics->RecordBreakpadHasDebugger(TRUE == ::IsDebuggerPresent());
 }

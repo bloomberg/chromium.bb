@@ -40,9 +40,4 @@ bool CheckMachineLevelInstall();
 // Handle upgrades if Chromium was upgraded while it was last running.
 bool DoUpgradeTasks(const CommandLine& command_line);
 
-// We record in UMA the conditions that can prevent breakpad from generating
-// and sending crash reports. Namely that the crash reporting registration
-// failed and that the process is being debugged.
-void RecordBreakpadStatusUMA(MetricsService* metrics);
-
 #endif  // CHROME_BROWSER_BROWSER_MAIN_WIN_H_

@@ -2,9 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browser_main.h"
+
 #include "base/command_line.h"
 #include "chrome/browser/browser_main_win.h"
 #include "chrome/common/result_codes.h"
+
+namespace Platform {
+
+void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
+}
+
+void WillTerminate() {
+}
+
+void RecordBreakpadStatusUMA(MetricsService* metrics) {
+  // TODO(port): http://crbug.com/21732
+}
+
+}  // namespace Platform
 
 // From browser_main_win.h, stubs until we figure out the right thing...
 
@@ -29,7 +45,4 @@ bool CheckMachineLevelInstall() {
 }
 
 void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
-}
-
-void RecordBreakpadStatusUMA(MetricsService* metrics) {
 }
