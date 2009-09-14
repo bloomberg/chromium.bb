@@ -2328,3 +2328,10 @@ BUG21644 : LayoutTests/http/tests/security/mixedContent/insecure-iframe-in-main-
 BUG21644 : LayoutTests/http/tests/security/mixedContent/insecure-image-in-main-frame.html = FAIL
 BUG21644 : LayoutTests/http/tests/security/mixedContent/redirect-http-to-https-iframe-in-main-frame.html = FAIL
 BUG21644 : LayoutTests/http/tests/security/mixedContent/redirect-https-to-http-iframe-in-main-frame.html = FAIL
+
+// New test added in r48318 (GoogleURL bug)
+BUG21764 : LayoutTests/fast/forms/ValidityState-typeMismatch-url.html = FAIL
+
+// New test added in r48336 (V8 bug)
+BUG21767 : LayoutTests/fast/js/Object-keys.html = FAIL
+BUG21767 : LayoutTests/http/tests/security/cross-frame-access-enumeration.html = TIMEOUT

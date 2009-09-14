@@ -1,7 +1,7 @@
 vars = {
   "webkit_trunk":
     "http://svn.webkit.org/repository/webkit/trunk",
-  "webkit_revision": "48313",
+  "webkit_revision": "48354",
 }
 
 deps = {
