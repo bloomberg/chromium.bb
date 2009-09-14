@@ -892,7 +892,7 @@
 }
 {
    # Also bug_17795
-   bug_17966
+   bug_17996
    Memcheck:Leak
    ...
    fun:_ZN7WebCore8SVGNames4initEv
