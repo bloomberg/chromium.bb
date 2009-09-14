@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <linux/futex.h>
 #include <linux/prctl.h>
 #include <linux/unistd.h>
 #include <netinet/in.h>

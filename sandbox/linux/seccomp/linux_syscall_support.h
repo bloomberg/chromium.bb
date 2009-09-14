@@ -580,6 +580,65 @@ struct kernel_statfs {
         ((~(int)(tid) << 3) | (int)((clock) | CPUCLOCK_PERTHREAD_MASK))
 #endif
 
+#ifndef FUTEX_WAIT
+#define FUTEX_WAIT                0
+#endif
+#ifndef FUTEX_WAKE
+#define FUTEX_WAKE                1
+#endif
+#ifndef FUTEX_FD
+#define FUTEX_FD                  2
+#endif
+#ifndef FUTEX_REQUEUE
+#define FUTEX_REQUEUE             3
+#endif
+#ifndef FUTEX_CMP_REQUEUE
+#define FUTEX_CMP_REQUEUE         4
+#endif
+#ifndef FUTEX_WAKE_OP
+#define FUTEX_WAKE_OP             5
+#endif
+#ifndef FUTEX_LOCK_PI
+#define FUTEX_LOCK_PI             6
+#endif
+#ifndef FUTEX_UNLOCK_PI
+#define FUTEX_UNLOCK_PI           7
+#endif
+#ifndef FUTEX_TRYLOCK_PI
+#define FUTEX_TRYLOCK_PI          8
+#endif
+#ifndef FUTEX_PRIVATE_FLAG
+#define FUTEX_PRIVATE_FLAG        128
+#endif
+#ifndef FUTEX_CMD_MASK
+#define FUTEX_CMD_MASK            ~FUTEX_PRIVATE_FLAG
+#endif
+#ifndef FUTEX_WAIT_PRIVATE
+#define FUTEX_WAIT_PRIVATE        (FUTEX_WAIT | FUTEX_PRIVATE_FLAG)
+#endif
+#ifndef FUTEX_WAKE_PRIVATE
+#define FUTEX_WAKE_PRIVATE        (FUTEX_WAKE | FUTEX_PRIVATE_FLAG)
+#endif
+#ifndef FUTEX_REQUEUE_PRIVATE
+#define FUTEX_REQUEUE_PRIVATE     (FUTEX_REQUEUE | FUTEX_PRIVATE_FLAG)
+#endif
+#ifndef FUTEX_CMP_REQUEUE_PRIVATE
+#define FUTEX_CMP_REQUEUE_PRIVATE (FUTEX_CMP_REQUEUE | FUTEX_PRIVATE_FLAG)
+#endif
+#ifndef FUTEX_WAKE_OP_PRIVATE
+#define FUTEX_WAKE_OP_PRIVATE     (FUTEX_WAKE_OP | FUTEX_PRIVATE_FLAG)
+#endif
+#ifndef FUTEX_LOCK_PI_PRIVATE
+#define FUTEX_LOCK_PI_PRIVATE     (FUTEX_LOCK_PI | FUTEX_PRIVATE_FLAG)
+#endif
+#ifndef FUTEX_UNLOCK_PI_PRIVATE
+#define FUTEX_UNLOCK_PI_PRIVATE   (FUTEX_UNLOCK_PI | FUTEX_PRIVATE_FLAG)
+#endif
+#ifndef FUTEX_TRYLOCK_PI_PRIVATE
+#define FUTEX_TRYLOCK_PI_PRIVATE  (FUTEX_TRYLOCK_PI | FUTEX_PRIVATE_FLAG)
+#endif
+
+
 #if defined(__x86_64__)
 #ifndef ARCH_SET_GS
 #define ARCH_SET_GS             0x1001
