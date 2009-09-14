@@ -1838,7 +1838,7 @@ static const char *const fulltext_zStatement[MAX_STMT] = {
   /* SEGDIR_MAX_INDEX */ "select max(idx) from %_segdir where level = ?",
   /* SEGDIR_SET */ "insert into %_segdir values (?, ?, ?, ?, ?, ?)",
   /* SEGDIR_SELECT_LEVEL */
-  "select start_block, leaves_end_block, root from %_segdir "
+  "select start_block, leaves_end_block, root, idx from %_segdir "
   " where level = ? order by idx",
   /* SEGDIR_SPAN */
   "select min(start_block), max(end_block) from %_segdir "
@@ -5287,11 +5287,14 @@ static int leavesReadersInit(fulltext_vtab *v, int iLevel,
     sqlite_int64 iEnd = sqlite3_column_int64(s, 1);
     const char *pRootData = sqlite3_column_blob(s, 2);
     int nRootData = sqlite3_column_bytes(s, 2);
+    sqlite_int64 iIndex = sqlite3_column_int64(s, 3);
 
     /* Corrupt if we get back different types than we stored. */
+    /* Also corrupt if the index is not sequential starting at 0. */
     if( sqlite3_column_type(s, 0)!=SQLITE_INTEGER ||
         sqlite3_column_type(s, 1)!=SQLITE_INTEGER ||
-        sqlite3_column_type(s, 2)!=SQLITE_BLOB ){
+        sqlite3_column_type(s, 2)!=SQLITE_BLOB ||
+        i != iIndex){
       rc = SQLITE_CORRUPT_BKPT;
       break;
     }
