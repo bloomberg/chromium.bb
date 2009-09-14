@@ -19,6 +19,7 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
+#include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 using webkit_glue::PasswordForm;
 
@@ -88,6 +89,8 @@ class LoginHandlerMac : public LoginHandler,
           @selector(sheetDidEnd:returnCode:contextInfo:));
 
     SetModel(manager);
+
+    [sheet_controller_ setExplanation:base::SysWideToNSString(explanation)];
 
     // Scary thread safety note: This can potentially be called *after* SetAuth
     // or CancelAuth (say, if the request was cancelled before the UI thread got
@@ -312,8 +315,11 @@ LoginHandler* LoginHandler::Create(URLRequest* request, MessageLoop* ui_loop) {
 @implementation LoginHandlerSheet
 
 - (id)initWithLoginHandler:(LoginHandlerMac*)handler {
- if ((self = [super initWithWindowNibName:@"HttpAuthLoginSheet"
-                                    owner:self])) {
+  NSString* nibPath =
+      [mac_util::MainAppBundle() pathForResource:@"HttpAuthLoginSheet"
+                                          ofType:@"nib"];
+  if ((self = [super initWithWindowNibPath:nibPath
+                                     owner:self])) {
     handler_ = handler;
   }
   return self;
@@ -344,6 +350,24 @@ LoginHandler* LoginHandler::Create(URLRequest* request, MessageLoop* ui_loop) {
     [passwordField_ setStringValue:password];
     [nameField_ selectText:self];
   }
+}
+
+- (void)setExplanation:(NSString*)explanation {
+  // Put in the text.
+  [explanationField_ setStringValue:explanation];
+
+  // Resize the TextField.
+  CGFloat explanationShift =
+      [GTMUILocalizerAndLayoutTweaker
+       sizeToFitFixedWidthTextField:explanationField_];
+
+  // Resize the window (no shifting needed due to window layout).
+  NSWindow* window = [self window];
+  [[window contentView] setAutoresizesSubviews:NO];
+  NSRect rect = [window frame];
+  rect.size.height = rect.size.height + explanationShift;
+  [window setFrame:rect display:NO];
+  [[window contentView] setAutoresizesSubviews:YES];
 }
 
 @end

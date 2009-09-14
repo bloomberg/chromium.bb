@@ -2339,6 +2339,7 @@
                   'app/nibs/ClearBrowsingData.xib',
                   'app/nibs/EditSearchEngine.xib',
                   'app/nibs/FirstRunDialog.xib',
+                  'app/nibs/HttpAuthLoginSheet.xib',
                   'app/nibs/HungRendererDialog.xib',
                   'app/nibs/ImportProgressDialog.xib',
                   'app/nibs/KeywordEditor.xib',

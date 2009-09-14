@@ -15,6 +15,7 @@ class LoginHandlerMac;
  @private
   IBOutlet NSTextField* nameField_;
   IBOutlet NSSecureTextField* passwordField_;
+  IBOutlet NSTextField* explanationField_;
   LoginHandlerMac* handler_;  // weak, owns us
 }
 - (id)initWithLoginHandler:(LoginHandlerMac*)handler;
@@ -24,6 +25,7 @@ class LoginHandlerMac;
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo;
 - (void)autofillLogin:(NSString*)login password:(NSString*)password;
+- (void)setExplanation:(NSString*)explanation;
 @end
 
 #endif  // CHROME_BROWSER_LOGIN_PROMPT_MAC_H_
