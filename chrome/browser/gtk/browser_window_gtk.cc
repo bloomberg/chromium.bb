@@ -1374,7 +1374,7 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
       toolbar_->Hide();
       tabstrip_->Hide();
       if (IsBookmarkBarSupported())
-        bookmark_bar_->Hide(false);
+        bookmark_bar_->EnterFullscreen();
     } else {
       UpdateCustomFrame();
       ShowSupportedWindowFeatures();

@@ -62,9 +62,16 @@ class BookmarkBarGtk : public AnimationDelegate,
   bool OnNewTabPage();
 
   // Change the visibility of the bookmarks bar. (Starts out hidden, per GTK's
-  // default behaviour).
+  // default behaviour). There are three visiblity states:
+  //
+  //   Showing    - bookmark bar is fully visible.
+  //   Hidden     - bookmark bar is hidden except for a few pixels that give
+  //                extra padding to the bottom of the toolbar. Buttons are not
+  //                clickable.
+  //   Fullscreen - bookmark bar is fully hidden.
   void Show(bool animate);
   void Hide(bool animate);
+  void EnterFullscreen();
 
   // Get the current height of the bookmark bar.
   int GetHeight();

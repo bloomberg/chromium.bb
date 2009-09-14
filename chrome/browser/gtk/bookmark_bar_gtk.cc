@@ -43,8 +43,9 @@ namespace {
 // The showing height of the bar.
 const int kBookmarkBarHeight = 29;
 
-// The height of the bar when it is "hidden". It is never completely hidden
-// because even when it is closed it forms the bottom few pixels of the toolbar.
+// The height of the bar when it is "hidden". It is usually not completely
+// hidden because even when it is closed it forms the bottom few pixels of
+// the toolbar.
 const int kBookmarkBarMinimumHeight = 4;
 
 // Left-padding for the instructional text.
@@ -233,7 +234,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
 }
 
 void BookmarkBarGtk::Show(bool animate) {
-  gtk_widget_show_all(bookmark_hbox_);
+  gtk_widget_show_all(widget());
   if (animate) {
     slide_animation_->Show();
   } else {
@@ -250,6 +251,9 @@ void BookmarkBarGtk::Show(bool animate) {
 }
 
 void BookmarkBarGtk::Hide(bool animate) {
+  // After coming out of fullscreen, the browser window sets the bookmark bar
+  // to the "hidden" state, which means we need to show our minimum height.
+  gtk_widget_show(widget());
   // Sometimes we get called without a matching call to open. If that happens
   // then force hide.
   if (slide_animation_->IsShowing() && animate) {
@@ -259,6 +263,10 @@ void BookmarkBarGtk::Hide(bool animate) {
     slide_animation_->Reset(0);
     AnimationProgressed(slide_animation_.get());
   }
+}
+
+void BookmarkBarGtk::EnterFullscreen() {
+  gtk_widget_hide(widget());
 }
 
 int BookmarkBarGtk::GetHeight() {
