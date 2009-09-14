@@ -1543,7 +1543,7 @@ void TabStrip::ResizeLayoutTabs() {
     StartResizeLayoutAnimation();
 }
 
-bool TabStrip::IsCursorInTabStripZone() {
+bool TabStrip::IsCursorInTabStripZone() const {
   gfx::Rect bounds = GetLocalBounds(true);
   gfx::Point tabstrip_topleft(bounds.origin());
   View::ConvertPointToScreen(this, &tabstrip_topleft);

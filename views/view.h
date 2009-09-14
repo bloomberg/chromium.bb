@@ -1099,7 +1099,7 @@ class View : public AcceleratorTarget {
 
   // Sets the parent View. This is called automatically by AddChild and is
   // thus private.
-  void SetParent(View *parent);
+  void SetParent(View* parent);
 
   // Call ViewHierarchyChanged for all child views on all parents
   void PropagateRemoveNotifications(View* parent);
@@ -1164,7 +1164,7 @@ class View : public AcceleratorTarget {
   gfx::Rect bounds_;
 
   // This view's parent
-  View *parent_;
+  View* parent_;
 
   // This view's children.
   typedef std::vector<View*> ViewList;

@@ -218,9 +218,7 @@ class TabStrip : public views::View,
 
   // Returns whether or not the cursor is currently in the "tab strip zone"
   // which is defined as the region above the TabStrip and a bit below it.
-  // Note: this method cannot be const because |ConvertPointToScreen| is not.
-  //       #@*($&(#!!!
-  bool IsCursorInTabStripZone();
+  bool IsCursorInTabStripZone() const;
 
   // Ensure that the message loop observer used for event spying is added and
   // removed appropriately so we can tell when to resize layout the tab strip.
