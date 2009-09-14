@@ -100,10 +100,10 @@ static struct radeon_cs *cs_gem_create(struct radeon_cs_manager *csm,
     }
     csg->chunks[0].chunk_id = RADEON_CHUNK_ID_IB;
     csg->chunks[0].length_dw = 0;
-    csg->chunks[0].chunk_data = (uint64_t)(intptr_t)csg->base.packets;
+    csg->chunks[0].chunk_data = (uint64_t)(uintptr_t)csg->base.packets;
     csg->chunks[1].chunk_id = RADEON_CHUNK_ID_RELOCS;
     csg->chunks[1].length_dw = 0;
-    csg->chunks[1].chunk_data = (uint64_t)(intptr_t)csg->relocs;
+    csg->chunks[1].chunk_data = (uint64_t)(uintptr_t)csg->relocs;
     return (struct radeon_cs*)csg;
 }
 
@@ -184,7 +184,7 @@ static int cs_gem_write_reloc(struct radeon_cs *cs,
         }
         cs->relocs = csg->relocs = tmp;
         csg->nrelocs += 1;
-        csg->chunks[1].chunk_data = (uint64_t)(intptr_t)csg->relocs;
+        csg->chunks[1].chunk_data = (uint64_t)(uintptr_t)csg->relocs;
     }
     csg->relocs_bo[csg->base.crelocs] = bo;
     idx = (csg->base.crelocs++) * RELOC_SIZE;
@@ -269,11 +269,11 @@ static int cs_gem_emit(struct radeon_cs *cs)
 
     csg->chunks[0].length_dw = cs->cdw;
 
-    chunk_array[0] = (uint64_t)(intptr_t)&csg->chunks[0];
-    chunk_array[1] = (uint64_t)(intptr_t)&csg->chunks[1];
+    chunk_array[0] = (uint64_t)(uintptr_t)&csg->chunks[0];
+    chunk_array[1] = (uint64_t)(uintptr_t)&csg->chunks[1];
 
     csg->cs.num_chunks = 2;
-    csg->cs.chunks = (uint64_t)(intptr_t)chunk_array;
+    csg->cs.chunks = (uint64_t)(uintptr_t)chunk_array;
 
     r = drmCommandWriteRead(cs->csm->fd, DRM_RADEON_CS,
                             &csg->cs, sizeof(struct drm_radeon_cs));
