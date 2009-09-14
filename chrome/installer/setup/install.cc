@@ -94,6 +94,12 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
                           file_util::GetFilenameFromPath(exe_path));
   uninstall_cmd.append(L"\" --");
   uninstall_cmd.append(installer_util::switches::kUninstall);
+
+#ifdef CHROME_EXP_BUILD
+  uninstall_cmd.append(L" --");
+  uninstall_cmd.append(installer_util::switches::kForceUninstall);
+#endif
+
   if (reg_root == HKEY_LOCAL_MACHINE) {
     uninstall_cmd.append(L" --");
     uninstall_cmd.append(installer_util::switches::kSystemLevel);
@@ -237,6 +243,12 @@ bool CreateOrUpdateChromeShortcuts(const std::wstring& exe_path,
                             file_util::GetFilenameFromPath(exe_path));
     std::wstring arguments(L" --");
     arguments.append(installer_util::switches::kUninstall);
+
+#ifdef CHROME_EXP_BUILD
+    arguments.append(L" --");
+    arguments.append(installer_util::switches::kForceUninstall);
+#endif
+
     if (system_install) {
       arguments.append(L" --");
       arguments.append(installer_util::switches::kSystemLevel);
