@@ -1,0 +1,91 @@
+# There are two kinds of suppressions in this file.
+# 1. third party stuff we have no control over
+#
+# 2. Suppressions for real chromium bugs that are not yet fixed.
+# These should all be in chromium's bug tracking system (but a few aren't yet).
+# Periodically we should sweep this file and the bug tracker clean by
+# running overnight and removing outdated bugs/suppressions.
+#-----------------------------------------------------------------------
+
+# 1. third party stuff we have no control over
+# Several Cocoa-specific races
+{
+  Some Cocoa-specific race in NSRunLoop class
+  ThreadSanitizer:Race
+  ...
+  fun:*CFRunLoop*
+}
+
+{
+  A race releasing NSObject
+  ThreadSanitizer:Race
+  ...
+  fun:CFBagContainsValue
+  fun:__CFDoExternRefOperation
+  fun:-[NSObject release]
+}
+
+{
+  And another race releasing NSObject
+  ThreadSanitizer:Race
+  ...
+  fun:CFBagRemoveValue
+  fun:__CFDoExternRefOperation
+  fun:-[NSObject release]
+}
+
+{
+  A race retaining NSObject
+  ThreadSanitizer:Race
+  ...
+  fun:CFBagAddValue
+  fun:__CFDoExternRefOperation
+  fun:-[NSObject retain]
+}
+
+# media_unittests depend on the Darwin libraries which have many reports in
+# them.
+{
+  Warnings in the CoreAudio framework
+  ThreadSanitizer:Race
+  ...
+  obj:/System/Library/Components/CoreAudio.component*
+}
+
+{
+  A warning in CoreAudio framework
+  ThreadSanitizer:Race
+  ...
+  fun:*HALRunLoop*
+}
+
+{
+  A warning in the AudioToolbox framework
+  ThreadSanitizer:Race
+  ...
+  fun:*CAPThread*
+}
+
+{
+  Warnings inside AQServer_{Stop,EnqueueBuffer}
+  ThreadSanitizer:Race
+  ...
+  fun:*AudioQueueObject*
+  ...
+  fun:AQServer_*
+}
+
+{
+  Warnings inside AudioHardwareGetProperty
+  ThreadSanitizer:Race
+  ...
+  fun:AudioHardwareGetProperty
+}
+
+#-----------------------------------------------------------------------
+# 2. Suppressions for real chromium bugs that are not yet fixed.
+# These should all be in chromium's bug tracking system (but a few aren't yet).
+# Periodically we should sweep this file and the bug tracker clean by
+# running overnight and removing outdated bugs/suppressions.
+
+# Nothing here yet, but updates will be submitted soon.
