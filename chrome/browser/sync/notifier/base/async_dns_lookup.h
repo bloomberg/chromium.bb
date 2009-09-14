@@ -31,7 +31,7 @@ class AsyncDNSLookup : public talk_base::SignalThread {
   }
 
  protected:
-  // SignalThread Interface
+  // SignalThread Interface.
   virtual void DoWork();
   virtual void OnMessage(talk_base::Message* message);
 
@@ -45,5 +45,7 @@ class AsyncDNSLookup : public talk_base::SignalThread {
 
   DISALLOW_COPY_AND_ASSIGN(AsyncDNSLookup);
 };
+
 }  // namespace notifier
+
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_BASE_ASYNC_DNS_LOOKUP_H_

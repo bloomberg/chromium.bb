@@ -69,4 +69,5 @@ Id Id::CreateFromClientString(const string& local_id) {
     id.s_ = string("c") + local_id;
   return id;
 }
+
 }  // namespace syncable

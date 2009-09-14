@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_SINGLE_LOGIN_ATTEMPT_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_SINGLE_LOGIN_ATTEMPT_H_
+
 #include <string>
 
 #include "chrome/browser/sync/notifier/communicator/login.h"
@@ -29,21 +30,21 @@ class Task;
 }
 
 namespace notifier {
+
 class ConnectionSettings;
 class LoginFailure;
 class LoginSettings;
 struct ServerInformation;
 class XmppConnectionGenerator;
 
-// Handles all of the aspects of a single login attempt
-// (across multiple ip addresses) and maintainence. By containing
-// this within one class, when another login attempt is made,
-// this class will be disposed and all of the signalling for the
-// previous login attempt will be cleaned up immediately.
+// Handles all of the aspects of a single login attempt (across multiple ip
+// addresses) and maintainence. By containing this within one class, when
+// another login attempt is made, this class will be disposed and all of the
+// signalling for the previous login attempt will be cleaned up immediately.
 //
-// This is a task to allow for cleaning this up when a signal
-// is being fired.  Technically, delete this during the firing of
-// a signal could work but it is fragile.
+// This is a task to allow for cleaning this up when a signal is being fired.
+// Technically, delete this during the firing of a signal could work but it is
+// fragile.
 class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
  public:
   SingleLoginAttempt(talk_base::Task* parent,
@@ -58,18 +59,17 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
     return client_;
   }
 
-  // Returns the proxy that is being used to connect (or
-  // the default proxy information if all attempted
-  // connections failed).
+  // Returns the proxy that is being used to connect (or the default proxy
+  // information if all attempted connections failed).
   const talk_base::ProxyInfo& proxy() const;
 
-  // Typically handled by creating a new SingleLoginAttempt
-  // and doing StartConnection
+  // Typically handled by creating a new SingleLoginAttempt and doing
+  // StartConnection.
   sigslot::signal0<> SignalUnexpectedDisconnect;
 
-  // Typically handled by setting storing the redirect for 5 seconds,
-  // and setting it into LoginSettings, then creating a new SingleLoginAttempt,
-  // and doing StartConnection.
+  // Typically handled by storing the redirect for 5 seconds, and setting it
+  // into LoginSettings, then creating a new SingleLoginAttempt, and doing
+  // StartConnection.
   //
   // SignalRedirect(const std::string& redirect_server, int redirect_port);
   sigslot::signal2<const std::string&, int> SignalRedirect;
@@ -82,8 +82,8 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
   // See the LoginFailure for how to handle this.
   sigslot::signal1<const LoginFailure&> SignalLoginFailure;
 
-  // Sent when there is a graceful log-off (state goes to closed
-  // with no error)
+  // Sent when there is a graceful log-off (state goes to closed with no
+  // error).
   sigslot::signal0<> SignalLogoff;
 
   sigslot::repeater2<const char*, int> SignalLogInput;
@@ -97,7 +97,7 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
   buzz::AsyncSocket* CreateSocket(const buzz::XmppClientSettings& xcs);
   buzz::PreXmppAuth* CreatePreXmppAuth(const buzz::XmppClientSettings& xcs);
 
-  // cleans up any xmpp client state to get ready for a new one
+  // Cleans up any xmpp client state to get ready for a new one.
   void ClearClient();
 
   void HandleConnectionError(
@@ -134,6 +134,7 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
 
   DISALLOW_COPY_AND_ASSIGN(SingleLoginAttempt);
 };
+
 }  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_SINGLE_LOGIN_ATTEMPT_H_

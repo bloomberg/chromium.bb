@@ -25,6 +25,7 @@ struct IdRowTraits {
     GetColumn(statement, 0, id);
   }
 };
+
 }  // namespace syncable
 
 #endif  // CHROME_BROWSER_SYNC_SYNCABLE_SYNCABLE_INL_H_

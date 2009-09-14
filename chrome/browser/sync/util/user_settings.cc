@@ -1,7 +1,7 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE entry.
-
+//
 // This class isn't pretty. It's just a step better than globals, which is what
 // these were previously.
 
@@ -11,8 +11,8 @@
 #include <windows.h>
 #endif
 
-#include <string>
 #include <limits>
+#include <string>
 #include <vector>
 
 #include "base/file_util.h"
@@ -51,9 +51,9 @@ string UserSettings::email() const {
 }
 
 static void MakeSigninsTable(sqlite3* const dbhandle) {
-  // Multiple email addresses can map to the same Google Account.
-  // This table keeps a map of sign-in email addresses to primary
-  // Google Account email addresses.
+  // Multiple email addresses can map to the same Google Account. This table
+  // keeps a map of sign-in email addresses to primary Google Account email
+  // addresses.
   ExecOrDie(dbhandle, "CREATE TABLE signins"
             " (signin, primary_email, "
             " PRIMARY KEY(signin, primary_email) ON CONFLICT REPLACE)");
@@ -73,9 +73,9 @@ void UserSettings::MigrateOldVersionsAsNeeded(sqlite3* const handle,
       return;
     case 10:
       {
-        // Scrape the 'shares' table to find the syncable DB.  'shares'
-        // had a pair of string columns that mapped the username to the filename
-        // of the sync data sqlite3 file.  Version 11 switched to a constant
+        // Scrape the 'shares' table to find the syncable DB.  'shares' had a
+        // pair of string columns that mapped the username to the filename of
+        // the sync data sqlite3 file.  Version 11 switched to a constant
         // filename, so here we read the string, copy the file to the new name,
         // delete the old one, and then drop the unused shares table.
         ScopedStatement share_query(PrepareQuery(handle,
@@ -106,8 +106,8 @@ static void MakeCookiesTable(sqlite3* const dbhandle) {
   // will be as many rows as there are auth tokens per sign in.
   // The service_token column will store encrypted values.
   ExecOrDie(dbhandle, "CREATE TABLE cookies"
-    " (email, service_name, service_token, "
-    " PRIMARY KEY(email, service_name) ON CONFLICT REPLACE)");
+      " (email, service_name, service_token, "
+      " PRIMARY KEY(email, service_name) ON CONFLICT REPLACE)");
 }
 
 static void MakeSigninTypesTable(sqlite3* const dbhandle) {
@@ -119,8 +119,8 @@ static void MakeSigninTypesTable(sqlite3* const dbhandle) {
 }
 
 static void MakeClientIDTable(sqlite3* const dbhandle) {
-  // Stores a single client ID value that can be used as the client id,
-  // if there's not another such ID provided on the install.
+  // Stores a single client ID value that can be used as the client id, if
+  // there's not another such ID provided on the install.
   ExecOrDie(dbhandle, "CREATE TABLE client_id (id) ");
   ExecOrDie(dbhandle, "INSERT INTO client_id values ( ? )",
       Generate128BitRandomHexString());
@@ -139,16 +139,17 @@ bool UserSettings::Init(const PathString& settings_path) {
     int sqlite_result = Exec(dbhandle.get(), "BEGIN EXCLUSIVE TRANSACTION");
     CHECK(SQLITE_DONE == sqlite_result);
     ScopedStatement table_query(PrepareQuery(dbhandle.get(),
-               "select count(*) from sqlite_master where type = 'table'"
-               " and name = 'db_version'"));
+        "select count(*) from sqlite_master where type = 'table'"
+        " and name = 'db_version'"));
     int query_result = sqlite3_step(table_query.get());
     CHECK(SQLITE_ROW == query_result);
     int table_count = 0;
     GetColumn(table_query.get(), 0, &table_count);
     table_query.reset(NULL);
     if (table_count > 0) {
-      ScopedStatement version_query(PrepareQuery(dbhandle.get(),
-                                    "SELECT version FROM db_version"));
+      ScopedStatement
+          version_query(PrepareQuery(dbhandle.get(),
+                                     "SELECT version FROM db_version"));
       query_result = sqlite3_step(version_query.get());
       CHECK(SQLITE_ROW == query_result);
       const int version = sqlite3_column_int(version_query.get(), 0);
@@ -187,7 +188,6 @@ bool UserSettings::Init(const PathString& settings_path) {
 #endif
   return true;
 }
-
 
 UserSettings::~UserSettings() {
   if (dbhandle_)

@@ -21,9 +21,9 @@
 
 namespace notifier {
 
-// Labels are a list of strings seperated by a '|' character.
-// The '|' character is escaped with a backslash ('\\') and the
-// backslash is also escaped with a backslash.
+// Labels are a list of strings seperated by a '|' character. The '|' character
+// is escaped with a backslash ('\\') and the backslash is also escaped with a
+// backslash.
 static void ParseLabelSet(const std::string& text,
                           MessageThread::StringSet* labels) {
   const char* input_cur = text.c_str();
@@ -43,7 +43,7 @@ static void ParseLabelSet(const std::string& text,
     }
 
     if (*input_cur == '\\') {
-      // skip a character in the input and break if we are at the end
+      // Skip a character in the input and break if we are at the end.
       input_cur++;
       if (input_cur >= input_end)
         break;
@@ -98,7 +98,7 @@ void MessageThread::Clear() {
 MessageThread& MessageThread::operator=(const MessageThread& r) {
   if (&r != this) {
     Clear();
-    // Copy everything
+    // Copy everything.
     r.AssertValid();
     thread_id_ = r.thread_id_;
     date64_ = r.date64_;
@@ -130,7 +130,7 @@ MessageThread* MessageThread::CreateFromXML(
   return info;
 }
 
-// Init from a chunk of XML
+// Init from a chunk of XML.
 bool MessageThread::InitFromXml(const buzz::XmlElement* src) {
   labels_ = new StringSet;
   senders_ = new MailSenderList;
@@ -196,7 +196,7 @@ bool MessageThread::unread() const {
 }
 
 #ifdef _DEBUG
-// non-debug version is inline and empty
+// Non-debug version is inline and empty.
 void MessageThread::AssertValid() const {
   assert(thread_id_ != 0);
   assert(senders_ != NULL);
@@ -207,8 +207,6 @@ void MessageThread::AssertValid() const {
 }
 #endif
 
-
-
 MailBox* MailBox::CreateFromXML(const buzz::XmlElement* src) {
   MailBox* mail_box = new MailBox();
   if (!mail_box || !mail_box->InitFromXml(src)) {
@@ -218,9 +216,8 @@ MailBox* MailBox::CreateFromXML(const buzz::XmlElement* src) {
   return mail_box;
 }
 
-// Init from a chunk of XML
-bool MailBox::InitFromXml(const buzz::XmlElement* src)
-{
+// Init from a chunk of XML.
+bool MailBox::InitFromXml(const buzz::XmlElement* src) {
   if (src->Name() != buzz::kQnMailBox)
     return false;
 
@@ -253,7 +250,7 @@ bool MailBox::InitFromXml(const buzz::XmlElement* src)
 
 const size_t kMaxShortnameLength = 12;
 
-// Tip: If you extend this list of chars, do not include '-'
+// Tip: If you extend this list of chars, do not include '-'.
 const char name_delim[] = " ,.:;\'\"()[]{}<>*@";
 
 class SenderFormatter {
@@ -297,11 +294,10 @@ class SenderFormatter {
   }
 
  private:
-  // Attempt to shorten to the first word in a person's name
-  // We could revisit and do better at international punctuation,
-  // but this is what cricket did, and it should be removed
-  // soon when gmail does the notification instead of us
-  // forming it on the client.
+  // Attempt to shorten to the first word in a person's name We could revisit
+  // and do better at international punctuation, but this is what cricket did,
+  // and it should be removed soon when gmail does the notification instead of
+  // us forming it on the client.
   static void ShortenName(std::string* name) {
     size_t start = name->find_first_not_of(name_delim);
     if (start != std::string::npos && start > 0) {
@@ -330,10 +326,10 @@ class SenderFormatter {
     }
 
     name_ = sender_.name();
-    // Handle the case of no name or a name looks like an email address.
-    // When mail is sent to "Quality@example.com" <quality-team@example.com>,
-    // we shouldn't show "Quality@example.com" as the name.
-    // Instead use the email address (without the @...)
+    // Handle the case of no name or a name looks like an email address. When
+    // mail is sent to "Quality@example.com" <quality-team@example.com>, we
+    // shouldn't show "Quality@example.com" as the name. Instead, use the email
+    // address (without the @...)
     if (name_.empty() || name_.find_first_of("@") != std::string::npos) {
       name_ = sender_.address();
       size_t at_index = name_.find_first_of("@");
@@ -413,20 +409,19 @@ class SenderFormatterList {
 
     // Add all unread messages.
     if (any_unread) {
-      // It should be rare, but there may be cases when all of the
-      // senders appear to have read the message.
+      // It should be rare, but there may be cases when all of the senders
+      // appear to have read the message.
       first_unread_index_ = is_first_unread() ? 0 : senders_.size();
       for (size_t i = 0; i < sender_list.size(); ++i) {
         if (!sender_list[i].unread()) {
           continue;
         }
-        // Don't add the originator if it is already at the
-        // start of the "unread" list.
+        // Don't add the originator if it is already at the start of the
+        // "unread" list.
         if (sender_list[i].originator() && is_first_unread()) {
           continue;
         }
-        senders_.push_back(new SenderFormatter(sender_list[i],
-                                               me_address));
+        senders_.push_back(new SenderFormatter(sender_list[i], me_address));
       }
     }
   }
@@ -449,9 +444,8 @@ class SenderFormatterList {
     }
 
     int length = 1;
-    // Add as many senders as we can in the given space.
-    // Computes the visible length at each iteration,
-    // but does not construct the actual html.
+    // Add as many senders as we can in the given space. Computes the visible
+    // length at each iteration, but does not construct the actual html.
     while (length < space && AddNextSender()) {
       int new_length = ConstructHtml(is_first_unread(), NULL);
       // Remove names to avoid truncating
@@ -476,7 +470,7 @@ class SenderFormatterList {
       }
     }
 
-    // Now construct the actual html
+    // Now construct the actual html.
     std::string html_list;
     length = ConstructHtml(is_first_unread(), &html_list);
     if (length > space) {
@@ -488,17 +482,16 @@ class SenderFormatterList {
 
  private:
   int ComputeSpacePerSender(int space) const {
-    // Why the "- 2"? To allow for the " .. " which may occur
-    // after the names, and no matter what always allow at least
-    // 2 characters per sender.
+    // Why the "- 2"? To allow for the " .. " which may occur after the names,
+    // and no matter what always allow at least 2 characters per sender.
     return talk_base::_max<int>(space / visible_count() - 2, 2);
   }
 
-  // Finds the next sender that should be added to the "from" list
-  // and sets it to visible.
+  // Finds the next sender that should be added to the "from" list and sets it
+  // to visible.
   //
-  // This method may be called until it returns false or
-  // until RemoveLastAddedSender is called.
+  // This method may be called until it returns false or until
+  // RemoveLastAddedSender is called.
   bool AddNextSender() {
     // The progression is:
     //   1. Add the person who started the thread, which is the first message.
@@ -508,14 +501,14 @@ class SenderFormatterList {
     //      (unless it has already been added).
     //      If there is no message (i.e. at index -1), return false.
     //
-    //   Typically, this method is called until it returns false or
-    //   all of the space available is used.
+    // Typically, this method is called until it returns false or all of the
+    // space available is used.
     switch (state_) {
       case INITIAL_STATE:
         state_ = FIRST_MESSAGE;
         index_ = 0;
-        // If the server behaves odd and doesn't send us any senders,
-        // do something graceful.
+        // If the server behaves odd and doesn't send us any senders, do
+        // something graceful.
         if (senders_.size() == 0) {
           return false;
         }
@@ -527,7 +520,7 @@ class SenderFormatterList {
           index_ = first_unread_index_;
           break;
         }
-        // fall through
+        // Fall through.
       case FIRST_UNREAD_MESSAGE:
         state_ = LAST_MESSAGE;
         index_ = senders_.size() - 1;
@@ -569,13 +562,13 @@ class SenderFormatterList {
   // Constructs the html of the SenderList and returns the length of the
   // visible text.
   //
-  // The algorithm simply walks down the list of Senders, appending
-  // the html for each visible sender, and adding ellipsis or commas
-  // in between, whichever is appropriate.
+  // The algorithm simply walks down the list of Senders, appending the html
+  // for each visible sender, and adding ellipsis or commas in between,
+  // whichever is appropriate.
   //
-  // html Filled with html.  Maybe NULL if the html doesn't
-  //      need to be constructed yet (useful for simply
-  //      determining the length of the visible text).
+  // html Filled with html.  Maybe NULL if the html doesn't need to be
+  //      constructed yet (useful for simply determining the length of the
+  //      visible text).
   //
   // returns The approximate visible length of the html.
   int ConstructHtml(bool first_is_unread,
@@ -586,7 +579,7 @@ class SenderFormatterList {
 
     int length = 0;
 
-    // The first is always visible
+    // The first is always visible.
     const SenderFormatter* sender = senders_[0];
     const std::string& originator_name = sender->name();
     length += originator_name.length();
@@ -600,18 +593,17 @@ class SenderFormatterList {
       sender = senders_[i];
 
       if (sender->visible()) {
-        // Handle the separator
+        // Handle the separator.
         between = elided ? "&nbsp;" : kNormalSeparator;
-        // Ignore the , for length because it is so narrow,
-        // so in both cases above the space is the only things
-        // that counts for spaces.
+        // Ignore the , for length because it is so narrow, so in both cases
+        // above the space is the only things that counts for spaces.
         length++;
 
-        // Handle the name
+        // Handle the name.
         const std::string name = sender->name();
         length += name.size();
 
-        // Construct the html
+        // Construct the html.
         if (html) {
           html->append(between);
           html->append(FormatName(name, sender->is_unread()));
@@ -619,7 +611,7 @@ class SenderFormatterList {
         elided = false;
       } else if (!elided) {
         between = kEllidedSeparator;
-        length += 2;  // ".." is narrow
+        length += 2;  // ".." is narrow.
         if (html) {
           html->append(between);
         }
@@ -679,4 +671,5 @@ std::string GetSenderHtml(const MailSenderList& sender_list,
   html_list.append(count_html);
   return html_list;
 }
+
 }  // namespace notifier

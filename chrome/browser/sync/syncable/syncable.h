@@ -248,16 +248,16 @@ enum CreateNewUpdateItem {
 typedef std::set<PathString> AttributeKeySet;
 
 // DBName is a PathString with additional transformation methods that are
-// useful when trying to derive a unique and legal database name from
-// an unsanitized sync name.
+// useful when trying to derive a unique and legal database name from an
+// unsanitized sync name.
 class DBName : public PathString {
  public:
   explicit DBName(const PathString& database_name)
       : PathString(database_name) { }
 
-  // TODO(ncarter): Remove these codepaths to maintain alternate titles
-  // which are OS legal filenames, Chrome doesn't depend on this like some
-  // other browsers do.
+  // TODO(ncarter): Remove these codepaths to maintain alternate titles which
+  // are OS legal filenames, Chrome doesn't depend on this like some other
+  // browsers do.
   void MakeOSLegal() {
     PathString new_value = MakePathComponentOSLegal(*this);
     if (!new_value.empty())
@@ -269,7 +269,7 @@ class DBName : public PathString {
   // to compute a name for an entry which has yet to be created.
   void MakeNoncollidingForEntry(BaseTransaction* trans,
                                 const Id& parent_id,
-                                Entry *e);
+                                Entry* e);
 };
 
 // SyncName encapsulates a canonical server name.  In general, when we need to
@@ -325,8 +325,8 @@ class SyncName {
       value_.append(PSTR(" "));
       non_unique_value_ = value_;
     }
-    // TODO(ncarter): Handle server's other requirement: truncation to
-    // 256 bytes in Unicode NFC.
+    // TODO(ncarter): Handle server's other requirement: truncation to 256
+    // bytes in Unicode NFC.
   }
 
   const PathString& value() const { return value_; }
@@ -522,7 +522,7 @@ class Entry {
 
  public:
   // After constructing, you must check good() to test whether the Get
-  // succeed.
+  // succeeded.
   Entry(BaseTransaction* trans, GetByHandle, int64 handle);
   Entry(BaseTransaction* trans, GetById, const Id& id);
   Entry(BaseTransaction* trans, GetByTag, const PathString& tag);
@@ -590,8 +590,8 @@ class Entry {
   }
   inline PathString GetSyncNameValue() const {
     DCHECK(kernel_);
-    // This should always be equal to GetName().sync_name().value(), but
-    // maybe faster.
+    // This should always be equal to GetName().sync_name().value(), but may be
+    // faster.
     return kernel_->ref(UNSANITIZED_NAME).empty() ? kernel_->ref(NAME) :
         kernel_->ref(UNSANITIZED_NAME);
   }
@@ -681,8 +681,8 @@ class MutableEntry : public Entry {
   }
   bool Put(IndexedBitField field, bool value);
 
-  // Avoids temporary collision in index when renaming a bookmark
-  // into another folder.
+  // Avoids temporary collision in index when renaming a bookmark into another
+  // folder.
   bool PutParentIdAndName(const Id& parent_id, const Name& name);
 
   // Sets the position of this item, and updates the entry kernels of the
@@ -721,7 +721,6 @@ class MutableEntry : public Entry {
   void* operator new(size_t size) { return (::operator new)(size); }
 
   bool PutImpl(StringField field, const PathString& value);
-
 
   // Adjusts the successor and predecessor entries so that they no longer
   // refer to this entry.
@@ -772,7 +771,7 @@ struct DirectoryChangeEvent {
     // Channel is closing.
     SHUTDOWN
   } todo;
-  // These members are only valid for CALCULATE_CHANGES
+  // These members are only valid for CALCULATE_CHANGES.
   const OriginalEntries* originals;
   BaseTransaction* trans;
   WriterTag writer;
@@ -817,8 +816,8 @@ struct ThreadNode {
   ThreadNode* next;
   ThreadNode* prev;
 
-  // True when this node is in a linked list.  Only accessed from
-  // owner thread so no locking necessary.
+  // True when this node is in a linked list.  Only accessed from owner thread
+  // so no locking necessary.
   bool in_list;
   WriteTransaction* current_write_trans;
   PThreadCondVar condvar;  // Mutex is the kernel's transaction mutex.
@@ -1029,9 +1028,9 @@ class Directory {
 
   // Returns the child meta handles for given parent id.
   void GetChildHandles(BaseTransaction*, const Id& parent_id,
-    const PathString& path_spec, ChildHandles* result);
+      const PathString& path_spec, ChildHandles* result);
   void GetChildHandles(BaseTransaction*, const Id& parent_id,
-    ChildHandles* result);
+      ChildHandles* result);
   void GetChildHandlesImpl(BaseTransaction* trans, const Id& parent_id,
                            PathMatcher* matcher, ChildHandles* result);
 
@@ -1071,7 +1070,7 @@ class Directory {
   void GetExtendedAttributesList(BaseTransaction* trans, int64 metahandle,
                                  AttributeKeySet* result);
   // Flags all extended attributes for deletion on the next SaveChanges.
-  void DeleteAllExtendedAttributes(WriteTransaction*trans, int64 metahandle);
+  void DeleteAllExtendedAttributes(WriteTransaction* trans, int64 metahandle);
 
   // Get the channel for post save notification, used by the syncer.
   inline Channel* channel() const {
@@ -1177,7 +1176,7 @@ class Directory {
     // other buffered IO.  Violating this rule will result in deadlock.
     pthread_mutex_t mutex;
     MetahandlesIndex* metahandles_index;  // Entries indexed by metahandle
-    IdsIndex* ids_index;                // Entries indexed by id
+    IdsIndex* ids_index;  // Entries indexed by id
     ParentIdAndNamesIndex* parent_id_and_names_index;
     // So we don't have to create an EntryKernel every time we want to
     // look something up in an index.  Needle in haystack metaphore.
@@ -1255,8 +1254,8 @@ class BaseTransaction {
   enum TransactionClass { READ, WRITE };
 
  protected:
-  explicit BaseTransaction(Directory* directory, const char* name,
-               const char* source_file, int line);
+  BaseTransaction(Directory* directory, const char* name,
+                  const char* source_file, int line);
 
   // The members below are optionally called by descendants.
   void Lock(ThreadCounts* const thread_counts, ThreadNode* thread_node,
@@ -1265,10 +1264,9 @@ class BaseTransaction {
   void UnlockAndLog(ThreadCounts* const thread_counts, OriginalEntries*);
   void Init(ThreadCounts* const thread_counts, TransactionClass tclass);
   ThreadNode* MakeThreadNode();
+
  public:
-
   inline Directory* directory() const { return directory_; }
-
   inline Id root_id() const { return Id(); }
 
  protected:
@@ -1412,7 +1410,6 @@ std::ostream& operator <<(std::ostream&, const syncable::Blob&);
 
 browser_sync::FastDump& operator <<
   (browser_sync::FastDump&, const syncable::Blob&);
-
 
 std::ostream& operator <<(std::ostream&, const syncable::ThreadNode&);
 

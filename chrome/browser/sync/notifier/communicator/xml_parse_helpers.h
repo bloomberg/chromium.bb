@@ -19,6 +19,7 @@ class QName;
 }
 
 namespace notifier {
+
 buzz::XmlElement* ReadXmlFromStream(talk_base::StreamInterface* stream);
 bool ParseInt64Attr(const buzz::XmlElement* element,
                     const buzz::QName& attribute, int64* result);

@@ -109,7 +109,7 @@ void TalkMediatorImpl::AuthWatcherEventHandler(
       }
       break;
     default:
-      // Do nothing
+      // Do nothing.
       break;
   }
 }
@@ -127,7 +127,7 @@ bool TalkMediatorImpl::Login() {
 }
 
 bool TalkMediatorImpl::DoLogin() {
-  // Connect to the mediator thread and start it processing messages.
+  // Connect to the mediator thread and start processing messages.
   if (!state_.connected) {
     mediator_thread_->SignalStateChange.connect(
         this,

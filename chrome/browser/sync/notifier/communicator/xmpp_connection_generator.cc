@@ -1,7 +1,7 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+//
 // XmppConnectionGenerator does the following algorithm:
 //   proxy = ResolveProxyInformation(connection_options)
 //   for server in server_list
@@ -68,7 +68,7 @@ const talk_base::ProxyInfo& XmppConnectionGenerator::proxy() const {
   return settings->proxy();
 }
 
-// Starts resolving proxy information
+// Starts resolving proxy information.
 void XmppConnectionGenerator::StartGenerating() {
   LOG(LS_VERBOSE) << "XmppConnectionGenerator::StartGenerating";
 
@@ -108,24 +108,23 @@ void XmppConnectionGenerator::OnProxyDetect(
   ASSERT(proxy_detect);
   settings_list_->SetProxy(proxy_detect->proxy());
 
-  // Start iterating through the connections (which
-  // are generated on demand).
+  // Start iterating through the connections (which are generated on demand).
   UseNextConnection();
 }
 
 void XmppConnectionGenerator::UseNextConnection() {
-  // Trying to connect
+  // Trying to connect.
 
-  // Iterate to the next possible connection
+  // Iterate to the next possible connection.
   settings_index_++;
   if (settings_index_ < settings_list_->GetCount()) {
-    // We have more connection settings in the settings_list_ to try, kick
-    // off the next one.
+    // We have more connection settings in the settings_list_ to try, kick off
+    // the next one.
     UseCurrentConnection();
     return;
   }
 
-  // Iterate to the next possible server
+  // Iterate to the next possible server.
   server_index_++;
   if (server_index_ < server_count_) {
     AsyncDNSLookup* dns_lookup = new AsyncDNSLookup(
@@ -139,7 +138,7 @@ void XmppConnectionGenerator::UseNextConnection() {
     return;
   }
 
-  // All out of possibilities
+  // All out of possibilities.
   HandleExhaustedConnections();
 }
 
@@ -147,7 +146,7 @@ void XmppConnectionGenerator::OnServerDNSResolved(
     AsyncDNSLookup* dns_lookup) {
   LOG(LS_VERBOSE) << "XmppConnectionGenerator::OnServerDNSResolved";
 
-  // Print logging info
+  // Print logging info.
   LOG(LS_VERBOSE) << "  server: " <<
       server_list_[server_index_].server.ToString() <<
       "  error: " << dns_lookup->error();
@@ -165,7 +164,7 @@ void XmppConnectionGenerator::OnServerDNSResolved(
         << talk_base::SocketAddress::IPToString(dns_lookup->ip_list()[i]);
   }
 
-  // Build the ip list
+  // Build the ip list.
   assert(settings_list_.get());
   settings_index_ = -1;
   settings_list_->ClearPermutations();
@@ -179,7 +178,7 @@ void XmppConnectionGenerator::OnServerDNSResolved(
   UseNextConnection();
 }
 
-static const char * const PROTO_NAMES[cricket::PROTO_LAST+1] = {
+static const char* const PROTO_NAMES[cricket::PROTO_LAST + 1] = {
   "udp", "tcp", "ssltcp"
 };
 
@@ -207,4 +206,5 @@ void XmppConnectionGenerator::HandleExhaustedConnections() {
                     << ", " << first_dns_error_ << ")";
   SignalExhaustedSettings(successfully_resolved_dns_, first_dns_error_);
 }
+
 }  // namespace notifier

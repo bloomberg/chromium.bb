@@ -56,7 +56,5 @@ void GetRandomBytes(char* output, int output_length) {
 string Generate128BitRandomHexString() {
   int64 chunk1 = static_cast<int64>(base::RandUint64());
   int64 chunk2 = static_cast<int64>(base::RandUint64());
-
-  return StringPrintf("%016" PRId64 "x%016" PRId64 "x",
-      chunk1, chunk2);
+  return StringPrintf("%016" PRId64 "x%016" PRId64 "x", chunk1, chunk2);
 }

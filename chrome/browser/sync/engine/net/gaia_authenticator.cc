@@ -244,8 +244,7 @@ bool GaiaAuthenticator::PerformGaiaRequest(const AuthParams& params,
 
   string message_text;
   unsigned long server_response_code;
-  if (!Post(gaia_auth_url, post_body, &server_response_code,
-            &message_text)) {
+  if (!Post(gaia_auth_url, post_body, &server_response_code, &message_text)) {
     results->auth_error = ConnectionUnavailable;
     return false;
   }
@@ -274,9 +273,9 @@ bool GaiaAuthenticator::PerformGaiaRequest(const AuthParams& params,
 
 bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
   // Use the provided Gaia server, but change the path to what V1 expects.
-  GURL url(gaia_url_);  // Gaia server
+  GURL url(gaia_url_);  // Gaia server.
   GURL::Replacements repl;
-  // Needs to stay in scope till GURL is out of scope
+  // Needs to stay in scope till GURL is out of scope.
   string path(kGetUserInfoPath);
   repl.SetPathStr(path);
   url = url.ReplaceComponents(repl);
@@ -320,9 +319,9 @@ bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
                                        const string& service_id,
                                        bool long_lived) {
   // Use the provided Gaia server, but change the path to what V1 expects.
-  GURL url(gaia_url_);  // Gaia server
+  GURL url(gaia_url_);  // Gaia server.
   GURL::Replacements repl;
-  // Needs to stay in scope till GURL is out of scope
+  // Needs to stay in scope till GURL is out of scope.
   string path(kGaiaV1IssueAuthTokenPath);
   repl.SetPathStr(path);
   url = url.ReplaceComponents(repl);
@@ -337,8 +336,7 @@ bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
 
   unsigned long server_response_code;
   string message_text;
-  if (!Post(url, post_body,
-            &server_response_code, &message_text)) {
+  if (!Post(url, post_body, &server_response_code, &message_text)) {
     return false;
   }
 

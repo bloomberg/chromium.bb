@@ -30,16 +30,16 @@ using std::string;
 
 namespace syncable {
 
-// This just has to be big enough to hold an UPDATE or
-// INSERT statement that modifies all the columns in the entry table.
+// This just has to be big enough to hold an UPDATE or INSERT statement that
+// modifies all the columns in the entry table.
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 static const int32 kCurrentDBVersion = 67;
 
 // TODO(sync): remove
-static void PathNameMatch16(sqlite3_context *context, int argc,
-                            sqlite3_value **argv) {
+static void PathNameMatch16(sqlite3_context* context, int argc,
+                            sqlite3_value** argv) {
   const PathString pathspec(reinterpret_cast<const PathChar*>
       (sqlite3_value_text16(argv[0])), sqlite3_value_bytes16(argv[0]) / 2);
 
@@ -60,8 +60,8 @@ static void PathNameMatch16(sqlite3_context *context, int argc,
 // Sqlite allows setting of the escape character in an ESCAPE clause and
 // this character is passed in as a third character to the like function.
 // See: http://www.sqlite.org/lang_expr.html
-static void PathNameMatch16WithEscape(sqlite3_context *context,
-                                      int argc, sqlite3_value **argv) {
+static void PathNameMatch16WithEscape(sqlite3_context* context,
+                                      int argc, sqlite3_value** argv) {
   // Never seen this called, but just in case.
   LOG(FATAL) << "PathNameMatch16WithEscape() not implemented";
 }
@@ -76,8 +76,8 @@ static void RegisterPathNameCollate(sqlite3* dbhandle) {
       NULL, &ComparePathNames16));
 }
 
-// Replace the LIKE operator with our own implementation that
-// does file spec matching like "*.txt".
+// Replace the LIKE operator with our own implementation that does file spec
+// matching like "*.txt".
 static void RegisterPathNameMatch(sqlite3* dbhandle) {
   // We only register this on Windows. We use the normal sqlite
   // matching function on mac/linux.
@@ -106,6 +106,7 @@ static inline bool IsSqliteErrorOurFault(int result) {
 }
 
 namespace {
+
 // This small helper class reduces the amount of code in the table upgrade code
 // below and also CHECKs as soon as there's an issue.
 class StatementExecutor {

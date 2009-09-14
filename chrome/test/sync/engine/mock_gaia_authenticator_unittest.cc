@@ -1,7 +1,7 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+//
 // Unit tests for MockGaiaAuthenticator.
 
 #include "base/basictypes.h"
@@ -154,4 +154,5 @@ TEST(MockGaiaAuthenticatorTest, TestSavedCredentials) {
   ASSERT_STREQ(mock_gaia_auth.sid().c_str(), "");
   ASSERT_STREQ(mock_gaia_auth.lsid().c_str(), "");
 }
+
 }  // namespace

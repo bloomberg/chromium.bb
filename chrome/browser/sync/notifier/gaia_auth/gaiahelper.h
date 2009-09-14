@@ -34,7 +34,7 @@ class GaiaServer {
  public:
   GaiaServer();
 
-  bool SetServer(const char* url);          // protocol://server:port
+  bool SetServer(const char* url);  // protocol://server:port
   bool SetDebugServer(const char* server);  // server:port
 
   const std::string& hostname() const { return hostname_; }

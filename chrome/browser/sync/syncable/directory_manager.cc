@@ -98,8 +98,8 @@ DirOpenResult DirectoryManager::OpenImpl(const PathString& name,
   return result;
 }
 
-// Marks a directory as closed.  It might take a while until all the
-// file handles and resources are freed by other threads.
+// Marks a directory as closed.  It might take a while until all the file
+// handles and resources are freed by other threads.
 void DirectoryManager::Close(const PathString& name) {
   // Erase from mounted and opened directory lists.
   pthread_mutex_lock(&mutex_);
@@ -121,8 +121,8 @@ void DirectoryManager::Close(const PathString& name) {
   managed_directory_ = NULL;
 }
 
-// Marks all directories as closed.  It might take a while until all the
-// file handles and resources are freed by other threads.
+// Marks all directories as closed.  It might take a while until all the file
+// handles and resources are freed by other threads.
 void DirectoryManager::CloseAllDirectories() {
   if (managed_directory_)
     Close(managed_directory_->name());

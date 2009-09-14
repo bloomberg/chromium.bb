@@ -15,18 +15,19 @@ class GaiaAuth;
 }
 
 namespace notifier {
+
 class Login;
 
-// Create an authenticated talk url from an unauthenticated url
+// Create an authenticated talk url from an unauthenticated url.
 class AuthTask : public talk_base::Task, public sigslot::has_slots<> {
  public:
   AuthTask(talk_base::Task* parent, Login* login, const char* url);
 
   // An abort method which doesn't take any parameters.
-  // (talk_base::Task::Abort() has a default parameter.)
+  // (talk_base::Task::Abort() has a default parameter).
   //
-  // The primary purpose of this method is to allow a
-  // signal to be hooked up to abort this task.
+  // The primary purpose of this method is to allow a signal to be hooked up to
+  // abort this task.
   void Abort() {
     talk_base::Task::Abort();
   }
@@ -62,9 +63,8 @@ class AuthTask : public talk_base::Task, public sigslot::has_slots<> {
   std::string service_;
   std::string url_;
 
-  // the following members are used for cases where we don't want to
-  // redirect through gaia, but rather via the end-site's mechanism
-  // (We need this for orkut)
+  // The following members are used for cases where we don't want to redirect
+  // through gaia, but rather via the end-site's mechanism.
   bool use_gaia_redirect_;
   std::string redir_auth_prefix_;
   std::string redir_continue_;

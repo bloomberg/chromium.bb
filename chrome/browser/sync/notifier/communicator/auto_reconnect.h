@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_AUTO_RECONNECT_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_AUTO_RECONNECT_H_
+
 #include <string>
 
 #include "chrome/browser/sync/notifier/base/time.h"
@@ -15,6 +16,7 @@ class Task;
 }
 
 namespace notifier {
+
 class NetworkStatusDetectorTask;
 class Timer;
 
@@ -26,14 +28,14 @@ class AutoReconnect : public sigslot::has_slots<> {
   void StopReconnectTimer();
   void OnClientStateChange(Login::ConnectionState state);
 
-  // Callback when power is suspended
+  // Callback when power is suspended.
   void OnPowerSuspend(bool suspended);
 
   void set_idle(bool idle) {
     is_idle_ = idle;
   }
 
-  // Returns true if the auto-retry is to be done (pending a countdown)
+  // Returns true if the auto-retry is to be done (pending a countdown).
   bool is_retrying() const {
     return reconnect_timer_ != NULL;
   }
@@ -41,6 +43,7 @@ class AutoReconnect : public sigslot::has_slots<> {
   int seconds_until() const;
   sigslot::signal0<> SignalTimerStartStop;
   sigslot::signal0<> SignalStartConnection;
+
  private:
   void StartReconnectTimerWithInterval(time64 interval_ns);
   void DoReconnect();
@@ -59,13 +62,14 @@ class AutoReconnect : public sigslot::has_slots<> {
   DISALLOW_COPY_AND_ASSIGN(AutoReconnect);
 };
 
-// Wait 2 seconds until after we actually connect to
-// reset reconnect related items.
+// Wait 2 seconds until after we actually connect to reset reconnect related
+// items.
 //
-// The reason for this delay is to avoid the situation in which buzz
-// is trying to block the client due to abuse and the client responses
-// by going into rapid reconnect mode, which makes the problem more severe.
+// The reason for this delay is to avoid the situation in which buzz is trying
+// to block the client due to abuse and the client responses by going into
+// rapid reconnect mode, which makes the problem more severe.
 extern const int kResetReconnectInfoDelaySec;
 
 }  // namespace notifier
+
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_AUTO_RECONNECT_H_

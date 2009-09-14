@@ -136,8 +136,8 @@ TEST_F(StringTest, TrimString) {
   const char* white = " \n\t";
   std::string s, c;
 
-  // TrimStringLeft
-  s = "";       // empty
+  // TrimStringLeft.
+  s = "";  // empty
   c = "";
   ASSERT_EQ(TrimStringLeft(&s, white), 0);
   ASSERT_STREQ(s.c_str(), c.c_str());
@@ -147,7 +147,7 @@ TEST_F(StringTest, TrimString) {
   ASSERT_EQ(TrimStringLeft(&s, white), 3);
   ASSERT_STREQ(s.c_str(), c.c_str());
 
-  s = "dog";    // nothing bad
+  s = "dog";  // nothing bad
   c = "dog";
   ASSERT_EQ(TrimStringLeft(&s, white), 0);
   ASSERT_STREQ(s.c_str(), c.c_str());
@@ -162,7 +162,7 @@ TEST_F(StringTest, TrimString) {
   ASSERT_EQ(TrimStringLeft(&s, white), 5);
   ASSERT_STREQ(s.c_str(), c.c_str());
 
-  // TrimStringRight
+  // TrimStringRight.
   s = "";
   c = "";
   ASSERT_EQ(TrimStringRight(&s, white), 0);
@@ -188,7 +188,7 @@ TEST_F(StringTest, TrimString) {
   ASSERT_EQ(TrimStringRight(&s, white), 4);
   ASSERT_STREQ(s.c_str(), c.c_str());
 
-  // TrimString
+  // TrimString.
   s = "";
   c = "";
   ASSERT_EQ(TrimString(&s, white), 0);
@@ -346,8 +346,8 @@ TEST_F(StringTest, StringReplace) {
   StringReplace(&s, "=", " = ", false);
   EXPECT_STREQ(s.c_str(), "");
 
-  // Input is an empty string and this is a request for repeated
-  // string replaces.
+  // Input is an empty string and this is a request for repeated string
+  // replaces.
   s = "";
   StringReplace(&s, "=", " = ", true);
   EXPECT_STREQ(s.c_str(), "");

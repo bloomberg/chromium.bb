@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 //
 // Mock ServerConnectionManager class for use in client unit tests.
-//
 
 #ifndef CHROME_TEST_SYNC_ENGINE_MOCK_SERVER_CONNECTION_H_
 #define CHROME_TEST_SYNC_ENGINE_MOCK_SERVER_CONNECTION_H_
@@ -26,8 +25,7 @@ namespace browser_sync {
 struct HttpResponse;
 }
 
-class MockConnectionManager
-    : public browser_sync::ServerConnectionManager {
+class MockConnectionManager : public browser_sync::ServerConnectionManager {
  public:
   // A callback function type. These can be set to be called when server
   // activity would normally take place. This aids simulation of race
@@ -48,9 +46,8 @@ class MockConnectionManager
   // Control of commit response.
   void SetMidCommitCallbackFunction(TestCallbackFunction callback);
 
-  // Set this if you want commit to perform commit time rename.
-  // Will request that the client renames all commited entries,
-  // prepending this string.
+  // Set this if you want commit to perform commit time rename. Will request
+  // that the client renames all commited entries, prepending this string.
   void SetCommitTimeRename(string prepend);
 
   // Control of get updates response. All updates set will only be returned
@@ -98,7 +95,7 @@ class MockConnectionManager
                                    PathString* xattr_key,
                                    syncable::Blob* xattr_value,
                                    int xattr_count);
-  // Prepare to add checksums
+  // Prepare to add checksums.
   void SetLastUpdateDeleted();
   void SetLastUpdateSingletonTag(const string& tag);
   void SetLastUpdateOriginatorFields(const string& client_id,
@@ -109,7 +106,7 @@ class MockConnectionManager
 
   void FailNextPostBufferToPathCall() { fail_next_postbuffer_ = true; }
 
-  // Simple inspectors
+  // Simple inspectors.
   bool client_stuck() const { return client_stuck_; }
 
   sync_pb::ClientCommand* GetNextClientCommand();
@@ -150,9 +147,9 @@ class MockConnectionManager
   // Determine if one entry in a commit should be rejected with a conflict.
   bool ShouldConflictThisCommit();
 
-  // Generate a numeric position_in_parent value.  We use a global
-  // counter that only decreases; this simulates new objects always
-  // being added to the front of the ordering.
+  // Generate a numeric position_in_parent value.  We use a global counter
+  // that only decreases; this simulates new objects always being added to the
+  // front of the ordering.
   int64 GeneratePositionInParent() {
     return next_position_in_parent_--;
   }
@@ -176,7 +173,7 @@ class MockConnectionManager
   bool client_stuck_;
   string commit_time_rename_prepended_string_;
 
-  // fail on the next call to PostBufferToPath()
+  // Fail on the next call to PostBufferToPath().
   bool fail_next_postbuffer_;
 
   // Our directory.

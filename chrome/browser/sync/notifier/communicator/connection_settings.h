@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_CONNECTION_SETTINGS_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_CONNECTION_SETTINGS_H_
+
 #include <deque>
 #include <string>
 #include <vector>
@@ -32,9 +33,9 @@ class ConnectionSettings {
 
  private:
   cricket::ProtocolType protocol_;  // PROTO_TCP, PROTO_SSLTCP, etc.
-  talk_base::SocketAddress server_;  // Server
-  talk_base::ProxyInfo proxy_;  // Proxy info
-  // need copy constructor due to use in stl deque
+  talk_base::SocketAddress server_;  // Server.
+  talk_base::ProxyInfo proxy_;  // Proxy info.
+  // Need copy constructor due to use in stl deque.
 };
 
 class ConnectionSettingsList {
@@ -73,6 +74,7 @@ class ConnectionSettingsList {
   std::vector<uint32> iplist_seen_;
   DISALLOW_COPY_AND_ASSIGN(ConnectionSettingsList);
 };
+
 }  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_CONNECTION_SETTINGS_H_

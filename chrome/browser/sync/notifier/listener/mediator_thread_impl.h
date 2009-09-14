@@ -1,21 +1,21 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// This object runs on a thread and knows how to interpret messages sent by
-// the talk mediator.  The mediator posts messages to a queue which the thread
-// polls (in a super class).
+//
+// This object runs on a thread and knows how to interpret messages sent by the
+// talk mediator. The mediator posts messages to a queue which the thread polls
+// (in a super class).
 //
 // Example usage:
-// MediatorThread m = new MediatorThreadImpl(pass in stuff);
-// m.start(); // Start the thread
-// // Once the thread is started, you can do server stuff
-// m.Login(loginInformation);
-// // events happen, the mediator finds out through its pump
-// // more messages are dispatched to the thread
-// // eventually we want to log out
-// m.Logout();
-// delete m; // Also stops the thread
+//
+//   MediatorThread m = new MediatorThreadImpl(pass in stuff);
+//   m.start(); // Start the thread
+//   // Once the thread is started, you can do server stuff.
+//   m.Login(loginInformation);
+//   // Events happen, the mediator finds out through its pump more messages
+//   // are dispatched to the thread eventually we want to log out.
+//   m.Logout();
+//   delete m; // Also stops the thread.
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_IMPL_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_IMPL_H_
@@ -50,9 +50,8 @@ enum MEDIATOR_CMD {
   CMD_SUBSCRIBE_FOR_UPDATES
 };
 
-// Used to pass authentication information from the mediator to the thread
+// Used to pass authentication information from the mediator to the thread.
 // Use new to allocate it on the heap, the thread will delete it for you.
-
 struct LoginData : public talk_base::MessageData {
   explicit LoginData(const buzz::XmppClientSettings& settings)
       : user_settings(settings) {
@@ -71,7 +70,7 @@ class MediatorThreadImpl
   MediatorThreadImpl();
   virtual ~MediatorThreadImpl();
 
-  // Start the thread
+  // Start the thread.
   virtual void Start();
   virtual void Run();
 

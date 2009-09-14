@@ -29,14 +29,13 @@ GaiaServer buzz::g_gaia_server;
 // GaiaAuth::WorkerThread
 ///////////////////////////////////////////////////////////////////////////////
 
-// GaiaAuth is NOT invoked during SASL authenticatioin, but
-// it is invoked even before XMPP login begins.  As a PreXmppAuth
-// object, it is driven by XmppClient before the XMPP socket is
-// opened.  The job of GaiaAuth is to goes out using HTTPS
-// POST to grab cookies from GAIA.
-
-// It is used by XmppClient.
-// It grabs a SaslAuthenticator which knows how to play the cookie login.
+// GaiaAuth is NOT invoked during SASL authentication, but it is invoked even
+// before XMPP login begins.  As a PreXmppAuth object, it is driven by
+// XmppClient before the XMPP socket is opened.  The job of GaiaAuth is to goes
+// out using HTTPS POST to grab cookies from GAIA.
+//
+// It is used by XmppClient. It grabs a SaslAuthenticator which knows how to
+// play the cookie login.
 
 class GaiaAuth::WorkerThread : public talk_base::SignalThread {
  public:
@@ -82,7 +81,7 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
       error_ = false;
     } else {
       talk_base::PhysicalSocketServer physical;
-      talk_base::SocketServer * ss = &physical;
+      talk_base::SocketServer* ss = &physical;
       if (firewall_) {
         ss = new talk_base::FirewallSocketServer(ss, firewall_);
       }
@@ -108,7 +107,7 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
                        g_gaia_server);
         ss->Wait(kGaiaAuthTimeoutMs, true);
 
-        error_code_ = monitor.error();   // save off the error code
+        error_code_ = monitor.error();   // Save off the error code.
 
         if (!monitor.done()) {
           LOG(INFO) << "GaiaAuth request timed out";
@@ -136,7 +135,7 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
               captcha_challenge_ = buzz::CaptchaChallenge(captcha_token,
                                                           captcha_url);
             }
-            // We had no "error" - we were just unauthorized
+            // We had no "error" - we were just unauthorized.
             error_ = false;
             error_code_ = 0;
             goto Cleanup;
@@ -159,7 +158,7 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
       GaiaRequestAuthToken(&http, sid_, lsid_, service_, g_gaia_server);
       ss->Wait(kGaiaAuthTimeoutMs, true);
 
-      error_code_ = monitor.error();   // save off the error code
+      error_code_ = monitor.error();   // Save off the error code.
 
       if (!monitor.done()) {
         LOG(INFO) << "GaiaAuth request timed out";
@@ -182,7 +181,7 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
       }
     }
 
-    // done authenticating
+    // Done authenticating.
 
   Cleanup:
     done_ = true;
@@ -236,8 +235,8 @@ class GaiaAuth::WorkerThread : public talk_base::SignalThread {
 ///////////////////////////////////////////////////////////////////////////////
 
 GaiaAuth::GaiaAuth(const std::string &user_agent, const std::string &sig)
-  : agent_(user_agent), signature_(sig),
-    firewall_(0), worker_(NULL), done_(false) {
+    : agent_(user_agent), signature_(sig), firewall_(0), worker_(NULL),
+      done_(false) {
 }
 
 GaiaAuth::~GaiaAuth() {
@@ -257,15 +256,15 @@ void GaiaAuth::StartPreXmppAuth(const buzz::Jid& jid,
 void GaiaAuth::StartTokenAuth(const buzz::Jid& jid,
                               const talk_base::CryptString& pass,
                               const std::string& service) {
-  InternalStartGaiaAuth(jid, talk_base::SocketAddress(),
-                        pass, "", service, false);
+  InternalStartGaiaAuth(jid, talk_base::SocketAddress(), pass, "", service,
+                        false);
 }
 
 void GaiaAuth::StartAuth(const buzz::Jid& jid,
                          const talk_base::CryptString& pass,
                          const std::string & service) {
-  InternalStartGaiaAuth(jid, talk_base::SocketAddress(),
-                        pass, "", service, true);
+  InternalStartGaiaAuth(jid, talk_base::SocketAddress(), pass, "", service,
+                        true);
 }
 
 void GaiaAuth::StartAuthFromSid(const buzz::Jid& jid,
@@ -281,9 +280,8 @@ void GaiaAuth::InternalStartGaiaAuth(const buzz::Jid& jid,
                                      const std::string& token,
                                      const std::string& service,
                                      bool obtain_auth) {
-  worker_ = new WorkerThread(jid.Str(), pass, token,
-                             service, agent_, signature_,
-                             obtain_auth, token_service_);
+  worker_ = new WorkerThread(jid.Str(), pass, token, service, agent_,
+                             signature_, obtain_auth, token_service_);
   worker_->set_proxy(proxy_);
   worker_->set_firewall(firewall_);
   worker_->set_captcha_answer(captcha_answer_);
@@ -315,36 +313,35 @@ std::string GaiaAuth::ChooseBestSaslMechanism(
 
   std::vector<std::string>::const_iterator it;
 
-  // a token is the weakest auth - 15s, service-limited, so prefer it.
+  // A token is the weakest auth - 15s, service-limited, so prefer it.
   it = std::find(mechanisms.begin(), mechanisms.end(), "X-GOOGLE-TOKEN");
   if (it != mechanisms.end())
     return "X-GOOGLE-TOKEN";
 
-  // a cookie is the next weakest - 14 days
+  // A cookie is the next weakest - 14 days.
   it = std::find(mechanisms.begin(), mechanisms.end(), "X-GOOGLE-COOKIE");
   if (it != mechanisms.end())
     return "X-GOOGLE-COOKIE";
 
-  // never pass @google.com passwords without encryption!!
+  // Never pass @google.com passwords without encryption!!
   if (!encrypted &&
       buzz::Jid(worker_->GetUsername()).domain() == "google.com") {
     return "";
   }
 
-  // as a last resort, use plain authentication
+  // As a last resort, use plain authentication.
   if (buzz::Jid(worker_->GetUsername()).domain() != "google.com") {
     it = std::find(mechanisms.begin(), mechanisms.end(), "PLAIN");
     if (it != mechanisms.end())
       return "PLAIN";
   }
 
-  // No good mechanism found
+  // No good mechanism found.
   return "";
 }
 
 buzz::SaslMechanism* GaiaAuth::CreateSaslMechanism(
     const std::string& mechanism) {
-
   if (!done_) {
     return NULL;
   }
@@ -370,7 +367,7 @@ buzz::SaslMechanism* GaiaAuth::CreateSaslMechanism(
                                         worker_->GetPassword());
   }
 
-  // oh well - none of the above
+  // Oh well - none of the above.
   return NULL;
 }
 
@@ -380,10 +377,10 @@ std::string GaiaAuth::CreateAuthenticatedUrl(
     return "";
 
   std::string url;
-  // Note that http_prefix always ends with a "/"
+  // Note that http_prefix always ends with a "/".
   url += g_gaia_server.http_prefix()
          + "accounts/TokenAuth?auth="
-         + worker_->GetToken();  // Do not URL encode - GAIA doesn't like that
+         + worker_->GetToken();  // Do not URL encode - GAIA doesn't like that.
   url += "&service=" + service;
   url += "&continue=" + UrlEncodeString(continue_url);
   url += "&source=" +  signature_;
@@ -439,4 +436,5 @@ buzz::CaptchaChallenge GaiaAuth::GetCaptchaChallenge() {
   }
   return worker_->GetCaptchaChallenge();
 }
+
 }  // namespace buzz

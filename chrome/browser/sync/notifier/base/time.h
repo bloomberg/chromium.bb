@@ -23,10 +23,10 @@ const time64 kMaxTime100ns = UINT64_C(9223372036854775807);
 // time and Jan 1, 1970.
 #ifdef WIN32
 // On Windows time64 is seconds since Jan 1, 1601.
-#define kStart100NsTimeToEpoch (116444736000000000uI64) // Jan 1, 1970 in time64
+#define kStart100NsTimeToEpoch (116444736000000000uI64)
 #else
 // On Unix time64 is seconds since Jan 1, 1970.
-#define kStart100NsTimeToEpoch (0)                      // Jan 1, 1970 in time64
+#define kStart100NsTimeToEpoch (0)
 #endif
 
 // Time difference in 100NS granularity between platform-dependent starting
@@ -38,9 +38,9 @@ const time64 kMaxTime100ns = UINT64_C(9223372036854775807);
 
 namespace notifier {
 
-// Get the current time represented in 100NS granularity
-// Different platform might return the value since different starting time.
-// Win32 platform returns the value since Jan 1, 1601.
+// Get the current time represented in 100NS granularity. Different platform
+// might return the value since different starting time. Win32 platform returns
+// the value since Jan 1, 1601.
 time64 GetCurrent100NSTime();
 
 // Get the current time represented in 100NS granularity since epoch
@@ -59,7 +59,7 @@ bool UtcTimeToLocalTime(struct tm* tm);
 // Convert from local time to UTC time.
 bool LocalTimeToUtcTime(struct tm* tm);
 
-// Returns the local time as a string suitable for logging
+// Returns the local time as a string suitable for logging.
 // Note: This is *not* threadsafe, so only call it from the main thread.
 char* GetLocalTimeAsString();
 
@@ -96,7 +96,8 @@ char* GetLocalTimeAsString();
 //                 / ( ("+" / "-") 4DIGIT )        ; Local differential
 //                                                 ;  hours+min. (HHMM)
 // Return local time if ret_local_time == true, return UTC time otherwise
-bool ParseRFC822DateTime(const char* str, struct tm* time, bool ret_local_time);
+bool ParseRFC822DateTime(const char* str, struct tm* time,
+                         bool ret_local_time);
 
 // Parse a string to time span.
 //

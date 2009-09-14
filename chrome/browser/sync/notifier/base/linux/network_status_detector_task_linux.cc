@@ -8,7 +8,7 @@ namespace notifier {
 
 NetworkStatusDetectorTask* NetworkStatusDetectorTask::Create(
     talk_base::Task* parent) {
-  // TODO(sync): No implementation for linux
+  // TODO(sync): No implementation for linux.
   return NULL;
 }
 

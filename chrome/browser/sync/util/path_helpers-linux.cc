@@ -26,13 +26,13 @@ string LastPathSegment(const string& path) {
   }
   if (string::npos == final_slash)
     return str;
-  str.erase(0, final_slash+1);
+  str.erase(0, final_slash + 1);
   return str;
 }
 
 PathString GetFullPath(const PathString& path) {
   // TODO(sync): Not sure what the base of the relative path should be on
-  //             linux.
+  // linux.
   return path;
 }
 
@@ -44,7 +44,7 @@ PathString AppendSlash(const PathString& path) {
 }
 
 PathString LowercasePath(const PathString& path) {
-  gchar *ret = g_utf8_strdown(path.c_str(), -1);
+  gchar* ret = g_utf8_strdown(path.c_str(), -1);
   PathString retstr(ret);
   g_free(ret);
   return retstr;

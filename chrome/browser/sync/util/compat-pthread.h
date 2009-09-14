@@ -20,7 +20,7 @@ inline ThreadId GetCurrentThreadId() {
 
 #if (!defined(OS_WINDOWS) && !defined(OS_MACOSX))
 // TODO(timsteele): What the heck is this?
-inline int sem_post_multiple(sem_t * sem, int number) {
+inline int sem_post_multiple(sem_t* sem, int number) {
   int i;
   int r = 0;
   for (i = 0; i < number; i++) {

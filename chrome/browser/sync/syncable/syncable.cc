@@ -253,7 +253,7 @@ Directory::~Directory() {
 
 BOOL PathNameMatch(const PathString& pathname, const PathString& pathspec) {
 #ifdef OS_WINDOWS
-  // NB If we go Vista only this is easier:
+  // Note that if we go Vista only this is easier:
   // http://msdn2.microsoft.com/en-us/library/ms628611.aspx
 
   // PathMatchSpec strips spaces from the start of pathspec, so we compare those
@@ -264,8 +264,8 @@ BOOL PathNameMatch(const PathString& pathname, const PathString& pathspec) {
   while (*pathname_ptr == ' ' && *pathspec_ptr == ' ')
      ++pathname_ptr, ++pathspec_ptr;
 
-  // if we have more inital spaces in the pathspec than in the pathname then the
-  // result from PathMatchSpec will be erronous
+  // If we have more inital spaces in the pathspec than in the pathname then the
+  // result from PathMatchSpec will be erronous.
   if (*pathspec_ptr == ' ')
     return FALSE;
 
@@ -281,7 +281,7 @@ BOOL PathNameMatch(const PathString& pathname, const PathString& pathspec) {
     return ::PathMatchSpec(pathname_ptr, pathspec_ptr);
   }
 
-  // We need to subst ';' with ':' in both, name and spec
+  // We need to subst ';' with ':' in both, name and spec.
   PathString name_subst(pathname_ptr);
   PathString spec_subst(pathspec_ptr);
 
@@ -436,8 +436,8 @@ EntryKernel* Directory::GetChildWithName(const Id& parent_id,
   return GetChildWithNameImpl(parent_id, dbname, lock);
 }
 
-// Will return child entry even when the folder is not
-// opened. This is used by syncer to apply update when folder is closed.
+// Will return child entry even when the folder is not opened. This is used by
+// syncer to apply update when folder is closed.
 EntryKernel* Directory::GetChildWithDBName(const Id& parent_id,
                                            const PathString& name) {
   ScopedKernelLock lock(this);
@@ -1418,7 +1418,7 @@ MutableEntry::MutableEntry(WriteTransaction* trans, Create,
 
 
 void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
-                   const PathString& name) {
+                        const PathString& name) {
   kernel_ = new EntryKernel;
   ZeroFields(kernel_, BEGIN_FIELDS);
   kernel_->ref(ID) = trans->directory_->NextId();
@@ -1597,8 +1597,8 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
   return true;
 }
 
-// Avoids temporary collision in index when renaming a bookmark
-// to another folder.
+// Avoids temporary collision in index when renaming a bookmark to another
+// folder.
 bool MutableEntry::PutParentIdAndName(const Id& parent_id,
                                       const Name& name) {
   DCHECK(kernel_);
@@ -1624,9 +1624,9 @@ void MutableEntry::UnlinkFromOrder() {
   Id old_previous = Get(PREV_ID);
   Id old_next = Get(NEXT_ID);
 
-  // Self-looping signifies that this item is not in the order.  If
-  // we were to set these to 0, we could get into trouble because
-  // this node might look like the first node in the ordering.
+  // Self-looping signifies that this item is not in the order.  If we were to
+  // set these to 0, we could get into trouble because this node might look
+  // like the first node in the ordering.
   Put(NEXT_ID, Get(ID));
   Put(PREV_ID, Get(ID));
 
@@ -1749,9 +1749,9 @@ ExtendedAttribute::ExtendedAttribute(BaseTransaction* trans, GetByHandle,
 }
 
 bool ExtendedAttribute::Init(BaseTransaction* trans,
-                 Directory::Kernel* const kernel,
-                 ScopedKernelLock* lock,
-                 const ExtendedAttributeKey& key) {
+                             Directory::Kernel* const kernel,
+                             ScopedKernelLock* lock,
+                             const ExtendedAttributeKey& key) {
   i_ = kernel->extended_attributes->find(key);
   good_ = kernel->extended_attributes->end() != i_;
   return good_;
@@ -1840,7 +1840,7 @@ static PathString FixBasenameInCollision(const PathString s) {
 
 void DBName::MakeNoncollidingForEntry(BaseTransaction* trans,
                                       const Id& parent_id,
-                                      Entry *e) {
+                                      Entry* e) {
   const PathString& desired_name = *this;
   CHECK(!desired_name.empty());
   PathString::size_type first_dot = desired_name.find_first_of(PSTR('.'));
@@ -1850,13 +1850,13 @@ void DBName::MakeNoncollidingForEntry(BaseTransaction* trans,
   PathString dotextension = desired_name.substr(first_dot);
   CHECK(basename + dotextension == desired_name);
   for (;;) {
-    // check for collision
+    // Check for collision.
     PathString testname = basename + dotextension;
     Entry same_path_entry(trans, GET_BY_PARENTID_AND_DBNAME,
                           parent_id, testname);
     if (!same_path_entry.good() || (e && same_path_entry.Get(ID) == e->Get(ID)))
       break;
-    // there was a collision, so fix the name
+    // There was a collision, so fix the name.
     basename = FixBasenameInCollision(basename);
   }
   // Set our value to the new value.  This invalidates desired_name.

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/notifier/base/task_pump.h"
-
 #include "chrome/browser/sync/notifier/base/time.h"
 #include "talk/base/common.h"
 #include "talk/base/thread.h"
@@ -30,7 +29,7 @@ void TaskPump::OnMessage(talk_base::Message* msg) {
 
 void TaskPump::WakeTasks() {
   if (!posted_) {
-    // Do the requested wake up
+    // Do the requested wake up.
     talk_base::Thread::Current()->Post(this, MSG_WAKE_UP);
     posted_ = true;
   }
@@ -39,4 +38,5 @@ void TaskPump::WakeTasks() {
 int64 TaskPump::CurrentTime() {
   return GetCurrent100NSTime();
 }
+
 }  // namespace notifier

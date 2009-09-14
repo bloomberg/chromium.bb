@@ -7,10 +7,10 @@
 
 namespace syncable {
 
-// This kind of Event is emitted when the state of a Directory object
-// changes somehow, such as the directory being opened or closed.
-// Don't confuse it with a DirectoryChangeEvent, which is what happens
-// when one or more of the Entry contents of a Directory have been updated.
+// This kind of Event is emitted when the state of a Directory object changes
+// somehow, such as the directory being opened or closed. Don't confuse it with
+// a DirectoryChangeEvent, which is what happens when one or more of the Entry
+// contents of a Directory have been updated.
 enum DirectoryEvent {
   DIRECTORY_CLOSED,
   DIRECTORY_DESTROYED,

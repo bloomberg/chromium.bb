@@ -76,7 +76,7 @@ int SqliteOpen(PathString filename, sqlite3** db) {
       attrs = attrs | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
     SetFileAttributes(filename.c_str(), attrs);
   }
-#endif
+#endif  // OS_WINDOWS
   // Be patient as we set pragmas.
   sqlite3_busy_timeout(*db, numeric_limits<int>::max());
 #ifndef DISABLE_SQLITE_FULL_FSYNC
@@ -106,7 +106,7 @@ sqlite3_stmt* BindArg(sqlite3_stmt* statement, const PathChar* s, int index) {
                                          SQLITE_TRANSIENT));
   return statement;
 }
-#endif
+#endif  // !PATHSTRING_IS_STD_STRING
 
 sqlite3_stmt* BindArg(sqlite3_stmt* statement, const string& s, int index) {
   if (NULL == statement)
@@ -179,7 +179,6 @@ sqlite3_stmt* BindArg(sqlite3_stmt* statement, SqliteNullType, int index) {
   return statement;
 }
 
-
 #if !PATHSTRING_IS_STD_STRING
 void GetColumn(sqlite3_stmt* statement, int index, PathString* value) {
   if (sqlite3_column_type(statement, index) == SQLITE_NULL) {
@@ -190,7 +189,7 @@ void GetColumn(sqlite3_stmt* statement, int index, PathString* value) {
         sqlite3_column_bytes16(statement, index) / sizeof(PathChar));
   }
 }
-#endif
+#endif  // !PATHSTRING_IS_STD_STRING
 
 void GetColumn(sqlite3_stmt* statement, int index, string* value) {
   if (sqlite3_column_type(statement, index) == SQLITE_NULL) {
@@ -229,7 +228,7 @@ void GetColumn(sqlite3_stmt* statement, int index, std::vector<uint8>* value) {
   }
 }
 
-bool DoesTableExist(sqlite3 *dbhandle, const string &table_name) {
+bool DoesTableExist(sqlite3* dbhandle, const string& table_name) {
   ScopedStatement count_query
     (PrepareQuery(dbhandle,
                   "SELECT count(*) from sqlite_master where name = ?",

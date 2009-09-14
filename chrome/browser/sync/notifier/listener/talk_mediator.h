@@ -1,18 +1,19 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+//
 // Interface to the code which handles talk logic.  Used to initialize SSL
-// before the underlying talk login occurs
+// before the underlying talk login occurs.
+//
 // Example usage:
 //
-// TalkMediator mediator();
-// mediator.SetCredentials("email", "pass", false);
-// mediator.WatchAuthWatcher(auth_watcher_);
-// AuthWatcher eventually sends AUTH_SUCCEEDED which triggers:
-// mediator.Login();
-// ...
-// mediator.Logout();
+//   TalkMediator mediator();
+//   mediator.SetCredentials("email", "pass", false);
+//   mediator.WatchAuthWatcher(auth_watcher_);
+//   AuthWatcher eventually sends AUTH_SUCCEEDED which triggers:
+//   mediator.Login();
+//   ...
+//   mediator.Logout();
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_TALK_MEDIATOR_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_TALK_MEDIATOR_H_
@@ -20,6 +21,7 @@
 #include <string>
 
 namespace browser_sync {
+
 class AuthWatcher;
 class SyncerThread;
 
@@ -34,7 +36,7 @@ struct TalkMediatorEvent {
     TALKMEDIATOR_DESTROYED,
   };
 
-  // Required by EventChannel
+  // Required by EventChannel.
   typedef TalkMediatorEvent EventType;
 
   static inline bool IsChannelShutdownEvent(const TalkMediatorEvent& event) {
@@ -58,8 +60,8 @@ class TalkMediator {
   virtual bool Login() = 0;
   virtual bool Logout() = 0;
 
-  // Method for the owner of this object to notify peers that an update
-  // has occurred.
+  // Method for the owner of this object to notify peers that an update has
+  // occurred.
   virtual bool SendNotification() = 0;
 
   // Channel by which talk mediator events are signaled.

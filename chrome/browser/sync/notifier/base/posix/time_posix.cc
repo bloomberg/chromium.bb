@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <assert.h>
-#include <sys/time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "chrome/browser/sync/notifier/base/time.h"
 

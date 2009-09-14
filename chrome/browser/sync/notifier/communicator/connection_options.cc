@@ -13,4 +13,5 @@ ConnectionOptions::ConnectionOptions()
       use_proxy_auth_(0),
       allow_unverified_certs_(false) {
 }
+
 }  // namespace notifier

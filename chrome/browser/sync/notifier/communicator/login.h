@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_LOGIN_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_LOGIN_H_
+
 #include <string>
 
 #include "chrome/browser/sync/notifier/base/time.h"
@@ -27,6 +28,7 @@ class Task;
 }  // namespace talk_base
 
 namespace notifier {
+
 class AutoReconnect;
 class ConnectionOptions;
 class LoginFailure;
@@ -36,12 +38,12 @@ struct ServerInformation;
 class SingleLoginAttempt;
 class Timer;
 
-// Does the login, keeps it alive (with refreshing cookies
-// and reattempting login when disconnected), figures out
-// what actions to take on the various errors that may occur.
+// Does the login, keeps it alive (with refreshing cookies and reattempting
+// login when disconnected), figures out what actions to take on the various
+// errors that may occur.
 class Login : public sigslot::has_slots<> {
  public:
-  // network_status and firewall may be NULL
+  // network_status and firewall may be NULL.
   Login(talk_base::Task* parent,
         const buzz::XmppClientSettings& user_settings,
         const ConnectionOptions& options,
@@ -57,8 +59,8 @@ class Login : public sigslot::has_slots<> {
 
   enum ConnectionState {
     STATE_CLOSED,
-    // Same as the closed state but indicates that a countdown is happening
-    // for auto-retrying the connection.
+    // Same as the closed state but indicates that a countdown is happening for
+    // auto-retrying the connection.
     STATE_RETRYING,
     STATE_OPENING,
     STATE_OPENED,
@@ -73,29 +75,27 @@ class Login : public sigslot::has_slots<> {
   void UseCurrentConnection();
   buzz::XmppClient* xmpp_client();
 
-  // Start the auto-reconnect.  It may not do the auto-reconnect
-  // if auto-reconnect is turned off.
+  // Start the auto-reconnect.  It may not do the auto-reconnect if
+  // auto-reconnect is turned off.
   void DoAutoReconnect();
 
   const LoginSettings& login_settings() const {
     return *(login_settings_.get());
   }
 
-  // Returns the best guess at the host responsible for
-  // the account (which we use to determine if it is
-  // a dasher account or not).
+  // Returns the best guess at the host responsible for the account (which we
+  // use to determine if it is a dasher account or not).
   //
-  // After login this may return a more accurate answer,
-  // which accounts for open sign-up accounts.
+  // After login this may return a more accurate answer, which accounts for
+  // open sign-up accounts.
   const std::string& google_host() const;
 
-  // Analogous to google_host but for the user account.
-  // ("fred" in "fred@gmail.com")
+  // Analogous to google_host but for the user account ("fred" in
+  // "fred@gmail.com").
   const std::string& google_user() const;
 
-  // Returns the proxy that is being used to connect (or
-  // the default proxy information if all attempted
-  // connections failed).
+  // Returns the proxy that is being used to connect (or the default proxy
+  // information if all attempted connections failed).
   //
   // Do not call until StartConnection has been called.
   const talk_base::ProxyInfo& proxy() const;
@@ -150,6 +150,7 @@ class Login : public sigslot::has_slots<> {
 
   DISALLOW_COPY_AND_ASSIGN(Login);
 };
+
 }  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_LOGIN_H_

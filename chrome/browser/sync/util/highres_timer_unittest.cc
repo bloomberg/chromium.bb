@@ -14,12 +14,12 @@
 TEST(HighresTimer, DISABLED_MillisecondClock) {
   HighresTimer timer;
 
-  // note: this could fail if we context switch between initializing the timer
+  // Note: this could fail if we context switch between initializing the timer
   // and here. Very unlikely however.
   EXPECT_EQ(0, timer.GetElapsedMs());
   timer.Start();
   uint64 half_ms = HighresTimer::GetTimerFrequency() / 2000;
-  // busy wait for half a millisecond
+  // Busy wait for half a millisecond.
   while (timer.start_ticks() + half_ms > HighresTimer::GetCurrentTicks()) {
     // Nothing
   }

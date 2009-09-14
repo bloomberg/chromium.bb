@@ -17,7 +17,7 @@ namespace browser_sync {
 bool UserSettings::GetLastUser(string* username) {
   ScopedDBHandle dbhandle(this);
   ScopedStatement query(PrepareQuery(dbhandle.get(),
-    "SELECT email FROM cookies"));
+      "SELECT email FROM cookies"));
   if (SQLITE_ROW == sqlite3_step(query.get())) {
     GetColumn(query.get(), 0, username);
     return true;
@@ -64,4 +64,3 @@ bool UserSettings::GetLastUserAndServiceToken(const string& service_name,
 }
 
 }  // namespace browser_sync
-

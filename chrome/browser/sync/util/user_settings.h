@@ -36,8 +36,8 @@ class UserSettings {
   void SwitchUser(const std::string& email);
 
   // Saves the email address and the named service token for the given user.
-  // Call this multiple times with the same email parameter to save
-  // multiple service tokens.
+  // Call this multiple times with the same email parameter to save multiple
+  // service tokens.
   void SetAuthTokenForService(const std::string& email,
                               const std::string& service_name,
                               const std::string& long_lived_service_token);
@@ -47,8 +47,8 @@ class UserSettings {
   // Returns the user name whose credentials have been persisted.
   bool GetLastUser(std::string* username);
 
-  // Returns the user name whose credentials have been persisted as well as
-  // a service token for the named service
+  // Returns the user name whose credentials have been persisted as well as a
+  // service token for the named service
   bool GetLastUserAndServiceToken(const std::string& service_name,
                                   std::string* username,
                                   std::string* service_token);
@@ -68,12 +68,11 @@ class UserSettings {
   // is used as both input and output.
   bool GetEmailForSignin(std::string* signin);
 
-
   std::string email() const;
 
-  // Get a unique ID suitable for use as the client ID.  This ID
-  // has the lifetime of the user settings database.  You may use this ID if
-  // your operating environment does not provide its own unique client ID.
+  // Get a unique ID suitable for use as the client ID.  This ID has the
+  // lifetime of the user settings database.  You may use this ID if your
+  // operating environment does not provide its own unique client ID.
   std::string GetClientId();
 
  protected:

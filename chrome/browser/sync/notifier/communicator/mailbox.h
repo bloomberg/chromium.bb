@@ -26,7 +26,7 @@ class MailAddress {
   }
   const std::string& name() const    { return name_; }
   const std::string& address() const { return address_; }
-  std::string safe_name() const; // will return *something*
+  std::string safe_name() const; // Will return *something*.
  private:
   std::string name_;
   std::string address_;
@@ -71,20 +71,19 @@ class MessageThread {
   ~MessageThread();
 
   // Try to parse the XML to create a MessageThreadInfo.  If NULL is returned
-  // then we either ran out of memory or there was an error in parsing the
-  // XML
+  // then we either ran out of memory or there was an error in parsing the XML.
   static MessageThread* CreateFromXML(const buzz::XmlElement* src);
 
   MessageThread& operator=(const MessageThread& r);
 
-  // SameThreadAs : name is self evident
+  // SameThreadAs : name is self evident.
   bool SameThreadAs(const MessageThread& r) {
     AssertValid();
     r.AssertValid();
     return (thread_id_ == r.thread_id_);
   }
 
-  // SameAs : true if thread has same id and messages
+  // SameAs : true if thread has same id and messages.
   // Assumes that messages don't disappear from threads.
   bool SameAs(const MessageThread& r) {
     AssertValid();
@@ -161,6 +160,7 @@ std::string GetSenderHtml(const MailSenderList& sender_list,
                           int message_count,
                           const std::string& me_address,
                           int space);
+
 }  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_MAILBOX_H_

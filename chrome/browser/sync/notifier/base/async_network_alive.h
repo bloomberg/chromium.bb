@@ -9,7 +9,7 @@
 
 namespace notifier {
 
-// System specific info needed for changes
+// System specific info needed for changes.
 class PlatformNetworkInfo;
 
 class AsyncNetworkAlive : public talk_base::SignalThread {
@@ -40,7 +40,6 @@ class AsyncNetworkAlive : public talk_base::SignalThread {
   AsyncNetworkAlive() : network_info_(NULL), alive_(false), error_(false) {
   }
 
- protected:
   PlatformNetworkInfo* network_info_;
   bool alive_;
   bool error_;
@@ -48,5 +47,7 @@ class AsyncNetworkAlive : public talk_base::SignalThread {
  private:
   DISALLOW_COPY_AND_ASSIGN(AsyncNetworkAlive);
 };
+
 }  // namespace notifier
+
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_BASE_ASYNC_NETWORK_ALIVE_H_

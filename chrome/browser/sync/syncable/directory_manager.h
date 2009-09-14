@@ -117,7 +117,7 @@ class ScopedDirLookup {
 
   Directory* dir_;
   bool good_;
-  // Ensure that the programmer checks good before using the ScopedDirLookup
+  // Ensure that the programmer checks good before using the ScopedDirLookup.
   // This member should can be removed if it ever shows up in profiling
   bool good_checked_;
   DirectoryManager* const dirman_;

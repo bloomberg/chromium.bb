@@ -24,7 +24,7 @@ TEST_F(TimeTest, ParseRFC822DateTime) {
   EXPECT_EQ(t.tm_year, 2005 - 1900);
   EXPECT_EQ(t.tm_mon, 4);
   EXPECT_EQ(t.tm_mday, 16);
-  EXPECT_TRUE(t.tm_hour == 15 || t.tm_hour == 14);  // daylight saving time
+  EXPECT_TRUE(t.tm_hour == 15 || t.tm_hour == 14);  // Daylight saving time.
   EXPECT_EQ(t.tm_min, 44);
   EXPECT_EQ(t.tm_sec , 18);
 
@@ -41,7 +41,7 @@ TEST_F(TimeTest, ParseRFC822DateTime) {
   EXPECT_EQ(t.tm_year, 2005 - 1900);
   EXPECT_EQ(t.tm_mon, 4);
   EXPECT_EQ(t.tm_mday, 16);
-  EXPECT_TRUE(t.tm_hour == 15 || t.tm_hour == 14);  // daylight saving time
+  EXPECT_TRUE(t.tm_hour == 15 || t.tm_hour == 14);  // Daylight saving time.
   EXPECT_EQ(t.tm_min, 56);
   EXPECT_EQ(t.tm_sec, 18);
 }

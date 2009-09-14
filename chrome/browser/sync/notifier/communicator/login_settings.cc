@@ -30,7 +30,7 @@ LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
        server_count_(server_count),
        user_settings_(new buzz::XmppClientSettings(user_settings)),
        connection_options_(new ConnectionOptions(options)) {
-  // Note: firewall may be NULL
+  // Note: firewall may be NULL.
   ASSERT(server_list != 0);
   ASSERT(server_count > 0);
   for (int i = 0; i < server_count_; ++i) {
@@ -38,9 +38,8 @@ LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
   }
 }
 
-// defined so that the destructors are executed here (and
-// the corresponding classes don't need to be included in
-// the header file)
+// Defined so that the destructors are executed here (and the corresponding
+// classes don't need to be included in the header file).
 LoginSettings::~LoginSettings() {
 }
 
@@ -54,4 +53,5 @@ void LoginSettings::set_server_override(
 void LoginSettings::clear_server_override() {
   server_override_.reset();
 }
+
 }  // namespace notifier

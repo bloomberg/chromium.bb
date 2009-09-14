@@ -60,9 +60,9 @@ class UserSettingsTest : public testing::Test {
 TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
   SetUpVersion10Databases();
   {
-    // Create a UserSettings, which should trigger migration code.
-    // We do this inside a scoped block so it closes itself and we can poke
-    // around to see what happened later.
+    // Create a UserSettings, which should trigger migration code. We do this
+    // inside a scoped block so it closes itself and we can poke around to see
+    // what happened later.
     UserSettings settings;
     settings.Init(kV10UserSettingsDB);
   }

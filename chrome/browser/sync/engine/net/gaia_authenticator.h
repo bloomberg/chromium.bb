@@ -192,7 +192,7 @@ class GaiaAuthenticator {
   bool LaunchAuthenticate(const AuthParams& params, bool synchronous);
   static void *ThreadMain(void *arg);
 
-  // virtual for testing purposes
+  // virtual for testing purposes.
   virtual bool Post(const GURL& url, const std::string& post_body,
                     unsigned long* response_code, std::string* response_body) {
     return false;
@@ -203,13 +203,13 @@ class GaiaAuthenticator {
   bool LookupEmail(AuthResults* results);
 
  public:
-  // Retrieve email
+  // Retrieve email.
   inline std::string email() const {
     PThreadScopedLock<PThreadMutex> enter(&mutex_);
     return auth_results_.email;
   }
 
-  // Retrieve password
+  // Retrieve password.
   inline std::string password() const {
     PThreadScopedLock<PThreadMutex> enter(&mutex_);
     return auth_results_.password;

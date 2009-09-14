@@ -61,8 +61,9 @@ int SubscribeTask::ProcessResponse() {
 
 buzz::XmlElement* SubscribeTask::NewSubscriptionMessage() {
   static const buzz::QName kQnNotifierGetAll(true, "google:notifier", "getAll");
-  static const buzz::QName kQnNotifierClientActive(true, buzz::STR_EMPTY,
-                                             "ClientActive");
+  static const buzz::QName kQnNotifierClientActive(true,
+                                                   buzz::STR_EMPTY,
+                                                   "ClientActive");
   static const buzz::QName kQnBool(true, buzz::STR_EMPTY, "bool");
   static const std::string kTrueString("true");
 

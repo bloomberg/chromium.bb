@@ -26,6 +26,7 @@
 #include "talk/xmpp/xmppclientsettings.h"
 
 namespace notifier {
+
 static void FillProxyInfo(const buzz::XmppClientSettings& xcs,
                           talk_base::ProxyInfo* proxy) {
   ASSERT(proxy != NULL);
@@ -88,8 +89,8 @@ SingleLoginAttempt::SingleLoginAttempt(talk_base::Task* parent,
 }
 
 SingleLoginAttempt::~SingleLoginAttempt() {
-  // If this assertion goes off, it means that "Stop()" didn't get
-  // called like it should have been.
+  // If this assertion goes off, it means that "Stop()" didn't get called like
+  // it should have been.
   ASSERT(client_ == NULL);
 }
 
@@ -106,9 +107,9 @@ int SingleLoginAttempt::ProcessStart() {
   ASSERT(GetState() == talk_base::Task::STATE_START);
   connection_generator_->StartGenerating();
 
-  // After being started, this class is callback driven and does
-  // signaling from those callbacks (with checks to see if it is
-  // done if it may be called back from something that isn't a child task).
+  // After being started, this class is callback driven and does signaling from
+  // those callbacks (with checks to see if it is done if it may be called back
+  // from something that isn't a child task).
   return talk_base::Task::STATE_BLOCKED;
 }
 
@@ -116,10 +117,9 @@ void SingleLoginAttempt::Stop() {
   ClearClient();
   talk_base::Task::Stop();
 
-  // No more signals should happen after being stopped.
-  // (This is needed because some of these signals
-  // happen due to other components doing signaling which
-  // may continue running even though this task is stopped.)
+  // No more signals should happen after being stopped. This is needed because
+  // some of these signals happen due to other components doing signaling which
+  // may continue running even though this task is stopped.
   SignalUnexpectedDisconnect.disconnect_all();
   SignalRedirect.disconnect_all();
   SignalLoginFailure.disconnect_all();
@@ -151,10 +151,10 @@ void SingleLoginAttempt::OnAttemptedAllConnections(
 
   LOG(INFO) << "Connection failed with error " << code_;
 
-  // We were connected and we had a problem
+  // We were connected and we had a problem.
   if (successful_connection_ && auto_reconnect()) {
     SignalNeedAutoReconnect();
-    // expect to be deleted at this point
+    // Expect to be deleted at this point.
     return;
   }
 
@@ -180,23 +180,23 @@ void SingleLoginAttempt::DoLogin(
   }
 
   buzz::XmppClientSettings client_settings;
-  // set the user settings portion
+  // Set the user settings portion.
   *static_cast<buzz::XmppClientSettings*>(&client_settings) =
       login_settings_->user_settings();
-  // fill in the rest of the client settings
+  // Fill in the rest of the client settings.
   connection_settings.FillXmppClientSettings(&client_settings);
 
   client_ = new buzz::XmppClient(this);
   SignalLogInput.repeat(client_->SignalLogInput);
   SignalLogOutput.repeat(client_->SignalLogOutput);
 
-  // listen for connection progress
+  // Listen for connection progress.
   client_->SignalStateChange.connect(this,
                                      &SingleLoginAttempt::OnClientStateChange);
 
-  // transition to "start"
+  // Transition to "start".
   OnClientStateChange(buzz::XmppEngine::STATE_START);
-  // start connecting
+  // Start connecting.
   client_->Connect(client_settings, login_settings_->lang(),
                    CreateSocket(client_settings),
                    CreatePreXmppAuth(client_settings));
@@ -204,15 +204,14 @@ void SingleLoginAttempt::DoLogin(
 }
 
 void SingleLoginAttempt::OnAuthenticationError() {
-  // We can check this flag later if all connection options fail
+  // We can check this flag later if all connection options fail.
   need_authentication_ = true;
 }
 
 void SingleLoginAttempt::OnCertificateExpired() {
-  // We can check this flag later if all connection options fail
+  // We can check this flag later if all connection options fail.
   certificate_expired_ = true;
 }
-
 
 buzz::AsyncSocket* SingleLoginAttempt::CreateSocket(
     const buzz::XmppClientSettings& xcs) {
@@ -234,7 +233,7 @@ buzz::PreXmppAuth* SingleLoginAttempt::CreatePreXmppAuth(
   if (login_settings_->no_gaia_auth())
     return NULL;
 
-  // For GMail, use Gaia preauthentication over HTTP
+  // For GMail, use Gaia preauthentication over HTTP.
   buzz::GaiaAuth* auth = new buzz::GaiaAuth(GetUserAgentString(),
                                             GetProductSignature());
   auth->SignalAuthenticationError.connect(
@@ -256,26 +255,26 @@ buzz::PreXmppAuth* SingleLoginAttempt::CreatePreXmppAuth(
 }
 
 void SingleLoginAttempt::OnFreshAuthCookie(const std::string& auth_cookie) {
-  // Remember this is a fresh cookie
+  // Remember this is a fresh cookie.
   cookie_refreshed_ = true;
 
-  // TODO(sync): do the cookie logic (part of which is in the #if 0 below)
+  // TODO(sync): do the cookie logic (part of which is in the #if 0 below).
 
-  // The following code is what PhoneWindow does for the equivalent method
+  // The following code is what PhoneWindow does for the equivalent method.
 #if 0
   // Save cookie
   AccountInfo current(account_history_.current());
   current.set_auth_cookie(auth_cookie);
   account_history_.set_current(current);
 
-  // Calc next time to refresh cookie, between 5 and 10 days
-  // The cookie has 14 days of life; this gives at least 4 days of retries
-  // before the current cookie expires, maximizing the chance of
-  // having a valid cookie next time the connection servers go down.
+  // Calc next time to refresh cookie, between 5 and 10 days. The cookie has
+  // 14 days of life; this gives at least 4 days of retries before the current
+  // cookie expires, maximizing the chance of having a valid cookie next time
+  // the connection servers go down.
   FTULL now;
 
   // NOTE: The following line is win32.  Address this when implementing this
-  // code (doing "the cookie logic")
+  // code (doing "the cookie logic").
   GetSystemTimeAsFileTime(&(now.ft));
   ULONGLONG five_days = (ULONGLONG)10000 * 1000 * 60 * 60 * 24 * 5;  // 5 days
   ULONGLONG random = (ULONGLONG)10000 *          // get to 100 ns units
@@ -351,12 +350,11 @@ void SingleLoginAttempt::OnHttpTestDone(talk_base::SignalThread* thread) {
     return;
   }
 
-  // Otherwise lets transmute the error into ERROR_SOCKET, and put
-  // the subcode as an indicator of what we think the problem
-  // might be.
+  // Otherwise lets transmute the error into ERROR_SOCKET, and put the subcode
+  // as an indicator of what we think the problem might be.
 
 #if 0
-  // TODO(sync): determine if notifier has an analogous situation
+  // TODO(sync): determine if notifier has an analogous situation.
 
   //
   // We weren't able to do an HTTP GET of www.google.com:80
@@ -365,14 +363,13 @@ void SingleLoginAttempt::OnHttpTestDone(talk_base::SignalThread* thread) {
   GAutoupdater::Version version_installed(GetProductVersion().c_str());
   if (version_logged_in < version_installed) {
     //
-    // Google Talk has been updated and can no longer connect
-    // to the Google Talk Service.  Your firewall is probably
-    // not allowing the new version of Google Talk to connect
-    // to the internet.  Please adjust your firewall settings
-    // to allow the new version of Google Talk to connect to
-    // the internet.
+    // Google Talk has been updated and can no longer connect to the Google
+    // Talk Service. Your firewall is probably not allowing the new version of
+    // Google Talk to connect to the internet. Please adjust your firewall
+    // settings to allow the new version of Google Talk to connect to the
+    // internet.
     //
-    // We'll use the "error=1" to help figure this out for now
+    // We'll use the "error=1" to help figure this out for now.
     //
     LoginFailure failure(LoginFailure::XMPP_ERROR,
                          buzz::XmppEngine::ERROR_SOCKET,
@@ -387,9 +384,8 @@ void SingleLoginAttempt::OnHttpTestDone(talk_base::SignalThread* thread) {
   //
 
   //
-  // Google Talk is unable to use your internet connection. Either your
-  // network isn't configured or Google Talk is being blocked by
-  // a local firewall.
+  // Google Talk is unable to use your internet connection. Either your network
+  // isn't configured or Google Talk is being blocked by a local firewall.
   //
   // We'll use the "error=0" to help figure this out for now
   //
@@ -410,7 +406,7 @@ void SingleLoginAttempt::OnClientStateChange(buzz::XmppEngine::State state) {
     case buzz::XmppEngine::STATE_NONE:
     case buzz::XmppEngine::STATE_START:
     case buzz::XmppEngine::STATE_OPENING:
-      // do nothing
+      // Do nothing.
       break;
     case buzz::XmppEngine::STATE_OPEN:
       successful_connection_ = true;
@@ -456,7 +452,7 @@ void SingleLoginAttempt::OnClientStateChangeClosed(
     SignalLogoff();
     return;
   } else if (previous_state == buzz::XmppEngine::STATE_OPEN) {
-    // Handler should attempt reconnect
+    // Handler should attempt reconnect.
     SignalUnexpectedDisconnect();
     return;
   } else {
@@ -469,12 +465,12 @@ void SingleLoginAttempt::HandleConnectionPasswordError(
     const buzz::CaptchaChallenge& captcha_challenge) {
   LOG(LS_VERBOSE) << "SingleLoginAttempt::HandleConnectionPasswordError";
 
-  // Clear the auth cookie
+  // Clear the auth cookie.
   std::string current_auth_cookie =
       login_settings_->user_settings().auth_cookie();
   login_settings_->modifiable_user_settings()->set_auth_cookie("");
-  // If there was an auth cookie and it was the same as the last
-  // auth cookie, then it is a stale cookie. Retry login.
+  // If there was an auth cookie and it was the same as the last auth cookie,
+  // then it is a stale cookie. Retry login.
   if (!current_auth_cookie.empty() && !cookie_refreshed_) {
     UseCurrentConnection();
     return;
@@ -492,13 +488,13 @@ void SingleLoginAttempt::HandleConnectionError(
     const buzz::CaptchaChallenge& captcha_challenge) {
   LOG_F(LS_VERBOSE) << "(" << code << ", " << subcode << ")";
 
-  // Save off the error code information, so we can use it
-  // to tell the user what went wrong if all else fails
+  // Save off the error code information, so we can use it to tell the user
+  // what went wrong if all else fails.
   code_ = code;
   subcode_ = subcode;
   if ((code_ == buzz::XmppEngine::ERROR_UNAUTHORIZED) ||
       (code_ == buzz::XmppEngine::ERROR_MISSING_USERNAME)) {
-    // There was a problem with credentials (username/password)
+    // There was a problem with credentials (username/password).
     HandleConnectionPasswordError(captcha_challenge);
     return;
   }
@@ -506,7 +502,7 @@ void SingleLoginAttempt::HandleConnectionError(
   // Unexpected disconnect,
   // Unreachable host,
   // Or internal server binding error -
-  // All these are temporary problems, so continue reconnecting
+  // All these are temporary problems, so continue reconnecting.
 
   // GaiaAuth signals this directly via SignalCertificateExpired, but
   // SChannelAdapter propagates the error through SocketWindow as a socket
@@ -518,7 +514,7 @@ void SingleLoginAttempt::HandleConnectionError(
 
   login_settings_->modifiable_user_settings()->set_resource("");
 
-  // Look for stream::error server redirection stanza "see-other-host"
+  // Look for stream::error server redirection stanza "see-other-host".
   if (stream_error) {
     const buzz::XmlElement* other =
         stream_error->FirstNamed(buzz::QN_XSTREAM_SEE_OTHER_HOST);
@@ -526,8 +522,8 @@ void SingleLoginAttempt::HandleConnectionError(
       const buzz::XmlElement* text =
           stream_error->FirstNamed(buzz::QN_XSTREAM_TEXT);
       if (text) {
-        // Yep, its a "stream:error" with "see-other-host" text, let's
-        // parse out the server:port, and then reconnect with that.
+        // Yep, its a "stream:error" with "see-other-host" text, let's parse
+        // out the server:port, and then reconnect with that.
         const std::string& redirect = text->BodyText();
         unsigned int colon = redirect.find(":");
         int redirect_port = kDefaultXmppPort;
@@ -540,12 +536,12 @@ void SingleLoginAttempt::HandleConnectionError(
           std::istringstream ist(port_text);
           ist >> redirect_port;
         }
-        // we never allow a redirect to port 0
+        // We never allow a redirect to port 0.
         if (redirect_port == 0) {
           redirect_port = kDefaultXmppPort;
         }
         SignalRedirect(redirect_server, redirect_port);
-        // may be deleted at this point
+        // May be deleted at this point.
         return;
       }
     }
@@ -556,7 +552,8 @@ void SingleLoginAttempt::HandleConnectionError(
     return;
   }
 
-  // Iterate to the next possible connection (still trying to connect)
+  // Iterate to the next possible connection (still trying to connect).
   UseNextConnection();
 }
+
 }  // namespace notifier

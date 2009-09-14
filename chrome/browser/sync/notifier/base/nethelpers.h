@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SYNC_NOTIFIER_BASE_NETHELPERS_H_
 
 #ifdef POSIX
-#include <netdb.h>
 #include <cstddef>
+#include <netdb.h>
 #elif WIN32
 #include <winsock2.h>
 #endif

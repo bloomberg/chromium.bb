@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <pwd.h>
-
 #include <string.h>
 
 #include "chrome/browser/sync/util/path_helpers.h"
@@ -39,8 +38,8 @@ string get_cache_dir() {
   return cache_dir_;
 }
 
-// On Posix, PathStrings are UTF-8, not UTF-16 as they are on Windows.
-// Thus, this function is different from the Windows version.
+// On Posix, PathStrings are UTF-8, not UTF-16 as they are on Windows. Thus,
+// this function is different from the Windows version.
 PathString TruncatePathString(const PathString& original, int length) {
   if (original.size() <= length)
     return original;
@@ -57,11 +56,11 @@ PathString TruncatePathString(const PathString& original, int length) {
 
   for (; last_char != ret.rend(); ++last_char) {
     if (0 == (*last_char & 0x80)) {
-      // got malformed UTF-8; bail
+      // Got malformed UTF-8; bail.
       return ret;
     }
     if (0 == (*last_char & 0x40)) {
-      // got another trailing byte
+      // Got another trailing byte.
       continue;
     }
     break;
@@ -86,7 +85,7 @@ PathString TruncatePathString(const PathString& original, int length) {
   return ret;
 }
 
-// Convert /s to :s .
+// Convert /s to :s.
 PathString MakePathComponentOSLegal(const PathString& component) {
   if (PathString::npos == component.find("/"))
     return PSTR("");

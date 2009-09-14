@@ -12,7 +12,7 @@ using std::string;
 
 namespace browser_sync {
 
-// Converts input_string to UTF8 and appends the result into to output_string
+// Converts input_string to UTF8 and appends the result into to output_string.
 void AppendPathStringToUTF8(const PathChar* wide, int size,
                             string* output_string) {
   CHECK(output_string);

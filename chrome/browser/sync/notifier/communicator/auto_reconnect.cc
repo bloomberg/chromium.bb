@@ -10,6 +10,7 @@
 #include "talk/base/common.h"
 
 namespace notifier {
+
 const int kResetReconnectInfoDelaySec = 2;
 
 AutoReconnect::AutoReconnect(talk_base::Task* parent,
@@ -44,7 +45,7 @@ int AutoReconnect::seconds_until() const {
     return 0;
   }
 
-  // Do a ceiling on the value (to avoid returning before its time)
+  // Do a ceiling on the value (to avoid returning before its time).
   int64 result = (time_until_100ns + kSecsTo100ns - 1) / kSecsTo100ns;
   return static_cast<int>(result);
 }
@@ -54,17 +55,17 @@ void AutoReconnect::StartReconnectTimer() {
 }
 
 void AutoReconnect::StartReconnectTimerWithInterval(time64 interval_ns) {
-  // Don't call StopReconnectTimer because we don't
-  // want other classes to detect that the intermediate state of
-  // the timer being stopped.  (We're avoiding the call to SignalTimerStartStop
-  // while reconnect_timer_ is NULL.)
+  // Don't call StopReconnectTimer because we don't want other classes to
+  // detect that the intermediate state of the timer being stopped.
+  // (We're avoiding the call to SignalTimerStartStop while reconnect_timer_ is
+  // NULL).
   if (reconnect_timer_) {
     reconnect_timer_->Abort();
     reconnect_timer_ = NULL;
   }
   reconnect_timer_ = new Timer(parent_,
                                static_cast<int>(interval_ns / kSecsTo100ns),
-                               false);  // repeat
+                               false);  // Repeat.
   reconnect_timer_->SignalTimeout.connect(this,
                                           &AutoReconnect::DoReconnect);
   SignalTimerStartStop();
@@ -73,7 +74,7 @@ void AutoReconnect::StartReconnectTimerWithInterval(time64 interval_ns) {
 void AutoReconnect::DoReconnect() {
   reconnect_timer_ = NULL;
 
-  // if timed out again, double autoreconnect time up to 30 minutes
+  // If timed out again, double autoreconnect time up to 30 minutes.
   reconnect_interval_ns_ *= 2;
   if (reconnect_interval_ns_ > 30 * kMinsTo100ns) {
     reconnect_interval_ns_ = 30 * kMinsTo100ns;
@@ -114,8 +115,8 @@ void AutoReconnect::SetupReconnectInterval() {
 
 void AutoReconnect::OnPowerSuspend(bool suspended) {
   if (suspended) {
-    // When the computer comes back on, ensure that the reconnect
-    // happens quickly (5 - 25 seconds).
+    // When the computer comes back on, ensure that the reconnect happens
+    // quickly (5 - 25 seconds).
     reconnect_interval_ns_ = (rand() % 20 + 5) * kSecsTo100ns;
   }
 }
@@ -125,13 +126,12 @@ void AutoReconnect::OnClientStateChange(Login::ConnectionState state) {
   StopDelayedResetTimer();
   switch (state) {
     case Login::STATE_RETRYING:
-      // do nothing
+      // Do nothing.
       break;
 
     case Login::STATE_CLOSED:
-      // When the user has been logged out and no auto-reconnect
-      // is happening, then the autoreconnect intervals should be
-      // reset.
+      // When the user has been logged out and no auto-reconnect is happening,
+      // then the autoreconnect intervals should be reset.
       ResetState();
       break;
 
@@ -140,17 +140,17 @@ void AutoReconnect::OnClientStateChange(Login::ConnectionState state) {
       break;
 
     case Login::STATE_OPENED:
-      // Reset autoreconnect timeout sequence after being connected
-      // for a bit of time.  This helps in the case that we are
-      // connecting briefly and then getting disconnect like when
-      // an account hits an abuse limit.
+      // Reset autoreconnect timeout sequence after being connected for a bit
+      // of time. This helps in the case that we are connecting briefly and
+      // then getting disconnect like when an account hits an abuse limit.
       StopReconnectTimer();
       delayed_reset_timer_ = new Timer(parent_,
                                        kResetReconnectInfoDelaySec,
-                                       false);  // repeat
+                                       false);  // Repeat.
       delayed_reset_timer_->SignalTimeout.connect(this,
                                                   &AutoReconnect::ResetState);
       break;
   }
 }
+
 }  // namespace notifier

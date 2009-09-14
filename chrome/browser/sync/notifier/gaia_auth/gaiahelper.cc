@@ -16,10 +16,10 @@
 
 namespace {
 
-std::string GetValueForKey(const std::string & key, const std::string & nvp) {
+std::string GetValueForKey(const std::string& key, const std::string& nvp) {
   size_t start_of_line = 0;
   size_t end_of_line = 0;
-  for (;;) {  // for each line
+  for (;;) {  // For each line.
     start_of_line = nvp.find_first_not_of("\r\n", end_of_line);
     if (start_of_line == std::string::npos)
       break;
@@ -41,7 +41,7 @@ std::string GetValueForKey(const std::string & key, const std::string & nvp) {
   return "";
 }
 
-}  // anonymous namespace
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -58,14 +58,14 @@ bool GaiaServer::SetServer(const char* url) {
   hostname_ = parsed.server();
   port_ = parsed.port();
   use_ssl_ = parsed.secure();
-  return true;  // parsed.valid();
+  return true;
 }
 
 bool GaiaServer::SetDebugServer(const char* server) {
   const char* colon = strchr(server, ':');
   if (colon) {
     hostname_ = std::string(server, colon - server);
-    port_ = atoi(colon+1);
+    port_ = atoi(colon + 1);
     use_ssl_ = false;
     return true;
   }
@@ -90,10 +90,10 @@ bool GaiaRequestSid(talk_base::HttpClient* client,
   buzz::Jid jid(username);
   std::string usable_name = username;
   if (jid.domain() == buzz::STR_DEFAULT_DOMAIN) {
-    // The default domain (default.talk.google.com) is not usable
-    // for Gaia auth.  But both gmail.com and googlemain.com will
-    // work, because the gaia server doesn't check to make sure the
-    // appropriate one is being used.  So we just slam on gmail.com
+    // The default domain (default.talk.google.com) is not usable for Gaia
+    // auth. But both gmail.com and googlemain.com will work, because the gaia
+    // server doesn't check to make sure the appropriate one is being used. So
+    // we just slam on gmail.com
     usable_name = jid.node() + "@" + buzz::STR_GMAIL_COM;
   }
 
@@ -138,8 +138,8 @@ GaiaResponse GaiaParseSidResponse(const talk_base::HttpClient& client,
                                   std::string* auth) {
   uint32 status_code = client.response().scode;
   const talk_base::MemoryStream* stream =
-    static_cast<const talk_base::MemoryStream*>(
-        client.response().document.get());
+      static_cast<const talk_base::MemoryStream*>(
+          client.response().document.get());
   size_t length;
   stream->GetPosition(&length);
   std::string response;
@@ -156,8 +156,8 @@ GaiaResponse GaiaParseSidResponse(const talk_base::HttpClient& client,
     std::string image_url = GetValueForKey("CaptchaUrl", response);
     if (!image_url.empty()) {
       // We should activate this "full url code" once we have a better ways
-      // to crack the URL for later download.  Right now we are too
-      // dependent on what Gaia returns.
+      // to crack the URL for later download.  Right now we are too dependent
+      // on what Gaia returns.
 #if 0
       if (image_url.find("http://") != 0 &&
           image_url.find("https://") != 0) {
@@ -202,15 +202,15 @@ bool GaiaRequestAuthToken(talk_base::HttpClient* client,
   post_data += "SID=" + UrlEncodeString(sid);
   post_data += "&LSID=" + UrlEncodeString(lsid);
   post_data += "&service=" + service;
-  post_data += "&Session=true";  // creates two week cookie
+  post_data += "&Session=true";  // Creates two week cookie.
 
   client->reset();
   client->set_server(talk_base::SocketAddress(gaia_server.hostname(),
-                                             gaia_server.port(), false));
+                                              gaia_server.port(), false));
   client->request().verb = talk_base::HV_POST;
   client->request().path = "/accounts/IssueAuthToken";
   client->request().setContent("application/x-www-form-urlencoded",
-    new talk_base::MemoryStream(post_data.data(), post_data.size()));
+      new talk_base::MemoryStream(post_data.data(), post_data.size()));
   client->response().document.reset(new talk_base::MemoryStream);
   client->start();
   return true;
@@ -223,8 +223,8 @@ GaiaResponse GaiaParseAuthTokenResponse(const talk_base::HttpClient& client,
   }
 
   const talk_base::MemoryStream* stream =
-    static_cast<const talk_base::MemoryStream*>(
-        client.response().document.get());
+      static_cast<const talk_base::MemoryStream*>(
+          client.response().document.get());
   size_t length;
   stream->GetPosition(&length);
   while ((length > 0) && isspace(stream->GetBuffer()[length-1]))

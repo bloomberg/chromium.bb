@@ -42,4 +42,5 @@ const buzz::CaptchaChallenge& LoginFailure::captcha() const {
          xmpp_error_ == buzz::XmppEngine::ERROR_MISSING_USERNAME);
   return *captcha_.get();
 }
+
 }  // namespace notifier

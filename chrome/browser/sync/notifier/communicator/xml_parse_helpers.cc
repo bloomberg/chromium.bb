@@ -29,12 +29,12 @@ buzz::XmlElement* ReadXmlFromStream(talk_base::StreamInterface* stream) {
   while(true) {
     size_t read = 0;
 
-    // Read a chunk
+    // Read a chunk.
     result = stream->Read(buf, kBufferSize, &read, NULL);
     if (result != talk_base::SR_SUCCESS)
       break;
 
-    // Pass it to the parser
+    // Pass it to the parser.
     parser.Parse(buf, read, false);
   }
 
@@ -91,11 +91,11 @@ void WriteXmlToStream(talk_base::StreamInterface* stream,
                       const buzz::XmlElement* xml) {
   // Save it all to a string and then write that string out to disk.
   //
-  // This is probably really inefficient in multiple ways.  We probably
-  // have an entire string copy of the XML in memory twice -- once in the
-  // stream and once in the string.  There is probably a way to get the data
-  // directly out of the stream but I don't have the time to decode the stream
-  // classes right now.
+  // This is probably really inefficient in multiple ways.  We probably have an
+  // entire string copy of the XML in memory twice -- once in the stream and
+  // once in the string.  There is probably a way to get the data directly out
+  // of the stream but I don't have the time to decode the stream classes right
+  // now.
   std::ostringstream s;
   buzz::XmlPrinter::PrintXml(&s, xml);
   std::string output_string = s.str();
@@ -135,9 +135,7 @@ bool SetStringAttr(buzz::XmlElement* element, const buzz::QName& attribute,
   return true;
 }
 
-
-// XmlStream
-
+// XmlStream.
 XmlStream::XmlStream()
     : state_(talk_base::SS_OPEN),
       builder_(new buzz::XmlBuilder()),

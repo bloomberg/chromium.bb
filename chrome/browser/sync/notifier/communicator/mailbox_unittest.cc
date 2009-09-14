@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/notifier/communicator/mailbox.h"
 
 namespace notifier {
+
 TEST_NOTIFIER_F(MailBoxTest);
 
 TEST_F(MailBoxTest, SingleSenderHtml) {
@@ -114,4 +115,5 @@ TEST_F(MailBoxTest, SenderWithThreeSendersShowing) {
       "ted&nbsp;..&nbsp;<b>Bob</b>&nbsp;..&nbsp;<b>Person1</b>&nbsp;(6)",
       sender_html.c_str());
 }
+
 }  // namespace notifier

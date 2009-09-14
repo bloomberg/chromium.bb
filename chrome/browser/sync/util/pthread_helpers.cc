@@ -60,7 +60,7 @@ void* ThreadMainProc(void* parameter) {
 
 }  // namespace
 
-#endif
+#endif  // OS_WINDOWS
 
 thread_handle CreatePThread(void *(*start) (void *), void* parameter) {
 #ifdef OS_WINDOWS
@@ -75,7 +75,7 @@ thread_handle CreatePThread(void *(*start) (void *), void* parameter) {
   if (0 != pthread_create(&pthread, NULL, ThreadMainProc, param.get()))
     return NULL;
 
-  // ownership has passed to the new thread
+  // Ownership has passed to the new thread.
   param.release();
 
   const HANDLE thread_handle = pthread_getw32threadhandle_np(pthread);
@@ -98,7 +98,7 @@ thread_handle CreatePThread(void *(*start) (void *), void* parameter) {
   } else {
     return 0;
   }
-#endif
+#endif  // OS_WINDOWS
 }
 
 struct timespec GetPThreadAbsoluteTime(uint32 ms) {
@@ -130,7 +130,7 @@ struct timespec GetPThreadAbsoluteTime(uint32 ms) {
   deadline.tv_sec += ms / 1000;
   deadline.tv_nsec = (ms % 1000) * 1000000;
   return deadline;
-#endif
+#endif  // OS_WINDOWS
 }
 
 void NameCurrentThreadForDebugging(char* name) {

@@ -34,9 +34,9 @@ browser_sync::FastDump& operator <<
 namespace syncable {
 
 // For historical reasons, 3 concepts got everloaded into the Id:
-// 1.  A unique, opaque identifier for the object.
-// 2.  Flag specifing whether server know about this object.
-// 3.  Flag for root.
+// 1. A unique, opaque identifier for the object.
+// 2. Flag specifing whether server know about this object.
+// 3. Flag for root.
 //
 // We originally wrapped an integer for this information, but now we use a
 // string. It will have one of three forms:
@@ -53,8 +53,8 @@ class Id {
   friend class MockConnectionManager;
   friend class SyncableIdTest;
  public:
-  // This constructor will be handy even when we move away from
-  // int64s, just for unit tests.
+  // This constructor will be handy even when we move away from int64s, just
+  // for unit tests.
   inline Id() : s_("r") { }
   inline Id(const Id& that) {
     Copy(that);

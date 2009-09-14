@@ -68,8 +68,8 @@ PathString ExpandTilde(const PathString& path) {
   return path;
 }
 
-// Returns a string with length or fewer elements, careful to
-// not truncate a string mid-surrogate pair.
+// Returns a string with length or fewer elements, careful to not truncate a
+// string mid-surrogate pair.
 PathString TruncatePathString(const PathString& original, int length) {
   if (original.size() <= static_cast<size_t>(length))
     return original;
@@ -122,13 +122,13 @@ PathString MakePathComponentOSLegal(const PathString& component) {
     mutable_component.resize(mutable_component.size() - 1, L' ');
 
   // Remove a bunch of forbidden names. windows only seems to mind if
-  // a forbidden name matches our name exactly (e.g. "prn") or if the
-  // name is the forbidden name, followed by a dot, followed by anything
+  // a forbidden name matches our name exactly (e.g. "prn") or if the name is
+  // the forbidden name, followed by a dot, followed by anything
   // (e.g., "prn.anything.foo.bar")
 
-  // From this point out, we break mutable_component into two strings, and
-  // use them this way: we save anything after and including the first dot
-  // (usually the extension) and only mess with stuff before the first dot.
+  // From this point out, we break mutable_component into two strings, and use
+  // them this way: we save anything after and including the first dot (usually
+  // the extension) and only mess with stuff before the first dot.
   PathString::size_type first_dot = mutable_component.find_first_of(L'.');
   if (PathString::npos == first_dot)
     first_dot = mutable_component.size();

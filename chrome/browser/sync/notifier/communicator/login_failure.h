@@ -17,11 +17,11 @@ namespace notifier {
 class LoginFailure {
  public:
   enum LoginError {
-    // Check the xmpp_error for more information
+    // Check the xmpp_error for more information.
     XMPP_ERROR,
 
-    // If the certificate has expired, it usually means that the
-    // computer's clock isn't set correctly.
+    // If the certificate has expired, it usually means that the computer's
+    // clock isn't set correctly.
     CERTIFICATE_EXPIRED_ERROR,
 
     // Apparently, there is a proxy that needs authentication information.
@@ -37,12 +37,12 @@ class LoginFailure {
                int subcode,
                const buzz::CaptchaChallenge& captcha);
 
-  // Used as the first level of error information
+  // Used as the first level of error information.
   LoginError error() const {
     return error_;
   }
 
-  // Returns the XmppEngine only. Valid if and only if error() == XMPP_ERROR
+  // Returns the XmppEngine only. Valid if and only if error() == XMPP_ERROR.
   //
   // Handler should mimic logic from PhoneWindow::ShowConnectionError
   // (except that the DiagnoseConnectionError has already been done).
@@ -65,5 +65,7 @@ class LoginFailure {
 
   DISALLOW_COPY_AND_ASSIGN(LoginFailure);
 };
+
 }  // namespace notifier
+
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_LOGIN_FAILURE_H_

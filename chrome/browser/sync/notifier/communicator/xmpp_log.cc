@@ -17,7 +17,7 @@
 namespace notifier {
 
 static bool IsAuthTag(const char* str, size_t len) {
-  // Beware that str is not NULL terminated
+  // Beware that str is not NULL terminated.
   if (str[0] == '<' &&
       str[1] == 'a' &&
       str[2] == 'u' &&
@@ -32,7 +32,7 @@ static bool IsAuthTag(const char* str, size_t len) {
 }
 
 static bool IsChatText(const char* str, size_t len) {
-  // Beware that str is not NULL terminated
+  // Beware that str is not NULL terminated.
   if (str[0] == '<' &&
       str[1] == 'm' &&
       str[2] == 'e' &&
@@ -106,6 +106,7 @@ void XmppLog::XmppPrint(bool output) {
     buffer->erase(buffer->begin(), buffer->begin() + start);
   }
 }
+
 }  // namespace notifier
 
 #endif  // if LOGGING

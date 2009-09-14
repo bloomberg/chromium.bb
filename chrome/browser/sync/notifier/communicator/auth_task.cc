@@ -61,7 +61,6 @@ int AuthTask::ProcessResponse() {
   return STATE_DONE;
 }
 
-
 void AuthTask::OnAuthDone() {
   Wake();
 }

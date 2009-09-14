@@ -50,10 +50,9 @@ class TestDirectorySetterUpper {
   // Clears any existing database backing files that might exist on disk.
   void SetUp();
 
-  // Undo everything done by SetUp(): close the directory and delete
-  // the backing files.  Before closing the directory, this will run the
-  // directory invariant checks and perform the SaveChanges action on
-  // the directory.
+  // Undo everything done by SetUp(): close the directory and delete the
+  // backing files. Before closing the directory, this will run the directory
+  // invariant checks and perform the SaveChanges action on the directory.
   void TearDown();
 
   syncable::DirectoryManager* manager() const { return manager_.get(); }

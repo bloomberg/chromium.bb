@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_XMPP_SOCKET_ADAPTER_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_XMPP_SOCKET_ADAPTER_H_
+
 #include <string>
 
 #include "talk/base/asyncsocket.h"
@@ -12,7 +13,7 @@
 #include "talk/xmpp/xmppengine.h"
 
 #ifndef _WIN32
-// Additional errors used by us from Win32 headers
+// Additional errors used by us from Win32 headers.
 #define SEC_E_CERT_EXPIRED static_cast<int>(0x80090328L)
 #define WSA_NOT_ENOUGH_MEMORY ENOMEM
 #endif
@@ -48,7 +49,7 @@ class XmppSocketAdapter : public buzz::AsyncSocket,
   sigslot::signal0<> SignalAuthenticationError;
 
  private:
-  // return false if the socket is closed
+  // Return false if the socket is closed.
   bool HandleReadable();
   bool HandleWritable();
 
@@ -80,6 +81,7 @@ class XmppSocketAdapter : public buzz::AsyncSocket,
   void SetWSAError(int error);
   DISALLOW_COPY_AND_ASSIGN(XmppSocketAdapter);
 };
+
 }  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_XMPP_SOCKET_ADAPTER_H_

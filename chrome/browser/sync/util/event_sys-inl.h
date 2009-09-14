@@ -250,7 +250,7 @@ public EventListener<typename EventTraits::EventType> {
     deleted_ = &deleted;
     static_cast<Derived*>(this)->Callback(event);
     if (deleted)  // The callback (legally) deleted this.
-      return;     // The only safe thing to do.
+      return;  // The only safe thing to do.
     deleted_ = NULL;
     if (EventTraits::IsChannelShutdownEvent(event)) {
       channel_->RemoveListener(this);

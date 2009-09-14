@@ -15,7 +15,7 @@
 namespace notifier {
 
 // Get the current time represented in 100NS granularity since epoch
-// (Jan 1, 1970)
+// (Jan 1, 1970).
 time64 GetCurrent100NSTimeSinceEpoch() {
   return GetCurrent100NSTime() - kStart100NsTimeToEpoch;
 }
@@ -28,7 +28,7 @@ char* GetLocalTimeAsString() {
   if (time_string) {
     int time_len = strlen(time_string);
     if (time_len > 0) {
-      time_string[time_len - 1] = 0;  // trim off terminating \n
+      time_string[time_len - 1] = 0;  // trim off terminating \n.
     }
   }
   return time_string;
@@ -102,7 +102,7 @@ const TimeZoneInfo kRFC822_TimeZone[] = {
   { "MDT", -6 },
   { "PST", -8 },
   { "PDT", -7 },
-  { "A",   -1 },  // Military time zones
+  { "A",   -1 },  // Military time zones.
   { "B",   -2 },
   { "C",   -3 },
   { "D",   -4 },
@@ -145,7 +145,7 @@ bool ParseRFC822DateTime(const char* str, struct tm* time,
 
   for (int i = 0; i < kNumOfDays; ++i) {
     if (str_token == kRFC822_Day[i]) {
-      // Skip spaces after ','
+      // Skip spaces after ','.
       while (*str_curr == ' ' && *str_curr != '\0') {
         str_curr++;
       }
@@ -171,11 +171,11 @@ bool ParseRFC822DateTime(const char* str, struct tm* time,
   int month = -1;
   for (int i = 0; i < kNumOfMonth; ++i) {
     if (str_token == kRFC822_Month[i]) {
-      month = i;  // month is 0 based number
+      month = i;  // Month is 0 based number.
       break;
     }
   }
-  if (month == -1) {  // month not found
+  if (month == -1) {  // Month not found.
     return false;
   }
 
@@ -188,7 +188,7 @@ bool ParseRFC822DateTime(const char* str, struct tm* time,
   if (!ParseStringToInt(str_token.c_str(), &year, true)) {
     return false;
   }
-  if (year < 100) {   // two digit year format, convert to 1950 - 2050 range
+  if (year < 100) {   // Two digit year format, convert to 1950 - 2050 range.
     if (year < 50) {
       year += 2000;
     } else {
@@ -224,7 +224,7 @@ bool ParseRFC822DateTime(const char* str, struct tm* time,
   }
 
   int second = 0;
-  // distingushed between XX:XX and XX:XX:XX time formats
+  // Distingushed between XX:XX and XX:XX:XX time formats.
   if (str_token.size() == 2 && isdigit(str_token[0]) && isdigit(str_token[1])) {
     second = 0;
     if (!ParseStringToInt(str_token.c_str(), &second, true) ||
@@ -240,15 +240,15 @@ bool ParseRFC822DateTime(const char* str, struct tm* time,
 
   int bias = 0;
   if (str_token[0] == '+' || str_token[0] == '-' || isdigit(str_token[0])) {
-    // numeric format
+    // Numeric format.
     int zone = 0;
     if (!ParseStringToInt(str_token.c_str(), &zone, true)) {
       return false;
     }
 
-    // zone is in HHMM format, need to convert to the number of minutes
+    // Zone is in HHMM format, need to convert to the number of minutes.
     bias = (zone / 100) * 60 + (zone % 100);
-  } else {  // text format
+  } else {  // Text format.
     for (size_t i = 0; i < sizeof(kRFC822_TimeZone) / sizeof(TimeZoneInfo);
          ++i) {
       if (str_token == kRFC822_TimeZone[i].zone_name) {
@@ -282,7 +282,7 @@ bool ParseRFC822DateTime(const char* str, struct tm* time,
   return true;
 }
 
-// Parse a string to time span
+// Parse a string to time span.
 //
 // A TimeSpan value can be represented as
 //    [d.]hh:mm:ss

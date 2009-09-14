@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 //
 // Mock ServerConnectionManager class for use in client regression tests.
-//
 
 #include "chrome/test/sync/engine/mock_server_connection.h"
 
@@ -264,8 +263,8 @@ void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
     ASSERT_LT(entry.name().length(), 256ul) << " name probably too long. True "
         "server name checking not implemented";
     if (entry.version() == 0) {
-      // relys on our new item string id format. (string representation of a
-      // negative number)
+      // Relies on our new item string id format. (string representation of a
+      // negative number).
       committed_ids_.push_back(syncable::Id::CreateFromClientString(id));
     } else {
       committed_ids_.push_back(syncable::Id::CreateFromServerId(id));
@@ -280,17 +279,17 @@ void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
     er->set_response_type(CommitResponse::SUCCESS);
     er->set_version(entry.version() + 1);
     if (!commit_time_rename_prepended_string_.empty()) {
-      // Commit time rename sent down from the server
+      // Commit time rename sent down from the server.
       er->set_name(commit_time_rename_prepended_string_ + entry.name());
     }
     string parent_id = entry.parent_id_string();
-    // Remap id's we've already assigned
+    // Remap id's we've already assigned.
     if (changed_ids.end() != changed_ids.find(parent_id)) {
       parent_id = changed_ids[parent_id];
       er->set_parent_id_string(parent_id);
     }
     if (entry.has_version() && 0 != entry.version()) {
-      er->set_id_string(id);  // allows verification
+      er->set_id_string(id);  // Allows verification.
     } else {
       string new_id = StringPrintf("mock_server:%d", next_new_id_++);
       changed_ids[id] = new_id;

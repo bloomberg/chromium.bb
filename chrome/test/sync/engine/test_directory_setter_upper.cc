@@ -34,8 +34,8 @@ void TestDirectorySetterUpper::TearDown() {
     return;
 
   {
-    // A small scope so we don't have the dir open when we close it and
-    // reset the DirectoryManager below.
+    // A small scope so we don't have the dir open when we close it and reset
+    // the DirectoryManager below.
     ScopedDirLookup dir(manager(), name());
     CHECK(dir.good()) << "Bad directory during tear down check";
     RunInvariantCheck(dir);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Gaia auth code for XMPP notifier support. This should be merged with
-// the other gaia auth file when we have time.
+// Gaia auth code for XMPP notifier support. This should be merged with the
+// other gaia auth file when we have time.
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_GAIA_AUTH_GAIAAUTH_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_GAIA_AUTH_GAIAAUTH_H_
@@ -43,7 +43,7 @@ class GaiaAuth : public PreXmppAuth, public sigslot::has_slots<> {
     captcha_answer_ = captcha_answer;
   }
 
-  // From inside XMPP login, this is called
+  // From inside XMPP login, this is called.
   virtual void StartPreXmppAuth(const buzz::Jid& jid,
                                 const talk_base::SocketAddress& server,
                                 const talk_base::CryptString& pass,
@@ -53,12 +53,12 @@ class GaiaAuth : public PreXmppAuth, public sigslot::has_slots<> {
                       const talk_base::CryptString& pass,
                       const std::string& service);
 
-  // This is used when calling GetAuth()
+  // This is used when calling GetAuth().
   void StartAuth(const buzz::Jid& jid,
                  const talk_base::CryptString& pass,
                  const std::string& service);
 
-  // This is used when bootstrapping from a download page
+  // This is used when bootstrapping from a download page.
   void StartAuthFromSid(const buzz::Jid& jid,
                         const std::string& sid,
                         const std::string& service);

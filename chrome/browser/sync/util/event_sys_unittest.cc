@@ -159,15 +159,15 @@ class ThreadTester : public EventListener<TestEvent> {
 
   struct ThreadInfo {
     pthread_t thread;
-    bool *completed;
+    bool* completed;
   };
 
   struct ThreadArgs {
     ThreadTester* self;
-    pthread_cond_t *thread_running_cond;
-    pthread_mutex_t *thread_running_mutex;
-    bool *thread_running;
-    bool *completed;
+    pthread_cond_t* thread_running_cond;
+    pthread_mutex_t* thread_running_mutex;
+    bool* thread_running;
+    bool* completed;
   };
 
   pthread_t Go() {

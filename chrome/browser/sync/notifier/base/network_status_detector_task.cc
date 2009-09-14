@@ -7,9 +7,9 @@
 namespace notifier {
 
 void NetworkStatusDetectorTask::DetectNetworkState() {
-  // If the detection has been finished, then just broadcast the current
-  // state. Otherwise, allow the signal to be sent when the initial
-  // detection is finished.
+  // If the detection has been finished, then just broadcast the current state.
+  // Otherwise, allow the signal to be sent when the initial detection is
+  // finished.
   if (initial_detection_done_) {
     SignalNetworkStateDetected(is_alive_, is_alive_);
   }

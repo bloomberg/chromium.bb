@@ -51,9 +51,9 @@ using std::string;
 
 namespace syncable {
 
-// A lot of these tests were written expecting to be able to read and
-// write object data on entries.  However, the design has changed.
-void PutDataAsExtendedAttribute(WriteTransaction *wtrans,
+// A lot of these tests were written expecting to be able to read and write
+// object data on entries.  However, the design has changed.
+void PutDataAsExtendedAttribute(WriteTransaction* wtrans,
                                 MutableEntry* e,
                                 const char* bytes,
                                 size_t bytes_length) {
@@ -63,7 +63,7 @@ void PutDataAsExtendedAttribute(WriteTransaction *wtrans,
   attr.mutable_value()->swap(bytes_blob);
 }
 
-void ExpectDataFromExtendedAttributeEquals(BaseTransaction *trans,
+void ExpectDataFromExtendedAttributeEquals(BaseTransaction* trans,
                                            Entry* e,
                                            const char* bytes,
                                            size_t bytes_length) {
@@ -193,7 +193,7 @@ class SyncableDirectoryTest : public testing::Test {
  protected:
   static const PathString kFilePath;
   static const PathString kName;
-  static const PathChar *kSqlite3File;
+  static const PathChar* kSqlite3File;
   static const Id kId;
 
   // SetUp() is called before each test case is run.
@@ -232,9 +232,9 @@ class SyncableDirectoryTest : public testing::Test {
     me.Put(IS_UNSYNCED, true);
   }
 
-  void ValidateEntry(BaseTransaction *trans, int64 id, bool check_name,
+  void ValidateEntry(BaseTransaction* trans, int64 id, bool check_name,
       PathString name, int64 base_version, int64 server_version, bool is_del);
-  void CreateAndCheck(WriteTransaction *trans, int64 parent_id, int64 id,
+  void CreateAndCheck(WriteTransaction* trans, int64 parent_id, int64 id,
       PathString name, PathString server_name, int64 version,
       bool set_server_fields, bool is_dir, bool add_to_lru, int64 *meta_handle);
 };
@@ -762,7 +762,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
 }
 
 
-void SyncableDirectoryTest::ValidateEntry(BaseTransaction *trans, int64 id,
+void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans, int64 id,
     bool check_name, PathString name, int64 base_version, int64 server_version,
     bool is_del) {
   Entry e(trans, GET_BY_ID, TestIdFactory::FromNumber(id));
@@ -1058,17 +1058,17 @@ TEST(SyncableDirectory, StressTransactions) {
   PathRemove(dirman.GetSyncDataDatabasePath());
 }
 
-static PathString UTF8ToPathStringQuick(const char *str) {
+static PathString UTF8ToPathStringQuick(const char* str) {
   PathString ret;
   CHECK(browser_sync::UTF8ToPathString(str, strlen(str), &ret));
   return ret;
 }
 
-// returns number of chars used. max possible is 4
+// Returns number of chars used. Max possible is 4.
 // This algorithm was coded from the table at
 // http://en.wikipedia.org/w/index.php?title=UTF-8&oldid=153391259
-// there are no endian issues.
-static int UTF32ToUTF8(uint32 incode, unsigned char *out) {
+// There are no endian issues.
+static int UTF32ToUTF8(uint32 incode, unsigned char* out) {
   if (incode <= 0x7f) {
     out[0] = incode;
     return 1;
@@ -1492,7 +1492,7 @@ TEST(Syncable, PathNameMatch) {
   EXPECT_TRUE(PathNameMatch(PSTR("  bob"), PSTR("  bob")));
   EXPECT_FALSE(PathNameMatch(PSTR("bob"), PSTR("  bob")));
   EXPECT_FALSE(PathNameMatch(PSTR("  bob"), PSTR("bob")));
-  // Combo test
+  // Combo test.
   EXPECT_TRUE(PathNameMatch(PSTR("  b;ob"), PSTR("  b;o*")));
   EXPECT_TRUE(PathNameMatch(PSTR("  b;ob"), PSTR("  b;ob")));
   EXPECT_FALSE(PathNameMatch(PSTR("b;ob"), PSTR("  b;ob")));

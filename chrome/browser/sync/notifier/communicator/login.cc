@@ -27,7 +27,7 @@
 
 namespace notifier {
 
-// redirect valid for 5 minutes
+// Redirect valid for 5 minutes.
 static const time64 kRedirectTimeoutNs = 5 * kMinsTo100ns;
 
 // Disconnect if network stays down for more than 10 seconds.
@@ -86,9 +86,8 @@ Login::Login(talk_base::Task* parent,
                                &AutoReconnect::OnPowerSuspend);
 }
 
-// defined so that the destructors are executed here (and
-// the corresponding classes don't need to be included in
-// the header file)
+// Defined so that the destructors are executed here (and the corresponding
+// classes don't need to be included in the header file).
 Login::~Login() {
   if (single_attempt_) {
     single_attempt_->Abort();
@@ -99,7 +98,7 @@ Login::~Login() {
 void Login::StartConnection() {
   // If there is a server redirect, use it.
   if (GetCurrent100NSTime() < redirect_time_ns_ + kRedirectTimeoutNs) {
-    // Override server/port with redirect values
+    // Override server/port with redirect values.
     talk_base::SocketAddress server_override;
     server_override.SetIP(redirect_server_, false);
     ASSERT(redirect_port_ != 0);
@@ -166,11 +165,10 @@ void Login::OnClientStateChange(buzz::XmppEngine::State state) {
   switch (state) {
     case buzz::XmppEngine::STATE_NONE:
     case buzz::XmppEngine::STATE_CLOSED:
-      // Ignore the closed state (because
-      // we may be trying the next dns entry).
+      // Ignore the closed state (because we may be trying the next dns entry).
       //
-      // But we go to this state for other
-      // signals when there is no retry happening.
+      // But we go to this state for other signals when there is no retry
+      // happening.
       new_state = state_;
       break;
 
@@ -218,7 +216,7 @@ void Login::HandleClientStateChange(ConnectionState new_state) {
 
       reset_unexpected_timer_ = new Timer(parent_,
                                           kResetReconnectInfoDelaySec,
-                                          false);  // repeat
+                                          false);  // Repeat.
       reset_unexpected_timer_->SignalTimeout.connect(
           this,
           &Login::ResetUnexpectedDisconnect);
@@ -248,8 +246,8 @@ int Login::seconds_until_reconnect() const {
 
 void Login::UseNextConnection() {
   if (!single_attempt_) {
-    // Just in case, there is an obscure case that causes
-    // this to get called when there is no single_attempt_.
+    // Just in case, there is an obscure case that causes this to get called
+    // when there is no single_attempt_.
     return;
   }
   single_attempt_->UseNextConnection();
@@ -257,8 +255,8 @@ void Login::UseNextConnection() {
 
 void Login::UseCurrentConnection() {
   if (!single_attempt_) {
-    // Just in case, there is an obscure case that causes
-    // this to get called when there is no single_attempt_.
+    // Just in case, there is an obscure case that causes this to get called
+    // when there is no single_attempt_.
     return;
   }
   single_attempt_->UseCurrentConnection();
@@ -271,7 +269,7 @@ void Login::OnRedirect(const std::string& redirect_server, int redirect_port) {
   redirect_server_ = redirect_server;
   redirect_port_ = redirect_port;
 
-  // Drop the current connection, and start the login process again
+  // Drop the current connection, and start the login process again.
   StartConnection();
 }
 
@@ -281,13 +279,12 @@ void Login::OnUnexpectedDisconnect() {
     reset_unexpected_timer_ = NULL;
   }
 
-  // Start the login process again
+  // Start the login process again.
   if (unexpected_disconnect_occurred_) {
-    // If we already have received an unexpected disconnect recently,
-    // then our account may have be jailed due to abuse, so we shouldn't
-    // make the situation worse by trying really hard to reconnect.
-    // Instead, we'll do the autoreconnect route, which has exponential
-    // back-off.
+    // If we already have received an unexpected disconnect recently, then our
+    // account may have be jailed due to abuse, so we shouldn't make the
+    // situation worse by trying really hard to reconnect. Instead, we'll do
+    // the autoreconnect route, which has exponential back-off.
     DoAutoReconnect();
     return;
   }
@@ -303,11 +300,10 @@ void Login::ResetUnexpectedDisconnect() {
 void Login::DoAutoReconnect() {
   bool allow_auto_reconnect =
       login_settings_->connection_options().auto_reconnect();
-  // Start the reconnect time before aborting the connection
-  // to ensure that AutoReconnect::is_retrying() is true, so
-  // that the Login doesn't transition to the CLOSED state
-  // (which would cause the reconnection timer to reset
-  //  and not double).
+  // Start the reconnect time before aborting the connection to ensure that
+  // AutoReconnect::is_retrying() is true, so that the Login doesn't
+  // transition to the CLOSED state (which would cause the reconnection timer
+  // to reset and not double).
   if (allow_auto_reconnect) {
     auto_reconnect_->StartReconnectTimer();
   }
@@ -325,9 +321,9 @@ void Login::DoAutoReconnect() {
 
 void Login::OnNetworkStateDetected(bool was_alive, bool is_alive) {
   if (was_alive && !is_alive) {
-    // Our network connection just went down.
-    // Setup a timer to disconnect. Don't disconnect immediately to avoid
-    // constant connection/disconnection due to flaky network interfaces.
+    // Our network connection just went down. Setup a timer to disconnect.
+    // Don't disconnect immediately to avoid constant
+    // connection/disconnection due to flaky network interfaces.
     ASSERT(disconnect_timer_ == NULL);
     disconnect_timer_ = new Timer(parent_, kDisconnectionDelaySecs, false);
     disconnect_timer_->SignalTimeout.connect(this,

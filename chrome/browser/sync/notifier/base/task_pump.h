@@ -18,7 +18,7 @@ class TaskPump : public talk_base::MessageHandler,
   // MessageHandler interface.
   virtual void OnMessage(talk_base::Message* msg);
 
-  // TaskRunner interface
+  // TaskRunner interface.
   virtual void WakeTasks();
   virtual int64 CurrentTime();
 

@@ -110,7 +110,7 @@ int ServerConnectionManager::Post::ReadResponse(string* out_buffer,
   return bytes_read;
 }
 
-// A helper class that automatically notifies when the status changes:
+// A helper class that automatically notifies when the status changes.
 struct WatchServerStatus {
   WatchServerStatus(ServerConnectionManager* conn_mgr, HttpResponse* response)
     : conn_mgr_(conn_mgr), response_(response),

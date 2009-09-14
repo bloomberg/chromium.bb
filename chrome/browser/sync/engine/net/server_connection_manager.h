@@ -327,7 +327,7 @@ class ServerConnectionManager {
 
  private:
   mutable PThreadMutex terminate_all_io_mutex_;
-  bool terminate_all_io_;  // when set to true, terminate all connections asap
+  bool terminate_all_io_;  // When set to true, terminate all connections asap.
   DISALLOW_COPY_AND_ASSIGN(ServerConnectionManager);
 };
 

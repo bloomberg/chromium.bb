@@ -1,7 +1,7 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+//
 // Methods for sending the update stanza to notify peers via xmpp.
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_SEND_UPDATE_TASK_H_
@@ -17,7 +17,7 @@ class SendUpdateTask : public buzz::XmppTask {
   explicit SendUpdateTask(Task* parent);
   virtual ~SendUpdateTask();
 
-  // Overridden from buzz::XmppTask
+  // Overridden from buzz::XmppTask.
   virtual int ProcessStart();
   virtual int ProcessResponse();
   virtual bool HandleStanza(const buzz::XmlElement* stanza);

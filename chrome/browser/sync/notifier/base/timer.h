@@ -17,8 +17,7 @@ class Timer : private talk_base::Task {
   // Call Abort() to stop the timer.
   using talk_base::Task::Abort;
 
-  // Call to find out when the timer is set to go off
-  // Returns int64
+  // Call to find out when the timer is set to go off. Returns int64.
   using talk_base::Task::get_timeout_time;
 
   // Call to set the timeout interval.

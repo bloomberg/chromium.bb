@@ -74,9 +74,8 @@ buzz::XmlElement* SendUpdateTask::NewUpdateMessage() {
   //    </Id>
   //  </set>
   // </iq>
-  buzz::XmlElement* stanza = MakeIq(buzz::STR_GET, GetClient()->jid().BareJid(),
-                              task_id());
-
+  buzz::XmlElement* stanza =
+      MakeIq(buzz::STR_GET, GetClient()->jid().BareJid(), task_id());
   buzz::XmlElement* notifier_set = new buzz::XmlElement(kQnNotifierSet, true);
   stanza->AddElement(notifier_set);
 

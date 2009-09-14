@@ -38,6 +38,7 @@ class XmppLog : public sigslot::has_slots<> {
   bool censor_password_;
   DISALLOW_COPY_AND_ASSIGN(XmppLog);
 };
+
 }  // namespace notifier
 
 #endif  // if LOGGING

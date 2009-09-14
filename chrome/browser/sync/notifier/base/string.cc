@@ -72,8 +72,8 @@ int CharToHexValue(char hex) {
   }
 }
 
-// Template function to convert a string to an int/int64
-// If strict is true, check for the validity and overflow
+// Template function to convert a string to an int/int64. If strict is true,
+// check for the validity and overflow
 template<typename T>
 bool ParseStringToIntTemplate(const char* str,
                               T* value,
@@ -82,47 +82,47 @@ bool ParseStringToIntTemplate(const char* str,
   ASSERT(str);
   ASSERT(value);
 
-  // Skip spaces
+  // Skip spaces.
   while (*str == ' ') {
     ++str;
   }
 
-  // Process sign
-  int c = static_cast<int>(*str++);     // current char
-  int possible_sign = c;                // save sign indication
+  // Process sign.
+  int c = static_cast<int>(*str++);  // current char
+  int possible_sign = c;  // save sign indication
   if (c == '-' || c == '+') {
     c = static_cast<int>(*str++);
   }
 
-  // Process numbers
+  // Process numbers.
   T total = 0;
   while (c && (c = CharToDigit(static_cast<char>(c))) != -1) {
-    // Check for overflow
+    // Check for overflow.
     if (strict && (total < min_value / 10 ||
                    (total == min_value / 10 &&
                     c > ((-(min_value + 10)) % 10)))) {
       return false;
     }
 
-    // Accumulate digit
+    // Accumulate digit.
     // Note that we accumulate in the negative direction so that we will not
     // blow away with the largest negative number
     total = 10 * total - c;
 
-    // Get next char
+    // Get next char.
     c = static_cast<int>(*str++);
   }
 
-  // Fail if encountering non-numeric character
+  // Fail if encountering non-numeric character.
   if (strict && c == -1) {
     return false;
   }
 
-  // Negate the number if needed
+  // Negate the number if needed.
   if (possible_sign == '-') {
     *value = total;
   } else {
-    // Check for overflow
+    // Check for overflow.
     if (strict && total == min_value) {
       return false;
     }
@@ -133,22 +133,22 @@ bool ParseStringToIntTemplate(const char* str,
   return true;
 }
 
-// Convert a string to an int
-// If strict is true, check for the validity and overflow
+// Convert a string to an int. If strict is true, check for the validity and
+// overflow.
 bool ParseStringToInt(const char* str, int* value, bool strict) {
   return ParseStringToIntTemplate<int>(str, value, strict, kint32min);
 }
 
-// Convert a string to an int
-// This version does not check for the validity and overflow
+// Convert a string to an int. This version does not check for the validity and
+// overflow
 int StringToInt(const char* str) {
   int value = 0;
   ParseStringToInt(str, &value, false);
   return value;
 }
 
-// Convert a string to an unsigned int.
-// If strict is true, check for the validity and overflow
+// Convert a string to an unsigned int. If strict is true, check for the
+// validity and overflow
 bool ParseStringToUint(const char* str, uint32* value, bool strict) {
   ASSERT(str);
   ASSERT(value);
@@ -165,88 +165,88 @@ bool ParseStringToUint(const char* str, uint32* value, bool strict) {
   return true;
 }
 
-// Convert a string to an int
-// This version does not check for the validity and overflow
+// Convert a string to an int. This version does not check for the validity and
+// overflow.
 uint32 StringToUint(const char* str) {
   uint32 value = 0;
   ParseStringToUint(str, &value, false);
   return value;
 }
 
-// Convert a string to an int64
-// If strict is true, check for the validity and overflow
+// Convert a string to an int64. If strict is true, check for the validity and
+// overflow.
 bool ParseStringToInt64(const char* str, int64* value, bool strict) {
   return ParseStringToIntTemplate<int64>(str, value, strict, kint64min);
 }
 
-// Convert a string to an int64
-// This version does not check for the validity and overflow
+// Convert a string to an int64. This version does not check for the validity
+// and overflow.
 int64 StringToInt64(const char* str) {
   int64 value = 0;
   ParseStringToInt64(str, &value, false);
   return value;
 }
 
-// Convert a string to a double
-// If strict is true, check for the validity and overflow
+// Convert a string to a double. If strict is true, check for the validity and
+// overflow.
 bool ParseStringToDouble(const char* str, double* value, bool strict) {
   ASSERT(str);
   ASSERT(value);
 
-  // Skip spaces
+  // Skip spaces.
   while (*str == ' ') {
     ++str;
   }
 
-  // Process sign
-  int c = static_cast<int>(*str++);     // current char
-  int sign = c;                         // save sign indication
+  // Process sign.
+  int c = static_cast<int>(*str++);  // Current char.
+  int sign = c;  // save sign indication
   if (c == '-' || c == '+') {
     c = static_cast<int>(*str++);
   }
 
-  // Process numbers before "."
+  // Process numbers before ".".
   double total = 0.0;
   while (c && (c != '.') && (c = CharToDigit(static_cast<char>(c))) != -1) {
-    // Check for overflow
+    // Check for overflow.
     if (strict && total >= DBL_MAX / 10) {
       return false;
     }
 
-    // Accumulate digit
+    // Accumulate digit.
     total = 10.0 * total + c;
 
-    // Get next char
+    // Get next char.
     c = static_cast<int>(*str++);
   }
 
-  // Process "."
+  // Process ".".
   if (c == '.') {
     c = static_cast<int>(*str++);
   } else {
-    // Fail if encountering non-numeric character
+    // Fail if encountering non-numeric character.
     if (strict && c == -1) {
       return false;
     }
   }
 
-  // Process numbers after "."
+  // Process numbers after ".".
   double power = 1.0;
   while ((c = CharToDigit(static_cast<char>(c))) != -1) {
-    // Check for overflow
+    // Check for overflow.
     if (strict && total >= DBL_MAX / 10) {
       return false;
     }
 
-    // Accumulate digit
+    // Accumulate digit.
     total = 10.0 * total + c;
     power *= 10.0;
 
-    // Get next char
+    // Get next char.
     c = static_cast<int>(*str++);
   }
 
-  // Get the final number
+  // Get the final number.
   *value = total / power;
   if (sign == '-') {
     *value = -(*value);
@@ -255,15 +255,15 @@ bool ParseStringToDouble(const char* str, double* value, bool strict) {
   return true;
 }
 
-// Convert a string to a double
-// This version does not check for the validity and overflow
+// Convert a string to a double. This version does not check for the validity
+// and overflow.
 double StringToDouble(const char* str) {
   double value = 0;
   ParseStringToDouble(str, &value, false);
   return value;
 }
 
-// Convert a float to a string
+// Convert a float to a string.
 std::string FloatToString(float f) {
   char buf[80];
   snprintf(buf, sizeof(buf), "%f", f);
@@ -308,11 +308,11 @@ std::string Int64ToHexString(int64 i64) {
   return std::string(buf);
 }
 
-// Parse a single "delim" delimited string from "*source"
-// Modify *source to point after the delimiter.
-// If no delimiter is present after the string, set *source to NULL.
+// Parse a single "delim" delimited string from "*source". Modify *source to
+// point after the delimiter. If no delimiter is present after the string, set
+// *source to NULL.
 //
-// Mainly a stringified wrapper around strpbrk()
+// Mainly a stringified wrapper around strpbrk().
 std::string SplitOneStringToken(const char** source, const char* delim) {
   ASSERT(source);
   ASSERT(delim);
@@ -358,7 +358,7 @@ std::string PascalCaseToLowerWithUnder(const char* pascal_case) {
   for(; *pascal_case != '\0'; pascal_case++) {
     char current_char = *pascal_case;
     if (isupper(current_char)) {
-      // DNSName should be dns_name
+      // DNSName should be dns_name.
       if ((islower(pascal_case[1]) && !lower_with_under.empty()) ||
           !previous_was_upper) {
         lower_with_under.append(1, '_');
@@ -377,7 +377,7 @@ void StringReplace(std::string* s,
                    bool replace_all) {
   ASSERT(s);
 
-  // If old_sub is empty, nothing to do
+  // If old_sub is empty, nothing to do.
   if (!old_sub || !*old_sub) {
     return;
   }
@@ -393,7 +393,7 @@ void StringReplace(std::string* s,
     }
     res.append(*s, start_pos, pos - start_pos);
     res.append(new_sub);
-    start_pos = pos + old_sub_size;  // start searching again after the "old"
+    start_pos = pos + old_sub_size;  // start searching again after the "old".
   } while (replace_all);
   res.append(*s, start_pos, s->length() - start_pos);
 

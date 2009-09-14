@@ -70,4 +70,5 @@ std::string TalkAuthTask::GetAuthenticatedUrl(
 std::string TalkAuthTask::GetSID() const {
   return auth_->GetSID();
 }
+
 }  // namespace notifier

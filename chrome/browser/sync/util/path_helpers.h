@@ -89,8 +89,8 @@ inline PathString StripSuffixPathString(const PathString& str,
   return ret;
 }
 
-// Returns a string with length or fewer elements, careful to
-// not truncate a string mid-surrogate pair.
+// Returns a string with length or fewer elements, careful to not truncate a
+// string mid-surrogate pair.
 PathString TruncatePathString(const PathString& original, int length);
 
 // Makes a path component legal for your OS, but doesn't handle collisions

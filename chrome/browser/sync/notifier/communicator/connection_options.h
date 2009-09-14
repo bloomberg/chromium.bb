@@ -33,8 +33,8 @@ class ConnectionOptions {
   void set_auth_user(const std::string& val) { auth_user_ = val; }
   void set_auth_pass(const talk_base::CryptString& val) { auth_pass_ = val; }
 
-  // Setting this to true opens a security hole, so it is
-  // *highly* recommended that you don't do this.
+  // Setting this to true opens a security hole, so it is *highly* recommended
+  // that you don't do this.
   void set_allow_unverified_certs(bool allow_unverified_certs) {
     allow_unverified_certs_ = allow_unverified_certs;
   }
@@ -48,8 +48,9 @@ class ConnectionOptions {
   std::string auth_user_;
   talk_base::CryptString auth_pass_;
   bool allow_unverified_certs_;
-  // allow the copy constructor and operator=
+  // Allow the copy constructor and operator=.
 };
+
 }  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_CONNECTION_OPTIONS_H_

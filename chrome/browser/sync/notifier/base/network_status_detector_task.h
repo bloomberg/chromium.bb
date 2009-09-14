@@ -10,6 +10,7 @@
 #include "talk/base/task.h"
 
 namespace notifier {
+
 class AsyncNetworkAlive;
 
 // Detects the current network state and any changes to that.
@@ -19,8 +20,8 @@ class NetworkStatusDetectorTask : public talk_base::Task,
   // Create an instance of (a subclass of) this class.
   static NetworkStatusDetectorTask* Create(talk_base::Task* parent);
 
-  // Determines the current network state and
-  // then calls SignalNetworkStateDetected.
+  // Determines the current network state and then calls
+  // SignalNetworkStateDetected.
   void DetectNetworkState();
 
   // Fires whenever the network state is detected.
@@ -51,5 +52,7 @@ class NetworkStatusDetectorTask : public talk_base::Task,
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStatusDetectorTask);
 };
+
 }  // namespace notifier
+
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_BASE_NETWORK_STATUS_DETECTOR_TASK_H_

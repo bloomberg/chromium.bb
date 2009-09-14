@@ -1,7 +1,7 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+//
 // Use MockGaiaAuthenticator to test your application by faking a login session.
 // This mock object should be initialized with the response you expect it to
 // return, and then can be used in exactly the same way as the real
@@ -104,4 +104,5 @@ bool MockGaiaAuthenticator::Authenticate(const char* email,
 void MockGaiaAuthenticator::ResetCredentials() {
   current_user_ = "";
 }
+
 }  // namespace browser_sync

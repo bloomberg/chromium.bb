@@ -15,8 +15,8 @@ void NetworkStatusDetectorTaskMT::OnNetworkAliveDone(
     AsyncNetworkAlive* network_alive) {
   ASSERT(network_alive);
   SetNetworkAlive(network_alive->alive());
-  // If we got an error from detecting the network alive state,
-  // then stop retrying the detection.
+  // If we got an error from detecting the network alive state, then stop
+  // retrying the detection.
   if (network_alive->error()) {
     return;
   }
@@ -25,8 +25,8 @@ void NetworkStatusDetectorTaskMT::OnNetworkAliveDone(
 
 void NetworkStatusDetectorTaskMT::StartAsyncDetection(
     PlatformNetworkInfo* previous_info) {
-  // Use the AsyncNetworkAlive to determine the network state (and
-  // changes in the network state).
+  // Use the AsyncNetworkAlive to determine the network state (and changes in
+  // the network state).
   AsyncNetworkAlive* network_alive = AsyncNetworkAlive::Create();
 
   if (previous_info) {

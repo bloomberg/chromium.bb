@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Utility functions
+// Utility functions.
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_BASE_UTILS_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_BASE_UTILS_H_
@@ -12,16 +12,15 @@
 
 #include "chrome/browser/sync/notifier/base/static_assert.h"
 
-// return error if the first argument evaluates to false
+// Return error if the first argument evaluates to false.
 #define RET_IF_FALSE(x) do { if (!(x)) return false; } while (false)
 
-// Protocol constants
+// Protocol constants.
 const char kHttpProto[] = "http://";
 const char kHttpsProto[] = "https://";
 
-// Initialize a POD to zero.
-// Using this function requires discipline. Don't use for types that have a
-// v-table or virtual bases.
+// Initialize a POD to zero. Using this function requires discipline. Don't
+// use for types that have a v-table or virtual bases.
 template <typename T>
 inline void SetZero(T& p) {
   // Guard against the easy mistake of
@@ -37,18 +36,18 @@ inline void SetZero(T& p) {
 
   // Test to see if the type has constructors.
   union CtorTest {
-      T t;
-      int i;
+    T t;
+    int i;
   };
 
-  // TODO(sync) There might be a way to test if the type has virtuals
+  // TODO(sync) There might be a way to test if the type has virtuals.
   // For now, if we zero a type with virtuals by mistake, it is going to crash
   // predictable at run-time when the virtuals are called.
   memset(&p, 0, sizeof(T));
 }
 
-// Used to delete each element in a vector<T*>/deque<T*>
-// (and then empty the sequence).
+// Used to delete each element in a vector<T*>/deque<T*> (and then empty the
+// sequence).
 template <class T>
 void CleanupSequence(T* items) {
   for (typename T::iterator it(items->begin()); it != items->end(); ++it) {
@@ -57,17 +56,17 @@ void CleanupSequence(T* items) {
   items->clear();
 }
 
-// Typically used to clean up values used in a hash_map
-// that had Type* as values.
+// Typically used to clean up values used in a hash_map that had Type* as
+// values.
 //
 // WARNING: This function assumes that T::clear will not access the values
-//   (or the keys if they are the same as the values).  This is true
-//   for hash_map.
+// (or the keys if they are the same as the values).  This is true for
+// hash_map.
 template <class T>
 void CleanupMap(T* items) {
   // This is likely slower than a for loop, but we have to do it this way. In
-  // some of the maps we use, deleting it->second causes it->first to be deleted
-  // as well, and that seems to send the iterator in a tizzy.
+  // some of the maps we use, deleting it->second causes it->first to be
+  // deleted as well, and that seems to send the iterator in a tizzy.
   typename T::iterator it = items->begin();
   while (it != items->end()) {
     items->erase(it->first);
@@ -76,7 +75,7 @@ void CleanupMap(T* items) {
   }
 }
 
-// Get the value of an element in the map with the specified name
+// Get the value of an element in the map with the specified name.
 template <class T>
 void GetMapElement(const std::map<const std::string, const T>& m,
                    const char* name,

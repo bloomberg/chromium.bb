@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 // File compatability routines. Useful to delete database files with.
-//
+
 #ifndef CHROME_BROWSER_SYNC_UTIL_COMPAT_FILE_H_
 #define CHROME_BROWSER_SYNC_UTIL_COMPAT_FILE_H_
 

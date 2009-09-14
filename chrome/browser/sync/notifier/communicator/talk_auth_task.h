@@ -14,9 +14,10 @@ class GaiaAuth;
 }
 
 namespace notifier {
+
 class Login;
 
-// Create an authenticated talk url from an unauthenticated url
+// Create an authenticated talk url from an unauthenticated url.
 class TalkAuthTask : public talk_base::Task, public sigslot::has_slots<> {
  public:
   TalkAuthTask(talk_base::Task* parent,
@@ -26,8 +27,8 @@ class TalkAuthTask : public talk_base::Task, public sigslot::has_slots<> {
   // An abort method which doesn't take any parameters.
   // (talk_base::Task::Abort() has a default parameter.)
   //
-  // The primary purpose of this method is to allow a
-  // signal to be hooked up to abort this task.
+  // The primary purpose of this method is to allow a signal to be hooked up to
+  // abort this task.
   void Abort() {
     talk_base::Task::Abort();
   }
@@ -43,7 +44,7 @@ class TalkAuthTask : public talk_base::Task, public sigslot::has_slots<> {
 
   bool HadError() const;
 
-  // TODO(sync): add captcha support
+  // TODO(sync): add captcha support.
 
  protected:
   virtual int ProcessStart();
@@ -57,6 +58,7 @@ class TalkAuthTask : public talk_base::Task, public sigslot::has_slots<> {
   std::string url_;
   DISALLOW_COPY_AND_ASSIGN(TalkAuthTask);
 };
+
 }  // namespace notifier
 
 #endif  // CHROME_BROWSER_SYNC_NOTIFIER_COMMUNICATOR_TALK_AUTH_TASK_H_
