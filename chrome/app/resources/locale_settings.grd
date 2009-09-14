@@ -594,7 +594,17 @@
       <message name="IDS_CHROME_WELCOME_URL" translateable="false">
         http://www.google.com/chrome/intl/en/welcome.html
       </message>
-
+      
+      <!-- The width of the sync setup wizard / login dialog in characters. -->
+      <message name="IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS" use_name_for_id="true">
+        45
+      </message>
+      
+      <!-- The height of the sync setup wizard / login dialog in lines. -->
+      <message name="IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES" use_name_for_id="true">
+        25
+      </message>
+      
     </messages>
   </release>
 </grit>

@@ -16,9 +16,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/sync/sync_setup_flow.h"
-
-static const int kSyncDialogWidth = 270;
-static const int kSyncDialogHeight = 369;
+#include "grit/locale_settings.h"
+#include "views/window/window.h"
 
 // XPath expression for finding specific iframes.
 static const wchar_t* kLoginIFrameXPath = L"//iframe[@id='login']";
@@ -129,8 +128,11 @@ SyncSetupFlow::~SyncSetupFlow() {
 }
 
 void SyncSetupFlow::GetDialogSize(gfx::Size* size) const {
-  size->set_width(kSyncDialogWidth);
-  size->set_height(kSyncDialogHeight);
+  gfx::Size s(views::Window::GetLocalizedContentsSize(
+      IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS,
+      IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES));
+  size->set_width(s.width());
+  size->set_height(s.height());
 }
 
 // A callback to notify the delegate that the dialog closed.
