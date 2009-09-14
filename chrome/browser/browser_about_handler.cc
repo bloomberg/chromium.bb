@@ -759,6 +759,23 @@ void ChromeOSAboutVersionHandler::OnVersion(
 
 #endif
 
+// Returns true if |url|'s spec starts with |about_specifier|, and is
+// terminated by the start of a path.
+bool StartsWithAboutSpecifier(const GURL& url, const char* about_specifier) {
+  return StartsWithASCII(url.spec(), about_specifier, true) &&
+         (url.spec().size() == strlen(about_specifier) ||
+          url.spec()[strlen(about_specifier)] == '/');
+}
+
+// Transforms a URL of the form "about:foo/XXX" to <url_prefix> + "XXX".
+GURL RemapAboutURL(const std::string& url_prefix, const GURL& url) {
+  std::string path;
+  size_t split = url.spec().find('/');
+  if (split != std::string::npos)
+    path = url.spec().substr(split + 1);
+  return GURL(url_prefix + path);
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -774,23 +791,16 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutBlankURL))
     return false;
 
-  // Handle rewriting view-cache URLs. This allows us to load about:cache.
-  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutCacheURL)) {
-    // Create an mapping from about:cache to the view-cache: internal URL.
-    *url = GURL(std::string(chrome::kViewCacheScheme) + ":");
+  // Rewrite about:cache/* URLs to chrome://net-internals/view-cache/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutCacheURL)) {
+    *url = RemapAboutURL(chrome::kNetworkViewCacheURL + std::string("/"),
+                         *url);
     return true;
   }
 
-  // Handle rewriting net-internal URLs. This allows us to load
-  // about:net-internal.
-  if (StartsWithASCII(url->spec(), chrome::kAboutNetInternalURL, true)) {
-    // Create a mapping from about:net-internal to the view-net-internal:
-    // internal URL.
-    std::string path;
-    size_t split = url->spec().find('/');
-    if (split != std::string::npos)
-      path = url->spec().substr(split + 1);
-    *url = GURL(std::string(chrome::kViewNetInternalScheme) + ":" + path);
+  // Rewrite about:net-internals/* URLs to chrome://net-internals/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutNetInternalsURL)) {
+    *url = RemapAboutURL(chrome::kNetworkViewInternalsURL, *url);
     return true;
   }
 

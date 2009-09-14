@@ -20,15 +20,13 @@ const char kJavaScriptScheme[] = "javascript";
 const char kMailToScheme[] = "mailto";
 const char kPrintScheme[] = "print";
 const char kUserScriptScheme[] = "chrome-user-script";
-const char kViewCacheScheme[] = "view-cache";
-const char kViewNetInternalScheme[] = "view-net-internal";
 const char kViewSourceScheme[] = "view-source";
 
 const char kStandardSchemeSeparator[] = "://";
 
 const char kAboutBlankURL[] = "about:blank";
 const char kAboutCacheURL[] = "about:cache";
-const char kAboutNetInternalURL[] = "about:net-internal";
+const char kAboutNetInternalsURL[] = "about:net-internals";
 const char kAboutCrashURL[] = "about:crash";
 const char kAboutHangURL[] = "about:hang";
 const char kAboutMemoryURL[] = "about:memory";
@@ -62,5 +60,8 @@ const char kSyncGaiaLoginPath[] = "gaialogin";
 const char kSyncMergeAndSyncPath[] = "mergeandsync";
 const char kSyncThrobberPath[] = "throbber.png";
 const char kSyncSetupFlowPath[] = "setup";
+
+const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
+const char kNetworkViewCacheURL[] = "chrome://net-internals/view-cache";
 
 }  // namespace chrome

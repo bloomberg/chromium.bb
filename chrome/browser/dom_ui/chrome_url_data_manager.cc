@@ -22,6 +22,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
+#include "net/url_request/url_request_view_net_internals_job.h"
 
 #include "grit/locale_settings.h"
 
@@ -296,6 +297,34 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
        L"rtl" : L"ltr");
 }
 
+// This class describes how to form chrome://net-internals/DESCRIPTION
+// URLs, and conversely how to extract DESCRIPTION.
+//
+// This needs to be passed to URLRequestViewNetInternalsJob, which lives
+// in the network module and doesn't know anything about what URL protocol
+// it has been registered with.
+class NetInternalsURLFormat : public URLRequestViewNetInternalsJob::URLFormat {
+ public:
+  virtual std::string GetDetails(const GURL& url) {
+    DCHECK(IsSupportedURL(url));
+    size_t start = strlen(chrome::kNetworkViewInternalsURL);
+    if (start >= url.spec().size())
+      return std::string();
+    return url.spec().substr(start);
+  }
+
+  virtual GURL MakeURL(const std::string& details) {
+    return GURL(std::string(chrome::kNetworkViewInternalsURL) + details);
+  }
+
+  static bool IsSupportedURL(const GURL& url) {
+    // Note that kNetworkViewInternalsURL is terminated by a '/'.
+    return StartsWithASCII(url.spec(),
+                           chrome::kNetworkViewInternalsURL,
+                           true /*case_sensitive*/);
+  }
+};
+
 URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,
                                              const std::string& scheme) {
   // Try first with a file handler
@@ -303,6 +332,12 @@ URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,
   if (ChromeURLDataManager::URLToFilePath(request->url(), &path))
     return new URLRequestChromeFileJob(request,
                                        FilePath::FromWStringHack(path));
+
+  // Next check for chrome://net-internals/, which uses its own job type.
+  if (NetInternalsURLFormat::IsSupportedURL(request->url())) {
+    static NetInternalsURLFormat url_format;
+    return new URLRequestViewNetInternalsJob(request, &url_format);
+  }
 
   // Fall back to using a custom handler
   return new URLRequestChromeJob(request);

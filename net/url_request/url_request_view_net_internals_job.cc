@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-#include "net/url_request/url_request_view_net_internal_job.h"
+#include "net/url_request/url_request_view_net_internals_job.h"
 
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -16,8 +16,11 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/view_cache_helper.h"
 
 namespace {
+
+const char kViewHttpCacheSubPath[] = "view-cache";
 
 //------------------------------------------------------------------------------
 // Format helpers.
@@ -51,12 +54,13 @@ class SubSection {
   virtual void OutputBody(URLRequestContext* context, std::string* out) {}
 
   // Outputs this subsection, and all of its children.
-  void OutputRecursive(URLRequestContext* context, std::string* out) {
+  void OutputRecursive(URLRequestContext* context,
+                       URLRequestViewNetInternalsJob::URLFormat* url_format,
+                       std::string* out) {
     if (!is_root()) {
-      std::string section_url =
-          std::string("view-net-internal:") + GetFullyQualifiedName();
       // Canonicalizing the URL escapes characters which cause problems in HTML.
-      section_url = GURL(section_url).spec();
+      std::string section_url =
+          url_format->MakeURL(GetFullyQualifiedName()).spec();
 
       // Print the heading.
       out->append(StringPrintf("<div>"
@@ -73,7 +77,7 @@ class SubSection {
     OutputBody(context, out);
 
     for (size_t i = 0; i < children_.size(); ++i)
-      children_[i]->OutputRecursive(context, out);
+      children_[i]->OutputRecursive(context, url_format, out);
 
     if (!is_root())
       out->append("</div>");
@@ -339,35 +343,80 @@ class URLRequestSubSection : public SubSection {
   }
 };
 
+class HttpCacheStatsSubSection : public SubSection {
+ public:
+  HttpCacheStatsSubSection(SubSection* parent)
+      : SubSection(parent, "stats", "Statistics") {
+  }
+
+  virtual void OutputBody(URLRequestContext* context, std::string* out) {
+    ViewCacheHelper::GetStatisticsHTML(context, out);
+  }
+};
+
+class HttpCacheSection : public SubSection {
+ public:
+  HttpCacheSection(SubSection* parent)
+      : SubSection(parent, "httpcache", "HttpCache") {
+    AddSubSection(new HttpCacheStatsSubSection(this));
+  }
+
+  virtual void OutputBody(URLRequestContext* context, std::string* out) {
+    // Advertise the view-cache URL (too much data to inline it).
+    out->append("<p><a href='/");
+    out->append(kViewHttpCacheSubPath);
+    out->append("'>View all cache entries</a></p>");
+  }
+};
+
 class AllSubSections : public SubSection {
  public:
   AllSubSections() : SubSection(NULL, "", "") {
     AddSubSection(new ProxyServiceSubSection(this));
     AddSubSection(new HostResolverSubSection(this));
     AddSubSection(new URLRequestSubSection(this));
+    AddSubSection(new HttpCacheSection(this));
   }
 };
 
-}  // namespace
+// Returns true if |path| is a subpath for "view-cache".
+// If it is, then |key| is assigned the subpath.
+bool GetViewCacheKeyFromPath(const std::string path,
+                             std::string* key) {
+  if (!StartsWithASCII(path, kViewHttpCacheSubPath, true))
+    return false;
 
-// static
-URLRequestJob* URLRequestViewNetInternalJob::Factory(
-    URLRequest* request, const std::string& scheme) {
-  return new URLRequestViewNetInternalJob(request);
+  if (path.size() > strlen(kViewHttpCacheSubPath) &&
+      path[strlen(kViewHttpCacheSubPath)] != '/')
+    return false;
+
+  if (path.size() > strlen(kViewHttpCacheSubPath) + 1)
+    *key = path.substr(strlen(kViewHttpCacheSubPath) + 1);
+
+  return true;
 }
 
-bool URLRequestViewNetInternalJob::GetData(std::string* mime_type,
-                                           std::string* charset,
-                                           std::string* data) const {
-  DCHECK_EQ(std::string("view-net-internal"), request_->url().scheme());
+}  // namespace
 
+bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
+                                            std::string* charset,
+                                            std::string* data) const {
   mime_type->assign("text/html");
   charset->assign("UTF-8");
 
   URLRequestContext* context = request_->context();
-  std::string path = request_->url().path();
+  std::string details = url_format_->GetDetails(request_->url());
 
   data->clear();
+
+  // Use a different handler for "view-cache/*" subpaths.
+  std::string cache_key;
+  if (GetViewCacheKeyFromPath(details, &cache_key)) {
+    GURL url = url_format_->MakeURL(kViewHttpCacheSubPath + std::string("/"));
+    ViewCacheHelper::GetEntryInfoHTML(cache_key, context, url.spec(), data);
+    return true;
+  }
+
   data->append("<html><head><title>Network internals</title>"
                "<style>"
                "body { font-family: sans-serif; }\n"
@@ -376,22 +425,22 @@ bool URLRequestViewNetInternalJob::GetData(std::string* mime_type,
                ".subsection_name { font-size: 80%; }\n"
                "</style>"
                "</head><body>"
-               "<p><a href='http://sites.google.com/a/chromium.org/dev/"
-               "developers/design-documents/view-net-internal'>"
+               "<p><a href='http://dev.chromium.org/"
+               "developers/design-documents/view-net-internals'>"
                "Help: how do I use this?</a></p>");
 
   SubSection* all = Singleton<AllSubSections>::get();
   SubSection* section = all;
 
   // Display only the subsection tree asked for.
-  if (!path.empty())
-    section = all->FindSubSectionByName(path);
+  if (!details.empty())
+    section = all->FindSubSectionByName(details);
 
   if (section) {
-    section->OutputRecursive(context, data);
+    section->OutputRecursive(context, url_format_, data);
   } else {
     data->append("<i>Nothing found for \"");
-    data->append(EscapeForHTML(path));
+    data->append(EscapeForHTML(details));
     data->append("\"</i>");
   }
 

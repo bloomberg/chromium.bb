@@ -72,8 +72,6 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
                                 GURL("file:///etc/passwd")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
-                                GURL("view-cache:http://www.google.com/")));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID,
                                 GURL("chrome://foo/bar")));
 
   p->Remove(kRendererID);
