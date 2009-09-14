@@ -87,7 +87,7 @@
 						<object class="NSTextField" id="310539509">
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{29, 123}, {234, 17}}</string>
+							<string key="NSFrame">{{29, 48}, {234, 17}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="958179589">
@@ -135,7 +135,7 @@
 						<object class="NSTextField" id="891861620">
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{29, 48}, {234, 17}}</string>
+							<string key="NSFrame">{{29, 123}, {234, 17}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="858790319">
@@ -171,7 +171,7 @@
 						<object class="NSTextField" id="784027825">
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{201, 123}, {234, 17}}</string>
+							<string key="NSFrame">{{201, 48}, {234, 17}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="611550854">
@@ -223,7 +223,7 @@
 						<object class="NSTextField" id="489328383">
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{201, 48}, {234, 17}}</string>
+							<string key="NSFrame">{{201, 123}, {234, 17}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="929811185">
@@ -468,9 +468,9 @@
 							<reference ref="1056899072"/>
 							<reference ref="891861620"/>
 							<reference ref="487067694"/>
-							<reference ref="784027825"/>
 							<reference ref="103622856"/>
 							<reference ref="717472336"/>
+							<reference ref="784027825"/>
 							<reference ref="489328383"/>
 						</object>
 						<reference key="parent" ref="1005"/>
