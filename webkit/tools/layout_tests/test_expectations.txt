@@ -2288,9 +2288,6 @@ BUG21141 LINUX : LayoutTests/fast/forms/select-script-onchange.html = FAIL
 // The test is flaky.
 BUG_VICTORW : LayoutTests/http/tests/security/javascriptURL/xss-ALLOWED-from-javascript-url-sub-frame-2-level.html = PASS CRASH
 
-// Webkit 48061:48071
-BUG_VICTORW WIN DEBUG : LayoutTests/fast/regex/cross-frame-callable.html = TIMEOUT
-
 // WebKit 48098:48155
 BUG21267 : LayoutTests/fast/events/click-focus-anchor.html = FAIL
 BUG21267 : LayoutTests/fast/events/tab-focus-anchor.html = FAIL
