@@ -454,7 +454,9 @@ class View : public AcceleratorTarget {
   // A group id is used to tag views which are part of the same logical group.
   // Focus can be moved between views with the same group using the arrow keys.
   // Groups are currently used to implement radio button mutual exclusion.
+  // The group id is immutable once it's set.
   void SetGroup(int gid);
+  // Returns the group id of the view, or -1 if the id is not set yet.
   int GetGroup() const;
 
   // If this returns true, the views from the same group can each be focused

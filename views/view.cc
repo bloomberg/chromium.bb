@@ -791,6 +791,8 @@ int View::GetID() const {
 }
 
 void View::SetGroup(int gid) {
+  // Don't change the group id once it's set.
+  DCHECK(group_ == -1 || group_ == gid);
   group_ = gid;
 }
 
