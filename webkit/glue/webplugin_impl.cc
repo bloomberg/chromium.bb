@@ -208,6 +208,10 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!plugin_delegate)
     return NULL;
 
+  // Set the container before Initialize because the plugin may
+  // synchronously call NPN_GetValue to get its container during its
+  // initialization.
+  SetContainer(container);
   bool ok = plugin_delegate->Initialize(
       plugin_url_, arg_names_, arg_values_, this, load_manually_);
   if (!ok) {
@@ -219,7 +223,6 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
     mime_type_ = actual_mime_type;
   delegate_ = plugin_delegate;
 
-  SetContainer(container);
   return true;
 }
 
