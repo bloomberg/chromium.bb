@@ -1959,7 +1959,9 @@ void AutomationProvider::ReloadAsync(int tab_handle) {
 void AutomationProvider::StopAsync(int tab_handle) {
   RenderViewHost* view = GetViewForTab(tab_handle);
   if (!view) {
-    NOTREACHED();
+    // We tolerate StopAsync being called even before a view has been created.
+    // So just log a warning instead of a NOTREACHED().
+    DLOG(WARNING) << "StopAsync: no view for handle " << tab_handle;
     return;
   }
 
