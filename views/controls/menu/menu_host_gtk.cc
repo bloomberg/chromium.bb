@@ -19,7 +19,6 @@ MenuHost::MenuHost(SubmenuView* submenu)
       closed_(false),
       submenu_(submenu),
       did_pointer_grab_(false) {
-  // TODO(sky): make sure this is needed.
   GdkModifierType current_event_mod;
   if (gtk_get_current_event_state(&current_event_mod)) {
     set_mouse_down(

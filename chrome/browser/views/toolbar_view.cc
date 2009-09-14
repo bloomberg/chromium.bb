@@ -47,10 +47,8 @@
 #include "views/background.h"
 #include "views/controls/button/button_dropdown.h"
 #include "views/controls/label.h"
-#include "views/widget/tooltip_manager.h"
-#if defined(OS_WIN)
 #include "views/drag_utils.h"
-#endif
+#include "views/widget/tooltip_manager.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 
@@ -752,7 +750,6 @@ void ToolbarView::WriteDragData(views::View* sender,
 
   UserMetrics::RecordAction(L"Toolbar_DragStar", profile_);
 
-#if defined(OS_WIN)
   // If there is a bookmark for the URL, add the bookmark drag data for it. We
   // do this to ensure the bookmark is moved, rather than creating an new
   // bookmark.
@@ -772,10 +769,6 @@ void ToolbarView::WriteDragData(views::View* sender,
                                    tab->GetFavIcon(),
                                    data);
   }
-#else
-  // TODO(port): do bookmark item drag & drop
-  NOTIMPLEMENTED();
-#endif
 }
 
 int ToolbarView::GetDragOperations(views::View* sender, int x, int y) {

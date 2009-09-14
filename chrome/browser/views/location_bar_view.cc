@@ -1054,7 +1054,7 @@ void LocationBarView::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
 #if defined(OS_WIN)
   FirstRunBubble::Show(profile_, GetWindow(), bounds, use_OEM_bubble);
 #else
-  NOTIMPLEMENTED();
+  // First run bubble doesn't make sense for Chrome OS.
 #endif
 }
 

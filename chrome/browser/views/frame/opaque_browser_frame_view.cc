@@ -1049,7 +1049,6 @@ void OpaqueBrowserFrameView::InitAppWindowResources() {
 #if defined(OS_WIN)
     title_font_ = new gfx::Font(win_util::GetWindowTitleFont());
 #else
-    NOTIMPLEMENTED();
     title_font_ = new gfx::Font();
 #endif
     initialized = true;
