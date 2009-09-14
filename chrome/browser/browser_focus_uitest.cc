@@ -48,7 +48,7 @@ const int kActionDelayMs = 500;
 const wchar_t kSimplePage[] = L"files/focus/page_with_focus.html";
 const wchar_t kStealFocusPage[] = L"files/focus/page_steals_focus.html";
 const wchar_t kTypicalPage[] = L"files/focus/typical_page.html";
-const wchar_t kTypicalPageName[] = L"typical_page.html";
+const char kTypicalPageName[] = "typical_page.html";
 
 class BrowserFocusTest : public InProcessBrowserTest {
  public:
@@ -148,11 +148,11 @@ class TestInterstitialPage : public InterstitialPage {
   TestInterstitialPage(TabContents* tab, bool new_navigation, const GURL& url)
       : InterstitialPage(tab, new_navigation, url),
         waiting_for_dom_response_(false) {
-    std::wstring file_path;
+    FilePath file_path;
     bool r = PathService::Get(chrome::DIR_TEST_DATA, &file_path);
     EXPECT_TRUE(r);
-    file_util::AppendToPath(&file_path, L"focus");
-    file_util::AppendToPath(&file_path, kTypicalPageName);
+    file_path = file_path.AppendASCII("focus");
+    file_path = file_path.AppendASCII(kTypicalPageName);
     r = file_util::ReadFileToString(file_path, &html_contents_);
     EXPECT_TRUE(r);
   }

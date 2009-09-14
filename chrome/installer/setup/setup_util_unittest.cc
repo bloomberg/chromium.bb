@@ -135,9 +135,8 @@ TEST_F(SetupUtilTest, GetInstallPreferencesTest) {
 // Test that we are parsing Chrome version correctly.
 TEST_F(SetupUtilTest, GetVersionFromDirTest) {
   // Create a version dir
-  std::wstring chrome_dir(test_dir_.value());
-  file_util::AppendToPath(&chrome_dir, L"1.0.0.0");
-  CreateDirectory(chrome_dir.c_str(), NULL);
+  FilePath chrome_dir = test_dir_.AppendASCII("1.0.0.0");
+  file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
   scoped_ptr<installer::Version> version(
       setup_util::GetVersionFromDir(test_dir_.value()));
@@ -147,15 +146,13 @@ TEST_F(SetupUtilTest, GetVersionFromDirTest) {
   ASSERT_FALSE(file_util::PathExists(chrome_dir));
   ASSERT_TRUE(setup_util::GetVersionFromDir(test_dir_.value()) == NULL);
 
-  chrome_dir = test_dir_.value();
-  file_util::AppendToPath(&chrome_dir, L"ABC");
-  CreateDirectory(chrome_dir.c_str(), NULL);
+  chrome_dir = test_dir_.AppendASCII("ABC");
+  file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
   ASSERT_TRUE(setup_util::GetVersionFromDir(test_dir_.value()) == NULL);
 
-  chrome_dir = test_dir_.value();
-  file_util::AppendToPath(&chrome_dir, L"2.3.4.5");
-  CreateDirectory(chrome_dir.c_str(), NULL);
+  chrome_dir = test_dir_.AppendASCII("2.3.4.5");
+  file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
   version.reset(setup_util::GetVersionFromDir(test_dir_.value()));
   ASSERT_TRUE(version->GetString() == L"2.3.4.5");

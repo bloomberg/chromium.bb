@@ -16,11 +16,9 @@ TEST(BlacklistIOTest, Generic) {
   FilePath data_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &data_dir);
 
-  FilePath input =
-      data_dir.Append(FilePath::FromWStringHack(L"blacklist_small.pbl"));
+  FilePath input = data_dir.AppendASCII("blacklist_small.pbl");
 
-  FilePath expected =
-      data_dir.Append(FilePath::FromWStringHack(L"blacklist_small.pbr"));
+  FilePath expected = data_dir.AppendASCII("blacklist_small.pbr");
 
   BlacklistIO io;
   EXPECT_TRUE(io.Read(input));
@@ -40,7 +38,7 @@ TEST(BlacklistIOTest, Generic) {
 
   FilePath output;
   PathService::Get(base::DIR_TEMP, &output);
-  output = output.Append(FilePath::FromWStringHack(L"blacklist_small.pbr"));
+  output = output.AppendASCII("blacklist_small.pbr");
   CHECK(io.Write(output));
   EXPECT_TRUE(file_util::ContentsEqual(output, expected));
   EXPECT_TRUE(file_util::Delete(output, false));
@@ -50,16 +48,13 @@ TEST(BlacklistIOTest, Combine) {
   // Testing data path.
   FilePath data_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &data_dir);
-  data_dir = data_dir.Append(FilePath::FromWStringHack(L"blacklist_samples"));
+  data_dir = data_dir.AppendASCII("blacklist_samples");
 
-  FilePath input1 =
-      data_dir.Append(FilePath::FromWStringHack(L"annoying_ads.pbl"));
+  FilePath input1 = data_dir.AppendASCII("annoying_ads.pbl");
 
-  FilePath input2 =
-    data_dir.Append(FilePath::FromWStringHack(L"block_flash.pbl"));
+  FilePath input2 = data_dir.AppendASCII("block_flash.pbl");
 
-  FilePath input3 =
-    data_dir.Append(FilePath::FromWStringHack(L"session_cookies.pbl"));
+  FilePath input3 = data_dir.AppendASCII("session_cookies.pbl");
 
   BlacklistIO io;
   EXPECT_TRUE(io.Read(input1));
@@ -94,10 +89,9 @@ TEST(BlacklistIOTest, Combine) {
 
   FilePath output;
   PathService::Get(base::DIR_TEMP, &output);
-  output = output.Append(FilePath::FromWStringHack(L"combine3.pbr"));
+  output = output.AppendASCII("combine3.pbr");
 
-  FilePath expected =
-      data_dir.Append(FilePath::FromWStringHack(L"combine3.pbr"));
+  FilePath expected = data_dir.AppendASCII("combine3.pbr");
 
   CHECK(io.Write(output));
   EXPECT_TRUE(file_util::ContentsEqual(output, expected));

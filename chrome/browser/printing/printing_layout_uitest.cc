@@ -27,10 +27,10 @@ const wchar_t kDocRoot[] = L"chrome/test/data";
 class PrintingLayoutTest : public PrintingTest<UITest> {
  public:
   PrintingLayoutTest() {
-    emf_path_ = browser_directory_.ToWStringHack();
-    file_util::AppendToPath(&emf_path_, L"metafile_dumps");
+    emf_path_ = browser_directory_;
+    emf_path_ = emf_path_.AppendASCII("metafile_dumps");
     launch_arguments_.AppendSwitchWithValue(L"debug-print",
-                                            L'"' + emf_path_ + L'"');
+                                            L'"' + emf_path_.value() + L'"');
     show_window_ = true;
   }
 
@@ -156,8 +156,7 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
     bool found_emf = false;
     bool found_prn = false;
     for (int i = 0; i < 100; ++i) {
-      file_util::FileEnumerator enumerator(
-          FilePath::FromWStringHack(emf_path()), false,
+      file_util::FileEnumerator enumerator(emf_path(), false,
           file_util::FileEnumerator::FILES);
       emf_file.clear();
       prn_file.clear();
@@ -198,11 +197,11 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
     return CommandLine::ForCurrentProcess()->HasSwitch(kGenerateSwitch);
   }
 
-  const std::wstring& emf_path() const { return emf_path_; }
+  const FilePath& emf_path() const { return emf_path_; }
 
-  std::wstring emf_path_;
+  FilePath emf_path_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PrintingLayoutTest);
+  DISALLOW_COPY_AND_ASSIGN(PrintingLayoutTest);
 };
 
 // Tests that don't need UI access.

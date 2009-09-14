@@ -80,9 +80,10 @@ TEST_F(FirefoxProfileLockTest, ProfileLock) {
 // If for some reason the lock file is left behind by the previous owner, we
 // should still be able to lock it, at least in the Windows implementation.
 TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
-  std::wstring test_path;
-  file_util::CreateNewTempDirectory(L"firefox_profile", &test_path);
-  FilePath lock_file_path = FilePath::FromWStringHack(test_path);
+  FilePath test_path;
+  file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("firefox_profile"),
+                                    &test_path);
+  FilePath lock_file_path = test_path;
   FileAutoDeleter deleter(lock_file_path);
   lock_file_path = lock_file_path.Append(FirefoxProfileLock::kLockFileName);
 
@@ -94,7 +95,7 @@ TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
 
   scoped_ptr<FirefoxProfileLock> lock;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock.get());
-  lock.reset(new FirefoxProfileLock(test_path));
+  lock.reset(new FirefoxProfileLock(test_path.ToWStringHack()));
   EXPECT_TRUE(lock->HasAcquired());
   lock->Unlock();
   EXPECT_FALSE(lock->HasAcquired());
