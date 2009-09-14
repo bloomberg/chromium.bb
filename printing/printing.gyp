@@ -51,7 +51,7 @@
         'printed_pages_source.h',
         'printing_context.h',
         'printing_context_linux.cc',
-        'printing_context_mac.cc',        
+        'printing_context_mac.cc',
         'printing_context_win.cc',
         'units.cc',
         'units.h',
@@ -64,15 +64,9 @@
       'conditions': [
         ['OS!="linux"', {'sources/': [['exclude', '_linux\\.cc$']]}],
         ['OS!="mac"', {'sources/': [['exclude', '_mac\\.(cc|mm?)$']]}],
-        ['OS!="win"', {
-          'sources/': [
-            ['exclude', '_win\\.cc$'],
-            ['exclude', 
-              'printed_document.cc',
-            ]
-          ]  
-        }, {  # else: OS=="win"
-          'sources/': [['exclude', '_posix\\.cc$']]
+        ['OS!="win"', {'sources/': [['exclude', '_win\\.cc$']]
+          }, {  # else: OS=="win"
+            'sources/': [['exclude', '_posix\\.cc$']]
         }],
       ],
     },
@@ -100,26 +94,16 @@
       'conditions': [
         ['OS!="linux"', {'sources/': [['exclude', '_linux_unittest\\.cc$']]}],
         ['OS!="mac"', {'sources/': [['exclude', '_mac_unittest\\.(cc|mm?)$']]}],
-        ['OS!="win"', {
-          'sources/': [
-            ['exclude', '_win_unittest\\.cc$'],
-
-            # Most of the printing functionailty is Windows only for now.
-            ['exclude', '.*'],
-            ['include', 'page_range_unittest.cc'],
-            ['include', 'page_setup_unittest.cc'],            
-            ['include', 'units_unittest.cc'],
-          ]
-        }, {  # else: OS=="win"
-          'sources/': [['exclude', '_posix_unittest\\.cc$']]
-        }],
+        ['OS!="win"', {'sources/': [['exclude', '_win_unittest\\.cc$']]
+          }, {  # else: OS=="win"
+            'sources/': [['exclude', '_posix_unittest\\.cc$']]
+          }
+        ],
         ['OS=="linux"', {
-          'dependencies': [
-            '../base/base.gyp:base_gfx',
-         ],
-         'sources/': [
-            ['include', 'pdf_ps_metafile_linux_unittest.cc'],
-          ]
+            'dependencies': [
+              '../build/linux/system.gyp:fontconfig',
+              '../build/linux/system.gyp:gtk',
+           ],
         }],
       ],
     },

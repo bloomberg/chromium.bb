@@ -8,18 +8,22 @@
 
 #include "app/gfx/font.h"
 #include "app/gfx/text_elider.h"
-#include "app/win_util.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/time_format.h"
 #include "printing/page_number.h"
 #include "printing/page_overlays.h"
 #include "printing/printed_pages_source.h"
 #include "printing/printed_page.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
+
+#if defined(OS_WIN)
+#include "app/win_util.h"
+#endif
 
 using base::Time;
 
@@ -36,6 +40,7 @@ struct PrintDebugDumpPath {
 
 Singleton<PrintDebugDumpPath> g_debug_dump_info;
 
+#if defined(OS_WIN)
 void SimpleModifyWorldTransform(HDC context,
                                 int offset_x,
                                 int offset_y,
@@ -51,6 +56,7 @@ void SimpleModifyWorldTransform(HDC context,
 void DrawRect(HDC context, gfx::Rect rect) {
   Rectangle(context, rect.x(), rect.y(), rect.right(), rect.bottom());
 }
+#endif  // OS_WIN
 
 }  // namespace
 
@@ -118,6 +124,7 @@ void PrintedDocument::RenderPrintedPage(const PrintedPage& page,
   }
 #endif
 
+#if defined(OS_WIN)
   const printing::PageSetup& page_setup(
       immutable_.settings_.page_setup_pixels());
 
@@ -206,6 +213,9 @@ void PrintedDocument::RenderPrintedPage(const PrintedPage& page,
                     font);
   int res = RestoreDC(context, saved_state);
   DCHECK_NE(res, 0);
+#else  // OS_WIN
+  NOTIMPLEMENTED();
+#endif  // OS_WIN
 }
 
 bool PrintedDocument::RenderPrintedPageNumber(int page_number, HDC context) {
@@ -238,7 +248,7 @@ void PrintedDocument::DisconnectSource() {
 }
 
 size_t PrintedDocument::MemoryUsage() const {
-  std::vector<scoped_refptr<PrintedPage>> pages_copy;
+  std::vector< scoped_refptr<PrintedPage> > pages_copy;
   {
     AutoLock lock(lock_);
     pages_copy.reserve(mutable_.pages_.size());
@@ -339,6 +349,7 @@ void PrintedDocument::PrintHeaderFooter(HDC context,
     }
   }
 
+#if defined(OS_WIN)
   // Save the state (again) for the clipping region.
   int saved_state = SaveDC(context);
   DCHECK_NE(saved_state, 0);
@@ -352,6 +363,9 @@ void PrintedDocument::PrintHeaderFooter(HDC context,
           static_cast<int>(output.size()));
   int res = RestoreDC(context, saved_state);
   DCHECK_NE(res, 0);
+#else  // OS_WIN
+  NOTIMPLEMENTED();
+#endif  // OS_WIN
 }
 
 void PrintedDocument::DebugDump(const PrintedPage& page) {
@@ -370,7 +384,11 @@ void PrintedDocument::DebugDump(const PrintedPage& page) {
   file_util::ReplaceIllegalCharacters(&filename, '_');
   std::wstring path(g_debug_dump_info->debug_dump_path);
   file_util::AppendToPath(&path, filename);
+#if defined(OS_WIN)
   page.native_metafile()->SaveTo(path);
+#else  // OS_WIN
+  NOTIMPLEMENTED();
+#endif  // OS_WIN
 }
 
 void PrintedDocument::set_debug_dump_path(const std::wstring& debug_dump_path) {
@@ -398,17 +416,17 @@ PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
       url_(source->RenderSourceUrl()),
       cookie_(cookie) {
   // Setup the document's date.
-#ifdef WIN32
+#if defined(OS_WIN)
   // On Windows, use the native time formatting for printing.
   SYSTEMTIME systemtime;
   GetLocalTime(&systemtime);
   date_ = win_util::FormatSystemDate(systemtime, std::wstring());
   time_ = win_util::FormatSystemTime(systemtime, std::wstring());
-#else
+#else  // OS_WIN
   Time now = Time::Now();
-  date_ = TimeFormat::ShortDateNumeric(now);
-  time_ = TimeFormat::TimeOfDay(now);
-#endif  // WIN32
+  date_ = base::TimeFormatShortDateNumeric(now);
+  time_ = base::TimeFormatTimeOfDay(now);
+#endif  // OS_WIN
 }
 
 }  // namespace printing

@@ -40,8 +40,9 @@ class PageOverlays {
                                  VerticalPosition y) const;
 
   // Sets the string of an overlay according to its x,y position.
-  void SetOverlay(HorizontalPosition x, VerticalPosition y,
-                  std::wstring& input);
+  void SetOverlay(HorizontalPosition x,
+                  VerticalPosition y,
+                  const std::wstring& input);
 
   // Replaces the variables in |input| with their actual values according to the
   // properties of the current printed document and the current printed page.

@@ -84,8 +84,9 @@ const std::wstring& PageOverlays::GetOverlay(HorizontalPosition x,
   return EmptyWString();
 }
 
-void PageOverlays::SetOverlay(HorizontalPosition x, VerticalPosition y,
-                              std::wstring& input) {
+void PageOverlays::SetOverlay(HorizontalPosition x,
+                              VerticalPosition y,
+                              const std::wstring& input) {
   switch (x) {
     case LEFT:
       switch (y) {
@@ -137,9 +138,6 @@ std::wstring PageOverlays::ReplaceVariables(const std::wstring& input,
                                             const PrintedDocument& document,
                                             const PrintedPage& page) {
   std::wstring output(input);
-// Prevent references to document.page_count() on Linux until
-// printed_document.cc is included in printing.gyp.
-#if !defined(OS_LINUX)
   for (size_t offset = output.find(L'{', 0);
        offset != std::wstring::npos;
        offset = output.find(L'{', offset)) {
@@ -203,7 +201,6 @@ std::wstring PageOverlays::ReplaceVariables(const std::wstring& input,
       ++offset;
     }
   }
-#endif // !defined(OS_LINUX)
   return output;
 }
 

@@ -13,24 +13,19 @@
 
 namespace {
 
-class PageOverlaysTest : public testing::Test {
- private:
-  MessageLoop message_loop_;
-};
-
 struct Keys {
   const wchar_t* key;
   const wchar_t* expected;
 };
 
 const Keys kOverlayKeys[] = {
-  printing::PageOverlays::kTitle, L"Foobar Document",
-  printing::PageOverlays::kTime, L"",
-  printing::PageOverlays::kDate, L"",
-  printing::PageOverlays::kPage, L"1",
-  printing::PageOverlays::kPageCount, L"2",
-  printing::PageOverlays::kPageOnTotal, L"1/2",
-  printing::PageOverlays::kUrl, L"http://www.perdu.com/",
+  { printing::PageOverlays::kTitle, L"Foobar Document" },
+  { printing::PageOverlays::kTime, L"" },
+  { printing::PageOverlays::kDate, L"" },
+  { printing::PageOverlays::kPage, L"1" },
+  { printing::PageOverlays::kPageCount, L"2" },
+  { printing::PageOverlays::kPageOnTotal, L"1/2" },
+  { printing::PageOverlays::kUrl, L"http://www.perdu.com/" },
 };
 
 class PagesSource : public printing::PrintedPagesSource {
@@ -40,12 +35,16 @@ class PagesSource : public printing::PrintedPagesSource {
   }
 
   virtual GURL RenderSourceUrl() {
-    return GURL(L"http://www.perdu.com");
+    return GURL("http://www.perdu.com");
   }
 };
 
 }  // namespace
 
+class PageOverlaysTest : public testing::Test {
+ private:
+  MessageLoop message_loop_;
+};
 
 TEST_F(PageOverlaysTest, StringConversion) {
   printing::PageOverlays overlays;
@@ -63,21 +62,22 @@ TEST_F(PageOverlaysTest, StringConversion) {
 
   std::wstring input;
   std::wstring out;
-  for (int i = 0; i < arraysize(kOverlayKeys); ++i) {
+  for (size_t i = 0; i < arraysize(kOverlayKeys); ++i) {
     input = StringPrintf(L"foo%lsbar", kOverlayKeys[i].key);
     out = printing::PageOverlays::ReplaceVariables(input, *doc.get(),
                                                    *page.get());
     EXPECT_FALSE(out.empty());
     if (wcslen(kOverlayKeys[i].expected) == 0)
       continue;
-    EXPECT_EQ(StringPrintf(L"foo%lsbar", kOverlayKeys[i].expected), out) <<
-        kOverlayKeys[i].key;
+    std::wstring expected = StringPrintf(L"foo%lsbar",
+                                         kOverlayKeys[i].expected);
+    EXPECT_EQ(expected, out) << kOverlayKeys[i].key;
   }
 
   // Check if SetOverlay really sets the page overlay.
   overlays.SetOverlay(printing::PageOverlays::LEFT,
                       printing::PageOverlays::TOP,
-                      UTF16ToWide(L"Page {page}"));
+                      L"Page {page}");
   input = overlays.GetOverlay(printing::PageOverlays::LEFT,
                               printing::PageOverlays::TOP);
   EXPECT_EQ(input, L"Page {page}");
