@@ -32,8 +32,14 @@ PASS arr[0] is 99
 PASS typeof orgFuncClone is 'function'
 PASS orgFuncClone('world') is 'Hello world'
 PASS groupClone(1, 2) is 9
-PASS typeof Math.sin is 'function'
+FAIL String(Math.sin) should be function sin() {
+    [native code]
+}. Was function sin(x) {
+  if (!(typeof(x) === 'number')) x = ToNumber(x);
+  return _Math_sin(x);
+}.
 PASS shadow() is 2
+PASS nestedret is 'inner nest'
 PASS not_nestedret is 'global nest'
 PASS sample.prototype.prototype is undefined.
 PASS sample.prototype.constructor == sample is true
@@ -42,4 +48,3 @@ PASS functionWithVarOverride(1) is 2
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
