@@ -21,6 +21,7 @@
 
 class AutocompleteEditModel;
 class AutocompleteEditViewWin;
+class BubbleBorder;
 class Profile;
 
 // An interface implemented by an object that provides data to populate

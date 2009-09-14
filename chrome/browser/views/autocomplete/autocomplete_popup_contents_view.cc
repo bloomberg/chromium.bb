@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/views/bubble_border.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -573,107 +574,6 @@ void AutocompleteResultView::InitClass() {
   }
 }
 
-class PopupBorder : public views::Border {
- public:
-  PopupBorder() {
-    InitClass();
-  }
-  virtual ~PopupBorder() {}
-
-  // Returns the border radius of the edge of the popup.
-  static int GetBorderRadius() {
-    // We can't safely calculate a border radius by comparing the sizes of the
-    // side and corner images, because either may have been extended in various
-    // directions in order to do more subtle dropshadow fading or other effects.
-    // So we hardcode the most accurate value.
-    return 4;
-  }
-
-  // Overridden from views::Border:
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) const;
-  virtual void GetInsets(gfx::Insets* insets) const;
-
- private:
-  // Border graphics.
-  static SkBitmap* dropshadow_left_;
-  static SkBitmap* dropshadow_topleft_;
-  static SkBitmap* dropshadow_top_;
-  static SkBitmap* dropshadow_topright_;
-  static SkBitmap* dropshadow_right_;
-  static SkBitmap* dropshadow_bottomright_;
-  static SkBitmap* dropshadow_bottom_;
-  static SkBitmap* dropshadow_bottomleft_;
-
-  static void InitClass();
-
-  DISALLOW_COPY_AND_ASSIGN(PopupBorder);
-};
-
-// static
-SkBitmap* PopupBorder::dropshadow_left_ = NULL;
-SkBitmap* PopupBorder::dropshadow_topleft_ = NULL;
-SkBitmap* PopupBorder::dropshadow_top_ = NULL;
-SkBitmap* PopupBorder::dropshadow_topright_ = NULL;
-SkBitmap* PopupBorder::dropshadow_right_ = NULL;
-SkBitmap* PopupBorder::dropshadow_bottomright_ = NULL;
-SkBitmap* PopupBorder::dropshadow_bottom_ = NULL;
-SkBitmap* PopupBorder::dropshadow_bottomleft_ = NULL;
-
-void PopupBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
-  int ds_tl_width = dropshadow_topleft_->width();
-  int ds_tl_height = dropshadow_topleft_->height();
-  int ds_tr_width = dropshadow_topright_->width();
-  int ds_tr_height = dropshadow_topright_->height();
-  int ds_br_width = dropshadow_bottomright_->width();
-  int ds_br_height = dropshadow_bottomright_->height();
-  int ds_bl_width = dropshadow_bottomleft_->width();
-  int ds_bl_height = dropshadow_bottomleft_->height();
-
-  canvas->DrawBitmapInt(*dropshadow_topleft_, 0, 0);
-  canvas->TileImageInt(*dropshadow_top_, ds_tl_width, 0,
-                       view.width() - ds_tr_width - ds_tl_width,
-                       dropshadow_top_->height());
-  canvas->DrawBitmapInt(*dropshadow_topright_, view.width() - ds_tr_width, 0);
-  canvas->TileImageInt(*dropshadow_right_,
-                       view.width() - dropshadow_right_->width(),
-                       ds_tr_height, dropshadow_right_->width(),
-                       view.height() - ds_tr_height - ds_br_height);
-  canvas->DrawBitmapInt(*dropshadow_bottomright_, view.width() - ds_br_width,
-                        view.height() - ds_br_height);
-  canvas->TileImageInt(*dropshadow_bottom_, ds_bl_width,
-                       view.height() - dropshadow_bottom_->height(),
-                       view.width() - ds_bl_width - ds_br_width,
-                       dropshadow_bottom_->height());
-  canvas->DrawBitmapInt(*dropshadow_bottomleft_, 0,
-                        view.height() - dropshadow_bottomleft_->height());
-  canvas->TileImageInt(*dropshadow_left_, 0, ds_tl_height,
-                       dropshadow_left_->width(),
-                       view.height() - ds_tl_height - ds_bl_height);
-}
-
-void PopupBorder::GetInsets(gfx::Insets* insets) const {
-  // The left, right and bottom edge image sizes define our insets. The corner
-  // images don't determine this because they can extend in both directions.
-  insets->Set(dropshadow_top_->height(), dropshadow_left_->width(),
-              dropshadow_bottom_->height(), dropshadow_right_->width());
-}
-
-void PopupBorder::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    dropshadow_left_ = rb.GetBitmapNamed(IDR_OMNIBOX_POPUP_DS_L);
-    dropshadow_topleft_ = rb.GetBitmapNamed(IDR_OMNIBOX_POPUP_DS_TL);
-    dropshadow_top_ = rb.GetBitmapNamed(IDR_OMNIBOX_POPUP_DS_T);
-    dropshadow_topright_ = rb.GetBitmapNamed(IDR_OMNIBOX_POPUP_DS_TR);
-    dropshadow_right_ = rb.GetBitmapNamed(IDR_OMNIBOX_POPUP_DS_R);
-    dropshadow_bottomright_ = rb.GetBitmapNamed(IDR_OMNIBOX_POPUP_DS_BR);
-    dropshadow_bottom_ = rb.GetBitmapNamed(IDR_OMNIBOX_POPUP_DS_B);
-    dropshadow_bottomleft_ = rb.GetBitmapNamed(IDR_OMNIBOX_POPUP_DS_BL);
-    initialized = true;
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, public:
 
@@ -693,7 +593,7 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
       popup_positioner_(popup_positioner),
       result_font_(font.DeriveFont(kEditFontAdjust)),
       ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
-  set_border(new PopupBorder);
+  set_border(new BubbleBorder);
 }
 
 gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
@@ -923,7 +823,7 @@ void AutocompletePopupContentsView::MakeContentsPath(
            SkIntToScalar(bounding_rect.right()),
            SkIntToScalar(bounding_rect.bottom()));
 
-  SkScalar radius = SkIntToScalar(PopupBorder::GetBorderRadius());
+  SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
   path->addRoundRect(rect, radius, radius);
 }
 
