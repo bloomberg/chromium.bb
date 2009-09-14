@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 
@@ -672,11 +674,14 @@ static const float kIndentLeavingSpaceForControls = 64.0;
     return;
 
   static NSImage* throbberWaitingImage =
-      [nsimage_cache::ImageNamed(@"throbber_waiting.png") retain];
+      [ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_THROBBER_WAITING)
+        retain];
   static NSImage* throbberLoadingImage =
-      [nsimage_cache::ImageNamed(@"throbber.png") retain];
+      [ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_THROBBER)
+        retain];
   static NSImage* sadFaviconImage =
-      [nsimage_cache::ImageNamed(@"sadfavicon.png") retain];
+      [ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SAD_FAVICON)
+        retain];
 
   TabController* tabController = [tabArray_ objectAtIndex:index];
 

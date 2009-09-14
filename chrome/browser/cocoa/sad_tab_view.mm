@@ -4,10 +4,11 @@
 
 #include "chrome/browser/cocoa/sad_tab_view.h"
 
-#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
+#include "app/resource_bundle.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/cocoa/nsimage_cache.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 static const int kSadTabOffset = -64;
 static const int kIconTitleSpacing = 20;
@@ -16,11 +17,11 @@ static const int kTitleMessageSpacing = 15;
 @implementation SadTabView
 
 - (void)drawRect:(NSRect)dirtyRect {
-  NSImage* sadTabImage = nsimage_cache::ImageNamed(@"sadtab.png");
-  NSString* title =
-      base::SysWideToNSString(l10n_util::GetString(IDS_SAD_TAB_TITLE));
-  NSString* message =
-      base::SysWideToNSString(l10n_util::GetString(IDS_SAD_TAB_MESSAGE));
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* sadTabImage = rb.GetNSImageNamed(IDR_SAD_TAB);
+  DCHECK(sadTabImage);
+  NSString* title = l10n_util::GetNSStringWithFixup(IDS_SAD_TAB_TITLE);
+  NSString* message = l10n_util::GetNSStringWithFixup(IDS_SAD_TAB_MESSAGE);
 
   NSColor* textColor = [NSColor whiteColor];
   NSColor* backgroundColor = [NSColor colorWithCalibratedRed:(35.0f/255.0f)

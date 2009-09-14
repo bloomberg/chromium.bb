@@ -3060,13 +3060,9 @@
         'app/theme/pageinfo_bad.png',
         'app/theme/pageinfo_good.png',
         'app/theme/reload_Template.pdf',
-        'app/theme/sadfavicon.png',
-        'app/theme/sadtab.png',
         'app/theme/star_Template.pdf',
         'app/theme/starred.pdf',
         'app/theme/stop_Template.pdf',
-        '../app/resources/throbber.png',
-        'app/theme/throbber_waiting.png',
         'app/app-Info.plist',
       ],
       # TODO(mark): Come up with a fancier way to do this.  It should only
