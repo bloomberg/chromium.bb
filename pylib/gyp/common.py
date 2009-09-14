@@ -92,6 +92,21 @@ def RelativePath(path, relative_to):
   return os.path.join(*relative_split)
 
 
+def FixIfRelativePath(path, relative_to):
+  # Like RelativePath but returns |path| unchanged if it is absolute.
+  if os.path.isabs(path):
+    return path
+  return RelativePath(path, relative_to)
+
+
+def UnrelativePath(path, relative_to):
+  # Assuming that |relative_to| is relative to the current directory, and |path|
+  # is a path relative to the dirname of |relative_to|, returns a path that
+  # identifies |path| relative to the current directory.
+  rel_dir = os.path.dirname(relative_to)
+  return os.path.normpath(os.path.join(rel_dir, path))
+
+
 # re objects used by EncodePOSIXShellArgument.  See IEEE 1003.1 XCU.2.2 at
 # http://www.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_02
 # and the documentation for various shells.

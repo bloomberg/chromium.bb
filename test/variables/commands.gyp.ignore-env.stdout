@@ -2,7 +2,7 @@ GENERAL: running with these options:
 GENERAL:   msvs_version: None
 GENERAL:   suffix: ''
 GENERAL:   includes: None
-GENERAL:   use_environment: True
+GENERAL:   use_environment: False
 GENERAL:   depth: '.'
 GENERAL:   generator_flags: []
 GENERAL:   generator_output: None

@@ -809,17 +809,26 @@ def GenerateOutput(target_list, target_dicts, data, params):
   if not default_configuration:
     default_configuration = 'Default'
 
-  root_makefile = open(os.path.join(options.depth, 'Makefile' + options.suffix),
-                       'w')
+  makefile_name = 'Makefile' + options.suffix
+  root_makefile = open(os.path.join(options.depth, makefile_name), 'w')
   root_makefile.write(SHARED_HEADER_ROOTDIR % options.depth)
   root_makefile.write(SHARED_HEADER_BUILDDIR_NAME % builddir_name)
   root_makefile.write(SHARED_HEADER.replace('__default_configuration__',
                                             default_configuration))
 
+  build_files = set()
   for qualified_target in target_list:
     build_file, target = gyp.common.BuildFileAndTarget('', qualified_target)[:2]
     output_file = os.path.join(os.path.split(build_file)[0],
                                target + options.suffix + '.mk')
+    build_files.add(gyp.common.RelativePath(build_file, options.depth))
+    included_files = data[build_file]['included_files']
+    for included_file in included_files:
+      # The included_files entries are relative to the dir of the build file
+      # that included them, so we have to undo that and then make them relative
+      # to the root dir.
+      build_files.add(gyp.common.RelativePath(
+          gyp.common.UnrelativePath(included_file, build_file), options.depth))
 
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
@@ -831,6 +840,18 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # from there to the output_file for including.
     submakefile_path = gyp.common.RelativePath(output_file, options.depth)
     root_makefile.write('include ' + submakefile_path + "\n")
+
+  if generator_flags.get('auto_regeneration', True):
+    build_files_args = [gyp.common.RelativePath(filename, options.depth)
+                        for filename in params['build_files_arg']]
+    root_makefile.write("%s: %s\n\t%s\n" % (
+        makefile_name,
+        ' '.join(build_files),
+        gyp.common.EncodePOSIXShellList(
+            [gyp.common.FixIfRelativePath(params['gyp_binary'], options.depth),
+             '-fmake'] +
+            gyp.RegenerateFlags(options) +
+            build_files_args)))
 
   root_makefile.write(SHARED_FOOTER)
 

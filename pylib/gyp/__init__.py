@@ -98,22 +98,137 @@ def NameValueListToDict(name_value_list):
       result[tokens[0]] = True
   return result
 
+def ShlexEnv(env_name):
+  flags = os.environ.get(env_name, [])
+  if flags:
+    flags = shlex.split(flags)
+  return flags
+
+def RegenerateAppendFlag(flag, values, predicate, env_name, options):
+  """Regenerate a list of command line flags, for an option of action='append'.
+
+  The |env_name|, if given, is checked in the environment and used to generate
+  an initial list of options, then the options that were specified on the
+  command line (given in |values|) are appended.  This matches the handling of
+  environment variables and command line flags where command line flags override
+  the environment, while not requiring the environment to be set when the flags
+  are used again.
+  """
+  flags = []
+  if options.use_environment and env_name:
+    for flag_value in ShlexEnv(env_name):
+      flags.append(flag + predicate(flag_value))
+  if values:
+    for flag_value in values:
+      flags.append(flag + predicate(flag_value))
+  return flags
+
+def RegenerateFlags(options):
+  """Given a parsed options object, and taking the environment variables into
+  account, returns a list of flags that should regenerate an equivalent options
+  object (even in the absence of the environment variables.)
+
+  Any path options will be normalized relative to depth.
+
+  The format flag is not included, as it is assumed the calling generator will
+  set that as appropriate.
+  """
+  def FixPath(path):
+    path = gyp.common.FixIfRelativePath(path, options.depth)
+    if not path:
+      return os.path.curdir
+    return path
+
+  def Noop(value):
+    return value
+
+  # We always want to ignore the environment when regenerating, to avoid
+  # duplicate or changed flags in the environment at the time of regeneration.
+  flags = ['--ignore-environment']
+  for name, metadata in options._regeneration_metadata.iteritems():
+    opt = metadata['opt']
+    value = getattr(options, name)
+    value_predicate = metadata['type'] == 'path' and FixPath or Noop
+    action = metadata['action']
+    env_name = metadata['env_name']
+    if action == 'append':
+      flags.extend(RegenerateAppendFlag(opt, value, value_predicate,
+                                        env_name, options))
+    elif action in ('store', None):  # None is a synonym for 'store'.
+      if value:
+        flags.append(opt + value_predicate(value))
+      elif options.use_environment and env_name and os.environ.get(env_name):
+        flags.append(opt + value_predicate(os.environ.get(env_name)))
+    else:
+      print >>sys.stderr, ("regeneration unimplemented for action", action,
+                           "flag", opt)
+
+  return flags
+
+class RegeneratableOptionParser(optparse.OptionParser):
+  def __init__(self):
+    self.__regeneratable_options = {}
+    optparse.OptionParser.__init__(self)
+
+  def add_option(self, *args, **kw):
+    """Add an option to the parser.
+
+    This accepts the same arguments as OptionParser.add_option, plus the
+    following:
+      regenerate: can be set to False to prevent this option from being included
+                  in regeneration.
+      env_name: name of environment variable that additional values for this
+                option come from.
+      type: adds type='path', to tell the regenerator that the values of
+            this option need to be made relative to options.depth
+    """
+    env_name = kw.pop('env_name', None),
+    if 'dest' in kw and kw.pop('regenerate', True):
+      dest = kw['dest']
+
+      # The path type is needed for regenerating, for optparse we can just treat
+      # it as a string.
+      type = kw.get('type')
+      if type == 'path':
+        kw['type'] = 'string'
+
+      if args[0].startswith('--'):
+        opt = args[0] + '='
+      else:
+        opt = args[0]
+      self.__regeneratable_options[dest] = {
+          'action': kw.get('action'),
+          'type': type,
+          'env_name': env_name,
+          'opt': opt,
+        }
+
+    optparse.OptionParser.add_option(self, *args, **kw)
+
+  def parse_args(self, *args):
+    values, args = optparse.OptionParser.parse_args(self, *args)
+    values._regeneration_metadata = self.__regeneratable_options
+    return values, args
+
 def main(args):
   my_name = os.path.basename(sys.argv[0])
 
-  parser = optparse.OptionParser()
+  parser = RegeneratableOptionParser()
   usage = 'usage: %s [options ...] [build_file ...]'
   parser.set_usage(usage.replace('%s', '%prog'))
   parser.add_option('-D', dest='defines', action='append', metavar='VAR=VAL',
+                    env_name='GYP_DEFINES',
                     help='sets variable VAR to value VAL')
   parser.add_option('-f', '--format', dest='formats', action='append',
+                    env_name='GYP_GENERATORS', regenerate=False,
                     help='output formats to generate')
   parser.add_option('--msvs-version', dest='msvs_version',
+                    regenerate=False,
                     help='Deprecated; use -G msvs_version=MSVS_VERSION instead')
   parser.add_option('-I', '--include', dest='includes', action='append',
-                    metavar='INCLUDE',
+                    metavar='INCLUDE', type='path',
                     help='files to include in all loaded .gyp files')
-  parser.add_option('--depth', dest='depth', metavar='PATH',
+  parser.add_option('--depth', dest='depth', metavar='PATH', type='path',
                     help='set DEPTH gyp variable to a relative path to PATH')
   parser.add_option('-d', '--debug', dest='debug', metavar='DEBUGMODE',
                     action='append', default=[], help='turn on a debugging '
@@ -122,10 +237,15 @@ def main(args):
   parser.add_option('-S', '--suffix', dest='suffix', default='',
                     help='suffix to add to generated files')
   parser.add_option('-G', dest='generator_flags', action='append', default=[],
-                    metavar='FLAG=VAL', help='sets generator flag FLAG to VAL')
+                    metavar='FLAG=VAL', env_name='GYP_GENERATOR_FLAGS',
+                    help='sets generator flag FLAG to VAL')
   parser.add_option('--generator-output', dest='generator_output',
-                    action='store', default=None, metavar='DIR',
+                    action='store', default=None, metavar='DIR', type='path',
+                    env_name='GYP_GENERATOR_OUTPUT',
                     help='puts generated build files under DIR')
+  parser.add_option('--ignore-environment', dest='use_environment',
+                    action='store_false', default=True, regenerate=False,
+                    help='do not read options from environment variables')
 
   # We read a few things from ~/.gyp, so set up a var for that.
   home_vars = ['HOME']
@@ -144,23 +264,14 @@ def main(args):
 
   # TODO(thomasvl): add support for ~/.gyp/defaults
 
-  (options, build_files) = parser.parse_args(args)
-
-  for mode in options.debug:
-    gyp.debug[mode] = 1
-
-  # Do an extra check to avoid work when we're not debugging.
-  if DEBUG_GENERAL in gyp.debug.keys():
-    DebugOutput(DEBUG_GENERAL, 'running with these options:')
-    for (option, value) in options.__dict__.items():
-      if isinstance(value, basestring):
-        DebugOutput(DEBUG_GENERAL, "  %s: '%s'" % (option, value))
-      else:
-        DebugOutput(DEBUG_GENERAL, "  %s: %s" % (option, str(value)))
+  (options, build_files_arg) = parser.parse_args(args)
+  build_files = build_files_arg
 
   if not options.formats:
     # If no format was given on the command line, then check the env variable.
-    generate_formats = os.environ.get('GYP_GENERATORS', [])
+    generate_formats = []
+    if options.use_environment:
+      generate_formats = os.environ.get('GYP_GENERATORS', [])
     if generate_formats:
       generate_formats = re.split('[\s,]', generate_formats)
     if generate_formats:
@@ -174,17 +285,31 @@ def main(args):
                            'freebsd8': 'make',
                            'linux2':   'scons',}[sys.platform] ]
 
+  if not options.generator_output and options.use_environment:
+    g_o = os.environ.get('GYP_GENERATOR_OUTPUT')
+    if g_o:
+      options.generator_output = g_o
+
+  for mode in options.debug:
+    gyp.debug[mode] = 1
+
+  # Do an extra check to avoid work when we're not debugging.
+  if DEBUG_GENERAL in gyp.debug.keys():
+    DebugOutput(DEBUG_GENERAL, 'running with these options:')
+    for (option, value) in options.__dict__.items():
+      if option[0] == '_':
+        continue
+      if isinstance(value, basestring):
+        DebugOutput(DEBUG_GENERAL, "  %s: '%s'" % (option, value))
+      else:
+        DebugOutput(DEBUG_GENERAL, "  %s: %s" % (option, str(value)))
+
   if not build_files:
     build_files = FindBuildFiles()
   if not build_files:
     print >>sys.stderr, (usage + '\n\n%s: error: no build_file') % \
                         (my_name, my_name)
     return 1
-
-  if not options.generator_output:
-    g_o = os.environ.get('GYP_GENERATOR_OUTPUT')
-    if g_o:
-      options.generator_output = g_o
 
   # TODO(mark): Chromium-specific hack!
   # For Chromium, the gyp "depth" variable should always be a relative path
@@ -218,12 +343,15 @@ def main(args):
   # it's for default.  Perhaps there should be a way to force (-F?) a
   # variable's value so that it can't be overridden by anything else.
   cmdline_default_variables = {}
-  defines = os.environ.get('GYP_DEFINES', [])
-  if defines:
-    defines = shlex.split(defines)
+  defines = []
+  if options.use_environment:
+    defines += ShlexEnv('GYP_DEFINES')
   if options.defines:
     defines += options.defines
   cmdline_default_variables = NameValueListToDict(defines)
+  if DEBUG_GENERAL in gyp.debug.keys():
+    DebugOutput(DEBUG_GENERAL,
+                "cmdline_default_variables: %s" % cmdline_default_variables)
 
   # Set up includes.
   includes = []
@@ -241,13 +369,15 @@ def main(args):
 
   # Generator flags should be prefixed with the target generator since they
   # are global across all generator runs.
-  gen_flags = os.environ.get('GYP_GENERATOR_FLAGS', [])
-  if gen_flags:
-    gen_flags = shlex.split(gen_flags)
+  gen_flags = []
+  if options.use_environment:
+    gen_flags += ShlexEnv('GYP_GENERATOR_FLAGS')
   if options.generator_flags:
     gen_flags += options.generator_flags
   generator_flags = NameValueListToDict(gen_flags)
-  
+  if DEBUG_GENERAL in gyp.debug.keys():
+    DebugOutput(DEBUG_GENERAL, "generator_flags: %s" % generator_flags)
+
   # TODO: Remove this and the option after we've gotten folks to move to the
   # generator flag.
   if options.msvs_version:
@@ -263,7 +393,9 @@ def main(args):
     params = {'options': options,
               'build_files': build_files,
               'generator_flags': generator_flags,
-              'cwd': os.getcwd()}
+              'cwd': os.getcwd(),
+              'build_files_arg': build_files_arg,
+              'gyp_binary': sys.argv[0]}
 
     # Start with the default variables from the command line.
     [generator, flat_list, targets, data] = Load(build_files, format,
