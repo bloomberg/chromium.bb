@@ -4,7 +4,6 @@
 Verifies file copies using an explicit build target of 'all'.
 """
 
-import os
 import sys
 
 import TestGyp
@@ -19,9 +18,8 @@ test.run_gyp('copies.gyp',
 
 test.writable(test.workpath('copies'), True)
 
-test.subdir('relocate')
-os.rename('copies', 'relocate/copies')
-os.rename('gypfiles', 'relocate/gypfiles')
+test.relocate('copies', 'relocate/copies')
+test.relocate('gypfiles', 'relocate/gypfiles')
 
 test.writable(test.workpath('relocate/copies'), False)
 

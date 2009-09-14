@@ -7,16 +7,13 @@ get created outside of that build directory hierarchy even when
 referred to with deeply-nested ../../.. paths.
 """
 
-import os
-
 import TestGyp
 
 test = TestGyp.TestGyp()
 
 test.run_gyp('prog1.gyp', '--depth=..', chdir='src')
 
-test.subdir('relocate')
-os.rename('src', 'relocate/src')
+test.relocate('src', 'relocate/src')
 
 test.subdir('relocate/builddir')
 

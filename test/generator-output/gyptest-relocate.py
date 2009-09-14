@@ -20,10 +20,8 @@ test.run_gyp('prog1.gyp',
 
 test.writable(test.workpath('src'), True)
 
-import os
-test.subdir('relocate')
-os.rename('src', 'relocate/src')
-os.rename('gypfiles', 'relocate/gypfiles')
+test.relocate('src', 'relocate/src')
+test.relocate('gypfiles', 'relocate/gypfiles')
 
 test.writable(test.workpath('relocate/src'), False)
 

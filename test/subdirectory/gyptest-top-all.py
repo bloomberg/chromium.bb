@@ -14,16 +14,13 @@ in a build directory relative to the "solution"--that is, the entry-point
 from which you built the entire tree.
 """
 
-import os
-
 import TestGyp
 
 test = TestGyp.TestGyp()
 
 test.run_gyp('prog1.gyp', chdir='src')
 
-test.subdir('relocate')
-os.rename('src', 'relocate/src')
+test.relocate('src', 'relocate/src')
 
 test.build_all('prog1.gyp', chdir='relocate/src')
 

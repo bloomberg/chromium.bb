@@ -11,16 +11,13 @@ to make Xcode behave like the other build tools--that is, put all
 built targets in a single output build directory at the top of the tree.
 """
 
-import os
-
 import TestGyp
 
 test = TestGyp.TestGyp()
 
 test.run_gyp('prog1.gyp', '-Dset_symroot=1', '--depth=.', chdir='src')
 
-test.subdir('relocate')
-os.rename('src', 'relocate/src')
+test.relocate('src', 'relocate/src')
 
 # Suppress the test infrastructure's setting SYMROOT on the command line.
 test.build_default('prog1.gyp', SYMROOT=None, chdir='relocate/src')

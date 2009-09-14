@@ -4,7 +4,6 @@
 Verifies simple actions when using the default build target.
 """
 
-import os
 import sys
 
 import TestGyp
@@ -13,8 +12,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('actions.gyp', chdir='src')
 
-test.subdir('relocate')
-os.rename('src', 'relocate/src')
+test.relocate('src', 'relocate/src')
 
 test.build_default('actions.gyp', chdir='relocate/src')
 

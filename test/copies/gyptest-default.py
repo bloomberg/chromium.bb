@@ -4,7 +4,6 @@
 Verifies file copies using the build tool default.
 """
 
-import os
 import sys
 
 import TestGyp
@@ -13,8 +12,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('copies.gyp', chdir='src')
 
-test.subdir('relocate')
-os.rename('src', 'relocate/src')
+test.relocate('src', 'relocate/src')
 
 test.build_default('copies.gyp', chdir='relocate/src')
 

@@ -3,7 +3,6 @@
 """
 """
 
-import os
 import sys
 
 import TestGyp
@@ -12,8 +11,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('build/all.gyp', chdir='src')
 
-test.subdir('relocate')
-os.rename('src', 'relocate/src')
+test.relocate('src', 'relocate/src')
 
 test.build_all('build/all.gyp', chdir='relocate/src')
 

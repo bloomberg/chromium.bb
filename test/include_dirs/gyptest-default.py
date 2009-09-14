@@ -4,7 +4,6 @@
 Verifies use of include_dirs when using the default build target.
 """
 
-import os
 import sys
 
 import TestGyp
@@ -13,8 +12,7 @@ test = TestGyp.TestGyp()
 
 test.run_gyp('includes.gyp', chdir='src')
 
-test.subdir('relocate')
-os.rename('src', 'relocate/src')
+test.relocate('src', 'relocate/src')
 
 test.build_all('includes.gyp', chdir='relocate/src')
 

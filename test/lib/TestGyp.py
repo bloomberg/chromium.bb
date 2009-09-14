@@ -130,6 +130,21 @@ class TestGypBase(TestCommon.TestCommon):
     if self.build_tool_list:
       self.build_tool = self.build_tool_list[0]
 
+  def relocate(self, source, destination):
+    """
+    Renames (relocates) the specified source (usually a directory)
+    to the specified destination, creating the destination directory
+    first if necessary.
+
+    Note:  Don't use this as a generic "rename" operation.  In the
+    future, "relocating" parts of a GYP tree may affect the state of
+    the test to modify the behavior of later method calls.
+    """
+    destination_dir = os.path.dirname(destination)
+    if not os.path.exists(destination_dir):
+      self.subdir(destination_dir)
+    os.rename(source, destination)
+
   def run_gyp(self, gyp_file, *args, **kw):
     """
     Runs gyp against the specified gyp_file with the specified args.

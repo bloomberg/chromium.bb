@@ -4,7 +4,6 @@
 Verifies --generator-output= behavior when using actions.
 """
 
-import os
 import sys
 
 import TestGyp
@@ -19,9 +18,8 @@ test.run_gyp('actions.gyp',
 
 test.writable(test.workpath('actions'), True)
 
-test.subdir('relocate')
-os.rename('actions', 'relocate/actions')
-os.rename('gypfiles', 'relocate/gypfiles')
+test.relocate('actions', 'relocate/actions')
+test.relocate('gypfiles', 'relocate/gypfiles')
 
 test.writable(test.workpath('relocate/actions'), False)
 
