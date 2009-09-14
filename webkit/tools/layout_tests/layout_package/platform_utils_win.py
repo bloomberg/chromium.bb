@@ -13,26 +13,27 @@ def PlatformName():
   """Returns the name of the platform we're currently running on."""
   # We're not ready for version-specific results yet. When we uncomment
   # this, we also need to add it to the BaselineSearchPath()
-  # return 'chromium-win' + PlatformVersion()
-  return 'chromium-win'
+  return 'chromium-win' + PlatformVersion()
 
 def PlatformVersion():
   """Returns the version string for the platform, e.g. '-vista' or
   '-snowleopard'. If the platform does not distinguish between
   minor versions, it returns ''."""
   winver = sys.getwindowsversion()
-  if winver[0] == 6 and winver[1] == 0:
-    return '-vista'
-  elif winver[0] == 5 and (winver[1] == 1 or winver[1] == 2):
+  if winver[0] == 5 and (winver[1] == 1 or winver[1] == 2):
     return '-xp'
   return ''
 
 def BaselineSearchPath():
   """Returns the list of directories to search for baselines/results, in
   order of preference. Paths are relative to the top of the source tree."""
-  return [path_utils.ChromiumBaselinePath('chromium-win'),
-          path_utils.WebKitBaselinePath('win'),
-          path_utils.WebKitBaselinePath('mac')]
+  dirs = []
+  if PlatformVersion() == "-xp":
+    dirs.append(path_utils.ChromiumBaselinePath('chromium-win-xp'))
+  dirs.append(path_utils.ChromiumBaselinePath('chromium-win'))
+  dirs.append(path_utils.WebKitBaselinePath('win'))
+  dirs.append(path_utils.WebKitBaselinePath('mac'))
+  return dirs
 
 def WDiffPath():
   """Path to the WDiff executable, whose binary is checked in on Win"""

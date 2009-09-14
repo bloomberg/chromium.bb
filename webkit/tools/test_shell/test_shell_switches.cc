@@ -14,6 +14,17 @@ const wchar_t kNoErrorDialogs[]                = L"noerrdialogs";
 const wchar_t kLayoutTests[] = L"layout-tests";
 const wchar_t kCrashDumps[] = L"crash-dumps";  // Enable crash dumps
 
+// Causes the test_shell to run with a generic theme (part of layout_tests).
+const wchar_t kGenericTheme[] = L"generic-theme";
+
+// This causes the test_shell to run with the classic theme.
+// Passing --layout-tests enables this by default.
+const wchar_t kClassicTheme[] = L"classic-theme";
+
+// This causes the test_shell to run with the new windows theming engine
+// enabled. This is the default unless --layout-tests is specified.
+const wchar_t kUxTheme[] = L"ux-theme";
+
 // Command line flags that control the tests when layout-tests is specified.
 const wchar_t kNoTree[] = L"notree";  // Don't dump the render tree.
 const wchar_t kDumpPixels[] = L"pixel-tests";  // Enable pixel tests.

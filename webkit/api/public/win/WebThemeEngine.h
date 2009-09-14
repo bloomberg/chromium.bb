@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -38,8 +38,11 @@ namespace WebKit {
     struct WebRect;
 
     // The part and state parameters correspond to values defined by the
-    // Windows Theme API.  The classicState parameter corresponds to the uState
-    // parameter of the Windows DrawFrameRect function.
+    // Windows Theme API (see
+    // http://msdn.microsoft.com/en-us/library/bb773187(VS.85).aspx ).
+    // The classicState parameter corresponds to the uState
+    // parameter of the Windows DrawFrameControl() function.
+    // See the definitions in <vsstyle.h> and <winuser.h>.
     class WebThemeEngine {
     public:
         virtual void paintButton(

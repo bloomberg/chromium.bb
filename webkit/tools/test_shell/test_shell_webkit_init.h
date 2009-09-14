@@ -29,9 +29,14 @@
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "v8/include/v8.h"
 
+#if defined(OS_WIN)
+#include "webkit/api/public/win/WebThemeEngine.h"
+#include "webkit/tools/test_shell/test_shell_webthemeengine.h"
+#endif
+
 class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
  public:
-  TestShellWebKitInit(bool layout_test_mode) {
+  explicit TestShellWebKitInit(bool layout_test_mode) {
     v8::V8::SetCounterFunction(StatsTable::FindLocation);
 
     WebKit::initialize(this);
@@ -56,6 +61,11 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     // content during the run. Upon exit that directory is deleted.
     if (appcache_dir_.CreateUniqueTempDir())
       SimpleAppCacheSystem::InitializeOnUIThread(appcache_dir_.path());
+
+#if defined(OS_WIN)
+    // Ensure we pick up the default theme engine.
+    setThemeEngine(NULL);
+#endif
   }
 
   ~TestShellWebKitInit() {
@@ -84,7 +94,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     return false;
   }
 
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result) {
+  virtual bool getFileSize(const WebKit::WebString& path,
+                           long long& result) {
     return file_util::GetFileSize(
         FilePath(webkit_glue::WebStringToFilePathString(path)),
                  reinterpret_cast<int64*>(&result));
@@ -158,12 +169,26 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     return SimpleAppCacheSystem::CreateApplicationCacheHost(client);
   }
 
+#if defined(OS_WIN)
+  void setThemeEngine(WebKit::WebThemeEngine* engine) {
+    active_theme_engine_ = engine ? engine : WebKitClientImpl::themeEngine();
+  }
+
+  virtual WebKit::WebThemeEngine *themeEngine() {
+    return active_theme_engine_;
+  }
+#endif
+
  private:
   webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebClipboardImpl real_clipboard_;
   ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
+
+#if defined(OS_WIN)
+  WebKit::WebThemeEngine* active_theme_engine_;
+#endif
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBKIT_INIT_H_

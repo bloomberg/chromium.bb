@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <iostream>
-
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -80,6 +78,11 @@ int main(int argc, char* argv[]) {
        parsed_command_line.HasSwitch(test_shell::kLayoutTests));
   bool layout_test_mode =
       parsed_command_line.HasSwitch(test_shell::kLayoutTests);
+  bool ux_theme = parsed_command_line.HasSwitch(test_shell::kUxTheme);
+  bool generic_theme =
+      parsed_command_line.HasSwitch(test_shell::kGenericTheme);
+  bool classic_theme = (layout_test_mode && !ux_theme && !generic_theme) ||
+      parsed_command_line.HasSwitch(test_shell::kClassicTheme);
 
   bool enable_gp_fault_error_box = false;
   enable_gp_fault_error_box =
@@ -156,9 +159,15 @@ int main(int argc, char* argv[]) {
     TestShell::SetAllowScriptsToCloseWindows();
 
   // Disable user themes for layout tests so pixel tests are consistent.
-  if (layout_test_mode) {
+#if defined(OS_WIN)
+  TestShellWebTheme::Engine engine;
+#endif
+  if (classic_theme)
     platform.SelectUnifiedTheme();
-  }
+#if defined(OS_WIN)
+  if (generic_theme)
+    test_shell_webkit_init.setThemeEngine(&engine);
+#endif
 
   if (parsed_command_line.HasSwitch(test_shell::kTestShellTimeOut)) {
     const std::wstring timeout_str = parsed_command_line.GetSwitchValue(
