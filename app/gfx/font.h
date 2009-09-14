@@ -9,12 +9,12 @@
 
 #include <string>
 
+#if defined(OS_LINUX)
+#include <list>
+#endif
+
 #if defined(OS_WIN)
 typedef struct HFONT__* HFONT;
-#elif defined(OS_LINUX)
-#include "third_party/skia/include/core/SkRefCnt.h"
-class SkPaint;
-class SkTypeface;
 #endif
 
 #if defined(OS_WIN)
@@ -28,8 +28,7 @@ class NSFont;
 typedef NSFont* NativeFont;
 #elif defined(OS_LINUX)
 typedef struct _PangoFontDescription PangoFontDescription;
-class SkTypeface;
-typedef SkTypeface* NativeFont;
+typedef PangoFontDescription* NativeFont;
 #else  // null port.
 #error No known OS defined
 #endif
@@ -102,6 +101,10 @@ class Font {
   // Font Size.
   int FontSize();
 
+  // Returns a handle to the native font.
+  // NOTE: on linux this returns the PangoFontDescription* being held by this
+  // object. You should not modify or free it. If you need to use it, make a
+  // copy of it by way of pango_font_description_copy(nativeFont()).
   NativeFont nativeFont() const;
 
   // Creates a font with the default name and style.
@@ -126,16 +129,6 @@ class Font {
   }
 #elif defined(OS_LINUX)
   static Font CreateFont(PangoFontDescription* desc);
-  // We need a copy constructor and assignment operator to deal with
-  // the Skia reference counting.
-  Font(const Font& other);
-  Font& operator=(const Font& other);
-  // Setup a Skia context to use the current typeface
-  void PaintSetup(SkPaint* paint) const;
-
-  // Converts |gfx_font| to a new pango font. Free the returned font with
-  // pango_font_description_free().
-  static PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font);
 #endif
 
  private:
@@ -196,32 +189,74 @@ class Font {
   // Indirect reference to the HFontRef, which references the underlying HFONT.
   scoped_refptr<HFontRef> font_ref_;
 #elif defined(OS_LINUX)
-  explicit Font(SkTypeface* typeface, const std::wstring& name,
-                int size, int style);
-  // Calculate and cache the font metrics.
-  void calculateMetrics();
-  // Make |this| a copy of |other|.
-  void CopyFont(const Font& other);
+  // Used internally on Linux to cache information about the font. Each
+  // Font maintains a reference to a PangoFontRef. Coping a Font ups the
+  // refcount of the corresponding PangoFontRef.
+  //
+  // As obtaining metrics (height, ascent, average char width) is expensive,
+  // the metrics are only obtained as needed. Additionally PangoFontRef
+  // maintains a static cache of PangoFontRefs. When a PangoFontRef is needed
+  // the cache is checked first.
+  class PangoFontRef : public base::RefCounted<PangoFontRef> {
+   public:
+    ~PangoFontRef();
+
+    // Creates or returns a cached PangoFontRef of the given family, size and
+    // style.
+    static PangoFontRef* Create(PangoFontDescription* pfd,
+                                const std::wstring& family,
+                                int size,
+                                int style);
+
+    PangoFontDescription* pfd() const { return pfd_; }
+    const std::wstring& family() const { return family_; }
+    int size() const { return size_; }
+    int style() const { return style_; }
+    int GetHeight() const;
+    int GetAscent() const;
+    int GetAveCharWidth() const;
+
+   private:
+    typedef std::list<PangoFontRef*> Cache;
+
+    PangoFontRef(PangoFontDescription* pfd,
+                 const std::wstring& family,
+                 int size,
+                 int style);
+
+    void CalculateMetricsIfNecessary() const;
+
+    // Returns the cache.
+    static Cache* GetCache();
+
+    // Adds |ref| to the cache, removing an existing PangoFontRef if there are
+    // too many.
+    static void AddToCache(PangoFontRef* ref);
+
+    PangoFontDescription* pfd_;
+    const std::wstring family_;
+    const int size_;
+    const int style_;
+
+    // Metrics related members. As these are expensive to calculate they are
+    // calculated the first time requested.
+    mutable int height_;
+    mutable int ascent_;
+    mutable int ave_char_width_;
+
+    // Have the metrics related members been determined yet (height_, ascent_
+    // ave_char_width_)?
+    mutable bool calculated_metrics_;
+
+    DISALLOW_COPY_AND_ASSIGN(PangoFontRef);
+  };
+
+  explicit Font(PangoFontDescription* pfd);
 
   // The default font, used for the default constructor.
   static Font* default_font_;
 
-  // These two both point to the same SkTypeface. We use the SkAutoUnref to
-  // handle the reference counting, but without @typeface_ we would have to
-  // cast the SkRefCnt from @typeface_helper_ every time.
-  scoped_ptr<SkAutoUnref> typeface_helper_;
-  SkTypeface *typeface_;
-
-  // Additional information about the face
-  // Skia actually expects a family name and not a font name.
-  std::wstring font_family_;
-  int font_size_;
-  int style_;
-
-  // Cached metrics, generated at construction
-  int height_;
-  int ascent_;
-  int avg_width_;
+  scoped_refptr<PangoFontRef> font_ref_;
 #elif defined(OS_MACOSX)
   explicit Font(const std::wstring& font_name, int font_size, int style);
 
