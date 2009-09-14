@@ -97,6 +97,9 @@ class AutocompleteEditView {
   // Closes the autocomplete popup, if it's open.
   virtual void ClosePopup() = 0;
 
+  // Sets the focus to the autocomplete view.
+  virtual void SetFocus() = 0;
+
   // Called when the temporary text in the model may have changed.
   // |display_text| is the new text to show; |save_original_selection| is true
   // when there wasn't previously a temporary text and thus we need to save off

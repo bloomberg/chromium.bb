@@ -71,12 +71,12 @@ class NativeViewHost : public View {
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
+  virtual void Focus();
 
  protected:
   virtual void VisibleBoundsInRootChanged();
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   virtual std::string GetClassName() const;
-  virtual void Focus();
 
  private:
   // The attached native view.

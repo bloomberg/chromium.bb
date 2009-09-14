@@ -706,6 +706,10 @@ void AutocompleteEditViewWin::ClosePopup() {
   popup_view_->GetModel()->StopAutocomplete();
 }
 
+void AutocompleteEditViewWin::SetFocus() {
+  ::SetFocus(m_hWnd);
+}
+
 IAccessible* AutocompleteEditViewWin::GetIAccessible() {
   if (!autocomplete_accessibility_) {
     CComObject<AutocompleteAccessibility>* accessibility = NULL;

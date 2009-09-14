@@ -289,11 +289,8 @@ void LocationBarView::InvalidatePageActions() {
 }
 
 void LocationBarView::Focus() {
-#if defined(OS_WIN)
-  ::SetFocus(location_entry_->m_hWnd);
-#else
-  gtk_widget_grab_focus(location_entry_->widget());
-#endif
+  // Focus the location entry native view.
+  location_entry_->SetFocus();
 }
 
 void LocationBarView::SetProfile(Profile* profile) {

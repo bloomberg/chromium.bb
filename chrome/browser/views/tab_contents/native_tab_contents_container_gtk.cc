@@ -17,7 +17,8 @@
 
 NativeTabContentsContainerGtk::NativeTabContentsContainerGtk(
     TabContentsContainer* container)
-    : container_(container) {
+    : container_(container),
+      focus_callback_id_(0) {
 }
 
 NativeTabContentsContainerGtk::~NativeTabContentsContainerGtk() {
@@ -27,48 +28,11 @@ NativeTabContentsContainerGtk::~NativeTabContentsContainerGtk() {
 // NativeTabContentsContainerGtk, NativeTabContentsContainer overrides:
 
 void NativeTabContentsContainerGtk::AttachContents(TabContents* contents) {
-  // We need to register the tab contents window with the BrowserContainer so
-  // that the BrowserContainer is the focused view when the focus is on the
-  // TabContents window (for the TabContents case).
-  set_focus_view(this);
-
   Attach(contents->GetNativeView());
-
-  // TODO(port): figure out focus interception
-#if defined(OS_WIN)
-  HWND contents_hwnd = contents->GetContentNativeView();
-  if (contents_hwnd)
-    views::FocusManager::InstallFocusSubclass(contents_hwnd, this);
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void NativeTabContentsContainerGtk::DetachContents(TabContents* contents) {
-  // TODO(port): figure out focus interception
-#if defined(OS_WIN)
-  // TODO(brettw) should this move to NativeViewHost::Detach which is called
-  // below? It needs cleanup regardless.
-  HWND container_hwnd = contents->GetNativeView();
-
-  // Hide the contents before adjusting its parent to avoid a full desktop
-  // flicker.
-  ShowWindow(container_hwnd, SW_HIDE);
-
-  // Reset the parent to NULL to ensure hidden tabs don't receive messages.
-  ::SetParent(container_hwnd, NULL);
-
-  // Unregister the tab contents window from the FocusManager.
-  views::FocusManager::UninstallFocusSubclass(container_hwnd);
-  HWND hwnd = contents->GetContentNativeView();
-  if (hwnd) {
-    // We may not have an HWND anymore, if the renderer crashed and we are
-    // displaying the sad tab for example.
-    views::FocusManager::UninstallFocusSubclass(hwnd);
-  }
-#else
   gtk_widget_hide(contents->GetNativeView());
-#endif
 
   // Now detach the TabContents.
   Detach();
@@ -81,31 +45,10 @@ void NativeTabContentsContainerGtk::SetFastResize(bool fast_resize) {
 void NativeTabContentsContainerGtk::RenderViewHostChanged(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {
-  // TODO(port): figure out focus interception
-#if defined(OS_WIN)
-  if (old_host && old_host->view()) {
-    views::FocusManager::UninstallFocusSubclass(
-        old_host->view()->GetNativeView());
-  }
-
-  if (new_host && new_host->view()) {
-    views::FocusManager::InstallFocusSubclass(
-        new_host->view()->GetNativeView(), this);
-  }
-
   // If we are focused, we need to pass the focus to the new RenderViewHost.
-  views::FocusManager* focus_manager = views::FocusManager::GetFocusManager(
-      GetRootView()->GetWidget()->GetNativeView());
+  views::FocusManager* focus_manager = GetFocusManager();
   if (focus_manager->GetFocusedView() == this)
     Focus();
-#else
-  // If we are focused, we need to pass the focus to the new RenderViewHost.
-  // TODO: uncomment this once FocusManager has been ported.
-  // views::FocusManager* focus_manager = views::FocusManager::GetFocusManager(
-  // GetRootView()->GetWidget()->GetNativeView());
-  // if (focus_manager->GetFocusedView() == this)
-  // Focus();
-#endif
 }
 
 views::View* NativeTabContentsContainerGtk::GetView() {
@@ -114,14 +57,15 @@ views::View* NativeTabContentsContainerGtk::GetView() {
 
 void NativeTabContentsContainerGtk::TabContentsFocused(
     TabContents* tab_contents) {
-#if defined(OS_WIN)
+  // Called when the tab contents native view gets focused (typically through a
+  // user click).  We make ourself the focused view, so the focus is restored
+  // properly when the browser window is deactivated/reactivated.
   views::FocusManager* focus_manager = GetFocusManager();
   if (!focus_manager) {
     NOTREACHED();
     return;
   }
   focus_manager->SetFocusedView(this);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

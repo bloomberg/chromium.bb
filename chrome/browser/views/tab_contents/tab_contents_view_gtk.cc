@@ -23,6 +23,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_win.h"
+#include "views/focus/view_storage.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/root_view.h"
 
@@ -97,9 +98,19 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
       views::WidgetGtk(TYPE_CHILD),
       ignore_next_char_event_(false) {
   drag_source_.reset(new TabContentsDragSource(this));
+  last_focused_view_storage_id_ =
+      views::ViewStorage::GetSharedInstance()->CreateStorageID();
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
+  // Make sure to remove any stored view we may still have in the ViewStorage.
+  //
+  // It is possible the view went away before us, so we only do this if the
+  // view is registered.
+  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
+    view_storage->RemoveView(last_focused_view_storage_id_);
+
   // Just deleting the object doesn't destroy the GtkWidget. We need to do that
   // manually, and synchronously, since subsequent signal handlers may expect
   // to locate this object.
@@ -218,12 +229,48 @@ void TabContentsViewGtk::SetInitialFocus() {
 }
 
 void TabContentsViewGtk::StoreFocus() {
-  NOTIMPLEMENTED();
+  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+
+  if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
+    view_storage->RemoveView(last_focused_view_storage_id_);
+
+  views::FocusManager* focus_manager =
+      views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
+  if (focus_manager) {
+    // |focus_manager| can be NULL if the tab has been detached but still
+    // exists.
+    views::View* focused_view = focus_manager->GetFocusedView();
+    if (focused_view)
+      view_storage->StoreView(last_focused_view_storage_id_, focused_view);
+  }
 }
 
 void TabContentsViewGtk::RestoreFocus() {
-  NOTIMPLEMENTED();
-  SetInitialFocus();
+  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  views::View* last_focused_view =
+      view_storage->RetrieveView(last_focused_view_storage_id_);
+  if (!last_focused_view) {
+    SetInitialFocus();
+  } else {
+    views::FocusManager* focus_manager =
+        views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
+
+    // If you hit this DCHECK, please report it to Jay (jcampan).
+    DCHECK(focus_manager != NULL) << "No focus manager when restoring focus.";
+
+    if (last_focused_view->IsFocusable() && focus_manager &&
+        focus_manager->ContainsView(last_focused_view)) {
+      last_focused_view->RequestFocus();
+    } else {
+      // The focused view may not belong to the same window hierarchy (e.g.
+      // if the location bar was focused and the tab is dragged out), or it may
+      // no longer be focusable (e.g. if the location bar was focused and then
+      // we switched to fullscreen mode).  In that case we default to the
+      // default focus.
+      SetInitialFocus();
+    }
+    view_storage->RemoveView(last_focused_view_storage_id_);
+  }
 }
 
 void TabContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {

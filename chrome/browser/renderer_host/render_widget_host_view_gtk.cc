@@ -148,7 +148,7 @@ class RenderWidgetHostViewGtkWidget {
     }
 
     host_view->ShowCurrentCursor();
-    host_view->GetRenderWidgetHost()->Focus();
+    host_view->GetRenderWidgetHost()->GotFocus();
 
     // The only way to enable a GtkIMContext object is to call its focus in
     // handler.

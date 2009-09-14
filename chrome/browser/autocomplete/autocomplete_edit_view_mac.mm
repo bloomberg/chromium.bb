@@ -362,6 +362,9 @@ void AutocompleteEditViewMac::ClosePopup() {
   popup_view_->GetModel()->StopAutocomplete();
 }
 
+void AutocompleteEditViewMac::SetFocus() {
+}
+
 void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
   NSString* ss = base::SysWideToNSString(display_text);
   NSMutableAttributedString* as =

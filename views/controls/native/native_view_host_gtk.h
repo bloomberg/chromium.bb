@@ -54,6 +54,11 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
   // Invoked from the 'destroy' signal.
   static void CallDestroy(GtkObject* object, NativeViewHostGtk* host);
 
+  // Invoked from the 'focus-in-event' signal.
+  static void CallFocusIn(GtkWidget* widget,
+                          GdkEventFocus* event,
+                          NativeViewHostGtk* button);
+
   // Our associated NativeViewHost.
   NativeViewHost* host_;
 
@@ -67,6 +72,9 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
 
   // Signal handle id for 'destroy' signal.
   gulong destroy_signal_id_;
+
+  // Signal handle id for 'focus-in-event' signal.
+  gulong focus_signal_id_;
 
   // The GtkFixed that contains the attached gfx::NativeView (used for
   // clipping).

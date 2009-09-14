@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
+#include "views/focus/focus_manager.h"
 #include "views/widget/widget_gtk.h"
 
 namespace views {
@@ -19,6 +20,7 @@ NativeViewHostGtk::NativeViewHostGtk(NativeViewHost* host)
     : host_(host),
       installed_clip_(false),
       destroy_signal_id_(0),
+      focus_signal_id_(0),
       fixed_(NULL) {
   CreateFixed(false);
 }
@@ -44,6 +46,12 @@ void NativeViewHostGtk::NativeViewAttached() {
                                           this);
   }
 
+  if (!focus_signal_id_) {
+    focus_signal_id_ = g_signal_connect(G_OBJECT(host_->native_view()),
+					"focus-in-event",
+					G_CALLBACK(CallFocusIn), this);
+  }
+
   // Always layout though.
   host_->Layout();
 
@@ -61,8 +69,10 @@ void NativeViewHostGtk::NativeViewDetaching() {
                               destroy_signal_id_);
   destroy_signal_id_ = 0;
 
-  // TODO(port): focus.
-  // FocusManager::UninstallFocusSubclass(native_view());
+  g_signal_handler_disconnect(G_OBJECT(host_->native_view()),
+                              focus_signal_id_);
+  focus_signal_id_ = 0;
+
   installed_clip_ = false;
 
   // Release ownership back to the caller.
@@ -154,7 +164,8 @@ void NativeViewHostGtk::HideWidget() {
 }
 
 void NativeViewHostGtk::SetFocus() {
-  NOTIMPLEMENTED();
+  DCHECK(host_->native_view());
+  gtk_widget_grab_focus(host_->native_view());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -199,7 +210,20 @@ WidgetGtk* NativeViewHostGtk::GetHostWidget() const {
 // static
 void NativeViewHostGtk::CallDestroy(GtkObject* object,
                                     NativeViewHostGtk* host) {
-  return host->host_->NativeViewDestroyed();
+  host->host_->NativeViewDestroyed();
+}
+
+// static
+void NativeViewHostGtk::CallFocusIn(GtkWidget* widget,
+				    GdkEventFocus* event,
+                                    NativeViewHostGtk* host) {
+  FocusManager* focus_manager =
+      FocusManager::GetFocusManagerForNativeView(widget);
+  if (!focus_manager) {
+    NOTREACHED();
+    return;
+  }
+  focus_manager->SetFocusedView(host->host_->focus_view());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

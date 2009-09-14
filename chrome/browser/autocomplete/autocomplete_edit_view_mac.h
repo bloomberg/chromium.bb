@@ -78,6 +78,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   virtual void RevertAll();
   virtual void UpdatePopup();
   virtual void ClosePopup();
+  virtual void SetFocus();
   virtual void OnTemporaryTextMaybeChanged(const std::wstring& display_text,
                                            bool save_original_selection);
   virtual bool OnInlineAutocompleteTextMaybeChanged(

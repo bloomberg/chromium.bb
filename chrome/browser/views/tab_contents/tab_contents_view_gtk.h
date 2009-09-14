@@ -81,6 +81,9 @@ class TabContentsViewGtk : public TabContentsView,
   // Whether to ignore the next CHAR keyboard event.
   bool ignore_next_char_event_;
 
+  // The id used in the ViewStorage to store the last focused view.
+  int last_focused_view_storage_id_;
+
   // The context menu. Callbacks are asynchronous so we need to keep it around.
   scoped_ptr<RenderViewContextMenuWin> context_menu_;
 

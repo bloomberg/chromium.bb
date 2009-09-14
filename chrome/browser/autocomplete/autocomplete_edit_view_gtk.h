@@ -60,9 +60,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   GtkWidget* widget() { return alignment_.get(); }
 
-  // Grab keyboard input focus, putting focus on the location widget.
-  void SetFocus();
-
   // Returns the width, in pixels, needed to display the current text. The
   // returned value includes margins and borders.
   int TextWidth();
@@ -102,6 +99,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   virtual void UpdatePopup();
   virtual void ClosePopup();
+
+  virtual void SetFocus();
 
   virtual void OnTemporaryTextMaybeChanged(const std::wstring& display_text,
                                            bool save_original_selection);

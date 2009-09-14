@@ -36,6 +36,8 @@ class BrowserFrameGtk : public BrowserFrame,
   // Overridden from views::Widget.
   virtual ThemeProvider* GetThemeProvider() const;
   virtual ThemeProvider* GetDefaultThemeProvider() const;
+  virtual gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* event);
+  virtual gboolean OnFocusOut(GtkWidget* widget, GdkEventFocus* event);
 
  protected:
   // WidgetGtk overrides.
