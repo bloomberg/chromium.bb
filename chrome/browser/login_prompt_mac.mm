@@ -62,6 +62,8 @@ class LoginHandlerMac : public LoginHandler,
   }
 
   void SetModel(LoginModel* model) {
+    if (login_model_)
+      login_model_->SetObserver(NULL);
     login_model_ = model;
     if (login_model_)
       login_model_->SetObserver(this);
@@ -164,6 +166,14 @@ class LoginHandlerMac : public LoginHandler,
           this, &LoginHandlerMac::SendNotifications));
     }
 
+    // Close sheet if it's still open, as required by
+    // ConstrainedWindowMacDelegate.
+    DCHECK(MessageLoop::current() == ui_loop_);
+    if (is_sheet_open())
+      [NSApp endSheet:sheet()];
+
+    SetModel(NULL);
+
     // Delete this object once all InvokeLaters have been called.
     request_loop_->ReleaseSoon(FROM_HERE, this);
   }
@@ -208,11 +218,6 @@ class LoginHandlerMac : public LoginHandler,
   // Closes the view_contents from the UI loop.
   void CloseContentsDeferred() {
     DCHECK(MessageLoop::current() == ui_loop_);
-
-    // Close sheet if it's still open, as required by
-    // ConstrainedWindowMacDelegate.
-    if (is_sheet_open())
-      [NSApp endSheet:sheet()];
 
     // The hosting ConstrainedWindow may have been freed.
     if (dialog_)
