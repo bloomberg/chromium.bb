@@ -314,6 +314,9 @@ WONTFIX : LayoutTests/fast/js/global-constructors.html = FAIL
 // as long as we don't crash.
 WONTFIX : LayoutTests/fast/js/global-recursion-on-full-stack.html = FAIL PASS
 
+// Actually passes, just needs a new image baseline.
+WIN LINUX BUG_JAMESR : LayoutTests/fast/repaint/fixed.html = FAIL
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
