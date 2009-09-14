@@ -187,6 +187,45 @@
       ],
     },
     {
+      'target_name': 'test_shell_pak',
+      'type': 'none',
+      'variables': {
+        'repack_path': '../../../tools/data_pack/repack.py',
+        'pak_path': '<(INTERMEDIATE_DIR)/repack/test_shell.pak',
+      },
+      'conditions': [
+        ['OS=="linux"', {
+          'actions': [
+            {
+              'action_name': 'test_shell_repack',
+              'variables': {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/test_shell/test_shell_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
+                ],
+              },
+              'inputs': [
+                '<(repack_path)',
+                '<@(pak_inputs)',
+              ],
+              'outputs': [
+                '<(pak_path)',
+              ],
+              'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
+            },
+          ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)',
+              'files': ['<(pak_path)'],
+            },
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'test_shell',
       'type': 'executable',
       'mac_bundle': 1,
@@ -237,27 +276,7 @@
           'dependencies': [
             '../../../build/linux/system.gyp:gtk',
             'test_shell_resources',
-          ],
-          'actions': [
-            {
-              'action_name': 'test_shell_repack',
-              'inputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/test_shell/test_shell_resources.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/repack/test_shell.pak',
-              ],
-              'action': ['python', '../../../tools/data_pack/repack.py', '<@(_outputs)', '<@(_inputs)'],
-            },
-          ],
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': ['<(INTERMEDIATE_DIR)/repack/test_shell.pak'],
-            },
+            'test_shell_pak',
           ],
         }],
         ['OS=="mac"', {
@@ -376,8 +395,7 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            # Linux tests use the built test_shell beside the test
-            'test_shell',
+            'test_shell_pak',
             '../../../build/linux/system.gyp:gtk',
           ],
           'sources!': [
