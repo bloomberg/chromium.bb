@@ -50,7 +50,8 @@ void OnDialogResponse(GtkDialog* dialog, int response_id,
 
 void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
                              Extension *extension,
-                             ExtensionInstallUI::Delegate *delegate) {
+                             ExtensionInstallUI::Delegate *delegate,
+                             const std::string& warning_text) {
   // Build the dialog.
   GtkWidget* dialog = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_TITLE).c_str(),
@@ -63,61 +64,36 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
       NULL);
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog), FALSE);
 
+  // Create a two column layout.
   GtkWidget* content_area = GTK_DIALOG(dialog)->vbox;
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
-  GtkWidget* right_column_area;
-  if (skia_icon) {
-    // Create a two column layout.
-    GtkWidget* icon_hbox = gtk_hbox_new(FALSE, gtk_util::kContentAreaSpacing);
-    gtk_box_pack_start(GTK_BOX(content_area), icon_hbox, TRUE, TRUE, 0);
+  GtkWidget* icon_hbox = gtk_hbox_new(FALSE, gtk_util::kContentAreaSpacing);
+  gtk_box_pack_start(GTK_BOX(content_area), icon_hbox, TRUE, TRUE, 0);
 
-    // Put Icon in the left column.
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(skia_icon);
-    GtkWidget* icon = gtk_image_new_from_pixbuf(pixbuf);
-    gtk_box_pack_start(GTK_BOX(icon_hbox), icon, TRUE, TRUE, 0);
+  // Put Icon in the left column.
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(skia_icon);
+  GtkWidget* icon = gtk_image_new_from_pixbuf(pixbuf);
+  gtk_box_pack_start(GTK_BOX(icon_hbox), icon, TRUE, TRUE, 0);
 
-    // Create a new vbox for the right column.
-    right_column_area = gtk_vbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(icon_hbox), right_column_area, TRUE, TRUE, 0);
-  } else {
-    right_column_area = content_area;
-  }
+  // Create a new vbox for the right column.
+  GtkWidget* right_column_area = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(icon_hbox), right_column_area, TRUE, TRUE, 0);
 
-  // Prompt.
-  std::string prompt_text = WideToUTF8(l10n_util::GetStringF(
+  std::string heading_text = WideToUTF8(l10n_util::GetStringF(
       IDS_EXTENSION_PROMPT_HEADING, UTF8ToWide(extension->name())));
-  GtkWidget* prompt_label = MakeMarkupLabel("<span weight=\"bold\">%s</span>",
-                                            prompt_text);
-  gtk_misc_set_alignment(GTK_MISC(prompt_label), 0.0, 0.5);
-  gtk_label_set_selectable(GTK_LABEL(prompt_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(right_column_area), prompt_label, TRUE, TRUE, 0);
+  GtkWidget* heading_label = MakeMarkupLabel("<span weight=\"bold\">%s</span>",
+                                             heading_text);
+  gtk_misc_set_alignment(GTK_MISC(heading_label), 0.0, 0.5);
+  gtk_label_set_selectable(GTK_LABEL(heading_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(right_column_area), heading_label, TRUE, TRUE, 0);
 
-  // Pick a random warning.
-  std::string warnings[] = {
-      l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_1),
-      l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_2),
-      l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_3)
-  };
-  std::string warning_text = warnings[
-      base::RandInt(0, arraysize(warnings) - 1)];
   GtkWidget* warning_label = gtk_label_new(warning_text.c_str());
   gtk_label_set_line_wrap(GTK_LABEL(warning_label), TRUE);
   gtk_widget_set_size_request(warning_label, kRightColumnWidth, -1);
   gtk_misc_set_alignment(GTK_MISC(warning_label), 0.0, 0.5);
   gtk_label_set_selectable(GTK_LABEL(warning_label), TRUE);
   gtk_box_pack_start(GTK_BOX(right_column_area), warning_label, TRUE, TRUE, 0);
-
-  // Severe label
-  std::string severe_text = l10n_util::GetStringUTF8(
-      IDS_EXTENSION_PROMPT_WARNING_SEVERE);
-  GtkWidget* severe_label = MakeMarkupLabel("<span weight=\"bold\">%s</span>",
-                                            severe_text);
-  GdkColor red = GDK_COLOR_RGB(0xff, 0x00, 0x00);
-  gtk_widget_modify_fg(severe_label, GTK_STATE_NORMAL, &red);
-  gtk_misc_set_alignment(GTK_MISC(severe_label), 0.0, 0.5);
-  gtk_label_set_selectable(GTK_LABEL(severe_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(right_column_area), severe_label, TRUE, TRUE, 0);
 
   g_signal_connect(dialog, "response", G_CALLBACK(OnDialogResponse), delegate);
   gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
@@ -142,5 +118,7 @@ void ExtensionInstallUI::ShowExtensionInstallPrompt(
     return;
   }
 
-  ShowInstallPromptDialog(browser_window->window(), icon, extension, delegate);
+  std::string warning_ascii = WideToASCII(warning_text);
+  ShowInstallPromptDialog(browser_window->window(), icon, extension, delegate,
+      warning_ascii);
 }
