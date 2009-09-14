@@ -438,6 +438,10 @@ class TabStripModel : public NotificationObserver {
   // Selects the last tab in the tab strip.
   void SelectLastTab();
 
+  // Swap adjacent tabs.
+  void MoveTabNext();
+  void MoveTabPrevious();
+
   // View API //////////////////////////////////////////////////////////////////
 
   // The specified contents should be opened in a new tabstrip. Returns the

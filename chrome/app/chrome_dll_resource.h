@@ -80,6 +80,8 @@
 #define IDC_SHOW_AS_TAB                 34029
 #define IDC_FULLSCREEN                  34030
 #define IDC_EXIT                        34031
+#define IDC_MOVE_TAB_NEXT               34032
+#define IDC_MOVE_TAB_PREVIOUS           34033
 
 // Page-related commands
 #define IDC_STAR                        35000

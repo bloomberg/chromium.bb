@@ -433,6 +433,16 @@ void TabStripModel::SelectLastTab() {
   SelectTabContentsAt(count() - 1, true);
 }
 
+void TabStripModel::MoveTabNext() {
+  int new_index = std::min(selected_index_ + 1, count() - 1);
+  MoveTabContentsAt(selected_index_, new_index, true);
+}
+
+void TabStripModel::MoveTabPrevious() {
+  int new_index = std::max(selected_index_ - 1, 0);
+  MoveTabContentsAt(selected_index_, new_index, true);
+}
+
 Browser* TabStripModel::TearOffTabContents(TabContents* detached_contents,
                                            const gfx::Rect& window_bounds,
                                            const DockInfo& dock_info) {

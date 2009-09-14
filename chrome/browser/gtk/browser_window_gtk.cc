@@ -198,6 +198,11 @@ const struct AcceleratorMapping {
   // Tab/window controls.
   { GDK_Page_Down, IDC_SELECT_NEXT_TAB, GDK_CONTROL_MASK },
   { GDK_Page_Up, IDC_SELECT_PREVIOUS_TAB, GDK_CONTROL_MASK },
+  { GDK_Page_Down, IDC_MOVE_TAB_NEXT,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_Page_Up, IDC_MOVE_TAB_PREVIOUS,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_Page_Up, IDC_SELECT_PREVIOUS_TAB, GDK_CONTROL_MASK },
   { GDK_w, IDC_CLOSE_TAB, GDK_CONTROL_MASK },
   { GDK_t, IDC_RESTORE_TAB,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
@@ -446,12 +451,18 @@ gboolean PreHandleAccelerator(guint keyval, GdkModifierType modifier,
       if (GDK_CONTROL_MASK == modifier) {
         browser->ExecuteCommand(IDC_SELECT_NEXT_TAB);
         return TRUE;
+      } else if ((GDK_CONTROL_MASK | GDK_SHIFT_MASK) == modifier) {
+        browser->ExecuteCommand(IDC_MOVE_TAB_NEXT);
+        return TRUE;
       }
       break;
 
     case GDK_Page_Up:
       if (GDK_CONTROL_MASK == modifier) {
         browser->ExecuteCommand(IDC_SELECT_PREVIOUS_TAB);
+        return TRUE;
+      } else if ((GDK_CONTROL_MASK | GDK_SHIFT_MASK) == modifier) {
+        browser->ExecuteCommand(IDC_MOVE_TAB_PREVIOUS);
         return TRUE;
       }
       break;

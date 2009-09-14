@@ -877,6 +877,16 @@ void Browser::SelectPreviousTab() {
   tabstrip_model_.SelectPreviousTab();
 }
 
+void Browser::MoveTabNext() {
+  UserMetrics::RecordAction(L"MoveTabNext", profile_);
+  tabstrip_model_.MoveTabNext();
+}
+
+void Browser::MoveTabPrevious() {
+  UserMetrics::RecordAction(L"MoveTabPrevious", profile_);
+  tabstrip_model_.MoveTabPrevious();
+}
+
 void Browser::SelectNumberedTab(int index) {
   if (index < tab_count()) {
     UserMetrics::RecordAction(L"SelectNumberedTab", profile_);
@@ -1365,6 +1375,8 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_CLOSE_TAB:             CloseTab();                    break;
     case IDC_SELECT_NEXT_TAB:       SelectNextTab();               break;
     case IDC_SELECT_PREVIOUS_TAB:   SelectPreviousTab();           break;
+    case IDC_MOVE_TAB_NEXT:         MoveTabNext();                 break;
+    case IDC_MOVE_TAB_PREVIOUS:     MoveTabPrevious();             break;
     case IDC_SELECT_TAB_0:
     case IDC_SELECT_TAB_1:
     case IDC_SELECT_TAB_2:
@@ -2320,6 +2332,8 @@ void Browser::InitCommandState() {
     command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);
     command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB,
                                           normal_window);
+    command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_NEXT, normal_window);
+    command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_PREVIOUS, normal_window);
     command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_0, normal_window);
     command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_1, normal_window);
     command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_2, normal_window);

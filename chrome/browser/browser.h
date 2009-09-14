@@ -319,6 +319,8 @@ class Browser : public TabStripModelDelegate,
   void CloseTab();
   void SelectNextTab();
   void SelectPreviousTab();
+  void MoveTabNext();
+  void MoveTabPrevious();
   void SelectNumberedTab(int index);
   void SelectLastTab();
   void DuplicateTab();
