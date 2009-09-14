@@ -294,50 +294,53 @@
 // Helper function for populating and displaying the in progress downloads at
 // exit alert panel.
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount {
-  NSString* descriptionText = nil;
+  NSString* warningText = nil;
+  NSString* explanationText = nil;
   NSString* waitTitle = nil;
   NSString* exitTitle = nil;
 
   // Set the dialog text based on whether or not there are multiple downloads.
   if (downloadCount == 1) {
-    // Dialog text.
-    descriptionText =
-        base::SysWideToNSString(
-            l10n_util::GetString(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_TITLE));
+    // Dialog text: warning and explanation.
+    warningText =
+        base::SysWideToNSString(l10n_util::GetString(
+            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING));
+    explanationText =
+        base::SysWideToNSString(l10n_util::GetString(
+            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION));
 
     // Cancel download and exit button text.
     exitTitle =
-        base::SysWideToNSString(
-            l10n_util::GetString(
-                IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL));
+        base::SysWideToNSString(l10n_util::GetString(
+            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL));
 
     // Wait for download button text.
     waitTitle =
-        base::SysWideToNSString(
-            l10n_util::GetString(
-                IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+        base::SysWideToNSString(l10n_util::GetString(
+            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
   } else {
-    // Dialog text.
-    descriptionText =
-        base::SysWideToNSString(
-            l10n_util::GetStringF(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE,
-                                  downloadCount));
+    // Dialog text: warning and explanation.
+    warningText =
+        base::SysWideToNSString(l10n_util::GetStringF(
+            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING, downloadCount));
+    explanationText =
+        base::SysWideToNSString(l10n_util::GetString(
+            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION));
 
     // Cancel downloads and exit button text.
     exitTitle =
-        base::SysWideToNSString(
-            l10n_util::GetString(
-                IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL));
+        base::SysWideToNSString(l10n_util::GetString(
+            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL));
 
     // Wait for downloads button text.
     waitTitle =
-        base::SysWideToNSString(
-            l10n_util::GetString(
-                IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+        base::SysWideToNSString(l10n_util::GetString(
+            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
   }
 
   // 'waitButton' is the default choice.
-  int choice = NSRunAlertPanel(nil, descriptionText, waitTitle, exitTitle, nil);
+  int choice = NSRunAlertPanel(warningText, explanationText,
+                               waitTitle, exitTitle, nil);
   return choice == NSAlertDefaultReturn ? YES : NO;
 }
 

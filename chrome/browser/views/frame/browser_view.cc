@@ -59,6 +59,7 @@
 #include "views/controls/single_split_view.h"
 #include "views/fill_layout.h"
 #include "views/focus/external_focus_tracker.h"
+#include "views/grid_layout.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
@@ -77,6 +78,8 @@
 #endif
 
 using base::TimeDelta;
+using views::ColumnSet;
+using views::GridLayout;
 
 // static
 SkBitmap BrowserView::default_favicon_;
@@ -449,29 +452,55 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
     int download_count = browser->profile()->GetDownloadManager()->
         in_progress_count();
 
-    std::wstring label_text;
+    std::wstring warning_text;
+    std::wstring explanation_text;
     if (download_count == 1) {
-      label_text =
-          l10n_util::GetString(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_TITLE);
+      warning_text =
+          l10n_util::GetString(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING);
+      explanation_text =
+          l10n_util::GetString(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION);
       ok_button_text_ = l10n_util::GetString(
           IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL);
       cancel_button_text_ = l10n_util::GetString(
           IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
     } else {
-      label_text =
-          l10n_util::GetStringF(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE,
+      warning_text =
+          l10n_util::GetStringF(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
                                 download_count);
+      explanation_text =
+          l10n_util::GetString(
+              IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION);
       ok_button_text_ = l10n_util::GetString(
           IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL);
       cancel_button_text_ = l10n_util::GetString(
           IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
     }
-    label_ = new views::Label(label_text);
-    label_->SetMultiLine(true);
-    label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    label_->set_border(views::Border::CreateEmptyBorder(10, 10, 10, 10));
-    AddChildView(label_);
-    SetLayoutManager(new views::FillLayout());
+
+    // There are two lines of text: the bold warning label and the text
+    // explanation label.
+    GridLayout* layout = new GridLayout(this);
+    SetLayoutManager(layout);
+    const int columnset_id = 0;
+    ColumnSet* column_set = layout->AddColumnSet(columnset_id);
+    column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
+                          GridLayout::USE_PREF, 0, 0);
+
+    gfx::Font bold_font =
+        ResourceBundle::GetSharedInstance().GetFont(
+            ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
+    warning_ = new views::Label(warning_text, bold_font);
+    warning_->SetMultiLine(true);
+    warning_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    warning_->set_border(views::Border::CreateEmptyBorder(10, 10, 10, 10));
+    layout->StartRow(0, columnset_id);
+    layout->AddView(warning_);
+
+    explanation_ = new views::Label(explanation_text);
+    explanation_->SetMultiLine(true);
+    explanation_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    explanation_->set_border(views::Border::CreateEmptyBorder(10, 10, 10, 10));
+    layout->StartRow(0, columnset_id);
+    layout->AddView(explanation_);
   }
 
   ~DownloadInProgressConfirmDialogDelegate() {
@@ -480,7 +509,9 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
   // View implementation:
   virtual gfx::Size GetPreferredSize() {
     const int kContentWidth = 400;
-    return gfx::Size(kContentWidth, label_->GetHeightForWidth(kContentWidth));
+    const int height = warning_->GetHeightForWidth(kContentWidth) +
+                       explanation_->GetHeightForWidth(kContentWidth);
+    return gfx::Size(kContentWidth, height);
   }
 
   // DialogDelegate implementation:
@@ -520,7 +551,8 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
 
  private:
   Browser* browser_;
-  views::Label* label_;
+  views::Label* warning_;
+  views::Label* explanation_;
 
   std::wstring ok_button_text_;
   std::wstring cancel_button_text_;
