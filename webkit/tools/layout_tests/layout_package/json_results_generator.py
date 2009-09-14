@@ -5,7 +5,10 @@
 import logging
 import os
 import re
+import subprocess
 import sys
+import time
+import xml.dom.minidom
 
 from layout_package import path_utils
 from layout_package import test_failures
@@ -29,10 +32,13 @@ class JSONResultsGenerator:
   RESULTS = "results"
   TIMES = "times"
   BUILD_NUMBERS = "buildNumbers"
+  WEBKIT_SVN = "webkitRevision"
+  CHROME_SVN = "chromeRevision"
+  TIME = "secondsSinceEpoch"
   TESTS = "tests"
 
   def __init__(self, failures, individual_test_timings, builder_name,
-      build_number, results_file_path, all_tests):
+      build_number, results_file_path, all_tests, file_dir):
     """
     failures: Map of test name to list of failures.
     individual_test_times: Map of test name to a tuple containing the
@@ -41,6 +47,7 @@ class JSONResultsGenerator:
     build_number: The build number for this run.
     results_file_path: Absolute path to the results json file.
     all_tests: List of all the tests that were run.
+    file_dir: directory when run_webkit_tests.py exists.
     """
     # Make sure all test paths are relative to the layout test root directory.
     self._failures = {}
@@ -59,6 +66,24 @@ class JSONResultsGenerator:
     self._builder_name = builder_name
     self._build_number = build_number
     self._results_file_path = results_file_path
+
+    self._path_to_webkit = path_utils.PathFromBase('third_party', 'WebKit', 'WebCore')
+
+  def _GetSVNRevision(self, in_directory=None):
+    """Returns the svn revision for the given directory.
+
+    Args:
+      in_directory: The directory where svn is to be run.
+    """
+    output = subprocess.Popen(["svn", "info", "--xml"],
+                              cwd=in_directory,
+                              shell=(sys.platform == 'win32'),
+                              stdout=subprocess.PIPE).communicate()[0]
+    try :
+      dom = xml.dom.minidom.parseString(output)
+      return dom.getElementsByTagName('entry')[0].getAttribute('revision');
+    except xml.parsers.expat.ExpatError:
+      return ""
 
   def _GetPathRelativeToLayoutTestRoot(self, test):
     """Returns the path of the test relative to the layout test root.
@@ -130,15 +155,22 @@ class JSONResultsGenerator:
     if self._builder_name not in results_json:
       results_json[self._builder_name] = self._CreateResultsForBuilderJSON()
 
-    tests = results_json[self._builder_name][self.TESTS]
+    results_for_builder = results_json[self._builder_name]
+    tests = results_for_builder[self.TESTS]
     all_failing_tests = set(self._failures.iterkeys())
     all_failing_tests.update(tests.iterkeys())
 
-    build_numbers = results_json[self._builder_name][self.BUILD_NUMBERS]
-    build_numbers.insert(0, self._build_number)
-    build_numbers = build_numbers[:self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG]
-    results_json[self._builder_name][self.BUILD_NUMBERS] = build_numbers
-    num_build_numbers = len(build_numbers)
+    self._InsertItemIntoRawList(results_for_builder, self._build_number,
+        self.BUILD_NUMBERS)
+    self._InsertItemIntoRawList(results_for_builder,
+        self._GetSVNRevision(self._path_to_webkit),
+        self.WEBKIT_SVN)
+    self._InsertItemIntoRawList(results_for_builder,
+        self._GetSVNRevision(),
+        self.CHROME_SVN)
+    self._InsertItemIntoRawList(results_for_builder,
+        int(time.time()),
+        self.TIME)
 
     for test in all_failing_tests:
       if test in failures_for_json:
@@ -154,11 +186,30 @@ class JSONResultsGenerator:
           thisTest[self.RESULTS])
       self._InsertItemRunLengthEncoded(result_and_time.time,
           thisTest[self.TIMES])
-      self._NormalizeResultsJSON(thisTest, test, tests, num_build_numbers)
+      self._NormalizeResultsJSON(thisTest, test, tests)
 
     # Specify separators in order to get compact encoding.
     results_str = simplejson.dumps(results_json, separators=(',', ':'))
     return self.JSON_PREFIX + results_str + self.JSON_SUFFIX
+
+  def _InsertItemIntoRawList(self, results_for_builder, item, key):
+    """Inserts the item into the list with the given key in the results for
+    this builder. Creates the list if no such list exists.
+
+    Args:
+      results_for_builder: Dictionary containing the test results for a single
+          builder.
+      item: Number or string to insert into the list.
+      key: Key in results_for_builder for the list to insert into.
+    """
+    if key in results_for_builder:
+      raw_list = results_for_builder[key]
+    else:
+      raw_list = []
+
+    raw_list.insert(0, item)
+    raw_list = raw_list[:self.MAX_NUMBER_OF_BUILD_RESULTS_TO_LOG]
+    results_for_builder[key] = raw_list
 
   def _InsertItemRunLengthEncoded(self, item, encoded_results):
     """Inserts the item into the run-length encoded results.
@@ -208,7 +259,6 @@ class JSONResultsGenerator:
 
   def _CreateResultsForBuilderJSON(self):
     results_for_builder = {}
-    results_for_builder[self.BUILD_NUMBERS] = []
     results_for_builder[self.TESTS] = {}
     return results_for_builder
 
@@ -232,7 +282,7 @@ class JSONResultsGenerator:
       return "O"
 
   def _RemoveItemsOverMaxNumberOfBuilds(self, encoded_list):
-    """Removes items from the run-length encoded list after the final itme that
+    """Removes items from the run-length encoded list after the final item that
     exceeds the max number of builds to track.
 
     Args:
@@ -248,16 +298,14 @@ class JSONResultsGenerator:
         return encoded_list[:index]
     return encoded_list
 
-  def _NormalizeResultsJSON(self, test, test_path, tests, num_build_numbers):
+  def _NormalizeResultsJSON(self, test, test_path, tests):
     """ Prune tests where all runs pass or tests that no longer exist and
-    truncate all results to maxNumberOfBuilds and pad results that don't
-    have encough runs for maxNumberOfBuilds.
+    truncate all results to maxNumberOfBuilds.
 
     Args:
       test: ResultsAndTimes object for this test.
       test_path: Path to the test.
       tests: The JSON object with all the test results for this builder.
-      num_build_numbers: The number to truncate/pad results to.
     """
     test[self.RESULTS] = self._RemoveItemsOverMaxNumberOfBuilds(
         test[self.RESULTS])
