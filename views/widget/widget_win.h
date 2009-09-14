@@ -586,6 +586,10 @@ class WidgetWin : public base::WindowImpl,
   int last_mouse_move_x_;
   int last_mouse_move_y_;
 
+  // Whether the focus should be restored next time we get enabled.  Needed to
+  // restore focus correctly when Windows modal dialogs are displayed.
+  bool restore_focus_when_enabled_;
+
   // Instance of accessibility information and handling for MSAA root
   ScopedComPtr<IAccessible> accessibility_root_;
 
