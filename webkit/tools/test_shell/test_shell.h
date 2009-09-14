@@ -335,10 +335,10 @@ private:
     const TestParams* test_params_;
 
     // True while a test is preparing to run
-    bool test_is_preparing_;
+    static bool test_is_preparing_;
 
     // True while a test is running
-    bool test_is_pending_;
+    static bool test_is_pending_;
 
     // True if driven from a nested message loop.
     bool is_modal_;

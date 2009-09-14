@@ -99,6 +99,8 @@ WindowList* TestShell::window_list_;
 WebPreferences* TestShell::web_prefs_ = NULL;
 bool TestShell::layout_test_mode_ = false;
 int TestShell::file_test_timeout_ms_ = kDefaultFileTestTimeoutMillisecs;
+bool TestShell::test_is_preparing_ = false;
+bool TestShell::test_is_pending_ = false;
 
 TestShell::TestShell()
     : m_mainWnd(NULL),
@@ -110,8 +112,6 @@ TestShell::TestShell()
       default_edit_wnd_proc_(0),
 #endif
       test_params_(NULL),
-      test_is_preparing_(false),
-      test_is_pending_(false),
       is_modal_(false),
       dump_stats_table_on_exit_(false) {
     delegate_.reset(new TestWebViewDelegate(this));
