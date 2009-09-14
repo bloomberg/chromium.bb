@@ -1313,11 +1313,6 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
   }
 }
 
-void BrowserWindowGtk::MaybeShowExtensionShelf() {
-  if (extension_shelf_.get())
-    extension_shelf_->Show();
-}
-
 void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
   TabContents* old_devtools = devtools_container_->GetTabContents();
   if (old_devtools)
@@ -1380,8 +1375,6 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
       tabstrip_->Hide();
       if (IsBookmarkBarSupported())
         bookmark_bar_->Hide(false);
-      if (extension_shelf_.get())
-        extension_shelf_->Hide();
     } else {
       UpdateCustomFrame();
       ShowSupportedWindowFeatures();
@@ -1638,7 +1631,6 @@ void BrowserWindowGtk::InitWidgets() {
     extension_shelf_.reset(new ExtensionShelfGtk(browser()->profile(),
                                                  browser_.get()));
     extension_shelf_->AddShelfToBox(content_vbox_);
-    MaybeShowExtensionShelf();
   }
 
   // This vbox surrounds the render area: find bar, info bars and render view.
@@ -2090,9 +2082,6 @@ void BrowserWindowGtk::ShowSupportedWindowFeatures() {
 
   if (IsBookmarkBarSupported())
     MaybeShowBookmarkBar(browser_->GetSelectedTabContents(), false);
-
-  if (IsExtensionShelfSupported())
-    MaybeShowExtensionShelf();
 }
 
 void BrowserWindowGtk::HideUnsupportedWindowFeatures() {
@@ -2102,10 +2091,8 @@ void BrowserWindowGtk::HideUnsupportedWindowFeatures() {
   if (!IsToolbarSupported())
     toolbar_->Hide();
 
-  if (!IsExtensionShelfSupported() && extension_shelf_.get())
-    extension_shelf_->Hide();
-
-  // If the bookmark bar is unsupported, then we never create it.
+  // If the bookmark bar or extension shelf is unsupported, then we never
+  // create them.
 }
 
 bool BrowserWindowGtk::IsTabStripSupported() const {

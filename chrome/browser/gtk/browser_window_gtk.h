@@ -212,9 +212,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // Show or hide the bookmark bar.
   void MaybeShowBookmarkBar(TabContents* contents, bool animate);
 
-  // Show or hide the extension shelf.
-  void MaybeShowExtensionShelf();
-
   // Sets the default size for the window and the the way the user is allowed to
   // resize it.
   void SetGeometryHints();
