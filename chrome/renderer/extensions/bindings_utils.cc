@@ -71,6 +71,15 @@ ContextList GetContextsForExtension(const std::string& extension_id) {
   return contexts;
 }
 
+ContextInfo* GetInfoForCurrentContext() {
+  v8::Local<v8::Context> context = v8::Context::GetCurrent();
+  ContextList::iterator context_iter = FindContext(context);
+  if (context_iter == GetContexts().end())
+    return NULL;
+  else
+    return context_iter->get();
+}
+
 ContextList::iterator FindContext(v8::Handle<v8::Context> context) {
   ContextList& all_contexts = GetContexts();
 

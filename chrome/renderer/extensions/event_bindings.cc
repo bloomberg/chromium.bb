@@ -22,11 +22,15 @@ using bindings_utils::CallFunctionInContext;
 using bindings_utils::ContextInfo;
 using bindings_utils::ContextList;
 using bindings_utils::GetContexts;
+using bindings_utils::GetInfoForCurrentContext;
 using bindings_utils::GetStringResource;
 using bindings_utils::ExtensionBase;
 using bindings_utils::GetPendingRequestMap;
 using bindings_utils::PendingRequestMap;
 using WebKit::WebFrame;
+
+static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
+                                         void*);
 
 namespace {
 
@@ -79,18 +83,17 @@ class ExtensionImpl : public ExtensionBase {
       std::string event_name(*v8::String::AsciiValue(args[0]));
       bool has_permission =
           ExtensionProcessBindings::CurrentContextHasPermission(event_name);
-#if EXTENSION_TIME_TO_BREAK_API
-      bool allow_api = has_permission;
-#else
-      bool allow_api = true;
-#endif
 
       // Increment the count even if the caller doesn't have permission, so that
       // refcounts stay balanced.
-      if (EventIncrementListenerCount(event_name) == 1 && allow_api) {
+      if (EventIncrementListenerCount(event_name) == 1 && has_permission) {
         EventBindings::GetRenderThread()->Send(
             new ViewHostMsg_ExtensionAddListener(event_name));
       }
+
+      ContextInfo* current_context_info = GetInfoForCurrentContext();
+      if (++current_context_info->num_connected_events == 1)
+        current_context_info->context.ClearWeak();
 
       if (!has_permission) {
         return ExtensionProcessBindings::ThrowPermissionDeniedException(
@@ -111,6 +114,13 @@ class ExtensionImpl : public ExtensionBase {
       if (EventDecrementListenerCount(event_name) == 0) {
         EventBindings::GetRenderThread()->Send(
           new ViewHostMsg_ExtensionRemoveListener(event_name));
+      }
+
+      ContextInfo* current_context_info = GetInfoForCurrentContext();
+      if (current_context_info &&
+          --current_context_info->num_connected_events == 0) {
+        current_context_info->context.MakeWeak(NULL,
+            &ContextWeakReferenceCallback);
       }
     }
 

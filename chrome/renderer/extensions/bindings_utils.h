@@ -68,12 +68,17 @@ struct ContextInfo {
   // a valid pointer, and is used for comparisons only.  Do not dereference.
   RenderView* render_view;
 
+  // A count of the number of events that are listening in this context. When
+  // this is zero, |context| will be a weak handle.
+  int num_connected_events;
+
   ContextInfo(v8::Persistent<v8::Context> context,
               const std::string& extension_id,
               v8::Persistent<v8::Context> parent_context,
               RenderView* render_view)
       : context(context), extension_id(extension_id),
-        parent_context(parent_context), render_view(render_view) {}
+        parent_context(parent_context), render_view(render_view),
+        num_connected_events(0) {}
 };
 typedef std::list< linked_ptr<ContextInfo> > ContextList;
 
@@ -85,6 +90,9 @@ ContextList GetContextsForExtension(const std::string& extension_id);
 
 // Returns the ContextInfo item that has the given context.
 ContextList::iterator FindContext(v8::Handle<v8::Context> context);
+
+// Returns the ContextInfo for the current v8 context.
+ContextInfo* GetInfoForCurrentContext();
 
 // Contains info relevant to a pending API request.
 struct PendingRequest {
