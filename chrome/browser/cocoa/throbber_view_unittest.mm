@@ -4,11 +4,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "app/resource_bundle.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/throbber_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "grit/app_resources.h"
 
 namespace {
 
@@ -16,10 +18,8 @@ class ThrobberViewTest : public PlatformTest {
  public:
   ThrobberViewTest() {
     NSRect frame = NSMakeRect(10, 10, 16, 16);
-    NSBundle* bundle = mac_util::MainAppBundle();
-    NSImage* image = [[[NSImage alloc] initByReferencingFile:
-                        [bundle pathForResource:@"throbber" ofType:@"png"]]
-                        autorelease];
+    NSImage* image =
+        ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_THROBBER);
     view_.reset([[ThrobberView filmstripThrobberViewWithFrame:frame
                                                         image:image] retain]);
     [cocoa_helper_.contentView() addSubview:view_.get()];
