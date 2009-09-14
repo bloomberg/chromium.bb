@@ -155,6 +155,7 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
 
   window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_transient_for(GTK_WINDOW(window_), transient_toplevel);
+  gtk_window_set_skip_taskbar_hint(GTK_WINDOW(window_), TRUE);
   gtk_window_set_decorated(GTK_WINDOW(window_), FALSE);
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
   gtk_widget_set_app_paintable(window_, TRUE);
