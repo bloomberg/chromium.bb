@@ -187,6 +187,9 @@ need to be translated for each locale.-->
       <message name="IDS_APP_SAVEAS_ALL_FILES" desc="Save As dialog box default text">
         All Files
       </message>
+      <message name="IDS_APP_SAVEAS_EXTENSION_FORMAT" desc="Save As dialog box extension format text">
+        <ph name="SAVEAS_EXTENSION_TYPE">$1<ex>EXE</ex></ph> File (.<ph name="SAVEAS_EXTENSION_NAME">$2<ex>exe</ex></ph>)
+      </message>
 
       <!--Accessible name/action strings-->
       <message name="IDS_APP_ACCACTION_PRESS" desc="The accessible default action for a button.">

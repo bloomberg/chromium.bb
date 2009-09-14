@@ -267,23 +267,33 @@ std::wstring FormatFilterForExtensions(
       size_t first_separator_index = first_extension.find(L';');
       if (first_separator_index != std::wstring::npos)
         first_extension = first_extension.substr(0, first_separator_index);
+
+      // Find the extension name without the preceeding '.' character.
+      std::wstring ext_name = first_extension;
+      size_t ext_index = ext_name.find_first_not_of(L'.');
+      if (ext_index != std::wstring::npos)
+        ext_name = ext_name.substr(ext_index);
+
       if (!GetRegistryDescriptionFromExtension(first_extension, &desc)) {
-        // The extension doesn't exist in the registry. It's likely bogus, so
-        // just drop it.
+        // The extension doesn't exist in the registry. Create a description
+        // based on the unknown extension type (i.e. if the extension is .qqq,
+        // the we create a description "QQQ File (.qqq)").
         include_all_files = true;
-        continue;
+        desc = l10n_util::GetStringF(IDS_APP_SAVEAS_EXTENSION_FORMAT,
+                                     l10n_util::ToUpper(ext_name),
+                                     ext_name);
       }
       if (desc.empty())
-        desc = L"*." + first_extension;
+        desc = L"*." + ext_name;
     }
 
-    result.append(desc.c_str(), desc.size()+1);  // Append NULL too.
-    result.append(ext.c_str(), ext.size()+1);
+    result.append(desc.c_str(), desc.size() + 1);  // Append NULL too.
+    result.append(ext.c_str(), ext.size() + 1);
   }
 
   if (include_all_files) {
-    result.append(all_desc.c_str(), all_desc.size()+1);
-    result.append(all_ext.c_str(), all_ext.size()+1);
+    result.append(all_desc.c_str(), all_desc.size() + 1);
+    result.append(all_ext.c_str(), all_ext.size() + 1);
   }
 
   result.append(1, '\0');  // Double NULL required.
