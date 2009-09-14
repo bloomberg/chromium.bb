@@ -447,6 +447,10 @@ void RenderViewHost::SetPageEncoding(const std::string& encoding_name) {
   Send(new ViewMsg_SetPageEncoding(routing_id(), encoding_name));
 }
 
+void RenderViewHost::ResetPageEncodingToDefault() {
+  Send(new ViewMsg_ResetPageEncodingToDefault(routing_id()));
+}
+
 void RenderViewHost::SetAlternateErrorPageURL(const GURL& url) {
   Send(new ViewMsg_SetAltErrorPageURL(routing_id(), url));
 }

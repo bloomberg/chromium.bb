@@ -373,6 +373,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_DeterminePageText, OnDeterminePageText)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
+    IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
+                        OnResetPageEncodingToDefault)
     IPC_MESSAGE_HANDLER(ViewMsg_SetupDevToolsClient, OnSetupDevToolsClient)
     IPC_MESSAGE_HANDLER(ViewMsg_DownloadFavIcon, OnDownloadFavIcon)
     IPC_MESSAGE_HANDLER(ViewMsg_ScriptEvalRequest, OnScriptEvalRequest)
@@ -2657,6 +2659,11 @@ void RenderView::OnZoom(int function) {
 
 void RenderView::OnSetPageEncoding(const std::string& encoding_name) {
   webview()->SetPageEncoding(encoding_name);
+}
+
+void RenderView::OnResetPageEncodingToDefault() {
+  std::string no_encoding;
+  webview()->SetPageEncoding(no_encoding);
 }
 
 void RenderView::NavigateBackForwardSoon(int offset) {

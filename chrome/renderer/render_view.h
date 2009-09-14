@@ -557,6 +557,7 @@ class RenderView : public RenderWidget,
   void OnDeterminePageText();
   void OnZoom(int function);
   void OnSetPageEncoding(const std::string& encoding_name);
+  void OnResetPageEncodingToDefault();
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
       const std::vector<GURL>& links,

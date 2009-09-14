@@ -234,6 +234,9 @@ class TabContents : public PageNavigator,
 
   const std::string& encoding() const { return encoding_; }
   void set_encoding(const std::string& encoding);
+  void reset_encoding() {
+    encoding_.clear();
+  }
 
   // Internal state ------------------------------------------------------------
 
@@ -580,6 +583,12 @@ class TabContents : public PageNavigator,
   void override_encoding(const std::string& encoding) {
     set_encoding(encoding);
     render_view_host()->SetPageEncoding(encoding);
+  }
+  // Remove any user-defined override encoding and reload by sending down
+  // ViewMsg_ResetPageEncodingToDefault to the renderer.
+  void reset_override_encoding() {
+    reset_encoding();
+    render_view_host()->ResetPageEncodingToDefault();
   }
 
   void WindowMoveOrResizeStarted() {

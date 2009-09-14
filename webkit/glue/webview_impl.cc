@@ -1419,12 +1419,12 @@ void WebViewImpl::SetPageEncoding(const std::string& encoding_name) {
   if (!page_.get())
     return;
 
-  if (!encoding_name.empty()) {
-    // only change override encoding, don't change default encoding
-    // TODO(brettw) use std::string for encoding names.
-    String new_encoding_name(webkit_glue::StdStringToString(encoding_name));
-    page_->mainFrame()->loader()->reloadWithOverrideEncoding(new_encoding_name);
-  }
+  // Only change override encoding, don't change default encoding.
+  // Note that the new encoding must be NULL if it isn't supposed to be set.
+  String new_encoding_name;
+  if (!encoding_name.empty())
+    new_encoding_name = webkit_glue::StdStringToString(encoding_name);
+  page_->mainFrame()->loader()->reloadWithOverrideEncoding(new_encoding_name);
 }
 
 // Return the canonical encoding name of current main webframe in webview.

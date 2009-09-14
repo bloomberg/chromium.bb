@@ -224,6 +224,9 @@ class RenderViewHost : public RenderWidgetHost,
   // Change the encoding of the page.
   void SetPageEncoding(const std::string& encoding);
 
+  // Reset any override encoding on the page and change back to default.
+  void ResetPageEncodingToDefault();
+
   // Change the alternate error page URL.  An empty GURL disables the use of
   // alternate error pages.
   void SetAlternateErrorPageURL(const GURL& url);

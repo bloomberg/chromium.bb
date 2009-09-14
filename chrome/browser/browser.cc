@@ -1017,8 +1017,15 @@ void Browser::Print() {
 void Browser::ToggleEncodingAutoDetect() {
   UserMetrics::RecordAction(L"AutoDetectChange", profile_);
   encoding_auto_detect_.SetValue(!encoding_auto_detect_.GetValue());
-  // Reload the page so we can try to auto-detect the charset.
-  Reload();
+  // If "auto detect" is turned on, then any current override encoding
+  // is cleared. This also implicitly performs a reload.
+  // OTOH, if "auto detect" is turned off, we don't change the currently
+  // active encoding.
+  if (encoding_auto_detect_.GetValue()) {
+    TabContents* contents = GetSelectedTabContents();
+    if (contents)
+      contents->reset_override_encoding();
+  }
 }
 
 void Browser::OverrideEncoding(int encoding_id) {
