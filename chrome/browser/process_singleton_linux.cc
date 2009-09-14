@@ -226,8 +226,8 @@ std::string ReadLink(const std::string& path) {
 // Unlink a path. Return true on success.
 bool UnlinkPath(const std::string& path) {
   int rv = unlink(path.c_str());
-  if (rv < 0)
-    DCHECK_EQ(errno, ENOENT);
+  if (rv < 0 && errno != ENOENT)
+    LOG(ERROR) << "Failed to unlink " << path << ": " << strerror(errno);
 
   return rv == 0;
 }
@@ -729,7 +729,8 @@ void ProcessSingleton::Create() {
       // startup race.
       // TODO(mattm): If the other instance is on the same host, we could try
       // to notify it rather than just failing.
-      LOG(FATAL) << "Failed to create SingletonLock: " << strerror(saved_errno);
+      LOG(FATAL) << "Failed to create " << lock_path_.value() << ": "
+                 << strerror(saved_errno);
     }
   }
 
