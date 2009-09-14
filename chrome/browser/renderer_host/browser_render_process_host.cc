@@ -772,9 +772,8 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
       // Request MAXIMUM_ALLOWED to match the access a handle
       // returned by CreateProcess() has to the process object.
       process_.set_handle(OpenProcess(MAXIMUM_ALLOWED, FALSE, peer_pid));
-#elif defined(OS_POSIX)
-      // ProcessHandle is just a pid.
-      process_.set_handle(peer_pid);
+#else
+      NOTREACHED();
 #endif
       DCHECK(process_.handle());
     }
@@ -782,13 +781,18 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
     // Need to verify that the peer_pid is actually the process we know, if
     // it is not, we need to panic now. See bug 1002150.
     if (peer_pid != process_.pid()) {
-      // In the case that we are running the renderer in a wrapper, this check
-      // is invalid as it's the wrapper PID that we'll have, not the actual
-      // renderer
-      const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-      if (cmd_line.HasSwitch(switches::kRendererCmdPrefix))
-        return;
+      // This check is invalid on Linux for two reasons:
+      //   a) If we are running the renderer in a wrapper (with
+      //      --renderer-cmd-prefix) then the we'll see the PID of the wrapper
+      //      process, not the renderer itself.
+      //   b) If we are using the SUID sandbox with CLONE_NEWPID, then the
+      //      renderer will be in a new PID namespace and will believe that
+      //      it's PID is 2 or 3.
+      // Additionally, this check isn't a security problem on Linux since we
+      // don't use the PID as reported by the renderer.
+#if !defined(OS_LINUX)
       CHECK(peer_pid == process_.pid()) << peer_pid << " " << process_.pid();
+#endif
     }
   }
 }
