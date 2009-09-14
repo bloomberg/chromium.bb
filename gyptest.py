@@ -181,6 +181,7 @@ def main(argv=None):
 
   passed = []
   failed = []
+  no_result = []
 
   if opts.format:
     format_list = opts.format.split(',')
@@ -204,7 +205,9 @@ def main(argv=None):
       status = cr.run([sys.executable, test],
                       stdout=sys.stdout,
                       stderr=sys.stderr)
-      if status:
+      if status == 2:
+        no_result.append(test)
+      elif status:
         failed.append(test)
       else:
         passed.append(test)
@@ -222,6 +225,7 @@ def main(argv=None):
     if opts.passed:
       report("Passed", passed)
     report("Failed", failed)
+    report("No result from", no_result)
 
   if failed:
     return 1
