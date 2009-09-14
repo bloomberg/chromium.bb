@@ -485,7 +485,6 @@ each locale. aa1 -->
       <message name="IDS_MOST_VISITED_SUB_PAGE" desc="The link below every domain on the most visited view">
         Show pages
       </message>
-
       <!-- Page menu -->
       <message name="IDS_NEW_TAB" desc="The text label of the New Tab menu item">
         New &amp;tab
@@ -4845,6 +4844,41 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_EDIT_SELECT_ALL_MAC" desc="The Mac menu item select all in the edit menu.">
           Select All
+        </message>
+        <!-- Edit::Find submenu -->
+        <message name="IDS_EDIT_FIND_SUBMENU_MAC" desc="The Mac menu item for the find submenu in the edit menu.">
+          Find
+        </message>
+        <message name="IDS_EDIT_FIND_MAC" desc="The Mac menu item for find in the edit menu.">
+          Find...
+        </message>
+        <message name="IDS_EDIT_FIND_NEXT_MAC" desc="The Mac menu item for find next in the edit menu.">
+          Find Next
+        </message>
+        <message name="IDS_EDIT_FIND_PREVIOUS_MAC" desc="The Mac menu item for find previous in the edit menu.">
+          Find Previous
+        </message>
+        <message name="IDS_EDIT_USE_SELECTION_MAC" desc="The Mac menu item for use selection for find in the edit menu.">
+          Use Selection for Find
+        </message>
+        <message name="IDS_EDIT_JUMP_TO_SELECTION_MAC" desc="The Mac menu item for jump to selection in the edit menu.">
+          Jump to Selection
+        </message>
+        <!-- Edit::Spelling and Grammar submenu -->
+        <message name="IDS_EDIT_SPELLING_GRAMMAR_MAC" desc="The Mac menu item for spelling and grammar submenu in the edit menu.">
+          Spelling and Grammar
+        </message>
+        <message name="IDS_EDIT_SHOW_SPELLING_GRAMMAR_MAC" desc="The Mac menu item for show spelling and grammar in the edit menu.">
+          Show Spelling and Grammar
+        </message>
+        <message name="IDS_EDIT_CHECK_DOCUMENT_MAC" desc="The Mac menu item for check document in the edit menu.">
+          Check Document Now
+        </message>
+        <message name="IDS_EDIT_CHECK_SPELLING_TYPING_MAC" desc="The Mac menu item for check spelling while typing in the edit menu.">
+          Check Spelling While Typing
+        </message>
+        <message name="IDS_EDIT_CHECK_GRAMMAR_MAC" desc="The Mac menu item for check grammar with spelling in the edit menu.">
+          Check Grammar With Spelling
         </message>
         <!-- View menu -->
         <message name="IDS_BOOMARK_BAR_ALWAYS_SHOW_MAC" desc="The Mac menu item for having bookmark bar always visible in the view menu.">
