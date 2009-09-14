@@ -53,26 +53,26 @@ ncv_gen_dir = ncv_gen_basedir +'/gen/native_client/src/trusted/validator_x86'
 
 # Define enumerate type files, and the options to process.
 ncv_enum_pairs = {
-    'ncopcode_prefix': "--name='OpcodePrefix' --add_size=1",
+    'ncopcode_prefix': '--name=OpcodePrefix --add_size=1',
     'ncopcode_insts':
-        "--name='InstMnemonic' --add_size=1 --sort=1 --name_prefix='Inst'",
-    'ncopcode_opcode_flags': "--name='OpcodeFlag' --add_size=1",
-    'ncopcode_operand_kind': "--name='OperandKind' --add_size=1",
-    'ncopcode_operand_flag': "--name='OperandFlag' --add_size=1",
-    'ncop_expr_node_flag': "--name='ExprNodeFlag' --add_size=1",
-    'ncop_expr_node_kind': "--name='ExprNodeKind' --add_size=1"
-    }
+      '--name=InstMnemonic --add_size=1 --sort=1 --name_prefix=Inst',
+    'ncopcode_opcode_flags': '--name=OpcodeFlag --add_size=1',
+    'ncopcode_operand_kind': '--name=OperandKind --add_size=1',
+    'ncopcode_operand_flag': '--name=OperandFlag --add_size=1',
+    'ncop_expr_node_flag': '--name=ExprNodeFlag --add_size=1',
+    'ncop_expr_node_kind': '--name=ExprNodeKind --add_size=1',
+}
 
 # Now code generate the enumerated types.
 for ncv_enum in ncv_enum_pairs:
   ncv_options = ncv_enum_pairs[ncv_enum]
-  ncv_base = ncv_gen_dir + "/" + ncv_enum
-  ncv_enum_file = env.File(ncv_enum + ".enum")
-  ncv_header_1 = env.File(ncv_base + ".h")
-  ncv_header_2 = env.File(ncv_base + "_impl.h")
+  ncv_base = ncv_gen_dir + '/' + ncv_enum
+  ncv_enum_file = env.File(ncv_enum + '.enum')
+  ncv_header_1 = env.File(ncv_base + '.h')
+  ncv_header_2 = env.File(ncv_base + '_impl.h')
   ncv_headers = [ ncv_header_1 , ncv_header_2 ]
   ncv_command = (
-      "${PYTHON} %s --header='%s' --source='%s' --path_prefix='%s' %s %s" %
+      '${PYTHON} %s --header="%s" --source="%s" --path_prefix="%s" %s %s' %
       (env.File('enum_gen.py'), ncv_header_1, ncv_header_2, ncv_gen_basedir,
        ncv_options, ncv_enum_file))
   env.Command(ncv_headers,
