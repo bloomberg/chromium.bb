@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 #define CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 
-#include "build/build_config.h"
+#include "views/view.h"
 
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
