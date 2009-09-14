@@ -271,6 +271,101 @@ bool CreateOrUpdateChromeShortcuts(const std::wstring& exe_path,
   return ret;
 }
 
+// After a successful copying of all the files, this function is called to
+// do a few post install tasks:
+// - Handle the case of in-use-update by updating "opv" key or deleting it if
+//   not required.
+// - Register any new dlls and unregister old dlls.
+// If these operations are successful, the function returns true, otherwise
+// false.
+bool DoPostInstallTasks(HKEY reg_root,
+                        const std::wstring& exe_path,
+                        const std::wstring& install_path,
+                        const std::wstring& new_chrome_exe,
+                        const std::wstring& current_version,
+                        const installer::Version& new_version) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::wstring version_key = dist->GetVersionKey();
+
+  if (file_util::PathExists(new_chrome_exe)) {
+    // Looks like this was in use update. So make sure we update the 'opv' key
+    // with the current version that is active and 'cmd' key with the rename
+    // command to run.
+    if (current_version.empty()) {
+      LOG(ERROR) << "New chrome.exe exists but current version is empty!";
+      return false;
+    }
+    scoped_ptr<WorkItemList> inuse_list(WorkItem::CreateWorkItemList());
+    inuse_list->AddSetRegValueWorkItem(reg_root,
+                                       version_key,
+                                       google_update::kRegOldVersionField,
+                                       current_version.c_str(),
+                                       true);
+
+    std::wstring rename_cmd(installer::GetInstallerPathUnderChrome(
+        install_path, new_version.GetString()));
+    file_util::AppendToPath(&rename_cmd,
+                            file_util::GetFilenameFromPath(exe_path));
+    rename_cmd = L"\"" + rename_cmd +
+                 L"\" --" + installer_util::switches::kRenameChromeExe;
+    if (reg_root == HKEY_LOCAL_MACHINE)
+      rename_cmd = rename_cmd + L" --" + installer_util::switches::kSystemLevel;
+    inuse_list->AddSetRegValueWorkItem(reg_root,
+                                       version_key,
+                                       google_update::kRegRenameCmdField,
+                                       rename_cmd.c_str(),
+                                       true);
+    if (!inuse_list->Do()) {
+      LOG(ERROR) << "Couldn't write opv/cmd values to registry.";
+      inuse_list->Rollback();
+      return false;
+    }
+  } else {
+    // Since this was not in-use-update, delete 'opv' and 'cmd' keys.
+    scoped_ptr<WorkItemList> inuse_list(WorkItem::CreateWorkItemList());
+    inuse_list->AddDeleteRegValueWorkItem(reg_root, version_key,
+                                          google_update::kRegOldVersionField,
+                                          true);
+    inuse_list->AddDeleteRegValueWorkItem(reg_root, version_key,
+                                          google_update::kRegRenameCmdField,
+                                          true);
+    if (!inuse_list->Do()) {
+      LOG(ERROR) << "Couldn't delete opv/cmd values from registry.";
+      inuse_list->Rollback();
+      return false;
+    }
+  }
+
+  // Now we need to register any self registering components and unregister
+  // any that were left from the old version that is being upgraded:
+  if (!current_version.empty()) {
+    std::wstring old_dll_path(install_path);
+    file_util::AppendToPath(&old_dll_path, current_version);
+    scoped_ptr<WorkItemList> old_dll_list(WorkItem::CreateWorkItemList());
+    if (InstallUtil::BuildDLLRegistrationList(old_dll_path, kDllsToRegister,
+                                              kNumDllsToRegister, false,
+                                              old_dll_list.get())) {
+      // Don't abort the install as a result of a failure to unregister old
+      // DLLs.
+      old_dll_list->Do();
+    }
+  }
+
+  std::wstring dll_path(install_path);
+  file_util::AppendToPath(&dll_path, new_version.GetString());
+  scoped_ptr<WorkItemList> dll_list(WorkItem::CreateWorkItemList());
+  if (InstallUtil::BuildDLLRegistrationList(dll_path, kDllsToRegister,
+                                            kNumDllsToRegister, true,
+                                            dll_list.get())) {
+    if (!dll_list->Do()) {
+      dll_list->Rollback();
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // This method tells if we are running on 64 bit platform so that we can copy
 // one extra exe. If the API call to determine 64 bit fails, we play it safe
 // and return true anyway so that the executable can be copied.
@@ -311,15 +406,40 @@ void RegisterChromeOnMachine(const std::wstring& install_path,
     ShellUtil::RegisterChromeBrowser(chrome_exe, L"", false);
   }
 }
-}  // namespace
 
-bool installer::InstallNewVersion(const std::wstring& exe_path,
-                                  const std::wstring& archive_path,
-                                  const std::wstring& src_path,
-                                  const std::wstring& install_path,
-                                  const std::wstring& temp_dir,
-                                  const HKEY reg_root,
-                                  const Version& new_version) {
+// This function installs a new version of Chrome to the specified location.
+// It returns true if install was successful and false in case of an error.
+//
+// exe_path: Path to the executable (setup.exe) as it will be copied
+//           to Chrome install folder after install is complete
+// archive_path: Path to the archive (chrome.7z) as it will be copied
+//               to Chrome install folder after install is complete
+// src_path: the path that contains a complete and unpacked Chrome package
+//           to be installed.
+// install_path: the destination path for Chrome to be installed to. This
+//               path does not need to exist.
+// temp_dir: the path of working directory used during installation. This path
+//           does not need to exist.
+// reg_root: the root of registry where the function applies settings for the
+//           new Chrome version. It should be either HKLM or HKCU.
+// new_version: new Chrome version that needs to be installed
+// current_version: returns the current active version (if any)
+//
+// This function makes best effort to do installation in a transactional
+// manner. If failed it tries to rollback all changes on the file system
+// and registry. For example, if install_path exists before calling the
+// function, it rolls back all new file and directory changes under
+// install_path. If install_path does not exist before calling the function
+// (typical new install), the function creates install_path during install
+// and removes the whole directory during rollback.
+bool InstallNewVersion(const std::wstring& exe_path,
+                       const std::wstring& archive_path,
+                       const std::wstring& src_path,
+                       const std::wstring& install_path,
+                       const std::wstring& temp_dir,
+                       const HKEY reg_root,
+                       const installer::Version& new_version,
+                       std::wstring* current_version) {
   if (reg_root != HKEY_LOCAL_MACHINE && reg_root != HKEY_CURRENT_USER)
     return false;
 
@@ -342,17 +462,16 @@ bool installer::InstallNewVersion(const std::wstring& exe_path,
         temp_dir);
   }
 
-  // Delete any new_chrome.exe if present (we will end up create a new one
+  // Delete any new_chrome.exe if present (we will end up creating a new one
   // if required) and then copy chrome.exe
   std::wstring new_chrome_exe = AppendPath(install_path,
                                            installer_util::kChromeNewExe);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   RegKey chrome_key(reg_root, dist->GetVersionKey().c_str(), KEY_READ);
-  std::wstring current_version;
   if (file_util::PathExists(new_chrome_exe))
-    chrome_key.ReadValue(google_update::kRegOldVersionField, &current_version);
-  if (current_version.empty())
-    chrome_key.ReadValue(google_update::kRegVersionField, &current_version);
+    chrome_key.ReadValue(google_update::kRegOldVersionField, current_version);
+  if (current_version->empty())
+    chrome_key.ReadValue(google_update::kRegVersionField, current_version);
   chrome_key.Close();
 
   install_list->AddDeleteTreeWorkItem(new_chrome_exe, std::wstring());
@@ -401,95 +520,26 @@ bool installer::InstallNewVersion(const std::wstring& exe_path,
                                        new_version.GetString(),
                                        true);    // overwrite version
 
-  // Perform install operations.
-  bool success = install_list->Do();
-
-  // If the installation worked, handle the in-use update case:
-  // * If new_chrome.exe exists, then currently Chrome was in use so save
-  // current version in old version key.
-  // * If new_chrome.exe doesnt exist, then delete old version key.
-  if (success) {
-    if (file_util::PathExists(new_chrome_exe)) {
-      if (current_version.empty()) {
-        LOG(ERROR) << "New chrome.exe exists but current version is empty!";
-        success = false;
-      } else {
-        scoped_ptr<WorkItemList> inuse_list(WorkItem::CreateWorkItemList());
-        inuse_list->AddSetRegValueWorkItem(reg_root,
-                                           version_key,
-                                           google_update::kRegOldVersionField,
-                                           current_version.c_str(),
-                                           true);
-        std::wstring rename_cmd(installer::GetInstallerPathUnderChrome(
-            install_path, new_version.GetString()));
-        file_util::AppendToPath(&rename_cmd,
-                                file_util::GetFilenameFromPath(exe_path));
-        rename_cmd = L"\"" + rename_cmd +
-                     L"\" --" + installer_util::switches::kRenameChromeExe;
-        if (reg_root == HKEY_LOCAL_MACHINE) {
-          rename_cmd = rename_cmd + L" --" +
-                       installer_util::switches::kSystemLevel;
-        }
-        inuse_list->AddSetRegValueWorkItem(reg_root,
-                                           version_key,
-                                           google_update::kRegRenameCmdField,
-                                           rename_cmd.c_str(),
-                                           true);
-        if (!inuse_list->Do()) {
-          LOG(ERROR) << "Couldn't write old version/rename value to registry.";
-          success = false;
-          inuse_list->Rollback();
-        }
-      }
-    } else {
-      scoped_ptr<WorkItemList> inuse_list(WorkItem::CreateWorkItemList());
-      inuse_list->AddDeleteRegValueWorkItem(reg_root, version_key,
-                                            google_update::kRegOldVersionField,
-                                            true);
-      inuse_list->AddDeleteRegValueWorkItem(reg_root, version_key,
-                                            google_update::kRegRenameCmdField,
-                                            true);
-      if (!inuse_list->Do()) {
-        LOG(ERROR) << "Couldn't write old version/rename value to registry.";
-        success = false;
-        inuse_list->Rollback();
-      }
-    }
-  }
-
-  // Now we need to register any self registering components and unregister
-  // any that were left from the old version that is being upgraded:
-  if (!current_version.empty()) {
-    std::wstring old_dll_path(install_path);
-    file_util::AppendToPath(&old_dll_path, current_version);
-    scoped_ptr<WorkItemList> old_dll_list(WorkItem::CreateWorkItemList());
-    if (InstallUtil::BuildDLLRegistrationList(old_dll_path, kDllsToRegister,
-                                              kNumDllsToRegister, false,
-                                              old_dll_list.get())) {
-      // Don't abort the install as a result of a failure to unregister old
-      // DLLs.
-      old_dll_list->Do();
-    }
-  }
-
-  std::wstring dll_path(install_path);
-  file_util::AppendToPath(&dll_path, new_version.GetString());
-  scoped_ptr<WorkItemList> dll_list(WorkItem::CreateWorkItemList());
-  if (InstallUtil::BuildDLLRegistrationList(dll_path, kDllsToRegister,
-                                            kNumDllsToRegister, true,
-                                            dll_list.get())) {
-    success = dll_list->Do();
-    if (!success) {
-      dll_list->Rollback();
-    }
-  }
-
-  if (!success) {
+  if (!install_list->Do() ||
+      !DoPostInstallTasks(reg_root, exe_path, install_path,
+                          new_chrome_exe, *current_version, new_version)) {
     LOG(ERROR) << "Install failed, rolling back... ";
     install_list->Rollback();
     LOG(ERROR) << "Rollback complete. ";
+    return false;
   }
-  return success;
+
+  return true;
+}
+
+}  // namespace
+
+std::wstring installer::GetInstallerPathUnderChrome(
+    const std::wstring& install_path, const std::wstring& new_version) {
+  std::wstring installer_path(install_path);
+  file_util::AppendToPath(&installer_path, new_version);
+  file_util::AppendToPath(&installer_path, installer_util::kInstallerDir);
+  return installer_path;
 }
 
 installer_util::InstallStatus installer::InstallOrUpdateChrome(
@@ -512,8 +562,9 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
   file_util::AppendToPath(&src_path, std::wstring(kInstallSourceChromeDir));
 
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  std::wstring current_version;
   bool install_success = InstallNewVersion(exe_path, archive_path, src_path,
-      install_path, install_temp_path, reg_root, new_version);
+      install_path, install_temp_path, reg_root, new_version, &current_version);
 
   installer_util::InstallStatus result;
   if (!install_success) {
@@ -558,16 +609,11 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
                               make_chrome_default);
     }
 
-    RemoveOldVersionDirs(install_path, new_version.GetString());
+    std::wstring latest_version_to_keep(new_version.GetString());
+    if (!current_version.empty())
+      latest_version_to_keep.assign(current_version);
+    RemoveOldVersionDirs(install_path, latest_version_to_keep);
   }
 
   return result;
-}
-
-std::wstring installer::GetInstallerPathUnderChrome(
-    const std::wstring& install_path, const std::wstring& new_version) {
-  std::wstring installer_path(install_path);
-  file_util::AppendToPath(&installer_path, new_version);
-  file_util::AppendToPath(&installer_path, installer_util::kInstallerDir);
-  return installer_path;
 }
