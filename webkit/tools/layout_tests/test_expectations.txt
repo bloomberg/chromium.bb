@@ -450,8 +450,6 @@ BUG20551 LINUX WIN : LayoutTests/fast/replaced/table-percent-height-text-control
 // sense.
 BUG1089231 : LayoutTests/fast/events/stopPropagation-submit.html = FAIL
 
-BUG10271 MAC LINUX : LayoutTests/fast/events/dispatchEvent-crash.html = CRASH FAIL
-
 // -----------------------------------------------------------------
 // PENDING TESTS (forked to pending/, need to be sent upstream)
 // -----------------------------------------------------------------
@@ -1293,9 +1291,6 @@ BUG10352 : LayoutTests/fast/js/primitive-method-this.html = FAIL
 // See bug http://code.google.com/p/chromium/issues/detail?id=7868,
 // not urgent for current release.
 BUG10352 : LayoutTests/http/tests/plugins/local-geturl-from-remote.html = FAIL
-// These two depend on which webkit features are enabled.  For instance, it checks
-// if the Audio constructor is available which is only the case if AUDIO is enabled.
-BUG10352 : LayoutTests/fast/dom/constructors-cached-navigate.html = FAIL
 
 // MERGE REGRESSIONS 36102:37604
 
@@ -2307,7 +2302,6 @@ BUG21439 : LayoutTests/userscripts/simple-stylesheet.html = FAIL
 BUG21442 : LayoutTests/storage/test-authorizer.html = TIMEOUT
 
 // Need investigation after we enable file URL universal access in test shell.
-BUG_JIANLI WIN : LayoutTests/fast/events/dispatchEvent-crash.html = CRASH
 BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
 
 // New tests added in r48284
