@@ -35,6 +35,8 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_NACL_MACROS_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_NACL_MACROS_H_ 1
 
+#include <stdlib.h>
+
 #define NACL_ARRAY_SIZE_UNSAFE(arr) ((sizeof arr)/sizeof arr[0])
 
 /*
@@ -139,17 +141,27 @@ char (&NaClArraySizeHelper(const T (&array)[N]))[N];
     }                                                         \
   } while (0)
 
-/*
- * Making this static causes unused-variable warnings, and does not
- * eliminate the useless stores at any optimization level (so far).
- *
- * The definition of the variable is in the platform library.
- */
-extern void *gNaClArrayCheck;
+static inline void *NaClArrayCheckHelper(void *arg) {
+  /*
+   * Doing runtime checks is not really necessary -- this code is in
+   * fact unreachable code that gets optimized out when used with the
+   * NACL_ARRAY_SIZE definition below.
+   *
+   * The runtime check is only useful when the build system is using
+   * the inappropriate flags (e.g., missing -pedantic -Werror or
+   * -pedantic-error), in which case instead of a compile-time error,
+   * we'd get a runtime error.
+   */
+  if (NULL != arg) {
+    abort();
+  }
+  return arg;
+}
 
 #  define NACL_ARRAY_SIZE(arr)                                          \
-  ((gNaClArrayCheck = __builtin_types_compatible_p(__typeof__(&arr[0]), \
-                                                   __typeof__(arr))),   \
+  (NaClArrayCheckHelper(                                                \
+      __builtin_types_compatible_p(__typeof__(&arr[0]),                 \
+                                   __typeof__(arr))),                   \
    NACL_ARRAY_SIZE_UNSAFE(arr))
 # else  /* __GNUC__ */
 
