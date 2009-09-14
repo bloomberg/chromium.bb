@@ -135,6 +135,10 @@ class Thread : PlatformThread::Delegate {
   // started the thread.  This way we know that we need to call Join.
   bool thread_was_started() const { return startup_data_ != NULL; }
 
+  // If true, we're in the middle of stopping, and shouldn't access
+  // |message_loop_|. It may non-NULL and invalid.
+  bool stopping_;
+
   // Used to pass data to ThreadMain.
   struct StartupData;
   StartupData* startup_data_;
