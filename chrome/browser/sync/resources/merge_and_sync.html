@@ -27,21 +27,28 @@
     function showMergeAndSyncDone() {
      var throbber = document.getElementById('throbber_container');
      throbber.style.display = "none";
-     document.getElementById("header").innerHTML =
-         "<font size='-1'><b>All done!</b></font>";
-     document.getElementById("close").value = "Close";
+     document.getElementById("header").style.display = "none";
+     document.getElementById("header_done").style.display = "block";
+     var closebutton = document.getElementById("close");
+     closebutton.value = document.getElementById("close_txt").innerHTML;
      setTimeout(Close, 1600);
     }
 </script>
 </HEAD>
 <BODY onload="setInterval(advanceThrobber, 30);">
-<p id="header"><font size="-1"><b>Your bookmarks will be merged.</b></font></p><br />
-<img src="merge_and_sync.png" alt="Merge and sync" />
+<div id="header">
+  <p><font size="-1"><b><span i18n-content="titlewarning"></span></b>
+  </font></p>
+</div>
+<div id="header_done" style="display:none">
+  <p><font size="-1">
+    <b><span i18n-content="alldone"></span></b>
+  </font></p>
+</div>
 <br />
-<p><font size="-1">
-Your existing online bookmarks will be merged with the
-bookmarks on this machine. You can use the Bookmark Manager to organize
-your bookmarks after the merge.</font></p>
+<img src="merge_and_sync.png" i18n-values="alt:mergeandsynclabel" />
+<br />
+<p><font size="-1"><span i18n-content="mergeandsyncwarning"></span></font></p>
 <br />
 <table align="right">
   <tr>
@@ -54,11 +61,14 @@ your bookmarks after the merge.</font></p>
     </td>
     <td>
       <input id="acceptMerge" type="button" class="gaia le button" name="accept"
-             value="Merge and sync"
+             i18n-values="value:mergeandsynclabel"
              onclick="acceptMergeAndSync();" />
     </td>
     <td>
-      <input id="close" type="button" value="Abort" onclick="Close();"/>
+      <input id="close" type="button" i18n-values="value:abortlabel"
+             onclick="Close();"/>
+      <span id="close_txt" i18n-content="closelabel" style="display:none">
+      </span>
     </td>
   </tr>
 </table>

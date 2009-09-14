@@ -54,7 +54,7 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     localized_strings.SetString(L"settingupsync",
                                 "Setting up Bookmarks Sync");
     localized_strings.SetString(L"errorsigningin", "Error signing in");
-    localized_strings.SetString(L"introduction", 
+    localized_strings.SetString(L"introduction",
         "Google Chrome can store your bookmark data with your Google account."
         "Bookmarks that you create on this computer will instantly be made"
         "available on all the computers synced to this account.");
@@ -72,16 +72,30 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
                                 "I cannot access my account");
     localized_strings.SetString(L"createaccount",
                                 "Create a Google Account");
-    
+
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
 
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, &localized_strings);
   } else if (path_raw == chrome::kSyncMergeAndSyncPath) {
+    DictionaryValue localized_strings;
+    localized_strings.SetString(L"mergeandsyncwarning",
+        "Your existing online bookmarks will be merged with the "
+        "bookmarks on this machine. You can use the Bookmark Manager to "
+        "organize your bookmarks after the merge.");
+    localized_strings.SetString(L"titlewarning",
+                                "Your bookmarks will be merged.");
+    localized_strings.SetString(L"mergeandsynclabel", "Merge and sync");
+    localized_strings.SetString(L"abortlabel", "Abort");
+    localized_strings.SetString(L"alldone", "All Done!");
+    localized_strings.SetString(L"closelabel", "Close");
+
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_MERGE_AND_SYNC_HTML));
-    response = html.as_string();
+
+    response = jstemplate_builder::GetI18nTemplateHtml(
+        html, &localized_strings);
   } else if (path_raw == chrome::kSyncSetupFlowPath) {
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_SYNC_SETUP_FLOW_HTML));
