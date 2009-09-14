@@ -488,15 +488,15 @@ BUG10273 LINUX : LayoutTests/http/tests/navigation/javascriptlink-frames.html = 
 BUG20844 LINUX WIN : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
 
 // The end result looks right, but the event messages differ.
-BUG845400 LINUX WIN : LayoutTests/editing/pasteboard/paste-xml.xhtml = FAIL
+BUG21807 LINUX WIN : LayoutTests/editing/pasteboard/paste-xml.xhtml = FAIL
 
 // Directionality of mixed-direction text in selected choice should
 // match that in the <select> option lists.
 // Low priority, unclear if test expectations are correct (see bug)
-BUG849411 : LayoutTests/fast/forms/select-writing-direction-natural.html = FAIL
+BUG6139 : LayoutTests/fast/forms/select-writing-direction-natural.html = FAIL
 
 // requires support for layoutTestController.encodeHostName()
-BUG850875 : LayoutTests/fast/encoding/idn-security.html = FAIL
+BUG21814 : LayoutTests/fast/encoding/idn-security.html = FAIL
 
 // These layout tests to see if link colors change after visiting a page. They
 // does this by using layoutTestController.keepWebHistory() to turn on a
