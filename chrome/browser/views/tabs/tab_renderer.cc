@@ -13,6 +13,7 @@
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -40,13 +41,12 @@ static const int kStandardTitleWidth = 175;
 static const int kCloseButtonVertFuzz = 0;
 static const int kCloseButtonHorzFuzz = 5;
 static const int kSelectedTitleColor = SK_ColorBLACK;
-// Preferred width of pinned tabs.
-static const int kPinnedTabWidth = 64;
 // When a non-pinned tab is pinned the width of the tab animates. If the width
 // of a pinned tab is >= kPinnedTabRendererAsTabWidth then the tab is rendered
 // as a normal tab. This is done to avoid having the title immediately
 // disappear when transitioning a tab from normal to pinned.
-static const int kPinnedTabRendererAsTabWidth = kPinnedTabWidth + 30;
+static const int kPinnedTabRendererAsTabWidth =
+    browser_defaults::kPinnedTabWidth + 30;
 
 // How long the hover state takes.
 static const int kHoverDurationMs = 90;
@@ -390,7 +390,7 @@ gfx::Size TabRenderer::GetStandardSize() {
 
 // static
 int TabRenderer::GetPinnedWidth() {
-  return kPinnedTabWidth;
+  return browser_defaults::kPinnedTabWidth;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -455,10 +455,10 @@ void TabRenderer::Layout() {
     favicon_bounds_.SetRect(lb.x(), favicon_top, kFavIconSize, kFavIconSize);
     if ((pinned() || data_.animating_pinned_change) &&
         width() < kPinnedTabRendererAsTabWidth) {
-      int pin_delta = kPinnedTabRendererAsTabWidth - kPinnedTabWidth;
-      int ideal_delta = width() - kPinnedTabWidth;
+      int pin_delta = kPinnedTabRendererAsTabWidth - GetPinnedWidth();
+      int ideal_delta = width() - GetPinnedWidth();
       if (ideal_delta < pin_delta) {
-        int ideal_x = (kPinnedTabWidth - kFavIconSize) / 2;
+        int ideal_x = (GetPinnedWidth() - kFavIconSize) / 2;
         int x = favicon_bounds_.x() + static_cast<int>(
             (1 - static_cast<float>(ideal_delta) /
              static_cast<float>(pin_delta)) *

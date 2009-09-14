@@ -36,6 +36,9 @@ extern const bool kSuppressCrashInfoBar;
 // TODO(sky): this should be removed once Chrome OS cleanly shuts down Chrome.
 extern const bool kRestoreAfterCrash;
 
+// Width of pinned tabs.
+extern const int kPinnedTabWidth;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

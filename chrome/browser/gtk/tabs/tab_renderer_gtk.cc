@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -36,13 +37,12 @@ const int kTitleCloseButtonSpacing = 5;
 const int kStandardTitleWidth = 175;
 const int kDropShadowOffset = 2;
 const int kInactiveTabBackgroundOffsetY = 20;
-// Preferred width of pinned tabs.
-const int kPinnedTabWidth = 64;
 // When a non-pinned tab is pinned the width of the tab animates. If the width
 // of a pinned tab is >= kPinnedTabRendererAsTabWidth then the tab is rendered
 // as a normal tab. This is done to avoid having the title immediately
 // disappear when transitioning a tab from normal to pinned.
-const int kPinnedTabRendererAsTabWidth = kPinnedTabWidth + 30;
+const int kPinnedTabRendererAsTabWidth =
+    browser_defaults::kPinnedTabWidth + 30;
 
 // The tab images are designed to overlap the toolbar by 1 pixel. For now we
 // don't actually overlap the toolbar, so this is used to know how many pixels
@@ -428,7 +428,7 @@ gfx::Size TabRendererGtk::GetStandardSize() {
 
 // static
 int TabRendererGtk::GetPinnedWidth() {
-  return kPinnedTabWidth;
+  return browser_defaults::kPinnedTabWidth;
 }
 
 // static
@@ -598,10 +598,10 @@ void TabRendererGtk::Layout() {
                             kFavIconSize, kFavIconSize);
     if ((is_pinned() || data_.animating_pinned_change) &&
         bounds_.width() < kPinnedTabRendererAsTabWidth) {
-      int pin_delta = kPinnedTabRendererAsTabWidth - kPinnedTabWidth;
-      int ideal_delta = bounds_.width() - kPinnedTabWidth;
+      int pin_delta = kPinnedTabRendererAsTabWidth - GetPinnedWidth();
+      int ideal_delta = bounds_.width() - GetPinnedWidth();
       if (ideal_delta < pin_delta) {
-        int ideal_x = (kPinnedTabWidth - kFavIconSize) / 2;
+        int ideal_x = (GetPinnedWidth() - kFavIconSize) / 2;
         int x = favicon_bounds_.x() + static_cast<int>(
             (1 - static_cast<float>(ideal_delta) /
              static_cast<float>(pin_delta)) *

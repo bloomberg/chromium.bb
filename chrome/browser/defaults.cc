@@ -16,6 +16,7 @@ const SessionStartupPref::Type kDefaultSessionStartupType =
     SessionStartupPref::LAST;
 const bool kSuppressCrashInfoBar = true;
 const bool kRestoreAfterCrash = true;
+const int kPinnedTabWidth = 64;
 
 #elif defined(OS_LINUX)
 
@@ -37,6 +38,7 @@ const SessionStartupPref::Type kDefaultSessionStartupType =
     SessionStartupPref::DEFAULT;
 const bool kSuppressCrashInfoBar = false;
 const bool kRestoreAfterCrash = false;
+const int kPinnedTabWidth = 56;
 
 #endif
 
